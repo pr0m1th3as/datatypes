@@ -28,13 +28,13 @@ string arrays
  string
  convertCharsToStrings
  convertStringsToChars
-table datatype
+table arrays
  table
  array2table
  cell2table
  struct2table
  istable
-Supplementary Classes
+supplementary classes
  missing
  vartype
  @cell/disp
