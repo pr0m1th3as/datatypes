@@ -41,4 +41,6 @@ Load the package by typing
 
   'pkg load datatypes`
 
-**Note** loading the **datatypes** package affects the way cell arrays are displayed in the terminal.
+**NOTICE !** Loading the **datatypes** package affects the way cell arrays are displayed in the terminal.
+
+**WARNING !!** Unloading the **datatypes** package while variables of data types provided by this package are in Octave's workspace will most likely make Octave unstable.
