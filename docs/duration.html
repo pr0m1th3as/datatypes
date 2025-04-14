@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Data Types for GNU Octave: duration</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+    <script type="text/javascript" async
+      src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
+    </script>
+    <script type="text/javascript">
+      window.addEventListener("load", () => {
+        for (let i of document.querySelectorAll(".collapse ul")) {
+          let tog = document.createElement("div");
+          tog.innerHTML = i.previousSibling.textContent;
+          tog.className = "toggle";
+          tog.onclick = () => tog.classList.toggle("show");
+          i.parentElement.removeChild(i.previousSibling);
+          i.parentElement.insertBefore(tog, i);
+        }
+      });
+    </script>
+    <style>
+    h6:hover {
+      color: gray;
+    }
+    var {
+      font-style: italics;
+      font-weight: bold;
+    }
+    td {
+      vertical-align: top;
+    }
+    [id^="togList"],                        /* HIDE CHECKBOX */
+    [id^="togList"] ~ .list,                /* HIDE LIST */
+    [id^="togList"] + label  span + span,   /* HIDE "Collapse" */
+    [id^="togList"]:checked + label span{   /* HIDE "Expand" (IF CHECKED) */
+      display:none;
+    }
+    [id^="togList"]:checked + label span + span{
+      display:inline-block;                 /* SHOW "Collapse" (IF CHECKED) */
+    }
+    [id^="togList"]:checked ~ .list{
+      display:block;                        /* SHOW LIST (IF CHECKED) */
+    }
+    </style>
+  </head>
+  <body>
+    <div class="bg-dark">
+      <div class="container-xl">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+          <div class="container-fluid">
+            <a class="navbar-brand" href=index.html>
+              <img src="assets/datatypes.png" alt="datatypes" class="d-inline-block align-top" width="25" height="25">
+              Data Types for GNU Octave
+            </a>
+            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav">
+                <li class="nav-item">
+                  <a class="nav-link" href="index.html#Datatypes">
+                    <i class="fas fa-list-alt"></i>
+                    Datatypes
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="https://gnu-octave.github.io/packages/">
+                  <img src="assets/octave-logo.svg" alt="GNU Octave logo" class="d-inline-block align-top" width="25" height="25">
+                    Octave Packages
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="https://www.octave.org">
+                    <i class="fas fa-home"></i>
+                    GNU Octave website
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+    <div class="container-xl my-4">
+      <div class="row flex-nowrap" style="min-height:0">
+        <div class="col-md-2 bg-light" style="overflow-y: scroll; width: 250px;">
+          <div class="p-2" style="text-align: center;">
+            <h3>Categories &</h3>
+            <h4 style="color: blue">Functions List</h4>
+          </div>
+			<div class="row">
+				<input id="togList1" type="checkbox" checked>
+				<label for="togList1">
+					<span><h6>Datatypes</h6></span>
+					<span><h6>Datatypes</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="NaT.html" class="text-decoration-none font-monospace"><small>NaT</small></a></li>
+					<li><a href="array2table.html" class="text-decoration-none font-monospace"><small>array2table</small></a></li>
+					<li><a href="caldays.html" class="text-decoration-none font-monospace"><small>caldays</small></a></li>
+					<li><a href="calendarDuration.html" class="text-decoration-none font-monospace"><small>calendarDuration</small></a></li>
+					<li><a href="calmonths.html" class="text-decoration-none font-monospace"><small>calmonths</small></a></li>
+					<li><a href="calquarters.html" class="text-decoration-none font-monospace"><small>calquarters</small></a></li>
+					<li><a href="calweeks.html" class="text-decoration-none font-monospace"><small>calweeks</small></a></li>
+					<li><a href="calyears.html" class="text-decoration-none font-monospace"><small>calyears</small></a></li>
+					<li><a href="categorical.html" class="text-decoration-none font-monospace"><small>categorical</small></a></li>
+					<li><a href="cell2table.html" class="text-decoration-none font-monospace"><small>cell2table</small></a></li>
+					<li><a href="convertCharsToStrings.html" class="text-decoration-none font-monospace"><small>convertCharsToStrings</small></a></li>
+					<li><a href="convertStringsToChars.html" class="text-decoration-none font-monospace"><small>convertStringsToChars</small></a></li>
+					<li><a href="datetime.html" class="text-decoration-none font-monospace"><small>datetime</small></a></li>
+					<li><a href="days.html" class="text-decoration-none font-monospace"><small>days</small></a></li>
+					<li><a href="duration.html" class="text-decoration-none font-monospace fw-bolder"><small>duration</small></a></li>
+					<li><a href="hours.html" class="text-decoration-none font-monospace"><small>hours</small></a></li>
+					<li><a href="iscalendarduration.html" class="text-decoration-none font-monospace"><small>iscalendarduration</small></a></li>
+					<li><a href="iscategorical.html" class="text-decoration-none font-monospace"><small>iscategorical</small></a></li>
+					<li><a href="isdatetime.html" class="text-decoration-none font-monospace"><small>isdatetime</small></a></li>
+					<li><a href="isduration.html" class="text-decoration-none font-monospace"><small>isduration</small></a></li>
+					<li><a href="istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
+					<li><a href="milliseconds.html" class="text-decoration-none font-monospace"><small>milliseconds</small></a></li>
+					<li><a href="minutes.html" class="text-decoration-none font-monospace"><small>minutes</small></a></li>
+					<li><a href="missing.html" class="text-decoration-none font-monospace"><small>missing</small></a></li>
+					<li><a href="seconds.html" class="text-decoration-none font-monospace"><small>seconds</small></a></li>
+					<li><a href="string.html" class="text-decoration-none font-monospace"><small>string</small></a></li>
+					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
+					<li><a href="table.html" class="text-decoration-none font-monospace"><small>table</small></a></li>
+					<li><a href="vartype.html" class="text-decoration-none font-monospace"><small>vartype</small></a></li>
+					<li><a href="years.html" class="text-decoration-none font-monospace"><small>years</small></a></li>
+					<li><a href="@cell_disp.html" class="text-decoration-none font-monospace"><small>@cell/disp</small></a></li>
+					<li><a href="@cell_display.html" class="text-decoration-none font-monospace"><small>@cell/display</small></a></li>
+					<li><a href="__datetime__.html" class="text-decoration-none font-monospace"><small>__datetime__</small></a></li>
+				</ul>
+				</div>
+			</div>
+
+			  </div>
+			  <div class="col-md-10">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <h3 class="d-inline-block mr-2">
+                Class&nbsp;Definition: <b><code>duration</code></b>
+                </h3>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>Class:</u> <b>duration</b></dt>
+</dl>
+
+<p> Array representing durations of time using fixed-length time units.
+</p>
+<div class="ms-5">
+<p> <code>duration</code> values are stored internally as <code>double</code> type array
+ representing numbers of elapsed days as a fixed-length time unit.  By
+ default, fractional seconds of duration values are not displayed, but their
+ actual precision is closer to nanoseconds for typical time lengths.
+</p>
+<p> <code>duration</code> arrays can be created through their constructor by
+ combining numeric arrays representing individual fixed-length elapsed time
+ units or through the functions <code>years</code>, <code>days</code>, <code>hours</code>,
+ <code>minutes</code>, <code>seconds</code>, and <code>calyears</code>, which create
+ fixed-length durations in terms of a single duration units.  These
+ functions are also available as methods of <code>duration</code> arrays to
+ extract individual duration units as numeric arrays.
+</p>
+<p> <strong>See also: </strong>
+  <a href="calendarDuration.html">calendarDuration</a>, 
+  <a href="duration.html">duration</a>
+</p>
+<p><strong>Source Code: </strong>
+  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/duration.m">duration</a>
+</div>
+
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>cellstr</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>duration:</u> <var>cstr</var> = <b>cellstr</b><i> (<var>D</var>)</i></dt>
+<dt><u>duration:</u> <var>cstr</var> = <b>cellstr</b><i> (<var>D</var>, <var>Format</var>)</i></dt>
+</dl>
+
+<p> Convert duration array to a cell array of character vectors.
+</p>
+<div class="ms-5">
+<p> <code><var>cstr</var> = cellstr (<var>D</var>)</code> returns a cellstr array of
+ character vectors, <var>cstr</var>, which has the same size as the input
+ duration <var>D</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>char</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>duration:</u> <var>cmat</var> = <b>char</b><i> (<var>D</var>)</i></dt>
+</dl>
+
+<p> Convert duration array to a character matrix.
+</p>
+<div class="ms-5">
+<p> <code><var>cmat</var> = char (<var>D</var>)</code> returns a character matrix with one
+ row per element in <var>D</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>datevec</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>duration:</u> <var>DV</var> = <b>datevec</b><i> (<var>DT</var>)</i></dt>
+<dt><u>duration:</u> [<var>Y</var>, <var>MO</var>, <var>D</var>, <var>h</var>, <var>mi</var>, <var>s</var>] = <b>datevec</b><i> (<var>DT</var>)</i></dt>
+</dl>
+
+<p> Convert duration array to date vectors.
+</p>
+<div class="ms-5">
+<p> <code><var>DV</var> = datevec (<var>DT</var>)</code> returns an <math>N&times;6</math> numeric matrix
+ whose rows represent each element in <var>DT</var> and each column corresponds
+ to years, months, days, hours, minutes, and seconds, respectively.  Since
+ months cannot be represented as a fixed length of time, the second column
+ of <var>DV</var> is always zero.  <var>DV</var> represents a length of time split
+ accross different fixed-length elapsed time units.
+</p>
+<p> <code>[<var>Y</var>, <var>MO</var>, <var>D</var>, <var>h</var>, <var>mi</var>, <var>s</var>] = datevec
+ (<var>DT</var>)</code> returns the components of <var>DT</var> as individual variables,
+ but unlike <var>DV</var> in the previous syntax, each variable has the same
+ size as the duration array <var>DT</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>days</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>duration:</u> <var>X</var> = <b>days</b><i> (<var>D</var>)</i></dt>
+</dl>
+
+<p> Duration equivalent numeric values in fixed-length days.
+</p>
+<div class="ms-5">
+<p> <code><var>X</var> = days (<var>D</var>)</code> converts durations in <var>D</var> to the
+ equivalent number of fixed-length days (1 day equals 24 hours).  <var>X</var>
+ is a double array of the same size as <var>D</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>dispstrings</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>duration:</u> <var>cstr</var> = <b>dispstrings</b><i> (<var>D</var>)</i></dt>
+</dl>
+
+<p> Get display formatted strings for each element of a duration array.
+</p>
+<div class="ms-5">
+<p> <code><var>cstr</var> = dispstrings (<var>D</var>)</code> returns a cellstr array of
+ character vectors, <var>cstr</var>, which has the same size as the input
+ duration <var>D</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>duration</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>duration:</u> <var>out</var> = <b>numel</b><i> (<var>D</var>)</i></dt>
+</dl>
+
+<p> Total number of elements in a duration array.
+</p>
+<div class="ms-5">
+<p> For compatibility reasons with Octave&rsquo;s OOP interface and <code>subsasgn</code>
+ behavior, duration&rsquo;s <code>numel</code> is defined to always return 1.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+
+
+
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>hms</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>duration:</u> <var>H</var> = <b>hms</b><i> (<var>D</var>)</i></dt>
+<dt><u>duration:</u> [<var>H</var>, <var>M</var>] = <b>hms</b><i> (<var>D</var>)</i></dt>
+<dt><u>duration:</u> [<var>H</var>, <var>M</var>, <var>S</var>] = <b>hms</b><i> (<var>D</var>)</i></dt>
+</dl>
+
+<p> Split duration array into separate time unit values.
+</p>
+<div class="ms-5">
+<p> <code>[<var>H</var>, <var>M</var>, <var>S</var>] = hms (<var>D</var>)</code> splits the duration
+ array <var>D</var> into separate numeric arrays <var>H</var>, <var>M</var>, and <var>S</var>,
+ which correspond to hours, minutes, and seconds, repsectively.  Hours and
+ minutes are returned as whole numbers, while seconds may also have a
+ fractional part.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>hours</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>duration:</u> <var>X</var> = <b>hours</b><i> (<var>D</var>)</i></dt>
+</dl>
+
+<p> Duration equivalent numeric values in hours.
+</p>
+<div class="ms-5">
+<p> <code><var>X</var> = hours (<var>D</var>)</code> converts durations in <var>D</var> to the
+ equivalent number of hours.  <var>X</var> is a double array of the same size
+ as <var>D</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>milliseconds</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>duration:</u> <var>X</var> = <b>milliseconds</b><i> (<var>D</var>)</i></dt>
+</dl>
+
+<p> Duration equivalent numeric values in milliseconds.
+</p>
+<div class="ms-5">
+<p> <code><var>X</var> = milliseconds (<var>D</var>)</code> converts durations in <var>D</var> to
+ the equivalent number of milliseconds.  <var>X</var> is a double array of the
+ same size as <var>D</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>minutes</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>duration:</u> <var>X</var> = <b>minutes</b><i> (<var>D</var>)</i></dt>
+</dl>
+
+<p> Duration equivalent numeric values in minutes.
+</p>
+<div class="ms-5">
+<p> <code><var>X</var> = minutes (<var>D</var>)</code> converts durations in <var>D</var> to the
+ equivalent number of minutes.  <var>X</var> is a double array of the same size
+ as <var>D</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>ndims</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>duration:</u> <var>out</var> = <b>ndims</b><i> (<var>D</var>)</i></dt>
+</dl>
+
+<p> Number of dimensions in a duration array.
+</p>
+<div class="ms-5">
+<p> <code><var>out</var> = ndims (<var>D</var>)</code> returns the number of dimensions of
+ the duration array <var>D</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>numel</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>duration:</u> <var>out</var> = <b>numel</b><i> (<var>D</var>)</i></dt>
+</dl>
+
+<p> Total number of elements in a duration array.
+</p>
+<div class="ms-5">
+<p> For compatibility reasons with Octave&rsquo;s OOP interface and <code>subsasgn</code>
+ behavior, duration&rsquo;s <code>numel</code> is defined to always return 1.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+
+
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>seconds</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>duration:</u> <var>X</var> = <b>milliseconds</b><i> (<var>D</var>)</i></dt>
+</dl>
+
+<p> Duration equivalent numeric values in milliseconds.
+</p>
+<div class="ms-5">
+<p> <code><var>X</var> = milliseconds (<var>D</var>)</code> converts durations in <var>D</var> to
+ the equivalent number of milliseconds.  <var>X</var> is a double array of the
+ same size as <var>D</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+
+
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>size</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>duration:</u> <var>sz</var> = <b>size</b><i> (<var>D</var>)</i></dt>
+<dt><u>duration:</u> <var>dim_sz</var> = <b>size</b><i> (<var>D</var>, <var>dim</var>)</i></dt>
+<dt><u>duration:</u> <var>dim_sz</var> = <b>size</b><i> (<var>D</var>, <var>d1</var>, <var>d2</var>, &hellip;)</i></dt>
+<dt><u>duration:</u> [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b><i> (&hellip;)</i></dt>
+</dl>
+
+<p> Return the size of a duration array.
+</p>
+<div class="ms-5">
+<p> <code><var>sz</var> = size (<var>D</var>)</code> returns a row vector with the size
+ (number of elements) of each dimension for the duration array <var>D</var>.
+</p>
+<p> <code><var>dim_sz</var> = size (<var>D</var>, <var>dim</var>)</code> returns the size of
+ the corresponding dimension specified in <var>dim</var>.  If <var>dim</var> is a
+ vector, then <var>dim_sz</var> is a vector of the same length and with each
+ element corresponding to a specified dimension.  Multiple dimensions may
+ also be specified as separate arguments.
+</p>
+<p> With a single output argument, <code>size</code> returns a row vector.  When
+ called with multiple output arguments, <code>size</code> returns the size of
+ dimension N in the Nth argument.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+
+
+
+
+
+
+
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>years</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>duration:</u> <var>X</var> = <b>years</b><i> (<var>D</var>)</i></dt>
+</dl>
+
+<p> Duration equivalent numeric values in fixed-length years.
+</p>
+<div class="ms-5">
+<p> <code><var>X</var> = years (<var>D</var>)</code> converts durations in <var>D</var> to the
+ equivalent number of fixed-length years (1 year equals 365.2425 days).
+ <var>X</var> is a double array of the same size as <var>D</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>

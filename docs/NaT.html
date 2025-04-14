@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Data Types for GNU Octave: NaT</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+    <script type="text/javascript" async
+      src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
+    </script>
+    <script type="text/javascript">
+      window.addEventListener("load", () => {
+        for (let i of document.querySelectorAll(".collapse ul")) {
+          let tog = document.createElement("div");
+          tog.innerHTML = i.previousSibling.textContent;
+          tog.className = "toggle";
+          tog.onclick = () => tog.classList.toggle("show");
+          i.parentElement.removeChild(i.previousSibling);
+          i.parentElement.insertBefore(tog, i);
+        }
+      });
+    </script>
+    <style>
+    h6:hover {
+      color: gray;
+    }
+    var {
+      font-style: italics;
+      font-weight: bold;
+    }
+    td {
+      vertical-align: top;
+    }
+    [id^="togList"],                        /* HIDE CHECKBOX */
+    [id^="togList"] ~ .list,                /* HIDE LIST */
+    [id^="togList"] + label  span + span,   /* HIDE "Collapse" */
+    [id^="togList"]:checked + label span{   /* HIDE "Expand" (IF CHECKED) */
+      display:none;
+    }
+    [id^="togList"]:checked + label span + span{
+      display:inline-block;                 /* SHOW "Collapse" (IF CHECKED) */
+    }
+    [id^="togList"]:checked ~ .list{
+      display:block;                        /* SHOW LIST (IF CHECKED) */
+    }
+    </style>
+  </head>
+  <body>
+    <div class="bg-dark">
+      <div class="container-xl">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+          <div class="container-fluid">
+            <a class="navbar-brand" href=index.html>
+              <img src="assets/datatypes.png" alt="datatypes" class="d-inline-block align-top" width="25" height="25">
+              Data Types for GNU Octave
+            </a>
+            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav">
+                <li class="nav-item">
+                  <a class="nav-link" href="index.html#Datatypes">
+                    <i class="fas fa-list-alt"></i>
+                    Datatypes
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="https://gnu-octave.github.io/packages/">
+                  <img src="assets/octave-logo.svg" alt="GNU Octave logo" class="d-inline-block align-top" width="25" height="25">
+                    Octave Packages
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="https://www.octave.org">
+                    <i class="fas fa-home"></i>
+                    GNU Octave website
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+    <div class="container-xl my-4">
+      <div class="row flex-nowrap" style="min-height:0">
+        <div class="col-md-2 bg-light" style="overflow-y: scroll; width: 250px;">
+          <div class="p-2" style="text-align: center;">
+            <h3>Categories &</h3>
+            <h4 style="color: blue">Functions List</h4>
+          </div>
+			<div class="row">
+				<input id="togList1" type="checkbox" checked>
+				<label for="togList1">
+					<span><h6>Datatypes</h6></span>
+					<span><h6>Datatypes</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="NaT.html" class="text-decoration-none font-monospace fw-bolder"><small>NaT</small></a></li>
+					<li><a href="array2table.html" class="text-decoration-none font-monospace"><small>array2table</small></a></li>
+					<li><a href="caldays.html" class="text-decoration-none font-monospace"><small>caldays</small></a></li>
+					<li><a href="calendarDuration.html" class="text-decoration-none font-monospace"><small>calendarDuration</small></a></li>
+					<li><a href="calmonths.html" class="text-decoration-none font-monospace"><small>calmonths</small></a></li>
+					<li><a href="calquarters.html" class="text-decoration-none font-monospace"><small>calquarters</small></a></li>
+					<li><a href="calweeks.html" class="text-decoration-none font-monospace"><small>calweeks</small></a></li>
+					<li><a href="calyears.html" class="text-decoration-none font-monospace"><small>calyears</small></a></li>
+					<li><a href="categorical.html" class="text-decoration-none font-monospace"><small>categorical</small></a></li>
+					<li><a href="cell2table.html" class="text-decoration-none font-monospace"><small>cell2table</small></a></li>
+					<li><a href="convertCharsToStrings.html" class="text-decoration-none font-monospace"><small>convertCharsToStrings</small></a></li>
+					<li><a href="convertStringsToChars.html" class="text-decoration-none font-monospace"><small>convertStringsToChars</small></a></li>
+					<li><a href="datetime.html" class="text-decoration-none font-monospace"><small>datetime</small></a></li>
+					<li><a href="days.html" class="text-decoration-none font-monospace"><small>days</small></a></li>
+					<li><a href="duration.html" class="text-decoration-none font-monospace"><small>duration</small></a></li>
+					<li><a href="hours.html" class="text-decoration-none font-monospace"><small>hours</small></a></li>
+					<li><a href="iscalendarduration.html" class="text-decoration-none font-monospace"><small>iscalendarduration</small></a></li>
+					<li><a href="iscategorical.html" class="text-decoration-none font-monospace"><small>iscategorical</small></a></li>
+					<li><a href="isdatetime.html" class="text-decoration-none font-monospace"><small>isdatetime</small></a></li>
+					<li><a href="isduration.html" class="text-decoration-none font-monospace"><small>isduration</small></a></li>
+					<li><a href="istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
+					<li><a href="milliseconds.html" class="text-decoration-none font-monospace"><small>milliseconds</small></a></li>
+					<li><a href="minutes.html" class="text-decoration-none font-monospace"><small>minutes</small></a></li>
+					<li><a href="missing.html" class="text-decoration-none font-monospace"><small>missing</small></a></li>
+					<li><a href="seconds.html" class="text-decoration-none font-monospace"><small>seconds</small></a></li>
+					<li><a href="string.html" class="text-decoration-none font-monospace"><small>string</small></a></li>
+					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
+					<li><a href="table.html" class="text-decoration-none font-monospace"><small>table</small></a></li>
+					<li><a href="vartype.html" class="text-decoration-none font-monospace"><small>vartype</small></a></li>
+					<li><a href="years.html" class="text-decoration-none font-monospace"><small>years</small></a></li>
+					<li><a href="@cell_disp.html" class="text-decoration-none font-monospace"><small>@cell/disp</small></a></li>
+					<li><a href="@cell_display.html" class="text-decoration-none font-monospace"><small>@cell/display</small></a></li>
+					<li><a href="__datetime__.html" class="text-decoration-none font-monospace"><small>__datetime__</small></a></li>
+				</ul>
+				</div>
+			</div>
+
+			  </div>
+			  <div class="col-md-10">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <h3 class="d-inline-block mr-2">
+                Function&nbsp;Reference: <b><code>NaT</code></b>
+                </h3>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>Function:</u> <b>NaT</b></dt>
+<dt><u>Function:</u> <var>T</var> = <b>NaT</b><i> (<var>n</var>)</i></dt>
+<dt><u>Function:</u> <var>T</var> = <b>NaT</b><i> (<var>sz1</var>, &hellip;, <var>szN</var>)</i></dt>
+<dt><u>Function:</u> <var>T</var> = <b>NaT</b><i> (<var>sz</var>)</i></dt>
+<dt><u>Function:</u> <var>T</var> = <b>NaT</b><i> (&hellip;, <code>'Format'</code>, <var>fmt</var>)</i></dt>
+<dt><u>Function:</u> <var>T</var> = <b>NaT</b><i> (&hellip;, <code>'TimeZone'</code>, <var>tz</var>)</i></dt>
+</dl>
+
+<p> “Not-a-Time”. Creates missing-valued datetime arrays.
+</p>
+<div class="ms-5">
+<p> <code><var>T</var> = NaT (<var>n</var>)</code> creates an <math>N&times;N</math> datetime matrix with all
+ values being Not-a-Time (<code>NaT</code>).  When called with no size input
+ values, it returns a <code>NaT</code> datetime scalar.
+</p>
+<p> <code><var>T</var> =</code> NaT (<var>sz1</var>, &hellip;, <var>szN</var>) returns a datetime array
+ with <code>NaT</code> values sized according to the input arguments <var>sz1</var>,
+ &hellip;, <var>szN</var>.  Alternatively, individual input size arguments can be
+ merged into a single size vector <var>sz</var>, as in the following syntax
+ <code><var>T</var> = NaT (<var>sz</var>)</code>.
+</p>
+<p> <code><var>T</var> = NaT (&hellip;, <code>'Format'</code>, <var>fmt</var>)</code> returns a
+ datetime array of <code>NaT</code> values with the specified display format.
+</p>
+<p> <code><var>T</var> = NaT (&hellip;, <code>'TimeZone'</code>, <var>tz</var>)</code> returns a
+ datetime array of <code>NaT</code> values n the time zone specified by <var>tz</var>.
+</p>
+<p> <code>NaT</code> is the <code>datetime</code> equivalent of <code>NaN</code>.  It represents
+ a missing or invalid value.  <code>NaT</code> values never compare equal to,
+ greater than, or less than any value, including other <code>NaT</code>s.  Doing
+ arithmetic with a <code>NaT</code> and any other value results in a <code>NaT</code>.
+</p>
+<p> <strong>See also: </strong>
+  <a href="datetime.html">datetime</a>
+</p>
+<p><strong>Source Code: </strong>
+  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/NaT.m">NaT</a>
+</div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>

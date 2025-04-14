@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Data Types for GNU Octave: categorical</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+    <script type="text/javascript" async
+      src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
+    </script>
+    <script type="text/javascript">
+      window.addEventListener("load", () => {
+        for (let i of document.querySelectorAll(".collapse ul")) {
+          let tog = document.createElement("div");
+          tog.innerHTML = i.previousSibling.textContent;
+          tog.className = "toggle";
+          tog.onclick = () => tog.classList.toggle("show");
+          i.parentElement.removeChild(i.previousSibling);
+          i.parentElement.insertBefore(tog, i);
+        }
+      });
+    </script>
+    <style>
+    h6:hover {
+      color: gray;
+    }
+    var {
+      font-style: italics;
+      font-weight: bold;
+    }
+    td {
+      vertical-align: top;
+    }
+    [id^="togList"],                        /* HIDE CHECKBOX */
+    [id^="togList"] ~ .list,                /* HIDE LIST */
+    [id^="togList"] + label  span + span,   /* HIDE "Collapse" */
+    [id^="togList"]:checked + label span{   /* HIDE "Expand" (IF CHECKED) */
+      display:none;
+    }
+    [id^="togList"]:checked + label span + span{
+      display:inline-block;                 /* SHOW "Collapse" (IF CHECKED) */
+    }
+    [id^="togList"]:checked ~ .list{
+      display:block;                        /* SHOW LIST (IF CHECKED) */
+    }
+    </style>
+  </head>
+  <body>
+    <div class="bg-dark">
+      <div class="container-xl">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+          <div class="container-fluid">
+            <a class="navbar-brand" href=index.html>
+              <img src="assets/datatypes.png" alt="datatypes" class="d-inline-block align-top" width="25" height="25">
+              Data Types for GNU Octave
+            </a>
+            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav">
+                <li class="nav-item">
+                  <a class="nav-link" href="index.html#Datatypes">
+                    <i class="fas fa-list-alt"></i>
+                    Datatypes
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="https://gnu-octave.github.io/packages/">
+                  <img src="assets/octave-logo.svg" alt="GNU Octave logo" class="d-inline-block align-top" width="25" height="25">
+                    Octave Packages
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="https://www.octave.org">
+                    <i class="fas fa-home"></i>
+                    GNU Octave website
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+    <div class="container-xl my-4">
+      <div class="row flex-nowrap" style="min-height:0">
+        <div class="col-md-2 bg-light" style="overflow-y: scroll; width: 250px;">
+          <div class="p-2" style="text-align: center;">
+            <h3>Categories &</h3>
+            <h4 style="color: blue">Functions List</h4>
+          </div>
+			<div class="row">
+				<input id="togList1" type="checkbox" checked>
+				<label for="togList1">
+					<span><h6>Datatypes</h6></span>
+					<span><h6>Datatypes</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="NaT.html" class="text-decoration-none font-monospace"><small>NaT</small></a></li>
+					<li><a href="array2table.html" class="text-decoration-none font-monospace"><small>array2table</small></a></li>
+					<li><a href="caldays.html" class="text-decoration-none font-monospace"><small>caldays</small></a></li>
+					<li><a href="calendarDuration.html" class="text-decoration-none font-monospace"><small>calendarDuration</small></a></li>
+					<li><a href="calmonths.html" class="text-decoration-none font-monospace"><small>calmonths</small></a></li>
+					<li><a href="calquarters.html" class="text-decoration-none font-monospace"><small>calquarters</small></a></li>
+					<li><a href="calweeks.html" class="text-decoration-none font-monospace"><small>calweeks</small></a></li>
+					<li><a href="calyears.html" class="text-decoration-none font-monospace"><small>calyears</small></a></li>
+					<li><a href="categorical.html" class="text-decoration-none font-monospace fw-bolder"><small>categorical</small></a></li>
+					<li><a href="cell2table.html" class="text-decoration-none font-monospace"><small>cell2table</small></a></li>
+					<li><a href="convertCharsToStrings.html" class="text-decoration-none font-monospace"><small>convertCharsToStrings</small></a></li>
+					<li><a href="convertStringsToChars.html" class="text-decoration-none font-monospace"><small>convertStringsToChars</small></a></li>
+					<li><a href="datetime.html" class="text-decoration-none font-monospace"><small>datetime</small></a></li>
+					<li><a href="days.html" class="text-decoration-none font-monospace"><small>days</small></a></li>
+					<li><a href="duration.html" class="text-decoration-none font-monospace"><small>duration</small></a></li>
+					<li><a href="hours.html" class="text-decoration-none font-monospace"><small>hours</small></a></li>
+					<li><a href="iscalendarduration.html" class="text-decoration-none font-monospace"><small>iscalendarduration</small></a></li>
+					<li><a href="iscategorical.html" class="text-decoration-none font-monospace"><small>iscategorical</small></a></li>
+					<li><a href="isdatetime.html" class="text-decoration-none font-monospace"><small>isdatetime</small></a></li>
+					<li><a href="isduration.html" class="text-decoration-none font-monospace"><small>isduration</small></a></li>
+					<li><a href="istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
+					<li><a href="milliseconds.html" class="text-decoration-none font-monospace"><small>milliseconds</small></a></li>
+					<li><a href="minutes.html" class="text-decoration-none font-monospace"><small>minutes</small></a></li>
+					<li><a href="missing.html" class="text-decoration-none font-monospace"><small>missing</small></a></li>
+					<li><a href="seconds.html" class="text-decoration-none font-monospace"><small>seconds</small></a></li>
+					<li><a href="string.html" class="text-decoration-none font-monospace"><small>string</small></a></li>
+					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
+					<li><a href="table.html" class="text-decoration-none font-monospace"><small>table</small></a></li>
+					<li><a href="vartype.html" class="text-decoration-none font-monospace"><small>vartype</small></a></li>
+					<li><a href="years.html" class="text-decoration-none font-monospace"><small>years</small></a></li>
+					<li><a href="@cell_disp.html" class="text-decoration-none font-monospace"><small>@cell/disp</small></a></li>
+					<li><a href="@cell_display.html" class="text-decoration-none font-monospace"><small>@cell/display</small></a></li>
+					<li><a href="__datetime__.html" class="text-decoration-none font-monospace"><small>__datetime__</small></a></li>
+				</ul>
+				</div>
+			</div>
+
+			  </div>
+			  <div class="col-md-10">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <h3 class="d-inline-block mr-2">
+                Class&nbsp;Definition: <b><code>categorical</code></b>
+                </h3>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>Class:</u> <b>categorical</b></dt>
+</dl>
+
+<p> Array representing categorical data.
+</p>
+<div class="ms-5">
+<p> A <code>categorical</code> array represents an array of values that correspond
+ to a finite set of discrete categories, which can be either ordinal (having
+ a mathematical ordering) or nominal.  It is an efficient way to define
+ groups of rows in a table or to other types of variables.
+</p>
+<p> Each <code>categorical</code> array stores the list of categories as a cell array
+ of character vectors and a numeric array of <code>uint16</code> type as indices
+ to the categories.  The categorical array may also store elements of
+ undefined categorical values, which represent the absense of a given
+ category and correspond to the <code>NaN</code> value for numeric arrays or in
+ general to the missing value for other data types.
+</p>
+<p> <code>categorical</code> arrays do not have any public properties, which can be
+ indexed by using dot notation similarily to structures.  However, there are
+ several methods which can be used to modify their categories once they are
+ constructed.
+</p>
+
+<p><strong>Source Code: </strong>
+  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/categorical.m">categorical</a>
+</div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>addcats</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>B</var> = <b>addcats</b><i> (<var>A</var>, <var>newcats</var>)</i></dt>
+<dt><u>categorical:</u> <var>B</var> = <b>addcats</b><i> (&hellip;, <code>'After'</code>, <var>catname</var>)</i></dt>
+<dt><u>categorical:</u> <var>B</var> = <b>addcats</b><i> (&hellip;, <code>'Before'</code>, <var>catname</var>)</i></dt>
+</dl>
+
+<p> Add categories to categorical array.
+</p>
+<div class="ms-5">
+<p> <code><var>B</var> = addcats (<var>A</var>, <var>newcats</var>)</code> appends new categories
+ specified in <var>newcats</var> to the categorical array <var>A</var> at the end of
+ any existing categories.  The output categorical array <var>B</var> does not
+ contain elements that belong to the newly added categories.
+</p>
+<p> @cdoe{<var>B</var> = addcats (&hellip;, <code>'After'</code>, <var>catname</var>)} adds
+ the categories after the existing category specified by <var>catname</var>.
+</p>
+<p> @cdoe{<var>B</var> = addcats (&hellip;, <code>'Before'</code>, <var>catname</var>)} adds
+ the categories before the existing category specified by <var>catname</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>categorical</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>C</var> = <b>times</b><i> (<var>A</var>, <var>B</var>)</i></dt>
+</dl>
+
+<p> Combine categorical arrays.
+</p>
+<div class="ms-5">
+<p> <code><var>C</var> = times (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>A</var> .* <var>B</var> and returns a categorical array whose categories
+ are the Cartesian product of the categories in <var>A</var> and <var>B</var> and
+ each element is indexed to a new category which is the combination of the
+ categories of the corresponding elements in @ar{A} and <var>B</var>.
+</code></p>
+<p><code> @ar{A} and <var>B</var> must be of common size or scalars.
+</code></p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>categories</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>cstr</var> = <b>categories</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> List of categories in categorical array.
+</p>
+<div class="ms-5">
+<p> <code><var>cstr</var> =</code> categories (<var>C</var>) returns a cell array of
+ character vectors with the names of the categories in <var>C</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>cellstr</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>cstr</var> = <b>cellstr</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Convert categorical array to a cell array of character vectors.
+</p>
+<div class="ms-5">
+<p> <code><var>cstr</var> = cellstr (<var>C</var>)</code> returns a cellstr array of
+ character vectors, <var>cstr</var>, which has the same size as the input
+ categorical <var>C</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>dispstrings</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>cstr</var> = <b>dispstrings</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Get display formatted strings for each element of a categorical array.
+</p>
+<div class="ms-5">
+<p> <code><var>cstr</var> = dispstrings (<var>C</var>)</code> returns a cellstr array of
+ character vectors, <var>cstr</var>, which has the same size as the input
+ categorical <var>C</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>double</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>out</var> = <b>double</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Convert categorical array to a double array.
+</p>
+<div class="ms-5">
+<p> <code><var>out</var> = double (<var>C</var>)</code> returns a double array indexing the
+ categories in <var>C</var>.  Categorical elements of undefined category are
+ returned as <code>NaN</code>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>eq</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>TF</var> = <b>isequaln</b><i> (<var>C1</var>, <var>C2</var>, &hellip;)</i></dt>
+</dl>
+
+<p> Return true if categorical arrays are equal under the additional
+ assumption that <code>NaN == NaN</code>.
+</p>
+<div class="ms-5">
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>ge</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>B</var> = <b>mergecats</b><i> (<var>A</var>, <var>oldcats</var>)</i></dt>
+<dt><u>categorical:</u> <var>B</var> = <b>mergecats</b><i> (<var>A</var>, <var>oldcats</var>, <var>newcat</var>)</i></dt>
+</dl>
+
+<p> Merge categories in categorical array.
+</p>
+<div class="ms-5">
+<p> <code><var>B</var> = mergecats (<var>A</var>, <var>oldcats</var>)</code> merges two or more
+ categories specified by <var>oldcats</var> into a single category with the
+ same name as <code><var>oldcats</var>(1)</code>.  In case of ordinal categorical
+ arrays, the categories listed in <var>oldcats</var> must be in consecutive
+ order.  All elements of <var>A</var> corresponding to the categories listed in
+ <var>oldcats</var> are re-indexed to correspond to <code><var>oldcats</var>(1)</code> in
+ <var>B</var>.
+</p>
+<p> <code><var>B</var> = mergecats (<var>A</var>, <var>oldcats</var>, <var>newcat</var>)</code> merges
+ the categories listed in <var>oldcats</var> into a single new category named
+ as specififed by <var>newcat</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>int16</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>out</var> = <b>uint16</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Convert categorical array to a uint16 array.
+</p>
+<div class="ms-5">
+<p> <code><var>out</var> = uint16 (<var>C</var>)</code> returns a <code>uint16</code> array
+ indexing the categories in <var>C</var>.  Categorical elements of undefined
+ category are returned as <code>0</code>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>int32</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>out</var> = <b>uint32</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Convert categorical array to a uint32 array.
+</p>
+<div class="ms-5">
+<p> <code><var>out</var> = uint32 (<var>C</var>)</code> returns a <code>uint32</code> array
+ indexing the categories in <var>C</var>.  Categorical elements of undefined
+ category are returned as <code>0</code>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>int64</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>out</var> = <b>uint64</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Convert categorical array to a uint64 array.
+</p>
+<div class="ms-5">
+<p> <code><var>out</var> = uint64 (<var>C</var>)</code> returns a <code>uint64</code> array
+ indexing the categories in <var>C</var>.  Categorical elements of undefined
+ category are returned as <code>0</code>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>int8</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>out</var> = <b>uint8</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Convert categorical array to a int8 array.
+</p>
+<div class="ms-5">
+<p> <code><var>out</var> = uint8 (<var>C</var>)</code> returns a <code>uint8</code> array
+ indexing the categories in <var>C</var>.  Categorical elements of undefined
+ category are returned as <code>0</code>.  Note that the returned category
+ indices saturate to <code>intmax ('uint8')</code>, which is 255.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>iscategory</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>TF</var> = <b>iscategory</b><i> (<var>C</var>, <var>catnames</var>)</i></dt>
+</dl>
+
+<p> Test for categories in a categorical array.
+</p>
+<div class="ms-5">
+<p> <code><var>TF</var> = iscategory (<var>C</var>, <var>catnames</var>)</code> returns a logical
+ array <var>TF</var> of the same size as <var>catnames</var> containing <code>true</code>
+ for each corresponding element of <var>catnames</var> that is a category in
+ categorical array <var>C</var> and <code>false</code> otherwise.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>iscolumn</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>TF</var> = <b>iscolumn</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Return true if categorical array is a column vector.
+</p>
+<div class="ms-5">
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>isempty</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>TF</var> = <b>isempty</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Return true if categorical array is empty.
+</p>
+<div class="ms-5">
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>isequal</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>TF</var> = <b>isequaln</b><i> (<var>C1</var>, <var>C2</var>, &hellip;)</i></dt>
+</dl>
+
+<p> Return true if categorical arrays are equal under the additional
+ assumption that <code>NaN == NaN</code>.
+</p>
+<div class="ms-5">
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>isequaln</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>TF</var> = <b>isequaln</b><i> (<var>C1</var>, <var>C2</var>, &hellip;)</i></dt>
+</dl>
+
+<p> Return true if categorical arrays are equal under the additional
+ assumption that <code>NaN == NaN</code>.
+</p>
+<div class="ms-5">
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>ismatrix</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>TF</var> = <b>ismatrix</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Return true if categorical array is a 2-D array.
+</p>
+<div class="ms-5">
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>ismember</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>TF</var> = <b>ismember</b><i> (<var>A</var>, <var>B</var>)</i></dt>
+<dt><u>categorical:</u> <var>TF</var> = <b>ismember</b><i> (<var>A</var>, <var>B</var>, <code>'rows'</code>)</i></dt>
+<dt><u>categorical:</u> [<var>TF</var>, <var>index</var>] = <b>ismember</b><i> (&hellip;)</i></dt>
+</dl>
+
+<p> Test for categorical elements in a set.
+</p>
+<div class="ms-5">
+<p> <code><var>TF</var> = ismember (<var>A</var>, <var>B</var>)</code> returns a logical array
+ <var>TF</var> of the same size as <var>A</var> containing <code>true</code> for each
+ corresponding element of <var>A</var> that is in <var>B</var> and <code>false</code>
+ otherwise.  If <var>A</var> and <var>B</var> are both ordinal, they must both have
+ the same ordered set of categories.  If neither <var>A</var> nor <var>B</var> are
+ ordinal, then this restriction is relaxed and comparison is performed
+ using the category names. Comparison between an ordinal and an unordered
+ categorical array is not allowed.  <var>A</var> or <var>B</var> may also be a
+ string array or a cell array of character vectors containing one or
+ multiple category names to compare against.
+</p>
+<p> <code><var>TF</var> = ismember (<var>A</var>, <var>B</var>, <code>'rows'</code>)</code> only
+ applies to categorical matrices with the same number of columns, in which
+ case the logical vector <var>TF</var> contains <code>true</code> for each row of
+ <var>A</var> that is also a row in <var>B</var>.  <var>TF</var> has the size number of
+ rows as <var>A</var>.
+</p>
+<p> <code>[<var>TF</var>, <var>index</var>] = ismember (<var>A</var>, <var>B</var>)</code> also returns
+ an index array of the same size as <var>A</var> containing the lowest index in
+ <var>B</var> for each element of <var>A</var> that is a member of <var>B</var> and 0
+ otherwise.  If the <code>'rows'</code> optional argument is used, then the
+ returning index is a column vector with the same rows as <var>A</var> and it
+ contains the lowest index in <var>B</var> for each row of <var>A</var> that is a
+ member of <var>B</var> and 0 otherwise.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>isordinal</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>TF</var> = <b>isordinal</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Test if categorical array is ordinal.
+</p>
+<div class="ms-5">
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>isprotected</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>TF</var> = <b>isprotected</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Test if categorical array is protected.
+</p>
+<div class="ms-5">
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>isrow</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>TF</var> = <b>isrow</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Return true if categorical array is a row vector.
+</p>
+<div class="ms-5">
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>isscalar</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>TF</var> = <b>isscalar</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Return true if categorical array is a scalar.
+</p>
+<div class="ms-5">
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>isundefined</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>out</var> = <b>isundefined</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Test for undefined elements in categorical array.
+</p>
+<div class="ms-5">
+<p> <code><var>TF</var> = isundefined (<var>C</var>)</code> returns a logical array <var>TF</var>
+ of the same size as <var>C</var> containing <code>true</code> for each
+ corresponding element of <var>C</var> that does not have a value from one of
+ the categories in <var>C</var> and <code>false</code> otherwise.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>isvector</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>TF</var> = <b>isvector</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Return true if categorical array is a vector.
+</p>
+<div class="ms-5">
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>le</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>out</var> = <b>single</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Convert categorical array to a single array.
+</p>
+<div class="ms-5">
+<p> <code><var>out</var> = single (<var>C</var>)</code> returns a single array indexing the
+ categories in <var>C</var>.  Categorical elements of undefined category are
+ returned as <code>NaN</code>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>mergecats</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>B</var> = <b>mergecats</b><i> (<var>A</var>, <var>oldcats</var>)</i></dt>
+<dt><u>categorical:</u> <var>B</var> = <b>mergecats</b><i> (<var>A</var>, <var>oldcats</var>, <var>newcat</var>)</i></dt>
+</dl>
+
+<p> Merge categories in categorical array.
+</p>
+<div class="ms-5">
+<p> <code><var>B</var> = mergecats (<var>A</var>, <var>oldcats</var>)</code> merges two or more
+ categories specified by <var>oldcats</var> into a single category with the
+ same name as <code><var>oldcats</var>(1)</code>.  In case of ordinal categorical
+ arrays, the categories listed in <var>oldcats</var> must be in consecutive
+ order.  All elements of <var>A</var> corresponding to the categories listed in
+ <var>oldcats</var> are re-indexed to correspond to <code><var>oldcats</var>(1)</code> in
+ <var>B</var>.
+</p>
+<p> <code><var>B</var> = mergecats (<var>A</var>, <var>oldcats</var>, <var>newcat</var>)</code> merges
+ the categories listed in <var>oldcats</var> into a single new category named
+ as specififed by <var>newcat</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>ndims</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>out</var> = <b>ndims</b><i> (<var>calD</var>)</i></dt>
+</dl>
+
+<p> Number of dimensions in a categorical array.
+</p>
+<div class="ms-5">
+<p> <code><var>out</var> = ndims (<var>calD</var>)</code> returns the number of dimensions
+ of the calendar duration array <var>calD</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>ne</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>B</var> = <b>setcats</b><i> (<var>A</var>, <var>newcats</var>)</i></dt>
+</dl>
+
+<p> Set categories in categorical array.
+</p>
+<div class="ms-5">
+<p> <code><var>B</var> = setcats (<var>A</var>, <var>newcats</var>)</code> sets categories in a
+ categorical array according to the elements of the imput array and the
+ categories specified by <var>newcats</var>.
+</p>
+ <ul>
+<li> Any element of <var>A</var> that corresponds to a category listed in
+ <var>newcats</var> is copied to <var>B</var> with the same categorical value.
+ </li><li> Any categories of <var>A</var> not listed in <var>newcats</var> are not
+ copied to <var>B</var> and the corresponding elements of <var>B</var> are
+ undefined.
+ </li><li> New categories listed in <var>newcats</var> that are not present in
+ <var>A</var> are added in <var>B</var>, but without any elements equal to these
+ new categories.
+ </li></ul>
+
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>numel</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>out</var> = <b>numel</b><i> (<var>calD</var>)</i></dt>
+</dl>
+
+<p> Total number of elements in a categorical array.
+</p>
+<div class="ms-5">
+<p> For compatibility reasons with Octave&rsquo;s OOP interface and <code>subsasgn</code>
+ behavior, categorical&rsquo;s <code>numel</code> is defined to always return 1.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>removecats</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>B</var> = <b>removecats</b><i> (<var>A</var>)</i></dt>
+<dt><u>categorical:</u> <var>B</var> = <b>removecats</b><i> (<var>A</var>, <var>oldcats</var>)</i></dt>
+</dl>
+
+<p> Remove categories from categorical array.
+</p>
+<div class="ms-5">
+<p> <code><var>B</var> = removecats (<var>A</var>)</code> removes all unused categories from
+ categorical array <var>A</var>.  The output categorical array <var>B</var> has the
+ same size and values as <var>A</var>, but potentially fewer categories.
+</p>
+<p> <code><var>B</var> = removecats (<var>A</var>, <var>oldcats</var>)</code> removes the
+ categories specified by <var>oldcats</var>.  The elements of <var>B</var> that
+ correspond to the removed categories are undefined.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>renamecats</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>B</var> = <b>renamecats</b><i> (<var>A</var>, <var>newnames</var>)</i></dt>
+<dt><u>categorical:</u> <var>B</var> = <b>renamecats</b><i> (<var>A</var>, <var>oldnames</var>, <var>newnames</var>)</i></dt>
+</dl>
+
+<p> Rename categories in categorical array.
+</p>
+<div class="ms-5">
+<p> Renames some or all of the categories in <var>obj</var>, without changing
+ any of its values.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>reordercats</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>B</var> = <b>reordercats</b><i> (<var>A</var>)</i></dt>
+<dt><u>categorical:</u> <var>B</var> = <b>reordercats</b><i> (<var>A</var>, <var>neworder</var>)</i></dt>
+</dl>
+
+<p> Reorder categories in categorical array.
+</p>
+<div class="ms-5">
+<p> <code><var>B</var> = reordercats (<var>A</var>)</code> reorders the categories of <var>A</var>
+ in alphanumeric order.
+</p>
+<p> <code><var>B</var> = reordercats (<var>A</var>, <var>neworder</var>)</code> reorders the
+ categories of <var>A</var> according to the order specified by <var>neworder</var>,
+ which must be a cell array of character vectors or a string array with
+ the same set of values as the existing categories in <var>A</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>setcats</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>B</var> = <b>setcats</b><i> (<var>A</var>, <var>newcats</var>)</i></dt>
+</dl>
+
+<p> Set categories in categorical array.
+</p>
+<div class="ms-5">
+<p> <code><var>B</var> = setcats (<var>A</var>, <var>newcats</var>)</code> sets categories in a
+ categorical array according to the elements of the imput array and the
+ categories specified by <var>newcats</var>.
+</p>
+ <ul>
+<li> Any element of <var>A</var> that corresponds to a category listed in
+ <var>newcats</var> is copied to <var>B</var> with the same categorical value.
+ </li><li> Any categories of <var>A</var> not listed in <var>newcats</var> are not
+ copied to <var>B</var> and the corresponding elements of <var>B</var> are
+ undefined.
+ </li><li> New categories listed in <var>newcats</var> that are not present in
+ <var>A</var> are added in <var>B</var>, but without any elements equal to these
+ new categories.
+ </li></ul>
+
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>single</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>out</var> = <b>single</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Convert categorical array to a single array.
+</p>
+<div class="ms-5">
+<p> <code><var>out</var> = single (<var>C</var>)</code> returns a single array indexing the
+ categories in <var>C</var>.  Categorical elements of undefined category are
+ returned as <code>NaN</code>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>size</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>sz</var> = <b>size</b><i> (<var>C</var>)</i></dt>
+<dt><u>categorical:</u> <var>dim_sz</var> = <b>size</b><i> (<var>C</var>, <var>dim</var>)</i></dt>
+<dt><u>categorical:</u> <var>dim_sz</var> = <b>size</b><i> (<var>C</var>, <var>d1</var>, <var>d2</var>, &hellip;)</i></dt>
+<dt><u>categorical:</u> [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b><i> (&hellip;)</i></dt>
+</dl>
+
+<p> Size of a categorical array.
+</p>
+<div class="ms-5">
+<p> <code><var>sz</var> = size (<var>C</var>)</code> returns a row vector with the size
+ (number of elements) of each dimension for the calendar duration array
+ <var>C</var>.
+</p>
+<p> <code><var>dim_sz</var> = size (<var>C</var>, <var>dim</var>)</code> returns the size of
+ the corresponding dimension specified in <var>dim</var>.  If <var>dim</var> is a
+ vector, then <var>dim_sz</var> is a vector of the same length and with each
+ element corresponding to a specified dimension.  Multiple dimensions may
+ also be specified as separate arguments.
+</p>
+<p> With a single output argument, <code>size</code> returns a row vector.  When
+ called with multiple output arguments, <code>size</code> returns the size of
+ dimension N in the Nth argument.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>summary</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <b>summary</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Display summary of categorical array.
+</p>
+<div class="ms-5">
+<p> <code>summary (<var>C</var>)</code> displays the number of elements in the
+ categorical array <var>C</var> that are equal to each category of <var>C</var>.
+ Any undefined elements in <var>C</var> are summed together and displayed as
+ <code>&lt;undefined&gt;</code>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>times</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>C</var> = <b>times</b><i> (<var>A</var>, <var>B</var>)</i></dt>
+</dl>
+
+<p> Combine categorical arrays.
+</p>
+<div class="ms-5">
+<p> <code><var>C</var> = times (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>A</var> .* <var>B</var> and returns a categorical array whose categories
+ are the Cartesian product of the categories in <var>A</var> and <var>B</var> and
+ each element is indexed to a new category which is the combination of the
+ categories of the corresponding elements in @ar{A} and <var>B</var>.
+</code></p>
+<p><code> @ar{A} and <var>B</var> must be of common size or scalars.
+</code></p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>uint16</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>out</var> = <b>uint16</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Convert categorical array to a uint16 array.
+</p>
+<div class="ms-5">
+<p> <code><var>out</var> = uint16 (<var>C</var>)</code> returns a <code>uint16</code> array
+ indexing the categories in <var>C</var>.  Categorical elements of undefined
+ category are returned as <code>0</code>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>uint32</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>out</var> = <b>uint32</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Convert categorical array to a uint32 array.
+</p>
+<div class="ms-5">
+<p> <code><var>out</var> = uint32 (<var>C</var>)</code> returns a <code>uint32</code> array
+ indexing the categories in <var>C</var>.  Categorical elements of undefined
+ category are returned as <code>0</code>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>uint64</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>out</var> = <b>uint64</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Convert categorical array to a uint64 array.
+</p>
+<div class="ms-5">
+<p> <code><var>out</var> = uint64 (<var>C</var>)</code> returns a <code>uint64</code> array
+ indexing the categories in <var>C</var>.  Categorical elements of undefined
+ category are returned as <code>0</code>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>uint8</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>categorical:</u> <var>out</var> = <b>uint8</b><i> (<var>C</var>)</i></dt>
+</dl>
+
+<p> Convert categorical array to a int8 array.
+</p>
+<div class="ms-5">
+<p> <code><var>out</var> = uint8 (<var>C</var>)</code> returns a <code>uint8</code> array
+ indexing the categories in <var>C</var>.  Categorical elements of undefined
+ category are returned as <code>0</code>.  Note that the returned category
+ indices saturate to <code>intmax ('uint8')</code>, which is 255.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+
+
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>

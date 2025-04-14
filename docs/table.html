@@ -1,0 +1,3228 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Data Types for GNU Octave: table</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+    <script type="text/javascript" async
+      src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
+    </script>
+    <script type="text/javascript">
+      window.addEventListener("load", () => {
+        for (let i of document.querySelectorAll(".collapse ul")) {
+          let tog = document.createElement("div");
+          tog.innerHTML = i.previousSibling.textContent;
+          tog.className = "toggle";
+          tog.onclick = () => tog.classList.toggle("show");
+          i.parentElement.removeChild(i.previousSibling);
+          i.parentElement.insertBefore(tog, i);
+        }
+      });
+    </script>
+    <style>
+    h6:hover {
+      color: gray;
+    }
+    var {
+      font-style: italics;
+      font-weight: bold;
+    }
+    td {
+      vertical-align: top;
+    }
+    [id^="togList"],                        /* HIDE CHECKBOX */
+    [id^="togList"] ~ .list,                /* HIDE LIST */
+    [id^="togList"] + label  span + span,   /* HIDE "Collapse" */
+    [id^="togList"]:checked + label span{   /* HIDE "Expand" (IF CHECKED) */
+      display:none;
+    }
+    [id^="togList"]:checked + label span + span{
+      display:inline-block;                 /* SHOW "Collapse" (IF CHECKED) */
+    }
+    [id^="togList"]:checked ~ .list{
+      display:block;                        /* SHOW LIST (IF CHECKED) */
+    }
+    </style>
+  </head>
+  <body>
+    <div class="bg-dark">
+      <div class="container-xl">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+          <div class="container-fluid">
+            <a class="navbar-brand" href=index.html>
+              <img src="assets/datatypes.png" alt="datatypes" class="d-inline-block align-top" width="25" height="25">
+              Data Types for GNU Octave
+            </a>
+            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav">
+                <li class="nav-item">
+                  <a class="nav-link" href="index.html#Datatypes">
+                    <i class="fas fa-list-alt"></i>
+                    Datatypes
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="https://gnu-octave.github.io/packages/">
+                  <img src="assets/octave-logo.svg" alt="GNU Octave logo" class="d-inline-block align-top" width="25" height="25">
+                    Octave Packages
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="https://www.octave.org">
+                    <i class="fas fa-home"></i>
+                    GNU Octave website
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+    <div class="container-xl my-4">
+      <div class="row flex-nowrap" style="min-height:0">
+        <div class="col-md-2 bg-light" style="overflow-y: scroll; width: 250px;">
+          <div class="p-2" style="text-align: center;">
+            <h3>Categories &</h3>
+            <h4 style="color: blue">Functions List</h4>
+          </div>
+			<div class="row">
+				<input id="togList1" type="checkbox" checked>
+				<label for="togList1">
+					<span><h6>Datatypes</h6></span>
+					<span><h6>Datatypes</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="NaT.html" class="text-decoration-none font-monospace"><small>NaT</small></a></li>
+					<li><a href="array2table.html" class="text-decoration-none font-monospace"><small>array2table</small></a></li>
+					<li><a href="caldays.html" class="text-decoration-none font-monospace"><small>caldays</small></a></li>
+					<li><a href="calendarDuration.html" class="text-decoration-none font-monospace"><small>calendarDuration</small></a></li>
+					<li><a href="calmonths.html" class="text-decoration-none font-monospace"><small>calmonths</small></a></li>
+					<li><a href="calquarters.html" class="text-decoration-none font-monospace"><small>calquarters</small></a></li>
+					<li><a href="calweeks.html" class="text-decoration-none font-monospace"><small>calweeks</small></a></li>
+					<li><a href="calyears.html" class="text-decoration-none font-monospace"><small>calyears</small></a></li>
+					<li><a href="categorical.html" class="text-decoration-none font-monospace"><small>categorical</small></a></li>
+					<li><a href="cell2table.html" class="text-decoration-none font-monospace"><small>cell2table</small></a></li>
+					<li><a href="convertCharsToStrings.html" class="text-decoration-none font-monospace"><small>convertCharsToStrings</small></a></li>
+					<li><a href="convertStringsToChars.html" class="text-decoration-none font-monospace"><small>convertStringsToChars</small></a></li>
+					<li><a href="datetime.html" class="text-decoration-none font-monospace"><small>datetime</small></a></li>
+					<li><a href="days.html" class="text-decoration-none font-monospace"><small>days</small></a></li>
+					<li><a href="duration.html" class="text-decoration-none font-monospace"><small>duration</small></a></li>
+					<li><a href="hours.html" class="text-decoration-none font-monospace"><small>hours</small></a></li>
+					<li><a href="iscalendarduration.html" class="text-decoration-none font-monospace"><small>iscalendarduration</small></a></li>
+					<li><a href="iscategorical.html" class="text-decoration-none font-monospace"><small>iscategorical</small></a></li>
+					<li><a href="isdatetime.html" class="text-decoration-none font-monospace"><small>isdatetime</small></a></li>
+					<li><a href="isduration.html" class="text-decoration-none font-monospace"><small>isduration</small></a></li>
+					<li><a href="istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
+					<li><a href="milliseconds.html" class="text-decoration-none font-monospace"><small>milliseconds</small></a></li>
+					<li><a href="minutes.html" class="text-decoration-none font-monospace"><small>minutes</small></a></li>
+					<li><a href="missing.html" class="text-decoration-none font-monospace"><small>missing</small></a></li>
+					<li><a href="seconds.html" class="text-decoration-none font-monospace"><small>seconds</small></a></li>
+					<li><a href="string.html" class="text-decoration-none font-monospace"><small>string</small></a></li>
+					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
+					<li><a href="table.html" class="text-decoration-none font-monospace fw-bolder"><small>table</small></a></li>
+					<li><a href="vartype.html" class="text-decoration-none font-monospace"><small>vartype</small></a></li>
+					<li><a href="years.html" class="text-decoration-none font-monospace"><small>years</small></a></li>
+					<li><a href="@cell_disp.html" class="text-decoration-none font-monospace"><small>@cell/disp</small></a></li>
+					<li><a href="@cell_display.html" class="text-decoration-none font-monospace"><small>@cell/display</small></a></li>
+					<li><a href="__datetime__.html" class="text-decoration-none font-monospace"><small>__datetime__</small></a></li>
+				</ul>
+				</div>
+			</div>
+
+			  </div>
+			  <div class="col-md-10">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <h3 class="d-inline-block mr-2">
+                Class&nbsp;Definition: <b><code>table</code></b>
+                </h3>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>Class:</u> <b>table</b></dt>
+</dl>
+
+<p> Array of tabular data containing multiple columnar variables.
+</p>
+<div class="ms-5">
+<p> A table is a 2-dimensional data structure that collects heterogeneous data
+ and metadata into a singe container.  Tables are suitable for storing
+ columnar data much like spreadsheets but they can also be used for storing
+ more complex data including multicolumnar variables and nested tables.
+</p>
+<p> Tables can be subscripted using parentheses like ordinary numeric arrays,
+ but in addition to indexing with numeric and logical vectors, you can also
+ use the table&rsquo;s variable or row names much like indexing a structure field
+ as well as using a <code>vartype</code> class object to make a selection of
+ variable types.  While these methods will return a subset of the original
+ table, you can also used curly brackets much like cell arrays to retrieve
+ the contents of the table.  In this case, the original data type of the
+ selected variables are returned.
+</p>
+<p> Besides the <code>table</code> constructor, you can also use <code>array2table</code>,
+ <code>cell2table</code>, and <code>struct2table</code> to create tables from the
+ respective data types.
+</p>
+<p> Besides all numeric data types, other supported data types that can be
+ stored in a table array are <code>logical</code>, <code>categorical</code>,
+ <code>cell</code>, (including <code>cellstr</code>), <code>calendarDuration</code>,
+ <code>duration</code>, <code>datetime</code>, <code>string</code>, and <code>struct</code>
+ arrays, as well as <code>table</code> itself.
+</p>
+<p> <strong>See also: </strong>
+  <a href="vartype.html">vartype</a>, 
+  <a href="array2table.html">array2table</a>, 
+  <a href="cell2table.html">cell2table</a>, 
+  <a href="struct2table.html">struct2table</a>
+</p>
+<p><strong>Source Code: </strong>
+  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/table.m">table</a>
+</div>
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>addprop</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>T</var> = <b>addprop</b><i> (<var>T</var>, <var>propertyNames</var>, <var>propertyTypes</var>)</i></dt>
+</dl>
+
+<p> Add custom properties to a table.
+</p>
+<div class="ms-5">
+<p> <code><var>T</var> = addprop (<var>T</var>, <var>propertyNames</var>, <var>propertyTypes</var>)</code>
+ adds properties that contain custom metadata to the table <var>T</var>.  The
+ input argument <var>propertyNames</var> specifies the names of the custom
+ properties to be added and <var>propertyTypes</var> the type of each
+ corresponding custom property, that is whether the metadata values
+ contained in the property apply to table <var>T</var> as a whole, or to the
+ variables of <var>T</var>.  Both <var>propertyNames</var> and <var>propertyTypes</var>
+ can be character vectors, cell arrays of character vectors, or stings.
+ When defined as cell arrays of character vectors or stings, they must
+ have the same number of elements.
+</p>
+<p> Valid <var>propertyTypes</var> are either <code>'table'</code> or
+ <code>'variable'</code>.  When defined as <code>'table'</code>, the custom property
+ can contain a scalar value of arbitrary type, which applies as metadata
+ to the table as a whole.  When defined as <code>'variable'</code>, the custom
+ property contains a vector, whose elements correspond to the number of
+ variables in the table.
+</p>
+<p> After adding custom properties using <code>addprop</code>, metadata values can
+ be assigned to the properties using dot syntax.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>addvars</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tblB</var> = <b>addvars</b><i> (<var>tblA</var>, <var>var1</var>, &hellip;, <var>varN</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>addvars</b><i> (&hellip;, <code>'After'</code>, <var>location</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>addvars</b><i> (&hellip;, <code>'Before'</code>, <var>location</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>addvars</b><i> (&hellip;, <code>'NewVariableNames'</code>, <var>newNames</var>)</i></dt>
+</dl>
+
+<p> Add new variables to a table.
+</p>
+<div class="ms-5">
+<p> <code><var>tblB</var> = addvars (<var>tblA</var>, <var>var1</var>, &hellip;, <var>varN</var>)</code>
+ adds new variables to the right of the last variable in table <var>tblA</var>.
+ Each of the arrays specified by the input arguments <code><var>var1</var>,
+ &hellip;, <var>varN</var></code> becomes a new variable and its name is derived from
+ the input argument&rsquo;s variable name or a default is created if the input
+ argument is not a variable itself.  The input arrays can be of any data
+ type including a table as long as they have the same number of rows as
+ <var>tblA</var>.
+</p>
+<p> <code><var>tblB</var> = addvars (&hellip;, <code>'After'</code>, <var>location</var>)</code>
+ adds the new variables after, i.e. to the right, the table variable
+ specified in <var>location</var>, which can be a character vector, a scalar
+ integer value or even a logical vector of the same size as
+ <code>width (<var>tblA</var>)</code>, as long as it indexes a single variable in
+ <var>tblA</var>.
+</p>
+<p> <code><var>tblB</var> = addvars (&hellip;, <code>'Before'</code>, <var>location</var>)</code>
+ adds the new variables before, i.e. to the left, the table variable
+ specified in <var>location</var>, which can be a character vector, a scalar
+ integer value or even a logical vector of the same size as
+ <code>width (<var>tblA</var>)</code>, as long as it indexes a single variable in
+ <var>tblA</var>.
+</p>
+<p> <code><var>tblB</var> = addvars (&hellip;, <code>'NewVariableNames'</code>,
+ <var>newNames</var>)</code> renames the new variables added from the previous
+ syntaxes according to the names specified by <var>newNames</var>, which can be
+ a character vector, a cell array of character vectors or a string array.
+ The number of names in <var>newNames</var> must be the same as the number of
+ added variables.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>anymissing</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>TF</var> = <b>anymissing</b><i> (<var>tblA</var>)</i></dt>
+</dl>
+
+<p> Determine if any table element is missing.
+</p>
+<div class="ms-5">
+<p> <code><var>TF</var> =</code> anymissing (<var>tblA</var>) returns <code>true</code> if at
+ least one element in table var{tblA is missing, otherwise tt returns
+ <code>false</code>.  <var>TF</var> is a logical scalar value.
+</p>
+<p> Missing values are defined according to the data type of each variable in
+ <var>tblA</var>:
+</p>
+ <ul>
+<li> <code>NaN</code> - double, single, duration and calendarDuration
+ </li><li> <code>NaT</code> - datetime
+ </li><li> <code>&lt;missing&gt;</code> - string
+ </li><li> <code>&lt;undefined&gt;</code> - categorical
+ </li><li> <code>''</code> - cell arrays of character vectors
+ </li><li> <code>[]</code> - cell arrays
+ </li></ul>
+
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>convertvars</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tblB</var> = <b>convertvars</b><i> (<var>tblA</var>, <var>vars</var>, <var>dataType</var>)</i></dt>
+</dl>
+
+<p> Convert table variables to specified data type.
+</p>
+<div class="ms-5">
+<p> <code><var>tblB</var> = mergevars (<var>tblA</var>, <var>vars</var>)</code> converts the
+ variables in <var>tblA</var> specified by <var>vars</var> to the specified data
+ type.
+</p>
+<p> <var>vars</var> can be any of the following types.
+ </p><ul>
+<li> a character vector specifying a single variable.
+ </li><li> a cell array of character vectors specifying a single or multiple
+ variables.
+ </li><li> a string array specifying a single or multiple variables.
+ </li><li> a numeric array of integer values indexing the variables to be
+ renamed.
+ </li><li> a logical vector of the same length as the width of the table
+ <var>tblA</var> indexing as <code>true</code> the variables to be renamed.
+ </li><li> a <code>vartype</code> object used to create a subscript that selects
+ variables of a specified type.
+ </li></ul>
+
+<p> <var>dataType</var> specifies the data type to convert those variables to.  It
+ can either be a character vector defining the name of the data type to
+ convert to or a function handle, which will perform the conversion.
+ a char holding the name of the data type, or a function handle which will
+ perform the conversion.  When specifying a name for data type conversion,
+ it can either be a one-argument constructor for the specified data type,
+ which must accept the selected variables&rsquo; current data types as input, or
+ an available method, which can be applied on selected variables&rsquo; current
+ data types.  When specifying a function handle for applying a conversion
+ on selected variables, this function handle must accept a single input
+ argument and return in its output the same rows as the input argument.
+</p>
+<p> Either way, each resulting variable must have the same number of rows as
+ the respective variable selected for conversion.  However, depending on
+ the chosen type of conversion, the columns of the converted variable(s)
+ might differ.  It is up to the user to ensure that the appropriate type
+ of conversion is performed.  <code>convertvars</code> only checks the custom
+ function handles for returning the correct number of rows, which must
+ equal the number of rows of the input table, <var>tblA</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>fillmissing</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <code>'constant'</code>, <var>val</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <var>method</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <var>movmethod</var>, <var>window</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <code>'knn'</code>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <code>'knn'</code>, <var>k</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <var>fillfun</var>, <var>gapwindow</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (&hellip;, <var>dim</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
+<dt><u>table:</u> [<var>tbl</var>, <var>TF</var>] = <b>fillmissing</b><i> (&hellip;)</i></dt>
+</dl>
+
+<p> Fill missing table elements.
+</p>
+<div class="ms-5">
+
+
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+
+
+
+
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>head</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <b>head</b><i> (<var>tbl</var>)</i></dt>
+<dt><u>table:</u> <b>head</b><i> (<var>tbl</var>, <var>k</var>)</i></dt>
+<dt><u>table:</u> <var>out</var> = <b>head</b><i> (<var>tbl</var>, <var>k</var>)</i></dt>
+</dl>
+
+<p> Display or return the first K rows of table.
+</p>
+<div class="ms-5">
+<p> <code>head (<var>tbl</var>)</code> displays the first eight rows of the table
+ <var>tbl</var>.  If there are less rows in <var>tbl</var>, <code>head</code> displays all
+ rows available. <var>k</var> must be a positive integer scalar value.
+</p>
+<p> <code>head (<var>tbl</var>, <var>k</var>)</code> displays the first <var>k</var> rows of the
+ table <var>tbl</var>.  If there are less than <var>k</var> rows in <var>tbl</var>,
+ <code>head</code> displays all rows available.
+</p>
+<p> <code><var>out</var> = head (<var>tbl</var>, <var>k</var>)</code> returns the first <var>k</var>
+ rows in a new table <var>out</var>. If <var>k</var> is omitted or empty, then it
+ defaults to eight.  If there are less than <var>k</var> rows in <var>tbl</var>,
+ all rows available are returned.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>height</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>H</var> = <b>height</b><i> (<var>tbl</var>)</i></dt>
+</dl>
+
+<p> Number of rows in table.
+</p>
+<div class="ms-5">
+<p> <code><var>H</var> = height (<var>tbl</var>)</code> returns the number of rows in the
+ table, <var>tbl</var>.  It is the equivalent of <code>size (<var>tbl</var>, 1)</code>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>horzcat</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tbl</var> = <b>horzcat</b><i> (<var>tbl1</var>, <var>tbl2</var>, &hellip;)</i></dt>
+</dl>
+
+<p> Horizontal concatenation for tables.
+</p>
+<div class="ms-5">
+<p> <code><var>tbl</var> = horzcat (<var>tbl1</var>, <var>tbl2</var>, &hellip;)</code> merges
+ tables by horizontally concatenating them, provided that all input tables
+ have collectively unique variable names and the same number of rows.
+</p>
+<p> Input tables that have row names must share the same unique set of row
+ names but not necessarily in the same order.  When row names are present
+ in multiple input tables, their position is matched to the row names of
+ the first input table.  Input tables without row names are concatenated
+ by position without re-indexing.  Output table&rsquo;s <code>Description</code> and
+ <code>UserData</code> properties are assigned using the first non-empty value.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>innerjoin</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tbl</var> = <b>innerjoin</b><i> (<var>tblL</var>, <var>tblR</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>innerjoin</b><i> (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</i></dt>
+<dt><u>table:</u> [<var>tbl</var>, <var>ixL</var>, <var>ixR</var>] = <b>innerjoin</b><i> (&hellip;)</i></dt>
+</dl>
+
+<p> Inner join between two tables by rows using key variables.
+</p>
+<div class="ms-5">
+
+
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>intersect</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tbl</var> = <b>intersect</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>intersect</b><i> (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</i></dt>
+<dt><u>table:</u> [<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = <b>intersect</b><i> (&hellip;)</i></dt>
+</dl>
+
+<p> Intersection of two tables by rows.
+</p>
+<div class="ms-5">
+
+
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>iscolumn</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>TF</var> = <b>iscolumn</b><i> (<var>tbl</var>)</i></dt>
+</dl>
+
+<p> Test input table for being a column vector.
+</p>
+<div class="ms-5">
+<p> <code><var>TF</var> = iscolumn (<var>tbl</var>)</code> returns <code>true</code> if the input
+ table <var>tbl</var> has a single variable.  The number of columns within that
+ variable does not matter.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>isempty</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>TF</var> = <b>isempty</b><i> (<var>tbl</var>)</i></dt>
+</dl>
+
+<p> Test input table for being empty.
+</p>
+<div class="ms-5">
+<p> For tables, <code>isempty</code> is true if the number of rows is 0 or the
+ number of variables is 0.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>ismatrix</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>TF</var> = <b>ismatrix</b><i> (<var>tbl</var>)</i></dt>
+</dl>
+
+<p> Test input table for being a matrix.
+</p>
+<div class="ms-5">
+<p> For tables, <code>ismatrix</code> is always true, by definition.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>ismember</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>TF</var> = <b>ismember</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
+<dt><u>table:</u> [<var>TF</var>, <var>ixB</var>] = <b>ismember</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
+</dl>
+
+<p> Find set members between two tables by rows.
+</p>
+<div class="ms-5">
+
+
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>ismissing</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>Method:</u> <var>TF</var> = <b>ismissing</b><i> (<var>tblA</var>)</i></dt>
+<dt><u>Method:</u> <var>TF</var> = <b>ismissing</b><i> (<var>tblA</var>, <var>indicator</var>)</i></dt>
+</dl>
+
+<p> Find missing values in table.
+</p>
+<div class="ms-5">
+<p> Finds missing values in <var>obj</var>’s variables.
+</p>
+<p> If indicator is not supplied, uses the standard missing values for each
+ variable’s data type. If indicator is supplied, the same indicator list is
+ applied across all variables.
+</p>
+<p> All variables in this must be vectors. (This is due to the requirement
+ that <code>size(out) == size(obj)</code>.)
+</p>
+<p> Returns a logical array the same size as <var>obj</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>isrow</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>TF</var> = <b>isrow</b><i> (<var>tbl</var>)</i></dt>
+</dl>
+
+<p> Test input table for being a row vector.
+</p>
+<div class="ms-5">
+<p> <code><var>TF</var> = isrow (<var>tbl</var>)</code> returns <code>true</code> if the input
+ table <var>tbl</var> has a single row.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>isscalar</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>Method:</u> <var>TF</var> = <b>isscalar</b><i> (<var>tbl</var>)</i></dt>
+</dl>
+
+<p> Test input table for being a scalar.
+</p>
+<div class="ms-5">
+<p> <code><var>TF</var> = isscalar (<var>tbl</var>)</code> returns <code>true</code> if the input
+ table <var>tbl</var> has a single row and a single variable.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>issortedrows</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>TF</var> = <b>issortedrows</b><i> (<var>tblA</var>)</i></dt>
+<dt><u>table:</u> <var>TF</var> = <b>issortedrows</b><i> (<var>tblA</var>, <code>&quot;RowNames&quot;</code>)</i></dt>
+<dt><u>table:</u> <var>TF</var> = <b>issortedrows</b><i> (<var>tblA</var>, <var>rowDimName</var>)</i></dt>
+<dt><u>table:</u> <var>TF</var> = <b>issortedrows</b><i> (<var>tblA</var>, <var>vars</var>)</i></dt>
+<dt><u>table:</u> <var>TF</var> = <b>issortedrows</b><i> (<var>tblA</var>, &hellip;, <var>direction</var>)</i></dt>
+<dt><u>table:</u> <var>TF</var> = <b>issortedrows</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
+</dl>
+
+<p> Check if table rows are sorted accordingly.
+</p>
+<div class="ms-5">
+<p> <code><var>TF</var> = issortedrows (<var>tblA</var>)</code> determines if the rows in
+ <var>tblA</var> are sorted in asceding order based on the values in the first
+ variable or subsequent variables if elements of the former are repeated.
+ <var>TF</var> is a logical scalar and it is <code>true</code> when
+ <code><var>tblA</var> == sortrows (<var>tblA</var>)</code> or <code>false</code> otherwise.
+</p>
+<p> <code><var>TF</var> = issortedrows (<var>tblA</var>, <code>&quot;RowNames&quot;</code>)</code>
+ determines if the rows in <var>tblA</var> are sorted according to its row
+ names.  <var>TF</var> is <code>true</code> when <code><var>tblA</var> == sortrows
+ (<var>tblA</var>, <code>&quot;RowNames&quot;</code>)</code> or <code>false</code> otherwise.  If
+ <var>tblA</var> does not have row names, i.e. <code>tblA.Properties.RowNames</code>
+ is empty, then <var>TF</var> is <code>true</code>.
+</p>
+<p> <code><var>TF</var> = issortedrows (<var>tblA</var>, <var>rowDimName</var>)</code> determines
+ if the rows in table <var>tblA</var> are sorted along the first dimension,
+ <var>rowDimName</var>, which is the equivalent to the previous syntax, i.e.
+ according to its row names. For this syntax to work, <var>rowDimName</var>
+ must match the first element in <code>tblA.Properties.DimensionNames</code>,
+ otherwise <var>rowDimName</var> is considered a variable name, as in the
+ following syntax.  <var>TF</var> is <code>true</code> when <code><var>tblA</var> ==
+ sortrows (<var>tblA</var>, <var>rowDimName</var>)</code> or <code>false</code> otherwise.  If
+ <var>tblA</var> does not have row names, i.e. <code>tblA.Properties.RowNames</code>
+ is empty, then <var>TF</var> is <code>true</code>.
+</p>
+<p> <code><var>TF</var> = issortedrows (<var>tblA</var>, <var>vars</var>)</code> determines if the
+ rowns in <var>tblA</var> are sorted by the elements in the variables specified
+ by <var>vars</var>, which can be a character vector (for a single variable) or
+ a cell array of character vectors or a string array (specifying a single
+ or multiple variables).  If <var>tblA</var> has row names, then <var>vars</var> can
+ include the row names.  Alternatively, <var>vars</var> can be a logical vector
+ or a numeric vector of real integers indexing the desired variables.
+ Positive integers specify an ascending order, whereas negative integers
+ specify a descending order for the referenced variables.  You can also
+ index all available variables in <var>tblA</var> by passing a semicolon
+ character argument.  This Octave specific syntax, facilitates the use of
+ <var>direction</var> input argument, when no particular variable needs to be
+ selected for sorting upon.  Additionally, <var>vars</var> can be a
+ <code>vartype</code> object used to create a subscript that selects variables
+ of a specified type.
+</p>
+<p> <code><var>TF</var> = issortedrows (<var>tblA</var>, &hellip;, <var>direction</var>)</code>
+ determines if the rows in <var>tblA</var> are sorted in the order specified by
+ <var>direction</var> for any of the previous syntaxes.  <var>direction</var> can be
+ <code>'ascend'</code> or <code>'descend'</code>, which is applied to all specified
+ variables or row names that <code>sortrows</code> operates on.  <var>direction</var>
+ can also be a cell array of character vectors, whose elements are
+ <code>'ascend'</code> and <code>'descend'</code>, where each element corresponds to
+ the specified variables and/or, row names used for sorting the table.
+ The order specified by <var>direction</var> always takes precedence over the
+ order defined by a numerical vector of integers in <var>vars</var>.
+ <var>direction</var> must always be the 3rd inpnut argument.  If you want to
+ omit passing selected variables and allow <code>sortrows</code> to work on
+ consequtive variables until all ties are resolved, then you can leave the
+ second input argument empty, as in
+ <code>sortrows (<var>tblA</var>, <code>[]</code>, <var>direction</var>)</code> or pass a
+ colon argument for <var>vars</var> as in
+ <code>sortrows (<var>tblA</var>, <code>':'</code>, <var>direction</var>)</code> or pass a
+</p>
+<p> <code><var>TF</var> = issortedrows (&hellip;, <var>Name</var>, <var>Value</var>)</code>
+ determines if the rows in <var>tblA</var> are sorted accoring the additional
+ parameters specifying the sorting of rows of a table with the following
+ Name-Value paired arguments.
+</p>
+ <ul>
+<li> <code>&quot;MissingPlacement&quot;</code> specifies the placement of missing
+ values with one of the following options: <code>&quot;auto&quot;</code> places the
+ missing elements at the bottom for ascending order and at the top for
+ descending order; <code>&quot;first&quot;</code> places missing elements at the top;
+ <code>&quot;last&quot;</code> places missing elements at the bottom.
+ </li><li> <code>&quot;ComparisonMethod&quot;</code> specifies the element comparison method
+ with one of the following options: <code>&quot;auto&quot;</code> sorts rows using the
+ real part for real numbers and the magnitude for complex numbers;
+ <code>&quot;real&quot;</code> sorts rows using the real part for both real and complex
+ numbers; <code>&quot;abs&quot;</code> sorts rows using the magnitude for both real and
+ complex numbers.  For complex numbers with equal magnitude, the phase
+ angle in the interval <math>(-π, π]</math> is further used to break ties.
+ </li></ul>
+
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>istable</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tf</var> = <b>istable</b><i> (<var>tbl</var>)</i></dt>
+</dl>
+
+<p> Return <code>True</code> if input is a table.
+</p>
+<div class="ms-5">
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>isvector</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>TF</var> = <b>isvector</b><i> (<var>tbl</var>)</i></dt>
+</dl>
+
+<p> Test input table for being a vector.
+</p>
+<div class="ms-5">
+<p> <code><var>TF</var> = isvector (<var>tbl</var>)</code> returns <code>true</code> if the input
+ table <var>tbl</var> has a single row or a single column.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>join</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tbl</var> = <b>outerjoin</b><i> (<var>tblL</var>, <var>tblR</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>outerjoin</b><i> (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</i></dt>
+<dt><u>table:</u> [<var>tbl</var>, <var>ixL</var>, <var>ixR</var>] = <b>outerjoin</b><i> (&hellip;)</i></dt>
+</dl>
+
+<p> Outer join between two tables by rows using key variables.
+</p>
+<div class="ms-5">
+
+
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>length</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>out</var> = <b>length</b><i> (<var>tbl</var>)</i></dt>
+</dl>
+
+<p> Length along longest dimension.
+</p>
+<div class="ms-5">
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>mergevars</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tblB</var> = <b>mergevars</b><i> (<var>tblA</var>, <var>vars</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>mergevars</b><i> (<var>tblA</var>, <var>vars</var>, <var>Name</var>, <var>Value</var>)</i></dt>
+</dl>
+
+<p> Merge table variables into a single multicolumn variable.
+</p>
+<div class="ms-5">
+<p> <code><var>tblB</var> = mergevars (<var>tblA</var>, <var>vars</var>)</code> combines the table
+ variables in <var>tblA</var> specified by <var>vars</var> to create a new
+ multicolumn variable in <var>tblB</var>.  All other variables in <var>tblA</var>
+ are copied to <var>tblB</var> unaltered.  By default, the name of the merged
+ variable in <var>tblB</var> takes the form <math>VarN</math>, where <math>N</math> is the
+ position of the first variable in <var>tblA</var> among those to be merged,
+ which is also the location of the merged variable in <var>tblB</var>.
+</p>
+<p> Note that merging variables with a <code>'string'</code> data type variable
+ will result to a multicolumn variable of <code>'string'</code> data type, by
+ initially converting all other to-be-merged variables into
+ <code>'string'</code> data type.
+</p>
+<p> <var>vars</var> can be any of the following types.
+ </p><ul>
+<li> a character vector specifying a single variable.
+ </li><li> a cell array of character vectors specifying a single or multiple
+ variables.
+ </li><li> a string array specifying a single or multiple variables.
+ </li><li> a numeric array of integer values indexing the variables to be
+ renamed.
+ </li><li> a logical vector of the same length as the width of the table
+ <var>tblA</var> indexing as <code>true</code> the variables to be renamed.
+ </li><li> a <code>vartype</code> object used to create a subscript that selects
+ variables of a specified type.
+ </li></ul>
+
+<p> <code><var>tblB</var> = mergevars (&hellip;, <var>Name</var>, <var>Value</var>)</code> further
+ specifies additional parameters for merging table variables with the
+ following Name-Value paired arguments.
+</p>
+ <ul>
+<li> <code>&quot;NewVariableName&quot;</code> specifies the name of the merged variable
+ in <var>tblB</var>, which must be unique.  <code>&quot;NewVariableName&quot;</code> must be
+ either a cellstr or string scalar or a character vector.
+ </li><li> <code>&quot;MergeAsTable&quot;</code> specifies whether the selected variables
+ should be merged into a multicolumn variable (default) or into a table
+ nested into a variable, which is usefull for variables that cannot be
+ concatenated due to incompatible variable types.  <code>&quot;MergeAsTable&quot;</code>
+ must be either a boolean scalar or a numeric scalar value of <code>1</code>
+ (<code>true</code>) or <code>0</code> (<code>false</code>).
+ </li></ul>
+
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>movevars</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tblB</var> = <b>removevars</b><i> (<var>tblA</var>, <var>vars</var>)</i></dt>
+</dl>
+
+<p> Remove variables from a table.
+</p>
+<div class="ms-5">
+<p> <code><var>tblB</var> = removevars (<var>tblA</var>, <var>vars</var>)</code> removes the
+ variables specified by <var>vars</var> from the input table <var>tblA</var>.
+</p>
+<p> <var>vars</var> can be any of the following types.
+ </p><ul>
+<li> a character vector specifying a single variable.
+ </li><li> a cell array of character vectors specifying a single or multiple
+ variables.
+ </li><li> a string array specifying a single or multiple variables).
+ </li><li> a numeric array of integer values indexing the variables to be
+ renamed.
+ </li><li> a logical vector of the same length as the width of the table
+ <var>tblA</var> indexing as <code>true</code> the variables to be renamed.
+ </li><li> a <code>vartype</code> object used to create a subscript that selects
+ variables of a specified type.
+ </li></ul>
+
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>ndims</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>out</var> = <b>ndims</b><i> (<var>tbl</var>)</i></dt>
+</dl>
+
+<p> Number of table dimensions.
+</p>
+<div class="ms-5">
+<p> For tables, <code>ndims(tbl)</code> is always 2.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>numel</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>out</var> = <b>numel</b><i> (<var>tbl</var>)</i></dt>
+</dl>
+
+<p> Total number of elements in table (actually 1).
+</p>
+<div class="ms-5">
+<p> For compatibility reasons with Octave&rsquo;s OOP interface and <code>subsasgn</code>
+ behavior, table&rsquo;s numel is defined to always return 1.  This is an
+ incompatibility with Matlab.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>outerjoin</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tbl</var> = <b>outerjoin</b><i> (<var>tblL</var>, <var>tblR</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>outerjoin</b><i> (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</i></dt>
+<dt><u>table:</u> [<var>tbl</var>, <var>ixL</var>, <var>ixR</var>] = <b>outerjoin</b><i> (&hellip;)</i></dt>
+</dl>
+
+<p> Outer join between two tables by rows using key variables.
+</p>
+<div class="ms-5">
+
+
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>removevars</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tblB</var> = <b>removevars</b><i> (<var>tblA</var>, <var>vars</var>)</i></dt>
+</dl>
+
+<p> Remove variables from a table.
+</p>
+<div class="ms-5">
+<p> <code><var>tblB</var> = removevars (<var>tblA</var>, <var>vars</var>)</code> removes the
+ variables specified by <var>vars</var> from the input table <var>tblA</var>.
+</p>
+<p> <var>vars</var> can be any of the following types.
+ </p><ul>
+<li> a character vector specifying a single variable.
+ </li><li> a cell array of character vectors specifying a single or multiple
+ variables.
+ </li><li> a string array specifying a single or multiple variables).
+ </li><li> a numeric array of integer values indexing the variables to be
+ renamed.
+ </li><li> a logical vector of the same length as the width of the table
+ <var>tblA</var> indexing as <code>true</code> the variables to be renamed.
+ </li><li> a <code>vartype</code> object used to create a subscript that selects
+ variables of a specified type.
+ </li></ul>
+
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>renamevars</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tblB</var> = <b>renamevars</b><i> (<var>tblA</var>, <var>vars</var>, <var>newNames</var>)</i></dt>
+</dl>
+
+<p> Rename variables in a table.
+</p>
+<div class="ms-5">
+<p> <code><var>tblB</var> = renamevars (<var>tblA</var>, <var>vars</var>, <var>newNames</var>)</code>
+ renames the selected variables in the table <var>tblA</var> specified by
+ <var>vars</var> using the names in <var>newNames</var>.
+</p>
+<p> <var>vars</var> can be any of the following types.
+ </p><ul>
+<li> a character vector specifying a single variable.
+ </li><li> a cell array of character vectors specifying a single or multiple
+ variables.
+ </li><li> a string array specifying a single or multiple variables).
+ </li><li> a numeric array of integer values indexing the variables to be
+ renamed.
+ </li><li> a logical vector of the same length as the width of the table
+ <var>tblA</var> indexing as <code>true</code> the variables to be renamed.
+ </li><li> a <code>vartype</code> object used to create a subscript that selects
+ variables of a specified type.
+ </li></ul>
+
+<p> <var>newNames</var> can either be a character vector (when renaming a single
+ variable) or a cell array of character vectors or a string array.  The
+ number of names specified by <var>newNames</var> must match the number of
+ variables specified by <var>vars</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>repelem</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tblB</var> = <b>repelem</b><i> (<var>tblA</var>, <var>sz</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>repelem</b><i> (<var>tblA</var>, <var>rows</var>, <var>columns</var>)</i></dt>
+</dl>
+
+<p> Replicate elements of a table.
+</p>
+<div class="ms-5">
+<p> Replicates elements of the input table <var>tblA</var> in a similar fashion
+ to how <code>repelem</code> applies to a matrix.  Only two dimensions are
+ supported for tables.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>repmat</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tblB</var> = <b>repmat</b><i> (<var>tblA</var>, <var>sz</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>repmat</b><i> (<var>tblA</var>, <var>rows</var>, <var>columns</var>)</i></dt>
+</dl>
+
+<p> Repeat copies of a table.
+</p>
+<div class="ms-5">
+<p> Repeats cp[ies of the input table <var>tblA</var> in a similar fashion
+ to how <code>repmat</code> applies to a matrix.  Only two dimensions are
+ supported for tables.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>rmmissing</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tbl</var> = <b>rmmissing</b><i> (<var>tblA</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>rmmissing</b><i> (<var>tblA</var>, <var>dim</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>rmmissing</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
+<dt><u>table:</u> [<var>tbl</var>, <var>TF</var>] = <b>rmmissing</b><i> (&hellip;)</i></dt>
+</dl>
+
+<p> Remove missing table elements by rows.
+</p>
+<div class="ms-5">
+
+
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>rmprop</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>T</var> = <b>rmprop</b><i> (<var>T</var>, <var>propertyNames</var>)</i></dt>
+</dl>
+
+<p> Remove custom properties from a table.
+</p>
+<div class="ms-5">
+<p> <code><var>T</var> = rmprop (<var>T</var>, <var>propertyNames</var>)</code> removes properties
+ that contain custom metadata from the table <var>T</var>.  The input argument
+ <var>propertyNames</var> specifies the names of the custom properties to be
+ removed and it can either be a character vector, a cell array of
+ character vectors, or a sting array.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>rows2vars</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tblB</var> = <b>rows2vars</b><i> (<var>tblA</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>rows2vars</b><i> (<var>tblA</var>, <var>Name</var>, <var>Value</var>)</i></dt>
+</dl>
+
+<p> Reorient table by swapping rows into variables.
+</p>
+<div class="ms-5">
+<p> <code><var>tblB</var> = rows2vars (<var>tblA</var>)</code> reorients the input table
+ <var>tblA</var> so that its rows become variables in the output table
+ <var>tblB</var> and the variables are swapped into rows and their names
+ are stored into a new variable at the beginning of the output table.  If
+ the contents of <var>tblA</var> can be concatenated, then the corresponding
+ variables of <var>tblB</var> arrays, otherwise they are cell arrays.  If the
+ input table <var>tblA</var> contains <code>RowNames</code>, then those names become
+ the variable names of the output table <var>tblB</var>, otherwise the variable
+ names of <var>tblB</var> are generated automatically.  <code>rows2vars</code> cannot
+ handle multicolumn variables or nested tables.
+</p>
+<p> variables in <var>tblA</var> specified by <var>vars</var> to create a new
+ multicolumn variable in <var>tblB</var>.  All other variables in <var>tblA</var>
+ are copied to <var>tblB</var> unaltered.  By default, the name of the merged
+ variable in <var>tblB</var> takes the form <math>VarN</math>, where <math>N</math> is the
+ position of the first variable in <var>tblA</var> among those to be merged,
+ which is also the location of the merged variable in <var>tblB</var>.
+</p>
+<p> <code><var>tblB</var> = rows2vars (&hellip;, <var>Name</var>, <var>Value</var>)</code> further
+ specifies additional parameters for merging table variables with the
+ following Name-Value paired arguments.
+</p>
+ <ul>
+<li> <code>&quot;DataVariables&quot;</code> specifies the variables from input table
+ <var>tblA</var> which will be reoriented.  <code>&quot;DataVariables&quot;</code> can be any
+ of the following types: a character vector specifying a single variable;
+ a cell array of character vectors or a string array specifying a single
+ or multiple variables; a numeric array of integer values specifying a
+ single or multiple variables; a logical vector of the same length as the
+ width of the input table specifying a single or multiple variables.
+ </li><li> <code>&quot;VariableNamesSource&quot;</code> specifies a single variable that
+ contains the variable names for the output table.  The values of the
+ selected variable must have a data type which can be converted to strings
+ and the number of unique names in the selected variable must match the
+ number of rows of the input table.  <code>&quot;VariableNamesSource&quot;</code> accepts
+ the same data types supported by <code>&quot;DataVariables&quot;</code> as long as they
+ index a single variable, which, however, must not be specified by the
+ <code>&quot;DataVariables&quot;</code> ame-Value paired argument.
+ </li><li> <code>&quot;VariableNamingRule&quot;</code> must be a character vector specifying
+ the rule for naming variables in the output table <var>tblB</var>.  When set
+ to <code>'modify'</code> (default), the variable names are modified so that
+ they are valid variable identifiers.  When set to <code>'preserve'</code>, the
+ original names are preserved.
+ </li></ul>
+
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>setdiff</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tbl</var> = <b>setdiff</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
+<dt><u>table:</u> [<var>tbl</var>, <var>ixA</var>] = <b>setdiff</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
+</dl>
+
+<p> Difference between two tables by rows.
+</p>
+<div class="ms-5">
+
+
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>setxor</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tbl</var> = <b>setxor</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>setxor</b><i> (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</i></dt>
+<dt><u>table:</u> [<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = <b>setxor</b><i> (&hellip;)</i></dt>
+</dl>
+
+<p> Exclusive OR of two tables by rows.
+</p>
+<div class="ms-5">
+
+
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>size</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>sz</var> = <b>size</b><i> (<var>tbl</var>)</i></dt>
+<dt><u>table:</u> [<var>rows</var>, <var>columns</var>] = <b>size</b><i> (<var>tbl</var>)</i></dt>
+<dt><u>table:</u> [<var>rows</var>, <var>columns</var>, &hellip;] = <b>size</b><i> (<var>tbl</var>)</i></dt>
+</dl>
+
+<p> Return the size of a table.
+</p>
+<div class="ms-5">
+<p> For tables, the size is [number-of-rows x number-of-variables].
+ This is the same as <code>[height(obj), width(obj)]</code>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>sortrows</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tblB</var> = <b>sortrows</b><i> (<var>tblA</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>sortrows</b><i> (<var>tblA</var>, <code>&quot;RowNames&quot;</code>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>sortrows</b><i> (<var>tblA</var>, <var>rowDimName</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>sortrows</b><i> (<var>tblA</var>, <var>vars</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>sortrows</b><i> (<var>tblA</var>, &hellip;, <var>direction</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>sortrows</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
+<dt><u>table:</u> [<var>tblB</var>, <var>index</var>] = <b>sortrows</b><i> (&hellip;)</i></dt>
+</dl>
+
+<p> Sort the rows of a table.
+</p>
+<div class="ms-5">
+<p> <code><var>tblB</var> = sortrows (<var>tblA</var>)</code> sorts the rows in <var>tblA</var> in
+ asceding order based on the values in the first variable.   If elements
+ in the first variable are repeated, then <code>sortrows</code> sorts by the
+ elements in the second variable, and so on.
+</p>
+<p> <code><var>tblB</var> = sortrows (<var>tblA</var>, <code>&quot;RowNames&quot;</code>)</code> sorts the
+ table <var>tblA</var> according to its row names.  If <var>tblA</var> does not
+ have row names, i.e. <code>tblA.Properties.RowNames</code> is empty, then it
+ returns <var>tblA</var>.
+</p>
+<p> <code><var>tblB</var> = sortrows (<var>tblA</var>, <var>rowDimName</var>)</code> also sorts
+ the table <var>tblA</var> along the first dimension, <var>rowDimName</var>, which
+ is the equivalent to the previous syntax, i.e. according to its row
+ names.  If <var>tblA</var> does not have row names, that is
+ <code>tblA.Properties.RowNames</code> is empty, then it returns <var>tblA</var>.
+ For this syntax to work, <var>rowDimName</var> must match the first element in
+ <code>tblA.Properties.DimensionNames</code>, otherwise <var>rowDimName</var> is
+ considered a variable name, as in the following syntax.
+</p>
+<p> <code><var>tblB</var> = sortrows (<var>tblA</var>, <var>vars</var>)</code> sorts the rows in
+ table <var>tblA</var> by the elements in the variables specified by
+ <var>vars</var>, which can be a character vector (for a single variable) or a
+ cell array of character vectors or a string array (specifying a single or
+ multiple variables).  If <var>tblA</var> has row names, then <var>vars</var> can
+ include the row names.  Alternatively, <var>vars</var> can be a logical vector
+ or a numeric vector of real integers indexing the desired variables.
+ Positive integers specify an ascending order, whereas negative integers
+ specify a descending order for the referenced variables.  You can also
+ index all available variables in <var>tblA</var> by passing a semicolon
+ character argument.  This Octave specific syntax, facilitates the use of
+ <var>direction</var> input argument, when no particular variable needs to be
+ selected for sorting upon.  Additionally, <var>vars</var> can be a
+ <code>vartype</code> object used to create a subscript that selects variables
+ of a specified type.
+</p>
+<p> <code><var>tblB</var> = sortrows (<var>tblA</var>, &hellip;, <var>direction</var>)</code> sorts
+ the rows in table <var>tblA</var> in the order specified by <var>direction</var>
+ for any of the previous syntaxes.  <var>direction</var> can be
+ <code>'ascend'</code> or <code>'descend'</code>, which is applied to all specified
+ variables or row names that <code>sortrows</code> operates on.  <var>direction</var>
+ can also be a cell array of character vectors, whose elements are
+ <code>'ascend'</code> and <code>'descend'</code>, where each element corresponds to
+ the specified variables and/or, row names used for sorting the table.
+ The order specified by <var>direction</var> always takes precedence over the
+ order defined by a numerical vector of integers in <var>vars</var>.
+ <var>direction</var> must always be the 3rd inpnut argument.  If you want to
+ omit passing selected variables and allow <code>sortrows</code> to work on
+ consequtive variables until all ties are resolved, then you can leave the
+ second input argument empty, as in
+ <code>sortrows (<var>tblA</var>, <code>[]</code>, <var>direction</var>)</code> or pass a
+ colon argument for <var>vars</var> as in
+ <code>sortrows (<var>tblA</var>, <code>':'</code>, <var>direction</var>)</code> or pass a
+</p>
+<p> <code><var>tblB</var> = sortrows (&hellip;, <var>Name</var>, <var>Value</var>)</code> specifies
+ additional parameters for sorting rows of a table with the following
+ Name-Value paired arguments.
+</p>
+ <ul>
+<li> <code>&quot;MissingPlacement&quot;</code> specifies the placement of missing
+ values with one of the following options: <code>&quot;auto&quot;</code> places the
+ missing elements at the bottom for ascending order and at the top for
+ descending order; <code>&quot;first&quot;</code> places missing elements at the top;
+ <code>&quot;last&quot;</code> places missing elements at the bottom.
+ </li><li> <code>&quot;ComparisonMethod&quot;</code> specifies the element comparison method
+ with one of the following options: <code>&quot;auto&quot;</code> sorts rows using the
+ real part for real numbers and the magnitude for complex numbers;
+ <code>&quot;real&quot;</code> sorts rows using the real part for both real and complex
+ numbers; <code>&quot;abs&quot;</code> sorts rows using the magnitude for both real and
+ complex numbers.  For complex numbers with equal magnitude, the phase
+ angle in the interval <math>(-π, π]</math> is further used to break ties.
+ </li></ul>
+
+<p> <code>[<var>tblB</var>, <var>index</var>] = sortrows (&hellip;)</code> also returns an
+ index vector such that <code><var>tblB</var> = <var>tblA</var>(<var>index</var>,:)</code>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>splitvars</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tblB</var> = <b>splitvars</b><i> (<var>tblA</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>splitvars</b><i> (<var>tblA</var>, <var>vars</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>splitvars</b><i> (&hellip;, <code>'NewVariableNames'</code>, <var>NewNames</var>)</i></dt>
+</dl>
+
+<p> Split multicolumn variables in a table.
+</p>
+<div class="ms-5">
+<p> <code><var>tblB</var> = splitvars (<var>tblA</var>)</code> splits mutlicolumn variables
+ in <var>tblA</var> so that they are single-column variables in <var>tblB</var>,
+ while all single-column variables in <var>tblA</var> are copied to <var>tblB</var>
+ unaltered. Each newly created single-column variable in <var>tblB</var> is
+ uniquely named by joining the name of its parent multicolumn variable in
+ <var>tblA</var> and the corresponding column number.  If a variable in
+ <var>tblA</var> contains a table, then each variable of this nested table is
+ returned as a newly created variable in <var>tblB</var>. By default, these
+ variables retain their original name in the nested table, unless there
+ are duplicate names, in which case the name of the nested table is also
+ used.  If the nested table in <var>tblA</var> contains a multicolumn variable,
+ then the newly created variable in <var>tblB</var> is also multicolumnar.
+</p>
+<p> <code><var>tblB</var> = splitvars (<var>tblA</var>, <var>vars</var>)</code> splits only the
+ variables in <var>tblA</var> specified by <var>vars</var>.  If left empty, it
+ defaults to all variables that can be split.  Single-column variables
+ specified in <var>vars</var> are coppied unaltered.
+</p>
+<p> <var>vars</var> can be any of the following types.
+ </p><ul>
+<li> a character vector specifying a single variable.
+ </li><li> a cell array of character vectors specifying a single or multiple
+ variables.
+ </li><li> a string array specifying a single or multiple variables.
+ </li><li> a numeric array of integer values indexing the variables to be
+ renamed.
+ </li><li> a logical vector of the same length as the width of the table
+ <var>tblA</var> indexing as <code>true</code> the variables to be renamed.
+ </li><li> a <code>vartype</code> object used to create a subscript that selects
+ variables of a specified type.
+ </li></ul>
+
+<p> <code><var>tblB</var> = splitvars (&hellip;, <code>'NewVariableNames'</code>,
+ <var>NewNames</var>)</code> assigns new names to the variables that are split out of
+ <var>tblA</var> and copied to <var>tblB</var>.  <var>NewNames</var> can be specified as
+ a cell array of character vectors and/or string arrays.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>squeeze</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tblB</var> = <b>squeeze</b><i> (<var>tblA</var>)</i></dt>
+</dl>
+
+<p> Remove singleton dimensions.
+</p>
+<div class="ms-5">
+<p> For tables, this is always a no-op that returns the input table
+ unmodified, because tables always have exactly 2 dimensions.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>stack</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tblB</var> = <b>unstack</b><i> (<var>tblA</var>, <var>vars</var>, <var>ivar</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>unstack</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
+<dt><u>table:</u> [<var>tblB</var>, <var>idxA</var>] = <b>unstack</b><i> (&hellip;)</i></dt>
+</dl>
+
+<p> Unstack a single table variable into multiple table variables.
+</p>
+<div class="ms-5">
+<p> <code><var>tblB</var> = stack (<var>tblA</var>, <var>vars</var>, <var>ivar</var>)</code> unstacks the values from
+ the variables <var>vars</var> in input <var>tblA</var> into a single variable in
+ output table <var>tblB</var>.  By default, the stacked variable in <var>tblB</var>
+ is named by joining the names of the variables in <var>tblA</var> as defined
+ by <var>vars</var>.  Additionally, a new categorical variable is included in
+ <var>tblB</var> that indicates which variable in <var>tblA</var> the stacked data
+ in each row of <var>tblB</var> comes from.  By default, this categorical
+ variable is named by appending <code>&quot;_Indicator&quot;</code> to the name of the
+ stacked variable.  Variables in <var>tblA</var> that are not defined in
+ <var>vars</var> for stacking are replicated in <var>tblB</var>.  If <var>tblA</var>
+ contains <code>RowNames</code>, these are not stacked.
+</p>
+<p> <var>vars</var> can be any of the following types.
+ </p><ul>
+<li> a character vector specifying a single variable.
+ </li><li> a cell array of character vectors specifying a single or multiple
+ variables.
+ </li><li> a string array specifying a single or multiple variables.
+ </li><li> a numeric array of integer values indexing the variables to be
+ renamed.
+ </li><li> a logical vector of the same length as the width of the table
+ <var>tblA</var> indexing as <code>true</code> the variables to be renamed.
+ </li><li> a <code>vartype</code> object used to create a subscript that selects
+ variables of a specified type.
+ </li></ul>
+
+<p> <code><var>tblB</var> = stack (&hellip;, <var>Name</var>, <var>Value</var>)</code> further
+ specifies additional parameters for merging table variables with the
+ following Name-Value paired arguments.
+</p>
+ <ul>
+<li> <code>&quot;ConstantVariables&quot;</code> specifies the variables other than
+ <var>vars</var> to include in the output table.  By default, all remaining
+ variables not specified by <var>vars</var> are included in the output table.
+ Specifying <code>&quot;ConstantVariables&quot;</code> allows you to select specific
+ variables to replicate in <var>tblB</var>.  Row names in <var>tblA</var> are always
+ replicated in <var>tblB</var>.  You can specify <code>&quot;ConstantVariables&quot;</code> in
+ the same manner as with <var>vars</var>.
+ </li><li> <code>&quot;NewDataVariableName&quot;</code> specifies the name for the new data
+ variable in the output table <var>tblB</var>.  It can be a character vector,
+ a string scalar, or a cellstring scalar.
+ </li><li> <code>&quot;IndexVariableName&quot;</code> specifies the name for the new
+ indicator variable in the output table <var>tblB</var>.  It can be a character
+ vector, a string scalar, or a cellstring scalar.
+ </li></ul>
+
+<p> <code>[<var>tblB</var>, <var>idxA</var>] = stack (&hellip;)</code> also returns an index
+ vector, <var>idxA</var>, indicating the correspondence between the rows in
+ <var>tblB</var> and the rows in <var>tblA</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>standardizeMissing</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tbl</var> = <b>standardizeMissing</b><i> (<var>tblA</var>, <var>indicator</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>rmmissing</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
+</dl>
+
+<p> Remove missing table elements by rows.
+</p>
+<div class="ms-5">
+
+
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>summary</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <b>summary</b><i> (<var>tbl</var>)</i></dt>
+<dt><u>table:</u> <var>s</var> = <b>summary</b><i> (<var>tbl</var>)</i></dt>
+</dl>
+
+<p> Print a summary of a table.
+</p>
+<div class="ms-5">
+<p> <code>summary (<var>tbl</var></code> prints the description from
+ <code><var>tbl</var>.Properties.Description (not implemented yet) followed
+ by a summary of each table variable's values and their properties as
+ defined in <code><var>tbl</var>.Properties.VariableUnits</code> and
+ <code><var>tbl</var>.Properties.VariableDescriptions</code> (not implemented yet).
+</code></p>
+<p><code> <code><var>s</var> = summary (<var>tbl</var></code> returns a structure, <var>s</var>, that
+ contains a summary of the input table, <var>tbl</var>.  Each field of <var>s</var>
+ is a structure that summarizes the values in the corresponding variable
+ of <var>tbl</var>.
+</code></p>
+ <ul>
+<li><code> For numerical variables of <code>double&quot;</code>, <code>single</code> or any
+ <code>int</code> type, it prints the minimum, median, and maximum values.  For
+ multicolumnar numerical variables it prints the minimum, median, and
+ maximum values for each column separately.
+</code>
+ </li><li><code> For variables of <code>logical</code> type, it prints the occurences
+ of <code>True</code> and <code>False</code>.
+</code>
+ </li><li><code> For variables of type <code>datetime</code>, <code>duration</code>, and
+ <code>calendarDuration</code> it prints the minimum, median, and maximum
+ values along with the TimeStep, which is only calculated for fixed
+ intervals present in the data, otherwise <code>NaN</code> is returned.
+</code>
+ </li><li><code> For variables of type <code>cellstr</code>, <code>cell</code>, <code>string</code>
+ and <code>struct</code> it prints the size and the type of variable.
+ </code></li></ul>
+
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>table</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>out</var> = <b>setvar</b><i> (<var>tbl</var>, <var>varRef</var>, <var>value</var>)</i></dt>
+</dl>
+
+<p> Set values to an existing or a new variable in table.
+</p>
+<div class="ms-5">
+<p> This sets (adds or replaces) the value for a variable in <var>tbl</var>. It
+ may be used to change the value of an existing variable, or add a new
+ variable.
+</p>
+<p> <var>varRef</var> is a variable reference, either its index or its name.
+ If you are adding a new variable, it must be a name, and not an index.
+</p>
+<p> <var>value</var> is the value to set the variable to.  If it is a scalar, it
+ is scalar-expanded to match the number of rows in <var>tbl</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>table2array</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>A</var> = <b>table2array</b><i> (<var>tbl</var>)</i></dt>
+</dl>
+
+<p> Converts a table to a homogeneous array.
+</p>
+<div class="ms-5">
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>table2cell</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>Method:</u> <var>C</var> = <b>table2cell</b><i> (<var>tbl</var>)</i></dt>
+</dl>
+
+<p> Converts a table to a cell array.
+</p>
+<div class="ms-5">
+<p> Each variable in <var>tbl</var> becomes a column of cells in the output
+ <var>C</var>.  Multicolumnar variables are returned in a single column with
+ each cell element containing a row vector.
+</p>
+<p> The size of the returned cell array, <var>C</var>, is the same as the input
+ table, <var>tbl</var>.  The output <var>C</var> does not include any of the table&rsquo;s
+ properties.  This also applies to row names.
+</p>
+<p> Compatibity Notes:
+</p>
+<p> Variables of types <code>categorical</code>, <code>calendarDuration</code>,
+ <code>datetime</code>, <code>duration</code> and <code>string</code> are returned as
+ in their printed representation as character vectors.  To revert them to
+ their original class type you can parse the cell elements to the
+ respective object constructor.
+</p>
+<p> Nested tables are handled as multicolumnar variables only if they contain
+ data types, which can be converted to homogeneous array, i.e. numerical
+ logical values. Other data types will result to a warning due to
+ implicit conversion from numeric to char and the returned values will
+ not contain all values from the nested table.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>table2struct</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>Method:</u> <var>S</var> = <b>table2struct</b><i> (<var>tbl</var>)</i></dt>
+<dt><u>Method:</u> <var>S</var> = <b>table2struct</b><i> (<var>tbl</var>, <code>&quot;ToScalar&quot;</code>, <code>true</code>)</i></dt>
+</dl>
+
+<p> Converts a table to a scalar structure or structure array.
+</p>
+<div class="ms-5">
+<p> <code><var>S</var> = table2struct (<var>tbl</var>)</code> returns a structure array with
+ the same fields as the variables in <var>tbl</var>.  The length of <var>S</var> is
+ the same as the height of <var>tbl</var>.
+</p>
+<p> <code><var>S</var> = table2struct (<var>tbl</var>, <code>&quot;ToScalar&quot;</code>,
+ <code>true</code>)</code> returns a scalar structure with the same fields as the
+ variables in <var>tbl</var>.  Each field has the same rows as the <var>tbl</var>.
+</p>
+<p> The output <var>S</var> does not include any of the table&rsquo;s properties.  This
+ also applies to row names.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>tail</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <b>tail</b><i> (<var>tbl</var>)</i></dt>
+<dt><u>table:</u> <b>tail</b><i> (<var>tbl</var>, <var>k</var>)</i></dt>
+<dt><u>table:</u> <var>out</var> = <b>tail</b><i> (<var>tbl</var>, <var>k</var>)</i></dt>
+</dl>
+
+<p> Display or return the last K rows of table.
+</p>
+<div class="ms-5">
+<p> <code>tail (<var>tbl</var>)</code> displays the last eight rows of the table
+ <var>tbl</var>.  If there are less rows in <var>tbl</var>, <code>tail</code> displays all
+ rows available. <var>k</var> must be a positive integer scalar value.
+</p>
+<p> <code>tail (<var>tbl</var>, <var>k</var>)</code> displays the last <var>k</var> rows of the
+ table <var>tbl</var>.  If there are less than <var>k</var> rows in <var>tbl</var>,
+ <code>tail</code> displays all rows available.
+</p>
+<p> <code><var>out</var> = tail (<var>tbl</var>, <var>k</var>)</code> returns the last <var>k</var>
+ rows in a new table <var>out</var>. If <var>k</var> is omitted or empty, then it
+ defaults to eight.  If there are less than <var>k</var> rows in <var>tbl</var>,
+ all rows available are returned.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>topkrows</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tblB</var> = <b>topkrows</b><i> (<var>tblA</var>, <var>k</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>topkrows</b><i> (<var>tblA</var>, <var>k</var>, <code>&quot;RowNames&quot;</code>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>topkrows</b><i> (<var>tblA</var>, <var>k</var>, <var>rowDimName</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>topkrows</b><i> (<var>tblA</var>, <var>k</var>, <var>vars</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>topkrows</b><i> (<var>tblA</var>, <var>k</var>, &hellip;, <var>direction</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>topkrows</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
+<dt><u>table:</u> [<var>tblB</var>, <var>index</var>] = <b>topkrows</b><i> (&hellip;)</i></dt>
+</dl>
+
+<p> Sort the rows of a table.
+</p>
+<div class="ms-5">
+<p> <code><var>tblB</var> = topkrows (<var>tblA</var>, <var>k</var>)</code> returns the top
+ <var>k</var> rows from table var{tblA sorted in asceding order based on the
+ values in the first variable.   If elements in the first variable are
+ repeated, then <code>topkrows</code> sorts by the elements in the second
+ variable, and so on.
+</p>
+<p> <code><var>tblB</var> = topkrows (<var>tblA</var>, <var>k</var>, <code>&quot;RowNames&quot;</code>)</code>
+ returns the top <var>k</var> rows from table var{tblA sorted according to its
+ row names.  If <var>tblA</var> does not have row names, i.e.
+ <code>tblA.Properties.RowNames</code> is empty, then it returns <var>tblA</var>.
+</p>
+<p> <code><var>tblB</var> = topkrows (<var>tblA</var>, <var>k</var>, <var>rowDimName</var>)</code> also
+ returns the top <var>k</var> rows from table var{tblA sorted along its first
+ dimension, <var>rowDimName</var>, which is the equivalent to the previous
+ syntax, i.e. according to its row names.  If <var>tblA</var> does not have row
+ names, i.e. <code>tblA.Properties.RowNames</code> is empty, then it returns
+ <var>tblA</var>.  For this syntax to work, <var>rowDimName</var> must match the
+ first element in <code>tblA.Properties.DimensionNames</code>, otherwise
+ <var>rowDimName</var> is considered a variable name, as in the following
+ syntax.
+</p>
+<p> <code><var>tblB</var> = topkrows (<var>tblA</var>, <var>k</var>, <var>vars</var>)</code> returns
+ the top <var>k</var> rows from table var{tblA sorted by the elements in the
+ variables specified by <var>vars</var>, which can be a character vector (for a
+ single variable) or a cell array of character vectors or a string array
+ (specifying a single or multiple variables).  If <var>tblA</var> has row
+ names, then <var>vars</var> can include the row names.  Alternatively,
+ <var>vars</var> can be a logical vector or a numeric vector of real integers
+ indexing the desired variables.  Positive integers specify an ascending
+ order, whereas negative integers specify a descending order for the
+ referenced variables.  You can also index all available variables in
+ <var>tblA</var> by passing a semicolon character argument.  This Octave
+ specific syntax, facilitates the use of <var>direction</var> input argument,
+ when no particular variable needs to be selected for sorting upon.
+ Additionally, <var>vars</var> can be a <code>vartype</code> object used to create a
+ subscript that selects variables of a specified type.
+</p>
+<p> <code><var>tblB</var> = topkrows (<var>tblA</var>, <var>k</var>, &hellip;,
+ <var>direction</var>)</code> returns the top <var>k</var> rows from table <var>tblA</var>
+ sorted in the order specified by <var>direction</var> for any of the previous
+ syntaxes.  <var>direction</var> can be <code>'ascend'</code> or <code>'descend'</code>,
+ which is applied to all specified variables or row names that
+ <code>sortrows</code> operates on.  <var>direction</var> can also be a cell array of
+ character vectors, whose elements are <code>'ascend'</code> and
+ <code>'descend'</code>, where each element corresponds to the specified
+ variables and/or, row names used for sorting the table.  The order
+ specified by <var>direction</var> always takes precedence over the order
+ defined by a numerical vector of integers in <var>vars</var>.  <var>direction</var>
+ must always be the 3rd inpnut argument.  If you want to omit passing
+ selected variables and allow <code>sortrows</code> to work on consequtive
+ variables until all ties are resolved, then you can leave the second
+ input argument empty, as in
+ <code>sortrows (<var>tblA</var>, <code>[]</code>, <var>direction</var>)</code> or pass a
+ colon argument for <var>vars</var> as in
+ <code>sortrows (<var>tblA</var>, <code>':'</code>, <var>direction</var>)</code> or pass a
+</p>
+<p> <code><var>tblB</var> = topkrows (&hellip;, <var>k</var>, <var>Name</var>, <var>Value</var>)</code>
+ returns the top <var>k</var> rows from table <var>tblA</var> sorted with any of the
+ previous syntaxes and further specified by additional parameters for
+ sorting rows of a table with the following Name-Value paired arguments.
+</p>
+ <ul>
+<li> <code>&quot;MissingPlacement&quot;</code> specifies the placement of missing
+ values with one of the following options: <code>&quot;auto&quot;</code> places the
+ missing elements at the bottom for ascending order and at the top for
+ descending order; <code>&quot;first&quot;</code> places missing elements at the top;
+ <code>&quot;last&quot;</code> places missing elements at the bottom.
+ </li><li> <code>&quot;ComparisonMethod&quot;</code> specifies the element comparison method
+ with one of the following options: <code>&quot;auto&quot;</code> sorts rows using the
+ real part for real numbers and the magnitude for complex numbers;
+ <code>&quot;real&quot;</code> sorts rows using the real part for both real and complex
+ numbers; <code>&quot;abs&quot;</code> sorts rows using the magnitude for both real and
+ complex numbers.  For complex numbers with equal magnitude, the phase
+ angle in the interval <math>(-π, π]</math> is further used to break ties.
+ </li></ul>
+
+<p> <code>[<var>tblB</var>, <var>index</var>] = topkrows (&hellip;)</code> also returns an
+ index vector such that <code><var>tblB</var> = <var>tblA</var>(<var>index</var>,:)</code>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>union</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tbl</var> = <b>union</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>union</b><i> (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</i></dt>
+<dt><u>table:</u> [<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = <b>union</b><i> (&hellip;)</i></dt>
+</dl>
+
+<p> Union of two tables by rows.
+</p>
+<div class="ms-5">
+
+
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>unique</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tblB</var> = <b>unique</b><i> (<var>tblA</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>unique</b><i> (<var>tblA</var>, <var>setOrder</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>unique</b><i> (<var>tblA</var>, <var>occurence</var>)</i></dt>
+<dt><u>table:</u> [<var>tblB</var>, <var>ixA</var>, <var>ixB</var>] = <b>unique</b><i> (&hellip;)</i></dt>
+</dl>
+
+<p> Unique rows in a table.
+</p>
+<div class="ms-5">
+<p> <code><var>tblB</var> = unique (<var>tblA</var>)</code> returns the unique rows of table
+ <var>tblA</var> in sorted order.
+</p>
+<p> <code><var>tblB</var> = unique (<var>tblA</var>, <var>setOrder</var>)</code> returns the
+ unique rows of table <var>tblA</var> in a specified order.  <var>setOrder</var> can
+ be either <code>&quot;sorted&quot;</code> (default) or <code>&quot;stable&quot;</code>.
+</p>
+ <ul>
+<li> <code>&quot;sorted&quot;</code> returns the unique rows sorted in ascending order.
+ </li><li> <code>&quot;stable&quot;</code> returns the unique rows according to their order
+ of occurence.
+ </li></ul>
+
+<p> <code><var>tblB</var> = unique (<var>tblA</var>, <var>occurence</var>)</code> returns the
+ unique rows of table <var>tblA</var> according to their order of occurence.
+ <var>occurence</var> cen be either <code>&quot;first&quot;</code> (default) or <code>&quot;last&quot;</code>.
+</p>
+ <ul>
+<li> <code>&quot;first&quot;</code> returns the first occurence of each unique row,
+ i.e. the lowest possible indices are returned.
+ </li><li> <code>&quot;last&quot;</code> returns the last occurence of each unique row, i.e.
+ the highest possible indices are returned.
+ </li></ul>
+
+<p> <code>[<var>tblB</var>, <var>ixA</var>, <var>ixB</var>] = unique (&hellip;)</code> also returns
+ index vectors <var>ixA</var> and <var>ixB</var> using any of the previous syntaxes.
+ <var>ixA</var> and <var>ixB</var> map the tables <var>tblA</var> and <var>tblB</var> to one
+ another such that <code><var>tblB</var> = <var>tblA</var>(<var>ixA</var>,:)</code> and
+ <code><var>tblA</var> = <var>tblB</var>(<var>ixB</var>,:)</code>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>unstack</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tblB</var> = <b>unstack</b><i> (<var>tblA</var>, <var>vars</var>, <var>ivar</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>unstack</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
+<dt><u>table:</u> [<var>tblB</var>, <var>idxA</var>] = <b>unstack</b><i> (&hellip;)</i></dt>
+</dl>
+
+<p> Unstack a single table variable into multiple table variables.
+</p>
+<div class="ms-5">
+<p> <code><var>tblB</var> = stack (<var>tblA</var>, <var>vars</var>, <var>ivar</var>)</code> unstacks the values from
+ the variables <var>vars</var> in input <var>tblA</var> into a single variable in
+ output table <var>tblB</var>.  By default, the stacked variable in <var>tblB</var>
+ is named by joining the names of the variables in <var>tblA</var> as defined
+ by <var>vars</var>.  Additionally, a new categorical variable is included in
+ <var>tblB</var> that indicates which variable in <var>tblA</var> the stacked data
+ in each row of <var>tblB</var> comes from.  By default, this categorical
+ variable is named by appending <code>&quot;_Indicator&quot;</code> to the name of the
+ stacked variable.  Variables in <var>tblA</var> that are not defined in
+ <var>vars</var> for stacking are replicated in <var>tblB</var>.  If <var>tblA</var>
+ contains <code>RowNames</code>, these are not stacked.
+</p>
+<p> <var>vars</var> can be any of the following types.
+ </p><ul>
+<li> a character vector specifying a single variable.
+ </li><li> a cell array of character vectors specifying a single or multiple
+ variables.
+ </li><li> a string array specifying a single or multiple variables.
+ </li><li> a numeric array of integer values indexing the variables to be
+ renamed.
+ </li><li> a logical vector of the same length as the width of the table
+ <var>tblA</var> indexing as <code>true</code> the variables to be renamed.
+ </li><li> a <code>vartype</code> object used to create a subscript that selects
+ variables of a specified type.
+ </li></ul>
+
+<p> <code><var>tblB</var> = stack (&hellip;, <var>Name</var>, <var>Value</var>)</code> further
+ specifies additional parameters for merging table variables with the
+ following Name-Value paired arguments.
+</p>
+ <ul>
+<li> <code>&quot;ConstantVariables&quot;</code> specifies the variables other than
+ <var>vars</var> to include in the output table.  By default, all remaining
+ variables not specified by <var>vars</var> are included in the output table.
+ Specifying <code>&quot;ConstantVariables&quot;</code> allows you to select specific
+ variables to replicate in <var>tblB</var>.  Row names in <var>tblA</var> are always
+ replicated in <var>tblB</var>.  You can specify <code>&quot;ConstantVariables&quot;</code> in
+ the same manner as with <var>vars</var>.
+ </li><li> <code>&quot;NewDataVariableName&quot;</code> specifies the name for the new data
+ variable in the output table <var>tblB</var>.  It can be a character vector,
+ a string scalar, or a cellstring scalar.
+ </li><li> <code>&quot;IndexVariableName&quot;</code> specifies the name for the new
+ indicator variable in the output table <var>tblB</var>.  It can be a character
+ vector, a string scalar, or a cellstring scalar.
+ </li></ul>
+
+<p> <code>[<var>tblB</var>, <var>idxA</var>] = stack (&hellip;)</code> also returns an index
+ vector, <var>idxA</var>, indicating the correspondence between the rows in
+ <var>tblB</var> and the rows in <var>tblA</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>vertcat</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>tbl</var> = <b>vertcat</b><i> (<var>tbl1</var>, <var>tbl2</var>, &hellip;)</i></dt>
+</dl>
+
+<p> Vertical concatenation for tables.
+</p>
+<div class="ms-5">
+<p> <code><var>tbl</var> = vertcat (<var>tbl1</var>, <var>tbl2</var>, &hellip;)</code> merges
+ tables by vertically concatenating them, provided that all input tables
+ have the same variable names but not necessarily in the same order.  The
+ position of the variable names are matched to those of the first input
+ table.
+</p>
+<p> When input tables have row names, they must be unique across tables.  In
+ such case, concatenated rows from input tables without row names are
+ automatically assigned default input names using the input table&rsquo;s name
+ as a prefix. Output table&rsquo;s <code>Description</code> and <code>UserData</code>
+ properties are assigned using the first non-empty value.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Method: <b><code>width</code></b>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><u>table:</u> <var>W</var> = <b>width</b><i> (<var>tbl</var>)</i></dt>
+</dl>
+
+<p> Number of variables in table.
+</p>
+<div class="ms-5">
+<p> <code><var>W</var> = width (<var>tbl</var>)</code> returns the number of variables in the
+ table, <var>tbl</var>.  It is the equivalent of <code>size (<var>tbl</var>, 2)</code>.
+</p>
+<p> Note that this is not the sum of the number of columns in each variable.
+ It is just the number of variables.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Example: 1
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="container bg-light">
+                <div class="row">
+                  <table><tbody><tr>
+                    <td>&nbsp;</td>
+                    <td><pre class="example">
+
+ ## Store patient date in a table
+
+ LastName = {"Sanchez"; "Johnson"; "Li"; "Diaz"; "Brown"};
+ Age = [38;43;38;40;49];
+ Smoker = logical ([1; 0; 1; 0; 1]);
+ Height = [71; 69; 64; 67; 64];
+ Weight = [176; 163; 131; 133; 119];
+ BloodPressure = [124, 93; 109, 77; 125, 83; 117, 75; 122, 80];
+ T = table (LastName, Age, Smoker, Height, Weight, BloodPressure)
+
+ ## Use indexing to access variables
+ meanHeight = mean (T.Height)
+
+ ## Calculate body mass index (BMI), and add it as a new table variable.
+
+ T.BMI = (T.Weight * 0.453592) ./ (T.Height * 0.0254) .^ 2
+
+T =
+  5x6 table
+
+     LastName      Age    Smoker    Height    Weight    BloodPressure    
+    ___________    ___    ______    ______    ______    _____________    
+
+    {'Sanchez'}     38    true          71       176        124    93    
+    {'Johnson'}     43    false         69       163        109    77    
+    {'Li'     }     38    true          64       131        125    83    
+    {'Diaz'   }     40    false         67       133        117    75    
+    {'Brown'  }     49    true          64       119        122    80    
+
+meanHeight = 67
+T =
+  5x7 table
+
+     LastName      Age    Smoker    Height    Weight    BloodPressure      BMI      
+    ___________    ___    ______    ______    ______    _____________    _______    
+
+    {'Sanchez'}     38    true          71       176        124    93    24.5467    
+    {'Johnson'}     43    false         69       163        109    77    24.0706    
+    {'Li'     }     38    true          64       131        125    83    22.4858    
+    {'Diaz'   }     40    false         67       133        117    75    20.8305    
+    {'Brown'  }     49    true          64       119        122    80    20.4261    
+
+                    </pre></td></tr></tbody>
+                  </table>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Example: 2
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="container bg-light">
+                <div class="row">
+                  <table><tbody><tr>
+                    <td>&nbsp;</td>
+                    <td><pre class="example">
+
+ ## Preallocate a table by specifying its size and the variable data types
+
+ sz = [4, 3];
+ varTypes = {"double", "datetime", "string"};
+ T = table ("Size", sz, "VariableTypes", varTypes)
+
+ ## Specify variable names with the "VariableNames" name-value pair argument
+ varNames = {"Temperature", "Time", "Station"};
+ T2 = table ("Size", sz, "VariableTypes", varTypes, "VariableNames", varNames)
+
+ ## Add rows of data to the first two rows of table T2
+ T2(1,:) = {75, datetime(2024, 2, 5), string("S1")};
+ T2(2,:) = {75, datetime(2024, 2, 6), string("S2")}
+
+T =
+  4x3 table
+
+    Var1    Var2      Var3       
+    ____    ____    _________    
+
+       0     NaT    <missing>    
+       0     NaT    <missing>    
+       0     NaT    <missing>    
+       0     NaT    <missing>    
+
+T2 =
+  4x3 table
+
+    Temperature    Time     Station     
+    ___________    ____    _________    
+
+              0     NaT    <missing>    
+              0     NaT    <missing>    
+              0     NaT    <missing>    
+              0     NaT    <missing>    
+
+T2 =
+  4x3 table
+
+    Temperature       Time         Station     
+    ___________    ___________    _________    
+
+             75    05-Feb-2024    "S1"         
+             75    06-Feb-2024    "S2"         
+              0            NaT    <missing>    
+              0            NaT    <missing>    
+
+                    </pre></td></tr></tbody>
+                  </table>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Example: 3
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="container bg-light">
+                <div class="row">
+                  <table><tbody><tr>
+                    <td>&nbsp;</td>
+                    <td><pre class="example">
+
+ ## Create a table from various types of arrays
+
+ T = table (string ({"M";"F";"M"}), [45;32;34], ...
+            {"NY";"CA";"MA"}, logical ([1;0;0]),...
+            "VariableNames", {"Gender", "Age", "State", "Vote"})
+
+ ## Create the same table using the state names as row names
+
+ T = table (string ({"M";"F";"M"}), [45;32;34], logical ([1;0;0]), ...
+            "VariableNames", {"Gender", "Age", "Vote"}, ...
+            "RowNames", {"NY";"CA";"MA"})
+
+T =
+  3x4 table
+
+    Gender    Age    State     Vote     
+    ______    ___    ______    _____    
+
+    "M"        45    {'NY'}    true     
+    "F"        32    {'CA'}    false    
+    "M"        34    {'MA'}    false    
+
+T =
+  3x3 table
+
+          Gender    Age    Vote     
+          ______    ___    _____    
+
+    NY    "M"        45    true     
+    CA    "F"        32    false    
+    MA    "M"        34    false    
+
+                    </pre></td></tr></tbody>
+                  </table>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Example: 4
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="container bg-light">
+                <div class="row">
+                  <table><tbody><tr>
+                    <td>&nbsp;</td>
+                    <td><pre class="example">
+
+ ## Create a Table from patient data
+
+ load patients
+ BloodPressure = [Systolic Diastolic];
+ T = table (Gender, Age, Smoker, BloodPressure, "RowNames", LastName);
+
+ ## Add descriptions and units to table
+
+ T.Properties.Description = "Simulated patient data";
+ T.Properties.VariableUnits =  {"", "Yrs", "", "mm Hg"};
+ T.Properties.VariableDescriptions(4) =  {"Systolic/Diastolic"};
+
+ ## Print a summary of the table
+
+ summary (T)
+
+Description:  Simulated patient data
+
+Variables:
+
+    Gender: 100x1 cell
+
+    Age: 100x1 double
+
+        Properties:
+            Units: Yrs
+        Values:
+            Min       25
+            Median    39
+            Max       50
+    Smoker: 100x1 logical
+
+        Values:
+            True      34
+            False     66
+
+    BloodPressure: 100x2 double
+
+        Properties:
+            Units: mm Hg
+            Description: Systolic/Diastolic
+        Values:
+                      Column 1    Column 2    
+                      ________    ________    
+            Min            109          68    
+            Median         122        81.5    
+            Max            138          99    
+
+                    </pre></td></tr></tbody>
+                  </table>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Example: 5
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="container bg-light">
+                <div class="row">
+                  <table><tbody><tr>
+                    <td>&nbsp;</td>
+                    <td><pre class="example">
+
+ ## Create a table and display its dimension names. You can access row
+ ## names and data using dimension names with dot syntax.
+
+ LastName = {"Sanchez"; "Johnson"; "Li"; "Diaz"; "Brown"};
+ Age = [38;43;38;40;49];
+ Smoker = logical ([1; 0; 1; 0; 1]);
+ Height = [71; 69; 64; 67; 64];
+ Weight = [176; 163; 131; 133; 119];
+ BloodPressure = [124, 93; 109, 77; 125, 83; 117, 75; 122, 80];
+ T = table (Age, Smoker, Height, Weight, BloodPressure, "RowNames", LastName)
+ T.Properties.DimensionNames
+
+ ## Access the row names using the first dimension name.
+ T.Row
+
+ ## Access the data using the second dimension name.
+ T.Variables
+
+ ## Modify the names of its dimensions using the Properties
+ T.Properties.DimensionNames = {"Patient","Data"};
+ T.Properties
+
+ ## Change a single dimension name
+ T.Properties.DimensionNames(1) = 'Patients'
+ T.Properties
+ T.Patients
+
+T =
+  5x5 table
+
+               Age    Smoker    Height    Weight    BloodPressure    
+               ___    ______    ______    ______    _____________    
+
+    Sanchez     38    true          71       176        124    93    
+    Johnson     43    false         69       163        109    77    
+    Li          38    true          64       131        125    83    
+    Diaz        40    false         67       133        117    75    
+    Brown       49    true          64       119        122    80    
+
+ans =
+  1x2 cell array
+
+    {'Row'}    {'Variables'}    
+
+ans =
+  5x1 cell array
+
+    {'Sanchez'}    
+    {'Johnson'}    
+    {'Li'     }    
+    {'Diaz'   }    
+    {'Brown'  }    
+
+ans =
+
+    38     1    71   176   124    93
+    43     0    69   163   109    77
+    38     1    64   131   125    83
+    40     0    67   133   117    75
+    49     1    64   119   122    80
+
+
+  TableProperties with properties:
+
+             Description: ''
+                UserData: []
+          DimensionNames: {'Patient'  'Data'}
+           VariableNames: {'Age'  'Smoker'  'Height'  'Weight'  'BloodPressure'}
+    VariableDescriptions: {}
+           VariableUnits: {}
+      VariableContinuity: []
+                RowNames: {5x5 cell}
+        CustomProperties: No custom properties are set.
+      Use 'addprop' and 'rmprop' methods to modify CustomProperties.
+T =
+  5x5 table
+
+               Age    Smoker    Height    Weight    BloodPressure    
+               ___    ______    ______    ______    _____________    
+
+    Sanchez     38    true          71       176        124    93    
+    Johnson     43    false         69       163        109    77    
+    Li          38    true          64       131        125    83    
+    Diaz        40    false         67       133        117    75    
+    Brown       49    true          64       119        122    80    
+
+
+  TableProperties with properties:
+
+             Description: ''
+                UserData: []
+          DimensionNames: {'Patients'  'Data'}
+           VariableNames: {'Age'  'Smoker'  'Height'  'Weight'  'BloodPressure'}
+    VariableDescriptions: {}
+           VariableUnits: {}
+      VariableContinuity: []
+                RowNames: {5x5 cell}
+        CustomProperties: No custom properties are set.
+      Use 'addprop' and 'rmprop' methods to modify CustomProperties.
+ans =
+  5x1 cell array
+
+    {'Sanchez'}    
+    {'Johnson'}    
+    {'Li'     }    
+    {'Diaz'   }    
+    {'Brown'  }    
+
+                    </pre></td></tr></tbody>
+                  </table>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Example: 6
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="container bg-light">
+                <div class="row">
+                  <table><tbody><tr>
+                    <td>&nbsp;</td>
+                    <td><pre class="example">
+
+ ## Various ways to specify row names for a table
+
+ LastName = {'Sanchez'; 'Johnson'; 'Lee'; 'Diaz'; 'Brown'};
+ Age = [38;43;38;40;49];
+ Height = [71;69;64;67;64];
+ Weight = [176;163;131;133;119];
+
+ ## Using the constructor
+ T = table(Age,Weight,Height,'RowNames',LastName)
+
+ ## Using a cell array of character vectors, a character array,
+ ## or a string array of the same height as the table. They are;
+ ## always converted to cellstr type internally.
+
+ T = table(Age,Weight,Height)
+ fprintf ("## Using a cell array of character vectors\n");
+ fprintf ("T.Properties.RowNames = LastName\n");
+ T.Properties.RowNames = LastName
+ fprintf ("## Using a string array\n");
+ fprintf ("T.Properties.RowNames = string (LastName)\n");
+ T.Properties.RowNames = string (LastName)
+ fprintf ("## Using a character array\n");
+ fprintf ("T.Properties.RowNames = char (LastName{:})\n");
+ T.Properties.RowNames = char (LastName{:})
+
+ ## Using an existing variable of type cellstr, string or char\n");
+ ## array in which case the existing variable is NOT removed.\n");
+
+ T = table(Age,Weight,Height,LastName)
+ fprintf ("## Using an existing variable\n");
+ fprintf ("T.Properties.RowNames = T.LastName\n");
+ T.Properties.RowNames = T.LastName
+
+ ## Referencing an existing variable by its VariableName, which
+ ## must be of type cellstr, string or char array.  In this case,
+ ## the existing variable is removed and only used as RowName, as
+ ## in the constructor example. Reference can also be a numeric scalar
+ ## indexing a Variable of appropriate type.
+
+ T = table(Age,Weight,Height,LastName);
+ fprintf ("## Referencing an existing variable with a character vector\n");
+ fprintf ("T.Properties.RowNames = 'LastName'\n");
+ T.Properties.RowNames = 'LastName'
+
+ T = table(Age,Weight,Height,LastName);
+ fprintf ("## Referencing an existing variable with a string scalar\n");
+ fprintf ("T.Properties.RowNames = string(""LastName"")\n");
+ T.Properties.RowNames = string("LastName")
+
+ T = table(Age,Weight,Height,LastName);
+ fprintf ("## Referencing an existing variable with a cellstr scalar\n");
+ fprintf ("T.Properties.RowNames = {'LastName'}\n");
+ T.Properties.RowNames = {'LastName'}
+
+ T = table(Age,Weight,Height,LastName);
+ fprintf ("## Referencing an existing variable with a numeric scalar\n");
+ fprintf ("T.Properties.RowNames = 4\n");
+ T.Properties.RowNames = 4
+
+T =
+  5x3 table
+
+               Age    Weight    Height    
+               ___    ______    ______    
+
+    Sanchez     38       176        71    
+    Johnson     43       163        69    
+    Lee         38       131        64    
+    Diaz        40       133        67    
+    Brown       49       119        64    
+
+T =
+  5x3 table
+
+    Age    Weight    Height    
+    ___    ______    ______    
+
+     38       176        71    
+     43       163        69    
+     38       131        64    
+     40       133        67    
+     49       119        64    
+
+## Using a cell array of character vectors
+T.Properties.RowNames = LastName
+T =
+  5x3 table
+
+               Age    Weight    Height    
+               ___    ______    ______    
+
+    Sanchez     38       176        71    
+    Johnson     43       163        69    
+    Lee         38       131        64    
+    Diaz        40       133        67    
+    Brown       49       119        64    
+
+## Using a string array
+T.Properties.RowNames = string (LastName)
+T =
+  5x3 table
+
+               Age    Weight    Height    
+               ___    ______    ______    
+
+    Sanchez     38       176        71    
+    Johnson     43       163        69    
+    Lee         38       131        64    
+    Diaz        40       133        67    
+    Brown       49       119        64    
+
+## Using a character array
+T.Properties.RowNames = char (LastName{:})
+T =
+  5x3 table
+
+               Age    Weight    Height    
+               ___    ______    ______    
+
+    Sanchez     38       176        71    
+    Johnson     43       163        69    
+    Lee         38       131        64    
+    Diaz        40       133        67    
+    Brown       49       119        64    
+
+T =
+  5x4 table
+
+    Age    Weight    Height     LastName      
+    ___    ______    ______    ___________    
+
+     38       176        71    {'Sanchez'}    
+     43       163        69    {'Johnson'}    
+     38       131        64    {'Lee'    }    
+     40       133        67    {'Diaz'   }    
+     49       119        64    {'Brown'  }    
+
+## Using an existing variable
+T.Properties.RowNames = T.LastName
+T =
+  5x4 table
+
+               Age    Weight    Height     LastName      
+               ___    ______    ______    ___________    
+
+    Sanchez     38       176        71    {'Sanchez'}    
+    Johnson     43       163        69    {'Johnson'}    
+    Lee         38       131        64    {'Lee'    }    
+    Diaz        40       133        67    {'Diaz'   }    
+    Brown       49       119        64    {'Brown'  }    
+
+## Referencing an existing variable with a character vector
+T.Properties.RowNames = 'LastName'
+T =
+  5x3 table
+
+               Age    Weight    Height    
+               ___    ______    ______    
+
+    Sanchez     38       176        71    
+    Johnson     43       163        69    
+    Lee         38       131        64    
+    Diaz        40       133        67    
+    Brown       49       119        64    
+
+## Referencing an existing variable with a string scalar
+T.Properties.RowNames = string("LastName")
+T =
+  5x3 table
+
+               Age    Weight    Height    
+               ___    ______    ______    
+
+    Sanchez     38       176        71    
+    Johnson     43       163        69    
+    Lee         38       131        64    
+    Diaz        40       133        67    
+    Brown       49       119        64    
+
+## Referencing an existing variable with a cellstr scalar
+T.Properties.RowNames = {'LastName'}
+T =
+  5x3 table
+
+               Age    Weight    Height    
+               ___    ______    ______    
+
+    Sanchez     38       176        71    
+    Johnson     43       163        69    
+    Lee         38       131        64    
+    Diaz        40       133        67    
+    Brown       49       119        64    
+
+## Referencing an existing variable with a numeric scalar
+T.Properties.RowNames = 4
+T =
+  5x3 table
+
+               Age    Weight    Height    
+               ___    ______    ______    
+
+    Sanchez     38       176        71    
+    Johnson     43       163        69    
+    Lee         38       131        64    
+    Diaz        40       133        67    
+    Brown       49       119        64    
+
+                    </pre></td></tr></tbody>
+                  </table>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Example: 8
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="container bg-light">
+                <div class="row">
+                  <table><tbody><tr>
+                    <td>&nbsp;</td>
+                    <td><pre class="example">
+
+ ## Create a nested table
+ T1 = table ([1; 2; 3], [4; 5; 6], [7; 8; 9]);
+ T2 = table ({"a"; "b"; "c"}, {"d"; "e"; "f"}, {"g"; "h"; "i"});
+ NT = table ([1; 2; 3], T1, [4; 5; 6], T2, {5; 6; 7}, ...
+             "VariableNames", {"A", "B", "C", "D", "E"})
+
+NT =
+  3x5 table
+
+    A             B              C               D                 E      
+    _    ____________________    _    _______________________    _____    
+
+         Var1    Var2    Var3         Var1     Var2     Var3              
+         ____    ____    ____         _____    _____    _____             
+
+    1       1       4       7    4    {'a'}    {'d'}    {'g'}    {[5]}    
+    2       2       5       8    5    {'b'}    {'e'}    {'h'}    {[6]}    
+    3       3       6       9    6    {'c'}    {'f'}    {'i'}    {[7]}    
+
+                    </pre></td></tr></tbody>
+                  </table>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>

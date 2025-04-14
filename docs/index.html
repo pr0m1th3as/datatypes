@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Data Types for GNU Octave</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+    <script type="text/javascript" async
+      src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
+    </script>
+    <script type="text/javascript">
+      window.addEventListener("load", () => {
+        for (let i of document.querySelectorAll(".collapse ul")) {
+          let tog = document.createElement("div");
+          tog.innerHTML = i.previousSibling.textContent;
+          tog.className = "toggle";
+          tog.onclick = () => tog.classList.toggle("show");
+          i.parentElement.removeChild(i.previousSibling);
+          i.parentElement.insertBefore(tog, i);
+        }
+      });
+    </script>
+    <style>
+    h6:hover {
+      color: gray;
+    }
+    var {
+      font-style: italics;
+      font-weight: bold;
+    }
+    td {
+      vertical-align: top;
+    }
+    [id^="togList"],                        /* HIDE CHECKBOX */
+    [id^="togList"] ~ .list,                /* HIDE LIST */
+    [id^="togList"] + label  span + span,   /* HIDE "Collapse" */
+    [id^="togList"]:checked + label span{   /* HIDE "Expand" (IF CHECKED) */
+      display:none;
+    }
+    [id^="togList"]:checked + label span + span{
+      display:inline-block;                 /* SHOW "Collapse" (IF CHECKED) */
+    }
+    [id^="togList"]:checked ~ .list{
+      display:block;                        /* SHOW LIST (IF CHECKED) */
+    }
+    </style>
+  </head>
+  <body>
+    <div class="bg-dark">
+      <div class="container-xl">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+          <div class="container-fluid">
+            <a class="navbar-brand" href=https://gnu-octave.github.io/packages/datatypes>
+              <img src="assets/datatypes.png" alt="datatypes" class="d-inline-block align-top" width="25" height="25">
+              Data Types for GNU Octave
+            </a>
+            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav">
+                <li class="nav-item">
+                  <a class="nav-link" href="https://gnu-octave.github.io/packages/">
+                  <img src="assets/octave-logo.svg" alt="GNU Octave logo" class="d-inline-block align-top" width="25" height="25">
+                    Octave Packages
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="https://www.octave.org">
+                    <i class="fas fa-home"></i>
+                    GNU Octave website
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+    <div class="container-xl my-4">
+      <div class="card rounded">
+        <div class="card-header card-header-mod">
+          <div class="row d-flex flex-wrap align-items-center">
+            <div class="col-sm-3 col-md-2 mb-2 mb-sm-0">
+              <img src="assets/datatypes.png" class="d-block m-auto" alt="datatypes">
+            </div>
+            <div class="col-sm-9 col-md-10">
+              <h3 class="d-inline-block mr-2">datatypes</h3>
+              <b>1.0.1&nbsp;2025-04-14</b>
+              <p class="indent">
+                A package for providing extra data types  and related functionality for GNU Octave.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+           <p>Select Category:
+             <select name="cat" onchange="location = this.options[this.selectedIndex].value;">
+             <option value="#Datatypes">Datatypes</option>
+             </select>
+           <p>
+
+           <h3 class="category">
+             <a name="Datatypes">Datatypes</a>
+           </h3>
+           <table class="table table-striped">
+             <tbody>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="NaT.html">NaT</a>
+                   </code></b>
+                 </td>
+                 <td>“Not-a-Time”.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="array2table.html">array2table</a>
+                   </code></b>
+                 </td>
+                 <td>Convert an array to a table.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="caldays.html">caldays</a>
+                   </code></b>
+                 </td>
+                 <td>Calendar duration in days.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="calendarDuration.html">calendarDuration</a>
+                   </code></b>
+                 </td>
+                 <td>Array representing durations of time using flexible-length calendar
+date/time units.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="calmonths.html">calmonths</a>
+                   </code></b>
+                 </td>
+                 <td>Calendar duration in months.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="calquarters.html">calquarters</a>
+                   </code></b>
+                 </td>
+                 <td>Calendar duration in quarters.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="calweeks.html">calweeks</a>
+                   </code></b>
+                 </td>
+                 <td>Calendar duration in weeks.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="calyears.html">calyears</a>
+                   </code></b>
+                 </td>
+                 <td>Calendar duration in years.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="categorical.html">categorical</a>
+                   </code></b>
+                 </td>
+                 <td>Array representing categorical data.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="cell2table.html">cell2table</a>
+                   </code></b>
+                 </td>
+                 <td>Convert a cell array to a table.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="convertCharsToStrings.html">convertCharsToStrings</a>
+                   </code></b>
+                 </td>
+                 <td>Convert character arrays to a string arrays, where applicable.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="convertStringsToChars.html">convertStringsToChars</a>
+                   </code></b>
+                 </td>
+                 <td>Convert string arrays to a character arrays, where applicable.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="datetime.html">datetime</a>
+                   </code></b>
+                 </td>
+                 <td>Array representing points in time using the Gregorian calendar.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="days.html">days</a>
+                   </code></b>
+                 </td>
+                 <td>Fixed-time duration in days.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="duration.html">duration</a>
+                   </code></b>
+                 </td>
+                 <td>Array representing durations of time using fixed-length time units.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="hours.html">hours</a>
+                   </code></b>
+                 </td>
+                 <td>Fixed-time duration in hours.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="iscalendarduration.html">iscalendarduration</a>
+                   </code></b>
+                 </td>
+                 <td>True if input is a 'calendarDuration' array, false otherwise.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="iscategorical.html">iscategorical</a>
+                   </code></b>
+                 </td>
+                 <td>True if input is a 'categorical' array, false otherwise.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="isdatetime.html">isdatetime</a>
+                   </code></b>
+                 </td>
+                 <td>True if input is a 'datetime' array, false otherwise.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="isduration.html">isduration</a>
+                   </code></b>
+                 </td>
+                 <td>True if input is a 'duration' array, false otherwise.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="istable.html">istable</a>
+                   </code></b>
+                 </td>
+                 <td>True if input is a 'table', false otherwise.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="milliseconds.html">milliseconds</a>
+                   </code></b>
+                 </td>
+                 <td>Fixed-time duration in milliseconds.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="minutes.html">minutes</a>
+                   </code></b>
+                 </td>
+                 <td>Fixed-time duration in minutes.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="missing.html">missing</a>
+                   </code></b>
+                 </td>
+                 <td>Array of missing values.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="seconds.html">seconds</a>
+                   </code></b>
+                 </td>
+                 <td>Fixed-time duration in seconds.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="string.html">string</a>
+                   </code></b>
+                 </td>
+                 <td>Array representing sequences of characters.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="struct2table.html">struct2table</a>
+                   </code></b>
+                 </td>
+                 <td>Convert a cell array to a table.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="table.html">table</a>
+                   </code></b>
+                 </td>
+                 <td>Array of tabular data containing multiple columnar variables.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="vartype.html">vartype</a>
+                   </code></b>
+                 </td>
+                 <td>vartype is an undocumented class</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="years.html">years</a>
+                   </code></b>
+                 </td>
+                 <td>Fixed-time duration in years.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="@cell_disp.html">@cell/disp</a>
+                   </code></b>
+                 </td>
+                 <td>Customized display of cell arrays.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="@cell_display.html">@cell/display</a>
+                   </code></b>
+                 </td>
+                 <td>Customized display of cell arrays.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="__datetime__.html">__datetime__</a>
+                   </code></b>
+                 </td>
+                 <td>Base fuction for datetime class.</td>
+               </tr>
+             </tbody>
+           </table>
+
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>
