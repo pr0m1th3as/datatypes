@@ -995,7 +995,12 @@ classdef duration
     endfunction
 
     function YI = interp1 (X, Y, XI, varargin)
-      error ("duration.interp1: not implemented yet.");
+      if (isa (Y, 'duration'))
+        YI = Y;
+        YI.Days = interp1 (X.Days, Y.Days, XI.Days, varargin{:});
+      else
+        YI = interp1 (X.Days, Y, XI.Days, varargin{:});
+      endif
     endfunction
 
     function S = sum (A, varargin)
@@ -1152,8 +1157,8 @@ classdef duration
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'sort'             'sortrows'         'unique'           'interp1'         ##
-## 'intersect'        'setdiff'          'setxor'           'union'           ##
+## 'sort'             'sortrows'         'unique'           'intersect'       ##
+## 'setdiff'          'setxor'           'union'                              ##
 ##                                                                            ##
 ################################################################################
 
@@ -1246,15 +1251,6 @@ classdef duration
       else
         [~, ixA, ixB] = __unique__ (A.Days, opt);
         B = subset (A, ixA);
-      endif
-    endfunction
-
-    function YI = interp1 (X, Y, XI, varargin)
-      if (isa (Y, 'duration'))
-        YI = Y;
-        YI.Days = interp1 (X.Days, Y.Days, XI.Days, varargin{:});
-      else
-        YI = interp1 (X.Days, Y, XI.Days, varargin{:});
       endif
     endfunction
 
