@@ -39,7 +39,7 @@ Install the latest dev version from the Octave command prompt by typing
 
 Load the package by typing
 
-  'pkg load datatypes`
+  `pkg load datatypes`
 
 **NOTICE !** Loading the **datatypes** package affects the way cell arrays are displayed in the terminal.
 
