@@ -1,0 +1,12 @@
+Name: datatypes
+Version: 1.0.1
+Date: 2025-04-14
+Author: Andreas Bertsatos
+Maintainer: Andreas Bertsatos <abertsatos@biol.uoa.gr>
+Title: Data Types for GNU Octave
+Description: A package for providing extra data types
+ and related functionality for GNU Octave.
+Categories: Datatypes
+Depends: octave (>= 9.1.0)
+Url: https://github.com/pr0m1th3as/datatypes
+Tracker: https://github.com/pr0m1th3as/datatypes/issues
