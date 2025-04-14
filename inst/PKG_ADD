@@ -1,0 +1,2 @@
+clear -f
+warning ("off", "Octave:data-file-in-path")
