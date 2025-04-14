@@ -98,30 +98,52 @@
         <div class="card-body">
            <p>Select Category:
              <select name="cat" onchange="location = this.options[this.selectedIndex].value;">
-             <option value="#Datatypes">Datatypes</option>
+             <option value="#categorical arrays">categorical arrays</option>
+             <option value="#calendarDuration arrays">calendarDuration arrays</option>
+             <option value="#datetime arrays">datetime arrays</option>
+             <option value="#duration arrays">duration arrays</option>
+             <option value="#string arrays">string arrays</option>
+             <option value="#table arrays">table arrays</option>
+             <option value="#supplementary classes">supplementary classes</option>
              </select>
            <p>
 
            <h3 class="category">
-             <a name="Datatypes">Datatypes</a>
+             <a name="categorical arrays">categorical arrays</a>
            </h3>
            <table class="table table-striped">
              <tbody>
                <tr>
                  <td>
                    <b><code>
-                   <a href="NaT.html">NaT</a>
+                   <a href="categorical.html">categorical</a>
                    </code></b>
                  </td>
-                 <td>“Not-a-Time”.</td>
+                 <td>Array representing categorical data.</td>
                </tr>
                <tr>
                  <td>
                    <b><code>
-                   <a href="array2table.html">array2table</a>
+                   <a href="iscategorical.html">iscategorical</a>
                    </code></b>
                  </td>
-                 <td>Convert an array to a table.</td>
+                 <td>True if input is a 'categorical' array, false otherwise.</td>
+               </tr>
+             </tbody>
+           </table>
+           <h3 class="category">
+             <a name="calendarDuration arrays">calendarDuration arrays</a>
+           </h3>
+           <table class="table table-striped">
+             <tbody>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="calendarDuration.html">calendarDuration</a>
+                   </code></b>
+                 </td>
+                 <td>Array representing durations of time using flexible-length calendar
+date/time units.</td>
                </tr>
                <tr>
                  <td>
@@ -134,11 +156,10 @@
                <tr>
                  <td>
                    <b><code>
-                   <a href="calendarDuration.html">calendarDuration</a>
+                   <a href="calweeks.html">calweeks</a>
                    </code></b>
                  </td>
-                 <td>Array representing durations of time using flexible-length calendar
-date/time units.</td>
+                 <td>Calendar duration in weeks.</td>
                </tr>
                <tr>
                  <td>
@@ -159,14 +180,6 @@ date/time units.</td>
                <tr>
                  <td>
                    <b><code>
-                   <a href="calweeks.html">calweeks</a>
-                   </code></b>
-                 </td>
-                 <td>Calendar duration in weeks.</td>
-               </tr>
-               <tr>
-                 <td>
-                   <b><code>
                    <a href="calyears.html">calyears</a>
                    </code></b>
                  </td>
@@ -175,18 +188,135 @@ date/time units.</td>
                <tr>
                  <td>
                    <b><code>
-                   <a href="categorical.html">categorical</a>
+                   <a href="iscalendarduration.html">iscalendarduration</a>
                    </code></b>
                  </td>
-                 <td>Array representing categorical data.</td>
+                 <td>True if input is a 'calendarDuration' array, false otherwise.</td>
+               </tr>
+             </tbody>
+           </table>
+           <h3 class="category">
+             <a name="datetime arrays">datetime arrays</a>
+           </h3>
+           <table class="table table-striped">
+             <tbody>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="datetime.html">datetime</a>
+                   </code></b>
+                 </td>
+                 <td>Array representing points in time using the Gregorian calendar.</td>
                </tr>
                <tr>
                  <td>
                    <b><code>
-                   <a href="cell2table.html">cell2table</a>
+                   <a href="isdatetime.html">isdatetime</a>
                    </code></b>
                  </td>
-                 <td>Convert a cell array to a table.</td>
+                 <td>True if input is a 'datetime' array, false otherwise.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="NaT.html">NaT</a>
+                   </code></b>
+                 </td>
+                 <td>“Not-a-Time”.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="__datetime__.html">__datetime__</a>
+                   </code></b>
+                 </td>
+                 <td>Base fuction for datetime class.</td>
+               </tr>
+             </tbody>
+           </table>
+           <h3 class="category">
+             <a name="duration arrays">duration arrays</a>
+           </h3>
+           <table class="table table-striped">
+             <tbody>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="duration.html">duration</a>
+                   </code></b>
+                 </td>
+                 <td>Array representing durations of time using fixed-length time units.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="days.html">days</a>
+                   </code></b>
+                 </td>
+                 <td>Fixed-time duration in days.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="years.html">years</a>
+                   </code></b>
+                 </td>
+                 <td>Fixed-time duration in years.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="hours.html">hours</a>
+                   </code></b>
+                 </td>
+                 <td>Fixed-time duration in hours.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="minutes.html">minutes</a>
+                   </code></b>
+                 </td>
+                 <td>Fixed-time duration in minutes.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="seconds.html">seconds</a>
+                   </code></b>
+                 </td>
+                 <td>Fixed-time duration in seconds.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="milliseconds.html">milliseconds</a>
+                   </code></b>
+                 </td>
+                 <td>Fixed-time duration in milliseconds.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="isduration.html">isduration</a>
+                   </code></b>
+                 </td>
+                 <td>True if input is a 'duration' array, false otherwise.</td>
+               </tr>
+             </tbody>
+           </table>
+           <h3 class="category">
+             <a name="string arrays">string arrays</a>
+           </h3>
+           <table class="table table-striped">
+             <tbody>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="string.html">string</a>
+                   </code></b>
+                 </td>
+                 <td>Array representing sequences of characters.</td>
                </tr>
                <tr>
                  <td>
@@ -204,117 +334,36 @@ date/time units.</td>
                  </td>
                  <td>Convert string arrays to a character arrays, where applicable.</td>
                </tr>
+             </tbody>
+           </table>
+           <h3 class="category">
+             <a name="table arrays">table arrays</a>
+           </h3>
+           <table class="table table-striped">
+             <tbody>
                <tr>
                  <td>
                    <b><code>
-                   <a href="datetime.html">datetime</a>
+                   <a href="table.html">table</a>
                    </code></b>
                  </td>
-                 <td>Array representing points in time using the Gregorian calendar.</td>
+                 <td>Array of tabular data containing multiple columnar variables.</td>
                </tr>
                <tr>
                  <td>
                    <b><code>
-                   <a href="days.html">days</a>
+                   <a href="array2table.html">array2table</a>
                    </code></b>
                  </td>
-                 <td>Fixed-time duration in days.</td>
+                 <td>Convert an array to a table.</td>
                </tr>
                <tr>
                  <td>
                    <b><code>
-                   <a href="duration.html">duration</a>
+                   <a href="cell2table.html">cell2table</a>
                    </code></b>
                  </td>
-                 <td>Array representing durations of time using fixed-length time units.</td>
-               </tr>
-               <tr>
-                 <td>
-                   <b><code>
-                   <a href="hours.html">hours</a>
-                   </code></b>
-                 </td>
-                 <td>Fixed-time duration in hours.</td>
-               </tr>
-               <tr>
-                 <td>
-                   <b><code>
-                   <a href="iscalendarduration.html">iscalendarduration</a>
-                   </code></b>
-                 </td>
-                 <td>True if input is a 'calendarDuration' array, false otherwise.</td>
-               </tr>
-               <tr>
-                 <td>
-                   <b><code>
-                   <a href="iscategorical.html">iscategorical</a>
-                   </code></b>
-                 </td>
-                 <td>True if input is a 'categorical' array, false otherwise.</td>
-               </tr>
-               <tr>
-                 <td>
-                   <b><code>
-                   <a href="isdatetime.html">isdatetime</a>
-                   </code></b>
-                 </td>
-                 <td>True if input is a 'datetime' array, false otherwise.</td>
-               </tr>
-               <tr>
-                 <td>
-                   <b><code>
-                   <a href="isduration.html">isduration</a>
-                   </code></b>
-                 </td>
-                 <td>True if input is a 'duration' array, false otherwise.</td>
-               </tr>
-               <tr>
-                 <td>
-                   <b><code>
-                   <a href="istable.html">istable</a>
-                   </code></b>
-                 </td>
-                 <td>True if input is a 'table', false otherwise.</td>
-               </tr>
-               <tr>
-                 <td>
-                   <b><code>
-                   <a href="milliseconds.html">milliseconds</a>
-                   </code></b>
-                 </td>
-                 <td>Fixed-time duration in milliseconds.</td>
-               </tr>
-               <tr>
-                 <td>
-                   <b><code>
-                   <a href="minutes.html">minutes</a>
-                   </code></b>
-                 </td>
-                 <td>Fixed-time duration in minutes.</td>
-               </tr>
-               <tr>
-                 <td>
-                   <b><code>
-                   <a href="missing.html">missing</a>
-                   </code></b>
-                 </td>
-                 <td>Array of missing values.</td>
-               </tr>
-               <tr>
-                 <td>
-                   <b><code>
-                   <a href="seconds.html">seconds</a>
-                   </code></b>
-                 </td>
-                 <td>Fixed-time duration in seconds.</td>
-               </tr>
-               <tr>
-                 <td>
-                   <b><code>
-                   <a href="string.html">string</a>
-                   </code></b>
-                 </td>
-                 <td>Array representing sequences of characters.</td>
+                 <td>Convert a cell array to a table.</td>
                </tr>
                <tr>
                  <td>
@@ -327,10 +376,25 @@ date/time units.</td>
                <tr>
                  <td>
                    <b><code>
-                   <a href="table.html">table</a>
+                   <a href="istable.html">istable</a>
                    </code></b>
                  </td>
-                 <td>Array of tabular data containing multiple columnar variables.</td>
+                 <td>True if input is a 'table', false otherwise.</td>
+               </tr>
+             </tbody>
+           </table>
+           <h3 class="category">
+             <a name="supplementary classes">supplementary classes</a>
+           </h3>
+           <table class="table table-striped">
+             <tbody>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="missing.html">missing</a>
+                   </code></b>
+                 </td>
+                 <td>Array of missing values.</td>
                </tr>
                <tr>
                  <td>
@@ -339,14 +403,6 @@ date/time units.</td>
                    </code></b>
                  </td>
                  <td>vartype is an undocumented class</td>
-               </tr>
-               <tr>
-                 <td>
-                   <b><code>
-                   <a href="years.html">years</a>
-                   </code></b>
-                 </td>
-                 <td>Fixed-time duration in years.</td>
                </tr>
                <tr>
                  <td>
@@ -363,14 +419,6 @@ date/time units.</td>
                    </code></b>
                  </td>
                  <td>Customized display of cell arrays.</td>
-               </tr>
-               <tr>
-                 <td>
-                   <b><code>
-                   <a href="__datetime__.html">__datetime__</a>
-                   </code></b>
-                 </td>
-                 <td>Base fuction for datetime class.</td>
                </tr>
              </tbody>
            </table>
