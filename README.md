@@ -7,6 +7,7 @@ Extra data types for GNU Octave
 1. [About](#1-about)
 2. [Documentation](#2-documentation)
 3. [Installation](#3-installation)
+4. [Acknowledgements](#4-acknowledgements)
 
 ## 1. About
 
@@ -44,3 +45,7 @@ Load the package by typing
 **NOTICE !** Loading the **datatypes** package affects the way cell arrays are displayed in the terminal.
 
 **WARNING !!** Unloading the **datatypes** package while variables of data types provided by this package are in Octave's workspace will most likely make Octave unstable.
+
+## 4. Acknowledgements
+
+The **datatypes** package has been developed to support the necessary functionality for the [**csg-toolkit**](https://github.com/pr0m1th3as/csg-toolkit) package as part of my [RECONSTRUCT](https://www.physicalanthropology.gr/reconstruct.php) project, which has received funding from the European Union’s Horizon 2020 research and innovation programme under the Marie Sklodowska-Curie Grant agreement No 101104702.
