@@ -564,7 +564,7 @@ classdef table
     ## of @var{tbl}.
     ##
     ## @itemize
-    ## @item For numerical variables of @qcode{double"}, @qcode{single} or any
+    ## @item For numerical variables of @qcode{double}, @qcode{single} or any
     ## @qcode{int} type, it prints the minimum, median, and maximum values.  For
     ## multicolumnar numerical variables it prints the minimum, median, and
     ## maximum values for each column separately.
@@ -886,7 +886,7 @@ classdef table
 
     ## -*- texinfo -*-
     ## @deftypefn  {table} {@var{tblB} =} sortrows (@var{tblA})
-    ## @deftypefnx {table} {@var{tblB} =} sortrows (@var{tblA}, @qcode{"RowNames"})
+    ## @deftypefnx {table} {@var{tblB} =} sortrows (@var{tblA}, @qcode{'RowNames'})
     ## @deftypefnx {table} {@var{tblB} =} sortrows (@var{tblA}, @var{rowDimName})
     ## @deftypefnx {table} {@var{tblB} =} sortrows (@var{tblA}, @var{vars})
     ## @deftypefnx {table} {@var{tblB} =} sortrows (@var{tblA}, @dots{}, @var{direction})
@@ -900,7 +900,7 @@ classdef table
     ## in the first variable are repeated, then @code{sortrows} sorts by the
     ## elements in the second variable, and so on.
     ##
-    ## @code{@var{tblB} = sortrows (@var{tblA}, @qcode{"RowNames"})} sorts the
+    ## @code{@var{tblB} = sortrows (@var{tblA}, 'RowNames')} sorts the
     ## table @var{tblA} according to its row names.  If @var{tblA} does not
     ## have row names, i.e. @qcode{tblA.Properties.RowNames} is empty, then it
     ## returns @var{tblA}.
@@ -944,25 +944,25 @@ classdef table
     ## omit passing selected variables and allow @code{sortrows} to work on
     ## consequtive variables until all ties are resolved, then you can leave the
     ## second input argument empty, as in
-    ## @qcode{sortrows (@var{tblA}, {[]}, @var{direction})}} or pass a
+    ## @code{sortrows (@var{tblA}, @{[]@}, @var{direction})} or pass a
     ## colon argument for @var{vars} as in
-    ## @qcode{sortrows (@var{tblA}, {':'}, @var{direction})}} or pass a
+    ## @code{sortrows (@var{tblA}, @{':'@}, @var{direction})}.
     ##
     ## @code{@var{tblB} = sortrows (@dots{}, @var{Name}, @var{Value})} specifies
     ## additional parameters for sorting rows of a table with the following
     ## Name-Value paired arguments.
     ##
     ## @itemize
-    ## @item @qcode{"MissingPlacement"} specifies the placement of missing
-    ## values with one of the following options: @qcode{"auto"} places the
+    ## @item @qcode{'MissingPlacement'} specifies the placement of missing
+    ## values with one of the following options: @qcode{'auto'} places the
     ## missing elements at the bottom for ascending order and at the top for
-    ## descending order; @qcode{"first"} places missing elements at the top;
-    ## @qcode{"last"} places missing elements at the bottom.
-    ## @item @qcode{"ComparisonMethod"} specifies the element comparison method
-    ## with one of the following options: @qcode{"auto"} sorts rows using the
+    ## descending order; @qcode{'first'} places missing elements at the top;
+    ## @qcode{'last'} places missing elements at the bottom.
+    ## @item @qcode{'ComparisonMethod'} specifies the element comparison method
+    ## with one of the following options: @qcode{'auto'} sorts rows using the
     ## real part for real numbers and the magnitude for complex numbers;
-    ## @qcode{"real"} sorts rows using the real part for both real and complex
-    ## numbers; @qcode{"abs"} sorts rows using the magnitude for both real and
+    ## @qcode{'real'} sorts rows using the real part for both real and complex
+    ## numbers; @qcode{'abs'} sorts rows using the magnitude for both real and
     ## complex numbers.  For complex numbers with equal magnitude, the phase
     ## angle in the interval @math{(-π, π]} is further used to break ties.
     ## @end itemize
@@ -1231,19 +1231,19 @@ classdef table
     ## be either @qcode{"sorted"} (default) or @qcode{"stable"}.
     ##
     ## @itemize
-    ## @item @qcode{"sorted"} returns the unique rows sorted in ascending order.
-    ## @item @qcode{"stable"} returns the unique rows according to their order
+    ## @item @qcode{'sorted'} returns the unique rows sorted in ascending order.
+    ## @item @qcode{'stable'} returns the unique rows according to their order
     ## of occurence.
     ## @end itemize
     ##
     ## @code{@var{tblB} = unique (@var{tblA}, @var{occurence})} returns the
     ## unique rows of table @var{tblA} according to their order of occurence.
-    ## @var{occurence} cen be either @qcode{"first"} (default) or @qcode{"last"}.
+    ## @var{occurence} cen be either @qcode{'first'} (default) or @qcode{'last'}.
     ##
     ## @itemize
-    ## @item @qcode{"first"} returns the first occurence of each unique row,
+    ## @item @qcode{'first'} returns the first occurence of each unique row,
     ## i.e. the lowest possible indices are returned.
-    ## @item @qcode{"last"} returns the last occurence of each unique row, i.e.
+    ## @item @qcode{'last'} returns the last occurence of each unique row, i.e.
     ## the highest possible indices are returned.
     ## @end itemize
     ##
@@ -1332,7 +1332,7 @@ classdef table
 
     ## -*- texinfo -*-
     ## @deftypefn  {table} {@var{TF} =} issortedrows (@var{tblA})
-    ## @deftypefnx {table} {@var{TF} =} issortedrows (@var{tblA}, @qcode{"RowNames"})
+    ## @deftypefnx {table} {@var{TF} =} issortedrows (@var{tblA}, @qcode{'RowNames'})
     ## @deftypefnx {table} {@var{TF} =} issortedrows (@var{tblA}, @var{rowDimName})
     ## @deftypefnx {table} {@var{TF} =} issortedrows (@var{tblA}, @var{vars})
     ## @deftypefnx {table} {@var{TF} =} issortedrows (@var{tblA}, @dots{}, @var{direction})
@@ -1346,10 +1346,10 @@ classdef table
     ## @var{TF} is a logical scalar and it is @qcode{true} when
     ## @code{@var{tblA} == sortrows (@var{tblA})} or @qcode{false} otherwise.
     ##
-    ## @code{@var{TF} = issortedrows (@var{tblA}, @qcode{"RowNames"})}
+    ## @code{@var{TF} = issortedrows (@var{tblA}, 'RowNames')}
     ## determines if the rows in @var{tblA} are sorted according to its row
     ## names.  @var{TF} is @qcode{true} when @code{@var{tblA} == sortrows
-    ## (@var{tblA}, @qcode{"RowNames"})} or @qcode{false} otherwise.  If
+    ## (@var{tblA}, 'RowNames')} or @qcode{false} otherwise.  If
     ## @var{tblA} does not have row names, i.e. @qcode{tblA.Properties.RowNames}
     ## is empty, then @var{TF} is @qcode{true}.
     ##
@@ -1394,9 +1394,9 @@ classdef table
     ## omit passing selected variables and allow @code{sortrows} to work on
     ## consequtive variables until all ties are resolved, then you can leave the
     ## second input argument empty, as in
-    ## @qcode{sortrows (@var{tblA}, {[]}, @var{direction})}} or pass a
+    ## @code{sortrows (@var{tblA}, @{[]@}, @var{direction})} or pass a
     ## colon argument for @var{vars} as in
-    ## @qcode{sortrows (@var{tblA}, {':'}, @var{direction})}} or pass a
+    ## @code{sortrows (@var{tblA}, @{':'@}, @var{direction})}.
     ##
     ## @code{@var{TF} = issortedrows (@dots{}, @var{Name}, @var{Value})}
     ## determines if the rows in @var{tblA} are sorted accoring the additional
@@ -1404,16 +1404,16 @@ classdef table
     ## Name-Value paired arguments.
     ##
     ## @itemize
-    ## @item @qcode{"MissingPlacement"} specifies the placement of missing
-    ## values with one of the following options: @qcode{"auto"} places the
+    ## @item @qcode{'MissingPlacement'} specifies the placement of missing
+    ## values with one of the following options: @qcode{'auto'} places the
     ## missing elements at the bottom for ascending order and at the top for
-    ## descending order; @qcode{"first"} places missing elements at the top;
-    ## @qcode{"last"} places missing elements at the bottom.
-    ## @item @qcode{"ComparisonMethod"} specifies the element comparison method
-    ## with one of the following options: @qcode{"auto"} sorts rows using the
+    ## descending order; @qcode{'first'} places missing elements at the top;
+    ## @qcode{'last'} places missing elements at the bottom.
+    ## @item @qcode{'ComparisonMethod'} specifies the element comparison method
+    ## with one of the following options: @qcode{'auto'} sorts rows using the
     ## real part for real numbers and the magnitude for complex numbers;
-    ## @qcode{"real"} sorts rows using the real part for both real and complex
-    ## numbers; @qcode{"abs"} sorts rows using the magnitude for both real and
+    ## @qcode{'real'} sorts rows using the real part for both real and complex
+    ## numbers; @qcode{'abs'} sorts rows using the magnitude for both real and
     ## complex numbers.  For complex numbers with equal magnitude, the phase
     ## angle in the interval @math{(-π, π]} is further used to break ties.
     ## @end itemize
@@ -1428,7 +1428,7 @@ classdef table
 
     ## -*- texinfo -*-
     ## @deftypefn  {table} {@var{tblB} =} topkrows (@var{tblA}, @var{k})
-    ## @deftypefnx {table} {@var{tblB} =} topkrows (@var{tblA}, @var{k}, @qcode{"RowNames"})
+    ## @deftypefnx {table} {@var{tblB} =} topkrows (@var{tblA}, @var{k}, @qcode{'RowNames'})
     ## @deftypefnx {table} {@var{tblB} =} topkrows (@var{tblA}, @var{k}, @var{rowDimName})
     ## @deftypefnx {table} {@var{tblB} =} topkrows (@var{tblA}, @var{k}, @var{vars})
     ## @deftypefnx {table} {@var{tblB} =} topkrows (@var{tblA}, @var{k}, @dots{}, @var{direction})
@@ -1438,18 +1438,18 @@ classdef table
     ## Sort the rows of a table.
     ##
     ## @code{@var{tblB} = topkrows (@var{tblA}, @var{k})} returns the top
-    ## @var{k} rows from table var{tblA} sorted in asceding order based on the
+    ## @var{k} rows from table @var{tblA} sorted in asceding order based on the
     ## values in the first variable.   If elements in the first variable are
     ## repeated, then @code{topkrows} sorts by the elements in the second
     ## variable, and so on.
     ##
-    ## @code{@var{tblB} = topkrows (@var{tblA}, @var{k}, @qcode{"RowNames"})}
-    ## returns the top @var{k} rows from table var{tblA} sorted according to its
-    ## row names.  If @var{tblA} does not have row names, i.e.
+    ## @code{@var{tblB} = topkrows (@var{tblA}, @var{k}, 'RowNames')} returns
+    ## the top @var{k} rows from table @var{tblA} sorted according to its row
+    ## names.  If @var{tblA} does not have row names, i.e.
     ## @qcode{tblA.Properties.RowNames} is empty, then it returns @var{tblA}.
     ##
     ## @code{@var{tblB} = topkrows (@var{tblA}, @var{k}, @var{rowDimName})} also
-    ## returns the top @var{k} rows from table var{tblA} sorted along its first
+    ## returns the top @var{k} rows from table @var{tblA} sorted along its first
     ## dimension, @var{rowDimName}, which is the equivalent to the previous
     ## syntax, i.e. according to its row names.  If @var{tblA} does not have row
     ## names, i.e. @qcode{tblA.Properties.RowNames} is empty, then it returns
@@ -1459,7 +1459,7 @@ classdef table
     ## syntax.
     ##
     ## @code{@var{tblB} = topkrows (@var{tblA}, @var{k}, @var{vars})} returns
-    ## the top @var{k} rows from table var{tblA} sorted by the elements in the
+    ## the top @var{k} rows from table @var{tblA} sorted by the elements in the
     ## variables specified by @var{vars}, which can be a character vector (for a
     ## single variable) or a cell array of character vectors or a string array
     ## (specifying a single or multiple variables).  If @var{tblA} has row
@@ -1489,9 +1489,9 @@ classdef table
     ## selected variables and allow @code{sortrows} to work on consequtive
     ## variables until all ties are resolved, then you can leave the second
     ## input argument empty, as in
-    ## @qcode{sortrows (@var{tblA}, {[]}, @var{direction})}} or pass a
+    ## @code{sortrows (@var{tblA}, @{[]@}, @var{direction})} or pass a
     ## colon argument for @var{vars} as in
-    ## @qcode{sortrows (@var{tblA}, {':'}, @var{direction})}} or pass a
+    ## @code{sortrows (@var{tblA}, @{':'@}, @var{direction})} or pass a
     ##
     ## @code{@var{tblB} = topkrows (@dots{}, @var{k}, @var{Name}, @var{Value})}
     ## returns the top @var{k} rows from table @var{tblA} sorted with any of the
@@ -1499,16 +1499,16 @@ classdef table
     ## sorting rows of a table with the following Name-Value paired arguments.
     ##
     ## @itemize
-    ## @item @qcode{"MissingPlacement"} specifies the placement of missing
-    ## values with one of the following options: @qcode{"auto"} places the
+    ## @item @qcode{'MissingPlacement'} specifies the placement of missing
+    ## values with one of the following options: @qcode{'auto'} places the
     ## missing elements at the bottom for ascending order and at the top for
-    ## descending order; @qcode{"first"} places missing elements at the top;
-    ## @qcode{"last"} places missing elements at the bottom.
-    ## @item @qcode{"ComparisonMethod"} specifies the element comparison method
-    ## with one of the following options: @qcode{"auto"} sorts rows using the
+    ## descending order; @qcode{'first'} places missing elements at the top;
+    ## @qcode{'last'} places missing elements at the bottom.
+    ## @item @qcode{'ComparisonMethod'} specifies the element comparison method
+    ## with one of the following options: @qcode{'auto'} sorts rows using the
     ## real part for real numbers and the magnitude for complex numbers;
-    ## @qcode{"real"} sorts rows using the real part for both real and complex
-    ## numbers; @qcode{"abs"} sorts rows using the magnitude for both real and
+    ## @qcode{'real'} sorts rows using the real part for both real and complex
+    ## numbers; @qcode{'abs'} sorts rows using the magnitude for both real and
     ## complex numbers.  For complex numbers with equal magnitude, the phase
     ## angle in the interval @math{(-π, π]} is further used to break ties.
     ## @end itemize
@@ -5695,7 +5695,7 @@ endfunction
 %! Data_A = {[34, 32]; ['text';'picture']; "text"; struct("c","data"); ...
 %!           [true, false]; ['some','text']; {'some','text'}; 25.34};
 %! Data_B = {32, 25; 0.2, 135; 0.123, 456; 42, 5; 154, 12; 32, 10; 4, 4; 9, 94};
-%! Data_C = datetime(2000,1,1)+[0:7;8:15]';
+%! Data_C = datetime (2000, [1:8;9:16]', 1);
 %!
 %! T = table (Data_A, Data_B, Data_C)
 
