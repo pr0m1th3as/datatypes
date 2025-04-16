@@ -230,44 +230,40 @@ double check_nan_inf (RowVector IN)
 
 DEFUN_DLD(__datetime__, args, nargout,
           "-*- texinfo -*-\n\
- @deftypefn  {datatypes} {} __datetime__ ()\n\
- @deftypefnx {datatypes} {} __datetime__ (@var{X}, @qcode{'ConvertFrom'}, @var{dateType})\n\
- @deftypefnx {datatypes} {} __datetime__ (@var{dnums}, @var{dur}, @var{from_tz}, @var{to_tz}, @var{format}, @var{LS})\n\
+ @deftypefn  {datatypes} {[@var{Y}, @var{MO}, @var{D}, @var{H}, @var{MI}, @var{S}]} __datetime__ (@dots{})\n\
+ @deftypefnx {datatypes} {[@var{Y}, @var{MO}, @var{D}, @var{H}, @var{MI}, @var{S}, @var{errmsg}]} __datetime__ (@dots{})\n\
+ @deftypefnx {datatypes} {[@dots{}] =} __datetime__ (@qcode{'now'})\n\
+ @deftypefnx {datatypes} {[@dots{}] =} __datetime__ (@qcode{'today'})\n\
+ @deftypefnx {datatypes} {[@dots{}] =} __datetime__ (@qcode{'tomorrow'})\n\
+ @deftypefnx {datatypes} {[@dots{}] =} __datetime__ (@qcode{'yesterday'})\n\
+ @deftypefnx {datatypes} {[@dots{}] =} __datetime__ (@var{Y}, @var{MO}, @var{D})\n\
+ @deftypefnx {datatypes} {[@dots{}] =} __datetime__ (@var{Y}, @var{MO}, @var{D}, @var{H}, @var{MI}, @var{S})\n\
+ @deftypefnx {datatypes} {[@dots{}] =} __datetime__ (@var{Y}, @var{MO}, @var{D}, @var{H}, @var{MI}, @var{S}, @var{MS})\n\
+ @deftypefnx {datatypes} {[@dots{}] =} __datetime__ (@var{X}, @qcode{'ConvertFrom'}, @var{dateType})\n\
+ @deftypefnx {datatypes} {[@dots{}] =} __datetime__ (@dots{}, @qcode{'Precision'}, @var{precision})\n\
+ @deftypefnx {datatypes} {[@dots{}] =} __datetime__ (@dots{}, @qcode{'TimeZone'}, @var{tzone}, @qcode{'toTimeZone'}, @var{totzone})\n\
 \n\
 \n\
 Base fuction for datetime class. \n\
 \n\n\
 @end deftypefn")
 {
-  // Prepare input output arguments
-  int nargin = args.length ();
+  // Either 6 or 7 output arguments are reguired
   if (nargout > 7)
   {
     error ("__datetime__: too many output arguments.");
   }
+  if (nargout < 6)
+  {
+    error ("__datetime__: too few output arguments.");
+  }
+
+  // Prepare input output arguments
+  int nargin = args.length ();
   octave_value_list retval(nargout);
   for (int i = 0; i < nargout; i++)
   {
     retval(i) = 0;
-  }
-
-  // When called with no input arguments, just return the system's current zone
-  if (nargin == 0)
-  {
-    if (nargout > 1)
-    {
-      error ("__datetime__: too many output arguments.");
-    }
-    stringstream cz;
-    cz << current_zone () -> name ();
-    retval(0) = cz.str ();
-    return retval;
-  }
-
-  // Either 6 or 7 output arguments are reguired from now on
-  if (nargout < 6)
-  {
-    error ("__datetime__: too few output arguments.");
   }
 
   // Add defaults
