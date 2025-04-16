@@ -221,7 +221,7 @@ classdef table
     ## of table variables.
     ##
     ## @code{@var{tbl} = table (@dots{}, @qcode{'RowNames'}, @var{rowNames})}
-    ## specifies the row names to use in the constructed table. @var{dimNames}}
+    ## specifies the row names to use in the constructed table. @var{dimNames}
     ## must be either a cell array of character vectors of string array with the
     ## same number of nonempty and unique elements as the number of rows in the
     ## table.
@@ -553,7 +553,7 @@ classdef table
     ## Print a summary of a table.
     ##
     ## @code{summary (@var{tbl}} prints the description from
-    ## @qcode{@var{tbl}.Properties.Description (not implemented yet) followed
+    ## @qcode{@var{tbl}.Properties.Description} (not implemented yet) followed
     ## by a summary of each table variable's values and their properties as
     ## defined in @qcode{@var{tbl}.Properties.VariableUnits} and
     ## @qcode{@var{tbl}.Properties.VariableDescriptions} (not implemented yet).
@@ -944,9 +944,9 @@ classdef table
     ## omit passing selected variables and allow @code{sortrows} to work on
     ## consequtive variables until all ties are resolved, then you can leave the
     ## second input argument empty, as in
-    ## @qcode{sortrows (@var{tblA}, @qcode{[]}, @var{direction})}} or pass a
+    ## @qcode{sortrows (@var{tblA}, {[]}, @var{direction})}} or pass a
     ## colon argument for @var{vars} as in
-    ## @qcode{sortrows (@var{tblA}, @qcode{':'}, @var{direction})}} or pass a
+    ## @qcode{sortrows (@var{tblA}, {':'}, @var{direction})}} or pass a
     ##
     ## @code{@var{tblB} = sortrows (@dots{}, @var{Name}, @var{Value})} specifies
     ## additional parameters for sorting rows of a table with the following
@@ -1394,9 +1394,9 @@ classdef table
     ## omit passing selected variables and allow @code{sortrows} to work on
     ## consequtive variables until all ties are resolved, then you can leave the
     ## second input argument empty, as in
-    ## @qcode{sortrows (@var{tblA}, @qcode{[]}, @var{direction})}} or pass a
+    ## @qcode{sortrows (@var{tblA}, {[]}, @var{direction})}} or pass a
     ## colon argument for @var{vars} as in
-    ## @qcode{sortrows (@var{tblA}, @qcode{':'}, @var{direction})}} or pass a
+    ## @qcode{sortrows (@var{tblA}, {':'}, @var{direction})}} or pass a
     ##
     ## @code{@var{TF} = issortedrows (@dots{}, @var{Name}, @var{Value})}
     ## determines if the rows in @var{tblA} are sorted accoring the additional
@@ -1489,9 +1489,9 @@ classdef table
     ## selected variables and allow @code{sortrows} to work on consequtive
     ## variables until all ties are resolved, then you can leave the second
     ## input argument empty, as in
-    ## @qcode{sortrows (@var{tblA}, @qcode{[]}, @var{direction})}} or pass a
+    ## @qcode{sortrows (@var{tblA}, {[]}, @var{direction})}} or pass a
     ## colon argument for @var{vars} as in
-    ## @qcode{sortrows (@var{tblA}, @qcode{':'}, @var{direction})}} or pass a
+    ## @qcode{sortrows (@var{tblA}, {':'}, @var{direction})}} or pass a
     ##
     ## @code{@var{tblB} = topkrows (@dots{}, @var{k}, @var{Name}, @var{Value})}
     ## returns the top @var{k} rows from table @var{tblA} sorted with any of the
@@ -3266,7 +3266,7 @@ classdef table
     ##
     ## Determine if any table element is missing.
     ##
-    ## @code{@var{TF} =} anymissing (@var{tblA})} returns @qcode{true} if at
+    ## @code{@var{TF} = anymissing (@var{tblA})} returns @qcode{true} if at
     ## least one element in table var{tblA} is missing, otherwise tt returns
     ## @qcode{false}.  @var{TF} is a logical scalar value.
     ##
@@ -3649,7 +3649,6 @@ classdef table
     endfunction
 
     ## -*- texinfo -*-
-    ## @node table.isscalar
     ## @deftypefn {Method} {@var{TF} =} isscalar (@var{tbl})
     ##
     ## Test input table for being a scalar.
@@ -3710,7 +3709,7 @@ classdef table
     ## -*- texinfo -*-
     ## @deftypefn {table} {@var{out} =} numel (@var{tbl})
     ##
-    ## Total number of elements in table (actually 1).
+    ## Total number of elements in table.
     ##
     ## For compatibility reasons with Octave's OOP interface and @code{subsasgn}
     ## behavior, table's numel is defined to always return 1.  This is an

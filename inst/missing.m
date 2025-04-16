@@ -25,7 +25,7 @@ classdef missing
   ##
   ## @end deftp
 
-  properties (SetAccess = private)
+  properties (SetAccess = private, Hidden)
     data = NaN
   endproperties
 

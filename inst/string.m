@@ -37,7 +37,7 @@ classdef string
   ## @seealso{convertCharsToStrings, convertStringsToChars}
   ## @end deftp
 
-  properties (SetAccess = private)
+  properties (SetAccess = private, Hidden)
     ## Text data
     strs = {''}
     ## Missing values flag
@@ -713,7 +713,7 @@ classdef string
     ##
     ## Remove content from string array.
     ##
-    ## @code{@var{newstr} = erase (@var{str}, @var{pat}) removes the
+    ## @code{@var{newstr} = erase (@var{str}, @var{pat})} removes the
     ## occurences of @var{pat} from each element of the string array @var{str}.
     ## @var{newstr} is a string array of the same size as @var{str}.
     ##
@@ -765,7 +765,7 @@ classdef string
     ##
     ## Reverse order of characters in string array.
     ##
-    ## @code{@var{newstr} = reverse (@var{str}) reverses the order of the
+    ## @code{@var{newstr} = reverse (@var{str})} reverses the order of the
     ## characters in every each element of the string array @var{str}.
     ## @var{newstr} is a string array of the same size as @var{str}.
     ##
@@ -795,7 +795,7 @@ classdef string
     ##
     ## Horizontal concatenation of texts in string array.
     ##
-    ## @code{@var{newstr} = strcat (@var{str1}, @var{str2), @dots{})) merges
+    ## @code{@var{newstr} = strcat (@var{str1}, @var{str2}, @dots{})} merges
     ## horizontally all the input arguments into a string array, as long as any
     ## of the input arguments is a string array.  All inputs must be of common
     ## size or scalars.  All inputs must be character vectors, cell arrays of
@@ -840,8 +840,8 @@ classdef string
     ##
     ## Convert contents of strinf array to lower case.
     ##
-    ## @code{@var{newstr} = lower (@var{str}) converts all upper case characters
-    ## in every element of the string array @var{str} to lower case.
+    ## @code{@var{newstr} = lower (@var{str})} converts all upper case
+    ## characters in every element of the string array @var{str} to lower case.
     ## @var{newstr} is a string array of the same size as @var{str}.
     ##
     ## @end deftypefn
@@ -855,8 +855,8 @@ classdef string
     ##
     ## Convert contents of strinf array to upper case.
     ##
-    ## @code{@var{newstr} = upper (@var{str}) converts all lower case characters
-    ## in every element of the string array @var{str} to upper case.
+    ## @code{@var{newstr} = upper (@var{str})} converts all lower case
+    ## characters in every element of the string array @var{str} to upper case.
     ## @var{newstr} is a string array of the same size as @var{str}.
     ##
     ## @end deftypefn

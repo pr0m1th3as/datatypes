@@ -36,10 +36,17 @@ classdef datetime
   ## @end deftp
 
   properties (Constant)
+    ## -*- texinfo -*-
+    ## @deftp {datetime} {property} localtime
+    ##
+    ## A read-only property specifying the local time zone of the system, where
+    ## Octave is running.
+    ##
+    ## @end deftp
     SystemTimeZone = localtime (time ()).zone;
   endproperties
 
-  properties (Access = private)
+  properties (Access = private, Hidden)
     ## Whole years
     Y = 0
     ## Whole months
@@ -411,7 +418,7 @@ classdef datetime
     ## Year, Month, and Day components of datetime array.
     ##
     ## @code{[@var{Y}, @var{M}, @var{D}] = ymd (@var{T})} returns the year,
-    ## month, and day components of the corresponding datetime values in @vat{T}
+    ## month, and day components of the corresponding datetime values in @var{T}
     ## as separate numeric arrays.  @var{Y}, @var{M}, @var{D} contain integer
     ## values and have the same size as @var{T}.
     ##
@@ -429,7 +436,7 @@ classdef datetime
     ##
     ## @code{[@var{h}, @var{m}, @var{s}] = ymd (@var{T})} returns the hour,
     ## miute, and second components of the corresponding datetime values in
-    ## @vat{T} as separate numeric arrays.  @var{h} and @var{m} contain integer
+    ## @var{T} as separate numeric arrays.  @var{h} and @var{m} contain integer
     ## values and @var{s} may also contain a fractional part.  All outputs have
     ## the same size as @var{T}.
     ##

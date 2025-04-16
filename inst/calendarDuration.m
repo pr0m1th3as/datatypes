@@ -50,7 +50,7 @@ classdef calendarDuration
     Format = 'ymdt'
   endproperties
 
-  properties (SetAccess = private)
+  properties (SetAccess = private, Hidden)
     ## Whole calendar months
     Months = 0
     ## Whole calendar days

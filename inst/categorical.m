@@ -40,7 +40,7 @@ classdef categorical
   ##
   ## @end deftp
 
-  properties (SetAccess = private)
+  properties (SetAccess = private, Hidden)
     ## Category Names
     cats = {}
     ## Indices to categories
@@ -512,7 +512,7 @@ classdef categorical
     ##
     ## List of categories in categorical array.
     ##
-    ## @code{@var{cstr} =} categories (@var{C})} returns a cell array of
+    ## @code{@var{cstr} = categories (@var{C})} returns a cell array of
     ## character vectors with the names of the categories in @var{C}.
     ##
     ## @end deftypefn
@@ -874,10 +874,10 @@ classdef categorical
     ## any existing categories.  The output categorical array @var{B} does not
     ## contain elements that belong to the newly added categories.
     ##
-    ## @cdoe{@var{B} = addcats (@dots{}, @qcode{'After'}, @var{catname})} adds
+    ## @code{@var{B} = addcats (@dots{}, @qcode{'After'}, @var{catname})} adds
     ## the categories after the existing category specified by @var{catname}.
     ##
-    ## @cdoe{@var{B} = addcats (@dots{}, @qcode{'Before'}, @var{catname})} adds
+    ## @code{@var{B} = addcats (@dots{}, @qcode{'Before'}, @var{catname})} adds
     ## the categories before the existing category specified by @var{catname}.
     ##
     ## @end deftypefn
@@ -1202,12 +1202,13 @@ classdef categorical
     ## Combine categorical arrays.
     ##
     ## @code{@var{C} = times (@var{A}, @var{B})} is the equivalent of the syntax
-    ## @code{@var{A} .* @var{B} and returns a categorical array whose categories
-    ## are the Cartesian product of the categories in @var{A} and @var{B} and
-    ## each element is indexed to a new category which is the combination of the
-    ## categories of the corresponding elements in @ar{A} and @var{B}.
+    ## @code{@var{A} .* @var{B}} and returns a categorical array whose
+    ## categories are the Cartesian product of the categories in @var{A} and
+    ## @var{B} and each element is indexed to a new category which is the
+    ## combination of the categories of the corresponding elements in @var{A}
+    ## and @var{B}.
     ##
-    ## @ar{A} and @var{B} must be of common size or scalars.
+    ## @var{A} and @var{B} must be of common size or scalars.
     ##
     ## @end deftypefn
     function C = times (A, B)

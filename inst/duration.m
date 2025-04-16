@@ -49,7 +49,7 @@ classdef duration
     Format = 'hh:mm:ss'
   endproperties
 
-  properties (SetAccess = private)
+  properties (SetAccess = private, Hidden)
     ## Duration length in days
     Days = 0
   endproperties
