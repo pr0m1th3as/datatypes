@@ -16,8 +16,18 @@
 ## this program; if not, see <http://www.gnu.org/licenses/>.
 
 classdef vartype
+  ## -*- texinfo -*-
+  ## @deftp {Class} vartype
+  ##
+  ## Subscript into a table by variable type.
+  ##
+  ## A utility class that facilitates subscripting table variables according to
+  ## their data type.
+  ##
+  ## @seealso{table}
+  ## @end deftp
 
-  properties (SetAccess = private)
+  properties (SetAccess = private, Hidden)
     type
   endproperties
 
