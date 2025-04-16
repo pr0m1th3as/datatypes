@@ -95,6 +95,19 @@
 			<div class="row">
 				<input id="togList1" type="checkbox">
 				<label for="togList1">
+					<span><h6>categorical arrays</h6></span>
+					<span><h6>categorical arrays</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="categorical.html" class="text-decoration-none font-monospace"><small>categorical</small></a></li>
+					<li><a href="iscategorical.html" class="text-decoration-none font-monospace"><small>iscategorical</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList2" type="checkbox">
+				<label for="togList2">
 					<span><h6>calendarDuration arrays</h6></span>
 					<span><h6>calendarDuration arrays</h6></span>
 				</label>
@@ -107,19 +120,6 @@
 					<li><a href="calquarters.html" class="text-decoration-none font-monospace"><small>calquarters</small></a></li>
 					<li><a href="calyears.html" class="text-decoration-none font-monospace"><small>calyears</small></a></li>
 					<li><a href="iscalendarduration.html" class="text-decoration-none font-monospace"><small>iscalendarduration</small></a></li>
-				</ul>
-				</div>
-			</div>
-			<div class="row">
-				<input id="togList2" type="checkbox">
-				<label for="togList2">
-					<span><h6>categorical arrays</h6></span>
-					<span><h6>categorical arrays</h6></span>
-				</label>
-				<div class="list">
-				<ul style="list-style-type: none; padding-left: 20px;">
-					<li><a href="categorical.html" class="text-decoration-none font-monospace"><small>categorical</small></a></li>
-					<li><a href="iscategorical.html" class="text-decoration-none font-monospace"><small>iscategorical</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -174,21 +174,6 @@
 			<div class="row">
 				<input id="togList6" type="checkbox">
 				<label for="togList6">
-					<span><h6>supplementary classes</h6></span>
-					<span><h6>supplementary classes</h6></span>
-				</label>
-				<div class="list">
-				<ul style="list-style-type: none; padding-left: 20px;">
-					<li><a href="missing.html" class="text-decoration-none font-monospace"><small>missing</small></a></li>
-					<li><a href="vartype.html" class="text-decoration-none font-monospace"><small>vartype</small></a></li>
-					<li><a href="@cell_disp.html" class="text-decoration-none font-monospace"><small>@cell/disp</small></a></li>
-					<li><a href="@cell_display.html" class="text-decoration-none font-monospace"><small>@cell/display</small></a></li>
-				</ul>
-				</div>
-			</div>
-			<div class="row">
-				<input id="togList7" type="checkbox">
-				<label for="togList7">
 					<span><h6>table arrays</h6></span>
 					<span><h6>table arrays</h6></span>
 				</label>
@@ -199,6 +184,21 @@
 					<li><a href="cell2table.html" class="text-decoration-none font-monospace"><small>cell2table</small></a></li>
 					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
 					<li><a href="istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList7" type="checkbox">
+				<label for="togList7">
+					<span><h6>supplementary classes</h6></span>
+					<span><h6>supplementary classes</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="missing.html" class="text-decoration-none font-monospace"><small>missing</small></a></li>
+					<li><a href="vartype.html" class="text-decoration-none font-monospace"><small>vartype</small></a></li>
+					<li><a href="@cell_disp.html" class="text-decoration-none font-monospace"><small>@cell/disp</small></a></li>
+					<li><a href="@cell_display.html" class="text-decoration-none font-monospace"><small>@cell/display</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -239,18 +239,264 @@
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/datetime.m">datetime</a>
 </div>
-        <div class="container-xl my-4">
-          <div class="card rounded">
-            <div class="card-header card-header-mod">
-              <div class="row d-flex flex-wrap align-items-center">
-                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                  <h3 class="d-inline-block mr-2">
-                  Method: <b><code>cellstr</code></b>
-                  </h3>
+        <h4 class="d-inline-block my-3">
+          Properties
+        </h4>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseProperty1"
+              aria-expanded="false" aria-controls="collapseProperty1">
+              <h4 class="d-inline-block mr-2">
+                <b><code>Format</code></b>
+              </h4>
+          </div>
+          <div class="collapse multi-collapse" id="collapseProperty1">
+            <div class="border-bottom py-2">
+
+
+<p> Display format, specified as a character vector or string scalar.  If
+ specified as a string scalar, it is converted and stored internally as
+ a character vector.
+</p>
+<div class="ms-5">
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseProperty2"
+              aria-expanded="false" aria-controls="collapseProperty2">
+              <h4 class="d-inline-block mr-2">
+                <b><code>SystemTimeZone</code></b>
+              </h4>
+          </div>
+          <div class="collapse multi-collapse" id="collapseProperty2">
+            <div class="border-bottom py-2">
+
+
+<p> A read-only property specifying the local time zone of the system, where
+ Octave is running.
+</p>
+<div class="ms-5">
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseProperty3"
+              aria-expanded="false" aria-controls="collapseProperty3">
+              <h4 class="d-inline-block mr-2">
+                <b><code>TimeZone</code></b>
+              </h4>
+          </div>
+          <div class="collapse multi-collapse" id="collapseProperty3">
+            <div class="border-bottom py-2">
+
+
+<p> TimeZone, specified as a character vector or string scalar.  If
+ specified as a string scalar, it is converted and stored internally as
+ a character vector.
+</p>
+<div class="ms-5">
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <h4 class="d-inline-block my-3">
+          Methods
+        </h4>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#colapsibleConstructor"
+              aria-expanded="false" aria-controls="colapsibleConstructor">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>datetime</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  <code>'InputFormat'</code>, <var>INFMT</var>, <code>'PivotYear'</code>, <var>PIVOT</var>)
+
                 </div>
               </div>
+          </div>
+          <div class="collapse multi-collapse" id="colapsibleConstructor">
+            <div class="border-bottom py-2">
+<dl>
+<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<code>'now'</code>)</i></dt>
+<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<code>'today'</code>)</i></dt>
+<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<code>'tomorrow'</code>)</i></dt>
+<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<code>'yesterday'</code>)</i></dt>
+<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<var>DateStrings</var>)</i></dt>
+<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<var>DateStrings</var>, <code>'InputFormat'</code>, <var>INFMT</var>)</i></dt>
+<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<var>DateStrings</var>,</i></dt>
+</dl>
+<p> <code>'InputFormat'</code>, <var>INFMT</var>, <code>'PivotYear'</code>, <var>PIVOT</var>)
+ </p><<div class="ms-5">
+/dd><dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<var>DateVectors</var>)</i></dt>
+<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<var>Y</var>, <var>MO</var>, <var>D</var>)</i></dt>
+<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>, <var>S</var>)</i></dt>
+<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>, <var>S</var>, <var>MS</var>)</i></dt>
+<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<var>X</var>, <code>'ConvertFrom'</code>, <var>TYPE</var>)</i></dt>
+<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (&hellip;, <code>'Format'</code>, <var>FMT</var>)</i></dt>
+<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (&hellip;, <code>'TimeZone'</code>, <var>TZ</var>)</i></dt>
+</dl>
+
+<p> Create a new array of datetime values.
+</p>
+<p> <code><var>Τ</var> = datetime (<code>'now'</code>)</code> returns a scalar datetime array
+ corresponding to the current date and time. <code><var>Τ</var> = datetime
+ (<code>'now'</code>)</code> is the same as <code><var>Τ</var> = datetime ()</code>.  Except for
+ <code>'now'</code>, the same syntax can be used with <code>'today'</code>,
+ <code>'tomorrow'</code> and <code>'yesterday'</code>.  These options return the
+ respective date but with time set at midnight.
+</p>
+<p> <code><var>Τ</var> = datetime (<var>DateStrings</var>)</code> creates a datetime array
+ from the text in <var>DateStrings</var> representing points in time.  In
+ current implementation, <var>DateStrings</var> are parsed by Octave&rsquo;s core
+ <code>datevec</code> function, hence supported text formats are currently those
+ supported by <code>datevec</code>.
+</p>
+<p> <code><var>Τ</var> = datetime (<var>DateStrings</var>, <code>'InputFormat'</code>,
+ <var>INFMT</var>)</code> also allows to specify a particular input text format to
+ parse <var>DateStrings</var>.  It is always preferable to specify the format
+ <var>INFMT</var> if it is known.  Formats which do not specify a particular
+ time component will have the value set to zero.  Formats which do not
+ a date will default to January 1st of the current year.
+</p>
+<p> <code><var>Τ</var> = datetime (<var>DateStrings</var>, <code>'InputFormat'</code>,
+ <var>INFMT</var>, <code>'PivotYear'</code>, <var>PIVOT</var>)</code> also allows to specify a
+ pivot year, which refers to the year at the start of the century to which
+ two-digit years will be referenced.  When not specified, it defaults to
+ the current years minus 50.
+</p>
+<p> <code><var>Τ</var> = datetime (<var>DateVectors</var>)</code> creates a column vector of
+ datetime values from the date vectors in <var>DateVectors</var>.
+</p>
+<p> <code><var>Τ</var> = datetime (<var>Y</var>, <var>MO</var>, <var>D</var></code> creates an array of
+ datetime values for corresponding elements of the <var>Y</var>, <var>MO</var>, and
+ <var>D</var> arrays, which must be of the same size or scalars, must contain
+ integer values, and they correspond to years, months, and days,
+ respectively.
+</p>
+<p> <code><var>Τ</var> = datetime (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>,
+ <var>S</var>)</code> also adds time components to the constructed datetime arrays.
+ <var>H</var>, <var>MI</var>, and <var>S</var> must be of the same size or scalars.
+ <var>H</var> and <var>MI</var> must contain integer values, whereas <var>S</var> may
+ also contain a fractional part.
+</p>
+<p> <code><var>Τ</var> = datetime (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>,
+ <var>S</var>, <var>MS</var>)</code> also adds a milliseconds component, <var>MS</var>, which
+ may also have a fractional part.
+</p>
+<p> <code><var>Τ</var> = datetime (<var>X</var>, <code>'ConvertFrom'</code>, <var>TYPE</var>)</code>
+ converts the numeric values in <var>X</var> to a datetime array accordinng to
+ the data type specified by <var>TYPE</var>.  The following types are
+ suppoerted:
+</p>
+ <ul>
+<li> <code>'datenum'</code>
+ </li><li> <code>'excel'</code>
+ </li><li> <code>'posixtime'</code>
+ </li><li> <code>'epochtime'</code>
+ </li></ul>
+
+<p> <code><var>Τ</var> = datetime (&hellip;, <code>'Format'</code>, <var>FMT</var>)</code>
+ specifies the display format of the values in the output datetime array.
+ Currently, only the default display format is implemented.
+</p>
+<p> <code><var>Τ</var> = datetime (&hellip;, <code>'TimeZone'</code>, <var>TZ</var>)</code> sets
+ the time zone to the values in the output datetime array.  If not
+ specified, the computer&rsquo;s local timezone is used.  Supported time zones
+ are specified in the IANA&rsquo;s Time Zone Database.  You may specify a new
+ time zone by setting the <code>'TimeZone'</code> property of the datetime
+ array, in which case the new datetime values may include Daylight Saving
+ Time (DST) in their computation.
+</p>
+<p> <strong>See also: </strong>
+  <a href="NaT.html">NaT</a>, 
+  <a href="datetime.html">datetime</a>, 
+  <a href="isdatetime.html">isdatetime</a>, 
+  <a href="calendarDuration.html">calendarDuration</a>, 
+  <a href="duration.html">duration</a>
+</p>
+</div>
             </div>
-            <div class="card-body">
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod1"
+              aria-expanded="false" aria-controls="collapseMethod1">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>dispstrings</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  Get display formatted strings for each element of a datetime object.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod1">
+            <div class="border-bottom py-2">
+<dl>
+<dt><u>datetime:</u> <var>cstr</var> = <b>dispstrings</b><i> (<var>Τ</var>)</i></dt>
+</dl>
+
+<p> Get display formatted strings for each element of a datetime object.
+</p>
+<div class="ms-5">
+<p> <code><var>cstr</var> = dispstrings (<var>Τ</var>)</code> returns a cellstr array of
+ character vectors, <var>cstr</var>, which has the same size as the input
+ datetime <var>Τ</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod2"
+              aria-expanded="false" aria-controls="collapseMethod2">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>cellstr</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  Convert datetime array to a cell array of character vectors.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod2">
+            <div class="border-bottom py-2">
 <dl>
 <dt><u>datetime:</u> <var>cstr</var> = <b>cellstr</b><i> (<var>T</var>)</i></dt>
 <dt><u>datetime:</u> <var>cstr</var> = <b>cellstr</b><i> (<var>T</var>, <var>Format</var>)</i></dt>
@@ -270,18 +516,24 @@
           </div>
         </div>
 
-        <div class="container-xl my-4">
-          <div class="card rounded">
-            <div class="card-header card-header-mod">
-              <div class="row d-flex flex-wrap align-items-center">
-                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                  <h3 class="d-inline-block mr-2">
-                  Method: <b><code>char</code></b>
-                  </h3>
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod3"
+              aria-expanded="false" aria-controls="collapseMethod3">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>char</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  Convert datetime array to a character matrix.
                 </div>
               </div>
-            </div>
-            <div class="card-body">
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod3">
+            <div class="border-bottom py-2">
 <dl>
 <dt><u>datetime:</u> <var>cmat</var> = <b>char</b><i> (<var>T</var>)</i></dt>
 <dt><u>datetime:</u> <var>cmat</var> = <b>char</b><i> (<var>T</var>, <var>Format</var>)</i></dt>
@@ -300,28 +552,35 @@
           </div>
         </div>
 
-
-        <div class="container-xl my-4">
-          <div class="card rounded">
-            <div class="card-header card-header-mod">
-              <div class="row d-flex flex-wrap align-items-center">
-                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                  <h3 class="d-inline-block mr-2">
-                  Method: <b><code>datetime</code></b>
-                  </h3>
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod4"
+              aria-expanded="false" aria-controls="collapseMethod4">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>ymd</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  Year, Month, and Day components of datetime array.
                 </div>
               </div>
-            </div>
-            <div class="card-body">
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod4">
+            <div class="border-bottom py-2">
 <dl>
-<dt><u>datetime:</u> <var>DV</var> = <b>datevec</b><i> (<var>T</var>)</i></dt>
+<dt><u>datetime:</u> [<var>Y</var>, <var>M</var>, <var>D</var>] = <b>ymd</b><i> (<var>T</var>)</i></dt>
 </dl>
 
-<p> Convert datetime array to date vectors.
+<p> Year, Month, and Day components of datetime array.
 </p>
 <div class="ms-5">
-<p> <code><var>DV</var> = datevec (<var>T</var>)</code> returns a numeric matrix with one row
- per element in <var>T</var>.
+<p> <code>[<var>Y</var>, <var>M</var>, <var>D</var>] = ymd (<var>T</var>)</code> returns the year,
+ month, and day components of the corresponding datetime values in <var>T</var>
+ as separate numeric arrays.  <var>Y</var>, <var>M</var>, <var>D</var> contain integer
+ values and have the same size as <var>T</var>.
 </p>
 
 </div>
@@ -330,80 +589,24 @@
           </div>
         </div>
 
-        <div class="container-xl my-4">
-          <div class="card rounded">
-            <div class="card-header card-header-mod">
-              <div class="row d-flex flex-wrap align-items-center">
-                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                  <h3 class="d-inline-block mr-2">
-                  Method: <b><code>datevec</code></b>
-                  </h3>
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod5"
+              aria-expanded="false" aria-controls="collapseMethod5">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>hms</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  Hour, Minute, and Second components of a datetime array.
                 </div>
               </div>
-            </div>
-            <div class="card-body">
-<dl>
-<dt><u>datetime:</u> <var>DV</var> = <b>datevec</b><i> (<var>T</var>)</i></dt>
-</dl>
-
-<p> Convert datetime array to date vectors.
-</p>
-<div class="ms-5">
-<p> <code><var>DV</var> = datevec (<var>T</var>)</code> returns a numeric matrix with one row
- per element in <var>T</var>.
-</p>
-
-</div>
-
-            </div>
           </div>
-        </div>
-
-
-        <div class="container-xl my-4">
-          <div class="card rounded">
-            <div class="card-header card-header-mod">
-              <div class="row d-flex flex-wrap align-items-center">
-                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                  <h3 class="d-inline-block mr-2">
-                  Method: <b><code>dispstrings</code></b>
-                  </h3>
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
-<dl>
-<dt><u>datetime:</u> <var>cstr</var> = <b>dispstrings</b><i> (<var>Τ</var>)</i></dt>
-</dl>
-
-<p> Get display formatted strings for each element of a datetime object.
-</p>
-<div class="ms-5">
-<p> <code><var>cstr</var> = dispstrings (<var>Τ</var>)</code> returns a cellstr array of
- character vectors, <var>cstr</var>, which has the same size as the input
- datetime <var>Τ</var>.
-</p>
-
-</div>
-
-            </div>
-          </div>
-        </div>
-
-
-
-        <div class="container-xl my-4">
-          <div class="card rounded">
-            <div class="card-header card-header-mod">
-              <div class="row d-flex flex-wrap align-items-center">
-                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                  <h3 class="d-inline-block mr-2">
-                  Method: <b><code>hms</code></b>
-                  </h3>
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
+          <div class="collapse multi-collapse" id="collapseMethod5">
+            <div class="border-bottom py-2">
 <dl>
 <dt><u>Method:</u> [<var>h</var>, <var>m</var>, <var>s</var>] = <b>hms</b><i> (<var>T</var>)</i></dt>
 </dl>
@@ -413,7 +616,7 @@
 <div class="ms-5">
 <p> <code>[<var>h</var>, <var>m</var>, <var>s</var>] = ymd (<var>T</var>)</code> returns the hour,
  miute, and second components of the corresponding datetime values in
- @vat{T} as separate numeric arrays.  <var>h</var> and <var>m</var> contain integer
+ <var>T</var> as separate numeric arrays.  <var>h</var> and <var>m</var> contain integer
  values and <var>s</var> may also contain a fractional part.  All outputs have
  the same size as <var>T</var>.
 </p>
@@ -424,110 +627,254 @@
           </div>
         </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <div class="container-xl my-4">
-          <div class="card rounded">
-            <div class="card-header card-header-mod">
-              <div class="row d-flex flex-wrap align-items-center">
-                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                  <h3 class="d-inline-block mr-2">
-                  Method: <b><code>ndims</code></b>
-                  </h3>
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod6"
+              aria-expanded="false" aria-controls="collapseMethod6">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>year</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
                 </div>
               </div>
-            </div>
-            <div class="card-body">
-<dl>
-<dt><u>datetime:</u> <var>out</var> = <b>ndims</b><i> (<var>T</var>)</i></dt>
-</dl>
-
-<p> Number of dimensions in a datetime array.
-</p>
-<div class="ms-5">
-<p> <code><var>out</var> = ndims (<var>T</var>)</code> returns the number of dimensions of
- the datetime array <var>T</var>.
-</p>
-
-</div>
-
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod6">
+            <div class="border-bottom py-2">
+<b><code>datetime.year</code></b> is not documented.
             </div>
           </div>
         </div>
 
-        <div class="container-xl my-4">
-          <div class="card rounded">
-            <div class="card-header card-header-mod">
-              <div class="row d-flex flex-wrap align-items-center">
-                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                  <h3 class="d-inline-block mr-2">
-                  Method: <b><code>numel</code></b>
-                  </h3>
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod7"
+              aria-expanded="false" aria-controls="collapseMethod7">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>quarter</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
                 </div>
               </div>
-            </div>
-            <div class="card-body">
-<dl>
-<dt><u>datetime:</u> <var>out</var> = <b>numel</b><i> (<var>T</var>)</i></dt>
-</dl>
-
-<p> Total number of elements in a datetime array.
-</p>
-<div class="ms-5">
-<p> For compatibility reasons with Octave&rsquo;s OOP interface and <code>subsasgn</code>
- behavior, datetime&rsquo;s <code>numel</code> is defined to always return 1.
-</p>
-
-</div>
-
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod7">
+            <div class="border-bottom py-2">
+<b><code>datetime.quarter</code></b> is not documented.
             </div>
           </div>
         </div>
 
-
-
-
-
-
-
-        <div class="container-xl my-4">
-          <div class="card rounded">
-            <div class="card-header card-header-mod">
-              <div class="row d-flex flex-wrap align-items-center">
-                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                  <h3 class="d-inline-block mr-2">
-                  Method: <b><code>size</code></b>
-                  </h3>
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod8"
+              aria-expanded="false" aria-controls="collapseMethod8">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>month</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
                 </div>
               </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod8">
+            <div class="border-bottom py-2">
+<b><code>datetime.month</code></b> is not documented.
             </div>
-            <div class="card-body">
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod9"
+              aria-expanded="false" aria-controls="collapseMethod9">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>week</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod9">
+            <div class="border-bottom py-2">
+<b><code>datetime.week</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod10"
+              aria-expanded="false" aria-controls="collapseMethod10">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>day</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod10">
+            <div class="border-bottom py-2">
+<b><code>datetime.day</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod11"
+              aria-expanded="false" aria-controls="collapseMethod11">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>hour</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod11">
+            <div class="border-bottom py-2">
+<b><code>datetime.hour</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod12"
+              aria-expanded="false" aria-controls="collapseMethod12">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>minute</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod12">
+            <div class="border-bottom py-2">
+<b><code>datetime.minute</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod13"
+              aria-expanded="false" aria-controls="collapseMethod13">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>second</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod13">
+            <div class="border-bottom py-2">
+<b><code>datetime.second</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod14"
+              aria-expanded="false" aria-controls="collapseMethod14">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>timeofday</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod14">
+            <div class="border-bottom py-2">
+<b><code>datetime.timeofday</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod15"
+              aria-expanded="false" aria-controls="collapseMethod15">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>tzoffset</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod15">
+            <div class="border-bottom py-2">
+<b><code>datetime.tzoffset</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod16"
+              aria-expanded="false" aria-controls="collapseMethod16">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>size</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  Size of a datetime array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod16">
+            <div class="border-bottom py-2">
 <dl>
 <dt><u>datetime:</u> <var>sz</var> = <b>size</b><i> (<var>T</var>)</i></dt>
 <dt><u>datetime:</u> <var>dim_sz</var> = <b>size</b><i> (<var>T</var>, <var>dim</var>)</i></dt>
@@ -558,37 +905,33 @@
           </div>
         </div>
 
-
-
-
-
-
-
-
-
-        <div class="container-xl my-4">
-          <div class="card rounded">
-            <div class="card-header card-header-mod">
-              <div class="row d-flex flex-wrap align-items-center">
-                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                  <h3 class="d-inline-block mr-2">
-                  Method: <b><code>ymd</code></b>
-                  </h3>
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod17"
+              aria-expanded="false" aria-controls="collapseMethod17">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>ndims</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  Number of dimensions in a datetime array.
                 </div>
               </div>
-            </div>
-            <div class="card-body">
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod17">
+            <div class="border-bottom py-2">
 <dl>
-<dt><u>datetime:</u> [<var>Y</var>, <var>M</var>, <var>D</var>] = <b>ymd</b><i> (<var>T</var>)</i></dt>
+<dt><u>datetime:</u> <var>out</var> = <b>ndims</b><i> (<var>T</var>)</i></dt>
 </dl>
 
-<p> Year, Month, and Day components of datetime array.
+<p> Number of dimensions in a datetime array.
 </p>
 <div class="ms-5">
-<p> <code>[<var>Y</var>, <var>M</var>, <var>D</var>] = ymd (<var>T</var>)</code> returns the year,
- month, and day components of the corresponding datetime values in @vat{T}
- as separate numeric arrays.  <var>Y</var>, <var>M</var>, <var>D</var> contain integer
- values and have the same size as <var>T</var>.
+<p> <code><var>out</var> = ndims (<var>T</var>)</code> returns the number of dimensions of
+ the datetime array <var>T</var>.
 </p>
 
 </div>
@@ -597,6 +940,926 @@
           </div>
         </div>
 
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod18"
+              aria-expanded="false" aria-controls="collapseMethod18">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>numel</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  Total number of elements in a datetime array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod18">
+            <div class="border-bottom py-2">
+<dl>
+<dt><u>datetime:</u> <var>out</var> = <b>numel</b><i> (<var>T</var>)</i></dt>
+</dl>
+
+<p> Total number of elements in a datetime array.
+</p>
+<div class="ms-5">
+<p> For compatibility reasons with Octave&rsquo;s OOP interface and <code>subsasgn</code>
+ behavior, datetime&rsquo;s <code>numel</code> is defined to always return 1.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod19"
+              aria-expanded="false" aria-controls="collapseMethod19">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>histcounts</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod19">
+            <div class="border-bottom py-2">
+<b><code>datetime.histcounts</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod20"
+              aria-expanded="false" aria-controls="collapseMethod20">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>min</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod20">
+            <div class="border-bottom py-2">
+<b><code>datetime.min</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod21"
+              aria-expanded="false" aria-controls="collapseMethod21">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>max</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod21">
+            <div class="border-bottom py-2">
+<b><code>datetime.max</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod22"
+              aria-expanded="false" aria-controls="collapseMethod22">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>mink</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod22">
+            <div class="border-bottom py-2">
+<b><code>datetime.mink</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod23"
+              aria-expanded="false" aria-controls="collapseMethod23">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>maxk</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod23">
+            <div class="border-bottom py-2">
+<b><code>datetime.maxk</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod24"
+              aria-expanded="false" aria-controls="collapseMethod24">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>plot</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod24">
+            <div class="border-bottom py-2">
+<b><code>datetime.plot</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod25"
+              aria-expanded="false" aria-controls="collapseMethod25">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>convertTo</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod25">
+            <div class="border-bottom py-2">
+<b><code>datetime.convertTo</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod26"
+              aria-expanded="false" aria-controls="collapseMethod26">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>exceltime</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod26">
+            <div class="border-bottom py-2">
+<b><code>datetime.exceltime</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod27"
+              aria-expanded="false" aria-controls="collapseMethod27">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>posixtime</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod27">
+            <div class="border-bottom py-2">
+<b><code>datetime.posixtime</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod28"
+              aria-expanded="false" aria-controls="collapseMethod28">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>juliandate</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod28">
+            <div class="border-bottom py-2">
+<b><code>datetime.juliandate</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod29"
+              aria-expanded="false" aria-controls="collapseMethod29">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>yyyymmdd</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod29">
+            <div class="border-bottom py-2">
+<b><code>datetime.yyyymmdd</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod30"
+              aria-expanded="false" aria-controls="collapseMethod30">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>datevec</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  Convert datetime array to date vectors.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod30">
+            <div class="border-bottom py-2">
+<dl>
+<dt><u>datetime:</u> <var>DV</var> = <b>datevec</b><i> (<var>T</var>)</i></dt>
+</dl>
+
+<p> Convert datetime array to date vectors.
+</p>
+<div class="ms-5">
+<p> <code><var>DV</var> = datevec (<var>T</var>)</code> returns a numeric matrix with one row
+ per element in <var>T</var>.
+</p>
+
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod31"
+              aria-expanded="false" aria-controls="collapseMethod31">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>isbetween</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod31">
+            <div class="border-bottom py-2">
+<b><code>datetime.isbetween</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod32"
+              aria-expanded="false" aria-controls="collapseMethod32">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>iscolumn</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod32">
+            <div class="border-bottom py-2">
+<b><code>datetime.iscolumn</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod33"
+              aria-expanded="false" aria-controls="collapseMethod33">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>isdst</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod33">
+            <div class="border-bottom py-2">
+<b><code>datetime.isdst</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod34"
+              aria-expanded="false" aria-controls="collapseMethod34">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>isempty</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod34">
+            <div class="border-bottom py-2">
+<b><code>datetime.isempty</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod35"
+              aria-expanded="false" aria-controls="collapseMethod35">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>isequal</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod35">
+            <div class="border-bottom py-2">
+<b><code>datetime.isequal</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod36"
+              aria-expanded="false" aria-controls="collapseMethod36">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>isequaln</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod36">
+            <div class="border-bottom py-2">
+<b><code>datetime.isequaln</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod37"
+              aria-expanded="false" aria-controls="collapseMethod37">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>isfinite</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod37">
+            <div class="border-bottom py-2">
+<b><code>datetime.isfinite</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod38"
+              aria-expanded="false" aria-controls="collapseMethod38">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>isinf</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod38">
+            <div class="border-bottom py-2">
+<b><code>datetime.isinf</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod39"
+              aria-expanded="false" aria-controls="collapseMethod39">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>ismatrix</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod39">
+            <div class="border-bottom py-2">
+<b><code>datetime.ismatrix</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod40"
+              aria-expanded="false" aria-controls="collapseMethod40">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>ismember</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod40">
+            <div class="border-bottom py-2">
+<b><code>datetime.ismember</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod41"
+              aria-expanded="false" aria-controls="collapseMethod41">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>isnat</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod41">
+            <div class="border-bottom py-2">
+<b><code>datetime.isnat</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod42"
+              aria-expanded="false" aria-controls="collapseMethod42">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>isregular</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod42">
+            <div class="border-bottom py-2">
+<b><code>datetime.isregular</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod43"
+              aria-expanded="false" aria-controls="collapseMethod43">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>isrow</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod43">
+            <div class="border-bottom py-2">
+<b><code>datetime.isrow</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod44"
+              aria-expanded="false" aria-controls="collapseMethod44">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>isscalar</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod44">
+            <div class="border-bottom py-2">
+<b><code>datetime.isscalar</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod45"
+              aria-expanded="false" aria-controls="collapseMethod45">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>issorted</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod45">
+            <div class="border-bottom py-2">
+<b><code>datetime.issorted</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod46"
+              aria-expanded="false" aria-controls="collapseMethod46">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>issortedrows</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod46">
+            <div class="border-bottom py-2">
+<b><code>datetime.issortedrows</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod47"
+              aria-expanded="false" aria-controls="collapseMethod47">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>isvector</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod47">
+            <div class="border-bottom py-2">
+<b><code>datetime.isvector</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod48"
+              aria-expanded="false" aria-controls="collapseMethod48">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>isweekend</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod48">
+            <div class="border-bottom py-2">
+<b><code>datetime.isweekend</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod49"
+              aria-expanded="false" aria-controls="collapseMethod49">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>sort</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod49">
+            <div class="border-bottom py-2">
+<b><code>datetime.sort</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod50"
+              aria-expanded="false" aria-controls="collapseMethod50">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>sortrows</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod50">
+            <div class="border-bottom py-2">
+<b><code>datetime.sortrows</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod51"
+              aria-expanded="false" aria-controls="collapseMethod51">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>unique</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod51">
+            <div class="border-bottom py-2">
+<b><code>datetime.unique</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod52"
+              aria-expanded="false" aria-controls="collapseMethod52">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>interp1</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod52">
+            <div class="border-bottom py-2">
+<b><code>datetime.interp1</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod53"
+              aria-expanded="false" aria-controls="collapseMethod53">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>intersect</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod53">
+            <div class="border-bottom py-2">
+<b><code>datetime.intersect</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod54"
+              aria-expanded="false" aria-controls="collapseMethod54">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>setdiff</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod54">
+            <div class="border-bottom py-2">
+<b><code>datetime.setdiff</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod55"
+              aria-expanded="false" aria-controls="collapseMethod55">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>setxor</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod55">
+            <div class="border-bottom py-2">
+<b><code>datetime.setxor</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod56"
+              aria-expanded="false" aria-controls="collapseMethod56">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>union</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod56">
+            <div class="border-bottom py-2">
+<b><code>datetime.union</code></b> is not documented.
+            </div>
+          </div>
+        </div>
 
 
             </div>
