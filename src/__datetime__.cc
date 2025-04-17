@@ -99,7 +99,7 @@ RowVector seconds2vector (double time_sec, string precision)
   return OUT;
 }
 
-RowVector tz2vector (auto to, string precision)
+template <typename ZonedType> RowVector tz2vector (const ZonedType& to, string precision)
 {
   RowVector OUT(6);
   auto t_local = to.get_local_time();
@@ -140,12 +140,13 @@ auto timezone_precision (double time_sec, string timezone, string precision)
   else
   {
     auto tp = double2nano (time_sec);
-    tz = make_zoned (timezone, tp);
+    using duration_type = std::chrono::duration<std::int64_t, std::ratio<1, 1000000>>; // microseconds
+    tz = make_zoned (timezone, std::chrono::time_point_cast<duration_type>(tp));
   }
   return tz;
 }
 
-RowVector timezone2vector (auto to)
+template <typename ZonedType> RowVector timezone2vector (const ZonedType& to)
 {
   RowVector OUT(6);
   auto t_local = to.get_local_time();
