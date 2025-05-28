@@ -877,7 +877,7 @@ classdef table
 ## 'sortrows'         'unique'           'issortedrows'     'topkrows'        ##
 ## 'addvars'          'renamevars'       'movevars'         'removevars'      ##
 ## 'splitvars'        'mergevars'        'convertvars'      'rows2vars'       ##
-## 'stack'            'unstack'          'inner2router'     'addprop'         ##
+## 'stack'            'unstack'          'inner2outer'      'addprop'         ##
 ## 'rmprop'                                                                   ##
 ##                                                                            ##
 ################################################################################
