@@ -86,8 +86,8 @@ RowVector seconds2vector (double time_sec, string precision)
   hh_mm_ss time_tp{tp - day_tp};
   year_month_day date_tp{day_tp};
   OUT(0) = (int)date_tp.year();
-  OUT(1) = (u_int)date_tp.month();
-  OUT(2) = (u_int)date_tp.day();
+  OUT(1) = (unsigned int)date_tp.month();
+  OUT(2) = (unsigned int)date_tp.day();
   OUT(3) = time_tp.hours().count();
   OUT(4) = time_tp.minutes().count();
   OUT(5) = (double)time_tp.seconds().count() +
@@ -107,8 +107,8 @@ template <typename ZonedType> RowVector tz2vector (const ZonedType& to, string p
   hh_mm_ss time_local{t_local - today_local};
   year_month_day date_local{today_local};
   OUT(0) = (int)date_local.year();
-  OUT(1) = (u_int)date_local.month();
-  OUT(2) = (u_int)date_local.day();
+  OUT(1) = (unsigned int)date_local.month();
+  OUT(2) = (unsigned int)date_local.day();
   OUT(3) = time_local.hours().count();
   OUT(4) = time_local.minutes().count();
   if (precision == "milliseconds")
@@ -154,8 +154,8 @@ template <typename ZonedType> RowVector timezone2vector (const ZonedType& to)
   hh_mm_ss time_tp{t_local - day_tp};
   year_month_day date_tp{day_tp};
   OUT(0) = (int)date_tp.year();
-  OUT(1) = (u_int)date_tp.month();
-  OUT(2) = (u_int)date_tp.day();
+  OUT(1) = (unsigned int)date_tp.month();
+  OUT(2) = (unsigned int)date_tp.day();
   OUT(3) = time_tp.hours().count();
   OUT(4) = time_tp.minutes().count();
   OUT(5) = (double)time_tp.seconds().count() +
@@ -807,8 +807,8 @@ Base fuction for datetime class. \n\
             ymd = sys_days{ymd} + days{tmp_D};
           }
           Y(i) = (int)ymd.year();
-          M(i) = (u_int)ymd.month();
-          D(i) = (u_int)ymd.day();
+          M(i) = (unsigned int)ymd.month();
+          D(i) = (unsigned int)ymd.day();
           h(i) = 0;
           m(i) = 0;
           s(i) = 0;
@@ -889,8 +889,8 @@ Base fuction for datetime class. \n\
             ymd = sys_days{ymd} + days{tmp_D};
           }
           Y(i) = (int)ymd.year();
-          M(i) = (u_int)ymd.month();
-          D(i) = (u_int)ymd.day();
+          M(i) = (unsigned int)ymd.month();
+          D(i) = (unsigned int)ymd.day();
         }
       }
     }
