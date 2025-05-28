@@ -970,13 +970,16 @@ classdef duration
 
     function C = colon (varargin)
       if (nargin < 2 || nargin > 3)
-        error ("duration: invalid number of input arguments.");
+        error ("duration.colon: invalid number of input arguments.");
+      endif
+      if (! all (cellfun ('isscalar', varargin)))
+        error ("duration.colon: input arguments must be scalars.");
       endif
       if (nargin == 2)
         [from, to] = promote (varargin{:});
-        increment = 1;
+        increment = days (1);
       else
-        [from, increment, to] = promote (varargin{:})
+        [from, increment, to] = promote (varargin{:});
       endif
       C = from;
       C.Days = from.Days:increment.Days:to.Days;
