@@ -33,7 +33,10 @@
 // We did not mean to shout.
 
 #ifndef HAS_STRING_VIEW
-#  if __cplusplus >= 201703 || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+#  if __has_include(<string_view>)
+#    include <string_view>
+#  endif
+#  ifdef __cpp_lib_string_view
 #    define HAS_STRING_VIEW 1
 #  else
 #    define HAS_STRING_VIEW 0
@@ -61,9 +64,6 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#if HAS_STRING_VIEW
-# include <string_view>
-#endif
 #include <utility>
 #include <type_traits>
 
