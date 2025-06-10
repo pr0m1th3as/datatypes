@@ -89,7 +89,7 @@ static_assert(HAS_REMOTE_API == 0 ? AUTO_DOWNLOAD == 0 : true,
 #endif
 
 #ifndef HAS_DEDUCTION_GUIDES
-#  if __cplusplus >= 201703
+#  ifdef __cpp_deduction_guides
 #    define HAS_DEDUCTION_GUIDES 1
 #  else
 #    define HAS_DEDUCTION_GUIDES 0
