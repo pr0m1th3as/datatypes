@@ -37,7 +37,7 @@ function out = calweeks (x)
   elseif (any (fix (x(:)) != x(:)))
     error ("calweeks: input array must contain only integer values.");
   endif
-  out = calendarDuration (0, 0, x * 7, 'Format', 'ymwdt');
+  out = calendarDuration (0, 0, double (x) * 7, 'Format', 'ymwdt');
 endfunction
 
 %!test
@@ -47,6 +47,9 @@ endfunction
 %!test
 %! D = calweeks ([1, 2, 3]);
 %! assert (calweeks (D), [1, 2, 3]);
+%!test
+%! D = calweeks (int16 (1));
+%! assert (calweeks (D), 1);
 
 %!error<calweeks: input array must be numeric.> calweeks ("asd");
 %!error<calweeks: input array must contain only integer values.> ...

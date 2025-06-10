@@ -292,8 +292,8 @@ classdef calendarDuration
       endswitch
 
       ## Construction
-      this.Months = Y * 12 + M;
-      this.Days = D;
+      this.Months = double (Y) * 12 + double (M);
+      this.Days = double (D);
       this.Time = T;
 
       ## Broadcast NaNs

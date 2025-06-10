@@ -1463,6 +1463,10 @@ function [err, days] = hms2days (H, MI, S, MS = 0)
       return
     endif
   endif
+  H = double (H);
+  MI = double (MI);
+  S = double (S);
+  MS = double (MS);
   days = (H / 24) + (MI / 1440) + (S / 86400) + (MS / 86400000);
 endfunction
 

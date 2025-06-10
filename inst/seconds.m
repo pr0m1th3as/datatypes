@@ -34,7 +34,7 @@ function out = seconds (x)
   if (! isnumeric (x))
     error ("seconds: input array must be numeric.");
   endif
-  out = duration (0, 0, x);
+  out = duration (0, 0, double (x));
 endfunction
 
 %!test
@@ -44,5 +44,8 @@ endfunction
 %!test
 %! D = seconds ([1, 2, 3]);
 %! assert (seconds (D), [1, 2, 3]);
+%!test
+%! D = seconds (int16 (1));
+%! assert (seconds (D), 1);
 
 %!error<seconds: input array must be numeric.> seconds ("asd");

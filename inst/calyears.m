@@ -37,7 +37,7 @@ function out = calyears (x)
   elseif (any (fix (x(:)) != x(:)))
     error ("calyears: input array must contain only integer values.");
   endif
-  out = calendarDuration (x, 0, 0);
+  out = calendarDuration (double (x), 0, 0);
 endfunction
 
 %!test
@@ -47,6 +47,9 @@ endfunction
 %!test
 %! D = calyears ([1, 2, 3]);
 %! assert (calyears (D), [1, 2, 3]);
+%!test
+%! D = calyears (int16 (1));
+%! assert (calyears (D), 1);
 
 %!error<calyears: input array must be numeric.> calyears ("asd");
 %!error<calyears: input array must contain only integer values.> ...

@@ -37,7 +37,7 @@ function out = caldays (x)
   elseif (any (fix (x(:)) != x(:)))
     error ("caldays: input array must contain only integer values.");
   endif
-  out = calendarDuration (0, 0, x);
+  out = calendarDuration (0, 0, double (x));
 endfunction
 
 %!test
@@ -47,6 +47,9 @@ endfunction
 %!test
 %! D = caldays ([1, 2, 3]);
 %! assert (caldays (D), [1, 2, 3]);
+%!test
+%! D = caldays (int16 (1));
+%! assert (caldays (D), 1);
 
 %!error<caldays: input array must be numeric.> caldays ("asd");
 %!error<caldays: input array must contain only integer values.> ...

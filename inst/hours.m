@@ -34,7 +34,7 @@ function out = hours (x)
   if (! isnumeric (x))
     error ("hours: input array must be numeric.");
   endif
-  out = duration (x, 0, 0);
+  out = duration (double (x), 0, 0);
 endfunction
 
 %!test
@@ -44,5 +44,8 @@ endfunction
 %!test
 %! D = hours ([1, 2, 3]);
 %! assert (hours (D), [1, 2, 3]);
+%!test
+%! D = hours (int16 (1));
+%! assert (hours (D), 1);
 
 %!error<hours: input array must be numeric.> hours ("asd");

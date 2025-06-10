@@ -34,7 +34,7 @@ function out = days (x)
   if (! isnumeric (x))
     error ("days: input array must be numeric.");
   endif
-  out = duration (x * 24, 0, 0);
+  out = duration (double (x) * 24, 0, 0);
 endfunction
 
 %!test
@@ -44,5 +44,8 @@ endfunction
 %!test
 %! D = days ([1, 2, 3]);
 %! assert (days (D), [1, 2, 3]);
+%!test
+%! D = days (int16 (1));
+%! assert (days (D), 1);
 
 %!error<days: input array must be numeric.> days ("asd");
