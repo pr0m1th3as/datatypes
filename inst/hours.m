@@ -31,10 +31,12 @@
 ## duration.hours}
 ## @end deftypefn
 function out = hours (x)
-  if (! isnumeric (x))
+  if (nargin == 0)
+    x = 1;
+  elseif (! isnumeric (x))
     error ("hours: input array must be numeric.");
   endif
-  out = duration (double (x), 0, 0);
+  out = duration (double (x), 0, 0, 'Format', 'h');
 endfunction
 
 %!test
@@ -46,6 +48,9 @@ endfunction
 %! assert (hours (D), [1, 2, 3]);
 %!test
 %! D = hours (int16 (1));
+%! assert (hours (D), 1);
+%!test
+%! D = hours ();
 %! assert (hours (D), 1);
 
 %!error<hours: input array must be numeric.> hours ("asd");

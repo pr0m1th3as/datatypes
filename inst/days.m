@@ -31,10 +31,12 @@
 ## duration.days}
 ## @end deftypefn
 function out = days (x)
-  if (! isnumeric (x))
+  if (nargin == 0)
+    x = 1;
+  elseif (! isnumeric (x))
     error ("days: input array must be numeric.");
   endif
-  out = duration (double (x) * 24, 0, 0);
+  out = duration (double (x) * 24, 0, 0, 'Format', 'd');
 endfunction
 
 %!test
@@ -46,6 +48,9 @@ endfunction
 %! assert (days (D), [1, 2, 3]);
 %!test
 %! D = days (int16 (1));
+%! assert (days (D), 1);
+%!test
+%! D = days ();
 %! assert (days (D), 1);
 
 %!error<days: input array must be numeric.> days ("asd");

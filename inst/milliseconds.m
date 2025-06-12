@@ -31,10 +31,12 @@
 ## duration.milliseconds}
 ## @end deftypefn
 function out = milliseconds (x)
-  if (! isnumeric (x))
+  if (nargin == 0)
+    x = 1;
+  elseif (! isnumeric (x))
     error ("milliseconds: input array must be numeric.");
   endif
-  out = duration (0, 0, double (x) / 1000);
+  out = duration (0, 0, double (x) / 1000, 'Format', 's');
 endfunction
 
 %!test
@@ -46,6 +48,9 @@ endfunction
 %! assert (milliseconds (D), [1, 2, 3]);
 %!test
 %! D = milliseconds (int16 (1));
+%! assert (milliseconds (D), 1);
+%!test
+%! D = milliseconds ();
 %! assert (milliseconds (D), 1);
 
 %!error<milliseconds: input array must be numeric.> milliseconds ("asd");

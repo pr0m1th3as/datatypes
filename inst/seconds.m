@@ -31,10 +31,12 @@
 ## duration.seconds}
 ## @end deftypefn
 function out = seconds (x)
-  if (! isnumeric (x))
+  if (nargin == 0)
+    x = 1;
+  elseif (! isnumeric (x))
     error ("seconds: input array must be numeric.");
   endif
-  out = duration (0, 0, double (x));
+  out = duration (0, 0, double (x), 'Format', 's');
 endfunction
 
 %!test
@@ -46,6 +48,9 @@ endfunction
 %! assert (seconds (D), [1, 2, 3]);
 %!test
 %! D = seconds (int16 (1));
+%! assert (seconds (D), 1);
+%!test
+%! D = seconds ();
 %! assert (seconds (D), 1);
 
 %!error<seconds: input array must be numeric.> seconds ("asd");
