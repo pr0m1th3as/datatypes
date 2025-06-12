@@ -286,9 +286,19 @@ classdef duration
           endif
           ## Build string according to display format
           if (strcmp (fmt, 'y'))
-            str = [str, sprintf('%g yrs', abs (d / 365.2425))];
+            years = abs (d / 365.2425);
+            if (years == 1)
+              str = [str, sprintf('%g yr', years)];
+            else
+              str = [str, sprintf('%g yrs', years)];
+            endif
           elseif (strcmp (fmt, 'd'))
-            str = [str, sprintf('%g days', abs (d))];
+            days = abs (d);
+            if (days == 1)
+              str = [str, sprintf('%g day', days)];
+            else
+              str = [str, sprintf('%g days', days)];
+            endif
           elseif (strcmp (fmt, 'h'))
             str = [str, sprintf('%g hr', abs (d * 24))];
           elseif (strcmp (fmt, 'm'))
