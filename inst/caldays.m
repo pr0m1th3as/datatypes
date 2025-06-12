@@ -32,7 +32,9 @@
 ## @end deftypefn
 function out = caldays (x)
   ## Check input
-  if (! isnumeric (x))
+  if (nargin == 0)
+    x = 1;
+  elseif (! isnumeric (x))
     error ("caldays: input array must be numeric.");
   elseif (any (fix (x(:)) != x(:)))
     error ("caldays: input array must contain only integer values.");
@@ -49,6 +51,9 @@ endfunction
 %! assert (caldays (D), [1, 2, 3]);
 %!test
 %! D = caldays (int16 (1));
+%! assert (caldays (D), 1);
+%!test
+%! D = caldays ();
 %! assert (caldays (D), 1);
 
 %!error<caldays: input array must be numeric.> caldays ("asd");

@@ -32,7 +32,9 @@
 ## @end deftypefn
 function out = calmonths (x)
   ## Check input
-  if (! isnumeric (x))
+  if (nargin == 0)
+    x = 1;
+  elseif (! isnumeric (x))
     error ("calmonths: input array must be numeric.");
   elseif (any (fix (x(:)) != x(:)))
     error ("calmonths: input array must contain only integer values.");
@@ -49,6 +51,9 @@ endfunction
 %! assert (calmonths (D), [1, 2, 3]);
 %!test
 %! D = calmonths (int16 (1));
+%! assert (calmonths (D), 1);
+%!test
+%! D = calmonths ();
 %! assert (calmonths (D), 1);
 
 %!error<calmonths: input array must be numeric.> calmonths ("asd");

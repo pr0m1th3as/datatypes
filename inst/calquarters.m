@@ -32,12 +32,14 @@
 ## @end deftypefn
 function out = calquarters (x)
   ## Check input
-  if (! isnumeric (x))
+  if (nargin == 0)
+    x = 1;
+  elseif (! isnumeric (x))
     error ("calquarters: input array must be numeric.");
   elseif (any (fix (x(:)) != x(:)))
     error ("calquarters: input array must contain only integer values.");
   endif
-  out = calendarDuration (0, double (x) * 3, 0);
+  out = calendarDuration (0, double (x) * 3, 0, 'Format', 'qmwdt');
 endfunction
 
 %!test
@@ -49,6 +51,9 @@ endfunction
 %! assert (calquarters (D), [1, 2, 3]);
 %!test
 %! D = calquarters (int16 (1));
+%! assert (calquarters (D), 1);
+%!test
+%! D = calquarters ();
 %! assert (calquarters (D), 1);
 
 %!error<calquarters: input array must be numeric.> calquarters ("asd");
