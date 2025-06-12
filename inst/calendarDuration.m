@@ -332,11 +332,35 @@ classdef calendarDuration
               els{end+1} = sprintf ('%dy', years);
             endif
             if (months != 0)
-              els{end+1} = sprintf ('%dmo', months);
+              ## Check Format contains 'q' to split between quarters and months
+              if (! isempty (strfind (calDur.Format, 'q')))
+                quarters = fix (months / 3);
+                months = rem (months, 3);
+                if (quarters != 0)
+                  els{end+1} = sprintf ('%dq', quarters);
+                endif
+                if (months != 0)
+                  els{end+1} = sprintf ('%dmo', months);
+                endif
+              else
+                els{end+1} = sprintf ('%dmo', months);
+              endif
             endif
           else
             if (calDur.Months != 0)
-              els{end+1} = sprintf ('%dmo', calDur.Months);
+              ## Check Format contains 'q' to split between quarters and months
+              if (! isempty (strfind (calDur.Format, 'q')))
+                quarters = fix (calDur.Months / 3);
+                months = rem (calDur.Months, 3);
+                if (quarters != 0)
+                  els{end+1} = sprintf ('%dq', quarters);
+                endif
+                if (months != 0)
+                  els{end+1} = sprintf ('%dmo', months);
+                endif
+              else
+                els{end+1} = sprintf ('%dmo', calDur.Months);
+              endif
             endif
           endif
           if (calDur.Days != 0)
