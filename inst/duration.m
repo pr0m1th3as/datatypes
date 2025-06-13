@@ -34,7 +34,7 @@ classdef duration
   ## functions are also available as methods of @code{duration} arrays to
   ## extract individual duration units as numeric arrays.
   ##
-  ## @seealso{calendarDuration, duration}
+  ## @seealso{calendarDuration, datetime}
   ## @end deftp
 
   properties
