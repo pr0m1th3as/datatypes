@@ -176,7 +176,7 @@ classdef duration
         if (! (ischar (inputFormat) && isvector (inputFormat)))
           error ("duration: 'InputFormat' must be a character vector.");
         else
-          errmsg = checkInputFormatString (inputFormat)
+          errmsg = checkInputFormatString (inputFormat);
           if (! isempty (errmsg))
             error ("duration: %s", errmsg);
           endif
