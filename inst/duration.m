@@ -34,7 +34,7 @@ classdef duration
   ## functions are also available as methods of @code{duration} arrays to
   ## extract individual duration units as numeric arrays.
   ##
-  ## @seealso{calendarDuration, duration}
+  ## @seealso{calendarDuration, datetime}
   ## @end deftp
 
   properties
@@ -176,7 +176,7 @@ classdef duration
         if (! (ischar (inputFormat) && isvector (inputFormat)))
           error ("duration: 'InputFormat' must be a character vector.");
         else
-          errmsg = checkInputFormatString (inputFormat)
+          errmsg = checkInputFormatString (inputFormat);
           if (! isempty (errmsg))
             error ("duration: %s", errmsg);
           endif
