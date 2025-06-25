@@ -222,7 +222,7 @@ classdef categorical
           elseif (strcmp (classv, 'logical'))
             if (all (valueset))
               catnames = {'true'};
-            elseif (! all (valueset))
+            elseif (! any (valueset))
               catnames = {'false'};
             else
               catnames = {'false'; 'true'};
@@ -242,7 +242,7 @@ classdef categorical
           valueset = unique (x);
           if (all (valueset))
             catnames = {'true'};
-          elseif (! all (valueset))
+          elseif (! any (valueset))
             catnames = {'false'};
           else
             catnames = {'false'; 'true'};
