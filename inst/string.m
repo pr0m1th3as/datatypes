@@ -362,7 +362,7 @@ classdef string
     function out = double (this)
       out = NaN (size (this));
       fcn = @(x) str2num (char (x));
-      c_out = cellfun (f, this.strs, "UniformOutput", false);
+      c_out = cellfun (fcn, this.strs, "UniformOutput", false);
       t_num = ! cellfun (@isempty, c_out);
       out(t_num) = cell2mat (c_out(t_num));
     endfunction
