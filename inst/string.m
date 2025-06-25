@@ -362,7 +362,7 @@ classdef string
     function out = double (this)
       out = NaN (size (this));
       fcn = @(x) str2num (char (x));
-      c_out = cellfun (f, this.strs, "UniformOutput", false);
+      c_out = cellfun (fcn, this.strs, "UniformOutput", false);
       t_num = ! cellfun (@isempty, c_out);
       out(t_num) = cell2mat (c_out(t_num));
     endfunction
@@ -791,7 +791,7 @@ classdef string
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {string} {@var{newstr} =} strcat (@var{str1}, @var{str2), @dots{})
+    ## @deftypefn {string} {@var{newstr} =} strcat (@var{str1}, @var{str2}, @dots{})
     ##
     ## Horizontal concatenation of texts in string array.
     ##
@@ -838,7 +838,7 @@ classdef string
     ## -*- texinfo -*-
     ## @deftypefn {string} {@var{newstr} =} lower (@var{str})
     ##
-    ## Convert contents of strinf array to lower case.
+    ## Convert contents of string array to lower case.
     ##
     ## @code{@var{newstr} = lower (@var{str})} converts all upper case
     ## characters in every element of the string array @var{str} to lower case.
@@ -853,7 +853,7 @@ classdef string
     ## -*- texinfo -*-
     ## @deftypefn {string} {@var{newstr} =} upper (@var{str})
     ##
-    ## Convert contents of strinf array to upper case.
+    ## Convert contents of string array to upper case.
     ##
     ## @code{@var{newstr} = upper (@var{str})} converts all lower case
     ## characters in every element of the string array @var{str} to upper case.
