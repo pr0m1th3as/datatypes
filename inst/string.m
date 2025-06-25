@@ -148,9 +148,11 @@ classdef string
         sz = size (in);
         this.strs = repmat ({''}, sz);
         this.isMissing = false (sz);
-        all_scalar = all (cellfun (@(x) isscalar(x) | isempty(x), in));
+        fcn = @(x) isscalar (x) | isempty (x) | (ischar (x) & isvector (x));
+        all_scalar = all (cellfun (fcn, in));
         if (! all_scalar)
-          error ("string: cell array must explicitly contain scalar elements.");
+          error (strcat ("string: cell array must explicitly contain", ...
+                         " scalar elements or character vectors."));
         endif
         is_numeric = cellfun (@isnumeric, in);
         is_logical = cellfun (@islogical, in);
