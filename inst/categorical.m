@@ -761,7 +761,7 @@ classdef categorical
         return;
       endif
       if (numel (varargin) > 0)
-        if (! ismatrix (A) || ! ismatrix (B) || size (A, 2) != size (b, 2))
+        if (! ismatrix (A) || ! ismatrix (B) || size (A, 2) != size (B, 2))
           error (["categorical.ismember: cannot use 'rows' unless both", ...
                   " A and B are matrices with the same number of columns."]);
         endif

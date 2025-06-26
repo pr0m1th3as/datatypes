@@ -102,7 +102,7 @@ function tbl = struct2table (S, varargin)
     endfor
     nrows = cellfun (@rows, varValues);
     if (! all (ismember (nrows, nrows(1))))
-      error ("struct2table: fiels have different rows. Use 'AsArray' option.");
+      error ("struct2table: fields have different rows. Use 'AsArray' option.");
     endif
   endif
 
@@ -161,7 +161,7 @@ endfunction
 %! assert (size (tbl.B{1}), [2, 1]);
 
 %!error<struct2table: input array must be a structure.> struct2table ({1});
-%!error<struct2table: fiels have different rows. Use 'AsArray' option.> ...
+%!error<struct2table: fields have different rows. Use 'AsArray' option.> ...
 %! struct2table (struct ('A', 1, 'B', [1; 2]));
 %!error<struct2table: 'RowNames' must match the rows in input cell.> ...
 %! struct2table (struct ('A', {'a';, 'b'}, 'B', [1; 2]), 'RowNames', 'q');

@@ -686,7 +686,6 @@ classdef duration
       else
         error ("duration.isbetween: invalid INTERVALTYPE option.");
       endif
-      error ("duration.isequal: not implemented yet.");
     endfunction
 
     function TF = iscolumn (this)
