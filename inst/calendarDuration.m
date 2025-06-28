@@ -190,6 +190,9 @@ classdef calendarDuration
           if (! (isnumeric (X) && ismatrix (X)))
             error ("calendarDuration: X must be a numeric matrix.");
           endif
+          if (! isreal (X))
+            error ("calendarDuration: X must be real.");
+          endif
           if (size (X, 2) == 3)
             tmp = X(:);
             tmp(isnan(tmp)) = 0;
@@ -222,6 +225,9 @@ classdef calendarDuration
           if (! (isnumeric (Y) && isnumeric (M) && isnumeric (D)))
             error ("calendarDuration: Y, MO, and D must be a numeric arrays.");
           endif
+          if (! (isreal (Y) && isreal (M) && isreal (D)))
+            error ("calendarDuration: Y, MO, and D must be real.");
+          endif
           ## Expand as necessary
           if (! isscalar (Y) || ! isscalar (M) || ! isscalar (D))
             [err, Y, M, D] = common_size (Y, M, D);
@@ -243,6 +249,9 @@ classdef calendarDuration
           [Y, M, D, T] = args{:};
           if (! (isnumeric (Y) && isnumeric (M) && isnumeric (D)))
             error ("calendarDuration: Y, MO, and D must be a numeric arrays.");
+          endif
+          if (! (isreal (Y) && isreal (M) && isreal (D)))
+            error ("calendarDuration: Y, MO, and D must be real.");
           endif
           if (! isa (T, "duration"))
             error ("calendarDuration: T must be a duration array.");
@@ -269,6 +278,10 @@ classdef calendarDuration
         ## this = calendarDuration (Y, M, D, H, MI, S)
         case 6
           [Y, M, D, H, MI, S] = args{:};
+          if (! (isreal (Y) && isreal (M) && isreal (D) &&
+                 isreal (H) && isreal (MI) && isreal (S)))
+            error ("calendarDuration: numeric input data must be real.");
+          endif
           ## Expand as necessary
           if (! isscalar (Y) || ! isscalar (M) || ! isscalar (D) ||
               ! isscalar (H) || ! isscalar (MI) || ! isscalar (S))

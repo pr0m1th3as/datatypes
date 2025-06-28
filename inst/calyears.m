@@ -36,6 +36,8 @@ function out = calyears (x)
     x = 1;
   elseif (! isnumeric (x))
     error ("calyears: input array must be numeric.");
+  elseif (! isreal (x))
+    error ("calyears: input array must be real.");
   elseif (any (fix (x(:)) != x(:)))
     error ("calyears: input array must contain only integer values.");
   endif
@@ -57,6 +59,7 @@ endfunction
 %! assert (calyears (D), 1);
 
 %!error<calyears: input array must be numeric.> calyears ("asd");
+%!error<calyears: input array must be real.> calyears (1+i);
 %!error<calyears: input array must contain only integer values.> ...
 %! calyears (1.2);
 

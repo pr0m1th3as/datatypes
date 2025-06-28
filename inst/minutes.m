@@ -35,6 +35,8 @@ function out = minutes (x)
     x = 1;
   elseif (! isnumeric (x))
     error ("minutes: input array must be numeric.");
+  elseif (! isreal (x))
+    error ("minutes: input array must be real.");
   endif
   out = duration (0, double (x), 0, 'Format', 'm');
 endfunction
@@ -54,3 +56,4 @@ endfunction
 %! assert (minutes (D), 1);
 
 %!error<minutes: input array must be numeric.> minutes ("asd");
+%!error<minutes: input array must be real.> minutes (1+i);

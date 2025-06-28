@@ -197,6 +197,9 @@ classdef duration
             if (! ismatrix (X))
               error ("duration: numeric X must be a matrix.");
             endif
+            if (! isreal (X))
+              error ("duration: numeric X must be real.");
+            endif
             if (size (X, 2) == 3)
               H  = X(:,1);
               MI = X(:,2);
@@ -219,6 +222,9 @@ classdef duration
           if (! (isnumeric (H) && isnumeric (MI) && isnumeric (S)))
             error ("duration: Y, M, and D must be a numeric arrays.");
           endif
+          if (! (isreal (H) && isreal (MI) && isreal (S)))
+            error ("duration: Y, M, and D must be a real.");
+          endif
           ## Expansion is handled by the helper function
           [err, days] = hms2days (H, MI, S);
           if (err > 0)
@@ -231,6 +237,9 @@ classdef duration
           [H, MI, S, MS] = args{:};
           if (! (isnumeric (H) && isnumeric (MI) && isnumeric (S) && isnumeric (MS)))
             error ("duration: H, MI, S, and MS must be a numeric arrays.");
+          endif
+          if (! (isreal (H) && isreal (MI) && isreal (S) && isreal (MS)))
+            error ("duration: H, MI, S, and MS must be a real.");
           endif
           ## Expansion is handled by the helper function
           [err, days] = hms2days (H, MI, S, MS);

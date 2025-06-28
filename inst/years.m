@@ -36,6 +36,8 @@ function out = years (x)
     x = 1;
   elseif (! isnumeric (x))
     error ("years: input array must be numeric.");
+  elseif (! isreal (x))
+    error ("years: input array must be real.");
   endif
   out = duration (double (x) * 24 * 365.2425, 0, 0, 'Format', 'y');
 endfunction
@@ -52,3 +54,4 @@ endfunction
 %! assert (years (D), 1);
 
 %!error<years: input array must be numeric.> years ("asd");
+%!error<years: input array must be real.> years (1+i);

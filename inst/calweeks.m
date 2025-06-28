@@ -36,6 +36,8 @@ function out = calweeks (x)
     x = 1;
   elseif (! isnumeric (x))
     error ("calweeks: input array must be numeric.");
+  elseif (! isreal (x))
+    error ("calweeks: input array must be real.");
   elseif (any (fix (x(:)) != x(:)))
     error ("calweeks: input array must contain only integer values.");
   endif
@@ -57,6 +59,7 @@ endfunction
 %! assert (calweeks (D), 1);
 
 %!error<calweeks: input array must be numeric.> calweeks ("asd");
+%!error<calweeks: input array must be real.> calweeks (1+i);
 %!error<calweeks: input array must contain only integer values.> ...
 %! calweeks (1.2);
 

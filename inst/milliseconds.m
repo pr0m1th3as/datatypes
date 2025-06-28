@@ -35,6 +35,8 @@ function out = milliseconds (x)
     x = 1;
   elseif (! isnumeric (x))
     error ("milliseconds: input array must be numeric.");
+  elseif (! isreal (x))
+    error ("milliseconds: input array must be real.");
   endif
   out = duration (0, 0, double (x) / 1000, 'Format', 's');
 endfunction
@@ -54,3 +56,4 @@ endfunction
 %! assert (milliseconds (D), 1);
 
 %!error<milliseconds: input array must be numeric.> milliseconds ("asd");
+%!error<milliseconds: input array must be real.> milliseconds (1+i);

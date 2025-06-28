@@ -36,6 +36,8 @@ function out = calquarters (x)
     x = 1;
   elseif (! isnumeric (x))
     error ("calquarters: input array must be numeric.");
+  elseif (! isreal (x))
+    error ("calquarters: input array must be real.");
   elseif (any (fix (x(:)) != x(:)))
     error ("calquarters: input array must contain only integer values.");
   endif
@@ -57,6 +59,7 @@ endfunction
 %! assert (calquarters (D), 1);
 
 %!error<calquarters: input array must be numeric.> calquarters ("asd");
+%!error<calquarters: input array must be real.> calquarters (1+i);
 %!error<calquarters: input array must contain only integer values.> ...
 %! calquarters (1.2);
 

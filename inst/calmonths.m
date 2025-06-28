@@ -36,6 +36,8 @@ function out = calmonths (x)
     x = 1;
   elseif (! isnumeric (x))
     error ("calmonths: input array must be numeric.");
+  elseif (! isreal (x))
+    error ("calmonths: input array must be real.");
   elseif (any (fix (x(:)) != x(:)))
     error ("calmonths: input array must contain only integer values.");
   endif
@@ -57,6 +59,7 @@ endfunction
 %! assert (calmonths (D), 1);
 
 %!error<calmonths: input array must be numeric.> calmonths ("asd");
+%!error<calmonths: input array must be real.> calmonths (1+i);
 %!error<calmonths: input array must contain only integer values.> ...
 %! calmonths (1.2);
 

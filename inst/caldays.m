@@ -36,6 +36,8 @@ function out = caldays (x)
     x = 1;
   elseif (! isnumeric (x))
     error ("caldays: input array must be numeric.");
+  elseif (! isreal (x))
+    error ("caldays: input array must be real.");
   elseif (any (fix (x(:)) != x(:)))
     error ("caldays: input array must contain only integer values.");
   endif
@@ -57,6 +59,7 @@ endfunction
 %! assert (caldays (D), 1);
 
 %!error<caldays: input array must be numeric.> caldays ("asd");
+%!error<caldays: input array must be real.> caldays (1+i);
 %!error<caldays: input array must contain only integer values.> ...
 %! caldays (1.2);
 

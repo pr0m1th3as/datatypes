@@ -35,6 +35,8 @@ function out = days (x)
     x = 1;
   elseif (! isnumeric (x))
     error ("days: input array must be numeric.");
+  elseif (! isreal (x))
+    error ("days: input array must be real.");
   endif
   out = duration (double (x) * 24, 0, 0, 'Format', 'd');
 endfunction
@@ -54,3 +56,4 @@ endfunction
 %! assert (days (D), 1);
 
 %!error<days: input array must be numeric.> days ("asd");
+%!error<days: input array must be real.> days (1+i);
