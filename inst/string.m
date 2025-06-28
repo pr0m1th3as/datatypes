@@ -22,7 +22,7 @@ classdef string
   ## Array representing sequences of characters.
   ##
   ## A string array is an array, where each element stores a sequence of
-  ## characters of arbitraty length.
+  ## characters of arbitrary length.
   ##
   ## A string array can also have missing elements, which differ from a sequence
   ## of characters of zero length (the equivalent of an empty character vector).
@@ -467,7 +467,7 @@ classdef string
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'contains'         'endsWith'         'matches'          'startsWith'      ##
-## 'iscolumm'         'isempty'          'ismatrix'         'ismember'        ##
+## 'iscolumn'         'isempty'          'ismatrix'         'ismember'        ##
 ## 'ismissing'        'isrow'            'isscalar'         'issorted'        ##
 ## 'isstring'         'isvector'                                              ##
 ##                                                                            ##
@@ -916,7 +916,7 @@ classdef string
       out = args{1};
       tmp = cellfun (@(obj) obj.strs, args, 'UniformOutput', false);
       out.strs = cat (dim, tmp{:});
-      tmp = cellfun (@(obj) obj.strs, args, 'UniformOutput', false);
+      tmp = cellfun (@(obj) obj.isMissing, args, 'UniformOutput', false);
       out.isMissing = cat (dim, tmp{:});
     endfunction
 
