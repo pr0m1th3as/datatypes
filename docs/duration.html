@@ -236,7 +236,7 @@
 </p>
 <p> <strong>See also: </strong>
   <a href="calendarDuration.html">calendarDuration</a>, 
-  <a href="duration.html">duration</a>
+  <a href="datetime.html">datetime</a>
 </p>
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/duration.m">duration</a>
@@ -273,6 +273,104 @@
         <h4 class="d-inline-block my-3">
           Methods
         </h4>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#colapsibleConstructor"
+              aria-expanded="false" aria-controls="colapsibleConstructor">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>duration</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  Create a new array of fixed-length time durations.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="colapsibleConstructor">
+            <div class="border-bottom py-2">
+<dl>
+<dt><u>duration:</u> <var>D</var> = <b>duration</b><i> (<var>X</var>)</i></dt>
+<dt><u>duration:</u> <var>D</var> = <b>duration</b><i> (<var>H</var>, <var>MI</var>, <var>S</var>)</i></dt>
+<dt><u>duration:</u> <var>D</var> = <b>duration</b><i> (<var>H</var>, <var>MI</var>, <var>S</var>, <var>MS</var>)</i></dt>
+<dt><u>duration:</u> <var>D</var> = <b>duration</b><i> (<var>TimeStrings</var>)</i></dt>
+<dt><u>duration:</u> <var>D</var> = <b>duration</b><i> (<var>TimeStrings</var>, <code>'InputFormat'</code>, <var>INFMT</var>)</i></dt>
+<dt><u>duration:</u> <var>D</var> = <b>duration</b><i> (&hellip;, <code>'Format'</code>, <var>FMT</var>)</i></dt>
+</dl>
+
+<p> Create a new array of fixed-length time durations.
+</p>
+<div class="ms-5">
+<p> <code><var>D</var> = duration (<var>X</var>)</code> creates a column vector of durations
+ from a numeric matrix.
+</p>
+<p> <code><var>D</var> = duration (<var>H</var>, <var>MI</var>, <var>S</var>)</code> creates a duration
+ array from numeric arrays containing the number of hours, minutes, and
+ seconds specified by <var>H</var>, <var>MI</var> and <var>S</var>, respectively.
+</p>
+<p> <code><var>D</var> = duration (<var>H</var>, <var>MI</var>, <var>S</var>, <var>MS</var>)</code> creates
+ a duration array from numeric arrays containing the number of hours,
+ minutes, seconds, and milliseconds specified by <var>H</var>, <var>MI</var>,
+ <var>S</var>, and <var>MS</var>, respectively.
+</p>
+<p> <code><var>D</var> =</code> duration (<var>TimeStrings</var>) creates a duration array
+ from text that represents elapsed times.  <var>TimeStrings</var> can be a
+ character vector, a cell array of character vectors, or a string array
+ representing times using either the <code>'hh:mm:ss'</code> or the
+ <code>'dd:hh:mm:ss'</code> format.
+</p>
+<p> <code><var>D</var> =</code> duration (<var>TimeStrings</var>, <code>'InputFormat'</code>,
+ <var>INFMT</var>) creates a duration array from text that represents elapsed
+ times according to the format specified by <var>INFMT</var>, which can be any
+ of the following:
+</p>
+ <ul>
+<li> <code>'dd:hh:mm:ss'</code>
+ </li><li> <code>'hh:mm:ss'</code>
+ </li><li> <code>'mm:ss'</code>
+ </li><li> <code>'hh:mm'</code>
+ </li><li> Any of the first three formats can also be appended with up to nine
+ <code>S</code> characters to indicate fractional second digits, such as
+ <code>'dd:hh:mm:ss.SS'</code> or <code>'mm:ss.SS'</code>.
+ </li></ul>
+
+<p> <code><var>D</var> = duration (&hellip;, <code>'Format'</code>, <var>FMT</var>)</code>
+ specifies the format in which <var>D</var> is displayed.  <var>FMT</var> can
+ specify either a digital timer, which can have any of the valid formats
+ for <code>'InputFormat'</code> as shown above or a single number with time
+ units by specifying one of the following:
+</p>
+ <ul>
+<li> <code>'y'</code> fixed-length years (1 year equals 365.2425 days)
+ </li><li> <code>'d'</code> fixed-length days (1 day equals 24 hours)
+ </li><li> <code>'h'</code> hours
+ </li><li> <code>'m'</code> minutes
+ </li><li> <code>'s'</code> seconds
+ </li></ul>
+
+<p> <code><var>D</var> = duration ()</code> returns a scalar array of durations with an
+ elapsed time value of zero.  To create an empty duration array, use
+ <code>duration ([], [], [])</code>.
+</p>
+<p> <strong>See also: </strong>
+  <a href="years.html">years</a>, 
+  <a href="days.html">days</a>, 
+  <a href="hours.html">hours</a>, 
+  <a href="minutes.html">minutes</a>, 
+  <a href="seconds.html">seconds</a>, 
+  <a href="milliseconds.html">milliseconds</a>, 
+  <a href="duration.html">duration</a>, 
+  <a href="isduration.html">isduration</a>, 
+  <a href="calendarDuration.html">calendarDuration</a>, 
+  <a href="datetime.html">datetime</a>
+</p>
+</div>
+            </div>
+          </div>
+        </div>
 
         <div class="container-xl my-1">
           <div class="row">
