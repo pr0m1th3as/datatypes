@@ -122,7 +122,7 @@ classdef datetime
     ## @deftypefnx {datetime} {@var{Τ} =} datetime (@qcode{'yesterday'})
     ## @deftypefnx {datetime} {@var{Τ} =} datetime (@var{DateStrings})
     ## @deftypefnx {datetime} {@var{Τ} =} datetime (@var{DateStrings}, @qcode{'InputFormat'}, @var{INFMT})
-    ## @deftypefnx {datetime} {@var{Τ} =} datetime (@var{DateStrings},
+    ## @deftypefnx {datetime} {@var{Τ} =} datetime (@var{DateStrings},@
     ## @qcode{'InputFormat'}, @var{INFMT}, @qcode{'PivotYear'}, @var{PIVOT})
     ## @deftypefnx {datetime} {@var{Τ} =} datetime (@var{DateVectors})
     ## @deftypefnx {datetime} {@var{Τ} =} datetime (@var{Y}, @var{MO}, @var{D})
