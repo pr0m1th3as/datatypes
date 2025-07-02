@@ -85,6 +85,7 @@ classdef duration
 
   methods (Access = public)
 
+    ## -*- texinfo -*-
     ## @deftypefn  {duration} {@var{D} =} duration (@var{X})
     ## @deftypefnx {duration} {@var{D} =} duration (@var{H}, @var{MI}, @var{S})
     ## @deftypefnx {duration} {@var{D} =} duration (@var{H}, @var{MI}, @var{S}, @var{MS})
