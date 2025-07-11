@@ -929,7 +929,7 @@ classdef duration
         C.Days = A.Days .* double (B);
       elseif (isnumeric (A) && isa (B, 'duration'))
         C = B;
-        C.Days = B.Days .* double (A);
+        C.Days = double (A) .* B.Days;
       else
         error (strcat ("duration: multiplication is not defined between", ...
                        " '%s' and '%s' arrays."), class (A), class (B));
@@ -942,7 +942,7 @@ classdef duration
         C.Days = A.Days * double (B);
       elseif (isnumeric (A) && isa (B, 'duration'))
         C = B;
-        C.Days = B.Days * double (A);
+        C.Days = double (A) * B.Days;
       else
         error (strcat ("duration: matrix multiplication is not defined", ...
                        " between '%s' and '%s' arrays."), class (A), class (B));
