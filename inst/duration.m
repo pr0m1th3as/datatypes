@@ -628,8 +628,8 @@ classdef duration
       if (nargout == 0 || nargout == 1)
         varargout{1} = sz;
       elseif (numel (sz) != nargout)
-        error (["duration.size: nargout > 1 but does not", ...
-                " match number of requested dimensions."]);
+        error (strcat ("duration.size: nargout > 1 but does not", ...
+                       " match number of requested dimensions."));
       else
         for i = 1:nargout
           varargout{i} = sz(i);
@@ -765,8 +765,8 @@ classdef duration
       endif
       if (! isempty (varargin))
         if (! isa (varargin{1}, 'categorical'))
-          error (["duration.ismissing: INDICATOR", ...
-                  " argument must be of 'duration' type."]);
+          error (strcat ("duration.ismissing: INDICATOR", ...
+                         " argument must be of 'duration' type."));
         endif
         indicator = varargin{1};
         TF = false (size (this));
@@ -867,10 +867,10 @@ classdef duration
 ##                                                                            ##
 ## 'abs'              'plus'             'uplus'            'minus'           ##
 ## 'uminus'           'times'            'mtimes'           'ldivide'         ##
-## 'rdivide'          'colon'            'linspace'         'interp1          ##
-## 'sum'              'cumsum'           'diff'             'mean'            ##
-## 'median'           'mode'             'floor'            'ceil'            ##
-## 'round'            'sign'                                                  ##
+## 'mldivide'         'rdivide'          'mrdivide'         'colon'           ##
+## 'linspace'         'interp1'          'sum'              'cumsum'          ##
+## 'diff'             'mean'             'median'           'mode'            ##
+## 'floor'            'ceil'             'round'            'sign'            ##
 ##                                                                            ##
 ################################################################################
 
@@ -885,15 +885,15 @@ classdef duration
       if (isa (A, 'duration') && isa (B, 'duration'))
         C = A;
         C.Days = A.Days + B.Days;
-      elseif (isa (A, 'double'))
+      elseif (isnumeric (A))
         C = B;
-        C.Days = B.Days + A;
-      elseif (isa (B, 'double'))
+        C.Days = B.Days + double (A);
+      elseif (isnumeric (B))
         C = A;
-        C.Days = A.Days + B;
+        C.Days = A.Days + double (B);
       else
-        error (["duration: addition is not defined between", ...
-                " '%s' and '%s' arrays"], class (A), class (B));
+        error (strcat ("duration: addition is not defined between", ...
+                       " '%s' and '%s' arrays."), class (A), class (B));
       endif
     endfunction
 
@@ -906,15 +906,15 @@ classdef duration
       if (isa (A, 'duration') && isa (B, 'duration'))
         C = A;
         C.Days = A.Days - B.Days;
-      elseif (isa (A, 'double'))
+      elseif (isnumeric (A))
         C = B;
-        C.Days = B.Days - A;
-      elseif (isa (B, 'double'))
+        C.Days = B.Days - double (A);
+      elseif (isnumeric (B))
         C = A;
-        C.Days = A.Days - B;
+        C.Days = A.Days - double (B);
       else
-        error (["duration: subtraction is not defined between", ...
-                " '%s' and '%s' arrays"], class (A), class (B));
+        error (strcat ("duration: subtraction is not defined between", ...
+                       " '%s' and '%s' arrays."), class (A), class (B));
       endif
     endfunction
 
@@ -924,66 +924,92 @@ classdef duration
     endfunction
 
     function C = times (A, B)
-      if (isa (A, 'duration') && isa (B, 'duration'))
+      if (isa (A, 'duration') && isnumeric (B))
         C = A;
-        C.Days = A.Days .* B.Days;
-      elseif (isa (A, 'double'))
+        C.Days = A.Days .* double (B);
+      elseif (isnumeric (A) && isa (B, 'duration'))
         C = B;
-        C.Days = B.Days .* A;
-      elseif (isa (B, 'double'))
-        C = A;
-        C.Days = A.Days .* B;
+        C.Days = B.Days .* double (A);
       else
-        error (["duration: multiplication is not defined between", ...
-                " '%s' and '%s' arrays"], class (A), class (B));
+        error (strcat ("duration: multiplication is not defined between", ...
+                       " '%s' and '%s' arrays."), class (A), class (B));
       endif
     endfunction
 
     function C = mtimes (A, B)
-      if (isa (A, 'duration') && isa (B, 'duration'))
+      if (isa (A, 'duration') && isnumeric (B))
         C = A;
-        C.Days = A.Days - B.Days;
-      elseif (isa (A, 'double'))
+        C.Days = A.Days * double (B);
+      elseif (isnumeric (A) && isa (B, 'duration'))
         C = B;
-        C.Days = B.Days - A;
-      elseif (isa (B, 'double'))
-        C = A;
-        C.Days = A.Days - B;
+        C.Days = B.Days * double (A);
       else
-        error (["duration: matrix multiplication is not defined", ...
-                " between '%s' and '%s' arrays"], class (A), class (B));
+        error (strcat ("duration: matrix multiplication is not defined", ...
+                       " between '%s' and '%s' arrays."), class (A), class (B));
       endif
     endfunction
 
     function C = ldivide (A, B)
       if (! isa (B, 'duration'))
-        error (["duration: right-hand side must be a duration", ...
-                " for left division: got '%s'"], class (A));
+        error (strcat ("duration: right-hand side must be a duration", ...
+                       " array for left division: got '%s'"), class (B));
       endif
-      C = A;
       if (isa (A, 'duration'))
         C = A.Days .\ B.Days;
       elseif (isnumeric (A))
+        C = B;
         C.Days = double (A) .\ B.Days;
       else
-        error (["duration: left-division is not defined between", ...
-                " '%s' and 'duration' arrays"], class (A));
+        error (strcat ("duration: left division is not defined", ...
+                       " between '%s' and 'duration' arrays"), class (A));
+      endif
+    endfunction
+
+    function C = mldivide (A, B)
+      if (! isa (B, 'duration'))
+        error (strcat ("duration: right-hand side must be a duration", ...
+                       " array for matrix left division: got '%s'"), class (B));
+      endif
+      if (isa (A, 'duration'))
+        C = A.Days \ B.Days;
+      elseif (isnumeric (A))
+        C = B;
+        C.Days = double (A) \ B.Days;
+      else
+        error (strcat ("duration: matrix left division is not defined", ...
+                       " between '%s' and 'duration' arrays"), class (A));
       endif
     endfunction
 
     function C = rdivide (A, B)
       if (! isa (A, 'duration'))
-        error (["duration: left-hand side must be a duration", ...
-                " for division: got '%s'"], class (A));
+        error (strcat ("duration: left-hand side must be a duration", ...
+                       " array for right division: got '%s'"), class (A));
       endif
-      C = A;
       if (isa (B, 'duration'))
         C = A.Days ./ B.Days;
       elseif (isnumeric (B))
+        C = A;
         C.Days = A.Days ./ double (B);
       else
-        error (["duration: right-division is not defined between", ...
-                " durationn and '%s' arrays"], class (B));
+        error (strcat ("duration: right division is not defined", ...
+                       " between 'duration' and '%s' arrays"), class (B));
+      endif
+    endfunction
+
+    function C = mrdivide (A, B)
+      if (! isa (A, 'duration'))
+        error (strcat ("duration: left-hand side must be a duration", ...
+                       " for matrix right division: got '%s'"), class (A));
+      endif
+      if (isa (B, 'duration'))
+        C = A.Days / B.Days;
+      elseif (isnumeric (B))
+        C = A;
+        C.Days = A.Days / double (B);
+      else
+        error (strcat ("duration: matrix right division is not defined", ...
+                       " between 'duration' and '%s' arrays"), class (B));
       endif
     endfunction
 
@@ -1210,8 +1236,8 @@ classdef duration
           elseif (strcmpi (col, 'descend'))
             col = -[1:size(A, 2)];
           else
-            error (strjoing (["duration.sortrows: DIRECTION can", ...
-                              "be either 'ascend' or 'descend'."]));
+            error (strcat ("duration.sortrows: DIRECTION can", ...
+                           " be either 'ascend' or 'descend'."));
           endif
         else
           error ("duration.sortrows: invalid value for COL argument.");
@@ -1391,8 +1417,8 @@ classdef duration
           out.Days = this.Days(s.subs{:});
 
         case '{}'
-          error (["duration.subsref: '{}' invalid indexing", ...
-                  " for referencing values. Use '()' instead."]);
+          error (strcat ("duration.subsref: '{}' invalid indexing", ...
+                         " for referencing values. Use '()' instead."));
 
         case '.'
           switch (s.subs)
@@ -1425,13 +1451,13 @@ classdef duration
           this.Days(s.subs{:}) = val.Days;
 
         case '{}'
-          error (["duration.subsasgn: '{}' invalid indexing", ...
-                  " for assigning values. Use '()' instead."]);
+          error (strcat ("duration.subsasgn: '{}' invalid indexing", ...
+                         " for assigning values. Use '()' instead."));
 
         case '.'
           if (! ischar (s.subs))
-            error (["calendarDuration.subsasgn: '.' index argument", ...
-                    " must be a character vector."]);
+            error (strcat ("calendarDuration.subsasgn: '.' index", ...
+                           " argument must be a character vector."));
           endif
           switch (s.subs)
             case 'Format'
