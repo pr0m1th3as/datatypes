@@ -604,12 +604,24 @@ classdef string
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'eq'               'ge'               'gt'               'le'              ##
-## 'lt'               'ne'                                                    ##
+## 'lt'               'ne'               'strcmp'           'strcmpi'         ##
+## 'strncmp'          'strncmpi'                                              ##
 ##                                                                            ##
 ################################################################################
 
   methods (Access = public)
 
+    ## -*- texinfo -*-
+    ## @deftypefn {string} {@var{TF} =} eq (@var{A}, @var{B})
+    ##
+    ## Test for equality.
+    ##
+    ## @var{TF} is @qcode{true}, if string @var{A} is lexicographically equal to
+    ## @var{B}.  If one input is a string array, the other input can be a string
+    ## array, a character vector, or a cell array of character vectors.  This is
+    ## equivalent to the @code{strcmp} function.
+    ##
+    ## @end deftypefn
     function TF = eq (A, B)
       if (iscellstr (A) || ischar (A))
         A = string (A);
@@ -627,46 +639,136 @@ classdef string
       TF(A.isMissing | B.isMissing) = false;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {string} {@var{TF} =} eq (@var{A}, @var{B})
+    ##
+    ## Test for greater than or equal to.
+    ##
+    ## @var{TF} is @qcode{true}, if string @var{A} is lexicographically greater
+    ## than or equal to @var{B}.  If one input is a string array, the other
+    ## input can be a string array, a character vector, or a cell array of
+    ## character vectors.
+    ##
+    ## @end deftypefn
     function TF = ge (A, B)
-      out = sign_strings (A, B);
-      if (ischar (out))
-        error ("string.ge: %s", out);
+      if (iscellstr (A) || ischar (A))
+        A = string (A);
+      elseif (iscellstr (B) || ischar (B))
+        B = string (B);
       endif
+      if (isscalar (A) && ! isscalar (B))
+        A = repmat (A, size (B));
+      elseif (isscalar (B) && ! isscalar (A))
+        B = repmat (B, size (A));
+      elseif (! isequal (size (A), size (B)))
+        error ("string.ge: inconsistent dimensions.");
+      endif
+      out = sign_strings (A.strs, B.strs);
       TF = false (size (out));
       TF(out >= 0) = true;
       TF(A.isMissing | B.isMissing) = false;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {string} {@var{TF} =} eq (@var{A}, @var{B})
+    ##
+    ## Test for greater than.
+    ##
+    ## @var{TF} is @qcode{true}, if string @var{A} is lexicographically greater
+    ## than @var{B}.  If one input is a string array, the other input can be a
+    ## string array, a character vector, or a cell array of character vectors.
+    ##
+    ## @end deftypefn
     function TF = gt (A, B)
-      out = sign_strings (A, B);
-      if (ischar (out))
-        error ("string.gt: %s", out);
+      if (iscellstr (A) || ischar (A))
+        A = string (A);
+      elseif (iscellstr (B) || ischar (B))
+        B = string (B);
       endif
+      if (isscalar (A) && ! isscalar (B))
+        A = repmat (A, size (B));
+      elseif (isscalar (B) && ! isscalar (A))
+        B = repmat (B, size (A));
+      elseif (! isequal (size (A), size (B)))
+        error ("string.gt: inconsistent dimensions.");
+      endif
+      out = sign_strings (A.strs, B.strs);
       TF = false (size (out));
       TF(out > 0) = true;
       TF(A.isMissing | B.isMissing) = false;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {string} {@var{TF} =} eq (@var{A}, @var{B})
+    ##
+    ## Test for less than or equal to.
+    ##
+    ## @var{TF} is @qcode{true}, if string @var{A} is lexicographically less
+    ## than or equal to @var{B}.  If one input is a string array, the other
+    ## input can be a string array, a character vector, or a cell array of
+    ## character vectors.
+    ##
+    ## @end deftypefn
     function TF = le (A, B)
-      out = sign_strings (A, B);
-      if (ischar (out))
-        error ("string.le: %s", out);
+      if (iscellstr (A) || ischar (A))
+        A = string (A);
+      elseif (iscellstr (B) || ischar (B))
+        B = string (B);
       endif
+      if (isscalar (A) && ! isscalar (B))
+        A = repmat (A, size (B));
+      elseif (isscalar (B) && ! isscalar (A))
+        B = repmat (B, size (A));
+      elseif (! isequal (size (A), size (B)))
+        error ("string.le: inconsistent dimensions.");
+      endif
+      out = sign_strings (A.strs, B.strs);
       TF = false (size (out));
       TF(out <= 0) = true;
       TF(A.isMissing | B.isMissing) = false;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {string} {@var{TF} =} eq (@var{A}, @var{B})
+    ##
+    ## Test for less than.
+    ##
+    ## @var{TF} is @qcode{true}, if string @var{A} is lexicographically less
+    ## than @var{B}.  If one input is a string array, the other input can be a
+    ## string array, a character vector, or a cell array of character vectors.
+    ##
+    ## @end deftypefn
     function TF = lt (A, B)
-      out = sign_strings (A, B);
-      if (ischar (out))
-        error ("string.lt: %s", out);
+      if (iscellstr (A) || ischar (A))
+        A = string (A);
+      elseif (iscellstr (B) || ischar (B))
+        B = string (B);
       endif
+      if (isscalar (A) && ! isscalar (B))
+        A = repmat (A, size (B));
+      elseif (isscalar (B) && ! isscalar (A))
+        B = repmat (B, size (A));
+      elseif (! isequal (size (A), size (B)))
+        error ("string.lt: inconsistent dimensions.");
+      endif
+      out = sign_strings (A.strs, B.strs);
       TF = false (size (out));
       TF(out < 0) = true;
       TF(A.isMissing | B.isMissing) = false;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {string} {@var{TF} =} ne (@var{A}, @var{B})
+    ##
+    ## Test for inequality.
+    ##
+    ## @var{TF} is @qcode{true}, if string @var{A} is lexicographically not
+    ## equal to @var{B}.  If one input is a string array, the other input can be
+    ## a string array, a character vector, or a cell array of character vectors.
+    ## @code{@var{TF} = ne (@var{A}, @var{B})} is equivalent to
+    ## @code{@var{TF} = ! strcmp (@var{A}, @var{B})}.
+    ##
+    ## @end deftypefn
     function TF = ne (A, B)
       if (iscellstr (A) || ischar (A))
         A = string (A);
@@ -682,6 +784,146 @@ classdef string
       endif
       TF = ! strcmp (A.strs, B.strs);
       TF(A.isMissing | B.isMissing) = true;
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {string} {@var{TF} =} strcmp (@var{A}, @var{B})
+    ##
+    ## Compare strings.
+    ##
+    ## @var{TF} is @qcode{true}, if string @var{A} is lexicographically equal to
+    ## @var{B}.  If one input is a string array, the other input can be a string
+    ## array, a character vector, or a cell array of character vectors.
+    ##
+    ## If either @var{A} or @var{B} is a string array or a cell array of
+    ## character vectors, then a logical array @var{TF} of the same size is
+    ## returned, containing the values described above for every member of the
+    ## array.  In this case, the other argument may also be a string array or a
+    ## cell array of character vectors (of the same size or scalar), or a
+    ## character vector.
+    ##
+    ## @end deftypefn
+    function TF = strcmp (A, B)
+      if (iscellstr (A) || ischar (A))
+        A = string (A);
+      elseif (iscellstr (B) || ischar (B))
+        B = string (B);
+      endif
+      if (isscalar (A))
+        A = repmat (A, size (B));
+      elseif (isscalar (B))
+        B = repmat (B, size (A));
+      elseif (! isequal (size (A), size (B)))
+        error ("string.strcmp: inconsistent dimensions.");
+      endif
+      TF = strcmp (A.strs, B.strs);
+      TF(A.isMissing | B.isMissing) = false;
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {string} {@var{TF} =} strcmp (@var{A}, @var{B})
+    ##
+    ## Compare strings (case insensitive).
+    ##
+    ## @var{TF} is @qcode{true}, if string @var{A} is lexicographically equal to
+    ## @var{B}, disregarding case of alphabetic characters.  If one input is a
+    ## string array, the other input can be a string array, a character vector,
+    ## or a cell array of character vectors.
+    ##
+    ## If either @var{A} or @var{B} is a string array or a cell array of
+    ## character vectors, then a logical array @var{TF} of the same size is
+    ## returned, containing the values described above for every member of the
+    ## array.  In this case, the other argument may also be a string array or a
+    ## cell array of character vectors (of the same size or scalar), or a
+    ## character vector.
+    ##
+    ## @end deftypefn
+    function TF = strcmpi (A, B)
+      if (iscellstr (A) || ischar (A))
+        A = string (A);
+      elseif (iscellstr (B) || ischar (B))
+        B = string (B);
+      endif
+      if (isscalar (A))
+        A = repmat (A, size (B));
+      elseif (isscalar (B))
+        B = repmat (B, size (A));
+      elseif (! isequal (size (A), size (B)))
+        error ("string.strcmpi: inconsistent dimensions.");
+      endif
+      TF = strcmpi (A.strs, B.strs);
+      TF(A.isMissing | B.isMissing) = false;
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {string} {@var{TF} =} strncmp (@var{A}, @var{B}, @var{n})
+    ##
+    ## Compare first @var{n} characters of strings.
+    ##
+    ## @var{TF} is @qcode{true}, if the first @var{n} characters of strings
+    ## @var{A} and @var{B} are lexicographically equal.  If one input is a
+    ## string array, the other input can be a string array, a character vector,
+    ## or a cell array of character vectors.
+    ##
+    ## If either @var{A} or @var{B} is a string array or a cell array of
+    ## character vectors, then a logical array @var{TF} of the same size is
+    ## returned, containing the values described above for every member of the
+    ## array.  In this case, the other argument may also be a string array or a
+    ## cell array of character vectors (of the same size or scalar), or a
+    ## character vector.
+    ##
+    ## @end deftypefn
+    function TF = strncmp (A, B, n)
+      if (iscellstr (A) || ischar (A))
+        A = string (A);
+      elseif (iscellstr (B) || ischar (B))
+        B = string (B);
+      endif
+      if (isscalar (A))
+        A = repmat (A, size (B));
+      elseif (isscalar (B))
+        B = repmat (B, size (A));
+      elseif (! isequal (size (A), size (B)))
+        error ("string.strncmp: inconsistent dimensions.");
+      endif
+      TF = strncmp (A.strs, B.strs, n);
+      TF(A.isMissing | B.isMissing) = false;
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {string} {@var{TF} =} strncmp (@var{A}, @var{B}, @var{n})
+    ##
+    ## Compare first @var{n} characters of strings (case insensitive).
+    ##
+    ## @var{TF} is @qcode{true}, if the first @var{n} characters of strings
+    ## @var{A} and @var{B} are lexicographically equal, disregarding case of
+    ## alphabetic characters.  If one input is a string array, the other input
+    ## can be a string array, a character vector, or a cell array of character
+    ## vectors.
+    ##
+    ## If either @var{A} or @var{B} is a string array or a cell array of
+    ## character vectors, then a logical array @var{TF} of the same size is
+    ## returned, containing the values described above for every member of the
+    ## array.  In this case, the other argument may also be a string array or a
+    ## cell array of character vectors (of the same size or scalar), or a
+    ## character vector.
+    ##
+    ## @end deftypefn
+    function TF = strncmpi (A, B, n)
+      if (iscellstr (A) || ischar (A))
+        A = string (A);
+      elseif (iscellstr (B) || ischar (B))
+        B = string (B);
+      endif
+      if (isscalar (A))
+        A = repmat (A, size (B));
+      elseif (isscalar (B))
+        B = repmat (B, size (A));
+      elseif (! isequal (size (A), size (B)))
+        error ("string.strncmpi: inconsistent dimensions.");
+      endif
+      TF = strncmpi (A.strs, B.strs, n);
+      TF(A.isMissing | B.isMissing) = false;
     endfunction
 
   endmethods
@@ -1073,27 +1315,10 @@ function out = cmp_uint32 (Acode, Bcode)
 endfunction
 
 function out = sign_strings (A, B)
-  if (iscellstr (A) || ischar (A))
-    A = string (A);
-  elseif (iscellstr (B) || ischar (B))
-    B = string (B);
-  endif
-  if (isscalar (A) && ! isscalar (B))
-    A = repmat (A, size (B));
-  elseif (isscalar (B) && ! isscalar (A))
-    B = repmat (B, size (A));
-  elseif (! isequal (size (A), size (B)))
-    out = "inconsistent dimensions.";
-    return;
-  endif
-  if (! isstring (A) || ! isstring (B))
-    out = "invalid data type.";
-    return;
-  endif
-  fcn = @(x) typecast (unicode2native (x, 'UTF-32LE'), 'uint32');
-  Acode = cellfun (fcn, cellstr (A), "UniformOutput", false);
+  fcn = @(x) typecast (unicode2native (x, 'UTF-32LE')(1:4*numel (x)), 'uint32');
+  Acode = cellfun (fcn, A, "UniformOutput", false);
   Acode(cellfun ('isempty', Acode)) = 0;
-  Bcode = cellfun (fcn, cellstr (B), "UniformOutput", false);
+  Bcode = cellfun (fcn, B, "UniformOutput", false);
   Bcode(cellfun ('isempty', Bcode)) = 0;
   out = cellfun (@cmp_uint32, Acode, Bcode);
 endfunction
@@ -1130,3 +1355,81 @@ endfunction
 %! string ({[1 2], false})
 %!error<string: cell array contains unsupported types.> string ({"d", @(x)x});
 %!error<string: unsupported input type: 'function_handle'> string (@(x)x);
+
+## Test relational operations
+%!assert (eq (string ("A"), string ("A")), true);
+%!assert (eq (string ("A"), string ("b")), false);
+%!assert (eq (string ("A"), {"A", "b"}), [true, false]);
+%!assert (eq ({"A", "b"}, string ("A")), [true, false]);
+%!assert (eq (string ({'A', 'b'}), 'A'), [true, false]);
+%!assert (eq ('A', string ({"A", "b"})), [true, false]);
+%!error <string.eq: inconsistent dimensions.> ...
+%! eq (string ({"A","B"}), string ({"A";"B"}))
+%!assert (ge (string ("A"), string ("A")), true);
+%!assert (ge (string ("A"), string ("b")), false);
+%!assert (ge (string ("b"), {"A", "b"}), [true, true]);
+%!assert (ge ({"A", "b"}, string ("b")), [false, true]);
+%!assert (ge (string ({'A', 'b'}), 'A'), [true, true]);
+%!assert (ge ('A', string ({"A", "b"})), [true, false]);
+%!error <string.ge: inconsistent dimensions.> ...
+%! ge (string ({"A","B"}), string ({"A";"B"}))
+%!assert (gt (string ("A"), string ("A")), false);
+%!assert (gt (string ("A"), string ("b")), false);
+%!assert (gt (string ("b"), {"A", "b"}), [true, false]);
+%!assert (gt ({"A", "b"}, string ("b")), [false, false]);
+%!assert (gt (string ({'A', 'b'}), 'A'), [false, true]);
+%!assert (gt ('A', string ({"A", "b"})), [false, false]);
+%!error <string.gt: inconsistent dimensions.> ...
+%! gt (string ({"A","B"}), string ({"A";"B"}))
+%!assert (le (string ("A"), string ("A")), true);
+%!assert (le (string ("A"), string ("b")), true);
+%!assert (le (string ("b"), {"A", "b"}), [false, true]);
+%!assert (le ({"A", "b"}, string ("b")), [true, true]);
+%!assert (le (string ({'A', 'b'}), 'A'), [true, false]);
+%!assert (le ('A', string ({"A", "b"})), [true, true]);
+%!error <string.le: inconsistent dimensions.> ...
+%! le (string ({"A","B"}), string ({"A";"B"}))
+%!assert (lt (string ("A"), string ("A")), false);
+%!assert (lt (string ("A"), string ("b")), true);
+%!assert (lt (string ("b"), {"A", "b"}), [false, false]);
+%!assert (lt ({"A", "b"}, string ("b")), [true, false]);
+%!assert (lt (string ({'A', 'b'}), 'A'), [false, false]);
+%!assert (lt ('A', string ({"A", "b"})), [false, true]);
+%!error <string.lt: inconsistent dimensions.> ...
+%! lt (string ({"A","B"}), string ({"A";"B"}))
+%!assert (ne (string ("A"), string ("A")), false);
+%!assert (ne (string ("A"), string ("b")), true);
+%!assert (ne (string ("A"), {"A", "b"}), [false, true]);
+%!assert (ne ({"A", "b"}, string ("A")), [false, true]);
+%!assert (ne (string ({'A', 'b'}), 'A'), [false, true]);
+%!assert (ne ('A', string ({"A", "b"})), [false, true]);
+%!error <string.ne: inconsistent dimensions.> ...
+%! ne (string ({"A","B"}), string ({"A";"B"}))
+%!assert (strcmp (string ("A"), string ("A")), true);
+%!assert (strcmp (string ("A"), string ("b")), false);
+%!assert (strcmp (string ("A"), {"A", "b"}), [true, false]);
+%!assert (strcmp ({"A", "b"}, string ("A")), [true, false]);
+%!assert (strcmp (string ({'A', 'b'}), 'A'), [true, false]);
+%!assert (strcmp ('A', string ({"A", "b"})), [true, false]);
+%!error <string.strcmp: inconsistent dimensions.> ...
+%! strcmp (string ({"A","B"}), string ({"A";"B"}))
+%!assert (strcmpi (string ("A"), string ("a")), true);
+%!assert (strcmpi (string ("A"), string ("b")), false);
+%!assert (strcmpi (string ("a"), {"A", "b"}), [true, false]);
+%!assert (strcmpi ({"A", "b"}, string ("a")), [true, false]);
+%!assert (strcmpi (string ({'a', 'b'}), 'A'), [true, false]);
+%!assert (strcmpi ('A', string ({"a", "b"})), [true, false]);
+%!error <string.strcmpi: inconsistent dimensions.> ...
+%! strcmpi (string ({"A","B"}), string ({"a";"b"}))
+%!assert (strncmp (string ("ASDFG"), "ASDER", 3), true);
+%!assert (strncmp (string ("ASDFG"), "ASDER", 4), false);
+%!assert (strncmp (string ("ASDFG"), {"ASDER","ASFGH"}, 3), [true, false]);
+%!assert (strncmp (string ("ASDFG"), {"ASDER","ASFGH"}, 2), [true, true]);
+%!error <string.strncmp: inconsistent dimensions.> ...
+%! strncmp (string ({"A","B"}), string ({"a";"b"}), 1)
+%!assert (strncmpi (string ("asDFG"), "ASDER", 3), true);
+%!assert (strncmpi (string ("ASDFG"), "asDER", 4), false);
+%!assert (strncmpi (string ("asdfg"), {"ASDER","ASFGH"}, 3), [true, false]);
+%!assert (strncmpi (string ("asdfg"), {"ASDER","ASFGH"}, 2), [true, true]);
+%!error <string.strncmpi: inconsistent dimensions.> ...
+%! strncmpi (string ({"A","B"}), string ({"a";"b"}), 1)
