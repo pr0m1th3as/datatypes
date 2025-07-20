@@ -34,6 +34,7 @@ table arrays
  cell2table
  struct2table
  istable
+ __csv2table__
  __table2csv__
 supplementary classes
  missing
