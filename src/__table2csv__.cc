@@ -31,7 +31,7 @@ DEFUN_DLD (__table2csv__, args, nargout,
  @deftypefn {datatypes} {} __table2csv__ (@var{file}, @var{C})\n\
 \n\
 \n\
-Barebone function for saving cell array to CSV file.\n\
+Barebone function for saving a cell array to a CSV file.\n\
 \n\
 @end deftypefn")
 {
@@ -39,7 +39,7 @@ Barebone function for saving cell array to CSV file.\n\
   // Check input arguments
   if (args.length() != 2)
   {
-    error ("__cell2csv__: two input arguments are required.");
+    error ("__table2csv__: two input arguments are required.");
   }
 
   // Get input arguments
