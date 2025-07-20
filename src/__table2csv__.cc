@@ -50,7 +50,7 @@ Barebone function for saving a cell array to a CSV file.\n\
   ofstream fd(file.c_str());
   if (! fd.is_open())
   {
-    retval(0) = "cannot open file '" + file + " for writing.";
+    retval(0) = "cannot open file '" + file + "' for writing.";
     return retval;
   }
 
