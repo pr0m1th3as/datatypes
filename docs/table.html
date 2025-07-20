@@ -184,6 +184,7 @@
 					<li><a href="cell2table.html" class="text-decoration-none font-monospace"><small>cell2table</small></a></li>
 					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
 					<li><a href="istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
+					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace"><small>__table2csv__</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -1853,17 +1854,18 @@
 <p> Unstack a single table variable into multiple table variables.
 </p>
 <div class="ms-5">
-<p> <code><var>tblB</var> = stack (<var>tblA</var>, <var>vars</var>, <var>ivar</var>)</code> unstacks the values from
- the variables <var>vars</var> in input <var>tblA</var> into a single variable in
- output table <var>tblB</var>.  By default, the stacked variable in <var>tblB</var>
- is named by joining the names of the variables in <var>tblA</var> as defined
- by <var>vars</var>.  Additionally, a new categorical variable is included in
- <var>tblB</var> that indicates which variable in <var>tblA</var> the stacked data
- in each row of <var>tblB</var> comes from.  By default, this categorical
- variable is named by appending <code>&quot;_Indicator&quot;</code> to the name of the
- stacked variable.  Variables in <var>tblA</var> that are not defined in
- <var>vars</var> for stacking are replicated in <var>tblB</var>.  If <var>tblA</var>
- contains <code>RowNames</code>, these are not stacked.
+<p> <code><var>tblB</var> = stack (<var>tblA</var>, <var>vars</var>, <var>ivar</var>)</code> unstacks
+ the values from the variables <var>vars</var> in input <var>tblA</var> into a
+ single variable in output table <var>tblB</var>.  By default, the stacked
+ variable in <var>tblB</var> is named by joining the names of the variables in
+ <var>tblA</var> as defined by <var>vars</var>.  Additionally, a new categorical
+ variable is included in <var>tblB</var> that indicates which variable in
+ <var>tblA</var> the stacked data in each row of <var>tblB</var> comes from.  By
+ default, this categorical variable is named by appending
+ <code>&quot;_Indicator&quot;</code> to the name of the stacked variable.  Variables in
+ <var>tblA</var> that are not defined in <var>vars</var> for stacking are replicated
+ in <var>tblB</var>.  If <var>tblA</var> contains <code>RowNames</code>, these are not
+ stacked.
 </p>
 <p> <var>vars</var> can be any of the following types.
  </p><ul>

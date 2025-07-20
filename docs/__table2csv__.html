@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Data Types for GNU Octave: seconds</title>
+    <title>Data Types for GNU Octave: __table2csv__</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
@@ -62,9 +62,9 @@
             <div class="collapse navbar-collapse" id="navbarNav">
               <ul class="navbar-nav">
                 <li class="nav-item">
-                  <a class="nav-link" href="index.html#duration arrays">
+                  <a class="nav-link" href="index.html#table arrays">
                     <i class="fas fa-list-alt"></i>
-                    duration arrays
+                    table arrays
                   </a>
                 </li>
                 <li class="nav-item">
@@ -139,7 +139,7 @@
 				</div>
 			</div>
 			<div class="row">
-				<input id="togList4" type="checkbox" checked>
+				<input id="togList4" type="checkbox">
 				<label for="togList4">
 					<span><h6>duration arrays</h6></span>
 					<span><h6>duration arrays</h6></span>
@@ -151,7 +151,7 @@
 					<li><a href="years.html" class="text-decoration-none font-monospace"><small>years</small></a></li>
 					<li><a href="hours.html" class="text-decoration-none font-monospace"><small>hours</small></a></li>
 					<li><a href="minutes.html" class="text-decoration-none font-monospace"><small>minutes</small></a></li>
-					<li><a href="seconds.html" class="text-decoration-none font-monospace fw-bolder"><small>seconds</small></a></li>
+					<li><a href="seconds.html" class="text-decoration-none font-monospace"><small>seconds</small></a></li>
 					<li><a href="milliseconds.html" class="text-decoration-none font-monospace"><small>milliseconds</small></a></li>
 					<li><a href="isduration.html" class="text-decoration-none font-monospace"><small>isduration</small></a></li>
 				</ul>
@@ -172,7 +172,7 @@
 				</div>
 			</div>
 			<div class="row">
-				<input id="togList6" type="checkbox">
+				<input id="togList6" type="checkbox" checked>
 				<label for="togList6">
 					<span><h6>table arrays</h6></span>
 					<span><h6>table arrays</h6></span>
@@ -184,7 +184,7 @@
 					<li><a href="cell2table.html" class="text-decoration-none font-monospace"><small>cell2table</small></a></li>
 					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
 					<li><a href="istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
-					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace"><small>__table2csv__</small></a></li>
+					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace fw-bolder"><small>__table2csv__</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -210,37 +210,24 @@
             <div class="card-header card-header-mod">
               <div class="row d-flex flex-wrap align-items-center">
                 <h3 class="d-inline-block mr-2">
-                Function&nbsp;Reference: <b><code>seconds</code></b>
+                Function&nbsp;Reference: <b><code>__table2csv__</code></b>
                 </h3>
               </div>
             </div>
             <div class="card-body">
-<dl>
-<dt><u>datatypes:</u> <var>D</var> = <b>seconds</b><i> (<var>X</var>)</i></dt>
+ <dl>
+<dt><u>datatypes:</u> <b>__table2csv__</b><i> (<var>file</var>, <var>C</var>)</i></dt>
 </dl>
 
-<p> Fixed-time duration in seconds.
+
+<p>Barebone function for saving a cell array to a CSV file.
 </p>
 <div class="ms-5">
-<p> <code><var>D</var> = seconds (<var>X</var>)</code> returns a <code>duration</code> array
- representing fixed-time duration seconds equivalent to the values in <var>X</var>,
- which must be a numeric array.
-</p>
-<p> <code>seconds</code> is also available as a method for <code>duration</code> arrays, in
- which case it performs the opposite conversion.
-</p>
-<p> <strong>See also: </strong>
-  <a href="duration.html">duration</a>, 
-  <a href="years.html">years</a>, 
-  <a href="days.html">days</a>, 
-  <a href="hours.html">hours</a>, 
-  <a href="minutes.html">minutes</a>, 
-  <a href="milliseconds.html">milliseconds</a>, 
-duration.seconds
-</p>
+
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/seconds.m">seconds</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/src/__table2csv__.cc">__table2csv__</a>
 </div>
+
 
             </div>
           </div>
