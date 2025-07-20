@@ -33,6 +33,9 @@ DEFUN_DLD (__table2csv__, args, nargout,
 \n\
 Barebone function for saving a cell array to a CSV file.\n\
 \n\
+This is a helper IO function for the @qcode{table2csv} method of the \
+@qcode{table} class.  Do NOT call it directly. \n\
+\n\
 @end deftypefn")
 {
   octave_value_list retval(nargout);
