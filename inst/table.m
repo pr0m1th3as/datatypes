@@ -427,6 +427,7 @@ classdef table
     ## -*- texinfo -*-
     ## @node table.table2cell
     ## @deftypefn {Method} {@var{C} =} table2cell (@var{tbl})
+    ## @deftypefn {Method} {[@var{C}, @var{H}, @var{T}] =} table2cell (@var{tbl}, @qcode{'csv'})
     ##
     ## Converts a table to a cell array.
     ##
@@ -453,31 +454,200 @@ classdef table
     ## not contain all values from the nested table.
     ##
     ## @end deftypefn
-    function C = table2cell (this)
-      C = cell (size (this));
-      for i = 1:width (this)
-        varVal = this.VariableValues{i};
-        if (iscell (varVal))
-          C(:,i) = varVal;
-        elseif (isnumeric (varVal) || islogical (varVal))
-          C(:,i) = num2cell (varVal, 2);
-        elseif (any (isa (varVal, {"calendarDuration", "categorical"})))
-          C(:,i) = dispstrs (varVal);
-        elseif (any (isa (varVal, {"datetime", "duration"})))
-          C(:,i) = dispstrs (varVal);
-        elseif (isa (varVal, "string"))
-          C(:,i) = cellstr (varVal);
-        elseif (isa (varVal, "table"))
-          tmpVal = table2cell (varVal);
-          if (size (tmpVal, 2) > 1)
-            C(:,i) = num2cell (cell2mat (tmpVal), 2);
-          else
-            C(:,i) = tmpVal;
+    function varargout = table2cell (this, varargin)
+      if (nargin == 1)
+        if (nargout > 1)
+          error ("table.table2cell: too many output arguments.");
+        endif
+        C = cell (size (this));
+        for i = 1:width (this)
+          varVal = this.VariableValues{i};
+          if (iscell (varVal))
+            C(:,i) = varVal;
+          elseif (isnumeric (varVal) || islogical (varVal))
+            C(:,i) = num2cell (varVal, 2);
+          elseif (any (isa (varVal, {"calendarDuration", "categorical"})))
+            C(:,i) = dispstrs (varVal);
+          elseif (any (isa (varVal, {"datetime", "duration"})))
+            C(:,i) = dispstrs (varVal);
+          elseif (isa (varVal, "string"))
+            C(:,i) = cellstr (varVal);
+          elseif (isa (varVal, "table"))
+            tmpVal = table2cell (varVal);
+            if (size (tmpVal, 2) > 1)
+              C(:,i) = num2cell (cell2mat (tmpVal), 2);
+            else
+              C(:,i) = tmpVal;
+            endif
+          elseif (isa (varVal, "struct"))
+            C(:,i) = struct2cell (varVal(:))';
           endif
-        elseif (isa (varVal, "struct"))
-          C(:,i) = struct2cell (varVal(:))';
+        endfor
+        varargout{1} = C;
+      elseif (strcmpi (varargin{1}, 'csv'))
+        if (nargout > 3)
+          error ("table.table2cell: too many output arguments.");
+        endif
+        C = {};
+        H = {};
+        T = {};
+        if (! isempty (this.RowNames))
+          C = [C, this.RowNames];
+          H = [H, NaN];
+          T = [T, 'cellstr'];
+        endif
+        for i = 1:width (this)
+          varVal = this.VariableValues{i};
+          if (iscell (varVal))
+            for c = size (varVal, 2)
+              C = [C, varVal(:,c)];
+              H = [H, this.VariableNames{i}];
+              T = [T, 'cell'];
+            endfor
+          elseif (islogical (varVal))
+            for c = size (varVal, 2)
+              C = [C, num2cell(varVal(:,c))];
+              H = [H, this.VariableNames{i}];
+              T = [T, 'logical'];
+            endfor
+          elseif (isnumeric (varVal))
+            for c = size (varVal, 2)
+              C = [C, num2cell(varVal(:,c))];
+              H = [H, this.VariableNames{i}];
+              T = [T, class(varVal(:,c))];
+            endfor
+          elseif (isa (varVal, 'calendarDuration'))
+            for c = size (varVal, 2)
+              C = [C, dispstrs(varVal(:,c))];
+              H = [H, this.VariableNames{i}];
+              T = [T, 'calendarDuration'];
+            endfor
+          elseif (isa (varVal, 'categorical'))
+            for c = size (varVal, 2)
+              C = [C, dispstrs(varVal(:,c))];
+              H = [H, this.VariableNames{i}];
+              T = [T, 'categorical'];
+            endfor
+          elseif (isa (varVal, 'datetime'))
+            for c = size (varVal, 2)
+              C = [C, dispstrs(varVal(:,c))];
+              H = [H, this.VariableNames{i}];
+              T = [T, 'datetime'];
+            endfor
+          elseif (isa (varVal, 'duration'))
+            for c = size (varVal, 2)
+              C = [C, dispstrs(varVal(:,c))];
+              H = [H, this.VariableNames{i}];
+              T = [T, 'duration'];
+            endfor
+          elseif (isa (varVal, 'string'))
+            for c = size (varVal, 2)
+              C = [C, cellstr(varVal(:,c))];
+              H = [H, this.VariableNames{i}];
+              T = [T, 'string'];
+            endfor
+          elseif (isa (varVal, 'table'))
+            [tmpC, tmpH, tmpT] = table2cell (varVal, 'csv');
+            C = [C, tmpC];
+            nestedH = {};
+            nestedT = {};
+            for c = 1:size (tmpC, 2)
+              nestedH = [nestedH, {{this.VariableNames{i}; tmpH{c}}}];
+              nestedT = [nestedT, {{'table'; tmpT{c}}}];
+            endfor
+            H = [H, nestedH];
+            T = [T, nestedT];
+          elseif (isa (varVal, 'struct'))
+            tmpC = squeeze (struct2cell (varVal(:)))';
+            tmpH = fieldnames (varVal(:))';
+            tmpT = cellfun ('class', tmpC(1,:), 'UniformOutput', false);
+            C = [C, tmpC];
+            nestedH = {};
+            nestedT = {};
+            for c = 1:size (tmpC, 2)
+              nestedH = [nestedH, {{this.VariableNames{i}; tnpH{c}}}];
+              nestedT = [nestedT, {{'struct'; tmpT{c}}}];
+            endfor
+            H = [H, nestedH];
+            T = [T, nestedT];
+          endif
+        endfor
+        varargout{1} = C;
+        if (nargout > 1)
+          varargout{2} = H;
+        endif
+        if (nargout > 2)
+          varargout{3} = T;
+        endif
+      else
+        error ("table.table2cell: invalid second input argument.");
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @node table.table2csv
+    ## @deftypefn {Method} {} table2csv (@var{tbl}, @var{file})
+    ##
+    ## Save a table to a CSV file.
+    ##
+    ## Each variable in @var{tbl} becomes a column of cells in the output
+    ## @var{C}.  Multicolumnar variables are split into separate columns with
+    ## each column sharing the same variable name.  Nested tables are also split
+    ## into separate columns with each column sharing the same variable name but
+    ## also the corresponding nested table's variable name.  Structures are
+    ## converted to cell arrays with each field becoming a separate column and
+    ## the fieldnames becoming nested column names in the same way as in nested
+    ## tables.
+    ##
+    ## The first cell of the CSV file contains a comment mentioning the number
+    ## of consecutive rows that contain info about the variable types. The
+    ## number of vartype rows may differ accordign to the nested tables and
+    ## structures contained in the table. The following rows contain the header
+    ## with the column names.
+    ##
+    ## @end deftypefn
+    function table2csv (this, file)
+      file = char (cellstr (file));
+      [C, H, T] = table2cell (this, 'csv');
+      ## Get columns and rows for variable types and headers
+      Ccols = size (C, 2);
+      Hrows = cellfun (@(x) size (x, 1), H);
+      Hmaxr = max (Hrows);
+      isvar = cellfun (@(x) ! isnumeric (x), H);
+      Trows = cellfun (@(x) size (x, 1), T);
+      Tmaxr = max (Trows);
+      Header = num2cell (nan (max (Hrows) + max (Trows), Ccols));
+      ## Populate header
+      for c = 1:Ccols
+        if (isvar(c))
+          for tr = 1:Trows(c)
+            Header{tr,c} = T{c}{tr};
+          endfor
+          for hr = 1:Hrows(c)
+            Header{hr+Tmaxr,c} = H{c}{hr};
+          endfor
         endif
       endfor
+      ## Replace NaN with '' in variable names header if table has RowNames
+      if (any (! isvar))
+        Header{1,1} = 'RowNames';
+        for tr = 2:Tmaxr
+          Header{hr,1} = '';
+        endfor
+        for hr = 1:Hmaxr
+          Header{hr+Tmaxr,1} = '';
+        endfor
+      endif
+      ## Generate descriptive comment for vartypes header
+      cmt = cell (1, Ccols);
+      cmt{1} = sprintf ("# next %d rows display variable types", Tmaxr);
+      ## Merge cell arrays into a single cell array for saving to csv file
+      csv = [cmt; Header; C];
+      ## Write to file
+      msg = __table2csv__ (file, csv);
+      if (msg)
+        error ("table.table2csv: %s", msg);
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -2725,17 +2895,18 @@ classdef table
     ##
     ## Unstack a single table variable into multiple table variables.
     ##
-    ## @code{@var{tblB} = stack (@var{tblA}, @var{vars}, @var{ivar})} unstacks the values from
-    ## the variables @var{vars} in input @var{tblA} into a single variable in
-    ## output table @var{tblB}.  By default, the stacked variable in @var{tblB}
-    ## is named by joining the names of the variables in @var{tblA} as defined
-    ## by @var{vars}.  Additionally, a new categorical variable is included in
-    ## @var{tblB} that indicates which variable in @var{tblA} the stacked data
-    ## in each row of @var{tblB} comes from.  By default, this categorical
-    ## variable is named by appending @qcode{"_Indicator"} to the name of the
-    ## stacked variable.  Variables in @var{tblA} that are not defined in
-    ## @var{vars} for stacking are replicated in @var{tblB}.  If @var{tblA}
-    ## contains @qcode{RowNames}, these are not stacked.
+    ## @code{@var{tblB} = stack (@var{tblA}, @var{vars}, @var{ivar})} unstacks
+    ## the values from the variables @var{vars} in input @var{tblA} into a
+    ## single variable in output table @var{tblB}.  By default, the stacked
+    ## variable in @var{tblB} is named by joining the names of the variables in
+    ## @var{tblA} as defined by @var{vars}.  Additionally, a new categorical
+    ## variable is included in @var{tblB} that indicates which variable in
+    ## @var{tblA} the stacked data in each row of @var{tblB} comes from.  By
+    ## default, this categorical variable is named by appending
+    ## @qcode{"_Indicator"} to the name of the stacked variable.  Variables in
+    ## @var{tblA} that are not defined in @var{vars} for stacking are replicated
+    ## in @var{tblB}.  If @var{tblA} contains @qcode{RowNames}, these are not
+    ## stacked.
     ##
     ## @var{vars} can be any of the following types.
     ## @itemize
