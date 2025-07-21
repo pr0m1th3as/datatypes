@@ -567,41 +567,49 @@ classdef table
     ## @end deftypefn
     function table2csv (this, file)
       file = char (cellstr (file));
-      [C, H, T] = table2cellarrays (this);
-      ## Get columns and rows for variable types and headers
-      Ccols = size (C, 2);
-      Hrows = cellfun (@(x) size (x, 1), H);
-      Hmaxr = max (Hrows);
-      isvar = cellfun (@(x) ! isnumeric (x), H);
+      [V, N, T, D, U] = table2cellarrays (this);
+      ## Get columns for final cell array
+      Ccols = size (V, 2);
+      ## Get rows for variable types, names, descriptions, and units
       Trows = cellfun (@(x) size (x, 1), T);
       Tmaxr = max (Trows);
-      Header = num2cell (nan (max (Hrows) + max (Trows), Ccols));
+      Nrows = cellfun (@(x) size (x, 1), N);
+      Nmaxr = max (Nrows);
+      isvar = cellfun ('isempty', N(1,:));
+      Drows = cellfun ('isempty', D);
+      Dmaxr = sum (all (Drows, 2));
+      Urows = cellfun ('isempty', U);
+      Umaxr = sum (all (Urows, 2));
+      ## Initialize header
+      Header = repmat ({''}, Nmaxr + Tmaxr + Dmaxr + Umaxr, Ccols);
       ## Populate header
       for c = 1:Ccols
         if (isvar(c))
           for tr = 1:Trows(c)
             Header{tr,c} = T{c}{tr};
           endfor
-          for hr = 1:Hrows(c)
-            Header{hr+Tmaxr,c} = H{c}{hr};
+          for nr = 1:Nrows(c)
+            Header{nr + Tmaxr,c} = N{c}{nr};
           endfor
+          if (Dmaxr)
+            for dr = 1:Dmaxr
+              Header{dr + Tmaxr + Nmaxr,c} = D{c}{dr};
+            endfor
+          endif
+          if (Umaxr)
+            for ur = 1:Umaxr
+              Header{ur + Tmaxr + Nmaxr + Dmaxr,c} = U{c}{ur};
+            endfor
+          endif
         endif
       endfor
-      ## Replace NaN with '' in variable names header if table has RowNames
-      if (any (! isvar))
-        Header{1,1} = 'RowNames';
-        for tr = 2:Tmaxr
-          Header{hr,1} = '';
-        endfor
-        for hr = 1:Hmaxr
-          Header{hr+Tmaxr,1} = '';
-        endfor
-      endif
-      ## Generate descriptive comment for vartypes header
+      ## Generate descriptive comment for header contents
       cmt = cell (1, Ccols);
-      cmt{1} = sprintf ("# next %d rows display variable types", Tmaxr);
+      txt = strcat ("# varTypes %d rows; varNames %d;", ...
+                    " varDescriptions %d; varUnits %d;");
+      cmt{1} = sprintf (txt, Tmaxr, Nmaxr, Dmaxr, Umaxr);
       ## Merge cell arrays into a single cell array for saving to csv file
-      csv = [cmt; Header; C];
+      csv = [cmt; Header; V];
       ## Write to file
       msg = __table2csv__ (file, csv);
       if (msg)
@@ -4512,6 +4520,12 @@ classdef table
               tbl = this;
 
             elseif (isequal (s.subs, "RowNames"))
+              ## Check for empty input to remove RowNames from table.
+              if (isempty (val))
+                this.RowNames = {};
+                tbl = this;
+                return;
+              endif
               ## Check for valid input: cellstring scalar, char row vector,or
               ## string scalar matching an existing VariableName of appropriate
               ## type, or a numeric scalar referencing an existing VariableName
@@ -5478,89 +5492,128 @@ classdef table
   methods (Access = private)
 
     ## Export table to cell arrays
-    function [C, H, T] = table2cellarrays (this)
-      C = {};
-      H = {};
-      T = {};
+    function [V, N, T, D, U] = table2cellarrays (this)
+      V = {};  # variable values
+      N = {};  # variable names
+      T = {};  # variable types
+      D = {};  # variable descriptions
+      U = {};  # variable units
       if (! isempty (this.RowNames))
-        C = [C, this.RowNames];
-        H = [H, NaN];
+        V = [V, this.RowNames];
+        N = [N, {''}];
         T = [T, 'cellstr'];
+        D = [D, {''}];
+        U = [U, {''}];
       endif
-      for i = 1:width (this)
-        varVal = this.VariableValues{i};
-        if (iscell (varVal))
-          for c = size (varVal, 2)
-            C = [C, varVal(:,c)];
-            H = [H, this.VariableNames{i}];
+      for ix = 1:width (this)
+        var_V = this.VariableValues{ix};
+        ncols = size (var_V, 2);
+        var_D = this.VariableDescriptions{ix};
+        var_U = this.VariableUnits{ix};
+        ## Handle variable values, names, and types
+        if (iscell (var_V))
+          for col = 1:ncols
+            V = [V, var_V(:,col)];
+            N = [N, this.VariableNames{ix}];
             T = [T, 'cell'];
           endfor
-        elseif (islogical (varVal))
-          for c = size (varVal, 2)
-            C = [C, num2cell(varVal(:,c))];
-            H = [H, this.VariableNames{i}];
+        elseif (islogical (var_V))
+          for col = 1:ncols
+            V = [V, num2cell(var_V(:,col))];
+            N = [N, this.VariableNames{ix}];
             T = [T, 'logical'];
           endfor
-        elseif (isnumeric (varVal))
-          for c = size (varVal, 2)
-            C = [C, num2cell(varVal(:,c))];
-            H = [H, this.VariableNames{i}];
-            T = [T, class(varVal(:,c))];
+        elseif (isnumeric (var_V))
+          for col = 1:ncols
+            V = [V, num2cell(var_V(:,col))];
+            N = [N, this.VariableNames{ix}];
+            T = [T, class(var_V(:,col))];
           endfor
-        elseif (isa (varVal, 'calendarDuration'))
-          for c = size (varVal, 2)
-            C = [C, dispstrs(varVal(:,c))];
-            H = [H, this.VariableNames{i}];
+        elseif (isa (var_V, 'calendarDuration'))
+          for col = 1:ncols
+            V = [V, dispstrs(var_V(:,col))];
+            N = [N, this.VariableNames{ix}];
             T = [T, 'calendarDuration'];
           endfor
-        elseif (isa (varVal, 'categorical'))
-          for c = size (varVal, 2)
-            C = [C, dispstrs(varVal(:,c))];
-            H = [H, this.VariableNames{i}];
+        elseif (isa (var_V, 'categorical'))
+          for col = 1:ncols
+            V = [V, dispstrs(var_V(:,col))];
+            N = [N, this.VariableNames{ix}];
             T = [T, 'categorical'];
           endfor
-        elseif (isa (varVal, 'datetime'))
-          for c = size (varVal, 2)
-            C = [C, dispstrs(varVal(:,c))];
-            H = [H, this.VariableNames{i}];
+        elseif (isa (var_V, 'datetime'))
+          for col = 1:ncols
+            V = [V, dispstrs(var_V(:,col))];
+            N = [N, this.VariableNames{ix}];
             T = [T, 'datetime'];
           endfor
-        elseif (isa (varVal, 'duration'))
-          for c = size (varVal, 2)
-            C = [C, dispstrs(varVal(:,c))];
-            H = [H, this.VariableNames{i}];
+        elseif (isa (var_V, 'duration'))
+          for col = 1:ncols
+            V = [V, dispstrs(var_V(:,col))];
+            N = [N, this.VariableNames{ix}];
             T = [T, 'duration'];
           endfor
-        elseif (isa (varVal, 'string'))
-          for c = size (varVal, 2)
-            C = [C, cellstr(varVal(:,c))];
-            H = [H, this.VariableNames{i}];
+        elseif (isa (var_V, 'string'))
+          for col = 1:ncols
+            V = [V, cellstr(var_V(:,col))];
+            N = [N, this.VariableNames{ix}];
             T = [T, 'string'];
           endfor
-        elseif (isa (varVal, 'table'))
-          [tmpC, tmpH, tmpT] = table2cellarrays (varVal);
-          C = [C, tmpC];
+        elseif (isa (var_V, 'table'))
+          [tmpV, tmpN, tmpT tmpD, tmpU] = table2cellarrays (var_V);
+          V = [V, tmpV];
           nestedH = {};
           nestedT = {};
-          for c = 1:size (tmpC, 2)
-            nestedH = [nestedH, {{this.VariableNames{i}; tmpH{c}}}];
-            nestedT = [nestedT, {{'table'; tmpT{c}}}];
+          nestedVD = {};
+          nestedVU = {};
+          for col = 1:size (tmpV, 2)
+            nestedH = [nestedH, {{this.VariableNames{ix}; tmpN{col}}}];
+            nestedT = [nestedT, {{'table'; tmpT{col}}}];
+            if (isempty (tmpD{col}))
+              nestedVD = [nestedVD, {{var_D; {''}}}];
+            else
+              nestedVD = [nestedVD, {{var_D; tmpD{col}}}];
+            endif
+            if (isempty (tmpU{col}))
+              nestedVD = [nestedVU, {{var_U; {''}}}];
+            else
+              nestedVD = [nestedVU, {{var_U; tmpU{col}}}];
+            endif
           endfor
-          H = [H, nestedH];
+          N = [N, nestedH];
           T = [T, nestedT];
-        elseif (isa (varVal, 'struct'))
-          tmpC = squeeze (struct2cell (varVal(:)))';
-          tmpH = fieldnames (varVal(:))';
-          tmpT = cellfun ('class', tmpC(1,:), 'UniformOutput', false);
-          C = [C, tmpC];
+          D = [D, nestedVD];
+          U = [U, nestedVU];
+        elseif (isa (var_V, 'struct'))
+          tmpV = squeeze (struct2cell (var_V(:)))';
+          tmpN = fieldnames (var_V(:))';
+          tmpT = cellfun ('class', tmpV(1,:), 'UniformOutput', false);
+          V = [V, tmpV];
           nestedH = {};
           nestedT = {};
-          for c = 1:size (tmpC, 2)
-            nestedH = [nestedH, {{this.VariableNames{i}; tnpH{c}}}];
-            nestedT = [nestedT, {{'struct'; tmpT{c}}}];
+          nestedVD = {};
+          nestedVU = {};
+          for col = 1:size (tmpV, 2)
+            nestedH = [nestedH, {{this.VariableNames{ix}; tnpH{col}}}];
+            nestedT = [nestedT, {{'struct'; tmpT{col}}}];
+            nestedVD = [nestedVD, {{var_D; {''}}}];
+            nestedVD = [nestedVU, {{var_U; {''}}}];
           endfor
-          H = [H, nestedH];
+          N = [N, nestedH];
           T = [T, nestedT];
+          D = [D, nestedVD];
+          U = [U, nestedVU];
+        endif
+        ## Handle variable descriptions and units
+        if (isempty (var_D))
+          D = [D, repmat({''}, 1, ncols)];
+        else
+          D = [D, repmat(var_D, 1, ncols)];
+        endif
+        if (isempty (var_U))
+          U = [U, repmat({''}, 1, ncols)];
+        else
+          U = [U, repmat(var_U, 1, ncols)];
         endif
       endfor
     endfunction
