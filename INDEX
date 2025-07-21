@@ -32,6 +32,7 @@ table arrays
  table
  array2table
  cell2table
+ csv2table
  struct2table
  istable
  __csv2table__
