@@ -895,6 +895,7 @@ classdef duration
         error (strcat ("duration: addition is not defined between", ...
                        " '%s' and '%s' arrays."), class (A), class (B));
       endif
+      C = fix_zero_precision (C);
     endfunction
 
     function B = uplus (A)
@@ -916,6 +917,7 @@ classdef duration
         error (strcat ("duration: subtraction is not defined between", ...
                        " '%s' and '%s' arrays."), class (A), class (B));
       endif
+      C = fix_zero_precision (C);
     endfunction
 
     function B = uminus (A)
@@ -963,6 +965,7 @@ classdef duration
         error (strcat ("duration: left division is not defined", ...
                        " between '%s' and 'duration' arrays"), class (A));
       endif
+      C = fix_zero_precision (C);
     endfunction
 
     function C = mldivide (A, B)
@@ -979,6 +982,7 @@ classdef duration
         error (strcat ("duration: matrix left division is not defined", ...
                        " between '%s' and 'duration' arrays"), class (A));
       endif
+      C = fix_zero_precision (C);
     endfunction
 
     function C = rdivide (A, B)
@@ -995,6 +999,7 @@ classdef duration
         error (strcat ("duration: right division is not defined", ...
                        " between 'duration' and '%s' arrays"), class (B));
       endif
+      C = fix_zero_precision (C);
     endfunction
 
     function C = mrdivide (A, B)
@@ -1011,6 +1016,7 @@ classdef duration
         error (strcat ("duration: matrix right division is not defined", ...
                        " between 'duration' and '%s' arrays"), class (B));
       endif
+      C = fix_zero_precision (C);
     endfunction
 
     function C = colon (varargin)
@@ -1028,6 +1034,7 @@ classdef duration
       endif
       C = from;
       C.Days = from.Days:increment.Days:to.Days;
+      C = fix_zero_precision (C);
     endfunction
 
     function C = linspace (A, B, n = 100)
@@ -1040,12 +1047,14 @@ classdef duration
       [A, B] = promote (A, B);
       C = A;
       C.Days = linspace (A.Days, B.Days, n);
+      C = fix_zero_precision (C);
     endfunction
 
     function YI = interp1 (X, Y, XI, varargin)
       if (isa (Y, 'duration'))
         YI = Y;
         YI.Days = interp1 (X.Days, Y.Days, XI.Days, varargin{:});
+        YI = fix_zero_precision (YI);
       else
         YI = interp1 (X.Days, Y, XI.Days, varargin{:});
       endif
@@ -1088,6 +1097,7 @@ classdef duration
       else
         S.Days = sum (A.Days(:));
       endif
+      S = fix_zero_precision (S);
     endfunction
 
     function S = cumsum (A, varargin)
@@ -1121,6 +1131,7 @@ classdef duration
       else
         S.Days = cumsum (A.Days, dim);
       endif
+      S = fix_zero_precision (S);
     endfunction
 
     function DT = diff (D, varargin)
@@ -1504,6 +1515,11 @@ classdef duration
     function out = subset (this, varargin)
       out = this;
       out.Days = this.Days(varargin{:});
+    endfunction
+
+    ## Fix floating point precision near zero
+    function this = fix_zero_precision (this)
+      this.Days(this.Days > -1e-15 & this.Days < 1e-15) = 0;
     endfunction
 
   endmethods
