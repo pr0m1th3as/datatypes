@@ -575,7 +575,7 @@ classdef table
       Tmaxr = max (Trows);
       Nrows = cellfun (@(x) size (x, 1), N);
       Nmaxr = max (Nrows);
-      isvar = cellfun ('isempty', N(1,:));
+      isvar = cellfun (@(x) ! isempty (x), N(1,:));
       Drows = cellfun ('isempty', D);
       Dmaxr = sum (all (Drows, 2));
       Urows = cellfun ('isempty', U);
@@ -5498,6 +5498,7 @@ classdef table
       T = {};  # variable types
       D = {};  # variable descriptions
       U = {};  # variable units
+      ## Process RowNames
       if (! isempty (this.RowNames))
         V = [V, this.RowNames];
         N = [N, {''}];
@@ -5505,59 +5506,74 @@ classdef table
         D = [D, {''}];
         U = [U, {''}];
       endif
+      ## Process variables
       for ix = 1:width (this)
         var_V = this.VariableValues{ix};
         ncols = size (var_V, 2);
-        var_D = this.VariableDescriptions{ix};
-        var_U = this.VariableUnits{ix};
-        ## Handle variable values, names, and types
+        ## Handle each variable type
         if (iscell (var_V))
           for col = 1:ncols
             V = [V, var_V(:,col)];
             N = [N, this.VariableNames{ix}];
             T = [T, 'cell'];
+            D = [D, this.VariableDescriptions(ix)];
+            U = [U, this.VariableUnits(ix)];
           endfor
         elseif (islogical (var_V))
           for col = 1:ncols
             V = [V, num2cell(var_V(:,col))];
             N = [N, this.VariableNames{ix}];
             T = [T, 'logical'];
+            D = [D, this.VariableDescriptions(ix)];
+            U = [U, this.VariableUnits(ix)];
           endfor
         elseif (isnumeric (var_V))
           for col = 1:ncols
             V = [V, num2cell(var_V(:,col))];
             N = [N, this.VariableNames{ix}];
             T = [T, class(var_V(:,col))];
+            D = [D, this.VariableDescriptions(ix)];
+            U = [U, this.VariableUnits(ix)];
           endfor
         elseif (isa (var_V, 'calendarDuration'))
           for col = 1:ncols
             V = [V, dispstrs(var_V(:,col))];
             N = [N, this.VariableNames{ix}];
             T = [T, 'calendarDuration'];
+            D = [D, this.VariableDescriptions(ix)];
+            U = [U, this.VariableUnits(ix)];
           endfor
         elseif (isa (var_V, 'categorical'))
           for col = 1:ncols
             V = [V, dispstrs(var_V(:,col))];
             N = [N, this.VariableNames{ix}];
             T = [T, 'categorical'];
+            D = [D, this.VariableDescriptions(ix)];
+            U = [U, this.VariableUnits(ix)];
           endfor
         elseif (isa (var_V, 'datetime'))
           for col = 1:ncols
             V = [V, dispstrs(var_V(:,col))];
             N = [N, this.VariableNames{ix}];
             T = [T, 'datetime'];
+            D = [D, this.VariableDescriptions(ix)];
+            U = [U, this.VariableUnits(ix)];
           endfor
         elseif (isa (var_V, 'duration'))
           for col = 1:ncols
             V = [V, dispstrs(var_V(:,col))];
             N = [N, this.VariableNames{ix}];
             T = [T, 'duration'];
+            D = [D, this.VariableDescriptions(ix)];
+            U = [U, this.VariableUnits(ix)];
           endfor
         elseif (isa (var_V, 'string'))
           for col = 1:ncols
             V = [V, cellstr(var_V(:,col))];
             N = [N, this.VariableNames{ix}];
             T = [T, 'string'];
+            D = [D, this.VariableDescriptions(ix)];
+            U = [U, this.VariableUnits(ix)];
           endfor
         elseif (isa (var_V, 'table'))
           [tmpV, tmpN, tmpT tmpD, tmpU] = table2cellarrays (var_V);
@@ -5570,14 +5586,14 @@ classdef table
             nestedN = [nestedN, {{this.VariableNames{ix}; tmpN{col}}}];
             nestedT = [nestedT, {{'table'; tmpT{col}}}];
             if (isempty (tmpD{col}))
-              nestedD = [nestedD, {{var_D; {''}}}];
+              nestedD = [nestedD, {{this.VariableDescriptions(ix); {''}}}];
             else
-              nestedD = [nestedD, {{var_D; tmpD{col}}}];
+              nestedD = [nestedD, {{this.VariableDescriptions(ix); tmpD(col)}}];
             endif
             if (isempty (tmpU{col}))
-              nestedU = [nestedU, {{var_U; {''}}}];
+              nestedU = [nestedU, {{this.VariableUnits(ix); {''}}}];
             else
-              nestedU = [nestedU, {{var_U; tmpU{col}}}];
+              nestedU = [nestedU, {{this.VariableUnits(ix); tmpU(col)}}];
             endif
           endfor
           N = [N, nestedN];
@@ -5596,24 +5612,13 @@ classdef table
           for col = 1:size (tmpV, 2)
             nestedN = [nestedN, {{this.VariableNames{ix}; tnpH{col}}}];
             nestedT = [nestedT, {{'struct'; tmpT{col}}}];
-            nestedD = [nestedD, {{var_D; {''}}}];
-            nestedU = [nestedU, {{var_U; {''}}}];
+            nestedD = [nestedD, {{this.VariableDescriptions(ix); {''}}}];
+            nestedU = [nestedU, {{this.VariableUnits(ix); {''}}}];
           endfor
           N = [N, nestedN];
           T = [T, nestedT];
           D = [D, nestedD];
           U = [U, nestedU];
-        endif
-        ## Handle variable descriptions and units
-        if (isempty (var_D))
-          D = [D, repmat({''}, 1, ncols)];
-        else
-          D = [D, repmat(var_D, 1, ncols)];
-        endif
-        if (isempty (var_U))
-          U = [U, repmat({''}, 1, ncols)];
-        else
-          U = [U, repmat(var_U, 1, ncols)];
         endif
       endfor
     endfunction
