@@ -584,7 +584,7 @@ classdef table
       Header = repmat ({''}, Nmaxr + Tmaxr + Dmaxr + Umaxr, Ccols);
       ## Populate header
       for c = 1:Ccols
-        if (isvar(c))
+        if (isvar(c))   # variable
           for tr = 1:Trows(c)
             Header{tr,c} = T{c}{tr};
           endfor
@@ -601,12 +601,14 @@ classdef table
               Header{ur + Tmaxr + Nmaxr + Dmaxr,c} = U{c}{ur};
             endfor
           endif
+        else            # RowNames
+          Header{1,c} = 'RowNames';
         endif
       endfor
       ## Generate descriptive comment for header contents
       cmt = cell (1, Ccols);
-      txt = strcat ("# varTypes %d rows; varNames %d;", ...
-                    " varDescriptions %d; varUnits %d;");
+      txt = strcat ("# varTypes %d rows; varNames %d rows;", ...
+                    " varDescriptions %d rows; varUnits %d rows.");
       cmt{1} = sprintf (txt, Tmaxr, Nmaxr, Dmaxr, Umaxr);
       ## Merge cell arrays into a single cell array for saving to csv file
       csv = [cmt; Header; V];
