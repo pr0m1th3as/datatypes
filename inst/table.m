@@ -5562,47 +5562,47 @@ classdef table
         elseif (isa (var_V, 'table'))
           [tmpV, tmpN, tmpT tmpD, tmpU] = table2cellarrays (var_V);
           V = [V, tmpV];
-          nestedH = {};
+          nestedN = {};
           nestedT = {};
-          nestedVD = {};
-          nestedVU = {};
+          nestedD = {};
+          nestedU = {};
           for col = 1:size (tmpV, 2)
-            nestedH = [nestedH, {{this.VariableNames{ix}; tmpN{col}}}];
+            nestedN = [nestedN, {{this.VariableNames{ix}; tmpN{col}}}];
             nestedT = [nestedT, {{'table'; tmpT{col}}}];
             if (isempty (tmpD{col}))
-              nestedVD = [nestedVD, {{var_D; {''}}}];
+              nestedD = [nestedD, {{var_D; {''}}}];
             else
-              nestedVD = [nestedVD, {{var_D; tmpD{col}}}];
+              nestedD = [nestedD, {{var_D; tmpD{col}}}];
             endif
             if (isempty (tmpU{col}))
-              nestedVD = [nestedVU, {{var_U; {''}}}];
+              nestedU = [nestedU, {{var_U; {''}}}];
             else
-              nestedVD = [nestedVU, {{var_U; tmpU{col}}}];
+              nestedU = [nestedU, {{var_U; tmpU{col}}}];
             endif
           endfor
-          N = [N, nestedH];
+          N = [N, nestedN];
           T = [T, nestedT];
-          D = [D, nestedVD];
-          U = [U, nestedVU];
+          D = [D, nestedD];
+          U = [U, nestedU];
         elseif (isa (var_V, 'struct'))
           tmpV = squeeze (struct2cell (var_V(:)))';
           tmpN = fieldnames (var_V(:))';
           tmpT = cellfun ('class', tmpV(1,:), 'UniformOutput', false);
           V = [V, tmpV];
-          nestedH = {};
+          nestedN = {};
           nestedT = {};
-          nestedVD = {};
-          nestedVU = {};
+          nestedD = {};
+          nestedU = {};
           for col = 1:size (tmpV, 2)
-            nestedH = [nestedH, {{this.VariableNames{ix}; tnpH{col}}}];
+            nestedN = [nestedN, {{this.VariableNames{ix}; tnpH{col}}}];
             nestedT = [nestedT, {{'struct'; tmpT{col}}}];
-            nestedVD = [nestedVD, {{var_D; {''}}}];
-            nestedVD = [nestedVU, {{var_U; {''}}}];
+            nestedD = [nestedD, {{var_D; {''}}}];
+            nestedU = [nestedU, {{var_U; {''}}}];
           endfor
-          N = [N, nestedH];
+          N = [N, nestedN];
           T = [T, nestedT];
-          D = [D, nestedVD];
-          U = [U, nestedVU];
+          D = [D, nestedD];
+          U = [U, nestedU];
         endif
         ## Handle variable descriptions and units
         if (isempty (var_D))
