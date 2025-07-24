@@ -41,6 +41,8 @@ classdef duration
     ## -*- texinfo -*-
     ## @deftp {duration} {property} Format
     ##
+    ## Display format
+    ##
     ## Display format, specified as a character vector or string scalar.  If
     ## specified as a string scalar, it is converted and stored internally as
     ## a character vector.
