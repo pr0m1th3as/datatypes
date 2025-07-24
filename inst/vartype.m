@@ -28,6 +28,7 @@ classdef vartype
   ## @end deftp
 
   properties (SetAccess = private, Hidden)
+    ## Type of data
     type
   endproperties
 
