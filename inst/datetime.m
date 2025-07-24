@@ -37,7 +37,9 @@ classdef datetime
 
   properties (Constant)
     ## -*- texinfo -*-
-    ## @deftp {datetime} {property} localtime
+    ## @deftp {datetime} {property} SystemTimeZone
+    ##
+    ## System time zone setting
     ##
     ## A read-only property specifying the local time zone of the system, where
     ## Octave is running.
@@ -48,22 +50,24 @@ classdef datetime
 
   properties (Access = private, Hidden)
     ## Whole years
-    Y = 0
+    Year = 0
     ## Whole months
-    M = 0
+    Month = 0
     ## Whole days
-    D = 0
+    Day = 0
     ## Whole hours
-    h = 0
+    Hour = 0
     ## Whole minutes
-    m = 0
+    Minute = 0
     ## Seconds (including fractional seconds)
-    s = 0
+    Second = 0
   endproperties
 
   properties
     ## -*- texinfo -*-
     ## @deftp {datetime} {property} Format
+    ##
+    ## Display format
     ##
     ## Display format, specified as a character vector or string scalar.  If
     ## specified as a string scalar, it is converted and stored internally as
@@ -75,7 +79,9 @@ classdef datetime
     ## -*- texinfo -*-
     ## @deftp {datetime} {property} TimeZone
     ##
-    ## TimeZone, specified as a character vector or string scalar.  If
+    ## Time zone
+    ##
+    ## Time zone, specified as a character vector or string scalar.  If
     ## specified as a string scalar, it is converted and stored internally as
     ## a character vector.
     ##
@@ -209,7 +215,8 @@ classdef datetime
 
       ## Return an scalar datetime object with current local time
       if (nargin == 0)
-        [this.Y, this.M, this.D, this.h, this.m, this.s] = __datetime__ ('now');
+        [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
+         this.Second] = __datetime__ ('now');
         return;
       endif
 
@@ -302,25 +309,27 @@ classdef datetime
             endif
           end_try_catch
           ## Split DATEVEC into individual date/time units and reshape
-          this.Y = reshape (DATEVEC(:,1), size (DateStrings));
-          this.M = reshape (DATEVEC(:,2), size (DateStrings));
-          this.D = reshape (DATEVEC(:,3), size (DateStrings));
-          this.h = reshape (DATEVEC(:,4), size (DateStrings));
-          this.m = reshape (DATEVEC(:,5), size (DateStrings));
-          this.s = reshape (DATEVEC(:,6), size (DateStrings));
+          this.Year = reshape (DATEVEC(:,1), size (DateStrings));
+          this.Month = reshape (DATEVEC(:,2), size (DateStrings));
+          this.Day = reshape (DATEVEC(:,3), size (DateStrings));
+          this.Hour = reshape (DATEVEC(:,4), size (DateStrings));
+          this.Minute = reshape (DATEVEC(:,5), size (DateStrings));
+          this.Second = reshape (DATEVEC(:,6), size (DateStrings));
           return;
         endif
       endif
 
       ## Handle inputs (no errors here)
       if (! isempty (ConvertFrom) && ! isempty (TimeZone))
-        [this.Y, this.M, this.D, this.h, this.m, this.s] = __datetime__ ...
-                    (args{1}, 'ConvertFrom', ConvertFrom, 'TimeZone', TimeZone);
+        [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
+         this.Second] = __datetime__ (args{1}, 'ConvertFrom', ConvertFrom, ...
+                                      'TimeZone', TimeZone);
       elseif (! isempty (ConvertFrom) && isempty (TimeZone))
-        [this.Y, this.M, this.D, this.h, this.m, this.s] = __datetime__ ...
-                    (args{1}, 'ConvertFrom', ConvertFrom);
+        [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
+         this.Second] = __datetime__ (args{1}, 'ConvertFrom', ConvertFrom);
       else
-        [this.Y, this.M, this.D, this.h, this.m, this.s] = __datetime__ (args{:});
+        [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
+         this.Second] = __datetime__ (args{:});
       endif
 
     endfunction
@@ -339,39 +348,31 @@ classdef datetime
       ## Default display format
       mnames = {'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', ...
                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'};
-      if (this.h != 0 || this.m != 0 || this.s != 0)
-        if (fix (this.s) == this.s)
-          fmt = "%02d-%s-%04d %02d:%02d:%02d";
-          type = 1;
-        else
-          fmt = "%02d-%s-%04d %02d:%02d:%02d.%03d";
-          type = 2;
-        endif
-      else
-        fmt = "%02d-%s-%04d";
-        type = 3;
-      endif
       ## Process all elements
       sz = size (this);
       cstr = cell (sz);
       for i = 1:prod (sz)
-        if (isnan (this.Y(i)))
+        if (isnan (this.Year(i)))
           cstr{i} = 'NaT';
-        elseif (isinf (this.Y(i)))
-          cstr{i} = num2str (this.Y(i));
+        elseif (isinf (this.Year(i)))
+          cstr{i} = num2str (this.Year(i));
         else
-          switch (type)
-            case 1
-              str = sprintf (fmt, this.D(i), mnames{this.M(i)}, this.Y(i), ...
-                             this.h(i), this.m(i), this.s(i));
-            case 2
-              str = sprintf (fmt, this.D(i), mnames{this.M(i)}, this.Y(i), ...
-                             this.h(i), this.m(i), fix (this.s(i)), ...
-                             rem (this.s(i), 1) * 1000);
-            case 3
-              str = sprintf (fmt, this.D(i), mnames{this.M(i)}, this.Y(i));
-
-          endswitch
+          if (this.Hour(i) != 0 || this.Minute(i) != 0 || this.Second(i) != 0)
+            if (fix (this.Second(i)) == this.Second(i))
+              str = sprintf ("%02d-%s-%04d %02d:%02d:%02d", this.Day(i), ...
+                             mnames{this.Month(i)}, this.Year(i), ...
+                             this.Hour(i), this.Minute(i), this.Second(i));
+            else
+              fmt = "%02d-%s-%04d %02d:%02d:%02d.%03d";
+              sec = this.Second(i);
+              str = sprintf (fmt, this.Day(i), mnames{this.Month(i)}, ...
+                             this.Year(i), this.Hour(i), this.Minute(i), ...
+                             fix (sec), rem (sec, 1) * 1000);
+            endif
+          else
+            str = sprintf ("%02d-%s-%04d", this.Day(i), ...
+                           mnames{this.Month(i)}, this.Year(i));
+          endif
           cstr{i} = str;
         endif
       endfor
@@ -424,9 +425,9 @@ classdef datetime
     ##
     ## @end deftypefn
     function [Y, M, D] = ymd (this)
-      Y = this.Y;
-      M = this.M;
-      D = this.D;
+      Y = this.Year;
+      M = this.Month;
+      D = this.Day;
     endfunction
 
     ## -*- texinfo -*-
@@ -442,21 +443,21 @@ classdef datetime
     ##
     ## @end deftypefn
     function [h, m, s] = hms (this)
-      h = this.h;
-      m = this.m;
-      s = this.d;
+      h = this.Hour;
+      m = this.Minute;
+      s = this.Second;
     endfunction
 
     function out = year (this)
-      out = this.Y;
+      out = this.Year;
     endfunction
 
     function out = quarter (this)
-      out = ceil (this.M / 3);
+      out = ceil (this.Month / 3);
     endfunction
 
     function out = month (this)
-      out = this.M;
+      out = this.Month;
     endfunction
 
     function out = week (this)
@@ -464,19 +465,19 @@ classdef datetime
     endfunction
 
     function out = day (this)
-      out = this.D;
+      out = this.Day;
     endfunction
 
     function out = hour (this)
-      out = this.h;
+      out = this.Hour;
     endfunction
 
     function out = minute (this)
-      out = this.m;
+      out = this.Minute;
     endfunction
 
     function out = second (this)
-      out = this.s;
+      out = this.Second;
     endfunction
 
     function out = timeofday (this)
@@ -526,9 +527,9 @@ classdef datetime
     ## @end deftypefn
     function varargout = size (this, varargin)
       if (! isempty (varargin))
-        sz = size (this.Y, varargin{:});
+        sz = size (this.Year, varargin{:});
       else
-        sz = size (this.Y);
+        sz = size (this.Year);
       endif
       if (nargout == 0 || nargout == 1)
         varargout{1} = sz;
@@ -552,7 +553,7 @@ classdef datetime
     ##
     ## @end deftypefn
     function out = ndims (this)
-      out = ndims (this.Y);
+      out = ndims (this.Year);
     endfunction
 
     ## -*- texinfo -*-
@@ -636,7 +637,8 @@ classdef datetime
     ##
     ## @end deftypefn
     function varargout = datevec (this)
-      DV = [this.Y(:), this.M(:), this.D(:), this.h(:), this.m(:), this.s(:)];
+      DV = [this.Year(:), this.Month(:), this.Day(:), ...
+            this.Hour(:), this.Minute(:), this.Second(:)];
       if (nargout == 0 || nargout == 1)
         varargout{1} = DV;
       elseif (nargout <= 6)
@@ -670,7 +672,7 @@ classdef datetime
     endfunction
 
     function TF = iscolumn (this)
-      TF = iscolumn (this.Y);
+      TF = iscolumn (this.Year);
     endfunction
 
     function TF = isdst (this)
@@ -678,7 +680,7 @@ classdef datetime
     endfunction
 
     function TF = isempty (this)
-      TF = isempty (this.Y);
+      TF = isempty (this.Year);
     endfunction
 
     function TF = isequal (varargin)
@@ -690,15 +692,15 @@ classdef datetime
     endfunction
 
     function TF = isfinite (this)
-      TF = isfinite (this.Y);
+      TF = isfinite (this.Year);
     endfunction
 
     function TF = isinf (this)
-      TF = isinf (this.Y);
+      TF = isinf (this.Year);
     endfunction
 
     function TF = ismatrix (this)
-      TF = ismatrix (this.Y);
+      TF = ismatrix (this.Year);
     endfunction
 
     function [TF, index] = ismember (A, B, varargin)
@@ -706,7 +708,7 @@ classdef datetime
     endfunction
 
     function TF = isnat (this)
-      TF = isnan (this.Y);
+      TF = isnan (this.Year);
     endfunction
 
     function TF = isregular (this)
@@ -714,11 +716,11 @@ classdef datetime
     endfunction
 
     function TF = isrow (this)
-      TF = isrow (this.Y);
+      TF = isrow (this.Year);
     endfunction
 
     function TF = isscalar (this)
-      TF = isscalar (this.Y);
+      TF = isscalar (this.Year);
     endfunction
 
     function TF = issorted (this, varargin)
@@ -730,7 +732,7 @@ classdef datetime
     endfunction
 
     function TF = isvector (this)
-      TF = isvector (this.Y);
+      TF = isvector (this.Year);
     endfunction
 
     function TF = isweekend (this)
@@ -805,18 +807,18 @@ classdef datetime
         error ("datetime: invalid input to constructor.");
       endif
       out = args{1};
-      fieldArgs = cellfun (@(obj) obj.Y, args, 'UniformOutput', false);
-      out.Y = cat (dim, fieldArgs{:});
-      fieldArgs = cellfun (@(obj) obj.M, args, 'UniformOutput', false);
-      out.M = cat (dim, fieldArgs{:});
-      fieldArgs = cellfun (@(obj) obj.D, args, 'UniformOutput', false);
-      out.D = cat (dim, fieldArgs{:});
-      fieldArgs = cellfun (@(obj) obj.h, args, 'UniformOutput', false);
-      out.h = cat (dim, fieldArgs{:});
-      fieldArgs = cellfun (@(obj) obj.m, args, 'UniformOutput', false);
-      out.m = cat (dim, fieldArgs{:});
-      fieldArgs = cellfun (@(obj) obj.s, args, 'UniformOutput', false);
-      out.s = cat (dim, fieldArgs{:});
+      fieldArgs  = cellfun (@(obj) obj.Year, args, 'UniformOutput', false);
+      out.Year   = cat (dim, fieldArgs{:});
+      fieldArgs  = cellfun (@(obj) obj.Month, args, 'UniformOutput', false);
+      out.Month  = cat (dim, fieldArgs{:});
+      fieldArgs  = cellfun (@(obj) obj.Day, args, 'UniformOutput', false);
+      out.Day    = cat (dim, fieldArgs{:});
+      fieldArgs  = cellfun (@(obj) obj.Hour, args, 'UniformOutput', false);
+      out.Hour   = cat (dim, fieldArgs{:});
+      fieldArgs  = cellfun (@(obj) obj.Minute, args, 'UniformOutput', false);
+      out.Minute = cat (dim, fieldArgs{:});
+      fieldArgs  = cellfun (@(obj) obj.Second, args, 'UniformOutput', false);
+      out.Second = cat (dim, fieldArgs{:});
     endfunction
 
     function out = horzcat (varargin)
@@ -828,66 +830,66 @@ classdef datetime
     endfunction
 
     function this = repmat (this, varargin)
-      this.Y = repmat (this.Y, varargin{:});
-      this.M = repmat (this.M, varargin{:});
-      this.D = repmat (this.D, varargin{:});
-      this.h = repmat (this.h, varargin{:});
-      this.m = repmat (this.m, varargin{:});
-      this.s = repmat (this.s, varargin{:});
+      this.Year   = repmat (this.Year, varargin{:});
+      this.Month  = repmat (this.Month, varargin{:});
+      this.Day    = repmat (this.Day, varargin{:});
+      this.Hour   = repmat (this.Hour, varargin{:});
+      this.Minute = repmat (this.Minute, varargin{:});
+      this.Second = repmat (this.Second, varargin{:});
     endfunction
 
     function this = reshape (this, varargin)
-      this.Y = reshape (this.Y, varargin{:});
-      this.M = reshape (this.M, varargin{:});
-      this.D = reshape (this.D, varargin{:});
-      this.h = reshape (this.h, varargin{:});
-      this.m = reshape (this.m, varargin{:});
-      this.s = reshape (this.s, varargin{:});
+      this.Year   = reshape (this.Year, varargin{:});
+      this.Month  = reshape (this.Month, varargin{:});
+      this.Day    = reshape (this.Day, varargin{:});
+      this.Hour   = reshape (this.Hour, varargin{:});
+      this.Minute = reshape (this.Minute, varargin{:});
+      this.Second = reshape (this.Second, varargin{:});
     endfunction
 
     function this = circshift (this, varargin)
-      this.Y = circshift (this.Y, varargin{:});
-      this.M = circshift (this.M, varargin{:});
-      this.D = circshift (this.D, varargin{:});
-      this.h = circshift (this.h, varargin{:});
-      this.m = circshift (this.m, varargin{:});
-      this.s = circshift (this.s, varargin{:});
+      this.Year   = circshift (this.Year, varargin{:});
+      this.Month  = circshift (this.Month, varargin{:});
+      this.Day    = circshift (this.Day, varargin{:});
+      this.Hour   = circshift (this.Hour, varargin{:});
+      this.Minute = circshift (this.Minute, varargin{:});
+      this.Second = circshift (this.Second, varargin{:});
     endfunction
 
     function this = permute (this, order)
-      this.Y = permute (this.Y, order);
-      this.M = permute (this.M, order);
-      this.D = permute (this.D, order);
-      this.h = permute (this.h, order);
-      this.m = permute (this.m, order);
-      this.s = permute (this.s, order);
+      this.Year   = permute (this.Year, order);
+      this.Month  = permute (this.Month, order);
+      this.Day    = permute (this.Day, order);
+      this.Hour   = permute (this.Hour, order);
+      this.Minute = permute (this.Minute, order);
+      this.Second = permute (this.Second, order);
     endfunction
 
     function this = ipermute (this, order)
-      this.Y = ipermute (this.Y, order);
-      this.M = ipermute (this.M, order);
-      this.D = ipermute (this.D, order);
-      this.h = ipermute (this.h, order);
-      this.m = ipermute (this.m, order);
-      this.s = ipermute (this.s, order);
+      this.Year   = ipermute (this.Year, order);
+      this.Month  = ipermute (this.Month, order);
+      this.Day    = ipermute (this.Day, order);
+      this.Hour   = ipermute (this.Hour, order);
+      this.Minute = ipermute (this.Minute, order);
+      this.Second = ipermute (this.Second, order);
     endfunction
 
     function this = transpose (this)
-      this.Y = transpose (this.Y);
-      this.M = transpose (this.M);
-      this.D = transpose (this.D);
-      this.h = transpose (this.h);
-      this.m = transpose (this.m);
-      this.s = transpose (this.s);
+      this.Year   = transpose (this.Year);
+      this.Month  = transpose (this.Month);
+      this.Day    = transpose (this.Day);
+      this.Hour   = transpose (this.Hour);
+      this.Minute = transpose (this.Minute);
+      this.Second = transpose (this.Second);
     endfunction
 
     function this = ctranspose (this)
-      this.Y = ctranspose (this.Y);
-      this.M = ctranspose (this.M);
-      this.D = ctranspose (this.D);
-      this.h = ctranspose (this.h);
-      this.m = ctranspose (this.m);
-      this.s = ctranspose (this.s);
+      this.Year   = ctranspose (this.Year);
+      this.Month  = ctranspose (this.Month);
+      this.Day    = ctranspose (this.Day);
+      this.Hour   = ctranspose (this.Hour);
+      this.Minute = ctranspose (this.Minute);
+      this.Second = ctranspose (this.Second);
     endfunction
 
   endmethods
@@ -911,12 +913,12 @@ classdef datetime
       switch (s.type)
         case '()'
           out = this;
-          out.Y = this.Y(s.subs{:});
-          out.M = this.M(s.subs{:});
-          out.D = this.D(s.subs{:});
-          out.h = this.h(s.subs{:});
-          out.m = this.m(s.subs{:});
-          out.s = this.s(s.subs{:});
+          out.Year   = this.Year(s.subs{:});
+          out.Month  = this.Month(s.subs{:});
+          out.Day    = this.Day(s.subs{:});
+          out.Hour   = this.Hour(s.subs{:});
+          out.Minute = this.m(s.subs{:});
+          out.Second = this.s(s.subs{:});
 
         case '{}'
           error (["datetime.subsref: '{}' invalid indexing", ...
@@ -937,20 +939,19 @@ classdef datetime
             case 'TimeZone'
               out = this.TimeZone;
             case {'Year'}
-              out = this.Y;
+              out = this.Year;
             case {'Month'}
-              out = this.M;
+              out = this.Month;
             case {'Day'}
-              out = this.D;
+              out = this.Day;
             case {'Hour'}
-              out = this.h;
+              out = this.Hour;
             case {'Minute'}
-              out = this.m;
+              out = this.Minute;
             case {'Second'}
-              out = this.s;
+              out = this.Second;
             otherwise
-              error ("datetime.subsref: unrecongized property: %s", ...
-                     s.subs);
+              error ("datetime.subsref: unrecongized property: %s", s.subs);
           endswitch
       endswitch
 
@@ -1016,20 +1017,19 @@ classdef datetime
               endif
               this.TimeZone = toTimeZone;
             case {'Year'}
-              this.Y(p.subs{:}) = val;
+              this.Year(p.subs{:}) = val;
             case {'Month'}
-              this.M(p.subs{:}) = val;
+              this.Month(p.subs{:}) = val;
             case {'Day'}
-              this.D(p.subs{:}) = val;
+              this.Day(p.subs{:}) = val;
             case {'Hour'}
-              this.h(p.subs{:}) = val;
+              this.Hour(p.subs{:}) = val;
             case {'Minute'}
-              this.m(p.subs{:}) = val;
+              this.Minute(p.subs{:}) = val;
             case {'Second'}
-              this.s(p.subs{:}) = val;
+              this.Second(p.subs{:}) = val;
             otherwise
-              error ("datetime.subsasgn: unrecongized property: %s", ...
-                     s.subs);
+              error ("datetime.subsasgn: unrecongized property: %s", s.subs);
           endswitch
       endswitch
 
@@ -1042,12 +1042,12 @@ classdef datetime
     ## Return a subset of the array
     function this = subset (this, varargin)
       this = this;
-      this.Y = this.Y(varargin{:});
-      this.M = this.M(varargin{:});
-      this.D = this.D(varargin{:});
-      this.h = this.h(varargin{:});
-      this.m = this.m(varargin{:});
-      this.s = this.s(varargin{:});
+      this.Year   = this.Year(varargin{:});
+      this.Month  = this.Month(varargin{:});
+      this.Day    = this.Day(varargin{:});
+      this.Hour   = this.Hour(varargin{:});
+      this.Minute = this.Minute(varargin{:});
+      this.Second = this.Second(varargin{:});
     endfunction
 
   endmethods
