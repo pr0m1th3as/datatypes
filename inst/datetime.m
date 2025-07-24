@@ -917,8 +917,8 @@ classdef datetime
           out.Month  = this.Month(s.subs{:});
           out.Day    = this.Day(s.subs{:});
           out.Hour   = this.Hour(s.subs{:});
-          out.Minute = this.m(s.subs{:});
-          out.Second = this.s(s.subs{:});
+          out.Minute = this.Minute(s.subs{:});
+          out.Second = this.Second(s.subs{:});
 
         case '{}'
           error (["datetime.subsref: '{}' invalid indexing", ...
@@ -983,12 +983,12 @@ classdef datetime
             error (["datetime.subsasgn: cannot assign %s values", ...
                             "to a datetime array."], class (val));
           endif
-          this.Y(s.subs{:}) = val.Y;
-          this.M(s.subs{:}) = val.M;
-          this.D(s.subs{:}) = val.D;
-          this.h(s.subs{:}) = val.h;
-          this.m(s.subs{:}) = val.m;
-          this.s(s.subs{:}) = val.s;
+          this.Year(s.subs{:})   = val.Year;
+          this.Month(s.subs{:})  = val.Month;
+          this.Day(s.subs{:})    = val.Day;
+          this.Hour(s.subs{:})   = val.Hour;
+          this.Minute(s.subs{:}) = val.Minute;
+          this.Second(s.subs{:}) = val.Second;
 
         case '{}'
           error (["datetime.subsasgn: '{}' invalid indexing", ...
@@ -1017,13 +1017,13 @@ classdef datetime
               endif
               this.TimeZone = toTimeZone;
             case {'Year'}
-              this.Year(p.subs{:}) = val;
+              this.Year(p.subs{:})   = val;
             case {'Month'}
-              this.Month(p.subs{:}) = val;
+              this.Month(p.subs{:})  = val;
             case {'Day'}
-              this.Day(p.subs{:}) = val;
+              this.Day(p.subs{:})    = val;
             case {'Hour'}
-              this.Hour(p.subs{:}) = val;
+              this.Hour(p.subs{:})   = val;
             case {'Minute'}
               this.Minute(p.subs{:}) = val;
             case {'Second'}
