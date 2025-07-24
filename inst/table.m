@@ -195,7 +195,7 @@ classdef table
     ## You can add custom properties only by using the @code{addprop} method and
     ## you can only remove a custom property with the @code{rmprop} method.  To
     ## access existing custom properties use dot name structure assignment as in
-    ## @qcode{var{tbl}.Properties.CustomProperties.@var{PropertyName}}, where
+    ## @qcode{@var{tbl}.Properties.CustomProperties.@var{PropertyName}}, where
     ## @var{PropertyName} is the name used with the @code{addprop} method.
     ##
     ## @end deftp
