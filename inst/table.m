@@ -5640,72 +5640,8 @@ classdef table
       for ix = 1:width (this)
         var_V = this.VariableValues{ix};
         ncols = size (var_V, 2);
-        ## Handle each variable type
-        if (iscell (var_V))
-          for col = 1:ncols
-            V = [V, var_V(:,col)];
-            N = [N, this.VariableNames{ix}];
-            T = [T, 'cell'];
-            D = [D, this.VariableDescriptions(ix)];
-            U = [U, this.VariableUnits(ix)];
-          endfor
-        elseif (islogical (var_V))
-          for col = 1:ncols
-            V = [V, num2cell(var_V(:,col))];
-            N = [N, this.VariableNames{ix}];
-            T = [T, 'logical'];
-            D = [D, this.VariableDescriptions(ix)];
-            U = [U, this.VariableUnits(ix)];
-          endfor
-        elseif (isnumeric (var_V))
-          for col = 1:ncols
-            V = [V, num2cell(var_V(:,col))];
-            N = [N, this.VariableNames{ix}];
-            T = [T, class(var_V(:,col))];
-            D = [D, this.VariableDescriptions(ix)];
-            U = [U, this.VariableUnits(ix)];
-          endfor
-        elseif (isa (var_V, 'calendarDuration'))
-          for col = 1:ncols
-            V = [V, dispstrs(var_V(:,col))];
-            N = [N, this.VariableNames{ix}];
-            T = [T, 'calendarDuration'];
-            D = [D, this.VariableDescriptions(ix)];
-            U = [U, this.VariableUnits(ix)];
-          endfor
-        elseif (isa (var_V, 'categorical'))
-          for col = 1:ncols
-            V = [V, dispstrs(var_V(:,col))];
-            N = [N, this.VariableNames{ix}];
-            T = [T, 'categorical'];
-            D = [D, this.VariableDescriptions(ix)];
-            U = [U, this.VariableUnits(ix)];
-          endfor
-        elseif (isa (var_V, 'datetime'))
-          for col = 1:ncols
-            V = [V, dispstrs(var_V(:,col))];
-            N = [N, this.VariableNames{ix}];
-            T = [T, 'datetime'];
-            D = [D, this.VariableDescriptions(ix)];
-            U = [U, this.VariableUnits(ix)];
-          endfor
-        elseif (isa (var_V, 'duration'))
-          for col = 1:ncols
-            V = [V, dispstrs(var_V(:,col))];
-            N = [N, this.VariableNames{ix}];
-            T = [T, 'duration'];
-            D = [D, this.VariableDescriptions(ix)];
-            U = [U, this.VariableUnits(ix)];
-          endfor
-        elseif (isa (var_V, 'string'))
-          for col = 1:ncols
-            V = [V, cellstr(var_V(:,col))];
-            N = [N, this.VariableNames{ix}];
-            T = [T, 'string'];
-            D = [D, this.VariableDescriptions(ix)];
-            U = [U, this.VariableUnits(ix)];
-          endfor
-        elseif (isa (var_V, 'table'))
+        ## Handle nested tables and structures separately
+        if (isa (var_V, 'table'))
           [tmpV, tmpN, tmpT tmpD, tmpU] = table2cellarrays (var_V);
           V = [V, tmpV];
           nestedN = {};
@@ -5749,6 +5685,14 @@ classdef table
           T = [T, nestedT];
           D = [D, nestedD];
           U = [U, nestedU];
+        else
+          for col = 1:ncols
+            V = [V, var_V(:,col)];
+            N = [N, this.VariableNames{ix}];
+            T = [T, this.VariableTypes{ix}];
+            D = [D, this.VariableDescriptions(ix)];
+            U = [U, this.VariableUnits(ix)];
+          endfor
         endif
       endfor
     endfunction
