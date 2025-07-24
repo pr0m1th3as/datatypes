@@ -52,9 +52,12 @@ classdef table
     ## -*- texinfo -*-
     ## @deftp {table} {property} Description
     ##
+    ## Table description
+    ##
     ## Table description specified as a character vector or a string scalar.
     ## If specified as a string scalar, it is converted and stored internally
-    ## as a character vector.
+    ## as a character vector.  You can access the @qcode{Description} property
+    ## of a table @var{tbl} with @qcode{@var{tbl}.Properties.Description}.
     ##
     ## @end deftp
     Description = ""
@@ -62,8 +65,11 @@ classdef table
     ## -*- texinfo -*-
     ## @deftp {table} {property} UserData
     ##
+    ## Additional table information
+    ##
     ## Additional table information, specified as an array.  Any type of data
-    ## can be attached using this property.
+    ## can be attached using this property.  You can access the @qcode{UserData}
+    ## property of a table @var{tbl} with @qcode{@var{tbl}.Properties.UserData}.
     ##
     ## @end deftp
     UserData = []
@@ -71,10 +77,19 @@ classdef table
     ## -*- texinfo -*-
     ## @deftp {table} {property} DimensionNames
     ##
+    ## Dimension names
+    ##
     ## Dimension names specified as a two-element cell array of character
     ## vectors or a two-element string array.  If specified as a string array,
     ## it is converted and stored internally as a cell array of character
-    ## vectors.
+    ## vectors.  You can access the @qcode{DimensionNames} property of a table
+    ## @var{tbl} with @qcode{@var{tbl}.Properties.DimensionNames}.
+    ##
+    ## By default, @qcode{DimensionNames} is specified as
+    ## @qcode{'Row', 'Variables'}.  You can access table data per rows or per
+    ## columns by using either one of the two dimension names, respectively.
+    ## However, if the table contains row names, then the first element of the
+    ## @qcode{DimensionNames} corresponds to the row names.
     ##
     ## @end deftp
     DimensionNames = {"Row", "Variables"}
@@ -82,17 +97,42 @@ classdef table
     ## -*- texinfo -*-
     ## @deftp {table} {property} VariableNames
     ##
+    ## Variable names
+    ##
     ## Variable names, specified as a cell array of character vectors or a
     ## string array.  If specified as a string array, it is converted and stored
     ## internally as a cell array of character vectors.  All elements must be
     ## nonempty and distinct, and their number must equal the number of
-    ## variables.
+    ## variables.  You can access the data type of a specific variable by using
+    ## dot name assignment, as in @qcode{@var{tbl}.@var{varname}}, where
+    ## @var{varname} is the name of the variable in table @var{tbl}.
     ##
     ## @end deftp
     VariableNames = {}
 
     ## -*- texinfo -*-
+    ## @deftp {table} {property} VariableTypes
+    ##
+    ## Variable data types
+    ##
+    ## The class of the data of each variable, defined as a cell array of
+    ## character vectors or a string array with the same number of elements as
+    ## the number of variables in the table.  If specified as a string array,
+    ## it is converted and stored internally as a cell array of character
+    ## vectors.  You can access the @qcode{VariableTypes} property of a table
+    ## @var{tbl} with @qcode{@var{tbl}.Properties.VariableTypes}.  You can
+    ## further index specific variables to access their data type.  Modifying
+    ## the elements of the @qcode{VariableTypes} property automatically converts
+    ## the underlying data of the corresponding variable into the specified
+    ## data types provided that a valid conversion is requested.
+    ##
+    ## @end deftp
+    VariableTypes = {}
+
+    ## -*- texinfo -*-
     ## @deftp {table} {property} VariableDescriptions
+    ##
+    ## Variable descriptions
     ##
     ## Variable descriptions, specified as a cell array of character vectors or
     ## a string array.  If specified as a string array, it is converted and
@@ -100,7 +140,9 @@ classdef table
     ## (default), it must contain the same number of elements as the number of
     ## variables.  If a specific variable does not have a description, this can
     ## be specified with an individual empty character vector or an empty
-    ## string.
+    ## string.  You can access the @qcode{VariableDescriptions} property of a
+    ## table @var{tbl} with @qcode{@var{tbl}.Properties.VariableDescriptions}.
+    ## You can further index specific variables to access their description.
     ##
     ## @end deftp
     VariableDescriptions = {}
@@ -108,35 +150,33 @@ classdef table
     ## -*- texinfo -*-
     ## @deftp {table} {property} VariableUnits
     ##
+    ## Variable units
+    ##
     ## Variable units, specified as a cell array of character vectors or a
     ## string array.  If specified as a string array, it is converted and stored
     ## internally as a cell array of character vectors.  If not empty (default),
     ## it must contain the same number of elements as the number of variables.
-    ## If a specific variable does not have a description, this can be specified
-    ## with an individual empty character vector or an empty string.
+    ## If a specific variable does not have a unit, this can be specified with
+    ## an individual empty character vector or an empty string.  You can access
+    ## the @qcode{VariableDescriptions} property of a table @var{tbl} with
+    ## @qcode{@var{tbl}.Properties.VariableDescriptions}.   You can further
+    ## index specific variables to access their description.
     ##
     ## @end deftp
     VariableUnits = {}
 
     ## -*- texinfo -*-
-    ## @deftp {table} {property} VariableValues
-    ##
-    ## The values of the variables, defined as a cell vector of arbitrary types.
-    ## You can access the values of a specific variable of a table @var{tbl} by
-    ## using the dot notation, as in @qcode{@var{tbl}.VarName}.
-    ##
-    ## @end deftp
-    VariableValues = {}
-
-    ## -*- texinfo -*-
     ## @deftp {table} {property} RowNames
+    ##
+    ## Row names
     ##
     ## Row names, specified as a cell array of character vectors or a string
     ## array.  If specified as a string array, it is converted and stored
     ## internally as a cell array of character vectors.  If not empty (default),
     ## it must contain the same number of elements as the number of rows in the
-    ## table.  Leading and trailing white space character are automatically
-    ## removed.
+    ## table.  All elements must be nonempty and distinct.  You can access the
+    ## rows of the table @var{tbl} by specifying one or more row names within
+    ## within parentheses or curly braces.
     ##
     ## @end deftp
     RowNames = {}
@@ -144,11 +184,19 @@ classdef table
     ## -*- texinfo -*-
     ## @deftp {table} {property} CustomProperties
     ##
+    ## Customized metadata of table and its variables
+    ##
     ## Custom properties that contain metadata of a table and its variables.
     ## By default, this is an empty container.  Each custom property can contain
     ## either table metadata or variable metadata.  Any custom property which is
     ## an array with the same number of elements as the number of variables is
     ## considered as variable metadata, otherwise is considered table metadata.
+    ##
+    ## You can add custom properties only by using the @code{addprop} method and
+    ## you can only remove a custom property with the @code{rmprop} method.  To
+    ## access existing custom properties use dot name structure assignment as in
+    ## @qcode{var{tbl}.Properties.CustomProperties.@var{PropertyName}}, where
+    ## @var{PropertyName} is the name used with the @code{addprop} method.
     ##
     ## @end deftp
     CustomProperties = []
@@ -157,6 +205,7 @@ classdef table
 
   properties (GetAccess = private, SetAccess = protected)
     CustomPropTypes = {}
+    VariableValues = {}
   endproperties
 
   methods (Hidden)
@@ -305,8 +354,10 @@ classdef table
         endif
 
         ## Populate variables with defaults
+        VariableTypes = cell (1, nv);
         VariableValues = cell (1, nv);
         for i = 1:nv
+          VariableTypes{i} = varTypes{i};
           switch (varTypes{i})
             case {"double", "single", "int8", "uint8", "int16", "uint16", ...
                   "int32", "uint32", "int64", "uint64"}
@@ -395,6 +446,8 @@ classdef table
       this.VariableUnits = repmat ({""}, [1, numel(VariableNames)]);
       this.VariableNames = VariableNames(:)';
       this.VariableValues = VariableValues;
+      this.VariableTypes = cellfun ('class', VariableValues, ...
+                                    'UniformOutput', false);
       if (! isempty (RowNames))
         if (numel (__unique__ (RowNames)) != size (VariableValues{1}, 1))
           error ("table: elements in 'RowNames' must be unique.");
@@ -2012,6 +2065,7 @@ classdef table
 
       ## Remove selected variables
       tbl = this;
+      tbl.VariableTypes(ixVar) = [];
       tbl.VariableNames(ixVar) = [];
       tbl.VariableValues(ixVar) = [];
       tbl.VariableDescriptions(ixVar) = [];
@@ -2229,6 +2283,7 @@ classdef table
               ## Copy data from each separate column
               tbl.VariableValues{idx} = tmp.VariableValues{i};
               ## Copy variable properties from nested table
+              tbl.VariableTypes{idx} = tmp.VariableTypes{i};
               if (! isempty (tmp.VariableDescriptions{i}))
                 tbl.VariableDescriptions{idx} = tmp.VariableDescriptions{i};
               endif
@@ -2246,6 +2301,7 @@ classdef table
               endif
               ## Copy data from each separate column
               tbl.VariableValues{idx} = tmp(:,i);
+              tbl.VariableTypes{idx} = class (tmp(:,1));
               idx += 1;
             endfor
           endif
@@ -2384,6 +2440,7 @@ classdef table
                   " be merged into a multicolumn variable due", ...
                   " to incompatible variable types."]);
         end_try_catch
+        tbl.VariableTypes{location} = class (newVarValue);
         tbl.VariableValues{location} = newVarValue;
         tbl.VariableNames(location) = newVarName;
       endif
@@ -2469,6 +2526,7 @@ classdef table
         endif
 
         ## Write output
+        tbl.VariableTypes{ixVars(i)} = class (newVarValue);
         tbl.VariableValues{ixVars(i)} = newVarValue;
       endfor
 
@@ -2650,6 +2708,10 @@ classdef table
       tbl.VariableDescriptions = repmat ({""}, 1, size (tbl, 2));
       tbl.VariableUnits = repmat ({""}, 1, size (tbl, 2));
 
+      ## Assign variable types in the new table
+      new_types = cellfun ('class', tbl.VariableValues, "UniformOutput", false);
+      tbl.VariableTypes = new_types;
+
       ## Remove any custom variable properties
       if (! isempty (tbl.CustomProperties))
         cp_names = fieldnames (this.CustomProperties);
@@ -2800,6 +2862,10 @@ classdef table
 
       ## Merge tables
       tbl = [constTable, stackedTable];
+
+      ## Assign variable types in the new table
+      new_types = cellfun ('class', tbl.VariableValues, "UniformOutput", false);
+      tbl.VariableTypes = new_types;
 
       ## Return index vector (if requested)
       if (nargout > 1)
@@ -3086,6 +3152,10 @@ classdef table
 
       idxA = I;
       tbl = [GvarTable, UvarTable];
+
+      ## Assign variable types in the new table
+      new_types = cellfun ('class', tbl.VariableValues, "UniformOutput", false);
+      tbl.VariableTypes = new_types;
 
     endfunction
 
@@ -3687,6 +3757,10 @@ classdef table
           ## FIX ME: Deal with custom properties here
         endfor
       endif
+
+      ## Assign variable types in the new table
+      new_types = cellfun ('class', tbl.VariableValues, "UniformOutput", false);
+      tbl.VariableTypes = new_types;
     endfunction
 
     ## -*- texinfo -*-
@@ -3873,6 +3947,7 @@ classdef table
       ## Replicate variables accordingly
       if (cols > 1)
         ## Replicate variables
+        tbl.VariableTypes = repelem (tbl.VariableTypes, 1, cols);
         tbl.VariableValues = repelem (tbl.VariableValues, 1, cols);
         tbl.VariableDescriptions = repelem (tbl.VariableDescriptions, 1, cols);
         tbl.VariableUnits = repelem (tbl.VariableUnits, 1, cols);
@@ -3965,6 +4040,7 @@ classdef table
       ## Replicate variables accordingly
       if (cols > 1)
         ## Replicate variables
+        tbl.VariableTypes = repmat (tbl.VariableTypes, 1, cols);
         tbl.VariableValues = repmat (tbl.VariableValues, 1, cols);
         tbl.VariableDescriptions = repmat (tbl.VariableDescriptions, 1, cols);
         tbl.VariableUnits = repmat (tbl.VariableUnits, 1, cols);
@@ -4438,6 +4514,54 @@ classdef table
               this.VariableNames = val;
               tbl = this;
 
+            elseif (isequal (s.subs, "VariableTypes"))
+              ## Check for further indexing of specific variable(s)
+              if (numel (chain_s) > 1)
+                idx = chain_s(2).subs;
+                if (numel (idx) > 1)
+                  error (["table.subsasgn: cannot index VariableTypes", ...
+                          " with more than one dimension. Use a vector to", ...
+                          " index multiple VariableTypes at once."]);
+                endif
+                idx = cell2mat (idx);
+                if (isequal (idx, ":"))
+                  idx = [1:width(this)];
+                endif
+                if (! all (ismember (idx, [1:width(this)])))
+                  error (["table.subsasgn: out of bound index for", ...
+                          " VariableTypes"]);
+                endif
+                if (ischar (val) || isa (val, "string"))
+                  val = cellstr (val);
+                endif
+                if (! (iscellstr (val) && numel (val) == numel (idx)))
+                  error (["table.subsasgn: VariableTypes must be", ...
+                          " a cell array of character vectors or a string", ...
+                          " array matching the number of indexed variables."]);
+                endif
+                ## Convert selected variable(s) to new data type(s)
+                tbl = convertvars (this, idx, val)
+                ## Save new datatypes to VariableTypes property
+                this.VariableTypes(idx) = val;
+                tbl = this;
+                return
+              endif
+              ## Check for valid input: cellstring or string array matching
+              ## the number of variables in the table
+              if (ischar (val) || isa (val, "string"))
+                val = cellstr (val);
+              endif
+              if (! (iscellstr (val) && numel (val) == width (this)))
+                error (["table.subsasgn: VariableTypes must be a", ...
+                        " cell array of character vectors or a string", ...
+                        " array matching the number of variables."]);
+              endif
+              ## Covnert variables to new data types
+              tbl = convertvars (this, ":", val)
+              ## Save new datatypes to VariableTypes property
+              this.VariableDescriptions = val;
+              tbl = this;
+
             elseif (isequal (s.subs, "VariableDescriptions"))
               ## Check for further indexing of specific variable(s)
               if (numel (chain_s) > 1)
@@ -4780,6 +4904,7 @@ classdef table
     function tbl = subsetvars (this, ixVars)
       tbl = this;
       ## Copy selected variables
+      tbl.VariableTypes = this.VariableTypes(ixVars);
       tbl.VariableNames = this.VariableNames(ixVars);
       tbl.VariableValues = this.VariableValues(ixVars);
       tbl.VariableDescriptions = this.VariableDescriptions(ixVars);
@@ -4810,6 +4935,7 @@ classdef table
       out.Description = this.Description;
       out.UserData = this.UserData;
       out.DimensionNames = this.DimensionNames;
+      out.VariableTypes = this.VariableTypes;
       out.VariableNames = this.VariableNames;
       out.VariableDescriptions = this.VariableDescriptions;
       out.VariableUnits = this.VariableUnits;
@@ -4863,6 +4989,7 @@ classdef table
         ## Add new variable
         ix_new_var = width (this) + 1;
         tbl.VariableNames{ix_new_var} = varRef;
+        tbl.VariableTypes{ix_new_var} = class (value);
         tbl.VariableValues{ix_new_var} = value;
         tbl.VariableDescriptions{ix_new_var} = "";
         tbl.VariableUnits{ix_new_var} = "";
@@ -4893,6 +5020,7 @@ classdef table
         endif
       else
         ## Set existing variable
+        tbl.VariableTypes{ixVar} = class (value);
         tbl.VariableValues{ixVar} = value;
       endif
     endfunction
