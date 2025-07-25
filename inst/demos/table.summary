@@ -1,0 +1,16 @@
+%!demo
+%! ## Create a Table from patient data
+%!
+%! load patients
+%! BloodPressure = [Systolic Diastolic];
+%! T = table (Gender, Age, Smoker, BloodPressure, "RowNames", LastName);
+%!
+%! ## Add descriptions and units to table
+%!
+%! T.Properties.Description = "Simulated patient data";
+%! T.Properties.VariableUnits =  {"", "Yrs", "", "mm Hg"};
+%! T.Properties.VariableDescriptions(4) =  {"Systolic/Diastolic"};
+%!
+%! ## Print a summary of the table
+%!
+%! summary (T)

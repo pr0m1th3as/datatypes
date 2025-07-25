@@ -1,0 +1,49 @@
+%!demo
+%! ## Preallocate a table by specifying its size and the variable data types
+%!
+%! sz = [4, 3];
+%! varTypes = {"double", "datetime", "string"};
+%! T = table ("Size", sz, "VariableTypes", varTypes)
+
+%!demo
+%! ## Specify variable names with the "VariableNames" name-value pair argument
+%! sz = [4, 3];
+%! varTypes = {"double", "datetime", "string"};
+%! varNames = {"Temperature", "Time", "Station"};
+%! T2 = table ("Size", sz, "VariableTypes", varTypes, "VariableNames", varNames)
+%!
+%! ## Add rows of data to the first two rows of table T2
+%! T2(1,:) = {75, datetime(2024, 2, 5), string("S1")};
+%! T2(2,:) = {75, datetime(2024, 2, 6), string("S2")}
+
+%!demo
+%! ## Create a table from various types of arrays
+%!
+%! T = table (string ({"M";"F";"M"}), [45;32;34], ...
+%!            {"NY";"CA";"MA"}, logical ([1;0;0]),...
+%!            "VariableNames", {"Gender", "Age", "State", "Vote"})
+
+%!demo
+%! ## Create the same table using the state names as row names
+%!
+%! T = table (string ({"M";"F";"M"}), [45;32;34], logical ([1;0;0]), ...
+%!            "VariableNames", {"Gender", "Age", "Vote"}, ...
+%!            "RowNames", {"NY";"CA";"MA"})
+
+%!demo
+%! ## Display a table with mixed cell arrays as unicolumnar variables
+%! ## and other types as multicolumnar variables
+%!
+%! Data_A = {[34, 32]; ['text';'picture']; "text"; struct("c","data"); ...
+%!           [true, false]; ['some','text']; {'some','text'}; 25.34};
+%! Data_B = {32, 25; 0.2, 135; 0.123, 456; 42, 5; 154, 12; 32, 10; 4, 4; 9, 94};
+%! Data_C = datetime (2000, [1:8;9:16]', 1);
+%!
+%! T = table (Data_A, Data_B, Data_C)
+
+%!demo
+%! ## Create a nested table
+%! T1 = table ([1; 2; 3], [4; 5; 6], [7; 8; 9]);
+%! T2 = table ({"a"; "b"; "c"}, {"d"; "e"; "f"}, {"g"; "h"; "i"});
+%! NT = table ([1; 2; 3], T1, [4; 5; 6], T2, {5; 6; 7}, ...
+%!             "VariableNames", {"A", "B", "C", "D", "E"})

@@ -1,0 +1,37 @@
+%!demo
+%! ## Access rows by selecting row names
+%!
+%! LastName = {'Sanchez'; 'Johnson'; 'Lee'; 'Diaz'; 'Brown'};
+%! Age = [38;43;38;40;49];
+%! Height = [71;69;64;67;64];
+%! Weight = [176;163;131;133;119];
+%! T = table (Age, Weight, Height, 'RowNames', LastName)
+%! T('Lee',:)
+%! T{'Lee',:}
+%! T({'Lee', 'Diaz'},:)
+%! T{{'Lee', 'Diaz'},:}
+
+%!demo
+%! ## Set row names by assigning a new variable
+%!
+%! LastName = {'Sanchez'; 'Johnson'; 'Lee'; 'Diaz'; 'Brown'};
+%! Age = [38;43;38;40;49];
+%! Height = [71;69;64;67;64];
+%! Weight = [176;163;131;133;119];
+%! T = table (Age, Weight, Height)
+%! T.Properties.RowNames = LastName
+
+%!demo
+%! ## Set row names by assigning an existing variable
+%!
+%! LastName = {'Sanchez'; 'Johnson'; 'Lee'; 'Diaz'; 'Brown'};
+%! Age = [38;43;38;40;49];
+%! Height = [71;69;64;67;64];
+%! Weight = [176;163;131;133;119];
+%! T = table (Age, Weight, Height, LastName)
+%!
+%! ## In this case the variable persists in the table
+%! T.Properties.RowNames = T.LastName
+%!
+%! ## In this case the variable is removed from the table
+%! T.Properties.RowNames = 'LastName'

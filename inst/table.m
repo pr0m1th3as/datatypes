@@ -105,7 +105,8 @@ classdef table
     ## nonempty and distinct, and their number must equal the number of
     ## variables.  You can access the data type of a specific variable by using
     ## dot name assignment, as in @qcode{@var{tbl}.@var{varname}}, where
-    ## @var{varname} is the name of the variable in table @var{tbl}.
+    ## @var{varname} is the name of the variable in table @var{tbl}.  If the
+    ## variable name does not a exist, a new one is created.
     ##
     ## @end deftp
     VariableNames = {}
@@ -176,7 +177,8 @@ classdef table
     ## it must contain the same number of elements as the number of rows in the
     ## table.  All elements must be nonempty and distinct.  You can access the
     ## rows of the table @var{tbl} by specifying one or more row names within
-    ## within parentheses or curly braces.
+    ## within parentheses or curly braces.  You can also set @qcode{RowNames} by
+    ## dot name assignment to an existing variable.
     ##
     ## @end deftp
     RowNames = {}
@@ -5900,175 +5902,6 @@ function [outData, optLen]  = mixedcell2str (data, varLen)
   outData = outData(:);
 endfunction
 
-
-%!demo
-%! ## Store patient date in a table
-%!
-%! LastName = {"Sanchez"; "Johnson"; "Li"; "Diaz"; "Brown"};
-%! Age = [38;43;38;40;49];
-%! Smoker = logical ([1; 0; 1; 0; 1]);
-%! Height = [71; 69; 64; 67; 64];
-%! Weight = [176; 163; 131; 133; 119];
-%! BloodPressure = [124, 93; 109, 77; 125, 83; 117, 75; 122, 80];
-%! T = table (LastName, Age, Smoker, Height, Weight, BloodPressure)
-%!
-%! ## Use indexing to access variables
-%! meanHeight = mean (T.Height)
-%!
-%! ## Calculate body mass index (BMI), and add it as a new table variable.
-%!
-%! T.BMI = (T.Weight * 0.453592) ./ (T.Height * 0.0254) .^ 2
-
-%!demo
-%! ## Preallocate a table by specifying its size and the variable data types
-%!
-%! sz = [4, 3];
-%! varTypes = {"double", "datetime", "string"};
-%! T = table ("Size", sz, "VariableTypes", varTypes)
-%!
-%! ## Specify variable names with the "VariableNames" name-value pair argument
-%! varNames = {"Temperature", "Time", "Station"};
-%! T2 = table ("Size", sz, "VariableTypes", varTypes, "VariableNames", varNames)
-%!
-%! ## Add rows of data to the first two rows of table T2
-%! T2(1,:) = {75, datetime(2024, 2, 5), string("S1")};
-%! T2(2,:) = {75, datetime(2024, 2, 6), string("S2")}
-
-%!demo
-%! ## Create a table from various types of arrays
-%!
-%! T = table (string ({"M";"F";"M"}), [45;32;34], ...
-%!            {"NY";"CA";"MA"}, logical ([1;0;0]),...
-%!            "VariableNames", {"Gender", "Age", "State", "Vote"})
-%!
-%! ## Create the same table using the state names as row names
-%!
-%! T = table (string ({"M";"F";"M"}), [45;32;34], logical ([1;0;0]), ...
-%!            "VariableNames", {"Gender", "Age", "Vote"}, ...
-%!            "RowNames", {"NY";"CA";"MA"})
-
-%!demo
-%! ## Create a Table from patient data
-%!
-%! load patients
-%! BloodPressure = [Systolic Diastolic];
-%! T = table (Gender, Age, Smoker, BloodPressure, "RowNames", LastName);
-%!
-%! ## Add descriptions and units to table
-%!
-%! T.Properties.Description = "Simulated patient data";
-%! T.Properties.VariableUnits =  {"", "Yrs", "", "mm Hg"};
-%! T.Properties.VariableDescriptions(4) =  {"Systolic/Diastolic"};
-%!
-%! ## Print a summary of the table
-%!
-%! summary (T)
-
-%!demo
-%! ## Create a table and display its dimension names. You can access row
-%! ## names and data using dimension names with dot syntax.
-%!
-%! LastName = {"Sanchez"; "Johnson"; "Li"; "Diaz"; "Brown"};
-%! Age = [38;43;38;40;49];
-%! Smoker = logical ([1; 0; 1; 0; 1]);
-%! Height = [71; 69; 64; 67; 64];
-%! Weight = [176; 163; 131; 133; 119];
-%! BloodPressure = [124, 93; 109, 77; 125, 83; 117, 75; 122, 80];
-%! T = table (Age, Smoker, Height, Weight, BloodPressure, "RowNames", LastName)
-%! T.Properties.DimensionNames
-%!
-%! ## Access the row names using the first dimension name.
-%! T.Row
-%!
-%! ## Access the data using the second dimension name.
-%! T.Variables
-%!
-%! ## Modify the names of its dimensions using the Properties
-%! T.Properties.DimensionNames = {"Patient","Data"};
-%! T.Properties
-%!
-%! ## Change a single dimension name
-%! T.Properties.DimensionNames(1) = 'Patients'
-%! T.Properties
-%! T.Patients
-
-%!demo
-%! ## Various ways to specify row names for a table
-%!
-%! LastName = {'Sanchez'; 'Johnson'; 'Lee'; 'Diaz'; 'Brown'};
-%! Age = [38;43;38;40;49];
-%! Height = [71;69;64;67;64];
-%! Weight = [176;163;131;133;119];
-%!
-%! ## Using the constructor
-%! T = table(Age,Weight,Height,'RowNames',LastName)
-%!
-%! ## Using a cell array of character vectors, a character array,
-%! ## or a string array of the same height as the table. They are;
-%! ## always converted to cellstr type internally.
-%!
-%! T = table(Age,Weight,Height)
-%! fprintf ("## Using a cell array of character vectors\n");
-%! fprintf ("T.Properties.RowNames = LastName\n");
-%! T.Properties.RowNames = LastName
-%! fprintf ("## Using a string array\n");
-%! fprintf ("T.Properties.RowNames = string (LastName)\n");
-%! T.Properties.RowNames = string (LastName)
-%! fprintf ("## Using a character array\n");
-%! fprintf ("T.Properties.RowNames = char (LastName{:})\n");
-%! T.Properties.RowNames = char (LastName{:})
-%!
-%! ## Using an existing variable of type cellstr, string or char\n");
-%! ## array in which case the existing variable is NOT removed.\n");
-%!
-%! T = table(Age,Weight,Height,LastName)
-%! fprintf ("## Using an existing variable\n");
-%! fprintf ("T.Properties.RowNames = T.LastName\n");
-%! T.Properties.RowNames = T.LastName
-%!
-%! ## Referencing an existing variable by its VariableName, which
-%! ## must be of type cellstr, string or char array.  In this case,
-%! ## the existing variable is removed and only used as RowName, as
-%! ## in the constructor example. Reference can also be a numeric scalar
-%! ## indexing a Variable of appropriate type.
-%!
-%! T = table(Age,Weight,Height,LastName);
-%! fprintf ("## Referencing an existing variable with a character vector\n");
-%! fprintf ("T.Properties.RowNames = 'LastName'\n");
-%! T.Properties.RowNames = 'LastName'
-%!
-%! T = table(Age,Weight,Height,LastName);
-%! fprintf ("## Referencing an existing variable with a string scalar\n");
-%! fprintf ("T.Properties.RowNames = string(""LastName"")\n");
-%! T.Properties.RowNames = string("LastName")
-%!
-%! T = table(Age,Weight,Height,LastName);
-%! fprintf ("## Referencing an existing variable with a cellstr scalar\n");
-%! fprintf ("T.Properties.RowNames = {'LastName'}\n");
-%! T.Properties.RowNames = {'LastName'}
-%!
-%! T = table(Age,Weight,Height,LastName);
-%! fprintf ("## Referencing an existing variable with a numeric scalar\n");
-%! fprintf ("T.Properties.RowNames = 4\n");
-%! T.Properties.RowNames = 4
-
-%!demo
-%! ## Display a table with mixed cell arrays as unicolumnar variables
-%! ## and other types as multicolumnar variables
-%!
-%! Data_A = {[34, 32]; ['text';'picture']; "text"; struct("c","data"); ...
-%!           [true, false]; ['some','text']; {'some','text'}; 25.34};
-%! Data_B = {32, 25; 0.2, 135; 0.123, 456; 42, 5; 154, 12; 32, 10; 4, 4; 9, 94};
-%! Data_C = datetime (2000, [1:8;9:16]', 1);
-%!
-%! T = table (Data_A, Data_B, Data_C)
-
-%!demo
-%! ## Create a nested table
-%! T1 = table ([1; 2; 3], [4; 5; 6], [7; 8; 9]);
-%! T2 = table ({"a"; "b"; "c"}, {"d"; "e"; "f"}, {"g"; "h"; "i"});
-%! NT = table ([1; 2; 3], T1, [4; 5; 6], T2, {5; 6; 7}, ...
-%!             "VariableNames", {"A", "B", "C", "D", "E"})
 
 ## Test the constructor
 %!test

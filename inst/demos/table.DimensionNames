@@ -1,0 +1,27 @@
+%!demo
+%! ## Create a table and display its dimension names. You can access row
+%! ## names and data using dimension names with dot syntax.
+%!
+%! LastName = {"Sanchez"; "Johnson"; "Li"; "Diaz"; "Brown"};
+%! Age = [38;43;38;40;49];
+%! Smoker = logical ([1; 0; 1; 0; 1]);
+%! Height = [71; 69; 64; 67; 64];
+%! Weight = [176; 163; 131; 133; 119];
+%! BloodPressure = [124, 93; 109, 77; 125, 83; 117, 75; 122, 80];
+%! T = table (Age, Smoker, Height, Weight, BloodPressure, "RowNames", LastName)
+%! T.Properties.DimensionNames
+%!
+%! ## Access the row names using the first dimension name.
+%! T.Row
+%!
+%! ## Access the data using the second dimension name.
+%! T.Variables
+%!
+%! ## Modify the names of its dimensions using the Properties
+%! T.Properties.DimensionNames = {"Patient","Data"};
+%! T.Properties
+%!
+%! ## Change a single dimension name
+%! T.Properties.DimensionNames(1) = 'Patients'
+%! T.Properties
+%! T.Patients
