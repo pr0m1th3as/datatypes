@@ -1,1 +1,2 @@
+rmpath (fullfile (fileparts (canonicalize_file_name (mfilename ("fullpath"))), "demos"));
 clear -f
