@@ -182,8 +182,10 @@
 					<li><a href="table.html" class="text-decoration-none font-monospace fw-bolder"><small>table</small></a></li>
 					<li><a href="array2table.html" class="text-decoration-none font-monospace"><small>array2table</small></a></li>
 					<li><a href="cell2table.html" class="text-decoration-none font-monospace"><small>cell2table</small></a></li>
+					<li><a href="csv2table.html" class="text-decoration-none font-monospace"><small>csv2table</small></a></li>
 					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
 					<li><a href="istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
+					<li><a href="__csv2table__.html" class="text-decoration-none font-monospace"><small>__csv2table__</small></a></li>
 					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace"><small>__table2csv__</small></a></li>
 				</ul>
 				</div>
@@ -264,23 +266,32 @@
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
               data-bs-toggle="collapse" data-bs-target="#collapseProperty1"
               aria-expanded="false" aria-controls="collapseProperty1">
-              <h4 class="d-inline-block mr-2">
-                <b><code>CustomProperties</code></b>
-              </h4>
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>Description</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+                  Table description
+                </div>
+              </div>
           </div>
           <div class="collapse multi-collapse" id="collapseProperty1">
             <div class="border-bottom py-2">
 
 
-<p> Custom properties that contain metadata of a table and its variables.
- By default, this is an empty container.  Each custom property can contain
- either table metadata or variable metadata.  Any custom property which is
- an array with the same number of elements as the number of variables is
- considered as variable metadata, otherwise is considered table metadata.
+<p> Table description
 </p>
 <div class="ms-5">
+<p> Table description specified as a character vector or a string scalar.
+ If specified as a string scalar, it is converted and stored internally
+ as a character vector.  You can access the <code>Description</code> property
+ of a table <var>tbl</var> with <code><var>tbl</var>.Properties.Description</code>.
+</p>
 
 </div>
+
 
             </div>
           </div>
@@ -291,21 +302,31 @@
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
               data-bs-toggle="collapse" data-bs-target="#collapseProperty2"
               aria-expanded="false" aria-controls="collapseProperty2">
-              <h4 class="d-inline-block mr-2">
-                <b><code>Description</code></b>
-              </h4>
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>UserData</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+                  Additional table information
+                </div>
+              </div>
           </div>
           <div class="collapse multi-collapse" id="collapseProperty2">
             <div class="border-bottom py-2">
 
 
-<p> Table description specified as a character vector or a string scalar.
- If specified as a string scalar, it is converted and stored internally
- as a character vector.
+<p> Additional table information
 </p>
 <div class="ms-5">
+<p> Additional table information, specified as an array.  Any type of data
+ can be attached using this property.  You can access the <code>UserData</code>
+ property of a table <var>tbl</var> with <code><var>tbl</var>.Properties.UserData</code>.
+</p>
 
 </div>
+
 
             </div>
           </div>
@@ -316,22 +337,174 @@
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
               data-bs-toggle="collapse" data-bs-target="#collapseProperty3"
               aria-expanded="false" aria-controls="collapseProperty3">
-              <h4 class="d-inline-block mr-2">
-                <b><code>DimensionNames</code></b>
-              </h4>
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>DimensionNames</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+                  Dimension names
+                </div>
+              </div>
           </div>
           <div class="collapse multi-collapse" id="collapseProperty3">
             <div class="border-bottom py-2">
 
 
+<p> Dimension names
+</p>
+<div class="ms-5">
 <p> Dimension names specified as a two-element cell array of character
  vectors or a two-element string array.  If specified as a string array,
  it is converted and stored internally as a cell array of character
- vectors.
+ vectors.  You can access the <code>DimensionNames</code> property of a table
+ <var>tbl</var> with <code><var>tbl</var>.Properties.DimensionNames</code>.
 </p>
-<div class="ms-5">
+<p> By default, <code>DimensionNames</code> is specified as
+ <code>'Row', 'Variables'</code>.  You can access table data per rows or per
+ columns by using either one of the two dimension names, respectively.
+ However, if the table contains row names, then the first element of the
+ <code>DimensionNames</code> corresponds to the row names.
+</p>
 
 </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Example: 1
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="container bg-light">
+                <div class="row">
+                  <table><tbody><tr>
+                    <td>&nbsp;</td>
+                    <td><pre class="example">
+
+ ## Create a table and display its dimension names. You can access row
+ ## names and data using dimension names with dot syntax.
+
+ LastName = {"Sanchez"; "Johnson"; "Li"; "Diaz"; "Brown"};
+ Age = [38;43;38;40;49];
+ Smoker = logical ([1; 0; 1; 0; 1]);
+ Height = [71; 69; 64; 67; 64];
+ Weight = [176; 163; 131; 133; 119];
+ BloodPressure = [124, 93; 109, 77; 125, 83; 117, 75; 122, 80];
+ T = table (Age, Smoker, Height, Weight, BloodPressure, "RowNames", LastName)
+ T.Properties.DimensionNames
+
+ ## Access the row names using the first dimension name.
+ T.Row
+
+ ## Access the data using the second dimension name.
+ T.Variables
+
+ ## Modify the names of its dimensions using the Properties
+ T.Properties.DimensionNames = {"Patient","Data"};
+ T.Properties
+
+ ## Change a single dimension name
+ T.Properties.DimensionNames(1) = 'Patients'
+ T.Properties
+ T.Patients
+
+T =
+  5x5 table
+
+               Age    Smoker    Height    Weight    BloodPressure    
+               ___    ______    ______    ______    _____________    
+
+    Sanchez     38    true          71       176        124    93    
+    Johnson     43    false         69       163        109    77    
+    Li          38    true          64       131        125    83    
+    Diaz        40    false         67       133        117    75    
+    Brown       49    true          64       119        122    80    
+
+ans =
+  1x2 cell array
+
+    {'Row'}    {'Variables'}    
+
+ans =
+  5x1 cell array
+
+    {'Sanchez'}    
+    {'Johnson'}    
+    {'Li'     }    
+    {'Diaz'   }    
+    {'Brown'  }    
+
+ans =
+
+    38     1    71   176   124    93
+    43     0    69   163   109    77
+    38     1    64   131   125    83
+    40     0    67   133   117    75
+    49     1    64   119   122    80
+
+
+  TableProperties with properties:
+
+             Description: ''
+                UserData: []
+          DimensionNames: {'Patient'  'Data'}
+           VariableNames: {'Age'  'Smoker'  'Height'  'Weight'  'BloodPressure'}
+    VariableDescriptions: {}
+           VariableUnits: {}
+      VariableContinuity: []
+                RowNames: {5x5 cell}
+        CustomProperties: No custom properties are set.
+      Use 'addprop' and 'rmprop' methods to modify CustomProperties.
+T =
+  5x5 table
+
+               Age    Smoker    Height    Weight    BloodPressure    
+               ___    ______    ______    ______    _____________    
+
+    Sanchez     38    true          71       176        124    93    
+    Johnson     43    false         69       163        109    77    
+    Li          38    true          64       131        125    83    
+    Diaz        40    false         67       133        117    75    
+    Brown       49    true          64       119        122    80    
+
+
+  TableProperties with properties:
+
+             Description: ''
+                UserData: []
+          DimensionNames: {'Patients'  'Data'}
+           VariableNames: {'Age'  'Smoker'  'Height'  'Weight'  'BloodPressure'}
+    VariableDescriptions: {}
+           VariableUnits: {}
+      VariableContinuity: []
+                RowNames: {5x5 cell}
+        CustomProperties: No custom properties are set.
+      Use 'addprop' and 'rmprop' methods to modify CustomProperties.
+ans =
+  5x1 cell array
+
+    {'Sanchez'}    
+    {'Johnson'}    
+    {'Li'     }    
+    {'Diaz'   }    
+    {'Brown'  }    
+
+                    </pre></td></tr></tbody>
+                  </table>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
 
             </div>
           </div>
@@ -342,24 +515,106 @@
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
               data-bs-toggle="collapse" data-bs-target="#collapseProperty4"
               aria-expanded="false" aria-controls="collapseProperty4">
-              <h4 class="d-inline-block mr-2">
-                <b><code>RowNames</code></b>
-              </h4>
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>VariableNames</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+                  Variable names
+                </div>
+              </div>
           </div>
           <div class="collapse multi-collapse" id="collapseProperty4">
             <div class="border-bottom py-2">
 
 
-<p> Row names, specified as a cell array of character vectors or a string
- array.  If specified as a string array, it is converted and stored
- internally as a cell array of character vectors.  If not empty (default),
- it must contain the same number of elements as the number of rows in the
- table.  Leading and trailing white space character are automatically
- removed.
+<p> Variable names
 </p>
 <div class="ms-5">
+<p> Variable names, specified as a cell array of character vectors or a
+ string array.  If specified as a string array, it is converted and stored
+ internally as a cell array of character vectors.  All elements must be
+ nonempty and distinct, and their number must equal the number of
+ variables.  You can access the data type of a specific variable by using
+ dot name assignment, as in <code><var>tbl</var>.<var>varname</var></code>, where
+ <var>varname</var> is the name of the variable in table <var>tbl</var>.  If the
+ variable name does not a exist, a new one is created.
+</p>
 
 </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Example: 1
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="container bg-light">
+                <div class="row">
+                  <table><tbody><tr>
+                    <td>&nbsp;</td>
+                    <td><pre class="example">
+
+ ## Store patient data in a table
+
+ LastName = {"Sanchez"; "Johnson"; "Li"; "Diaz"; "Brown"};
+ Age = [38;43;38;40;49];
+ Smoker = logical ([1; 0; 1; 0; 1]);
+ Height = [71; 69; 64; 67; 64];
+ Weight = [176; 163; 131; 133; 119];
+ BloodPressure = [124, 93; 109, 77; 125, 83; 117, 75; 122, 80];
+ T = table (LastName, Age, Smoker, Height, Weight, BloodPressure)
+
+ ## Use indexing to access variables
+ meanHeight = mean (T.Height)
+
+ ## Calculate body mass index (BMI), and add it as a new table variable.
+ pounds2kg = 0.4535924;
+ inch2meter = 0.0254;
+ T.BMI = (T.Weight * pounds2kg) ./ (T.Height * inch2meter) .^ 2
+
+T =
+  5x6 table
+
+     LastName      Age    Smoker    Height    Weight    BloodPressure    
+    ___________    ___    ______    ______    ______    _____________    
+
+    {'Sanchez'}     38    true          71       176        124    93    
+    {'Johnson'}     43    false         69       163        109    77    
+    {'Li'     }     38    true          64       131        125    83    
+    {'Diaz'   }     40    false         67       133        117    75    
+    {'Brown'  }     49    true          64       119        122    80    
+
+meanHeight = 67
+T =
+  5x7 table
+
+     LastName      Age    Smoker    Height    Weight    BloodPressure      BMI      
+    ___________    ___    ______    ______    ______    _____________    _______    
+
+    {'Sanchez'}     38    true          71       176        124    93    24.5468    
+    {'Johnson'}     43    false         69       163        109    77    24.0706    
+    {'Li'     }     38    true          64       131        125    83    22.4859    
+    {'Diaz'   }     40    false         67       133        117    75    20.8305    
+    {'Brown'  }     49    true          64       119        122    80    20.4261    
+
+                    </pre></td></tr></tbody>
+                  </table>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
 
             </div>
           </div>
@@ -370,20 +625,38 @@
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
               data-bs-toggle="collapse" data-bs-target="#collapseProperty5"
               aria-expanded="false" aria-controls="collapseProperty5">
-              <h4 class="d-inline-block mr-2">
-                <b><code>UserData</code></b>
-              </h4>
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>VariableTypes</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+                  Variable data types
+                </div>
+              </div>
           </div>
           <div class="collapse multi-collapse" id="collapseProperty5">
             <div class="border-bottom py-2">
 
 
-<p> Additional table information, specified as an array.  Any type of data
- can be attached using this property.
+<p> Variable data types
 </p>
 <div class="ms-5">
+<p> The class of the data of each variable, defined as a cell array of
+ character vectors or a string array with the same number of elements as
+ the number of variables in the table.  If specified as a string array,
+ it is converted and stored internally as a cell array of character
+ vectors.  You can access the <code>VariableTypes</code> property of a table
+ <var>tbl</var> with <code><var>tbl</var>.Properties.VariableTypes</code>.  You can
+ further index specific variables to access their data type.  Modifying
+ the elements of the <code>VariableTypes</code> property automatically converts
+ the underlying data of the corresponding variable into the specified
+ data types provided that a valid conversion is requested.
+</p>
 
 </div>
+
 
             </div>
           </div>
@@ -394,25 +667,37 @@
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
               data-bs-toggle="collapse" data-bs-target="#collapseProperty6"
               aria-expanded="false" aria-controls="collapseProperty6">
-              <h4 class="d-inline-block mr-2">
-                <b><code>VariableDescriptions</code></b>
-              </h4>
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>VariableDescriptions</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+                  Variable descriptions
+                </div>
+              </div>
           </div>
           <div class="collapse multi-collapse" id="collapseProperty6">
             <div class="border-bottom py-2">
 
 
+<p> Variable descriptions
+</p>
+<div class="ms-5">
 <p> Variable descriptions, specified as a cell array of character vectors or
  a string array.  If specified as a string array, it is converted and
  stored internally as a cell array of character vectors.  If not empty
  (default), it must contain the same number of elements as the number of
  variables.  If a specific variable does not have a description, this can
  be specified with an individual empty character vector or an empty
- string.
+ string.  You can access the <code>VariableDescriptions</code> property of a
+ table <var>tbl</var> with <code><var>tbl</var>.Properties.VariableDescriptions</code>.
+ You can further index specific variables to access their description.
 </p>
-<div class="ms-5">
 
 </div>
+
 
             </div>
           </div>
@@ -423,23 +708,37 @@
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
               data-bs-toggle="collapse" data-bs-target="#collapseProperty7"
               aria-expanded="false" aria-controls="collapseProperty7">
-              <h4 class="d-inline-block mr-2">
-                <b><code>VariableNames</code></b>
-              </h4>
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>VariableUnits</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+                  Variable units
+                </div>
+              </div>
           </div>
           <div class="collapse multi-collapse" id="collapseProperty7">
             <div class="border-bottom py-2">
 
 
-<p> Variable names, specified as a cell array of character vectors or a
- string array.  If specified as a string array, it is converted and stored
- internally as a cell array of character vectors.  All elements must be
- nonempty and distinct, and their number must equal the number of
- variables.
+<p> Variable units
 </p>
 <div class="ms-5">
+<p> Variable units, specified as a cell array of character vectors or a
+ string array.  If specified as a string array, it is converted and stored
+ internally as a cell array of character vectors.  If not empty (default),
+ it must contain the same number of elements as the number of variables.
+ If a specific variable does not have a unit, this can be specified with
+ an individual empty character vector or an empty string.  You can access
+ the <code>VariableDescriptions</code> property of a table <var>tbl</var> with
+ <code><var>tbl</var>.Properties.VariableDescriptions</code>.   You can further
+ index specific variables to access their description.
+</p>
 
 </div>
+
 
             </div>
           </div>
@@ -450,24 +749,250 @@
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
               data-bs-toggle="collapse" data-bs-target="#collapseProperty8"
               aria-expanded="false" aria-controls="collapseProperty8">
-              <h4 class="d-inline-block mr-2">
-                <b><code>VariableUnits</code></b>
-              </h4>
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>RowNames</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+                  Row names
+                </div>
+              </div>
           </div>
           <div class="collapse multi-collapse" id="collapseProperty8">
             <div class="border-bottom py-2">
 
 
-<p> Variable units, specified as a cell array of character vectors or a
- string array.  If specified as a string array, it is converted and stored
- internally as a cell array of character vectors.  If not empty (default),
- it must contain the same number of elements as the number of variables.
- If a specific variable does not have a description, this can be specified
- with an individual empty character vector or an empty string.
+<p> Row names
 </p>
 <div class="ms-5">
+<p> Row names, specified as a cell array of character vectors or a string
+ array.  If specified as a string array, it is converted and stored
+ internally as a cell array of character vectors.  If not empty (default),
+ it must contain the same number of elements as the number of rows in the
+ table.  All elements must be nonempty and distinct.  You can access the
+ rows of the table <var>tbl</var> by specifying one or more row names within
+ within parentheses or curly braces.  You can also set <code>RowNames</code> by
+ dot name assignment to an existing variable.
+</p>
 
 </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Example: 1
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="container bg-light">
+                <div class="row">
+                  <table><tbody><tr>
+                    <td>&nbsp;</td>
+                    <td><pre class="example">
+
+ ## Access rows by selecting row names
+
+ LastName = {'Sanchez'; 'Johnson'; 'Lee'; 'Diaz'; 'Brown'};
+ Age = [38;43;38;40;49];
+ Height = [71;69;64;67;64];
+ Weight = [176;163;131;133;119];
+ T = table (Age, Weight, Height, 'RowNames', LastName)
+ T('Lee',:)
+ T{'Lee',:}
+ T({'Lee', 'Diaz'},:)
+ T{{'Lee', 'Diaz'},:}
+
+T =
+  5x3 table
+
+               Age    Weight    Height    
+               ___    ______    ______    
+
+    Sanchez     38       176        71    
+    Johnson     43       163        69    
+    Lee         38       131        64    
+    Diaz        40       133        67    
+    Brown       49       119        64    
+
+ans =
+  1x3 table
+
+           Age    Weight    Height    
+           ___    ______    ______    
+
+    Lee     38       131        64    
+
+ans =
+
+    38   131    64
+
+ans =
+  2x3 table
+
+            Age    Weight    Height    
+            ___    ______    ______    
+
+    Lee      38       131        64    
+    Diaz     40       133        67    
+
+ans =
+
+    38   131    64
+    40   133    67
+
+                    </pre></td></tr></tbody>
+                  </table>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Example: 2
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="container bg-light">
+                <div class="row">
+                  <table><tbody><tr>
+                    <td>&nbsp;</td>
+                    <td><pre class="example">
+
+ ## Set row names by assigning a new variable
+
+ LastName = {'Sanchez'; 'Johnson'; 'Lee'; 'Diaz'; 'Brown'};
+ Age = [38;43;38;40;49];
+ Height = [71;69;64;67;64];
+ Weight = [176;163;131;133;119];
+ T = table (Age, Weight, Height)
+ T.Properties.RowNames = LastName
+
+T =
+  5x3 table
+
+    Age    Weight    Height    
+    ___    ______    ______    
+
+     38       176        71    
+     43       163        69    
+     38       131        64    
+     40       133        67    
+     49       119        64    
+
+T =
+  5x3 table
+
+               Age    Weight    Height    
+               ___    ______    ______    
+
+    Sanchez     38       176        71    
+    Johnson     43       163        69    
+    Lee         38       131        64    
+    Diaz        40       133        67    
+    Brown       49       119        64    
+
+                    </pre></td></tr></tbody>
+                  </table>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Example: 3
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="container bg-light">
+                <div class="row">
+                  <table><tbody><tr>
+                    <td>&nbsp;</td>
+                    <td><pre class="example">
+
+ ## Set row names by assigning an existing variable
+
+ LastName = {'Sanchez'; 'Johnson'; 'Lee'; 'Diaz'; 'Brown'};
+ Age = [38;43;38;40;49];
+ Height = [71;69;64;67;64];
+ Weight = [176;163;131;133;119];
+ T = table (Age, Weight, Height, LastName)
+
+ ## In this case the variable persists in the table
+ T.Properties.RowNames = T.LastName
+
+ ## In this case the variable is removed from the table
+ T.Properties.RowNames = 'LastName'
+
+T =
+  5x4 table
+
+    Age    Weight    Height     LastName      
+    ___    ______    ______    ___________    
+
+     38       176        71    {'Sanchez'}    
+     43       163        69    {'Johnson'}    
+     38       131        64    {'Lee'    }    
+     40       133        67    {'Diaz'   }    
+     49       119        64    {'Brown'  }    
+
+T =
+  5x4 table
+
+               Age    Weight    Height     LastName      
+               ___    ______    ______    ___________    
+
+    Sanchez     38       176        71    {'Sanchez'}    
+    Johnson     43       163        69    {'Johnson'}    
+    Lee         38       131        64    {'Lee'    }    
+    Diaz        40       133        67    {'Diaz'   }    
+    Brown       49       119        64    {'Brown'  }    
+
+T =
+  5x3 table
+
+               Age    Weight    Height    
+               ___    ______    ______    
+
+    Sanchez     38       176        71    
+    Johnson     43       163        69    
+    Lee         38       131        64    
+    Diaz        40       133        67    
+    Brown       49       119        64    
+
+                    </pre></td></tr></tbody>
+                  </table>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
 
             </div>
           </div>
@@ -478,21 +1003,39 @@
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
               data-bs-toggle="collapse" data-bs-target="#collapseProperty9"
               aria-expanded="false" aria-controls="collapseProperty9">
-              <h4 class="d-inline-block mr-2">
-                <b><code>VariableValues</code></b>
-              </h4>
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>CustomProperties</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+                  Customized metadata of table and its variables
+                </div>
+              </div>
           </div>
           <div class="collapse multi-collapse" id="collapseProperty9">
             <div class="border-bottom py-2">
 
 
-<p> The values of the variables, defined as a cell vector of arbitrary types.
- You can access the values of a specific variable of a table <var>tbl</var> by
- using the dot notation, as in <code><var>tbl</var>.VarName</code>.
+<p> Customized metadata of table and its variables
 </p>
 <div class="ms-5">
+<p> Custom properties that contain metadata of a table and its variables.
+ By default, this is an empty container.  Each custom property can contain
+ either table metadata or variable metadata.  Any custom property which is
+ an array with the same number of elements as the number of variables is
+ considered as variable metadata, otherwise is considered table metadata.
+</p>
+<p> You can add custom properties only by using the <code>addprop</code> method and
+ you can only remove a custom property with the <code>rmprop</code> method.  To
+ access existing custom properties use dot name structure assignment as in
+ <code><var>tbl</var>.Properties.CustomProperties.<var>PropertyName</var></code>, where
+ <var>PropertyName</var> is the name used with the <code>addprop</code> method.
+</p>
 
 </div>
+
 
             </div>
           </div>
@@ -571,6 +1114,294 @@
   <a href="istable.html">istable</a>
 </p>
 </div>
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Example: 1
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="container bg-light">
+                <div class="row">
+                  <table><tbody><tr>
+                    <td>&nbsp;</td>
+                    <td><pre class="example">
+
+ ## Preallocate a table by specifying its size and the variable data types
+
+ sz = [4, 3];
+ varTypes = {"double", "datetime", "string"};
+ T = table ("Size", sz, "VariableTypes", varTypes)
+
+T =
+  4x3 table
+
+    Var1    Var2      Var3       
+    ____    ____    _________    
+
+       0     NaT    <missing>    
+       0     NaT    <missing>    
+       0     NaT    <missing>    
+       0     NaT    <missing>    
+
+                    </pre></td></tr></tbody>
+                  </table>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Example: 2
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="container bg-light">
+                <div class="row">
+                  <table><tbody><tr>
+                    <td>&nbsp;</td>
+                    <td><pre class="example">
+
+ ## Specify variable names with the "VariableNames" name-value pair argument
+ sz = [4, 3];
+ varTypes = {"double", "datetime", "string"};
+ varNames = {"Temperature", "Time", "Station"};
+ T2 = table ("Size", sz, "VariableTypes", varTypes, "VariableNames", varNames)
+
+ ## Add rows of data to the first two rows of table T2
+ T2(1,:) = {75, datetime(2024, 2, 5), string("S1")};
+ T2(2,:) = {75, datetime(2024, 2, 6), string("S2")}
+
+T2 =
+  4x3 table
+
+    Temperature    Time     Station     
+    ___________    ____    _________    
+
+              0     NaT    <missing>    
+              0     NaT    <missing>    
+              0     NaT    <missing>    
+              0     NaT    <missing>    
+
+T2 =
+  4x3 table
+
+    Temperature       Time         Station     
+    ___________    ___________    _________    
+
+             75    05-Feb-2024    "S1"         
+             75    06-Feb-2024    "S2"         
+              0            NaT    <missing>    
+              0            NaT    <missing>    
+
+                    </pre></td></tr></tbody>
+                  </table>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Example: 3
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="container bg-light">
+                <div class="row">
+                  <table><tbody><tr>
+                    <td>&nbsp;</td>
+                    <td><pre class="example">
+
+ ## Create a table from various types of arrays
+
+ T = table (string ({"M";"F";"M"}), [45;32;34], ...
+            {"NY";"CA";"MA"}, logical ([1;0;0]),...
+            "VariableNames", {"Gender", "Age", "State", "Vote"})
+
+T =
+  3x4 table
+
+    Gender    Age    State     Vote     
+    ______    ___    ______    _____    
+
+    "M"        45    {'NY'}    true     
+    "F"        32    {'CA'}    false    
+    "M"        34    {'MA'}    false    
+
+                    </pre></td></tr></tbody>
+                  </table>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Example: 4
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="container bg-light">
+                <div class="row">
+                  <table><tbody><tr>
+                    <td>&nbsp;</td>
+                    <td><pre class="example">
+
+ ## Create the same table using the state names as row names
+
+ T = table (string ({"M";"F";"M"}), [45;32;34], logical ([1;0;0]), ...
+            "VariableNames", {"Gender", "Age", "Vote"}, ...
+            "RowNames", {"NY";"CA";"MA"})
+
+T =
+  3x3 table
+
+          Gender    Age    Vote     
+          ______    ___    _____    
+
+    NY    "M"        45    true     
+    CA    "F"        32    false    
+    MA    "M"        34    false    
+
+                    </pre></td></tr></tbody>
+                  </table>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Example: 5
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="container bg-light">
+                <div class="row">
+                  <table><tbody><tr>
+                    <td>&nbsp;</td>
+                    <td><pre class="example">
+
+ ## Display a table with mixed cell arrays as unicolumnar variables
+ ## and other types as multicolumnar variables
+
+ Data_A = {[34, 32]; ['text';'picture']; "text"; struct("c","data"); ...
+           [true, false]; ['some','text']; {'some','text'}; 25.34};
+ Data_B = {32, 25; 0.2, 135; 0.123, 456; 42, 5; 154, 12; 32, 10; 4, 4; 9, 94};
+ Data_C = datetime (2000, [1:8;9:16]', 1);
+
+ T = table (Data_A, Data_B, Data_C)
+
+T =
+  8x3 table
+
+       Data_A              Data_B                     Data_C              
+    ____________    ____________________    __________________________    
+
+    {   [34 32]}    {   [32]}    { [25]}    01-Jan-2000    01-Sep-2000    
+    {2x7 char  }    {  [0.2]}    {[135]}    01-Feb-2000    01-Oct-2000    
+    {'text'    }    {[0.123]}    {[456]}    01-Mar-2000    01-Nov-2000    
+    {1x1 struct}    {   [42]}    {  [5]}    01-Apr-2000    01-Dec-2000    
+    {     [1 0]}    {  [154]}    { [12]}    01-May-2000    01-Jan-2001    
+    {'sometext'}    {   [32]}    { [10]}    01-Jun-2000    01-Feb-2001    
+    {1x2 cell  }    {    [4]}    {  [4]}    01-Jul-2000    01-Mar-2001    
+    {   [25.34]}    {    [9]}    { [94]}    01-Aug-2000    01-Apr-2001    
+
+                    </pre></td></tr></tbody>
+                  </table>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Example: 6
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="container bg-light">
+                <div class="row">
+                  <table><tbody><tr>
+                    <td>&nbsp;</td>
+                    <td><pre class="example">
+
+ ## Create a nested table
+ T1 = table ([1; 2; 3], [4; 5; 6], [7; 8; 9]);
+ T2 = table ({"a"; "b"; "c"}, {"d"; "e"; "f"}, {"g"; "h"; "i"});
+ NT = table ([1; 2; 3], T1, [4; 5; 6], T2, {5; 6; 7}, ...
+             "VariableNames", {"A", "B", "C", "D", "E"})
+
+NT =
+  3x5 table
+
+    A             B              C               D                 E      
+    _    ____________________    _    _______________________    _____    
+
+         Var1    Var2    Var3         Var1     Var2     Var3              
+         ____    ____    ____         _____    _____    _____             
+
+    1       1       4       7    4    {'a'}    {'d'}    {'g'}    {[5]}    
+    2       2       5       8    5    {'b'}    {'e'}    {'h'}    {[6]}    
+    3       3       6       9    6    {'c'}    {'f'}    {'i'}    {[7]}    
+
+                    </pre></td></tr></tbody>
+                  </table>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
             </div>
           </div>
         </div>
@@ -633,6 +1464,82 @@
 
 </div>
 
+        <div class="container-xl my-4">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                  <h3 class="d-inline-block mr-2">
+                  Example: 1
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="container bg-light">
+                <div class="row">
+                  <table><tbody><tr>
+                    <td>&nbsp;</td>
+                    <td><pre class="example">
+
+ ## Create a Table from patient data
+
+ load patients
+ BloodPressure = [Systolic Diastolic];
+ T = table (Gender, Age, Smoker, BloodPressure, "RowNames", LastName);
+
+ ## Add descriptions and units to table
+
+ T.Properties.Description = "Simulated patient data";
+ T.Properties.VariableUnits =  {"", "Yrs", "", "mm Hg"};
+ T.Properties.VariableDescriptions(4) =  {"Systolic/Diastolic"};
+
+ ## Print a summary of the table
+
+ summary (T)
+
+Description:  Simulated patient data
+
+Variables:
+
+    Gender: 100x1 cell
+
+    Age: 100x1 double
+
+        Properties:
+            Units: Yrs
+        Values:
+            Min       25
+            Median    39
+            Max       50
+    Smoker: 100x1 logical
+
+        Values:
+            True      34
+            False     66
+
+    BloodPressure: 100x2 double
+
+        Properties:
+            Units: mm Hg
+            Description: Systolic/Diastolic
+        Values:
+                      Column 1    Column 2    
+                      ________    ________    
+            Min            109          68    
+            Median         122        81.5    
+            Max            138          99    
+
+                    </pre></td></tr></tbody>
+                  </table>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
             </div>
           </div>
         </div>
@@ -667,6 +1574,7 @@
 </p>
 
 </div>
+
 
             </div>
           </div>
@@ -705,6 +1613,7 @@
 </p>
 
 </div>
+
 
             </div>
           </div>
@@ -753,6 +1662,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -799,6 +1709,7 @@
 </p>
 
 </div>
+
 
             </div>
           </div>
@@ -913,6 +1824,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -977,6 +1889,7 @@
 </p>
 
 </div>
+
 
             </div>
           </div>
@@ -1092,6 +2005,7 @@
 
 
 </div>
+
 
             </div>
           </div>
@@ -1210,6 +2124,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -1275,6 +2190,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -1329,6 +2245,7 @@
 </p>
 
 </div>
+
 
             </div>
           </div>
@@ -1395,6 +2312,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -1443,6 +2361,7 @@
 
 
 </div>
+
 
             </div>
           </div>
@@ -1514,6 +2433,7 @@
 </p>
 
 </div>
+
 
             </div>
           </div>
@@ -1591,6 +2511,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -1660,6 +2581,7 @@
 </p>
 
 </div>
+
 
             </div>
           </div>
@@ -1738,6 +2660,7 @@
 
 
 </div>
+
 
             </div>
           </div>
@@ -1822,6 +2745,7 @@
 </p>
 
 </div>
+
 
             </div>
           </div>
@@ -1908,6 +2832,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -1961,6 +2886,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -1999,6 +2925,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -2034,6 +2961,7 @@
 
 
 </div>
+
 
             </div>
           </div>
@@ -2071,6 +2999,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -2106,6 +3035,7 @@
 
 
 </div>
+
 
             </div>
           </div>
@@ -2143,6 +3073,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -2179,6 +3110,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -2213,6 +3145,7 @@
 
 
 </div>
+
 
             </div>
           </div>
@@ -2249,6 +3182,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -2284,6 +3218,7 @@
 
 
 </div>
+
 
             </div>
           </div>
@@ -2333,6 +3268,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -2377,6 +3313,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -2413,6 +3350,7 @@
 
 
 </div>
+
 
             </div>
           </div>
@@ -2456,6 +3394,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -2490,6 +3429,7 @@
 
 
 </div>
+
 
             </div>
           </div>
@@ -2741,6 +3681,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -2777,6 +3718,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -2812,6 +3754,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -2845,6 +3788,7 @@
 </p>
 
 </div>
+
 
             </div>
           </div>
@@ -2881,6 +3825,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -2915,6 +3860,7 @@
 </p>
 
 </div>
+
 
             </div>
           </div>
@@ -2951,6 +3897,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -2982,6 +3929,7 @@
 <div class="ms-5">
 
 </div>
+
 
             </div>
           </div>
@@ -3016,6 +3964,7 @@
 </p>
 
 </div>
+
 
             </div>
           </div>
@@ -3052,6 +4001,7 @@
 </p>
 
 </div>
+
 
             </div>
           </div>
@@ -3090,6 +4040,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -3126,6 +4077,7 @@
 </p>
 
 </div>
+
 
             </div>
           </div>
@@ -3164,6 +4116,7 @@
 
 </div>
 
+
             </div>
           </div>
         </div>
@@ -3198,6 +4151,7 @@
 </p>
 
 </div>
+
 
             </div>
           </div>
@@ -3243,750 +4197,7 @@
 
 </div>
 
-            </div>
-          </div>
-        </div>
 
-        <div class="container-xl my-4">
-          <div class="card rounded">
-            <div class="card-header card-header-mod">
-              <div class="row d-flex flex-wrap align-items-center">
-                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                  <h3 class="d-inline-block mr-2">
-                  Example: 1
-                  </h3>
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="container bg-light">
-                <div class="row">
-                  <table><tbody><tr>
-                    <td>&nbsp;</td>
-                    <td><pre class="example">
-
- ## Store patient date in a table
-
- LastName = {"Sanchez"; "Johnson"; "Li"; "Diaz"; "Brown"};
- Age = [38;43;38;40;49];
- Smoker = logical ([1; 0; 1; 0; 1]);
- Height = [71; 69; 64; 67; 64];
- Weight = [176; 163; 131; 133; 119];
- BloodPressure = [124, 93; 109, 77; 125, 83; 117, 75; 122, 80];
- T = table (LastName, Age, Smoker, Height, Weight, BloodPressure)
-
- ## Use indexing to access variables
- meanHeight = mean (T.Height)
-
- ## Calculate body mass index (BMI), and add it as a new table variable.
-
- T.BMI = (T.Weight * 0.453592) ./ (T.Height * 0.0254) .^ 2
-
-T =
-  5x6 table
-
-     LastName      Age    Smoker    Height    Weight    BloodPressure    
-    ___________    ___    ______    ______    ______    _____________    
-
-    {'Sanchez'}     38    true          71       176        124    93    
-    {'Johnson'}     43    false         69       163        109    77    
-    {'Li'     }     38    true          64       131        125    83    
-    {'Diaz'   }     40    false         67       133        117    75    
-    {'Brown'  }     49    true          64       119        122    80    
-
-meanHeight = 67
-T =
-  5x7 table
-
-     LastName      Age    Smoker    Height    Weight    BloodPressure      BMI      
-    ___________    ___    ______    ______    ______    _____________    _______    
-
-    {'Sanchez'}     38    true          71       176        124    93    24.5467    
-    {'Johnson'}     43    false         69       163        109    77    24.0706    
-    {'Li'     }     38    true          64       131        125    83    22.4858    
-    {'Diaz'   }     40    false         67       133        117    75    20.8305    
-    {'Brown'  }     49    true          64       119        122    80    20.4261    
-
-                    </pre></td></tr></tbody>
-                  </table>
-
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-4">
-          <div class="card rounded">
-            <div class="card-header card-header-mod">
-              <div class="row d-flex flex-wrap align-items-center">
-                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                  <h3 class="d-inline-block mr-2">
-                  Example: 2
-                  </h3>
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="container bg-light">
-                <div class="row">
-                  <table><tbody><tr>
-                    <td>&nbsp;</td>
-                    <td><pre class="example">
-
- ## Preallocate a table by specifying its size and the variable data types
-
- sz = [4, 3];
- varTypes = {"double", "datetime", "string"};
- T = table ("Size", sz, "VariableTypes", varTypes)
-
- ## Specify variable names with the "VariableNames" name-value pair argument
- varNames = {"Temperature", "Time", "Station"};
- T2 = table ("Size", sz, "VariableTypes", varTypes, "VariableNames", varNames)
-
- ## Add rows of data to the first two rows of table T2
- T2(1,:) = {75, datetime(2024, 2, 5), string("S1")};
- T2(2,:) = {75, datetime(2024, 2, 6), string("S2")}
-
-T =
-  4x3 table
-
-    Var1    Var2      Var3       
-    ____    ____    _________    
-
-       0     NaT    <missing>    
-       0     NaT    <missing>    
-       0     NaT    <missing>    
-       0     NaT    <missing>    
-
-T2 =
-  4x3 table
-
-    Temperature    Time     Station     
-    ___________    ____    _________    
-
-              0     NaT    <missing>    
-              0     NaT    <missing>    
-              0     NaT    <missing>    
-              0     NaT    <missing>    
-
-T2 =
-  4x3 table
-
-    Temperature       Time         Station     
-    ___________    ___________    _________    
-
-             75    05-Feb-2024    "S1"         
-             75    06-Feb-2024    "S2"         
-              0            NaT    <missing>    
-              0            NaT    <missing>    
-
-                    </pre></td></tr></tbody>
-                  </table>
-
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-4">
-          <div class="card rounded">
-            <div class="card-header card-header-mod">
-              <div class="row d-flex flex-wrap align-items-center">
-                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                  <h3 class="d-inline-block mr-2">
-                  Example: 3
-                  </h3>
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="container bg-light">
-                <div class="row">
-                  <table><tbody><tr>
-                    <td>&nbsp;</td>
-                    <td><pre class="example">
-
- ## Create a table from various types of arrays
-
- T = table (string ({"M";"F";"M"}), [45;32;34], ...
-            {"NY";"CA";"MA"}, logical ([1;0;0]),...
-            "VariableNames", {"Gender", "Age", "State", "Vote"})
-
- ## Create the same table using the state names as row names
-
- T = table (string ({"M";"F";"M"}), [45;32;34], logical ([1;0;0]), ...
-            "VariableNames", {"Gender", "Age", "Vote"}, ...
-            "RowNames", {"NY";"CA";"MA"})
-
-T =
-  3x4 table
-
-    Gender    Age    State     Vote     
-    ______    ___    ______    _____    
-
-    "M"        45    {'NY'}    true     
-    "F"        32    {'CA'}    false    
-    "M"        34    {'MA'}    false    
-
-T =
-  3x3 table
-
-          Gender    Age    Vote     
-          ______    ___    _____    
-
-    NY    "M"        45    true     
-    CA    "F"        32    false    
-    MA    "M"        34    false    
-
-                    </pre></td></tr></tbody>
-                  </table>
-
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-4">
-          <div class="card rounded">
-            <div class="card-header card-header-mod">
-              <div class="row d-flex flex-wrap align-items-center">
-                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                  <h3 class="d-inline-block mr-2">
-                  Example: 4
-                  </h3>
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="container bg-light">
-                <div class="row">
-                  <table><tbody><tr>
-                    <td>&nbsp;</td>
-                    <td><pre class="example">
-
- ## Create a Table from patient data
-
- load patients
- BloodPressure = [Systolic Diastolic];
- T = table (Gender, Age, Smoker, BloodPressure, "RowNames", LastName);
-
- ## Add descriptions and units to table
-
- T.Properties.Description = "Simulated patient data";
- T.Properties.VariableUnits =  {"", "Yrs", "", "mm Hg"};
- T.Properties.VariableDescriptions(4) =  {"Systolic/Diastolic"};
-
- ## Print a summary of the table
-
- summary (T)
-
-Description:  Simulated patient data
-
-Variables:
-
-    Gender: 100x1 cell
-
-    Age: 100x1 double
-
-        Properties:
-            Units: Yrs
-        Values:
-            Min       25
-            Median    39
-            Max       50
-    Smoker: 100x1 logical
-
-        Values:
-            True      34
-            False     66
-
-    BloodPressure: 100x2 double
-
-        Properties:
-            Units: mm Hg
-            Description: Systolic/Diastolic
-        Values:
-                      Column 1    Column 2    
-                      ________    ________    
-            Min            109          68    
-            Median         122        81.5    
-            Max            138          99    
-
-                    </pre></td></tr></tbody>
-                  </table>
-
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-4">
-          <div class="card rounded">
-            <div class="card-header card-header-mod">
-              <div class="row d-flex flex-wrap align-items-center">
-                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                  <h3 class="d-inline-block mr-2">
-                  Example: 5
-                  </h3>
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="container bg-light">
-                <div class="row">
-                  <table><tbody><tr>
-                    <td>&nbsp;</td>
-                    <td><pre class="example">
-
- ## Create a table and display its dimension names. You can access row
- ## names and data using dimension names with dot syntax.
-
- LastName = {"Sanchez"; "Johnson"; "Li"; "Diaz"; "Brown"};
- Age = [38;43;38;40;49];
- Smoker = logical ([1; 0; 1; 0; 1]);
- Height = [71; 69; 64; 67; 64];
- Weight = [176; 163; 131; 133; 119];
- BloodPressure = [124, 93; 109, 77; 125, 83; 117, 75; 122, 80];
- T = table (Age, Smoker, Height, Weight, BloodPressure, "RowNames", LastName)
- T.Properties.DimensionNames
-
- ## Access the row names using the first dimension name.
- T.Row
-
- ## Access the data using the second dimension name.
- T.Variables
-
- ## Modify the names of its dimensions using the Properties
- T.Properties.DimensionNames = {"Patient","Data"};
- T.Properties
-
- ## Change a single dimension name
- T.Properties.DimensionNames(1) = 'Patients'
- T.Properties
- T.Patients
-
-T =
-  5x5 table
-
-               Age    Smoker    Height    Weight    BloodPressure    
-               ___    ______    ______    ______    _____________    
-
-    Sanchez     38    true          71       176        124    93    
-    Johnson     43    false         69       163        109    77    
-    Li          38    true          64       131        125    83    
-    Diaz        40    false         67       133        117    75    
-    Brown       49    true          64       119        122    80    
-
-ans =
-  1x2 cell array
-
-    {'Row'}    {'Variables'}    
-
-ans =
-  5x1 cell array
-
-    {'Sanchez'}    
-    {'Johnson'}    
-    {'Li'     }    
-    {'Diaz'   }    
-    {'Brown'  }    
-
-ans =
-
-    38     1    71   176   124    93
-    43     0    69   163   109    77
-    38     1    64   131   125    83
-    40     0    67   133   117    75
-    49     1    64   119   122    80
-
-
-  TableProperties with properties:
-
-             Description: ''
-                UserData: []
-          DimensionNames: {'Patient'  'Data'}
-           VariableNames: {'Age'  'Smoker'  'Height'  'Weight'  'BloodPressure'}
-    VariableDescriptions: {}
-           VariableUnits: {}
-      VariableContinuity: []
-                RowNames: {5x5 cell}
-        CustomProperties: No custom properties are set.
-      Use 'addprop' and 'rmprop' methods to modify CustomProperties.
-T =
-  5x5 table
-
-               Age    Smoker    Height    Weight    BloodPressure    
-               ___    ______    ______    ______    _____________    
-
-    Sanchez     38    true          71       176        124    93    
-    Johnson     43    false         69       163        109    77    
-    Li          38    true          64       131        125    83    
-    Diaz        40    false         67       133        117    75    
-    Brown       49    true          64       119        122    80    
-
-
-  TableProperties with properties:
-
-             Description: ''
-                UserData: []
-          DimensionNames: {'Patients'  'Data'}
-           VariableNames: {'Age'  'Smoker'  'Height'  'Weight'  'BloodPressure'}
-    VariableDescriptions: {}
-           VariableUnits: {}
-      VariableContinuity: []
-                RowNames: {5x5 cell}
-        CustomProperties: No custom properties are set.
-      Use 'addprop' and 'rmprop' methods to modify CustomProperties.
-ans =
-  5x1 cell array
-
-    {'Sanchez'}    
-    {'Johnson'}    
-    {'Li'     }    
-    {'Diaz'   }    
-    {'Brown'  }    
-
-                    </pre></td></tr></tbody>
-                  </table>
-
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-4">
-          <div class="card rounded">
-            <div class="card-header card-header-mod">
-              <div class="row d-flex flex-wrap align-items-center">
-                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                  <h3 class="d-inline-block mr-2">
-                  Example: 6
-                  </h3>
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="container bg-light">
-                <div class="row">
-                  <table><tbody><tr>
-                    <td>&nbsp;</td>
-                    <td><pre class="example">
-
- ## Various ways to specify row names for a table
-
- LastName = {'Sanchez'; 'Johnson'; 'Lee'; 'Diaz'; 'Brown'};
- Age = [38;43;38;40;49];
- Height = [71;69;64;67;64];
- Weight = [176;163;131;133;119];
-
- ## Using the constructor
- T = table(Age,Weight,Height,'RowNames',LastName)
-
- ## Using a cell array of character vectors, a character array,
- ## or a string array of the same height as the table. They are;
- ## always converted to cellstr type internally.
-
- T = table(Age,Weight,Height)
- fprintf ("## Using a cell array of character vectors\n");
- fprintf ("T.Properties.RowNames = LastName\n");
- T.Properties.RowNames = LastName
- fprintf ("## Using a string array\n");
- fprintf ("T.Properties.RowNames = string (LastName)\n");
- T.Properties.RowNames = string (LastName)
- fprintf ("## Using a character array\n");
- fprintf ("T.Properties.RowNames = char (LastName{:})\n");
- T.Properties.RowNames = char (LastName{:})
-
- ## Using an existing variable of type cellstr, string or char\n");
- ## array in which case the existing variable is NOT removed.\n");
-
- T = table(Age,Weight,Height,LastName)
- fprintf ("## Using an existing variable\n");
- fprintf ("T.Properties.RowNames = T.LastName\n");
- T.Properties.RowNames = T.LastName
-
- ## Referencing an existing variable by its VariableName, which
- ## must be of type cellstr, string or char array.  In this case,
- ## the existing variable is removed and only used as RowName, as
- ## in the constructor example. Reference can also be a numeric scalar
- ## indexing a Variable of appropriate type.
-
- T = table(Age,Weight,Height,LastName);
- fprintf ("## Referencing an existing variable with a character vector\n");
- fprintf ("T.Properties.RowNames = 'LastName'\n");
- T.Properties.RowNames = 'LastName'
-
- T = table(Age,Weight,Height,LastName);
- fprintf ("## Referencing an existing variable with a string scalar\n");
- fprintf ("T.Properties.RowNames = string(""LastName"")\n");
- T.Properties.RowNames = string("LastName")
-
- T = table(Age,Weight,Height,LastName);
- fprintf ("## Referencing an existing variable with a cellstr scalar\n");
- fprintf ("T.Properties.RowNames = {'LastName'}\n");
- T.Properties.RowNames = {'LastName'}
-
- T = table(Age,Weight,Height,LastName);
- fprintf ("## Referencing an existing variable with a numeric scalar\n");
- fprintf ("T.Properties.RowNames = 4\n");
- T.Properties.RowNames = 4
-
-T =
-  5x3 table
-
-               Age    Weight    Height    
-               ___    ______    ______    
-
-    Sanchez     38       176        71    
-    Johnson     43       163        69    
-    Lee         38       131        64    
-    Diaz        40       133        67    
-    Brown       49       119        64    
-
-T =
-  5x3 table
-
-    Age    Weight    Height    
-    ___    ______    ______    
-
-     38       176        71    
-     43       163        69    
-     38       131        64    
-     40       133        67    
-     49       119        64    
-
-## Using a cell array of character vectors
-T.Properties.RowNames = LastName
-T =
-  5x3 table
-
-               Age    Weight    Height    
-               ___    ______    ______    
-
-    Sanchez     38       176        71    
-    Johnson     43       163        69    
-    Lee         38       131        64    
-    Diaz        40       133        67    
-    Brown       49       119        64    
-
-## Using a string array
-T.Properties.RowNames = string (LastName)
-T =
-  5x3 table
-
-               Age    Weight    Height    
-               ___    ______    ______    
-
-    Sanchez     38       176        71    
-    Johnson     43       163        69    
-    Lee         38       131        64    
-    Diaz        40       133        67    
-    Brown       49       119        64    
-
-## Using a character array
-T.Properties.RowNames = char (LastName{:})
-T =
-  5x3 table
-
-               Age    Weight    Height    
-               ___    ______    ______    
-
-    Sanchez     38       176        71    
-    Johnson     43       163        69    
-    Lee         38       131        64    
-    Diaz        40       133        67    
-    Brown       49       119        64    
-
-T =
-  5x4 table
-
-    Age    Weight    Height     LastName      
-    ___    ______    ______    ___________    
-
-     38       176        71    {'Sanchez'}    
-     43       163        69    {'Johnson'}    
-     38       131        64    {'Lee'    }    
-     40       133        67    {'Diaz'   }    
-     49       119        64    {'Brown'  }    
-
-## Using an existing variable
-T.Properties.RowNames = T.LastName
-T =
-  5x4 table
-
-               Age    Weight    Height     LastName      
-               ___    ______    ______    ___________    
-
-    Sanchez     38       176        71    {'Sanchez'}    
-    Johnson     43       163        69    {'Johnson'}    
-    Lee         38       131        64    {'Lee'    }    
-    Diaz        40       133        67    {'Diaz'   }    
-    Brown       49       119        64    {'Brown'  }    
-
-## Referencing an existing variable with a character vector
-T.Properties.RowNames = 'LastName'
-T =
-  5x3 table
-
-               Age    Weight    Height    
-               ___    ______    ______    
-
-    Sanchez     38       176        71    
-    Johnson     43       163        69    
-    Lee         38       131        64    
-    Diaz        40       133        67    
-    Brown       49       119        64    
-
-## Referencing an existing variable with a string scalar
-T.Properties.RowNames = string("LastName")
-T =
-  5x3 table
-
-               Age    Weight    Height    
-               ___    ______    ______    
-
-    Sanchez     38       176        71    
-    Johnson     43       163        69    
-    Lee         38       131        64    
-    Diaz        40       133        67    
-    Brown       49       119        64    
-
-## Referencing an existing variable with a cellstr scalar
-T.Properties.RowNames = {'LastName'}
-T =
-  5x3 table
-
-               Age    Weight    Height    
-               ___    ______    ______    
-
-    Sanchez     38       176        71    
-    Johnson     43       163        69    
-    Lee         38       131        64    
-    Diaz        40       133        67    
-    Brown       49       119        64    
-
-## Referencing an existing variable with a numeric scalar
-T.Properties.RowNames = 4
-T =
-  5x3 table
-
-               Age    Weight    Height    
-               ___    ______    ______    
-
-    Sanchez     38       176        71    
-    Johnson     43       163        69    
-    Lee         38       131        64    
-    Diaz        40       133        67    
-    Brown       49       119        64    
-
-                    </pre></td></tr></tbody>
-                  </table>
-
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-4">
-          <div class="card rounded">
-            <div class="card-header card-header-mod">
-              <div class="row d-flex flex-wrap align-items-center">
-                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                  <h3 class="d-inline-block mr-2">
-                  Example: 7
-                  </h3>
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="container bg-light">
-                <div class="row">
-                  <table><tbody><tr>
-                    <td>&nbsp;</td>
-                    <td><pre class="example">
-
- ## Display a table with mixed cell arrays as unicolumnar variables
- ## and other types as multicolumnar variables
-
- Data_A = {[34, 32]; ['text';'picture']; "text"; struct("c","data"); ...
-           [true, false]; ['some','text']; {'some','text'}; 25.34};
- Data_B = {32, 25; 0.2, 135; 0.123, 456; 42, 5; 154, 12; 32, 10; 4, 4; 9, 94};
- Data_C = datetime (2000, [1:8;9:16]', 1);
-
- T = table (Data_A, Data_B, Data_C)
-
-T =
-  8x3 table
-
-       Data_A              Data_B                     Data_C              
-    ____________    ____________________    __________________________    
-
-    {   [34 32]}    {   [32]}    { [25]}    01-Jan-2000    01-Sep-2000    
-    {2x7 char  }    {  [0.2]}    {[135]}    01-Feb-2000    01-Oct-2000    
-    {'text'    }    {[0.123]}    {[456]}    01-Mar-2000    01-Nov-2000    
-    {1x1 struct}    {   [42]}    {  [5]}    01-Apr-2000    01-Dec-2000    
-    {     [1 0]}    {  [154]}    { [12]}    01-May-2000    01-Jan-2001    
-    {'sometext'}    {   [32]}    { [10]}    01-Jun-2000    01-Feb-2001    
-    {1x2 cell  }    {    [4]}    {  [4]}    01-Jul-2000    01-Mar-2001    
-    {   [25.34]}    {    [9]}    { [94]}    01-Aug-2000    01-Apr-2001    
-
-                    </pre></td></tr></tbody>
-                  </table>
-
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-4">
-          <div class="card rounded">
-            <div class="card-header card-header-mod">
-              <div class="row d-flex flex-wrap align-items-center">
-                <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                  <h3 class="d-inline-block mr-2">
-                  Example: 8
-                  </h3>
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="container bg-light">
-                <div class="row">
-                  <table><tbody><tr>
-                    <td>&nbsp;</td>
-                    <td><pre class="example">
-
- ## Create a nested table
- T1 = table ([1; 2; 3], [4; 5; 6], [7; 8; 9]);
- T2 = table ({"a"; "b"; "c"}, {"d"; "e"; "f"}, {"g"; "h"; "i"});
- NT = table ([1; 2; 3], T1, [4; 5; 6], T2, {5; 6; 7}, ...
-             "VariableNames", {"A", "B", "C", "D", "E"})
-
-NT =
-  3x5 table
-
-    A             B              C               D                 E      
-    _    ____________________    _    _______________________    _____    
-
-         Var1    Var2    Var3         Var1     Var2     Var3              
-         ____    ____    ____         _____    _____    _____             
-
-    1       1       4       7    4    {'a'}    {'d'}    {'g'}    {[5]}    
-    2       2       5       8    5    {'b'}    {'e'}    {'h'}    {[6]}    
-    3       3       6       9    6    {'c'}    {'f'}    {'i'}    {[7]}    
-
-                    </pre></td></tr></tbody>
-                  </table>
-
-                </div>
-              </div>
             </div>
           </div>
         </div>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Data Types for GNU Octave: array2table</title>
+    <title>Data Types for GNU Octave: csv2table</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
@@ -180,9 +180,9 @@
 				<div class="list">
 				<ul style="list-style-type: none; padding-left: 20px;">
 					<li><a href="table.html" class="text-decoration-none font-monospace"><small>table</small></a></li>
-					<li><a href="array2table.html" class="text-decoration-none font-monospace fw-bolder"><small>array2table</small></a></li>
+					<li><a href="array2table.html" class="text-decoration-none font-monospace"><small>array2table</small></a></li>
 					<li><a href="cell2table.html" class="text-decoration-none font-monospace"><small>cell2table</small></a></li>
-					<li><a href="csv2table.html" class="text-decoration-none font-monospace"><small>csv2table</small></a></li>
+					<li><a href="csv2table.html" class="text-decoration-none font-monospace fw-bolder"><small>csv2table</small></a></li>
 					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
 					<li><a href="istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 					<li><a href="__csv2table__.html" class="text-decoration-none font-monospace"><small>__csv2table__</small></a></li>
@@ -212,55 +212,147 @@
             <div class="card-header card-header-mod">
               <div class="row d-flex flex-wrap align-items-center">
                 <h3 class="d-inline-block mr-2">
-                Function&nbsp;Reference: <b><code>array2table</code></b>
+                Function&nbsp;Reference: <b><code>csv2table</code></b>
                 </h3>
               </div>
             </div>
             <div class="card-body">
 <dl>
-<dt><u>datatypes:</u> <var>tbl</var> = <b>array2table</b><i> (<var>A</var>)</i></dt>
-<dt><u>datatypes:</u> <var>tbl</var> = <b>array2table</b><i> (<var>A</var>, <var>Name</var>, <var>Value</var>)</i></dt>
+<dt><u>datatypes:</u> <var>tbl</var> = <b>csv2table</b><i> (<var>filename</var>)</i></dt>
+<dt><u>datatypes:</u> <var>tbl</var> = <b>csv2table</b><i> (<var>filename</var>, <var>Name</var>, <var>Value</var>)</i></dt>
 </dl>
 
-<p> Convert an array to a table.
+<p> Load a CSV file into a table.
 </p>
 <div class="ms-5">
-<p> <code><var>tbl</var> = array2table (<var>A</var>)</code> converts the 2-D matrix <var>A</var> to
- the table <var>tbl</var>, where each column of <var>A</var> becomes a variable in
- <var>tbl</var>.
+<p> <code><var>tbl</var> = csv2table (<var>filename</var>)</code> creates a table <var>tbl</var> by
+ reading the data in CSV file specified by <var>filename</var>, which can be either
+ character vector or a string scalar.  If the CSV file was saved by the
+ <code>table2csv</code> method, then it reads the custom comment line in the first
+ element of the CSV file and reconstructs the table as specified including
+ variable types, variable names, and possibly any nested tables or structures
+ it may contain.  If no such special comment is found, then it treats the CSV
+ file as simple columnar data and loads with the following default options.
 </p>
-<p> <var>A</var> can be any type of array supported by <code>table</code>, including a cell
- array, as long they are constraint to 2 dimensions.  However, in the case of
- a cell array <code>array2table</code> does not extract the contents of its cells,
- resulting to a table with each variable being a column of cells.  Use
- <code>cell2table</code> if you wat to create a table from the contents of the cells
- in <var>A</var>.
-</p>
-<p> <code><var>tbl</var> = array2table (<var>A</var>, <var>Name</var>, <var>Value</var>)</code> specifies
- optional parameters for creating the table <var>tbl</var> with the following
- Name-Value paired arguments.
+ <ol>
+<li> The first column is considered as <code>RowNames</code> and it is converted
+ to cell array of character vectors and it is subsequently removed from the
+ remaining data contained in the CSV file.  To change the default behavior,
+ you need to specify the <code>ReadRowNames</code> and <code>RowNamesColumn</code>
+ paired arguments accordingly.
+ </li><li> The first line is treated as a header containing the variable names of
+ the table.  Any numeric values in the header line are converted to character
+ vectors and all variable names are automatically modified to valid Octave
+ variable names.  To change the default behavior, you need to specify the
+ <code>ReadVariableNames</code>, <code>VariableNamingRule</code>, and
+ <code>VariableNamesLine</code> paired arguments accordingly.
+ </li><li> The data type of each column in the remaining data is automatically
+ detected according to its contents.  Consequently, text is converted to
+ character vectors, datetime and duration strings are converted to datetime
+ and duration arrays, respectively, and hexadecimal strings are converted to
+ the smallest integer type that can represent all variable values.  To change
+ the default behavior, you need to specify the <code>TextType</code>,
+ <code>DatetimeType</code>, <code>DurationType</code>, and <code>HexType</code> accordingly.
+ </li></ol>
+
+<p> <code><var>tbl</var> = csv2table (<var>filename</var>, <var>Name</var>, <var>Value</var>)</code>
+ specifies optional parameters for creating the table <var>tbl</var> with the
+ following Name-Value paired arguments.
 </p>
  <table>
-<thead><tr><th width="23%"><var>Name</var></th><th width="2%"></th><th width="75%"><var>Value</var></th></tr></thead>
-<tr><td width="23%"><code>'VariableNames'</code></td><td width="2%"></td><td width="75%">A cell array of character vectors or
- a string array defining the variable names of <var>tbl</var>.  The names must be
- valid variable names and unique.</td></tr>
-<tr><td width="23%"><code>'RowNames'</code></td><td width="2%"></td><td width="75%">A cell array of character vectors or
- a string array defining the row names of <var>tbl</var>.  The names must be unique
- but not necessarily valid variable names.</td></tr>
-<tr><td width="23%"><code>'DimensionNames'</code></td><td width="2%"></td><td width="75%">A cell array of character vectors or
- a string array defining the dimension names of <var>tbl</var>.  The names must be
- unique and not in conflict with variable names.  By default, dimension names
- are <code>'Row', 'Variables'</code>.</td></tr>
+<thead><tr><th width="33%"><var>Name</var></th><th width="2%"></th><th width="65%"><var>Value</var></th></tr></thead>
+<tr><td width="33%"><code>'NumHeaderLines'</code></td><td width="2%"></td><td width="65%">A positive integer scalar value
+ specifying the number of rows to omit reading from the CSV file.  If the CSV
+ contains the custom comment line in its first element, then the
+ <code>'NumHeaderLines'</code> applies to the top number of rows to remove from the
+ created table.  If CSV is a generic case, then <code>'NumHeaderLines'</code>
+ specifies the number of lines to omit parsing from the CSV file itself.</td></tr>
+<tr><td width="33%"><code>'VariableNames'</code></td><td width="2%"></td><td width="65%">A cell array of character vectors or
+ a string array specifying the names of the variables of the created table.
+ The names must be unique but not necessarily valid variable names.  If not
+ empty, it overrides any variable names extracted from the CSV file.  This
+ applies both to custom and generic CSV files.</td></tr>
+<tr><td width="33%"><code>'ReadVariableNames'</code></td><td width="2%"></td><td width="65%">A logical scalar specifying
+ whether to parse or not the CSV files for variable names.  If your CSV file
+ only contains data, set <code>'ReadVariableNames'</code> to <code>false</code> so that
+ <code>csv2table</code> parses all lines as data rows in the returned table.
+ Variable names will be automatically generated to the default style as done
+ by <code>table</code>, unless otherwise specified by the <code>'VariableNames'</code>
+ paired argument.  The default value is <code>true</code>.</td></tr>
+<tr><td width="33%"><code>'VariableNamingRule'</code></td><td width="2%"></td><td width="65%">A character vector or a string
+ scalar specifying whether the variable names should be modified to valid
+ Octave variable names or the original names should be preserved.  Valid
+ options are <code>&quot;modify&quot;</code> and <code>&quot;preserve&quot;</code>.  By default,
+ <code>csv2table</code> modifies the parsed variable names.</td></tr>
+<tr><td width="33%"><code>'VariableNamesLine'</code></td><td width="2%"></td><td width="65%">A nonnegative integer scalar
+ value specifying the line number in the CSV file, which should be parsed for
+ variable names.  This only applies if the <code>'ReadVariableNames'</code> option
+ is <code>true</code>.  The specified line is subsequently removed from the
+ remaining data contained in the CSV file.  If <code>'VariableNamesLine'</code> is
+ set to zero, then it is equivalent to setting <code>'ReadVariableNames'</code> to
+ <code>false</code>.</td></tr>
+<tr><td width="33%"><code>'VariableTypes'</code></td><td width="2%"></td><td width="65%">A cell array of character vectors or
+ a string array specifying the data type of the variables of the created
+ table.  The number of elements must much the number of variable in the table.
+ This optional argument only has an effect on generic CSV files.  When
+ specified, it overrides any other data type specification or automatic
+ detection by the <code>csv2table</code> function.</td></tr>
+<tr><td width="33%"><code>'VariableUnitsLine'</code></td><td width="2%"></td><td width="65%">A nonnegative integer scalar
+ value specifying the line number in the CSV file, which should be parsed for
+ variable units.  The specified line is subsequently removed from the
+ remaining data contained in the CSV file.</td></tr>
+<tr><td width="33%"><code>'VariableDescriptionsLine'</code></td><td width="2%"></td><td width="65%">A nonnegative integer
+ scalar value specifying the line number in the CSV file, which should be
+ parsed for variable descriptions.  The specified line is subsequently removed
+ from the remaining data contained in the CSV file.</td></tr>
+<tr><td width="33%"><code>'ReadRowNames'</code></td><td width="2%"></td><td width="65%">A logical scalar specifying whether to
+ parse or not the CSV files for row names.  If your CSV file only contains
+ data, set <code>'ReadRowNames'</code> to <code>false</code> so that <code>csv2table</code>
+ parses all columns as data columms in the returned table.  The default value
+ is <code>true</code>.</td></tr>
+<tr><td width="33%"><code>'RowNamesColumn'</code></td><td width="2%"></td><td width="65%">A nonnegative integer scalar value
+ specifying the column number in the CSV file, which should be parsed for
+ row names.  This only applies if the <code>'ReadRowNames'</code> option is
+ <code>true</code>.  The specified column is subsequently removed from the
+ remaining data contained in the CSV file.  If <code>'RowNamesColumn'</code> is set
+ to zero, then it is equivalent to setting <code>'ReadRowNames'</code> to
+ <code>false</code>.  Note that the values in the column specified by
+ <code>'RowNamesColumn'</code> must be unique, otherwise <code>csv2table</code> will
+ return an error.</td></tr>
+<tr><td width="33%"><code>'TextType'</code></td><td width="2%"></td><td width="65%">A character vector or a string scalar
+ specifying whether the text data in the CSV file should be stored in the
+ table as character vectors or string arrays.  Valid options are
+ <code>&quot;char&quot;</code> and <code>&quot;string&quot;</code>.  By default, <code>csv2table</code> stores
+ text data as character vectors.</td></tr>
+<tr><td width="33%"><code>'DatetimeType'</code></td><td width="2%"></td><td width="65%">A character vector or a string scalar
+ specifying whether the datetime strings found in the CSV file should be
+ stored in the table as datetime arrays or as text data.  Valid options are
+ <code>&quot;datetime&quot;</code> and <code>&quot;text&quot;</code>.  By default, <code>csv2table</code> stores
+ datetime strings as datetime arrays.  If <code>&quot;text&quot;</code> is specified, then
+ the data type depends on the <code>'TextType'</code> option.</td></tr>
+<tr><td width="33%"><code>'DurationType'</code></td><td width="2%"></td><td width="65%">A character vector or a string scalar
+ specifying whether the duration strings found in the CSV file should be
+ stored in the table as duration arrays or as text data.  Valid options are
+ <code>&quot;duration&quot;</code> and <code>&quot;text&quot;</code>.  By default, <code>csv2table</code> stores
+ duration strings as duration arrays.  If <code>&quot;text&quot;</code> is specified, then
+ the data type depends on the <code>'TextType'</code> option.</td></tr>
+<tr><td width="33%"><code>'HexType'</code></td><td width="2%"></td><td width="65%">A character vector or a string scalar
+ specifying whether the hexadecimal text found in the CSV file should be
+ stored as a suitable integer type, <code>&quot;auto&quot;</code> (default), as unaltered
+ input text, <code>&quot;text&quot;</code>, (in which case the data type depends on the
+ <code>'TextType'</code> option), or as any of the integer types supported by
+ Octave.  Valid options are <code>&quot;auto&quot;</code>, <code>&quot;text&quot;</code>, <code>&quot;int8&quot;</code>,
+ <code>&quot;int16&quot;</code>, <code>&quot;int32&quot;</code>, <code>&quot;int64&quot;</code>, <code>&quot;uint8&quot;</code>,
+ <code>&quot;uint16&quot;</code>, <code>&quot;uint32&quot;</code>, and <code>&quot;uint64&quot;</code>.</td></tr>
 </table>
 
 <p> <strong>See also: </strong>
-  <a href="cell2table.html">cell2table</a>, 
+  <a href="array2table.html">array2table</a>, 
   <a href="struct2table.html">struct2table</a>, 
   <a href="table.html">table</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/array2table.m">array2table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/csv2table.m">csv2table</a>
 </div>
 
             </div>

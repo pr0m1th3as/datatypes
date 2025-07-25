@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Data Types for GNU Octave: array2table</title>
+    <title>Data Types for GNU Octave: __csv2table__</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
@@ -180,12 +180,12 @@
 				<div class="list">
 				<ul style="list-style-type: none; padding-left: 20px;">
 					<li><a href="table.html" class="text-decoration-none font-monospace"><small>table</small></a></li>
-					<li><a href="array2table.html" class="text-decoration-none font-monospace fw-bolder"><small>array2table</small></a></li>
+					<li><a href="array2table.html" class="text-decoration-none font-monospace"><small>array2table</small></a></li>
 					<li><a href="cell2table.html" class="text-decoration-none font-monospace"><small>cell2table</small></a></li>
 					<li><a href="csv2table.html" class="text-decoration-none font-monospace"><small>csv2table</small></a></li>
 					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
 					<li><a href="istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
-					<li><a href="__csv2table__.html" class="text-decoration-none font-monospace"><small>__csv2table__</small></a></li>
+					<li><a href="__csv2table__.html" class="text-decoration-none font-monospace fw-bolder"><small>__csv2table__</small></a></li>
 					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace"><small>__table2csv__</small></a></li>
 				</ul>
 				</div>
@@ -212,56 +212,26 @@
             <div class="card-header card-header-mod">
               <div class="row d-flex flex-wrap align-items-center">
                 <h3 class="d-inline-block mr-2">
-                Function&nbsp;Reference: <b><code>array2table</code></b>
+                Function&nbsp;Reference: <b><code>__csv2table__</code></b>
                 </h3>
               </div>
             </div>
             <div class="card-body">
-<dl>
-<dt><u>datatypes:</u> <var>tbl</var> = <b>array2table</b><i> (<var>A</var>)</i></dt>
-<dt><u>datatypes:</u> <var>tbl</var> = <b>array2table</b><i> (<var>A</var>, <var>Name</var>, <var>Value</var>)</i></dt>
+ <dl>
+<dt><u>datatypes:</u> <var>C</var> = <b>__csv2table__</b><i> (<var>file</var>)</i></dt>
 </dl>
 
-<p> Convert an array to a table.
+
+<p>Barebone function for loading a CSV file to a cell array.
 </p>
 <div class="ms-5">
-<p> <code><var>tbl</var> = array2table (<var>A</var>)</code> converts the 2-D matrix <var>A</var> to
- the table <var>tbl</var>, where each column of <var>A</var> becomes a variable in
- <var>tbl</var>.
+<p>This is a helper IO function for the <code>csv2table</code> function.  Do NOT call it directly. 
 </p>
-<p> <var>A</var> can be any type of array supported by <code>table</code>, including a cell
- array, as long they are constraint to 2 dimensions.  However, in the case of
- a cell array <code>array2table</code> does not extract the contents of its cells,
- resulting to a table with each variable being a column of cells.  Use
- <code>cell2table</code> if you wat to create a table from the contents of the cells
- in <var>A</var>.
-</p>
-<p> <code><var>tbl</var> = array2table (<var>A</var>, <var>Name</var>, <var>Value</var>)</code> specifies
- optional parameters for creating the table <var>tbl</var> with the following
- Name-Value paired arguments.
-</p>
- <table>
-<thead><tr><th width="23%"><var>Name</var></th><th width="2%"></th><th width="75%"><var>Value</var></th></tr></thead>
-<tr><td width="23%"><code>'VariableNames'</code></td><td width="2%"></td><td width="75%">A cell array of character vectors or
- a string array defining the variable names of <var>tbl</var>.  The names must be
- valid variable names and unique.</td></tr>
-<tr><td width="23%"><code>'RowNames'</code></td><td width="2%"></td><td width="75%">A cell array of character vectors or
- a string array defining the row names of <var>tbl</var>.  The names must be unique
- but not necessarily valid variable names.</td></tr>
-<tr><td width="23%"><code>'DimensionNames'</code></td><td width="2%"></td><td width="75%">A cell array of character vectors or
- a string array defining the dimension names of <var>tbl</var>.  The names must be
- unique and not in conflict with variable names.  By default, dimension names
- are <code>'Row', 'Variables'</code>.</td></tr>
-</table>
 
-<p> <strong>See also: </strong>
-  <a href="cell2table.html">cell2table</a>, 
-  <a href="struct2table.html">struct2table</a>, 
-  <a href="table.html">table</a>
-</p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/array2table.m">array2table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/src/__csv2table__.cc">__csv2table__</a>
 </div>
+
 
             </div>
           </div>
