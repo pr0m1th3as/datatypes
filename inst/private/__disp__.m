@@ -15,6 +15,14 @@
 ## You should have received a copy of the GNU General Public License along with
 ## this program; if not, see <http://www.gnu.org/licens
 
+## -*- texinfo -*-
+## @deftypefn  {private} {} __disp__ (@var{obj}, @var{class})
+## @deftypefnx {private} {} __disp__ (@var{obj}, @var{class}, @var{varname})
+##
+## Display arrays of datatype objects.
+##
+## @end deftypefn
+
 function __disp__ (this, datatype, name = 'ans')
   if (isempty (this))
     fprintf ('  0x0 empty %s array\n\n', datatype);

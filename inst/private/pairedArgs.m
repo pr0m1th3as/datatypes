@@ -15,6 +15,16 @@
 ## You should have received a copy of the GNU General Public License along with
 ## this program; if not, see <http://www.gnu.org/licens
 
+## -*- texinfo -*-
+## @deftypefn  {private} {[@var{optvar}, @var{rem_args}] =} pairedArgs
+##                       (@var{optvar_name}, @var{default_value}, @var{varargin})
+## @deftypefn  {private} {[@var{optvars}, @var{rem_args}] =} pairedArgs
+##                       (@var{optvar_names}, @var{default_values}, @var{varargin})
+##
+## Parse optional paired arguments from varargin.
+##
+## @end deftypefn
+
 function [varargout] = pairedArgs (optNames, dfValues, args)
   foundNames = [];
   nargs = numel (args);
