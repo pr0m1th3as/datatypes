@@ -46,12 +46,12 @@ This is a helper IO function for the @qcode{table2csv} method of the \
   }
 
   // Get input arguments
-  string file = args(0).string_value();
-  Cell C = args(1).cell_value();
+  string file = args(0).string_value ();
+  Cell C = args(1).cell_value ();
 
   // Open CSV file
-  ofstream fd(file.c_str());
-  if (! fd.is_open())
+  ofstream fd(file.c_str ());
+  if (! fd.is_open ())
   {
     retval(0) = "cannot open file '" + file + "' for writing.";
     return retval;
@@ -61,8 +61,8 @@ This is a helper IO function for the @qcode{table2csv} method of the \
   string word;
   string sep = ",";
   string prot = "\"";
-  int rows = C.rows();
-  int cols = C.columns();
+  int rows = C.rows ();
+  int cols = C.columns ();
 
   // Process each row
   for (int row = 0; row < rows; row++)
@@ -79,27 +79,27 @@ This is a helper IO function for the @qcode{table2csv} method of the \
       }
 
       // Handle NaN and NA separately
-      if (C(row, col).isnan())
+      if ((C(row, col).isnan ()).bool_value ())
       {
         word += "NaN";
       }
-      else if (C(row, col).isna())
+      else if ((C(row, col).isna ()).bool_value ())
       {
         word += "NA";
       }
 
       // Real numeric values
-      else if (C(row, col).is_real_scalar())
+      else if (C(row, col).is_real_scalar ())
       {
         char tmp[30];
-        sprintf(tmp, "%.15g", C(row, col).double_value());
+        sprintf(tmp, "%.15g", C(row, col).double_value ());
         word += tmp;
       }
 
       // String values
-      else if (C(row, col).is_string())
+      else if (C(row, col).is_string ())
       {
-        string str = C(row, col).string_value();
+        string str = C(row, col).string_value ();
         str = prot + str + prot;
         word += str;
       }
