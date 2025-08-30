@@ -640,14 +640,14 @@ classdef table
       for c = 1:Ccols
         if (isvar(c))   # variable
           if (Trows(c) == 1)
-            Header{tr,c} = T{c};
+            Header{1,c} = T{c};
           else
             for tr = 1:Trows(c)
               Header{tr,c} = T{c}{tr};
             endfor
           endif
           if (Nrows(c) == 1)
-            Header{tr,c} = N{c};
+            Header{1 + Tmaxr,c} = N{c};
           else
             for nr = 1:Nrows(c)
               Header{nr + Tmaxr,c} = N{c}{nr};
@@ -655,7 +655,7 @@ classdef table
           endif
           if (Dmaxr)
             if (Dmaxr == 1)
-              Header{dr + Tmaxr + Nmaxr,c} = D{c};
+              Header{1 + Tmaxr + Nmaxr,c} = D{c};
             else
               for dr = 1:Dmaxr
                 Header{dr + Tmaxr + Nmaxr,c} = D{c}{dr};
@@ -664,7 +664,7 @@ classdef table
           endif
           if (Umaxr)
             if (Umaxr == 1)
-              Header{dr + Tmaxr + Nmaxr + Dmaxr,c} = U{c};
+              Header{1 + Tmaxr + Nmaxr + Dmaxr,c} = U{c};
             else
               for ur = 1:Umaxr
                 Header{ur + Tmaxr + Nmaxr + Dmaxr,c} = U{c}{ur};
