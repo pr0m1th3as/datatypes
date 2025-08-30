@@ -19,7 +19,7 @@ this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include <fstream>
 #include <stdint.h>
-
+#include <iostream>
 #include <octave/oct.h>
 #include <octave/parse.h>
 #include <octave/Cell.h>
@@ -78,22 +78,21 @@ This is a helper IO function for the @qcode{table2csv} method of the \
         word += sep;
       }
 
-      // Handle NaN and NA separately
-      if ((C(row, col).isnan ()).bool_value ())
-      {
-        word += "NaN";
-      }
-      else if ((C(row, col).isna ()).bool_value ())
-      {
-        word += "NA";
-      }
-
       // Real numeric values
-      else if (C(row, col).is_real_scalar ())
+      if (C(row, col).is_real_scalar ())
       {
-        char tmp[30];
-        sprintf(tmp, "%.15g", C(row, col).double_value ());
-        word += tmp;
+        double value = C(row, col).double_value ();
+        // Handle NaN first
+        if (isnan (value))
+        {
+          word += "NaN";
+        }
+        else
+        {
+          char tmp[30];
+          sprintf(tmp, "%.15g", value);
+          word += tmp;
+        }
       }
 
       // String values
