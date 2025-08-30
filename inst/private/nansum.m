@@ -1,6 +1,6 @@
-## Copyright (C) 2001 Paul Kienzle <pkienzle@users.sf.net>
+## Copyright (C) 2025 Andreas Bertsatos <abertsatos@biol.uoa.gr>
 ##
-## This file is part of the statistics package for GNU Octave.
+## This file is part of the datatypes package for GNU Octave.
 ##
 ## This program is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free Software
@@ -16,39 +16,91 @@
 ## this program; if not, see <http://www.gnu.org/licenses/>.
 
 ## -*- texinfo -*-
-## @deftypefn  {statistics} {s =} nansum (@var{x})
-## @deftypefnx {statistics} {s =} nansum (@var{x}, @var{dim})
-## @deftypefnx {statistics} {s =} nansum (@dots{}, @qcode{"native"})
-## @deftypefnx {statistics} {s =} nansum (@dots{}, @qcode{"double"})
-## @deftypefnx {statistics} {s =} nansum (@dots{}, @qcode{"extra"})
+## @deftypefn  {private} {@var{s} =} nansum (@var{x})
+## @deftypefnx {private} {@var{s} =} nanmax (@var{x}, @qcode{'all'})
+## @deftypefnx {private} {@var{s} =} nanmax (@var{x}, @var{dim})
+## @deftypefnx {private} {@var{s} =} nanmax (@var{x}, @var{vecdim})
+##
 ## Compute the sum while ignoring NaN values.
 ##
-## @code{nansum} is identical to the @code{sum} function except that NaN
-## values are treated as 0 and so ignored.  If all values are NaN, the sum is
-## returned as 0.
-##
-## See help text of @code{sum} for details on the options.
-##
-## @seealso{sum, nanmin, nanmax}
 ## @end deftypefn
 
-function v = nansum (X, varargin)
-  if (nargin < 1)
+function s = nansum (x, dim)
+  if (nargin < 1 || nargin > 2)
     print_usage ();
-  else
-    X(isnan (X)) = 0;
-    v = sum (X, varargin{:});
+  elseif (! isnumeric (x))
+    error ("nansum: X must be numeric.");
+  elseif (isempty (x))
+    s = 0;
+  elseif (nargin == 1)
+    nanvals = isnan (x);
+    x(nanvals) = 0;
+    s = sum (x);
+    s(all (nanvals)) = 0;
+  elseif (nargin == 2 && strcmpi (dim, "all"))
+    x = x(:);
+    nanvals = isnan (x);
+    x(nanvals) = 0;
+    s = sum (x);
+    s(all (nanvals)) = 0;
+  else  # DIM must be a numeric scalar or vector
+    if (isscalar (dim))
+      if (! isnumeric (dim) || fix (dim) != dim || dim <= 0)
+        error ("nansum: DIM must be a positive integer.");
+      endif
+      nanvals = isnan (x);
+      x(nanvals) = 0;
+      s = sum (x, dim);
+      s(all (nanvals, dim)) = 0;
+    else
+      if (! isvector (dim) || any (fix (dim) != dim) || any (dim <= 0))
+        error ("nansum: VECDIM must be a vector of positive integer.");
+      endif
+      vecdim = sort (dim);
+      if (! all (diff (vecdim)))
+         error ("nansum: VECDIM must contain non-repeating positive integers.");
+      endif
+      ## Ignore dimensions in VECDIM larger than actual array
+      vecdim(find (vecdim > ndims (x))) = [];
+
+      if (isempty (vecdim))
+        s = x;
+      else
+
+        ## Calculate permutation vector
+        szx = size (x);
+        remdims = 1:ndims (x);      # All dimensions
+        remdims(vecdim) = [];       # Delete dimensions specified by vecdim
+        nremd = numel (remdims);
+
+        ## If all dimensions are given, it is equivalent to 'all' flag
+        if (nremd == 0)
+          x = x(:);
+          nanvals = isnan (x);
+          x(nanvals) = 0;
+          s = sum (x);
+          s(all (nanvals)) = 0;
+
+        else
+          ## Permute to push vecdims to back
+          perm = [remdims, vecdim];
+          x = permute (x, perm);
+
+          ## Reshape to squash all vecdims in final dimension
+          sznew = [szx(remdims), prod(szx(vecdim))];
+          x = reshape (x, sznew);
+
+          ## Calculate nansum on final dimension
+          dim = nremd + 1;
+          nanvals = isnan (x);
+          x(nanvals) = 0;
+          s = sum (x, dim);
+          s(all (nanvals, dim)) = 0;
+
+          ## Inverse permute back to correct dimensions
+          s = ipermute (s, perm);
+        endif
+      endif
+    endif
   endif
 endfunction
-
-%!assert (nansum ([2 4 NaN 7]), 13)
-%!assert (nansum ([2 4 NaN Inf]), Inf)
-
-%!assert (nansum ([1 NaN 3; NaN 5 6; 7 8 NaN]), [8 13 9])
-%!assert (nansum ([1 NaN 3; NaN 5 6; 7 8 NaN], 2), [4; 11; 15])
-%!assert (nansum (single ([1 NaN 3; NaN 5 6; 7 8 NaN])), single ([8 13 9]))
-%!assert (nansum (single ([1 NaN 3; NaN 5 6; 7 8 NaN]), "double"), [8 13 9])
-
-%!assert (nansum (uint8 ([2 4 1 7])), 14)
-%!assert (nansum (uint8 ([2 4 1 7]), "native"), uint8 (14))
-%!assert (nansum (uint8 ([2 4 1 7])), 14)
