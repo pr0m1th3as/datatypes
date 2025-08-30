@@ -630,9 +630,9 @@ classdef table
       Nrows = cellfun (@(x) size (x, 1), N);
       Nmaxr = max (Nrows);
       isvar = cellfun (@(x) ! isempty (x), N(1,:));
-      Drows = cellfun ('isempty', D);
+      Drows = cellfun (@(x) ! isempty (x), D);
       Dmaxr = sum (all (Drows, 2));
-      Urows = cellfun ('isempty', U);
+      Urows = cellfun (@(x) ! isempty (x), U);
       Umaxr = sum (all (Urows, 2));
       ## Initialize header
       Header = repmat ({''}, Nmaxr + Tmaxr + Dmaxr + Umaxr, Ccols);
