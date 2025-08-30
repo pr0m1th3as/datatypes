@@ -78,8 +78,18 @@ This is a helper IO function for the @qcode{table2csv} method of the \
         word += sep;
       }
 
+      // Handle NaN and NA separately
+      if (C(row, col).isnan())
+      {
+        word += "NaN";
+      }
+      else if (C(row, col).isna())
+      {
+        word += "NA";
+      }
+
       // Real numeric values
-      if (C(row, col).is_real_scalar())
+      else if (C(row, col).is_real_scalar())
       {
         char tmp[30];
         sprintf(tmp, "%.15g", C(row, col).double_value());
