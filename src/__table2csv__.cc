@@ -83,7 +83,11 @@ This is a helper IO function for the @qcode{table2csv} method of the \
       {
         double value = C(row, col).double_value ();
         // Handle NaN first
-        if (isnan (value))
+        if (octave::math::isna (value))
+        {
+          word += "NA";
+        }
+        else if (isnan (value))
         {
           word += "NaN";
         }
