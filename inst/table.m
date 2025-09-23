@@ -480,8 +480,7 @@ classdef table
     endfunction
 
     ## -*- texinfo -*-
-    ## @node table.table2cell
-    ## @deftypefn {Method} {@var{C} =} table2cell (@var{tbl})
+    ## @deftypefn {table} {@var{C} =} table2cell (@var{tbl})
     ##
     ## Converts a table to a cell array.
     ##
@@ -539,8 +538,8 @@ classdef table
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn  {Method} {@var{S} =} table2struct (@var{tbl})
-    ## @deftypefnx {Method} {@var{S} =} table2struct (@var{tbl}, @qcode{"ToScalar"}, @qcode{true})
+    ## @deftypefn  {table} {@var{S} =} table2struct (@var{tbl})
+    ## @deftypefnx {table} {@var{S} =} table2struct (@var{tbl}, @qcode{"ToScalar"}, @qcode{true})
     ##
     ## Converts a table to a scalar structure or structure array.
     ##
@@ -599,7 +598,7 @@ classdef table
   methods (Access = public)
 
     ## -*- texinfo -*-
-    ## @deftypefn {Method} {} table2csv (@var{tbl}, @var{file})
+    ## @deftypefn {table} {} table2csv (@var{tbl}, @var{file})
     ##
     ## Save a table to a CSV file.
     ##
@@ -2901,8 +2900,8 @@ classdef table
     ## Unstack a single table variable into multiple table variables.
     ##
     ## @code{@var{tblB} = stack (@var{tblA}, @var{vars}, @var{ivar})} unstacks
-    ## the values from the variables @var{vars} in input @var{tblA} into a
-    ## single variable in output table @var{tblB}.  By default, the stacked
+    ## the values from the variables @var{vars} in input @var{tblA} into
+    ## multiple variables in output table @var{tblB}.  By default, the stacked
     ## variable in @var{tblB} is named by joining the names of the variables in
     ## @var{tblA} as defined by @var{vars}.  Additionally, a new categorical
     ## variable is included in @var{tblB} that indicates which variable in
@@ -2959,7 +2958,7 @@ classdef table
         error ("table.unstack: too few input arguments.");
       endif
 
-      ## Define allowed vartypes
+      ## Define allowed vartypes (cellstr + numeric are checked in place)
       allowed = {"logical", "string", "categorical"};
 
       ## Parse optional Name-Value paired arguments
@@ -2984,8 +2983,7 @@ classdef table
         endif
       endfor
       ## Move variables to unstack into a new table
-      removeVar = setdiff (1:width (this), ixVars);
-      VarsTable = removevars (this, removeVar);
+      VarsTable = subsetvars (this, ixVars);
 
       ## Get indicator variable
       [ixIvar, ~] = resolveVarRef (this, ivar, "lenient");
@@ -2996,7 +2994,8 @@ classdef table
         error ("table.unstack: IVAR indexes a non-existing variable: '%s'.", ...
                ivar{find (ixIvar == 0)});
       endif
-      ## Check indicator variable is of a valid type (allowed + cellstr)
+      ## Check indicator variable is not a multicolumn variable
+      ## or member of the variables to be unstacked
       IvarValues = this.VariableValues{ixIvar};
       if (! isvector (IvarValues))
         error ("table.unstack: IVAR must index a single column variable.");
@@ -3005,6 +3004,7 @@ classdef table
         error (["table.unstack: IVAR cannot be any of the variables to", ...
                 " be unstacked as specified by VARS."]);
       endif
+      ## Check indicator variable is of a valid type
       if (! (iscellstr (IvarValues) || isnumeric (IvarValues)))
         if (! ismember (class (IvarValues), allowed))
           error (["table.unstack: IVAR indexes a variable of invalid", ...
@@ -3021,9 +3021,29 @@ classdef table
         IvarValues = cellstr (string (IvarValues));
       endif
 
+      ## Get constant variables
+      if (! isempty (constVars))
+        cIxVars = resolveVarRef (this, constVars, "lenient");
+        if (any (cIxVars == 0))
+          constVars = cellstr (constVars);
+          error (["table.unstack: 'ConstantVariables' index a non-existing", ...
+                  "  variable: '%s'."], constVars{find (cIxVars == 0)});
+        endif
+        if (any (ismember (cIxVars, ixVars)))
+          error (["table.unstack: 'ConstantVariables' cannot contain any", ...
+                  " variables to be unstacked as specified by VARS."]);
+        endif
+        if (any (ismember (cIxVars, ixIvar)))
+          error (["table.unstack: 'ConstantVariables' cannot contain the", ...
+                  " indicator variable as specified by IVAR."]);
+        endif
+      else
+        cIxVars = [];
+      endif
+
       ## Get grouping variables
       if (isempty (groupVars))
-        gIxVars = setdiff (1:width (this), [ixVars, ixIvar]);
+        gIxVars = setdiff (1:width (this), [ixVars, ixIvar, cIxVars]);
       else
         gIxVars = resolveVarRef (this, groupVars, "lenient");
         if (any (gIxVars == 0))
@@ -3048,30 +3068,20 @@ classdef table
           endif
         endif
       endfor
+
       ## Move grouping variables into a new table
       removeVar = setdiff (1:width (this), gIxVars);
       GvarTable = removevars (this, removeVar);
 
-      ## Get constant variables to include
-      if (! isempty (constVars))
-        cIxVars = resolveVarRef (this, constVars, "lenient");
-        if (any (cIxVars == 0))
-          constVars = cellstr (constVars);
-          error (["table.unstack: 'ConstantVariables' index a non-existing", ...
-                  "  variable: '%s'."], constVars{find (cIxVars == 0)});
-        endif
-        if (any (ismember (cIxVars, ixVars)))
-          error (["table.unstack: 'ConstantVariables' cannot contain any", ...
-                  " variables to be unstacked as specified by VARS."]);
-        endif
-        if (any (ismember (cIxVars, ixIvar)))
-          error (["table.unstack: 'ConstantVariables' cannot contain the", ...
-                  " indicator variable as specified by IVAR."]);
-        endif
+      ## Move constant variables int a new table
+      if (! isempty (cIxVars))
         if (any (ismember (cIxVars, gIxVars)) && ! isempty (groupVars))
           error (["table.unstack: 'ConstantVariables' cannot contain any", ...
                   " grouping variables as specified by 'GroupingVariables'."]);
         endif
+        CvarTable = subsetvars (this, cIxVars);
+      else
+        CvarTable = table;
       endif
 
       ## Get new data variable names
@@ -3088,30 +3098,33 @@ classdef table
         endif
       endif
 
-      ## Get aggregation function
+      ## Check user-defined aggregation function
 
-
-      ## Handle variable naming rule
-      if (strcmpi (rule, "modify"))
-        for i = 1:numel (newVarNames)
-          if (! isvarname (newVarNames{i}))
-            newVarNames{i} = matlab.lang.makeValidName (newVarNames{i});
-          endif
-        endfor
-      elseif (! strcmpi (rule, "preserve"))
-        error ("table.rows2vars: invalid input for 'VariableNamingRule'.");
+      ## Create table containing unique instances of grouping variables,
+      ## otherwise use unique instances of the indicator variable
+      if (! isempty (GvarTable))
+        [GvarTable, I, J] = unique (GvarTable, "stable");
+        nrows = numel (I);
+      else
+        [~, I, J] = __unique__ (IvarValues, "stable", "rows");
+        nrows = 1;
       endif
-
-      ## Create table containing unique groups
-      #[~, I, J] = __unique__ (GvarTable.VariableValues{:,:}, "stable", "rows");
-      #GvarTable = subsetrows (GvarTable, I);
-      [GvarTable, I, J] = unique (GvarTable, "stable");
 
       ## Start unstacking here
       if (isscalar (ixVars))  # single variable to unstack
-        ## Create table with unstacked variables
-        nrows = numel (I);
+        ## Handle variable naming rule
         ncols = numel (newVarNames);
+        if (strcmpi (rule, "modify"))
+          for i = 1:ncols
+            if (! isvarname (newVarNames{i}))
+              newVarNames{i} = matlab.lang.makeValidName (newVarNames{i});
+            endif
+          endfor
+        elseif (! strcmpi (rule, "preserve"))
+          error ("table.unstack: invalid input for 'VariableNamingRule'.");
+        endif
+
+        ## Create table with unstacked variables
         vvals = VarsTable.VariableValues{:,:};
         if (iscellstr (vvals))
           vtype = 'cellstr';
@@ -3122,10 +3135,11 @@ classdef table
         UvarTable = table ('Size', [nrows, ncols], 'VariableTypes', vtype, ...
                                                    'VariableNames', newVarNames);
         ## Copy descriptions and units to unstacked variables
-        vd = this.VariableDescriptions{ixIvar};
+        vd = this.VariableDescriptions{ixVars};
         UvarTable.VariableDescriptions = repmat ({vd}, 1, ncols);
-        vu = this.VariableUnits{ixIvar};
+        vu = this.VariableUnits{ixVars};
         UvarTable.VariableUnits = repmat ({vu}, 1, ncols);
+
         ## FIX ME: copy custom variable properties to unstacked variables
 
         ## Add type-specific NaN values and handle multicolumn variables
@@ -3146,29 +3160,148 @@ classdef table
             aggrFcn = @(x) __unique__ (x)(1);
           endif
         endif
+
+        ## Process each unstacked variable
         for i = 1:ncols
           UvarTable.VariableValues{i} = mcvec;
+          ix = strcmp (IvarNames{i}, IvarValues);
+          if (nrows == 1)
+            aggrVal = aggrFcn (vvals(ix, :));
+            UvarTable.VariableValues{i} = aggrVal;
+            CixRows = 1;
+          else
+            CixRows = [];
+            for j = 1:nrows
+              tmpIvarNames = IvarValues(J == j);
+              ix = strcmp (IvarNames{i}, tmpIvarNames);
+              if (any (ix))
+                aggrVec = ismember (tmpIvarNames, IvarNames{i});
+                aggrVal = aggrFcn (vvals(J == j, :)(aggrVec,:));
+                UvarTable.VariableValues{i}(j,:) = aggrVal;
+              endif
+              CixRows = [CixRows, find(J == j, 1)];
+            endfor
+          endif
         endfor
 
-        tmpVarValues = VarsTable.VariableValues{:,:};
-        for i = 1:nrows
-          tmpIvarNames = IvarValues(J == i);
-          for j = 1:numel (IvarNames)
-            ix = strcmp (IvarNames{j}, tmpIvarNames);
-            if (any (ix))
-              aggrVec = ismember (tmpIvarNames, IvarNames{j});
-              aggrVal = aggrFcn (tmpVarValues(J == i, :)(aggrVec,:));
-              UvarTable.VariableValues{j}(i,:) = aggrVal;
-            endif
-          endfor
-        endfor;
+        ## Keep corresponding rows from ConstantVariables
+        if (! isempty (CvarTable))
+          CvarTable = subsetrows (CvarTable, CixRows);
+        endif
 
       else # multiple variables to unstack
+        nvars = numel (ixVars);
+        ncols = numel (newVarNames);
+        expVarNames = cell (1, nvars * ncols);
+        expVarTypes = expVarNames;
 
+        ## Create composite variable names and get vartypes
+        ij = 1;
+        for i = 1:nvars
+          vvals = VarsTable.VariableValues{i};
+          if (iscellstr (vvals))
+            vtype = 'cellstr';
+          else
+            vtype = class (vvals);
+          endif
+          for j = 1:ncols
+            expVarNames{ij} = sprintf ('%s_%s', VarsTable.VariableNames{i}, ...
+                                                newVarNames{j});
+            expVarTypes{ij} = vtype;
+            ij++;
+          endfor
+        endfor
+
+        ## Handle variable naming rule
+        if (strcmpi (rule, "modify"))
+          for i = 1:numel (expVarNames)
+            if (! isvarname (expVarNames{i}))
+              expVarNames{i} = matlab.lang.makeValidName (expVarNames{i});
+            endif
+          endfor
+        elseif (! strcmpi (rule, "preserve"))
+          error ("table.unstack: invalid input for 'VariableNamingRule'.");
+        endif
+
+        ## Create table for each unstacked variable
+        UvarTable = table ('Size', [nrows, ncols*nvars], ...
+                           'VariableTypes', expVarTypes, ...
+                           'VariableNames', expVarNames);
+
+        ## Copy descriptions and units to unstacked variables
+        VD = {};
+        VU = {};
+        for i = 1:nvars
+          vd = this.VariableDescriptions{ixVars(i)};
+          VD = [VD, repmat({vd}, 1, ncols)];
+          vu = this.VariableUnits{ixVars(i)};
+          VU = [VU, repmat({vu}, 1, ncols)];
+        endfor
+        UvarTable.VariableDescriptions = VD;
+        UvarTable.VariableUnits = VU;
+
+        ## FIX ME: copy custom variable properties to unstacked variables
+
+        ## Process each separate variable to be unstacked
+        vi = 1;
+        for v = 1:nvars
+          ## Get values of selected variable
+          vvals = VarsTable.VariableValues{v};
+
+          ## Add type-specific NaN values and handle multicolumn variables
+          vcols = size (vvals, 2);
+          if (isnumeric (vvals))
+            mcvec =  repmat (NaN, nrows, vcols);
+            if (isempty (aggrFcn))  # add default aggrevation function
+              aggrFcn = @sum;
+            endif
+          elseif (isa (vvals, "duration"))
+            mcvec =  repmat (duration ([NaN, NaN, NaN]), nrows, vcols);
+            if (isempty (aggrFcn))  # add default aggrevation function
+              aggrFcn = @sum;
+            endif
+          else
+            mcvec = repmat (UvarTable.VariableValues{1}, 1, vcols);
+            if (isempty (aggrFcn))  # add default aggrevation function
+              aggrFcn = @(x) __unique__ (x)(1);
+            endif
+          endif
+
+          ## Process each unstacked variable
+          for i = 1:ncols
+            UvarTable.VariableValues{vi} = mcvec;
+            ix = strcmp (IvarNames{i}, IvarValues);
+            if (nrows == 1)
+              aggrVal = aggrFcn (vvals(ix, :));
+              UvarTable.VariableValues{vi} = aggrVal;
+              CixRows = 1;
+            else
+              CixRows = [];
+              for j = 1:nrows
+                tmpIvarNames = IvarValues(J == j);
+                ix = strcmp (IvarNames{i}, tmpIvarNames);
+                if (any (ix))
+                  aggrVec = ismember (tmpIvarNames, IvarNames{i});
+                  aggrVal = aggrFcn (vvals(J == j, :)(aggrVec,:));
+                  UvarTable.VariableValues{vi}(j,:) = aggrVal;
+                endif
+                if (v == 1)
+                  CixRows = [CixRows, find(J == j, 1)];
+                endif
+              endfor
+            endif
+            vi++;
+          endfor
+        endfor
+
+        ## Keep corresponding rows from ConstantVariables
+        if (! isempty (CvarTable))
+          CvarTable = subsetrows (CvarTable, CixRows);
+        endif
       endif
 
       idxA = I;
-      tbl = [GvarTable, UvarTable];
+      tbl = [GvarTable, CvarTable, UvarTable];
 
       ## Assign variable types in the new table
       new_types = cellfun ('class', tbl.VariableValues, "UniformOutput", false);
@@ -5918,55 +6051,6 @@ function [outData, optLen]  = mixedcell2str (data, varLen)
 endfunction
 
 
-## Test the constructor
-%!test
-%! Name = {"John"; "Mary"; "Peter"; "Barbara"};
-%! Age = [23; 34; 42; 28];
-%! Height = [167; 163; 183; 178];
-%! T = table (Name, Age, Height);
-%! assert (size (T), [4, 3]);
-%! assert (size (T.Age), [4, 1]);
-%! assert (mean (T.Age), 31.75);
-%! varnames = T.Properties.VariableNames;
-%! assert (varnames, {"Name", "Age", "Height"});
-%!test
-%! Name = {"John"; "Mary"; "Peter"; "Barbara"};
-%! Age = [23; 34; 42; 28];
-%! Height = [167; 163; 183; 178];
-%! T = table (Name, Age, Height);
-%! BloodPressure = [114 83; 119 75; 115 73; 107 80];
-%! T = table (Name, Age, Height, BloodPressure);
-%! assert (size (T), [4, 4]);
-%! assert (size (T.BloodPressure), [4, 2]);
-%!test
-%! Name = {"John"; "Mary"; "Peter"; "Barbara"};
-%! Age = [23; 34; 42; 28];
-%! Height = [167; 163; 183; 178];
-%! T = table (Name, Age, Height, "VariableNames", {"A", "B", "C"});
-%! assert (T.Properties.VariableNames, {"A", "B", "C"});
-%!test
-%! sz = [4 3];
-%! varTypes = {"double", "datetime", "string"};
-%! T = table("Size", sz, "VariableTypes", varTypes);
-%! assert (size (T), [4, 3]);
-%! assert (T.Properties.VariableNames, {"Var1", "Var2", "Var3"});
-%!test
-%! sz = [4 3];
-%! varTypes = {"double", "datetime", "string"};
-%! T = table("Size", sz, "VariableTypes", varTypes, ...
-%!           "VariableNames", {"A", "B", "C"});
-%! assert (size (T), [4, 3]);
-%! assert (T.Properties.VariableNames, {"A", "B", "C"});
-%!test
-%! sz = [4 3];
-%! varTypes = {"double", "datetime", "table"};
-%! T = table("Size", sz, "VariableTypes", varTypes, ...
-%!           "VariableNames", {"A", "B", "C"});
-%! assert (size (T), [4, 3]);
-%! assert (size (T.C), [0, 1]);
-%! assert (class (T.A), "double");
-%! assert (class (T.B), "datetime");
-%! assert (class (T.C), "table");
 
 ## Test 'subref' and 'subsasgn' methods
 %!shared LastName, Age, Smoker, Height, Weight, BloodPressure, T, tblA
