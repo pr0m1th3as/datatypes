@@ -2899,20 +2899,21 @@ classdef table
     ##
     ## Unstack a single table variable into multiple table variables.
     ##
-    ## @code{@var{tblB} = stack (@var{tblA}, @var{vars}, @var{ivar})} unstacks
-    ## the values from the variables @var{vars} in input @var{tblA} into
-    ## multiple variables in output table @var{tblB}.  By default, the stacked
-    ## variable in @var{tblB} is named by joining the names of the variables in
-    ## @var{tblA} as defined by @var{vars}.  Additionally, a new categorical
-    ## variable is included in @var{tblB} that indicates which variable in
-    ## @var{tblA} the stacked data in each row of @var{tblB} comes from.  By
-    ## default, this categorical variable is named by appending
-    ## @qcode{"_Indicator"} to the name of the stacked variable.  Variables in
-    ## @var{tblA} that are not defined in @var{vars} for stacking are replicated
-    ## in @var{tblB}.  If @var{tblA} contains @qcode{RowNames}, these are not
-    ## stacked.
+    ## @code{@var{tblB} = unstack (@var{tblA}, @var{vars}, @var{ivar})} unstacks
+    ## the values from the variables @var{vars} according to the indicator
+    ## variable @var{ivar} in input @var{tblA} into multiple variables in output
+    ## table @var{tblB}.  The new (unstacked) variables in @var{tblB} are named
+    ## according to the unique values of the indicator variable and the rows
+    ## with matching indicator values are aggregated into the new (unstacked)
+    ## variables.  By default, @qcode{numeric} and @qcode{duration} data types
+    ## are aggregated by summation, whereas from other data types the first
+    ## unique element of each group is returned.
     ##
-    ## @var{vars} can be any of the following types.
+    ## @var{vars} may specify one or more variables of any data type supported
+    ## by the @qcode{table} class except for nested tables, whereas @var{ivar}
+    ## must only specify a single variable, which must be numeric, logical,
+    ## categorical, string, or cellstring.  Both @var{vars} and @var{ivar} can
+    ## be specified as follows:
     ## @itemize
     ## @item a character vector specifying a single variable.
     ## @item a cell array of character vectors specifying a single or multiple
@@ -2926,24 +2927,53 @@ classdef table
     ## variables of a specified type.
     ## @end itemize
     ##
-    ## @code{@var{tblB} = stack (@dots{}, @var{Name}, @var{Value})} further
+    ## By default, all remaining variables in @var{tblA} which are not specified
+    ## by @var{vars} and @var{ivar} are treated as grouping variables, in which
+    ## case each unique combination of values in the grouping variables
+    ## idintifies a group of rows in @var{tblA} that is unstacked into one row
+    ## of @var{tblB}.
+    ##
+    ## @code{@var{tblB} = unstack (@dots{}, @var{Name}, @var{Value})} further
     ## specifies additional parameters for merging table variables with the
     ## following Name-Value paired arguments.
     ##
     ## @itemize
-    ## @item @qcode{"ConstantVariables"} specifies the variables other than
-    ## @var{vars} to include in the output table.  By default, all remaining
+    ## @item @qcode{"GroupingVariables"} specifies the variables that should be
+    ## used as grouping variables.  All valid schemes for indexing a table
+    ## variable can be used.  If grouping variables have missing values, the
+    ## data from corresponding rows are not aggregated in the output table.
     ## variables not specified by @var{vars} are included in the output table.
-    ## Specifying @qcode{"ConstantVariables"} allows you to select specific
-    ## variables to replicate in @var{tblB}.  Row names in @var{tblA} are always
-    ## replicated in @var{tblB}.  You can specify @qcode{"ConstantVariables"} in
-    ## the same manner as with @var{vars}.
-    ## @item @qcode{"NewDataVariableName"} specifies the name for the new data
-    ## variable in the output table @var{tblB}.  It can be a character vector,
-    ## a string scalar, or a cellstring scalar.
-    ## @item @qcode{"IndexVariableName"} specifies the name for the new
-    ## indicator variable in the output table @var{tblB}.  It can be a character
-    ## vector, a string scalar, or a cellstring scalar.
+    ## Table row names cannot be assigned as a grouping variable, since these
+    ## must be unique for each row and it kind of misses the point of unstacking
+    ## a table to itself.
+    ## @item @qcode{"ConstantVariables"} specifies the variables that are
+    ## constant within each group.  All valid schemes for indexing a table
+    ## variable can be used.  The values for these variables in the output are
+    ## taken from the first row in each group in the input.  By default, no
+    ## variable is treated as constant unless specified.  However, if the input
+    ## table has row names, these effectively are treated as constant variable.
+    ## @item @qcode{"NewDataVariableNames"} specifies the names for the new data
+    ## variables in the output table @var{tblB}.  It can be a character vector,
+    ## a string scalar, or a cellstring scalar.  By default, the names of the
+    ## new unstacked data variables are based on the string representation of
+    ## the unique values in the indicator variable @var{ivar}.  If multiple
+    ## variables are unstacked, then @code{unstack} generates composite names
+    ## using both the values from the indicator variable and the name of the
+    ## variable being unstacked.  The number of names must match the number of
+    ## unique values in the indicator variable.
+    ## @item @qcode{"AggregationFunction"} specifies a function handle used to
+    ## aggregate each group's data into a single value.  By default,
+    ## @code{@@sum} is applied on numeric, duration, and calendarDuration data,
+    ## @code{@@mode} is used for boolean and categorical data, while the first
+    ## element returned by @code{unique} is used for all other supported data
+    ## types.
+    ## @item @qcode{"VariableNamingRule"}, specified as either @qcode{"modify"}
+    ## or @qcode{"preserve"}, defines the rule for naming the new unstacked
+    ## variables in the output table @var{tblB}.  @qcode{"modify"} (default)
+    ## forces all variable names to be a valid Octave variable names.
+    ## @qcode{"preserve"} allows to preserve original names taken from the input
+    ## table and can have any Unicode characters, including spaces and non-ASCII
+    ## characters.
     ## @end itemize
     ##
     ## @code{[@var{tblB}, @var{idxA}] = stack (@dots{})} also returns an index
@@ -3073,7 +3103,7 @@ classdef table
       removeVar = setdiff (1:width (this), gIxVars);
       GvarTable = removevars (this, removeVar);
 
-      ## Move constant variables int a new table
+      ## Move constant variables into a new table
       if (! isempty (cIxVars))
         if (any (ismember (cIxVars, gIxVars)) && ! isempty (groupVars))
           error (["table.unstack: 'ConstantVariables' cannot contain any", ...
@@ -3099,10 +3129,18 @@ classdef table
       endif
 
       ## Check user-defined aggregation function
+      if (! isempty (aggrFcn))
+        if (! is_function_handle (aggrFcn))
+          error (["table.unstack: 'AggregationFunction'", ...
+                  " must be a function handle."]);
+        endif
+      endif
 
       ## Create table containing unique instances of grouping variables,
       ## otherwise use unique instances of the indicator variable
       if (! isempty (GvarTable))
+        ## Remove missing values
+        GvarTable = rmmissing (GvarTable);
         [GvarTable, I, J] = unique (GvarTable, "stable");
         nrows = numel (I);
       else
@@ -3143,22 +3181,10 @@ classdef table
         ## FIX ME: copy custom variable properties to unstacked variables
 
         ## Add type-specific NaN values and handle multicolumn variables
-        vcols = size (vvals, 2);
-        if (isnumeric (vvals))
-          mcvec =  repmat (NaN, nrows, vcols);
-          if (isempty (aggrFcn))  # add default aggrevation function
-            aggrFcn = @sum;
-          endif
-        elseif (isa (vvals, "duration"))
-          mcvec =  repmat (duration ([NaN, NaN, NaN]), nrows, vcols);
-          if (isempty (aggrFcn))  # add default aggrevation function
-            aggrFcn = @sum;
-          endif
-        else
-          mcvec = repmat (UvarTable.VariableValues{1}, 1, vcols);
-          if (isempty (aggrFcn))  # add default aggrevation function
-            aggrFcn = @(x) __unique__ (x)(1);
-          endif
+        ## Check that aggregation function returns suitable output
+        [mvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, aggrFcn);
+        if (ischar (aggrFcn))
+          error (aggrFcn);
         endif
 
         ## Process each unstacked variable
@@ -3249,22 +3275,10 @@ classdef table
           vvals = VarsTable.VariableValues{v};
 
           ## Add type-specific NaN values and handle multicolumn variables
-          vcols = size (vvals, 2);
-          if (isnumeric (vvals))
-            mcvec =  repmat (NaN, nrows, vcols);
-            if (isempty (aggrFcn))  # add default aggrevation function
-              aggrFcn = @sum;
-            endif
-          elseif (isa (vvals, "duration"))
-            mcvec =  repmat (duration ([NaN, NaN, NaN]), nrows, vcols);
-            if (isempty (aggrFcn))  # add default aggrevation function
-              aggrFcn = @sum;
-            endif
-          else
-            mcvec = repmat (UvarTable.VariableValues{1}, 1, vcols);
-            if (isempty (aggrFcn))  # add default aggrevation function
-              aggrFcn = @(x) __unique__ (x)(1);
-            endif
+          ## Check that aggregation function returns suitable output
+          [mcvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, aggrFcn);
+          if (ischar (aggrFcn))
+            error (aggrFcn);
           endif
 
           ## Process each unstacked variable
@@ -3300,13 +3314,22 @@ classdef table
         endif
       endif
 
-      idxA = I;
+      ## Merge output table and return index
       tbl = [GvarTable, CvarTable, UvarTable];
+      idxA = I;
 
-      ## Assign variable types in the new table
-      new_types = cellfun ('class', tbl.VariableValues, "UniformOutput", false);
-      tbl.VariableTypes = new_types;
+    endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {table} {@var{tblB} =} inner2outer (@var{tblA})
+    ##
+    ## Invert nested table-in-table hierarchy in tables.
+    ##
+    ## @code{@var{tblB} = inner2outer (@var{tblA})}
+    ##
+    ## @end deftypefn
+    function tbl = inner2outer (this)
+      error ("table.inner2outer: not implemented yet.");
     endfunction
 
     ## -*- texinfo -*-
@@ -3661,7 +3684,6 @@ classdef table
 
     ## -*- texinfo -*-
     ## @deftypefn  {table} {@var{tbl} =} rmmissing (@var{tblA})
-    ## @deftypefnx {table} {@var{tbl} =} rmmissing (@var{tblA}, @var{dim})
     ## @deftypefnx {table} {@var{tbl} =} rmmissing (@dots{}, @var{Name}, @var{Value})
     ## @deftypefnx {table} {[@var{tbl}, @var{TF}] =} rmmissing (@dots{})
     ##
@@ -3670,8 +3692,9 @@ classdef table
     ##
     ##
     ## @end deftypefn
-    function [tbl, TF] = rmmissing (tblA, varargin)
-      error ("table.rmmissing: not implemented yet.");
+    function [tbl, TF] = rmmissing (this, varargin)
+      TF = any (ismissing (this), 2);
+      tbl = subsetrows (this, ! TF);
     endfunction
 
     ## -*- texinfo -*-
@@ -6050,6 +6073,121 @@ function [outData, optLen]  = mixedcell2str (data, varLen)
   outData = outData(:);
 endfunction
 
+## Helper function for unstack method to get default aggregation function
+## and missing values according to the data type of the stacked variable
+function [mcvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, aggrFcn)
+  ## Get columns of stacked variable
+  vcols = size (vvals, 2);
+  ## Handle each specific data type
+  if (any (isa (vvals, {'single', 'double'})))
+    mcvec =  NaN (nrows, vcols, "like", vvals);
+    if (isempty (aggrFcn))  # add default aggrevation function
+      aggrFcn = @sum;
+    else  # check that it produces correct output
+      tmpval = 1:5;
+      try
+        tmpval = aggrFcn (tmpval);
+      catch
+        aggrFcn = strcat (["table.unstack: invalid 'AggregationFunction'", ...
+                           " for numeric data."]);
+      end_try_catch
+      if (! isscalar (tmpval))
+        aggrFcn = strcat (["table.unstack: 'AggregationFunction'", ...
+                           " must return a scalar value."]);
+      endif
+    endif
+  elseif (isnumeric (vvals))  # integer types have no missing value, use 0
+    mcvec =  zeros (nrows, vcols, "like", vvals);
+    if (isempty (aggrFcn))  # add default aggrevation function
+      aggrFcn = @sum;
+    else  # check that it produces correct output
+      tmpval = 1:5;
+      try
+        tmpval = aggrFcn (tmpval);
+      catch
+        aggrFcn = strcat (["table.unstack: invalid 'AggregationFunction'", ...
+                           " for numeric data."]);
+      end_try_catch
+      if (! isscalar (tmpval))
+        aggrFcn = strcat (["table.unstack: 'AggregationFunction'", ...
+                           " must return a scalar value."]);
+      endif
+    endif
+  elseif (isa (vvals, "calendarDuration"))
+    mcvec =  repmat (calendarDuration ([NaN, NaN, NaN]), nrows, vcols);
+    if (isempty (aggrFcn))  # add default aggrevation function
+      aggrFcn = @sum;
+    else  # check that it produces correct output
+      tmpval = calendarDuration (1:5, 0, 0);
+      try
+        tmpval = aggrFcn (tmpval);
+      catch
+        aggrFcn = strcat (["table.unstack: invalid 'AggregationFunction'", ...
+                           " for calendarDuration data."]);
+      end_try_catch
+      if (! isscalar (tmpval))
+        aggrFcn = strcat (["table.unstack: 'AggregationFunction'", ...
+                           " must return a scalar value."]);
+      endif
+    endif
+  elseif (isa (vvals, "duration"))
+    mcvec =  repmat (duration ([NaN, NaN, NaN]), nrows, vcols);
+    if (isempty (aggrFcn))  # add default aggrevation function
+      aggrFcn = @sum;
+    else  # check that it produces correct output
+      tmpval = duration (1:5, 0, 0);
+      try
+        tmpval = aggrFcn (tmpval);
+      catch
+        aggrFcn = strcat (["table.unstack: invalid 'AggregationFunction'", ...
+                           " for duration data."]);
+      end_try_catch
+      if (! isscalar (tmpval))
+        aggrFcn = strcat (["table.unstack: 'AggregationFunction'", ...
+                           " must return a scalar value."]);
+      endif
+    endif
+  elseif (islogical (vvals))  # mode is used for boolean values
+    mcvec =  false (nrows, vcols);
+    if (isempty (aggrFcn))  # add default aggrevation function
+      aggrFcn = @mode;
+    else  # check that it produces correct output
+      tmpval = [false, false, true, true, false];
+      try
+        tmpval = aggrFcn (tmpval);
+      catch
+        aggrFcn = strcat (["table.unstack: invalid 'AggregationFunction'", ...
+                           " for logical data."]);
+      end_try_catch
+      if (! isscalar (tmpval))
+        aggrFcn = strcat (["table.unstack: 'AggregationFunction'", ...
+                           " must return a scalar value."]);
+      endif
+    endif
+  elseif (isa (vvals, "categorical"))
+    mcvec =  repmat (categorical (NaN), nrows, vcols);
+    if (isempty (aggrFcn))  # add default aggrevation function
+      aggrFcn = @mode;
+    else  # check that it produces correct output
+      tmpval = categorical (1:5);
+      try
+        tmpval = aggrFcn (tmpval);
+      catch
+        aggrFcn = strcat (["table.unstack: invalid 'AggregationFunction'", ...
+                           " for categorical data."]);
+      end_try_catch
+      if (! isscalar (tmpval))
+        aggrFcn = strcat (["table.unstack: 'AggregationFunction'", ...
+                           " must return a scalar value."]);
+      endif
+    endif
+  else  # all other data types
+    mcvec = repmat (UvarTable.VariableValues{1}, nrows, vcols);
+    if (isempty (aggrFcn))  # add default aggrevation function
+      aggrFcn = @(x) __unique__ (x)(1);
+    endif
+  endif
+endfunction
 
 
 ## Test 'subref' and 'subsasgn' methods
