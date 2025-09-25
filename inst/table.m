@@ -3182,7 +3182,7 @@ classdef table
 
         ## Add type-specific NaN values and handle multicolumn variables
         ## Check that aggregation function returns suitable output
-        [mvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, aggrFcn);
+        [mcvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, aggrFcn);
         if (ischar (aggrFcn))
           error (aggrFcn);
         endif
@@ -6294,7 +6294,7 @@ endfunction
 %! T.("29-May-2019 Blood Pressure Reading") = BloodPressure;
 %! assert (T.("29-May-2019 Blood Pressure Reading"), BloodPressure);
 %!test
-%! T = table(Age,Smoker);
+%! T = table (Age, Smoker);
 %! T.Height = Height;
 %! T.Weight = Weight;
 %! assert (size (T), [5, 4]);
@@ -6335,6 +6335,25 @@ endfunction
 %! assert (isempty (T.Patients), false);
 %! T.Properties.DimensionNames(2) = 'Data';
 %! assert (T.Data, [Age,Smoker,Height,Weight]);
+%!test
+%! T = table (Age, Smoker, Height, Weight, BloodPressure);
+%! assert (T{1, @isnumeric}, [38, 71, 176, 124, 93]);
+%! assert (T{1, vartype ("numeric")}, [38, 71, 176, 124, 93]);
+%!test
+%! T1 = table (LastName, Age);
+%! assert (T1{:, @iscellstr}, LastName);
+%! assert (T1{:, @isnumeric}, Age);
+%! assert (T1(:, @iscellstr).LastName, LastName)
+%! assert (T1(:, @isnumeric).Age, Age)
+%!test
+%! T1 = table (LastName, Age);
+%! assert (T1{:, @iscellstr}, LastName);
+%! assert (T1{:, @isnumeric}, Age);
+%!test
+%! T1 = table (LastName, Age, Height);
+%! assert (T1{:, @iscellstr}, LastName);
+%! assert (class (T1(:, @isnumeric)), "table");
+%! assert (size (T1(:, @isnumeric)), [5, 2]);
 
 ## Test **summary information** methods
 %!test
