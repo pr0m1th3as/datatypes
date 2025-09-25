@@ -143,9 +143,11 @@ classdef categorical
         error (["categorical: 'Protected' categories indicator", ...
                 " must be either false (0) or true (1)."]);
       endif
+      opt = "sorted";
       if (Ordinal)
         this.isOrdinal = true;
         this.isProtected = true;
+        opt = "stable";
       elseif (Protected)
         this.isProtected = true;
       endif
@@ -155,7 +157,36 @@ classdef categorical
         this.cats = x.cats;
         this.code = x.code;
         this.isMissing = x.isMissing;
-        return
+        ## Set new categories if valueset argument is provided
+        if (numel (args) > 0)
+          valueset = cellstr (string (args{1}));
+          this = setcats (this, valueset);
+        endif
+        ## Set new category names if catname argument is provided
+        if (numel (args) > 1)
+          catnames = args{2};
+          if (! (iscellstr (catnames) || isa (catnames, 'string')))
+            error ("categorical: invalid type of CATNAMES.");
+          endif
+          catnames = cellstr (catnames);
+          if (numel (valueset) != numel (catnames))
+            error ("categorical: CATNAMES and VALUESET lengths do not match.");
+          endif
+          if (any (cellfun (@isempty, catnames)))
+            error ("categorical: CATNAMES contains empty or missing strings.");
+          endif
+          this.cats = catnames(:);
+          ## Create index vector to categories
+          index2cat = __grp2idx__ (catnames(:));
+          ## Reassociate to user defined categories (only when required)
+          if (! isempty (index2cat) && numel (index2cat) != unique (index2cat))
+            valueset = 1:numel (valueset);
+            fcn = @ (x) index2cat(find (valueset == x));
+            tf = ! this.isMissing;
+            this.code(tf) = uint16 (arrayfun (fcn, this.code(tf)));
+          endif
+        endif
+        return;
       endif
 
       ## Handle input arguments
@@ -235,11 +266,11 @@ classdef categorical
       else
         ## Resolve valueset and catnames from input array
         if (isnumeric (x))
-          valueset = unique (x);
+          valueset = unique (x, opt);
           valueset = valueset(! isnan (valueset));
           catnames = arrayfun (@num2str, valueset, "UniformOutput", false);
         elseif (strcmp (classx, 'logical'))
-          valueset = unique (x);
+          valueset = unique (x, opt);
           if (all (valueset))
             catnames = {'true'};
           elseif (! any (valueset))
@@ -248,20 +279,20 @@ classdef categorical
             catnames = {'false'; 'true'};
           endif
         elseif (strcmp (classx, 'cellstr'))
-          valueset = unique (x);  # does not remove empty
+          valueset = unique (x, opt);  # does not remove empty
           valueset = valueset(! cellfun (@isempty, valueset));
           catnames = valueset;
         elseif (strcmp (classx, 'string'))
-          valueset = unique (x);  # removes missing, but not empty
+          valueset = unique (x, opt);  # removes missing, but not empty
           valueset = valueset(! cellfun (@isempty, cellstr (valueset)));
           catnames = cellstr (valueset);
         elseif (strcmp (classx, 'datetime'))
-          valueset = unique (x);  # does not remove NaT
+          valueset = unique (x, opt);  # does not remove NaT
           fcn = @(x) strcmp (x, 'NaT');
           valueset = valueset(! cellfun (fcn, dispstrings (valueset)));
           catnames = dispstrings (valueset);
         elseif (strcmp (classx, 'duration'))
-          valueset = unique (x);  # does not remove NaN
+          valueset = unique (x, opt);  # does not remove NaN
           fcn = @(x) strcmp (x, 'NaN');
           valueset = valueset(! cellfun (fcn, dispstrings (valueset)));
           catnames = dispstrings (valueset);
@@ -656,6 +687,7 @@ classdef categorical
         cats = cellfun (@(x) categories (x), args, 'UniformOutput', false);
         if (! isequal (cats{:}))
           TF = false;
+          return;
         endif
         fieldArgs = cellfun (@(x) x.code, args, 'UniformOutput', false);
         TF = isequal (fieldArgs{:});
@@ -686,6 +718,7 @@ classdef categorical
         cats = cellfun (@(x) categories (x), args, 'UniformOutput', false);
         if (! isequal (cats{:}))
           TF = false;
+          return;
         endif
         fieldArgs = cellfun (@(x) x.code, args, 'UniformOutput', false);
         TF = isequaln (fieldArgs{:});
@@ -1171,7 +1204,7 @@ classdef categorical
     ## Set categories in categorical array.
     ##
     ## @code{@var{B} = setcats (@var{A}, @var{newcats})} sets categories in a
-    ## categorical array according to the elements of the imput array and the
+    ## categorical array according to the elements of the input array and the
     ## categories specified by @var{newcats}.
     ##
     ## @itemize
@@ -1257,7 +1290,40 @@ classdef categorical
   methods (Access = public)
 
     function TF = eq (A, B)
-      TF = isequal (A, B);
+      if (iscellstr (B) || isa (B, 'string') || ischar (B))
+        B = cellstr (B);
+        if (! isscalar (B))
+          error ("categorical.eq: incompatible size for comparison.");
+        endif
+        TF = strcmp (B, cellstr (A));
+      elseif (iscellstr (A) || isa (A, 'string') || ischar (A))
+        A = cellstr (A);
+        if (! isscalar (A))
+          error ("categorical.eq: incompatible size for comparison.");
+        endif
+        TF = strcmp (A, cellstr (B));
+      elseif (iscategorical (A) && iscategorical (B))
+        if (A.isOrdinal && B.isOrdinal)
+          ## Check that both categorical arrays have the same categories
+          ## and they are in the same order
+          cats = cellfun (@(x) categories (x), {A, B}, 'UniformOutput', false);
+          if (! isequal (cats{:}))
+            error (["categorical.eq: comparison between ordinal arrays", ...
+                    " requires that both have the same categories,", ...
+                    " which must be ordered in the same way."]);
+          endif
+          codes = cellfun (@(x) x.code, {A, B}, 'UniformOutput', false);
+          TF = codes{1} == codes{2};
+        elseif (A.isOrdinal || B.isOrdinal)
+          error (["categorical.eq: cannot compare a categorical", ...
+                  " array that is ordinal with one that is not."]);
+        else
+          TF = strcmp (cellstr (A), cellstr (B));
+        endif
+      else
+        error (["categorical.eq: comparison is not defined between '%s'", ...
+                " and '%s' arrays."], class (A), class (B));
+      endif
     endfunction
 
     function TF = ge (A, B)
@@ -1357,7 +1423,7 @@ classdef categorical
     endfunction
 
     function TF = ne (A, B)
-      TF = ! isequal (A, B);
+      TF = ! eq (A, B);
     endfunction
 
   endmethods
@@ -1708,7 +1774,6 @@ classdef categorical
           if (isordinal (this) && isordinal (val))
             ## Check that all categorical arrays have the same categories
             ## and they are in the same order
-            cats = cellfun (@(x) categories (x), args, 'UniformOutput', false);
             if (! isequal (categories (this), categories (val)))
               error (["categorical.subsasgn: cannot assign value to ordinal", ...
                       " categorical array unless they have the same ordered", ...
