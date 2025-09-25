@@ -595,9 +595,9 @@ classdef categorical
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'iscategory'       'iscolumn'         'isempty'          'isequal'         ##
-## 'isequaln'         'ismatrix'         'ismember'         'isordinal'       ##
-## 'isprotected'      'isrow'            'isscalar'         'issorted'        ##
-## 'issortedrows'     'isundefined'      'isvector'                           ##
+## 'isequaln'         'ismatrix'         'ismember'         'ismissing'       ##
+## 'isordinal'        'isprotected'      'isrow'            'isscalar'        ##
+## 'issorted'         'issortedrows'     'isundefined'      'isvector'        ##
 ##                                                                            ##
 ################################################################################
 
@@ -781,6 +781,21 @@ classdef categorical
         cats_B = B.cats(B.code);
         [TF, index] = ismember (cats_A, cats_B, varargin{:});
       endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {categorical} {@var{out} =} ismissing (@var{C})
+    ##
+    ## Test for undefined elements in categorical array.
+    ##
+    ## @code{@var{TF} = ismissing (@var{C})} returns a logical array @var{TF}
+    ## of the same size as @var{C} containing @qcode{true} for each
+    ## corresponding element of @var{C} that does not have a value from one of
+    ## the categories in @var{C} and @qcode{false} otherwise.
+    ##
+    ## @end deftypefn
+    function TF = ismissing (this)
+      TF = this.isMissing;
     endfunction
 
     ## -*- texinfo -*-
