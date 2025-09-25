@@ -281,16 +281,13 @@
             <div class="border-bottom py-2">
 
 
-<p> Table description
-</p>
-<div class="ms-5">
+<p> </p>
 <p> Table description specified as a character vector or a string scalar.
  If specified as a string scalar, it is converted and stored internally
  as a character vector.  You can access the <code>Description</code> property
  of a table <var>tbl</var> with <code><var>tbl</var>.Properties.Description</code>.
 </p>
 
-</div>
 
 
             </div>
@@ -317,15 +314,12 @@
             <div class="border-bottom py-2">
 
 
-<p> Additional table information
-</p>
-<div class="ms-5">
+<p> </p>
 <p> Additional table information, specified as an array.  Any type of data
  can be attached using this property.  You can access the <code>UserData</code>
  property of a table <var>tbl</var> with <code><var>tbl</var>.Properties.UserData</code>.
 </p>
 
-</div>
 
 
             </div>
@@ -352,9 +346,7 @@
             <div class="border-bottom py-2">
 
 
-<p> Dimension names
-</p>
-<div class="ms-5">
+<p> </p>
 <p> Dimension names specified as a two-element cell array of character
  vectors or a two-element string array.  If specified as a string array,
  it is converted and stored internally as a cell array of character
@@ -368,7 +360,6 @@
  <code>DimensionNames</code> corresponds to the row names.
 </p>
 
-</div>
 
         <div class="container-xl my-4">
           <div class="card rounded">
@@ -530,9 +521,7 @@ ans =
             <div class="border-bottom py-2">
 
 
-<p> Variable names
-</p>
-<div class="ms-5">
+<p> </p>
 <p> Variable names, specified as a cell array of character vectors or a
  string array.  If specified as a string array, it is converted and stored
  internally as a cell array of character vectors.  All elements must be
@@ -543,7 +532,6 @@ ans =
  variable name does not a exist, a new one is created.
 </p>
 
-</div>
 
         <div class="container-xl my-4">
           <div class="card rounded">
@@ -640,9 +628,7 @@ T =
             <div class="border-bottom py-2">
 
 
-<p> Variable data types
-</p>
-<div class="ms-5">
+<p> </p>
 <p> The class of the data of each variable, defined as a cell array of
  character vectors or a string array with the same number of elements as
  the number of variables in the table.  If specified as a string array,
@@ -655,7 +641,6 @@ T =
  data types provided that a valid conversion is requested.
 </p>
 
-</div>
 
 
             </div>
@@ -682,9 +667,7 @@ T =
             <div class="border-bottom py-2">
 
 
-<p> Variable descriptions
-</p>
-<div class="ms-5">
+<p> </p>
 <p> Variable descriptions, specified as a cell array of character vectors or
  a string array.  If specified as a string array, it is converted and
  stored internally as a cell array of character vectors.  If not empty
@@ -696,7 +679,6 @@ T =
  You can further index specific variables to access their description.
 </p>
 
-</div>
 
 
             </div>
@@ -723,9 +705,7 @@ T =
             <div class="border-bottom py-2">
 
 
-<p> Variable units
-</p>
-<div class="ms-5">
+<p> </p>
 <p> Variable units, specified as a cell array of character vectors or a
  string array.  If specified as a string array, it is converted and stored
  internally as a cell array of character vectors.  If not empty (default),
@@ -737,7 +717,6 @@ T =
  index specific variables to access their description.
 </p>
 
-</div>
 
 
             </div>
@@ -764,9 +743,7 @@ T =
             <div class="border-bottom py-2">
 
 
-<p> Row names
-</p>
-<div class="ms-5">
+<p> </p>
 <p> Row names, specified as a cell array of character vectors or a string
  array.  If specified as a string array, it is converted and stored
  internally as a cell array of character vectors.  If not empty (default),
@@ -777,7 +754,6 @@ T =
  dot name assignment to an existing variable.
 </p>
 
-</div>
 
         <div class="container-xl my-4">
           <div class="card rounded">
@@ -1018,9 +994,7 @@ T =
             <div class="border-bottom py-2">
 
 
-<p> Customized metadata of table and its variables
-</p>
-<div class="ms-5">
+<p> </p>
 <p> Custom properties that contain metadata of a table and its variables.
  By default, this is an empty container.  Each custom property can contain
  either table metadata or variable metadata.  Any custom property which is
@@ -1034,7 +1008,6 @@ T =
  <var>PropertyName</var> is the name used with the <code>addprop</code> method.
 </p>
 
-</div>
 
 
             </div>
@@ -1071,9 +1044,7 @@ T =
 <dt><u>table:</u> <var>tbl</var> = <b>table</b><i> (&hellip;, <code>'DimensionNames'</code>, <var>dimNames</var>)</i></dt>
 </dl>
 
-<p> Create a new table.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>tbl</var> = table (<var>var1</var>, <var>var2</var>, &hellip;, <var>varN</var>)</code>
  created a new table with the given variables.  The variables passed as
  input arguments become the variables of the table.  Their names are
@@ -1113,7 +1084,7 @@ T =
   <a href="table.html">table</a>, 
   <a href="istable.html">istable</a>
 </p>
-</div>
+
         <div class="container-xl my-4">
           <div class="card rounded">
             <div class="card-header card-header-mod">
@@ -1429,9 +1400,7 @@ NT =
 <dt><u>table:</u> <var>s</var> = <b>summary</b><i> (<var>tbl</var>)</i></dt>
 </dl>
 
-<p> Print a summary of a table.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code>summary (<var>tbl</var></code> prints the description from
  <code><var>tbl</var>.Properties.Description</code> (not implemented yet) followed
  by a summary of each table variable&rsquo;s values and their properties as
@@ -1462,7 +1431,6 @@ NT =
  </li></ul>
 
 
-</div>
 
         <div class="container-xl my-4">
           <div class="card rounded">
@@ -1566,14 +1534,11 @@ Variables:
 <dt><u>table:</u> <var>H</var> = <b>height</b><i> (<var>tbl</var>)</i></dt>
 </dl>
 
-<p> Number of rows in table.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>H</var> = height (<var>tbl</var>)</code> returns the number of rows in the
  table, <var>tbl</var>.  It is the equivalent of <code>size (<var>tbl</var>, 1)</code>.
 </p>
 
-</div>
 
 
             </div>
@@ -1602,9 +1567,7 @@ Variables:
 <dt><u>table:</u> <var>W</var> = <b>width</b><i> (<var>tbl</var>)</i></dt>
 </dl>
 
-<p> Number of variables in table.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>W</var> = width (<var>tbl</var>)</code> returns the number of variables in the
  table, <var>tbl</var>.  It is the equivalent of <code>size (<var>tbl</var>, 2)</code>.
 </p>
@@ -1612,7 +1575,6 @@ Variables:
  It is just the number of variables.
 </p>
 
-</div>
 
 
             </div>
@@ -1643,9 +1605,7 @@ Variables:
 <dt><u>table:</u> <var>out</var> = <b>head</b><i> (<var>tbl</var>, <var>k</var>)</i></dt>
 </dl>
 
-<p> Display or return the first K rows of table.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code>head (<var>tbl</var>)</code> displays the first eight rows of the table
  <var>tbl</var>.  If there are less rows in <var>tbl</var>, <code>head</code> displays all
  rows available. <var>k</var> must be a positive integer scalar value.
@@ -1660,7 +1620,6 @@ Variables:
  all rows available are returned.
 </p>
 
-</div>
 
 
             </div>
@@ -1691,9 +1650,7 @@ Variables:
 <dt><u>table:</u> <var>out</var> = <b>tail</b><i> (<var>tbl</var>, <var>k</var>)</i></dt>
 </dl>
 
-<p> Display or return the last K rows of table.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code>tail (<var>tbl</var>)</code> displays the last eight rows of the table
  <var>tbl</var>.  If there are less rows in <var>tbl</var>, <code>tail</code> displays all
  rows available. <var>k</var> must be a positive integer scalar value.
@@ -1708,7 +1665,6 @@ Variables:
  all rows available are returned.
 </p>
 
-</div>
 
 
             </div>
@@ -1743,9 +1699,7 @@ Variables:
 <dt><u>table:</u> [<var>tblB</var>, <var>index</var>] = <b>sortrows</b><i> (&hellip;)</i></dt>
 </dl>
 
-<p> Sort the rows of a table.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>tblB</var> = sortrows (<var>tblA</var>)</code> sorts the rows in <var>tblA</var> in
  asceding order based on the values in the first variable.   If elements
  in the first variable are repeated, then <code>sortrows</code> sorts by the
@@ -1822,7 +1776,6 @@ Variables:
  index vector such that <code><var>tblB</var> = <var>tblA</var>(<var>index</var>,:)</code>.
 </p>
 
-</div>
 
 
             </div>
@@ -1854,9 +1807,7 @@ Variables:
 <dt><u>table:</u> [<var>tblB</var>, <var>ixA</var>, <var>ixB</var>] = <b>unique</b><i> (&hellip;)</i></dt>
 </dl>
 
-<p> Unique rows in a table.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>tblB</var> = unique (<var>tblA</var>)</code> returns the unique rows of table
  <var>tblA</var> in sorted order.
 </p>
@@ -1888,7 +1839,6 @@ Variables:
  <code><var>tblA</var> = <var>tblB</var>(<var>ixB</var>,:)</code>.
 </p>
 
-</div>
 
 
             </div>
@@ -1922,9 +1872,7 @@ Variables:
 <dt><u>table:</u> <var>TF</var> = <b>issortedrows</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
 </dl>
 
-<p> Check if table rows are sorted accordingly.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>TF</var> = issortedrows (<var>tblA</var>)</code> determines if the rows in
  <var>tblA</var> are sorted in asceding order based on the values in the first
  variable or subsequent variables if elements of the former are repeated.
@@ -2004,7 +1952,6 @@ Variables:
  </li></ul>
 
 
-</div>
 
 
             </div>
@@ -2039,9 +1986,7 @@ Variables:
 <dt><u>table:</u> [<var>tblB</var>, <var>index</var>] = <b>topkrows</b><i> (&hellip;)</i></dt>
 </dl>
 
-<p> Sort the rows of a table.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>tblB</var> = topkrows (<var>tblA</var>, <var>k</var>)</code> returns the top
  <var>k</var> rows from table <var>tblA</var> sorted in asceding order based on the
  values in the first variable.   If elements in the first variable are
@@ -2122,7 +2067,6 @@ Variables:
  index vector such that <code><var>tblB</var> = <var>tblA</var>(<var>index</var>,:)</code>.
 </p>
 
-</div>
 
 
             </div>
@@ -2154,9 +2098,7 @@ Variables:
 <dt><u>table:</u> <var>tblB</var> = <b>addvars</b><i> (&hellip;, <code>'NewVariableNames'</code>, <var>newNames</var>)</i></dt>
 </dl>
 
-<p> Add new variables to a table.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>tblB</var> = addvars (<var>tblA</var>, <var>var1</var>, &hellip;, <var>varN</var>)</code>
  adds new variables to the right of the last variable in table <var>tblA</var>.
  Each of the arrays specified by the input arguments <code><var>var1</var>,
@@ -2188,7 +2130,6 @@ Variables:
  added variables.
 </p>
 
-</div>
 
 
             </div>
@@ -2217,9 +2158,7 @@ Variables:
 <dt><u>table:</u> <var>tblB</var> = <b>renamevars</b><i> (<var>tblA</var>, <var>vars</var>, <var>newNames</var>)</i></dt>
 </dl>
 
-<p> Rename variables in a table.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>tblB</var> = renamevars (<var>tblA</var>, <var>vars</var>, <var>newNames</var>)</code>
  renames the selected variables in the table <var>tblA</var> specified by
  <var>vars</var> using the names in <var>newNames</var>.
@@ -2244,7 +2183,6 @@ Variables:
  variables specified by <var>vars</var>.
 </p>
 
-</div>
 
 
             </div>
@@ -2275,9 +2213,7 @@ Variables:
 <dt><u>table:</u> <var>tblB</var> = <b>movevars</b><i> (&hellip;, <code>'Before'</code>, <var>location</var>)</i></dt>
 </dl>
 
-<p> Move variables in a table.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>tblB</var> = movevars (<var>tblA</var>, <var>vars</var>)</code> moves the variables
  specified by <var>vars</var> to the end of the input table <var>tblA</var>.
 </p>
@@ -2310,7 +2246,6 @@ Variables:
  <var>tblA</var> which is not selected by <var>vars</var>.
 </p>
 
-</div>
 
 
             </div>
@@ -2339,9 +2274,7 @@ Variables:
 <dt><u>table:</u> <var>tblB</var> = <b>removevars</b><i> (<var>tblA</var>, <var>vars</var>)</i></dt>
 </dl>
 
-<p> Remove variables from a table.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>tblB</var> = removevars (<var>tblA</var>, <var>vars</var>)</code> removes the
  variables specified by <var>vars</var> from the input table <var>tblA</var>.
 </p>
@@ -2360,7 +2293,6 @@ Variables:
  </li></ul>
 
 
-</div>
 
 
             </div>
@@ -2391,9 +2323,7 @@ Variables:
 <dt><u>table:</u> <var>tblB</var> = <b>splitvars</b><i> (&hellip;, <code>'NewVariableNames'</code>, <var>NewNames</var>)</i></dt>
 </dl>
 
-<p> Split multicolumn variables in a table.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>tblB</var> = splitvars (<var>tblA</var>)</code> splits mutlicolumn variables
  in <var>tblA</var> so that they are single-column variables in <var>tblB</var>,
  while all single-column variables in <var>tblA</var> are copied to <var>tblB</var>
@@ -2432,7 +2362,6 @@ Variables:
  a cell array of character vectors and/or string arrays.
 </p>
 
-</div>
 
 
             </div>
@@ -2462,9 +2391,7 @@ Variables:
 <dt><u>table:</u> <var>tblB</var> = <b>mergevars</b><i> (<var>tblA</var>, <var>vars</var>, <var>Name</var>, <var>Value</var>)</i></dt>
 </dl>
 
-<p> Merge table variables into a single multicolumn variable.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>tblB</var> = mergevars (<var>tblA</var>, <var>vars</var>)</code> combines the table
  variables in <var>tblA</var> specified by <var>vars</var> to create a new
  multicolumn variable in <var>tblB</var>.  All other variables in <var>tblA</var>
@@ -2509,7 +2436,6 @@ Variables:
  </li></ul>
 
 
-</div>
 
 
             </div>
@@ -2538,9 +2464,7 @@ Variables:
 <dt><u>table:</u> <var>tblB</var> = <b>convertvars</b><i> (<var>tblA</var>, <var>vars</var>, <var>dataType</var>)</i></dt>
 </dl>
 
-<p> Convert table variables to specified data type.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>tblB</var> = mergevars (<var>tblA</var>, <var>vars</var>)</code> converts the
  variables in <var>tblA</var> specified by <var>vars</var> to the specified data
  type.
@@ -2580,7 +2504,6 @@ Variables:
  equal the number of rows of the input table, <var>tblA</var>.
 </p>
 
-</div>
 
 
             </div>
@@ -2610,9 +2533,7 @@ Variables:
 <dt><u>table:</u> <var>tblB</var> = <b>rows2vars</b><i> (<var>tblA</var>, <var>Name</var>, <var>Value</var>)</i></dt>
 </dl>
 
-<p> Reorient table by swapping rows into variables.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>tblB</var> = rows2vars (<var>tblA</var>)</code> reorients the input table
  <var>tblA</var> so that its rows become variables in the output table
  <var>tblB</var> and the variables are swapped into rows and their names
@@ -2659,7 +2580,6 @@ Variables:
  </li></ul>
 
 
-</div>
 
 
             </div>
@@ -2690,9 +2610,7 @@ Variables:
 <dt><u>table:</u> [<var>tblB</var>, <var>idxA</var>] = <b>stack</b><i> (&hellip;)</i></dt>
 </dl>
 
-<p> Stack multiple table variables into a single table variable.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>tblB</var> = stack (<var>tblA</var>, <var>vars</var>)</code> stacks the values from
  the variables <var>vars</var> in input <var>tblA</var> into a single variable in
  output table <var>tblB</var>.  By default, the stacked variable in <var>tblB</var>
@@ -2744,7 +2662,6 @@ Variables:
  <var>tblB</var> and the rows in <var>tblA</var>.
 </p>
 
-</div>
 
 
             </div>
@@ -2775,23 +2692,22 @@ Variables:
 <dt><u>table:</u> [<var>tblB</var>, <var>idxA</var>] = <b>unstack</b><i> (&hellip;)</i></dt>
 </dl>
 
-<p> Unstack a single table variable into multiple table variables.
+<p> </p>
+<p> <code><var>tblB</var> = unstack (<var>tblA</var>, <var>vars</var>, <var>ivar</var>)</code> unstacks
+ the values from the variables <var>vars</var> according to the indicator
+ variable <var>ivar</var> in input <var>tblA</var> into multiple variables in output
+ table <var>tblB</var>.  The new (unstacked) variables in <var>tblB</var> are named
+ according to the unique values of the indicator variable and the rows
+ with matching indicator values are aggregated into the new (unstacked)
+ variables.  By default, <code>numeric</code> and <code>duration</code> data types
+ are aggregated by summation, whereas from other data types the first
+ unique element of each group is returned.
 </p>
-<div class="ms-5">
-<p> <code><var>tblB</var> = stack (<var>tblA</var>, <var>vars</var>, <var>ivar</var>)</code> unstacks
- the values from the variables <var>vars</var> in input <var>tblA</var> into a
- single variable in output table <var>tblB</var>.  By default, the stacked
- variable in <var>tblB</var> is named by joining the names of the variables in
- <var>tblA</var> as defined by <var>vars</var>.  Additionally, a new categorical
- variable is included in <var>tblB</var> that indicates which variable in
- <var>tblA</var> the stacked data in each row of <var>tblB</var> comes from.  By
- default, this categorical variable is named by appending
- <code>&quot;_Indicator&quot;</code> to the name of the stacked variable.  Variables in
- <var>tblA</var> that are not defined in <var>vars</var> for stacking are replicated
- in <var>tblB</var>.  If <var>tblA</var> contains <code>RowNames</code>, these are not
- stacked.
-</p>
-<p> <var>vars</var> can be any of the following types.
+<p> <var>vars</var> may specify one or more variables of any data type supported
+ by the <code>table</code> class except for nested tables, whereas <var>ivar</var>
+ must only specify a single variable, which must be numeric, logical,
+ categorical, string, or cellstring.  Both <var>vars</var> and <var>ivar</var> can
+ be specified as follows:
  </p><ul>
 <li> a character vector specifying a single variable.
  </li><li> a cell array of character vectors specifying a single or multiple
@@ -2805,24 +2721,53 @@ Variables:
  variables of a specified type.
  </li></ul>
 
-<p> <code><var>tblB</var> = stack (&hellip;, <var>Name</var>, <var>Value</var>)</code> further
+<p> By default, all remaining variables in <var>tblA</var> which are not specified
+ by <var>vars</var> and <var>ivar</var> are treated as grouping variables, in which
+ case each unique combination of values in the grouping variables
+ idintifies a group of rows in <var>tblA</var> that is unstacked into one row
+ of <var>tblB</var>.
+</p>
+<p> <code><var>tblB</var> = unstack (&hellip;, <var>Name</var>, <var>Value</var>)</code> further
  specifies additional parameters for merging table variables with the
  following Name-Value paired arguments.
 </p>
  <ul>
-<li> <code>&quot;ConstantVariables&quot;</code> specifies the variables other than
- <var>vars</var> to include in the output table.  By default, all remaining
+<li> <code>&quot;GroupingVariables&quot;</code> specifies the variables that should be
+ used as grouping variables.  All valid schemes for indexing a table
+ variable can be used.  If grouping variables have missing values, the
+ data from corresponding rows are not aggregated in the output table.
  variables not specified by <var>vars</var> are included in the output table.
- Specifying <code>&quot;ConstantVariables&quot;</code> allows you to select specific
- variables to replicate in <var>tblB</var>.  Row names in <var>tblA</var> are always
- replicated in <var>tblB</var>.  You can specify <code>&quot;ConstantVariables&quot;</code> in
- the same manner as with <var>vars</var>.
- </li><li> <code>&quot;NewDataVariableName&quot;</code> specifies the name for the new data
- variable in the output table <var>tblB</var>.  It can be a character vector,
- a string scalar, or a cellstring scalar.
- </li><li> <code>&quot;IndexVariableName&quot;</code> specifies the name for the new
- indicator variable in the output table <var>tblB</var>.  It can be a character
- vector, a string scalar, or a cellstring scalar.
+ Table row names cannot be assigned as a grouping variable, since these
+ must be unique for each row and it kind of misses the point of unstacking
+ a table to itself.
+ </li><li> <code>&quot;ConstantVariables&quot;</code> specifies the variables that are
+ constant within each group.  All valid schemes for indexing a table
+ variable can be used.  The values for these variables in the output are
+ taken from the first row in each group in the input.  By default, no
+ variable is treated as constant unless specified.  However, if the input
+ table has row names, these effectively are treated as constant variable.
+ </li><li> <code>&quot;NewDataVariableNames&quot;</code> specifies the names for the new data
+ variables in the output table <var>tblB</var>.  It can be a character vector,
+ a string scalar, or a cellstring scalar.  By default, the names of the
+ new unstacked data variables are based on the string representation of
+ the unique values in the indicator variable <var>ivar</var>.  If multiple
+ variables are unstacked, then <code>unstack</code> generates composite names
+ using both the values from the indicator variable and the name of the
+ variable being unstacked.  The number of names must match the number of
+ unique values in the indicator variable.
+ </li><li> <code>&quot;AggregationFunction&quot;</code> specifies a function handle used to
+ aggregate each group&rsquo;s data into a single value.  By default,
+ <code>@sum</code> is applied on numeric, duration, and calendarDuration data,
+ <code>@mode</code> is used for boolean and categorical data, while the first
+ element returned by <code>unique</code> is used for all other supported data
+ types.
+ </li><li> <code>&quot;VariableNamingRule&quot;</code>, specified as either <code>&quot;modify&quot;</code>
+ or <code>&quot;preserve&quot;</code>, defines the rule for naming the new unstacked
+ variables in the output table <var>tblB</var>.  <code>&quot;modify&quot;</code> (default)
+ forces all variable names to be a valid Octave variable names.
+ <code>&quot;preserve&quot;</code> allows to preserve original names taken from the input
+ table and can have any Unicode characters, including spaces and non-ASCII
+ characters.
  </li></ul>
 
 <p> <code>[<var>tblB</var>, <var>idxA</var>] = stack (&hellip;)</code> also returns an index
@@ -2830,7 +2775,6 @@ Variables:
  <var>tblB</var> and the rows in <var>tblA</var>.
 </p>
 
-</div>
 
 
             </div>
@@ -2845,6 +2789,38 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
+                    <b><code>inner2outer</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  Invert nested table-in-table hierarchy in tables.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod20">
+            <div class="border-bottom py-2">
+<dl>
+<dt><u>table:</u> <var>tblB</var> = <b>inner2outer</b><i> (<var>tblA</var>)</i></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>tblB</var> = inner2outer (<var>tblA</var>)</code>
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod21"
+              aria-expanded="false" aria-controls="collapseMethod21">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
                     <b><code>addprop</code></b>
                   </h4>
                 </div>
@@ -2853,15 +2829,13 @@ Variables:
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod20">
+          <div class="collapse multi-collapse" id="collapseMethod21">
             <div class="border-bottom py-2">
 <dl>
 <dt><u>table:</u> <var>T</var> = <b>addprop</b><i> (<var>T</var>, <var>propertyNames</var>, <var>propertyTypes</var>)</i></dt>
 </dl>
 
-<p> Add custom properties to a table.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>T</var> = addprop (<var>T</var>, <var>propertyNames</var>, <var>propertyTypes</var>)</code>
  adds properties that contain custom metadata to the table <var>T</var>.  The
  input argument <var>propertyNames</var> specifies the names of the custom
@@ -2884,46 +2858,6 @@ Variables:
  be assigned to the properties using dot syntax.
 </p>
 
-</div>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod21"
-              aria-expanded="false" aria-controls="collapseMethod21">
-              <div class="row align-items-center">
-                <div class="col-3">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>rmprop</code></b>
-                  </h4>
-                </div>
-                <div class="col-9">
-                  Remove custom properties from a table.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod21">
-            <div class="border-bottom py-2">
-<dl>
-<dt><u>table:</u> <var>T</var> = <b>rmprop</b><i> (<var>T</var>, <var>propertyNames</var>)</i></dt>
-</dl>
-
-<p> Remove custom properties from a table.
-</p>
-<div class="ms-5">
-<p> <code><var>T</var> = rmprop (<var>T</var>, <var>propertyNames</var>)</code> removes properties
- that contain custom metadata from the table <var>T</var>.  The input argument
- <var>propertyNames</var> specifies the names of the custom properties to be
- removed and it can either be a character vector, a cell array of
- character vectors, or a sting array.
-</p>
-
-</div>
 
 
             </div>
@@ -2938,29 +2872,28 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>join</code></b>
+                    <b><code>rmprop</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Combine two tables by rows using key variables.
+                  Remove custom properties from a table.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod22">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>join</b><i> (<var>tblL</var>, <var>tblR</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>join</b><i> (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</i></dt>
-<dt><u>table:</u> [<var>tbl</var>, <var>ixR</var>] = <b>join</b><i> (&hellip;)</i></dt>
+<dt><u>table:</u> <var>T</var> = <b>rmprop</b><i> (<var>T</var>, <var>propertyNames</var>)</i></dt>
 </dl>
 
-<p> Combine two tables by rows using key variables.
+<p> </p>
+<p> <code><var>T</var> = rmprop (<var>T</var>, <var>propertyNames</var>)</code> removes properties
+ that contain custom metadata from the table <var>T</var>.  The input argument
+ <var>propertyNames</var> specifies the names of the custom properties to be
+ removed and it can either be a character vector, a cell array of
+ character vectors, or a sting array.
 </p>
-<div class="ms-5">
 
-
-
-</div>
 
 
             </div>
@@ -2975,29 +2908,26 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>innerjoin</code></b>
+                    <b><code>join</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Inner join between two tables by rows using key variables.
+                  Combine two tables by rows using key variables.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod23">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>innerjoin</b><i> (<var>tblL</var>, <var>tblR</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>innerjoin</b><i> (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</i></dt>
-<dt><u>table:</u> [<var>tbl</var>, <var>ixL</var>, <var>ixR</var>] = <b>innerjoin</b><i> (&hellip;)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>join</b><i> (<var>tblL</var>, <var>tblR</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>join</b><i> (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</i></dt>
+<dt><u>table:</u> [<var>tbl</var>, <var>ixR</var>] = <b>join</b><i> (&hellip;)</i></dt>
 </dl>
 
-<p> Inner join between two tables by rows using key variables.
-</p>
-<div class="ms-5">
+<p> </p>
 
 
 
-</div>
 
 
             </div>
@@ -3012,29 +2942,26 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>outerjoin</code></b>
+                    <b><code>innerjoin</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Outer join between two tables by rows using key variables.
+                  Inner join between two tables by rows using key variables.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod24">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>outerjoin</b><i> (<var>tblL</var>, <var>tblR</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>outerjoin</b><i> (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</i></dt>
-<dt><u>table:</u> [<var>tbl</var>, <var>ixL</var>, <var>ixR</var>] = <b>outerjoin</b><i> (&hellip;)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>innerjoin</b><i> (<var>tblL</var>, <var>tblR</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>innerjoin</b><i> (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</i></dt>
+<dt><u>table:</u> [<var>tbl</var>, <var>ixL</var>, <var>ixR</var>] = <b>innerjoin</b><i> (&hellip;)</i></dt>
 </dl>
 
-<p> Outer join between two tables by rows using key variables.
-</p>
-<div class="ms-5">
+<p> </p>
 
 
 
-</div>
 
 
             </div>
@@ -3049,29 +2976,26 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>union</code></b>
+                    <b><code>outerjoin</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Union of two tables by rows.
+                  Outer join between two tables by rows using key variables.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod25">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>union</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>union</b><i> (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</i></dt>
-<dt><u>table:</u> [<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = <b>union</b><i> (&hellip;)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>outerjoin</b><i> (<var>tblL</var>, <var>tblR</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>outerjoin</b><i> (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</i></dt>
+<dt><u>table:</u> [<var>tbl</var>, <var>ixL</var>, <var>ixR</var>] = <b>outerjoin</b><i> (&hellip;)</i></dt>
 </dl>
 
-<p> Union of two tables by rows.
-</p>
-<div class="ms-5">
+<p> </p>
 
 
 
-</div>
 
 
             </div>
@@ -3086,29 +3010,26 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>intersect</code></b>
+                    <b><code>union</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Intersection of two tables by rows.
+                  Union of two tables by rows.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod26">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>intersect</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>intersect</b><i> (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</i></dt>
-<dt><u>table:</u> [<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = <b>intersect</b><i> (&hellip;)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>union</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>union</b><i> (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</i></dt>
+<dt><u>table:</u> [<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = <b>union</b><i> (&hellip;)</i></dt>
 </dl>
 
-<p> Intersection of two tables by rows.
-</p>
-<div class="ms-5">
+<p> </p>
 
 
 
-</div>
 
 
             </div>
@@ -3123,28 +3044,26 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>ismember</code></b>
+                    <b><code>intersect</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Find set members between two tables by rows.
+                  Intersection of two tables by rows.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod27">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>TF</var> = <b>ismember</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
-<dt><u>table:</u> [<var>TF</var>, <var>ixB</var>] = <b>ismember</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>intersect</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>intersect</b><i> (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</i></dt>
+<dt><u>table:</u> [<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = <b>intersect</b><i> (&hellip;)</i></dt>
 </dl>
 
-<p> Find set members between two tables by rows.
-</p>
-<div class="ms-5">
+<p> </p>
 
 
 
-</div>
 
 
             </div>
@@ -3159,28 +3078,25 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>setdiff</code></b>
+                    <b><code>ismember</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Difference between two tables by rows.
+                  Find set members between two tables by rows.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod28">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>setdiff</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
-<dt><u>table:</u> [<var>tbl</var>, <var>ixA</var>] = <b>setdiff</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
+<dt><u>table:</u> <var>TF</var> = <b>ismember</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
+<dt><u>table:</u> [<var>TF</var>, <var>ixB</var>] = <b>ismember</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
 </dl>
 
-<p> Difference between two tables by rows.
-</p>
-<div class="ms-5">
+<p> </p>
 
 
 
-</div>
 
 
             </div>
@@ -3195,29 +3111,25 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>setxor</code></b>
+                    <b><code>setdiff</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Exclusive OR of two tables by rows.
+                  Difference between two tables by rows.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod29">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>setxor</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>setxor</b><i> (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</i></dt>
-<dt><u>table:</u> [<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = <b>setxor</b><i> (&hellip;)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>setdiff</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
+<dt><u>table:</u> [<var>tbl</var>, <var>ixA</var>] = <b>setdiff</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
 </dl>
 
-<p> Exclusive OR of two tables by rows.
-</p>
-<div class="ms-5">
+<p> </p>
 
 
 
-</div>
 
 
             </div>
@@ -3232,6 +3144,40 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
+                    <b><code>setxor</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  Exclusive OR of two tables by rows.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod30">
+            <div class="border-bottom py-2">
+<dl>
+<dt><u>table:</u> <var>tbl</var> = <b>setxor</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>setxor</b><i> (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</i></dt>
+<dt><u>table:</u> [<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = <b>setxor</b><i> (&hellip;)</i></dt>
+</dl>
+
+<p> </p>
+
+
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod31"
+              aria-expanded="false" aria-controls="collapseMethod31">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
                     <b><code>anymissing</code></b>
                   </h4>
                 </div>
@@ -3240,15 +3186,13 @@ Variables:
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod30">
+          <div class="collapse multi-collapse" id="collapseMethod31">
             <div class="border-bottom py-2">
 <dl>
 <dt><u>table:</u> <var>TF</var> = <b>anymissing</b><i> (<var>tblA</var>)</i></dt>
 </dl>
 
-<p> Determine if any table element is missing.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>TF</var> = anymissing (<var>tblA</var>)</code> returns <code>true</code> if at
  least one element in table var{tblA is missing, otherwise tt returns
  <code>false</code>.  <var>TF</var> is a logical scalar value.
@@ -3266,52 +3210,6 @@ Variables:
  </li></ul>
 
 
-</div>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod31"
-              aria-expanded="false" aria-controls="collapseMethod31">
-              <div class="row align-items-center">
-                <div class="col-3">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>ismissing</code></b>
-                  </h4>
-                </div>
-                <div class="col-9">
-                  Find missing values in table.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod31">
-            <div class="border-bottom py-2">
-<dl>
-<dt><u>Method:</u> <var>TF</var> = <b>ismissing</b><i> (<var>tblA</var>)</i></dt>
-<dt><u>Method:</u> <var>TF</var> = <b>ismissing</b><i> (<var>tblA</var>, <var>indicator</var>)</i></dt>
-</dl>
-
-<p> Find missing values in table.
-</p>
-<div class="ms-5">
-<p> Finds missing values in <var>obj</var>’s variables.
-</p>
-<p> If indicator is not supplied, uses the standard missing values for each
- variable’s data type. If indicator is supplied, the same indicator list is
- applied across all variables.
-</p>
-<p> All variables in this must be vectors. (This is due to the requirement
- that <code>size(out) == size(obj)</code>.)
-</p>
-<p> Returns a logical array the same size as <var>obj</var>.
-</p>
-
-</div>
 
 
             </div>
@@ -3326,30 +3224,34 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>rmmissing</code></b>
+                    <b><code>ismissing</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Remove missing table elements by rows.
+                  Find missing values in table.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod32">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>rmmissing</b><i> (<var>tblA</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>rmmissing</b><i> (<var>tblA</var>, <var>dim</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>rmmissing</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
-<dt><u>table:</u> [<var>tbl</var>, <var>TF</var>] = <b>rmmissing</b><i> (&hellip;)</i></dt>
+<dt><u>Method:</u> <var>TF</var> = <b>ismissing</b><i> (<var>tblA</var>)</i></dt>
+<dt><u>Method:</u> <var>TF</var> = <b>ismissing</b><i> (<var>tblA</var>, <var>indicator</var>)</i></dt>
 </dl>
 
-<p> Remove missing table elements by rows.
+<p> </p>
+<p> Finds missing values in <var>obj</var>’s variables.
 </p>
-<div class="ms-5">
+<p> If indicator is not supplied, uses the standard missing values for each
+ variable’s data type. If indicator is supplied, the same indicator list is
+ applied across all variables.
+</p>
+<p> All variables in this must be vectors. (This is due to the requirement
+ that <code>size(out) == size(obj)</code>.)
+</p>
+<p> Returns a logical array the same size as <var>obj</var>.
+</p>
 
-
-
-</div>
 
 
             </div>
@@ -3364,35 +3266,26 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>fillmissing</code></b>
+                    <b><code>rmmissing</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Fill missing table elements.
+                  Remove missing table elements by rows.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod33">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <code>'constant'</code>, <var>val</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <var>method</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <var>movmethod</var>, <var>window</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <code>'knn'</code>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <code>'knn'</code>, <var>k</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <var>fillfun</var>, <var>gapwindow</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (&hellip;, <var>dim</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
-<dt><u>table:</u> [<var>tbl</var>, <var>TF</var>] = <b>fillmissing</b><i> (&hellip;)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>rmmissing</b><i> (<var>tblA</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>rmmissing</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
+<dt><u>table:</u> [<var>tbl</var>, <var>TF</var>] = <b>rmmissing</b><i> (&hellip;)</i></dt>
 </dl>
 
-<p> Fill missing table elements.
-</p>
-<div class="ms-5">
+<p> </p>
 
 
 
-</div>
 
 
             </div>
@@ -3407,28 +3300,32 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>standardizeMissing</code></b>
+                    <b><code>fillmissing</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Remove missing table elements by rows.
+                  Fill missing table elements.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod34">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>standardizeMissing</b><i> (<var>tblA</var>, <var>indicator</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>rmmissing</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <code>'constant'</code>, <var>val</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <var>method</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <var>movmethod</var>, <var>window</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <code>'knn'</code>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <code>'knn'</code>, <var>k</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <var>fillfun</var>, <var>gapwindow</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (&hellip;, <var>dim</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
+<dt><u>table:</u> [<var>tbl</var>, <var>TF</var>] = <b>fillmissing</b><i> (&hellip;)</i></dt>
 </dl>
 
-<p> Remove missing table elements by rows.
-</p>
-<div class="ms-5">
+<p> </p>
 
 
 
-</div>
 
 
             </div>
@@ -3443,17 +3340,27 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>pivot</code></b>
+                    <b><code>standardizeMissing</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  undocumented
+                  Remove missing table elements by rows.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod35">
             <div class="border-bottom py-2">
-<b><code>table.pivot</code></b> is not documented.
+<dl>
+<dt><u>table:</u> <var>tbl</var> = <b>standardizeMissing</b><i> (<var>tblA</var>, <var>indicator</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>rmmissing</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
+</dl>
+
+<p> </p>
+
+
+
+
+
             </div>
           </div>
         </div>
@@ -3466,7 +3373,7 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>groupcounts</code></b>
+                    <b><code>pivot</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
@@ -3476,7 +3383,7 @@ Variables:
           </div>
           <div class="collapse multi-collapse" id="collapseMethod36">
             <div class="border-bottom py-2">
-<b><code>table.groupcounts</code></b> is not documented.
+<b><code>table.pivot</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -3489,7 +3396,7 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>groupfilter</code></b>
+                    <b><code>groupcounts</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
@@ -3499,7 +3406,7 @@ Variables:
           </div>
           <div class="collapse multi-collapse" id="collapseMethod37">
             <div class="border-bottom py-2">
-<b><code>table.groupfilter</code></b> is not documented.
+<b><code>table.groupcounts</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -3512,7 +3419,7 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>groupsummary</code></b>
+                    <b><code>groupfilter</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
@@ -3522,7 +3429,7 @@ Variables:
           </div>
           <div class="collapse multi-collapse" id="collapseMethod38">
             <div class="border-bottom py-2">
-<b><code>table.groupsummary</code></b> is not documented.
+<b><code>table.groupfilter</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -3535,7 +3442,7 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>grouptransform</code></b>
+                    <b><code>groupsummary</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
@@ -3545,7 +3452,7 @@ Variables:
           </div>
           <div class="collapse multi-collapse" id="collapseMethod39">
             <div class="border-bottom py-2">
-<b><code>table.grouptransform</code></b> is not documented.
+<b><code>table.groupsummary</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -3558,7 +3465,7 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>findgroups</code></b>
+                    <b><code>grouptransform</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
@@ -3568,7 +3475,7 @@ Variables:
           </div>
           <div class="collapse multi-collapse" id="collapseMethod40">
             <div class="border-bottom py-2">
-<b><code>table.findgroups</code></b> is not documented.
+<b><code>table.grouptransform</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -3581,7 +3488,7 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>splitapply</code></b>
+                    <b><code>findgroups</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
@@ -3591,7 +3498,7 @@ Variables:
           </div>
           <div class="collapse multi-collapse" id="collapseMethod41">
             <div class="border-bottom py-2">
-<b><code>table.splitapply</code></b> is not documented.
+<b><code>table.findgroups</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -3604,7 +3511,7 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>rowfun</code></b>
+                    <b><code>splitapply</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
@@ -3614,7 +3521,7 @@ Variables:
           </div>
           <div class="collapse multi-collapse" id="collapseMethod42">
             <div class="border-bottom py-2">
-<b><code>table.rowfun</code></b> is not documented.
+<b><code>table.splitapply</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -3627,7 +3534,7 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>varfun</code></b>
+                    <b><code>rowfun</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
@@ -3637,7 +3544,7 @@ Variables:
           </div>
           <div class="collapse multi-collapse" id="collapseMethod43">
             <div class="border-bottom py-2">
-<b><code>table.varfun</code></b> is not documented.
+<b><code>table.rowfun</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -3650,38 +3557,17 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>horzcat</code></b>
+                    <b><code>varfun</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Horizontal concatenation for tables.
+                  undocumented
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod44">
             <div class="border-bottom py-2">
-<dl>
-<dt><u>table:</u> <var>tbl</var> = <b>horzcat</b><i> (<var>tbl1</var>, <var>tbl2</var>, &hellip;)</i></dt>
-</dl>
-
-<p> Horizontal concatenation for tables.
-</p>
-<div class="ms-5">
-<p> <code><var>tbl</var> = horzcat (<var>tbl1</var>, <var>tbl2</var>, &hellip;)</code> merges
- tables by horizontally concatenating them, provided that all input tables
- have collectively unique variable names and the same number of rows.
-</p>
-<p> Input tables that have row names must share the same unique set of row
- names but not necessarily in the same order.  When row names are present
- in multiple input tables, their position is matched to the row names of
- the first input table.  Input tables without row names are concatenated
- by position without re-indexing.  Output table&rsquo;s <code>Description</code> and
- <code>UserData</code> properties are assigned using the first non-empty value.
-</p>
-
-</div>
-
-
+<b><code>table.varfun</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -3694,29 +3580,33 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>iscolumn</code></b>
+                    <b><code>horzcat</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Test input table for being a column vector.
+                  Horizontal concatenation for tables.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod45">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>TF</var> = <b>iscolumn</b><i> (<var>tbl</var>)</i></dt>
+<dt><u>table:</u> <var>tbl</var> = <b>horzcat</b><i> (<var>tbl1</var>, <var>tbl2</var>, &hellip;)</i></dt>
 </dl>
 
-<p> Test input table for being a column vector.
+<p> </p>
+<p> <code><var>tbl</var> = horzcat (<var>tbl1</var>, <var>tbl2</var>, &hellip;)</code> merges
+ tables by horizontally concatenating them, provided that all input tables
+ have collectively unique variable names and the same number of rows.
 </p>
-<div class="ms-5">
-<p> <code><var>TF</var> = iscolumn (<var>tbl</var>)</code> returns <code>true</code> if the input
- table <var>tbl</var> has a single variable.  The number of columns within that
- variable does not matter.
+<p> Input tables that have row names must share the same unique set of row
+ names but not necessarily in the same order.  When row names are present
+ in multiple input tables, their position is matched to the row names of
+ the first input table.  Input tables without row names are concatenated
+ by position without re-indexing.  Output table&rsquo;s <code>Description</code> and
+ <code>UserData</code> properties are assigned using the first non-empty value.
 </p>
 
-</div>
 
 
             </div>
@@ -3731,28 +3621,26 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>isempty</code></b>
+                    <b><code>iscolumn</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Test input table for being empty.
+                  Test input table for being a column vector.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod46">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>TF</var> = <b>isempty</b><i> (<var>tbl</var>)</i></dt>
+<dt><u>table:</u> <var>TF</var> = <b>iscolumn</b><i> (<var>tbl</var>)</i></dt>
 </dl>
 
-<p> Test input table for being empty.
-</p>
-<div class="ms-5">
-<p> For tables, <code>isempty</code> is true if the number of rows is 0 or the
- number of variables is 0.
+<p> </p>
+<p> <code><var>TF</var> = iscolumn (<var>tbl</var>)</code> returns <code>true</code> if the input
+ table <var>tbl</var> has a single variable.  The number of columns within that
+ variable does not matter.
 </p>
 
-</div>
 
 
             </div>
@@ -3767,27 +3655,25 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>ismatrix</code></b>
+                    <b><code>isempty</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Test input table for being a matrix.
+                  Test input table for being empty.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod47">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>TF</var> = <b>ismatrix</b><i> (<var>tbl</var>)</i></dt>
+<dt><u>table:</u> <var>TF</var> = <b>isempty</b><i> (<var>tbl</var>)</i></dt>
 </dl>
 
-<p> Test input table for being a matrix.
-</p>
-<div class="ms-5">
-<p> For tables, <code>ismatrix</code> is always true, by definition.
+<p> </p>
+<p> For tables, <code>isempty</code> is true if the number of rows is 0 or the
+ number of variables is 0.
 </p>
 
-</div>
 
 
             </div>
@@ -3802,28 +3688,24 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>isrow</code></b>
+                    <b><code>ismatrix</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Test input table for being a row vector.
+                  Test input table for being a matrix.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod48">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>TF</var> = <b>isrow</b><i> (<var>tbl</var>)</i></dt>
+<dt><u>table:</u> <var>TF</var> = <b>ismatrix</b><i> (<var>tbl</var>)</i></dt>
 </dl>
 
-<p> Test input table for being a row vector.
-</p>
-<div class="ms-5">
-<p> <code><var>TF</var> = isrow (<var>tbl</var>)</code> returns <code>true</code> if the input
- table <var>tbl</var> has a single row.
+<p> </p>
+<p> For tables, <code>ismatrix</code> is always true, by definition.
 </p>
 
-</div>
 
 
             </div>
@@ -3838,28 +3720,25 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>isscalar</code></b>
+                    <b><code>isrow</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Test input table for being a scalar.
+                  Test input table for being a row vector.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod49">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>Method:</u> <var>TF</var> = <b>isscalar</b><i> (<var>tbl</var>)</i></dt>
+<dt><u>table:</u> <var>TF</var> = <b>isrow</b><i> (<var>tbl</var>)</i></dt>
 </dl>
 
-<p> Test input table for being a scalar.
-</p>
-<div class="ms-5">
-<p> <code><var>TF</var> = isscalar (<var>tbl</var>)</code> returns <code>true</code> if the input
- table <var>tbl</var> has a single row and a single variable.
+<p> </p>
+<p> <code><var>TF</var> = isrow (<var>tbl</var>)</code> returns <code>true</code> if the input
+ table <var>tbl</var> has a single row.
 </p>
 
-</div>
 
 
             </div>
@@ -3874,28 +3753,25 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>isvector</code></b>
+                    <b><code>isscalar</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Test input table for being a vector.
+                  Test input table for being a scalar.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod50">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>TF</var> = <b>isvector</b><i> (<var>tbl</var>)</i></dt>
+<dt><u>Method:</u> <var>TF</var> = <b>isscalar</b><i> (<var>tbl</var>)</i></dt>
 </dl>
 
-<p> Test input table for being a vector.
-</p>
-<div class="ms-5">
-<p> <code><var>TF</var> = isvector (<var>tbl</var>)</code> returns <code>true</code> if the input
- table <var>tbl</var> has a single row or a single column.
+<p> </p>
+<p> <code><var>TF</var> = isscalar (<var>tbl</var>)</code> returns <code>true</code> if the input
+ table <var>tbl</var> has a single row and a single variable.
 </p>
 
-</div>
 
 
             </div>
@@ -3910,25 +3786,25 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>length</code></b>
+                    <b><code>isvector</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Length along longest dimension.
+                  Test input table for being a vector.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod51">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>out</var> = <b>length</b><i> (<var>tbl</var>)</i></dt>
+<dt><u>table:</u> <var>TF</var> = <b>isvector</b><i> (<var>tbl</var>)</i></dt>
 </dl>
 
-<p> Length along longest dimension.
+<p> </p>
+<p> <code><var>TF</var> = isvector (<var>tbl</var>)</code> returns <code>true</code> if the input
+ table <var>tbl</var> has a single row or a single column.
 </p>
-<div class="ms-5">
 
-</div>
 
 
             </div>
@@ -3943,27 +3819,22 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>ndims</code></b>
+                    <b><code>length</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Number of table dimensions.
+                  Length along longest dimension.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod52">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>out</var> = <b>ndims</b><i> (<var>tbl</var>)</i></dt>
+<dt><u>table:</u> <var>out</var> = <b>length</b><i> (<var>tbl</var>)</i></dt>
 </dl>
 
-<p> Number of table dimensions.
-</p>
-<div class="ms-5">
-<p> For tables, <code>ndims(tbl)</code> is always 2.
-</p>
+<p> </p>
 
-</div>
 
 
             </div>
@@ -3978,29 +3849,24 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>numel</code></b>
+                    <b><code>ndims</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Total number of elements in table.
+                  Number of table dimensions.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod53">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>out</var> = <b>numel</b><i> (<var>tbl</var>)</i></dt>
+<dt><u>table:</u> <var>out</var> = <b>ndims</b><i> (<var>tbl</var>)</i></dt>
 </dl>
 
-<p> Total number of elements in table.
-</p>
-<div class="ms-5">
-<p> For compatibility reasons with Octave&rsquo;s OOP interface and <code>subsasgn</code>
- behavior, table&rsquo;s numel is defined to always return 1.  This is an
- incompatibility with Matlab.
+<p> </p>
+<p> For tables, <code>ndims(tbl)</code> is always 2.
 </p>
 
-</div>
 
 
             </div>
@@ -4015,30 +3881,26 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>repelem</code></b>
+                    <b><code>numel</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Replicate elements of a table.
+                  Total number of elements in table.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod54">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tblB</var> = <b>repelem</b><i> (<var>tblA</var>, <var>sz</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>repelem</b><i> (<var>tblA</var>, <var>rows</var>, <var>columns</var>)</i></dt>
+<dt><u>table:</u> <var>out</var> = <b>numel</b><i> (<var>tbl</var>)</i></dt>
 </dl>
 
-<p> Replicate elements of a table.
-</p>
-<div class="ms-5">
-<p> Replicates elements of the input table <var>tblA</var> in a similar fashion
- to how <code>repelem</code> applies to a matrix.  Only two dimensions are
- supported for tables.
+<p> </p>
+<p> For compatibility reasons with Octave&rsquo;s OOP interface and <code>subsasgn</code>
+ behavior, table&rsquo;s numel is defined to always return 1.  This is an
+ incompatibility with Matlab.
 </p>
 
-</div>
 
 
             </div>
@@ -4053,30 +3915,27 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>repmat</code></b>
+                    <b><code>repelem</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Repeat copies of a table.
+                  Replicate elements of a table.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod55">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tblB</var> = <b>repmat</b><i> (<var>tblA</var>, <var>sz</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>repmat</b><i> (<var>tblA</var>, <var>rows</var>, <var>columns</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>repelem</b><i> (<var>tblA</var>, <var>sz</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>repelem</b><i> (<var>tblA</var>, <var>rows</var>, <var>columns</var>)</i></dt>
 </dl>
 
-<p> Repeat copies of a table.
-</p>
-<div class="ms-5">
-<p> Repeats cp[ies of the input table <var>tblA</var> in a similar fashion
- to how <code>repmat</code> applies to a matrix.  Only two dimensions are
+<p> </p>
+<p> Replicates elements of the input table <var>tblA</var> in a similar fashion
+ to how <code>repelem</code> applies to a matrix.  Only two dimensions are
  supported for tables.
 </p>
 
-</div>
 
 
             </div>
@@ -4091,30 +3950,27 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>size</code></b>
+                    <b><code>repmat</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Return the size of a table.
+                  Repeat copies of a table.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod56">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>sz</var> = <b>size</b><i> (<var>tbl</var>)</i></dt>
-<dt><u>table:</u> [<var>rows</var>, <var>columns</var>] = <b>size</b><i> (<var>tbl</var>)</i></dt>
-<dt><u>table:</u> [<var>rows</var>, <var>columns</var>, &hellip;] = <b>size</b><i> (<var>tbl</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>repmat</b><i> (<var>tblA</var>, <var>sz</var>)</i></dt>
+<dt><u>table:</u> <var>tblB</var> = <b>repmat</b><i> (<var>tblA</var>, <var>rows</var>, <var>columns</var>)</i></dt>
 </dl>
 
-<p> Return the size of a table.
-</p>
-<div class="ms-5">
-<p> For tables, the size is [number-of-rows x number-of-variables].
- This is the same as <code>[height(obj), width(obj)]</code>.
+<p> </p>
+<p> Repeats cp[ies of the input table <var>tblA</var> in a similar fashion
+ to how <code>repmat</code> applies to a matrix.  Only two dimensions are
+ supported for tables.
 </p>
 
-</div>
 
 
             </div>
@@ -4129,28 +3985,27 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>squeeze</code></b>
+                    <b><code>size</code></b>
                   </h4>
                 </div>
                 <div class="col-9">
-                  Remove singleton dimensions.
+                  Return the size of a table.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod57">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tblB</var> = <b>squeeze</b><i> (<var>tblA</var>)</i></dt>
+<dt><u>table:</u> <var>sz</var> = <b>size</b><i> (<var>tbl</var>)</i></dt>
+<dt><u>table:</u> [<var>rows</var>, <var>columns</var>] = <b>size</b><i> (<var>tbl</var>)</i></dt>
+<dt><u>table:</u> [<var>rows</var>, <var>columns</var>, &hellip;] = <b>size</b><i> (<var>tbl</var>)</i></dt>
 </dl>
 
-<p> Remove singleton dimensions.
-</p>
-<div class="ms-5">
-<p> For tables, this is always a no-op that returns the input table
- unmodified, because tables always have exactly 2 dimensions.
+<p> </p>
+<p> For tables, the size is [number-of-rows x number-of-variables].
+ This is the same as <code>[height(obj), width(obj)]</code>.
 </p>
 
-</div>
 
 
             </div>
@@ -4165,6 +4020,39 @@ Variables:
               <div class="row align-items-center">
                 <div class="col-3">
                   <h4 class="d-inline-block mr-4">
+                    <b><code>squeeze</code></b>
+                  </h4>
+                </div>
+                <div class="col-9">
+                  Remove singleton dimensions.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod58">
+            <div class="border-bottom py-2">
+<dl>
+<dt><u>table:</u> <var>tblB</var> = <b>squeeze</b><i> (<var>tblA</var>)</i></dt>
+</dl>
+
+<p> </p>
+<p> For tables, this is always a no-op that returns the input table
+ unmodified, because tables always have exactly 2 dimensions.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod59"
+              aria-expanded="false" aria-controls="collapseMethod59">
+              <div class="row align-items-center">
+                <div class="col-3">
+                  <h4 class="d-inline-block mr-4">
                     <b><code>vertcat</code></b>
                   </h4>
                 </div>
@@ -4173,15 +4061,13 @@ Variables:
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod58">
+          <div class="collapse multi-collapse" id="collapseMethod59">
             <div class="border-bottom py-2">
 <dl>
 <dt><u>table:</u> <var>tbl</var> = <b>vertcat</b><i> (<var>tbl1</var>, <var>tbl2</var>, &hellip;)</i></dt>
 </dl>
 
-<p> Vertical concatenation for tables.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>tbl</var> = vertcat (<var>tbl1</var>, <var>tbl2</var>, &hellip;)</code> merges
  tables by vertically concatenating them, provided that all input tables
  have the same variable names but not necessarily in the same order.  The
@@ -4195,7 +4081,6 @@ Variables:
  properties are assigned using the first non-empty value.
 </p>
 
-</div>
 
 
             </div>

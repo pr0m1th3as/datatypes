@@ -274,9 +274,7 @@
 <dt><u>string:</u> <var>str</var> = <b>string</b><i> ({<var>in1</var>, &hellip;, <var>inN</var>})</i></dt>
 </dl>
 
-<p> Create a new string array.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>str</var> = string ()</code> creates a scalar string array, whose element
  contains an empty character vector.
 </p>
@@ -316,7 +314,7 @@
   <a href="duration.html">duration</a>, 
   <a href="missing.html">missing</a>
 </p>
-</div>
+
 
             </div>
           </div>
@@ -344,16 +342,13 @@
 <dt><u>string:</u> <var>cstr</var> = <b>cellstr</b><i> (<var>str</var>)</i></dt>
 </dl>
 
-<p> Convert string array to a cell array of character vectors.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>cstr</var> = cellstr (<var>str</var>)</code> returns a cell array of
  character vectors, <var>cstr</var>, which has the same size as the input
  string <var>str</var>.  Both empty strings and missing values are returned as
  empty character vectors.
 </p>
 
-</div>
 
 
             </div>
@@ -382,9 +377,7 @@
 <dt><u>string:</u> <var>c_arr</var> = <b>cell</b><i> (<var>str</var>)</i></dt>
 </dl>
 
-<p> Convert string array to a cell array.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>c_arr</var> = cell (<var>str</var>)</code> returns a cell array, <var>c_arr</var>,
  which has the same size as the input string <var>str</var>.  All strings are
  converted to character vectors.  Empty strings are converted to
@@ -392,7 +385,6 @@
  <code>[]</code> empty numeric vectors.
 </p>
 
-</div>
 
 
             </div>
@@ -421,16 +413,13 @@
 <dt><u>string:</u> <var>c_mat</var> = <b>char</b><i> (<var>str</var>)</i></dt>
 </dl>
 
-<p> Convert string array to a character matrix.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>c_mat</var> = char (<var>str</var>)</code> returns a character matrix,
  <var>c_mat</var>, which contains as many rows as the elements of the string.
  Both empty strings and missing values are returned as empty character
  vectors.
 </p>
 
-</div>
 
 
             </div>
@@ -459,16 +448,13 @@
 <dt><u>string:</u> <var>X</var> = <b>double</b><i> (<var>str</var>)</i></dt>
 </dl>
 
-<p> Convert string array to a double array.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>X</var> = char (<var>str</var>)</code> returns a double array, <var>X</var>, which
  has the same size as the input string <var>str</var>.  All elements in
  <var>str</var> that represent real or complex numbers are converted to
  equivalent double values.  Otherwise, <code>NaN</code> is returned.
 </p>
 
-</div>
 
 
             </div>
@@ -500,9 +486,7 @@
 <dt><u>string:</u> [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b><i> (&hellip;)</i></dt>
 </dl>
 
-<p> Return the size of a string array.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>sz</var> = size (<var>str</var>)</code> returns a row vector with the size
  (number of elements) of each dimension for the string array <var>str</var>.
 </p>
@@ -517,7 +501,6 @@
  dimension N in the Nth argument.
 </p>
 
-</div>
 
 
             </div>
@@ -546,14 +529,11 @@
 <dt><u>string:</u> <var>out</var> = <b>ndims</b><i> (<var>str</var>)</i></dt>
 </dl>
 
-<p> Number of dimensions in a string array.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>out</var> = ndims (<var>str</var>)</code> returns the number of dimensions of
  the string array <var>D</var>.
 </p>
 
-</div>
 
 
             </div>
@@ -582,11 +562,8 @@
 <dt><u>string:</u> <var>out</var> = <b>numel</b><i> (<var>str</var>)</i></dt>
 </dl>
 
-<p> Total number of elements in a string array.
-</p>
-<div class="ms-5">
+<p> </p>
 
-</div>
 
 
             </div>
@@ -615,11 +592,8 @@
 <dt><u>string:</u> <var>out</var> = <b>strlength</b><i> (<var>str</var>)</i></dt>
 </dl>
 
-<p> Length of text in string arrays.
-</p>
-<div class="ms-5">
+<p> </p>
 
-</div>
 
 
             </div>
@@ -648,13 +622,10 @@
 <dt><u>string:</u> <var>TF</var> = <b>iscolumn</b><i> (<var>str</var>)</i></dt>
 </dl>
 
-<p> Test if string array is a column vector.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <var>TF</var> is <code>true</code>, if string array <var>str</var> is a column vector.
 </p>
 
-</div>
 
 
             </div>
@@ -683,13 +654,10 @@
 <dt><u>string:</u> <var>TF</var> = <b>isempty</b><i> (<var>str</var>)</i></dt>
 </dl>
 
-<p> Test if string array is empty.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <var>TF</var> is <code>true</code>, if string array <var>str</var> is empty.
 </p>
 
-</div>
 
 
             </div>
@@ -718,13 +686,10 @@
 <dt><u>string:</u> <var>TF</var> = <b>ismatrix</b><i> (<var>str</var>)</i></dt>
 </dl>
 
-<p> Test if string array is a matrix.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <var>TF</var> is <code>true</code>, if string array <var>str</var> is a matrix.
 </p>
 
-</div>
 
 
             </div>
@@ -753,13 +718,10 @@
 <dt><u>string:</u> <var>TF</var> = <b>ismember</b><i> (<var>str1</var>, <var>str2</var>)</i></dt>
 </dl>
 
-<p> Test for set member in string arrays.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <var>TF</var> is a logical array of the same size as <var>str1</var>.
 </p>
 
-</div>
 
 
             </div>
@@ -788,13 +750,10 @@
 <dt><u>string:</u> <var>TF</var> = <b>ismissing</b><i> (<var>str</var>)</i></dt>
 </dl>
 
-<p> Test for missing elements in string array.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <var>TF</var> is a logical array of the same size as <var>str</var>.
 </p>
 
-</div>
 
 
             </div>
@@ -823,13 +782,10 @@
 <dt><u>string:</u> <var>TF</var> = <b>isrow</b><i> (<var>str</var>)</i></dt>
 </dl>
 
-<p> Test if string array is a row vector.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <var>TF</var> is <code>true</code>, if string array <var>str</var> is a row vector.
 </p>
 
-</div>
 
 
             </div>
@@ -858,13 +814,10 @@
 <dt><u>string:</u> <var>TF</var> = <b>isscalar</b><i> (<var>str</var>)</i></dt>
 </dl>
 
-<p> Test if string array is a scalar.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <var>TF</var> is <code>true</code>, if string array <var>str</var> is a scalar.
 </p>
 
-</div>
 
 
             </div>
@@ -893,13 +846,10 @@
 <dt><u>string:</u> <var>TF</var> = <b>isvector</b><i> (<var>str</var>)</i></dt>
 </dl>
 
-<p> Test if string array is a vector.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <var>TF</var> is <code>true</code>, if string array <var>str</var> is a vector.
 </p>
 
-</div>
 
 
             </div>
@@ -928,16 +878,13 @@
 <dt><u>string:</u> <var>TF</var> = <b>eq</b><i> (<var>A</var>, <var>B</var>)</i></dt>
 </dl>
 
-<p> Test for equality.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <var>TF</var> is <code>true</code>, if string <var>A</var> is lexicographically equal to
  <var>B</var>.  If one input is a string array, the other input can be a string
  array, a character vector, or a cell array of character vectors.  This is
  equivalent to the <code>strcmp</code> function.
 </p>
 
-</div>
 
 
             </div>
@@ -966,16 +913,13 @@
 <dt><u>string:</u> <var>TF</var> = <b>eq</b><i> (<var>A</var>, <var>B</var>)</i></dt>
 </dl>
 
-<p> Test for greater than or equal to.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <var>TF</var> is <code>true</code>, if string <var>A</var> is lexicographically greater
  than or equal to <var>B</var>.  If one input is a string array, the other
  input can be a string array, a character vector, or a cell array of
  character vectors.
 </p>
 
-</div>
 
 
             </div>
@@ -1004,15 +948,12 @@
 <dt><u>string:</u> <var>TF</var> = <b>eq</b><i> (<var>A</var>, <var>B</var>)</i></dt>
 </dl>
 
-<p> Test for greater than.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <var>TF</var> is <code>true</code>, if string <var>A</var> is lexicographically greater
  than <var>B</var>.  If one input is a string array, the other input can be a
  string array, a character vector, or a cell array of character vectors.
 </p>
 
-</div>
 
 
             </div>
@@ -1041,16 +982,13 @@
 <dt><u>string:</u> <var>TF</var> = <b>eq</b><i> (<var>A</var>, <var>B</var>)</i></dt>
 </dl>
 
-<p> Test for less than or equal to.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <var>TF</var> is <code>true</code>, if string <var>A</var> is lexicographically less
  than or equal to <var>B</var>.  If one input is a string array, the other
  input can be a string array, a character vector, or a cell array of
  character vectors.
 </p>
 
-</div>
 
 
             </div>
@@ -1079,15 +1017,12 @@
 <dt><u>string:</u> <var>TF</var> = <b>eq</b><i> (<var>A</var>, <var>B</var>)</i></dt>
 </dl>
 
-<p> Test for less than.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <var>TF</var> is <code>true</code>, if string <var>A</var> is lexicographically less
  than <var>B</var>.  If one input is a string array, the other input can be a
  string array, a character vector, or a cell array of character vectors.
 </p>
 
-</div>
 
 
             </div>
@@ -1116,9 +1051,7 @@
 <dt><u>string:</u> <var>TF</var> = <b>ne</b><i> (<var>A</var>, <var>B</var>)</i></dt>
 </dl>
 
-<p> Test for inequality.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <var>TF</var> is <code>true</code>, if string <var>A</var> is lexicographically not
  equal to <var>B</var>.  If one input is a string array, the other input can be
  a string array, a character vector, or a cell array of character vectors.
@@ -1126,7 +1059,6 @@
  <code><var>TF</var> = ! strcmp (<var>A</var>, <var>B</var>)</code>.
 </p>
 
-</div>
 
 
             </div>
@@ -1155,9 +1087,7 @@
 <dt><u>string:</u> <var>TF</var> = <b>strcmp</b><i> (<var>A</var>, <var>B</var>)</i></dt>
 </dl>
 
-<p> Compare strings.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <var>TF</var> is <code>true</code>, if string <var>A</var> is lexicographically equal to
  <var>B</var>.  If one input is a string array, the other input can be a string
  array, a character vector, or a cell array of character vectors.
@@ -1170,7 +1100,6 @@
  character vector.
 </p>
 
-</div>
 
 
             </div>
@@ -1199,9 +1128,7 @@
 <dt><u>string:</u> <var>TF</var> = <b>strcmp</b><i> (<var>A</var>, <var>B</var>)</i></dt>
 </dl>
 
-<p> Compare strings (case insensitive).
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <var>TF</var> is <code>true</code>, if string <var>A</var> is lexicographically equal to
  <var>B</var>, disregarding case of alphabetic characters.  If one input is a
  string array, the other input can be a string array, a character vector,
@@ -1215,7 +1142,6 @@
  character vector.
 </p>
 
-</div>
 
 
             </div>
@@ -1244,9 +1170,7 @@
 <dt><u>string:</u> <var>TF</var> = <b>strncmp</b><i> (<var>A</var>, <var>B</var>, <var>n</var>)</i></dt>
 </dl>
 
-<p> Compare first <var>n</var> characters of strings.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <var>TF</var> is <code>true</code>, if the first <var>n</var> characters of strings
  <var>A</var> and <var>B</var> are lexicographically equal.  If one input is a
  string array, the other input can be a string array, a character vector,
@@ -1260,7 +1184,6 @@
  character vector.
 </p>
 
-</div>
 
 
             </div>
@@ -1289,9 +1212,7 @@
 <dt><u>string:</u> <var>TF</var> = <b>strncmp</b><i> (<var>A</var>, <var>B</var>, <var>n</var>)</i></dt>
 </dl>
 
-<p> Compare first <var>n</var> characters of strings (case insensitive).
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <var>TF</var> is <code>true</code>, if the first <var>n</var> characters of strings
  <var>A</var> and <var>B</var> are lexicographically equal, disregarding case of
  alphabetic characters.  If one input is a string array, the other input
@@ -1306,7 +1227,6 @@
  character vector.
 </p>
 
-</div>
 
 
             </div>
@@ -1381,15 +1301,12 @@
 <dt><u>string:</u> <var>newstr</var> = <b>erase</b><i> (<var>str</var>, <var>pat</var>)</i></dt>
 </dl>
 
-<p> Remove content from string array.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>newstr</var> = erase (<var>str</var>, <var>pat</var>)</code> removes the
  occurences of <var>pat</var> from each element of the string array <var>str</var>.
  <var>newstr</var> is a string array of the same size as <var>str</var>.
 </p>
 
-</div>
 
 
             </div>
@@ -1625,15 +1542,12 @@
 <dt><u>string:</u> <var>newstr</var> = <b>reverse</b><i> (<var>str</var>)</i></dt>
 </dl>
 
-<p> Reverse order of characters in string array.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>newstr</var> = reverse (<var>str</var>)</code> reverses the order of the
  characters in every each element of the string array <var>str</var>.
  <var>newstr</var> is a string array of the same size as <var>str</var>.
 </p>
 
-</div>
 
 
             </div>
@@ -1708,9 +1622,7 @@
 <dt><u>string:</u> <var>newstr</var> = <b>strcat</b><i> (<var>str1</var>, <var>str2</var>, &hellip;)</i></dt>
 </dl>
 
-<p> Horizontal concatenation of texts in string array.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>newstr</var> = strcat (<var>str1</var>, <var>str2</var>, &hellip;)</code> merges
  horizontally all the input arguments into a string array, as long as any
  of the input arguments is a string array.  All inputs must be of common
@@ -1718,7 +1630,6 @@
  character vectors, or string arrays.
 </p>
 
-</div>
 
 
             </div>
@@ -1839,15 +1750,12 @@
 <dt><u>string:</u> <var>newstr</var> = <b>lower</b><i> (<var>str</var>)</i></dt>
 </dl>
 
-<p> Convert contents of string array to lower case.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>newstr</var> = lower (<var>str</var>)</code> converts all upper case
  characters in every element of the string array <var>str</var> to lower case.
  <var>newstr</var> is a string array of the same size as <var>str</var>.
 </p>
 
-</div>
 
 
             </div>
@@ -1876,15 +1784,12 @@
 <dt><u>string:</u> <var>newstr</var> = <b>upper</b><i> (<var>str</var>)</i></dt>
 </dl>
 
-<p> Convert contents of string array to upper case.
-</p>
-<div class="ms-5">
+<p> </p>
 <p> <code><var>newstr</var> = upper (<var>str</var>)</code> converts all lower case
  characters in every element of the string array <var>str</var> to upper case.
  <var>newstr</var> is a string array of the same size as <var>str</var>.
 </p>
 
-</div>
 
 
             </div>
