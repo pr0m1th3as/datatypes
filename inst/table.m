@@ -3620,7 +3620,7 @@ classdef table
     ##
     ## @end deftypefn
     function TF = anymissing (this)
-      TF = any (ismissing (this));
+      TF = any (any (ismissing (this)));
     endfunction
 
     ## -*- texinfo -*-
