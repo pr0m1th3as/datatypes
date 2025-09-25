@@ -45,7 +45,8 @@ classdef vartype
     ## accepted by the @code{isa} function, such as @code{numeric},
     ## @code{logical}, @code{integer}, @code{string}, @code{categorical}, etc.
     ## It can also be @code{cellstr} to select variables that contain cell
-    ## arrays of character vectors.
+    ## arrays of character vectors or @code{numeric} to select variables with
+    ## numeric values.
     ##
     ## @end deftypefn
     function this = vartype (type)
@@ -71,6 +72,8 @@ classdef vartype
     function TF = varMatch (this, varVal)
       if (isequal (this.type, 'cellstr'))
         TF = iscellstr (varVal);
+      elseif (isequal (this.type, 'numeric'))
+        TF = isnumeric (varVal);
       else
         TF = isa (varVal, this.type);
       endif
