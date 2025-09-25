@@ -6263,6 +6263,56 @@ function [mcvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, aggrFcn)
 endfunction
 
 
+## Test the constructor
+%!test
+%! Name = {"John"; "Mary"; "Peter"; "Barbara"};
+%! Age = [23; 34; 42; 28];
+%! Height = [167; 163; 183; 178];
+%! T = table (Name, Age, Height);
+%! assert (size (T), [4, 3]);
+%! assert (size (T.Age), [4, 1]);
+%! assert (mean (T.Age), 31.75);
+%! varnames = T.Properties.VariableNames;
+%! assert (varnames, {"Name", "Age", "Height"});
+%!test
+%! Name = {"John"; "Mary"; "Peter"; "Barbara"};
+%! Age = [23; 34; 42; 28];
+%! Height = [167; 163; 183; 178];
+%! T = table (Name, Age, Height);
+%! BloodPressure = [114 83; 119 75; 115 73; 107 80];
+%! T = table (Name, Age, Height, BloodPressure);
+%! assert (size (T), [4, 4]);
+%! assert (size (T.BloodPressure), [4, 2]);
+%!test
+%! Name = {"John"; "Mary"; "Peter"; "Barbara"};
+%! Age = [23; 34; 42; 28];
+%! Height = [167; 163; 183; 178];
+%! T = table (Name, Age, Height, "VariableNames", {"A", "B", "C"});
+%! assert (T.Properties.VariableNames, {"A", "B", "C"});
+%!test
+%! sz = [4 3];
+%! varTypes = {"double", "datetime", "string"};
+%! T = table("Size", sz, "VariableTypes", varTypes);
+%! assert (size (T), [4, 3]);
+%! assert (T.Properties.VariableNames, {"Var1", "Var2", "Var3"});
+%!test
+%! sz = [4 3];
+%! varTypes = {"double", "datetime", "string"};
+%! T = table("Size", sz, "VariableTypes", varTypes, ...
+%!           "VariableNames", {"A", "B", "C"});
+%! assert (size (T), [4, 3]);
+%! assert (T.Properties.VariableNames, {"A", "B", "C"});
+%!test
+%! sz = [4 3];
+%! varTypes = {"double", "datetime", "table"};
+%! T = table("Size", sz, "VariableTypes", varTypes, ...
+%!           "VariableNames", {"A", "B", "C"});
+%! assert (size (T), [4, 3]);
+%! assert (size (T.C), [0, 1]);
+%! assert (class (T.A), "double");
+%! assert (class (T.B), "datetime");
+%! assert (class (T.C), "table");
+
 ## Test 'subref' and 'subsasgn' methods
 %!shared LastName, Age, Smoker, Height, Weight, BloodPressure, T, tblA
 %! LastName = {"Sanchez"; "Johnson"; "Li"; "Diaz"; "Brown"};
