@@ -3693,8 +3693,74 @@ classdef table
     ##
     ## @end deftypefn
     function [tbl, TF] = rmmissing (this, varargin)
-      TF = any (ismissing (this), 2);
-      tbl = subsetrows (this, ! TF);
+      ## Handle simple input argument first
+      if (numel (varargin) == 0)
+        TF = any (ismissing (this), 2);
+        tbl = subsetrows (this, ! TF);
+        return;
+      endif
+
+      ## Parse optional Name-Value paired arguments
+      optNames = {'MinNumMissing', 'DataVariables', 'MissingLocations'};
+      dfValues = {1, [], []};
+      [minNum, dVars, mLocs] = pairedArgs (optNames, dfValues, varargin(:));
+
+      ## Check optional Name-Value paired arguments and operate accordingly
+      if (! isscalar (minNum) || fix (minNum) != minNum || minNum <= 0)
+        error ("table.rmmissing: 'MinNumMissing' must be a positive integer.");
+      endif
+      if (! isempty (dVars))
+        dIxVars = resolveVarRef (this, dVars, "lenient");
+        if (any (dIxVars == 0))
+          tableVars = this.VariableNames;
+          error (["table.unstack: 'DataVariables' index a non-existing", ...
+                  " variable: '%s'."], tableVars{find (dIxVars == 0)});
+        endif
+        tmpT = subsetvars (this, dIxVars);
+      else
+        tmpT = this;
+      endif
+      if (! isempty (mLocs))
+        if (islogical (mLocs))
+          if (! isequal (size (mLocs), size (tmpT)))
+            error (["table.rmmissing: 'MissingLocations' must be a logical", ...
+                    " matrix of the same size as the input table or the", ...
+                    " part of it referenced by 'DataVariables'."]);
+          endif
+          TF = sum (mLocs, 2) >= minNum;
+          tbl = subsetrows (this, ! TF);
+        elseif (isa (mLocs, "table"))
+          ix = ismember (mLocs.VariableNames, tmpT.VariableNames);
+          if (! all (ix))
+            error (["table.rmmissing: 'MissingLocations' must be a table", ...
+                    " with the same variable names as the input table or", ...
+                    " the part of it referenced by 'DataVariables'."]);
+          endif
+          TF = [];
+          for ix = find (ismember (tmpT.VariableNames, mLocs.VariableNames))
+            varTF = mLocs.VariableValues{ix};
+            if (! isequal (size (tmpT.VariableValues{ix}), varTF))
+              error (["table.rmmissing: 'MissingLocations' must be a table", ...
+                      " with the same variable sizes as the input table or", ...
+                      " the part of it referenced by 'DataVariables'."]);
+            endif
+            if (isa (varTF, "logical"))
+              TF = [TF, varTF];
+            else
+              error (["table.rmmissing: 'MissingLocations'", ...
+                      " must be a table with logical variables."]);
+            endif
+          endfor
+          TF = sum (TF, 2) >= minNum;
+          tbl = subsetrows (this, ! TF);
+        else
+          error ("table.rmmissing: invalid data type for 'MissingLocations'.");
+        endif
+      else
+        TF = sum (ismissing (tmpT), 2) >= minNum;
+        tbl = subsetrows (this, ! TF);
+      endif
+
     endfunction
 
     ## -*- texinfo -*-
@@ -5025,6 +5091,13 @@ classdef table
         ixVar = [];
         for i = 1:nvars
           if (varRef.varMatch (this.VariableValues{i}))
+            ixVar(end+1) = i;
+          endif
+        endfor
+      elseif (is_function_handle (varRef))
+        ixVar = [];
+        for i = 1:nvars
+          if (varRef (this.VariableValues{i}))
             ixVar(end+1) = i;
           endif
         endfor
