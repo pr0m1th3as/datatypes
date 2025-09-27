@@ -955,12 +955,12 @@ Return true if categorical array is a column vector.
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = iscolumn (<var>C</var>) returns a logical scalar <var>TF</var>,
+<p> <code><var>TF</var> = iscolumn (<var>C</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the categorical array <var>C</var> is a column vector
  and <code>false</code> otherwise.  A column vector is a 2-D array for which
  <code>size (<var>X</var>)</code> returns <code>[<var>N</var>, 1]</code> with non-negative
  <var>N</var>.
-</code></p>
+</p>
 
 
 
@@ -991,10 +991,10 @@ Return true if categorical array is empty.
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isempty (<var>C</var>) returns a logical scalar <var>TF</var>,
+<p> <code><var>TF</var> = isempty (<var>C</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the categorical array <var>C</var> is empty and
  <code>false</code> otherwise.
-</code></p>
+</p>
 
 
 
@@ -1026,22 +1026,22 @@ Return true if categorical arrays are equal.
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isequal (<var>C1</var>, <var>C2</var>) returns a logical scalar
+<p> <code><var>TF</var> = isequal (<var>C1</var>, <var>C2</var>)</code> returns a logical scalar
  <var>TF</var>, which is <code>true</code> if the categorical arrays <var>C1</var> and
  <var>C2</var> contain the same values and <code>false</code> otherwise.  Either
  <var>C1</var> or <var>C2</var> may also be a string array, a missing object array,
  a character vector, or a cell array of character vectors, which will be
  promoted to a categorical array prior to comparison.
-</code></p>
-<p><code> If categorical arrays <var>C1</var> and <var>C2</var> are ordinal, they must have
+</p>
+<p> If categorical arrays <var>C1</var> and <var>C2</var> are ordinal, they must have
  the same set and ordering of categories.  If neither are ordinal, the
  category names of each pair of elements are compared.  Hence, they do not
  need to have the same set of categories.
-</code></p>
-<p><code> <code><var>TF</var> = isequal (<var>C1</var>, <var>C2</var>, &hellip;) returns a logical
+</p>
+<p> <code><var>TF</var> = isequal (<var>C1</var>, <var>C2</var>, &hellip;)</code> returns a logical
  scalar <var>TF</var>, which is <code>true</code> if all input arguments are equal
  and <code>false</code> otherwise.
-</code></code></p>
+</p>
 
 
 
@@ -1073,23 +1073,23 @@ Return true if categorical arrays are equal under the assumption that
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isequaln (<var>C1</var>, <var>C2</var>) returns a logical scalar
+<p> <code><var>TF</var> = isequaln (<var>C1</var>, <var>C2</var>)</code> returns a logical scalar
  <var>TF</var>, which is <code>true</code> if the categorical arrays <var>C1</var> and
  <var>C2</var> contain the same values or corresponding undefined elements and
  <code>false</code> otherwise.  Either <var>C1</var> or <var>C2</var> may also be a
  string array, a missing object array, a character vector, or a cell array
  of character vectors, which will be promoted to a categorical array prior
  to comparison.
-</code></p>
-<p><code> If categorical arrays <var>C1</var> and <var>C2</var> are ordinal, they must have
+</p>
+<p> If categorical arrays <var>C1</var> and <var>C2</var> are ordinal, they must have
  the same set and ordering of categories.  If neither are ordinal, the
  category names of each pair of elements are compared.  Hence, they do not
  need to have the same set of categories.
-</code></p>
-<p><code> <code><var>TF</var> = isequaln (<var>C1</var>, <var>C2</var>, &hellip;) returns a logical
- scalar <var>TF</var>, which is <code>true</code> if all input arguments are equal
- and <code>false</code> otherwise.
-</code></code></p>
+</p>
+<p> <code><var>TF</var> = isequaln (<var>C1</var>, <var>C2</var>, &hellip;)</code> returns a
+ logical scalar <var>TF</var>, which is <code>true</code> if all input arguments
+ are equal and <code>false</code> otherwise.
+</p>
 
 
 
@@ -1120,12 +1120,12 @@ Return true if categorical array is a 2-D array.
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = ismatrix (<var>C</var>) returns a logical scalar <var>TF</var>,
+<p> <code><var>TF</var> = ismatrix (<var>C</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the categorical array <var>C</var> is a matrix and
  <code>false</code> otherwise.  A matrix is an array of any type where
  <code>ndims (<var>X</var>) == 2</code> and for which <code>size (<var>X</var>)</code> returns
  <code>[<var>M</var>, <var>N</var>]</code> with non-negative <var>M</var> and <var>N</var>.
-</code></p>
+</p>
 
 
 
@@ -1248,10 +1248,10 @@ Test if categorical array is ordinal.
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isordinal (<var>C</var>) returns a logical scalar <var>TF</var>,
+<p> <code><var>TF</var> = isordinal (<var>C</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the categorical array <var>C</var> is ordinal and
  <code>false</code> otherwise.
-</code></p>
+</p>
 
 
 
@@ -1282,10 +1282,10 @@ Test if categorical array is protected.
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isprotected (<var>C</var>) returns a logical scalar <var>TF</var>,
+<p> <code><var>TF</var> = isprotected (<var>C</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the categorical array <var>C</var> is protected and
  <code>false</code> otherwise.
-</code></p>
+</p>
 
 
 
@@ -1316,12 +1316,12 @@ Return true if categorical array is a row vector.
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isrow (<var>C</var>) returns a logical scalar <var>TF</var>,
+<p> <code><var>TF</var> = isrow (<var>C</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the categorical array <var>C</var> is a row vector
  and <code>false</code> otherwise.  A row vector is a 2-D array for which
  <code>size (<var>X</var>)</code> returns <code>[1, <var>N</var>]</code> with non-negative
  <var>N</var>.
-</code></p>
+</p>
 
 
 
@@ -1352,11 +1352,11 @@ Return true if categorical array is a scalar.
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isscalar (<var>C</var>) returns a logical scalar <var>TF</var>,
+<p> <code><var>TF</var> = isscalar (<var>C</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the categorical array <var>C</var> is also a scalar
  and <code>false</code> otherwise.  A scalar is a single element object for
  which <code>size (<var>X</var>)</code> returns <code>[1, 1]</code>.
-</code></p>
+</p>
 
 
 
@@ -1422,12 +1422,12 @@ Return true if categorical array is a vector.
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>C</var>) returns a logical scalar <var>TF</var>,
+<p> <code><var>TF</var> = isvector (<var>C</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the categorical array <var>C</var> is a vector and
  <code>false</code> otherwise.  A vector is a 2-D array for which one of the
  dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
  definition, a scalar is also a vector.
-</code></p>
+</p>
 
 
 
