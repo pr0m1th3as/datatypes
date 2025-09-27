@@ -136,12 +136,12 @@ classdef categorical
 
       ## Check optional Name-Value paired arguments
       if (! ismember (Ordinal, [0, 1]))
-        error (["categorical: 'Ordinal' variable indicator", ...
-                " must be either false (0) or true (1)."]);
+        error (strcat (["categorical: 'Ordinal' variable indicator", ...
+                        " must be either false (0) or true (1)."]));
       endif
       if (! ismember (Protected, [0, 1]))
-        error (["categorical: 'Protected' categories indicator", ...
-                " must be either false (0) or true (1)."]);
+        error (strcat (["categorical: 'Protected' categories indicator", ...
+                        " must be either false (0) or true (1)."]));
       endif
       opt = "sorted";
       if (Ordinal)
@@ -238,14 +238,14 @@ classdef categorical
           ## Check valueset for missing or empty elements
           if (strcmp (classv, 'cellstr'))
             if (any (cellfun (@isempty, valueset)))
-              error (["categorical: VALUESET cannot contain empty", ...
-                      " text, unless CATNAMES are specified."]);
+              error (strcat (["categorical: VALUESET cannot contain empty", ...
+                              " text, unless CATNAMES are specified."]));
             endif
             catnames = valueset;
           elseif (strcmp (classv, 'string'))
             if (any (cellfun (@(x) isempty (x) || ismissing (x), valueset)))
-              error (["categorical: VALUESET cannot contain empty or", ...
-                      " missing text, unless CATNAMES are specified."]);
+              error (strcat (["categorical: VALUESET cannot contain empty or", ...
+                              " missing text, unless CATNAMES are specified."]));
             endif
             catnames = cellstr (valueset);
           elseif (isnumeric (valueset))
@@ -303,8 +303,9 @@ classdef categorical
       [tf, loc] = ismember (x, valueset);
       maxc = intmax ('uint16');
       if (any (loc > maxc))
-        error (["categorical: too many categories; categorical supports up", ...
-                " to %d categories; this input has %d."], maxc, max (loc));
+        error (strcat (["categorical: too many categories; categorical", ...
+                        " supports up to %d categories; this input has", ...
+                        " %d."]), maxc, max (loc));
       endif
 
       ## Reassociate to user defined categories (only when regrouping required)
@@ -583,8 +584,8 @@ classdef categorical
       if (nargout == 0 || nargout == 1)
         varargout{1} = sz;
       elseif (numel (sz) != nargout)
-        error (["categorical.size: nargout > 1 but does", ...
-                " not match number of requested dimensions."]);
+        error (strcat (["categorical.size: nargout > 1 but does", ...
+                        " not match number of requested dimensions."]));
       else
         for i = 1:nargout
           varargout{i} = sz(i);
@@ -828,16 +829,16 @@ classdef categorical
       ## Either A or B contain category name(s)
       if ((isa (A, 'string') || iscellstr (A)) && isa (B, 'categorical'))
         if (numel (varargin) > 0)
-          error (["categorical.ismember: cannot use 'rows' when", ...
-                  " testing against category names."]);
+          error (strcat (["categorical.ismember: cannot use 'rows'", ...
+                          " when testing against category names."]));
         endif
         A = cellstr (A);
         [TF, index] = ismember (A, categories (B));
         return;
       elseif ((isa (B, 'string') || iscellstr (B)) && isa (A, 'categorical'))
         if (numel (varargin) > 0)
-          error (["categorical.ismember: cannot use 'rows' when", ...
-                  " testing against category names."]);
+          error (strcat (["categorical.ismember: cannot use 'rows'", ...
+                          " when testing against category names."]));
         endif
         B = cellstr (B);
         [TF, index] = ismember (B, categories (A));
@@ -845,15 +846,16 @@ classdef categorical
       endif
       if (numel (varargin) > 0)
         if (! ismatrix (A) || ! ismatrix (B) || size (A, 2) != size (B, 2))
-          error (["categorical.ismember: cannot use 'rows' unless both", ...
-                  " A and B are matrices with the same number of columns."]);
+          error (strcat (["categorical.ismember: cannot use 'rows' unless", ...
+                          " both A and B are matrices with the same number", ...
+                          " of columns."]));
         endif
       endif
       ## Both ordinal
       if (isordinal (A) && isordinal (B))
         if (! isequal (categories (A), categories (B)))
-          error (["categorical.ismember: ordinal categorical arrays", ...
-                  " must have the same ordered set of categories."]);
+          error (strcat (["categorical.ismember: ordinal categorical arrays", ...
+                          " must have the same ordered set of categories."]));
         endif
         [TF, idx] = ismember (double (A), double (B), varargin{:});
       elseif (isordinal (A) || isordinal (B))
@@ -1003,6 +1005,12 @@ classdef categorical
     ## @code{@var{B} = addcats (@dots{}, @qcode{'Before'}, @var{catname})} adds
     ## the categories before the existing category specified by @var{catname}.
     ##
+    ## @var{catname} must be either a character vector, a cellstr scalar or a
+    ## string scalar.  @var{newcats} may be a cell array of character vectors or
+    ## any type of array that can be converted to a cell array of character
+    ## vectors with the @code{cellstr} function, as long as it does contain any
+    ## duplicate names and does not reference an existing category in @var{A}.
+    ##
     ## @end deftypefn
     function B = addcats (A, newcats, varargin)
 
@@ -1013,8 +1021,14 @@ classdef categorical
         error ("categorical:addcats: NEWCATS cannot be empty.");
       endif
 
+      ## Convert to cellstring
+      try
+        newcats = cellstr (newcats);
+      catch
+        error ("categorical:addcats: NEWCATS cannot be converted to cellstr.");
+      end_try_catch
+
       ## New catnames must be unique and non-existing
-      newcats = cellstr (newcats);
       if (! isequal (newcats, unique (newcats)))
         error ("categorical:addcats: duplicate category names in NEWCATS.");
       endif
@@ -1030,8 +1044,8 @@ classdef categorical
 
       ## Check optional Name-Value paired arguments
       if (! isempty (After) && ! isempty (Before))
-        error (["categorical.addcats: cannot use both", ...
-                " 'After' and 'Before' options."]);
+        error (strcat (["categorical.addcats: cannot use both", ...
+                        " 'After' and 'Before' options."]));
       endif
 
       ## Add categories
@@ -1093,6 +1107,12 @@ classdef categorical
     ## the categories listed in @var{oldcats} into a single new category named
     ## as specififed by @var{newcat}.
     ##
+    ## @var{newcat} must be either a character vector, a cellstr scalar or a
+    ## string scalar.  @var{oldcats} may be a cell array of character vectors or
+    ## any type of array that can be converted to a cell array of character
+    ## vectors with the @code{cellstr} function.  Any names in @var{oldcats}
+    ## that do not reference an existing category are ignored.
+    ##
     ## @end deftypefn
     function B = mergecats (A, oldcats, varargin)
 
@@ -1102,7 +1122,15 @@ classdef categorical
       elseif (isempty (oldcats))
         error ("categorical:mergecats: OLDCATS cannot be empty.");
       endif
-      oldcats = cellstr (oldcats);
+
+      ## Convert to cellstring
+      try
+        oldcats = cellstr (oldcats);
+      catch
+        error ("categorical:mergecats: NEWCATS cannot be converted to cellstr.");
+      end_try_catch
+
+      ## Check for optional third argument
       if (nargin < 3)
         newcat = oldcats{1};
       else
@@ -1111,6 +1139,7 @@ classdef categorical
           error ("categorical:mergecats: blank new category name.");
         endif
       endif
+
       ## Keep old cat names that reference existing categories, ignore the rest
       [TF, index] = ismember (oldcats, A.cats);
       if (! any (TF))
@@ -1118,10 +1147,11 @@ classdef categorical
         return;
       endif
       index(! TF) = [];
+
       ## Only consecutive categories can be merged in ordinal arrays
       if (A.isOrdinal && any (diff (index) != 1))
-        error (["categorical.mergecats: only consecutive categories", ...
-                " can be merged in ordinal categorical arrays."]);
+        error (strcat (["categorical.mergecats: only consecutive categories", ...
+                        " can be merged in ordinal categorical arrays."]));
       endif
 
       ## Merge categories
@@ -1148,8 +1178,14 @@ classdef categorical
     ## categories specified by @var{oldcats}.  The elements of @var{B} that
     ## correspond to the removed categories are undefined.
     ##
+    ## @var{oldcats} may be a cell array of character vectors or any type of
+    ## array that can be converted to a cell array of character vectors with the
+    ## @code{cellstr} function.  Any names in @var{oldcats} that do not
+    ## reference an existing category are ignored.
+    ##
     ## @end deftypefn
     function B = removecats (A, varargin)
+
       ## Remove unused categories
       if (nargin == 1)
         usedcodes = __unique__ (A.code(:));
@@ -1160,7 +1196,14 @@ classdef categorical
       elseif (isempty (varargin))
         error ("categorical:removecats: OLDCATS cannot be empty.");
       else
-        oldcats = cellstr (varargin{1});
+        ## Convert to cellstring
+        try
+          oldcats = cellstr (varargin{1});
+        catch
+          error (strcat (["categorical:removecats: OLDCATS", ...
+                          " cannot be converted to cellstr."]));
+        end_try_catch
+
         ## Keep old cat names that reference existing categories, ignore the rest
         [TF, remidx] = ismember (oldcats, A.cats);
         if (! any (TF))
@@ -1178,6 +1221,7 @@ classdef categorical
           B.code(B.code > remcodes) -= 1;
           return;
         endif
+
         ## If remcodes are consecutive, then we only need to subtract once
         ## the number of elements in remcodes from each code that is more
         ## than max(remcodes), otherwise we need to do this repeatedly for
@@ -1231,25 +1275,46 @@ classdef categorical
       if (nargin < 2)
         error ("categorical:renamecats: too few input arguments.");
       endif
+
+      ## Process input arguments
       if (nargin == 2)
         oldnames = A.cats;
-        newnames = cellstr (varargin{1});
+        ## Convert to cellstring
+        try
+          newnames = cellstr (varargin{1});
+        catch
+          error (strcat (["categorical:renamecats: NEWNAMES", ...
+                          " cannot be converted to cellstr."]));
+        end_try_catch
         if (numel (oldnames) != numel (newnames))
-          error (["categorical:renamecats: NEWNAMES must equal the", ...
-                  " number of existing categories in input array."]);
+          error (strcat (["categorical:renamecats: NEWNAMES must equal the", ...
+                          " number of existing categories in input array."]));
         endif
       else
-        oldnames = cellstr (varargin{1});
-        newnames = cellstr (varargin{2});
+        ## Convert to cellstring
+        try
+          oldnames = cellstr (varargin{1});
+        catch
+          error (strcat (["categorical:renamecats: OLDNAMES", ...
+                          " cannot be converted to cellstr."]));
+        end_try_catch
+        try
+          newnames = cellstr (varargin{2});
+        catch
+          error (strcat (["categorical:renamecats: NEWNAMES", ...
+                          " cannot be converted to cellstr."]));
+        end_try_catch
         if (numel (oldnames) != numel (newnames))
-          error (["categorical:renamecats: OLDNAMES and NEWNAMES", ...
-                  " must have the same number of elements."]);
+          error (strcat (["categorical:renamecats: OLDNAMES and NEWNAMES", ...
+                          " must have the same number of elements."]));
         endif
       endif
+
+      ## Find and rename existing categories
       [TF, index] = ismember (oldnames, A.cats);
       if (! all (TF))
-        error (["categorical.renamecats: OLDNAMES must be", ...
-                " a subset of existing categories."])
+        error (strcat (["categorical.renamecats: OLDNAMES must be", ...
+                        " a subset of existing categories."]));
       endif
       B = this;
       B.cats(index) = newnames;
@@ -1266,20 +1331,29 @@ classdef categorical
     ##
     ## @code{@var{B} = reordercats (@var{A}, @var{neworder})} reorders the
     ## categories of @var{A} according to the order specified by @var{neworder},
-    ## which must be a cell array of character vectors or a string array with
-    ## the same set of values as the existing categories in @var{A}.
+    ## which may be a cell array of character vectors or any type of array that
+    ## can be converted to a cell array of character vectors with the
+    ## @code{cellstr} function as long as it contains the same set with the
+    ## existing categories in @var{A}.
     ##
     ## @end deftypefn
     function B = reordercats (A, varargin)
       if (nargin == 1)
         neworder = sort (A.cats);
       else
-        neworder = cellstr (varargin{1});
+        ## Convert to cellstring
+        try
+          neworder = cellstr (varargin{1});
+        catch
+          error (strcat (["categorical:reordercats: NEWORDER", ...
+                          " cannot be converted to cellstr."]));
+        end_try_catch
         if (! all (ismember (neworder, A.cats)))
           error (["categorical.reordercats: NEWORDER must contain", ...
                   " the same set with the existing categories."]);
         endif
       endif
+      ## Reorder
       [~, newidx] = ismember (A.cats, neworder);
       B = A;
       B.code(! B.isMissing) = newidx(A.code(! A.isMissing));
@@ -1291,9 +1365,10 @@ classdef categorical
     ##
     ## Set categories in categorical array.
     ##
-    ## @code{@var{B} = setcats (@var{A}, @var{newcats})} sets categories in a
-    ## categorical array according to the elements of the input array and the
-    ## categories specified by @var{newcats}.
+    ## @code{@var{B} = setcats (@var{A}, @var{newcats})} sets categories in the
+    ## categorical array @var{B} according to the elements of the input array
+    ## @var{A} and the categories specified by @var{newcats} according to the
+    ## following rules:
     ##
     ## @itemize
     ## @item Any element of @var{A} that corresponds to a category listed in
@@ -1306,14 +1381,24 @@ classdef categorical
     ## new categories.
     ## @end itemize
     ##
+    ## @var{newcats} may be a cell array of character vectors or any type of
+    ## array that can be converted to a cell array of character vectors with the
+    ## @code{cellstr} function.
+    ##
     ## @end deftypefn
     function B = setcats (A, newcats)
       ## Check input arguments
       if (nargin < 2)
         error ("categorical:setcats: too few input arguments.");
       endif
-      newcats = cellstr (newcats);
-      B = A;
+
+      ## Convert to cellstring
+      try
+        newcats = cellstr (newcats);
+      catch
+        error ("categorical:setcats: NEWCATS cannot be converted to cellstr.");
+      end_try_catch
+      ## Find existing categories
       [TF, index] = ismember (A.cats, newcats);
       ## Remove and reorder categories
       B = removecats (A, A.cats(! TF));
@@ -1338,19 +1423,22 @@ classdef categorical
     ## Combine categorical arrays.
     ##
     ## @code{@var{C} = times (@var{A}, @var{B})} is the equivalent of the syntax
-    ## @code{@var{A} .* @var{B}} and returns a categorical array whose
+    ## @code{@var{C} = @var{A} .* @var{B}} and returns a categorical array whose
     ## categories are the Cartesian product of the categories in @var{A} and
     ## @var{B} and each element is indexed to a new category which is the
     ## combination of the categories of the corresponding elements in @var{A}
     ## and @var{B}.
     ##
-    ## @var{A} and @var{B} must be of common size or scalars.
+    ## @var{A} and @var{B} must be of common size or scalar categorical arrays.
     ##
     ## @end deftypefn
     function C = times (A, B)
       ## Check input arguments
       if (nargin < 2)
         error ("categorical:times: too few input arguments.");
+      endif
+      if (! isa (A, 'categorical') || ! isa (B, 'categorical'))
+        error ("categorical:times: A and B must be categorical arrays.");
       endif
       newcats = {};
       for i = 1:numel (A.cats)
@@ -1377,6 +1465,36 @@ classdef categorical
 
   methods (Access = public)
 
+    ## -*- texinfo -*-
+    ## @deftypefn {categorical} {@var{TF} =} eq (@var{A}, @var{B})
+    ##
+    ## Equality for categorical arrays.
+    ##
+    ## @code{@var{TF} = eq (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} == @var{B}} and returns a logical array of the
+    ## same size as the largest input with its elements set to @qcode{true}
+    ## where the corresponding elements of @var{A} and @var{B} are equal and set
+    ## to @qcode{false} where they are not.  @var{A} and @var{B} must be size
+    ## compatible, which translates to they can be the same size, one can be
+    ## scalar, or for every dimension, their dimension sizes must be equal or
+    ## one of them must be 1.
+    ##
+    ## If categorical arrays @var{A} and @var{B} are ordinal, they must have
+    ## the same set and ordering of categories.  If neither are ordinal, the
+    ## category names of each pair of elements are compared.  Hence, they do
+    ## not need to have the same set of categories.
+    ##
+    ## One of the input arguments can also be a character vector, a cellstr
+    ## scalar or a string scalar as long as the other is a categorical array.
+    ## In this case, a logical array of the same size as the categorical array
+    ## is returned in which every element is tested for equality by comparing
+    ## its category with that specified by the string argument.
+    ##
+    ## Undefined elements always return @qcode{false}, since they are not
+    ## comparable to any other categorical values including other undefined
+    ## elements.
+    ##
+    ## @end deftypefn
     function TF = eq (A, B)
       if (iscellstr (B) || isa (B, 'string') || ischar (B))
         B = cellstr (B);
@@ -1396,24 +1514,55 @@ classdef categorical
           ## and they are in the same order
           cats = cellfun (@(x) categories (x), {A, B}, 'UniformOutput', false);
           if (! isequal (cats{:}))
-            error (["categorical.eq: comparison between ordinal arrays", ...
-                    " requires that both have the same categories,", ...
-                    " which must be ordered in the same way."]);
+            error (strcat (["categorical.eq: comparison between ordinal", ...
+                            " arrays requires that both have the same", ...
+                            " categories, which must be ordered in the", ...
+                            " same way."]));
           endif
           codes = cellfun (@(x) x.code, {A, B}, 'UniformOutput', false);
           TF = codes{1} == codes{2};
         elseif (A.isOrdinal || B.isOrdinal)
-          error (["categorical.eq: cannot compare a categorical", ...
-                  " array that is ordinal with one that is not."]);
+          error (strcat (["categorical.eq: cannot compare a categorical", ...
+                          " array that is ordinal with one that is not."]));
         else
           TF = strcmp (cellstr (A), cellstr (B));
         endif
       else
-        error (["categorical.eq: comparison is not defined between '%s'", ...
-                " and '%s' arrays."], class (A), class (B));
+        error (strcat (["categorical.eq: comparison is not defined between", ...
+                        " '%s' and '%s' arrays."], class (A), class (B)));
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {categorical} {@var{TF} =} ge (@var{A}, @var{B})
+    ##
+    ## Greater than or equal to for ordinal categorical arrays.
+    ##
+    ## @code{@var{TF} = ge (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} >= @var{B}} and returns a logical array of the
+    ## same size as the largest input with its elements set to @qcode{true}
+    ## where the corresponding elements of @var{A} are greater than or equal to
+    ## @var{B} and set to @qcode{false} where they are not.  @var{A} and @var{B}
+    ## must be size compatible, which translates to they can be the same size,
+    ## one can be scalar, or for every dimension, their dimension sizes must be
+    ## equal or one of them must be 1.
+    ##
+    ## If categorical arrays @var{A} and @var{B} are both ordinal, they must
+    ## have the same set and ordering of categories.  Unordered categorical
+    ## arrays cannot be compared for greater than or equal to inequality.
+    ##
+    ## One of the input arguments can also be a character vector, a cellstr
+    ## scalar or a string scalar as long as the other is a categorical array.
+    ## In this case, a logical array of the same size as the categorical array
+    ## is returned in which every element is tested for greater than or equal to
+    ## inequality by comparing its category with that specified by the string
+    ## argument.
+    ##
+    ## Undefined elements always return @qcode{false}, since they are not
+    ## comparable to any other categorical values including other undefined
+    ## elements.
+    ##
+    ## @end deftypefn
     function TF = ge (A, B)
       if (iscellstr (B) || isa (B, 'string') || ischar (B))
         if (! A.isOrdinal)
@@ -1431,13 +1580,42 @@ classdef categorical
       elseif (iscellstr (A) || isa (A, 'string') || ischar (A))
         TF = B <= A;
       elseif (! A.isOrdinal || ! B.isOrdinal)
-        error (["categorical.ge: relational comparison is not", ...
-                " allowed for non-ordinal categorical arrays."]);
+        error (strcat (["categorical.ge: relational comparison is not", ...
+                        " allowed for non-ordinal categorical arrays."]));
       else
         TF = double (A) >= double (B);
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {categorical} {@var{TF} =} gt (@var{A}, @var{B})
+    ##
+    ## Greater than for ordinal categorical arrays.
+    ##
+    ## @code{@var{TF} = gt (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} > @var{B}} and returns a logical array of the
+    ## same size as the largest input with its elements set to @qcode{true}
+    ## where the corresponding elements of @var{A} are greater than @var{B} and
+    ## set to @qcode{false} where they are not.  @var{A} and @var{B} must be
+    ## size compatible, which translates to they can be the same size, one can
+    ## be scalar, or for every dimension, their dimension sizes must be equal or
+    ## one of them must be 1.
+    ##
+    ## If categorical arrays @var{A} and @var{B} are both ordinal, they must
+    ## have the same set and ordering of categories.  Unordered categorical
+    ## arrays cannot be compared for greater than inequality.
+    ##
+    ## One of the input arguments can also be a character vector, a cellstr
+    ## scalar or a string scalar as long as the other is a categorical array.
+    ## In this case, a logical array of the same size as the categorical array
+    ## is returned in which every element is tested for greater than inequality
+    ## by comparing its category with that specified by the string argument.
+    ##
+    ## Undefined elements always return @qcode{false}, since they are not
+    ## comparable to any other categorical values including other undefined
+    ## elements.
+    ##
+    ## @end deftypefn
     function TF = gt (A, B)
       if (iscellstr (B) || isa (B, 'string') || ischar (B))
         if (! A.isOrdinal)
@@ -1455,13 +1633,43 @@ classdef categorical
       elseif (iscellstr (A) || isa (A, 'string') || ischar (A))
         TF = B < A;
       elseif (! A.isOrdinal || ! B.isOrdinal)
-        error (["categorical.lt: relational comparison is not", ...
-                " allowed for non-ordinal categorical arrays."]);
+        error (strcat (["categorical.lt: relational comparison is not", ...
+                        " allowed for non-ordinal categorical arrays."]));
       else
         TF = double (A) > double (B);
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {categorical} {@var{TF} =} le (@var{A}, @var{B})
+    ##
+    ## Less than or equal to for ordinal categorical arrays.
+    ##
+    ## @code{@var{TF} = le (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} >= @var{B}} and returns a logical array of the
+    ## same size as the largest input with its elements set to @qcode{true}
+    ## where the corresponding elements of @var{A} are less than or equal to
+    ## @var{B} and set to @qcode{false} where they are not.  @var{A} and @var{B}
+    ## must be size compatible, which translates to they can be the same size,
+    ## one can be scalar, or for every dimension, their dimension sizes must be
+    ## equal or one of them must be 1.
+    ##
+    ## If categorical arrays @var{A} and @var{B} are both ordinal, they must
+    ## have the same set and ordering of categories.  Unordered categorical
+    ## arrays cannot be compared for less than or equal to inequality.
+    ##
+    ## One of the input arguments can also be a character vector, a cellstr
+    ## scalar or a string scalar as long as the other is a categorical array.
+    ## In this case, a logical array of the same size as the categorical array
+    ## is returned in which every element is tested for less than or equal to
+    ## inequality by comparing its category with that specified by the string
+    ## argument.
+    ##
+    ## Undefined elements always return @qcode{false}, since they are not
+    ## comparable to any other categorical values including other undefined
+    ## elements.
+    ##
+    ## @end deftypefn
     function TF = le (A, B)
       if (iscellstr (B) || isa (B, 'string') || ischar (B))
         if (! A.isOrdinal)
@@ -1479,13 +1687,42 @@ classdef categorical
       elseif (iscellstr (A) || isa (A, 'string') || ischar (A))
         TF = B >= A;
       elseif (! A.isOrdinal || ! B.isOrdinal)
-        error (["categorical.le: relational comparison is not", ...
-                " allowed for non-ordinal categorical arrays."]);
+        error (strcat (["categorical.le: relational comparison is not", ...
+                        " allowed for non-ordinal categorical arrays."]));
       else
         TF = double (A) <= double (B);
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {categorical} {@var{TF} =} lt (@var{A}, @var{B})
+    ##
+    ## Less than for ordinal categorical arrays.
+    ##
+    ## @code{@var{TF} = lt (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} > @var{B}} and returns a logical array of the
+    ## same size as the largest input with its elements set to @qcode{true}
+    ## where the corresponding elements of @var{A} are less than @var{B} and
+    ## set to @qcode{false} where they are not.  @var{A} and @var{B} must be
+    ## size compatible, which translates to they can be the same size, one can
+    ## be scalar, or for every dimension, their dimension sizes must be equal or
+    ## one of them must be 1.
+    ##
+    ## If categorical arrays @var{A} and @var{B} are both ordinal, they must
+    ## have the same set and ordering of categories.  Unordered categorical
+    ## arrays cannot be compared for less than inequality.
+    ##
+    ## One of the input arguments can also be a character vector, a cellstr
+    ## scalar or a string scalar as long as the other is a categorical array.
+    ## In this case, a logical array of the same size as the categorical array
+    ## is returned in which every element is tested for less than inequality
+    ## by comparing its category with that specified by the string argument.
+    ##
+    ## Undefined elements always return @qcode{false}, since they are not
+    ## comparable to any other categorical values including other undefined
+    ## elements.
+    ##
+    ## @end deftypefn
     function TF = lt (A, B)
       if (iscellstr (B) || isa (B, 'string') || ischar (B))
         if (! A.isOrdinal)
@@ -1503,13 +1740,43 @@ classdef categorical
       elseif (iscellstr (A) || isa (A, 'string') || ischar (A))
         TF = B > A;
       elseif (! A.isOrdinal || ! B.isOrdinal)
-        error (["categorical.lt: relational comparison is not", ...
-                " allowed for non-ordinal categorical arrays."]);
+        error (strcat (["categorical.lt: relational comparison is not", ...
+                        " allowed for non-ordinal categorical arrays."]));
       else
         TF = double (A) < double (B);
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {categorical} {@var{TF} =} ne (@var{A}, @var{B})
+    ##
+    ## Not equal for categorical arrays.
+    ##
+    ## @code{@var{TF} = ne (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} != @var{B}} and returns a logical array of the
+    ## same size as the largest input with its elements set to @qcode{true}
+    ## where the corresponding elements of @var{A} and @var{B} are not equal and
+    ## set to @qcode{false} where they are equal.  @var{A} and @var{B} must be
+    ## size compatible, which translates to they can be the same size, one can
+    ## be scalar, or for every dimension, their dimension sizes must be equal or
+    ## one of them must be 1.
+    ##
+    ## If categorical arrays @var{A} and @var{B} are ordinal, they must have
+    ## the same set and ordering of categories.  If neither are ordinal, the
+    ## category names of each pair of elements are compared.  Hence, they do
+    ## not need to have the same set of categories.
+    ##
+    ## One of the input arguments can also be a character vector, a cellstr
+    ## scalar or a string scalar as long as the other is a categorical array.
+    ## In this case, a logical array of the same size as the categorical array
+    ## is returned in which every element is tested for inequality by comparing
+    ## its category with that specified by the string argument.
+    ##
+    ## Undefined elements always return @qcode{true}, since they are not
+    ## comparable to any other categorical values including other undefined
+    ## elements.
+    ##
+    ## @end deftypefn
     function TF = ne (A, B)
       TF = ! eq (A, B);
     endfunction
@@ -1555,8 +1822,8 @@ classdef categorical
           elseif (strcmpi (col, 'descend'))
             col = -[1:size(A, 2)];
           else
-            error (strjoing (["categorical.sortrows: DIRECTION can", ...
-                              "be either 'ascend' or 'descend'."]));
+            error (strcat (["categorical.sortrows: DIRECTION can", ...
+                            " be either 'ascend' or 'descend'."]));
           endif
         else
           error ("categorical.sortrows: invalid value for COL argument.");
@@ -1574,8 +1841,8 @@ classdef categorical
           col = - abs (col);
         else
           if (numel (direction) != numel (col))
-            error (strjoin (["categorical.sortrows: DIRECTION", ...
-                             "does not match COL argument."]));
+            error (strcat (["categorical.sortrows: DIRECTION", ...
+                            " does not match COL argument."]));
           endif
           col = abs (col);
           idx = strcmpi (direction, 'descend');
@@ -1681,8 +1948,9 @@ classdef categorical
         ## and they are in the same order
         cats = cellfun (@(x) categories (x), args, 'UniformOutput', false);
         if (! isequal (cats{:}))
-          error (["categorical.cat: cannot concatenate ordinal categorical", ...
-                  " arrays unless they have the same ordered set of categories."]);
+          error (strcat (["categorical.cat: cannot concatenate ordinal", ...
+                          " categorical arrays unless they have the same", ...
+                          " ordered set of categories."]));
         endif
         out = args{1};
         fieldArgs = cellfun (@(x) x.code, args, 'UniformOutput', false);
@@ -1691,8 +1959,8 @@ classdef categorical
         out.isMissing = cat (dim, fieldArgs{:});
         return;
       elseif (any (is_ordinal))
-        error (["categorical.cat: cannot concatenate ordinal", ...
-                " with non-ordinal categorical arrays."]);
+        error (strcat (["categorical.cat: cannot concatenate ordinal", ...
+                        " with non-ordinal categorical arrays."]));
       endif
       ## If any categorical array is protected, all must have the same categories
       is_protected = cellfun (@isprotected, args);
@@ -1701,8 +1969,9 @@ classdef categorical
         ## but they are not necessarily in the same order
         cats = cellfun (@(x) categories (x), args, 'UniformOutput', false);
         if (! all (ismember (cats{:})))
-          error (["categorical.cat: cannot concatenate protected categorical", ...
-                  " arrays that do not have the same set of categories."]);
+          error (strcat (["categorical.cat: cannot concatenate protected", ...
+                          " categorical arrays that do not have the same", ...
+                          " set of categories."]));
         endif
         out = args{1};
         out.isProtected = true; # returning array must also be protected
@@ -1821,12 +2090,12 @@ classdef categorical
           out.isMissing = this.isMissing(s.subs{:});
 
         case '{}'
-          error (["categorical.subsref: '{}' invalid indexing", ...
-                  " for referencing values. Use '()' instead."]);
+          error (strcat (["categorical.subsref: '{}' invalid indexing", ...
+                          " for referencing values. Use '()' instead."]));
 
         case '.'
-          error (["categorical.subsref: '.' invalid indexing", ...
-                  " for referencing field of non-structure array."]);
+          error (strcat (["categorical.subsref: '.' invalid indexing", ...
+                          " for referencing field of non-structure array."]));
       endswitch
 
       ## Chained references
@@ -1854,8 +2123,9 @@ classdef categorical
               val.isProtected = true;
             endif
           elseif (! isa (val, 'categorical'))
-            error (["categorical.subsasgn: assignment value must be a", ...
-                    " categorical array or text representing categories."]);
+            error (strcat (["categorical.subsasgn: assignment value must", ...
+                            " be a categorical array or text representing", ...
+                            " categories."]));
           endif
           ## After this point VAL is categorical array
           ## If any categorical array is ordinal, all must be
@@ -1863,27 +2133,28 @@ classdef categorical
             ## Check that all categorical arrays have the same categories
             ## and they are in the same order
             if (! isequal (categories (this), categories (val)))
-              error (["categorical.subsasgn: cannot assign value to ordinal", ...
-                      " categorical array unless they have the same ordered", ...
-                      " set of categories."]);
+              error (strcat (["categorical.subsasgn: cannot assign value", ...
+                              " to ordinal categorical array unless they", ...
+                              " have the same ordered set of categories."]));
             endif
             this.code(s.subs{:}) = val.code;
             this.isMissing(s.subs{:}) = val.isMissing;
             return;
           elseif (isordinal (this))
-            error (["categorical.subsasgn: cannot assign unordered", ...
-                    " categorical array to ordinal categorical array."]);
+            error (strcat (["categorical.subsasgn: cannot assign unordered", ...
+                            " categorical array to ordinal categorical array."]));
           elseif (isordinal (val))
-            error (["categorical.subsasgn: cannot assign ordinal", ...
-                    " categorical array to unordered categorical array."]);
+            error (strcat (["categorical.subsasgn: cannot assign ordinal", ...
+                            " categorical array to unordered categorical", ...
+                            " array."]));
           endif
           ## If protected, all must have the same categories
           if (isprotected (this) || isprotected (val))
             ## Check that all categorical arrays have the same categories
             ## but they are not necessarily in the same order
             if (! all (ismember (this.cats, val.cats)))
-              error (["categorical.subsasgn: cannot asssign to protected", ...
-                      " categorical array new categories."]);
+              error (strcat (["categorical.subsasgn: cannot asssign to", ...
+                              " protected categorical array new categories."]));
             endif
             ## Reorder codes accordingly
             idx = cell (1, numel (this.cats));
@@ -1923,12 +2194,12 @@ classdef categorical
           this.isMissing(s.subs{:}) = val.isMissing;
 
         case '{}'
-          error (["categorical.subsasgn: '{}' invalid indexing", ...
-                  " for assigning values. Use '()' instead."]);
+          error (strcat (["categorical.subsasgn: '{}' invalid indexing", ...
+                          " for assigning values. Use '()' instead."]));
 
         case '.'
-          error (["categorical.subsasgn: '.' invalid indexing", ...
-                  " for assigning field of non-structure array."]);
+          error (strcat (["categorical.subsasgn: '.' invalid indexing", ...
+                          " for assigning field of non-structure array."]));
       endswitch
 
     endfunction
