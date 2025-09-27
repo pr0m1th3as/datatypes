@@ -202,25 +202,31 @@ function [dispstr, optLen]  = mixedcell2str (data, cols)
       dispstr(hm_idx) = cellfun (sf, data(hm_idx), "UniformOutput", false);
     endfor
     for i = 1:sum (is_bool)
-      hm_idx = find (is_bool, i);
+      hm_idx = find (is_bool)(i);
       do_idx = find (cumsum (cellfun ('length', strsplit (dispstr{hm_idx})) ...
                              + 1) > cols - 10, 1) - 1;
-      sf = @(x) sprintf ("%s ... ", strtrim (sprintf ("%d ", x(1:do_idx))));
-      dispstr(hm_idx) = cellfun (sf, data(hm_idx), "UniformOutput", false);
+      if (! isempty (do_idx))
+        sf = @(x) sprintf ("%s ... ", strtrim (sprintf ("%d ", x(1:do_idx))));
+        dispstr(hm_idx) = cellfun (sf, data(hm_idx), "UniformOutput", false);
+      endif
     endfor
     for i = 1:sum (is_numeric)
-      hm_idx = find (is_numeric, i);
+      hm_idx = find (is_numeric)(i);
       do_idx = find (cumsum (cellfun ('length', strsplit (dispstr{hm_idx})) ...
                              + 1) > cols - 8, 1) - 1;
-      sf = @(x) sprintf ("%s ... ", strtrim (sprintf ("%g ", x(1:do_idx))));
-      dispstr(hm_idx) = cellfun (sf, data(hm_idx), "UniformOutput", false);
+      if (! isempty (do_idx))
+        sf = @(x) sprintf ("%s ... ", strtrim (sprintf ("%g ", x(1:do_idx))));
+        dispstr(hm_idx) = cellfun (sf, data(hm_idx), "UniformOutput", false);
+      endif
     endfor
     for i = 1:sum (has_method)
-      hm_idx = find (has_method, i);
+      hm_idx = find (has_method)(i);
       do_idx = find (cumsum (cellfun ('length', strsplit (dispstr{hm_idx})) ...
                              + 4) > cols - 6, 1) - 1;
-      sf = @(x) sprintf ("%s ... ", strjoin (dispstrings (x(1:do_idx)), '    '));
-      dispstr(hm_idx) = cellfun (sf, data(hm_idx), "UniformOutput", false);
+      if (! isempty (do_idx))
+        sf = @(x) sprintf ("%s ... ", strjoin (dispstrings (x(1:do_idx)), '    '));
+        dispstr(hm_idx) = cellfun (sf, data(hm_idx), "UniformOutput", false);
+      endif
     endfor
     ## Recalculate optimal length
     if (all (brackets))
