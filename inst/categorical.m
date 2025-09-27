@@ -655,7 +655,7 @@ classdef categorical
     ##
     ## Return true if categorical array is a column vector.
     ##
-    ## @code{@var{TF} = iscolumn (@var{C}) returns a logical scalar @var{TF},
+    ## @code{@var{TF} = iscolumn (@var{C})} returns a logical scalar @var{TF},
     ## which is @qcode{true} if the categorical array @var{C} is a column vector
     ## and @qcode{false} otherwise.  A column vector is a 2-D array for which
     ## @code{size (@var{X})} returns @code{[@var{N}, 1]} with non-negative
@@ -671,7 +671,7 @@ classdef categorical
     ##
     ## Return true if categorical array is empty.
     ##
-    ## @code{@var{TF} = isempty (@var{C}) returns a logical scalar @var{TF},
+    ## @code{@var{TF} = isempty (@var{C})} returns a logical scalar @var{TF},
     ## which is @qcode{true} if the categorical array @var{C} is empty and
     ## @qcode{false} otherwise.
     ##
@@ -686,7 +686,7 @@ classdef categorical
     ##
     ## Return true if categorical arrays are equal.
     ##
-    ## @code{@var{TF} = isequal (@var{C1}, @var{C2}) returns a logical scalar
+    ## @code{@var{TF} = isequal (@var{C1}, @var{C2})} returns a logical scalar
     ## @var{TF}, which is @qcode{true} if the categorical arrays @var{C1} and
     ## @var{C2} contain the same values and @qcode{false} otherwise.  Either
     ## @var{C1} or @var{C2} may also be a string array, a missing object array,
@@ -698,7 +698,7 @@ classdef categorical
     ## category names of each pair of elements are compared.  Hence, they do not
     ## need to have the same set of categories.
     ##
-    ## @code{@var{TF} = isequal (@var{C1}, @var{C2}, @dots{}) returns a logical
+    ## @code{@var{TF} = isequal (@var{C1}, @var{C2}, @dots{})} returns a logical
     ## scalar @var{TF}, which is @qcode{true} if all input arguments are equal
     ## and @qcode{false} otherwise.
     ##
@@ -733,7 +733,7 @@ classdef categorical
     ## Return true if categorical arrays are equal under the assumption that
     ## undefined elements are equal.
     ##
-    ## @code{@var{TF} = isequaln (@var{C1}, @var{C2}) returns a logical scalar
+    ## @code{@var{TF} = isequaln (@var{C1}, @var{C2})} returns a logical scalar
     ## @var{TF}, which is @qcode{true} if the categorical arrays @var{C1} and
     ## @var{C2} contain the same values or corresponding undefined elements and
     ## @qcode{false} otherwise.  Either @var{C1} or @var{C2} may also be a
@@ -746,9 +746,9 @@ classdef categorical
     ## category names of each pair of elements are compared.  Hence, they do not
     ## need to have the same set of categories.
     ##
-    ## @code{@var{TF} = isequaln (@var{C1}, @var{C2}, @dots{}) returns a logical
-    ## scalar @var{TF}, which is @qcode{true} if all input arguments are equal
-    ## and @qcode{false} otherwise.
+    ## @code{@var{TF} = isequaln (@var{C1}, @var{C2}, @dots{})} returns a
+    ## logical scalar @var{TF}, which is @qcode{true} if all input arguments
+    ## are equal and @qcode{false} otherwise.
     ##
     ## @end deftypefn
     function TF = isequaln (varargin)
@@ -780,7 +780,7 @@ classdef categorical
     ##
     ## Return true if categorical array is a 2-D array.
     ##
-    ## @code{@var{TF} = ismatrix (@var{C}) returns a logical scalar @var{TF},
+    ## @code{@var{TF} = ismatrix (@var{C})} returns a logical scalar @var{TF},
     ## which is @qcode{true} if the categorical array @var{C} is a matrix and
     ## @qcode{false} otherwise.  A matrix is an array of any type where
     ## @code{ndims (@var{X}) == 2} and for which @code{size (@var{X})} returns
@@ -886,7 +886,7 @@ classdef categorical
     ##
     ## Test if categorical array is ordinal.
     ##
-    ## @code{@var{TF} = isordinal (@var{C}) returns a logical scalar @var{TF},
+    ## @code{@var{TF} = isordinal (@var{C})} returns a logical scalar @var{TF},
     ## which is @qcode{true} if the categorical array @var{C} is ordinal and
     ## @qcode{false} otherwise.
     ##
@@ -900,7 +900,7 @@ classdef categorical
     ##
     ## Test if categorical array is protected.
     ##
-    ## @code{@var{TF} = isprotected (@var{C}) returns a logical scalar @var{TF},
+    ## @code{@var{TF} = isprotected (@var{C})} returns a logical scalar @var{TF},
     ## which is @qcode{true} if the categorical array @var{C} is protected and
     ## @qcode{false} otherwise.
     ##
@@ -914,7 +914,7 @@ classdef categorical
     ##
     ## Return true if categorical array is a row vector.
     ##
-    ## @code{@var{TF} = isrow (@var{C}) returns a logical scalar @var{TF},
+    ## @code{@var{TF} = isrow (@var{C})} returns a logical scalar @var{TF},
     ## which is @qcode{true} if the categorical array @var{C} is a row vector
     ## and @qcode{false} otherwise.  A row vector is a 2-D array for which
     ## @code{size (@var{X})} returns @code{[1, @var{N}]} with non-negative
@@ -930,7 +930,7 @@ classdef categorical
     ##
     ## Return true if categorical array is a scalar.
     ##
-    ## @code{@var{TF} = isscalar (@var{C}) returns a logical scalar @var{TF},
+    ## @code{@var{TF} = isscalar (@var{C})} returns a logical scalar @var{TF},
     ## which is @qcode{true} if the categorical array @var{C} is also a scalar
     ## and @qcode{false} otherwise.  A scalar is a single element object for
     ## which @code{size (@var{X})} returns @code{[1, 1]}.
@@ -960,7 +960,7 @@ classdef categorical
     ##
     ## Return true if categorical array is a vector.
     ##
-    ## @code{@var{TF} = isvector (@var{C}) returns a logical scalar @var{TF},
+    ## @code{@var{TF} = isvector (@var{C})} returns a logical scalar @var{TF},
     ## which is @qcode{true} if the categorical array @var{C} is a vector and
     ## @qcode{false} otherwise.  A vector is a 2-D array for which one of the
     ## dimensions is equal to 1 (either @math{1xN} or @math{Nx1}).  By
