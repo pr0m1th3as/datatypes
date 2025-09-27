@@ -655,6 +655,12 @@ classdef categorical
     ##
     ## Return true if categorical array is a column vector.
     ##
+    ## @code{@var{TF} = iscolumn (@var{C}) returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the categorical array @var{C} is a column vector
+    ## and @qcode{false} otherwise.  A column vector is a 2-D array for which
+    ## @code{size (@var{X})} returns @code{[@var{N}, 1]} with non-negative
+    ## @var{N}.
+    ##
     ## @end deftypefn
     function TF = iscolumn (this)
       TF = iscolumn (this.code);
@@ -665,15 +671,36 @@ classdef categorical
     ##
     ## Return true if categorical array is empty.
     ##
+    ## @code{@var{TF} = isempty (@var{C}) returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the categorical array @var{C} is empty and
+    ## @qcode{false} otherwise.
+    ##
     ## @end deftypefn
     function TF = isempty (this)
       TF = isempty (this.code);
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {categorical} {@var{TF} =} isequal (@var{C1}, @var{C2}, @dots{})
+    ## @deftypefn  {categorical} {@var{TF} =} isequal (@var{C1}, @var{C2})
+    ## @deftypefnx {categorical} {@var{TF} =} isequal (@var{C1}, @var{C2}, @dots{})
     ##
     ## Return true if categorical arrays are equal.
+    ##
+    ## @code{@var{TF} = isequal (@var{C1}, @var{C2}) returns a logical scalar
+    ## @var{TF}, which is @qcode{true} if the categorical arrays @var{C1} and
+    ## @var{C2} contain the same values and @qcode{false} otherwise.  Either
+    ## @var{C1} or @var{C2} may also be a string array, a missing object array,
+    ## a character vector, or a cell array of character vectors, which will be
+    ## promoted to a categorical array prior to comparison.
+    ##
+    ## If categorical arrays @var{C1} and @var{C2} are ordinal, they must have
+    ## the same set and ordering of categories.  If neither are ordinal, the
+    ## category names of each pair of elements are compared.  Hence, they do not
+    ## need to have the same set of categories.
+    ##
+    ## @code{@var{TF} = isequal (@var{C1}, @var{C2}, @dots{}) returns a logical
+    ## scalar @var{TF}, which is @qcode{true} if all input arguments are equal
+    ## and @qcode{false} otherwise.
     ##
     ## @end deftypefn
     function TF = isequal (varargin)
@@ -703,8 +730,25 @@ classdef categorical
     ## -*- texinfo -*-
     ## @deftypefn {categorical} {@var{TF} =} isequaln (@var{C1}, @var{C2}, @dots{})
     ##
-    ## Return true if categorical arrays are equal under the additional
-    ## assumption that @qcode{NaN == NaN}.
+    ## Return true if categorical arrays are equal under the assumption that
+    ## undefined elements are equal.
+    ##
+    ## @code{@var{TF} = isequaln (@var{C1}, @var{C2}) returns a logical scalar
+    ## @var{TF}, which is @qcode{true} if the categorical arrays @var{C1} and
+    ## @var{C2} contain the same values or corresponding undefined elements and
+    ## @qcode{false} otherwise.  Either @var{C1} or @var{C2} may also be a
+    ## string array, a missing object array, a character vector, or a cell array
+    ## of character vectors, which will be promoted to a categorical array prior
+    ## to comparison.
+    ##
+    ## If categorical arrays @var{C1} and @var{C2} are ordinal, they must have
+    ## the same set and ordering of categories.  If neither are ordinal, the
+    ## category names of each pair of elements are compared.  Hence, they do not
+    ## need to have the same set of categories.
+    ##
+    ## @code{@var{TF} = isequaln (@var{C1}, @var{C2}, @dots{}) returns a logical
+    ## scalar @var{TF}, which is @qcode{true} if all input arguments are equal
+    ## and @qcode{false} otherwise.
     ##
     ## @end deftypefn
     function TF = isequaln (varargin)
@@ -735,6 +779,12 @@ classdef categorical
     ## @deftypefn {categorical} {@var{TF} =} ismatrix (@var{C})
     ##
     ## Return true if categorical array is a 2-D array.
+    ##
+    ## @code{@var{TF} = ismatrix (@var{C}) returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the categorical array @var{C} is a matrix and
+    ## @qcode{false} otherwise.  A matrix is an array of any type where
+    ## @code{ndims (@var{X}) == 2} and for which @code{size (@var{X})} returns
+    ## @code{[@var{M}, @var{N}]} with non-negative @var{M} and @var{N}.
     ##
     ## @end deftypefn
     function TF = ismatrix (this)
@@ -836,6 +886,10 @@ classdef categorical
     ##
     ## Test if categorical array is ordinal.
     ##
+    ## @code{@var{TF} = isordinal (@var{C}) returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the categorical array @var{C} is ordinal and
+    ## @qcode{false} otherwise.
+    ##
     ## @end deftypefn
     function TF = isordinal (this)
       TF = this.isOrdinal;
@@ -845,6 +899,10 @@ classdef categorical
     ## @deftypefn {categorical} {@var{TF} =} isprotected (@var{C})
     ##
     ## Test if categorical array is protected.
+    ##
+    ## @code{@var{TF} = isprotected (@var{C}) returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the categorical array @var{C} is protected and
+    ## @qcode{false} otherwise.
     ##
     ## @end deftypefn
     function TF = isprotected (this)
@@ -856,6 +914,12 @@ classdef categorical
     ##
     ## Return true if categorical array is a row vector.
     ##
+    ## @code{@var{TF} = isrow (@var{C}) returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the categorical array @var{C} is a row vector
+    ## and @qcode{false} otherwise.  A row vector is a 2-D array for which
+    ## @code{size (@var{X})} returns @code{[1, @var{N}]} with non-negative
+    ## @var{N}.
+    ##
     ## @end deftypefn
     function TF = isrow (this)
       TF = isrow (this.code);
@@ -865,6 +929,11 @@ classdef categorical
     ## @deftypefn {categorical} {@var{TF} =} isscalar (@var{C})
     ##
     ## Return true if categorical array is a scalar.
+    ##
+    ## @code{@var{TF} = isscalar (@var{C}) returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the categorical array @var{C} is also a scalar
+    ## and @qcode{false} otherwise.  A scalar is a single element object for
+    ## which @code{size (@var{X})} returns @code{[1, 1]}.
     ##
     ## @end deftypefn
     function TF = isscalar (this)
@@ -890,6 +959,12 @@ classdef categorical
     ## @deftypefn {categorical} {@var{TF} =} isvector (@var{C})
     ##
     ## Return true if categorical array is a vector.
+    ##
+    ## @code{@var{TF} = isvector (@var{C}) returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the categorical array @var{C} is a vector and
+    ## @qcode{false} otherwise.  A vector is a 2-D array for which one of the
+    ## dimensions is equal to 1 (either @math{1xN} or @math{Nx1}).  By
+    ## definition, a scalar is also a vector.
     ##
     ## @end deftypefn
     function TF = isvector (this)
@@ -1134,8 +1209,21 @@ classdef categorical
     ##
     ## Rename categories in categorical array.
     ##
-    ## Renames some or all of the categories in @var{obj}, without changing
-    ## any of its values.
+    ## @code{@var{B} =} renamecats (@var{A}, @var{newnames})} renames all the
+    ## categories in @var{A}, without changing any of its values, with the names
+    ## specified in @var{newnames}.  @var{newnames} may be a cell array of
+    ## character vectors or any type of array that can be converted to a cell
+    ## array of character vectors with the @code{cellstr} function, as long as
+    ## it has the same number of elements as the categories in @var{A}.
+    ##
+    ## @code{@var{B} =} renamecats (@var{A}, @var{oldnames}, @var{newnames})}
+    ## renames the categories of @var{A} specified in @var{oldnames} with the
+    ## names specified in @var{newnames}.  Both @var{oldnames} and
+    ## @var{newnames} may be a cell arrays of character vectors or any type of
+    ## array that can be converted to a cell array of character vectors with the
+    ## @code{cellstr} function, as long as they have the same number of
+    ## elements.  @var{oldnames} must specify a subset of existing categories in
+    ## @var{A}.
     ##
     ## @end deftypefn
     function B = renamecats (A, varargin)
