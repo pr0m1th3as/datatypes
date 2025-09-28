@@ -433,7 +433,8 @@ classdef calendarDuration
     ##
     ## @code{@var{cstr} = cellstr (@var{calD})} returns a cellstr array of
     ## character vectors, @var{cstr}, which has the same size as the input
-    ## calendarDuration @var{calD}.
+    ## @var{calD}.  @var{cstr} contains the string representations of the
+    ## calendar durations in @var{calD}.
     ##
     ## @end deftypefn
     function cstr = cellstr (this, Format = '')
@@ -781,6 +782,12 @@ classdef calendarDuration
     ##
     ## Return true if calendarDuration array is a column vector.
     ##
+    ## @code{@var{TF} = iscolumn (@var{calD})} returns a logical scalar
+    ## @var{TF}, which is @qcode{true} if the calendar duration array @var{calD}
+    ## is a column vector and @qcode{false} otherwise.  A column vector is a 2-D
+    ## array for which @code{size (@var{X})} returns @code{[@var{N}, 1]} with
+    ## non-negative @var{N}.
+    ##
     ## @end deftypefn
     function TF = iscolumn (this)
       TF = iscolumn (this.Months);
@@ -791,15 +798,30 @@ classdef calendarDuration
     ##
     ## Return true if calendarDuration array is empty.
     ##
+    ## @code{@var{TF} = isempty (@var{calD})} returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the calendar duration array @var{calD} is empty
+    ## and @qcode{false} otherwise.
+    ##
     ## @end deftypefn
     function TF = isempty (this)
       TF = isempty (this.Months);
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {calendarDuration} {@var{TF} =} isequal (@var{calD1}, @var{calD2}, @dots{})
+    ## @deftypefn  {calendarDuration} {@var{TF} =} isequal (@var{calD1}, @var{calD2})
+    ## @deftypefnx {calendarDuration} {@var{TF} =} isequal (@var{calD1}, @var{calD2}, @dots{})
     ##
-    ## Return true if all calendarDuration arrays are equal.
+    ## Return true if calendarDuration arrays are equal.
+    ##
+    ## @code{@var{TF} = isequal (@var{calD1}, @var{calD2})} returns a logical
+    ## scalar @var{TF}, which is @qcode{true} if the calendar duration arrays
+    ## @var{calD1} and @var{calD2} contain the same values and @qcode{false}
+    ## otherwise.
+    ##
+    ## @code{@var{TF} = isequal (@var{calD1}, @var{calD2}, @dots{})} returns a
+    ## logical scalar @var{TF}, which is @qcode{true} if all input arguments are
+    ## calendar duration arrays with equal values in each corresponding elements
+    ## and @qcode{false} otherwise.
     ##
     ## @end deftypefn
     function TF = isequal (this, varargin)
@@ -818,10 +840,21 @@ classdef calendarDuration
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {calendarDuration} {@var{TF} =} isequaln (@var{calD1}, @var{calD2}, @dots{})
+    ## @deftypefn  {calendarDuration} {@var{TF} =} isequaln (@var{calD1}, @var{calD2})
+    ## @deftypefnx {calendarDuration} {@var{TF} =} isequaln (@var{calD1}, @var{calD2}, @dots{})
     ##
-    ## Return true if all calendarDuration arrays are equal under the additional
-    ## assumption that @qcode{NaN == NaN}.
+    ## Return true if calendarDuration arrays are equal under the assumption
+    ## that missing elements are equal.
+    ##
+    ## @code{@var{TF} = isequaln (@var{calD1}, @var{calD2})} returns a logical
+    ## scalar @var{TF}, which is @qcode{true} if the calendar duration arrays
+    ## @var{calD1} and @var{calD2} contain the same values or corresponding
+    ## missing elements and @qcode{false} otherwise.
+    ##
+    ## @code{@var{TF} = isequaln (@var{calD1}, @var{calD2}, @dots{})} returns a
+    ## logical scalar @var{TF}, which is @qcode{true} if all input arguments
+    ## are calendar duration arrays with equal values or corresponding missing
+    ## elements and @qcode{false} otherwise.
     ##
     ## @end deftypefn
     function TF = isequaln (this, varargin)
@@ -842,9 +875,13 @@ classdef calendarDuration
     ## -*- texinfo -*-
     ## @deftypefn {calendarDuration} {@var{TF} =} isfinite (@var{calD})
     ##
-    ## Return a logical array which is true where the elements of
-    ## calendarDuration array @var{calD} are finite and false where they are
-    ## not.  @var{TF} and @var{calD} are of the same size.
+    ## Return true for calendar durations that are finite.
+    ##
+    ## @code{@var{TF} = isfinite (@var{calD})} returns a logical array @var{TF}
+    ## of the same size as @var{calD} containing @qcode{true} for each
+    ## corresponding element of @var{calD} that is finite and @qcode{false}
+    ## otherwise.  Finite elements are those which are neither infinite nor
+    ## Not-A-Number.
     ##
     ## @end deftypefn
     function TF = isfinite (this)
@@ -854,9 +891,12 @@ classdef calendarDuration
     ## -*- texinfo -*-
     ## @deftypefn {calendarDuration} {@var{TF} =} isinf (@var{calD})
     ##
-    ## Return a logical array which is true where the elements of
-    ## calendarDuration array @var{calD} are infinite and false where they are
-    ## not.  @var{TF} and @var{calD} are of the same size.
+    ## Return true for calendar durations that are infinite.
+    ##
+    ## @code{@var{TF} = isinf (@var{calD})} returns a logical array @var{TF}
+    ## of the same size as @var{calD} containing @qcode{true} for each
+    ## corresponding element of @var{calD} that is either @qcode{Inf} or
+    ## @qcode{-Inf} and @qcode{false} otherwise.
     ##
     ## @end deftypefn
     function TF = isinf (this)
@@ -868,6 +908,13 @@ classdef calendarDuration
     ##
     ## Return true if calendarDuration array is a 2-D array.
     ##
+    ## @code{@var{TF} = ismatrix (@var{calD})} returns a logical scalar
+    ## @var{TF}, which is @qcode{true} if the calendarDuration array @var{calD}
+    ## is a matrix and @qcode{false} otherwise.  A matrix is an array of any
+    ## type where @code{ndims (@var{X}) == 2} and for which
+    ## @code{size (@var{X})} returns @code{[@var{H}, @var{W}]} with non-negative
+    ## @var{H} and @var{W}.
+    ##
     ## @end deftypefn
     function TF = ismatrix (this)
       TF = ismatrix (this.Months);
@@ -876,14 +923,14 @@ classdef calendarDuration
     ## -*- texinfo -*-
     ## @deftypefn {calendarDuration} {@var{TF} =} ismissing (@var{calD})
     ##
-    ## Find missing data in a calendar duration array.
+    ## Find missing data in a calendarDuration array.
     ##
     ## Missing values in calendarDuration arrays are represented by @qcode{NaN},
     ## thus @code{@var{TF} = ismissing (@var{calD})} is equivalent to
     ## @code{@var{TF} = isnan (@var{calD})}.
     ##
     ## Note: @code{ismissing} for calendarDuration arrays does not support a
-    ## second @var{Indicator} arguments.
+    ## second @var{Indicator} argument.
     ##
     ## @end deftypefn
     function TF = ismissing (this, varargin)
@@ -896,9 +943,12 @@ classdef calendarDuration
     ## -*- texinfo -*-
     ## @deftypefn {calendarDuration} {@var{TF} =} isnan (@var{calD})
     ##
-    ## Return a logical array which is true where the elements of @var{calD} are
-    ## @qcode{NaN} values and false where they are not.  @var{TF} and @var{calD}
-    ## are of the same size.
+    ## Return true for calendar durations that are Not-A-Number.
+    ##
+    ## @code{@var{TF} = isnan (@var{calD})} returns a logical array @var{TF}
+    ## of the same size as @var{calD} containing @qcode{true} for each
+    ## corresponding element of @var{calD} that is @qcode{NaN} and @qcode{false}
+    ## otherwise.
     ##
     ## @end deftypefn
     function TF = isnan (this)
@@ -910,6 +960,12 @@ classdef calendarDuration
     ##
     ## Return true if calendarDuration array is a row vector.
     ##
+    ## @code{@var{TF} = isrow (@var{calD})} returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the calendarDuration array @var{calD} is a row
+    ## vector and @qcode{false} otherwise.  A row vector is a 2-D array for
+    ## which @code{size (@var{X})} returns @code{[1, @var{N}]} with non-negative
+    ## @var{N}.
+    ##
     ## @end deftypefn
     function TF = isrow (this)
       TF = isrow (this.Months);
@@ -920,15 +976,26 @@ classdef calendarDuration
     ##
     ## Return true if calendarDuration array is a scalar.
     ##
+    ## @code{@var{TF} = isscalar (@var{calD})} returns a logical scalar
+    ## @var{TF}, which is @qcode{true} if the calendarDuration array @var{calD}
+    ## is also a scalar and @qcode{false} otherwise.  A scalar is a single
+    ## element object for which @code{size (@var{X})} returns @code{[1, 1]}.
+    ##
     ## @end deftypefn
     function TF = isscalar (this)
       TF = isscalar (this.Months);
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {calendarDuration} {@var{TF} =} isscalar (@var{calD})
+    ## @deftypefn {calendarDuration} {@var{TF} =} isvector (@var{calD})
     ##
     ## Return true if calendarDuration array is a vector.
+    ##
+    ## @code{@var{TF} = isvector (@var{calD})} returns a logical scalar
+    ## @var{TF}, which is @qcode{true} if the calendarDuration array @var{calD}
+    ## is a vector and @qcode{false} otherwise.  A vector is a 2-D array for
+    ## which one of the dimensions is equal to 1 (either @math{1xN} or
+    ## @math{Nx1}).  By definition, a scalar is also a vector.
     ##
     ## @end deftypefn
     function TF = isvector (this)
