@@ -5851,12 +5851,9 @@ classdef table
             s.(varName).TimeStep = NaN;
           endif
         elseif (isnumeric (this.VariableValues{v}))
-          ## Cannot avoid dependency on statistics package here for median
-          ## until Octave >= 9.1, when median with omitnan option gets into
-          ## core Octave.  Hence no need to workaround nanmin and nanmax.
-          s.(varName).Min = nanmin (this.VariableValues{v});
+          s.(varName).Min = __nanmin__ (this.VariableValues{v});
           s.(varName).Median = median (this.VariableValues{v}, "omitnan");
-          s.(varName).Max = nanmax (this.VariableValues{v});
+          s.(varName).Max = __nanmax__ (this.VariableValues{v});
           s.(varName).NumMissing = sum (isnan (this.VariableValues{v}));
         endif
         ## No need to summarize values in 'cell', 'cellstr', 'string',
