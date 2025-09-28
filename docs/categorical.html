@@ -36,6 +36,13 @@
     white-space: nowrap;
     color: gray;
     }
+    code.description {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    white-space: normal;
+    font-size:1.2em;
+    color: gray;
+    }
     var {
     font-family: Consolas, "Courier New", monospace;
     border-radius: 0.3em;
@@ -1991,7 +1998,7 @@ Less than or equal to for ordinal categorical arrays.
 
 <p> </p>
 <p> <code><var>TF</var> = le (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
- <code><var>TF</var> = <var>A</var> &gt;= <var>B</var></code> and returns a logical array of the
+ <code><var>TF</var> = <var>A</var> &lt;= <var>B</var></code> and returns a logical array of the
  same size as the largest input with its elements set to <code>true</code>
  where the corresponding elements of <var>A</var> are less than or equal to
  <var>B</var> and set to <code>false</code> where they are not.  <var>A</var> and <var>B</var>
@@ -2045,7 +2052,7 @@ Less than for ordinal categorical arrays.
 
 <p> </p>
 <p> <code><var>TF</var> = lt (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
- <code><var>TF</var> = <var>A</var> &gt; <var>B</var></code> and returns a logical array of the
+ <code><var>TF</var> = <var>A</var> &lt; <var>B</var></code> and returns a logical array of the
  same size as the largest input with its elements set to <code>true</code>
  where the corresponding elements of <var>A</var> are less than <var>B</var> and
  set to <code>false</code> where they are not.  <var>A</var> and <var>B</var> must be
@@ -2086,13 +2093,44 @@ Less than for ordinal categorical arrays.
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Not equal for categorical arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod44">
             <div class="border-bottom py-2">
-<b><code>categorical.ne</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">categorical: <var>TF</var> = <b>ne</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = ne (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>TF</var> = <var>A</var> != <var>B</var></code> and returns a logical array of the
+ same size as the largest input with its elements set to <code>true</code>
+ where the corresponding elements of <var>A</var> and <var>B</var> are not equal and
+ set to <code>false</code> where they are equal.  <var>A</var> and <var>B</var> must be
+ size compatible, which translates to they can be the same size, one can
+ be scalar, or for every dimension, their dimension sizes must be equal or
+ one of them must be 1.
+</p>
+<p> If categorical arrays <var>A</var> and <var>B</var> are ordinal, they must have
+ the same set and ordering of categories.  If neither are ordinal, the
+ category names of each pair of elements are compared.  Hence, they do
+ not need to have the same set of categories.
+</p>
+<p> One of the input arguments can also be a character vector, a cellstr
+ scalar or a string scalar as long as the other is a categorical array.
+ In this case, a logical array of the same size as the categorical array
+ is returned in which every element is tested for inequality by comparing
+ its category with that specified by the string argument.
+</p>
+<p> Undefined elements always return <code>true</code>, since they are not
+ comparable to any other categorical values including other undefined
+ elements.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -2105,7 +2143,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>ne</code></b>
+                    <b><code>min</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2115,7 +2153,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod45">
             <div class="border-bottom py-2">
-<b><code>categorical.ne</code></b> is not documented.
+<b><code>categorical.min</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2128,7 +2166,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>sort</code></b>
+                    <b><code>max</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2138,7 +2176,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod46">
             <div class="border-bottom py-2">
-<b><code>categorical.sort</code></b> is not documented.
+<b><code>categorical.max</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2151,7 +2189,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>sortrows</code></b>
+                    <b><code>median</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2161,7 +2199,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod47">
             <div class="border-bottom py-2">
-<b><code>categorical.sortrows</code></b> is not documented.
+<b><code>categorical.median</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2174,7 +2212,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>unique</code></b>
+                    <b><code>mode</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2184,7 +2222,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod48">
             <div class="border-bottom py-2">
-<b><code>categorical.sortrows</code></b> is not documented.
+<b><code>categorical.mode</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2197,7 +2235,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>intersect</code></b>
+                    <b><code>sort</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2207,7 +2245,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod49">
             <div class="border-bottom py-2">
-<b><code>categorical.intersect</code></b> is not documented.
+<b><code>categorical.sort</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2220,7 +2258,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>setdiff</code></b>
+                    <b><code>sortrows</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2230,7 +2268,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod50">
             <div class="border-bottom py-2">
-<b><code>categorical.setdiff</code></b> is not documented.
+<b><code>categorical.sortrows</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2243,7 +2281,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>setxor</code></b>
+                    <b><code>unique</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2253,7 +2291,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod51">
             <div class="border-bottom py-2">
-<b><code>categorical.setxor</code></b> is not documented.
+<b><code>categorical.sortrows</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2266,7 +2304,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>union</code></b>
+                    <b><code>intersect</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2275,6 +2313,75 @@ undocumented
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod52">
+            <div class="border-bottom py-2">
+<b><code>categorical.intersect</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod53"
+              aria-expanded="false" aria-controls="collapseMethod53">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>setdiff</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod53">
+            <div class="border-bottom py-2">
+<b><code>categorical.setdiff</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod54"
+              aria-expanded="false" aria-controls="collapseMethod54">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>setxor</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod54">
+            <div class="border-bottom py-2">
+<b><code>categorical.setxor</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod55"
+              aria-expanded="false" aria-controls="collapseMethod55">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>union</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod55">
             <div class="border-bottom py-2">
 <b><code>categorical.union</code></b> is not documented.
             </div>
