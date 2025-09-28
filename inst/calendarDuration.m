@@ -17,7 +17,7 @@
 
 classdef calendarDuration
   ## -*- texinfo -*-
-  ## @deftp {Class} calendarDuration
+  ## @deftp {datatypes} calendarDuration
   ##
   ## Array representing durations of time using flexible-length calendar
   ## date/time units.

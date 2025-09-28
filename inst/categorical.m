@@ -17,7 +17,7 @@
 
 classdef categorical
   ## -*- texinfo -*-
-  ## @deftp {Class} categorical
+  ## @deftp {datatypes} categorical
   ##
   ## Array representing categorical data.
   ##
@@ -1817,6 +1817,23 @@ classdef categorical
     ## elements.
     ##
     ## @end deftypefn
+    function TF = ne (A, B)
+      TF = ! eq (A, B);
+    endfunction
+
+  endmethods
+
+################################################################################
+##                        ** Arithmetic Operations **                         ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'min'              'max'              'median'           'mode'            ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
     function TF = ne (A, B)
       TF = ! eq (A, B);
     endfunction

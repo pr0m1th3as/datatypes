@@ -17,7 +17,7 @@
 
 classdef duration
   ## -*- texinfo -*-
-  ## @deftp {Class} duration
+  ## @deftp {datatypes} duration
   ##
   ## Array representing durations of time using fixed-length time units.
   ##

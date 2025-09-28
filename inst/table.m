@@ -17,7 +17,7 @@
 
 classdef table
   ## -*- texinfo -*-
-  ## @deftp {Class} table
+  ## @deftp {datatypes} table
   ##
   ## Array of tabular data containing multiple columnar variables.
   ##

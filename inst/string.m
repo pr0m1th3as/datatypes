@@ -17,7 +17,7 @@
 
 classdef string
   ## -*- texinfo -*-
-  ## @deftp {Class} string
+  ## @deftp {datatypes} string
   ##
   ## Array representing sequences of characters.
   ##

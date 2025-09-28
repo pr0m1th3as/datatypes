@@ -17,7 +17,7 @@
 
 classdef missing
   ## -*- texinfo -*-
-  ## @deftp {Class} missing
+  ## @deftp {datatypes} missing
   ##
   ## Array of missing values.
   ##

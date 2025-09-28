@@ -17,7 +17,7 @@
 
 classdef vartype
   ## -*- texinfo -*-
-  ## @deftp {Class} vartype
+  ## @deftp {datatypes} vartype
   ##
   ## Subscript into a table by variable type.
   ##

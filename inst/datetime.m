@@ -17,7 +17,7 @@
 
 classdef datetime
   ## -*- texinfo -*-
-  ## @deftp {Class} datetime
+  ## @deftp {datatypes} datetime
   ##
   ## Array representing points in time using the Gregorian calendar.
   ##
