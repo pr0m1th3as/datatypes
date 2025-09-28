@@ -89,27 +89,67 @@ classdef categorical
     ## @deftypefn  {categorical} {@var{C} =} categorical (@var{A})
     ## @deftypefnx {categorical} {@var{C} =} categorical (@var{A}, @var{valueset})
     ## @deftypefnx {categorical} {@var{C} =} categorical (@var{A}, @var{valueset}, @var{catnames})
-    ## @deftypefnx {categorical} {@var{C} =} categorical (dots{}, @var{Name}, @var{Value})
+    ## @deftypefnx {categorical} {@var{C} =} categorical (@dots{}, @var{Name}, @var{Value})
     ##
     ## Create a new array of categorical values.
     ##
-    ## @var{A} is the array of values to convert to categoricals.
+    ## @code{@var{C} = categorical (@var{A})} creates a categorical array
+    ## @var{C} from the input array @var{A}, which can be numeric, logical,
+    ## datetime, duration, string, or cell array of character vectors.  Input
+    ## @var{A} can also be another categorical array.  The categories in @var{C}
+    ## the sorted unique values from the input array @var{A}.  When the input
+    ## array is string or cell array of character vectors, any leading or
+    ## trailing white spaces are removed.  Missing values in the input array
+    ## correspond to @qcode{<undefined>} elements in the created categorical
+    ## array.  By default, there is no category for undefined values in the
+    ## output array.
     ##
-    ## @var{valueset} is the set of all values from which @var{A} is drawn.
-    ## If omitted, it defaults to the unique values in @var{A}.
+    ## @code{@var{C} = categorical (@var{A}, @var{valueset})} creates a
+    ## categorical array from input @var{A} with the categories specified in
+    ## @var{valueset}, which must be a vector of unique values.  The data type
+    ## of input array @var{A} and @var{valueset} must be the same, unless they
+    ## are string or cell arrays of character vectors, in which case they can be
+    ## used interchangeably.  Similarly to intput array @var{A} any leading or
+    ## trailing white spaces are removed, if @var{valueset} is a string or cell
+    ## array of character vectors.
     ##
-    ## @var{catnames} is a list of category names corresponding to
-    ## @var{valueset}. If omitted, it defaults to @var{valueset}, converted
-    ## to strings.
+    ## @code{@var{C} = categorical (@var{A}, @var{valueset}, @var{catnames})}
+    ## creates a categorical array from input @var{A} with the categories
+    ## specified in @var{valueset} and named after the corresponding values in
+    ## @var{catnames}, which must be specified either as a string array or a
+    ## cell array of character vectors.  If omitted, @code{categorical} uses
+    ## the cellstring representation of @var{valueset} to name the specified
+    ## category names.  @var{catnames} must not contain any missing values, it
+    ## may have duplicate names, and it must have the same number of elements as
+    ## @var{valueset}.
     ##
-    ## @var{Ordinal} is a logical indicating whether the category values in
-    ## @var{C} have a numeric ordering relationship. Defaults to false.
+    ## @code{@var{C} = categorical (@dots{}, @var{Name}, @var{Value})} further
+    ## specifies additional parameters for creating categorical array @var{C}.
     ##
-    ## @var{Protected} indicates whether @var{C} should be protected, which
-    ## prevents the addition of new categories to the array. Defaults to
-    ## false.
+    ## @itemize
+    ## @item @qcode{"Ordinal"} must be a logical scalar specifying that the
+    ## categories in @var{C} have a numeric ordering relationship.  By default,
+    ## it is @qcode{false} and @code{categorical} creates a non-ordinal array.
+    ## The elements of unordered categorical arrays can only be compared for
+    ## equality.  Any other relational operator cannot be used.  Setting
+    ## @qcode{"Ordinal"} to @qcode{true} results in a categorical array with
+    ## mathematically orderred categories.  The ordering goes from smallest to
+    ## largest according to the order in @var{valueset} or the order or
+    ## appearance in input array @var{A}, when @var{valueset} is not specified,
+    ## in which case the unique values in @{A} are not sorted in order to set
+    ## the categories.  Ordinal categorical arrays allow for relational
+    ## operators such as @qcode{>=, >, <=, <), as well as statistical operations
+    ## such as @code{min}, @code{max}, and @code{median}.
     ##
-    ## @code{@var{C} = categorical ()} returns an empty categorical array.
+    ## @item @qcode{"Protected"} must be a logical scalar specifying that the
+    ## categories in @var{C} are protected.  By default, it is @qcode{false} for
+    ## unordered categorical arrays and it is always @qcode{true} for ordinal
+    ## categorical arrays.  Setting @qcode{"Protected"} to @qcode{true} prevents
+    ## from assigning new values that do not correspond to existing categories.
+    ## When @qcode{false}, assigning new values to the array automatically
+    ## updates the categories. Hence, categorical arrays with differenct sets of
+    ## categories can be combined/merged into a new array with set operations.
+    ## @end itemize
     ##
     ## @seealso{categories, discretize, iscategorical}
     ## @end deftypefn
@@ -207,7 +247,7 @@ classdef categorical
         if (iscellstr (valueset))
           classv = 'cellstr';
         endif
-        if (strcmp (classx, 'cellstr'))
+        if (any (strcmp (classx, {'cellstr', 'string'})))
           if (! (iscellstr (valueset) || isa (valueset, 'string')))
             error ("categorical: incompatible types of VALUESET and X.");
           endif
@@ -1253,14 +1293,14 @@ classdef categorical
     ##
     ## Rename categories in categorical array.
     ##
-    ## @code{@var{B} =} renamecats (@var{A}, @var{newnames})} renames all the
+    ## @code{@var{B} = renamecats (@var{A}, @var{newnames})} renames all the
     ## categories in @var{A}, without changing any of its values, with the names
     ## specified in @var{newnames}.  @var{newnames} may be a cell array of
     ## character vectors or any type of array that can be converted to a cell
     ## array of character vectors with the @code{cellstr} function, as long as
     ## it has the same number of elements as the categories in @var{A}.
     ##
-    ## @code{@var{B} =} renamecats (@var{A}, @var{oldnames}, @var{newnames})}
+    ## @code{@var{B} = renamecats (@var{A}, @var{oldnames}, @var{newnames})}
     ## renames the categories of @var{A} specified in @var{oldnames} with the
     ## names specified in @var{newnames}.  Both @var{oldnames} and
     ## @var{newnames} may be a cell arrays of character vectors or any type of
