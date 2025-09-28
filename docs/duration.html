@@ -237,7 +237,7 @@
               </div>
             </div>
             <div class="card-body">
-<dl><code><h5 class="fs">datatypes: duration</h5></code></dl>
+<dl><code><h5 class="description">datatypes: duration</h5></code></dl>
 
 <p> Array representing durations of time using fixed-length time units.
 </p>
@@ -934,13 +934,26 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Return true if duration array is a column vector.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod16">
             <div class="border-bottom py-2">
-<b><code>duration.iscolumn</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>iscolumn</b> (<var>D</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = iscolumn (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code> if the duration array <var>D</var> is a column vector
+ and <code>false</code> otherwise.  A column vector is a 2-D array for which
+ <code>size (<var>X</var>)</code> returns <code>[<var>N</var>, 1]</code> with non-negative
+ <var>N</var>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -957,13 +970,24 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Return true if duration array is empty.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod17">
             <div class="border-bottom py-2">
-<b><code>duration.isempty</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isempty</b> (<var>D</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = isempty (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code> if the duration array <var>D</var> is empty and
+ <code>false</code> otherwise.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -1072,13 +1096,26 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Return true if duration array is a 2-D array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod22">
             <div class="border-bottom py-2">
-<b><code>duration.ismatrix</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>ismatrix</b> (<var>D</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = ismatrix (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code> if the duration array <var>D</var> is a matrix and
+ <code>false</code> otherwise.  A matrix is an array of any type where
+ <code>ndims (<var>X</var>) == 2</code> and for which <code>size (<var>X</var>)</code> returns
+ <code>[<var>H</var>, <var>W</var>]</code> with non-negative <var>H</var> and <var>W</var>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -1095,13 +1132,26 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Return true if duration array is a 2-D array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod23">
             <div class="border-bottom py-2">
-<b><code>duration.ismatrix</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>ismatrix</b> (<var>D</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = ismatrix (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code> if the duration array <var>D</var> is a matrix and
+ <code>false</code> otherwise.  A matrix is an array of any type where
+ <code>ndims (<var>X</var>) == 2</code> and for which <code>size (<var>X</var>)</code> returns
+ <code>[<var>H</var>, <var>W</var>]</code> with non-negative <var>H</var> and <var>W</var>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -1164,13 +1214,26 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Return true if duration array is a row vector.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod26">
             <div class="border-bottom py-2">
-<b><code>duration.isrow</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isrow</b> (<var>D</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = isrow (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code> if the duration array <var>D</var> is a row vector
+ and <code>false</code> otherwise.  A row vector is a 2-D array for which
+ <code>size (<var>X</var>)</code> returns <code>[1, <var>N</var>]</code> with non-negative
+ <var>N</var>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -1187,13 +1250,25 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Return true if duration array is a scalar.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod27">
             <div class="border-bottom py-2">
-<b><code>duration.isscalar</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isscalar</b> (<var>D</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = isscalar (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code> if the duration array <var>D</var> is also a scalar
+ and <code>false</code> otherwise.  A scalar is a single element object for
+ which <code>size (<var>X</var>)</code> returns <code>[1, 1]</code>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -1256,13 +1331,26 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Return true if duration array is a vector.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod30">
             <div class="border-bottom py-2">
-<b><code>duration.isvector</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code> if the duration array <var>D</var> is a vector and
+ <code>false</code> otherwise.  A vector is a 2-D array for which one of the
+ dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
+ definition, a scalar is also a vector.
+</p>
+
+
+
             </div>
           </div>
         </div>

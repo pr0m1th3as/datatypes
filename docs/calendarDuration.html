@@ -237,7 +237,7 @@
               </div>
             </div>
             <div class="card-body">
-<dl><code><h5 class="fs">datatypes: calendarDuration</h5></code></dl>
+<dl><code><h5 class="description">datatypes: calendarDuration</h5></code></dl>
 
 <p> Array representing durations of time using flexible-length calendar
  date/time units.
@@ -459,7 +459,8 @@ Convert calendarDuration array to a cell array of character vectors.
 <p> </p>
 <p> <code><var>cstr</var> = cellstr (<var>calD</var>)</code> returns a cellstr array of
  character vectors, <var>cstr</var>, which has the same size as the input
- calendarDuration <var>calD</var>.
+ <var>calD</var>.  <var>cstr</var> contains the string representations of the
+ calendar durations in <var>calD</var>.
 </p>
 
 
@@ -998,6 +999,12 @@ Return true if calendarDuration array is a column vector.
 </dl>
 
 <p> </p>
+<p> <code><var>TF</var> = iscolumn (<var>calD</var>)</code> returns a logical scalar
+ <var>TF</var>, which is <code>true</code> if the calendar duration array <var>calD</var>
+ is a column vector and <code>false</code> otherwise.  A column vector is a 2-D
+ array for which <code>size (<var>X</var>)</code> returns <code>[<var>N</var>, 1]</code> with
+ non-negative <var>N</var>.
+</p>
 
 
 
@@ -1028,6 +1035,10 @@ Return true if calendarDuration array is empty.
 </dl>
 
 <p> </p>
+<p> <code><var>TF</var> = isempty (<var>calD</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code> if the calendar duration array <var>calD</var> is empty
+ and <code>false</code> otherwise.
+</p>
 
 
 
@@ -1047,17 +1058,28 @@ Return true if calendarDuration array is empty.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if all calendarDuration arrays are equal.
+Return true if calendarDuration arrays are equal.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod18">
             <div class="border-bottom py-2">
 <dl>
+<dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isequal</b> (<var>calD1</var>, <var>calD2</var>)</code></h5></dt>
 <dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isequal</b> (<var>calD1</var>, <var>calD2</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
+<p> <code><var>TF</var> = isequal (<var>calD1</var>, <var>calD2</var>)</code> returns a logical
+ scalar <var>TF</var>, which is <code>true</code> if the calendar duration arrays
+ <var>calD1</var> and <var>calD2</var> contain the same values and <code>false</code>
+ otherwise.
+</p>
+<p> <code><var>TF</var> = isequal (<var>calD1</var>, <var>calD2</var>, &hellip;)</code> returns a
+ logical scalar <var>TF</var>, which is <code>true</code> if all input arguments are
+ calendar duration arrays with equal values in each corresponding elements
+ and <code>false</code> otherwise.
+</p>
 
 
 
@@ -1077,18 +1099,29 @@ Return true if all calendarDuration arrays are equal.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if all calendarDuration arrays are equal under the additional
- assumption that <code>NaN == NaN</code>.
+Return true if calendarDuration arrays are equal under the assumption
+ that missing elements are equal.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod19">
             <div class="border-bottom py-2">
 <dl>
+<dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isequaln</b> (<var>calD1</var>, <var>calD2</var>)</code></h5></dt>
 <dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isequaln</b> (<var>calD1</var>, <var>calD2</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
+<p> <code><var>TF</var> = isequaln (<var>calD1</var>, <var>calD2</var>)</code> returns a logical
+ scalar <var>TF</var>, which is <code>true</code> if the calendar duration arrays
+ <var>calD1</var> and <var>calD2</var> contain the same values or corresponding
+ missing elements and <code>false</code> otherwise.
+</p>
+<p> <code><var>TF</var> = isequaln (<var>calD1</var>, <var>calD2</var>, &hellip;)</code> returns a
+ logical scalar <var>TF</var>, which is <code>true</code> if all input arguments
+ are calendar duration arrays with equal values or corresponding missing
+ elements and <code>false</code> otherwise.
+</p>
 
 
 
@@ -1108,9 +1141,7 @@ Return true if all calendarDuration arrays are equal under the additional
                   </h4>
                 </div>
                 <div class="col-8">
-Return a logical array which is true where the elements of
- calendarDuration array <var>calD</var> are finite and false where they are
- not.  <var>TF</var> and <var>calD</var> are of the same size.
+Return true for calendar durations that are finite.
                 </div>
               </div>
           </div>
@@ -1121,6 +1152,12 @@ Return a logical array which is true where the elements of
 </dl>
 
 <p> </p>
+<p> <code><var>TF</var> = isfinite (<var>calD</var>)</code> returns a logical array <var>TF</var>
+ of the same size as <var>calD</var> containing <code>true</code> for each
+ corresponding element of <var>calD</var> that is finite and <code>false</code>
+ otherwise.  Finite elements are those which are neither infinite nor
+ Not-A-Number.
+</p>
 
 
 
@@ -1140,9 +1177,7 @@ Return a logical array which is true where the elements of
                   </h4>
                 </div>
                 <div class="col-8">
-Return a logical array which is true where the elements of
- calendarDuration array <var>calD</var> are infinite and false where they are
- not.  <var>TF</var> and <var>calD</var> are of the same size.
+Return true for calendar durations that are infinite.
                 </div>
               </div>
           </div>
@@ -1153,6 +1188,11 @@ Return a logical array which is true where the elements of
 </dl>
 
 <p> </p>
+<p> <code><var>TF</var> = isinf (<var>calD</var>)</code> returns a logical array <var>TF</var>
+ of the same size as <var>calD</var> containing <code>true</code> for each
+ corresponding element of <var>calD</var> that is either <code>Inf</code> or
+ <code>-Inf</code> and <code>false</code> otherwise.
+</p>
 
 
 
@@ -1183,6 +1223,13 @@ Return true if calendarDuration array is a 2-D array.
 </dl>
 
 <p> </p>
+<p> <code><var>TF</var> = ismatrix (<var>calD</var>)</code> returns a logical scalar
+ <var>TF</var>, which is <code>true</code> if the calendarDuration array <var>calD</var>
+ is a matrix and <code>false</code> otherwise.  A matrix is an array of any
+ type where <code>ndims (<var>X</var>) == 2</code> and for which
+ <code>size (<var>X</var>)</code> returns <code>[<var>H</var>, <var>W</var>]</code> with non-negative
+ <var>H</var> and <var>W</var>.
+</p>
 
 
 
@@ -1202,7 +1249,7 @@ Return true if calendarDuration array is a 2-D array.
                   </h4>
                 </div>
                 <div class="col-8">
-Find missing data in a calendar duration array.
+Find missing data in a calendarDuration array.
                 </div>
               </div>
           </div>
@@ -1218,7 +1265,7 @@ Find missing data in a calendar duration array.
  <code><var>TF</var> = isnan (<var>calD</var>)</code>.
 </p>
 <p> Note: <code>ismissing</code> for calendarDuration arrays does not support a
- second <var>Indicator</var> arguments.
+ second <var>Indicator</var> argument.
 </p>
 
 
@@ -1239,9 +1286,7 @@ Find missing data in a calendar duration array.
                   </h4>
                 </div>
                 <div class="col-8">
-Return a logical array which is true where the elements of <var>calD</var> are
- <code>NaN</code> values and false where they are not.  <var>TF</var> and <var>calD</var>
- are of the same size.
+Return true for calendar durations that are Not-A-Number.
                 </div>
               </div>
           </div>
@@ -1252,6 +1297,11 @@ Return a logical array which is true where the elements of <var>calD</var> are
 </dl>
 
 <p> </p>
+<p> <code><var>TF</var> = isnan (<var>calD</var>)</code> returns a logical array <var>TF</var>
+ of the same size as <var>calD</var> containing <code>true</code> for each
+ corresponding element of <var>calD</var> that is <code>NaN</code> and <code>false</code>
+ otherwise.
+</p>
 
 
 
@@ -1282,6 +1332,12 @@ Return true if calendarDuration array is a row vector.
 </dl>
 
 <p> </p>
+<p> <code><var>TF</var> = isrow (<var>calD</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code> if the calendarDuration array <var>calD</var> is a row
+ vector and <code>false</code> otherwise.  A row vector is a 2-D array for
+ which <code>size (<var>X</var>)</code> returns <code>[1, <var>N</var>]</code> with non-negative
+ <var>N</var>.
+</p>
 
 
 
@@ -1312,6 +1368,11 @@ Return true if calendarDuration array is a scalar.
 </dl>
 
 <p> </p>
+<p> <code><var>TF</var> = isscalar (<var>calD</var>)</code> returns a logical scalar
+ <var>TF</var>, which is <code>true</code> if the calendarDuration array <var>calD</var>
+ is also a scalar and <code>false</code> otherwise.  A scalar is a single
+ element object for which <code>size (<var>X</var>)</code> returns <code>[1, 1]</code>.
+</p>
 
 
 
@@ -1338,10 +1399,16 @@ Return true if calendarDuration array is a vector.
           <div class="collapse multi-collapse" id="collapseMethod27">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isscalar</b> (<var>calD</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isvector</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
+<p> <code><var>TF</var> = isvector (<var>calD</var>)</code> returns a logical scalar
+ <var>TF</var>, which is <code>true</code> if the calendarDuration array <var>calD</var>
+ is a vector and <code>false</code> otherwise.  A vector is a 2-D array for
+ which one of the dimensions is equal to 1 (either <math>1&times;N</math> or
+ <math>N&times;1</math>).  By definition, a scalar is also a vector.
+</p>
 
 
 

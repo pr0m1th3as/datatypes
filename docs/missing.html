@@ -237,7 +237,7 @@
               </div>
             </div>
             <div class="card-body">
-<dl><code><h5 class="fs">datatypes: missing</h5></code></dl>
+<dl><code><h5 class="description">datatypes: missing</h5></code></dl>
 
 <p> Array of missing values.
 </p>
@@ -273,7 +273,7 @@ Create missing values.
           <div class="collapse multi-collapse" id="colapsibleConstructor">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">missing: missing</dt>
+<dt><code><h5 class="fs">missing: <var>M</var> = <b>missing</b> ()</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -300,13 +300,36 @@ Create missing values.
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Return the size of a missing array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod1">
             <div class="border-bottom py-2">
-<b><code>missing.size</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">missing: <var>sz</var> = <b>size</b> (<var>M</var>)</code></h5></dt>
+<dt><code><h5 class="fs">missing: <var>dim_sz</var> = <b>size</b> (<var>M</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">missing: <var>dim_sz</var> = <b>size</b> (<var>M</var>, <var>d1</var>, <var>d2</var>, &hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">missing: [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b> (&hellip;)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>sz</var> = size (<var>M</var>)</code> returns a row vector with the size
+ (number of elements) of each dimension for the missing array <var>M</var>.
+</p>
+<p> <code><var>dim_sz</var> = size (<var>M</var>, <var>dim</var>)</code> returns the size of
+ the corresponding dimension specified in <var>dim</var>.  If <var>dim</var> is a
+ vector, then <var>dim_sz</var> is a vector of the same length and with each
+ element corresponding to a specified dimension.  Multiple dimensions may
+ also be specified as separate arguments.
+</p>
+<p> With a single output argument, <code>size</code> returns a row vector.  When
+ called with multiple output arguments, <code>size</code> returns the size of
+ dimension N in the Nth argument.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -323,13 +346,23 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Number of dimensions in a missing array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod2">
             <div class="border-bottom py-2">
-<b><code>missing.ndims</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">missing: <var>out</var> = <b>ndims</b> (<var>M</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>out</var> = ndims (<var>M</var>)</code> returns the number of dimensions of
+ the missing array <var>M</var>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -346,13 +379,23 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Total number of elements in a missing array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod3">
             <div class="border-bottom py-2">
-<b><code>missing.numel</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">missing: <var>out</var> = <b>numel</b> (<var>M</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>out</var> = numel (<var>M</var>)</code> returns the number of elements in the
+ missing array <var>M</var>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -369,13 +412,26 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Return true if missing array is a column vector.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod4">
             <div class="border-bottom py-2">
-<b><code>missing.iscolumn</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">missing: <var>TF</var> = <b>iscolumn</b> (<var>M</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = iscolumn (<var>M</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code> if the missing array <var>M</var> is a column vector
+ and <code>false</code> otherwise.  A column vector is a 2-D array for which
+ <code>size (<var>X</var>)</code> returns <code>[<var>N</var>, 1]</code> with non-negative
+ <var>N</var>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -392,13 +448,24 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Return true if missing array is empty.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod5">
             <div class="border-bottom py-2">
-<b><code>missing.isempty</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">missing: <var>TF</var> = <b>isempty</b> (<var>M</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = isempty (<var>M</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code> if the missing array <var>M</var> is empty and
+ <code>false</code> otherwise.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -415,13 +482,26 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Return true if missing array is a 2-D array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod6">
             <div class="border-bottom py-2">
-<b><code>missing.ismatrix</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">missing: <var>TF</var> = <b>ismatrix</b> (<var>M</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = ismatrix (<var>M</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code> if the missing array <var>M</var> is a matrix and
+ <code>false</code> otherwise.  A matrix is an array of any type where
+ <code>ndims (<var>X</var>) == 2</code> and for which <code>size (<var>X</var>)</code> returns
+ <code>[<var>H</var>, <var>W</var>]</code> with non-negative <var>H</var> and <var>W</var>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -438,13 +518,26 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Return true if missing array is a row vector.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod7">
             <div class="border-bottom py-2">
-<b><code>missing.isrow</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">missing: <var>TF</var> = <b>isrow</b> (<var>M</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = isrow (<var>M</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code> if the missing array <var>M</var> is a row vector
+ and <code>false</code> otherwise.  A row vector is a 2-D array for which
+ <code>size (<var>X</var>)</code> returns <code>[1, <var>N</var>]</code> with non-negative
+ <var>N</var>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -461,13 +554,25 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Return true if missing array is a scalar.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod8">
             <div class="border-bottom py-2">
-<b><code>missing.isscalar</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">missing: <var>TF</var> = <b>isscalar</b> (<var>M</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = isscalar (<var>M</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code> if the missing array <var>M</var> is also a scalar
+ and <code>false</code> otherwise.  A scalar is a single element object for
+ which <code>size (<var>X</var>)</code> returns <code>[1, 1]</code>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -484,13 +589,26 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Return true if missing array is a vector.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod9">
             <div class="border-bottom py-2">
-<b><code>missing.isvector</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">missing: <var>TF</var> = <b>isvector</b> (<var>M</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = isvector (<var>M</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code> if the missing array <var>M</var> is a vector and
+ <code>false</code> otherwise.  A vector is a 2-D array for which one of the
+ dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
+ definition, a scalar is also a vector.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -507,13 +625,30 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Equality for missing arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod10">
             <div class="border-bottom py-2">
-<b><code>missing.eq</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">missing: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = eq (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>TF</var> = <var>A</var> == <var>B</var></code> and returns a logical array of the
+ same size as the largest input with its elements set to <code>false</code>.
+ <var>A</var> and <var>B</var> must be size compatible, which translates to they can
+ be the same size, one can be scalar, or for every dimension, their
+ dimension sizes must be equal or one of them must be 1.
+</p>
+<p> One of the input arguments may also be any type of array.  Any comparison
+ with missing arrays always returns <code>false</code>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -530,13 +665,30 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Greater than or equal to for missing arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod11">
             <div class="border-bottom py-2">
-<b><code>missing.ge</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">missing: <var>TF</var> = <b>ge</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = ge (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>TF</var> = <var>A</var> &gt;= <var>B</var></code> and returns a logical array of the
+ same size as the largest input with its elements set to <code>false</code>.
+ <var>A</var> and <var>B</var> must be size compatible, which translates to they can
+ be the same size, one can be scalar, or for every dimension, their
+ dimension sizes must be equal or one of them must be 1.
+</p>
+<p> One of the input arguments may also be any type of array.  Any comparison
+ with missing arrays always returns <code>false</code>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -553,13 +705,30 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Greater than for missing arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod12">
             <div class="border-bottom py-2">
-<b><code>missing.gt</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">missing: <var>TF</var> = <b>gt</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = gt (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>TF</var> = <var>A</var> &gt; <var>B</var></code> and returns a logical array of the
+ same size as the largest input with its elements set to <code>false</code>.
+ <var>A</var> and <var>B</var> must be size compatible, which translates to they can
+ be the same size, one can be scalar, or for every dimension, their
+ dimension sizes must be equal or one of them must be 1.
+</p>
+<p> One of the input arguments may also be any type of array.  Any comparison
+ with missing arrays always returns <code>false</code>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -576,13 +745,30 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Less than or equal to for missing arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod13">
             <div class="border-bottom py-2">
-<b><code>missing.le</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">missing: <var>TF</var> = <b>le</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = le (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>TF</var> = <var>A</var> &lt;= <var>B</var></code> and returns a logical array of the
+ same size as the largest input with its elements set to <code>false</code>.
+ <var>A</var> and <var>B</var> must be size compatible, which translates to they can
+ be the same size, one can be scalar, or for every dimension, their
+ dimension sizes must be equal or one of them must be 1.
+</p>
+<p> One of the input arguments may also be any type of array.  Any comparison
+ with missing arrays always returns <code>false</code>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -599,13 +785,30 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Less than for missing arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod14">
             <div class="border-bottom py-2">
-<b><code>missing.lt</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">missing: <var>TF</var> = <b>lt</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = lt (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>TF</var> = <var>A</var> &lt; <var>B</var></code> and returns a logical array of the
+ same size as the largest input with its elements set to <code>false</code>.
+ <var>A</var> and <var>B</var> must be size compatible, which translates to they can
+ be the same size, one can be scalar, or for every dimension, their
+ dimension sizes must be equal or one of them must be 1.
+</p>
+<p> One of the input arguments may also be any type of array.  Any comparison
+ with missing arrays always returns <code>false</code>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -622,13 +825,30 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Not equal for missing arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod15">
             <div class="border-bottom py-2">
-<b><code>missing.ne</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">missing: <var>TF</var> = <b>ne</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = ne (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>TF</var> = <var>A</var> != <var>B</var></code> and returns a logical array of the
+ same size as the largest input with its elements set to <code>false</code>.
+ <var>A</var> and <var>B</var> must be size compatible, which translates to they can
+ be the same size, one can be scalar, or for every dimension, their
+ dimension sizes must be equal or one of them must be 1.
+</p>
+<p> One of the input arguments may also be any type of array.  Any comparison
+ with missing arrays always returns <code>false</code>.
+</p>
+
+
+
             </div>
           </div>
         </div>
