@@ -1834,8 +1834,20 @@ classdef categorical
 
   methods (Access = public)
 
-    function TF = ne (A, B)
-      TF = ! eq (A, B);
+    function [B, index] = min (A)
+      error ("categorical.min: not implemented yet.");
+    endfunction
+
+    function [B, index] = max (A)
+      error ("categorical.max: not implemented yet.");
+    endfunction
+
+    function B = median (A, varargin)
+      error ("categorical.median: not implemented yet.");
+    endfunction
+
+    function [varargout] = mode (A, varargin)
+      error ("categorical.mode: not implemented yet.");
     endfunction
 
   endmethods
