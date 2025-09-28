@@ -61,7 +61,7 @@ classdef missing
   methods (Access = public)
 
     ## -*- texinfo -*-
-    ## @deftypefn {missing} missing
+    ## @deftypefn {missing} {@var{M} =} missing ()
     ##
     ## Create missing values.
     ##
