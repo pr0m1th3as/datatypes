@@ -16,12 +16,11 @@
 ## this program; if not, see <http://www.gnu.org/licenses/>.
 
 ## -*- texinfo -*-
-## @deftypefn  {Function} {} NaT
-## @deftypefnx {Function} {@var{T} =} NaT (@var{n})
-## @deftypefnx {Function} {@var{T} =} NaT (@var{sz1}, @dots{}, @var{szN})
-## @deftypefnx {Function} {@var{T} =} NaT (@var{sz})
-## @deftypefnx {Function} {@var{T} =} NaT (@dots{}, @qcode{'Format'}, @var{fmt})
-## @deftypefnx {Function} {@var{T} =} NaT (@dots{}, @qcode{'TimeZone'}, @var{tz})
+## @deftypefn  {datatypes} {@var{T} =} NaT (@var{n})
+## @deftypefnx {datatypes} {@var{T} =} NaT (@var{sz1}, @dots{}, @var{szN})
+## @deftypefnx {datatypes} {@var{T} =} NaT (@var{sz})
+## @deftypefnx {datatypes} {@var{T} =} NaT (@dots{}, @qcode{'Format'}, @var{fmt})
+## @deftypefnx {datatypes} {@var{T} =} NaT (@dots{}, @qcode{'TimeZone'}, @var{tz})
 ##
 ## “Not-a-Time”. Creates missing-valued datetime arrays.
 ##
