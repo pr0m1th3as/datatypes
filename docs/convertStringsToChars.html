@@ -23,12 +23,25 @@
       });
     </script>
     <style>
+    h5.fs {
+    margin-top: -0.15em;
+    margin-bottom: -0.15em;
+    }
     h6:hover {
       color: gray;
     }
+    code {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    white-space: nowrap;
+    color: gray;
+    }
     var {
-      font-style: italics;
-      font-weight: bold;
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    font-style: normal;
+    font-weight: bold;
+    color: gray;
     }
     td {
       vertical-align: top;
@@ -218,8 +231,8 @@
             </div>
             <div class="card-body">
 <dl>
-<dt><u>datatypes:</u> <var>B</var> = <b>convertStringsToChars</b><i> (<var>A</var>)</i></dt>
-<dt><u>datatypes:</u> [<var>B1</var>, &hellip;, <var>Bn</var>] = <b>convertStringsToChars</b><i> (<var>A1</var>, &hellip;, <var>An</var>)</i></dt>
+<dt><code><h5 class="fs">datatypes: <var>B</var> = <b>convertStringsToChars</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datatypes: [<var>B1</var>, &hellip;, <var>Bn</var>] = <b>convertStringsToChars</b> (<var>A1</var>, &hellip;, <var>An</var>)</code></h5></dt>
 </dl>
 
 <p> Convert string arrays to a character arrays, where applicable.

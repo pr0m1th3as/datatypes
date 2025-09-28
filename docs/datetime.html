@@ -23,12 +23,25 @@
       });
     </script>
     <style>
+    h5.fs {
+    margin-top: -0.15em;
+    margin-bottom: -0.15em;
+    }
     h6:hover {
       color: gray;
     }
+    code {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    white-space: nowrap;
+    color: gray;
+    }
     var {
-      font-style: italics;
-      font-weight: bold;
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    font-style: normal;
+    font-weight: bold;
+    color: gray;
     }
     td {
       vertical-align: top;
@@ -218,7 +231,7 @@
             </div>
             <div class="card-body">
 <dl>
-<dt><u>Class:</u> <b>datetime</b></dt>
+<dt><code><h5 class="fs">Class: <b>datetime</b></h5></code></dt>
 </dl>
 
 <p> Array representing points in time using the Gregorian calendar.
@@ -241,6 +254,7 @@
 </p>
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/datetime.m">datetime</a>
+</p>
 </div>
         <h4 class="d-inline-block my-3">
           Properties
@@ -364,20 +378,20 @@ Create a new array of datetime values.
           <div class="collapse multi-collapse" id="colapsibleConstructor">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<code>'now'</code>)</i></dt>
-<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<code>'today'</code>)</i></dt>
-<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<code>'tomorrow'</code>)</i></dt>
-<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<code>'yesterday'</code>)</i></dt>
-<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<var>DateStrings</var>)</i></dt>
-<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<var>DateStrings</var>, <code>'InputFormat'</code>, <var>INFMT</var>)</i></dt>
-<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<var>DateStrings</var>, <code>'InputFormat'</code>, <var>INFMT</var>, <code>'PivotYear'</code>, <var>PIVOT</var>)</i></dt>
-<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<var>DateVectors</var>)</i></dt>
-<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<var>Y</var>, <var>MO</var>, <var>D</var>)</i></dt>
-<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>, <var>S</var>)</i></dt>
-<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>, <var>S</var>, <var>MS</var>)</i></dt>
-<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (<var>X</var>, <code>'ConvertFrom'</code>, <var>TYPE</var>)</i></dt>
-<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (&hellip;, <code>'Format'</code>, <var>FMT</var>)</i></dt>
-<dt><u>datetime:</u> <var>Τ</var> = <b>datetime</b><i> (&hellip;, <code>'TimeZone'</code>, <var>TZ</var>)</i></dt>
+<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<code>'now'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<code>'today'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<code>'tomorrow'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<code>'yesterday'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<var>DateStrings</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<var>DateStrings</var>, <code>'InputFormat'</code>, <var>INFMT</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<var>DateStrings</var>, <code>'InputFormat'</code>, <var>INFMT</var>, <code>'PivotYear'</code>, <var>PIVOT</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<var>DateVectors</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<var>Y</var>, <var>MO</var>, <var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>, <var>S</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>, <var>S</var>, <var>MS</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<var>X</var>, <code>'ConvertFrom'</code>, <var>TYPE</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (&hellip;, <code>'Format'</code>, <var>FMT</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (&hellip;, <code>'TimeZone'</code>, <var>TZ</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -482,7 +496,7 @@ Get display formatted strings for each element of a datetime object.
           <div class="collapse multi-collapse" id="collapseMethod1">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>datetime:</u> <var>cstr</var> = <b>dispstrings</b><i> (<var>Τ</var>)</i></dt>
+<dt><code><h5 class="fs">datetime: <var>cstr</var> = <b>dispstrings</b> (<var>Τ</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -516,8 +530,8 @@ Convert datetime array to a cell array of character vectors.
           <div class="collapse multi-collapse" id="collapseMethod2">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>datetime:</u> <var>cstr</var> = <b>cellstr</b><i> (<var>T</var>)</i></dt>
-<dt><u>datetime:</u> <var>cstr</var> = <b>cellstr</b><i> (<var>T</var>, <var>Format</var>)</i></dt>
+<dt><code><h5 class="fs">datetime: <var>cstr</var> = <b>cellstr</b> (<var>T</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>cstr</var> = <b>cellstr</b> (<var>T</var>, <var>Format</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -551,8 +565,8 @@ Convert datetime array to a character matrix.
           <div class="collapse multi-collapse" id="collapseMethod3">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>datetime:</u> <var>cmat</var> = <b>char</b><i> (<var>T</var>)</i></dt>
-<dt><u>datetime:</u> <var>cmat</var> = <b>char</b><i> (<var>T</var>, <var>Format</var>)</i></dt>
+<dt><code><h5 class="fs">datetime: <var>cmat</var> = <b>char</b> (<var>T</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>cmat</var> = <b>char</b> (<var>T</var>, <var>Format</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -585,7 +599,7 @@ Year, Month, and Day components of datetime array.
           <div class="collapse multi-collapse" id="collapseMethod4">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>datetime:</u> [<var>Y</var>, <var>M</var>, <var>D</var>] = <b>ymd</b><i> (<var>T</var>)</i></dt>
+<dt><code><h5 class="fs">datetime: [<var>Y</var>, <var>M</var>, <var>D</var>] = <b>ymd</b> (<var>T</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -620,7 +634,7 @@ Hour, Minute, and Second components of a datetime array.
           <div class="collapse multi-collapse" id="collapseMethod5">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>Method:</u> [<var>h</var>, <var>m</var>, <var>s</var>] = <b>hms</b><i> (<var>T</var>)</i></dt>
+<dt><code><h5 class="fs">Method: [<var>h</var>, <var>m</var>, <var>s</var>] = <b>hms</b> (<var>T</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -886,10 +900,10 @@ Size of a datetime array.
           <div class="collapse multi-collapse" id="collapseMethod16">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>datetime:</u> <var>sz</var> = <b>size</b><i> (<var>T</var>)</i></dt>
-<dt><u>datetime:</u> <var>dim_sz</var> = <b>size</b><i> (<var>T</var>, <var>dim</var>)</i></dt>
-<dt><u>datetime:</u> <var>dim_sz</var> = <b>size</b><i> (<var>T</var>, <var>d1</var>, <var>d2</var>, &hellip;)</i></dt>
-<dt><u>datetime:</u> [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b><i> (&hellip;)</i></dt>
+<dt><code><h5 class="fs">datetime: <var>sz</var> = <b>size</b> (<var>T</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>dim_sz</var> = <b>size</b> (<var>T</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>dim_sz</var> = <b>size</b> (<var>T</var>, <var>d1</var>, <var>d2</var>, &hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -932,7 +946,7 @@ Number of dimensions in a datetime array.
           <div class="collapse multi-collapse" id="collapseMethod17">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>datetime:</u> <var>out</var> = <b>ndims</b><i> (<var>T</var>)</i></dt>
+<dt><code><h5 class="fs">datetime: <var>out</var> = <b>ndims</b> (<var>T</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -965,7 +979,7 @@ Total number of elements in a datetime array.
           <div class="collapse multi-collapse" id="collapseMethod18">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>datetime:</u> <var>out</var> = <b>numel</b><i> (<var>T</var>)</i></dt>
+<dt><code><h5 class="fs">datetime: <var>out</var> = <b>numel</b> (<var>T</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1251,7 +1265,7 @@ Convert datetime array to date vectors.
           <div class="collapse multi-collapse" id="collapseMethod30">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>datetime:</u> <var>DV</var> = <b>datevec</b><i> (<var>T</var>)</i></dt>
+<dt><code><h5 class="fs">datetime: <var>DV</var> = <b>datevec</b> (<var>T</var>)</code></h5></dt>
 </dl>
 
 <p> </p>

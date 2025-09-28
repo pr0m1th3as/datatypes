@@ -23,12 +23,25 @@
       });
     </script>
     <style>
+    h5.fs {
+    margin-top: -0.15em;
+    margin-bottom: -0.15em;
+    }
     h6:hover {
       color: gray;
     }
+    code {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    white-space: nowrap;
+    color: gray;
+    }
     var {
-      font-style: italics;
-      font-weight: bold;
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    font-style: normal;
+    font-weight: bold;
+    color: gray;
     }
     td {
       vertical-align: top;
@@ -218,7 +231,7 @@
             </div>
             <div class="card-body">
 <dl>
-<dt><u>Class:</u> <b>categorical</b></dt>
+<dt><code><h5 class="fs">Class: <b>categorical</b></h5></code></dt>
 </dl>
 
 <p> Array representing categorical data.
@@ -244,6 +257,7 @@
 
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/categorical.m">categorical</a>
+</p>
 </div>
 
         <h4 class="d-inline-block my-3">
@@ -269,31 +283,71 @@ Create a new array of categorical values.
           <div class="collapse multi-collapse" id="colapsibleConstructor">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>C</var> = <b>categorical</b><i> (<var>A</var>)</i></dt>
-<dt><u>categorical:</u> <var>C</var> = <b>categorical</b><i> (<var>A</var>, <var>valueset</var>)</i></dt>
-<dt><u>categorical:</u> <var>C</var> = <b>categorical</b><i> (<var>A</var>, <var>valueset</var>, <var>catnames</var>)</i></dt>
-<dt><u>categorical:</u> <var>C</var> = <b>categorical</b><i> (dots{, <var>Name</var>, <var>Value</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>categorical</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>categorical</b> (<var>A</var>, <var>valueset</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>categorical</b> (<var>A</var>, <var>valueset</var>, <var>catnames</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>categorical</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <var>A</var> is the array of values to convert to categoricals.
+<p> <code><var>C</var> = categorical (<var>A</var>)</code> creates a categorical array
+ <var>C</var> from the input array <var>A</var>, which can be numeric, logical,
+ datetime, duration, string, or cell array of character vectors.  Input
+ <var>A</var> can also be another categorical array.  The categories in <var>C</var>
+ the sorted unique values from the input array <var>A</var>.  When the input
+ array is string or cell array of character vectors, any leading or
+ trailing white spaces are removed.  Missing values in the input array
+ correspond to <code>&lt;undefined&gt;</code> elements in the created categorical
+ array.  By default, there is no category for undefined values in the
+ output array.
 </p>
-<p> <var>valueset</var> is the set of all values from which <var>A</var> is drawn.
- If omitted, it defaults to the unique values in <var>A</var>.
+<p> <code><var>C</var> = categorical (<var>A</var>, <var>valueset</var>)</code> creates a
+ categorical array from input <var>A</var> with the categories specified in
+ <var>valueset</var>, which must be a vector of unique values.  The data type
+ of input array <var>A</var> and <var>valueset</var> must be the same, unless they
+ are string or cell arrays of character vectors, in which case they can be
+ used interchangeably.  Similarly to intput array <var>A</var> any leading or
+ trailing white spaces are removed, if <var>valueset</var> is a string or cell
+ array of character vectors.
 </p>
-<p> <var>catnames</var> is a list of category names corresponding to
- <var>valueset</var>. If omitted, it defaults to <var>valueset</var>, converted
- to strings.
+<p> <code><var>C</var> = categorical (<var>A</var>, <var>valueset</var>, <var>catnames</var>)</code>
+ creates a categorical array from input <var>A</var> with the categories
+ specified in <var>valueset</var> and named after the corresponding values in
+ <var>catnames</var>, which must be specified either as a string array or a
+ cell array of character vectors.  If omitted, <code>categorical</code> uses
+ the cellstring representation of <var>valueset</var> to name the specified
+ category names.  <var>catnames</var> must not contain any missing values, it
+ may have duplicate names, and it must have the same number of elements as
+ <var>valueset</var>.
 </p>
-<p> <var>Ordinal</var> is a logical indicating whether the category values in
- <var>C</var> have a numeric ordering relationship. Defaults to false.
+<p> <code><var>C</var> = categorical (&hellip;, <var>Name</var>, <var>Value</var>)</code> further
+ specifies additional parameters for creating categorical array <var>C</var>.
 </p>
-<p> <var>Protected</var> indicates whether <var>C</var> should be protected, which
- prevents the addition of new categories to the array. Defaults to
- false.
-</p>
-<p> <code><var>C</var> = categorical ()</code> returns an empty categorical array.
-</p>
+ <ul>
+<li> <code>&quot;Ordinal&quot;</code> must be a logical scalar specifying that the
+ categories in <var>C</var> have a numeric ordering relationship.  By default,
+ it is <code>false</code> and <code>categorical</code> creates a non-ordinal array.
+ The elements of unordered categorical arrays can only be compared for
+ equality.  Any other relational operator cannot be used.  Setting
+ <code>&quot;Ordinal&quot;</code> to <code>true</code> results in a categorical array with
+ mathematically orderred categories.  The ordering goes from smallest to
+ largest according to the order in <var>valueset</var> or the order or
+ appearance in input array <var>A</var>, when <var>valueset</var> is not specified,
+ in which case the unique values in {A are not sorted in order to set
+ the categories.  Ordinal categorical arrays allow for relational
+ operators such as <code>&gt;=, &gt;, &lt;=, &lt;), as well as statistical operations
+ such as <code>min</code>, <code>max</code>, and <code>median</code>.
+</code>
+ </li><li><code> <code>&quot;Protected&quot;</code> must be a logical scalar specifying that the
+ categories in <var>C</var> are protected.  By default, it is <code>false</code> for
+ unordered categorical arrays and it is always <code>true</code> for ordinal
+ categorical arrays.  Setting <code>&quot;Protected&quot;</code> to <code>true</code> prevents
+ from assigning new values that do not correspond to existing categories.
+ When <code>false</code>, assigning new values to the array automatically
+ updates the categories. Hence, categorical arrays with differenct sets of
+ categories can be combined/merged into a new array with set operations.
+ </code></li></ul>
+
 <p> <strong>See also: </strong>
 categories, 
 discretize, 
@@ -324,7 +378,7 @@ Get display formatted strings for each element of a categorical array.
           <div class="collapse multi-collapse" id="collapseMethod1">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>cstr</var> = <b>dispstrings</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>cstr</var> = <b>dispstrings</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -358,7 +412,7 @@ Convert categorical array to a cell array of character vectors.
           <div class="collapse multi-collapse" id="collapseMethod2">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>cstr</var> = <b>cellstr</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>cstr</var> = <b>cellstr</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -392,7 +446,7 @@ Convert categorical array to a double array.
           <div class="collapse multi-collapse" id="collapseMethod3">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>out</var> = <b>double</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>out</var> = <b>double</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -426,7 +480,7 @@ Convert categorical array to a single array.
           <div class="collapse multi-collapse" id="collapseMethod4">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>out</var> = <b>single</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>out</var> = <b>single</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -460,7 +514,7 @@ Convert categorical array to a int64 array.
           <div class="collapse multi-collapse" id="collapseMethod5">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>out</var> = <b>int64</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>out</var> = <b>int64</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -494,7 +548,7 @@ Convert categorical array to a int32 array.
           <div class="collapse multi-collapse" id="collapseMethod6">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>out</var> = <b>int32</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>out</var> = <b>int32</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -528,7 +582,7 @@ Convert categorical array to a int16 array.
           <div class="collapse multi-collapse" id="collapseMethod7">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>out</var> = <b>int16</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>out</var> = <b>int16</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -563,7 +617,7 @@ Convert categorical array to a int8 array.
           <div class="collapse multi-collapse" id="collapseMethod8">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>out</var> = <b>int8</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>out</var> = <b>int8</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -598,7 +652,7 @@ Convert categorical array to a uint64 array.
           <div class="collapse multi-collapse" id="collapseMethod9">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>out</var> = <b>uint64</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>out</var> = <b>uint64</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -632,7 +686,7 @@ Convert categorical array to a uint32 array.
           <div class="collapse multi-collapse" id="collapseMethod10">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>out</var> = <b>uint32</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>out</var> = <b>uint32</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -666,7 +720,7 @@ Convert categorical array to a uint16 array.
           <div class="collapse multi-collapse" id="collapseMethod11">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>out</var> = <b>uint16</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>out</var> = <b>uint16</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -700,7 +754,7 @@ Convert categorical array to a int8 array.
           <div class="collapse multi-collapse" id="collapseMethod12">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>out</var> = <b>uint8</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>out</var> = <b>uint8</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -735,7 +789,7 @@ Display summary of categorical array.
           <div class="collapse multi-collapse" id="collapseMethod13">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <b>summary</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <b>summary</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -770,7 +824,7 @@ List of categories in categorical array.
           <div class="collapse multi-collapse" id="collapseMethod14">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>cstr</var> = <b>categories</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>cstr</var> = <b>categories</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -803,10 +857,10 @@ Size of a categorical array.
           <div class="collapse multi-collapse" id="collapseMethod15">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>sz</var> = <b>size</b><i> (<var>C</var>)</i></dt>
-<dt><u>categorical:</u> <var>dim_sz</var> = <b>size</b><i> (<var>C</var>, <var>dim</var>)</i></dt>
-<dt><u>categorical:</u> <var>dim_sz</var> = <b>size</b><i> (<var>C</var>, <var>d1</var>, <var>d2</var>, &hellip;)</i></dt>
-<dt><u>categorical:</u> [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b><i> (&hellip;)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>sz</var> = <b>size</b> (<var>C</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>dim_sz</var> = <b>size</b> (<var>C</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>dim_sz</var> = <b>size</b> (<var>C</var>, <var>d1</var>, <var>d2</var>, &hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -850,7 +904,7 @@ Number of dimensions in a categorical array.
           <div class="collapse multi-collapse" id="collapseMethod16">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>out</var> = <b>ndims</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>out</var> = <b>ndims</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -883,7 +937,7 @@ Total number of elements in a categorical array.
           <div class="collapse multi-collapse" id="collapseMethod17">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>out</var> = <b>numel</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>out</var> = <b>numel</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -916,7 +970,7 @@ Test for categories in a categorical array.
           <div class="collapse multi-collapse" id="collapseMethod18">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>TF</var> = <b>iscategory</b><i> (<var>C</var>, <var>catnames</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>TF</var> = <b>iscategory</b> (<var>C</var>, <var>catnames</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -951,7 +1005,7 @@ Return true if categorical array is a column vector.
           <div class="collapse multi-collapse" id="collapseMethod19">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>TF</var> = <b>iscolumn</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>TF</var> = <b>iscolumn</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -987,7 +1041,7 @@ Return true if categorical array is empty.
           <div class="collapse multi-collapse" id="collapseMethod20">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>TF</var> = <b>isempty</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isempty</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1021,8 +1075,8 @@ Return true if categorical arrays are equal.
           <div class="collapse multi-collapse" id="collapseMethod21">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>TF</var> = <b>isequal</b><i> (<var>C1</var>, <var>C2</var>)</i></dt>
-<dt><u>categorical:</u> <var>TF</var> = <b>isequal</b><i> (<var>C1</var>, <var>C2</var>, &hellip;)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isequal</b> (<var>C1</var>, <var>C2</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isequal</b> (<var>C1</var>, <var>C2</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1069,7 +1123,7 @@ Return true if categorical arrays are equal under the assumption that
           <div class="collapse multi-collapse" id="collapseMethod22">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>TF</var> = <b>isequaln</b><i> (<var>C1</var>, <var>C2</var>, &hellip;)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isequaln</b> (<var>C1</var>, <var>C2</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1116,7 +1170,7 @@ Return true if categorical array is a 2-D array.
           <div class="collapse multi-collapse" id="collapseMethod23">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>TF</var> = <b>ismatrix</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>TF</var> = <b>ismatrix</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1152,9 +1206,9 @@ Test for categorical elements in a set.
           <div class="collapse multi-collapse" id="collapseMethod24">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>TF</var> = <b>ismember</b><i> (<var>A</var>, <var>B</var>)</i></dt>
-<dt><u>categorical:</u> <var>TF</var> = <b>ismember</b><i> (<var>A</var>, <var>B</var>, <code>'rows'</code>)</i></dt>
-<dt><u>categorical:</u> [<var>TF</var>, <var>index</var>] = <b>ismember</b><i> (&hellip;)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>TF</var> = <b>ismember</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>TF</var> = <b>ismember</b> (<var>A</var>, <var>B</var>, <code>'rows'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [<var>TF</var>, <var>index</var>] = <b>ismember</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1209,7 +1263,7 @@ Test for undefined elements in categorical array.
           <div class="collapse multi-collapse" id="collapseMethod25">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>out</var> = <b>ismissing</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>out</var> = <b>ismissing</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1244,7 +1298,7 @@ Test if categorical array is ordinal.
           <div class="collapse multi-collapse" id="collapseMethod26">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>TF</var> = <b>isordinal</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isordinal</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1278,7 +1332,7 @@ Test if categorical array is protected.
           <div class="collapse multi-collapse" id="collapseMethod27">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>TF</var> = <b>isprotected</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isprotected</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1312,7 +1366,7 @@ Return true if categorical array is a row vector.
           <div class="collapse multi-collapse" id="collapseMethod28">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>TF</var> = <b>isrow</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isrow</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1348,7 +1402,7 @@ Return true if categorical array is a scalar.
           <div class="collapse multi-collapse" id="collapseMethod29">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>TF</var> = <b>isscalar</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isscalar</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1383,7 +1437,7 @@ Test for undefined elements in categorical array.
           <div class="collapse multi-collapse" id="collapseMethod30">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>out</var> = <b>isundefined</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>out</var> = <b>isundefined</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1418,7 +1472,7 @@ Return true if categorical array is a vector.
           <div class="collapse multi-collapse" id="collapseMethod31">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>TF</var> = <b>isvector</b><i> (<var>C</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isvector</b> (<var>C</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1454,9 +1508,9 @@ Add categories to categorical array.
           <div class="collapse multi-collapse" id="collapseMethod32">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>B</var> = <b>addcats</b><i> (<var>A</var>, <var>newcats</var>)</i></dt>
-<dt><u>categorical:</u> <var>B</var> = <b>addcats</b><i> (&hellip;, <code>'After'</code>, <var>catname</var>)</i></dt>
-<dt><u>categorical:</u> <var>B</var> = <b>addcats</b><i> (&hellip;, <code>'Before'</code>, <var>catname</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>addcats</b> (<var>A</var>, <var>newcats</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>addcats</b> (&hellip;, <code>'After'</code>, <var>catname</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>addcats</b> (&hellip;, <code>'Before'</code>, <var>catname</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1470,6 +1524,12 @@ Add categories to categorical array.
 </p>
 <p> <code><var>B</var> = addcats (&hellip;, <code>'Before'</code>, <var>catname</var>)</code> adds
  the categories before the existing category specified by <var>catname</var>.
+</p>
+<p> <var>catname</var> must be either a character vector, a cellstr scalar or a
+ string scalar.  <var>newcats</var> may be a cell array of character vectors or
+ any type of array that can be converted to a cell array of character
+ vectors with the <code>cellstr</code> function, as long as it does contain any
+ duplicate names and does not reference an existing category in <var>A</var>.
 </p>
 
 
@@ -1497,8 +1557,8 @@ Merge categories in categorical array.
           <div class="collapse multi-collapse" id="collapseMethod33">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>B</var> = <b>mergecats</b><i> (<var>A</var>, <var>oldcats</var>)</i></dt>
-<dt><u>categorical:</u> <var>B</var> = <b>mergecats</b><i> (<var>A</var>, <var>oldcats</var>, <var>newcat</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>mergecats</b> (<var>A</var>, <var>oldcats</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>mergecats</b> (<var>A</var>, <var>oldcats</var>, <var>newcat</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1513,6 +1573,12 @@ Merge categories in categorical array.
 <p> <code><var>B</var> = mergecats (<var>A</var>, <var>oldcats</var>, <var>newcat</var>)</code> merges
  the categories listed in <var>oldcats</var> into a single new category named
  as specififed by <var>newcat</var>.
+</p>
+<p> <var>newcat</var> must be either a character vector, a cellstr scalar or a
+ string scalar.  <var>oldcats</var> may be a cell array of character vectors or
+ any type of array that can be converted to a cell array of character
+ vectors with the <code>cellstr</code> function.  Any names in <var>oldcats</var>
+ that do not reference an existing category are ignored.
 </p>
 
 
@@ -1540,8 +1606,8 @@ Remove categories from categorical array.
           <div class="collapse multi-collapse" id="collapseMethod34">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>B</var> = <b>removecats</b><i> (<var>A</var>)</i></dt>
-<dt><u>categorical:</u> <var>B</var> = <b>removecats</b><i> (<var>A</var>, <var>oldcats</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>removecats</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>removecats</b> (<var>A</var>, <var>oldcats</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1552,6 +1618,11 @@ Remove categories from categorical array.
 <p> <code><var>B</var> = removecats (<var>A</var>, <var>oldcats</var>)</code> removes the
  categories specified by <var>oldcats</var>.  The elements of <var>B</var> that
  correspond to the removed categories are undefined.
+</p>
+<p> <var>oldcats</var> may be a cell array of character vectors or any type of
+ array that can be converted to a cell array of character vectors with the
+ <code>cellstr</code> function.  Any names in <var>oldcats</var> that do not
+ reference an existing category are ignored.
 </p>
 
 
@@ -1579,19 +1650,19 @@ Rename categories in categorical array.
           <div class="collapse multi-collapse" id="collapseMethod35">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>B</var> = <b>renamecats</b><i> (<var>A</var>, <var>newnames</var>)</i></dt>
-<dt><u>categorical:</u> <var>B</var> = <b>renamecats</b><i> (<var>A</var>, <var>oldnames</var>, <var>newnames</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>renamecats</b> (<var>A</var>, <var>newnames</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>renamecats</b> (<var>A</var>, <var>oldnames</var>, <var>newnames</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>B</var> =</code> renamecats (<var>A</var>, <var>newnames</var>) renames all the
+<p> <code><var>B</var> = renamecats (<var>A</var>, <var>newnames</var>)</code> renames all the
  categories in <var>A</var>, without changing any of its values, with the names
  specified in <var>newnames</var>.  <var>newnames</var> may be a cell array of
  character vectors or any type of array that can be converted to a cell
  array of character vectors with the <code>cellstr</code> function, as long as
  it has the same number of elements as the categories in <var>A</var>.
 </p>
-<p> <code><var>B</var> =</code> renamecats (<var>A</var>, <var>oldnames</var>, <var>newnames</var>)
+<p> <code><var>B</var> = renamecats (<var>A</var>, <var>oldnames</var>, <var>newnames</var>)</code>
  renames the categories of <var>A</var> specified in <var>oldnames</var> with the
  names specified in <var>newnames</var>.  Both <var>oldnames</var> and
  <var>newnames</var> may be a cell arrays of character vectors or any type of
@@ -1626,8 +1697,8 @@ Reorder categories in categorical array.
           <div class="collapse multi-collapse" id="collapseMethod36">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>B</var> = <b>reordercats</b><i> (<var>A</var>)</i></dt>
-<dt><u>categorical:</u> <var>B</var> = <b>reordercats</b><i> (<var>A</var>, <var>neworder</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>reordercats</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>reordercats</b> (<var>A</var>, <var>neworder</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1636,8 +1707,10 @@ Reorder categories in categorical array.
 </p>
 <p> <code><var>B</var> = reordercats (<var>A</var>, <var>neworder</var>)</code> reorders the
  categories of <var>A</var> according to the order specified by <var>neworder</var>,
- which must be a cell array of character vectors or a string array with
- the same set of values as the existing categories in <var>A</var>.
+ which may be a cell array of character vectors or any type of array that
+ can be converted to a cell array of character vectors with the
+ <code>cellstr</code> function as long as it contains the same set with the
+ existing categories in <var>A</var>.
 </p>
 
 
@@ -1665,13 +1738,14 @@ Set categories in categorical array.
           <div class="collapse multi-collapse" id="collapseMethod37">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>B</var> = <b>setcats</b><i> (<var>A</var>, <var>newcats</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>setcats</b> (<var>A</var>, <var>newcats</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>B</var> = setcats (<var>A</var>, <var>newcats</var>)</code> sets categories in a
- categorical array according to the elements of the input array and the
- categories specified by <var>newcats</var>.
+<p> <code><var>B</var> = setcats (<var>A</var>, <var>newcats</var>)</code> sets categories in the
+ categorical array <var>B</var> according to the elements of the input array
+ <var>A</var> and the categories specified by <var>newcats</var> according to the
+ following rules:
 </p>
  <ul>
 <li> Any element of <var>A</var> that corresponds to a category listed in
@@ -1684,6 +1758,10 @@ Set categories in categorical array.
  new categories.
  </li></ul>
 
+<p> <var>newcats</var> may be a cell array of character vectors or any type of
+ array that can be converted to a cell array of character vectors with the
+ <code>cellstr</code> function.
+</p>
 
 
 
@@ -1710,18 +1788,18 @@ Combine categorical arrays.
           <div class="collapse multi-collapse" id="collapseMethod38">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>categorical:</u> <var>C</var> = <b>times</b><i> (<var>A</var>, <var>B</var>)</i></dt>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>times</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
 <p> <code><var>C</var> = times (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
- <code><var>A</var> .* <var>B</var></code> and returns a categorical array whose
+ <code><var>C</var> = <var>A</var> .* <var>B</var></code> and returns a categorical array whose
  categories are the Cartesian product of the categories in <var>A</var> and
  <var>B</var> and each element is indexed to a new category which is the
  combination of the categories of the corresponding elements in <var>A</var>
  and <var>B</var>.
 </p>
-<p> <var>A</var> and <var>B</var> must be of common size or scalars.
+<p> <var>A</var> and <var>B</var> must be of common size or scalar categorical arrays.
 </p>
 
 
@@ -1742,13 +1820,44 @@ Combine categorical arrays.
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Equality for categorical arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod39">
             <div class="border-bottom py-2">
-<b><code>categorical.eq</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">categorical: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = eq (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>TF</var> = <var>A</var> == <var>B</var></code> and returns a logical array of the
+ same size as the largest input with its elements set to <code>true</code>
+ where the corresponding elements of <var>A</var> and <var>B</var> are equal and set
+ to <code>false</code> where they are not.  <var>A</var> and <var>B</var> must be size
+ compatible, which translates to they can be the same size, one can be
+ scalar, or for every dimension, their dimension sizes must be equal or
+ one of them must be 1.
+</p>
+<p> If categorical arrays <var>A</var> and <var>B</var> are ordinal, they must have
+ the same set and ordering of categories.  If neither are ordinal, the
+ category names of each pair of elements are compared.  Hence, they do
+ not need to have the same set of categories.
+</p>
+<p> One of the input arguments can also be a character vector, a cellstr
+ scalar or a string scalar as long as the other is a categorical array.
+ In this case, a logical array of the same size as the categorical array
+ is returned in which every element is tested for equality by comparing
+ its category with that specified by the string argument.
+</p>
+<p> Undefined elements always return <code>false</code>, since they are not
+ comparable to any other categorical values including other undefined
+ elements.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -1765,13 +1874,44 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Greater than or equal to for ordinal categorical arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod40">
             <div class="border-bottom py-2">
-<b><code>categorical.ge</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">categorical: <var>TF</var> = <b>ge</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = ge (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>TF</var> = <var>A</var> &gt;= <var>B</var></code> and returns a logical array of the
+ same size as the largest input with its elements set to <code>true</code>
+ where the corresponding elements of <var>A</var> are greater than or equal to
+ <var>B</var> and set to <code>false</code> where they are not.  <var>A</var> and <var>B</var>
+ must be size compatible, which translates to they can be the same size,
+ one can be scalar, or for every dimension, their dimension sizes must be
+ equal or one of them must be 1.
+</p>
+<p> If categorical arrays <var>A</var> and <var>B</var> are both ordinal, they must
+ have the same set and ordering of categories.  Unordered categorical
+ arrays cannot be compared for greater than or equal to inequality.
+</p>
+<p> One of the input arguments can also be a character vector, a cellstr
+ scalar or a string scalar as long as the other is a categorical array.
+ In this case, a logical array of the same size as the categorical array
+ is returned in which every element is tested for greater than or equal to
+ inequality by comparing its category with that specified by the string
+ argument.
+</p>
+<p> Undefined elements always return <code>false</code>, since they are not
+ comparable to any other categorical values including other undefined
+ elements.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -1788,13 +1928,43 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Greater than for ordinal categorical arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod41">
             <div class="border-bottom py-2">
-<b><code>categorical.gt</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">categorical: <var>TF</var> = <b>gt</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = gt (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>TF</var> = <var>A</var> &gt; <var>B</var></code> and returns a logical array of the
+ same size as the largest input with its elements set to <code>true</code>
+ where the corresponding elements of <var>A</var> are greater than <var>B</var> and
+ set to <code>false</code> where they are not.  <var>A</var> and <var>B</var> must be
+ size compatible, which translates to they can be the same size, one can
+ be scalar, or for every dimension, their dimension sizes must be equal or
+ one of them must be 1.
+</p>
+<p> If categorical arrays <var>A</var> and <var>B</var> are both ordinal, they must
+ have the same set and ordering of categories.  Unordered categorical
+ arrays cannot be compared for greater than inequality.
+</p>
+<p> One of the input arguments can also be a character vector, a cellstr
+ scalar or a string scalar as long as the other is a categorical array.
+ In this case, a logical array of the same size as the categorical array
+ is returned in which every element is tested for greater than inequality
+ by comparing its category with that specified by the string argument.
+</p>
+<p> Undefined elements always return <code>false</code>, since they are not
+ comparable to any other categorical values including other undefined
+ elements.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -1811,13 +1981,44 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Less than or equal to for ordinal categorical arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod42">
             <div class="border-bottom py-2">
-<b><code>categorical.le</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">categorical: <var>TF</var> = <b>le</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = le (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>TF</var> = <var>A</var> &gt;= <var>B</var></code> and returns a logical array of the
+ same size as the largest input with its elements set to <code>true</code>
+ where the corresponding elements of <var>A</var> are less than or equal to
+ <var>B</var> and set to <code>false</code> where they are not.  <var>A</var> and <var>B</var>
+ must be size compatible, which translates to they can be the same size,
+ one can be scalar, or for every dimension, their dimension sizes must be
+ equal or one of them must be 1.
+</p>
+<p> If categorical arrays <var>A</var> and <var>B</var> are both ordinal, they must
+ have the same set and ordering of categories.  Unordered categorical
+ arrays cannot be compared for less than or equal to inequality.
+</p>
+<p> One of the input arguments can also be a character vector, a cellstr
+ scalar or a string scalar as long as the other is a categorical array.
+ In this case, a logical array of the same size as the categorical array
+ is returned in which every element is tested for less than or equal to
+ inequality by comparing its category with that specified by the string
+ argument.
+</p>
+<p> Undefined elements always return <code>false</code>, since they are not
+ comparable to any other categorical values including other undefined
+ elements.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -1834,13 +2035,43 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Less than for ordinal categorical arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod43">
             <div class="border-bottom py-2">
-<b><code>categorical.lt</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">categorical: <var>TF</var> = <b>lt</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = lt (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>TF</var> = <var>A</var> &gt; <var>B</var></code> and returns a logical array of the
+ same size as the largest input with its elements set to <code>true</code>
+ where the corresponding elements of <var>A</var> are less than <var>B</var> and
+ set to <code>false</code> where they are not.  <var>A</var> and <var>B</var> must be
+ size compatible, which translates to they can be the same size, one can
+ be scalar, or for every dimension, their dimension sizes must be equal or
+ one of them must be 1.
+</p>
+<p> If categorical arrays <var>A</var> and <var>B</var> are both ordinal, they must
+ have the same set and ordering of categories.  Unordered categorical
+ arrays cannot be compared for less than inequality.
+</p>
+<p> One of the input arguments can also be a character vector, a cellstr
+ scalar or a string scalar as long as the other is a categorical array.
+ In this case, a logical array of the same size as the categorical array
+ is returned in which every element is tested for less than inequality
+ by comparing its category with that specified by the string argument.
+</p>
+<p> Undefined elements always return <code>false</code>, since they are not
+ comparable to any other categorical values including other undefined
+ elements.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -1857,13 +2088,44 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Not equal for categorical arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod44">
             <div class="border-bottom py-2">
-<b><code>categorical.ne</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">categorical: <var>TF</var> = <b>ne</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = ne (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>TF</var> = <var>A</var> != <var>B</var></code> and returns a logical array of the
+ same size as the largest input with its elements set to <code>true</code>
+ where the corresponding elements of <var>A</var> and <var>B</var> are not equal and
+ set to <code>false</code> where they are equal.  <var>A</var> and <var>B</var> must be
+ size compatible, which translates to they can be the same size, one can
+ be scalar, or for every dimension, their dimension sizes must be equal or
+ one of them must be 1.
+</p>
+<p> If categorical arrays <var>A</var> and <var>B</var> are ordinal, they must have
+ the same set and ordering of categories.  If neither are ordinal, the
+ category names of each pair of elements are compared.  Hence, they do
+ not need to have the same set of categories.
+</p>
+<p> One of the input arguments can also be a character vector, a cellstr
+ scalar or a string scalar as long as the other is a categorical array.
+ In this case, a logical array of the same size as the categorical array
+ is returned in which every element is tested for inequality by comparing
+ its category with that specified by the string argument.
+</p>
+<p> Undefined elements always return <code>true</code>, since they are not
+ comparable to any other categorical values including other undefined
+ elements.
+</p>
+
+
+
             </div>
           </div>
         </div>

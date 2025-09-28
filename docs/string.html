@@ -23,12 +23,25 @@
       });
     </script>
     <style>
+    h5.fs {
+    margin-top: -0.15em;
+    margin-bottom: -0.15em;
+    }
     h6:hover {
       color: gray;
     }
+    code {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    white-space: nowrap;
+    color: gray;
+    }
     var {
-      font-style: italics;
-      font-weight: bold;
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    font-style: normal;
+    font-weight: bold;
+    color: gray;
     }
     td {
       vertical-align: top;
@@ -218,7 +231,7 @@
             </div>
             <div class="card-body">
 <dl>
-<dt><u>Class:</u> <b>string</b></dt>
+<dt><code><h5 class="fs">Class: <b>string</b></h5></code></dt>
 </dl>
 
 <p> Array representing sequences of characters.
@@ -243,6 +256,7 @@
 </p>
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/string.m">string</a>
+</p>
 </div>
         <h4 class="d-inline-block my-3">
           Methods
@@ -267,11 +281,11 @@ Create a new string array.
           <div class="collapse multi-collapse" id="colapsibleConstructor">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>str</var> = <b>string</b><i> ()</i></dt>
-<dt><u>string:</u> <var>str</var> = <b>string</b><i> (<var>in</var>)</i></dt>
-<dt><u>string:</u> <var>str</var> = <b>string</b><i> (<var>calendarDuration</var>, <code>'Format'</code>, <var>FMT</var>)</i></dt>
-<dt><u>string:</u> <var>str</var> = <b>string</b><i> (<var>duration</var>, <code>'Format'</code>, <var>FMT</var>)</i></dt>
-<dt><u>string:</u> <var>str</var> = <b>string</b><i> ({<var>in1</var>, &hellip;, <var>inN</var>})</i></dt>
+<dt><code><h5 class="fs">string: <var>str</var> = <b>string</b> ()</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>str</var> = <b>string</b> (<var>in</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>str</var> = <b>string</b> (<var>calendarDuration</var>, <code>'Format'</code>, <var>FMT</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>str</var> = <b>string</b> (<var>duration</var>, <code>'Format'</code>, <var>FMT</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>str</var> = <b>string</b> ({<var>in1</var>, &hellip;, <var>inN</var>})</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -339,7 +353,7 @@ Convert string array to a cell array of character vectors.
           <div class="collapse multi-collapse" id="collapseMethod1">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>cstr</var> = <b>cellstr</b><i> (<var>str</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>cstr</var> = <b>cellstr</b> (<var>str</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -374,7 +388,7 @@ Convert string array to a cell array.
           <div class="collapse multi-collapse" id="collapseMethod2">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>c_arr</var> = <b>cell</b><i> (<var>str</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>c_arr</var> = <b>cell</b> (<var>str</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -410,7 +424,7 @@ Convert string array to a character matrix.
           <div class="collapse multi-collapse" id="collapseMethod3">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>c_mat</var> = <b>char</b><i> (<var>str</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>c_mat</var> = <b>char</b> (<var>str</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -445,7 +459,7 @@ Convert string array to a double array.
           <div class="collapse multi-collapse" id="collapseMethod4">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>X</var> = <b>double</b><i> (<var>str</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>X</var> = <b>double</b> (<var>str</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -480,10 +494,10 @@ Return the size of a string array.
           <div class="collapse multi-collapse" id="collapseMethod5">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>sz</var> = <b>size</b><i> (<var>str</var>)</i></dt>
-<dt><u>string:</u> <var>dim_sz</var> = <b>size</b><i> (<var>str</var>, <var>dim</var>)</i></dt>
-<dt><u>string:</u> <var>dim_sz</var> = <b>size</b><i> (<var>str</var>, <var>d1</var>, <var>d2</var>, &hellip;)</i></dt>
-<dt><u>string:</u> [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b><i> (&hellip;)</i></dt>
+<dt><code><h5 class="fs">string: <var>sz</var> = <b>size</b> (<var>str</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>dim_sz</var> = <b>size</b> (<var>str</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>dim_sz</var> = <b>size</b> (<var>str</var>, <var>d1</var>, <var>d2</var>, &hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">string: [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -526,7 +540,7 @@ Number of dimensions in a string array.
           <div class="collapse multi-collapse" id="collapseMethod6">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>out</var> = <b>ndims</b><i> (<var>str</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>out</var> = <b>ndims</b> (<var>str</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -559,7 +573,7 @@ Total number of elements in a string array.
           <div class="collapse multi-collapse" id="collapseMethod7">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>out</var> = <b>numel</b><i> (<var>str</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>out</var> = <b>numel</b> (<var>str</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -589,7 +603,7 @@ Length of text in string arrays.
           <div class="collapse multi-collapse" id="collapseMethod8">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>out</var> = <b>strlength</b><i> (<var>str</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>out</var> = <b>strlength</b> (<var>str</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -619,7 +633,7 @@ Test if string array is a column vector.
           <div class="collapse multi-collapse" id="collapseMethod9">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>TF</var> = <b>iscolumn</b><i> (<var>str</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>iscolumn</b> (<var>str</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -651,7 +665,7 @@ Test if string array is empty.
           <div class="collapse multi-collapse" id="collapseMethod10">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>TF</var> = <b>isempty</b><i> (<var>str</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>isempty</b> (<var>str</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -683,7 +697,7 @@ Test if string array is a matrix.
           <div class="collapse multi-collapse" id="collapseMethod11">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>TF</var> = <b>ismatrix</b><i> (<var>str</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>ismatrix</b> (<var>str</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -715,7 +729,7 @@ Test for set member in string arrays.
           <div class="collapse multi-collapse" id="collapseMethod12">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>TF</var> = <b>ismember</b><i> (<var>str1</var>, <var>str2</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>ismember</b> (<var>str1</var>, <var>str2</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -747,7 +761,7 @@ Test for missing elements in string array.
           <div class="collapse multi-collapse" id="collapseMethod13">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>TF</var> = <b>ismissing</b><i> (<var>str</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>ismissing</b> (<var>str</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -779,7 +793,7 @@ Test if string array is a row vector.
           <div class="collapse multi-collapse" id="collapseMethod14">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>TF</var> = <b>isrow</b><i> (<var>str</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>isrow</b> (<var>str</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -811,7 +825,7 @@ Test if string array is a scalar.
           <div class="collapse multi-collapse" id="collapseMethod15">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>TF</var> = <b>isscalar</b><i> (<var>str</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>isscalar</b> (<var>str</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -843,7 +857,7 @@ Test if string array is a vector.
           <div class="collapse multi-collapse" id="collapseMethod16">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>TF</var> = <b>isvector</b><i> (<var>str</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>isvector</b> (<var>str</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -875,7 +889,7 @@ Test for equality.
           <div class="collapse multi-collapse" id="collapseMethod17">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>TF</var> = <b>eq</b><i> (<var>A</var>, <var>B</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -910,7 +924,7 @@ Test for greater than or equal to.
           <div class="collapse multi-collapse" id="collapseMethod18">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>TF</var> = <b>eq</b><i> (<var>A</var>, <var>B</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -945,7 +959,7 @@ Test for greater than.
           <div class="collapse multi-collapse" id="collapseMethod19">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>TF</var> = <b>eq</b><i> (<var>A</var>, <var>B</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -979,7 +993,7 @@ Test for less than or equal to.
           <div class="collapse multi-collapse" id="collapseMethod20">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>TF</var> = <b>eq</b><i> (<var>A</var>, <var>B</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1014,7 +1028,7 @@ Test for less than.
           <div class="collapse multi-collapse" id="collapseMethod21">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>TF</var> = <b>eq</b><i> (<var>A</var>, <var>B</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1048,7 +1062,7 @@ Test for inequality.
           <div class="collapse multi-collapse" id="collapseMethod22">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>TF</var> = <b>ne</b><i> (<var>A</var>, <var>B</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>ne</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1084,7 +1098,7 @@ Compare strings.
           <div class="collapse multi-collapse" id="collapseMethod23">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>TF</var> = <b>strcmp</b><i> (<var>A</var>, <var>B</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>strcmp</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1125,7 +1139,7 @@ Compare strings (case insensitive).
           <div class="collapse multi-collapse" id="collapseMethod24">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>TF</var> = <b>strcmp</b><i> (<var>A</var>, <var>B</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>strcmp</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1167,7 +1181,7 @@ Compare first <var>n</var> characters of strings.
           <div class="collapse multi-collapse" id="collapseMethod25">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>TF</var> = <b>strncmp</b><i> (<var>A</var>, <var>B</var>, <var>n</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>strncmp</b> (<var>A</var>, <var>B</var>, <var>n</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1209,7 +1223,7 @@ Compare first <var>n</var> characters of strings (case insensitive).
           <div class="collapse multi-collapse" id="collapseMethod26">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>TF</var> = <b>strncmp</b><i> (<var>A</var>, <var>B</var>, <var>n</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>strncmp</b> (<var>A</var>, <var>B</var>, <var>n</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1298,7 +1312,7 @@ Remove content from string array.
           <div class="collapse multi-collapse" id="collapseMethod29">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>newstr</var> = <b>erase</b><i> (<var>str</var>, <var>pat</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>erase</b> (<var>str</var>, <var>pat</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1539,7 +1553,7 @@ Reverse order of characters in string array.
           <div class="collapse multi-collapse" id="collapseMethod39">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>newstr</var> = <b>reverse</b><i> (<var>str</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>reverse</b> (<var>str</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1619,7 +1633,7 @@ Horizontal concatenation of texts in string array.
           <div class="collapse multi-collapse" id="collapseMethod42">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>newstr</var> = <b>strcat</b><i> (<var>str1</var>, <var>str2</var>, &hellip;)</i></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>strcat</b> (<var>str1</var>, <var>str2</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1747,7 +1761,7 @@ Convert contents of string array to lower case.
           <div class="collapse multi-collapse" id="collapseMethod47">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>newstr</var> = <b>lower</b><i> (<var>str</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>lower</b> (<var>str</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1781,7 +1795,7 @@ Convert contents of string array to upper case.
           <div class="collapse multi-collapse" id="collapseMethod48">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>string:</u> <var>newstr</var> = <b>upper</b><i> (<var>str</var>)</i></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>upper</b> (<var>str</var>)</code></h5></dt>
 </dl>
 
 <p> </p>

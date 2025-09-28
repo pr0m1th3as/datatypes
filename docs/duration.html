@@ -23,12 +23,25 @@
       });
     </script>
     <style>
+    h5.fs {
+    margin-top: -0.15em;
+    margin-bottom: -0.15em;
+    }
     h6:hover {
       color: gray;
     }
+    code {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    white-space: nowrap;
+    color: gray;
+    }
     var {
-      font-style: italics;
-      font-weight: bold;
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    font-style: normal;
+    font-weight: bold;
+    color: gray;
     }
     td {
       vertical-align: top;
@@ -218,7 +231,7 @@
             </div>
             <div class="card-body">
 <dl>
-<dt><u>Class:</u> <b>duration</b></dt>
+<dt><code><h5 class="fs">Class: <b>duration</b></h5></code></dt>
 </dl>
 
 <p> Array representing durations of time using fixed-length time units.
@@ -243,6 +256,7 @@
 </p>
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/duration.m">duration</a>
+</p>
 </div>
         <h4 class="d-inline-block my-3">
           Properties
@@ -303,12 +317,12 @@ Create a new array of fixed-length time durations.
           <div class="collapse multi-collapse" id="colapsibleConstructor">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>duration:</u> <var>D</var> = <b>duration</b><i> (<var>X</var>)</i></dt>
-<dt><u>duration:</u> <var>D</var> = <b>duration</b><i> (<var>H</var>, <var>MI</var>, <var>S</var>)</i></dt>
-<dt><u>duration:</u> <var>D</var> = <b>duration</b><i> (<var>H</var>, <var>MI</var>, <var>S</var>, <var>MS</var>)</i></dt>
-<dt><u>duration:</u> <var>D</var> = <b>duration</b><i> (<var>TimeStrings</var>)</i></dt>
-<dt><u>duration:</u> <var>D</var> = <b>duration</b><i> (<var>TimeStrings</var>, <code>'InputFormat'</code>, <var>INFMT</var>)</i></dt>
-<dt><u>duration:</u> <var>D</var> = <b>duration</b><i> (&hellip;, <code>'Format'</code>, <var>FMT</var>)</i></dt>
+<dt><code><h5 class="fs">duration: <var>D</var> = <b>duration</b> (<var>X</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>D</var> = <b>duration</b> (<var>H</var>, <var>MI</var>, <var>S</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>D</var> = <b>duration</b> (<var>H</var>, <var>MI</var>, <var>S</var>, <var>MS</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>D</var> = <b>duration</b> (<var>TimeStrings</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>D</var> = <b>duration</b> (<var>TimeStrings</var>, <code>'InputFormat'</code>, <var>INFMT</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>D</var> = <b>duration</b> (&hellip;, <code>'Format'</code>, <var>FMT</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -400,7 +414,7 @@ Get display formatted strings for each element of a duration array.
           <div class="collapse multi-collapse" id="collapseMethod1">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>duration:</u> <var>cstr</var> = <b>dispstrings</b><i> (<var>D</var>)</i></dt>
+<dt><code><h5 class="fs">duration: <var>cstr</var> = <b>dispstrings</b> (<var>D</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -434,8 +448,8 @@ Convert duration array to a cell array of character vectors.
           <div class="collapse multi-collapse" id="collapseMethod2">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>duration:</u> <var>cstr</var> = <b>cellstr</b><i> (<var>D</var>)</i></dt>
-<dt><u>duration:</u> <var>cstr</var> = <b>cellstr</b><i> (<var>D</var>, <var>Format</var>)</i></dt>
+<dt><code><h5 class="fs">duration: <var>cstr</var> = <b>cellstr</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>cstr</var> = <b>cellstr</b> (<var>D</var>, <var>Format</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -469,7 +483,7 @@ Convert duration array to a character matrix.
           <div class="collapse multi-collapse" id="collapseMethod3">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>duration:</u> <var>cmat</var> = <b>char</b><i> (<var>D</var>)</i></dt>
+<dt><code><h5 class="fs">duration: <var>cmat</var> = <b>char</b> (<var>D</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -502,8 +516,8 @@ Convert duration array to date vectors.
           <div class="collapse multi-collapse" id="collapseMethod4">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>duration:</u> <var>DV</var> = <b>datevec</b><i> (<var>DT</var>)</i></dt>
-<dt><u>duration:</u> [<var>Y</var>, <var>MO</var>, <var>D</var>, <var>h</var>, <var>mi</var>, <var>s</var>] = <b>datevec</b><i> (<var>DT</var>)</i></dt>
+<dt><code><h5 class="fs">duration: <var>DV</var> = <b>datevec</b> (<var>DT</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>Y</var>, <var>MO</var>, <var>D</var>, <var>h</var>, <var>mi</var>, <var>s</var>] = <b>datevec</b> (<var>DT</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -545,9 +559,9 @@ Split duration array into separate time unit values.
           <div class="collapse multi-collapse" id="collapseMethod5">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>duration:</u> <var>H</var> = <b>hms</b><i> (<var>D</var>)</i></dt>
-<dt><u>duration:</u> [<var>H</var>, <var>M</var>] = <b>hms</b><i> (<var>D</var>)</i></dt>
-<dt><u>duration:</u> [<var>H</var>, <var>M</var>, <var>S</var>] = <b>hms</b><i> (<var>D</var>)</i></dt>
+<dt><code><h5 class="fs">duration: <var>H</var> = <b>hms</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>H</var>, <var>M</var>] = <b>hms</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>H</var>, <var>M</var>, <var>S</var>] = <b>hms</b> (<var>D</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -583,7 +597,7 @@ Duration equivalent numeric values in fixed-length years.
           <div class="collapse multi-collapse" id="collapseMethod6">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>duration:</u> <var>X</var> = <b>years</b><i> (<var>D</var>)</i></dt>
+<dt><code><h5 class="fs">duration: <var>X</var> = <b>years</b> (<var>D</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -617,7 +631,7 @@ Duration equivalent numeric values in fixed-length days.
           <div class="collapse multi-collapse" id="collapseMethod7">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>duration:</u> <var>X</var> = <b>days</b><i> (<var>D</var>)</i></dt>
+<dt><code><h5 class="fs">duration: <var>X</var> = <b>days</b> (<var>D</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -651,7 +665,7 @@ Duration equivalent numeric values in hours.
           <div class="collapse multi-collapse" id="collapseMethod8">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>duration:</u> <var>X</var> = <b>hours</b><i> (<var>D</var>)</i></dt>
+<dt><code><h5 class="fs">duration: <var>X</var> = <b>hours</b> (<var>D</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -685,7 +699,7 @@ Duration equivalent numeric values in minutes.
           <div class="collapse multi-collapse" id="collapseMethod9">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>duration:</u> <var>X</var> = <b>minutes</b><i> (<var>D</var>)</i></dt>
+<dt><code><h5 class="fs">duration: <var>X</var> = <b>minutes</b> (<var>D</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -719,7 +733,7 @@ Duration equivalent numeric values in seconds.
           <div class="collapse multi-collapse" id="collapseMethod10">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>duration:</u> <var>X</var> = <b>seconds</b><i> (<var>D</var>)</i></dt>
+<dt><code><h5 class="fs">duration: <var>X</var> = <b>seconds</b> (<var>D</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -753,7 +767,7 @@ Duration equivalent numeric values in milliseconds.
           <div class="collapse multi-collapse" id="collapseMethod11">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>duration:</u> <var>X</var> = <b>milliseconds</b><i> (<var>D</var>)</i></dt>
+<dt><code><h5 class="fs">duration: <var>X</var> = <b>milliseconds</b> (<var>D</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -787,10 +801,10 @@ Return the size of a duration array.
           <div class="collapse multi-collapse" id="collapseMethod12">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>duration:</u> <var>sz</var> = <b>size</b><i> (<var>D</var>)</i></dt>
-<dt><u>duration:</u> <var>dim_sz</var> = <b>size</b><i> (<var>D</var>, <var>dim</var>)</i></dt>
-<dt><u>duration:</u> <var>dim_sz</var> = <b>size</b><i> (<var>D</var>, <var>d1</var>, <var>d2</var>, &hellip;)</i></dt>
-<dt><u>duration:</u> [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b><i> (&hellip;)</i></dt>
+<dt><code><h5 class="fs">duration: <var>sz</var> = <b>size</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>dim_sz</var> = <b>size</b> (<var>D</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>dim_sz</var> = <b>size</b> (<var>D</var>, <var>d1</var>, <var>d2</var>, &hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -833,7 +847,7 @@ Number of dimensions in a duration array.
           <div class="collapse multi-collapse" id="collapseMethod13">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>duration:</u> <var>out</var> = <b>ndims</b><i> (<var>D</var>)</i></dt>
+<dt><code><h5 class="fs">duration: <var>out</var> = <b>ndims</b> (<var>D</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -866,7 +880,7 @@ Total number of elements in a duration array.
           <div class="collapse multi-collapse" id="collapseMethod14">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>duration:</u> <var>out</var> = <b>numel</b><i> (<var>D</var>)</i></dt>
+<dt><code><h5 class="fs">duration: <var>out</var> = <b>numel</b> (<var>D</var>)</code></h5></dt>
 </dl>
 
 <p> </p>

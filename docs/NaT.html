@@ -23,12 +23,25 @@
       });
     </script>
     <style>
+    h5.fs {
+    margin-top: -0.15em;
+    margin-bottom: -0.15em;
+    }
     h6:hover {
       color: gray;
     }
+    code {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    white-space: nowrap;
+    color: gray;
+    }
     var {
-      font-style: italics;
-      font-weight: bold;
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    font-style: normal;
+    font-weight: bold;
+    color: gray;
     }
     td {
       vertical-align: top;
@@ -218,12 +231,12 @@
             </div>
             <div class="card-body">
 <dl>
-<dt><u>Function:</u> <b>NaT</b></dt>
-<dt><u>Function:</u> <var>T</var> = <b>NaT</b><i> (<var>n</var>)</i></dt>
-<dt><u>Function:</u> <var>T</var> = <b>NaT</b><i> (<var>sz1</var>, &hellip;, <var>szN</var>)</i></dt>
-<dt><u>Function:</u> <var>T</var> = <b>NaT</b><i> (<var>sz</var>)</i></dt>
-<dt><u>Function:</u> <var>T</var> = <b>NaT</b><i> (&hellip;, <code>'Format'</code>, <var>fmt</var>)</i></dt>
-<dt><u>Function:</u> <var>T</var> = <b>NaT</b><i> (&hellip;, <code>'TimeZone'</code>, <var>tz</var>)</i></dt>
+<dt><code><h5 class="fs">Function: <b>NaT</b></dt>
+<dt><code><h5 class="fs">Function: <var>T</var> = <b>NaT</b> (<var>n</var>)</code></h5></dt>
+<dt><code><h5 class="fs">Function: <var>T</var> = <b>NaT</b> (<var>sz1</var>, &hellip;, <var>szN</var>)</code></h5></dt>
+<dt><code><h5 class="fs">Function: <var>T</var> = <b>NaT</b> (<var>sz</var>)</code></h5></dt>
+<dt><code><h5 class="fs">Function: <var>T</var> = <b>NaT</b> (&hellip;, <code>'Format'</code>, <var>fmt</var>)</code></h5></dt>
+<dt><code><h5 class="fs">Function: <var>T</var> = <b>NaT</b> (&hellip;, <code>'TimeZone'</code>, <var>tz</var>)</code></h5></dt>
 </dl>
 
 <p> “Not-a-Time”. Creates missing-valued datetime arrays.

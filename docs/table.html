@@ -23,12 +23,25 @@
       });
     </script>
     <style>
+    h5.fs {
+    margin-top: -0.15em;
+    margin-bottom: -0.15em;
+    }
     h6:hover {
       color: gray;
     }
+    code {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    white-space: nowrap;
+    color: gray;
+    }
     var {
-      font-style: italics;
-      font-weight: bold;
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    font-style: normal;
+    font-weight: bold;
+    color: gray;
     }
     td {
       vertical-align: top;
@@ -218,7 +231,7 @@
             </div>
             <div class="card-body">
 <dl>
-<dt><u>Class:</u> <b>table</b></dt>
+<dt><code><h5 class="fs">Class: <b>table</b></h5></code></dt>
 </dl>
 
 <p> Array of tabular data containing multiple columnar variables.
@@ -256,6 +269,7 @@
 </p>
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/table.m">table</a>
+</p>
 </div>
         <h4 class="d-inline-block my-3">
           Properties
@@ -1037,11 +1051,11 @@ Create a new table.
           <div class="collapse multi-collapse" id="colapsibleConstructor">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>table</b><i> (<var>var1</var>, <var>var2</var>, &hellip;, <var>varN</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>table</b><i> (<code>'Size'</code>, <var>sz</var>, <code>'VariableTypes'</code>, <var>varTypes</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>table</b><i> (&hellip;, <code>'VariableNames'</code>, <var>varNames</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>table</b><i> (&hellip;, <code>'RowNames'</code>, <var>rowNames</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>table</b><i> (&hellip;, <code>'DimensionNames'</code>, <var>dimNames</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>table</b> (<var>var1</var>, <var>var2</var>, &hellip;, <var>varN</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>table</b> (<code>'Size'</code>, <var>sz</var>, <code>'VariableTypes'</code>, <var>varTypes</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>table</b> (&hellip;, <code>'VariableNames'</code>, <var>varNames</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>table</b> (&hellip;, <code>'RowNames'</code>, <var>rowNames</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>table</b> (&hellip;, <code>'DimensionNames'</code>, <var>dimNames</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1396,8 +1410,8 @@ Print a summary of a table.
           <div class="collapse multi-collapse" id="collapseMethod1">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <b>summary</b><i> (<var>tbl</var>)</i></dt>
-<dt><u>table:</u> <var>s</var> = <b>summary</b><i> (<var>tbl</var>)</i></dt>
+<dt><code><h5 class="fs">table: <b>summary</b> (<var>tbl</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>s</var> = <b>summary</b> (<var>tbl</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1531,7 +1545,7 @@ Number of rows in table.
           <div class="collapse multi-collapse" id="collapseMethod2">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>H</var> = <b>height</b><i> (<var>tbl</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>H</var> = <b>height</b> (<var>tbl</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1564,7 +1578,7 @@ Number of variables in table.
           <div class="collapse multi-collapse" id="collapseMethod3">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>W</var> = <b>width</b><i> (<var>tbl</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>W</var> = <b>width</b> (<var>tbl</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1600,9 +1614,9 @@ Display or return the first K rows of table.
           <div class="collapse multi-collapse" id="collapseMethod4">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <b>head</b><i> (<var>tbl</var>)</i></dt>
-<dt><u>table:</u> <b>head</b><i> (<var>tbl</var>, <var>k</var>)</i></dt>
-<dt><u>table:</u> <var>out</var> = <b>head</b><i> (<var>tbl</var>, <var>k</var>)</i></dt>
+<dt><code><h5 class="fs">table: <b>head</b> (<var>tbl</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <b>head</b> (<var>tbl</var>, <var>k</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>out</var> = <b>head</b> (<var>tbl</var>, <var>k</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1645,9 +1659,9 @@ Display or return the last K rows of table.
           <div class="collapse multi-collapse" id="collapseMethod5">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <b>tail</b><i> (<var>tbl</var>)</i></dt>
-<dt><u>table:</u> <b>tail</b><i> (<var>tbl</var>, <var>k</var>)</i></dt>
-<dt><u>table:</u> <var>out</var> = <b>tail</b><i> (<var>tbl</var>, <var>k</var>)</i></dt>
+<dt><code><h5 class="fs">table: <b>tail</b> (<var>tbl</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <b>tail</b> (<var>tbl</var>, <var>k</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>out</var> = <b>tail</b> (<var>tbl</var>, <var>k</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1690,13 +1704,13 @@ Sort the rows of a table.
           <div class="collapse multi-collapse" id="collapseMethod6">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tblB</var> = <b>sortrows</b><i> (<var>tblA</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>sortrows</b><i> (<var>tblA</var>, <code>'RowNames'</code>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>sortrows</b><i> (<var>tblA</var>, <var>rowDimName</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>sortrows</b><i> (<var>tblA</var>, <var>vars</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>sortrows</b><i> (<var>tblA</var>, &hellip;, <var>direction</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>sortrows</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
-<dt><u>table:</u> [<var>tblB</var>, <var>index</var>] = <b>sortrows</b><i> (&hellip;)</i></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>sortrows</b> (<var>tblA</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>sortrows</b> (<var>tblA</var>, <code>'RowNames'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>sortrows</b> (<var>tblA</var>, <var>rowDimName</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>sortrows</b> (<var>tblA</var>, <var>vars</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>sortrows</b> (<var>tblA</var>, &hellip;, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>sortrows</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>tblB</var>, <var>index</var>] = <b>sortrows</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1801,10 +1815,10 @@ Unique rows in a table.
           <div class="collapse multi-collapse" id="collapseMethod7">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tblB</var> = <b>unique</b><i> (<var>tblA</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>unique</b><i> (<var>tblA</var>, <var>setOrder</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>unique</b><i> (<var>tblA</var>, <var>occurence</var>)</i></dt>
-<dt><u>table:</u> [<var>tblB</var>, <var>ixA</var>, <var>ixB</var>] = <b>unique</b><i> (&hellip;)</i></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>unique</b> (<var>tblA</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>unique</b> (<var>tblA</var>, <var>setOrder</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>unique</b> (<var>tblA</var>, <var>occurence</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>tblB</var>, <var>ixA</var>, <var>ixB</var>] = <b>unique</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1864,12 +1878,12 @@ Check if table rows are sorted accordingly.
           <div class="collapse multi-collapse" id="collapseMethod8">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>TF</var> = <b>issortedrows</b><i> (<var>tblA</var>)</i></dt>
-<dt><u>table:</u> <var>TF</var> = <b>issortedrows</b><i> (<var>tblA</var>, <code>'RowNames'</code>)</i></dt>
-<dt><u>table:</u> <var>TF</var> = <b>issortedrows</b><i> (<var>tblA</var>, <var>rowDimName</var>)</i></dt>
-<dt><u>table:</u> <var>TF</var> = <b>issortedrows</b><i> (<var>tblA</var>, <var>vars</var>)</i></dt>
-<dt><u>table:</u> <var>TF</var> = <b>issortedrows</b><i> (<var>tblA</var>, &hellip;, <var>direction</var>)</i></dt>
-<dt><u>table:</u> <var>TF</var> = <b>issortedrows</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>TF</var> = <b>issortedrows</b> (<var>tblA</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>TF</var> = <b>issortedrows</b> (<var>tblA</var>, <code>'RowNames'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>TF</var> = <b>issortedrows</b> (<var>tblA</var>, <var>rowDimName</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>TF</var> = <b>issortedrows</b> (<var>tblA</var>, <var>vars</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>TF</var> = <b>issortedrows</b> (<var>tblA</var>, &hellip;, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>TF</var> = <b>issortedrows</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1977,13 +1991,13 @@ Sort the rows of a table.
           <div class="collapse multi-collapse" id="collapseMethod9">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tblB</var> = <b>topkrows</b><i> (<var>tblA</var>, <var>k</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>topkrows</b><i> (<var>tblA</var>, <var>k</var>, <code>'RowNames'</code>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>topkrows</b><i> (<var>tblA</var>, <var>k</var>, <var>rowDimName</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>topkrows</b><i> (<var>tblA</var>, <var>k</var>, <var>vars</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>topkrows</b><i> (<var>tblA</var>, <var>k</var>, &hellip;, <var>direction</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>topkrows</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
-<dt><u>table:</u> [<var>tblB</var>, <var>index</var>] = <b>topkrows</b><i> (&hellip;)</i></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>topkrows</b> (<var>tblA</var>, <var>k</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>topkrows</b> (<var>tblA</var>, <var>k</var>, <code>'RowNames'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>topkrows</b> (<var>tblA</var>, <var>k</var>, <var>rowDimName</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>topkrows</b> (<var>tblA</var>, <var>k</var>, <var>vars</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>topkrows</b> (<var>tblA</var>, <var>k</var>, &hellip;, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>topkrows</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>tblB</var>, <var>index</var>] = <b>topkrows</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -2092,10 +2106,10 @@ Add new variables to a table.
           <div class="collapse multi-collapse" id="collapseMethod10">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tblB</var> = <b>addvars</b><i> (<var>tblA</var>, <var>var1</var>, &hellip;, <var>varN</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>addvars</b><i> (&hellip;, <code>'After'</code>, <var>location</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>addvars</b><i> (&hellip;, <code>'Before'</code>, <var>location</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>addvars</b><i> (&hellip;, <code>'NewVariableNames'</code>, <var>newNames</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>addvars</b> (<var>tblA</var>, <var>var1</var>, &hellip;, <var>varN</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>addvars</b> (&hellip;, <code>'After'</code>, <var>location</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>addvars</b> (&hellip;, <code>'Before'</code>, <var>location</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>addvars</b> (&hellip;, <code>'NewVariableNames'</code>, <var>newNames</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -2155,7 +2169,7 @@ Rename variables in a table.
           <div class="collapse multi-collapse" id="collapseMethod11">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tblB</var> = <b>renamevars</b><i> (<var>tblA</var>, <var>vars</var>, <var>newNames</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>renamevars</b> (<var>tblA</var>, <var>vars</var>, <var>newNames</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -2208,9 +2222,9 @@ Move variables in a table.
           <div class="collapse multi-collapse" id="collapseMethod12">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tblB</var> = <b>movevars</b><i> (<var>tblA</var>, <var>vars</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>movevars</b><i> (&hellip;, <code>'After'</code>, <var>location</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>movevars</b><i> (&hellip;, <code>'Before'</code>, <var>location</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>movevars</b> (<var>tblA</var>, <var>vars</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>movevars</b> (&hellip;, <code>'After'</code>, <var>location</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>movevars</b> (&hellip;, <code>'Before'</code>, <var>location</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -2271,7 +2285,7 @@ Remove variables from a table.
           <div class="collapse multi-collapse" id="collapseMethod13">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tblB</var> = <b>removevars</b><i> (<var>tblA</var>, <var>vars</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>removevars</b> (<var>tblA</var>, <var>vars</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -2318,9 +2332,9 @@ Split multicolumn variables in a table.
           <div class="collapse multi-collapse" id="collapseMethod14">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tblB</var> = <b>splitvars</b><i> (<var>tblA</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>splitvars</b><i> (<var>tblA</var>, <var>vars</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>splitvars</b><i> (&hellip;, <code>'NewVariableNames'</code>, <var>NewNames</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>splitvars</b> (<var>tblA</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>splitvars</b> (<var>tblA</var>, <var>vars</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>splitvars</b> (&hellip;, <code>'NewVariableNames'</code>, <var>NewNames</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -2387,8 +2401,8 @@ Merge table variables into a single multicolumn variable.
           <div class="collapse multi-collapse" id="collapseMethod15">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tblB</var> = <b>mergevars</b><i> (<var>tblA</var>, <var>vars</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>mergevars</b><i> (<var>tblA</var>, <var>vars</var>, <var>Name</var>, <var>Value</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>mergevars</b> (<var>tblA</var>, <var>vars</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>mergevars</b> (<var>tblA</var>, <var>vars</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -2461,7 +2475,7 @@ Convert table variables to specified data type.
           <div class="collapse multi-collapse" id="collapseMethod16">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tblB</var> = <b>convertvars</b><i> (<var>tblA</var>, <var>vars</var>, <var>dataType</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>convertvars</b> (<var>tblA</var>, <var>vars</var>, <var>dataType</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -2529,8 +2543,8 @@ Reorient table by swapping rows into variables.
           <div class="collapse multi-collapse" id="collapseMethod17">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tblB</var> = <b>rows2vars</b><i> (<var>tblA</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>rows2vars</b><i> (<var>tblA</var>, <var>Name</var>, <var>Value</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>rows2vars</b> (<var>tblA</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>rows2vars</b> (<var>tblA</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -2605,9 +2619,9 @@ Stack multiple table variables into a single table variable.
           <div class="collapse multi-collapse" id="collapseMethod18">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tblB</var> = <b>stack</b><i> (<var>tblA</var>, <var>vars</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>stack</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
-<dt><u>table:</u> [<var>tblB</var>, <var>idxA</var>] = <b>stack</b><i> (&hellip;)</i></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>stack</b> (<var>tblA</var>, <var>vars</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>stack</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>tblB</var>, <var>idxA</var>] = <b>stack</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -2687,9 +2701,9 @@ Unstack a single table variable into multiple table variables.
           <div class="collapse multi-collapse" id="collapseMethod19">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tblB</var> = <b>unstack</b><i> (<var>tblA</var>, <var>vars</var>, <var>ivar</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>unstack</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
-<dt><u>table:</u> [<var>tblB</var>, <var>idxA</var>] = <b>unstack</b><i> (&hellip;)</i></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>unstack</b> (<var>tblA</var>, <var>vars</var>, <var>ivar</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>unstack</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>tblB</var>, <var>idxA</var>] = <b>unstack</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -2800,7 +2814,7 @@ Invert nested table-in-table hierarchy in tables.
           <div class="collapse multi-collapse" id="collapseMethod20">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tblB</var> = <b>inner2outer</b><i> (<var>tblA</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>inner2outer</b> (<var>tblA</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -2832,7 +2846,7 @@ Add custom properties to a table.
           <div class="collapse multi-collapse" id="collapseMethod21">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>T</var> = <b>addprop</b><i> (<var>T</var>, <var>propertyNames</var>, <var>propertyTypes</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>T</var> = <b>addprop</b> (<var>T</var>, <var>propertyNames</var>, <var>propertyTypes</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -2883,7 +2897,7 @@ Remove custom properties from a table.
           <div class="collapse multi-collapse" id="collapseMethod22">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>T</var> = <b>rmprop</b><i> (<var>T</var>, <var>propertyNames</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>T</var> = <b>rmprop</b> (<var>T</var>, <var>propertyNames</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -2919,9 +2933,9 @@ Combine two tables by rows using key variables.
           <div class="collapse multi-collapse" id="collapseMethod23">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>join</b><i> (<var>tblL</var>, <var>tblR</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>join</b><i> (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</i></dt>
-<dt><u>table:</u> [<var>tbl</var>, <var>ixR</var>] = <b>join</b><i> (&hellip;)</i></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>join</b> (<var>tblL</var>, <var>tblR</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>join</b> (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>ixR</var>] = <b>join</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -2953,9 +2967,9 @@ Inner join between two tables by rows using key variables.
           <div class="collapse multi-collapse" id="collapseMethod24">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>innerjoin</b><i> (<var>tblL</var>, <var>tblR</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>innerjoin</b><i> (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</i></dt>
-<dt><u>table:</u> [<var>tbl</var>, <var>ixL</var>, <var>ixR</var>] = <b>innerjoin</b><i> (&hellip;)</i></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>innerjoin</b> (<var>tblL</var>, <var>tblR</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>innerjoin</b> (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>ixL</var>, <var>ixR</var>] = <b>innerjoin</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -2987,9 +3001,9 @@ Outer join between two tables by rows using key variables.
           <div class="collapse multi-collapse" id="collapseMethod25">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>outerjoin</b><i> (<var>tblL</var>, <var>tblR</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>outerjoin</b><i> (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</i></dt>
-<dt><u>table:</u> [<var>tbl</var>, <var>ixL</var>, <var>ixR</var>] = <b>outerjoin</b><i> (&hellip;)</i></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>outerjoin</b> (<var>tblL</var>, <var>tblR</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>outerjoin</b> (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>ixL</var>, <var>ixR</var>] = <b>outerjoin</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3021,9 +3035,9 @@ Union of two tables by rows.
           <div class="collapse multi-collapse" id="collapseMethod26">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>union</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>union</b><i> (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</i></dt>
-<dt><u>table:</u> [<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = <b>union</b><i> (&hellip;)</i></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>union</b> (<var>tblA</var>, <var>tblB</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>union</b> (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = <b>union</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3055,9 +3069,9 @@ Intersection of two tables by rows.
           <div class="collapse multi-collapse" id="collapseMethod27">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>intersect</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>intersect</b><i> (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</i></dt>
-<dt><u>table:</u> [<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = <b>intersect</b><i> (&hellip;)</i></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>intersect</b> (<var>tblA</var>, <var>tblB</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>intersect</b> (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = <b>intersect</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3089,8 +3103,8 @@ Find set members between two tables by rows.
           <div class="collapse multi-collapse" id="collapseMethod28">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>TF</var> = <b>ismember</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
-<dt><u>table:</u> [<var>TF</var>, <var>ixB</var>] = <b>ismember</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>TF</var> = <b>ismember</b> (<var>tblA</var>, <var>tblB</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>TF</var>, <var>ixB</var>] = <b>ismember</b> (<var>tblA</var>, <var>tblB</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3122,8 +3136,8 @@ Difference between two tables by rows.
           <div class="collapse multi-collapse" id="collapseMethod29">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>setdiff</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
-<dt><u>table:</u> [<var>tbl</var>, <var>ixA</var>] = <b>setdiff</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>setdiff</b> (<var>tblA</var>, <var>tblB</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>ixA</var>] = <b>setdiff</b> (<var>tblA</var>, <var>tblB</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3155,9 +3169,9 @@ Exclusive OR of two tables by rows.
           <div class="collapse multi-collapse" id="collapseMethod30">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>setxor</b><i> (<var>tblA</var>, <var>tblB</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>setxor</b><i> (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</i></dt>
-<dt><u>table:</u> [<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = <b>setxor</b><i> (&hellip;)</i></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>setxor</b> (<var>tblA</var>, <var>tblB</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>setxor</b> (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = <b>setxor</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3189,7 +3203,7 @@ Determine if any table element is missing.
           <div class="collapse multi-collapse" id="collapseMethod31">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>TF</var> = <b>anymissing</b><i> (<var>tblA</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>TF</var> = <b>anymissing</b> (<var>tblA</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3235,8 +3249,8 @@ Find missing values in table.
           <div class="collapse multi-collapse" id="collapseMethod32">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>Method:</u> <var>TF</var> = <b>ismissing</b><i> (<var>tblA</var>)</i></dt>
-<dt><u>Method:</u> <var>TF</var> = <b>ismissing</b><i> (<var>tblA</var>, <var>indicator</var>)</i></dt>
+<dt><code><h5 class="fs">Method: <var>TF</var> = <b>ismissing</b> (<var>tblA</var>)</code></h5></dt>
+<dt><code><h5 class="fs">Method: <var>TF</var> = <b>ismissing</b> (<var>tblA</var>, <var>indicator</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3277,9 +3291,9 @@ Remove missing table elements by rows.
           <div class="collapse multi-collapse" id="collapseMethod33">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>rmmissing</b><i> (<var>tblA</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>rmmissing</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
-<dt><u>table:</u> [<var>tbl</var>, <var>TF</var>] = <b>rmmissing</b><i> (&hellip;)</i></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>rmmissing</b> (<var>tblA</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>rmmissing</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>TF</var>] = <b>rmmissing</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3311,15 +3325,15 @@ Fill missing table elements.
           <div class="collapse multi-collapse" id="collapseMethod34">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <code>'constant'</code>, <var>val</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <var>method</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <var>movmethod</var>, <var>window</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <code>'knn'</code>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <code>'knn'</code>, <var>k</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (<var>tblA</var>, <var>fillfun</var>, <var>gapwindow</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (&hellip;, <var>dim</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>fillmissing</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
-<dt><u>table:</u> [<var>tbl</var>, <var>TF</var>] = <b>fillmissing</b><i> (&hellip;)</i></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>fillmissing</b> (<var>tblA</var>, <code>'constant'</code>, <var>val</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>fillmissing</b> (<var>tblA</var>, <var>method</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>fillmissing</b> (<var>tblA</var>, <var>movmethod</var>, <var>window</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>fillmissing</b> (<var>tblA</var>, <code>'knn'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>fillmissing</b> (<var>tblA</var>, <code>'knn'</code>, <var>k</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>fillmissing</b> (<var>tblA</var>, <var>fillfun</var>, <var>gapwindow</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>fillmissing</b> (&hellip;, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>fillmissing</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>TF</var>] = <b>fillmissing</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3351,8 +3365,8 @@ Remove missing table elements by rows.
           <div class="collapse multi-collapse" id="collapseMethod35">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>standardizeMissing</b><i> (<var>tblA</var>, <var>indicator</var>)</i></dt>
-<dt><u>table:</u> <var>tbl</var> = <b>rmmissing</b><i> (&hellip;, <var>Name</var>, <var>Value</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>standardizeMissing</b> (<var>tblA</var>, <var>indicator</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>rmmissing</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3591,7 +3605,7 @@ Horizontal concatenation for tables.
           <div class="collapse multi-collapse" id="collapseMethod45">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>horzcat</b><i> (<var>tbl1</var>, <var>tbl2</var>, &hellip;)</i></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>horzcat</b> (<var>tbl1</var>, <var>tbl2</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3632,7 +3646,7 @@ Test input table for being a column vector.
           <div class="collapse multi-collapse" id="collapseMethod46">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>TF</var> = <b>iscolumn</b><i> (<var>tbl</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>TF</var> = <b>iscolumn</b> (<var>tbl</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3666,7 +3680,7 @@ Test input table for being empty.
           <div class="collapse multi-collapse" id="collapseMethod47">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>TF</var> = <b>isempty</b><i> (<var>tbl</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>TF</var> = <b>isempty</b> (<var>tbl</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3699,7 +3713,7 @@ Test input table for being a matrix.
           <div class="collapse multi-collapse" id="collapseMethod48">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>TF</var> = <b>ismatrix</b><i> (<var>tbl</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>TF</var> = <b>ismatrix</b> (<var>tbl</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3731,7 +3745,7 @@ Test input table for being a row vector.
           <div class="collapse multi-collapse" id="collapseMethod49">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>TF</var> = <b>isrow</b><i> (<var>tbl</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>TF</var> = <b>isrow</b> (<var>tbl</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3764,7 +3778,7 @@ Test input table for being a scalar.
           <div class="collapse multi-collapse" id="collapseMethod50">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>Method:</u> <var>TF</var> = <b>isscalar</b><i> (<var>tbl</var>)</i></dt>
+<dt><code><h5 class="fs">Method: <var>TF</var> = <b>isscalar</b> (<var>tbl</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3797,7 +3811,7 @@ Test input table for being a vector.
           <div class="collapse multi-collapse" id="collapseMethod51">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>TF</var> = <b>isvector</b><i> (<var>tbl</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>TF</var> = <b>isvector</b> (<var>tbl</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3830,7 +3844,7 @@ Length along longest dimension.
           <div class="collapse multi-collapse" id="collapseMethod52">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>out</var> = <b>length</b><i> (<var>tbl</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>out</var> = <b>length</b> (<var>tbl</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3860,7 +3874,7 @@ Number of table dimensions.
           <div class="collapse multi-collapse" id="collapseMethod53">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>out</var> = <b>ndims</b><i> (<var>tbl</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>out</var> = <b>ndims</b> (<var>tbl</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3892,7 +3906,7 @@ Total number of elements in table.
           <div class="collapse multi-collapse" id="collapseMethod54">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>out</var> = <b>numel</b><i> (<var>tbl</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>out</var> = <b>numel</b> (<var>tbl</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3926,8 +3940,8 @@ Replicate elements of a table.
           <div class="collapse multi-collapse" id="collapseMethod55">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tblB</var> = <b>repelem</b><i> (<var>tblA</var>, <var>sz</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>repelem</b><i> (<var>tblA</var>, <var>rows</var>, <var>columns</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>repelem</b> (<var>tblA</var>, <var>sz</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>repelem</b> (<var>tblA</var>, <var>rows</var>, <var>columns</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3961,8 +3975,8 @@ Repeat copies of a table.
           <div class="collapse multi-collapse" id="collapseMethod56">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tblB</var> = <b>repmat</b><i> (<var>tblA</var>, <var>sz</var>)</i></dt>
-<dt><u>table:</u> <var>tblB</var> = <b>repmat</b><i> (<var>tblA</var>, <var>rows</var>, <var>columns</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>repmat</b> (<var>tblA</var>, <var>sz</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>repmat</b> (<var>tblA</var>, <var>rows</var>, <var>columns</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3996,9 +4010,9 @@ Return the size of a table.
           <div class="collapse multi-collapse" id="collapseMethod57">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>sz</var> = <b>size</b><i> (<var>tbl</var>)</i></dt>
-<dt><u>table:</u> [<var>rows</var>, <var>columns</var>] = <b>size</b><i> (<var>tbl</var>)</i></dt>
-<dt><u>table:</u> [<var>rows</var>, <var>columns</var>, &hellip;] = <b>size</b><i> (<var>tbl</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>sz</var> = <b>size</b> (<var>tbl</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>rows</var>, <var>columns</var>] = <b>size</b> (<var>tbl</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>rows</var>, <var>columns</var>, &hellip;] = <b>size</b> (<var>tbl</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -4031,7 +4045,7 @@ Remove singleton dimensions.
           <div class="collapse multi-collapse" id="collapseMethod58">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tblB</var> = <b>squeeze</b><i> (<var>tblA</var>)</i></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>squeeze</b> (<var>tblA</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -4064,7 +4078,7 @@ Vertical concatenation for tables.
           <div class="collapse multi-collapse" id="collapseMethod59">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>table:</u> <var>tbl</var> = <b>vertcat</b><i> (<var>tbl1</var>, <var>tbl2</var>, &hellip;)</i></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>vertcat</b> (<var>tbl1</var>, <var>tbl2</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>

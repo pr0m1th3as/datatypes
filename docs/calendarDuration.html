@@ -23,12 +23,25 @@
       });
     </script>
     <style>
+    h5.fs {
+    margin-top: -0.15em;
+    margin-bottom: -0.15em;
+    }
     h6:hover {
       color: gray;
     }
+    code {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    white-space: nowrap;
+    color: gray;
+    }
     var {
-      font-style: italics;
-      font-weight: bold;
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    font-style: normal;
+    font-weight: bold;
+    color: gray;
     }
     td {
       vertical-align: top;
@@ -218,7 +231,7 @@
             </div>
             <div class="card-body">
 <dl>
-<dt><u>Class:</u> <b>calendarDuration</b></dt>
+<dt><code><h5 class="fs">Class: <b>calendarDuration</b></h5></code></dt>
 </dl>
 
 <p> Array representing durations of time using flexible-length calendar
@@ -244,6 +257,7 @@
 </p>
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/calendarDuration.m">calendarDuration</a>
+</p>
 </div>
         <h4 class="d-inline-block my-3">
           Properties
@@ -304,11 +318,11 @@ Create a new array of calendar durations.
           <div class="collapse multi-collapse" id="colapsibleConstructor">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>calD</var> = <b>calendarDuration</b><i> (<var>X</var>)</i></dt>
-<dt><u>calendarDuration:</u> <var>calD</var> = <b>calendarDuration</b><i> (<var>Y</var>, <var>MO</var>, <var>D</var>)</i></dt>
-<dt><u>calendarDuration:</u> <var>calD</var> = <b>calendarDuration</b><i> (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>, <var>S</var>)</i></dt>
-<dt><u>calendarDuration:</u> <var>calD</var> = <b>calendarDuration</b><i> (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>T</var>)</i></dt>
-<dt><u>calendarDuration:</u> <var>calD</var> = <b>calendarDuration</b><i> (&hellip;, <code>'Format'</code>, <var>FMT</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>calD</var> = <b>calendarDuration</b> (<var>X</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>calD</var> = <b>calendarDuration</b> (<var>Y</var>, <var>MO</var>, <var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>calD</var> = <b>calendarDuration</b> (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>, <var>S</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>calD</var> = <b>calendarDuration</b> (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>T</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>calD</var> = <b>calendarDuration</b> (&hellip;, <code>'Format'</code>, <var>FMT</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -399,7 +413,7 @@ Get display formatted strings for each element of a calendarDuration
           <div class="collapse multi-collapse" id="collapseMethod1">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>cstr</var> = <b>dispstrings</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>cstr</var> = <b>dispstrings</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -433,8 +447,8 @@ Convert calendarDuration array to a cell array of character vectors.
           <div class="collapse multi-collapse" id="collapseMethod2">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>cstr</var> = <b>cellstr</b><i> (<var>calD</var>)</i></dt>
-<dt><u>calendarDuration:</u> <var>cstr</var> = <b>cellstr</b><i> (<var>calD</var>, <var>Format</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>cstr</var> = <b>cellstr</b> (<var>calD</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>cstr</var> = <b>cellstr</b> (<var>calD</var>, <var>Format</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -468,7 +482,7 @@ Convert calendarDuration array to a character matrix.
           <div class="collapse multi-collapse" id="collapseMethod3">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>cmat</var> = <b>char</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>cmat</var> = <b>char</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -501,7 +515,7 @@ Convert calendarDuration array to date vectors.
           <div class="collapse multi-collapse" id="collapseMethod4">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>DV</var> = <b>datevec</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>DV</var> = <b>datevec</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -534,7 +548,7 @@ Return time portion of calendarDuration array.
           <div class="collapse multi-collapse" id="collapseMethod5">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>T</var> = <b>time</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>T</var> = <b>time</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -567,7 +581,7 @@ Split calendarDuration array into numeric time units.
           <div class="collapse multi-collapse" id="collapseMethod6">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> [&hellip;] = <b>split</b><i> (<var>calD</var>, <var>units</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: [&hellip;] = <b>split</b> (<var>calD</var>, <var>units</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -619,7 +633,7 @@ Calendar duration in days.
           <div class="collapse multi-collapse" id="collapseMethod7">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>X</var> = <b>caldays</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>X</var> = <b>caldays</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -661,7 +675,7 @@ Calendar duration in weeks.
           <div class="collapse multi-collapse" id="collapseMethod8">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>X</var> = <b>calweeks</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>X</var> = <b>calweeks</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -703,7 +717,7 @@ Calendar duration in months.
           <div class="collapse multi-collapse" id="collapseMethod9">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>X</var> = <b>calmonths</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>X</var> = <b>calmonths</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -745,7 +759,7 @@ Calendar duration in quarters.
           <div class="collapse multi-collapse" id="collapseMethod10">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>X</var> = <b>calquarters</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>X</var> = <b>calquarters</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -787,7 +801,7 @@ Calendar duration in years.
           <div class="collapse multi-collapse" id="collapseMethod11">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>X</var> = <b>calyears</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>X</var> = <b>calyears</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -829,10 +843,10 @@ Size of a calendarDuration array.
           <div class="collapse multi-collapse" id="collapseMethod12">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>sz</var> = <b>size</b><i> (<var>calD</var>)</i></dt>
-<dt><u>calendarDuration:</u> <var>dim_sz</var> = <b>size</b><i> (<var>calD</var>, <var>dim</var>)</i></dt>
-<dt><u>calendarDuration:</u> <var>dim_sz</var> = <b>size</b><i> (<var>calD</var>, <var>d1</var>, <var>d2</var>, &hellip;)</i></dt>
-<dt><u>calendarDuration:</u> [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b><i> (&hellip;)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>sz</var> = <b>size</b> (<var>calD</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>dim_sz</var> = <b>size</b> (<var>calD</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>dim_sz</var> = <b>size</b> (<var>calD</var>, <var>d1</var>, <var>d2</var>, &hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -876,7 +890,7 @@ Number of dimensions in a calendarDuration array.
           <div class="collapse multi-collapse" id="collapseMethod13">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>out</var> = <b>ndims</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>out</var> = <b>ndims</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -909,7 +923,7 @@ Total number of elements in a calendarDuration array.
           <div class="collapse multi-collapse" id="collapseMethod14">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>out</var> = <b>numel</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>out</var> = <b>numel</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -942,7 +956,7 @@ Number of nonzero elements in calendarDuration array.
           <div class="collapse multi-collapse" id="collapseMethod15">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>out</var> = <b>nns</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>out</var> = <b>nns</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -975,7 +989,7 @@ Return true if calendarDuration array is a column vector.
           <div class="collapse multi-collapse" id="collapseMethod16">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>TF</var> = <b>iscolumn</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>iscolumn</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1005,7 +1019,7 @@ Return true if calendarDuration array is empty.
           <div class="collapse multi-collapse" id="collapseMethod17">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>TF</var> = <b>isempty</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isempty</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1035,7 +1049,7 @@ Return true if all calendarDuration arrays are equal.
           <div class="collapse multi-collapse" id="collapseMethod18">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>TF</var> = <b>isequal</b><i> (<var>calD1</var>, <var>calD2</var>, &hellip;)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isequal</b> (<var>calD1</var>, <var>calD2</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1066,7 +1080,7 @@ Return true if all calendarDuration arrays are equal under the additional
           <div class="collapse multi-collapse" id="collapseMethod19">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>TF</var> = <b>isequaln</b><i> (<var>calD1</var>, <var>calD2</var>, &hellip;)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isequaln</b> (<var>calD1</var>, <var>calD2</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1098,7 +1112,7 @@ Return a logical array which is true where the elements of
           <div class="collapse multi-collapse" id="collapseMethod20">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>TF</var> = <b>isfinite</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isfinite</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1130,7 +1144,7 @@ Return a logical array which is true where the elements of
           <div class="collapse multi-collapse" id="collapseMethod21">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>TF</var> = <b>isinf</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isinf</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1160,7 +1174,7 @@ Return true if calendarDuration array is a 2-D array.
           <div class="collapse multi-collapse" id="collapseMethod22">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>TF</var> = <b>ismatrix</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>ismatrix</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1190,7 +1204,7 @@ Find missing data in a calendar duration array.
           <div class="collapse multi-collapse" id="collapseMethod23">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>TF</var> = <b>ismissing</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>ismissing</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1229,7 +1243,7 @@ Return a logical array which is true where the elements of <var>calD</var> are
           <div class="collapse multi-collapse" id="collapseMethod24">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>TF</var> = <b>isnan</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isnan</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1259,7 +1273,7 @@ Return true if calendarDuration array is a row vector.
           <div class="collapse multi-collapse" id="collapseMethod25">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>TF</var> = <b>isrow</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isrow</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1289,7 +1303,7 @@ Return true if calendarDuration array is a scalar.
           <div class="collapse multi-collapse" id="collapseMethod26">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>TF</var> = <b>isscalar</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isscalar</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1319,7 +1333,7 @@ Return true if calendarDuration array is a vector.
           <div class="collapse multi-collapse" id="collapseMethod27">
             <div class="border-bottom py-2">
 <dl>
-<dt><u>calendarDuration:</u> <var>TF</var> = <b>isscalar</b><i> (<var>calD</var>)</i></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isscalar</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
