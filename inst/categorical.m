@@ -1686,7 +1686,7 @@ classdef categorical
     ## Less than or equal to for ordinal categorical arrays.
     ##
     ## @code{@var{TF} = le (@var{A}, @var{B})} is the equivalent of the syntax
-    ## @code{@var{TF} = @var{A} >= @var{B}} and returns a logical array of the
+    ## @code{@var{TF} = @var{A} <= @var{B}} and returns a logical array of the
     ## same size as the largest input with its elements set to @qcode{true}
     ## where the corresponding elements of @var{A} are less than or equal to
     ## @var{B} and set to @qcode{false} where they are not.  @var{A} and @var{B}
@@ -1740,7 +1740,7 @@ classdef categorical
     ## Less than for ordinal categorical arrays.
     ##
     ## @code{@var{TF} = lt (@var{A}, @var{B})} is the equivalent of the syntax
-    ## @code{@var{TF} = @var{A} > @var{B}} and returns a logical array of the
+    ## @code{@var{TF} = @var{A} < @var{B}} and returns a logical array of the
     ## same size as the largest input with its elements set to @qcode{true}
     ## where the corresponding elements of @var{A} are less than @var{B} and
     ## set to @qcode{false} where they are not.  @var{A} and @var{B} must be
