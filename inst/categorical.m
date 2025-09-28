@@ -138,7 +138,7 @@ classdef categorical
     ## appearance in input array @var{A}, when @var{valueset} is not specified,
     ## in which case the unique values in @{A} are not sorted in order to set
     ## the categories.  Ordinal categorical arrays allow for relational
-    ## operators such as @qcode{>=, >, <=, <), as well as statistical operations
+    ## operators such as @qcode{>=, >, <=, <}, as well as statistical operations
     ## such as @code{min}, @code{max}, and @code{median}.
     ##
     ## @item @qcode{"Protected"} must be a logical scalar specifying that the
