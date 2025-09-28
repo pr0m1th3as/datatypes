@@ -16,18 +16,18 @@
 ## this program; if not, see <http://www.gnu.org/licenses/>.
 
 ## -*- texinfo -*-
-## @deftypefn  {private} {@var{v} =} nanmin (@var{x})
-## @deftypefnx {private} {@var{v} =} nanmin (@var{x}, [], @var{dim})
-## @deftypefnx {private} {[@var{v}, @var{idx}] =} nanmin (@dots{})
-## @deftypefnx {private} {@var{v} =} nanmin (@var{x}, [], @qcode{'all'})
-## @deftypefnx {private} {@var{v} =} nanmin (@var{x}, [], @var{vecdim})
-## @deftypefnx {private} {@var{v} =} nanmin (@var{x}, @var{y})
+## @deftypefn  {private} {@var{v} =} __nanmin__ (@var{x})
+## @deftypefnx {private} {@var{v} =} __nanmin__ (@var{x}, [], @var{dim})
+## @deftypefnx {private} {[@var{v}, @var{idx}] =} __nanmin__ (@dots{})
+## @deftypefnx {private} {@var{v} =} __nanmin__ (@var{x}, [], @qcode{'all'})
+## @deftypefnx {private} {@var{v} =} __nanmin__ (@var{x}, [], @var{vecdim})
+## @deftypefnx {private} {@var{v} =} __nanmin__ (@var{x}, @var{y})
 ##
 ## Find the minimum while ignoring NaN values.
 ##
 ## @end deftypefn
 
-function [v, idx] = nanmin (x, y, dim)
+function [v, idx] = __nanmin__ (x, y, dim)
   if (nargin < 1 || nargin > 3)
     print_usage;
   elseif (nargin == 1 || (nargin == 2 && isempty (y)))

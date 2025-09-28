@@ -16,18 +16,18 @@
 ## this program; if not, see <http://www.gnu.org/licenses/>.
 
 ## -*- texinfo -*-
-## @deftypefn  {private} {@var{v} =} nanmax (@var{x})
-## @deftypefnx {private} {@var{v} =} nanmax (@var{x}, [], @var{dim})
-## @deftypefnx {private} {[@var{v}, @var{idx}] =} nanmax (@dots{})
-## @deftypefnx {private} {@var{v} =} nanmax (@var{x}, [], @qcode{'all'})
-## @deftypefnx {private} {@var{v} =} nanmax (@var{x}, [], @var{vecdim})
-## @deftypefnx {private} {@var{v} =} nanmax (@var{x}, @var{y})
+## @deftypefn  {private} {@var{v} =} __nanmax__ (@var{x})
+## @deftypefnx {private} {@var{v} =} __nanmax__ (@var{x}, [], @var{dim})
+## @deftypefnx {private} {[@var{v}, @var{idx}] =} __nanmax__ (@dots{})
+## @deftypefnx {private} {@var{v} =} __nanmax__ (@var{x}, [], @qcode{'all'})
+## @deftypefnx {private} {@var{v} =} __nanmax__ (@var{x}, [], @var{vecdim})
+## @deftypefnx {private} {@var{v} =} __nanmax__ (@var{x}, @var{y})
 ##
 ## Find the maximum while ignoring NaN values.
 ##
 ## @end deftypefn
 
-function [v, idx] = nanmax (x, y, dim)
+function [v, idx] = __nanmax__ (x, y, dim)
   if (nargin < 1 || nargin > 3)
     print_usage;
   elseif (nargin == 1 || (nargin == 2 && isempty (y)))
