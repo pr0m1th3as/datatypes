@@ -125,6 +125,28 @@ classdef missing
 
   methods (Access = public)
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {missing} {@var{sz} =} size (@var{M})
+    ## @deftypefnx {missing} {@var{dim_sz} =} size (@var{M}, @var{dim})
+    ## @deftypefnx {missing} {@var{dim_sz} =} size (@var{M}, @var{d1}, @var{d2}, @dots{})
+    ## @deftypefnx {missing} {[@var{rows}, @var{columns}, @dots{}, @var{dim_n_sz}] =} size (@dots{})
+    ##
+    ## Return the size of a missing array.
+    ##
+    ## @code{@var{sz} = size (@var{M})} returns a row vector with the size
+    ## (number of elements) of each dimension for the missing array @var{M}.
+    ##
+    ## @code{@var{dim_sz} = size (@var{M}, @var{dim})} returns the size of
+    ## the corresponding dimension specified in @var{dim}.  If @var{dim} is a
+    ## vector, then @var{dim_sz} is a vector of the same length and with each
+    ## element corresponding to a specified dimension.  Multiple dimensions may
+    ## also be specified as separate arguments.
+    ##
+    ## With a single output argument, @code{size} returns a row vector.  When
+    ## called with multiple output arguments, @code{size} returns the size of
+    ## dimension N in the Nth argument.
+    ##
+    ## @end deftypefn
     function varargout = size (this, varargin)
       if (! isempty (varargin))
         sz = size (this.data, varargin{:});
@@ -143,10 +165,28 @@ classdef missing
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {missing} {@var{out} =} ndims (@var{M})
+    ##
+    ## Number of dimensions in a missing array.
+    ##
+    ## @code{@var{out} = ndims (@var{M})} returns the number of dimensions of
+    ## the missing array @var{M}.
+    ##
+    ## @end deftypefn
     function out = ndims (this)
       out = ndims (this.data);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {missing} {@var{out} =} numel (@var{M})
+    ##
+    ## Total number of elements in a missing array.
+    ##
+    ## @code{@var{out} = numel (@var{M})} returns the number of elements in the
+    ## missing array @var{M}.
+    ##
+    ## @end deftypefn
     function out = numel (this)
       out = numel (this.data);
     endfunction
@@ -165,30 +205,108 @@ classdef missing
 
   methods (Access = public)
 
+    ## -*- texinfo -*-
+    ## @deftypefn {missing} {@var{TF} =} iscolumn (@var{M})
+    ##
+    ## Return true if missing array is a column vector.
+    ##
+    ## @code{@var{TF} = iscolumn (@var{M})} returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the missing array @var{M} is a column vector
+    ## and @qcode{false} otherwise.  A column vector is a 2-D array for which
+    ## @code{size (@var{X})} returns @code{[@var{N}, 1]} with non-negative
+    ## @var{N}.
+    ##
+    ## @end deftypefn
     function out = iscolumn (this)
       out = iscolumn (this.data);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {missing} {@var{TF} =} isempty (@var{M})
+    ##
+    ## Return true if missing array is empty.
+    ##
+    ## @code{@var{TF} = isempty (@var{M})} returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the missing array @var{M} is empty and
+    ## @qcode{false} otherwise.
+    ##
+    ## @end deftypefn
     function out = isempty (this)
       out = isempty (this.data);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {missing} {@var{TF} =} ismatrix (@var{M})
+    ##
+    ## Return true if missing array is a 2-D array.
+    ##
+    ## @code{@var{TF} = ismatrix (@var{M})} returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the missing array @var{M} is a matrix and
+    ## @qcode{false} otherwise.  A matrix is an array of any type where
+    ## @code{ndims (@var{X}) == 2} and for which @code{size (@var{X})} returns
+    ## @code{[@var{H}, @var{W}]} with non-negative @var{H} and @var{W}.
+    ##
+    ## @end deftypefn
     function out = ismatrix (this)
       out = ismatrix (this.data);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {missing} {@var{out} =} ismissing (@var{M})
+    ##
+    ## Return true for each element in missing array.
+    ##
+    ## @code{@var{TF} = ismissing (@var{M})} returns a logical array @var{TF}
+    ## of the same size as @var{M} containing @qcode{true} in every element.
+    ##
+    ## @end deftypefn
     function out = ismissing (this)
       out = true (size (this));
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {missing} {@var{TF} =} isrow (@var{M})
+    ##
+    ## Return true if missing array is a row vector.
+    ##
+    ## @code{@var{TF} = isrow (@var{M})} returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the missing array @var{M} is a row vector
+    ## and @qcode{false} otherwise.  A row vector is a 2-D array for which
+    ## @code{size (@var{X})} returns @code{[1, @var{N}]} with non-negative
+    ## @var{N}.
+    ##
+    ## @end deftypefn
     function out = isrow (this)
       out = isrow (this.data);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {missing} {@var{TF} =} isscalar (@var{M})
+    ##
+    ## Return true if missing array is a scalar.
+    ##
+    ## @code{@var{TF} = isscalar (@var{M})} returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the missing array @var{M} is also a scalar
+    ## and @qcode{false} otherwise.  A scalar is a single element object for
+    ## which @code{size (@var{X})} returns @code{[1, 1]}.
+    ##
+    ## @end deftypefn
     function out = isscalar (this)
       out = isscalar (this.data);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {missing} {@var{TF} =} isvector (@var{M})
+    ##
+    ## Return true if missing array is a vector.
+    ##
+    ## @code{@var{TF} = isvector (@var{M})} returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the missing array @var{M} is a vector and
+    ## @qcode{false} otherwise.  A vector is a 2-D array for which one of the
+    ## dimensions is equal to 1 (either @math{1xN} or @math{Nx1}).  By
+    ## definition, a scalar is also a vector.
+    ##
+    ## @end deftypefn
     function out = isvector (this)
       out = isvector (this.data);
     endfunction
@@ -207,76 +325,160 @@ classdef missing
 
   methods (Access = public)
 
+    ## -*- texinfo -*-
+    ## @deftypefn {missing} {@var{TF} =} eq (@var{A}, @var{B})
+    ##
+    ## Equality for missing arrays.
+    ##
+    ## @code{@var{TF} = eq (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} == @var{B}} and returns a logical array of the
+    ## same size as the largest input with its elements set to @qcode{false}.
+    ## @var{A} and @var{B} must be size compatible, which translates to they can
+    ## be the same size, one can be scalar, or for every dimension, their
+    ## dimension sizes must be equal or one of them must be 1.
+    ##
+    ## One of the input arguments may also be any type of array.  Any comparison
+    ## with missing arrays always returns @qcode{false}.
+    ##
+    ## @end deftypefn
     function TF = eq (A, B)
-      if (isscalar (A))
-        TF = false (size (B));
-      elseif (isscalar (B))
-        TF = false (size (A));
-      elseif (isequal (size (A), size (B)))
-        TF = false (size (A));
-      else
+      A = nan (size (A));
+      B = nan (size (B));
+      try
+        TF = A == B;
+      catch
         error ("missing.eq: arrays have incompatible sizes.");
-      endif
+      end_try_catch
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {missing} {@var{TF} =} ge (@var{A}, @var{B})
+    ##
+    ## Greater than or equal to for missing arrays.
+    ##
+    ## @code{@var{TF} = ge (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} >= @var{B}} and returns a logical array of the
+    ## same size as the largest input with its elements set to @qcode{false}.
+    ## @var{A} and @var{B} must be size compatible, which translates to they can
+    ## be the same size, one can be scalar, or for every dimension, their
+    ## dimension sizes must be equal or one of them must be 1.
+    ##
+    ## One of the input arguments may also be any type of array.  Any comparison
+    ## with missing arrays always returns @qcode{false}.
+    ##
+    ## @end deftypefn
     function out = ge (A, B)
-      if (isscalar (A))
-        TF = false (size (B));
-      elseif (isscalar (B))
-        TF = false (size (A));
-      elseif (isequal (size (A), size (B)))
-        TF = false (size (A));
-      else
+      A = nan (size (A));
+      B = nan (size (B));
+      try
+        TF = A >= B;
+      catch
         error ("missing.ge: arrays have incompatible sizes.");
-      endif
+      end_try_catch
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {missing} {@var{TF} =} gt (@var{A}, @var{B})
+    ##
+    ## Greater than for missing arrays.
+    ##
+    ## @code{@var{TF} = gt (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} > @var{B}} and returns a logical array of the
+    ## same size as the largest input with its elements set to @qcode{false}.
+    ## @var{A} and @var{B} must be size compatible, which translates to they can
+    ## be the same size, one can be scalar, or for every dimension, their
+    ## dimension sizes must be equal or one of them must be 1.
+    ##
+    ## One of the input arguments may also be any type of array.  Any comparison
+    ## with missing arrays always returns @qcode{false}.
+    ##
+    ## @end deftypefn
     function out = gt (A, B)
-      if (isscalar (A))
-        TF = false (size (B));
-      elseif (isscalar (B))
-        TF = false (size (A));
-      elseif (isequal (size (A), size (B)))
-        TF = false (size (A));
-      else
+      A = nan (size (A));
+      B = nan (size (B));
+      try
+        TF = A > B;
+      catch
         error ("missing.gt: arrays have incompatible sizes.");
-      endif
+      end_try_catch
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {missing} {@var{TF} =} le (@var{A}, @var{B})
+    ##
+    ## Less than or equal to for missing arrays.
+    ##
+    ## @code{@var{TF} = le (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} <= @var{B}} and returns a logical array of the
+    ## same size as the largest input with its elements set to @qcode{false}.
+    ## @var{A} and @var{B} must be size compatible, which translates to they can
+    ## be the same size, one can be scalar, or for every dimension, their
+    ## dimension sizes must be equal or one of them must be 1.
+    ##
+    ## One of the input arguments may also be any type of array.  Any comparison
+    ## with missing arrays always returns @qcode{false}.
+    ##
+    ## @end deftypefn
     function out = le (A, B)
-      if (isscalar (A))
-        TF = false (size (B));
-      elseif (isscalar (B))
-        TF = false (size (A));
-      elseif (isequal (size (A), size (B)))
-        TF = false (size (A));
-      else
+      A = nan (size (A));
+      B = nan (size (B));
+      try
+        TF = A <= B;
+      catch
         error ("missing.le: arrays have incompatible sizes.");
-      endif
+      end_try_catch
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {missing} {@var{TF} =} lt (@var{A}, @var{B})
+    ##
+    ## Less than for missing arrays.
+    ##
+    ## @code{@var{TF} = lt (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} < @var{B}} and returns a logical array of the
+    ## same size as the largest input with its elements set to @qcode{false}.
+    ## @var{A} and @var{B} must be size compatible, which translates to they can
+    ## be the same size, one can be scalar, or for every dimension, their
+    ## dimension sizes must be equal or one of them must be 1.
+    ##
+    ## One of the input arguments may also be any type of array.  Any comparison
+    ## with missing arrays always returns @qcode{false}.
+    ##
+    ## @end deftypefn
     function out = lt (A, B)
-      if (isscalar (A))
-        TF = false (size (B));
-      elseif (isscalar (B))
-        TF = false (size (A));
-      elseif (isequal (size (A), size (B)))
-        TF = false (size (A));
-      else
+      A = nan (size (A));
+      B = nan (size (B));
+      try
+        TF = A < B;
+      catch
         error ("missing.lt: arrays have incompatible sizes.");
-      endif
+      end_try_catch
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {missing} {@var{TF} =} ne (@var{A}, @var{B})
+    ##
+    ## Not equal for missing arrays.
+    ##
+    ## @code{@var{TF} = ne (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} != @var{B}} and returns a logical array of the
+    ## same size as the largest input with its elements set to @qcode{false}.
+    ## @var{A} and @var{B} must be size compatible, which translates to they can
+    ## be the same size, one can be scalar, or for every dimension, their
+    ## dimension sizes must be equal or one of them must be 1.
+    ##
+    ## One of the input arguments may also be any type of array.  Any comparison
+    ## with missing arrays always returns @qcode{false}.
+    ##
+    ## @end deftypefn
     function out = ne (A, B)
-      if (isscalar (A))
-        TF = true (size (B));
-      elseif (isscalar (B))
-        TF = true (size (A));
-      elseif (isequal (size (A), size (B)))
-        TF = true (size (A));
-      else
+      A = nan (size (A));
+      B = nan (size (B));
+      try
+        TF = A != B;
+      catch
         error ("missing.ne: arrays have incompatible sizes.");
-      endif
+      end_try_catch
     endfunction
 
   endmethods

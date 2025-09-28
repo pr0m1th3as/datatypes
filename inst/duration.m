@@ -700,10 +700,32 @@ classdef duration
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{TF} =} iscolumn (@var{D})
+    ##
+    ## Return true if duration array is a column vector.
+    ##
+    ## @code{@var{TF} = iscolumn (@var{D})} returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the duration array @var{D} is a column vector
+    ## and @qcode{false} otherwise.  A column vector is a 2-D array for which
+    ## @code{size (@var{X})} returns @code{[@var{N}, 1]} with non-negative
+    ## @var{N}.
+    ##
+    ## @end deftypefn
     function TF = iscolumn (this)
       TF = iscolumn (this.Days);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{TF} =} isempty (@var{D})
+    ##
+    ## Return true if duration array is empty.
+    ##
+    ## @code{@var{TF} = isempty (@var{D})} returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the duration array @var{D} is empty and
+    ## @qcode{false} otherwise.
+    ##
+    ## @end deftypefn
     function TF = isempty (this)
       TF = isempty (this.Days);
     endfunction
@@ -730,6 +752,18 @@ classdef duration
       TF = isinf (this.Days);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{TF} =} ismatrix (@var{D})
+    ##
+    ## Return true if duration array is a 2-D array.
+    ##
+    ## @code{@var{TF} = ismatrix (@var{D})} returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the duration array @var{D} is a matrix and
+    ## @qcode{false} otherwise.  A matrix is an array of any type where
+    ## @code{ndims (@var{X}) == 2} and for which @code{size (@var{X})} returns
+    ## @code{[@var{H}, @var{W}]} with non-negative @var{H} and @var{W}.
+    ##
+    ## @end deftypefn
     function TF = ismatrix (this)
       TF = ismatrix (this.Days);
     endfunction
@@ -786,10 +820,33 @@ classdef duration
       TF = isnan (this.Days);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{TF} =} isrow (@var{D})
+    ##
+    ## Return true if duration array is a row vector.
+    ##
+    ## @code{@var{TF} = isrow (@var{D})} returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the duration array @var{D} is a row vector
+    ## and @qcode{false} otherwise.  A row vector is a 2-D array for which
+    ## @code{size (@var{X})} returns @code{[1, @var{N}]} with non-negative
+    ## @var{N}.
+    ##
+    ## @end deftypefn
     function TF = isrow (this)
       TF = isrow (this.Days);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{TF} =} isscalar (@var{D})
+    ##
+    ## Return true if duration array is a scalar.
+    ##
+    ## @code{@var{TF} = isscalar (@var{D})} returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the duration array @var{D} is also a scalar
+    ## and @qcode{false} otherwise.  A scalar is a single element object for
+    ## which @code{size (@var{X})} returns @code{[1, 1]}.
+    ##
+    ## @end deftypefn
     function TF = isscalar (this)
       TF = isscalar (this.Days);
     endfunction
@@ -812,6 +869,18 @@ classdef duration
       TF = isequal (this.Days, sorted.Days);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{TF} =} isvector (@var{D})
+    ##
+    ## Return true if duration array is a vector.
+    ##
+    ## @code{@var{TF} = isvector (@var{D})} returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the duration array @var{D} is a vector and
+    ## @qcode{false} otherwise.  A vector is a 2-D array for which one of the
+    ## dimensions is equal to 1 (either @math{1xN} or @math{Nx1}).  By
+    ## definition, a scalar is also a vector.
+    ##
+    ## @end deftypefn
     function TF = isvector (this)
       TF = isvector (this.Days);
     endfunction

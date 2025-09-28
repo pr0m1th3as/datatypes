@@ -825,7 +825,7 @@ classdef categorical
     ## which is @qcode{true} if the categorical array @var{C} is a matrix and
     ## @qcode{false} otherwise.  A matrix is an array of any type where
     ## @code{ndims (@var{X}) == 2} and for which @code{size (@var{X})} returns
-    ## @code{[@var{M}, @var{N}]} with non-negative @var{M} and @var{N}.
+    ## @code{[@var{H}, @var{W}]} with non-negative @var{H} and @var{W}.
     ##
     ## @end deftypefn
     function TF = ismatrix (this)

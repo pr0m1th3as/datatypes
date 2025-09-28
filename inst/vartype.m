@@ -32,6 +32,26 @@ classdef vartype
     type
   endproperties
 
+  methods (Hidden)
+
+    ## Custom display
+    function display (this)
+      in_name = inputname (1);
+      if (! isempty (in_name))
+        fprintf ("%s =\n", in_name);
+      endif
+      disp (this);
+    endfunction
+
+    ## Custom display
+    function disp (this)
+      fprintf ("\n  table vartype subscript:\n\n");
+      fprintf ("    Select table variables matching the type '%s'\n\n", ...
+               this.type);
+    endfunction
+
+  endmethods
+
   methods  (Access = public)
 
     ## -*- texinfo -*-
@@ -79,22 +99,6 @@ classdef vartype
       endif
     endfunction
 
-    ## Custom display
-    function display (this)
-      in_name = inputname (1);
-      if (! isempty (in_name))
-        fprintf ("%s =\n", in_name);
-      endif
-      disp (this);
-    endfunction
-
-    ## Custom display
-    function disp (this)
-      fprintf ("\n  table vartype subscript:\n\n");
-      fprintf ("    Select table variables matching the type '%s'\n\n", ...
-               this.type);
-    endfunction
-
   endmethods
 
 endclassdef
@@ -106,8 +110,30 @@ endclassdef
 %!test
 %! S = vartype ('cellstr');
 %! assert (S.varMatch ({2343}), false);
-%! assert (S.varMatch ({"as"}), true);
+%! assert (S.varMatch ({'as'}), true);
+%!test
+%! S = vartype ('string');
+%! assert (S.varMatch (string ('as')), true);
+%! assert (S.varMatch ({'as'}), false);
 %!test
 %! S = vartype ('single');
 %! assert (S.varMatch (34.5), false);
 %! assert (S.varMatch (single (34.5)), true);
+%!test
+%! S = vartype ('numeric');
+%! assert (S.varMatch (int8 (34)), true);
+%! assert (S.varMatch (single (34.5)), true);
+%!test
+%! S = vartype ('duration');
+%! assert (S.varMatch (int8 (34)), false);
+%! assert (S.varMatch (calweeks (3)), false);
+%! assert (S.varMatch (hours (12)), true);
+%!test
+%! S = vartype ('calendarDuration');
+%! assert (S.varMatch ('char'), false);
+%! assert (S.varMatch (calweeks (3)), true);
+%! assert (S.varMatch (hours (12)), false);
+
+## Test input validation
+%!error <vartype: TYPE  must be either a character vector or a string scalar.> ...
+%! vartype (3)
