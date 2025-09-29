@@ -2181,9 +2181,9 @@ Smallest element in an ordinal categorical array.
 </p>
 <p> <code><var>C</var> = min (<var>A</var>, <code>[]</code>, <var>vecdim</var>)</code> operates on all
  the elements contained in the dimensions specified by <var>vecdim</var>, which
- must be numeric vector of non-repeating positive integers.  Any values in
- <var>vecdim</var> indexing dimensions larger that the actual array <var>A</var> are
- ignored.
+ must be a numeric vector of non-repeating positive integers.  Any values
+ in <var>vecdim</var> indexing dimensions larger that the actual array <var>A</var>
+ are ignored.
 </p>
 <p> <code><var>C</var> = min (<var>A</var>, <code>[]</code>, <code>'all'</code>)</code> operates on all
  dimensions and returns the smallest element in <var>A</var>.
@@ -2210,7 +2210,7 @@ Smallest element in an ordinal categorical array.
  all elements along the operating dimension are undefined, then it returns
  an undefined element.  <code>'omitnan'</code> may also be used as equivalent
  to <code>'omitundefined'</code>.
- </li><li> <code>'includeundefined'</code>, returns an undefined element if there
+ </li><li> <code>'includeundefined'</code> returns an undefined element if there
  any undefined elements along the operating dimension.
  <code>'includenan'</code> may also be used as equivalent to
  <code>'includeundefined'</code>.
@@ -2269,9 +2269,9 @@ Smallest element in an ordinal categorical array.
 </p>
 <p> <code><var>C</var> = max (<var>A</var>, <code>[]</code>, <var>vecdim</var>)</code> operates on all
  the elements contained in the dimensions specified by <var>vecdim</var>, which
- must be numeric vector of non-repeating positive integers.  Any values in
- <var>vecdim</var> indexing dimensions larger that the actual array <var>A</var> are
- ignored.
+ must be a numeric vector of non-repeating positive integers.  Any values
+ in <var>vecdim</var> indexing dimensions larger that the actual array <var>A</var>
+ are ignored.
 </p>
 <p> <code><var>C</var> = max (<var>A</var>, <code>[]</code>, <code>'all'</code>)</code> operates on all
  dimensions and returns the largest element in <var>A</var>.
@@ -2298,7 +2298,7 @@ Smallest element in an ordinal categorical array.
  all elements along the operating dimension are undefined, then it returns
  an undefined element.  <code>'omitnan'</code> may also be used as equivalent
  to <code>'omitundefined'</code>.
- </li><li> <code>'includeundefined'</code>, returns an undefined element if there
+ </li><li> <code>'includeundefined'</code> returns an undefined element if there
  any undefined elements along the operating dimension.
  <code>'includenan'</code> may also be used as equivalent to
  <code>'includeundefined'</code>.
@@ -2323,13 +2323,63 @@ Smallest element in an ordinal categorical array.
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Median value of an ordinal categorical array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod47">
             <div class="border-bottom py-2">
-<b><code>categorical.median</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>median</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>median</b> (<var>A</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>median</b> (<var>A</var>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>median</b> (<var>A</var>, <code>'all'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>median</b> (&hellip;, <var>missingflag</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>B</var> = median (<var>A</var>)</code> returns the median of the elements in
+ ordinal categorical vector <var>A</var>.  If <var>A</var> is a matrix,
+ <code>median (<var>A</var>)</code> returns a row vector with the median element
+ from each column.  For multidimensional arrays, <code>median (<var>A</var>)</code>
+ operates along the first non-singleton dimension.  <var>B</var> is also
+ ordinal with the same ordered categories as <var>A</var>.  For even number of
+ elements along the operating dimension, the returned median value is
+ either the midway category between the two middle elements or the larger
+ of the two categories midway between the two middle elements.
+</p>
+<p> <code><var>B</var> = median (<var>A</var>, <var>dim</var>)</code> operates along the dimension
+ specified by <var>dim</var>.
+</p>
+<p> <code><var>B</var> = median (<var>A</var>, <var>vecdim</var>)</code> operates on all the
+ elements contained in the dimensions specified by <var>vecdim</var>, which
+ must be a numeric vector of non-repeating positive integers.  Any values
+ in <var>vecdim</var> indexing dimensions larger that the actual array <var>A</var>
+ are ignored.
+</p>
+<p> <code><var>C</var> = median (<var>A</var>, <code>[]</code>, <code>'all'</code>)</code> operates on
+ all dimensions and returns the median element in <var>A</var>.
+</p>
+<p> <code><var>C</var> = median (&hellip;, <var>missingflag</var>)</code> specifies how to
+ handle undefined elements in any of the previous syntaxes.
+ <var>missingflag</var> must be a character vector or a string scalar with one
+ of the following values:
+</p>
+ <ul>
+<li> <code>'omitundefined'</code> ignores all undefined elements and returns
+ the median of the remaining elements.  If all elements along the
+ operating dimension are undefined, then it returns an undefined element.
+ <code>'omitnan'</code> may also be used as equivalent to
+ <code>'omitundefined'</code>.
+ </li><li> <code>'includeundefined'</code>, which is the default, returns an
+ undefined element if there any undefined elements along the operating
+ dimension. <code>'includenan'</code> may also be used as equivalent to
+ <code>'includeundefined'</code>.
+ </li></ul>
+
+
+
+
             </div>
           </div>
         </div>
@@ -2346,13 +2396,55 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Most frequent element in a categorical array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod48">
             <div class="border-bottom py-2">
-<b><code>categorical.mode</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">categorical: <var>M</var> = <b>mode</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [<var>M</var>, <var>F</var>] = <b>mode</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [<var>M</var>, <var>F</var>, <var>C</var>] = <b>mode</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [&hellip;] = <b>mode</b> (<var>A</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [&hellip;] = <b>mode</b> (<var>A</var>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [&hellip;] = <b>mode</b> (<var>A</var>, <code>'all'</code>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>M</var> = mode (<var>A</var>)</code> returns the most frequent element in the
+ categorical vector <var>A</var>.  If <var>A</var> is a matrix,
+ <code>mode (<var>A</var>)</code> returns a row vector with the most frequent element
+ from each column.  For multidimensional arrays, <code>mode (<var>A</var>)</code>
+ operates along the first non-singleton dimension.  <var>B</var> is also a
+ categorical array with the same categories as <var>A</var>.  For multiple
+ elements with the same maximum frequency along the operating dimension,
+ the element from the category that occurs first in <var>A</var> is returned.
+</p>
+<p> <code>[<var>M</var>, <var>F</var>] = mode (<var>A</var>)</code> also returns a numeric array
+ <var>F</var>, which has the same size as <var>M</var> and it contains the number of
+ occurences of each corresponding element of <var>M</var>.
+</p>
+<p> <code>[<var>M</var>, <var>F</var>, <var>C</var>] = mode (<var>A</var>)</code> also returns a cell
+ array <var>C</var>, which has the same size as <var>M</var> and each element is a
+ sorted categorical vector of all the values with the same maximum
+ frequency of the corresponding element of <var>M</var>.
+</p>
+<p> <code><var>B</var> = median (<var>A</var>, <var>dim</var>)</code> operates along the dimension
+ specified by <var>dim</var>.
+</p>
+<p> <code><var>B</var> = median (<var>A</var>, <var>vecdim</var>)</code> operates on all the
+ elements contained in the dimensions specified by <var>vecdim</var>, which
+ must be a numeric vector of non-repeating positive integers.  Any values
+ in <var>vecdim</var> indexing dimensions larger that the actual array <var>A</var>
+ are ignored.
+</p>
+<p> <code><var>C</var> = median (<var>A</var>, <code>[]</code>, <code>'all'</code>)</code> operates on
+ all dimensions and returns the most frequent element in <var>A</var>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -2365,7 +2457,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>sort</code></b>
+                    <b><code>histcounts</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2375,7 +2467,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod49">
             <div class="border-bottom py-2">
-<b><code>categorical.sort</code></b> is not documented.
+<b><code>categorical.histcounts</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2388,7 +2480,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>sortrows</code></b>
+                    <b><code>sort</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2398,7 +2490,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod50">
             <div class="border-bottom py-2">
-<b><code>categorical.sortrows</code></b> is not documented.
+<b><code>categorical.sort</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2411,7 +2503,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>unique</code></b>
+                    <b><code>sortrows</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2434,7 +2526,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>intersect</code></b>
+                    <b><code>unique</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2444,7 +2536,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod52">
             <div class="border-bottom py-2">
-<b><code>categorical.intersect</code></b> is not documented.
+<b><code>categorical.sortrows</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2457,7 +2549,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>setdiff</code></b>
+                    <b><code>intersect</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2467,7 +2559,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod53">
             <div class="border-bottom py-2">
-<b><code>categorical.setdiff</code></b> is not documented.
+<b><code>categorical.intersect</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2480,7 +2572,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>setxor</code></b>
+                    <b><code>setdiff</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2490,7 +2582,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod54">
             <div class="border-bottom py-2">
-<b><code>categorical.setxor</code></b> is not documented.
+<b><code>categorical.setdiff</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2503,7 +2595,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>union</code></b>
+                    <b><code>setxor</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2512,6 +2604,29 @@ undocumented
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod55">
+            <div class="border-bottom py-2">
+<b><code>categorical.setxor</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod56"
+              aria-expanded="false" aria-controls="collapseMethod56">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>union</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod56">
             <div class="border-bottom py-2">
 <b><code>categorical.union</code></b> is not documented.
             </div>
