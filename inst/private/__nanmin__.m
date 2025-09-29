@@ -21,32 +21,77 @@
 ## @deftypefnx {private} {[@var{v}, @var{idx}] =} __nanmin__ (@dots{})
 ## @deftypefnx {private} {@var{v} =} __nanmin__ (@var{x}, [], @qcode{'all'})
 ## @deftypefnx {private} {@var{v} =} __nanmin__ (@var{x}, [], @var{vecdim})
+## @deftypefnx {private} {@var{v} =} __nanmin__ (@var{x}, [], @dots{}, @var{includenan})
 ## @deftypefnx {private} {@var{v} =} __nanmin__ (@var{x}, @var{y})
+## @deftypefnx {private} {@var{v} =} __nanmin__ (@var{x}, @var{y}, @var{includenan})
 ##
 ## Find the minimum while ignoring NaN values.
 ##
 ## @end deftypefn
 
-function [v, idx] = __nanmin__ (x, y, dim)
-  if (nargin < 1 || nargin > 3)
+function [v, idx] = __nanmin__ (x, varargin)
+  if (nargin < 1 || nargin > 4)
     print_usage;
-  elseif (nargin == 1 || (nargin == 2 && isempty (y)))
+  endif
+  ## Get optional arguments
+  nargs = numel (varargin);
+  if (nargs == 0)
+    y = [];
+    dim = [];
+    include = false;
+  elseif (nargs == 1)
+    y = varargin{1};
+    dim = [];
+    include = false;
+  elseif (nargs == 2)
+    y = varargin{1};
+    if (isempty (y))
+      dim = varargin{2};
+      include = false;
+    else
+      dim = [];
+      include = varargin{2};
+    endif
+  elseif (nargs == 3)
+    y = varargin{1};
+    if (isempty (y))
+      dim = varargin{2};
+      include = varargin{3};
+    else
+      dim = [];
+      include = varargin{2};
+    endif
+  endif
+  ## Process according to given input arguments
+  if (isempty (y) && isempty (dim))
     nanvals = isnan (x);
     x(nanvals) = Inf;
     [v, idx] = min (x);
-    v(all (nanvals)) = NaN;
-  elseif (nargin == 3 && strcmpi (dim, "all") && isempty (y))
+    if (include)
+      v(any (nanvals)) = NaN;
+    else
+      v(all (nanvals)) = NaN;
+    endif
+  elseif (isempty (y) && strcmpi (dim, "all"))
     x = x(:);
     nanvals = isnan (x);
     x(nanvals) = Inf;
     [v, idx] = min (x);
-    v(all (nanvals)) = NaN;
-  elseif (nargin == 3 && isempty (y))
+    if (include)
+      v(any (nanvals)) = NaN;
+    else
+      v(all (nanvals)) = NaN;
+    endif
+  elseif (isempty (y))
     if (isscalar (dim))
       nanvals = isnan (x);
       x(nanvals) = Inf;
       [v, idx] = min (x, [], dim);
-      v(all (nanvals, dim)) = NaN;
+      if (include)
+        v(any (nanvals, dim)) = NaN;
+      else
+        v(all (nanvals, dim)) = NaN;
+      endif
     else
       vecdim = sort (dim);
       if (! all (diff (vecdim)))
@@ -74,7 +119,11 @@ function [v, idx] = __nanmin__ (x, y, dim)
           nanvals = isnan (x);
           x(nanvals) = Inf;
           [v, idx] = min (x);
-          v(all (nanvals)) = NaN;
+          if (include)
+            v(any (nanvals)) = NaN;
+          else
+            v(all (nanvals)) = NaN;
+          endif
 
         else
           ## Permute to push vecdims to back
@@ -90,7 +139,11 @@ function [v, idx] = __nanmin__ (x, y, dim)
           nanvals = isnan (x);
           x(nanvals) = Inf;
           [v, idx] = min (x, [], dim);
-          v(all (nanvals, dim)) = NaN;
+          if (include)
+            v(any (nanvals, dim)) = NaN;
+          else
+            v(all (nanvals, dim)) = NaN;
+          endif
 
           ## Inverse permute back to correct dimensions
           v = ipermute (v, perm);
@@ -98,7 +151,7 @@ function [v, idx] = __nanmin__ (x, y, dim)
         endif
       endif
     endif
-  else
+  else  # y is not empty
     if (nargout > 1)
       error ("nanmin: a second output is not supported with this syntax.");
     endif
@@ -107,6 +160,10 @@ function [v, idx] = __nanmin__ (x, y, dim)
     x(Xnan) = Inf;
     y(Ynan) = Inf;
     v = min (x, y);
-    v(Xnan & Ynan) = NaN;
+    if (include)
+      v(Xnan | Ynan) = NaN;
+    else
+      v(Xnan & Ynan) = NaN;
+    endif
   endif
 endfunction
