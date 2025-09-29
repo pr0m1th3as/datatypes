@@ -2389,6 +2389,51 @@ classdef categorical
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {categorical} {@var{N} =} histcounts (@var{A})
+    ## @deftypefnx {categorical} {@var{N} =} histcounts (@var{A}, @var{cats})
+    ## @deftypefnx {categorical} {@var{N} =} histcounts (@dots{}, @qcode{'Normalization'}, @var{normtype})
+    ## @deftypefnx {categorical} {[@var{N}, @var{cats}] =} histcounts (@dots{})
+    ##
+    ## Histogram bin counts of a categorical array.
+    ##
+    ## @code{@var{N} = histcounts (@var{A})} returns a numeric vector @var{N}
+    ## with the number of elements of each category in @var{A}.  @var{A} can be
+    ## a categorical array of any dimensions, but it is converted internally to
+    ## a single column vector.
+    ##
+    ## @code{@var{N} = histcounts (@var{A}, @var{cats})} returns the number of
+    ## elements only for the categories of @var{A} specified in @var{cats},
+    ## which may be a categorical array, a string array, or a cell array of
+    ## character vectors, as long as it specifies unique existing categories in
+    ## @var{A}.
+    ##
+    ## @code{@var{N} = histcounts (@dots{}, @qcode{'Normalization'},
+    ## @var{normtype})} specifies how to normalize the histogram values returned
+    ## in @var{N} with any of the following options specified in @var{normtype}:
+    ##
+    ## @itemize
+    ## @item @qcode{'count'}, which is the default, returns the number of
+    ## elements in each category.
+    ## @item @qcode{'countdensity'} is the same as @qcode{'count'}, since the
+    ## bin width in categorical arrays is always equal to 1.
+    ## @item @qcode{'probability'} returns the number of elements in each
+    ## category relative to the total number of elements in @var{A}.
+    ## @item @qcode{'pdf'} is the same as @qcode{'probability'}, since the bin
+    ## width in categorical arrays is always equal to 1.
+    ## @item @qcode{'cumcount'} returns the cumulative number of elements in
+    ## each category and all previous categories.
+    ## @item @qcode{'cdf'} returns the cumulative number of elements in
+    ## each category and all previous categories relative to the total number of
+    ## elements in @var{A}.
+    ## @end itemize
+    ##
+    ## @code{[@var{N}, @var{cats}] = histcounts (@dots{})} also returns the
+    ## corresponding categories of @var{A} for each count in @var{N}.
+    ## @var{cats} is a cell array of character vectors with the same size as
+    ## @var{N}.
+    ##
+    ## @end deftypefn
     function [N, cats] = histcounts (A, varargin)
       error ("categorical.histcounts: not implemented yet.");
     endfunction
