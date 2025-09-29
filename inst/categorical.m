@@ -1829,6 +1829,7 @@ classdef categorical
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'min'              'max'              'median'           'mode'            ##
+## 'histcounts'                                                               ##
 ##                                                                            ##
 ################################################################################
 
@@ -1862,9 +1863,9 @@ classdef categorical
     ##
     ## @code{@var{C} = min (@var{A}, @qcode{[]}, @var{vecdim})} operates on all
     ## the elements contained in the dimensions specified by @var{vecdim}, which
-    ## must be numeric vector of non-repeating positive integers.  Any values in
-    ## @var{vecdim} indexing dimensions larger that the actual array @var{A} are
-    ## ignored.
+    ## must be a numeric vector of non-repeating positive integers.  Any values
+    ## in @var{vecdim} indexing dimensions larger that the actual array @var{A}
+    ## are ignored.
     ##
     ## @code{@var{C} = min (@var{A}, @qcode{[]}, @qcode{'all'})} operates on all
     ## dimensions and returns the smallest element in @var{A}.
@@ -1891,7 +1892,7 @@ classdef categorical
     ## all elements along the operating dimension are undefined, then it returns
     ## an undefined element.  @qcode{'omitnan'} may also be used as equivalent
     ## to @qcode{'omitundefined'}.
-    ## @item @qcode{'includeundefined'}, returns an undefined element if there
+    ## @item @qcode{'includeundefined'} returns an undefined element if there
     ## any undefined elements along the operating dimension.
     ## @qcode{'includenan'} may also be used as equivalent to
     ## @qcode{'includeundefined'}.
@@ -1969,7 +1970,7 @@ classdef categorical
       endif
       ## Fix missing codes
       C.isMissing = isnan (C_d);
-      C.code = int16 (C_d);
+      C.code = uint16 (C_d);
     endfunction
 
     ## -*- texinfo -*-
@@ -2000,9 +2001,9 @@ classdef categorical
     ##
     ## @code{@var{C} = max (@var{A}, @qcode{[]}, @var{vecdim})} operates on all
     ## the elements contained in the dimensions specified by @var{vecdim}, which
-    ## must be numeric vector of non-repeating positive integers.  Any values in
-    ## @var{vecdim} indexing dimensions larger that the actual array @var{A} are
-    ## ignored.
+    ## must be a numeric vector of non-repeating positive integers.  Any values
+    ## in @var{vecdim} indexing dimensions larger that the actual array @var{A}
+    ## are ignored.
     ##
     ## @code{@var{C} = max (@var{A}, @qcode{[]}, @qcode{'all'})} operates on all
     ## dimensions and returns the largest element in @var{A}.
@@ -2029,7 +2030,7 @@ classdef categorical
     ## all elements along the operating dimension are undefined, then it returns
     ## an undefined element.  @qcode{'omitnan'} may also be used as equivalent
     ## to @qcode{'omitundefined'}.
-    ## @item @qcode{'includeundefined'}, returns an undefined element if there
+    ## @item @qcode{'includeundefined'} returns an undefined element if there
     ## any undefined elements along the operating dimension.
     ## @qcode{'includenan'} may also be used as equivalent to
     ## @qcode{'includeundefined'}.
@@ -2048,10 +2049,10 @@ classdef categorical
       omitflag = true;
       if (numel (varargin) > 0)
         if (ischar (varargin{end}) || isa (varargin{end}, 'string'))
-          if (strcmpi (varargin{end}, 'includeundefined'))
+          if (any (strcmpi (varargin{end}, {'includeundefined', 'includenan'})))
             omitflag = false;
             varargin(end) = [];
-          elseif (strcmpi (varargin{end}, 'omitundefined'))
+          elseif (any (strcmpi (varargin{end}, {'omitundefined', 'omitnan'})))
             omitflag = true;
             varargin(end) = [];
           elseif (! strcmpi (varargin{end}, 'all'))
@@ -2107,15 +2108,255 @@ classdef categorical
       endif
       ## Fix missing codes
       C.isMissing = isnan (C_d);
-      C.code = int16 (C_d);
+      C.code = uint16 (C_d);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {categorical} {@var{B} =} median (@var{A})
+    ## @deftypefnx {categorical} {@var{B} =} median (@var{A}, @var{dim})
+    ## @deftypefnx {categorical} {@var{B} =} median (@var{A}, @var{vecdim})
+    ## @deftypefnx {categorical} {@var{B} =} median (@var{A}, @qcode{'all'})
+    ## @deftypefnx {categorical} {@var{B} =} median (@dots{}, @var{missingflag})
+    ##
+    ## Median value of an ordinal categorical array.
+    ##
+    ## @code{@var{B} = median (@var{A})} returns the median of the elements in
+    ## ordinal categorical vector @var{A}.  If @var{A} is a matrix,
+    ## @code{median (@var{A})} returns a row vector with the median element
+    ## from each column.  For multidimensional arrays, @code{median (@var{A})}
+    ## operates along the first non-singleton dimension.  @var{B} is also
+    ## ordinal with the same ordered categories as @var{A}.  For even number of
+    ## elements along the operating dimension, the returned median value is
+    ## either the midway category between the two middle elements or the larger
+    ## of the two categories midway between the two middle elements.
+    ##
+    ## @code{@var{B} = median (@var{A}, @var{dim})} operates along the dimension
+    ## specified by @var{dim}.
+    ##
+    ## @code{@var{B} = median (@var{A}, @var{vecdim})} operates on all the
+    ## elements contained in the dimensions specified by @var{vecdim}, which
+    ## must be a numeric vector of non-repeating positive integers.  Any values
+    ## in @var{vecdim} indexing dimensions larger that the actual array @var{A}
+    ## are ignored.
+    ##
+    ## @code{@var{C} = median (@var{A}, @qcode{[]}, @qcode{'all'})} operates on
+    ## all dimensions and returns the median element in @var{A}.
+    ##
+    ## @code{@var{C} = median (@dots{}, @var{missingflag})} specifies how to
+    ## handle undefined elements in any of the previous syntaxes.
+    ## @var{missingflag} must be a character vector or a string scalar with one
+    ## of the following values:
+    ##
+    ## @itemize
+    ## @item @qcode{'omitundefined'} ignores all undefined elements and returns
+    ## the median of the remaining elements.  If all elements along the
+    ## operating dimension are undefined, then it returns an undefined element.
+    ## @qcode{'omitnan'} may also be used as equivalent to
+    ## @qcode{'omitundefined'}.
+    ## @item @qcode{'includeundefined'}, which is the default, returns an
+    ## undefined element if there any undefined elements along the operating
+    ## dimension. @qcode{'includenan'} may also be used as equivalent to
+    ## @qcode{'includeundefined'}.
+    ## @end itemize
+    ##
+    ## @end deftypefn
     function B = median (A, varargin)
-      error ("categorical.median: not implemented yet.");
+      ## Check for ordinal categorical array
+      if (! A.isOrdinal)
+        error ("categorical.median: categorical array A is not ordinal.");
+      endif
+      if (numel (varargin) > 2)
+        error ("categorical.median: too many input arguments.");
+      endif
+      ## Get missing flag
+      omitflag = 'omitnan';
+      if (numel (varargin) > 0)
+        if (ischar (varargin{end}) || isa (varargin{end}, 'string'))
+          if (any (strcmpi (varargin{end}, {'includeundefined', 'includenan'})))
+            omitflag = 'includenan';
+            varargin(end) = [];
+          elseif (any (strcmpi (varargin{end}, {'omitundefined', 'omitnan'})))
+            omitflag = 'omitnan';
+            varargin(end) = [];
+          elseif (! strcmpi (varargin{end}, 'all'))
+            error ("categorical.max: invalid missing flag.");
+          endif
+        endif
+      endif
+      ## Grab dim, vecdim, 'all' before computing median value
+      if (isempty (varargin))
+        B_d = median (double (A), omitflag);
+      else
+        B_d = median (double (A), varargin{1}, omitflag);
+      endif
+      ## Save median to output array
+      B = A;
+      B.isMissing = isnan (B_d);
+      B.code = uint16 (B_d);
     endfunction
 
-    function [varargout] = mode (A, varargin)
-      error ("categorical.mode: not implemented yet.");
+    ## -*- texinfo -*-
+    ## @deftypefn  {categorical} {@var{M} =} mode (@var{A})
+    ## @deftypefnx {categorical} {[@var{M}, @var{F}] =} mode (@var{A})
+    ## @deftypefnx {categorical} {[@var{M}, @var{F}, @var{C}] =} mode (@var{A})
+    ## @deftypefnx {categorical} {[@dots{}] =} mode (@var{A}, @var{dim})
+    ## @deftypefnx {categorical} {[@dots{}] =} mode (@var{A}, @var{vecdim})
+    ## @deftypefnx {categorical} {[@dots{}] =} mode (@var{A}, @qcode{'all'})
+    ##
+    ## Most frequent element in a categorical array.
+    ##
+    ## @code{@var{M} = mode (@var{A})} returns the most frequent element in the
+    ## categorical vector @var{A}.  If @var{A} is a matrix,
+    ## @code{mode (@var{A})} returns a row vector with the most frequent element
+    ## from each column.  For multidimensional arrays, @code{mode (@var{A})}
+    ## operates along the first non-singleton dimension.  @var{B} is also a
+    ## categorical array with the same categories as @var{A}.  For multiple
+    ## elements with the same maximum frequency along the operating dimension,
+    ## the element from the category that occurs first in @var{A} is returned.
+    ##
+    ## @code{[@var{M}, @var{F}] = mode (@var{A})} also returns a numeric array
+    ## @var{F}, which has the same size as @var{M} and it contains the number of
+    ## occurences of each corresponding element of @var{M}.
+    ##
+    ## @code{[@var{M}, @var{F}, @var{C}] = mode (@var{A})} also returns a cell
+    ## array @var{C}, which has the same size as @var{M} and each element is a
+    ## sorted categorical vector of all the values with the same maximum
+    ## frequency of the corresponding element of @var{M}.
+    ##
+    ## @code{@var{B} = median (@var{A}, @var{dim})} operates along the dimension
+    ## specified by @var{dim}.
+    ##
+    ## @code{@var{B} = median (@var{A}, @var{vecdim})} operates on all the
+    ## elements contained in the dimensions specified by @var{vecdim}, which
+    ## must be a numeric vector of non-repeating positive integers.  Any values
+    ## in @var{vecdim} indexing dimensions larger that the actual array @var{A}
+    ## are ignored.
+    ##
+    ## @code{@var{C} = median (@var{A}, @qcode{[]}, @qcode{'all'})} operates on
+    ## all dimensions and returns the most frequent element in @var{A}.
+    ##
+    ## @end deftypefn
+    function [M, F, C] = mode (A, dim = [])
+      ## Check for ordinal categorical array
+      if (! A.isOrdinal)
+        error ("categorical.mode: categorical array A is not ordinal.");
+      endif
+
+      ## Handle 'all' option first
+      if (strcmpi (dim, 'all'))
+        A = subset (A, ':');
+        dim = [];
+      endif
+
+      ## Simple case, only one input argument
+      if (isempty (dim))
+        [m, F, c] = mode (double (A));
+        M = A;
+        M.code = uint16 (m);
+        M.isMissing = isnan (m);
+        C = cell (size (c));
+        for i = 1:numel (c)
+          tmp = A;
+          tmp.code = uint16 (c{i});
+          tmp.isMissing = isnan (c{i});
+          C(i) = tmp;
+        endfor
+
+      elseif (isscalar (dim)) # DIM
+        if (dim < 1 || fix (dim) != dim)
+          error ("categorical.mode: DIM must be a positive integer.");
+        endif
+        [m, F, c] = mode (double (A), dim);
+        M = A;
+        M.code = uint16 (m);
+        M.isMissing = isnan (m);
+        C = cell (size (c));
+        for i = 1:numel (c)
+          tmp = A;
+          tmp.code = uint16 (c{i});
+          tmp.isMissing = isnan (c{i});
+          C(i) = tmp;
+        endfor
+
+      elseif (isvector (dim)) # VECDIM
+        vecdim = sort (dim);
+        if (! all (diff (vecdim)))
+           error (strcat ("categorical.mode: VECDIM must contain", ...
+                           " non-repeating positive integers."));
+        endif
+
+        ## Ignore dimensions in VECDIM larger than actual array
+        vecdim(find (vecdim > ndims (A))) = [];
+
+        ## Special case, no dimensions left in VECDIM, return input
+        if (isempty (vecdim))
+          M = A;
+          sz = size (A);
+          F = ones (sz);
+          C = cell (sz);
+          for i = 1:prod (sz)
+            C{i} = subset (A, i);
+          endfor
+
+        else
+          ## Calculate permutation vector
+          szx = size (A);
+          remdims = 1:ndims (A);      # All dimensions
+          remdims(vecdim) = [];       # Delete dimensions specified by vecdim
+          nremd = numel (remdims);
+
+          ## If all dimensions are given, it is equivalent to 'all' flag
+          if (nremd == 0)
+            A = subset (A, ':');
+            [m, F, c] = mode (double (A));
+            M = A;
+            M.code = uint16 (m);
+            M.isMissing = isnan (m);
+            C = cell (size (c));
+            for i = 1:numel (c)
+              tmp = A;
+              tmp.code = uint16 (c{i});
+              tmp.isMissing = isnan (c{i});
+              C(i) = tmp;
+            endfor
+
+          else
+            ## Permute to push vecdims to back
+            perm = [remdims, vecdim];
+            A = permute (A, perm);
+
+            ## Reshape to squash all vecdims in final dimension
+            sznew = [szx(remdims), prod(szx(vecdim))];
+            A = reshape (A, sznew);
+
+            ## Calculate mode on final dimension
+            dim = nremd + 1;
+            [m, F, c] = mode (double (A), dim);
+
+            ## Inverse permute back to correct dimensions
+            m = ipermute (m, perm);
+            F = ipermute (F, perm);
+            c = ipermute (c, perm);
+
+            M = A;
+            M.code = uint16 (m);
+            M.isMissing = isnan (m);
+            C = cell (size (c));
+            for i = 1:numel (c)
+              tmp = A;
+              tmp.code = uint16 (c{i});
+              tmp.isMissing = isnan (c{i});
+              C(i) = tmp;
+            endfor
+          endif
+        endif
+      else
+        error ("categorical.mode: invalid second input argument.");
+      endif
+    endfunction
+
+    function [N, cats] = histcounts (A, varargin)
+      error ("categorical.histcounts: not implemented yet.");
     endfunction
 
   endmethods
@@ -2565,8 +2806,8 @@ classdef categorical
     ## Return a subset of the array
     function this = subset (this, varargin)
       this = this;
-      this.cats = this.cats(varargin{:});
       this.code = this.code(varargin{:});
+      this.isMissing = this.isMissing(varargin{:});
     endfunction
 
   endmethods
