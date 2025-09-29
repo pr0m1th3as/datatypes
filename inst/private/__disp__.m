@@ -25,7 +25,9 @@
 
 function __disp__ (this, datatype, name = 'ans')
   if (isempty (this))
-    fprintf ('  0x0 empty %s array\n\n', datatype);
+    str = strjoin (repmat ({'%d'}, 1, ndims (this)), 'x');
+    str = sprintf ('\n  %s empty %s array\n\n', str, datatype);
+    fprintf (str, size (this));
   elseif (isscalar (this))
     fprintf ('  %s\n\n', datatype);
     fprintf ('   %s\n', dispstrings (this){:});
