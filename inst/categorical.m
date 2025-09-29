@@ -176,12 +176,12 @@ classdef categorical
 
       ## Check optional Name-Value paired arguments
       if (! ismember (Ordinal, [0, 1]))
-        error (strcat (["categorical: 'Ordinal' variable indicator", ...
-                        " must be either false (0) or true (1)."]));
+        error (strcat ("categorical: 'Ordinal' variable indicator", ...
+                       " must be either false (0) or true (1)."));
       endif
       if (! ismember (Protected, [0, 1]))
-        error (strcat (["categorical: 'Protected' categories indicator", ...
-                        " must be either false (0) or true (1)."]));
+        error (strcat ("categorical: 'Protected' categories indicator", ...
+                       " must be either false (0) or true (1)."));
       endif
       opt = "sorted";
       if (Ordinal)
@@ -278,14 +278,14 @@ classdef categorical
           ## Check valueset for missing or empty elements
           if (strcmp (classv, 'cellstr'))
             if (any (cellfun (@isempty, valueset)))
-              error (strcat (["categorical: VALUESET cannot contain empty", ...
-                              " text, unless CATNAMES are specified."]));
+              error (strcat ("categorical: VALUESET cannot contain empty", ...
+                             " text, unless CATNAMES are specified."));
             endif
             catnames = valueset;
           elseif (strcmp (classv, 'string'))
             if (any (cellfun (@(x) isempty (x) || ismissing (x), valueset)))
-              error (strcat (["categorical: VALUESET cannot contain empty or", ...
-                              " missing text, unless CATNAMES are specified."]));
+              error (strcat ("categorical: VALUESET cannot contain empty or", ...
+                             " missing text, unless CATNAMES are specified."));
             endif
             catnames = cellstr (valueset);
           elseif (isnumeric (valueset))
@@ -343,9 +343,9 @@ classdef categorical
       [tf, loc] = ismember (x, valueset);
       maxc = intmax ('uint16');
       if (any (loc > maxc))
-        error (strcat (["categorical: too many categories; categorical", ...
-                        " supports up to %d categories; this input has", ...
-                        " %d."]), maxc, max (loc));
+        error (strcat ("categorical: too many categories; categorical", ...
+                       " supports up to %d categories; this input has", ...
+                       " %d."), maxc, max (loc));
       endif
 
       ## Reassociate to user defined categories (only when regrouping required)
@@ -624,8 +624,8 @@ classdef categorical
       if (nargout == 0 || nargout == 1)
         varargout{1} = sz;
       elseif (numel (sz) != nargout)
-        error (strcat (["categorical.size: nargout > 1 but does", ...
-                        " not match number of requested dimensions."]));
+        error (strcat ("categorical.size: nargout > 1 but does", ...
+                       " not match number of requested dimensions."));
       else
         for i = 1:nargout
           varargout{i} = sz(i);
@@ -869,16 +869,16 @@ classdef categorical
       ## Either A or B contain category name(s)
       if ((isa (A, 'string') || iscellstr (A)) && isa (B, 'categorical'))
         if (numel (varargin) > 0)
-          error (strcat (["categorical.ismember: cannot use 'rows'", ...
-                          " when testing against category names."]));
+          error (strcat ("categorical.ismember: cannot use 'rows'", ...
+                         " when testing against category names."));
         endif
         A = cellstr (A);
         [TF, index] = ismember (A, categories (B));
         return;
       elseif ((isa (B, 'string') || iscellstr (B)) && isa (A, 'categorical'))
         if (numel (varargin) > 0)
-          error (strcat (["categorical.ismember: cannot use 'rows'", ...
-                          " when testing against category names."]));
+          error (strcat ("categorical.ismember: cannot use 'rows'", ...
+                         " when testing against category names."));
         endif
         B = cellstr (B);
         [TF, index] = ismember (B, categories (A));
@@ -886,16 +886,16 @@ classdef categorical
       endif
       if (numel (varargin) > 0)
         if (! ismatrix (A) || ! ismatrix (B) || size (A, 2) != size (B, 2))
-          error (strcat (["categorical.ismember: cannot use 'rows' unless", ...
-                          " both A and B are matrices with the same number", ...
-                          " of columns."]));
+          error (strcat ("categorical.ismember: cannot use 'rows' unless", ...
+                         " both A and B are matrices with the same number", ...
+                         " of columns."));
         endif
       endif
       ## Both ordinal
       if (isordinal (A) && isordinal (B))
         if (! isequal (categories (A), categories (B)))
-          error (strcat (["categorical.ismember: ordinal categorical arrays", ...
-                          " must have the same ordered set of categories."]));
+          error (strcat ("categorical.ismember: ordinal categorical arrays", ...
+                         " must have the same ordered set of categories."));
         endif
         [TF, idx] = ismember (double (A), double (B), varargin{:});
       elseif (isordinal (A) || isordinal (B))
@@ -1190,8 +1190,8 @@ classdef categorical
 
       ## Only consecutive categories can be merged in ordinal arrays
       if (A.isOrdinal && any (diff (index) != 1))
-        error (strcat (["categorical.mergecats: only consecutive categories", ...
-                        " can be merged in ordinal categorical arrays."]));
+        error (strcat ("categorical.mergecats: only consecutive categories", ...
+                       " can be merged in ordinal categorical arrays."));
       endif
 
       ## Merge categories
@@ -1240,8 +1240,8 @@ classdef categorical
         try
           oldcats = cellstr (varargin{1});
         catch
-          error (strcat (["categorical:removecats: OLDCATS", ...
-                          " cannot be converted to cellstr."]));
+          error (strcat ("categorical:removecats: OLDCATS", ...
+                         " cannot be converted to cellstr."));
         end_try_catch
 
         ## Keep old cat names that reference existing categories, ignore the rest
@@ -1323,38 +1323,38 @@ classdef categorical
         try
           newnames = cellstr (varargin{1});
         catch
-          error (strcat (["categorical:renamecats: NEWNAMES", ...
-                          " cannot be converted to cellstr."]));
+          error (strcat ("categorical:renamecats: NEWNAMES", ...
+                         " cannot be converted to cellstr."));
         end_try_catch
         if (numel (oldnames) != numel (newnames))
-          error (strcat (["categorical:renamecats: NEWNAMES must equal the", ...
-                          " number of existing categories in input array."]));
+          error (strcat ("categorical:renamecats: NEWNAMES must equal the", ...
+                         " number of existing categories in input array."));
         endif
       else
         ## Convert to cellstring
         try
           oldnames = cellstr (varargin{1});
         catch
-          error (strcat (["categorical:renamecats: OLDNAMES", ...
-                          " cannot be converted to cellstr."]));
+          error (strcat ("categorical:renamecats: OLDNAMES", ...
+                         " cannot be converted to cellstr."));
         end_try_catch
         try
           newnames = cellstr (varargin{2});
         catch
-          error (strcat (["categorical:renamecats: NEWNAMES", ...
-                          " cannot be converted to cellstr."]));
+          error (strcat ("categorical:renamecats: NEWNAMES", ...
+                         " cannot be converted to cellstr."));
         end_try_catch
         if (numel (oldnames) != numel (newnames))
-          error (strcat (["categorical:renamecats: OLDNAMES and NEWNAMES", ...
-                          " must have the same number of elements."]));
+          error (strcat ("categorical:renamecats: OLDNAMES and NEWNAMES", ...
+                         " must have the same number of elements."));
         endif
       endif
 
       ## Find and rename existing categories
       [TF, index] = ismember (oldnames, A.cats);
       if (! all (TF))
-        error (strcat (["categorical.renamecats: OLDNAMES must be", ...
-                        " a subset of existing categories."]));
+        error (strcat ("categorical.renamecats: OLDNAMES must be", ...
+                       " a subset of existing categories."));
       endif
       B = this;
       B.cats(index) = newnames;
@@ -1385,12 +1385,12 @@ classdef categorical
         try
           neworder = cellstr (varargin{1});
         catch
-          error (strcat (["categorical:reordercats: NEWORDER", ...
-                          " cannot be converted to cellstr."]));
+          error (strcat ("categorical:reordercats: NEWORDER", ...
+                         " cannot be converted to cellstr."));
         end_try_catch
         if (! all (ismember (neworder, A.cats)))
-          error (["categorical.reordercats: NEWORDER must contain", ...
-                  " the same set with the existing categories."]);
+          error ("categorical.reordercats: NEWORDER must contain", ...
+                 " the same set with the existing categories.");
         endif
       endif
       ## Reorder
@@ -1554,22 +1554,22 @@ classdef categorical
           ## and they are in the same order
           cats = cellfun (@(x) categories (x), {A, B}, 'UniformOutput', false);
           if (! isequal (cats{:}))
-            error (strcat (["categorical.eq: comparison between ordinal", ...
-                            " arrays requires that both have the same", ...
-                            " categories, which must be ordered in the", ...
-                            " same way."]));
+            error (strcat ("categorical.eq: comparison between ordinal", ...
+                           " arrays requires that both have the same", ...
+                           " categories, which must be ordered in the", ...
+                           " same way."));
           endif
           codes = cellfun (@(x) x.code, {A, B}, 'UniformOutput', false);
           TF = codes{1} == codes{2};
         elseif (A.isOrdinal || B.isOrdinal)
-          error (strcat (["categorical.eq: cannot compare a categorical", ...
-                          " array that is ordinal with one that is not."]));
+          error (strcat ("categorical.eq: cannot compare a categorical", ...
+                         " array that is ordinal with one that is not."));
         else
           TF = strcmp (cellstr (A), cellstr (B));
         endif
       else
-        error (strcat (["categorical.eq: comparison is not defined between", ...
-                        " '%s' and '%s' arrays."], class (A), class (B)));
+        error (strcat ("categorical.eq: comparison is not defined between", ...
+                       " '%s' and '%s' arrays."), class (A), class (B));
       endif
     endfunction
 
@@ -1620,8 +1620,8 @@ classdef categorical
       elseif (iscellstr (A) || isa (A, 'string') || ischar (A))
         TF = B <= A;
       elseif (! A.isOrdinal || ! B.isOrdinal)
-        error (strcat (["categorical.ge: relational comparison is not", ...
-                        " allowed for non-ordinal categorical arrays."]));
+        error (strcat ("categorical.ge: relational comparison is not", ...
+                       " allowed for non-ordinal categorical arrays."));
       else
         TF = double (A) >= double (B);
       endif
@@ -1673,8 +1673,8 @@ classdef categorical
       elseif (iscellstr (A) || isa (A, 'string') || ischar (A))
         TF = B < A;
       elseif (! A.isOrdinal || ! B.isOrdinal)
-        error (strcat (["categorical.lt: relational comparison is not", ...
-                        " allowed for non-ordinal categorical arrays."]));
+        error (strcat ("categorical.lt: relational comparison is not", ...
+                       " allowed for non-ordinal categorical arrays."));
       else
         TF = double (A) > double (B);
       endif
@@ -1727,8 +1727,8 @@ classdef categorical
       elseif (iscellstr (A) || isa (A, 'string') || ischar (A))
         TF = B >= A;
       elseif (! A.isOrdinal || ! B.isOrdinal)
-        error (strcat (["categorical.le: relational comparison is not", ...
-                        " allowed for non-ordinal categorical arrays."]));
+        error (strcat ("categorical.le: relational comparison is not", ...
+                       " allowed for non-ordinal categorical arrays."));
       else
         TF = double (A) <= double (B);
       endif
@@ -1780,8 +1780,8 @@ classdef categorical
       elseif (iscellstr (A) || isa (A, 'string') || ischar (A))
         TF = B > A;
       elseif (! A.isOrdinal || ! B.isOrdinal)
-        error (strcat (["categorical.lt: relational comparison is not", ...
-                        " allowed for non-ordinal categorical arrays."]));
+        error (strcat ("categorical.lt: relational comparison is not", ...
+                       " allowed for non-ordinal categorical arrays."));
       else
         TF = double (A) < double (B);
       endif
@@ -1834,12 +1834,152 @@ classdef categorical
 
   methods (Access = public)
 
-    function [B, index] = min (A)
-      error ("categorical.min: not implemented yet.");
+    function [C, index] = min (A, B = [], varargin)
+      ## Check for ordinal categorical array
+      if (! A.isOrdinal)
+        error ("categorical.min: categorical array A is not ordinal.");
+      endif
+      if (numel (varargin) > 2)
+        error ("categorical.min: too many input arguments.");
+      endif
+      ## Get missing flag
+      omitflag = true;
+      if (numel (varargin) > 0)
+        if (ischar (varargin{end}) || isa (varargin{end}, 'string'))
+          if (strcmpi (varargin{end}, 'includeundefined'))
+            omitflag = false;
+            varargin(end) = [];
+          elseif (strcmpi (varargin{end}, 'omitundefined'))
+            omitflag = true;
+            varargin(end) = [];
+          elseif (! strcmpi (varargin{end}, 'all'))
+            error ("categorical.min: invalid missing flag.");
+          endif
+        endif
+      endif
+      ## Grab dim, vecdim, 'all'
+      if (isempty (varargin))
+        dim = [];
+      else
+        dim = varargin{1};
+      endif
+      ## Create output array
+      C = A;
+      ## Minimum of two arrays
+      if (! isempty (B))
+        ## No second output allowed
+        if (nargout > 1)
+          error (strcat ("categorical.min: a second output is", ...
+                         " not supported with this syntax."));
+        endif
+        ## Check for ordinal categorical array
+        if (! isa (B, 'categorical'))
+          error ("categorical.min: array B must be categorical.");
+        endif
+        if (! B.isOrdinal)
+          error ("categorical.min: categorical array B is not ordinal.");
+        endif
+        ## Check for same categories (including their order)
+        Acats = categories (A);
+        Bcats = categories (B);
+        if (! isequal (Acats, Bcats))
+          error (strcat ("categorical.min: categorical arrays must have", ...
+                         " the same set of categories, including thei order."));
+        endif
+        ## Process codes and missing values
+        A_d = double (A);
+        B_d = double (B);
+        if (omitflag)
+          C_d = __nanmin__ (A_d, B_d);
+        else
+          C_d = __nanmin__ (A_d, B_d, true);
+        endif
+      ## Minimum of one array
+      else
+        A_d = double (A);
+        if (omitflag)
+          [C_d, index] = __nanmin__ (A_d, [], varargin{:});
+        else
+          [C_d, index] = __nanmin__ (A_d, [], varargin{:}, true);
+        endif
+      endif
+      ## Fix missing codes
+      C.isMissing = isnan (C_d);
+      C.code = int16 (C_d);
     endfunction
 
-    function [B, index] = max (A)
-      error ("categorical.max: not implemented yet.");
+    function [C, index] = max (A, B = [], varargin)
+      ## Check for ordinal categorical array
+      if (! A.isOrdinal)
+        error ("categorical.max: categorical array A is not ordinal.");
+      endif
+      if (numel (varargin) > 2)
+        error ("categorical.max: too many input arguments.");
+      endif
+      ## Get missing flag
+      omitflag = true;
+      if (numel (varargin) > 0)
+        if (ischar (varargin{end}) || isa (varargin{end}, 'string'))
+          if (strcmpi (varargin{end}, 'includeundefined'))
+            omitflag = false;
+            varargin(end) = [];
+          elseif (strcmpi (varargin{end}, 'omitundefined'))
+            omitflag = true;
+            varargin(end) = [];
+          elseif (! strcmpi (varargin{end}, 'all'))
+            error ("categorical.max: invalid missing flag.");
+          endif
+        endif
+      endif
+      ## Grab dim, vecdim, 'all'
+      if (isempty (varargin))
+        dim = [];
+      else
+        dim = varargin{1};
+      endif
+      ## Create output array
+      C = A;
+      ## Minimum of two arrays
+      if (! isempty (B))
+        ## No second output allowed
+        if (nargout > 1)
+          error (strcat ("categorical.min: a second output is", ...
+                         " not supported with this syntax."));
+        endif
+        ## Check for ordinal categorical array
+        if (! isa (B, 'categorical'))
+          error ("categorical.max: array B must be categorical.");
+        endif
+        if (! B.isOrdinal)
+          error ("categorical.max: categorical array B is not ordinal.");
+        endif
+        ## Check for same categories (including their order)
+        Acats = categories (A);
+        Bcats = categories (B);
+        if (! isequal (Acats, Bcats))
+          error (strcat ("categorical.max: categorical arrays must have", ...
+                         " the same set of categories, including thei order."));
+        endif
+        ## Process codes and missing values
+        A_d = double (A);
+        B_d = double (B);
+        if (omitflag)
+          C_d = __nanmax__ (A_d, B_d);
+        else
+          C_d = __nanmax__ (A_d, B_d, true);
+        endif
+      ## Minimum of one array
+      else
+        A_d = double (A);
+        if (omitflag)
+          [C_d, index] = __nanmax__ (A_d, [], varargin{:});
+        else
+          [C_d, index] = __nanmax__ (A_d, [], varargin{:}, true);
+        endif
+      endif
+      ## Fix missing codes
+      C.isMissing = isnan (C_d);
+      C.code = int16 (C_d);
     endfunction
 
     function B = median (A, varargin)
@@ -1891,8 +2031,8 @@ classdef categorical
           elseif (strcmpi (col, 'descend'))
             col = -[1:size(A, 2)];
           else
-            error (strcat (["categorical.sortrows: DIRECTION can", ...
-                            " be either 'ascend' or 'descend'."]));
+            error (strcat ("categorical.sortrows: DIRECTION can", ...
+                           " be either 'ascend' or 'descend'."));
           endif
         else
           error ("categorical.sortrows: invalid value for COL argument.");
@@ -1910,8 +2050,8 @@ classdef categorical
           col = - abs (col);
         else
           if (numel (direction) != numel (col))
-            error (strcat (["categorical.sortrows: DIRECTION", ...
-                            " does not match COL argument."]));
+            error (strcat ("categorical.sortrows: DIRECTION", ...
+                           " does not match COL argument."));
           endif
           col = abs (col);
           idx = strcmpi (direction, 'descend');
@@ -2017,9 +2157,9 @@ classdef categorical
         ## and they are in the same order
         cats = cellfun (@(x) categories (x), args, 'UniformOutput', false);
         if (! isequal (cats{:}))
-          error (strcat (["categorical.cat: cannot concatenate ordinal", ...
-                          " categorical arrays unless they have the same", ...
-                          " ordered set of categories."]));
+          error (strcat ("categorical.cat: cannot concatenate ordinal", ...
+                         " categorical arrays unless they have the same", ...
+                         " ordered set of categories."));
         endif
         out = args{1};
         fieldArgs = cellfun (@(x) x.code, args, 'UniformOutput', false);
@@ -2028,8 +2168,8 @@ classdef categorical
         out.isMissing = cat (dim, fieldArgs{:});
         return;
       elseif (any (is_ordinal))
-        error (strcat (["categorical.cat: cannot concatenate ordinal", ...
-                        " with non-ordinal categorical arrays."]));
+        error (strcat ("categorical.cat: cannot concatenate ordinal", ...
+                       " with non-ordinal categorical arrays."));
       endif
       ## If any categorical array is protected, all must have the same categories
       is_protected = cellfun (@isprotected, args);
@@ -2038,9 +2178,9 @@ classdef categorical
         ## but they are not necessarily in the same order
         cats = cellfun (@(x) categories (x), args, 'UniformOutput', false);
         if (! all (ismember (cats{:})))
-          error (strcat (["categorical.cat: cannot concatenate protected", ...
-                          " categorical arrays that do not have the same", ...
-                          " set of categories."]));
+          error (strcat ("categorical.cat: cannot concatenate protected", ...
+                         " categorical arrays that do not have the same", ...
+                         " set of categories."));
         endif
         out = args{1};
         out.isProtected = true; # returning array must also be protected
@@ -2159,12 +2299,12 @@ classdef categorical
           out.isMissing = this.isMissing(s.subs{:});
 
         case '{}'
-          error (strcat (["categorical.subsref: '{}' invalid indexing", ...
-                          " for referencing values. Use '()' instead."]));
+          error (strcat ("categorical.subsref: '{}' invalid indexing", ...
+                         " for referencing values. Use '()' instead."));
 
         case '.'
-          error (strcat (["categorical.subsref: '.' invalid indexing", ...
-                          " for referencing field of non-structure array."]));
+          error (strcat ("categorical.subsref: '.' invalid indexing", ...
+                         " for referencing field of non-structure array."));
       endswitch
 
       ## Chained references
@@ -2192,9 +2332,9 @@ classdef categorical
               val.isProtected = true;
             endif
           elseif (! isa (val, 'categorical'))
-            error (strcat (["categorical.subsasgn: assignment value must", ...
-                            " be a categorical array or text representing", ...
-                            " categories."]));
+            error (strcat ("categorical.subsasgn: assignment value must", ...
+                           " be a categorical array or text representing", ...
+                           " categories."));
           endif
           ## After this point VAL is categorical array
           ## If any categorical array is ordinal, all must be
@@ -2202,28 +2342,28 @@ classdef categorical
             ## Check that all categorical arrays have the same categories
             ## and they are in the same order
             if (! isequal (categories (this), categories (val)))
-              error (strcat (["categorical.subsasgn: cannot assign value", ...
-                              " to ordinal categorical array unless they", ...
-                              " have the same ordered set of categories."]));
+              error (strcat ("categorical.subsasgn: cannot assign value", ...
+                             " to ordinal categorical array unless they", ...
+                             " have the same ordered set of categories."));
             endif
             this.code(s.subs{:}) = val.code;
             this.isMissing(s.subs{:}) = val.isMissing;
             return;
           elseif (isordinal (this))
-            error (strcat (["categorical.subsasgn: cannot assign unordered", ...
-                            " categorical array to ordinal categorical array."]));
+            error (strcat ("categorical.subsasgn: cannot assign unordered", ...
+                           " categorical array to ordinal categorical array."));
           elseif (isordinal (val))
-            error (strcat (["categorical.subsasgn: cannot assign ordinal", ...
-                            " categorical array to unordered categorical", ...
-                            " array."]));
+            error (strcat ("categorical.subsasgn: cannot assign ordinal", ...
+                           " categorical array to unordered categorical", ...
+                           " array."));
           endif
           ## If protected, all must have the same categories
           if (isprotected (this) || isprotected (val))
             ## Check that all categorical arrays have the same categories
             ## but they are not necessarily in the same order
             if (! all (ismember (this.cats, val.cats)))
-              error (strcat (["categorical.subsasgn: cannot asssign to", ...
-                              " protected categorical array new categories."]));
+              error (strcat ("categorical.subsasgn: cannot asssign to", ...
+                             " protected categorical array new categories."));
             endif
             ## Reorder codes accordingly
             idx = cell (1, numel (this.cats));
@@ -2263,12 +2403,12 @@ classdef categorical
           this.isMissing(s.subs{:}) = val.isMissing;
 
         case '{}'
-          error (strcat (["categorical.subsasgn: '{}' invalid indexing", ...
-                          " for assigning values. Use '()' instead."]));
+          error (strcat ("categorical.subsasgn: '{}' invalid indexing", ...
+                         " for assigning values. Use '()' instead."));
 
         case '.'
-          error (strcat (["categorical.subsasgn: '.' invalid indexing", ...
-                          " for assigning field of non-structure array."]));
+          error (strcat ("categorical.subsasgn: '.' invalid indexing", ...
+                         " for assigning field of non-structure array."));
       endswitch
 
     endfunction
