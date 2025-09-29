@@ -2192,29 +2192,29 @@ Smallest element in an ordinal categorical array.
  returns the indices of the minimum values in <var>index</var>, using any of
  the previous syntaxes.
 </p>
-<p> <code><var>C</var> = min (<var>A</var>, <var>B</var>) returns an ordinal categorical
+<p> <code><var>C</var> = min (<var>A</var>, <var>B</var>)</code> returns an ordinal categorical
  array <var>C</var> with the smallest elements from <var>A</var> and <var>B</var>, which
  both must be ordinal categorical arrays of compatible sizes with the same
  set and ordering of categories.  Compatible size means that <var>A</var> and
  <var>B</var> can be the same size, one can be scalar, or for every dimension,
  their dimension sizes must be equal or one of them must be 1.
-</code></p>
-<p><code> <code>[&hellip;] = min (&hellip;, <var>missingflag</var>) specifies how to treat
- undefined elements in any of the previous syntaxes.  <var>missingflag</var>
- must be a character vector or a string scalar with onoe of the following
- values:
-</code></code></p>
+</p>
+<p> <code>[&hellip;] = min (&hellip;, <var>missingflag</var>)</code> specifies how to
+ handle undefined elements in any of the previous syntaxes.
+ <var>missingflag</var> must be a character vector or a string scalar with one
+ of the following values:
+</p>
  <ul>
-<li><code><code> <code>'omitundefined'</code>, which is the default, ignores all
+<li> <code>'omitundefined'</code>, which is the default, ignores all
  undefined elements and returns the minimum of the remaining elements.  If
  all elements along the operating dimension are undefined, then it returns
  an undefined element.  <code>'omitnan'</code> may also be used as equivalent
  to <code>'omitundefined'</code>.
- </code></code></li><li><code><code> <code>'includeundefined'</code>, returns an undefined element if there
+ </li><li> <code>'includeundefined'</code>, returns an undefined element if there
  any undefined elements along the operating dimension.
  <code>'includenan'</code> may also be used as equivalent to
  <code>'includeundefined'</code>.
- </code></code></li></ul>
+ </li></ul>
 
 
 
@@ -2280,29 +2280,29 @@ Smallest element in an ordinal categorical array.
  returns the indices of the maximum values in <var>index</var>, using any of
  the previous syntaxes.
 </p>
-<p> <code><var>C</var> = max (<var>A</var>, <var>B</var>) returns an ordinal categorical
+<p> <code><var>C</var> = max (<var>A</var>, <var>B</var>)</code> returns an ordinal categorical
  array <var>C</var> with the largest elements from <var>A</var> and <var>B</var>, which
  both must be ordinal categorical arrays of compatible sizes with the same
  set and ordering of categories.  Compatible size means that <var>A</var> and
  <var>B</var> can be the same size, one can be scalar, or for every dimension,
  their dimension sizes must be equal or one of them must be 1.
-</code></p>
-<p><code> <code>[&hellip;] = max (&hellip;, <var>missingflag</var>) specifies how to treat
- undefined elements in any of the previous syntaxes.  <var>missingflag</var>
- must be a character vector or a string scalar with onoe of the following
- values:
-</code></code></p>
+</p>
+<p> <code>[&hellip;] = max (&hellip;, <var>missingflag</var>)</code> specifies how to
+ handle undefined elements in any of the previous syntaxes.
+ <var>missingflag</var> must be a character vector or a string scalar with one
+ of the following values:
+</p>
  <ul>
-<li><code><code> <code>'omitundefined'</code>, which is the default, ignores all
+<li> <code>'omitundefined'</code>, which is the default, ignores all
  undefined elements and returns the maximum of the remaining elements.  If
  all elements along the operating dimension are undefined, then it returns
  an undefined element.  <code>'omitnan'</code> may also be used as equivalent
  to <code>'omitundefined'</code>.
- </code></code></li><li><code><code> <code>'includeundefined'</code>, returns an undefined element if there
+ </li><li> <code>'includeundefined'</code>, returns an undefined element if there
  any undefined elements along the operating dimension.
  <code>'includenan'</code> may also be used as equivalent to
  <code>'includeundefined'</code>.
- </code></code></li></ul>
+ </li></ul>
 
 
 
