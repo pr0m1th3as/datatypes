@@ -1834,6 +1834,70 @@ classdef categorical
 
   methods (Access = public)
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {categorical} {@var{C} =} min (@var{A})
+    ## @deftypefnx {categorical} {[@var{C}, @var{index}] =} min (@var{A})
+    ## @deftypefnx {categorical} {@var{C} =} min (@var{A}, @qcode{[]}, @var{dim})
+    ## @deftypefnx {categorical} {@var{C} =} min (@var{A}, @qcode{[]}, @var{vecdim})
+    ## @deftypefnx {categorical} {@var{C} =} min (@var{A}, @qcode{[]}, @qcode{'all'})
+    ## @deftypefnx {categorical} {[@var{C}, @var{index}] =} min (@var{A}, @qcode{[]}, @dots{})
+    ## @deftypefnx {categorical} {@var{C} =} min (@var{A}, @var{B})
+    ## @deftypefnx {categorical} {[@dots{}] =} min (@dots{}, @var{missingflag})
+    ##
+    ## Smallest element in an ordinal categorical array.
+    ##
+    ## @code{@var{C} = min (@var{A})} returns the smallest element in ordinal
+    ## categorical vector @var{A}.  If @var{A} is a matrix, @code{min (@var{A})}
+    ## returns a row vector with the smallest element from each column.  For
+    ## multidimensional arrays, @code{min (@var{A})} operates along the first
+    ## non-singleton dimension.
+    ##
+    ## @code{[@var{C}, @var{index}] = min (@var{A})} also returns the indices of
+    ## the minimum values in @var{index}, which has the same size as @var{C}.
+    ## When the operating dimension contains more than one minimal elements, the
+    ## index of the first one is returned.
+    ##
+    ## @code{@var{C} = min (@var{A}, @qcode{[]}, @var{dim})} operates along the
+    ## dimension specified by @var{dim}.
+    ##
+    ## @code{@var{C} = min (@var{A}, @qcode{[]}, @var{vecdim})} operates on all
+    ## the elements contained in the dimensions specified by @var{vecdim}, which
+    ## must be numeric vector of non-repeating positive integers.  Any values in
+    ## @var{vecdim} indexing dimensions larger that the actual array @var{A} are
+    ## ignored.
+    ##
+    ## @code{@var{C} = min (@var{A}, @qcode{[]}, @qcode{'all'})} operates on all
+    ## dimensions and returns the smallest element in @var{A}.
+    ##
+    ## @code{[@var{C}, @var{index}] = min (@var{A}, @qcode{[]}, @dots{})} also
+    ## returns the indices of the minimum values in @var{index}, using any of
+    ## the previous syntaxes.
+    ##
+    ## @code{@var{C} = min (@var{A}, @var{B}) returns an ordinal categorical
+    ## array @var{C} with the smallest elements from @var{A} and @var{B}, which
+    ## both must be ordinal categorical arrays of compatible sizes with the same
+    ## set and ordering of categories.  Compatible size means that @var{A} and
+    ## @var{B} can be the same size, one can be scalar, or for every dimension,
+    ## their dimension sizes must be equal or one of them must be 1.
+    ##
+    ## @code{[@dots{}] = min (@dots{}, @var{missingflag}) specifies how to treat
+    ## undefined elements in any of the previous syntaxes.  @var{missingflag}
+    ## must be a character vector or a string scalar with onoe of the following
+    ## values:
+    ##
+    ## @itemize
+    ## @item @qcode{'omitundefined'}, which is the default, ignores all
+    ## undefined elements and returns the minimum of the remaining elements.  If
+    ## all elements along the operating dimension are undefined, then it returns
+    ## an undefined element.  @qcode{'omitnan'} may also be used as equivalent
+    ## to @qcode{'omitundefined'}.
+    ## @item @qcode{'includeundefined'}, returns an undefined element if there
+    ## any undefined elements along the operating dimension.
+    ## @qcode{'includenan'} may also be used as equivalent to
+    ## @qcode{'includeundefined'}.
+    ## @end itemize
+    ##
+    ## @end deftypefn
     function [C, index] = min (A, B = [], varargin)
       ## Check for ordinal categorical array
       if (! A.isOrdinal)
@@ -1846,10 +1910,10 @@ classdef categorical
       omitflag = true;
       if (numel (varargin) > 0)
         if (ischar (varargin{end}) || isa (varargin{end}, 'string'))
-          if (strcmpi (varargin{end}, 'includeundefined'))
+          if (any (strcmpi (varargin{end}, {'includeundefined', 'includenan'})))
             omitflag = false;
             varargin(end) = [];
-          elseif (strcmpi (varargin{end}, 'omitundefined'))
+          elseif (any (strcmpi (varargin{end}, {'omitundefined', 'omitnan'})))
             omitflag = true;
             varargin(end) = [];
           elseif (! strcmpi (varargin{end}, 'all'))
@@ -1908,6 +1972,70 @@ classdef categorical
       C.code = int16 (C_d);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {categorical} {@var{C} =} max (@var{A})
+    ## @deftypefnx {categorical} {[@var{C}, @var{index}] =} max (@var{A})
+    ## @deftypefnx {categorical} {@var{C} =} max (@var{A}, @qcode{[]}, @var{dim})
+    ## @deftypefnx {categorical} {@var{C} =} max (@var{A}, @qcode{[]}, @var{vecdim})
+    ## @deftypefnx {categorical} {@var{C} =} max (@var{A}, @qcode{[]}, @qcode{'all'})
+    ## @deftypefnx {categorical} {[@var{C}, @var{index}] =} max (@var{A}, @qcode{[]}, @dots{})
+    ## @deftypefnx {categorical} {@var{C} =} max (@var{A}, @var{B})
+    ## @deftypefnx {categorical} {[@dots{}] =} max (@dots{}, @var{missingflag})
+    ##
+    ## Smallest element in an ordinal categorical array.
+    ##
+    ## @code{@var{C} = max (@var{A})} returns the largest element in ordinal
+    ## categorical vector @var{A}.  If @var{A} is a matrix, @code{max (@var{A})}
+    ## returns a row vector with the largest element from each column.  For
+    ## multidimensional arrays, @code{max (@var{A})} operates along the first
+    ## non-singleton dimension.
+    ##
+    ## @code{[@var{C}, @var{index}] = max (@var{A})} also returns the indices of
+    ## the maximum values in @var{index}, which has the same size as @var{C}.
+    ## When the operating dimension contains more than one maximal elements, the
+    ## index of the first one is returned.
+    ##
+    ## @code{@var{C} = max (@var{A}, @qcode{[]}, @var{dim})} operates along the
+    ## dimension specified by @var{dim}.
+    ##
+    ## @code{@var{C} = max (@var{A}, @qcode{[]}, @var{vecdim})} operates on all
+    ## the elements contained in the dimensions specified by @var{vecdim}, which
+    ## must be numeric vector of non-repeating positive integers.  Any values in
+    ## @var{vecdim} indexing dimensions larger that the actual array @var{A} are
+    ## ignored.
+    ##
+    ## @code{@var{C} = max (@var{A}, @qcode{[]}, @qcode{'all'})} operates on all
+    ## dimensions and returns the largest element in @var{A}.
+    ##
+    ## @code{[@var{C}, @var{index}] = max (@var{A}, @qcode{[]}, @dots{})} also
+    ## returns the indices of the maximum values in @var{index}, using any of
+    ## the previous syntaxes.
+    ##
+    ## @code{@var{C} = max (@var{A}, @var{B}) returns an ordinal categorical
+    ## array @var{C} with the largest elements from @var{A} and @var{B}, which
+    ## both must be ordinal categorical arrays of compatible sizes with the same
+    ## set and ordering of categories.  Compatible size means that @var{A} and
+    ## @var{B} can be the same size, one can be scalar, or for every dimension,
+    ## their dimension sizes must be equal or one of them must be 1.
+    ##
+    ## @code{[@dots{}] = max (@dots{}, @var{missingflag}) specifies how to treat
+    ## undefined elements in any of the previous syntaxes.  @var{missingflag}
+    ## must be a character vector or a string scalar with onoe of the following
+    ## values:
+    ##
+    ## @itemize
+    ## @item @qcode{'omitundefined'}, which is the default, ignores all
+    ## undefined elements and returns the maximum of the remaining elements.  If
+    ## all elements along the operating dimension are undefined, then it returns
+    ## an undefined element.  @qcode{'omitnan'} may also be used as equivalent
+    ## to @qcode{'omitundefined'}.
+    ## @item @qcode{'includeundefined'}, returns an undefined element if there
+    ## any undefined elements along the operating dimension.
+    ## @qcode{'includenan'} may also be used as equivalent to
+    ## @qcode{'includeundefined'}.
+    ## @end itemize
+    ##
+    ## @end deftypefn
     function [C, index] = max (A, B = [], varargin)
       ## Check for ordinal categorical array
       if (! A.isOrdinal)
