@@ -2147,13 +2147,78 @@ Not equal for categorical arrays.
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Smallest element in an ordinal categorical array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod45">
             <div class="border-bottom py-2">
-<b><code>categorical.min</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>min</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [<var>C</var>, <var>index</var>] = <b>min</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>min</b> (<var>A</var>, <code>[]</code>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>min</b> (<var>A</var>, <code>[]</code>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>min</b> (<var>A</var>, <code>[]</code>, <code>'all'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [<var>C</var>, <var>index</var>] = <b>min</b> (<var>A</var>, <code>[]</code>, &hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>min</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [&hellip;] = <b>min</b> (&hellip;, <var>missingflag</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>C</var> = min (<var>A</var>)</code> returns the smallest element in ordinal
+ categorical vector <var>A</var>.  If <var>A</var> is a matrix, <code>min (<var>A</var>)</code>
+ returns a row vector with the smallest element from each column.  For
+ multidimensional arrays, <code>min (<var>A</var>)</code> operates along the first
+ non-singleton dimension.
+</p>
+<p> <code>[<var>C</var>, <var>index</var>] = min (<var>A</var>)</code> also returns the indices of
+ the minimum values in <var>index</var>, which has the same size as <var>C</var>.
+ When the operating dimension contains more than one minimal elements, the
+ index of the first one is returned.
+</p>
+<p> <code><var>C</var> = min (<var>A</var>, <code>[]</code>, <var>dim</var>)</code> operates along the
+ dimension specified by <var>dim</var>.
+</p>
+<p> <code><var>C</var> = min (<var>A</var>, <code>[]</code>, <var>vecdim</var>)</code> operates on all
+ the elements contained in the dimensions specified by <var>vecdim</var>, which
+ must be numeric vector of non-repeating positive integers.  Any values in
+ <var>vecdim</var> indexing dimensions larger that the actual array <var>A</var> are
+ ignored.
+</p>
+<p> <code><var>C</var> = min (<var>A</var>, <code>[]</code>, <code>'all'</code>)</code> operates on all
+ dimensions and returns the smallest element in <var>A</var>.
+</p>
+<p> <code>[<var>C</var>, <var>index</var>] = min (<var>A</var>, <code>[]</code>, &hellip;)</code> also
+ returns the indices of the minimum values in <var>index</var>, using any of
+ the previous syntaxes.
+</p>
+<p> <code><var>C</var> = min (<var>A</var>, <var>B</var>) returns an ordinal categorical
+ array <var>C</var> with the smallest elements from <var>A</var> and <var>B</var>, which
+ both must be ordinal categorical arrays of compatible sizes with the same
+ set and ordering of categories.  Compatible size means that <var>A</var> and
+ <var>B</var> can be the same size, one can be scalar, or for every dimension,
+ their dimension sizes must be equal or one of them must be 1.
+</code></p>
+<p><code> <code>[&hellip;] = min (&hellip;, <var>missingflag</var>) specifies how to treat
+ undefined elements in any of the previous syntaxes.  <var>missingflag</var>
+ must be a character vector or a string scalar with onoe of the following
+ values:
+</code></code></p>
+ <ul>
+<li><code><code> <code>'omitundefined'</code>, which is the default, ignores all
+ undefined elements and returns the minimum of the remaining elements.  If
+ all elements along the operating dimension are undefined, then it returns
+ an undefined element.  <code>'omitnan'</code> may also be used as equivalent
+ to <code>'omitundefined'</code>.
+ </code></code></li><li><code><code> <code>'includeundefined'</code>, returns an undefined element if there
+ any undefined elements along the operating dimension.
+ <code>'includenan'</code> may also be used as equivalent to
+ <code>'includeundefined'</code>.
+ </code></code></li></ul>
+
+
+
+
             </div>
           </div>
         </div>
@@ -2170,13 +2235,78 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Smallest element in an ordinal categorical array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod46">
             <div class="border-bottom py-2">
-<b><code>categorical.max</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>max</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [<var>C</var>, <var>index</var>] = <b>max</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>max</b> (<var>A</var>, <code>[]</code>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>max</b> (<var>A</var>, <code>[]</code>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>max</b> (<var>A</var>, <code>[]</code>, <code>'all'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [<var>C</var>, <var>index</var>] = <b>max</b> (<var>A</var>, <code>[]</code>, &hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>max</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [&hellip;] = <b>max</b> (&hellip;, <var>missingflag</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>C</var> = max (<var>A</var>)</code> returns the largest element in ordinal
+ categorical vector <var>A</var>.  If <var>A</var> is a matrix, <code>max (<var>A</var>)</code>
+ returns a row vector with the largest element from each column.  For
+ multidimensional arrays, <code>max (<var>A</var>)</code> operates along the first
+ non-singleton dimension.
+</p>
+<p> <code>[<var>C</var>, <var>index</var>] = max (<var>A</var>)</code> also returns the indices of
+ the maximum values in <var>index</var>, which has the same size as <var>C</var>.
+ When the operating dimension contains more than one maximal elements, the
+ index of the first one is returned.
+</p>
+<p> <code><var>C</var> = max (<var>A</var>, <code>[]</code>, <var>dim</var>)</code> operates along the
+ dimension specified by <var>dim</var>.
+</p>
+<p> <code><var>C</var> = max (<var>A</var>, <code>[]</code>, <var>vecdim</var>)</code> operates on all
+ the elements contained in the dimensions specified by <var>vecdim</var>, which
+ must be numeric vector of non-repeating positive integers.  Any values in
+ <var>vecdim</var> indexing dimensions larger that the actual array <var>A</var> are
+ ignored.
+</p>
+<p> <code><var>C</var> = max (<var>A</var>, <code>[]</code>, <code>'all'</code>)</code> operates on all
+ dimensions and returns the largest element in <var>A</var>.
+</p>
+<p> <code>[<var>C</var>, <var>index</var>] = max (<var>A</var>, <code>[]</code>, &hellip;)</code> also
+ returns the indices of the maximum values in <var>index</var>, using any of
+ the previous syntaxes.
+</p>
+<p> <code><var>C</var> = max (<var>A</var>, <var>B</var>) returns an ordinal categorical
+ array <var>C</var> with the largest elements from <var>A</var> and <var>B</var>, which
+ both must be ordinal categorical arrays of compatible sizes with the same
+ set and ordering of categories.  Compatible size means that <var>A</var> and
+ <var>B</var> can be the same size, one can be scalar, or for every dimension,
+ their dimension sizes must be equal or one of them must be 1.
+</code></p>
+<p><code> <code>[&hellip;] = max (&hellip;, <var>missingflag</var>) specifies how to treat
+ undefined elements in any of the previous syntaxes.  <var>missingflag</var>
+ must be a character vector or a string scalar with onoe of the following
+ values:
+</code></code></p>
+ <ul>
+<li><code><code> <code>'omitundefined'</code>, which is the default, ignores all
+ undefined elements and returns the maximum of the remaining elements.  If
+ all elements along the operating dimension are undefined, then it returns
+ an undefined element.  <code>'omitnan'</code> may also be used as equivalent
+ to <code>'omitundefined'</code>.
+ </code></code></li><li><code><code> <code>'includeundefined'</code>, returns an undefined element if there
+ any undefined elements along the operating dimension.
+ <code>'includenan'</code> may also be used as equivalent to
+ <code>'includeundefined'</code>.
+ </code></code></li></ul>
+
+
+
+
             </div>
           </div>
         </div>
