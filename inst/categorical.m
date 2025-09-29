@@ -1873,17 +1873,17 @@ classdef categorical
     ## returns the indices of the minimum values in @var{index}, using any of
     ## the previous syntaxes.
     ##
-    ## @code{@var{C} = min (@var{A}, @var{B}) returns an ordinal categorical
+    ## @code{@var{C} = min (@var{A}, @var{B})} returns an ordinal categorical
     ## array @var{C} with the smallest elements from @var{A} and @var{B}, which
     ## both must be ordinal categorical arrays of compatible sizes with the same
     ## set and ordering of categories.  Compatible size means that @var{A} and
     ## @var{B} can be the same size, one can be scalar, or for every dimension,
     ## their dimension sizes must be equal or one of them must be 1.
     ##
-    ## @code{[@dots{}] = min (@dots{}, @var{missingflag}) specifies how to treat
-    ## undefined elements in any of the previous syntaxes.  @var{missingflag}
-    ## must be a character vector or a string scalar with onoe of the following
-    ## values:
+    ## @code{[@dots{}] = min (@dots{}, @var{missingflag})} specifies how to
+    ## handle undefined elements in any of the previous syntaxes.
+    ## @var{missingflag} must be a character vector or a string scalar with one
+    ## of the following values:
     ##
     ## @itemize
     ## @item @qcode{'omitundefined'}, which is the default, ignores all
@@ -2011,17 +2011,17 @@ classdef categorical
     ## returns the indices of the maximum values in @var{index}, using any of
     ## the previous syntaxes.
     ##
-    ## @code{@var{C} = max (@var{A}, @var{B}) returns an ordinal categorical
+    ## @code{@var{C} = max (@var{A}, @var{B})} returns an ordinal categorical
     ## array @var{C} with the largest elements from @var{A} and @var{B}, which
     ## both must be ordinal categorical arrays of compatible sizes with the same
     ## set and ordering of categories.  Compatible size means that @var{A} and
     ## @var{B} can be the same size, one can be scalar, or for every dimension,
     ## their dimension sizes must be equal or one of them must be 1.
     ##
-    ## @code{[@dots{}] = max (@dots{}, @var{missingflag}) specifies how to treat
-    ## undefined elements in any of the previous syntaxes.  @var{missingflag}
-    ## must be a character vector or a string scalar with onoe of the following
-    ## values:
+    ## @code{[@dots{}] = max (@dots{}, @var{missingflag})} specifies how to
+    ## handle undefined elements in any of the previous syntaxes.
+    ## @var{missingflag} must be a character vector or a string scalar with one
+    ## of the following values:
     ##
     ## @itemize
     ## @item @qcode{'omitundefined'}, which is the default, ignores all
