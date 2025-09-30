@@ -231,13 +231,13 @@ classdef categorical
 
       ## Handle input arguments
       index2cat = [];
-      isnanset = false;
+      isnanvset = false;
       ## Input Array (x)
-      classx = class (x);
       if (iscellstr (x))
         classx = 'cellstr';
-        isnanx = ismissing (x);
+        isnanx = cellfun (@(x) isempty (strtrim (x)), x);
       elseif (isnumeric (x))
+        classx = 'numeric';
         isnanx = isnan (x);
       elseif (isa (x, 'datetime'))
         classx = 'datetime';
@@ -257,25 +257,31 @@ classdef categorical
       ## Categories (valueset)
       if (numel (args) > 0)
         valueset = args{1}(:);
-        classv = class (valueset);
         if (iscellstr (valueset))
           classv = 'cellstr';
+        elseif (isnumeric (valueset))
+          classv = 'numeric';
+        else
+          classv = class (valueset);
         endif
         if (any (strcmp (classx, {'cellstr', 'string'})))
           if (! (iscellstr (valueset) || isa (valueset, 'string')))
             error ("categorical: incompatible types of VALUESET and X.");
           endif
-          isnanset = ismissing (valueset);
+          isnanvset = ismissing (valueset);
         elseif (isequal (classx, classv))
           if (strcmp (classv, 'datetime'))
-            isnanset = isnat (valueset);
+            isnanvset = isnat (valueset);
           else  # numeric, duration,
-            isnanset = isnan (valueset);
+            isnanvset = isnan (valueset);
           endif
         else
           error ("categorical: types of VALUESET and X do not match.");
         endif
-        if (numel (unique (valueset)) < numel (valueset) || sum (isnanset) > 1)
+        if (sum (isnanvset) > 1)
+          error ("categorical: VALUESET contains multiple missing values.");
+        endif
+        if (numel (unique (valueset)) < numel (valueset))
           error ("categorical: VALUESET contains non-unique values.");
         endif
         ## Category names (catnames)
@@ -295,22 +301,16 @@ classdef categorical
           index2cat = __grp2idx__ (catnames);
         else
           ## Check valueset for missing or empty elements
-          if (strcmp (classv, 'cellstr'))
-            if (any (cellfun (@isempty, valueset)))
-              error (strcat ("categorical: VALUESET cannot contain empty", ...
-                             " text, unless CATNAMES are specified."));
-            endif
-            catnames = valueset;
-          elseif (strcmp (classv, 'string'))
-            if (any (cellfun (@(x) isempty (x) || ismissing (x), valueset)))
+          if (any (strcmp (classv, {'cellstr', 'string'})))
+            catnames = cellstr (valueset);
+            if (any (cellfun (@(x) isempty (strtrim (x)), valueset)))
               error (strcat ("categorical: VALUESET cannot contain empty or", ...
                              " missing text, unless CATNAMES are specified."));
             endif
-            catnames = cellstr (valueset);
           elseif (isnumeric (valueset))
             if (any (isnan (valueset)))
-              error (strcat ("categorical: VALUESET cannot contain NaN", ...
-                             " values, unless CATNAMES are specified."));
+              error (strcat ("categorical: numeric VALUESET cannot contain", ...
+                             " NaN values, unless CATNAMES are specified."));
             endif
             catnames = arrayfun (@num2str, valueset, "UniformOutput", false);
           elseif (strcmp (classv, 'logical'))
@@ -321,7 +321,17 @@ classdef categorical
             else
               catnames = {'false'; 'true'};
             endif
-          else # datetime or duration
+          elseif (strcmp (classv, 'datetime'))
+            if (any (isnat (valueset)))
+              error (strcat ("categorical: datetime VALUESET cannot contain", ...
+                             " NaT values, unless CATNAMES are specified."));
+            endif
+            catnames = dispstrings (valueset);
+          else  # duration
+            if (any (isnan (valueset)))
+              error (strcat ("categorical: duration VALUESET cannot contain", ...
+                             " NaN values, unless CATNAMES are specified."));
+            endif
             catnames = dispstrings (valueset);
           endif
         endif
@@ -365,7 +375,7 @@ classdef categorical
       ## Associate input array with valueset
       [tf, loc] = ismember (x, valueset);
       maxc = intmax ('uint16');
-      maxl = max (loc(:)) + sum (isnanset);
+      maxl = max (loc(:)) + sum (isnanvset);
       if (maxl > maxc)
         error (strcat ("categorical: too many categories; categorical", ...
                        " supports up to %d categories; this input has", ...
@@ -373,16 +383,16 @@ classdef categorical
       endif
 
       ## If missing value in valueset is associated with a category name
-      ## remove missing values in X from 'tf' and assign 'maxl' value in
-      ## the corresponding indices of 'loc'
-      if (any (isnanset))
+      ## remove missing values in X from 'tf' and assign the index of the
+      ## valueset that corresponds to the missing value to 'loc'
+      if (any (isnanvset))
         tf = tf | isnanx;
-        loc(find (isnanx)) = maxl;
+        loc(find (isnanx)) = find (isnanvset);
       endif
 
       ## Reassociate to user defined categories (only when regrouping required)
       if (! isempty (index2cat))
-        if (numel (index2cat) != unique (index2cat) || any (isnanset))
+        if (numel (index2cat) != unique (index2cat) || any (isnanvset))
           valueset = 1:numel (valueset);
           fcn = @ (x) index2cat(find (valueset == x));
           loc(tf) = arrayfun (fcn, loc(tf));
