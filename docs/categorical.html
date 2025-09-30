@@ -2461,13 +2461,59 @@ Most frequent element in a categorical array.
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Histogram bin counts of a categorical array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod49">
             <div class="border-bottom py-2">
-<b><code>categorical.histcounts</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">categorical: <var>N</var> = <b>histcounts</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>N</var> = <b>histcounts</b> (<var>A</var>, <var>cats</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>N</var> = <b>histcounts</b> (&hellip;, <code>'Normalization'</code>, <var>normtype</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [<var>N</var>, <var>cats</var>] = <b>histcounts</b> (&hellip;)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>N</var> = histcounts (<var>A</var>)</code> returns a numeric vector <var>N</var>
+ with the number of elements of each category in <var>A</var>.  <var>A</var> can be
+ a categorical array of any dimensions, but it is converted internally to
+ a single column vector.
+</p>
+<p> <code><var>N</var> = histcounts (<var>A</var>, <var>cats</var>)</code> returns the number of
+ elements only for the categories of <var>A</var> specified in <var>cats</var>,
+ which may be a categorical array, a string array, or a cell array of
+ character vectors, as long as it specifies unique existing categories in
+ <var>A</var>.
+</p>
+<p> <code><var>N</var> = histcounts (&hellip;, <code>'Normalization'</code>,
+ <var>normtype</var>)</code> specifies how to normalize the histogram values returned
+ in <var>N</var> with any of the following options specified in <var>normtype</var>:
+</p>
+ <ul>
+<li> <code>'count'</code>, which is the default, returns the number of
+ elements in each category.
+ </li><li> <code>'countdensity'</code> is the same as <code>'count'</code>, since the
+ bin width in categorical arrays is always equal to 1.
+ </li><li> <code>'probability'</code> returns the number of elements in each
+ category relative to the total number of elements in <var>A</var>.
+ </li><li> <code>'pdf'</code> is the same as <code>'probability'</code>, since the bin
+ width in categorical arrays is always equal to 1.
+ </li><li> <code>'cumcount'</code> returns the cumulative number of elements in
+ each category and all previous categories.
+ </li><li> <code>'cdf'</code> returns the cumulative number of elements in
+ each category and all previous categories relative to the total number of
+ elements in <var>A</var>.
+ </li></ul>
+
+<p> <code>[<var>N</var>, <var>cats</var>] = histcounts (&hellip;)</code> also returns the
+ corresponding categories of <var>A</var> for each count in <var>N</var>.
+ <var>cats</var> is a cell array of character vectors with the same size as
+ <var>N</var>.
+</p>
+
+
+
             </div>
           </div>
         </div>
