@@ -1134,12 +1134,14 @@ classdef string
       endif
       ## Find unique
       if (do_rows)
-        is_nm = ! any (ismissing (A), 2);
-        [~, ixA, ixB] = __unique__ (A.strs(is_nm,:), 'rows', opt);
+        is_nm = ! any (A.isMissing, 2);
+        A = subset (A, is_nm, ':');
+        [~, ixA, ixB] = __unique__ (A.strs, 'rows', opt);
         B = subset (A, ixA, ':');
-        if (any (is_nm(:)))
+        is_missing = ! is_nm;
+        if (any (is_missing))
           w = size (A, 2);
-          B = [B repmat(missing, 1, w)];
+          B = [B; repmat(missing, sum (is_missing), w)];
         endif
       else
         is_nm = ! A.isMissing;
