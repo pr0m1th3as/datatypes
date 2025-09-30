@@ -1551,6 +1551,47 @@ Add categories to categorical array.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
+                    <b><code>countcats</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Count occurences of categories in a categorical array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod33">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>countcats</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>countcats</b> (<var>A</var>, <var>dim</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>C</var> = countcats (<var>A</var>)</code> returns the number of elements for
+ each category in <var>A</var>.  If <var>A</var> is a vector, <var>C</var> is also a
+ vector with one element for each category in <var>A</var>.  If <var>A</var> is a
+ matrix, <var>C</var> is a matrix with each column containing the category
+ counts from each column of <var>A</var>.  For multidimensional arrays,
+ <code>countcats</code> operates along the first non-singleton dimension.
+</p>
+<p> <code><var>C</var> = countcats (<var>A</var>, <var>dim</var>)</code> aperates along the
+ dimension <var>dim</var>.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod34"
+              aria-expanded="false" aria-controls="collapseMethod34">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
                     <b><code>mergecats</code></b>
                   </h4>
                 </div>
@@ -1559,7 +1600,7 @@ Merge categories in categorical array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod33">
+          <div class="collapse multi-collapse" id="collapseMethod34">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>mergecats</b> (<var>A</var>, <var>oldcats</var>)</code></h5></dt>
@@ -1595,8 +1636,8 @@ Merge categories in categorical array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod34"
-              aria-expanded="false" aria-controls="collapseMethod34">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod35"
+              aria-expanded="false" aria-controls="collapseMethod35">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1608,7 +1649,7 @@ Remove categories from categorical array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod34">
+          <div class="collapse multi-collapse" id="collapseMethod35">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>removecats</b> (<var>A</var>)</code></h5></dt>
@@ -1639,8 +1680,8 @@ Remove categories from categorical array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod35"
-              aria-expanded="false" aria-controls="collapseMethod35">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod36"
+              aria-expanded="false" aria-controls="collapseMethod36">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1652,7 +1693,7 @@ Rename categories in categorical array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod35">
+          <div class="collapse multi-collapse" id="collapseMethod36">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>renamecats</b> (<var>A</var>, <var>newnames</var>)</code></h5></dt>
@@ -1686,8 +1727,8 @@ Rename categories in categorical array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod36"
-              aria-expanded="false" aria-controls="collapseMethod36">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod37"
+              aria-expanded="false" aria-controls="collapseMethod37">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1699,7 +1740,7 @@ Reorder categories in categorical array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod36">
+          <div class="collapse multi-collapse" id="collapseMethod37">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>reordercats</b> (<var>A</var>)</code></h5></dt>
@@ -1727,8 +1768,8 @@ Reorder categories in categorical array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod37"
-              aria-expanded="false" aria-controls="collapseMethod37">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod38"
+              aria-expanded="false" aria-controls="collapseMethod38">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1740,7 +1781,7 @@ Set categories in categorical array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod37">
+          <div class="collapse multi-collapse" id="collapseMethod38">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>setcats</b> (<var>A</var>, <var>newcats</var>)</code></h5></dt>
@@ -1777,8 +1818,8 @@ Set categories in categorical array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod38"
-              aria-expanded="false" aria-controls="collapseMethod38">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod39"
+              aria-expanded="false" aria-controls="collapseMethod39">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1790,7 +1831,7 @@ Combine categorical arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod38">
+          <div class="collapse multi-collapse" id="collapseMethod39">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>C</var> = <b>times</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -1816,8 +1857,8 @@ Combine categorical arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod39"
-              aria-expanded="false" aria-controls="collapseMethod39">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod40"
+              aria-expanded="false" aria-controls="collapseMethod40">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1829,7 +1870,7 @@ Equality for categorical arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod39">
+          <div class="collapse multi-collapse" id="collapseMethod40">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -1870,8 +1911,8 @@ Equality for categorical arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod40"
-              aria-expanded="false" aria-controls="collapseMethod40">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod41"
+              aria-expanded="false" aria-controls="collapseMethod41">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1883,7 +1924,7 @@ Greater than or equal to for ordinal categorical arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod40">
+          <div class="collapse multi-collapse" id="collapseMethod41">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>ge</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -1924,8 +1965,8 @@ Greater than or equal to for ordinal categorical arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod41"
-              aria-expanded="false" aria-controls="collapseMethod41">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod42"
+              aria-expanded="false" aria-controls="collapseMethod42">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1937,7 +1978,7 @@ Greater than for ordinal categorical arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod41">
+          <div class="collapse multi-collapse" id="collapseMethod42">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>gt</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -1977,8 +2018,8 @@ Greater than for ordinal categorical arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod42"
-              aria-expanded="false" aria-controls="collapseMethod42">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod43"
+              aria-expanded="false" aria-controls="collapseMethod43">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1990,7 +2031,7 @@ Less than or equal to for ordinal categorical arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod42">
+          <div class="collapse multi-collapse" id="collapseMethod43">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>le</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -2031,8 +2072,8 @@ Less than or equal to for ordinal categorical arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod43"
-              aria-expanded="false" aria-controls="collapseMethod43">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod44"
+              aria-expanded="false" aria-controls="collapseMethod44">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -2044,7 +2085,7 @@ Less than for ordinal categorical arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod43">
+          <div class="collapse multi-collapse" id="collapseMethod44">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>lt</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -2084,8 +2125,8 @@ Less than for ordinal categorical arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod44"
-              aria-expanded="false" aria-controls="collapseMethod44">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod45"
+              aria-expanded="false" aria-controls="collapseMethod45">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -2097,7 +2138,7 @@ Not equal for categorical arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod44">
+          <div class="collapse multi-collapse" id="collapseMethod45">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>ne</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -2138,8 +2179,8 @@ Not equal for categorical arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod45"
-              aria-expanded="false" aria-controls="collapseMethod45">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod46"
+              aria-expanded="false" aria-controls="collapseMethod46">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -2151,7 +2192,7 @@ Smallest element in an ordinal categorical array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod45">
+          <div class="collapse multi-collapse" id="collapseMethod46">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>C</var> = <b>min</b> (<var>A</var>)</code></h5></dt>
@@ -2226,8 +2267,8 @@ Smallest element in an ordinal categorical array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod46"
-              aria-expanded="false" aria-controls="collapseMethod46">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod47"
+              aria-expanded="false" aria-controls="collapseMethod47">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -2239,7 +2280,7 @@ Smallest element in an ordinal categorical array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod46">
+          <div class="collapse multi-collapse" id="collapseMethod47">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>C</var> = <b>max</b> (<var>A</var>)</code></h5></dt>
@@ -2314,8 +2355,8 @@ Smallest element in an ordinal categorical array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod47"
-              aria-expanded="false" aria-controls="collapseMethod47">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod48"
+              aria-expanded="false" aria-controls="collapseMethod48">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -2327,7 +2368,7 @@ Median value of an ordinal categorical array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod47">
+          <div class="collapse multi-collapse" id="collapseMethod48">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>median</b> (<var>A</var>)</code></h5></dt>
@@ -2387,8 +2428,8 @@ Median value of an ordinal categorical array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod48"
-              aria-expanded="false" aria-controls="collapseMethod48">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod49"
+              aria-expanded="false" aria-controls="collapseMethod49">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -2400,7 +2441,7 @@ Most frequent element in a categorical array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod48">
+          <div class="collapse multi-collapse" id="collapseMethod49">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>M</var> = <b>mode</b> (<var>A</var>)</code></h5></dt>
@@ -2452,8 +2493,8 @@ Most frequent element in a categorical array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod49"
-              aria-expanded="false" aria-controls="collapseMethod49">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod50"
+              aria-expanded="false" aria-controls="collapseMethod50">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -2465,7 +2506,7 @@ Histogram bin counts of a categorical array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod49">
+          <div class="collapse multi-collapse" id="collapseMethod50">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>N</var> = <b>histcounts</b> (<var>A</var>)</code></h5></dt>
@@ -2521,8 +2562,8 @@ Histogram bin counts of a categorical array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod50"
-              aria-expanded="false" aria-controls="collapseMethod50">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod51"
+              aria-expanded="false" aria-controls="collapseMethod51">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -2530,36 +2571,59 @@ Histogram bin counts of a categorical array.
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod50">
-            <div class="border-bottom py-2">
-<b><code>categorical.sort</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod51"
-              aria-expanded="false" aria-controls="collapseMethod51">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>sortrows</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
+Histogram bin counts of a categorical array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod51">
             <div class="border-bottom py-2">
-<b><code>categorical.sortrows</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">categorical: <var>N</var> = <b>histcounts</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>N</var> = <b>histcounts</b> (<var>A</var>, <var>cats</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>N</var> = <b>histcounts</b> (&hellip;, <code>'Normalization'</code>, <var>normtype</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [<var>N</var>, <var>cats</var>] = <b>histcounts</b> (&hellip;)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>N</var> = histcounts (<var>A</var>)</code> returns a numeric vector <var>N</var>
+ with the number of elements of each category in <var>A</var>.  <var>A</var> can be
+ a categorical array of any dimensions, but it is converted internally to
+ a single column vector.
+</p>
+<p> <code><var>N</var> = histcounts (<var>A</var>, <var>cats</var>)</code> returns the number of
+ elements only for the categories of <var>A</var> specified in <var>cats</var>,
+ which may be a categorical array, a string array, or a cell array of
+ character vectors, as long as it specifies unique existing categories in
+ <var>A</var>.
+</p>
+<p> <code><var>N</var> = histcounts (&hellip;, <code>'Normalization'</code>,
+ <var>normtype</var>)</code> specifies how to normalize the histogram values returned
+ in <var>N</var> with any of the following options specified in <var>normtype</var>:
+</p>
+ <ul>
+<li> <code>'count'</code>, which is the default, returns the number of
+ elements in each category.
+ </li><li> <code>'countdensity'</code> is the same as <code>'count'</code>, since the
+ bin width in categorical arrays is always equal to 1.
+ </li><li> <code>'probability'</code> returns the number of elements in each
+ category relative to the total number of elements in <var>A</var>.
+ </li><li> <code>'pdf'</code> is the same as <code>'probability'</code>, since the bin
+ width in categorical arrays is always equal to 1.
+ </li><li> <code>'cumcount'</code> returns the cumulative number of elements in
+ each category and all previous categories.
+ </li><li> <code>'cdf'</code> returns the cumulative number of elements in
+ each category and all previous categories relative to the total number of
+ elements in <var>A</var>.
+ </li></ul>
+
+<p> <code>[<var>N</var>, <var>cats</var>] = histcounts (&hellip;)</code> also returns the
+ corresponding categories of <var>A</var> for each count in <var>N</var>.
+ <var>cats</var> is a cell array of character vectors with the same size as
+ <var>N</var>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -2572,7 +2636,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>unique</code></b>
+                    <b><code>sortrows</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2595,7 +2659,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>intersect</code></b>
+                    <b><code>unique</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2605,7 +2669,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod53">
             <div class="border-bottom py-2">
-<b><code>categorical.intersect</code></b> is not documented.
+<b><code>categorical.sortrows</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2618,7 +2682,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>setdiff</code></b>
+                    <b><code>intersect</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2628,7 +2692,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod54">
             <div class="border-bottom py-2">
-<b><code>categorical.setdiff</code></b> is not documented.
+<b><code>categorical.intersect</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2641,7 +2705,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>setxor</code></b>
+                    <b><code>setdiff</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2651,7 +2715,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod55">
             <div class="border-bottom py-2">
-<b><code>categorical.setxor</code></b> is not documented.
+<b><code>categorical.setdiff</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2664,7 +2728,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>union</code></b>
+                    <b><code>setxor</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2673,6 +2737,29 @@ undocumented
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod56">
+            <div class="border-bottom py-2">
+<b><code>categorical.setxor</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod57"
+              aria-expanded="false" aria-controls="collapseMethod57">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>union</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod57">
             <div class="border-bottom py-2">
 <b><code>categorical.union</code></b> is not documented.
             </div>
