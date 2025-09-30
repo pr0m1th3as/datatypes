@@ -2445,7 +2445,53 @@ classdef categorical
     ##
     ## @end deftypefn
     function [N, cats] = histcounts (A, varargin)
-      error ("categorical.histcounts: not implemented yet.");
+      ## Parse and validate optional Name-Value paired argument
+      optNames = {'Normalization'};
+      dfValues = {'count'};
+      [normtype, args] = pairedArgs (optNames, dfValues, varargin(:));
+      vnt = {'count', 'countdensity', 'probability', 'pdf', 'cumcount', 'cdf'};
+      if (! ismember (normtype, vnt))
+        error ("categorical.histcounts: invalid 'Normalization' type.");
+      endif
+
+      ## Check for selected categories
+      if (! isempty (args))
+        cats = args{1};
+        if (isa (cats, 'categorical'))
+          cats = categories (cats);
+        elseif (isa (cats, 'string'))
+          cats = cellstr (cats);
+        elseif (! iscellstr (cats))
+          error (strcat ("categorical.histcounts: invalid", ...
+                         " type for CATS input argument."));
+        endif
+        if (! all (ismember (cats, A.cats)))
+          error (strcat ("categorical.histcounts: input argument", ...
+                         " CATS references non-existing categories in A."));
+        endif
+      else
+        cats = A.cats;
+      endif
+      ## Force cats to row vector
+      cats = cats(:)';
+
+      ## Count elements in selected categories
+      codes = A.code(:);
+      ccats = find (ismember (A.cats, cats));
+      ncats = numel (ccats);
+      N = zeros (1, ncats)
+      for i = 1:ncats
+        N(i) = sum (codes == ccats(i));
+      endfor
+
+      ## Apply normalization scheme
+      if (any (strcmp (normtype, {'probability', 'pdf'})))
+        N = N ./ numel (codes);
+      elseif (strcmp (normtype, 'cumcount'))
+        N = cumsum (N);
+      elseif (strcmp (normtype, 'cdf'))
+        N = cumsum (N ./ numel (codes));
+      endif
     endfunction
 
   endmethods
