@@ -1064,8 +1064,8 @@ classdef categorical
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'addcats'          'mergecats'        'removecats'       'renamecats'      ##
-## 'reordercats'      'setcats'          'times'                              ##
+## 'addcats'          'countcats'        'mergecats'        'removecats'      ##
+## 'renamecats'       'reordercats'      'setcats'          'times'           ##
 ##                                                                            ##
 ################################################################################
 
@@ -1170,6 +1170,45 @@ classdef categorical
       else
         B = A;
         B.cats = [B.cats; newcats];
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {categorical} {@var{C} =} countcats (@var{A})
+    ## @deftypefnx {categorical} {@var{C} =} countcats (@var{A}, @var{dim})
+    ##
+    ## Count occurences of categories in a categorical array.
+    ##
+    ## @code{@var{C} = countcats (@var{A})} returns the number of elements for
+    ## each category in @var{A}.  If @var{A} is a vector, @var{C} is also a
+    ## vector with one element for each category in @var{A}.  If @var{A} is a
+    ## matrix, @var{C} is a matrix with each column containing the category
+    ## counts from each column of @var{A}.  For multidimensional arrays,
+    ## @code{countcats} operates along the first non-singleton dimension.
+    ##
+    ## @code{@var{C} = countcats (@var{A}, @var{dim})} aperates along the
+    ## dimension @var{dim}.
+    ##
+    ## @end deftypefn
+    function C = countcats (A, dim = [])
+      nc = numel (A.cats);
+      if (isempty (dim))
+        C = histc (A.code, [1:nc]);
+      else
+        if (! isscalar (dim) || fix (dim) != dim || dim < 0)
+          error ("categorical.countcats: DIM must be a positive integer.");
+        endif
+        if (dim <= ndims (A))
+          C = histc (A.code, [1:nc], dim);
+        else
+          C = repmat (zeros (size (A)), [ones(1, dim - 1), nc]);
+          totnum = prod (size (A));
+          linvec = 1:totnum;
+          for i = 1:nc
+            offset = (i - 1) * totnum;
+            C(linvec + offset) = A.code == i;
+          endfor
+        endif
       endif
     endfunction
 
