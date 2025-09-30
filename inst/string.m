@@ -444,6 +444,7 @@ classdef string
     ## @end deftypefn
     function out = numel (this, varargin)
       out = numel (this.strs);
+      #out = 1
     endfunction
 
     ## -*- texinfo -*-
@@ -1109,6 +1110,55 @@ classdef string
       out.strs = upper (this.strs);
     endfunction
 
+    function [B, ixA, ixB] = unique (A, varargin)
+      ## Handle 'rows' option
+      do_rows = false;
+      if (! isempty (varargin))
+        idx = strcmpi ('rows', varargin(:));
+        if (any (idx))
+          do_rows = true;
+          varargin(idx) = [];
+          if (ndims (A) != 2)
+            error ("string.unique: 'rows' applies only to 2-D matrices.");
+          endif
+        endif
+      endif
+      ## Handle 'setOrder' and 'occurence' options
+      opt = "sorted";
+      if (! isempty (varargin))
+        if (any (strcmp (varargin{1}, {"sorted", "stable", "first", "last"})))
+          opt = varargin{1};
+        else
+          error ("string.unique: invalid option '%s'.", varargin{1});
+        endif
+      endif
+      ## Find unique
+      if (do_rows)
+        is_nm = ! any (ismissing (A), 2);
+        [~, ixA, ixB] = __unique__ (A.strs(is_nm,:), 'rows', opt);
+        B = subset (A, ixA, ':');
+        if (any (is_nm(:)))
+          w = size (A, 2);
+          B = [B repmat(missing, 1, w)];
+        endif
+      else
+        is_nm = ! A.isMissing;
+        A = subset (A, is_nm);
+        [~, ixA, ixB] = __unique__ (A.strs, opt);
+        B = subset (A, ixA);
+        is_missing = ! is_nm(:);
+        if (any (is_missing))
+          if (isrow (A))
+            mstr = repmat (missing, 1, sum (is_missing));
+            B = [B, mstr];
+          else
+            mstr = repmat (missing, sum (is_missing), 1);
+            B = [B; mstr];
+          endif
+        endif
+      endif
+    endfunction
+
   endmethods
 
 ################################################################################
@@ -1212,7 +1262,7 @@ classdef string
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'end'              'subsref'          'subsasgn'                           ##
+## 'end'              'subsref'          'subsasgn'         'subset'          ##
 ##                                                                            ##
 ################################################################################
 
@@ -1295,6 +1345,13 @@ classdef string
                   " assigning values. Use '()' or '{}' instead."]);
       endswitch
 
+    endfunction
+
+    ## Return a subset of the array
+    function this = subset (this, varargin)
+      this = this;
+      this.strs = this.strs(varargin{:});
+      this.isMissing = this.isMissing(varargin{:});
     endfunction
 
   endmethods
