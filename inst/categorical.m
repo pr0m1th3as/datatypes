@@ -2509,7 +2509,7 @@ classdef categorical
   methods (Access = public)
 
     function [B, index] = sort (A, varargin)
-      ## Parse and validate optional Name-Value paired argument
+      ## Parse and validate optional 'MissingPlacement' paired argument
       optNames = {'MissingPlacement'};
       dfValues = {'auto'};
       [MP, args] = pairedArgs (optNames, dfValues, varargin(:));
@@ -2563,55 +2563,140 @@ classdef categorical
       if (ndims (A) != 2)
         error ("categorical.sortrows: A must be a 2-D matrix.");
       endif
-      col_dir = false;
-      if (numel (varargin) > 0)
-        col = varargin{1};
+
+      ## Parse and validate optional 'MissingPlacement' paired argument
+      optNames = {'MissingPlacement'};
+      dfValues = {'auto'};
+      [MP, args] = pairedArgs (optNames, dfValues, varargin(:));
+      if (! ismember (MP, {'auto', 'first', 'last'}))
+        error ("categorical.sort: invalid value for 'MissingPlacement'.");
+      endif
+
+      ## Parse COL / DIRECTION input
+      nc = size (A, 2);
+      col = [1:nc];  # default ascending direction
+      dir_flag = false;
+      if (numel (args) > 2)
+        error ("categorical.sortrows: too many input arguments.");
+      endif
+      if (numel (args) > 0)
+        col = args{1};
         if (isnumeric (col))
           if (! isvector (col) || fix (col) != col)
-            error ("categorical.sortrows: COL must be a vector of integers.");
+            error (strcat ("categorical.sortrows: COL must be a vector", ...
+                           " of nonzero integers indexing columns in A."));
           endif
-        elseif ((ischar (col) && isvector (col)) ||
-                (isscalar (col) && isa (col, 'string')))
-          col = cellstr (col);
-          if (strcmpi (col, 'ascend'))
-            col = [1:size(A, 2)];
-          elseif (strcmpi (col, 'descend'))
-            col = -[1:size(A, 2)];
-          else
-            error (strcat ("categorical.sortrows: DIRECTION can", ...
-                           " be either 'ascend' or 'descend'."));
+          if (max (abs (col)) > nc)
+            error ("categorical.sortrows: COL indexes non-existing column.");
           endif
+        elseif (isvector (col) && (ischar (col) || iscellstr (col) ||
+                                   isa (col, 'string')))
+          direction = cellstr (col);
+          if (! all (ismember (direction, {'ascend', 'descend'})))
+            error (strcat ("categorical.sortrows: DIRECTION input must", ...
+                           " contain either 'ascend' or 'descend' values."));
+          endif
+          ## Apply scalar expansion
+          if (isscalar (direction))
+            direction = repmat (direction, 1, nc);
+          endif
+          if (numel (direction) != nc)
+            error (strcat ("categorical.sortrows: DIRECTION", ...
+                           " does not match the columns in A."));
+          endif
+          ## Assign DIRECTION to COL
+          col = [1:nc];
+          idx = strcmp (direction, 'descend');
+          col(idx) = - col(idx);
+          dir_flag = true;
         else
-          error ("categorical.sortrows: invalid value for COL argument.");
+          error ("categorical.sortrows: invalid type for COL argument.");
         endif
-        col_dir = true;
       endif
-      if (numel (varargin) > 1)
-        direction = cellstr (varargin{2});
-        if (! all (ismember (direction, {'ascend', 'descend'})))
-          error ("categorical.sortrows: invalid value for DIRECTION argument.");
+      if (numel (args) > 1)
+        if (dir_flag)
+          error ("categorical.sortrows: invalid third input argument.");
         endif
-        if (isscalar (direction) && strcmpi (direction, 'ascend'))
+        if ((isvector (args{2}) && ischar (args{2})) || isa (args{2}, 'string'))
+          direction = cellstr (args{2});
+        elseif (isvector (args{2}) && iscellstr (args{2}))
+          direction = args{2};
+        else
+          error ("categorical.sortrows: invalid type for DIRECTION argument.");
+        endif
+        if (! all (ismember (direction, {'ascend', 'descend'})))
+          error (strcat ("categorical.sortrows: DIRECTION input must", ...
+                         " contain either 'ascend' or 'descend' values."));
+        endif
+        ## Assign DIRECTION to COL
+        if (isscalar (direction) && strcmp (direction, 'ascend'))
           col = abs (col);
-        elseif (isscalar (direction) && strcmpi (direction, 'descend'))
+        elseif (isscalar (direction) && strcmp (direction, 'descend'))
           col = - abs (col);
         else
           if (numel (direction) != numel (col))
             error (strcat ("categorical.sortrows: DIRECTION", ...
-                           " does not match COL argument."));
+                           " does not match the elements in COL."));
           endif
           col = abs (col);
-          idx = strcmpi (direction, 'descend');
+          idx = strcmp (direction, 'descend');
           col(idx) = - col(idx);
         endif
       endif
-      B = A;
-      code = double (A);
-      if (col_dir)
-        [B.code, index] = sortrows (code, col);
+
+      ## Since codes are positive integers and 0 is used for undefined elements,
+      ## we assume A.code == 0 for NaN.  However, in ascending order NaNs go to
+      ## the end, while 0s at the very top and vice versa.  So we have to
+      ## mitigate this in tandem with the 'MissingPlacement' option, by setting
+      ## 0s to max(code) + 1 for certain combinations of options.
+      code = A.code;
+      is_nan = code == 0;
+      if (any (is_nan(:)))
+        ## Get new value for missing elements code
+        nan_code = max (code(:)) + 1;
+        asc_cols = [];
+        des_cols = [];
+        if (any (strcmp (MP, {'auto', 'last'})))
+          ## Change codes only in ascending columns
+          asc_cols = col(col > 0);
+          if (! isempty (asc_cols))
+            asc_code = code(:, asc_cols);
+            a_is_nan = asc_code == 0;
+            asc_code(a_is_nan) = nan_code;
+            code(:, asc_cols) = asc_code;
+          endif
+        endif
+        if (any (strcmp (MP, {'auto', 'first'})))
+          ## Change codes only in descending columns
+          des_cols = abs (col(col < 0));
+          if (! isempty (des_cols))
+            des_code = code(:, des_cols);
+            d_is_nan = des_code == 0;
+            des_code(d_is_nan) = nan_code;
+            code(:, des_cols) = des_code;
+          endif
+        endif
+        ## Sort values
+        [code, index] = sortrows (code, col);
+        ## Get indices of missing values and change them back to 0
+        adcols = [asc_cols, des_cols];
+        if (! isempty (adcols))
+          adcode = code(:, [asc_cols, des_cols]);
+          is_nan = adcode == nan_code;
+          adcode(is_nan) = 0;
+          code(:, [asc_cols, des_cols]) = adcode;
+        endif
+        ## Re-index missing values after sorting
+        is_nan = code == 0;
       else
-        [B.code, index] = sortrows (code);
+        ## Sort values with no undefined elements
+        [code, index] = sort (code, args{:});
       endif
+
+      ## Populate output categorical array
+      B = A;
+      B.code = uint16 (code);
+      B.isMissing = is_nan;
     endfunction
 
     function [B, ixA, ixB] = unique (A, varargin)
