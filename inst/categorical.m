@@ -2509,11 +2509,54 @@ classdef categorical
   methods (Access = public)
 
     function [B, index] = sort (A, varargin)
+      ## Parse and validate optional Name-Value paired argument
+      optNames = {'MissingPlacement'};
+      dfValues = {'auto'};
+      [MP, args] = pairedArgs (optNames, dfValues, varargin(:));
+      if (! ismember (MP, {'auto', 'first', 'last'}))
+        error ("categorical.sort: invalid value for 'MissingPlacement'.");
+      endif
+
+      ## Get direction
+      cid = cellfun (@ischar, args);
+      if (any (cid))
+        dir = args{cid};
+      else
+        dir = 'ascend';
+      endif
+
+      ## Since codes are positive integers and 0 is used for undefined elements,
+      ## we assume A.code == 0 for NaN.  However, in ascending order NaNs go to
+      ## the end, while 0s at the very top and vice versa.  So we have to
+      ## mitigate this in tandem with the 'MissingPlacement' option, by setting
+      ## 0s to max(code) + 1 for certain combinations of options.
+      code = A.code;
+      is_nan = code == 0;
+      if (any (is_nan(:)))
+        if ((strcmp (dir, 'ascend') && any (strcmp (MP, {'auto', 'last'}))) ||
+            (strcmp (dir, 'descend') && any (strcmp (MP, {'auto', 'first'}))))
+          ## Get new value for missing elements code
+          nan_code = max (code(:)) + 1;
+          code(is_nan) = nan_code;
+          ## Sort values
+          [code, index] = sort (code, args{:});
+          ## Get indices of missing values and change them back to 0
+          is_nan = code == nan_code;
+          code(is_nan) = 0;
+        else
+          ## ## Sort values without swaping code for undefined elements
+          [code, index] = sort (code, args{:});
+          is_nan = code == 0;
+        endif
+      else
+        ## Sort values with no undefined elements
+        [code, index] = sort (code, args{:});
+      endif
+
+      ## Populate output categorical array
       B = A;
-      code = double (A);
-      [code, index] = sort (code, varargin{:});
-      B.code = code;
-      B.isMissing = isnan (code);
+      B.code = uint16 (code);
+      B.isMissing = is_nan;
     endfunction
 
     function [B, index] = sortrows (A, varargin)
