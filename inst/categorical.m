@@ -2771,20 +2771,20 @@ classdef categorical
       endif
     endfunction
 
-    function [out, ixa, ixb] = intersect (A, B, varargin)
-      error ("categorical.intersect: not implemented yet.");
+    function [C, ixa, ixb] = intersect (A, B, varargin)
+      [C, ixa, ixb] = setop (A, B, 'intersect', varargin{:});
     endfunction
 
-    function [out, ixa, ixb] = setdiff (A, B, varargin)
-      error ("categorical.setdiff: not implemented yet.");
+    function [C, ixa] = setdiff (A, B, varargin)
+      [C, ixa] = setop (A, B, 'setdiff', varargin{:});
     endfunction
 
-    function [out, ixa, ixb] = setxor (A, B, varargin)
-      error ("categorical.setxor: not implemented yet.");
+    function [C, ixa, ixb] = setxor (A, B, varargin)
+      [C, ixa, ixb] = setop (A, B, 'setxor', varargin{:});
     endfunction
 
-    function [out, ixa, ixb] = union (A, B, varargin)
-      error ("categorical.union: not implemented yet.");
+    function [C, ixa, ixb] = union (A, B, varargin)
+      [C, ixa, ixb] = setop (A, B, 'union', varargin{:});
     endfunction
 
   endmethods
@@ -3110,6 +3110,64 @@ classdef categorical
       this = this;
       this.code = this.code(varargin{:});
       this.isMissing = this.isMissing(varargin{:});
+    endfunction
+
+    ## Common function for set operations
+    function [C, ixa, ixb] = setop (A, B, fname, varargin)
+      if (iscellstr (A) || isa (A, 'string'))
+        A = categorical (A);
+      elseif (iscellstr (B) || isa (B, 'string'))
+        B = categorical (B);
+      endif
+      if (! isa (A, 'categorical') || ! isa (B, 'categorical'))
+        C = sprintf ("categorical.%s: invalid type input arrays.", fname);
+        return;
+      endif
+      if (xor (A.isOrdinal, B.isOrdinal))
+        C = sprintf (strcat ("categorical.%s: if A is", ...
+                             " ordinal, B must be ordinal."), fname);
+        return;
+      endif
+      C = A;
+      if (A.isOrdinal && B.isOrdinal)
+        if (! isequal (A.cats, B.cats))
+          C = sprintf (strcat ("categorical.%s: ordinal arrays must", ...
+                               " have the same set of categories in", ...
+                               " the same order."), fname);
+          return;
+        endif
+        ## For ordinal arrays, operate directly on codes
+        Acodes = double (A);
+        Bcodes = double (B);
+      else
+        ## For unordered arrays, operate on categorical values
+        allcats = unique ([A.cats(:); B.cats(:)]);
+        A_cats_idx = cellfun (@(x) find (ismember (allcats, x)), A.cats);
+        Acodes = nan (size (A.code));
+        for i = 1:numel (A_cats_idx)
+          Acodes(A.code == i) = A_cats_idx(i);
+        endfor
+        B_cats_idx = cellfun (@(x) find (ismember (allcats, x)), B.cats);
+        Bcodes = nan (size (B.code));
+        for i = 1:numel (B_cats_idx)
+          Bcodes(B.code == i) = B_cats_idx(i);
+        endfor
+        C.cats = allcats;
+      endif
+      ## Apply set operation
+      switch (fname)
+        case 'intersect'
+          [code, ixa, ixb] = intersect (Acodes, Bcodes, varargin{:});
+        case 'setdiff'
+          [code, ixa] = setdiff (Acodes, Bcodes, varargin{:});
+        case 'setxor'
+          [code, ixa, ixb] = setxor (Acodes, Bcodes, varargin{:});
+        case 'union'
+          [code, ixa, ixb] = union (Acodes, Bcodes, varargin{:});
+      endswitch
+      ## Add codes and missing arrays
+      C.code = uint16 (code);
+      C.isMissing = C.code == 0;
     endfunction
 
   endmethods
