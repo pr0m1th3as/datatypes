@@ -812,9 +812,9 @@ classdef categorical
     ## Return true if categorical array is a column vector.
     ##
     ## @code{@var{TF} = iscolumn (@var{C})} returns a logical scalar @var{TF},
-    ## which is @qcode{true} if the categorical array @var{C} is a column vector
-    ## and @qcode{false} otherwise.  A column vector is a 2-D array for which
-    ## @code{size (@var{X})} returns @code{[@var{N}, 1]} with non-negative
+    ## which is @qcode{true}, if the categorical array @var{C} is a column
+    ## vector, and @qcode{false} otherwise.  A column vector is a 2-D array for
+    ## which @code{size (@var{X})} returns @code{[@var{N}, 1]} with non-negative
     ## @var{N}.
     ##
     ## @end deftypefn
@@ -828,7 +828,7 @@ classdef categorical
     ## Return true if categorical array is empty.
     ##
     ## @code{@var{TF} = isempty (@var{C})} returns a logical scalar @var{TF},
-    ## which is @qcode{true} if the categorical array @var{C} is empty and
+    ## which is @qcode{true}, if the categorical array @var{C} is empty, and
     ## @qcode{false} otherwise.
     ##
     ## @end deftypefn
@@ -843,8 +843,8 @@ classdef categorical
     ## Return true if categorical arrays are equal.
     ##
     ## @code{@var{TF} = isequal (@var{C1}, @var{C2})} returns a logical scalar
-    ## @var{TF}, which is @qcode{true} if the categorical arrays @var{C1} and
-    ## @var{C2} contain the same values and @qcode{false} otherwise.  Either
+    ## @var{TF}, which is @qcode{true}, if the categorical arrays @var{C1} and
+    ## @var{C2} contain the same values, and @qcode{false} otherwise.  Either
     ## @var{C1} or @var{C2} may also be a string array, a missing object array,
     ## a character vector, or a cell array of character vectors, which will be
     ## promoted to a categorical array prior to comparison.
@@ -855,7 +855,7 @@ classdef categorical
     ## need to have the same set of categories.
     ##
     ## @code{@var{TF} = isequal (@var{C1}, @var{C2}, @dots{})} returns a logical
-    ## scalar @var{TF}, which is @qcode{true} if all input arguments are equal
+    ## scalar @var{TF}, which is @qcode{true}, if all input arguments are equal,
     ## and @qcode{false} otherwise.
     ##
     ## @end deftypefn
@@ -890,8 +890,8 @@ classdef categorical
     ## undefined elements are equal.
     ##
     ## @code{@var{TF} = isequaln (@var{C1}, @var{C2})} returns a logical scalar
-    ## @var{TF}, which is @qcode{true} if the categorical arrays @var{C1} and
-    ## @var{C2} contain the same values or corresponding undefined elements and
+    ## @var{TF}, which is @qcode{true}, if the categorical arrays @var{C1} and
+    ## @var{C2} contain the same values or corresponding undefined elements, and
     ## @qcode{false} otherwise.  Either @var{C1} or @var{C2} may also be a
     ## string array, a missing object array, a character vector, or a cell array
     ## of character vectors, which will be promoted to a categorical array prior
@@ -903,8 +903,8 @@ classdef categorical
     ## need to have the same set of categories.
     ##
     ## @code{@var{TF} = isequaln (@var{C1}, @var{C2}, @dots{})} returns a
-    ## logical scalar @var{TF}, which is @qcode{true} if all input arguments
-    ## are equal and @qcode{false} otherwise.
+    ## logical scalar @var{TF}, which is @qcode{true}, if all input arguments
+    ## are equal, and @qcode{false} otherwise.
     ##
     ## @end deftypefn
     function TF = isequaln (varargin)
@@ -937,7 +937,7 @@ classdef categorical
     ## Return true if categorical array is a 2-D array.
     ##
     ## @code{@var{TF} = ismatrix (@var{C})} returns a logical scalar @var{TF},
-    ## which is @qcode{true} if the categorical array @var{C} is a matrix and
+    ## which is @qcode{true}, if the categorical array @var{C} is a matrix, and
     ## @qcode{false} otherwise.  A matrix is an array of any type where
     ## @code{ndims (@var{X}) == 2} and for which @code{size (@var{X})} returns
     ## @code{[@var{H}, @var{W}]} with non-negative @var{H} and @var{W}.
@@ -1044,7 +1044,7 @@ classdef categorical
     ## Test if categorical array is ordinal.
     ##
     ## @code{@var{TF} = isordinal (@var{C})} returns a logical scalar @var{TF},
-    ## which is @qcode{true} if the categorical array @var{C} is ordinal and
+    ## which is @qcode{true}, if the categorical array @var{C} is ordinal, and
     ## @qcode{false} otherwise.
     ##
     ## @end deftypefn
@@ -1058,7 +1058,7 @@ classdef categorical
     ## Test if categorical array is protected.
     ##
     ## @code{@var{TF} = isprotected (@var{C})} returns a logical scalar @var{TF},
-    ## which is @qcode{true} if the categorical array @var{C} is protected and
+    ## which is @qcode{true}, if the categorical array @var{C} is protected, and
     ## @qcode{false} otherwise.
     ##
     ## @end deftypefn
@@ -1072,7 +1072,7 @@ classdef categorical
     ## Return true if categorical array is a row vector.
     ##
     ## @code{@var{TF} = isrow (@var{C})} returns a logical scalar @var{TF},
-    ## which is @qcode{true} if the categorical array @var{C} is a row vector
+    ## which is @qcode{true}, if the categorical array @var{C} is a row vector,
     ## and @qcode{false} otherwise.  A row vector is a 2-D array for which
     ## @code{size (@var{X})} returns @code{[1, @var{N}]} with non-negative
     ## @var{N}.
@@ -1088,13 +1088,129 @@ classdef categorical
     ## Return true if categorical array is a scalar.
     ##
     ## @code{@var{TF} = isscalar (@var{C})} returns a logical scalar @var{TF},
-    ## which is @qcode{true} if the categorical array @var{C} is also a scalar
+    ## which is @qcode{true}, if the categorical array @var{C} is also a scalar,
     ## and @qcode{false} otherwise.  A scalar is a single element object for
     ## which @code{size (@var{X})} returns @code{[1, 1]}.
     ##
     ## @end deftypefn
     function TF = isscalar (this)
       TF = isscalar (this.code);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {categorical} {@var{TF} =} issorted (@var{C})
+    ## @deftypefnx {categorical} {@var{TF} =} issorted (@var{C}, @var{dim})
+    ## @deftypefnx {categorical} {@var{TF} =} issorted (@var{C}, @var{direction})
+    ## @deftypefnx {categorical} {@var{TF} =} issorted (@var{C}, @var{dim}, @var{direction})
+    ## @deftypefnx {categorical} {@var{TF} =} issorted (@dots{}, @qcode{'MissingPlacement'}, @var{MP})
+    ##
+    ## Return true if categorical array is sorted.
+    ##
+    ## @code{@var{TF} = issorted (@var{C})} returns a logical scalar @var{TF},
+    ## which is @qcode{true}, if the categorical array @var{C} is sorted in
+    ## ascending order, and @qcode{false} otherwise.
+    ##
+    ## @code{@var{TF} = issorted (@var{C}, @var{dim})} returns a logical scalar
+    ## @var{TF}, which is @qcode{true}, if the categorical array @var{C} is
+    ## sorted in ascending order along the dimension @var{dim}, and
+    ## @qcode{false} otherwise.
+    ##
+    ## @code{@var{TF} = issorted (@var{A}, @var{direction})} returns a logical
+    ## scalar @var{TF}, which is @qcode{true}, if the categorical array @var{C}
+    ## is sorted in the direction specified by @var{direction}, and
+    ## @qcode{false} otherwise.  @var{direction} can be any of the following
+    ## options:
+    ##
+    ## @itemize
+    ## @item @qcode{'ascend'}, which is the default, checks is elements are in
+    ## ascending order.
+    ## @item @qcode{'descend'} checks if elements are in descending order.
+    ## @item @qcode{'monotonic'} checks if elements are either in ascending or
+    ## descending order.
+    ## @item @qcode{'strictascend'} checks if elements are in ascending order
+    ## and there are no duplicate or undefined elements.
+    ## @item @qcode{'strictdescend'} checks if elements are in descending order
+    ## and there are no duplicate or undefined elements.
+    ## @item @qcode{'strictmonotonic'} checks if elements are either in
+    ## ascending or descending order and there are no duplicate or undefined
+    ## elements.
+    ## @end itemize
+    ##
+    ## @code{@var{TF} = issorted (@dots{}, @qcode{'MissingPlacement'}, @var{MP})}
+    ## specifies where missing elements (@qcode{<undefined>}) are placed with
+    ## any of the following options specified in @var{MP}:
+    ##
+    ## @itemize
+    ## @item @qcode{'auto'}, which is the default, places missing elements last
+    ## for ascending sort and first for descending sort.
+    ## @item @qcode{'first'} places missing elements first.
+    ## @item @qcode{'last'} places missing elements last.
+    ## @end itemize
+    ##
+    ## @end deftypefn
+    function TF = issorted (this, varargin)
+      ## Single input argument
+      if (nargin == 1)
+        TF = isequal (this, sort (this));
+        return;
+      endif
+
+      ## Get direction
+      fcn = @(x) ischar (x) && ! strcmpi (x, 'MissingPlacement');
+      cid = cellfun (fcn, varargin);
+      if (any (cid))
+        direction = varargin{cid};
+        ## Check for type of direction
+        valid = {'ascend', 'descend', 'monotonic', 'strictascend', ...
+                 'strictdescend', 'strictmonotonic'};
+        if (! ismember (direction, valid_direction))
+          error ("categorical.issorted: invalid DIRECTION value.");
+        endif
+        switch (direction)
+          case {'ascend', 'descend'}
+            TF = isequal (this, sort (this, varargin(:)));
+
+          case {'strictascend', 'strictdescend'}
+            ## Check for missing values first (fast)
+            if (any (this.isMissing(:)))
+              TF = false;
+              return;
+            endif
+            varargin{cid} = strrep (direction, 'strict', '');
+            sorted = unique (sort (this, varargin{:}), 'stable');
+            TF = isequal (this, sorted);
+
+          case 'monotonic'
+            ## Check for either ascending or descending
+            varargin{cid} = 'ascend';
+            TF = isequal (this, sort (this, varargin{:}));
+            if (TF)
+              return;
+            endif
+            varargin{cid} = 'descend';
+            TF = isequal (this, sort (this, varargin{:}));
+
+          case 'strictmonotonic'
+            ## Check missing values first (fast)
+            if (any (this.isMissing(:)))
+              TF = false;
+              return;
+            endif
+            ## Check for either ascending or descending
+            varargin{cid} = 'ascend';
+            sorted = unique (sort (this, varargin{:}), 'stable');
+            TF = isequal (this, sorted);
+            if (TF)
+              return;
+            endif
+            varargin{cid} = 'descend';
+            sorted = unique (sort (this, varargin{:}), 'stable');
+            TF = isequal (this, sorted);
+        endswitch
+      else
+        ## No DIRECTION input argument
+        TF = isequal (this, sort (this, varargin{:}));
+      endif
     endfunction
 
     ## -*- texinfo -*-
