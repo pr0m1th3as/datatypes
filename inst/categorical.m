@@ -2914,18 +2914,180 @@ classdef categorical
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {categorical} {@var{C} =} intersect (@var{A}, @var{B})
+    ## @deftypefnx {categorical} {@var{C} =} intersect (@var{A}, @var{B}, @qcode{'rows'})
+    ## @deftypefnx {categorical} {[@var{C}, @var{ixA}, @var{ixB}] =} intersect (@dots{})
+    ## @deftypefnx {categorical} {@dots{} =} intersect (@dots{}, @var{order})
+    ##
+    ## Set intersection of two categorical arrays.
+    ##
+    ## @code{@var{C} = intersect (@var{A}, @var{B})} returns the unique common
+    ## values of the categorical arrays @var{A} and @var{B}.  Either @var{A} or
+    ## @var{B} input arguments may be a character vector, a string array, or a
+    ## cell array of character vectors, which is promoted to a categorical array
+    ## prior to set intersection.  If both @var{A} and @var{B} are row vectors,
+    ## then @var{C} is also a row vector, otherwise @code{intersect} returns a
+    ## column vector.
+    ##
+    ## If categorical arrays @var{A} and @var{B} are ordinal, they must have
+    ## the same set and ordering of categories, which is transfered to @var{C}.
+    ## If neither are ordinal, the category names of each pair of elements are
+    ## compared (they do not need to have the same set of categories) in which
+    ## case the categories in @var{C} are the sorted union of the categories in
+    ## @var{A} and @var{B}.
+    ##
+    ## @code{@var{C} = intersect (@var{A}, @var{B}, @qcode{'rows'}} returns the
+    ## unique common rows of the categorical matrices @var{A} and @var{B}, which
+    ## must have the same number of columns.  By default, the rows in
+    ## categorical matrix @var{C} are in sorted order.
+    ##
+    ## @code{[@var{C}, @var{ixA}, @var{ixB}] = intersect (@dots{})} also returns
+    ## index vectors @var{ixA} and @var{ixB} such that
+    ## @code{@var{C} = @var{A}(@var{ixA})} and
+    ## @code{@var{C} = @var{B}(@var{ixB})}, unless the @qcode{'rows'} optional
+    ## argument is given, in which case @code{@var{C} = @var{A}(@var{ixA},:)}
+    ## and @code{@var{C} = @var{B}(@var{ixB},:)}.
+    ##
+    ## @code{@dots{} = intersect (@dots{}, @var{order})} also specifies the
+    ## order of the returned unique values.  @var{order} may be either
+    ## @qcode{'sorted'}, which is the default behavior, or @qcode{'stable'},
+    ## in which case the unique values are returned in order of appearance.
+    ##
+    ## @end deftypefn
     function [C, ixA, ixB] = intersect (A, B, varargin)
       [C, ixA, ixB] = setop (A, B, 'intersect', varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {categorical} {@var{C} =} setdiff (@var{A}, @var{B})
+    ## @deftypefnx {categorical} {@var{C} =} setdiff (@var{A}, @var{B}, @qcode{'rows'})
+    ## @deftypefnx {categorical} {[@var{C}, @var{ixA}] =} setdiff (@dots{})
+    ## @deftypefnx {categorical} {@dots{} =} setdiff (@dots{}, @var{order})
+    ##
+    ## Set difference of two categorical arrays.
+    ##
+    ## @code{@var{C} = setdiff (@var{A}, @var{B})} returns the unique common
+    ## values of the categorical arrays @var{A} and @var{B}.  Either @var{A} or
+    ## @var{B} input arguments may be a character vector, a string array, or a
+    ## cell array of character vectors, which is promoted to a categorical array
+    ## prior to set difference.  If both @var{A} and @var{B} are row vectors,
+    ## then @var{C} is also a row vector, otherwise @code{intersect} returns a
+    ## column vector.
+    ##
+    ## If categorical arrays @var{A} and @var{B} are ordinal, they must have
+    ## the same set and ordering of categories, which is transfered to @var{C}.
+    ## If neither are ordinal, the category names of each pair of elements are
+    ## compared (they do not need to have the same set of categories) in which
+    ## case the categories in @var{C} are the sorted union of the categories in
+    ## @var{A} and @var{B}.
+    ##
+    ## @code{@var{C} = setdiff (@var{A}, @var{B}, @qcode{'rows'}} returns the
+    ## unique common rows of the categorical matrices @var{A} and @var{B}, which
+    ## must have the same number of columns.  By default, the rows in
+    ## categorical matrix @var{C} are in sorted order.
+    ##
+    ## @code{[@var{C}, @var{ixA}] = setdiff (@dots{})} also returns the index
+    ## vector @var{ixA} such that @code{@var{C} = @var{A}(@var{ixA})}, unless
+    ## the @qcode{'rows'} optional argument is given, in which case
+    ## @code{@var{C} = @var{A}(@var{ixA},:)}.
+    ##
+    ## @code{@dots{} = setdiff (@dots{}, @var{order})} also specifies the
+    ## order of the returned unique values.  @var{order} may be either
+    ## @qcode{'sorted'}, which is the default behavior, or @qcode{'stable'},
+    ## in which case the unique values are returned in order of appearance.
+    ##
+    ## @end deftypefn
     function [C, ixA] = setdiff (A, B, varargin)
       [C, ixA] = setop (A, B, 'setdiff', varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {categorical} {@var{C} =} setxor (@var{A}, @var{B})
+    ## @deftypefnx {categorical} {@var{C} =} setxor (@var{A}, @var{B}, @qcode{'rows'})
+    ## @deftypefnx {categorical} {[@var{C}, @var{ixA}, @var{ixB}] =} setxor (@dots{})
+    ## @deftypefnx {categorical} {@dots{} =} setxor (@dots{}, @var{order})
+    ##
+    ## Set exclusive-or of two categorical arrays.
+    ##
+    ## @code{@var{C} = setxor (@var{A}, @var{B})} returns the unique common
+    ## values of the categorical arrays @var{A} and @var{B}.  Either @var{A} or
+    ## @var{B} input arguments may be a character vector, a string array, or a
+    ## cell array of character vectors, which is promoted to a categorical array
+    ## prior to set exclusive-or.  If both @var{A} and @var{B} are row vectors,
+    ## then @var{C} is also a row vector, otherwise @code{setxor} returns a
+    ## column vector.
+    ##
+    ## If categorical arrays @var{A} and @var{B} are ordinal, they must have
+    ## the same set and ordering of categories, which is transfered to @var{C}.
+    ## If neither are ordinal, the category names of each pair of elements are
+    ## compared (they do not need to have the same set of categories) in which
+    ## case the categories in @var{C} are the sorted union of the categories in
+    ## @var{A} and @var{B}.
+    ##
+    ## @code{@var{C} = setxor (@var{A}, @var{B}, @qcode{'rows'}} returns the
+    ## unique common rows of the categorical matrices @var{A} and @var{B}, which
+    ## must have the same number of columns.  By default, the rows in
+    ## categorical matrix @var{C} are in sorted order.
+    ##
+    ## @code{[@var{C}, @var{ixA}, @var{ixB}] = setxor (@dots{})} also returns
+    ## index vectors @var{ixA} and @var{ixB} such that
+    ## @code{@var{C} = @var{A}(@var{ixA})} and
+    ## @code{@var{C} = @var{B}(@var{ixB})}, unless the @qcode{'rows'} optional
+    ## argument is given, in which case @code{@var{C} = @var{A}(@var{ixA},:)}
+    ## and @code{@var{C} = @var{B}(@var{ixB},:)}.
+    ##
+    ## @code{@dots{} = setxor (@dots{}, @var{order})} also specifies the
+    ## order of the returned unique values.  @var{order} may be either
+    ## @qcode{'sorted'}, which is the default behavior, or @qcode{'stable'},
+    ## in which case the unique values are returned in order of appearance.
+    ##
+    ## @end deftypefn
     function [C, ixA, ixB] = setxor (A, B, varargin)
       [C, ixA, ixB] = setop (A, B, 'setxor', varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {categorical} {@var{C} =} union (@var{A}, @var{B})
+    ## @deftypefnx {categorical} {@var{C} =} union (@var{A}, @var{B}, @qcode{'rows'})
+    ## @deftypefnx {categorical} {[@var{C}, @var{ixA}, @var{ixB}] =} union (@dots{})
+    ## @deftypefnx {categorical} {@dots{} =} union (@dots{}, @var{order})
+    ##
+    ## Set union of two categorical arrays.
+    ##
+    ## @code{@var{C} = union (@var{A}, @var{B})} returns the unique common
+    ## values of the categorical arrays @var{A} and @var{B}.  Either @var{A} or
+    ## @var{B} input arguments may be a character vector, a string array, or a
+    ## cell array of character vectors, which is promoted to a categorical array
+    ## prior to set exclusive-or.  If both @var{A} and @var{B} are row vectors,
+    ## then @var{C} is also a row vector, otherwise @code{union} returns a
+    ## column vector.
+    ##
+    ## If categorical arrays @var{A} and @var{B} are ordinal, they must have
+    ## the same set and ordering of categories, which is transfered to @var{C}.
+    ## If neither are ordinal, the category names of each pair of elements are
+    ## compared (they do not need to have the same set of categories) in which
+    ## case the categories in @var{C} are the sorted union of the categories in
+    ## @var{A} and @var{B}.
+    ##
+    ## @code{@var{C} = union (@var{A}, @var{B}, @qcode{'rows'}} returns the
+    ## unique common rows of the categorical matrices @var{A} and @var{B}, which
+    ## must have the same number of columns.  By default, the rows in
+    ## categorical matrix @var{C} are in sorted order.
+    ##
+    ## @code{[@var{C}, @var{ixA}, @var{ixB}] = union (@dots{})} also returns
+    ## index vectors @var{ixA} and @var{ixB} such that
+    ## @code{@var{C} = @var{A}(@var{ixA})} and
+    ## @code{@var{C} = @var{B}(@var{ixB})}, unless the @qcode{'rows'} optional
+    ## argument is given, in which case @code{@var{C} = @var{A}(@var{ixA},:)}
+    ## and @code{@var{C} = @var{B}(@var{ixB},:)}.
+    ##
+    ## @code{@dots{} = union (@dots{}, @var{order})} also specifies the
+    ## order of the returned unique values.  @var{order} may be either
+    ## @qcode{'sorted'}, which is the default behavior, or @qcode{'stable'},
+    ## in which case the unique values are returned in order of appearance.
+    ##
+    ## @end deftypefn
     function [C, ixA, ixB] = union (A, B, varargin)
       [C, ixA, ixB] = setop (A, B, 'union', varargin{:});
     endfunction
@@ -3257,9 +3419,9 @@ classdef categorical
 
     ## Common function for set operations
     function [C, ixA, ixB] = setop (A, B, fname, varargin)
-      if (iscellstr (A) || isa (A, 'string'))
+      if (ischar (A) || iscellstr (A) || isa (A, 'string'))
         A = categorical (A);
-      elseif (iscellstr (B) || isa (B, 'string'))
+      elseif (ischar (B) || iscellstr (B) || isa (B, 'string'))
         B = categorical (B);
       endif
       if (! isa (A, 'categorical') || ! isa (B, 'categorical'))
