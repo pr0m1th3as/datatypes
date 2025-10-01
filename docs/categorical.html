@@ -2786,13 +2786,55 @@ Unique values in a categorical array.
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Set intersection of two categorical arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod54">
             <div class="border-bottom py-2">
-<b><code>categorical.intersect</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>intersect</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>intersect</b> (<var>A</var>, <var>B</var>, <code>'rows'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [<var>C</var>, <var>ixA</var>, <var>ixB</var>] = <b>intersect</b> (&hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: &hellip; = <b>intersect</b> (&hellip;, <var>order</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>C</var> = intersect (<var>A</var>, <var>B</var>)</code> returns the unique common
+ values of the categorical arrays <var>A</var> and <var>B</var>.  Either <var>A</var> or
+ <var>B</var> input arguments may be a character vector, a string array, or a
+ cell array of character vectors, which is promoted to a categorical array
+ prior to set intersection.  If both <var>A</var> and <var>B</var> are row vectors,
+ then <var>C</var> is also a row vector, otherwise <code>intersect</code> returns a
+ column vector.
+</p>
+<p> If categorical arrays <var>A</var> and <var>B</var> are ordinal, they must have
+ the same set and ordering of categories, which is transfered to <var>C</var>.
+ If neither are ordinal, the category names of each pair of elements are
+ compared (they do not need to have the same set of categories) in which
+ case the categories in <var>C</var> are the sorted union of the categories in
+ <var>A</var> and <var>B</var>.
+</p>
+<p> <code><var>C</var> = intersect (<var>A</var>, <var>B</var>, <code>'rows'</code></code> returns the
+ unique common rows of the categorical matrices <var>A</var> and <var>B</var>, which
+ must have the same number of columns.  By default, the rows in
+ categorical matrix <var>C</var> are in sorted order.
+</p>
+<p> <code>[<var>C</var>, <var>ixA</var>, <var>ixB</var>] = intersect (&hellip;)</code> also returns
+ index vectors <var>ixA</var> and <var>ixB</var> such that
+ <code><var>C</var> = <var>A</var>(<var>ixA</var>)</code> and
+ <code><var>C</var> = <var>B</var>(<var>ixB</var>)</code>, unless the <code>'rows'</code> optional
+ argument is given, in which case <code><var>C</var> = <var>A</var>(<var>ixA</var>,:)</code>
+ and <code><var>C</var> = <var>B</var>(<var>ixB</var>,:)</code>.
+</p>
+<p> <code>&hellip; = intersect (&hellip;, <var>order</var>)</code> also specifies the
+ order of the returned unique values.  <var>order</var> may be either
+ <code>'sorted'</code>, which is the default behavior, or <code>'stable'</code>,
+ in which case the unique values are returned in order of appearance.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -2809,13 +2851,53 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Set difference of two categorical arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod55">
             <div class="border-bottom py-2">
-<b><code>categorical.setdiff</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>setdiff</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>setdiff</b> (<var>A</var>, <var>B</var>, <code>'rows'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [<var>C</var>, <var>ixA</var>] = <b>setdiff</b> (&hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: &hellip; = <b>setdiff</b> (&hellip;, <var>order</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>C</var> = setdiff (<var>A</var>, <var>B</var>)</code> returns the unique common
+ values of the categorical arrays <var>A</var> and <var>B</var>.  Either <var>A</var> or
+ <var>B</var> input arguments may be a character vector, a string array, or a
+ cell array of character vectors, which is promoted to a categorical array
+ prior to set difference.  If both <var>A</var> and <var>B</var> are row vectors,
+ then <var>C</var> is also a row vector, otherwise <code>intersect</code> returns a
+ column vector.
+</p>
+<p> If categorical arrays <var>A</var> and <var>B</var> are ordinal, they must have
+ the same set and ordering of categories, which is transfered to <var>C</var>.
+ If neither are ordinal, the category names of each pair of elements are
+ compared (they do not need to have the same set of categories) in which
+ case the categories in <var>C</var> are the sorted union of the categories in
+ <var>A</var> and <var>B</var>.
+</p>
+<p> <code><var>C</var> = setdiff (<var>A</var>, <var>B</var>, <code>'rows'</code></code> returns the
+ unique common rows of the categorical matrices <var>A</var> and <var>B</var>, which
+ must have the same number of columns.  By default, the rows in
+ categorical matrix <var>C</var> are in sorted order.
+</p>
+<p> <code>[<var>C</var>, <var>ixA</var>] = setdiff (&hellip;)</code> also returns the index
+ vector <var>ixA</var> such that <code><var>C</var> = <var>A</var>(<var>ixA</var>)</code>, unless
+ the <code>'rows'</code> optional argument is given, in which case
+ <code><var>C</var> = <var>A</var>(<var>ixA</var>,:)</code>.
+</p>
+<p> <code>&hellip; = setdiff (&hellip;, <var>order</var>)</code> also specifies the
+ order of the returned unique values.  <var>order</var> may be either
+ <code>'sorted'</code>, which is the default behavior, or <code>'stable'</code>,
+ in which case the unique values are returned in order of appearance.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -2832,13 +2914,55 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Set exclusive-or of two categorical arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod56">
             <div class="border-bottom py-2">
-<b><code>categorical.setxor</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>setxor</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>setxor</b> (<var>A</var>, <var>B</var>, <code>'rows'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [<var>C</var>, <var>ixA</var>, <var>ixB</var>] = <b>setxor</b> (&hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: &hellip; = <b>setxor</b> (&hellip;, <var>order</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>C</var> = setxor (<var>A</var>, <var>B</var>)</code> returns the unique common
+ values of the categorical arrays <var>A</var> and <var>B</var>.  Either <var>A</var> or
+ <var>B</var> input arguments may be a character vector, a string array, or a
+ cell array of character vectors, which is promoted to a categorical array
+ prior to set exclusive-or.  If both <var>A</var> and <var>B</var> are row vectors,
+ then <var>C</var> is also a row vector, otherwise <code>setxor</code> returns a
+ column vector.
+</p>
+<p> If categorical arrays <var>A</var> and <var>B</var> are ordinal, they must have
+ the same set and ordering of categories, which is transfered to <var>C</var>.
+ If neither are ordinal, the category names of each pair of elements are
+ compared (they do not need to have the same set of categories) in which
+ case the categories in <var>C</var> are the sorted union of the categories in
+ <var>A</var> and <var>B</var>.
+</p>
+<p> <code><var>C</var> = setxor (<var>A</var>, <var>B</var>, <code>'rows'</code></code> returns the
+ unique common rows of the categorical matrices <var>A</var> and <var>B</var>, which
+ must have the same number of columns.  By default, the rows in
+ categorical matrix <var>C</var> are in sorted order.
+</p>
+<p> <code>[<var>C</var>, <var>ixA</var>, <var>ixB</var>] = setxor (&hellip;)</code> also returns
+ index vectors <var>ixA</var> and <var>ixB</var> such that
+ <code><var>C</var> = <var>A</var>(<var>ixA</var>)</code> and
+ <code><var>C</var> = <var>B</var>(<var>ixB</var>)</code>, unless the <code>'rows'</code> optional
+ argument is given, in which case <code><var>C</var> = <var>A</var>(<var>ixA</var>,:)</code>
+ and <code><var>C</var> = <var>B</var>(<var>ixB</var>,:)</code>.
+</p>
+<p> <code>&hellip; = setxor (&hellip;, <var>order</var>)</code> also specifies the
+ order of the returned unique values.  <var>order</var> may be either
+ <code>'sorted'</code>, which is the default behavior, or <code>'stable'</code>,
+ in which case the unique values are returned in order of appearance.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -2855,13 +2979,55 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Set union of two categorical arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod57">
             <div class="border-bottom py-2">
-<b><code>categorical.union</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>union</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>union</b> (<var>A</var>, <var>B</var>, <code>'rows'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [<var>C</var>, <var>ixA</var>, <var>ixB</var>] = <b>union</b> (&hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: &hellip; = <b>union</b> (&hellip;, <var>order</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>C</var> = union (<var>A</var>, <var>B</var>)</code> returns the unique common
+ values of the categorical arrays <var>A</var> and <var>B</var>.  Either <var>A</var> or
+ <var>B</var> input arguments may be a character vector, a string array, or a
+ cell array of character vectors, which is promoted to a categorical array
+ prior to set exclusive-or.  If both <var>A</var> and <var>B</var> are row vectors,
+ then <var>C</var> is also a row vector, otherwise <code>union</code> returns a
+ column vector.
+</p>
+<p> If categorical arrays <var>A</var> and <var>B</var> are ordinal, they must have
+ the same set and ordering of categories, which is transfered to <var>C</var>.
+ If neither are ordinal, the category names of each pair of elements are
+ compared (they do not need to have the same set of categories) in which
+ case the categories in <var>C</var> are the sorted union of the categories in
+ <var>A</var> and <var>B</var>.
+</p>
+<p> <code><var>C</var> = union (<var>A</var>, <var>B</var>, <code>'rows'</code></code> returns the
+ unique common rows of the categorical matrices <var>A</var> and <var>B</var>, which
+ must have the same number of columns.  By default, the rows in
+ categorical matrix <var>C</var> are in sorted order.
+</p>
+<p> <code>[<var>C</var>, <var>ixA</var>, <var>ixB</var>] = union (&hellip;)</code> also returns
+ index vectors <var>ixA</var> and <var>ixB</var> such that
+ <code><var>C</var> = <var>A</var>(<var>ixA</var>)</code> and
+ <code><var>C</var> = <var>B</var>(<var>ixB</var>)</code>, unless the <code>'rows'</code> optional
+ argument is given, in which case <code><var>C</var> = <var>A</var>(<var>ixA</var>,:)</code>
+ and <code><var>C</var> = <var>B</var>(<var>ixB</var>,:)</code>.
+</p>
+<p> <code>&hellip; = union (&hellip;, <var>order</var>)</code> also specifies the
+ order of the returned unique values.  <var>order</var> may be either
+ <code>'sorted'</code>, which is the default behavior, or <code>'stable'</code>,
+ in which case the unique values are returned in order of appearance.
+</p>
+
+
+
             </div>
           </div>
         </div>
