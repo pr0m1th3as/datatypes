@@ -76,10 +76,10 @@ classdef categorical
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'categorical'      'dispstrings'      'cellstr'          'double'          ##
-## 'single'           'int64'            'int32'            'int16'           ##
-## 'int8'             'uint64'           'uint32'           'uint16'          ##
-## 'uint8'                                                                    ##
+## 'categorical'      'dispstrings'      'cellstr'          'char'            ##
+## 'double'           'single'           'int64'            'int32'           ##
+## 'int16'            'int8'             'uint64'           'uint32'          ##
+## 'uint16'           'uint8'                                                 ##
 ##                                                                            ##
 ################################################################################
 
@@ -438,6 +438,21 @@ classdef categorical
     endfunction
 
     ## -*- texinfo -*-
+    ## @deftypefn {categorical} {@var{CM} =} char (@var{C})
+    ##
+    ## Convert categorical array to a 2-D character matrix.
+    ##
+    ## @code{@var{CM} = char (@var{C})} returns a character matrix @var{CM},
+    ## which contains @code{numel (@var{C})} rows and each row contains the
+    ## category name for the corresponding element of @code{@var{C}(:)}.
+    ##
+    ## @end deftypefn
+    function CM = char (this)
+      cstr = dispstrings (this);
+      CM = char (cstr(:));
+    endfunction
+
+    ## -*- texinfo -*-
     ## @deftypefn {categorical} {@var{out} =} double (@var{C})
     ##
     ## Convert categorical array to a double array.
@@ -589,8 +604,8 @@ classdef categorical
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'summary'          'categories'       'countcats'        'size'            ##
-## 'ndims'            'numel'                                                 ##
+## 'summary'          'categories'       'countcats'        'length'          ##
+## 'size'             'ndims'            'numel'                              ##
 ##                                                                            ##
 ################################################################################
 
@@ -676,6 +691,24 @@ classdef categorical
     endfunction
 
     ## -*- texinfo -*-
+    ## @deftypefn {categorical} {@var{N} =} length (@var{C})
+    ##
+    ## Length of a categorical vector.
+    ##
+    ## @code{@var{N} = length (@var{C})} returns the size of the longest
+    ## dimension of the categorical array @var{C}, unless any of dimensions has
+    ## zero length, in which case @code{length (@var{C})} returns 0.
+    ##
+    ## @end deftypefn
+    function N = length (this)
+      if (isempty (this))
+        N = 0;
+      else
+        N = max (size (this));
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
     ## @deftypefn  {categorical} {@var{sz} =} size (@var{C})
     ## @deftypefnx {categorical} {@var{dim_sz} =} size (@var{C}, @var{dim})
     ## @deftypefnx {categorical} {@var{dim_sz} =} size (@var{C}, @var{d1}, @var{d2}, @dots{})
@@ -684,8 +717,7 @@ classdef categorical
     ## Size of a categorical array.
     ##
     ## @code{@var{sz} = size (@var{C})} returns a row vector with the size
-    ## (number of elements) of each dimension for the calendar duration array
-    ## @var{C}.
+    ## (number of elements) of each dimension for the categorical array @var{C}.
     ##
     ## @code{@var{dim_sz} = size (@var{C}, @var{dim})} returns the size of
     ## the corresponding dimension specified in @var{dim}.  If @var{dim} is a
@@ -717,12 +749,12 @@ classdef categorical
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {categorical} {@var{out} =} ndims (@var{calD})
+    ## @deftypefn {categorical} {@var{out} =} ndims (@var{C})
     ##
     ## Number of dimensions in a categorical array.
     ##
-    ## @code{@var{out} = ndims (@var{calD})} returns the number of dimensions
-    ## of the calendar duration array @var{calD}.
+    ## @code{@var{out} = ndims (@var{C})} returns the number of dimensions of
+    ## the categorical array @var{C}.
     ##
     ## @end deftypefn
     function out = ndims (this)
@@ -730,7 +762,7 @@ classdef categorical
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {categorical} {@var{out} =} numel (@var{calD})
+    ## @deftypefn {categorical} {@var{out} =} numel (@var{C})
     ##
     ## Total number of elements in a categorical array.
     ##
@@ -3105,7 +3137,7 @@ classdef categorical
 ##                                                                            ##
 ################################################################################
 
-  methods (Hidden)
+  methods (Access = public)
 
     function out = cat (dim, varargin)
       args = varargin;
