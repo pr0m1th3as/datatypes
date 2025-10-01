@@ -1214,6 +1214,76 @@ classdef categorical
     endfunction
 
     ## -*- texinfo -*-
+    ## @deftypefn  {categorical} {@var{TF} =} issortedrows (@var{C})
+    ## @deftypefnx {categorical} {@var{TF} =} issortedrows (@var{C}, @var{col})
+    ## @deftypefnx {categorical} {@var{TF} =} issortedrows (@var{C}, @var{direction})
+    ## @deftypefnx {categorical} {@var{TF} =} issortedrows (@var{C}, @var{col}, @var{direction})
+    ## @deftypefnx {categorical} {@var{TF} =} issortedrows (@dots{}, @qcode{'MissingPlacement'}, @var{MP})
+    ##
+    ## Return true if categorical matrix rows are sorted. (unimplemented)
+    ##
+    ## @code{@var{TF} = issortedrows (@var{C})} returns a logical scalar
+    ## @var{TF}, which is @qcode{true}, if the rows in the 2-D categorical array
+    ## @var{C} are sorted in ascending order, and @qcode{false} otherwise.
+    ##
+    ## @code{@var{TF} = issortedrows (@var{C}, @var{col})} returns a logical
+    ## scalar @var{TF}, which is @qcode{true}, if the categorical array @var{C}
+    ## is sorted according to the columns specified by the vector @var{col}, and
+    ## @qcode{false} otherwise.  @var{col} must explicitly contain non-zero
+    ## integers whose absolute values index  existing columns in @var{A}.
+    ## Positive elements sort the corresponding columns in ascending order,
+    ## while negative elements sort the corresponding columns in descending
+    ## order.
+    ##
+    ## @code{@var{TF} = issortedrows (@var{C}, @var{direction})} checks if the
+    ## rows in @var{C} are sorted according to the specified direction, which
+    ## can be any of the following options:
+    ##
+    ## @itemize
+    ## @item @qcode{'ascend'}, which is the default, checks is elements are in
+    ## ascending order.
+    ## @item @qcode{'descend'} checks if elements are in descending order.
+    ## @item @qcode{'monotonic'} checks if elements are either in ascending or
+    ## descending order.
+    ## @item @qcode{'strictascend'} checks if elements are in ascending order
+    ## and there are no duplicate or undefined elements.
+    ## @item @qcode{'strictdescend'} checks if elements are in descending order
+    ## and there are no duplicate or undefined elements.
+    ## @item @qcode{'strictmonotonic'} checks if elements are either in
+    ## ascending or descending order and there are no duplicate or undefined
+    ## elements.
+    ## @end itemize
+    ##
+    ## Alternatively, @var{direction} can be a cell array array of character
+    ## vectors specifying the sorting direction for each individual column of
+    ## @var{A}, in which case the number of elements in @var{direction} must
+    ## equal the number of columns in @var{A}.
+    ##
+    ## @code{@var{B} = issortedrows (@var{A}, @var{col}, @var{direction})}
+    ## checks if the rows in the categorical array @var{A} are sorted according
+    ## to the columns specified in @var{col} using the corresponding sorting
+    ## direction specified in @var{direction}.  In this case, the sign of the
+    ## values in @var{col} is ignored.  @var{col} and @var{direction} must have
+    ## the same length, but not necessarily the same number of elements as the
+    ## columns in @var{A}.
+    ##
+    ## @code{@var{TF} = issorted (@dots{}, @qcode{'MissingPlacement'}, @var{MP})}
+    ## specifies where missing elements (@qcode{<undefined>}) are placed with
+    ## any of the following options specified in @var{MP}:
+    ##
+    ## @itemize
+    ## @item @qcode{'auto'}, which is the default, places missing elements last
+    ## for ascending sort and first for descending sort.
+    ## @item @qcode{'first'} places missing elements first.
+    ## @item @qcode{'last'} places missing elements last.
+    ## @end itemize
+    ##
+    ## @end deftypefn
+    function TF = issortedrows (this, varargin)
+      error ("categorical.issortedrows: not implemented yet.");
+    endfunction
+
+    ## -*- texinfo -*-
     ## @deftypefn {categorical} {@var{out} =} isundefined (@var{C})
     ##
     ## Test for undefined elements in categorical array.
@@ -2059,8 +2129,8 @@ classdef categorical
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'min'              'max'              'median'           'mode'            ##
-## 'histcounts'                                                               ##
+## 'min'              'mink'             'max'              'maxk'            ##
+## 'median'           'mode'             'histcounts'                         ##
 ##                                                                            ##
 ################################################################################
 
@@ -2205,6 +2275,22 @@ classdef categorical
     endfunction
 
     ## -*- texinfo -*-
+    ## @deftypefn {categorical} {@var{B} =} mink (@var{A}, @var{K})
+    ##
+    ## Smallest K categories from categorical array. (unimplemented)
+    ##
+    ## @code{@var{B} = mink (@var{A}, @var{K)} returns the @var{K} smallest
+    ## categories in categorical vector @var{A}.  If @var{A} is a matrix,
+    ## @code{mink (@var{A})} returns the @var{K} smallest categories from each
+    ## column.  For multidimensional arrays, @code{mink (@var{A})} returns the
+    ## @var{K} smallest categories along the first non-singleton dimension.
+    ##
+    ## @end deftypefn
+    function B = mink (A, K)
+      error ("categorical.mink: not inplemented yet.");
+    endfunction
+
+    ## -*- texinfo -*-
     ## @deftypefn  {categorical} {@var{C} =} max (@var{A})
     ## @deftypefnx {categorical} {[@var{C}, @var{index}] =} max (@var{A})
     ## @deftypefnx {categorical} {@var{C} =} max (@var{A}, @qcode{[]}, @var{dim})
@@ -2340,6 +2426,22 @@ classdef categorical
       ## Fix missing codes
       C.isMissing = isnan (C_d);
       C.code = uint16 (C_d);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {categorical} {@var{B} =} maxk (@var{A}, @var{K})
+    ##
+    ## Largest K categories from categorical array. (unimplemented)
+    ##
+    ## @code{@var{B} = maxk (@var{A}, @var{K)} returns the @var{K} largest
+    ## categories in categorical vector @var{A}.  If @var{A} is a matrix,
+    ## @code{maxk (@var{A})} returns the @var{K} largest categories from each
+    ## column.  For multidimensional arrays, @code{maxk (@var{A})} returns the
+    ## @var{K} largest categories along the first non-singleton dimension.
+    ##
+    ## @end deftypefn
+    function B = maxk (A, K)
+      error ("categorical.maxk: not inplemented yet.");
     endfunction
 
     ## -*- texinfo -*-
@@ -2688,8 +2790,8 @@ classdef categorical
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'sort'             'sortrows'         'unique'           'intersect'       ##
-## 'setdiff'          'setxor'           'union'                              ##
+## 'sort'             'sortrows'         'topkrows'         'unique'          ##
+## 'intersect'        'setdiff'          'setxor'           'union'           ##
 ##                                                                            ##
 ################################################################################
 
@@ -2812,10 +2914,10 @@ classdef categorical
     ##
     ## @code{@var{B} = sortrows (@var{A}, @var{col})} sorts @var{A} according to
     ## to the columns specified by the numeric vector @var{col}, which must
-    ## explicitly contain non-zero integers whose absolute value indexes an
-    ## existing column in @var{A}.  Positive elements sort the corresponding
-    ## columns in ascending order, while negative elements sort the
-    ## corresponding columns in descending order.
+    ## explicitly contain non-zero integers whose absolute values index existing
+    ## columns in @var{A}.  Positive elements sort the corresponding columns in
+    ## ascending order, while negative elements sort the corresponding columns
+    ## in descending order.
     ##
     ## @code{@var{B} = sortrows (@var{A}, @var{direction})} also specifies the
     ## sorting direction, which can be either @qcode{'ascend'} (default) or
@@ -2987,6 +3089,20 @@ classdef categorical
       B = A;
       B.code = uint16 (code);
       B.isMissing = is_nan;
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {categorical} {@var{B} =} topkrows (@var{A}, @var{K})
+    ##
+    ## Top K sorted rows of categorical array. (unimplemented)
+    ##
+    ## @code{@var{B} = topkrows (@var{A}, @var{K)} returns the top @var{K} rows
+    ## of the 2-D categorical array @var{A} sorted in descending order as a
+    ## group.
+    ##
+    ## @end deftypefn
+    function B = topkrows (A, K)
+      error ("categorical.topkrows: not inplemented yet.");
     endfunction
 
     ## -*- texinfo -*-
@@ -3249,7 +3365,7 @@ classdef categorical
 ##                                                                            ##
 ## 'cat'              'horzcat'          'vertcat'          'repmat'          ##
 ## 'reshape'          'circshift'        'permute'          'ipermute'        ##
-## 'transpose'        'ctranspose'                                            ##
+## 'transpose'        'ctranspose'       'keyHash'          'keyMatch'        ##
 ##                                                                            ##
 ################################################################################
 
@@ -3396,6 +3512,33 @@ classdef categorical
     function this = ctranspose (this)
       this.code = ctranspose (this.code);
       this.isMissing = ctranspose (this.isMissing);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {categorical} {@var{hey} =} keyHash (@var{C})
+    ##
+    ## Generate a hash code for categorical array. (unimplemented)
+    ##
+    ## @code{@var{h} = keyHash (@var{C})} generates a @qcode{uint64} scalar that
+    ## represents the input array {C}.
+    ##
+    ## @end deftypefn
+    function key = keyHash (this)
+      error ("categorical.keyHash: not inplemented yet.");
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {categorical} {@var{TF} =} keyMatch (@var{C1}, @var{C2)
+    ##
+    ## Return true if both inputs have the same hash key. (unimplemented)
+    ##
+    ## @code{@var{TF} = keyMatch (@var{C1}, @var{C2)} returns a logical scalar,
+    ## which is @qcode{true}, if both categorical arrays @var{C1} and @var{C2)
+    ## have the same hash key, and @qcode{false} otherwise.
+    ##
+    ## @end deftypefn
+    function TF = keyMatch (A, B)
+      error ("categorical.keyMatch: not inplemented yet.");
     endfunction
 
   endmethods
