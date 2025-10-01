@@ -2547,6 +2547,56 @@ classdef categorical
 
   methods (Access = public)
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {categorical} {@var{B} =} sort (@var{A})
+    ## @deftypefnx {categorical} {@var{B} =} sort (@var{A}, @var{dim})
+    ## @deftypefnx {categorical} {@var{B} =} sort (@var{A}, @var{direction})
+    ## @deftypefnx {categorical} {@var{B} =} sort (@var{A}, @var{dim}, @var{direction})
+    ## @deftypefnx {categorical} {@var{B} =} sort (@dots{}, @qcode{'MissingPlacement'}, @var{MP})
+    ## @deftypefnx {categorical} {[@var{B}, @var{index}] =} sort (@var{A}, @dots{})
+    ##
+    ## Sort elements in a categorical array.
+    ##
+    ## @code{@var{B} = sort (@var{A})} sorts the categorical array @var{A} in
+    ## ascending order.  The sorted array @var{B} has the same categories as
+    ## @var{A}.  If @var{A} is a matrix, @code{sort (@var{A})} sorts each column
+    ## of @var{A} in ascending order.  For multidimensional arrays,
+    ## @code{mode (@var{A})} sorts along the first non-singleton dimension.
+    ##
+    ## @code{@var{B} = sort (@var{A}, @var{dim})} sorts along the dimension
+    ## specified by @var{dim}.
+    ##
+    ## @code{@var{B} = sort (@var{A}, @var{direction})} also specifies the
+    ## sorting direction, which can be either @qcode{'ascend'} (default) or
+    ## @qcode{'descend'}.
+    ##
+    ## @code{@var{B} = sort (@dots{}, @qcode{'MissingPlacement'}, @var{MP})}
+    ## specifies where to place the missing elements (@qcode{<undefined>})
+    ## returned in @var{B} with any of the following options specified in
+    ## @var{MP}:
+    ##
+    ## @itemize
+    ## @item @qcode{'auto'}, which is the default, places missing elements last
+    ## for ascending sort and first for descending sort.
+    ## @item @qcode{'first'} places missing elements first.
+    ## @item @qcode{'last'} places missing elements last.
+    ## @end itemize
+    ##
+    ## @code{[@var{B}, @var{index}] = sort (@var{A}, @dots{})} also returns a
+    ## sorting index containing the original indices of the elements in the
+    ## sorted array.
+    ##
+    ## @itemize
+    ## @item If @var{A} is a vector, then @var{index} contains the original
+    ## linear indices of the elements in the sorted vector @var{B} such that
+    ## @code{@var{B} = @var{A}(@var{index})}.
+    ## @item If @var{A} is an @math{MxN} matrix and @qcode{@var{dim} = 1}, then
+    ## @var{index} contains the original row indices of the elements in the
+    ## sorted vector @var{B} such that for @qcode{j = 1:N},
+    ## @code{@var{B}(:,j) = @var{A}(@var{index}(:,j),j)}.
+    ## @end itemize
+    ##
+    ## @end deftypefn
     function [B, index] = sort (A, varargin)
       ## Parse and validate optional 'MissingPlacement' paired argument
       optNames = {'MissingPlacement'};
@@ -2598,6 +2648,59 @@ classdef categorical
       B.isMissing = is_nan;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {categorical} {@var{B} =} sortrows (@var{A})
+    ## @deftypefnx {categorical} {@var{B} =} sortrows (@var{A}, @var{col})
+    ## @deftypefnx {categorical} {@var{B} =} sortrows (@var{A}, @var{direction})
+    ## @deftypefnx {categorical} {@var{B} =} sortrows (@var{A}, @var{col}, @var{direction})
+    ## @deftypefnx {categorical} {@var{B} =} sortrows (@dots{}, @qcode{'MissingPlacement'}, @var{MP})
+    ## @deftypefnx {categorical} {[@var{B}, @var{index}] =} sortrows (@var{A}, @dots{})
+    ##
+    ## Sort rows in a categorical array.
+    ##
+    ## @code{@var{B} = sortrows (@var{A})} sorts the rows of the 2-D categorical
+    ## array @var{A} in ascending order.  The sorted array @var{B} has the same
+    ## categories as @var{A}.
+    ##
+    ## @code{@var{B} = sortrows (@var{A}, @var{col})} sorts @var{A} according to
+    ## to the columns specified by the numeric vector @var{col}, which must
+    ## explicitly contain non-zero integers whose absolute value indexes an
+    ## existing column in @var{A}.  Positive elements sort the corresponding
+    ## columns in ascending order, while negative elements sort the
+    ## corresponding columns in descending order.
+    ##
+    ## @code{@var{B} = sortrows (@var{A}, @var{direction})} also specifies the
+    ## sorting direction, which can be either @qcode{'ascend'} (default) or
+    ## @qcode{'descend'} applying to all columns in @var{A}.  Alternatively,
+    ## @var{direction} can be a cell array array of character vectors specifying
+    ## the sorting direction for each individual column of @var{A}, in which
+    ## case the number of elements in @var{direction} must equal the number of
+    ## columns in @var{A}.
+    ##
+    ## @code{@var{B} = sortrows (@var{A}, @var{col}, @var{direction})} sorts the
+    ## categorical array @var{A} according to the columns specified in @var{col}
+    ## using the corresponding sorting direction specified in @var{direction}.
+    ## In this case, the sign of the values in @var{col} is ignored.  @var{col}
+    ## and @var{direction} must have the same length, but not necessarily the
+    ## same number of elements as the columns in @var{A}.
+    ##
+    ## @code{@var{B} = sortrows (@dots{}, @qcode{'MissingPlacement'}, @var{MP})}
+    ## specifies where to place the missing elements (@qcode{<undefined>})
+    ## returned in @var{B} with any of the following options specified in
+    ## @var{MP}:
+    ##
+    ## @itemize
+    ## @item @qcode{'auto'}, which is the default, places missing elements last
+    ## for ascending sort and first for descending sort.
+    ## @item @qcode{'first'} places missing elements first.
+    ## @item @qcode{'last'} places missing elements last.
+    ## @end itemize
+    ##
+    ## @code{[@var{B}, @var{index}] = sortrows (@var{A}, @dots{})} also returns
+    ## an index vector containing the original row indices of @var{A} in the
+    ## sorted matrix @var{B} such that @code{@var{B} = @var{A}(@var{index},:)}.
+    ##
+    ## @end deftypefn
     function [B, index] = sortrows (A, varargin)
       if (ndims (A) != 2)
         error ("categorical.sortrows: A must be a 2-D matrix.");
@@ -2738,6 +2841,46 @@ classdef categorical
       B.isMissing = is_nan;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {categorical} {@var{B} =} unique (@var{A})
+    ## @deftypefnx {categorical} {@var{B} =} unique (@var{A}, @qcode{'rows'})
+    ## @deftypefnx {categorical} {[@var{B}, @var{ixA}, @var{ixB}] =} unique (@dots{})
+    ## @deftypefnx {categorical} {@dots{} =} unique (@dots{}, @var{order})
+    ## @deftypefnx {categorical} {@dots{} =} unique (@dots{}, @var{occurence})
+    ##
+    ## Unique values in a categorical array.
+    ##
+    ## @code{@var{B} = unique (@var{A})} returns the unique values of the
+    ## categorical array @var{A} in the categorical vector @var{B} sorted
+    ## according to the order of categories in @var{A}.  @var{B} retains the
+    ## same categories as @var{A}.  If @var{A} is a column vector, then @var{B}
+    ## is also a column vector, otherwise @code{unique} returns a row vector.
+    ##
+    ## @code{@var{B} = unique (@var{A}, @qcode{'rows'})} returns the unique rows
+    ## of the categorical matrix @var{A} in the categorical matrix @var{B}
+    ## sorted  according to the order of categories in @var{A}.  @var{B} retains
+    ## the same categories as @var{A}.
+    ##
+    ## @code{[@var{B}, @var{ixA}, @var{ixB}] = unique (@dots{})} also returns
+    ## index vectors @var{ixA} and @var{ixB} such that
+    ## @code{@var{B} = @var{A}(@var{ixA})} and
+    ## @code{@var{A} = @var{B}(@var{ixB})}, unless the @qcode{'rows'} optional
+    ## argument is given, in which case @code{@var{B} = @var{A}(@var{ixA},:)}
+    ## and @code{@var{A} = @var{B}(@var{ixB},:)}.
+    ##
+    ## @code{@dots{} = unique (@dots{}, @var{order})} also specifies the order
+    ## of the returned unique values.  @var{order} may be either
+    ## @qcode{'sorted'}, which is the default behavior, or @qcode{'stable'}, in
+    ## which case the unique values are returned in order of appearance.
+    ##
+    ## @code{@dots{} = unique (@dots{}, @var{occurence})} also specifies the
+    ## which index is returned in @var{ixA}, where there are repeated values or
+    ## rows (if opted) in the input categorical array.  @var{occurence} may be
+    ## either @qcode{'first'}, which is the default and returns the index of the
+    ## first occurence of each unique value, or @qcode{'last'}, in which case
+    ## the last occurence of each unique value is returned.
+    ##
+    ## @end deftypefn
     function [B, ixA, ixB] = unique (A, varargin)
       ## Handle 'rows' option
       do_rows = false;
@@ -2754,7 +2897,7 @@ classdef categorical
       ## Handle 'setOrder' and 'occurence' options
       opt = "sorted";
       if (! isempty (varargin))
-        if (any (strcmp (varargin{1}, {"sorted", "stable", "first", "last"})))
+        if (any (strcmp (varargin{1}, {'sorted', 'stable', 'first', 'last'})))
           opt = varargin{1};
         else
           error ("categorical.unique: invalid option '%s'.", varargin{1});
@@ -2771,20 +2914,20 @@ classdef categorical
       endif
     endfunction
 
-    function [C, ixa, ixb] = intersect (A, B, varargin)
-      [C, ixa, ixb] = setop (A, B, 'intersect', varargin{:});
+    function [C, ixA, ixB] = intersect (A, B, varargin)
+      [C, ixA, ixB] = setop (A, B, 'intersect', varargin{:});
     endfunction
 
-    function [C, ixa] = setdiff (A, B, varargin)
-      [C, ixa] = setop (A, B, 'setdiff', varargin{:});
+    function [C, ixA] = setdiff (A, B, varargin)
+      [C, ixA] = setop (A, B, 'setdiff', varargin{:});
     endfunction
 
-    function [C, ixa, ixb] = setxor (A, B, varargin)
-      [C, ixa, ixb] = setop (A, B, 'setxor', varargin{:});
+    function [C, ixA, ixB] = setxor (A, B, varargin)
+      [C, ixA, ixB] = setop (A, B, 'setxor', varargin{:});
     endfunction
 
-    function [C, ixa, ixb] = union (A, B, varargin)
-      [C, ixa, ixb] = setop (A, B, 'union', varargin{:});
+    function [C, ixA, ixB] = union (A, B, varargin)
+      [C, ixA, ixB] = setop (A, B, 'union', varargin{:});
     endfunction
 
   endmethods
@@ -3113,7 +3256,7 @@ classdef categorical
     endfunction
 
     ## Common function for set operations
-    function [C, ixa, ixb] = setop (A, B, fname, varargin)
+    function [C, ixA, ixB] = setop (A, B, fname, varargin)
       if (iscellstr (A) || isa (A, 'string'))
         A = categorical (A);
       elseif (iscellstr (B) || isa (B, 'string'))
@@ -3157,13 +3300,13 @@ classdef categorical
       ## Apply set operation
       switch (fname)
         case 'intersect'
-          [code, ixa, ixb] = intersect (Acodes, Bcodes, varargin{:});
+          [code, ixA, ixB] = intersect (Acodes, Bcodes, varargin{:});
         case 'setdiff'
-          [code, ixa] = setdiff (Acodes, Bcodes, varargin{:});
+          [code, ixA] = setdiff (Acodes, Bcodes, varargin{:});
         case 'setxor'
-          [code, ixa, ixb] = setxor (Acodes, Bcodes, varargin{:});
+          [code, ixA, ixB] = setxor (Acodes, Bcodes, varargin{:});
         case 'union'
-          [code, ixa, ixb] = union (Acodes, Bcodes, varargin{:});
+          [code, ixA, ixB] = union (Acodes, Bcodes, varargin{:});
       endswitch
       ## Add codes and missing arrays
       C.code = uint16 (code);
