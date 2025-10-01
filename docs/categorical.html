@@ -851,6 +851,47 @@ List of categories in categorical array.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
+                    <b><code>countcats</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Count occurences of categories in a categorical array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod15">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>countcats</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>countcats</b> (<var>A</var>, <var>dim</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>C</var> = countcats (<var>A</var>)</code> returns the number of elements for
+ each category in <var>A</var>.  If <var>A</var> is a vector, <var>C</var> is also a
+ vector with one element for each category in <var>A</var>.  If <var>A</var> is a
+ matrix, <var>C</var> is a matrix with each column containing the category
+ counts from each column of <var>A</var>.  For multidimensional arrays,
+ <code>countcats</code> operates along the first non-singleton dimension.
+</p>
+<p> <code><var>C</var> = countcats (<var>A</var>, <var>dim</var>)</code> aperates along the
+ dimension <var>dim</var>.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod16"
+              aria-expanded="false" aria-controls="collapseMethod16">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
                     <b><code>size</code></b>
                   </h4>
                 </div>
@@ -859,7 +900,7 @@ Size of a categorical array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod15">
+          <div class="collapse multi-collapse" id="collapseMethod16">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>sz</var> = <b>size</b> (<var>C</var>)</code></h5></dt>
@@ -893,8 +934,8 @@ Size of a categorical array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod16"
-              aria-expanded="false" aria-controls="collapseMethod16">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod17"
+              aria-expanded="false" aria-controls="collapseMethod17">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -906,7 +947,7 @@ Number of dimensions in a categorical array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod16">
+          <div class="collapse multi-collapse" id="collapseMethod17">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>out</var> = <b>ndims</b> (<var>calD</var>)</code></h5></dt>
@@ -926,8 +967,8 @@ Number of dimensions in a categorical array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod17"
-              aria-expanded="false" aria-controls="collapseMethod17">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod18"
+              aria-expanded="false" aria-controls="collapseMethod18">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -939,7 +980,7 @@ Total number of elements in a categorical array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod17">
+          <div class="collapse multi-collapse" id="collapseMethod18">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>out</var> = <b>numel</b> (<var>calD</var>)</code></h5></dt>
@@ -959,8 +1000,8 @@ Total number of elements in a categorical array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod18"
-              aria-expanded="false" aria-controls="collapseMethod18">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod19"
+              aria-expanded="false" aria-controls="collapseMethod19">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -972,7 +1013,7 @@ Test for categories in a categorical array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod18">
+          <div class="collapse multi-collapse" id="collapseMethod19">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>iscategory</b> (<var>C</var>, <var>catnames</var>)</code></h5></dt>
@@ -994,8 +1035,8 @@ Test for categories in a categorical array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod19"
-              aria-expanded="false" aria-controls="collapseMethod19">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod20"
+              aria-expanded="false" aria-controls="collapseMethod20">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1007,7 +1048,7 @@ Return true if categorical array is a column vector.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod19">
+          <div class="collapse multi-collapse" id="collapseMethod20">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>iscolumn</b> (<var>C</var>)</code></h5></dt>
@@ -1030,8 +1071,8 @@ Return true if categorical array is a column vector.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod20"
-              aria-expanded="false" aria-controls="collapseMethod20">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod21"
+              aria-expanded="false" aria-controls="collapseMethod21">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1043,7 +1084,7 @@ Return true if categorical array is empty.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod20">
+          <div class="collapse multi-collapse" id="collapseMethod21">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isempty</b> (<var>C</var>)</code></h5></dt>
@@ -1064,8 +1105,8 @@ Return true if categorical array is empty.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod21"
-              aria-expanded="false" aria-controls="collapseMethod21">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod22"
+              aria-expanded="false" aria-controls="collapseMethod22">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1077,7 +1118,7 @@ Return true if categorical arrays are equal.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod21">
+          <div class="collapse multi-collapse" id="collapseMethod22">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isequal</b> (<var>C1</var>, <var>C2</var>)</code></h5></dt>
@@ -1111,8 +1152,8 @@ Return true if categorical arrays are equal.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod22"
-              aria-expanded="false" aria-controls="collapseMethod22">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod23"
+              aria-expanded="false" aria-controls="collapseMethod23">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1125,7 +1166,7 @@ Return true if categorical arrays are equal under the assumption that
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod22">
+          <div class="collapse multi-collapse" id="collapseMethod23">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isequaln</b> (<var>C1</var>, <var>C2</var>, &hellip;)</code></h5></dt>
@@ -1159,8 +1200,8 @@ Return true if categorical arrays are equal under the assumption that
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod23"
-              aria-expanded="false" aria-controls="collapseMethod23">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod24"
+              aria-expanded="false" aria-controls="collapseMethod24">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1172,7 +1213,7 @@ Return true if categorical array is a 2-D array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod23">
+          <div class="collapse multi-collapse" id="collapseMethod24">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>ismatrix</b> (<var>C</var>)</code></h5></dt>
@@ -1195,8 +1236,8 @@ Return true if categorical array is a 2-D array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod24"
-              aria-expanded="false" aria-controls="collapseMethod24">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod25"
+              aria-expanded="false" aria-controls="collapseMethod25">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1208,7 +1249,7 @@ Test for categorical elements in a set.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod24">
+          <div class="collapse multi-collapse" id="collapseMethod25">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>ismember</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -1252,8 +1293,8 @@ Test for categorical elements in a set.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod25"
-              aria-expanded="false" aria-controls="collapseMethod25">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod26"
+              aria-expanded="false" aria-controls="collapseMethod26">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1265,7 +1306,7 @@ Test for undefined elements in categorical array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod25">
+          <div class="collapse multi-collapse" id="collapseMethod26">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>out</var> = <b>ismissing</b> (<var>C</var>)</code></h5></dt>
@@ -1287,8 +1328,8 @@ Test for undefined elements in categorical array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod26"
-              aria-expanded="false" aria-controls="collapseMethod26">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod27"
+              aria-expanded="false" aria-controls="collapseMethod27">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1300,7 +1341,7 @@ Test if categorical array is ordinal.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod26">
+          <div class="collapse multi-collapse" id="collapseMethod27">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isordinal</b> (<var>C</var>)</code></h5></dt>
@@ -1321,8 +1362,8 @@ Test if categorical array is ordinal.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod27"
-              aria-expanded="false" aria-controls="collapseMethod27">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod28"
+              aria-expanded="false" aria-controls="collapseMethod28">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1334,7 +1375,7 @@ Test if categorical array is protected.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod27">
+          <div class="collapse multi-collapse" id="collapseMethod28">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isprotected</b> (<var>C</var>)</code></h5></dt>
@@ -1355,8 +1396,8 @@ Test if categorical array is protected.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod28"
-              aria-expanded="false" aria-controls="collapseMethod28">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod29"
+              aria-expanded="false" aria-controls="collapseMethod29">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1368,7 +1409,7 @@ Return true if categorical array is a row vector.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod28">
+          <div class="collapse multi-collapse" id="collapseMethod29">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isrow</b> (<var>C</var>)</code></h5></dt>
@@ -1391,8 +1432,8 @@ Return true if categorical array is a row vector.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod29"
-              aria-expanded="false" aria-controls="collapseMethod29">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod30"
+              aria-expanded="false" aria-controls="collapseMethod30">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1404,7 +1445,7 @@ Return true if categorical array is a scalar.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod29">
+          <div class="collapse multi-collapse" id="collapseMethod30">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isscalar</b> (<var>C</var>)</code></h5></dt>
@@ -1426,8 +1467,8 @@ Return true if categorical array is a scalar.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod30"
-              aria-expanded="false" aria-controls="collapseMethod30">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod31"
+              aria-expanded="false" aria-controls="collapseMethod31">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1439,7 +1480,7 @@ Test for undefined elements in categorical array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod30">
+          <div class="collapse multi-collapse" id="collapseMethod31">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>out</var> = <b>isundefined</b> (<var>C</var>)</code></h5></dt>
@@ -1461,8 +1502,8 @@ Test for undefined elements in categorical array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod31"
-              aria-expanded="false" aria-controls="collapseMethod31">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod32"
+              aria-expanded="false" aria-controls="collapseMethod32">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1474,7 +1515,7 @@ Return true if categorical array is a vector.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod31">
+          <div class="collapse multi-collapse" id="collapseMethod32">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isvector</b> (<var>C</var>)</code></h5></dt>
@@ -1497,8 +1538,8 @@ Return true if categorical array is a vector.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod32"
-              aria-expanded="false" aria-controls="collapseMethod32">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod33"
+              aria-expanded="false" aria-controls="collapseMethod33">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1510,7 +1551,7 @@ Add categories to categorical array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod32">
+          <div class="collapse multi-collapse" id="collapseMethod33">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>addcats</b> (<var>A</var>, <var>newcats</var>)</code></h5></dt>
@@ -1535,47 +1576,6 @@ Add categories to categorical array.
  any type of array that can be converted to a cell array of character
  vectors with the <code>cellstr</code> function, as long as it does contain any
  duplicate names and does not reference an existing category in <var>A</var>.
-</p>
-
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod33"
-              aria-expanded="false" aria-controls="collapseMethod33">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>countcats</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Count occurences of categories in a categorical array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod33">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">categorical: <var>C</var> = <b>countcats</b> (<var>A</var>)</code></h5></dt>
-<dt><code><h5 class="fs">categorical: <var>C</var> = <b>countcats</b> (<var>A</var>, <var>dim</var>)</code></h5></dt>
-</dl>
-
-<p> </p>
-<p> <code><var>C</var> = countcats (<var>A</var>)</code> returns the number of elements for
- each category in <var>A</var>.  If <var>A</var> is a vector, <var>C</var> is also a
- vector with one element for each category in <var>A</var>.  If <var>A</var> is a
- matrix, <var>C</var> is a matrix with each column containing the category
- counts from each column of <var>A</var>.  For multidimensional arrays,
- <code>countcats</code> operates along the first non-singleton dimension.
-</p>
-<p> <code><var>C</var> = countcats (<var>A</var>, <var>dim</var>)</code> aperates along the
- dimension <var>dim</var>.
 </p>
 
 
@@ -2571,56 +2571,61 @@ Histogram bin counts of a categorical array.
                   </h4>
                 </div>
                 <div class="col-8">
-Histogram bin counts of a categorical array.
+Sort elements in a categorical array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod51">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">categorical: <var>N</var> = <b>histcounts</b> (<var>A</var>)</code></h5></dt>
-<dt><code><h5 class="fs">categorical: <var>N</var> = <b>histcounts</b> (<var>A</var>, <var>cats</var>)</code></h5></dt>
-<dt><code><h5 class="fs">categorical: <var>N</var> = <b>histcounts</b> (&hellip;, <code>'Normalization'</code>, <var>normtype</var>)</code></h5></dt>
-<dt><code><h5 class="fs">categorical: [<var>N</var>, <var>cats</var>] = <b>histcounts</b> (&hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>sort</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>sort</b> (<var>A</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>sort</b> (<var>A</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>sort</b> (<var>A</var>, <var>dim</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>sort</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [<var>B</var>, <var>index</var>] = <b>sort</b> (<var>A</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>N</var> = histcounts (<var>A</var>)</code> returns a numeric vector <var>N</var>
- with the number of elements of each category in <var>A</var>.  <var>A</var> can be
- a categorical array of any dimensions, but it is converted internally to
- a single column vector.
+<p> <code><var>B</var> = sort (<var>A</var>)</code> sorts the categorical array <var>A</var> in
+ ascending order.  The sorted array <var>B</var> has the same categories as
+ <var>A</var>.  If <var>A</var> is a matrix, <code>sort (<var>A</var>)</code> sorts each column
+ of <var>A</var> in ascending order.  For multidimensional arrays,
+ <code>mode (<var>A</var>)</code> sorts along the first non-singleton dimension.
 </p>
-<p> <code><var>N</var> = histcounts (<var>A</var>, <var>cats</var>)</code> returns the number of
- elements only for the categories of <var>A</var> specified in <var>cats</var>,
- which may be a categorical array, a string array, or a cell array of
- character vectors, as long as it specifies unique existing categories in
- <var>A</var>.
+<p> <code><var>B</var> = sort (<var>A</var>, <var>dim</var>)</code> sorts along the dimension
+ specified by <var>dim</var>.
 </p>
-<p> <code><var>N</var> = histcounts (&hellip;, <code>'Normalization'</code>,
- <var>normtype</var>)</code> specifies how to normalize the histogram values returned
- in <var>N</var> with any of the following options specified in <var>normtype</var>:
+<p> <code><var>B</var> = sort (<var>A</var>, <var>direction</var>)</code> also specifies the
+ sorting direction, which can be either <code>'ascend'</code> (default) or
+ <code>'descend'</code>.
+</p>
+<p> <code><var>B</var> = sort (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
+ specifies where to place the missing elements (<code>&lt;undefined&gt;</code>)
+ returned in <var>B</var> with any of the following options specified in
+ <var>MP</var>:
 </p>
  <ul>
-<li> <code>'count'</code>, which is the default, returns the number of
- elements in each category.
- </li><li> <code>'countdensity'</code> is the same as <code>'count'</code>, since the
- bin width in categorical arrays is always equal to 1.
- </li><li> <code>'probability'</code> returns the number of elements in each
- category relative to the total number of elements in <var>A</var>.
- </li><li> <code>'pdf'</code> is the same as <code>'probability'</code>, since the bin
- width in categorical arrays is always equal to 1.
- </li><li> <code>'cumcount'</code> returns the cumulative number of elements in
- each category and all previous categories.
- </li><li> <code>'cdf'</code> returns the cumulative number of elements in
- each category and all previous categories relative to the total number of
- elements in <var>A</var>.
+<li> <code>'auto'</code>, which is the default, places missing elements last
+ for ascending sort and first for descending sort.
+ </li><li> <code>'first'</code> places missing elements first.
+ </li><li> <code>'last'</code> places missing elements last.
  </li></ul>
 
-<p> <code>[<var>N</var>, <var>cats</var>] = histcounts (&hellip;)</code> also returns the
- corresponding categories of <var>A</var> for each count in <var>N</var>.
- <var>cats</var> is a cell array of character vectors with the same size as
- <var>N</var>.
+<p> <code>[<var>B</var>, <var>index</var>] = sort (<var>A</var>, &hellip;)</code> also returns a
+ sorting index containing the original indices of the elements in the
+ sorted array.
 </p>
+ <ul>
+<li> If <var>A</var> is a vector, then <var>index</var> contains the original
+ linear indices of the elements in the sorted vector <var>B</var> such that
+ <code><var>B</var> = <var>A</var>(<var>index</var>)</code>.
+ </li><li> If <var>A</var> is an <math>M&times;N</math> matrix and <code><var>dim</var> = 1</code>, then
+ <var>index</var> contains the original row indices of the elements in the
+ sorted vector <var>B</var> such that for <code>j = 1:N</code>,
+ <code><var>B</var>(:,j) = <var>A</var>(<var>index</var>(:,j),j)</code>.
+ </li></ul>
+
 
 
 
@@ -2640,13 +2645,67 @@ Histogram bin counts of a categorical array.
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Sort rows in a categorical array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod52">
             <div class="border-bottom py-2">
-<b><code>categorical.sortrows</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>sortrows</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>sortrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [<var>B</var>, <var>index</var>] = <b>sortrows</b> (<var>A</var>, &hellip;)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>B</var> = sortrows (<var>A</var>)</code> sorts the rows of the 2-D categorical
+ array <var>A</var> in ascending order.  The sorted array <var>B</var> has the same
+ categories as <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>)</code> sorts <var>A</var> according to
+ to the columns specified by the numeric vector <var>col</var>, which must
+ explicitly contain non-zero integers whose absolute value indexes an
+ existing column in <var>A</var>.  Positive elements sort the corresponding
+ columns in ascending order, while negative elements sort the
+ corresponding columns in descending order.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>direction</var>)</code> also specifies the
+ sorting direction, which can be either <code>'ascend'</code> (default) or
+ <code>'descend'</code> applying to all columns in <var>A</var>.  Alternatively,
+ <var>direction</var> can be a cell array array of character vectors specifying
+ the sorting direction for each individual column of <var>A</var>, in which
+ case the number of elements in <var>direction</var> must equal the number of
+ columns in <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>, <var>direction</var>)</code> sorts the
+ categorical array <var>A</var> according to the columns specified in <var>col</var>
+ using the corresponding sorting direction specified in <var>direction</var>.
+ In this case, the sign of the values in <var>col</var> is ignored.  <var>col</var>
+ and <var>direction</var> must have the same length, but not necessarily the
+ same number of elements as the columns in <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
+ specifies where to place the missing elements (<code>&lt;undefined&gt;</code>)
+ returned in <var>B</var> with any of the following options specified in
+ <var>MP</var>:
+</p>
+ <ul>
+<li> <code>'auto'</code>, which is the default, places missing elements last
+ for ascending sort and first for descending sort.
+ </li><li> <code>'first'</code> places missing elements first.
+ </li><li> <code>'last'</code> places missing elements last.
+ </li></ul>
+
+<p> <code>[<var>B</var>, <var>index</var>] = sortrows (<var>A</var>, &hellip;)</code> also returns
+ an index vector containing the original row indices of <var>A</var> in the
+ sorted matrix <var>B</var> such that <code><var>B</var> = <var>A</var>(<var>index</var>,:)</code>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -2663,13 +2722,54 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Unique values in a categorical array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod53">
             <div class="border-bottom py-2">
-<b><code>categorical.sortrows</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>unique</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>unique</b> (<var>A</var>, <code>'rows'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [<var>B</var>, <var>ixA</var>, <var>ixB</var>] = <b>unique</b> (&hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: &hellip; = <b>unique</b> (&hellip;, <var>order</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: &hellip; = <b>unique</b> (&hellip;, <var>occurence</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>B</var> = unique (<var>A</var>)</code> returns the unique values of the
+ categorical array <var>A</var> in the categorical vector <var>B</var> sorted
+ according to the order of categories in <var>A</var>.  <var>B</var> retains the
+ same categories as <var>A</var>.  If <var>A</var> is a column vector, then <var>B</var>
+ is also a column vector, otherwise <code>unique</code> returns a row vector.
+</p>
+<p> <code><var>B</var> = unique (<var>A</var>, <code>'rows'</code>)</code> returns the unique rows
+ of the categorical matrix <var>A</var> in the categorical matrix <var>B</var>
+ sorted  according to the order of categories in <var>A</var>.  <var>B</var> retains
+ the same categories as <var>A</var>.
+</p>
+<p> <code>[<var>B</var>, <var>ixA</var>, <var>ixB</var>] = unique (&hellip;)</code> also returns
+ index vectors <var>ixA</var> and <var>ixB</var> such that
+ <code><var>B</var> = <var>A</var>(<var>ixA</var>)</code> and
+ <code><var>A</var> = <var>B</var>(<var>ixB</var>)</code>, unless the <code>'rows'</code> optional
+ argument is given, in which case <code><var>B</var> = <var>A</var>(<var>ixA</var>,:)</code>
+ and <code><var>A</var> = <var>B</var>(<var>ixB</var>,:)</code>.
+</p>
+<p> <code>&hellip; = unique (&hellip;, <var>order</var>)</code> also specifies the order
+ of the returned unique values.  <var>order</var> may be either
+ <code>'sorted'</code>, which is the default behavior, or <code>'stable'</code>, in
+ which case the unique values are returned in order of appearance.
+</p>
+<p> <code>&hellip; = unique (&hellip;, <var>occurence</var>)</code> also specifies the
+ which index is returned in <var>ixA</var>, where there are repeated values or
+ rows (if opted) in the input categorical array.  <var>occurence</var> may be
+ either <code>'first'</code>, which is the default and returns the index of the
+ first occurence of each unique value, or <code>'last'</code>, in which case
+ the last occurence of each unique value is returned.
+</p>
+
+
+
             </div>
           </div>
         </div>
