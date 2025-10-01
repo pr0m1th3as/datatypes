@@ -2287,7 +2287,7 @@ classdef categorical
     ##
     ## @end deftypefn
     function B = mink (A, K)
-      error ("categorical.mink: not inplemented yet.");
+      error ("categorical.mink: not implemented yet.");
     endfunction
 
     ## -*- texinfo -*-
@@ -2441,7 +2441,7 @@ classdef categorical
     ##
     ## @end deftypefn
     function B = maxk (A, K)
-      error ("categorical.maxk: not inplemented yet.");
+      error ("categorical.maxk: not implemented yet.");
     endfunction
 
     ## -*- texinfo -*-
@@ -3102,7 +3102,7 @@ classdef categorical
     ##
     ## @end deftypefn
     function B = topkrows (A, K)
-      error ("categorical.topkrows: not inplemented yet.");
+      error ("categorical.topkrows: not implemented yet.");
     endfunction
 
     ## -*- texinfo -*-
@@ -3371,6 +3371,28 @@ classdef categorical
 
   methods (Access = public)
 
+    ## -*- texinfo -*-
+    ## @deftypefn {categorical} {@var{C} =} cat (@var{dim}, @var{A}, @var{B}, @dots{})
+    ##
+    ## Concatenate categorical arrays.
+    ##
+    ## @code{@var{C} = cat (@var{dim}, @var{A}, @var{B}, @dots{})} concatenates
+    ## categorical arrays @var{A}, @var{B}, @dots{} along dimension @var{dim}.
+    ## All input arrays must have the same size except along the operating
+    ## dimension @var{dim}.  Any of the input arrays may also be string arrays
+    ## or cell arrays of character vectors of compatible size.
+    ##
+    ## If any input array is an ordinal categorical array, then all inputs must
+    ## be ordinal categorical arrays with the same set and ordering of
+    ## categories.  In this case, @var{C} is also an ordinal categorical array
+    ## with the same set and ordering of categories.  If none of the input
+    ## arrays are ordinal, then they do not need to have the same set of
+    ## categories.  In this case, categorical array @var{C} contains the union
+    ## of the categories from all input arrays.  Protected categorical arrays
+    ## can only be concatenated with other arrays that have the same set of
+    ## categories but not necessarily in the same order.
+    ##
+    ## @end deftypefn
     function out = cat (dim, varargin)
       args = varargin;
       [args{:}] = promote (varargin{:});
@@ -3471,10 +3493,56 @@ classdef categorical
       endfor
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {categorical} {@var{C} =} horzcat (@var{A}, @var{B}, @dots{})
+    ##
+    ## Horizontal concatenation of categorical arrays.
+    ##
+    ## @code{@var{C} = horzcat (@var{A}, @var{B}, @dots{}} is the equivalent of
+    ## the syntax @code{@var{B} = [@var{A}, @var{B}, @dots{}]} and horizontally
+    ## concatenates the categorical arrays @var{A}, @var{B}, @dots{}.  All input
+    ## arrays must have the same size except along the second dimension.  Any of
+    ## the input arrays may also be string arrays or cell arrays of character
+    ## vectors of compatible size.
+    ##
+    ## If any input array is an ordinal categorical array, then all inputs must
+    ## be ordinal categorical arrays with the same set and ordering of
+    ## categories.  In this case, @var{C} is also an ordinal categorical array
+    ## with the same set and ordering of categories.  If none of the input
+    ## arrays are ordinal, then they do not need to have the same set of
+    ## categories.  In this case, categorical array @var{C} contains the union
+    ## of the categories from all input arrays.  Protected categorical arrays
+    ## can only be concatenated with other arrays that have the same set of
+    ## categories but not necessarily in the same order.
+    ##
+    ## @end deftypefn
     function out = horzcat (varargin)
       out = cat (2, varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {categorical} {@var{C} =} vertat (@var{A}, @var{B}, @dots{})
+    ##
+    ## Vertical concatenation of categorical arrays.
+    ##
+    ## @code{@var{C} = vertat (@var{A}, @var{B}, @dots{}} is the equivalent of
+    ## the syntax @code{@var{B} = [@var{A}; @var{B}; @dots{}]} and vertically
+    ## concatenates the categorical arrays @var{A}, @var{B}, @dots{}.  All input
+    ## arrays must have the same size except along the first dimension.  Any of
+    ## the input arrays may also be string arrays or cell arrays of character
+    ## vectors of compatible size.
+    ##
+    ## If any input array is an ordinal categorical array, then all inputs must
+    ## be ordinal categorical arrays with the same set and ordering of
+    ## categories.  In this case, @var{C} is also an ordinal categorical array
+    ## with the same set and ordering of categories.  If none of the input
+    ## arrays are ordinal, then they do not need to have the same set of
+    ## categories.  In this case, categorical array @var{C} contains the union
+    ## of the categories from all input arrays.  Protected categorical arrays
+    ## can only be concatenated with other arrays that have the same set of
+    ## categories but not necessarily in the same order.
+    ##
+    ## @end deftypefn
     function out = vertcat (varargin)
       out = cat (1, varargin{:});
     endfunction
@@ -3504,12 +3572,39 @@ classdef categorical
       this.isMissing = ipermute (this.isMissing, order);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {categorical} {@var{B} =} transpose (@var{A})
+    ##
+    ## Transpose a categorical matrix.
+    ##
+    ## @code{@var{B} = transpose (@var{A})} is the equivalent of the syntax
+    ## @code{@var{B} = @var{A}.'} and returns the transpose of the categorical
+    ## matrix @var{A}.
+    ##
+    ## @end deftypefn
     function this = transpose (this)
+      if (ndims (this) != 2)
+        error ("categorical.transpose: not defined for N-D arrays.");
+      endif
       this.code = transpose (this.code);
       this.isMissing = transpose (this.isMissing);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {categorical} {@var{B} =} ctranspose (@var{A})
+    ##
+    ## Transpose a categorical matrix.
+    ##
+    ## @code{@var{B} = ctranspose (@var{A})} is the equivalent of the syntax
+    ## @code{@var{B} = @var{A}'} and returns the transpose of the categorical
+    ## matrix @var{A}.  For categorical arrays, @code{ctranspose} is identical
+    ## to @code{transpose}.
+    ##
+    ## @end deftypefn
     function this = ctranspose (this)
+      if (ndims (this) != 2)
+        error ("categorical.ctranspose: not defined for N-D arrays.");
+      endif
       this.code = ctranspose (this.code);
       this.isMissing = ctranspose (this.isMissing);
     endfunction
@@ -3524,7 +3619,7 @@ classdef categorical
     ##
     ## @end deftypefn
     function key = keyHash (this)
-      error ("categorical.keyHash: not inplemented yet.");
+      error ("categorical.keyHash: not implemented yet.");
     endfunction
 
     ## -*- texinfo -*-
@@ -3538,7 +3633,7 @@ classdef categorical
     ##
     ## @end deftypefn
     function TF = keyMatch (A, B)
-      error ("categorical.keyMatch: not inplemented yet.");
+      error ("categorical.keyMatch: not implemented yet.");
     endfunction
 
   endmethods
