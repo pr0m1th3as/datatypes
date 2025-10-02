@@ -1220,7 +1220,7 @@ classdef categorical
     ## @deftypefnx {categorical} {@var{TF} =} issortedrows (@var{C}, @var{col}, @var{direction})
     ## @deftypefnx {categorical} {@var{TF} =} issortedrows (@dots{}, @qcode{'MissingPlacement'}, @var{MP})
     ##
-    ## Return true if categorical matrix rows are sorted. (unimplemented)
+    ## Return true if categorical matrix rows are sorted.
     ##
     ## @code{@var{TF} = issortedrows (@var{C})} returns a logical scalar
     ## @var{TF}, which is @qcode{true}, if the rows in the 2-D categorical array
@@ -1280,7 +1280,111 @@ classdef categorical
     ##
     ## @end deftypefn
     function TF = issortedrows (this, varargin)
-      error ("categorical.issortedrows: not implemented yet.");
+      ## Single input argument
+      if (nargin == 1)
+        TF = isequal (this, sortrows (this));
+        return;
+      endif
+
+      ## Get direction
+      opt_out_arg = 'MissingPlacement';
+      fcn = @(x) (ischar (x) && ! strcmpi (x, opt_out_arg)) || iscellstr (x);
+      cid = cellfun (fcn, varargin);
+      if (any (cid))
+        if (sum (cid) > 1)
+          error ("categorical.issortedrows: invalid input arguments.");
+        endif
+        direction = cellstr (varargin{cid});
+
+        ## Check for valid type of direction
+        valid = {'ascend', 'descend', 'monotonic', 'strictascend', ...
+                 'strictdescend', 'strictmonotonic'};
+        if (! all (cellfun (@(x) ismember (x, valid), direction)))
+          error ("categorical.issortedrows: invalid DIRECTION value.");
+        endif
+
+        ## Handle non-strict modes first
+        simple_types = {'ascend', 'descend', 'monotonic'};
+        if (all (cellfun (@(x) ismember (x, {'ascend', 'descend'}), direction)))
+          TF = isequal (this, sortrows (this, varargin(:)));
+          return;
+        endif
+        if (all (cellfun (@(x) ismember (x, simple_types), direction)))
+          idx = strcmp (direction, 'monotonic');
+          direction{idx} = 'ascend';
+          varargin{cid} = direction;
+          TF = isequal (this, sortrows (this, varargin(:)));
+          if (TF)
+            return;
+          endif
+          direction{idx} = 'descend';
+          varargin{cid} = direction;
+          TF = isequal (this, sort (this, varargin{:}));
+          return;
+        endif
+
+        ## Handle strict modes
+        strict_types = {'strictascend', 'strictdescend', 'strictmonotonic'};
+        idx = cellfun (@(x) ismember (x, strict_types), direction);
+
+        ## Get COL vector (if given) from input arguments and find
+        ## the corresponding columns for which strict modes apply.
+        col = cellfun (@isnumeric, varargin);
+        if (col)   # COL is available
+          col = varargin{col};
+          if (numel (direction) != numel (col))
+            error ("categorical.issortedrows: COL and DIRECTION mismatch.");
+          endif
+          strict_idx = abs (col(idx));  # remove negative numbers (if any)
+        else       # only DIRECTION is available
+          strict_idx = idx;
+        endif
+
+        ## Check for missing values first (fast)
+        if (any (any (this.isMissing(:,strict_idx))))
+          TF = false;
+          return;
+        endif
+
+        ## Change strict modes to simple modes
+        direction = strrep (direction, 'strict', '');
+        varargin{cid} = direction;
+
+        ## Operate with simple modes and check strictness on selected columns
+        if (all (cellfun (@(x) ismember (x, {'ascend', 'descend'}), direction)))
+          sorted = sortrows (this, varargin{:});
+          ## Test 'strict' columns for unique rows
+          tmpcol = subset (sorted, ':', strict_idx);
+          [~, ix] = unique (tmpcol, 'rows', 'stable');
+          sorted = subset (sorted, ix, ':');
+          TF = isequal (this, sorted);
+
+        else  # 'monotonic' mode also exists
+          idx = strcmp (direction, 'monotonic');
+          direction{idx} = 'ascend';
+          varargin{cid} = direction;
+          sorted = sortrows (this, varargin{:});
+          ## Test 'strct' columns for unique rows
+          tmpcol = subset (sorted, ':', strict_idx);
+          [~, ix] = unique (tmpcol, 'rows', 'stable');
+          sorted = subset (sorted, ix, ':');
+          TF = isequal (this, sorted);
+          if (TF)
+            return;
+          endif
+          direction{idx} = 'descend';
+          varargin{cid} = direction;
+          sorted = sortrows (this, varargin{:});
+          ## Test 'strct' columns for unique rows
+          tmpcol = subset (sorted, ':', strict_idx);
+          [~, ix] = unique (tmpcol, 'rows', 'stable');
+          sorted = subset (sorted, ix, ':');
+          TF = isequal (this, sorted);
+        endif
+      else
+        ## No DIRECTION input argument
+        TF = isequal (this, sortrows (this, varargin{:}));
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -3134,7 +3238,7 @@ classdef categorical
         is_nan = code == 0;
       else
         ## Sort values with no undefined elements
-        [code, index] = sort (code, args{:});
+        [code, index] = sortrows (code, col);
       endif
 
       ## Populate output categorical array
