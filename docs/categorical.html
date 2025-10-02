@@ -3046,7 +3046,7 @@ Sort rows in a categorical array.
                   </h4>
                 </div>
                 <div class="col-8">
-Top K sorted rows of categorical array. (unimplemented)
+Top K sorted rows of categorical array.
                 </div>
               </div>
           </div>
@@ -3054,12 +3054,40 @@ Top K sorted rows of categorical array. (unimplemented)
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>topkrows</b> (<var>A</var>, <var>K</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>topkrows</b> (<var>A</var>, <var>K</var>, <var>col</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>topkrows</b> (<var>A</var>, <var>K</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>topkrows</b> (<var>A</var>, <var>K</var>, <var>col</var>, <var>direction</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
 <p> <code><var>B</var> = topkrows (<var>A</var>, <var>K</var>)</code> returns the top <var>K</var> rows
  of the 2-D categorical array <var>A</var> sorted in descending order as a
  group.
+</p>
+<p> <code><var>B</var> = topkrows (<var>A</var>, <var>K</var>, <var>col</var>)</code> returns the top
+ <var>K</var> rows of the 2-D categorical array <var>A</var> sorted according to the
+ columns specified by the numeric vector <var>col</var>, which must explicitly
+ contain non-zero integers whose absolute values index existing columns in
+ <var>A</var>.  Positive elements sort the corresponding columns in ascending
+ order, while negative elements sort the corresponding columns in
+ descending order.
+</p>
+<p> <code><var>B</var> = topkrows (<var>A</var>, <var>K</var>, <var>direction</var>)</code> returns the
+ top <var>K</var> rows of the 2-D categorical array <var>A</var> sorted according to
+ <var>direction</var>, which can be either <code>'ascend'</code> (default) or
+ <code>'descend'</code> applying to all columns in <var>A</var>.  Alternatively,
+ <var>direction</var> can be a cell array array of character vectors specifying
+ the sorting direction for each individual column of <var>A</var>, in which
+ case the number of elements in <var>direction</var> must equal the number of
+ columns in <var>A</var>.
+</p>
+<p> <code><var>B</var> = topkrows (<var>A</var>, <var>K</var>, <var>col</var>, <var>direction</var>)</code>
+ returns the top <var>K</var> rows of the 2-D categorical array <var>A</var> sorted
+ according to the columns specified in <var>col</var> using the corresponding
+ sorting direction specified in <var>direction</var>.  In this case, the sign
+ of the values in <var>col</var> is ignored.  <var>col</var> and <var>direction</var>
+ must have the same length, but not necessarily the same number of
+ elements as the columns in <var>A</var>.
 </p>
 
 
