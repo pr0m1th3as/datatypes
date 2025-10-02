@@ -3929,20 +3929,27 @@ classdef categorical
     ## -*- texinfo -*-
     ## @deftypefn {categorical} {@var{hey} =} keyHash (@var{C})
     ##
-    ## Generate a hash code for categorical array. (unimplemented)
+    ## Generate a hash code for categorical array.
     ##
     ## @code{@var{h} = keyHash (@var{C})} generates a @qcode{uint64} scalar that
     ## represents the input array @var{C}.
     ##
     ## @end deftypefn
     function key = keyHash (this)
-      error ("categorical.keyHash: not implemented yet.");
+      ## Initialize string with size and class name
+      size_str = sprintf ('%dx', size (this.code))(1:end-1);
+      flag_str = sprintf ('-o%d-p%d:', this.isOrdinal, this.isProtected);
+      init_str = [size_str 'categorical' flag_str];
+      cats = [this.cats(:); '<undefined>'];
+      code = this.code(:);
+      cstr = [cats{code}];
+      key = __ckeyHash__([init_str cstr]);
     endfunction
 
     ## -*- texinfo -*-
     ## @deftypefn {categorical} {@var{TF} =} keyMatch (@var{C1}, @var{C2)
     ##
-    ## Return true if both inputs have the same hash key. (unimplemented)
+    ## Return true if both inputs have the same hash key.
     ##
     ## @code{@var{TF} = keyMatch (@var{C1}, @var{C2})} returns a logical scalar,
     ## which is @qcode{true}, if both categorical arrays @var{C1} and @var{C2}
@@ -3950,7 +3957,13 @@ classdef categorical
     ##
     ## @end deftypefn
     function TF = keyMatch (A, B)
-      error ("categorical.keyMatch: not implemented yet.");
+      if (any (class (A) != class (B)))
+        TF = false;
+      else
+        A_key = keyHash (A);
+        B_key = keyHash (B);
+        TF = A_key == B_key;
+      endif
     endfunction
 
   endmethods
