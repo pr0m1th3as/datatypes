@@ -2508,7 +2508,7 @@ Smallest element in an ordinal categorical array.
                   </h4>
                 </div>
                 <div class="col-8">
-Smallest K categories from categorical array. (unimplemented)
+Smallest K categories from an ordinal categorical array.
                 </div>
               </div>
           </div>
@@ -2516,15 +2516,25 @@ Smallest K categories from categorical array. (unimplemented)
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>mink</b> (<var>A</var>, <var>K</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>mink</b> (<var>A</var>, <var>K</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [<var>B</var>, <var>index</var>] = <b>mink</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>B</var> = mink (<var>A</var>, <var>K)</var> returns the <var>K</var> smallest
+<p> <code><var>B</var> = mink (<var>A</var>, <var>K</var>)</code> returns the <var>K</var> smallest
  categories in categorical vector <var>A</var>.  If <var>A</var> is a matrix,
  <code>mink (<var>A</var>)</code> returns the <var>K</var> smallest categories from each
  column.  For multidimensional arrays, <code>mink (<var>A</var>)</code> returns the
  <var>K</var> smallest categories along the first non-singleton dimension.
-</code></p>
+</p>
+<p> <code><var>B</var> = mink (<var>A</var>, <var>K</var>, <var>dim</var>)</code> returns the <var>K</var>
+ smallest elements in categorical array  <var>A</var> along the dimension
+ specified by <var>dim</var>.
+</p>
+<p> <code>[<var>B</var>, <var>index</var>] = mink (&hellip;)</code> also returns the indices
+ of the <var>K</var> smallest elements in <var>index</var>, using any of the
+ previous syntaxes.
+</p>
 
 
 
@@ -2544,7 +2554,7 @@ Smallest K categories from categorical array. (unimplemented)
                   </h4>
                 </div>
                 <div class="col-8">
-Smallest element in an ordinal categorical array.
+Largest element in an ordinal categorical array.
                 </div>
               </div>
           </div>
@@ -2632,7 +2642,7 @@ Smallest element in an ordinal categorical array.
                   </h4>
                 </div>
                 <div class="col-8">
-Largest K categories from categorical array. (unimplemented)
+Largest K categories from an ordinal categorical array.
                 </div>
               </div>
           </div>
@@ -2640,15 +2650,25 @@ Largest K categories from categorical array. (unimplemented)
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>maxk</b> (<var>A</var>, <var>K</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>B</var> = <b>maxk</b> (<var>A</var>, <var>K</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [<var>B</var>, <var>index</var>] = <b>maxk</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>B</var> = maxk (<var>A</var>, <var>K)</var> returns the <var>K</var> largest
+<p> <code><var>B</var> = maxk (<var>A</var>, <var>K</var>)</code> returns the <var>K</var> largest
  categories in categorical vector <var>A</var>.  If <var>A</var> is a matrix,
  <code>maxk (<var>A</var>)</code> returns the <var>K</var> largest categories from each
  column.  For multidimensional arrays, <code>maxk (<var>A</var>)</code> returns the
  <var>K</var> largest categories along the first non-singleton dimension.
-</code></p>
+</p>
+<p> <code><var>B</var> = maxk (<var>A</var>, <var>K</var>, <var>dim</var>)</code> returns the <var>K</var>
+ largest elements in categorical array  <var>A</var> along the dimension
+ specified by <var>dim</var>.
+</p>
+<p> <code>[<var>B</var>, <var>index</var>] = maxk (&hellip;)</code> also returns the indices
+ of the <var>K</var> largest elements in <var>index</var>, using any of the
+ previous syntaxes.
+</p>
 
 
 
@@ -3037,10 +3057,10 @@ Top K sorted rows of categorical array. (unimplemented)
 </dl>
 
 <p> </p>
-<p> <code><var>B</var> = topkrows (<var>A</var>, <var>K)</var> returns the top <var>K</var> rows
+<p> <code><var>B</var> = topkrows (<var>A</var>, <var>K</var>)</code> returns the top <var>K</var> rows
  of the 2-D categorical array <var>A</var> sorted in descending order as a
  group.
-</code></p>
+</p>
 
 
 
@@ -3864,7 +3884,7 @@ Generate a hash code for categorical array. (unimplemented)
 
 <p> </p>
 <p> <code><var>h</var> = keyHash (<var>C</var>)</code> generates a <code>uint64</code> scalar that
- represents the input array {C.
+ represents the input array <var>C</var>.
 </p>
 
 
@@ -3897,10 +3917,10 @@ Return true if both inputs have the same hash key. (unimplemented)
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = keyMatch (<var>C1</var>, <var>C2)</var> returns a logical scalar,
- which is <code>true</code>, if both categorical arrays <var>C1</var> and <var>C2)
+<p> <code><var>TF</var> = keyMatch (<var>C1</var>, <var>C2</var>)</code> returns a logical scalar,
+ which is <code>true</code>, if both categorical arrays <var>C1</var> and <var>C2</var>
  have the same hash key, and <code>false</code> otherwise.
-</var></code></p>
+</p>
 
 
 
