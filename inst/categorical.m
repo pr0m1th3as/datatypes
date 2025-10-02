@@ -3144,17 +3144,56 @@ classdef categorical
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {categorical} {@var{B} =} topkrows (@var{A}, @var{K})
+    ## @deftypefn  {categorical} {@var{B} =} topkrows (@var{A}, @var{K})
+    ## @deftypefnx {categorical} {@var{B} =} topkrows (@var{A}, @var{K}, @var{col})
+    ## @deftypefnx {categorical} {@var{B} =} topkrows (@var{A}, @var{K}, @var{direction})
+    ## @deftypefnx {categorical} {@var{B} =} topkrows (@var{A}, @var{K}, @var{col}, @var{direction})
     ##
-    ## Top K sorted rows of categorical array. (unimplemented)
+    ## Top K sorted rows of categorical array.
     ##
     ## @code{@var{B} = topkrows (@var{A}, @var{K})} returns the top @var{K} rows
     ## of the 2-D categorical array @var{A} sorted in descending order as a
     ## group.
     ##
+    ## @code{@var{B} = topkrows (@var{A}, @var{K}, @var{col})} returns the top
+    ## @var{K} rows of the 2-D categorical array @var{A} sorted according to the
+    ## columns specified by the numeric vector @var{col}, which must explicitly
+    ## contain non-zero integers whose absolute values index existing columns in
+    ## @var{A}.  Positive elements sort the corresponding columns in ascending
+    ## order, while negative elements sort the corresponding columns in
+    ## descending order.
+    ##
+    ## @code{@var{B} = topkrows (@var{A}, @var{K}, @var{direction})} returns the
+    ## top @var{K} rows of the 2-D categorical array @var{A} sorted according to
+    ## @var{direction}, which can be either @qcode{'ascend'} (default) or
+    ## @qcode{'descend'} applying to all columns in @var{A}.  Alternatively,
+    ## @var{direction} can be a cell array array of character vectors specifying
+    ## the sorting direction for each individual column of @var{A}, in which
+    ## case the number of elements in @var{direction} must equal the number of
+    ## columns in @var{A}.
+    ##
+    ## @code{@var{B} = topkrows (@var{A}, @var{K}, @var{col}, @var{direction})}
+    ## returns the top @var{K} rows of the 2-D categorical array @var{A} sorted
+    ## according to the columns specified in @var{col} using the corresponding
+    ## sorting direction specified in @var{direction}.  In this case, the sign
+    ## of the values in @var{col} is ignored.  @var{col} and @var{direction}
+    ## must have the same length, but not necessarily the same number of
+    ## elements as the columns in @var{A}.
+    ##
     ## @end deftypefn
-    function B = topkrows (A, K)
-      error ("categorical.topkrows: not implemented yet.");
+    function B = topkrows (A, K, varargin)
+      ## Check input argument
+      if (! (isscalar (K) && fix (K) == K && K > 0))
+        error ("categorical.topkrows: K must be a positive integer scalar.");
+      endif
+      ## Sort rows
+      if (numel (varargin) == 0)
+        B = sortrows (A, 'descend');
+      else
+        B = sortrows (A, varargin{:});
+      endif
+      ## Return top K rows
+      B = subset (B, 1:K, ':');
     endfunction
 
     ## -*- texinfo -*-
