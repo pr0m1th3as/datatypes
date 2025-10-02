@@ -2275,19 +2275,45 @@ classdef categorical
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {categorical} {@var{B} =} mink (@var{A}, @var{K})
+    ## @deftypefn  {categorical} {@var{B} =} mink (@var{A}, @var{K})
+    ## @deftypefnx {categorical} {@var{B} =} mink (@var{A}, @var{K}, @var{dim})
+    ## @deftypefnx {categorical} {[@var{B}, @var{index}] =} mink (@dots{})
     ##
-    ## Smallest K categories from categorical array. (unimplemented)
+    ## Smallest K categories from an ordinal categorical array.
     ##
-    ## @code{@var{B} = mink (@var{A}, @var{K)} returns the @var{K} smallest
+    ## @code{@var{B} = mink (@var{A}, @var{K})} returns the @var{K} smallest
     ## categories in categorical vector @var{A}.  If @var{A} is a matrix,
     ## @code{mink (@var{A})} returns the @var{K} smallest categories from each
     ## column.  For multidimensional arrays, @code{mink (@var{A})} returns the
     ## @var{K} smallest categories along the first non-singleton dimension.
     ##
+    ## @code{@var{B} = mink (@var{A}, @var{K}, @var{dim})} returns the @var{K}
+    ## smallest elements in categorical array  @var{A} along the dimension
+    ## specified by @var{dim}.
+    ##
+    ## @code{[@var{B}, @var{index}] = mink (@dots{})} also returns the indices
+    ## of the @var{K} smallest elements in @var{index}, using any of the
+    ## previous syntaxes.
+    ##
     ## @end deftypefn
-    function B = mink (A, K)
-      error ("categorical.mink: not implemented yet.");
+    function [B, index] = mink (A, K, dim = [])
+      ## Check input arguments
+      if (! A.isOrdinal)
+        error ("categorical.mink: categorical array A is not ordinal.");
+      endif
+      if (! (isscalar (K) && fix (K) == K && K > 0))
+        error ("categorical.mink: K must be a positive integer scalar.");
+      endif
+      if (isempty (dim))
+        dim = find (size (A) > 1)(1);
+      endif
+      ## Calculate subscript vector
+      idx = repmat ({':'}, 1, ndims (A));
+      idx{dim} = 1:K;
+      ## Sort array and keep K elements along DIM
+      [B, index] = sort (A, dim);
+      B = subset (B, idx{:});
+      index = index(1:K);
     endfunction
 
     ## -*- texinfo -*-
@@ -2300,7 +2326,7 @@ classdef categorical
     ## @deftypefnx {categorical} {@var{C} =} max (@var{A}, @var{B})
     ## @deftypefnx {categorical} {[@dots{}] =} max (@dots{}, @var{missingflag})
     ##
-    ## Smallest element in an ordinal categorical array.
+    ## Largest element in an ordinal categorical array.
     ##
     ## @code{@var{C} = max (@var{A})} returns the largest element in ordinal
     ## categorical vector @var{A}.  If @var{A} is a matrix, @code{max (@var{A})}
@@ -2430,18 +2456,44 @@ classdef categorical
 
     ## -*- texinfo -*-
     ## @deftypefn {categorical} {@var{B} =} maxk (@var{A}, @var{K})
+    ## @deftypefnx {categorical} {@var{B} =} maxk (@var{A}, @var{K}, @var{dim})
+    ## @deftypefnx {categorical} {[@var{B}, @var{index}] =} maxk (@dots{})
     ##
-    ## Largest K categories from categorical array. (unimplemented)
+    ## Largest K categories from an ordinal categorical array.
     ##
-    ## @code{@var{B} = maxk (@var{A}, @var{K)} returns the @var{K} largest
+    ## @code{@var{B} = maxk (@var{A}, @var{K})} returns the @var{K} largest
     ## categories in categorical vector @var{A}.  If @var{A} is a matrix,
     ## @code{maxk (@var{A})} returns the @var{K} largest categories from each
     ## column.  For multidimensional arrays, @code{maxk (@var{A})} returns the
     ## @var{K} largest categories along the first non-singleton dimension.
     ##
+    ## @code{@var{B} = maxk (@var{A}, @var{K}, @var{dim})} returns the @var{K}
+    ## largest elements in categorical array  @var{A} along the dimension
+    ## specified by @var{dim}.
+    ##
+    ## @code{[@var{B}, @var{index}] = maxk (@dots{})} also returns the indices
+    ## of the @var{K} largest elements in @var{index}, using any of the
+    ## previous syntaxes.
+    ##
     ## @end deftypefn
-    function B = maxk (A, K)
-      error ("categorical.maxk: not implemented yet.");
+    function [B, index] = maxk (A, K, dim = [])
+      ## Check input arguments
+      if (! A.isOrdinal)
+        error ("categorical.maxk: categorical array A is not ordinal.");
+      endif
+      if (! (isscalar (K) && fix (K) == K && K > 0))
+        error ("categorical.maxk: K must be a positive integer scalar.");
+      endif
+      if (isempty (dim))
+        dim = find (size (A) > 1)(1);
+      endif
+      ## Calculate subscript vector
+      idx = repmat ({':'}, 1, ndims (A));
+      idx{dim} = 1:K;
+      ## Sort array and keep K elements along DIM
+      [B, index] = sort (A, dim, 'descend', 'MissingPlacement', 'last');
+      B = subset (B, idx{:});
+      index = index(1:K);
     endfunction
 
     ## -*- texinfo -*-
@@ -3096,7 +3148,7 @@ classdef categorical
     ##
     ## Top K sorted rows of categorical array. (unimplemented)
     ##
-    ## @code{@var{B} = topkrows (@var{A}, @var{K)} returns the top @var{K} rows
+    ## @code{@var{B} = topkrows (@var{A}, @var{K})} returns the top @var{K} rows
     ## of the 2-D categorical array @var{A} sorted in descending order as a
     ## group.
     ##
@@ -3737,7 +3789,7 @@ classdef categorical
     ## Generate a hash code for categorical array. (unimplemented)
     ##
     ## @code{@var{h} = keyHash (@var{C})} generates a @qcode{uint64} scalar that
-    ## represents the input array {C}.
+    ## represents the input array @var{C}.
     ##
     ## @end deftypefn
     function key = keyHash (this)
@@ -3749,8 +3801,8 @@ classdef categorical
     ##
     ## Return true if both inputs have the same hash key. (unimplemented)
     ##
-    ## @code{@var{TF} = keyMatch (@var{C1}, @var{C2)} returns a logical scalar,
-    ## which is @qcode{true}, if both categorical arrays @var{C1} and @var{C2)
+    ## @code{@var{TF} = keyMatch (@var{C1}, @var{C2})} returns a logical scalar,
+    ## which is @qcode{true}, if both categorical arrays @var{C1} and @var{C2}
     ## have the same hash key, and @qcode{false} otherwise.
     ##
     ## @end deftypefn
