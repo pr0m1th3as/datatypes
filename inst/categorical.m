@@ -3547,29 +3547,151 @@ classdef categorical
       out = cat (1, varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {categorical} {@var{B} =} repmat (@var{A}, @var{n})
+    ## @deftypefnx {categorical} {@var{B} =} repmat (@var{A}, @var{d1}, @dots{}, @var{dN})
+    ## @deftypefnx {categorical} {@var{B} =} repmat (@var{A}, @var{dimvec})
+    ##
+    ## Repeat copies of a categorical array.
+    ##
+    ## @code{@var{B} = repmat (@var{A}, @var{n})} returns a categorical array
+    ## @var{B} containing @var{n} copies of the input categorical array @var{A}
+    ## along every dimension of @var{A}.
+    ##
+    ## @code{@var{B} = repmat (@var{A}, @var{d1}, @dots{}, @var{dN})} returns an
+    ## array @var{B} containing copies of @var{A} along the dimensions specified
+    ## by the list of scalar integer values @var{d1}, @dots{}, @var{dN}, which
+    ## specify how many copies of @var{A} are made in each dimension.
+    ##
+    ## @code{@var{B} = repmat (@var{A}, @var{dimvec})} is equivalent to the
+    ## previous syntax with @code{@var{dimvec} = [@var{d1}, @dots{}, @var{dN}]}.
+    ##
+    ## @end deftypefn
     function this = repmat (this, varargin)
       this.code = repmat (this.code, varargin{:});
       this.isMissing = repmat (this.isMissing, varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {categorical} {@var{B} =} repelem (@var{A}, @var{n})
+    ## @deftypefnx {categorical} {@var{B} =} repelem (@var{A}, @var{d1}, @dots{}, @var{dN})
+    ##
+    ## Repeat copies of categorical array elements.
+    ##
+    ## @code{@var{B} = repelem (@var{A}, @var{n})} returns a categorical vector
+    ## @var{B} containing repeated elements of the input @var{A}, which must be
+    ## a categorical vector.  If @var{n} is a scalar, each element of @var{A} is
+    ## repeated @var{n} times along the non-singleton dimension of @var{A}.  If
+    ## @var{n} is a vector, it must have the same elemnts as @var{A}, in which
+    ## case it specifies the number of times to repeat each corresponding
+    ## element of @var{A}.
+    ##
+    ## @code{@var{B} =} repelem (@var{A}, @var{d1}, @dots{}, @var{dN}} returns
+    ## an array @var{B} with each element of @var{A} repeated according to the
+    ## the list of input arguments @code{@var{d1}, @dots{}, @var{dN}} each
+    ## corresponding to a different dimension @code{1:ndims (@var{A})} of the
+    ## input array @var{A}.  @var{d1}, @dots{}, @var{dN} must be either scalars
+    ## or vectors with the same length as the corresponding dimension of
+    ## @var{A} containing non-negative integer values specifying the number of
+    ## repetitions of each element along the corresponding dimension.
+    ##
+    ## @end deftypefn
+    function this = repelem (this, varargin)
+      this.code = repelem (this.code, varargin{:});
+      this.isMissing = repelem (this.isMissing, varargin{:});
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {categorical} {@var{B} =} reshape (@var{A}, @var{d1}, @dots{}, @var{dN})
+    ## @deftypefnx {categorical} {@var{B} =} reshape (@var{A}, @dots{}, @qcode{[]}, @dots{})
+    ## @deftypefnx {categorical} {@var{B} =} reshape (@var{A}, @var{dimvec})
+    ##
+    ## Repeat copies of categorical array elements.
+    ##
+    ## @code{@var{B} = reshape (@var{A}, @var{d1}, @dots{}, @var{dN})} returns a
+    ## categorical array @var{B} with specified dimensions @var{d1}, @dots{},
+    ## @var{dN} whose elements are taken columnwise from the categorical array
+    ## @var{A}.  The product of @var{d1}, @dots{}, @var{dN} must equal the total
+    ## number of elements in @var{A}.
+    ##
+    ## @code{@var{B} = reshape (@var{A}, @dots{}, @qcode{[]}, @dots{})} returns
+    ## a categorical array @var{B} with one dimension unspecified which is
+    ## calculated automatically so that the product of dimensions in @var{B}
+    ## matches the total elements in @var{A}, which must be divisible the
+    ## product of specified dimensions.  An empty matrix @qcode{([])} is used to
+    ## flag the unspecified dimension.
+    ##
+    ## @end deftypefn
     function this = reshape (this, varargin)
       this.code = reshape (this.code, varargin{:});
       this.isMissing = reshape (this.isMissing, varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {categorical} {@var{B} =} circshift (@var{A}, @var{n})
+    ## @deftypefnx {categorical} {@var{B} =} circshift (@var{A}, @var{n}, @var{dim})
+    ##
+    ## Circularly shift the elements in a categorical array.
+    ##
+    ## @code{@var{B} = circshift (@var{A}, @var{n})} circularly shifts the
+    ## elements of the categorical array @var{A} according to @var{n}.  If
+    ## @var{n} is a nonzero integer scalar, then the elements of @var{A} are
+    ## shifted by @var{n} elements along the first non-singleton dimension of
+    ## @var{A}. If @var{n} is a vector, it must not be longer that the number of
+    ## dimensions of @var{A} with each value of @var{n} corresponding to a
+    ## dimension in @var{A}.   The sign of the value(s) in @var{n} specify the
+    ## direction in the elements of @var{A} are shifted.
+    ##
+    ## @code{@var{B} = circshift (@var{A}, @var{n}, @var{dim})} circularly
+    ## shifts the elements of the categorical array @var{A} along the dimension
+    ## specified by @var{dim}.  In this case, @var{n} must be a scalar integer
+    ## value.
+    ##
+    ## @end deftypefn
     function this = circshift (this, varargin)
       this.code = circshift (this.code, varargin{:});
       this.isMissing = circshift (this.isMissing, varargin{:});
     endfunction
 
-    function this = permute (this, order)
-      this.code = permute (this.code, order);
-      this.isMissing = permute (this.isMissing, order);
+    ## -*- texinfo -*-
+    ## @deftypefn {categorical} {@var{B} =} permute (@var{A}, @var{dims})
+    ##
+    ## Generalized transpose for a categorical N-D array.
+    ##
+    ## @code{@var{B} = permute (@var{A}, @var{dims})} returns the generalized
+    ## transpose of the categorical array @var{A} by rearranging its dimensions
+    ## according to the permutation vector specified in @var{dims}.
+    ##
+    ## @var{dims} must index all the dimensions @code{1:ndims (@var{A})} of the
+    ## input array @var{A}, in any order, but only once.  The @var{N}th
+    ## dimension of @var{A} gets remapped to the dimension in @var{B} specified
+    ## by @code{@var{dims}(@var{N})}.
+    ##
+    ## @end deftypefn
+    function this = permute (this, dims)
+      this.code = permute (this.code, dims);
+      this.isMissing = permute (this.isMissing, dims);
     endfunction
 
-    function this = ipermute (this, order)
-      this.code = ipermute (this.code, order);
-      this.isMissing = ipermute (this.isMissing, order);
+    ## -*- texinfo -*-
+    ## @deftypefn {categorical} {@var{A} =} ipermute (@var{B}, @var{dims})
+    ##
+    ## Generalized transpose for a categorical N-D array.
+    ##
+    ## @code{@var{A} = ipermute (@var{B}, @var{dims})} returns the inverse of
+    ## the generalized transpose performed by the @code{permute} function.  The
+    ## expression @code{ipermute (permute (@var{A}, @var{dims}), @var{dims})}
+    ## returns the original array @var{A}.
+    ##
+    ## @var{dims} must index all the dimensions @code{1:ndims (@var{B})} of the
+    ## input array @var{B}, in any order, but only once.  The dimension of
+    ## @var{B} specified in @code{@var{dims}(@var{N})} gets remapped to the
+    ## @var{N}th dimension of @var{A}.
+    ##
+    ## @end deftypefn
+    function this = ipermute (this, dims)
+      this.code = ipermute (this.code, dims);
+      this.isMissing = ipermute (this.isMissing, dims);
     endfunction
 
     ## -*- texinfo -*-
