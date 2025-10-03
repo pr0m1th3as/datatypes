@@ -1543,12 +1543,27 @@ classdef calendarDuration
       endif
       switch s.type
         case '()'
-          if (! isa (val, "calendarDuration"))
-            val = calendarDuration (val);
+          if (isempty (val))
+            this.Months(s.subs{:}) = [];
+            this.Days(s.subs{:})   = [];
+            this.Time(s.subs{:})   = [];
+            return;
+          elseif (isnumeric (val))
+            tmp = zeros (size (val));
+            this.Months(s.subs{:}) = tmp;
+            this.Days(s.subs{:})   = tmp;
+            this.Time(s.subs{:})   = duration (24 * double (val), 0, 0);
+            this = broadcastProperties (this);
+          elseif (isa (val, "calendarDuration"))
+            this.Months(s.subs{:}) = val.Months;
+            this.Days(s.subs{:})   = val.Days;
+            this.Time(s.subs{:})   = val.Time;
+            this = broadcastProperties (this);
+          else
+            error (strcat ("calendarDuration.subsasgn: assignment value", ...
+                           " must be calendarDuration array or a numeric", ...
+                           " array representing 24-hour days."));
           endif
-          this.Months(s.subs{:}) = val.Months;
-          this.Days(s.subs{:})   = val.Days;
-          this.Time(s.subs{:})   = val.Time;
 
         case '{}'
           error (["calendarDuration.subsasgn: '{}' invalid indexing", ...

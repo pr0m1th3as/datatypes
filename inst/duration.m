@@ -1806,8 +1806,6 @@ classdef duration
           elseif (isnumeric (val))
             val = duration (24 * double (val), 0, 0);
           elseif (! isa (val, "duration"))
-            val = duration (val);
-          else
             error (strcat ("duration.subsasgn: assignment value must", ...
                            " be a duration array, a numeric array or", ...
                            " text representing categories."));
