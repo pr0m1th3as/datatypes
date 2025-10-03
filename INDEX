@@ -39,6 +39,9 @@ supplementary classes
  vartype
  @cell/disp
  @cell/display
+supplementary functions
+ keyHash
+ keyMatch
 compiled functions
  __ckeyHash__
  __nkeyHash__
