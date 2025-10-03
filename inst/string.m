@@ -1169,8 +1169,8 @@ classdef string
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'cat'              'horzcat'          'vertcat'          'repmat'          ##
-## 'reshape'          'circshift'        'permute'          'ipermute'        ##
-## 'transpose'        'ctranspose'                                            ##
+## 'repelem'          'reshape'          'circshift'        'permute'         ##
+## 'ipermute'         'transpose'        'ctranspose'                         ##
 ##                                                                            ##
 ################################################################################
 
@@ -1225,6 +1225,11 @@ classdef string
     function this = repmat (this, varargin)
       this.strs = repmat (this.strs, varargin{:});
       this.isMissing = repmat (this.isMissing, varargin{:});
+    endfunction
+
+    function this = repelem (this, varargin)
+      this.strs = repelem (this.strs, varargin{:});
+      this.isMissing = repelem (this.isMissing, varargin{:});
     endfunction
 
     function this = reshape (this, varargin)
