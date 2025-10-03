@@ -3809,9 +3809,9 @@ classdef categorical
     ## second row of @var{R} specify the repeat count of each element.
     ##
     ## @end deftypefn
-    function this = repelems (this, varargin)
-      this.code = repelems (this.code, varargin{:});
-      this.isMissing = repelems (this.isMissing, varargin{:});
+    function this = repelems (this, R)
+      this.code = repelems (this.code, R);
+      this.isMissing = repelems (this.isMissing, R);
     endfunction
 
     ## -*- texinfo -*-
