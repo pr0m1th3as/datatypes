@@ -18,7 +18,6 @@ this program; if not, see <http://www.gnu.org/licenses/>.
 */
 
 #define FNV1A64_PRIME 0x00000100000001b3
-#include <iostream>
 #include <octave/oct.h>
 
 using namespace std;
@@ -39,14 +38,27 @@ DEFUN_DLD (__ckeyHash__, args, nargout,
  @deftypefnx {} {@var{uint64} =} __ckeyHash__ (@var{str}, @var{FNV1A64_BASE)\n\
 \n\
 \n\
-Fowler–Noll–Vo hash key for a string. \n\
+Fowler–Noll–Vo hash key for a character vector. \n\
 \n\
-This is a helper function for the @qcode{keyHash} method.  Do NOT \
-call it directly. \n\
+This is a helper function for @qcode{keyHash} methods of `datatypes`' classes. \
+Do NOT use this function directly. \n\
 \n\
 @end deftypefn")
 {
   octave_uint64 base;
+  // Validate input
+  if (args.length () < 1)
+  {
+    error ("__ckeyHash__: too few input arguments.");
+  }
+  if (args(0).isempty ())
+  {
+    error ("__ckeyHash__: STR cannot be empty.");
+  }
+  if (! (args(0).is_string ()))
+  {
+    error ("__ckeyHash__: STR must be a character vector.");
+  }
   // Get or assign a base value
   if (args.length() > 1)
   {
