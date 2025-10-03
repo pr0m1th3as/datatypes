@@ -1525,7 +1525,7 @@ classdef duration
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'end'              'subsref'          'subsasgn'                           ##
+## 'end'              'subsref'          'subsasgn'         'subset'          ##
 ##                                                                            ##
 ################################################################################
 
@@ -1610,6 +1610,14 @@ classdef duration
 
     endfunction
 
+  methods (Access = private)
+
+    ## Return a subset of a duration array
+    function out = subset (this, varargin)
+      out = this;
+      out.Days = this.Days(varargin{:});
+    endfunction
+
   endmethods
 
   methods (Access = private)
@@ -1635,12 +1643,6 @@ classdef duration
           error ("duration: invalid input to constructor.");
         endif
       endfor
-    endfunction
-
-    ## Return a subset of a duration array
-    function out = subset (this, varargin)
-      out = this;
-      out.Days = this.Days(varargin{:});
     endfunction
 
     ## Fix floating point precision near zero

@@ -1349,6 +1349,8 @@ classdef string
 
     endfunction
 
+  methods (Access = private)
+
     ## Return a subset of the array
     function this = subset (this, varargin)
       this = this;

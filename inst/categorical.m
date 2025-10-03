@@ -3991,7 +3991,7 @@ classdef categorical
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'subsref'          'subsasgn'                                              ##
+## 'end'              'subsref'          'subsasgn'         'subset'          ##
 ##                                                                            ##
 ################################################################################
 
@@ -4135,6 +4135,15 @@ classdef categorical
 
     endfunction
 
+  methods (Access = private)
+
+    ## Return a subset of the array
+    function this = subset (this, varargin)
+      this = this;
+      this.code = this.code(varargin{:});
+      this.isMissing = this.isMissing(varargin{:});
+    endfunction
+
   endmethods
 
   methods (Access = private)
@@ -4154,13 +4163,6 @@ classdef categorical
           error ("categorical: invalid input to constructor.");
         endif
       endfor
-    endfunction
-
-    ## Return a subset of the array
-    function this = subset (this, varargin)
-      this = this;
-      this.code = this.code(varargin{:});
-      this.isMissing = this.isMissing(varargin{:});
     endfunction
 
     ## Common function for set operations
