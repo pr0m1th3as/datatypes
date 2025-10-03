@@ -730,7 +730,9 @@ classdef duration
       else
         key = __ckeyHash__(init_str);
       endif
-      key = __nkeyHash__(this.Days(:), key);
+      if (! isempty (this.Days))
+        key = __nkeyHash__(this.Days(:), key);
+      endif
     endfunction
 
   endmethods

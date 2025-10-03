@@ -619,12 +619,14 @@ classdef datetime
       else
         key = __ckeyHash__(init_str);
       endif
-      key = __nkeyHash__(this.Year(:), key);
-      key = __nkeyHash__(this.Month(:), key);
-      key = __nkeyHash__(this.Day(:), key);
-      key = __nkeyHash__(this.Hour(:), key);
-      key = __nkeyHash__(this.Minute(:), key);
-      key = __nkeyHash__(this.Second(:), key);
+      if (! isempty (this.Year))
+        key = __nkeyHash__(this.Year(:), key);
+        key = __nkeyHash__(this.Month(:), key);
+        key = __nkeyHash__(this.Day(:), key);
+        key = __nkeyHash__(this.Hour(:), key);
+        key = __nkeyHash__(this.Minute(:), key);
+        key = __nkeyHash__(this.Second(:), key);
+      endif
     endfunction
 
   endmethods
@@ -1043,7 +1045,15 @@ classdef datetime
       endif
       switch s.type
         case '()'
-          if (! isa (val, "datetime"))
+          if (isempty (val))
+            this.Year(s.subs{:})   = [];
+            this.Month(s.subs{:})  = [];
+            this.Day(s.subs{:})    = [];
+            this.Hour(s.subs{:})   = [];
+            this.Minute(s.subs{:}) = [];
+            this.Second(s.subs{:}) = [];
+            return;
+          elseif (! isa (val, "datetime"))
             error (["datetime.subsasgn: cannot assign %s values", ...
                             "to a datetime array."], class (val));
           endif

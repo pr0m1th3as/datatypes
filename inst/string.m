@@ -511,9 +511,11 @@ classdef string
       else
         key = __ckeyHash__(init_str);
       endif
-      strs = [this.strs{:}];
-      key = __ckeyHash__(strs, key);
-      key = __nkeyHash__(this.isMissing(:), key);
+      if (! isempty (this.strs))
+        strs = [this.strs{:}];
+        key = __ckeyHash__(strs, key);
+        key = __nkeyHash__(this.isMissing(:), key);
+      endif
     endfunction
 
   endmethods
@@ -1390,7 +1392,11 @@ classdef string
 
       switch (s.type)
         case '()'
-          if (! isa (rhs, "string"))
+          if (isempty (rhs))
+            this.strs(s.subs{:}) = [];
+            this.isMissing(s.subs{:}) =[];
+            return;
+          elseif (! isa (rhs, "string"))
             rhs = string (rhs);
           endif
           this.strs(s.subs{:}) = rhs.strs;
