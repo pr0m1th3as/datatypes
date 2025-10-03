@@ -47,7 +47,7 @@ call it directly. \n\
 @end deftypefn")
 {
   octave_uint64 base;
-  // Get or assign a value
+  // Get or assign a base value
   if (args.length() > 1)
   {
     base = args(1).uint64_scalar_value ();

@@ -3932,7 +3932,12 @@ classdef categorical
     ## Generate a hash code for categorical array.
     ##
     ## @code{@var{h} = keyHash (@var{C})} generates a @qcode{uint64} scalar that
-    ## represents the input array @var{C}.
+    ## represents the input array @var{C}.  @code{keyHash} utilizes the 64-bit
+    ## variant of the Fowler-Noll-Vo non-cryptographic hash function.
+    ##
+    ## Note that unlike MATLAB, this implementation does no use any random seed.
+    ## As a result, @code{keyHash} will always generate the exact same hash key
+    ## for any particular input across different workers and Octave sessions.
     ##
     ## @end deftypefn
     function key = keyHash (this)
