@@ -838,6 +838,24 @@ classdef datetime
       this.Second = repmat (this.Second, varargin{:});
     endfunction
 
+    function this = repelem (this, varargin)
+      this.Year   = repelem (this.Year, varargin{:});
+      this.Month  = repelem (this.Month, varargin{:});
+      this.Day    = repelem (this.Day, varargin{:});
+      this.Hour   = repelem (this.Hour, varargin{:});
+      this.Minute = repelem (this.Minute, varargin{:});
+      this.Second = repelem (this.Second, varargin{:});
+    endfunction
+
+    function this = repelems (this, R)
+      this.Year   = repelems (this.Year, R);
+      this.Month  = repelems (this.Month, R);
+      this.Day    = repelems (this.Day, R);
+      this.Hour   = repelems (this.Hour, R);
+      this.Minute = repelems (this.Minute, R);
+      this.Second = repelems (this.Second, R);
+    endfunction
+
     function this = reshape (this, varargin)
       this.Year   = reshape (this.Year, varargin{:});
       this.Month  = reshape (this.Month, varargin{:});
