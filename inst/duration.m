@@ -591,9 +591,8 @@ classdef duration
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'size'             'ndims'            'numel'            'histcounts'      ##
-## 'min'              'max'              'mink'             'maxk'            ##
-## 'nnz'              'plot'                                                  ##
+## 'size'             'ndims'            'numel'            'nnz'             ##
+## 'length'           'keyHash'                                               ##
 ##                                                                            ##
 ################################################################################
 
@@ -663,6 +662,75 @@ classdef duration
     ## @end deftypefn
     function out = numel (this, varargin)
       out = 1;
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{out} =} nnz (@var{D})
+    ##
+    ## Number of nonzero elements in duration array.
+    ##
+    ## @code{@var{out} = nnz (@var{D})} returns the number of nonzero
+    ## elements in the duration array @var{D}.
+    ##
+    ## @end deftypefn
+    function out = nnz (this)
+      m = this.Months(:);
+      d = this.Days(:);
+      h = hours (this.Time(:));
+      out = numel (m) - sum (m == 0 & d == 0 & h == 0);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{N} =} length (@var{D})
+    ##
+    ## Length of a duration vector.
+    ##
+    ## @code{@var{N} = length (@var{D})} returns the size of the longest
+    ## dimension of the duration array @var{D}, unless any of its dimensions has
+    ## zero length, in which case @code{length (@var{D})} returns 0.
+    ##
+    ## @end deftypefn
+    function N = length (this)
+      if (isempty (this.Days))
+        N = 0;
+      else
+        N = max (size (this.Days));
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{hey} =} keyHash (@var{D})
+    ##
+    ## Generate a hash code for duration array.
+    ##
+    ## @code{@var{h} = keyHash (@var{D})} generates a @qcode{uint64} scalar that
+    ## represents the input array @var{D}.  @code{keyHash} utilizes the 64-bit
+    ## FMV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
+    ##
+    ## @code{@var{h} = keyHash (@var{D}), @var{base}} also generates a 64-bit
+    ## hash code using @var{base} as the offset basis for the FNV-1a hash
+    ## algorithm.  @var{base} must be a @qcode{uint64} integer type scalar.  Use
+    ## this syntax to cascade @code{keyHash} on multiple objects for which a
+    ## single hash code is required.
+    ##
+    ## Note that unlike MATLAB, this implementation does no use any random seed.
+    ## As a result, @code{keyHash} will always generate the exact same hash key
+    ## for any particular input across different workers and Octave sessions.
+    ##
+    ## @end deftypefn
+    function key = keyHash (this, base = [])
+      ## Initialize string with size and class name
+      size_str = sprintf ('%dx', size (this.Days))(1:end-1);
+      init_str = [size_str 'duration'];
+      if (base)
+        if (! (isscalar (base) && isa (base, 'uint64')))
+          error ("duration.keyHash: BASE must be a UINT64 scalar.");
+        endif
+        key = __ckeyHash__(init_str, base);
+      else
+        key = __ckeyHash__(init_str);
+      endif
+      key = __nkeyHash__(this.Days(:), key);
     endfunction
 
   endmethods
@@ -1664,65 +1732,6 @@ classdef duration
     ## @end deftypefn
     function this = ctranspose (this)
       this.Days = ctranspose (this.Days);
-    endfunction
-
-  endmethods
-
-################################################################################
-##                           ** Hash Operations **                            ##
-################################################################################
-##                             Available Methods                              ##
-##                                                                            ##
-## 'keyHash'          'keyMatch'                                              ##
-##                                                                            ##
-################################################################################
-
-  methods (Access = public)
-
-    ## -*- texinfo -*-
-    ## @deftypefn {duration} {@var{hey} =} keyHash (@var{C})
-    ##
-    ## Generate a hash code for duration array.
-    ##
-    ## @code{@var{h} = keyHash (@var{C})} generates a @qcode{uint64} scalar that
-    ## represents the input array @var{C}.  @code{keyHash} utilizes the 64-bit
-    ## variant of the Fowler-Noll-Vo non-cryptographic hash function.
-    ##
-    ## Note that unlike MATLAB, this implementation does no use any random seed.
-    ## As a result, @code{keyHash} will always generate the exact same hash key
-    ## for any particular input across different workers and Octave sessions.
-    ##
-    ## @end deftypefn
-    function key = keyHash (this, base = [])
-      ## Initialize string with size and class name
-      size_str = sprintf ('%dx', size (this.Days))(1:end-1);
-      init_str = [size_str 'duration'];
-      if (base)
-        key = __ckeyHash__(init_str, base);
-      else
-        key = __ckeyHash__(init_str);
-      endif
-      key = __nkeyHash__(this.Days(:), key);
-    endfunction
-
-    ## -*- texinfo -*-
-    ## @deftypefn {duration} {@var{TF} =} keyMatch (@var{C1}, @var{C2)
-    ##
-    ## Return true if both inputs have the same hash key.
-    ##
-    ## @code{@var{TF} = keyMatch (@var{C1}, @var{C2})} returns a logical scalar,
-    ## which is @qcode{true}, if both categorical arrays @var{C1} and @var{C2}
-    ## have the same hash key, and @qcode{false} otherwise.
-    ##
-    ## @end deftypefn
-    function TF = keyMatch (A, B)
-      if (any (class (A) != class (B)))
-        TF = false;
-      else
-        A_key = keyHash (A);
-        B_key = keyHash (B);
-        TF = A_key == B_key;
-      endif
     endfunction
 
   endmethods

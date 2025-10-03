@@ -377,7 +377,7 @@ classdef string
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'size'             'ndims'            'numel'            'strlength'       ##
-## 'count'                                                                    ##
+## 'length'           'keyHash'                                               ##
 ##                                                                            ##
 ################################################################################
 
@@ -458,6 +458,62 @@ classdef string
       fcn = @(x) __unicode_length__ (x);
       TF = ! this.isMissing;
       out(TF) = cell2mat (cellfun (fcn, this.strs(TF), "UniformOutput", false));
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {string} {@var{N} =} length (@var{str})
+    ##
+    ## Length of a string vector.
+    ##
+    ## @code{@var{N} = length (@var{str})} returns the size of the longest
+    ## dimension of the string array @var{str}, unless any of its dimensions
+    ## has zero length, in which case @code{length (@var{D})} returns 0.
+    ##
+    ## @end deftypefn
+    function N = length (this)
+      if (isempty (this.strs))
+        N = 0;
+      else
+        N = max (size (this.strs));
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {string} {@var{hey} =} keyHash (@var{str})
+    ##
+    ## Generate a hash code for string array.
+    ##
+    ## @code{@var{h} = keyHash (@var{str})} generates a @qcode{uint64} scalar
+    ## that represents the input array @var{str}.  @code{keyHash} utilizes the
+    ## 64-bit FMV-1a variant of the Fowler-Noll-Vo non-cryptographic hash
+    ## function.
+    ##
+    ## @code{@var{h} = keyHash (@var{str}), @var{base}} also generates a 64-bit
+    ## hash code using @var{base} as the offset basis for the FNV-1a hash
+    ## algorithm.  @var{base} must be a @qcode{uint64} integer type scalar.  Use
+    ## this syntax to cascade @code{keyHash} on multiple objects for which a
+    ## single hash code is required.
+    ##
+    ## Note that unlike MATLAB, this implementation does no use any random seed.
+    ## As a result, @code{keyHash} will always generate the exact same hash key
+    ## for any particular input across different workers and Octave sessions.
+    ##
+    ## @end deftypefn
+    function key = keyHash (this, base = [])
+      ## Initialize string with size and class name
+      size_str = sprintf ('%dx', size (this.strs))(1:end-1);
+      init_str = [size_str 'string'];
+      if (base)
+        if (! (isscalar (base) && isa (base, 'uint64')))
+          error ("string.keyHash: BASE must be a UINT64 scalar.");
+        endif
+        key = __ckeyHash__(init_str, base);
+      else
+        key = __ckeyHash__(init_str);
+      endif
+      strs = [this.strs{:}];
+      key = __ckeyHash__(strs, key);
+      key = __nkeyHash__(this.isMissing(:), key);
     endfunction
 
   endmethods

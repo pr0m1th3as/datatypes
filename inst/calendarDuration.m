@@ -748,11 +748,11 @@ classdef calendarDuration
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {calendarDuration} {@var{out} =} nns (@var{calD})
+    ## @deftypefn {calendarDuration} {@var{out} =} nnz (@var{calD})
     ##
     ## Number of nonzero elements in calendarDuration array.
     ##
-    ## @code{@var{out} = nns (@var{calD})} returns the number of nonzero
+    ## @code{@var{out} = nnz (@var{calD})} returns the number of nonzero
     ## elements in the calendar duration array @var{calD}.
     ##
     ## @end deftypefn
@@ -769,16 +769,16 @@ classdef calendarDuration
     ## Length of a calendarDuration vector.
     ##
     ## @code{@var{N} = length (@var{calD})} returns the size of the longest
-    ## dimension of the calendarDuration array @var{calD}, unless any of
+    ## dimension of the calendarDuration array @var{calD}, unless any of its
     ## dimensions has zero length, in which case @code{length (@var{calD})}
     ## returns 0.
     ##
     ## @end deftypefn
     function N = length (this)
-      if (isempty (this))
+      if (isempty (this.Months))
         N = 0;
       else
-        N = max (size (this));
+        N = max (size (this.Months));
       endif
     endfunction
 
@@ -808,6 +808,9 @@ classdef calendarDuration
       size_str = sprintf ('%dx', size (this.Months))(1:end-1);
       init_str = [size_str 'calendarDuration'];
       if (base)
+        if (! (isscalar (base) && isa (base, 'uint64')))
+          error ("calendarDuration.keyHash: BASE must be a UINT64 scalar.");
+        endif
         key = __ckeyHash__(init_str, base);
       else
         key = __ckeyHash__(init_str);

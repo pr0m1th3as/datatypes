@@ -696,15 +696,15 @@ classdef categorical
     ## Length of a categorical vector.
     ##
     ## @code{@var{N} = length (@var{C})} returns the size of the longest
-    ## dimension of the categorical array @var{C}, unless any of dimensions has
-    ## zero length, in which case @code{length (@var{C})} returns 0.
+    ## dimension of the categorical array @var{C}, unless any of its dimensions
+    ## has zero length, in which case @code{length (@var{C})} returns 0.
     ##
     ## @end deftypefn
     function N = length (this)
-      if (isempty (this))
+      if (isempty (this.code))
         N = 0;
       else
-        N = max (size (this));
+        N = max (size (this.code));
       endif
     endfunction
 
@@ -805,6 +805,9 @@ classdef categorical
       code(code == 0) = max (code) + 1;
       cstr = [cats{code}];
       if (base)
+        if (! (isscalar (base) && isa (base, 'uint64')))
+          error ("categorical.keyHash: BASE must be a UINT64 scalar.");
+        endif
         key = __ckeyHash__([init_str cstr], base);
       else
         key = __ckeyHash__([init_str cstr]);

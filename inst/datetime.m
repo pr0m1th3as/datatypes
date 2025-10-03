@@ -495,9 +495,8 @@ classdef datetime
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'size'             'ndims'            'numel'            'histcounts'      ##
-## 'min'              'max'              'mink'             'maxk'            ##
-## 'plot'                                                                     ##
+## 'size'             'ndims'            'numel'            'length'          ##
+## 'keyHash'                                                                  ##
 ##                                                                            ##
 ################################################################################
 
@@ -569,28 +568,63 @@ classdef datetime
       out = 1;
     endfunction
 
-    function out = histcounts (this, varargin)
-      error ("datetime.histcounts: not implemented yet.");
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{N} =} length (@var{T})
+    ##
+    ## Length of a datetime vector.
+    ##
+    ## @code{@var{N} = length (@var{T})} returns the size of the longest
+    ## dimension of the datetime array @var{T}, unless any of its dimensions
+    ## has zero length, in which case @code{length (@var{T})} returns 0.
+    ##
+    ## @end deftypefn
+    function N = length (this)
+      if (isempty (this.Year))
+        N = 0;
+      else
+        N = max (size (this.Year));
+      endif
     endfunction
 
-    function out = min (this, varargin)
-      error ("datetime.min: not implemented yet.");
-    endfunction
-
-    function out = max (this, varargin)
-      error ("datetime.max: not implemented yet.");
-    endfunction
-
-    function out = mink (this, varargin)
-      error ("datetime.mink: not implemented yet.");
-    endfunction
-
-    function out = maxk (this, varargin)
-      error ("datetime.maxk: not implemented yet.");
-    endfunction
-
-    function out = plot (this, varargin)
-      error ("datetime.plot: not implemented yet.");
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{hey} =} keyHash (@var{T})
+    ##
+    ## Generate a hash code for datetime array.
+    ##
+    ## @code{@var{h} = keyHash (@var{T})} generates a @qcode{uint64} scalar that
+    ## represents the input array @var{T}.  @code{keyHash} utilizes the 64-bit
+    ## FMV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
+    ##
+    ## @code{@var{h} = keyHash (@var{T}), @var{base}} also generates a 64-bit
+    ## hash code using @var{base} as the offset basis for the FNV-1a hash
+    ## algorithm.  @var{base} must be a @qcode{uint64} integer type scalar.  Use
+    ## this syntax to cascade @code{keyHash} on multiple objects for which a
+    ## single hash code is required.
+    ##
+    ## Note that unlike MATLAB, this implementation does no use any random seed.
+    ## As a result, @code{keyHash} will always generate the exact same hash key
+    ## for any particular input across different workers and Octave sessions.
+    ##
+    ## @end deftypefn
+    function key = keyHash (this, base = [])
+      ## Initialize string with size and class name
+      size_str = sprintf ('%dx', size (this.strs))(1:end-1);
+      flag_str = sprintf ('-TZ%s:', this.TimeZone);
+      init_str = [size_str 'datetime' flag_str];
+      if (base)
+        if (! (isscalar (base) && isa (base, 'uint64')))
+          error ("datetime.keyHash: BASE must be a UINT64 scalar.");
+        endif
+        key = __ckeyHash__(init_str, base);
+      else
+        key = __ckeyHash__(init_str);
+      endif
+      key = __nkeyHash__(this.Year(:), key);
+      key = __nkeyHash__(this.Month(:), key);
+      key = __nkeyHash__(this.Day(:), key);
+      key = __nkeyHash__(this.Hour(:), key);
+      key = __nkeyHash__(this.Minute(:), key);
+      key = __nkeyHash__(this.Second(:), key);
     endfunction
 
   endmethods
