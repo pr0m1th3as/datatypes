@@ -3997,6 +3997,18 @@ classdef categorical
 
   methods (Hidden)
 
+    ## Overload 'end' keyword
+    function last_index = end (this, end_dim, ndim_obj)
+      lastdim = ndims (this);
+      if (end_dim == ndim_obj && ndim_obj == 1)
+        last_index = prod (size (this));
+      elseif (end_dim == ndim_obj && end_dim < lastdim)
+        last_index = prod (size (this)(end_dim:lastdim));
+      else
+        last_index = size (this, end_dim);
+      endif
+    endfunction
+
     ## Class specific subscripted reference
     function varargout = subsref (this, s)
 
