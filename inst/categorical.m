@@ -3559,8 +3559,8 @@ classdef categorical
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'cat'              'horzcat'          'vertcat'          'repmat'          ##
-## 'repelem'          'reshape'          'circshift'        'permute'         ##
-## 'ipermute'         'transpose'        'ctranspose'                         ##
+## 'repelem'          'repelems'         'reshape'          'circshift'       ##
+## 'permute'          'ipermute'         'transpose'        'ctranspose'      ##
 ##                                                                            ##
 ################################################################################
 
@@ -3794,6 +3794,24 @@ classdef categorical
     function this = repelem (this, varargin)
       this.code = repelem (this.code, varargin{:});
       this.isMissing = repelem (this.isMissing, varargin{:});
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {categorical} {@var{B} =} repelems (@var{A}, @var{R})
+    ##
+    ## Construct a vector of repeated elements from a categorical array.
+    ##
+    ## @code{@var{B} = repelems (@var{A}, @var{R})} returns a categorical vector
+    ## @var{B} containing repeated elements of the input @var{A}, which must be
+    ## a categorical vector.  @var{R} must be a @math{2xN} matrix of integers.
+    ## Entries in the first row of @var{R} correspond to the linear indexing of
+    ## the elements in @var{A} to be repeated.  The corresponding entries in the
+    ## second row of @var{R} specify the repeat count of each element.
+    ##
+    ## @end deftypefn
+    function this = repelems (this, varargin)
+      this.code = repelems (this.code, varargin{:});
+      this.isMissing = repelems (this.isMissing, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
