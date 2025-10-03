@@ -53,7 +53,7 @@ Do NOT use this function directly. \n\
   }
   if (args(0).isempty ())
   {
-    error ("__ckeyHash__: X cannot be empty.");
+    error ("__nkeyHash__: X cannot be empty.");
   }
   if (! (args(0).isnumeric () || args(0).islogical ()))
   {
