@@ -1498,11 +1498,15 @@ classdef duration
     ## for any particular input across different workers and Octave sessions.
     ##
     ## @end deftypefn
-    function key = keyHash (this)
+    function key = keyHash (this, base = [])
       ## Initialize string with size and class name
       size_str = sprintf ('%dx', size (this.Days))(1:end-1);
       init_str = [size_str 'duration'];
-      key = __ckeyHash__(init_str);
+      if (base)
+        key = __ckeyHash__(init_str, base);
+      else
+        key = __ckeyHash__(init_str);
+      endif
       key = __nkeyHash__(this.Days(:), key);
     endfunction
 
@@ -1617,6 +1621,8 @@ classdef duration
       endswitch
 
     endfunction
+
+  endmethods
 
   methods (Access = private)
 
