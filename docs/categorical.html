@@ -3913,7 +3913,12 @@ Generate a hash code for categorical array.
 
 <p> </p>
 <p> <code><var>h</var> = keyHash (<var>C</var>)</code> generates a <code>uint64</code> scalar that
- represents the input array <var>C</var>.
+ represents the input array <var>C</var>.  <code>keyHash</code> utilizes the 64-bit
+ variant of the Fowler-Noll-Vo non-cryptographic hash function.
+</p>
+<p> Note that unlike MATLAB, this implementation does no use any random seed.
+ As a result, <code>keyHash</code> will always generate the exact same hash key
+ for any particular input across different workers and Octave sessions.
 </p>
 
 
