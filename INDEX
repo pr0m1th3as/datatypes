@@ -14,7 +14,6 @@ datetime arrays
  datetime
  isdatetime
  NaT
- __datetime__
 duration arrays
  duration
  days
@@ -35,11 +34,14 @@ table arrays
  csv2table
  struct2table
  istable
- __csv2table__
- __table2csv__
 supplementary classes
  missing
  vartype
  @cell/disp
  @cell/display
+compiled functions
  __ckeyHash__
+ __nkeyHash__
+ __datetime__
+ __csv2table__
+ __table2csv__
