@@ -674,6 +674,7 @@ classdef calendarDuration
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'size'             'ndims'            'numel'            'nnz'             ##
+## 'length'           'keyHash'                                               ##
 ##                                                                            ##
 ################################################################################
 
@@ -760,6 +761,60 @@ classdef calendarDuration
       d = this.Days(:);
       h = hours (this.Time(:));
       out = numel (m) - sum (m == 0 & d == 0 & h == 0);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {calendarDuration} {@var{N} =} length (@var{calD})
+    ##
+    ## Length of a calendarDuration vector.
+    ##
+    ## @code{@var{N} = length (@var{calD})} returns the size of the longest
+    ## dimension of the calendarDuration array @var{calD}, unless any of
+    ## dimensions has zero length, in which case @code{length (@var{calD})}
+    ## returns 0.
+    ##
+    ## @end deftypefn
+    function N = length (this)
+      if (isempty (this))
+        N = 0;
+      else
+        N = max (size (this));
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {calendarDuration} {@var{hey} =} keyHash (@var{calD})
+    ##
+    ## Generate a hash code for a calendarDuration array.
+    ##
+    ## @code{@var{h} = keyHash (@var{calD})} generates a @qcode{uint64} scalar
+    ## that represents the input array @var{calD}.  @code{keyHash} utilizes the
+    ## 64-bit FMV-1a variant of the Fowler-Noll-Vo non-cryptographic hash
+    ## function.
+    ##
+    ## @code{@var{h} = keyHash (@var{calD}), @var{base}} also generates a 64-bit
+    ## hash code using @var{base} as the offset basis for the FNV-1a hash
+    ## algorithm.  @var{base} must be a @qcode{uint64} integer type scalar.  Use
+    ## this syntax to cascade @code{keyHash} on multiple objects for which a
+    ## single hash code is required.
+    ##
+    ## Note that unlike MATLAB, this implementation does no use any random seed.
+    ## As a result, @code{keyHash} will always generate the exact same hash key
+    ## for any particular input across different workers and Octave sessions.
+    ##
+    ## @end deftypefn
+    function key = keyHash (this, base = [])
+      ## Initialize string with size and class name
+      size_str = sprintf ('%dx', size (this.Months))(1:end-1);
+      init_str = [size_str 'calendarDuration'];
+      if (base)
+        key = __ckeyHash__(init_str, base);
+      else
+        key = __ckeyHash__(init_str);
+      endif
+      key = __nkeyHash__(this.Months(:), key);
+      key = __nkeyHash__(this.Days(:), key);
+      key = keyHash (this.Time, key);
     endfunction
 
   endmethods
@@ -1415,72 +1470,11 @@ classdef calendarDuration
   endmethods
 
 ################################################################################
-##                           ** Hash Operations **                            ##
-################################################################################
-##                             Available Methods                              ##
-##                                                                            ##
-## 'keyHash'          'keyMatch'                                              ##
-##                                                                            ##
-################################################################################
-
-  methods (Access = public)
-
-    ## -*- texinfo -*-
-    ## @deftypefn {calendarDuration} {@var{hey} =} keyHash (@var{C})
-    ##
-    ## Generate a hash code for calendarDuration array.
-    ##
-    ## @code{@var{h} = keyHash (@var{C})} generates a @qcode{uint64} scalar that
-    ## represents the input array @var{C}.  @code{keyHash} utilizes the 64-bit
-    ## variant of the Fowler-Noll-Vo non-cryptographic hash function.
-    ##
-    ## Note that unlike MATLAB, this implementation does no use any random seed.
-    ## As a result, @code{keyHash} will always generate the exact same hash key
-    ## for any particular input across different workers and Octave sessions.
-    ##
-    ## @end deftypefn
-    function key = keyHash (this, base = [])
-      ## Initialize string with size and class name
-      size_str = sprintf ('%dx', size (this.Months))(1:end-1);
-      init_str = [size_str 'calendarDuration'];
-      if (base)
-        key = __ckeyHash__(init_str, base);
-      else
-        key = __ckeyHash__(init_str);
-      endif
-      key = __nkeyHash__(this.Months(:), key);
-      key = __nkeyHash__(this.Days(:), key);
-      key = keyHash (this.Time, key);
-    endfunction
-
-    ## -*- texinfo -*-
-    ## @deftypefn {calendarDuration} {@var{TF} =} keyMatch (@var{C1}, @var{C2)
-    ##
-    ## Return true if both inputs have the same hash key.
-    ##
-    ## @code{@var{TF} = keyMatch (@var{C1}, @var{C2})} returns a logical scalar,
-    ## which is @qcode{true}, if both categorical arrays @var{C1} and @var{C2}
-    ## have the same hash key, and @qcode{false} otherwise.
-    ##
-    ## @end deftypefn
-    function TF = keyMatch (A, B)
-      if (any (class (A) != class (B)))
-        TF = false;
-      else
-        A_key = keyHash (A);
-        B_key = keyHash (B);
-        TF = A_key == B_key;
-      endif
-    endfunction
-
-  endmethods
-
-################################################################################
 ##                  ** Reference and Assignment Operations **                 ##
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'end'              'subsref'          'subsasgn'                           ##
+## 'end'              'subsref'          'subsasgn'         'subset'          ##
 ##                                                                            ##
 ################################################################################
 
