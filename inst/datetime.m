@@ -787,7 +787,7 @@ classdef datetime
 ##                                                                            ##
 ################################################################################
 
-  methods (Access = public)
+  methods (Hidden)
 
     function [B, index] = sort (A, varargin)
       error ("datetime.sort: not implemented yet.");
@@ -834,7 +834,7 @@ classdef datetime
 ##                                                                            ##
 ################################################################################
 
-  methods (Hidden)
+  methods (Access = public)
 
     function out = cat (dim, varargin)
       args = varargin;

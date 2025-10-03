@@ -1232,7 +1232,7 @@ classdef string
 ##                                                                            ##
 ################################################################################
 
-  methods (Hidden)
+  methods (Access = public)
 
     function out = cat (dim, varargin)
       args = varargin;

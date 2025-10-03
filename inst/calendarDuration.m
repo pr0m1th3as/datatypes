@@ -1152,7 +1152,7 @@ classdef calendarDuration
 ##                                                                            ##
 ################################################################################
 
-  methods (Access = public)
+  methods (Hidden)
 
     function [B, index] = sort (A, varargin)
       error ("calendarDuration.sort: not implemented yet.");
