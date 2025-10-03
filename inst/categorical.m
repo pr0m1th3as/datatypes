@@ -3971,7 +3971,7 @@ classdef categorical
     ## for any particular input across different workers and Octave sessions.
     ##
     ## @end deftypefn
-    function key = keyHash (this)
+    function key = keyHash (this, base = [])
       ## Initialize string with size and class name
       size_str = sprintf ('%dx', size (this.code))(1:end-1);
       flag_str = sprintf ('-o%d-p%d:', this.isOrdinal, this.isProtected);
@@ -3979,7 +3979,11 @@ classdef categorical
       cats = [this.cats(:); '<undefined>'];
       code = this.code(:);
       cstr = [cats{code}];
-      key = __ckeyHash__([init_str cstr]);
+      if (base)
+        key = __ckeyHash__([init_str cstr], base);
+      else
+        key = __ckeyHash__([init_str cstr]);
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -4152,6 +4156,8 @@ classdef categorical
       endswitch
 
     endfunction
+
+  endmethods
 
   methods (Access = private)
 
