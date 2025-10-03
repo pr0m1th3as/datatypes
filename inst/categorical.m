@@ -46,7 +46,7 @@ classdef categorical
     ## Indices to categories
     code = uint16 ([])
     ## <undefined> elements
-    isMissing = []
+    isMissing = logical ([])
     ## Flag for ordinal categories
     isOrdinal = false
     ## Flag for protecting category list
@@ -796,23 +796,35 @@ classdef categorical
     ##
     ## @end deftypefn
     function key = keyHash (this, base = [])
-      ## Initialize string with size and class name
+      ## Initialize string with size, class name, flags, and categories
       size_str = sprintf ('%dx', size (this.code))(1:end-1);
       flag_str = sprintf ('-o%d-p%d:', this.isOrdinal, this.isProtected);
-      init_str = [size_str 'categorical' flag_str];
-      cats = [this.cats(:); '<undefined>'];
-      code = this.code(:);
-      code(code == 0) = max (code) + 1;
-      cstr = [cats{code}];
-      if (base)
-        if (! (isscalar (base) && isa (base, 'uint64')))
-          error ("categorical.keyHash: BASE must be a UINT64 scalar.");
+      cats_str = sprintf ('%s', this.cats{:});
+      init_str = [size_str 'categorical' flag_str cats_str];
+      if (isempty (this.code))
+        if (base)
+          if (! (isscalar (base) && isa (base, 'uint64')))
+            error ("categorical.keyHash: BASE must be a UINT64 scalar.");
+          endif
+          key = __ckeyHash__(init_str, base);
+        else
+          key = __ckeyHash__(init_str);
         endif
-        key = __ckeyHash__([init_str cstr], base);
       else
-        key = __ckeyHash__([init_str cstr]);
+        cats = [this.cats(:); '<undefined>'];
+        code = this.code(:);
+        code(code == 0) = max (code) + 1;
+        cstr = [cats{code}];
+        if (base)
+          if (! (isscalar (base) && isa (base, 'uint64')))
+            error ("categorical.keyHash: BASE must be a UINT64 scalar.");
+          endif
+          key = __ckeyHash__([init_str cstr], base);
+        else
+          key = __ckeyHash__([init_str cstr]);
+        endif
+        key = __nkeyHash__(this.isMissing(:), key);
       endif
-      key = __nkeyHash__(this.isMissing(:), key);
     endfunction
 
   endmethods
@@ -4046,8 +4058,12 @@ classdef categorical
       endif
       switch s.type
         case '()'
-          if (iscellstr (val) || ischar (val) ||
-                                 any (isa (val, {'missing', 'string'})))
+          if (isempty (val))
+            this.code(s.subs{:}) = [];
+            this.isMissing(s.subs{:}) = [];
+            return;
+          elseif (iscellstr (val) || ischar (val) || isnumeric (val) ||
+              islogical (val) || any (isa (val, {'missing', 'string'})))
             val = promote (val);
             if (isordinal (this))
               val.isOrdinal = true;
@@ -4056,8 +4072,8 @@ classdef categorical
             endif
           elseif (! isa (val, 'categorical'))
             error (strcat ("categorical.subsasgn: assignment value must", ...
-                           " be a categorical array or text representing", ...
-                           " categories."));
+                           " be a categorical array, numeric, logical or", ...
+                           "  text representing categories."));
           endif
           ## After this point VAL is categorical array
           ## If any categorical array is ordinal, all must be
@@ -4151,23 +4167,6 @@ classdef categorical
 
   methods (Access = private)
 
-    ## Promote text arrays to categorical objects
-    function varargout = promote (varargin)
-      for i = 1:numel (varargin)
-        val = varargin{i};
-        if (isa (val, "categorical"))
-          varargout{i} = val;
-        elseif (iscellstr (val) || isa (val, "string") || ischar (val))
-          val = cellstr (val);
-          varargout{i} = categorical (val);
-        elseif (isa (val, 'missing'))
-          varargout{i} = categorical (nan (size (missing)));
-        else
-          error ("categorical: invalid input to constructor.");
-        endif
-      endfor
-    endfunction
-
     ## Common function for set operations
     function [C, ixA, ixB] = setop (A, B, fname, varargin)
       if (ischar (A) || iscellstr (A) || isa (A, 'string'))
@@ -4229,6 +4228,25 @@ classdef categorical
   endmethods
 
 endclassdef
+
+## Promote text arrays to categorical objects
+function varargout = promote (varargin)
+  for i = 1:numel (varargin)
+    val = varargin{i};
+    if (isa (val, "categorical"))
+      varargout{i} = val;
+    elseif (iscellstr (val) || isa (val, "string") || ischar (val))
+      val = cellstr (val);
+      varargout{i} = categorical (val);
+    elseif (isnumeric (val) || islogical (val))
+      varargout{i} = categorical (val);
+    elseif (isa (val, 'missing'))
+      varargout{i} = categorical (nan (size (missing)));
+    else
+      error ("categorical: invalid input to constructor.");
+    endif
+  endfor
+endfunction
 
 ## Custom function for displaying categorical summary
 function dispcellmatrix (C)
