@@ -3850,8 +3850,8 @@ classdef categorical
     ## elements of the categorical array @var{A} according to @var{n}.  If
     ## @var{n} is a nonzero integer scalar, then the elements of @var{A} are
     ## shifted by @var{n} elements along the first non-singleton dimension of
-    ## @var{A}. If @var{n} is a vector, it must not be longer that the number of
-    ## dimensions of @var{A} with each value of @var{n} corresponding to a
+    ## @var{A}.  If @var{n} is a vector, it must not be longer that the number
+    ## of dimensions of @var{A} with each value of @var{n} corresponding to a
     ## dimension in @var{A}.   The sign of the value(s) in @var{n} specify the
     ## direction in the elements of @var{A} are shifted.
     ##

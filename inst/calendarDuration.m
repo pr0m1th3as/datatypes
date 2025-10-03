@@ -1213,9 +1213,9 @@ classdef calendarDuration
     ##
     ## Repeat copies of a calendarDuration array.
     ##
-    ## @code{@var{B} = repmat (@var{A}, @var{n})} returns a calendarDuration array
-    ## @var{B} containing @var{n} copies of the input calendarDuration array
-    ## @var{A} along every dimension of @var{A}.
+    ## @code{@var{B} = repmat (@var{A}, @var{n})} returns a calendarDuration
+    ## array @var{B} containing @var{n} copies of the input calendarDuration
+    ## array @var{A} along every dimension of @var{A}.
     ##
     ## @code{@var{B} = repmat (@var{A}, @var{d1}, @dots{}, @var{dN})} returns an
     ## array @var{B} containing copies of @var{A} along the dimensions specified
@@ -1269,11 +1269,11 @@ classdef calendarDuration
     ##
     ## @code{@var{B} = repelems (@var{A}, @var{R})} returns a calendarDuration
     ## vector @var{B} containing repeated elements of the input @var{A}, which
-    ## must be# a calendarDuration vector.  @var{R} must be a @math{2xN} matrix
-    ## of integers. Entries in the first row of @var{R} correspond to the linear
-    ## indexing of the elements in @var{A} to be repeated.  The corresponding
-    ## entries in the second row of @var{R} specify the repeat count of each
-    ## element.
+    ## must be a calendarDuration vector.  @var{R} must be a @math{2xN} matrix
+    ## of integers.  Entries in the first row of @var{R} correspond to the
+    ## linear indexing of the elements in @var{A} to be repeated.  The
+    ## corresponding entries in the second row of @var{R} specify the repeat
+    ## count of each element.
     ##
     ## @end deftypefn
     function this = repelems (this, R)
@@ -1319,8 +1319,8 @@ classdef calendarDuration
     ## elements of the calendarDuration array @var{A} according to @var{n}.  If
     ## @var{n} is a nonzero integer scalar, then the elements of @var{A} are
     ## shifted by @var{n} elements along the first non-singleton dimension of
-    ## @var{A}. If @var{n} is a vector, it must not be longer that the number of
-    ## dimensions of @var{A} with each value of @var{n} corresponding to a
+    ## @var{A}.  If @var{n} is a vector, it must not be longer that the number
+    ## of dimensions of @var{A} with each value of @var{n} corresponding to a
     ## dimension in @var{A}.   The sign of the value(s) in @var{n} specify the
     ## direction in the elements of @var{A} are shifted.
     ##
