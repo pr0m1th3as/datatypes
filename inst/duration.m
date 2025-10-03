@@ -1412,8 +1412,8 @@ classdef duration
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'cat'              'horzcat'          'vertcat'          'repmat'          ##
-## 'reshape'          'circshift'        'permute'          'ipermute'        ##
-## 'transpose'        'ctranspose'                                            ##
+## 'repelem'          'reshape'          'circshift'        'permute'         ##
+## 'ipermute'         'transpose'        'ctranspose'                         ##
 ##                                                                            ##
 ################################################################################
 
@@ -1437,6 +1437,10 @@ classdef duration
 
     function this = repmat (this, varargin)
       this.Days = repmat (this.Days, varargin{:});
+    endfunction
+
+    function this = repelem (this, varargin)
+      this.Days = repelem (this.Days, varargin{:});
     endfunction
 
     function this = reshape (this, varargin)
