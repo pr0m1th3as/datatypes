@@ -3559,8 +3559,8 @@ classdef categorical
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'cat'              'horzcat'          'vertcat'          'repmat'          ##
-## 'reshape'          'circshift'        'permute'          'ipermute'        ##
-## 'transpose'        'ctranspose'       'keyHash'          'keyMatch'        ##
+## 'repelem'          'reshape'          'circshift'        'permute'         ##
+## 'ipermute'         'transpose'        'ctranspose'                         ##
 ##                                                                            ##
 ################################################################################
 
@@ -3925,6 +3925,19 @@ classdef categorical
       this.code = ctranspose (this.code);
       this.isMissing = ctranspose (this.isMissing);
     endfunction
+
+  endmethods
+
+################################################################################
+##                           ** Hash Operations **                            ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'keyHash'          'keyMatch'                                              ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
 
     ## -*- texinfo -*-
     ## @deftypefn {categorical} {@var{hey} =} keyHash (@var{C})
