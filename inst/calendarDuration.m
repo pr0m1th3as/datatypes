@@ -1141,6 +1141,20 @@ classdef calendarDuration
 
   methods (Hidden)
 
+    ## -*- texinfo -*-
+    ## @deftypefn {calendarDuration} {@var{C} =} cat (@var{dim}, @var{A}, @var{B}, @dots{})
+    ##
+    ## Concatenate calendarDuration arrays.
+    ##
+    ## @code{@var{C} = cat (@var{dim}, @var{A}, @var{B}, @dots{})} concatenates
+    ## calendarDuration arrays @var{A}, @var{B}, @dots{} along dimension
+    ## @var{dim}.  All input arrays must have the same size except along the
+    ## operating dimension @var{dim}.  Any of the input arrays may also be
+    ## string arrays or cell arrays of character vectors of compatible size.
+    ## Additionally, an input can be a numeric matrix, which when parsed to the
+    ## constructor will return a calendarDuration array of compatible size.
+    ##
+    ## @end deftypefn
     function out = cat (dim, varargin)
       args = varargin;
       [args{:}] = promote (varargin{:});
@@ -1154,62 +1168,244 @@ classdef calendarDuration
       out = broadcastProperties (out);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {calendarDuration} {@var{C} =} horzcat (@var{A}, @var{B}, @dots{})
+    ##
+    ## Horizontal concatenation of calendarDuration arrays.
+    ##
+    ## @code{@var{C} = horzcat (@var{A}, @var{B}, @dots{}} is the equivalent of
+    ## the syntax @code{@var{B} = [@var{A}, @var{B}, @dots{}]} and horizontally
+    ## concatenates the calendarDuration arrays @var{A}, @var{B}, @dots{}.  All
+    ## input arrays must have the same size except along the second dimension.
+    ## Any of the input arrays may also be string arrays or cell arrays of
+    ## character vectors of compatible size.  Additionally, an input can be a
+    ## numeric matrix, which when parsed to the constructor will return a
+    ## calendarDuration array of compatible size.
+    ##
+    ## @end deftypefn
     function out = horzcat (varargin)
       out = cat (2, varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {calendarDuration} {@var{C} =} vertat (@var{A}, @var{B}, @dots{})
+    ##
+    ## Vertical concatenation of calendarDuration arrays.
+    ##
+    ## @code{@var{C} = vertat (@var{A}, @var{B}, @dots{}} is the equivalent of
+    ## the syntax @code{@var{B} = [@var{A}; @var{B}; @dots{}]} and vertically
+    ## concatenates the calendarDuration arrays @var{A}, @var{B}, @dots{}.  All
+    ## input arrays must have the same size except along the first dimension.
+    ## Any of the input arrays may also be string arrays or cell arrays of
+    ## character vectors of compatible size.  Additionally, an input can be a
+    ## numeric matrix, which when parsed to the constructor will return a
+    ## calendarDuration array of compatible size.
+    ##
+    ## @end deftypefn
     function out = vertcat (varargin)
       out = cat (1, varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {calendarDuration} {@var{B} =} repmat (@var{A}, @var{n})
+    ## @deftypefnx {calendarDuration} {@var{B} =} repmat (@var{A}, @var{d1}, @dots{}, @var{dN})
+    ## @deftypefnx {calendarDuration} {@var{B} =} repmat (@var{A}, @var{dimvec})
+    ##
+    ## Repeat copies of a calendarDuration array.
+    ##
+    ## @code{@var{B} = repmat (@var{A}, @var{n})} returns a calendarDuration array
+    ## @var{B} containing @var{n} copies of the input calendarDuration array
+    ## @var{A} along every dimension of @var{A}.
+    ##
+    ## @code{@var{B} = repmat (@var{A}, @var{d1}, @dots{}, @var{dN})} returns an
+    ## array @var{B} containing copies of @var{A} along the dimensions specified
+    ## by the list of scalar integer values @var{d1}, @dots{}, @var{dN}, which
+    ## specify how many copies of @var{A} are made in each dimension.
+    ##
+    ## @code{@var{B} = repmat (@var{A}, @var{dimvec})} is equivalent to the
+    ## previous syntax with @code{@var{dimvec} = [@var{d1}, @dots{}, @var{dN}]}.
+    ##
+    ## @end deftypefn
     function this = repmat (this, varargin)
       this.Months = repmat (this.Months, varargin{:});
       this.Days   = repmat (this.Days, varargin{:});
       this.Time   = repmat (this.Time, varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {calendarDuration} {@var{B} =} repelem (@var{A}, @var{n})
+    ## @deftypefnx {calendarDuration} {@var{B} =} repelem (@var{A}, @var{d1}, @dots{}, @var{dN})
+    ##
+    ## Repeat copies of calendarDuration array elements.
+    ##
+    ## @code{@var{B} = repelem (@var{A}, @var{n})} returns a calendarDuration
+    ## vector @var{B} containing repeated elements of the input @var{A}, which
+    ## must be a calendarDuration vector.  If @var{n} is a scalar, each element
+    ## of @var{A} is repeated @var{n} times along the non-singleton dimension of
+    ## @var{A}.  If @var{n} is a vector, it must have the same elemnts as
+    ## @var{A}, in which case it specifies the number of times to repeat each
+    ## corresponding element of @var{A}.
+    ##
+    ## @code{@var{B} =} repelem (@var{A}, @var{d1}, @dots{}, @var{dN}} returns
+    ## an array @var{B} with each element of @var{A} repeated according to the
+    ## the list of input arguments @code{@var{d1}, @dots{}, @var{dN}} each
+    ## corresponding to a different dimension @code{1:ndims (@var{A})} of the
+    ## input array @var{A}.  @var{d1}, @dots{}, @var{dN} must be either scalars
+    ## or vectors with the same length as the corresponding dimension of
+    ## @var{A} containing non-negative integer values specifying the number of
+    ## repetitions of each element along the corresponding dimension.
+    ##
+    ## @end deftypefn
     function this = repelem (this, varargin)
       this.Months = repelem (this.Months, varargin{:});
       this.Days   = repelem (this.Days, varargin{:});
       this.Time   = repelem (this.Time, varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {calendarDuration} {@var{B} =} repelems (@var{A}, @var{R})
+    ##
+    ## Construct a vector of repeated elements from a calendarDuration array.
+    ##
+    ## @code{@var{B} = repelems (@var{A}, @var{R})} returns a calendarDuration
+    ## vector @var{B} containing repeated elements of the input @var{A}, which
+    ## must be# a calendarDuration vector.  @var{R} must be a @math{2xN} matrix
+    ## of integers. Entries in the first row of @var{R} correspond to the linear
+    ## indexing of the elements in @var{A} to be repeated.  The corresponding
+    ## entries in the second row of @var{R} specify the repeat count of each
+    ## element.
+    ##
+    ## @end deftypefn
     function this = repelems (this, R)
       this.Months = repelems (this.Months, R);
       this.Days   = repelems (this.Days, R);
       this.Time   = repelems (this.Time, R);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {calendarDuration} {@var{B} =} reshape (@var{A}, @var{d1}, @dots{}, @var{dN})
+    ## @deftypefnx {calendarDuration} {@var{B} =} reshape (@var{A}, @dots{}, @qcode{[]}, @dots{})
+    ## @deftypefnx {calendarDuration} {@var{B} =} reshape (@var{A}, @var{dimvec})
+    ##
+    ## Repeat copies of calendarDuration array elements.
+    ##
+    ## @code{@var{B} = reshape (@var{A}, @var{d1}, @dots{}, @var{dN})} returns a
+    ## calendarDuration array @var{B} with specified dimensions @var{d1},
+    ## @dots{}, @var{dN}, whose elements are taken columnwise from the
+    ## calendarDuration array @var{A}.  The product of @var{d1}, @dots{},
+    ## @var{dN} must equal the total number of elements in @var{A}.
+    ##
+    ## @code{@var{B} = reshape (@var{A}, @dots{}, @qcode{[]}, @dots{})} returns
+    ## a calendarDuration array @var{B} with one dimension unspecified which is
+    ## calculated automatically so that the product of dimensions in @var{B}
+    ## matches the total elements in @var{A}, which must be divisible the
+    ## product of specified dimensions.  An empty matrix @qcode{([])} is used to
+    ## flag the unspecified dimension.
+    ##
+    ## @end deftypefn
     function this = reshape (this, varargin)
       this.Months = reshape (this.Months, varargin{:});
       this.Days   = reshape (this.Days, varargin{:});
       this.Time   = reshape (this.Time, varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {calendarDuration} {@var{B} =} circshift (@var{A}, @var{n})
+    ## @deftypefnx {calendarDuration} {@var{B} =} circshift (@var{A}, @var{n}, @var{dim})
+    ##
+    ## Circularly shift the elements in a calendarDuration array.
+    ##
+    ## @code{@var{B} = circshift (@var{A}, @var{n})} circularly shifts the
+    ## elements of the calendarDuration array @var{A} according to @var{n}.  If
+    ## @var{n} is a nonzero integer scalar, then the elements of @var{A} are
+    ## shifted by @var{n} elements along the first non-singleton dimension of
+    ## @var{A}. If @var{n} is a vector, it must not be longer that the number of
+    ## dimensions of @var{A} with each value of @var{n} corresponding to a
+    ## dimension in @var{A}.   The sign of the value(s) in @var{n} specify the
+    ## direction in the elements of @var{A} are shifted.
+    ##
+    ## @code{@var{B} = circshift (@var{A}, @var{n}, @var{dim})} circularly
+    ## shifts the elements of the calendarDuration array @var{A} along the
+    ## dimension specified by @var{dim}.  In this case, @var{n} must be a scalar
+    ## integer value.
+    ##
+    ## @end deftypefn
     function this = circshift (this, varargin)
       this.Months = circshift (this.Months, varargin{:});
       this.Days   = circshift (this.Days, varargin{:});
       this.Time   = circshift (this.Time, varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {calendarDuration} {@var{B} =} permute (@var{A}, @var{dims})
+    ##
+    ## Generalized transpose for a calendarDuration N-D array.
+    ##
+    ## @code{@var{B} = permute (@var{A}, @var{dims})} returns the generalized
+    ## transpose of the calendarDuration array @var{A} by rearranging its
+    ## dimensions according to the permutation vector specified in @var{dims}.
+    ##
+    ## @var{dims} must index all the dimensions @code{1:ndims (@var{A})} of the
+    ## input array @var{A}, in any order, but only once.  The @var{N}th
+    ## dimension of @var{A} gets remapped to the dimension in @var{B} specified
+    ## by @code{@var{dims}(@var{N})}.
+    ##
+    ## @end deftypefn
     function this = permute (this, order)
       this.Months = permute (this.Months, order);
       this.Days   = permute (this.Days, order);
       this.Time   = permute (this.Time, order);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {calendarDuration} {@var{A} =} ipermute (@var{B}, @var{dims})
+    ##
+    ## Generalized transpose for a calendarDuration N-D array.
+    ##
+    ## @code{@var{A} = ipermute (@var{B}, @var{dims})} returns the inverse of
+    ## the generalized transpose performed by the @code{permute} function.  The
+    ## expression @code{ipermute (permute (@var{A}, @var{dims}), @var{dims})}
+    ## returns the original array @var{A}.
+    ##
+    ## @var{dims} must index all the dimensions @code{1:ndims (@var{B})} of the
+    ## input array @var{B}, in any order, but only once.  The dimension of
+    ## @var{B} specified in @code{@var{dims}(@var{N})} gets remapped to the
+    ## @var{N}th dimension of @var{A}.
+    ##
+    ## @end deftypefn
     function this = ipermute (this, order)
       this.Months = ipermute (this.Months, order);
       this.Days   = ipermute (this.Days, order);
       this.Time   = ipermute (this.Time, order);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {calendarDuration} {@var{B} =} transpose (@var{A})
+    ##
+    ## Transpose a calendarDuration matrix.
+    ##
+    ## @code{@var{B} = transpose (@var{A})} is the equivalent of the syntax
+    ## @code{@var{B} = @var{A}.'} and returns the transpose of the
+    ## calendarDuration matrix @var{A}.
+    ##
+    ## @end deftypefn
     function this = transpose (this)
       this.Months = transpose (this.Months);
       this.Days   = transpose (this.Days);
       this.Time   = transpose (this.Time);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {calendarDuration} {@var{B} =} ctranspose (@var{A})
+    ##
+    ## Transpose a calendarDuration matrix.
+    ##
+    ## @code{@var{B} = ctranspose (@var{A})} is the equivalent of the syntax
+    ## @code{@var{B} = @var{A}'} and returns the transpose of the
+    ## calendarDuration matrix @var{A}.  For calendarDuration arrays,
+    ## @code{ctranspose} is identical to @code{transpose}.
+    ##
+    ## @end deftypefn
     function this = ctranspose (this)
       this.Months = ctranspose (this.Months);
       this.Days   = ctranspose (this.Days);
