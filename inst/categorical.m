@@ -3823,7 +3823,7 @@ classdef categorical
     ##
     ## @code{@var{B} = reshape (@var{A}, @var{d1}, @dots{}, @var{dN})} returns a
     ## categorical array @var{B} with specified dimensions @var{d1}, @dots{},
-    ## @var{dN} whose elements are taken columnwise from the categorical array
+    ## @var{dN}, whose elements are taken columnwise from the categorical array
     ## @var{A}.  The product of @var{d1}, @dots{}, @var{dN} must equal the total
     ## number of elements in @var{A}.
     ##
