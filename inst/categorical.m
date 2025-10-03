@@ -3978,12 +3978,14 @@ classdef categorical
       init_str = [size_str 'categorical' flag_str];
       cats = [this.cats(:); '<undefined>'];
       code = this.code(:);
+      code(code == 0) = max (code) + 1;
       cstr = [cats{code}];
       if (base)
         key = __ckeyHash__([init_str cstr], base);
       else
         key = __ckeyHash__([init_str cstr]);
       endif
+      key = __nkeyHash__(this.isMissing(:), key);
     endfunction
 
     ## -*- texinfo -*-
