@@ -154,7 +154,6 @@
 					<li><a href="datetime.html" class="text-decoration-none font-monospace fw-bolder"><small>datetime</small></a></li>
 					<li><a href="isdatetime.html" class="text-decoration-none font-monospace"><small>isdatetime</small></a></li>
 					<li><a href="NaT.html" class="text-decoration-none font-monospace"><small>NaT</small></a></li>
-					<li><a href="__datetime__.html" class="text-decoration-none font-monospace"><small>__datetime__</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -205,8 +204,6 @@
 					<li><a href="csv2table.html" class="text-decoration-none font-monospace"><small>csv2table</small></a></li>
 					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
 					<li><a href="istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
-					<li><a href="__csv2table__.html" class="text-decoration-none font-monospace"><small>__csv2table__</small></a></li>
-					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace"><small>__table2csv__</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -222,7 +219,35 @@
 					<li><a href="vartype.html" class="text-decoration-none font-monospace"><small>vartype</small></a></li>
 					<li><a href="@cell_disp.html" class="text-decoration-none font-monospace"><small>@cell/disp</small></a></li>
 					<li><a href="@cell_display.html" class="text-decoration-none font-monospace"><small>@cell/display</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList8" type="checkbox">
+				<label for="togList8">
+					<span><h6>supplementary functions</h6></span>
+					<span><h6>supplementary functions</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="keyHash.html" class="text-decoration-none font-monospace"><small>keyHash</small></a></li>
+					<li><a href="keyMatch.html" class="text-decoration-none font-monospace"><small>keyMatch</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList9" type="checkbox">
+				<label for="togList9">
+					<span><h6>compiled functions</h6></span>
+					<span><h6>compiled functions</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
 					<li><a href="__ckeyHash__.html" class="text-decoration-none font-monospace"><small>__ckeyHash__</small></a></li>
+					<li><a href="__nkeyHash__.html" class="text-decoration-none font-monospace"><small>__nkeyHash__</small></a></li>
+					<li><a href="__datetime__.html" class="text-decoration-none font-monospace"><small>__datetime__</small></a></li>
+					<li><a href="__csv2table__.html" class="text-decoration-none font-monospace"><small>__csv2table__</small></a></li>
+					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace"><small>__table2csv__</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -1007,17 +1032,28 @@ Total number of elements in a datetime array.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>histcounts</code></b>
+                    <b><code>length</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Length of a datetime vector.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod19">
             <div class="border-bottom py-2">
-<b><code>datetime.histcounts</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">datetime: <var>N</var> = <b>length</b> (<var>T</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>N</var> = length (<var>T</var>)</code> returns the size of the longest
+ dimension of the datetime array <var>T</var>, unless any of its dimensions
+ has zero length, in which case <code>length (<var>T</var>)</code> returns 0.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -1030,17 +1066,32 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>min</code></b>
+                    <b><code>keyHash</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Generate a hash code for datetime array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod20">
             <div class="border-bottom py-2">
-<b><code>datetime.min</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">datetime: <var>hey</var> = <b>keyHash</b> (<var>C</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>h</var> = keyHash (<var>C</var>)</code> generates a <code>uint64</code> scalar that
+ represents the input array <var>C</var>.  <code>keyHash</code> utilizes the 64-bit
+ variant of the Fowler-Noll-Vo non-cryptographic hash function.
+</p>
+<p> Note that unlike MATLAB, this implementation does no use any random seed.
+ As a result, <code>keyHash</code> will always generate the exact same hash key
+ for any particular input across different workers and Octave sessions.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -1053,7 +1104,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>max</code></b>
+                    <b><code>convertTo</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1063,7 +1114,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod21">
             <div class="border-bottom py-2">
-<b><code>datetime.max</code></b> is not documented.
+<b><code>datetime.convertTo</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1076,7 +1127,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>mink</code></b>
+                    <b><code>exceltime</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1086,7 +1137,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod22">
             <div class="border-bottom py-2">
-<b><code>datetime.mink</code></b> is not documented.
+<b><code>datetime.exceltime</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1099,7 +1150,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>maxk</code></b>
+                    <b><code>posixtime</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1109,7 +1160,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod23">
             <div class="border-bottom py-2">
-<b><code>datetime.maxk</code></b> is not documented.
+<b><code>datetime.posixtime</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1122,7 +1173,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>plot</code></b>
+                    <b><code>juliandate</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1132,7 +1183,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod24">
             <div class="border-bottom py-2">
-<b><code>datetime.plot</code></b> is not documented.
+<b><code>datetime.juliandate</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1145,7 +1196,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>convertTo</code></b>
+                    <b><code>yyyymmdd</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1155,7 +1206,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod25">
             <div class="border-bottom py-2">
-<b><code>datetime.convertTo</code></b> is not documented.
+<b><code>datetime.yyyymmdd</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1168,98 +1219,6 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>exceltime</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod26">
-            <div class="border-bottom py-2">
-<b><code>datetime.exceltime</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod27"
-              aria-expanded="false" aria-controls="collapseMethod27">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>posixtime</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod27">
-            <div class="border-bottom py-2">
-<b><code>datetime.posixtime</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod28"
-              aria-expanded="false" aria-controls="collapseMethod28">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>juliandate</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod28">
-            <div class="border-bottom py-2">
-<b><code>datetime.juliandate</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod29"
-              aria-expanded="false" aria-controls="collapseMethod29">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>yyyymmdd</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod29">
-            <div class="border-bottom py-2">
-<b><code>datetime.yyyymmdd</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod30"
-              aria-expanded="false" aria-controls="collapseMethod30">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
                     <b><code>datevec</code></b>
                   </h4>
                 </div>
@@ -1268,7 +1227,7 @@ Convert datetime array to date vectors.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod30">
+          <div class="collapse multi-collapse" id="collapseMethod26">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">datetime: <var>DV</var> = <b>datevec</b> (<var>T</var>)</code></h5></dt>
@@ -1288,8 +1247,8 @@ Convert datetime array to date vectors.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod31"
-              aria-expanded="false" aria-controls="collapseMethod31">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod27"
+              aria-expanded="false" aria-controls="collapseMethod27">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1301,9 +1260,101 @@ undocumented
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod31">
+          <div class="collapse multi-collapse" id="collapseMethod27">
             <div class="border-bottom py-2">
 <b><code>datetime.isbetween</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod28"
+              aria-expanded="false" aria-controls="collapseMethod28">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>iscolumn</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod28">
+            <div class="border-bottom py-2">
+<b><code>datetime.iscolumn</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod29"
+              aria-expanded="false" aria-controls="collapseMethod29">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>isdst</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod29">
+            <div class="border-bottom py-2">
+<b><code>datetime.isdst</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod30"
+              aria-expanded="false" aria-controls="collapseMethod30">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>isempty</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod30">
+            <div class="border-bottom py-2">
+<b><code>datetime.isempty</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod31"
+              aria-expanded="false" aria-controls="collapseMethod31">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>isequal</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod31">
+            <div class="border-bottom py-2">
+<b><code>datetime.isequal</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1316,7 +1367,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>iscolumn</code></b>
+                    <b><code>isequaln</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1326,7 +1377,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod32">
             <div class="border-bottom py-2">
-<b><code>datetime.iscolumn</code></b> is not documented.
+<b><code>datetime.isequaln</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1339,7 +1390,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>isdst</code></b>
+                    <b><code>isfinite</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1349,7 +1400,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod33">
             <div class="border-bottom py-2">
-<b><code>datetime.isdst</code></b> is not documented.
+<b><code>datetime.isfinite</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1362,7 +1413,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>isempty</code></b>
+                    <b><code>isinf</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1372,7 +1423,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod34">
             <div class="border-bottom py-2">
-<b><code>datetime.isempty</code></b> is not documented.
+<b><code>datetime.isinf</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1385,7 +1436,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>isequal</code></b>
+                    <b><code>ismatrix</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1395,7 +1446,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod35">
             <div class="border-bottom py-2">
-<b><code>datetime.isequal</code></b> is not documented.
+<b><code>datetime.ismatrix</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1408,7 +1459,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>isequaln</code></b>
+                    <b><code>ismember</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1418,7 +1469,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod36">
             <div class="border-bottom py-2">
-<b><code>datetime.isequaln</code></b> is not documented.
+<b><code>datetime.ismember</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1431,7 +1482,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>isfinite</code></b>
+                    <b><code>isnat</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1441,7 +1492,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod37">
             <div class="border-bottom py-2">
-<b><code>datetime.isfinite</code></b> is not documented.
+<b><code>datetime.isnat</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1454,7 +1505,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>isinf</code></b>
+                    <b><code>isregular</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1464,7 +1515,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod38">
             <div class="border-bottom py-2">
-<b><code>datetime.isinf</code></b> is not documented.
+<b><code>datetime.isregular</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1477,7 +1528,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>ismatrix</code></b>
+                    <b><code>isrow</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1487,7 +1538,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod39">
             <div class="border-bottom py-2">
-<b><code>datetime.ismatrix</code></b> is not documented.
+<b><code>datetime.isrow</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1500,7 +1551,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>ismember</code></b>
+                    <b><code>isscalar</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1510,7 +1561,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod40">
             <div class="border-bottom py-2">
-<b><code>datetime.ismember</code></b> is not documented.
+<b><code>datetime.isscalar</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1523,7 +1574,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>isnat</code></b>
+                    <b><code>issorted</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1533,7 +1584,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod41">
             <div class="border-bottom py-2">
-<b><code>datetime.isnat</code></b> is not documented.
+<b><code>datetime.issorted</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1546,7 +1597,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>isregular</code></b>
+                    <b><code>issortedrows</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1556,7 +1607,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod42">
             <div class="border-bottom py-2">
-<b><code>datetime.isregular</code></b> is not documented.
+<b><code>datetime.issortedrows</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1569,7 +1620,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>isrow</code></b>
+                    <b><code>isvector</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1579,7 +1630,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod43">
             <div class="border-bottom py-2">
-<b><code>datetime.isrow</code></b> is not documented.
+<b><code>datetime.isvector</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1592,7 +1643,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>isscalar</code></b>
+                    <b><code>isweekend</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1602,7 +1653,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod44">
             <div class="border-bottom py-2">
-<b><code>datetime.isscalar</code></b> is not documented.
+<b><code>datetime.isweekend</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1615,7 +1666,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>issorted</code></b>
+                    <b><code>sort</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1625,7 +1676,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod45">
             <div class="border-bottom py-2">
-<b><code>datetime.issorted</code></b> is not documented.
+<b><code>datetime.sort</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1638,7 +1689,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>issortedrows</code></b>
+                    <b><code>sortrows</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1648,7 +1699,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod46">
             <div class="border-bottom py-2">
-<b><code>datetime.issortedrows</code></b> is not documented.
+<b><code>datetime.sortrows</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1661,7 +1712,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>isvector</code></b>
+                    <b><code>unique</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1671,7 +1722,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod47">
             <div class="border-bottom py-2">
-<b><code>datetime.isvector</code></b> is not documented.
+<b><code>datetime.unique</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1684,7 +1735,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>isweekend</code></b>
+                    <b><code>interp1</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1694,7 +1745,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod48">
             <div class="border-bottom py-2">
-<b><code>datetime.isweekend</code></b> is not documented.
+<b><code>datetime.interp1</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1707,7 +1758,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>sort</code></b>
+                    <b><code>intersect</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1717,7 +1768,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod49">
             <div class="border-bottom py-2">
-<b><code>datetime.sort</code></b> is not documented.
+<b><code>datetime.intersect</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1730,7 +1781,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>sortrows</code></b>
+                    <b><code>setdiff</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1740,7 +1791,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod50">
             <div class="border-bottom py-2">
-<b><code>datetime.sortrows</code></b> is not documented.
+<b><code>datetime.setdiff</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1753,7 +1804,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>unique</code></b>
+                    <b><code>setxor</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1763,7 +1814,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod51">
             <div class="border-bottom py-2">
-<b><code>datetime.unique</code></b> is not documented.
+<b><code>datetime.setxor</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1776,7 +1827,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>interp1</code></b>
+                    <b><code>union</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1786,7 +1837,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod52">
             <div class="border-bottom py-2">
-<b><code>datetime.interp1</code></b> is not documented.
+<b><code>datetime.union</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1799,17 +1850,32 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>intersect</code></b>
+                    <b><code>keyHash</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Generate a hash code for datetime array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod53">
             <div class="border-bottom py-2">
-<b><code>datetime.intersect</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">datetime: <var>hey</var> = <b>keyHash</b> (<var>C</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>h</var> = keyHash (<var>C</var>)</code> generates a <code>uint64</code> scalar that
+ represents the input array <var>C</var>.  <code>keyHash</code> utilizes the 64-bit
+ variant of the Fowler-Noll-Vo non-cryptographic hash function.
+</p>
+<p> Note that unlike MATLAB, this implementation does no use any random seed.
+ As a result, <code>keyHash</code> will always generate the exact same hash key
+ for any particular input across different workers and Octave sessions.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -1822,63 +1888,29 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>setdiff</code></b>
+                    <b><code>keyMatch</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Return true if both inputs have the same hash key.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod54">
             <div class="border-bottom py-2">
-<b><code>datetime.setdiff</code></b> is not documented.
-            </div>
-          </div>
-        </div>
+<dl>
+<dt><code><h5 class="fs">datetime: <var>TF</var> = <b>keyMatch</b> (<var>C1</var>, <var>C2)
+</var></code></h5></dt>
+</dl>
 
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod55"
-              aria-expanded="false" aria-controls="collapseMethod55">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>setxor</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod55">
-            <div class="border-bottom py-2">
-<b><code>datetime.setxor</code></b> is not documented.
-            </div>
-          </div>
-        </div>
+<p> </p>
+<p> <code><var>TF</var> = keyMatch (<var>C1</var>, <var>C2</var>)</code> returns a logical scalar,
+ which is <code>true</code>, if both categorical arrays <var>C1</var> and <var>C2</var>
+ have the same hash key, and <code>false</code> otherwise.
+</p>
 
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod56"
-              aria-expanded="false" aria-controls="collapseMethod56">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>union</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod56">
-            <div class="border-bottom py-2">
-<b><code>datetime.union</code></b> is not documented.
+
+
             </div>
           </div>
         </div>

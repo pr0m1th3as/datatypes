@@ -125,6 +125,8 @@
              <option value="#string arrays">string arrays</option>
              <option value="#table arrays">table arrays</option>
              <option value="#supplementary classes">supplementary classes</option>
+             <option value="#supplementary functions">supplementary functions</option>
+             <option value="#compiled functions">compiled functions</option>
              </select>
            <p>
 
@@ -243,14 +245,6 @@ date/time units.</td>
                    </code></b>
                  </td>
                  <td>“Not-a-Time”.</td>
-               </tr>
-               <tr>
-                 <td>
-                   <b><code>
-                   <a href="__datetime__.html">__datetime__</a>
-                   </code></b>
-                 </td>
-                 <td>Base fuction for datetime class.</td>
                </tr>
              </tbody>
            </table>
@@ -409,22 +403,6 @@ date/time units.</td>
                  </td>
                  <td>True if input is a 'table', false otherwise.</td>
                </tr>
-               <tr>
-                 <td>
-                   <b><code>
-                   <a href="__csv2table__.html">__csv2table__</a>
-                   </code></b>
-                 </td>
-                 <td>Barebone function for loading a CSV file to a cell array.</td>
-               </tr>
-               <tr>
-                 <td>
-                   <b><code>
-                   <a href="__table2csv__.html">__table2csv__</a>
-                   </code></b>
-                 </td>
-                 <td>Barebone function for saving a cell array to a CSV file.</td>
-               </tr>
              </tbody>
            </table>
            <h3 class="category">
@@ -464,13 +442,75 @@ date/time units.</td>
                  </td>
                  <td>Customized display of cell arrays.</td>
                </tr>
+             </tbody>
+           </table>
+           <h3 class="category">
+             <a name="supplementary functions">supplementary functions</a>
+           </h3>
+           <table class="table table-striped">
+             <tbody>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="keyHash.html">keyHash</a>
+                   </code></b>
+                 </td>
+                 <td>Generate a hash code for a categorical array.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="keyMatch.html">keyMatch</a>
+                   </code></b>
+                 </td>
+                 <td>Return true if both inputs have the same hash code.</td>
+               </tr>
+             </tbody>
+           </table>
+           <h3 class="category">
+             <a name="compiled functions">compiled functions</a>
+           </h3>
+           <table class="table table-striped">
+             <tbody>
                <tr>
                  <td>
                    <b><code>
                    <a href="__ckeyHash__.html">__ckeyHash__</a>
                    </code></b>
                  </td>
-                 <td>Fowler–Noll–Vo hash key for a string.</td>
+                 <td>Fowler–Noll–Vo hash key for a character vector.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="__nkeyHash__.html">__nkeyHash__</a>
+                   </code></b>
+                 </td>
+                 <td>Fowler–Noll–Vo hash key for a numeric vector.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="__datetime__.html">__datetime__</a>
+                   </code></b>
+                 </td>
+                 <td>Base fuction for datetime class.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="__csv2table__.html">__csv2table__</a>
+                   </code></b>
+                 </td>
+                 <td>Barebone function for loading a CSV file to a cell array.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="__table2csv__.html">__table2csv__</a>
+                   </code></b>
+                 </td>
+                 <td>Barebone function for saving a cell array to a CSV file.</td>
                </tr>
              </tbody>
            </table>

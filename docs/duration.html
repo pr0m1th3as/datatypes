@@ -154,7 +154,6 @@
 					<li><a href="datetime.html" class="text-decoration-none font-monospace"><small>datetime</small></a></li>
 					<li><a href="isdatetime.html" class="text-decoration-none font-monospace"><small>isdatetime</small></a></li>
 					<li><a href="NaT.html" class="text-decoration-none font-monospace"><small>NaT</small></a></li>
-					<li><a href="__datetime__.html" class="text-decoration-none font-monospace"><small>__datetime__</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -205,8 +204,6 @@
 					<li><a href="csv2table.html" class="text-decoration-none font-monospace"><small>csv2table</small></a></li>
 					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
 					<li><a href="istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
-					<li><a href="__csv2table__.html" class="text-decoration-none font-monospace"><small>__csv2table__</small></a></li>
-					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace"><small>__table2csv__</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -222,7 +219,35 @@
 					<li><a href="vartype.html" class="text-decoration-none font-monospace"><small>vartype</small></a></li>
 					<li><a href="@cell_disp.html" class="text-decoration-none font-monospace"><small>@cell/disp</small></a></li>
 					<li><a href="@cell_display.html" class="text-decoration-none font-monospace"><small>@cell/display</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList8" type="checkbox">
+				<label for="togList8">
+					<span><h6>supplementary functions</h6></span>
+					<span><h6>supplementary functions</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="keyHash.html" class="text-decoration-none font-monospace"><small>keyHash</small></a></li>
+					<li><a href="keyMatch.html" class="text-decoration-none font-monospace"><small>keyMatch</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList9" type="checkbox">
+				<label for="togList9">
+					<span><h6>compiled functions</h6></span>
+					<span><h6>compiled functions</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
 					<li><a href="__ckeyHash__.html" class="text-decoration-none font-monospace"><small>__ckeyHash__</small></a></li>
+					<li><a href="__nkeyHash__.html" class="text-decoration-none font-monospace"><small>__nkeyHash__</small></a></li>
+					<li><a href="__datetime__.html" class="text-decoration-none font-monospace"><small>__datetime__</small></a></li>
+					<li><a href="__csv2table__.html" class="text-decoration-none font-monospace"><small>__csv2table__</small></a></li>
+					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace"><small>__table2csv__</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -908,17 +933,27 @@ Total number of elements in a duration array.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>isbetween</code></b>
+                    <b><code>nnz</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Number of nonzero elements in duration array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod15">
             <div class="border-bottom py-2">
-<b><code>duration.isbetween</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">duration: <var>out</var> = <b>nnz</b> (<var>D</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>out</var> = nnz (<var>D</var>)</code> returns the number of nonzero
+ elements in the duration array <var>D</var>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -931,6 +966,107 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
+                    <b><code>length</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Length of a duration vector.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod16">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">duration: <var>N</var> = <b>length</b> (<var>D</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>N</var> = length (<var>D</var>)</code> returns the size of the longest
+ dimension of the duration array <var>D</var>, unless any of its dimensions has
+ zero length, in which case <code>length (<var>D</var>)</code> returns 0.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod17"
+              aria-expanded="false" aria-controls="collapseMethod17">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>keyHash</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Generate a hash code for duration array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod17">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">duration: <var>hey</var> = <b>keyHash</b> (<var>D</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>h</var> = keyHash (<var>D</var>)</code> generates a <code>uint64</code> scalar that
+ represents the input array <var>D</var>.  <code>keyHash</code> utilizes the 64-bit
+ FMV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
+</p>
+<p> <code><var>h</var> = keyHash (<var>D</var>), <var>base</var></code> also generates a 64-bit
+ hash code using <var>base</var> as the offset basis for the FNV-1a hash
+ algorithm.  <var>base</var> must be a <code>uint64</code> integer type scalar.  Use
+ this syntax to cascade <code>keyHash</code> on multiple objects for which a
+ single hash code is required.
+</p>
+<p> Note that unlike MATLAB, this implementation does no use any random seed.
+ As a result, <code>keyHash</code> will always generate the exact same hash key
+ for any particular input across different workers and Octave sessions.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod18"
+              aria-expanded="false" aria-controls="collapseMethod18">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>isbetween</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod18">
+            <div class="border-bottom py-2">
+<b><code>duration.isbetween</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod19"
+              aria-expanded="false" aria-controls="collapseMethod19">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
                     <b><code>iscolumn</code></b>
                   </h4>
                 </div>
@@ -939,7 +1075,7 @@ Return true if duration array is a column vector.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod16">
+          <div class="collapse multi-collapse" id="collapseMethod19">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>iscolumn</b> (<var>D</var>)</code></h5></dt>
@@ -962,8 +1098,8 @@ Return true if duration array is a column vector.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod17"
-              aria-expanded="false" aria-controls="collapseMethod17">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod20"
+              aria-expanded="false" aria-controls="collapseMethod20">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -975,7 +1111,7 @@ Return true if duration array is empty.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod17">
+          <div class="collapse multi-collapse" id="collapseMethod20">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>isempty</b> (<var>D</var>)</code></h5></dt>
@@ -996,8 +1132,8 @@ Return true if duration array is empty.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod18"
-              aria-expanded="false" aria-controls="collapseMethod18">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod21"
+              aria-expanded="false" aria-controls="collapseMethod21">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1009,78 +1145,9 @@ undocumented
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod18">
-            <div class="border-bottom py-2">
-<b><code>duration.isequal</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod19"
-              aria-expanded="false" aria-controls="collapseMethod19">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>isequaln</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod19">
-            <div class="border-bottom py-2">
-<b><code>duration.isequaln</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod20"
-              aria-expanded="false" aria-controls="collapseMethod20">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>isfinite</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod20">
-            <div class="border-bottom py-2">
-<b><code>duration.isfinite</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod21"
-              aria-expanded="false" aria-controls="collapseMethod21">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>isinf</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
           <div class="collapse multi-collapse" id="collapseMethod21">
             <div class="border-bottom py-2">
-<b><code>duration.isinf</code></b> is not documented.
+<b><code>duration.isequal</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1093,30 +1160,17 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>ismatrix</code></b>
+                    <b><code>isequaln</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a 2-D array.
+undocumented
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod22">
             <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>ismatrix</b> (<var>D</var>)</code></h5></dt>
-</dl>
-
-<p> </p>
-<p> <code><var>TF</var> = ismatrix (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a matrix and
- <code>false</code> otherwise.  A matrix is an array of any type where
- <code>ndims (<var>X</var>) == 2</code> and for which <code>size (<var>X</var>)</code> returns
- <code>[<var>H</var>, <var>W</var>]</code> with non-negative <var>H</var> and <var>W</var>.
-</p>
-
-
-
+<b><code>duration.isequaln</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1129,7 +1183,53 @@ Return true if duration array is a 2-D array.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>ismember</code></b>
+                    <b><code>isfinite</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod23">
+            <div class="border-bottom py-2">
+<b><code>duration.isfinite</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod24"
+              aria-expanded="false" aria-controls="collapseMethod24">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>isinf</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod24">
+            <div class="border-bottom py-2">
+<b><code>duration.isinf</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod25"
+              aria-expanded="false" aria-controls="collapseMethod25">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>ismatrix</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1137,7 +1237,7 @@ Return true if duration array is a 2-D array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod23">
+          <div class="collapse multi-collapse" id="collapseMethod25">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>ismatrix</b> (<var>D</var>)</code></h5></dt>
@@ -1160,8 +1260,44 @@ Return true if duration array is a 2-D array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod24"
-              aria-expanded="false" aria-controls="collapseMethod24">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod26"
+              aria-expanded="false" aria-controls="collapseMethod26">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>ismember</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Return true if duration array is a 2-D array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod26">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>ismatrix</b> (<var>D</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = ismatrix (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code> if the duration array <var>D</var> is a matrix and
+ <code>false</code> otherwise.  A matrix is an array of any type where
+ <code>ndims (<var>X</var>) == 2</code> and for which <code>size (<var>X</var>)</code> returns
+ <code>[<var>H</var>, <var>W</var>]</code> with non-negative <var>H</var> and <var>W</var>.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod27"
+              aria-expanded="false" aria-controls="collapseMethod27">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1173,7 +1309,7 @@ undocumented
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod24">
+          <div class="collapse multi-collapse" id="collapseMethod27">
             <div class="border-bottom py-2">
 <b><code>duration.ismissing</code></b> is not documented.
             </div>
@@ -1183,8 +1319,8 @@ undocumented
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod25"
-              aria-expanded="false" aria-controls="collapseMethod25">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod28"
+              aria-expanded="false" aria-controls="collapseMethod28">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1196,7 +1332,7 @@ undocumented
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod25">
+          <div class="collapse multi-collapse" id="collapseMethod28">
             <div class="border-bottom py-2">
 <b><code>duration.isnan</code></b> is not documented.
             </div>
@@ -1206,8 +1342,8 @@ undocumented
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod26"
-              aria-expanded="false" aria-controls="collapseMethod26">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod29"
+              aria-expanded="false" aria-controls="collapseMethod29">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1219,7 +1355,7 @@ Return true if duration array is a row vector.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod26">
+          <div class="collapse multi-collapse" id="collapseMethod29">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>isrow</b> (<var>D</var>)</code></h5></dt>
@@ -1242,8 +1378,8 @@ Return true if duration array is a row vector.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod27"
-              aria-expanded="false" aria-controls="collapseMethod27">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod30"
+              aria-expanded="false" aria-controls="collapseMethod30">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1255,7 +1391,7 @@ Return true if duration array is a scalar.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod27">
+          <div class="collapse multi-collapse" id="collapseMethod30">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>isscalar</b> (<var>D</var>)</code></h5></dt>
@@ -1277,8 +1413,8 @@ Return true if duration array is a scalar.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod28"
-              aria-expanded="false" aria-controls="collapseMethod28">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod31"
+              aria-expanded="false" aria-controls="collapseMethod31">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1290,7 +1426,7 @@ undocumented
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod28">
+          <div class="collapse multi-collapse" id="collapseMethod31">
             <div class="border-bottom py-2">
 <b><code>duration.issorted</code></b> is not documented.
             </div>
@@ -1300,8 +1436,8 @@ undocumented
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod29"
-              aria-expanded="false" aria-controls="collapseMethod29">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod32"
+              aria-expanded="false" aria-controls="collapseMethod32">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1313,7 +1449,7 @@ undocumented
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod29">
+          <div class="collapse multi-collapse" id="collapseMethod32">
             <div class="border-bottom py-2">
 <b><code>duration.issortedrows</code></b> is not documented.
             </div>
@@ -1323,8 +1459,8 @@ undocumented
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod30"
-              aria-expanded="false" aria-controls="collapseMethod30">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod33"
+              aria-expanded="false" aria-controls="collapseMethod33">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1336,7 +1472,7 @@ Return true if duration array is a vector.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod30">
+          <div class="collapse multi-collapse" id="collapseMethod33">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
@@ -1359,8 +1495,8 @@ Return true if duration array is a vector.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod31"
-              aria-expanded="false" aria-controls="collapseMethod31">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod34"
+              aria-expanded="false" aria-controls="collapseMethod34">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1372,78 +1508,9 @@ undocumented
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod31">
-            <div class="border-bottom py-2">
-<b><code>duration.eq</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod32"
-              aria-expanded="false" aria-controls="collapseMethod32">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>ge</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod32">
-            <div class="border-bottom py-2">
-<b><code>duration.ge</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod33"
-              aria-expanded="false" aria-controls="collapseMethod33">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>gt</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod33">
-            <div class="border-bottom py-2">
-<b><code>duration.gt</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod34"
-              aria-expanded="false" aria-controls="collapseMethod34">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>le</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
           <div class="collapse multi-collapse" id="collapseMethod34">
             <div class="border-bottom py-2">
-<b><code>duration.le</code></b> is not documented.
+<b><code>duration.eq</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1456,7 +1523,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>lt</code></b>
+                    <b><code>ge</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1466,7 +1533,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod35">
             <div class="border-bottom py-2">
-<b><code>duration.lt</code></b> is not documented.
+<b><code>duration.ge</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1479,7 +1546,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>ne</code></b>
+                    <b><code>gt</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1489,7 +1556,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod36">
             <div class="border-bottom py-2">
-<b><code>duration.ne</code></b> is not documented.
+<b><code>duration.gt</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1502,7 +1569,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>abs</code></b>
+                    <b><code>le</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1512,7 +1579,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod37">
             <div class="border-bottom py-2">
-<b><code>duration.abs</code></b> is not documented.
+<b><code>duration.le</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1525,7 +1592,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>plus</code></b>
+                    <b><code>lt</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1535,7 +1602,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod38">
             <div class="border-bottom py-2">
-<b><code>duration.plus</code></b> is not documented.
+<b><code>duration.lt</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1548,7 +1615,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>uplus</code></b>
+                    <b><code>ne</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1558,7 +1625,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod39">
             <div class="border-bottom py-2">
-<b><code>duration.uplus</code></b> is not documented.
+<b><code>duration.ne</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1571,7 +1638,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>minus</code></b>
+                    <b><code>abs</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1581,7 +1648,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod40">
             <div class="border-bottom py-2">
-<b><code>duration.minus</code></b> is not documented.
+<b><code>duration.abs</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1594,7 +1661,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>uminus</code></b>
+                    <b><code>plus</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1604,7 +1671,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod41">
             <div class="border-bottom py-2">
-<b><code>duration.uminus</code></b> is not documented.
+<b><code>duration.plus</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1617,7 +1684,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>times</code></b>
+                    <b><code>uplus</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1627,7 +1694,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod42">
             <div class="border-bottom py-2">
-<b><code>duration.times</code></b> is not documented.
+<b><code>duration.uplus</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1640,7 +1707,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>mtimes</code></b>
+                    <b><code>minus</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1650,7 +1717,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod43">
             <div class="border-bottom py-2">
-<b><code>duration.mtimes</code></b> is not documented.
+<b><code>duration.minus</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1663,7 +1730,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>ldivide</code></b>
+                    <b><code>uminus</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1673,7 +1740,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod44">
             <div class="border-bottom py-2">
-<b><code>duration.ldivide</code></b> is not documented.
+<b><code>duration.uminus</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1686,7 +1753,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>mldivide</code></b>
+                    <b><code>times</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1696,7 +1763,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod45">
             <div class="border-bottom py-2">
-<b><code>duration.mldivide</code></b> is not documented.
+<b><code>duration.times</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1709,7 +1776,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>rdivide</code></b>
+                    <b><code>mtimes</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1719,7 +1786,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod46">
             <div class="border-bottom py-2">
-<b><code>duration.rdivide</code></b> is not documented.
+<b><code>duration.mtimes</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1732,7 +1799,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>mrdivide</code></b>
+                    <b><code>ldivide</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1742,7 +1809,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod47">
             <div class="border-bottom py-2">
-<b><code>duration.mrdivide</code></b> is not documented.
+<b><code>duration.ldivide</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1755,7 +1822,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>colon</code></b>
+                    <b><code>mldivide</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1765,7 +1832,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod48">
             <div class="border-bottom py-2">
-<b><code>duration.colon</code></b> is not documented.
+<b><code>duration.mldivide</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1778,7 +1845,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>linspace</code></b>
+                    <b><code>rdivide</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1788,7 +1855,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod49">
             <div class="border-bottom py-2">
-<b><code>duration.linspace</code></b> is not documented.
+<b><code>duration.rdivide</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1801,7 +1868,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>interp1</code></b>
+                    <b><code>mrdivide</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1811,7 +1878,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod50">
             <div class="border-bottom py-2">
-<b><code>duration.interp1</code></b> is not documented.
+<b><code>duration.mrdivide</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1824,7 +1891,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>sum</code></b>
+                    <b><code>colon</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1834,7 +1901,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod51">
             <div class="border-bottom py-2">
-<b><code>duration.sum</code></b> is not documented.
+<b><code>duration.colon</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1847,7 +1914,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>cumsum</code></b>
+                    <b><code>linspace</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1857,7 +1924,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod52">
             <div class="border-bottom py-2">
-<b><code>duration.cumsum</code></b> is not documented.
+<b><code>duration.linspace</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1870,7 +1937,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>diff</code></b>
+                    <b><code>interp1</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1880,7 +1947,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod53">
             <div class="border-bottom py-2">
-<b><code>duration.diff</code></b> is not documented.
+<b><code>duration.interp1</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1893,7 +1960,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>mean</code></b>
+                    <b><code>sum</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1903,7 +1970,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod54">
             <div class="border-bottom py-2">
-<b><code>duration.mean</code></b> is not documented.
+<b><code>duration.sum</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1916,7 +1983,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>median</code></b>
+                    <b><code>cumsum</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1926,7 +1993,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod55">
             <div class="border-bottom py-2">
-<b><code>duration.median</code></b> is not documented.
+<b><code>duration.cumsum</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1939,7 +2006,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>mode</code></b>
+                    <b><code>diff</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1949,7 +2016,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod56">
             <div class="border-bottom py-2">
-<b><code>duration.mode</code></b> is not documented.
+<b><code>duration.diff</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1962,7 +2029,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>floor</code></b>
+                    <b><code>mean</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1972,7 +2039,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod57">
             <div class="border-bottom py-2">
-<b><code>duration.floor</code></b> is not documented.
+<b><code>duration.mean</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1985,7 +2052,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>ceil</code></b>
+                    <b><code>median</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1995,7 +2062,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod58">
             <div class="border-bottom py-2">
-<b><code>duration.ceil</code></b> is not documented.
+<b><code>duration.median</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2008,7 +2075,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>round</code></b>
+                    <b><code>mode</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2018,7 +2085,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod59">
             <div class="border-bottom py-2">
-<b><code>duration.round</code></b> is not documented.
+<b><code>duration.mode</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2031,7 +2098,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>sign</code></b>
+                    <b><code>floor</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2041,7 +2108,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod60">
             <div class="border-bottom py-2">
-<b><code>duration.sign</code></b> is not documented.
+<b><code>duration.floor</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2054,7 +2121,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>sort</code></b>
+                    <b><code>ceil</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2064,7 +2131,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod61">
             <div class="border-bottom py-2">
-<b><code>duration.sort</code></b> is not documented.
+<b><code>duration.ceil</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2077,7 +2144,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>sortrows</code></b>
+                    <b><code>round</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2087,7 +2154,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod62">
             <div class="border-bottom py-2">
-<b><code>duration.sortrows</code></b> is not documented.
+<b><code>duration.round</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2100,7 +2167,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>unique</code></b>
+                    <b><code>sign</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2110,7 +2177,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod63">
             <div class="border-bottom py-2">
-<b><code>duration.sortrows</code></b> is not documented.
+<b><code>duration.sign</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2123,7 +2190,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>intersect</code></b>
+                    <b><code>sort</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2133,7 +2200,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod64">
             <div class="border-bottom py-2">
-<b><code>duration.intersect</code></b> is not documented.
+<b><code>duration.sort</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2146,7 +2213,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>setdiff</code></b>
+                    <b><code>sortrows</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2156,7 +2223,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod65">
             <div class="border-bottom py-2">
-<b><code>duration.setdiff</code></b> is not documented.
+<b><code>duration.sortrows</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2169,7 +2236,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>setxor</code></b>
+                    <b><code>unique</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2179,7 +2246,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod66">
             <div class="border-bottom py-2">
-<b><code>duration.setxor</code></b> is not documented.
+<b><code>duration.sortrows</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -2192,7 +2259,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>union</code></b>
+                    <b><code>intersect</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -2201,6 +2268,75 @@ undocumented
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod67">
+            <div class="border-bottom py-2">
+<b><code>duration.intersect</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod68"
+              aria-expanded="false" aria-controls="collapseMethod68">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>setdiff</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod68">
+            <div class="border-bottom py-2">
+<b><code>duration.setdiff</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod69"
+              aria-expanded="false" aria-controls="collapseMethod69">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>setxor</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod69">
+            <div class="border-bottom py-2">
+<b><code>duration.setxor</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod70"
+              aria-expanded="false" aria-controls="collapseMethod70">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>union</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod70">
             <div class="border-bottom py-2">
 <b><code>duration.union</code></b> is not documented.
             </div>

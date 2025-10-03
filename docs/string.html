@@ -154,7 +154,6 @@
 					<li><a href="datetime.html" class="text-decoration-none font-monospace"><small>datetime</small></a></li>
 					<li><a href="isdatetime.html" class="text-decoration-none font-monospace"><small>isdatetime</small></a></li>
 					<li><a href="NaT.html" class="text-decoration-none font-monospace"><small>NaT</small></a></li>
-					<li><a href="__datetime__.html" class="text-decoration-none font-monospace"><small>__datetime__</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -205,8 +204,6 @@
 					<li><a href="csv2table.html" class="text-decoration-none font-monospace"><small>csv2table</small></a></li>
 					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
 					<li><a href="istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
-					<li><a href="__csv2table__.html" class="text-decoration-none font-monospace"><small>__csv2table__</small></a></li>
-					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace"><small>__table2csv__</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -222,7 +219,35 @@
 					<li><a href="vartype.html" class="text-decoration-none font-monospace"><small>vartype</small></a></li>
 					<li><a href="@cell_disp.html" class="text-decoration-none font-monospace"><small>@cell/disp</small></a></li>
 					<li><a href="@cell_display.html" class="text-decoration-none font-monospace"><small>@cell/display</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList8" type="checkbox">
+				<label for="togList8">
+					<span><h6>supplementary functions</h6></span>
+					<span><h6>supplementary functions</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="keyHash.html" class="text-decoration-none font-monospace"><small>keyHash</small></a></li>
+					<li><a href="keyMatch.html" class="text-decoration-none font-monospace"><small>keyMatch</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList9" type="checkbox">
+				<label for="togList9">
+					<span><h6>compiled functions</h6></span>
+					<span><h6>compiled functions</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
 					<li><a href="__ckeyHash__.html" class="text-decoration-none font-monospace"><small>__ckeyHash__</small></a></li>
+					<li><a href="__nkeyHash__.html" class="text-decoration-none font-monospace"><small>__nkeyHash__</small></a></li>
+					<li><a href="__datetime__.html" class="text-decoration-none font-monospace"><small>__datetime__</small></a></li>
+					<li><a href="__csv2table__.html" class="text-decoration-none font-monospace"><small>__csv2table__</small></a></li>
+					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace"><small>__table2csv__</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -628,6 +653,78 @@ Length of text in string arrays.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
+                    <b><code>length</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Length of a string vector.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod9">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>N</var> = <b>length</b> (<var>str</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>N</var> = length (<var>str</var>)</code> returns the size of the longest
+ dimension of the string array <var>str</var>, unless any of its dimensions
+ has zero length, in which case <code>length (<var>D</var>)</code> returns 0.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod10"
+              aria-expanded="false" aria-controls="collapseMethod10">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>keyHash</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Generate a hash code for string array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod10">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>hey</var> = <b>keyHash</b> (<var>C</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>h</var> = keyHash (<var>C</var>)</code> generates a <code>uint64</code> scalar that
+ represents the input array <var>C</var>.  <code>keyHash</code> utilizes the 64-bit
+ variant of the Fowler-Noll-Vo non-cryptographic hash function.
+</p>
+<p> Note that unlike MATLAB, this implementation does no use any random seed.
+ As a result, <code>keyHash</code> will always generate the exact same hash key
+ for any particular input across different workers and Octave sessions.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod11"
+              aria-expanded="false" aria-controls="collapseMethod11">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
                     <b><code>iscolumn</code></b>
                   </h4>
                 </div>
@@ -636,7 +733,7 @@ Test if string array is a column vector.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod9">
+          <div class="collapse multi-collapse" id="collapseMethod11">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>iscolumn</b> (<var>str</var>)</code></h5></dt>
@@ -655,8 +752,8 @@ Test if string array is a column vector.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod10"
-              aria-expanded="false" aria-controls="collapseMethod10">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod12"
+              aria-expanded="false" aria-controls="collapseMethod12">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -668,7 +765,7 @@ Test if string array is empty.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod10">
+          <div class="collapse multi-collapse" id="collapseMethod12">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>isempty</b> (<var>str</var>)</code></h5></dt>
@@ -687,8 +784,8 @@ Test if string array is empty.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod11"
-              aria-expanded="false" aria-controls="collapseMethod11">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod13"
+              aria-expanded="false" aria-controls="collapseMethod13">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -700,7 +797,7 @@ Test if string array is a matrix.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod11">
+          <div class="collapse multi-collapse" id="collapseMethod13">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>ismatrix</b> (<var>str</var>)</code></h5></dt>
@@ -719,8 +816,8 @@ Test if string array is a matrix.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod12"
-              aria-expanded="false" aria-controls="collapseMethod12">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod14"
+              aria-expanded="false" aria-controls="collapseMethod14">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -732,7 +829,7 @@ Test for set member in string arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod12">
+          <div class="collapse multi-collapse" id="collapseMethod14">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>ismember</b> (<var>str1</var>, <var>str2</var>)</code></h5></dt>
@@ -751,8 +848,8 @@ Test for set member in string arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod13"
-              aria-expanded="false" aria-controls="collapseMethod13">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod15"
+              aria-expanded="false" aria-controls="collapseMethod15">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -764,7 +861,7 @@ Test for missing elements in string array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod13">
+          <div class="collapse multi-collapse" id="collapseMethod15">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>ismissing</b> (<var>str</var>)</code></h5></dt>
@@ -783,8 +880,8 @@ Test for missing elements in string array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod14"
-              aria-expanded="false" aria-controls="collapseMethod14">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod16"
+              aria-expanded="false" aria-controls="collapseMethod16">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -796,7 +893,7 @@ Test if string array is a row vector.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod14">
+          <div class="collapse multi-collapse" id="collapseMethod16">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>isrow</b> (<var>str</var>)</code></h5></dt>
@@ -815,8 +912,8 @@ Test if string array is a row vector.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod15"
-              aria-expanded="false" aria-controls="collapseMethod15">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod17"
+              aria-expanded="false" aria-controls="collapseMethod17">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -828,7 +925,7 @@ Test if string array is a scalar.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod15">
+          <div class="collapse multi-collapse" id="collapseMethod17">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>isscalar</b> (<var>str</var>)</code></h5></dt>
@@ -847,8 +944,8 @@ Test if string array is a scalar.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod16"
-              aria-expanded="false" aria-controls="collapseMethod16">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod18"
+              aria-expanded="false" aria-controls="collapseMethod18">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -860,7 +957,7 @@ Test if string array is a vector.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod16">
+          <div class="collapse multi-collapse" id="collapseMethod18">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>isvector</b> (<var>str</var>)</code></h5></dt>
@@ -879,8 +976,8 @@ Test if string array is a vector.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod17"
-              aria-expanded="false" aria-controls="collapseMethod17">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod19"
+              aria-expanded="false" aria-controls="collapseMethod19">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -892,7 +989,7 @@ Test for equality.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod17">
+          <div class="collapse multi-collapse" id="collapseMethod19">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -914,8 +1011,8 @@ Test for equality.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod18"
-              aria-expanded="false" aria-controls="collapseMethod18">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod20"
+              aria-expanded="false" aria-controls="collapseMethod20">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -927,75 +1024,6 @@ Test for greater than or equal to.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod18">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">string: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
-</dl>
-
-<p> </p>
-<p> <var>TF</var> is <code>true</code>, if string <var>A</var> is lexicographically greater
- than or equal to <var>B</var>.  If one input is a string array, the other
- input can be a string array, a character vector, or a cell array of
- character vectors.
-</p>
-
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod19"
-              aria-expanded="false" aria-controls="collapseMethod19">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>gt</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Test for greater than.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod19">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">string: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
-</dl>
-
-<p> </p>
-<p> <var>TF</var> is <code>true</code>, if string <var>A</var> is lexicographically greater
- than <var>B</var>.  If one input is a string array, the other input can be a
- string array, a character vector, or a cell array of character vectors.
-</p>
-
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod20"
-              aria-expanded="false" aria-controls="collapseMethod20">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>le</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Test for less than or equal to.
-                </div>
-              </div>
-          </div>
           <div class="collapse multi-collapse" id="collapseMethod20">
             <div class="border-bottom py-2">
 <dl>
@@ -1003,7 +1031,7 @@ Test for less than or equal to.
 </dl>
 
 <p> </p>
-<p> <var>TF</var> is <code>true</code>, if string <var>A</var> is lexicographically less
+<p> <var>TF</var> is <code>true</code>, if string <var>A</var> is lexicographically greater
  than or equal to <var>B</var>.  If one input is a string array, the other
  input can be a string array, a character vector, or a cell array of
  character vectors.
@@ -1023,6 +1051,75 @@ Test for less than or equal to.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
+                    <b><code>gt</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Test for greater than.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod21">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <var>TF</var> is <code>true</code>, if string <var>A</var> is lexicographically greater
+ than <var>B</var>.  If one input is a string array, the other input can be a
+ string array, a character vector, or a cell array of character vectors.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod22"
+              aria-expanded="false" aria-controls="collapseMethod22">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>le</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Test for less than or equal to.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod22">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <var>TF</var> is <code>true</code>, if string <var>A</var> is lexicographically less
+ than or equal to <var>B</var>.  If one input is a string array, the other
+ input can be a string array, a character vector, or a cell array of
+ character vectors.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod23"
+              aria-expanded="false" aria-controls="collapseMethod23">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
                     <b><code>lt</code></b>
                   </h4>
                 </div>
@@ -1031,7 +1128,7 @@ Test for less than.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod21">
+          <div class="collapse multi-collapse" id="collapseMethod23">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -1052,8 +1149,8 @@ Test for less than.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod22"
-              aria-expanded="false" aria-controls="collapseMethod22">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod24"
+              aria-expanded="false" aria-controls="collapseMethod24">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1065,7 +1162,7 @@ Test for inequality.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod22">
+          <div class="collapse multi-collapse" id="collapseMethod24">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>ne</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -1088,8 +1185,8 @@ Test for inequality.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod23"
-              aria-expanded="false" aria-controls="collapseMethod23">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod25"
+              aria-expanded="false" aria-controls="collapseMethod25">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1101,7 +1198,7 @@ Compare strings.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod23">
+          <div class="collapse multi-collapse" id="collapseMethod25">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>strcmp</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -1129,8 +1226,8 @@ Compare strings.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod24"
-              aria-expanded="false" aria-controls="collapseMethod24">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod26"
+              aria-expanded="false" aria-controls="collapseMethod26">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1142,7 +1239,7 @@ Compare strings (case insensitive).
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod24">
+          <div class="collapse multi-collapse" id="collapseMethod26">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>strcmp</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -1171,8 +1268,8 @@ Compare strings (case insensitive).
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod25"
-              aria-expanded="false" aria-controls="collapseMethod25">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod27"
+              aria-expanded="false" aria-controls="collapseMethod27">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1184,7 +1281,7 @@ Compare first <var>n</var> characters of strings.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod25">
+          <div class="collapse multi-collapse" id="collapseMethod27">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>strncmp</b> (<var>A</var>, <var>B</var>, <var>n</var>)</code></h5></dt>
@@ -1213,8 +1310,8 @@ Compare first <var>n</var> characters of strings.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod26"
-              aria-expanded="false" aria-controls="collapseMethod26">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod28"
+              aria-expanded="false" aria-controls="collapseMethod28">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1226,7 +1323,7 @@ Compare first <var>n</var> characters of strings (case insensitive).
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod26">
+          <div class="collapse multi-collapse" id="collapseMethod28">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>strncmp</b> (<var>A</var>, <var>B</var>, <var>n</var>)</code></h5></dt>
@@ -1256,8 +1353,8 @@ Compare first <var>n</var> characters of strings (case insensitive).
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod27"
-              aria-expanded="false" aria-controls="collapseMethod27">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod29"
+              aria-expanded="false" aria-controls="collapseMethod29">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1269,7 +1366,7 @@ undocumented
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod27">
+          <div class="collapse multi-collapse" id="collapseMethod29">
             <div class="border-bottom py-2">
 <b><code>string.append</code></b> is not documented.
             </div>
@@ -1279,8 +1376,8 @@ undocumented
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod28"
-              aria-expanded="false" aria-controls="collapseMethod28">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod30"
+              aria-expanded="false" aria-controls="collapseMethod30">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1292,7 +1389,7 @@ undocumented
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod28">
+          <div class="collapse multi-collapse" id="collapseMethod30">
             <div class="border-bottom py-2">
 <b><code>string.compose</code></b> is not documented.
             </div>
@@ -1302,8 +1399,8 @@ undocumented
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod29"
-              aria-expanded="false" aria-controls="collapseMethod29">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod31"
+              aria-expanded="false" aria-controls="collapseMethod31">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1315,7 +1412,7 @@ Remove content from string array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod29">
+          <div class="collapse multi-collapse" id="collapseMethod31">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>erase</b> (<var>str</var>, <var>pat</var>)</code></h5></dt>
@@ -1336,8 +1433,8 @@ Remove content from string array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod30"
-              aria-expanded="false" aria-controls="collapseMethod30">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod32"
+              aria-expanded="false" aria-controls="collapseMethod32">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1349,55 +1446,9 @@ undocumented
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod30">
-            <div class="border-bottom py-2">
-<b><code>string.eraseBetween</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod31"
-              aria-expanded="false" aria-controls="collapseMethod31">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>extract</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod31">
-            <div class="border-bottom py-2">
-<b><code>string.extract</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod32"
-              aria-expanded="false" aria-controls="collapseMethod32">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>extractAfter</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
           <div class="collapse multi-collapse" id="collapseMethod32">
             <div class="border-bottom py-2">
-<b><code>string.extractAfter</code></b> is not documented.
+<b><code>string.eraseBetween</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1410,7 +1461,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>extractBefore</code></b>
+                    <b><code>extract</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1420,7 +1471,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod33">
             <div class="border-bottom py-2">
-<b><code>string.extractBefore</code></b> is not documented.
+<b><code>string.extract</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1433,7 +1484,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>extractBetween</code></b>
+                    <b><code>extractAfter</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1443,7 +1494,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod34">
             <div class="border-bottom py-2">
-<b><code>string.extractBetween</code></b> is not documented.
+<b><code>string.extractAfter</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1456,7 +1507,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>insertAfter</code></b>
+                    <b><code>extractBefore</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1466,7 +1517,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod35">
             <div class="border-bottom py-2">
-<b><code>string.insertAfter</code></b> is not documented.
+<b><code>string.extractBefore</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1479,7 +1530,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>insertBefore</code></b>
+                    <b><code>extractBetween</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1489,7 +1540,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod36">
             <div class="border-bottom py-2">
-<b><code>string.insertBefore</code></b> is not documented.
+<b><code>string.extractBetween</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1502,7 +1553,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>replace</code></b>
+                    <b><code>insertAfter</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1512,7 +1563,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod37">
             <div class="border-bottom py-2">
-<b><code>string.replace</code></b> is not documented.
+<b><code>string.insertAfter</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1525,7 +1576,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>replaceBetween</code></b>
+                    <b><code>insertBefore</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1535,7 +1586,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod38">
             <div class="border-bottom py-2">
-<b><code>string.replaceBetween</code></b> is not documented.
+<b><code>string.insertBefore</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1548,6 +1599,52 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
+                    <b><code>replace</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod39">
+            <div class="border-bottom py-2">
+<b><code>string.replace</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod40"
+              aria-expanded="false" aria-controls="collapseMethod40">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>replaceBetween</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod40">
+            <div class="border-bottom py-2">
+<b><code>string.replaceBetween</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod41"
+              aria-expanded="false" aria-controls="collapseMethod41">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
                     <b><code>reverse</code></b>
                   </h4>
                 </div>
@@ -1556,7 +1653,7 @@ Reverse order of characters in string array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod39">
+          <div class="collapse multi-collapse" id="collapseMethod41">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>reverse</b> (<var>str</var>)</code></h5></dt>
@@ -1577,8 +1674,8 @@ Reverse order of characters in string array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod40"
-              aria-expanded="false" aria-controls="collapseMethod40">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod42"
+              aria-expanded="false" aria-controls="collapseMethod42">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1590,7 +1687,7 @@ undocumented
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod40">
+          <div class="collapse multi-collapse" id="collapseMethod42">
             <div class="border-bottom py-2">
 <b><code>string.sort</code></b> is not documented.
             </div>
@@ -1600,8 +1697,8 @@ undocumented
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod41"
-              aria-expanded="false" aria-controls="collapseMethod41">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod43"
+              aria-expanded="false" aria-controls="collapseMethod43">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1613,7 +1710,7 @@ undocumented
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod41">
+          <div class="collapse multi-collapse" id="collapseMethod43">
             <div class="border-bottom py-2">
 <b><code>string.split</code></b> is not documented.
             </div>
@@ -1623,8 +1720,8 @@ undocumented
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod42"
-              aria-expanded="false" aria-controls="collapseMethod42">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod44"
+              aria-expanded="false" aria-controls="collapseMethod44">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1636,7 +1733,7 @@ Horizontal concatenation of texts in string array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod42">
+          <div class="collapse multi-collapse" id="collapseMethod44">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>strcat</b> (<var>str1</var>, <var>str2</var>, &hellip;)</code></h5></dt>
@@ -1659,8 +1756,8 @@ Horizontal concatenation of texts in string array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod43"
-              aria-expanded="false" aria-controls="collapseMethod43">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod45"
+              aria-expanded="false" aria-controls="collapseMethod45">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1672,55 +1769,9 @@ undocumented
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod43">
-            <div class="border-bottom py-2">
-<b><code>string.strip</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod44"
-              aria-expanded="false" aria-controls="collapseMethod44">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>pad</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod44">
-            <div class="border-bottom py-2">
-<b><code>string.pad</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod45"
-              aria-expanded="false" aria-controls="collapseMethod45">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>join</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
           <div class="collapse multi-collapse" id="collapseMethod45">
             <div class="border-bottom py-2">
-<b><code>string.join</code></b> is not documented.
+<b><code>string.strip</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1733,7 +1784,7 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>plus</code></b>
+                    <b><code>pad</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
@@ -1743,7 +1794,7 @@ undocumented
           </div>
           <div class="collapse multi-collapse" id="collapseMethod46">
             <div class="border-bottom py-2">
-<b><code>string.plus</code></b> is not documented.
+<b><code>string.pad</code></b> is not documented.
             </div>
           </div>
         </div>
@@ -1756,6 +1807,52 @@ undocumented
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
+                    <b><code>join</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod47">
+            <div class="border-bottom py-2">
+<b><code>string.join</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod48"
+              aria-expanded="false" aria-controls="collapseMethod48">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>plus</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+undocumented
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod48">
+            <div class="border-bottom py-2">
+<b><code>string.plus</code></b> is not documented.
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod49"
+              aria-expanded="false" aria-controls="collapseMethod49">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
                     <b><code>lower</code></b>
                   </h4>
                 </div>
@@ -1764,7 +1861,7 @@ Convert contents of string array to lower case.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod47">
+          <div class="collapse multi-collapse" id="collapseMethod49">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>lower</b> (<var>str</var>)</code></h5></dt>
@@ -1785,8 +1882,8 @@ Convert contents of string array to lower case.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod48"
-              aria-expanded="false" aria-controls="collapseMethod48">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod50"
+              aria-expanded="false" aria-controls="collapseMethod50">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1798,7 +1895,7 @@ Convert contents of string array to upper case.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod48">
+          <div class="collapse multi-collapse" id="collapseMethod50">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>upper</b> (<var>str</var>)</code></h5></dt>
@@ -1819,8 +1916,8 @@ Convert contents of string array to upper case.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod49"
-              aria-expanded="false" aria-controls="collapseMethod49">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod51"
+              aria-expanded="false" aria-controls="collapseMethod51">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1832,7 +1929,7 @@ Convert contents of string array to upper case.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod49">
+          <div class="collapse multi-collapse" id="collapseMethod51">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>upper</b> (<var>str</var>)</code></h5></dt>
@@ -1842,6 +1939,79 @@ Convert contents of string array to upper case.
 <p> <code><var>newstr</var> = upper (<var>str</var>)</code> converts all lower case
  characters in every element of the string array <var>str</var> to upper case.
  <var>newstr</var> is a string array of the same size as <var>str</var>.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod52"
+              aria-expanded="false" aria-controls="collapseMethod52">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>keyHash</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Generate a hash code for string array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod52">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>hey</var> = <b>keyHash</b> (<var>C</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>h</var> = keyHash (<var>C</var>)</code> generates a <code>uint64</code> scalar that
+ represents the input array <var>C</var>.  <code>keyHash</code> utilizes the 64-bit
+ variant of the Fowler-Noll-Vo non-cryptographic hash function.
+</p>
+<p> Note that unlike MATLAB, this implementation does no use any random seed.
+ As a result, <code>keyHash</code> will always generate the exact same hash key
+ for any particular input across different workers and Octave sessions.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod53"
+              aria-expanded="false" aria-controls="collapseMethod53">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>keyMatch</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Return true if both inputs have the same hash key.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod53">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>keyMatch</b> (<var>C1</var>, <var>C2)
+</var></code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = keyMatch (<var>C1</var>, <var>C2</var>)</code> returns a logical scalar,
+ which is <code>true</code>, if both categorical arrays <var>C1</var> and <var>C2</var>
+ have the same hash key, and <code>false</code> otherwise.
 </p>
 
 
