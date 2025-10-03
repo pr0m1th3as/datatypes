@@ -1840,29 +1840,6 @@ classdef duration
 
   methods (Access = private)
 
-    ## Promote numeric and string arrays to duration objects
-    function varargout = promote (varargin)
-      for i = 1:numel (varargin)
-        x = varargin{i};
-        if (isa (x, "duration"))
-          varargout{i} = x;
-        elseif (isnumeric (x))
-          ncols = size (x, 2);
-          if (isscalar (x))
-            varargout{i} = duration (24 * x, 0, 0);
-          elseif (ismatrix (x) && ncols == 3)
-            varargout{i} = duration (x);
-          else
-            error ("duration: invalid size input to constructor.");
-          endif
-        elseif (iscellstr (x) || ischar (x) || isa (x, "string"))
-          varargout{i} = duration (x);
-        else
-          error ("duration: invalid input to constructor.");
-        endif
-      endfor
-    endfunction
-
     ## Fix floating point precision near zero
     function this = fix_zero_precision (this)
       this.Days(this.Days > -1e-15 & this.Days < 1e-15) = 0;
@@ -1871,6 +1848,29 @@ classdef duration
   endmethods
 
 endclassdef
+
+## Promote numeric and string arrays to duration objects
+function varargout = promote (varargin)
+  for i = 1:numel (varargin)
+    x = varargin{i};
+    if (isa (x, "duration"))
+      varargout{i} = x;
+    elseif (isnumeric (x))
+      ncols = size (x, 2);
+      if (isscalar (x))
+        varargout{i} = duration (24 * x, 0, 0);
+      elseif (ismatrix (x) && ncols == 3)
+        varargout{i} = duration (x);
+      else
+        error ("duration: invalid size input to constructor.");
+      endif
+    elseif (iscellstr (x) || ischar (x) || isa (x, "string"))
+      varargout{i} = duration (x);
+    else
+      error ("duration: invalid input to constructor.");
+    endif
+  endfor
+endfunction
 
 ## Parse H, M, S, and MS numeric inputs into days
 function [err, days] = hms2days (H, MI, S, MS = 0)
