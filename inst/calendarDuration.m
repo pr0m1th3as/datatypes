@@ -815,9 +815,11 @@ classdef calendarDuration
       else
         key = __ckeyHash__(init_str);
       endif
-      key = __nkeyHash__(this.Months(:), key);
-      key = __nkeyHash__(this.Days(:), key);
-      key = keyHash (this.Time, key);
+      if (! isempty (this.Months))
+        key = __nkeyHash__(this.Months(:), key);
+        key = __nkeyHash__(this.Days(:), key);
+        key = keyHash (this.Time, key);
+      endif
     endfunction
 
   endmethods
