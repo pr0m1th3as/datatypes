@@ -1458,7 +1458,7 @@ classdef duration
       A_isDur = isa (A, 'duration');
       B_isDur = isa (B, 'duration');
       AIisDur = isa (AI, 'duration');
-      if (xor (A_isDur, AIisDur)
+      if (xor (A_isDur, AIisDur))
         error ("duration.interp1: if A is a duration array, AI must be also.");
       endif
       if (B_isDur)
@@ -1468,7 +1468,7 @@ classdef duration
           BI = days (interp1 (A, B.Days, AI, varargin{:}));
         else
           error (strcat ("duration.interp1: if A is not a duration", ...
-                         " array, then both A and AI must be numeric.");
+                         " array, then both A and AI must be numeric."));
         endif
       elseif (isnumeric (B))
         BI = interp1 (A.Days, B, AI.Days, varargin{:});
