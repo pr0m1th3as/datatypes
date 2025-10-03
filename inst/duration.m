@@ -1357,8 +1357,8 @@ classdef duration
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'sort'             'sortrows'         'unique'           'intersect'       ##
-## 'setdiff'          'setxor'           'union'                              ##
+## 'sort'             'sortrows'         'unique'           'interp1'         ##
+## 'intersect'        'setdiff'          'setxor'           'union'           ##
 ##                                                                            ##
 ################################################################################
 
@@ -1451,6 +1451,29 @@ classdef duration
       else
         [~, ixA, ixB] = __unique__ (A.Days, opt);
         B = subset (A, ixA);
+      endif
+    endfunction
+
+    function BI = interp1 (A, B, AI, varargin)
+      A_isDur = isa (A, 'duration');
+      B_isDur = isa (B, 'duration');
+      AIisDur = isa (AI, 'duration');
+      if (xor (A_isDur, AIisDur)
+        error ("duration.interp1: if A is a duration array, AI must be also.");
+      endif
+      if (B_isDur)
+        if (A_isDur)
+          BI = days (interp1 (A.Days, B.Days, AI.Days, varargin{:}));
+        elseif (isnumeric (A) && isnumeric (AI))
+          BI = days (interp1 (A, B.Days, AI, varargin{:}));
+        else
+          error (strcat ("duration.interp1: if A is not a duration", ...
+                         " array, then both A and AI must be numeric.");
+        endif
+      elseif (isnumeric (B))
+        BI = interp1 (A.Days, B, AI.Days, varargin{:});
+      else
+        error ("duration.interp1: B must be a duration or numeric array.");
       endif
     endfunction
 

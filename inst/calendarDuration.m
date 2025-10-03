@@ -1147,8 +1147,8 @@ classdef calendarDuration
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'sort'             'sortrows'         'unique'           'interp1'         ##
-## 'intersect'        'setdiff'          'setxor'           'union'           ##
+## 'sort'             'sortrows'         'unique'           'intersect'       ##
+## 'setdiff'          'setxor'           'union'                              ##
 ##                                                                            ##
 ################################################################################
 
@@ -1164,10 +1164,6 @@ classdef calendarDuration
 
     function [B, ixA, ixB] = unique (A, varargin)
       error ("calendarDuration.unique: not implemented yet.");
-    endfunction
-
-    function [C, ixA, ixB] = interp1 (A, B, varargin)
-      error ("calendarDuration.interp1: not implemented yet.");
     endfunction
 
     function [C, ixA, ixB] = intersect (A, B, varargin)

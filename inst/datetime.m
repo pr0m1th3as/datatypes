@@ -801,7 +801,7 @@ classdef datetime
       error ("datetime.unique: not implemented yet.");
     endfunction
 
-    function [C, ixA, ixB] = interp1 (A, B, varargin)
+    function BI = interp1 (A, B, AI, varargin)
       error ("datetime.interp1: not implemented yet.");
     endfunction
 
