@@ -1134,8 +1134,8 @@ classdef calendarDuration
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'cat'              'horzcat'          'vertcat'          'repmat'          ##
-## 'reshape'          'circshift'        'permute'          'ipermute'        ##
-## 'transpose'        'ctranspose'                                            ##
+## 'repelem'          'repelems'         'reshape'          'circshift'       ##
+## 'permute'          'ipermute'         'transpose'        'ctranspose'      ##
 ##                                                                            ##
 ################################################################################
 
@@ -1166,6 +1166,18 @@ classdef calendarDuration
       this.Months = repmat (this.Months, varargin{:});
       this.Days   = repmat (this.Days, varargin{:});
       this.Time   = repmat (this.Time, varargin{:});
+    endfunction
+
+    function this = repelem (this, varargin)
+      this.Months = repelem (this.Months, varargin{:});
+      this.Days   = repelem (this.Days, varargin{:});
+      this.Time   = repelem (this.Time, varargin{:});
+    endfunction
+
+    function this = repelems (this, R)
+      this.Months = repelems (this.Months, R);
+      this.Days   = repelems (this.Days, R);
+      this.Time   = repelems (this.Time, R);
     endfunction
 
     function this = reshape (this, varargin)
@@ -1312,6 +1324,18 @@ classdef calendarDuration
 
   methods (Access = private)
 
+    ## Return a subset of the array
+    function this = subset (this, varargin)
+      this = this;
+      this.Months = this.Months(varargin{:});
+      this.Days   = this.Days(varargin{:});
+      this.Time   = this.Time(varargin{:});
+    endfunction
+
+  endmethods
+
+  methods (Access = private)
+
     ## Broadcast properties
     function this = broadcastProperties (this)
       ## Handle NaNs and Infs first
@@ -1375,14 +1399,6 @@ classdef calendarDuration
         dt = hours (this.Time);
         out = [this.Months, this.Days, dt];
       endif
-    endfunction
-
-    ## Return a subset of the array
-    function this = subset (this, varargin)
-      this = this;
-      this.Months = this.Months(varargin{:});
-      this.Days   = this.Days(varargin{:});
-      this.Time   = this.Time(varargin{:});
     endfunction
 
   endmethods
