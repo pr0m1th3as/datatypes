@@ -605,7 +605,7 @@ classdef categorical
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'summary'          'categories'       'countcats'        'length'          ##
-## 'size'             'ndims'            'numel'                              ##
+## 'size'             'ndims'            'numel'            'keyHash'         ##
 ##                                                                            ##
 ################################################################################
 
@@ -772,6 +772,44 @@ classdef categorical
     ## @end deftypefn
     function out = numel (this, varargin)
       out = 1;
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {categorical} {@var{hey} =} keyHash (@var{C})
+    ## @deftypefnx {categorical} {@var{hey} =} keyHash (@var{C}, @var{base})
+    ##
+    ## Generate a hash code for a categorical array.
+    ##
+    ## @code{@var{h} = keyHash (@var{C})} generates a @qcode{uint64} scalar that
+    ## represents the input array @var{C}.  @code{keyHash} utilizes the 64-bit
+    ## FMV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
+    ##
+    ## @code{@var{h} = keyHash (@var{C}), @var{base}} also generates a 64-bit
+    ## hash code using @var{base} as the offset basis for the FNV-1a hash
+    ## algorithm.  @var{base} must be a @qcode{uint64} integer type scalar.  Use
+    ## this syntax to cascade @code{keyHash} on multiple objects for which a
+    ## single hash code is required.
+    ##
+    ## Note that unlike MATLAB, this implementation does no use any random seed.
+    ## As a result, @code{keyHash} will always generate the exact same hash key
+    ## for any particular input across different workers and Octave sessions.
+    ##
+    ## @end deftypefn
+    function key = keyHash (this, base = [])
+      ## Initialize string with size and class name
+      size_str = sprintf ('%dx', size (this.code))(1:end-1);
+      flag_str = sprintf ('-o%d-p%d:', this.isOrdinal, this.isProtected);
+      init_str = [size_str 'categorical' flag_str];
+      cats = [this.cats(:); '<undefined>'];
+      code = this.code(:);
+      code(code == 0) = max (code) + 1;
+      cstr = [cats{code}];
+      if (base)
+        key = __ckeyHash__([init_str cstr], base);
+      else
+        key = __ckeyHash__([init_str cstr]);
+      endif
+      key = __nkeyHash__(this.isMissing(:), key);
     endfunction
 
   endmethods
@@ -3942,70 +3980,6 @@ classdef categorical
       endif
       this.code = ctranspose (this.code);
       this.isMissing = ctranspose (this.isMissing);
-    endfunction
-
-  endmethods
-
-################################################################################
-##                           ** Hash Operations **                            ##
-################################################################################
-##                             Available Methods                              ##
-##                                                                            ##
-## 'keyHash'          'keyMatch'                                              ##
-##                                                                            ##
-################################################################################
-
-  methods (Access = public)
-
-    ## -*- texinfo -*-
-    ## @deftypefn {categorical} {@var{hey} =} keyHash (@var{C})
-    ##
-    ## Generate a hash code for categorical array.
-    ##
-    ## @code{@var{h} = keyHash (@var{C})} generates a @qcode{uint64} scalar that
-    ## represents the input array @var{C}.  @code{keyHash} utilizes the 64-bit
-    ## variant of the Fowler-Noll-Vo non-cryptographic hash function.
-    ##
-    ## Note that unlike MATLAB, this implementation does no use any random seed.
-    ## As a result, @code{keyHash} will always generate the exact same hash key
-    ## for any particular input across different workers and Octave sessions.
-    ##
-    ## @end deftypefn
-    function key = keyHash (this, base = [])
-      ## Initialize string with size and class name
-      size_str = sprintf ('%dx', size (this.code))(1:end-1);
-      flag_str = sprintf ('-o%d-p%d:', this.isOrdinal, this.isProtected);
-      init_str = [size_str 'categorical' flag_str];
-      cats = [this.cats(:); '<undefined>'];
-      code = this.code(:);
-      code(code == 0) = max (code) + 1;
-      cstr = [cats{code}];
-      if (base)
-        key = __ckeyHash__([init_str cstr], base);
-      else
-        key = __ckeyHash__([init_str cstr]);
-      endif
-      key = __nkeyHash__(this.isMissing(:), key);
-    endfunction
-
-    ## -*- texinfo -*-
-    ## @deftypefn {categorical} {@var{TF} =} keyMatch (@var{C1}, @var{C2)
-    ##
-    ## Return true if both inputs have the same hash key.
-    ##
-    ## @code{@var{TF} = keyMatch (@var{C1}, @var{C2})} returns a logical scalar,
-    ## which is @qcode{true}, if both categorical arrays @var{C1} and @var{C2}
-    ## have the same hash key, and @qcode{false} otherwise.
-    ##
-    ## @end deftypefn
-    function TF = keyMatch (A, B)
-      if (any (class (A) != class (B)))
-        TF = false;
-      else
-        A_key = keyHash (A);
-        B_key = keyHash (B);
-        TF = A_key == B_key;
-      endif
     endfunction
 
   endmethods
