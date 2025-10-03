@@ -1510,7 +1510,7 @@ classdef duration
 ##                                                                            ##
 ################################################################################
 
-  methods (Hidden)
+  methods (Access = public)
 
     ## -*- texinfo -*-
     ## @deftypefn {duration} {@var{C} =} cat (@var{dim}, @var{A}, @var{B}, @dots{})
