@@ -1195,7 +1195,7 @@ classdef calendarDuration
 ##                                                                            ##
 ################################################################################
 
-  methods (Hidden)
+  methods (Access = public)
 
     ## -*- texinfo -*-
     ## @deftypefn {calendarDuration} {@var{C} =} cat (@var{dim}, @var{A}, @var{B}, @dots{})
