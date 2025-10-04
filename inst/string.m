@@ -1001,6 +1001,70 @@ classdef string
 ##                                                                            ##
 ################################################################################
 
+  methods (Hidden)
+
+    function out = compose (this, varargin)
+      error ("string.compose: not implemented yet.");
+    endfunction
+
+    function out = eraseBetween (this, start, stop)
+      error ("string.eraseBetween: not implemented yet.");
+    endfunction
+
+    function out = extract (this, pat)
+      error ("string.extract: not implemented yet.");
+    endfunction
+
+    function out = extractAfter (this, pat)
+      error ("string.extractAfter: not implemented yet.");
+    endfunction
+
+    function out = extractBefore (this, pat)
+      error ("string.extractBefore: not implemented yet.");
+    endfunction
+
+    function out = extractBetween (this, start, stop)
+      error ("string.extractBetween: not implemented yet.");
+    endfunction
+
+    function out = insertAfter (this, pat, new)
+      error ("string.insertAfter: not implemented yet.");
+    endfunction
+
+    function out = insertBefore (this, pat, new)
+      error ("string.insertBefore: not implemented yet.");
+    endfunction
+
+    function out = replace (this, pat, new)
+      error ("string.replace: not implemented yet.");
+    endfunction
+
+    function out = replaceBetween (this, start, stop, new)
+      error ("string.replaceBetween: not implemented yet.");
+    endfunction
+
+    function out = sort (this, varargin)
+      error ("string.sort: not implemented yet.");
+    endfunction
+
+    function out = split (this, varargin)
+      error ("string.split: not implemented yet.");
+    endfunction
+
+    function out = strip (this, varargin)
+      error ("string.strip: not implemented yet.");
+    endfunction
+
+    function out = pad (this, varargin)
+      error ("string.pad: not implemented yet.");
+    endfunction
+
+    function out = join (this, varargin)
+      error ("string.join: not implemented yet.");
+    endfunction
+
+  endmethods
+
   methods (Access = public)
 
     ## -*- texinfo -*-
@@ -1056,10 +1120,6 @@ classdef string
       endif
     endfunction
 
-    function out = compose (this, varargin)
-      error ("string.compose: not implemented yet.");
-    endfunction
-
     ## -*- texinfo -*-
     ## @deftypefn {string} {@var{newstr} =} erase (@var{str}, @var{pat})
     ##
@@ -1074,42 +1134,6 @@ classdef string
       pat = char (pat);
       out = this;
       out.strs = strrep (this.strs, pat, '');
-    endfunction
-
-    function out = eraseBetween (this, start, stop)
-      error ("string.eraseBetween: not implemented yet.");
-    endfunction
-
-    function out = extract (this, pat)
-      error ("string.extract: not implemented yet.");
-    endfunction
-
-    function out = extractAfter (this, pat)
-      error ("string.extractAfter: not implemented yet.");
-    endfunction
-
-    function out = extractBefore (this, pat)
-      error ("string.extractBefore: not implemented yet.");
-    endfunction
-
-    function out = extractBetween (this, start, stop)
-      error ("string.extractBetween: not implemented yet.");
-    endfunction
-
-    function out = insertAfter (this, pat, new)
-      error ("string.insertAfter: not implemented yet.");
-    endfunction
-
-    function out = insertBefore (this, pat, new)
-      error ("string.insertBefore: not implemented yet.");
-    endfunction
-
-    function out = replace (this, pat, new)
-      error ("string.replace: not implemented yet.");
-    endfunction
-
-    function out = replaceBetween (this, start, stop, new)
-      error ("string.replaceBetween: not implemented yet.");
     endfunction
 
     ## -*- texinfo -*-
@@ -1132,14 +1156,6 @@ classdef string
       code = cellfun (frev, code, "UniformOutput", false);
       out.strs(notempty) = cellfun (fn2u, code, "UniformOutput", false);
       out.isMissing = this.isMissing;
-    endfunction
-
-    function out = sort (this, varargin)
-      error ("string.sort: not implemented yet.");
-    endfunction
-
-    function out = split (this, varargin)
-      error ("string.split: not implemented yet.");
     endfunction
 
     ## -*- texinfo -*-
@@ -1171,20 +1187,23 @@ classdef string
       out = string (strcat (args{:}));
     endfunction
 
-    function out = strip (this, varargin)
-      error ("string.strip: not implemented yet.");
-    endfunction
-
-    function out = pad (this, varargin)
-      error ("string.pad: not implemented yet.");
-    endfunction
-
-    function out = join (this, varargin)
-      error ("string.join: not implemented yet.");
-    endfunction
-
+    ## -*- texinfo -*-
+    ## @deftypefn {string} {@var{newstr} =} plys (@var{str1}, @var{str2})
+    ##
+    ## Append strings.
+    ##
+    ## @code{@var{newstr} = lower (@var{str})} is the equivalent of the syntax
+    ## @code{@var{newstr} = @var{str1} + @var{str2}} and appends @var{str2} to
+    ## @var{str1}.  Both input arguments must be string arrays of compatible
+    ## size.
+    ##
+    ## @end deftypefn
     function out = plus (str1, str2)
-      error ("string.plus: not implemented yet.");
+      if (isa (str1, 'string') && isa (str2, 'string'))
+        out = append (str1, str2);
+      else
+        error ("string.plus: both STR1 and STR2 must be string arrays.");
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -1217,6 +1236,44 @@ classdef string
       out.strs = upper (this.strs);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {string} {@var{B} =} unique (@var{A})
+    ## @deftypefnx {string} {@var{B} =} unique (@var{A}, @qcode{'rows'})
+    ## @deftypefnx {string} {[@var{B}, @var{ixA}, @var{ixB}] =} unique (@dots{})
+    ## @deftypefnx {string} {@dots{} =} unique (@dots{}, @var{order})
+    ## @deftypefnx {string} {@dots{} =} unique (@dots{}, @var{occurence})
+    ##
+    ## Unique values in a string array.
+    ##
+    ## @code{@var{B} = unique (@var{A})} returns the unique values of the string
+    ## array @var{A} in the string vector @var{B} sorted lexicographically.  If
+    ## If @var{A} is a column vector, then @var{B} is also a column vector,
+    ## otherwise @code{unique} returns a row vector.
+    ##
+    ## @code{@var{B} = unique (@var{A}, @qcode{'rows'})} returns the unique rows
+    ## of the string matrix @var{A} in the string matrix @var{B} sorted in
+    ## lexicographical order.
+    ##
+    ## @code{[@var{B}, @var{ixA}, @var{ixB}] = unique (@dots{})} also returns
+    ## index vectors @var{ixA} and @var{ixB} such that
+    ## @code{@var{B} = @var{A}(@var{ixA})} and
+    ## @code{@var{A} = @var{B}(@var{ixB})}, unless the @qcode{'rows'} optional
+    ## argument is given, in which case @code{@var{B} = @var{A}(@var{ixA},:)}
+    ## and @code{@var{A} = @var{B}(@var{ixB},:)}.
+    ##
+    ## @code{@dots{} = unique (@dots{}, @var{order})} also specifies the order
+    ## of the returned unique values.  @var{order} may be either
+    ## @qcode{'sorted'}, which is the default behavior, or @qcode{'stable'}, in
+    ## which case the unique values are returned in order of appearance.
+    ##
+    ## @code{@dots{} = unique (@dots{}, @var{occurence})} also specifies the
+    ## which index is returned in @var{ixA}, where there are repeated values or
+    ## rows (if opted) in the input categorical array.  @var{occurence} may be
+    ## either @qcode{'first'}, which is the default and returns the index of the
+    ## first occurence of each unique value, or @qcode{'last'}, in which case
+    ## the last occurence of each unique value is returned.
+    ##
+    ## @end deftypefn
     function [B, ixA, ixB] = unique (A, varargin)
       ## Handle 'rows' option
       do_rows = false;

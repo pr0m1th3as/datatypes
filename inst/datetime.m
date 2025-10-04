@@ -460,10 +460,6 @@ classdef datetime
       out = this.Month;
     endfunction
 
-    function out = week (this)
-      error ("datetime.week: not implemented yet.");
-    endfunction
-
     function out = day (this)
       out = this.Day;
     endfunction
@@ -478,6 +474,14 @@ classdef datetime
 
     function out = second (this)
       out = this.Second;
+    endfunction
+
+  endmethods
+
+  methods (Hidden)
+
+    function out = week (this)
+      error ("datetime.week: not implemented yet.");
     endfunction
 
     function out = timeofday (this)
@@ -641,7 +645,7 @@ classdef datetime
 ##                                                                            ##
 ################################################################################
 
-  methods (Access = public)
+  methods (Hidden)
 
     function out = convertTo (this, varargin)
       error ("datetime.convertTo: not implemented yet.");
@@ -662,6 +666,10 @@ classdef datetime
     function out = yyyymmdd (this, varargin)
       error ("datetime.yyyymmdd: not implemented yet.");
     endfunction
+
+  endmethods
+
+  methods (Access = public)
 
     ## -*- texinfo -*-
     ## @deftypefn {datetime} {@var{DV} =} datevec (@var{T})
@@ -701,22 +709,14 @@ classdef datetime
 ##                                                                            ##
 ################################################################################
 
-  methods (Access = public)
+  methods (Hidden)
 
     function TF = isbetween (this, varargin)
       error ("datetime.isbetween: not implemented yet.");
     endfunction
 
-    function TF = iscolumn (this)
-      TF = iscolumn (this.Year);
-    endfunction
-
     function TF = isdst (this)
       error ("datetime.isdst: not implemented yet.");
-    endfunction
-
-    function TF = isempty (this)
-      TF = isempty (this.Year);
     endfunction
 
     function TF = isequal (varargin)
@@ -725,6 +725,38 @@ classdef datetime
 
     function TF = isequaln (varargin)
       error ("datetime.isequaln: not implemented yet.");
+    endfunction
+
+    function [TF, index] = ismember (A, B, varargin)
+      error ("datetime.ismember: not implemented yet.");
+    endfunction
+
+    function TF = isregular (this)
+      error ("datetime.isregular: not implemented yet.");
+    endfunction
+
+    function TF = issorted (this, varargin)
+      error ("datetime.issorted: not implemented yet.");
+    endfunction
+
+    function TF = issortedrows (this, varargin)
+     error ("datetime.issortedrows: not implemented yet.");
+    endfunction
+
+    function TF = isweekend (this)
+      error ("datetime.isweekend: not implemented yet.");
+    endfunction
+
+  endmethods
+
+  methods (Access = public)
+
+    function TF = iscolumn (this)
+      TF = iscolumn (this.Year);
+    endfunction
+
+    function TF = isempty (this)
+      TF = isempty (this.Year);
     endfunction
 
     function TF = isfinite (this)
@@ -739,16 +771,8 @@ classdef datetime
       TF = ismatrix (this.Year);
     endfunction
 
-    function [TF, index] = ismember (A, B, varargin)
-      error ("datetime.ismember: not implemented yet.");
-    endfunction
-
     function TF = isnat (this)
       TF = isnan (this.Year);
-    endfunction
-
-    function TF = isregular (this)
-      error ("datetime.isregular: not implemented yet.");
     endfunction
 
     function TF = isrow (this)
@@ -759,20 +783,8 @@ classdef datetime
       TF = isscalar (this.Year);
     endfunction
 
-    function TF = issorted (this, varargin)
-      error ("datetime.issorted: not implemented yet.");
-    endfunction
-
-    function TF = issortedrows (this, varargin)
-     error ("datetime.issortedrows: not implemented yet.");
-    endfunction
-
     function TF = isvector (this)
       TF = isvector (this.Year);
-    endfunction
-
-    function TF = isweekend (this)
-      error ("datetime.isweekend: not implemented yet.");
     endfunction
 
   endmethods
