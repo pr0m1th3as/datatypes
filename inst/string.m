@@ -1003,8 +1003,57 @@ classdef string
 
   methods (Access = public)
 
-    function out = append (this, varargin)
-      error ("string.append: not implemented yet.");
+    ## -*- texinfo -*-
+    ## @deftypefn {string} {@var{newstr} =} append (@var{str1}, @dots{}, @var{strN})
+    ##
+    ## Remove content from string array.
+    ##
+    ## @code{@var{newstr} = append (@var{str1}, @dots{}, @var{strN})} combines
+    ## the text from each input argument, @var{str1}, @dots{}, @var{strN}),
+    ## which must be either string arrays, cell arrays of character vectors, or
+    ## character vectors or matrices.  All input arguments must be of compatible
+    ## sizes.  Character vectors are treated as a single text element and
+    ## character matrices are treated as a column of elements.  @code{apped}
+    ## preserves any trailing white spaces, unlike the @code{strcat} function.
+    ##
+    ## @end deftypefn
+    function out = append (varargin)
+      ## Check input for valid types
+      fcn = @(x) iscellstr (x) || ischar (x) || isa (x, 'string');
+      dtypes = cellfun (fcn, varargin);
+      if (! all (dtypes))
+        error (strcat ("string.append: input arguments must be strindg", ...
+                       " arrays, cell arrays of character vectors, or", ...
+                       " character matrices."));
+      endif
+      ## Convert all inputs to string arrays
+      ctypes = cellfun (@(x) ! isa (x, 'string'), varargin);
+      if (any (ctypes))
+        varargin(ctypes) = cellfun (@(x) string (char (x)), ...
+                                    varargin(ctypes), "UniformOutput", false);
+      endif
+      ## Handle compatible dimensions
+      out = varargin{1};
+      in_sz = cellfun (@size, varargin, "UniformOutput", false);
+      strArgs = cellfun (@(x) x.strs, varargin, 'UniformOutput', false);
+      ismArgs = cellfun (@(x) x.isMissing, varargin, 'UniformOutput', false);
+      if (isequal (in_sz{:}))
+        out.strs = strcat (strArgs{:});
+        out.isMissing = and (ismArgs{:});
+      else
+        try
+          out.isMissing = and (ismArgs{:});
+          szo = size (out.isMissing);
+        catch
+          error ("string.append: inputs have incompatible sizes.");
+        end_try_catch
+        for n = 1:numel (strArgs)
+          strArg = strArgs{n};
+          newsz = szo ./ size (strArg);
+          strArgs{n} = repmat (strArg, newsz);
+        endfor
+        out.strs = strcat (strArgs{:});
+      endif
     endfunction
 
     function out = compose (this, varargin)

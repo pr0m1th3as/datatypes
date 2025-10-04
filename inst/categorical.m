@@ -3769,11 +3769,11 @@ classdef categorical
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {categorical} {@var{C} =} vertat (@var{A}, @var{B}, @dots{})
+    ## @deftypefn {categorical} {@var{C} =} vertcat (@var{A}, @var{B}, @dots{})
     ##
     ## Vertical concatenation of categorical arrays.
     ##
-    ## @code{@var{C} = vertat (@var{A}, @var{B}, @dots{}} is the equivalent of
+    ## @code{@var{C} = vertcat (@var{A}, @var{B}, @dots{}} is the equivalent of
     ## the syntax @code{@var{B} = [@var{A}; @var{B}; @dots{}]} and vertically
     ## concatenates the categorical arrays @var{A}, @var{B}, @dots{}.  All input
     ## arrays must have the same size except along the first dimension.  Any of
