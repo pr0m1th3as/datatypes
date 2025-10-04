@@ -1369,13 +1369,28 @@ Compare first <var>n</var> characters of strings (case insensitive).
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Remove content from string array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod29">
             <div class="border-bottom py-2">
-<b><code>string.append</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>append</b> (<var>str1</var>, &hellip;, <var>strN</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>newstr</var> = append (<var>str1</var>, &hellip;, <var>strN</var>)</code> combines
+ the text from each input argument, <var>str1</var>, &hellip;, <var>strN</var>),
+ which must be either string arrays, cell arrays of character vectors, or
+ character vectors or matrices.  All input arguments must be of compatible
+ sizes.  Character vectors are treated as a single text element and
+ character matrices are treated as a column of elements.  <code>apped</code>
+ preserves any trailing white spaces, unlike the <code>strcat</code> function.
+</p>
+
+
+
             </div>
           </div>
         </div>
