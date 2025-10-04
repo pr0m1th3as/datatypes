@@ -848,6 +848,17 @@ classdef datetime
 
   methods (Access = public)
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{C} =} cat (@var{dim}, @var{A}, @var{B}, @dots{})
+    ##
+    ## Concatenate datetime arrays.
+    ##
+    ## @code{@var{C} = cat (@var{dim}, @var{A}, @var{B}, @dots{})} concatenates
+    ## datetime arrays @var{A}, @var{B}, @dots{} along dimension @var{dim}.  All
+    ## input arrays must be datetime arrays and have the same size except along
+    ## the operating dimension @var{dim}.
+    ##
+    ## @end deftypefn
     function out = cat (dim, varargin)
       args = varargin;
       f = @(x) isa (x, 'datetime');
@@ -869,14 +880,58 @@ classdef datetime
       out.Second = cat (dim, fieldArgs{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{C} =} horzcat (@var{A}, @var{B}, @dots{})
+    ##
+    ## Horizontal concatenation of datetime arrays.
+    ##
+    ## @code{@var{C} = horzcat (@var{A}, @var{B}, @dots{}} is the equivalent of
+    ## the syntax @code{@var{B} = [@var{A}, @var{B}, @dots{}]} and horizontally
+    ## concatenates the datetime arrays @var{A}, @var{B}, @dots{}.  All input
+    ## arrays must be datetime arrays and have the same size except along the
+    ## second dimension.
+    ##
+    ## @end deftypefn
     function out = horzcat (varargin)
       out = cat (2, varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{C} =} vertcat (@var{A}, @var{B}, @dots{})
+    ##
+    ## Vertical concatenation of datetime arrays.
+    ##
+    ## @code{@var{C} = vertcat (@var{A}, @var{B}, @dots{}} is the equivalent of
+    ## the syntax @code{@var{B} = [@var{A}; @var{B}; @dots{}]} and vertically
+    ## concatenates the datetime arrays @var{A}, @var{B}, @dots{}.  All input
+    ## arrays must be datetime arrays and have the same size except along the
+    ## second dimension.
+    ##
+    ## @end deftypefn
     function out = vertcat (varargin)
       out = cat (1, varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{B} =} repmat (@var{A}, @var{n})
+    ## @deftypefnx {datetime} {@var{B} =} repmat (@var{A}, @var{d1}, @dots{}, @var{dN})
+    ## @deftypefnx {datetime} {@var{B} =} repmat (@var{A}, @var{dimvec})
+    ##
+    ## Repeat copies of a datetime array.
+    ##
+    ## @code{@var{B} = repmat (@var{A}, @var{n})} returns a datetime array
+    ## @var{B} containing @var{n} copies of the input datetime array @var{A}
+    ## along every dimension of @var{A}.
+    ##
+    ## @code{@var{B} = repmat (@var{A}, @var{d1}, @dots{}, @var{dN})} returns an
+    ## array @var{B} containing copies of @var{A} along the dimensions specified
+    ## by the list of scalar integer values @var{d1}, @dots{}, @var{dN}, which
+    ## specify how many copies of @var{A} are made in each dimension.
+    ##
+    ## @code{@var{B} = repmat (@var{A}, @var{dimvec})} is equivalent to the
+    ## previous syntax with @code{@var{dimvec} = [@var{d1}, @dots{}, @var{dN}]}.
+    ##
+    ## @end deftypefn
     function this = repmat (this, varargin)
       this.Year   = repmat (this.Year, varargin{:});
       this.Month  = repmat (this.Month, varargin{:});
@@ -886,6 +941,30 @@ classdef datetime
       this.Second = repmat (this.Second, varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{B} =} repelem (@var{A}, @var{n})
+    ## @deftypefnx {datetime} {@var{B} =} repelem (@var{A}, @var{d1}, @dots{}, @var{dN})
+    ##
+    ## Repeat copies of datetime array elements.
+    ##
+    ## @code{@var{B} = repelem (@var{A}, @var{n})} returns a datetime vector
+    ## @var{B} containing repeated elements of the input @var{A}, which must be
+    ## a datetime vector.  If @var{n} is a scalar, each element of @var{A} is
+    ## repeated @var{n} times along the non-singleton dimension of @var{A}.  If
+    ## @var{n} is a vector, it must have the same elemnts as @var{A}, in which
+    ## case it specifies the number of times to repeat each corresponding
+    ## element of @var{A}.
+    ##
+    ## @code{@var{B} =} repelem (@var{A}, @var{d1}, @dots{}, @var{dN}} returns
+    ## an array @var{B} with each element of @var{A} repeated according to the
+    ## the list of input arguments @code{@var{d1}, @dots{}, @var{dN}} each
+    ## corresponding to a different dimension @code{1:ndims (@var{A})} of the
+    ## input array @var{A}.  @var{d1}, @dots{}, @var{dN} must be either scalars
+    ## or vectors with the same length as the corresponding dimension of
+    ## @var{A} containing non-negative integer values specifying the number of
+    ## repetitions of each element along the corresponding dimension.
+    ##
+    ## @end deftypefn
     function this = repelem (this, varargin)
       this.Year   = repelem (this.Year, varargin{:});
       this.Month  = repelem (this.Month, varargin{:});
@@ -895,6 +974,19 @@ classdef datetime
       this.Second = repelem (this.Second, varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{B} =} repelems (@var{A}, @var{R})
+    ##
+    ## Construct a vector of repeated elements from a datetime array.
+    ##
+    ## @code{@var{B} = repelems (@var{A}, @var{R})} returns a datetime vector
+    ## @var{B} containing repeated elements of the input @var{A}, which must be
+    ## a datetime vector.  @var{R} must be a @math{2xN} matrix of integers.
+    ## Entries in the first row of @var{R} correspond to the linear indexing of
+    ## the elements in @var{A} to be repeated.  The corresponding entries in the
+    ## second row of @var{R} specify the repeat count of each element.
+    ##
+    ## @end deftypefn
     function this = repelems (this, R)
       this.Year   = repelems (this.Year, R);
       this.Month  = repelems (this.Month, R);
@@ -904,6 +996,27 @@ classdef datetime
       this.Second = repelems (this.Second, R);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{B} =} reshape (@var{A}, @var{d1}, @dots{}, @var{dN})
+    ## @deftypefnx {datetime} {@var{B} =} reshape (@var{A}, @dots{}, @qcode{[]}, @dots{})
+    ## @deftypefnx {datetime} {@var{B} =} reshape (@var{A}, @var{dimvec})
+    ##
+    ## Repeat copies of datetime array elements.
+    ##
+    ## @code{@var{B} = reshape (@var{A}, @var{d1}, @dots{}, @var{dN})} returns
+    ## a datetime array @var{B} with specified dimensions @var{d1}, @dots{},
+    ## @var{dN}, whose elements are taken columnwise from the datetime array
+    ## @var{A}.  The product of @var{d1}, @dots{}, @var{dN} must equal the total
+    ## number of elements in @var{A}.
+    ##
+    ## @code{@var{B} = reshape (@var{A}, @dots{}, @qcode{[]}, @dots{})} returns
+    ## a datetime array @var{B} with one dimension unspecified which is
+    ## calculated automatically so that the product of dimensions in @var{B}
+    ## matches the total elements in @var{A}, which must be divisible the
+    ## product of specified dimensions.  An empty matrix @qcode{([])} is used to
+    ## flag the unspecified dimension.
+    ##
+    ## @end deftypefn
     function this = reshape (this, varargin)
       this.Year   = reshape (this.Year, varargin{:});
       this.Month  = reshape (this.Month, varargin{:});
@@ -913,6 +1026,27 @@ classdef datetime
       this.Second = reshape (this.Second, varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{B} =} circshift (@var{A}, @var{n})
+    ## @deftypefnx {datetime} {@var{B} =} circshift (@var{A}, @var{n}, @var{dim})
+    ##
+    ## Circularly shift the elements in a datetime array.
+    ##
+    ## @code{@var{B} = circshift (@var{A}, @var{n})} circularly shifts the
+    ## elements of the datetime array @var{A} according to @var{n}.  If @var{n}
+    ## is a nonzero integer scalar, then the elements of @var{A} are shifted by
+    ## @var{n} elements along the first non-singleton dimension of @var{A}.  If
+    ## @var{n} is a vector, it must not be longer that the number of dimensions
+    ## of @var{A} with each value of @var{n} corresponding to a dimension in
+    ## @var{A}.   The sign of the value(s) in @var{n} specify the direction in
+    ## the elements of @var{A} are shifted.
+    ##
+    ## @code{@var{B} = circshift (@var{A}, @var{n}, @var{dim})} circularly
+    ## shifts the elements of the datetime array @var{A} along the dimension
+    ## specified by @var{dim}.  In this case, @var{n} must be a scalar integer
+    ## value.
+    ##
+    ## @end deftypefn
     function this = circshift (this, varargin)
       this.Year   = circshift (this.Year, varargin{:});
       this.Month  = circshift (this.Month, varargin{:});
@@ -922,6 +1056,21 @@ classdef datetime
       this.Second = circshift (this.Second, varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{B} =} permute (@var{A}, @var{dims})
+    ##
+    ## Generalized transpose for a datetime N-D array.
+    ##
+    ## @code{@var{B} = permute (@var{A}, @var{dims})} returns the generalized
+    ## transpose of the datetime array @var{A} by rearranging its dimensions
+    ## according to the permutation vector specified in @var{dims}.
+    ##
+    ## @var{dims} must index all the dimensions @code{1:ndims (@var{A})} of the
+    ## input array @var{A}, in any order, but only once.  The @var{N}th
+    ## dimension of @var{A} gets remapped to the dimension in @var{B} specified
+    ## by @code{@var{dims}(@var{N})}.
+    ##
+    ## @end deftypefn
     function this = permute (this, order)
       this.Year   = permute (this.Year, order);
       this.Month  = permute (this.Month, order);
@@ -931,6 +1080,22 @@ classdef datetime
       this.Second = permute (this.Second, order);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{A} =} ipermute (@var{B}, @var{dims})
+    ##
+    ## Generalized transpose for a datetime N-D array.
+    ##
+    ## @code{@var{A} = ipermute (@var{B}, @var{dims})} returns the inverse of
+    ## the generalized transpose performed by the @code{permute} function.  The
+    ## expression @code{ipermute (permute (@var{A}, @var{dims}), @var{dims})}
+    ## returns the original array @var{A}.
+    ##
+    ## @var{dims} must index all the dimensions @code{1:ndims (@var{B})} of the
+    ## input array @var{B}, in any order, but only once.  The dimension of
+    ## @var{B} specified in @code{@var{dims}(@var{N})} gets remapped to the
+    ## @var{N}th dimension of @var{A}.
+    ##
+    ## @end deftypefn
     function this = ipermute (this, order)
       this.Year   = ipermute (this.Year, order);
       this.Month  = ipermute (this.Month, order);
@@ -940,6 +1105,16 @@ classdef datetime
       this.Second = ipermute (this.Second, order);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{B} =} transpose (@var{A})
+    ##
+    ## Transpose a datetime matrix.
+    ##
+    ## @code{@var{B} = transpose (@var{A})} is the equivalent of the syntax
+    ## @code{@var{B} = @var{A}.'} and returns the transpose of the datetime
+    ## matrix @var{A}.
+    ##
+    ## @end deftypefn
     function this = transpose (this)
       this.Year   = transpose (this.Year);
       this.Month  = transpose (this.Month);
@@ -949,6 +1124,17 @@ classdef datetime
       this.Second = transpose (this.Second);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{B} =} ctranspose (@var{A})
+    ##
+    ## Transpose a datetime matrix.
+    ##
+    ## @code{@var{B} = ctranspose (@var{A})} is the equivalent of the syntax
+    ## @code{@var{B} = @var{A}'} and returns the transpose of the datetime
+    ## matrix @var{A}.  For datetime arrays, @code{ctranspose} is identical to
+    ## @code{transpose}.
+    ##
+    ## @end deftypefn
     function this = ctranspose (this)
       this.Year   = ctranspose (this.Year);
       this.Month  = ctranspose (this.Month);
