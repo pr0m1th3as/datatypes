@@ -1364,34 +1364,33 @@ classdef string
             cat_array = cellfun (@categorical, varargin, 'UniformOutput', false);
             out = [cat_array{:}];
             return;
-          catch (me)
-            error (me);
+          catch (err)
+            error (err.message);
           end_try_catch
         elseif (isdatetime (args{i}))
           try
             dat_array = cellfun (@datetime, varargin, 'UniformOutput', false);
             out = [dat_array{:}];
             return;
-          catch (me)
-            error (me);
+          catch (err)
+            error (err.message);
           end_try_catch
         elseif (isduration (args{i}))
           try
             dur_array = cellfun (@duration, varargin, 'UniformOutput', false);
             out = [dur_array{:}];
             return;
-          catch (me)
-            error (me);
+          catch (err)
+            error (err.message);
           end_try_catch
-        ## Grab any numeric, logical, character matrices and cell arrays
-        ## of character vectors and convert them to string arrays
-        elseif (isnumeric (args{i}) || islogical (args{i}))
-          args(i) = string (args{i});
-        elseif (iscellstr (args{i}) || ischar (args{i}))
-          args(i) = string (args{i});
+        ## Grab everything else and try converting it a to string array
         elseif (! isa (args{i}, 'string'))
-          error ("string.cat: cannot concatenate string arrays with '%s'.", ...
-                 class (args{i}))
+          try
+            args(i) = string (args{i});
+          catch
+            error ("string.cat: cannot concatenate string arrays with '%s'.", ...
+                   class (args{i}));
+          end_try_catch
         endif
       endfor
       ## Concatenate strings
