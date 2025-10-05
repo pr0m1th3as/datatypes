@@ -456,12 +456,61 @@ classdef datetime
       out = ceil (this.Month / 3);
     endfunction
 
-    function out = month (this)
+    function out = month (this, type = 'monthofyear')
+      if (strcmpi (type, 'monthofyear'))
+        out = this.Month;
+      elseif (strcmpi (type, 'name'))
+        mn = {'January', 'February', 'March', 'April', 'May', 'June', ...
+              'July', 'August', 'September', 'October', 'November', 'December'};
+        out = mn(this.Month);
+      elseif (strcmpi (type, 'shortname'))
+        mn = {'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', ...
+              'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'};
+        out = mn(this.Month);
+      else
+        error ("datetime: unrecongized MONTHTYPE.");
+      endif
       out = this.Month;
     endfunction
 
-    function out = day (this)
-      out = this.Day;
+    function out = day (this, type = 'dayofmonth')
+      vtypes = {'dayofweek', 'iso-dayofweek', 'name', 'shortname'};
+      if (strcmpi (type, 'dayofmonth'))
+        out = this.Day;
+      elseif (any (strcmpi (type, vtypes)))
+        m = this.Month - 2;
+        y = this.Year;
+        m(m < 1) += 12;
+        y(m < 1) -= 1;
+        K = mod (y, 100);
+        J = floor (y ./ 100);
+        code = floor ((26 .* m - 2) ./ 10);
+        out = mod ((this.Day + code + K + floor (K ./ 4) ...
+                             + floor (J ./ 4) + 5 .* J), 7) + 1;
+        if (strcmpi (type, 'iso-dayofweek'))
+          out = mod (out - 1, 7);
+          out(out == 0) = 7;
+        elseif (strcmpi (type, 'name'))
+          dn = {'Sunday', 'Monday', 'Tuesday', 'Wednesday', ...
+                'Thursday', 'Friday', 'Saturday'};
+          out = dn(out);
+        elseif (strcmpi (type, 'shortname'))
+          dn = {'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'};
+          out = dn(out);
+        endif
+      elseif (any (strcmpi (type, 'dayofyear')))
+        m = this.Month;
+        y = this.Year;
+        days = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+        isly = mod (y, 4) == 0 & (mod (y, 100) != 0 | mod (y, 400) == 0);
+        if (isly && m > 2)
+          out = days(m) + this.Day + 1;
+        else
+          out = days(m) + this.Day;
+        endif
+      else
+        error ("datetime: unrecongized DAYTYPE.");
+      endif
     endfunction
 
     function out = hour (this)
