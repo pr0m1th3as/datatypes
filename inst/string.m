@@ -1388,7 +1388,7 @@ classdef string
           try
             args(i) = string (args{i});
           catch
-            error ("string.cat: cannot concatenate string arrays with '%s'.", ...
+            error ("string.cat: cannot concatenate string arrays with 's'.", ...
                    class (args{i}));
           end_try_catch
         endif

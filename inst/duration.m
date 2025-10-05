@@ -811,7 +811,7 @@ classdef duration
       args = varargin;
       [args{:}] = promote (varargin{:});
       days = cellfun (@(obj) obj.Days, args, 'UniformOutput', false);
-      TF = isequal (days{:});
+      TF = isequaln (days{:});
     endfunction
 
     function TF = isfinite (this)
