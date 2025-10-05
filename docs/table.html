@@ -2838,7 +2838,7 @@ Unstack a single table variable into multiple table variables.
                   </h4>
                 </div>
                 <div class="col-8">
-Invert nested table-in-table hierarchy in tables.
+Invert nested table-in-table hierarchy in tables. (unimplemented)
                 </div>
               </div>
           </div>
@@ -2849,8 +2849,29 @@ Invert nested table-in-table hierarchy in tables.
 </dl>
 
 <p> </p>
-<p> <code><var>tblB</var> = inner2outer (<var>tblA</var>)</code>
+<p> <code><var>tblB</var> = inner2outer (<var>tblA</var>)</code> finds the variables in
+ <var>tblA</var> that contain nested tables and returns a table <var>tblB</var> in
+ which the variables of the nested tables in <var>tblA</var> are regrouped as
+ variables in <var>tblB</var> and the variables of <var>tblA</var> that contain
+ nested tables become the variables of the nested tables in <var>tblB</var>.
+ Any other variable in <var>tblA</var> are copied unaltered into <var>tblB</var>.
 </p>
+<p> For example, if <var>tblA</var> has three variables named <var>A</var>, <var>B</var>,
+ and <var>C</var>, all they all contain nested tables with two variables named
+ <var>Var1</var> and <var>Var2</var>, then <var>tblB</var> has two variables named
+ <var>Var1</var> and <var>Var2</var> each containing a nested table with variables
+ <var>A</var>, <var>B</var>, and <var>C</var>.  As a result of this operation, the table
+ variables <code><var>tblA</var>.<var>A</var>.<var>Var1</var></code>,
+ <code><var>tblA</var>.<var>B</var>.<var>Var1</var></code>, and
+ <code><var>tblA</var>.<var>C</var>.<var>Var1</var></code> are regrouped into
+ <code><var>tblA</var>.<var>Var1</var>.<var>A</var>, <code><var>tblA</var>.<var>Var1</var>.<var>B</var>,
+ and <code><var>tblA</var>.<var>Var1</var>.<var>C</var>, and the table variables
+ <code><var>tblA</var>.<var>A</var>.<var>Var2</var></code>,
+ <code><var>tblA</var>.<var>B</var>.<var>Var2</var></code>, and
+ <code><var>tblA</var>.<var>B</var>.<var>Var3</var></code> are regrouped into
+ <code><var>tblA</var>.<var>Var2</var>.<var>A</var>, <code><var>tblA</var>.<var>Var2</var>.<var>B</var>,
+ and <code><var>tblA</var>.<var>Var2</var>.<var>C</var>.
+</code></code></code></code></code></code></p>
 
 
 
@@ -2953,276 +2974,6 @@ Remove custom properties from a table.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>join</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Combine two tables by rows using key variables.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod23">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">table: <var>tbl</var> = <b>join</b> (<var>tblL</var>, <var>tblR</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: <var>tbl</var> = <b>join</b> (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>ixR</var>] = <b>join</b> (&hellip;)</code></h5></dt>
-</dl>
-
-<p> </p>
-
-
-
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod24"
-              aria-expanded="false" aria-controls="collapseMethod24">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>innerjoin</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Inner join between two tables by rows using key variables.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod24">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">table: <var>tbl</var> = <b>innerjoin</b> (<var>tblL</var>, <var>tblR</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: <var>tbl</var> = <b>innerjoin</b> (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>ixL</var>, <var>ixR</var>] = <b>innerjoin</b> (&hellip;)</code></h5></dt>
-</dl>
-
-<p> </p>
-
-
-
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod25"
-              aria-expanded="false" aria-controls="collapseMethod25">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>outerjoin</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Outer join between two tables by rows using key variables.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod25">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">table: <var>tbl</var> = <b>outerjoin</b> (<var>tblL</var>, <var>tblR</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: <var>tbl</var> = <b>outerjoin</b> (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>ixL</var>, <var>ixR</var>] = <b>outerjoin</b> (&hellip;)</code></h5></dt>
-</dl>
-
-<p> </p>
-
-
-
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod26"
-              aria-expanded="false" aria-controls="collapseMethod26">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>union</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Union of two tables by rows.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod26">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">table: <var>tbl</var> = <b>union</b> (<var>tblA</var>, <var>tblB</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: <var>tbl</var> = <b>union</b> (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = <b>union</b> (&hellip;)</code></h5></dt>
-</dl>
-
-<p> </p>
-
-
-
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod27"
-              aria-expanded="false" aria-controls="collapseMethod27">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>intersect</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Intersection of two tables by rows.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod27">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">table: <var>tbl</var> = <b>intersect</b> (<var>tblA</var>, <var>tblB</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: <var>tbl</var> = <b>intersect</b> (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = <b>intersect</b> (&hellip;)</code></h5></dt>
-</dl>
-
-<p> </p>
-
-
-
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod28"
-              aria-expanded="false" aria-controls="collapseMethod28">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>ismember</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Find set members between two tables by rows.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod28">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">table: <var>TF</var> = <b>ismember</b> (<var>tblA</var>, <var>tblB</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: [<var>TF</var>, <var>ixB</var>] = <b>ismember</b> (<var>tblA</var>, <var>tblB</var>)</code></h5></dt>
-</dl>
-
-<p> </p>
-
-
-
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod29"
-              aria-expanded="false" aria-controls="collapseMethod29">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>setdiff</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Difference between two tables by rows.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod29">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">table: <var>tbl</var> = <b>setdiff</b> (<var>tblA</var>, <var>tblB</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>ixA</var>] = <b>setdiff</b> (<var>tblA</var>, <var>tblB</var>)</code></h5></dt>
-</dl>
-
-<p> </p>
-
-
-
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod30"
-              aria-expanded="false" aria-controls="collapseMethod30">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>setxor</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Exclusive OR of two tables by rows.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod30">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">table: <var>tbl</var> = <b>setxor</b> (<var>tblA</var>, <var>tblB</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: <var>tbl</var> = <b>setxor</b> (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = <b>setxor</b> (&hellip;)</code></h5></dt>
-</dl>
-
-<p> </p>
-
-
-
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod31"
-              aria-expanded="false" aria-controls="collapseMethod31">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
                     <b><code>anymissing</code></b>
                   </h4>
                 </div>
@@ -3231,7 +2982,7 @@ Determine if any table element is missing.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod31">
+          <div class="collapse multi-collapse" id="collapseMethod23">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>TF</var> = <b>anymissing</b> (<var>tblA</var>)</code></h5></dt>
@@ -3264,8 +3015,8 @@ Determine if any table element is missing.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod32"
-              aria-expanded="false" aria-controls="collapseMethod32">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod24"
+              aria-expanded="false" aria-controls="collapseMethod24">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3277,7 +3028,7 @@ Find missing values in table.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod32">
+          <div class="collapse multi-collapse" id="collapseMethod24">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">Method: <var>TF</var> = <b>ismissing</b> (<var>tblA</var>)</code></h5></dt>
@@ -3306,8 +3057,8 @@ Find missing values in table.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod33"
-              aria-expanded="false" aria-controls="collapseMethod33">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod25"
+              aria-expanded="false" aria-controls="collapseMethod25">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3319,7 +3070,7 @@ Remove missing table elements by rows.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod33">
+          <div class="collapse multi-collapse" id="collapseMethod25">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>tbl</var> = <b>rmmissing</b> (<var>tblA</var>)</code></h5></dt>
@@ -3340,8 +3091,8 @@ Remove missing table elements by rows.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod34"
-              aria-expanded="false" aria-controls="collapseMethod34">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod26"
+              aria-expanded="false" aria-controls="collapseMethod26">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3349,11 +3100,11 @@ Remove missing table elements by rows.
                   </h4>
                 </div>
                 <div class="col-8">
-Fill missing table elements.
+Fill missing table elements. (unimplemented)
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod34">
+          <div class="collapse multi-collapse" id="collapseMethod26">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>tbl</var> = <b>fillmissing</b> (<var>tblA</var>, <code>'constant'</code>, <var>val</var>)</code></h5></dt>
@@ -3380,8 +3131,8 @@ Fill missing table elements.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod35"
-              aria-expanded="false" aria-controls="collapseMethod35">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod27"
+              aria-expanded="false" aria-controls="collapseMethod27">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3389,11 +3140,11 @@ Fill missing table elements.
                   </h4>
                 </div>
                 <div class="col-8">
-Remove missing table elements by rows.
+Remove missing table elements by rows. (unimplemented)
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod35">
+          <div class="collapse multi-collapse" id="collapseMethod27">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>tbl</var> = <b>standardizeMissing</b> (<var>tblA</var>, <var>indicator</var>)</code></h5></dt>
@@ -3413,215 +3164,8 @@ Remove missing table elements by rows.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod36"
-              aria-expanded="false" aria-controls="collapseMethod36">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>pivot</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod36">
-            <div class="border-bottom py-2">
-<b><code>table.pivot</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod37"
-              aria-expanded="false" aria-controls="collapseMethod37">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>groupcounts</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod37">
-            <div class="border-bottom py-2">
-<b><code>table.groupcounts</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod38"
-              aria-expanded="false" aria-controls="collapseMethod38">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>groupfilter</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod38">
-            <div class="border-bottom py-2">
-<b><code>table.groupfilter</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod39"
-              aria-expanded="false" aria-controls="collapseMethod39">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>groupsummary</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod39">
-            <div class="border-bottom py-2">
-<b><code>table.groupsummary</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod40"
-              aria-expanded="false" aria-controls="collapseMethod40">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>grouptransform</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod40">
-            <div class="border-bottom py-2">
-<b><code>table.grouptransform</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod41"
-              aria-expanded="false" aria-controls="collapseMethod41">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>findgroups</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod41">
-            <div class="border-bottom py-2">
-<b><code>table.findgroups</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod42"
-              aria-expanded="false" aria-controls="collapseMethod42">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>splitapply</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod42">
-            <div class="border-bottom py-2">
-<b><code>table.splitapply</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod43"
-              aria-expanded="false" aria-controls="collapseMethod43">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>rowfun</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod43">
-            <div class="border-bottom py-2">
-<b><code>table.rowfun</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod44"
-              aria-expanded="false" aria-controls="collapseMethod44">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>varfun</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-undocumented
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod44">
-            <div class="border-bottom py-2">
-<b><code>table.varfun</code></b> is not documented.
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod45"
-              aria-expanded="false" aria-controls="collapseMethod45">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod28"
+              aria-expanded="false" aria-controls="collapseMethod28">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3633,7 +3177,7 @@ Horizontal concatenation for tables.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod45">
+          <div class="collapse multi-collapse" id="collapseMethod28">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>tbl</var> = <b>horzcat</b> (<var>tbl1</var>, <var>tbl2</var>, &hellip;)</code></h5></dt>
@@ -3661,8 +3205,8 @@ Horizontal concatenation for tables.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod46"
-              aria-expanded="false" aria-controls="collapseMethod46">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod29"
+              aria-expanded="false" aria-controls="collapseMethod29">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3674,7 +3218,7 @@ Test input table for being a column vector.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod46">
+          <div class="collapse multi-collapse" id="collapseMethod29">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>TF</var> = <b>iscolumn</b> (<var>tbl</var>)</code></h5></dt>
@@ -3695,8 +3239,8 @@ Test input table for being a column vector.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod47"
-              aria-expanded="false" aria-controls="collapseMethod47">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod30"
+              aria-expanded="false" aria-controls="collapseMethod30">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3708,7 +3252,7 @@ Test input table for being empty.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod47">
+          <div class="collapse multi-collapse" id="collapseMethod30">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>TF</var> = <b>isempty</b> (<var>tbl</var>)</code></h5></dt>
@@ -3728,8 +3272,8 @@ Test input table for being empty.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod48"
-              aria-expanded="false" aria-controls="collapseMethod48">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod31"
+              aria-expanded="false" aria-controls="collapseMethod31">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3741,7 +3285,7 @@ Test input table for being a matrix.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod48">
+          <div class="collapse multi-collapse" id="collapseMethod31">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>TF</var> = <b>ismatrix</b> (<var>tbl</var>)</code></h5></dt>
@@ -3760,8 +3304,8 @@ Test input table for being a matrix.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod49"
-              aria-expanded="false" aria-controls="collapseMethod49">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod32"
+              aria-expanded="false" aria-controls="collapseMethod32">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3773,7 +3317,7 @@ Test input table for being a row vector.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod49">
+          <div class="collapse multi-collapse" id="collapseMethod32">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>TF</var> = <b>isrow</b> (<var>tbl</var>)</code></h5></dt>
@@ -3793,8 +3337,8 @@ Test input table for being a row vector.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod50"
-              aria-expanded="false" aria-controls="collapseMethod50">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod33"
+              aria-expanded="false" aria-controls="collapseMethod33">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3806,7 +3350,7 @@ Test input table for being a scalar.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod50">
+          <div class="collapse multi-collapse" id="collapseMethod33">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">Method: <var>TF</var> = <b>isscalar</b> (<var>tbl</var>)</code></h5></dt>
@@ -3826,8 +3370,8 @@ Test input table for being a scalar.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod51"
-              aria-expanded="false" aria-controls="collapseMethod51">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod34"
+              aria-expanded="false" aria-controls="collapseMethod34">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3839,7 +3383,7 @@ Test input table for being a vector.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod51">
+          <div class="collapse multi-collapse" id="collapseMethod34">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>TF</var> = <b>isvector</b> (<var>tbl</var>)</code></h5></dt>
@@ -3859,8 +3403,8 @@ Test input table for being a vector.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod52"
-              aria-expanded="false" aria-controls="collapseMethod52">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod35"
+              aria-expanded="false" aria-controls="collapseMethod35">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3872,7 +3416,7 @@ Length along longest dimension.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod52">
+          <div class="collapse multi-collapse" id="collapseMethod35">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>out</var> = <b>length</b> (<var>tbl</var>)</code></h5></dt>
@@ -3889,8 +3433,8 @@ Length along longest dimension.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod53"
-              aria-expanded="false" aria-controls="collapseMethod53">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod36"
+              aria-expanded="false" aria-controls="collapseMethod36">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3902,7 +3446,7 @@ Number of table dimensions.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod53">
+          <div class="collapse multi-collapse" id="collapseMethod36">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>out</var> = <b>ndims</b> (<var>tbl</var>)</code></h5></dt>
@@ -3921,8 +3465,8 @@ Number of table dimensions.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod54"
-              aria-expanded="false" aria-controls="collapseMethod54">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod37"
+              aria-expanded="false" aria-controls="collapseMethod37">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3934,7 +3478,7 @@ Total number of elements in table.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod54">
+          <div class="collapse multi-collapse" id="collapseMethod37">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>out</var> = <b>numel</b> (<var>tbl</var>)</code></h5></dt>
@@ -3955,8 +3499,8 @@ Total number of elements in table.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod55"
-              aria-expanded="false" aria-controls="collapseMethod55">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod38"
+              aria-expanded="false" aria-controls="collapseMethod38">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3968,7 +3512,7 @@ Replicate elements of a table.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod55">
+          <div class="collapse multi-collapse" id="collapseMethod38">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>tblB</var> = <b>repelem</b> (<var>tblA</var>, <var>sz</var>)</code></h5></dt>
@@ -3990,8 +3534,8 @@ Replicate elements of a table.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod56"
-              aria-expanded="false" aria-controls="collapseMethod56">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod39"
+              aria-expanded="false" aria-controls="collapseMethod39">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4003,7 +3547,7 @@ Repeat copies of a table.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod56">
+          <div class="collapse multi-collapse" id="collapseMethod39">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>tblB</var> = <b>repmat</b> (<var>tblA</var>, <var>sz</var>)</code></h5></dt>
@@ -4025,8 +3569,8 @@ Repeat copies of a table.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod57"
-              aria-expanded="false" aria-controls="collapseMethod57">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod40"
+              aria-expanded="false" aria-controls="collapseMethod40">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4038,7 +3582,7 @@ Return the size of a table.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod57">
+          <div class="collapse multi-collapse" id="collapseMethod40">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>sz</var> = <b>size</b> (<var>tbl</var>)</code></h5></dt>
@@ -4060,8 +3604,8 @@ Return the size of a table.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod58"
-              aria-expanded="false" aria-controls="collapseMethod58">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod41"
+              aria-expanded="false" aria-controls="collapseMethod41">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4073,7 +3617,7 @@ Remove singleton dimensions.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod58">
+          <div class="collapse multi-collapse" id="collapseMethod41">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>tblB</var> = <b>squeeze</b> (<var>tblA</var>)</code></h5></dt>
@@ -4093,8 +3637,8 @@ Remove singleton dimensions.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod59"
-              aria-expanded="false" aria-controls="collapseMethod59">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod42"
+              aria-expanded="false" aria-controls="collapseMethod42">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4106,7 +3650,7 @@ Vertical concatenation for tables.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod59">
+          <div class="collapse multi-collapse" id="collapseMethod42">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>tbl</var> = <b>vertcat</b> (<var>tbl1</var>, <var>tbl2</var>, &hellip;)</code></h5></dt>

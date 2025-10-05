@@ -268,11 +268,12 @@
 <p> Array representing points in time using the Gregorian calendar.
 </p>
 <div class="ms-5">
-<p> The underlying implementation relies on the <code>'date.h'</code> C++ library
- and stores internally the datetime points are double arrays representing
- whole years, months, days, hours, and minutes, as well as seconds including
- their fractional part.  The precision of this implementation is set at
- microseconds, which is substantial for typical times.
+<p> A <code>datetime</code> array stores internally the datetime points as double
+ arrays representing whole years, months, days, hours, and minutes, as well
+ as seconds including their fractional part.  The underlying implementation
+ relies on the <code>'date.h'</code> C++ library.  The precision of this
+ implementation is set at microseconds, which is substantial for typical
+ times.
 </p>
 <p> A <code>datetime</code> array is a collection of date/time elements, with each
  element holding a complete date/time.  The <code>datetime</code> array also has
@@ -637,7 +638,8 @@ Year, Month, and Day components of datetime array.
 <p> <code>[<var>Y</var>, <var>M</var>, <var>D</var>] = ymd (<var>T</var>)</code> returns the year,
  month, and day components of the corresponding datetime values in <var>T</var>
  as separate numeric arrays.  <var>Y</var>, <var>M</var>, <var>D</var> contain integer
- values and have the same size as <var>T</var>.
+ values and have the same size as <var>T</var>.  Not-A-Time (<code>NaT</code>)
+ values in <var>T</var> are returned as <code>NaN</code> in the output arrays.
 </p>
 
 
@@ -665,15 +667,16 @@ Hour, Minute, and Second components of a datetime array.
           <div class="collapse multi-collapse" id="collapseMethod5">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">Method: [<var>h</var>, <var>m</var>, <var>s</var>] = <b>hms</b> (<var>T</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: [<var>h</var>, <var>m</var>, <var>s</var>] = <b>hms</b> (<var>T</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
 <p> <code>[<var>h</var>, <var>m</var>, <var>s</var>] = ymd (<var>T</var>)</code> returns the hour,
- miute, and second components of the corresponding datetime values in
+ minute, and second components of the corresponding datetime values in
  <var>T</var> as separate numeric arrays.  <var>h</var> and <var>m</var> contain integer
  values and <var>s</var> may also contain a fractional part.  All outputs have
- the same size as <var>T</var>.
+ the same size as <var>T</var>.  Not-A-Time (<code>NaT</code>) values in <var>T</var> are
+ returned as <code>NaN</code> in the output arrays.
 </p>
 
 
@@ -694,13 +697,26 @@ Hour, Minute, and Second components of a datetime array.
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Year component of a datetime array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod6">
             <div class="border-bottom py-2">
-<b><code>datetime.year</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">datetime: <var>Y</var> = <b>year</b> (<var>T</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>Y</var> = year (<var>T</var>)</code> returns the year number for each element
+ of the input datetime array <var>T</var>.  The output <var>Y</var> is a
+ <code>double</code> array and it has the same size as <var>T</var>.  Not-A-Time
+ (<code>NaT</code>) values in <var>T</var> are returned as <code>NaN</code> in the output
+ array.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -717,13 +733,26 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Quarter component of a datetime array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod7">
             <div class="border-bottom py-2">
-<b><code>datetime.quarter</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">datetime: <var>Q</var> = <b>quarter</b> (<var>T</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>Q</var> = quarter (<var>T</var>)</code> returns the quarter number for each
+ element of the input datetime array <var>T</var>.  The output <var>Q</var> is a
+ <code>double</code> array containing integer values in the range <math>[1, 4]</math>
+ and it has the same size as <var>T</var>.  Not-A-Time (<code>NaT</code>) values in
+ <var>T</var> are returned as <code>NaN</code> in the output array.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -740,13 +769,42 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Month component of a datetime array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod8">
             <div class="border-bottom py-2">
-<b><code>datetime.month</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">datetime: <var>M</var> = <b>month</b> (<var>T</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>M</var> = <b>month</b> (<var>T</var>, <var>monthType</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>M</var> = month (<var>T</var>)</code> returns the month number for each
+ element of the input datetime array <var>T</var>.  The output <var>M</var> is a
+ <code>double</code> array containing integer values in the range
+ <math>[1, 12]</math> and it has the same size as <var>T</var>.  Not-A-Time
+ (<code>NaT</code>) values in <var>T</var> are returned as <code>NaN</code> in the output
+ array.
+</p>
+<p> <code><var>M</var> = month (<var>T</var>, <var>monthType</var>)</code> returns the month
+ number or name for each element of the input datetime array <var>T</var> as
+ specified by <var>monthType</var>, which may have any of the following
+ options:
+</p>
+ <ul>
+<li> <code>'monthofyear'</code> (default) returns the month number in a
+ numeric array.
+ </li><li> <code>'name'</code> returns the corresponding full name of the month in
+ a cell array of character vectors.
+ </li><li> <code>'shortname'</code> returns the corresponding 3-letter abbreviation
+ of the month in a cell array of character vectors.
+ </li></ul>
+
+
+
+
             </div>
           </div>
         </div>
@@ -763,13 +821,51 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Day component of a datetime array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod9">
             <div class="border-bottom py-2">
-<b><code>datetime.day</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">datetime: <var>D</var> = <b>day</b> (<var>T</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>D</var> = <b>day</b> (<var>T</var>, <var>dayType</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>D</var> = day (<var>T</var>)</code> returns the day number for each element of
+ the input datetime array <var>T</var>.  The output <var>D</var> is a <code>double</code>
+ array containing integer values in the range <math>[1, 31]</math>, depending on
+ the month and year, and it has the same size as <var>T</var>.  Not-A-Time
+ (<code>NaT</code>) values in <var>T</var> are returned as <code>NaN</code> in the output
+ array.
+</p>
+<p> <code><var>D</var> = day (<var>T</var>, <var>monthType</var>)</code> returns the day number or
+ name for each element of the input datetime array <var>T</var> as specified by
+ <var>dayType</var>, which may have any of the following options:
+</p>
+ <ul>
+<li> <code>'dayofmonth'</code> (default) returns the day-of-month number in a
+ numeric array.  Depending on the month and year, it can range from 1 to
+ 28, 29, 30, or 31.
+ </li><li> <code>'dayofweek'</code> returns the day-of-week number in a numeric
+ array of <code>double</code> integer values ranging from 1 to 7, where 1
+ corresponds to Sunday.
+ </li><li> <code>'iso-dayofweek'</code> returns the day-of-week number in a numeric
+ array of <code>double</code> integer values ranging from 1 to 7, where 1
+ corresponds to Monday according to the ISO 8601 standard.
+ </li><li> <code>'dayofyear'</code> returns the day-of-year number in a numeric
+ array of <code>double</code> integer values ranging from 1 to 365 or 366,
+ depending on the year.
+ </li><li> <code>'name'</code> returns the corresponding full name of the day in
+ a cell array of character vectors.
+ </li><li> <code>'shortname'</code> returns the corresponding 3-letter abbreviation
+ of the day in a cell array of character vectors.
+ </li></ul>
+
+
+
+
             </div>
           </div>
         </div>
@@ -786,13 +882,27 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Hour component of a datetime array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod10">
             <div class="border-bottom py-2">
-<b><code>datetime.hour</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">datetime: <var>h</var> = <b>hour</b> (<var>T</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>h</var> = hour (<var>T</var>)</code> returns the hour number for each element
+ of the input datetime array <var>T</var>.  The output <var>h</var> is a
+ <code>double</code> array containing integer values in the range
+ <math>[0, 23]</math> and it has the same size as <var>T</var>.  Not-A-Time
+ (<code>NaT</code>) values in <var>T</var> are returned as <code>NaN</code> in the output
+ array.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -809,13 +919,27 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Minute component of a datetime array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod11">
             <div class="border-bottom py-2">
-<b><code>datetime.minute</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">datetime: <var>m</var> = <b>minute</b> (<var>T</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>m</var> = minute (<var>T</var>)</code> returns the minute number for each
+ element of the input datetime array <var>T</var>.  The output <var>m</var> is a
+ <code>double</code> array containing integer values in the range
+ <math>[0, 59]</math> and it has the same size as <var>T</var>.  Not-A-Time
+ (<code>NaT</code>) values in <var>T</var> are returned as <code>NaN</code> in the output
+ array.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -832,13 +956,39 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Seconds component of a datetime array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod12">
             <div class="border-bottom py-2">
-<b><code>datetime.second</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">datetime: <var>s</var> = <b>second</b> (<var>T</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>s</var> = <b>second</b> (<var>T</var>, <var>dayType</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>s</var> = second (<var>T</var>)</code> returns the number of seconds for each
+ element of the input datetime array <var>T</var>.  The output <var>s</var> is a
+ <code>double</code> array containing values in the range <math>[1, 60)</math>,
+ including any fractional part of the second, and it has the same size as
+ <var>T</var>.  Not-A-Time (<code>NaT</code>) values in <var>T</var> are returned as
+ <code>NaN</code> in the output array.
+</p>
+<p> <code><var>D</var> = second (<var>T</var>, <var>secondType</var>)</code> returns the seconds
+ for each element of the input datetime array <var>T</var> as specified by
+ <var>secondType</var>, which may have any of the following options:
+</p>
+ <ul>
+<li> <code>'secondofminute'</code> (default) returns the second of the minute
+ in a numeric array, in the range <math>[1, 60)</math>.
+ </li><li> <code>'secondofday'</code> returns the second of the day in a numeric
+ array, in the range <math>[1, 86400)</math>.
+ </li></ul>
+
+
+
+
             </div>
           </div>
         </div>
@@ -1078,13 +1228,26 @@ Convert datetime array to date vectors.
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Return true if datetime array is a column vector.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod19">
             <div class="border-bottom py-2">
-<b><code>datetime.iscolumn</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">datetime: <var>TF</var> = <b>iscolumn</b> (<var>T</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = iscolumn (<var>T</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code>, if the datetime array <var>T</var> is a column
+ vector, and <code>false</code> otherwise.  A column vector is a 2-D array for
+ which <code>size (<var>X</var>)</code> returns <code>[<var>N</var>, 1]</code> with non-negative
+ <var>N</var>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -1101,13 +1264,24 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Return true if datetime array is empty.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod20">
             <div class="border-bottom py-2">
-<b><code>datetime.isempty</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">datetime: <var>TF</var> = <b>isempty</b> (<var>T</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = isempty (<var>T</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code>, if the datetime array <var>T</var> is empty, and
+ <code>false</code> otherwise.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -1124,13 +1298,26 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Test for finite elements in datetime array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod21">
             <div class="border-bottom py-2">
-<b><code>datetime.isfinite</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">datetime: <var>out</var> = <b>isfinite</b> (<var>T</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = isfinite (<var>T</var>)</code> returns a logical array <var>TF</var> of
+ the same size as <var>T</var> containing <code>true</code> for each corresponding
+ element of <var>T</var> that is finite and <code>false</code> otherwise.  Finite
+ elements in datetime arrays are those which are neither <code>Inf</code> nor
+ <code>NaT</code>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -1147,13 +1334,24 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Test for infinite elements in datetime array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod22">
             <div class="border-bottom py-2">
-<b><code>datetime.isinf</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">datetime: <var>out</var> = <b>isinf</b> (<var>T</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = isinf (<var>T</var>)</code> returns a logical array <var>TF</var> of the
+ same size as <var>T</var> containing <code>true</code> for each corresponding
+ element of <var>T</var> that is infinite and <code>false</code> otherwise.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -1170,13 +1368,26 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Return true if datetime array is a 2-D array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod23">
             <div class="border-bottom py-2">
-<b><code>datetime.ismatrix</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">datetime: <var>TF</var> = <b>ismatrix</b> (<var>T</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = ismatrix (<var>T</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code>, if the datetime array <var>T</var> is a matrix, and
+ <code>false</code> otherwise.  A matrix is an array of any type where
+ <code>ndims (<var>X</var>) == 2</code> and for which <code>size (<var>X</var>)</code> returns
+ <code>[<var>H</var>, <var>W</var>]</code> with non-negative <var>H</var> and <var>W</var>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -1193,13 +1404,26 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Test for Not-A-Time elements in datetime array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod24">
             <div class="border-bottom py-2">
-<b><code>datetime.isnat</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">datetime: <var>out</var> = <b>isinf</b> (<var>T</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = isinf (<var>T</var>)</code> returns a logical array <var>TF</var> of the
+ same size as <var>T</var> containing <code>true</code> for each corresponding
+ element of <var>T</var> that is Not-A-Time (<code>NaT</code>) and <code>false</code>
+ otherwise.  <code>NaT</code> is the equivalent of <code>NaN</code> in numeric
+ arrays.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -1216,13 +1440,26 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Return true if datetime array is a row vector.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod25">
             <div class="border-bottom py-2">
-<b><code>datetime.isrow</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">datetime: <var>TF</var> = <b>isrow</b> (<var>T</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = isrow (<var>T</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code>, if the datetime array <var>T</var> is a row vector,
+ and <code>false</code> otherwise.  A row vector is a 2-D array for which
+ <code>size (<var>X</var>)</code> returns <code>[1, <var>N</var>]</code> with non-negative
+ <var>N</var>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -1239,13 +1476,25 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Return true if datetime array is a scalar.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod26">
             <div class="border-bottom py-2">
-<b><code>datetime.isscalar</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">datetime: <var>TF</var> = <b>isscalar</b> (<var>T</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = isscalar (<var>T</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code>, if the datetime array <var>T</var> is also a scalar,
+ and <code>false</code> otherwise.  A scalar is a single element object for
+ which <code>size (<var>X</var>)</code> returns <code>[1, 1]</code>.
+</p>
+
+
+
             </div>
           </div>
         </div>
@@ -1262,13 +1511,26 @@ undocumented
                   </h4>
                 </div>
                 <div class="col-8">
-undocumented
+Return true if datetime array is a vector.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod27">
             <div class="border-bottom py-2">
-<b><code>datetime.isvector</code></b> is not documented.
+<dl>
+<dt><code><h5 class="fs">datetime: <var>TF</var> = <b>isvector</b> (<var>T</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = isvector (<var>T</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code> if the datetime array <var>T</var> is a vector and
+ <code>false</code> otherwise.  A vector is a 2-D array for which one of the
+ dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
+ definition, a scalar is also a vector.
+</p>
+
+
+
             </div>
           </div>
         </div>

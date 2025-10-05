@@ -268,11 +268,12 @@
 <dt><code><h5 class="fs">datatypes: <var>hey</var> = <b>keyHash</b> (<var>X</var>, <var>base</var>)</code></h5></dt>
 </dl>
 
-<p> Generate a hash code for a categorical array.
+<p> Generate a hash code for an array.
 </p>
 <div class="ms-5">
 <p> <code><var>h</var> = keyHash (<var>X</var>)</code> generates a <code>uint64</code> scalar that
- represents the input array <var>X</var>.  <code>keyHash</code> utilizes the 64-bit
+ represents the input <var>X</var>, which may be numeric, logical, or character
+ array or cell array of character vectors.  <code>keyHash</code> utilizes the 64-bit
  FMV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
 </p>
 <p> <code><var>h</var> = keyHash (<var>X</var>), <var>base</var></code> also generates a 64-bit
