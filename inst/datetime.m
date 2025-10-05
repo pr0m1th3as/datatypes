@@ -21,11 +21,12 @@ classdef datetime
   ##
   ## Array representing points in time using the Gregorian calendar.
   ##
-  ## The underlying implementation relies on the @qcode{'date.h'} C++ library
-  ## and stores internally the datetime points are double arrays representing
-  ## whole years, months, days, hours, and minutes, as well as seconds including
-  ## their fractional part.  The precision of this implementation is set at
-  ## microseconds, which is substantial for typical times.
+  ## A @qcode{datetime} array stores internally the datetime points as double
+  ## arrays representing whole years, months, days, hours, and minutes, as well
+  ## as seconds including their fractional part.  The underlying implementation
+  ## relies on the @qcode{'date.h'} C++ library.  The precision of this
+  ## implementation is set at microseconds, which is substantial for typical
+  ## times.
   ##
   ## A @code{datetime} array is a collection of date/time elements, with each
   ## element holding a complete date/time.  The @code{datetime} array also has
@@ -421,7 +422,8 @@ classdef datetime
     ## @code{[@var{Y}, @var{M}, @var{D}] = ymd (@var{T})} returns the year,
     ## month, and day components of the corresponding datetime values in @var{T}
     ## as separate numeric arrays.  @var{Y}, @var{M}, @var{D} contain integer
-    ## values and have the same size as @var{T}.
+    ## values and have the same size as @var{T}.  Not-A-Time (@qcode{NaT})
+    ## values in @var{T} are returned as @qcode{NaN} in the output arrays.
     ##
     ## @end deftypefn
     function [Y, M, D] = ymd (this)
@@ -431,15 +433,16 @@ classdef datetime
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {Method} {[@var{h}, @var{m}, @var{s}] =} hms (@var{T})
+    ## @deftypefn {datetime} {[@var{h}, @var{m}, @var{s}] =} hms (@var{T})
     ##
     ## Hour, Minute, and Second components of a datetime array.
     ##
     ## @code{[@var{h}, @var{m}, @var{s}] = ymd (@var{T})} returns the hour,
-    ## miute, and second components of the corresponding datetime values in
+    ## minute, and second components of the corresponding datetime values in
     ## @var{T} as separate numeric arrays.  @var{h} and @var{m} contain integer
     ## values and @var{s} may also contain a fractional part.  All outputs have
-    ## the same size as @var{T}.
+    ## the same size as @var{T}.  Not-A-Time (@qcode{NaT}) values in @var{T} are
+    ## returned as @qcode{NaN} in the output arrays.
     ##
     ## @end deftypefn
     function [h, m, s] = hms (this)
@@ -448,14 +451,66 @@ classdef datetime
       s = this.Second;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{Y} =} year (@var{T})
+    ##
+    ## Year component of a datetime array.
+    ##
+    ## @code{@var{Y} = year (@var{T})} returns the year number for each element
+    ## of the input datetime array @var{T}.  The output @var{Y} is a
+    ## @qcode{double} array and it has the same size as @var{T}.  Not-A-Time
+    ## (@qcode{NaT}) values in @var{T} are returned as @qcode{NaN} in the output
+    ## array.
+    ##
+    ## @end deftypefn
     function out = year (this)
       out = this.Year;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{Q} =} quarter (@var{T})
+    ##
+    ## Quarter component of a datetime array.
+    ##
+    ## @code{@var{Q} = quarter (@var{T})} returns the quarter number for each
+    ## element of the input datetime array @var{T}.  The output @var{Q} is a
+    ## @qcode{double} array containing integer values in the range @math{[1, 4]}
+    ## and it has the same size as @var{T}.  Not-A-Time (@qcode{NaT}) values in
+    ## @var{T} are returned as @qcode{NaN} in the output array.
+    ##
+    ## @end deftypefn
     function out = quarter (this)
       out = ceil (this.Month / 3);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{M} =} month (@var{T})
+    ## @deftypefnx {datetime} {@var{M} =} month (@var{T}, @var{monthType})
+    ##
+    ## Month component of a datetime array.
+    ##
+    ## @code{@var{M} = month (@var{T})} returns the month number for each
+    ## element of the input datetime array @var{T}.  The output @var{M} is a
+    ## @qcode{double} array containing integer values in the range
+    ## @math{[1, 12]} and it has the same size as @var{T}.  Not-A-Time
+    ## (@qcode{NaT}) values in @var{T} are returned as @qcode{NaN} in the output
+    ## array.
+    ##
+    ## @code{@var{M} = month (@var{T}, @var{monthType})} returns the month
+    ## number or name for each element of the input datetime array @var{T} as
+    ## specified by @var{monthType}, which may have any of the following
+    ## options:
+    ##
+    ## @itemize
+    ## @item @qcode{'monthofyear'} (default) returns the month number in a
+    ## numeric array.
+    ## @item @qcode{'name'} returns the corresponding full name of the month in
+    ## a cell array of character vectors.
+    ## @item @qcode{'shortname'} returns the corresponding 3-letter abbreviation
+    ## of the month in a cell array of character vectors.
+    ## @end itemize
+    ##
+    ## @end deftypefn
     function out = month (this, type = 'monthofyear')
       if (strcmpi (type, 'monthofyear'))
         out = this.Month;
@@ -473,6 +528,43 @@ classdef datetime
       out = this.Month;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{D} =} day (@var{T})
+    ## @deftypefnx {datetime} {@var{D} =} day (@var{T}, @var{dayType})
+    ##
+    ## Day component of a datetime array.
+    ##
+    ## @code{@var{D} = day (@var{T})} returns the day number for each element of
+    ## the input datetime array @var{T}.  The output @var{D} is a @qcode{double}
+    ## array containing integer values in the range @math{[1, 31]}, depending on
+    ## the month and year, and it has the same size as @var{T}.  Not-A-Time
+    ## (@qcode{NaT}) values in @var{T} are returned as @qcode{NaN} in the output
+    ## array.
+    ##
+    ## @code{@var{D} = day (@var{T}, @var{monthType})} returns the day number or
+    ## name for each element of the input datetime array @var{T} as specified by
+    ## @var{dayType}, which may have any of the following options:
+    ##
+    ## @itemize
+    ## @item @qcode{'dayofmonth'} (default) returns the day-of-month number in a
+    ## numeric array.  Depending on the month and year, it can range from 1 to
+    ## 28, 29, 30, or 31.
+    ## @item @qcode{'dayofweek'} returns the day-of-week number in a numeric
+    ## array of @qcode{double} integer values ranging from 1 to 7, where 1
+    ## corresponds to Sunday.
+    ## @item @qcode{'iso-dayofweek'} returns the day-of-week number in a numeric
+    ## array of @qcode{double} integer values ranging from 1 to 7, where 1
+    ## corresponds to Monday according to the ISO 8601 standard.
+    ## @item @qcode{'dayofyear'} returns the day-of-year number in a numeric
+    ## array of @qcode{double} integer values ranging from 1 to 365 or 366,
+    ## depending on the year.
+    ## @item @qcode{'name'} returns the corresponding full name of the day in
+    ## a cell array of character vectors.
+    ## @item @qcode{'shortname'} returns the corresponding 3-letter abbreviation
+    ## of the day in a cell array of character vectors.
+    ## @end itemize
+    ##
+    ## @end deftypefn
     function out = day (this, type = 'dayofmonth')
       vtypes = {'dayofweek', 'iso-dayofweek', 'name', 'shortname'};
       if (strcmpi (type, 'dayofmonth'))
@@ -513,14 +605,65 @@ classdef datetime
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{h} =} hour (@var{T})
+    ##
+    ## Hour component of a datetime array.
+    ##
+    ## @code{@var{h} = hour (@var{T})} returns the hour number for each element
+    ## of the input datetime array @var{T}.  The output @var{h} is a
+    ## @qcode{double} array containing integer values in the range
+    ## @math{[0, 23]} and it has the same size as @var{T}.  Not-A-Time
+    ## (@qcode{NaT}) values in @var{T} are returned as @qcode{NaN} in the output
+    ## array.
+    ##
+    ## @end deftypefn
     function out = hour (this)
       out = this.Hour;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{m} =} minute (@var{T})
+    ##
+    ## Minute component of a datetime array.
+    ##
+    ## @code{@var{m} = minute (@var{T})} returns the minute number for each
+    ## element of the input datetime array @var{T}.  The output @var{m} is a
+    ## @qcode{double} array containing integer values in the range
+    ## @math{[0, 59]} and it has the same size as @var{T}.  Not-A-Time
+    ## (@qcode{NaT}) values in @var{T} are returned as @qcode{NaN} in the output
+    ## array.
+    ##
+    ## @end deftypefn
     function out = minute (this)
       out = this.Minute;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{s} =} second (@var{T})
+    ## @deftypefnx {datetime} {@var{s} =} second (@var{T}, @var{dayType})
+    ##
+    ## Seconds component of a datetime array.
+    ##
+    ## @code{@var{s} = second (@var{T})} returns the number of seconds for each
+    ## element of the input datetime array @var{T}.  The output @var{s} is a
+    ## @qcode{double} array containing values in the range @math{[1, 60)},
+    ## including any fractional part of the second, and it has the same size as
+    ## @var{T}.  Not-A-Time (@qcode{NaT}) values in @var{T} are returned as
+    ## @qcode{NaN} in the output array.
+    ##
+    ## @code{@var{D} = second (@var{T}, @var{secondType})} returns the seconds
+    ## for each element of the input datetime array @var{T} as specified by
+    ## @var{secondType}, which may have any of the following options:
+    ##
+    ## @itemize
+    ## @item @qcode{'secondofminute'} (default) returns the second of the minute
+    ## in a numeric array, in the range @math{[1, 60)}.
+    ## @item @qcode{'secondofday'} returns the second of the day in a numeric
+    ## array, in the range @math{[1, 86400)}.
+    ## @end itemize
+    ##
+    ## @end deftypefn
     function out = second (this)
       out = this.Second;
     endfunction
@@ -800,38 +943,141 @@ classdef datetime
 
   methods (Access = public)
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{TF} =} iscolumn (@var{T})
+    ##
+    ## Return true if datetime array is a column vector.
+    ##
+    ## @code{@var{TF} = iscolumn (@var{T})} returns a logical scalar @var{TF},
+    ## which is @qcode{true}, if the datetime array @var{T} is a column
+    ## vector, and @qcode{false} otherwise.  A column vector is a 2-D array for
+    ## which @code{size (@var{X})} returns @code{[@var{N}, 1]} with non-negative
+    ## @var{N}.
+    ##
+    ## @end deftypefn
     function TF = iscolumn (this)
       TF = iscolumn (this.Year);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{TF} =} isempty (@var{T})
+    ##
+    ## Return true if datetime array is empty.
+    ##
+    ## @code{@var{TF} = isempty (@var{T})} returns a logical scalar @var{TF},
+    ## which is @qcode{true}, if the datetime array @var{T} is empty, and
+    ## @qcode{false} otherwise.
+    ##
+    ## @end deftypefn
     function TF = isempty (this)
       TF = isempty (this.Year);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{out} =} isfinite (@var{T})
+    ##
+    ## Test for finite elements in datetime array.
+    ##
+    ## @code{@var{TF} = isfinite (@var{T})} returns a logical array @var{TF} of
+    ## the same size as @var{T} containing @qcode{true} for each corresponding
+    ## element of @var{T} that is finite and @qcode{false} otherwise.  Finite
+    ## elements in datetime arrays are those which are neither @qcode{Inf} nor
+    ## @qcode{NaT}.
+    ##
+    ## @end deftypefn
     function TF = isfinite (this)
       TF = isfinite (this.Year);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{out} =} isinf (@var{T})
+    ##
+    ## Test for infinite elements in datetime array.
+    ##
+    ## @code{@var{TF} = isinf (@var{T})} returns a logical array @var{TF} of the
+    ## same size as @var{T} containing @qcode{true} for each corresponding
+    ## element of @var{T} that is infinite and @qcode{false} otherwise.
+    ##
+    ## @end deftypefn
     function TF = isinf (this)
       TF = isinf (this.Year);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{TF} =} ismatrix (@var{T})
+    ##
+    ## Return true if datetime array is a 2-D array.
+    ##
+    ## @code{@var{TF} = ismatrix (@var{T})} returns a logical scalar @var{TF},
+    ## which is @qcode{true}, if the datetime array @var{T} is a matrix, and
+    ## @qcode{false} otherwise.  A matrix is an array of any type where
+    ## @code{ndims (@var{X}) == 2} and for which @code{size (@var{X})} returns
+    ## @code{[@var{H}, @var{W}]} with non-negative @var{H} and @var{W}.
+    ##
+    ## @end deftypefn
     function TF = ismatrix (this)
       TF = ismatrix (this.Year);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{out} =} isinf (@var{T})
+    ##
+    ## Test for Not-A-Time elements in datetime array.
+    ##
+    ## @code{@var{TF} = isinf (@var{T})} returns a logical array @var{TF} of the
+    ## same size as @var{T} containing @qcode{true} for each corresponding
+    ## element of @var{T} that is Not-A-Time (@qcode{NaT}) and @qcode{false}
+    ## otherwise.  @qcode{NaT} is the equivalent of @qcode{NaN} in numeric
+    ## arrays.
+    ##
+    ## @end deftypefn
     function TF = isnat (this)
       TF = isnan (this.Year);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{TF} =} isrow (@var{T})
+    ##
+    ## Return true if datetime array is a row vector.
+    ##
+    ## @code{@var{TF} = isrow (@var{T})} returns a logical scalar @var{TF},
+    ## which is @qcode{true}, if the datetime array @var{T} is a row vector,
+    ## and @qcode{false} otherwise.  A row vector is a 2-D array for which
+    ## @code{size (@var{X})} returns @code{[1, @var{N}]} with non-negative
+    ## @var{N}.
+    ##
+    ## @end deftypefn
     function TF = isrow (this)
       TF = isrow (this.Year);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{TF} =} isscalar (@var{T})
+    ##
+    ## Return true if datetime array is a scalar.
+    ##
+    ## @code{@var{TF} = isscalar (@var{T})} returns a logical scalar @var{TF},
+    ## which is @qcode{true}, if the datetime array @var{T} is also a scalar,
+    ## and @qcode{false} otherwise.  A scalar is a single element object for
+    ## which @code{size (@var{X})} returns @code{[1, 1]}.
+    ##
+    ## @end deftypefn
     function TF = isscalar (this)
       TF = isscalar (this.Year);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{TF} =} isvector (@var{T})
+    ##
+    ## Return true if datetime array is a vector.
+    ##
+    ## @code{@var{TF} = isvector (@var{T})} returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the datetime array @var{T} is a vector and
+    ## @qcode{false} otherwise.  A vector is a 2-D array for which one of the
+    ## dimensions is equal to 1 (either @math{1xN} or @math{Nx1}).  By
+    ## definition, a scalar is also a vector.
+    ##
+    ## @end deftypefn
     function TF = isvector (this)
       TF = isvector (this.Year);
     endfunction

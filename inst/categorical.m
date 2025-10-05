@@ -1449,6 +1449,7 @@ classdef categorical
     ## of the same size as @var{C} containing @qcode{true} for each
     ## corresponding element of @var{C} that does not have a value from one of
     ## the categories in @var{C} and @qcode{false} otherwise.
+    ## @qcode{<undefined>} is the equivalent of @qcode{NaN} in numeric arrays.
     ##
     ## @end deftypefn
     function TF = isundefined (this)
