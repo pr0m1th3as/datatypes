@@ -1076,6 +1076,21 @@ classdef calendarDuration
 
   methods (Access = public)
 
+    ## -*- texinfo -*-
+    ## @deftypefn {calendarDuration} {@var{C} =} minus (@var{A}, @var{B})
+    ##
+    ## Subtraction for calendarDuration arrays.
+    ##
+    ## @code{@var{C} = minus (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{C} = @var{A} - @var{B}} and returns the result of substracting
+    ## the corresponding elements of @var{B} from those of @var{A}.  @var{C} is
+    ## a calendarDuration array of the same size as the input arguments after
+    ## the necessary (if required) expansion.  @var{A} and @var{B} must be size
+    ## compatible, which translates to they can be the same size, one can be
+    ## scalar, or for every dimension, their dimension sizes must be equal or
+    ## one of them must be 1.
+    ##
+    ## @end deftypefn
     function out = minus (A, B)
       if (isa (A, 'calendarDuration') && isa (B, 'calendarDuration'))
         out = A;
@@ -1101,6 +1116,17 @@ classdef calendarDuration
       out = broadcastProperties (out);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {calendarDuration} {@var{C} =} minus (@var{A})
+    ##
+    ## Unary minus for calendarDuration arrays.
+    ##
+    ## @code{@var{C} = uminus (@var{A})} is the equivalent of the syntax
+    ## @code{@var{C} = -@var{A}} and returns @var{A} after negating its
+    ## elements.  @var{C} is a calendarDuration array of the same size as
+    ## @var{A}.
+    ##
+    ## @end deftypefn
     function out = uminus (A)
       out = A;
       out.Months = -A.Months;
@@ -1108,6 +1134,21 @@ classdef calendarDuration
       out.Time = -A.Time;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {calendarDuration} {@var{C} =} plus (@var{A}, @var{B})
+    ##
+    ## Addition for calendarDuration arrays.
+    ##
+    ## @code{@var{C} = plus (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{C} = @var{A} + @var{B}} and returns the result of adding the
+    ## corresponding elements of @var{A} and @var{A}.  @var{C} is a
+    ## calendarDuration array of the same size as the input arguments after the
+    ## necessary (if required) expansion.  @var{A} and @var{B} must be size
+    ## compatible, which translates to they can be the same size, one can be
+    ## scalar, or for every dimension, their dimension sizes must be equal or
+    ## one of them must be 1.
+    ##
+    ## @end deftypefn
     function out = plus (A, B)
       if (isa (A, 'calendarDuration') && isa (B, 'calendarDuration'))
         out = A;
@@ -1133,6 +1174,16 @@ classdef calendarDuration
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {calendarDuration} {@var{C} =} uplus (@var{A})
+    ##
+    ## Unary plus for calendarDuration arrays.
+    ##
+    ## @code{@var{C} = uminus (@var{A})} is the equivalent of the syntax
+    ## @code{@var{C} = +@var{A}} and returns a copy of @var{A}.  @var{C} is a
+    ## calendarDuration array of the same size as @var{A}.
+    ##
+    ## @end deftypefn
     function out = uplus (A)
       out = A;
       out.Months = A.Months;
