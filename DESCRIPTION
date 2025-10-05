@@ -1,6 +1,6 @@
 Name: datatypes
-Version: 1.0.9
-Date: 2025-10-03
+Version: 1.1.0
+Date: 2025-10-05
 Author: Andreas Bertsatos
 Maintainer: Andreas Bertsatos <abertsatos@biol.uoa.gr>
 Title: Data Types for GNU Octave
