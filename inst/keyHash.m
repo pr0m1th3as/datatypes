@@ -19,10 +19,11 @@
 ## @deftypefn  {datatypes} {@var{hey} =} keyHash (@var{X})
 ## @deftypefnx {datatypes} {@var{hey} =} keyHash (@var{X}, @var{base})
 ##
-## Generate a hash code for a categorical array.
+## Generate a hash code for an array.
 ##
 ## @code{@var{h} = keyHash (@var{X})} generates a @qcode{uint64} scalar that
-## represents the input array @var{X}.  @code{keyHash} utilizes the 64-bit
+## represents the input @var{X}, which may be numeric, logical, or character
+## array or cell array of character vectors.  @code{keyHash} utilizes the 64-bit
 ## FMV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
 ##
 ## @code{@var{h} = keyHash (@var{X}), @var{base}} also generates a 64-bit
