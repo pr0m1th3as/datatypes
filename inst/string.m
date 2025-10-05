@@ -1582,7 +1582,7 @@ classdef string
     ## -*- texinfo -*-
     ## @deftypefn {string} {@var{A} =} ipermute (@var{B}, @var{dims})
     ##
-    ## Generalized transpose for a string N-D array.
+    ## Inverse of the generalized transpose for a string N-D array.
     ##
     ## @code{@var{A} = ipermute (@var{B}, @var{dims})} returns the inverse of
     ## the generalized transpose performed by the @code{permute} function.  The

@@ -1083,7 +1083,7 @@ classdef datetime
     ## -*- texinfo -*-
     ## @deftypefn {datetime} {@var{A} =} ipermute (@var{B}, @var{dims})
     ##
-    ## Generalized transpose for a datetime N-D array.
+    ## Inverse of the generalized transpose for a datetime N-D array.
     ##
     ## @code{@var{A} = ipermute (@var{B}, @var{dims})} returns the inverse of
     ## the generalized transpose performed by the @code{permute} function.  The

@@ -1416,7 +1416,7 @@ classdef calendarDuration
     ## -*- texinfo -*-
     ## @deftypefn {calendarDuration} {@var{A} =} ipermute (@var{B}, @var{dims})
     ##
-    ## Generalized transpose for a calendarDuration N-D array.
+    ## Inverse of the generalized transpose for a calendarDuration N-D array.
     ##
     ## @code{@var{A} = ipermute (@var{B}, @var{dims})} returns the inverse of
     ## the generalized transpose performed by the @code{permute} function.  The

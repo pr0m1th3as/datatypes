@@ -3942,7 +3942,7 @@ classdef categorical
     ## -*- texinfo -*-
     ## @deftypefn {categorical} {@var{A} =} ipermute (@var{B}, @var{dims})
     ##
-    ## Generalized transpose for a categorical N-D array.
+    ## Inverse of the generalized transpose for a categorical N-D array.
     ##
     ## @code{@var{A} = ipermute (@var{B}, @var{dims})} returns the inverse of
     ## the generalized transpose performed by the @code{permute} function.  The
