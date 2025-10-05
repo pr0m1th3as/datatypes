@@ -3327,9 +3327,30 @@ classdef table
     ## -*- texinfo -*-
     ## @deftypefn  {table} {@var{tblB} =} inner2outer (@var{tblA})
     ##
-    ## Invert nested table-in-table hierarchy in tables.
+    ## Invert nested table-in-table hierarchy in tables. (unimplemented)
     ##
-    ## @code{@var{tblB} = inner2outer (@var{tblA})}
+    ## @code{@var{tblB} = inner2outer (@var{tblA})} finds the variables in
+    ## @var{tblA} that contain nested tables and returns a table @var{tblB} in
+    ## which the variables of the nested tables in @var{tblA} are regrouped as
+    ## variables in @var{tblB} and the variables of @var{tblA} that contain
+    ## nested tables become the variables of the nested tables in @var{tblB}.
+    ## Any other variable in @var{tblA} are copied unaltered into @var{tblB}.
+    ##
+    ## For example, if @var{tblA} has three variables named @var{A}, @var{B},
+    ## and @var{C}, all they all contain nested tables with two variables named
+    ## @var{Var1} and @var{Var2}, then @var{tblB} has two variables named
+    ## @var{Var1} and @var{Var2} each containing a nested table with variables
+    ## @var{A}, @var{B}, and @var{C}.  As a result of this operation, the table
+    ## variables @code{@var{tblA}.@var{A}.@var{Var1}},
+    ## @code{@var{tblA}.@var{B}.@var{Var1}}, and
+    ## @code{@var{tblA}.@var{C}.@var{Var1}} are regrouped into
+    ## @code{@var{tblA}.@var{Var1}.@var{A}, @code{@var{tblA}.@var{Var1}.@var{B},
+    ## and @code{@var{tblA}.@var{Var1}.@var{C}, and the table variables
+    ## @code{@var{tblA}.@var{A}.@var{Var2}},
+    ## @code{@var{tblA}.@var{B}.@var{Var2}}, and
+    ## @code{@var{tblA}.@var{B}.@var{Var3}} are regrouped into
+    ## @code{@var{tblA}.@var{Var2}.@var{A}, @code{@var{tblA}.@var{Var2}.@var{B},
+    ## and @code{@var{tblA}.@var{Var2}.@var{C}.
     ##
     ## @end deftypefn
     function tbl = inner2outer (this)
@@ -3475,7 +3496,7 @@ classdef table
 ##                                                                            ##
 ################################################################################
 
-  methods (Access = public)
+  methods (Hidden)
 
     ## -*- texinfo -*-
     ## @deftypefn  {table} {@var{tbl} =} join (@var{tblL}, @var{tblR})
@@ -3778,7 +3799,7 @@ classdef table
     ## @deftypefnx {table} {@var{tbl} =} fillmissing (@dots{}, @var{Name}, @var{Value})
     ## @deftypefnx {table} {[@var{tbl}, @var{TF}] =} fillmissing (@dots{})
     ##
-    ## Fill missing table elements.
+    ## Fill missing table elements. (unimplemented)
     ##
     ##
     ##
@@ -3791,7 +3812,7 @@ classdef table
     ## @deftypefn  {table} {@var{tbl} =} standardizeMissing (@var{tblA}, @var{indicator})
     ## @deftypefnx {table} {@var{tbl} =} rmmissing (@dots{}, @var{Name}, @var{Value})
     ##
-    ## Remove missing table elements by rows.
+    ## Remove missing table elements by rows. (unimplemented)
     ##
     ##
     ##
@@ -3813,7 +3834,7 @@ classdef table
 ##                                                                            ##
 ################################################################################
 
-  methods (Access = public)
+  methods (Hidden)
 
     function out = pivot (this)
       error ("table.pivot: not implemented yet.");
