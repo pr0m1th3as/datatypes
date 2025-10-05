@@ -1009,9 +1009,9 @@ classdef duration
 ## 'abs'              'plus'             'uplus'            'minus'           ##
 ## 'uminus'           'times'            'mtimes'           'ldivide'         ##
 ## 'mldivide'         'rdivide'          'mrdivide'         'colon'           ##
-## 'linspace'         'interp1'          'sum'              'cumsum'          ##
-## 'diff'             'mean'             'median'           'mode'            ##
-## 'floor'            'ceil'             'round'            'sign'            ##
+## 'linspace'         'sum'              'cumsum'           'diff'            ##
+## 'mean'             'median'           'mode'             'floor'           ##
+## 'ceil'             'round'            'sign'                               ##
 ##                                                                            ##
 ################################################################################
 
@@ -1189,16 +1189,6 @@ classdef duration
       C = A;
       C.Days = linspace (A.Days, B.Days, n);
       C = fix_zero_precision (C);
-    endfunction
-
-    function YI = interp1 (X, Y, XI, varargin)
-      if (isa (Y, 'duration'))
-        YI = Y;
-        YI.Days = interp1 (X.Days, Y.Days, XI.Days, varargin{:});
-        YI = fix_zero_precision (YI);
-      else
-        YI = interp1 (X.Days, Y, XI.Days, varargin{:});
-      endif
     endfunction
 
     function S = sum (A, varargin)
@@ -1470,6 +1460,7 @@ classdef duration
           error (strcat ("duration.interp1: if A is not a duration", ...
                          " array, then both A and AI must be numeric."));
         endif
+        BI = fix_zero_precision (BI);
       elseif (isnumeric (B))
         BI = interp1 (A.Days, B, AI.Days, varargin{:});
       else
