@@ -1,6 +1,7 @@
 # Makefile for compiling required oct files
 
-ifeq ($(OS),Windows_NT)
+TARGET_OS ?= $(OS)
+ifeq ($(TARGET_OS),Windows_NT)
 	LIBS = -lOle32 -lcurl
 else
 	LIBS =
