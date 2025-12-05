@@ -2,7 +2,7 @@
 
 TARGET_OS ?= $(OS)
 ifeq ($(TARGET_OS),Windows_NT)
-	LIBS = -lOle32 -lcurl
+	LIBS = -lole32 -lcurl
 else
 	LIBS =
 endif
