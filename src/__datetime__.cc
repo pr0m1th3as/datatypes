@@ -245,7 +245,7 @@ DEFUN_DLD(__datetime__, args, nargout,
  @deftypefnx {datatypes} {[@dots{}] =} __datetime__ (@dots{}, @qcode{'TimeZone'}, @var{tzone}, @qcode{'toTimeZone'}, @var{totzone})\n\
 \n\
 \n\
-Base fuction for datetime class. \n\
+Base function for datetime class. \n\
 \n\n\
 @end deftypefn")
 {
