@@ -1020,11 +1020,47 @@ classdef datetime
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {datetime} {@var{out} =} isinf (@var{T})
+    ## @deftypefn  {datetime} {@var{TF} =} ismissing (@var{T})
+    ## @deftypefnx {datetime} {@var{TF} =} ismissing (@varT}, @var{indicator})
+    ##
+    ## Test for missing elements in datetime array.
+    ##
+    ## @var{TF} is a logical array of the same size as @var{T}.
+    ##
+    ## @end deftypefn
+    function TF = ismissing (this, varargin)
+      if (nargin > 2)
+        error ("datetime.ismissing: too many input arguments.");
+      endif
+      if (! isempty (varargin))
+        indicator = varargin{1};
+        TF = false (size (this));
+        if (isvector (indicator))
+          if (! isa (varargin{1}, 'datetime'))
+            for i = 1:numel (indicator)
+              DT = indicator(i);
+              is_eq = DT.Year == this.Year & DT.Month == this.Month & ...
+                      DT.Day == this.Day & DT.Hour == this.Hour & ...
+                      DT.Minute == this.Minute & DT.Second == this.Second;
+              TF(is_eq) = true;
+            endfor
+          else
+            error ("datetime.ismissing: INDICATOR must be a 'datetime' array.");
+          endif
+        else
+          error ("datetime.ismissing: INDICATOR must be a vector.");
+        endif
+      else
+        TF = isnan (this.Year);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{out} =} isnat (@var{T})
     ##
     ## Test for Not-A-Time elements in datetime array.
     ##
-    ## @code{@var{TF} = isinf (@var{T})} returns a logical array @var{TF} of the
+    ## @code{@var{TF} = isnat (@var{T})} returns a logical array @var{TF} of the
     ## same size as @var{T} containing @qcode{true} for each corresponding
     ## element of @var{T} that is Not-A-Time (@qcode{NaT}) and @qcode{false}
     ## otherwise.  @qcode{NaT} is the equivalent of @qcode{NaN} in numeric
