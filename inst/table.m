@@ -3651,6 +3651,7 @@ classdef table
     ## -*- texinfo -*-
     ## @deftypefn  {Method} {@var{TF} =} ismissing (@var{tblA})
     ## @deftypefnx {Method} {@var{TF} =} ismissing (@var{tblA}, @var{indicator})
+    ## @deftypefnx {Method} {@var{TF} =} ismissing (@dots{}, @qcode{'OutputFormat'}, @var{outFmt})
     ##
     ## Find missing values in table.
     ##
@@ -3678,22 +3679,24 @@ classdef table
       if (isempty (indicator))
         for i = 1:width (this)
           tmpVar = this.VariableValues{i};
-          if (any (isa (tmpVar, {'calendarDuration', 'categorical', ...
-                                 'datetime', 'duration', 'string'})))
-            varTF = ismissing (tmpVar);
-            varTF = any (varTF, 2);
-            this.VariableValues{i} = varTF;
-          elseif (isa (tmpVar, 'table'))
+          if (isa (tmpVar, 'table'))
             varTF = ismissing (tmpVar, 'OutputFormat', 'logical');
             varTF = any (varTF, 2);
             this.VariableValues{i} = varTF;
-          else
+          elseif (any (isa (tmpVar, {'calendarDuration', 'categorical', ...
+                                     'datetime', 'duration', 'string'})))
+            varTF = ismissing (tmpVar);
+            varTF = any (varTF, 2);
+            this.VariableValues{i} = varTF;
+          else  # numeric, logical, char, and cellstr arrays
             varTF = __ismissing__ (tmpVar);
             varTF = any (varTF, 2);
             this.VariableValues{i} = varTF;
           endif
         endfor
       else
+        ## Remove nested cell caused by parsing with paredArgs
+        indicator = indicator{1};
         ## Indicator must be a vector in any case
         if (! isvector (indicator))
           error ("table.ismissing: INDICATOR must be a vector.");
@@ -3714,6 +3717,10 @@ classdef table
           string_indicator = string (indicator (idx_string));
           idx_istext = idx_string;
           istext_indicator = cellstr (string_indicator);
+          ## numeric and logical arrays
+          fcn = @(x) isnumeric (x) || islogical (x)
+          idx_numlog = cellfun (fcn, indicator);
+          numlog_indicator = indicator {idx_numlog};
         elseif (iscellstr (indicator))
           ## datetime and duration arrays use default missing values
           idx_datetime = false (size (indicator));
@@ -3723,50 +3730,77 @@ classdef table
           string_indicator = indicator;
           idx_istext = idx_string;
           istext_indicator = indicator;
+          ## numeric and logical arrays use default missing values
+          idx_numlog = idx_datetime
+        else  # single data type indicator
+          idx_datetime = false;
+          idx_duration = false;
+          idx_string = false;
+          idx_istext = false;
+          idx_numlog = false;
+          if (isa (indicator, 'datetime'))
+            idx_datetime = true;
+            datetime_indicator = indicator;
+          elseif (isa (indicator, 'duration'))
+            idx_duration = true;
+            datetime_indicator = indicator;
+          elseif (isa (indicator, 'string'))
+            idx_string = true;
+            string_indicator = indicator;
+            idx_istext = true;
+            istext_indicator = cellstr (string_indicator);
+          elseif (iscellstr (indicator) || ischar (indicator))
+            idx_string = true;
+            string_indicator = indicator;
+            idx_istext = true;
+            istext_indicator = indicator;
+          else  # numeric and logical arrays
+            idx_numlog = true;
+            numlog_indicator = indicator;
+          endif
         endif
+        ## Return false TF vector for any datatypes that are not
+        ## represented in the indicator and should be ignored
+        TF_false = false (rows (this), 1);
         for i = 1:width (this)
           tmpVar = this.VariableValues{i};
-          if (any (isa (tmpVar, {'calendarDuration', 'categorical'})))
-            varTF = ismissing (tmpVar);
-            varTF = any (varTF, 2);
-            this.VariableValues{i} = varTF;
+          if (isa (tmpVar, 'table'))
+            varTF = ismissing (tmpVar, indicator, 'OutputFormat', 'logical');
+          elseif (any (isa (tmpVar, {'calendarDuration', 'categorical'})))
+            varTF = TF_false;
           elseif (isa (tmpVar, 'datetime'))
             if (any (idx_datetime))
               varTF = ismissing (tmpVar, datetime_indicator);
             else
-              varTF = ismissing (tmpVar);
+              varTF = TF_false;
             endif
-            varTF = any (varTF, 2);
-            this.VariableValues{i} = varTF;
           elseif (isa (tmpVar, 'duration'))
             if (any (idx_duration))
               varTF = ismissing (tmpVar, duration_indicator);
             else
-              varTF = ismissing (tmpVar);
+              varTF = TF_false;
             endif
-            varTF = any (varTF, 2);
-            this.VariableValues{i} = varTF;
           elseif (isa (tmpVar, 'string'))
             if (any (idx_string))
               varTF = ismissing (tmpVar, string_indicator);
             else
-              varTF = ismissing (tmpVar);
+              varTF = TF_false;
             endif
-            varTF = any (varTF, 2);
-            this.VariableValues{i} = varTF;
-          elseif (isa (tmpVar, 'table'))
-            varTF = ismissing (tmpVar, indicator, 'OutputFormat', 'logical');
-            varTF = any (varTF, 2);
-            this.VariableValues{i} = varTF;
-          else  # char arrays and cellstr arrays
+          elseif (ischar (tmpVar) || iscellstr (tmpVar))
             if (any (idx_istext))
               varTF = __ismissing__ (tmpVar, istext_indicator);
             else
-              varTF = __ismissing__ (tmpVar);
+              varTF = TF_false;
             endif
-            varTF = any (varTF, 2);
-            this.VariableValues{i} = varTF;
+          else  # numeric and logical arrays
+            if (any (idx_numlog))
+              varTF = __ismissing__ (tmpVar, numlog_indicator);
+            else
+              varTF = TF_false;
+            endif
           endif
+          varTF = any (varTF, 2);
+          this.VariableValues{i} = varTF;
         endfor
       endif
 
