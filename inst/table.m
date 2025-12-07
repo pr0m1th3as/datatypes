@@ -3706,37 +3706,60 @@ classdef table
           ## datetime arrays
           fcn = @(x) isa (x, 'datetime');
           idx_datetime = cellfun (fcn, indicator);
-          datetime_indicator = indicator {idx_datetime};
+          if (any (idx_datetime))
+            datetime_indicator = indicator {idx_datetime};
+            idx_datetime = true;
+          endif
           ## duration arrays
           fcn = @(x) isa (x, 'duration');
           idx_duration = cellfun (fcn, indicator);
-          duration_indicator = indicator {idx_duration};
-          ## string and text (cellstr, char) arrays
-          fcn = @(x) isstring (x) || iscellstr (x) || ischar (x);
+          if (any (idx_duration))
+            duration_indicator = indicator {idx_duration};
+            idx_duration = true;
+          endif
+          ## string arrays
+          fcn = @(x) isa (x, 'string');
           idx_string = cellfun (fcn, indicator);
-          string_indicator = string (indicator (idx_string));
-          idx_istext = idx_string;
-          istext_indicator = cellstr (string_indicator);
+          if (any (idx_string))
+            string_indicator = indicator {idx_string};
+            idx_string = true;
+          endif
+          ## cell arrays of character vectors
+          fcn = @(x) iscellstr (x);
+          idx_iscstr = cellfun (fcn, indicator);
+          if (any (idx_iscstr))
+            iscstr_indicator = indicator {idx_iscstr};
+            idx_iscstr = true;
+          endif
+          ## char arrays
+          idx_ischar = cellfun ('ischar', indicator);
+          if (any (idx_ischar))
+            ischar_indicator = [indicator{idx_ischar}];
+            idx_ischar = true;
+          endif
           ## numeric and logical arrays
           fcn = @(x) isnumeric (x) || islogical (x)
           idx_numlog = cellfun (fcn, indicator);
-          numlog_indicator = indicator {idx_numlog};
+          if (any (idx_numlog))
+            numlog_indicator = indicator {idx_numlog};
+            idx_numlog = true;
+          endif
         elseif (iscellstr (indicator))
-          ## datetime and duration arrays use default missing values
-          idx_datetime = false (size (indicator));
-          idx_duration = idx_datetime;
-          ## string and text (cellstr, char) arrays
-          idx_string = true (size (indicator));
-          string_indicator = indicator;
-          idx_istext = idx_string;
-          istext_indicator = indicator;
-          ## numeric and logical arrays use default missing values
-          idx_numlog = idx_datetime
+          ## only cell arrays of character vectors are searched
+          idx_iscstr = true;
+          iscstr_indicator = indicator;
+          ## all other arrays are ignored
+          idx_datetime = false;
+          idx_duration = false;
+          idx_string = false
+          idx_ischar = false
+          idx_numlog = false;
         else  # single data type indicator
           idx_datetime = false;
           idx_duration = false;
           idx_string = false;
-          idx_istext = false;
+          idx_iscstr = false;
+          idx_ischar = false;
           idx_numlog = false;
           if (isa (indicator, 'datetime'))
             idx_datetime = true;
@@ -3747,13 +3770,12 @@ classdef table
           elseif (isa (indicator, 'string'))
             idx_string = true;
             string_indicator = indicator;
-            idx_istext = true;
-            istext_indicator = cellstr (string_indicator);
-          elseif (iscellstr (indicator) || ischar (indicator))
-            idx_string = true;
-            string_indicator = indicator;
-            idx_istext = true;
-            istext_indicator = indicator;
+          elseif (iscellstr (indicator))
+            idx_iscstr = true;
+            iscstr_indicator = indicator;
+          elseif (ischar (indicator))
+            idx_ischar = true;
+            ischar_indicator = indicator;
           else  # numeric and logical arrays
             idx_numlog = true;
             numlog_indicator = indicator;
@@ -3769,31 +3791,37 @@ classdef table
           elseif (any (isa (tmpVar, {'calendarDuration', 'categorical'})))
             varTF = TF_false;
           elseif (isa (tmpVar, 'datetime'))
-            if (any (idx_datetime))
+            if (idx_datetime)
               varTF = ismissing (tmpVar, datetime_indicator);
             else
               varTF = TF_false;
             endif
           elseif (isa (tmpVar, 'duration'))
-            if (any (idx_duration))
+            if (idx_duration)
               varTF = ismissing (tmpVar, duration_indicator);
             else
               varTF = TF_false;
             endif
           elseif (isa (tmpVar, 'string'))
-            if (any (idx_string))
+            if (idx_string)
               varTF = ismissing (tmpVar, string_indicator);
             else
               varTF = TF_false;
             endif
-          elseif (ischar (tmpVar) || iscellstr (tmpVar))
-            if (any (idx_istext))
-              varTF = __ismissing__ (tmpVar, istext_indicator);
+          elseif (iscellstr (tmpVar))
+            if (idx_iscstr)
+              varTF = ismissing (tmpVar, iscstr_indicator);
+            else
+              varTF = TF_false;
+            endif
+          elseif (ischar (tmpVar))
+            if (idx_ischar)
+              varTF = __ismissing__ (tmpVar, ischar_indicator);
             else
               varTF = TF_false;
             endif
           else  # numeric and logical arrays
-            if (any (idx_numlog))
+            if (idx_numlog)
               varTF = __ismissing__ (tmpVar, numlog_indicator);
             else
               varTF = TF_false;
