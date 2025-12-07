@@ -40,7 +40,7 @@ function TF = __ismissing__ (A, indicator)
   if ((! isempty (indicator)) &&
       ((isnumeric (A) && ! (isnumeric (indicator) || islogical (indicator))) ||
        (ischar (A) && ! ischar (indicator)) ||
-       (iscellstr (A) && ! (iscellstr (indicator)))))
+       (iscellstr (A) && ! iscellstr (indicator))))
     error ("ismissing: 'indicator' and 'A' must have the same data type.");
   endif
 
@@ -69,7 +69,7 @@ function TF = __ismissing__ (A, indicator)
     ## Indicator specified for missing data
     TF = false (size (A));
     if (isnumeric(A) || ischar (A) || islogical (A))
-      for iter = 1 : numel (indicator)
+      for iter = 1:numel (indicator)
         if (isnan (indicator(iter)))
           TF(isnan(A)) = true;
         else
@@ -77,7 +77,7 @@ function TF = __ismissing__ (A, indicator)
         endif
       endfor
     elseif (iscellstr (A))
-      for iter = 1 : numel (indicator)
+      for iter = 1:numel (indicator)
         TF(strcmp (A, indicator(iter))) = true;
       endfor
     endif
