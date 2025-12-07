@@ -865,14 +865,22 @@ classdef duration
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{TF} =} ismissing (@var{D})
+    ## @deftypefnx {duration} {@var{TF} =} ismissing (@var{D}, @var{indicator})
+    ##
+    ## Test for missing elements in duration array.
+    ##
+    ## @var{TF} is a logical array of the same size as @var{D}.
+    ##
+    ## @end deftypefn
     function TF = ismissing (this, varargin)
-      if (nargin > 1)
+      if (nargin > 2)
         error ("duration.ismissing: too many input arguments.");
       endif
       if (! isempty (varargin))
-        if (! isa (varargin{1}, 'categorical'))
-          error (strcat ("duration.ismissing: INDICATOR", ...
-                         " argument must be of 'duration' type."));
+        if (! isa (varargin{1}, 'duration'))
+          error ("duration.ismissing: INDICATOR must be a 'duration' array.");
         endif
         indicator = varargin{1};
         TF = false (size (this));

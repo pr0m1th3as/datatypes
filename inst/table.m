@@ -3657,8 +3657,8 @@ classdef table
     ## Finds missing values in @var{obj}’s variables.
     ##
     ## If indicator is not supplied, uses the standard missing values for each
-    ## variable’s data type. If indicator is supplied, the same indicator list is
-    ## applied across all variables.
+    ## variable’s data type. If indicator is supplied, the same indicator list
+    ## is applied across all variables.
     ##
     ## All variables in this must be vectors. (This is due to the requirement
     ## that @code{size(out) == size(obj)}.)
@@ -3666,12 +3666,12 @@ classdef table
     ## Returns a logical array the same size as @var{obj}.
     ##
     ## @end deftypefn
-    function TF = ismissing (this, indicator = [], varargin)
+    function TF = ismissing (this, varargin)
 
       ## Parse optional Name-Value paired arguments
       optNames = {'OutputFormat'};
       dfValues = {'logical'};
-      [outFmt] = pairedArgs (optNames, dfValues, varargin(:));
+      [outFmt, indicator] = pairedArgs (optNames, dfValues, varargin(:));
 
       if (! any (strcmpi (outFmt, {'logical', 'tabular'})))
         error ("table.ismissing: invalid value for 'OutputFormat'.");
@@ -3689,8 +3689,7 @@ classdef table
           varTF = any (varTF, 2);
           this.VariableValues{i} = varTF;
         elseif (isa (tmpVar, 'table'))
-          varTF = ismissing (tmpVar, indicator, outFmt, ...
-                             'OutputFormat', 'logical');
+          varTF = ismissing (tmpVar, indicator, 'OutputFormat', 'logical');
           varTF = any (varTF, 2);
           this.VariableValues{i} = varTF;
         else

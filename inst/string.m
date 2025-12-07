@@ -596,15 +596,31 @@ classdef string
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {string} {@var{TF} =} ismissing (@var{str})
+    ## @deftypefn  {string} {@var{TF} =} ismissing (@var{str})
+    ## @deftypefnx {string} {@var{TF} =} ismissing (@var{str}, @var{indicator})
     ##
     ## Test for missing elements in string array.
     ##
     ## @var{TF} is a logical array of the same size as @var{str}.
     ##
     ## @end deftypefn
-    function TF = ismissing (this)
-      TF = this.isMissing;
+    function TF = ismissing (this, varargin)
+      if (nargin > 2)
+        error ("string.ismissing: too many input arguments.");
+      endif
+      if (! isempty (varargin))
+        if (! isa (varargin{1}, 'string'))
+          error ("string.ismissing: INDICATOR must be a 'string' array.");
+        endif
+        indicator = varargin{1};
+        TF = false (size (this));
+        for i = 1:numel (indicator)
+          str = indicator(i);
+          TF(this == str) = true;
+        endfor
+      else
+        TF = this.isMissing;
+      endif
     endfunction
 
     ## -*- texinfo -*-
