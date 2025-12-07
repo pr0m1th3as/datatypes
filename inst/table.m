@@ -3639,8 +3639,8 @@ classdef table
     ## @item @qcode{NaT} - datetime
     ## @item @qcode{<missing>} - string
     ## @item @qcode{<undefined>} - categorical
-    ## @item @qcode{''} - cell arrays of character vectors
-    ## @item @qcode{[]} - cell arrays
+    ## @item @qcode{@{''@}} - cell arrays of character vectors
+    ## @item @qcode{''} - character arrays
     ## @end itemize
     ##
     ## @end deftypefn
@@ -3649,19 +3649,59 @@ classdef table
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn  {Method} {@var{TF} =} ismissing (@var{tblA})
-    ## @deftypefnx {Method} {@var{TF} =} ismissing (@var{tblA}, @var{indicator})
+    ## @deftypefn  {Method} {@var{TF} =} ismissing (@var{tbl})
+    ## @deftypefnx {Method} {@var{TF} =} ismissing (@var{tbl}, @var{indicator})
     ## @deftypefnx {Method} {@var{TF} =} ismissing (@dots{}, @qcode{'OutputFormat'}, @var{outFmt})
     ##
     ## Find missing values in table.
     ##
-    ## Finds missing values in @var{obj}’s variables.
+    ## @code{@var{TF} = ismissing (@var{tbl})} returns a logical array,
+    ## @var{TF}, with any @qcode{true} values corresponding to missing elements
+    ## in the input table @var{tbl}.
     ##
-    ## If indicator is not supplied, uses the standard missing values for each
-    ## variable’s data type. If indicator is supplied, the same indicator list
-    ## is applied across all variables.
+    ## Missing values are defined according to the data type of each variable in
+    ## @var{tblA}:
     ##
-    ## Returns a logical array the same size as @var{obj}.
+    ## @itemize
+    ## @item @qcode{NaN} - double, single, duration and calendarDuration
+    ## @item @qcode{NaT} - datetime
+    ## @item @qcode{<missing>} - string
+    ## @item @qcode{<undefined>} - categorical
+    ## @item @qcode{@{''@}} - cell arrays of character vectors
+    ## @item @qcode{''} - character arrays
+    ## @end itemize
+    ##
+    ## @code{@var{TF} = ismissing (@var{tbl}, @var{indicator})} also returns a
+    ## logical array, @var{TF}, with any @qcode{true} values corresponding to
+    ## elements in the input table @var{tbl}, which are equal to the values in
+    ## @var{indicator}.  When specifying an @var{indicator}, all default missing
+    ## values are ignored.  If you want to keep them, you need to define them in
+    ## @var{indicator}.
+    ##
+    ## @var{indicator} can be either a vector of specific data type, in which
+    ## case all other data types in table @var{tbl} are ignored, or a cell array
+    ## containing mixed types of data types, in which case they match the data
+    ## types of the variables in table @var{tbl}.  Missing values specified by
+    ## @var{indicator} also apply to nested tables.
+    ##
+    ## Besides the explicit data type match between @var{indicator} and
+    ## @var{tbl}, the following additional data types matches apply.
+    ## @itemize
+    ## @item @qcode{double} indicators match numeric and logical variables.
+    ## @item @qcode{logical} indicators match numeric and logical variables.
+    ## @item @qcode{char} and @qcode{cellstr} indicators match string variables.
+    ## @item @qcode{char} and @var{string} indicators match categorical
+    ## variables.
+    ## @end itemize
+    ##
+    ## The output array @var{FT} has the same size as the input table @var{tbl}.
+    ##
+    ## @code{@var{TF} = ismissing (@dots{}, @qcode{'OutputFormat'}, @var{outFmt})}
+    ## specifies whether @var{TF} is returned as a logical array or as a table,
+    ## which maintains the variable names and all other information of the input
+    ## table @var{tbl}.  Specifying @var{outFmt} as @qcode{'logical'} (default)
+    ## returns a logical array.  Specifying @var{outFmt} as @qcode{'tabular'}
+    ## returns a table.
     ##
     ## @end deftypefn
     function TF = ismissing (this, varargin)
@@ -3701,34 +3741,66 @@ classdef table
         if (! isvector (indicator))
           error ("table.ismissing: INDICATOR must be a vector.");
         endif
+        ## Elements in indicator vector must be scalars (except char vectors)
+        fcn = @(x) isscalar (x) | isempty (x) | (ischar (x) & isvector (x));
+        all_scalar = all (cellfun (fcn, indicator));
+        if (! all_scalar)
+          error (strcat ("table.ismissing: INDICATOR must explicitly", ...
+                         " contain scalar elements or character vectors."));
+        endif
+        ## NaN values for calendarDuration and duration
+        nan_calendarDuration = nan_duration = false;
         ## Preprocess indicator if it is a cell array
         if (iscell (indicator) && ! iscellstr (indicator))
+          ## categorical arrays
+          idx_categorical = false;
+          categorical_indicator = [];
+          fcn = @(x) isa (x, 'categorical');
+          ids_categorical = cellfun (fcn, indicator);
+          if (any (ids_categorical))
+            new_categories = [indicator{ids_categorical}];
+            categorical_indicator = [categorical_indicator, new_categories];
+            idx_categorical = true;
+          endif
+          fcn = @(x) isa (x, 'string');
+          ids_categorical = cellfun (fcn, indicator);
+          if (any (ids_categorical))
+            new_categories = categorical ([indicator{ids_categorical}]);
+            categorical_indicator = [categorical_indicator, new_categories];
+            idx_categorical = true;
+          endif
+          ids_categorical = cellfun ('ischar', indicator);
+          if (any (ids_categorical))
+            new_categories = categorical (string ([indicator{ids_categorical}]));
+            categorical_indicator = [categorical_indicator, new_categories];
+            idx_categorical = true;
+          endif
           ## datetime arrays
           fcn = @(x) isa (x, 'datetime');
           idx_datetime = cellfun (fcn, indicator);
           if (any (idx_datetime))
-            datetime_indicator = indicator {idx_datetime};
+            datetime_indicator = [indicator{idx_datetime}];
             idx_datetime = true;
           endif
           ## duration arrays
           fcn = @(x) isa (x, 'duration');
           idx_duration = cellfun (fcn, indicator);
           if (any (idx_duration))
-            duration_indicator = indicator {idx_duration};
+            duration_indicator = [indicator{idx_duration}];
             idx_duration = true;
           endif
           ## string arrays
-          fcn = @(x) isa (x, 'string');
+          fcn = @(x) isa (x, 'string') || ischar (x) || iscellstr (x);
           idx_string = cellfun (fcn, indicator);
           if (any (idx_string))
-            string_indicator = indicator {idx_string};
+            string_indicator = string (indicator(idx_string));
             idx_string = true;
           endif
           ## cell arrays of character vectors
           fcn = @(x) iscellstr (x);
           idx_iscstr = cellfun (fcn, indicator);
           if (any (idx_iscstr))
-            iscstr_indicator = indicator {idx_iscstr};
+            iscstr_indicator = indicator{idx_iscstr};
             idx_iscstr = true;
           endif
           ## char arrays
@@ -3738,30 +3810,40 @@ classdef table
             idx_ischar = true;
           endif
           ## numeric and logical arrays
-          fcn = @(x) isnumeric (x) || islogical (x)
+          fcn = @(x) isnumeric (x) || islogical (x);
           idx_numlog = cellfun (fcn, indicator);
           if (any (idx_numlog))
-            numlog_indicator = indicator {idx_numlog};
+            numlog_indicator = [indicator{idx_numlog}];
             idx_numlog = true;
+            ## Check for NaN and apply to duration and calendarDuration arrays
+            if (any (isnan (numlog_indicator)))
+              nan_calendarDuration = nan_duration = true;
+            endif
           endif
         elseif (iscellstr (indicator))
-          ## only cell arrays of character vectors are searched
+          ## cell arrays of character vectors and string arrays are searched
           idx_iscstr = true;
           iscstr_indicator = indicator;
+          idx_string = true;
+          string_indicator = indicator;
           ## all other arrays are ignored
+          idx_categorical = false;
           idx_datetime = false;
           idx_duration = false;
-          idx_string = false
           idx_ischar = false
           idx_numlog = false;
         else  # single data type indicator
+          idx_categorical = false;
           idx_datetime = false;
           idx_duration = false;
           idx_string = false;
           idx_iscstr = false;
           idx_ischar = false;
           idx_numlog = false;
-          if (isa (indicator, 'datetime'))
+          if (isa (indicator, 'categorical'))
+            idx_categorical = true;
+            categorical_indicator = indicator;
+          elseif (isa (indicator, 'datetime'))
             idx_datetime = true;
             datetime_indicator = indicator;
           elseif (isa (indicator, 'duration'))
@@ -3770,15 +3852,27 @@ classdef table
           elseif (isa (indicator, 'string'))
             idx_string = true;
             string_indicator = indicator;
+            idx_categorical = true;
+            categorical_indicator = categorical (indicator);
           elseif (iscellstr (indicator))
             idx_iscstr = true;
             iscstr_indicator = indicator;
+            idx_string = true;
+            string_indicator = string (indicator);
           elseif (ischar (indicator))
             idx_ischar = true;
             ischar_indicator = indicator;
+            idx_string = true;
+            string_indicator = string (indicator);
+            idx_categorical = true;
+            categorical_indicator = categorical (string_indicator);
           else  # numeric and logical arrays
             idx_numlog = true;
             numlog_indicator = indicator;
+            ## Check for NaN and apply to duration and calendarDuration arrays
+            if (any (isnan (numlog_indicator)))
+              nan_calendarDuration = nan_duration = true;
+            endif
           endif
         endif
         ## Return false TF vector for any datatypes that are not
@@ -3788,8 +3882,19 @@ classdef table
           tmpVar = this.VariableValues{i};
           if (isa (tmpVar, 'table'))
             varTF = ismissing (tmpVar, indicator, 'OutputFormat', 'logical');
-          elseif (any (isa (tmpVar, {'calendarDuration', 'categorical'})))
+          elseif (isa (tmpVar, 'calendarDuration'))
+            if (nan_calendarDuration)
+              varTF = ismissing (tmpVar);
+            else
+              varTF = TF_false;
+            endif
             varTF = TF_false;
+          elseif (isa (tmpVar, 'categorical'))
+            if (idx_categorical)
+              varTF = ismissing (tmpVar, categorical_indicator);
+            else
+              varTF = TF_false;
+            endif
           elseif (isa (tmpVar, 'datetime'))
             if (idx_datetime)
               varTF = ismissing (tmpVar, datetime_indicator);
@@ -3797,10 +3902,12 @@ classdef table
               varTF = TF_false;
             endif
           elseif (isa (tmpVar, 'duration'))
+            varTF = TF_false;
+            if (nan_duration)
+              varTF = varTF | ismissing (tmpVar);
+            endif
             if (idx_duration)
-              varTF = ismissing (tmpVar, duration_indicator);
-            else
-              varTF = TF_false;
+              varTF = varTF | ismissing (tmpVar, duration_indicator);
             endif
           elseif (isa (tmpVar, 'string'))
             if (idx_string)
@@ -3810,7 +3917,7 @@ classdef table
             endif
           elseif (iscellstr (tmpVar))
             if (idx_iscstr)
-              varTF = ismissing (tmpVar, iscstr_indicator);
+              varTF = __ismissing__ (tmpVar, iscstr_indicator);
             else
               varTF = TF_false;
             endif
@@ -3835,6 +3942,8 @@ classdef table
       ## Return appropriate OutputFormat
       if (strcmpi (outFmt, 'logical'))
         TF = table2array (this);
+      else
+        TF = this;
       endif
 
     endfunction
