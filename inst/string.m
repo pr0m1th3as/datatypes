@@ -604,7 +604,7 @@ classdef string
     ## @deftypefn  {string} {@var{TF} =} ismissing (@var{str})
     ## @deftypefnx {string} {@var{TF} =} ismissing (@var{str}, @var{indicator})
     ##
-    ## Test for missing elements in string array.
+    ## Find missing elements in string array.
     ##
     ## @code{@var{TF} = ismissing (@var{str})} returns a logical array,
     ## @var{TF}, with any @qcode{true} values corresponding to missing elements
@@ -631,7 +631,12 @@ classdef string
         if (isvector (indicator))
           if (ischar (indicator))
             TF(this == indicator) = true;
-          elseif (iscellstr (indicator) || isstring (indicator))
+          elseif (isstring (indicator))
+            for i = 1:numel (indicator)
+              str = indicator.strs(i);
+              TF(this == str) = true;
+            endfor
+          elseif (iscellstr (indicator))
             for i = 1:numel (indicator)
               str = indicator(i);
               TF(this == str) = true;
