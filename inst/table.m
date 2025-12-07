@@ -3660,9 +3660,6 @@ classdef table
     ## variable’s data type. If indicator is supplied, the same indicator list
     ## is applied across all variables.
     ##
-    ## All variables in this must be vectors. (This is due to the requirement
-    ## that @code{size(out) == size(obj)}.)
-    ##
     ## Returns a logical array the same size as @var{obj}.
     ##
     ## @end deftypefn
@@ -3677,27 +3674,101 @@ classdef table
         error ("table.ismissing: invalid value for 'OutputFormat'.");
       endif
 
-      ## Process each table variable
-      for i = 1:width (this)
-        tmpVar = this.VariableValues{i};
-        if (any (isa (tmpVar, {'categorical', 'calendarDuration'})))
-          varTF = ismissing (tmpVar);
-          varTF = any (varTF, 2);
-          this.VariableValues{i} = varTF;
-        elseif (any (isa (tmpVar, {'duration', 'datetime', 'string'})))
-          varTF = ismissing (tmpVar, indicator);
-          varTF = any (varTF, 2);
-          this.VariableValues{i} = varTF;
-        elseif (isa (tmpVar, 'table'))
-          varTF = ismissing (tmpVar, indicator, 'OutputFormat', 'logical');
-          varTF = any (varTF, 2);
-          this.VariableValues{i} = varTF;
-        else
-          varTF = __ismissing__ (tmpVar, indicator);
-          varTF = any (varTF, 2);
-          this.VariableValues{i} = varTF;
+      ## Process each table variable with default missing values
+      if (isempty (indicator))
+        for i = 1:width (this)
+          tmpVar = this.VariableValues{i};
+          if (any (isa (tmpVar, {'calendarDuration', 'categorical', ...
+                                 'datetime', 'duration', 'string'})))
+            varTF = ismissing (tmpVar);
+            varTF = any (varTF, 2);
+            this.VariableValues{i} = varTF;
+          elseif (isa (tmpVar, 'table'))
+            varTF = ismissing (tmpVar, 'OutputFormat', 'logical');
+            varTF = any (varTF, 2);
+            this.VariableValues{i} = varTF;
+          else
+            varTF = __ismissing__ (tmpVar);
+            varTF = any (varTF, 2);
+            this.VariableValues{i} = varTF;
+          endif
+        endfor
+      else
+        ## Indicator must be a vector in any case
+        if (! isvector (indicator))
+          error ("table.ismissing: INDICATOR must be a vector.");
         endif
-      endfor
+        ## Preprocess indicator if it is a cell array
+        if (iscell (indicator) && ! iscellstr (indicator))
+          ## datetime arrays
+          fcn = @(x) isa (x, 'datetime');
+          idx_datetime = cellfun (fcn, indicator);
+          datetime_indicator = indicator {idx_datetime};
+          ## duration arrays
+          fcn = @(x) isa (x, 'duration');
+          idx_duration = cellfun (fcn, indicator);
+          duration_indicator = indicator {idx_duration};
+          ## string and text (cellstr, char) arrays
+          fcn = @(x) isstring (x) || iscellstr (x) || ischar (x);
+          idx_string = cellfun (fcn, indicator);
+          string_indicator = string (indicator (idx_string));
+          idx_istext = idx_string;
+          istext_indicator = cellstr (string_indicator);
+        elseif (iscellstr (indicator))
+          ## datetime and duration arrays use default missing values
+          idx_datetime = false (size (indicator));
+          idx_duration = idx_datetime;
+          ## string and text (cellstr, char) arrays
+          idx_string = true (size (indicator));
+          string_indicator = indicator;
+          idx_istext = idx_string;
+          istext_indicator = indicator;
+        endif
+        for i = 1:width (this)
+          tmpVar = this.VariableValues{i};
+          if (any (isa (tmpVar, {'calendarDuration', 'categorical'})))
+            varTF = ismissing (tmpVar);
+            varTF = any (varTF, 2);
+            this.VariableValues{i} = varTF;
+          elseif (isa (tmpVar, 'datetime'))
+            if (any (idx_datetime))
+              varTF = ismissing (tmpVar, datetime_indicator);
+            else
+              varTF = ismissing (tmpVar);
+            endif
+            varTF = any (varTF, 2);
+            this.VariableValues{i} = varTF;
+          elseif (isa (tmpVar, 'duration'))
+            if (any (idx_duration))
+              varTF = ismissing (tmpVar, duration_indicator);
+            else
+              varTF = ismissing (tmpVar);
+            endif
+            varTF = any (varTF, 2);
+            this.VariableValues{i} = varTF;
+          elseif (isa (tmpVar, 'string'))
+            if (any (idx_string))
+              varTF = ismissing (tmpVar, string_indicator);
+            else
+              varTF = ismissing (tmpVar);
+            endif
+            varTF = any (varTF, 2);
+            this.VariableValues{i} = varTF;
+          elseif (isa (tmpVar, 'table'))
+            varTF = ismissing (tmpVar, indicator, 'OutputFormat', 'logical');
+            varTF = any (varTF, 2);
+            this.VariableValues{i} = varTF;
+          else  # char arrays and cellstr arrays
+            if (any (idx_istext))
+              varTF = __ismissing__ (tmpVar, istext_indicator);
+            else
+              varTF = __ismissing__ (tmpVar);
+            endif
+            varTF = any (varTF, 2);
+            this.VariableValues{i} = varTF;
+          endif
+        endfor
+      endif
 
       ## Return appropriate OutputFormat
       if (strcmpi (outFmt, 'logical'))
