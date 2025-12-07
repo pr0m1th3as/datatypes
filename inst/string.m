@@ -606,7 +606,19 @@ classdef string
     ##
     ## Test for missing elements in string array.
     ##
-    ## @var{TF} is a logical array of the same size as @var{str}.
+    ## @code{@var{TF} = ismissing (@var{str})} returns a logical array,
+    ## @var{TF}, with any @qcode{true} values corresponding to missing elements
+    ## in the input string array @var{str}.
+    ##
+    ## @code{@var{TF} = ismissing (@var{str}, @var{indicator})} also returns a
+    ## logical array, @var{TF}, with any @qcode{true} values corresponding to
+    ## elements in the input string array @var{str}, which are lexicographically
+    ## equal to the values in @var{indicator}.
+    ##
+    ## @var{indicator} must be either a character vector or a string vector
+    ## or a cell vector of character vectors.
+    ##
+    ## The output array @var{FT} has the same size as the input array @var{str}.
     ##
     ## @end deftypefn
     function TF = ismissing (this, varargin)
@@ -714,9 +726,9 @@ classdef string
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
         B = string (B);
-      else
-        error ("string.eq: comparison between %s and %s is not supported.", ...
-               class (A), class (B));
+      elseif (! isa (A, 'string') || ! isa (B, 'string'))
+        error (strcat ("string.eq: comparison between '%s' and '%s'", ...
+                       " is not supported."), class (A), class (B));
       endif
       if (isscalar (A))
         A = repmat (A, size (B));
@@ -745,9 +757,9 @@ classdef string
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
         B = string (B);
-      else
-        error ("string.ge: comparison between %s and %s is not supported.", ...
-               class (A), class (B));
+      elseif (! isa (A, 'string') || ! isa (B, 'string'))
+        error (strcat ("string.ge: comparison between '%s' and '%s'", ...
+                       " is not supported."), class (A), class (B));
       endif
       if (isscalar (A) && ! isscalar (B))
         A = repmat (A, size (B));
@@ -777,9 +789,9 @@ classdef string
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
         B = string (B);
-      else
-        error ("string.gt: comparison between %s and %s is not supported.", ...
-               class (A), class (B));
+      elseif (! isa (A, 'string') || ! isa (B, 'string'))
+        error (strcat ("string.gt: comparison between '%s' and '%s'", ...
+                       " is not supported."), class (A), class (B));
       endif
       if (isscalar (A) && ! isscalar (B))
         A = repmat (A, size (B));
@@ -810,9 +822,9 @@ classdef string
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
         B = string (B);
-      else
-        error ("string.le: comparison between %s and %s is not supported.", ...
-               class (A), class (B));
+      elseif (! isa (A, 'string') || ! isa (B, 'string'))
+        error (strcat ("string.le: comparison between '%s' and '%s'", ...
+                       " is not supported."), class (A), class (B));
       endif
       if (isscalar (A) && ! isscalar (B))
         A = repmat (A, size (B));
@@ -842,9 +854,9 @@ classdef string
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
         B = string (B);
-      else
-        error ("string.lt: comparison between %s and %s is not supported.", ...
-               class (A), class (B));
+      elseif (! isa (A, 'string') || ! isa (B, 'string'))
+        error (strcat ("string.lt: comparison between '%s' and '%s'", ...
+                       " is not supported."), class (A), class (B));
       endif
       if (isscalar (A) && ! isscalar (B))
         A = repmat (A, size (B));
@@ -876,9 +888,9 @@ classdef string
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
         B = string (B);
-      else
-        error ("string.ne: comparison between %s and %s is not supported.", ...
-               class (A), class (B));
+      elseif (! isa (A, 'string') || ! isa (B, 'string'))
+        error (strcat ("string.ne: comparison between '%s' and '%s'", ...
+                       " is not supported."), class (A), class (B));
       endif
       if (isscalar (A))
         A = repmat (A, size (B));
@@ -913,9 +925,9 @@ classdef string
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
         B = string (B);
-      else
-        error ("string.strcmp: comparison between %s and %s is not supported.", ...
-               class (A), class (B));
+      elseif (! isa (A, 'string') || ! isa (B, 'string'))
+        error (strcat ("string.strcmp: comparison between '%s' and '%s'", ...
+                       " is not supported."), class (A), class (B));
       endif
       if (isscalar (A))
         A = repmat (A, size (B));
@@ -951,9 +963,9 @@ classdef string
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
         B = string (B);
-      else
-        error ("string.strcmpi: comparison between %s and %s is not supported.", ...
-               class (A), class (B));
+      elseif (! isa (A, 'string') || ! isa (B, 'string'))
+        error (strcat ("string.strcmpi: comparison between '%s' and '%s'", ...
+                       " is not supported."), class (A), class (B));
       endif
       if (isscalar (A))
         A = repmat (A, size (B));
@@ -989,9 +1001,9 @@ classdef string
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
         B = string (B);
-      else
-        error ("string.strncmp: comparison between %s and %s is not supported.", ...
-               class (A), class (B));
+      elseif (! isa (A, 'string') || ! isa (B, 'string'))
+        error (strcat ("string.strncmp: comparison between '%s' and '%s'", ...
+                       " is not supported."), class (A), class (B));
       endif
       if (isscalar (A))
         A = repmat (A, size (B));
@@ -1028,9 +1040,9 @@ classdef string
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
         B = string (B);
-      else
-        error ("string.strncmpi: comparison between %s and %s is not supported.", ...
-               class (A), class (B));
+      elseif (! isa (A, 'string') || ! isa (B, 'string'))
+        error (strcat ("string.strncmpi: comparison between '%s' and '%s'", ...
+                       " is not supported."), class (A), class (B));
       endif
       if (isscalar (A))
         A = repmat (A, size (B));
@@ -1862,6 +1874,10 @@ endfunction
 %!assert (eq ({"A", "b"}, string ("A")), [true, false]);
 %!assert (eq (string ({'A', 'b'}), 'A'), [true, false]);
 %!assert (eq ('A', string ({"A", "b"})), [true, false]);
+%!error <string.eq: comparison between 'string' and 'double' is not supported.> ...
+%!       eq (string ("A"), 2)
+%!error <string.eq: comparison between 'double' and 'string' is not supported.> ...
+%!       NaN == string ("A")
 %!error <string.eq: inconsistent dimensions.> ...
 %! eq (string ({"A","B"}), string ({"A";"B"}))
 %!assert (ge (string ("A"), string ("A")), true);
@@ -1870,6 +1886,10 @@ endfunction
 %!assert (ge ({"A", "b"}, string ("b")), [false, true]);
 %!assert (ge (string ({'A', 'b'}), 'A'), [true, true]);
 %!assert (ge ('A', string ({"A", "b"})), [true, false]);
+%!error <string.ge: comparison between 'string' and 'double' is not supported.> ...
+%!       ge (string ("A"), 2)
+%!error <string.ge: comparison between 'double' and 'string' is not supported.> ...
+%!       NaN >= string ("A")
 %!error <string.ge: inconsistent dimensions.> ...
 %! ge (string ({"A","B"}), string ({"A";"B"}))
 %!assert (gt (string ("A"), string ("A")), false);
@@ -1878,6 +1898,10 @@ endfunction
 %!assert (gt ({"A", "b"}, string ("b")), [false, false]);
 %!assert (gt (string ({'A', 'b'}), 'A'), [false, true]);
 %!assert (gt ('A', string ({"A", "b"})), [false, false]);
+%!error <string.gt: comparison between 'string' and 'double' is not supported.> ...
+%!       gt (string ("A"), 2)
+%!error <string.gt: comparison between 'double' and 'string' is not supported.> ...
+%!       NaN > string ("A")
 %!error <string.gt: inconsistent dimensions.> ...
 %! gt (string ({"A","B"}), string ({"A";"B"}))
 %!assert (le (string ("A"), string ("A")), true);
@@ -1886,6 +1910,10 @@ endfunction
 %!assert (le ({"A", "b"}, string ("b")), [true, true]);
 %!assert (le (string ({'A', 'b'}), 'A'), [true, false]);
 %!assert (le ('A', string ({"A", "b"})), [true, true]);
+%!error <string.le: comparison between 'string' and 'double' is not supported.> ...
+%!       le (string ("A"), 2)
+%!error <string.le: comparison between 'double' and 'string' is not supported.> ...
+%!       NaN <= string ("A")
 %!error <string.le: inconsistent dimensions.> ...
 %! le (string ({"A","B"}), string ({"A";"B"}))
 %!assert (lt (string ("A"), string ("A")), false);
@@ -1894,6 +1922,10 @@ endfunction
 %!assert (lt ({"A", "b"}, string ("b")), [true, false]);
 %!assert (lt (string ({'A', 'b'}), 'A'), [false, false]);
 %!assert (lt ('A', string ({"A", "b"})), [false, true]);
+%!error <string.lt: comparison between 'string' and 'double' is not supported.> ...
+%!       lt (string ("A"), 2)
+%!error <string.lt: comparison between 'double' and 'string' is not supported.> ...
+%!       NaN < string ("A")
 %!error <string.lt: inconsistent dimensions.> ...
 %! lt (string ({"A","B"}), string ({"A";"B"}))
 %!assert (ne (string ("A"), string ("A")), false);
@@ -1902,6 +1934,10 @@ endfunction
 %!assert (ne ({"A", "b"}, string ("A")), [false, true]);
 %!assert (ne (string ({'A', 'b'}), 'A'), [false, true]);
 %!assert (ne ('A', string ({"A", "b"})), [false, true]);
+%!error <string.ne: comparison between 'string' and 'double' is not supported.> ...
+%!       ne (string ("A"), 2)
+%!error <string.ne: comparison between 'double' and 'string' is not supported.> ...
+%!       NaN != string ("A")
 %!error <string.ne: inconsistent dimensions.> ...
 %! ne (string ({"A","B"}), string ({"A";"B"}))
 %!assert (strcmp (string ("A"), string ("A")), true);
@@ -1910,6 +1946,10 @@ endfunction
 %!assert (strcmp ({"A", "b"}, string ("A")), [true, false]);
 %!assert (strcmp (string ({'A', 'b'}), 'A'), [true, false]);
 %!assert (strcmp ('A', string ({"A", "b"})), [true, false]);
+%!error <string.strcmp: comparison between 'string' and 'double' is not supported.> ...
+%!       strcmp (string ("A"), 2)
+%!error <string.strcmp: comparison between 'double' and 'string' is not supported.> ...
+%!       strcmp (2, string ("A"))
 %!error <string.strcmp: inconsistent dimensions.> ...
 %! strcmp (string ({"A","B"}), string ({"A";"B"}))
 %!assert (strcmpi (string ("A"), string ("a")), true);
@@ -1918,17 +1958,29 @@ endfunction
 %!assert (strcmpi ({"A", "b"}, string ("a")), [true, false]);
 %!assert (strcmpi (string ({'a', 'b'}), 'A'), [true, false]);
 %!assert (strcmpi ('A', string ({"a", "b"})), [true, false]);
+%!error <string.strcmpi: comparison between 'string' and 'double' is not supported.> ...
+%!       strcmpi (string ("A"), 2)
+%!error <string.strcmpi: comparison between 'double' and 'string' is not supported.> ...
+%!       strcmpi (2, string ("A"))
 %!error <string.strcmpi: inconsistent dimensions.> ...
 %! strcmpi (string ({"A","B"}), string ({"a";"b"}))
 %!assert (strncmp (string ("ASDFG"), "ASDER", 3), true);
 %!assert (strncmp (string ("ASDFG"), "ASDER", 4), false);
 %!assert (strncmp (string ("ASDFG"), {"ASDER","ASFGH"}, 3), [true, false]);
 %!assert (strncmp (string ("ASDFG"), {"ASDER","ASFGH"}, 2), [true, true]);
+%!error <string.strncmp: comparison between 'string' and 'double' is not supported.> ...
+%!       strncmp (string ("A"), 2)
+%!error <string.strncmp: comparison between 'double' and 'string' is not supported.> ...
+%!       strncmp (2, string ("A"))
 %!error <string.strncmp: inconsistent dimensions.> ...
 %! strncmp (string ({"A","B"}), string ({"a";"b"}), 1)
 %!assert (strncmpi (string ("asDFG"), "ASDER", 3), true);
 %!assert (strncmpi (string ("ASDFG"), "asDER", 4), false);
 %!assert (strncmpi (string ("asdfg"), {"ASDER","ASFGH"}, 3), [true, false]);
 %!assert (strncmpi (string ("asdfg"), {"ASDER","ASFGH"}, 2), [true, true]);
+%!error <string.strncmpi: comparison between 'string' and 'double' is not supported.> ...
+%!       strncmpi (string ("A"), 2)
+%!error <string.strncmpi: comparison between 'double' and 'string' is not supported.> ...
+%!       strncmpi (2, string ("A"))
 %!error <string.strncmpi: inconsistent dimensions.> ...
 %! strncmpi (string ({"A","B"}), string ({"a";"b"}), 1)
