@@ -156,6 +156,7 @@ classdef string
         endif
         is_numeric = cellfun (@isnumeric, in);
         is_logical = cellfun (@islogical, in);
+        is_cellstr = cellfun (@iscellstr, in);
         is_charvec = cellfun (@ischar, in);
         is_strings = cellfun (@(x) isa (x, "string"), in);
         is_missing = cellfun (@(x) isa (x, "missing"), in);
@@ -163,7 +164,7 @@ classdef string
         class_types = {"duration", "calendarDuration"};
         is_duration = cellfun (@(x) any (isa (x, class_types)), in);
         ## Check for unsupported classes
-        all_support = all (is_numeric | is_logical | is_charvec | ...
+        all_support = all (is_numeric | is_logical | is_cellstr | is_charvec | ...
                            is_strings | is_missing | is_datetime | is_duration);
         if (! all_support)
           error ("string: cell array contains unsupported types.");
@@ -195,14 +196,18 @@ classdef string
           this.strs(is_logical) = strs;
           this.isMissing(is_logical) = tf_m;
         endif
+        ## Handle cell arrays of character vectors
+        if (any (is_cellstr(:)))
+          this.strs(is_cellstr) = in{is_cellstr};
+        endif
         ## Handle character vectors (including empty 0x0 char vectors '')
         if (any (is_charvec(:)))
           this.strs(is_charvec) = in(is_charvec);
         endif
         ## Handle strings
         if (any (is_strings(:)))
-          this.strs(is_strings) = in.strs(is_strings);
-          this.isMissing(is_strings) = in.isMissing(is_strings);
+          this.strs(is_strings) = in{is_strings}.strs;
+          this.isMissing(is_strings) = in{is_strings}.isMissing;
         endif
         ## Handle missing objects
         if (any (is_missing(:)))
@@ -609,15 +614,22 @@ classdef string
         error ("string.ismissing: too many input arguments.");
       endif
       if (! isempty (varargin))
-        if (! isa (varargin{1}, 'string'))
-          error ("string.ismissing: INDICATOR must be a 'string' array.");
-        endif
         indicator = varargin{1};
         TF = false (size (this));
-        for i = 1:numel (indicator)
-          str = indicator(i);
-          TF(this == str) = true;
-        endfor
+        if (isvector (indicator))
+          if (ischar (indicator))
+            TF(this == indicator) = true;
+          elseif (iscellstr (indicator) || isstring (indicator))
+            for i = 1:numel (indicator)
+              str = indicator(i);
+              TF(this == str) = true;
+            endfor
+          else
+            error ("string.ismissing: INDICATOR must be a text array.");
+          endif
+        else
+          error ("string.ismissing: INDICATOR must be a vector.");
+        endif
       else
         TF = this.isMissing;
       endif
@@ -702,6 +714,9 @@ classdef string
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
         B = string (B);
+      else
+        error ("string.eq: comparison between %s and %s is not supported.", ...
+               class (A), class (B));
       endif
       if (isscalar (A))
         A = repmat (A, size (B));
@@ -730,6 +745,9 @@ classdef string
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
         B = string (B);
+      else
+        error ("string.ge: comparison between %s and %s is not supported.", ...
+               class (A), class (B));
       endif
       if (isscalar (A) && ! isscalar (B))
         A = repmat (A, size (B));
@@ -759,6 +777,9 @@ classdef string
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
         B = string (B);
+      else
+        error ("string.gt: comparison between %s and %s is not supported.", ...
+               class (A), class (B));
       endif
       if (isscalar (A) && ! isscalar (B))
         A = repmat (A, size (B));
@@ -789,6 +810,9 @@ classdef string
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
         B = string (B);
+      else
+        error ("string.le: comparison between %s and %s is not supported.", ...
+               class (A), class (B));
       endif
       if (isscalar (A) && ! isscalar (B))
         A = repmat (A, size (B));
@@ -818,6 +842,9 @@ classdef string
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
         B = string (B);
+      else
+        error ("string.lt: comparison between %s and %s is not supported.", ...
+               class (A), class (B));
       endif
       if (isscalar (A) && ! isscalar (B))
         A = repmat (A, size (B));
@@ -849,6 +876,9 @@ classdef string
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
         B = string (B);
+      else
+        error ("string.ne: comparison between %s and %s is not supported.", ...
+               class (A), class (B));
       endif
       if (isscalar (A))
         A = repmat (A, size (B));
@@ -883,6 +913,9 @@ classdef string
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
         B = string (B);
+      else
+        error ("string.strcmp: comparison between %s and %s is not supported.", ...
+               class (A), class (B));
       endif
       if (isscalar (A))
         A = repmat (A, size (B));
@@ -918,6 +951,9 @@ classdef string
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
         B = string (B);
+      else
+        error ("string.strcmpi: comparison between %s and %s is not supported.", ...
+               class (A), class (B));
       endif
       if (isscalar (A))
         A = repmat (A, size (B));
@@ -953,6 +989,9 @@ classdef string
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
         B = string (B);
+      else
+        error ("string.strncmp: comparison between %s and %s is not supported.", ...
+               class (A), class (B));
       endif
       if (isscalar (A))
         A = repmat (A, size (B));
@@ -989,6 +1028,9 @@ classdef string
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
         B = string (B);
+      else
+        error ("string.strncmpi: comparison between %s and %s is not supported.", ...
+               class (A), class (B));
       endif
       if (isscalar (A))
         A = repmat (A, size (B));
