@@ -879,19 +879,22 @@ classdef duration
         error ("duration.ismissing: too many input arguments.");
       endif
       if (! isempty (varargin))
-        if (! isa (varargin{1}, 'duration'))
-          error ("duration.ismissing: INDICATOR must be a 'duration' array.");
-        endif
         indicator = varargin{1};
         TF = false (size (this));
-        for i = 1:numel (indicator)
-          days = days (indicator(i));
-          TF(this.Days == days) = true;
-        endfor
+        if (isvector (indicator))
+          if (! isa (varargin{1}, 'duration'))
+            for i = 1:numel (indicator)
+              TF(this.Days == days (indicator(i))) = true;
+            endfor
+          else
+            error ("duration.ismissing: INDICATOR must be a 'duration' array.");
+          endif
+        else
+          error ("duration.ismissing: INDICATOR must be a vector.");
+        endif
       else
-        TF = this.IsNaN;
+        TF = isnan (this.Days);
       endif
-      TF = isnan (this.Days);
     endfunction
 
     function TF = isnan (this)
