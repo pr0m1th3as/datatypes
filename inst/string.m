@@ -206,8 +206,8 @@ classdef string
         endif
         ## Handle strings
         if (any (is_strings(:)))
-          this.strs(is_strings) = in{is_strings}.strs;
-          this.isMissing(is_strings) = in{is_strings}.isMissing;
+          this.strs(is_strings) = [in{is_strings}].strs;
+          this.isMissing(is_strings) = [in{is_strings}].isMissing;
         endif
         ## Handle missing objects
         if (any (is_missing(:)))
