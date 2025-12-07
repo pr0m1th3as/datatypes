@@ -3691,6 +3691,12 @@ classdef categorical
     ##
     ## @end deftypefn
     function out = cat (dim, varargin)
+      ## Remove empty inputs
+      varargin(cellfun ('isempty', varargin)) = [];
+      if (numel (varargin) == 1)
+        out = varargin{1};
+        return;
+      endif
       args = varargin;
       [args{:}] = promote (varargin{:});
       ## Check that all dimensions except DIM are equal
