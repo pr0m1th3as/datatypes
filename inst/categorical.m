@@ -1077,18 +1077,66 @@ classdef categorical
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {categorical} {@var{out} =} ismissing (@var{C})
+    ## @deftypefn  {categorical} {@var{out} =} ismissing (@var{C})
+    ## @deftypefnx {categorical} {@var{out} =} ismissing (@var{C}, @var{indicator})
     ##
-    ## Test for undefined elements in categorical array.
+    ## Find missing elements in categorical array.
     ##
     ## @code{@var{TF} = ismissing (@var{C})} returns a logical array @var{TF}
     ## of the same size as @var{C} containing @qcode{true} for each
     ## corresponding element of @var{C} that does not have a value from one of
     ## the categories in @var{C} and @qcode{false} otherwise.
     ##
+    ## @code{@var{TF} = ismissing (@var{C}, @var{indicator})} also returns a
+    ## logical array @var{TF} containing @qcode{true} for each corresponding
+    ## element of @var{C} that does not have a value from one of the categories
+    ## specified in @var{indicator} and @qcode{false} otherwise.
+    ##
+    ## @var{indicator} must be either a categorical array or a character vector
+    ## or a string vector or a cell vector of character vectors.  When the
+    ## @var{indicator} contains text representation, the comparison is based on
+    ## lexicographical equality to the category names of @var{C}.
+    ##
     ## @end deftypefn
-    function TF = ismissing (this)
-      TF = this.isMissing;
+    function TF = ismissing (this, varargin)
+      if (nargin > 2)
+        error ("categorical.ismissing: too many input arguments.");
+      endif
+      if (! isempty (varargin))
+        indicator = varargin{1};
+        TF = false (size (this));
+        if (isvector (indicator))
+          if (ischar (indicator))
+            TF(this == indicator) = true;
+          elseif (isstring (indicator))
+            for i = 1:numel (indicator)
+              cat = indicator.strs(i);
+              TF(this == cat) = true;
+            endfor
+          elseif (iscellstr (indicator))
+            for i = 1:numel (indicator)
+              cat = indicator(i);
+              TF(this == cat) = true;
+            endfor
+          elseif (isa (indicator, 'categorical'))
+            for i = 1:length (indicator)
+              idx = indicator.code(i);
+              if (idx)
+                cat = indicator.cats{idx};
+                TF(this == cat) = true;
+              else  # code = 0 corresponds to undefined categories
+                TF(this.isMissing) = true;
+              endif
+            endfor
+          else
+            error ("categorical.ismissing: INDICATOR must be a text array.");
+          endif
+        else
+          error ("categorical.ismissing: INDICATOR must be a vector.");
+        endif
+      else
+        TF = this.isMissing;
+      endif
     endfunction
 
     ## -*- texinfo -*-
