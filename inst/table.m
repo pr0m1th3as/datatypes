@@ -3728,7 +3728,11 @@ classdef table
             varTF = ismissing (tmpVar);
             varTF = any (varTF, 2);
             this.VariableValues{i} = varTF;
-          else  # numeric, logical, char, and cellstr arrays
+          elseif (ischar (tmpVar))
+            varTF = __ismissing__ (tmpVar);
+            varTF = all (varTF, 2);
+            this.VariableValues{i} = varTF;
+          else  # numeric, logical, and cellstr arrays
             varTF = __ismissing__ (tmpVar);
             varTF = any (varTF, 2);
             this.VariableValues{i} = varTF;
@@ -3741,17 +3745,17 @@ classdef table
         if (! isvector (indicator))
           error ("table.ismissing: INDICATOR must be a vector.");
         endif
-        ## Elements in indicator vector must be scalars (except char vectors)
-        fcn = @(x) isscalar (x) | isempty (x) | (ischar (x) & isvector (x));
-        all_scalar = all (cellfun (fcn, indicator));
-        if (! all_scalar)
-          error (strcat ("table.ismissing: INDICATOR must explicitly", ...
-                         " contain scalar elements or character vectors."));
-        endif
         ## NaN values for calendarDuration and duration
         nan_calendarDuration = nan_duration = false;
         ## Preprocess indicator if it is a cell array
         if (iscell (indicator) && ! iscellstr (indicator))
+          ## Elements in indicator vector must be scalars (except char vectors)
+          fcn = @(x) isscalar (x) | isempty (x) | (ischar (x) & isvector (x));
+          all_scalar = all (cellfun (fcn, indicator));
+          if (! all_scalar)
+            error (strcat ("table.ismissing: INDICATOR must explicitly", ...
+                           " contain scalar elements or character vectors."));
+          endif
           ## categorical arrays
           idx_categorical = false;
           categorical_indicator = [];
@@ -3861,7 +3865,7 @@ classdef table
             string_indicator = string (indicator);
           elseif (ischar (indicator))
             idx_ischar = true;
-            ischar_indicator = indicator;
+            ischar_indicator = cellstr (indicator);
             idx_string = true;
             string_indicator = string (indicator);
             idx_categorical = true;
@@ -3923,7 +3927,7 @@ classdef table
             endif
           elseif (ischar (tmpVar))
             if (idx_ischar)
-              varTF = __ismissing__ (tmpVar, ischar_indicator);
+              varTF = __ismissing__ (cellstr (tmpVar), ischar_indicator);
             else
               varTF = TF_false;
             endif
@@ -4051,7 +4055,7 @@ classdef table
 
     ## -*- texinfo -*-
     ## @deftypefn  {table} {@var{tbl} =} standardizeMissing (@var{tblA}, @var{indicator})
-    ## @deftypefnx {table} {@var{tbl} =} rmmissing (@dots{}, @var{Name}, @var{Value})
+    ## @deftypefnx {table} {@var{tbl} =} standardizeMissing (@dots{}, @var{Name}, @var{Value})
     ##
     ## Remove missing table elements by rows. (unimplemented)
     ##
