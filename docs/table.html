@@ -3001,8 +3001,8 @@ Determine if any table element is missing.
  </li><li> <code>NaT</code> - datetime
  </li><li> <code>&lt;missing&gt;</code> - string
  </li><li> <code>&lt;undefined&gt;</code> - categorical
- </li><li> <code>''</code> - cell arrays of character vectors
- </li><li> <code>[]</code> - cell arrays
+ </li><li> <code>{''}</code> - cell arrays of character vectors
+ </li><li> <code>''</code> - character arrays
  </li></ul>
 
 
@@ -3031,21 +3031,59 @@ Find missing values in table.
           <div class="collapse multi-collapse" id="collapseMethod24">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">Method: <var>TF</var> = <b>ismissing</b> (<var>tblA</var>)</code></h5></dt>
-<dt><code><h5 class="fs">Method: <var>TF</var> = <b>ismissing</b> (<var>tblA</var>, <var>indicator</var>)</code></h5></dt>
+<dt><code><h5 class="fs">Method: <var>TF</var> = <b>ismissing</b> (<var>tbl</var>)</code></h5></dt>
+<dt><code><h5 class="fs">Method: <var>TF</var> = <b>ismissing</b> (<var>tbl</var>, <var>indicator</var>)</code></h5></dt>
+<dt><code><h5 class="fs">Method: <var>TF</var> = <b>ismissing</b> (&hellip;, <code>'OutputFormat'</code>, <var>outFmt</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> Finds missing values in <var>obj</var>’s variables.
+<p> <code><var>TF</var> = ismissing (<var>tbl</var>)</code> returns a logical array,
+ <var>TF</var>, with any <code>true</code> values corresponding to missing elements
+ in the input table <var>tbl</var>.
 </p>
-<p> If indicator is not supplied, uses the standard missing values for each
- variable’s data type. If indicator is supplied, the same indicator list is
- applied across all variables.
+<p> Missing values are defined according to the data type of each variable in
+ <var>tblA</var>:
 </p>
-<p> All variables in this must be vectors. (This is due to the requirement
- that <code>size(out) == size(obj)</code>.)
+ <ul>
+<li> <code>NaN</code> - double, single, duration and calendarDuration
+ </li><li> <code>NaT</code> - datetime
+ </li><li> <code>&lt;missing&gt;</code> - string
+ </li><li> <code>&lt;undefined&gt;</code> - categorical
+ </li><li> <code>{''}</code> - cell arrays of character vectors
+ </li><li> <code>''</code> - character arrays
+ </li></ul>
+
+<p> <code><var>TF</var> = ismissing (<var>tbl</var>, <var>indicator</var>)</code> also returns a
+ logical array, <var>TF</var>, with any <code>true</code> values corresponding to
+ elements in the input table <var>tbl</var>, which are equal to the values in
+ <var>indicator</var>.  When specifying an <var>indicator</var>, all default missing
+ values are ignored.  If you want to keep them, you need to define them in
+ <var>indicator</var>.
 </p>
-<p> Returns a logical array the same size as <var>obj</var>.
+<p> <var>indicator</var> can be either a vector of specific data type, in which
+ case all other data types in table <var>tbl</var> are ignored, or a cell array
+ containing mixed types of data types, in which case they match the data
+ types of the variables in table <var>tbl</var>.  Missing values specified by
+ <var>indicator</var> also apply to nested tables.
+</p>
+<p> Besides the explicit data type match between <var>indicator</var> and
+ <var>tbl</var>, the following additional data types matches apply.
+ </p><ul>
+<li> <code>double</code> indicators match numeric and logical variables.
+ </li><li> <code>logical</code> indicators match numeric and logical variables.
+ </li><li> <code>char</code> and <code>cellstr</code> indicators match string variables.
+ </li><li> <code>char</code> and <var>string</var> indicators match categorical
+ variables.
+ </li></ul>
+
+<p> The output array <var>FT</var> has the same size as the input table <var>tbl</var>.
+</p>
+<p> <code><var>TF</var> = ismissing (&hellip;, <code>'OutputFormat'</code>, <var>outFmt</var>)</code>
+ specifies whether <var>TF</var> is returned as a logical array or as a table,
+ which maintains the variable names and all other information of the input
+ table <var>tbl</var>.  Specifying <var>outFmt</var> as <code>'logical'</code> (default)
+ returns a logical array.  Specifying <var>outFmt</var> as <code>'tabular'</code>
+ returns a table.
 </p>
 
 
@@ -3148,7 +3186,7 @@ Remove missing table elements by rows. (unimplemented)
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>tbl</var> = <b>standardizeMissing</b> (<var>tblA</var>, <var>indicator</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: <var>tbl</var> = <b>rmmissing</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>standardizeMissing</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></h5></dt>
 </dl>
 
 <p> </p>

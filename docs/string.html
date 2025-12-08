@@ -864,7 +864,7 @@ Test for set member in string arrays.
                   </h4>
                 </div>
                 <div class="col-8">
-Test for missing elements in string array.
+Find missing elements in string array.
                 </div>
               </div>
           </div>
@@ -872,10 +872,23 @@ Test for missing elements in string array.
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>ismissing</b> (<var>str</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>ismissing</b> (<var>str</var>, <var>indicator</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <var>TF</var> is a logical array of the same size as <var>str</var>.
+<p> <code><var>TF</var> = ismissing (<var>str</var>)</code> returns a logical array,
+ <var>TF</var>, with any <code>true</code> values corresponding to missing elements
+ in the input string array <var>str</var>.
+</p>
+<p> <code><var>TF</var> = ismissing (<var>str</var>, <var>indicator</var>)</code> also returns a
+ logical array, <var>TF</var>, with any <code>true</code> values corresponding to
+ elements in the input string array <var>str</var>, which are lexicographically
+ equal to the values in <var>indicator</var>.
+</p>
+<p> <var>indicator</var> must be either a character vector or a string vector
+ or a cell vector of character vectors.
+</p>
+<p> The output array <var>FT</var> has the same size as the input array <var>str</var>.
 </p>
 
 

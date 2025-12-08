@@ -1440,7 +1440,7 @@ Test for categorical elements in a set.
                   </h4>
                 </div>
                 <div class="col-8">
-Test for undefined elements in categorical array.
+Find missing elements in categorical array.
                 </div>
               </div>
           </div>
@@ -1448,6 +1448,7 @@ Test for undefined elements in categorical array.
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">categorical: <var>out</var> = <b>ismissing</b> (<var>C</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>out</var> = <b>ismissing</b> (<var>C</var>, <var>indicator</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1455,6 +1456,16 @@ Test for undefined elements in categorical array.
  of the same size as <var>C</var> containing <code>true</code> for each
  corresponding element of <var>C</var> that does not have a value from one of
  the categories in <var>C</var> and <code>false</code> otherwise.
+</p>
+<p> <code><var>TF</var> = ismissing (<var>C</var>, <var>indicator</var>)</code> also returns a
+ logical array <var>TF</var> containing <code>true</code> for each corresponding
+ element of <var>C</var> that does not have a value from one of the categories
+ specified in <var>indicator</var> and <code>false</code> otherwise.
+</p>
+<p> <var>indicator</var> must be either a categorical array or a character vector
+ or a string vector or a cell vector of character vectors.  When the
+ <var>indicator</var> contains text representation, the comparison is based on
+ lexicographical equality to the category names of <var>C</var>.
 </p>
 
 
