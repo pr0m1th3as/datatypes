@@ -38,7 +38,10 @@ function out = calweeks (x)
     error ("calweeks: input array must be numeric.");
   elseif (! isreal (x))
     error ("calweeks: input array must be real.");
-  elseif (any (fix (x(:)) != x(:)))
+  endif
+  xx = x;
+  xx(isnan (x)) = 0;
+  if (any (fix (xx(:)) != xx(:)))
     error ("calweeks: input array must contain only integer values.");
   endif
   out = calendarDuration (0, 0, double (x) * 7, 'Format', 'ymwdt');
@@ -51,6 +54,9 @@ endfunction
 %!test
 %! D = calweeks ([1, 2, 3]);
 %! assert (calweeks (D), [1, 2, 3]);
+%!test
+%! D = calweeks ([1, 2, NaN, 4]);
+%! assert (calweeks (D), [1, 2, NaN, 4]);
 %!test
 %! D = calweeks (int16 (1));
 %! assert (calweeks (D), 1);

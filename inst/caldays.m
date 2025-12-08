@@ -38,7 +38,10 @@ function out = caldays (x)
     error ("caldays: input array must be numeric.");
   elseif (! isreal (x))
     error ("caldays: input array must be real.");
-  elseif (any (fix (x(:)) != x(:)))
+  endif
+  xx = x;
+  xx(isnan (x)) = 0;
+  if (any (fix (xx(:)) != xx(:)))
     error ("caldays: input array must contain only integer values.");
   endif
   out = calendarDuration (0, 0, double (x));
@@ -51,6 +54,9 @@ endfunction
 %!test
 %! D = caldays ([1, 2, 3]);
 %! assert (caldays (D), [1, 2, 3]);
+%!test
+%! D = caldays ([1, 2, NaN, 4]);
+%! assert (caldays (D), [1, 2, NaN, 4]);
 %!test
 %! D = caldays (int16 (1));
 %! assert (caldays (D), 1);

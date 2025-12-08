@@ -38,7 +38,10 @@ function out = calquarters (x)
     error ("calquarters: input array must be numeric.");
   elseif (! isreal (x))
     error ("calquarters: input array must be real.");
-  elseif (any (fix (x(:)) != x(:)))
+  endif
+  xx = x;
+  xx(isnan (x)) = 0;
+  if (any (fix (xx(:)) != xx(:)))
     error ("calquarters: input array must contain only integer values.");
   endif
   out = calendarDuration (0, double (x) * 3, 0, 'Format', 'qmwdt');
@@ -51,6 +54,9 @@ endfunction
 %!test
 %! D = calquarters ([1, 2, 3]);
 %! assert (calquarters (D), [1, 2, 3]);
+%!test
+%! D = calquarters ([1, 2, NaN, 4]);
+%! assert (calquarters (D), [1, 2, NaN, 4]);
 %!test
 %! D = calquarters (int16 (1));
 %! assert (calquarters (D), 1);

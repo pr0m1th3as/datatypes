@@ -38,7 +38,10 @@ function out = calmonths (x)
     error ("calmonths: input array must be numeric.");
   elseif (! isreal (x))
     error ("calmonths: input array must be real.");
-  elseif (any (fix (x(:)) != x(:)))
+  endif
+  xx = x;
+  xx(isnan (x)) = 0;
+  if (any (fix (xx(:)) != xx(:)))
     error ("calmonths: input array must contain only integer values.");
   endif
   out = calendarDuration (0, double (x), 0);
@@ -51,6 +54,9 @@ endfunction
 %!test
 %! D = calmonths ([1, 2, 3]);
 %! assert (calmonths (D), [1, 2, 3]);
+%!test
+%! D = calmonths ([1, 2, NaN, 4]);
+%! assert (calmonths (D), [1, 2, NaN, 4]);
 %!test
 %! D = calmonths (int16 (1));
 %! assert (calmonths (D), 1);
