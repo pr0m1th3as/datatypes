@@ -3834,7 +3834,7 @@ classdef table
           idx_categorical = false;
           idx_datetime = false;
           idx_duration = false;
-          idx_ischar = false
+          idx_ischar = false;
           idx_numlog = false;
         else  # single data type indicator
           idx_categorical = false;
@@ -3892,7 +3892,6 @@ classdef table
             else
               varTF = TF_false;
             endif
-            varTF = TF_false;
           elseif (isa (tmpVar, 'categorical'))
             if (idx_categorical)
               varTF = ismissing (tmpVar, categorical_indicator);
