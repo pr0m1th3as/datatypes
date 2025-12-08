@@ -1373,3 +1373,92 @@
 %! unstack (tblA, 'Height', 'Age', 'AggregationFunction', 'isnumeric');
 %!error <table.unstack: invalid input for 'VariableNamingRule'.> ...
 %! unstack (tblA, {'Weight', 'Height'}, 'Age', 'VariableNamingRule', 'somerule');
+
+
+################################################################################
+##                           ** Missing Values **                             ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'anymissing'       'ismissing'        'rmmissing'        'fillmissing'     ##
+## 'standardizeMissing'                                                       ##
+##                                                                            ##
+################################################################################
+
+## Test 'anymissing' method
+%!test
+%! T = table (categorical ({'1';'2';'';'4'}));
+%! assert (anymissing (T), true);
+%!test
+%! T = table (categorical ({'1';'2';'3';'4'}));
+%! assert (anymissing (T), false);
+%!test
+%! T = table (calyears ([1; 2; NaN; 4]));
+%! assert (anymissing (T), true);
+%!test
+%! T = table (calyears ([1; 2; 3; 4]));
+%! assert (anymissing (T), false);
+%!test
+%! T = table (days ([1; 2; NaN; 4]));
+%! assert (anymissing (T), true);
+%!test
+%! T = table (days ([1; 2; 3; 4]));
+%! assert (anymissing (T), false);
+%!test
+%! T = table (string ([1; 2; NaN; 4]));
+%! assert (anymissing (T), true);
+%!test
+%! T = table (string ([1; 2; 3; 4]));
+%! assert (anymissing (T), false);
+%!test
+%! T = table ({'1'; '2'; ''; '4'});
+%! assert (anymissing (T), true);
+%!test
+%! T = table ({'1'; '2'; 'NaN'; '4'});
+%! assert (anymissing (T), false);
+%!test
+%! T = table (['1'; '2'; ' '; '4']);
+%! assert (anymissing (T), true);
+%!test
+%! T = table (['1'; '2'; 'NaN'; '4']);
+%! assert (anymissing (T), false);
+%!test
+%! T = table (['1'; '2'; 'N'; '4']);
+%! assert (anymissing (T), false);
+
+## Test 'ismissing' method
+%!test
+%! TF = ismissing (table (['   '; ' 2 '; 'NaN'; '4  ']), ' 2');
+%! assert (TF, [false; true; false; false]);
+%!test
+%! TF = ismissing (table (['   '; ' 2 '; 'NaN'; '4  ']), '2');
+%! assert (TF, [false; false; false; false]);
+%!test
+%! TF = ismissing (table (['   '; '2  '; 'NaN'; '4  ']), '2');
+%! assert (TF, [false; true; false; false]);
+%!test
+%! TF = ismissing (table (['   '; ' 2 '; 'NaN'; '4  ']));
+%! assert (TF, [true; false; false; false]);
+%!test
+%! TF = ismissing (table ({'1'; '2'; ''; '4'}));
+%! assert (TF, [false; false; true; false]);
+%!test
+%! TF = ismissing (table ({'1'; '2'; ''; '4'}), 'OutputFormat', 'tabular');
+%! assert (class (TF), 'table');
+%! assert (TF.Var1, [false; false; true; false]);
+%!test
+%! TF = ismissing (table ({'1'; '2'; ''; '4'}), {'4'}, 'OutputFormat', 'tabular');
+%! assert (class (TF), 'table');
+%! assert (TF.Var1, [false; false; false; true]);
+%!test
+%! TF = ismissing (table ({'1'; '2'; ''; '4'}, string ([1; 2; 3; 4])), {'4', '3'}, 'OutputFormat', 'tabular');
+%! assert (class (TF), 'table');
+%! assert (TF.Var1, [false; false; false; true]);
+%! assert (TF.Var2, [false; false; true; true]);
+%!test
+%! TF = ismissing (table ({'1'; '2'; ''; '4'}, string ([1; 2; 3; 4])), {'4', '3'});
+%! assert (class (TF), 'logical');
+%! assert (TF, [false, false; false, false; false, true; true, true]);
+%!test
+%! TF = ismissing (table (days ([1; 2; NaN; 4]), calweeks ([1; 2; NaN; 4])));
+%! assert (TF, [false, false; false, false; true, true; false, false]);
