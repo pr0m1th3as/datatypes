@@ -62,5 +62,5 @@ The **datatypes** package was initially developed to support the necessary funct
 <p align="center" width="100%">
 <a href="https://www.physicalanthropology.gr/reconstruct.php"><img src="/logos/reconstruct.png"/></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="https://marie-sklodowska-curie-actions.ec.europa.eu/"><img src="/logos/MSCA.png"/></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a hreh="https://research-and-innovation.ec.europa.eu/funding/funding-opportunities/funding-programmes-and-open-calls/horizon-europe_en"><img src="/logos/EU-Horizon.png"/></a>
+<a href="https://research-and-innovation.ec.europa.eu/funding/funding-opportunities/funding-programmes-and-open-calls/horizon-europe_en"><img src="/logos/EU-Horizon.png"/></a>
 </p>
