@@ -129,7 +129,8 @@ function [dispstr, optLen]  = mixedcell2str (data, cols)
 
   ## Empty cells are printed as doubles
   is_empty = cellfun (@isempty, data);
-  sf = @(x) sprintf ("0x0 %s", class (x));
+  sf = @(x) sprintf (strcat (repmat ("%dx", 1, ndims (x))(1:end-1), " %s"), ...
+                     size (x), class (x));
   dispstr(is_empty) = cellfun (sf, data(is_empty), "UniformOutput", false);
 
   ## Index remaining scalar and row vector elements
