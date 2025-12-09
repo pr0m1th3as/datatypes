@@ -1,0 +1,5 @@
+All software in the 'datatypes' package is published under the
+GNU General Public License verion 3 (GPLv3).  The package's
+logo ('doc/datatypes.png') is licensed under a Creative Commons
+Attribution-ShareAlike 4.0 International license (CC BY-SA 4.0).
+
