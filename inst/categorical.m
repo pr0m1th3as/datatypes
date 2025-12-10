@@ -1070,8 +1070,14 @@ classdef categorical
         error ("categorical.ismember: both categorical arrays nust be ordinal.");
       else
         ## Compare the category names of each element (except undefined)
-        cats_A = A.cats(A.code(A.code != 0));
-        cats_B = B.cats(B.code(B.code != 0));
+        A_idx = A.code != 0;
+        B_idx = B.code != 0;
+        cats_A = cell (size (A.code));
+        cats_B = cell (size (B.code));
+        cats_A(A_idx) = A.cats(A.code(A_idx));
+        cats_A(! A_idx) = {''};
+        cats_B(B_idx) = B.cats(B.code(B_idx));
+        cats_B(! B_idx) = {''};
         [TF, index] = ismember (cats_A, cats_B, varargin{:});
       endif
     endfunction
