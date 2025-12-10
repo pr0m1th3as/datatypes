@@ -576,11 +576,29 @@ classdef string
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {string} {@var{TF} =} ismember (@var{str1}, @var{str2})
+    ## @deftypefn {string} {@var{TF} =} ismember (@var{A}, @var{B})
     ##
-    ## Test for set member in string arrays.
+    ## Test for string elements in a set.
     ##
-    ## @var{TF} is a logical array of the same size as @var{str1}.
+    ## @code{@var{TF} = ismember (@var{A}, @var{B})} returns a logical array
+    ## @var{TF} of the same size as @var{A} containing @qcode{true} for each
+    ## corresponding element of @var{A} that is in @var{B} and @qcode{false}
+    ## otherwise.  Similarly to @qcode{NaN} values, @qcode{<missing>} elements
+    ## are not equal with each other and always return @qcode{false}.
+    ##
+    ## @code{@var{TF} = ismember (@var{A}, @var{B}, @qcode{'rows'})} only
+    ## applies to string matrices with the same number of columns, in which
+    ## case the logical vector @var{TF} contains @qcode{true} for each row of
+    ## @var{A} that is also a row in @var{B}.  @var{TF} has the same number of
+    ## rows as @var{A}.
+    ##
+    ## @code{[@var{TF}, @var{index}] = ismember (@var{A}, @var{B})} also returns
+    ## an index array of the same size as @var{A} containing the lowest index in
+    ## @var{B} for each element of @var{A} that is a member of @var{B} and 0
+    ## otherwise.  If the @qcode{'rows'} optional argument is used, then the
+    ## returning index is a column vector with the same rows as @var{A} and it
+    ## contains the lowest index in @var{B} for each row of @var{A} that is a
+    ## member of @var{B} and 0 otherwise.
     ##
     ## @end deftypefn
     function [TF, index] = ismember (A, B, varargin)
