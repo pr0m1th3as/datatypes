@@ -1069,9 +1069,9 @@ classdef categorical
       elseif (isordinal (A) || isordinal (B))
         error ("categorical.ismember: both categorical arrays nust be ordinal.");
       else
-        ## Compare the category names of each element
-        cats_A = A.cats(A.code);
-        cats_B = B.cats(B.code);
+        ## Compare the category names of each element (except undefined)
+        cats_A = A.cats(A.code(A.code != 0));
+        cats_B = B.cats(B.code(B.code != 0));
         [TF, index] = ismember (cats_A, cats_B, varargin{:});
       endif
     endfunction
