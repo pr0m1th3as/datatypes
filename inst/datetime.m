@@ -919,8 +919,71 @@ classdef datetime
       error ("datetime.isequaln: not implemented yet.");
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{TF} =} ismember (@var{A}, @var{B})
+    ## @deftypefnx {datetime} {@var{TF} =} ismember (@var{A}, @var{B}, @qcode{'rows'})
+    ## @deftypefnx {datetime} {[@var{TF}, @var{index}] =} ismember (@dots{})
+    ##
+    ## Test for datetime elements in a set.
+    ##
+    ## @code{@var{TF} = ismember (@var{A}, @var{B})} returns a logical array
+    ## @var{TF} of the same size as @var{A} containing @qcode{true} for each
+    ## corresponding element of @var{A} that is in @var{B} and @qcode{false}
+    ## otherwise.  Similarly to @qcode{NaN} values, Not-A-Time (@qcode{NaT})
+    ## elements are not equal with each other and always return @qcode{false}.
+    ##
+    ## @code{@var{TF} = ismember (@var{A}, @var{B}, @qcode{'rows'})} only
+    ## applies to datetime matrices with the same number of columns, in which
+    ## case the logical vector @var{TF} contains @qcode{true} for each row of
+    ## @var{A} that is also a row in @var{B}.  @var{TF} has the same number of
+    ## rows as @var{A}.
+    ##
+    ## @code{[@var{TF}, @var{index}] = ismember (@var{A}, @var{B})} also returns
+    ## an index array of the same size as @var{A} containing the lowest index in
+    ## @var{B} for each element of @var{A} that is a member of @var{B} and 0
+    ## otherwise.  If the @qcode{'rows'} optional argument is used, then the
+    ## returning index is a column vector with the same rows as @var{A} and it
+    ## contains the lowest index in @var{B} for each row of @var{A} that is a
+    ## member of @var{B} and 0 otherwise.
+    ##
+    ## @end deftypefn
     function [TF, index] = ismember (A, B, varargin)
-      error ("datetime.ismember: not implemented yet.");
+      ## Check input arguments
+      do_rows = false;
+      if (! isempty (varargin))
+        if (strcmpi (varargin{1}, 'rows'))
+          do_rows = true;
+          if (ndims (A) != 2 || ndims (A) != ndims (B))
+            error ("datetime.ismember: 'rows' applies only to 2-D matrices.");
+          endif
+          if (size (A, 2) != size (B, 2))
+            error ("datetime.ismember: 'rows' requires same number of columns.");
+          endif
+        else
+          error ("datetime.ismember: invalid optional argument.");
+        endif
+      endif
+      if (! isa (B, 'datetime'))
+        error ("datetime.ismember: B must be a 'datetime' array.");
+      endif
+      ## Find ismember
+      if (do_rows)
+        [TF_y, index_y] = ismember (A.Year, B.Year, 'rows');
+        [TF_mo, index_mo] = ismember (A.Month, B.Month, 'rows');
+        [TF_d, index_d] = ismember (A.Day, B.Day, 'rows');
+        [TF_h, index_h] = ismember (A.Hour, B.Hour, 'rows');
+        [TF_mi, index_mi] = ismember (A.Minute, B.Minute, 'rows');
+        [TF_s, index_s] = ismember (A.Second, B.Second, 'rows');
+      else
+        [TF_y, index_y] = ismember (A.Year, B.Year);
+        [TF_mo, index_mo] = ismember (A.Month, B.Month);
+        [TF_d, index_d] = ismember (A.Day, B.Day);
+        [TF_h, index_h] = ismember (A.Hour, B.Hour);
+        [TF_mi, index_mi] = ismember (A.Minute, B.Minute);
+        [TF_s, index_s] = ismember (A.Second, B.Second);
+      endif
+      TF = TF_y & TF_mo & TF_d & TF_h & TF_mi & TF_s;
+      index = index_y(TF);
     endfunction
 
     function TF = isregular (this)
