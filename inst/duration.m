@@ -838,6 +838,32 @@ classdef duration
       TF = ismatrix (this.Days);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{TF} =} ismember (@var{A}, @var{B})
+    ##
+    ## Test for duration elements in a set.
+    ##
+    ## @code{@var{TF} = ismember (@var{A}, @var{B})} returns a logical array
+    ## @var{TF} of the same size as @var{A} containing @qcode{true} for each
+    ## corresponding element of @var{A} that is in @var{B} and @qcode{false}
+    ## otherwise.  @qcode{NaN} elements are not equal with each other and always
+    ## return @qcode{false}.
+    ##
+    ## @code{@var{TF} = ismember (@var{A}, @var{B}, @qcode{'rows'})} only
+    ## applies to duration matrices with the same number of columns, in which
+    ## case the logical vector @var{TF} contains @qcode{true} for each row of
+    ## @var{A} that is also a row in @var{B}.  @var{TF} has the same number of
+    ## rows as @var{A}.
+    ##
+    ## @code{[@var{TF}, @var{index}] = ismember (@var{A}, @var{B})} also returns
+    ## an index array of the same size as @var{A} containing the lowest index in
+    ## @var{B} for each element of @var{A} that is a member of @var{B} and 0
+    ## otherwise.  If the @qcode{'rows'} optional argument is used, then the
+    ## returning index is a column vector with the same rows as @var{A} and it
+    ## contains the lowest index in @var{B} for each row of @var{A} that is a
+    ## member of @var{B} and 0 otherwise.
+    ##
+    ## @end deftypefn
     function [TF, index] = ismember (A, B, varargin)
       ## Check input arguments
       do_rows = false;
