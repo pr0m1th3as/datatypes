@@ -1021,7 +1021,7 @@ classdef categorical
     ## @code{@var{TF} = ismember (@var{A}, @var{B}, @qcode{'rows'})} only
     ## applies to categorical matrices with the same number of columns, in which
     ## case the logical vector @var{TF} contains @qcode{true} for each row of
-    ## @var{A} that is also a row in @var{B}.  @var{TF} has the size number of
+    ## @var{A} that is also a row in @var{B}.  @var{TF} has the same number of
     ## rows as @var{A}.
     ##
     ## @code{[@var{TF}, @var{index}] = ismember (@var{A}, @var{B})} also returns
