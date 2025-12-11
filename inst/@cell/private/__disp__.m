@@ -17,7 +17,9 @@
 
 function __disp__ (C, name = 'ans')
   if (isempty (C))
-    fprintf ('  0x0 empty cell array\n\n');
+    str = strjoin (repmat ({'%d'}, 1, ndims (C)), 'x');
+    str = sprintf ('  %s empty cell array\n\n', str);
+    fprintf (str, size (C));
     fprintf ('    {0x0 double}\n\n');
   elseif (ismatrix (C))
     fprintf ('  %dx%d cell array\n\n', size (C));
