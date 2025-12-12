@@ -869,18 +869,36 @@ Test if string array is a matrix.
                   </h4>
                 </div>
                 <div class="col-8">
-Test for set member in string arrays.
+Test for string elements in a set.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod15">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">string: <var>TF</var> = <b>ismember</b> (<var>str1</var>, <var>str2</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>ismember</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <var>TF</var> is a logical array of the same size as <var>str1</var>.
+<p> <code><var>TF</var> = ismember (<var>A</var>, <var>B</var>)</code> returns a logical array
+ <var>TF</var> of the same size as <var>A</var> containing <code>true</code> for each
+ corresponding element of <var>A</var> that is in <var>B</var> and <code>false</code>
+ otherwise.  Similarly to <code>NaN</code> values, <code>&lt;missing&gt;</code> elements
+ are not equal with each other and always return <code>false</code>.
+</p>
+<p> <code><var>TF</var> = ismember (<var>A</var>, <var>B</var>, <code>'rows'</code>)</code> only
+ applies to string matrices with the same number of columns, in which
+ case the logical vector <var>TF</var> contains <code>true</code> for each row of
+ <var>A</var> that is also a row in <var>B</var>.  <var>TF</var> has the same number of
+ rows as <var>A</var>.
+</p>
+<p> <code>[<var>TF</var>, <var>index</var>] = ismember (<var>A</var>, <var>B</var>)</code> also returns
+ an index array of the same size as <var>A</var> containing the lowest index in
+ <var>B</var> for each element of <var>A</var> that is a member of <var>B</var> and 0
+ otherwise.  If the <code>'rows'</code> optional argument is used, then the
+ returning index is a column vector with the same rows as <var>A</var> and it
+ contains the lowest index in <var>B</var> for each row of <var>A</var> that is a
+ member of <var>B</var> and 0 otherwise.
 </p>
 
 

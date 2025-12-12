@@ -1334,22 +1334,36 @@ Return true if duration array is a 2-D array.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a 2-D array.
+Test for duration elements in a set.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod26">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>ismatrix</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>ismember</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = ismatrix (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a matrix and
- <code>false</code> otherwise.  A matrix is an array of any type where
- <code>ndims (<var>X</var>) == 2</code> and for which <code>size (<var>X</var>)</code> returns
- <code>[<var>H</var>, <var>W</var>]</code> with non-negative <var>H</var> and <var>W</var>.
+<p> <code><var>TF</var> = ismember (<var>A</var>, <var>B</var>)</code> returns a logical array
+ <var>TF</var> of the same size as <var>A</var> containing <code>true</code> for each
+ corresponding element of <var>A</var> that is in <var>B</var> and <code>false</code>
+ otherwise.  <code>NaN</code> elements are not equal with each other and always
+ return <code>false</code>.
+</p>
+<p> <code><var>TF</var> = ismember (<var>A</var>, <var>B</var>, <code>'rows'</code>)</code> only
+ applies to duration matrices with the same number of columns, in which
+ case the logical vector <var>TF</var> contains <code>true</code> for each row of
+ <var>A</var> that is also a row in <var>B</var>.  <var>TF</var> has the same number of
+ rows as <var>A</var>.
+</p>
+<p> <code>[<var>TF</var>, <var>index</var>] = ismember (<var>A</var>, <var>B</var>)</code> also returns
+ an index array of the same size as <var>A</var> containing the lowest index in
+ <var>B</var> for each element of <var>A</var> that is a member of <var>B</var> and 0
+ otherwise.  If the <code>'rows'</code> optional argument is used, then the
+ returning index is a column vector with the same rows as <var>A</var> and it
+ contains the lowest index in <var>B</var> for each row of <var>A</var> that is a
+ member of <var>B</var> and 0 otherwise.
 </p>
 
 
