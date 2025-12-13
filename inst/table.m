@@ -1466,7 +1466,7 @@ classdef table
           ## Sorting mixed cell data is not supported
           error ("table.sortrows: cannot sort variables of 'cell' type.");
 
-        elseif (isnumeric (varVal))
+        elseif (isnumeric (varVal) || islogical (varVal))
           varProxy = [varProxy, varVal];
 
         elseif (isstruct (varVal))
