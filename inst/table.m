@@ -519,9 +519,9 @@ classdef table
         elseif (isnumeric (varVal) || islogical (varVal))
           C(:,i) = num2cell (varVal, 2);
         elseif (any (isa (varVal, {"calendarDuration", "categorical"})))
-          C(:,i) = dispstrs (varVal);
+          C(:,i) = dispstrings (varVal);
         elseif (any (isa (varVal, {"datetime", "duration"})))
-          C(:,i) = dispstrs (varVal);
+          C(:,i) = dispstrings (varVal);
         elseif (isa (varVal, "string"))
           C(:,i) = cellstr (varVal);
         elseif (isa (varVal, "table"))
