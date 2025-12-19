@@ -4356,7 +4356,7 @@ classdef table
     ##
     ## @end deftypefn
     function TF = isvector (this)
-      TF = isrow (this) || iscol (this);
+      TF = isrow (this) || iscolumn (this);
     endfunction
 
     ## -*- texinfo -*-
