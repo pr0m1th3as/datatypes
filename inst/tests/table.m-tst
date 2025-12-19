@@ -1462,3 +1462,50 @@
 %!test
 %! TF = ismissing (table (days ([1; 2; NaN; 4]), calweeks ([1; 2; NaN; 4])));
 %! assert (TF, [false, false; false, false; true, true; false, false]);
+
+
+################################################################################
+##                       **    Auxiliary Methods    **                        ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'horzcat'          'iscolumn'         'isempty'          'ismatrix'        ##
+## 'isrow'            'isscalar'         'istable'          'isvector'        ##
+## 'length'           'ndims'            'numel'            'repelem'         ##
+## 'repmat'           'size'             'squeeze'          'vertcat'         ##
+##                                                                            ##
+################################################################################
+
+%!assert (iscolumn (table ([1; 2; 3])), true)
+%!assert (iscolumn (table ([1, 2, 3])), false)
+%!assert (isempty (table ()), true)
+%!assert (isempty (table ([])), true)
+%!assert (isempty (table (1)), false)
+%!assert (ismatrix (table ([])), true)
+%!assert (ismatrix (table (1)), true)
+%!assert (isrow (table ([1, 2, 3])), true)
+%!assert (isrow (table (1, 2, 3)), true)
+%!assert (isrow (table ([1; 2; 3)), false)
+%!assert (isscalar (table (1)), true)
+%!assert (isscalar (table ([1, 2, 3])), true)
+%!assert (isscalar (table (1, 2, 3)), false)
+%!assert (isscalar (table ([1; 2; 3])), false)
+%!assert (istable (table ()), true)
+%!assert (isvector (table (1)), true)
+%!assert (isvector (table (1, 2, 3)), true)
+%!assert (isvector (table ([1, 2, 3])), true)
+%!assert (isvector (table ([1; 2; 3])), true)
+%!assert (isvector (table ([1; 2], {'a'; 'b'})), false)
+%!assert (length (table (1)), 1)
+%!assert (length (table ([1; 2; 3])), 3)
+%!assert (length (table ([1, 2, 3])), 1)
+%!assert (length (table ([1; 2; 3], [2; 3; 4])), 3)
+%!assert (length (table ([1; 2], [2; 3], [3; 4], [4; 5])), 4)
+%!assert (ndims (table ()), 2)
+%!assert (ndims (table ([])), 2)
+%!assert (ndims (table ([1, 2, 3, 4])), 2)
+%!assert (ndims (table ([1; 2], {'a'; 'b'})), 2)
+## 'numel' always return 1 (MATLAB incompatibility)
+%!assert (numel (table ()), 1)
+%!assert (numel (table (1)), 1)
+%!assert (numel (table (1, 2, 3, 4)), 1)
