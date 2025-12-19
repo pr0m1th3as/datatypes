@@ -1477,7 +1477,8 @@
 ################################################################################
 
 %!assert (iscolumn (table ([1; 2; 3])), true)
-%!assert (iscolumn (table ([1, 2, 3])), false)
+%!assert (iscolumn (table ([1, 2, 3])), true)
+%!assert (iscolumn (table (1, 2, 3)), false)
 %!assert (isempty (table ()), true)
 %!assert (isempty (table ([])), true)
 %!assert (isempty (table (1)), false)
@@ -1485,7 +1486,7 @@
 %!assert (ismatrix (table (1)), true)
 %!assert (isrow (table ([1, 2, 3])), true)
 %!assert (isrow (table (1, 2, 3)), true)
-%!assert (isrow (table ([1; 2; 3)), false)
+%!assert (isrow (table ([1; 2; 3])), false)
 %!assert (isscalar (table (1)), true)
 %!assert (isscalar (table ([1, 2, 3])), true)
 %!assert (isscalar (table (1, 2, 3)), false)
