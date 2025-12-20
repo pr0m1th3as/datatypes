@@ -155,10 +155,10 @@
 %!                                       'RowNames', {'Row1', 'Row2', 'Row3'});
 %! out = t(end, :);
 %! assert (out.Properties.VariableNames, {'A', 'B', 'C'});
-%! assert (out.Properties.RowNames, {''Row3'});
-%! assert (out.C, [3; 6; 9]);
+%! assert (out.Properties.RowNames, {'Row3'});
+%! assert ([out.A, out.B, out.C], [3, 6, 9]);
 %! out = t{end,:};
-%! assert (out, [3; 6; 9]);
+%! assert (out, [3, 6, 9]);
 
 ## Test **summary information** methods
 %!test
