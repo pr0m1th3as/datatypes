@@ -1526,7 +1526,7 @@ classdef calendarDuration
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'end'              'subsref'          'subsasgn'         'subset'          ##
+## 'end'              'subsref'          'subsasgn'                           ##
 ##                                                                            ##
 ################################################################################
 
@@ -1649,10 +1649,6 @@ classdef calendarDuration
       this.Days   = this.Days(varargin{:});
       this.Time   = this.Time(varargin{:});
     endfunction
-
-  endmethods
-
-  methods (Access = private)
 
     ## Broadcast properties
     function this = broadcastProperties (this)

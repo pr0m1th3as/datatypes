@@ -4065,7 +4065,7 @@ classdef categorical
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'end'              'subsref'          'subsasgn'         'subset'          ##
+## 'end'              'subsref'          'subsasgn'                           ##
 ##                                                                            ##
 ################################################################################
 
@@ -4223,10 +4223,6 @@ classdef categorical
       this.code = this.code(varargin{:});
       this.isMissing = this.isMissing(varargin{:});
     endfunction
-
-  endmethods
-
-  methods (Access = private)
 
     ## Common function for set operations
     function [C, ixA, ixB] = setop (A, B, fname, varargin)

@@ -1794,7 +1794,7 @@ classdef duration
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'end'              'subsref'          'subsasgn'         'subset'          ##
+## 'end'              'subsref'          'subsasgn'                           ##
 ##                                                                            ##
 ################################################################################
 
@@ -1897,10 +1897,6 @@ classdef duration
       out = this;
       out.Days = this.Days(varargin{:});
     endfunction
-
-  endmethods
-
-  methods (Access = private)
 
     ## Fix floating point precision near zero
     function this = fix_zero_precision (this)
