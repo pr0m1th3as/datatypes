@@ -1119,7 +1119,7 @@ classdef datetime
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {datetime} {@var{out} =} isnat (@var{T})
+    ## @deftypefn {datetime} {@var{TF} =} isnat (@var{T})
     ##
     ## Test for Not-A-Time elements in datetime array.
     ##
@@ -1128,6 +1128,8 @@ classdef datetime
     ## element of @var{T} that is Not-A-Time (@qcode{NaT}) and @qcode{false}
     ## otherwise.  @qcode{NaT} is the equivalent of @qcode{NaN} in numeric
     ## arrays.
+    ##
+    ## If @var{T} is not a datetime array, @code{isnat} returns an error.
     ##
     ## @end deftypefn
     function TF = isnat (this)
