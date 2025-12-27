@@ -153,6 +153,7 @@
 				<ul style="list-style-type: none; padding-left: 20px;">
 					<li><a href="datetime.html" class="text-decoration-none font-monospace fw-bolder"><small>datetime</small></a></li>
 					<li><a href="isdatetime.html" class="text-decoration-none font-monospace"><small>isdatetime</small></a></li>
+					<li><a href="isnat.html" class="text-decoration-none font-monospace"><small>isnat</small></a></li>
 					<li><a href="NaT.html" class="text-decoration-none font-monospace"><small>NaT</small></a></li>
 				</ul>
 				</div>
@@ -1444,7 +1445,7 @@ Test for Not-A-Time elements in datetime array.
           <div class="collapse multi-collapse" id="collapseMethod25">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">datetime: <var>out</var> = <b>isnat</b> (<var>T</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>TF</var> = <b>isnat</b> (<var>T</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1453,6 +1454,8 @@ Test for Not-A-Time elements in datetime array.
  element of <var>T</var> that is Not-A-Time (<code>NaT</code>) and <code>false</code>
  otherwise.  <code>NaT</code> is the equivalent of <code>NaN</code> in numeric
  arrays.
+</p>
+<p> If <var>T</var> is not a datetime array, <code>isnat</code> returns an error.
 </p>
 
 
