@@ -13,6 +13,7 @@ calendarDuration arrays
 datetime arrays
  datetime
  isdatetime
+ isnat
  NaT
 duration arrays
  duration
