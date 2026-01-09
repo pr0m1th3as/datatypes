@@ -272,7 +272,7 @@ classdef datetime
       if (! isempty (TimeZone))
         ## Call __datetime__ to check for valid timezone string
         [~,~,~,~,~,~,errmsg] = __datetime__ (0, 0, 0, 'TimeZone', TimeZone);
-        if (! isempty (isnumeric))
+        if (! isnumeric (errmsg))
           error ("datetime: %s ", errmsg);
         endif
         this.TimeZone = TimeZone;
