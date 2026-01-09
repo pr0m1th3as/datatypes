@@ -268,7 +268,17 @@ Base function for datetime class. \n\
   }
 
   // Add defaults
-  string timezone = current_zone () -> name ();
+  string timezone;
+  try
+  {
+    timezone = current_zone () -> name ();
+  }
+  catch (const exception& e)
+  {
+    octave_stdout << "__datetime__: TZDB error: " << e.what() << "\n";
+    octave_stdout << "Falling back to UTC.\n";
+    timezone = "UTC";
+  }
   string to_tzone = timezone;
   string precision = "milliseconds";
   bool doLeapSec = false;
