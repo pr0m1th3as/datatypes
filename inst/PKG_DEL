@@ -1,4 +1,3 @@
 rmpath (fullfile (fileparts (canonicalize_file_name (mfilename ("fullpath"))), "demos"));
 rmpath (fullfile (fileparts (canonicalize_file_name (mfilename ("fullpath"))), "tests"));
-rmpath (fullfile (fileparts (canonicalize_file_name (mfilename ("fullpath"))), "tzdata"));
 clear -f
