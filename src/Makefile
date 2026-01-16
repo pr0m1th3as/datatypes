@@ -2,16 +2,14 @@
 
 TARGET_OS ?= $(OS)
 ifeq ($(TARGET_OS),Windows_NT)
-	LIBS = -lole32 -lcurl
+	LIBS = -lole32
 else
 	LIBS =
 endif
 
 LDFLAGS += $(LIBS)
 
-TZFLAGS := $(shell octave --no-gui --no-init-file --no-history --eval \
-             "q = pkg ('prefix'); q = fullfile (q, 'datatypes-1.1.5'); \
-             fprintf ('-DINSTALL=%s -DHAS_REMOTE_API=0', q)")
+TZFLAGS = -DHAS_REMOTE_API=0
 
 all:
 	$(MKOCTFILE)       '-I ./date'  __datetime__.cc tz.cpp $(TZFLAGS) $(LDFLAGS)
