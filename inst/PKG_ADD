@@ -1,4 +1,5 @@
 clear -f
 addpath (fullfile (fileparts (canonicalize_file_name (mfilename ("fullpath"))), "demos"));
 addpath (fullfile (fileparts (canonicalize_file_name (mfilename ("fullpath"))), "tests"));
+addpath (fullfile (fileparts (canonicalize_file_name (mfilename ("fullpath"))), "tzdata"));
 warning ("off", "Octave:data-file-in-path")
