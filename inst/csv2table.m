@@ -174,7 +174,11 @@ function tbl = csv2table (name, varargin)
 
   ## Get first comment line (as saved by 'table2csv' method)
   H_key = strsplit (C{1,1});
-  H_txt = strjoin (H_key([1,2,4,5,7,8,10,11,13]));
+  if (numel (H_key) == 13)
+    H_txt = strjoin (H_key([1,2,4,5,7,8,10,11,13]));
+  else
+    H_txt = '';
+  endif
   txt = '# varTypes rows; varNames rows; varDescriptions rows; varUnits rows.';
   if (strcmpi (H_txt, txt))
     Trows = str2num (H_key{3});
@@ -322,8 +326,10 @@ function tbl = csv2table (name, varargin)
   endif
 
   ## Check that RowNames are unique
-  if (numel (unique (RowNames)) != numel (RowNames))
-    error ("csv2table: 'RowNames' must be unique.");
+  if (has_RowNames)
+    if (numel (unique (RowNames)) != numel (RowNames))
+      error ("csv2table: 'RowNames' must be unique.");
+    endif
   endif
 
   ## Parse columns into variables with user defined variable types
@@ -427,8 +433,8 @@ endfunction
 
 function varValue = cell2auto (C, textType, datetimeType, durationTypes, hexType)
   ## Numeric columns are always returned as doubles
-  if (isnumeric (C))
-    varValue = C;
+  if (all (cellfun ('isnumeric', C)))
+    varValue = cell2mat (C);
   ## Mixed cells are forced to text
   elseif (! iscellstr (C))
     varValue = string (C);
@@ -495,6 +501,7 @@ function varValue = cell2auto (C, textType, datetimeType, durationTypes, hexType
     endif
     ## Leave it unaltered as cellstr or convert to strings
     if (! is_datetime && ! is_duration && ! is_hex)
+      varValue = C;
       if (strcmpi (textType, 'string'))
         varValue = string (varValue);
       endif
