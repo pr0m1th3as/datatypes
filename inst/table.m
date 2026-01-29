@@ -4493,7 +4493,7 @@ classdef table
     ##
     ## Repeat copies of a table.
     ##
-    ## Repeats cp[ies of the input table @var{tblA} in a similar fashion
+    ## Repeats cοpies of the input table @var{tblA} in a similar fashion
     ## to how @code{repmat} applies to a matrix.  Only two dimensions are
     ## supported for tables.
     ##
