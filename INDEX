@@ -43,6 +43,7 @@ supplementary classes
 supplementary functions
  keyHash
  keyMatch
+ parsePairedArguments
 compiled functions
  __ckeyHash__
  __nkeyHash__
