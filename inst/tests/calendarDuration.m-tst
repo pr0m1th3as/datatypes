@@ -31,11 +31,62 @@
 %! A = days ([2, 2]);
 %! B = calweeks (1);
 %! [c1, c2] = split (A - B, {'days', 'time'});
-%! assert (c1, [7, 7]);
-%! assert (days (c2), [-2, -2]);
+%! assert (c1, [-7, -7]);
+%! assert (days (c2), [2, 2]);
 %!test
 %! A = [2, 2];
 %! B = calweeks (1);
 %! [c1, c2] = split (A - B, {'days', 'time'});
+%! assert (c1, [-7, -7]);
+%! assert (days (c2), [2, 2]);
+%!error <calendarDuration: subtraction is not defined between 'calendarDuration' and 'char' arrays.> ...
+%! calweeks (1) - 'a'
+%!error <calendarDuration: subtraction is not defined between 'calendarDuration' and 'cell' arrays.> ...
+%! calweeks (1) - {1}
+%!error <calendarDuration: subtraction is not defined between 'calendarDuration' and 'uint8' arrays.> ...
+%! calweeks (1) - uint8 (1)
+
+%!test
+%! A = caldays ([1, 2, 3]);
+%! assert (caldays (-A), [-1, -2, -3]);
+%!test
+%! A = randi (10, 3, 4, 5);
+%! B = caldays (A);
+%! C = - caldays (A);
+%! assert (caldays (B + C), zeros (3, 4, 5));
+
+%!test
+%! A = caldays ([1, 2, 3]);
+%! B = caldays (1);
+%! assert (caldays (A + B), [2, 3, 4]);
+%! assert (caldays (B + A), [2, 3, 4]);
+%!test
+%! A = calweeks (1);
+%! B = days ([2, 2]);
+%! [c1, c2] = split (A + B, {'days', 'time'});
 %! assert (c1, [7, 7]);
-%! assert (days (c2), [-2, -2]);
+%! assert (days (c2), [2, 2]);
+%!test
+%! A = calweeks (1);
+%! B = [2, 2];
+%! [c1, c2] = split (A + B, {'days', 'time'});
+%! assert (c1, [7, 7]);
+%! assert (days (c2), [2, 2]);
+%!test
+%! A = days ([2, 2]);
+%! B = calweeks (1);
+%! [c1, c2] = split (A + B, {'days', 'time'});
+%! assert (c1, [7, 7]);
+%! assert (days (c2), [2, 2]);
+%!test
+%! A = [2, 2];
+%! B = calweeks (1);
+%! [c1, c2] = split (A + B, {'days', 'time'});
+%! assert (c1, [7, 7]);
+%! assert (days (c2), [2, 2]);
+%!error <calendarDuration: addition is not defined between 'calendarDuration' and 'char' arrays.> ...
+%! calweeks (1) + 'a'
+%!error <calendarDuration: addition is not defined between 'calendarDuration' and 'cell' arrays.> ...
+%! calweeks (1) + {1}
+%!error <calendarDuration: addition is not defined between 'calendarDuration' and 'uint8' arrays.> ...
+%! calweeks (1) + uint8 (1)
