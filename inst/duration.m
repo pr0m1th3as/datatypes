@@ -1063,6 +1063,12 @@ classdef duration
       if (isa (A, 'duration') && isa (B, 'duration'))
         C = A;
         C.Days = A.Days + B.Days;
+      elseif (isa (A, 'duration') && isa (B, 'calendarDuration'))
+        C = B;
+        tmp = zeros (size (A));
+        C.Months = B.Months + tmp;
+        C.Days = B.Days + tmp;
+        C.Time = B.Time + A;
       elseif (isnumeric (A))
         C = B;
         C.Days = B.Days + double (A);
@@ -1085,6 +1091,12 @@ classdef duration
       if (isa (A, 'duration') && isa (B, 'duration'))
         C = A;
         C.Days = A.Days - B.Days;
+      elseif (isa (A, 'duration') && isa (B, 'calendarDuration'))
+        C = B;
+        tmp = zeros (size (A));
+        C.Months = B.Months - tmp;
+        C.Days = B.Days - tmp;
+        C.Time = B.Time - A;
       elseif (isnumeric (A))
         C = B;
         C.Days = B.Days - double (A);
