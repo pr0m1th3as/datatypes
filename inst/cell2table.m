@@ -1,4 +1,4 @@
-## Copyright (C) 2024-2025 Andreas Bertsatos <abertsatos@biol.uoa.gr>
+## Copyright (C) 2024-2026 Andreas Bertsatos <abertsatos@biol.uoa.gr>
 ##
 ## This file is part of the datatypes package for GNU Octave.
 ##
@@ -49,6 +49,9 @@
 ## are @qcode{'Row', 'Variables'}.
 ## @end multitable
 ##
+## Alternatively, you may specify any of the aforementioned paired arguments as
+## @code{@var{Name} = @var{Value}}.
+##
 ## @seealso{array2table, struct2table, table}
 ## @end deftypefn
 function tbl = cell2table (C, varargin)
@@ -63,9 +66,21 @@ function tbl = cell2table (C, varargin)
 
   ## Parse optional Name-Value paired arguments
   optNames = {'VariableNames', 'RowNames', 'DimensionNames'};
-  dfValues = {{}, {}, {"Row", "Variables"}};
-  [varNames, rowNames, dimNames, args] = pairedArgs (optNames, dfValues, ...
-                                                     varargin(:));
+  dfValues = {{}, {}, {}};
+  newPairs = {};
+  for ii = numel (varargin):-1:1
+    tmpi = strsplit (inputname (ii+1, false));
+    if (numel (tmpi) > 1)
+      idx = find (strcmpi (tmpi{1}, optNames));
+      if (strcmp (tmpi{2}, '=') && any (idx))
+        newPairs = [newPairs, optNames{idx}, varargin(ii)];
+        varargin(ii) = [];
+      endif
+    endif
+  endfor
+  args = [varargin, newPairs];
+  [varNames, rowNames, dimNames, args] = parsePairedArguments ...
+                                         (optNames, dfValues, args);
 
   ## Split columns into separate input data arguments for table
   varN = size (C, 2);
@@ -134,19 +149,59 @@ endfunction
 %! assert (tbl.C1, [1; 3]);
 %! assert (tbl.C2, [2; 4]);
 %! assert (size (C), size (tbl));
-%! assert (isa (tbl.C1, "double"), true);
+%! assert (isa (tbl.C1, 'double'), true);
 %!test
 %! tbl = cell2table ({1, 2; 3, 4});
 %! assert (tbl.Var1, [1; 3]);
 %! assert (tbl.Var2, [2; 4]);
 %! assert (size (tbl), [2, 2]);
-%! assert (isa (tbl.Var1, "double"), true);
+%! assert (isa (tbl.Var1, 'double'), true);
 %!test
-%! tbl = cell2table ({1, ""; 3, 4}, 'VariableNames', {'A', 'B'});
+%! tbl = cell2table ({1, ''; 3, 4}, 'VariableNames', {'A', 'B'});
 %! assert (tbl.A, [1; 3]);
-%! assert (tbl.B, {""; 4});
-%! assert (isa (tbl.A, "double"), true);
-%! assert (isa (tbl.B, "double"), false);
+%! assert (tbl.B, {''; 4});
+%! assert (isa (tbl.A, 'double'), true);
+%! assert (isa (tbl.B, 'double'), false);
+%!test
+%! tbl = cell2table ({1, ''; 3, 4}, VariableNames = {'A', 'B'});
+%! assert (tbl.A, [1; 3]);
+%! assert (tbl.B, {''; 4});
+%! assert (isa (tbl.A, 'double'), true);
+%! assert (isa (tbl.B, 'double'), false);
+%!test
+%! tbl = cell2table ({1, ''; 3, 4}, "RowNames", {'A', 'B'});
+%! assert (tbl.Var1, [1; 3]);
+%! assert (tbl.Var2, {''; 4});
+%! assert (tbl.Properties.RowNames, {'A'; 'B'});
+%! assert (class (tbl('A', :)), 'table');
+%! assert (tbl{'A', :}, {1, ''});
+%!test
+%! tbl = cell2table ({1, ''; 3, 4}, RowNames = {'A', 'B'});
+%! assert (tbl.Var1, [1; 3]);
+%! assert (tbl.Var2, {''; 4});
+%! assert (tbl.Properties.RowNames, {'A'; 'B'});
+%! assert (class (tbl('A', :)), 'table');
+%! assert (tbl{'B', :}, {3, 4});
+%!test
+%! tbl = cell2table ({1, ''; 3, 4}, string ('DimensionNames'), {'A', 'B'});
+%! assert (tbl.Var1, [1; 3]);
+%! assert (tbl.Var2, {""; 4});
+%! assert (tbl.A, {});
+%! assert (tbl.B, {1, ''; 3, 4});
+%!test
+%! tbl = cell2table ({1, ''; 3, 4}, "RowNames", {'A', 'B'}, DimensionNames = {'A', 'B'});
+%! assert (tbl.Var1, [1; 3]);
+%! assert (tbl.Var2, {''; 4});
+%! assert (tbl.A, {'A'; 'B'});
+%! assert (tbl.B, {1, ''; 3, 4});
+%!test
+%! tbl = cell2table ({1, string(''); 3, 4}, RowNames = {'R1', 'R2'}, DimensionNames = {'A', 'B'});
+%! assert (class (tbl('R1', :)), 'table');
+%! assert (class (tbl{'R1', :}), 'string');
+%! assert (cellstr (tbl{'R1', :}), {'1', ''});
+%! assert (tbl.A, {'R1'; 'R2'});
+%! assert (class (tbl.B), 'string');
+%! assert (cellstr (tbl.B), {'1', ''; '3', '4'});
 
 %!error<cell2table: input array must be a 2-D cell array.> ...
 %! cell2table (cell (3, 3, 3));
