@@ -4851,7 +4851,11 @@ classdef table
           elseif (isequal (s.subs, this.DimensionNames{1}))
             tbl = this.RowNames;
           elseif (isequal (s.subs, this.DimensionNames{2}))
-            tbl = table2array (this);
+            try
+              tbl = table2array (this);
+            catch
+              tbl = table2cell (this);
+            end_try_catch
           ## Everything else is indexing an existing variable name
           else
             tbl = getvar (this, s.subs);
