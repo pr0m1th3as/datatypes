@@ -1121,7 +1121,7 @@ classdef calendarDuration
         out.Time = -out.Time + days (A);
       else
         error (strcat ("calendarDuration: subtraction is not defined", ...
-                       " between '%s' and '%s' arrays"), class (A), class (B));
+                       " between '%s' and '%s' arrays."), class (A), class (B));
       endif
       out = broadcastProperties (out);
     endfunction
@@ -1190,7 +1190,7 @@ classdef calendarDuration
         out.Time = B.Time + days (A);
       else
         error (strcat ("calendarDuration: addition is not defined", ...
-                       " between '%s' and '%s' arrays"), class (A), class (B));
+                       " between '%s' and '%s' arrays."), class (A), class (B));
       endif
     endfunction
 
