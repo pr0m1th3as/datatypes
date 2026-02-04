@@ -1,4 +1,4 @@
-## Copyright (C) 2024-2025 Andreas Bertsatos <abertsatos@biol.uoa.gr>
+## Copyright (C) 2024-2026 Andreas Bertsatos <abertsatos@biol.uoa.gr>
 ##
 ## This file is part of the datatypes package for GNU Octave.
 ##
@@ -199,8 +199,8 @@ classdef calendarDuration
             tmp = X(:);
             tmp(isnan(tmp)) = 0;
             if (any (fix (tmp) != tmp))
-              error (["calendarDuration: years, months,", ...
-                      " and days must be integer values."]);
+              error (strcat ("calendarDuration: years, months,", ...
+                             " and days must be integer values."));
             endif
             Y = X(:,1);
             M = X(:,2);
@@ -210,8 +210,8 @@ classdef calendarDuration
             tmp = X(:,[1:5]);
             tmp(isnan(tmp)) = 0;
             if (any (fix (tmp(:)) != tmp(:)))
-              error (["calendarDuration: years, months, days,", ...
-                      " hours, and minutes must be integer values."]);
+              error (strcat ("calendarDuration: years, months, days,", ...
+                             " hours, and minutes must be integer values."));
             endif
             Y = X(:,1);
             M = X(:,2);
@@ -234,15 +234,15 @@ classdef calendarDuration
           if (! isscalar (Y) || ! isscalar (M) || ! isscalar (D))
             [err, Y, M, D] = common_size (Y, M, D);
             if (err > 0)
-              error (["calendarDuration: Y, MO, and D must", ...
-                      " be of common size or scalars."]);
+              error (strcat ("calendarDuration: Y, MO, and D must", ...
+                             " be of common size or scalars."));
             endif
           endif
           tmp = [Y(:), M(:), D(:)];
           tmp(isnan(tmp)) = 0;
           if (any (fix (tmp(:)) != tmp(:)))
-            error (["calendarDuration: years, months,", ...
-                    " and days must be integer values."]);
+            error (strcat ("calendarDuration: years, months,", ...
+                           " and days must be integer values."));
           endif
           T = repmat (duration (0, 0, 0), size (Y));
 
@@ -263,8 +263,8 @@ classdef calendarDuration
           if (! isscalar (Y) || ! isscalar (M) || ! isscalar (D) || ! isscalar (t))
             [err, Y, M, D, t] = common_size (Y, M, D, t);
             if (err > 0)
-              error (["calendarDuration: Y, MO, D, and T", ...
-                      " must be of common size or scalars."]);
+              error (strcat ("calendarDuration: Y, MO, D, and T", ...
+                             " must be of common size or scalars."));
             endif
             if (! isequal (size (T), size (t)))
               T = repmat (T, size (t));
@@ -273,8 +273,8 @@ classdef calendarDuration
           tmp = [Y(:), M(:), D(:)];
           tmp(isnan(tmp)) = 0;
           if (any (fix (tmp(:)) != tmp(:)))
-            error (["calendarDuration: years, months,", ...
-                    " and days must be integer values."]);
+            error (strcat ("calendarDuration: years, months,", ...
+                           " and days must be integer values."));
           endif
 
         ## this = calendarDuration (Y, M, D, H, MI, S)
@@ -289,15 +289,15 @@ classdef calendarDuration
               ! isscalar (H) || ! isscalar (MI) || ! isscalar (S))
             [err, Y, M, D, H, MI, S] = common_size (Y, M, D, H, MI, S);
             if (err > 0)
-              error (["calendarDuration: Y, MO, D, H, MI, and", ...
-                      " S must be of common size or scalars."]);
+              error (strcat ("calendarDuration: Y, MO, D, H, MI, and", ...
+                             " S must be of common size or scalars."));
             endif
           endif
           tmp = [Y(:), M(:), D(:), H(:), MI(:)];
           tmp(isnan(tmp)) = 0;
           if (any (fix (tmp(:)) != tmp(:)))
-            error (["calendarDuration: years, months, days,", ...
-                    " hours, and minutes must be integer values."]);
+            error (strcat ("calendarDuration: years, months, days,", ...
+                           " hours, and minutes must be integer values."));
           endif
           T = duration (H, MI, S);
 
@@ -545,8 +545,8 @@ classdef calendarDuration
       endif
       idx_order = cellfun (@(x) find (strcmpi (x, valid_units)), units);
       if (any (diff (idx_order) < 0))
-        error (["calendarDuration.datavec: UNITS must", ...
-                " be specified in descending order."]);
+        error (strcat ("calendarDuration.datavec: UNITS must", ...
+                       " be specified in descending order."));
       endif
       ## Check output
       n_args = numel (units);
@@ -555,22 +555,22 @@ classdef calendarDuration
       endif
       months = this.Months;
       days = this.Days;
-      for i = 1:numel (n_args)
+      for i = 1:n_args
         unit = units{i};
-        if (strcmpi (units, 'years'))
+        if (strcmpi (unit, 'years'))
           varargout{i} = fix (months / 12);
           months = months - fix (months / 12);
-        elseif (strcmpi (units, 'quarters'))
+        elseif (strcmpi (unit, 'quarters'))
           varargout{i} = fix (months / 3);
           months = months - fix (months / 3);
-        elseif (strcmpi (units, 'months'))
+        elseif (strcmpi (unit, 'months'))
           varargout{i} = months .* this.Sign;
-        elseif (strcmpi (units, 'weeks'))
+        elseif (strcmpi (unit, 'weeks'))
           varargout{i} = fix (days / 7);
           days = days - fix (days / 7);
-        elseif (strcmpi (units, 'days'))
+        elseif (strcmpi (unit, 'days'))
           varargout{i} = days;
-        elseif (strcmpi (units, 'time'))
+        elseif (strcmpi (unit, 'time'))
           varargout{i} = this.Time;
         endif
       endfor
@@ -712,8 +712,8 @@ classdef calendarDuration
       if (nargout == 0 || nargout == 1)
         varargout{1} = sz;
       elseif (numel (sz) != nargout)
-        error (["calendarDuration.size: nargout > 1 but does", ...
-                " not match number of requested dimensions."]);
+        error (strcat ("calendarDuration.size: nargout > 1 but does", ...
+                       " not match number of requested dimensions."));
       else
         for i = 1:nargout
           varargout{i} = sz(i);
@@ -891,8 +891,8 @@ classdef calendarDuration
       args = cell (size (varargin));
       for i = 1:numel (varargin)
         if (! isa (varargin{i}, 'calendarDuration'))
-          error (["calendarDuration.isequal: all input arguments", ...
-                  " must be calendarDuration arrays."]);
+          error (strcat ("calendarDuration.isequal: all input arguments", ...
+                         " must be calendarDuration arrays."));
         endif
         args(:) = proxyArray (varargin{i});
       endfor
@@ -924,8 +924,8 @@ classdef calendarDuration
       args = cell (size (varargin));
       for i = 1:numel (varargin)
         if (! isa (varargin{i}, 'calendarDuration'))
-          error (["calendarDuration.isequaln: all input arguments", ...
-                  " must be calendarDuration arrays."]);
+          error (strcat ("calendarDuration.isequaln: all input arguments", ...
+                         " must be calendarDuration arrays."));
         endif
         args(:) = proxyArray (varargin{i});
       endfor
@@ -1090,6 +1090,10 @@ classdef calendarDuration
     ## scalar, or for every dimension, their dimension sizes must be equal or
     ## one of them must be 1.
     ##
+    ## Either @var{A} or @var{B} may also be a duration array or a double array,
+    ## in which case it represents days and it is converted to a duration array
+    ## with the @code{days ()} function.
+    ##
     ## @end deftypefn
     function out = minus (A, B)
       if (isa (A, 'calendarDuration') && isa (B, 'calendarDuration'))
@@ -1098,20 +1102,26 @@ classdef calendarDuration
         out.Days = A.Days - B.Days;
         out.Time = A.Time - B.Time;
       elseif (isa (A, 'calendarDuration') && isa (B, 'duration'))
-        out = repmat (A, size (B));
+        out = A;
+        tmp = zeros (size (B));
+        out.Months = A.Months - tmp;
+        out.Days = A.Days - tmp;
         out.Time = A.Time - B;
-      elseif (isa (A, 'duration') && isa (B, 'calendarDuration'))
-        out = repmat (B, size (A));
-        out.Time = A - B.Time;
-      elseif (isa (A, 'double'))
-        out = repmat (B, size (A));
-        out.Time = B.Time - A;
-      elseif (isa (B, 'double'))
-        out = repmat (A, size (B));
-        out.Time = A.Time - B;
+      elseif (isa (A, 'calendarDuration') && isa (B, 'double'))
+        out = A;
+        tmp = zeros (size (B));
+        out.Months = out.Months - tmp;
+        out.Days = out.Days - tmp;
+        out.Time = out.Time - days (B);
+      elseif (isa (A, 'double') && isa (B, 'calendarDuration'))
+        out = B;
+        tmp = zeros (size (A));
+        out.Months = -out.Months + tmp;
+        out.Days = -out.Days + tmp;
+        out.Time = -out.Time + days (A);
       else
-        error (["calendarDuration: subtraction is not defined", ...
-                " between '%s' and '%s' arrays"], class (A), class (B));
+        error (strcat ("calendarDuration: subtraction is not defined", ...
+                       " between '%s' and '%s' arrays"), class (A), class (B));
       endif
       out = broadcastProperties (out);
     endfunction
@@ -1148,6 +1158,10 @@ classdef calendarDuration
     ## scalar, or for every dimension, their dimension sizes must be equal or
     ## one of them must be 1.
     ##
+    ## Either @var{A} or @var{B} may also be a duration array or a double array,
+    ## in which case it represents days and it is converted to a duration array
+    ## with the @code{days ()} function.
+    ##
     ## @end deftypefn
     function out = plus (A, B)
       if (isa (A, 'calendarDuration') && isa (B, 'calendarDuration'))
@@ -1157,20 +1171,26 @@ classdef calendarDuration
         out.Time = A.Time + B.Time;
         out = broadcastProperties (out);
       elseif (isa (A, 'calendarDuration') && isa (B, 'duration'))
-        out = repmat (A, size (B));
+        out = A;
+        tmp = zeros (size (B));
+        out.Months = A.Months + tmp;
+        out.Days = A.Days + tmp;
         out.Time = A.Time + B;
-      elseif (isa (A, 'duration') && isa (B, 'calendarDuration'))
-        out = repmat (B, size (A));
-        out.Time = A + B.Time;
-      elseif (isa (A, 'double'))
-        out = repmat (B, size (A));
-        out.Time = B.Time + A;
-      elseif (isa (B, 'double'))
-        out = repmat (A, size (B));
-        out.Time = A.Time + B;
+      elseif (isa (A, 'calendarDuration') && isa (B, 'double'))
+        out = A;
+        tmp = zeros (size (B));
+        out.Months = A.Months + tmp;
+        out.Days = A.Days + tmp;
+        out.Time = A.Time + days (B);
+      elseif (isa (A, 'double') && isa (B, 'calendarDuration'))
+        out = B;
+        tmp = zeros (size (A));
+        out.Months = B.Months + tmp;
+        out.Days = B.Days + tmp;
+        out.Time = B.Time + days (A);
       else
-        error (["calendarDuration: addition is not defined", ...
-                " between '%s' and '%s' arrays"], class (A), class (B));
+        error (strcat ("calendarDuration: addition is not defined", ...
+                       " between '%s' and '%s' arrays"), class (A), class (B));
       endif
     endfunction
 
