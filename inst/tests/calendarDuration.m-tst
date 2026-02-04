@@ -1,0 +1,41 @@
+
+
+################################################################################
+##                       ** Mathematical Operations **                        ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'minus'            'uminus'           'plus'             'uplus'           ##
+## 'times'            'mtimes'                                                ##
+##                                                                            ##
+################################################################################
+
+%!test
+%! A = caldays ([1, 2, 3]);
+%! B = caldays (1);
+%! assert (caldays (A - B), [0, 1, 2]);
+%! assert (caldays (B - A), [0, -1, -2]);
+%!test
+%! A = calweeks (1);
+%! B = days ([2, 2]);
+%! [c1, c2] = split (A - B, {'days', 'time'});
+%! assert (c1, [7, 7]);
+%! assert (days (c2), [-2, -2]);
+%!test
+%! A = calweeks (1);
+%! B = [2, 2];
+%! [c1, c2] = split (A - B, {'days', 'time'});
+%! assert (c1, [7, 7]);
+%! assert (days (c2), [-2, -2]);
+%!test
+%! A = days ([2, 2]);
+%! B = calweeks (1);
+%! [c1, c2] = split (A - B, {'days', 'time'});
+%! assert (c1, [7, 7]);
+%! assert (days (c2), [-2, -2]);
+%!test
+%! A = [2, 2];
+%! B = calweeks (1);
+%! [c1, c2] = split (A - B, {'days', 'time'});
+%! assert (c1, [7, 7]);
+%! assert (days (c2), [-2, -2]);
