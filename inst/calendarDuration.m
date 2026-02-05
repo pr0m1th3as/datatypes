@@ -558,16 +558,19 @@ classdef calendarDuration
       for i = 1:n_args
         unit = units{i};
         if (strcmpi (unit, 'years'))
-          varargout{i} = fix (months / 12);
-          months = months - fix (months / 12);
+          years = fix (months / 12);
+          months = months - years * 12;
+          varargout{i} = years;
         elseif (strcmpi (unit, 'quarters'))
-          varargout{i} = fix (months / 3);
-          months = months - fix (months / 3);
+          quarters = fix (months / 3);
+          months = months - quartes * 3;
+          varargout{i} = quarters;
         elseif (strcmpi (unit, 'months'))
-          varargout{i} = months .* this.Sign;
+          varargout{i} = months;
         elseif (strcmpi (unit, 'weeks'))
-          varargout{i} = fix (days / 7);
-          days = days - fix (days / 7);
+          weeks = fix (days / 7);
+          days = days - weeks * 7;
+          varargout{i} = weeks;
         elseif (strcmpi (unit, 'days'))
           varargout{i} = days;
         elseif (strcmpi (unit, 'time'))
@@ -1211,6 +1214,24 @@ classdef calendarDuration
       out.Time = A.Time;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {calendarDuration} {@var{C} =} times (@var{A}, @var{B})
+    ##
+    ## Element-by-element multiplication for calendarDuration arrays.
+    ##
+    ## @code{@var{C} = time (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{C} = @var{A} .* @var{B}} and returns the element-by-element
+    ## multiplication product of inputs @var{A} and @var{B}.  Either @var{A} or
+    ## @var{B} must be a calendarDuration array and its complement must be a
+    ## double array.
+    ##
+    ## @var{C} is a calendarDuration array of the same size as the input
+    ## arguments after the necessary (if required) expansion.  @var{A} and
+    ## @var{B} must be size compatible, which translates to they can be the same
+    ## size, one can be scalar, or for every dimension, their dimension sizes
+    ## must be equal or one of them must be 1.
+    ##
+    ## @end deftypefn
     function out = times (A, B)
       if (isa (A, 'calendarDuration') && isnumeric (B))
         out = A;
@@ -1249,23 +1270,31 @@ classdef calendarDuration
   endmethods
 
 ################################################################################
-##                   ** Sort, Filter, and Set Operations **                   ##
+##                 ** Equality, Filter, and Set Operations **                 ##
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'sort'             'sortrows'         'unique'           'intersect'       ##
+## 'eq'               'ne'               'unique'           'intersect'       ##
 ## 'setdiff'          'setxor'           'union'                              ##
 ##                                                                            ##
 ################################################################################
 
   methods (Hidden)
 
-    function [B, index] = sort (A, varargin)
-      error ("calendarDuration.sort: not implemented yet.");
+    function TF = eq (A, B)
+      if (! (iscalendarduration (A) || iscalendarduration (B)))
+        error (strcat ("calendarDuration.eq: equality is not defined", ...
+                       " between '%s' and '%s' arrays."), class (A), class (B));
+      endif
+      TF = A.Months == B.Months & A.Days == B.Days & A.Time == B.Time;
     endfunction
 
-    function [B, index] = sortrows (A, varargin)
-      error ("calendarDuration.sortrows: not implemented yet.");
+    function TF = ne (A, B)
+      if (! (iscalendarduration (A) || iscalendarduration (B)))
+        error (strcat ("calendarDuration.eq: inequality is not defined", ...
+                       " between '%s' and '%s' arrays."), class (A), class (B));
+      endif
+      TF = A.Months != B.Months & A.Days != B.Days & A.Time != B.Time;
     endfunction
 
     function [B, ixA, ixB] = unique (A, varargin)
