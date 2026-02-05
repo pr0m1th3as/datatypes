@@ -1093,9 +1093,9 @@ classdef calendarDuration
     ## scalar, or for every dimension, their dimension sizes must be equal or
     ## one of them must be 1.
     ##
-    ## Either @var{A} or @var{B} may also be a duration array or a double array,
-    ## in which case it represents days and it is converted to a duration array
-    ## with the @code{days ()} function.
+    ## Either @var{A} or @var{B} may also be a duration or a numeric array with
+    ## the latter representing duration days and being internally converted to a
+    ## duration array with the @code{days ()} function.
     ##
     ## @end deftypefn
     function out = minus (A, B)
@@ -1110,13 +1110,13 @@ classdef calendarDuration
         out.Months = A.Months - tmp;
         out.Days = A.Days - tmp;
         out.Time = A.Time - B;
-      elseif (isa (A, 'calendarDuration') && isa (B, 'double'))
+      elseif (isa (A, 'calendarDuration') && isnumeric (B))
         out = A;
         tmp = zeros (size (B));
         out.Months = out.Months - tmp;
         out.Days = out.Days - tmp;
         out.Time = out.Time - days (B);
-      elseif (isa (A, 'double') && isa (B, 'calendarDuration'))
+      elseif (isnumeric (A) && isa (B, 'calendarDuration'))
         out = B;
         tmp = zeros (size (A));
         out.Months = -out.Months + tmp;
@@ -1161,9 +1161,9 @@ classdef calendarDuration
     ## scalar, or for every dimension, their dimension sizes must be equal or
     ## one of them must be 1.
     ##
-    ## Either @var{A} or @var{B} may also be a duration array or a double array,
-    ## in which case it represents days and it is converted to a duration array
-    ## with the @code{days ()} function.
+    ## Either @var{A} or @var{B} may also be a duration or a numeric array with
+    ## the latter representing duration days and being internally converted to a
+    ## duration array with the @code{days ()} function.
     ##
     ## @end deftypefn
     function out = plus (A, B)
@@ -1179,13 +1179,13 @@ classdef calendarDuration
         out.Months = A.Months + tmp;
         out.Days = A.Days + tmp;
         out.Time = A.Time + B;
-      elseif (isa (A, 'calendarDuration') && isa (B, 'double'))
+      elseif (isa (A, 'calendarDuration') && isnumeric (B))
         out = A;
         tmp = zeros (size (B));
         out.Months = A.Months + tmp;
         out.Days = A.Days + tmp;
         out.Time = A.Time + days (B);
-      elseif (isa (A, 'double') && isa (B, 'calendarDuration'))
+      elseif (isnumeric (A) && isa (B, 'calendarDuration'))
         out = B;
         tmp = zeros (size (A));
         out.Months = B.Months + tmp;
@@ -1219,7 +1219,7 @@ classdef calendarDuration
     ##
     ## Element-by-element multiplication for calendarDuration arrays.
     ##
-    ## @code{@var{C} = time (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{C} = times (@var{A}, @var{B})} is the equivalent of the syntax
     ## @code{@var{C} = @var{A} .* @var{B}} and returns the element-by-element
     ## multiplication product of inputs @var{A} and @var{B}.  Either @var{A} or
     ## @var{B} must be a calendarDuration array and its complement must be a
@@ -1248,6 +1248,24 @@ classdef calendarDuration
       out.Time = out.Time .* tmp;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {calendarDuration} {@var{C} =} times (@var{A}, @var{B})
+    ##
+    ## Matrix multiplication for calendarDuration arrays.
+    ##
+    ## @code{@var{C} = mtimes (@var{A}, @var{B})} is the equivalent of the
+    ## syntax @code{@var{C} = @var{A} * @var{B}} and returns the matrix
+    ## multiplication product of inputs @var{A} and @var{B}.  Either @var{A} or
+    ## @var{B} must be a calendarDuration array and its complement must be a
+    ## double array.
+    ##
+    ## @var{C} is a calendarDuration array of the same size as the input
+    ## arguments after the necessary (if required) expansion.  @var{A} and
+    ## @var{B} must be size compatible, which translates to they can be the same
+    ## size, one can be scalar, or for every dimension, their dimension sizes
+    ## must be equal or one of them must be 1.
+    ##
+    ## @end deftypefn
     function out = mtimes (A, B)
       if (isa (A, 'calendarDuration') && isnumeric (B))
         out = A;
