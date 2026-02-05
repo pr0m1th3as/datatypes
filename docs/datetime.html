@@ -233,6 +233,7 @@
 				<ul style="list-style-type: none; padding-left: 20px;">
 					<li><a href="keyHash.html" class="text-decoration-none font-monospace"><small>keyHash</small></a></li>
 					<li><a href="keyMatch.html" class="text-decoration-none font-monospace"><small>keyMatch</small></a></li>
+					<li><a href="parsePairedArguments.html" class="text-decoration-none font-monospace"><small>parsePairedArguments</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -411,69 +412,69 @@ Create a new array of datetime values.
           <div class="collapse multi-collapse" id="colapsibleConstructor">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<code>'now'</code>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<code>'today'</code>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<code>'tomorrow'</code>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<code>'yesterday'</code>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<var>DateStrings</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<var>DateStrings</var>, <code>'InputFormat'</code>, <var>INFMT</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<var>DateStrings</var>, <code>'InputFormat'</code>, <var>INFMT</var>, <code>'PivotYear'</code>, <var>PIVOT</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<var>DateVectors</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<var>Y</var>, <var>MO</var>, <var>D</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>, <var>S</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>, <var>S</var>, <var>MS</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (<var>X</var>, <code>'ConvertFrom'</code>, <var>TYPE</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (&hellip;, <code>'Format'</code>, <var>FMT</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>Τ</var> = <b>datetime</b> (&hellip;, <code>'TimeZone'</code>, <var>TZ</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<code>'now'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<code>'today'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<code>'tomorrow'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<code>'yesterday'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>DateStrings</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>DateStrings</var>, <code>'InputFormat'</code>, <var>INFMT</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>DateStrings</var>, <code>'InputFormat'</code>, <var>INFMT</var>, <code>'PivotYear'</code>, <var>PIVOT</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>DateVectors</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>Y</var>, <var>MO</var>, <var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>, <var>S</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>, <var>S</var>, <var>MS</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>X</var>, <code>'ConvertFrom'</code>, <var>TYPE</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (&hellip;, <code>'Format'</code>, <var>FMT</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (&hellip;, <code>'TimeZone'</code>, <var>TZ</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>Τ</var> = datetime (<code>'now'</code>)</code> returns a scalar datetime array
- corresponding to the current date and time. <code><var>Τ</var> = datetime
- (<code>'now'</code>)</code> is the same as <code><var>Τ</var> = datetime ()</code>.  Except for
+<p> <code><var>T</var> = datetime (<code>'now'</code>)</code> returns a scalar datetime array
+ corresponding to the current date and time. <code><var>T</var> = datetime
+ (<code>'now'</code>)</code> is the same as <code><var>T</var> = datetime ()</code>.  Except for
  <code>'now'</code>, the same syntax can be used with <code>'today'</code>,
  <code>'tomorrow'</code> and <code>'yesterday'</code>.  These options return the
  respective date but with time set at midnight.
 </p>
-<p> <code><var>Τ</var> = datetime (<var>DateStrings</var>)</code> creates a datetime array
+<p> <code><var>T</var> = datetime (<var>DateStrings</var>)</code> creates a datetime array
  from the text in <var>DateStrings</var> representing points in time.  In
  current implementation, <var>DateStrings</var> are parsed by Octave&rsquo;s core
  <code>datevec</code> function, hence supported text formats are currently those
  supported by <code>datevec</code>.
 </p>
-<p> <code><var>Τ</var> = datetime (<var>DateStrings</var>, <code>'InputFormat'</code>,
+<p> <code><var>T</var> = datetime (<var>DateStrings</var>, <code>'InputFormat'</code>,
  <var>INFMT</var>)</code> also allows to specify a particular input text format to
  parse <var>DateStrings</var>.  It is always preferable to specify the format
  <var>INFMT</var> if it is known.  Formats which do not specify a particular
  time component will have the value set to zero.  Formats which do not
  a date will default to January 1st of the current year.
 </p>
-<p> <code><var>Τ</var> = datetime (<var>DateStrings</var>, <code>'InputFormat'</code>,
+<p> <code><var>T</var> = datetime (<var>DateStrings</var>, <code>'InputFormat'</code>,
  <var>INFMT</var>, <code>'PivotYear'</code>, <var>PIVOT</var>)</code> also allows to specify a
  pivot year, which refers to the year at the start of the century to which
  two-digit years will be referenced.  When not specified, it defaults to
  the current years minus 50.
 </p>
-<p> <code><var>Τ</var> = datetime (<var>DateVectors</var>)</code> creates a column vector of
+<p> <code><var>T</var> = datetime (<var>DateVectors</var>)</code> creates a column vector of
  datetime values from the date vectors in <var>DateVectors</var>.
 </p>
-<p> <code><var>Τ</var> = datetime (<var>Y</var>, <var>MO</var>, <var>D</var></code> creates an array of
+<p> <code><var>T</var> = datetime (<var>Y</var>, <var>MO</var>, <var>D</var></code> creates an array of
  datetime values for corresponding elements of the <var>Y</var>, <var>MO</var>, and
  <var>D</var> arrays, which must be of the same size or scalars, must contain
  integer values, and they correspond to years, months, and days,
  respectively.
 </p>
-<p> <code><var>Τ</var> = datetime (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>,
+<p> <code><var>T</var> = datetime (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>,
  <var>S</var>)</code> also adds time components to the constructed datetime arrays.
  <var>H</var>, <var>MI</var>, and <var>S</var> must be of the same size or scalars.
  <var>H</var> and <var>MI</var> must contain integer values, whereas <var>S</var> may
  also contain a fractional part.
 </p>
-<p> <code><var>Τ</var> = datetime (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>,
+<p> <code><var>T</var> = datetime (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>,
  <var>S</var>, <var>MS</var>)</code> also adds a milliseconds component, <var>MS</var>, which
  may also have a fractional part.
 </p>
-<p> <code><var>Τ</var> = datetime (<var>X</var>, <code>'ConvertFrom'</code>, <var>TYPE</var>)</code>
+<p> <code><var>T</var> = datetime (<var>X</var>, <code>'ConvertFrom'</code>, <var>TYPE</var>)</code>
  converts the numeric values in <var>X</var> to a datetime array accordinng to
  the data type specified by <var>TYPE</var>.  The following types are
  suppoerted:
@@ -485,11 +486,11 @@ Create a new array of datetime values.
  </li><li> <code>'epochtime'</code>
  </li></ul>
 
-<p> <code><var>Τ</var> = datetime (&hellip;, <code>'Format'</code>, <var>FMT</var>)</code>
+<p> <code><var>T</var> = datetime (&hellip;, <code>'Format'</code>, <var>FMT</var>)</code>
  specifies the display format of the values in the output datetime array.
  Currently, only the default display format is implemented.
 </p>
-<p> <code><var>Τ</var> = datetime (&hellip;, <code>'TimeZone'</code>, <var>TZ</var>)</code> sets
+<p> <code><var>T</var> = datetime (&hellip;, <code>'TimeZone'</code>, <var>TZ</var>)</code> sets
  the time zone to the values in the output datetime array.  If not
  specified, the computer&rsquo;s local timezone is used.  Supported time zones
  are specified in the IANA&rsquo;s Time Zone Database.  You may specify a new
@@ -529,13 +530,13 @@ Get display formatted strings for each element of a datetime object.
           <div class="collapse multi-collapse" id="collapseMethod1">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">datetime: <var>cstr</var> = <b>dispstrings</b> (<var>Τ</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>cstr</var> = <b>dispstrings</b> (<var>T</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>cstr</var> = dispstrings (<var>Τ</var>)</code> returns a cellstr array of
+<p> <code><var>cstr</var> = dispstrings (<var>T</var>)</code> returns a cellstr array of
  character vectors, <var>cstr</var>, which has the same size as the input
- datetime <var>Τ</var>.
+ datetime <var>T</var>.
 </p>
 
 

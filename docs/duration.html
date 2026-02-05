@@ -233,6 +233,7 @@
 				<ul style="list-style-type: none; padding-left: 20px;">
 					<li><a href="keyHash.html" class="text-decoration-none font-monospace"><small>keyHash</small></a></li>
 					<li><a href="keyMatch.html" class="text-decoration-none font-monospace"><small>keyMatch</small></a></li>
+					<li><a href="parsePairedArguments.html" class="text-decoration-none font-monospace"><small>parsePairedArguments</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -773,6 +774,9 @@ Duration equivalent numeric values in seconds.
  equivalent number of seconds.  <var>X</var> is a double array of the same size
  as <var>D</var>.
 </p>
+<p> Values containing a fractional portion less than 0.1 nanoseconds are
+ rounded to whole seconds.
+</p>
 
 
 
@@ -806,6 +810,9 @@ Duration equivalent numeric values in milliseconds.
 <p> <code><var>X</var> = milliseconds (<var>D</var>)</code> converts durations in <var>D</var> to
  the equivalent number of milliseconds.  <var>X</var> is a double array of the
  same size as <var>D</var>.
+</p>
+<p> Values containing a fractional portion less than 0.1 nanoseconds are
+ rounded to whole seconds.
 </p>
 
 
