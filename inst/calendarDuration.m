@@ -1211,6 +1211,41 @@ classdef calendarDuration
       out.Time = A.Time;
     endfunction
 
+    function out = times (A, B)
+      if (isa (A, 'calendarDuration') && isnumeric (B))
+        out = A;
+        tmp = double (B);
+      elseif (isnumeric (A) && isa (B, 'calendarDuration'))
+        out = B;
+        tmp = double (A);
+      else
+        error (strcat ("calendarDuration: multiplication is not defined", ...
+                       " between '%s' and '%s' arrays."), class (A), class (B));
+      endif
+      out.Months = out.Months .* tmp;
+      out.Days = out.Days .* tmp;
+      out.Time = out.Time .* tmp;
+    endfunction
+
+    function out = mtimes (A, B)
+      if (isa (A, 'calendarDuration') && isnumeric (B))
+        out = A;
+        tmp = double (B);
+        out.Months = A.Months * tmp;
+        out.Days = A.Days * tmp;
+        out.Time = A.Time * tmp;
+      elseif (isnumeric (A) && isa (B, 'calendarDuration'))
+        out = B;
+        tmp = double (A);
+        out.Months = tmp * B.Months;
+        out.Days = tmp * B.Days;
+        out.Time = tmp * B.Time;
+      else
+        error (strcat ("calendarDuration: matrix multiplication is not defined", ...
+                       " between '%s' and '%s' arrays."), class (A), class (B));
+      endif
+    endfunction
+
   endmethods
 
 ################################################################################
