@@ -43,8 +43,8 @@
 %! calweeks (1) - 'a'
 %!error <calendarDuration: subtraction is not defined between 'calendarDuration' and 'cell' arrays.> ...
 %! calweeks (1) - {1}
-%!error <calendarDuration: subtraction is not defined between 'calendarDuration' and 'uint8' arrays.> ...
-%! calweeks (1) - uint8 (1)
+%!error <calendarDuration: subtraction is not defined between 'calendarDuration' and 'struct' arrays.> ...
+%! calweeks (1) - struct ('a', 1)
 
 %!test
 %! A = caldays ([1, 2, 3]);
@@ -88,8 +88,8 @@
 %! calweeks (1) + 'a'
 %!error <calendarDuration: addition is not defined between 'calendarDuration' and 'cell' arrays.> ...
 %! calweeks (1) + {1}
-%!error <calendarDuration: addition is not defined between 'calendarDuration' and 'uint8' arrays.> ...
-%! calweeks (1) + uint8 (1)
+%!error <calendarDuration: addition is not defined between 'calendarDuration' and 'struct' arrays.> ...
+%! calweeks (1) + struct ('a', 1)
 
 %!test
 %! A = calendarDuration ([1, 1, 5, 4, 30, 2]);
@@ -123,3 +123,42 @@
 %! assert (m, 2);
 %! assert (d, 10);
 %! assert (seconds (t), 32404);
+%!error <calendarDuration: multiplication is not defined between 'calendarDuration' and 'char' arrays.> ...
+%! calweeks (1) .* 'a'
+%!error <calendarDuration: multiplication is not defined between 'calendarDuration' and 'cell' arrays.> ...
+%! calweeks (1) .* {1}
+%!error <calendarDuration: multiplication is not defined between 'calendarDuration' and 'struct' arrays.> ...
+%! calweeks (1) .* struct ('a', 1)
+
+%!test
+%! A = calendarDuration ([1, 1, 5, 4, 30, 2]);
+%! B = 2 * A;
+%! [y, m, d, t] = split (B, {'years', 'months', 'days', 'time'});
+%! assert (y, 2);
+%! assert (m, 2);
+%! assert (d, 10);
+%! assert (seconds (t), 32404);
+%!test
+%! A = calendarDuration ([1, 2], 0, [4, 5]);
+%! B = A * [1; 2];
+%! [y, d] = split (B, {'years', 'days'});
+%! assert (y, [1, 2] * [1; 2]);
+%! assert (d, [4, 5] * [1; 2]);
+%!test
+%! A = calendarDuration ([1, 2], 0, [4, 5]);
+%! B = A * [4; 2];
+%! [y, d] = split (B, {'years', 'days'});
+%! assert (y, [1, 2] * [4; 2]);
+%! assert (d, [4, 5] * [4; 2]);
+%!test
+%! A = calendarDuration ([1, 2], 0, [4, 5]);
+%! B = [4; 2] * A;
+%! [y, d] = split (B, {'years', 'days'});
+%! assert (y, [4; 2] * [1, 2]);
+%! assert (d, [4; 2] * [4, 5]);
+%!error <calendarDuration: matrix multiplication is not defined between 'calendarDuration' and 'char' arrays.> ...
+%! calweeks (1) * 'a'
+%!error <calendarDuration: matrix multiplication is not defined between 'calendarDuration' and 'cell' arrays.> ...
+%! calweeks (1) * {1}
+%!error <calendarDuration: matrix multiplication is not defined between 'calendarDuration' and 'struct' arrays.> ...
+%! calweeks (1) * struct ('a', 1)
