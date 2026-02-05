@@ -1,5 +1,4 @@
-## Copyright (C) 1995-2023 The Octave Project Developers
-## Copyright (C) 2024-2025 Andreas Bertsatos <abertsatos@biol.uoa.gr>
+## Copyright (C) 2024-2026 Andreas Bertsatos <abertsatos@biol.uoa.gr>
 ##
 ## This file is part of the datatypes package for GNU Octave.
 ##

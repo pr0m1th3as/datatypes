@@ -1,5 +1,4 @@
-## Copyright (C) 1995-2023 The Octave Project Developers
-## Copyright (C) 2024-2025 Andreas Bertsatos <abertsatos@biol.uoa.gr>
+## Copyright (C) 2024-2026 Andreas Bertsatos <abertsatos@biol.uoa.gr>
 ##
 ## This file is part of the datatypes package for GNU Octave.
 ##
@@ -75,24 +74,6 @@ function [y, i, j] = __unique__ (x, varargin)
     optfirst = true;
     optsorted = true;
     optlegacy = false;
-  endif
-
-  ## FIXME: The operations
-  ##
-  ##   match = (y(1:n-1) == y(2:n));
-  ##   y(idx) = [];
-  ##
-  ## are very slow on sparse matrices.  Until they are fixed to be as
-  ## fast as for full matrices, operate on the nonzero elements of the
-  ## sparse array as long as we are not operating on rows.
-  if (issparse (x) && ! optrows && nargout <= 1)
-    if (nnz (x) < numel (x))
-      y = unique ([0; nonzeros(x)], varargin{:});
-    else
-      ## Corner case where sparse matrix is actually full
-      y = unique (full (x), varargin{:});
-    endif
-    return;
   endif
 
   if (optrows)
