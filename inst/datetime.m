@@ -123,70 +123,70 @@ classdef datetime
   methods (Access = public)
 
     ## -*- texinfo -*-
-    ## @deftypefn  {datetime} {@var{Τ} =} datetime (@qcode{'now'})
-    ## @deftypefnx {datetime} {@var{Τ} =} datetime (@qcode{'today'})
-    ## @deftypefnx {datetime} {@var{Τ} =} datetime (@qcode{'tomorrow'})
-    ## @deftypefnx {datetime} {@var{Τ} =} datetime (@qcode{'yesterday'})
-    ## @deftypefnx {datetime} {@var{Τ} =} datetime (@var{DateStrings})
-    ## @deftypefnx {datetime} {@var{Τ} =} datetime (@var{DateStrings}, @qcode{'InputFormat'}, @var{INFMT})
-    ## @deftypefnx {datetime} {@var{Τ} =} datetime (@var{DateStrings},@
+    ## @deftypefn  {datetime} {@var{T} =} datetime (@qcode{'now'})
+    ## @deftypefnx {datetime} {@var{T} =} datetime (@qcode{'today'})
+    ## @deftypefnx {datetime} {@var{T} =} datetime (@qcode{'tomorrow'})
+    ## @deftypefnx {datetime} {@var{T} =} datetime (@qcode{'yesterday'})
+    ## @deftypefnx {datetime} {@var{T} =} datetime (@var{DateStrings})
+    ## @deftypefnx {datetime} {@var{T} =} datetime (@var{DateStrings}, @qcode{'InputFormat'}, @var{INFMT})
+    ## @deftypefnx {datetime} {@var{T} =} datetime (@var{DateStrings},@
     ## @qcode{'InputFormat'}, @var{INFMT}, @qcode{'PivotYear'}, @var{PIVOT})
-    ## @deftypefnx {datetime} {@var{Τ} =} datetime (@var{DateVectors})
-    ## @deftypefnx {datetime} {@var{Τ} =} datetime (@var{Y}, @var{MO}, @var{D})
-    ## @deftypefnx {datetime} {@var{Τ} =} datetime (@var{Y}, @var{MO}, @var{D}, @var{H}, @var{MI}, @var{S})
-    ## @deftypefnx {datetime} {@var{Τ} =} datetime (@var{Y}, @var{MO}, @var{D}, @var{H}, @var{MI}, @var{S}, @var{MS})
-    ## @deftypefnx {datetime} {@var{Τ} =} datetime (@var{X}, @qcode{'ConvertFrom'}, @var{TYPE})
-    ## @deftypefnx {datetime} {@var{Τ} =} datetime (@dots{}, @qcode{'Format'}, @var{FMT})
-    ## @deftypefnx {datetime} {@var{Τ} =} datetime (@dots{}, @qcode{'TimeZone'}, @var{TZ})
+    ## @deftypefnx {datetime} {@var{T} =} datetime (@var{DateVectors})
+    ## @deftypefnx {datetime} {@var{T} =} datetime (@var{Y}, @var{MO}, @var{D})
+    ## @deftypefnx {datetime} {@var{T} =} datetime (@var{Y}, @var{MO}, @var{D}, @var{H}, @var{MI}, @var{S})
+    ## @deftypefnx {datetime} {@var{T} =} datetime (@var{Y}, @var{MO}, @var{D}, @var{H}, @var{MI}, @var{S}, @var{MS})
+    ## @deftypefnx {datetime} {@var{T} =} datetime (@var{X}, @qcode{'ConvertFrom'}, @var{TYPE})
+    ## @deftypefnx {datetime} {@var{T} =} datetime (@dots{}, @qcode{'Format'}, @var{FMT})
+    ## @deftypefnx {datetime} {@var{T} =} datetime (@dots{}, @qcode{'TimeZone'}, @var{TZ})
     ##
     ## Create a new array of datetime values.
     ##
-    ## @code{@var{Τ} = datetime (@qcode{'now'})} returns a scalar datetime array
-    ## corresponding to the current date and time. @code{@var{Τ} = datetime
-    ## (@qcode{'now'})} is the same as @code{@var{Τ} = datetime ()}.  Except for
+    ## @code{@var{T} = datetime (@qcode{'now'})} returns a scalar datetime array
+    ## corresponding to the current date and time. @code{@var{T} = datetime
+    ## (@qcode{'now'})} is the same as @code{@var{T} = datetime ()}.  Except for
     ## @qcode{'now'}, the same syntax can be used with @qcode{'today'},
     ## @qcode{'tomorrow'} and @qcode{'yesterday'}.  These options return the
     ## respective date but with time set at midnight.
     ##
-    ## @code{@var{Τ} = datetime (@var{DateStrings})} creates a datetime array
+    ## @code{@var{T} = datetime (@var{DateStrings})} creates a datetime array
     ## from the text in @var{DateStrings} representing points in time.  In
     ## current implementation, @var{DateStrings} are parsed by Octave's core
     ## @code{datevec} function, hence supported text formats are currently those
     ## supported by @code{datevec}.
     ##
-    ## @code{@var{Τ} = datetime (@var{DateStrings}, @qcode{'InputFormat'},
+    ## @code{@var{T} = datetime (@var{DateStrings}, @qcode{'InputFormat'},
     ## @var{INFMT})} also allows to specify a particular input text format to
     ## parse @var{DateStrings}.  It is always preferable to specify the format
     ## @var{INFMT} if it is known.  Formats which do not specify a particular
     ## time component will have the value set to zero.  Formats which do not
     ## a date will default to January 1st of the current year.
     ##
-    ## @code{@var{Τ} = datetime (@var{DateStrings}, @qcode{'InputFormat'},
+    ## @code{@var{T} = datetime (@var{DateStrings}, @qcode{'InputFormat'},
     ## @var{INFMT}, @qcode{'PivotYear'}, @var{PIVOT})} also allows to specify a
     ## pivot year, which refers to the year at the start of the century to which
     ## two-digit years will be referenced.  When not specified, it defaults to
     ## the current years minus 50.
     ##
-    ## @code{@var{Τ} = datetime (@var{DateVectors})} creates a column vector of
+    ## @code{@var{T} = datetime (@var{DateVectors})} creates a column vector of
     ## datetime values from the date vectors in @var{DateVectors}.
     ##
-    ## @code{@var{Τ} = datetime (@var{Y}, @var{MO}, @var{D}} creates an array of
+    ## @code{@var{T} = datetime (@var{Y}, @var{MO}, @var{D}} creates an array of
     ## datetime values for corresponding elements of the @var{Y}, @var{MO}, and
     ## @var{D} arrays, which must be of the same size or scalars, must contain
     ## integer values, and they correspond to years, months, and days,
     ## respectively.
     ##
-    ## @code{@var{Τ} = datetime (@var{Y}, @var{MO}, @var{D}, @var{H}, @var{MI},
+    ## @code{@var{T} = datetime (@var{Y}, @var{MO}, @var{D}, @var{H}, @var{MI},
     ## @var{S})} also adds time components to the constructed datetime arrays.
     ## @var{H}, @var{MI}, and @var{S} must be of the same size or scalars.
     ## @var{H} and @var{MI} must contain integer values, whereas @var{S} may
     ## also contain a fractional part.
     ##
-    ## @code{@var{Τ} = datetime (@var{Y}, @var{MO}, @var{D}, @var{H}, @var{MI},
+    ## @code{@var{T} = datetime (@var{Y}, @var{MO}, @var{D}, @var{H}, @var{MI},
     ## @var{S}, @var{MS})} also adds a milliseconds component, @var{MS}, which
     ## may also have a fractional part.
     ##
-    ## @code{@var{Τ} = datetime (@var{X}, @qcode{'ConvertFrom'}, @var{TYPE})}
+    ## @code{@var{T} = datetime (@var{X}, @qcode{'ConvertFrom'}, @var{TYPE})}
     ## converts the numeric values in @var{X} to a datetime array accordinng to
     ## the data type specified by @var{TYPE}.  The following types are
     ## suppoerted:
@@ -198,11 +198,11 @@ classdef datetime
     ## @item @qcode{'epochtime'}
     ## @end itemize
     ##
-    ## @code{@var{Τ} = datetime (@dots{}, @qcode{'Format'}, @var{FMT})}
+    ## @code{@var{T} = datetime (@dots{}, @qcode{'Format'}, @var{FMT})}
     ## specifies the display format of the values in the output datetime array.
     ## Currently, only the default display format is implemented.
     ##
-    ## @code{@var{Τ} = datetime (@dots{}, @qcode{'TimeZone'}, @var{TZ})} sets
+    ## @code{@var{T} = datetime (@dots{}, @qcode{'TimeZone'}, @var{TZ})} sets
     ## the time zone to the values in the output datetime array.  If not
     ## specified, the computer's local timezone is used.  Supported time zones
     ## are specified in the IANA's Time Zone Database.  You may specify a new
@@ -336,13 +336,13 @@ classdef datetime
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {datetime} {@var{cstr} =} dispstrings (@var{Τ})
+    ## @deftypefn {datetime} {@var{cstr} =} dispstrings (@var{T})
     ##
     ## Get display formatted strings for each element of a datetime object.
     ##
-    ## @code{@var{cstr} = dispstrings (@var{Τ})} returns a cellstr array of
+    ## @code{@var{cstr} = dispstrings (@var{T})} returns a cellstr array of
     ## character vectors, @var{cstr}, which has the same size as the input
-    ## datetime @var{Τ}.
+    ## datetime @var{T}.
     ##
     ## @end deftypefn
     function cstr = dispstrings (this)
