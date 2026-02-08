@@ -37,34 +37,17 @@
 ##
 ## Each property name specified by @var{optarg_names} is case insensitive.
 ##
-## If you wish to specify optional arguments using the assignment syntax as in
-## @code{@var{Name_1} = @var{Value_1}, @dots{}, @var{Name_N} = @var{Value_N}},
-## then you should adapt the code from the following example prior to calling
-## @code{parsePairedArguments}.
+## The following example illustrates how to use @code{parsePairedArguments}
+## inside a function to parse optional paired arguments for three properties,
+## namely @qcode{'A'}, @qcode{'B'}, and @qcode{'C'}.
 ##
 ## @example
 ## ## Declare optional property Names and their default Values
 ## optNames = @{'A', 'B', 'C'@};
 ## dfValues = @{1, 2, 3@};
 ##
-## ## Expand specified properties using assignment syntax into Name-Value pairs
-## newPairs = @{@};
-## for ii = numel (varargin):-1:1
-##   tmpi = strsplit (inputname (ii+1, false));
-##   if (numel (tmpi) > 1)
-##     idx = find (strcmpi (tmpi@{1@}, optNames));
-##     if (strcmp (tmpi@{2@}, '=') && any (idx))
-##       ## Append Name, Value paired argument
-##       newPairs = [newPairs, optNames@{idx@}, varargin(ii)];
-##       varargin(ii) = [];
-##     endif
-##   endif
-## endfor
-## args = [varargin, newPairs];
-##
 ## ## Parse optional Name-Value paired arguments
-## [varNames, rowNames, dimNames, args] = parsePairedArguments ...
-##                                        (optNames, dfValues, args);
+## [var_A, var_B, var_C, args] = parsePairedArguments (optNames, dfValues, args);
 ## @end example
 ##
 ## @end deftypefn
