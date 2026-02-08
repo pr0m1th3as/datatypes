@@ -432,14 +432,20 @@ function tbl = cell2tbl (C, T, N, D, U, RowNames);
 endfunction
 
 function varValue = cell2auto (C, textType, datetimeType, durationTypes, hexType)
+  ## Index empty cells
+  idx = cellfun ('isempty', C);
   ## Numeric columns are always returned as doubles
   if (all (cellfun ('isnumeric', C)))
     varValue = cell2mat (C);
+  elseif (all (cellfun ('isnumeric', C(! idx))))
+    C(idx) = NaN;
+    varValue = cell2mat (C);
   ## Mixed cells are forced to text
   elseif (! iscellstr (C))
-    varValue = string (C);
     if (strcmpi (textType, 'char'))
       varValue = cellstr (C);
+    else
+      varValue = string (C);
     endif
   else  # cellstr
     ## Check for datetime strings
