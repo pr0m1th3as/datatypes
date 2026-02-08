@@ -53,9 +53,6 @@
 ## are @qcode{'Row', 'Variables'}.
 ## @end multitable
 ##
-## Alternatively, you may specify any of the aforementioned paired arguments as
-## @code{@var{Name} = @var{Value}}.
-##
 ## @seealso{cell2table, struct2table, table}
 ## @end deftypefn
 function tbl = array2table (A, varargin)
@@ -68,17 +65,6 @@ function tbl = array2table (A, varargin)
   ## Parse optional Name-Value paired arguments
   optNames = {'VariableNames', 'RowNames', 'DimensionNames'};
   dfValues = {{}, {}, {}};
-  newPairs = {};
-  for ii = numel (varargin):-1:1
-    tmpi = strsplit (inputname (ii+1, false));
-    if (numel (tmpi) > 1)
-      idx = find (strcmpi (tmpi{1}, optNames));
-      if (strcmp (tmpi{2}, '=') && any (idx))
-        newPairs = [newPairs, optNames{idx}, varargin(ii)];
-        varargin(ii) = [];
-      endif
-    endif
-  endfor
   args = [varargin, newPairs];
   [varNames, rowNames, dimNames, args] = parsePairedArguments ...
                                          (optNames, dfValues, args);
