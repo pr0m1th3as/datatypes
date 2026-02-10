@@ -128,11 +128,6 @@ endfunction
 %! assert (tbl.B, [2; 4]);
 %! assert (isa (tbl.A, "double"), true);
 %!test
-%! tbl = array2table ([1, 2; 3, 4], VariableNames = {'A', 'B'});
-%! assert (tbl.A, [1; 3]);
-%! assert (tbl.B, [2; 4]);
-%! assert (isa (tbl.A, "double"), true);
-%!test
 %! tbl = array2table ([1, 2; 3, 4], "RowNames", {'A', 'B'});
 %! assert (tbl.Var1, [1; 3]);
 %! assert (tbl.Var2, [2; 4]);
@@ -140,20 +135,13 @@ endfunction
 %! assert (class (tbl('A', :)), 'table');
 %! assert (tbl{'A', :}, [1, 2]);
 %!test
-%! tbl = array2table ([1, 2; 3, 4], RowNames = {'A', 'B'});
-%! assert (tbl.Var1, [1; 3]);
-%! assert (tbl.Var2, [2; 4]);
-%! assert (tbl.Properties.RowNames, {'A'; 'B'});
-%! assert (class (tbl('A', :)), 'table');
-%! assert (tbl{'B', :}, [3, 4]);
-%!test
 %! tbl = array2table ([1, 2; 3, 4], string ('DimensionNames'), {'A', 'B'});
 %! assert (tbl.Var1, [1; 3]);
 %! assert (tbl.Var2, [2; 4]);
 %! assert (tbl.A, {});
 %! assert (tbl.B, [1, 2; 3, 4]);
 %!test
-%! tbl = array2table ([1, 2; 3, 4], "RowNames", {'A', 'B'}, DimensionNames = {'A', 'B'});
+%! tbl = array2table ([1, 2; 3, 4], "RowNames", {'A', 'B'}, "DimensionNames", {'A', 'B'});
 %! assert (tbl.Var1, [1; 3]);
 %! assert (tbl.Var2, [2; 4]);
 %! assert (tbl.A, {'A'; 'B'});

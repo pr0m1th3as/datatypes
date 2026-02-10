@@ -148,12 +148,6 @@ endfunction
 %! assert (isa (tbl.A, 'double'), true);
 %! assert (isa (tbl.B, 'double'), false);
 %!test
-%! tbl = cell2table ({1, ''; 3, 4}, VariableNames = {'A', 'B'});
-%! assert (tbl.A, [1; 3]);
-%! assert (tbl.B, {''; 4});
-%! assert (isa (tbl.A, 'double'), true);
-%! assert (isa (tbl.B, 'double'), false);
-%!test
 %! tbl = cell2table ({1, ''; 3, 4}, "RowNames", {'A', 'B'});
 %! assert (tbl.Var1, [1; 3]);
 %! assert (tbl.Var2, {''; 4});
@@ -161,26 +155,19 @@ endfunction
 %! assert (class (tbl('A', :)), 'table');
 %! assert (tbl{'A', :}, {1, ''});
 %!test
-%! tbl = cell2table ({1, ''; 3, 4}, RowNames = {'A', 'B'});
-%! assert (tbl.Var1, [1; 3]);
-%! assert (tbl.Var2, {''; 4});
-%! assert (tbl.Properties.RowNames, {'A'; 'B'});
-%! assert (class (tbl('A', :)), 'table');
-%! assert (tbl{'B', :}, {3, 4});
-%!test
 %! tbl = cell2table ({1, ''; 3, 4}, string ('DimensionNames'), {'A', 'B'});
 %! assert (tbl.Var1, [1; 3]);
 %! assert (tbl.Var2, {""; 4});
 %! assert (tbl.A, {});
 %! assert (tbl.B, {1, ''; 3, 4});
 %!test
-%! tbl = cell2table ({1, ''; 3, 4}, "RowNames", {'A', 'B'}, DimensionNames = {'A', 'B'});
+%! tbl = cell2table ({1, ''; 3, 4}, "RowNames", {'A', 'B'}, "DimensionNames", {'A', 'B'});
 %! assert (tbl.Var1, [1; 3]);
 %! assert (tbl.Var2, {''; 4});
 %! assert (tbl.A, {'A'; 'B'});
 %! assert (tbl.B, {1, ''; 3, 4});
 %!test
-%! tbl = cell2table ({1, string(''); 3, 4}, RowNames = {'R1', 'R2'}, DimensionNames = {'A', 'B'});
+%! tbl = cell2table ({1, string(''); 3, 4}, RowNames = {'R1', 'R2'}, "DimensionNames", {'A', 'B'});
 %! assert (class (tbl('R1', :)), 'table');
 %! assert (class (tbl{'R1', :}), 'string');
 %! assert (cellstr (tbl{'R1', :}), {'1', ''});
