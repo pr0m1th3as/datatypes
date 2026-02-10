@@ -287,33 +287,16 @@
 </p>
 <p> Each property name specified by <var>optarg_names</var> is case insensitive.
 </p>
-<p> If you wish to specify optional arguments using the assignment syntax as in
- <code><var>Name_1</var> = <var>Value_1</var>, &hellip;, <var>Name_N</var> = <var>Value_N</var></code>,
- then you should adapt the code from the following example prior to calling
- <code>parsePairedArguments</code>.
+<p> The following example illustrates how to use <code>parsePairedArguments</code>
+ inside a function to parse optional paired arguments for three properties,
+ namely <code>'A'</code>, <code>'B'</code>, and <code>'C'</code>.
 </p>
  <table><tr><td>&nbsp;</td><td><pre class="example"> ## Declare optional property Names and their default Values
  optNames = {'A', 'B', 'C'};
  dfValues = {1, 2, 3};
 
- ## Expand specified properties using assignment syntax into Name-Value pairs
- newPairs = {};
- for ii = numel (varargin):-1:1
-   tmpi = strsplit (inputname (ii+1, false));
-   if (numel (tmpi) &gt; 1)
-     idx = find (strcmpi (tmpi{1}, optNames));
-     if (strcmp (tmpi{2}, '=') &amp;&amp; any (idx))
-       ## Append Name, Value paired argument
-       newPairs = [newPairs, optNames{idx}, varargin(ii)];
-       varargin(ii) = [];
-     endif
-   endif
- endfor
- args = [varargin, newPairs];
-
  ## Parse optional Name-Value paired arguments
- [varNames, rowNames, dimNames, args] = parsePairedArguments ...
-                                        (optNames, dfValues, args);
+ [var_A, var_B, var_C, args] = parsePairedArguments (optNames, dfValues, args);
  </pre></td></tr></table>
 
 
