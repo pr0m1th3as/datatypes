@@ -65,9 +65,8 @@ function tbl = array2table (A, varargin)
   ## Parse optional Name-Value paired arguments
   optNames = {'VariableNames', 'RowNames', 'DimensionNames'};
   dfValues = {{}, {}, {}};
-  args = [varargin, newPairs];
   [varNames, rowNames, dimNames, args] = parsePairedArguments ...
-                                         (optNames, dfValues, args);
+                                         (optNames, dfValues, varargin);
 
   ## Split columns into separate input data arguments for table
   varN = size (A, 2);

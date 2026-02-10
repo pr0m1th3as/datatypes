@@ -68,7 +68,7 @@ function tbl = struct2table (S, varargin)
   optNames = {'AsArray', 'RowNames', 'DimensionNames'};
   dfValues = {default, {}, {"Row", "Variables"}};
   [AsArray, rowNames, dimNames, args] = pairedArgs (optNames, dfValues, ...
-                                                    varargin(:));
+                                                    varargin);
 
   ## Get variable names from structure fields
   varNames = fieldnames (S);
