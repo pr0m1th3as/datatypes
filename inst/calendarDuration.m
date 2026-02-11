@@ -334,7 +334,9 @@ classdef calendarDuration
     ##
     ## @code{@var{cstr} = dispstrings (@var{calD})} returns a cellstr array of
     ## character vectors, @var{cstr}, which has the same size as the input
-    ## calendarDuration array, @var{calD}.
+    ## calendarDuration array, @var{calD}.  The returned text representations
+    ## in @var{cstr} are formatted according to the @qcode{'Format'} property
+    ## of the input array @var{calD}.
     ##
     ## @end deftypefn
     function cstr = dispstrings (this)
@@ -427,7 +429,7 @@ classdef calendarDuration
               els{end+1} = sprintf ('%dh %dm %ds', hours, minutes, seconds);
             endif
           endif
-          if isempty (els)
+          if (isempty (els))
             els = {'0d'};
           endif
           cstr{i} = strjoin (els, ' ');
