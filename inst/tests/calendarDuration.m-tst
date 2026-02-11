@@ -1,4 +1,248 @@
+## Copyright (C) 2026 Andreas Bertsatos <abertsatos@biol.uoa.gr>
+##
+## This file is part of the datatypes package for GNU Octave.
+##
+## This program is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free Software
+## Foundation; either version 3 of the License, or (at your option) any later
+## version.
+##
+## This program is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+## details.
+##
+## You should have received a copy of the GNU General Public License along with
+## this program; if not, see <http://www.gnu.org/licenses/>.
 
+################################################################################
+##             ** Create and convert 'calendarDuration' type **               ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'duration'         'dispstrings'      'cellstr'          'char'            ##
+## 'datevec'          'time'             'split'            'caldays'         ##
+## 'calweeks'         'calmonths'        'calquarters'      'calyears'        ##
+##                                                                            ##
+################################################################################
+
+%!assert (isscalar (calendarDuration ()), true)
+%!assert (class (calendarDuration), 'calendarDuration')
+%!assert (dispstrings (calendarDuration ()), {'0d'})
+%!assert (size (calendarDuration (zeros (4, 3))), [4, 1])
+%!assert (size (calendarDuration (ones (5, 6))), [5, 1])
+%!test
+%! X = calendarDuration ([0, 0, 1]);
+%! assert (caldays (X), 1);
+%! assert (dispstrings (X), {'1d'});
+%! assert (char (X), '1d');
+%!test
+%! X = calendarDuration ([0, 2, 14]);
+%! assert (caldays (X), 14);
+%! assert (calweeks (X), 2);
+%! assert (calmonths (X), 2);
+%! assert (char (X), '2mo 14d');
+%!test
+%! X = calendarDuration ([1, 5, 15]);
+%! assert (caldays (X), 15);
+%! assert (calweeks (X), 2);
+%! assert (calmonths (X), 17);
+%! assert (calquarters (X), 5);
+%! assert (dispstrings (X), {'1y 5mo 15d'});
+%! assert (char (X, 'mdt'), '17mo 15d');
+%! assert (cellstr (X, 'mwdt'), {'17mo 2w 1d'});
+%!test
+%! X = calendarDuration ([1, 0, 0, 12, 30, 6.5]);
+%! assert (caldays (X), 0);
+%! assert (calweeks (X), 0);
+%! assert (calmonths (X), 12);
+%! assert (calquarters (X), 4);
+%! assert (dispstrings (X), {'1y 12h 30m 6.5s'});
+%! assert (class (time (X)), 'duration');
+%! assert (hours (time (X)), 12.5018, 1e-4);
+%! assert (minutes (time (X)), 750.1083, 1e-4);
+%! assert (seconds (time (X)), 45006.5);
+%!assert (size (calendarDuration ([1, 2; 9, 8], 0, 1)), [2, 2])
+%!assert (size (calendarDuration (1, zeros (2, 3, 4), 1)), [2, 3, 4])
+%!test
+%! X = calendarDuration (0, 0, 1);
+%! assert (caldays (X), 1);
+%! assert (dispstrings (X), {'1d'});
+%! assert (char (X), '1d');
+%!test
+%! X = calendarDuration ([0, 2, 14]);
+%! assert (caldays (X), 14);
+%! assert (calweeks (X), 2);
+%! assert (calmonths (X), 2);
+%! assert (char (X), '2mo 14d');
+%!test
+%! X = calendarDuration (1, 5, 15);
+%! assert (caldays (X), 15);
+%! assert (calweeks (X), 2);
+%! assert (calmonths (X), 17);
+%! assert (calquarters (X), 5);
+%! assert (dispstrings (X), {'1y 5mo 15d'});
+%! assert (char (X, 'mdt'), '17mo 15d');
+%! assert (cellstr (X, 'mwdt'), {'17mo 2w 1d'});
+%!test
+%! X = calendarDuration ([1;NaN], 2, 3);
+%! assert (char (X(1)), '1y 2mo 3d');
+%! assert (char (X(2)), 'NaN');
+%!assert (size (calendarDuration (1, 2, 1, days (ones (2, 3, 4)))), [2, 3, 4])
+%!test
+%! X = calendarDuration (1, 0, 0, duration (12, 30, 6.5));
+%! assert (caldays (X), 0);
+%! assert (calweeks (X), 0);
+%! assert (calmonths (X), 12);
+%! assert (calquarters (X), 4);
+%! assert (dispstrings (X), {'1y 12h 30m 6.5s'});
+%! assert (class (time (X)), 'duration');
+%! assert (hours (time (X)), 12.5018, 1e-4);
+%! assert (minutes (time (X)), 750.1083, 1e-4);
+%! assert (seconds (time (X)), 45006.5);
+%!test
+%! X = calendarDuration (1, 0, 0, 12, 30, 6.5);
+%! assert (caldays (X), 0);
+%! assert (calweeks (X), 0);
+%! assert (calmonths (X), 12);
+%! assert (calquarters (X), 4);
+%! assert (dispstrings (X), {'1y 12h 30m 6.5s'});
+%! assert (class (time (X)), 'duration');
+%! assert (hours (time (X)), 12.5018, 1e-4);
+%! assert (minutes (time (X)), 750.1083, 1e-4);
+%! assert (seconds (time (X)), 45006.5);
+%!test
+%! X = calendarDuration ([1, NaN], 0, 0, 12, 30, 6.5);
+%! assert (caldays (X(1)), 0);
+%! assert (calweeks (X(1)), 0);
+%! assert (calmonths (X(1)), 12);
+%! assert (calquarters (X(1)), 4);
+%! assert (dispstrings (X(1)), {'1y 12h 30m 6.5s'});
+%! assert (class (time (X(1))), 'duration');
+%! assert (hours (time (X(1))), 12.5018, 1e-4);
+%! assert (minutes (time (X(1))), 750.1083, 1e-4);
+%! assert (seconds (time (X(1))), 45006.5);
+%! assert (caldays (X(2)), NaN);
+%! assert (calweeks (X(2)), NaN);
+%! assert (calmonths (X(2)), NaN);
+%! assert (calquarters (X(2)), NaN);
+%! assert (char (X(2)), 'NaN');
+%! assert (class (time (X(2))), 'duration');
+%! assert (hours (time (X(2))), NaN);
+%! assert (minutes (time (X(2))), NaN);
+%! assert (seconds (time (X(2))), NaN);
+%!error<calendarDuration: 'Format' must be a character vector.> ...
+%! calendarDuration ([0, 0, 1], 'Format', 1)
+%!error<calendarDuration: 'Format' must be a character vector.> ...
+%! calendarDuration ([0, 0, 1], 'Format', {'YY-MM-DD'})
+%!error<calendarDuration: 'Format' contains duplicate characters.> ...
+%! calendarDuration ([0, 0, 1], 'Format', 'yymd')
+%!error<calendarDuration: 'Format' must contain 'm', 'd', and 't'.> ...
+%! calendarDuration ([0, 0, 1], 'Format', 'ymd')
+%!error<calendarDuration: 'Format' has invalid order of characters.> ...
+%! calendarDuration ([0, 0, 1], 'Format', 'mtd')
+%!error<calendarDuration: X must be a numeric matrix.> calendarDuration ({0, 0})
+%!error<calendarDuration: X must be a numeric matrix.> calendarDuration ('asd')
+%!error<calendarDuration: X must be real.> calendarDuration (1+i)
+%!error<calendarDuration: years, months, and days must be integer values.> ...
+%! calendarDuration ([0.5, 1, 1])
+%!error<calendarDuration: years, months, and days must be integer values.> ...
+%! calendarDuration ([1, 0.5, 1])
+%!error<calendarDuration: years, months, and days must be integer values.> ...
+%! calendarDuration ([1, 1, 0.5])
+%!error<calendarDuration: years, months, days, hours, and minutes must be integer values.> ...
+%! calendarDuration ([0.5, 0, 0, 0, 0, 0])
+%!error<calendarDuration: years, months, days, hours, and minutes must be integer values.> ...
+%! calendarDuration ([0, 0.5, 0, 0, 0, 0])
+%!error<calendarDuration: years, months, days, hours, and minutes must be integer values.> ...
+%! calendarDuration ([0, 0, 0.5, 0, 0, 0])
+%!error<calendarDuration: years, months, days, hours, and minutes must be integer values.> ...
+%! calendarDuration ([0, 0, 0, 0.5, 0, 0])
+%!error<calendarDuration: years, months, days, hours, and minutes must be integer values.> ...
+%! calendarDuration ([0, 0, 0, 0, 0.5, 0])
+%!error<calendarDuration: X must have either 3 or 6 columns.> ...
+%! calendarDuration ([1, 1])
+%!error<calendarDuration: X must have either 3 or 6 columns.> ...
+%! calendarDuration ([1, 1, 1, 0.5, 0])
+%!error<calendarDuration: Y, MO, and D must be a numeric arrays.> ...
+%! calendarDuration ('a', 2, 3)
+%!error<calendarDuration: Y, MO, and D must be a numeric arrays.> ...
+%! calendarDuration (1, {2}, 3)
+%!error<calendarDuration: Y, MO, and D must be a numeric arrays.> ...
+%! calendarDuration (1, 2, {'s'})
+%!error<calendarDuration: Y, MO, and D must be real.> calendarDuration (i, 2, 3)
+%!error<calendarDuration: Y, MO, and D must be real.> calendarDuration (1, i, 3)
+%!error<calendarDuration: Y, MO, and D must be real.> calendarDuration (1, 2, i)
+%!error<calendarDuration: Y, MO, and D must be of common size or scalars.> ...
+%! calendarDuration ([1, 2], 2, [1; 2])
+%!error<calendarDuration: years, months, and days must be integer values.> ...
+%! calendarDuration (1.2, 2, 3)
+%!error<calendarDuration: years, months, and days must be integer values.> ...
+%! calendarDuration (1, 2.5, 3)
+%!error<calendarDuration: years, months, and days must be integer values.> ...
+%! calendarDuration (1, 2, 0.3)
+%!error<calendarDuration: Y, MO, and D must be a numeric arrays.> ...
+%! calendarDuration ('a', 2, 3, days (1))
+%!error<calendarDuration: Y, MO, and D must be a numeric arrays.> ...
+%! calendarDuration (1, {2}, 3, days (1))
+%!error<calendarDuration: Y, MO, and D must be a numeric arrays.> ...
+%! calendarDuration (1, 2, {'s'}, days (1))
+%!error<calendarDuration: Y, MO, and D must be real.> ...
+%! calendarDuration (i, 2, 3, days (1))
+%!error<calendarDuration: Y, MO, and D must be real.> ...
+%! calendarDuration (1, i, 3, days (1))
+%!error<calendarDuration: Y, MO, and D must be real.> ...
+%! calendarDuration (1, 2, i, days (1))
+%!error<calendarDuration: T must be a duration array.> ...
+%! calendarDuration (1, 2, 3, 2)
+%!error<calendarDuration: Y, MO, D, and T must be of common size or scalars.> ...
+%! calendarDuration ([1, 2], 2, 1, days ([1; 2]))
+%!error<calendarDuration: years, months, and days must be integer values.> ...
+%! calendarDuration (1.2, 2, 3, days (1))
+%!error<calendarDuration: years, months, and days must be integer values.> ...
+%! calendarDuration (1, 2.5, 3, days (1))
+%!error<calendarDuration: years, months, and days must be integer values.> ...
+%! calendarDuration (1, 2, 0.3, days (1))
+%!error<calendarDuration: Y, MO, D, H, MI, and S must be numeric arrays.> ...
+%! calendarDuration ('a', 0, 0, 12, 30, 6.5)
+%!error<calendarDuration: Y, MO, D, H, MI, and S must be numeric arrays.> ...
+%! calendarDuration (1, {0}, 0, 12, 30, 6.5)
+%!error<calendarDuration: Y, MO, D, H, MI, and S must be numeric arrays.> ...
+%! calendarDuration (1, 0, string (0), 12, 30, 6.5)
+%!error<calendarDuration: Y, MO, D, H, MI, and S must be numeric arrays.> ...
+%! calendarDuration (1, 0, 0, {12}, 30, 6.5)
+%!error<calendarDuration: Y, MO, D, H, MI, and S must be numeric arrays.> ...
+%! calendarDuration (1, 0, 0, 12, '30', 6.5)
+%!error<calendarDuration: Y, MO, D, H, MI, and S must be numeric arrays.> ...
+%! calendarDuration (1, 0, 0, 12, 30, struct ('s', 6.5))
+%!error<calendarDuration: numeric input data must be real.> ...
+%! calendarDuration (i, 0, 0, 12, 30, 6.5)
+%!error<calendarDuration: numeric input data must be real.> ...
+%! calendarDuration (1, i, 0, 12, 30, 6.5)
+%!error<calendarDuration: numeric input data must be real.> ...
+%! calendarDuration (1, 0, i, 12, 30, 6.5)
+%!error<calendarDuration: numeric input data must be real.> ...
+%! calendarDuration (1, 0, 0, i, 30, 6.5)
+%!error<calendarDuration: numeric input data must be real.> ...
+%! calendarDuration (1, 0, 0, 12, i, 6.5)
+%!error<calendarDuration: numeric input data must be real.> ...
+%! calendarDuration (1, 0, 0, 12, 30, i)
+%!error<calendarDuration: Y, MO, D, H, MI, and S must be of common size or scalars.> ...
+%! calendarDuration ([1, 2], 0, [0; 0], 12, 30, 6.5)
+%!error<calendarDuration: years, months, days, hours, and minutes must be integer values.> ...
+%! calendarDuration (1.2, 0, 1, 12, 30, 6.5)
+%!error<calendarDuration: years, months, days, hours, and minutes must be integer values.> ...
+%! calendarDuration (1, [0.1, NaN], 1, 12, 30, 6.5)
+%!error<calendarDuration: years, months, days, hours, and minutes must be integer values.> ...
+%! calendarDuration (1, 0, 1.5, 12, 30, 6.5)
+%!error<calendarDuration: years, months, days, hours, and minutes must be integer values.> ...
+%! calendarDuration (1, 0, 1, 1.2, 30, 6.5)
+%!error<calendarDuration: years, months, days, hours, and minutes must be integer values.> ...
+%! calendarDuration (1, 0, 1, 12, 29.5, 6.5)
+%!error<calendarDuration: invalid number of input arguments.> ...
+%! calendarDuration (1, [0.1, NaN])
+%!error<calendarDuration: invalid number of input arguments.> ...
+%! calendarDuration (1, [0.1, NaN], 1, 12, 30)
 
 ################################################################################
 ##                       ** Mathematical Operations **                        ##
