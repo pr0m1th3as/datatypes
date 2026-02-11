@@ -147,6 +147,11 @@ classdef calendarDuration
     ## @item @qcode{'t'} time duration
     ## @end itemize
     ##
+    ## Each character must be specified only once in the same order as they
+    ## appear in the above list.  @qcode{'m'}, @qcode{'d'}, and @qcode{'t'}
+    ## characters must always be included in the format specification.  Any
+    ## characters besides these listed above are ignored.
+    ##
     ## @code{@var{calD} = calendarDuration ()} returns a scalar array of
     ## calendar durations with a value of zero days.  To create an empty
     ## calendarDuration array, use @code{calendarDuration ([], [], [])}.
@@ -197,7 +202,7 @@ classdef calendarDuration
           endif
           if (size (X, 2) == 3)
             tmp = X(:);
-            tmp(isnan(tmp)) = 0;
+            tmp(isnan (tmp)) = 0;
             if (any (fix (tmp) != tmp))
               error (strcat ("calendarDuration: years, months,", ...
                              " and days must be integer values."));
@@ -208,7 +213,7 @@ classdef calendarDuration
             T = duration (zeros (size (X)));
           elseif (size (X, 2) == 6)
             tmp = X(:,[1:5]);
-            tmp(isnan(tmp)) = 0;
+            tmp(isnan (tmp)) = 0;
             if (any (fix (tmp(:)) != tmp(:)))
               error (strcat ("calendarDuration: years, months, days,", ...
                              " hours, and minutes must be integer values."));
@@ -239,7 +244,7 @@ classdef calendarDuration
             endif
           endif
           tmp = [Y(:), M(:), D(:)];
-          tmp(isnan(tmp)) = 0;
+          tmp(isnan (tmp)) = 0;
           if (any (fix (tmp(:)) != tmp(:)))
             error (strcat ("calendarDuration: years, months,", ...
                            " and days must be integer values."));
@@ -271,7 +276,7 @@ classdef calendarDuration
             endif
           endif
           tmp = [Y(:), M(:), D(:)];
-          tmp(isnan(tmp)) = 0;
+          tmp(isnan (tmp)) = 0;
           if (any (fix (tmp(:)) != tmp(:)))
             error (strcat ("calendarDuration: years, months,", ...
                            " and days must be integer values."));
@@ -280,6 +285,11 @@ classdef calendarDuration
         ## this = calendarDuration (Y, M, D, H, MI, S)
         case 6
           [Y, M, D, H, MI, S] = args{:};
+          if (! (isnumeric (Y) && isnumeric (M) && isnumeric (D) &&
+                 isnumeric (H) && isnumeric (MI) && isnumeric (S)))
+            error (strcat ("calendarDuration: Y, MO, D, H, MI,", ...
+                           " and S must be numeric arrays."));
+          endif
           if (! (isreal (Y) && isreal (M) && isreal (D) &&
                  isreal (H) && isreal (MI) && isreal (S)))
             error ("calendarDuration: numeric input data must be real.");
@@ -294,7 +304,7 @@ classdef calendarDuration
             endif
           endif
           tmp = [Y(:), M(:), D(:), H(:), MI(:)];
-          tmp(isnan(tmp)) = 0;
+          tmp(isnan (tmp)) = 0;
           if (any (fix (tmp(:)) != tmp(:)))
             error (strcat ("calendarDuration: years, months, days,", ...
                            " hours, and minutes must be integer values."));
@@ -1829,13 +1839,11 @@ function errmsg = checkFormatString (Format)
   ## Check for duplicate characters
   if (any (cellfun (@(x) numel (x) > 1, sp)))
     errmsg = "'Format' contains duplicate characters.";
-  endif
   ## Check for 'm', 'd', and 't' being present
-  if (any (cellfun (@isempty, sp([3,5,6]))))
+  elseif (any (cellfun (@isempty, sp([3,5,6]))))
     errmsg = "'Format' must contain 'm', 'd', and 't'.";
-  endif
   ## Check order
-  if (any (diff (cell2mat (sp)) < 1))
+  elseif (any (diff (cell2mat (sp)) < 1))
     errmsg = "'Format' has invalid order of characters.";
   endif
 endfunction
