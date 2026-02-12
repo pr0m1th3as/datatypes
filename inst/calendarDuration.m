@@ -173,15 +173,11 @@ classdef calendarDuration
 
       ## Check optional 'Format' argument
       if (! isempty (Format))
-        if (! (ischar (Format) && isvector (Format)))
-          error ("calendarDuration: 'Format' must be a character vector.");
-        else
-          errmsg = checkFormatString (Format);
-          if (! isempty (errmsg))
-            error ("calendarDuration: %s", errmsg);
-          endif
-          this.Format = Format;
+        errmsg = checkFormatString (Format);
+        if (! isempty (errmsg))
+          error ("calendarDuration: 'Format' %s", errmsg);
         endif
+        this.Format = Format;
       endif
 
       ## Parse inputs
@@ -439,7 +435,7 @@ classdef calendarDuration
 
     ## -*- texinfo -*-
     ## @deftypefn  {calendarDuration} {@var{cstr} =} cellstr (@var{calD})
-    ## @deftypefnx {calendarDuration} {@var{cstr} =} cellstr (@var{calD}, @var{Format})
+    ## @deftypefnx {calendarDuration} {@var{cstr} =} cellstr (@var{calD}, @var{FMT})
     ##
     ## Convert calendarDuration array to a cell array of character vectors.
     ##
@@ -448,33 +444,46 @@ classdef calendarDuration
     ## @var{calD}.  @var{cstr} contains the string representations of the
     ## calendar durations in @var{calD}.
     ##
+    ## @code{@var{cstr} = cellstr (@var{calD}, @var{FMT})} further specifies
+    ## the format of the returned string representations.  @var{FMT} must be a
+    ## character vector conforming to the same specifications required by the
+    ## constructor's @qcode{'Format'} property paired argument.  Note that
+    ## @code{cellstr} only accepts @var{FMT} as a single argument and not as a
+    ## property paired argument.
+    ##
     ## @end deftypefn
-    function cstr = cellstr (this, Format = '')
-      if (! isempty (Format))
-        if (! (ischar (Format) && isvector (Format)))
-          error ("calendarDuration.cellstr: FORMAT must be a character vector.");
-        else
-          errmsg = checkFormatString (Format);
-          if (! isempty (errmsg))
-            error ("calendarDuration.cellstr: %s", errmsg);
-          endif
-          this.Format = Format;
+    function cstr = cellstr (this, FMT = '')
+      if (! isempty (FMT))
+        errmsg = checkFormatString (FMT);
+        if (! isempty (errmsg))
+          error ("calendarDuration.cellstr: FMT %s", errmsg);
         endif
+        this.Format = FMT;
       endif
       cstr = dispstrings (this);
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {calendarDuration} {@var{cmat} =} char (@var{calD})
+    ## @deftypefn  {calendarDuration} {@var{cmat} =} char (@var{calD})
+    ## @deftypefnx {calendarDuration} {@var{cmat} =} char (@var{calD}, @var{FMT})
     ##
     ## Convert calendarDuration array to a character matrix.
     ##
     ## @code{@var{cmat} = char (@var{calD})} returns a character matrix with
-    ## one row per element in @var{calD}.
+    ## one row per element in @var{calD}.  The second optional argment,
+    ## @var{FMT}, can be used to specify the format of the returned string
+    ## representations of the calendarDuration input array @var{calD}.
     ##
     ## @end deftypefn
-    function cmat = char (this, Format = '')
-      cmat = char (cellstr (this, Format));
+    function cmat = char (this, FMT = '')
+      if (! isempty (FMT))
+        errmsg = checkFormatString (FMT);
+        if (! isempty (errmsg))
+          error ("calendarDuration.char: FMT %s", errmsg);
+        endif
+        this.Format = FMT;
+      endif
+      cmat = char (dispstrings (this));
     endfunction
 
     ## -*- texinfo -*-
@@ -1741,7 +1750,7 @@ classdef calendarDuration
             case 'Format'
               errmsg = checkFormatString (val);
               if (! isempty (errmsg))
-                error ("calendarDuration.subsargn: %s", errmsg);
+                error ("calendarDuration.subsargn: 'Format' %s", errmsg);
               endif
               this.Format = val;
             otherwise
@@ -1835,18 +1844,23 @@ endclassdef
 
 ## Check 'Format' string
 function errmsg = checkFormatString (Format)
+  ## Check for character vector
+  if (! (ischar (Format) && isvector (Format)))
+    errmsg = "must be a character vector.";
+    return;
+  endif
   errmsg = '';
   sf = @(x) strfind (Format, x);
   sp = cellfun (sf, {'y','q','m','w','d','t'}, 'UniformOutput', false);
   ## Check for duplicate characters
   if (any (cellfun (@(x) numel (x) > 1, sp)))
-    errmsg = "'Format' contains duplicate characters.";
+    errmsg = "contains duplicate characters.";
   ## Check for 'm', 'd', and 't' being present
   elseif (any (cellfun (@isempty, sp([3,5,6]))))
-    errmsg = "'Format' must contain 'm', 'd', and 't'.";
+    errmsg = "must contain 'm', 'd', and 't'.";
   ## Check order
   elseif (any (diff (cell2mat (sp)) < 1))
-    errmsg = "'Format' has invalid order of characters.";
+    errmsg = "has invalid order of characters.";
   endif
 endfunction
 
