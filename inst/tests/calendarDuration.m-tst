@@ -275,6 +275,68 @@
 %!assert (dispstrings (calendarDuration (0, 0, 0, minutes (5.000005))), {'0h 5m 3e-04s'})
 %!assert (dispstrings (calendarDuration (0, 0, 0, duration (3, 5, 0.3))), {'3h 5m 0.3s'})
 
+%!assert (cellstr (calendarDuration (1, 3, 1), 'mwdt'), {'15mo 1d'})
+%!assert (cellstr (calendarDuration (1, 3, 1), 'ymwdt'), {'1y 3mo 1d'})
+%!assert (cellstr (calendarDuration (1, 3, 15), 'ymwdt'), {'1y 3mo 2w 1d'})
+%!assert (cellstr (calendarDuration (1, 3, 15), 'mwdt'), {'15mo 2w 1d'})
+%!assert (cellstr (calendarDuration (1, 3, 15), 'ymdt'), {'1y 3mo 15d'})
+%!assert (cellstr (calendarDuration (1, 3, 15), 'mdt'), {'15mo 15d'})
+%!assert (cellstr (calendarDuration (0, 15, 15), 'ymdt'), {'1y 3mo 15d'})
+%!assert (cellstr (calendarDuration (0, 0, 0)), {'0d'})
+%!assert (cellstr (calendarDuration (1, 0, 0)), {'1y'})
+%!assert (cellstr (calendarDuration (0, 1, 0)), {'1mo'})
+%!assert (cellstr (calendarDuration (0, 12, 0)), {'1y'})
+%!assert (cellstr (calendarDuration (0, 0, 1)), {'1d'})
+%!assert (cellstr (calendarDuration (0, 0, 14)), {'14d'})
+%!assert (cellstr (calendarDuration (0, 0, 14), 'mwdt'), {'2w'})
+%!assert (cellstr (calendarDuration (0, 1, 0, minutes (5))), {'1mo 0h 5m 0s'})
+%!assert (cellstr (calendarDuration (0, 0, 0, minutes (5))), {'0h 5m 0s'})
+%!assert (cellstr (calendarDuration (0, 0, 0, minutes (50.05))), {'0h 50m 3s'})
+%!assert (cellstr (calendarDuration (0, 0, 0, minutes (5.005))), {'0h 5m 0.3s'})
+%!assert (cellstr (calendarDuration (0, 0, 0, minutes (5.000005))), {'0h 5m 3e-04s'})
+%!assert (cellstr (calendarDuration (0, 0, 0, duration (3, 5, 0.3))), {'3h 5m 0.3s'})
+%!error<calendarDuration.cellstr: FMT must be a character vector.> ...
+%! cellstr (calendarDuration ([0, 0, 1]), 1)
+%!error<calendarDuration.cellstr: FMT must be a character vector.> ...
+%! cellstr (calendarDuration ([0, 0, 1]), {'YY-MM-DD'})
+%!error<calendarDuration.cellstr: FMT contains duplicate characters.> ...
+%! cellstr (calendarDuration ([0, 0, 1]), 'yymd')
+%!error<calendarDuration.cellstr: FMT must contain 'm', 'd', and 't'.> ...
+%! cellstr (calendarDuration ([0, 0, 1]), 'ymd')
+%!error<calendarDuration.cellstr: FMT has invalid order of characters.> ...
+%! cellstr (calendarDuration ([0, 0, 1]), 'mtd')
+
+%!assert (char (calendarDuration (1, 3, 1), 'mwdt'), '15mo 1d')
+%!assert (char (calendarDuration (1, 3, 1), 'ymwdt'), '1y 3mo 1d')
+%!assert (char (calendarDuration (1, 3, 15), 'ymwdt'), '1y 3mo 2w 1d')
+%!assert (char (calendarDuration (1, 3, 15), 'mwdt'), '15mo 2w 1d')
+%!assert (char (calendarDuration (1, 3, 15), 'ymdt'), '1y 3mo 15d')
+%!assert (char (calendarDuration (1, 3, 15), 'mdt'), '15mo 15d')
+%!assert (char (calendarDuration (0, 15, 15), 'ymdt'), '1y 3mo 15d')
+%!assert (char (calendarDuration (0, 0, 0)), '0d')
+%!assert (char (calendarDuration (1, 0, 0)), '1y')
+%!assert (char (calendarDuration (0, 1, 0)), '1mo')
+%!assert (char (calendarDuration (0, 12, 0)), '1y')
+%!assert (char (calendarDuration (0, 0, 1)), '1d')
+%!assert (char (calendarDuration (0, 0, 14)), '14d')
+%!assert (char (calendarDuration (0, 0, 14), 'mwdt'), '2w')
+%!assert (char (calendarDuration (0, 1, 0, minutes (5))), '1mo 0h 5m 0s')
+%!assert (char (calendarDuration (0, 0, 0, minutes (5))), '0h 5m 0s')
+%!assert (char (calendarDuration (0, 0, 0, minutes (50.05))), '0h 50m 3s')
+%!assert (char (calendarDuration (0, 0, 0, minutes (5.005))), '0h 5m 0.3s')
+%!assert (char (calendarDuration (0, 0, 0, minutes (5.000005))), '0h 5m 3e-04s')
+%!assert (char (calendarDuration (0, 0, 0, duration (3, 5, 0.3))), '3h 5m 0.3s')
+%!error<calendarDuration.char: FMT must be a character vector.> ...
+%! char (calendarDuration ([0, 0, 1]), 1)
+%!error<calendarDuration.char: FMT must be a character vector.> ...
+%! char (calendarDuration ([0, 0, 1]), {'YY-MM-DD'})
+%!error<calendarDuration.char: FMT contains duplicate characters.> ...
+%! char (calendarDuration ([0, 0, 1]), 'yymd')
+%!error<calendarDuration.char: FMT must contain 'm', 'd', and 't'.> ...
+%! char (calendarDuration ([0, 0, 1]), 'ymd')
+%!error<calendarDuration.char: FMT has invalid order of characters.> ...
+%! char (calendarDuration ([0, 0, 1]), 'mtd')
+
 ################################################################################
 ##                       ** Mathematical Operations **                        ##
 ################################################################################
