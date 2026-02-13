@@ -446,6 +446,158 @@
 %! assert (size (t), [2, 2]);
 %! [h, m, s] = hms (t);
 %! assert (s, [0.0251, 0.0251; 0.0251, 0.0251]);
+%!assert (seconds (time (calendarDuration (0, 0, 0, 1, 0, 1))), 3601)
+%!assert (seconds (time (calendarDuration (0, 0, 1, 1, 0, 1))), 3601)
+%!assert (seconds (time (calendarDuration (0, 0, 0, 1, 30, 2.5))), 5402.5)
+%!assert (seconds (time (calendarDuration (0, 1, 0, 1, 30, 2.5))), 5402.5)
+%!assert (minutes (time (calendarDuration (0, 0, 0, 1, 0, 1))), 60.017, 1e-3)
+%!assert (minutes (time (calendarDuration (0, 1, 1, 1, 0, 1))), 60.017, 1e-3)
+%!assert (minutes (time (calendarDuration (0, 0, 1, 1, 30, 2.5))), 90.042, 1e-3)
+%!assert (minutes (time (calendarDuration (1, 1, 0, 1, 30, 62.5))), 91.042, 1e-3)
+%!assert (fix (minutes (time (calendarDuration (0, 0, 0, 1, 0, 1)))), 60)
+%!assert (fix (minutes (time (calendarDuration (0, 1, 1, 1, 0, 1)))), 60)
+%!assert (fix (minutes (time (calendarDuration (0, 0, 1, 1, 30, 2.5)))), 90)
+%!assert (fix (minutes (time (calendarDuration (1, 1, 0, 1, 30, 62.5)))), 91)
+%!assert (hours (time (calendarDuration (0, 0, 1, 1, 0, 0))), 1)
+%!assert (hours (time (calendarDuration (0, 0, 1, 1, 30, 0))), 1.5)
+%!assert (hours (time (calendarDuration (0, 0, 1, 1, 0, 1800))), 1.5)
+%!assert (hours (time (calendarDuration (0, [1, 2], 1, 1, 0, 0))), [1, 1])
+%!assert (hours (time (calendarDuration (0, 0, 1, [1; 2], 30, 0))), [1.5; 2.5])
+%!assert (hours (time (calendarDuration (0, 0, 1, 1, [0, 0], 1800))), [1.5, 1.5])
+
+%!test
+%! X = calendarDuration (1, 0, 15);
+%! assert (split (X, 'years'), 1);
+%! [Y, Q, W, D] = split (X, {'years', 'quarters', 'weeks', 'days'});
+%! assert (Y, 1);
+%! assert (Q, 0);
+%! assert (W, 2);
+%! assert (D, 1);
+%!test
+%! X = calendarDuration (1, 0, 15);
+%! T = split (X, 'time');
+%! assert (isduration (T), true);
+%! assert (hours (T), 0);
+%! assert (minutes (T), 0);
+%! assert (seconds (T), 0);
+%! assert (dispstrings (T), {'00:00:00'});
+%!test
+%! X = calendarDuration (1, ones (2), 15);
+%! T = split (X, 'time');
+%! assert (isduration (T), true);
+%! assert (hours (T), zeros (2));
+%! assert (minutes (T), zeros (2));
+%! assert (seconds (T), zeros (2));
+%! assert (dispstrings (T), repmat ({'00:00:00'}, 2, 2));
+%!test
+%! X = calendarDuration (1, 0, 15);
+%! assert (split (X, 'years'), 1);
+%! [Q, W, D] = split (X, {'quarters', 'weeks', 'days'});
+%! assert (Q, 4);
+%! assert (W, 2);
+%! assert (D, 1);
+%!test
+%! X = calendarDuration (1, zeros (2, 3, 4), 15);
+%! assert (split (X, 'years'), ones (2, 3, 4));
+%! [Q, W, D] = split (X, {'quarters', 'weeks', 'days'});
+%! assert (Q, 4 * ones (2, 3, 4));
+%! assert (W, 2 * ones (2, 3, 4));
+%! assert (D, 1 * ones (2, 3, 4));
+%!test
+%! X = calendarDuration (1, 0, 15);
+%! assert (split (X, 'years'), 1);
+%! [Q, D] = split (X, {'quarters', 'days'});
+%! assert (Q, 4);
+%! assert (D, 15);
+%!test
+%! X = calendarDuration (1, 4, 64);
+%! assert (split (X, 'years'), 1);
+%! [Q, M, D] = split (X, {'quarters', 'months', 'days'});
+%! assert (Q, 5);
+%! assert (M, 1);
+%! assert (D, 64);
+%!test
+%! X = calendarDuration (1, 4, 64:69);
+%! assert (split (X, 'years'), ones (1, 6));
+%! [Q, M, D] = split (X, {'quarters', 'months', 'days'});
+%! assert (Q, [5, 5, 5, 5, 5, 5]);
+%! assert (M, [1, 1, 1, 1, 1, 1]);
+%! assert (D, [64:69]);
+%!test
+%! X = calendarDuration (1, 4, 64, 0, 35, 30);
+%! [Q, M, W, T] = split (X, {'quarters', 'months', 'weeks', 'time'});
+%! assert (Q, 5);
+%! assert (M, 1);
+%! assert (W, 9);
+%! assert (minutes (T), 35.5);
+%! assert (seconds (T), 2130);
+%!test
+%! X = calendarDuration (1, 4, 64, 0, 35, [30; 60]);
+%! [Q, M, W, T] = split (X, {'quarters', 'months', 'weeks', 'time'});
+%! assert (Q, [5; 5]);
+%! assert (M, [1; 1]);
+%! assert (W, [9; 9]);
+%! assert (minutes (T), [35.5; 36]);
+%! assert (seconds (T), [2130; 2160]);
+%!error<calendarDuration.split: too few input arguments.> split (calendarDuration)
+%!error<calendarDuration.split: invalid input type for UNITS.> ...
+%! split (calendarDuration, 1)
+%!error<calendarDuration.split: invalid input type for UNITS.> ...
+%! split (calendarDuration, {1})
+%!error<calendarDuration.split: 'ert' is not a valid time unit.> ...
+%! split (calendarDuration, 'ert')
+%!error<calendarDuration.split: 'ert' is not a valid time unit.> ...
+%! split (calendarDuration, {'time', 'ert'})
+%!error<calendarDuration.split: 'ert' is not a valid time unit.> ...
+%! split (calendarDuration, string ({'time', 'ert'}))
+%!error<calendarDuration.split: UNITS must be specified in descending order.> ...
+%! split (calendarDuration, {'time', 'years'})
+%!error<calendarDuration.split: UNITS must be specified in descending order.> ...
+%! split (calendarDuration, string ({'months', 'weeks', 'years'}))
+%!error<calendarDuration.split: wrong number of output arguments.> ...
+%! split (calendarDuration, {'years', 'months'})
+%!error<calendarDuration.split: wrong number of output arguments.> ...
+%! [Y, M, D] = split (calendarDuration, {'years', 'months'})
+
+%!assert (caldays (caldays (5)), 5)
+%!assert (caldays (caldays (1:10)), 1:10)
+%!assert (caldays (caldays (ones (2, 3, 4))), ones (2, 3, 4))
+%!assert (caldays (calendarDuration (0, 0, [1, 2; 3, 4])), [1, 2; 3, 4])
+%!test
+%! x = randi (20, 2, 3);
+%! assert (caldays (calendarDuration (0, 0, x)), x);
+
+%!assert (calweeks (calweeks (5)), 5)
+%!assert (calweeks (calweeks (1:10)), 1:10)
+%!assert (calweeks (calweeks (ones (2, 3, 4))), ones (2, 3, 4))
+%!assert (calweeks (calendarDuration (0, 0, 7 * [1, 2; 3, 4])), [1, 2; 3, 4])
+%!test
+%! x = randi (20, 2, 3, 4);
+%! assert (calweeks (calendarDuration (0, 0, x * 7)), x);
+
+%!assert (calmonths (calmonths (5)), 5)
+%!assert (calmonths (calmonths (1:10)), 1:10)
+%!assert (calmonths (calmonths (ones (2, 3, 4))), ones (2, 3, 4))
+%!assert (calmonths (calendarDuration (0, [1, 2; 3, 4], 0)), [1, 2; 3, 4])
+%!test
+%! x = randi (20, 2, 3);
+%! assert (calmonths (calendarDuration (0, x, 0)), x);
+
+%!assert (calquarters (calquarters (5)), 5)
+%!assert (calquarters (calquarters (1:10)), 1:10)
+%!assert (calquarters (calquarters (ones (2, 3, 4))), ones (2, 3, 4))
+%!assert (calquarters (calendarDuration (0, 3 * [1, 2; 3, 4], 0)), [1, 2; 3, 4])
+%!test
+%! x = randi (20, 2, 3, 4);
+%! assert (calquarters (calendarDuration (0, x * 3, 0)), x);
+
+%!assert (calyears (calyears (5)), 5)
+%!assert (calyears (calyears (1:10)), 1:10)
+%!assert (calyears (calyears (ones (2, 3, 4))), ones (2, 3, 4))
+%!assert (calyears (calendarDuration ([1, 2; 3, 4], 0, 0)), [1, 2; 3, 4])
+%!test
+%! x = randi (20, 2, 3);
+%! assert (calyears (calendarDuration (x, 0, 0)), x);
 
 ################################################################################
 ##                       ** Mathematical Operations **                        ##
