@@ -765,8 +765,8 @@ classdef calendarDuration
       if (nargout == 0 || nargout == 1)
         varargout{1} = sz;
       elseif (numel (sz) != nargout)
-        error (strcat ("calendarDuration.size: nargout > 1 but does", ...
-                       " not match number of requested dimensions."));
+        error (strcat ("calendarDuration.size: number of output arguments", ...
+                       " does not match number of requested dimensions."));
       else
         for i = 1:nargout
           varargout{i} = sz(i);
