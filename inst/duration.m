@@ -483,9 +483,31 @@ classdef duration
     function varargout = hms (this)
       x = this.Days * 86400;
       h = fix (x / 3600);
-      x = x - h * 3600;
+      tmp = x - h * 3600;
+      ## Find cases of floating point errors
+      idx = 3600 - tmp < 1e-10;
+      if (any (idx(:)))
+        h(idx) += 1;
+        x(idx) -= h(idx) * 3600;
+        x(! idx) = tmp(! idx);
+      else
+        x = tmp;
+      endif
       m = fix (x / 60);
-      s = x - m * 60;
+      tmp = x - m * 60;
+      idx = 60 - tmp < 1e-10;
+      if (any (idx(:)))
+        m(idx) += 1;
+        x(idx) -= m(idx) * 60;
+        x(! idx) = tmp(! idx);
+      else
+        x = tmp;
+      endif
+      s = x;
+      idx = x < 1e-10;
+      if (any (idx(:)))
+        s(idx) = 0;
+      endif
       if (nargout == 0 || nargout == 1)
         varargout{1} = h;
       elseif (nargout == 2)
