@@ -487,12 +487,26 @@ classdef calendarDuration
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {calendarDuration} {@var{DV} =} datevec (@var{calD})
+    ## @deftypefn  {calendarDuration} {@var{DV} =} datevec (@var{calD})
+    ## @deftypefnx {calendarDuration} {[@var{Y}, @var{MO}] =} datevec (@var{calD})
+    ## @deftypefnx {calendarDuration} {[@var{Y}, @var{MO}, @var{D}] =} datevec (@var{calD})
+    ## @deftypefnx {calendarDuration} {[@var{Y}, @var{MO}, @var{D}, @var{H}] =} datevec (@var{calD})
+    ## @deftypefnx {calendarDuration} {[@var{Y}, @var{MO}, @var{D}, @var{H}, @var{MI}] =} datevec (@var{calD})
+    ## @deftypefnx {calendarDuration} {[@var{Y}, @var{MO}, @var{D}, @var{H}, @var{MI}, @var{S}] =} datevec (@var{calD})
     ##
     ## Convert calendarDuration array to date vectors.
     ##
-    ## @code{@var{DV} = datevec (@var{calD})} returns a numeric matrix with
-    ## one row per element in @var{calD}.
+    ## @code{@var{DV} = datevec (@var{calD})} returns an @math{Nx6} numeric
+    ## matrix, where @math{N} is the number of elements in @var{calD} and the
+    ## columns corresponds to years, months, days, hours, minutes, and seconds,
+    ## respectively.
+    ##
+    ## When @code{datevec} is called with more than one output arguments, then
+    ## it returns the components of the date vectors as individual variables
+    ## @var{Y}, @var{MO}, @var{D}, @var{H}, @var{MI},and @var{S} corresponding
+    ## to years, months, days, hours, minutes, and seconds, respectively.  In
+    ## this case, the individual variables have the same size as the input array
+    ## @var{calD}.
     ##
     ## @end deftypefn
     function varargout = datevec (this)
@@ -503,9 +517,20 @@ classdef calendarDuration
       if (nargout == 0 || nargout == 1)
         varargout{1} = DV;
       elseif (nargout <= 6)
-        for i = 1:nargout
-          varargout{i} = DV(:,i);
-        endfor
+        varargout{1} = years;
+        varargout{2} = months;
+        if (nargout > 2)
+          varargout{3} = this.Days;
+        endif
+        if (nargout > 3)
+          varargout{4} = h;
+        endif
+        if (nargout > 4)
+          varargout{5} = m;
+        endif
+        if (nargout > 5)
+          varargout{6} = s;
+        endif
       else
         error ("calendarDuration.datavec: too many output arguments.");
       endif
