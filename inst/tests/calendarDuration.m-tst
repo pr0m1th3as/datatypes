@@ -423,6 +423,30 @@
 %!error<calendarDuration.datavec: too many output arguments.> ...
 %! [Y, MO, D, H, MI, S, MS] = datevec (calendarDuration)
 
+%!assert (size (time (calendarDuration (1, 1, 1))), [1, 1])
+%!assert (size (time (calendarDuration (ones (2, 3, 4), 1, 1))), [2, 3, 4])
+%!assert (size (time (calendarDuration (1, 1, 1, days (1)))), [1, 1])
+%!assert (size (time (calendarDuration (0, 0, 0, ones (2, 3, 4), 1, 1))), [2, 3, 4])
+%!test
+%! t = time (calendarDuration (1, 1, 1));
+%! assert (class (t), 'duration');
+%! [h, m, s] = hms (t);
+%! assert (h, 0);
+%! assert (m, 0);
+%! assert (s, 0);
+%!test
+%! t = time (calendarDuration (1, ones (2), 1, hours (1.5)));
+%! assert (size (t), [2, 2]);
+%! [h, m, s] = hms (t);
+%! assert (h, ones (2));
+%! assert (m, 30 * ones (2));
+%! assert (s, zeros (2));
+%!test
+%! t = time (calendarDuration (1, ones (2), 1, 0, 0, 0.0251));
+%! assert (size (t), [2, 2]);
+%! [h, m, s] = hms (t);
+%! assert (s, [0.0251, 0.0251; 0.0251, 0.0251]);
+
 ################################################################################
 ##                       ** Mathematical Operations **                        ##
 ################################################################################
