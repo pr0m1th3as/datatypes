@@ -484,8 +484,7 @@ classdef duration
       x = this.Days * 86400;
       h = fix (x / 3600);
       tmp = x - h * 3600;
-      ## Find cases of floating point errors
-      idx = 3600 - tmp < 1e-10;
+      idx = 3600 - tmp < 1e-12; # find round-off errors to whole hours
       if (any (idx(:)))
         h(idx) += 1;
         x(idx) -= h(idx) * 3600;
@@ -495,7 +494,7 @@ classdef duration
       endif
       m = fix (x / 60);
       tmp = x - m * 60;
-      idx = 60 - tmp < 1e-10;
+      idx = 60 - tmp < 1e-12; # find round-off errors to whole minutes
       if (any (idx(:)))
         m(idx) += 1;
         x(idx) -= m(idx) * 60;
@@ -504,10 +503,11 @@ classdef duration
         x = tmp;
       endif
       s = x;
-      idx = x < 1e-10;
+      idx = x < 1e-12; # find round-off errors to whole seconds
       if (any (idx(:)))
         s(idx) = 0;
       endif
+      s = round (s * 1e15) / 1e15; # eliminate round-off errors to femto-seconds
       if (nargout == 0 || nargout == 1)
         varargout{1} = h;
       elseif (nargout == 2)
