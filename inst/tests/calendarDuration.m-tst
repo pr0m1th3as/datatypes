@@ -600,6 +600,93 @@
 %! assert (calyears (calendarDuration (x, 0, 0)), x);
 
 ################################################################################
+##                         ** Summary Information **                          ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'size'             'ndims'            'numel'            'nnz'             ##
+## 'length'           'keyHash'                                               ##
+##                                                                            ##
+################################################################################
+
+%!assert (size (calendarDuration), [1, 1])
+%!assert (size (calendarDuration ([], [], [])), [0, 0])
+%!assert (size (calendarDuration (ones (0, 3))), [0, 1])
+%!assert (size (calendarDuration (ones (0, 1), ones (0, 1), ones (0, 1))), [0, 1])
+%!assert (size (calendarDuration (ones (0, 3), ones (0, 3), ones (0, 3))), [0, 3])
+%!assert (size (calendarDuration (ones (1, 0), ones (1, 0), ones (1, 0))), [1, 0])
+%!assert (size (calendarDuration (ones (5, 3))), [5, 1])
+%!assert (size (calendarDuration (ones (5, 6))), [5, 1])
+%!assert (size (calendarDuration (ones (2, 3, 4), 0, 0)), [2, 3, 4])
+%!assert (size (calendarDuration (ones (1:10), 0, 0)), 1:10)
+%!test
+%! X = calendarDuration (ones (2, 3, 4), 0, 0);
+%! [d1, d2, d3] = size (X);
+%! assert (d1, 2);
+%! assert (d2, 3);
+%! assert (d3, 4);
+%!test
+%! X = calendarDuration (0, 0, 0, minutes (randi (30, 2, 3, 4)));
+%! [d1, d2, d3] = size (X);
+%! assert (d1, 2);
+%! assert (d2, 3);
+%! assert (d3, 4);
+%!test
+%! X = calendarDuration (0, 0, 0, minutes (randi (30, 2, 3, 4)));
+%! [d1, d2, d3] = size (X);
+%! assert (size (X, 1), 2);
+%! assert (size (X, 2), 3);
+%! assert (size (X, 3), 4);
+%!error<calendarDuration.size: number of output arguments does not match number of requested dimensions.> ...
+%! [d1, d2] = size (calendarDuration (ones (2, 3, 4), 0, 0))
+
+%!assert (ndims (calendarDuration ([], [], [])), 2)
+%!assert (ndims (calendarDuration (1, 1, 1)), 2)
+%!assert (ndims (calendarDuration), 2)
+%!assert (ndims (calendarDuration (ones (2), 1, 1)), 2)
+%!assert (ndims (calendarDuration (ones (2, 3, 4), 1, 1)), 3)
+%!assert (ndims (calendarDuration (ones (1:10), 1, 1)), 10)
+
+%!assert (numel (calendarDuration ([], [], [])), 1)
+%!assert (numel (calendarDuration (1, 1, 1)), 1)
+%!assert (numel (calendarDuration), 1)
+%!assert (numel (calendarDuration (ones (2), 1, 1)), 1)
+%!assert (numel (calendarDuration (ones (2, 3, 4), 1, 1)), 1)
+%!assert (numel (calendarDuration (ones (1:10), 1, 1)), 1)
+
+%!assert (nnz (calendarDuration (1, 1, 1)), 1)
+%!assert (nnz (calendarDuration (0, 0, 0)), 0)
+%!assert (nnz (calendarDuration (0:5, 0, 0)), 5)
+%!assert (nnz (calendarDuration ([0, 0, 0, 1, 1], 0, 0)), 2)
+%!assert (nnz (calendarDuration (ones (2, 3, 4), 0, 0)), 24)
+
+%!assert (length (calendarDuration (1, 1, 1)), 1)
+%!assert (length (calendarDuration (0, 0, 0)), 1)
+%!assert (length (calendarDuration (0:5, 0, 0)), 6)
+%!assert (length (calendarDuration ([0, 0, 0, 1, 1], 0, 0)), 5)
+%!assert (length (calendarDuration (ones (2, 3, 4), 0, 0)), 4)
+%!assert (length (calendarDuration (ones (2, 10, 4), 0, 0)), 10)
+
+%!assert (keyHash (calendarDuration), uint64 (9404037721690811995))
+%!assert (keyHash (calendarDuration (0, 0, 0)), uint64 (9404037721690811995))
+%!assert (keyHash (calendarDuration ([], [], [])), uint64 (10790283023733344549))
+%!assert (keyHash (calendarDuration (1, 1, 1)), uint64 (11245130726649642670))
+%!test
+%! key = keyHash (calendarDuration ([1, 2; 3, 4], 1, 1));
+%! assert (key, uint64 (3011565863366139772));
+%!test
+%! key = keyHash (calendarDuration (0, 0, 0, days ([1, 2, 3])));
+%! assert (key, uint64 (10002591001239839942));
+%!test
+%! base_key = uint64 (2342124352342344234);
+%! key = keyHash (calendarDuration (0, 0, 0, days ([1, 2, 3])), base_key);
+%! assert (key, uint64 (2231107818551636405));
+%!error<calendarDuration.keyHash: BASE must be a UINT64 scalar.> ...
+%! keyHash (calendarDuration (0, 0, 0), uint64 ([1, 2]))
+%!error<calendarDuration.keyHash: BASE must be a UINT64 scalar.> ...
+%! keyHash (calendarDuration (0, 0, 0), 2231107818551636405)
+
+################################################################################
 ##                       ** Mathematical Operations **                        ##
 ################################################################################
 ##                             Available Methods                              ##
