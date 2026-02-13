@@ -552,7 +552,7 @@ classdef calendarDuration
     ## -*- texinfo -*-
     ## @deftypefn {calendarDuration} {[@dots{}] =} split (@var{calD}, @var{units})
     ##
-    ## Split calendarDuration array into numeric time units.
+    ## Split calendarDuration array into numeric and duration units.
     ##
     ## @code{[@dots{}] = split (@var{calD}, @var{units})} splits the calendar
     ## duration units in @var{calD} into separate numeric arrays according to
@@ -571,7 +571,7 @@ classdef calendarDuration
     ##
     ## When a single date/time unit is specified, @var{units} may also be a
     ## character vector.  When @qcode{'time'} is specified in @var{units}, the
-    ## corresponding returning argument is a @code{duration} array.  The values
+    ## corresponding returned argument is a @code{duration} array.  The values
     ## of years, quarters, and months are computed independently from the values
     ## of weeks and days in @var{calD}, with larger units taking precedence when
     ## specified  The same applies for duration arrays, when requested.
@@ -580,24 +580,28 @@ classdef calendarDuration
     function varargout = split (this, units)
       ## Check input
       if (nargin < 2)
-        error ("calendarDuration.datavec: too few input arguments.");
+        error ("calendarDuration.split: too few input arguments.");
       endif
-      units = cellstr (units);
+      if (isstring (units) || ischar (units))
+        units = cellstr (units);
+      elseif (! iscellstr (units))
+        error ("calendarDuration.split: invalid input type for UNITS.");
+      endif
       valid_units = {'years', 'quarters', 'months', 'weeks', 'days', 'time'};
       idx_units = ismember (tolower (units), valid_units);
       if (! all (idx_units))
-        error ("calendarDuration.datavec: '%s' is not a valid time unit.", ...
+        error ("calendarDuration.split: '%s' is not a valid time unit.", ...
                units{find (! idx_units)});
       endif
       idx_order = cellfun (@(x) find (strcmpi (x, valid_units)), units);
       if (any (diff (idx_order) < 0))
-        error (strcat ("calendarDuration.datavec: UNITS must", ...
+        error (strcat ("calendarDuration.split: UNITS must", ...
                        " be specified in descending order."));
       endif
       ## Check output
       n_args = numel (units);
       if (nargout != n_args)
-        error ("calendarDuration.datavec: wrong number of output arguments.");
+        error ("calendarDuration.split: wrong number of output arguments.");
       endif
       months = this.Months;
       days = this.Days;
@@ -609,7 +613,7 @@ classdef calendarDuration
           varargout{i} = years;
         elseif (strcmpi (unit, 'quarters'))
           quarters = fix (months / 3);
-          months = months - quartes * 3;
+          months = months - quarters * 3;
           varargout{i} = quarters;
         elseif (strcmpi (unit, 'months'))
           varargout{i} = months;
