@@ -836,7 +836,8 @@ classdef calendarDuration
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {calendarDuration} {@var{hey} =} keyHash (@var{calD})
+    ## @deftypefn  {calendarDuration} {@var{hey} =} keyHash (@var{calD})
+    ## @deftypefnx {calendarDuration} {@var{hey} =} keyHash (@var{calD}, @var{base})
     ##
     ## Generate a hash code for a calendarDuration array.
     ##
