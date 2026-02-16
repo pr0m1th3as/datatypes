@@ -1068,3 +1068,43 @@
 ## 'setdiff'          'setxor'           'union'                              ##
 ##                                                                            ##
 ################################################################################
+
+%!assert (caldays (3) == caldays (3), true)
+%!assert (caldays (3) == caldays (4), false)
+%!assert (caldays (14) == calweeks (2), true)
+%!assert (calmonths (15) == calquarters (5), true)
+%!assert (calmonths ([15, 12, NaN]) == calquarters ([5, 4, 3]), [true, true, false])
+%!assert (calyears (ones (2)) == calmonths ([12, 15]), logical ([1, 0; 1, 0]))
+%!assert (calyears (ones (2)) == calmonths ([12; 15]), logical ([1, 1; 0, 0]))
+%!assert (calmonths ([3, 4]) == calmonths ([3, 4]), [true, true])
+%!assert (calmonths ([3, NaN]) == calmonths ([3, 4]), [true, false])
+%!assert (calmonths ([3; NaN]) == calmonths ([3; NaN]), [true; false])
+%!assert (calendarDuration ([1; 2], 0, 0) == calyears ([1, 2]), logical (eye (2)))
+%!error<calendarDuration.eq: equality is not defined between 'calendarDuration' and 'double' arrays.> ...
+%! caldays (3) == NaN
+%!error<calendarDuration.eq: equality is not defined between 'calendarDuration' and 'duration' arrays.> ...
+%! calendarDuration (0, 0, 0, hours (5)) == hours (5)
+%!error<calendarDuration.eq: equality is not defined between 'double' and 'calendarDuration' arrays.> ...
+%! 5 == calyears (5)
+%!error<calendarDuration.eq: equality is not defined between 'char' and 'calendarDuration' arrays.> ...
+%! '1y' == calyears(1)
+
+%!assert (caldays (3) != caldays (3), false)
+%!assert (caldays (3) != caldays (4), true)
+%!assert (caldays (14) != calweeks (2), false)
+%!assert (calmonths (15) != calquarters (5), false)
+%!assert (calmonths ([15, 12, NaN]) != calquarters ([5, 4, 3]), [false, false, true])
+%!assert (calyears (ones (2)) != calmonths ([12, 15]), logical ([0, 1; 0, 1]))
+%!assert (calyears (ones (2)) != calmonths ([12; 15]), logical ([0, 0; 1, 1]))
+%!assert (calmonths ([3, 4]) != calmonths ([3, 4]), [false, false])
+%!assert (calmonths ([3, NaN]) != calmonths ([3, 4]), [false, true])
+%!assert (calmonths ([3; NaN]) != calmonths ([3; NaN]), [false; true])
+%!assert (calendarDuration ([1; 2], 0, 0) != calyears ([2, 1]), logical (eye (2)))
+%!error<calendarDuration.ne: inequality is not defined between 'calendarDuration' and 'double' arrays.> ...
+%! caldays (3) != NaN
+%!error<calendarDuration.ne: inequality is not defined between 'calendarDuration' and 'duration' arrays.> ...
+%! calendarDuration (0, 0, 0, hours (5)) != hours (5)
+%!error<calendarDuration.ne: inequality is not defined between 'double' and 'calendarDuration' arrays.> ...
+%! 5 != calyears (5)
+%!error<calendarDuration.ne: inequality is not defined between 'char' and 'calendarDuration' arrays.> ...
+%! '1y' != calyears(1)
