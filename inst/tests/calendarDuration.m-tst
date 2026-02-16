@@ -749,7 +749,9 @@
 %!error<calendarDuration.isequal: all input arguments must be calendarDuration arrays.> ...
 %! isequal (caldays (3), 1)
 %!error<calendarDuration.isequal: all input arguments must be calendarDuration arrays.> ...
-%! isequal (caldays (3), caldays (3), {1})
+%! isequal (caldays (3), caldays (3), hours (1))
+%!error<calendarDuration.isequal: all input arguments must be calendarDuration arrays.> ...
+%! isequal (caldays (3), caldays (3), days (1))
 
 %!assert (isequaln (caldays (5), caldays (5)), true)
 %!assert (isequaln (caldays (NaN), caldays (NaN)), true)
@@ -783,7 +785,116 @@
 %!error<calendarDuration.isequaln: all input arguments must be calendarDuration arrays.> ...
 %! isequaln (caldays (3), 1)
 %!error<calendarDuration.isequaln: all input arguments must be calendarDuration arrays.> ...
-%! isequaln (caldays (3), caldays (3), {1})
+%! isequaln (caldays (3), caldays (3), hours (1))
+%!error<calendarDuration.isequaln: all input arguments must be calendarDuration arrays.> ...
+%! isequaln (caldays (3), caldays (3), days (1))
+
+%!assert (isfinite (caldays (1)), true)
+%!assert (isfinite (caldays (NaN)), false)
+%!assert (isfinite (caldays (Inf)), false)
+%!assert (isfinite (caldays (-Inf)), false)
+%!assert (isfinite (calendarDuration ([1, 0, 1])), true)
+%!assert (isfinite (calendarDuration (nan (2), 1, 0)), false (2))
+%!assert (isfinite (calendarDuration (Inf (3), 0, 0)), false (3))
+%!assert (isfinite (calendarDuration (1, -Inf, [0; 0])), false (2, 1))
+%!assert (size (isfinite (caldays ([]))), [0, 0])
+%!assert (size (isfinite (caldays (ones (1, 2, 0, 2)))), [1, 2, 0, 2])
+
+%!assert (isinf (caldays (1)), false)
+%!assert (isinf (caldays (NaN)), false)
+%!assert (isinf (caldays (Inf)), true)
+%!assert (isinf (caldays (-Inf)), true)
+%!assert (isinf (calendarDuration ([1, 0, NaN])), false)
+%!assert (isinf (calendarDuration ([1, Inf, -Inf])), false)
+%!assert (isinf (calendarDuration (nan (2), 1, 0)), false (2))
+%!assert (isinf (calendarDuration (Inf (3), 0, 0)), true (3))
+%!assert (isinf (calendarDuration (1, -Inf, [0; 0])), true (2, 1))
+%!assert (size (isinf (caldays ([]))), [0, 0])
+%!assert (size (isinf (caldays (Inf (1, 2, 0, 2)))), [1, 2, 0, 2])
+
+%!assert (ismatrix (caldays (3)), true)
+%!assert (ismatrix (caldays ([3, 3; 2, 1])), true)
+%!assert (ismatrix (caldays ([3, 3, 2, 1])), true)
+%!assert (ismatrix (caldays (ones (3, 3, 2))), false)
+%!assert (ismatrix (calmonths (3)), true)
+%!assert (ismatrix (calmonths ([3, 3; 2, 1])), true)
+%!assert (ismatrix (calmonths ([3, 3, 2, 1])), true)
+%!assert (ismatrix (calmonths (ones (3, 3, 2))), false)
+%!assert (ismatrix (calendarDuration (0, 0, 3)), true)
+%!assert (ismatrix (calendarDuration ([3, 3; 2, 1], 0, 0)), true)
+%!assert (ismatrix (calendarDuration ([3, 3, 2, 1], 0, 1)), true)
+%!assert (ismatrix (calendarDuration (ones (3, 3, 2), 0, 0)), false)
+%!assert (ismatrix (calendarDuration (0, 0, 1, hours (ones (3, 3)))), true)
+%!assert (ismatrix (calendarDuration (0, 0, 1, hours (ones (3, 3, 2)))), false)
+
+%!assert (ismissing (caldays (1)), false)
+%!assert (ismissing (caldays (NaN)), true)
+%!assert (ismissing (caldays (Inf)), false)
+%!assert (ismissing (caldays (-Inf)), false)
+%!assert (ismissing (calendarDuration ([1, 0, NaN])), true)
+%!assert (ismissing (calendarDuration ([1, Inf, -Inf])), true)
+%!assert (ismissing (calendarDuration (nan (2), 1, 0)), true (2))
+%!assert (ismissing (calendarDuration (Inf (3), 0, 0)), false (3))
+%!assert (ismissing (calendarDuration (1, -Inf, [0; NaN])), [false; true])
+%!assert (size (ismissing (caldays ([]))), [0, 0])
+%!assert (ismissing (caldays (nan (1, 2, 0, 2))), true (1, 2, 0, 2))
+%!assert (size (ismissing (caldays (nan (1, 2, 0, 2)))), [1, 2, 0, 2])
+%!error<calendarDuration.ismissing: Indicators are not supported.> ...
+%! ismissing (caldays (3), 3)
+
+%!assert (isnan (caldays (1)), false)
+%!assert (isnan (caldays (NaN)), true)
+%!assert (isnan (caldays (Inf)), false)
+%!assert (isnan (caldays (-Inf)), false)
+%!assert (isnan (calendarDuration ([1, 0, NaN])), true)
+%!assert (isnan (calendarDuration ([1, Inf, -Inf])), true)
+%!assert (isnan (calendarDuration (nan (2), 1, 0)), true (2))
+%!assert (isnan (calendarDuration (Inf (3), 0, 0)), false (3))
+%!assert (isnan (calendarDuration (1, -Inf, [0; NaN])), [false; true])
+%!assert (size (isnan (caldays ([]))), [0, 0])
+%!assert (isnan (caldays (nan (1, 2, 0, 2))), true (1, 2, 0, 2))
+%!assert (size (isnan (caldays (nan (1, 2, 0, 2)))), [1, 2, 0, 2])
+
+%!assert (isrow (calendarDuration (0, 0, 0)), true)
+%!assert (isrow (calendarDuration ([], [], [])), false)
+%!assert (isrow (calendarDuration (ones (1, 0), ones (1, 0), ones (1, 0))), true)
+%!assert (isrow (calendarDuration (ones (0, 1), ones (0, 1), ones (0, 1))), false)
+%!assert (isrow (calmonths (1)), true)
+%!assert (isrow (calmonths ([1, 2, 3])), true)
+%!assert (isrow (calyears ([1; 2; 3])), false)
+%!assert (isrow (calendarDuration (1, 1, 1, 1, 1, 1)), true)
+%!assert (isrow (calendarDuration (1, 1, 1, 1, 1, [1, 2, 3])), true)
+%!assert (isrow (calendarDuration (1, 1, 1, 1, 1, ones (2))), false)
+%!assert (isrow (calendarDuration (1, 1, ones (1, 1, 2))), false)
+%!assert (isrow (calendarDuration (1, 1, ones (1, 2, 1))), true)
+
+%!assert (isscalar (calmonths (1)), true)
+%!assert (isscalar (calmonths ([1, 2, 3])), false)
+%!assert (isscalar (calyears ([1; 2; 3])), false)
+%!assert (isscalar (calendarDuration (0, 0, 0)), true)
+%!assert (isscalar (calendarDuration ([], [], [])), false)
+%!assert (isscalar (calendarDuration (1, 1, 1, 1, 1, 1)), true)
+%!assert (isscalar (calendarDuration (1, 1, 1, 1, 1, [1, 2, 3])), false)
+%!assert (isscalar (calendarDuration (1, 1, 1, 1, 1, ones (2))), false)
+%!assert (isscalar (calendarDuration (1, 1, ones (1, 1, 2))), false)
+%!assert (isscalar (calendarDuration (1, 1, ones (1, 2, 1))), false)
+%!assert (isscalar (calendarDuration (1, 1, ones (1, 1, 1))), true)
+%!assert (isscalar (calendarDuration (1, 1, 1, hours (5))), true)
+
+%!assert (isvector (calendarDuration (0, 0, 0)), true)
+%!assert (isvector (calendarDuration ([], [], [])), false)
+%!assert (isvector (calendarDuration (ones (1, 0), ones (1, 0), ones (1, 0))), true)
+%!assert (isvector (calendarDuration (ones (0, 1), ones (0, 1), ones (0, 1))), true)
+%!assert (isvector (calmonths (1)), true)
+%!assert (isvector (calmonths ([1, 2, 3])), true)
+%!assert (isvector (calyears ([1; 2; 3])), true)
+%!assert (isvector (calendarDuration (1, 1, 1, 1, 1, 1)), true)
+%!assert (isvector (calendarDuration (1, 1, 1, 1, 1, [1, 2, 3])), true)
+%!assert (isvector (calendarDuration (1, 1, 1, 1, 1, ones (2))), false)
+%!assert (isvector (calendarDuration (1, 1, ones (1, 1, 2))), false)
+%!assert (isvector (calendarDuration (1, 1, ones (2, 1, 2))), false)
+%!assert (isvector (calendarDuration (1, 1, ones (1, 2, 1))), true)
+%!assert (isvector (calendarDuration (1, 1, ones (2, 1, 1))), true)
 
 ################################################################################
 ##                       ** Mathematical Operations **                        ##
@@ -947,3 +1058,13 @@
 %! calweeks (1) * {1}
 %!error <calendarDuration: matrix multiplication is not defined between 'calendarDuration' and 'struct' arrays.> ...
 %! calweeks (1) * struct ('a', 1)
+
+################################################################################
+##                 ** Equality, Filter, and Set Operations **                 ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'eq'               'ne'               'unique'           'intersect'       ##
+## 'setdiff'          'setxor'           'union'                              ##
+##                                                                            ##
+################################################################################
