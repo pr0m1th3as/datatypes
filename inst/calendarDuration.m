@@ -1382,6 +1382,25 @@ classdef calendarDuration
 
   methods (Hidden)
 
+    ## -*- texinfo -*-
+    ## @deftypefn {calendarDuration} {@var{TF} =} eq (@var{A}, @var{B})
+    ##
+    ## Test for equality between calendarDuration arrays.
+    ##
+    ## @code{@var{TF} = eq (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} == @var{B}} and returns a logical array with
+    ## elements set to @qcode{true} where calendarDuration arrays @var{A} and
+    ## @var{B} are equal, otherwise set to @qcode{false}.  Missing values are
+    ## not equal to each other.  Hence, any @code{NaN} values in @var{A} or
+    ## @var{B} result to @qcode{false} elements in @var{TF}.
+    ##
+    ## @var{A} and @var{B} must be size compatible, which translates to they can
+    ## be the same size, one can be scalar, or for every dimension, their
+    ## dimension sizes must be equal or one of them must be 1.  The size of the
+    ## output @var{TF} is the same as the size of input arrays after their
+    ## expansion according to the broadcasting rules.
+    ##
+    ## @end deftypefn
     function TF = eq (A, B)
       if (! (iscalendarduration (A) || iscalendarduration (B)))
         error (strcat ("calendarDuration.eq: equality is not defined", ...
@@ -1390,6 +1409,25 @@ classdef calendarDuration
       TF = A.Months == B.Months & A.Days == B.Days & A.Time == B.Time;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {calendarDuration} {@var{TF} =} ne (@var{A}, @var{B})
+    ##
+    ## Test for equality between calendarDuration arrays.
+    ##
+    ## @code{@var{TF} = ne (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} != @var{B}} and returns a logical array with
+    ## elements set to @qcode{true} where calendarDuration arrays @var{A} and
+    ## @var{B} are not equal, otherwise set to @qcode{false}.  Missing values
+    ## are not equal to each other.  Hence, any @code{NaN} values in @var{A} or
+    ## @var{B} result to @qcode{true} elements in @var{TF}.
+    ##
+    ## @var{A} and @var{B} must be size compatible, which translates to they can
+    ## be the same size, one can be scalar, or for every dimension, their
+    ## dimension sizes must be equal or one of them must be 1.  The size of the
+    ## output @var{TF} is the same as the size of input arrays after their
+    ## expansion according to the broadcasting rules.
+    ##
+    ## @end deftypefn
     function TF = ne (A, B)
       if (! (iscalendarduration (A) || iscalendarduration (B)))
         error (strcat ("calendarDuration.eq: inequality is not defined", ...
