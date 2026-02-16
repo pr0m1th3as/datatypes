@@ -687,6 +687,105 @@
 %! keyHash (calendarDuration (0, 0, 0), 2231107818551636405)
 
 ################################################################################
+##                          ** Query Operations **                            ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'iscolumm'         'isempty'          'isequal'          'isequaln'        ##
+## 'isfinite'         'isinf'            'ismatrix'         'ismissing'       ##
+## 'isnan'            'isrow'            'isscalar'         'isvector'        ##
+##                                                                            ##
+################################################################################
+
+%!assert (iscolumn (calendarDuration (0, 0, 0)), true)
+%!assert (iscolumn (calendarDuration ([], [], [])), false)
+%!assert (iscolumn (calendarDuration (ones (1, 0), ones (1, 0), ones (1, 0))), false)
+%!assert (iscolumn (calendarDuration (ones (0, 1), ones (0, 1), ones (0, 1))), true)
+%!assert (iscolumn (calendarDuration ([1, 1], 1, 1)), false)
+%!assert (iscolumn (calendarDuration ([1; 1], 1, 1)), true)
+%!assert (iscolumn (calendarDuration (ones (2), 1, 1)), false)
+%!assert (iscolumn (calendarDuration (1, 1, zeros (2, 3, 4))), false)
+
+%!assert (isempty (calendarDuration (0, 0, 0)), false)
+%!assert (isempty (calendarDuration ([], [], [])), true)
+%!assert (isempty (calendarDuration (ones (1, 0), ones (1, 0), ones (1, 0))), true)
+%!assert (isempty (calendarDuration (ones (0, 1), ones (0, 1), ones (0, 1))), true)
+%!test
+%! x = ones ([2, 3, 0, 2]);
+%! assert (isempty (calendarDuration (x, x, x)), true);
+%! assert (isempty (calendarDuration (x, x, x, x, x, x)), true)
+%! assert (isempty (calendarDuration (x, x, x, hours (x))), true);
+%!test
+%! x = ones ([2, 3, 1, 2]);
+%! assert (isempty (calendarDuration (x, x, x)), false);
+%! assert (isempty (calendarDuration (x, x, x, x, x, x)), false)
+%! assert (isempty (calendarDuration (x, x, x, hours (x))), false);
+
+%!assert (isequal (caldays (5), caldays (5)), true)
+%!assert (isequal (caldays (NaN), caldays (NaN)), false)
+%!assert (isequal (caldays (5), caldays (6)), false)
+%!assert (isequal (caldays ([5, NaN]), caldays ([5, NaN])), false)
+%!assert (isequal (caldays (5), caldays (5), caldays (5)), true)
+%!assert (isequal (caldays (5), caldays (6), calweeks (1)), false)
+%!assert (isequal (caldays (7), caldays (7), calweeks (1)), true)
+%!assert (isequal (caldays ([1:3]), caldays ([1, 2, 3])), true)
+%!assert (isequal (caldays ([1:3]), caldays ([1, NaN, 3])), false)
+%!assert (isequal (calmonths (5), calmonths (5)), true)
+%!assert (isequal (calmonths (5), calmonths (6)), false)
+%!assert (isequal (calmonths (NaN), calmonths (NaN)), false)
+%!assert (isequal (calmonths (5), calmonths (5), calmonths (5)), true)
+%!assert (isequal (calmonths (5), calmonths (6), calquarters (2)), false)
+%!assert (isequal (calmonths (6), calmonths (6), calquarters (2)), true)
+%!assert (isequal (calmonths ([1:3]), calmonths ([1, 2, 3])), true)
+%!assert (isequal (calmonths ([1:3]), calmonths ([1, NaN, 3])), false)
+%!assert (isequal (calmonths ([1, NaN, 3]), calmonths ([1, NaN, 3])), false)
+%!assert (isequal (calendarDuration (0, 0, 0, hours (ones (3))), ...
+%!                 calendarDuration (0, 0, 0, hours (ones (3)))), true)
+%!assert (isequal (calendarDuration (0, 0, 0, hours (nan (3))), ...
+%!                 calendarDuration (0, 0, 0, hours (nan (3)))), false)
+%!assert (isequal (calendarDuration (0, 0, 0, hours (ones (3, 3, 2))), ...
+%!                 calendarDuration (0, 0, 0, hours (ones (3, 3, 3)))), false)
+%!error<calendarDuration.isequal: too few input arguments.> isequal (caldays (3))
+%!error<calendarDuration.isequal: all input arguments must be calendarDuration arrays.> ...
+%! isequal (caldays (3), 1)
+%!error<calendarDuration.isequal: all input arguments must be calendarDuration arrays.> ...
+%! isequal (caldays (3), caldays (3), {1})
+
+%!assert (isequaln (caldays (5), caldays (5)), true)
+%!assert (isequaln (caldays (NaN), caldays (NaN)), true)
+%!assert (isequaln (caldays (5), caldays (6)), false)
+%!assert (isequaln (caldays ([5, NaN]), caldays ([5, NaN])), true)
+%!assert (isequaln (caldays (5), caldays (5), caldays (5)), true)
+%!assert (isequaln (caldays (5), caldays (6), calweeks (1)), false)
+%!assert (isequaln (caldays (7), caldays (7), calweeks (1)), true)
+%!assert (isequaln (caldays ([1:3]), caldays ([1, 2, 3])), true)
+%!assert (isequaln (caldays ([1:3]), caldays ([1, NaN, 3])), false)
+%!assert (isequaln (calmonths (5), calmonths (5)), true)
+%!assert (isequaln (calmonths (NaN), calmonths (NaN)), true)
+%!assert (isequaln (calmonths (5), calmonths (6)), false)
+%!assert (isequaln (calmonths (5), calmonths (5), calmonths (5)), true)
+%!assert (isequaln (calmonths (5), calmonths (6), calquarters (2)), false)
+%!assert (isequaln (calmonths (6), calmonths (6), calquarters (2)), true)
+%!assert (isequaln (calmonths ([1:3]), calmonths ([1, 2, 3])), true)
+%!assert (isequaln (calmonths ([1:3]), calmonths ([1, NaN, 3])), false)
+%!assert (isequaln (calmonths ([1, NaN, 3]), calmonths ([1, NaN, 3])), true)
+%!assert (isequaln (calendarDuration (0, 0, 0, hours (ones (3))), ...
+%!                 calendarDuration (0, 0, 0, hours (ones (3)))), true)
+%!assert (isequaln (calendarDuration (0, 0, 0, hours (nan (3))), ...
+%!                 calendarDuration (0, 0, 0, hours (nan (3)))), true)
+%!assert (isequaln (calendarDuration (0, 0, 0, hours (ones (3, 3, 2))), ...
+%!                 calendarDuration (0, 0, 0, hours (ones (3, 3, 3)))), false)
+%!assert (isequaln (calendarDuration (0, NaN, 0, hours (ones (3))), ...
+%!                 calendarDuration (0, NaN, 0, hours (ones (3)))), true)
+%!assert (isequaln (calendarDuration (0, 0, NaN, hours (nan (3, 3, 3))), ...
+%!                 calendarDuration (0, 0, NaN, hours (nan (3, 3, 3)))), true)
+%!error<calendarDuration.isequaln: too few input arguments.> isequaln (caldays (3))
+%!error<calendarDuration.isequaln: all input arguments must be calendarDuration arrays.> ...
+%! isequaln (caldays (3), 1)
+%!error<calendarDuration.isequaln: all input arguments must be calendarDuration arrays.> ...
+%! isequaln (caldays (3), caldays (3), {1})
+
+################################################################################
 ##                       ** Mathematical Operations **                        ##
 ################################################################################
 ##                             Available Methods                              ##
