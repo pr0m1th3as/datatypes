@@ -1402,7 +1402,7 @@ classdef calendarDuration
     ##
     ## @end deftypefn
     function TF = eq (A, B)
-      if (! (iscalendarduration (A) || iscalendarduration (B)))
+      if (! (iscalendarduration (A) && iscalendarduration (B)))
         error (strcat ("calendarDuration.eq: equality is not defined", ...
                        " between '%s' and '%s' arrays."), class (A), class (B));
       endif
@@ -1429,7 +1429,7 @@ classdef calendarDuration
     ##
     ## @end deftypefn
     function TF = ne (A, B)
-      if (! (iscalendarduration (A) || iscalendarduration (B)))
+      if (! (iscalendarduration (A) && iscalendarduration (B)))
         error (strcat ("calendarDuration.eq: inequality is not defined", ...
                        " between '%s' and '%s' arrays."), class (A), class (B));
       endif
