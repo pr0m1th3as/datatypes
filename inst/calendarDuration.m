@@ -942,15 +942,24 @@ classdef calendarDuration
       if (numel (varargin) < 1)
         error ("calendarDuration.isequal: too few input arguments.");
       endif
-      args = cell (size (varargin));
+      n_dim = size (this);
       for i = 1:numel (varargin)
-        if (! isa (varargin{i}, 'calendarDuration'))
+        tmp = varargin{i};
+        if (! isa (tmp, 'calendarDuration'))
           error (strcat ("calendarDuration.isequal: all input arguments", ...
                          " must be calendarDuration arrays."));
         endif
-        args(:) = proxyArray (varargin{i});
+        if (! isequal (n_dim, size (tmp)))
+          TF = false;
+          return;
+        endif
+        if (this == tmp)
+          TF = true;
+        else
+          TF = false;
+          return;
+        endif
       endfor
-      TF = isequal (proxyArray (this), args{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -975,15 +984,38 @@ classdef calendarDuration
       if (numel (varargin) < 1)
         error ("calendarDuration.isequaln: too few input arguments.");
       endif
-      args = cell (size (varargin));
+      n_dim = size (this);
+      ## Force NaNs to zeros
+      i_nan = isnan (this);
+      if (any (i_nan(:)))
+        this.Months(i_nan) = 0;
+        this.Days(i_nan) = 0;
+        this.Time(i_nan) = duration (0, 0, 0);
+      endif
       for i = 1:numel (varargin)
-        if (! isa (varargin{i}, 'calendarDuration'))
+        tmp = varargin{i};
+        if (! isa (tmp, 'calendarDuration'))
           error (strcat ("calendarDuration.isequaln: all input arguments", ...
                          " must be calendarDuration arrays."));
         endif
-        args(:) = proxyArray (varargin{i});
+        if (! isequal (n_dim, size (tmp)))
+          TF = false;
+          return;
+        endif
+        ## Force NaNs to zeros
+        i_nan = isnan (tmp);
+        if (any (i_nan(:)))
+          tmp.Months(i_nan) = 0;
+          tmp.Days(i_nan) = 0;
+          tmp.Time(i_nan) = duration (0, 0, 0);
+        endif
+        if (this == tmp)
+          TF = true;
+        else
+          TF = false;
+          return;
+        endif
       endfor
-      TF = isequaln (proxyArray (this), args{:});
     endfunction
 
     ## -*- texinfo -*-
