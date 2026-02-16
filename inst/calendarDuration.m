@@ -1430,10 +1430,10 @@ classdef calendarDuration
     ## @end deftypefn
     function TF = ne (A, B)
       if (! (iscalendarduration (A) && iscalendarduration (B)))
-        error (strcat ("calendarDuration.eq: inequality is not defined", ...
+        error (strcat ("calendarDuration.ne: inequality is not defined", ...
                        " between '%s' and '%s' arrays."), class (A), class (B));
       endif
-      TF = A.Months != B.Months & A.Days != B.Days & A.Time != B.Time;
+      TF = A.Months != B.Months | A.Days != B.Days | A.Time != B.Time;
     endfunction
 
     function [B, ixA, ixB] = unique (A, varargin)
