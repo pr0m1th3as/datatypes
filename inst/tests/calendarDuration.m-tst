@@ -693,7 +693,8 @@
 ##                                                                            ##
 ## 'iscolumm'         'isempty'          'isequal'          'isequaln'        ##
 ## 'isfinite'         'isinf'            'ismatrix'         'ismissing'       ##
-## 'isnan'            'isrow'            'isscalar'         'isvector'        ##
+## 'isnan'            'isreal'           'isrow'            'isscalar'        ##
+## 'isvector'                                                                 ##
 ##                                                                            ##
 ################################################################################
 
@@ -854,6 +855,9 @@
 %!assert (size (isnan (caldays ([]))), [0, 0])
 %!assert (isnan (caldays (nan (1, 2, 0, 2))), true (1, 2, 0, 2))
 %!assert (size (isnan (caldays (nan (1, 2, 0, 2)))), [1, 2, 0, 2])
+
+%!assert (isscalar (isreal (caldays (ones (2, 2, 2)))), true)
+%!assert (isreal (calendarDuration ([1, 1, 1])), true)
 
 %!assert (isrow (calendarDuration (0, 0, 0)), true)
 %!assert (isrow (calendarDuration ([], [], [])), false)
@@ -1060,12 +1064,11 @@
 %! calweeks (1) * struct ('a', 1)
 
 ################################################################################
-##                 ** Equality, Filter, and Set Operations **                 ##
+##                    ** Equality and Filter Operations **                    ##
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'eq'               'ne'               'unique'           'intersect'       ##
-## 'setdiff'          'setxor'           'union'                              ##
+## 'eq'               'ne'               'unique'                             ##
 ##                                                                            ##
 ################################################################################
 
