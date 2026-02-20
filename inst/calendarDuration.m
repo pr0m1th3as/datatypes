@@ -885,7 +885,8 @@ classdef calendarDuration
 ##                                                                            ##
 ## 'iscolumm'         'isempty'          'isequal'          'isequaln'        ##
 ## 'isfinite'         'isinf'            'ismatrix'         'ismissing'       ##
-## 'isnan'            'isrow'            'isscalar'         'isvector'        ##
+## 'isnan'            'isreal'           'isrow'            'isscalar'        ##
+## 'isvector'                                                                 ##
 ##                                                                            ##
 ################################################################################
 
@@ -1099,6 +1100,19 @@ classdef calendarDuration
     ## @end deftypefn
     function TF = isnan (this)
       TF = isnan (this.Months);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {calendarDuration} {@var{TF} =} isreal (@var{calD})
+    ##
+    ## Always return true for calendarDuration arrays.
+    ##
+    ## @code{@var{TF} = isrear (@var{calD})} always returns a logical scalar
+    ## @qcode{true} value, if the input argument is a calendarDuration array.
+    ##
+    ## @end deftypefn
+    function TF = isreal (this)
+      TF = true;
     endfunction
 
     ## -*- texinfo -*-
@@ -1371,12 +1385,11 @@ classdef calendarDuration
   endmethods
 
 ################################################################################
-##                 ** Equality, Filter, and Set Operations **                 ##
+##                    ** Equality and Filter Operations **                    ##
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'eq'               'ne'               'unique'           'intersect'       ##
-## 'setdiff'          'setxor'           'union'                              ##
+## 'eq'               'ne'               'unique'                             ##
 ##                                                                            ##
 ################################################################################
 
@@ -1438,22 +1451,6 @@ classdef calendarDuration
 
     function [B, ixA, ixB] = unique (A, varargin)
       error ("calendarDuration.unique: not implemented yet.");
-    endfunction
-
-    function [C, ixA, ixB] = intersect (A, B, varargin)
-      error ("calendarDuration.intersect: not implemented yet.");
-    endfunction
-
-    function [C, index] = setdiff (A, B, varargin)
-      error ("calendarDuration.setdiff: not implemented yet.");
-    endfunction
-
-    function [C, ixA, ixB] = setxor (A, B, varargin)
-      error ("calendarDuration.setxor: not implemented yet.");
-    endfunction
-
-    function [C, ixA, ixB] = union (A, B, varargin)
-      error ("calendarDuration.union: not implemented yet.");
     endfunction
 
   endmethods
