@@ -16,13 +16,14 @@
 ## this program; if not, see <http://www.gnu.org/licenses/>.
 
 ## -*- texinfo -*-
-## @deftypefn  {private} {@var{y} =} __unique__ (@var{x})
-## @deftypefnx {private} {@var{y} =} __unique__ (@var{x}, "rows")
-## @deftypefnx {private} {@var{y} =} __unique__ (@dots{}, "sorted")
-## @deftypefnx {private} {@var{y} =} __unique__ (@dots{}, "stable")
-## @deftypefnx {private} {[@var{y}, @var{i}, @var{j}] =} __unique__ (@dots{})
-## @deftypefnx {private} {[@var{y}, @var{i}, @var{j}] =} __unique__ (@dots{}, "first")
-## @deftypefnx {private} {[@var{y}, @var{i}, @var{j}] =} __unique__ (@dots{}, "last")
+## @deftypefn  {private} {@var{B} =} __unique__ (@var{A})
+## @deftypefnx {private} {@var{B} =} __unique__ (@var{A}, @var{setOrder})
+## @deftypefnx {private} {@var{B} =} __unique__ (@var{A}, @var{occurence})
+## @deftypefnx {private} {@var{B} =} __unique__ (@var{A}, @var{setOrder}, @var{occurence})
+## @deftypefnx {private} {@var{B} =} __unique__ (@var{A}, @var{occurence}, @var{setOrder})
+## @deftypefnx {private} {@var{B} =} __unique__ (@var{A}, @dots{}, @qcode{'rows'})
+## @deftypefnx {private} {@var{B} =} __unique__ (@var{A}, @qcode{'rows'}, @dots{})
+## @deftypefnx {private} {[@var{B}, @var{ixA}, @var{ixB}] =} __unique__ (@dots{})
 ##
 ## Return the unique elements of @var{x}.
 ##
@@ -145,13 +146,13 @@ function [y, i, j] = __unique__ (x, varargin)
   endif
 
 
-  ## Calculate i and j outputs (2nd and 3rd outputs)
+  ## Calculate 2nd and 3rd outputs
   if (nargout > 1)
     if (optsorted)
       idx = find (match);
 
       if (optfirst)
-        idx += 1;  # in-place is faster than other forms of increment
+        idx += 1;
       endif
 
       i = j;
