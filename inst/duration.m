@@ -1496,35 +1496,11 @@ classdef duration
     endfunction
 
     function [B, ixA, ixB] = unique (A, varargin)
-      ## Handle 'rows' option
-      do_rows = false;
-      if (! isempty (varargin))
-        idx = strcmpi ('rows', varargin(:));
-        if (any (idx))
-          do_rows = true;
-          varargin(idx) = [];
-          if (ndims (A) != 2)
-            error ("duration.unique: 'rows' applies only to 2-D matrices.");
-          endif
-        endif
+      ## 'legacy' option is not supported
+      if (any (strcmp ("legacy", varargin)))
+        error ("duration.unique: 'legacy' option is not supported.");
       endif
-      ## Handle 'setOrder' and 'occurence' options
-      opt = "sorted";
-      if (! isempty (varargin))
-        if (any (strcmp (varargin{1}, {"sorted", "stable", "first", "last"})))
-          opt = varargin{1};
-        else
-          error ("duration.unique: invalid option '%s'.", varargin{1});
-        endif
-      endif
-      ## Find unique
-      if (do_rows)
-        [~, ixA, ixB] = __unique__ (A.Days, 'rows', opt);
-        B = subset (A, ixA, ':');
-      else
-        [~, ixA, ixB] = __unique__ (A.Days, opt);
-        B = subset (A, ixA);
-      endif
+      [B, ixA, ixB] = __unique__ (A.Days, varargin{:});
     endfunction
 
     function BI = interp1 (A, B, AI, varargin)
