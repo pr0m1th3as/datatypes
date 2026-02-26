@@ -23,7 +23,6 @@
 ## @deftypefnx {private} {[@var{y}, @var{i}, @var{j}] =} __unique__ (@dots{})
 ## @deftypefnx {private} {[@var{y}, @var{i}, @var{j}] =} __unique__ (@dots{}, "first")
 ## @deftypefnx {private} {[@var{y}, @var{i}, @var{j}] =} __unique__ (@dots{}, "last")
-## @deftypefnx {private} {[@var{y}, @var{i}, @var{j}] =} __unique__ (@dots{}, "legacy")
 ##
 ## Return the unique elements of @var{x}.
 ##
@@ -48,18 +47,14 @@ function [y, i, j] = __unique__ (x, varargin)
     optlast   = any (strcmp ("last", varargin));
     optsorted = any (strcmp ("sorted", varargin));
     optstable = any (strcmp ("stable", varargin));
-    optlegacy = any (strcmp ("legacy", varargin));
-    if (optfirst && optlast)
-      error ('unique: cannot specify both "first" and "last"');
+    if (optrows && ndims (x) != 2)
+      error ("unique: 'rows' applies only to 2-D matrices.");
+    elseif (optfirst && optlast)
+      error ("unique: cannot specify both 'first' and 'last'.");
     elseif (optsorted && optstable)
-      error ('unique: cannot specify both "sorted" and "stable"');
-    elseif ((optfirst || optlast) && (optsorted || optstable))
-      error ('unique: cannot specify "first"/"last" with "sorted"/"stable"');
-    elseif (optlegacy && (optsorted || optstable))
-      error ('unique: cannot specify "sorted" or "stable" with "legacy"');
-    elseif (optrows + optfirst + optlast + optsorted + optstable + optlegacy
-            != nargin-1)
-      error ("unique: invalid option");
+      error ("unique: cannot specify both 'sorted' and 'stable'.");
+    elseif (optrows + optfirst + optlast + optsorted + optstable != nargin-1)
+      error ("unique: invalid optional argument.");
     endif
 
     ## Set defaults if not set earlier.
@@ -73,7 +68,6 @@ function [y, i, j] = __unique__ (x, varargin)
     optrows = false;
     optfirst = true;
     optsorted = true;
-    optlegacy = false;
   endif
 
   if (optrows)
@@ -153,12 +147,10 @@ function [y, i, j] = __unique__ (x, varargin)
 
   ## Calculate i and j outputs (2nd and 3rd outputs)
   if (nargout > 1)
-
     if (optsorted)
-
       idx = find (match);
 
-      if (! optlegacy && optfirst)
+      if (optfirst)
         idx += 1;  # in-place is faster than other forms of increment
       endif
 
@@ -170,7 +162,6 @@ function [y, i, j] = __unique__ (x, varargin)
       endif
 
     else
-
       ## Get inverse of sort index j so that sort(x)(k) = x(j)(k) = x.
       k = j;  # cheap way to copy dimensions
       k(j) = 1:n;
@@ -194,15 +185,6 @@ function [y, i, j] = __unique__ (x, varargin)
         j = p(j(l(k))); # Replace j with 3rd output mapping y->x.
 
       endif
-    endif
-
-    if (optlegacy && isrowvec)
-      i = i.';
-
-      if (nargout > 2)
-        j = j.';
-      endif
-
     endif
   endif
 
