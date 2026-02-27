@@ -1973,17 +1973,16 @@ classdef calendarDuration
       for i = 1:numel (varargin)
         if (isa (varargin{i}, "calendarDuration"))
           varargout{i} = varargin{i};
+        elseif (isa (varargin{i}, "duration"))
+          varargout{i} = calendarDuration (0, 0, 0, varargin{i});
         elseif (isnumeric (varargin{i}))
-          ncols = size (varargin{i}, 2);
-          if (isscalar (varargin{i}))
+          if (isempty (varargin{i}))
+            varargout{i} = calendarDuration ([], [], []);
+          else
             varargout{i} = calendarDuration (0, 0, 0, 24 * varargin{i}, 0, 0);
-          elseif (ismatrix (varargin{i}) && (ismember (ncols, [3, 4, 6])))
-            varargout{i} = calendarDuration (varargin{i});
           endif
-        elseif (iscellstr (X) || ischar (X) || isa (X, "string"))
-          varargout{i} = duration (varargin{i});
         else
-          error ("duration: invalid input to constructor.");
+          error ("calendarDuration: invalid input to constructor.");
         endif
       endfor
     endfunction
