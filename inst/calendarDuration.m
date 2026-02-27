@@ -1917,11 +1917,11 @@ classdef calendarDuration
             case 'Format'
               errmsg = checkFormatString (val);
               if (! isempty (errmsg))
-                error ("calendarDuration.subsargn: 'Format' %s", errmsg);
+                error ("calendarDuration.subsasgn: 'Format' %s", errmsg);
               endif
               this.Format = val;
             otherwise
-              error ("calendarDuration.subsasgn: unrecongized property: %s", ...
+              error ("calendarDuration.subsasgn: unrecongized property: '%s'", ...
                      s.subs);
           endswitch
       endswitch
