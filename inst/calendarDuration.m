@@ -1393,7 +1393,7 @@ classdef calendarDuration
 ##                                                                            ##
 ################################################################################
 
-  methods (Hidden)
+  methods (Access = public)
 
     ## -*- texinfo -*-
     ## @deftypefn {calendarDuration} {@var{TF} =} eq (@var{A}, @var{B})
@@ -1449,8 +1449,78 @@ classdef calendarDuration
       TF = A.Months != B.Months | A.Days != B.Days | A.Time != B.Time;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {calendarDuration} {@var{B} =} unique (@var{A})
+    ## @deftypefnx {calendarDuration} {@var{B} =} unique (@var{A}, @var{setOrder})
+    ## @deftypefnx {calendarDuration} {@var{B} =} unique (@var{A}, @var{occurence})
+    ## @deftypefnx {calendarDuration} {@var{B} =} unique (@var{A}, @var{setOrder}, @var{occurence})
+    ## @deftypefnx {calendarDuration} {@var{B} =} unique (@var{A}, @var{occurence}, @var{setOrder})
+    ## @deftypefnx {calendarDuration} {@var{B} =} unique (@var{A}, @dots{}, @qcode{'rows'})
+    ## @deftypefnx {calendarDuration} {[@var{B}, @var{ixA}, @var{ixB}] =} unique (@dots{})
+    ##
+    ## Unique values in a calendarDuration array.
+    ##
+    ## @code{@var{B} = unique (@var{A})} returns the unique values of the
+    ## calendarDuration array @var{A} in sorted order.
+    ##
+    ## @code{@var{B} = unique (@var{A}, @var{setOrder})} returns the unique
+    ## values of the calendarDuration array @var{A} in an order as specified by
+    ## @var{setOrder}, which can be either of the following values:
+    ##
+    ## @itemize
+    ## @item @qcode{'sorted'} (default) returns the unique values sorted in
+    ## ascending order.
+    ## @item @qcode{'stable'} returns the unique values according to their order
+    ## of occurence.
+    ## @end itemize
+    ##
+    ## @code{@var{B} = unique (@var{A}, @var{occurence})} returns the unique
+    ## values of the calendarDuration array @var{tblA} according to their order
+    ## of occurence.  ## @var{occurence} can be either of the following values:
+    ##
+    ## @itemize
+    ## @item @qcode{'first'} (default) returns the first occurence of each
+    ## unique value, i.e. the lowest possible indices are returned.
+    ## @item @qcode{'last'} returns the last occurence of each unique value,
+    ## i.e. the highest possible indices are returned.
+    ## @end itemize
+    ##
+    ## You can specify @var{setOrder} and @var{occurence} arguments together.
+    ##
+    ## @code{@var{B} = unique (@var{A}, @dots{}, @qcode{'rows'})} returns the
+    ## unique rows of @var{A} by treating each row as a single entity.  The
+    ## @qcode{'rows'} option can be used alone or in any combination with the
+    ## @var{setOrder} and @var{occurence} arguments.  @qcode{'rows'} can be
+    ## placed at any position in the function's argument list after the input
+    ## array @var{A}.  However, this syntax is only valid for 2-dimensional
+    ## calendarDuration arrays.
+    ##
+    ## @code{[@var{tblB}, @var{ixA}, @var{ixB}] = unique (@dots{})} also returns
+    ## index vectors @var{ixA} and @var{ixB} using any of the previous syntaxes.
+    ## @var{ixA} and @var{ixB} map the arrays @var{A} and @var{B} to one another
+    ## such that @qcode{@var{B} = @var{A}(@var{ixA})} and
+    ## @qcode{@var{A} = @var{B}(@var{ixB})}.  When the @qcode{'rows'} optional
+    ## argument is specified, then @qcode{@var{B} = @var{A}(@var{ixA},:)} and
+    ## @qcode{@var{tblA} = @var{tblB}(@var{ixB},:)}.
+    ##
+    ## @end deftypefn
     function [B, ixA, ixB] = unique (A, varargin)
-      error ("calendarDuration.unique: not implemented yet.");
+      ## 'legacy' option is not supported
+      if (any (strcmp ("legacy", varargin)))
+        error ("calendarDuration.unique: 'legacy' option is not supported.");
+      endif
+      ## Handle each property array separately
+      [~, ~, Midx] = __unique__ (A.Months, varargin{:});
+      [~, ~, Didx] = __unique__ (A.Days, varargin{:});
+      [~, ~, Tidx] = unique (A.Time, varargin{:});
+      ## Use indices to find unique calendarDuration values
+      if (any (strcmp ('rows', varargin)))
+        [~, ixA, ixB] = __unique__ ([Midx, Didx, Tidx], varargin{:});
+        B = subset (A, ixA, ':');
+      else
+        [~, ixA, ixB] = __unique__ ([Midx, Didx, Tidx], 'rows', varargin{:});
+        B = subset (A, ixA);
+      endif
     endfunction
 
   endmethods
