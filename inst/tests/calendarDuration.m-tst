@@ -1336,3 +1336,157 @@
 %! assert (caldays (cD), [1; 0]);
 %! assert (days (time (cD)), [0; 2]);
 
+%!shared x1, x2
+%! x1 = [2, 3];
+%! x2 = magic (3);
+%!assert (caldays (repmat (caldays (x1), 3)), repmat (x1, 3))
+%!assert (caldays (repmat (caldays (x1), 2, 3)), repmat (x1, 2, 3))
+%!assert (caldays (repmat (caldays (x1), 1, 1, 3)), repmat (x1, 1, 1, 3))
+%!assert (caldays (repmat (caldays (x1), [1, 1, 3])), repmat (x1, [1, 1, 3]))
+%!assert (caldays (repmat (caldays (x1), 1, 0, 3)), repmat (x1, 1, 0, 3))
+%!assert (caldays (repmat (caldays (x1), [1, 0, 3])), repmat (x1, 1, 0, 3))
+%!assert (caldays (repelem (caldays (x1), 3)), repelem (x1, 3))
+%!assert (caldays (repelem (caldays (x1), 2, 3)), repelem (x1, 2, 3))
+%!assert (caldays (repelem (caldays (x1), [1, 3])), repelem (x1, [1, 3]))
+%!assert (caldays (repelem (caldays (x2), 1, [1, 1, 3])), repelem (x2, 1, [1, 1, 3]))
+%!assert (caldays (repelem (caldays (x2), [2, 3, 4], [1, 0, 3])), repelem (x2, [2, 3, 4], [1, 0, 3]))
+%!assert (caldays (repelem (caldays (x2), 2, [1, 0, 3])), repelem (x2, 2, [1, 0, 3]))
+%!assert (caldays (repelems (caldays (x2), [1, 3, 4; 4, 2, 5])), repelems (x2, [1, 3, 4; 4, 2, 5]))
+%!assert (isempty (repelems (caldays (x2), [1, 3, 4; 0, 0, 0])), true)
+%!assert (size (reshape (caldays (x2), 1, 9)), [1, 9])
+%!assert (caldays (reshape (caldays (x2), 1, 9)), reshape (x2, 1, 9))
+%!assert (caldays (reshape (caldays (x2), 1, 1, 9)), reshape (x2, 1, 1, 9))
+%!assert (caldays (reshape (caldays (x2), 1, 1, 3, 1, 3)), reshape (x2, 1, 1, 3, 1, 3))
+%!assert (caldays (circshift (caldays (x2), 1)), circshift (x2, 1))
+%!assert (caldays (circshift (caldays (x2), -2)), circshift (x2, -2))
+%!assert (caldays (circshift (caldays (x2), [1, -2])), circshift (x2, [1, -2]))
+%!assert (caldays (circshift (caldays (x2), -1, 2)), circshift (x2, -1, 2))
+%!test
+%! cD = permute (caldays (x2), [2, 1]);
+%! assert (caldays (cD), permute (x2, [2, 1]));
+%!test
+%! cD = ipermute (permute (caldays (x2), [2, 1]), [2, 1]);
+%! assert (caldays (cD), x2);
+%!assert (caldays (caldays (x2)'), x2');
+%!assert (caldays (caldays (x2).'), x2');
+%!assert (caldays (ctranspose (caldays (x2))), x2');
+%!assert (caldays (ctranspose (caldays (x2))), caldays (transpose (caldays (x2))));
+
+################################################################################
+##                  ** Reference and Assignment Operations **                 ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'end'              'subsref'          'subsasgn'                           ##
+##                                                                            ##
+################################################################################
+
+%!test
+%! cD = caldays (x2);
+%! assert (caldays (cD(end)), 2);
+%! assert (caldays (cD(1:end)), x2(:)');
+%! assert (caldays (cD(1:end)'), x2(:));
+%!test
+%! cD = caldays ([x2, x2]);
+%! assert (caldays (cD(1, 2:end-1)), [1, 6, 8, 1]);
+%! assert (caldays (cD(1:end-1, 2:end-1)), [1, 6, 8, 1; 5, 7, 3, 5]);
+%! assert (size (cD(1:end, 2:end-1)), [3, 4]);
+
+%!test
+%! cD = caldays ([x2, x2]);
+%! assert (class (cD(1)), 'calendarDuration');
+%! assert (length (cD(1)), 1);
+%! assert (class (cD(1,:)), 'calendarDuration');
+%! assert (length (cD(1,:)), 6);
+%! assert (length (cD(:,2)), 3);
+%!test
+%! cD = caldays (x1);
+%! assert (cD.proxyArray, [0, 2, 0, 0, 3, 0]);
+%! assert (cD.Format, 'ymdt');
+%!test
+%! cD = caldays (x1');
+%! assert (cD.proxyArray, [0, 2, 0; 0, 3, 0]);
+%! assert (cD.Format, 'ymdt');
+%!test
+%! cD = calendarDuration ([1; 2], 4, [2; 4]);
+%! assert (cD.proxyArray, [16, 2, 0; 28, 4, 0]);
+%! assert (cD.Format, 'ymdt');
+%!test
+%! cD = calendarDuration ([1; 2], 4, [2; 4], hours ([8.5; 14.2]), 'Format', 'qmdt');
+%! assert (cD.proxyArray, [16, 2, 8.5; 28, 4, 14.2]);
+%! assert (cD.Format, 'qmdt');
+%!error<calendarDuration.subsref: '{}' invalid indexing for referencing values. Use '\(\)' instead.> ...
+%! caldays (3){1}
+%!error<calendarDuration.subsref: '.' index argument must be a character vector.> ...
+%! subsref (caldays (3), struct ('type', '.', 'subs', 123));
+%!error<calendarDuration.subsref: unrecongized property: 'fdasd'> ...
+%! caldays (3).fdasd
+
+%!test
+%! cD = calendarDuration ([1; 2], 4, [2; 4]);
+%! cD(1) = calyears (2) + calmonths (1) + caldays (14);
+%! assert (calyears (cD), [2; 2]);
+%! assert (calmonths (cD), [25; 28]);
+%! assert (caldays (cD), [14; 4]);
+%! assert (days (time (cD)), [0; 0])
+%!test
+%! cD = calendarDuration ([1; 2], 4, [2; 4]);
+%! cD(end) = 180;
+%! assert (calyears (cD), [1; 0]);
+%! assert (calmonths (cD), [16; 0]);
+%! assert (caldays (cD), [2; 0]);
+%! assert (days (time (cD)), [0; 180])
+%!test
+%! cD = calendarDuration ([1; 2], 4, [2; 4]);
+%! cD(1) = [];
+%! assert (calyears (cD), 2);
+%! assert (calmonths (cD), 28);
+%! assert (caldays (cD), 4);
+%!test
+%! cD = calendarDuration ([1, 3; 2, 2], 4, 0);
+%! cD(1,:) = [];
+%! assert (calyears (cD), [2, 2]);
+%! assert (calmonths (cD), [28, 28]);
+%! assert (caldays (cD), [0, 0]);
+%! cD(end+1, :) = caldays ([2; 3]);
+%! assert (caldays (cD(2,:)), [2, 3]);
+%!test
+%! cD = calendarDuration ([1, 3; 2, 2], 4, 0);
+%! cD(:, 2) = [];
+%! assert (calyears (cD), [1; 2]);
+%! assert (calmonths (cD), [16; 28]);
+%! assert (caldays (cD), [0; 0]);
+%! cD(:, end+1) = calmonths ([2; 3]);
+%! assert (calmonths (cD(:,2)), [2; 3]);
+%! cD(:, end+1) = calmonths ([2, 3]);
+%! assert (calmonths (cD(2,:)), [28, 3, 3]);
+%! assert (calmonths (cD(:,[2,3])), [2, 2; 3, 3]);
+%!test
+%! cD = calendarDuration ([1; 2], 4, [2; 4]);
+%! cD(2) = [];
+%! assert (calyears (cD), 1);
+%! assert (calmonths (cD), 16);
+%! assert (caldays (cD), 2);
+%!test
+%! cD = calendarDuration ([1; 2], 4, [2; 4]);
+%! assert (cD.Format, 'ymdt');
+%! cD.Format = 'qmdt';
+%! assert (cD.Format, 'qmdt');
+%! cD.Format = 'qmwdt';
+%! assert (cD.Format, 'qmwdt');
+%!error<calendarDuration.subsasgn: assignment value must be calendarDuration array or a numeric array representing 24-hour days.> ...
+%! cD = caldays([1:5]); cD(2) = hours (1)
+%!error<calendarDuration.subsasgn: '{}' invalid indexing for assigning values. Use '\(\)' instead.> ...
+%! cD = caldays([1:5]); cD{2} = 1
+%!error<calendarDuration.subsasgn: '.' index argument must be a character vector.> ...
+%! subsasgn (caldays (3), struct ('type', '.', 'subs', 123));
+%!error<calendarDuration.subsasgn: 'Format' must be a character vector.> ...
+%! cD = caldays([1:5]); cD.Format = ['asd';'ert']
+%!error<calendarDuration.subsasgn: 'Format' contains duplicate characters.> ...
+%! cD = caldays([1:5]); cD.Format = 'mmdt'
+%!error<calendarDuration.subsasgn: 'Format' must contain 'm', 'd', and 't'.> ...
+%! cD = caldays([1:5]); cD.Format = 'ymd'
+%!error<calendarDuration.subsasgn: 'Format' has invalid order of characters.> ...
+%! cD = caldays([1:5]); cD.Format = 'mydt'
+%!error<calendarDuration.subsasgn: unrecongized property: 'fdasd'> ...
+%! cD = caldays([1:5]); cD.fdasd = 1
