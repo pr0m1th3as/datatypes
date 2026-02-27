@@ -1225,3 +1225,114 @@
 %!test
 %! cD = cat (4, caldays ([1, 2]), caldays ([3, 4]));
 %! assert (caldays (cD), reshape ([1, 2, 3, 4], 1, 2, 1, 2));
+%!error<cat: dimension mismatch> cat (1, caldays ([3, 4]), [0; 2; 5])
+%!error<cat: dimension mismatch> cat (1, caldays ([3; 4]), [0, 2; 5, 2])
+%!error<cat: dimension mismatch> cat (2, caldays ([3; 4]), [0; 2; 5])
+%!error<cat: dimension mismatch> cat (2, caldays ([3, 4]), [0, 2; 5, 2])
+%!error<calendarDuration: invalid input to constructor.> ...
+%! cat (1, caldays ([3; 4]), {})
+%!error<calendarDuration: invalid input to constructor.> ...
+%! cat (1, caldays ([3; 4]), {'o'})
+%!error<calendarDuration: invalid input to constructor.> ...
+%! cat (1, caldays ([3; 4]), 'o')
+%!error<calendarDuration: invalid input to constructor.> ...
+%! cat (1, caldays ([3; 4]), string ('o'))
+
+%!test
+%! cD = [days(1), caldays(2)];
+%! assert (caldays (cD), [0, 2]);
+%! assert (days (time (cD)), [1, 0]);
+%!test
+%! cD = [days(1), 1, caldays(2)];
+%! assert (caldays (cD), [0, 0, 2]);
+%! assert (days (time (cD)), [1, 1, 0]);
+%!test
+%! cD = [caldays(1), days(2)];
+%! assert (caldays (cD), [1, 0]);
+%! assert (days (time (cD)), [0, 2]);
+%!test
+%! cD = [caldays(1), 1, days(2)];
+%! assert (caldays (cD), [1, 0, 0]);
+%! assert (days (time (cD)), [0, 1, 2]);
+%!test
+%! cD = [days(1), [], caldays(2)];
+%! assert (caldays (cD), [0, 2]);
+%! assert (days (time (cD)), [1, 0]);
+%!test
+%! cD = [caldays(1), [], days(2)];
+%! assert (caldays (cD), [1, 0]);
+%! assert (days (time (cD)), [0, 2]);
+%!test
+%! cD = [days(1), ones(0, 1), caldays(2)];
+%! assert (caldays (cD), [0, 2]);
+%! assert (days (time (cD)), [1, 0]);
+%!test
+%! cD = [caldays(1), ones(0, 1), days(2)];
+%! assert (caldays (cD), [1, 0]);
+%! assert (days (time (cD)), [0, 2]);
+%!test
+%! cD = [days(1), ones(0, 1), caldays(2), ones(1, 0)];
+%! assert (caldays (cD), [0, 2]);
+%! assert (days (time (cD)), [1, 0]);
+%!test
+%! cD = [caldays(1), ones(0, 1), days(2), ones(1, 0)];
+%! assert (caldays (cD), [1, 0]);
+%! assert (days (time (cD)), [0, 2]);
+%!test
+%! cD = [days(1), ones(2, 0, 1), caldays(2)];
+%! assert (caldays (cD), [0, 2]);
+%! assert (days (time (cD)), [1, 0]);
+%!test
+%! cD = [caldays(1), ones(2, 0, 1), days(2)];
+%! assert (caldays (cD), [1, 0]);
+%! assert (days (time (cD)), [0, 2]);
+
+%!test
+%! cD = [days(1); caldays(2)];
+%! assert (caldays (cD), [0; 2]);
+%! assert (days (time (cD)), [1; 0]);
+%!test
+%! cD = [days(1); 1; caldays(2)];
+%! assert (caldays (cD), [0; 0; 2]);
+%! assert (days (time (cD)), [1; 1; 0]);
+%!test
+%! cD = [caldays(1); days(2)];
+%! assert (caldays (cD), [1; 0]);
+%! assert (days (time (cD)), [0; 2]);
+%!test
+%! cD = [caldays(1); 1; days(2)];
+%! assert (caldays (cD), [1; 0; 0]);
+%! assert (days (time (cD)), [0; 1; 2]);
+%!test
+%! cD = [days(1); []; caldays(2)];
+%! assert (caldays (cD), [0; 2]);
+%! assert (days (time (cD)), [1; 0]);
+%!test
+%! cD = [caldays(1); []; days(2)];
+%! assert (caldays (cD), [1; 0]);
+%! assert (days (time (cD)), [0; 2]);
+%!test
+%! cD = [days(1); ones(0, 1); caldays(2)];
+%! assert (caldays (cD), [0; 2]);
+%! assert (days (time (cD)), [1; 0]);
+%!test
+%! cD = [caldays(1); ones(0, 1); days(2)];
+%! assert (caldays (cD), [1; 0]);
+%! assert (days (time (cD)), [0; 2]);
+%!test
+%! cD = [days(1); ones(0, 1); caldays(2); ones(1, 0)];
+%! assert (caldays (cD), [0; 2]);
+%! assert (days (time (cD)), [1; 0]);
+%!test
+%! cD = [caldays(1); ones(0, 1); days(2); ones(1, 0)];
+%! assert (caldays (cD), [1; 0]);
+%! assert (days (time (cD)), [0; 2]);
+%!test
+%! cD = [days(1); ones(2, 0, 1); caldays(2)];
+%! assert (caldays (cD), [0; 2]);
+%! assert (days (time (cD)), [1; 0]);
+%!test
+%! cD = [caldays(1); ones(2, 0, 1); days(2)];
+%! assert (caldays (cD), [1; 0]);
+%! assert (days (time (cD)), [0; 2]);
+
