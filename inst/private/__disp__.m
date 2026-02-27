@@ -46,11 +46,13 @@ function __disp__ (this, datatype, name = 'ans')
       high_ixs{i} = [1:high_sz(i)]';
     endfor
     page_ixs = combvec (high_ixs);
+    idx.type = '()';
     for ix = 1:size (page_ixs, 1)
       p_ix = page_ixs(ix,:);
+      idx.subs = {":", ":", num2cell(p_ix){:}};
       pagestr = sprintf (strjoin(repmat ({'%d'}, 1, numel (p_ix)), ':'), p_ix);
       fprintf ('%s(:,:,%s) = \n\n', name, pagestr);
-      page_this = this(:,:,p_ix);
+      page_this = subsref (this, idx);
       dispcstrmatrix (dispstrings (page_this));
     endfor
   endif
