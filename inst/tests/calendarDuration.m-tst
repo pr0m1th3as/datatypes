@@ -1169,3 +1169,59 @@
 %! assert (idx, [2; 3]);
 %!error<calendarDuration.unique: 'legacy' option is not supported.> ...
 %! unique (caldays ([1, 2; 2, 3; 1, 2]), 'legacy')
+
+################################################################################
+##                           ** Array Operations **                           ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'cat'              'horzcat'          'vertcat'          'repmat'          ##
+## 'repelem'          'repelems'         'reshape'          'circshift'       ##
+## 'permute'          'ipermute'         'transpose'        'ctranspose'      ##
+##                                                                            ##
+################################################################################
+
+%!test
+%! cD = cat (1, 2, caldays ([3; 4]));
+%! assert (caldays (cD), [0; 3; 4]);
+%! assert (days (time (cD)), [2; 0; 0]);
+%!test
+%! cD = cat (1, caldays ([3; 4]), 5);
+%! assert (caldays (cD), [3; 4; 0]);
+%! assert (days (time (cD)), [0; 0; 5]);
+%!test
+%! cD = cat (2, 2, caldays ([3, 4]));
+%! assert (caldays (cD), [0, 3, 4]);
+%! assert (days (time (cD)), [2, 0, 0]);
+%!test
+%! cD = cat (2, caldays ([3, 4]), 5);
+%! assert (caldays (cD), [3, 4, 0]);
+%! assert (days (time (cD)), [0, 0, 5]);
+%!test
+%! cD = cat (1, [0; 1; 2], caldays ([3; 4]));
+%! assert (caldays (cD), [0; 0; 0; 3; 4]);
+%! assert (days (time (cD)), [0; 1; 2; 0; 0]);
+%!test
+%! cD = cat (1, caldays ([3; 4]), [0; 2; 5]);
+%! assert (caldays (cD), [3; 4; 0; 0; 0]);
+%! assert (days (time (cD)), [0; 0; 0; 2; 5]);
+%!test
+%! cD = cat (2, [0, 1, 2], caldays ([3, 4]));
+%! assert (caldays (cD), [0, 0, 0, 3, 4]);
+%! assert (days (time (cD)), [0, 1, 2, 0, 0]);
+%!test
+%! cD = cat (2, caldays ([3, 4]), [0, 2, 5]);
+%! assert (caldays (cD), [3, 4, 0, 0, 0]);
+%! assert (days (time (cD)), [0, 0, 0, 2, 5]);
+%!test
+%! cD = cat (1, caldays ([1, 2]), caldays ([3, 4]));
+%! assert (caldays (cD), [1, 2; 3, 4]);
+%!test
+%! cD = cat (2, caldays ([1, 2]), caldays ([3, 4]));
+%! assert (caldays (cD), [1, 2, 3, 4]);
+%!test
+%! cD = cat (3, caldays ([1, 2]), caldays ([3, 4]));
+%! assert (caldays (cD), reshape ([1, 2, 3, 4], 1, 2, 2));
+%!test
+%! cD = cat (4, caldays ([1, 2]), caldays ([3, 4]));
+%! assert (caldays (cD), reshape ([1, 2, 3, 4], 1, 2, 1, 2));
