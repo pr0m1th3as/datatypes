@@ -1577,11 +1577,29 @@ classdef duration
     ##
     ## @end deftypefn
     function out = cat (dim, varargin)
-      args = varargin;
-      [args{:}] = promote (varargin{:});
-      out = args{1};
-      days = cellfun (@(obj) obj.Days, args, 'UniformOutput', false);
-      out.Days = cat (dim, days{:});
+      ## If any of the input arrays is a calendarDuration array, then convert
+      ## the first input to calendarDuration array and call the corresponding
+      ## method.
+      if (any (cellfun ('iscalendarduration', varargin)))
+        if (isduration (varargin{1}))
+          varargin{1} = calendarDuration (0, 0, 0, varargin{1});
+        elseif (isnumeric (varargin{1}))
+          if (isempty (varargin{i}))
+            varargout{i} = calendarDuration ([], [], []);
+          else
+            varargout{i} = calendarDuration (0, 0, 0, 24 * varargin{i}, 0, 0);
+          endif
+        else
+          error ("calendarDuration: invalid input to constructor.");
+        endif
+        out = cat (dim, varargin{:});
+      else
+        args = varargin;
+        [args{:}] = promote (varargin{:});
+        out = args{1};
+        days = cellfun (@(obj) obj.Days, args, 'UniformOutput', false);
+        out.Days = cat (dim, days{:});
+      endif
     endfunction
 
     ## -*- texinfo -*-
