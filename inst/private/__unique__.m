@@ -164,7 +164,7 @@ function [y, i, j] = __unique__ (x, varargin)
 
     else
       ## Get inverse of sort index j so that sort(x)(k) = x(j)(k) = x.
-      k = j;  # cheap way to copy dimensions
+      kk = k = j;  # cheap way to copy dimensions
       k(j) = 1:n;
 
       ## Generate logical index of sorted unique value locations.
@@ -186,6 +186,13 @@ function [y, i, j] = __unique__ (x, varargin)
         j = p(j(l(k))); # Replace j with 3rd output mapping y->x.
 
       endif
+
+      ## Fix second output for 'stable' && 'last'
+      if (! optfirst)
+        uniquex = ! [match(:); false];
+        i = kk(uniquex)(j(uniquex));
+      endif
+
     endif
   endif
 
