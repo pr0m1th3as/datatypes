@@ -1847,13 +1847,13 @@ classdef calendarDuration
           out.Time   = this.Time(s.subs{:});
 
         case '{}'
-          error (["calendarDuration.subsref: '{}' invalid indexing", ...
-                  " for referencing values. Use '()' instead."]);
+          error (strcat ("calendarDuration.subsref: '{}' invalid indexing", ...
+                         " for referencing values. Use '()' instead."));
 
         case '.'
           if (! ischar (s.subs))
-            error (["calendarDuration.subsref: '.' index argument", ...
-                    " must be a character vector."]);
+            error (strcat ("calendarDuration.subsref: '.' index", ...
+                           " argument must be a character vector."));
           endif
           switch (s.subs)
             case 'proxyArray'  # used by 'table' class
@@ -1861,7 +1861,7 @@ classdef calendarDuration
             case 'Format'
               out = this.Format;
             otherwise
-              error ("calendarDuration.subsref: unrecongized property: %s", ...
+              error ("calendarDuration.subsref: unrecongized property: '%s'", ...
                      s.subs);
           endswitch
       endswitch
@@ -1905,13 +1905,13 @@ classdef calendarDuration
           endif
 
         case '{}'
-          error (["calendarDuration.subsasgn: '{}' invalid indexing", ...
-                  " for assigning values. Use '()' instead."]);
+          error (strcat ("calendarDuration.subsasgn: '{}' invalid indexing", ...
+                         " for assigning values. Use '()' instead."));
 
         case '.'
           if (! ischar (s.subs))
-            error (["calendarDuration.subsasgn: '.' index argument", ...
-                    " must be a character vector."]);
+            error (strcat ("calendarDuration.subsasgn: '.' index", ...
+                           " argument must be a character vector."));
           endif
           switch (s.subs)
             case 'Format'
