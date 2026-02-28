@@ -1898,10 +1898,15 @@ classdef calendarDuration
             this.Days(s.subs{:})   = val.Days;
             this.Time(s.subs{:})   = val.Time;
             this = broadcastProperties (this);
+          elseif (isa (val, "duration"))
+            this.Months(s.subs{:}) = 0;
+            this.Days(s.subs{:})   = 0;
+            this.Time(s.subs{:})   = val;
+            this = broadcastProperties (this);
           else
             error (strcat ("calendarDuration.subsasgn: assignment value", ...
-                           " must be calendarDuration array or a numeric", ...
-                           " array representing 24-hour days."));
+                           " must be calendarDuration or duration array", ..."
+                           " or a numeric array representing 24-hour days."));
           endif
 
         case '{}'
