@@ -525,7 +525,6 @@ classdef datetime
       else
         error ("datetime: unrecognized MONTHTYPE.");
       endif
-      out = this.Month;
     endfunction
 
     ## -*- texinfo -*-
