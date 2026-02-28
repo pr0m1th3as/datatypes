@@ -405,6 +405,11 @@ Create a new array of calendar durations.
  </li><li> <code>'t'</code> time duration
  </li></ul>
 
+<p> Each character must be specified only once in the same order as they
+ appear in the above list.  <code>'m'</code>, <code>'d'</code>, and <code>'t'</code>
+ characters must always be included in the format specification.  Any
+ characters besides these listed above are ignored.
+</p>
 <p> <code><var>calD</var> = calendarDuration ()</code> returns a scalar array of
  calendar durations with a value of zero days.  To create an empty
  calendarDuration array, use <code>calendarDuration ([], [], [])</code>.
@@ -452,7 +457,9 @@ Get display formatted strings for each element of a calendarDuration
 <p> </p>
 <p> <code><var>cstr</var> = dispstrings (<var>calD</var>)</code> returns a cellstr array of
  character vectors, <var>cstr</var>, which has the same size as the input
- calendarDuration array, <var>calD</var>.
+ calendarDuration array, <var>calD</var>.  The returned text representations
+ in <var>cstr</var> are formatted according to the <code>'Format'</code> property
+ of the input array <var>calD</var>.
 </p>
 
 
@@ -481,7 +488,7 @@ Convert calendarDuration array to a cell array of character vectors.
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>cstr</var> = <b>cellstr</b> (<var>calD</var>)</code></h5></dt>
-<dt><code><h5 class="fs">calendarDuration: <var>cstr</var> = <b>cellstr</b> (<var>calD</var>, <var>Format</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>cstr</var> = <b>cellstr</b> (<var>calD</var>, <var>FMT</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -489,6 +496,13 @@ Convert calendarDuration array to a cell array of character vectors.
  character vectors, <var>cstr</var>, which has the same size as the input
  <var>calD</var>.  <var>cstr</var> contains the string representations of the
  calendar durations in <var>calD</var>.
+</p>
+<p> <code><var>cstr</var> = cellstr (<var>calD</var>, <var>FMT</var>)</code> further specifies
+ the format of the returned string representations.  <var>FMT</var> must be a
+ character vector conforming to the same specifications required by the
+ constructor&rsquo;s <code>'Format'</code> property paired argument.  Note that
+ <code>cellstr</code> only accepts <var>FMT</var> as a single argument and not as a
+ property paired argument.
 </p>
 
 
@@ -517,11 +531,14 @@ Convert calendarDuration array to a character matrix.
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>cmat</var> = <b>char</b> (<var>calD</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>cmat</var> = <b>char</b> (<var>calD</var>, <var>FMT</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
 <p> <code><var>cmat</var> = char (<var>calD</var>)</code> returns a character matrix with
- one row per element in <var>calD</var>.
+ one row per element in <var>calD</var>.  The second optional argment,
+ <var>FMT</var>, can be used to specify the format of the returned string
+ representations of the calendarDuration input array <var>calD</var>.
 </p>
 
 
@@ -550,11 +567,25 @@ Convert calendarDuration array to date vectors.
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>DV</var> = <b>datevec</b> (<var>calD</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: [<var>Y</var>, <var>MO</var>] = <b>datevec</b> (<var>calD</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: [<var>Y</var>, <var>MO</var>, <var>D</var>] = <b>datevec</b> (<var>calD</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: [<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>] = <b>datevec</b> (<var>calD</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: [<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>] = <b>datevec</b> (<var>calD</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: [<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>, <var>S</var>] = <b>datevec</b> (<var>calD</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>DV</var> = datevec (<var>calD</var>)</code> returns a numeric matrix with
- one row per element in <var>calD</var>.
+<p> <code><var>DV</var> = datevec (<var>calD</var>)</code> returns an <math>N&times;6</math> numeric
+ matrix, where <math>N</math> is the number of elements in <var>calD</var> and the
+ columns corresponds to years, months, days, hours, minutes, and seconds,
+ respectively.
+</p>
+<p> When <code>datevec</code> is called with more than one output arguments, then
+ it returns the components of the date vectors as individual variables
+ <var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>,and <var>S</var> corresponding
+ to years, months, days, hours, minutes, and seconds, respectively.  In
+ this case, the individual variables have the same size as the input array
+ <var>calD</var>.
 </p>
 
 
@@ -608,7 +639,7 @@ Return time portion of calendarDuration array.
                   </h4>
                 </div>
                 <div class="col-8">
-Split calendarDuration array into numeric time units.
+Split calendarDuration array into numeric and duration units.
                 </div>
               </div>
           </div>
@@ -636,7 +667,7 @@ Split calendarDuration array into numeric time units.
 
 <p> When a single date/time unit is specified, <var>units</var> may also be a
  character vector.  When <code>'time'</code> is specified in <var>units</var>, the
- corresponding returning argument is a <code>duration</code> array.  The values
+ corresponding returned argument is a <code>duration</code> array.  The values
  of years, quarters, and months are computed independently from the values
  of weeks and days in <var>calD</var>, with larger units taking precedence when
  specified  The same applies for duration arrays, when requested.
@@ -1059,6 +1090,7 @@ Generate a hash code for a calendarDuration array.
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>hey</var> = <b>keyHash</b> (<var>calD</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>hey</var> = <b>keyHash</b> (<var>calD</var>, <var>base</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1425,6 +1457,39 @@ Return true for calendar durations that are Not-A-Number.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
+                    <b><code>isreal</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Always return true for calendarDuration arrays.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod27">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isreal</b> (<var>calD</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = isrear (<var>calD</var>)</code> always returns a logical scalar
+ <code>true</code> value, if the input argument is a calendarDuration array.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod28"
+              aria-expanded="false" aria-controls="collapseMethod28">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
                     <b><code>isrow</code></b>
                   </h4>
                 </div>
@@ -1433,7 +1498,7 @@ Return true if calendarDuration array is a row vector.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod27">
+          <div class="collapse multi-collapse" id="collapseMethod28">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isrow</b> (<var>calD</var>)</code></h5></dt>
@@ -1456,8 +1521,8 @@ Return true if calendarDuration array is a row vector.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod28"
-              aria-expanded="false" aria-controls="collapseMethod28">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod29"
+              aria-expanded="false" aria-controls="collapseMethod29">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1469,7 +1534,7 @@ Return true if calendarDuration array is a scalar.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod28">
+          <div class="collapse multi-collapse" id="collapseMethod29">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isscalar</b> (<var>calD</var>)</code></h5></dt>
@@ -1491,8 +1556,8 @@ Return true if calendarDuration array is a scalar.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod29"
-              aria-expanded="false" aria-controls="collapseMethod29">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod30"
+              aria-expanded="false" aria-controls="collapseMethod30">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1504,7 +1569,7 @@ Return true if calendarDuration array is a vector.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod29">
+          <div class="collapse multi-collapse" id="collapseMethod30">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isvector</b> (<var>calD</var>)</code></h5></dt>
@@ -1527,8 +1592,8 @@ Return true if calendarDuration array is a vector.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod30"
-              aria-expanded="false" aria-controls="collapseMethod30">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod31"
+              aria-expanded="false" aria-controls="collapseMethod31">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1540,7 +1605,7 @@ Subtraction for calendarDuration arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod30">
+          <div class="collapse multi-collapse" id="collapseMethod31">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>C</var> = <b>minus</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -1570,8 +1635,8 @@ Subtraction for calendarDuration arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod31"
-              aria-expanded="false" aria-controls="collapseMethod31">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod32"
+              aria-expanded="false" aria-controls="collapseMethod32">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1583,7 +1648,7 @@ Unary minus for calendarDuration arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod31">
+          <div class="collapse multi-collapse" id="collapseMethod32">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>C</var> = <b>minus</b> (<var>A</var>)</code></h5></dt>
@@ -1605,8 +1670,8 @@ Unary minus for calendarDuration arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod32"
-              aria-expanded="false" aria-controls="collapseMethod32">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod33"
+              aria-expanded="false" aria-controls="collapseMethod33">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1618,7 +1683,7 @@ Addition for calendarDuration arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod32">
+          <div class="collapse multi-collapse" id="collapseMethod33">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>C</var> = <b>plus</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -1648,8 +1713,8 @@ Addition for calendarDuration arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod33"
-              aria-expanded="false" aria-controls="collapseMethod33">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod34"
+              aria-expanded="false" aria-controls="collapseMethod34">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1661,7 +1726,7 @@ Unary plus for calendarDuration arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod33">
+          <div class="collapse multi-collapse" id="collapseMethod34">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>C</var> = <b>uplus</b> (<var>A</var>)</code></h5></dt>
@@ -1682,8 +1747,8 @@ Unary plus for calendarDuration arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod34"
-              aria-expanded="false" aria-controls="collapseMethod34">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod35"
+              aria-expanded="false" aria-controls="collapseMethod35">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1695,7 +1760,7 @@ Element-by-element multiplication for calendarDuration arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod34">
+          <div class="collapse multi-collapse" id="collapseMethod35">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>C</var> = <b>times</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -1724,8 +1789,8 @@ Element-by-element multiplication for calendarDuration arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod35"
-              aria-expanded="false" aria-controls="collapseMethod35">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod36"
+              aria-expanded="false" aria-controls="collapseMethod36">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1737,7 +1802,7 @@ Matrix multiplication for calendarDuration arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod35">
+          <div class="collapse multi-collapse" id="collapseMethod36">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>C</var> = <b>times</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -1766,8 +1831,173 @@ Matrix multiplication for calendarDuration arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod36"
-              aria-expanded="false" aria-controls="collapseMethod36">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod37"
+              aria-expanded="false" aria-controls="collapseMethod37">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>eq</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Test for equality between calendarDuration arrays.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod37">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = eq (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>TF</var> = <var>A</var> == <var>B</var></code> and returns a logical array with
+ elements set to <code>true</code> where calendarDuration arrays <var>A</var> and
+ <var>B</var> are equal, otherwise set to <code>false</code>.  Missing values are
+ not equal to each other.  Hence, any <code>NaN</code> values in <var>A</var> or
+ <var>B</var> result to <code>false</code> elements in <var>TF</var>.
+</p>
+<p> <var>A</var> and <var>B</var> must be size compatible, which translates to they can
+ be the same size, one can be scalar, or for every dimension, their
+ dimension sizes must be equal or one of them must be 1.  The size of the
+ output <var>TF</var> is the same as the size of input arrays after their
+ expansion according to the broadcasting rules.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod38"
+              aria-expanded="false" aria-controls="collapseMethod38">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>ne</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Test for equality between calendarDuration arrays.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod38">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>ne</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = ne (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>TF</var> = <var>A</var> != <var>B</var></code> and returns a logical array with
+ elements set to <code>true</code> where calendarDuration arrays <var>A</var> and
+ <var>B</var> are not equal, otherwise set to <code>false</code>.  Missing values
+ are not equal to each other.  Hence, any <code>NaN</code> values in <var>A</var> or
+ <var>B</var> result to <code>true</code> elements in <var>TF</var>.
+</p>
+<p> <var>A</var> and <var>B</var> must be size compatible, which translates to they can
+ be the same size, one can be scalar, or for every dimension, their
+ dimension sizes must be equal or one of them must be 1.  The size of the
+ output <var>TF</var> is the same as the size of input arrays after their
+ expansion according to the broadcasting rules.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod39"
+              aria-expanded="false" aria-controls="collapseMethod39">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>unique</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Unique values in a calendarDuration array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod39">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>unique</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>unique</b> (<var>A</var>, <var>setOrder</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>unique</b> (<var>A</var>, <var>occurence</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>unique</b> (<var>A</var>, <var>setOrder</var>, <var>occurence</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>unique</b> (<var>A</var>, <var>occurence</var>, <var>setOrder</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>unique</b> (<var>A</var>, &hellip;, <code>'rows'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: [<var>B</var>, <var>ixA</var>, <var>ixB</var>] = <b>unique</b> (&hellip;)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>B</var> = unique (<var>A</var>)</code> returns the unique values of the
+ calendarDuration array <var>A</var> in sorted order.
+</p>
+<p> <code><var>B</var> = unique (<var>A</var>, <var>setOrder</var>)</code> returns the unique
+ values of the calendarDuration array <var>A</var> in an order as specified by
+ <var>setOrder</var>, which can be either of the following values:
+</p>
+ <ul>
+<li> <code>'sorted'</code> (default) returns the unique values sorted in
+ ascending order.
+ </li><li> <code>'stable'</code> returns the unique values according to their order
+ of occurence.
+ </li></ul>
+
+<p> <code><var>B</var> = unique (<var>A</var>, <var>occurence</var>)</code> returns the unique
+ values of the calendarDuration array <var>tblA</var> according to their order
+ of occurence.  ## <var>occurence</var> can be either of the following values:
+</p>
+ <ul>
+<li> <code>'first'</code> (default) returns the first occurence of each
+ unique value, i.e. the lowest possible indices are returned.
+ </li><li> <code>'last'</code> returns the last occurence of each unique value,
+ i.e. the highest possible indices are returned.
+ </li></ul>
+
+<p> You can specify <var>setOrder</var> and <var>occurence</var> arguments together.
+</p>
+<p> <code><var>B</var> = unique (<var>A</var>, &hellip;, <code>'rows'</code>)</code> returns the
+ unique rows of <var>A</var> by treating each row as a single entity.  The
+ <code>'rows'</code> option can be used alone or in any combination with the
+ <var>setOrder</var> and <var>occurence</var> arguments.  <code>'rows'</code> can be
+ placed at any position in the function&rsquo;s argument list after the input
+ array <var>A</var>.  However, this syntax is only valid for 2-dimensional
+ calendarDuration arrays.
+</p>
+<p> <code>[<var>tblB</var>, <var>ixA</var>, <var>ixB</var>] = unique (&hellip;)</code> also returns
+ index vectors <var>ixA</var> and <var>ixB</var> using any of the previous syntaxes.
+ <var>ixA</var> and <var>ixB</var> map the arrays <var>A</var> and <var>B</var> to one another
+ such that <code><var>B</var> = <var>A</var>(<var>ixA</var>)</code> and
+ <code><var>A</var> = <var>B</var>(<var>ixB</var>)</code>.  When the <code>'rows'</code> optional
+ argument is specified, then <code><var>B</var> = <var>A</var>(<var>ixA</var>,:)</code> and
+ <code><var>tblA</var> = <var>tblB</var>(<var>ixB</var>,:)</code>.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod40"
+              aria-expanded="false" aria-controls="collapseMethod40">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1779,7 +2009,7 @@ Concatenate calendarDuration arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod36">
+          <div class="collapse multi-collapse" id="collapseMethod40">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>C</var> = <b>cat</b> (<var>dim</var>, <var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
@@ -1804,8 +2034,8 @@ Concatenate calendarDuration arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod37"
-              aria-expanded="false" aria-controls="collapseMethod37">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod41"
+              aria-expanded="false" aria-controls="collapseMethod41">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1817,7 +2047,7 @@ Horizontal concatenation of calendarDuration arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod37">
+          <div class="collapse multi-collapse" id="collapseMethod41">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>C</var> = <b>horzcat</b> (<var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
@@ -1843,8 +2073,8 @@ Horizontal concatenation of calendarDuration arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod38"
-              aria-expanded="false" aria-controls="collapseMethod38">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod42"
+              aria-expanded="false" aria-controls="collapseMethod42">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1856,7 +2086,7 @@ Vertical concatenation of calendarDuration arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod38">
+          <div class="collapse multi-collapse" id="collapseMethod42">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>C</var> = <b>vertat</b> (<var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
@@ -1882,8 +2112,8 @@ Vertical concatenation of calendarDuration arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod39"
-              aria-expanded="false" aria-controls="collapseMethod39">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod43"
+              aria-expanded="false" aria-controls="collapseMethod43">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1895,7 +2125,7 @@ Repeat copies of a calendarDuration array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod39">
+          <div class="collapse multi-collapse" id="collapseMethod43">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>repmat</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
@@ -1926,8 +2156,8 @@ Repeat copies of a calendarDuration array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod40"
-              aria-expanded="false" aria-controls="collapseMethod40">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod44"
+              aria-expanded="false" aria-controls="collapseMethod44">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1939,7 +2169,7 @@ Repeat copies of calendarDuration array elements.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod40">
+          <div class="collapse multi-collapse" id="collapseMethod44">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>repelem</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
@@ -1974,8 +2204,8 @@ Repeat copies of calendarDuration array elements.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod41"
-              aria-expanded="false" aria-controls="collapseMethod41">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod45"
+              aria-expanded="false" aria-controls="collapseMethod45">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1987,7 +2217,7 @@ Construct a vector of repeated elements from a calendarDuration array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod41">
+          <div class="collapse multi-collapse" id="collapseMethod45">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>repelems</b> (<var>A</var>, <var>R</var>)</code></h5></dt>
@@ -2012,8 +2242,8 @@ Construct a vector of repeated elements from a calendarDuration array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod42"
-              aria-expanded="false" aria-controls="collapseMethod42">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod46"
+              aria-expanded="false" aria-controls="collapseMethod46">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -2025,7 +2255,7 @@ Repeat copies of calendarDuration array elements.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod42">
+          <div class="collapse multi-collapse" id="collapseMethod46">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>reshape</b> (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code></h5></dt>
@@ -2057,8 +2287,8 @@ Repeat copies of calendarDuration array elements.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod43"
-              aria-expanded="false" aria-controls="collapseMethod43">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod47"
+              aria-expanded="false" aria-controls="collapseMethod47">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -2070,7 +2300,7 @@ Circularly shift the elements in a calendarDuration array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod43">
+          <div class="collapse multi-collapse" id="collapseMethod47">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>circshift</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
@@ -2102,8 +2332,8 @@ Circularly shift the elements in a calendarDuration array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod44"
-              aria-expanded="false" aria-controls="collapseMethod44">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod48"
+              aria-expanded="false" aria-controls="collapseMethod48">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -2115,7 +2345,7 @@ Generalized transpose for a calendarDuration N-D array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod44">
+          <div class="collapse multi-collapse" id="collapseMethod48">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>permute</b> (<var>A</var>, <var>dims</var>)</code></h5></dt>
@@ -2141,8 +2371,8 @@ Generalized transpose for a calendarDuration N-D array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod45"
-              aria-expanded="false" aria-controls="collapseMethod45">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod49"
+              aria-expanded="false" aria-controls="collapseMethod49">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -2154,7 +2384,7 @@ Inverse of the generalized transpose for a calendarDuration N-D array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod45">
+          <div class="collapse multi-collapse" id="collapseMethod49">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>A</var> = <b>ipermute</b> (<var>B</var>, <var>dims</var>)</code></h5></dt>
@@ -2181,8 +2411,8 @@ Inverse of the generalized transpose for a calendarDuration N-D array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod46"
-              aria-expanded="false" aria-controls="collapseMethod46">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod50"
+              aria-expanded="false" aria-controls="collapseMethod50">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -2194,7 +2424,7 @@ Transpose a calendarDuration matrix.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod46">
+          <div class="collapse multi-collapse" id="collapseMethod50">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>transpose</b> (<var>A</var>)</code></h5></dt>
@@ -2215,8 +2445,8 @@ Transpose a calendarDuration matrix.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod47"
-              aria-expanded="false" aria-controls="collapseMethod47">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod51"
+              aria-expanded="false" aria-controls="collapseMethod51">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -2228,7 +2458,7 @@ Transpose a calendarDuration matrix.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod47">
+          <div class="collapse multi-collapse" id="collapseMethod51">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>ctranspose</b> (<var>A</var>)</code></h5></dt>
