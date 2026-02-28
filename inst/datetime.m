@@ -523,7 +523,7 @@ classdef datetime
               'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'};
         out = mn(this.Month);
       else
-        error ("datetime: unrecongized MONTHTYPE.");
+        error ("datetime: unrecognized MONTHTYPE.");
       endif
       out = this.Month;
     endfunction
@@ -601,7 +601,7 @@ classdef datetime
           out = days(m) + this.Day;
         endif
       else
-        error ("datetime: unrecongized DAYTYPE.");
+        error ("datetime: unrecognized DAYTYPE.");
       endif
     endfunction
 
@@ -882,7 +882,7 @@ classdef datetime
           varargout{i} = DV(:,i);
         endfor
       else
-        error ("datetime.datavec: too many output arguments.");
+        error ("datetime.datevec: too many output arguments.");
       endif
     endfunction
 
@@ -893,7 +893,7 @@ classdef datetime
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'isbetween'        'iscolumm'         'isdst'            'isemtpy'         ##
+## 'isbetween'        'iscolumn'         'isdst'            'isempty'         ##
 ## 'isequal'          'isequaln'         'isfinite'         'isinf'           ##
 ## 'ismatrix'         'ismember'         'isnat'            'isregular'       ##
 ## 'isrow'            'isscalar'         'issorted'         'issortedrows'    ##
@@ -1611,7 +1611,7 @@ classdef datetime
             case {'Second'}
               out = this.Second;
             otherwise
-              error ("datetime.subsref: unrecongized property: %s", s.subs);
+              error ("datetime.subsref: unrecognized property: %s", s.subs);
           endswitch
       endswitch
 
@@ -1697,7 +1697,7 @@ classdef datetime
             case {'Second'}
               this.Second(p.subs{:}) = val;
             otherwise
-              error ("datetime.subsasgn: unrecongized property: %s", s.subs);
+              error ("datetime.subsasgn: unrecognized property: %s", s.subs);
           endswitch
       endswitch
 

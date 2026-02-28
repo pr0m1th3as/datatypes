@@ -462,7 +462,7 @@ classdef duration
           varargout{i} = reshape (DV(:,i), size (this));
         endfor
       else
-        error ("duration.datavec: too many output arguments.");
+        error ("duration.datevec: too many output arguments.");
       endif
     endfunction
 
@@ -782,7 +782,7 @@ classdef duration
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'isbetween'        'iscolumm'         'isempty'          'isequal'         ##
+## 'isbetween'        'iscolumn'         'isempty'          'isequal'         ##
 ## 'isequaln'         'isfinite'         'isinf'            'ismatrix'        ##
 ## 'ismember'         'ismissing'        'isnan'            'isregular'       ##
 ## 'isrow'            'isscalar'         'issorted'         'issortedrows'    ##
@@ -1871,7 +1871,7 @@ classdef duration
             case 'Format'
               out = this.Format;
             otherwise
-              error ("duration.subsref: unrecongized property: %s", s.subs);
+              error ("duration.subsref: unrecognized property: %s", s.subs);
           endswitch
       endswitch
 
@@ -1922,7 +1922,7 @@ classdef duration
               endif
               this.Format = val;
             otherwise
-              error ("duration.subsasgn: unrecongized property: %s", s.subs);
+              error ("duration.subsasgn: unrecognized property: %s", s.subs);
           endswitch
       endswitch
 
