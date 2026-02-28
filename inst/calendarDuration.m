@@ -470,7 +470,7 @@ classdef calendarDuration
     ## Convert calendarDuration array to a character matrix.
     ##
     ## @code{@var{cmat} = char (@var{calD})} returns a character matrix with
-    ## one row per element in @var{calD}.  The second optional argment,
+    ## one row per element in @var{calD}.  The second optional argument,
     ## @var{FMT}, can be used to specify the format of the returned string
     ## representations of the calendarDuration input array @var{calD}.
     ##
