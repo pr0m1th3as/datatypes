@@ -18,9 +18,9 @@
 ## -*- texinfo -*-
 ## @deftypefn  {private} {@var{B} =} __unique__ (@var{A})
 ## @deftypefnx {private} {@var{B} =} __unique__ (@var{A}, @var{setOrder})
-## @deftypefnx {private} {@var{B} =} __unique__ (@var{A}, @var{occurence})
-## @deftypefnx {private} {@var{B} =} __unique__ (@var{A}, @var{setOrder}, @var{occurence})
-## @deftypefnx {private} {@var{B} =} __unique__ (@var{A}, @var{occurence}, @var{setOrder})
+## @deftypefnx {private} {@var{B} =} __unique__ (@var{A}, @var{occurrence})
+## @deftypefnx {private} {@var{B} =} __unique__ (@var{A}, @var{setOrder}, @var{occurrence})
+## @deftypefnx {private} {@var{B} =} __unique__ (@var{A}, @var{occurrence}, @var{setOrder})
 ## @deftypefnx {private} {@var{B} =} __unique__ (@var{A}, @dots{}, @qcode{'rows'})
 ## @deftypefnx {private} {@var{B} =} __unique__ (@var{A}, @qcode{'rows'}, @dots{})
 ## @deftypefnx {private} {[@var{B}, @var{ixA}, @var{ixB}] =} __unique__ (@dots{})

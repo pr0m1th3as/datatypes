@@ -1452,9 +1452,9 @@ classdef calendarDuration
     ## -*- texinfo -*-
     ## @deftypefn  {calendarDuration} {@var{B} =} unique (@var{A})
     ## @deftypefnx {calendarDuration} {@var{B} =} unique (@var{A}, @var{setOrder})
-    ## @deftypefnx {calendarDuration} {@var{B} =} unique (@var{A}, @var{occurence})
-    ## @deftypefnx {calendarDuration} {@var{B} =} unique (@var{A}, @var{setOrder}, @var{occurence})
-    ## @deftypefnx {calendarDuration} {@var{B} =} unique (@var{A}, @var{occurence}, @var{setOrder})
+    ## @deftypefnx {calendarDuration} {@var{B} =} unique (@var{A}, @var{occurrence})
+    ## @deftypefnx {calendarDuration} {@var{B} =} unique (@var{A}, @var{setOrder}, @var{occurrence})
+    ## @deftypefnx {calendarDuration} {@var{B} =} unique (@var{A}, @var{occurrence}, @var{setOrder})
     ## @deftypefnx {calendarDuration} {@var{B} =} unique (@var{A}, @dots{}, @qcode{'rows'})
     ## @deftypefnx {calendarDuration} {[@var{B}, @var{ixA}, @var{ixB}] =} unique (@dots{})
     ##
@@ -1471,26 +1471,26 @@ classdef calendarDuration
     ## @item @qcode{'sorted'} (default) returns the unique values sorted in
     ## ascending order.
     ## @item @qcode{'stable'} returns the unique values according to their order
-    ## of occurence.
+    ## of occurrence.
     ## @end itemize
     ##
-    ## @code{@var{B} = unique (@var{A}, @var{occurence})} returns the unique
+    ## @code{@var{B} = unique (@var{A}, @var{occurrence})} returns the unique
     ## values of the calendarDuration array @var{tblA} according to their order
-    ## of occurence.  ## @var{occurence} can be either of the following values:
+    ## of occurrence.  @var{occurrence} can be either of the following values:
     ##
     ## @itemize
-    ## @item @qcode{'first'} (default) returns the first occurence of each
+    ## @item @qcode{'first'} (default) returns the first occurrence of each
     ## unique value, i.e. the lowest possible indices are returned.
-    ## @item @qcode{'last'} returns the last occurence of each unique value,
+    ## @item @qcode{'last'} returns the last occurrence of each unique value,
     ## i.e. the highest possible indices are returned.
     ## @end itemize
     ##
-    ## You can specify @var{setOrder} and @var{occurence} arguments together.
+    ## You can specify @var{setOrder} and @var{occurrence} arguments together.
     ##
     ## @code{@var{B} = unique (@var{A}, @dots{}, @qcode{'rows'})} returns the
     ## unique rows of @var{A} by treating each row as a single entity.  The
     ## @qcode{'rows'} option can be used alone or in any combination with the
-    ## @var{setOrder} and @var{occurence} arguments.  @qcode{'rows'} can be
+    ## @var{setOrder} and @var{occurrence} arguments.  @qcode{'rows'} can be
     ## placed at any position in the function's argument list after the input
     ## array @var{A}.  However, this syntax is only valid for 2-dimensional
     ## calendarDuration arrays.
