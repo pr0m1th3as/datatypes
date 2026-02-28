@@ -1935,9 +1935,9 @@ Unique values in a calendarDuration array.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>unique</b> (<var>A</var>)</code></h5></dt>
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>unique</b> (<var>A</var>, <var>setOrder</var>)</code></h5></dt>
-<dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>unique</b> (<var>A</var>, <var>occurence</var>)</code></h5></dt>
-<dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>unique</b> (<var>A</var>, <var>setOrder</var>, <var>occurence</var>)</code></h5></dt>
-<dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>unique</b> (<var>A</var>, <var>occurence</var>, <var>setOrder</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>unique</b> (<var>A</var>, <var>occurrence</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>unique</b> (<var>A</var>, <var>setOrder</var>, <var>occurrence</var>)</code></h5></dt>
+<dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>unique</b> (<var>A</var>, <var>occurrence</var>, <var>setOrder</var>)</code></h5></dt>
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>unique</b> (<var>A</var>, &hellip;, <code>'rows'</code>)</code></h5></dt>
 <dt><code><h5 class="fs">calendarDuration: [<var>B</var>, <var>ixA</var>, <var>ixB</var>] = <b>unique</b> (&hellip;)</code></h5></dt>
 </dl>
@@ -1954,26 +1954,26 @@ Unique values in a calendarDuration array.
 <li> <code>'sorted'</code> (default) returns the unique values sorted in
  ascending order.
  </li><li> <code>'stable'</code> returns the unique values according to their order
- of occurence.
+ of occurrence.
  </li></ul>
 
-<p> <code><var>B</var> = unique (<var>A</var>, <var>occurence</var>)</code> returns the unique
+<p> <code><var>B</var> = unique (<var>A</var>, <var>occurrence</var>)</code> returns the unique
  values of the calendarDuration array <var>tblA</var> according to their order
- of occurence.  ## <var>occurence</var> can be either of the following values:
+ of occurrence.  <var>occurrence</var> can be either of the following values:
 </p>
  <ul>
-<li> <code>'first'</code> (default) returns the first occurence of each
+<li> <code>'first'</code> (default) returns the first occurrence of each
  unique value, i.e. the lowest possible indices are returned.
- </li><li> <code>'last'</code> returns the last occurence of each unique value,
+ </li><li> <code>'last'</code> returns the last occurrence of each unique value,
  i.e. the highest possible indices are returned.
  </li></ul>
 
-<p> You can specify <var>setOrder</var> and <var>occurence</var> arguments together.
+<p> You can specify <var>setOrder</var> and <var>occurrence</var> arguments together.
 </p>
 <p> <code><var>B</var> = unique (<var>A</var>, &hellip;, <code>'rows'</code>)</code> returns the
  unique rows of <var>A</var> by treating each row as a single entity.  The
  <code>'rows'</code> option can be used alone or in any combination with the
- <var>setOrder</var> and <var>occurence</var> arguments.  <code>'rows'</code> can be
+ <var>setOrder</var> and <var>occurrence</var> arguments.  <code>'rows'</code> can be
  placed at any position in the function&rsquo;s argument list after the input
  array <var>A</var>.  However, this syntax is only valid for 2-dimensional
  calendarDuration arrays.
