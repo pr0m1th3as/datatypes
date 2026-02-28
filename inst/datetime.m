@@ -525,7 +525,6 @@ classdef datetime
       else
         error ("datetime: unrecognized MONTHTYPE.");
       endif
-      out = this.Month;
     endfunction
 
     ## -*- texinfo -*-
@@ -641,7 +640,7 @@ classdef datetime
 
     ## -*- texinfo -*-
     ## @deftypefn  {datetime} {@var{s} =} second (@var{T})
-    ## @deftypefnx {datetime} {@var{s} =} second (@var{T}, @var{dayType})
+    ## @deftypefnx {datetime} {@var{s} =} second (@var{T}, @var{secondType})
     ##
     ## Seconds component of a datetime array.
     ##
@@ -652,7 +651,7 @@ classdef datetime
     ## @var{T}.  Not-A-Time (@qcode{NaT}) values in @var{T} are returned as
     ## @qcode{NaN} in the output array.
     ##
-    ## @code{@var{D} = second (@var{T}, @var{secondType})} returns the seconds
+    ## @code{@var{s} = second (@var{T}, @var{secondType})} returns the seconds
     ## for each element of the input datetime array @var{T} as specified by
     ## @var{secondType}, which may have any of the following options:
     ##
@@ -664,8 +663,14 @@ classdef datetime
     ## @end itemize
     ##
     ## @end deftypefn
-    function out = second (this)
-      out = this.Second;
+    function out = second (this, secondType = 'secondofminute')
+      if (strcmpi (secondType, 'secondofminute'))
+        out = this.Second;
+      elseif (strcmpi (secondType, 'secondofday'))
+        out = this.Hour * 3600 + this.Minute * 60 + this.Second;
+      else
+        error ("datetime.second: unrecognized SECONDTYPE.");
+      endif
     endfunction
 
   endmethods
