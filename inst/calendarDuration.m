@@ -532,7 +532,7 @@ classdef calendarDuration
           varargout{6} = s;
         endif
       else
-        error ("calendarDuration.datavec: too many output arguments.");
+        error ("calendarDuration.datevec: too many output arguments.");
       endif
     endfunction
 
@@ -688,10 +688,10 @@ classdef calendarDuration
     ##
     ## Calendar duration in quarters.
     ##
-    ## @code{@var{X} = calmonths (@var{calD})} returns a numeric array with the
+    ## @code{@var{X} = calquarters (@var{calD})} returns a numeric array with the
     ## number of quarters as represented in @var{calD}.
     ##
-    ## @code{calmonths} is also available as a function, in which case it
+    ## @code{calquarters} is also available as a function, in which case it
     ## performs the opposite conversion.
     ##
     ## @seealso{calendarDuration.calyears, calendarDuration.calmonths,
@@ -706,10 +706,10 @@ classdef calendarDuration
     ##
     ## Calendar duration in years.
     ##
-    ## @code{@var{X} = calmonths (@var{calD})} returns a numeric array with the
+    ## @code{@var{X} = calyears (@var{calD})} returns a numeric array with the
     ## number of years as represented in @var{calD}.
     ##
-    ## @code{calmonths} is also available as a function, in which case it
+    ## @code{calyears} is also available as a function, in which case it
     ## performs the opposite conversion.
     ##
     ## @seealso{calendarDuration.calquarters, calendarDuration.calmonths,
@@ -852,7 +852,7 @@ classdef calendarDuration
     ## this syntax to cascade @code{keyHash} on multiple objects for which a
     ## single hash code is required.
     ##
-    ## Note that unlike MATLAB, this implementation does no use any random seed.
+    ## Note that unlike MATLAB, this implementation does not use any random seed.
     ## As a result, @code{keyHash} will always generate the exact same hash key
     ## for any particular input across different workers and Octave sessions.
     ##
@@ -883,7 +883,7 @@ classdef calendarDuration
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'iscolumm'         'isempty'          'isequal'          'isequaln'        ##
+## 'iscolumn'         'isempty'          'isequal'          'isequaln'        ##
 ## 'isfinite'         'isinf'            'ismatrix'         'ismissing'       ##
 ## 'isnan'            'isreal'           'isrow'            'isscalar'        ##
 ## 'isvector'                                                                 ##
@@ -1107,7 +1107,7 @@ classdef calendarDuration
     ##
     ## Always return true for calendarDuration arrays.
     ##
-    ## @code{@var{TF} = isrear (@var{calD})} always returns a logical scalar
+    ## @code{@var{TF} = isreal (@var{calD})} always returns a logical scalar
     ## @qcode{true} value, if the input argument is a calendarDuration array.
     ##
     ## @end deftypefn
@@ -1251,7 +1251,7 @@ classdef calendarDuration
     ##
     ## @code{@var{C} = plus (@var{A}, @var{B})} is the equivalent of the syntax
     ## @code{@var{C} = @var{A} + @var{B}} and returns the result of adding the
-    ## corresponding elements of @var{A} and @var{A}.  @var{C} is a
+    ## corresponding elements of @var{A} and @var{B}.  @var{C} is a
     ## calendarDuration array of the same size as the input arguments after the
     ## necessary (if required) expansion.  @var{A} and @var{B} must be size
     ## compatible, which translates to they can be the same size, one can be
@@ -1299,7 +1299,7 @@ classdef calendarDuration
     ##
     ## Unary plus for calendarDuration arrays.
     ##
-    ## @code{@var{C} = uminus (@var{A})} is the equivalent of the syntax
+    ## @code{@var{C} = uplus (@var{A})} is the equivalent of the syntax
     ## @code{@var{C} = +@var{A}} and returns a copy of @var{A}.  @var{C} is a
     ## calendarDuration array of the same size as @var{A}.
     ##
@@ -1346,7 +1346,7 @@ classdef calendarDuration
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {calendarDuration} {@var{C} =} times (@var{A}, @var{B})
+    ## @deftypefn {calendarDuration} {@var{C} =} mtimes (@var{A}, @var{B})
     ##
     ## Matrix multiplication for calendarDuration arrays.
     ##
@@ -1425,7 +1425,7 @@ classdef calendarDuration
     ## -*- texinfo -*-
     ## @deftypefn {calendarDuration} {@var{TF} =} ne (@var{A}, @var{B})
     ##
-    ## Test for equality between calendarDuration arrays.
+    ## Test for inequality between calendarDuration arrays.
     ##
     ## @code{@var{TF} = ne (@var{A}, @var{B})} is the equivalent of the syntax
     ## @code{@var{TF} = @var{A} != @var{B}} and returns a logical array with
@@ -1585,11 +1585,11 @@ classdef calendarDuration
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {calendarDuration} {@var{C} =} vertat (@var{A}, @var{B}, @dots{})
+    ## @deftypefn {calendarDuration} {@var{C} =} vertcat (@var{A}, @var{B}, @dots{})
     ##
     ## Vertical concatenation of calendarDuration arrays.
     ##
-    ## @code{@var{C} = vertat (@var{A}, @var{B}, @dots{}} is the equivalent of
+    ## @code{@var{C} = vertcat (@var{A}, @var{B}, @dots{}} is the equivalent of
     ## the syntax @code{@var{B} = [@var{A}; @var{B}; @dots{}]} and vertically
     ## concatenates the calendarDuration arrays @var{A}, @var{B}, @dots{}.  All
     ## input arrays must have the same size except along the first dimension.
@@ -1639,7 +1639,7 @@ classdef calendarDuration
     ## vector @var{B} containing repeated elements of the input @var{A}, which
     ## must be a calendarDuration vector.  If @var{n} is a scalar, each element
     ## of @var{A} is repeated @var{n} times along the non-singleton dimension of
-    ## @var{A}.  If @var{n} is a vector, it must have the same elemnts as
+    ## @var{A}.  If @var{n} is a vector, it must have the same elements as
     ## @var{A}, in which case it specifies the number of times to repeat each
     ## corresponding element of @var{A}.
     ##
@@ -1861,7 +1861,7 @@ classdef calendarDuration
             case 'Format'
               out = this.Format;
             otherwise
-              error ("calendarDuration.subsref: unrecongized property: '%s'", ...
+              error ("calendarDuration.subsref: unrecognized property: '%s'", ...
                      s.subs);
           endswitch
       endswitch
@@ -1905,7 +1905,7 @@ classdef calendarDuration
             this = broadcastProperties (this);
           else
             error (strcat ("calendarDuration.subsasgn: assignment value", ...
-                           " must be calendarDuration or duration array", ..."
+                           " must be calendarDuration or duration array", ...
                            " or a numeric array representing 24-hour days."));
           endif
 
@@ -1926,7 +1926,7 @@ classdef calendarDuration
               endif
               this.Format = val;
             otherwise
-              error ("calendarDuration.subsasgn: unrecongized property: '%s'", ...
+              error ("calendarDuration.subsasgn: unrecognized property: '%s'", ...
                      s.subs);
           endswitch
       endswitch
