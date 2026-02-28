@@ -1438,6 +1438,13 @@
 %! assert (days (time (cD)), [0; 180])
 %!test
 %! cD = calendarDuration ([1; 2], 4, [2; 4]);
+%! cD(end) = hours (12);
+%! assert (calyears (cD), [1; 0]);
+%! assert (calmonths (cD), [16; 0]);
+%! assert (caldays (cD), [2; 0]);
+%! assert (days (time (cD)), [0; 0.5])
+%!test
+%! cD = calendarDuration ([1; 2], 4, [2; 4]);
 %! cD(1) = [];
 %! assert (calyears (cD), 2);
 %! assert (calmonths (cD), 28);
@@ -1474,8 +1481,8 @@
 %! assert (cD.Format, 'qmdt');
 %! cD.Format = 'qmwdt';
 %! assert (cD.Format, 'qmwdt');
-%!error<calendarDuration.subsasgn: assignment value must be calendarDuration array or a numeric array representing 24-hour days.> ...
-%! cD = caldays([1:5]); cD(2) = hours (1)
+%!error<calendarDuration.subsasgn: assignment value must be calendarDuration or duration array or a numeric array representing 24-hour days.> ...
+%! cD = caldays([1:5]); cD(2) = {1}
 %!error<calendarDuration.subsasgn: '{}' invalid indexing for assigning values. Use '\(\)' instead.> ...
 %! cD = caldays([1:5]); cD{2} = 1
 %!error<calendarDuration.subsasgn: '.' index argument must be a character vector.> ...
