@@ -29,9 +29,9 @@ function TF = keyMatch (A, B)
   if (nargin != 2)
     print_usage;
   endif
-  if (any (class (A) != class (B)))
+  if (! strcmp (class (A), class (B)))
     TF = false;
-  elseif (isempty (A) || isempty (B))
+  elseif (! isequal (size (A), size (B)))
     TF = false;
   else
     A_key = keyHash (A);
@@ -40,6 +40,8 @@ function TF = keyMatch (A, B)
   endif
 endfunction
 
+%!assert (keyMatch (1, {'1'}), false);
+%!assert (keyMatch (ones (2), 2), false);
 %!assert (keyMatch (1, 2), false);
 %!assert (keyMatch (1, 1), true);
 
