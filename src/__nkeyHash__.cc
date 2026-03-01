@@ -51,10 +51,6 @@ Do NOT use this function directly. \n\
   {
     error ("__nkeyHash__: too few input arguments.");
   }
-  if (args(0).isempty ())
-  {
-    error ("__nkeyHash__: X cannot be empty.");
-  }
   if (! (args(0).isnumeric () || args(0).islogical ()))
   {
     error ("__nkeyHash__: X must be either numeric or logical.");
