@@ -869,6 +869,7 @@ classdef calendarDuration
       else
         key = __ckeyHash__(init_str);
       endif
+      ## Compute hash with underlying calendarDuration array values
       if (! isempty (this.Months))
         key = __nkeyHash__(this.Months(:), key);
         key = __nkeyHash__(this.Days(:), key);
