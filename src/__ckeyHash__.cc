@@ -51,10 +51,6 @@ Do NOT use this function directly. \n\
   {
     error ("__ckeyHash__: too few input arguments.");
   }
-  if (args(0).isempty ())
-  {
-    error ("__ckeyHash__: STR cannot be empty.");
-  }
   if (! (args(0).is_string ()))
   {
     error ("__ckeyHash__: STR must be a character vector.");
