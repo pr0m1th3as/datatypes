@@ -516,11 +516,10 @@ classdef string
       else
         key = __ckeyHash__(init_str);
       endif
-      if (! isempty (this.strs))
-        strs = [this.strs{:}];
-        key = __ckeyHash__(strs, key);
-        key = __nkeyHash__(this.isMissing(:), key);
-      endif
+      ## Compute hash with underlying string array values
+      strs = [this.strs{:}];
+      key = __ckeyHash__(strs, key);
+      key = __nkeyHash__(this.isMissing(:), key);
     endfunction
 
   endmethods
