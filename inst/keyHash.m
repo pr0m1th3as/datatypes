@@ -39,8 +39,8 @@
 ## @end deftypefn
 function key = keyHash (x = [], base = [])
   ## Validate input
-  if (isempty (x))
-    error ("keyHash: X cannot not be empty.");
+  if (nargin < 1)
+    print_usage;
   endif
   ## Initialize string with size and class name
   size_str = sprintf ('%dx', size (x))(1:end-1);
@@ -90,6 +90,6 @@ endfunction
 %! key2 = keyHash (B);
 %! assert (isequal (key1, key2), false);
 
-%!error<keyHash: X cannot not be empty.> keyHash ();
+%!error<Invalid call to keyHash.  Correct usage is:> keyHash ();
 %!error<keyHash: BASE must be a UINT64 scalar.> keyHash (1, 1);
 %!error<keyHash: unsupported input type.> keyHash (@(x) x);
