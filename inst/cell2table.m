@@ -23,12 +23,12 @@
 ##
 ## @code{@var{tbl} = cell2table (@var{C})} converts the 2-D cell array @var{C}
 ## to the table @var{tbl}, where the contents of each column of @var{C} becomes
-## a variable in @var{tbl}.  The contents of each collumn are concatenated into
+## a variable in @var{tbl}.  The contents of each column are concatenated into
 ## their common data type (i.e. if a column of @var{C} contains explicitly
 ## @qcode{double} numbers, then the corresponding variable in @var{tbl} is of
 ## the same type), otherwise they are added as a column of cells.
 ##
-## @code{@var{tbl} = array2table (@var{C}, @var{Name}, @var{Value})} specifies
+## @code{@var{tbl} = cell2table (@var{C}, @var{Name}, @var{Value})} specifies
 ## optional parameters for creating the table @var{tbl} with the following
 ## Name-Value paired arguments.
 ##

@@ -22,7 +22,7 @@ classdef table
   ## Array of tabular data containing multiple columnar variables.
   ##
   ## A table is a 2-dimensional data structure that collects heterogeneous data
-  ## and metadata into a singe container.  Tables are suitable for storing
+  ## and metadata into a single container.  Tables are suitable for storing
   ## columnar data much like spreadsheets but they can also be used for storing
   ## more complex data including multicolumnar variables and nested tables.
   ##
@@ -177,7 +177,7 @@ classdef table
     ## it must contain the same number of elements as the number of rows in the
     ## table.  All elements must be nonempty and distinct.  You can access the
     ## rows of the table @var{tbl} by specifying one or more row names within
-    ## within parentheses or curly braces.  You can also set @qcode{RowNames} by
+    ## parentheses or curly braces.  You can also set @qcode{RowNames} by
     ## dot name assignment to an existing variable.
     ##
     ## @end deftp
@@ -492,7 +492,7 @@ classdef table
     ## table, @var{tbl}.  The output @var{C} does not include any of the table's
     ## properties.  This also applies to row names.
     ##
-    ## Compatibity Notes:
+    ## Compatibility Notes:
     ##
     ## Variables of types @qcode{categorical}, @qcode{calendarDuration},
     ## @qcode{datetime}, @qcode{duration} and @qcode{string} are returned as
@@ -561,14 +561,14 @@ classdef table
       ## Check optional input arguments
       if (nargin > 1)
         if (nargin != 3)
-          error ("table.table2struct: wrong number of input aguments.");
+          error ("table.table2struct: wrong number of input arguments.");
         endif
         if (strcmpi (varargin{1}, "ToScalar") && isequal (varargin{2}, 1))
           toScalar = true;
         elseif (strcmpi (varargin{1}, "ToScalar"))
           toScalar = false;
         else
-          error ("table.table2struct: wrong optional input agument.");
+          error ("table.table2struct: wrong optional input argument.");
         endif
       endif
       ## Do the conversion
@@ -613,7 +613,7 @@ classdef table
     ##
     ## The first cell of the CSV file contains a comment mentioning the number
     ## of consecutive rows that contain info about the variable types. The
-    ## number of vartype rows may differ accordign to the nested tables and
+    ## number of vartype rows may differ according to the nested tables and
     ## structures contained in the table. The following rows contain the header
     ## with the column names.
     ##
@@ -730,7 +730,7 @@ classdef table
     ## multicolumnar numerical variables it prints the minimum, median, and
     ## maximum values for each column separately.
     ##
-    ## @item For variables of @qcode{logical} type, it prints the occurences
+    ## @item For variables of @qcode{logical} type, it prints the occurrences
     ## of @qcode{True} and @qcode{False}.
     ##
     ## @item For variables of type @qcode{datetime}, @qcode{duration}, and
@@ -1057,7 +1057,7 @@ classdef table
     ## Sort the rows of a table.
     ##
     ## @code{@var{tblB} = sortrows (@var{tblA})} sorts the rows in @var{tblA} in
-    ## asceding order based on the values in the first variable.   If elements
+    ## ascending order based on the values in the first variable.   If elements
     ## in the first variable are repeated, then @code{sortrows} sorts by the
     ## elements in the second variable, and so on.
     ##
@@ -1101,9 +1101,9 @@ classdef table
     ## the specified variables and/or, row names used for sorting the table.
     ## The order specified by @var{direction} always takes precedence over the
     ## order defined by a numerical vector of integers in @var{vars}.
-    ## @var{direction} must always be the 3rd inpnut argument.  If you want to
+    ## @var{direction} must always be the 3rd input argument.  If you want to
     ## omit passing selected variables and allow @code{sortrows} to work on
-    ## consequtive variables until all ties are resolved, then you can leave the
+    ## consecutive variables until all ties are resolved, then you can leave the
     ## second input argument empty, as in
     ## @code{sortrows (@var{tblA}, @{[]@}, @var{direction})} or pass a
     ## colon argument for @var{vars} as in
@@ -1379,7 +1379,7 @@ classdef table
     ## -*- texinfo -*-
     ## @deftypefn  {table} {@var{tblB} =} unique (@var{tblA})
     ## @deftypefnx {table} {@var{tblB} =} unique (@var{tblA}, @var{setOrder})
-    ## @deftypefnx {table} {@var{tblB} =} unique (@var{tblA}, @var{occurence})
+    ## @deftypefnx {table} {@var{tblB} =} unique (@var{tblA}, @var{occurrence})
     ## @deftypefnx {table} {[@var{tblB}, @var{ixA}, @var{ixB}] =} unique (@dots{})
     ##
     ## Unique rows in a table.
@@ -1394,17 +1394,17 @@ classdef table
     ## @itemize
     ## @item @qcode{'sorted'} returns the unique rows sorted in ascending order.
     ## @item @qcode{'stable'} returns the unique rows according to their order
-    ## of occurence.
+    ## of occurrence.
     ## @end itemize
     ##
-    ## @code{@var{tblB} = unique (@var{tblA}, @var{occurence})} returns the
-    ## unique rows of table @var{tblA} according to their order of occurence.
-    ## @var{occurence} cen be either @qcode{'first'} (default) or @qcode{'last'}.
+    ## @code{@var{tblB} = unique (@var{tblA}, @var{occurrence})} returns the
+    ## unique rows of table @var{tblA} according to their order of occurrence.
+    ## @var{occurrence} can be either @qcode{'first'} (default) or @qcode{'last'}.
     ##
     ## @itemize
-    ## @item @qcode{'first'} returns the first occurence of each unique row,
+    ## @item @qcode{'first'} returns the first occurrence of each unique row,
     ## i.e. the lowest possible indices are returned.
-    ## @item @qcode{'last'} returns the last occurence of each unique row, i.e.
+    ## @item @qcode{'last'} returns the last occurrence of each unique row, i.e.
     ## the highest possible indices are returned.
     ## @end itemize
     ##
@@ -1422,7 +1422,7 @@ classdef table
         error ("table.unique: too many input arguments.");
       endif
 
-      ## Handle 'setOrder' and 'occurence' options
+      ## Handle 'setOrder' and 'occurrence' options
       opt = "sorted";
       if (! isempty (varargin))
         if (any (strcmp (varargin{1}, {"sorted", "stable", "first", "last"})))
@@ -1502,7 +1502,7 @@ classdef table
     ## Check if table rows are sorted accordingly.
     ##
     ## @code{@var{TF} = issortedrows (@var{tblA})} determines if the rows in
-    ## @var{tblA} are sorted in asceding order based on the values in the first
+    ## @var{tblA} are sorted in ascending order based on the values in the first
     ## variable or subsequent variables if elements of the former are repeated.
     ## @var{TF} is a logical scalar and it is @qcode{true} when
     ## @code{@var{tblA} == sortrows (@var{tblA})} or @qcode{false} otherwise.
@@ -1526,7 +1526,7 @@ classdef table
     ## is empty, then @var{TF} is @qcode{true}.
     ##
     ## @code{@var{TF} = issortedrows (@var{tblA}, @var{vars})} determines if the
-    ## rowns in @var{tblA} are sorted by the elements in the variables specified
+    ## rows in @var{tblA} are sorted by the elements in the variables specified
     ## by @var{vars}, which can be a character vector (for a single variable) or
     ## a cell array of character vectors or a string array (specifying a single
     ## or multiple variables).  If @var{tblA} has row names, then @var{vars} can
@@ -1551,16 +1551,16 @@ classdef table
     ## the specified variables and/or, row names used for sorting the table.
     ## The order specified by @var{direction} always takes precedence over the
     ## order defined by a numerical vector of integers in @var{vars}.
-    ## @var{direction} must always be the 3rd inpnut argument.  If you want to
+    ## @var{direction} must always be the 3rd input argument.  If you want to
     ## omit passing selected variables and allow @code{sortrows} to work on
-    ## consequtive variables until all ties are resolved, then you can leave the
+    ## consecutive variables until all ties are resolved, then you can leave the
     ## second input argument empty, as in
     ## @code{sortrows (@var{tblA}, @{[]@}, @var{direction})} or pass a
     ## colon argument for @var{vars} as in
     ## @code{sortrows (@var{tblA}, @{':'@}, @var{direction})}.
     ##
     ## @code{@var{TF} = issortedrows (@dots{}, @var{Name}, @var{Value})}
-    ## determines if the rows in @var{tblA} are sorted accoring the additional
+    ## determines if the rows in @var{tblA} are sorted according the additional
     ## parameters specifying the sorting of rows of a table with the following
     ## Name-Value paired arguments.
     ##
@@ -1599,7 +1599,7 @@ classdef table
     ## Sort the rows of a table.
     ##
     ## @code{@var{tblB} = topkrows (@var{tblA}, @var{k})} returns the top
-    ## @var{k} rows from table @var{tblA} sorted in asceding order based on the
+    ## @var{k} rows from table @var{tblA} sorted in ascending order based on the
     ## values in the first variable.   If elements in the first variable are
     ## repeated, then @code{topkrows} sorts by the elements in the second
     ## variable, and so on.
@@ -1646,8 +1646,8 @@ classdef table
     ## variables and/or, row names used for sorting the table.  The order
     ## specified by @var{direction} always takes precedence over the order
     ## defined by a numerical vector of integers in @var{vars}.  @var{direction}
-    ## must always be the 3rd inpnut argument.  If you want to omit passing
-    ## selected variables and allow @code{sortrows} to work on consequtive
+    ## must always be the 3rd input argument.  If you want to omit passing
+    ## selected variables and allow @code{sortrows} to work on consecutive
     ## variables until all ties are resolved, then you can leave the second
     ## input argument empty, as in
     ## @code{sortrows (@var{tblA}, @{[]@}, @var{direction})} or pass a
@@ -2129,7 +2129,7 @@ classdef table
     ## @code{@var{tblB} = splitvars (@var{tblA}, @var{vars})} splits only the
     ## variables in @var{tblA} specified by @var{vars}.  If left empty, it
     ## defaults to all variables that can be split.  Single-column variables
-    ## specified in @var{vars} are coppied unaltered.
+    ## specified in @var{vars} are copied unaltered.
     ##
     ## @var{vars} can be any of the following types.
     ## @itemize
@@ -2371,7 +2371,7 @@ classdef table
     ## either a cellstr or string scalar or a character vector.
     ## @item @qcode{"MergeAsTable"} specifies whether the selected variables
     ## should be merged into a multicolumn variable (default) or into a table
-    ## nested into a variable, which is usefull for variables that cannot be
+    ## nested into a variable, which is useful for variables that cannot be
     ## concatenated due to incompatible variable types.  @qcode{"MergeAsTable"}
     ## must be either a boolean scalar or a numeric scalar value of @qcode{1}
     ## (@qcode{true}) or @qcode{0} (@qcode{false}).
@@ -2930,7 +2930,7 @@ classdef table
     ## By default, all remaining variables in @var{tblA} which are not specified
     ## by @var{vars} and @var{ivar} are treated as grouping variables, in which
     ## case each unique combination of values in the grouping variables
-    ## idintifies a group of rows in @var{tblA} that is unstacked into one row
+    ## identifies a group of rows in @var{tblA} that is unstacked into one row
     ## of @var{tblB}.
     ##
     ## @code{@var{tblB} = unstack (@dots{}, @var{Name}, @var{Value})} further
@@ -3098,7 +3098,7 @@ classdef table
             invalid = this.VariableNames{gIxVars(i)};
             gIxVars(i) = [];
             warning (["table.unstack: 'GroupingVariables' index a variable", ...
-                      " of invalid type: '%s', which is ingored."], invalid);
+                      " of invalid type: '%s', which is ignored."], invalid);
           endif
         endif
       endfor
@@ -3628,7 +3628,7 @@ classdef table
     ## Determine if any table element is missing.
     ##
     ## @code{@var{TF} = anymissing (@var{tblA})} returns @qcode{true} if at
-    ## least one element in table var{tblA} is missing, otherwise tt returns
+    ## least one element in table @var{tblA} is missing, otherwise it returns
     ## @qcode{false}.  @var{TF} is a logical scalar value.
     ##
     ## Missing values are defined according to the data type of each variable in
@@ -4406,7 +4406,7 @@ classdef table
     ## supported for tables.
     ##
     ## @end deftypefn
-    function tbl = repelem (this, varargin);
+    function tbl = repelem (this, varargin)
 
       ## Check input arguments
       nargs = numel (varargin);
@@ -4493,7 +4493,7 @@ classdef table
     ##
     ## Repeat copies of a table.
     ##
-    ## Repeats cοpies of the input table @var{tblA} in a similar fashion
+    ## Repeats copies of the input table @var{tblA} in a similar fashion
     ## to how @code{repmat} applies to a matrix.  Only two dimensions are
     ## supported for tables.
     ##
@@ -5069,7 +5069,7 @@ classdef table
                           " array matching the number of indexed variables."]);
                 endif
                 ## Convert selected variable(s) to new data type(s)
-                tbl = convertvars (this, idx, val)
+                tbl = convertvars (this, idx, val);
                 ## Save new datatypes to VariableTypes property
                 this.VariableTypes(idx) = val;
                 tbl = this;

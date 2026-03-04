@@ -29,7 +29,7 @@
 ## array, as long they are constraint to 2 dimensions.  However, in the case of
 ## a cell array @code{array2table} does not extract the contents of its cells,
 ## resulting to a table with each variable being a column of cells.  Use
-## @code{cell2table} if you wat to create a table from the contents of the cells
+## @code{cell2table} if you want to create a table from the contents of the cells
 ## in @var{A}.
 ##
 ## @code{@var{tbl} = array2table (@var{A}, @var{Name}, @var{Value})} specifies

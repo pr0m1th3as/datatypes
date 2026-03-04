@@ -83,7 +83,7 @@ classdef vartype
     ## Match a @qcode{vartype} object to a variable value.
     ##
     ## @code{@var{TF} = varMatch (@var{obj}, @var{value})} compares the class
-    ## type of the variable in @var{value} with the predifined class type in the
+    ## type of the variable in @var{value} with the predefined class type in the
     ## @qcode{vartype} object.  If they are equal, @var{TF} is @qcode{true},
     ## otherwise @var{TF} is @qcode{false}.
     ##

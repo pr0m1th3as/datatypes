@@ -241,7 +241,7 @@ function tbl = csv2table (name, varargin)
    textType, datetimeType, durationTypes, hexType, args] = pairedArgs ...
                                             (optNames, dfValues, varargin(:));
 
-  ## Apply optional argmuments to CSV files with vartype header
+  ## Apply optional arguments to CSV files with vartype header
   if (Trows > 0)
     if (numHeaderLines)
       tbl(1:numHeaderLines,:) = [];

@@ -131,16 +131,16 @@ call it directly. \n\
           warning ("__csv2table__: line(s) found with more fields than in headerline");
           break;
         }
-        // Check for last char to be 13 (CR) and remove if found */
+        // Check for last char to be 13 (CR) and remove if found
         if (word.length () && word[word.length () - 1] == char(13))
         {
           word.resize (word.size () - 1);
         }
-        // Check if scalar */
+        // Check if scalar
         const char *word_str = word.c_str ();
         char *err;
         double val = strtod (word_str, &err);
-        // Store into the cell; check if it is in address argument range*/
+        // Store into the cell; check if it is in address argument range
         if (col < cols)
         {
           C(row, col) = ((word == "") || oinside || (err != word_str + word.length())) ?
@@ -152,7 +152,7 @@ call it directly. \n\
       }
       else if ((inside) && line[k] == prot && (k + 1 < len && line[k+1] == prot))
       {
-        // Inside a string */
+        // Inside a string
         word += prot;
         ++k;
       }

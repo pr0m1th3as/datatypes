@@ -29,12 +29,12 @@ classdef categorical
   ## Each @code{categorical} array stores the list of categories as a cell array
   ## of character vectors and a numeric array of @qcode{uint16} type as indices
   ## to the categories.  The categorical array may also store elements of
-  ## undefined categorical values, which represent the absense of a given
+  ## undefined categorical values, which represent the absence of a given
   ## category and correspond to the @qcode{NaN} value for numeric arrays or in
   ## general to the missing value for other data types.
   ##
   ## @code{categorical} arrays do not have any public properties, which can be
-  ## indexed by using dot notation similarily to structures.  However, there are
+  ## indexed by using dot notation similarly to structures.  However, there are
   ## several methods which can be used to modify their categories once they are
   ## constructed.
   ##
@@ -109,7 +109,7 @@ classdef categorical
     ## @var{valueset}, which must be a vector of unique values.  The data type
     ## of input array @var{A} and @var{valueset} must be the same, unless they
     ## are string or cell arrays of character vectors, in which case they can be
-    ## used interchangeably.  Similarly to intput array @var{A} any leading or
+    ## used interchangeably.  Similarly to input array @var{A} any leading or
     ## trailing white spaces are removed, if @var{valueset} is a string or cell
     ## array of character vectors.
     ##
@@ -133,8 +133,8 @@ classdef categorical
     ## The elements of unordered categorical arrays can only be compared for
     ## equality.  Any other relational operator cannot be used.  Setting
     ## @qcode{"Ordinal"} to @qcode{true} results in a categorical array with
-    ## mathematically orderred categories.  The ordering goes from smallest to
-    ## largest according to the order in @var{valueset} or the order or
+    ## mathematically ordered categories.  The ordering goes from smallest to
+    ## largest according to the order in @var{valueset} or the order of
     ## appearance in input array @var{A}, when @var{valueset} is not specified,
     ## in which case the unique values in @{A} are not sorted in order to set
     ## the categories.  Ordinal categorical arrays allow for relational
@@ -147,7 +147,7 @@ classdef categorical
     ## categorical arrays.  Setting @qcode{"Protected"} to @qcode{true} prevents
     ## from assigning new values that do not correspond to existing categories.
     ## When @qcode{false}, assigning new values to the array automatically
-    ## updates the categories. Hence, categorical arrays with differenct sets of
+    ## updates the categories. Hence, categorical arrays with different sets of
     ## categories can be combined/merged into a new array with set operations.
     ## @end itemize
     ##
@@ -655,7 +655,7 @@ classdef categorical
     ## @deftypefn  {categorical} {@var{C} =} countcats (@var{A})
     ## @deftypefnx {categorical} {@var{C} =} countcats (@var{A}, @var{dim})
     ##
-    ## Count occurences of categories in a categorical array.
+    ## Count occurrences of categories in a categorical array.
     ##
     ## @code{@var{C} = countcats (@var{A})} returns the number of elements for
     ## each category in @var{A}.  If @var{A} is a vector, @var{C} is also a
@@ -664,7 +664,7 @@ classdef categorical
     ## counts from each column of @var{A}.  For multidimensional arrays,
     ## @code{countcats} operates along the first non-singleton dimension.
     ##
-    ## @code{@var{C} = countcats (@var{A}, @var{dim})} aperates along the
+    ## @code{@var{C} = countcats (@var{A}, @var{dim})} operates along the
     ## dimension @var{dim}.
     ##
     ## @end deftypefn
@@ -782,7 +782,7 @@ classdef categorical
     ##
     ## @code{@var{h} = keyHash (@var{C})} generates a @qcode{uint64} scalar that
     ## represents the input array @var{C}.  @code{keyHash} utilizes the 64-bit
-    ## FMV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
+    ## FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
     ##
     ## @code{@var{h} = keyHash (@var{C}), @var{base}} also generates a 64-bit
     ## hash code using @var{base} as the offset basis for the FNV-1a hash
@@ -1067,7 +1067,7 @@ classdef categorical
         endif
         [TF, idx] = ismember (double (A), double (B), varargin{:});
       elseif (isordinal (A) || isordinal (B))
-        error ("categorical.ismember: both categorical arrays nust be ordinal.");
+        error ("categorical.ismember: both categorical arrays must be ordinal.");
       else
         ## Compare the category names of each element (except undefined)
         A_idx = A.code != 0;
@@ -1268,7 +1268,7 @@ classdef categorical
       if (any (cid))
         direction = varargin{cid};
         ## Check for type of direction
-        valid = {'ascend', 'descend', 'monotonic', 'strictascend', ...
+        valid_direction = {'ascend', 'descend', 'monotonic', 'strictascend', ...
                  'strictdescend', 'strictmonotonic'};
         if (! ismember (direction, valid_direction))
           error ("categorical.issorted: invalid DIRECTION value.");
@@ -1361,7 +1361,7 @@ classdef categorical
     ## elements.
     ## @end itemize
     ##
-    ## Alternatively, @var{direction} can be a cell array array of character
+    ## Alternatively, @var{direction} can be a cell array of character
     ## vectors specifying the sorting direction for each individual column of
     ## @var{A}, in which case the number of elements in @var{direction} must
     ## equal the number of columns in @var{A}.
@@ -1621,7 +1621,7 @@ classdef categorical
         endif
       elseif (! isempty (Before))
         maxcode = numel (A.cats);
-        idxcode = find (strcmp (After, A.cats));
+        idxcode = find (strcmp (Before, A.cats));
         if (isempty (idxcode))
           error ("categorical:addcats: 'Before' indexes a non-existing category.");
         elseif (idxcode == maxcode)
@@ -1658,7 +1658,7 @@ classdef categorical
     ##
     ## @code{@var{B} = mergecats (@var{A}, @var{oldcats}, @var{newcat})} merges
     ## the categories listed in @var{oldcats} into a single new category named
-    ## as specififed by @var{newcat}.
+    ## as specified by @var{newcat}.
     ##
     ## @var{newcat} must be either a character vector, a cellstr scalar or a
     ## string scalar.  @var{oldcats} may be a cell array of character vectors or
@@ -1869,7 +1869,7 @@ classdef categorical
         error (strcat ("categorical.renamecats: OLDNAMES must be", ...
                        " a subset of existing categories."));
       endif
-      B = this;
+      B = A;
       B.cats(index) = newnames;
     endfunction
 
@@ -2462,7 +2462,7 @@ classdef categorical
         Bcats = categories (B);
         if (! isequal (Acats, Bcats))
           error (strcat ("categorical.min: categorical arrays must have", ...
-                         " the same set of categories, including thei order."));
+                         " the same set of categories, including their order."));
         endif
         ## Process codes and missing values
         A_d = double (A);
@@ -2642,7 +2642,7 @@ classdef categorical
         Bcats = categories (B);
         if (! isequal (Acats, Bcats))
           error (strcat ("categorical.max: categorical arrays must have", ...
-                         " the same set of categories, including thei order."));
+                         " the same set of categories, including their order."));
         endif
         ## Process codes and missing values
         A_d = double (A);
@@ -2813,23 +2813,23 @@ classdef categorical
     ##
     ## @code{[@var{M}, @var{F}] = mode (@var{A})} also returns a numeric array
     ## @var{F}, which has the same size as @var{M} and it contains the number of
-    ## occurences of each corresponding element of @var{M}.
+    ## occurrences of each corresponding element of @var{M}.
     ##
     ## @code{[@var{M}, @var{F}, @var{C}] = mode (@var{A})} also returns a cell
     ## array @var{C}, which has the same size as @var{M} and each element is a
     ## sorted categorical vector of all the values with the same maximum
     ## frequency of the corresponding element of @var{M}.
     ##
-    ## @code{@var{B} = median (@var{A}, @var{dim})} operates along the dimension
+    ## @code{@var{B} = mode (@var{A}, @var{dim})} operates along the dimension
     ## specified by @var{dim}.
     ##
-    ## @code{@var{B} = median (@var{A}, @var{vecdim})} operates on all the
+    ## @code{@var{B} = mode (@var{A}, @var{vecdim})} operates on all the
     ## elements contained in the dimensions specified by @var{vecdim}, which
     ## must be a numeric vector of non-repeating positive integers.  Any values
     ## in @var{vecdim} indexing dimensions larger that the actual array @var{A}
     ## are ignored.
     ##
-    ## @code{@var{C} = median (@var{A}, @qcode{[]}, @qcode{'all'})} operates on
+    ## @code{@var{C} = mode (@var{A}, @qcode{[]}, @qcode{'all'})} operates on
     ## all dimensions and returns the most frequent element in @var{A}.
     ##
     ## @end deftypefn
@@ -3032,7 +3032,7 @@ classdef categorical
       codes = A.code(:);
       ccats = find (ismember (A.cats, cats));
       ncats = numel (ccats);
-      N = zeros (1, ncats)
+      N = zeros (1, ncats);
       for i = 1:ncats
         N(i) = sum (codes == ccats(i));
       endfor
@@ -3186,7 +3186,7 @@ classdef categorical
     ## @code{@var{B} = sortrows (@var{A}, @var{direction})} also specifies the
     ## sorting direction, which can be either @qcode{'ascend'} (default) or
     ## @qcode{'descend'} applying to all columns in @var{A}.  Alternatively,
-    ## @var{direction} can be a cell array array of character vectors specifying
+    ## @var{direction} can be a cell array of character vectors specifying
     ## the sorting direction for each individual column of @var{A}, in which
     ## case the number of elements in @var{direction} must equal the number of
     ## columns in @var{A}.
@@ -3379,7 +3379,7 @@ classdef categorical
     ## top @var{K} rows of the 2-D categorical array @var{A} sorted according to
     ## @var{direction}, which can be either @qcode{'ascend'} (default) or
     ## @qcode{'descend'} applying to all columns in @var{A}.  Alternatively,
-    ## @var{direction} can be a cell array array of character vectors specifying
+    ## @var{direction} can be a cell array of character vectors specifying
     ## the sorting direction for each individual column of @var{A}, in which
     ## case the number of elements in @var{direction} must equal the number of
     ## columns in @var{A}.
@@ -3413,7 +3413,7 @@ classdef categorical
     ## @deftypefnx {categorical} {@var{B} =} unique (@var{A}, @qcode{'rows'})
     ## @deftypefnx {categorical} {[@var{B}, @var{ixA}, @var{ixB}] =} unique (@dots{})
     ## @deftypefnx {categorical} {@dots{} =} unique (@dots{}, @var{order})
-    ## @deftypefnx {categorical} {@dots{} =} unique (@dots{}, @var{occurence})
+    ## @deftypefnx {categorical} {@dots{} =} unique (@dots{}, @var{occurrence})
     ##
     ## Unique values in a categorical array.
     ##
@@ -3440,12 +3440,12 @@ classdef categorical
     ## @qcode{'sorted'}, which is the default behavior, or @qcode{'stable'}, in
     ## which case the unique values are returned in order of appearance.
     ##
-    ## @code{@dots{} = unique (@dots{}, @var{occurence})} also specifies the
+    ## @code{@dots{} = unique (@dots{}, @var{occurrence})} also specifies the
     ## which index is returned in @var{ixA}, where there are repeated values or
-    ## rows (if opted) in the input categorical array.  @var{occurence} may be
+    ## rows (if opted) in the input categorical array.  @var{occurrence} may be
     ## either @qcode{'first'}, which is the default and returns the index of the
-    ## first occurence of each unique value, or @qcode{'last'}, in which case
-    ## the last occurence of each unique value is returned.
+    ## first occurrence of each unique value, or @qcode{'last'}, in which case
+    ## the last occurrence of each unique value is returned.
     ##
     ## @end deftypefn
     function [B, ixA, ixB] = unique (A, varargin)
@@ -3461,7 +3461,7 @@ classdef categorical
           endif
         endif
       endif
-      ## Handle 'setOrder' and 'occurence' options
+      ## Handle 'setOrder' and 'occurrence' options
       opt = "sorted";
       if (! isempty (varargin))
         if (any (strcmp (varargin{1}, {'sorted', 'stable', 'first', 'last'})))
@@ -3891,7 +3891,7 @@ classdef categorical
     ## @var{B} containing repeated elements of the input @var{A}, which must be
     ## a categorical vector.  If @var{n} is a scalar, each element of @var{A} is
     ## repeated @var{n} times along the non-singleton dimension of @var{A}.  If
-    ## @var{n} is a vector, it must have the same elemnts as @var{A}, in which
+    ## @var{n} is a vector, it must have the same elements as @var{A}, in which
     ## case it specifies the number of times to repeat each corresponding
     ## element of @var{A}.
     ##
@@ -4162,7 +4162,7 @@ classdef categorical
             ## Check that all categorical arrays have the same categories
             ## but they are not necessarily in the same order
             if (! all (ismember (this.cats, val.cats)))
-              error (strcat ("categorical.subsasgn: cannot asssign to", ...
+              error (strcat ("categorical.subsasgn: cannot assign to", ...
                              " protected categorical array new categories."));
             endif
             ## Reorder codes accordingly

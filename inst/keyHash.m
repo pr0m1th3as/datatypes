@@ -24,15 +24,15 @@
 ## @code{@var{h} = keyHash (@var{X})} generates a @qcode{uint64} scalar that
 ## represents the input @var{X}, which may be numeric, logical, or character
 ## array or cell array of character vectors.  @code{keyHash} utilizes the 64-bit
-## FMV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
+## FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
 ##
-## @code{@var{h} = keyHash (@var{X}), @var{base}} also generates a 64-bit
+## @code{@var{h} = keyHash (@var{X}, @var{base})} also generates a 64-bit
 ## hash code using @var{base} as the offset basis for the FNV-1a hash
 ## algorithm.  @var{base} must be a @qcode{uint64} integer type scalar.  Use
 ## this syntax to cascade @code{keyHash} on multiple objects for which a
 ## single hash code is required.
 ##
-## Note that unlike MATLAB, this implementation does no use any random seed.
+## Note that unlike MATLAB, this implementation does not use any random seed.
 ## As a result, @code{keyHash} will always generate the exact same hash key
 ## for any particular input across different workers and Octave sessions.
 ##
