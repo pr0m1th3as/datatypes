@@ -38,7 +38,7 @@
 ## datetime array of @qcode{NaT} values with the specified display format.
 ##
 ## @code{@var{T} = NaT (@dots{}, @qcode{'TimeZone'}, @var{tz})} returns a
-## datetime array of @qcode{NaT} values n the time zone specified by @var{tz}.
+## datetime array of @qcode{NaT} values in the time zone specified by @var{tz}.
 ##
 ## @qcode{NaT} is the @qcode{datetime} equivalent of @qcode{NaN}.  It represents
 ## a missing or invalid value.  @qcode{NaT} values never compare equal to,

@@ -249,7 +249,7 @@ Base function for datetime class. \n\
 \n\n\
 @end deftypefn")
 {
-  // Either 6 or 7 output arguments are reguired
+  // Either 6 or 7 output arguments are required
   if (nargout > 7)
   {
     error ("__datetime__: too many output arguments.");
@@ -762,7 +762,7 @@ Base function for datetime class. \n\
             round (YMD(i,2)) != YMD(i,2))
         {
           string errmsg = "Year, Month, and Day components";
-          errmsg += " must be inteder values.";
+          errmsg += " must be integer values.";
           if (nargout == 7)
           {
             retval(6) = errmsg;
@@ -837,7 +837,7 @@ Base function for datetime class. \n\
             round (YMDhms(i,4)) != YMDhms(i,4))
         {
           string errmsg = "Year, Month, Day, Hour, and Minute";
-          errmsg += " components must be inteder values.";
+          errmsg += " components must be integer values.";
           if (nargout == 7)
           {
             retval(6) = errmsg;

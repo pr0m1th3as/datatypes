@@ -19,7 +19,7 @@
 ## @deftypefn  {datatypes} {@var{tbl} =} struct2table (@var{S})
 ## @deftypefnx {datatypes} {@var{tbl} =} struct2table (@var{S}, @var{Name}, @var{Value})
 ##
-## Convert a cell array to a table.
+## Convert a structure array to a table.
 ##
 ## @code{@var{tbl} = struct2table (@var{S})} converts a structure array @var{S}
 ## to the table @var{tbl}, where each field of the input structure becomes a
@@ -27,7 +27,7 @@
 ## all of which have @math{M} rows, or an @math{Mx1} or @math{1xM} structure
 ## array with @math{N} fields, the output is an @math{MxN} table.
 ##
-## @code{@var{tbl} = array2table (@var{S}, @var{Name}, @var{Value})} specifies
+## @code{@var{tbl} = struct2table (@var{S}, @var{Name}, @var{Value})} specifies
 ## optional parameters for creating the table @var{tbl} with the following
 ## Name-Value paired arguments.
 ##
@@ -109,7 +109,7 @@ function tbl = struct2table (S, varargin)
   ## Handle remaining paired arguments
   if (! isempty (rowNames))
     if (numel (rowNames) != nrows)
-      error ("struct2table: 'RowNames' must match the rows in input cell.");
+      error ("struct2table: 'RowNames' must match the rows in input structure.");
     endif
     optArgs = [optArgs {'RowNames', rowNames}];
   endif
@@ -163,7 +163,7 @@ endfunction
 %!error<struct2table: input array must be a structure.> struct2table ({1});
 %!error<struct2table: fields have different rows. Use 'AsArray' option.> ...
 %! struct2table (struct ('A', 1, 'B', [1; 2]));
-%!error<struct2table: 'RowNames' must match the rows in input cell.> ...
+%!error<struct2table: 'RowNames' must match the rows in input structure.> ...
 %! struct2table (struct ('A', {'a';, 'b'}, 'B', [1; 2]), 'RowNames', 'q');
 %!error<struct2table: 'DimensionNames' must be a two-element vector.> ...
 %! struct2table (struct ('A', {'a';, 'b'}, 'B', [1; 2]), 'DimensionNames', 'q');

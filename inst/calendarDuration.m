@@ -843,7 +843,7 @@ classdef calendarDuration
     ##
     ## @code{@var{h} = keyHash (@var{calD})} generates a @qcode{uint64} scalar
     ## that represents the input array @var{calD}.  @code{keyHash} utilizes the
-    ## 64-bit FMV-1a variant of the Fowler-Noll-Vo non-cryptographic hash
+    ## 64-bit FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash
     ## function.
     ##
     ## @code{@var{h} = keyHash (@var{calD}), @var{base}} also generates a 64-bit
@@ -1684,7 +1684,7 @@ classdef calendarDuration
     ## @deftypefnx {calendarDuration} {@var{B} =} reshape (@var{A}, @dots{}, @qcode{[]}, @dots{})
     ## @deftypefnx {calendarDuration} {@var{B} =} reshape (@var{A}, @var{dimvec})
     ##
-    ## Repeat copies of calendarDuration array elements.
+    ## Reshape calendarDuration array.
     ##
     ## @code{@var{B} = reshape (@var{A}, @var{d1}, @dots{}, @var{dN})} returns a
     ## calendarDuration array @var{B} with specified dimensions @var{d1},

@@ -223,10 +223,10 @@ classdef duration
         case 3
           [H, MI, S] = args{:};
           if (! (isnumeric (H) && isnumeric (MI) && isnumeric (S)))
-            error ("duration: Y, M, and D must be a numeric arrays.");
+            error ("duration: H, MI, and S must be numeric arrays.");
           endif
           if (! (isreal (H) && isreal (MI) && isreal (S)))
-            error ("duration: Y, M, and D must be a real.");
+            error ("duration: H, MI, and S must be a real.");
           endif
           ## Expansion is handled by the helper function
           [err, days] = hms2days (H, MI, S);
@@ -435,7 +435,7 @@ classdef duration
     ## to years, months, days, hours, minutes, and seconds, respectively.  Since
     ## months cannot be represented as a fixed length of time, the second column
     ## of @var{DV} is always zero.  @var{DV} represents a length of time split
-    ## accross different fixed-length elapsed time units.
+    ## across different fixed-length elapsed time units.
     ##
     ## @code{[@var{Y}, @var{MO}, @var{D}, @var{h}, @var{mi}, @var{s}] = datevec
     ## (@var{DT})} returns the components of @var{DT} as individual variables,
@@ -475,7 +475,7 @@ classdef duration
     ##
     ## @code{[@var{H}, @var{M}, @var{S}] = hms (@var{D})} splits the duration
     ## array @var{D} into separate numeric arrays @var{H}, @var{M}, and @var{S},
-    ## which correspond to hours, minutes, and seconds, repsectively.  Hours and
+    ## which correspond to hours, minutes, and seconds, respectively.  Hours and
     ## minutes are returned as whole numbers, while seconds may also have a
     ## fractional part.
     ##
@@ -745,9 +745,9 @@ classdef duration
     ##
     ## @code{@var{h} = keyHash (@var{D})} generates a @qcode{uint64} scalar that
     ## represents the input array @var{D}.  @code{keyHash} utilizes the 64-bit
-    ## FMV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
+    ## FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
     ##
-    ## @code{@var{h} = keyHash (@var{D}), @var{base}} also generates a 64-bit
+    ## @code{@var{h} = keyHash (@var{D}, @var{base})} also generates a 64-bit
     ## hash code using @var{base} as the offset basis for the FNV-1a hash
     ## algorithm.  @var{base} must be a @qcode{uint64} integer type scalar.  Use
     ## this syntax to cascade @code{keyHash} on multiple objects for which a
@@ -1622,11 +1622,11 @@ classdef duration
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {duration} {@var{C} =} vertat (@var{A}, @var{B}, @dots{})
+    ## @deftypefn {duration} {@var{C} =} vertcat (@var{A}, @var{B}, @dots{})
     ##
     ## Vertical concatenation of duration arrays.
     ##
-    ## @code{@var{C} = vertat (@var{A}, @var{B}, @dots{}} is the equivalent of
+    ## @code{@var{C} = vertcat (@var{A}, @var{B}, @dots{}} is the equivalent of
     ## the syntax @code{@var{B} = [@var{A}; @var{B}; @dots{}]} and vertically
     ## concatenates the duration arrays @var{A}, @var{B}, @dots{}.  All input
     ## arrays must have the same size except along the first dimension.  All of
@@ -1674,7 +1674,7 @@ classdef duration
     ## @var{B} containing repeated elements of the input @var{A}, which must be
     ## a duration vector.  If @var{n} is a scalar, each element of @var{A} is
     ## repeated @var{n} times along the non-singleton dimension of @var{A}.  If
-    ## @var{n} is a vector, it must have the same elemnts as @var{A}, in which
+    ## @var{n} is a vector, it must have the same elements as @var{A}, in which
     ## case it specifies the number of times to repeat each corresponding
     ## element of @var{A}.
     ##
@@ -1714,7 +1714,7 @@ classdef duration
     ## @deftypefnx {duration} {@var{B} =} reshape (@var{A}, @dots{}, @qcode{[]}, @dots{})
     ## @deftypefnx {duration} {@var{B} =} reshape (@var{A}, @var{dimvec})
     ##
-    ## Repeat copies of duration array elements.
+    ## Reshape duration array.
     ##
     ## @code{@var{B} = reshape (@var{A}, @var{d1}, @dots{}, @var{dN})} returns a
     ## duration array @var{B} with specified dimensions @var{d1}, @dots{},
@@ -1911,7 +1911,7 @@ classdef duration
 
         case '.'
           if (! ischar (s.subs))
-            error (strcat ("calendarDuration.subsasgn: '.' index", ...
+            error (strcat ("duration.subsasgn: '.' index", ...
                            " argument must be a character vector."));
           endif
           switch (s.subs)
@@ -2125,7 +2125,7 @@ function errmsg = checkInputFormatString (inputFormat)
     errmsg = "invalid 'InputFormat'.";
   endif
   if (foundInFmt(4) && numel (inputFormat) > 1)
-    errmsg = "'hh:mm' input format cannot indicate fractional secons digits.";
+    errmsg = "'hh:mm' input format cannot indicate fractional second digits.";
   endif
   if (numel (inputFormat) == 2)
     if (any (char (inputFormat(2)) != 'S'))

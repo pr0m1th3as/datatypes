@@ -187,9 +187,9 @@ classdef datetime
     ## may also have a fractional part.
     ##
     ## @code{@var{T} = datetime (@var{X}, @qcode{'ConvertFrom'}, @var{TYPE})}
-    ## converts the numeric values in @var{X} to a datetime array accordinng to
+    ## converts the numeric values in @var{X} to a datetime array according to
     ## the data type specified by @var{TYPE}.  The following types are
-    ## suppoerted:
+    ## supported:
     ##
     ## @itemize
     ## @item @qcode{'datenum'}
@@ -437,7 +437,7 @@ classdef datetime
     ##
     ## Hour, Minute, and Second components of a datetime array.
     ##
-    ## @code{[@var{h}, @var{m}, @var{s}] = ymd (@var{T})} returns the hour,
+    ## @code{[@var{h}, @var{m}, @var{s}] = hms (@var{T})} returns the hour,
     ## minute, and second components of the corresponding datetime values in
     ## @var{T} as separate numeric arrays.  @var{h} and @var{m} contain integer
     ## values and @var{s} may also contain a fractional part.  All outputs have
@@ -540,7 +540,7 @@ classdef datetime
     ## (@qcode{NaT}) values in @var{T} are returned as @qcode{NaN} in the output
     ## array.
     ##
-    ## @code{@var{D} = day (@var{T}, @var{monthType})} returns the day number or
+    ## @code{@var{D} = day (@var{T}, @var{dayType})} returns the day number or
     ## name for each element of the input datetime array @var{T} as specified by
     ## @var{dayType}, which may have any of the following options:
     ##
@@ -794,7 +794,7 @@ classdef datetime
     ##
     ## @code{@var{h} = keyHash (@var{T})} generates a @qcode{uint64} scalar that
     ## represents the input array @var{T}.  @code{keyHash} utilizes the 64-bit
-    ## FMV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
+    ## FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
     ##
     ## @code{@var{h} = keyHash (@var{T}), @var{base}} also generates a 64-bit
     ## hash code using @var{base} as the offset basis for the FNV-1a hash
@@ -1089,7 +1089,7 @@ classdef datetime
 
     ## -*- texinfo -*-
     ## @deftypefn  {datetime} {@var{TF} =} ismissing (@var{T})
-    ## @deftypefnx {datetime} {@var{TF} =} ismissing (@varT}, @var{indicator})
+    ## @deftypefnx {datetime} {@var{TF} =} ismissing (@var{T}, @var{indicator})
     ##
     ## Test for missing elements in datetime array.
     ##
@@ -1352,7 +1352,7 @@ classdef datetime
     ## @var{B} containing repeated elements of the input @var{A}, which must be
     ## a datetime vector.  If @var{n} is a scalar, each element of @var{A} is
     ## repeated @var{n} times along the non-singleton dimension of @var{A}.  If
-    ## @var{n} is a vector, it must have the same elemnts as @var{A}, in which
+    ## @var{n} is a vector, it must have the same elements as @var{A}, in which
     ## case it specifies the number of times to repeat each corresponding
     ## element of @var{A}.
     ##
@@ -1402,7 +1402,7 @@ classdef datetime
     ## @deftypefnx {datetime} {@var{B} =} reshape (@var{A}, @dots{}, @qcode{[]}, @dots{})
     ## @deftypefnx {datetime} {@var{B} =} reshape (@var{A}, @var{dimvec})
     ##
-    ## Repeat copies of datetime array elements.
+    ## Reshape datetime array.
     ##
     ## @code{@var{B} = reshape (@var{A}, @var{d1}, @dots{}, @var{dN})} returns
     ## a datetime array @var{B} with specified dimensions @var{d1}, @dots{},

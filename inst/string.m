@@ -490,7 +490,7 @@ classdef string
     ##
     ## @code{@var{h} = keyHash (@var{str})} generates a @qcode{uint64} scalar
     ## that represents the input array @var{str}.  @code{keyHash} utilizes the
-    ## 64-bit FMV-1a variant of the Fowler-Noll-Vo non-cryptographic hash
+    ## 64-bit FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash
     ## function.
     ##
     ## @code{@var{h} = keyHash (@var{str}), @var{base}} also generates a 64-bit
@@ -636,7 +636,7 @@ classdef string
     ## @var{indicator} must be either a character vector or a string vector
     ## or a cell vector of character vectors.
     ##
-    ## The output array @var{FT} has the same size as the input array @var{str}.
+    ## The output array @var{TF} has the same size as the input array @var{str}.
     ##
     ## @end deftypefn
     function TF = ismissing (this, varargin)
@@ -765,7 +765,7 @@ classdef string
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {string} {@var{TF} =} eq (@var{A}, @var{B})
+    ## @deftypefn {string} {@var{TF} =} ge (@var{A}, @var{B})
     ##
     ## Test for greater than or equal to.
     ##
@@ -798,7 +798,7 @@ classdef string
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {string} {@var{TF} =} eq (@var{A}, @var{B})
+    ## @deftypefn {string} {@var{TF} =} gt (@var{A}, @var{B})
     ##
     ## Test for greater than.
     ##
@@ -830,7 +830,7 @@ classdef string
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {string} {@var{TF} =} eq (@var{A}, @var{B})
+    ## @deftypefn {string} {@var{TF} =} le (@var{A}, @var{B})
     ##
     ## Test for less than or equal to.
     ##
@@ -863,7 +863,7 @@ classdef string
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {string} {@var{TF} =} eq (@var{A}, @var{B})
+    ## @deftypefn {string} {@var{TF} =} lt (@var{A}, @var{B})
     ##
     ## Test for less than.
     ##
@@ -964,7 +964,7 @@ classdef string
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {string} {@var{TF} =} strcmp (@var{A}, @var{B})
+    ## @deftypefn {string} {@var{TF} =} strcmpi (@var{A}, @var{B})
     ##
     ## Compare strings (case insensitive).
     ##
@@ -1040,7 +1040,7 @@ classdef string
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {string} {@var{TF} =} strncmp (@var{A}, @var{B}, @var{n})
+    ## @deftypefn {string} {@var{TF} =} strncmpi (@var{A}, @var{B}, @var{n})
     ##
     ## Compare first @var{n} characters of strings (case insensitive).
     ##
@@ -1170,7 +1170,7 @@ classdef string
     ## which must be either string arrays, cell arrays of character vectors, or
     ## character vectors or matrices.  All input arguments must be of compatible
     ## sizes.  Character vectors are treated as a single text element and
-    ## character matrices are treated as a column of elements.  @code{apped}
+    ## character matrices are treated as a column of elements.  @code{append}
     ## preserves any trailing white spaces, unlike the @code{strcat} function.
     ##
     ## @end deftypefn
@@ -1179,7 +1179,7 @@ classdef string
       fcn = @(x) iscellstr (x) || ischar (x) || isa (x, 'string');
       dtypes = cellfun (fcn, varargin);
       if (! all (dtypes))
-        error (strcat ("string.append: input arguments must be strindg", ...
+        error (strcat ("string.append: input arguments must be string", ...
                        " arrays, cell arrays of character vectors, or", ...
                        " character matrices."));
       endif
@@ -1219,7 +1219,7 @@ classdef string
     ## Remove content from string array.
     ##
     ## @code{@var{newstr} = erase (@var{str}, @var{pat})} removes the
-    ## occurences of @var{pat} from each element of the string array @var{str}.
+    ## occurrences of @var{pat} from each element of the string array @var{str}.
     ## @var{newstr} is a string array of the same size as @var{str}.
     ##
     ## @end deftypefn
@@ -1281,7 +1281,7 @@ classdef string
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {string} {@var{newstr} =} plys (@var{str1}, @var{str2})
+    ## @deftypefn {string} {@var{newstr} =} plus (@var{str1}, @var{str2})
     ##
     ## Append strings.
     ##
@@ -1334,7 +1334,7 @@ classdef string
     ## @deftypefnx {string} {@var{B} =} unique (@var{A}, @qcode{'rows'})
     ## @deftypefnx {string} {[@var{B}, @var{ixA}, @var{ixB}] =} unique (@dots{})
     ## @deftypefnx {string} {@dots{} =} unique (@dots{}, @var{order})
-    ## @deftypefnx {string} {@dots{} =} unique (@dots{}, @var{occurence})
+    ## @deftypefnx {string} {@dots{} =} unique (@dots{}, @var{occurrence})
     ##
     ## Unique values in a string array.
     ##
@@ -1359,12 +1359,12 @@ classdef string
     ## @qcode{'sorted'}, which is the default behavior, or @qcode{'stable'}, in
     ## which case the unique values are returned in order of appearance.
     ##
-    ## @code{@dots{} = unique (@dots{}, @var{occurence})} also specifies the
+    ## @code{@dots{} = unique (@dots{}, @var{occurrence})} also specifies the
     ## which index is returned in @var{ixA}, where there are repeated values or
-    ## rows (if opted) in the input categorical array.  @var{occurence} may be
+    ## rows (if opted) in the input categorical array.  @var{occurrence} may be
     ## either @qcode{'first'}, which is the default and returns the index of the
-    ## first occurence of each unique value, or @qcode{'last'}, in which case
-    ## the last occurence of each unique value is returned.
+    ## first occurrence of each unique value, or @qcode{'last'}, in which case
+    ## the last occurrence of each unique value is returned.
     ##
     ## @end deftypefn
     function [B, ixA, ixB] = unique (A, varargin)
@@ -1380,7 +1380,7 @@ classdef string
           endif
         endif
       endif
-      ## Handle 'setOrder' and 'occurence' options
+      ## Handle 'setOrder' and 'occurrence' options
       opt = "sorted";
       if (! isempty (varargin))
         if (any (strcmp (varargin{1}, {"sorted", "stable", "first", "last"})))
@@ -1481,7 +1481,7 @@ classdef string
           try
             args(i) = string (args{i});
           catch
-            error ("string.cat: cannot concatenate string arrays with 's'.", ...
+            error ("string.cat: cannot concatenate string arrays with '%s'.", ...
                    class (args{i}));
           end_try_catch
         endif
@@ -1563,7 +1563,7 @@ classdef string
     ## @var{B} containing repeated elements of the input @var{A}, which must be
     ## a string vector.  If @var{n} is a scalar, each element of @var{A} is
     ## repeated @var{n} times along the non-singleton dimension of @var{A}.  If
-    ## @var{n} is a vector, it must have the same elemnts as @var{A}, in which
+    ## @var{n} is a vector, it must have the same elements as @var{A}, in which
     ## case it specifies the number of times to repeat each corresponding
     ## element of @var{A}.
     ##
@@ -1605,7 +1605,7 @@ classdef string
     ## @deftypefnx {string} {@var{B} =} reshape (@var{A}, @dots{}, @qcode{[]}, @dots{})
     ## @deftypefnx {string} {@var{B} =} reshape (@var{A}, @var{dimvec})
     ##
-    ## Repeat copies of string array elements.
+    ## Reshape string array.
     ##
     ## @code{@var{B} = reshape (@var{A}, @var{d1}, @dots{}, @var{dN})} returns
     ## a string array @var{B} with specified dimensions @var{d1}, @dots{},

@@ -48,11 +48,11 @@ classdef missing
   endmethods
 
 ################################################################################
-##                ** Create and convert 'categorical' type **                 ##
+##                ** Create and convert 'missing' type **                 ##
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'categorical'      'dispstrings'      'cellstr'          'double'          ##
+## 'missing'          'dispstrings'      'cellstr'          'double'          ##
 ## 'single'           'calendarDuration' 'categorical'      'datetime'        ##
 ## 'duration'                                                                 ##
 ##                                                                            ##
@@ -367,7 +367,7 @@ classdef missing
     ## with missing arrays always returns @qcode{false}.
     ##
     ## @end deftypefn
-    function out = ge (A, B)
+    function TF = ge (A, B)
       A = nan (size (A));
       B = nan (size (B));
       try
@@ -393,7 +393,7 @@ classdef missing
     ## with missing arrays always returns @qcode{false}.
     ##
     ## @end deftypefn
-    function out = gt (A, B)
+    function TF = gt (A, B)
       A = nan (size (A));
       B = nan (size (B));
       try
@@ -419,7 +419,7 @@ classdef missing
     ## with missing arrays always returns @qcode{false}.
     ##
     ## @end deftypefn
-    function out = le (A, B)
+    function TF = le (A, B)
       A = nan (size (A));
       B = nan (size (B));
       try
@@ -445,7 +445,7 @@ classdef missing
     ## with missing arrays always returns @qcode{false}.
     ##
     ## @end deftypefn
-    function out = lt (A, B)
+    function TF = lt (A, B)
       A = nan (size (A));
       B = nan (size (B));
       try
@@ -471,7 +471,7 @@ classdef missing
     ## with missing arrays always returns @qcode{false}.
     ##
     ## @end deftypefn
-    function out = ne (A, B)
+    function TF = ne (A, B)
       A = nan (size (A));
       B = nan (size (B));
       try

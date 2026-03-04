@@ -14,7 +14,7 @@
 ##
 ## You should have received a copy of the GNU General Public License
 ## along with this program; if not, see
-## <http:##www.gnu.org/licenses/>.
+## <http://www.gnu.org/licenses/>.
 
 ## -*- texinfo -*-
 ## @deftypefn  {private} {[@var{g}, @var{gn}, @var{gl}] =} __grp2idx__ (@var{s})
