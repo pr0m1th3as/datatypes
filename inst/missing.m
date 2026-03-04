@@ -48,7 +48,7 @@ classdef missing
   endmethods
 
 ################################################################################
-##                ** Create and convert 'missing' type **                 ##
+##                  ** Create and convert 'missing' type **                   ##
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
