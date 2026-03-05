@@ -1500,7 +1500,8 @@ classdef duration
       if (any (strcmp ("legacy", varargin)))
         error ("duration.unique: 'legacy' option is not supported.");
       endif
-      [B, ixA, ixB] = __unique__ (A.Days, varargin{:});
+      B = A;
+      [B.Days, ixA, ixB] = __unique__ (A.Days, varargin{:});
     endfunction
 
     function BI = interp1 (A, B, AI, varargin)
