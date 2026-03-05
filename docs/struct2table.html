@@ -270,7 +270,7 @@
 <dt><code><h5 class="fs">datatypes: <var>tbl</var> = <b>struct2table</b> (<var>S</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
 </dl>
 
-<p> Convert a cell array to a table.
+<p> Convert a structure array to a table.
 </p>
 <div class="ms-5">
 <p> <code><var>tbl</var> = struct2table (<var>S</var>)</code> converts a structure array <var>S</var>
@@ -279,7 +279,7 @@
  all of which have <math>M</math> rows, or an <math>M&times;1</math> or <math>1&times;M</math> structure
  array with <math>N</math> fields, the output is an <math>M&times;N</math> table.
 </p>
-<p> <code><var>tbl</var> = array2table (<var>S</var>, <var>Name</var>, <var>Value</var>)</code> specifies
+<p> <code><var>tbl</var> = struct2table (<var>S</var>, <var>Name</var>, <var>Value</var>)</code> specifies
  optional parameters for creating the table <var>tbl</var> with the following
  Name-Value paired arguments.
 </p>

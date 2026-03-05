@@ -559,7 +559,7 @@ Convert duration array to date vectors.
  to years, months, days, hours, minutes, and seconds, respectively.  Since
  months cannot be represented as a fixed length of time, the second column
  of <var>DV</var> is always zero.  <var>DV</var> represents a length of time split
- accross different fixed-length elapsed time units.
+ across different fixed-length elapsed time units.
 </p>
 <p> <code>[<var>Y</var>, <var>MO</var>, <var>D</var>, <var>h</var>, <var>mi</var>, <var>s</var>] = datevec
  (<var>DT</var>)</code> returns the components of <var>DT</var> as individual variables,
@@ -600,7 +600,7 @@ Split duration array into separate time unit values.
 <p> </p>
 <p> <code>[<var>H</var>, <var>M</var>, <var>S</var>] = hms (<var>D</var>)</code> splits the duration
  array <var>D</var> into separate numeric arrays <var>H</var>, <var>M</var>, and <var>S</var>,
- which correspond to hours, minutes, and seconds, repsectively.  Hours and
+ which correspond to hours, minutes, and seconds, respectively.  Hours and
  minutes are returned as whole numbers, while seconds may also have a
  fractional part.
 </p>
@@ -1025,9 +1025,9 @@ Generate a hash code for duration array.
 <p> </p>
 <p> <code><var>h</var> = keyHash (<var>D</var>)</code> generates a <code>uint64</code> scalar that
  represents the input array <var>D</var>.  <code>keyHash</code> utilizes the 64-bit
- FMV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
+ FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
 </p>
-<p> <code><var>h</var> = keyHash (<var>D</var>), <var>base</var></code> also generates a 64-bit
+<p> <code><var>h</var> = keyHash (<var>D</var>, <var>base</var>)</code> also generates a 64-bit
  hash code using <var>base</var> as the offset basis for the FNV-1a hash
  algorithm.  <var>base</var> must be a <code>uint64</code> integer type scalar.  Use
  this syntax to cascade <code>keyHash</code> on multiple objects for which a
@@ -1069,9 +1069,9 @@ Generate a hash code for duration array.
 <p> </p>
 <p> <code><var>h</var> = keyHash (<var>D</var>)</code> generates a <code>uint64</code> scalar that
  represents the input array <var>D</var>.  <code>keyHash</code> utilizes the 64-bit
- FMV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
+ FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
 </p>
-<p> <code><var>h</var> = keyHash (<var>D</var>), <var>base</var></code> also generates a 64-bit
+<p> <code><var>h</var> = keyHash (<var>D</var>, <var>base</var>)</code> also generates a 64-bit
  hash code using <var>base</var> as the offset basis for the FNV-1a hash
  algorithm.  <var>base</var> must be a <code>uint64</code> integer type scalar.  Use
  this syntax to cascade <code>keyHash</code> on multiple objects for which a
@@ -3051,11 +3051,11 @@ Vertical concatenation of duration arrays.
           <div class="collapse multi-collapse" id="collapseMethod73">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>C</var> = <b>vertat</b> (<var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>vertcat</b> (<var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>C</var> = vertat (<var>A</var>, <var>B</var>, &hellip;</code> is the equivalent of
+<p> <code><var>C</var> = vertcat (<var>A</var>, <var>B</var>, &hellip;</code> is the equivalent of
  the syntax <code><var>B</var> = [<var>A</var>; <var>B</var>; &hellip;]</code> and vertically
  concatenates the duration arrays <var>A</var>, <var>B</var>, &hellip;.  All input
  arrays must have the same size except along the first dimension.  All of
@@ -3143,7 +3143,7 @@ Repeat copies of duration array elements.
  <var>B</var> containing repeated elements of the input <var>A</var>, which must be
  a duration vector.  If <var>n</var> is a scalar, each element of <var>A</var> is
  repeated <var>n</var> times along the non-singleton dimension of <var>A</var>.  If
- <var>n</var> is a vector, it must have the same elemnts as <var>A</var>, in which
+ <var>n</var> is a vector, it must have the same elements as <var>A</var>, in which
  case it specifies the number of times to repeat each corresponding
  element of <var>A</var>.
 </p>
@@ -3212,7 +3212,7 @@ Construct a vector of repeated duration array.
                   </h4>
                 </div>
                 <div class="col-8">
-Repeat copies of duration array elements.
+Reshape duration array.
                 </div>
               </div>
           </div>

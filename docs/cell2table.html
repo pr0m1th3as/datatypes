@@ -275,12 +275,12 @@
 <div class="ms-5">
 <p> <code><var>tbl</var> = cell2table (<var>C</var>)</code> converts the 2-D cell array <var>C</var>
  to the table <var>tbl</var>, where the contents of each column of <var>C</var> becomes
- a variable in <var>tbl</var>.  The contents of each collumn are concatenated into
+ a variable in <var>tbl</var>.  The contents of each column are concatenated into
  their common data type (i.e. if a column of <var>C</var> contains explicitly
  <code>double</code> numbers, then the corresponding variable in <var>tbl</var> is of
  the same type), otherwise they are added as a column of cells.
 </p>
-<p> <code><var>tbl</var> = array2table (<var>C</var>, <var>Name</var>, <var>Value</var>)</code> specifies
+<p> <code><var>tbl</var> = cell2table (<var>C</var>, <var>Name</var>, <var>Value</var>)</code> specifies
  optional parameters for creating the table <var>tbl</var> with the following
  Name-Value paired arguments.
 </p>

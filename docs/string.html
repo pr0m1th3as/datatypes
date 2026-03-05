@@ -743,7 +743,7 @@ Generate a hash code for string array.
 <p> </p>
 <p> <code><var>h</var> = keyHash (<var>str</var>)</code> generates a <code>uint64</code> scalar
  that represents the input array <var>str</var>.  <code>keyHash</code> utilizes the
- 64-bit FMV-1a variant of the Fowler-Noll-Vo non-cryptographic hash
+ 64-bit FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash
  function.
 </p>
 <p> <code><var>h</var> = keyHash (<var>str</var>), <var>base</var></code> also generates a 64-bit
@@ -945,7 +945,7 @@ Find missing elements in string array.
 <p> <var>indicator</var> must be either a character vector or a string vector
  or a cell vector of character vectors.
 </p>
-<p> The output array <var>FT</var> has the same size as the input array <var>str</var>.
+<p> The output array <var>TF</var> has the same size as the input array <var>str</var>.
 </p>
 
 
@@ -1136,7 +1136,7 @@ Test for greater than or equal to.
           <div class="collapse multi-collapse" id="collapseMethod22">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">string: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>ge</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1171,7 +1171,7 @@ Test for greater than.
           <div class="collapse multi-collapse" id="collapseMethod23">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">string: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>gt</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1205,7 +1205,7 @@ Test for less than or equal to.
           <div class="collapse multi-collapse" id="collapseMethod24">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">string: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>le</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1240,7 +1240,7 @@ Test for less than.
           <div class="collapse multi-collapse" id="collapseMethod25">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">string: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>lt</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1351,7 +1351,7 @@ Compare strings (case insensitive).
           <div class="collapse multi-collapse" id="collapseMethod28">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">string: <var>TF</var> = <b>strcmp</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>strcmpi</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1435,7 +1435,7 @@ Compare first <var>n</var> characters of strings (case insensitive).
           <div class="collapse multi-collapse" id="collapseMethod30">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">string: <var>TF</var> = <b>strncmp</b> (<var>A</var>, <var>B</var>, <var>n</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>strncmpi</b> (<var>A</var>, <var>B</var>, <var>n</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1487,7 +1487,7 @@ Remove content from string array.
  which must be either string arrays, cell arrays of character vectors, or
  character vectors or matrices.  All input arguments must be of compatible
  sizes.  Character vectors are treated as a single text element and
- character matrices are treated as a column of elements.  <code>apped</code>
+ character matrices are treated as a column of elements.  <code>append</code>
  preserves any trailing white spaces, unlike the <code>strcat</code> function.
 </p>
 
@@ -1521,7 +1521,7 @@ Remove content from string array.
 
 <p> </p>
 <p> <code><var>newstr</var> = erase (<var>str</var>, <var>pat</var>)</code> removes the
- occurences of <var>pat</var> from each element of the string array <var>str</var>.
+ occurrences of <var>pat</var> from each element of the string array <var>str</var>.
  <var>newstr</var> is a string array of the same size as <var>str</var>.
 </p>
 
@@ -1620,7 +1620,7 @@ Append strings.
           <div class="collapse multi-collapse" id="collapseMethod35">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">string: <var>newstr</var> = <b>plys</b> (<var>str1</var>, <var>str2</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>plus</b> (<var>str1</var>, <var>str2</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1727,7 +1727,7 @@ Unique values in a string array.
 <dt><code><h5 class="fs">string: <var>B</var> = <b>unique</b> (<var>A</var>, <code>'rows'</code>)</code></h5></dt>
 <dt><code><h5 class="fs">string: [<var>B</var>, <var>ixA</var>, <var>ixB</var>] = <b>unique</b> (&hellip;)</code></h5></dt>
 <dt><code><h5 class="fs">string: &hellip; = <b>unique</b> (&hellip;, <var>order</var>)</code></h5></dt>
-<dt><code><h5 class="fs">string: &hellip; = <b>unique</b> (&hellip;, <var>occurence</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: &hellip; = <b>unique</b> (&hellip;, <var>occurrence</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1752,12 +1752,12 @@ Unique values in a string array.
  <code>'sorted'</code>, which is the default behavior, or <code>'stable'</code>, in
  which case the unique values are returned in order of appearance.
 </p>
-<p> <code>&hellip; = unique (&hellip;, <var>occurence</var>)</code> also specifies the
+<p> <code>&hellip; = unique (&hellip;, <var>occurrence</var>)</code> also specifies the
  which index is returned in <var>ixA</var>, where there are repeated values or
- rows (if opted) in the input categorical array.  <var>occurence</var> may be
+ rows (if opted) in the input categorical array.  <var>occurrence</var> may be
  either <code>'first'</code>, which is the default and returns the index of the
- first occurence of each unique value, or <code>'last'</code>, in which case
- the last occurence of each unique value is returned.
+ first occurrence of each unique value, or <code>'last'</code>, in which case
+ the last occurrence of each unique value is returned.
 </p>
 
 
@@ -1949,7 +1949,7 @@ Repeat copies of string array elements.
  <var>B</var> containing repeated elements of the input <var>A</var>, which must be
  a string vector.  If <var>n</var> is a scalar, each element of <var>A</var> is
  repeated <var>n</var> times along the non-singleton dimension of <var>A</var>.  If
- <var>n</var> is a vector, it must have the same elemnts as <var>A</var>, in which
+ <var>n</var> is a vector, it must have the same elements as <var>A</var>, in which
  case it specifies the number of times to repeat each corresponding
  element of <var>A</var>.
 </p>
@@ -2018,7 +2018,7 @@ Construct a vector of repeated elements from a string array.
                   </h4>
                 </div>
                 <div class="col-8">
-Repeat copies of string array elements.
+Reshape string array.
                 </div>
               </div>
           </div>

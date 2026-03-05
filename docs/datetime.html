@@ -475,9 +475,9 @@ Create a new array of datetime values.
  may also have a fractional part.
 </p>
 <p> <code><var>T</var> = datetime (<var>X</var>, <code>'ConvertFrom'</code>, <var>TYPE</var>)</code>
- converts the numeric values in <var>X</var> to a datetime array accordinng to
+ converts the numeric values in <var>X</var> to a datetime array according to
  the data type specified by <var>TYPE</var>.  The following types are
- suppoerted:
+ supported:
 </p>
  <ul>
 <li> <code>'datenum'</code>
@@ -673,7 +673,7 @@ Hour, Minute, and Second components of a datetime array.
 </dl>
 
 <p> </p>
-<p> <code>[<var>h</var>, <var>m</var>, <var>s</var>] = ymd (<var>T</var>)</code> returns the hour,
+<p> <code>[<var>h</var>, <var>m</var>, <var>s</var>] = hms (<var>T</var>)</code> returns the hour,
  minute, and second components of the corresponding datetime values in
  <var>T</var> as separate numeric arrays.  <var>h</var> and <var>m</var> contain integer
  values and <var>s</var> may also contain a fractional part.  All outputs have
@@ -842,7 +842,7 @@ Day component of a datetime array.
  (<code>NaT</code>) values in <var>T</var> are returned as <code>NaN</code> in the output
  array.
 </p>
-<p> <code><var>D</var> = day (<var>T</var>, <var>monthType</var>)</code> returns the day number or
+<p> <code><var>D</var> = day (<var>T</var>, <var>dayType</var>)</code> returns the day number or
  name for each element of the input datetime array <var>T</var> as specified by
  <var>dayType</var>, which may have any of the following options:
 </p>
@@ -966,7 +966,7 @@ Seconds component of a datetime array.
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">datetime: <var>s</var> = <b>second</b> (<var>T</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>s</var> = <b>second</b> (<var>T</var>, <var>dayType</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>s</var> = <b>second</b> (<var>T</var>, <var>secondType</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -977,7 +977,7 @@ Seconds component of a datetime array.
  <var>T</var>.  Not-A-Time (<code>NaT</code>) values in <var>T</var> are returned as
  <code>NaN</code> in the output array.
 </p>
-<p> <code><var>D</var> = second (<var>T</var>, <var>secondType</var>)</code> returns the seconds
+<p> <code><var>s</var> = second (<var>T</var>, <var>secondType</var>)</code> returns the seconds
  for each element of the input datetime array <var>T</var> as specified by
  <var>secondType</var>, which may have any of the following options:
 </p>
@@ -1166,7 +1166,7 @@ Generate a hash code for datetime array.
 <p> </p>
 <p> <code><var>h</var> = keyHash (<var>T</var>)</code> generates a <code>uint64</code> scalar that
  represents the input array <var>T</var>.  <code>keyHash</code> utilizes the 64-bit
- FMV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
+ FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
 </p>
 <p> <code><var>h</var> = keyHash (<var>T</var>), <var>base</var></code> also generates a 64-bit
  hash code using <var>base</var> as the offset basis for the FNV-1a hash
@@ -1414,7 +1414,7 @@ Test for missing elements in datetime array.
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">datetime: <var>TF</var> = <b>ismissing</b> (<var>T</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>TF</var> = <b>ismissing</b> (@varT, <var>indicator</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>TF</var> = <b>ismissing</b> (<var>T</var>, <var>indicator</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1751,7 +1751,7 @@ Repeat copies of datetime array elements.
  <var>B</var> containing repeated elements of the input <var>A</var>, which must be
  a datetime vector.  If <var>n</var> is a scalar, each element of <var>A</var> is
  repeated <var>n</var> times along the non-singleton dimension of <var>A</var>.  If
- <var>n</var> is a vector, it must have the same elemnts as <var>A</var>, in which
+ <var>n</var> is a vector, it must have the same elements as <var>A</var>, in which
  case it specifies the number of times to repeat each corresponding
  element of <var>A</var>.
 </p>
@@ -1820,7 +1820,7 @@ Construct a vector of repeated elements from a datetime array.
                   </h4>
                 </div>
                 <div class="col-8">
-Repeat copies of datetime array elements.
+Reshape datetime array.
                 </div>
               </div>
           </div>

@@ -278,12 +278,12 @@
 <p> Each <code>categorical</code> array stores the list of categories as a cell array
  of character vectors and a numeric array of <code>uint16</code> type as indices
  to the categories.  The categorical array may also store elements of
- undefined categorical values, which represent the absense of a given
+ undefined categorical values, which represent the absence of a given
  category and correspond to the <code>NaN</code> value for numeric arrays or in
  general to the missing value for other data types.
 </p>
 <p> <code>categorical</code> arrays do not have any public properties, which can be
- indexed by using dot notation similarily to structures.  However, there are
+ indexed by using dot notation similarly to structures.  However, there are
  several methods which can be used to modify their categories once they are
  constructed.
 </p>
@@ -339,7 +339,7 @@ Create a new array of categorical values.
  <var>valueset</var>, which must be a vector of unique values.  The data type
  of input array <var>A</var> and <var>valueset</var> must be the same, unless they
  are string or cell arrays of character vectors, in which case they can be
- used interchangeably.  Similarly to intput array <var>A</var> any leading or
+ used interchangeably.  Similarly to input array <var>A</var> any leading or
  trailing white spaces are removed, if <var>valueset</var> is a string or cell
  array of character vectors.
 </p>
@@ -363,8 +363,8 @@ Create a new array of categorical values.
  The elements of unordered categorical arrays can only be compared for
  equality.  Any other relational operator cannot be used.  Setting
  <code>&quot;Ordinal&quot;</code> to <code>true</code> results in a categorical array with
- mathematically orderred categories.  The ordering goes from smallest to
- largest according to the order in <var>valueset</var> or the order or
+ mathematically ordered categories.  The ordering goes from smallest to
+ largest according to the order in <var>valueset</var> or the order of
  appearance in input array <var>A</var>, when <var>valueset</var> is not specified,
  in which case the unique values in {A are not sorted in order to set
  the categories.  Ordinal categorical arrays allow for relational
@@ -377,7 +377,7 @@ Create a new array of categorical values.
  categorical arrays.  Setting <code>&quot;Protected&quot;</code> to <code>true</code> prevents
  from assigning new values that do not correspond to existing categories.
  When <code>false</code>, assigning new values to the array automatically
- updates the categories. Hence, categorical arrays with differenct sets of
+ updates the categories. Hence, categorical arrays with different sets of
  categories can be combined/merged into a new array with set operations.
  </li></ul>
 
@@ -917,7 +917,7 @@ List of categories in categorical array.
                   </h4>
                 </div>
                 <div class="col-8">
-Count occurences of categories in a categorical array.
+Count occurrences of categories in a categorical array.
                 </div>
               </div>
           </div>
@@ -936,7 +936,7 @@ Count occurences of categories in a categorical array.
  counts from each column of <var>A</var>.  For multidimensional arrays,
  <code>countcats</code> operates along the first non-singleton dimension.
 </p>
-<p> <code><var>C</var> = countcats (<var>A</var>, <var>dim</var>)</code> aperates along the
+<p> <code><var>C</var> = countcats (<var>A</var>, <var>dim</var>)</code> operates along the
  dimension <var>dim</var>.
 </p>
 
@@ -1118,7 +1118,7 @@ Generate a hash code for a categorical array.
 <p> </p>
 <p> <code><var>h</var> = keyHash (<var>C</var>)</code> generates a <code>uint64</code> scalar that
  represents the input array <var>C</var>.  <code>keyHash</code> utilizes the 64-bit
- FMV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
+ FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
 </p>
 <p> <code><var>h</var> = keyHash (<var>C</var>), <var>base</var></code> also generates a 64-bit
  hash code using <var>base</var> as the offset basis for the FNV-1a hash
@@ -1749,7 +1749,7 @@ Return true if categorical matrix rows are sorted.
  elements.
  </li></ul>
 
-<p> Alternatively, <var>direction</var> can be a cell array array of character
+<p> Alternatively, <var>direction</var> can be a cell array of character
  vectors specifying the sorting direction for each individual column of
  <var>A</var>, in which case the number of elements in <var>direction</var> must
  equal the number of columns in <var>A</var>.
@@ -1935,7 +1935,7 @@ Merge categories in categorical array.
 </p>
 <p> <code><var>B</var> = mergecats (<var>A</var>, <var>oldcats</var>, <var>newcat</var>)</code> merges
  the categories listed in <var>oldcats</var> into a single new category named
- as specififed by <var>newcat</var>.
+ as specified by <var>newcat</var>.
 </p>
 <p> <var>newcat</var> must be either a character vector, a cellstr scalar or a
  string scalar.  <var>oldcats</var> may be a cell array of character vectors or
@@ -2873,23 +2873,23 @@ Most frequent element in a categorical array.
 </p>
 <p> <code>[<var>M</var>, <var>F</var>] = mode (<var>A</var>)</code> also returns a numeric array
  <var>F</var>, which has the same size as <var>M</var> and it contains the number of
- occurences of each corresponding element of <var>M</var>.
+ occurrences of each corresponding element of <var>M</var>.
 </p>
 <p> <code>[<var>M</var>, <var>F</var>, <var>C</var>] = mode (<var>A</var>)</code> also returns a cell
  array <var>C</var>, which has the same size as <var>M</var> and each element is a
  sorted categorical vector of all the values with the same maximum
  frequency of the corresponding element of <var>M</var>.
 </p>
-<p> <code><var>B</var> = median (<var>A</var>, <var>dim</var>)</code> operates along the dimension
+<p> <code><var>B</var> = mode (<var>A</var>, <var>dim</var>)</code> operates along the dimension
  specified by <var>dim</var>.
 </p>
-<p> <code><var>B</var> = median (<var>A</var>, <var>vecdim</var>)</code> operates on all the
+<p> <code><var>B</var> = mode (<var>A</var>, <var>vecdim</var>)</code> operates on all the
  elements contained in the dimensions specified by <var>vecdim</var>, which
  must be a numeric vector of non-repeating positive integers.  Any values
  in <var>vecdim</var> indexing dimensions larger that the actual array <var>A</var>
  are ignored.
 </p>
-<p> <code><var>C</var> = median (<var>A</var>, <code>[]</code>, <code>'all'</code>)</code> operates on
+<p> <code><var>C</var> = mode (<var>A</var>, <code>[]</code>, <code>'all'</code>)</code> operates on
  all dimensions and returns the most frequent element in <var>A</var>.
 </p>
 
@@ -3084,7 +3084,7 @@ Sort rows in a categorical array.
 <p> <code><var>B</var> = sortrows (<var>A</var>, <var>direction</var>)</code> also specifies the
  sorting direction, which can be either <code>'ascend'</code> (default) or
  <code>'descend'</code> applying to all columns in <var>A</var>.  Alternatively,
- <var>direction</var> can be a cell array array of character vectors specifying
+ <var>direction</var> can be a cell array of character vectors specifying
  the sorting direction for each individual column of <var>A</var>, in which
  case the number of elements in <var>direction</var> must equal the number of
  columns in <var>A</var>.
@@ -3161,7 +3161,7 @@ Top K sorted rows of categorical array.
  top <var>K</var> rows of the 2-D categorical array <var>A</var> sorted according to
  <var>direction</var>, which can be either <code>'ascend'</code> (default) or
  <code>'descend'</code> applying to all columns in <var>A</var>.  Alternatively,
- <var>direction</var> can be a cell array array of character vectors specifying
+ <var>direction</var> can be a cell array of character vectors specifying
  the sorting direction for each individual column of <var>A</var>, in which
  case the number of elements in <var>direction</var> must equal the number of
  columns in <var>A</var>.
@@ -3204,7 +3204,7 @@ Unique values in a categorical array.
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>unique</b> (<var>A</var>, <code>'rows'</code>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: [<var>B</var>, <var>ixA</var>, <var>ixB</var>] = <b>unique</b> (&hellip;)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: &hellip; = <b>unique</b> (&hellip;, <var>order</var>)</code></h5></dt>
-<dt><code><h5 class="fs">categorical: &hellip; = <b>unique</b> (&hellip;, <var>occurence</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: &hellip; = <b>unique</b> (&hellip;, <var>occurrence</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3231,12 +3231,12 @@ Unique values in a categorical array.
  <code>'sorted'</code>, which is the default behavior, or <code>'stable'</code>, in
  which case the unique values are returned in order of appearance.
 </p>
-<p> <code>&hellip; = unique (&hellip;, <var>occurence</var>)</code> also specifies the
+<p> <code>&hellip; = unique (&hellip;, <var>occurrence</var>)</code> also specifies the
  which index is returned in <var>ixA</var>, where there are repeated values or
- rows (if opted) in the input categorical array.  <var>occurence</var> may be
+ rows (if opted) in the input categorical array.  <var>occurrence</var> may be
  either <code>'first'</code>, which is the default and returns the index of the
- first occurence of each unique value, or <code>'last'</code>, in which case
- the last occurence of each unique value is returned.
+ first occurrence of each unique value, or <code>'last'</code>, in which case
+ the last occurrence of each unique value is returned.
 </p>
 
 
@@ -3715,7 +3715,7 @@ Repeat copies of categorical array elements.
  <var>B</var> containing repeated elements of the input <var>A</var>, which must be
  a categorical vector.  If <var>n</var> is a scalar, each element of <var>A</var> is
  repeated <var>n</var> times along the non-singleton dimension of <var>A</var>.  If
- <var>n</var> is a vector, it must have the same elemnts as <var>A</var>, in which
+ <var>n</var> is a vector, it must have the same elements as <var>A</var>, in which
  case it specifies the number of times to repeat each corresponding
  element of <var>A</var>.
 </p>

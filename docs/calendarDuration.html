@@ -1096,7 +1096,7 @@ Generate a hash code for a calendarDuration array.
 <p> </p>
 <p> <code><var>h</var> = keyHash (<var>calD</var>)</code> generates a <code>uint64</code> scalar
  that represents the input array <var>calD</var>.  <code>keyHash</code> utilizes the
- 64-bit FMV-1a variant of the Fowler-Noll-Vo non-cryptographic hash
+ 64-bit FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash
  function.
 </p>
 <p> <code><var>h</var> = keyHash (<var>calD</var>), <var>base</var></code> also generates a 64-bit
@@ -2251,7 +2251,7 @@ Construct a vector of repeated elements from a calendarDuration array.
                   </h4>
                 </div>
                 <div class="col-8">
-Repeat copies of calendarDuration array elements.
+Reshape calendarDuration array.
                 </div>
               </div>
           </div>

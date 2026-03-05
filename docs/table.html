@@ -271,7 +271,7 @@
 </p>
 <div class="ms-5">
 <p> A table is a 2-dimensional data structure that collects heterogeneous data
- and metadata into a singe container.  Tables are suitable for storing
+ and metadata into a single container.  Tables are suitable for storing
  columnar data much like spreadsheets but they can also be used for storing
  more complex data including multicolumnar variables and nested tables.
 </p>
@@ -797,7 +797,7 @@ Row names
  it must contain the same number of elements as the number of rows in the
  table.  All elements must be nonempty and distinct.  You can access the
  rows of the table <var>tbl</var> by specifying one or more row names within
- within parentheses or curly braces.  You can also set <code>RowNames</code> by
+ parentheses or curly braces.  You can also set <code>RowNames</code> by
  dot name assignment to an existing variable.
 </p>
 
@@ -1485,7 +1485,7 @@ Converts a table to a cell array.
  table, <var>tbl</var>.  The output <var>C</var> does not include any of the table&rsquo;s
  properties.  This also applies to row names.
 </p>
-<p> Compatibity Notes:
+<p> Compatibility Notes:
 </p>
 <p> Variables of types <code>categorical</code>, <code>calendarDuration</code>,
  <code>datetime</code>, <code>duration</code> and <code>string</code> are returned as
@@ -1582,7 +1582,7 @@ Save a table to a CSV file.
 </p>
 <p> The first cell of the CSV file contains a comment mentioning the number
  of consecutive rows that contain info about the variable types. The
- number of vartype rows may differ accordign to the nested tables and
+ number of vartype rows may differ according to the nested tables and
  structures contained in the table. The following rows contain the header
  with the column names.
 </p>
@@ -1634,7 +1634,7 @@ Print a summary of a table.
  multicolumnar numerical variables it prints the minimum, median, and
  maximum values for each column separately.
 
- </li><li> For variables of <code>logical</code> type, it prints the occurences
+ </li><li> For variables of <code>logical</code> type, it prints the occurrences
  of <code>True</code> and <code>False</code>.
 
  </li><li> For variables of type <code>datetime</code>, <code>duration</code>, and
@@ -1917,7 +1917,7 @@ Sort the rows of a table.
 
 <p> </p>
 <p> <code><var>tblB</var> = sortrows (<var>tblA</var>)</code> sorts the rows in <var>tblA</var> in
- asceding order based on the values in the first variable.   If elements
+ ascending order based on the values in the first variable.   If elements
  in the first variable are repeated, then <code>sortrows</code> sorts by the
  elements in the second variable, and so on.
 </p>
@@ -1961,9 +1961,9 @@ Sort the rows of a table.
  the specified variables and/or, row names used for sorting the table.
  The order specified by <var>direction</var> always takes precedence over the
  order defined by a numerical vector of integers in <var>vars</var>.
- <var>direction</var> must always be the 3rd inpnut argument.  If you want to
+ <var>direction</var> must always be the 3rd input argument.  If you want to
  omit passing selected variables and allow <code>sortrows</code> to work on
- consequtive variables until all ties are resolved, then you can leave the
+ consecutive variables until all ties are resolved, then you can leave the
  second input argument empty, as in
  <code>sortrows (<var>tblA</var>, {[]}, <var>direction</var>)</code> or pass a
  colon argument for <var>vars</var> as in
@@ -2019,7 +2019,7 @@ Unique rows in a table.
 <dl>
 <dt><code><h5 class="fs">table: <var>tblB</var> = <b>unique</b> (<var>tblA</var>)</code></h5></dt>
 <dt><code><h5 class="fs">table: <var>tblB</var> = <b>unique</b> (<var>tblA</var>, <var>setOrder</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: <var>tblB</var> = <b>unique</b> (<var>tblA</var>, <var>occurence</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>unique</b> (<var>tblA</var>, <var>occurrence</var>)</code></h5></dt>
 <dt><code><h5 class="fs">table: [<var>tblB</var>, <var>ixA</var>, <var>ixB</var>] = <b>unique</b> (&hellip;)</code></h5></dt>
 </dl>
 
@@ -2034,17 +2034,17 @@ Unique rows in a table.
  <ul>
 <li> <code>'sorted'</code> returns the unique rows sorted in ascending order.
  </li><li> <code>'stable'</code> returns the unique rows according to their order
- of occurence.
+ of occurrence.
  </li></ul>
 
-<p> <code><var>tblB</var> = unique (<var>tblA</var>, <var>occurence</var>)</code> returns the
- unique rows of table <var>tblA</var> according to their order of occurence.
- <var>occurence</var> cen be either <code>'first'</code> (default) or <code>'last'</code>.
+<p> <code><var>tblB</var> = unique (<var>tblA</var>, <var>occurrence</var>)</code> returns the
+ unique rows of table <var>tblA</var> according to their order of occurrence.
+ <var>occurrence</var> can be either <code>'first'</code> (default) or <code>'last'</code>.
 </p>
  <ul>
-<li> <code>'first'</code> returns the first occurence of each unique row,
+<li> <code>'first'</code> returns the first occurrence of each unique row,
  i.e. the lowest possible indices are returned.
- </li><li> <code>'last'</code> returns the last occurence of each unique row, i.e.
+ </li><li> <code>'last'</code> returns the last occurrence of each unique row, i.e.
  the highest possible indices are returned.
  </li></ul>
 
@@ -2090,7 +2090,7 @@ Check if table rows are sorted accordingly.
 
 <p> </p>
 <p> <code><var>TF</var> = issortedrows (<var>tblA</var>)</code> determines if the rows in
- <var>tblA</var> are sorted in asceding order based on the values in the first
+ <var>tblA</var> are sorted in ascending order based on the values in the first
  variable or subsequent variables if elements of the former are repeated.
  <var>TF</var> is a logical scalar and it is <code>true</code> when
  <code><var>tblA</var> == sortrows (<var>tblA</var>)</code> or <code>false</code> otherwise.
@@ -2114,7 +2114,7 @@ Check if table rows are sorted accordingly.
  is empty, then <var>TF</var> is <code>true</code>.
 </p>
 <p> <code><var>TF</var> = issortedrows (<var>tblA</var>, <var>vars</var>)</code> determines if the
- rowns in <var>tblA</var> are sorted by the elements in the variables specified
+ rows in <var>tblA</var> are sorted by the elements in the variables specified
  by <var>vars</var>, which can be a character vector (for a single variable) or
  a cell array of character vectors or a string array (specifying a single
  or multiple variables).  If <var>tblA</var> has row names, then <var>vars</var> can
@@ -2139,16 +2139,16 @@ Check if table rows are sorted accordingly.
  the specified variables and/or, row names used for sorting the table.
  The order specified by <var>direction</var> always takes precedence over the
  order defined by a numerical vector of integers in <var>vars</var>.
- <var>direction</var> must always be the 3rd inpnut argument.  If you want to
+ <var>direction</var> must always be the 3rd input argument.  If you want to
  omit passing selected variables and allow <code>sortrows</code> to work on
- consequtive variables until all ties are resolved, then you can leave the
+ consecutive variables until all ties are resolved, then you can leave the
  second input argument empty, as in
  <code>sortrows (<var>tblA</var>, {[]}, <var>direction</var>)</code> or pass a
  colon argument for <var>vars</var> as in
  <code>sortrows (<var>tblA</var>, {':'}, <var>direction</var>)</code>.
 </p>
 <p> <code><var>TF</var> = issortedrows (&hellip;, <var>Name</var>, <var>Value</var>)</code>
- determines if the rows in <var>tblA</var> are sorted accoring the additional
+ determines if the rows in <var>tblA</var> are sorted according the additional
  parameters specifying the sorting of rows of a table with the following
  Name-Value paired arguments.
 </p>
@@ -2204,7 +2204,7 @@ Sort the rows of a table.
 
 <p> </p>
 <p> <code><var>tblB</var> = topkrows (<var>tblA</var>, <var>k</var>)</code> returns the top
- <var>k</var> rows from table <var>tblA</var> sorted in asceding order based on the
+ <var>k</var> rows from table <var>tblA</var> sorted in ascending order based on the
  values in the first variable.   If elements in the first variable are
  repeated, then <code>topkrows</code> sorts by the elements in the second
  variable, and so on.
@@ -2251,8 +2251,8 @@ Sort the rows of a table.
  variables and/or, row names used for sorting the table.  The order
  specified by <var>direction</var> always takes precedence over the order
  defined by a numerical vector of integers in <var>vars</var>.  <var>direction</var>
- must always be the 3rd inpnut argument.  If you want to omit passing
- selected variables and allow <code>sortrows</code> to work on consequtive
+ must always be the 3rd input argument.  If you want to omit passing
+ selected variables and allow <code>sortrows</code> to work on consecutive
  variables until all ties are resolved, then you can leave the second
  input argument empty, as in
  <code>sortrows (<var>tblA</var>, {[]}, <var>direction</var>)</code> or pass a
@@ -2556,7 +2556,7 @@ Split multicolumn variables in a table.
 <p> <code><var>tblB</var> = splitvars (<var>tblA</var>, <var>vars</var>)</code> splits only the
  variables in <var>tblA</var> specified by <var>vars</var>.  If left empty, it
  defaults to all variables that can be split.  Single-column variables
- specified in <var>vars</var> are coppied unaltered.
+ specified in <var>vars</var> are copied unaltered.
 </p>
 <p> <var>vars</var> can be any of the following types.
  </p><ul>
@@ -2645,7 +2645,7 @@ Merge table variables into a single multicolumn variable.
  either a cellstr or string scalar or a character vector.
  </li><li> <code>&quot;MergeAsTable&quot;</code> specifies whether the selected variables
  should be merged into a multicolumn variable (default) or into a table
- nested into a variable, which is usefull for variables that cannot be
+ nested into a variable, which is useful for variables that cannot be
  concatenated due to incompatible variable types.  <code>&quot;MergeAsTable&quot;</code>
  must be either a boolean scalar or a numeric scalar value of <code>1</code>
  (<code>true</code>) or <code>0</code> (<code>false</code>).
@@ -2940,7 +2940,7 @@ Unstack a single table variable into multiple table variables.
 <p> By default, all remaining variables in <var>tblA</var> which are not specified
  by <var>vars</var> and <var>ivar</var> are treated as grouping variables, in which
  case each unique combination of values in the grouping variables
- idintifies a group of rows in <var>tblA</var> that is unstacked into one row
+ identifies a group of rows in <var>tblA</var> that is unstacked into one row
  of <var>tblB</var>.
 </p>
 <p> <code><var>tblB</var> = unstack (&hellip;, <var>Name</var>, <var>Value</var>)</code> further
@@ -3161,7 +3161,7 @@ Determine if any table element is missing.
 
 <p> </p>
 <p> <code><var>TF</var> = anymissing (<var>tblA</var>)</code> returns <code>true</code> if at
- least one element in table var{tblA is missing, otherwise tt returns
+ least one element in table <var>tblA</var> is missing, otherwise it returns
  <code>false</code>.  <var>TF</var> is a logical scalar value.
 </p>
 <p> Missing values are defined according to the data type of each variable in
@@ -3794,7 +3794,7 @@ Repeat copies of a table.
 </dl>
 
 <p> </p>
-<p> Repeats cοpies of the input table <var>tblA</var> in a similar fashion
+<p> Repeats copies of the input table <var>tblA</var> in a similar fashion
  to how <code>repmat</code> applies to a matrix.  Only two dimensions are
  supported for tables.
 </p>
