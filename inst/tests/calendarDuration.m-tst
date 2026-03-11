@@ -27,6 +27,7 @@
 ################################################################################
 
 %!assert (isscalar (calendarDuration ()), true)
+%!assert (isempty (calendarDuration ()), false)
 %!assert (class (calendarDuration), 'calendarDuration')
 %!assert (dispstrings (calendarDuration ()), {'0d'})
 %!assert (size (calendarDuration (zeros (4, 3))), [4, 1])
