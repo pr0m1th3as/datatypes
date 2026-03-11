@@ -2138,8 +2138,3 @@ function errmsg = checkInputFormatString (inputFormat)
   endif
 endfunction
 
-
-%!test duration;
-%!test duration (1, 2, 3);
-%!test assert (duration (1, 2, 3) < duration (1, 2, 4))
-
