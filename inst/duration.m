@@ -573,9 +573,14 @@ classdef duration
     ## equivalent number of minutes.  @var{X} is a double array of the same size
     ## as @var{D}.
     ##
+    ## Values containing a fractional portion less than 1 picosecond are rounded
+    ## to the nearest picosecondsecond.
+    ##
     ## @end deftypefn
     function out = minutes (this)
       out = this.Days * 1440;
+      ## Fix floating point precision to nearest picosecond
+      out = round (out * 1e+13) / 1e+13;
     endfunction
 
     ## -*- texinfo -*-
@@ -587,18 +592,14 @@ classdef duration
     ## equivalent number of seconds.  @var{X} is a double array of the same size
     ## as @var{D}.
     ##
-    ## Values containing a fractional portion less than 0.1 nanoseconds are
-    ## rounded to whole seconds.
+    ## Values containing a fractional portion less than 1 picosecond are rounded
+    ## to the nearest picosecondsecond.
     ##
     ## @end deftypefn
     function out = seconds (this)
       out = this.Days * 86400;
-      ## Fix floating point precision near zero
-      tmp = abs (round (out) - out);
-      nrz = tmp < 1e-10 & tmp > 0; # less than 0.1 nanosecond
-      if (any (nrz))
-        out(nrz) = round (out(nrz));
-      endif
+      ## Fix floating point precision to nearest picosecond
+      out = round (out * 1e+12) / 1e+12;
     endfunction
 
     ## -*- texinfo -*-
