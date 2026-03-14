@@ -169,7 +169,7 @@ classdef calendarDuration
       ## Parse optional Name-Value paired arguments
       optNames = {'Format'};
       dfValues = {[]};
-      [Format, args] = pairedArgs (optNames, dfValues, varargin(:));
+      [Format, args] = parsePairedArguments (optNames, dfValues, varargin(:));
 
       ## Check optional 'Format' argument
       if (! isempty (Format))
