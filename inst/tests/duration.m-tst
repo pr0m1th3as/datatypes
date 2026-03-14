@@ -45,4 +45,23 @@
 %!assert (seconds (duration (0, zeros (4), 15)), ones (4) * 15)
 %!assert (minutes (duration (0, 50, 30)), 50.5)
 %!assert (minutes (duration (0, 40:50, 30)), [40:50] + 0.5)
-
+%!assert (seconds (duration (0, 0, 0, 15)), 0.015)
+%!assert (size (duration (ones (2, 4, 3), 0, 0)), [2, 4, 3])
+%!assert (size (duration (0, ones (2, 3, 4), 0)), [2, 3, 4])
+%!assert (size (duration (zeros (4), zeros (4), 0, 0)), [4, 4])
+%!assert (size (duration (zeros (4), 0, 0, zeros (4))), [4, 4])
+%!error<duration: 'Format' must be a character vector or a string scalar.> ...
+%! duration (0, 0, 0, 'Format', 5)
+%!error<duration: 'Format' must be a character vector or a string scalar.> ...
+%! duration (0, 0, 0, 'Format', {'mm:ss'})
+%!error<duration: 'Format' must be a character vector or a string scalar.> ...
+%! duration (0, 0, 0, 'Format', string ({'mm:ss', 'hh:mm:ss'}))
+%!error<duration: invalid display format.> duration (0, 0, 0, 'Format', 't')
+%!error<duration: invalid display format.> duration (0, 0, 0, 'Format', 'd.h.S')
+%!error<duration: invalid display format.> duration (0, 0, 0, 'Format', 's.SS')
+%!error<duration: 'hh:mm' display format cannot indicate fractional second digits.> ...
+%! duration (0, 0, 0, 'Format', 'hh:mm.SS')
+%!error<duration: invalid display format for fractional second digits.> ...
+%! duration (0, 0, 0, 'Format', 'hh:mm.SM')
+%!error<duration: more than nine fractional second digits in display format.> ...
+%! duration (0, 0, 0, 'Format', 'hh:mm:ss.SSSSSSSSSS')
