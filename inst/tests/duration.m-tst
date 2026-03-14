@@ -65,3 +65,47 @@
 %! duration (0, 0, 0, 'Format', 'hh:mm.SM')
 %!error<duration: more than nine fractional second digits in display format.> ...
 %! duration (0, 0, 0, 'Format', 'hh:mm:ss.SSSSSSSSSS')
+%!error<duration: 'InputFormat' must be a character vector or a string scalar.> ...
+%! duration (0, 0, 0, 'InputFormat', {'hh:mm'})
+%!error<duration: 'InputFormat' must be a character vector or a string scalar.> ...
+%! duration (0, 0, 0, 'InputFormat', string ({'hh:mm', 'hh:mm'}))
+%!error<duration: invalid 'InputFormat'.> duration (0, 0, 0, 'InputFormat', 'hh:mmm')
+%!error<duration: invalid 'InputFormat'.> duration (0, 0, 0, 'InputFormat', string ('hh:mmm'))
+%!error<duration: 'hh:mm' input format cannot indicate fractional second digits.> ...
+%! duration (0, 0, 0, 'InputFormat', 'hh:mm.SSS')
+%!error<duration: invalid 'InputFormat' for fractional second digits.> ...
+%! duration (0, 0, 0, 'InputFormat', string ('hh:mm:ss.SSM'))
+%!error<duration: more than nine fractional second digits in 'InputFormat'.> ...
+%! duration (0, 0, 0, 'InputFormat', string ('hh:mm:ss.SSSSSSSSSS'))
+%!error<duration: more than nine fractional second digits in 'InputFormat'.> ...
+%! duration (0, 0, 0, 'InputFormat', 'hh:mm:ss.SSSSSSSSSS')
+%!error<duration: numeric X must be a matrix.> duration (ones (2, 2, 2))
+%!error<duration: numeric X must be real.> duration (ones (2, 3) * i)
+%!error<duration: X must have 3 columns.> duration (ones (2, 4))
+%!error<duration: invalid type of single input data argument.> duration ({1})
+%!error<duration: invalid type of single input data argument.> duration (struct ('a', 1))
+%!error<duration: H, MI, and S must be numeric arrays.> duration ('a', 0, 0)
+%!error<duration: H, MI, and S must be numeric arrays.> duration (0, 'a', 0)
+%!error<duration: H, MI, and S must be numeric arrays.> duration (0, 0, 'a')
+%!error<duration: H, MI, and S must be real.> duration (i, 0, 0)
+%!error<duration: H, MI, and S must be real.> duration (0, i, 0)
+%!error<duration: H, MI, and S must be real.> duration (0, 0, i)
+%!error<duration: H, MI, and S must be of common size or scalars.> ...
+%! duration (0, [0, 0], [0; 0])
+%!error<duration: H, MI, S, and MS must be numeric arrays.> duration ('a', 0, 0, 0)
+%!error<duration: H, MI, S, and MS must be numeric arrays.> duration (0, 'a', 0, 0)
+%!error<duration: H, MI, S, and MS must be numeric arrays.> duration (0, 0, 'a', 0)
+%!error<duration: H, MI, S, and MS must be numeric arrays.> duration (0, 0, 0, 'a')
+%!error<duration: H, MI, S, and MS must be real.> duration (i, 0, 0, 0)
+%!error<duration: H, MI, S, and MS must be real.> duration (0, i, 0, 0)
+%!error<duration: H, MI, S, and MS must be real.> duration (0, 0, i, 0)
+%!error<duration: H, MI, S, and MS must be real.> duration (0, 0, 0, i)
+%!error<duration: H, MI, S, and MS must be of common size or scalars.> ...
+%! duration (0, [0, 0], [0; 0], 0)
+%!error<duration: invalid number of input arguments.> duration (1, 2, 3, 4, 5)
+%!warning<duration: 'InputFormat' has no effect on numeric data.> ...
+%! duration ([0, 0, 0], 'InputFormat', 'hh:mm');
+%!warning<duration: 'InputFormat' has no effect on numeric data.> ...
+%! duration (0, 0, 0, 'InputFormat', 'hh:mm');
+%!warning<duration: 'InputFormat' has no effect on numeric data.> ...
+%! duration (0, 0, 0, 0, 'InputFormat', 'hh:mm');

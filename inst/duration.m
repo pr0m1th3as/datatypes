@@ -226,12 +226,18 @@ classdef duration
               error ("duration: X must have 3 columns.");
             endif
             [~, this.Days] = hms2days (H, MI, S);
+            ## Return a warning if InputFormat is defined
+            if (! isempty (inputFormat))
+              warning ("duration: 'InputFormat' has no effect on numeric data.");
+            endif
 
           elseif (iscellstr (X) || ischar (X) || isa (X, "string"))
             if (! iscellstr (X))
               X = cellstr (X);
             endif
             this.Days = timestrings2days (X, inputFormat);
+          else
+            error ("duration: invalid type of single input data argument.");
           endif
 
         ## this = duration (H, MI, S)
@@ -241,7 +247,7 @@ classdef duration
             error ("duration: H, MI, and S must be numeric arrays.");
           endif
           if (! (isreal (H) && isreal (MI) && isreal (S)))
-            error ("duration: H, MI, and S must be a real.");
+            error ("duration: H, MI, and S must be real.");
           endif
           ## Expansion is handled by the helper function
           [err, days] = hms2days (H, MI, S);
@@ -249,15 +255,19 @@ classdef duration
             error ("duration: H, MI, and S must be of common size or scalars.");
           endif
           this.Days = days;
+          ## Return a warning if InputFormat is defined
+          if (! isempty (inputFormat))
+            warning ("duration: 'InputFormat' has no effect on numeric data.");
+          endif
 
         ## this = duration (H, MI, S, MS)
         case 4
           [H, MI, S, MS] = args{:};
           if (! (isnumeric (H) && isnumeric (MI) && isnumeric (S) && isnumeric (MS)))
-            error ("duration: H, MI, S, and MS must be a numeric arrays.");
+            error ("duration: H, MI, S, and MS must be numeric arrays.");
           endif
           if (! (isreal (H) && isreal (MI) && isreal (S) && isreal (MS)))
-            error ("duration: H, MI, S, and MS must be a real.");
+            error ("duration: H, MI, S, and MS must be real.");
           endif
           ## Expansion is handled by the helper function
           [err, days] = hms2days (H, MI, S, MS);
@@ -265,6 +275,10 @@ classdef duration
             error ("duration: H, MI, S, and MS must be of common size or scalars.");
           endif
           this.Days = days;
+          ## Return a warning if InputFormat is defined
+          if (! isempty (inputFormat))
+            warning ("duration: 'InputFormat' has no effect on numeric data.");
+          endif
 
         otherwise
           error ("duration: invalid number of input arguments.");
