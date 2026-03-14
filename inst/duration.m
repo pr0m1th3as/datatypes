@@ -161,28 +161,43 @@ classdef duration
       ## Parse optional Name-Value paired arguments
       optNames = {'Format', 'InputFormat'};
       dfValues = {[], []};
-      [Format, inputFormat, args] = pairedArgs (optNames, dfValues, varargin(:));
+      [Format, inputFormat, args] = parsePairedArguments (optNames, ...
+                                                          dfValues, varargin(:));
 
       ## Check optional 'Format' and 'InputFormat' arguments
       if (! isempty (Format))
-        if (! (ischar (Format) && isvector (Format)))
-          error ("duration: 'Format' must be a character vector.");
-        else
-          errmsg = checkFormatString (Format);
-          if (! isempty (errmsg))
-            error ("duration: %s", errmsg);
+        ## Convert string to character vector if necessary
+        if (isstring (Format))
+          if (! isscalar (Format))
+            error (strcat ("duration: 'Format' must be a character", ...
+                           " vector or a string scalar."));
           endif
-          this.Format = Format;
+          Format = char (Format);
+        elseif (! (ischar (Format) && isvector (Format)))
+          error (strcat ("duration: 'Format' must be a character", ...
+                         " vector or a string scalar."));
         endif
+        errmsg = checkFormatString (Format);
+        if (! isempty (errmsg))
+          error ("duration: %s", errmsg);
+        endif
+        this.Format = Format;
       endif
       if (! isempty (inputFormat))
-        if (! (ischar (inputFormat) && isvector (inputFormat)))
-          error ("duration: 'InputFormat' must be a character vector.");
-        else
-          errmsg = checkInputFormatString (inputFormat);
-          if (! isempty (errmsg))
-            error ("duration: %s", errmsg);
+        ## Convert string to character vector if necessary
+        if (isstring (inputFormat))
+          if (! isscalar (inputFormat))
+            error (strcat ("duration: 'InputFormat' must be a", ...
+                           " character vector or a string scalar."));
           endif
+          inputFormat = char (inputFormat);
+        elseif (! (ischar (inputFormat) && isvector (inputFormat)))
+          error (strcat ("duration: 'InputFormat' must be a character", ...
+                         " vector or a string scalar."));
+        endif
+        errmsg = checkInputFormatString (inputFormat);
+        if (! isempty (errmsg))
+          error ("duration: %s", errmsg);
         endif
       endif
 
@@ -398,15 +413,22 @@ classdef duration
     ## @end deftypefn
     function cstr = cellstr (this, Format = '')
       if (! isempty (Format))
-        if (! (ischar (Format) && isvector (Format)))
-          error ("duration.cellstr: FORMAT must be a character vector.");
-        else
-          errmsg = checkFormatString (Format);
-          if (! isempty (errmsg))
-            error ("duration.cellstr: %s", errmsg);
+        ## Convert string to character vector if necessary
+        if (isstring (Format))
+          if (! isscalar (Format))
+            error (strcat ("duration.cellstr: FORMAT must be a", ...
+                           " character vector or a string scalar."));
           endif
-          this.Format = Format;
+          Format = char (Format);
+        elseif (! (ischar (Format) && isvector (Format)))
+          error (strcat ("duration.cellstr: FORMAT must be a", ...
+                         " character vector or a string scalar."));
         endif
+        errmsg = checkFormatString (Format);
+        if (! isempty (errmsg))
+          error ("duration.cellstr: %s", errmsg);
+        endif
+        this.Format = Format;
       endif
       cstr = dispstrings (this);
     endfunction
@@ -421,7 +443,25 @@ classdef duration
     ##
     ## @end deftypefn
     function cmat = char (this, Format = '')
-      cmat = char (cellstr (this, Format));
+      if (! isempty (Format))
+        ## Convert string to character vector if necessary
+        if (isstring (Format))
+          if (! isscalar (Format))
+            error (strcat ("duration.char: FORMAT must be a", ...
+                           " character vector or a string scalar."));
+          endif
+          Format = char (Format);
+        elseif (! (ischar (Format) && isvector (Format)))
+          error (strcat ("duration.char: FORMAT must be a", ...
+                         " character vector or a string scalar."));
+        endif
+        errmsg = checkFormatString (Format);
+        if (! isempty (errmsg))
+          error ("duration.char: %s", errmsg);
+        endif
+        this.Format = Format;
+      endif
+      cmat = char (dispstrings (this));
     endfunction
 
     ## -*- texinfo -*-
@@ -580,7 +620,7 @@ classdef duration
     function out = minutes (this)
       out = this.Days * 1440;
       ## Fix floating point precision to nearest picosecond
-      out = round (out * 1e+13) / 1e+13;
+      out = round (out * 1e+13) * 1e-13;
     endfunction
 
     ## -*- texinfo -*-
@@ -599,7 +639,7 @@ classdef duration
     function out = seconds (this)
       out = this.Days * 86400;
       ## Fix floating point precision to nearest picosecond
-      out = round (out * 1e+12) / 1e+12;
+      out = round (out * 1e+12) * 1e-12;
     endfunction
 
     ## -*- texinfo -*-
@@ -611,18 +651,14 @@ classdef duration
     ## the equivalent number of milliseconds.  @var{X} is a double array of the
     ## same size as @var{D}.
     ##
-    ## Values containing a fractional portion less than 0.1 nanoseconds are
-    ## rounded to whole seconds.
+    ## Values containing a fractional portion less than 1 picosecond are rounded
+    ## to the nearest picosecondsecond.
     ##
     ## @end deftypefn
     function out = milliseconds (this)
       out = this.Days * 86400000;
-      ## Fix floating point precision near zero
-      tmp = abs (round (out) - out);
-      nrz = tmp < 1e-7 & tmp > 0; # less than 0.1 nanosecond
-      if (any (nrz))
-        out(nrz) = round (out(nrz));
-      endif
+      ## Fix floating point precision to nearest picosecond
+      out = round (out * 1e+9) * 1e-9;
     endfunction
 
   endmethods
@@ -2099,20 +2135,20 @@ function errmsg = checkFormatString (Format)
   validFmt = {'y', 'd', 'h', 'm', 's', 'dd:hh:mm:ss','hh:mm:ss','mm:ss','hh:mm'};
   foundFmt = ismember (validFmt, Format(1));
   if (! any (foundFmt) || numel (Format) > 2)
-    errmsg = "invalid display 'Format'.";
+    errmsg = "invalid display format.";
   endif
   if (any (foundFmt([1:5])) && numel (Format) > 1)
-    errmsg = "invalid display 'Format'.";
+    errmsg = "invalid display format.";
   endif
   if (foundFmt(9) && numel (Format) > 1)
     errmsg = "'hh:mm' display format cannot indicate fractional second digits.";
   endif
   if (numel (Format) == 2)
     if (any (char (Format(2)) != 'S'))
-      errmsg = "invalid display 'Format' for fractional second digits.";
+      errmsg = "invalid display format for fractional second digits.";
     endif
     if (numel (Format{2}) > 9)
-      errmsg = "more than nine fractional second digits in display 'Format'.";
+      errmsg = "more than nine fractional second digits in display format.";
     endif
   endif
 endfunction
