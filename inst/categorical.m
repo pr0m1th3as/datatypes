@@ -1015,8 +1015,8 @@ classdef categorical
     ## ordinal, then this restriction is relaxed and comparison is performed
     ## using the category names. Comparison between an ordinal and an unordered
     ## categorical array is not allowed.  @var{A} or @var{B} may also be a
-    ## string array or a cell array of character vectors containing one or
-    ## multiple category names to compare against.
+    ## string array, a character array, or a cell array of character vectors
+    ## containing one or multiple category names to compare against.
     ##
     ## @code{@var{TF} = ismember (@var{A}, @var{B}, @qcode{'rows'})} only
     ## applies to categorical matrices with the same number of columns, in which
