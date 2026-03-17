@@ -1035,9 +1035,9 @@ classdef categorical
     ## @end deftypefn
     function [TF, index] = ismember (A, B, varargin)
       ## Either A or B contain category name(s)
-      if ((ischar (A) && isvector (A)) || isstring (A) || iscellstr (A))
+      if ((ischar (A) && isrow (A)) || isstring (A) || iscellstr (A))
         A = cellstr (A);
-      elseif ((ischar (B) && isvector (B)) || isstring (B) || iscellstr (B))
+      elseif ((ischar (B) && isrow (B)) || isstring (B) || iscellstr (B))
         B = cellstr (B);
       elseif (! (iscategorical (A) && iscategorical (B)))
         error (strcat ("categorical.ismember: A and B must be categorical", ...
