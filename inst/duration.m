@@ -173,7 +173,7 @@ classdef duration
                            " vector or a string scalar."));
           endif
           Format = char (Format);
-        elseif (! (ischar (Format) && isvector (Format)))
+        elseif (! (ischar (Format) && isrow (Format)))
           error (strcat ("duration: 'Format' must be a character", ...
                          " vector or a string scalar."));
         endif
@@ -191,7 +191,7 @@ classdef duration
                            " character vector or a string scalar."));
           endif
           inputFormat = char (inputFormat);
-        elseif (! (ischar (inputFormat) && isvector (inputFormat)))
+        elseif (! (ischar (inputFormat) && isrow (inputFormat)))
           error (strcat ("duration: 'InputFormat' must be a character", ...
                          " vector or a string scalar."));
         endif
@@ -306,6 +306,7 @@ classdef duration
       else
         fracSec = true;
         fdigits = numel (fmt{2});
+        pat = sprintf ('.%%0%dd', fdigits);
         fmt = fmt{1};
       endif
       ## Process all elements
@@ -360,7 +361,7 @@ classdef duration
               fs = rem (x, 60) - s; # fraction of a second
               ## Promote to integer value according to requested digits
               ms = abs (fix (fs * 10 ^ fdigits));
-              str = [str, sprintf('.%d', ms)];
+              str = [str, sprintf(pat, ms)];
             endif
           elseif (strcmp (fmt, 'hh:mm:ss'))
             x = d * 86400;
@@ -380,7 +381,7 @@ classdef duration
               fs = x - s; # fraction of a second
               ## Promote to integer value according to requested digits
               ms = abs (fix (fs * 10 ^ fdigits));
-              str = [str, sprintf('.%d', ms)];
+              str = [str, sprintf(pat, ms)];
             endif
           elseif (strcmp (fmt, 'dd:hh:mm:ss'))
             x = d - fix (d);
@@ -406,7 +407,7 @@ classdef duration
               fs = x - s; # fraction of a second
               ## Promote to integer value according to requested digits
               ms = abs (fix (fs * 10 ^ fdigits));
-              str = [str, sprintf('.%d', ms)];
+              str = [str, sprintf(pat, ms)];
             endif
           endif
           cstr{i} = str;
@@ -434,7 +435,7 @@ classdef duration
                            " character vector or a string scalar."));
           endif
           Format = char (Format);
-        elseif (! (ischar (Format) && isvector (Format)))
+        elseif (! (ischar (Format) && isrow (Format)))
           error (strcat ("duration.cellstr: FORMAT must be a", ...
                          " character vector or a string scalar."));
         endif
@@ -465,7 +466,7 @@ classdef duration
                            " character vector or a string scalar."));
           endif
           Format = char (Format);
-        elseif (! (ischar (Format) && isvector (Format)))
+        elseif (! (ischar (Format) && isrow (Format)))
           error (strcat ("duration.char: FORMAT must be a", ...
                          " character vector or a string scalar."));
         endif
