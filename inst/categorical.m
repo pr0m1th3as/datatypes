@@ -1035,20 +1035,23 @@ classdef categorical
     ## @end deftypefn
     function [TF, index] = ismember (A, B, varargin)
       ## Either A or B contain category name(s)
-      if ((isa (A, 'string') || iscellstr (A)) && isa (B, 'categorical'))
+      if (ischar (A) || isstring (A))
+        A = cellstr (A);
+      elseif (ischar (B) || isstring (B))
+        B = cellstr (B);
+      endif
+      if (iscellstr (A) && isa (B, 'categorical'))
         if (numel (varargin) > 0)
           error (strcat ("categorical.ismember: cannot use 'rows'", ...
                          " when testing against category names."));
         endif
-        A = cellstr (A);
         [TF, index] = ismember (A, categories (B));
         return;
-      elseif ((isa (B, 'string') || iscellstr (B)) && isa (A, 'categorical'))
+      elseif (iscellstr (B) && isa (A, 'categorical'))
         if (numel (varargin) > 0)
           error (strcat ("categorical.ismember: cannot use 'rows'", ...
                          " when testing against category names."));
         endif
-        B = cellstr (B);
         [TF, index] = ismember (B, categories (A));
         return;
       endif
