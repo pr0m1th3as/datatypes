@@ -304,9 +304,9 @@ classdef duration
         fmt = fmt{1};
         fracSec = false;
       else
-        fmt = fmt{1};
         fracSec = true;
         fdigits = numel (fmt{2});
+        fmt = fmt{1};
       endif
       ## Process all elements
       sz = size (this);
@@ -350,12 +350,12 @@ classdef duration
             x = d * 1440;
             h = abs (fix (x / 60));
             m = abs (fix (rem (x, 60)));
-            str = [str, sprintf('%d:%d', h, m)];
+            str = [str, sprintf('%02d:%02d', h, m)];
           elseif (strcmp (fmt, 'mm:ss'))
             x = d * 86400;
             m = abs (fix (x / 60));
             s = abs (floor (rem (x, 60)));
-            str = [str, sprintf('%d:%d', m, s)];
+            str = [str, sprintf('%02d:%02d', m, s)];
             if (fracSec)
               fs = rem (x, 60) - s; # fraction of a second
               ## Promote to integer value according to requested digits
