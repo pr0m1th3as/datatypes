@@ -1015,7 +1015,7 @@ classdef categorical
     ## ordinal, then this restriction is relaxed and comparison is performed
     ## using the category names. Comparison between an ordinal and an unordered
     ## categorical array is not allowed.  @var{A} or @var{B} may also be a
-    ## string array, a character array, or a cell array of character vectors
+    ## string array, a character vector, or a cell array of character vectors
     ## containing one or multiple category names to compare against.
     ##
     ## @code{@var{TF} = ismember (@var{A}, @var{B}, @qcode{'rows'})} only
@@ -1052,7 +1052,7 @@ classdef categorical
           error (strcat ("categorical.ismember: cannot use 'rows'", ...
                          " when testing against category names."));
         endif
-        [TF, index] = ismember (B, categories (A));
+        [TF, index] = ismember (categories (A), B);
         return;
       endif
       if (numel (varargin) > 0)
