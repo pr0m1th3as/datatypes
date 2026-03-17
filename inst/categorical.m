@@ -1035,10 +1035,15 @@ classdef categorical
     ## @end deftypefn
     function [TF, index] = ismember (A, B, varargin)
       ## Either A or B contain category name(s)
-      if (ischar (A) || isstring (A))
+      if ((ischar (A) && isvector (A)) || isstring (A) || iscellstr (A))
         A = cellstr (A);
-      elseif (ischar (B) || isstring (B))
+      elseif ((ischar (B) && isvector (B)) || isstring (B) || iscellstr (B))
         B = cellstr (B);
+      elseif (! (iscategorical (A) && iscategorical (B)))
+        error (strcat ("categorical.ismember: A and B must be categorical", ...
+                       " arrays, or one of them (A or B) can be a string", ...
+                       " array, a character vector, or a cell array of", ...
+                       " character vectors specifying category names."));
       endif
       if (iscellstr (A) && isa (B, 'categorical'))
         if (numel (varargin) > 0)
