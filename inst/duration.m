@@ -490,30 +490,52 @@ classdef duration
     ## to years, months, days, hours, minutes, and seconds, respectively.  Since
     ## months cannot be represented as a fixed length of time, the second column
     ## of @var{DV} is always zero.  @var{DV} represents a length of time split
-    ## across different fixed-length elapsed time units.
+    ## across different fixed-length elapsed time units.  The number of rows in
+    ## @var{DV} equals to the number of elements in the duration array @var{DT}.
     ##
     ## @code{[@var{Y}, @var{MO}, @var{D}, @var{h}, @var{mi}, @var{s}] = datevec
     ## (@var{DT})} returns the components of @var{DT} as individual variables,
     ## but unlike @var{DV} in the previous syntax, each variable has the same
     ## size as the duration array @var{DT}.
     ##
+    ## Values containing a fractional portion less than 1 picosecond are rounded
+    ## to the nearest picosecond.
+    ##
     ## @end deftypefn
     function varargout = datevec (this)
       d = this.Days;
-      y = fix (d / 365.2425);
+      tmp = d / 365.2425;
+      y = fix (tmp);
+      ## Fix round-off errors with threshold scaled by years
+      idx = abs (tmp - y - 1) < 1e-15 * y;
+      y(idx) += 1;
       x = rem (d, 365.2425);
       d = fix (x);
       x = x - d;
+      ## Get remaining duration in seconds
       x = x * 86400;
-      h = fix (x / 3600);
+      tmp = x / 3600;
+      h = fix (tmp);
+      idx = abs (tmp - h - 1) < 1e-15 * h;
+      h(idx) += 1;
       x = x - h * 3600;
-      m = fix (x / 60);
+      tmp = x / 60;
+      m = fix (tmp);
+      idx = abs (tmp - m - 1) < 1e-15 * m;
+      m(idx) += 1;
       s = x - m * 60;
-      DV = [y, 0, d, h, m, s];
+      ## Fix floating point precision to nearest picosecond
+      s = round (s * 1e+9) * 1e-12;
+      ## Add months column
+      mo = zeros (size (s));
+      mo(isnan (d)) = NaN;
+      ## Transform to matrix
+      DV = [y(:), mo(:), d(:), h(:), m(:), s(:)];
       if (nargout == 0 || nargout == 1)
         varargout{1} = DV;
       elseif (nargout <= 6)
         for i = 1:nargout
+          ## Multiple outputs are reshaped to original input size
           varargout{i} = reshape (DV(:,i), size (this));
         endfor
       else
@@ -533,6 +555,9 @@ classdef duration
     ## which correspond to hours, minutes, and seconds, respectively.  Hours and
     ## minutes are returned as whole numbers, while seconds may also have a
     ## fractional part.
+    ##
+    ## Values containing a fractional portion less than 1 picosecond are rounded
+    ## to the nearest picosecond.
     ##
     ## @end deftypefn
     function varargout = hms (this)
@@ -562,7 +587,8 @@ classdef duration
       if (any (idx(:)))
         s(idx) = 0;
       endif
-      s = round (s * 1e15) / 1e15; # eliminate round-off errors to femto-seconds
+      ## Fix floating point precision to nearest picosecond
+      s = round (s * 1e12) / 1e12;
       if (nargout == 0 || nargout == 1)
         varargout{1} = h;
       elseif (nargout == 2)
@@ -629,7 +655,7 @@ classdef duration
     ## as @var{D}.
     ##
     ## Values containing a fractional portion less than 1 picosecond are rounded
-    ## to the nearest picosecondsecond.
+    ## to the nearest picosecond.
     ##
     ## @end deftypefn
     function out = minutes (this)
@@ -648,7 +674,7 @@ classdef duration
     ## as @var{D}.
     ##
     ## Values containing a fractional portion less than 1 picosecond are rounded
-    ## to the nearest picosecondsecond.
+    ## to the nearest picosecond.
     ##
     ## @end deftypefn
     function out = seconds (this)
@@ -667,7 +693,7 @@ classdef duration
     ## same size as @var{D}.
     ##
     ## Values containing a fractional portion less than 1 picosecond are rounded
-    ## to the nearest picosecondsecond.
+    ## to the nearest picosecond.
     ##
     ## @end deftypefn
     function out = milliseconds (this)
