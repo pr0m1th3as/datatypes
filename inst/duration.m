@@ -868,11 +868,51 @@ classdef duration
 
   methods (Access = public)
 
-    function TF = isbetween (this, lower, upper, intervaltype = 'closed')
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{TF} =} isbetween (@var{D}, @var{lower}, @var{upper})
+    ## @deftypefnx {duration} {@var{TF} =} isbetween (@var{D}, @var{lower}, @var{upper}, @var{intervalType})
+    ##
+    ## Test for duration elements within specified range.
+    ##
+    ## @code{@var{TF} = isbetween (@var{D}, @var{lower}, @var{upper})} returns a
+    ## logical array, @var{TF}, which is the same size as the input duration
+    ## array @var{D} and it contains @qcode{true} for each corresponding element
+    ## which is within the range specified by @var{lower} and @var{upper} and
+    ## @qcode{false} otherwise.  @var{lower} and @var{upper} must be duration
+    ## arrays of compatible size with @var{D} or alternatively they can be any
+    ## valid input to duration array constructor.
+    ##
+    ## @code{@var{TF} = isbetween (@var{D}, @var{lower}, @var{upper},
+    ## @var{intervalType})} specifies the type of interval for the @var{lower}
+    ## and @var{upper} bounds and it can be one of the following values.
+    ##
+    ## @itemize
+    ## @item @qcode{'closed'} (default) includes lower and upper bounds.
+    ##
+    ## @item @qcode{'open'} excludes lower and upper bounds.
+    ##
+    ## @item @qcode{'openleft'} or @qcode{'closedright'} exclude the lower and
+    ## include the upper bound.  They have identical behavior.
+    ##
+    ## @item @qcode{'closedleft'} or @qcode{'openright'} include the lower and
+    ## exclude the upper bound.  They have identical behavior.
+    ## @end itemize
+    ##
+    ## @var{intervalType} can be specified either as a character vector or a
+    ## string scalar.
+    ##
+    ## @end deftypefn
+    function TF = isbetween (this, lower, upper, varargin)
       if (nargin < 3)
         error ("duration.isbetween: too few input arguments.");
+      elseif (nargin == 3)
+        intervaltype = 'closed';
+      elseif (nargin == 4)
+        intervaltype = varargin{1};
+      elseif (nargin > 4)
+        error (strcat ("duration.isbetween: optional paired arguments", ...
+                       " are not suppoorted for duration arrays."));
       endif
-      [lower, upper] = promote (lower, upper);
       if (strcmpi (intervaltype, 'closed'))
         TF = lower <= this & this <= upper;
       elseif (strcmpi (intervaltype, 'open'))
@@ -1970,17 +2010,20 @@ classdef duration
         case '()'
           if (isempty (val))
             this.Days(s.subs{:}) = [];
-            return;
-          elseif (iscellstr (val) || ischar (val) || isa (val, {'string'}))
-            val = promote (val);
+          elseif (isa (val, 'missing'))
+            this.Days(s.subs{:}) = NaN;
+          elseif (iscellstr (val) || ischar (val) || isstring (val))
+            if (! iscellstr (val))
+              val = cellstr (val);
+            endif
+            this.Days(s.subs{:}) = timestrings2days (val, []);
           elseif (isnumeric (val))
-            val = duration (24 * double (val), 0, 0);
+            this.Days(s.subs{:}) = double (val);
           elseif (! isa (val, "duration"))
             error (strcat ("duration.subsasgn: assignment value must", ...
-                           " be a duration array, a numeric array or", ...
-                           " text representing categories."));
+                           " be a duration array, a numeric array of", ...
+                           " days, or a text represention of durations."));
           endif
-          this.Days(s.subs{:}) = val.Days;
 
         case '{}'
           error (strcat ("duration.subsasgn: '{}' invalid indexing", ...
