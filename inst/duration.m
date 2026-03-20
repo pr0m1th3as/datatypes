@@ -525,7 +525,7 @@ classdef duration
       m(idx) += 1;
       s = x - m * 60;
       ## Fix floating point precision to nearest picosecond
-      s = round (s * 1e+9) * 1e-12;
+      s = round (s * 1e+12) * 1e-12;
       ## Add months column
       mo = zeros (size (s));
       mo(isnan (d)) = NaN;
@@ -792,10 +792,8 @@ classdef duration
     ##
     ## @end deftypefn
     function out = nnz (this)
-      m = this.Months(:);
       d = this.Days(:);
-      h = hours (this.Time(:));
-      out = numel (m) - sum (m == 0 & d == 0 & h == 0);
+      out = numel (d) - sum (d == 0);
     endfunction
 
     ## -*- texinfo -*-
