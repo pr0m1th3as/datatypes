@@ -453,3 +453,68 @@
 %! assert (m, zeros (1, 5));
 %! assert (s, [1:5]);
 %!error<duration.hms: too many output arguments.> [h, m, s, ms] = hms (days (1))
+
+################################################################################
+##                         ** Summary Information **                          ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'size'             'ndims'            'numel'            'nnz'             ##
+## 'length'           'keyHash'                                               ##
+##                                                                            ##
+################################################################################
+
+%!assert (size (duration), [1, 1])
+%!assert (size (days ([])), [0, 0])
+%!assert (size (days (ones (2, 0, 3, 4))), [2, 0, 3, 4])
+%!assert (size (duration (ones (2, 4), 0, 0)), [2, 4])
+%!assert (size (duration (ones (2, 4, 1, 1), 0, 0)), [2, 4])
+%!assert (size (duration (ones (2, 4, 1, 0), 0, 0)), [2, 4, 1, 0])
+%!assert (size (duration (zeros (6, 3))), [6, 1])
+
+%!assert (ndims (duration), 2)
+%!assert (ndims (days ([])), 2)
+%!assert (ndims (days (ones (2, 0, 3, 4))), 4)
+%!assert (ndims (duration (ones (2, 4), 0, 0)), 2)
+%!assert (ndims (duration (zeros (6, 3))), 2)
+
+%!assert (numel (duration), 1)
+%!assert (numel (days ([])), 1)
+%!assert (numel (days (ones (2, 0, 3, 4))), 1)
+%!assert (numel (duration (ones (2, 4), 0, 0)), 1)
+%!assert (numel (duration (zeros (6, 3))), 1)
+
+%!assert (nnz (days ([])), 0)
+%!assert (nnz (duration), 0)
+%!assert (nnz (days (ones (2, 0, 3, 4))), 0)
+%!assert (nnz (days (zeros (2, 0, 3, 4))), 0)
+%!assert (nnz (days (zeros (2, 1, 3, 4))), 0)
+%!assert (nnz (days (ones (2, 1, 3, 4))), 24)
+%!assert (nnz (days ([1, 4, 0, 9, 0, 8])), 4)
+%!assert (nnz (days ([1, 4, 0; 9, 0, 8])), 4)
+
+%!assert (length (duration (1, 1, 1)), 1)
+%!assert (length (duration (0, 0, 0)), 1)
+%!assert (length (duration (0:5, 0, 0)), 6)
+%!assert (length (duration ([0, 0, 0, 1, 1], 0, 0)), 5)
+%!assert (length (duration (ones (2, 3, 4), 0, 0)), 4)
+%!assert (length (duration (ones (2, 10, 4), 0, 0)), 10)
+
+%!assert (keyHash (duration), uint64 (8095976253982599603))
+%!assert (keyHash (duration (0, 0, 0)), uint64 (8095976253982599603))
+%!assert (keyHash (duration ([], [], [])), uint64 (14859204025010592219))
+%!assert (keyHash (duration (1, 1, 1)), uint64 (13776124020415645612))
+%!test
+%! key = keyHash (duration ([1, 2; 3, 4], 1, 1));
+%! assert (key, uint64 (9389203521563080232));
+%!test
+%! key = keyHash (duration (0, 0, 0, [1, 2, 3]));
+%! assert (key, uint64 (7422929858764574817));
+%!test
+%! base_key = uint64 (2342124352342344234);
+%! key = keyHash (duration (0, 0, 0, [1, 2, 3]), base_key);
+%! assert (key, uint64 (13938388645620099040));
+%!error<duration.keyHash: BASE must be a UINT64 scalar.> ...
+%! keyHash (duration (0, 0, 0), uint64 ([1, 2]))
+%!error<duration.keyHash: BASE must be a UINT64 scalar.> ...
+%! keyHash (duration (0, 0, 0), 2231107818551636405)
