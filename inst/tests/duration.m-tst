@@ -287,3 +287,169 @@
 %! char (duration (0, 0, 0), 'hh:mm.SM')
 %!error<duration.char: more than nine fractional second digits in display format.> ...
 %! char (duration (0, 0, 0), 'hh:mm:ss.SSSSSSSSSS')
+
+%!test
+%! [y, mo, d, h, mi, s] = datevec (years (1));
+%! assert (y, 1);
+%! assert (mo, 0);
+%! assert (d, 0);
+%! assert (h, 0);
+%! assert (mi, 0);
+%! assert (s, 0);
+%!test
+%! [y, mo, d, h, mi, s] = datevec (years (1.0258123));
+%! assert (y, 1);
+%! assert (mo, 0);
+%! assert (d, 9);
+%! assert (h, 10);
+%! assert (mi, 15);
+%! assert (s, 57.5121, 1E-4);
+%!test
+%! [y, mo, d, h, mi, s] = datevec (years (1.5));
+%! assert (y, 1);
+%! assert (mo, 0);
+%! assert (d, 182);
+%! assert (h, 14);
+%! assert (mi, 54);
+%! assert (s, 36, 1e-8);
+%!test
+%! [y, mo, d, h, mi, s] = datevec (days (1));
+%! assert (y, 0);
+%! assert (mo, 0);
+%! assert (d, 1);
+%! assert (h, 0);
+%! assert (mi, 0);
+%! assert (s, 0);
+%!test
+%! [y, mo, d, h, mi, s] = datevec (days (1.0258123));
+%! assert (y, 0);
+%! assert (mo, 0);
+%! assert (d, 1);
+%! assert (h, 0);
+%! assert (mi, 37);
+%! assert (s, 10.1827, 1E-4);
+%!test
+%! [y, mo, d, h, mi, s] = datevec (days (1.5));
+%! assert (y, 0);
+%! assert (mo, 0);
+%! assert (d, 1);
+%! assert (h, 12);
+%! assert (mi, 0);
+%! assert (s, 0, 1e-8);
+%!assert (datevec (years (1)), [1, 0, 0, 0, 0, 0])
+%!assert (datevec (years (1.0258123)), [1, 0, 9, 10, 15, 57.5121], 1e-4)
+%!assert (datevec (years (1.5)), [1, 0, 182, 14, 54, 36], 1e-8)
+%!assert (datevec (days (1)), [0, 0, 1, 0, 0, 0])
+%!assert (datevec (days (1.0258123)), [0, 0, 1, 0, 37, 10.1827], 1e-4)
+%!assert (datevec (days (1.5)), [0, 0, 1, 12, 0, 0])
+%!test
+%! [y, mo, d, h, mi, s] = datevec (days (magic (3)));
+%! assert (y, zeros (3));
+%! assert (mo, zeros (3));
+%! assert (d, magic (3));
+%! assert (h, zeros (3));
+%! assert (mi, zeros (3));
+%! assert (s, zeros (3));
+%!test
+%! DV = datevec (days (magic (3)));
+%! out = zeros (9, 6);
+%! out(:,3) = magic (3)(:);
+%! assert (DV, out);
+%!test
+%! [y, mo, d, h, mi, s] = datevec (days (ones (2, 3, 4)));
+%! assert (y, zeros (2, 3, 4));
+%! assert (mo, zeros (2, 3, 4));
+%! assert (d, ones (2, 3, 4));
+%! assert (h, zeros (2, 3, 4));
+%! assert (mi, zeros (2, 3, 4));
+%! assert (s, zeros (2, 3, 4));
+%!test
+%! DV = datevec (days (ones (2, 3, 4)));
+%! out = zeros (24, 6);
+%! out(:,3) = ones (24, 1);
+%! assert (DV, out);
+%!test
+%! DV = datevec (years (reshape ([1:24], 2, 3, 4)));
+%! out = zeros (24, 6);
+%! out(:,1) = [1:24]';
+%! assert (DV, out);
+%!test
+%! DV = datevec (days (reshape ([1:24], 2, 3, 4)));
+%! out = zeros (24, 6);
+%! out(:,3) = [1:24]';
+%! assert (DV, out);
+%!test
+%! DV = datevec (hours (reshape ([1:24], 2, 3, 4)));
+%! out = zeros (24, 6);
+%! out(:,4) = [1:23,0]';
+%! out(24,3) = 1;
+%! assert (DV, out);
+%!test
+%! DV = datevec (minutes (reshape ([1:24], 2, 3, 4)));
+%! out = zeros (24, 6);
+%! out(:,5) = [1:24]';
+%! assert (DV, out);
+%!test
+%! DV = datevec (seconds (reshape ([1:24], 2, 3, 4)));
+%! out = zeros (24, 6);
+%! out(:,6) = [1:24]';
+%! assert (DV, out, 2e-15);
+%!test
+%! DV = datevec (milliseconds (reshape ([1:24], 2, 3, 4)));
+%! out = zeros (24, 6);
+%! out(:,6) = 1e-3 * [1:24]';
+%! assert (DV, out, 2e-15);
+%!test
+%! X = reshape ([1:24], 2, 3, 4);
+%! X([12,17]) = NaN;
+%! DV = datevec (days (X));
+%! out = zeros (24, 6);
+%! out(:, 3) = [1:24]';
+%! out([12,17],:) = NaN;
+%! assert (DV, out);
+%!test
+%! X = reshape ([1:24], 2, 3, 4);
+%! X([12,17]) = NaN;
+%! [y, mo, d, h, mi, s] = datevec (days (X));
+%! y_out = mo_out = h_out = mi_out = s_out = zeros (2, 3, 4);
+%! d_out = X;
+%! y_out([12,17]) = mo_out([12,17]) = NaN;
+%! h_out([12,17]) = mi_out([12,17]) = s_out([12,17]) = NaN;
+%! assert (y, y_out);
+%! assert (mo, mo_out);
+%! assert (d, d_out);
+%! assert (h, h_out);
+%! assert (mi, mi_out);
+%! assert (s, s_out);
+
+%!assert (hms (hours ([1:5])), [1:5])
+%!assert (hms (days ([1:5])), 24 * [1:5])
+%!assert (hms (hours (reshape ([1:24], 2, 3, 4))), reshape ([1:24], 2, 3, 4))
+%!test
+%! [h, m, s] = hms (days (0.25 * reshape ([1:24], 2, 3, 4)));
+%! assert (h, 6 * reshape ([1:24], 2, 3, 4));
+%! assert (m, zeros (2, 3, 4));
+%! assert (s, zeros (2, 3, 4));
+%!test
+%! [h, m, s] = hms (years (0.25 * reshape ([1:24], 2, 3, 4)));
+%! h_out = fix (hours (years (0.25 * reshape ([1:24], 2, 3, 4))));
+%! assert (h, h_out);
+%! m_out = fix (minutes (years (0.25 * reshape ([1:24], 2, 3, 4)))) - h_out * 60;
+%! assert (m, m_out);
+%! s_out = round (seconds (years (0.25 * reshape ([1:24], 2, 3, 4))));
+%! assert (s, s_out - (h_out * 3600 + m_out * 60), 5e-8);
+%!test
+%! [h, m, s] = hms (hours ([1:5]));
+%! assert (m, zeros (1, 5));
+%! assert (s, zeros (1, 5));
+%!test
+%! [h, m, s] = hms (minutes ([1:5]));
+%! assert (h, zeros (1, 5));
+%! assert (m, [1:5]);
+%! assert (s, zeros (1, 5));
+%!test
+%! [h, m, s] = hms (seconds ([1:5]));
+%! assert (h, zeros (1, 5));
+%! assert (m, zeros (1, 5));
+%! assert (s, [1:5]);
+%!error<duration.hms: too many output arguments.> [h, m, s, ms] = hms (days (1))
