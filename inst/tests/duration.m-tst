@@ -158,6 +158,45 @@
 %!assert (dispstrings (duration (0, 36, 0.025, 'Format', 'mm:ss.SSSSSSS')), {'36:00.0250000'})
 %!assert (dispstrings (duration (0, 36, 0.025, 'Format', 'mm:ss.SSSSSSSS')), {'36:00.02500000'})
 %!assert (dispstrings (duration (0, 36, 0.025, 'Format', 'mm:ss.SSSSSSSSS')), {'36:00.025000000'})
+%!test
+%! D = duration ([1, 2.3, NaN, Inf, -Inf], 0, 0, 'Format', 'y');
+%! assert (dispstrings (D), {'0.000114079 yrs', '0.000262383 yrs', 'NaN yrs', 'Inf yrs', '-Inf yrs'});
+%!test
+%! D = duration ([1, 2.3, NaN, Inf, -Inf], 0, 0, 'Format', 'd');
+%! assert (dispstrings (D), {'0.0416667 days', '0.0958333 days', 'NaN days', 'Inf days', '-Inf days'});
+%!test
+%! D = duration ([1, 2.3, NaN, Inf, -Inf], 0, 0, 'Format', 'h');
+%! assert (dispstrings (D), {'1 hr', '2.3 hr', 'NaN hr', 'Inf hr', '-Inf hr'});
+%!test
+%! D = duration ([1, 2.3, NaN, Inf, -Inf], 0, 0, 'Format', 'm');
+%! assert (dispstrings (D), {'60 min', '138 min', 'NaN min', 'Inf min', '-Inf min'});
+%!test
+%! D = duration ([1, 2.3, NaN, Inf, -Inf], 0, 0, 'Format', 's');
+%! assert (dispstrings (D), {'3600 sec', '8280 sec', 'NaN sec', 'Inf sec', '-Inf sec'});
+%!test
+%! D = duration ([1, 2.3, NaN, Inf, -Inf], 0, 0, 'Format', 'hh:mm');
+%! assert (dispstrings (D), {'01:00', '02:18', 'NaN', 'Inf', '-Inf'});
+%!test
+%! D = duration ([1, 2.3, NaN, Inf, -Inf], 0, 0, 'Format', 'mm:ss');
+%! assert (dispstrings (D), {'60:00', '138:00', 'NaN', 'Inf', '-Inf'});
+%!test
+%! D = duration ([1, 2.3, NaN, Inf, -Inf], 0, 0, 'Format', 'hh:mm:ss');
+%! assert (dispstrings (D), {'01:00:00', '02:18:00', 'NaN', 'Inf', '-Inf'});
+%!test
+%! D = duration ([1, 2.3, NaN, Inf, -Inf], 0, 0, 'Format', 'hh:mm:ss.SS');
+%! assert (dispstrings (D), {'01:00:00.00', '02:18:00.00', 'NaN', 'Inf', '-Inf'});
+%!test
+%! D = duration ([1, 2.3, NaN, Inf, -Inf], 0, 0, 'Format', 'dd:hh:mm:ss');
+%! assert (dispstrings (D), {'01:00:00', '02:18:00', 'NaN', 'Inf', '-Inf'});
+%!test
+%! D = duration ([1, 2.3, NaN, Inf, -Inf], 0, 0, 'Format', 'dd:hh:mm:ss.SS');
+%! assert (dispstrings (D), {'01:00:00.00', '02:18:00.00', 'NaN', 'Inf', '-Inf'});
+%!test
+%! D = duration ([24.001, 2.3001, NaN, Inf, -Inf], 0, 0, 'Format', 'dd:hh:mm:ss');
+%! assert (dispstrings (D), {'01:00:00:03', '02:18:00', 'NaN', 'Inf', '-Inf'});
+%!test
+%! D = duration ([24.001, 2.3001, NaN, Inf, -Inf], 0, 0, 'Format', 'dd:hh:mm:ss.SSS');
+%! assert (dispstrings (D), {'01:00:00:03.600', '02:18:00.360', 'NaN', 'Inf', '-Inf'});
 
 %!assert (cellstr (years (1)), {'1 yr'})
 %!assert (cellstr (years (1), 'd'), {'365.243 days'})
