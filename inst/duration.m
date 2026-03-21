@@ -940,8 +940,9 @@ classdef duration
     ## array @var{D} and it contains @qcode{true} for each corresponding element
     ## which is within the range specified by @var{lower} and @var{upper} and
     ## @qcode{false} otherwise.  @var{lower} and @var{upper} must be duration
-    ## arrays of compatible size with @var{D} or alternatively they can be any
-    ## valid input to duration array constructor.
+    ## arrays of compatible size with @var{D} or alternatively they can be
+    ## specified as a character vector, a cell array of character vectors or a
+    ## string array containing valid text duration representations.
     ##
     ## @code{@var{TF} = isbetween (@var{D}, @var{lower}, @var{upper},
     ## @var{intervalType})} specifies the type of interval for the @var{lower}
@@ -973,6 +974,9 @@ classdef duration
       elseif (nargin > 4)
         error (strcat ("duration.isbetween: optional paired arguments", ...
                        " are not suppoorted for duration arrays."));
+      endif
+      if (isnumeric (lower) || isnumeric (upper))
+        error ("duration.isbetween: LOWER and UPPER cannot be numeric.");
       endif
       if (strcmpi (intervaltype, 'closed'))
         TF = lower <= this & this <= upper;
@@ -2135,14 +2139,7 @@ function varargout = promote (varargin)
     if (isa (x, "duration"))
       varargout{i} = x;
     elseif (isnumeric (x))
-      ncols = size (x, 2);
-      if (isscalar (x))
-        varargout{i} = duration (24 * x, 0, 0);
-      elseif (ismatrix (x) && ncols == 3)
-        varargout{i} = duration (x);
-      else
-        error ("duration: invalid size input to constructor.");
-      endif
+      varargout{i} = days (x);
     elseif (iscellstr (x) || ischar (x) || isa (x, "string"))
       varargout{i} = duration (x);
     else
