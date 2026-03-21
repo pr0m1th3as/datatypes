@@ -518,3 +518,86 @@
 %! keyHash (duration (0, 0, 0), uint64 ([1, 2]))
 %!error<duration.keyHash: BASE must be a UINT64 scalar.> ...
 %! keyHash (duration (0, 0, 0), 2231107818551636405)
+
+################################################################################
+##                          ** Query Operations **                            ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'isbetween'        'iscolumn'         'isempty'          'isequal'         ##
+## 'isequaln'         'isfinite'         'isinf'            'ismatrix'        ##
+## 'ismember'         'ismissing'        'isnan'            'isregular'       ##
+## 'isrow'            'isscalar'         'issorted'         'issortedrows'    ##
+## 'isvector'                                                                 ##
+##                                                                            ##
+################################################################################
+
+%!test
+%! TF = isbetween (days ([0:5]), days (2), days (3));
+%! assert (TF, logical ([0, 0, 1, 1, 0, 0,]));
+%!test
+%! TF = isbetween (days ([0:5]), duration ('02:00:00:00'), days (3));
+%! assert (TF, logical ([0, 0, 1, 1, 0, 0,]));
+%!test
+%! TF = isbetween (days ([0:5]), duration ("1:00:00:00"), days (3));
+%! assert (TF, logical ([0, 1, 1, 1, 0, 0,]));
+%!test
+%! TF = isbetween (days ([0:5]), duration ("1:00:00:00"), days (4));
+%! assert (TF, logical ([0, 1, 1, 1, 1, 0,]));
+%!test
+%! TF =  isbetween (days ([0:5]), days (2), days (3), 'open');
+%! assert (TF, false (1, 6));
+%!test
+%! TF = isbetween (days ([0:5]), duration ('02:00:00:00'), days (3), 'open');
+%! assert (TF, false (1, 6));
+%!test
+%! TF = isbetween (days ([0:5]), duration ('01:00:00:00'), days (3), 'open');
+%! assert (TF, logical ([0, 0, 1, 0, 0, 0,]));
+%!test
+%! TF = isbetween (days ([0:5]), duration ('01:00:00:00'), days (4), 'open');
+%! assert (TF, logical ([0, 0, 1, 1, 0, 0,]));
+%!test
+%! TF = isbetween (days ([0:5]), days (2), hours (72), 'open');
+%! assert (TF, false (1, 6));
+%!test
+%! TF =  isbetween (days ([0:5]), days (2), days (3), 'openleft');
+%! assert (TF, logical ([0, 0, 0, 1, 0, 0,]));
+%!test
+%! TF = isbetween (days ([0:5]), duration ('02:00:00:00'), days (3), 'openleft');
+%! assert (TF, logical ([0, 0, 0, 1, 0, 0,]));
+%!test
+%! TF = isbetween (days ([0:5]), duration ('01:00:00:00'), days (3), 'openleft');
+%! assert (TF, logical ([0, 0, 1, 1, 0, 0,]));
+%!test
+%! TF = isbetween (days ([0:5]), duration ('01:00:00:00'), days (4), 'openleft');
+%! assert (TF, logical ([0, 0, 1, 1, 1, 0,]));
+%!test
+%! TF = isbetween (days ([0:5]), days (2), hours (72), 'openleft');
+%! assert (TF, logical ([0, 0, 0, 1, 0, 0,]));
+%!test
+%! TF =  isbetween (days ([0:5]), days (2), days (3), 'closedleft');
+%! assert (TF, logical ([0, 0, 1, 0, 0, 0,]));
+%!test
+%! TF = isbetween (days ([0:5]), duration ('02:00:00:00'), days (3), 'closedleft');
+%! assert (TF, logical ([0, 0, 1, 0, 0, 0,]));
+%!test
+%! TF = isbetween (days ([0:5]), duration ('01:00:00:00'), days (3), 'closedleft');
+%! assert (TF, logical ([0, 1, 1, 0, 0, 0,]));
+%!test
+%! TF = isbetween (days ([0:5]), duration ('01:00:00:00'), days (4), 'closedleft');
+%! assert (TF, logical ([0, 1, 1, 1, 0, 0,]));
+%!test
+%! TF = isbetween (days ([0:5]), days (2), hours (72), 'closedleft');
+%! assert (TF, logical ([0, 0, 1, 0, 0, 0,]));
+%!test
+%! TF = isbetween (days ([0:5]),'1:23:00:00', hours (72));
+%! assert (TF, logical ([0, 0, 1, 1, 0, 0,]));
+%!assert (isbetween (years (1), years (1), years (1)), true)
+%!error<duration.isbetween: too few input arguments.> ...
+%! isbetween (days (1), days (1))
+%!error<duration.isbetween: optional paired arguments are not suppoorted for duration arrays.> ...
+%! isbetween (days (1), days (1), days (1), 'open', 'OutputFormat', 'logical')
+%!error<duration.isbetween: LOWER and UPPER cannot be numeric.> ...
+%! isbetween (days (1), 1, 2)
+%!error<duration.isbetween: invalid INTERVALTYPE option.> ...
+%! isbetween (days (1), days (1), days (1), 'asd')
