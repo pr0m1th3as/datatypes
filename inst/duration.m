@@ -324,38 +324,63 @@ classdef duration
           str = '';
           if (d < 0)
             str = [str, '-'];
-            #d = abs(d);
+            d = abs (d);
           endif
           ## Build string according to display format
           if (strcmp (fmt, 'y'))
-            years = abs (d / 365.2425);
+            years = d / 365.2425;
             if (years == 1)
               str = [str, sprintf('%g yr', years)];
             else
               str = [str, sprintf('%g yrs', years)];
             endif
           elseif (strcmp (fmt, 'd'))
-            days = abs (d);
-            if (days == 1)
-              str = [str, sprintf('%g day', days)];
+            if (d == 1)
+              str = [str, sprintf('%g day', d)];
             else
-              str = [str, sprintf('%g days', days)];
+              str = [str, sprintf('%g days', d)];
             endif
           elseif (strcmp (fmt, 'h'))
-            str = [str, sprintf('%g hr', abs (d * 24))];
+            str = [str, sprintf('%g hr', d * 24)];
           elseif (strcmp (fmt, 'm'))
-            str = [str, sprintf('%g min', abs (d * 1440))];
+            str = [str, sprintf('%g min', d * 1440)];
           elseif (strcmp (fmt, 's'))
-            str = [str, sprintf('%g sec', abs (d * 86400))];
+            str = [str, sprintf('%g sec', d * 86400)];
           elseif (strcmp (fmt, 'hh:mm'))
+            ## Convert to minutes
             x = d * 1440;
-            h = abs (fix (x / 60));
-            m = abs (fix (rem (x, 60)));
+            ## Calculate hours
+            tmp = x / 60;
+            h = fix (tmp);
+            ## Fix round-off errors with threshold scaled by hours
+            if (abs (tmp - h - 1) < 1e-15 * (1 + h))
+              h++;
+            endif
+            ## Calculate remaining minutes
+            tmp = x - h * 60;
+            m = fix (tmp);
+            ## Fix round-off errors with threshold scaled by minutes
+            if (abs (tmp - m - 1) < 1e-15 * (1 + m))
+              m++;
+            endif
             str = [str, sprintf('%02d:%02d', h, m)];
           elseif (strcmp (fmt, 'mm:ss'))
+            ## Convert to seconds
             x = d * 86400;
-            m = abs (fix (x / 60));
-            s = abs (floor (rem (x, 60)));
+            ## Calculate minutes
+            tmp = x / 60;
+            m = fix (tmp);
+            ## Fix round-off errors with threshold scaled by minutes
+            if (abs (tmp - m - 1) < 1e-15 * (1 + m))
+              m++;
+            endif
+            ## Calculate remaining seconds
+            tmp = x - m * 60;
+            s = fix (tmp);
+            ## Fix round-off errors with threshold scaled by seconds
+            if (abs (tmp - s - 1) < 1e-15 * (1 + s))
+              s++;
+            endif
             str = [str, sprintf('%02d:%02d', m, s)];
             if (fracSec)
               fs = rem (x, 60) - s; # fraction of a second
@@ -364,49 +389,85 @@ classdef duration
               str = [str, sprintf(pat, ms)];
             endif
           elseif (strcmp (fmt, 'hh:mm:ss'))
+            ## Convert to seconds
             x = d * 86400;
-            h = fix (x / 3600);
+            ## Calculate hours
+            tmp = x / 3600;
+            h = fix (tmp);
+            ## Fix round-off errors with threshold scaled by hours
+            if (abs (tmp - h - 1) < 1e-15 * (1 + h))
+              h++;
+            endif
+            ## Calculate remaining duration in seconds
             x = x - h * 3600;
-            m = fix (x / 60);
+            ## Calculate remaining minutes
+            tmp = x / 60;
+            m = fix (tmp);
+            ## Fix round-off errors with threshold scaled by minutes
+            if (abs (tmp - m - 1) < 1e-15 * (1 + m))
+              m++;
+            endif
+            ## Calculate remaining seconds
             x = x - m * 60;
-            if (abs (x) - abs (round (x)) < 1e-10)
-              x = round (1e10 * x) / 1e10;
+            s = fix (x);
+            ## Fix round-off errors with threshold scaled by seconds
+            if (abs (x - s - 1) < 1e-15 * (1 + s))
+              s++;
             endif
-            s = floor (x);
-            if (abs (s) - abs (x) > 1e-8)
-              s = fix (x);
-            endif
-            str = [str, sprintf('%02d:%02d:%02d', abs (h), abs (m), abs (s))];
+            str = [str, sprintf('%02d:%02d:%02d', h, m, s)];
             if (fracSec)
               fs = x - s; # fraction of a second
+              ## Round to nearest nanosecond
+              fs = round (fs * 1e+9) * 1e-9;
               ## Promote to integer value according to requested digits
-              ms = abs (fix (fs * 10 ^ fdigits));
+              ms = floor (fs * 10 ^ fdigits);
               str = [str, sprintf(pat, ms)];
             endif
           elseif (strcmp (fmt, 'dd:hh:mm:ss'))
-            x = d - fix (d);
-            x = x * 86400;
-            h = fix (x / 3600);
-            x = x - h * 3600;
-            m = fix (x / 60);
-            x = x - m * 60;
-            if (abs (x) - abs (round (x)) < 1e-10)
-              x = round (1e10 * x) / 1e10;
+            ## Calculate days
+            tmp = fix (d);
+            ## Fix round-off errors with threshold scaled by days
+            if (abs (d - tmp - 1) < 1e-15 * (1 + d))
+              tmp++;
             endif
-            s = floor (x);
-            if (abs (s) - abs (x) > 1e-8)
-              s = fix (x);
+            x = d - tmp;
+            d = tmp;
+            ## Calculate remaining duration in seconds
+            x = x * 86400;
+            ## Calculate hours
+            tmp = x / 3600;
+            h = fix (tmp);
+            ## Fix round-off errors with threshold scaled by hours
+            if (abs (tmp - h - 1) < 1e-15 * (1 + h))
+              h++;
+            endif
+            ## Calculate remaining duration in seconds
+            x = x - h * 3600;
+            ## Calculate remaining minutes
+            tmp = x / 60;
+            m = fix (tmp);
+            ## Fix round-off errors with threshold scaled by minutes
+            if (abs (tmp - m - 1) < 1e-15 * (1 + m))
+              m++;
+            endif
+            ## Calculate remaining seconds
+            x = x - m * 60;
+            s = fix (x);
+            ## Fix round-off errors with threshold scaled by seconds
+            if (abs (x - s - 1) < 1e-15 * (1 + s))
+              s++;
             endif
             if (fix (d) > 0)
-              str = [str, sprintf('%02d:%02d:%02d:%02d', ...
-                                  abs (fix (d)), abs (h), abs (m), abs (s))];
+              str = [str, sprintf('%02d:%02d:%02d:%02d', d, h, m, s)];
             else
               str = [str, sprintf('%02d:%02d:%02d', h, m, s)];
             endif
             if (fracSec)
               fs = x - s; # fraction of a second
+              ## Round to nearest nanosecond
+              fs = round (fs * 1e+9) * 1e-9;
               ## Promote to integer value according to requested digits
-              ms = abs (fix (fs * 10 ^ fdigits));
+              ms = floor (fs * 10 ^ fdigits);
               str = [str, sprintf(pat, ms)];
             endif
           endif
@@ -2146,6 +2207,7 @@ function days = timestrings2days (TS, inputFormat)
   ## Process all elements according to inputFormat (unrecognized return NaN)
   for i = 1:numel (TS)
     str1 = TS{i};
+    pnd_sign = 1;
     if (numel (find (str1 == '.')))
       cstr = strsplit (str1, '.');
       if (isempty (cstr{2}))
@@ -2162,17 +2224,38 @@ function days = timestrings2days (TS, inputFormat)
         D  = 0;
         H  = 0;
         MI = str2double (cstr{1});
+        if (MI < 0)
+          pnd_sign = -1;
+          MI = -MI;
+        endif
         S  = str2double (cstr{2});
+        if (S >= 60)
+          S = NaN;
+        endif
       elseif (nCols == 2) # 'hh:mm:ss'
         D  = 0;
         H  = str2double (cstr{1});
+        if (H < 0)
+          pnd_sign = -1;
+          H = -H;
+        endif
         MI = str2double (cstr{2});
         S  = str2double (cstr{3});
+        if (MI >= 60 || S >= 60)
+          MI = S = NaN;
+        endif
       else  # 'dd:hh:mm:ss'
         D  = str2double (cstr{1});
+        if (D < 0)
+          pnd_sign = -1;
+          D = -D;
+        endif
         H  = str2double (cstr{2});
         MI = str2double (cstr{3});
         S  = str2double (cstr{4});
+        if (H >= 24 || MI >= 60 || S >= 60)
+          H = MI = S = NaN;
+        endif
       endif
     else
       cstr = strsplit (str1, ':');
@@ -2183,30 +2266,56 @@ function days = timestrings2days (TS, inputFormat)
           D  = 0;
           H  = 0;
           MI = str2double (cstr{1});
+          if (MI < 0)
+            pnd_sign = -1;
+            MI = -MI;
+          endif
           S  = str2double (cstr{2});
           MS = 0;
         else  # 'hh:mm'
           D  = 0;
           H  = str2double (cstr{1});
+          if (H < 0)
+            pnd_sign = -1;
+            H = -H;
+          endif
           MI = str2double (cstr{2});
+          if (MI >= 60)
+            MI = NaN;
+          endif
           S  = 0;
           MS = 0;
         endif
       elseif (nCols == 2) # 'hh:mm:ss'
         D  = 0;
         H  = str2double (cstr{1});
+        if (H < 0)
+          pnd_sign = -1;
+          H = -H;
+        endif
         MI = str2double (cstr{2});
         S  = str2double (cstr{3});
+        if (MI >= 60 || S >= 60)
+          MI = S = NaN;
+        endif
         MS = 0;
       else  # 'dd:hh:mm:ss'
         D  = str2double (cstr{1});
+        if (D < 0)
+          pnd_sign = -1;
+          D = -D;
+        endif
         H  = str2double (cstr{2});
         MI = str2double (cstr{3});
         S  = str2double (cstr{4});
+        if (H >= 24 || MI >= 60 || S >= 60)
+          H = MI = S = NaN;
+        endif
         MS = 0;
       endif
     endif
     days(i) = D + (H / 24) + (MI / 1440) + (S / 86400) + (MS / 86400000);
+    days(i) *= pnd_sign;
   endfor
 endfunction
 
