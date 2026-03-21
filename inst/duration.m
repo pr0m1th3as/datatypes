@@ -315,10 +315,21 @@ classdef duration
       for i = 1:prod (sz)
         d = this.Days(i);
         ## Handle NaNs and Infs early
-        if (isnan (d))
-          cstr{i} = 'NaN';
-        elseif (isinf (d))
-          cstr{i} = num2str (d);
+        if (! isfinite (d))
+          switch (fmt)
+            case 'y'
+              cstr{i} = sprintf ('%g yrs', d);
+            case 'd'
+              cstr{i} = sprintf ('%g days', d);
+            case 'h'
+              cstr{i} = sprintf ('%g hr', d);
+            case 'm'
+              cstr{i} = sprintf ('%g min', d);
+            case 's'
+              cstr{i} = sprintf ('%g sec', d);
+            otherwise
+              cstr{i} = sprintf ('%g', d);
+          endswitch
         else
           ## Get sign for positive/negative duration
           str = '';
@@ -2053,7 +2064,7 @@ classdef duration
             case 'Format'
               out = this.Format;
             otherwise
-              error ("duration.subsref: unrecognized property: %s", s.subs);
+              error ("duration.subsref: unrecognized property: '%s'", s.subs);
           endswitch
       endswitch
 
@@ -2084,7 +2095,9 @@ classdef duration
             this.Days(s.subs{:}) = timestrings2days (val, []);
           elseif (isnumeric (val))
             this.Days(s.subs{:}) = double (val);
-          elseif (! isa (val, "duration"))
+          elseif (isa (val, "duration"))
+            this.Days(s.subs{:}) = val.Days;
+          else
             error (strcat ("duration.subsasgn: assignment value must", ...
                            " be a duration array, a numeric array of", ...
                            " days, or a text represention of durations."));
@@ -2095,19 +2108,26 @@ classdef duration
                          " for assigning values. Use '()' instead."));
 
         case '.'
-          if (! ischar (s.subs))
-            error (strcat ("duration.subsasgn: '.' index", ...
-                           " argument must be a character vector."));
-          endif
           switch (s.subs)
             case 'Format'
+              ## Convert string to character vector if necessary
+              if (isstring (val))
+                if (! isscalar (val))
+                  error (strcat ("duration.subsasgn: 'Format' must be a", ...
+                                 " character vector or a string scalar."));
+                endif
+                val = char (val);
+              elseif (! (ischar (val) && isrow (val)))
+                error (strcat ("duration.subsasgn: 'Format' must be a", ...
+                               " character vector or a string scalar."));
+              endif
               errmsg = checkFormatString (val);
               if (! isempty (errmsg))
                 error ("duration.subsasgn: %s", errmsg);
               endif
               this.Format = val;
             otherwise
-              error ("duration.subsasgn: unrecognized property: %s", s.subs);
+              error ("duration.subsasgn: unrecognized property: '%s'", s.subs);
           endswitch
       endswitch
 
