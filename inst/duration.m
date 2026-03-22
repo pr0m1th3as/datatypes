@@ -1032,6 +1032,24 @@ classdef duration
       TF = isempty (this.Days);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{TF} =} isequal (@var{D1}, @var{D2})
+    ## @deftypefnx {duration} {@var{TF} =} isequal (@var{D1}, @var{D2}, @dots{})
+    ##
+    ## Return true if duration arrays are equal.
+    ##
+    ## @code{@var{TF} = isequal (@var{D1}, @var{D2})} returns a logical scalar
+    ## @var{TF}, which is @qcode{true}, if the duration arrays @var{D1} and
+    ## @var{D2} contain the same values, and @qcode{false} otherwise.  Either
+    ## @var{D1} or @var{D2} can also be specified as a character vector, a cell
+    ## array of character vectors or a string array containing valid text
+    ## duration representations.
+    ##
+    ## @code{@var{TF} = isequal (@var{D1}, @var{D2}, @dots{})} returns a logical
+    ## scalar @var{TF}, which is @qcode{true}, if all input arguments are equal,
+    ## and @qcode{false} otherwise.
+    ##
+    ## @end deftypefn
     function TF = isequal (varargin)
       args = varargin;
       [args{:}] = promote (varargin{:});
@@ -1039,6 +1057,26 @@ classdef duration
       TF = isequal (days{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{TF} =} isequaln (@var{D1}, @var{D2})
+    ## @deftypefnx {duration} {@var{TF} =} isequaln (@var{D1}, @var{D2}, @dots{})
+    ##
+    ## Return true if duration arrays are equal under the assumption that
+    ## missing elements are equal.
+    ##
+    ## @code{@var{TF} = isequal (@var{D1}, @var{D2})} returns a logical scalar
+    ## @var{TF}, which is @qcode{true}, if the duration arrays @var{D1} and
+    ## @var{D2} contain the same values or corresponding missing elements, and
+    ## @qcode{false} otherwise.  Either @var{D1} or @var{D2} can also be
+    ## specified as a character vector, a cell array of character vectors or a
+    ## string array containing valid text duration representations.
+    ##
+    ## @code{@var{TF} = isequal (@var{D1}, @var{D2}, @dots{})} returns a logical
+    ## scalar @var{TF}, which is @qcode{true}, if all input arguments are equal
+    ## under the assumption that missing elements are equal, and @qcode{false}
+    ## otherwise.
+    ##
+    ## @end deftypefn
     function TF = isequaln (varargin)
       args = varargin;
       [args{:}] = promote (varargin{:});
