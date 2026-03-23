@@ -937,7 +937,8 @@ classdef categorical
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {categorical} {@var{TF} =} isequaln (@var{C1}, @var{C2}, @dots{})
+    ## @deftypefn  {categorical} {@var{TF} =} isequaln (@var{C1}, @var{C2})
+    ## @deftypefnx {categorical} {@var{TF} =} isequaln (@var{C1}, @var{C2}, @dots{})
     ##
     ## Return true if categorical arrays are equal under the assumption that
     ## undefined elements are equal.
