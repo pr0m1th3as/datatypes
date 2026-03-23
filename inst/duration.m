@@ -1159,7 +1159,7 @@ classdef duration
     function varargout = ismember (A, B, varargin)
       ## Check input arguments
       if (! isa (B, 'duration'))
-        error ("duration.ismember: B must be a 'duration' array.");
+        B = promote (B);
       endif
       ## Check for 'rows' optional argument
       if (! isempty (varargin))
