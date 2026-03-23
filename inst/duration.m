@@ -1156,30 +1156,34 @@ classdef duration
     ## member of @var{B} and 0 otherwise.
     ##
     ## @end deftypefn
-    function [TF, index] = ismember (A, B, varargin)
+    function varargout = ismember (A, B, varargin)
       ## Check input arguments
-      do_rows = false;
+      if (! isa (B, 'duration'))
+        error ("duration.ismember: B must be a 'duration' array.");
+      endif
+      ## Check for 'rows' optional argument
       if (! isempty (varargin))
         if (strcmpi (varargin{1}, 'rows'))
-          do_rows = true;
           if (ndims (A) != 2 || ndims (A) != ndims (B))
             error ("duration.ismember: 'rows' applies only to 2-D matrices.");
           endif
           if (size (A, 2) != size (B, 2))
             error ("duration.ismember: 'rows' requires same number of columns.");
           endif
+          if (nargout > 1)
+            [varargout{1}, varargout{2}] = ismember (A.Days, B.Days, 'rows');
+          else
+            varargout{1} = ismember (A.Days, B.Days, 'rows');
+          endif
         else
           error ("duration.ismember: invalid optional argument.");
         endif
-      endif
-      if (! isa (B, 'duration'))
-        error ("duration.ismember: B must be a 'duration' array.");
-      endif
-      ## Find ismember
-      if (do_rows)
-        [TF, index] = ismember (A.Days, B.Days, 'rows');
       else
-        [TF, index] = ismember (A.Days, B.Days);
+        if (nargout > 1)
+          [varargout{1}, varargout{2}] = ismember (A.Days, B.Days);
+        else
+          varargout{1} = ismember (A.Days, B.Days);
+        endif
       endif
     endfunction
 
