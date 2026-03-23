@@ -2676,7 +2676,7 @@ classdef categorical
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {categorical} {@var{B} =} maxk (@var{A}, @var{K})
+    ## @deftypefn  {categorical} {@var{B} =} maxk (@var{A}, @var{K})
     ## @deftypefnx {categorical} {@var{B} =} maxk (@var{A}, @var{K}, @var{dim})
     ## @deftypefnx {categorical} {[@var{B}, @var{index}] =} maxk (@dots{})
     ##
