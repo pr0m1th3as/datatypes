@@ -689,6 +689,78 @@
 %!assert (isequaln (days (1), duration (24, 0, 0), '24:00:00'), true)
 %!assert (isequaln (days ([1, NaN]), duration ([24, NaN], 0, 0)), true)
 
+%!assert (isfinite (days ([1, -Inf, NaN, Inf])), [true, false, false, false])
+%!assert (isfinite (days ([1, -Inf; NaN, Inf])), [true, false; false, false])
+%!assert (isfinite (days (ones (0, 1))), true (0, 1))
+%!assert (isfinite (days (ones (1, 0))), true (1, 0))
+%!assert (isfinite (days ([])), true ([]))
+%!assert (isfinite (duration (ones (2, 3, 4), 0, 0)), true (2, 3, 4))
+%!assert (isfinite (duration (Inf (2, 3, 4), 0, 0)), false (2, 3, 4))
+%!assert (isfinite (duration (-Inf (2, 3, 4), 0, 0)), false (2, 3, 4))
+%!assert (isfinite (duration (NaN (2, 3, 4), 0, 0)), false (2, 3, 4))
+
+%!assert (isinf (days ([1, -Inf, NaN, Inf])), [false, true, false, true])
+%!assert (isinf (days ([1, -Inf; NaN, Inf])), [false, true; false, true])
+%!assert (isinf (days (ones (0, 1))), true (0, 1))
+%!assert (isinf (days (ones (1, 0))), true (1, 0))
+%!assert (isinf (days ([])), true ([]))
+%!assert (isinf (duration (ones (2, 3, 4), 0, 0)), false (2, 3, 4))
+%!assert (isinf (duration (Inf (2, 3, 4), 0, 0)), true (2, 3, 4))
+%!assert (isinf (duration (-Inf (2, 3, 4), 0, 0)), true (2, 3, 4))
+%!assert (isinf (duration (NaN (2, 3, 4), 0, 0)), false (2, 3, 4))
+
+%!assert (ismatrix (duration), true)
+%!assert (ismatrix (duration ([], [], [])), true)
+%!assert (ismatrix (duration (ones (2, 4), 0, 0)), true)
+%!assert (ismatrix (duration (ones (2, 4, 1), 0, 0)), true)
+%!assert (ismatrix (duration (ones (2, 1, 4), 0, 0)), false)
+%!assert (ismatrix (duration (ones (2, 3, 4), 0, 0)), false)
+%!assert (ismatrix (days (ones (0, 1))), true)
+%!assert (ismatrix (days (ones (1, 0))), true)
+
+%!assert (ismember (days (1), days ([1, 2])), true)
+%!assert (ismember (days ([1, 2]), days (1)), [true, false])
+%!assert (ismember (days ([1; 2]), days (1)), [true; false])
+%!assert (ismember (days (1), days ([1; 2])), true)
+%!test
+%! [TF, index] = ismember (days (1), days (ones (2, 3, 4)));
+%! assert (TF, true);
+%! assert (index, 24); # This is MATLAB incompatible
+%! #assert (index, 1); # This must be fixed in core 'ismember' bug #55659
+%!test
+%! x = ones (2, 3, 4);
+%! x(1) = 2;
+%! [TF, index] = ismember (days (1), days (x));
+%! assert (TF, true);
+%! assert (index, 24); # This is MATLAB incompatible
+%! #assert (index, 2); # This must be fixed in core 'ismember' bug #55659
+%!test
+%! [TF, index] = ismember (days ([0:4]), days ([1, 2]));
+%! assert (TF, [false, true, true, false, false]);
+%! assert (index, [0, 1, 2, 0, 0]);
+%!test
+%! [TF, index] = ismember (days ([0:4]), days ([-1, 2]));
+%! assert (TF, [false, false, true, false, false]);
+%! assert (index, [0, 0, 2, 0, 0]);
+%!test
+%! [TF, index] = ismember (days ([0:4]), [-1, 2]);
+%! assert (TF, [false, false, true, false, false]);
+%! assert (index, [0, 0, 2, 0, 0]);
+%!test
+%! [TF, index] = ismember (days ([0:4]), {'24:00:00', '18:00:00'});
+%! assert (TF, [false, true, false, false, false]);
+%! assert (index, [0, 1, 0, 0, 0]);
+%!test
+%! [TF, index] = ismember (days ([2,3;1,2;-1,2;4,5]), days ([-1, 2]), 'rows');
+%! assert (TF, [false; false; true; false]);
+%! assert (index, [0; 0; 1; 0]);
+%!error<duration.ismember: 'rows' applies only to 2-D matrices.> ...
+%! ismember (days (1), days (ones (2, 3, 4)), 'rows')
+%!error<duration.ismember: 'rows' requires same number of columns.> ...
+%! ismember (days (1), days (ones (2, 3)), 'rows')
+%!error<duration.ismember: invalid optional argument.> ...
+%! ismember (days (1), days (1), 'row')
+
 %!assert (isvector (days ([1, 2, 3, 4])), true)
 %!assert (isvector (days ([1; 2; 3; 4])), true)
 %!assert (isvector (days ([1, 2; 3, 4])), false)
