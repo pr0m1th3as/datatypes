@@ -1010,8 +1010,8 @@ classdef duration
     ## @code{@var{TF} = iscolumn (@var{D})} returns a logical scalar @var{TF},
     ## which is @qcode{true} if the duration array @var{D} is a column vector
     ## and @qcode{false} otherwise.  A column vector is a 2-D array for which
-    ## @code{size (@var{X})} returns @code{[@var{N}, 1]} with non-negative
-    ## @var{N}.
+    ## @code{size (@var{D})} returns @code{[@var{N}, 1]} with non-negative
+    ## @var{N}.  By definition, a scalar is also a column vector.
     ##
     ## @end deftypefn
     function TF = iscolumn (this)
@@ -1084,10 +1084,33 @@ classdef duration
       TF = isequaln (days{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{TF} =} isfinite (@var{D})
+    ##
+    ## Return true for duration elements that are finite.
+    ##
+    ## @code{@var{TF} = isfinite (@var{D})} returns a logical array @var{TF}
+    ## of the same size as @var{calD} containing @qcode{true} for each
+    ## corresponding element of @var{D} that is finite and @qcode{false}
+    ## otherwise.  Finite elements are those which are neither infinite nor
+    ## Not-A-Number.
+    ##
+    ## @end deftypefn
     function TF = isfinite (this)
       TF = isfinite (this.Days);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{TF} =} isinf (@var{D})
+    ##
+    ## Return true for duration elements that are infinite.
+    ##
+    ## @code{@var{TF} = isinf (@var{D})} returns a logical array @var{TF}
+    ## of the same size as @var{D} containing @qcode{true} for each
+    ## corresponding element of @var{calD} that is either @qcode{Inf} or
+    ## @qcode{-Inf} and @qcode{false} otherwise.
+    ##
+    ## @end deftypefn
     function TF = isinf (this)
       TF = isinf (this.Days);
     endfunction
@@ -1100,8 +1123,7 @@ classdef duration
     ## @code{@var{TF} = ismatrix (@var{D})} returns a logical scalar @var{TF},
     ## which is @qcode{true} if the duration array @var{D} is a matrix and
     ## @qcode{false} otherwise.  A matrix is an array of any type where
-    ## @code{ndims (@var{X}) == 2} and for which @code{size (@var{X})} returns
-    ## @code{[@var{H}, @var{W}]} with non-negative @var{H} and @var{W}.
+    ## @code{ndims (@var{D}) == 2}.  By definition, a scalar is also a matrix.
     ##
     ## @end deftypefn
     function TF = ismatrix (this)
@@ -1193,6 +1215,16 @@ classdef duration
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{TF} =} isnan (@var{D})
+    ##
+    ## Return true for duration elements that are Not-A-Number.
+    ##
+    ## @code{@var{TF} = isnan (@var{D})} returns a logical array @var{TF} of the
+    ## same size as @var{D} containing @qcode{true} for each corresponding
+    ## element of @var{calD} that is @qcode{NaN} and @qcode{false} otherwise.
+    ##
+    ## @end deftypefn
     function TF = isnan (this)
       TF = isnan (this.Days);
     endfunction
@@ -1205,8 +1237,8 @@ classdef duration
     ## @code{@var{TF} = isrow (@var{D})} returns a logical scalar @var{TF},
     ## which is @qcode{true} if the duration array @var{D} is a row vector
     ## and @qcode{false} otherwise.  A row vector is a 2-D array for which
-    ## @code{size (@var{X})} returns @code{[1, @var{N}]} with non-negative
-    ## @var{N}.
+    ## @code{size (@var{D})} returns @code{[1, @var{N}]} with non-negative
+    ## @var{N}.  By definition, a scalar is also a row vector.
     ##
     ## @end deftypefn
     function TF = isrow (this)
@@ -1221,7 +1253,7 @@ classdef duration
     ## @code{@var{TF} = isscalar (@var{D})} returns a logical scalar @var{TF},
     ## which is @qcode{true} if the duration array @var{D} is also a scalar
     ## and @qcode{false} otherwise.  A scalar is a single element object for
-    ## which @code{size (@var{X})} returns @code{[1, 1]}.
+    ## which @code{size (@var{D})} returns @code{[1, 1]}.
     ##
     ## @end deftypefn
     function TF = isscalar (this)
@@ -1667,9 +1699,132 @@ classdef duration
 
   methods (Access = public)
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{B} =} sort (@var{A})
+    ## @deftypefnx {duration} {@var{B} =} sort (@var{A}, @var{dim})
+    ## @deftypefnx {duration} {@var{B} =} sort (@var{A}, @var{direction})
+    ## @deftypefnx {duration} {@var{B} =} sort (@var{A}, @var{dim}, @var{direction})
+    ## @deftypefnx {duration} {@var{B} =} sort (@dots{}, @qcode{'MissingPlacement'}, @var{MP})
+    ## @deftypefnx {duration} {@var{B} =} sort (@dots{}, @qcode{'ComparisonMethod'}, @var{CM})
+    ## @deftypefnx {duration} {[@var{B}, @var{index}] =} sort (@var{A}, @dots{})
+    ##
+    ## Sort elements in a duration array.
+    ##
+    ## @code{@var{B} = sort (@var{A})} sorts the duration array @var{A} in
+    ## ascending order.  If @var{A} is a matrix, @code{sort (@var{A})} sorts
+    ## each column of @var{A} in ascending order.  For multidimensional arrays,
+    ## @code{mode (@var{A})} sorts along the first non-singleton dimension.
+    ##
+    ## @code{@var{B} = sort (@var{A}, @var{dim})} sorts along the dimension
+    ## specified by @var{dim}.
+    ##
+    ## @code{@var{B} = sort (@var{A}, @var{direction})} also specifies the
+    ## sorting direction, which can be either @qcode{'ascend'} (default) or
+    ## @qcode{'descend'}.
+    ##
+    ## @code{@var{B} = sort (@dots{}, @qcode{'MissingPlacement'}, @var{MP})}
+    ## specifies where to place the missing elements (@qcode{<undefined>})
+    ## returned in @var{B} with one of the following options specified in
+    ## @var{MP}:
+    ##
+    ## @itemize
+    ## @item @qcode{'auto'}, which is the default, places missing elements last
+    ## for ascending sort and first for descending sort.
+    ## @item @qcode{'first'} places missing elements first.
+    ## @item @qcode{'last'} places missing elements last.
+    ## @end itemize
+    ##
+    ## @code{@var{B} = sort (@dots{}, @qcode{'ComparisonMethod'}, @var{CM})}
+    ## specifies the comparison method for determining the order of elements
+    ## returned in @var{B} with one of following options:
+    ##
+    ## @itemize
+    ## @item @qcode{'auto'}, which is the default, sorts by @code{real (A)}.
+    ## @item @qcode{'real'} sorts by @code{real (A)}.
+    ## @item @qcode{'abs'} sorts by @code{abs (A)}.
+    ## @end itemize
+    ##
+    ## @code{[@var{B}, @var{index}] = sort (@var{A}, @dots{})} also returns a
+    ## sorting index containing the original indices of the elements in the
+    ## sorted array.
+    ##
+    ## @itemize
+    ## @item If @var{A} is a vector, then @var{index} contains the original
+    ## linear indices of the elements in the sorted vector @var{B} such that
+    ## @code{@var{B} = @var{A}(@var{index})}.
+    ## @item If @var{A} is an @math{MxN} matrix and @qcode{@var{dim} = 1}, then
+    ## @var{index} contains the original row indices of the elements in the
+    ## sorted vector @var{B} such that for @qcode{j = 1:N},
+    ## @code{@var{B}(:,j) = @var{A}(@var{index}(:,j),j)}.
+    ## @end itemize
+    ##
+    ## @end deftypefn
     function [B, index] = sort (A, varargin)
-      B = A;
-      [B.Days, index] = sort (A.Days, varargin{:});
+      ## Parse and validate optional 'MissingPlacement' paired argument
+      optNames = {'MissingPlacement', 'ComparisonMethod'};
+      dfValues = {'auto', 'auto'};
+      [MP, CM, args] = parsePairedArguments (optNames, dfValues, varargin(:));
+      if (! ismember (MP, {'auto', 'first', 'last'}))
+        error ("duration.sort: invalid value for 'MissingPlacement'.");
+      endif
+      if (! ismember (CM, {'auto', 'real', 'abs'}))
+        error ("duration.sort: invalid value for 'ComparisonMethod'.");
+      endif
+
+      ## Get direction
+      cid = cellfun (@ischar, args);
+      if (any (cid))
+        dir = args{cid};
+      else
+        dir = 'ascend';
+      endif
+
+      ## Apply comparison method
+      data = A.Days;
+      if (strcmp (CM, 'abs'))
+        data = abs (data);
+      endif
+
+      ## Special handling for missing elements when missing placement overrides
+      ## default behavior (only if missing data actually exist).
+      is_nan = isnan (data);
+      if (any (is_nan(:)))
+        ## FIX ME: this workaround will be removed once the 'sort' function
+        ## in core Octave supports 'MissingPlacement' optional argument.
+        ## This implementation fails the edge case where -Inf and -realmax
+        ## elements are present along the operating dimension.
+        if ((strcmp (dir, 'ascend') && strcmp (MP, {'first'})) ||
+            (strcmp (dir, 'descend') && strcmp (MP, {'last'})))
+          ## Convert missing values to -Inf so that they are placed
+          ## appropriately according to 'MissingPlacement' specification.
+          ## If -Inf values already exist in data, then convert them to the
+          ## next smallest possible value
+          is_m_inf = data == -Inf;
+          if (any (is_m_inf(:)))
+            m_inf_rep = - realmax;
+            data(is_m_inf) = m_inf_rep;
+          endif
+          d(is_nan) = -Inf;
+          ## Sort values
+          [~, index] = sort (data, args{:});
+          ## Convert -Inf to NaN and smallest possible values to -Inf (if any)
+          is_nan = data == -Inf;
+          data(is_nan) = NaN;
+          if (any (is_m_inf))
+            is_m_inf = data == m_inf_rep;
+            data(is_m_inf) = -Inf;
+          endif
+        else
+          ## Sort values without special handling
+          [~, index] = sort (data, args{:});
+        endif
+      else
+        ## Sort values with no undefined elements
+        [~, index] = sort (data, args{:});
+      endif
+
+      ## Return sorted duration array
+      B = subset (A, index);
     endfunction
 
     function [B, index] = sortrows (A, varargin)
