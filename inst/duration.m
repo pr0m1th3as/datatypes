@@ -1131,7 +1131,10 @@ classdef duration
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {duration} {@var{TF} =} ismember (@var{A}, @var{B})
+    ## @deftypefn  {duration} {@var{TF} =} ismember (@var{A}, @var{B})
+    ## @deftypefnx {duration} {@var{TF} =} ismember (@var{a}, @var{s}, @qcode{'rows'})
+    ## @deftypefnx {duration} {[@var{TF}, @var{index}] =} ismember (@dots{})
+    ## @deftypefnx {duration} {[@var{TF}, @var{index}] =} ismember (@dots{}, @qcode{'legacy'})
     ##
     ## Test for duration elements in a set.
     ##
@@ -1153,7 +1156,10 @@ classdef duration
     ## otherwise.  If the @qcode{'rows'} optional argument is used, then the
     ## returning index is a column vector with the same rows as @var{A} and it
     ## contains the lowest index in @var{B} for each row of @var{A} that is a
-    ## member of @var{B} and 0 otherwise.
+    ## member of @var{B} and 0 otherwise.  If the @qcode{'legacy'} optional
+    ## argument is specified, then the highest index of matched elements is
+    ## returned.  Unless multiple matches exist, the @qcode{'legacy'} option has
+    ## no effect on the returned @var{index}.
     ##
     ## @end deftypefn
     function varargout = ismember (A, B, varargin)
@@ -1161,28 +1167,32 @@ classdef duration
       if (! isa (B, 'duration'))
         B = promote (B);
       endif
-      ## Check for 'rows' optional argument
+      ## Check for 'rows' and 'legacy' optional arguments
       if (! isempty (varargin))
-        if (strcmpi (varargin{1}, 'rows'))
+        if (! cellfun ('ischar', varargin));
+          error ("duration.ismember: all options must be character vectors.");
+        elseif (! all (strcmpi (varargin, 'rows') | strcmpi (varargin, 'legacy')))
+          error ("duration.ismember: only 'rows' and 'legacy' are valid options.");
+        endif
+        do_rows = any (strcmpi ('rows', varargin));
+        if (do_rows)
           if (ndims (A) != 2 || ndims (A) != ndims (B))
             error ("duration.ismember: 'rows' applies only to 2-D matrices.");
           endif
           if (size (A, 2) != size (B, 2))
             error ("duration.ismember: 'rows' requires same number of columns.");
           endif
-          if (nargout > 1)
-            [varargout{1}, varargout{2}] = ismember (A.Days, B.Days, 'rows');
-          else
-            varargout{1} = ismember (A.Days, B.Days, 'rows');
-          endif
+        endif
+        if (nargout > 1)
+          [varargout{1}, varargout{2}] = __ismember__ (A.Days, B.Days, varargin{:});
         else
-          error ("duration.ismember: invalid optional argument.");
+          varargout{1} = __ismember__ (A.Days, B.Days, varargin{:});
         endif
       else
         if (nargout > 1)
-          [varargout{1}, varargout{2}] = ismember (A.Days, B.Days);
+          [varargout{1}, varargout{2}] = __ismember__ (A.Days, B.Days);
         else
-          varargout{1} = ismember (A.Days, B.Days);
+          varargout{1} = __ismember__ (A.Days, B.Days);
         endif
       endif
     endfunction
