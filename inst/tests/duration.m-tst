@@ -725,15 +725,23 @@
 %!test
 %! [TF, index] = ismember (days (1), days (ones (2, 3, 4)));
 %! assert (TF, true);
-%! assert (index, 24); # This is MATLAB incompatible
-%! #assert (index, 1); # This must be fixed in core 'ismember' bug #55659
+%! assert (index, 1);
+%!test
+%! [TF, index] = ismember (days (1), days (ones (2, 3, 4)), 'legacy');
+%! assert (TF, true);
+%! assert (index, 24);
 %!test
 %! x = ones (2, 3, 4);
 %! x(1) = 2;
 %! [TF, index] = ismember (days (1), days (x));
 %! assert (TF, true);
-%! assert (index, 24); # This is MATLAB incompatible
-%! #assert (index, 2); # This must be fixed in core 'ismember' bug #55659
+%! assert (index, 2); # This is MATLAB incompatible
+%!test
+%! x = ones (2, 3, 4);
+%! x(1) = 2;
+%! [TF, index] = ismember (days (1), days (x), 'legacy');
+%! assert (TF, true);
+%! assert (index, 24);
 %!test
 %! [TF, index] = ismember (days ([0:4]), days ([1, 2]));
 %! assert (TF, [false, true, true, false, false]);
@@ -758,7 +766,9 @@
 %! ismember (days (1), days (ones (2, 3, 4)), 'rows')
 %!error<duration.ismember: 'rows' requires same number of columns.> ...
 %! ismember (days (1), days (ones (2, 3)), 'rows')
-%!error<duration.ismember: invalid optional argument.> ...
+%!error<duration.ismember: all options must be character vectors.> ...
+%! ismember (days (1), days (1), 3)
+%!error<duration.ismember: only 'rows' and 'legacy' are valid options.> ...
 %! ismember (days (1), days (1), 'row')
 
 %!assert (isvector (days ([1, 2, 3, 4])), true)
