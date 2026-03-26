@@ -868,6 +868,7 @@ classdef table
                 ## logical
                 strTrue = "";
                 strFalse = "";
+                template = ["%s%", sprintf("%d", mLen), "g    "];
                 for c = 1:numel (var.True)
                   strTrue = [strTrue, sprintf(template, pad, var.True(c))];
                   strFalse = [strFalse, sprintf(template, pad, var.False(c))];
