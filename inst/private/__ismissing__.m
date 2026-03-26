@@ -27,7 +27,7 @@ function TF = __ismissing__ (A, indicator)
 
   ## Check "indicator"
   if (nargin != 2)
-     indicator = [];
+    indicator = [];
   endif
 
   ## If A is an array of cell strings and indicator just a string,
