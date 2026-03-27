@@ -944,7 +944,7 @@ classdef duration
     ## @deftypefn  {duration} {@var{TF} =} isbetween (@var{D}, @var{lower}, @var{upper})
     ## @deftypefnx {duration} {@var{TF} =} isbetween (@var{D}, @var{lower}, @var{upper}, @var{intervalType})
     ##
-    ## Test for duration elements within specified range.
+    ## Find duration elements within specified range.
     ##
     ## @code{@var{TF} = isbetween (@var{D}, @var{lower}, @var{upper})} returns a
     ## logical array, @var{TF}, which is the same size as the input duration
@@ -1136,7 +1136,7 @@ classdef duration
     ## @deftypefnx {duration} {[@var{TF}, @var{index}] =} ismember (@dots{})
     ## @deftypefnx {duration} {[@var{TF}, @var{index}] =} ismember (@dots{}, @qcode{'legacy'})
     ##
-    ## Test for duration elements in a set.
+    ## Find duration elements in a set.
     ##
     ## @code{@var{TF} = ismember (@var{A}, @var{B})} returns a logical array
     ## @var{TF} of the same size as @var{A} containing @qcode{true} for each
@@ -1201,9 +1201,16 @@ classdef duration
     ## @deftypefn  {duration} {@var{TF} =} ismissing (@var{D})
     ## @deftypefnx {duration} {@var{TF} =} ismissing (@var{D}, @var{indicator})
     ##
-    ## Test for missing elements in duration array.
+    ## Find missing elements in duration array.
     ##
-    ## @var{TF} is a logical array of the same size as @var{D}.
+    ## @code{@var{TF} = ismissing (@var{D})} returns a logical array, @var{TF},
+    ## with the same dimensions as @var{D}, where @code{true} values match the
+    ## standard missing values in the input duration array.
+    ##
+    ## The optional input @var{indicator} can be a scalar or a vector duration
+    ## array, specifying alternative missing values in the input data.  When
+    ## specifying @var{indicator} values, the standard missing values are
+    ## ignored, unless explicitly stated in the @var{indicator}.
     ##
     ## @end deftypefn
     function TF = ismissing (this, varargin)
@@ -1214,9 +1221,9 @@ classdef duration
         indicator = varargin{1};
         TF = false (size (this));
         if (isvector (indicator))
-          if (! isa (varargin{1}, 'duration'))
-            for i = 1:numel (indicator)
-              TF(this.Days == days (indicator(i))) = true;
+          if (isa (indicator, 'duration'))
+            for i = 1:length (indicator)
+              TF(this.Days == indicator.Days(i)) = true;
             endfor
           else
             error ("duration.ismissing: INDICATOR must be a 'duration' array.");
@@ -1234,8 +1241,8 @@ classdef duration
     ##
     ## Return true for duration elements that are Not-A-Number.
     ##
-    ## @code{@var{TF} = isnan (@var{D})} returns a logical array @var{TF} of the
-    ## same size as @var{D} containing @qcode{true} for each corresponding
+    ## @code{@var{TF} = isnan (@var{D})} returns a logical array @var{TF} of
+    ## the same size as @var{D} containing @qcode{true} for each corresponding
     ## element of @var{calD} that is @qcode{NaN} and @qcode{false} otherwise.
     ##
     ## @end deftypefn
@@ -1274,6 +1281,68 @@ classdef duration
       TF = isscalar (this.Days);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{TF} =} issorted (@var{D})
+    ## @deftypefnx {duration} {@var{TF} =} issorted (@var{D}, @var{dim})
+    ## @deftypefnx {duration} {@var{TF} =} issorted (@var{D}, @var{direction})
+    ## @deftypefnx {duration} {@var{TF} =} issorted (@var{D}, @var{dim}, @var{direction})
+    ## @deftypefnx {duration} {@var{TF} =} issorted (@dots{}, @qcode{'MissingPlacement'}, @var{MP})
+    ## @deftypefnx {duration} {@var{TF} =} issorted (@dots{}, @qcode{'ComparisonMethod'}, @var{CM})
+    ##
+    ## Return true if duration array is sorted.
+    ##
+    ## @code{@var{TF} = issorted (@var{D})} returns a logical scalar @var{TF},
+    ## which is @qcode{true}, if the duration array @var{D} is sorted in
+    ## ascending order, and @qcode{false} otherwise.
+    ##
+    ## @code{@var{TF} = issorted (@var{D}, @var{dim})} returns a logical scalar
+    ## @var{TF}, which is @qcode{true}, if the duration array @var{D} is
+    ## sorted in ascending order along the dimension @var{dim}, and
+    ## @qcode{false} otherwise.
+    ##
+    ## @code{@var{TF} = issorted (@var{D}, @var{direction})} returns a logical
+    ## scalar @var{TF}, which is @qcode{true}, if the duration array @var{D}
+    ## is sorted in the direction specified by @var{direction}, and
+    ## @qcode{false} otherwise.  @var{direction} can be any of the following
+    ## options:
+    ##
+    ## @itemize
+    ## @item @qcode{'ascend'}, which is the default, checks is elements are in
+    ## ascending order.
+    ## @item @qcode{'descend'} checks if elements are in descending order.
+    ## @item @qcode{'monotonic'} checks if elements are either in ascending or
+    ## descending order.
+    ## @item @qcode{'strictascend'} checks if elements are in ascending order
+    ## and there are no duplicate or undefined elements.
+    ## @item @qcode{'strictdescend'} checks if elements are in descending order
+    ## and there are no duplicate or undefined elements.
+    ## @item @qcode{'strictmonotonic'} checks if elements are either in
+    ## ascending or descending order and there are no duplicate or undefined
+    ## elements.
+    ## @end itemize
+    ##
+    ## @code{@var{TF} = issorted (@dots{}, @qcode{'MissingPlacement'}, @var{MP})}
+    ## specifies where missing elements (@qcode{NaN}) are placed with one of the
+    ## following options specified in @var{MP}:
+    ##
+    ## @itemize
+    ## @item @qcode{'auto'}, which is the default, places missing elements last
+    ## for ascending sort and first for descending sort.
+    ## @item @qcode{'first'} places missing elements first.
+    ## @item @qcode{'last'} places missing elements last.
+    ## @end itemize
+    ##
+    ## @code{@var{TF} = issorted (@dots{}, @qcode{'ComparisonMethod'}, @var{CM})}
+    ## specifies the comparison method for determining the order of elements
+    ## with one of following options specified in @var{CM}:
+    ##
+    ## @itemize
+    ## @item @qcode{'auto'}, which is the default, sorts by @code{real (A)}.
+    ## @item @qcode{'real'} sorts by @code{real (A)}.
+    ## @item @qcode{'abs'} sorts by @code{abs (A)}.
+    ## @end itemize
+    ##
+    ## @end deftypefn
     function TF = issorted (this, varargin)
       if (isempty (varargin))
         sorted = sort (this);
@@ -1774,7 +1843,7 @@ classdef duration
     ##
     ## @end deftypefn
     function [B, index] = sort (A, varargin)
-      ## Parse and validate optional 'MissingPlacement' paired argument
+      ## Parse and validate optional paired arguments
       optNames = {'MissingPlacement', 'ComparisonMethod'};
       dfValues = {'auto', 'auto'};
       [MP, CM, args] = parsePairedArguments (optNames, dfValues, varargin(:));
@@ -1792,8 +1861,19 @@ classdef duration
       else
         dir = 'ascend';
       endif
+      ## Get operating dimension
+      szA = size (A);
+      cid = cellfun (@isnumeric, args);
+      if (any (cid))
+        dim = args{cid};
+      else
+        dim = find (szA != 1, 1);
+        if (isempty (dim)) # scalar
+          dim = 1;
+        endif
+      endif
 
-      ## Apply comparison method
+      ## Apply comparison method (Octave specific)
       data = A.Days;
       if (strcmp (CM, 'abs'))
         data = abs (data);
@@ -1818,42 +1898,113 @@ classdef duration
             m_inf_rep = - realmax;
             data(is_m_inf) = m_inf_rep;
           endif
-          d(is_nan) = -Inf;
-          ## Sort values
-          [~, index] = sort (data, args{:});
-          ## Convert -Inf to NaN and smallest possible values to -Inf (if any)
-          is_nan = data == -Inf;
-          data(is_nan) = NaN;
-          if (any (is_m_inf))
-            is_m_inf = data == m_inf_rep;
-            data(is_m_inf) = -Inf;
-          endif
-        else
-          ## Sort values without special handling
-          [~, index] = sort (data, args{:});
+          data(is_nan) = -Inf;
         endif
-      else
-        ## Sort values with no undefined elements
-        [~, index] = sort (data, args{:});
       endif
 
+      ## Sort values
+      [~, index] = sort (data, args{:});
+
+      ## Calculate linear index
+      n_dims = ndims (A);
+      dimarg = cell (1, n_dims);
+      for i = 1:n_dims
+        if (i == dim)
+          dimarg{i} = index;
+        else
+          dim_sz = szA(i);
+          tmpvec = ones (1, n_dims);
+          tmpvec(i) = dim_sz;
+          tmp_sz = szA;
+          tmp_sz(i) = 1;
+          dimarg{i} = repmat (reshape ([1:dim_sz], tmpvec), tmp_sz);
+        endif
+      endfor
+
       ## Return sorted duration array
-      B = subset (A, index);
+      B = subset (A, sub2ind (szA, dimarg{:}));
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{B} =} sortrows (@var{A})
+    ## @deftypefnx {duration} {@var{B} =} sortrows (@var{A}, @var{col})
+    ## @deftypefnx {duration} {@var{B} =} sortrows (@var{A}, @var{direction})
+    ## @deftypefnx {duration} {@var{B} =} sortrows (@var{A}, @var{col}, @var{direction})
+    ## @deftypefnx {duration} {@var{B} =} sortrows (@dots{}, @qcode{'MissingPlacement'}, @var{MP})
+    ## @deftypefnx {duration} {[@var{B}, @var{index}] =} sortrows (@var{A}, @dots{})
+    ##
+    ## Sort rows in a duration array.
+    ##
+    ## @code{@var{B} = sortrows (@var{A})} sorts the rows of the 2-D duration
+    ## array @var{A} in ascending order.  The sorted array @var{B} has the same
+    ## size as @var{A}.
+    ##
+    ## @code{@var{B} = sortrows (@var{A}, @var{col})} sorts @var{A} according to
+    ## to the columns specified by the numeric vector @var{col}, which must
+    ## explicitly contain non-zero integers whose absolute values index existing
+    ## columns in @var{A}.  Positive elements sort the corresponding columns in
+    ## ascending order, while negative elements sort the corresponding columns
+    ## in descending order.
+    ##
+    ## @code{@var{B} = sortrows (@var{A}, @var{direction})} also specifies the
+    ## sorting direction, which can be either @qcode{'ascend'} (default) or
+    ## @qcode{'descend'} applying to all columns in @var{A}.  Alternatively,
+    ## @var{direction} can be either a string array or a cell array of character
+    ## vectors specifying the sorting direction for each individual column of
+    ## @var{A}, in which case the number of elements in @var{direction} must
+    ## equal the number of columns in @var{A}.
+    ##
+    ## @code{@var{B} = sortrows (@var{A}, @var{col}, @var{direction})} sorts the
+    ## categorical array @var{A} according to the columns specified in @var{col}
+    ## using the corresponding sorting direction specified in @var{direction}.
+    ## In this case, the sign of the values in @var{col} is ignored.  @var{col}
+    ## and @var{direction} must have the same number of elements, but not
+    ## necessarily equal to the columns of @var{A}.
+    ##
+    ## @code{@var{B} = sortrows (@dots{}, @qcode{'MissingPlacement'}, @var{MP})}
+    ## specifies where to place the missing elements (@qcode{NaN}) returned in
+    ## @var{B} with any of the following options specified in @var{MP}:
+    ##
+    ## @itemize
+    ## @item @qcode{'auto'}, which is the default, places missing elements last
+    ## for ascending sort and first for descending sort.
+    ## @item @qcode{'first'} places missing elements first.
+    ## @item @qcode{'last'} places missing elements last.
+    ## @end itemize
+    ##
+    ## @code{[@var{B}, @var{index}] = sortrows (@var{A}, @dots{})} also returns
+    ## an index vector containing the original row indices of @var{A} in the
+    ## sorted matrix @var{B} such that @code{@var{B} = @var{A}(@var{index},:)}.
+    ##
+    ## @end deftypefn
     function [B, index] = sortrows (A, varargin)
+      ## Input array must be a matrix
       if (ndims (A) != 2)
         error ("duration.sortrows: A must be a 2-D matrix.");
       endif
+
+      ## Parse and validate optional paired arguments
+      optNames = {'MissingPlacement', 'ComparisonMethod'};
+      dfValues = {'auto', 'auto'};
+      [MP, CM, args] = parsePairedArguments (optNames, dfValues, varargin(:));
+      if (! ismember (MP, {'auto', 'first', 'last'}))
+        error ("duration.sortrows: invalid value for 'MissingPlacement'.");
+      endif
+      if (! ismember (CM, {'auto', 'real', 'abs'}))
+        error ("duration.sortrows: invalid value for 'ComparisonMethod'.");
+      endif
+
+      ## Create column sorting vector according to relevant inputs (if any)
+      col = [1:columns(A)];
       col_dir = false;
-      if (numel (varargin) > 0)
-        col = varargin{1};
+      if (numel (args) > 0)
+        col = args{1};
         if (isnumeric (col))
-          if (! isvector (col) || fix (col) != col)
-            error ("duration.sortrows: COL must be a vector of integers.");
+          if (! isvector (col) || fix (col) != col || any (col == 0))
+            error ("duration.sortrows: COL must be a vector of nonzero integers.");
           endif
         elseif ((ischar (col) && isvector (col)) ||
-                (isscalar (col) && isa (col, 'string')))
+                (isscalar (col) && (iscellstr (col) || isstring (col))))
           col = cellstr (col);
           if (strcmpi (col, 'ascend'))
             col = [1:size(A, 2)];
@@ -1863,13 +2014,26 @@ classdef duration
             error (strcat ("duration.sortrows: DIRECTION can", ...
                            " be either 'ascend' or 'descend'."));
           endif
+        elseif (iscellstr (col) || isstring (col))
+          col = cellstr (col);
+          if (! all (ismember (col, {'ascend', 'descend'})))
+            error ("duration.sortrows: invalid value for DIRECTION argument.");
+          endif
+          ncols = columns (A);
+          if (numel (col) != ncols)
+            error (strcat ("duration.sortrows: DIRECTION does", ...
+                           " not match number of columns in A."));
+          endif
+          idx = strcmpi (col, 'descend');
+          col = [1:ncols];
+          col(idx) = - col(idx);
         else
-          error ("duration.sortrows: invalid value for COL argument.");
+          error ("duration.sortrows: invalid type for COL or DIRECTION argument.");
         endif
         col_dir = true;
       endif
-      if (numel (varargin) > 1)
-        direction = cellstr (varargin{2});
+      if (numel (args) > 1)
+        direction = cellstr (args{2});
         if (! all (ismember (direction, {'ascend', 'descend'})))
           error ("duration.sortrows: invalid value for DIRECTION argument.");
         endif
@@ -1886,12 +2050,56 @@ classdef duration
           col(idx) = - col(idx);
         endif
       endif
-      B = A;
-      if (col_dir)
-        [B.Days, index] = sortrows (A.Days, col);
-      else
-        [B.Days, index] = sortrows (A.Days);
+
+      ## Apply comparison method (Octave specific)
+      data = A.Days;
+      if (strcmp (CM, 'abs'))
+        data = abs (data);
       endif
+
+      ## FIX ME: this workaround will be removed once the 'sortrows' function
+      ## in core Octave supports 'MissingPlacement' optional argument.
+      ## This implementation fails the edge case where -Inf and -realmax
+      ## elements are present along the operating dimension.
+      pos_dir = col > 0;
+      neg_dir = col < 0;
+      fix_pos_dir = any (pos_dir) && strcmp (MP, {'first'});
+      fix_neg_dir = any (neg_dir) && strcmp (MP, {'last'});
+      if (fix_pos_dir || fix_neg_dir)
+        ## Apply on selected columns
+        if (fix_pos_dir)
+          col_idx = col(pos_dir);
+        else  # must be fix_neg_dir
+          col_idx = - col(neg_dir);
+        endif
+        cdata = data(:,col_idx);
+        ## Only if missing data exist in operating columns.
+        is_nan = isnan (cdata);
+        if (any (is_nan(:)))
+          ## Convert missing values to -Inf so that they are placed
+          ## appropriately according to 'MissingPlacement' specification.
+          ## If -Inf values already exist in data, then convert them to the
+          ## next smallest possible value
+          is_m_inf = cdata == -Inf;
+          if (any (is_m_inf(:)))
+            m_inf_rep = - realmax;
+            cdata(is_m_inf) = m_inf_rep;
+          endif
+          cdata(is_nan) = -Inf;
+          data(:,col_idx) = cdata;
+          ## Sort values
+          [~, index] = sortrows (data, col);
+        else
+          ## Sort values without special handling
+          [~, index] = sortrows (data, col);
+        endif
+      else
+        ## Sort values with no undefined elements
+        [~, index] = sortrows (data, col);
+      endif
+
+      ## Return sorted duration array
+      B = subset (A, index, ':');
     endfunction
 
     function [B, ixA, ixB] = unique (A, varargin)
