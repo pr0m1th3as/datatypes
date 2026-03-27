@@ -771,6 +771,44 @@
 %!error<duration.ismember: only 'rows' and 'legacy' are valid options.> ...
 %! ismember (days (1), days (1), 'row')
 
+%!assert (ismissing (days ([1, 2, 3, NaN, 5])), logical ([0, 0, 0, 1, 0]))
+%!assert (ismissing (days ([1, 2, 3, NaN, 5]), days (1)), logical ([1, 0, 0, 0, 0]))
+%!assert (ismissing (days ([1, 2, 3, NaN, 5]), duration (24, 0, 0)), logical ([1, 0, 0, 0, 0]))
+%!assert (ismissing (days ([1, 2, 3, NaN, 5]), duration ('48:00:00')), logical ([0, 1, 0, 0, 0]))
+%!assert (ismissing (seconds ([1:5]), duration (0, 0, [1:3])), logical ([1, 1, 1, 0, 0]))
+%!assert (ismissing (days ([1, 2, 3, NaN, 5]), days ([1, 3])), logical ([1, 0, 1, 0, 0]))
+%!assert (ismissing (days ([1, 2, 3, NaN, 5]), days ([1, 6])), logical ([1, 0, 0, 0, 0]))
+%!assert (ismissing (days ([1, 2, 3, NaN, 5]), days ([1, 5, 6])), logical ([1, 0, 0, 0, 1]))
+%!error<duration.ismissing: too many input arguments.> ...
+%! ismissing (days (1), days (1), days (1))
+%!error<duration.ismissing: INDICATOR must be a 'duration' array.> ...
+%! ismissing (days ([1, 2, 3, NaN, 5]), 5)
+%!error<duration.ismissing: INDICATOR must be a 'duration' array.> ...
+%! ismissing (days ([1, 2, 3, NaN, 5]), '24:00:00')
+%!error<duration.ismissing: INDICATOR must be a 'duration' array.> ...
+%! ismissing (days ([1, 2, 3, NaN, 5]), string ('24:00:00'))
+
+%!assert (isnan (minutes ([1:10])), false (1, 10))
+%!assert (isnan (days ([1, 2, NaN, 4, NaN])), logical ([0, 0, 1, 0, 1]))
+%!assert (isnan (duration (NaN (3, 4, 5), 0, 0)), true (3, 4, 5))
+%!assert (isnan (duration (zeros (3, 4, 5), 0, 0)), false (3, 4, 5))
+
+%!assert (isrow (days ([1, 2, 3, 4])), true)
+%!assert (isrow (days ([1; 2; 3; 4])), false)
+%!assert (isrow (days ([1, 2; 3, 4])), false)
+%!assert (isrow (days ([])), false)
+%!assert (isrow (days (ones (1, 0))), true)
+%!assert (isrow (days (ones (0, 1))), false)
+%!assert (isrow (days (1)), true)
+%!assert (isrow (days (ones (2, 3, 4))), false)
+
+%!assert (isscalar (days ([])), false)
+%!assert (isscalar (days (ones (1, 0))), false)
+%!assert (isscalar (days (ones (0, 1))), false)
+%!assert (isscalar (days (1)), true)
+%!assert (isscalar (days (NaN)), true)
+%!assert (isscalar (days ([1, 2])), false)
+
 %!assert (isvector (days ([1, 2, 3, 4])), true)
 %!assert (isvector (days ([1; 2; 3; 4])), true)
 %!assert (isvector (days ([1, 2; 3, 4])), false)
@@ -779,6 +817,402 @@
 %!assert (isvector (days (ones (0, 1))), true)
 %!assert (isvector (days (1)), true)
 %!assert (isvector (days (ones (2, 3, 4))), false)
+
+################################################################################
+##                   ** Sort, Filter, and Set Operations **                   ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'sort'             'sortrows'         'unique'           'interp1'         ##
+## 'intersect'        'setdiff'          'setxor'           'union'           ##
+##                                                                            ##
+################################################################################
+
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! D = sort (D);
+%! assert (days (D), [1, -4; 1, 1; 2, 2; 2, 3]);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! D = sort (D, 1);
+%! assert (days (D), [1, -4; 1, 1; 2, 2; 2, 3]);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! D = sort (D, 2);
+%! assert (days (D), [1, 2; 1, 3; -4, 2; 1, 2]);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! D = sort (D, 1, 'ComparisonMethod', 'abs');
+%! assert (days (D), [1, 1; 1, 2; 2, 3; 2, -4]);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! D = sort (D, 2, 'ComparisonMethod', 'abs');
+%! assert (days (D), [1, 2; 1, 3; 2, -4; 1, 2]);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! D = sort (D, 'descend');
+%! assert (days (D), [2, 3; 2, 2; 1, 1; 1, -4]);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! D = sort (D, 1, 'descend');
+%! assert (days (D), [2, 3; 2, 2; 1, 1; 1, -4]);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! D = sort (D, 2, 'descend');
+%! assert (days (D), [2, 1; 3, 1; 2, -4; 2, 1]);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! D = sort (D, 1, 'descend', 'ComparisonMethod', 'abs');
+%! assert (days (D), [2, -4; 2, 3; 1, 2; 1, 1]);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! D = sort (D, 2, 'descend', 'ComparisonMethod', 'abs');
+%! assert (days (D), [2, 1; 3, 1; -4, 2; 2, 1]);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D);
+%! X = [-2, -4, 1; 1, 1, 2; 1, 2, 2; 1, 3, 2; 2, 3, 3; 2, NaN, NaN];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 1);
+%! X = [-2, -4, 1; 1, 1, 2; 1, 2, 2; 1, 3, 2; 2, 3, 3; 2, NaN, NaN];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 2);
+%! X = [1, 2, 2; 1, 1, 3; -4, 2, 2; 1, 2, NaN; -2, 3, NaN; 1, 2, 3];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 1, 'ComparisonMethod', 'abs');
+%! X = [1, 1, 1; 1, 2, 2; 1, 3, 2; 2, 3, 2; 2, -4, 3; -2, NaN, NaN];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 2, 'ComparisonMethod', 'abs');
+%! X = [1, 2, 2; 1, 1, 3; 2, 2, -4; 1, 2, NaN; -2, 3, NaN; 1, 2, 3];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 1, 'MissingPlacement', 'first');
+%! X = [-2, NaN, NaN; 1, -4, 1; 1, 1, 2; 1, 2, 2; 2, 3, 2; 2, 3, 3];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 2, 'MissingPlacement', 'first');
+%! X = [1, 2, 2; 1, 1, 3; -4, 2, 2; NaN, 1, 2; NaN, -2, 3; 1, 2, 3];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 1, 'MissingPlacement', 'last');
+%! X = [-2, -4, 1; 1, 1, 2; 1, 2, 2; 1, 3, 2; 2, 3, 3; 2, NaN, NaN];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 2, 'MissingPlacement', 'last');
+%! X = [1, 2, 2; 1, 1, 3; -4, 2, 2; 1, 2, NaN; -2, 3, NaN; 1, 2, 3];
+%! assert (days (D), X);
+
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 'descend');
+%! X = [2, NaN, NaN; 2, 3, 3; 1, 3, 2; 1, 2, 2; 1, 1, 2; -2, -4, 1];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 1, 'descend');
+%! X = [2, NaN, NaN; 2, 3, 3; 1, 3, 2; 1, 2, 2; 1, 1, 2; -2, -4, 1];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 2, 'descend');
+%! X = [2, 2, 1; 3, 1, 1; 2, 2, -4; NaN, 2, 1; NaN, 3, -2; 3, 2, 1];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 1, 'descend', 'ComparisonMethod', 'abs');
+%! X = [2, NaN, NaN; 2, -4, 3; -2, 3, 2; 1, 3, 2; 1, 2, 2; 1, 1, 1];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 2, 'descend', 'ComparisonMethod', 'abs');
+%! X = [2, 2, 1; 3, 1, 1; -4, 2, 2; NaN, 2, 1; NaN, 3, -2; 3, 2, 1];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 1, 'descend', 'MissingPlacement', 'first');
+%! X = [2, NaN, NaN; 2, 3, 3; 1, 3, 2; 1, 2, 2; 1, 1, 2; -2, -4, 1];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 2, 'descend', 'MissingPlacement', 'first');
+%! X = [2, 2, 1; 3, 1, 1; 2, 2, -4; NaN, 2, 1; NaN, 3, -2; 3, 2, 1];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 1, 'descend', 'MissingPlacement', 'last');
+%! X = [2, 3, 3; 2, 3, 2; 1, 2, 2; 1, 1, 2; 1, -4, 1; -2, NaN, NaN];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 2, 'descend', 'MissingPlacement', 'last');
+%! X = [2, 2, 1; 3, 1, 1; 2, 2, -4; 2, 1, NaN; 3, -2, NaN; 3, 2, 1];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 1, 'MissingPlacement', 'first', 'ComparisonMethod', 'abs');
+%! X = [1, NaN, NaN; 1, 1, 1; 1, 2, 2; 2, 3, 2; 2, 3, 2; -2, -4, 3];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 2, 'MissingPlacement', 'first', 'ComparisonMethod', 'abs');
+%! X = [1, 2, 2; 1, 1, 3; 2, 2, -4; NaN, 1, 2; NaN, -2, 3; 1, 2, 3];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 1, 'MissingPlacement', 'last', 'ComparisonMethod', 'abs');
+%! X = [1, 1, 1; 1, 2, 2; 1, 3, 2; 2, 3, 2; 2, -4, 3; -2, NaN, NaN];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 2, 'MissingPlacement', 'last', 'ComparisonMethod', 'abs');
+%! X = [1, 2, 2; 1, 1, 3; 2, 2, -4; 1, 2, NaN; -2, 3, NaN; 1, 2, 3];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 1, 'descend', 'MissingPlacement', 'first', 'ComparisonMethod', 'abs');
+%! X = [2, NaN, NaN; 2, -4, 3; -2, 3, 2; 1, 3, 2; 1, 2, 2; 1, 1, 1];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 2, 'descend', 'MissingPlacement', 'first', 'ComparisonMethod', 'abs');
+%! X = [2, 2, 1; 3, 1, 1; -4, 2, 2; NaN, 2, 1; NaN, 3, -2; 3, 2, 1];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 1, 'descend', 'MissingPlacement', 'last', 'ComparisonMethod', 'abs');
+%! X = [2, -4, 3; 2, 3, 2; -2, 3, 2; 1, 2, 2; 1, 1, 1; 1, NaN, NaN];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sort (D, 2, 'descend', 'MissingPlacement', 'last', 'ComparisonMethod', 'abs');
+%! X = [2, 2, 1; 3, 1, 1; -4, 2, 2; 2, 1, NaN; 3, -2, NaN; 3, 2, 1];
+%! assert (days (D), X);
+
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! D = sortrows (D);
+%! assert (days (D), [1, 2; 1, 3; 2, -4; 2, 1]);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! D = sortrows (D, 'ComparisonMethod', 'abs');
+%! assert (days (D), [1, 2; 1, 3; 2, 1; 2, -4]);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! D = sortrows (D, 1, 'ComparisonMethod', 'abs');
+%! assert (days (D), [1, 2; 1, 3; 2, -4; 2, 1]);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! D = sortrows (D, 2, 'ComparisonMethod', 'abs');
+%! assert (days (D), [2, 1; 1, 2; 1, 3; 2, -4]);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! D = sortrows (D, -1, 'ComparisonMethod', 'abs');
+%! assert (days (D), [2, -4; 2, 1; 1, 2; 1, 3]);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! D = sortrows (D, -2, 'ComparisonMethod', 'abs');
+%! assert (days (D), [2, -4; 1, 3; 1, 2; 2, 1]);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D);
+%! X = [-2, NaN, 3; 1, 2, 2; 1, 3, 1; 1, 3, 2; 2, -4, 2; 2, 1, NaN];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, -2, 'MissingPlacement', 'first');
+%! X = [-2, NaN, 3; 1, 3, 1; 1, 3, 2; 1, 2, 2; 2, 1, NaN; 2, -4, 2];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, -2, 'MissingPlacement', 'last');
+%! X = [1, 3, 1; 1, 3, 2; 1, 2, 2; 2, 1, NaN; 2, -4, 2; -2, NaN, 3];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, 2, 'MissingPlacement', 'first');
+%! X = [-2, NaN, 3; 2, -4, 2; 2, 1, NaN; 1, 2, 2; 1, 3, 1; 1, 3, 2];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, 2, 'MissingPlacement', 'last');
+%! X = [2, -4, 2; 2, 1, NaN; 1, 2, 2; 1, 3, 1; 1, 3, 2; -2, NaN, 3];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, 'ComparisonMethod', 'abs', 'MissingPlacement', 'first');
+%! X = [1, 2, 2; 1, 3, 1; 1, 3, 2; -2, NaN, 3; 2, 1, NaN; 2, -4, 2];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, 'ComparisonMethod', 'abs', 'MissingPlacement', 'last');
+%! X = [1, 2, 2; 1, 3, 1; 1, 3, 2; 2, 1, NaN; 2, -4, 2; -2, NaN, 3];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [1, -2, 3]);
+%! X = [-2, NaN, 3; 1, 3, 1; 1, 3, 2; 1, 2, 2; 2, 1, NaN; 2, -4, 2];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [-1, -2, 3]);
+%! X = [2, 1, NaN; 2, -4, 2; 1, 3, 1; 1, 3, 2; 1, 2, 2; -2, NaN, 3];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [1, -2, -3]);
+%! X = [-2, NaN, 3; 1, 3, 2; 1, 3, 1; 1, 2, 2; 2, 1, NaN; 2, -4, 2];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [1, -2], {'ascend', 'descend'});
+%! X = [-2, NaN, 3; 1, 3, 1; 1, 3, 2; 1, 2, 2; 2, 1, NaN; 2, -4, 2];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [1, -2], {'descend', 'ascend'});
+%! X = [2, -4, 2; 2, 1, NaN; 1, 2, 2; 1, 3, 1; 1, 3, 2; -2, NaN, 3];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [-1, -2, 3], {'ascend', 'ascend', 'descend'});
+%! X = [-2, NaN, 3; 1, 2, 2; 1, 3, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [1, -2, -3], string ({'ascend', 'ascend', 'descend'}));
+%! X = [-2, NaN, 3; 1, 2, 2; 1, 3, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, string ({'ascend', 'ascend', 'descend'}));
+%! X = [-2, NaN, 3; 1, 2, 2; 1, 3, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, string ({'ascend', 'ascend', 'descend'}));
+%! X = [-2, NaN, 3; 1, 2, 2; 1, 3, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [1, 2, -3]);
+%! X = [-2, NaN, 3; 1, 2, 2; 1, 3, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [1, -2, 3], 'MissingPlacement', 'first');
+%! X = [-2, NaN, 3; 1, 3, 1; 1, 3, 2; 1, 2, 2; 2, 1, NaN; 2, -4, 2];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [-1, -2, 3], 'MissingPlacement', 'first');
+%! X = [2, 1, NaN; 2, -4, 2; 1, 3, 1; 1, 3, 2; 1, 2, 2; -2, NaN, 3];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [1, -2, -3], 'MissingPlacement', 'first');
+%! X = [-2, NaN, 3; 1, 3, 2; 1, 3, 1; 1, 2, 2; 2, 1, NaN; 2, -4, 2];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [1, -2, 3], 'MissingPlacement', 'last');
+%! X = [-2, NaN, 3; 1, 3, 1; 1, 3, 2; 1, 2, 2; 2, 1, NaN; 2, -4, 2];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [-1, -2, 3], 'MissingPlacement', 'last');
+%! X = [2, 1, NaN; 2, -4, 2; 1, 3, 1; 1, 3, 2; 1, 2, 2; -2, NaN, 3];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [1, -2, -3], 'MissingPlacement', 'last');
+%! X = [-2, NaN, 3; 1, 3, 2; 1, 3, 1; 1, 2, 2; 2, 1, NaN; 2, -4, 2];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [1, -2, 3], 'MissingPlacement', 'first', 'ComparisonMethod', 'abs');
+%! X = [1, 3, 1; 1, 3, 2; 1, 2, 2; -2, NaN, 3; 2, -4, 2; 2, 1, NaN];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [-1, -2, 3], 'MissingPlacement', 'first', 'ComparisonMethod', 'abs');
+%! X = [-2, NaN, 3; 2, -4, 2; 2, 1, NaN; 1, 3, 1; 1, 3, 2; 1, 2, 2];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [1, -2, -3], 'MissingPlacement', 'first', 'ComparisonMethod', 'abs');
+%! X = [1, 3, 2; 1, 3, 1; 1, 2, 2; -2, NaN, 3; 2, -4, 2; 2, 1, NaN];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [1, -2, 3], 'MissingPlacement', 'last', 'ComparisonMethod', 'abs');
+%! X = [1, 3, 1; 1, 3, 2; 1, 2, 2; 2, -4, 2; 2, 1, NaN; -2, NaN, 3];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [-1, -2, 3], 'MissingPlacement', 'last', 'ComparisonMethod', 'abs');
+%! X = [2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 1; 1, 3, 2; 1, 2, 2];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [1, -2, -3], 'MissingPlacement', 'last', 'ComparisonMethod', 'abs');
+%! X = [1, 3, 2; 1, 3, 1; 1, 2, 2; 2, -4, 2; 2, 1, NaN; -2, NaN, 3];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [1, -2], {'ascend', 'descend'}, 'MissingPlacement', 'first');
+%! X = [-2, NaN, 3; 1, 3, 1; 1, 3, 2; 1, 2, 2; 2, 1, NaN; 2, -4, 2];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [1, -2], {'descend', 'ascend'}, 'MissingPlacement', 'last');
+%! X = [2, -4, 2; 2, 1, NaN; 1, 2, 2; 1, 3, 1; 1, 3, 2; -2, NaN, 3];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [-1, -2, 3], {'ascend', 'ascend', 'descend'}, ...
+%!               'ComparisonMethod', 'abs', 'MissingPlacement', 'first');
+%! X = [1, 2, 2; 1, 3, 2; 1, 3, 1; -2, NaN, 3; 2, 1, NaN; 2, -4, 2];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [1, -2, -3], {'ascend', 'ascend', 'descend'}, ...
+%!               'ComparisonMethod', 'abs', 'MissingPlacement', 'first');
+%! X = [1, 2, 2; 1, 3, 2; 1, 3, 1; -2, NaN, 3; 2, 1, NaN; 2, -4, 2];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [-1, -2, 3], {'ascend', 'ascend', 'descend'}, ...
+%!               'ComparisonMethod', 'abs', 'MissingPlacement', 'last');
+%! X = [1, 2, 2; 1, 3, 2; 1, 3, 1; 2, 1, NaN; 2, -4, 2; -2, NaN, 3];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [1, -2, -3], {'ascend', 'ascend', 'descend'}, ...
+%!               'ComparisonMethod', 'abs', 'MissingPlacement', 'last');
+%! X = [1, 2, 2; 1, 3, 2; 1, 3, 1; 2, 1, NaN; 2, -4, 2; -2, NaN, 3];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, {'ascend', 'ascend', 'descend'}, 'ComparisonMethod', 'abs');
+%! X = [1, 2, 2; 1, 3, 2; 1, 3, 1; 2, 1, NaN; 2, -4, 2; -2, NaN, 3];
+%! assert (days (D), X);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! D = sortrows (D, [1, 2, -3], 'ComparisonMethod', 'abs');
+%! X = [1, 2, 2; 1, 3, 2; 1, 3, 1; 2, 1, NaN; 2, -4, 2; -2, NaN, 3];
+%! assert (days (D), X);
 
 ################################################################################
 ##                  ** Reference and Assignment Operations **                 ##
