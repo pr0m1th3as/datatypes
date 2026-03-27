@@ -1234,7 +1234,7 @@ classdef categorical
     ## @code{@var{TF} = issorted (@var{A}, @var{direction})} returns a logical
     ## scalar @var{TF}, which is @qcode{true}, if the categorical array @var{C}
     ## is sorted in the direction specified by @var{direction}, and
-    ## @qcode{false} otherwise.  @var{direction} can be any of the following
+    ## @qcode{false} otherwise.  @var{direction} can be one of the following
     ## options:
     ##
     ## @itemize
@@ -1254,7 +1254,7 @@ classdef categorical
     ##
     ## @code{@var{TF} = issorted (@dots{}, @qcode{'MissingPlacement'}, @var{MP})}
     ## specifies where missing elements (@qcode{<undefined>}) are placed with
-    ## any of the following options specified in @var{MP}:
+    ## one of the following options specified in @var{MP}:
     ##
     ## @itemize
     ## @item @qcode{'auto'}, which is the default, places missing elements last
@@ -1353,7 +1353,7 @@ classdef categorical
     ##
     ## @code{@var{TF} = issortedrows (@var{C}, @var{direction})} checks if the
     ## rows in @var{C} are sorted according to the specified direction, which
-    ## can be any of the following options:
+    ## can be one of the following options:
     ##
     ## @itemize
     ## @item @qcode{'ascend'}, which is the default, checks is elements are in
@@ -1385,7 +1385,7 @@ classdef categorical
     ##
     ## @code{@var{TF} = issorted (@dots{}, @qcode{'MissingPlacement'}, @var{MP})}
     ## specifies where missing elements (@qcode{<undefined>}) are placed with
-    ## any of the following options specified in @var{MP}:
+    ## one of the following options specified in @var{MP}:
     ##
     ## @itemize
     ## @item @qcode{'auto'}, which is the default, places missing elements last
