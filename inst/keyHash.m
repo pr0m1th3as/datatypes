@@ -89,6 +89,18 @@ endfunction
 %! key1 = keyHash (A);
 %! key2 = keyHash (B);
 %! assert (isequal (key1, key2), false);
+%!test
+%! A = '';
+%! E = uint64(15921358368119480423);
+%! key = keyHash (A);
+%! assert (isequal(key, E), sprintf("k: %lx e: %lx d: %lx", key, E, key - E));
+%! assert (key, E);
+%!test
+%! A = uint64(128);
+%! E = uint64(8038837787959150693);
+%! key = keyHash (A);
+%! assert (isequal(key, E), sprintf("k: %lx e: %lx d: %lx", key, E, key - E));
+%! assert (key, E);
 
 %!error<Invalid call to keyHash.  Correct usage is:> keyHash ();
 %!error<keyHash: BASE must be a UINT64 scalar.> keyHash (1, 1);
