@@ -559,12 +559,16 @@ Convert duration array to date vectors.
  to years, months, days, hours, minutes, and seconds, respectively.  Since
  months cannot be represented as a fixed length of time, the second column
  of <var>DV</var> is always zero.  <var>DV</var> represents a length of time split
- across different fixed-length elapsed time units.
+ across different fixed-length elapsed time units.  The number of rows in
+ <var>DV</var> equals to the number of elements in the duration array <var>DT</var>.
 </p>
 <p> <code>[<var>Y</var>, <var>MO</var>, <var>D</var>, <var>h</var>, <var>mi</var>, <var>s</var>] = datevec
  (<var>DT</var>)</code> returns the components of <var>DT</var> as individual variables,
  but unlike <var>DV</var> in the previous syntax, each variable has the same
  size as the duration array <var>DT</var>.
+</p>
+<p> Values containing a fractional portion less than 1 picosecond are rounded
+ to the nearest picosecond.
 </p>
 
 
@@ -603,6 +607,9 @@ Split duration array into separate time unit values.
  which correspond to hours, minutes, and seconds, respectively.  Hours and
  minutes are returned as whole numbers, while seconds may also have a
  fractional part.
+</p>
+<p> Values containing a fractional portion less than 1 picosecond are rounded
+ to the nearest picosecond.
 </p>
 
 
@@ -740,6 +747,9 @@ Duration equivalent numeric values in minutes.
  equivalent number of minutes.  <var>X</var> is a double array of the same size
  as <var>D</var>.
 </p>
+<p> Values containing a fractional portion less than 1 picosecond are rounded
+ to the nearest picosecond.
+</p>
 
 
 
@@ -774,8 +784,8 @@ Duration equivalent numeric values in seconds.
  equivalent number of seconds.  <var>X</var> is a double array of the same size
  as <var>D</var>.
 </p>
-<p> Values containing a fractional portion less than 0.1 nanoseconds are
- rounded to whole seconds.
+<p> Values containing a fractional portion less than 1 picosecond are rounded
+ to the nearest picosecond.
 </p>
 
 
@@ -811,8 +821,8 @@ Duration equivalent numeric values in milliseconds.
  the equivalent number of milliseconds.  <var>X</var> is a double array of the
  same size as <var>D</var>.
 </p>
-<p> Values containing a fractional portion less than 0.1 nanoseconds are
- rounded to whole seconds.
+<p> Values containing a fractional portion less than 1 picosecond are rounded
+ to the nearest picosecond.
 </p>
 
 
@@ -1056,30 +1066,45 @@ Generate a hash code for duration array.
                   </h4>
                 </div>
                 <div class="col-8">
-Generate a hash code for duration array.
+Find duration elements within specified range.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod18">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>hey</var> = <b>keyHash</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isbetween</b> (<var>D</var>, <var>lower</var>, <var>upper</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isbetween</b> (<var>D</var>, <var>lower</var>, <var>upper</var>, <var>intervalType</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>h</var> = keyHash (<var>D</var>)</code> generates a <code>uint64</code> scalar that
- represents the input array <var>D</var>.  <code>keyHash</code> utilizes the 64-bit
- FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
+<p> <code><var>TF</var> = isbetween (<var>D</var>, <var>lower</var>, <var>upper</var>)</code> returns a
+ logical array, <var>TF</var>, which is the same size as the input duration
+ array <var>D</var> and it contains <code>true</code> for each corresponding element
+ which is within the range specified by <var>lower</var> and <var>upper</var> and
+ <code>false</code> otherwise.  <var>lower</var> and <var>upper</var> must be duration
+ arrays of compatible size with <var>D</var> or alternatively they can be
+ specified as a character vector, a cell array of character vectors or a
+ string array containing valid text duration representations.
 </p>
-<p> <code><var>h</var> = keyHash (<var>D</var>, <var>base</var>)</code> also generates a 64-bit
- hash code using <var>base</var> as the offset basis for the FNV-1a hash
- algorithm.  <var>base</var> must be a <code>uint64</code> integer type scalar.  Use
- this syntax to cascade <code>keyHash</code> on multiple objects for which a
- single hash code is required.
+<p> <code><var>TF</var> = isbetween (<var>D</var>, <var>lower</var>, <var>upper</var>,
+ <var>intervalType</var>)</code> specifies the type of interval for the <var>lower</var>
+ and <var>upper</var> bounds and it can be one of the following values.
 </p>
-<p> Note that unlike MATLAB, this implementation does no use any random seed.
- As a result, <code>keyHash</code> will always generate the exact same hash key
- for any particular input across different workers and Octave sessions.
+ <ul>
+<li> <code>'closed'</code> (default) includes lower and upper bounds.
+
+ </li><li> <code>'open'</code> excludes lower and upper bounds.
+
+ </li><li> <code>'openleft'</code> or <code>'closedright'</code> exclude the lower and
+ include the upper bound.  They have identical behavior.
+
+ </li><li> <code>'closedleft'</code> or <code>'openright'</code> include the lower and
+ exclude the upper bound.  They have identical behavior.
+ </li></ul>
+
+<p> <var>intervalType</var> can be specified either as a character vector or a
+ string scalar.
 </p>
 
 
@@ -1114,8 +1139,8 @@ Return true if duration array is a column vector.
 <p> <code><var>TF</var> = iscolumn (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the duration array <var>D</var> is a column vector
  and <code>false</code> otherwise.  A column vector is a 2-D array for which
- <code>size (<var>X</var>)</code> returns <code>[<var>N</var>, 1]</code> with non-negative
- <var>N</var>.
+ <code>size (<var>D</var>)</code> returns <code>[<var>N</var>, 1]</code> with non-negative
+ <var>N</var>.  By definition, a scalar is also a column vector.
 </p>
 
 
@@ -1170,20 +1195,28 @@ Return true if duration array is empty.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is empty.
+Return true if duration arrays are equal.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod21">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isempty</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isequal</b> (<var>D1</var>, <var>D2</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isequal</b> (<var>D1</var>, <var>D2</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isempty (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is empty and
- <code>false</code> otherwise.
+<p> <code><var>TF</var> = isequal (<var>D1</var>, <var>D2</var>)</code> returns a logical scalar
+ <var>TF</var>, which is <code>true</code>, if the duration arrays <var>D1</var> and
+ <var>D2</var> contain the same values, and <code>false</code> otherwise.  Either
+ <var>D1</var> or <var>D2</var> can also be specified as a character vector, a cell
+ array of character vectors or a string array containing valid text
+ duration representations.
+</p>
+<p> <code><var>TF</var> = isequal (<var>D1</var>, <var>D2</var>, &hellip;)</code> returns a logical
+ scalar <var>TF</var>, which is <code>true</code>, if all input arguments are equal,
+ and <code>false</code> otherwise.
 </p>
 
 
@@ -1204,20 +1237,30 @@ Return true if duration array is empty.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is empty.
+Return true if duration arrays are equal under the assumption that
+ missing elements are equal.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod22">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isempty</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isequaln</b> (<var>D1</var>, <var>D2</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isequaln</b> (<var>D1</var>, <var>D2</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isempty (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is empty and
- <code>false</code> otherwise.
+<p> <code><var>TF</var> = isequal (<var>D1</var>, <var>D2</var>)</code> returns a logical scalar
+ <var>TF</var>, which is <code>true</code>, if the duration arrays <var>D1</var> and
+ <var>D2</var> contain the same values or corresponding missing elements, and
+ <code>false</code> otherwise.  Either <var>D1</var> or <var>D2</var> can also be
+ specified as a character vector, a cell array of character vectors or a
+ string array containing valid text duration representations.
+</p>
+<p> <code><var>TF</var> = isequal (<var>D1</var>, <var>D2</var>, &hellip;)</code> returns a logical
+ scalar <var>TF</var>, which is <code>true</code>, if all input arguments are equal
+ under the assumption that missing elements are equal, and <code>false</code>
+ otherwise.
 </p>
 
 
@@ -1238,20 +1281,22 @@ Return true if duration array is empty.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is empty.
+Return true for duration elements that are finite.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod23">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isempty</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isfinite</b> (<var>D</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isempty (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is empty and
- <code>false</code> otherwise.
+<p> <code><var>TF</var> = isfinite (<var>D</var>)</code> returns a logical array <var>TF</var>
+ of the same size as <var>calD</var> containing <code>true</code> for each
+ corresponding element of <var>D</var> that is finite and <code>false</code>
+ otherwise.  Finite elements are those which are neither infinite nor
+ Not-A-Number.
 </p>
 
 
@@ -1272,20 +1317,21 @@ Return true if duration array is empty.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is empty.
+Return true for duration elements that are infinite.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod24">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isempty</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isinf</b> (<var>D</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isempty (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is empty and
- <code>false</code> otherwise.
+<p> <code><var>TF</var> = isinf (<var>D</var>)</code> returns a logical array <var>TF</var>
+ of the same size as <var>D</var> containing <code>true</code> for each
+ corresponding element of <var>calD</var> that is either <code>Inf</code> or
+ <code>-Inf</code> and <code>false</code> otherwise.
 </p>
 
 
@@ -1320,8 +1366,7 @@ Return true if duration array is a 2-D array.
 <p> <code><var>TF</var> = ismatrix (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the duration array <var>D</var> is a matrix and
  <code>false</code> otherwise.  A matrix is an array of any type where
- <code>ndims (<var>X</var>) == 2</code> and for which <code>size (<var>X</var>)</code> returns
- <code>[<var>H</var>, <var>W</var>]</code> with non-negative <var>H</var> and <var>W</var>.
+ <code>ndims (<var>D</var>) == 2</code>.  By definition, a scalar is also a matrix.
 </p>
 
 
@@ -1342,7 +1387,7 @@ Return true if duration array is a 2-D array.
                   </h4>
                 </div>
                 <div class="col-8">
-Test for duration elements in a set.
+Find duration elements in a set.
                 </div>
               </div>
           </div>
@@ -1350,6 +1395,9 @@ Test for duration elements in a set.
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>ismember</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>ismember</b> (<var>a</var>, <var>s</var>, <code>'rows'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>TF</var>, <var>index</var>] = <b>ismember</b> (&hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>TF</var>, <var>index</var>] = <b>ismember</b> (&hellip;, <code>'legacy'</code>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -1371,7 +1419,10 @@ Test for duration elements in a set.
  otherwise.  If the <code>'rows'</code> optional argument is used, then the
  returning index is a column vector with the same rows as <var>A</var> and it
  contains the lowest index in <var>B</var> for each row of <var>A</var> that is a
- member of <var>B</var> and 0 otherwise.
+ member of <var>B</var> and 0 otherwise.  If the <code>'legacy'</code> optional
+ argument is specified, then the highest index of matched elements is
+ returned.  Unless multiple matches exist, the <code>'legacy'</code> option has
+ no effect on the returned <var>index</var>.
 </p>
 
 
@@ -1392,7 +1443,7 @@ Test for duration elements in a set.
                   </h4>
                 </div>
                 <div class="col-8">
-Test for missing elements in duration array.
+Find missing elements in duration array.
                 </div>
               </div>
           </div>
@@ -1404,7 +1455,14 @@ Test for missing elements in duration array.
 </dl>
 
 <p> </p>
-<p> <var>TF</var> is a logical array of the same size as <var>D</var>.
+<p> <code><var>TF</var> = ismissing (<var>D</var>)</code> returns a logical array, <var>TF</var>,
+ with the same dimensions as <var>D</var>, where <code>true</code> values match the
+ standard missing values in the input duration array.
+</p>
+<p> The optional input <var>indicator</var> can be a scalar or a vector duration
+ array, specifying alternative missing values in the input data.  When
+ specifying <var>indicator</var> values, the standard missing values are
+ ignored, unless explicitly stated in the <var>indicator</var>.
 </p>
 
 
@@ -1425,19 +1483,20 @@ Test for missing elements in duration array.
                   </h4>
                 </div>
                 <div class="col-8">
-Test for missing elements in duration array.
+Return true for duration elements that are Not-A-Number.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod28">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>ismissing</b> (<var>D</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>ismissing</b> (<var>D</var>, <var>indicator</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isnan</b> (<var>D</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <var>TF</var> is a logical array of the same size as <var>D</var>.
+<p> <code><var>TF</var> = isnan (<var>D</var>)</code> returns a logical array <var>TF</var> of
+ the same size as <var>D</var> containing <code>true</code> for each corresponding
+ element of <var>calD</var> that is <code>NaN</code> and <code>false</code> otherwise.
 </p>
 
 
@@ -1472,8 +1531,8 @@ Return true if duration array is a row vector.
 <p> <code><var>TF</var> = isrow (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the duration array <var>D</var> is a row vector
  and <code>false</code> otherwise.  A row vector is a 2-D array for which
- <code>size (<var>X</var>)</code> returns <code>[1, <var>N</var>]</code> with non-negative
- <var>N</var>.
+ <code>size (<var>D</var>)</code> returns <code>[1, <var>N</var>]</code> with non-negative
+ <var>N</var>.  By definition, a scalar is also a row vector.
 </p>
 
 
@@ -1508,7 +1567,7 @@ Return true if duration array is a scalar.
 <p> <code><var>TF</var> = isscalar (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the duration array <var>D</var> is also a scalar
  and <code>false</code> otherwise.  A scalar is a single element object for
- which <code>size (<var>X</var>)</code> returns <code>[1, 1]</code>.
+ which <code>size (<var>D</var>)</code> returns <code>[1, 1]</code>.
 </p>
 
 
@@ -1529,22 +1588,73 @@ Return true if duration array is a scalar.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a scalar.
+Return true if duration array is sorted.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod31">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isscalar</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>issorted</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>issorted</b> (<var>D</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>issorted</b> (<var>D</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>issorted</b> (<var>D</var>, <var>dim</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>issorted</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>issorted</b> (&hellip;, <code>'ComparisonMethod'</code>, <var>CM</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isscalar (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is also a scalar
- and <code>false</code> otherwise.  A scalar is a single element object for
- which <code>size (<var>X</var>)</code> returns <code>[1, 1]</code>.
+<p> <code><var>TF</var> = issorted (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code>, if the duration array <var>D</var> is sorted in
+ ascending order, and <code>false</code> otherwise.
 </p>
+<p> <code><var>TF</var> = issorted (<var>D</var>, <var>dim</var>)</code> returns a logical scalar
+ <var>TF</var>, which is <code>true</code>, if the duration array <var>D</var> is
+ sorted in ascending order along the dimension <var>dim</var>, and
+ <code>false</code> otherwise.
+</p>
+<p> <code><var>TF</var> = issorted (<var>D</var>, <var>direction</var>)</code> returns a logical
+ scalar <var>TF</var>, which is <code>true</code>, if the duration array <var>D</var>
+ is sorted in the direction specified by <var>direction</var>, and
+ <code>false</code> otherwise.  <var>direction</var> can be any of the following
+ options:
+</p>
+ <ul>
+<li> <code>'ascend'</code>, which is the default, checks is elements are in
+ ascending order.
+ </li><li> <code>'descend'</code> checks if elements are in descending order.
+ </li><li> <code>'monotonic'</code> checks if elements are either in ascending or
+ descending order.
+ </li><li> <code>'strictascend'</code> checks if elements are in ascending order
+ and there are no duplicate or undefined elements.
+ </li><li> <code>'strictdescend'</code> checks if elements are in descending order
+ and there are no duplicate or undefined elements.
+ </li><li> <code>'strictmonotonic'</code> checks if elements are either in
+ ascending or descending order and there are no duplicate or undefined
+ elements.
+ </li></ul>
+
+<p> <code><var>TF</var> = issorted (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
+ specifies where missing elements (<code>NaN</code>) are placed with one of the
+ following options specified in <var>MP</var>:
+</p>
+ <ul>
+<li> <code>'auto'</code>, which is the default, places missing elements last
+ for ascending sort and first for descending sort.
+ </li><li> <code>'first'</code> places missing elements first.
+ </li><li> <code>'last'</code> places missing elements last.
+ </li></ul>
+
+<p> <code><var>TF</var> = issorted (&hellip;, <code>'ComparisonMethod'</code>, <var>CM</var>)</code>
+ specifies the comparison method for determining the order of elements
+ with one of following options specified in <var>CM</var>:
+</p>
+ <ul>
+<li> <code>'auto'</code>, which is the default, sorts by <code>real (A)</code>.
+ </li><li> <code>'real'</code> sorts by <code>real (A)</code>.
+ </li><li> <code>'abs'</code> sorts by <code>abs (A)</code>.
+ </li></ul>
+
 
 
 
@@ -1564,22 +1674,88 @@ Return true if duration array is a scalar.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a scalar.
+Return true if duration matrix rows are sorted.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod32">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isscalar</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>issortedrows</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>issortedrows</b> (<var>D</var>, <var>col</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>issortedrows</b> (<var>D</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>issortedrows</b> (<var>D</var>, <var>col</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>issortedrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>issortedrows</b> (&hellip;, <code>'ComparisonMethod'</code>, <var>CM</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isscalar (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is also a scalar
- and <code>false</code> otherwise.  A scalar is a single element object for
- which <code>size (<var>X</var>)</code> returns <code>[1, 1]</code>.
+<p> <code><var>TF</var> = issortedrows (<var>D</var>)</code> returns a logical scalar
+ <var>TF</var>, which is <code>true</code>, if the rows in the 2-D duration array
+ <var>D</var> are sorted in ascending order, and <code>false</code> otherwise.
 </p>
+<p> <code><var>TF</var> = issortedrows (<var>D</var>, <var>col</var>)</code> returns a logical
+ scalar <var>TF</var>, which is <code>true</code>, if the duration array <var>D</var>
+ is sorted according to the columns specified by the vector <var>col</var>, and
+ <code>false</code> otherwise.  <var>col</var> must explicitly contain non-zero
+ integers whose absolute values index existing columns in <var>D</var>.
+ Positive elements sort the corresponding columns in ascending order,
+ while negative elements sort the corresponding columns in descending
+ order.
+</p>
+<p> <code><var>TF</var> = issortedrows (<var>D</var>, <var>direction</var>)</code> checks if the
+ rows in <var>D</var> are sorted according to the specified direction, which
+ can be one of the following options:
+</p>
+ <ul>
+<li> <code>'ascend'</code>, which is the default, checks is elements are in
+ ascending order.
+ </li><li> <code>'descend'</code> checks if elements are in descending order.
+ </li><li> <code>'monotonic'</code> checks if elements are either in ascending or
+ descending order.
+ </li><li> <code>'strictascend'</code> checks if elements are in ascending order
+ and there are no duplicate or undefined elements.
+ </li><li> <code>'strictdescend'</code> checks if elements are in descending order
+ and there are no duplicate or undefined elements.
+ </li><li> <code>'strictmonotonic'</code> checks if elements are either in
+ ascending or descending order and there are no duplicate or undefined
+ elements.
+ </li></ul>
+
+<p> Alternatively, <var>direction</var> can be a cell array of character
+ vectors specifying the sorting direction for each individual column of
+ <var>D</var>, in which case the number of elements in <var>direction</var> must
+ equal the number of columns in <var>D</var>.
+</p>
+<p> <code><var>TF</var> = issortedrows (<var>D</var>, <var>col</var>, <var>direction</var>)</code>
+ checks if the rows in the duration array <var>D</var> are sorted according
+ to the columns specified in <var>col</var> using the corresponding sorting
+ direction specified in <var>direction</var>.  In this case, the sign of the
+ values in <var>col</var> is ignored.  <var>col</var> and <var>direction</var> must have
+ the same length, but not necessarily the same number of elements as the
+ columns in <var>D</var>.
+</p>
+<p> <code><var>TF</var> = issortedrows (&hellip;, <code>'MissingPlacement'</code>,
+ <var>MP</var>)</code> specifies where missing elements (<code>&lt;undefined&gt;</code>) are
+ placed with one of the following options specified in <var>MP</var>:
+</p>
+ <ul>
+<li> <code>'auto'</code>, which is the default, places missing elements last
+ for ascending sort and first for descending sort.
+ </li><li> <code>'first'</code> places missing elements first.
+ </li><li> <code>'last'</code> places missing elements last.
+ </li></ul>
+
+<p> <code><var>TF</var> = issortedrows (&hellip;, <code>'ComparisonMethod'</code>,
+ <var>CM</var>)</code> specifies the comparison method for determining the order of
+ elements with one of following options specified in <var>CM</var>:
+</p>
+ <ul>
+<li> <code>'auto'</code>, which is the default, sorts by <code>real (A)</code>.
+ </li><li> <code>'real'</code> sorts by <code>real (A)</code>.
+ </li><li> <code>'abs'</code> sorts by <code>abs (A)</code>.
+ </li></ul>
+
 
 
 
@@ -2679,23 +2855,72 @@ Return true if duration array is a vector.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Sort elements in a duration array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod63">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sort</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sort</b> (<var>A</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sort</b> (<var>A</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sort</b> (<var>A</var>, <var>dim</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sort</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sort</b> (&hellip;, <code>'ComparisonMethod'</code>, <var>CM</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>B</var>, <var>index</var>] = <b>sort</b> (<var>A</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>B</var> = sort (<var>A</var>)</code> sorts the duration array <var>A</var> in
+ ascending order.  If <var>A</var> is a matrix, <code>sort (<var>A</var>)</code> sorts
+ each column of <var>A</var> in ascending order.  For multidimensional arrays,
+ <code>mode (<var>A</var>)</code> sorts along the first non-singleton dimension.
 </p>
+<p> <code><var>B</var> = sort (<var>A</var>, <var>dim</var>)</code> sorts along the dimension
+ specified by <var>dim</var>.
+</p>
+<p> <code><var>B</var> = sort (<var>A</var>, <var>direction</var>)</code> also specifies the
+ sorting direction, which can be either <code>'ascend'</code> (default) or
+ <code>'descend'</code>.
+</p>
+<p> <code><var>B</var> = sort (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
+ specifies where to place the missing elements (<code>&lt;undefined&gt;</code>)
+ returned in <var>B</var> with one of the following options specified in
+ <var>MP</var>:
+</p>
+ <ul>
+<li> <code>'auto'</code>, which is the default, places missing elements last
+ for ascending sort and first for descending sort.
+ </li><li> <code>'first'</code> places missing elements first.
+ </li><li> <code>'last'</code> places missing elements last.
+ </li></ul>
+
+<p> <code><var>B</var> = sort (&hellip;, <code>'ComparisonMethod'</code>, <var>CM</var>)</code>
+ specifies the comparison method for determining the order of elements
+ returned in <var>B</var> with one of following options:
+</p>
+ <ul>
+<li> <code>'auto'</code>, which is the default, sorts by <code>real (A)</code>.
+ </li><li> <code>'real'</code> sorts by <code>real (A)</code>.
+ </li><li> <code>'abs'</code> sorts by <code>abs (A)</code>.
+ </li></ul>
+
+<p> <code>[<var>B</var>, <var>index</var>] = sort (<var>A</var>, &hellip;)</code> also returns a
+ sorting index containing the original indices of the elements in the
+ sorted array.  <var>index</var> is the same size as <var>A</var> and it comprises
+ indexing vectors oriented along the operating dimensions.
+</p>
+ <ul>
+<li> If <var>A</var> is a vector, then <var>index</var> contains the original
+ linear indices of the elements in the sorted vector <var>B</var> such that
+ <code><var>B</var> = <var>A</var>(<var>index</var>)</code>.
+ </li><li> If <var>A</var> is an <math>M&times;N</math> matrix and <code><var>dim</var> = 1</code>, then
+ <var>index</var> contains the original row indices of the elements in the
+ sorted vector <var>B</var> such that for <code>j = 1:N</code>,
+ <code><var>B</var>(:,j) = <var>A</var>(<var>index</var>(:,j),j)</code>.
+ </li></ul>
+
 
 
 
@@ -2715,22 +2940,62 @@ Return true if duration array is a vector.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Sort rows in a duration array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod64">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>B</var>, <var>index</var>] = <b>sortrows</b> (<var>A</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>B</var> = sortrows (<var>A</var>)</code> sorts the rows of the 2-D duration
+ array <var>A</var> in ascending order.  The sorted array <var>B</var> has the same
+ size as <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>)</code> sorts <var>A</var> according to
+ to the columns specified by the numeric vector <var>col</var>, which must
+ explicitly contain non-zero integers whose absolute values index existing
+ columns in <var>A</var>.  Positive elements sort the corresponding columns in
+ ascending order, while negative elements sort the corresponding columns
+ in descending order.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>direction</var>)</code> also specifies the
+ sorting direction, which can be either <code>'ascend'</code> (default) or
+ <code>'descend'</code> applying to all columns in <var>A</var>.  Alternatively,
+ <var>direction</var> can be either a string array or a cell array of character
+ vectors specifying the sorting direction for each individual column of
+ <var>A</var>, in which case the number of elements in <var>direction</var> must
+ equal the number of columns in <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>, <var>direction</var>)</code> sorts the
+ categorical array <var>A</var> according to the columns specified in <var>col</var>
+ using the corresponding sorting direction specified in <var>direction</var>.
+ In this case, the sign of the values in <var>col</var> is ignored.  <var>col</var>
+ and <var>direction</var> must have the same number of elements, but not
+ necessarily equal to the columns of <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
+ specifies where to place the missing elements (<code>NaN</code>) returned in
+ <var>B</var> with any of the following options specified in <var>MP</var>:
+</p>
+ <ul>
+<li> <code>'auto'</code>, which is the default, places missing elements last
+ for ascending sort and first for descending sort.
+ </li><li> <code>'first'</code> places missing elements first.
+ </li><li> <code>'last'</code> places missing elements last.
+ </li></ul>
+
+<p> <code>[<var>B</var>, <var>index</var>] = sortrows (<var>A</var>, &hellip;)</code> also returns
+ an index vector containing the original row indices of <var>A</var> in the
+ sorted matrix <var>B</var> such that <code><var>B</var> = <var>A</var>(<var>index</var>,:)</code>.
 </p>
 
 
@@ -2751,22 +3016,62 @@ Return true if duration array is a vector.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Sort rows in a duration array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod65">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>B</var>, <var>index</var>] = <b>sortrows</b> (<var>A</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>B</var> = sortrows (<var>A</var>)</code> sorts the rows of the 2-D duration
+ array <var>A</var> in ascending order.  The sorted array <var>B</var> has the same
+ size as <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>)</code> sorts <var>A</var> according to
+ to the columns specified by the numeric vector <var>col</var>, which must
+ explicitly contain non-zero integers whose absolute values index existing
+ columns in <var>A</var>.  Positive elements sort the corresponding columns in
+ ascending order, while negative elements sort the corresponding columns
+ in descending order.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>direction</var>)</code> also specifies the
+ sorting direction, which can be either <code>'ascend'</code> (default) or
+ <code>'descend'</code> applying to all columns in <var>A</var>.  Alternatively,
+ <var>direction</var> can be either a string array or a cell array of character
+ vectors specifying the sorting direction for each individual column of
+ <var>A</var>, in which case the number of elements in <var>direction</var> must
+ equal the number of columns in <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>, <var>direction</var>)</code> sorts the
+ categorical array <var>A</var> according to the columns specified in <var>col</var>
+ using the corresponding sorting direction specified in <var>direction</var>.
+ In this case, the sign of the values in <var>col</var> is ignored.  <var>col</var>
+ and <var>direction</var> must have the same number of elements, but not
+ necessarily equal to the columns of <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
+ specifies where to place the missing elements (<code>NaN</code>) returned in
+ <var>B</var> with any of the following options specified in <var>MP</var>:
+</p>
+ <ul>
+<li> <code>'auto'</code>, which is the default, places missing elements last
+ for ascending sort and first for descending sort.
+ </li><li> <code>'first'</code> places missing elements first.
+ </li><li> <code>'last'</code> places missing elements last.
+ </li></ul>
+
+<p> <code>[<var>B</var>, <var>index</var>] = sortrows (<var>A</var>, &hellip;)</code> also returns
+ an index vector containing the original row indices of <var>A</var> in the
+ sorted matrix <var>B</var> such that <code><var>B</var> = <var>A</var>(<var>index</var>,:)</code>.
 </p>
 
 
@@ -2787,22 +3092,62 @@ Return true if duration array is a vector.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Sort rows in a duration array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod66">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>B</var>, <var>index</var>] = <b>sortrows</b> (<var>A</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>B</var> = sortrows (<var>A</var>)</code> sorts the rows of the 2-D duration
+ array <var>A</var> in ascending order.  The sorted array <var>B</var> has the same
+ size as <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>)</code> sorts <var>A</var> according to
+ to the columns specified by the numeric vector <var>col</var>, which must
+ explicitly contain non-zero integers whose absolute values index existing
+ columns in <var>A</var>.  Positive elements sort the corresponding columns in
+ ascending order, while negative elements sort the corresponding columns
+ in descending order.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>direction</var>)</code> also specifies the
+ sorting direction, which can be either <code>'ascend'</code> (default) or
+ <code>'descend'</code> applying to all columns in <var>A</var>.  Alternatively,
+ <var>direction</var> can be either a string array or a cell array of character
+ vectors specifying the sorting direction for each individual column of
+ <var>A</var>, in which case the number of elements in <var>direction</var> must
+ equal the number of columns in <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>, <var>direction</var>)</code> sorts the
+ categorical array <var>A</var> according to the columns specified in <var>col</var>
+ using the corresponding sorting direction specified in <var>direction</var>.
+ In this case, the sign of the values in <var>col</var> is ignored.  <var>col</var>
+ and <var>direction</var> must have the same number of elements, but not
+ necessarily equal to the columns of <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
+ specifies where to place the missing elements (<code>NaN</code>) returned in
+ <var>B</var> with any of the following options specified in <var>MP</var>:
+</p>
+ <ul>
+<li> <code>'auto'</code>, which is the default, places missing elements last
+ for ascending sort and first for descending sort.
+ </li><li> <code>'first'</code> places missing elements first.
+ </li><li> <code>'last'</code> places missing elements last.
+ </li></ul>
+
+<p> <code>[<var>B</var>, <var>index</var>] = sortrows (<var>A</var>, &hellip;)</code> also returns
+ an index vector containing the original row indices of <var>A</var> in the
+ sorted matrix <var>B</var> such that <code><var>B</var> = <var>A</var>(<var>index</var>,:)</code>.
 </p>
 
 
@@ -2823,22 +3168,62 @@ Return true if duration array is a vector.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Sort rows in a duration array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod67">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>B</var>, <var>index</var>] = <b>sortrows</b> (<var>A</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>B</var> = sortrows (<var>A</var>)</code> sorts the rows of the 2-D duration
+ array <var>A</var> in ascending order.  The sorted array <var>B</var> has the same
+ size as <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>)</code> sorts <var>A</var> according to
+ to the columns specified by the numeric vector <var>col</var>, which must
+ explicitly contain non-zero integers whose absolute values index existing
+ columns in <var>A</var>.  Positive elements sort the corresponding columns in
+ ascending order, while negative elements sort the corresponding columns
+ in descending order.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>direction</var>)</code> also specifies the
+ sorting direction, which can be either <code>'ascend'</code> (default) or
+ <code>'descend'</code> applying to all columns in <var>A</var>.  Alternatively,
+ <var>direction</var> can be either a string array or a cell array of character
+ vectors specifying the sorting direction for each individual column of
+ <var>A</var>, in which case the number of elements in <var>direction</var> must
+ equal the number of columns in <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>, <var>direction</var>)</code> sorts the
+ categorical array <var>A</var> according to the columns specified in <var>col</var>
+ using the corresponding sorting direction specified in <var>direction</var>.
+ In this case, the sign of the values in <var>col</var> is ignored.  <var>col</var>
+ and <var>direction</var> must have the same number of elements, but not
+ necessarily equal to the columns of <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
+ specifies where to place the missing elements (<code>NaN</code>) returned in
+ <var>B</var> with any of the following options specified in <var>MP</var>:
+</p>
+ <ul>
+<li> <code>'auto'</code>, which is the default, places missing elements last
+ for ascending sort and first for descending sort.
+ </li><li> <code>'first'</code> places missing elements first.
+ </li><li> <code>'last'</code> places missing elements last.
+ </li></ul>
+
+<p> <code>[<var>B</var>, <var>index</var>] = sortrows (<var>A</var>, &hellip;)</code> also returns
+ an index vector containing the original row indices of <var>A</var> in the
+ sorted matrix <var>B</var> such that <code><var>B</var> = <var>A</var>(<var>index</var>,:)</code>.
 </p>
 
 
@@ -2859,22 +3244,62 @@ Return true if duration array is a vector.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Sort rows in a duration array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod68">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>B</var>, <var>index</var>] = <b>sortrows</b> (<var>A</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>B</var> = sortrows (<var>A</var>)</code> sorts the rows of the 2-D duration
+ array <var>A</var> in ascending order.  The sorted array <var>B</var> has the same
+ size as <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>)</code> sorts <var>A</var> according to
+ to the columns specified by the numeric vector <var>col</var>, which must
+ explicitly contain non-zero integers whose absolute values index existing
+ columns in <var>A</var>.  Positive elements sort the corresponding columns in
+ ascending order, while negative elements sort the corresponding columns
+ in descending order.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>direction</var>)</code> also specifies the
+ sorting direction, which can be either <code>'ascend'</code> (default) or
+ <code>'descend'</code> applying to all columns in <var>A</var>.  Alternatively,
+ <var>direction</var> can be either a string array or a cell array of character
+ vectors specifying the sorting direction for each individual column of
+ <var>A</var>, in which case the number of elements in <var>direction</var> must
+ equal the number of columns in <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>, <var>direction</var>)</code> sorts the
+ categorical array <var>A</var> according to the columns specified in <var>col</var>
+ using the corresponding sorting direction specified in <var>direction</var>.
+ In this case, the sign of the values in <var>col</var> is ignored.  <var>col</var>
+ and <var>direction</var> must have the same number of elements, but not
+ necessarily equal to the columns of <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
+ specifies where to place the missing elements (<code>NaN</code>) returned in
+ <var>B</var> with any of the following options specified in <var>MP</var>:
+</p>
+ <ul>
+<li> <code>'auto'</code>, which is the default, places missing elements last
+ for ascending sort and first for descending sort.
+ </li><li> <code>'first'</code> places missing elements first.
+ </li><li> <code>'last'</code> places missing elements last.
+ </li></ul>
+
+<p> <code>[<var>B</var>, <var>index</var>] = sortrows (<var>A</var>, &hellip;)</code> also returns
+ an index vector containing the original row indices of <var>A</var> in the
+ sorted matrix <var>B</var> such that <code><var>B</var> = <var>A</var>(<var>index</var>,:)</code>.
 </p>
 
 
@@ -2895,22 +3320,62 @@ Return true if duration array is a vector.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Sort rows in a duration array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod69">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>B</var>, <var>index</var>] = <b>sortrows</b> (<var>A</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>B</var> = sortrows (<var>A</var>)</code> sorts the rows of the 2-D duration
+ array <var>A</var> in ascending order.  The sorted array <var>B</var> has the same
+ size as <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>)</code> sorts <var>A</var> according to
+ to the columns specified by the numeric vector <var>col</var>, which must
+ explicitly contain non-zero integers whose absolute values index existing
+ columns in <var>A</var>.  Positive elements sort the corresponding columns in
+ ascending order, while negative elements sort the corresponding columns
+ in descending order.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>direction</var>)</code> also specifies the
+ sorting direction, which can be either <code>'ascend'</code> (default) or
+ <code>'descend'</code> applying to all columns in <var>A</var>.  Alternatively,
+ <var>direction</var> can be either a string array or a cell array of character
+ vectors specifying the sorting direction for each individual column of
+ <var>A</var>, in which case the number of elements in <var>direction</var> must
+ equal the number of columns in <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>, <var>direction</var>)</code> sorts the
+ categorical array <var>A</var> according to the columns specified in <var>col</var>
+ using the corresponding sorting direction specified in <var>direction</var>.
+ In this case, the sign of the values in <var>col</var> is ignored.  <var>col</var>
+ and <var>direction</var> must have the same number of elements, but not
+ necessarily equal to the columns of <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
+ specifies where to place the missing elements (<code>NaN</code>) returned in
+ <var>B</var> with any of the following options specified in <var>MP</var>:
+</p>
+ <ul>
+<li> <code>'auto'</code>, which is the default, places missing elements last
+ for ascending sort and first for descending sort.
+ </li><li> <code>'first'</code> places missing elements first.
+ </li><li> <code>'last'</code> places missing elements last.
+ </li></ul>
+
+<p> <code>[<var>B</var>, <var>index</var>] = sortrows (<var>A</var>, &hellip;)</code> also returns
+ an index vector containing the original row indices of <var>A</var> in the
+ sorted matrix <var>B</var> such that <code><var>B</var> = <var>A</var>(<var>index</var>,:)</code>.
 </p>
 
 
@@ -2931,22 +3396,62 @@ Return true if duration array is a vector.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Sort rows in a duration array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod70">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>B</var>, <var>index</var>] = <b>sortrows</b> (<var>A</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>B</var> = sortrows (<var>A</var>)</code> sorts the rows of the 2-D duration
+ array <var>A</var> in ascending order.  The sorted array <var>B</var> has the same
+ size as <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>)</code> sorts <var>A</var> according to
+ to the columns specified by the numeric vector <var>col</var>, which must
+ explicitly contain non-zero integers whose absolute values index existing
+ columns in <var>A</var>.  Positive elements sort the corresponding columns in
+ ascending order, while negative elements sort the corresponding columns
+ in descending order.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>direction</var>)</code> also specifies the
+ sorting direction, which can be either <code>'ascend'</code> (default) or
+ <code>'descend'</code> applying to all columns in <var>A</var>.  Alternatively,
+ <var>direction</var> can be either a string array or a cell array of character
+ vectors specifying the sorting direction for each individual column of
+ <var>A</var>, in which case the number of elements in <var>direction</var> must
+ equal the number of columns in <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>, <var>direction</var>)</code> sorts the
+ categorical array <var>A</var> according to the columns specified in <var>col</var>
+ using the corresponding sorting direction specified in <var>direction</var>.
+ In this case, the sign of the values in <var>col</var> is ignored.  <var>col</var>
+ and <var>direction</var> must have the same number of elements, but not
+ necessarily equal to the columns of <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
+ specifies where to place the missing elements (<code>NaN</code>) returned in
+ <var>B</var> with any of the following options specified in <var>MP</var>:
+</p>
+ <ul>
+<li> <code>'auto'</code>, which is the default, places missing elements last
+ for ascending sort and first for descending sort.
+ </li><li> <code>'first'</code> places missing elements first.
+ </li><li> <code>'last'</code> places missing elements last.
+ </li></ul>
+
+<p> <code>[<var>B</var>, <var>index</var>] = sortrows (<var>A</var>, &hellip;)</code> also returns
+ an index vector containing the original row indices of <var>A</var> in the
+ sorted matrix <var>B</var> such that <code><var>B</var> = <var>A</var>(<var>index</var>,:)</code>.
 </p>
 
 

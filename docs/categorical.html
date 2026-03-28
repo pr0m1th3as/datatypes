@@ -1309,6 +1309,7 @@ Return true if categorical arrays are equal under the assumption that
           <div class="collapse multi-collapse" id="collapseMethod26">
             <div class="border-bottom py-2">
 <dl>
+<dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isequaln</b> (<var>C1</var>, <var>C2</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isequaln</b> (<var>C1</var>, <var>C2</var>, &hellip;)</code></h5></dt>
 </dl>
 
@@ -1406,8 +1407,8 @@ Test for categorical elements in a set.
  ordinal, then this restriction is relaxed and comparison is performed
  using the category names. Comparison between an ordinal and an unordered
  categorical array is not allowed.  <var>A</var> or <var>B</var> may also be a
- string array or a cell array of character vectors containing one or
- multiple category names to compare against.
+ string array, a character vector, or a cell array of character vectors
+ containing one or multiple category names to compare against.
 </p>
 <p> <code><var>TF</var> = ismember (<var>A</var>, <var>B</var>, <code>'rows'</code>)</code> only
  applies to categorical matrices with the same number of columns, in which
@@ -1654,7 +1655,7 @@ Return true if categorical array is sorted.
 <p> <code><var>TF</var> = issorted (<var>A</var>, <var>direction</var>)</code> returns a logical
  scalar <var>TF</var>, which is <code>true</code>, if the categorical array <var>C</var>
  is sorted in the direction specified by <var>direction</var>, and
- <code>false</code> otherwise.  <var>direction</var> can be any of the following
+ <code>false</code> otherwise.  <var>direction</var> can be one of the following
  options:
 </p>
  <ul>
@@ -1674,7 +1675,7 @@ Return true if categorical array is sorted.
 
 <p> <code><var>TF</var> = issorted (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
  specifies where missing elements (<code>&lt;undefined&gt;</code>) are placed with
- any of the following options specified in <var>MP</var>:
+ one of the following options specified in <var>MP</var>:
 </p>
  <ul>
 <li> <code>'auto'</code>, which is the default, places missing elements last
@@ -1725,14 +1726,14 @@ Return true if categorical matrix rows are sorted.
  scalar <var>TF</var>, which is <code>true</code>, if the categorical array <var>C</var>
  is sorted according to the columns specified by the vector <var>col</var>, and
  <code>false</code> otherwise.  <var>col</var> must explicitly contain non-zero
- integers whose absolute values index  existing columns in <var>A</var>.
+ integers whose absolute values index  existing columns in <var>C</var>.
  Positive elements sort the corresponding columns in ascending order,
  while negative elements sort the corresponding columns in descending
  order.
 </p>
 <p> <code><var>TF</var> = issortedrows (<var>C</var>, <var>direction</var>)</code> checks if the
  rows in <var>C</var> are sorted according to the specified direction, which
- can be any of the following options:
+ can be one of the following options:
 </p>
  <ul>
 <li> <code>'ascend'</code>, which is the default, checks is elements are in
@@ -1751,20 +1752,20 @@ Return true if categorical matrix rows are sorted.
 
 <p> Alternatively, <var>direction</var> can be a cell array of character
  vectors specifying the sorting direction for each individual column of
- <var>A</var>, in which case the number of elements in <var>direction</var> must
- equal the number of columns in <var>A</var>.
+ <var>C</var>, in which case the number of elements in <var>direction</var> must
+ equal the number of columns in <var>C</var>.
 </p>
-<p> <code><var>B</var> = issortedrows (<var>A</var>, <var>col</var>, <var>direction</var>)</code>
- checks if the rows in the categorical array <var>A</var> are sorted according
+<p> <code><var>TF</var> = issortedrows (<var>C</var>, <var>col</var>, <var>direction</var>)</code>
+ checks if the rows in the categorical array <var>C</var> are sorted according
  to the columns specified in <var>col</var> using the corresponding sorting
  direction specified in <var>direction</var>.  In this case, the sign of the
  values in <var>col</var> is ignored.  <var>col</var> and <var>direction</var> must have
  the same length, but not necessarily the same number of elements as the
- columns in <var>A</var>.
+ columns in <var>C</var>.
 </p>
-<p> <code><var>TF</var> = issorted (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
- specifies where missing elements (<code>&lt;undefined&gt;</code>) are placed with
- any of the following options specified in <var>MP</var>:
+<p> <code><var>TF</var> = issortedrows (&hellip;, <code>'MissingPlacement'</code>,
+ <var>MP</var>)</code> specifies where missing elements (<code>&lt;undefined&gt;</code>) are
+ placed with one of the following options specified in <var>MP</var>:
 </p>
  <ul>
 <li> <code>'auto'</code>, which is the default, places missing elements last
