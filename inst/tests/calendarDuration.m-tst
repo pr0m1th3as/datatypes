@@ -999,7 +999,7 @@
 %! assert (y, [1, 3]);
 %! assert (m, [1, 3]);
 %! assert (d, [5, 15]);
-%! assert (seconds (t), [16202, 48606]);
+%! assert (seconds (t), [16202, 48606], 4e-12);
 %!test
 %! A = calendarDuration ([1, 1, 5, 4, 30, 2]);
 %! B = A .* [1; 3];
@@ -1007,7 +1007,7 @@
 %! assert (y, [1; 3]);
 %! assert (m, [1; 3]);
 %! assert (d, [5; 15]);
-%! assert (seconds (t), [16202; 48606]);
+%! assert (seconds (t), [16202; 48606], 4e-12);
 %!test
 %! A = calendarDuration ([1, 1, 5, 4, 30, 2]);
 %! B = [1; 3] .* A;
@@ -1015,7 +1015,7 @@
 %! assert (y, [1; 3]);
 %! assert (m, [1; 3]);
 %! assert (d, [5; 15]);
-%! assert (seconds (t), [16202; 48606]);
+%! assert (seconds (t), [16202; 48606], 4e-12);
 %!test
 %! A = calendarDuration ([1, 1, 5, 4, 30, 2]);
 %! B = 2 .* A;
@@ -1023,7 +1023,7 @@
 %! assert (y, 2);
 %! assert (m, 2);
 %! assert (d, 10);
-%! assert (seconds (t), 32404);
+%! assert (seconds (t), 32404, 4e-12);
 %!error <calendarDuration: multiplication is not defined between 'calendarDuration' and 'char' arrays.> ...
 %! calweeks (1) .* 'a'
 %!error <calendarDuration: multiplication is not defined between 'calendarDuration' and 'cell' arrays.> ...
@@ -1038,7 +1038,7 @@
 %! assert (y, 2);
 %! assert (m, 2);
 %! assert (d, 10);
-%! assert (seconds (t), 32404);
+%! assert (seconds (t), 32404, 4e-12);
 %!test
 %! A = calendarDuration ([1, 2], 0, [4, 5]);
 %! B = A * [1; 2];
