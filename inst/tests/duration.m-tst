@@ -811,6 +811,7 @@
 
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issorted (sort (D)), true);
 %! assert (issorted (sort (D), 'ascend'), true);
 %! assert (issorted (sort (D), 'descend'), false);
 %! assert (issorted (sort (D), 'monotonic'), true);
@@ -819,6 +820,7 @@
 %! assert (issorted (sort (D), 'strictmonotonic'), false);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issorted (sort (D, 2), 2), true);
 %! assert (issorted (sort (D, 2), 2, 'ascend'), true);
 %! assert (issorted (sort (D, 2), 2, 'descend'), false);
 %! assert (issorted (sort (D, 2), 2, 'monotonic'), true);
@@ -887,6 +889,7 @@
 %! assert (issorted (sort (D, 'descend'), 'strictmonotonic'), true);
 %!test
 %! D = days ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (D)), true);
 %! assert (issorted (sort (D), 'ascend'), true);
 %! assert (issorted (sort (D), 'descend'), false);
 %! assert (issorted (sort (D), 'monotonic'), true);
@@ -926,6 +929,18 @@
 %! assert (issorted (sort (D, 2, 'descend', 'MissingPlacement', 'first'), 2, ...
 %!                   'descend', 'MissingPlacement', 'first'), true);
 %!test
+%! D = days ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (D, 2, string ('ascend'), 'MissingPlacement', 'auto'), 2), true);
+%! assert (issorted (sort (D, 2, string ('ascend'), 'MissingPlacement', 'first'), 2), false);
+%! assert (issorted (sort (D, 2, string ('ascend'), 'MissingPlacement', 'first'), 2, ...
+%!                   'MissingPlacement', 'first'), true);
+%!test
+%! D = days ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (D, 2, string ('descend'), 'MissingPlacement', 'auto'), 2, 'descend'), true);
+%! assert (issorted (sort (D, 2, string ('descend'), 'MissingPlacement', 'last'), 2, 'descend'), false);
+%! assert (issorted (sort (D, 2, string ('descend'), 'MissingPlacement', 'first'), 2, ...
+%!                   'descend', 'MissingPlacement', 'first'), true);
+%!test
 %! D = days ([1, 2; 2, -3; 3, 4; 4, NaN]);
 %! assert (issorted (sort (D, 'MissingPlacement', 'auto', ...
 %!                         'ComparisonMethod', 'real')), true);
@@ -962,6 +977,123 @@
 %! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'first', ...
 %!                         'ComparisonMethod', 'abs'), 'descend', ...
 %!                   'MissingPlacement', 'first', 'ComparisonMethod', 'abs'), true);
+
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issortedrows (sortrows (D)), true);
+%! assert (issortedrows (sortrows (D, 1)), true);
+%! assert (issortedrows (sortrows (D, 1), -1), false);
+%! assert (issortedrows (sortrows (D, 1), 1), true);
+%! assert (issortedrows (sortrows (D, 2)), false);
+%! assert (issortedrows (sortrows (D, 2), 2), true);
+%! assert (issortedrows (sortrows (D, 2), -2), false);
+%! assert (issortedrows (sortrows (D, -2), 2), false);
+%! assert (issortedrows (sortrows (D, -2), -2), true);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issortedrows (sortrows (D, 'ComparisonMethod', 'abs')), false);
+%! assert (issortedrows (sortrows (D, 'ComparisonMethod', 'real')), true);
+%! assert (issortedrows (sortrows (D, 'ComparisonMethod', 'abs'), ...
+%!                       'ComparisonMethod', 'abs'), true);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issortedrows (sortrows (D, 2, 'ComparisonMethod', 'abs'), 2), false);
+%! assert (issortedrows (sortrows (D, 2, 'ComparisonMethod', 'real'), 2), true);
+%! assert (issortedrows (sortrows (D, 2, 'ComparisonMethod', 'abs'), 2, ...
+%!                       'ComparisonMethod', 'abs'), true);
+%! assert (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'abs'), ...
+%!                       {'ascend', 'ascend'}), false);
+%! assert (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'abs'), ...
+%!                       {'ascend', 'ascend'}, 'ComparisonMethod', 'abs'), true);
+%! assert (issortedrows (sortrows (D, 2, 'ComparisonMethod', 'real'), 2), true);
+%! assert (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'real'), ...
+%!                       {'ascend', 'ascend'}, 'ComparisonMethod', 'auto'), true);
+%! assert (issortedrows (sortrows (D, [-1, 2], 'ComparisonMethod', 'abs'), ...
+%!                       {'ascend', 'ascend'}, 'ComparisonMethod', 'abs'), false);
+%! assert (issortedrows (sortrows (D, 2, 'ComparisonMethod', 'real'), -2), false);
+%! assert (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'real'), ...
+%!                       {'ascend', 'descend'}, 'ComparisonMethod', 'auto'), false);
+%! assert (issortedrows (sortrows (D, [1, -2], 'ComparisonMethod', 'real'), ...
+%!                       {'ascend', 'descend'}, 'ComparisonMethod', 'auto'), true);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'abs'), ...
+%!                       [1, 2], string ({'ascend', 'ascend'})), false);
+%! assert (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'abs'), ...
+%!                       [1, 2], string ({'ascend', 'ascend'}), ...
+%!                       'ComparisonMethod', 'abs'), true);
+%! assert (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'abs'), ...
+%!                       [1, -2], string ({'ascend', 'ascend'}), ...
+%!                       'ComparisonMethod', 'abs'), true);
+%! assert (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'real'), ...
+%!                       [1, 2], string ({'ascend', 'ascend'}), ...
+%!                       'ComparisonMethod', 'auto'), true);
+%! assert (issortedrows (sortrows (D, [1, -2], string ({'ascend', 'ascend'}), ...
+%!                                 'ComparisonMethod', 'real'), ...
+%!                       [1, 2], string ({'ascend', 'ascend'}), ...
+%!                       'ComparisonMethod', 'auto'), true);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! assert (issortedrows (sortrows (D)), true);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! assert (issortedrows (sortrows (D, -2, 'MissingPlacement', 'first')), false);
+%! assert (issortedrows (sortrows (D, -2, 'MissingPlacement', 'first'), -2), true);
+%! assert (issortedrows (sortrows (D, -2, 'MissingPlacement', 'last'), -2), false);
+%! assert (issortedrows (sortrows (D, -2, 'MissingPlacement', 'last'), -2, ...
+%!                       'MissingPlacement', 'last'), true);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! assert (issortedrows (sortrows (D, 2, 'MissingPlacement', 'last')), false);
+%! assert (issortedrows (sortrows (D, 2, 'MissingPlacement', 'last'), 2), true);
+%! assert (issortedrows (sortrows (D, 2, 'MissingPlacement', 'first'), 2), false);
+%! assert (issortedrows (sortrows (D, 2, 'MissingPlacement', 'first'), 2, ...
+%!                       'MissingPlacement', 'first'), true);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! assert (issortedrows (sortrows (D, 'ComparisonMethod', 'abs', ...
+%!                                 'MissingPlacement', 'first'), ...
+%!                       'ComparisonMethod', 'abs', ...
+%!                       'MissingPlacement', 'first'), true);
+%! assert (issortedrows (sortrows (D, 'ComparisonMethod', 'abs', ...
+%!                                 'MissingPlacement', 'last'), ...
+%!                       'ComparisonMethod', 'abs', ...
+%!                       'MissingPlacement', 'first'), false);
+%! assert (issortedrows (sortrows (D, 'ComparisonMethod', 'abs', ...
+%!                                 'MissingPlacement', 'last'), ...
+%!                       'ComparisonMethod', 'abs', ...
+%!                       'MissingPlacement', 'auto'), true);
+%! assert (issortedrows (sortrows (D, 'ComparisonMethod', 'abs', ...
+%!                                 'MissingPlacement', 'last'), ...
+%!                       'ComparisonMethod', 'abs'), true);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! assert (issortedrows (sortrows (D, [1, -2, 3]), [1, -2, 3]), true);
+%! assert (issortedrows (sortrows (D, [1, 2, -3]), [1, -2, 3]), false);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! assert (issortedrows (sortrows (D, string ({'ascend', 'descend', 'ascend'})), ...
+%!                       string ({'ascend', 'descend', 'ascend'})), true);
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! assert (issortedrows (sortrows (D, string ({'ascend', 'descend', 'ascend'})), ...
+%!                       string ({'descend', 'ascend', 'ascend'})), false);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! assert (issortedrows (sortrows (D, [2, 3], string ({'descend', 'ascend'})), ...
+%!                       [2, 3], string ({'descend', 'ascend'})), true);
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! assert (issortedrows (sortrows (D, [2, 3], string ({'ascend', 'descend'})), ...
+%!                       [2, -3]), true);
+%! assert (issortedrows (sortrows (D, [2, 3], string ({'descend', 'descend'})), ...
+%!                       [2, -3], string ({'descend', 'ascend'})), false);
+%!test
+%! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! assert (issortedrows (sortrows (D, [1, -2, 3], 'MissingPlacement', 'first'), ...
+%!         [1, -2, 3], 'MissingPlacement', 'first'), true);
+%! assert (issortedrows (sortrows (D, [-1, -2, -3], 'MissingPlacement', 'first'), ...
+%!         [-1, -2, -3]), true);
+%! assert (issortedrows (sortrows (D, [-1, -2, -3], 'MissingPlacement', 'first'), ...
+%!         [1, -2,-3], string ({'descend', 'descend', 'descend'})), true);
 
 %!assert (isvector (days ([1, 2, 3, 4])), true)
 %!assert (isvector (days ([1; 2; 3; 4])), true)
