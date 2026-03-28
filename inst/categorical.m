@@ -1346,7 +1346,7 @@ classdef categorical
     ## scalar @var{TF}, which is @qcode{true}, if the categorical array @var{C}
     ## is sorted according to the columns specified by the vector @var{col}, and
     ## @qcode{false} otherwise.  @var{col} must explicitly contain non-zero
-    ## integers whose absolute values index  existing columns in @var{A}.
+    ## integers whose absolute values index  existing columns in @var{C}.
     ## Positive elements sort the corresponding columns in ascending order,
     ## while negative elements sort the corresponding columns in descending
     ## order.
@@ -1372,20 +1372,20 @@ classdef categorical
     ##
     ## Alternatively, @var{direction} can be a cell array of character
     ## vectors specifying the sorting direction for each individual column of
-    ## @var{A}, in which case the number of elements in @var{direction} must
-    ## equal the number of columns in @var{A}.
+    ## @var{C}, in which case the number of elements in @var{direction} must
+    ## equal the number of columns in @var{C}.
     ##
-    ## @code{@var{B} = issortedrows (@var{A}, @var{col}, @var{direction})}
-    ## checks if the rows in the categorical array @var{A} are sorted according
+    ## @code{@var{TF} = issortedrows (@var{C}, @var{col}, @var{direction})}
+    ## checks if the rows in the categorical array @var{C} are sorted according
     ## to the columns specified in @var{col} using the corresponding sorting
     ## direction specified in @var{direction}.  In this case, the sign of the
     ## values in @var{col} is ignored.  @var{col} and @var{direction} must have
     ## the same length, but not necessarily the same number of elements as the
-    ## columns in @var{A}.
+    ## columns in @var{C}.
     ##
-    ## @code{@var{TF} = issorted (@dots{}, @qcode{'MissingPlacement'}, @var{MP})}
-    ## specifies where missing elements (@qcode{<undefined>}) are placed with
-    ## one of the following options specified in @var{MP}:
+    ## @code{@var{TF} = issortedrows (@dots{}, @qcode{'MissingPlacement'},
+    ## @var{MP})} specifies where missing elements (@qcode{<undefined>}) are
+    ## placed with one of the following options specified in @var{MP}:
     ##
     ## @itemize
     ## @item @qcode{'auto'}, which is the default, places missing elements last
