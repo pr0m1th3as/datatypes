@@ -809,6 +809,160 @@
 %!assert (isscalar (days (NaN)), true)
 %!assert (isscalar (days ([1, 2])), false)
 
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issorted (sort (D), 'ascend'), true);
+%! assert (issorted (sort (D), 'descend'), false);
+%! assert (issorted (sort (D), 'monotonic'), true);
+%! assert (issorted (sort (D), 'strictascend'), false);
+%! assert (issorted (sort (D), 'strictdescend'), false);
+%! assert (issorted (sort (D), 'strictmonotonic'), false);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issorted (sort (D, 2), 2, 'ascend'), true);
+%! assert (issorted (sort (D, 2), 2, 'descend'), false);
+%! assert (issorted (sort (D, 2), 2, 'monotonic'), true);
+%! assert (issorted (sort (D, 2), 2, 'strictascend'), true);
+%! assert (issorted (sort (D, 2), 2, 'strictdescend'), false);
+%! assert (issorted (sort (D, 2), 2, 'strictmonotonic'), true);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issorted (sort (D, 2), 'ascend'), false);
+%! assert (issorted (sort (D, 2), 'descend'), false);
+%! assert (issorted (sort (D, 2), 'monotonic'), false);
+%! assert (issorted (sort (D, 2), 'strictascend'), false);
+%! assert (issorted (sort (D, 2), 'strictdescend'), false);
+%! assert (issorted (sort (D, 2), 'strictmonotonic'), false);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issorted (sort (D, 'descend'), 'ascend'), false);
+%! assert (issorted (sort (D, 'descend'), 'descend'), true);
+%! assert (issorted (sort (D, 'descend'), 'monotonic'), true);
+%! assert (issorted (sort (D, 'descend'), 'strictascend'), false);
+%! assert (issorted (sort (D, 'descend'), 'strictdescend'), false);
+%! assert (issorted (sort (D, 'descend'), 'strictmonotonic'), false);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issorted (sort (D, 2, 'descend'), 2, 'ascend'), false);
+%! assert (issorted (sort (D, 2, 'descend'), 2, 'descend'), true);
+%! assert (issorted (sort (D, 2, 'descend'), 2, 'monotonic'), true);
+%! assert (issorted (sort (D, 2, 'descend'), 2, 'strictascend'), false);
+%! assert (issorted (sort (D, 2, 'descend'), 2, 'strictdescend'), true);
+%! assert (issorted (sort (D, 2, 'descend'), 2, 'strictmonotonic'), true);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issorted (sort (D, 2, 'descend'), 'ascend'), false);
+%! assert (issorted (sort (D, 2, 'descend'), 'descend'), false);
+%! assert (issorted (sort (D, 2, 'descend'), 'monotonic'), false);
+%! assert (issorted (sort (D, 2, 'descend'), 'strictascend'), false);
+%! assert (issorted (sort (D, 2, 'descend'), 'strictdescend'), false);
+%! assert (issorted (sort (D, 2, 'descend'), 'strictmonotonic'), false);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issorted (sort (D, 'ComparisonMethod', 'real')), true);
+%! assert (issorted (sort (D, 'ComparisonMethod', 'abs')), false);
+%! assert (issorted (sort (D, 'ComparisonMethod', 'abs'), ...
+%!                   'ComparisonMethod', 'abs'), true);
+%!test
+%! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issorted (sort (D, 2, 'ComparisonMethod', 'real'), 2), true);
+%! assert (issorted (sort (D, 2, 'ComparisonMethod', 'abs'), 2), false);
+%! assert (issorted (sort (D, 2, 'ComparisonMethod', 'abs'), 2, ...
+%!                   'ComparisonMethod', 'abs'), true);
+%!test
+%! D = days ([1, 2; 2, 3; 3, 4; 4, 5]);
+%! assert (issorted (sort (D), 'ascend'), true);
+%! assert (issorted (sort (D), 'descend'), false);
+%! assert (issorted (sort (D), 'monotonic'), true);
+%! assert (issorted (sort (D), 'strictascend'), true);
+%! assert (issorted (sort (D), 'strictdescend'), false);
+%! assert (issorted (sort (D), 'strictmonotonic'), true);
+%!test
+%! D = days ([1, 2; 2, 3; 3, 4; 4, 5]);
+%! assert (issorted (sort (D, 'descend'), 'ascend'), false);
+%! assert (issorted (sort (D, 'descend'), 'descend'), true);
+%! assert (issorted (sort (D, 'descend'), 'monotonic'), true);
+%! assert (issorted (sort (D, 'descend'), 'strictascend'), false);
+%! assert (issorted (sort (D, 'descend'), 'strictdescend'), true);
+%! assert (issorted (sort (D, 'descend'), 'strictmonotonic'), true);
+%!test
+%! D = days ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (D), 'ascend'), true);
+%! assert (issorted (sort (D), 'descend'), false);
+%! assert (issorted (sort (D), 'monotonic'), true);
+%! assert (issorted (sort (D), 'strictascend'), false);
+%! assert (issorted (sort (D), 'strictdescend'), false);
+%! assert (issorted (sort (D), 'strictmonotonic'), false);
+%!test
+%! D = days ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (D, 'descend'), 'ascend'), false);
+%! assert (issorted (sort (D, 'descend'), 'descend'), true);
+%! assert (issorted (sort (D, 'descend'), 'monotonic'), true);
+%! assert (issorted (sort (D, 'descend'), 'strictascend'), false);
+%! assert (issorted (sort (D, 'descend'), 'strictdescend'), false);
+%! assert (issorted (sort (D, 'descend'), 'strictmonotonic'), false);
+%!test
+%! D = days ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (D, 'MissingPlacement', 'auto')), true);
+%! assert (issorted (sort (D, 'MissingPlacement', 'first')), false);
+%! assert (issorted (sort (D, 'MissingPlacement', 'first'), ...
+%!                   'MissingPlacement', 'first'), true);
+%!test
+%! D = days ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'auto'), 'descend'), true);
+%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'last'), 'descend'), false);
+%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'first'), ...
+%!                   'descend', 'MissingPlacement', 'first'), true);
+%!test
+%! D = days ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (D, 2, 'MissingPlacement', 'auto'), 2), true);
+%! assert (issorted (sort (D, 2, 'MissingPlacement', 'first'), 2), false);
+%! assert (issorted (sort (D, 2, 'MissingPlacement', 'first'), 2, ...
+%!                   'MissingPlacement', 'first'), true);
+%!test
+%! D = days ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (D, 2, 'descend', 'MissingPlacement', 'auto'), 2, 'descend'), true);
+%! assert (issorted (sort (D, 2, 'descend', 'MissingPlacement', 'last'), 2, 'descend'), false);
+%! assert (issorted (sort (D, 2, 'descend', 'MissingPlacement', 'first'), 2, ...
+%!                   'descend', 'MissingPlacement', 'first'), true);
+%!test
+%! D = days ([1, 2; 2, -3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (D, 'MissingPlacement', 'auto', ...
+%!                         'ComparisonMethod', 'real')), true);
+%! assert (issorted (sort (D, 'MissingPlacement', 'auto', ...
+%!                         'ComparisonMethod', 'abs')), false);
+%! assert (issorted (sort (D, 'MissingPlacement', 'auto', ...
+%!                         'ComparisonMethod', 'abs'), 'ComparisonMethod', 'abs'), true);
+%! assert (issorted (sort (D, 'MissingPlacement', 'last', ...
+%!                         'ComparisonMethod', 'abs')), false);
+%! assert (issorted (sort (D, 'MissingPlacement', 'last', ...
+%!                         'ComparisonMethod', 'abs'), 'ComparisonMethod', 'abs'), true);
+%! assert (issorted (sort (D, 'MissingPlacement', 'first', ...
+%!                         'ComparisonMethod', 'abs'), ...
+%!                   'MissingPlacement', 'first', 'ComparisonMethod', 'abs'), true);
+%!test
+%! D = days ([1, 2; 2, -3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'auto', ...
+%!                         'ComparisonMethod', 'real'), 'descend'), true);
+%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'auto', ...
+%!                         'ComparisonMethod', 'abs'), 'descend'), false);
+%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'auto', ...
+%!                         'ComparisonMethod', 'abs'), ...
+%!                   'descend', 'ComparisonMethod', 'abs'), true);
+%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'last', ...
+%!                         'ComparisonMethod', 'abs'), 'descend'), false);
+%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'last', ...
+%!                         'ComparisonMethod', 'abs'), ...
+%!                   'descend', 'ComparisonMethod', 'abs'), false);
+%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'first', ...
+%!                         'ComparisonMethod', 'abs'), 'descend'), false);
+%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'first', ...
+%!                         'ComparisonMethod', 'abs'), ...
+%!                   'descend', 'ComparisonMethod', 'abs'), true);
+%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'first', ...
+%!                         'ComparisonMethod', 'abs'), 'descend', ...
+%!                   'MissingPlacement', 'first', 'ComparisonMethod', 'abs'), true);
+
 %!assert (isvector (days ([1, 2, 3, 4])), true)
 %!assert (isvector (days ([1; 2; 3; 4])), true)
 %!assert (isvector (days ([1, 2; 3, 4])), false)
@@ -913,7 +1067,6 @@
 %! D = sort (D, 2, 'MissingPlacement', 'last');
 %! X = [1, 2, 2; 1, 1, 3; -4, 2, 2; 1, 2, NaN; -2, 3, NaN; 1, 2, 3];
 %! assert (days (D), X);
-
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sort (D, 'descend');
