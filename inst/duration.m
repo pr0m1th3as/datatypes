@@ -364,14 +364,14 @@ classdef duration
             tmp = x / 60;
             h = fix (tmp);
             ## Fix round-off errors with threshold scaled by hours
-            if (abs (tmp - h - 1) < 1e-15 * (1 + h))
+            if (abs (tmp - h - 1) < 1e-13 * (1 + h))
               h++;
             endif
             ## Calculate remaining minutes
             tmp = x - h * 60;
             m = fix (tmp);
             ## Fix round-off errors with threshold scaled by minutes
-            if (abs (tmp - m - 1) < 1e-15 * (1 + m))
+            if (abs (tmp - m - 1) < 1e-13 * (1 + m))
               m++;
             endif
             str = [str, sprintf('%02d:%02d', h, m)];
@@ -382,14 +382,14 @@ classdef duration
             tmp = x / 60;
             m = fix (tmp);
             ## Fix round-off errors with threshold scaled by minutes
-            if (abs (tmp - m - 1) < 1e-15 * (1 + m))
+            if (abs (tmp - m - 1) < 1e-13 * (1 + m))
               m++;
             endif
             ## Calculate remaining seconds
             tmp = x - m * 60;
             s = fix (tmp);
             ## Fix round-off errors with threshold scaled by seconds
-            if (abs (tmp - s - 1) < 1e-15 * (1 + s))
+            if (abs (tmp - s - 1) < 1e-12 * (1 + s))
               s++;
             endif
             str = [str, sprintf('%02d:%02d', m, s)];
@@ -406,7 +406,7 @@ classdef duration
             tmp = x / 3600;
             h = fix (tmp);
             ## Fix round-off errors with threshold scaled by hours
-            if (abs (tmp - h - 1) < 1e-15 * (1 + h))
+            if (abs (tmp - h - 1) < 1e-13 * (1 + h))
               h++;
             endif
             ## Calculate remaining duration in seconds
@@ -415,14 +415,14 @@ classdef duration
             tmp = x / 60;
             m = fix (tmp);
             ## Fix round-off errors with threshold scaled by minutes
-            if (abs (tmp - m - 1) < 1e-15 * (1 + m))
+            if (abs (tmp - m - 1) < 1e-13 * (1 + m))
               m++;
             endif
             ## Calculate remaining seconds
             x = x - m * 60;
             s = fix (x);
             ## Fix round-off errors with threshold scaled by seconds
-            if (abs (x - s - 1) < 1e-15 * (1 + s))
+            if (abs (x - s - 1) < 1e-12 * (1 + s))
               s++;
             endif
             str = [str, sprintf('%02d:%02d:%02d', h, m, s)];
@@ -449,7 +449,7 @@ classdef duration
             tmp = x / 3600;
             h = fix (tmp);
             ## Fix round-off errors with threshold scaled by hours
-            if (abs (tmp - h - 1) < 1e-15 * (1 + h))
+            if (abs (tmp - h - 1) < 1e-13 * (1 + h))
               h++;
             endif
             ## Calculate remaining duration in seconds
@@ -458,14 +458,14 @@ classdef duration
             tmp = x / 60;
             m = fix (tmp);
             ## Fix round-off errors with threshold scaled by minutes
-            if (abs (tmp - m - 1) < 1e-15 * (1 + m))
+            if (abs (tmp - m - 1) < 1e-13 * (1 + m))
               m++;
             endif
             ## Calculate remaining seconds
             x = x - m * 60;
             s = fix (x);
             ## Fix round-off errors with threshold scaled by seconds
-            if (abs (x - s - 1) < 1e-15 * (1 + s))
+            if (abs (x - s - 1) < 1e-12 * (1 + s))
               s++;
             endif
             if (fix (d) > 0)
