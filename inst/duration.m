@@ -733,7 +733,7 @@ classdef duration
     function out = minutes (this)
       out = this.Days * 1440;
       ## Fix floating point precision to nearest picosecond
-      out = round (out * 1e+13) * 1e-13;
+      out = round (out * 1e13) / 1e13;
     endfunction
 
     ## -*- texinfo -*-
@@ -752,7 +752,7 @@ classdef duration
     function out = seconds (this)
       out = this.Days * 86400;
       ## Fix floating point precision to nearest picosecond
-      out = round (out * 1e+12) * 1e-12;
+      out = round (out * 1e12) / 1e12;
     endfunction
 
     ## -*- texinfo -*-
@@ -771,7 +771,7 @@ classdef duration
     function out = milliseconds (this)
       out = this.Days * 86400000;
       ## Fix floating point precision to nearest picosecond
-      out = round (out * 1e+9) * 1e-9;
+      out = round (out * 1e9) / 1e9;
     endfunction
 
   endmethods
@@ -1525,7 +1525,7 @@ classdef duration
     function TF = issortedrows (this, varargin)
       ## Single input argument
       if (nargin == 1)
-        TF = isequal (this, sortrows (this));
+        TF = isequaln (this, sortrows (this));
         return;
       endif
 
@@ -1546,22 +1546,22 @@ classdef duration
         endif
 
         ## Handle non-strict modes first
-        simple_types = {'ascend', 'descend', 'monotonic'};
         if (all (cellfun (@(x) ismember (x, {'ascend', 'descend'}), direction)))
-          TF = isequal (this, sortrows (this, varargin{:}));
+          TF = isequaln (this, sortrows (this, varargin{:}));
           return;
         endif
+        simple_types = {'ascend', 'descend', 'monotonic'};
         if (all (cellfun (@(x) ismember (x, simple_types), direction)))
           idx = strcmp (direction, 'monotonic');
           direction{idx} = 'ascend';
           varargin{cid} = direction;
-          TF = isequal (this, sortrows (this, varargin(:)));
+          TF = isequaln (this, sortrows (this, varargin(:)));
           if (TF)
             return;
           endif
           direction{idx} = 'descend';
           varargin{cid} = direction;
-          TF = isequal (this, sort (this, varargin{:}));
+          TF = isequaln (this, sort (this, varargin{:}));
           return;
         endif
 
@@ -1595,37 +1595,43 @@ classdef duration
         ## Operate with simple modes and check strictness on selected columns
         if (all (cellfun (@(x) ismember (x, {'ascend', 'descend'}), direction)))
           sorted = sortrows (this, varargin{:});
-          ## Test 'strict' columns for unique rows
-          tmpcol = subset (sorted, ':', strict_idx);
-          [~, ix] = unique (tmpcol, 'rows', 'stable');
-          sorted = subset (sorted, ix, ':');
-          TF = isequal (this, sorted);
+          ## Test 'strictness' on specific columns for unique rows
+          tmpcol = sorted.Days(:, strict_idx);
+          if (any (all (diff (tmpcol, 1, 1) == 0, 2)))
+            TF = false;
+            return;
+          endif
+          TF = isequaln (this, sorted);
 
         else  # 'monotonic' mode also exists
           idx = strcmp (direction, 'monotonic');
           direction{idx} = 'ascend';
           varargin{cid} = direction;
           sorted = sortrows (this, varargin{:});
-          ## Test 'strict' columns for unique rows
-          tmpcol = subset (sorted, ':', strict_idx);
-          [~, ix] = unique (tmpcol, 'rows', 'stable');
-          sorted = subset (sorted, ix, ':');
-          TF = isequal (this, sorted);
+          ## Test 'strictness' on specific columns for unique rows
+          tmpcol = sorted.Days(:, strict_idx);
+          if (any (all (diff (tmpcol, 1, 1) == 0, 2)))
+            TF = false;
+            return;
+          endif
+          TF = isequaln (this, sorted);
           if (TF)
             return;
           endif
           direction{idx} = 'descend';
           varargin{cid} = direction;
           sorted = sortrows (this, varargin{:});
-          ## Test 'strict' columns for unique rows
-          tmpcol = subset (sorted, ':', strict_idx);
-          [~, ix] = unique (tmpcol, 'rows', 'stable');
-          sorted = subset (sorted, ix, ':');
-          TF = isequal (this, sorted);
+          ## Test 'strictness' on specific columns for unique rows
+          tmpcol = sorted.Days(:, strict_idx);
+          if (any (all (diff (tmpcol, 1, 1) == 0, 2)))
+            TF = false;
+            return;
+          endif
+          TF = isequaln (this, sorted);
         endif
       else
         ## No DIRECTION input argument
-        TF = isequal (this, sortrows (this, varargin{:}));
+        TF = isequaln (this, sortrows (this, varargin{:}));
       endif
     endfunction
 
@@ -2122,6 +2128,9 @@ classdef duration
       if (! ismember (CM, {'auto', 'real', 'abs'}))
         error ("duration.sort: invalid value for 'ComparisonMethod'.");
       endif
+
+      ## Force strings to character vectors
+      [args{:}] = convertStringsToChars (args{:});
 
       ## Get direction
       cid = cellfun (@ischar, args);
