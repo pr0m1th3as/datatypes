@@ -744,6 +744,11 @@ classdef string
     ##
     ## @end deftypefn
     function TF = eq (A, B)
+      ## Overload methods fof certain data types
+      if (any (isa (B, {'categorical', 'duration'})))
+        TF = eq (B, A);
+        return;
+      endif
       if (iscellstr (A) || ischar (A))
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
@@ -775,6 +780,11 @@ classdef string
     ##
     ## @end deftypefn
     function TF = ge (A, B)
+      ## Overload methods fof certain data types
+      if (any (isa (B, {'categorical', 'duration'})))
+        TF = le (B, A);
+        return;
+      endif
       if (iscellstr (A) || ischar (A))
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
@@ -807,6 +817,11 @@ classdef string
     ##
     ## @end deftypefn
     function TF = gt (A, B)
+      ## Overload methods fof certain data types
+      if (any (isa (B, {'categorical', 'duration'})))
+        TF = lt (B, A);
+        return;
+      endif
       if (iscellstr (A) || ischar (A))
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
@@ -840,6 +855,11 @@ classdef string
     ##
     ## @end deftypefn
     function TF = le (A, B)
+      ## Overload methods fof certain data types
+      if (any (isa (B, {'categorical', 'duration'})))
+        TF = ge (B, A);
+        return;
+      endif
       if (iscellstr (A) || ischar (A))
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
@@ -872,6 +892,11 @@ classdef string
     ##
     ## @end deftypefn
     function TF = lt (A, B)
+      ## Overload methods fof certain data types
+      if (any (isa (B, {'categorical', 'duration'})))
+        TF = gt (B, A);
+        return;
+      endif
       if (iscellstr (A) || ischar (A))
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
@@ -906,6 +931,11 @@ classdef string
     ##
     ## @end deftypefn
     function TF = ne (A, B)
+      ## Overload methods fof certain data types
+      if (any (isa (B, {'categorical', 'duration'})))
+        TF = ne (B, A);
+        return;
+      endif
       if (iscellstr (A) || ischar (A))
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
