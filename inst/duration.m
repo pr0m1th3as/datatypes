@@ -1665,31 +1665,145 @@ classdef duration
 
   methods (Access = public)
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{TF} =} eq (@var{A}, @var{B})
+    ##
+    ## Equality for duration arrays.
+    ##
+    ## @code{@var{TF} = eq (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} == @var{B}} and returns a logical array of the
+    ## same size as the largest input with its elements set to @qcode{true}
+    ## where the corresponding elements of @var{A} and @var{B} are equal and set
+    ## to @qcode{false} where they are not.  @var{A} and @var{B} must be size
+    ## compatible, which translates to they can be the same size, one can be
+    ## scalar, or for every dimension, their dimension sizes must be equal or
+    ## one of them must be 1.
+    ##
+    ## One of the input arguments can also be a character vector, a cell array
+    ## of character vectors, or a string array representing duration strings or
+    ## a numeric array representing days.
+    ##
+    ## @end deftypefn
     function TF = eq (A, B)
       [A, B] = promote (A, B);
       TF = A.Days == B.Days;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{TF} =} ge (@var{A}, @var{B})
+    ##
+    ## Equality for duration arrays.
+    ##
+    ## @code{@var{TF} = ge (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} >= @var{B}} and returns a logical array of the
+    ## same size as the largest input with its elements set to @qcode{true}
+    ## where the corresponding elements of @var{A} are greater than or equal to
+    ## @var{B} and set to @qcode{false} where they are not.  @var{A} and @var{B}
+    ## must be size compatible, which translates to they can be the same size,
+    ## one can be scalar, or for every dimension, their dimension sizes must be
+    ## equal or one of them must be 1.
+    ##
+    ## One of the input arguments can also be a character vector, a cell array
+    ## of character vectors, or a string array representing duration strings or
+    ## a numeric array representing days.
+    ##
+    ## @end deftypefn
     function TF = ge (A, B)
       [A, B] = promote (A, B);
       TF = A.Days >= B.Days;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{TF} =} gt (@var{A}, @var{B})
+    ##
+    ## Equality for duration arrays.
+    ##
+    ## @code{@var{TF} = gt (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} > @var{B}} and returns a logical array of the
+    ## same size as the largest input with its elements set to @qcode{true}
+    ## where the corresponding elements of @var{A} are greater than @var{B} and
+    ## set to @qcode{false} where they are not.  @var{A} and @var{B} must be
+    ## size compatible, which translates to they can be the same size, one can
+    ## be scalar, or for every dimension, their dimension sizes must be equal or
+    ## one of them must be 1.
+    ##
+    ## One of the input arguments can also be a character vector, a cell array
+    ## of character vectors, or a string array representing duration strings or
+    ## a numeric array representing days.
+    ##
+    ## @end deftypefn
     function TF = gt (A, B)
       [A, B] = promote (A, B);
       TF = A.Days > B.Days;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{TF} =} le (@var{A}, @var{B})
+    ##
+    ## Equality for duration arrays.
+    ##
+    ## @code{@var{TF} = le (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} <= @var{B}} and returns a logical array of the
+    ## same size as the largest input with its elements set to @qcode{true}
+    ## where the corresponding elements of @var{A} are less than or equal to
+    ## @var{B} and set to @qcode{false} where they are not.  @var{A} and @var{B}
+    ## must be size compatible, which translates to they can be the same size,
+    ## one can be scalar, or for every dimension, their dimension sizes must be
+    ## equal or one of them must be 1.
+    ##
+    ## One of the input arguments can also be a character vector, a cell array
+    ## of character vectors, or a string array representing duration strings or
+    ## a numeric array representing days.
+    ##
+    ## @end deftypefn
     function TF = le (A, B)
       [A, B] = promote (A, B);
       TF = A.Days <= B.Days;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{TF} =} lt (@var{A}, @var{B})
+    ##
+    ## Equality for duration arrays.
+    ##
+    ## @code{@var{TF} = lt (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} < @var{B}} and returns a logical array of the
+    ## same size as the largest input with its elements set to @qcode{true}
+    ## where the corresponding elements of @var{A} are less than @var{B} and set
+    ## to @qcode{false} where they are not.  @var{A} and @var{B} must be size
+    ## compatible, which translates to they can be the same size, one can be
+    ## scalar, or for every dimension, their dimension sizes must be equal or
+    ## one of them must be 1.
+    ##
+    ## One of the input arguments can also be a character vector, a cell array
+    ## of character vectors, or a string array representing duration strings or
+    ## a numeric array representing days.
+    ##
+    ## @end deftypefn
     function TF = lt (A, B)
       [A, B] = promote (A, B);
       TF = A.Days < B.Days;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{TF} =} ne (@var{A}, @var{B})
+    ##
+    ## Equality for duration arrays.
+    ##
+    ## @code{@var{TF} = ne (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} != @var{B}} and returns a logical array of the
+    ## same size as the largest input with its elements set to @qcode{true}
+    ## where the corresponding elements of @var{A} and @var{B} are not equal and
+    ## set to @qcode{false} where they are not.  @var{A} and @var{B} must be
+    ## size compatible, which translates to they can be the same size, one can
+    ## be scalar, or for every dimension, their dimension sizes must be equal or
+    ## one of them must be 1.
+    ##
+    ## One of the input arguments can also be a character vector, a cell array
+    ## of character vectors, or a string array representing duration strings or
+    ## a numeric array representing days.
+    ##
+    ## @end deftypefn
     function TF = ne (A, B)
       [A, B] = promote (A, B);
       TF = A.Days != B.Days;
