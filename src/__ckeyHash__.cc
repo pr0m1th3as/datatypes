@@ -19,6 +19,7 @@ this program; if not, see <http://www.gnu.org/licenses/>.
 
 #define FNV1A64_PRIME 0x00000100000001b3
 #include <octave/oct.h>
+#include <array>
 
 using namespace std;
 
@@ -26,9 +27,23 @@ static inline constexpr uint64_t fnv1a64 (const char* buf, size_t len, uint64_t 
 {
 	for (size_t i = 0; i < len; i++)
   {
-		out = (out ^ buf[i]) * FNV1A64_PRIME;
+    // default char signedness depends on architecture, for signed for
+    // backwards compatibility
+    const unsigned char b = buf[i];
+    out = (out ^ b) * FNV1A64_PRIME;
   }
 	return out;
+}
+
+namespace /* tests */ {
+constexpr std::array<char, 4> testData{0, 1, char(0x80), 0};
+static_assert(0 == fnv1a64(testData.data(), 0, 0));
+static_assert(0x123 == fnv1a64(testData.data(), 0, 0x123));
+static_assert(0 == fnv1a64(testData.data(), 1, 0));
+static_assert(FNV1A64_PRIME == fnv1a64(testData.data(), 1, 1));
+static_assert(FNV1A64_PRIME == fnv1a64(testData.data(), 2, 0));
+static_assert(18445758911290863785ull == fnv1a64(testData.data(), 3, 0));
+static_assert(17797707857304284971ull == fnv1a64(testData.data(), 4, 0));
 }
 
 
