@@ -1271,6 +1271,62 @@
 %!assert (days ([1, 2]) != [1; 2], [false, true; true, false])
 
 ################################################################################
+##                       ** Mathematical Operations **                        ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'abs'              'plus'             'uplus'            'minus'           ##
+## 'uminus'           'times'            'mtimes'           'ldivide'         ##
+## 'mldivide'         'rdivide'          'mrdivide'         'colon'           ##
+## 'linspace'         'sum'              'cumsum'           'diff'            ##
+## 'mean'             'median'           'mode'             'floor'           ##
+## 'ceil'             'round'            'sign'                               ##
+##                                                                            ##
+################################################################################
+
+%!assert (days (abs (days ([1, -1, NaN, -Inf, Inf]))), [1, 1, NaN, Inf, Inf])
+%!assert (days (abs (days (- ones (2, 3, 4)))), ones (2, 3, 4))
+
+%!assert (days (days ([1, 2; NaN, Inf]) + [2, 3]), [3, 5; NaN, Inf])
+%!assert (days (days ([1, 2; NaN, Inf]) + days ([2, 3])), [3, 5; NaN, Inf])
+%!assert (days ([2, 3] + days ([1, 2; NaN, Inf])), [3, 5; NaN, Inf])
+%!assert (days (days ([2, 3]) + days ([1, 2; NaN, Inf])), [3, 5; NaN, Inf])
+%!assert (caldays (days (1) + calendarDuration), 0)
+%!assert (caldays (days (1) + calendarDuration (0, 0, 1)), 1)
+%!assert (hours (time (days (1) + calendarDuration)), 24)
+%!assert (hours (time (days (1) + calendarDuration (0, 0, 1))), 24)
+%!assert (class (days (1) + calendarDuration), 'calendarDuration')
+%!error<duration: addition is not defined between 'duration' and 'char' arrays.> ...
+%! days (1) + '24:00:00'
+%!error<duration: addition is not defined between 'duration' and 'cell' arrays.> ...
+%! days (1) + {'24:00:00'}
+%!error<duration: addition is not defined between 'duration' and 'string' arrays.> ...
+%! days (1) + string('24:00:00')
+
+%!assert (days (+ days (-3)), -3)
+%!assert (days (+ days (magic (3))), magic (3))
+
+%!assert (days (days ([3, 5; NaN, Inf]) - [2, 3]), [1, 2; NaN, Inf])
+%!assert (days (days ([3, 5; NaN, Inf]) - days ([2, 3])), [1, 2; NaN, Inf])
+%!assert (days ([3, 5] - days ([2, 3; NaN, Inf])), [1, 2; NaN, -Inf])
+%!assert (days (days ([3, 5]) - days ([2, 3; NaN, Inf])), [1, 2; NaN, -Inf])
+%!assert (caldays (days (1) - calendarDuration), 0)
+%!assert (caldays (days (1) - calendarDuration (0, 0, 1)), -1)
+%!assert (hours (time (days (1) - calendarDuration)), 24)
+%!assert (hours (time (days (1) - calendarDuration (0, 0, 1))), 24)
+%!assert (class (days (1) - calendarDuration), 'calendarDuration')
+%!error<duration: subtraction is not defined between 'duration' and 'char' arrays.> ...
+%! days (1) - '24:00:00'
+%!error<duration: subtraction is not defined between 'duration' and 'cell' arrays.> ...
+%! days (1) - {'24:00:00'}
+%!error<duration: subtraction is not defined between 'duration' and 'string' arrays.> ...
+%! days (1) - string('24:00:00')
+
+%!assert (days (- days (-3)), 3)
+%!assert (days (- days (3)), -3)
+%!assert (days (- days (magic (3))), - magic (3))
+
+################################################################################
 ##                   ** Sort, Filter, and Set Operations **                   ##
 ################################################################################
 ##                             Available Methods                              ##
