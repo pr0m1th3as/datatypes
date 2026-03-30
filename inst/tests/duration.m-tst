@@ -1277,10 +1277,10 @@
 ##                                                                            ##
 ## 'abs'              'plus'             'uplus'            'minus'           ##
 ## 'uminus'           'times'            'mtimes'           'ldivide'         ##
-## 'mldivide'         'rdivide'          'mrdivide'         'colon'           ##
-## 'linspace'         'sum'              'cumsum'           'diff'            ##
-## 'mean'             'median'           'mode'             'floor'           ##
-## 'ceil'             'round'            'sign'                               ##
+## 'rdivide'          'colon'            'linspace'         'sign'            ##
+## 'sum'              'cumsum'           'diff'             'min'             ##
+## 'max'              'cummin'           'cummax'           'floor'           ##
+## 'ceil'             'round'                                                 ##
 ##                                                                            ##
 ################################################################################
 
@@ -1325,6 +1325,39 @@
 %!assert (days (- days (-3)), 3)
 %!assert (days (- days (3)), -3)
 %!assert (days (- days (magic (3))), - magic (3))
+
+%!assert (days (days ([1:3]) .* [1:3]), [1, 4, 9])
+%!assert (days ([1:3] .* days ([1:3])), [1, 4, 9])
+%!assert (days (days ([1:3]) .* [1; 2]), [1, 2, 3; 2, 4, 6])
+%!assert (days ([1; 2] .* days ([1:3])), [1, 2, 3; 2, 4, 6])
+%!assert (class (1 .* duration), 'duration')
+%!assert (class (duration .* magic (3)), 'duration')
+%!assert (hours (duration .* magic (3)), zeros (3))
+%!error<duration: multiplication is not defined between 'duration' and 'duration' arrays.> ...
+%! days (1) .* days (1)
+%!error<duration: multiplication is not defined between 'duration' and 'char' arrays.> ...
+%! days (1) .* 'asd'
+%!error<duration: multiplication is not defined between 'duration' and 'string' arrays.> ...
+%! days (1) .* string ({'asd'})
+%!error<duration: multiplication is not defined between 'cell' and 'duration' arrays.> ...
+%! {'asd'} .*  days (1)
+
+%!assert (days (days ([1:3]) * [1:3]'), 14)
+%!assert (days (days ([1:3]') * [1:3]), [1, 2, 3; 2, 4, 6; 3, 6, 9])
+%!assert (days ([1:3] * days ([1:3]')), 14)
+%!assert (days ([1:3]' * days ([1:3])), [1, 2, 3; 2, 4, 6; 3, 6, 9])
+%!assert (class (1 * duration), 'duration')
+%!assert (class (days (magic (3)) * magic (3)), 'duration')
+%!assert (days (days (magic (3)) * magic (3)), magic (3) * magic (3))
+%!assert (days (magic (3) * days (magic (3))), magic (3) * magic (3))
+%!error<duration: matrix multiplication is not defined between 'duration' and 'duration' arrays.> ...
+%! days (1) * days (1)
+%!error<duration: matrix multiplication is not defined between 'duration' and 'char' arrays.> ...
+%! days (1) * 'asd'
+%!error<duration: matrix multiplication is not defined between 'duration' and 'string' arrays.> ...
+%! days (1) * string ({'asd'})
+%!error<duration: matrix multiplication is not defined between 'cell' and 'duration' arrays.> ...
+%! {'asd'} *  days (1)
 
 ################################################################################
 ##                   ** Sort, Filter, and Set Operations **                   ##
