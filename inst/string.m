@@ -744,7 +744,7 @@ classdef string
     ##
     ## @end deftypefn
     function TF = eq (A, B)
-      ## Overload methods fof certain data types
+      ## Overload methods for certain data types
       if (any (isa (B, {'categorical', 'duration'})))
         TF = eq (B, A);
         return;
@@ -780,7 +780,7 @@ classdef string
     ##
     ## @end deftypefn
     function TF = ge (A, B)
-      ## Overload methods fof certain data types
+      ## Overload methods for certain data types
       if (any (isa (B, {'categorical', 'duration'})))
         TF = le (B, A);
         return;
@@ -817,7 +817,7 @@ classdef string
     ##
     ## @end deftypefn
     function TF = gt (A, B)
-      ## Overload methods fof certain data types
+      ## Overload methods for certain data types
       if (any (isa (B, {'categorical', 'duration'})))
         TF = lt (B, A);
         return;
@@ -855,7 +855,7 @@ classdef string
     ##
     ## @end deftypefn
     function TF = le (A, B)
-      ## Overload methods fof certain data types
+      ## Overload methods for certain data types
       if (any (isa (B, {'categorical', 'duration'})))
         TF = ge (B, A);
         return;
@@ -892,7 +892,7 @@ classdef string
     ##
     ## @end deftypefn
     function TF = lt (A, B)
-      ## Overload methods fof certain data types
+      ## Overload methods for certain data types
       if (any (isa (B, {'categorical', 'duration'})))
         TF = gt (B, A);
         return;
@@ -931,7 +931,7 @@ classdef string
     ##
     ## @end deftypefn
     function TF = ne (A, B)
-      ## Overload methods fof certain data types
+      ## Overload methods for certain data types
       if (any (isa (B, {'categorical', 'duration'})))
         TF = ne (B, A);
         return;
