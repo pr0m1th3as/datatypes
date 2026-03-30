@@ -2047,7 +2047,7 @@ classdef duration
         C = fix_zero_precision (C);
       else
         error (strcat ("duration: left division is not defined", ...
-                       " between '%s' and 'duration' arrays"), class (A));
+                       " between '%s' and 'duration' arrays."), class (A));
       endif
     endfunction
 
@@ -2079,11 +2079,11 @@ classdef duration
       elseif (isnumeric (B))
         C = A;
         C.Days = A.Days ./ double (B);
+        C = fix_zero_precision (C);
       else
         error (strcat ("duration: right division is not defined", ...
-                       " between 'duration' and '%s' arrays"), class (B));
+                       " between 'duration' and '%s' arrays."), class (B));
       endif
-      C = fix_zero_precision (C);
     endfunction
 
     function C = colon (varargin)
