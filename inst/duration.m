@@ -1671,13 +1671,14 @@ classdef duration
     ## Equality for duration arrays.
     ##
     ## @code{@var{TF} = eq (@var{A}, @var{B})} is the equivalent of the syntax
-    ## @code{@var{TF} = @var{A} == @var{B}} and returns a logical array of the
-    ## same size as the largest input with its elements set to @qcode{true}
-    ## where the corresponding elements of @var{A} and @var{B} are equal and set
-    ## to @qcode{false} where they are not.  @var{A} and @var{B} must be size
-    ## compatible, which translates to they can be the same size, one can be
-    ## scalar, or for every dimension, their dimension sizes must be equal or
-    ## one of them must be 1.
+    ## @code{@var{TF} = @var{A} == @var{B}} and returns a logical array whose
+    ## elements set to @qcode{true} where the corresponding elements of @var{A}
+    ## and @var{B} are equal and set to @qcode{false} otherwise.
+    ##
+    ## @var{A} and @var{B} must be size compatible, which translates to they can
+    ## be the same size, one can be scalar, or for every dimension, their
+    ## dimension sizes must be equal or one of them must be 1.  The size of
+    ## @var{C} is determined by the size compatibility of @var{A} and @var{B}.
     ##
     ## One of the input arguments can also be a character vector, a cell array
     ## of character vectors, or a string array representing duration strings or
@@ -1695,13 +1696,14 @@ classdef duration
     ## Equality for duration arrays.
     ##
     ## @code{@var{TF} = ge (@var{A}, @var{B})} is the equivalent of the syntax
-    ## @code{@var{TF} = @var{A} >= @var{B}} and returns a logical array of the
-    ## same size as the largest input with its elements set to @qcode{true}
-    ## where the corresponding elements of @var{A} are greater than or equal to
-    ## @var{B} and set to @qcode{false} where they are not.  @var{A} and @var{B}
-    ## must be size compatible, which translates to they can be the same size,
-    ## one can be scalar, or for every dimension, their dimension sizes must be
-    ## equal or one of them must be 1.
+    ## @code{@var{TF} = @var{A} >= @var{B}} and returns a logical array whose
+    ## elements set to @qcode{true} where the corresponding elements of @var{A}
+    ## are greater than or equal to @var{B} and set to @qcode{false} otherwise.
+    ##
+    ## @var{A} and @var{B} must be size compatible, which translates to they can
+    ## be the same size, one can be scalar, or for every dimension, their
+    ## dimension sizes must be equal or one of them must be 1.  The size of
+    ## @var{C} is determined by the size compatibility of @var{A} and @var{B}.
     ##
     ## One of the input arguments can also be a character vector, a cell array
     ## of character vectors, or a string array representing duration strings or
@@ -1719,13 +1721,14 @@ classdef duration
     ## Equality for duration arrays.
     ##
     ## @code{@var{TF} = gt (@var{A}, @var{B})} is the equivalent of the syntax
-    ## @code{@var{TF} = @var{A} > @var{B}} and returns a logical array of the
-    ## same size as the largest input with its elements set to @qcode{true}
-    ## where the corresponding elements of @var{A} are greater than @var{B} and
-    ## set to @qcode{false} where they are not.  @var{A} and @var{B} must be
-    ## size compatible, which translates to they can be the same size, one can
-    ## be scalar, or for every dimension, their dimension sizes must be equal or
-    ## one of them must be 1.
+    ## @code{@var{TF} = @var{A} > @var{B}} and returns a logical array whose
+    ## elements set to @qcode{true} where the corresponding elements of @var{A}
+    ## are greater than @var{B} and set to @qcode{false} otherwise.
+    ##
+    ## @var{A} and @var{B} must be size compatible, which translates to they can
+    ## be the same size, one can be scalar, or for every dimension, their
+    ## dimension sizes must be equal or one of them must be 1.  The size of
+    ## @var{C} is determined by the size compatibility of @var{A} and @var{B}.
     ##
     ## One of the input arguments can also be a character vector, a cell array
     ## of character vectors, or a string array representing duration strings or
@@ -1743,13 +1746,14 @@ classdef duration
     ## Equality for duration arrays.
     ##
     ## @code{@var{TF} = le (@var{A}, @var{B})} is the equivalent of the syntax
-    ## @code{@var{TF} = @var{A} <= @var{B}} and returns a logical array of the
-    ## same size as the largest input with its elements set to @qcode{true}
-    ## where the corresponding elements of @var{A} are less than or equal to
-    ## @var{B} and set to @qcode{false} where they are not.  @var{A} and @var{B}
-    ## must be size compatible, which translates to they can be the same size,
-    ## one can be scalar, or for every dimension, their dimension sizes must be
-    ## equal or one of them must be 1.
+    ## @code{@var{TF} = @var{A} <= @var{B}} and returns a logical array whose
+    ## elements set to @qcode{true} where the corresponding elements of @var{A}
+    ## are less than or equal to @var{B} and set to @qcode{false} otherwise.
+    ##
+    ## @var{A} and @var{B} must be size compatible, which translates to they can
+    ## be the same size, one can be scalar, or for every dimension, their
+    ## dimension sizes must be equal or one of them must be 1.  The size of
+    ## @var{C} is determined by the size compatibility of @var{A} and @var{B}.
     ##
     ## One of the input arguments can also be a character vector, a cell array
     ## of character vectors, or a string array representing duration strings or
@@ -1767,13 +1771,14 @@ classdef duration
     ## Equality for duration arrays.
     ##
     ## @code{@var{TF} = lt (@var{A}, @var{B})} is the equivalent of the syntax
-    ## @code{@var{TF} = @var{A} < @var{B}} and returns a logical array of the
-    ## same size as the largest input with its elements set to @qcode{true}
-    ## where the corresponding elements of @var{A} are less than @var{B} and set
-    ## to @qcode{false} where they are not.  @var{A} and @var{B} must be size
-    ## compatible, which translates to they can be the same size, one can be
-    ## scalar, or for every dimension, their dimension sizes must be equal or
-    ## one of them must be 1.
+    ## @code{@var{TF} = @var{A} < @var{B}} and returns a logical array whose
+    ## elements set to @qcode{true} where the corresponding elements of @var{A}
+    ## are less than @var{B} and set to @qcode{false} otherwise.
+    ##
+    ## @var{A} and @var{B} must be size compatible, which translates to they can
+    ## be the same size, one can be scalar, or for every dimension, their
+    ## dimension sizes must be equal or one of them must be 1.  The size of
+    ## @var{C} is determined by the size compatibility of @var{A} and @var{B}.
     ##
     ## One of the input arguments can also be a character vector, a cell array
     ## of character vectors, or a string array representing duration strings or
@@ -1791,13 +1796,14 @@ classdef duration
     ## Equality for duration arrays.
     ##
     ## @code{@var{TF} = ne (@var{A}, @var{B})} is the equivalent of the syntax
-    ## @code{@var{TF} = @var{A} != @var{B}} and returns a logical array of the
-    ## same size as the largest input with its elements set to @qcode{true}
-    ## where the corresponding elements of @var{A} and @var{B} are not equal and
-    ## set to @qcode{false} where they are not.  @var{A} and @var{B} must be
-    ## size compatible, which translates to they can be the same size, one can
-    ## be scalar, or for every dimension, their dimension sizes must be equal or
-    ## one of them must be 1.
+    ## @code{@var{TF} = @var{A} != @var{B}} and returns a logical array whose
+    ## elements set to @qcode{true} where the corresponding elements of @var{A}
+    ## and @var{B} are not equal and set to @qcode{false} otherwise.
+    ##
+    ## @var{A} and @var{B} must be size compatible, which translates to they can
+    ## be the same size, one can be scalar, or for every dimension, their
+    ## dimension sizes must be equal or one of them must be 1.  The size of
+    ## @var{C} is determined by the size compatibility of @var{A} and @var{B}.
     ##
     ## One of the input arguments can also be a character vector, a cell array
     ## of character vectors, or a string array representing duration strings or
@@ -1827,21 +1833,52 @@ classdef duration
 
   methods (Access = public)
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{B} =} abs (@var{A})
+    ##
+    ## Absolute value of the elements of a duration array.
+    ##
+    ## @code{@var{B} = abs (@var{A})} returns the absolute value of each element
+    ## in the duration array @var{A}.  The returned duration array @var{B} has
+    ## the same size as the input array @var{A}.
+    ##
+    ## @end deftypefn
     function B = abs (A)
       B = A;
       B.Days = abs (A.Days);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{C} =} plus (@var{A}, @var{B})
+    ##
+    ## Addition for duration arrays.
+    ##
+    ## @code{@var{C} = plus (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{C} = @var{A} + @var{B}} and returns the sum of @var{A} and
+    ## @var{B} by adding the corresponding elements.  @var{A} and @var{B} must
+    ## be size compatible, which translates to they can be the same size, one
+    ## can be scalar, or for every dimension, their dimension sizes must be
+    ## equal or one of them must be 1.  The size of @var{C} is determined by the
+    ## size compatibility of @var{A} and @var{B}.
+    ##
+    ## One of the input arguments can also be a numeric array in which case its
+    ## elements are treated as a number of 24-hour days.  If the second argument
+    ## @var{B} is a calendarDuration arrays, then the returned array @var{C} is
+    ## also a calendarDuration array.
+    ##
+    ## @end deftypefn
     function C = plus (A, B)
+      ## Overload methods for certain data types
+      if (isa (B, 'calendarDuration'))
+        C = B + A;
+        return;
+      endif
       if (isa (A, 'duration') && isa (B, 'duration'))
         C = A;
         C.Days = A.Days + B.Days;
-      elseif (isa (A, 'duration') && isa (B, 'calendarDuration'))
-        C = B + A;
-        return;
       elseif (isnumeric (A))
         C = B;
-        C.Days = B.Days + double (A);
+        C.Days = double (A) + B.Days;
       elseif (isnumeric (B))
         C = A;
         C.Days = A.Days + double (B);
@@ -1852,21 +1889,51 @@ classdef duration
       C = fix_zero_precision (C);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{B} =} uplus (@var{A})
+    ##
+    ## Unary plus for duration arrays.
+    ##
+    ## @code{@var{B} = plus (@var{A})} is the equivalent of the syntax
+    ## @code{@var{B} = + @var{A}} and returns the input array unaltered.
+    ##
+    ## @end deftypefn
     function B = uplus (A)
       B = A;
       B.Days = A.Days;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{C} =} minus (@var{A}, @var{B})
+    ##
+    ## Subtraction for duration arrays.
+    ##
+    ## @code{@var{C} = minus (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{C} = @var{A} - @var{B}} and returns the subtraction of @var{B}
+    ## from @var{A} by subtracting the corresponding elements.  @var{A} and
+    ## @var{B} must be size compatible, which translates to they can be the same
+    ## size, one can be scalar, or for every dimension, their dimension sizes
+    ## must be equal or one of them must be 1.  The size of @var{C} is
+    ## determined by the size compatibility of @var{A} and @var{B}.
+    ##
+    ## One of the input arguments can also be a numeric array in which case its
+    ## elements are treated as a number of 24-hour days.  If the second argument
+    ## @var{B} is a calendarDuration arrays, then the returned array @var{C} is
+    ## also a calendarDuration array.
+    ##
+    ## @end deftypefn
     function C = minus (A, B)
+      ## Overload methods for certain data types
+      if (isa (B, 'calendarDuration'))
+        C = -B + A;
+        return;
+      endif
       if (isa (A, 'duration') && isa (B, 'duration'))
         C = A;
         C.Days = A.Days - B.Days;
-      elseif (isa (A, 'duration') && isa (B, 'calendarDuration'))
-        C = -B + A;
-        return;
       elseif (isnumeric (A))
         C = B;
-        C.Days = B.Days - double (A);
+        C.Days = double (A) - B.Days;
       elseif (isnumeric (B))
         C = A;
         C.Days = A.Days - double (B);
@@ -1877,6 +1944,16 @@ classdef duration
       C = fix_zero_precision (C);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{B} =} uminus (@var{A})
+    ##
+    ## Unary minus for duration arrays.
+    ##
+    ## @code{@var{B} = minus (@var{A})} is the equivalent of the syntax
+    ## @code{@var{B} = - @var{A}} and returns the input array with its elements
+    ## negated.
+    ##
+    ## @end deftypefn
     function B = uminus (A)
       B = A;
       B.Days = - A.Days;
