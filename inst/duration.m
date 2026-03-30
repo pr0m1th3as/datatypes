@@ -1824,10 +1824,10 @@ classdef duration
 ##                                                                            ##
 ## 'abs'              'plus'             'uplus'            'minus'           ##
 ## 'uminus'           'times'            'mtimes'           'ldivide'         ##
-## 'mldivide'         'rdivide'          'mrdivide'         'colon'           ##
-## 'linspace'         'sum'              'cumsum'           'diff'            ##
-## 'mean'             'median'           'mode'             'floor'           ##
-## 'ceil'             'round'            'sign'                               ##
+## 'rdivide'          'colon'            'linspace'         'sign'            ##
+## 'sum'              'cumsum'           'diff'             'min'             ##
+## 'max'              'cummin'           'cummax'           'floor'           ##
+## 'ceil'             'round'                                                 ##
 ##                                                                            ##
 ################################################################################
 
@@ -1894,7 +1894,7 @@ classdef duration
     ##
     ## Unary plus for duration arrays.
     ##
-    ## @code{@var{B} = plus (@var{A})} is the equivalent of the syntax
+    ## @code{@var{B} = uplus (@var{A})} is the equivalent of the syntax
     ## @code{@var{B} = + @var{A}} and returns the input array unaltered.
     ##
     ## @end deftypefn
@@ -1949,7 +1949,7 @@ classdef duration
     ##
     ## Unary minus for duration arrays.
     ##
-    ## @code{@var{B} = minus (@var{A})} is the equivalent of the syntax
+    ## @code{@var{B} = uminus (@var{A})} is the equivalent of the syntax
     ## @code{@var{B} = - @var{A}} and returns the input array with its elements
     ## negated.
     ##
@@ -1959,6 +1959,23 @@ classdef duration
       B.Days = - A.Days;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{C} =} times (@var{A}, @var{B})
+    ##
+    ## Element-wise multiplication for duration arrays.
+    ##
+    ## @code{@var{C} = times (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{C} = @var{A} .* @var{B}} and returns the element-by-element
+    ## multiplication product between the corresponding elements of input arrays
+    ## @var{A} and @var{B}, one of which must be a numeric array and the other a
+    ## duration array.
+    ##
+    ## @var{A} and @var{B} must be size compatible, which translates to they
+    ## can be the same size, one can be scalar, or for every dimension, their
+    ## dimension sizes must be equal or one of them must be 1.  The size of
+    ## @var{C} is determined by the size compatibility of @var{A} and @var{B}.
+    ##
+    ## @end deftypefn
     function C = times (A, B)
       if (isa (A, 'duration') && isnumeric (B))
         C = A;
@@ -1972,6 +1989,20 @@ classdef duration
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{C} =} times (@var{A}, @var{B})
+    ##
+    ## Matrix multiplication for duration arrays.
+    ##
+    ## @code{@var{C} = mtimes (@var{A}, @var{B})} is the equivalent of the
+    ## syntax @code{@var{C} = @var{A} * @var{B}} and returns the matrix
+    ## multiplication product of input arrays @var{A} and @var{B}, one of which
+    ## must be a numeric array and the other a duration array.
+    ##
+    ## The columns of @var{A} must equal the rows of @var{B} and the size of
+    ## @var{C} is determined by the rows of @var{A} and the columns of @var{B}.
+    ##
+    ## @end deftypefn
     function C = mtimes (A, B)
       if (isa (A, 'duration') && isnumeric (B))
         C = A;
@@ -1985,6 +2016,24 @@ classdef duration
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{C} =} ldivide (@var{A}, @var{B})
+    ##
+    ## Element-wise left division for duration arrays.
+    ##
+    ## @code{@var{C} = ldivide (@var{A}, @var{B})} is the equivalent of the
+    ## syntax @code{@var{C} = @var{A} .\ @var{B}} and returns the element-wise
+    ## division of the duration array @var{B} by the corresponding elements of
+    ## input array @var{A}, which can either be a duration or a numeric array.
+    ## If @var{A} is a duration array, then @var{C} is a double numeric array.
+    ## If @var{A} is a numeric array, then @var{C} is a duration array.
+    ##
+    ## @var{A} and @var{B} must be size compatible, which translates to they
+    ## can be the same size, one can be scalar, or for every dimension, their
+    ## dimension sizes must be equal or one of them must be 1.  The size of
+    ## @var{C} is determined by the size compatibility of @var{A} and @var{B}.
+    ##
+    ## @end deftypefn
     function C = ldivide (A, B)
       if (! isa (B, 'duration'))
         error (strcat ("duration: right-hand side must be a duration", ...
@@ -1995,30 +2044,31 @@ classdef duration
       elseif (isnumeric (A))
         C = B;
         C.Days = double (A) .\ B.Days;
+        C = fix_zero_precision (C);
       else
         error (strcat ("duration: left division is not defined", ...
                        " between '%s' and 'duration' arrays"), class (A));
       endif
-      C = fix_zero_precision (C);
     endfunction
 
-    function C = mldivide (A, B)
-      if (! isa (B, 'duration'))
-        error (strcat ("duration: right-hand side must be a duration", ...
-                       " array for matrix left division: got '%s'"), class (B));
-      endif
-      if (isa (A, 'duration'))
-        C = A.Days \ B.Days;
-      elseif (isnumeric (A))
-        C = B;
-        C.Days = double (A) \ B.Days;
-      else
-        error (strcat ("duration: matrix left division is not defined", ...
-                       " between '%s' and 'duration' arrays"), class (A));
-      endif
-      C = fix_zero_precision (C);
-    endfunction
-
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{C} =} rdivide (@var{A}, @var{B})
+    ##
+    ## Element-wise right division for duration arrays.
+    ##
+    ## @code{@var{C} = rdivide (@var{A}, @var{B})} is the equivalent of the
+    ## syntax @code{@var{C} = @var{A} ./ @var{B}} and returns the element-wise
+    ## division of the duration array @var{A} by the corresponding elements of
+    ## input array @var{B}, which can either be a duration or a numeric array.
+    ## If @var{B} is a duration array, then @var{C} is a double numeric array.
+    ## If @var{B} is a numeric array, then @var{C} is a duration array.
+    ##
+    ## @var{A} and @var{B} must be size compatible, which translates to they
+    ## can be the same size, one can be scalar, or for every dimension, their
+    ## dimension sizes must be equal or one of them must be 1.  The size of
+    ## @var{C} is determined by the size compatibility of @var{A} and @var{B}.
+    ##
+    ## @end deftypefn
     function C = rdivide (A, B)
       if (! isa (A, 'duration'))
         error (strcat ("duration: left-hand side must be a duration", ...
@@ -2031,23 +2081,6 @@ classdef duration
         C.Days = A.Days ./ double (B);
       else
         error (strcat ("duration: right division is not defined", ...
-                       " between 'duration' and '%s' arrays"), class (B));
-      endif
-      C = fix_zero_precision (C);
-    endfunction
-
-    function C = mrdivide (A, B)
-      if (! isa (A, 'duration'))
-        error (strcat ("duration: left-hand side must be a duration", ...
-                       " for matrix right division: got '%s'"), class (A));
-      endif
-      if (isa (B, 'duration'))
-        C = A.Days / B.Days;
-      elseif (isnumeric (B))
-        C = A;
-        C.Days = A.Days / double (B);
-      else
-        error (strcat ("duration: matrix right division is not defined", ...
                        " between 'duration' and '%s' arrays"), class (B));
       endif
       C = fix_zero_precision (C);
@@ -2163,21 +2196,6 @@ classdef duration
       DT.Days = diff (D.Days, varargin{:});
     endfunction
 
-    function M = mean (D, varargin)
-      M = D;
-      M.Days = mean (D.Days, varargin{:});
-    endfunction
-
-    function M = median (D, varargin)
-      M = D;
-      M.Days = median (D.Days, varargin{:});
-    endfunction
-
-    function M = mode (D, varargin)
-      M = D;
-      M.Days = mode (D.Days, varargin{:});
-    endfunction
-
     function B = floor (A, unit = 'seconds')
       B = A;
       if (strcmpi (unit, 'seconds'))
@@ -2231,6 +2249,38 @@ classdef duration
 
     function out = sign (A)
       out = sign (A.Days);
+    endfunction
+
+  endmethods
+
+################################################################################
+##                        ** Statistical Operations **                        ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'bounds'           'center'           'histc'            'iqr'             ##
+## 'kendal'           'kurtosis'         'mad'              'mape'            ##
+## 'mean'             'median'           'mode'             'prctile'         ##
+## 'quantile'         'range'            'rmse'             'skewness'        ##
+## 'spearman'         'statistics'       'std'              'var'             ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    function M = mean (D, varargin)
+      M = D;
+      M.Days = mean (D.Days, varargin{:});
+    endfunction
+
+    function M = median (D, varargin)
+      M = D;
+      M.Days = median (D.Days, varargin{:});
+    endfunction
+
+    function M = mode (D, varargin)
+      M = D;
+      M.Days = mode (D.Days, varargin{:});
     endfunction
 
   endmethods
