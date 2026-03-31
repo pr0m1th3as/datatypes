@@ -1849,6 +1849,17 @@ classdef string
 
     endfunction
 
+    ## Overload colon for duration support
+    function R = colon (varargin)
+      ## Get properties from first duration input
+      idx = cellfun ('isduration', varargin);
+      A = varargin{idx};
+      ## Convert first input (string) to duration
+      varargin{1} = duration (varargin{1}, 'Format', A.Format);
+      ## Call duration overloaded method
+      R = colon (varargin{:});
+    endfunction
+
   endmethods
 
   methods (Access = private)
