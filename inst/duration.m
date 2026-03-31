@@ -1824,10 +1824,10 @@ classdef duration
 ##                                                                            ##
 ## 'abs'              'plus'             'uplus'            'minus'           ##
 ## 'uminus'           'times'            'mtimes'           'ldivide'         ##
-## 'rdivide'          'colon'            'linspace'         'sign'            ##
-## 'sum'              'cumsum'           'diff'             'min'             ##
-## 'max'              'cummin'           'cummax'           'floor'           ##
-## 'ceil'             'round'                                                 ##
+## 'rdivide'          'colon'            'linspace'         'diff'            ##
+## 'sum'              'cumsum'           'min'              'max'             ##
+## 'cummin'           'cummax'           'floor'            'ceil'            ##
+## 'round'            'sign'                                                  ##
 ##                                                                            ##
 ################################################################################
 
@@ -2103,20 +2103,21 @@ classdef duration
     ## @var{C} is determined by the size compatibility of @var{A} and @var{B}.
     ##
     ## As long as one of the inputs is a duration scalar, the following types
-    ## are supported for the remaining input arguments:
+    ## are additionally supported for the remaining input arguments:
     ##
     ## @itemize
-    ## @item duration scalar
-    ## @item character vector
-    ## @item cellstr scalar
-    ## @item string scalar
+    ## @item numeric scalar (24-hour day)
+    ## @item character vector (duration string)
+    ## @item cellstr scalar (duration string)
+    ## @item string scalar (duration string)
+    ## @end itemize
     ##
     ## @end deftypefn
     function R = colon (varargin)
       if (nargin < 2 || nargin > 3)
         error ("duration.colon: invalid number of input arguments.");
       endif
-      idx = cellfun ('isduration', varargin);
+      idx = find (cellfun ('isduration', varargin), 1);
       R = varargin{idx};
       if (nargin == 2)
         [from, to] = promote (varargin{:});
@@ -2134,17 +2135,54 @@ classdef duration
       R = fix_zero_precision (R);
     endfunction
 
-    function C = linspace (A, B, n = 100)
-      if (nargin < 2 || nargin > 3)
-        error ("duration.linspace: invalid number of input arguments.");
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{R} =} linspace (@var{Start}, @var{End})
+    ## @deftypefnx {duration} {@var{R} =} linspace (@var{Start}, @var{End}, @var{N})
+    ##
+    ## Create linearly spaced duration elements.
+    ##
+    ## @code{@var{R} = linspace (@var{Start}, @var{End})} returns 100 linearly
+    ## spaced elements between @var{Start} and @var{End}.  If @var{Start} and
+    ## @var{End} are scalars, then @var{R} is a vector.  If one or both inputs
+    ## are vectors, then @var{R} is a matrix where each row is an independent
+    ## sequence between @code{@var{Start}(idx_N)} and @code{@var{End}(idx_N)}.
+    ##
+    ## @code{@var{R} = linspace (@var{Start}, @var{End}, @var{N})} specifies the
+    ## number (default is 100) of equally spaced elements between @var{Start}
+    ## and @var{End}.  If @var{N} is not an integer value, then it is floored
+    ## to the nearest integer.  If @var{N} is zero or negative, then an empty
+    ## matrix is returned.  If @var{N} is one, then @var{End} is returned.
+    ## If @var{N} greater than one, then @var{Start} and @var{End} are always
+    ## included in the range.
+    ##
+    ## Either @var{Start} or @var{End} input arguments can also be one of the
+    ## following types:
+    ##
+    ## @itemize
+    ## @item numeric scalar or vector (24-hour days)
+    ## @item character vector (duration string)
+    ## @item cellstr scalar or vector (duration strings)
+    ## @item string scalar or vector (duration strings)
+    ## @end itemize
+    ##
+    ## @end deftypefn
+    function R = linspace (A, B, n = 100)
+      if (nargin < 2)
+        error ("duration.linspace: too few input arguments.");
       endif
-      if (! isscalar (A) || ! isscalar (B))
-        error ("duration.linspace: A and B must be scalars.");
+      if (isduration (A))
+        R = A;
+      else
+        R = B;
       endif
       [A, B] = promote (A, B);
-      C = A;
-      C.Days = linspace (A.Days, B.Days, n);
-      C = fix_zero_precision (C);
+      R.Days = linspace (A.Days, B.Days, n);
+      R = fix_zero_precision (R);
+    endfunction
+
+    function DT = diff (D, varargin)
+      DT = D;
+      DT.Days = diff (D.Days, varargin{:});
     endfunction
 
     function S = sum (A, varargin)
@@ -2219,11 +2257,6 @@ classdef duration
         S.Days = cumsum (A.Days, dim);
       endif
       S = fix_zero_precision (S);
-    endfunction
-
-    function DT = diff (D, varargin)
-      DT = D;
-      DT.Days = diff (D.Days, varargin{:});
     endfunction
 
     function B = floor (A, unit = 'seconds')

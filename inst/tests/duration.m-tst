@@ -1399,6 +1399,31 @@
 %!assert_equal (string('00:00:00'):days(1):string('72:00:00'), days ([0:3]))
 %!assert_equal (days(1):string({'06:00:00'}):days(10), days ([1:0.25:10]))
 %!assert_equal (days(1):{'06:00:00'}:days(10), days ([1:0.25:10]))
+%!error<duration.colon: invalid number of input arguments.> colon (days (1))
+%!error<duration.colon: invalid number of input arguments.> colon (days (1), 2, 3, 4)
+%!error<duration.colon: input arguments must be scalars.> days([1, 2]):days(2)
+%!error<duration.colon: input arguments must be scalars.> days(1):days([1, 2])
+%!error<duration.colon: input arguments must be scalars.> days(1):days(2):days([1, 2])
+
+%!assert_equal (days (linspace (days (1), days (2))), linspace (1, 2))
+%!assert_equal (days (linspace (days (1), days (2), 15)), linspace (1, 2, 15))
+%!assert_equal (days (linspace (days (1), 2)), linspace (1, 2))
+%!assert_equal (days (linspace (1, days (2))), linspace (1, 2))
+%!assert_equal (days (linspace (1, days (2), 15)), linspace (1, 2, 15))
+%!assert_equal (days (linspace (days (1), '48:00:00')), linspace (1, 2))
+%!assert_equal (days (linspace (days (1), {'48:00:00'})), linspace (1, 2))
+%!assert_equal (days (linspace (days (1), string ({'48:00:00'}))), linspace (1, 2))
+%!assert_equal (days (linspace (days (1), '48:00:00', 15)), linspace (1, 2, 15))
+%!assert_equal (days (linspace (days (1), {'48:00:00'}, 15)), linspace (1, 2, 15))
+%!assert_equal (days (linspace (days (1), string ({'48:00:00'}), 15)), linspace (1, 2, 15))
+%!assert_equal (days (linspace ('48:00:00', days (1))), linspace (2, 1))
+%!assert_equal (days (linspace ({'48:00:00'}, days (1))), linspace (2, 1))
+%!assert_equal (days (linspace (string ({'48:00:00'}), days (1))), linspace (2, 1))
+%!assert_equal (days (linspace ('48:00:00', days (1), 15)), linspace (2, 1, 15))
+%!assert_equal (days (linspace ({'48:00:00'}, days (1), 15)), linspace (2, 1, 15))
+%!assert_equal (days (linspace (string ({'48:00:00'}), days (1), 15)), linspace (2, 1, 15))
+%!error<duration.linspace: too few input arguments.> ...
+%! linspace (days (1))
 
 ################################################################################
 ##                   ** Sort, Filter, and Set Operations **                   ##
