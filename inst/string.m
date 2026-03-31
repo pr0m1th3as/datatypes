@@ -1849,15 +1849,43 @@ classdef string
 
     endfunction
 
+  endmethods
+
+################################################################################
+##                 ** Overloaded methods for duration class **                ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'colon'            'linspace'                                              ##
+##                                                                            ##
+################################################################################
+
+  methods (Hidden)
+
     ## Overload colon for duration support
     function R = colon (varargin)
       ## Get properties from first duration input
-      idx = cellfun ('isduration', varargin);
+      idx = find (cellfun ('isduration', varargin), 1);
+      if (isempty (idx))
+        error ("string.colon: unsupported input types.");
+      endif
       A = varargin{idx};
       ## Convert first input (string) to duration
       varargin{1} = duration (varargin{1}, 'Format', A.Format);
       ## Call duration overloaded method
       R = colon (varargin{:});
+    endfunction
+
+    ## Overload linspace for duration support
+    function R = linspace (A, B, n = 100)
+      ## Get properties from duration input
+      if (! isduration (B))
+        error ("string.linspace: unsupported input types.");
+      endif
+      ## Convert first input (string) to duration
+      A = duration (A, 'Format', B.Format);
+      ## Call duration overloaded method
+      R = linspace (A, B, n);
     endfunction
 
   endmethods
