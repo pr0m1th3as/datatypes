@@ -1825,8 +1825,8 @@ classdef duration
 ## 'abs'              'plus'             'uplus'            'minus'           ##
 ## 'uminus'           'times'            'mtimes'           'ldivide'         ##
 ## 'rdivide'          'colon'            'linspace'         'diff'            ##
-## 'sum'              'cumsum'           'min'              'max'             ##
-## 'cummin'           'cummax'           'floor'            'ceil'            ##
+## 'sum'              'cumsum'           'min'              'cummin'          ##
+## 'max'              'cummax'           'floor'            'ceil'            ##
 ## 'round'            'sign'                                                  ##
 ##                                                                            ##
 ################################################################################
@@ -2180,83 +2180,255 @@ classdef duration
       R = fix_zero_precision (R);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{DT} =} diff (@var{D})
+    ## @deftypefnx {duration} {@var{DT} =} diff (@var{D}, @var{K})
+    ## @deftypefnx {duration} {@var{DT} =} diff (@var{D}, @var{K}, @var{DIM})
+    ##
+    ## Compute differences between adjacent elements in a duration array.
+    ##
+    ## This method overloads the core @code{diff} function for duration arrays.
+    ## The functionality is identical to core @code{diff} function.  Type
+    ## @code{help diff} for more information.
+    ##
+    ## @end deftypefn
     function DT = diff (D, varargin)
       DT = D;
       DT.Days = diff (D.Days, varargin{:});
+      DT = fix_zero_precision (DT);
     endfunction
 
-    function S = sum (A, varargin)
-      dim = [];
-      if (! isempty (varargin))
-        tmp = varargin{end};
-        if (ischar (tmp) && isvector (tmp))
-          if (strcmpi (tmp, 'omitnan'))
-            A.Days(isnan (A)) = 0;
-            varargin(end) = [];
-          elseif (strcmpi (tmp, 'includenan'))
-            includenan = true;
-            varargin(end) = [];
-          endif
-        elseif (isa (tmp, 'string') && isscalar (tmp))
-          if (strcmpi (tmp, 'omitnan'))
-            A.Days(isnan (A)) = 0;
-            varargin(end) = [];
-          elseif (strcmpi (tmp, 'includenan'))
-            includenan = true;
-            varargin(end) = [];
-          endif
-        endif
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{S} =} sum (@var{D})
+    ## @deftypefnx {duration} {@var{S} =} sum (@var{D}, @var{dim})
+    ## @deftypefnx {duration} {@var{S} =} sum (@var{D}, @var{vecdim})
+    ## @deftypefnx {duration} {@var{S} =} sum (@var{D}, @qcode{'all'})
+    ## @deftypefnx {duration} {@var{S} =} sum (@dots{}, @var{nanflag})
+    ##
+    ## Compute the sum of the elements of a duration array.
+    ##
+    ## This method overloads the core @code{sum} function for duration arrays.
+    ## The functionality is identical to core @code{sum} function.  Type
+    ## @code{help sum} for more information.
+    ##
+    ## @end deftypefn
+    function S = sum (D, varargin)
+      ## Force strings to character vectors or cell arrays of character vectors
+      if (any (cellfun ('isstring', varargin)))
+        [varargin{:}] = convertStringsToChars (varargin{:});
       endif
-      if (! isempty (varargin))
-        if (strcmpi (varargin{end}, 'all'))
-          dim = 'all';
-        elseif (isnumeric (varargin{end}) && isscalar (varargin{end}))
-          dim = varargin{end};
-        endif
-      endif
-      S = A;
-      if (isempty (dim))
-        S.Days = sum (A.Days);
-      elseif (isnumeric (dim))
-        S.Days = sum (A.Days, dim);
-      else
-        S.Days = sum (A.Days(:));
-      endif
+      S = D;
+      S.Days = sum (D.Days, varargin{:});
       S = fix_zero_precision (S);
     endfunction
 
-    function S = cumsum (A, varargin)
-      dim = [];
-      if (! isempty (varargin))
-        tmp = varargin{end};
-        if (ischar (tmp) && isvector (tmp))
-          if (strcmpi (tmp, 'omitnan'))
-            A.Days(isnan (A)) = 0;
-            varargin(end) = [];
-          elseif (strcmpi (tmp, 'includenan'))
-            varargin(end) = [];
-          endif
-        elseif (isa (tmp, 'string') && isscalar (tmp))
-          if (strcmpi (tmp, 'omitnan'))
-            A.Days(isnan (A)) = 0;
-            varargin(end) = [];
-          elseif (strcmpi (tmp, 'includenan'))
-            varargin(end) = [];
-          endif
-        endif
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{CS} =} cumsum (@var{D})
+    ## @deftypefnx {duration} {@var{CS} =} cumsum (@var{D}, @var{dim})
+    ## @deftypefnx {duration} {@var{CS} =} cumsum (@var{D}, @var{vecdim})
+    ## @deftypefnx {duration} {@var{CS} =} cumsum (@var{D}, @qcode{'all'})
+    ## @deftypefnx {duration} {@var{CS} =} cumsum (@dots{}, @var{direction})
+    ## @deftypefnx {duration} {@var{CS} =} cumsum (@dots{}, @var{nanflag})
+    ##
+    ## Compute the cumulative sum of the elements of a duration array.
+    ##
+    ## This method overloads the core @code{cumsum} function for duration
+    ## arrays. The functionality is identical to core @code{cumsum} function.
+    ## Type @code{help cumsum} for more information.
+    ##
+    ## @end deftypefn
+    function CS = cumsum (D, varargin)
+      ## Force strings to character vectors or cell arrays of character vectors
+      if (any (cellfun ('isstring', varargin)))
+        [varargin{:}] = convertStringsToChars (varargin{:});
       endif
-      if (! isempty (varargin))
-        if (isnumeric (varargin{end}) && isscalar (varargin{end}))
-          dim = varargin{end};
+      CS = D;
+      CS.Days = cumsum (D.Days, varargin{:});
+      CS = fix_zero_precision (CS);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{M} =} min (@var{D})
+    ## @deftypefnx {duration} {@var{M} =} min (@var{D}, @qcode{[]}, @var{dim})
+    ## @deftypefnx {duration} {@var{M} =} min (@var{D}, @qcode{[]}, @var{vecdim})
+    ## @deftypefnx {duration} {@var{M} =} min (@var{D}, @qcode{[]}, @qcode{'all'})
+    ## @deftypefnx {duration} {@var{M} =} min (@var{D}, @qcode{[]}, @var{nanflag})
+    ## @deftypefnx {duration} {@var{M} =} min (@var{D}, @qcode{[]}, @dots{}, @var{nanflag})
+    ## @deftypefnx {duration} {[@var{M}, @var{index}] =} min (@dots{})
+    ## @deftypefnx {duration} {[@var{M}, @var{index}] =} min (@dots{}, @qcode{'linear'})
+    ## @deftypefnx {duration} {@var{M} =} min (@var{D1}, @var{D2})
+    ## @deftypefnx {duration} {@var{M} =} min (@var{D1}, @var{D2}, @var{nanflag})
+    ## @deftypefnx {duration} {@dots{} =} min (@dots{}, @qcode{'ComparisonMethod'}, @var{method})
+    ##
+    ## Find minimum values in duration arrays.
+    ##
+    ## This method overloads the core @code{min} function for duration
+    ## arrays. The functionality is identical to core @code{min} function.
+    ## Type @code{help min} for more information.
+    ##
+    ## @end deftypefn
+    function varargout = min (D, varargin)
+      M = D;
+      if (isempty (varargin))
+        if (nargout > 1)
+          [M.Days, varargout{2}] = min (D.Days);
+        else
+          M.Days = min (D.Days);
         endif
-      endif
-      S = A;
-      if (isempty (dim))
-        S.Days = sum (A.Days);
+        varargout{1} = M;
       else
-        S.Days = cumsum (A.Days, dim);
+        ## Force strings to character vectors or cell arrays of character vectors
+        if (any (cellfun ('isstring', varargin)))
+          [varargin{:}] = convertStringsToChars (varargin{:});
+        endif
+        ## Second argument is a duration
+        if (isduration (varargin{1}))
+          D2 = varargin{1};
+          varargin(1) = [];
+          M.Days = min (D.Days, D2.Days, varargin{:});
+          varargout{1} = M;
+        else
+          if (nargout > 1)
+            [M.Days, varargout{2}] = min (D.Days, varargin{:});
+          else
+            M.Days = min (D.Days, varargin{:});
+          endif
+          varargout{1} = M;
+        endif
       endif
-      S = fix_zero_precision (S);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{M} =} cummin (@var{D})
+    ## @deftypefnx {duration} {@var{M} =} cummin (@var{D}, @var{dim})
+    ## @deftypefnx {duration} {@var{M} =} cummin (@var{D}, @var{vecdim})
+    ## @deftypefnx {duration} {@var{M} =} cummin (@var{D}, @qcode{'all'})
+    ## @deftypefnx {duration} {@var{M} =} cummin (@qcode{[]}, @var{nanflag})
+    ## @deftypefnx {duration} {@var{M} =} cummin (@qcode{[]}, @var{direction})
+    ## @deftypefnx {duration} {[@var{M}, @var{index}] =} cummin (@dots{})
+    ## @deftypefnx {duration} {[@var{M}, @var{index}] =} cummin (@dots{}, @qcode{'linear'})
+    ## @deftypefnx {duration} {@dots{} =} cummin (@dots{}, @qcode{'ComparisonMethod'}, @var{method})
+    ##
+    ## Return the cumulative minimum values in duration arrays.
+    ##
+    ## This method overloads the core @code{cummin} function for duration
+    ## arrays. The functionality is identical to core @code{cummin} function.
+    ## Type @code{help cummin} for more information.
+    ##
+    ## @end deftypefn
+    function varargout = cummin (D, varargin)
+      M = D;
+      if (isempty (varargin))
+        if (nargout > 1)
+          [M.Days, varargout{2}] = cummin (D.Days);
+        else
+          M.Days = cummin (D.Days);
+        endif
+        varargout{1} = M;
+      else
+        ## Force strings to character vectors or cell arrays of character vectors
+        if (any (cellfun ('isstring', varargin)))
+          [varargin{:}] = convertStringsToChars (varargin{:});
+        endif
+        if (nargout > 1)
+          [M.Days, varargout{2}] = cummin (D.Days, varargin{:});
+        else
+          M.Days = cummin (D.Days, varargin{:});
+        endif
+        varargout{1} = M;
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{M} =} max (@var{D})
+    ## @deftypefnx {duration} {@var{M} =} max (@var{D}, @qcode{[]}, @var{dim})
+    ## @deftypefnx {duration} {@var{M} =} max (@var{D}, @qcode{[]}, @var{vecdim})
+    ## @deftypefnx {duration} {@var{M} =} max (@var{D}, @qcode{[]}, @qcode{'all'})
+    ## @deftypefnx {duration} {@var{M} =} max (@var{D}, @qcode{[]}, @var{nanflag})
+    ## @deftypefnx {duration} {@var{M} =} max (@var{D}, @qcode{[]}, @dots{}, @var{nanflag})
+    ## @deftypefnx {duration} {[@var{M}, @var{index}] =} max (@dots{})
+    ## @deftypefnx {duration} {[@var{M}, @var{index}] =} max (@dots{}, @qcode{'linear'})
+    ## @deftypefnx {duration} {@var{M} =} max (@var{D1}, @var{D2})
+    ## @deftypefnx {duration} {@var{M} =} max (@var{D1}, @var{D2}, @var{nanflag})
+    ## @deftypefnx {duration} {@dots{} =} max (@dots{}, @qcode{'ComparisonMethod'}, @var{method})
+    ##
+    ## Find maximum values in duration arrays.
+    ##
+    ## This method overloads the core @code{max} function for duration
+    ## arrays. The functionality is identical to core @code{max} function.
+    ## Type @code{help max} for more information.
+    ##
+    ## @end deftypefn
+    function varargout = max (D, varargin)
+      M = D;
+      if (isempty (varargin))
+        if (nargout > 1)
+          [M.Days, varargout{2}] = max (D.Days);
+        else
+          M.Days = max (D.Days);
+        endif
+        varargout{1} = M;
+      else
+        ## Force strings to character vectors or cell arrays of character vectors
+        if (any (cellfun ('isstring', varargin)))
+          [varargin{:}] = convertStringsToChars (varargin{:});
+        endif
+        ## Second argument is a duration
+        if (isduration (varargin{1}))
+          D2 = varargin{1};
+          varargin(1) = [];
+          M.Days = max (D.Days, D2.Days, varargin{:});
+          varargout{1} = M;
+        else
+          if (nargout > 1)
+            [M.Days, varargout{2}] = max (D.Days, varargin{:});
+          else
+            M.Days = max (D.Days, varargin{:});
+          endif
+          varargout{1} = M;
+        endif
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{M} =} cummax (@var{D})
+    ## @deftypefnx {duration} {@var{M} =} cummax (@var{D}, @var{dim})
+    ## @deftypefnx {duration} {@var{M} =} cummax (@var{D}, @var{vecdim})
+    ## @deftypefnx {duration} {@var{M} =} cummax (@var{D}, @qcode{'all'})
+    ## @deftypefnx {duration} {@var{M} =} cummax (@qcode{[]}, @var{nanflag})
+    ## @deftypefnx {duration} {@var{M} =} cummax (@qcode{[]}, @var{direction})
+    ## @deftypefnx {duration} {[@var{M}, @var{index}] =} cummax (@dots{})
+    ## @deftypefnx {duration} {[@var{M}, @var{index}] =} cummax (@dots{}, @qcode{'linear'})
+    ## @deftypefnx {duration} {@dots{} =} cummax (@dots{}, @qcode{'ComparisonMethod'}, @var{method})
+    ##
+    ## Return the cumulative maximum values in duration arrays.
+    ##
+    ## This method overloads the core @code{cummax} function for duration
+    ## arrays. The functionality is identical to core @code{cummax} function.
+    ## Type @code{help cummax} for more information.
+    ##
+    ## @end deftypefn
+    function varargout = cummax (D, varargin)
+      M = D;
+      if (isempty (varargin))
+        if (nargout > 1)
+          [M.Days, varargout{2}] = cummax (D.Days);
+        else
+          M.Days = cummax (D.Days);
+        endif
+        varargout{1} = M;
+      else
+        ## Force strings to character vectors or cell arrays of character vectors
+        if (any (cellfun ('isstring', varargin)))
+          [varargin{:}] = convertStringsToChars (varargin{:});
+        endif
+        if (nargout > 1)
+          [M.Days, varargout{2}] = cummax (D.Days, varargin{:});
+        else
+          M.Days = cummax (D.Days, varargin{:});
+        endif
+        varargout{1} = M;
+      endif
     endfunction
 
     function B = floor (A, unit = 'seconds')
