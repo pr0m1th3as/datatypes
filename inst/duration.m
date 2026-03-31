@@ -2086,22 +2086,52 @@ classdef duration
       endif
     endfunction
 
-    function C = colon (varargin)
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{R} =} colon (@var{Base}, @var{Limit})
+    ## @deftypefnx {duration} {@var{R} =} colon (@var{Base}, @var{Increment}, @var{Limit})
+    ##
+    ## Create a range of durations in a vector.
+    ##
+    ## @code{@var{R} = colon (@var{Base}, @var{Limit})} is the equivalent of the
+    ## syntax @code{@var{C} = @var{Base}:@var{Limit}} and returns a duration
+    ## vector in the range from @var{Base} to @var{Limit} incremented by 24-hour
+    ## days.
+    ##
+    ## @code{@var{R} = colon (@var{Base}, @var{Increment}, @var{Limit})} is
+    ## equivalent to @code{@var{C} = @var{Base}:@var{Increment}:@var{Limit}}.
+    ## dimension sizes must be equal or one of them must be 1.  The size of
+    ## @var{C} is determined by the size compatibility of @var{A} and @var{B}.
+    ##
+    ## As long as one of the inputs is a duration scalar, the following types
+    ## are supported for the remaining input arguments:
+    ##
+    ## @itemize
+    ## @item duration scalar
+    ## @item character vector
+    ## @item cellstr scalar
+    ## @item string scalar
+    ##
+    ## @end deftypefn
+    function R = colon (varargin)
       if (nargin < 2 || nargin > 3)
         error ("duration.colon: invalid number of input arguments.");
       endif
-      if (! all (cellfun ('isscalar', varargin)))
-        error ("duration.colon: input arguments must be scalars.");
-      endif
+      idx = cellfun ('isduration', varargin);
+      R = varargin{idx};
       if (nargin == 2)
         [from, to] = promote (varargin{:});
+        if (! isscalar (from) || ! isscalar (to))
+          error ("duration.colon: input arguments must be scalars.");
+        endif
         increment = days (1);
       else
         [from, increment, to] = promote (varargin{:});
+        if (! isscalar (from) || ! isscalar (increment) || ! isscalar (to))
+          error ("duration.colon: input arguments must be scalars.");
+        endif
       endif
-      C = from;
-      C.Days = from.Days:increment.Days:to.Days;
-      C = fix_zero_precision (C);
+      R.Days = from.Days:increment.Days:to.Days;
+      R = fix_zero_precision (R);
     endfunction
 
     function C = linspace (A, B, n = 100)
