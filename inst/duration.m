@@ -2441,6 +2441,30 @@ classdef duration
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{Y} =} floor (@var{D})
+    ## @deftypefnx {duration} {@var{Y} =} floor (@var{D}, @var{unit})
+    ##
+    ## Round toward negative infinity for duration arrays.
+    ##
+    ## @code{@var{Y} = floor (@var{D})} rounds each element of the duration
+    ## array @var{D} to the largest integer number of seconds not greater than
+    ## that element.
+    ##
+    ## @code{@var{Y} = floor (@var{D}, @var{unit})} rounds each element of the
+    ## duration array @var{D} to the largest integer number of the specified
+    ## unit of time not greater than that element.  @var{unit} must be one of
+    ## the following values:
+    ##
+    ## @itemize
+    ## @item @qcode{'seconds'} (default)
+    ## @item @qcode{'minutes'}
+    ## @item @qcode{'hours'}
+    ## @item @qcode{'days'}
+    ## @item @qcode{'years'}
+    ## @end itemize
+    ##
+    ## @end deftypefn
     function B = floor (A, unit = 'seconds')
       B = A;
       if (strcmpi (unit, 'seconds'))
@@ -2458,6 +2482,30 @@ classdef duration
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{Y} =} ceil (@var{D})
+    ## @deftypefnx {duration} {@var{Y} =} ceil (@var{D}, @var{unit})
+    ##
+    ## Round toward negative infinity for duration arrays.
+    ##
+    ## @code{@var{Y} = ceil (@var{D})} rounds each element of the duration
+    ## array @var{D} to the smallest integer number of seconds not less than
+    ## that element.
+    ##
+    ## @code{@var{Y} = ceil (@var{D}, @var{unit})} rounds each element of the
+    ## duration array @var{D} to the smallest integer number of the specified
+    ## unit of time not less than that element.  @var{unit} must be one of the
+    ## following values:
+    ##
+    ## @itemize
+    ## @item @qcode{'seconds'} (default)
+    ## @item @qcode{'minutes'}
+    ## @item @qcode{'hours'}
+    ## @item @qcode{'days'}
+    ## @item @qcode{'years'}
+    ## @end itemize
+    ##
+    ## @end deftypefn
     function B = ceil (A, unit = 'seconds')
       B = A;
       if (strcmpi (unit, 'seconds'))
@@ -2475,6 +2523,30 @@ classdef duration
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{Y} =} round (@var{D})
+    ## @deftypefnx {duration} {@var{Y} =} round (@var{D}, @var{unit})
+    ##
+    ## Round to the nearest integer time unit for duration arrays.
+    ##
+    ## @code{@var{Y} = round (@var{D})} rounds each element of the duration
+    ## array @var{D} to the nearest integer number of seconds to that element.
+    ## In case of a tie, return the one further away from zero.
+    ##
+    ## @code{@var{Y} = round (@var{D}, @var{unit})} rounds each element of the
+    ## duration array @var{D} to the nearest integer number of the specified
+    ## unit of time to that element.  @var{unit} must be one of the following
+    ## values:
+    ##
+    ## @itemize
+    ## @item @qcode{'seconds'} (default)
+    ## @item @qcode{'minutes'}
+    ## @item @qcode{'hours'}
+    ## @item @qcode{'days'}
+    ## @item @qcode{'years'}
+    ## @end itemize
+    ##
+    ## @end deftypefn
     function B = round (A, unit = 'seconds')
       B = A;
       if (strcmpi (unit, 'seconds'))
@@ -2492,6 +2564,24 @@ classdef duration
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{out} =} sign (@var{D})
+    ## @deftypefnx {duration} {@var{out} =} sign (@var{D}, @var{unit})
+    ##
+    ## Compute the signum function for duration arrays.
+    ##
+    ## @code{@var{out} = sign (@var{D})} returns an array of doubles, @var{out},
+    ## the same size as the duration array @var{D}, where each element has one
+    ## following values:
+    ##
+    ## @itemize
+    ## @item @qcode{1} if the corresponding element of D is greater than 0.
+    ## @item @qcode{0} if the corresponding element of D is equal to 0.
+    ## @item @qcode{-1} if the corresponding element of D is less than 0.
+    ## @item @qcode{NaN} if the corresponding element of D is a missing value.
+    ## @end itemize
+    ##
+    ## @end deftypefn
     function out = sign (A)
       out = sign (A.Days);
     endfunction
