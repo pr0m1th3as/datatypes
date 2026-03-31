@@ -1379,6 +1379,27 @@
 %!error<duration: right division is not defined between 'duration' and 'char' arrays.> ...
 %! days (1) ./ 'asd'
 
+%!assert_equal (days(1):days(10), days ([1:10]))
+%!assert_equal (days(1):2:days(10), days ([1:2:10]))
+%!assert_equal (days(1):days(2):days(10), days ([1:2:10]))
+%!test
+%! R = days(1):'72:00:00';
+%! assert_equal (R, days ([1:3]))
+%! assert_equal (R.Format, 'd')
+%!test
+%! R = '00:00:00':days(1):'72:00:00';
+%! assert_equal (R, days ([0:3]))
+%! assert_equal (R.Format, 'd')
+%!test
+%! R = days(1):'06:00:00':days(10);
+%! assert_equal (R, days ([1:0.25:10]))
+%! assert_equal (R.Format, 'd')
+%!assert_equal (days(1):{'72:00:00'}, days ([1:3]))
+%!assert_equal (days(1):string('72:00:00'), days ([1:3]))
+%!assert_equal (string('00:00:00'):days(1):string('72:00:00'), days ([0:3]))
+%!assert_equal (days(1):string({'06:00:00'}):days(10), days ([1:0.25:10]))
+%!assert_equal (days(1):{'06:00:00'}:days(10), days ([1:0.25:10]))
+
 ################################################################################
 ##                   ** Sort, Filter, and Set Operations **                   ##
 ################################################################################
