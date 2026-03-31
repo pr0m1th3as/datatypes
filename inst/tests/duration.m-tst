@@ -1506,6 +1506,336 @@
 %!               cumsum (x, [2, 4], "reverse", "omitnan"));
 %!assert_equal (cumsum (days ([NaN, NaN]), "omitnan"), days ([0, 0]))
 
+%!assert_equal (min (days ([1, 4, 2, 3])), days (1))
+%!assert_equal (min (days ([1; -10; 5; -2])), days (-10))
+%!test
+%! x = reshape (days ([1:8]), [2,2,2]);
+%! assert_equal (min (x, [], 1), reshape (days ([1, 3, 5, 7]), [1, 2, 2]));
+%! assert_equal (min (x, [], 2), reshape (days ([1, 2, 5, 6]), [2, 1, 2]));
+%! [y, i] = min (x, [], 3);
+%! assert_equal (ndims (y), 2);
+%! assert_equal (y, days ([1, 3; 2, 4]));
+%! assert_equal (ndims (i), 2);
+%! assert_equal (i, [1, 1; 1, 1]);
+%!test
+%! x = reshape (days ([1:8]), [2, 2, 2]);
+%! assert_equal (min (x, [], [1, 3]), days ([1, 3]));
+%! assert_equal (min (x, [], [2, 3]), days ([1; 2]));
+%! assert_equal (min (x, [], [1, 2]), reshape (days ([1, 5]), [1, 1, 2]));
+%! assert_equal (min (x, [], [1, 2, 3]), min (x, [], "all"));
+%!test
+%! x = days ([1, 2, 3, 4]);
+%! y = flip (x);
+%! assert_equal (min (x, y), days ([1, 2, 2, 1]));
+%! assert_equal (min (x, 3), days ([1, 2, 3, 3]));
+%! assert_equal (min (2, x), days ([1, 2, 2, 2]));
+%!test
+%! [m, i] = min (days ([1, 2, 3; 4, 3, NaN; 4, 5, 6]), [], 2, "includenan");
+%! assert (isequaln (m, days ([1; NaN; 4])), true);
+%! assert (i, [1; 3; 1]);
+%! [m,i] = min (days ([1, 2, 3; 4, NaN, NaN; 4, 5, 6]), [], 2, "includenan");
+%! assert (isequaln (m, [1; NaN; 4]), true);
+%! assert (i, [1; 2; 1]);
+%!test
+%! x = days (magic (3));
+%! x(2, 3) = NaN;
+%! assert (isequaln (min (x, [], 2, "includenan"), days ([1; NaN; 2])), true);
+%!assert_equal (size (min (days (0), days (zeros (0, 1)))), [0, 1])
+%!assert_equal (size (min (days ([]), days (zeros (0, 1)))), [0, 0])
+%!assert_equal (size (min (days (zeros (0, 1)), days ([]))), [0, 0])
+%!assert_equal (size (min (days ([]), days (zeros (1, 0)))), [0, 0])
+%!assert_equal (size (min (days (zeros (1, 0)), days ([]))), [0, 0])
+%!test
+%! x = repmat (days ([4, 3, 2, 4, 1, 5, 3, 2]), 3, 2, 5, 2);
+%! [m, i] = min (x, [], [2, 3], 'linear');
+%! assert_equal (m, days (ones (3, 1, 1, 2)));
+%! assert_equal (i(:,:,1,1), [13; 14; 15]);
+%! assert_equal (i(:,:,1,2), [253; 254; 255]);
+%!test
+%! x = repmat (days ([4, 3, 2, 4, 1, 5, 3, 2]), 3, 2, 5, 2);
+%! [m, i] = min (x, [], [1, 3], 'linear');
+%! assert_equal (m, x(1,:,1,:));
+%! assert_equal (i(:,:,1,1), [1:3:46]);
+%! assert_equal (i(:,:,1,2), [241:3:286]);
+
+%!assert_equal (cummin (days ([1, 4, 2, 3])), days ([1, 1, 1, 1]))
+%!assert_equal (cummin (days ([1; -10; 5; -2])), days ([1; -10; -10; -10]))
+%!test
+%! x = reshape (days ([1:8]), [2, 2, 2]);
+%! assert_equal (cummin (x, 1), reshape (days ([1, 1, 3, 3, 5, 5, 7, 7]), [2, 2, 2]));
+%! assert_equal (cummin (x, 2), reshape (days ([1, 2, 1, 2, 5, 6, 5, 6]), [2, 2, 2]));
+%! [w, iw] = cummin (x, 3);
+%! assert_equal (ndims (w), 3);
+%! assert_equal (w, repmat (days ([1, 3; 2, 4]), [1, 1, 2]));
+%! assert_equal (ndims (iw), 3);
+%! assert_equal (iw, ones (2, 2, 2));
+%!assert (isequaln (cummin (days ([1; -10; NaN; -2]), 'includenan'), days ([1; -10; NaN; NaN])))
+%!assert (isequaln (cummin (days ([1; -10; NaN; -2]), 'reverse', 'includenan'), days ([NaN(3,1); -2])))
+%!assert (isequaln (cummin (days ([1, -10, NaN, -2]), 'includenan'), days ([1, -10, NaN, NaN])))
+%!assert (isequaln (cummin (days ([1, -10, NaN, -2]), 'reverse', 'includenan'), days ([NaN(1,3), -2])))
+%!shared A
+%! A = days ([3, 5, NaN, 4, 2; 2, 6, 2, 9, 4; 1, 3, 0, NaN, 1; 5, 3, 4, 2, 0]);
+%!test
+%! [m, i] = cummin (A, 'includenan');
+%! m_exp = days ([3, 5, NaN, 4, 2; 2, 5, NaN, 4, 2; ...
+%!                1, 3, NaN, NaN, 1; 1, 3, NaN, NaN, 0]);
+%! i_exp = [1, 1, 1, 1, 1; 2, 1, 1, 1, 1; 3, 3, 1, 3, 3; 3, 3, 1, 3, 4];
+%! assert (isequaln (m, m_exp));
+%! assert_equal (i, i_exp);
+%!test
+%! [m, i] = cummin (A, 'includenan', 'reverse');
+%! m_exp = days ([1, 3, NaN, NaN, 0; 1, 3, 0, NaN, 0; ...
+%!                1, 3, 0, NaN, 0; 5, 3, 4, 2, 0]);
+%! i_exp = [3, 4, 1, 3, 4; 3, 4, 3, 3, 4; 3, 4, 3, 3, 4; 4, 4, 4, 4, 4];
+%! assert (isequaln (m, m_exp));
+%! assert_equal (i, i_exp);
+%!test
+%! [m, i] = cummin (A, 'reverse');
+%! m_exp = days ([1, 3, 0, 2, 0; 1, 3, 0, 2, 0; 1, 3, 0, 2, 0; 5, 3, 4, 2, 0]);
+%! i_exp = [3, 4, 3, 4, 4; 3, 4, 3, 4, 4; 3, 4, 3, 4, 4; 4, 4, 4, 4, 4];
+%! assert_equal (m, m_exp);
+%! assert_equal (i, i_exp);
+%!test
+%! [m, i] = cummin (A);
+%! m_exp = days ([3, 5, NaN, 4, 2; 2, 5, 2, 4, 2; 1, 3, 0, 4, 1; 1, 3, 0, 2, 0]);
+%! i_exp = [1, 1, 1, 1, 1; 2, 1, 2, 1, 1; 3, 3, 3, 1, 3; 3, 3, 3, 4, 4];
+%! assert (isequaln (m, m_exp));
+%! assert_equal (i, i_exp);
+%!test
+%! [m, i] = cummin (A, 2, 'includenan');
+%! m_exp = days ([3, 3, NaN, NaN, NaN; 2, 2, 2, 2, 2; 1, 1, 0, NaN, NaN; 5, 3, 3, 2, 0]);
+%! i_exp = [1, 1, 3, 3, 3; 1, 1, 1, 1, 1; 1, 1, 3, 4, 4; 1, 2, 2, 4, 5];
+%! assert (isequaln (m, m_exp));
+%! assert_equal (i, i_exp);
+%!test
+%! [m, i] = cummin (A, 2, 'includenan', 'reverse');
+%! m_exp = days ([NaN, NaN, NaN, 2, 2; 2, 2, 2, 4, 4; ...
+%!                NaN, NaN, NaN, NaN, 1; 0, 0, 0, 0, 0]);
+%! i_exp = [3, 3, 3, 5, 5; 3, 3, 3, 5, 5; 4, 4, 4, 4, 5; 5, 5, 5, 5, 5];
+%! assert (isequaln (m, m_exp));
+%! assert_equal (i, i_exp);
+%!test
+%! [m, i] = cummin (A, 2, 'reverse');
+%! m_exp = days ([2, 2, 2, 2, 2; 2, 2, 2, 4, 4; 0, 0, 0, 1, 1; 0, 0, 0, 0, 0]);
+%! i_exp = [5, 5, 5, 5, 5; 3, 3, 3, 5, 5; 3, 3, 3, 5, 5; 5, 5, 5, 5, 5];
+%! assert_equal (m, m_exp);
+%! assert_equal (i, i_exp);
+%!test
+%! [m, i] = cummin (A, 2);
+%! m_exp = days ([3, 3, 3, 3, 2; 2, 2, 2, 2, 2; 1, 1, 0, 0, 0; 5, 3, 3, 2, 0]);
+%! i_exp = [1, 1, 1, 1, 5; 1, 1, 1, 1, 1; 1, 1, 3, 3, 3; 1, 2, 2, 4, 5];
+%! assert_equal (m, m_exp);
+%! assert_equal (i, i_exp);
+%!test
+%! [~, i_lin] = cummin (A, 'includenan', 'linear');
+%! assert (isequaln (cummin (A, 'includenan'), A(i_lin)));
+%!test
+%! [~, i_lin] = cummin (A, 'includenan', 'reverse', 'linear');
+%! assert (isequaln (cummin (A, 'includenan', 'reverse'), A(i_lin)));
+%!test
+%! [~, i_lin] = cummin (A, 'reverse', 'linear');
+%! assert (isequaln (cummin (A, 'reverse'), A(i_lin)));
+%!test
+%! [~, i_lin] = cummin (A, 'linear');
+%! assert (isequaln (cummin (A), A(i_lin)));
+%!test
+%! [~, i_lin] = cummin (A, 2, 'includenan', 'linear');
+%! assert (isequaln (cummin (A, 2, 'includenan'), A(i_lin)));
+%!test
+%! [~, i_lin] = cummin (A, 2, 'includenan', 'reverse', 'linear');
+%! assert (isequaln (cummin (A, 2, 'includenan', 'reverse'), A(i_lin)));
+%!test
+%! [~, i_lin] = cummin (A, 2, 'reverse', 'linear');
+%! assert (isequaln (cummin (A, 2, 'reverse'), A(i_lin)));
+%!test
+%! [~, i_lin] = cummin (A, 2, 'linear');
+%! assert (isequaln (cummin (A, 2), A(i_lin)));
+%!shared x
+%! x = days (randi ([-10, 10], 3, 4, 5, 2));
+%!test
+%! [m, i] = cummin (x, [2, 3], 'linear');
+%! assert_equal (m, x(i));
+%!test
+%! [m, i] = cummin (x, [1, 3], 'linear');
+%! assert_equal (m, x(i));
+%!test
+%! [m, i] = cummin (x, [2, 4], 'linear');
+%! assert_equal (m, x(i));
+%!test
+%! [m, i] = cummin (x, [1, 4], 'linear');
+%! assert_equal (m, x(i));
+%!test
+%! [m, i] = cummin (x, [1, 2, 3], 'linear');
+%! assert_equal (m, x(i));
+%!test
+%! [m, i] = cummin (x, [2, 3, 4], 'linear');
+%! assert_equal (m, x(i));
+
+%!assert_equal (max (days ([1, 4, 2, 3])), days (4))
+%!assert_equal (max (days ([1; -10; 5; -2])), days (5))
+%!test
+%! x = reshape (days ([1:8]), [2,2,2]);
+%! assert_equal (max (x, [], 1), reshape (days ([2, 4, 6, 8]), [1, 2, 2]));
+%! assert_equal (max (x, [], 2), reshape (days ([3, 4, 7, 8]), [2, 1, 2]));
+%! [y, i] = max (x, [], 3);
+%! assert_equal (ndims (y), 2);
+%! assert_equal (y, days ([5, 7; 6, 8]));
+%! assert_equal (ndims (i), 2);
+%! assert_equal (i, [2, 2; 2, 2]);
+%!test
+%! x = reshape (days ([1:8]), [2, 2, 2]);
+%! assert_equal (max (x, [], [1, 3]), days ([6, 8]));
+%! assert_equal (max (x, [], [2, 3]), days ([7; 8]));
+%! assert_equal (max (x, [], [1, 2]), reshape (days ([4, 8]), [1, 1, 2]));
+%! assert_equal (max (x, [], [1, 2, 3]), max (x, [], "all"));
+%!test
+%! x = days ([1, 2, 3, 4]);
+%! y = flip (x);
+%! assert_equal (max (x, y), days ([4, 3, 3, 4]));
+%! assert_equal (max (x, 3), days ([3, 3, 3, 4]));
+%! assert_equal (max (2, x), days ([2, 2, 3, 4]));
+%!test
+%! [m, i] = max (days ([1, 2, 3; 4, 3, NaN; 4, 5, 6]), [], 2, "includenan");
+%! assert (isequaln (m, days ([3; NaN; 6])), true);
+%! assert (i, [3; 3; 3]);
+%! [m,i] = max (days ([1, 2, 3; 4, NaN, NaN; 4, 5, 6]), [], 2, "includenan");
+%! assert (isequaln (m, [3; NaN; 6]), true);
+%! assert (i, [3; 2; 3]);
+%!test
+%! x = days (magic (3));
+%! x(2, 3) = NaN;
+%! assert (isequaln (max (x, [], 2, "includenan"), days ([8; NaN; 9])), true);
+%!assert_equal (size (max (days (0), days (zeros (0, 1)))), [0, 1])
+%!assert_equal (size (max (days ([]), days (zeros (0, 1)))), [0, 0])
+%!assert_equal (size (max (days (zeros (0, 1)), days ([]))), [0, 0])
+%!assert_equal (size (max (days ([]), days (zeros (1, 0)))), [0, 0])
+%!assert_equal (size (max (days (zeros (1, 0)), days ([]))), [0, 0])
+%!test
+%! x = repmat (days ([4, 3, 2, 4, 1, 5, 3, 2]), 3, 2, 5, 2);
+%! [m, i] = max (x, [], [2, 3], 'linear');
+%! assert_equal (m, days (5 * ones (3, 1, 1, 2)));
+%! assert_equal (i(:,:,1,1), [16; 17; 18]);
+%! assert_equal (i(:,:,1,2), [256; 257; 258]);
+%!test
+%! x = repmat (days ([4, 3, 2, 4, 1, 5, 3, 2]), 3, 2, 5, 2);
+%! [m, i] = max (x, [], [1, 3], 'linear');
+%! assert_equal (m, x(1,:,1,:));
+%! assert_equal (i(:,:,1,1), [1:3:46]);
+%! assert_equal (i(:,:,1,2), [241:3:286]);
+
+%!assert_equal (cummax (days ([1, 4, 2, 3])), days ([1, 4, 4, 4]))
+%!assert_equal (cummax (days ([1; -10; 5; -2])), days ([1; 1; 5; 5]))
+%!test
+%! x = reshape (days ([8:-1:1]), [2, 2, 2]);
+%! assert_equal (cummax (x, 1), reshape (days ([8, 8, 6, 6, 4, 4, 2, 2]), [2, 2, 2]));
+%! assert_equal (cummax (x, 2), reshape (days ([8, 7, 8, 7, 4, 3, 4, 3]), [2, 2, 2]));
+%! [w, iw] = cummax (x, 3);
+%! assert_equal (ndims (w), 3);
+%! assert_equal (w, repmat (days ([8, 6; 7, 5]), [1, 1, 2]));
+%! assert_equal (ndims (iw), 3);
+%! assert_equal (iw, ones (2, 2, 2));
+%!assert (isequaln (cummax (days ([1; -10; NaN; -2]), 'includenan'), days ([1; 1; NaN; NaN])))
+%!assert (isequaln (cummax (days ([1; -10; NaN; -2]), 'reverse', 'includenan'), days ([NaN(3,1); -2])))
+%!assert (isequaln (cummax (days ([1, -10, NaN, -2]), 'includenan'), days ([1, 1, NaN, NaN])))
+%!assert (isequaln (cummax (days ([1, -10, NaN, -2]), 'reverse', 'includenan'), days ([NaN(1,3), -2])))
+%!shared A
+%! A = days ([3, 5, NaN, 4, 2; 2, 6, 2, 9, 4; 1, 3, 0, NaN, 1; 5, 3, 4, 2, 0]);
+%!test
+%! [m, i] = cummax (A, 'includenan');
+%! m_exp = days ([3, 5, NaN, 4, 2; 3, 6, NaN, 9, 4; ...
+%!                3, 6, NaN, NaN, 4; 5, 6, NaN, NaN, 4]);
+%! i_exp = [1, 1, 1, 1, 1; 1, 2, 1, 2, 2; 1, 2, 1, 3, 2; 4, 2, 1, 3, 2];
+%! assert (isequaln (m, m_exp));
+%! assert_equal (i, i_exp);
+%!test
+%! [m, i] = cummax (A, 'includenan', 'reverse');
+%! m_exp = days ([5, 6, NaN, NaN, 4; 5, 6, 4, NaN, 4; ...
+%!                5, 3, 4, NaN, 1; 5, 3, 4, 2, 0]);
+%! i_exp = [4, 2, 1, 3, 2; 4, 2, 4, 3, 2; 4, 4, 4, 3, 3; 4, 4, 4, 4, 4];
+%! assert (isequaln (m, m_exp));
+%! assert_equal (i, i_exp);
+%!test
+%! [m, i] = cummax (A, 'reverse');
+%! m_exp = days ([5, 6, 4, 9, 4; 5, 6, 4, 9, 4; 5, 3, 4, 2, 1; 5, 3, 4, 2, 0]);
+%! i_exp = [4, 2, 4, 2, 2; 4, 2, 4, 2, 2; 4, 4, 4, 4, 3; 4, 4, 4, 4, 4];
+%! assert_equal (m, m_exp);
+%! assert_equal (i, i_exp);
+%!test
+%! [m, i] = cummax (A);
+%! m_exp = days ([3, 5, NaN, 4, 2; 3, 6, 2, 9, 4; 3, 6, 2, 9, 4; 5, 6, 4, 9, 4]);
+%! i_exp = [1, 1, 1, 1, 1; 1, 2, 2, 2, 2; 1, 2, 2, 2, 2; 4, 2, 4, 2, 2];
+%! assert (isequaln (m, m_exp));
+%! assert_equal (i, i_exp);
+%!test
+%! [m, i] = cummax (A, 2, 'includenan');
+%! m_exp = days ([3, 5, NaN, NaN, NaN; 2, 6, 6, 9, 9; 1, 3, 3, NaN, NaN; 5, 5, 5, 5, 5]);
+%! i_exp = [1, 2, 3, 3, 3; 1, 2, 2, 4, 4; 1, 2, 2, 4, 4; 1, 1, 1, 1, 1];
+%! assert (isequaln (m, m_exp));
+%! assert_equal (i, i_exp);
+%!test
+%! [m, i] = cummax (A, 2, 'includenan', 'reverse');
+%! m_exp = days ([NaN, NaN, NaN, 4, 2; 9, 9, 9, 9, 4; ...
+%!                NaN, NaN, NaN, NaN, 1; 5, 4, 4, 2, 0]);
+%! i_exp = [3, 3, 3, 4, 5; 4, 4, 4, 4, 5; 4, 4, 4, 4, 5; 1, 3, 3, 4, 5];
+%! assert (isequaln (m, m_exp));
+%! assert_equal (i, i_exp);
+%!test
+%! [m, i] = cummax (A, 2, 'reverse');
+%! m_exp = days ([5, 5, 4, 4, 2; 9, 9, 9, 9, 4; 3, 3, 1, 1, 1; 5, 4, 4, 2, 0]);
+%! i_exp = [2, 2, 4, 4, 5; 4, 4, 4, 4, 5; 2, 2, 5, 5, 5; 1, 3, 3, 4, 5];
+%! assert_equal (m, m_exp);
+%! assert_equal (i, i_exp);
+%!test
+%! [m, i] = cummax (A, 2);
+%! m_exp = days ([3, 5, 5, 5, 5; 2, 6, 6, 9, 9; 1, 3, 3, 3, 3; 5, 5, 5, 5, 5]);
+%! i_exp = [1, 2, 2, 2, 2; 1, 2, 2, 4, 4; 1, 2, 2, 2, 2; 1, 1, 1, 1, 1];
+%! assert_equal (m, m_exp);
+%! assert_equal (i, i_exp);
+%!test
+%! [~, i_lin] = cummax (A, 'includenan', 'linear');
+%! assert (isequaln (cummax (A, 'includenan'), A(i_lin)));
+%!test
+%! [~, i_lin] = cummax (A, 'includenan', 'reverse', 'linear');
+%! assert (isequaln (cummax (A, 'includenan', 'reverse'), A(i_lin)));
+%!test
+%! [~, i_lin] = cummax (A, 'reverse', 'linear');
+%! assert (isequaln (cummax (A, 'reverse'), A(i_lin)));
+%!test
+%! [~, i_lin] = cummax (A, 'linear');
+%! assert (isequaln (cummax (A), A(i_lin)));
+%!test
+%! [~, i_lin] = cummax (A, 2, 'includenan', 'linear');
+%! assert (isequaln (cummax (A, 2, 'includenan'), A(i_lin)));
+%!test
+%! [~, i_lin] = cummax (A, 2, 'includenan', 'reverse', 'linear');
+%! assert (isequaln (cummax (A, 2, 'includenan', 'reverse'), A(i_lin)));
+%!test
+%! [~, i_lin] = cummax (A, 2, 'reverse', 'linear');
+%! assert (isequaln (cummax (A, 2, 'reverse'), A(i_lin)));
+%!test
+%! [~, i_lin] = cummax (A, 2, 'linear');
+%! assert (isequaln (cummax (A, 2), A(i_lin)));
+%!shared x
+%! x = days (randi ([-10, 10], 3, 4, 5, 2));
+%!test
+%! [m, i] = cummax (x, [2, 3], 'linear');
+%! assert_equal (m, x(i));
+%!test
+%! [m, i] = cummax (x, [1, 3], 'linear');
+%! assert_equal (m, x(i));
+%!test
+%! [m, i] = cummax (x, [2, 4], 'linear');
+%! assert_equal (m, x(i));
+%!test
+%! [m, i] = cummax (x, [1, 4], 'linear');
+%! assert_equal (m, x(i));
+%!test
+%! [m, i] = cummax (x, [1, 2, 3], 'linear');
+%! assert_equal (m, x(i));
+%!test
+%! [m, i] = cummax (x, [2, 3, 4], 'linear');
+%! assert_equal (m, x(i));
+
 ################################################################################
 ##                   ** Sort, Filter, and Set Operations **                   ##
 ################################################################################

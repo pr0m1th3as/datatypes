@@ -2285,6 +2285,11 @@ classdef duration
         if (isduration (varargin{1}))
           D2 = varargin{1};
           varargin(1) = [];
+          ## Make sure first argument is also a duration
+          if (! isduration (D))
+            D = promote (D);
+            M = D2;
+          endif
           M.Days = min (D.Days, D2.Days, varargin{:});
           varargout{1} = M;
         else
@@ -2377,6 +2382,11 @@ classdef duration
         if (isduration (varargin{1}))
           D2 = varargin{1};
           varargin(1) = [];
+          ## Make sure first argument is also a duration
+          if (! isduration (D))
+            D = promote (D);
+            M = D2;
+          endif
           M.Days = max (D.Days, D2.Days, varargin{:});
           varargout{1} = M;
         else
