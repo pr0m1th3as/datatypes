@@ -2081,6 +2081,641 @@
 %!assert (isequaln (mad (days ([1, NaN; 3, NaN]), [], 1), days ([1, NaN])))
 %!assert_equal (mad (days ([1, NaN; 3, NaN]), [], 2), days ([0; 0]))
 
+%!test
+%! F = days ([2, 11, 6]);
+%! A = days ([3, 10, 8]);
+%! assert (mape (F, A), 22.7778, 1e-4);
+%! assert (mape (F, A, 1), [33.3333, 10.0000, 25.0000], 1e-4);
+%! assert (mape (F, A, 2), 22.7778, 1e-4);
+%! assert (mape (F, A, 3), [33.3333, 10.0000, 25.0000], 1e-4);
+%! assert (mape (F, A, 'all'), 22.7778, 1e-4);
+%!test
+%! F = days ([3; 7; 4; NaN]);
+%! A = days ([4; 0; 6; 4]);
+%! assert (mape (F, A), NaN);
+%! assert (mape (F, A, 'omitnan'), Inf);
+%! assert (mape (F, A, 'omitzero'), NaN);
+%! assert (mape (F, A, 'omitnan', 'omitzero'), 29.1667, 1e-4);
+%! assert (mape (F, A, 1, 'omitnan', 'omitzero'), 29.1667, 1e-4);
+%! E = mape (F, A, 2, 'omitnan', 'omitzero');
+%! assert (E, [25; NaN; 33.3333; NaN], 1e-4);
+%!test
+%! F = days ([17, 21; 1, 5; 13, 17]);
+%! A = days ([18, 19; 5, 4; 15, 13]);
+%! assert (mape (F, A), [32.9630, 22.0985], 1e-4);
+%! assert (mape (F, A, 1), [32.9630, 22.0985], 1e-4);
+%! assert (mape (F, A, 2), [8.0409; 52.5000; 22.0513], 1e-4);
+%! assert (mape (F, A, 'all'), 27.5307, 1e-4);
+%! assert (mape (F, A, [1, 2]), 27.5307, 1e-4);
+%!test
+%! F = days ([3, 5; -1, 2]);
+%! F(:,:,2) = days ([4, 2; 7, -4]);
+%! A = days ([6, 5; 0, 3]);
+%! E = mape (F, A, [1, 2]);
+%! assert (E(:,:,1), Inf);
+%! assert (E(:,:,2), Inf);
+%! E = mape (F, A, [1, 2], 'omitzero');
+%! assert (E(:,:,1), 27.7778, 1e-4);
+%! assert (E(:,:,2), 108.8889, 1e-4);
+%! assert (mape (F, A, [1, 3]), [Inf, 81.6667], 1e-4);
+%! assert (mape (F, A, [1, 3], 'omitzero'), [41.6667, 81.6667], 1e-4);
+%! assert (mape (F, A, [2, 3]), [35.8333; Inf], 1e-4);
+%! assert (mape (F, A, [2, 3], 'omitzero'), [35.8333; 133.3333], 1e-4);
+%!assert (mape ([1:4], zeros (1, 4)), Inf)
+%!assert (mape ([1:4], zeros (1, 4), "omitzero"), NaN)
+%!test
+%! F = days ([2, 11, 6]);
+%! A = days ([3, 10, 8]);
+%! W = [1, 2, 1];
+%! assert (mape (F, A, 'Weights', W), 19.5833, 1e-4);
+%! assert (mape (F, A, 1, 'Weights', W), [33.3333, 10, 25], 1e-4);
+%! assert (mape (F, A, 2, 'Weights', W), 19.5833, 1e-4);
+%! assert (mape (F, A, 3, 'Weights', W), [33.3333, 10, 25], 1e-4);
+%!test
+%! F = days ([3; 7; 4; NaN]);
+%! A = days ([4; 0; 6; 4]);
+%! W = [1, 2, 1, 2];
+%! assert (mape (F, A, 'Weights', W), NaN);
+%! assert (mape (F, A, 'omitnan', 'Weights', W), Inf);
+%! assert (mape (F, A, 'omitzero', 'Weights', W), NaN);
+%! assert (mape (F, A, 'omitnan', 'omitzero', 'Weights', W), 29.1667, 1e-4);
+%! assert (mape (F, A, 1, 'omitnan', 'omitzero', 'Weights', W), 29.1667, 1e-4);
+%!test
+%! F = days ([3; 7; 4; NaN]);
+%! A = days ([4; 0; 6; 4]);
+%! W = [1; 2; 1; 2];
+%! E = mape (F, A, 2, 'omitnan', 'omitzero', 'Weights', W);
+%! assert (E, [25; NaN; 33.3333; NaN], 1e-4);
+%! E = mape (F, A, 3, 'omitnan', 'omitzero', 'Weights', W);
+%! assert (E, [25; NaN; 33.3333; NaN], 1e-4);
+%!test
+%! F = days ([3, 5; -1, 2]);
+%! F(:,:,2) = days ([4, 2; 7, -4]);
+%! A = days ([6, 5; 0, 3]);
+%! W = [1, 1; 1, 1];
+%! Ew = mape (F, A, [1, 2], 'omitzero', 'Weights', W);
+%! E = mape (F, A, [1, 2], 'omitzero');
+%! assert (Ew, E);
+%! Ew = mape (F, A, [1, 3], 'omitzero', 'Weights', W);
+%! E = mape (F, A, [1, 3], 'omitzero');
+%! assert (Ew, E);
+%! Ew = mape (F, A, [2, 3], 'omitzero', 'Weights', W);
+%! E = mape (F, A, [2, 3], 'omitzero');
+%! assert (Ew, E);
+%!test
+%! F = days ([3, 5; -1, 2]);
+%! F(:,:,2) = days ([4, NaN; 7, -4]);
+%! A = days ([6, 5; 2, 3]);
+%! W = [1, 1; 1, 1];
+%! Ew = mape (F, A, [1, 2], 'omitnan', 'Weights', W);
+%! E = mape (F, A, [1, 2], 'omitnan');
+%! assert (Ew, E);
+%! Ew = mape (F, A, [1, 3], 'omitnan','Weights', W);
+%! E = mape (F, A, [1, 3], 'omitnan');
+%! assert (Ew, E);
+%! Ew = mape (F, A, [2, 3], 'omitnan','Weights', W);
+%! E = mape (F, A, [2, 3], 'omitnan');
+%! assert (Ew, E);
+%!error<duration.mape: both F and A must be duration arrays.> ...
+%! mape (days ([1, 2, 3]), 1:3)
+%!error<duration.mape: both F and A must be duration arrays.> ...
+%! mape (1:3, days ([1, 2, 3]))
+
+%!assert_equal (mean (days (magic (3)), 1), days ([5, 5, 5]))
+%!assert_equal (mean (days (magic (3)), 2), days ([5; 5; 5]))
+%!test
+%! x = days ([-10:10]);
+%! y = [x;x+5;x-5];
+%! assert_equal (mean (x), days (0));
+%! assert_equal (mean (y, 2), days ([0, 5, -5]'));
+%! assert_equal (mean (y, 'all'), days (0));
+%! y(2,4) = NaN;
+%! assert (all (mean (y', 'omitnan') - days ([0, 5.35, -5]) < 1e-14));
+%! z = y + 20;
+%! assert (isequaln (mean (z, "all"), days (NaN)));
+%! assert (isequaln (mean (z, "all", "includenan"), days (NaN)));
+%! assert (days (mean (z, "all", "omitnan")), 20.03225806451613, 4e-14);
+%!test
+%! x = repmat ([1:20;6:25], [5 2 6 3]);
+%! assert (size (mean (x, [3 2])), [10 1 1 3]);
+%! assert (size (mean (x, [1 2])), [1 1 6 3]);
+%! assert (size (mean (x, [1 2 4])), [1 1 6]);
+%! assert (size (mean (x, [1 4 3])), [1 40]);
+%! assert (size (mean (x, [1 2 3 4])), [1 1]);
+
+## Test exceeding dimensions
+%!assert_equal (mean (days (ones (2, 2)), 3), days (ones (2, 2)))
+%!assert_equal (mean (days (ones (2, 2, 2)), 99), days (ones (2, 2, 2)))
+%!assert_equal (mean (days (magic (3)), 3), days (magic (3)))
+%!assert_equal (mean (days (magic (3)), [1, 3]), days ([5, 5, 5]))
+%!assert_equal (mean (days (magic (3)), [1, 99]), days ([5, 5, 5]))
+%!test
+%! x = days ([1, 1; 7, 9; 1, 9; 1, 9; 6, 2]);
+%! w = [1; 2; 1; 2; 3];
+%! assert (days (mean (x, 'Weights', w)), [4, 5.7778], 1e-4);
+%! assert (days (mean (x, 'Weights', w')), [4, 5.7778], 1e-4);
+%! assert (days (mean (x, 1, 'Weights', w)), [4, 5.7778], 1e-4);
+%! assert (days (mean (x, 1, 'Weights', w')), [4, 5.7778], 1e-4);
+%! assert (days (mean (x', 2, 'Weights', w)), [4; 5.7778], 1e-4);
+%! assert (days (mean (x', 2, 'Weights', w')), [4; 5.7778], 1e-4);
+%!test
+%! x = days ([1, 1; 7, 9; 1, 9; 1, 9; 6, 2]);
+%! x = reshape (x', [1, 2, 5]);
+%! w = [1, 2, 1, 2, 3];
+%! assert (size (x)([1, 3]), size (w));
+%! assert (days (mean (x, [1, 3], 'Weights', w)), [4, 5.7778], 1e-4);
+%!test
+%! x = days ([1, 1; 7, 9; 1, 9; 1, 9; 6, 2]);
+%! x = reshape (x', [1, 2, 5]);
+%! w = ones (1, 2, 5);
+%! assert (size (x), size (w));
+%! assert (days (mean (x, 'all', 'Weights', w)), days (mean (x, 'all')), 1e-4);
+%! assert (days (mean (x, [1, 2, 3], 'Weights', w)), days (mean (x, [1, 2, 3])), 1e-4);
+
+%!assert_equal (median (days (1)), days (1))
+%!assert_equal (median (days ([1, 2, 3])), days (2))
+%!assert_equal (median (days ([1, 2, 3]')), days (2))
+%!assert_equal (median (days (cat (3, 3, 1, 2))), days (2))
+%!assert_equal (median (days ([3, 1, 2])), days (2))
+%!assert_equal (median (days ([2, 4, 6, 8])), days (5))
+%!assert_equal (median (days ([8, 2, 6, 4])), days (5))
+%!assert_equal (median (days ([1, 2]), 3), days ([1, 2]))
+%!test
+%! x = days ([1, 2, 3, 4, 5, 6]);
+%! x2 = x';
+%! y = days ([1, 2, 3, 4, 5, 6, 7]);
+%! y2 = y';
+%!
+%! assert (median (x) == median (x2) && median (x) == days (3.5));
+%! assert (median (y) == median (y2) && median (y) == days (4));
+%! assert_equal (median ([x2, 2 * x2]), days ([3.5, 7]));
+%! assert_equal (median ([y2, 3 * y2]), days ([4, 12]));
+%!test
+%! x = repmat (days ([2 2.1 2.2 2 NaN; 3 1 2 NaN 5; 1 1.1 1.4 5 3]), [1, 1, 4]);
+%! y = repmat (days ([2 1.1 2 NaN NaN]), [1, 1, 4]);
+%! assert (isequaln (median (x), y));
+%! assert (isequaln (median (x, 1), y));
+%! y = repmat (days ([2, 1.1, 2, 3.5, 4]), [1, 1, 4]);
+%! assert_equal (median (x, "omitnan"), y);
+%! assert_equal (median (x, 1, "omitnan"), y);
+%! y = repmat (days ([2.05; 2.5; 1.4]), [1, 1, 4]);
+%! assert_equal (median (x, 2, "omitnan"), y);
+%! y = repmat (days ([NaN; NaN; 1.4]), [1, 1, 4]);
+%! assert (isequaln (median (x, 2), y));
+%! assert (isequaln (median (x, "all"), NaN));
+%! assert (isequaln (median (x, "all", "omitnan"), 2));
+%!assert_equal (median (cat (3, 3, 1, NaN, 2), "omitnan"), 2)
+%!assert_equal (median (cat (3, 3, 1, NaN, 2), 3, "omitnan"), 2)
+
+%!test
+%! [m, f, c] = mode (days (toeplitz (1:5)));
+%! assert_equal (m, days ([1, 2, 2, 2, 1]));
+%! assert_equal (f, [1, 2, 2, 2, 1]);
+%! assert_equal (c, {days([1;2;3;4;5]), days(2), days([2;3]), days(2), days([1;2;3;4;5])});
+%!test
+%! [m, f, c] = mode (days (toeplitz (1:5)), 2);
+%! assert_equal (m, days ([1; 2; 2; 2;1 ]));
+%! assert_equal (f, [1; 2; 2; 2; 1]);
+%! assert_equal (c, {days([1;2;3;4;5]); days(2); days([2;3]); days(2); days([1;2;3;4;5])});
+%!assert_equal (mode (days ([2,3,1,2,3,4]), 1), days ([2,3,1,2,3,4]))
+%!assert_equal (mode (days ([2,3,1,2,3,4]), 2), days (2))
+%!assert_equal (mode (days ([2,3,1,2,3,4])), days (2))
+%!assert_equal (mode (days ([2;3;1;2;3;4]), 1), days (2))
+%!assert_equal (mode (days ([2;3;1;2;3;4]), 2), days ([2;3;1;2;3;4]))
+%!assert_equal (mode (days ([2;3;1;2;3;4])), days (2))
+%!shared
+%!shared x
+%! x(:,:,1) = toeplitz (1:3);
+%! x(:,:,2) = circshift (toeplitz (1:3), 1);
+%! x(:,:,3) = circshift (toeplitz (1:3), 2);
+%! x = days (x);
+%!test
+%! [m, f, c] = mode (x, 1);
+%! assert_equal (reshape (m, [3, 3]), days ([1, 1, 1; 2, 2, 2; 1, 1, 1]));
+%! assert_equal (reshape (f, [3, 3]), [1, 1, 1; 2, 2, 2; 1, 1, 1]);
+%! c = reshape (c, [3, 3]);
+%! assert_equal (c{1}, days ([1; 2; 3]));
+%! assert_equal (c{2}, days (2));
+%! assert_equal (c{3}, days ([1; 2; 3]));
+%!test
+%! [m, f, c] = mode (x, 2);
+%! assert_equal (reshape (m, [3, 3]), days ([1, 1, 2; 2, 1, 1; 1, 2, 1]));
+%! assert_equal (reshape (f, [3, 3]), [1, 1, 2; 2, 1, 1; 1, 2, 1]);
+%! c = reshape (c, [3, 3]);
+%! assert_equal (c{1}, days ([1; 2; 3]));
+%! assert_equal (c{2}, days (2));
+%! assert_equal (c{3}, days ([1; 2; 3]));
+%!test
+%! [m, f, c] = mode (x, 3);
+%! assert_equal (reshape (m, [3, 3]), days ([1, 2, 1; 1, 2, 1; 1, 2, 1]));
+%! assert_equal (reshape (f, [3, 3]), [1, 2, 1; 1, 2, 1; 1, 2, 1]);
+%! c = reshape (c, [3, 3]);
+%! assert_equal (c{1}, days ([1; 2; 3]));
+%! assert_equal (c{2}, days ([1; 2; 3]));
+%! assert_equal (c{3}, days ([1; 2; 3]));
+%!shared
+
+%!test
+%! pct = 50;
+%! q = prctile (days (1:4), pct);
+%! qa = days (2.5);
+%! assert_equal (q, qa);
+%! q = prctile (days (1:4), pct, 1);
+%! qa = days ([1, 2, 3, 4]);
+%! assert_equal (q, qa);
+%! q = prctile (days (1:4), pct, 2);
+%! qa = days (2.5);
+%! assert_equal (q, qa);
+%!test
+%! pct = [50 75];
+%! q = prctile (days (1:4), pct);
+%! qa = days ([2.5, 3.5]);
+%! assert_equal (q, qa);
+%! q = prctile (days (1:4), pct, 1);
+%! qa = days ([1, 2, 3, 4; 1, 2, 3, 4]);
+%! assert_equal (q, qa);
+%! q = prctile (days (1:4), pct, 2);
+%! qa = days ([2.5, 3.5]);
+%! assert_equal (q, qa);
+%!test
+%! pct = 50;
+%! x = [0.1126, 0.1148, 0.0521, 0.2364, 0.1393
+%!      0.1718, 0.7273, 0.2041, 0.4531, 0.1585
+%!      0.2795, 0.7978, 0.3296, 0.5567, 0.7307
+%!      0.4288, 0.8753, 0.6477, 0.6287, 0.8165
+%!      0.9331, 0.9312, 0.9635, 0.7796, 0.8461];
+%! tol = 0.0001;
+%! q = days (prctile (days (x), pct, 1));
+%! qa = [0.2795, 0.7978, 0.3296, 0.5567, 0.7307];
+%! assert (q, qa, tol);
+%! q = days (prctile (days (x), pct, 2));
+%! qa = [0.1148; 0.2041; 0.5567; 0.6477; 0.9312];
+%! assert (q, qa, tol);
+%!test
+%! pct = 50;
+%! tol = 0.0001;
+%! x = [0.1126, 0.1148, 0.0521, 0.2364, 0.1393
+%!      0.1718, 0.7273, 0.2041, 0.4531, 0.1585
+%!      0.2795, 0.7978, 0.3296, 0.5567, 0.7307
+%!      0.4288, 0.8753, 0.6477, 0.6287, 0.8165
+%!      0.9331, 0.9312, 0.9635, 0.7796, 0.8461];
+%! x(5,5) = Inf;
+%! q = days (prctile (days (x), pct, 1));
+%! qa = [0.2795, 0.7978, 0.3296, 0.5567, 0.7307];
+%! assert (q, qa, tol);
+%! x(5,5) = -Inf;
+%! q = days (prctile (days (x), pct, 1));
+%! qa = [0.2795, 0.7978, 0.3296, 0.5567, 0.1585];
+%! assert (q, qa, tol);
+%! x(1,1) = Inf;
+%! q = days (prctile (days (x), pct, 1));
+%! qa = [0.4288, 0.7978, 0.3296, 0.5567, 0.1585];
+%! assert (q, qa, tol);
+%!test
+%! pct = 50;
+%! tol = 0.0001;
+%! x = [0.1126, 0.1148, 0.0521, 0.2364, 0.1393
+%!      0.1718, 0.7273, 0.2041, 0.4531, 0.1585
+%!      0.2795, 0.7978, 0.3296, 0.5567, 0.7307
+%!      0.4288, 0.8753, 0.6477, 0.6287, 0.8165
+%!      0.9331, 0.9312, 0.9635, 0.7796, 0.8461];
+%! x(3,3) = Inf;
+%! q = days (prctile (days (x), pct, 1));
+%! qa = [0.2795, 0.7978, 0.6477, 0.5567, 0.7307];
+%! assert (q, qa, tol);
+%! q = days (prctile (days (x), pct, 2));
+%! qa = [0.1148; 0.2041; 0.7307; 0.6477; 0.9312];
+%! assert (q, qa, tol);
+%!test
+%! pct = 50;
+%! tol = 0.0001;
+%! x = [0.1126, 0.1148, 0.0521, 0.2364, 0.1393
+%!      0.1718, 0.7273, 0.2041, 0.4531, 0.1585
+%!      0.2795, 0.7978, 0.3296, 0.5567, 0.7307
+%!      0.4288, 0.8753, 0.6477, 0.6287, 0.8165
+%!      0.9331, 0.9312, 0.9635, 0.7796, 0.8461];
+%! x(5,5) = NaN;
+%! q = days (prctile (days (x), pct, 2));
+%! qa = [0.1148; 0.2041; 0.5567; 0.6477; 0.9322];
+%! assert (q, qa, tol);
+%! x(1,1) = NaN;
+%! q = days (prctile (days (x), pct, 2));
+%! qa = [0.1270; 0.2041; 0.5567; 0.6477; 0.9322];
+%! assert (q, qa, tol);
+%! x(3,3) = NaN;
+%! q = days (prctile (days (x), pct, 2));
+%! qa = [0.1270; 0.2041; 0.6437; 0.6477; 0.9322];
+%! assert (q, qa, tol);
+%!assert_equal (prctile (days ([1:10]), 1, 3), days ([1:10]))
+
+%!test
+%! p = 0.50;
+%! q = quantile (days (1:4), p);
+%! qa = days (2.5);
+%! assert_equal (q, qa);
+%! q = quantile (days (1:4), p, 1);
+%! qa = days ([1, 2, 3, 4]);
+%! assert_equal (q, qa);
+%! q = quantile (days (1:4), p, 2);
+%! qa = days (2.5);
+%! assert_equal (q, qa);
+%!test
+%! p = [0.50 0.75];
+%! q = quantile (days (1:4), p);
+%! qa = days ([2.5 3.5]);
+%! assert_equal (q, qa);
+%! q = quantile (days (1:4), p, 1);
+%! qa = days ([1, 2, 3, 4; 1, 2, 3, 4]);
+%! assert_equal (q, qa);
+%! q = quantile (days (1:4), p, 2);
+%! qa = days ([2.5 3.5]);
+%! assert_equal (q, qa);
+%!test
+%! p = 0.5;
+%! x = days (sort (rand (11)));
+%! q = quantile (x, p);
+%! assert_equal (q, x(6,:));
+%! x = x.';
+%! q = quantile (x, p, 2);
+%! assert_equal (q, x(:,6));
+%!test
+%! sx = [2, 3, 4];
+%! x = days (rand (sx));
+%! dim = 2;
+%! p = 0.5;
+%! yobs = quantile (x, p, dim);
+%! yexp = median (x, dim);
+%! assert_equal (yobs, yexp);
+
+%!assert_equal (range (days (1:10)), days (9))
+%!assert_equal (range (days (magic (3))), days ([5, 8, 5]))
+%!assert_equal (range (days (magic (3)), 2), days ([7; 4; 7]))
+%!assert_equal (range (days (2)), duration)
+%!test
+%! x = days (magic (3));
+%! x(2,3) = NaN;
+%! assert_equal (range (x), days ([5, 8, 4]));
+%! assert_equal (range (x, "omitnan"), days ([5, 8, 4]));
+%! assert (isequaln (range (x, "includenan"), days ([5, 8, NaN])));
+%! assert_equal (range (x, 2), days ([7; 2; 7]));
+%! assert_equal (range (x, 2, "omitnan"), days ([7; 2; 7]));
+%! assert (isequaln (range (x, 2, "includenan"), days ([7; NaN; 7])));
+%!test
+%! x = reshape (days (1:27), [3, 3, 3]);
+%! assert_equal (range (x, 3), x(:,:,3) - x(:,:,1));
+%!test
+%! x = reshape (days (1:27), [3, 3, 3]);
+%! assert_equal (range (x, [2, 3]), x(:,3,3) - x(:,1,1));
+%!test
+%! x = reshape (days (1:27), [3, 3, 3]);
+%! assert_equal (range (x, [1, 3]), x(3,:,3) - x(1,:,1));
+%!test
+%! x = reshape (days (1:27), [3, 3, 3]);
+%! assert_equal (range (x, [1, 2, 3]), days (26));
+%!test
+%! x = reshape (days (1:27), [3, 3, 3]);
+%! assert_equal (range (x, "all"), days (26));
+%!test
+%! x = reshape (days (1:27), [3, 3, 3]);
+%! x(3) = NaN;
+%! assert_equal (range (x, "all"), days (26));
+%!test
+%! x = reshape (days (1:27), [3, 3, 3]);
+%! x(3) = NaN;
+%! assert_equal (range (x, "all", "omitnan"), days (26));
+%!test
+%! x = reshape (days (1:27), [3, 3, 3]);
+%! x(3) = NaN;
+%! assert (isequaln (range (x, "all", "includenan"), days (NaN)));
+%!test
+%! x = reshape (days (1:27), [3, 3, 3]);
+%! x(3) = NaN;
+%! s = min (x, [], "includenan");
+%! l = max (x, [], "includenan");
+%! assert (isequaln (range (x, "includenan"), l - s));
+%!test
+%! x = reshape (days (1:27), [3, 3, 3]);
+%! x(3) = NaN;
+%! y = range (x, 3, "includenan");
+%! assert (isequaln (y(3), days (NaN)));
+
+%!test
+%! F = days ([2, 11, 6]);
+%! A = days ([3, 10, 8]);
+%! assert (days (rmse (F, A)), sqrt (2), eps);
+%! assert (days (rmse (F, A, 1)), [1, 1, 2], eps);
+%! assert (days (rmse (F, A, 2)), sqrt (2), eps);
+%! assert (days (rmse (F, A, 3)), [1, 1, 2], eps);
+%! assert (days (rmse (F, A, 'all')), sqrt (2), eps);
+%!test
+%! F = days ([3; 7; 4; NaN]);
+%! A = days ([4; 0; 6; 4]);
+%! assert (days (rmse (F, A)), NaN);
+%! assert (days (rmse (F, A, 'omitnan')), 4.2426, 1e-4);
+%! assert (days (rmse (F, A, 1, 'omitnan')), 4.2426, 1e-4);
+%! assert (days (rmse (F, A, 2, 'omitnan')), [1; 7; 2; NaN]);
+%!test
+%! F = days ([17, 21; 1, 5; 13, 17]);
+%! A = days ([18, 19; 5, 4; 15, 13]);
+%! assert (days (rmse (F, A)), [2.6458, 2.6458], 1e-4);
+%! assert (days (rmse (F, A, 1)), [2.6458, 2.6458], 1e-4);
+%! assert (days (rmse (F, A, 2)), [1.5811; 2.9155; 3.1623], 1e-4);
+%! assert (days (rmse (F, A, 'all')), 2.6458, 1e-4);
+%! assert (days (rmse (F, A, [1, 2])), 2.6458, 1e-4);
+%!test
+%! F = days ([3, 5; -1, 2]);
+%! F(:,:,2) = days ([4, 2; 7, -4]);
+%! A = days ([6, 5; NaN, 3]);
+%! E = days (rmse (F, A, [1, 2]));
+%! assert (E(:,:,1), NaN);
+%! assert (E(:,:,2), NaN);
+%! E = days (rmse (F, A, [1, 2], 'omitnan'));
+%! assert (E(:,:,1), 1.8257, 1e-4);
+%! assert (E(:,:,2), 4.5461, 1e-4);
+%! assert (days (rmse (F, A, [1, 3])), [NaN, 3.8406], 1e-4);
+%! assert (days (rmse (F, A, [1, 3], 'omitnan')), [2.5495, 3.8406], 1e-4);
+%! assert (days (rmse (F, A, [2, 3])), [2.3452; NaN], 1e-4);
+%! assert (days (rmse (F, A, [2, 3], 'omitnan')), [2.3452; 5], 1e-4);
+%!test
+%! F = days ([2, 11, 6]);
+%! A = days ([3, 10, 8]);
+%! W = [1, 2, 1];
+%! assert (days (rmse (F, A, 'Weights', W)), 1.3229, 1e-4);
+%! assert (days (rmse (F, A, 1, 'Weights', W)), [1, 1, 2]);
+%! assert (days (rmse (F, A, 2, 'Weights', W)), 1.3229, 1e-4);
+%! assert (days (rmse (F, A, 3, 'Weights', W)), [1, 1, 2]);
+%!test
+%! F = days ([3; 7; 4; NaN]);
+%! A = days ([4; 0; 6; 4]);
+%! W = [1, 2, 1, 2];
+%! assert (days (rmse (F, A, 'Weights', W)), NaN);
+%! assert (days (rmse (F, A, 'omitnan', 'Weights', W)), 5.0744, 1e-4);
+%! assert (days (rmse (F, A, 1, 'omitnan', 'Weights', W)), 5.0744, 1e-4);
+%!test
+%! F = days ([3; 7; 4; NaN]);
+%! A = days ([4; 0; 6; 4]);
+%! W = [1; 2; 1; 2];
+%! assert (days (rmse (F, A, 2, 'Weights', W)), [1; 7; 2; NaN], 1e-4);
+%! assert (days (rmse (F, A, 2, 'omitnan', 'Weights', W)), [1; 7; 2; NaN], 1e-4);
+%! assert (days (rmse (F, A, 3, 'Weights', W)), [1; 7; 2; NaN], 1e-4);
+%! assert (days (rmse (F, A, 3, 'omitnan', 'Weights', W)), [1; 7; 2; NaN], 1e-4);
+%!test
+%! F = days ([3, 4; 7, 5; 4, 3; NaN, 8]);
+%! A = days ([4; 0; 6; 4]);
+%! W = [3; 1; 2; 2];
+%! E = days (rmse (F, A, 1, 'omitnan', 'Weights', W));
+%! assert (E, [3.1623, 3.0619], 1e-4);
+%!test
+%! F = days ([3, 4; 7, 5; 4, 3; NaN, 8]);
+%! A = days ([4; 0; 6; 4]);
+%! W = [3, 0.4; 1, 0.2; 2, 0.2; 2, 0.2];
+%! assert (days (rmse (F, A, 1, 'Weights', W)), [NaN, 3.1623], 1e-4);
+%! assert (days (rmse (F, A, 1, 'omitnan', 'Weights', W)), [3.1623, 3.1623], 1e-4);
+%! assert (days (rmse (F, A, 2, 'Weights', W)), [0.9393; 6.7082; 2.1106; NaN], 1e-4);
+%! E = rmse (F, A, 2, 'omitnan', 'Weights', W);
+%! assert (days (E), [0.9393; 6.7082; 2.1106; 4], 1e-4);
+%!test
+%! F = days ([3, 5; -1, 2]);
+%! F(:,:,2) = days ([4, NaN; 7, -4]);
+%! A = days ([6, 5; 2, 3]);
+%! W = [1, 1; 1, 1];
+%! Ew = rmse (F, A, [1, 2], 'omitnan', 'Weights', W);
+%! E = rmse (F, A, [1, 2], 'omitnan');
+%! assert_equal (Ew, E);
+%! Ew = rmse (F, A, [1, 3], 'omitnan','Weights', W);
+%! E = rmse (F, A, [1, 3], 'omitnan');
+%! assert_equal (Ew, E);
+%! Ew = rmse (F, A, [2, 3], 'omitnan','Weights', W);
+%! E = rmse (F, A, [2, 3], 'omitnan');
+%! assert_equal (Ew, E);
+%!test
+%! F = days ([3, 5; -1, 2]);
+%! F(:,:,2) = days ([4, 2; 7, -4]);
+%! A = days ([6, 5; 0, 3]);
+%! W = [1, 2; 1, 1];
+%! F1 = reshape (F, 1, 4, 2);
+%! A1 = reshape (A, 1, 4);
+%! W1 = reshape (W, 1, 4);
+%! E1w = days (rmse (F1, A1, 2, 'Weights', W1));
+%! assert (E1w(:,:,1), 1.4832, 1e-4);
+%! assert (E1w(:,:,2), 4.8990, 1e-4);
+%! E1 = days (rmse (F1, A1, 2));
+%! assert (E1(:,:,1), 1.6583, 1e-4);
+%! assert (E1(:,:,2), 5.2678, 1e-4);
+%! assert_equal (rmse (F, A, [1, 2], 'Weights', W), days (E1w));
+%! assert_equal (rmse (F, A, [1, 2]), days (E1));
+%!test
+%! F = days ([3, 5; -1, 2]);
+%! F(:,:,2) = days ([4, 2; 7, -4]);
+%! A = days ([6, 5; 0, 3]);
+%! W = [0.5, 2; 1, 3];
+%! F1 = reshape (F, 2, 4, 1);
+%! A1 = reshape (repmat (A, 1, 1, 2), 2, 4, 1);
+%! W1 = [0.5, 1, 2, 3; 0.5, 1, 2, 3];
+%! E1w = rmse (F1, A1, 2, 'Weights', W1);
+%! assert (days (E1w), [2.4651; 6.1582], 1e-4);
+%! E1 = rmse (F1, A1, 2);
+%! assert (days (E1), [2.3452; 5], 1e-4);
+%! assert_equal (rmse (F, A, [2, 3], 'Weights', W), E1w);
+%! assert_equal (rmse (F, A, [2, 3]), E1);
+%!error<duration.rmse: both F and A must be duration arrays.> ...
+%! rmse (days ([1, 2, 3]), 1:3)
+%!error<duration.rmse: both F and A must be duration arrays.> ...
+%! rmse (1:3, days ([1, 2, 3]))
+
+%!assert (skewness (days ([-1, 0, 1])), 0)
+%!assert (skewness (days ([-2, 0, 1])) < 0)
+%!assert (skewness (days ([-1, 0, 2])) > 0)
+%!assert (skewness (days ([-3, 0, 1])) == -1 * skewness ([-1, 0, 3]))
+%!assert (skewness (days (ones (3, 5))), NaN (1, 5))
+%!assert (skewness (days (1), [], 3), NaN)
+%!test
+%! x = [0; 0; 0; 1];
+%! y = days ([x, 2*x]);
+%! assert (skewness (y), 1.154700538379251 * [1 1], 5*eps);
+%!assert (skewness (days ([1:5, 10; 1:5, 10]),  0, 2), 1.439590274527954 * [1; 1], eps)
+%!assert (skewness (days ([1:5, 10; 1:5, 10]),  1, 2), 1.051328089232020 * [1; 1], 2*eps)
+%!assert (skewness (days ([1:5, 10; 1:5, 10]), [], 2), 1.051328089232020 * [1; 1], 2*eps)
+%!test
+%! x(:,:,1) = [0.5377, 0.3188, 3.5784; 1.8339, -1.3077, 2.7694; ...
+%!             -2.2588, -0.4336, -1.3499; 0.8622, 0.3426, 3.0349];
+%! x(:,:,2) = [0.7254, -0.1241, 0.6715; -0.0631, 1.4897, -1.2075; ...
+%!             0.7147 1.4090 0.7172; -0.2050, 1.4172, 1.6302];
+%! y = skewness (days (x));
+%! assert (y(:,:,1), [-0.8084, -0.5578, -1.0772], 1e-4);
+%! assert (y(:,:,2), [-0.0403, -1.1472, -0.6632], 1e-4);
+%! y = skewness (days (x), 1, 2);
+%! assert (y(:,:,1), [0.6956; -0.5575; 0.0049; 0.6033], 1e-4);
+%! assert (y(:,:,2), [-0.6969; 0.1828; 0.7071; -0.6714], 1e-4);
+%! y = skewness (days (x), 1, 3);
+%! assert (y, zeros (4, 3), 8 * eps);
+%!test
+%! x(:,:,1) = [0.5377, 0.3188, 3.5784; 1.8339, -1.3077, 2.7694; ...
+%!             -2.2588, -0.4336, -1.3499; 0.8622, 0.3426, 3.0349];
+%! x(:,:,2) = [0.7254, -0.1241, 0.6715; -0.0631, 1.4897, -1.2075; ...
+%!             0.7147 1.4090 0.7172; -0.2050, 1.4172, 1.6302];
+%! y = skewness (days (x), 1, "all");
+%! assert (y, 0.0916, 1e-4);
+%! y = skewness (days (x), 1, [1, 2]);
+%! assert (y(:,:,1), 0.1070, 1e-4);
+%! assert (y(:,:,2), -0.6263, 1e-4);
+%! y = skewness (days (x), 1, [1, 3]);
+%! assert (y, [-1.0755, -0.3108, -0.2209], 1e-4);
+
+%!test
+%! x = days (ones (10, 2));
+%! y = days ([1, 3]);
+%! assert_equal (std (x), days ([0, 0]));
+%! assert (days (std (y)), sqrt (2), sqrt (eps));
+%! assert_equal (std (x, 0, 2), days (zeros (10, 1)));
+%!assert_equal (std (days (ones (3, 1, 2)), 0, 2), days (zeros (3, 1, 2)))
+%!assert (days (std (days ([1, 2]), 0)), sqrt (2)/2, 5*eps)
+%!assert (days (std (days ([1, 2]), 1)), 0.5, 5*eps)
+%!assert_equal (std (days (1)), duration)
+%!assert_equal (std (days ([1, 2, 3]), [], 3), days ([0, 0, 0]))
+%!test
+%! x = days ([-10:10]);
+%! y = [x;x+5;x-5];
+%! assert_equal (std (x), days (sqrt (38.5)));
+%! assert_equal (std (y, [], 2), days (sqrt ([38.5; 38.5; 38.5])));
+%! assert_equal (std (y, 0, 2), days (sqrt ([38.5; 38.5; 38.5])));
+%! assert (days (std (y, 1, 2)), sqrt (ones (3,1) * 36.66666666666666), 1e-14);
+%! assert (days (std (y, "all")), sqrt (54.19354838709678), 1e-14);
+%! y(2,4) = NaN;
+%! assert (isequaln (std (y, "all"), days (NaN)));
+%! assert (isequaln (std (y, "all", "includenan"), days (NaN)));
+%! assert (days (std (y, "all", "omitnan")), sqrt (55.01533580116342), 1e-14);
+%! assert (isequaln (std (y, 0, 2, "includenan"), days (sqrt ([38.5; NaN; 38.5]))));
+%! assert (isequaln (std (y, [], 2), days (sqrt ([38.5; NaN; 38.5]))));
+%! assert (days (std (y, [], 2, "omitnan")), sqrt ([38.5; 37.81842105263158; 38.5]), 1e-14);
+%!assert (days (std (days ([1, NaN, 3]), [1 2 3], "omitnan")), sqrt (0.75), eps)
+%!assert (days (std (days ([1, 2, 3]), [1 NaN 3], "omitnan")), sqrt (0.75), eps)
+%!assert (days (std (days (magic (3)), [1 NaN 3], "omitnan")), sqrt ([3, 12, 3]), eps)
+%!assert (days (std (days ([1, NaN, 3]), [1 2 3], "omitnan", "all")), sqrt (0.75), eps)
+%!assert (days (std (days ([1, NaN, 3]), [1 2 3], "all", "omitnan")), sqrt (0.75), eps)
+%!assert (days (std (days ([1, 2, 3]), [1 NaN 3], "omitnan", "all")), sqrt (0.75), eps)
+%!assert (days (std (days ([1, NaN, 3]), [1 2 3], 2, "omitnan")), sqrt (0.75), eps)
+%!assert (days (std (days ([1, 2, 3]), [1 NaN 3], 2, "omitnan")), sqrt (0.75), eps)
+%!assert (days (std (days (magic (3)), [1 NaN 3], 1, "omitnan")), sqrt ([3, 12, 3]), eps)
+%!assert (days (std (days (magic (3)), [1 NaN 3], 2, "omitnan")), sqrt ([0.75;3;0.75]), eps)
+%!assert (days (std (days ([4, 4; 4, 6; 6, 6]), [1 3], 2, 'omitnan')), sqrt ([0;0.75;0]), eps)
+%!assert (days (std (days ([4, NaN; 4, 6; 6, 6]), [1, 2, 3], 1, 'omitnan')), sqrt ([1 0]))
+%!assert (days (std (days ([4, NaN; 4, 6; 6, 6]), [1, 3], 2, 'omitnan')), sqrt ([0;0.75;0]), eps)
+%!assert (days (std (days (3*reshape(1:18, [3, 3, 2])), [1, 2, 3], 1, 'omitnan')), ...
+%!        sqrt (ones (1, 3, 2) * 5))
+%!assert (days (std (reshape (days (1:18), [3, 3, 2]), [1, 2, 3], 2, 'omitnan')), ...
+%!        sqrt (5 * ones(3, 1, 2)))
+%!assert (days (std (3 * reshape (days (1:18), [3, 3, 2]), ones (3,3,2), [1 2], 'omitnan')), ...
+%!        sqrt (60 * ones (1, 1, 2)))
+%!assert (days (std (3*reshape(days (1:18), [3, 3, 2]), ones (3,3,2), [1 4], 'omitnan')), ...
+%!        sqrt (6 * ones (1, 3, 2)))
+%!assert (days (std (6 * reshape (days (1:18), [3, 3, 2]), ones (3,3,2), [1:3], 'omitnan')), sqrt (969))
+%!test
+%! x = reshape (days (1:18), [3, 3, 2]);
+%! x([2, 14]) = NaN;
+%! w = ones (3,3,2);
+%! assert_equal (std (16 * x, w, [1:3], 'omitnan'), days (sqrt (6519)));
+
 ################################################################################
 ##                   ** Sort, Filter, and Set Operations **                   ##
 ################################################################################
