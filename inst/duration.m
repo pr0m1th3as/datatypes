@@ -2594,28 +2594,351 @@ classdef duration
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'bounds'           'center'           'histc'            'iqr'             ##
-## 'kendal'           'kurtosis'         'mad'              'mape'            ##
-## 'mean'             'median'           'mode'             'prctile'         ##
-## 'quantile'         'range'            'rmse'             'skewness'        ##
-## 'spearman'         'statistics'       'std'              'var'             ##
+## 'kurtosis'         'mad'              'mape'             'mean'            ##
+## 'median'           'mode'             'prctile'          'quantile'        ##
+## 'range'            'rmse'             'skewness'         'std'             ##
 ##                                                                            ##
 ################################################################################
 
   methods (Access = public)
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {[@var{s}, @var{l}] =} bounds (@var{D})
+    ## @deftypefnx {duration} {[@var{s}, @var{l}] =} bounds (@var{D}, @var{dim})
+    ## @deftypefnx {duration} {[@var{s}, @var{l}] =} bounds (@var{D}, @var{vecdim})
+    ## @deftypefnx {duration} {[@var{s}, @var{l}] =} bounds (@var{D}, @qcode{'all'})
+    ## @deftypefnx {duration} {[@var{s}, @var{l}] =} bounds (@dots{}, @var{nanflag})
+    ##
+    ## Return the smallest and largest values of a duration array.
+    ##
+    ## This method is a specialization of the core @code{bounds} function for
+    ## duration arrays.  The functionality is identical to core @code{bounds}
+    ## function.  Type @code{help bounds} for more information.
+    ##
+    ## @end deftypefn
+    function [s, l] = bounds (D, varargin)
+      if (nargin < 1 || nargin > 3)
+        error ("duration.bounds: invalid number of input arguments.");
+      endif
+      if (isempty (varargin))
+        s = min (D);
+        l = max (D);
+      else
+        s = min (D, [], varargin{:});
+        l = max (D, [], varargin{:});
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{C} =} center (@var{D})
+    ## @deftypefnx {duration} {@var{C} =} center (@var{D}, @var{dim})
+    ## @deftypefnx {duration} {@var{C} =} center (@var{D}, @var{vecdim})
+    ## @deftypefnx {duration} {@var{C} =} center (@var{D}, @qcode{'all'})
+    ## @deftypefnx {duration} {@var{C} =} center (@dots{}, @var{nanflag})
+    ##
+    ## Center values in a duration array.
+    ##
+    ## This method overloads the core @code{center} function for duration
+    ## arrays.  The functionality is identical to core @code{center} function.
+    ## Type @code{help center} for more information.
+    ##
+    ## @end deftypefn
+    function C = center (D, varargin)
+      C = D;
+      C.Days = center (D.Days, varargin{:});
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{n} =} histc (@var{D}, @var{edges})
+    ## @deftypefnx {duration} {@var{n} =} histc (@var{D}, @var{edges}, @var{dim})
+    ## @deftypefnx {duration} {[@var{n}, @var{idx}] =} histc (@dots{})
+    ##
+    ## Compute histogram counts in a duration array.
+    ##
+    ## This method overloads the core @code{histc} function for duration
+    ## arrays.  The functionality is identical to core @code{histc} function.
+    ## Type @code{help histc} for more information.
+    ##
+    ## @end deftypefn
+    function varargout = histc (D, varargin)
+      if (nargout > 1)
+        [varargout{1}, varargout{2}] = histc (D.Days, varargin{:});
+      else
+        varargout{1} = histc (D.Days, varargin{:});
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{r} =} iqr (@var{D})
+    ## @deftypefnx {duration} {@var{r} =} iqr (@var{D}, @var{dim})
+    ## @deftypefnx {duration} {@var{r} =} iqr (@var{D}, @var{vecdim})
+    ## @deftypefnx {duration} {@var{r} =} iqr (@var{D}, @qcode{'all'})
+    ## @deftypefnx {duration} {[@var{r}, @var{q}] =} iqr (@dots{})
+    ##
+    ## Compute the interquartile range of a duration array.
+    ##
+    ## This method overloads the core @code{iqr} function for duration arrays.
+    ## The functionality is identical to core @code{iqr} function.
+    ## Type @code{help iqr} for more information.
+    ##
+    ## @end deftypefn
+    function varargout = iqr (D, varargin)
+      R = D;
+      if (nargout > 1)
+        [R.Days, varargout{2}] = iqr (D.Days, varargin{:});
+      else
+        R.Days = iqr (D.Days, varargin{:});
+      endif
+      varargout{1} = R;
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{k} =} kurtosis (@var{D})
+    ## @deftypefnx {duration} {@var{k} =} kurtosis (@var{D}, @var{flag})
+    ## @deftypefnx {duration} {@var{k} =} kurtosis (@var{D}, @var{flag}, @var{dim})
+    ## @deftypefnx {duration} {@var{k} =} kurtosis (@var{D}, @var{flag}, @var{vecdim})
+    ## @deftypefnx {duration} {@var{k} =} kurtosis (@var{D}, @var{flag}, @qcode{'all'})
+    ##
+    ## Compute the sample kurtosis of a duration array.
+    ##
+    ## This method overloads the core @code{kurtosis} function for duration
+    ## arrays.  The functionality is identical to core @code{kurtosis} function.
+    ## Type @code{help kurtosis} for more information.
+    ##
+    ## @end deftypefn
+    function k = kurtosis (D, varargin)
+      k = kurtosis (D.Days, varargin{:});
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{M} =} mad (@var{D})
+    ## @deftypefnx {duration} {@var{M} =} mad (@var{D}, @var{opt})
+    ## @deftypefnx {duration} {@var{M} =} mad (@var{D}, @var{opt}, @var{dim})
+    ## @deftypefnx {duration} {@var{M} =} mad (@var{D}, @var{opt}, @var{vecdim})
+    ## @deftypefnx {duration} {@var{M} =} mad (@var{D}, @var{opt}, @qcode{'all'})
+    ##
+    ## Compute the mean or median absolute deviation of a duration array.
+    ##
+    ## This method overloads the core @code{mad} function for duration arrays.
+    ## The functionality is identical to core @code{mad} function.
+    ## Type @code{help mad} for more information.
+    ##
+    ## @end deftypefn
+    function M = mad (D, varargin)
+      M = D;
+      M.Days = mad (D.Days, varargin{:});
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{E} =} mape (@var{F}, @var{A})
+    ## @deftypefnx {duration} {@var{E} =} mape (@var{F}, @var{A}, @var{dim})
+    ## @deftypefnx {duration} {@var{E} =} mape (@var{F}, @var{A}, @var{vecdim})
+    ## @deftypefnx {duration} {@var{E} =} mape (@var{F}, @var{A}, @qcode{'all'})
+    ## @deftypefnx {duration} {@var{E} =} mape (@dots{}, @var{nanflag})
+    ## @deftypefnx {duration} {@var{E} =} mape (@dots{}, @var{zeroflag})
+    ## @deftypefnx {duration} {@var{E} =} mape (@dots{}, @qcode{'Weights'}, @var{W})
+    ##
+    ## Compute the mean absolute percentage error between duration arrays.
+    ##
+    ## This method overloads the core @code{mape} function for duration arrays.
+    ## The functionality is identical to core @code{mape} function.
+    ## Type @code{help mape} for more information.
+    ##
+    ## @end deftypefn
+    function E = mape (F, A, varargin)
+      E = F;
+      E.Days = mape (F.Days, A.Days, varargin{:});
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{M} =} mean (@var{D})
+    ## @deftypefnx {duration} {@var{M} =} mean (@var{D}, @var{dim})
+    ## @deftypefnx {duration} {@var{M} =} mean (@var{D}, @var{vecdim})
+    ## @deftypefnx {duration} {@var{M} =} mean (@var{D}, @qcode{'all'})
+    ## @deftypefnx {duration} {@var{M} =} mean (@dots{}, @var{nanflag})
+    ## @deftypefnx {duration} {@var{M} =} mean (@dots{}, @var{outtype})
+    ## @deftypefnx {duration} {@var{M} =} mean (@dots{}, @qcode{'Weights'}, @var{W})
+    ##
+    ## Compute the mean of the elements of a duration array.
+    ##
+    ## This method overloads the core @code{mean} function for duration arrays.
+    ## The functionality is identical to core @code{mean} function.
+    ## Type @code{help mean} for more information.
+    ##
+    ## @end deftypefn
     function M = mean (D, varargin)
       M = D;
       M.Days = mean (D.Days, varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{M} =} median (@var{D})
+    ## @deftypefnx {duration} {@var{M} =} median (@var{D}, @var{dim})
+    ## @deftypefnx {duration} {@var{M} =} median (@var{D}, @var{vecdim})
+    ## @deftypefnx {duration} {@var{M} =} median (@var{D}, @qcode{'all'})
+    ## @deftypefnx {duration} {@var{M} =} median (@dots{}, @var{nanflag})
+    ## @deftypefnx {duration} {@var{M} =} median (@dots{}, @var{outtype})
+    ##
+    ## Compute the median value of the elements of a duration array.
+    ##
+    ## This method overloads the core @code{median} function for duration
+    ## arrays.  The functionality is identical to core @code{median} function.
+    ## Type @code{help median} for more information.
+    ##
+    ## @end deftypefn
     function M = median (D, varargin)
       M = D;
       M.Days = median (D.Days, varargin{:});
     endfunction
 
-    function M = mode (D, varargin)
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{M} =} mode (@var{x})
+    ## @deftypefnx {duration} {@var{M} =} mode (@var{x}, @var{dim})
+    ## @deftypefnx {duration} {@var{M} =} mode (@var{x}, @var{vecdim})
+    ## @deftypefnx {duration} {@var{M} =} mode (@var{x}, @qcode{'all'})
+    ## @deftypefnx {duration} {[@var{M}, @var{F}, @var{C}] =} mode (@dots{})
+    ##
+    ## Compute the most frequently occurring value in a duration array.
+    ##
+    ## This method overloads the core @code{mode} function for duration arrays.
+    ## The functionality is identical to core @code{mode} function.
+    ## Type @code{help mode} for more information.
+    ##
+    ## @end deftypefn
+    function [M, F, C] = mode (D, varargin)
       M = D;
-      M.Days = mode (D.Days, varargin{:});
+      [M.Days, F, C] = mode (D.Days, varargin{:});
+      if (nargout == 3)
+        C = cellfun ('days', C, 'UniformOutput', false);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{Q} =} prctile (@var{D})
+    ## @deftypefnx {duration} {@var{q} =} prctile (@var{D}, @var{p})
+    ## @deftypefnx {duration} {@var{Q} =} prctile (@var{D}, @var{p}, @var{dim})
+    ## @deftypefnx {duration} {@var{Q} =} prctile (@var{D}, @var{p}, @var{vecdim})
+    ## @deftypefnx {duration} {@var{Q} =} prctile (@var{D}, @var{p}, @qcode{'all'})
+    ## @deftypefnx {duration} {@var{Q} =} prctile (@var{D}, @var{p}, @dots{}, @var{method})
+    ##
+    ## Compute the percentiles of a duration array.
+    ##
+    ## This method overloads the core @code{prctile} function for duration
+    ## arrays.  The functionality is identical to core @code{prctile} function.
+    ## Type @code{help prctile} for more information.
+    ##
+    ## @end deftypefn
+    function Q = prctile (D, varargin)
+      Q = D;
+      Q.Days = prctile (D.Days, varargin{:});
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{Q} =} quantile (@var{D})
+    ## @deftypefnx {duration} {@var{Q} =} quantile (@var{D}, @var{p})
+    ## @deftypefnx {duration} {@var{Q} =} quantile (@var{D}, @var{n})
+    ## @deftypefnx {duration} {@var{Q} =} quantile (@var{D}, @dots{}, @var{dim})
+    ## @deftypefnx {duration} {@var{Q} =} quantile (@var{D}, @dots{}, @var{vecdim})
+    ## @deftypefnx {duration} {@var{Q} =} quantile (@var{D}, @dots{}, @qcode{'all'})
+    ## @deftypefnx {duration} {@var{Q} =} quantile (@var{D}, @var{p}, @dots{}, @var{method})
+    ## @deftypefnx {duration} {@var{Q} =} quantile (@var{D}, @var{n}, @dots{}, @var{method})
+    ##
+    ## Compute the quantiles of a duration array.
+    ##
+    ## This method overloads the core @code{quantile} function for duration
+    ## arrays.  The functionality is identical to core @code{quantile} function.
+    ## Type @code{help quantile} for more information.
+    ##
+    ## @end deftypefn
+    function Q = quantile (D, varargin)
+      Q = D;
+      Q.Days = quantile (D.Days, varargin{:});
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{R} =} range (@var{D})
+    ## @deftypefnx {duration} {@var{R} =} range (@var{D}, @var{dim})
+    ## @deftypefnx {duration} {@var{R} =} range (@var{D}, @var{vecdim})
+    ## @deftypefnx {duration} {@var{R} =} range (@var{D}, @qcode{'all'})
+    ## @deftypefnx {duration} {@var{R} =} range (@dots{}, @var{nanflag})
+    ##
+    ## Compute the range of a duration array.
+    ##
+    ## This method overloads the core @code{range} function for duration arrays.
+    ## The functionality is identical to core @code{range} function.
+    ## Type @code{help range} for more information.
+    ##
+    ## @end deftypefn
+    function R = range (D, varargin)
+      R = D;
+      R.Days = range (D.Days, varargin{:});
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{E} =} rmse (@var{F}, @var{A})
+    ## @deftypefnx {duration} {@var{E} =} rmse (@var{F}, @var{A}, @var{dim})
+    ## @deftypefnx {duration} {@var{E} =} rmse (@var{F}, @var{A}, @var{vecdim})
+    ## @deftypefnx {duration} {@var{E} =} rmse (@var{F}, @var{A}, @qcode{'all'})
+    ## @deftypefnx {duration} {@var{E} =} rmse (@dots{}, @var{nanflag})
+    ## @deftypefnx {duration} {@var{E} =} rmse (@dots{}, @qcode{'Weights'}, @var{W})
+    ##
+    ## Compute the root mean squared error between duration arrays.
+    ##
+    ## This method overloads the core @code{rmse} function for duration arrays.
+    ## The functionality is identical to core @code{rmse} function.
+    ## Type @code{help rmse} for more information.
+    ##
+    ## @end deftypefn
+    function E = rmse (F, A, varargin)
+      E = F;
+      E.Days = rmse (F.Days, A.Days, varargin{:});
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{y} =} skewness (@var{D})
+    ## @deftypefnx {duration} {@var{y} =} skewness (@var{D}, @var{flag})
+    ## @deftypefnx {duration} {@var{y} =} skewness (@var{D}, @var{flag}, @var{dim})
+    ## @deftypefnx {duration} {@var{y} =} skewness (@var{D}, @var{flag}, @var{vecdim})
+    ## @deftypefnx {duration} {@var{y} =} skewness (@var{D}, @var{flag}, @qcode{'all'})
+    ##
+    ## Compute the sample skewness of a duration array.
+    ##
+    ## This method overloads the core @code{skewness} function for duration
+    ## arrays.  The functionality is identical to core @code{skewness} function.
+    ## Type @code{help skewness} for more information.
+    ##
+    ## @end deftypefn
+    function y = skewness (D, varargin)
+      y = skewness (D.Days, varargin{:});
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{S} =} std (@var{D})
+    ## @deftypefnx {duration} {@var{S} =} std (@var{D}, @var{w})
+    ## @deftypefnx {duration} {@var{S} =} std (@var{D}, @var{w}, @var{dim})
+    ## @deftypefnx {duration} {@var{S} =} std (@var{D}, @var{w}, @var{vecdim})
+    ## @deftypefnx {duration} {@var{S} =} std (@var{D}, @var{w}, @qcode{'all'})
+    ## @deftypefnx {duration} {@var{S} =} std (@dots{}, @var{nanflag})
+    ## @deftypefnx {duration} {[@var{S}, @var{M}] =} std (@dots{})
+    ##
+    ## Compute the standard deviation of a duration array.
+    ##
+    ## This method overloads the core @code{std} function for duration arrays.
+    ## The functionality is identical to core @code{std} function.
+    ## Type @code{help std} for more information.
+    ##
+    ## @end deftypefn
+    function varargout = std (D, varargin)
+      if (nargout > 1)
+        S = M = D;
+        [S.Days, M.Days] = std (D.Days, varargin{:});
+        varargout{1} = S;
+        varargout{2} = M;
+      else
+        S = D;
+        S.Days = std (D.Days, varargin{:});
+        varargout{1} = S;
+      endif
     endfunction
 
   endmethods
