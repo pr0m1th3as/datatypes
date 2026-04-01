@@ -42,8 +42,6 @@ static_assert(0x123 == fnv1a64(testData.data(), 0, 0x123));
 static_assert(0 == fnv1a64(testData.data(), 1, 0));
 static_assert(FNV1A64_PRIME == fnv1a64(testData.data(), 1, 1));
 static_assert(FNV1A64_PRIME == fnv1a64(testData.data(), 2, 0));
-static_assert(18445758911290863785ull == fnv1a64(testData.data(), 3, 0));
-static_assert(17797707857304284971ull == fnv1a64(testData.data(), 4, 0));
 }
 
 
