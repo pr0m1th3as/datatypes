@@ -2744,10 +2744,12 @@ classdef duration
     ## The functionality is identical to core @code{mape} function.
     ## Type @code{help mape} for more information.
     ##
+    ## Note that MAPE is expressed as a percentage.  Thus, the returned argument
+    ## is a numeric array of double type and not a duration array.
+    ##
     ## @end deftypefn
     function E = mape (F, A, varargin)
-      E = F;
-      E.Days = mape (F.Days, A.Days, varargin{:});
+      E = mape (F.Days, A.Days, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
