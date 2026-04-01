@@ -1843,9 +1843,8 @@ classdef duration
     ## the same size as the input array @var{A}.
     ##
     ## @end deftypefn
-    function B = abs (A)
-      B = A;
-      B.Days = abs (A.Days);
+    function this = abs (this)
+      this.Days = abs (this.Days);
     endfunction
 
     ## -*- texinfo -*-
@@ -1898,9 +1897,8 @@ classdef duration
     ## @code{@var{B} = + @var{A}} and returns the input array unaltered.
     ##
     ## @end deftypefn
-    function B = uplus (A)
-      B = A;
-      B.Days = A.Days;
+    function this = uplus (this)
+
     endfunction
 
     ## -*- texinfo -*-
@@ -1954,9 +1952,8 @@ classdef duration
     ## negated.
     ##
     ## @end deftypefn
-    function B = uminus (A)
-      B = A;
-      B.Days = - A.Days;
+    function this = uminus (this)
+      this.Days = - this.Days;
     endfunction
 
     ## -*- texinfo -*-
@@ -2192,10 +2189,9 @@ classdef duration
     ## @code{help diff} for more information.
     ##
     ## @end deftypefn
-    function DT = diff (D, varargin)
-      DT = D;
-      DT.Days = diff (D.Days, varargin{:});
-      DT = fix_zero_precision (DT);
+    function this = diff (this, varargin)
+      this.Days = diff (this.Days, varargin{:});
+      this = fix_zero_precision (this);
     endfunction
 
     ## -*- texinfo -*-
@@ -2212,14 +2208,13 @@ classdef duration
     ## @code{help sum} for more information.
     ##
     ## @end deftypefn
-    function S = sum (D, varargin)
+    function this = sum (this, varargin)
       ## Force strings to character vectors or cell arrays of character vectors
       if (any (cellfun ('isstring', varargin)))
         [varargin{:}] = convertStringsToChars (varargin{:});
       endif
-      S = D;
-      S.Days = sum (D.Days, varargin{:});
-      S = fix_zero_precision (S);
+      this.Days = sum (this.Days, varargin{:});
+      this = fix_zero_precision (this);
     endfunction
 
     ## -*- texinfo -*-
@@ -2237,14 +2232,13 @@ classdef duration
     ## Type @code{help cumsum} for more information.
     ##
     ## @end deftypefn
-    function CS = cumsum (D, varargin)
+    function this = cumsum (this, varargin)
       ## Force strings to character vectors or cell arrays of character vectors
       if (any (cellfun ('isstring', varargin)))
         [varargin{:}] = convertStringsToChars (varargin{:});
       endif
-      CS = D;
-      CS.Days = cumsum (D.Days, varargin{:});
-      CS = fix_zero_precision (CS);
+      this.Days = cumsum (this.Days, varargin{:});
+      this = fix_zero_precision (this);
     endfunction
 
     ## -*- texinfo -*-
@@ -2321,26 +2315,25 @@ classdef duration
     ## Type @code{help cummin} for more information.
     ##
     ## @end deftypefn
-    function varargout = cummin (D, varargin)
-      M = D;
+    function varargout = cummin (this, varargin)
       if (isempty (varargin))
         if (nargout > 1)
-          [M.Days, varargout{2}] = cummin (D.Days);
+          [this.Days, varargout{2}] = cummin (this.Days);
         else
-          M.Days = cummin (D.Days);
+          this.Days = cummin (this.Days);
         endif
-        varargout{1} = M;
+        varargout{1} = this;
       else
         ## Force strings to character vectors or cell arrays of character vectors
         if (any (cellfun ('isstring', varargin)))
           [varargin{:}] = convertStringsToChars (varargin{:});
         endif
         if (nargout > 1)
-          [M.Days, varargout{2}] = cummin (D.Days, varargin{:});
+          [this.Days, varargout{2}] = cummin (this.Days, varargin{:});
         else
-          M.Days = cummin (D.Days, varargin{:});
+          this.Days = cummin (this.Days, varargin{:});
         endif
-        varargout{1} = M;
+        varargout{1} = this;
       endif
     endfunction
 
@@ -2418,26 +2411,25 @@ classdef duration
     ## Type @code{help cummax} for more information.
     ##
     ## @end deftypefn
-    function varargout = cummax (D, varargin)
-      M = D;
+    function varargout = cummax (this, varargin)
       if (isempty (varargin))
         if (nargout > 1)
-          [M.Days, varargout{2}] = cummax (D.Days);
+          [this.Days, varargout{2}] = cummax (this.Days);
         else
-          M.Days = cummax (D.Days);
+          this.Days = cummax (this.Days);
         endif
-        varargout{1} = M;
+        varargout{1} = this;
       else
         ## Force strings to character vectors or cell arrays of character vectors
         if (any (cellfun ('isstring', varargin)))
           [varargin{:}] = convertStringsToChars (varargin{:});
         endif
         if (nargout > 1)
-          [M.Days, varargout{2}] = cummax (D.Days, varargin{:});
+          [this.Days, varargout{2}] = cummax (this.Days, varargin{:});
         else
-          M.Days = cummax (D.Days, varargin{:});
+          this.Days = cummax (this.Days, varargin{:});
         endif
-        varargout{1} = M;
+        varargout{1} = this;
       endif
     endfunction
 
@@ -2465,18 +2457,17 @@ classdef duration
     ## @end itemize
     ##
     ## @end deftypefn
-    function B = floor (A, unit = 'seconds')
-      B = A;
+    function this = floor (this, unit = 'seconds')
       if (strcmpi (unit, 'seconds'))
-        B.Days = floor (seconds (A)) / 86400;
+        this.Days = floor (seconds (this)) / 86400;
       elseif (strcmpi (unit, 'minutes'))
-        B.Days = floor (minutes (A)) / 1440;
+        this.Days = floor (minutes (this)) / 1440;
       elseif (strcmpi (unit, 'hours'))
-        B.Days = floor (hours (A)) / 24;
+        this.Days = floor (hours (this)) / 24;
       elseif (strcmpi (unit, 'days'))
-        B.Days = floor (A.Days);
+        this.Days = floor (this.Days);
       elseif (strcmpi (unit, 'years'))
-        B.Days = floor (years (A)) * 365.2425;
+        this.Days = floor (years (this)) * 365.2425;
       else
         error ("duration.floor: invalid UNIT.");
       endif
@@ -2506,18 +2497,17 @@ classdef duration
     ## @end itemize
     ##
     ## @end deftypefn
-    function B = ceil (A, unit = 'seconds')
-      B = A;
+    function this = ceil (this, unit = 'seconds')
       if (strcmpi (unit, 'seconds'))
-        B.Days = ceil (seconds (A)) / 86400;
+        this.Days = ceil (seconds (this)) / 86400;
       elseif (strcmpi (unit, 'minutes'))
-        B.Days = ceil (minutes (A)) / 1440;
+        this.Days = ceil (minutes (this)) / 1440;
       elseif (strcmpi (unit, 'hours'))
-        B.Days = ceil (hours (A)) / 24;
+        this.Days = ceil (hours (this)) / 24;
       elseif (strcmpi (unit, 'days'))
-        B.Days = ceil (A.Days);
+        this.Days = ceil (this.Days);
       elseif (strcmpi (unit, 'years'))
-        B.Days = ceil (years (A)) * 365.2425;
+        this.Days = ceil (years (this)) * 365.2425;
       else
         error ("duration.ceil: invalid UNIT.");
       endif
@@ -2547,18 +2537,17 @@ classdef duration
     ## @end itemize
     ##
     ## @end deftypefn
-    function B = round (A, unit = 'seconds')
-      B = A;
+    function this = round (this, unit = 'seconds')
       if (strcmpi (unit, 'seconds'))
-        B.Days = round (seconds (A)) / 86400;
+        this.Days = round (seconds (this)) / 86400;
       elseif (strcmpi (unit, 'minutes'))
-        B.Days = round (minutes (A)) / 1440;
+        this.Days = round (minutes (this)) / 1440;
       elseif (strcmpi (unit, 'hours'))
-        B.Days = round (hours (A)) / 24;
+        this.Days = round (hours (this)) / 24;
       elseif (strcmpi (unit, 'days'))
-        B.Days = round (A.Days);
+        this.Days = round (A.Days);
       elseif (strcmpi (unit, 'years'))
-        B.Days = round (years (A)) * 365.2425;
+        this.Days = round (years (this)) * 365.2425;
       else
         error ("duration.round: invalid UNIT.");
       endif
@@ -2582,8 +2571,8 @@ classdef duration
     ## @end itemize
     ##
     ## @end deftypefn
-    function out = sign (A)
-      out = sign (A.Days);
+    function out = sign (this)
+      out = sign (this.Days);
     endfunction
 
   endmethods
@@ -2616,16 +2605,16 @@ classdef duration
     ## function.  Type @code{help bounds} for more information.
     ##
     ## @end deftypefn
-    function [s, l] = bounds (D, varargin)
+    function [s, l] = bounds (this, varargin)
       if (nargin < 1 || nargin > 3)
         error ("duration.bounds: invalid number of input arguments.");
       endif
       if (isempty (varargin))
-        s = min (D);
-        l = max (D);
+        s = min (this);
+        l = max (this);
       else
-        s = min (D, [], varargin{:});
-        l = max (D, [], varargin{:});
+        s = min (this, [], varargin{:});
+        l = max (this, [], varargin{:});
       endif
     endfunction
 
@@ -2643,9 +2632,8 @@ classdef duration
     ## Type @code{help center} for more information.
     ##
     ## @end deftypefn
-    function C = center (D, varargin)
-      C = D;
-      C.Days = center (D.Days, varargin{:});
+    function this = center (this, varargin)
+      this.Days = center (this.Days, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -2682,14 +2670,13 @@ classdef duration
     ## Type @code{help iqr} for more information.
     ##
     ## @end deftypefn
-    function varargout = iqr (D, varargin)
-      R = D;
+    function varargout = iqr (this, varargin)
       if (nargout > 1)
-        [R.Days, varargout{2}] = iqr (D.Days, varargin{:});
+        [this.Days, varargout{2}] = iqr (this.Days, varargin{:});
       else
-        R.Days = iqr (D.Days, varargin{:});
+        this.Days = iqr (this.Days, varargin{:});
       endif
-      varargout{1} = R;
+      varargout{1} = this;
     endfunction
 
     ## -*- texinfo -*-
@@ -2727,9 +2714,8 @@ classdef duration
     ## Type @code{help mad} for more information.
     ##
     ## @end deftypefn
-    function M = mad (D, varargin)
-      M = D;
-      M.Days = mad (D.Days, varargin{:});
+    function this = mad (this, varargin)
+      this.Days = mad (this.Days, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -2748,10 +2734,14 @@ classdef duration
     ## Type @code{help mape} for more information.
     ##
     ## Note that MAPE is expressed as a percentage.  Thus, the returned argument
-    ## is a numeric array of double type and not a duration array.
+    ## is a numeric array of double type and not a duration array.  However,
+    ## both @var{F} and @var{A} must be duration arrays.
     ##
     ## @end deftypefn
     function E = mape (F, A, varargin)
+      if (! isduration (F) || ! isduration (A))
+        error ("duration.mape: both F and A must be durationn arrays.");
+      endif
       E = mape (F.Days, A.Days, varargin{:});
     endfunction
 
@@ -2771,9 +2761,8 @@ classdef duration
     ## Type @code{help mean} for more information.
     ##
     ## @end deftypefn
-    function M = mean (D, varargin)
-      M = D;
-      M.Days = mean (D.Days, varargin{:});
+    function this = mean (this, varargin)
+      this.Days = mean (this.Days, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -2791,16 +2780,15 @@ classdef duration
     ## Type @code{help median} for more information.
     ##
     ## @end deftypefn
-    function M = median (D, varargin)
-      M = D;
-      M.Days = median (D.Days, varargin{:});
+    function this = median (this, varargin)
+      this.Days = median (this.Days, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn  {duration} {@var{M} =} mode (@var{x})
-    ## @deftypefnx {duration} {@var{M} =} mode (@var{x}, @var{dim})
-    ## @deftypefnx {duration} {@var{M} =} mode (@var{x}, @var{vecdim})
-    ## @deftypefnx {duration} {@var{M} =} mode (@var{x}, @qcode{'all'})
+    ## @deftypefn  {duration} {@var{M} =} mode (@var{D})
+    ## @deftypefnx {duration} {@var{M} =} mode (@var{D}, @var{dim})
+    ## @deftypefnx {duration} {@var{M} =} mode (@var{D}, @var{vecdim})
+    ## @deftypefnx {duration} {@var{M} =} mode (@var{D}, @qcode{'all'})
     ## @deftypefnx {duration} {[@var{M}, @var{F}, @var{C}] =} mode (@dots{})
     ##
     ## Compute the most frequently occurring value in a duration array.
@@ -2810,9 +2798,8 @@ classdef duration
     ## Type @code{help mode} for more information.
     ##
     ## @end deftypefn
-    function [M, F, C] = mode (D, varargin)
-      M = D;
-      [M.Days, F, C] = mode (D.Days, varargin{:});
+    function [this, F, C] = mode (this, varargin)
+      [this.Days, F, C] = mode (this.Days, varargin{:});
       if (nargout == 3)
         C = cellfun ('days', C, 'UniformOutput', false);
       endif
@@ -2833,9 +2820,8 @@ classdef duration
     ## Type @code{help prctile} for more information.
     ##
     ## @end deftypefn
-    function Q = prctile (D, varargin)
-      Q = D;
-      Q.Days = prctile (D.Days, varargin{:});
+    function this = prctile (this, varargin)
+      this.Days = prctile (this.Days, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -2855,9 +2841,8 @@ classdef duration
     ## Type @code{help quantile} for more information.
     ##
     ## @end deftypefn
-    function Q = quantile (D, varargin)
-      Q = D;
-      Q.Days = quantile (D.Days, varargin{:});
+    function this = quantile (this, varargin)
+      this.Days = quantile (this.Days, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -2874,9 +2859,8 @@ classdef duration
     ## Type @code{help range} for more information.
     ##
     ## @end deftypefn
-    function R = range (D, varargin)
-      R = D;
-      R.Days = range (D.Days, varargin{:});
+    function this = range (this, varargin)
+      this.Days = range (this.Days, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -2894,9 +2878,11 @@ classdef duration
     ## Type @code{help rmse} for more information.
     ##
     ## @end deftypefn
-    function E = rmse (F, A, varargin)
-      E = F;
-      E.Days = rmse (F.Days, A.Days, varargin{:});
+    function this = rmse (this, A, varargin)
+      if (! isduration (F) || ! isduration (A))
+        error ("duration.mape: both F and A must be durationn arrays.");
+      endif
+      this.Days = rmse (this.Days, A.Days, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -2936,16 +2922,15 @@ classdef duration
     ## Type @code{help std} for more information.
     ##
     ## @end deftypefn
-    function varargout = std (D, varargin)
+    function varargout = std (this, varargin)
       if (nargout > 1)
-        S = M = D;
-        [S.Days, M.Days] = std (D.Days, varargin{:});
-        varargout{1} = S;
+        M = this;
+        [this.Days, M.Days] = std (this.Days, varargin{:});
+        varargout{1} = this;
         varargout{2} = M;
       else
-        S = D;
-        S.Days = std (D.Days, varargin{:});
-        varargout{1} = S;
+        this.Days = std (this.Days, varargin{:});
+        varargout{1} = this;
       endif
     endfunction
 
