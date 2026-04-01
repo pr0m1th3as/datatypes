@@ -189,8 +189,9 @@ function [y, i, j] = __unique__ (x, varargin)
 
       ## Fix second output for 'stable' && 'last'
       if (! optfirst)
-        uniquex = ! [match(:); false];
-        i = kk(uniquex)(j(uniquex));
+        uniquex = ! [false; match(:)];
+        #i = kk(uniquex)(j(uniquex));
+        i = find (uniquex);
       endif
 
     endif
