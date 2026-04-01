@@ -3287,6 +3287,61 @@ classdef duration
       B = subset (A, index, ':');
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{B} =} unique (@var{A})
+    ## @deftypefnx {duration} {@var{B} =} unique (@var{A}, @var{setOrder})
+    ## @deftypefnx {duration} {@var{B} =} unique (@var{A}, @var{occurrence})
+    ## @deftypefnx {duration} {@var{B} =} unique (@var{A}, @var{setOrder}, @var{occurrence})
+    ## @deftypefnx {duration} {@var{B} =} unique (@var{A}, @var{occurrence}, @var{setOrder})
+    ## @deftypefnx {duration} {@var{B} =} unique (@var{A}, @dots{}, @qcode{'rows'})
+    ## @deftypefnx {duration} {[@var{B}, @var{ixA}, @var{ixB}] =} unique (@dots{})
+    ##
+    ## Unique values in a duration array.
+    ##
+    ## @code{@var{B} = unique (@var{A})} returns the unique values of the
+    ## duration array @var{A} in sorted order.
+    ##
+    ## @code{@var{B} = unique (@var{A}, @var{setOrder})} returns the unique
+    ## values of the duration array @var{A} in an order as specified by
+    ## @var{setOrder}, which can be either of the following values:
+    ##
+    ## @itemize
+    ## @item @qcode{'sorted'} (default) returns the unique values sorted in
+    ## ascending order.
+    ## @item @qcode{'stable'} returns the unique values according to their order
+    ## of occurrence.
+    ## @end itemize
+    ##
+    ## @code{@var{B} = unique (@var{A}, @var{occurrence})} returns the unique
+    ## values of the duration array @var{tblA} according to their order of
+    ## occurrence.  @var{occurrence} can be either of the following values:
+    ##
+    ## @itemize
+    ## @item @qcode{'first'} (default) returns the first occurrence of each
+    ## unique value, i.e. the lowest possible indices are returned.
+    ## @item @qcode{'last'} returns the last occurrence of each unique value,
+    ## i.e. the highest possible indices are returned.
+    ## @end itemize
+    ##
+    ## You can specify @var{setOrder} and @var{occurrence} arguments together.
+    ##
+    ## @code{@var{B} = unique (@var{A}, @dots{}, @qcode{'rows'})} returns the
+    ## unique rows of @var{A} by treating each row as a single entity.  The
+    ## @qcode{'rows'} option can be used alone or in any combination with the
+    ## @var{setOrder} and @var{occurrence} arguments.  @qcode{'rows'} can be
+    ## placed at any position in the function's argument list after the input
+    ## array @var{A}.  However, this syntax is only valid for 2-dimensional
+    ## duration arrays.
+    ##
+    ## @code{[@var{tblB}, @var{ixA}, @var{ixB}] = unique (@dots{})} also returns
+    ## index vectors @var{ixA} and @var{ixB} using any of the previous syntaxes.
+    ## @var{ixA} and @var{ixB} map the arrays @var{A} and @var{B} to one another
+    ## such that @qcode{@var{B} = @var{A}(@var{ixA})} and
+    ## @qcode{@var{A} = @var{B}(@var{ixB})}.  When the @qcode{'rows'} optional
+    ## argument is specified, then @qcode{@var{B} = @var{A}(@var{ixA},:)} and
+    ## @qcode{@var{tblA} = @var{tblB}(@var{ixB},:)}.
+    ##
+    ## @end deftypefn
     function [B, ixA, ixB] = unique (A, varargin)
       ## 'legacy' option is not supported
       if (any (strcmp ("legacy", varargin)))
@@ -3320,24 +3375,214 @@ classdef duration
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{C} =} intersect (@var{A}, @var{B})
+    ## @deftypefnx {duration} {@var{C} =} intersect (@var{A}, @var{B}, @qcode{'rows'})
+    ## @deftypefnx {duration} {@dots{} =} intersect (@var{A}, @var{B}, @dots{}, @var{order})
+    ## @deftypefnx {duration} {[@var{C}, @var{ixA}, @var{ixB}] =} intersect (@dots{})
+    ##
+    ## Set intersection of two duration arrays.
+    ##
+    ## @code{@var{C} = intersect (@var{A}, @var{B})} returns the unique common
+    ## values of the duration arrays @var{A} and @var{B}.  Either @var{A} or
+    ## @var{B} input arguments can also be a duration string specified as a
+    ## character vector, a string array, or a cell array of character vectors,
+    ## or a numeric array representing 24-hour days.  In such case, the input is
+    ## promoted to a duration array prior to calculating the intersection.  If
+    ## both @var{A} and @var{B} are row vectors, then @var{C} is also a row
+    ## vector, otherwise @code{intersect} returns a column vector.
+    ##
+    ## @code{@var{C} = intersect (@var{A}, @var{B}, @qcode{'rows'}} returns the
+    ## unique common rows of the duration matrices @var{A} and @var{B}, which
+    ## must have the same number of columns.  By default, the rows in duration
+    ## matrix @var{C} are in sorted order.
+    ##
+    ## @code{@dots{} = intersect (@var{A}, @var{B}, @dots{}, @var{order})} also
+    ## specifies the order of the returned unique values.  @var{order} can be
+    ## @qcode{'sorted'}, which is the default behavior, or @qcode{'stable'}, in
+    ## which case the unique values are returned in order of appearance.
+    ##
+    ## @code{[@var{C}, @var{ixA}, @var{ixB}] = intersect (@dots{})} also returns
+    ## index vectors @var{ixA} and @var{ixB} such that
+    ## @code{@var{C} = @var{A}(@var{ixA})} and
+    ## @code{@var{C} = @var{B}(@var{ixB})}, unless the @qcode{'rows'} optional
+    ## argument is given, in which case @code{@var{C} = @var{A}(@var{ixA},:)}
+    ## and @code{@var{C} = @var{B}(@var{ixB},:)}.
+    ##
+    ## @end deftypefn
     function [C, ixA, ixB] = intersect (A, B, varargin)
-      [~, ixA, ixB] = intersect (A.Days, B.Days, varargin{:});
-      C = subset (A, ixA);
+      ## 'legacy' option is not supported
+      if (any (strcmp ("legacy", varargin)))
+        error ("duration.intersect: 'legacy' option is not supported.");
+      endif
+      if (ischar (A) || isstring (A) || iscellstr (A) || isnumeric (A))
+        C = B;
+        A = promote (A);
+      elseif (ischar (B) || isstring (B) || iscellstr (B) || isnumeric (B))
+        C = A;
+        B = promote (B);
+      elseif (! isduration (A) || ! isduration (B))
+        error (strcat ("duration.intersect: set operation not defined", ...
+                       " between '%s' and '%s' arrays."), class (A), class (B));
+      endif
+      [C.Days, ixA, ixB] = intersect (A.Days, B.Days, varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{C} =} setdiff (@var{A}, @var{B})
+    ## @deftypefnx {duration} {@var{C} =} setdiff (@var{A}, @var{B}, @qcode{'rows'})
+    ## @deftypefnx {duration} {@dots{} =} setdiff (@var{A}, @var{B}, @dots{}, @var{order})
+    ## @deftypefnx {duration} {[@var{C}, @var{ixA}] =} setdiff (@dots{})
+    ##
+    ## Set difference of two duration arrays.
+    ##
+    ## @code{@var{C} = setdiff (@var{A}, @var{B})} returns the unique common
+    ## values of the duration arrays @var{A} and @var{B}.  Either @var{A} or
+    ## @var{B} input arguments can also be a duration string specified as a
+    ## character vector, a string array, or a cell array of character vectors,
+    ## or a numeric array representing 24-hour days.  In such case, the input is
+    ## promoted to a duration array prior to calculating the intersection.  If
+    ## both @var{A} and @var{B} are row vectors, then @var{C} is also a row
+    ## vector, otherwise @code{intersect} returns a column vector.
+    ##
+    ## @code{@var{C} = setdiff (@var{A}, @var{B}, @qcode{'rows'}} returns the
+    ## unique common rows of the duration matrices @var{A} and @var{B}, which
+    ## must have the same number of columns.  By default, the rows in duration
+    ## matrix @var{C} are in sorted order.
+    ##
+    ## @code{@dots{} = setdiff (@var{A}, @var{B}, @dots{}, @var{order})} also
+    ## specifies the order of the returned unique values.  @var{order} can be
+    ## @qcode{'sorted'}, which is the default behavior, or @qcode{'stable'}, in
+    ## which case the unique values are returned in order of appearance.
+    ##
+    ## @code{[@var{C}, @var{ixA}] = setdiff (@dots{})} also returns the index
+    ## vector @var{ixA} such that @code{@var{C} = @var{A}(@var{ixA})}, unless
+    ## the @qcode{'rows'} optional argument is given, in which case
+    ## @code{@var{C} = @var{A}(@var{ixA},:)}.
+    ##
+    ## @end deftypefn
     function [C, index] = setdiff (A, B, varargin)
-      [~, index] = setdiff (A.Days, B.Days, varargin{:});
-      C = subset (A, index);
+      ## 'legacy' option is not supported
+      if (any (strcmp ("legacy", varargin)))
+        error ("duration.setdiff: 'legacy' option is not supported.");
+      endif
+      if (ischar (A) || isstring (A) || iscellstr (A) || isnumeric (A))
+        C = B;
+        A = promote (A);
+      elseif (ischar (B) || isstring (B) || iscellstr (B) || isnumeric (B))
+        C = A;
+        B = promote (B);
+      elseif (! isduration (A) || ! isduration (B))
+        error (strcat ("duration.setdiff: set operation not defined", ...
+                       " between '%s' and '%s' arrays."), class (A), class (B));
+      endif
+      [C.Days, index] = setdiff (A.Days, B.Days, varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{C} =} setxor (@var{A}, @var{B})
+    ## @deftypefnx {duration} {@var{C} =} setxor (@var{A}, @var{B}, @qcode{'rows'})
+    ## @deftypefnx {duration} {@dots{} =} setxor (@var{A}, @var{B}, @dots{}, @var{order})
+    ## @deftypefnx {duration} {[@var{C}, @var{ixA}, @var{ixB}] =} setxor (@dots{})
+    ##
+    ## Set exclusive-or of two duration arrays.
+    ##
+    ## @code{@var{C} = setxor (@var{A}, @var{B})} returns the unique common
+    ## values of the duration arrays @var{A} and @var{B}.  Either @var{A} or
+    ## @var{B} input arguments can also be a duration string specified as a
+    ## character vector, a string array, or a cell array of character vectors,
+    ## or a numeric array representing 24-hour days.  In such case, the input is
+    ## promoted to a duration array prior to calculating the intersection.  If
+    ## both @var{A} and @var{B} are row vectors, then @var{C} is also a row
+    ## vector, otherwise @code{intersect} returns a column vector.
+    ##
+    ## @code{@var{C} = setxor (@var{A}, @var{B}, @qcode{'rows'}} returns the
+    ## unique common rows of the duration matrices @var{A} and @var{B}, which
+    ## must have the same number of columns.  By default, the rows in
+    ## duration matrix @var{C} are in sorted order.
+    ##
+    ## @code{@dots{} = setxor (@var{A}, @var{B}, @dots{}, @var{order})} also
+    ## specifies the order of the returned unique values.  @var{order} can be
+    ## @qcode{'sorted'}, which is the default behavior, or @qcode{'stable'}, in
+    ## which case the unique values are returned in order of appearance.
+    ##
+    ## @code{[@var{C}, @var{ixA}, @var{ixB}] = setxor (@dots{})} also returns
+    ## index vectors @var{ixA} and @var{ixB} such that
+    ## @code{@var{C} = @var{A}(@var{ixA})} and
+    ## @code{@var{C} = @var{B}(@var{ixB})}, unless the @qcode{'rows'} optional
+    ## argument is given, in which case @code{@var{C} = @var{A}(@var{ixA},:)}
+    ## and @code{@var{C} = @var{B}(@var{ixB},:)}.
+    ##
+    ## @end deftypefn
     function [C, ixA, ixB] = setxor (A, B, varargin)
-      [~, ixA, ixB] = setxor (A.Days, B.Days, varargin{:});
-      C = subset (A, ixA);
+      ## 'legacy' option is not supported
+      if (any (strcmp ("legacy", varargin)))
+        error ("duration.setxor: 'legacy' option is not supported.");
+      endif
+      if (ischar (A) || isstring (A) || iscellstr (A) || isnumeric (A))
+        C = B;
+        A = promote (A);
+      elseif (ischar (B) || isstring (B) || iscellstr (B) || isnumeric (B))
+        C = A;
+        B = promote (B);
+      elseif (! isduration (A) || ! isduration (B))
+        error (strcat ("duration.setxor: set operation not defined", ...
+                       " between '%s' and '%s' arrays."), class (A), class (B));
+      endif
+      [C.Days, ixA, ixB] = setxor (A.Days, B.Days, varargin{:});
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{C} =} union (@var{A}, @var{B})
+    ## @deftypefnx {duration} {@var{C} =} union (@var{A}, @var{B}, @qcode{'rows'})
+    ## @deftypefnx {duration} {@dots{} =} union (@var{A}, @var{B}, @dots{}, @var{order})
+    ## @deftypefnx {duration} {[@var{C}, @var{ixA}, @var{ixB}] =} union (@dots{})
+    ##
+    ## Set union of two duration arrays.
+    ##
+    ## @code{@var{C} = union (@var{A}, @var{B})} returns the unique common
+    ## values of the duration arrays @var{A} and @var{B}.  Either @var{A} or
+    ## @var{B} input arguments can also be a duration string specified as a
+    ## character vector, a string array, or a cell array of character vectors,
+    ## or a numeric array representing 24-hour days.  In such case, the input is
+    ## promoted to a duration array prior to calculating the intersection.  If
+    ## both @var{A} and @var{B} are row vectors, then @var{C} is also a row
+    ## vector, otherwise @code{intersect} returns a column vector.
+    ##
+    ## @code{@var{C} = union (@var{A}, @var{B}, @qcode{'rows'}} returns the
+    ## unique common rows of the duration matrices @var{A} and @var{B}, which
+    ## must have the same number of columns.  By default, the rows in
+    ## duration matrix @var{C} are in sorted order.
+    ##
+    ## @code{@dots{} = union (@var{A}, @var{B}, @dots{}, @var{order})} also
+    ## specifies the order of the returned unique values.  @var{order} can be
+    ## @qcode{'sorted'}, which is the default behavior, or @qcode{'stable'}, in
+    ## which case the unique values are returned in order of appearance.
+    ##
+    ## @code{[@var{C}, @var{ixA}, @var{ixB}] = union (@dots{})} also returns
+    ## index vectors @var{ixA} and @var{ixB} such that
+    ## @code{@var{C} = @var{A}(@var{ixA})} and
+    ## @code{@var{C} = @var{B}(@var{ixB})}, unless the @qcode{'rows'} optional
+    ## argument is given, in which case @code{@var{C} = @var{A}(@var{ixA},:)}
+    ## and @code{@var{C} = @var{B}(@var{ixB},:)}.
+    ##
+    ## @end deftypefn
     function [C, ixA, ixB] = union (A, B, varargin)
-      [~, ixA, ixB] = union (A.Days, B.Days, varargin{:});
-      C = subset (A, ixA);
+      ## 'legacy' option is not supported
+      if (any (strcmp ("legacy", varargin)))
+        error ("duration.union: 'legacy' option is not supported.");
+      endif
+      if (ischar (A) || isstring (A) || iscellstr (A) || isnumeric (A))
+        C = B;
+        A = promote (A);
+      elseif (ischar (B) || isstring (B) || iscellstr (B) || isnumeric (B))
+        C = A;
+        B = promote (B);
+      elseif (! isduration (A) || ! isduration (B))
+        error (strcat ("duration.union: set operation not defined", ...
+                       " between '%s' and '%s' arrays."), class (A), class (B));
+      endif
+      [C.Days, ixA, ixB] = union (A.Days, B.Days, varargin{:});
     endfunction
 
   endmethods
