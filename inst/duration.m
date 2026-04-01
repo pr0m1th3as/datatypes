@@ -3495,7 +3495,7 @@ classdef duration
     ## -*- texinfo -*-
     ## @deftypefn  {duration} {@var{C} =} intersect (@var{A}, @var{B})
     ## @deftypefnx {duration} {@var{C} =} intersect (@var{A}, @var{B}, @qcode{'rows'})
-    ## @deftypefnx {duration} {@dots{} =} intersect (@var{A}, @var{B}, @dots{}, @var{order})
+    ## @deftypefnx {duration} {@var{C} =} intersect (@var{A}, @var{B}, @dots{}, @var{order})
     ## @deftypefnx {duration} {[@var{C}, @var{ixA}, @var{ixB}] =} intersect (@dots{})
     ##
     ## Set intersection of two duration arrays.
@@ -3550,7 +3550,7 @@ classdef duration
     ## -*- texinfo -*-
     ## @deftypefn  {duration} {@var{C} =} setdiff (@var{A}, @var{B})
     ## @deftypefnx {duration} {@var{C} =} setdiff (@var{A}, @var{B}, @qcode{'rows'})
-    ## @deftypefnx {duration} {@dots{} =} setdiff (@var{A}, @var{B}, @dots{}, @var{order})
+    ## @deftypefnx {duration} {@var{C} =} setdiff (@var{A}, @var{B}, @dots{}, @var{order})
     ## @deftypefnx {duration} {[@var{C}, @var{ixA}] =} setdiff (@dots{})
     ##
     ## Set difference of two duration arrays.
@@ -3603,7 +3603,7 @@ classdef duration
     ## -*- texinfo -*-
     ## @deftypefn  {duration} {@var{C} =} setxor (@var{A}, @var{B})
     ## @deftypefnx {duration} {@var{C} =} setxor (@var{A}, @var{B}, @qcode{'rows'})
-    ## @deftypefnx {duration} {@dots{} =} setxor (@var{A}, @var{B}, @dots{}, @var{order})
+    ## @deftypefnx {duration} {@var{C} =} setxor (@var{A}, @var{B}, @dots{}, @var{order})
     ## @deftypefnx {duration} {[@var{C}, @var{ixA}, @var{ixB}] =} setxor (@dots{})
     ##
     ## Set exclusive-or of two duration arrays.
@@ -3658,7 +3658,7 @@ classdef duration
     ## -*- texinfo -*-
     ## @deftypefn  {duration} {@var{C} =} union (@var{A}, @var{B})
     ## @deftypefnx {duration} {@var{C} =} union (@var{A}, @var{B}, @qcode{'rows'})
-    ## @deftypefnx {duration} {@dots{} =} union (@var{A}, @var{B}, @dots{}, @var{order})
+    ## @deftypefnx {duration} {@var{C} =} union (@var{A}, @var{B}, @dots{}, @var{order})
     ## @deftypefnx {duration} {[@var{C}, @var{ixA}, @var{ixB}] =} union (@dots{})
     ##
     ## Set union of two duration arrays.
