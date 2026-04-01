@@ -2705,6 +2705,9 @@ classdef duration
     ## arrays.  The functionality is identical to core @code{kurtosis} function.
     ## Type @code{help kurtosis} for more information.
     ##
+    ## Note that kurtosis is a dimensionless quantity  Thus, the returned
+    ## argument is a numeric array of double type and not a duration array.
+    ##
     ## @end deftypefn
     function k = kurtosis (D, varargin)
       k = kurtosis (D.Days, varargin{:});
@@ -2908,6 +2911,9 @@ classdef duration
     ## This method overloads the core @code{skewness} function for duration
     ## arrays.  The functionality is identical to core @code{skewness} function.
     ## Type @code{help skewness} for more information.
+    ##
+    ## Note that skewness is a dimensionless quantity  Thus, the returned
+    ## argument is a numeric array of double type and not a duration array.
     ##
     ## @end deftypefn
     function y = skewness (D, varargin)
