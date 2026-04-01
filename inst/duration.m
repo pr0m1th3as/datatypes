@@ -2740,7 +2740,7 @@ classdef duration
     ## @end deftypefn
     function E = mape (F, A, varargin)
       if (! isduration (F) || ! isduration (A))
-        error ("duration.mape: both F and A must be durationn arrays.");
+        error ("duration.mape: both F and A must be duration arrays.");
       endif
       E = mape (F.Days, A.Days, varargin{:});
     endfunction
@@ -2879,8 +2879,8 @@ classdef duration
     ##
     ## @end deftypefn
     function this = rmse (this, A, varargin)
-      if (! isduration (F) || ! isduration (A))
-        error ("duration.mape: both F and A must be durationn arrays.");
+      if (! isduration (this) || ! isduration (A))
+        error ("duration.rmse: both F and A must be duration arrays.");
       endif
       this.Days = rmse (this.Days, A.Days, varargin{:});
     endfunction
@@ -3327,13 +3327,12 @@ classdef duration
     ## @qcode{@var{tblA} = @var{tblB}(@var{ixB},:)}.
     ##
     ## @end deftypefn
-    function [B, ixA, ixB] = unique (A, varargin)
+    function [this, ixA, ixB] = unique (this, varargin)
       ## 'legacy' option is not supported
       if (any (strcmp ("legacy", varargin)))
         error ("duration.unique: 'legacy' option is not supported.");
       endif
-      B = A;
-      [B.Days, ixA, ixB] = __unique__ (A.Days, varargin{:});
+      [this.Days, ixA, ixB] = __unique__ (this.Days, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -3534,12 +3533,14 @@ classdef duration
         error ("duration.intersect: 'legacy' option is not supported.");
       endif
       if (ischar (A) || isstring (A) || iscellstr (A) || isnumeric (A))
-        C = B;
+        C = duration ('Format', B.Format);
         A = promote (A);
       elseif (ischar (B) || isstring (B) || iscellstr (B) || isnumeric (B))
-        C = A;
+        C = duration ('Format', A.Format);
         B = promote (B);
-      elseif (! isduration (A) || ! isduration (B))
+      elseif (isduration (A) && isduration (B))
+        C = duration ('Format', A.Format);
+      else
         error (strcat ("duration.intersect: set operation not defined", ...
                        " between '%s' and '%s' arrays."), class (A), class (B));
       endif
@@ -3585,12 +3586,14 @@ classdef duration
         error ("duration.setdiff: 'legacy' option is not supported.");
       endif
       if (ischar (A) || isstring (A) || iscellstr (A) || isnumeric (A))
-        C = B;
+        C = duration ('Format', B.Format);
         A = promote (A);
       elseif (ischar (B) || isstring (B) || iscellstr (B) || isnumeric (B))
-        C = A;
+        C = duration ('Format', A.Format);
         B = promote (B);
-      elseif (! isduration (A) || ! isduration (B))
+      elseif (isduration (A) && isduration (B))
+        C = duration ('Format', A.Format);
+      else
         error (strcat ("duration.setdiff: set operation not defined", ...
                        " between '%s' and '%s' arrays."), class (A), class (B));
       endif
@@ -3638,12 +3641,14 @@ classdef duration
         error ("duration.setxor: 'legacy' option is not supported.");
       endif
       if (ischar (A) || isstring (A) || iscellstr (A) || isnumeric (A))
-        C = B;
+        C = duration ('Format', B.Format);
         A = promote (A);
       elseif (ischar (B) || isstring (B) || iscellstr (B) || isnumeric (B))
-        C = A;
+        C = duration ('Format', A.Format);
         B = promote (B);
-      elseif (! isduration (A) || ! isduration (B))
+      elseif (isduration (A) && isduration (B))
+        C = duration ('Format', A.Format);
+      else
         error (strcat ("duration.setxor: set operation not defined", ...
                        " between '%s' and '%s' arrays."), class (A), class (B));
       endif
@@ -3691,12 +3696,14 @@ classdef duration
         error ("duration.union: 'legacy' option is not supported.");
       endif
       if (ischar (A) || isstring (A) || iscellstr (A) || isnumeric (A))
-        C = B;
+        C = duration ('Format', B.Format);
         A = promote (A);
       elseif (ischar (B) || isstring (B) || iscellstr (B) || isnumeric (B))
-        C = A;
+        C = duration ('Format', A.Format);
         B = promote (B);
-      elseif (! isduration (A) || ! isduration (B))
+      elseif (isduration (A) && isduration (B))
+        C = duration ('Format', A.Format);
+      else
         error (strcat ("duration.union: set operation not defined", ...
                        " between '%s' and '%s' arrays."), class (A), class (B));
       endif
