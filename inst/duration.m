@@ -3336,27 +3336,160 @@ classdef duration
       [B.Days, ixA, ixB] = __unique__ (A.Days, varargin{:});
     endfunction
 
-    function BI = interp1 (A, B, AI, varargin)
-      A_isDur = isa (A, 'duration');
-      B_isDur = isa (B, 'duration');
-      AIisDur = isa (AI, 'duration');
-      if (xor (A_isDur, AIisDur))
-        error ("duration.interp1: if A is a duration array, AI must be also.");
-      endif
-      if (B_isDur)
-        if (A_isDur)
-          BI = days (interp1 (A.Days, B.Days, AI.Days, varargin{:}));
-        elseif (isnumeric (A) && isnumeric (AI))
-          BI = days (interp1 (A, B.Days, AI, varargin{:}));
-        else
-          error (strcat ("duration.interp1: if A is not a duration", ...
-                         " array, then both A and AI must be numeric."));
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{YI} =} interp1 (@var{X}, @var{Y}, @var{XI})
+    ## @deftypefn  {duration} {@var{YI} =} interp1 (@var{Y}, @var{X})
+    ## @deftypefn  {duration} {@var{YI} =} interp1 (@dots{}, @var{method})
+    ## @deftypefn  {duration} {@var{YI} =} interp1 (@dots{}, @var{method}, @var{extrapolation})
+    ## @deftypefn  {duration} {@var{pp} =} interp1 ((@var{X}, @var{Y}, @var{method}, @qcode{'pp'})
+    ##
+    ## One-dimensional interpolation for duration arrays.
+    ##
+    ## @code{@var{YI} = interp1 (@var{X}, @var{Y}, @var{XI})} computes the
+    ## linearly interpolated values of a one-dimensional function, which is
+    ## represented by sample points @var{X} and corresponding values @var{Y},
+    ## at specific query points @var{XI}.  @var{X} must be a vector.  If @var{Y}
+    ## is vector, then it must have the same length as @var{X}.  If @var{Y} is
+    ## matrix, then each column is treated as a different set of one-dimensional
+    ## sample values and the number of rows must equal the length of @var{X}.
+    ## @var{XI} must be a vector and the same data type as @var{X}.  The output
+    ## @var{XI} is the same data type as @var{Y} and its size depends on @var{Y}
+    ## and @var{XI}.  @var{X} and @var{Y} can both be duration arrays or one of
+    ## them can be a numeric array.
+    ##
+    ## @code{@var{YI} = interp1 (@var{Y}, @var{X})} computes the linearly
+    ## interpolated values of a one-dimensional function assuming a default set
+    ## of query points determined by the shape of @var{Y}:
+    ##
+    ## @itemize
+    ## @item If @var{Y} is a vector, then the default query points are
+    ## @code{[1:length(@var{Y})}.
+    ##
+    ## @item If @var{Y} is an array, then the default query points are
+    ## @code{[1:size(@var{Y})}.
+    ## @end itemize
+    ##
+    ## @code{@var{YI} = interp1 (@dots{}, @var{method})} specifies one of the
+    ## following interpolation methods to be used:
+    ##
+    ## @itemize
+    ## @item @qcode{'linear'} (default) computes the linear interpolation from
+    ## nearest neighbors.
+    ##
+    ## @item @qcode{'nearest'} returns the nearest neighbor.
+    ##
+    ## @item @qcode{'next'} returns the next neighbor.
+    ##
+    ## @item @qcode{'previous'} returns the previous neighbor.
+    ##
+    ## @item @qcode{'pchip'} computes the piecewise cubic Hermite interpolating
+    ## polynomial, which corresponds to shape-preserving interpolation with
+    ## smooth first derivative.
+    ##
+    ## @item @qcode{'cubic'} computes the cubic interpolation.
+    ##
+    ## @item @qcode{'spline'} computes the cubic spline interpolation, which
+    ## corresponds to smooth first and second derivatives throughout the curve.
+    ## @end itemize
+    ##
+    ## @code{@var{YI} = interp1 (@dots{}, @var{method}, @var{extrapolation})}
+    ## further specifies a strategy for evaluating points that lie outside the
+    ## range of the sample points in @var{X}.  Set @var{extrapolation} to
+    ## @qcode{'extrap'} to use the current @var{method} to extrapolate values.
+    ## Set @var{extrapolation} to a scalar value of the same data type as
+    ## @var{Y} to return a constant value outside the range of @var{X}.  When
+    ## unspecified, @var{extrapolation} defaults to @qcode{NaN}.
+    ##
+    ## @code{@var{pp} = interp1 ((@var{X}, @var{Y}, @var{method}, @qcode{'pp'}}
+    ## returns the a piecewise polynomial object, which can be later used with
+    ## @code{ppval} to evaluate the interpolation.
+    ##
+    ## @end deftypefn
+    function YI = interp1 (X, Y, varargin)
+      if (isempty (varargin))
+        ## YI = interp1 (Y, X)
+        if (isduration (Y))
+          Y = Y.days;
         endif
-        BI = fix_zero_precision (BI);
-      elseif (isnumeric (B))
-        BI = interp1 (A.Days, B, AI.Days, varargin{:});
+        if (isduration (X))
+          YI = duration ('Format', X.Format);
+          YI.Days = interp1 (X.Days, Y);
+        else
+          YI = interp1 (X, Y);
+        endif
       else
-        error ("duration.interp1: B must be a duration or numeric array.");
+        [varargin{:}] = convertStringsToChars (varargin{:});
+        method = varargin{1};
+        if (ischar (method))
+          ## YI = interp1 (Y, X, method)
+          ## YI = interp1 (Y, X, method, extrap)
+          ## PP = interp1 (X, Y, method, pp)
+          if (isduration (Y))
+            Y = Y.days;
+          endif
+          if (numel (varargin) == 2)
+            if (strcmp (varargin{2}, 'pp'))
+              if (isduration (X))
+                X = X.days;
+              endif
+              YI = interp1 (X, Y, method, 'pp');
+            endif
+            return;
+          endif
+          if (isduration (X))
+            YI = duration ('Format', X.Format);
+            YI.Days = interp1 (X.Days, Y);
+          else
+            YI = interp1 (X, Y);
+          endif
+        else
+          XI = method;
+          varargin(1) = [];
+          ## YI = interp1 (X, Y, XI)
+          ## YI = interp1 (X, Y, XI, method)
+          ## YI = interp1 (X, Y, XI, method, extrap)
+          X_isDur = isa (X, 'duration');
+          Y_isDur = isa (Y, 'duration');
+          XIisDur = isa (XI, 'duration');
+          if (xor (X_isDur, XIisDur))
+            error ("duration.interp1: if X is a duration array, XI must be also.");
+          endif
+          ## Parse method and extrapolation
+          if (! isempty (varargin))
+            method = varargin{1};
+            varargin(1) = [];
+            if (! isempty (varargin))
+              extrap = varargin{1};
+              ExtDur = isduration (extrap);
+              if (isduration (extrap) && Y_isDur)
+                extrap = days (extrap);
+              elseif (xor (ExtDur, Y_isDur))
+                error ("duration.interp1: EXTRAPOLATION scalar value must match Y.");
+              endif
+            else
+              extrap = NaN;
+            endif
+          else
+            method = 'linear';
+            extrap = NaN;
+          endif
+          if (Y_isDur)
+            if (X_isDur)
+              YI = duration ('Format', X.Format);
+              YI.Days = interp1 (X.Days, Y.Days, XI.Days, method, extrap);
+            elseif (isnumeric (X) && isnumeric (XI))
+              YI = days (interp1 (X, Y.Days, XI, method, extrap));
+            else
+              error (strcat ("duration.interp1: if X is not a duration", ...
+                             " array, then both X and XI must be numeric."));
+            endif
+            YI = fix_zero_precision (YI);
+          elseif (isnumeric (Y))
+            YI = interp1 (X.Days, Y, XI.Days, method, extrap);
+          else
+            error ("duration.interp1: Y must be a duration or numeric array.");
+          endif
+        endif
       endif
     endfunction
 
