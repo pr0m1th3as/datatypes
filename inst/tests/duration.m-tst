@@ -1879,6 +1879,209 @@
 %!assert_equal (sign (seconds ([-2:2] .* ones (5))), repmat ([-1, -1, 0, 1, 1], 5, 1))
 
 ################################################################################
+##                        ** Statistical Operations **                        ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'bounds'           'center'           'histc'            'iqr'             ##
+## 'kendal'           'kurtosis'         'mad'              'mape'            ##
+## 'mean'             'median'           'mode'             'prctile'         ##
+## 'quantile'         'range'            'rmse'             'skewness'        ##
+## 'spearman'         'statistics'       'std'              'var'             ##
+##                                                                            ##
+################################################################################
+
+%!test
+%! [s, l] = bounds (days (1:10));
+%! assert_equal ([s, l], days ([1, 10]));
+%!test
+%! [s, l] = bounds (days ([10:-1:1]'));
+%! assert_equal ([s, l], days ([1, 10]));
+%!assert_equal (bounds (days (magic (3))), days ([3, 1, 2]))
+%!assert_equal (bounds (days (magic (3)), 2), days ([1; 3; 2]))
+%!test
+%! x = days (magic (3));
+%! x(2,3) = NaN;
+%! assert_equal (bounds (x), days ([3, 1, 2]));
+%! assert_equal (bounds (x, "omitnan"), days ([3, 1, 2]));
+%! assert (isequaln (bounds (x, "includenan"), days ([3, 1, NaN])));
+%! assert_equal (bounds (x, 2), days ([1; 3; 2]));
+%! assert_equal (bounds (x, 2, "omitnan"), days ([1; 3; 2]));
+%! assert (isequaln (bounds (x, 2, "includenan"), days ([1; NaN; 2])));
+%!test
+%! x = reshape (days (1:27), [3, 3, 3]);
+%! [s, l] = bounds (x, 3);
+%! assert_equal (s, x(:,:,1));
+%! assert_equal (l, x(:,:,3));
+%!test
+%! [s, l] = bounds (x, [2, 3]);
+%! assert_equal (s, x(:,1,1));
+%! assert_equal (l, x(:,3,3));
+%!test
+%! [s, l] = bounds (x, [1, 3]);
+%! assert_equal (s, x(1,:,1));
+%! assert_equal (l, x(3,:,3));
+%!test
+%! [s, l] = bounds (x, [1, 2, 3]);
+%! assert_equal (s, days (1));
+%! assert_equal (l, days (27));
+%!test
+%! [s, l] = bounds (x, "all");
+%! assert_equal (s, days (1));
+%! assert_equal (l, days (27));
+%!test
+%! x(3) = NaN;
+%! [s, l] = bounds (x, "all");
+%! assert_equal (s, days (1));
+%! assert_equal (l, days (27));
+%!test
+%! [s,l] = bounds (x, "all", "omitnan");
+%! assert_equal (s, days (1));
+%! assert_equal (l, days (27));
+%!test
+%! [s,l] = bounds (x, "all", "includenan");
+%! assert_equal (isnan (s), true);
+%! assert_equal (isnan (l), true);
+%!test
+%! [s,l] = bounds (x, "includenan");
+%! assert (isequaln (s, min (x, [], "includenan")));
+%! assert (isequaln (l, max (x, [], "includenan")));
+
+%!assert_equal (center (days ([1, 2, 3])), days ([-1,0,1]))
+%!assert_equal (center (days (ones (3, 2, 0, 2))), days (zeros (3, 2, 0,2 )))
+%!assert_equal (center (days (magic (3))), days ([3, -4, 1; -2, 0, 2; -1, 4, -3]))
+%!assert_equal (center (days ([1, 2, 3; 6, 5, 4]), 2), days ([-1, 0, 1; 1, 0, -1]))
+%!assert_equal (center (days (1), 3), days (0))
+%!assert_equal (center (repmat (days ([1, 2, 3]), 5, 1)), days (zeros (5, 3)))
+%!assert_equal (center (repmat (days ([1, 2, 3]), 5, 1), 2), repmat (days ([-1, 0, 1]), 5, 1))
+%!test
+%! out = center (days ([1, 3, 2; 2, NaN, 1]));
+%! assert (isequaln (out, days ([-0.5, NaN, 0.5; 0.5, NaN, -0.5])));
+%!test
+%! out = center (days ([1, 3, 2; 2, NaN, 1]), 'omitnan');
+%! assert (isequaln (out, days ([-0.5, 0, 0.5; 0.5, NaN, -0.5])));
+%!test
+%! out = center (days ([1, 3, 2; 2, NaN, 1]), 2, 'omitnan');
+%! assert (isequaln (out, days ([-1, 1, 0; 0.5, NaN, -0.5])));
+
+%!test
+%! x = linspace (days (0), days (10), 1001);
+%! n = histc (x, 0:10);
+%! assert_equal (n, [repmat(100, 1, 10), 1]);
+%!test
+%! x = repmat (linspace (days (0), days (10), 1001), [2, 1, 3]);
+%! n = histc (x, 0:10, 2);
+%! assert_equal (n, repmat ([repmat(100, 1, 10), 1], [2, 1, 3]));
+
+%!assert_equal (iqr (days (17)), duration)
+%!assert_equal (iqr (days (17), 1), duration)
+%!assert_equal (iqr (days (17), 4), duration)
+%!assert_equal (iqr (days ([1:3])), days (1.5))
+%!assert_equal (iqr (days ([1:4])), days (2))
+%!assert_equal (iqr (days ([1:5])), days (2.5))
+%!assert_equal (iqr (days ([1:10])), days (5))
+%!assert_equal (iqr (days ([1:10]')), days (5))
+%!assert_equal (iqr (days ([1:10]), 2), days (5))
+%!assert_equal (iqr (days ([1:10]), 1), days (zeros (1, 10)))
+%!assert_equal (iqr (days ([1:10]), 3), days (zeros (1, 10)))
+%!assert_equal (iqr (days ([1:5; 2:6]), [1, 2]), days (3))
+%!assert_equal (iqr (days ([1:5; 2:6]), 'all'), days (3))
+%!test
+%! x = reshape (days (1:6), [1, 2, 3]);
+%! assert_equal (iqr (x), days (ones (1, 1, 3)));
+%! assert_equal (iqr (x, 1), days (zeros (1, 2, 3)));
+%! assert_equal (iqr (x, 2), days (ones (1, 1, 3)));
+%! assert_equal (iqr (x, 3), days ([3, 3]));
+%!test
+%! x = magic (4); x = cat (3,x, 2*x, 3*x); x = cat (4, x, 2*x);
+%! y = cat (3, 8*[1, 1, 1, 1], 16*[1, 1, 1, 1], 24*[1, 1, 1, 1]);
+%! x = days (x); y = days (y);
+%! assert_equal (iqr (x), cat (4, y, 2*y));
+%! assert_equal (iqr (x, 1), cat (4, y, 2*y));
+%! y = cat (3, 4*[3, 1, 1, 3].', 8*[3, 1, 1, 3].', 12*[3, 1, 1, 3].');
+%! y = days (y);
+%! assert_equal (iqr (x, 2), cat (4, y, 2*y));
+%! y = [24, 3, 4.5, 19.5; 7.5, 16.5, 15, 12; 13.5, 10.5, 9, 18; 6, 21, 22.5, 1.5];
+%! y = days (y);
+%! assert_equal (iqr (x, 3), cat (4, y, 2*y));
+%! y = [16, 2, 3, 13; 5, 11, 10, 8; 9, 7, 6, 12; 4, 14, 15, 1];
+%! y = days (y);
+%! assert_equal (iqr (x, 4), cat (3, y, 2*y, 3*y));
+%! assert_equal (iqr (x, 5), days (zeros (size (x))));
+%!assert_equal (iqr (days (17), [1, 8]), duration)
+%!assert_equal (iqr (days ([1, 2, 5; 2, 5, 6]), [1, 2]), days (3))
+%!test
+%! x = days (cat (3, [1, 2, 5; 2, 5, 6], [1, 2, 5; 2, 5, 6]));
+%! assert_equal (iqr (x, [1, 2]), days (cat (3, 3, 3)));
+%! assert_equal (iqr (x, [1, 2]'), days (cat (3, 3, 3)));
+
+%!test
+%! x = [-1; 0; 0; 0; 1];
+%! y = days ([x, 2*x]);
+%! assert (kurtosis (y), [2.5, 2.5], sqrt (eps));
+%!assert_equal (kurtosis (days ([-3, 0, 1])), kurtosis (days ([-1, 0, 3])))
+%!assert_equal (kurtosis (days (ones (3, 5))), NaN (1, 5))
+%!assert_equal (kurtosis (days (1), [], 3), NaN)
+%!test
+%! clear x;
+%! x(:,:,1) = [0.5377, 0.3188, 3.5784; 1.8339, -1.3077, 2.7694; ...
+%!             -2.2588, -0.4336, -1.3499; 0.8622, 0.3426, 3.0349];
+%! x(:,:,2) = [0.7254, -0.1241, 0.6715; -0.0631, 1.4897, -1.2075; ...
+%!             0.7147 1.4090 0.7172; -0.2050, 1.4172, 1.6302];
+%! y = kurtosis (days (x));
+%! assert_equal (class (y), 'double');
+%! assert (y(:,:,1), [2.1350, 1.7060, 2.2789], 1e-4);
+%! assert (y(:,:,2), [1.0542, 2.3278, 2.0996], 1e-4);
+%! y = kurtosis (days (x), 1, 2);
+%! assert (y(:,:,1), [1.5; 1.5; 1.5; 1.5], 8 * eps);
+%! assert (y(:,:,2), [1.5; 1.5; 1.5; 1.5], 8 * eps);
+%! y = kurtosis (days (x), 1, 3);
+%! assert (y, ones (4, 3), 8 * eps);
+%!test
+%! x(:,:,1) = [0.5377, 0.3188, 3.5784; 1.8339, -1.3077, 2.7694; ...
+%!             -2.2588, -0.4336, -1.3499; 0.8622, 0.3426, 3.0349];
+%! x(:,:,2) = [0.7254, -0.1241, 0.6715; -0.0631, 1.4897, -1.2075; ...
+%!             0.7147 1.4090 0.7172; -0.2050, 1.4172, 1.6302];
+%! y = kurtosis (days (x), 1, "all");
+%! assert (y, 2.8029, 1e-4);
+%! y = kurtosis (days (x), 1, [1, 2]);
+%! assert (y(:,:,1), 1.9345, 1e-4);
+%! assert (y(:,:,2), 2.5877, 1e-4);
+%! y = kurtosis (days (x), 1, [2, 3]);
+%! assert (y, [3.8457; 1.4306; 1.7094; 2.3378], 1e-4);
+
+%!assert_equal (mad (days (123)), duration)
+%!assert_equal (isnan (mad (days (Inf))), true)
+%!assert_equal (mad (days ([3, Inf])), days (Inf))
+%!assert_equal (mad (days ([0, 0, 1, 2, 100])), days (31.76))
+%!assert_equal (mad (days ([0, 0, 1, 2, 100]')), days (31.76))
+%!assert_equal (mad (days ([0, 0, 1, 2, 100]), 1), days (1))
+%!assert_equal (mad (days ([0, 0, 1, 2, 100]'), 1), days (1))
+%!assert_equal (mad (days (magic (4))), days ([4, 4, 4, 4]))
+%!assert_equal (mad (days (magic (4)), [], 2), days ([6; 2; 2; 6]))
+%!assert_equal (mad (days (magic (4)), 1), days ([2.5, 3.5, 3.5, 2.5]))
+%!assert_equal (mad (days (magic (4)), 1, 2), days ([5.5; 1.5; 1.5; 5.5]))
+%!assert_equal (mad (days (magic (4)), 0, 3), days (zeros (4)))
+%!assert_equal (mad (days (magic (4)), 1, 3), days (zeros (4)))
+%!assert_equal (mad (days (cat (3, magic (4), magic (4)))), days (4 * ones (1, 4, 2)))
+%!assert_equal (mad (days (magic (4)), 0, "all"), days (4))
+%!assert_equal (mad (days (magic (4)), 1, "all"), days (4))
+%!assert_equal (mad (days (magic (4)), 0, [1 2]), days (4))
+%!assert_equal (mad (days (magic (4)), 0, [1 3]), mad (days (magic (4)), 0, 1))
+%!assert_equal (mad (days (magic (4)), 0, [1 2 3]), days (4))
+%!assert_equal (mad (days (magic (4)), 1, [1 2]), days (4))
+%!assert_equal (mad (days (magic (4)), 1, [1 3]), mad (days (magic (4)), 1, 1))
+%!assert_equal (mad (days (magic (4)), 1, [1 2 3]), days (4))
+%!assert_equal (mad (days (magic (4)), 0, [3 4 99]), days (zeros (4)))
+%!assert_equal (mad (days (magic (4)), 1, [3 4 99]), days (zeros (4)))
+%!assert (isequaln (mad (days (NaN)), days (NaN)))
+%!assert (isequaln (mad (days (NaN (2))), days (NaN (1, 2))))
+%!assert_equal (mad (days ([1, 2; 3, NaN])), days ([1, 0]))
+%!assert (isequaln (mad (days ([1, 2; 3, NaN]), [], 1), days ([1, 0])))
+%!assert (isequaln (mad (days ([1, NaN; 3, NaN]), [], 1), days ([1, NaN])))
+%!assert_equal (mad (days ([1, NaN; 3, NaN]), [], 2), days ([0; 0]))
+
+################################################################################
 ##                   ** Sort, Filter, and Set Operations **                   ##
 ################################################################################
 ##                             Available Methods                              ##
