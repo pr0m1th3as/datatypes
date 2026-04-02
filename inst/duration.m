@@ -3751,10 +3751,10 @@ classdef duration
         if (isduration (varargin{1}))
           varargin{1} = calendarDuration (0, 0, 0, varargin{1});
         elseif (isnumeric (varargin{1}))
-          if (isempty (varargin{i}))
-            varargout{i} = calendarDuration ([], [], []);
+          if (isempty (varargin{1}))
+            varargout{1} = calendarDuration ([], [], []);
           else
-            varargout{i} = calendarDuration (0, 0, 0, 24 * varargin{i}, 0, 0);
+            varargout{1} = calendarDuration (0, 0, 0, 24 * varargin{i}, 0, 0);
           endif
         else
           error ("calendarDuration: invalid input to constructor.");
@@ -3763,7 +3763,10 @@ classdef duration
       else
         args = varargin;
         [args{:}] = promote (varargin{:});
-        out = args{1};
+        ## Get format from first duration array argument
+        idx = find (cellfun ('isduration', varargin), 1);
+        fmt = varargin{idx}.Format;
+        out = duration ('Format', fmt);
         days = cellfun (@(obj) obj.Days, args, 'UniformOutput', false);
         out.Days = cat (dim, days{:});
       endif
