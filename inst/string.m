@@ -1856,7 +1856,8 @@ classdef string
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'colon'            'linspace'                                              ##
+## 'colon'            'linspace'         'intersect'        'setdiff'         ##
+## 'setxor'           'union'                                                 ##
 ##                                                                            ##
 ################################################################################
 
@@ -1878,7 +1879,7 @@ classdef string
 
     ## Overload linspace for duration support
     function R = linspace (A, B, n = 100)
-      ## Get properties from duration input
+      ## Check for duration input
       if (! isduration (B))
         error ("string.linspace: unsupported input types.");
       endif
@@ -1886,6 +1887,54 @@ classdef string
       A = duration (A, 'Format', B.Format);
       ## Call duration overloaded method
       R = linspace (A, B, n);
+    endfunction
+
+    ## Overload intersect for duration support
+    function [C, ixA, ixB] = intersect (A, B, varargin)
+      ## Check for duration input
+      if (! isduration (B))
+        error ("string.intersect: unsupported input types.");
+      endif
+      ## Convert first input (string) to duration
+      A = duration (A, 'Format', B.Format);
+      ## Call duration overloaded method
+      [C, ixA, ixB] = intersect (A, B, varargin{:});
+    endfunction
+
+    ## Overload setdiff for duration support
+    function [C, index] = setdiff (A, B, varargin)
+      ## Check for duration input
+      if (! isduration (B))
+        error ("string.setdiff: unsupported input types.");
+      endif
+      ## Convert first input (string) to duration
+      A = duration (A, 'Format', B.Format);
+      ## Call duration overloaded method
+      [C, index] = setdiff (A, B, varargin{:});
+    endfunction
+
+    ## Overload setxor for duration support
+    function [C, ixA, ixB] = setxor (A, B, varargin)
+      ## Check for duration input
+      if (! isduration (B))
+        error ("string.setxor: unsupported input types.");
+      endif
+      ## Convert first input (string) to duration
+      A = duration (A, 'Format', B.Format);
+      ## Call duration overloaded method
+      [C, ixA, ixB] = setxor (A, B, varargin{:});
+    endfunction
+
+    ## Overload union for duration support
+    function [C, ixA, ixB] = union (A, B, varargin)
+      ## Check for duration input
+      if (! isduration (B))
+        error ("string.union: unsupported input types.");
+      endif
+      ## Convert first input (string) to duration
+      A = duration (A, 'Format', B.Format);
+      ## Call duration overloaded method
+      [C, ixA, ixB] = union (A, B, varargin{:});
     endfunction
 
   endmethods
