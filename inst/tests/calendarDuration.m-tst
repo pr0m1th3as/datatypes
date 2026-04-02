@@ -1153,21 +1153,25 @@
 %! assert (caldays (U), [1, 3, 2]);
 %! assert (idx, [1; 2; 4]);
 %!test
-%! [U, idx] = unique (caldays ([1, 2; 2, 3; 1, 2]), 'rows', 'sorted', 'first');
-%! assert (caldays (U), [1, 2; 2, 3]);
-%! assert (idx, [1; 2]);
+%! [B, ixA, ixB] = unique (caldays ([1, 2; 2, 3; 1, 2]), 'rows', 'sorted', 'first');
+%! assert (caldays (B), [1, 2; 2, 3]);
+%! assert (ixA, [1; 2]);
+%! assert (ixB, [1; 2; 1]);
 %!test
-%! [U, idx] = unique (caldays ([1, 2; 2, 3; 1, 2]), 'rows', 'stable', 'first');
-%! assert (caldays (U), [1, 2; 2, 3]);
-%! assert (idx, [1; 2]);
+%! [B, ixA, ixB] = unique (caldays ([1, 2; 2, 3; 1, 2]), 'rows', 'stable', 'first');
+%! assert (caldays (B), [1, 2; 2, 3]);
+%! assert (ixA, [1; 2]);
+%! assert (ixB, [1; 2; 1]);
 %!test
-%! [U, idx] = unique (caldays ([1, 2; 2, 3; 1, 2]), 'rows', 'sorted', 'last');
-%! assert (caldays (U), [1, 2; 2, 3]);
-%! assert (idx, [3; 2]);
+%! [B, ixA, ixB] = unique (caldays ([1, 2; 2, 3; 1, 2]), 'rows', 'sorted', 'last');
+%! assert (caldays (B), [1, 2; 2, 3]);
+%! assert (ixA, [3; 2]);
+%! assert (ixB, [1; 2; 1]);
 %!test
-%! [U, idx] = unique (caldays ([1, 2; 2, 3; 1, 2]), 'rows', 'stable', 'last');
-%! assert (caldays (U), [2, 3; 1, 2]);
-%! assert (idx, [2; 3]);
+%! [B, ixA, ixB] = unique (caldays ([1, 2; 2, 3; 1, 2]), 'rows', 'stable', 'last');
+%! assert (caldays (B), [2, 3; 1, 2]);
+%! assert (ixA, [2; 3]);
+%! assert (ixB, [2; 1; 2]);
 %!error<calendarDuration.unique: 'legacy' option is not supported.> ...
 %! unique (caldays ([1, 2; 2, 3; 1, 2]), 'legacy')
 
