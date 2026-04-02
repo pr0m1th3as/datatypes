@@ -1811,22 +1811,30 @@ Return true if duration array is a vector.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Equality for duration arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod34">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>TF</var> = eq (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>TF</var> = <var>A</var> == <var>B</var></code> and returns a logical array whose
+ elements set to <code>true</code> where the corresponding elements of <var>A</var>
+ and <var>B</var> are equal and set to <code>false</code> otherwise.
+</p>
+<p> <var>A</var> and <var>B</var> must be size compatible, which translates to they can
+ be the same size, one can be scalar, or for every dimension, their
+ dimension sizes must be equal or one of them must be 1.  The size of
+ <var>C</var> is determined by the size compatibility of <var>A</var> and <var>B</var>.
+</p>
+<p> One of the input arguments can also be a character vector, a cell array
+ of character vectors, or a string array representing duration strings or
+ a numeric array representing days.
 </p>
 
 
@@ -1847,22 +1855,30 @@ Return true if duration array is a vector.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Equality for duration arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod35">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>ge</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>TF</var> = ge (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>TF</var> = <var>A</var> &gt;= <var>B</var></code> and returns a logical array whose
+ elements set to <code>true</code> where the corresponding elements of <var>A</var>
+ are greater than or equal to <var>B</var> and set to <code>false</code> otherwise.
+</p>
+<p> <var>A</var> and <var>B</var> must be size compatible, which translates to they can
+ be the same size, one can be scalar, or for every dimension, their
+ dimension sizes must be equal or one of them must be 1.  The size of
+ <var>C</var> is determined by the size compatibility of <var>A</var> and <var>B</var>.
+</p>
+<p> One of the input arguments can also be a character vector, a cell array
+ of character vectors, or a string array representing duration strings or
+ a numeric array representing days.
 </p>
 
 
@@ -1883,22 +1899,30 @@ Return true if duration array is a vector.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Equality for duration arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod36">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>gt</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>TF</var> = gt (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>TF</var> = <var>A</var> &gt; <var>B</var></code> and returns a logical array whose
+ elements set to <code>true</code> where the corresponding elements of <var>A</var>
+ are greater than <var>B</var> and set to <code>false</code> otherwise.
+</p>
+<p> <var>A</var> and <var>B</var> must be size compatible, which translates to they can
+ be the same size, one can be scalar, or for every dimension, their
+ dimension sizes must be equal or one of them must be 1.  The size of
+ <var>C</var> is determined by the size compatibility of <var>A</var> and <var>B</var>.
+</p>
+<p> One of the input arguments can also be a character vector, a cell array
+ of character vectors, or a string array representing duration strings or
+ a numeric array representing days.
 </p>
 
 
@@ -1919,22 +1943,30 @@ Return true if duration array is a vector.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Equality for duration arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod37">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>le</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>TF</var> = le (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>TF</var> = <var>A</var> &lt;= <var>B</var></code> and returns a logical array whose
+ elements set to <code>true</code> where the corresponding elements of <var>A</var>
+ are less than or equal to <var>B</var> and set to <code>false</code> otherwise.
+</p>
+<p> <var>A</var> and <var>B</var> must be size compatible, which translates to they can
+ be the same size, one can be scalar, or for every dimension, their
+ dimension sizes must be equal or one of them must be 1.  The size of
+ <var>C</var> is determined by the size compatibility of <var>A</var> and <var>B</var>.
+</p>
+<p> One of the input arguments can also be a character vector, a cell array
+ of character vectors, or a string array representing duration strings or
+ a numeric array representing days.
 </p>
 
 
@@ -1955,22 +1987,30 @@ Return true if duration array is a vector.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Equality for duration arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod38">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>lt</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>TF</var> = lt (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>TF</var> = <var>A</var> &lt; <var>B</var></code> and returns a logical array whose
+ elements set to <code>true</code> where the corresponding elements of <var>A</var>
+ are less than <var>B</var> and set to <code>false</code> otherwise.
+</p>
+<p> <var>A</var> and <var>B</var> must be size compatible, which translates to they can
+ be the same size, one can be scalar, or for every dimension, their
+ dimension sizes must be equal or one of them must be 1.  The size of
+ <var>C</var> is determined by the size compatibility of <var>A</var> and <var>B</var>.
+</p>
+<p> One of the input arguments can also be a character vector, a cell array
+ of character vectors, or a string array representing duration strings or
+ a numeric array representing days.
 </p>
 
 
@@ -1991,22 +2031,30 @@ Return true if duration array is a vector.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Equality for duration arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod39">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>ne</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>TF</var> = ne (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>TF</var> = <var>A</var> != <var>B</var></code> and returns a logical array whose
+ elements set to <code>true</code> where the corresponding elements of <var>A</var>
+ and <var>B</var> are not equal and set to <code>false</code> otherwise.
+</p>
+<p> <var>A</var> and <var>B</var> must be size compatible, which translates to they can
+ be the same size, one can be scalar, or for every dimension, their
+ dimension sizes must be equal or one of them must be 1.  The size of
+ <var>C</var> is determined by the size compatibility of <var>A</var> and <var>B</var>.
+</p>
+<p> One of the input arguments can also be a character vector, a cell array
+ of character vectors, or a string array representing duration strings or
+ a numeric array representing days.
 </p>
 
 
@@ -2027,22 +2075,20 @@ Return true if duration array is a vector.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Absolute value of the elements of a duration array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod40">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>abs</b> (<var>A</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>B</var> = abs (<var>A</var>)</code> returns the absolute value of each element
+ in the duration array <var>A</var>.  The returned duration array <var>B</var> has
+ the same size as the input array <var>A</var>.
 </p>
 
 
@@ -2063,22 +2109,29 @@ Return true if duration array is a vector.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Addition for duration arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod41">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>plus</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>C</var> = plus (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>C</var> = <var>A</var> + <var>B</var></code> and returns the sum of <var>A</var> and
+ <var>B</var> by adding the corresponding elements.  <var>A</var> and <var>B</var> must
+ be size compatible, which translates to they can be the same size, one
+ can be scalar, or for every dimension, their dimension sizes must be
+ equal or one of them must be 1.  The size of <var>C</var> is determined by the
+ size compatibility of <var>A</var> and <var>B</var>.
+</p>
+<p> One of the input arguments can also be a numeric array in which case its
+ elements are treated as a number of 24-hour days.  If the second argument
+ <var>B</var> is a calendarDuration arrays, then the returned array <var>C</var> is
+ also a calendarDuration array.
 </p>
 
 
@@ -2099,22 +2152,19 @@ Return true if duration array is a vector.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Unary plus for duration arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod42">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>uplus</b> (<var>A</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>B</var> = uplus (<var>A</var>)</code> is the equivalent of the syntax
+ <code><var>B</var> = + <var>A</var></code> and returns the input array unaltered.
 </p>
 
 
@@ -2135,22 +2185,29 @@ Return true if duration array is a vector.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Subtraction for duration arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod43">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>minus</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>C</var> = minus (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>C</var> = <var>A</var> - <var>B</var></code> and returns the subtraction of <var>B</var>
+ from <var>A</var> by subtracting the corresponding elements.  <var>A</var> and
+ <var>B</var> must be size compatible, which translates to they can be the same
+ size, one can be scalar, or for every dimension, their dimension sizes
+ must be equal or one of them must be 1.  The size of <var>C</var> is
+ determined by the size compatibility of <var>A</var> and <var>B</var>.
+</p>
+<p> One of the input arguments can also be a numeric array in which case its
+ elements are treated as a number of 24-hour days.  If the second argument
+ <var>B</var> is a calendarDuration arrays, then the returned array <var>C</var> is
+ also a calendarDuration array.
 </p>
 
 
@@ -2171,22 +2228,20 @@ Return true if duration array is a vector.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Unary minus for duration arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod44">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>uminus</b> (<var>A</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>B</var> = uminus (<var>A</var>)</code> is the equivalent of the syntax
+ <code><var>B</var> = - <var>A</var></code> and returns the input array with its elements
+ negated.
 </p>
 
 
@@ -2207,22 +2262,27 @@ Return true if duration array is a vector.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Element-wise multiplication for duration arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod45">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>times</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>C</var> = times (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
+ <code><var>C</var> = <var>A</var> .* <var>B</var></code> and returns the element-by-element
+ multiplication product between the corresponding elements of input arrays
+ <var>A</var> and <var>B</var>, one of which must be a numeric array and the other a
+ duration array.
+</p>
+<p> <var>A</var> and <var>B</var> must be size compatible, which translates to they
+ can be the same size, one can be scalar, or for every dimension, their
+ dimension sizes must be equal or one of them must be 1.  The size of
+ <var>C</var> is determined by the size compatibility of <var>A</var> and <var>B</var>.
 </p>
 
 
@@ -2243,22 +2303,24 @@ Return true if duration array is a vector.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Matrix multiplication for duration arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod46">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>times</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>C</var> = mtimes (<var>A</var>, <var>B</var>)</code> is the equivalent of the
+ syntax <code><var>C</var> = <var>A</var> * <var>B</var></code> and returns the matrix
+ multiplication product of input arrays <var>A</var> and <var>B</var>, one of which
+ must be a numeric array and the other a duration array.
+</p>
+<p> The columns of <var>A</var> must equal the rows of <var>B</var> and the size of
+ <var>C</var> is determined by the rows of <var>A</var> and the columns of <var>B</var>.
 </p>
 
 
@@ -2279,22 +2341,28 @@ Return true if duration array is a vector.
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Element-wise left division for duration arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod47">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>ldivide</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>C</var> = ldivide (<var>A</var>, <var>B</var>)</code> is the equivalent of the
+ syntax <code><var>C</var> = <var>A</var> .\ <var>B</var></code> and returns the element-wise
+ division of the duration array <var>B</var> by the corresponding elements of
+ input array <var>A</var>, which can either be a duration or a numeric array.
+ If <var>A</var> is a duration array, then <var>C</var> is a double numeric array.
+ If <var>A</var> is a numeric array, then <var>C</var> is a duration array.
+</p>
+<p> <var>A</var> and <var>B</var> must be size compatible, which translates to they
+ can be the same size, one can be scalar, or for every dimension, their
+ dimension sizes must be equal or one of them must be 1.  The size of
+ <var>C</var> is determined by the size compatibility of <var>A</var> and <var>B</var>.
 </p>
 
 
@@ -2311,26 +2379,32 @@ Return true if duration array is a vector.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>mldivide</code></b>
+                    <b><code>rdivide</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Element-wise right division for duration arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod48">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>rdivide</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>C</var> = rdivide (<var>A</var>, <var>B</var>)</code> is the equivalent of the
+ syntax <code><var>C</var> = <var>A</var> ./ <var>B</var></code> and returns the element-wise
+ division of the duration array <var>A</var> by the corresponding elements of
+ input array <var>B</var>, which can either be a duration or a numeric array.
+ If <var>B</var> is a duration array, then <var>C</var> is a double numeric array.
+ If <var>B</var> is a numeric array, then <var>C</var> is a duration array.
+</p>
+<p> <var>A</var> and <var>B</var> must be size compatible, which translates to they
+ can be the same size, one can be scalar, or for every dimension, their
+ dimension sizes must be equal or one of them must be 1.  The size of
+ <var>C</var> is determined by the size compatibility of <var>A</var> and <var>B</var>.
 </p>
 
 
@@ -2347,27 +2421,42 @@ Return true if duration array is a vector.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>rdivide</code></b>
+                    <b><code>colon</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Create a range of durations in a vector.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod49">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>R</var> = <b>colon</b> (<var>Base</var>, <var>Limit</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>R</var> = <b>colon</b> (<var>Base</var>, <var>Increment</var>, <var>Limit</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>R</var> = colon (<var>Base</var>, <var>Limit</var>)</code> is the equivalent of the
+ syntax <code><var>C</var> = <var>Base</var>:<var>Limit</var></code> and returns a duration
+ vector in the range from <var>Base</var> to <var>Limit</var> incremented by 24-hour
+ days.
 </p>
+<p> <code><var>R</var> = colon (<var>Base</var>, <var>Increment</var>, <var>Limit</var>)</code> is
+ equivalent to <code><var>C</var> = <var>Base</var>:<var>Increment</var>:<var>Limit</var></code>.
+ dimension sizes must be equal or one of them must be 1.  The size of
+ <var>C</var> is determined by the size compatibility of <var>A</var> and <var>B</var>.
+</p>
+<p> As long as one of the inputs is a duration scalar, the following types
+ are additionally supported for the remaining input arguments:
+</p>
+ <ul>
+<li> numeric scalar (24-hour day)
+ </li><li> character vector (duration string)
+ </li><li> cellstr scalar (duration string)
+ </li><li> string scalar (duration string)
+ </li></ul>
+
 
 
 
@@ -2383,27 +2472,46 @@ Return true if duration array is a vector.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>mrdivide</code></b>
+                    <b><code>linspace</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Create linearly spaced duration elements.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod50">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>R</var> = <b>linspace</b> (<var>Start</var>, <var>End</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>R</var> = <b>linspace</b> (<var>Start</var>, <var>End</var>, <var>N</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>R</var> = linspace (<var>Start</var>, <var>End</var>)</code> returns 100 linearly
+ spaced elements between <var>Start</var> and <var>End</var>.  If <var>Start</var> and
+ <var>End</var> are scalars, then <var>R</var> is a vector.  If one or both inputs
+ are vectors, then <var>R</var> is a matrix where each row is an independent
+ sequence between <code><var>Start</var>(idx_N)</code> and <code><var>End</var>(idx_N)</code>.
 </p>
+<p> <code><var>R</var> = linspace (<var>Start</var>, <var>End</var>, <var>N</var>)</code> specifies the
+ number (default is 100) of equally spaced elements between <var>Start</var>
+ and <var>End</var>.  If <var>N</var> is not an integer value, then it is floored
+ to the nearest integer.  If <var>N</var> is zero or negative, then an empty
+ matrix is returned.  If <var>N</var> is one, then <var>End</var> is returned.
+ If <var>N</var> greater than one, then <var>Start</var> and <var>End</var> are always
+ included in the range.
+</p>
+<p> Either <var>Start</var> or <var>End</var> input arguments can also be one of the
+ following types:
+</p>
+ <ul>
+<li> numeric scalar or vector (24-hour days)
+ </li><li> character vector (duration string)
+ </li><li> cellstr scalar or vector (duration strings)
+ </li><li> string scalar or vector (duration strings)
+ </li></ul>
+
 
 
 
@@ -2419,26 +2527,26 @@ Return true if duration array is a vector.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>colon</code></b>
+                    <b><code>diff</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Compute differences between adjacent elements in a duration array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod51">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>DT</var> = <b>diff</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>DT</var> = <b>diff</b> (<var>D</var>, <var>K</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>DT</var> = <b>diff</b> (<var>D</var>, <var>K</var>, <var>DIM</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> This method overloads the core <code>diff</code> function for duration arrays.
+ The functionality is identical to core <code>diff</code> function.  Type
+ <code>help diff</code> for more information.
 </p>
 
 
@@ -2455,26 +2563,28 @@ Return true if duration array is a vector.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>linspace</code></b>
+                    <b><code>sum</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Compute the sum of the elements of a duration array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod52">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>S</var> = <b>sum</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>S</var> = <b>sum</b> (<var>D</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>S</var> = <b>sum</b> (<var>D</var>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>S</var> = <b>sum</b> (<var>D</var>, <code>'all'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>S</var> = <b>sum</b> (&hellip;, <var>nanflag</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> This method overloads the core <code>sum</code> function for duration arrays.
+ The functionality is identical to core <code>sum</code> function.  Type
+ <code>help sum</code> for more information.
 </p>
 
 
@@ -2491,26 +2601,29 @@ Return true if duration array is a vector.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>sum</code></b>
+                    <b><code>cumsum</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Compute the cumulative sum of the elements of a duration array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod53">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>CS</var> = <b>cumsum</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>CS</var> = <b>cumsum</b> (<var>D</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>CS</var> = <b>cumsum</b> (<var>D</var>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>CS</var> = <b>cumsum</b> (<var>D</var>, <code>'all'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>CS</var> = <b>cumsum</b> (&hellip;, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>CS</var> = <b>cumsum</b> (&hellip;, <var>nanflag</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> This method overloads the core <code>cumsum</code> function for duration
+ arrays. The functionality is identical to core <code>cumsum</code> function.
+ Type <code>help cumsum</code> for more information.
 </p>
 
 
@@ -2527,26 +2640,34 @@ Return true if duration array is a vector.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>cumsum</code></b>
+                    <b><code>min</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Find minimum values in duration arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod54">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>min</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>min</b> (<var>D</var>, <code>[]</code>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>min</b> (<var>D</var>, <code>[]</code>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>min</b> (<var>D</var>, <code>[]</code>, <code>'all'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>min</b> (<var>D</var>, <code>[]</code>, <var>nanflag</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>min</b> (<var>D</var>, <code>[]</code>, &hellip;, <var>nanflag</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>M</var>, <var>index</var>] = <b>min</b> (&hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>M</var>, <var>index</var>] = <b>min</b> (&hellip;, <code>'linear'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>min</b> (<var>D1</var>, <var>D2</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>min</b> (<var>D1</var>, <var>D2</var>, <var>nanflag</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: &hellip; = <b>min</b> (&hellip;, <code>'ComparisonMethod'</code>, <var>method</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> This method overloads the core <code>min</code> function for duration
+ arrays. The functionality is identical to core <code>min</code> function.
+ Type <code>help min</code> for more information.
 </p>
 
 
@@ -2563,26 +2684,32 @@ Return true if duration array is a vector.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>diff</code></b>
+                    <b><code>cummin</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Return the cumulative minimum values in duration arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod55">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>cummin</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>cummin</b> (<var>D</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>cummin</b> (<var>D</var>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>cummin</b> (<var>D</var>, <code>'all'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>cummin</b> (<code>[]</code>, <var>nanflag</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>cummin</b> (<code>[]</code>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>M</var>, <var>index</var>] = <b>cummin</b> (&hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>M</var>, <var>index</var>] = <b>cummin</b> (&hellip;, <code>'linear'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: &hellip; = <b>cummin</b> (&hellip;, <code>'ComparisonMethod'</code>, <var>method</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> This method overloads the core <code>cummin</code> function for duration
+ arrays. The functionality is identical to core <code>cummin</code> function.
+ Type <code>help cummin</code> for more information.
 </p>
 
 
@@ -2599,26 +2726,34 @@ Return true if duration array is a vector.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>mean</code></b>
+                    <b><code>max</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Find maximum values in duration arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod56">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>max</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>max</b> (<var>D</var>, <code>[]</code>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>max</b> (<var>D</var>, <code>[]</code>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>max</b> (<var>D</var>, <code>[]</code>, <code>'all'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>max</b> (<var>D</var>, <code>[]</code>, <var>nanflag</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>max</b> (<var>D</var>, <code>[]</code>, &hellip;, <var>nanflag</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>M</var>, <var>index</var>] = <b>max</b> (&hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>M</var>, <var>index</var>] = <b>max</b> (&hellip;, <code>'linear'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>max</b> (<var>D1</var>, <var>D2</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>max</b> (<var>D1</var>, <var>D2</var>, <var>nanflag</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: &hellip; = <b>max</b> (&hellip;, <code>'ComparisonMethod'</code>, <var>method</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> This method overloads the core <code>max</code> function for duration
+ arrays. The functionality is identical to core <code>max</code> function.
+ Type <code>help max</code> for more information.
 </p>
 
 
@@ -2635,26 +2770,32 @@ Return true if duration array is a vector.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>median</code></b>
+                    <b><code>cummax</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Return the cumulative maximum values in duration arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod57">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>cummax</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>cummax</b> (<var>D</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>cummax</b> (<var>D</var>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>cummax</b> (<var>D</var>, <code>'all'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>cummax</b> (<code>[]</code>, <var>nanflag</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>cummax</b> (<code>[]</code>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>M</var>, <var>index</var>] = <b>cummax</b> (&hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>M</var>, <var>index</var>] = <b>cummax</b> (&hellip;, <code>'linear'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: &hellip; = <b>cummax</b> (&hellip;, <code>'ComparisonMethod'</code>, <var>method</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> This method overloads the core <code>cummax</code> function for duration
+ arrays. The functionality is identical to core <code>cummax</code> function.
+ Type <code>help cummax</code> for more information.
 </p>
 
 
@@ -2671,27 +2812,39 @@ Return true if duration array is a vector.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>mode</code></b>
+                    <b><code>floor</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Round toward negative infinity for duration arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod58">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>Y</var> = <b>floor</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>Y</var> = <b>floor</b> (<var>D</var>, <var>unit</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>Y</var> = floor (<var>D</var>)</code> rounds each element of the duration
+ array <var>D</var> to the largest integer number of seconds not greater than
+ that element.
 </p>
+<p> <code><var>Y</var> = floor (<var>D</var>, <var>unit</var>)</code> rounds each element of the
+ duration array <var>D</var> to the largest integer number of the specified
+ unit of time not greater than that element.  <var>unit</var> must be one of
+ the following values:
+</p>
+ <ul>
+<li> <code>'seconds'</code> (default)
+ </li><li> <code>'minutes'</code>
+ </li><li> <code>'hours'</code>
+ </li><li> <code>'days'</code>
+ </li><li> <code>'years'</code>
+ </li></ul>
+
 
 
 
@@ -2707,27 +2860,39 @@ Return true if duration array is a vector.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>floor</code></b>
+                    <b><code>ceil</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Round toward negative infinity for duration arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod59">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>Y</var> = <b>ceil</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>Y</var> = <b>ceil</b> (<var>D</var>, <var>unit</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>Y</var> = ceil (<var>D</var>)</code> rounds each element of the duration
+ array <var>D</var> to the smallest integer number of seconds not less than
+ that element.
 </p>
+<p> <code><var>Y</var> = ceil (<var>D</var>, <var>unit</var>)</code> rounds each element of the
+ duration array <var>D</var> to the smallest integer number of the specified
+ unit of time not less than that element.  <var>unit</var> must be one of the
+ following values:
+</p>
+ <ul>
+<li> <code>'seconds'</code> (default)
+ </li><li> <code>'minutes'</code>
+ </li><li> <code>'hours'</code>
+ </li><li> <code>'days'</code>
+ </li><li> <code>'years'</code>
+ </li></ul>
+
 
 
 
@@ -2743,27 +2908,39 @@ Return true if duration array is a vector.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>ceil</code></b>
+                    <b><code>round</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Round to the nearest integer time unit for duration arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod60">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>Y</var> = <b>round</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>Y</var> = <b>round</b> (<var>D</var>, <var>unit</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>Y</var> = round (<var>D</var>)</code> rounds each element of the duration
+ array <var>D</var> to the nearest integer number of seconds to that element.
+ In case of a tie, return the one further away from zero.
 </p>
+<p> <code><var>Y</var> = round (<var>D</var>, <var>unit</var>)</code> rounds each element of the
+ duration array <var>D</var> to the nearest integer number of the specified
+ unit of time to that element.  <var>unit</var> must be one of the following
+ values:
+</p>
+ <ul>
+<li> <code>'seconds'</code> (default)
+ </li><li> <code>'minutes'</code>
+ </li><li> <code>'hours'</code>
+ </li><li> <code>'days'</code>
+ </li><li> <code>'years'</code>
+ </li></ul>
+
 
 
 
@@ -2779,27 +2956,33 @@ Return true if duration array is a vector.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>round</code></b>
+                    <b><code>sign</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Compute the signum function for duration arrays.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod61">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>out</var> = <b>sign</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>out</var> = <b>sign</b> (<var>D</var>, <var>unit</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> <code><var>out</var> = sign (<var>D</var>)</code> returns an array of doubles, <var>out</var>,
+ the same size as the duration array <var>D</var>, where each element has one
+ following values:
 </p>
+ <ul>
+<li> <code>1</code> if the corresponding element of D is greater than 0.
+ </li><li> <code>0</code> if the corresponding element of D is equal to 0.
+ </li><li> <code>-1</code> if the corresponding element of D is less than 0.
+ </li><li> <code>NaN</code> if the corresponding element of D is a missing value.
+ </li></ul>
+
 
 
 
@@ -2815,26 +2998,28 @@ Return true if duration array is a vector.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>sign</code></b>
+                    <b><code>bounds</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
-Return true if duration array is a vector.
+Return the smallest and largest values of a duration array.
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseMethod62">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>s</var>, <var>l</var>] = <b>bounds</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>s</var>, <var>l</var>] = <b>bounds</b> (<var>D</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>s</var>, <var>l</var>] = <b>bounds</b> (<var>D</var>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>s</var>, <var>l</var>] = <b>bounds</b> (<var>D</var>, <code>'all'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>s</var>, <var>l</var>] = <b>bounds</b> (&hellip;, <var>nanflag</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the duration array <var>D</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
+<p> This method is a specialization of the core <code>bounds</code> function for
+ duration arrays.  The functionality is identical to core <code>bounds</code>
+ function.  Type <code>help bounds</code> for more information.
 </p>
 
 
@@ -2851,6 +3036,596 @@ Return true if duration array is a vector.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
+                    <b><code>center</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Center values in a duration array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod63">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>center</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>center</b> (<var>D</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>center</b> (<var>D</var>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>center</b> (<var>D</var>, <code>'all'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>center</b> (&hellip;, <var>nanflag</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> This method overloads the core <code>center</code> function for duration
+ arrays.  The functionality is identical to core <code>center</code> function.
+ Type <code>help center</code> for more information.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod64"
+              aria-expanded="false" aria-controls="collapseMethod64">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>histc</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Compute histogram counts in a duration array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod64">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">duration: <var>n</var> = <b>histc</b> (<var>D</var>, <var>edges</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>n</var> = <b>histc</b> (<var>D</var>, <var>edges</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>n</var>, <var>idx</var>] = <b>histc</b> (&hellip;)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> This method overloads the core <code>histc</code> function for duration
+ arrays.  The functionality is identical to core <code>histc</code> function.
+ Type <code>help histc</code> for more information.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod65"
+              aria-expanded="false" aria-controls="collapseMethod65">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>iqr</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Compute the interquartile range of a duration array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod65">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">duration: <var>r</var> = <b>iqr</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>r</var> = <b>iqr</b> (<var>D</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>r</var> = <b>iqr</b> (<var>D</var>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>r</var> = <b>iqr</b> (<var>D</var>, <code>'all'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>r</var>, <var>q</var>] = <b>iqr</b> (&hellip;)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> This method overloads the core <code>iqr</code> function for duration arrays.
+ The functionality is identical to core <code>iqr</code> function.
+ Type <code>help iqr</code> for more information.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod66"
+              aria-expanded="false" aria-controls="collapseMethod66">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>kurtosis</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Compute the sample kurtosis of a duration array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod66">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">duration: <var>k</var> = <b>kurtosis</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>k</var> = <b>kurtosis</b> (<var>D</var>, <var>flag</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>k</var> = <b>kurtosis</b> (<var>D</var>, <var>flag</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>k</var> = <b>kurtosis</b> (<var>D</var>, <var>flag</var>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>k</var> = <b>kurtosis</b> (<var>D</var>, <var>flag</var>, <code>'all'</code>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> This method overloads the core <code>kurtosis</code> function for duration
+ arrays.  The functionality is identical to core <code>kurtosis</code> function.
+ Type <code>help kurtosis</code> for more information.
+</p>
+<p> Note that kurtosis is a dimensionless quantity  Thus, the returned
+ argument is a numeric array of double type and not a duration array.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod67"
+              aria-expanded="false" aria-controls="collapseMethod67">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>mad</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Compute the mean or median absolute deviation of a duration array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod67">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>mad</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>mad</b> (<var>D</var>, <var>opt</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>mad</b> (<var>D</var>, <var>opt</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>mad</b> (<var>D</var>, <var>opt</var>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>mad</b> (<var>D</var>, <var>opt</var>, <code>'all'</code>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> This method overloads the core <code>mad</code> function for duration arrays.
+ The functionality is identical to core <code>mad</code> function.
+ Type <code>help mad</code> for more information.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod68"
+              aria-expanded="false" aria-controls="collapseMethod68">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>mape</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Compute the mean absolute percentage error between duration arrays.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod68">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">duration: <var>E</var> = <b>mape</b> (<var>F</var>, <var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>E</var> = <b>mape</b> (<var>F</var>, <var>A</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>E</var> = <b>mape</b> (<var>F</var>, <var>A</var>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>E</var> = <b>mape</b> (<var>F</var>, <var>A</var>, <code>'all'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>E</var> = <b>mape</b> (&hellip;, <var>nanflag</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>E</var> = <b>mape</b> (&hellip;, <var>zeroflag</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>E</var> = <b>mape</b> (&hellip;, <code>'Weights'</code>, <var>W</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> This method overloads the core <code>mape</code> function for duration arrays.
+ The functionality is identical to core <code>mape</code> function.
+ Type <code>help mape</code> for more information.
+</p>
+<p> Note that MAPE is expressed as a percentage.  Thus, the returned argument
+ is a numeric array of double type and not a duration array.  However,
+ both <var>F</var> and <var>A</var> must be duration arrays.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod69"
+              aria-expanded="false" aria-controls="collapseMethod69">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>mean</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Compute the mean of the elements of a duration array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod69">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>mean</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>mean</b> (<var>D</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>mean</b> (<var>D</var>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>mean</b> (<var>D</var>, <code>'all'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>mean</b> (&hellip;, <var>nanflag</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>mean</b> (&hellip;, <var>outtype</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>mean</b> (&hellip;, <code>'Weights'</code>, <var>W</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> This method overloads the core <code>mean</code> function for duration arrays.
+ The functionality is identical to core <code>mean</code> function.
+ Type <code>help mean</code> for more information.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod70"
+              aria-expanded="false" aria-controls="collapseMethod70">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>median</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Compute the median value of the elements of a duration array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod70">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>median</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>median</b> (<var>D</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>median</b> (<var>D</var>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>median</b> (<var>D</var>, <code>'all'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>median</b> (&hellip;, <var>nanflag</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>median</b> (&hellip;, <var>outtype</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> This method overloads the core <code>median</code> function for duration
+ arrays.  The functionality is identical to core <code>median</code> function.
+ Type <code>help median</code> for more information.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod71"
+              aria-expanded="false" aria-controls="collapseMethod71">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>mode</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Compute the most frequently occurring value in a duration array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod71">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>mode</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>mode</b> (<var>D</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>mode</b> (<var>D</var>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>M</var> = <b>mode</b> (<var>D</var>, <code>'all'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>M</var>, <var>F</var>, <var>C</var>] = <b>mode</b> (&hellip;)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> This method overloads the core <code>mode</code> function for duration arrays.
+ The functionality is identical to core <code>mode</code> function.
+ Type <code>help mode</code> for more information.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod72"
+              aria-expanded="false" aria-controls="collapseMethod72">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>prctile</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Compute the percentiles of a duration array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod72">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">duration: <var>Q</var> = <b>prctile</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>q</var> = <b>prctile</b> (<var>D</var>, <var>p</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>Q</var> = <b>prctile</b> (<var>D</var>, <var>p</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>Q</var> = <b>prctile</b> (<var>D</var>, <var>p</var>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>Q</var> = <b>prctile</b> (<var>D</var>, <var>p</var>, <code>'all'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>Q</var> = <b>prctile</b> (<var>D</var>, <var>p</var>, &hellip;, <var>method</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> This method overloads the core <code>prctile</code> function for duration
+ arrays.  The functionality is identical to core <code>prctile</code> function.
+ Type <code>help prctile</code> for more information.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod73"
+              aria-expanded="false" aria-controls="collapseMethod73">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>quantile</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Compute the quantiles of a duration array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod73">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">duration: <var>Q</var> = <b>quantile</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, <var>p</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, <var>n</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, &hellip;, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, &hellip;, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, &hellip;, <code>'all'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, <var>p</var>, &hellip;, <var>method</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, <var>n</var>, &hellip;, <var>method</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> This method overloads the core <code>quantile</code> function for duration
+ arrays.  The functionality is identical to core <code>quantile</code> function.
+ Type <code>help quantile</code> for more information.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod74"
+              aria-expanded="false" aria-controls="collapseMethod74">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>range</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Compute the range of a duration array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod74">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">duration: <var>R</var> = <b>range</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>R</var> = <b>range</b> (<var>D</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>R</var> = <b>range</b> (<var>D</var>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>R</var> = <b>range</b> (<var>D</var>, <code>'all'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>R</var> = <b>range</b> (&hellip;, <var>nanflag</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> This method overloads the core <code>range</code> function for duration arrays.
+ The functionality is identical to core <code>range</code> function.
+ Type <code>help range</code> for more information.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod75"
+              aria-expanded="false" aria-controls="collapseMethod75">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>rmse</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Compute the root mean squared error between duration arrays.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod75">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">duration: <var>E</var> = <b>rmse</b> (<var>F</var>, <var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>E</var> = <b>rmse</b> (<var>F</var>, <var>A</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>E</var> = <b>rmse</b> (<var>F</var>, <var>A</var>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>E</var> = <b>rmse</b> (<var>F</var>, <var>A</var>, <code>'all'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>E</var> = <b>rmse</b> (&hellip;, <var>nanflag</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>E</var> = <b>rmse</b> (&hellip;, <code>'Weights'</code>, <var>W</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> This method overloads the core <code>rmse</code> function for duration arrays.
+ The functionality is identical to core <code>rmse</code> function.
+ Type <code>help rmse</code> for more information.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod76"
+              aria-expanded="false" aria-controls="collapseMethod76">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>skewness</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Compute the sample skewness of a duration array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod76">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">duration: <var>y</var> = <b>skewness</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>y</var> = <b>skewness</b> (<var>D</var>, <var>flag</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>y</var> = <b>skewness</b> (<var>D</var>, <var>flag</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>y</var> = <b>skewness</b> (<var>D</var>, <var>flag</var>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>y</var> = <b>skewness</b> (<var>D</var>, <var>flag</var>, <code>'all'</code>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> This method overloads the core <code>skewness</code> function for duration
+ arrays.  The functionality is identical to core <code>skewness</code> function.
+ Type <code>help skewness</code> for more information.
+</p>
+<p> Note that skewness is a dimensionless quantity  Thus, the returned
+ argument is a numeric array of double type and not a duration array.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod77"
+              aria-expanded="false" aria-controls="collapseMethod77">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>std</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Compute the standard deviation of a duration array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod77">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">duration: <var>S</var> = <b>std</b> (<var>D</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>S</var> = <b>std</b> (<var>D</var>, <var>w</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>S</var> = <b>std</b> (<var>D</var>, <var>w</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>S</var> = <b>std</b> (<var>D</var>, <var>w</var>, <var>vecdim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>S</var> = <b>std</b> (<var>D</var>, <var>w</var>, <code>'all'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>S</var> = <b>std</b> (&hellip;, <var>nanflag</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>S</var>, <var>M</var>] = <b>std</b> (&hellip;)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> This method overloads the core <code>std</code> function for duration arrays.
+ The functionality is identical to core <code>std</code> function.
+ Type <code>help std</code> for more information.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod78"
+              aria-expanded="false" aria-controls="collapseMethod78">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
                     <b><code>sort</code></b>
                   </h4>
                 </div>
@@ -2859,7 +3634,7 @@ Sort elements in a duration array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod63">
+          <div class="collapse multi-collapse" id="collapseMethod78">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>sort</b> (<var>A</var>)</code></h5></dt>
@@ -2931,8 +3706,8 @@ Sort elements in a duration array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod64"
-              aria-expanded="false" aria-controls="collapseMethod64">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod79"
+              aria-expanded="false" aria-controls="collapseMethod79">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -2944,7 +3719,7 @@ Sort rows in a duration array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod64">
+          <div class="collapse multi-collapse" id="collapseMethod79">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>)</code></h5></dt>
@@ -3007,8 +3782,8 @@ Sort rows in a duration array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod65"
-              aria-expanded="false" aria-controls="collapseMethod65">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod80"
+              aria-expanded="false" aria-controls="collapseMethod80">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3016,62 +3791,65 @@ Sort rows in a duration array.
                   </h4>
                 </div>
                 <div class="col-8">
-Sort rows in a duration array.
+Unique values in a duration array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod65">
+          <div class="collapse multi-collapse" id="collapseMethod80">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>direction</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>, <var>direction</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: [<var>B</var>, <var>index</var>] = <b>sortrows</b> (<var>A</var>, &hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>unique</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>unique</b> (<var>A</var>, <var>setOrder</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>unique</b> (<var>A</var>, <var>occurrence</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>unique</b> (<var>A</var>, <var>setOrder</var>, <var>occurrence</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>unique</b> (<var>A</var>, <var>occurrence</var>, <var>setOrder</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>B</var> = <b>unique</b> (<var>A</var>, &hellip;, <code>'rows'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>B</var>, <var>ixA</var>, <var>ixB</var>] = <b>unique</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>B</var> = sortrows (<var>A</var>)</code> sorts the rows of the 2-D duration
- array <var>A</var> in ascending order.  The sorted array <var>B</var> has the same
- size as <var>A</var>.
+<p> <code><var>B</var> = unique (<var>A</var>)</code> returns the unique values of the
+ duration array <var>A</var> in sorted order.
 </p>
-<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>)</code> sorts <var>A</var> according to
- to the columns specified by the numeric vector <var>col</var>, which must
- explicitly contain non-zero integers whose absolute values index existing
- columns in <var>A</var>.  Positive elements sort the corresponding columns in
- ascending order, while negative elements sort the corresponding columns
- in descending order.
-</p>
-<p> <code><var>B</var> = sortrows (<var>A</var>, <var>direction</var>)</code> also specifies the
- sorting direction, which can be either <code>'ascend'</code> (default) or
- <code>'descend'</code> applying to all columns in <var>A</var>.  Alternatively,
- <var>direction</var> can be either a string array or a cell array of character
- vectors specifying the sorting direction for each individual column of
- <var>A</var>, in which case the number of elements in <var>direction</var> must
- equal the number of columns in <var>A</var>.
-</p>
-<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>, <var>direction</var>)</code> sorts the
- categorical array <var>A</var> according to the columns specified in <var>col</var>
- using the corresponding sorting direction specified in <var>direction</var>.
- In this case, the sign of the values in <var>col</var> is ignored.  <var>col</var>
- and <var>direction</var> must have the same number of elements, but not
- necessarily equal to the columns of <var>A</var>.
-</p>
-<p> <code><var>B</var> = sortrows (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
- specifies where to place the missing elements (<code>NaN</code>) returned in
- <var>B</var> with any of the following options specified in <var>MP</var>:
+<p> <code><var>B</var> = unique (<var>A</var>, <var>setOrder</var>)</code> returns the unique
+ values of the duration array <var>A</var> in an order as specified by
+ <var>setOrder</var>, which can be either of the following values:
 </p>
  <ul>
-<li> <code>'auto'</code>, which is the default, places missing elements last
- for ascending sort and first for descending sort.
- </li><li> <code>'first'</code> places missing elements first.
- </li><li> <code>'last'</code> places missing elements last.
+<li> <code>'sorted'</code> (default) returns the unique values sorted in
+ ascending order.
+ </li><li> <code>'stable'</code> returns the unique values according to their order
+ of occurrence.
  </li></ul>
 
-<p> <code>[<var>B</var>, <var>index</var>] = sortrows (<var>A</var>, &hellip;)</code> also returns
- an index vector containing the original row indices of <var>A</var> in the
- sorted matrix <var>B</var> such that <code><var>B</var> = <var>A</var>(<var>index</var>,:)</code>.
+<p> <code><var>B</var> = unique (<var>A</var>, <var>occurrence</var>)</code> returns the unique
+ values of the duration array <var>tblA</var> according to their order of
+ occurrence.  <var>occurrence</var> can be either of the following values:
+</p>
+ <ul>
+<li> <code>'first'</code> (default) returns the first occurrence of each
+ unique value, i.e. the lowest possible indices are returned.
+ </li><li> <code>'last'</code> returns the last occurrence of each unique value,
+ i.e. the highest possible indices are returned.
+ </li></ul>
+
+<p> You can specify <var>setOrder</var> and <var>occurrence</var> arguments together.
+</p>
+<p> <code><var>B</var> = unique (<var>A</var>, &hellip;, <code>'rows'</code>)</code> returns the
+ unique rows of <var>A</var> by treating each row as a single entity.  The
+ <code>'rows'</code> option can be used alone or in any combination with the
+ <var>setOrder</var> and <var>occurrence</var> arguments.  <code>'rows'</code> can be
+ placed at any position in the function&rsquo;s argument list after the input
+ array <var>A</var>.  However, this syntax is only valid for 2-dimensional
+ duration arrays.
+</p>
+<p> <code>[<var>tblB</var>, <var>ixA</var>, <var>ixB</var>] = unique (&hellip;)</code> also returns
+ index vectors <var>ixA</var> and <var>ixB</var> using any of the previous syntaxes.
+ <var>ixA</var> and <var>ixB</var> map the arrays <var>A</var> and <var>B</var> to one another
+ such that <code><var>B</var> = <var>A</var>(<var>ixA</var>)</code> and
+ <code><var>A</var> = <var>B</var>(<var>ixB</var>)</code>.  When the <code>'rows'</code> optional
+ argument is specified, then <code><var>B</var> = <var>A</var>(<var>ixA</var>,:)</code> and
+ <code><var>tblA</var> = <var>tblB</var>(<var>ixB</var>,:)</code>.
 </p>
 
 
@@ -3083,8 +3861,8 @@ Sort rows in a duration array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod66"
-              aria-expanded="false" aria-controls="collapseMethod66">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod81"
+              aria-expanded="false" aria-controls="collapseMethod81">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3092,62 +3870,96 @@ Sort rows in a duration array.
                   </h4>
                 </div>
                 <div class="col-8">
-Sort rows in a duration array.
+One-dimensional interpolation for duration arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod66">
+          <div class="collapse multi-collapse" id="collapseMethod81">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>direction</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>, <var>direction</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: [<var>B</var>, <var>index</var>] = <b>sortrows</b> (<var>A</var>, &hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>YI</var> = <b>interp1</b> (<var>X</var>, <var>Y</var>, <var>XI</var>)</code></h5></dt>
+</dl>
+ <dl>
+<dt><code><h5 class="fs">duration: <var>YI</var> = <b>interp1</b> (<var>Y</var>, <var>XI</var>)</code></h5></dt>
+</dl>
+ <dl>
+<dt><code><h5 class="fs">duration: <var>YI</var> = <b>interp1</b> (&hellip;, <var>method</var>)</code></h5></dt>
+</dl>
+ <dl>
+<dt><code><h5 class="fs">duration: <var>YI</var> = <b>interp1</b> (&hellip;, <var>method</var>, <var>extrapolation</var>)</code></h5></dt>
+</dl>
+ <dl>
+<dt><code><h5 class="fs">duration: <var>pp</var> = <b>interp1</b> ((<var>X</var>, <var>Y</var>, <code>'pp'</code>)</code></h5></dt>
+</dl>
+ <dl>
+<dt><code><h5 class="fs">duration: <var>pp</var> = <b>interp1</b> ((<var>X</var>, <var>Y</var>, <var>method</var>, <code>'pp'</code>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>B</var> = sortrows (<var>A</var>)</code> sorts the rows of the 2-D duration
- array <var>A</var> in ascending order.  The sorted array <var>B</var> has the same
- size as <var>A</var>.
+<p> <code><var>YI</var> = interp1 (<var>X</var>, <var>Y</var>, <var>XI</var>)</code> computes the
+ linearly interpolated values of a one-dimensional function, which is
+ represented by sample points <var>X</var> and corresponding values <var>Y</var>,
+ at specific query points <var>XI</var>.  <var>X</var> must be a vector.  If <var>Y</var>
+ is vector, then it must have the same length as <var>X</var>.  If <var>Y</var> is
+ matrix, then each column is treated as a different set of one-dimensional
+ sample values and the number of rows must equal the length of <var>X</var>.
+ <var>XI</var> must be a vector and the same data type as <var>X</var>.  The output
+ <var>XI</var> is the same data type as <var>Y</var> and its size depends on <var>Y</var>
+ and <var>XI</var>.  <var>X</var> and <var>Y</var> can both be duration arrays or one of
+ them can be a numeric array.
 </p>
-<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>)</code> sorts <var>A</var> according to
- to the columns specified by the numeric vector <var>col</var>, which must
- explicitly contain non-zero integers whose absolute values index existing
- columns in <var>A</var>.  Positive elements sort the corresponding columns in
- ascending order, while negative elements sort the corresponding columns
- in descending order.
-</p>
-<p> <code><var>B</var> = sortrows (<var>A</var>, <var>direction</var>)</code> also specifies the
- sorting direction, which can be either <code>'ascend'</code> (default) or
- <code>'descend'</code> applying to all columns in <var>A</var>.  Alternatively,
- <var>direction</var> can be either a string array or a cell array of character
- vectors specifying the sorting direction for each individual column of
- <var>A</var>, in which case the number of elements in <var>direction</var> must
- equal the number of columns in <var>A</var>.
-</p>
-<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>, <var>direction</var>)</code> sorts the
- categorical array <var>A</var> according to the columns specified in <var>col</var>
- using the corresponding sorting direction specified in <var>direction</var>.
- In this case, the sign of the values in <var>col</var> is ignored.  <var>col</var>
- and <var>direction</var> must have the same number of elements, but not
- necessarily equal to the columns of <var>A</var>.
-</p>
-<p> <code><var>B</var> = sortrows (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
- specifies where to place the missing elements (<code>NaN</code>) returned in
- <var>B</var> with any of the following options specified in <var>MP</var>:
+<p> <code><var>YI</var> = interp1 (<var>Y</var>, <var>XI</var>)</code> computes the linearly
+ interpolated values of a one-dimensional function assuming a default set
+ of sampling points determined by the shape of <var>Y</var>:
 </p>
  <ul>
-<li> <code>'auto'</code>, which is the default, places missing elements last
- for ascending sort and first for descending sort.
- </li><li> <code>'first'</code> places missing elements first.
- </li><li> <code>'last'</code> places missing elements last.
+<li> If <var>Y</var> is a vector, then the default sampling points are
+ <code>[1:length(<var>Y</var>)</code>.
+
+ </li><li> If <var>Y</var> is an array, then the default sampling points are
+ <code>[1:size(<var>Y</var>)</code>.
  </li></ul>
 
-<p> <code>[<var>B</var>, <var>index</var>] = sortrows (<var>A</var>, &hellip;)</code> also returns
- an index vector containing the original row indices of <var>A</var> in the
- sorted matrix <var>B</var> such that <code><var>B</var> = <var>A</var>(<var>index</var>,:)</code>.
+<p> <code><var>YI</var> = interp1 (&hellip;, <var>method</var>)</code> specifies one of the
+ following interpolation methods to be used:
+</p>
+ <ul>
+<li> <code>'linear'</code> (default) computes the linear interpolation from
+ nearest neighbors.
+
+ </li><li> <code>'nearest'</code> returns the nearest neighbor.
+
+ </li><li> <code>'next'</code> returns the next neighbor.
+
+ </li><li> <code>'previous'</code> returns the previous neighbor.
+
+ </li><li> <code>'pchip'</code> computes the piecewise cubic Hermite interpolating
+ polynomial, which corresponds to shape-preserving interpolation with
+ smooth first derivative.
+
+ </li><li> <code>'cubic'</code> computes the cubic interpolation.
+
+ </li><li> <code>'spline'</code> computes the cubic spline interpolation, which
+ corresponds to smooth first and second derivatives throughout the curve.
+ </li></ul>
+
+<p> <code><var>YI</var> = interp1 (&hellip;, <var>method</var>, <var>extrapolation</var>)</code>
+ further specifies a strategy for evaluating points that lie outside the
+ range of the sample points in <var>X</var>.  Set <var>extrapolation</var> to
+ <code>'extrap'</code> to use the current <var>method</var> to extrapolate values.
+ Set <var>extrapolation</var> to a scalar value of the same data type as
+ <var>Y</var> to return a constant value outside the range of <var>X</var>.  When
+ unspecified, <var>extrapolation</var> defaults to <code>NaN</code>.
+</p>
+<p> <code><var>pp</var> = interp1 ((<var>X</var>, <var>Y</var>, <code>'pp'</code></code> returns a
+ piecewise polynomial object, using the default linear interpolation
+ algorithm, which can be later used with <code>ppval</code> to evaluate the
+ interpolation at new query points.
+</p>
+<p> <code><var>pp</var> = interp1 ((<var>X</var>, <var>Y</var>, <var>method</var>, <code>'pp'</code></code>
+ return a piecewise polynomial object, using the interpolation algorithm
+ specified by <var>method</var>, which can be later used with <code>ppval</code> to
+ evaluate the interpolation at new query points.
 </p>
 
 
@@ -3159,8 +3971,8 @@ Sort rows in a duration array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod67"
-              aria-expanded="false" aria-controls="collapseMethod67">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod82"
+              aria-expanded="false" aria-controls="collapseMethod82">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3168,62 +3980,45 @@ Sort rows in a duration array.
                   </h4>
                 </div>
                 <div class="col-8">
-Sort rows in a duration array.
+Set intersection of two duration arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod67">
+          <div class="collapse multi-collapse" id="collapseMethod82">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>direction</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>, <var>direction</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: [<var>B</var>, <var>index</var>] = <b>sortrows</b> (<var>A</var>, &hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>intersect</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>intersect</b> (<var>A</var>, <var>B</var>, <code>'rows'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>intersect</b> (<var>A</var>, <var>B</var>, &hellip;, <var>order</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>C</var>, <var>ixA</var>, <var>ixB</var>] = <b>intersect</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>B</var> = sortrows (<var>A</var>)</code> sorts the rows of the 2-D duration
- array <var>A</var> in ascending order.  The sorted array <var>B</var> has the same
- size as <var>A</var>.
+<p> <code><var>C</var> = intersect (<var>A</var>, <var>B</var>)</code> returns the unique common
+ values of the duration arrays <var>A</var> and <var>B</var>.  Either <var>A</var> or
+ <var>B</var> input arguments can also be a duration string specified as a
+ character vector, a string array, or a cell array of character vectors,
+ or a numeric array representing 24-hour days.  In such case, the input is
+ promoted to a duration array prior to calculating the intersection.  If
+ both <var>A</var> and <var>B</var> are row vectors, then <var>C</var> is also a row
+ vector, otherwise <code>intersect</code> returns a column vector.
 </p>
-<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>)</code> sorts <var>A</var> according to
- to the columns specified by the numeric vector <var>col</var>, which must
- explicitly contain non-zero integers whose absolute values index existing
- columns in <var>A</var>.  Positive elements sort the corresponding columns in
- ascending order, while negative elements sort the corresponding columns
- in descending order.
+<p> <code><var>C</var> = intersect (<var>A</var>, <var>B</var>, <code>'rows'</code></code> returns the
+ unique common rows of the duration matrices <var>A</var> and <var>B</var>, which
+ must have the same number of columns.  By default, the rows in duration
+ matrix <var>C</var> are in sorted order.
 </p>
-<p> <code><var>B</var> = sortrows (<var>A</var>, <var>direction</var>)</code> also specifies the
- sorting direction, which can be either <code>'ascend'</code> (default) or
- <code>'descend'</code> applying to all columns in <var>A</var>.  Alternatively,
- <var>direction</var> can be either a string array or a cell array of character
- vectors specifying the sorting direction for each individual column of
- <var>A</var>, in which case the number of elements in <var>direction</var> must
- equal the number of columns in <var>A</var>.
+<p> <code>&hellip; = intersect (<var>A</var>, <var>B</var>, &hellip;, <var>order</var>)</code> also
+ specifies the order of the returned unique values.  <var>order</var> can be
+ <code>'sorted'</code>, which is the default behavior, or <code>'stable'</code>, in
+ which case the unique values are returned in order of appearance.
 </p>
-<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>, <var>direction</var>)</code> sorts the
- categorical array <var>A</var> according to the columns specified in <var>col</var>
- using the corresponding sorting direction specified in <var>direction</var>.
- In this case, the sign of the values in <var>col</var> is ignored.  <var>col</var>
- and <var>direction</var> must have the same number of elements, but not
- necessarily equal to the columns of <var>A</var>.
-</p>
-<p> <code><var>B</var> = sortrows (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
- specifies where to place the missing elements (<code>NaN</code>) returned in
- <var>B</var> with any of the following options specified in <var>MP</var>:
-</p>
- <ul>
-<li> <code>'auto'</code>, which is the default, places missing elements last
- for ascending sort and first for descending sort.
- </li><li> <code>'first'</code> places missing elements first.
- </li><li> <code>'last'</code> places missing elements last.
- </li></ul>
-
-<p> <code>[<var>B</var>, <var>index</var>] = sortrows (<var>A</var>, &hellip;)</code> also returns
- an index vector containing the original row indices of <var>A</var> in the
- sorted matrix <var>B</var> such that <code><var>B</var> = <var>A</var>(<var>index</var>,:)</code>.
+<p> <code>[<var>C</var>, <var>ixA</var>, <var>ixB</var>] = intersect (&hellip;)</code> also returns
+ index vectors <var>ixA</var> and <var>ixB</var> such that
+ <code><var>C</var> = <var>A</var>(<var>ixA</var>)</code> and
+ <code><var>C</var> = <var>B</var>(<var>ixB</var>)</code>, unless the <code>'rows'</code> optional
+ argument is given, in which case <code><var>C</var> = <var>A</var>(<var>ixA</var>,:)</code>
+ and <code><var>C</var> = <var>B</var>(<var>ixB</var>,:)</code>.
 </p>
 
 
@@ -3235,8 +4030,8 @@ Sort rows in a duration array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod68"
-              aria-expanded="false" aria-controls="collapseMethod68">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod83"
+              aria-expanded="false" aria-controls="collapseMethod83">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3244,62 +4039,43 @@ Sort rows in a duration array.
                   </h4>
                 </div>
                 <div class="col-8">
-Sort rows in a duration array.
+Set difference of two duration arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod68">
+          <div class="collapse multi-collapse" id="collapseMethod83">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>direction</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>, <var>direction</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: [<var>B</var>, <var>index</var>] = <b>sortrows</b> (<var>A</var>, &hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>setdiff</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>setdiff</b> (<var>A</var>, <var>B</var>, <code>'rows'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>setdiff</b> (<var>A</var>, <var>B</var>, &hellip;, <var>order</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>C</var>, <var>ixA</var>] = <b>setdiff</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>B</var> = sortrows (<var>A</var>)</code> sorts the rows of the 2-D duration
- array <var>A</var> in ascending order.  The sorted array <var>B</var> has the same
- size as <var>A</var>.
+<p> <code><var>C</var> = setdiff (<var>A</var>, <var>B</var>)</code> returns the unique common
+ values of the duration arrays <var>A</var> and <var>B</var>.  Either <var>A</var> or
+ <var>B</var> input arguments can also be a duration string specified as a
+ character vector, a string array, or a cell array of character vectors,
+ or a numeric array representing 24-hour days.  In such case, the input is
+ promoted to a duration array prior to calculating the intersection.  If
+ both <var>A</var> and <var>B</var> are row vectors, then <var>C</var> is also a row
+ vector, otherwise <code>intersect</code> returns a column vector.
 </p>
-<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>)</code> sorts <var>A</var> according to
- to the columns specified by the numeric vector <var>col</var>, which must
- explicitly contain non-zero integers whose absolute values index existing
- columns in <var>A</var>.  Positive elements sort the corresponding columns in
- ascending order, while negative elements sort the corresponding columns
- in descending order.
+<p> <code><var>C</var> = setdiff (<var>A</var>, <var>B</var>, <code>'rows'</code></code> returns the
+ unique common rows of the duration matrices <var>A</var> and <var>B</var>, which
+ must have the same number of columns.  By default, the rows in duration
+ matrix <var>C</var> are in sorted order.
 </p>
-<p> <code><var>B</var> = sortrows (<var>A</var>, <var>direction</var>)</code> also specifies the
- sorting direction, which can be either <code>'ascend'</code> (default) or
- <code>'descend'</code> applying to all columns in <var>A</var>.  Alternatively,
- <var>direction</var> can be either a string array or a cell array of character
- vectors specifying the sorting direction for each individual column of
- <var>A</var>, in which case the number of elements in <var>direction</var> must
- equal the number of columns in <var>A</var>.
+<p> <code>&hellip; = setdiff (<var>A</var>, <var>B</var>, &hellip;, <var>order</var>)</code> also
+ specifies the order of the returned unique values.  <var>order</var> can be
+ <code>'sorted'</code>, which is the default behavior, or <code>'stable'</code>, in
+ which case the unique values are returned in order of appearance.
 </p>
-<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>, <var>direction</var>)</code> sorts the
- categorical array <var>A</var> according to the columns specified in <var>col</var>
- using the corresponding sorting direction specified in <var>direction</var>.
- In this case, the sign of the values in <var>col</var> is ignored.  <var>col</var>
- and <var>direction</var> must have the same number of elements, but not
- necessarily equal to the columns of <var>A</var>.
-</p>
-<p> <code><var>B</var> = sortrows (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
- specifies where to place the missing elements (<code>NaN</code>) returned in
- <var>B</var> with any of the following options specified in <var>MP</var>:
-</p>
- <ul>
-<li> <code>'auto'</code>, which is the default, places missing elements last
- for ascending sort and first for descending sort.
- </li><li> <code>'first'</code> places missing elements first.
- </li><li> <code>'last'</code> places missing elements last.
- </li></ul>
-
-<p> <code>[<var>B</var>, <var>index</var>] = sortrows (<var>A</var>, &hellip;)</code> also returns
- an index vector containing the original row indices of <var>A</var> in the
- sorted matrix <var>B</var> such that <code><var>B</var> = <var>A</var>(<var>index</var>,:)</code>.
+<p> <code>[<var>C</var>, <var>ixA</var>] = setdiff (&hellip;)</code> also returns the index
+ vector <var>ixA</var> such that <code><var>C</var> = <var>A</var>(<var>ixA</var>)</code>, unless
+ the <code>'rows'</code> optional argument is given, in which case
+ <code><var>C</var> = <var>A</var>(<var>ixA</var>,:)</code>.
 </p>
 
 
@@ -3311,8 +4087,8 @@ Sort rows in a duration array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod69"
-              aria-expanded="false" aria-controls="collapseMethod69">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod84"
+              aria-expanded="false" aria-controls="collapseMethod84">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3320,62 +4096,45 @@ Sort rows in a duration array.
                   </h4>
                 </div>
                 <div class="col-8">
-Sort rows in a duration array.
+Set exclusive-or of two duration arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod69">
+          <div class="collapse multi-collapse" id="collapseMethod84">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>direction</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>, <var>direction</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: [<var>B</var>, <var>index</var>] = <b>sortrows</b> (<var>A</var>, &hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>setxor</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>setxor</b> (<var>A</var>, <var>B</var>, <code>'rows'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>setxor</b> (<var>A</var>, <var>B</var>, &hellip;, <var>order</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>C</var>, <var>ixA</var>, <var>ixB</var>] = <b>setxor</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>B</var> = sortrows (<var>A</var>)</code> sorts the rows of the 2-D duration
- array <var>A</var> in ascending order.  The sorted array <var>B</var> has the same
- size as <var>A</var>.
+<p> <code><var>C</var> = setxor (<var>A</var>, <var>B</var>)</code> returns the unique common
+ values of the duration arrays <var>A</var> and <var>B</var>.  Either <var>A</var> or
+ <var>B</var> input arguments can also be a duration string specified as a
+ character vector, a string array, or a cell array of character vectors,
+ or a numeric array representing 24-hour days.  In such case, the input is
+ promoted to a duration array prior to calculating the intersection.  If
+ both <var>A</var> and <var>B</var> are row vectors, then <var>C</var> is also a row
+ vector, otherwise <code>intersect</code> returns a column vector.
 </p>
-<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>)</code> sorts <var>A</var> according to
- to the columns specified by the numeric vector <var>col</var>, which must
- explicitly contain non-zero integers whose absolute values index existing
- columns in <var>A</var>.  Positive elements sort the corresponding columns in
- ascending order, while negative elements sort the corresponding columns
- in descending order.
+<p> <code><var>C</var> = setxor (<var>A</var>, <var>B</var>, <code>'rows'</code></code> returns the
+ unique common rows of the duration matrices <var>A</var> and <var>B</var>, which
+ must have the same number of columns.  By default, the rows in
+ duration matrix <var>C</var> are in sorted order.
 </p>
-<p> <code><var>B</var> = sortrows (<var>A</var>, <var>direction</var>)</code> also specifies the
- sorting direction, which can be either <code>'ascend'</code> (default) or
- <code>'descend'</code> applying to all columns in <var>A</var>.  Alternatively,
- <var>direction</var> can be either a string array or a cell array of character
- vectors specifying the sorting direction for each individual column of
- <var>A</var>, in which case the number of elements in <var>direction</var> must
- equal the number of columns in <var>A</var>.
+<p> <code>&hellip; = setxor (<var>A</var>, <var>B</var>, &hellip;, <var>order</var>)</code> also
+ specifies the order of the returned unique values.  <var>order</var> can be
+ <code>'sorted'</code>, which is the default behavior, or <code>'stable'</code>, in
+ which case the unique values are returned in order of appearance.
 </p>
-<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>, <var>direction</var>)</code> sorts the
- categorical array <var>A</var> according to the columns specified in <var>col</var>
- using the corresponding sorting direction specified in <var>direction</var>.
- In this case, the sign of the values in <var>col</var> is ignored.  <var>col</var>
- and <var>direction</var> must have the same number of elements, but not
- necessarily equal to the columns of <var>A</var>.
-</p>
-<p> <code><var>B</var> = sortrows (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
- specifies where to place the missing elements (<code>NaN</code>) returned in
- <var>B</var> with any of the following options specified in <var>MP</var>:
-</p>
- <ul>
-<li> <code>'auto'</code>, which is the default, places missing elements last
- for ascending sort and first for descending sort.
- </li><li> <code>'first'</code> places missing elements first.
- </li><li> <code>'last'</code> places missing elements last.
- </li></ul>
-
-<p> <code>[<var>B</var>, <var>index</var>] = sortrows (<var>A</var>, &hellip;)</code> also returns
- an index vector containing the original row indices of <var>A</var> in the
- sorted matrix <var>B</var> such that <code><var>B</var> = <var>A</var>(<var>index</var>,:)</code>.
+<p> <code>[<var>C</var>, <var>ixA</var>, <var>ixB</var>] = setxor (&hellip;)</code> also returns
+ index vectors <var>ixA</var> and <var>ixB</var> such that
+ <code><var>C</var> = <var>A</var>(<var>ixA</var>)</code> and
+ <code><var>C</var> = <var>B</var>(<var>ixB</var>)</code>, unless the <code>'rows'</code> optional
+ argument is given, in which case <code><var>C</var> = <var>A</var>(<var>ixA</var>,:)</code>
+ and <code><var>C</var> = <var>B</var>(<var>ixB</var>,:)</code>.
 </p>
 
 
@@ -3387,8 +4146,8 @@ Sort rows in a duration array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod70"
-              aria-expanded="false" aria-controls="collapseMethod70">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod85"
+              aria-expanded="false" aria-controls="collapseMethod85">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3396,62 +4155,45 @@ Sort rows in a duration array.
                   </h4>
                 </div>
                 <div class="col-8">
-Sort rows in a duration array.
+Set union of two duration arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod70">
+          <div class="collapse multi-collapse" id="collapseMethod85">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>direction</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>, <var>direction</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: [<var>B</var>, <var>index</var>] = <b>sortrows</b> (<var>A</var>, &hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>union</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>union</b> (<var>A</var>, <var>B</var>, <code>'rows'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>union</b> (<var>A</var>, <var>B</var>, &hellip;, <var>order</var>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: [<var>C</var>, <var>ixA</var>, <var>ixB</var>] = <b>union</b> (&hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>B</var> = sortrows (<var>A</var>)</code> sorts the rows of the 2-D duration
- array <var>A</var> in ascending order.  The sorted array <var>B</var> has the same
- size as <var>A</var>.
+<p> <code><var>C</var> = union (<var>A</var>, <var>B</var>)</code> returns the unique common
+ values of the duration arrays <var>A</var> and <var>B</var>.  Either <var>A</var> or
+ <var>B</var> input arguments can also be a duration string specified as a
+ character vector, a string array, or a cell array of character vectors,
+ or a numeric array representing 24-hour days.  In such case, the input is
+ promoted to a duration array prior to calculating the intersection.  If
+ both <var>A</var> and <var>B</var> are row vectors, then <var>C</var> is also a row
+ vector, otherwise <code>intersect</code> returns a column vector.
 </p>
-<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>)</code> sorts <var>A</var> according to
- to the columns specified by the numeric vector <var>col</var>, which must
- explicitly contain non-zero integers whose absolute values index existing
- columns in <var>A</var>.  Positive elements sort the corresponding columns in
- ascending order, while negative elements sort the corresponding columns
- in descending order.
+<p> <code><var>C</var> = union (<var>A</var>, <var>B</var>, <code>'rows'</code></code> returns the
+ unique common rows of the duration matrices <var>A</var> and <var>B</var>, which
+ must have the same number of columns.  By default, the rows in
+ duration matrix <var>C</var> are in sorted order.
 </p>
-<p> <code><var>B</var> = sortrows (<var>A</var>, <var>direction</var>)</code> also specifies the
- sorting direction, which can be either <code>'ascend'</code> (default) or
- <code>'descend'</code> applying to all columns in <var>A</var>.  Alternatively,
- <var>direction</var> can be either a string array or a cell array of character
- vectors specifying the sorting direction for each individual column of
- <var>A</var>, in which case the number of elements in <var>direction</var> must
- equal the number of columns in <var>A</var>.
+<p> <code>&hellip; = union (<var>A</var>, <var>B</var>, &hellip;, <var>order</var>)</code> also
+ specifies the order of the returned unique values.  <var>order</var> can be
+ <code>'sorted'</code>, which is the default behavior, or <code>'stable'</code>, in
+ which case the unique values are returned in order of appearance.
 </p>
-<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>, <var>direction</var>)</code> sorts the
- categorical array <var>A</var> according to the columns specified in <var>col</var>
- using the corresponding sorting direction specified in <var>direction</var>.
- In this case, the sign of the values in <var>col</var> is ignored.  <var>col</var>
- and <var>direction</var> must have the same number of elements, but not
- necessarily equal to the columns of <var>A</var>.
-</p>
-<p> <code><var>B</var> = sortrows (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
- specifies where to place the missing elements (<code>NaN</code>) returned in
- <var>B</var> with any of the following options specified in <var>MP</var>:
-</p>
- <ul>
-<li> <code>'auto'</code>, which is the default, places missing elements last
- for ascending sort and first for descending sort.
- </li><li> <code>'first'</code> places missing elements first.
- </li><li> <code>'last'</code> places missing elements last.
- </li></ul>
-
-<p> <code>[<var>B</var>, <var>index</var>] = sortrows (<var>A</var>, &hellip;)</code> also returns
- an index vector containing the original row indices of <var>A</var> in the
- sorted matrix <var>B</var> such that <code><var>B</var> = <var>A</var>(<var>index</var>,:)</code>.
+<p> <code>[<var>C</var>, <var>ixA</var>, <var>ixB</var>] = union (&hellip;)</code> also returns
+ index vectors <var>ixA</var> and <var>ixB</var> such that
+ <code><var>C</var> = <var>A</var>(<var>ixA</var>)</code> and
+ <code><var>C</var> = <var>B</var>(<var>ixB</var>)</code>, unless the <code>'rows'</code> optional
+ argument is given, in which case <code><var>C</var> = <var>A</var>(<var>ixA</var>,:)</code>
+ and <code><var>C</var> = <var>B</var>(<var>ixB</var>,:)</code>.
 </p>
 
 
@@ -3463,8 +4205,8 @@ Sort rows in a duration array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod71"
-              aria-expanded="false" aria-controls="collapseMethod71">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod86"
+              aria-expanded="false" aria-controls="collapseMethod86">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3476,7 +4218,7 @@ Concatenate duration arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod71">
+          <div class="collapse multi-collapse" id="collapseMethod86">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>C</var> = <b>cat</b> (<var>dim</var>, <var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
@@ -3501,8 +4243,8 @@ Concatenate duration arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod72"
-              aria-expanded="false" aria-controls="collapseMethod72">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod87"
+              aria-expanded="false" aria-controls="collapseMethod87">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3514,7 +4256,7 @@ Horizontal concatenation of duration arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod72">
+          <div class="collapse multi-collapse" id="collapseMethod87">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>C</var> = <b>horzcat</b> (<var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
@@ -3540,8 +4282,8 @@ Horizontal concatenation of duration arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod73"
-              aria-expanded="false" aria-controls="collapseMethod73">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod88"
+              aria-expanded="false" aria-controls="collapseMethod88">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3553,7 +4295,7 @@ Vertical concatenation of duration arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod73">
+          <div class="collapse multi-collapse" id="collapseMethod88">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>C</var> = <b>vertcat</b> (<var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
@@ -3579,8 +4321,8 @@ Vertical concatenation of duration arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod74"
-              aria-expanded="false" aria-controls="collapseMethod74">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod89"
+              aria-expanded="false" aria-controls="collapseMethod89">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3592,7 +4334,7 @@ Repeat copies of a duration array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod74">
+          <div class="collapse multi-collapse" id="collapseMethod89">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>repmat</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
@@ -3623,8 +4365,8 @@ Repeat copies of a duration array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod75"
-              aria-expanded="false" aria-controls="collapseMethod75">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod90"
+              aria-expanded="false" aria-controls="collapseMethod90">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3636,7 +4378,7 @@ Repeat copies of duration array elements.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod75">
+          <div class="collapse multi-collapse" id="collapseMethod90">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>repelem</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
@@ -3671,8 +4413,8 @@ Repeat copies of duration array elements.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod76"
-              aria-expanded="false" aria-controls="collapseMethod76">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod91"
+              aria-expanded="false" aria-controls="collapseMethod91">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3684,7 +4426,7 @@ Construct a vector of repeated duration array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod76">
+          <div class="collapse multi-collapse" id="collapseMethod91">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>repelems</b> (<var>A</var>, <var>R</var>)</code></h5></dt>
@@ -3708,8 +4450,8 @@ Construct a vector of repeated duration array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod77"
-              aria-expanded="false" aria-controls="collapseMethod77">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod92"
+              aria-expanded="false" aria-controls="collapseMethod92">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3721,7 +4463,7 @@ Reshape duration array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod77">
+          <div class="collapse multi-collapse" id="collapseMethod92">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>reshape</b> (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code></h5></dt>
@@ -3753,8 +4495,8 @@ Reshape duration array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod78"
-              aria-expanded="false" aria-controls="collapseMethod78">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod93"
+              aria-expanded="false" aria-controls="collapseMethod93">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3766,7 +4508,7 @@ Circularly shift the elements in a duration array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod78">
+          <div class="collapse multi-collapse" id="collapseMethod93">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>circshift</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
@@ -3798,8 +4540,8 @@ Circularly shift the elements in a duration array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod79"
-              aria-expanded="false" aria-controls="collapseMethod79">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod94"
+              aria-expanded="false" aria-controls="collapseMethod94">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3811,7 +4553,7 @@ Generalized transpose for a duration N-D array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod79">
+          <div class="collapse multi-collapse" id="collapseMethod94">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>permute</b> (<var>A</var>, <var>dims</var>)</code></h5></dt>
@@ -3837,8 +4579,8 @@ Generalized transpose for a duration N-D array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod80"
-              aria-expanded="false" aria-controls="collapseMethod80">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod95"
+              aria-expanded="false" aria-controls="collapseMethod95">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3850,7 +4592,7 @@ Inverse of the generalized transpose for a duration N-D array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod80">
+          <div class="collapse multi-collapse" id="collapseMethod95">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>A</var> = <b>ipermute</b> (<var>B</var>, <var>dims</var>)</code></h5></dt>
@@ -3877,8 +4619,8 @@ Inverse of the generalized transpose for a duration N-D array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod81"
-              aria-expanded="false" aria-controls="collapseMethod81">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod96"
+              aria-expanded="false" aria-controls="collapseMethod96">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3890,7 +4632,7 @@ Transpose a duration matrix.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod81">
+          <div class="collapse multi-collapse" id="collapseMethod96">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>transpose</b> (<var>A</var>)</code></h5></dt>
@@ -3911,8 +4653,8 @@ Transpose a duration matrix.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod82"
-              aria-expanded="false" aria-controls="collapseMethod82">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod97"
+              aria-expanded="false" aria-controls="collapseMethod97">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3924,7 +4666,7 @@ Transpose a duration matrix.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod82">
+          <div class="collapse multi-collapse" id="collapseMethod97">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>ctranspose</b> (<var>A</var>)</code></h5></dt>
