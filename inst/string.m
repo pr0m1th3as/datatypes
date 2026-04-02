@@ -1479,20 +1479,22 @@ classdef string
       ## For categorical, datetime, and duration arrays being present in the
       ## input arguments, call their constructor for the first input array and
       ## forward all input to their respective concatenation method.
-      if (any (cellfun ('iscalendarduration', varargin)))
-        varargin{1} = calendarDuration (0, 0, 0, duration (varargin{1}));
-        out = cat (dim, varargin{:});
-        return;
-      elseif (any (cellfun ('iscategorical', varargin)))
+      is_datetime = cellfun ('isdatetime', varargin);
+      is_duration = cellfun ('isduration', varargin);
+      if (any (cellfun ('iscategorical', varargin)))
         varargin{1} = categorical (varargin{1});
         out = cat (dim, varargin{:});
         return;
-      elseif (any (cellfun ('isdatetime', varargin)))
-        varargin{1} = datetime (varargin{1});
+      elseif (any (is_datetime))
+        idx = find (is_datetime, 1);
+        tmp = varargin{idx};
+        varargin{1} = datetime (varargin{1}, 'Format', tmp.Format);
         out = cat (dim, varargin{:});
         return;
       elseif (any (cellfun ('isduration', varargin)))
-        varargin{1} = duration (varargin{1});
+        idx = find (is_duration, 1);
+        tmp = varargin{idx};
+        varargin{1} = duration (varargin{1}, 'Format', tmp.Format);
         out = cat (dim, varargin{:});
         return;
       endif
