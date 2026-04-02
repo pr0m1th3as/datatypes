@@ -3459,6 +3459,164 @@
 %! union (days ([1, 2]), datetime)
 
 ################################################################################
+##                           ** Array Operations **                           ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'cat'              'horzcat'          'vertcat'          'repmat'          ##
+## 'repelem'          'repelems'         'reshape'          'circshift'       ##
+## 'permute'          'ipermute'         'transpose'        'ctranspose'      ##
+##                                                                            ##
+################################################################################
+
+%!test
+%! D = cat (2, days (2), hours (3));
+%! assert_equal (D, days ([2, 0.125]));
+%! assert_equal (D.Format, 'd');
+%!test
+%! D = cat (2, hours (3), days (3));
+%! assert_equal (D, hours ([3, 72]));
+%! assert_equal (D.Format, 'h');
+%!test
+%! D = cat (2, '24:00:00', hours (3), days (3));
+%! assert_equal (D, hours ([24, 3, 72]));
+%! assert_equal (D.Format, 'h');
+%!test
+%! D = cat (2, string ('24:00:00'), hours (3), days (3));
+%! assert_equal (D, hours ([24, 3, 72]));
+%! assert_equal (D.Format, 'h');
+%!test
+%! D = cat (2, string ('24:00:00:00'), hours (3), days (3));
+%! assert_equal (D, hours ([576, 3, 72]));
+%! assert_equal (D.Format, 'h');
+%!test
+%! D = cat (2, seconds (3), string ('24:00:00:00'), hours (3), days (3));
+%! assert_equal (D, seconds ([3, 2.0736e+06, 10800, 2.592e+05]));
+%! assert_equal (D.Format, 's');
+%!test
+%! D = cat (2, string ('24:00:00'), duration (3, 0, 0), days (3));
+%! assert_equal (D, hours ([24, 3, 72]));
+%! assert_equal (D.Format, 'hh:mm:ss');
+%!test
+%! D = cat (1, days (2), hours (3));
+%! assert_equal (D, days ([2; 0.125]));
+%! assert_equal (D.Format, 'd');
+%!test
+%! D = cat (1, hours (3), days (3));
+%! assert_equal (D, hours ([3; 72]));
+%! assert_equal (D.Format, 'h');
+%!test
+%! D = cat (1, '24:00:00', hours (3), days (3));
+%! assert_equal (D, hours ([24; 3; 72]));
+%! assert_equal (D.Format, 'h');
+%!test
+%! D = cat (1, string ('24:00:00'), hours (3), days (3));
+%! assert_equal (D, hours ([24; 3; 72]));
+%! assert_equal (D.Format, 'h');
+%!test
+%! D = cat (1, string ('24:00:00:00'), hours (3), days (3));
+%! assert_equal (D, hours ([576; 3; 72]));
+%! assert_equal (D.Format, 'h');
+%!test
+%! D = cat (1, seconds (3), string ('24:00:00:00'), hours (3), days (3));
+%! assert_equal (D, seconds ([3; 2.0736e+06; 10800; 2.592e+05]));
+%! assert_equal (D.Format, 's');
+%!test
+%! D = cat (1, string ('24:00:00'), duration (3, 0, 0), days (3));
+%! assert_equal (D, hours ([24; 3; 72]));
+%! assert_equal (D.Format, 'hh:mm:ss');
+
+%!test
+%! D = [days(2), hours(3)];
+%! assert_equal (D, days ([2, 0.125]));
+%! assert_equal (D.Format, 'd');
+%!test
+%! D = [hours(3), days(3)];
+%! assert_equal (D, hours ([3, 72]));
+%! assert_equal (D.Format, 'h');
+%!test
+%! D = ['24:00:00', hours(3), days(3)];
+%! assert_equal (D, hours ([24, 3, 72]));
+%! assert_equal (D.Format, 'h');
+%!test
+%! D = [string('24:00:00'), hours(3), days(3)];
+%! assert_equal (D, hours ([24, 3, 72]));
+%! assert_equal (D.Format, 'h');
+%!test
+%! D = [string('24:00:00:00'), hours(3), days(3)];
+%! assert_equal (D, hours ([576, 3, 72]));
+%! assert_equal (D.Format, 'h');
+%!test
+%! D = [seconds(3), string('24:00:00:00'), hours(3), days(3)];
+%! assert_equal (D, seconds ([3, 2.0736e+06, 10800, 2.592e+05]));
+%! assert_equal (D.Format, 's');
+%!test
+%! D = [string('24:00:00'), duration(3, 0, 0), days(3)];
+%! assert_equal (D, hours ([24, 3, 72]));
+%! assert_equal (D.Format, 'hh:mm:ss');
+
+%!test
+%! D = [days(2); hours(3)];
+%! assert_equal (D, days ([2; 0.125]));
+%! assert_equal (D.Format, 'd');
+%!test
+%! D = [hours(3); days(3)];
+%! assert_equal (D, hours ([3; 72]));
+%! assert_equal (D.Format, 'h');
+%!test
+%! D = ['24:00:00'; hours(3); days(3)];
+%! assert_equal (D, hours ([24; 3; 72]));
+%! assert_equal (D.Format, 'h');
+%!test
+%! D = [string('24:00:00'); hours(3); days(3)];
+%! assert_equal (D, hours ([24; 3; 72]));
+%! assert_equal (D.Format, 'h');
+%!test
+%! D = [string('24:00:00:00'); hours(3); days(3)];
+%! assert_equal (D, hours ([576; 3; 72]));
+%! assert_equal (D.Format, 'h');
+%!test
+%! D = [seconds(3); string('24:00:00:00'); hours(3); days(3)];
+%! assert_equal (D, seconds ([3; 2.0736e+06; 10800; 2.592e+05]));
+%! assert_equal (D.Format, 's');
+%!test
+%! D = [string('24:00:00'); duration(3, 0, 0); days(3)];
+%! assert_equal (D, hours ([24; 3; 72]));
+%! assert_equal (D.Format, 'hh:mm:ss');
+
+%!assert_equal (repmat (days ([1, 2]), 4), days (repmat ([1, 2], 4)))
+%!assert_equal (repmat (days ([1, 2]), 2, 3, 4), days (repmat ([1, 2], 2, 3, 4)))
+%!assert_equal (repmat (days ([1, 2]), [2, 3]), days (repmat ([1, 2], [2, 3])))
+
+%!assert_equal (repelem (days ([1:3]), 4), days (repelem ([1:3], 4)))
+%!assert_equal (repelem (days ([1:3]), 2, 3, 4), days (repelem ([1:3], 2, 3, 4)))
+%!assert_equal (repelem (days ([1:3]), [2, 3, 3]), days (repelem ([1:3], [2, 3, 3])))
+
+%!assert_equal (repelems (days ([1:5]), [1, 3, 5; 2, 1, 2]), days ([1, 1, 3, 5, 5]))
+
+%!assert_equal (reshape (days (magic (4)), 2, 2, 4), days (reshape (magic (4), 2, 2, 4)))
+%!assert_equal (reshape (days (magic (4)), [2, 2, 4]), days (reshape (magic (4), [2, 2, 4])))
+%!assert_equal (reshape (days (magic (4)), [], 2, 2), days (reshape (magic (4), [], 2, 2)))
+
+%!assert_equal (circshift (days (magic (4)), 2), days (circshift (magic (4), 2)))
+%!assert_equal (circshift (days (magic (4)), 1, 2), days (circshift (magic (4), 1, 2)))
+%!assert_equal (circshift (days (magic (4)), 1, 1), days (circshift (magic (4), 1, 1)))
+%!assert_equal (circshift (days (magic (4)), 1, 1), days (circshift (magic (4), 1)))
+
+%!test
+%! X = randi (10, 2, 3, 4);
+%! D = days (X);
+%! assert_equal (size (permute (D, [3, 1, 2])), [4, 2, 3]);
+%! assert_equal (permute (D, [3, 1, 2]), days (permute (X, [3, 1, 2])));
+%! assert_equal (D, ipermute (permute (D, [3, 1, 2]), [3, 1, 2]));
+
+%!assert_equal (transpose (days ([1, 2; 3, 4])), days ([1, 3; 2, 4]))
+%!assert_equal (transpose (days ([1, 2; 3, 4])), ctranspose (days ([1, 2; 3, 4])))
+
+%!assert_equal (ctranspose (days ([1, 2; 3, 4])), days ([1, 3; 2, 4]))
+%!assert_equal (ctranspose (days ([1, 2; 3, 4])), transpose (days ([1, 2; 3, 4])))
+
+################################################################################
 ##                  ** Reference and Assignment Operations **                 ##
 ################################################################################
 ##                             Available Methods                              ##
