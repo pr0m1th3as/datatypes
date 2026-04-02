@@ -3337,7 +3337,7 @@ classdef duration
 
     ## -*- texinfo -*-
     ## @deftypefn  {duration} {@var{YI} =} interp1 (@var{X}, @var{Y}, @var{XI})
-    ## @deftypefn  {duration} {@var{YI} =} interp1 (@var{Y}, @var{X})
+    ## @deftypefn  {duration} {@var{YI} =} interp1 (@var{Y}, @var{XI})
     ## @deftypefn  {duration} {@var{YI} =} interp1 (@dots{}, @var{method})
     ## @deftypefn  {duration} {@var{YI} =} interp1 (@dots{}, @var{method}, @var{extrapolation})
     ## @deftypefn  {duration} {@var{pp} =} interp1 ((@var{X}, @var{Y}, @qcode{'pp'})
@@ -3357,15 +3357,15 @@ classdef duration
     ## and @var{XI}.  @var{X} and @var{Y} can both be duration arrays or one of
     ## them can be a numeric array.
     ##
-    ## @code{@var{YI} = interp1 (@var{Y}, @var{X})} computes the linearly
+    ## @code{@var{YI} = interp1 (@var{Y}, @var{XI})} computes the linearly
     ## interpolated values of a one-dimensional function assuming a default set
-    ## of query points determined by the shape of @var{Y}:
+    ## of sampling points determined by the shape of @var{Y}:
     ##
     ## @itemize
-    ## @item If @var{Y} is a vector, then the default query points are
+    ## @item If @var{Y} is a vector, then the default sampling points are
     ## @code{[1:length(@var{Y})}.
     ##
-    ## @item If @var{Y} is an array, then the default query points are
+    ## @item If @var{Y} is an array, then the default sampling points are
     ## @code{[1:size(@var{Y})}.
     ## @end itemize
     ##
@@ -3413,7 +3413,7 @@ classdef duration
     ## @end deftypefn
     function YI = interp1 (X, Y, varargin)
       if (isempty (varargin))
-        ## YI = interp1 (Y, X)
+        ## YI = interp1 (Y, XI)
         if (isduration (Y))
           Y = Y.days;
         endif
@@ -3427,33 +3427,34 @@ classdef duration
         [varargin{:}] = convertStringsToChars (varargin{:});
         method = varargin{1};
         if (ischar (method))
-          ## YI = interp1 (Y, X, method)
-          ## YI = interp1 (Y, X, method, extrap)
+          ## YI = interp1 (Y, XI, method)
+          ## YI = interp1 (Y, XI, method, extrap)
           ## PP = interp1 (X, Y, pp)
           ## PP = interp1 (X, Y, method, pp)
-          if (isduration (Y))
+          X_isDur = isa (X, 'duration');
+          Y_isDur = isa (Y, 'duration');
+          if (X_isDur)
+            F = X.Format;
+            X = X.days;
+          endif
+          if (Y_isDur)
             Y = Y.days;
           endif
-          if (strcmpi (method, 'pp'))
-            if (isduration (X))
-              X = X.days;
+          ## Handle numeric extrapolation input
+          extrap = cellfun (@(x) isduration (x) || isnumeric (x), varargin);
+          if (any (extrap))
+            tmp = varargin{extrap};
+            ExtDur = isduration (tmp);
+            if (xor (ExtDur, X_isDur))
+              error ("duration.interp1: EXTRAPOLATION scalar value must match Y.");
+            elseif (ExtDur)
+              varargin{extrap} = days (tmp);
             endif
-            YI = interp1 (X, Y, 'pp');
-            return;
-          elseif (numel (varargin) == 2)
-            if (strcmp (varargin{2}, 'pp'))
-              if (isduration (X))
-                X = X.days;
-              endif
-              YI = interp1 (X, Y, method, 'pp');
-            endif
-            return;
           endif
-          if (isduration (X))
-            YI = duration ('Format', X.Format);
-            YI.Days = interp1 (X.Days, Y, varargin{:});
-          else
-            YI = interp1 (X, Y, varargin{:});
+          YI = interp1 (X, Y, varargin{:});
+          if (isnumeric (YI) && X_isDur)
+            YI = days (YI);
+            YI.Format = F;
           endif
         else
           XI = method;
@@ -3467,38 +3468,27 @@ classdef duration
           if (xor (X_isDur, XIisDur))
             error ("duration.interp1: if X is a duration array, XI must be also.");
           endif
-          ## Parse method and extrapolation
-          if (! isempty (varargin))
-            method = varargin{1};
-            varargin(1) = [];
-            if (! isempty (varargin))
-              extrap = varargin{1};
-              ExtDur = isduration (extrap);
-              if (isduration (extrap) && Y_isDur)
-                extrap = days (extrap);
-              elseif (xor (ExtDur, Y_isDur))
-                error ("duration.interp1: EXTRAPOLATION scalar value must match Y.");
-              endif
-            else
-              extrap = NaN;
+          ## Handle numeric extrapolation input
+          extrap = cellfun (@(x) isduration (x) || isnumeric (x), varargin);
+          if (any (extrap))
+            tmp = varargin{extrap};
+            ExtDur = isduration (tmp);
+            if (xor (ExtDur, Y_isDur))
+              error ("duration.interp1: EXTRAPOLATION scalar value must match Y.");
+            elseif (ExtDur)
+              varargin{extrap} = days (tmp);
             endif
-          else
-            method = 'linear';
-            extrap = NaN;
           endif
           if (Y_isDur)
+            YI = duration ('Format', Y.Format);
             if (X_isDur)
-              YI = duration ('Format', X.Format);
-              YI.Days = interp1 (X.Days, Y.Days, XI.Days, method, extrap);
-            elseif (isnumeric (X) && isnumeric (XI))
-              YI = days (interp1 (X, Y.Days, XI, method, extrap));
+              YI.Days = interp1 (X.Days, Y.Days, XI.Days, varargin{:});
             else
-              error (strcat ("duration.interp1: if X is not a duration", ...
-                             " array, then both X and XI must be numeric."));
+              YI.Days = interp1 (X, Y.Days, XI, varargin{:});
             endif
             YI = fix_zero_precision (YI);
           elseif (isnumeric (Y))
-            YI = interp1 (X.Days, Y, XI.Days, method, extrap);
+            YI = interp1 (X.Days, Y, XI.Days, varargin{:});
           else
             error ("duration.interp1: Y must be a duration or numeric array.");
           endif
