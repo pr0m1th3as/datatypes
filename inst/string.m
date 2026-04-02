@@ -1476,50 +1476,38 @@ classdef string
     ##
     ## @end deftypefn
     function out = cat (dim, varargin)
-      args = varargin;
       ## For categorical, datetime, and duration arrays being present in the
-      ## input arguments, call their constructor and forward all input to their
-      ## respective concatenation method.
-      for i = 1:numel (args)
-        if (iscategorical (args{i}))
-          try
-            cat_array = cellfun (@categorical, varargin, 'UniformOutput', false);
-            out = [cat_array{:}];
-            return;
-          catch (err)
-            error (err.message);
-          end_try_catch
-        elseif (isdatetime (args{i}))
-          try
-            dat_array = cellfun (@datetime, varargin, 'UniformOutput', false);
-            out = [dat_array{:}];
-            return;
-          catch (err)
-            error (err.message);
-          end_try_catch
-        elseif (isduration (args{i}))
-          try
-            dur_array = cellfun (@duration, varargin, 'UniformOutput', false);
-            out = [dur_array{:}];
-            return;
-          catch (err)
-            error (err.message);
-          end_try_catch
-        ## Grab everything else and try converting it a to string array
-        elseif (! isa (args{i}, 'string'))
-          try
-            args(i) = string (args{i});
-          catch
-            error ("string.cat: cannot concatenate string arrays with '%s'.", ...
-                   class (args{i}));
-          end_try_catch
-        endif
-      endfor
+      ## input arguments, call their constructor for the first input array and
+      ## forward all input to their respective concatenation method.
+      if (any (cellfun ('iscalendarduration', varargin)))
+        varargin{1} = calendarDuration (0, 0, 0, duration (varargin{1}));
+        out = cat (dim, varargin{:});
+        return;
+      elseif (any (cellfun ('iscategorical', varargin)))
+        varargin{1} = categorical (varargin{1});
+        out = cat (dim, varargin{:});
+        return;
+      elseif (any (cellfun ('isdatetime', varargin)))
+        varargin{1} = datetime (varargin{1});
+        out = cat (dim, varargin{:});
+        return;
+      elseif (any (cellfun ('isduration', varargin)))
+        varargin{1} = duration (varargin{1});
+        out = cat (dim, varargin{:});
+        return;
+      endif
+      ## For everything else, try converting it a to string array
+      idx = find (cellfun (@(x) ! isstring (x), varargin));
+      if (! isempty (idx))
+        for i = idx
+          varargin{i} = string (varargin{i});
+        endfor
+      endif
       ## Concatenate strings
-      out = args{1};
-      tmp = cellfun (@(obj) obj.strs, args, 'UniformOutput', false);
+      out = string;
+      tmp = cellfun (@(obj) obj.strs, varargin, 'UniformOutput', false);
       out.strs = cat (dim, tmp{:});
-      tmp = cellfun (@(obj) obj.isMissing, args, 'UniformOutput', false);
+      tmp = cellfun (@(obj) obj.isMissing, varargin, 'UniformOutput', false);
       out.isMissing = cat (dim, tmp{:});
     endfunction
 
