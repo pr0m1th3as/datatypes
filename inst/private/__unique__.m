@@ -114,7 +114,11 @@ function [y, i, j] = __unique__ (x, varargin)
       y(match,:) = [];
     else
       y = x;
-      y(j([false; match]), :) = [];
+      if (optfirst)
+        y(j([false; match]), :) = [];
+      else
+        y(j([match; false]), :) = [];
+      endif
     endif
   else
     if (isvector (x))
@@ -141,7 +145,11 @@ function [y, i, j] = __unique__ (x, varargin)
       else
         y = x(:);
       endif
-      y(j([false; match(:)])) = [];
+      if (optfirst)
+        y(j([false; match(:)])) = [];
+      else
+        y(j([match(:); false])) = [];
+      endif
     endif
   endif
 
@@ -164,11 +172,15 @@ function [y, i, j] = __unique__ (x, varargin)
 
     else
       ## Get inverse of sort index j so that sort(x)(k) = x(j)(k) = x.
-      kk = k = j;  # cheap way to copy dimensions
+      k = j;  # cheap way to copy dimensions
       k(j) = 1:n;
 
       ## Generate logical index of sorted unique value locations.
-      uniquex = ! [false; match(:)];
+      if (optfirst)
+        uniquex = ! [false; match(:)];
+      else
+        uniquex = ! [match(:); false];
+      endif
 
       ## Remap unique locations to unsorted x, such that y = x(i).
       i = find (uniquex(k));
@@ -177,23 +189,23 @@ function [y, i, j] = __unique__ (x, varargin)
 
         ni = numel (i);
 
-        u = find (uniquex);      # Linear index of unique elements of sort(x)
-        l = u(cumsum (uniquex)); # Expand u for all elements in sort(x)
+        u = find (uniquex);   # Linear index of unique elements of sort(x)
+        p = j;                # cheap way to copy dimensions
 
-        p = j;       # cheap way to copy dimensions
-        p(i) = 1:ni; # set p to contain the vector positions of i.
+        if (optfirst)
+          l = u(cumsum (uniquex));  # Expand u for all elements in sort(x)
+          p(i) = 1:ni;              # set p to contain the vector positions of i
+        elseif (optrows)
+          l = u(cumsum (uniquex, 'reverse'));
+          p(i) = ni:-1:1;
+        else
+          l = u(cumsum (! [false; match(:)]));
+          p(i) = 1:ni;
+        endif
 
         j = p(j(l(k))); # Replace j with 3rd output mapping y->x.
 
       endif
-
-      ## Fix second output for 'stable' && 'last'
-      if (! optfirst)
-        uniquex = ! [false; match(:)];
-        #i = kk(uniquex)(j(uniquex));
-        i = find (uniquex);
-      endif
-
     endif
   endif
 
