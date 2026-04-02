@@ -637,7 +637,7 @@ classdef duration
       h = fix (x / 3600);
       tmp = x - h * 3600;
       idx = 3600 - tmp < 1e-12; # find round-off errors to whole hours
-      if (any (idx(:)))
+      if (any (idx, 'all'))
         h(idx) += 1;
         x(idx) -= h(idx) * 3600;
         x(! idx) = tmp(! idx);
@@ -647,7 +647,7 @@ classdef duration
       m = fix (x / 60);
       tmp = x - m * 60;
       idx = 60 - tmp < 1e-12; # find round-off errors to whole minutes
-      if (any (idx(:)))
+      if (any (idx, 'all'))
         m(idx) += 1;
         x(idx) -= m(idx) * 60;
         x(! idx) = tmp(! idx);
@@ -656,7 +656,7 @@ classdef duration
       endif
       s = x;
       idx = x < 1e-12; # find round-off errors to whole seconds
-      if (any (idx(:)))
+      if (any (idx, 'all'))
         s(idx) = 0;
       endif
       ## Fix floating point precision to nearest picosecond
@@ -1388,13 +1388,13 @@ classdef duration
 
           case 'strictascend'
             ## Check for missing values first (fast)
-            if (any (ismissing (this)(:)))
+            if (any (ismissing (this), 'all'))
               TF = false;
               return;
             endif
             varargin{cid} = strrep (direction, 'strict', '');
             sorted = sort (this, varargin{:});
-            if (any ((diff (sorted, 1, dim) <= 0)(:)))
+            if (any (diff (sorted, 1, dim) <= 0, 'all'))
               TF = false;
               return;
             endif
@@ -1402,13 +1402,13 @@ classdef duration
 
           case 'strictdescend'
             ## Check for missing values first (fast)
-            if (any (ismissing (this)(:)))
+            if (any (ismissing (this), 'all'))
               TF = false;
               return;
             endif
             varargin{cid} = strrep (direction, 'strict', '');
             sorted = sort (this, varargin{:});
-            if (any ((diff (sorted, 1, dim) >= 0)(:)))
+            if (any (diff (sorted, 1, dim) >= 0, 'all'))
               TF = false;
               return;
             endif
@@ -1416,14 +1416,14 @@ classdef duration
 
           case 'strictmonotonic'
             ## Check missing values first (fast)
-            if (any (ismissing (this)(:)))
+            if (any (ismissing (this), 'all'))
               TF = false;
               return;
             endif
             ## Check for either ascending or descending
             varargin{cid} = 'ascend';
             sorted = sort (this, varargin{:});
-            if (any ((diff (sorted, 1, dim) <= 0)(:)))
+            if (any (diff (sorted, 1, dim) <= 0, 'all'))
               TF = false;
               return;
             endif
@@ -1433,7 +1433,7 @@ classdef duration
             endif
             varargin{cid} = 'descend';
             sorted = sort (this, varargin{:});
-            if (any ((diff (sorted, 1, dim) >= 0)(:)))
+            if (any (diff (sorted, 1, dim) >= 0, 'all'))
               TF = false;
               return;
             endif
@@ -1583,7 +1583,7 @@ classdef duration
         endif
 
         ## Check for missing values first (fast)
-        if (any (ismissing (this(:,strict_idx))(:)))
+        if (any (ismissing (this(:,strict_idx)), 'all'))
           TF = false;
           return;
         endif
@@ -3052,7 +3052,7 @@ classdef duration
       ## Special handling for missing elements when missing placement overrides
       ## default behavior (only if missing data actually exist).
       is_nan = isnan (data);
-      if (any (is_nan(:)))
+      if (any (is_nan, 'all'))
         ## FIX ME: this workaround will be removed once the 'sort' function
         ## in core Octave supports 'MissingPlacement' optional argument.
         ## This implementation fails the edge case where -Inf and -realmax
@@ -3064,7 +3064,7 @@ classdef duration
           ## If -Inf values already exist in data, then convert them to the
           ## next smallest possible value
           is_m_inf = data == -Inf;
-          if (any (is_m_inf(:)))
+          if (any (is_m_inf, 'all'))
             m_inf_rep = - realmax;
             data(is_m_inf) = m_inf_rep;
           endif
@@ -3245,13 +3245,13 @@ classdef duration
         cdata = data(:,col_idx);
         ## Only if missing data exist in operating columns.
         is_nan = isnan (cdata);
-        if (any (is_nan(:)))
+        if (any (is_nan, 'all'))
           ## Convert missing values to -Inf so that they are placed
           ## appropriately according to 'MissingPlacement' specification.
           ## If -Inf values already exist in data, then convert them to the
           ## next smallest possible value
           is_m_inf = cdata == -Inf;
-          if (any (is_m_inf(:)))
+          if (any (is_m_inf, 'all'))
             m_inf_rep = - realmax;
             cdata(is_m_inf) = m_inf_rep;
           endif

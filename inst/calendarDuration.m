@@ -210,7 +210,7 @@ classdef calendarDuration
           elseif (size (X, 2) == 6)
             tmp = X(:,[1:5]);
             tmp(isnan (tmp)) = 0;
-            if (any (fix (tmp(:)) != tmp(:)))
+            if (any (fix (tmp) != tmp, 'all'))
               error (strcat ("calendarDuration: years, months, days,", ...
                              " hours, and minutes must be integer values."));
             endif
@@ -241,7 +241,7 @@ classdef calendarDuration
           endif
           tmp = [Y(:), M(:), D(:)];
           tmp(isnan (tmp)) = 0;
-          if (any (fix (tmp(:)) != tmp(:)))
+          if (any (fix (tmp) != tmp, 'all'))
             error (strcat ("calendarDuration: years, months,", ...
                            " and days must be integer values."));
           endif
@@ -273,7 +273,7 @@ classdef calendarDuration
           endif
           tmp = [Y(:), M(:), D(:)];
           tmp(isnan (tmp)) = 0;
-          if (any (fix (tmp(:)) != tmp(:)))
+          if (any (fix (tmp) != tmp, 'all'))
             error (strcat ("calendarDuration: years, months,", ...
                            " and days must be integer values."));
           endif
@@ -301,7 +301,7 @@ classdef calendarDuration
           endif
           tmp = [Y(:), M(:), D(:), H(:), MI(:)];
           tmp(isnan (tmp)) = 0;
-          if (any (fix (tmp(:)) != tmp(:)))
+          if (any (fix (tmp) != tmp, 'all'))
             error (strcat ("calendarDuration: years, months, days,", ...
                            " hours, and minutes must be integer values."));
           endif
@@ -989,7 +989,7 @@ classdef calendarDuration
       n_dim = size (this);
       ## Force NaNs to zeros
       i_nan = isnan (this);
-      if (any (i_nan(:)))
+      if (any (i_nan, 'all'))
         this.Months(i_nan) = 0;
         this.Days(i_nan) = 0;
         this.Time(i_nan) = duration (0, 0, 0);
@@ -1006,7 +1006,7 @@ classdef calendarDuration
         endif
         ## Force NaNs to zeros
         i_nan = isnan (tmp);
-        if (any (i_nan(:)))
+        if (any (i_nan, 'all'))
           tmp.Months(i_nan) = 0;
           tmp.Days(i_nan) = 0;
           tmp.Time(i_nan) = duration (0, 0, 0);
@@ -1517,9 +1517,15 @@ classdef calendarDuration
       ## Use indices to find unique calendarDuration values
       if (any (strcmp ('rows', varargin)))
         [~, ixA, ixB] = __unique__ ([Midx, Didx, Tidx], varargin{:});
+        if (any (strcmp ('last', varargin)))
+          [~, ixA, ~] = __unique__ (ixB, 'last');
+        endif
         B = subset (A, ixA, ':');
       else
         [~, ixA, ixB] = __unique__ ([Midx, Didx, Tidx], 'rows', varargin{:});
+        if (any (strcmp ('last', varargin)))
+          [~, ixA, ~] = __unique__ (ixB, 'last');
+        endif
         B = subset (A, ixA);
       endif
     endfunction
@@ -1952,7 +1958,7 @@ classdef calendarDuration
       is_nan = isnan (this.Months) | isnan (this.Days) | isnan (this.Time);
       isPinf = Inf == this.Months | Inf == this.Days | Inf == this.Time;
       isNinf = -Inf == this.Months | -Inf == this.Days | -Inf == this.Time;
-      if (any (is_nan(:)) || any (isPinf(:) & isNinf(:)))
+      if (any (is_nan, 'all') || any (isPinf & isNinf, 'all'))
         is_nan = is_nan | (isPinf & isNinf);
         isPinf = isPinf & ! is_nan;
         isNinf = isNinf & ! is_nan;
@@ -1962,12 +1968,12 @@ classdef calendarDuration
       this.Days(is_nan) = NaN;
       this.Time(is_nan) = duration ([NaN, NaN, NaN]);
       ## Broadcast Infs
-      if (any (isPinf(:)))
+      if (any (isPinf, 'all'))
         this.Months(isPinf) = Inf;
         this.Days(isPinf) = Inf;
         this.Time(isPinf) = duration ([Inf, Inf, Inf]);
       endif
-      if (any (isNinf(:)))
+      if (any (isNinf, 'all'))
         this.Months(isNinf) = -Inf;
         this.Days(isNinf) = -Inf;
         this.Time(isNinf) = duration ([-Inf, -Inf, -Inf]);
