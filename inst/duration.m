@@ -3340,6 +3340,7 @@ classdef duration
     ## @deftypefn  {duration} {@var{YI} =} interp1 (@var{Y}, @var{X})
     ## @deftypefn  {duration} {@var{YI} =} interp1 (@dots{}, @var{method})
     ## @deftypefn  {duration} {@var{YI} =} interp1 (@dots{}, @var{method}, @var{extrapolation})
+    ## @deftypefn  {duration} {@var{pp} =} interp1 ((@var{X}, @var{Y}, @qcode{'pp'})
     ## @deftypefn  {duration} {@var{pp} =} interp1 ((@var{X}, @var{Y}, @var{method}, @qcode{'pp'})
     ##
     ## One-dimensional interpolation for duration arrays.
@@ -3422,11 +3423,18 @@ classdef duration
         if (ischar (method))
           ## YI = interp1 (Y, X, method)
           ## YI = interp1 (Y, X, method, extrap)
+          ## PP = interp1 (X, Y, pp)
           ## PP = interp1 (X, Y, method, pp)
           if (isduration (Y))
             Y = Y.days;
           endif
-          if (numel (varargin) == 2)
+          if (strcmpi (method, 'pp'))
+            if (isduration (X))
+              X = X.days;
+            endif
+            YI = interp1 (X, Y, 'pp');
+            return;
+          elseif (numel (varargin) == 2)
             if (strcmp (varargin{2}, 'pp'))
               if (isduration (X))
                 X = X.days;
@@ -3437,9 +3445,9 @@ classdef duration
           endif
           if (isduration (X))
             YI = duration ('Format', X.Format);
-            YI.Days = interp1 (X.Days, Y);
+            YI.Days = interp1 (X.Days, Y, varargin{:});
           else
-            YI = interp1 (X, Y);
+            YI = interp1 (X, Y, varargin{:});
           endif
         else
           XI = method;
