@@ -3400,9 +3400,15 @@ classdef duration
     ## @var{Y} to return a constant value outside the range of @var{X}.  When
     ## unspecified, @var{extrapolation} defaults to @qcode{NaN}.
     ##
+    ## @code{@var{pp} = interp1 ((@var{X}, @var{Y}, @qcode{'pp'}} returns a
+    ## piecewise polynomial object, using the default linear interpolation
+    ## algorithm, which can be later used with @code{ppval} to evaluate the
+    ## interpolation at new query points.
+    ##
     ## @code{@var{pp} = interp1 ((@var{X}, @var{Y}, @var{method}, @qcode{'pp'}}
-    ## returns the a piecewise polynomial object, which can be later used with
-    ## @code{ppval} to evaluate the interpolation.
+    ## return a piecewise polynomial object, using the interpolation algorithm
+    ## specified by @var{method}, which can be later used with @code{ppval} to
+    ## evaluate the interpolation at new query points.
     ##
     ## @end deftypefn
     function YI = interp1 (X, Y, varargin)
