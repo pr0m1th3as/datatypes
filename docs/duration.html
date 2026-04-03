@@ -1250,14 +1250,14 @@ Return true if duration arrays are equal under the assumption that
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isequal (<var>D1</var>, <var>D2</var>)</code> returns a logical scalar
+<p> <code><var>TF</var> = isequaln (<var>D1</var>, <var>D2</var>)</code> returns a logical scalar
  <var>TF</var>, which is <code>true</code>, if the duration arrays <var>D1</var> and
  <var>D2</var> contain the same values or corresponding missing elements, and
  <code>false</code> otherwise.  Either <var>D1</var> or <var>D2</var> can also be
  specified as a character vector, a cell array of character vectors or a
  string array containing valid text duration representations.
 </p>
-<p> <code><var>TF</var> = isequal (<var>D1</var>, <var>D2</var>, &hellip;)</code> returns a logical
+<p> <code><var>TF</var> = isequaln (<var>D1</var>, <var>D2</var>, &hellip;)</code> returns a logical
  scalar <var>TF</var>, which is <code>true</code>, if all input arguments are equal
  under the assumption that missing elements are equal, and <code>false</code>
  otherwise.
@@ -3889,10 +3889,10 @@ One-dimensional interpolation for duration arrays.
 <dt><code><h5 class="fs">duration: <var>YI</var> = <b>interp1</b> (&hellip;, <var>method</var>, <var>extrapolation</var>)</code></h5></dt>
 </dl>
  <dl>
-<dt><code><h5 class="fs">duration: <var>pp</var> = <b>interp1</b> ((<var>X</var>, <var>Y</var>, <code>'pp'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>pp</var> = <b>interp1</b> (<var>X</var>, <var>Y</var>, <code>'pp'</code>)</code></h5></dt>
 </dl>
  <dl>
-<dt><code><h5 class="fs">duration: <var>pp</var> = <b>interp1</b> ((<var>X</var>, <var>Y</var>, <var>method</var>, <code>'pp'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>pp</var> = <b>interp1</b> (<var>X</var>, <var>Y</var>, <var>method</var>, <code>'pp'</code>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -3951,12 +3951,12 @@ One-dimensional interpolation for duration arrays.
  <var>Y</var> to return a constant value outside the range of <var>X</var>.  When
  unspecified, <var>extrapolation</var> defaults to <code>NaN</code>.
 </p>
-<p> <code><var>pp</var> = interp1 ((<var>X</var>, <var>Y</var>, <code>'pp'</code></code> returns a
+<p> <code><var>pp</var> = interp1 (<var>X</var>, <var>Y</var>, <code>'pp'</code></code> returns a
  piecewise polynomial object, using the default linear interpolation
  algorithm, which can be later used with <code>ppval</code> to evaluate the
  interpolation at new query points.
 </p>
-<p> <code><var>pp</var> = interp1 ((<var>X</var>, <var>Y</var>, <var>method</var>, <code>'pp'</code></code>
+<p> <code><var>pp</var> = interp1 (<var>X</var>, <var>Y</var>, <var>method</var>, <code>'pp'</code></code>
  return a piecewise polynomial object, using the interpolation algorithm
  specified by <var>method</var>, which can be later used with <code>ppval</code> to
  evaluate the interpolation at new query points.
