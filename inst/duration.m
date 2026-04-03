@@ -1064,14 +1064,14 @@ classdef duration
     ## Return true if duration arrays are equal under the assumption that
     ## missing elements are equal.
     ##
-    ## @code{@var{TF} = isequal (@var{D1}, @var{D2})} returns a logical scalar
+    ## @code{@var{TF} = isequaln (@var{D1}, @var{D2})} returns a logical scalar
     ## @var{TF}, which is @qcode{true}, if the duration arrays @var{D1} and
     ## @var{D2} contain the same values or corresponding missing elements, and
     ## @qcode{false} otherwise.  Either @var{D1} or @var{D2} can also be
     ## specified as a character vector, a cell array of character vectors or a
     ## string array containing valid text duration representations.
     ##
-    ## @code{@var{TF} = isequal (@var{D1}, @var{D2}, @dots{})} returns a logical
+    ## @code{@var{TF} = isequaln (@var{D1}, @var{D2}, @dots{})} returns a logical
     ## scalar @var{TF}, which is @qcode{true}, if all input arguments are equal
     ## under the assumption that missing elements are equal, and @qcode{false}
     ## otherwise.
@@ -2545,7 +2545,7 @@ classdef duration
       elseif (strcmpi (unit, 'hours'))
         this.Days = round (hours (this)) / 24;
       elseif (strcmpi (unit, 'days'))
-        this.Days = round (A.Days);
+        this.Days = round (this.Days);
       elseif (strcmpi (unit, 'years'))
         this.Days = round (years (this)) * 365.2425;
       else
@@ -3340,8 +3340,8 @@ classdef duration
     ## @deftypefn  {duration} {@var{YI} =} interp1 (@var{Y}, @var{XI})
     ## @deftypefn  {duration} {@var{YI} =} interp1 (@dots{}, @var{method})
     ## @deftypefn  {duration} {@var{YI} =} interp1 (@dots{}, @var{method}, @var{extrapolation})
-    ## @deftypefn  {duration} {@var{pp} =} interp1 ((@var{X}, @var{Y}, @qcode{'pp'})
-    ## @deftypefn  {duration} {@var{pp} =} interp1 ((@var{X}, @var{Y}, @var{method}, @qcode{'pp'})
+    ## @deftypefn  {duration} {@var{pp} =} interp1 (@var{X}, @var{Y}, @qcode{'pp'})
+    ## @deftypefn  {duration} {@var{pp} =} interp1 (@var{X}, @var{Y}, @var{method}, @qcode{'pp'})
     ##
     ## One-dimensional interpolation for duration arrays.
     ##
@@ -3400,12 +3400,12 @@ classdef duration
     ## @var{Y} to return a constant value outside the range of @var{X}.  When
     ## unspecified, @var{extrapolation} defaults to @qcode{NaN}.
     ##
-    ## @code{@var{pp} = interp1 ((@var{X}, @var{Y}, @qcode{'pp'}} returns a
+    ## @code{@var{pp} = interp1 (@var{X}, @var{Y}, @qcode{'pp'}} returns a
     ## piecewise polynomial object, using the default linear interpolation
     ## algorithm, which can be later used with @code{ppval} to evaluate the
     ## interpolation at new query points.
     ##
-    ## @code{@var{pp} = interp1 ((@var{X}, @var{Y}, @var{method}, @qcode{'pp'}}
+    ## @code{@var{pp} = interp1 (@var{X}, @var{Y}, @var{method}, @qcode{'pp'}}
     ## return a piecewise polynomial object, using the interpolation algorithm
     ## specified by @var{method}, which can be later used with @code{ppval} to
     ## evaluate the interpolation at new query points.
