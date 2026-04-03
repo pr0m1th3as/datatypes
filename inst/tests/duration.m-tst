@@ -1848,6 +1848,9 @@
 %! assert_equal (Y, {'08:29:00.00', '08:30:00.00', '08:31:00.00'});
 %! Y = dispstrings (floor (D, 'hours'));
 %! assert_equal (Y, {'08:00:00.00', '08:00:00.00', '08:00:00.00'});
+%!test
+%! D = days (3) + hours (6.5);
+%! assert_equal (floor (D, 'days'), days (3));
 
 %!test
 %! D = hours(8) + minutes(29:31) + seconds(1.23);
@@ -1861,6 +1864,9 @@
 %! assert_equal (Y, {'08:30:00.00', '08:31:00.00', '08:32:00.00'});
 %! Y = dispstrings (ceil (D, 'hours'));
 %! assert_equal (Y, {'09:00:00.00', '09:00:00.00', '09:00:00.00'});
+%!test
+%! D = days (3) + hours (6.5);
+%! assert_equal (ceil (D, 'days'), days (4));
 
 %!test
 %! D = hours(8) + minutes(29:31) + seconds(1.23);
@@ -1874,6 +1880,9 @@
 %! assert_equal (Y, {'08:29:00.00', '08:30:00.00', '08:31:00.00'});
 %! Y = dispstrings (round (D, 'hours'));
 %! assert_equal (Y, {'08:00:00.00', '09:00:00.00', '09:00:00.00'});
+%!test
+%! D = days (3) + hours (6.5);
+%! assert_equal (round (D, 'days'), days (3));
 
 %!assert_equal (sign (days ([-1, 0, 1, NaN])), [-1, 0, 1, NaN])
 %!assert_equal (sign (seconds ([-2:2] .* ones (5))), repmat ([-1, -1, 0, 1, 1], 5, 1))
