@@ -1183,7 +1183,7 @@ classdef calendarDuration
     ## Subtraction for calendarDuration arrays.
     ##
     ## @code{@var{C} = minus (@var{A}, @var{B})} is the equivalent of the syntax
-    ## @code{@var{C} = @var{A} - @var{B}} and returns the result of substracting
+    ## @code{@var{C} = @var{A} - @var{B}} and returns the result of subtracting
     ## the corresponding elements of @var{B} from those of @var{A}.  @var{C} is
     ## a calendarDuration array of the same size as the input arguments after
     ## the necessary (if required) expansion.  @var{A} and @var{B} must be size
