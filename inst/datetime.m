@@ -971,24 +971,14 @@ classdef datetime
       if (! isa (B, 'datetime'))
         error ("datetime.ismember: B must be a 'datetime' array.");
       endif
-      ## Find ismember
+      ## FIX ME: this is a workaround until 'posixtime' is implemented
+      A = dispstrings (A);
+      B = dispstrings (B);
       if (do_rows)
-        [TF_y, index_y] = ismember (A.Year, B.Year, 'rows');
-        [TF_mo, index_mo] = ismember (A.Month, B.Month, 'rows');
-        [TF_d, index_d] = ismember (A.Day, B.Day, 'rows');
-        [TF_h, index_h] = ismember (A.Hour, B.Hour, 'rows');
-        [TF_mi, index_mi] = ismember (A.Minute, B.Minute, 'rows');
-        [TF_s, index_s] = ismember (A.Second, B.Second, 'rows');
+        [TF, index] = ismember (A, B, 'rows');
       else
-        [TF_y, index_y] = ismember (A.Year, B.Year);
-        [TF_mo, index_mo] = ismember (A.Month, B.Month);
-        [TF_d, index_d] = ismember (A.Day, B.Day);
-        [TF_h, index_h] = ismember (A.Hour, B.Hour);
-        [TF_mi, index_mi] = ismember (A.Minute, B.Minute);
-        [TF_s, index_s] = ismember (A.Second, B.Second);
+        [TF, index] = ismember (A, B);
       endif
-      TF = TF_y & TF_mo & TF_d & TF_h & TF_mi & TF_s;
-      index = index_y(TF);
     endfunction
 
     function TF = isregular (this)
@@ -1210,8 +1200,88 @@ classdef datetime
       error ("datetime.sortrows: not implemented yet.");
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{B} =} unique (@var{A})
+    ## @deftypefnx {datetime} {@var{B} =} unique (@var{A}, @var{setOrder})
+    ## @deftypefnx {datetime} {@var{B} =} unique (@var{A}, @var{occurrence})
+    ## @deftypefnx {datetime} {@var{B} =} unique (@var{A}, @var{setOrder}, @var{occurrence})
+    ## @deftypefnx {datetime} {@var{B} =} unique (@var{A}, @var{occurrence}, @var{setOrder})
+    ## @deftypefnx {datetime} {@var{B} =} unique (@var{A}, @dots{}, @qcode{'rows'})
+    ## @deftypefnx {datetime} {[@var{B}, @var{ixA}, @var{ixB}] =} unique (@dots{})
+    ##
+    ## Unique values in a datetime array.
+    ##
+    ## @code{@var{B} = unique (@var{A})} returns the unique values of the
+    ## datetime array @var{A} in sorted order.
+    ##
+    ## @code{@var{B} = unique (@var{A}, @var{setOrder})} returns the unique
+    ## values of the datetime array @var{A} in an order as specified by
+    ## @var{setOrder}, which can be either of the following values:
+    ##
+    ## @itemize
+    ## @item @qcode{'sorted'} (default) returns the unique values sorted in
+    ## ascending order.
+    ## @item @qcode{'stable'} returns the unique values according to their order
+    ## of occurrence.
+    ## @end itemize
+    ##
+    ## @code{@var{B} = unique (@var{A}, @var{occurrence})} returns the unique
+    ## values of the datetime array @var{tblA} according to their order of
+    ## occurrence.  @var{occurrence} can be either of the following values:
+    ##
+    ## @itemize
+    ## @item @qcode{'first'} (default) returns the first occurrence of each
+    ## unique value, i.e. the lowest possible indices are returned.
+    ## @item @qcode{'last'} returns the last occurrence of each unique value,
+    ## i.e. the highest possible indices are returned.
+    ## @end itemize
+    ##
+    ## You can specify @var{setOrder} and @var{occurrence} arguments together.
+    ##
+    ## @code{@var{B} = unique (@var{A}, @dots{}, @qcode{'rows'})} returns the
+    ## unique rows of @var{A} by treating each row as a single entity.  The
+    ## @qcode{'rows'} option can be used alone or in any combination with the
+    ## @var{setOrder} and @var{occurrence} arguments.  @qcode{'rows'} can be
+    ## placed at any position in the function's argument list after the input
+    ## array @var{A}.  However, this syntax is only valid for 2-dimensional
+    ## datetime arrays.
+    ##
+    ## @code{[@var{tblB}, @var{ixA}, @var{ixB}] = unique (@dots{})} also returns
+    ## index vectors @var{ixA} and @var{ixB} using any of the previous syntaxes.
+    ## @var{ixA} and @var{ixB} map the arrays @var{A} and @var{B} to one another
+    ## such that @qcode{@var{B} = @var{A}(@var{ixA})} and
+    ## @qcode{@var{A} = @var{B}(@var{ixB})}.  When the @qcode{'rows'} optional
+    ## argument is specified, then @qcode{@var{B} = @var{A}(@var{ixA},:)} and
+    ## @qcode{@var{tblA} = @var{tblB}(@var{ixB},:)}.
+    ##
+    ## @end deftypefn
     function [B, ixA, ixB] = unique (A, varargin)
-      error ("datetime.unique: not implemented yet.");
+      ## 'legacy' option is not supported
+      if (any (strcmp ("legacy", varargin)))
+        error ("datetime.unique: 'legacy' option is not supported.");
+      endif
+      ## Handle each property array separately
+      [~, ~, Yidx] =  __unique__ (A.Year, varargin{:});
+      [~, ~, MOidx] = __unique__ (A.Month, varargin{:});
+      [~, ~, Didx] =  __unique__ (A.Day, varargin{:});
+      [~, ~, Hidx] =  __unique__ (A.Hour, varargin{:});
+      [~, ~, MIidx] = __unique__ (A.Minute, varargin{:});
+      [~, ~, Sidx] =  __unique__ (A.Second, varargin{:});
+      DT = [Yidx, MOidx, Didx, Hidx, MIidx, Sidx];
+      ## Use indices to find unique datetime values
+      if (any (strcmp ('rows', varargin)))
+        [~, ixA, ixB] = __unique__ (DT, varargin{:});
+        if (any (strcmp ('last', varargin)))
+          [~, ixA, ~] = __unique__ (ixB, 'last');
+        endif
+        B = subset (A, ixA, ':');
+      else
+        [~, ixA, ixB] = __unique__ (DT, 'rows', varargin{:});
+        if (any (strcmp ('last', varargin)))
+          [~, ixA, ~] = __unique__ (ixB, 'last');
+        endif
+        B = subset (A, ixA);
+      endif
     endfunction
 
     function BI = interp1 (A, B, AI, varargin)
