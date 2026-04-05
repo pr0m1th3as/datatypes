@@ -1,0 +1,405 @@
+## Copyright (C) 2026 Andreas Bertsatos <abertsatos@biol.uoa.gr>
+##
+## This file is part of the datatypes package for GNU Octave.
+##
+## This program is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free Software
+## Foundation; either version 3 of the License, or (at your option) any later
+## version.
+##
+## This program is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+## details.
+##
+## You should have received a copy of the GNU General Public License along with
+## this program; if not, see <http://www.gnu.org/licenses/>.
+
+################################################################################
+##                ** Create and convert 'categorical' type **                 ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'categorical'      'dispstrings'      'cellstr'          'char'            ##
+## 'double'           'single'           'int64'            'int32'           ##
+## 'int16'            'int8'             'uint64'           'uint32'          ##
+## 'uint16'           'uint8'                                                 ##
+##                                                                            ##
+################################################################################
+
+%!assert_equal (isscalar (categorical ()), false)
+%!assert_equal (isempty (categorical ()), true)
+%!assert_equal (class (categorical), 'categorical')
+%!assert_equal (dispstrings (categorical ()), {})
+%!assert_equal (size (categorical), [0, 0])
+%!assert_equal (size (categorical (NaN (2, 3, 4))), [2, 3, 4])
+%!assert_equal (categories (categorical), {})
+%!assert_equal (categories (categorical (NaN)), {})
+%!assert_equal (categories (categorical (NaN (3))), {})
+%!assert_equal (double (categorical), [])
+%!assert_equal (double (categorical (NaN)), NaN)
+%!assert_equal (double (categorical (NaN (3))), NaN (3))
+%!test
+%! stations = categorical (string ({'S1', 'S2', 'S1', 'S3', 'S2'}));
+%! assert_equal (stations, categorical ({'S1', 'S2', 'S1', 'S3', 'S2'}));
+%! assert_equal (dispstrings (stations), {'S1', 'S2', 'S1', 'S3', 'S2'});
+%! assert_equal (categories (stations), {'S1'; 'S2'; 'S3'});
+%!test
+%! stations = categorical ({'S1', 'S2', 'S1'; 'S2', 'S3', 'S2'});
+%! assert_equal (categories (stations), {'S1'; 'S2'; 'S3'});
+%! assert_equal (double (stations), [1, 2, 1; 2, 3, 2]);
+%! assert_equal (size (stations), [2, 3]);
+%!test
+%! stations = categorical ({'S1', 'S2', ''; 'S2', 'S3', 'S2'});
+%! assert_equal (categories (stations), {'S1'; 'S2'; 'S3'});
+%! assert_equal (dispstrings (stations), {'S1', 'S2', '<undefined>'; 'S2', 'S3', 'S2'});
+%! assert_equal (ismissing (stations), isundefined (stations));
+%! assert_equal (double (stations), [1, 2, NaN; 2, 3, 2]);
+%!test
+%! stations = categorical ({'S1', 'S2', 'S1'; 'S2', 'S3', 'S2'}, 'Ordinal', true);
+%! assert_equal (categories (stations), {'S1'; 'S2'; 'S3'});
+%! assert_equal (double (stations), [1, 2, 1; 2, 3, 2]);
+%!test
+%! stations = categorical ({'S3', 'S2', 'S1'; 'S2', 'S3', 'S2'}, 'Ordinal', true);
+%! assert_equal (categories (stations), {'S1'; 'S2'; 'S3'});
+%! assert_equal (double (stations), [3, 2, 1; 2, 3, 2]);
+%!test
+%! C = categorical ([3, 2, 3; 2, 1, 2]);
+%! assert_equal (dispstrings (C), {'3', '2', '3'; '2', '1', '2'});
+%! assert_equal (categories (C), {'1'; '2'; '3'});
+%! assert_equal (double (C), [3, 2, 3; 2, 1, 2]);
+%!test
+%! C = categorical ([1, 2, 3; 2, 1, 2]);
+%! assert_equal (dispstrings (C), {'1', '2', '3'; '2', '1', '2'});
+%! assert_equal (categories (C), {'1'; '2'; '3'});
+%! assert_equal (double (C), [1, 2, 3; 2, 1, 2]);
+%!test
+%! C = categorical ([3, 2, 3; 2, 1, 2], 'Ordinal', true);
+%! assert_equal (dispstrings (C), {'3', '2', '3'; '2', '1', '2'});
+%! assert_equal (categories (C), {'1'; '2'; '3'});
+%! assert_equal (double (C), [3, 2, 3; 2, 1, 2]);
+%!test
+%! C = categorical ([1, 2, 3; 2, 1, 2], 'Ordinal', true);
+%! assert_equal (dispstrings (C), {'1', '2', '3'; '2', '1', '2'});
+%! assert_equal (categories (C), {'1'; '2'; '3'});
+%! assert_equal (double (C), [1, 2, 3; 2, 1, 2]);
+%!test
+%! C = categorical ([3, NaN, 3; 2, 1, 2]);
+%! assert_equal (dispstrings (C), {'3', '<undefined>', '3'; '2', '1', '2'});
+%! assert_equal (categories (C), {'1'; '2'; '3'});
+%! assert_equal (ismissing (C), isundefined (C));
+%! assert_equal (double (C), [3, NaN, 3; 2, 1, 2]);
+%!test
+%! C = categorical ([1, NaN, 3; 5, 1, 2]);
+%! assert_equal (dispstrings (C), {'1', '<undefined>', '3'; '5', '1', '2'});
+%! assert_equal (categories (C), {'1'; '2'; '3'; '5'});
+%! assert_equal (ismissing (C), isundefined (C));
+%! assert_equal (double (C), [1, NaN, 3; 4, 1, 2]);
+%!test
+%! C = categorical ([3, NaN, 3; 2, 1, 2], 'Ordinal', true);
+%! assert_equal (dispstrings (C), {'3', '<undefined>', '3'; '2', '1', '2'});
+%! assert_equal (categories (C), {'1'; '2'; '3'});
+%! assert_equal (ismissing (C), isundefined (C));
+%! assert_equal (double (C), [3, NaN, 3; 2, 1, 2]);
+%!test
+%! C = categorical ([1, NaN, 3; 2, 1, 2], 'Ordinal', true);
+%! assert_equal (dispstrings (C), {'1', '<undefined>', '3'; '2', '1', '2'});
+%! assert_equal (categories (C), {'1'; '2'; '3'});
+%! assert_equal (ismissing (C), isundefined (C));
+%! assert_equal (double (C), [1, NaN, 3; 2, 1, 2]);
+%!test
+%! C = categorical ({'medium', 'small', 'large'}, 'Ordinal', true);
+%! assert_equal (dispstrings (C), {'medium', 'small', 'large'});
+%! assert_equal (categories (C), {'large'; 'medium'; 'small'});
+%! assert_equal (double (C), [2, 3, 1]);
+%!test
+%! S = {'medium', 'small', 'large'; 'large', 'medium', 'small'};
+%! C = categorical (S, 'Ordinal', true);
+%! assert_equal (dispstrings (C), S);
+%! assert_equal (categories (C), {'large'; 'medium'; 'small'});
+%! assert_equal (double (C), [2, 3, 1; 1, 2, 3]);
+%!test
+%! allsizes = {'medium', 'large', 'small', 'small', 'medium', 'large', 'medium', 'small'};
+%! valueset = {'small', 'medium', 'large'};
+%! C = categorical (allsizes, valueset, 'Ordinal', true);
+%! assert_equal (categories (C), {'small'; 'medium'; 'large'});
+%! assert_equal (double (C), [2, 3, 1, 1, 2, 3, 2, 1]);
+%!test
+%! allsizes = {'medium', 'large', 'small', 'small', 'medium', 'large', 'medium', 'small'};
+%! valueset = string ({'small', 'medium', 'large'});
+%! C = categorical (allsizes, valueset, 'Ordinal', true);
+%! assert_equal (categories (C), {'small'; 'medium'; 'large'});
+%! assert_equal (double (C), [2, 3, 1, 1, 2, 3, 2, 1]);
+%!test
+%! allsizes = string ({'medium', 'large', 'small', 'small', ...
+%!                     'medium', 'large', 'medium', 'small'});
+%! valueset = string ({'small', 'medium', 'large'});
+%! C = categorical (allsizes, valueset, 'Ordinal', true);
+%! assert_equal (categories (C), {'small'; 'medium'; 'large'});
+%! assert_equal (double (C), [2, 3, 1, 1, 2, 3, 2, 1]);
+%!test
+%! allsizes = string ({'medium', 'large', 'small', 'small', ...
+%!                     'medium', 'large', 'medium', 'small'});
+%! valueset = {'small', 'medium', 'large'};
+%! C = categorical (allsizes, valueset, 'Ordinal', true);
+%! assert_equal (categories (C), {'small'; 'medium'; 'large'});
+%! assert_equal (double (C), [2, 3, 1, 1, 2, 3, 2, 1]);
+%!test
+%! C = categorical (days ([3, NaN, 3; 2, 1, 2]));
+%! assert_equal (dispstrings (C), {'3 days', '<undefined>', '3 days'; '2 days', '1 day', '2 days'});
+%! assert_equal (categories (C), {'1 day'; '2 days'; '3 days'});
+%! assert_equal (double (C), [3, NaN, 3; 2, 1, 2]);
+%!test
+%! C = categorical (days ([3, NaN, 3; 2, 1, 2]), 'Ordinal', true);
+%! assert_equal (dispstrings (C), {'3 days', '<undefined>', '3 days'; '2 days', '1 day', '2 days'});
+%! assert_equal (categories (C), {'1 day'; '2 days'; '3 days'});
+%! assert_equal (double (C), [3, NaN, 3; 2, 1, 2]);
+%!test
+%! C = categorical (days ([3, NaN, 3; 2, 1, 2]), days (1:3), 'Ordinal', true);
+%! assert_equal (dispstrings (C), {'3 days', '<undefined>', '3 days'; '2 days', '1 day', '2 days'});
+%! assert_equal (categories (C), {'1 day'; '2 days'; '3 days'});
+%! assert_equal (double (C), [3, NaN, 3; 2, 1, 2]);
+%!test
+%! C = categorical (days ([3, NaN, 3; 2, 1, 2]), days ([3:-1:1]), 'Ordinal', true);
+%! assert_equal (dispstrings (C), {'3 days', '<undefined>', '3 days'; '2 days', '1 day', '2 days'});
+%! assert_equal (categories (C), {'3 days'; '2 days'; '1 day'});
+%! assert_equal (double (C), [1, NaN, 1; 2, 3, 2]);
+%!test
+%! C = categorical (days ([3, NaN, 3; 2, 1, 2]), days ([3, 1, 2]), 'Ordinal', true);
+%! assert_equal (dispstrings (C), {'3 days', '<undefined>', '3 days'; '2 days', '1 day', '2 days'});
+%! assert_equal (categories (C), {'3 days'; '1 day'; '2 days'});
+%! assert_equal (double (C), [1, NaN, 1; 3, 2, 3]);
+%!test
+%! C = categorical (days ([3, NaN, 3; 2, 1, 2]), days ([2, 3, 1]), 'Ordinal', true);
+%! assert_equal (dispstrings (C), {'3 days', '<undefined>', '3 days'; '2 days', '1 day', '2 days'});
+%! assert_equal (categories (C), {'2 days'; '3 days'; '1 day'});
+%! assert_equal (double (C), [2, NaN, 2; 1, 3, 1]);
+%!test
+%! C = categorical ([1:5], [1:5], {'A', 'B', 'C', 'D', 'E'});
+%! assert_equal (dispstrings (C), {'A', 'B', 'C', 'D', 'E'});
+%! assert_equal (categories (C), {'A'; 'B'; 'C'; 'D'; 'E'});
+%! assert_equal (double (C), 1:5);
+%!test
+%! C = categorical ([1:5], [5:-1:1], {'A', 'B', 'C', 'D', 'E'});
+%! assert_equal (dispstrings (C), {'E', 'D', 'C', 'B', 'A'});
+%! assert_equal (categories (C), {'A'; 'B'; 'C'; 'D'; 'E'});
+%! assert_equal (double (C), [5, 4, 3, 2, 1]);
+%!test
+%! C = categorical ([1:5], [1:5], {'E', 'D', 'C', 'B', 'A'});
+%! assert_equal (dispstrings (C), {'E', 'D', 'C', 'B', 'A'});
+%! assert_equal (categories (C), {'E'; 'D'; 'C'; 'B'; 'A'});
+%! assert_equal (double (C), 1:5);
+%!test
+%! C = categorical ([1:5], [5:-1:1], {'E', 'D', 'C', 'B', 'A'});
+%! assert_equal (dispstrings (C), {'A', 'B', 'C', 'D', 'E'});
+%! assert_equal (categories (C), {'E'; 'D'; 'C'; 'B'; 'A'});
+%! assert_equal (double (C), [5, 4, 3, 2, 1]);
+%!test
+%! C = categorical (categorical (1:5), categorical (1:5), {'A', 'B', 'C', 'D', 'E'});
+%! assert_equal (dispstrings (C), {'A', 'B', 'C', 'D', 'E'});
+%! assert_equal (categories (C), {'A'; 'B'; 'C'; 'D'; 'E'});
+%! assert_equal (double (C), 1:5);
+%!test
+%! C = categorical (categorical (1:5), categorical ([5:-1:1]), {'A', 'B', 'C', 'D', 'E'});
+%! assert_equal (dispstrings (C), {'E', 'D', 'C', 'B', 'A'});
+%! assert_equal (categories (C), {'A'; 'B'; 'C'; 'D'; 'E'});
+%! assert_equal (double (C), [5, 4, 3, 2, 1]);
+%!test
+%! C = categorical (categorical (1:5), categorical (1:5), {'E', 'D', 'C', 'B', 'A'});
+%! assert_equal (dispstrings (C), {'E', 'D', 'C', 'B', 'A'});
+%! assert_equal (categories (C), {'E'; 'D'; 'C'; 'B'; 'A'});
+%! assert_equal (double (C), 1:5);
+%!test
+%! C = categorical (categorical (1:5), categorical ([5:-1:1]), {'E', 'D', 'C', 'B', 'A'});
+%! assert_equal (dispstrings (C), {'A', 'B', 'C', 'D', 'E'});
+%! assert_equal (categories (C), {'E'; 'D'; 'C'; 'B'; 'A'});
+%! assert_equal (double (C), [5, 4, 3, 2, 1]);
+%!test
+%! C = categorical (categorical (1:5), categorical (2:4), {'B', 'C', 'D'});
+%! assert_equal (dispstrings (C), {'<undefined>', 'B', 'C', 'D', '<undefined>'});
+%! assert_equal (categories (C), {'B'; 'C'; 'D'});
+%! assert_equal (double (C), [NaN, 1, 2, 3, NaN]);
+%!test
+%! C = categorical (categorical ([5:-1:1]), categorical (1:5), {'A', 'B', 'C', 'D', 'E'});
+%! assert_equal (dispstrings (C), {'E', 'D', 'C', 'B', 'A'});
+%! assert_equal (categories (C), {'A'; 'B'; 'C'; 'D'; 'E'});
+%! assert_equal (double (C), [5, 4, 3, 2, 1]);
+%!test
+%! C = categorical (categorical ([5:-1:1]), categorical ([5:-1:1]), {'A', 'B', 'C', 'D', 'E'});
+%! assert_equal (dispstrings (C), {'A', 'B', 'C', 'D', 'E'});
+%! assert_equal (categories (C), {'A'; 'B'; 'C'; 'D'; 'E'});
+%! assert_equal (double (C), 1:5);
+%!test
+%! C = categorical (categorical ([5:-1:1]), categorical (1:5), {'E', 'D', 'C', 'B', 'A'});
+%! assert_equal (dispstrings (C), {'A', 'B', 'C', 'D', 'E'});
+%! assert_equal (categories (C), {'E'; 'D'; 'C'; 'B'; 'A'});
+%! assert_equal (double (C), [5, 4, 3, 2, 1]);
+%!test
+%! C = categorical (categorical ([5:-1:1]), categorical ([5:-1:1]), {'E', 'D', 'C', 'B', 'A'});
+%! assert_equal (dispstrings (C), {'E', 'D', 'C', 'B', 'A'});
+%! assert_equal (categories (C), {'E'; 'D'; 'C'; 'B'; 'A'});
+%! assert_equal (double (C), 1:5);
+%!test
+%! C = categorical ([1, 2, 1, NaN, 3, 2, 3]);
+%! assert_equal (dispstrings (C), ({'1', '2', '1', '<undefined>', '3', '2', '3'}));
+%! C = categorical ([1, 2, 1, NaN, 3, 2, 3], [1, 2, 3, NaN], {'a', 's', 'd', 'f'});
+%! assert_equal (dispstrings (C), {'a', 's', 'a', 'f', 'd', 's', 'd'});
+%! assert_equal (categories (C), {'a'; 's'; 'd'; 'f'});
+%! assert_equal (double (C), [1, 2, 1, 4, 3, 2, 3]);
+%!test
+%! C = categorical (categorical ([1, 2, 1, NaN, 3, 2, 3]));
+%! assert_equal (dispstrings (C), ({'1', '2', '1', '<undefined>', '3', '2', '3'}));
+%! C = categorical (categorical ([1, 2, 1, NaN, 3, 2, 3]), ...
+%!                  categorical ([1, 2, 3, NaN]), {'a', 's', 'd', 'f'});
+%! assert_equal (dispstrings (C), {'a', 's', 'a', 'f', 'd', 's', 'd'});
+%! assert_equal (categories (C), {'a'; 's'; 'd'; 'f'});
+%! assert_equal (double (C), [1, 2, 1, 4, 3, 2, 3]);
+%!test
+%! C = categorical (1:5, [1, 2, 3], {'a', 'b', 'b'});
+%! assert_equal (dispstrings (C), {'a', 'b', 'b', '<undefined>', '<undefined>'});
+%! assert_equal (categories (C), {'a'; 'b'});
+%! assert_equal (double (C), [1, 2, 2, NaN, NaN]);
+%!test
+%! C = categorical (categorical (1:5), categorical ([1, 2, 3]), {'a', 'b', 'b'});
+%! assert_equal (dispstrings (C), {'a', 'b', 'b', '<undefined>', '<undefined>'});
+%! assert_equal (categories (C), {'a'; 'b'});
+%! assert_equal (double (C), [1, 2, 2, NaN, NaN]);
+%!test
+%! C = categorical ({'1', '2', '1', '2'}, {' ', '1', '2'}, {'a','s','d'});
+%! assert_equal (dispstrings (C), {'s', 'd', 's', 'd'});
+%! assert_equal (categories (C), {'a'; 's'; 'd'});
+%! assert_equal (double (C), [2, 3, 2, 3]);
+%!test
+%! C = categorical ({'1', '2', '', '2'}, {' ', '1', '2'}, {'a','s','d'});
+%! assert_equal (dispstrings (C), {'s', 'd', 'a', 'd'});
+%! assert_equal (categories (C), {'a'; 's'; 'd'});
+%! assert_equal (double (C), [2, 3, 1, 3]);
+%!test
+%! C = categorical ({'1', '2', ' ', '2'}, {' ', '1', '2'}, {'a','s','d'});
+%! assert_equal (dispstrings (C), {'s', 'd', 'a', 'd'});
+%! assert_equal (categories (C), {'a'; 's'; 'd'});
+%! assert_equal (double (C), [2, 3, 1, 3]);
+%!test
+%! C = categorical (string ({'1', '2', '1', '2'}), string ({' ', '1', '2'}), {'a','s','d'});
+%! assert_equal (dispstrings (C), {'s', 'd', 's', 'd'});
+%! assert_equal (categories (C), {'a'; 's'; 'd'});
+%! assert_equal (double (C), [2, 3, 2, 3]);
+%!test
+%! C = categorical (string ({'1', '2', '', '2'}), string ({' ', '1', '2'}), {'a','s','d'});
+%! assert_equal (dispstrings (C), {'s', 'd', 'a', 'd'});
+%! assert_equal (categories (C), {'a'; 's'; 'd'});
+%! assert_equal (double (C), [2, 3, 1, 3]);
+%!test
+%! C = categorical (string ({'1', '2', ' ', '2'}), string ({' ', '1', '2'}), {'a','s','d'});
+%! assert_equal (dispstrings (C), {'s', 'd', 'a', 'd'});
+%! assert_equal (categories (C), {'a'; 's'; 'd'});
+%! assert_equal (double (C), [2, 3, 1, 3]);
+%!test
+%! C = categorical (string ({'1', '2', ' ', '2'}), string ({missing, '1', '2'}), {'a','s','d'});
+%! assert_equal (dispstrings (C), {'s', 'd', 'a', 'd'});
+%! assert_equal (categories (C), {'a'; 's'; 'd'});
+%! assert_equal (double (C), [2, 3, 1, 3]);
+%!test
+%! C = categorical (days ([1, 2, 1, 3, NaN]));
+%! assert_equal (dispstrings (C), {'1 day', '2 days', '1 day', '3 days', '<undefined>'});
+%! assert_equal (categories (C), {'1 day'; '2 days'; '3 days'});
+%! assert_equal (double (C), [1, 2, 1, 3, NaN]);
+%!test
+%! C = categorical (days ([1, 2, 1, 3, NaN]), days ([1, 2, 3, NaN]), {'a', 'b', 'c', 'd'});
+%! assert_equal (dispstrings (C), {'a', 'b', 'a', 'c', 'd'});
+%! assert_equal (categories (C), {'a'; 'b'; 'c'; 'd'});
+%! assert_equal (double (C), [1, 2, 1, 3, 4]);
+%!test
+%! C = categorical (days ([1, 2, 1, 3, NaN]), days ([1, 2, 3, NaN]), {'a', 'c', 'c', 'd'});
+%! assert_equal (dispstrings (C), {'a', 'c', 'a', 'c', 'd'});
+%! assert_equal (categories (C), {'a'; 'c'; 'd'});
+%! assert_equal (double (C), [1, 2, 1, 2, 3]);
+%!test
+%! DT = [datetime('yesterday'), datetime('today'), datetime('tomorrow')];
+%! C = categorical (DT);
+%! assert_equal (dispstrings (C), dispstrings (DT));
+%! assert_equal (categories (C), dispstrings (DT'));
+%! assert_equal (double (C), [1, 2, 3]);
+%!test
+%! DT = [datetime('yesterday'), datetime('today'), datetime('tomorrow')];
+%! C = categorical (DT, DT, {'a', 'b', 'c'});
+%! assert_equal (dispstrings (C), {'a', 'b', 'c'});
+%! assert_equal (categories (C), {'a'; 'b'; 'c'});
+%! assert_equal (double (C), [1, 2, 3]);
+%!test
+%! DT = [datetime('yesterday'), datetime('today'), NaT, datetime('tomorrow')];
+%! C = categorical (DT, DT, {'a', 'b', 'c', 'd'});
+%! assert_equal (dispstrings (C), {'a', 'b', 'c', 'd'});
+%! assert_equal (categories (C), {'a'; 'b'; 'c'; 'd'});
+%! assert_equal (double (C), [1, 2, 3, 4]);
+%!test
+%! DT = [datetime('yesterday'), datetime('today'), NaT, datetime('tomorrow')];
+%! C = categorical (DT, DT, {'a', 'b', 'c', 'c'});
+%! assert_equal (dispstrings (C), {'a', 'b', 'c', 'c'});
+%! assert_equal (categories (C), {'a'; 'b'; 'c'});
+%! assert_equal (double (C), [1, 2, 3, 3]);
+%!test
+%! C = categorical ([false, true, true, false, true]);
+%! assert_equal (dispstrings (C), {'false', 'true', 'true', 'false', 'true'});
+%! assert_equal (categories (C), {'false'; 'true'});
+%! assert_equal (double (C), [1, 2, 2, 1, 2]);
+%!error<categorical: 'Ordinal' variable indicator must be either false \(0\) or true \(1\).> ...
+%! categorical (1, 'Ordinal', 3)
+%!error<categorical: 'Ordinal' variable indicator must be either false \(0\) or true \(1\).> ...
+%! categorical (1, 'Ordinal', 'true')
+%!error<categorical: 'Protected' categories indicator must be either false \(0\) or true \(1\).> ...
+%! categorical (1, 'Protected', 3)
+%!error<categorical: 'Protected' categories indicator must be either false \(0\) or true \(1\).> ...
+%! categorical (1, 'Protected', 'true')
+%!error<categorical: VALUESET contains multiple missing values.> ...
+%! categorical (categorical (1:5), categorical ([1, NaN, NaN]))
+%!error<categorical: VALUESET contains non-unique values.> ...
+%! categorical (categorical (1:5), categorical ([1, 1, 1]))
+%!error<categorical: VALUESET with missing value requires CATNAMES.> ...
+%! categorical (categorical (1:5), categorical ([1, 2, NaN]))
+%!error<categorical: invalid type of CATNAMES.> ...
+%! categorical (categorical (1:5), categorical ([1, 2, NaN]), [1, 2])
+%!error<categorical: CATNAMES and VALUESET lengths do not match.> ...
+%! categorical (categorical (1:5), categorical ([1, 2, NaN]), {'1', '2'})
+%!error<categorical: CATNAMES contain empty or missing strings.> ...
+%! categorical (categorical (1:5), categorical ([1, 2, NaN]), {'1', '2', ''})
+%!error<categorical: invalid type of CATNAMES.> ...
+%! categorical (categorical (1:5), categorical ([1, 2, 3]), [1, 2])
+%!error<categorical: CATNAMES and VALUESET lengths do not match.> ...
+%! categorical (categorical (1:5), categorical ([1, 2, 3]), {'1', '2'})
+%!error<categorical: CATNAMES contain empty or missing strings.> ...
+%! categorical (categorical (1:5), categorical ([1, 2, 3]), {'1', '2', ''})
+%!error<categorical: incompatible types of VALUESET and X.> ...
+%! categorical (categorical (1:5), [1, 2, 3])
+%!error<categorical: invalid input type for X.> categorical ({1})
+%!error<categorical: incompatible types of VALUESET and X.> ...
+%! categorical ({'1', '2', '3'}, [1, 2, 3])
+%!error<categorical: incompatible types of VALUESET and X.> ...
+%! categorical (days ([1, 2, 3]), [1, 2, 3])
+%!error<categorical: VALUESET with missing value requires CATNAMES.> ...
+%! categorical (1:5, [1, 2, NaN])
+%!error<categorical: VALUESET contains multiple missing values.> ...
+%! categorical (1:5, [1, NaN, NaN], {'a', 'b', 'c'})
+%!error<categorical: VALUESET contains non-unique values.> ...
+%! categorical (1:5, [1, 2, 2])
+%!error<categorical: VALUESET contains non-unique values.> ...
+%! categorical (1:5, [2, 2, NaN], {'a', 'b', 'c'})
+%!error<categorical: invalid type of CATNAMES.> ...
+%! categorical (1:5, [1, 2, NaN], ['a'; 'b'; 'c'])
+%!error<categorical: invalid type of CATNAMES.> ...
+%! categorical (1:5, [1, 2, NaN], days ([1, 2, 3]))
+%!error<categorical: CATNAMES and VALUESET lengths do not match.> ...
+%! categorical (1:5, [1, 2, NaN], {'a', 'b'})
+%!error<categorical: CATNAMES contain empty or missing strings.> ...
+%! categorical (1:5, [1, 2, NaN], {'a', 'b', ''})
+
+################################################################################
+##                  ** Reference and Assignment Operations **                 ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'end'              'subsref'          'subsasgn'                           ##
+##                                                                            ##
+################################################################################
+
+
