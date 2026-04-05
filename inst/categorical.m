@@ -183,14 +183,15 @@ classdef categorical
         error (strcat ("categorical: 'Protected' categories indicator", ...
                        " must be either false (0) or true (1)."));
       endif
-      opt = "sorted";
       if (Ordinal)
         this.isOrdinal = true;
         this.isProtected = true;
-        opt = "stable";
       elseif (Protected)
         this.isProtected = true;
       endif
+
+      ## Function handle for identifying missing text
+      fmt = @(x) isempty (strtrim (x));
 
       ## Handle categorical input first
       if (isa (x, 'categorical'))
@@ -199,31 +200,76 @@ classdef categorical
         this.isMissing = x.isMissing;
         ## Set new categories if valueset argument is provided
         if (numel (args) > 0)
-          valueset = cellstr (string (args{1}));
-          this = setcats (this, valueset);
-        endif
-        ## Set new category names if catname argument is provided
-        if (numel (args) > 1)
-          catnames = args{2};
-          if (! (iscellstr (catnames) || isa (catnames, 'string')))
-            error ("categorical: invalid type of CATNAMES.");
-          endif
-          catnames = cellstr (catnames);
-          if (numel (valueset) != numel (catnames))
-            error ("categorical: CATNAMES and VALUESET lengths do not match.");
-          endif
-          if (any (cellfun (@isempty, catnames)))
-            error ("categorical: CATNAMES contains empty or missing strings.");
-          endif
-          this.cats = catnames(:);
-          ## Create index vector to categories
-          index2cat = __grp2idx__ (catnames(:));
-          ## Reassociate to user defined categories (only when required)
-          if (! isempty (index2cat) && numel (index2cat) != unique (index2cat))
-            valueset = 1:numel (valueset);
-            fcn = @ (x) index2cat(find (valueset == x));
-            tf = ! this.isMissing;
-            this.code(tf) = uint16 (arrayfun (fcn, this.code(tf)));
+          ## valueset must be a same type as data input (categorical)
+          catvset = args{1};
+          if (isa (catvset, 'categorical'))
+            isnanvset = catvset.isMissing;
+            codevset = catvset.code;
+            if (sum (isnanvset) > 1)
+              error ("categorical: VALUESET contains multiple missing values.");
+            elseif (numel (unique (codevset)) != numel (codevset))
+              error ("categorical: VALUESET contains non-unique values.");
+            endif
+            if (any (isnanvset))
+              if (numel (args) == 1)
+                error ("categorical: VALUESET with missing value requires CATNAMES.");
+              endif
+              ## Keep index of missing values in x
+              isnanx = this.isMissing;
+              ## Get CATNAMES
+              catnames = args{2};
+              if (! (iscellstr (catnames) || isa (catnames, 'string')))
+                error ("categorical: invalid type of CATNAMES.");
+              endif
+              catnames = cellstr (catnames);
+              ## codevset must include 0 since there is an undefined element
+              if (numel (codevset) != numel (catnames))
+                error ("categorical: CATNAMES and VALUESET lengths do not match.");
+              endif
+              if (any (cellfun (fmt, catnames)))
+                error ("categorical: CATNAMES contain empty or missing strings.");
+              endif
+              ## Separate missing from nonmissing catnames
+              valueset = catvset.cats(codevset(! isnanvset));
+              ## Set nonmissing values
+              this = setcats (this, valueset);
+              ## Find code value for missing catname, add 1 to all code values
+              ## equal to or greater than the missing code value, and convert
+              ## all initial 0 code values to the new missing catname value.
+              nanvalue = find (isnanvset);
+              this.code(this.code >= nanvalue) += 1;
+              this.code(isnanx) = uint16 (nanvalue);
+              this.isMissing(isnanx) = false;
+              this.cats = catnames(:);
+            else
+              valueset = catvset.cats(codevset);
+              this = setcats (this, valueset);
+              ## Set new category names if catname argument is provided
+              if (numel (args) > 1)
+                catnames = args{2};
+                if (! (iscellstr (catnames) || isa (catnames, 'string')))
+                  error ("categorical: invalid type of CATNAMES.");
+                endif
+                catnames = cellstr (catnames);
+                if (numel (valueset) != numel (catnames))
+                  error ("categorical: CATNAMES and VALUESET lengths do not match.");
+                endif
+                if (any (cellfun (fmt, catnames)))
+                  error ("categorical: CATNAMES contain empty or missing strings.");
+                endif
+                this.cats = catnames(:);
+              endif
+            endif
+            ## In case of duplicate catnames, regrouping is required
+            if (numel (args) > 1 && numel (unique (catnames)) != numel (catnames))
+              ## Generate regrouping index to unique categories
+              index2cat = __grp2idx__ (catnames);
+              idx = ! this.isMissing;
+              this.code(idx) = arrayfun (@(x) index2cat(x), this.code(idx));
+              this.cats = unique (this.cats, 'stable');
+            endif
+          else
+            error ("categorical: incompatible types of VALUESET and X.");
           endif
         endif
         return;
@@ -235,7 +281,7 @@ classdef categorical
       ## Input Array (x)
       if (iscellstr (x))
         classx = 'cellstr';
-        isnanx = cellfun (@(x) isempty (strtrim (x)), x);
+        isnanx = cellfun (fmt, x);
       elseif (isnumeric (x))
         classx = 'numeric';
         isnanx = isnan (x);
@@ -250,13 +296,13 @@ classdef categorical
         isnanx = isnan (x);
       elseif (isa (x, 'string'))
         classx = 'string';
-        isnanx = ismissing (x);
+        isnanx = cellfun (fmt, cellstr (x));
       else
         error ("categorical: invalid input type for X.");
       endif
       ## Categories (valueset)
       if (numel (args) > 0)
-        valueset = args{1}(:);
+        valueset = args{1};
         if (iscellstr (valueset))
           classv = 'cellstr';
         elseif (isnumeric (valueset))
@@ -268,7 +314,11 @@ classdef categorical
           if (! (iscellstr (valueset) || isa (valueset, 'string')))
             error ("categorical: incompatible types of VALUESET and X.");
           endif
-          isnanvset = ismissing (valueset);
+          if (iscellstr (valueset))
+            isnanvset = cellfun (fmt, valueset);
+          else  # string
+            isnanvset = cellfun (fmt, cellstr (valueset));
+          endif
         elseif (isequal (classx, classv))
           if (strcmp (classv, 'datetime'))
             isnanvset = isnat (valueset);
@@ -276,42 +326,38 @@ classdef categorical
             isnanvset = isnan (valueset);
           endif
         else
-          error ("categorical: types of VALUESET and X do not match.");
+          error ("categorical: incompatible types of VALUESET and X.");
+        endif
+        if (any (isnanvset) && numel (args) == 1)
+          error ("categorical: VALUESET with missing value requires CATNAMES.");
         endif
         if (sum (isnanvset) > 1)
           error ("categorical: VALUESET contains multiple missing values.");
         endif
-        if (numel (unique (valueset)) < numel (valueset))
+        if (prod (size (unique (valueset))) < prod (size (valueset)))
           error ("categorical: VALUESET contains non-unique values.");
         endif
         ## Category names (catnames)
         if (numel (args) > 1)
-          catnames = args{2}(:);
+          catnames = args{2};
           if (! (iscellstr (catnames) || isa (catnames, 'string')))
             error ("categorical: invalid type of CATNAMES.");
           endif
           catnames = cellstr (catnames);
-          if (numel (valueset) != numel (catnames))
+          if (prod (size (valueset)) != numel (catnames))
             error ("categorical: CATNAMES and VALUESET lengths do not match.");
           endif
-          if (any (cellfun (@isempty, catnames)))
-            error ("categorical: CATNAMES contains empty or missing strings.");
+          if (any (cellfun (@(x) isempty (strtrim (x)), catnames)))
+            error ("categorical: CATNAMES contain empty or missing strings.");
           endif
           ## Create index vector to categories
           index2cat = __grp2idx__ (catnames);
         else
           ## Check valueset for missing or empty elements
           if (any (strcmp (classv, {'cellstr', 'string'})))
-            catnames = cellstr (valueset);
-            if (any (cellfun (@(x) isempty (strtrim (x)), valueset)))
-              error (strcat ("categorical: VALUESET cannot contain empty or", ...
-                             " missing text, unless CATNAMES are specified."));
-            endif
+            valueset = cellstr (valueset);
+            catnames = valueset;
           elseif (isnumeric (valueset))
-            if (any (isnan (valueset)))
-              error (strcat ("categorical: numeric VALUESET cannot contain", ...
-                             " NaN values, unless CATNAMES are specified."));
-            endif
             catnames = arrayfun (@num2str, valueset, "UniformOutput", false);
           elseif (strcmp (classv, 'logical'))
             if (all (valueset))
@@ -321,17 +367,7 @@ classdef categorical
             else
               catnames = {'false'; 'true'};
             endif
-          elseif (strcmp (classv, 'datetime'))
-            if (any (isnat (valueset)))
-              error (strcat ("categorical: datetime VALUESET cannot contain", ...
-                             " NaT values, unless CATNAMES are specified."));
-            endif
-            catnames = dispstrings (valueset);
-          else  # duration
-            if (any (isnan (valueset)))
-              error (strcat ("categorical: duration VALUESET cannot contain", ...
-                             " NaN values, unless CATNAMES are specified."));
-            endif
+          else  # datetime, duration
             catnames = dispstrings (valueset);
           endif
         endif
@@ -339,11 +375,11 @@ classdef categorical
       else
         ## Resolve valueset and catnames from input array
         if (strcmp (classx, 'numeric'))
-          valueset = unique (x, opt);
+          valueset = unique (x);
           valueset = valueset(! isnan (valueset));
           catnames = arrayfun (@num2str, valueset, "UniformOutput", false);
         elseif (strcmp (classx, 'logical'))
-          valueset = unique (x, opt);
+          valueset = unique (x);
           if (all (valueset))
             catnames = {'true'};
           elseif (! any (valueset))
@@ -352,22 +388,20 @@ classdef categorical
             catnames = {'false'; 'true'};
           endif
         elseif (strcmp (classx, 'cellstr'))
-          valueset = unique (x, opt);  # does not remove empty
-          valueset = valueset(! cellfun (@isempty, valueset));
+          valueset = unique (x);  # does not remove empty
+          valueset = valueset(! cellfun (fmt, valueset));
           catnames = valueset;
         elseif (strcmp (classx, 'string'))
-          valueset = unique (x, opt);  # removes missing, but not empty
-          valueset = valueset(! cellfun (@isempty, cellstr (valueset)));
+          valueset = unique (x);  # removes missing, but not empty
+          valueset = valueset(! cellfun (fmt, cellstr (valueset)));
           catnames = cellstr (valueset);
         elseif (strcmp (classx, 'datetime'))
-          valueset = unique (x, opt);  # does not remove NaT
-          fcn = @(x) strcmp (x, 'NaT');
-          valueset = valueset(! cellfun (fcn, dispstrings (valueset)));
+          valueset = unique (x);  # does not remove NaT
+          valueset = valueset(! isnat (valueset));
           catnames = dispstrings (valueset);
         elseif (strcmp (classx, 'duration'))
-          valueset = unique (x, opt);  # does not remove NaN
-          fcn = @(x) strcmp (x, 'NaN');
-          valueset = valueset(! cellfun (fcn, dispstrings (valueset)));
+          valueset = unique (x);  # does not remove NaN
+          valueset = valueset(! ismissing (valueset));
           catnames = dispstrings (valueset);
         endif
       endif
@@ -393,7 +427,7 @@ classdef categorical
       ## Reassociate to user defined categories (only when regrouping required)
       if (! isempty (index2cat))
         if (numel (index2cat) != unique (index2cat) || any (isnanvset))
-          valueset = 1:numel (valueset);
+          valueset = 1:prod (size (valueset));
           fcn = @ (x) index2cat(find (valueset == x));
           loc(tf) = arrayfun (fcn, loc(tf));
         endif
@@ -402,7 +436,7 @@ classdef categorical
       ## Add constructor properties
       this.code = uint16 (loc);
       this.isMissing = ! tf;
-      this.cats = catnames;
+      this.cats = unique (catnames(:), 'stable');
 
     endfunction
 
@@ -648,7 +682,7 @@ classdef categorical
     ##
     ## @end deftypefn
     function cstr = categories (this)
-      cstr = this.cats(:);
+      cstr = this.cats;
     endfunction
 
     ## -*- texinfo -*-
@@ -1784,27 +1818,18 @@ classdef categorical
           return;
         endif
 
-        ## If remcodes are consecutive, then we only need to subtract once
-        ## the number of elements in remcodes from each code that is more
-        ## than max(remcodes), otherwise we need to do this repeatedly for
-        ## consecutive subset in remcodes
+        ## If remcodes are consecutive, then we only need to subtract the
+        ## number of removed categories with code less than 'min (remcodes)'.
+        ## Otherwise we need to compute a variable subtraction vector and
+        ## process remaining categories in sequential order.
         idx = find (diff (remcodes) > 1);
         if (isempty (idx))  # all removed elements are consecutive
-          B.code(B.code > max (remcodes)) -= numel (remcodes);
-          return;
+          B.code(! TF) -= min (remcodes) - 1;
         else
-          while (numel (remcodes) > 0)
-            if (numel (idx) > 0)
-              remvec = remcodes(1:idx(1));
-              remcodes(1:idx(1)) = [];
-              idx = idx - idx(1);
-              idx(1) = [];
-            else
-              remvec = remcodes;
-              remcodes = [];
-            endif
-            B.code(B.code > max (remvec)) -= numel (remvec);
-          endwhile
+          remidx = cumsum (diff ([0; remcodes]) - 1);
+          for idx = 1:numel (remcodes)
+            B.code(B.code == remcodes(idx)) -= remidx(idx);
+          endfor
         endif
       endif;
     endfunction
@@ -4132,18 +4157,33 @@ classdef categorical
             this.code(s.subs{:}) = [];
             this.isMissing(s.subs{:}) = [];
             return;
-          elseif (iscellstr (val) || ischar (val) || isnumeric (val) ||
-              islogical (val) || any (isa (val, {'missing', 'string'})))
-            val = promote (val);
-            if (isordinal (this))
-              val.isOrdinal = true;
-            elseif (isprotected (this))
-              val.isProtected = true;
+          elseif (isa (val, 'missing'))
+            this.code(s.subs{:}) = 0;
+            this.isMissing(s.subs{:}) = true;
+            return;
+          elseif (iscellstr (val) || ischar (val) || isstring (val))
+            val = cellstr (val);
+            if (! isscalar (val))
+              error (strcat ("categorical.subsasgn: assignment value must", ...
+                             " be a categorical array or text representing", ...
+                             " a single category."));
             endif
+            new_code = find (strcmp (this.cats, val));
+            if (! isempty (new_code))   # category exists
+              this.code == new_code;
+            else
+              ## New category, check for protected status
+              if (isprotected (this))
+                error (strcat ("categorical.subasgn: cannot assign new", ...
+                               " category to protected categorical array."));
+              endif
+              this.cats = [this.cats; val];
+            endif
+            return;
           elseif (! isa (val, 'categorical'))
             error (strcat ("categorical.subsasgn: assignment value must", ...
-                           " be a categorical array, numeric, logical or", ...
-                           "  text representing categories."));
+                           " be a categorical array or text representing", ...
+                           " a single category."));
           endif
           ## After this point VAL is categorical array
           ## If any categorical array is ordinal, all must be
@@ -4171,8 +4211,8 @@ classdef categorical
             ## Check that all categorical arrays have the same categories
             ## but they are not necessarily in the same order
             if (! all (ismember (this.cats, val.cats)))
-              error (strcat ("categorical.subsasgn: cannot assign to", ...
-                             " protected categorical array new categories."));
+              error (strcat ("categorical.subsasgn: cannot assign new", ...
+                             " categories to protected categorical array."));
             endif
             ## Reorder codes accordingly
             idx = cell (1, numel (this.cats));
@@ -4189,23 +4229,24 @@ classdef categorical
           endif
           ## No constrains, add new categories as necessary and bump code indexing
           ## to reflect the changes in category list of assigned categorical array
-          ncats = numel (categories (val));
-          idx = cell (1, ncats);
+          n_cats = numel (val.cats);
+          maxcat = numel (this.cats);
+          idx = cell (1, n_cats);
           newcat = {};
           n_code = [];
-          for j = 1:ncats
+          for j = 1:n_cats
             new_code = find (strcmp (this.cats, val.cats(j)));
             if (! isempty (new_code))
-              idx{j} = val.code == new_code;
-              n_code = [n_code, j];
+              idx{j} = val.code == j;
+              n_code = [n_code, new_code];
             else
               idx{j} = val.code == j;
-              n_code = [n_code, numel(this.cats)+1];
+              n_code = [n_code, maxcat++];
               newcat = [newcat, val.cats(j)];
             endif
           endfor
-          this.cats = [this.cats, newcat];
-          for j = 1:ncats
+          this.cats = [this.cats; newcat];
+          for j = 1:n_cats
             val.code(idx{j}) = n_code(j);
           endfor
           this.code(s.subs{:}) = val.code;
