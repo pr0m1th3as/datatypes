@@ -824,7 +824,7 @@ classdef categorical
     ## this syntax to cascade @code{keyHash} on multiple objects for which a
     ## single hash code is required.
     ##
-    ## Note that unlike MATLAB, this implementation does no use any random seed.
+    ## Note that unlike MATLAB, this implementation does not use any random seed.
     ## As a result, @code{keyHash} will always generate the exact same hash key
     ## for any particular input across different workers and Octave sessions.
     ##

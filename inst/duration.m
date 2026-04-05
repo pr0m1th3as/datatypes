@@ -109,13 +109,13 @@ classdef duration
     ## minutes, seconds, and milliseconds specified by @var{H}, @var{MI},
     ## @var{S}, and @var{MS}, respectively.
     ##
-    ## @code{@var{D} =} duration (@var{TimeStrings})} creates a duration array
+    ## @code{@var{D} = duration (@var{TimeStrings})} creates a duration array
     ## from text that represents elapsed times.  @var{TimeStrings} can be a
     ## character vector, a cell array of character vectors, or a string array
     ## representing times using either the @qcode{'hh:mm:ss'} or the
     ## @qcode{'dd:hh:mm:ss'} format.
     ##
-    ## @code{@var{D} =} duration (@var{TimeStrings}, @qcode{'InputFormat'},
+    ## @code{@var{D} = duration (@var{TimeStrings}, @qcode{'InputFormat'},
     ## @var{INFMT})} creates a duration array from text that represents elapsed
     ## times according to the format specified by @var{INFMT}, which can be any
     ## of the following:
@@ -901,7 +901,7 @@ classdef duration
     ## this syntax to cascade @code{keyHash} on multiple objects for which a
     ## single hash code is required.
     ##
-    ## Note that unlike MATLAB, this implementation does no use any random seed.
+    ## Note that unlike MATLAB, this implementation does not use any random seed.
     ## As a result, @code{keyHash} will always generate the exact same hash key
     ## for any particular input across different workers and Octave sessions.
     ##
@@ -984,7 +984,7 @@ classdef duration
         intervaltype = varargin{1};
       elseif (nargin > 4)
         error (strcat ("duration.isbetween: optional paired arguments", ...
-                       " are not suppoorted for duration arrays."));
+                       " are not supported for duration arrays."));
       endif
       if (isnumeric (lower) || isnumeric (upper))
         error ("duration.isbetween: LOWER and UPPER cannot be numeric.");
