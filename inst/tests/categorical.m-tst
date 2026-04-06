@@ -393,6 +393,34 @@
 %!error<categorical: CATNAMES contain empty or missing strings.> ...
 %! categorical (1:5, [1, 2, NaN], {'a', 'b', ''})
 
+%!test
+%! C = categorical ([1, 2, 1, NaN, 3, 2, 3]);
+%! assert_equal (cellstr (C), dispstrings (C));
+
+%!test
+%! C = categorical ([1, 2, 1, NaN, 3, 2, 3]);
+%! assert_equal (char (C), char (cellstr (C)));
+%! assert_equal (size (char (C)), [7, 11]);
+%! assert_equal (class (char (C)), 'char');
+
+%!test
+%! C = categorical ([1, 2, 1, NaN, 3, 2, 3]);
+%! assert_equal (double (C), [1, 2, 1, NaN, 3, 2, 3]);
+%! assert_equal (single (C), single ([1, 2, 1, NaN, 3, 2, 3]));
+%! assert_equal (int64 (C), int64 ([1, 2, 1, 0, 3, 2, 3]));
+%! assert_equal (int32 (C), int32 ([1, 2, 1, 0, 3, 2, 3]));
+%! assert_equal (int16 (C), int16 ([1, 2, 1, 0, 3, 2, 3]));
+%! assert_equal (int8 (C), int8 ([1, 2, 1, 0, 3, 2, 3]));
+%! assert_equal (uint64 (C), uint64 ([1, 2, 1, 0, 3, 2, 3]));
+%! assert_equal (uint32 (C), uint32 ([1, 2, 1, 0, 3, 2, 3]));
+%! assert_equal (uint16 (C), uint16 ([1, 2, 1, 0, 3, 2, 3]));
+%! assert_equal (uint8 (C), uint8 ([1, 2, 1, 0, 3, 2, 3]));
+
+%!test
+%! C = categorical (1:256);
+%! assert_equal (int8 (C), int8 ([1:126, 127*ones(1, 130)]));
+%! assert_equal (uint8 (C), uint8 ([1:255, 255]));
+
 ################################################################################
 ##                  ** Reference and Assignment Operations **                 ##
 ################################################################################
