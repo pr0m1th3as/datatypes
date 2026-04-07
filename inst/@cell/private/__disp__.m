@@ -135,10 +135,10 @@ function [dispstr, optLen]  = mixedcell2str (data, cols)
   dispstr(is_empty) = cellfun (sf, data(is_empty), "UniformOutput", false);
 
   ## Index remaining scalar and row vector elements
-  ve = cell2mat (cellfun (@(x) size (x,1), data, "UniformOutput", false)) == 1;
+  ve = cell2mat (cellfun (@(x) isrow (x), data, "UniformOutput", false)) == 1;
   ve = ve & ! (is_cell | is_empty);
   ## Index everything else
-  me = cell2mat (cellfun (@(x) size (x,1), data, "UniformOutput", false)) != 1;
+  me = cell2mat (cellfun (@(x) isrow (x), data, "UniformOutput", false)) != 1;
   me = me & ! (is_cell | is_empty);
 
   ## Catch 'char' scalars or row vectors
