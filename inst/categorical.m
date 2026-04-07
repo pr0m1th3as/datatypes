@@ -667,6 +667,26 @@ classdef categorical
       dfValue = {'default'};
       [stats, args] = parsePairedArguments (optName, dfValue, varargin(:));
 
+      ## Handle default statistcs
+      didx = strcmpi (stats, 'default');
+      if (this.isOrdinal)
+        if (any (didx))
+          default = {'counts', 'nummissing', 'min', 'median', 'max'};
+          stats(didx) = [];
+          ridx = cellfun (@(x) any (strcmpi (x, default)), stats);
+          stats(ridx) = [];
+          stats = [default, stats];
+        endif
+      else
+        if (any (didx))
+          default = {'counts', 'nummissing'};
+          stats(didx) = [];
+          ridx = cellfun (@(x) any (strcmpi (x, default)), stats);
+          stats(ridx) = [];
+          stats = [default, stats];
+        endif
+      endif
+
       ## Get operating dimension
       if (isempty (args))
         (dim = find (sz > 1, 1)) || (dim = 1);
@@ -680,32 +700,47 @@ classdef categorical
       ## Store input size and category names in output struct
       s.Size = size (this);
       s.Type = 'categorical';
+      s.Name = inputname (1);
       s.Categories = this.cats;
       ## Store 'counts' first (if requested)
       cidx = strcmpi (stats, 'counts');
+      nidx = strcmpi (stats, 'nummissing');
+      NAMES = {};
       if (any (cidx))
+        NAMES = [NAMES; this.cats];
         s.Counts = countcats (this, dim);
         stats(cidx) = [];
+        if (any (nidx))
+          s.NumMissing = sum (this.isMissing, dim);
+          stats(nidx) = [];
+          NAMES = [NAMES; '<undefined>'];
+        endif
       endif
       ## Store remaining statistics according to their order in 'stats'
+      STATS = {};
       while (! isempty (stats))
         switch (lower (stats{1}))
           case 'nummissing'
             s.NumMissing = sum (this.isMissing, dim);
+            STATS = [STATS; 'NumMissing'];
           case 'min'
             if (this.isOrdinal)
               s.Min = min (this, [], dim);
+              STATS = [STATS; 'Min'];
             endif
           case 'median'
             if (this.isOrdinal)
               s.Median = median (this, dim);
+              STATS = [STATS; 'Median'];
             endif
           case 'max'
             if (this.isOrdinal)
               s.Max = max (this, [], dim);
+              STATS = [STATS; 'Max'];
             endif
           case 'mode'
             s.Mode = mode (this, dim);
+            STATS = [STATS; 'Mode'];
         endswitch
         stats(1) = [];
       endwhile
@@ -714,9 +749,7 @@ classdef categorical
       if (nargout > 0)
         varargout{1} = s;
       else
-        ## FIXME
-       error ("categorical.summary: not implemented yet.");
-        __summary__ (s, dim);
+        __summary__ (s, dim, NAMES, STATS);
       endif
     endfunction
 
@@ -2953,7 +2986,7 @@ classdef categorical
     function [M, F, C] = mode (A, dim = [])
       ## Check for ordinal categorical array
       if (! A.isOrdinal)
-        error ("categorical.mode: categorical array A is not ordinal.");
+        #error ("categorical.mode: categorical array A is not ordinal.");
       endif
 
       ## Handle 'all' option first
@@ -3815,7 +3848,7 @@ classdef categorical
     ## @end deftypefn
     function out = cat (dim, varargin)
       ## Remove empty inputs
-      varargin(cellfun ('isempty', varargin)) = [];
+      varargin(cellfun (@(x) isempty(x), varargin)) = [];
       if (numel (varargin) == 1)
         out = varargin{1};
         return;
@@ -3905,10 +3938,10 @@ classdef categorical
           else
             idx{j} = args{i}.code == j;
             n_code = [n_code, numel(out.cats)+1];
-            newcat = [newcat, args{i}.cats(j)];
+            newcat = [newcat; args{i}.cats(j)];
           endif
         endfor
-        out.cats = [out.cats, newcat];
+        out.cats = [out.cats; newcat];
         for j = 1:ncats
           args{i}.code(idx{j}) = n_code(j);
         endfor
