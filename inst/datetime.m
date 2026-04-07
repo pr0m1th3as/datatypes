@@ -226,7 +226,7 @@ classdef datetime
                   'Locale', 'PivotYear', 'TimeZone'};
       dfValues = {[], [], [], [], [], []};
       [ConvertFrom, Format, inputFormat, Locale, PivotYear, TimeZone, args] =...
-                                   pairedArgs (optNames, dfValues, varargin(:));
+                    parsePairedArguments (optNames, dfValues, varargin(:));
 
       ## Check optional 'Format' and 'InputFormat' arguments
       if (! isempty (ConvertFrom))

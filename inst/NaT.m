@@ -52,7 +52,9 @@ function T = NaT (varargin)
   ## Parse optional Name-Value paired arguments
   optNames = {'Format', 'TimeZone'};
   dfValues = {'default', ''};
-  [Format, TimeZone, args] = pairedArgs (optNames, dfValues, varargin(:));
+  [Format, TimeZone, args] = parsePairedArguments (optNames, dfValues, ...
+                                                   varargin(:));
+
   ## Check optional Name-Value paired arguments
   if (! ((ischar (Format) && isvector (Format)) ||
          (isa (Format, "string") && isscalar (Format))))
