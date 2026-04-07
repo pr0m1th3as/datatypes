@@ -172,7 +172,8 @@ classdef categorical
       ## Parse optional Name-Value paired arguments
       optNames = {'Ordinal', 'Protected'};
       dfValues = {false, false};
-      [Ordinal, Protected, args] = pairedArgs (optNames, dfValues, varargin(:));
+      [Ordinal, Protected, args] = parsePairedArguments (optNames, dfValues, ...
+                                                         varargin(:));
 
       ## Check optional Name-Value paired arguments
       if (! ismember (Ordinal, [0, 1]))
@@ -646,7 +647,10 @@ classdef categorical
   methods (Access = public)
 
     ## -*- texinfo -*-
-    ## @deftypefn {categorical} {} summary (@var{C})
+    ## @deftypefn  {categorical} {} summary (@var{C})
+    ## @deftypefnx {categorical} {} summary (@var{C}, @var{dim})
+    ## @deftypefnx {categorical} {} summary (@dots{}, @var{Name}, @var{Value})
+    ## @deftypefnx {categorical} {@var{s} =} summary (@dots{})
     ##
     ## Display summary of categorical array.
     ##
@@ -656,20 +660,64 @@ classdef categorical
     ## @qcode{<undefined>}.
     ##
     ## @end deftypefn
-    function summary (this)
-      ## Get number of elements per category
-      cats = this.cats';
-      cols = numel (cats);
-      nums = arrayfun (@(x) sum (this.code(:) == x), 1:cols);
-      ## Check for undefined elements
-      undefined = sum (this.code == 0);
-      if (undefined > 0)
-        cats = [cats, {'<undefined>'}];
-        nums = [nums, undefined];
+    function varargout = summary (this, varargin)
+
+      ## Parse optional Name-Value paired arguments
+      optName = {'Statistics'};
+      dfValue = {'default'};
+      [stats, args] = parsePairedArguments (optName, dfValue, varargin(:));
+
+      ## Get operating dimension
+      if (isempty (args))
+        (dim = find (sz > 1, 1)) || (dim = 1);
+      else
+        dim = args{1};
+        if (! isscalar (dim) || fix (dim) != dim || dim < 0)
+          error ("categorical.summary: DIM must be a positive integer.");
+        endif
       endif
-      ## Merge categories and number of elements into a cellstr array
-      cstr = [cats; num2cell(nums)];
-      dispcellmatrix (cstr);
+
+      ## Store input size and category names in output struct
+      s.Size = size (this);
+      s.Type = 'categorical';
+      s.Categories = this.cats;
+      ## Store 'counts' first (if requested)
+      cidx = strcmpi (stats, 'counts');
+      if (any (cidx))
+        s.Counts = countcats (this, dim);
+        stats(cidx) = [];
+      endif
+      ## Store remaining statistics according to their order in 'stats'
+      while (! isempty (stats))
+        switch (lower (stats{1}))
+          case 'nummissing'
+            s.NumMissing = sum (this.isMissing, dim);
+          case 'min'
+            if (this.isOrdinal)
+              s.Min = min (this, [], dim);
+            endif
+          case 'median'
+            if (this.isOrdinal)
+              s.Median = median (this, dim);
+            endif
+          case 'max'
+            if (this.isOrdinal)
+              s.Max = max (this, [], dim);
+            endif
+          case 'mode'
+            s.Mode = mode (this, dim);
+        endswitch
+        stats(1) = [];
+      endwhile
+
+      ## Return structure or display summary
+      if (nargout > 0)
+        varargout{1} = s;
+      else
+        ## FIXME
+       error ("categorical.summary: not implemented yet.");
+        __summary__ (s, dim);
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -686,41 +734,76 @@ classdef categorical
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn  {categorical} {@var{C} =} countcats (@var{A})
-    ## @deftypefnx {categorical} {@var{C} =} countcats (@var{A}, @var{dim})
+    ## @deftypefn  {categorical} {@var{N} =} countcats (@var{C})
+    ## @deftypefnx {categorical} {@var{N} =} countcats (@var{C}, @var{dim})
     ##
     ## Count occurrences of categories in a categorical array.
     ##
-    ## @code{@var{C} = countcats (@var{A})} returns the number of elements for
-    ## each category in @var{A}.  If @var{A} is a vector, @var{C} is also a
-    ## vector with one element for each category in @var{A}.  If @var{A} is a
-    ## matrix, @var{C} is a matrix with each column containing the category
-    ## counts from each column of @var{A}.  For multidimensional arrays,
+    ## @code{@var{N} = countcats (@var{C})} returns the number of elements for
+    ## each category in @var{C}.  If @var{C} is a vector, @var{N} is also a
+    ## vector with one element for each category in @var{C}.  If @var{C} is a
+    ## matrix, @var{N} is a matrix with each column containing the category
+    ## counts from each column of @var{C}.  For multidimensional arrays,
     ## @code{countcats} operates along the first non-singleton dimension.
     ##
-    ## @code{@var{C} = countcats (@var{A}, @var{dim})} operates along the
+    ## @code{@var{N} = countcats (@var{C}, @var{dim})} operates along the
     ## dimension @var{dim}.
     ##
     ## @end deftypefn
-    function C = countcats (A, dim = [])
-      nc = numel (A.cats);
+    function N = countcats (this, dim = [])
+      sz = size (this.code);
+      nc = numel (this.cats);
+      if (nc == 0)
+        N = zeros (sz);
+        return;
+      endif
       if (isempty (dim))
-        C = histc (A.code, [1:nc]);
+        (dim = find (sz > 1, 1)) || (dim = 1);
+      elseif (! isscalar (dim) || fix (dim) != dim || dim < 0)
+        error ("categorical.countcats: DIM must be a positive integer.");
+      endif
+      if (dim <= ndims (this))
+        nsz = sz;
+        nsz(dim) = nc;
+        ## This is the O(M*log(N) + N) algorithm.
+
+        ## Look-up indices.
+        grp = [1:nc];
+
+        idx = lookup (grp, this.code);
+        ## Zero invalid ones (including NaNs).  x < edges(1) are already zero.
+        idx(! (this.code <= grp(end))) = 0;
+
+        iidx = idx;
+
+        ## In case of matrix input, we adjust the indices.
+        if (! isvector (this.code))
+          nl = prod (sz(1:dim-1));
+          nn = sz(dim);
+          nu = prod (sz(dim+1:end));
+          if (nl != 1)
+            iidx = (iidx-1) * nl;
+            iidx += reshape (kron (ones (1, nn*nu), 1:nl), sz);
+          endif
+          if (nu != 1)
+            ne = length (grp);
+            iidx += reshape (kron (nl*ne*(0:nu-1), ones (1, nl*nn)), sz);
+          endif
+        endif
+
+        ## Select valid elements.
+        iidx = iidx(idx != 0);
+
+        ## Call accumarray to sum the indexed elements.
+        N = accumarray (iidx(:), 1, nsz);
       else
-        if (! isscalar (dim) || fix (dim) != dim || dim < 0)
-          error ("categorical.countcats: DIM must be a positive integer.");
-        endif
-        if (dim <= ndims (A))
-          C = histc (A.code, [1:nc], dim);
-        else
-          C = repmat (zeros (size (A)), [ones(1, dim - 1), nc]);
-          totnum = prod (size (A));
-          linvec = 1:totnum;
-          for i = 1:nc
-            offset = (i - 1) * totnum;
-            C(linvec + offset) = A.code == i;
-          endfor
-        endif
+        N = repmat (zeros (size (this)), [ones(1, dim - 1), nc]);
+        totnum = prod (size (this));
+        linvec = 1:totnum;
+        for i = 1:nc
+          offset = (i - 1) * totnum;
+          N(linvec + offset) = this.code == i;
+        endfor
       endif
     endfunction
 
@@ -1636,7 +1719,7 @@ classdef categorical
       ## Parse optional Name-Value paired arguments
       optNames = {"After", "Before"};
       dfValues = {[], []};
-      [After, Before] = pairedArgs (optNames, dfValues, varargin(:));
+      [After, Before] = parsePairedArguments (optNames, dfValues, varargin(:));
 
       ## Check optional Name-Value paired arguments
       if (! isempty (After) && ! isempty (Before))
@@ -3035,7 +3118,7 @@ classdef categorical
       ## Parse and validate optional Name-Value paired argument
       optNames = {'Normalization'};
       dfValues = {'count'};
-      [normtype, args] = pairedArgs (optNames, dfValues, varargin(:));
+      [normtype, args] = parsePairedArguments (optNames, dfValues, varargin(:));
       vnt = {'count', 'countdensity', 'probability', 'pdf', 'cumcount', 'cdf'};
       if (! ismember (normtype, vnt))
         error ("categorical.histcounts: invalid 'Normalization' type.");
@@ -3149,7 +3232,7 @@ classdef categorical
       ## Parse and validate optional 'MissingPlacement' paired argument
       optNames = {'MissingPlacement'};
       dfValues = {'auto'};
-      [MP, args] = pairedArgs (optNames, dfValues, varargin(:));
+      [MP, args] = parsePairedArguments (optNames, dfValues, varargin(:));
       if (! ismember (MP, {'auto', 'first', 'last'}))
         error ("categorical.sort: invalid value for 'MissingPlacement'.");
       endif
@@ -3257,7 +3340,7 @@ classdef categorical
       ## Parse and validate optional 'MissingPlacement' paired argument
       optNames = {'MissingPlacement'};
       dfValues = {'auto'};
-      [MP, args] = pairedArgs (optNames, dfValues, varargin(:));
+      [MP, args] = parsePairedArguments (optNames, dfValues, varargin(:));
       if (! ismember (MP, {'auto', 'first', 'last'}))
         error ("categorical.sort: invalid value for 'MissingPlacement'.");
       endif
