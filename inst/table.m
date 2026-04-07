@@ -298,7 +298,7 @@ classdef table
       optNames = {"VariableNames", "RowNames", "DimensionNames"};
       dfValues = {{}, {}, {"Row", "Variables"}};
       [VariableNames, RowNames, DimensionNames, args] = ...
-             pairedArgs (optNames, dfValues, varargin(:));
+                      parsePairedArguments (optNames, dfValues, varargin(:));
       ## Check optional Name-Value paired arguments
       if (! isempty (VariableNames))
         if (! (iscellstr (VariableNames) || isa (VariableNames, "string")))
@@ -1145,7 +1145,7 @@ classdef table
       ## Parse optional Name-Value paired arguments
       optNames = {"MissingPlacement", "ComparisonMethod"};
       dfValues = {"auto", "auto"};
-      [MP, CM, args] = pairedArgs (optNames, dfValues, varargin(:));
+      [MP, CM, args] = parsePairedArguments (optNames, dfValues, varargin(:));
 
       ## Check optional Name-Value paired arguments
       if (! ismember (MP, {"auto", "first", "last"}))
@@ -1741,8 +1741,8 @@ classdef table
       ## Parse optional Name-Value paired arguments
       optNames = {"After", "Before", "NewVariableNames"};
       dfValues = {[], [], []};
-      [After, Before, newVarNames, args] = pairedArgs ...
-                                           (optNames, dfValues, varargin(:));
+      [After, Before, newVarNames, args] = ...
+                      parsePairedArguments (optNames, dfValues, varargin(:));
 
       ## Check optional Name-Value paired arguments
       if (! isempty (After) && ! isempty (Before))
@@ -1967,7 +1967,7 @@ classdef table
       ## Parse optional Name-Value paired arguments
       optNames = {"After", "Before"};
       dfValues = {[], []};
-      [After, Before] = pairedArgs (optNames, dfValues, varargin(:));
+      [After, Before] = parsePairedArguments (optNames, dfValues, varargin(:));
 
       ## Check optional Name-Value paired arguments
       if (! isempty (After) && ! isempty (Before))
@@ -2162,7 +2162,7 @@ classdef table
       ## Parse optional Name-Value paired arguments
       optNames = {"NewVariableNames"};
       dfValues = {[]};
-      [newNames, vars] = pairedArgs (optNames, dfValues, varargin(:));
+      [newNames, vars] = parsePairedArguments (optNames, dfValues, varargin(:));
 
       ## Get vars to actually split
       if (isempty (vars))
@@ -2389,7 +2389,8 @@ classdef table
       ## Parse optional Name-Value paired arguments
       optNames = {"NewVariableName", "MergeAsTable"};
       dfValues = {[], false};
-      [newVarName, mergeAsTable] = pairedArgs (optNames, dfValues, varargin(:));
+      [newVarName, mergeAsTable] = parsePairedArguments (optNames, dfValues, ...
+                                                         varargin(:));
 
       ## Check user input for 'MergeAsTable'
       if (! isscalar (mergeAsTable))
@@ -2606,7 +2607,8 @@ classdef table
       ## Parse optional Name-Value paired arguments
       optNames = {"DataVariables", "VariableNamesSource", "VariableNamingRule"};
       dfValues = {[], [], 'modify'};
-      [varRef, source, rule] = pairedArgs (optNames, dfValues, varargin(:));
+      [varRef, source, rule] = parsePairedArguments (optNames, dfValues, ...
+                                                     varargin(:));
 
       ## Check user input for 'DataVariables'
       if (! isempty (varRef))
@@ -2813,8 +2815,8 @@ classdef table
       optNames = {"ConstantVariables", "NewDataVariableName", ...
                   "IndexVariableName"};
       dfValues = {[], [], []};
-      [constVars, newVarName, idxVarName] = pairedArgs (optNames, dfValues, ...
-                                                        varargin(:));
+      [constVars, newVarName, idxVarName] = ...
+                  parsePairedArguments (optNames, dfValues, varargin(:));
 
       ## Get variables to stack
       [ixVars, varNames] = resolveVarRef (this, vars, "lenient");
@@ -2997,8 +2999,8 @@ classdef table
                   "NewDataVariableNames", "AggregationFunction", ...
                   "VariableNamingRule"};
       dfValues = {[], [], [], [], "modify"};
-      [groupVars, constVars, newVarNames, aggrFcn, rule] = pairedArgs ...
-                                             (optNames, dfValues, varargin(:));
+      [groupVars, constVars, newVarNames, aggrFcn, rule] = ...
+                  parsePairedArguments (optNames, dfValues, varargin(:));
 
       ## Get variables to unstack
       [ixVars, ~] = resolveVarRef (this, vars, "lenient");
@@ -3710,7 +3712,8 @@ classdef table
       ## Parse optional Name-Value paired arguments
       optNames = {'OutputFormat'};
       dfValues = {'logical'};
-      [outFmt, indicator] = pairedArgs (optNames, dfValues, varargin(:));
+      [outFmt, indicator] = parsePairedArguments (optNames, dfValues, ...
+                                                  varargin(:));
 
       if (! any (strcmpi (outFmt, {'logical', 'tabular'})))
         error ("table.ismissing: invalid value for 'OutputFormat'.");
@@ -3973,7 +3976,8 @@ classdef table
       ## Parse optional Name-Value paired arguments
       optNames = {'MinNumMissing', 'DataVariables', 'MissingLocations'};
       dfValues = {1, [], []};
-      [minNum, dVars, mLocs] = pairedArgs (optNames, dfValues, varargin(:));
+      [minNum, dVars, mLocs] = parsePairedArguments (optNames, dfValues, ...
+                                                     varargin(:));
 
       ## Check optional Name-Value paired arguments and operate accordingly
       if (! isscalar (minNum) || fix (minNum) != minNum || minNum <= 0)
