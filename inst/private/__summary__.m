@@ -139,8 +139,9 @@ function disp_summary_low (C, show_stats = false)
       else
         fprintf ('(:,:,%s) = \n\n', pagestr);
       endif
-      page_C = C(:,:,p_ix);
-      dispcellmatrix (page_C);
+      idx.type = '()';
+      idx.subs = {':', ':', num2cell(p_ix){:}};
+      dispcellmatrix (subsref (C, idx));
     endfor
   endif
 endfunction
@@ -171,7 +172,8 @@ function disp_summary_high (C, D, DIM, show_stats = false)
     endfor
     page_ixs = new_page;
   endif
-  for ix = 1:size (page_ixs, 1)
+  page_num = size (page_ixs, 1);
+  for ix = 1:page_num
     p_ix = page_ixs(ix,:);
     cidx = p_ix(DIM);
     p_ixx = arrayfun (@(x) cellstr (num2str (x)), p_ix);
@@ -182,8 +184,9 @@ function disp_summary_high (C, D, DIM, show_stats = false)
     else
       fprintf ('(:,:,%s) = \n\n', pagestr);
     endif
-    page_C = C(:,:,p_ix);
-    dispcellmatrix (page_C);
+    idx.type = '()';
+    idx.subs = {':', ':', num2cell(p_ix){:}};
+    dispcellmatrix (subsref (C, idx));
   endfor
 endfunction
 
