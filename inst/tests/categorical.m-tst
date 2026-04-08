@@ -432,7 +432,7 @@
 ################################################################################
 
 %!test
-%! C = categorical (repmat (magic (2), 3, 3, 2));
+%! C = categorical (repmat ([1, 3; 4, 2], 3, 3, 2));
 %! s = summary (C, 1);
 %! assert_equal (s.Size, [6, 6, 2]);
 %! assert_equal (s.Type, 'categorical');
@@ -441,9 +441,8 @@
 %! assert_equal (size (s.Counts), [4, 6, 2]);
 %! assert_equal (s.NumMissing, sum (isundefined (C), 1));
 %! assert_equal (size (s.NumMissing), [1, 6, 2]);
-
 %!test
-%! C = categorical (repmat (magic (2), 3, 3, 2));
+%! C = categorical (repmat ([1, 3; 4, 2], 3, 3, 2));
 %! s = summary (C, 2);
 %! assert_equal (s.Size, [6, 6, 2]);
 %! assert_equal (s.Type, 'categorical');
@@ -452,9 +451,8 @@
 %! assert_equal (size (s.Counts), [6, 4, 2]);
 %! assert_equal (s.NumMissing, sum (isundefined (C), 2));
 %! assert_equal (size (s.NumMissing), [6, 1, 2]);
-
 %!test
-%! C = categorical (repmat (magic (2), 3, 3, 2));
+%! C = categorical (repmat ([1, 3; 4, 2], 3, 3, 2));
 %! s = summary (C, 3);
 %! assert_equal (s.Size, [6, 6, 2]);
 %! assert_equal (s.Type, 'categorical');
@@ -463,9 +461,8 @@
 %! assert_equal (size (s.Counts), [6, 6, 4]);
 %! assert_equal (s.NumMissing, sum (isundefined (C), 3));
 %! assert_equal (size (s.NumMissing), [6, 6]);
-
 %!test
-%! C = categorical (repmat (magic (2), 3, 3, 2));
+%! C = categorical (repmat ([1, 3; 4, 2], 3, 3, 2));
 %! s = summary (C, 4);
 %! assert_equal (s.Size, [6, 6, 2]);
 %! assert_equal (s.Type, 'categorical');
@@ -474,7 +471,6 @@
 %! assert_equal (size (s.Counts), [6, 6, 2, 4]);
 %! assert_equal (s.NumMissing, sum (isundefined (C), 4));
 %! assert_equal (size (s.NumMissing), [6, 6, 2]);
-
 %!test
 %! C = categorical (string ({'1', '2', ' ', '2'}), string ({' ', '1', '2'}), ...
 %!                  {'a', 's', 'd'});
@@ -484,7 +480,6 @@
 %! assert_equal (s.Categories, {'a'; 's'; 'd'});
 %! assert_equal (s.Counts, [1, 1, 2]);
 %! assert_equal (s.NumMissing, 0);
-
 %!test
 %! C = categorical ({'A'; 'B'; 'C'; ''; 'C'; ''; 'C'; 'A'; ''});
 %! C = repmat (C, 1, 4, 3);
@@ -496,7 +491,6 @@
 %! assert_equal (size (s.Counts), [3, 4, 3]);
 %! assert_equal (s.NumMissing, sum (isundefined (C)));
 %! assert_equal (size (s.NumMissing), [1, 4, 3]);
-
 %!test
 %! C = categorical ({'A'; 'B'; 'C'; ''; 'C'; ''; 'C'; 'A'; ''});
 %! C = repmat (C, 1, 4, 3);
@@ -508,7 +502,6 @@
 %! assert_equal (size (s.Counts), [9, 3, 3]);
 %! assert_equal (s.NumMissing, sum (isundefined (C), 2));
 %! assert_equal (size (s.NumMissing), [9, 1, 3]);
-
 %!test
 %! C = categorical ({'A'; 'B'; 'C'; ''; 'C'; ''; 'C'; 'A'; ''});
 %! C = repmat (C, 1, 4, 3);
@@ -520,7 +513,6 @@
 %! assert_equal (size (s.Counts), [9, 4, 3]);
 %! assert_equal (s.NumMissing, sum (isundefined (C), 3));
 %! assert_equal (size (s.NumMissing), [9, 4]);
-
 %!test
 %! C = categorical ({'A'; 'B'; 'C'; ''; 'C'; ''; 'C'; 'A'; ''});
 %! C = repmat (C, 1, 4, 3);
@@ -532,7 +524,6 @@
 %! assert_equal (size (s.Counts), [9, 4, 3, 3]);
 %! assert_equal (s.NumMissing, sum (isundefined (C), 4));
 %! assert_equal (size (s.NumMissing), [9, 4, 3]);
-
 %!test
 %! s = summary (categorical ([1, 2, 1, 3, 2, 3, 2, 1, 3, 2], [1, 2, 3], ...
 %!                           {'l','m','h'}, 'Ordinal', true), 1, ...
@@ -547,7 +538,6 @@
 %! assert_equal (s.NumMissing, zeros (1, 10));
 %! assert_equal (s.Max, C);
 %! assert_equal (s.Median, C);
-
 %!test
 %! s = summary (categorical ([1, 2, 1, 3, 2, 3, 2, 1, 3, NaN], [1, 2, 3], ...
 %!                           {'l','m','h'}, 'Ordinal', true), 1, ...
@@ -562,7 +552,6 @@
 %! assert_equal (s.NumMissing, [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
 %! assert_equal (s.Max, C);
 %! assert_equal (s.Median, C);
-
 %!test
 %! s = summary (categorical ([1, 2, 1, 3, 2, 3, 2, 1, 3, NaN], [1, 2, 3], ...
 %!                           {'l','m','h'}, 'Ordinal', true), 1, ...
@@ -575,7 +564,6 @@
 %! assert_equal (size (s.Max), [1, 10]);
 %! assert_equal (size (s.Median), [1, 10]);
 %! assert_equal (size (s.Mode), [1, 10]);
-
 %!test
 %! s = summary (categorical ([1, 2, 1, 3, 2, 3, 2, 1, 3, NaN], [1, 2, 3], ...
 %!                           {'l','m','h'}, 'Ordinal', true), 1, ...
@@ -588,7 +576,34 @@
 %! assert_equal (size (s.Max), [1, 10]);
 %! assert_equal (size (s.Median), [1, 10]);
 %! assert_equal (size (s.Mode), [1, 10]);
+%!error<categorical.summary: unrecognized input argument.> ...
+%! summary (categorical ([1:3]), 2, 3)
+%!error<categorical.summary: DIM must be a positive integer.> ...
+%!  summary (categorical ([1:3]), 0)
+%!error<categorical.summary: DIM must be a positive integer.> ...
+%!  summary (categorical ([1:3]), [1, 2])
+%!error<categorical.summary: DIM must be a positive integer.> ...
+%!  summary (categorical ([1:3]), 'a')
 
+%!assert_equal (categories (categorical), {})
+%!assert_equal (categories (categorical (NaN (3), [1, 2, 3])), {'1'; '2'; '3'})
+%!assert_equal (categories (categorical (1:5)), {'1'; '2'; '3'; '4'; '5'})
+
+%!assert_equal (countcats (categorical), [])
+%!assert_equal (countcats (categorical ([NaN, 1;NaN,2;NaN, NaN])), [0, 1; 0, 1])
+%!assert_equal (countcats (categorical (NaN (3))), zeros (0, 3))
+%!assert_equal (countcats (categorical (NaN (3), [1, 2, 3])), zeros (3))
+%!assert_equal (countcats (categorical (NaN (2, 0, 3))), zeros (0, 0, 3))
+%!assert_equal (countcats (categorical (NaN (2, 0, 3), [1, 2, 3])), zeros (3, 0, 3))
+%!assert_equal (countcats (categorical (NaN (2, 0, 3), [1, 2, 3]), 2), zeros (2, 3, 3))
+%!assert_equal (countcats (categorical (ones (3, 2, 0, 2))), ones (0, 2, 0, 2))
+%!assert_equal (countcats (categorical (ones (3, 2, 0, 2)), 3), ones (3, 2, 0, 2))
+%!error<categorical.countcats: DIM must be a positive integer.> ...
+%! countcats (categorical (ones (3, 2, 0, 2)), 0)
+%!error<categorical.countcats: DIM must be a positive integer.> ...
+%! countcats (categorical (ones (3, 2, 0, 2)), [1, 2])
+%!error<categorical.countcats: DIM must be a positive integer.> ...
+%! countcats (categorical (ones (3, 2, 0, 2)), 'a')
 
 ################################################################################
 ##                  ** Reference and Assignment Operations **                 ##

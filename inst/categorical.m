@@ -160,15 +160,6 @@ classdef categorical
         return;
       endif
 
-      ## Handle undefined array (all x is NaN)
-      if (isnumeric (x))
-        if (all (isnan (x(:))))
-          this.code = uint16 (zeros (size (x)));
-          this.isMissing = true (size (x));
-          return;
-        endif
-      endif
-
       ## Parse optional Name-Value paired arguments
       optNames = {'Ordinal', 'Protected'};
       dfValues = {false, false};
@@ -437,7 +428,12 @@ classdef categorical
       ## Add constructor properties
       this.code = uint16 (loc);
       this.isMissing = ! tf;
-      this.cats = unique (catnames(:), 'stable');
+      if (isempty (catnames))
+        this.cats = {};
+      else
+        this.cats = unique (catnames(:), 'stable');
+      endif
+
 
     endfunction
 
@@ -695,8 +691,11 @@ classdef categorical
       if (isempty (args))
         (dim = find (sz > 1, 1)) || (dim = 1);
       else
+        if (numel (args) > 1)
+          error ("categorical.summary: unrecognized input argument.");
+        endif
         dim = args{1};
-        if (! isscalar (dim) || fix (dim) != dim || dim < 0)
+        if (! (isnumeric (dim) && isscalar (dim) && fix (dim) == dim && dim > 0))
           error ("categorical.summary: DIM must be a positive integer.");
         endif
       endif
@@ -751,6 +750,7 @@ classdef categorical
 
       ## Return structure or display summary
       if (nargout > 0)
+        s = rmfield (s, 'Name');
         varargout{1} = s;
       else
         __summary__ (s, dim, NAMES, STATS);
@@ -791,19 +791,19 @@ classdef categorical
       codes = this.code;
       sz = size (codes);
       nc = numel (this.cats);
-      if (nc == 0)
-        N = zeros (sz);
-        return;
-      endif
       if (isempty (dim))
         (dim = find (sz > 1, 1)) || (dim = 1);
-      elseif (! isscalar (dim) || fix (dim) != dim || dim < 0)
+      elseif (! (isnumeric (dim) && isscalar (dim) && fix (dim) == dim && dim > 0))
         error ("categorical.countcats: DIM must be a positive integer.");
+      endif
+      if (nc == 0)
+        sz(dim) = 0;
+        N = zeros (sz);
+        return;
       endif
       if (dim <= ndims (this))
         nsz = sz;
         nsz(dim) = nc;
-        ## This is the O(M*log(N) + N) algorithm.
 
         ## Look-up indices.
         grp = [1:nc];

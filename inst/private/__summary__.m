@@ -29,6 +29,21 @@ function __summary__ (S, DIM, NAMES, STATS)
   endif
   fprintf (str, sz);
 
+  ## Handle empty arrays
+  if (false)#(any (sz == 0))
+    nanfn = {'Size', 'Type', 'Name', 'Categories', 'Counts'};
+    remfn = fieldnames (S);
+    remfn(ismember (remfn, nanfn)) = [];
+    if (! isempty (remfn))
+      fprintf ('Additional statistics:\n\n');
+      for i = 1:numel (remfn)
+        stat = S.(remfn{i});
+
+      endfor
+    endif
+    return;
+  endif
+
   ## Concatenate STATS (if any)
   disp_stats = false;
   if (! isempty (STATS))
@@ -115,9 +130,10 @@ function disp_summary_low (C, show_stats = false)
       high_ixs{i} = [1:high_sz(i)]';
     endfor
     page_ixs = combvec (high_ixs);
-    for ix = 1:size (page_ixs, 1)
+    page_num = size (page_ixs, 1);
+    for ix = 1:page_num
       p_ix = page_ixs(ix,:);
-      pagestr = sprintf (strjoin(repmat ({'%d'}, 1, numel (p_ix)), ':'), p_ix);
+      pagestr = sprintf (strjoin(repmat ({'%d'}, 1, numel (p_ix)), ','), p_ix);
       if (show_stats)
         fprintf ('(:,:,%s) summary:\n\n', pagestr);
       else
@@ -141,13 +157,26 @@ function disp_summary_high (C, D, DIM, show_stats = false)
   for i = 1:numel (high_sz)
     high_ixs{i} = [1:high_sz(i)]';
   endfor
+  if (isempty (high_ixs))
+    fprintf ('%s:\n', D{1});
+    dispcellmatrix (C);
+    return;
+  endif
   page_ixs = combvec (high_ixs);
+  ## Group categories together
+  if (DIM > 1)
+    new_page = [];
+    for i = 1:numel (D)
+      new_page = [new_page; page_ixs(page_ixs(:,DIM) == i, :)];
+    endfor
+    page_ixs = new_page;
+  endif
   for ix = 1:size (page_ixs, 1)
     p_ix = page_ixs(ix,:);
     cidx = p_ix(DIM);
     p_ixx = arrayfun (@(x) cellstr (num2str (x)), p_ix);
     p_ixx(DIM) = D(cidx);
-    pagestr = sprintf (strjoin(repmat ({'%s'}, 1, numel (p_ix)), ':'), p_ixx{:});
+    pagestr = sprintf (strjoin(repmat ({'%s'}, 1, numel (p_ix)), ','), p_ixx{:});
     if (show_stats)
       fprintf ('(:,:,%s) summary:\n\n', pagestr);
     else
