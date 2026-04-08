@@ -667,6 +667,9 @@ classdef categorical
       dfValue = {'default'};
       [stats, args] = parsePairedArguments (optName, dfValue, varargin(:));
 
+      ## Force stats to cellstr
+      stats = cellstr (stats);
+
       ## Handle default statistcs
       didx = strcmpi (stats, 'default');
       if (this.isOrdinal)
@@ -704,12 +707,12 @@ classdef categorical
       s.Categories = this.cats;
       ## Store 'counts' first (if requested)
       cidx = strcmpi (stats, 'counts');
-      nidx = strcmpi (stats, 'nummissing');
       NAMES = {};
       if (any (cidx))
         NAMES = [NAMES; this.cats];
         s.Counts = countcats (this, dim);
         stats(cidx) = [];
+        nidx = strcmpi (stats, 'nummissing');
         if (any (nidx))
           s.NumMissing = sum (this.isMissing, dim);
           stats(nidx) = [];
