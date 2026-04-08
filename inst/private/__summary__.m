@@ -67,7 +67,7 @@ function __summary__ (S, DIM, NAMES, STATS)
     else
       counts = S.Counts;
     endif
-    counts = categorical (counts);
+    counts = num2cell (counts);
     ## Append counts to categories
     tmpsz = sz;
     tmpsz(1:2) = 1;
@@ -82,17 +82,17 @@ function __summary__ (S, DIM, NAMES, STATS)
 
   if (disp_counts)
     if (DIM < 3)
-      disp_summary_low (dispstrings (counts))
+      disp_summary_low (counts);
     else
-      disp_summary_high (dispstrings (counts), NAMES, DIM)
+      disp_summary_high (counts, NAMES, DIM);
     endif
   endif
 
   if (disp_stats)
     if (DIM < 3)
-      disp_summary_low (stats, true)
+      disp_summary_low (stats, true);
     else
-      disp_summary_high (stats, STATS, DIM, true)
+      disp_summary_high (stats, STATS, DIM, true);
     endif
   endif
 endfunction

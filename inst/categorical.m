@@ -691,6 +691,7 @@ classdef categorical
       endif
 
       ## Get operating dimension
+      sz = size (this);
       if (isempty (args))
         (dim = find (sz > 1, 1)) || (dim = 1);
       else
@@ -701,7 +702,7 @@ classdef categorical
       endif
 
       ## Store input size and category names in output struct
-      s.Size = size (this);
+      s.Size = sz;
       s.Type = 'categorical';
       s.Name = inputname (1);
       s.Categories = this.cats;
@@ -787,7 +788,8 @@ classdef categorical
     ##
     ## @end deftypefn
     function N = countcats (this, dim = [])
-      sz = size (this.code);
+      codes = this.code;
+      sz = size (codes);
       nc = numel (this.cats);
       if (nc == 0)
         N = zeros (sz);
@@ -806,14 +808,15 @@ classdef categorical
         ## Look-up indices.
         grp = [1:nc];
 
-        idx = lookup (grp, this.code);
+        idx = lookup (grp, codes);
         ## Zero invalid ones (including NaNs).  x < edges(1) are already zero.
-        idx(! (this.code <= grp(end))) = 0;
+        idx(! (codes <= grp(end))) = 0;
 
         iidx = idx;
 
         ## In case of matrix input, we adjust the indices.
-        if (! isvector (this.code))
+        no_vector = (isrow (codes) && dim == 1) || (iscolumn (codes) && dim == 2);
+        if (! isvector (codes) || no_vector)
           nl = prod (sz(1:dim-1));
           nn = sz(dim);
           nu = prod (sz(dim+1:end));
@@ -838,7 +841,7 @@ classdef categorical
         linvec = 1:totnum;
         for i = 1:nc
           offset = (i - 1) * totnum;
-          N(linvec + offset) = this.code == i;
+          N(linvec + offset) = codes == i;
         endfor
       endif
     endfunction
