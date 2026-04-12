@@ -54,15 +54,18 @@ function key = keyHash (x = [], base = [])
     key = __ckeyHash__(init_str);
   endif
   ## Select data type
-  if (isnumeric (x) || islogical (x))
-    key = __nkeyHash__(x(:), key);
+  if (isnumeric (x))
+    x = num2hex (x)'(:)';
+  elseif (islogical (x))
+    x = num2hex (int8 (x))'(:)';
   elseif (ischar (x))
-    key = __ckeyHash__(x(:), key);
+    x = x(:);
   elseif (iscellstr (x))
-    key = __ckeyHash__([x{:}], key);
+    x = [x{:}];
   else
     error ("keyHash: unsupported input type.");
   endif
+  key = __ckeyHash__(x, key);
 endfunction
 
 %!test
@@ -97,10 +100,14 @@ endfunction
 %! assert (key, E);
 %!test
 %! A = uint64(128);
-%! E = uint64(8038837787959150693);
+%! E = uint64(16460521561820702077);
 %! key = keyHash (A);
 %! assert (isequal(key, E), sprintf("k: %lx e: %lx d: %lx", key, E, key - E));
 %! assert (key, E);
+%!test
+%!  A = keyHash ([1, 2; 3, 4]);
+%!  B = keyHash ([1; 3; 2; 4]);
+%!  assert (! isequal (A, B));
 
 %!error<Invalid call to keyHash.  Correct usage is:> keyHash ();
 %!error<keyHash: BASE must be a UINT64 scalar.> keyHash (1, 1);
