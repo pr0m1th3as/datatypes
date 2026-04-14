@@ -672,6 +672,46 @@
 %!error<categorical.keyHash: BASE must be a UINT64 scalar.> ...
 %! keyHash (categorical (1:5), 2231107818551636405)
 
+################################################################################
+##                          ** Query Operations **                            ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'iscategory'       'iscolumn'         'isempty'          'isequal'         ##
+## 'isequaln'         'ismatrix'         'ismember'         'ismissing'       ##
+## 'isordinal'        'isprotected'      'isrow'            'isscalar'        ##
+## 'issorted'         'issortedrows'     'isundefined'      'isvector'        ##
+##                                                                            ##
+################################################################################
+
+%!assert_equal (iscategory (categorical, ''), false)
+%!assert_equal (iscategory (categorical (1:3), '1'), true)
+%!assert_equal (iscategory (categorical (1:3), '4'), false)
+%!assert_equal (iscategory (categorical (1:3), string ('1')), true)
+%!assert_equal (iscategory (categorical (1:3), string ('4')), false)
+%!assert_equal (iscategory (categorical (1:3), {'1', '2'}), [true, true])
+%!assert_equal (iscategory (categorical (1:3), {'1'; '2'}), [true; true])
+%!assert_equal (iscategory (categorical (1:3), {'1', '4', '3'}), logical ([1, 0, 1]))
+%!test
+%! C = categorical ([], [1, 2, 3], {'A', 'B', 'C'});
+%! assert_equal (iscategory (C, 'A'), true);
+%! assert_equal (iscategory (C, '1'), false);
+%! assert_equal (iscategory (C, string ('A')), true);
+%! assert_equal (iscategory (C, string (1:3)), [false, false, false]);
+%!error<categorical.iscategory: CATNAMES input argument is required.> ...
+%! iscategory (categorical)
+
+%!assert_equal (iscolumn (categorical), false)
+%!assert_equal (iscolumn (categorical (1)), true)
+%!assert_equal (iscolumn (categorical (1:2)), false)
+%!assert_equal (iscolumn (categorical ([1:2]')), true)
+%!assert_equal (iscolumn (categorical (ones (2))), false)
+
+%!assert_equal (isempty (categorical), true)
+%!assert_equal (isempty (categorical (1)), false)
+%!assert_equal (isempty (categorical (ones (3, 2, 0, 3))), true)
+%!assert_equal (isempty (categorical ([], [1, 2, 3], {'A', 'B', 'C'})), true)
+%!assert_equal (isempty (categorical (NaN (2, 0), [1, 2, 3], {'A', 'B', 'C'})), true)
 
 ################################################################################
 ##                  ** Reference and Assignment Operations **                 ##
