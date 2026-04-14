@@ -1011,6 +1011,9 @@ classdef categorical
     ##
     ## @end deftypefn
     function TF = iscategory (this, catnames)
+      if (nargin < 2)
+        error ("categorical.iscategory: CATNAMES input argument is required.");
+      endif
       catnames = cellstr (catnames);
       TF = ismember (catnames, this.cats);
     endfunction
