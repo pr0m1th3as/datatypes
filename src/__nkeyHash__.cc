@@ -19,9 +19,18 @@ this program; if not, see <http://www.gnu.org/licenses/>.
 
 #define FNV1A64_PRIME 0x00000100000001b3
 #include <octave/oct.h>
+#include <cstring>
 #include <array>
 
 using namespace std;
+
+constexpr bool isLittleEndian()
+{
+  unsigned int value = 0x01020304;
+  unsigned char bytes[4] = {};
+  std::memcpy (bytes, &value, sizeof (value));
+  return bytes[0] == 0x04;
+}
 
 static inline constexpr uint64_t fnv1a64 (const char* buf, size_t len, uint64_t out)
 {
@@ -29,6 +38,20 @@ static inline constexpr uint64_t fnv1a64 (const char* buf, size_t len, uint64_t 
   {
     // default char signedness depends on architecture, for signed for
     // backwards compatibility
+    const signed char b = buf[i];
+    out = (out ^ b) * FNV1A64_PRIME;
+  }
+	return out;
+}
+
+static inline constexpr uint64_t fnv1a64 (const char* buf, size_t len, size_t nbytes, uint64_t out)
+{
+	for (size_t i = 0; i < len; i++)
+  {
+    // reverse bytes for big endian systems
+    size_t dv = i / nbytes;
+    size_t md = i % nbytes;
+    size_t ii = dv * nbytes + nbytes - md - 1;
     const signed char b = buf[i];
     out = (out ^ b) * FNV1A64_PRIME;
   }
@@ -86,8 +109,31 @@ Do NOT use this function directly. \n\
   const void *in = args(0).mex_get_data ();
   const char *buf = static_cast<const char *>(in);
   // Generate the hash key
-  octave_uint64 out = fnv1a64 (buf, len, base);
   octave_value_list retval (nargout);
-  retval(0) = out;
+  if (isLittleEndian ())
+  {
+    octave_uint64 out = fnv1a64 (buf, len, base);
+    retval(0) = out;
+  }
+  else
+  {
+    uint32_t nbytes = 1;
+    if (args(0).is_int16_type () || args(0).is_uint16_type ())
+    {
+      nbytes = 2;
+    }
+    else if (args(0).is_int32_type () || args(0).is_uint32_type ()
+                                      || args(0).is_single_type ())
+    {
+      nbytes = 4;
+    }
+    else if (args(0).is_int64_type () || args(0).is_uint64_type ()
+                                      || args(0).is_double_type ())
+    {
+      nbytes = 8;
+    }
+    octave_uint64 out = fnv1a64 (buf, len, nbytes, base);
+    retval(0) = out;
+  }
   return retval;
 }
