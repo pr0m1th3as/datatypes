@@ -772,12 +772,34 @@ classdef string
         error (strcat ("string.eq: comparison between '%s' and '%s'", ...
                        " is not supported."), class (A), class (B));
       endif
+      szA = size (A);
+      szB = size (B);
       if (isscalar (A))
-        A = repmat (A, size (B));
+        A = repmat (A, szB);
       elseif (isscalar (B))
-        B = repmat (B, size (A));
-      elseif (! isequal (size (A), size (B)))
-        error ("string.eq: inconsistent dimensions.");
+        B = repmat (B, szA);
+      elseif (! isequal (szA, szB))
+        ## Force size dim vectors to equal length
+        ndA = numel (szA);
+        ndB = numel (szB);
+        if (ndA > ndB)
+          szB = [szB, ones(1, ndA - ndB)];
+        elseif (ndB > ndA)
+          szA = [szA, ones(1, ndB - ndA)];
+        endif
+        ## Check for compatible dimensions
+        A_1 = szA != 1 & szA != szB;
+        B_1 = szB != 1 & szA != szB;
+        A_B = A_1 & B_1;
+        if (any (A_B))
+          error ("string.eq: incompatible dimensions.");
+        endif
+        ## Expand arrays to same size
+        eqAB = szA == szB;
+        szA(eqAB) = 1;
+        szB(eqAB) = 1;
+        A = repmat (A, szB);
+        B = repmat (B, szA);
       endif
       TF = strcmp (A.strs, B.strs);
       TF(A.isMissing | B.isMissing) = false;
@@ -808,12 +830,34 @@ classdef string
         error (strcat ("string.ge: comparison between '%s' and '%s'", ...
                        " is not supported."), class (A), class (B));
       endif
-      if (isscalar (A) && ! isscalar (B))
-        A = repmat (A, size (B));
-      elseif (isscalar (B) && ! isscalar (A))
-        B = repmat (B, size (A));
-      elseif (! isequal (size (A), size (B)))
-        error ("string.ge: inconsistent dimensions.");
+      szA = size (A);
+      szB = size (B);
+      if (isscalar (A))
+        A = repmat (A, szB);
+      elseif (isscalar (B))
+        B = repmat (B, szA);
+      elseif (! isequal (szA, szB))
+        ## Force size dim vectors to equal length
+        ndA = numel (szA);
+        ndB = numel (szB);
+        if (ndA > ndB)
+          szB = [szB, ones(1, ndA - ndB)];
+        elseif (ndB > ndA)
+          szA = [szA, ones(1, ndB - ndA)];
+        endif
+        ## Check for compatible dimensions
+        A_1 = szA != 1 & szA != szB;
+        B_1 = szB != 1 & szA != szB;
+        A_B = A_1 & B_1;
+        if (any (A_B))
+          error ("string.ge: incompatible dimensions.");
+        endif
+        ## Expand arrays to same size
+        eqAB = szA == szB;
+        szA(eqAB) = 1;
+        szB(eqAB) = 1;
+        A = repmat (A, szB);
+        B = repmat (B, szA);
       endif
       out = sign_strings (A.strs, B.strs);
       TF = false (size (out));
@@ -845,12 +889,34 @@ classdef string
         error (strcat ("string.gt: comparison between '%s' and '%s'", ...
                        " is not supported."), class (A), class (B));
       endif
-      if (isscalar (A) && ! isscalar (B))
-        A = repmat (A, size (B));
-      elseif (isscalar (B) && ! isscalar (A))
-        B = repmat (B, size (A));
-      elseif (! isequal (size (A), size (B)))
-        error ("string.gt: inconsistent dimensions.");
+      szA = size (A);
+      szB = size (B);
+      if (isscalar (A))
+        A = repmat (A, szB);
+      elseif (isscalar (B))
+        B = repmat (B, szA);
+      elseif (! isequal (szA, szB))
+        ## Force size dim vectors to equal length
+        ndA = numel (szA);
+        ndB = numel (szB);
+        if (ndA > ndB)
+          szB = [szB, ones(1, ndA - ndB)];
+        elseif (ndB > ndA)
+          szA = [szA, ones(1, ndB - ndA)];
+        endif
+        ## Check for compatible dimensions
+        A_1 = szA != 1 & szA != szB;
+        B_1 = szB != 1 & szA != szB;
+        A_B = A_1 & B_1;
+        if (any (A_B))
+          error ("string.gt: incompatible dimensions.");
+        endif
+        ## Expand arrays to same size
+        eqAB = szA == szB;
+        szA(eqAB) = 1;
+        szB(eqAB) = 1;
+        A = repmat (A, szB);
+        B = repmat (B, szA);
       endif
       out = sign_strings (A.strs, B.strs);
       TF = false (size (out));
@@ -883,12 +949,34 @@ classdef string
         error (strcat ("string.le: comparison between '%s' and '%s'", ...
                        " is not supported."), class (A), class (B));
       endif
-      if (isscalar (A) && ! isscalar (B))
-        A = repmat (A, size (B));
-      elseif (isscalar (B) && ! isscalar (A))
-        B = repmat (B, size (A));
-      elseif (! isequal (size (A), size (B)))
-        error ("string.le: inconsistent dimensions.");
+      szA = size (A);
+      szB = size (B);
+      if (isscalar (A))
+        A = repmat (A, szB);
+      elseif (isscalar (B))
+        B = repmat (B, szA);
+      elseif (! isequal (szA, szB))
+        ## Force size dim vectors to equal length
+        ndA = numel (szA);
+        ndB = numel (szB);
+        if (ndA > ndB)
+          szB = [szB, ones(1, ndA - ndB)];
+        elseif (ndB > ndA)
+          szA = [szA, ones(1, ndB - ndA)];
+        endif
+        ## Check for compatible dimensions
+        A_1 = szA != 1 & szA != szB;
+        B_1 = szB != 1 & szA != szB;
+        A_B = A_1 & B_1;
+        if (any (A_B))
+          error ("string.le: incompatible dimensions.");
+        endif
+        ## Expand arrays to same size
+        eqAB = szA == szB;
+        szA(eqAB) = 1;
+        szB(eqAB) = 1;
+        A = repmat (A, szB);
+        B = repmat (B, szA);
       endif
       out = sign_strings (A.strs, B.strs);
       TF = false (size (out));
@@ -920,12 +1008,34 @@ classdef string
         error (strcat ("string.lt: comparison between '%s' and '%s'", ...
                        " is not supported."), class (A), class (B));
       endif
-      if (isscalar (A) && ! isscalar (B))
-        A = repmat (A, size (B));
-      elseif (isscalar (B) && ! isscalar (A))
-        B = repmat (B, size (A));
-      elseif (! isequal (size (A), size (B)))
-        error ("string.lt: inconsistent dimensions.");
+      szA = size (A);
+      szB = size (B);
+      if (isscalar (A))
+        A = repmat (A, szB);
+      elseif (isscalar (B))
+        B = repmat (B, szA);
+      elseif (! isequal (szA, szB))
+        ## Force size dim vectors to equal length
+        ndA = numel (szA);
+        ndB = numel (szB);
+        if (ndA > ndB)
+          szB = [szB, ones(1, ndA - ndB)];
+        elseif (ndB > ndA)
+          szA = [szA, ones(1, ndB - ndA)];
+        endif
+        ## Check for compatible dimensions
+        A_1 = szA != 1 & szA != szB;
+        B_1 = szB != 1 & szA != szB;
+        A_B = A_1 & B_1;
+        if (any (A_B))
+          error ("string.lt: incompatible dimensions.");
+        endif
+        ## Expand arrays to same size
+        eqAB = szA == szB;
+        szA(eqAB) = 1;
+        szB(eqAB) = 1;
+        A = repmat (A, szB);
+        B = repmat (B, szA);
       endif
       out = sign_strings (A.strs, B.strs);
       TF = false (size (out));
@@ -959,12 +1069,34 @@ classdef string
         error (strcat ("string.ne: comparison between '%s' and '%s'", ...
                        " is not supported."), class (A), class (B));
       endif
+      szA = size (A);
+      szB = size (B);
       if (isscalar (A))
-        A = repmat (A, size (B));
+        A = repmat (A, szB);
       elseif (isscalar (B))
-        B = repmat (B, size (A));
-      elseif (! isequal (size (A), size (B)))
-        error ("string.ne: inconsistent dimensions.");
+        B = repmat (B, szA);
+      elseif (! isequal (szA, szB))
+        ## Force size dim vectors to equal length
+        ndA = numel (szA);
+        ndB = numel (szB);
+        if (ndA > ndB)
+          szB = [szB, ones(1, ndA - ndB)];
+        elseif (ndB > ndA)
+          szA = [szA, ones(1, ndB - ndA)];
+        endif
+        ## Check for compatible dimensions
+        A_1 = szA != 1 & szA != szB;
+        B_1 = szB != 1 & szA != szB;
+        A_B = A_1 & B_1;
+        if (any (A_B))
+          error ("string.ne: incompatible dimensions.");
+        endif
+        ## Expand arrays to same size
+        eqAB = szA == szB;
+        szA(eqAB) = 1;
+        szB(eqAB) = 1;
+        A = repmat (A, szB);
+        B = repmat (B, szA);
       endif
       TF = ! strcmp (A.strs, B.strs);
       TF(A.isMissing | B.isMissing) = true;
@@ -2055,78 +2187,90 @@ endfunction
 %!error<string: unsupported input type: 'function_handle'> string (@(x)x);
 
 ## Test relational operations
-%!assert (eq (string ("A"), string ("A")), true);
-%!assert (eq (string ("A"), string ("b")), false);
-%!assert (eq (string ("A"), {"A", "b"}), [true, false]);
-%!assert (eq ({"A", "b"}, string ("A")), [true, false]);
+%!assert (eq (string ('A'), string ('A')), true);
+%!assert (eq (string ('A'), string ('b')), false);
+%!assert (eq (string ('A'), {'A', 'b'}), [true, false]);
+%!assert (eq ({'A', 'b'}, string ('A')), [true, false]);
 %!assert (eq (string ({'A', 'b'}), 'A'), [true, false]);
 %!assert (eq ('A', string ({"A", "b"})), [true, false]);
+%!assert (eq (string ({'A', 'B'}), string ({'A'; 'B'})), logical (eye (2)))
 %!error <string.eq: comparison between 'string' and 'double' is not supported.> ...
-%!       eq (string ("A"), 2)
+%!       eq (string ('A'), 2)
 %!error <string.eq: comparison between 'double' and 'string' is not supported.> ...
-%!       NaN == string ("A")
-%!error <string.eq: inconsistent dimensions.> ...
-%! eq (string ({"A","B"}), string ({"A";"B"}))
-%!assert (ge (string ("A"), string ("A")), true);
-%!assert (ge (string ("A"), string ("b")), false);
-%!assert (ge (string ("b"), {"A", "b"}), [true, true]);
-%!assert (ge ({"A", "b"}, string ("b")), [false, true]);
+%!       NaN == string ('A')
+%!error <string.eq: incompatible dimensions.> ...
+%! eq (string ({'A', 'B', 'A'; 'A', 'D', 'F'}), string ({'A', 'B'}))
+
+%!assert (ge (string ('A'), string ('A')), true);
+%!assert (ge (string ('A'), string ('b')), false);
+%!assert (ge (string ('b'), {'A', 'b'}), [true, true]);
+%!assert (ge ({'A', 'b'}, string ('b')), [false, true]);
 %!assert (ge (string ({'A', 'b'}), 'A'), [true, true]);
-%!assert (ge ('A', string ({"A", "b"})), [true, false]);
+%!assert (ge ('A', string ({'A', 'b'})), [true, false]);
+%!assert (ge (string ({'A', 'B'}), string ({'A'; 'B'})), logical ([1, 1; 0, 1]))
 %!error <string.ge: comparison between 'string' and 'double' is not supported.> ...
-%!       ge (string ("A"), 2)
+%!       ge (string ('A'), 2)
 %!error <string.ge: comparison between 'double' and 'string' is not supported.> ...
-%!       NaN >= string ("A")
-%!error <string.ge: inconsistent dimensions.> ...
-%! ge (string ({"A","B"}), string ({"A";"B"}))
-%!assert (gt (string ("A"), string ("A")), false);
-%!assert (gt (string ("A"), string ("b")), false);
-%!assert (gt (string ("b"), {"A", "b"}), [true, false]);
-%!assert (gt ({"A", "b"}, string ("b")), [false, false]);
+%!       NaN >= string ('A')
+%!error <string.ge: incompatible dimensions.> ...
+%! ge (string ({'A', 'B', 'A'; 'A', 'D', 'F'}), string ({'A', 'B'}))
+
+%!assert (gt (string ('A'), string ('A')), false);
+%!assert (gt (string ('A'), string ('b')), false);
+%!assert (gt (string ('b'), {'A', 'b'}), [true, false]);
+%!assert (gt ({'A', 'b'}, string ('b')), [false, false]);
 %!assert (gt (string ({'A', 'b'}), 'A'), [false, true]);
-%!assert (gt ('A', string ({"A", "b"})), [false, false]);
+%!assert (gt ('A', string ({'A', 'b'})), [false, false]);
+%!assert (gt (string ({'A', 'B'}), string ({'A'; 'B'})), logical ([0, 1; 0, 0]))
 %!error <string.gt: comparison between 'string' and 'double' is not supported.> ...
-%!       gt (string ("A"), 2)
+%!       gt (string ('A'), 2)
 %!error <string.gt: comparison between 'double' and 'string' is not supported.> ...
-%!       NaN > string ("A")
-%!error <string.gt: inconsistent dimensions.> ...
-%! gt (string ({"A","B"}), string ({"A";"B"}))
-%!assert (le (string ("A"), string ("A")), true);
-%!assert (le (string ("A"), string ("b")), true);
-%!assert (le (string ("b"), {"A", "b"}), [false, true]);
-%!assert (le ({"A", "b"}, string ("b")), [true, true]);
+%!       NaN > string ('A')
+%!error <string.gt: incompatible dimensions.> ...
+%! gt (string ({'A', 'B', 'A'; 'A', 'D', 'F'}), string ({'A', 'B'}))
+
+%!assert (le (string ('A'), string ('A')), true);
+%!assert (le (string ('A'), string ('b')), true);
+%!assert (le (string ('b'), {'A', 'b'}), [false, true]);
+%!assert (le ({'A', 'b'}, string ('b')), [true, true]);
 %!assert (le (string ({'A', 'b'}), 'A'), [true, false]);
-%!assert (le ('A', string ({"A", "b"})), [true, true]);
+%!assert (le ('A', string ({'A', 'b'})), [true, true]);
+%!assert (le (string ({'A', 'B'}), string ({'A'; 'B'})), logical ([1, 0; 1, 1]))
 %!error <string.le: comparison between 'string' and 'double' is not supported.> ...
-%!       le (string ("A"), 2)
+%!       le (string ('A'), 2)
 %!error <string.le: comparison between 'double' and 'string' is not supported.> ...
-%!       NaN <= string ("A")
-%!error <string.le: inconsistent dimensions.> ...
-%! le (string ({"A","B"}), string ({"A";"B"}))
-%!assert (lt (string ("A"), string ("A")), false);
-%!assert (lt (string ("A"), string ("b")), true);
-%!assert (lt (string ("b"), {"A", "b"}), [false, false]);
-%!assert (lt ({"A", "b"}, string ("b")), [true, false]);
+%!       NaN <= string ('A')
+%!error <string.le: incompatible dimensions.> ...
+%! le (string ({'A', 'B', 'A'; 'A', 'D', 'F'}), string ({'A', 'B'}))
+
+%!assert (lt (string ('A'), string ('A')), false);
+%!assert (lt (string ('A'), string ('b')), true);
+%!assert (lt (string ('b'), {'A', 'b'}), [false, false]);
+%!assert (lt ({'A', 'b'}, string ("b")), [true, false]);
 %!assert (lt (string ({'A', 'b'}), 'A'), [false, false]);
-%!assert (lt ('A', string ({"A", "b"})), [false, true]);
+%!assert (lt ('A', string ({'A', 'b'})), [false, true]);
+%!assert (lt (string ({'A', 'B'}), string ({'A'; 'B'})), logical ([0, 0; 1, 0]))
 %!error <string.lt: comparison between 'string' and 'double' is not supported.> ...
-%!       lt (string ("A"), 2)
+%!       lt (string ('A'), 2)
 %!error <string.lt: comparison between 'double' and 'string' is not supported.> ...
-%!       NaN < string ("A")
-%!error <string.lt: inconsistent dimensions.> ...
-%! lt (string ({"A","B"}), string ({"A";"B"}))
-%!assert (ne (string ("A"), string ("A")), false);
-%!assert (ne (string ("A"), string ("b")), true);
-%!assert (ne (string ("A"), {"A", "b"}), [false, true]);
-%!assert (ne ({"A", "b"}, string ("A")), [false, true]);
+%!       NaN < string ('A')
+%!error <string.lt: incompatible dimensions.> ...
+%! lt (string ({'A', 'B', 'A'; 'A', 'D', 'F'}), string ({'A', 'B'}))
+
+%!assert (ne (string ('A'), string ('A')), false);
+%!assert (ne (string ('A'), string ('b')), true);
+%!assert (ne (string ('A'), {'A', 'b'}), [false, true]);
+%!assert (ne ({'A', 'b'}, string ('A')), [false, true]);
 %!assert (ne (string ({'A', 'b'}), 'A'), [false, true]);
-%!assert (ne ('A', string ({"A", "b"})), [false, true]);
+%!assert (ne ('A', string ({'A', 'b'})), [false, true]);
+%!assert (ne (string ({'A', 'B'}), string ({'A'; 'B'})), logical ([0, 1; 1, 0]))
 %!error <string.ne: comparison between 'string' and 'double' is not supported.> ...
-%!       ne (string ("A"), 2)
+%!       ne (string ('A'), 2)
 %!error <string.ne: comparison between 'double' and 'string' is not supported.> ...
-%!       NaN != string ("A")
-%!error <string.ne: inconsistent dimensions.> ...
-%! ne (string ({"A","B"}), string ({"A";"B"}))
+%!       NaN != string ('A')
+%!error <string.ne: incompatible dimensions.> ...
+%! ne (string ({'A', 'B', 'A'; 'A', 'D', 'F'}), string ({'A', 'B'}))
+
 %!assert (strcmp (string ("A"), string ("A")), true);
 %!assert (strcmp (string ("A"), string ("b")), false);
 %!assert (strcmp (string ("A"), {"A", "b"}), [true, false]);
