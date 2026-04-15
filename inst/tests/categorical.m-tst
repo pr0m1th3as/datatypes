@@ -885,7 +885,7 @@
 %!                        categorical (1:3), 'rows'), true)
 %!assert_equal (ismember (string ({'1', '2', '3'}), ...
 %!                        categorical ([1, 2, 3; 2, 2, 3]), 'rows'), true)
-%!assert_equal (ismember (categorical (1:3), {'1', '2', '2'}, 'rows'), true)
+%!assert_equal (ismember (categorical (1:3), {'1', '2', '2'}, 'rows'), false)
 %!assert_equal (ismember (categorical (1:3), {'1', '2', '2'; '1', '2', '3'}, 'rows'), true)
 %!assert_equal (ismember (categorical (1:3), {'1', '2', '3'}, 'rows'), true)
 %!assert_equal (ismember (categorical ([1, 2, 3; 2, 2, 3]), ...
