@@ -532,7 +532,7 @@ classdef missing
   methods (Hidden)
 
     function out = cat (dim, varargin)
-      datatype = [];
+      datatype = '';
       for i = 1:numel (varargin)
         if (isa (varargin{i}, 'missing'))
           continue
@@ -557,28 +557,34 @@ classdef missing
                  class (varargin{i}));
         endif
       endfor
-      args = varargin;
-      for i = 1:numel (varargin)
-        if (isa (varargin{i}, 'missing'))
-          switch datatype
-            case 'calendarDuration'
-              args{i} = calendarDuration (NaN (size (varargin{i})), NaN, NaN);
-            case 'cellstr'
-              args{i} = repmat({''}, size (varargin{i}));
-            case 'categorical'
-              args{i} = categorical (NaN (size (varargin{i})));
-            case 'datetime'
-              args{i} = NaT (size (varargin{i}));
-            case 'double'
-              args{i} = NaN (size (varargin{i}));
-            case 'single'
-              args{i} = single (NaN (size (varargin{i})));
-            case 'string'
-              args{i} = string (NaN (size (varargin{i})));
-          endswitch
-        endif
-      endfor
-      out = cat (dim, args{:});
+      if (isempty (datatype))
+        sz = cellfun (@(x) x.data, varargin, 'UniformOutput', false);
+        out = varargin{1};
+        out.data = cat (dim, sz{:});
+      else
+        args = varargin;
+        for i = 1:numel (varargin)
+          if (isa (varargin{i}, 'missing'))
+            switch datatype
+              case 'calendarDuration'
+                args{i} = calendarDuration (NaN (size (varargin{i})), NaN, NaN);
+              case 'cellstr'
+                args{i} = repmat({''}, size (varargin{i}));
+              case 'categorical'
+                args{i} = categorical (NaN (size (varargin{i})));
+              case 'datetime'
+                args{i} = NaT (size (varargin{i}));
+              case 'double'
+                args{i} = NaN (size (varargin{i}));
+              case 'single'
+                args{i} = single (NaN (size (varargin{i})));
+              case 'string'
+                args{i} = string (NaN (size (varargin{i})));
+            endswitch
+          endif
+        endfor
+        out = cat (dim, args{:});
+      endif
     endfunction
 
     function out = horzcat (varargin)
