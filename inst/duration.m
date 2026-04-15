@@ -1132,7 +1132,7 @@ classdef duration
 
     ## -*- texinfo -*-
     ## @deftypefn  {duration} {@var{TF} =} ismember (@var{A}, @var{B})
-    ## @deftypefnx {duration} {@var{TF} =} ismember (@var{a}, @var{s}, @qcode{'rows'})
+    ## @deftypefnx {duration} {@var{TF} =} ismember (@var{A}, @var{B}, @qcode{'rows'})
     ## @deftypefnx {duration} {[@var{TF}, @var{index}] =} ismember (@dots{})
     ## @deftypefnx {duration} {[@var{TF}, @var{index}] =} ismember (@dots{}, @qcode{'legacy'})
     ##
