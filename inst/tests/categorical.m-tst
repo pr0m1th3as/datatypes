@@ -823,6 +823,88 @@
 %!assert_equal (ismatrix (categorical (ones (2, 1, 2))), false)
 %!assert_equal (ismatrix (categorical (ones (2, 0, 2))), false)
 
+%!assert_equal (ismember (categorical (1:3), '1'), [true, false, false])
+%!assert_equal (ismember (categorical (1:3), string ('1')), [true, false, false])
+%!assert_equal (ismember (categorical (1:3), {'1', '2'}), [true, true, false])
+%!assert_equal (ismember (categorical (1:3), string ({'1', '2'})), [true, true, false])
+%!assert_equal (ismember ('1', categorical (1:3)), true)
+%!assert_equal (ismember ({'1', '2'}, categorical (1:3)), [true, true])
+%!assert_equal (ismember ({'1', '2'}, categorical ([1:3]')), [true, true])
+%!assert_equal (ismember ({'1'; '2'}, categorical (1:3)), [true; true])
+%!assert_equal (ismember ({'1', '2'}, categorical ([1, 2, 1, 3, 2, 3, 2, 1])), ...
+%!              [true, true])
+%!assert_equal (ismember (categorical ([1, 2, 1, 3, 2, 3, 2, 1]), {'1','2'}), ...
+%!              logical ([1, 1, 1, 0, 1, 0, 1, 1]))
+%!assert_equal (ismember (categorical ([1, 2, 1, 3, 2, 3, 2, 1]), categorical (1:3)), ...
+%!              true (1, 8))
+%!assert_equal (ismember (categorical (1:3), categorical([1, 2, 1, 3, 2, 3, 2, 1])), ...
+%!              true (1, 3))
+%!assert_equal (ismember (categorical ([1, 2, 1, 3, 2, 3, 2, 1]), categorical (1:2)), ...
+%!              logical ([1, 1, 1, 0, 1, 0, 1, 1]))
+%!assert_equal (ismember (categorical ([1; 2]), categorical ([1, 2, 1, 3, 2, 3, 2, 1])), ...
+%!              [true; true])
+%!test
+%! C1 = categorical ([1, 2, 1, 3, 2, 3, 2, NaN]);
+%! C2 = categorical ([1, NaN, 3]);
+%! assert_equal (ismember (C1, C2), logical ([1, 0, 1, 1, 0, 1, 0, 0]));
+%! assert_equal (ismember (C2, C1), [true, false, true]);
+%! assert_equal (ismember (C1', C2), logical ([1; 0; 1; 1; 0; 1; 0; 0]));
+%! assert_equal (ismember (C2', C1), [true; false; true]);
+%!test
+%! C1 = categorical ([1, 2, 1, 3, 2, 3, 2, NaN], [1, 2, 3], 'Ordinal', true);
+%! C2 = categorical ([1, NaN, 3], [1, 2, 3], 'Ordinal', true);
+%! assert_equal (ismember (C1, C2), logical ([1, 0, 1, 1, 0, 1, 0, 0]));
+%! assert_equal (ismember (C2, C1), [true, false, true]);
+%! assert_equal (ismember (C1', C2), logical ([1; 0; 1; 1; 0; 1; 0; 0]));
+%! assert_equal (ismember (C2', C1), [true; false; true]);
+%!test
+%! C1 = categorical ([1, 2, 1, 3, 2, 3, 2, NaN], [3, 2, 1], 'Ordinal', true);
+%! C2 = categorical ([1, NaN, 3], [3, 2, 1], 'Ordinal', true);
+%! assert_equal (ismember (C1, C2), logical ([1, 0, 1, 1, 0, 1, 0, 0]));
+%! assert_equal (ismember (C2, C1), [true, false, true]);
+%! assert_equal (ismember (C1', C2), logical ([1; 0; 1; 1; 0; 1; 0; 0]));
+%! assert_equal (ismember (C2', C1), [true; false; true]);
+%!test
+%! C1 = categorical ([1, 2, 1, 3, 2, 3, 2, NaN], [1, 2, 3], {'a', 'b', 'c'}, 'Ordinal', true);
+%! C2 = categorical ([1, NaN, 3], [3, 2, 1], {'a', 'b', 'c'}, 'Ordinal', true);
+%! assert_equal (ismember (C1, C2), logical ([1, 0, 1, 1, 0, 1, 0, 0]));
+%! assert_equal (ismember (C2, C1), [true, false, true]);
+%! assert_equal (ismember (C1', C2), logical ([1; 0; 1; 1; 0; 1; 0; 0]));
+%! assert_equal (ismember (C2', C1), [true; false; true]);
+%!assert_equal (ismember ({'1', '2', '2'}, categorical (1:3), 'rows'), false)
+%!assert_equal (ismember ({'1', '2', '2'; '1', '2', '3'}, ...
+%!                        categorical (1:3), 'rows'), [false; true])
+%!assert_equal (ismember ({'1', '2', '3'}, categorical (1:3), 'rows'), true)
+%!assert_equal (ismember ({'1', '2', '3'}, ...
+%!                        categorical ([1, 2, 3; 2, 2, 3]), 'rows'), true)
+%!assert_equal (ismember (string ({'1', '2', '2'}), categorical (1:3), 'rows'), ...
+%!              false)
+%!assert_equal (ismember (string ({'1', '2', '2'; '1', '2', '3'}), ...
+%!                        categorical (1:3), 'rows'), [false; true])
+%!assert_equal (ismember (string ({'1', '2', '3'}), ...
+%!                        categorical (1:3), 'rows'), true)
+%!assert_equal (ismember (string ({'1', '2', '3'}), ...
+%!                        categorical ([1, 2, 3; 2, 2, 3]), 'rows'), true)
+%!assert_equal (ismember (categorical (1:3), {'1', '2', '2'}, 'rows'), true)
+%!assert_equal (ismember (categorical (1:3), {'1', '2', '2'; '1', '2', '3'}, 'rows'), true)
+%!assert_equal (ismember (categorical (1:3), {'1', '2', '3'}, 'rows'), true)
+%!assert_equal (ismember (categorical ([1, 2, 3; 2, 2, 3]), ...
+%!                        {'1', '2', '3'}, 'rows'), [true; false])
+%!error<categorical.ismember: A and B must be categorical arrays, or one of them> ...
+%! ismember (1, categorical)
+%!error<categorical.ismember: A and B must be categorical arrays, or one of them> ...
+%! ismember (categorical, {1})
+%!error<categorical.ismember: all options must be character vectors.> ...
+%! ismember (categorical, categorical, 1)
+%!error<categorical.ismember: only 'rows' and 'legacy' are valid options.> ...
+%! ismember (categorical, categorical, 'option')
+%!error<categorical.ismember: 'rows' applies only to 2-D matrices.> ...
+%! ismember (categorical (ones (2, 3, 4)), categorical, 'rows')
+%!error<categorical.ismember: 'rows' requires same number of columns.> ...
+%! ismember ({'1', '2'}, categorical (1:3), 'rows')
+%!error<categorical.ismember: 'rows' requires same number of columns.> ...
+%! ismember (categorical (1:3), {'1', '2'}, 'rows')
+
 ################################################################################
 ##                  ** Reference and Assignment Operations **                 ##
 ################################################################################
