@@ -29,7 +29,7 @@ constexpr bool isLittleEndian()
   unsigned int value = 0x01020304;
   unsigned char bytes[4] = {};
   std::memcpy (bytes, &value, sizeof (value));
-  return bytes[0] != 0x04;
+  return bytes[0] == 0x04;
 }
 
 static inline constexpr uint64_t fnv1a64 (const char* buf, size_t len, uint64_t out)
