@@ -583,9 +583,12 @@ classdef string
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {string} {@var{TF} =} ismember (@var{A}, @var{B})
+    ## @deftypefn  {string} {@var{TF} =} ismember (@var{A}, @var{B})
+    ## @deftypefnx {string} {@var{TF} =} ismember (@var{A}, @var{B}, @qcode{'rows'})
+    ## @deftypefnx {string} {[@var{TF}, @var{index}] =} ismember (@dots{})
+    ## @deftypefnx {string} {[@var{TF}, @var{index}] =} ismember (@dots{}, @qcode{'legacy'})
     ##
-    ## Test for string elements in a set.
+    ## Find string elements in a set.
     ##
     ## @code{@var{TF} = ismember (@var{A}, @var{B})} returns a logical array
     ## @var{TF} of the same size as @var{A} containing @qcode{true} for each
@@ -605,10 +608,22 @@ classdef string
     ## otherwise.  If the @qcode{'rows'} optional argument is used, then the
     ## returning index is a column vector with the same rows as @var{A} and it
     ## contains the lowest index in @var{B} for each row of @var{A} that is a
-    ## member of @var{B} and 0 otherwise.
+    ## member of @var{B} and 0 otherwise.  If the @qcode{'legacy'} optional
+    ## argument is specified, then the highest index of matched elements is
+    ## returned.  Unless multiple matches exist, the @qcode{'legacy'} option has
+    ## no effect on the returned @var{index}.
     ##
     ## @end deftypefn
-    function [TF, index] = ismember (A, B, varargin)
+    function varargout = ismember (A, B, varargin)
+      if (iscategorical (B))
+        A = categorical (A);
+        if (nargout > 1)
+          [varargout{1}, varargout{2}] = ismember (A, B, varargin{:});
+        else
+          varargout{1} = ismember (A, B, varargin{:});
+        endif
+        return;
+      endif
       if (iscellstr (A) || ischar (A))
         A = string (A);
       elseif (iscellstr (B) || ischar (B))
@@ -623,12 +638,22 @@ classdef string
       ## Handle empty input array
       if (isempty (A) || isempty (B))
         sz = size (A);
-        TF = false (sz);
-        index = zeros (sz);
+        varargout{1} = false (sz);
+        if (nargout > 1)
+          varargout{2} = zeros (sz);
+        endif
       else
-        [TF, index] = ismember (A.strs, B.strs, varargin{:});
-        TF(A.isMissing) = false;
-        index(A.isMissing) = 0;
+        if (nargout > 1)
+          [TF, index] = __ismember__ (A.strs, B.strs, varargin{:});
+          TF(A.isMissing) = false;
+          index(A.isMissing) = 0;
+          varargout{1} = TF;
+          varargout{2} = index;
+        else
+          TF = __ismember__ (A.strs, B.strs, varargin{:});
+          TF(A.isMissing) = false;
+          varargout{1} = TF;
+        endif
       endif
     endfunction
 
