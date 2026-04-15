@@ -112,6 +112,42 @@ classdef missing
       out = duration (NaN (size (this)));
     endfunction
 
+    ## Overload isequal for categorical support
+    function TF = isequal (varargin)
+      ## Check for categorical input
+      idx = find (cellfun ('iscategorical', varargin), 1);
+      if (isempty (idx))
+        if (any (cellfun (@(x) ! isa (x, 'missing'), varargin)))
+          error ("missing.isequal: unsupported input types.");
+        endif
+        data = cellfun (@(x) x.data, varargin, 'UniformOutput', false);
+        TF = isequal (data{:});
+      else
+        ## Convert first input (missing) to categorical
+        varargin{1} = categorical (varargin{1});
+        ## Call categorical overloaded method
+        TF = isequal (varargin{:});
+      endif
+    endfunction
+
+    ## Overload isequaln for categorical support
+    function TF = isequaln (varargin)
+      ## Check for categorical input
+      idx = find (cellfun ('iscategorical', varargin), 1);
+      if (isempty (idx))
+        if (any (cellfun (@(x) ! isa (x, 'missing'), varargin)))
+          error ("missing.isequaln: unsupported input types.");
+        endif
+        data = cellfun (@(x) x.data, varargin, 'UniformOutput', false);
+        TF = isequaln (data{:});
+      else
+        ## Convert first input (missing) to categorical
+        varargin{1} = categorical (varargin{1});
+        ## Call categorical overloaded method
+        TF = isequaln (varargin{:});
+      endif
+    endfunction
+
   endmethods
 
 ################################################################################
