@@ -1862,7 +1862,7 @@ classdef string
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'colon'            'linspace'         'intersect'        'setdiff'         ##
-## 'setxor'           'union'                                                 ##
+## 'setxor'           'union'            'isequal'          'isequaln'        ##
 ##                                                                            ##
 ################################################################################
 
@@ -1947,12 +1947,40 @@ classdef string
       ## Check for categorical input
       idx = find (cellfun ('iscategorical', varargin), 1);
       if (isempty (idx))
-        TF = isequal (varargin{:});
+        if (any (cellfun (@(x) ! isa (x, 'string'), varargin)))
+          error ("string.isequal: unsupported input types.");
+        endif
+        tmp1 = cellfun (@(x) x.strs, varargin, 'UniformOutput', false);
+        tmp2 = cellfun (@(x) x.isMissing, varargin, 'UniformOutput', false);
+        if (any (cellfun (@(x) any (x, 'all'), tmp2)))
+          TF = false;
+        else
+          TF = isequal (tmp1{:}) && isequal (tmp2{:});
+        endif
       else
         ## Convert first input (string) to categorical
         varargin{1} = categorical (varargin{1});
         ## Call categorical overloaded method
         TF = isequal (varargin{:});
+      endif
+    endfunction
+
+    ## Overload isequaln for categorical support
+    function TF = isequaln (varargin)
+      ## Check for categorical input
+      idx = find (cellfun ('iscategorical', varargin), 1);
+      if (isempty (idx))
+        if (any (cellfun (@(x) ! isa (x, 'string'), varargin)))
+          error ("string.isequaln: unsupported input types.");
+        endif
+        tmp1 = cellfun (@(x) x.strs, varargin, 'UniformOutput', false);
+        tmp2 = cellfun (@(x) x.isMissing, varargin, 'UniformOutput', false);
+        TF = isequal (tmp1{:}) && isequal (tmp2{:});
+      else
+        ## Convert first input (string) to categorical
+        varargin{1} = categorical (varargin{1});
+        ## Call categorical overloaded method
+        TF = isequaln (varargin{:});
       endif
     endfunction
 
