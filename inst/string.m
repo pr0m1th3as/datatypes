@@ -125,7 +125,7 @@ classdef string
       endif
 
       ## Handle empty input
-      if (isempty (in))
+      if (isempty (in) && ! ischar (in))
         sz = size (in);
         this.strs = repmat ({''}, sz);
         this.isMissing = false (sz);
