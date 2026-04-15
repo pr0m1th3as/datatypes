@@ -292,6 +292,8 @@ classdef categorical
       else
         error ("categorical: invalid input type for X.");
       endif
+      ## Force isnanx to logical array in case of empty text input
+      isnanx = logical (isnanx);
       ## Categories (valueset)
       if (numel (args) > 0)
         valueset = args{1};
@@ -1074,6 +1076,11 @@ classdef categorical
     function TF = isequal (varargin)
       args = varargin;
       [args{:}] = promote (varargin{:});
+      ## Check for undefined elements (result to false)
+      if (any (cellfun (@(x) any (x.code == 0, 'all'), args)))
+        TF = false;
+        return;
+      endif
       ## If any categorical value is ordinal, all must be
       is_ordinal = cellfun (@isordinal, args);
       if (all (is_ordinal))
@@ -1090,7 +1097,8 @@ classdef categorical
         TF = false;
       else
         ## Compare the category names of each element
-        fieldArgs = cellfun (@(x) x.cats(x.code), args, 'UniformOutput', false);
+        fcn = @(x) reshape (x.cats(x.code), size (x.code));
+        fieldArgs = cellfun (fcn, args, 'UniformOutput', false);
         TF = isequal (fieldArgs{:});
       endif
     endfunction
@@ -1134,13 +1142,14 @@ classdef categorical
           return;
         endif
         fieldArgs = cellfun (@(x) x.code, args, 'UniformOutput', false);
-        TF = isequaln (fieldArgs{:});
+        TF = isequal (fieldArgs{:});
       elseif (any (is_ordinal))
         TF = false;
       else
         ## Compare the category names of each element
-        fieldArgs = cellfun (@(x) x.cats(x.code), args, 'UniformOutput', false);
-        TF = isequaln (fieldArgs{:});
+        fcn = @(x) reshape ((['<undefined>'; x.cats])(x.code + 1), size (x.code));
+        fieldArgs = cellfun (fcn, args, 'UniformOutput', false);
+        TF = isequal (fieldArgs{:});
       endif
     endfunction
 
