@@ -124,6 +124,14 @@ classdef string
         return;
       endif
 
+      ## Handle empty input
+      if (isempty (in))
+        sz = size (in);
+        this.strs = repmat ({''}, sz);
+        this.isMissing = false (sz);
+        return;
+      endif
+
       ## Handle string input first
       if (isa (in, "string"))
         this.strs = in.strs;
@@ -612,9 +620,16 @@ classdef string
       if (! isstring (B))
         error ("string.ismember: second input argument must be text.");
       endif
-      [TF, index] = ismember (A.strs, B.strs, varargin{:});
-      TF(A.isMissing) = false;
-      index(A.isMissing) = 0;
+      ## Handle empty input array
+      if (isempty (A) || isempty (B))
+        sz = size (A);
+        TF = false (sz);
+        index = zeros (sz);
+      else
+        [TF, index] = ismember (A.strs, B.strs, varargin{:});
+        TF(A.isMissing) = false;
+        index(A.isMissing) = 0;
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -1925,6 +1940,20 @@ classdef string
       A = duration (A, 'Format', B.Format);
       ## Call duration overloaded method
       [C, ixA, ixB] = union (A, B, varargin{:});
+    endfunction
+
+    ## Overload isequal for categorical support
+    function TF = isequal (varargin)
+      ## Check for categorical input
+      idx = find (cellfun ('iscategorical', varargin), 1);
+      if (isempty (idx))
+        TF = isequal (varargin{:});
+      else
+        ## Convert first input (string) to categorical
+        varargin{1} = categorical (varargin{1});
+        ## Call categorical overloaded method
+        TF = isequal (varargin{:});
+      endif
     endfunction
 
   endmethods
