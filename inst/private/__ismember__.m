@@ -132,14 +132,14 @@ function [TF, index] = __ismember__ (a, s, varargin)
         ## FIXME: lookup does not support "rows", so we just use unique.
         na = rows (a);
         if (optlegacy)
-          [~, ii, jj] = unique ([a; s], 'rows', 'last');
+          [~, ii, jj] = __unique__ ([a; s], 'rows', 'last');
           jj = ii(jj(1:na));
           TF = jj > na;
           if (nargout > 1)
             index = max (0, jj - na);
           endif
         else
-          [~, ii, jj] = unique ([s; a], 'rows', 'first');
+          [~, ii, jj] = __unique__ ([s; a], 'rows', 'first');
           nj = numel(jj) - (na-1);
           jj = ii(jj(nj:end));
           TF = jj < nj;
