@@ -815,6 +815,13 @@
 %! C2 = categorical ([2, NaN, 2], [1, 2], {'B', 'A'}, 'Ordinal', true);
 %! assert_equal (isequaln (C1, C2), false);
 
+%!assert_equal (ismatrix (categorical), true)
+%!assert_equal (ismatrix (categorical (NaN)), true)
+%!assert_equal (ismatrix (categorical (ones (1, 0))), true)
+%!assert_equal (ismatrix (categorical (ones (2, 1))), true)
+%!assert_equal (ismatrix (categorical (ones (2, 2, 1))), true)
+%!assert_equal (ismatrix (categorical (ones (2, 1, 2))), false)
+%!assert_equal (ismatrix (categorical (ones (2, 0, 2))), false)
 
 ################################################################################
 ##                  ** Reference and Assignment Operations **                 ##
