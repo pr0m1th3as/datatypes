@@ -1173,19 +1173,22 @@ classdef categorical
     ## @deftypefn  {categorical} {@var{TF} =} ismember (@var{A}, @var{B})
     ## @deftypefnx {categorical} {@var{TF} =} ismember (@var{A}, @var{B}, @qcode{'rows'})
     ## @deftypefnx {categorical} {[@var{TF}, @var{index}] =} ismember (@dots{})
+    ## @deftypefnx {categorical} {[@var{TF}, @var{index}] =} ismember (@dots{}, @qcode{'legacy'})
     ##
-    ## Test for categorical elements in a set.
+    ## Find categorical elements in a set.
     ##
     ## @code{@var{TF} = ismember (@var{A}, @var{B})} returns a logical array
     ## @var{TF} of the same size as @var{A} containing @qcode{true} for each
     ## corresponding element of @var{A} that is in @var{B} and @qcode{false}
-    ## otherwise.  If @var{A} and @var{B} are both ordinal, they must both have
-    ## the same ordered set of categories.  If neither @var{A} nor @var{B} are
-    ## ordinal, then this restriction is relaxed and comparison is performed
-    ## using the category names. Comparison between an ordinal and an unordered
-    ## categorical array is not allowed.  @var{A} or @var{B} may also be a
-    ## string array, a character vector, or a cell array of character vectors
-    ## containing one or multiple category names to compare against.
+    ## otherwise.  @qcode{<undefined>} elements are not equal with each other
+    ## and always return @qcode{false}.  If @var{A} and @var{B} are ordinal,
+    ## they must have the same ordered set of categories.  If neither @var{A}
+    ## nor @var{B} are ordinal, then this restriction is relaxed and comparison
+    ## is performed using the category names.  Comparison between an ordinal and
+    ## an unordered categorical array is not allowed.  Either @var{A} or @var{B}
+    ## may also be a string array, a character vector, or a cell array of
+    ## character vectors containing one or multiple category names to compare
+    ## against an unordered categorical array.
     ##
     ## @code{@var{TF} = ismember (@var{A}, @var{B}, @qcode{'rows'})} only
     ## applies to categorical matrices with the same number of columns, in which
@@ -1199,42 +1202,54 @@ classdef categorical
     ## otherwise.  If the @qcode{'rows'} optional argument is used, then the
     ## returning index is a column vector with the same rows as @var{A} and it
     ## contains the lowest index in @var{B} for each row of @var{A} that is a
-    ## member of @var{B} and 0 otherwise.
+    ## member of @var{B} and 0 otherwise.  If the @qcode{'legacy'} optional
+    ## argument is specified, then the highest index of matched elements is
+    ## returned.  Unless multiple matches exist, the @qcode{'legacy'} option has
+    ## no effect on the returned @var{index}.
     ##
     ## @end deftypefn
-    function [TF, index] = ismember (A, B, varargin)
-      ## Either A or B contain category name(s)
+    function varargout = ismember (A, B, varargin)
+      ## Either A or B contain categorical text representation
       if ((ischar (A) && isrow (A)) || isstring (A) || iscellstr (A))
-        A = cellstr (A);
+        if (ischar (A))
+          A = cellstr (A);
+        endif
+        A = categorical (A);
       elseif ((ischar (B) && isrow (B)) || isstring (B) || iscellstr (B))
-        B = cellstr (B);
+        if (ischar (B))
+          B = cellstr (B);
+        endif
+        B = categorical (B);
       elseif (! (iscategorical (A) && iscategorical (B)))
         error (strcat ("categorical.ismember: A and B must be categorical", ...
                        " arrays, or one of them (A or B) can be a string", ...
                        " array, a character vector, or a cell array of", ...
                        " character vectors specifying category names."));
       endif
-      if (iscellstr (A) && isa (B, 'categorical'))
-        if (numel (varargin) > 0)
-          error (strcat ("categorical.ismember: cannot use 'rows'", ...
-                         " when testing against category names."));
+      ## Check for 'rows' and 'legacy' optional arguments
+      if (! isempty (varargin))
+        if (! cellfun ('ischar', varargin));
+          error ("categorical.ismember: all options must be character vectors.");
+        elseif (! all (strcmpi (varargin, 'rows') | strcmpi (varargin, 'legacy')))
+          error ("categorical.ismember: only 'rows' and 'legacy' are valid options.");
         endif
-        [TF, index] = ismember (A, categories (B));
-        return;
-      elseif (iscellstr (B) && isa (A, 'categorical'))
-        if (numel (varargin) > 0)
-          error (strcat ("categorical.ismember: cannot use 'rows'", ...
-                         " when testing against category names."));
+        if (any (strcmpi ('rows', varargin)))
+          if (ndims (A) != 2 || ndims (A) != ndims (B))
+            error ("categorical.ismember: 'rows' applies only to 2-D matrices.");
+          endif
+          if (size (A, 2) != size (B, 2))
+            error ("categorical.ismember: 'rows' requires same number of columns.");
+          endif
         endif
-        [TF, index] = ismember (categories (A), B);
-        return;
       endif
-      if (numel (varargin) > 0)
-        if (! ismatrix (A) || ! ismatrix (B) || size (A, 2) != size (B, 2))
-          error (strcat ("categorical.ismember: cannot use 'rows' unless", ...
-                         " both A and B are matrices with the same number", ...
-                         " of columns."));
+      ## Handle empty input array
+      if (isempty (A) || isempty (B))
+        sz = size (A);
+        varargout{1} = false (sz);
+        if (nargout > 1)
+          varargout{2} = zeros (sz);
         endif
+        return;
       endif
       ## Both ordinal
       if (isordinal (A) && isordinal (B))
@@ -1242,20 +1257,27 @@ classdef categorical
           error (strcat ("categorical.ismember: ordinal categorical arrays", ...
                          " must have the same ordered set of categories."));
         endif
-        [TF, idx] = ismember (double (A), double (B), varargin{:});
+        if (nargout > 1)
+          [varargout{1}, varargout{2}] = __ismember__ (double (A), double (B), ...
+                                                       varargin{:});
+        else
+          varargout{1} = __ismember__ (double (A), double (B), varargin{:});
+        endif
       elseif (isordinal (A) || isordinal (B))
         error ("categorical.ismember: both categorical arrays must be ordinal.");
       else
         ## Compare the category names of each element (except undefined)
         A_idx = A.code != 0;
         B_idx = B.code != 0;
-        cats_A = cell (size (A.code));
-        cats_B = cell (size (B.code));
+        cats_A = string (cell (size (A.code)));
+        cats_B = string (cell (size (B.code)));
         cats_A(A_idx) = A.cats(A.code(A_idx));
-        cats_A(! A_idx) = {''};
         cats_B(B_idx) = B.cats(B.code(B_idx));
-        cats_B(! B_idx) = {''};
-        [TF, index] = ismember (cats_A, cats_B, varargin{:});
+        if (nargout > 1)
+          [varargout{1}, varargout{2}] = ismember (cats_A, cats_B, varargin{:});
+        else
+          varargout{1} = ismember (cats_A, cats_B, varargin{:});
+        endif
       endif
     endfunction
 
