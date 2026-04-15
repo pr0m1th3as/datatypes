@@ -123,7 +123,7 @@ function [TF, index] = __ismember__ (a, s, varargin)
         index = zeros (rows (a), 1);
       endif
     else
-      if (rows (s) == 1)
+      if (rows (s) == 1 && ! iscell (a) && ! iscell (s))
         TF = all (a == s, 2);
         if (nargout > 1)
           index = double (TF);
