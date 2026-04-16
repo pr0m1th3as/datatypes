@@ -7,13 +7,27 @@ else
 	LIBS =
 endif
 
+MKOCTFILE ?= mkoctfile
+
 LDFLAGS += $(LIBS)
 
 TZFLAGS = -DHAS_REMOTE_API=0
 
-all:
-	$(MKOCTFILE)       '-I ./date'  __datetime__.cc tz.cpp $(TZFLAGS) $(LDFLAGS)
-	$(MKOCTFILE)       __table2csv__.cc $(LDFLAGS)
-	$(MKOCTFILE)       __csv2table__.cc $(LDFLAGS)
-	$(MKOCTFILE)       __ckeyHash__.cc $(LDFLAGS)
-	$(MKOCTFILE)       __nkeyHash__.cc $(LDFLAGS)
+OCTFILES = __datetime__.oct	\
+           __table2csv__.oct	\
+           __csv2table__.oct	\
+           __ckeyHash__.oct	\
+           __nkeyHash__.oct
+
+.PHONY: all
+all: $(OCTFILES)
+
+__datetime__.oct: __datetime__.cc tz.cpp
+	$(MKOCTFILE) '-I ./date'  __datetime__.cc tz.cpp $(TZFLAGS) $(LDFLAGS)
+
+%.oct: %.cc
+	$(MKOCTFILE) $< $(LDFLAGS)
+
+.PHONY: clean
+clean:
+	rm -f $(OCTFILES)
