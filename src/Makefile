@@ -27,3 +27,7 @@ __datetime__.oct: __datetime__.cc tz.cpp
 
 %.oct: %.cc
 	$(MKOCTFILE) $< $(LDFLAGS)
+
+.PHONY: clean
+clean:
+	rm -f $(OCTFILES)
