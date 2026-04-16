@@ -7,6 +7,8 @@ else
 	LIBS =
 endif
 
+MKOCTFILE ?= mkoctfile
+
 LDFLAGS += $(LIBS)
 
 TZFLAGS = -DHAS_REMOTE_API=0
