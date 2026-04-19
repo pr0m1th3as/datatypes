@@ -1040,7 +1040,8 @@ Base function for datetime class. \n\
         {
           pr = 1000;
         }
-        int tmp_micro = (int)(round (remainder (HMS(5), 1) * pr));
+        double tmp_frac_sec = HMS(5) - tmp_s;
+        int tmp_micro = (int)(round (tmp_frac_sec * pr));
         // Fix years / months
         int tmp_Y = (int)Y(i) + ((int)M(i) / 12);
         int tmp_M = (int)M(i) % 12;
