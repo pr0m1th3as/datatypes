@@ -1,4 +1,4 @@
-clear -f
+clear -c
 addpath (fullfile (fileparts (canonicalize_file_name (mfilename ("fullpath"))), "demos"));
 addpath (fullfile (fileparts (canonicalize_file_name (mfilename ("fullpath"))), "tests"));
 setenv ("TZDATA", fullfile (fileparts (canonicalize_file_name (mfilename ("fullpath"))), "tzdata"));
