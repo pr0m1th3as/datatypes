@@ -1312,16 +1312,14 @@ classdef categorical
         TF = false (size (this));
         if (isvector (indicator))
           if (ischar (indicator))
+            if (! isrow (indicator))
+              error (strcat ("categorical.ismissing: INDICATOR specified", ...
+                             " as a character vector must be a row vector."));
+            endif
             TF(this == indicator) = true;
-          elseif (isstring (indicator))
+          elseif (isstring (indicator) || iscellstr (indicator))
             for i = 1:numel (indicator)
-              cat = indicator.strs(i);
-              TF(this == cat) = true;
-            endfor
-          elseif (iscellstr (indicator))
-            for i = 1:numel (indicator)
-              cat = indicator(i);
-              TF(this == cat) = true;
+              TF(this == indicator(i)) = true;
             endfor
           elseif (isa (indicator, 'categorical'))
             for i = 1:length (indicator)
@@ -1334,7 +1332,9 @@ classdef categorical
               endif
             endfor
           else
-            error ("categorical.ismissing: INDICATOR must be a text array.");
+            error (strcat ("categorical.ismissing: INDICATOR must be", ...
+                           " a text representation of categories or", ...
+                           " categorical."));
           endif
         else
           error ("categorical.ismissing: INDICATOR must be a vector.");
