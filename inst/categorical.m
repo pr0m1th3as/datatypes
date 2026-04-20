@@ -3310,6 +3310,9 @@ classdef categorical
         error ("categorical.sort: invalid value for 'MissingPlacement'.");
       endif
 
+      ## Force strings to character vectors
+      [args{:}] = convertStringsToChars (args{:});
+
       ## Get direction
       cid = cellfun (@ischar, args);
       if (any (cid))
