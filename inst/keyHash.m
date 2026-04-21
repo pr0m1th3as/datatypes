@@ -103,30 +103,36 @@ endfunction
 %! assert (key, E);
 
 ## Add more tests on endianness (see GitHub issue 43)
-%!assert_equal (keyHash ([1, 2]), uint64 (1291405323040189622));
-%!assert_equal (keyHash ([1+2i]), uint64 (4391366703481493027));
-%!assert_equal (keyHash (single ([1, 2])), uint64 (10607299016200876763));
-%!assert_equal (keyHash (int64 ([1, 2])), uint64 (8387921810608003298));
-%!assert_equal (keyHash (uint64 ([1, 2])), uint64 (15129359585364357711));
-%!assert_equal (keyHash (int32 ([1, 2])), uint64 (7340059757986521701));
-%!assert_equal (keyHash (uint32 ([1, 2])), uint64 (6705001899901839972));
-%!assert_equal (keyHash (int16 ([1, 2])), uint64 (2451959940856797955));
-%!assert_equal (keyHash (uint16 ([1, 2])), uint64 (10303904549507999050));
-%!assert_equal (keyHash (int8 ([1, 2])), uint64 (3623669810820070662));
-%!assert_equal (keyHash (uint8 ([1, 2])), uint64 (12877398120156278681));
-%!assert_equal (keyHash (logical ([1, 2])), uint64 (16918259908176314871));
-%!assert_equal (__nkeyHash__ ([1, 2]), uint64 (4062974330926783736));
-%!assert_equal (__nkeyHash__ ([1+2i]), uint64 (4062974330926783736));
-%!assert_equal (__nkeyHash__ (single ([1, 2])), uint64 (10375111465485032152));
-%!assert_equal (__nkeyHash__ (int64 ([1, 2])), uint64 (8581494755304202342));
-%!assert_equal (__nkeyHash__ (uint64 ([1, 2])), uint64 (8581494755304202342));
-%!assert_equal (__nkeyHash__ (int32 ([1, 2])), uint64 (14538333428393601222));
-%!assert_equal (__nkeyHash__ (uint32 ([1, 2])), uint64 (14538333428393601222));
-%!assert_equal (__nkeyHash__ (int16 ([1, 2])), uint64 (12479921481467174326));
-%!assert_equal (__nkeyHash__ (uint16 ([1, 2])), uint64 (12479921481467174326));
-%!assert_equal (__nkeyHash__ (int8 ([1, 2])), uint64 (589729691727335466));
-%!assert_equal (__nkeyHash__ (uint8 ([1, 2])), uint64 (589729691727335466));
-%!assert_equal (__nkeyHash__ (logical ([1, 2])), uint64 (589728592215707255));
+%!assert_equal (keyHash ([1, 2]), uint64 (1291405323040189622))
+%!assert_equal (keyHash ([1+2i]), uint64 (4391366703481493027))
+%!assert_equal (keyHash (single ([1, 2])), uint64 (10607299016200876763))
+%!assert_equal (keyHash (int64 ([1, 2])), uint64 (8387921810608003298))
+%!assert_equal (keyHash (uint64 ([1, 2])), uint64 (15129359585364357711))
+%!assert_equal (keyHash (int32 ([1, 2])), uint64 (7340059757986521701))
+%!assert_equal (keyHash (uint32 ([1, 2])), uint64 (6705001899901839972))
+%!assert_equal (keyHash (int16 ([1, 2])), uint64 (2451959940856797955))
+%!assert_equal (keyHash (uint16 ([1, 2])), uint64 (10303904549507999050))
+%!assert_equal (keyHash (int8 ([1, 2])), uint64 (3623669810820070662))
+%!assert_equal (keyHash (uint8 ([1, 2])), uint64 (12877398120156278681))
+%!assert_equal (keyHash (logical ([1, 2])), uint64 (16918259908176314871))
+%!assert_equal (__nkeyHash__ ([1, 2]), uint64 (4062974330926783736))
+%!assert_equal (__nkeyHash__ ([1+2i]), uint64 (4062974330926783736))
+%!assert_equal (__nkeyHash__ (single ([1, 2])), uint64 (10375111465485032152))
+%!assert_equal (__nkeyHash__ (int64 ([1, 2])), uint64 (8581494755304202342))
+%!assert_equal (__nkeyHash__ (uint64 ([1, 2])), uint64 (8581494755304202342))
+%!assert_equal (__nkeyHash__ (int32 ([1, 2])), uint64 (14538333428393601222))
+%!assert_equal (__nkeyHash__ (uint32 ([1, 2])), uint64 (14538333428393601222))
+%!assert_equal (__nkeyHash__ (int16 ([1, 2])), uint64 (12479921481467174326))
+%!assert_equal (__nkeyHash__ (uint16 ([1, 2])), uint64 (12479921481467174326))
+%!assert_equal (__nkeyHash__ (int8 ([1, 2])), uint64 (589729691727335466))
+%!assert_equal (__nkeyHash__ (uint8 ([1, 2])), uint64 (589729691727335466))
+%!assert_equal (__nkeyHash__ (logical ([1, 2])), uint64 (589728592215707255))
+
+## Add more tests on different architectures (see GitHub issues 38 and 40)
+%!assert_equal (__nkeyHash__ (uint8 (128)), uint64 (5808531584386460767))
+%!assert_equal (keyHash (uint8 (128)), uint64 (10759574069356082695))
+%!assert_equal (__nkeyHash__ (uint32 (0xdeadbeef)), uint64 (12840711468051582507))
+%!assert_equal (keyHash (uint32 (0xdeadbeef)), uint64 (3790509136731937468))
 
 %!error<Invalid call to keyHash.  Correct usage is:> keyHash ();
 %!error<keyHash: BASE must be a UINT64 scalar.> keyHash (1, 1);
