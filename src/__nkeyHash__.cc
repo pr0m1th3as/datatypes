@@ -24,7 +24,7 @@ this program; if not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 
-constexpr bool isLittleEndian()
+inline bool isLittleEndian()
 {
   unsigned int value = 0x01020304;
   unsigned char bytes[4] = {};
