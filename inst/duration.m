@@ -3157,66 +3157,81 @@ classdef duration
       optNames = {'MissingPlacement', 'ComparisonMethod'};
       dfValues = {'auto', 'auto'};
       [MP, CM, args] = parsePairedArguments (optNames, dfValues, varargin(:));
-      if (! ismember (MP, {'auto', 'first', 'last'}))
+      if (! any (strcmp (MP, {'auto', 'first', 'last'})))
         error ("duration.sortrows: invalid value for 'MissingPlacement'.");
       endif
-      if (! ismember (CM, {'auto', 'real', 'abs'}))
+      if (! any (strcmp (CM, {'auto', 'real', 'abs'})))
         error ("duration.sortrows: invalid value for 'ComparisonMethod'.");
       endif
 
-      ## Create column sorting vector according to relevant inputs (if any)
-      col = [1:columns(A)];
-      col_dir = false;
+      ## Parse COL / DIRECTION input
+      nc = size (A, 2);
+      col = [1:nc];  # default ascending direction
+      dir_flag = false;
+      if (numel (args) > 2)
+        error ("duration.sortrows: too many input arguments.");
+      endif
       if (numel (args) > 0)
         col = args{1};
         if (isnumeric (col))
-          if (! isvector (col) || fix (col) != col || any (col == 0))
-            error ("duration.sortrows: COL must be a vector of nonzero integers.");
+          if (! isvector (col) || any (fix (col) != col) || any (col == 0))
+            error (strcat ("duration.sortrows: COL must be a vector", ...
+                           " of nonzero integers indexing columns in A."));
           endif
-        elseif ((ischar (col) && isvector (col)) ||
-                (isscalar (col) && (iscellstr (col) || isstring (col))))
-          col = cellstr (col);
-          if (strcmpi (col, 'ascend'))
-            col = [1:size(A, 2)];
-          elseif (strcmpi (col, 'descend'))
-            col = -[1:size(A, 2)];
-          else
-            error (strcat ("duration.sortrows: DIRECTION can", ...
-                           " be either 'ascend' or 'descend'."));
+          if (max (abs (col)) > nc)
+            error ("duration.sortrows: COL indexes non-existing column.");
           endif
-        elseif (iscellstr (col) || isstring (col))
-          col = cellstr (col);
-          if (! all (ismember (col, {'ascend', 'descend'})))
-            error ("duration.sortrows: invalid value for DIRECTION argument.");
+        elseif (isvector (col) && (ischar (col) || iscellstr (col) ||
+                                   isa (col, 'string')))
+          direction = cellstr (col);
+          if (! all (ismember (direction, {'ascend', 'descend'})))
+            error (strcat ("duration.sortrows: DIRECTION input must", ...
+                           " contain either 'ascend' or 'descend' values."));
           endif
-          ncols = columns (A);
-          if (numel (col) != ncols)
-            error (strcat ("duration.sortrows: DIRECTION does", ...
-                           " not match number of columns in A."));
+          ## Apply scalar expansion
+          if (isscalar (direction))
+            direction = repmat (direction, 1, nc);
           endif
-          idx = strcmpi (col, 'descend');
-          col = [1:ncols];
+          if (numel (direction) != nc)
+            error (strcat ("duration.sortrows: DIRECTION", ...
+                           " does not match the columns in A."));
+          endif
+          ## Assign DIRECTION to COL
+          col = [1:nc];
+          idx = strcmp (direction, 'descend');
           col(idx) = - col(idx);
+          dir_flag = true;
         else
-          error ("duration.sortrows: invalid type for COL or DIRECTION argument.");
+          error ("duration.sortrows: invalid type for COL argument.");
         endif
-        col_dir = true;
       endif
       if (numel (args) > 1)
-        direction = cellstr (args{2});
-        if (! all (ismember (direction, {'ascend', 'descend'})))
-          error ("duration.sortrows: invalid value for DIRECTION argument.");
+        if (dir_flag)
+          error ("duration.sortrows: invalid third input argument.");
         endif
-        if (isscalar (direction) && strcmpi (direction, 'ascend'))
+        if ((isvector (args{2}) && ischar (args{2})) || isa (args{2}, 'string'))
+          direction = cellstr (args{2});
+        elseif (isvector (args{2}) && iscellstr (args{2}))
+          direction = args{2};
+        else
+          error ("duration.sortrows: invalid type for DIRECTION argument.");
+        endif
+        if (! all (ismember (direction, {'ascend', 'descend'})))
+          error (strcat ("duration.sortrows: DIRECTION input must", ...
+                         " contain either 'ascend' or 'descend' values."));
+        endif
+        ## Assign DIRECTION to COL
+        if (isscalar (direction) && strcmp (direction, 'ascend'))
           col = abs (col);
-        elseif (isscalar (direction) && strcmpi (direction, 'descend'))
+        elseif (isscalar (direction) && strcmp (direction, 'descend'))
           col = - abs (col);
         else
           if (numel (direction) != numel (col))
-            error ("duration.sortrows: DIRECTION does not match COL argument.");
+            error (strcat ("duration.sortrows: DIRECTION does", ...
+                           " not match the elements in COL."));
           endif
           col = abs (col);
-          idx = strcmpi (direction, 'descend');
+          idx = strcmp (direction, 'descend');
           col(idx) = - col(idx);
         endif
       endif
