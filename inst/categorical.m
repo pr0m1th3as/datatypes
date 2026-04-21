@@ -3417,7 +3417,7 @@ classdef categorical
       optNames = {'MissingPlacement'};
       dfValues = {'auto'};
       [MP, args] = parsePairedArguments (optNames, dfValues, varargin(:));
-      if (! ismember (MP, {'auto', 'first', 'last'}))
+      if (! any (strcmp (MP, {'auto', 'first', 'last'})))
         error ("categorical.sort: invalid value for 'MissingPlacement'.");
       endif
 
