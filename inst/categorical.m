@@ -3586,19 +3586,25 @@ classdef categorical
     ## elements as the columns in @var{A}.
     ##
     ## @end deftypefn
-    function B = topkrows (A, K, varargin)
+    function [B, index] = topkrows (A, K, varargin)
       ## Check input argument
+      if (nargin < 2)
+        error ("categorical.topkrows: too few input arguments.");
+      endif
       if (! (isscalar (K) && fix (K) == K && K > 0))
         error ("categorical.topkrows: K must be a positive integer scalar.");
       endif
       ## Sort rows
       if (numel (varargin) == 0)
-        B = sortrows (A, 'descend');
+        [B, index] = sortrows (A, 'descend');
       else
-        B = sortrows (A, varargin{:});
+        [B, index] = sortrows (A, varargin{:});
       endif
       ## Return top K rows
-      B = subset (B, 1:K, ':');
+      if (K < numel (index))
+        B = subset (B, 1:K, ':');
+        index = index(1:K);
+      endif
     endfunction
 
     ## -*- texinfo -*-
