@@ -1412,6 +1412,38 @@
 %! X = [1, 3, 2; 1, 3, 1; 1, 2, 2; 2, 4, 2; 2, 1, NaN; 2, NaN, 3];
 %! assert_equal (isequaln (B, categorical (X)), true);
 %! assert_equal (I, [6; 2; 1; 3; 4; 5]);
+%!test
+%! C = categorical ([1, 2, 3; 2, 3, 4], [4, 3, 2, 1], 'Ordinal', true);
+%! [B, I] = sortrows (C);
+%! out = categorical ([2, 3, 4; 1, 2, 3], [4, 3, 2, 1], 'Ordinal', true);
+%! assert_equal (B, out);
+%! assert_equal (I, [2; 1]);
+%!test
+%! C = categorical ([1, 2, 3; 2, 3, 4], [1, 2, 3, 4], 'Ordinal', true);
+%! [B, I] = sortrows (C);
+%! out = categorical ([1, 2, 3; 2, 3, 4], [1, 2, 3, 4], 'Ordinal', true);
+%! assert_equal (B, out);
+%! assert_equal (I, [1; 2]);
+%!test
+%! C = categorical ([1, 2, 3; 2, 3, 4; 1, 2, NaN], [1:4], 'Ordinal', true);
+%! [B, I] = sortrows (C);
+%! assert_equal (double (B), [1, 2, 3; 1, 2, NaN; 2, 3, 4]);
+%! assert_equal (I, [1; 3; 2]);
+%!test
+%! C = categorical ([1, 2, 3; 2, 3, 4; 1, 2, NaN], [1:4], 'Ordinal', true);
+%! [B, I] = sortrows (C, 'MissingPlacement', 'first');
+%! assert_equal (double (B), [1, 2, NaN; 1, 2, 3; 2, 3, 4]);
+%! assert_equal (I, [3; 1; 2]);
+%!test
+%! C = categorical ([1, 2, 3; 2, 3, 4; 1, 2, NaN], [1:4], 'Ordinal', true);
+%! [B, I] = sortrows (C, 'descend');
+%! assert_equal (double (B), [2, 3, 4; 1, 2, NaN; 1, 2, 3]);
+%! assert_equal (I, [2; 3; 1]);
+%!test
+%! C = categorical ([1, 2, 3; 2, 3, 4; 1, 2, NaN], [1:4], 'Ordinal', true);
+%! [B, I] = sortrows (C, 'descend', 'MissingPlacement', 'last');
+%! assert_equal (double (B), [2, 3, 4; 1, 2, 3; 1, 2, NaN]);
+%! assert_equal (I, [2; 1; 3]);
 %!error<categorical.sortrows: A must be a 2-D matrix.> ...
 %! sortrows (categorical (ones (2, 3, 4)))
 %!error<categorical.sort: invalid value for 'MissingPlacement'.> ...
@@ -1440,6 +1472,60 @@
 %! sortrows (categorical (1), 1, {'a'})
 %!error<categorical.sortrows: DIRECTION does not match the elements in COL.> ...
 %! sortrows (categorical (1), 1, {'ascend', 'descend'})
+
+%!test
+%! C = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! [B, I] = topkrows (C, 2);
+%! assert_equal (B, categorical ([2, 1; 2, -4]));
+%! assert_equal (I, [4; 3]);
+%!test
+%! C = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! [B, I] = topkrows (C, 5);
+%! assert_equal (B, sortrows (C, 'descend'));
+%!test
+%! C = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! [B, I] = topkrows (C, 2, 'ascend');
+%! assert_equal (B, categorical ([1, 2; 1, 3]));
+%! assert_equal (I, [1; 2]);
+%!test
+%! C = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! [B, I] = topkrows (C, 2, -1);
+%! assert_equal (B, categorical ([2, -4; 2, 1]));
+%! assert_equal (I, [3; 4]);
+%!test
+%! C = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! [B, I] = topkrows (C, 2, 2);
+%! assert_equal (B, categorical ([2, -4; 2, 1]));
+%! assert_equal (I, [3; 4]);
+%!test
+%! C = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! [B, I] = topkrows (C, 2, -2);
+%! assert_equal (B, categorical ([1, 3; 1, 2]));
+%! assert_equal (I, [2; 1]);
+%!test
+%! C = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! [B, I] = topkrows (C, 2, [1, -2]);
+%! assert_equal (B, categorical ([1, 3; 1, 2]));
+%! assert_equal (I, [2; 1]);
+%!test
+%! C = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! [B, I] = topkrows (C, 2, [-1, -2]);
+%! assert_equal (B, categorical ([2, 1; 2, -4]));
+%! assert_equal (I, [4; 3]);
+%!test
+%! C = categorical ([1, 2, 2; 1, 3, 1; 2, 4, 2; 2, 1, NaN; 2, NaN, 3; 1, 3, 2]);
+%! [B, I] = topkrows (C, 3);
+%! assert_equal (double (B), [2, NaN, 3; 2, 4, 2; 2, 1, NaN]);
+%! assert_equal (I, [5; 3; 4]);
+%!test
+%! C = categorical ([1, 2, 2; 1, 3, 1; 2, 4, 2; 2, 1, NaN; 2, NaN, 3; 1, 3, 2]);
+%! [B, I] = topkrows (C, 3, 'ascend');
+%! assert_equal (B, categorical ([1, 2, 2; 1, 3, 1; 1, 3, 2]));
+%! assert_equal (I, [1; 2; 6]);
+%!error<categorical.topkrows: too few input arguments.> ...
+%! topkrows (categorical (1))
+%!error<categorical.topkrows: K must be a positive integer scalar.> ...
+%! topkrows (categorical (1), 0)
 
 ################################################################################
 ##                  ** Reference and Assignment Operations **                 ##
