@@ -3609,73 +3609,72 @@ classdef categorical
 
     ## -*- texinfo -*-
     ## @deftypefn  {categorical} {@var{B} =} unique (@var{A})
-    ## @deftypefnx {categorical} {@var{B} =} unique (@var{A}, @qcode{'rows'})
+    ## @deftypefnx {categorical} {@var{B} =} unique (@var{A}, @var{setOrder})
+    ## @deftypefnx {categorical} {@var{B} =} unique (@var{A}, @var{occurrence})
+    ## @deftypefnx {categorical} {@var{B} =} unique (@var{A}, @var{setOrder}, @var{occurrence})
+    ## @deftypefnx {categorical} {@var{B} =} unique (@var{A}, @var{occurrence}, @var{setOrder})
+    ## @deftypefnx {categorical} {@var{B} =} unique (@var{A}, @dots{}, @qcode{'rows'})
     ## @deftypefnx {categorical} {[@var{B}, @var{ixA}, @var{ixB}] =} unique (@dots{})
-    ## @deftypefnx {categorical} {@dots{} =} unique (@dots{}, @var{order})
-    ## @deftypefnx {categorical} {@dots{} =} unique (@dots{}, @var{occurrence})
     ##
     ## Unique values in a categorical array.
     ##
     ## @code{@var{B} = unique (@var{A})} returns the unique values of the
     ## categorical array @var{A} in the categorical vector @var{B} sorted
     ## according to the order of categories in @var{A}.  @var{B} retains the
-    ## same categories as @var{A}.  If @var{A} is a column vector, then @var{B}
-    ## is also a column vector, otherwise @code{unique} returns a row vector.
+    ## same categories as @var{A}.  If @var{A} is a row vector, then @var{B}
+    ## is also a row vector, otherwise @code{unique} returns a column vector.
     ##
-    ## @code{@var{B} = unique (@var{A}, @qcode{'rows'})} returns the unique rows
-    ## of the categorical matrix @var{A} in the categorical matrix @var{B}
-    ## sorted  according to the order of categories in @var{A}.  @var{B} retains
-    ## the same categories as @var{A}.
+    ## @code{@var{B} = unique (@var{A}, @var{setOrder})} returns the unique
+    ## values of the categorical array @var{A} in an order as specified by
+    ## @var{setOrder}, which can be either of the following values:
+    ##
+    ## @itemize
+    ## @item @qcode{'sorted'} (default) returns the unique values sorted in
+    ## ascending order.
+    ## @item @qcode{'stable'} returns the unique values according to their order
+    ## of occurrence.
+    ## @end itemize
+    ##
+    ## @code{@var{B} = unique (@var{A}, @var{occurrence})} returns the unique
+    ## values of the categorical array @var{A} according to their order of
+    ## occurrence.  @var{occurrence} can be either of the following values:
+    ##
+    ## @itemize
+    ## @item @qcode{'first'} (default) returns the first occurrence of each
+    ## unique value, i.e. the lowest possible indices are returned.
+    ## @item @qcode{'last'} returns the last occurrence of each unique value,
+    ## i.e. the highest possible indices are returned.
+    ## @end itemize
+    ##
+    ## You can specify @var{setOrder} and @var{occurrence} arguments together.
+    ##
+    ## @code{@var{B} = unique (@var{A}, @dots{}, @qcode{'rows'})} returns the
+    ## unique rows of @var{A} by treating each row as a single entity.  The
+    ## @qcode{'rows'} option can be used alone or in any combination with the
+    ## @var{setOrder} and @var{occurrence} arguments.  @qcode{'rows'} can be
+    ## placed at any position in the function's argument list after the input
+    ## array @var{A}.  However, this syntax is only valid for 2-dimensional
+    ## categorical arrays.
     ##
     ## @code{[@var{B}, @var{ixA}, @var{ixB}] = unique (@dots{})} also returns
-    ## index vectors @var{ixA} and @var{ixB} such that
-    ## @code{@var{B} = @var{A}(@var{ixA})} and
-    ## @code{@var{A} = @var{B}(@var{ixB})}, unless the @qcode{'rows'} optional
-    ## argument is given, in which case @code{@var{B} = @var{A}(@var{ixA},:)}
-    ## and @code{@var{A} = @var{B}(@var{ixB},:)}.
-    ##
-    ## @code{@dots{} = unique (@dots{}, @var{order})} also specifies the order
-    ## of the returned unique values.  @var{order} may be either
-    ## @qcode{'sorted'}, which is the default behavior, or @qcode{'stable'}, in
-    ## which case the unique values are returned in order of appearance.
-    ##
-    ## @code{@dots{} = unique (@dots{}, @var{occurrence})} also specifies the
-    ## which index is returned in @var{ixA}, where there are repeated values or
-    ## rows (if opted) in the input categorical array.  @var{occurrence} may be
-    ## either @qcode{'first'}, which is the default and returns the index of the
-    ## first occurrence of each unique value, or @qcode{'last'}, in which case
-    ## the last occurrence of each unique value is returned.
+    ## index vectors @var{ixA} and @var{ixB} using any of the previous syntaxes.
+    ## @var{ixA} and @var{ixB} map the arrays @var{A} and @var{B} to one another
+    ## such that @qcode{@var{B} = @var{A}(@var{ixA})} and
+    ## @qcode{@var{A} = @var{B}(@var{ixB})}.  When the @qcode{'rows'} optional
+    ## argument is specified, then @qcode{@var{B} = @var{A}(@var{ixA},:)} and
+    ## @qcode{@var{A} = @var{B}(@var{ixB},:)}.
     ##
     ## @end deftypefn
     function [B, ixA, ixB] = unique (A, varargin)
-      ## Handle 'rows' option
-      do_rows = false;
-      if (! isempty (varargin))
-        idx = strcmpi ('rows', varargin(:));
-        if (any (idx))
-          do_rows = true;
-          varargin(idx) = [];
-          if (ndims (A) != 2)
-            error ("categorical.unique: 'rows' applies only to 2-D matrices.");
-          endif
-        endif
+      ## 'legacy' option is not supported
+      if (any (strcmp ('legacy', varargin)))
+        error ("duration.unique: 'legacy' option is not supported.");
       endif
-      ## Handle 'setOrder' and 'occurrence' options
-      opt = "sorted";
-      if (! isempty (varargin))
-        if (any (strcmp (varargin{1}, {'sorted', 'stable', 'first', 'last'})))
-          opt = varargin{1};
-        else
-          error ("categorical.unique: invalid option '%s'.", varargin{1});
-        endif
-      endif
-      ## Find unique
       code = double (A);
-      if (do_rows)
-        [~, ixA, ixB] = __unique__ (code, 'rows', opt);
+      [~, ixA, ixB] = __unique__ (code, varargin{:});
+      if (any (strcmp ('rows', varargin)))
         B = subset (A, ixA, ':');
       else
-        [~, ixA, ixB] = __unique__ (code, opt);
         B = subset (A, ixA);
       endif
     endfunction
