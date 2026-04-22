@@ -3313,7 +3313,7 @@ classdef duration
     ## @end itemize
     ##
     ## @code{@var{B} = unique (@var{A}, @var{occurrence})} returns the unique
-    ## values of the duration array @var{tblA} according to their order of
+    ## values of the duration array @var{A} according to their order of
     ## occurrence.  @var{occurrence} can be either of the following values:
     ##
     ## @itemize
@@ -3333,13 +3333,13 @@ classdef duration
     ## array @var{A}.  However, this syntax is only valid for 2-dimensional
     ## duration arrays.
     ##
-    ## @code{[@var{tblB}, @var{ixA}, @var{ixB}] = unique (@dots{})} also returns
+    ## @code{[@var{B}, @var{ixA}, @var{ixB}] = unique (@dots{})} also returns
     ## index vectors @var{ixA} and @var{ixB} using any of the previous syntaxes.
     ## @var{ixA} and @var{ixB} map the arrays @var{A} and @var{B} to one another
     ## such that @qcode{@var{B} = @var{A}(@var{ixA})} and
     ## @qcode{@var{A} = @var{B}(@var{ixB})}.  When the @qcode{'rows'} optional
     ## argument is specified, then @qcode{@var{B} = @var{A}(@var{ixA},:)} and
-    ## @qcode{@var{tblA} = @var{tblB}(@var{ixB},:)}.
+    ## @qcode{@var{A} = @var{B}(@var{ixB},:)}.
     ##
     ## @end deftypefn
     function [this, ixA, ixB] = unique (this, varargin)
