@@ -3344,7 +3344,7 @@ classdef duration
     ## @end deftypefn
     function [this, ixA, ixB] = unique (this, varargin)
       ## 'legacy' option is not supported
-      if (any (strcmp ("legacy", varargin)))
+      if (any (strcmp ('legacy', varargin)))
         error ("duration.unique: 'legacy' option is not supported.");
       endif
       [this.Days, ixA, ixB] = __unique__ (this.Days, varargin{:});
