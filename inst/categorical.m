@@ -4346,10 +4346,6 @@ classdef categorical
             this.code(s.subs{:}) = 0;
             this.isMissing(s.subs{:}) = true;
             return;
-          elseif (isnan (val))
-            this.code(s.subs{:}) = 0;
-            this.isMissing(s.subs{:}) = true;
-            return;
           elseif (iscellstr (val) || ischar (val) || isstring (val))
             val = cellstr (val);
             if (! isscalar (val))
