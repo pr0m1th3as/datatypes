@@ -1457,24 +1457,34 @@ classdef categorical
     function TF = issorted (this, varargin)
       ## Single input argument
       if (nargin == 1)
-        TF = isequal (this, sort (this));
+        TF = isequaln (this, sort (this));
         return;
       endif
 
+      ## Parse and validate optional 'MissingPlacement' paired argument
+      optNames = {'MissingPlacement'};
+      dfValues = {'auto'};
+      [MP, args] = parsePairedArguments (optNames, dfValues, varargin(:));
+      if (! ismember (MP, {'auto', 'first', 'last'}))
+        error ("categorical.issorted: invalid value for 'MissingPlacement'.");
+      endif
+
+      ## Force strings to character vectors
+      [args{:}] = convertStringsToChars (args{:});
+
       ## Get direction
-      fcn = @(x) ischar (x) && ! strcmpi (x, 'MissingPlacement');
-      cid = cellfun (fcn, varargin);
+      cid = cellfun (@(x) ischar (x), args);
       if (any (cid))
-        direction = varargin{cid};
+        direction = args{cid};
         ## Check for type of direction
         valid_direction = {'ascend', 'descend', 'monotonic', 'strictascend', ...
-                 'strictdescend', 'strictmonotonic'};
+                           'strictdescend', 'strictmonotonic'};
         if (! ismember (direction, valid_direction))
           error ("categorical.issorted: invalid DIRECTION value.");
         endif
         switch (direction)
           case {'ascend', 'descend'}
-            TF = isequal (this, sort (this, varargin(:)));
+            TF = isequal (this, sort (this, args{:}, 'MissingPlacement', MP));
 
           case {'strictascend', 'strictdescend'}
             ## Check for missing values first (fast)
@@ -1482,19 +1492,22 @@ classdef categorical
               TF = false;
               return;
             endif
-            varargin{cid} = strrep (direction, 'strict', '');
-            sorted = unique (sort (this, varargin{:}), 'stable');
+            args{cid} = strrep (direction, 'strict', '');
+            if (! strcmp (MP, 'auto'))
+              args = [args, 'MissingPlacement', MP];
+            endif
+            sorted = unique (sort (this, args{:}), 'stable');
             TF = isequal (this, sorted);
 
           case 'monotonic'
             ## Check for either ascending or descending
-            varargin{cid} = 'ascend';
-            TF = isequal (this, sort (this, varargin{:}));
+            args{cid} = 'ascend';
+            TF = isequaln (this, sort (this, args{:}, 'MissingPlacement', MP));
             if (TF)
               return;
             endif
-            varargin{cid} = 'descend';
-            TF = isequal (this, sort (this, varargin{:}));
+            args{cid} = 'descend';
+            TF = isequaln (this, sort (this, args{:}, 'MissingPlacement', MP));
 
           case 'strictmonotonic'
             ## Check missing values first (fast)
@@ -1503,19 +1516,27 @@ classdef categorical
               return;
             endif
             ## Check for either ascending or descending
-            varargin{cid} = 'ascend';
-            sorted = unique (sort (this, varargin{:}), 'stable');
+            args{cid} = 'ascend';
+            if (! strcmp (MP, 'auto'))
+              arg = [args, 'MissingPlacement', MP];
+              sorted = unique (sort (this, arg{:}), 'stable');
+            else
+              sorted = unique (sort (this, args{:}), 'stable');
+            endif
             TF = isequal (this, sorted);
             if (TF)
               return;
             endif
-            varargin{cid} = 'descend';
-            sorted = unique (sort (this, varargin{:}), 'stable');
+            args{cid} = 'descend';
+            if (! strcmp (MP, 'auto'))
+              args = [args, 'MissingPlacement', MP];
+            endif
+            sorted = unique (sort (this, args{:}), 'stable');
             TF = isequal (this, sorted);
         endswitch
       else
         ## No DIRECTION input argument
-        TF = isequal (this, sort (this, varargin{:}));
+        TF = isequaln (this, sort (this, args{:}, 'MissingPlacement', MP));
       endif
     endfunction
 
@@ -1588,7 +1609,7 @@ classdef categorical
     function TF = issortedrows (this, varargin)
       ## Single input argument
       if (nargin == 1)
-        TF = isequal (this, sortrows (this));
+        TF = isequaln (this, sortrows (this));
         return;
       endif
 
@@ -4322,6 +4343,10 @@ classdef categorical
             this.isMissing(s.subs{:}) = [];
             return;
           elseif (isa (val, 'missing'))
+            this.code(s.subs{:}) = 0;
+            this.isMissing(s.subs{:}) = true;
+            return;
+          elseif (isnan (val))
             this.code(s.subs{:}) = 0;
             this.isMissing(s.subs{:}) = true;
             return;
