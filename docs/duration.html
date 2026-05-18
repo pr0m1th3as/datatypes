@@ -371,14 +371,14 @@ Create a new array of fixed-length time durations.
  minutes, seconds, and milliseconds specified by <var>H</var>, <var>MI</var>,
  <var>S</var>, and <var>MS</var>, respectively.
 </p>
-<p> <code><var>D</var> =</code> duration (<var>TimeStrings</var>) creates a duration array
+<p> <code><var>D</var> = duration (<var>TimeStrings</var>)</code> creates a duration array
  from text that represents elapsed times.  <var>TimeStrings</var> can be a
  character vector, a cell array of character vectors, or a string array
  representing times using either the <code>'hh:mm:ss'</code> or the
  <code>'dd:hh:mm:ss'</code> format.
 </p>
-<p> <code><var>D</var> =</code> duration (<var>TimeStrings</var>, <code>'InputFormat'</code>,
- <var>INFMT</var>) creates a duration array from text that represents elapsed
+<p> <code><var>D</var> = duration (<var>TimeStrings</var>, <code>'InputFormat'</code>,
+ <var>INFMT</var>)</code> creates a duration array from text that represents elapsed
  times according to the format specified by <var>INFMT</var>, which can be any
  of the following:
 </p>
@@ -1043,7 +1043,7 @@ Generate a hash code for duration array.
  this syntax to cascade <code>keyHash</code> on multiple objects for which a
  single hash code is required.
 </p>
-<p> Note that unlike MATLAB, this implementation does no use any random seed.
+<p> Note that unlike MATLAB, this implementation does not use any random seed.
  As a result, <code>keyHash</code> will always generate the exact same hash key
  for any particular input across different workers and Octave sessions.
 </p>
@@ -1395,7 +1395,7 @@ Find duration elements in a set.
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>ismember</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>ismember</b> (<var>a</var>, <var>s</var>, <code>'rows'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">duration: <var>TF</var> = <b>ismember</b> (<var>A</var>, <var>B</var>, <code>'rows'</code>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: [<var>TF</var>, <var>index</var>] = <b>ismember</b> (&hellip;)</code></h5></dt>
 <dt><code><h5 class="fs">duration: [<var>TF</var>, <var>index</var>] = <b>ismember</b> (&hellip;, <code>'legacy'</code>)</code></h5></dt>
 </dl>
@@ -3823,7 +3823,7 @@ Unique values in a duration array.
  </li></ul>
 
 <p> <code><var>B</var> = unique (<var>A</var>, <var>occurrence</var>)</code> returns the unique
- values of the duration array <var>tblA</var> according to their order of
+ values of the duration array <var>A</var> according to their order of
  occurrence.  <var>occurrence</var> can be either of the following values:
 </p>
  <ul>
@@ -3843,13 +3843,13 @@ Unique values in a duration array.
  array <var>A</var>.  However, this syntax is only valid for 2-dimensional
  duration arrays.
 </p>
-<p> <code>[<var>tblB</var>, <var>ixA</var>, <var>ixB</var>] = unique (&hellip;)</code> also returns
+<p> <code>[<var>B</var>, <var>ixA</var>, <var>ixB</var>] = unique (&hellip;)</code> also returns
  index vectors <var>ixA</var> and <var>ixB</var> using any of the previous syntaxes.
  <var>ixA</var> and <var>ixB</var> map the arrays <var>A</var> and <var>B</var> to one another
  such that <code><var>B</var> = <var>A</var>(<var>ixA</var>)</code> and
  <code><var>A</var> = <var>B</var>(<var>ixB</var>)</code>.  When the <code>'rows'</code> optional
  argument is specified, then <code><var>B</var> = <var>A</var>(<var>ixA</var>,:)</code> and
- <code><var>tblA</var> = <var>tblB</var>(<var>ixB</var>,:)</code>.
+ <code><var>A</var> = <var>B</var>(<var>ixB</var>,:)</code>.
 </p>
 
 

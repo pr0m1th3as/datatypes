@@ -752,7 +752,7 @@ Generate a hash code for string array.
  this syntax to cascade <code>keyHash</code> on multiple objects for which a
  single hash code is required.
 </p>
-<p> Note that unlike MATLAB, this implementation does no use any random seed.
+<p> Note that unlike MATLAB, this implementation does not use any random seed.
  As a result, <code>keyHash</code> will always generate the exact same hash key
  for any particular input across different workers and Octave sessions.
 </p>
@@ -871,7 +871,7 @@ Test if string array is a matrix.
                   </h4>
                 </div>
                 <div class="col-8">
-Test for string elements in a set.
+Find string elements in a set.
                 </div>
               </div>
           </div>
@@ -879,6 +879,9 @@ Test for string elements in a set.
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>ismember</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>ismember</b> (<var>A</var>, <var>B</var>, <code>'rows'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">string: [<var>TF</var>, <var>index</var>] = <b>ismember</b> (&hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">string: [<var>TF</var>, <var>index</var>] = <b>ismember</b> (&hellip;, <code>'legacy'</code>)</code></h5></dt>
 </dl>
 
 <p> </p>
@@ -900,7 +903,10 @@ Test for string elements in a set.
  otherwise.  If the <code>'rows'</code> optional argument is used, then the
  returning index is a column vector with the same rows as <var>A</var> and it
  contains the lowest index in <var>B</var> for each row of <var>A</var> that is a
- member of <var>B</var> and 0 otherwise.
+ member of <var>B</var> and 0 otherwise.  If the <code>'legacy'</code> optional
+ argument is specified, then the highest index of matched elements is
+ returned.  Unless multiple matches exist, the <code>'legacy'</code> option has
+ no effect on the returned <var>index</var>.
 </p>
 
 
