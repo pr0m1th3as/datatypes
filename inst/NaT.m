@@ -28,7 +28,7 @@
 ## values being Not-a-Time (@qcode{NaT}).  When called with no size input
 ## values, it returns a @qcode{NaT} datetime scalar.
 ##
-## @code{@var{T} =} NaT (@var{sz1}, @dots{}, @var{szN}) returns a datetime array
+## @code{@var{T} = NaT (@var{sz1}, @dots{}, @var{szN})} returns a datetime array
 ## with @qcode{NaT} values sized according to the input arguments @var{sz1},
 ## @dots{}, @var{szN}.  Alternatively, individual input size arguments can be
 ## merged into a single size vector @var{sz}, as in the following syntax
