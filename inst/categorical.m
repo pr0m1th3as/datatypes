@@ -1488,7 +1488,7 @@ classdef categorical
 
           case {'strictascend', 'strictdescend'}
             ## Check for missing values first (fast)
-            if (any (this.isMissing(:)))
+            if (any (this.isMissing, 'all'))
               TF = false;
               return;
             endif
@@ -1511,7 +1511,7 @@ classdef categorical
 
           case 'strictmonotonic'
             ## Check missing values first (fast)
-            if (any (this.isMissing(:)))
+            if (any (this.isMissing, 'all'))
               TF = false;
               return;
             endif
