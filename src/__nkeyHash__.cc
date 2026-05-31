@@ -71,7 +71,7 @@ static_assert(FNV1A64_PRIME == fnv1a64(testData.data(), 2, 0));
 DEFUN_DLD (__nkeyHash__, args, nargout,
            "-*- texinfo -*-\n\
  @deftypefn  {} {@var{uint64} =} __nkeyHash__ (@var{x})\n\
- @deftypefnx {} {@var{uint64} =} __nkeyHash__ (@var{x}, @var{FNV1A64_BASE)\n\
+ @deftypefnx {} {@var{uint64} =} __nkeyHash__ (@var{x}, @var{FNV1A64_BASE})\n\
 \n\
 \n\
 Fowler–Noll–Vo hash key for a numeric vector. \n\

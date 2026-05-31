@@ -4114,7 +4114,7 @@ classdef categorical
     ## case it specifies the number of times to repeat each corresponding
     ## element of @var{A}.
     ##
-    ## @code{@var{B} =} repelem (@var{A}, @var{d1}, @dots{}, @var{dN}} returns
+    ## @code{@var{B} = repelem (@var{A}, @var{d1}, @dots{}, @var{dN})} returns
     ## an array @var{B} with each element of @var{A} repeated according to the
     ## the list of input arguments @code{@var{d1}, @dots{}, @var{dN}} each
     ## corresponding to a different dimension @code{1:ndims (@var{A})} of the
