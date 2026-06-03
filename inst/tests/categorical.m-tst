@@ -1159,6 +1159,20 @@
 %! assert (issortedrows (sortrows (D, [-1, -2, -3], 'MissingPlacement', 'first'), ...
 %!         [1, -2,-3], string ({'descend', 'descend', 'descend'})), true);
 
+%!assert (isundefined (categorical ([1:10])), false (1, 10))
+%!assert (isundefined (categorical ([1, 2, NaN, 4, NaN])), logical ([0, 0, 1, 0, 1]))
+%!assert (isundefined (categorical (NaN (3, 4, 5))), true (3, 4, 5))
+%!assert (isundefined (categorical (zeros (3, 4, 5))), false (3, 4, 5))
+
+%!assert (isvector (categorical ([1, 2, 3, 4])), true)
+%!assert (isvector (categorical ([1; 2; 3; 4])), true)
+%!assert (isvector (categorical ([1, 2; 3, 4])), false)
+%!assert (isvector (categorical ([])), false)
+%!assert (isvector (categorical (ones (1, 0))), true)
+%!assert (isvector (categorical (ones (0, 1))), true)
+%!assert (isvector (categorical (1)), true)
+%!assert (isvector (categorical (ones (2, 3, 4))), false)
+
 ################################################################################
 ##                   ** Sort, Filter, and Set Operations **                   ##
 ################################################################################
