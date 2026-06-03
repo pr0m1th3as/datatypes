@@ -979,123 +979,123 @@
 %!assert_equal (isscalar (categorical (ones (1, 0))), false)
 
 %!test
-%! D = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
-%! assert (issorted (sort (D)), true);
-%! assert (issorted (sort (D), 'ascend'), true);
-%! assert (issorted (sort (D), 'descend'), false);
-%! assert (issorted (sort (D), 'monotonic'), true);
-%! assert (issorted (sort (D), 'strictascend'), false);
-%! assert (issorted (sort (D), 'strictdescend'), false);
-%! assert (issorted (sort (D), 'strictmonotonic'), false);
+%! C = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issorted (sort (C)), true);
+%! assert (issorted (sort (C), 'ascend'), true);
+%! assert (issorted (sort (C), 'descend'), false);
+%! assert (issorted (sort (C), 'monotonic'), true);
+%! assert (issorted (sort (C), 'strictascend'), false);
+%! assert (issorted (sort (C), 'strictdescend'), false);
+%! assert (issorted (sort (C), 'strictmonotonic'), false);
 %!test
-%! D = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
-%! assert (issorted (sort (D, 2), 2), true);
-%! assert (issorted (sort (D, 2), 2, 'ascend'), true);
-%! assert (issorted (sort (D, 2), 2, 'descend'), false);
-%! assert (issorted (sort (D, 2), 2, 'monotonic'), true);
-%! assert (issorted (sort (D, 2), 2, 'strictascend'), true);
-%! assert (issorted (sort (D, 2), 2, 'strictdescend'), false);
-%! assert (issorted (sort (D, 2), 2, 'strictmonotonic'), true);
+%! C = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issorted (sort (C, 2), 2), true);
+%! assert (issorted (sort (C, 2), 2, 'ascend'), true);
+%! assert (issorted (sort (C, 2), 2, 'descend'), false);
+%! assert (issorted (sort (C, 2), 2, 'monotonic'), true);
+%! assert (issorted (sort (C, 2), 2, 'strictascend'), true);
+%! assert (issorted (sort (C, 2), 2, 'strictdescend'), false);
+%! assert (issorted (sort (C, 2), 2, 'strictmonotonic'), true);
 %!test
-%! D = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
-%! assert (issorted (sort (D, 2), 'ascend'), false);
-%! assert (issorted (sort (D, 2), 'descend'), false);
-%! assert (issorted (sort (D, 2), 'monotonic'), false);
-%! assert (issorted (sort (D, 2), 'strictascend'), false);
-%! assert (issorted (sort (D, 2), 'strictdescend'), false);
-%! assert (issorted (sort (D, 2), 'strictmonotonic'), false);
+%! C = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issorted (sort (C, 2), 'ascend'), false);
+%! assert (issorted (sort (C, 2), 'descend'), false);
+%! assert (issorted (sort (C, 2), 'monotonic'), false);
+%! assert (issorted (sort (C, 2), 'strictascend'), false);
+%! assert (issorted (sort (C, 2), 'strictdescend'), false);
+%! assert (issorted (sort (C, 2), 'strictmonotonic'), false);
 %!test
-%! D = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
-%! assert (issorted (sort (D, 'descend'), 'ascend'), false);
-%! assert (issorted (sort (D, 'descend'), 'descend'), true);
-%! assert (issorted (sort (D, 'descend'), 'monotonic'), true);
-%! assert (issorted (sort (D, 'descend'), 'strictascend'), false);
-%! assert (issorted (sort (D, 'descend'), 'strictdescend'), false);
-%! assert (issorted (sort (D, 'descend'), 'strictmonotonic'), false);
+%! C = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issorted (sort (C, 'descend'), 'ascend'), false);
+%! assert (issorted (sort (C, 'descend'), 'descend'), true);
+%! assert (issorted (sort (C, 'descend'), 'monotonic'), true);
+%! assert (issorted (sort (C, 'descend'), 'strictascend'), false);
+%! assert (issorted (sort (C, 'descend'), 'strictdescend'), false);
+%! assert (issorted (sort (C, 'descend'), 'strictmonotonic'), false);
 %!test
-%! D = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
-%! assert (issorted (sort (D, 2, 'descend'), 2, 'ascend'), false);
-%! assert (issorted (sort (D, 2, 'descend'), 2, 'descend'), true);
-%! assert (issorted (sort (D, 2, 'descend'), 2, 'monotonic'), true);
-%! assert (issorted (sort (D, 2, 'descend'), 2, 'strictascend'), false);
-%! assert (issorted (sort (D, 2, 'descend'), 2, 'strictdescend'), true);
-%! assert (issorted (sort (D, 2, 'descend'), 2, 'strictmonotonic'), true);
+%! C = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issorted (sort (C, 2, 'descend'), 2, 'ascend'), false);
+%! assert (issorted (sort (C, 2, 'descend'), 2, 'descend'), true);
+%! assert (issorted (sort (C, 2, 'descend'), 2, 'monotonic'), true);
+%! assert (issorted (sort (C, 2, 'descend'), 2, 'strictascend'), false);
+%! assert (issorted (sort (C, 2, 'descend'), 2, 'strictdescend'), true);
+%! assert (issorted (sort (C, 2, 'descend'), 2, 'strictmonotonic'), true);
 %!test
-%! D = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
-%! assert (issorted (sort (D, 2, 'descend'), 'ascend'), false);
-%! assert (issorted (sort (D, 2, 'descend'), 'descend'), false);
-%! assert (issorted (sort (D, 2, 'descend'), 'monotonic'), false);
-%! assert (issorted (sort (D, 2, 'descend'), 'strictascend'), false);
-%! assert (issorted (sort (D, 2, 'descend'), 'strictdescend'), false);
-%! assert (issorted (sort (D, 2, 'descend'), 'strictmonotonic'), false);
+%! C = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issorted (sort (C, 2, 'descend'), 'ascend'), false);
+%! assert (issorted (sort (C, 2, 'descend'), 'descend'), false);
+%! assert (issorted (sort (C, 2, 'descend'), 'monotonic'), false);
+%! assert (issorted (sort (C, 2, 'descend'), 'strictascend'), false);
+%! assert (issorted (sort (C, 2, 'descend'), 'strictdescend'), false);
+%! assert (issorted (sort (C, 2, 'descend'), 'strictmonotonic'), false);
 %!test
-%! D = categorical ([1, 2; 2, 3; 3, 4; 4, 5]);
-%! assert (issorted (sort (D), 'ascend'), true);
-%! assert (issorted (sort (D), 'descend'), false);
-%! assert (issorted (sort (D), 'monotonic'), true);
-%! assert (issorted (sort (D), 'strictascend'), true);
-%! assert (issorted (sort (D), 'strictdescend'), false);
-%! assert (issorted (sort (D), 'strictmonotonic'), true);
+%! C = categorical ([1, 2; 2, 3; 3, 4; 4, 5]);
+%! assert (issorted (sort (C), 'ascend'), true);
+%! assert (issorted (sort (C), 'descend'), false);
+%! assert (issorted (sort (C), 'monotonic'), true);
+%! assert (issorted (sort (C), 'strictascend'), true);
+%! assert (issorted (sort (C), 'strictdescend'), false);
+%! assert (issorted (sort (C), 'strictmonotonic'), true);
 %!test
-%! D = categorical ([1, 2; 2, 3; 3, 4; 4, 5]);
-%! assert (issorted (sort (D, 'descend'), 'ascend'), false);
-%! assert (issorted (sort (D, 'descend'), 'descend'), true);
-%! assert (issorted (sort (D, 'descend'), 'monotonic'), true);
-%! assert (issorted (sort (D, 'descend'), 'strictascend'), false);
-%! assert (issorted (sort (D, 'descend'), 'strictdescend'), true);
-%! assert (issorted (sort (D, 'descend'), 'strictmonotonic'), true);
+%! C = categorical ([1, 2; 2, 3; 3, 4; 4, 5]);
+%! assert (issorted (sort (C, 'descend'), 'ascend'), false);
+%! assert (issorted (sort (C, 'descend'), 'descend'), true);
+%! assert (issorted (sort (C, 'descend'), 'monotonic'), true);
+%! assert (issorted (sort (C, 'descend'), 'strictascend'), false);
+%! assert (issorted (sort (C, 'descend'), 'strictdescend'), true);
+%! assert (issorted (sort (C, 'descend'), 'strictmonotonic'), true);
 %!test
-%! D = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
-%! assert (issorted (sort (D)), true);
-%! assert (issorted (sort (D), 'ascend'), true);
-%! assert (issorted (sort (D), 'descend'), false);
-%! assert (issorted (sort (D), 'monotonic'), true);
-%! assert (issorted (sort (D), 'strictascend'), false);
-%! assert (issorted (sort (D), 'strictdescend'), false);
-%! assert (issorted (sort (D), 'strictmonotonic'), false);
+%! C = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (C)), true);
+%! assert (issorted (sort (C), 'ascend'), true);
+%! assert (issorted (sort (C), 'descend'), false);
+%! assert (issorted (sort (C), 'monotonic'), true);
+%! assert (issorted (sort (C), 'strictascend'), false);
+%! assert (issorted (sort (C), 'strictdescend'), false);
+%! assert (issorted (sort (C), 'strictmonotonic'), false);
 %!test
-%! D = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
-%! assert (issorted (sort (D, 'descend'), 'ascend'), false);
-%! assert (issorted (sort (D, 'descend'), 'descend'), true);
-%! assert (issorted (sort (D, 'descend'), 'monotonic'), true);
-%! assert (issorted (sort (D, 'descend'), 'strictascend'), false);
-%! assert (issorted (sort (D, 'descend'), 'strictdescend'), false);
-%! assert (issorted (sort (D, 'descend'), 'strictmonotonic'), false);
+%! C = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (C, 'descend'), 'ascend'), false);
+%! assert (issorted (sort (C, 'descend'), 'descend'), true);
+%! assert (issorted (sort (C, 'descend'), 'monotonic'), true);
+%! assert (issorted (sort (C, 'descend'), 'strictascend'), false);
+%! assert (issorted (sort (C, 'descend'), 'strictdescend'), false);
+%! assert (issorted (sort (C, 'descend'), 'strictmonotonic'), false);
 %!test
-%! D = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
-%! assert (issorted (sort (D, 'MissingPlacement', 'auto')), true);
-%! assert (issorted (sort (D, 'MissingPlacement', 'first')), false);
-%! assert (issorted (sort (D, 'MissingPlacement', 'first'), ...
+%! C = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (C, 'MissingPlacement', 'auto')), true);
+%! assert (issorted (sort (C, 'MissingPlacement', 'first')), false);
+%! assert (issorted (sort (C, 'MissingPlacement', 'first'), ...
 %!                   'MissingPlacement', 'first'), true);
 %!test
-%! D = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
-%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'auto'), 'descend'), true);
-%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'last'), 'descend'), false);
-%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'first'), ...
+%! C = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (C, 'descend', 'MissingPlacement', 'auto'), 'descend'), true);
+%! assert (issorted (sort (C, 'descend', 'MissingPlacement', 'last'), 'descend'), false);
+%! assert (issorted (sort (C, 'descend', 'MissingPlacement', 'first'), ...
 %!                   'descend', 'MissingPlacement', 'first'), true);
 %!test
-%! D = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
-%! assert (issorted (sort (D, 2, 'MissingPlacement', 'auto'), 2), true);
-%! assert (issorted (sort (D, 2, 'MissingPlacement', 'first'), 2), false);
-%! assert (issorted (sort (D, 2, 'MissingPlacement', 'first'), 2, ...
+%! C = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (C, 2, 'MissingPlacement', 'auto'), 2), true);
+%! assert (issorted (sort (C, 2, 'MissingPlacement', 'first'), 2), false);
+%! assert (issorted (sort (C, 2, 'MissingPlacement', 'first'), 2, ...
 %!                   'MissingPlacement', 'first'), true);
 %!test
-%! D = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
-%! assert (issorted (sort (D, 2, 'descend', 'MissingPlacement', 'auto'), 2, 'descend'), true);
-%! assert (issorted (sort (D, 2, 'descend', 'MissingPlacement', 'last'), 2, 'descend'), false);
-%! assert (issorted (sort (D, 2, 'descend', 'MissingPlacement', 'first'), 2, ...
+%! C = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (C, 2, 'descend', 'MissingPlacement', 'auto'), 2, 'descend'), true);
+%! assert (issorted (sort (C, 2, 'descend', 'MissingPlacement', 'last'), 2, 'descend'), false);
+%! assert (issorted (sort (C, 2, 'descend', 'MissingPlacement', 'first'), 2, ...
 %!                   'descend', 'MissingPlacement', 'first'), true);
 %!test
-%! D = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
-%! assert (issorted (sort (D, 2, string ('ascend'), 'MissingPlacement', 'auto'), 2), true);
-%! assert (issorted (sort (D, 2, string ('ascend'), 'MissingPlacement', 'first'), 2), false);
-%! assert (issorted (sort (D, 2, string ('ascend'), 'MissingPlacement', 'first'), 2, ...
+%! C = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (C, 2, string ('ascend'), 'MissingPlacement', 'auto'), 2), true);
+%! assert (issorted (sort (C, 2, string ('ascend'), 'MissingPlacement', 'first'), 2), false);
+%! assert (issorted (sort (C, 2, string ('ascend'), 'MissingPlacement', 'first'), 2, ...
 %!                   'MissingPlacement', 'first'), true);
 %!test
-%! D = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
-%! assert (issorted (sort (D, 2, string ('descend'), 'MissingPlacement', 'auto'), 2, 'descend'), true);
-%! assert (issorted (sort (D, 2, string ('descend'), 'MissingPlacement', 'last'), 2, 'descend'), false);
-%! assert (issorted (sort (D, 2, string ('descend'), 'MissingPlacement', 'first'), 2, ...
+%! C = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (C, 2, string ('descend'), 'MissingPlacement', 'auto'), 2, 'descend'), true);
+%! assert (issorted (sort (C, 2, string ('descend'), 'MissingPlacement', 'last'), 2, 'descend'), false);
+%! assert (issorted (sort (C, 2, string ('descend'), 'MissingPlacement', 'first'), 2, ...
 %!                   'descend', 'MissingPlacement', 'first'), true);
 %!error<categorical.issorted: invalid value for 'MissingPlacement'.> ...
 %! issorted (sort (categorical), 'MissingPlacement', 'some')
@@ -1103,60 +1103,60 @@
 %! issorted (sort (categorical), 'asd')
 
 %!test
-%! D = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
-%! assert (issortedrows (sortrows (D)), true);
-%! assert (issortedrows (sortrows (D, 1)), true);
-%! assert (issortedrows (sortrows (D, 1), -1), false);
-%! assert (issortedrows (sortrows (D, 1), 1), true);
-%! assert (issortedrows (sortrows (D, 2)), false);
-%! assert (issortedrows (sortrows (D, 2), 2), true);
-%! assert (issortedrows (sortrows (D, 2), -2), false);
-%! assert (issortedrows (sortrows (D, -2), 2), false);
-%! assert (issortedrows (sortrows (D, -2), -2), true);
+%! C = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issortedrows (sortrows (C)), true);
+%! assert (issortedrows (sortrows (C, 1)), true);
+%! assert (issortedrows (sortrows (C, 1), -1), false);
+%! assert (issortedrows (sortrows (C, 1), 1), true);
+%! assert (issortedrows (sortrows (C, 2)), false);
+%! assert (issortedrows (sortrows (C, 2), 2), true);
+%! assert (issortedrows (sortrows (C, 2), -2), false);
+%! assert (issortedrows (sortrows (C, -2), 2), false);
+%! assert (issortedrows (sortrows (C, -2), -2), true);
 %!test
-%! D = categorical ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
-%! assert (issortedrows (sortrows (D)), true);
+%! C = categorical ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! assert (issortedrows (sortrows (C)), true);
 %!test
-%! D = categorical ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
-%! assert (issortedrows (sortrows (D, -2, 'MissingPlacement', 'first')), false);
-%! assert (issortedrows (sortrows (D, -2, 'MissingPlacement', 'first'), -2), true);
-%! assert (issortedrows (sortrows (D, -2, 'MissingPlacement', 'last'), -2), false);
-%! assert (issortedrows (sortrows (D, -2, 'MissingPlacement', 'last'), -2, ...
+%! C = categorical ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! assert (issortedrows (sortrows (C, -2, 'MissingPlacement', 'first')), false);
+%! assert (issortedrows (sortrows (C, -2, 'MissingPlacement', 'first'), -2), true);
+%! assert (issortedrows (sortrows (C, -2, 'MissingPlacement', 'last'), -2), false);
+%! assert (issortedrows (sortrows (C, -2, 'MissingPlacement', 'last'), -2, ...
 %!                       'MissingPlacement', 'last'), true);
 %!test
-%! D = categorical ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
-%! assert (issortedrows (sortrows (D, 2, 'MissingPlacement', 'last')), false);
-%! assert (issortedrows (sortrows (D, 2, 'MissingPlacement', 'last'), 2), true);
-%! assert (issortedrows (sortrows (D, 2, 'MissingPlacement', 'first'), 2), false);
-%! assert (issortedrows (sortrows (D, 2, 'MissingPlacement', 'first'), 2, ...
+%! C = categorical ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! assert (issortedrows (sortrows (C, 2, 'MissingPlacement', 'last')), false);
+%! assert (issortedrows (sortrows (C, 2, 'MissingPlacement', 'last'), 2), true);
+%! assert (issortedrows (sortrows (C, 2, 'MissingPlacement', 'first'), 2), false);
+%! assert (issortedrows (sortrows (C, 2, 'MissingPlacement', 'first'), 2, ...
 %!                       'MissingPlacement', 'first'), true);
 %!test
-%! D = categorical ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
-%! assert (issortedrows (sortrows (D, [1, -2, 3]), [1, -2, 3]), true);
-%! assert (issortedrows (sortrows (D, [1, 2, -3]), [1, -2, 3]), false);
+%! C = categorical ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! assert (issortedrows (sortrows (C, [1, -2, 3]), [1, -2, 3]), true);
+%! assert (issortedrows (sortrows (C, [1, 2, -3]), [1, -2, 3]), false);
 %!test
-%! D = categorical ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
-%! assert (issortedrows (sortrows (D, string ({'ascend', 'descend', 'ascend'})), ...
+%! C = categorical ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! assert (issortedrows (sortrows (C, string ({'ascend', 'descend', 'ascend'})), ...
 %!                       string ({'ascend', 'descend', 'ascend'})), true);
-%! D = categorical ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
-%! assert (issortedrows (sortrows (D, string ({'ascend', 'descend', 'ascend'})), ...
+%! C = categorical ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! assert (issortedrows (sortrows (C, string ({'ascend', 'descend', 'ascend'})), ...
 %!                       string ({'descend', 'ascend', 'ascend'})), false);
 %!test
-%! D = categorical ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
-%! assert (issortedrows (sortrows (D, [2, 3], string ({'descend', 'ascend'})), ...
+%! C = categorical ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! assert (issortedrows (sortrows (C, [2, 3], string ({'descend', 'ascend'})), ...
 %!                       [2, 3], string ({'descend', 'ascend'})), true);
-%! D = categorical ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
-%! assert (issortedrows (sortrows (D, [2, 3], string ({'ascend', 'descend'})), ...
+%! C = categorical ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! assert (issortedrows (sortrows (C, [2, 3], string ({'ascend', 'descend'})), ...
 %!                       [2, -3]), true);
-%! assert (issortedrows (sortrows (D, [2, 3], string ({'descend', 'descend'})), ...
+%! assert (issortedrows (sortrows (C, [2, 3], string ({'descend', 'descend'})), ...
 %!                       [2, -3], string ({'descend', 'ascend'})), false);
 %!test
-%! D = categorical ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
-%! assert (issortedrows (sortrows (D, [1, -2, 3], 'MissingPlacement', 'first'), ...
+%! C = categorical ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
+%! assert (issortedrows (sortrows (C, [1, -2, 3], 'MissingPlacement', 'first'), ...
 %!         [1, -2, 3], 'MissingPlacement', 'first'), true);
-%! assert (issortedrows (sortrows (D, [-1, -2, -3], 'MissingPlacement', 'first'), ...
+%! assert (issortedrows (sortrows (C, [-1, -2, -3], 'MissingPlacement', 'first'), ...
 %!         [-1, -2, -3]), true);
-%! assert (issortedrows (sortrows (D, [-1, -2, -3], 'MissingPlacement', 'first'), ...
+%! assert (issortedrows (sortrows (C, [-1, -2, -3], 'MissingPlacement', 'first'), ...
 %!         [1, -2,-3], string ({'descend', 'descend', 'descend'})), true);
 
 %!assert (isundefined (categorical ([1:10])), false (1, 10))
@@ -1172,6 +1172,145 @@
 %!assert (isvector (categorical (ones (0, 1))), true)
 %!assert (isvector (categorical (1)), true)
 %!assert (isvector (categorical (ones (2, 3, 4))), false)
+
+################################################################################
+##                        ** Category Operations **                           ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'addcats'          'mergecats'        'removecats'       'renamecats'      ##
+## 'reordercats'      'setcats'          'times'                              ##
+##                                                                            ##
+################################################################################
+
+%!test
+%! C = categorical ({'red', 'blue', 'red', 'blue', 'red', 'blue'});
+%! B = addcats (C, {'green', 'black'});
+%! assert_equal (C, B);
+%! assert_equal (categories (B), {'blue'; 'red'; 'green'; 'black'});
+%! assert_equal (categories (C), {'blue'; 'red'});
+%!test
+%! C = categorical ({'red', 'blue', 'red', 'blue', 'red', 'blue'});
+%! B = addcats (C, string ({'green', 'black'}));
+%! assert_equal (C, B);
+%! assert_equal (categories (B), {'blue'; 'red'; 'green'; 'black'});
+%! assert_equal (categories (C), {'blue'; 'red'});
+%!test
+%! S = {'medium', 'large', 'small', 'xlarge', 'large', 'medium'};
+%! C = categorical (S, {'small', 'medium', 'large', 'xlarge'}, 'Ordinal', true);
+%! B = addcats (C, 'xsmall', 'Before', 'small');
+%! cats = categories (B);
+%! assert_equal (cats, {'xsmall'; 'small'; 'medium'; 'large'; 'xlarge'});
+%! assert_equal (double (B), [3, 4, 2, 5, 4, 3]);
+%! assert_equal (cats (double (B)), S(:));
+%!test
+%! S = {'medium', 'large', 'small', 'xlarge', 'large', 'medium'};
+%! C = categorical (S, {'small', 'medium', 'large', 'xlarge'}, 'Ordinal', true);
+%! B = addcats (C, 'xsmall', 'Before', 'medium');
+%! cats = categories (B);
+%! assert_equal (cats, {'small'; 'xsmall'; 'medium'; 'large'; 'xlarge'});
+%! assert_equal (double (B), [3, 4, 1, 5, 4, 3]);
+%! assert_equal (cats (double (B)), S(:));
+%!test
+%! S = {'medium', 'large', 'small', 'xlarge', 'large', 'medium'};
+%! C = categorical (S, {'small', 'medium', 'large', 'xlarge'}, 'Ordinal', true);
+%! B = addcats (C, 'xsmall', 'Before', 'large');
+%! cats = categories (B);
+%! assert_equal (cats, {'small'; 'medium'; 'xsmall'; 'large'; 'xlarge'});
+%! assert_equal (double (B), [2, 4, 1, 5, 4, 2]);
+%! assert_equal (cats (double (B)), S(:));
+%!test
+%! S = {'medium', 'large', 'small', 'xlarge', 'large', 'medium'};
+%! C = categorical (S, {'small', 'medium', 'large', 'xlarge'}, 'Ordinal', true);
+%! B = addcats (C, 'xsmall', 'Before', 'xlarge');
+%! cats = categories (B);
+%! assert_equal (cats, {'small'; 'medium'; 'large'; 'xsmall'; 'xlarge'});
+%! assert_equal (double (B), [2, 3, 1, 5, 3, 2]);
+%! assert_equal (cats (double (B)), S(:));
+%!test
+%! S = {'medium', 'large', 'small', 'xlarge', 'large', 'medium'};
+%! C = categorical (S, {'small', 'medium', 'large', 'xlarge'}, 'Ordinal', true);
+%! B = addcats (C, {'xxsmall', 'xsmall'}, 'Before', 'small');
+%! cats = categories (B);
+%! assert_equal (cats, {'xxsmall'; 'xsmall'; 'small'; 'medium'; 'large'; 'xlarge'});
+%! assert_equal (double (B), [4, 5, 3, 6, 5, 4]);
+%! assert_equal (cats (double (B)), S(:));
+%!test
+%! S = {'medium', 'large', 'small', 'xlarge', 'large', 'medium'};
+%! C = categorical (S, {'small', 'medium', 'large', 'xlarge'}, 'Ordinal', true);
+%! B = addcats (C, {'xxsmall', 'xsmall'}, 'Before', 'xlarge');
+%! cats = categories (B);
+%! assert_equal (cats, {'small'; 'medium'; 'large'; 'xxsmall'; 'xsmall'; 'xlarge'});
+%! assert_equal (double (B), [2, 3, 1, 6, 3, 2]);
+%! assert_equal (cats (double (B)), S(:));
+%!test
+%! S = {'medium', 'large', 'small', 'xsmall', 'large', 'medium'};
+%! C = categorical (S, {'xsmall', 'small', 'medium', 'large'}, 'Ordinal', true);
+%! B = addcats (C, 'xlarge', 'After', 'large');
+%! cats = categories (B);
+%! assert_equal (cats, {'xsmall'; 'small'; 'medium'; 'large'; 'xlarge'});
+%! assert_equal (double (B), [3, 4, 2, 1, 4, 3]);
+%! assert_equal (cats (double (B)), S(:));
+%!test
+%! S = {'medium', 'large', 'small', 'xsmall', 'large', 'medium'};
+%! C = categorical (S, {'xsmall', 'small', 'medium', 'large'}, 'Ordinal', true);
+%! B = addcats (C, 'xlarge', 'After', 'medium');
+%! cats = categories (B);
+%! assert_equal (cats, {'xsmall'; 'small'; 'medium'; 'xlarge'; 'large'});
+%! assert_equal (double (B), [3, 5, 2, 1, 5, 3]);
+%! assert_equal (cats (double (B)), S(:));
+%!test
+%! S = {'medium', 'large', 'small', 'xsmall', 'large', 'medium'};
+%! C = categorical (S, {'xsmall', 'small', 'medium', 'large'}, 'Ordinal', true);
+%! B = addcats (C, 'xlarge', 'After', 'small');
+%! cats = categories (B);
+%! assert_equal (cats, {'xsmall'; 'small'; 'xlarge'; 'medium'; 'large'});
+%! assert_equal (double (B), [4, 5, 2, 1, 5, 4]);
+%! assert_equal (cats (double (B)), S(:));
+%!test
+%! S = {'medium', 'large', 'small', 'xsmall', 'large', 'medium'};
+%! C = categorical (S, {'xsmall', 'small', 'medium', 'large'}, 'Ordinal', true);
+%! B = addcats (C, 'xlarge', 'After', 'xsmall');
+%! cats = categories (B);
+%! assert_equal (cats, {'xsmall'; 'xlarge'; 'small'; 'medium'; 'large'});
+%! assert_equal (double (B), [4, 5, 3, 1, 5, 4]);
+%! assert_equal (cats (double (B)), S(:));
+%!test
+%! S = {'medium', 'large', 'small', 'xsmall', 'large', 'medium'};
+%! C = categorical (S, {'xsmall', 'small', 'medium', 'large'}, 'Ordinal', true);
+%! B = addcats (C, {'xlarge', 'xxlarge'}, 'After', 'large');
+%! cats = categories (B);
+%! assert_equal (cats, {'xsmall'; 'small'; 'medium'; 'large'; 'xlarge'; 'xxlarge'});
+%! assert_equal (double (B), [3, 4, 2, 1, 4, 3]);
+%! assert_equal (cats (double (B)), S(:));
+%!test
+%! S = {'medium', 'large', 'small', 'xsmall', 'large', 'medium'};
+%! C = categorical (S, {'xsmall', 'small', 'medium', 'large'}, 'Ordinal', true);
+%! B = addcats (C, {'xlarge', 'xxlarge'}, 'After', 'xsmall');
+%! cats = categories (B);
+%! assert_equal (cats, {'xsmall'; 'xlarge'; 'xxlarge'; 'small'; 'medium'; 'large'});
+%! assert_equal (double (B), [5, 6, 4, 1, 6, 5]);
+%! assert_equal (cats (double (B)), S(:));
+%!error<categorical:addcats: too few input arguments.> addcats (categorical)
+%!error<categorical:addcats: NEWCATS cannot be empty.> addcats (categorical, '')
+%!error<categorical:addcats: NEWCATS cannot be empty.> addcats (categorical, [])
+%!error<categorical:addcats: NEWCATS cannot be empty.> addcats (categorical, {})
+%!error<categorical:addcats: NEWCATS cannot be numeric or logical.> ...
+%! addcats (categorical, 1)
+%!error<categorical:addcats: NEWCATS cannot be numeric or logical.> ...
+%! addcats (categorical, false)
+%!error<categorical:addcats: NEWCATS cannot be converted to cellstr.> ...
+%! addcats (categorical, struct ('a', 2))
+%!error<categorical:addcats: duplicate category names in NEWCATS.> ...
+%! addcats (categorical, {'a', 'a'})
+%!error<categorical:addcats: new category names already present.> ...
+%! addcats (categorical ({'a', 'b', 'a'}), {'a', 'c'})
+%!error<categorical.addcats: cannot specify both 'After' and 'Before'.> ...
+%! addcats (categorical ({'a', 'b', 'a'}), 'c', 'After', 'a', 'Before', 'b')
+%!error<categorical:addcats: 'After' indexes a non-existing category.> ...
+%! addcats (categorical ({'a', 'b', 'a'}), 'c', 'After', 'd')
+%!error<categorical:addcats: 'Before' indexes a non-existing category.> ...
+%! addcats (categorical ({'a', 'b', 'a'}), 'c', 'Before', 'c')
 
 ################################################################################
 ##                   ** Sort, Filter, and Set Operations **                   ##
@@ -1724,43 +1863,43 @@
 %!assert_equal (unique (categorical ([1, 2, 2, 3, 4, 4])), categorical ([1:4]))
 %!assert_equal (unique (categorical ([1, 2, 2, 3, 4, 4]')), categorical ([1:4]'))
 %!test
-%! D = categorical ([1, 2, 2, 3, 4, 4]);
-%! [c, i, j] = unique (D);
-%! assert_equal (c, D(i));
-%! assert_equal (c(j), D);
+%! C = categorical ([1, 2, 2, 3, 4, 4]);
+%! [c, i, j] = unique (C);
+%! assert_equal (c, C(i));
+%! assert_equal (c(j), C);
 %!assert_equal (unique (categorical ([1, 4, 2, 2, 3]), 'sorted'), categorical (1:4))
 %!test
-%! D = categorical ([1, 4, 2, 2, 3]);
-%! [c, i, j] = unique (D, 'sorted');
+%! C = categorical ([1, 4, 2, 2, 3]);
+%! [c, i, j] = unique (C, 'sorted');
 %! assert_equal (c, categorical (1:4));
-%! assert_equal (c, D(i));
-%! assert_equal (c(j), D);
+%! assert_equal (c, C(i));
+%! assert_equal (c(j), C);
 %!test
-%! D = categorical ([1, 4, 2, 2, 3]);
-%! [c, i, j] = unique (D, 'stable');
+%! C = categorical ([1, 4, 2, 2, 3]);
+%! [c, i, j] = unique (C, 'stable');
 %! assert_equal (c, categorical ([1, 4, 2, 3]));
-%! assert_equal (c, D(i));
-%! assert_equal (c(j), D);
+%! assert_equal (c, C(i));
+%! assert_equal (c(j), C);
 %!test
-%! D = categorical ([1, 4, 2, 2, 3]);
-%! [c, i, j] = unique (D, 'sorted', 'last');
+%! C = categorical ([1, 4, 2, 2, 3]);
+%! [c, i, j] = unique (C, 'sorted', 'last');
 %! assert_equal (i, [1; 4; 5; 2]);
-%! assert_equal (c, D(i));
-%! assert_equal (c(j), D);
+%! assert_equal (c, C(i));
+%! assert_equal (c(j), C);
 %!test
-%! D = categorical ([1, 4, 2, 2, 3]);
-%! [c, i, j] = unique (D, 'stable', 'last');
+%! C = categorical ([1, 4, 2, 2, 3]);
+%! [c, i, j] = unique (C, 'stable', 'last');
 %! assert_equal (i, [1; 2; 4; 5]);
-%! assert_equal (c, D(i));
-%! assert_equal (c(j), D);
+%! assert_equal (c, C(i));
+%! assert_equal (c(j), C);
 %!test
-%! D = categorical ([3, 1, 3; 3, 3, 1; 1, 3, 3; 3, 2, 3; 2, 3, 3; ...
+%! C = categorical ([3, 1, 3; 3, 3, 1; 1, 3, 3; 3, 2, 3; 2, 3, 3; ...
 %!            1, 1, 3; 1, 2, 3; 2, 3, 2; 3, 3, 2; 3, 3, 1]);
-%! [c, i, j] = unique (D(:,[1:2]), 'rows');
+%! [c, i, j] = unique (C(:,[1:2]), 'rows');
 %! assert_equal (c, categorical ([1, 1; 1, 2; 1, 3; 2, 3; 3, 1; 3, 2; 3, 3]));
 %! assert_equal (i, [6; 7; 3; 5; 1; 4; 2]);
 %! assert_equal (j, [5; 7; 3; 6; 4; 1; 2; 4; 7; 7]);
-%! assert_equal (D(i,[1:2]), categorical ([1, 1; 1, 2; 1, 3; 2, 3; 3, 1; 3, 2; 3, 3]));
+%! assert_equal (C(i,[1:2]), categorical ([1, 1; 1, 2; 1, 3; 2, 3; 3, 1; 3, 2; 3, 3]));
 %!test
 %! [B, ia, ib] = unique (categorical ([1, 2; 2, 3; 1, 2]), 'rows', 'sorted', 'first');
 %! assert_equal (B, categorical ([1, 2; 2, 3]));
