@@ -1814,8 +1814,8 @@ classdef categorical
     ## @var{catname} must be either a character vector, a cellstr scalar or a
     ## string scalar.  @var{newcats} may be a cell array of character vectors or
     ## any type of array that can be converted to a cell array of character
-    ## vectors with the @code{cellstr} function, as long as it does contain any
-    ## duplicate names and does not reference an existing category in @var{A}.
+    ## vectors with the @code{cellstr} function, as long as it does not contain
+    ## any duplicate names or references existing category in @var{A}.
     ##
     ## @end deftypefn
     function B = addcats (A, newcats, varargin)
@@ -1825,17 +1825,24 @@ classdef categorical
         error ("categorical:addcats: too few input arguments.");
       elseif (isempty (newcats))
         error ("categorical:addcats: NEWCATS cannot be empty.");
+      elseif (isnumeric (newcats) || islogical (newcats))
+        error ("categorical:addcats: NEWCATS cannot be numeric or logical.");
       endif
 
       ## Convert to cellstring
-      try
-        newcats = cellstr (newcats);
-      catch
-        error ("categorical:addcats: NEWCATS cannot be converted to cellstr.");
-      end_try_catch
+      if (! iscellstr (newcats))
+        try
+          newcats = cellstr (newcats);
+        catch
+          error ("categorical:addcats: NEWCATS cannot be converted to cellstr.");
+        end_try_catch
+      endif
+
+      ## Force to column vector
+      newcats = newcats(:);
 
       ## New catnames must be unique and non-existing
-      if (! isequal (newcats, unique (newcats)))
+      if (numel (newcats) != numel (unique (newcats)))
         error ("categorical:addcats: duplicate category names in NEWCATS.");
       endif
       TF = ismember (newcats, A.cats);
@@ -1850,8 +1857,7 @@ classdef categorical
 
       ## Check optional Name-Value paired arguments
       if (! isempty (After) && ! isempty (Before))
-        error (strcat (["categorical.addcats: cannot use both", ...
-                        " 'After' and 'Before' options."]));
+        error ("categorical.addcats: cannot specify both 'After' and 'Before'.");
       endif
 
       ## Add categories
@@ -1865,7 +1871,7 @@ classdef categorical
           B.cats = [B.cats; newcats];
         else
           B = A;
-          B.cats = [B.cats; newcats];
+          B.cats = [B.cats(1:idxcode); newcats; B.cats(idxcode+1:end)];
           idx_add = idxcode+1:maxcode;
           n_cats = numel (newcats);
           for i = numel (idx_add):-1:1
@@ -1877,12 +1883,13 @@ classdef categorical
         idxcode = find (strcmp (Before, A.cats));
         if (isempty (idxcode))
           error ("categorical:addcats: 'Before' indexes a non-existing category.");
-        elseif (idxcode == maxcode)
+        elseif (idxcode == 1)
           B = A;
-          B.cats = [B.cats; newcats];
+          B.cats = [newcats; B.cats];
+          B.code(! B.isMissing) += numel (newcats);
         else
           B = A;
-          B.cats = [B.cats; newcats];
+          B.cats = [B.cats(1:idxcode-1); newcats; B.cats(idxcode:end)];
           idx_add = idxcode:maxcode;
           n_cats = numel (newcats);
           for i = numel (idx_add):-1:1
