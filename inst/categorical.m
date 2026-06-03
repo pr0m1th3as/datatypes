@@ -1461,6 +1461,18 @@ classdef categorical
         return;
       endif
 
+      ## Get operating dimension
+      cid = cellfun (@isnumeric, varargin);
+      if (any (cid))
+        dim = varargin{cid};
+      else
+        sz = size (this);
+        dim = find (sz != 1, 1);
+        if (isempty (dim)) # scalar
+          dim = 1;
+        endif
+      endif
+
       ## Parse and validate optional 'MissingPlacement' paired argument
       optNames = {'MissingPlacement'};
       dfValues = {'auto'};
@@ -1484,7 +1496,7 @@ classdef categorical
         endif
         switch (direction)
           case {'ascend', 'descend'}
-            TF = isequal (this, sort (this, args{:}, 'MissingPlacement', MP));
+            TF = isequaln (this, sort (this, args{:}, 'MissingPlacement', MP));
 
           case {'strictascend', 'strictdescend'}
             ## Check for missing values first (fast)
@@ -1496,7 +1508,11 @@ classdef categorical
             if (! strcmp (MP, 'auto'))
               args = [args, 'MissingPlacement', MP];
             endif
-            sorted = unique (sort (this, args{:}), 'stable');
+            sorted = sort (this, args{:});
+            if (any (diff (double (sorted), 1, dim) == 0, 'all'))
+              TF = false;
+              return;
+            endif
             TF = isequal (this, sorted);
 
           case 'monotonic'
@@ -1519,9 +1535,17 @@ classdef categorical
             args{cid} = 'ascend';
             if (! strcmp (MP, 'auto'))
               arg = [args, 'MissingPlacement', MP];
-              sorted = unique (sort (this, arg{:}), 'stable');
+              sorted = sort (this, args{:});
+              if (any (diff (double (sorted), 1, dim) == 0, 'all'))
+                TF = false;
+                return;
+              endif
             else
-              sorted = unique (sort (this, args{:}), 'stable');
+              sorted = sort (this, args{:});
+              if (any (diff (double (sorted), 1, dim) == 0, 'all'))
+                TF = false;
+                return;
+              endif
             endif
             TF = isequal (this, sorted);
             if (TF)
@@ -1531,7 +1555,11 @@ classdef categorical
             if (! strcmp (MP, 'auto'))
               args = [args, 'MissingPlacement', MP];
             endif
-            sorted = unique (sort (this, args{:}), 'stable');
+            sorted = sort (this, args{:});
+            if (any (diff (double (sorted), 1, dim) == 0, 'all'))
+              TF = false;
+              return;
+            endif
             TF = isequal (this, sorted);
         endswitch
       else
