@@ -1555,7 +1555,7 @@ classdef duration
           idx = strcmp (direction, 'monotonic');
           direction{idx} = 'ascend';
           varargin{cid} = direction;
-          TF = isequaln (this, sortrows (this, varargin(:)));
+          TF = isequaln (this, sortrows (this, varargin{:}));
           if (TF)
             return;
           endif
