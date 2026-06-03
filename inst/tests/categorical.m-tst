@@ -978,7 +978,125 @@
 %!assert_equal (isscalar (categorical (ones (0, 1))), false)
 %!assert_equal (isscalar (categorical (ones (1, 0))), false)
 
-
+%!test
+%! D = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issorted (sort (D)), true);
+%! assert (issorted (sort (D), 'ascend'), true);
+%! assert (issorted (sort (D), 'descend'), false);
+%! assert (issorted (sort (D), 'monotonic'), true);
+%! assert (issorted (sort (D), 'strictascend'), false);
+%! assert (issorted (sort (D), 'strictdescend'), false);
+%! assert (issorted (sort (D), 'strictmonotonic'), false);
+%!test
+%! D = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issorted (sort (D, 2), 2), true);
+%! assert (issorted (sort (D, 2), 2, 'ascend'), true);
+%! assert (issorted (sort (D, 2), 2, 'descend'), false);
+%! assert (issorted (sort (D, 2), 2, 'monotonic'), true);
+%! assert (issorted (sort (D, 2), 2, 'strictascend'), true);
+%! assert (issorted (sort (D, 2), 2, 'strictdescend'), false);
+%! assert (issorted (sort (D, 2), 2, 'strictmonotonic'), true);
+%!test
+%! D = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issorted (sort (D, 2), 'ascend'), false);
+%! assert (issorted (sort (D, 2), 'descend'), false);
+%! assert (issorted (sort (D, 2), 'monotonic'), false);
+%! assert (issorted (sort (D, 2), 'strictascend'), false);
+%! assert (issorted (sort (D, 2), 'strictdescend'), false);
+%! assert (issorted (sort (D, 2), 'strictmonotonic'), false);
+%!test
+%! D = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issorted (sort (D, 'descend'), 'ascend'), false);
+%! assert (issorted (sort (D, 'descend'), 'descend'), true);
+%! assert (issorted (sort (D, 'descend'), 'monotonic'), true);
+%! assert (issorted (sort (D, 'descend'), 'strictascend'), false);
+%! assert (issorted (sort (D, 'descend'), 'strictdescend'), false);
+%! assert (issorted (sort (D, 'descend'), 'strictmonotonic'), false);
+%!test
+%! D = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issorted (sort (D, 2, 'descend'), 2, 'ascend'), false);
+%! assert (issorted (sort (D, 2, 'descend'), 2, 'descend'), true);
+%! assert (issorted (sort (D, 2, 'descend'), 2, 'monotonic'), true);
+%! assert (issorted (sort (D, 2, 'descend'), 2, 'strictascend'), false);
+%! assert (issorted (sort (D, 2, 'descend'), 2, 'strictdescend'), true);
+%! assert (issorted (sort (D, 2, 'descend'), 2, 'strictmonotonic'), true);
+%!test
+%! D = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert (issorted (sort (D, 2, 'descend'), 'ascend'), false);
+%! assert (issorted (sort (D, 2, 'descend'), 'descend'), false);
+%! assert (issorted (sort (D, 2, 'descend'), 'monotonic'), false);
+%! assert (issorted (sort (D, 2, 'descend'), 'strictascend'), false);
+%! assert (issorted (sort (D, 2, 'descend'), 'strictdescend'), false);
+%! assert (issorted (sort (D, 2, 'descend'), 'strictmonotonic'), false);
+%!test
+%! D = categorical ([1, 2; 2, 3; 3, 4; 4, 5]);
+%! assert (issorted (sort (D), 'ascend'), true);
+%! assert (issorted (sort (D), 'descend'), false);
+%! assert (issorted (sort (D), 'monotonic'), true);
+%! assert (issorted (sort (D), 'strictascend'), true);
+%! assert (issorted (sort (D), 'strictdescend'), false);
+%! assert (issorted (sort (D), 'strictmonotonic'), true);
+%!test
+%! D = categorical ([1, 2; 2, 3; 3, 4; 4, 5]);
+%! assert (issorted (sort (D, 'descend'), 'ascend'), false);
+%! assert (issorted (sort (D, 'descend'), 'descend'), true);
+%! assert (issorted (sort (D, 'descend'), 'monotonic'), true);
+%! assert (issorted (sort (D, 'descend'), 'strictascend'), false);
+%! assert (issorted (sort (D, 'descend'), 'strictdescend'), true);
+%! assert (issorted (sort (D, 'descend'), 'strictmonotonic'), true);
+%!test
+%! D = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (D)), true);
+%! assert (issorted (sort (D), 'ascend'), true);
+%! assert (issorted (sort (D), 'descend'), false);
+%! assert (issorted (sort (D), 'monotonic'), true);
+%! assert (issorted (sort (D), 'strictascend'), false);
+%! assert (issorted (sort (D), 'strictdescend'), false);
+%! assert (issorted (sort (D), 'strictmonotonic'), false);
+%!test
+%! D = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (D, 'descend'), 'ascend'), false);
+%! assert (issorted (sort (D, 'descend'), 'descend'), true);
+%! assert (issorted (sort (D, 'descend'), 'monotonic'), true);
+%! assert (issorted (sort (D, 'descend'), 'strictascend'), false);
+%! assert (issorted (sort (D, 'descend'), 'strictdescend'), false);
+%! assert (issorted (sort (D, 'descend'), 'strictmonotonic'), false);
+%!test
+%! D = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (D, 'MissingPlacement', 'auto')), true);
+%! assert (issorted (sort (D, 'MissingPlacement', 'first')), false);
+%! assert (issorted (sort (D, 'MissingPlacement', 'first'), ...
+%!                   'MissingPlacement', 'first'), true);
+%!test
+%! D = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'auto'), 'descend'), true);
+%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'last'), 'descend'), false);
+%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'first'), ...
+%!                   'descend', 'MissingPlacement', 'first'), true);
+%!test
+%! D = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (D, 2, 'MissingPlacement', 'auto'), 2), true);
+%! assert (issorted (sort (D, 2, 'MissingPlacement', 'first'), 2), false);
+%! assert (issorted (sort (D, 2, 'MissingPlacement', 'first'), 2, ...
+%!                   'MissingPlacement', 'first'), true);
+%!test
+%! D = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (D, 2, 'descend', 'MissingPlacement', 'auto'), 2, 'descend'), true);
+%! assert (issorted (sort (D, 2, 'descend', 'MissingPlacement', 'last'), 2, 'descend'), false);
+%! assert (issorted (sort (D, 2, 'descend', 'MissingPlacement', 'first'), 2, ...
+%!                   'descend', 'MissingPlacement', 'first'), true);
+%!test
+%! D = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (D, 2, string ('ascend'), 'MissingPlacement', 'auto'), 2), true);
+%! assert (issorted (sort (D, 2, string ('ascend'), 'MissingPlacement', 'first'), 2), false);
+%! assert (issorted (sort (D, 2, string ('ascend'), 'MissingPlacement', 'first'), 2, ...
+%!                   'MissingPlacement', 'first'), true);
+%!test
+%! D = categorical ([1, 2; 2, 3; 3, 4; 4, NaN]);
+%! assert (issorted (sort (D, 2, string ('descend'), 'MissingPlacement', 'auto'), 2, 'descend'), true);
+%! assert (issorted (sort (D, 2, string ('descend'), 'MissingPlacement', 'last'), 2, 'descend'), false);
+%! assert (issorted (sort (D, 2, string ('descend'), 'MissingPlacement', 'first'), 2, ...
+%!                   'descend', 'MissingPlacement', 'first'), true);
 
 ################################################################################
 ##                   ** Sort, Filter, and Set Operations **                   ##
