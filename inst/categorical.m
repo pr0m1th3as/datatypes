@@ -1822,11 +1822,11 @@ classdef categorical
 
       ## Check input arguments
       if (nargin < 2)
-        error ("categorical:addcats: too few input arguments.");
+        error ("categorical.addcats: too few input arguments.");
       elseif (isempty (newcats))
-        error ("categorical:addcats: NEWCATS cannot be empty.");
+        error ("categorical.addcats: NEWCATS cannot be empty.");
       elseif (isnumeric (newcats) || islogical (newcats))
-        error ("categorical:addcats: NEWCATS cannot be numeric or logical.");
+        error ("categorical.addcats: NEWCATS cannot be numeric or logical.");
       endif
 
       ## Convert to cellstring
@@ -1834,7 +1834,7 @@ classdef categorical
         try
           newcats = cellstr (newcats);
         catch
-          error ("categorical:addcats: NEWCATS cannot be converted to cellstr.");
+          error ("categorical.addcats: NEWCATS cannot be converted to cellstr.");
         end_try_catch
       endif
 
@@ -1843,11 +1843,11 @@ classdef categorical
 
       ## New catnames must be unique and non-existing
       if (numel (newcats) != numel (unique (newcats)))
-        error ("categorical:addcats: duplicate category names in NEWCATS.");
+        error ("categorical.addcats: duplicate category names in NEWCATS.");
       endif
       TF = ismember (newcats, A.cats);
       if (any (TF))
-        error ("categorical:addcats: new category names already present.");
+        error ("categorical.addcats: new category names already present.");
       endif
 
       ## Parse optional Name-Value paired arguments
@@ -1865,7 +1865,7 @@ classdef categorical
         maxcode = numel (A.cats);
         idxcode = find (strcmp (After, A.cats));
         if (isempty (idxcode))
-          error ("categorical:addcats: 'After' indexes a non-existing category.");
+          error ("categorical.addcats: 'After' indexes a non-existing category.");
         elseif (idxcode == maxcode)
           B = A;
           B.cats = [B.cats; newcats];
@@ -1882,7 +1882,7 @@ classdef categorical
         maxcode = numel (A.cats);
         idxcode = find (strcmp (Before, A.cats));
         if (isempty (idxcode))
-          error ("categorical:addcats: 'Before' indexes a non-existing category.");
+          error ("categorical.addcats: 'Before' indexes a non-existing category.");
         elseif (idxcode == 1)
           B = A;
           B.cats = [newcats; B.cats];
@@ -1931,25 +1931,40 @@ classdef categorical
 
       ## Check input arguments
       if (nargin < 2)
-        error ("categorical:mergecats: too few input arguments.");
+        error ("categorical.mergecats: too few input arguments.");
       elseif (isempty (oldcats))
-        error ("categorical:mergecats: OLDCATS cannot be empty.");
+        error ("categorical.mergecats: OLDCATS cannot be empty.");
+      elseif (isnumeric (oldcats) || islogical (oldcats))
+        error ("categorical.mergecats: OLDCATS cannot be numeric or logical.");
       endif
 
       ## Convert to cellstring
       try
         oldcats = cellstr (oldcats);
       catch
-        error ("categorical:mergecats: NEWCATS cannot be converted to cellstr.");
+        error ("categorical.mergecats: OLDCATS cannot be converted to cellstr.");
       end_try_catch
+
+      ## Force to column vector
+      oldcats = oldcats(:);
 
       ## Check for optional third argument
       if (nargin < 3)
         newcat = oldcats{1};
       else
+        newcat = varargin{1};
+        if (isstring (newcat) && isscalar (newcat))
+          newcat = cellstr (newcat);
+        elseif (ischar (newcat) && (isrow (newcat) || isempty (newcat)))
+          newcat = cellstr (newcat);
+        elseif (! (iscellstr (newcat) && isscalar (newcat)))
+          error (strcat ("categorical.mergecats: NEWCAT must be either", ...
+                         " a character vector, a cellstring scalar, or", ...
+                         " a string scalar."));
+        endif
         newcat = cellstr (varargin{1});
         if (cellfun ('isempty', newcat))
-          error ("categorical:mergecats: blank new category name.");
+          error ("categorical.mergecats: NEWCAT cannot be empty.");
         endif
       endif
 
@@ -1962,19 +1977,25 @@ classdef categorical
       index(! TF) = [];
 
       ## Only consecutive categories can be merged in ordinal arrays
-      if (A.isOrdinal && any (diff (index) != 1))
+      if (A.isOrdinal && any (diff (sort (index)) != 1))
         error (strcat ("categorical.mergecats: only consecutive categories", ...
                        " can be merged in ordinal categorical arrays."));
       endif
 
       ## Merge categories
       TF = ismember (A.code, index);
+      [Findex, Fidx] = min (index);
+      index(Fidx) = [];
       B = A;
-      B.code(TF) = index(1);
-      B.cats(index(1)) = newcat;
-      remidx = index(2:end);
-      B.cats(remidx) = [];
-      B.code(! TF) -= numel (remidx);
+      B.code(TF) = Findex;
+      B.cats(Findex) = newcat;
+      B.cats(index) = [];
+
+      ## Fix codes due to removed categories
+      index = sort (index, 'descend');
+      for idx = index
+        B.code(B.code > idx) -= 1;
+      endfor
     endfunction
 
     ## -*- texinfo -*-
@@ -2007,13 +2028,13 @@ classdef categorical
         B = A;
         B.cats(remidx) = [];
       elseif (isempty (varargin))
-        error ("categorical:removecats: OLDCATS cannot be empty.");
+        error ("categorical.removecats: OLDCATS cannot be empty.");
       else
         ## Convert to cellstring
         try
           oldcats = cellstr (varargin{1});
         catch
-          error (strcat ("categorical:removecats: OLDCATS", ...
+          error (strcat ("categorical.removecats: OLDCATS", ...
                          " cannot be converted to cellstr."));
         end_try_catch
 
@@ -2077,7 +2098,7 @@ classdef categorical
     function B = renamecats (A, varargin)
       ## Check input arguments
       if (nargin < 2)
-        error ("categorical:renamecats: too few input arguments.");
+        error ("categorical.renamecats: too few input arguments.");
       endif
 
       ## Process input arguments
@@ -2087,11 +2108,11 @@ classdef categorical
         try
           newnames = cellstr (varargin{1});
         catch
-          error (strcat ("categorical:renamecats: NEWNAMES", ...
+          error (strcat ("categorical.renamecats: NEWNAMES", ...
                          " cannot be converted to cellstr."));
         end_try_catch
         if (numel (oldnames) != numel (newnames))
-          error (strcat ("categorical:renamecats: NEWNAMES must equal the", ...
+          error (strcat ("categorical.renamecats: NEWNAMES must equal the", ...
                          " number of existing categories in input array."));
         endif
       else
@@ -2099,17 +2120,17 @@ classdef categorical
         try
           oldnames = cellstr (varargin{1});
         catch
-          error (strcat ("categorical:renamecats: OLDNAMES", ...
+          error (strcat ("categorical.renamecats: OLDNAMES", ...
                          " cannot be converted to cellstr."));
         end_try_catch
         try
           newnames = cellstr (varargin{2});
         catch
-          error (strcat ("categorical:renamecats: NEWNAMES", ...
+          error (strcat ("categorical.renamecats: NEWNAMES", ...
                          " cannot be converted to cellstr."));
         end_try_catch
         if (numel (oldnames) != numel (newnames))
-          error (strcat ("categorical:renamecats: OLDNAMES and NEWNAMES", ...
+          error (strcat ("categorical.renamecats: OLDNAMES and NEWNAMES", ...
                          " must have the same number of elements."));
         endif
       endif
@@ -2149,7 +2170,7 @@ classdef categorical
         try
           neworder = cellstr (varargin{1});
         catch
-          error (strcat ("categorical:reordercats: NEWORDER", ...
+          error (strcat ("categorical.reordercats: NEWORDER", ...
                          " cannot be converted to cellstr."));
         end_try_catch
         if (! all (ismember (neworder, A.cats)))
@@ -2193,14 +2214,14 @@ classdef categorical
     function B = setcats (A, newcats)
       ## Check input arguments
       if (nargin < 2)
-        error ("categorical:setcats: too few input arguments.");
+        error ("categorical.setcats: too few input arguments.");
       endif
 
       ## Convert to cellstring
       try
         newcats = cellstr (newcats);
       catch
-        error ("categorical:setcats: NEWCATS cannot be converted to cellstr.");
+        error ("categorical.setcats: NEWCATS cannot be converted to cellstr.");
       end_try_catch
       ## Find existing categories
       [TF, index] = ismember (A.cats, newcats);
@@ -2239,10 +2260,10 @@ classdef categorical
     function C = times (A, B)
       ## Check input arguments
       if (nargin < 2)
-        error ("categorical:times: too few input arguments.");
+        error ("categorical.times: too few input arguments.");
       endif
       if (! isa (A, 'categorical') || ! isa (B, 'categorical'))
-        error ("categorical:times: A and B must be categorical arrays.");
+        error ("categorical.times: A and B must be categorical arrays.");
       endif
       newcats = {};
       for i = 1:numel (A.cats)
