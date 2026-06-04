@@ -1291,26 +1291,140 @@
 %! assert_equal (cats, {'xsmall'; 'xlarge'; 'xxlarge'; 'small'; 'medium'; 'large'});
 %! assert_equal (double (B), [5, 6, 4, 1, 6, 5]);
 %! assert_equal (cats (double (B)), S(:));
-%!error<categorical:addcats: too few input arguments.> addcats (categorical)
-%!error<categorical:addcats: NEWCATS cannot be empty.> addcats (categorical, '')
-%!error<categorical:addcats: NEWCATS cannot be empty.> addcats (categorical, [])
-%!error<categorical:addcats: NEWCATS cannot be empty.> addcats (categorical, {})
-%!error<categorical:addcats: NEWCATS cannot be numeric or logical.> ...
+%!error<categorical.addcats: too few input arguments.> addcats (categorical)
+%!error<categorical.addcats: NEWCATS cannot be empty.> addcats (categorical, '')
+%!error<categorical.addcats: NEWCATS cannot be empty.> addcats (categorical, [])
+%!error<categorical.addcats: NEWCATS cannot be empty.> addcats (categorical, {})
+%!error<categorical.addcats: NEWCATS cannot be numeric or logical.> ...
 %! addcats (categorical, 1)
-%!error<categorical:addcats: NEWCATS cannot be numeric or logical.> ...
+%!error<categorical.addcats: NEWCATS cannot be numeric or logical.> ...
 %! addcats (categorical, false)
-%!error<categorical:addcats: NEWCATS cannot be converted to cellstr.> ...
+%!error<categorical.addcats: NEWCATS cannot be converted to cellstr.> ...
 %! addcats (categorical, struct ('a', 2))
-%!error<categorical:addcats: duplicate category names in NEWCATS.> ...
+%!error<categorical.addcats: duplicate category names in NEWCATS.> ...
 %! addcats (categorical, {'a', 'a'})
-%!error<categorical:addcats: new category names already present.> ...
+%!error<categorical.addcats: new category names already present.> ...
 %! addcats (categorical ({'a', 'b', 'a'}), {'a', 'c'})
 %!error<categorical.addcats: cannot specify both 'After' and 'Before'.> ...
 %! addcats (categorical ({'a', 'b', 'a'}), 'c', 'After', 'a', 'Before', 'b')
-%!error<categorical:addcats: 'After' indexes a non-existing category.> ...
+%!error<categorical.addcats: 'After' indexes a non-existing category.> ...
 %! addcats (categorical ({'a', 'b', 'a'}), 'c', 'After', 'd')
-%!error<categorical:addcats: 'Before' indexes a non-existing category.> ...
+%!error<categorical.addcats: 'Before' indexes a non-existing category.> ...
 %! addcats (categorical ({'a', 'b', 'a'}), 'c', 'Before', 'c')
+%!error<categorical.mergecats: NEWCAT must be either a character vector, a cellstring scalar, or a string scalar.> ...
+%! mergecats (categorical, {'a'}, 1)
+%!error<categorical.mergecats: NEWCAT must be either a character vector, a cellstring scalar, or a string scalar.> ...
+%! mergecats (categorical, {'a'}, [])
+%!error<categorical.mergecats: NEWCAT must be either a character vector, a cellstring scalar, or a string scalar.> ...
+%! mergecats (categorical, {'a'}, {'w', 'e'})
+%!error<categorical.mergecats: NEWCAT must be either a character vector, a cellstring scalar, or a string scalar.> ...
+%! mergecats (categorical, {'a'}, ['w'; 'e'])
+%!error<categorical.mergecats: NEWCAT must be either a character vector, a cellstring scalar, or a string scalar.> ...
+%! mergecats (categorical, {'a'}, string ({'w', 'e'}))
+%!error<categorical.mergecats: NEWCAT must be either a character vector, a cellstring scalar, or a string scalar.> ...
+%! mergecats (categorical, {'a'}, missing)
+%!error<categorical.mergecats: NEWCAT cannot be empty.> ...
+%! mergecats (categorical, {'a'}, '')
+%!error<categorical.mergecats: NEWCAT cannot be empty.> ...
+%! mergecats (categorical, {'a'}, {''})
+%!error<categorical.mergecats: NEWCAT cannot be empty.> ...
+%! mergecats (categorical, {'a'}, string ({''}))
+%!error<categorical.mergecats: NEWCAT cannot be empty.> ...
+%! mergecats (categorical, {'a'}, string (missing))
+%!test
+%! A = categorical ({'pink', 'blue', 'pink', 'red', 'blue', 'red'});
+%! B = mergecats (A, {'red', 'pink'});
+%! assert_equal (B, categorical ({'red', 'blue', 'red', 'red', 'blue', 'red'}));
+%! assert_equal (categories (B), {'blue'; 'red'});
+%! assert_equal (double (B), [2, 1, 2, 2, 1, 2]);
+%!test
+%! A = categorical ({'pink', 'blue', 'pink', 'red', 'blue', 'red'});
+%! B = mergecats (A, {'pink', 'red'});
+%! assert_equal (B, categorical ({'pink', 'blue', 'pink', 'pink', 'blue', 'pink'}));
+%! assert_equal (categories (B), {'blue'; 'pink'});
+%! assert_equal (double (B), [2, 1, 2, 2, 1, 2]);
+%!test
+%! A = categorical ({'pink', 'blue', 'pink', 'red', 'blue', 'red'});
+%! B = mergecats (A, {'pink', 'blue'});
+%! assert_equal (B, categorical ({'pink', 'pink', 'pink', 'red', 'pink', 'red'}));
+%! assert_equal (categories (B), {'pink'; 'red'});
+%! assert_equal (double (B), [1, 1, 1, 2, 1, 2]);
+%!test
+%! A = categorical ({'pink', 'blue', 'pink', 'red', 'blue', 'red'});
+%! B = mergecats (A, {'red', 'pink'}, 'gold');
+%! assert_equal (B, categorical ({'gold', 'blue', 'gold', 'gold', 'blue', 'gold'}));
+%! assert_equal (categories (B), {'blue'; 'gold'});
+%! assert_equal (double (B), [2, 1, 2, 2, 1, 2]);
+%!test
+%! A = categorical ({'pink', 'blue', 'pink', 'red', 'blue', 'red'});
+%! B = mergecats (A, string ({'pink', 'red'}), 'gold');
+%! assert_equal (B, categorical ({'gold', 'blue', 'gold', 'gold', 'blue', 'gold'}));
+%! assert_equal (categories (B), {'blue'; 'gold'});
+%! assert_equal (double (B), [2, 1, 2, 2, 1, 2]);
+%!test
+%! A = categorical ({'pink', 'blue', 'pink', 'red', 'blue', 'red'});
+%! B = mergecats (A, {'pink', 'blue'}, string ('gold'));
+%! assert_equal (B, categorical ({'gold', 'gold', 'gold', 'red', 'gold', 'red'}));
+%! assert_equal (categories (B), {'gold'; 'red'});
+%! assert_equal (double (B), [1, 1, 1, 2, 1, 2]);
+%!test
+%! A = categorical ({'shirt', 'pants', 'shoes', 'shirt', 'dress', 'belt'});
+%! assert_equal (categories (A), {'belt'; 'dress'; 'pants'; 'shirt'; 'shoes'});
+%! B = mergecats (A, {'belt', 'shoes'}, 'hat');
+%! assert_equal (categories (B), {'hat'; 'dress'; 'pants'; 'shirt'});
+%! assert_equal (double (B), [4, 3, 1, 4, 2, 1]);
+%!test
+%! A = categorical ({'shirt', 'pants', 'shoes', 'shirt', 'dress', 'belt'});
+%! assert_equal (categories (A), {'belt'; 'dress'; 'pants'; 'shirt'; 'shoes'});
+%! B = mergecats (A, {'dress', 'shoes'}, 'hat');
+%! assert_equal (categories (B), {'belt'; 'hat'; 'pants'; 'shirt'});
+%! assert_equal (double (B), [4, 3, 2, 4, 2, 1]);
+%!test
+%! A = categorical ({'shirt', 'pants', 'shoes', 'shirt', 'dress', 'belt'});
+%! assert_equal (categories (A), {'belt'; 'dress'; 'pants'; 'shirt'; 'shoes'});
+%! B = mergecats (A, {'dress', 'shirt'}, 'hat');
+%! assert_equal (categories (B), {'belt'; 'hat'; 'pants'; 'shoes'});
+%! assert_equal (double (B), [2, 3, 4, 2, 2, 1]);
+%!test
+%! A = categorical ({'shirt', 'pants', 'shoes', 'shirt', 'dress', 'belt'});
+%! assert_equal (categories (A), {'belt'; 'dress'; 'pants'; 'shirt'; 'shoes'});
+%! B = mergecats (A, {'belt', 'shirt', 'shoes'}, 'hat');
+%! assert_equal (categories (B), {'hat'; 'dress'; 'pants'});
+%! assert_equal (double (B), [1, 3, 1, 1, 2, 1]);
+%!test
+%! A = categorical ({'shirt', 'pants', 'shoes', 'shirt', 'dress', 'belt'});
+%! B = mergecats (A, {'dresss', 'shoes'}, 'hat');
+%! assert_equal (categories (B), {'belt'; 'dress'; 'pants'; 'shirt'; 'hat'});
+%! assert_equal (double (B), [4, 3, 5, 4, 2, 1]);
+%!test
+%! A = categorical ({'shirt', 'pants', 'shoes', 'shirt', 'dress', 'belt'});
+%! B = mergecats (A, {'dresss', 'shirt'}, 'hat');
+%! assert_equal (categories (B), {'belt'; 'dress'; 'pants'; 'hat'; 'shoes'});
+%! assert_equal (double (B), [4, 3, 5, 4, 2, 1]);
+%!test
+%! A = categorical ({'shirt', 'pants', 'shoes', 'shirt', 'dress', 'belt', ''});
+%! B = mergecats (A, {'belt', 'shoes'}, 'other');
+%! cats = categories (B);
+%! assert_equal (cats, {'other'; 'dress'; 'pants'; 'shirt'});
+%! codes = double (B);
+%! assert_equal (codes, [4, 3, 1, 4, 2, 1, NaN]);
+%! S = {'shirt'; 'pants'; 'other'; 'shirt'; 'dress'; 'other'};
+%! assert_equal (cats(codes(! isnan (codes))), S);
+%!test
+%! A = categorical ([1, 2, 3, 2, 1], 1:3, {'poor', 'fair', 'good'}, 'Ordinal', true);
+%! B = mergecats (A, {'fair', 'poor'}, "bad");
+%! assert_equal (categories (B), {'bad'; 'good'});
+%! assert_equal (double (B), [1, 1, 2, 1, 1]);
+%!error<categorical.mergecats: too few input arguments.> mergecats (categorical)
+%!error<categorical.mergecats: OLDCATS cannot be empty.> mergecats (categorical, '')
+%!error<categorical.mergecats: OLDCATS cannot be empty.> mergecats (categorical, [])
+%!error<categorical.mergecats: OLDCATS cannot be empty.> mergecats (categorical, {})
+%!error<categorical.mergecats: OLDCATS cannot be numeric or logical.> ...
+%! mergecats (categorical, 1)
+%!error<categorical.mergecats: OLDCATS cannot be numeric or logical.> ...
+%! mergecats (categorical, false)
+%!error<categorical.mergecats: OLDCATS cannot be converted to cellstr.> ...
+%! mergecats (categorical, struct ('a', 2))
 
 ################################################################################
 ##                   ** Sort, Filter, and Set Operations **                   ##
