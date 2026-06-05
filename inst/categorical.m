@@ -1812,10 +1812,14 @@ classdef categorical
     ## the categories before the existing category specified by @var{catname}.
     ##
     ## @var{catname} must be either a character vector, a cellstr scalar or a
-    ## string scalar.  @var{newcats} may be a cell array of character vectors or
-    ## any type of array that can be converted to a cell array of character
-    ## vectors with the @code{cellstr} function, as long as it does not contain
-    ## any duplicate names or references existing category in @var{A}.
+    ## string scalar.  @var{newcats} can be a string array, a cell array of
+    ## character vectors, or any type of array that can be converted to a cell
+    ## array of character vectors with the @code{cellstr} function, as long as
+    ## it does not contain any duplicate names or references existing category
+    ## in @var{A}.
+    ##
+    ## When adding a single category, @var{newcats} can also be specified as a
+    ## character vector.
     ##
     ## @end deftypefn
     function B = addcats (A, newcats, varargin)
@@ -1846,7 +1850,7 @@ classdef categorical
         error ("categorical.addcats: duplicate category names in NEWCATS.");
       endif
       TF = ismember (newcats, A.cats);
-      if (any (TF))
+      if (any (TF, 'all'))
         error ("categorical.addcats: new category names already present.");
       endif
 
@@ -1921,10 +1925,10 @@ classdef categorical
     ## as specified by @var{newcat}.
     ##
     ## @var{newcat} must be either a character vector, a cellstr scalar or a
-    ## string scalar.  @var{oldcats} may be a cell array of character vectors or
-    ## any type of array that can be converted to a cell array of character
-    ## vectors with the @code{cellstr} function.  Any names in @var{oldcats}
-    ## that do not reference an existing category are ignored.
+    ## string scalar.  @var{oldcats} can be string array, a cell array of
+    ## character vectors, or any type of array that can be converted to a cell
+    ## array of character vectors with the @code{cellstr} function.  Any names
+    ## in @var{oldcats} that do not reference an existing category are ignored.
     ##
     ## @end deftypefn
     function B = mergecats (A, oldcats, varargin)
@@ -1936,14 +1940,18 @@ classdef categorical
         error ("categorical.mergecats: OLDCATS cannot be empty.");
       elseif (isnumeric (oldcats) || islogical (oldcats))
         error ("categorical.mergecats: OLDCATS cannot be numeric or logical.");
+      elseif (ischar (oldcats))
+        error ("categorical.mergecats: OLDCATS cannot be a character vector.");
       endif
 
       ## Convert to cellstring
-      try
-        oldcats = cellstr (oldcats);
-      catch
-        error ("categorical.mergecats: OLDCATS cannot be converted to cellstr.");
-      end_try_catch
+      if (! iscellstr (oldcats))
+        try
+          oldcats = cellstr (oldcats);
+        catch
+          error ("categorical.mergecats: OLDCATS cannot be converted to cellstr.");
+        end_try_catch
+      endif
 
       ## Force to column vector
       oldcats = oldcats(:);
@@ -1970,7 +1978,7 @@ classdef categorical
 
       ## Keep old cat names that reference existing categories, ignore the rest
       [TF, index] = ismember (oldcats, A.cats);
-      if (! any (TF))
+      if (! any (TF, 'all'))
         B = A;
         return;
       endif
@@ -1993,7 +2001,7 @@ classdef categorical
 
       ## Fix codes due to removed categories
       index = sort (index, 'descend');
-      for idx = index
+      for idx = index(:)'
         B.code(B.code > idx) -= 1;
       endfor
     endfunction
@@ -2012,64 +2020,69 @@ classdef categorical
     ## categories specified by @var{oldcats}.  The elements of @var{B} that
     ## correspond to the removed categories are undefined.
     ##
-    ## @var{oldcats} may be a cell array of character vectors or any type of
-    ## array that can be converted to a cell array of character vectors with the
-    ## @code{cellstr} function.  Any names in @var{oldcats} that do not
-    ## reference an existing category are ignored.
+    ## @var{oldcats} can be a string array, a cell array of character vectors,
+    ## or any type of array that can be converted to a cell array of character
+    ## vectors with the @code{cellstr} function.  Any names in @var{oldcats}
+    ## that do not reference an existing category are ignored.
+    ##
+    ## When removing a single category, @var{oldcats} can also be specified as a
+    ## character vector.
     ##
     ## @end deftypefn
     function B = removecats (A, varargin)
 
       ## Remove unused categories
       if (nargin == 1)
-        usedcodes = __unique__ (A.code(:));
+        usedcodes = __unique__ (A.code);
         usedcodes(usedcodes == 0) = [];
-        remidx = ! ismember (1:numel(A.cats), usedcodes);
+        remcodes = setdiff (1:numel(A.cats), usedcodes);
         B = A;
-        B.cats(remidx) = [];
-      elseif (isempty (varargin))
-        error ("categorical.removecats: OLDCATS cannot be empty.");
+        B.cats(remcodes) = [];
+        remcodes = sort (remcodes, 'descend');
+        for code = remcodes(:)'
+          B.code(B.code > code) -= 1;
+        endfor
+
       else
+        oldcats = varargin{1};
+        ## Some input validation
+        if (isempty (oldcats))
+          ## Handle MATLAB compatibility here
+          if (iscell (oldcats))
+            B = A;
+            return;
+          endif
+          error ("categorical.removecats: OLDCATS cannot be empty.");
+        elseif (isnumeric (oldcats) || islogical (oldcats))
+          error ("categorical.removecats: OLDCATS cannot be numeric or logical.");
+        endif
         ## Convert to cellstring
-        try
-          oldcats = cellstr (varargin{1});
-        catch
-          error (strcat ("categorical.removecats: OLDCATS", ...
-                         " cannot be converted to cellstr."));
-        end_try_catch
+        if (! iscellstr (oldcats))
+          try
+            oldcats = cellstr (oldcats);
+          catch
+            error (strcat ("categorical.removecats: OLDCATS", ...
+                           " cannot be converted to cellstr."));
+          end_try_catch
+        endif
 
         ## Keep old cat names that reference existing categories, ignore the rest
-        [TF, remidx] = ismember (oldcats, A.cats);
-        if (! any (TF))
+        [TF, remcodes] = ismember (oldcats, A.cats);
+        if (! any (TF, 'all'))
           B = A;
           return;
         endif
-        remidx(! TF) = [];
-        [TF] = ismember (A.code, remidx);
+        remcodes(! TF) = [];
+        [TF] = ismember (A.code, remcodes);
         B = A;
         B.code(TF) = 0;
-        B.cats(remidx) = [];
+        B.cats(remcodes) = [];
         B.isMissing = B.isMissing | TF;
-        remcodes = unique (B.code(! TF)(:));
-        if (isscalar (remcodes))
-          B.code(B.code > remcodes) -= 1;
-          return;
-        endif
-
-        ## If remcodes are consecutive, then we only need to subtract the
-        ## number of removed categories with code less than 'min (remcodes)'.
-        ## Otherwise we need to compute a variable subtraction vector and
-        ## process remaining categories in sequential order.
-        idx = find (diff (remcodes) > 1);
-        if (isempty (idx))  # all removed elements are consecutive
-          B.code(! TF) -= min (remcodes) - 1;
-        else
-          remidx = cumsum (diff ([0; remcodes]) - 1);
-          for idx = 1:numel (remcodes)
-            B.code(B.code == remcodes(idx)) -= remidx(idx);
-          endfor
-        endif
-      endif;
+        remcodes = sort (remcodes, 'descend');
+        for code = remcodes(:)'
+          B.code(B.code > code) -= 1;
+        endfor
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -2080,19 +2093,23 @@ classdef categorical
     ##
     ## @code{@var{B} = renamecats (@var{A}, @var{newnames})} renames all the
     ## categories in @var{A}, without changing any of its values, with the names
-    ## specified in @var{newnames}.  @var{newnames} may be a cell array of
-    ## character vectors or any type of array that can be converted to a cell
-    ## array of character vectors with the @code{cellstr} function, as long as
-    ## it has the same number of elements as the categories in @var{A}.
+    ## specified in @var{newnames}.  @var{newnames} can be specified as a string
+    ## array, a cell array of character vectors, or any type of array that can
+    ## be converted to a cell array of character vectors with the @code{cellstr}
+    ## function, as long as it has the same number of elements as the categories
+    ## in @var{A}.
     ##
     ## @code{@var{B} = renamecats (@var{A}, @var{oldnames}, @var{newnames})}
     ## renames the categories of @var{A} specified in @var{oldnames} with the
     ## names specified in @var{newnames}.  Both @var{oldnames} and
-    ## @var{newnames} may be a cell arrays of character vectors or any type of
-    ## array that can be converted to a cell array of character vectors with the
-    ## @code{cellstr} function, as long as they have the same number of
-    ## elements.  @var{oldnames} must specify a subset of existing categories in
-    ## @var{A}.
+    ## @var{newnames} can be a string array, a cell array of character vectors,
+    ## or any type of array that can be converted to a cell array of character
+    ## vectors with the @code{cellstr} function, as long as they have the same
+    ## number of elements.  @var{oldnames} must specify a subset of existing
+    ## categories in @var{A}.
+    ##
+    ## When renaming a single category, both @var{oldnames} and @var{newnames}
+    ## can also be specified as character vectors.
     ##
     ## @end deftypefn
     function B = renamecats (A, varargin)
@@ -2101,34 +2118,77 @@ classdef categorical
         error ("categorical.renamecats: too few input arguments.");
       endif
 
-      ## Process input arguments
+      ## Process 2 input arguments
       if (nargin == 2)
         oldnames = A.cats;
+        newnames = varargin{1};
+
+        ## Some input validation
+        if (isempty (newnames))
+          ## Handle MATLAB compatibility here
+          if (iscell (newnames))
+            B = A;
+            return;
+          endif
+          error ("categorical.renamecats: NEWNAMES cannot be empty.");
+        elseif (isnumeric (newnames) || islogical (newnames))
+          error ("categorical.renamecats: NEWNAMES cannot be numeric or logical.");
+        endif
+
         ## Convert to cellstring
-        try
-          newnames = cellstr (varargin{1});
-        catch
-          error (strcat ("categorical.renamecats: NEWNAMES", ...
-                         " cannot be converted to cellstr."));
-        end_try_catch
+        if (! iscellstr (newnames))
+          try
+            newnames = cellstr (newnames);
+          catch
+            error (strcat ("categorical.renamecats: NEWNAMES", ...
+                           " cannot be converted to cellstr."));
+          end_try_catch
+        endif
+
+        ## Make sure categories match
         if (numel (oldnames) != numel (newnames))
           error (strcat ("categorical.renamecats: NEWNAMES must equal the", ...
                          " number of existing categories in input array."));
         endif
+
+      ## Process 3 input arguments
       else
+        oldnames = varargin{1};
+        newnames = varargin{2};
+
+        ## OLDNAMES input validation
+        if (isempty (oldnames) && ! iscell (oldnames))
+          error ("categorical.renamecats: OLDNAMES cannot be empty.");
+        elseif (isnumeric (oldnames) || islogical (oldnames))
+          error ("categorical.renamecats: OLDNAMES cannot be numeric or logical.");
+        endif
         ## Convert to cellstring
-        try
-          oldnames = cellstr (varargin{1});
-        catch
-          error (strcat ("categorical.renamecats: OLDNAMES", ...
-                         " cannot be converted to cellstr."));
-        end_try_catch
-        try
-          newnames = cellstr (varargin{2});
-        catch
-          error (strcat ("categorical.renamecats: NEWNAMES", ...
-                         " cannot be converted to cellstr."));
-        end_try_catch
+        if (! iscellstr (oldnames))
+          try
+            oldnames = cellstr (oldnames);
+          catch
+            error (strcat ("categorical.renamecats: OLDNAMES", ...
+                           " cannot be converted to cellstr."));
+          end_try_catch
+        endif
+
+        ## NEWNAMES input validation
+        if (isempty (newnames) && ! iscell (newnames))
+          error ("categorical.renamecats: NEWNAMES cannot be empty.");
+        elseif (isnumeric (newnames) || islogical (newnames))
+          error ("categorical.renamecats: NEWNAMES cannot be numeric or logical.");
+        endif
+        ## Convert to cellstring
+        if (! iscellstr (newnames))
+          try
+            newnames = cellstr (newnames);
+          catch
+            error (strcat ("categorical.renamecats: NEWNAMES", ...
+                           " cannot be converted to cellstr."));
+          end_try_catch
+        endif
+
+        ## Make sure category names match
         if (numel (oldnames) != numel (newnames))
           error (strcat ("categorical.renamecats: OLDNAMES and NEWNAMES", ...
                          " must have the same number of elements."));
@@ -2156,28 +2216,58 @@ classdef categorical
     ##
     ## @code{@var{B} = reordercats (@var{A}, @var{neworder})} reorders the
     ## categories of @var{A} according to the order specified by @var{neworder},
-    ## which may be a cell array of character vectors or any type of array that
-    ## can be converted to a cell array of character vectors with the
-    ## @code{cellstr} function as long as it contains the same set with the
-    ## existing categories in @var{A}.
+    ## which must define a permutation of @code{categories (@var{A})}.
+    ##
+    ## @var{neworder} can be a numeric vector, a string array, a cell array of
+    ## character vectors, or any type of array that can be converted to a cell
+    ## array of character vectors with the @code{cellstr} function as long as it
+    ## indexes all existing categories in @var{A}.
     ##
     ## @end deftypefn
     function B = reordercats (A, varargin)
+      ## Get NEWORDER
       if (nargin == 1)
         neworder = sort (A.cats);
       else
+        neworder = varargin{1};
+
+        ## NEWORDER input validation
+        if (isnumeric (neworder))
+          catidx = 1:numel (A.cats);
+          if (! (isvector (neworder) && neworder > 0 && fix (neworder) == neworder))
+            error (strcat ("categorical.reordercats: NEWORDER numeric", ...
+                           " input must be a vector of positive integers."));
+          endif
+          if (! isequal (sort (neworder)(:), catidx(:)))
+            error (strcat ("categorical.reordercats: NEWORDER numeric input", ...
+                           " must index a permutation of existing categories."));
+          endif
+          neworder = A.cats(neworder);
+        elseif (isempty (neworder))
+          error ("categorical.reordercats: NEWORDER cannot be empty.");
+        elseif (islogical (neworder))
+          error ("categorical.reordercats: NEWORDER cannot be logical.");
+        elseif (ischar (neworder))
+          error ("categorical.reordercats: NEWORDER cannot be a character vector.");
+        endif
+
         ## Convert to cellstring
-        try
-          neworder = cellstr (varargin{1});
-        catch
-          error (strcat ("categorical.reordercats: NEWORDER", ...
-                         " cannot be converted to cellstr."));
-        end_try_catch
+        if (! iscellstr (neworder))
+          try
+            neworder = cellstr (varargin{1});
+          catch
+            error (strcat ("categorical.reordercats: NEWORDER", ...
+                           " cannot be converted to cellstr."));
+          end_try_catch
+        endif
+
+        ## Make sure categories match
         if (! all (ismember (neworder, A.cats)))
-          error ("categorical.reordercats: NEWORDER must contain", ...
-                 " the same set with the existing categories.");
+          error (strcat ("categorical.reordercats: NEWORDER must contain", ...
+                         " the same set with the existing categories."));
         endif
       endif
+
       ## Reorder
       [~, newidx] = ismember (A.cats, neworder);
       B = A;
@@ -2226,7 +2316,11 @@ classdef categorical
       ## Find existing categories
       [TF, index] = ismember (A.cats, newcats);
       ## Remove and reorder categories
-      B = removecats (A, A.cats(! TF));
+      if (all (TF, 'all'))
+        B = A;
+      else
+        B = removecats (A, A.cats(! TF));
+      endif
       [TF, index] = ismember (newcats, B.cats);
       index(! TF) = [];
       B = reordercats (B, B.cats(index));
@@ -4067,7 +4161,8 @@ classdef categorical
             n_code = [n_code, j];
           else
             idx{j} = args{i}.code == j;
-            n_code = [n_code, numel(out.cats)+1];
+            next_c = numel (out.cats) + numel (n_code) + 1;
+            n_code = [n_code, next_c];
             newcat = [newcat; args{i}.cats(j)];
           endif
         endfor
