@@ -1423,8 +1423,178 @@
 %! mergecats (categorical, 1)
 %!error<categorical.mergecats: OLDCATS cannot be numeric or logical.> ...
 %! mergecats (categorical, false)
+%!error<categorical.mergecats: OLDCATS cannot be a character vector.> ...
+%! mergecats (categorical ({'a'}), 'a')
 %!error<categorical.mergecats: OLDCATS cannot be converted to cellstr.> ...
 %! mergecats (categorical, struct ('a', 2))
+
+%!test
+%! A = categorical ({'red', 'blue', 'blue', 'blue', 'red', 'blue'}, ...
+%!                  {'black', 'blue', 'red', 'green'});
+%! assert_equal (categories (A), {'black'; 'blue'; 'red'; 'green'});
+%! B = removecats (A);
+%! assert_equal (categories (B), {'blue'; 'red'});
+%! assert_equal (A, B);
+%!test
+%! A = categorical ({'red', 'blue', 'blue', 'blue', 'red', 'blue'}, ...
+%!                  {'black', 'blue', 'red', 'green'});
+%! B = removecats (A, cell (0, 1));
+%! assert_equal (categories (B), {'black'; 'blue'; 'red'; 'green'});
+%! assert_equal (A, B);
+%!test
+%! A = categorical ({'red', 'blue', 'blue', 'blue', 'red', 'blue'}, ...
+%!                  {'black', 'blue', 'red', 'green'});
+%! B = removecats (A, {});
+%! assert_equal (categories (B), {'black'; 'blue'; 'red'; 'green'});
+%! assert_equal (A, B);
+%!test
+%! A = categorical ({'plane', 'car', 'train', 'car', 'plane', 'car'});
+%! B = removecats (A, 'car');
+%! assert_equal (categories (B), {'plane'; 'train'});
+%! assert_equal (double (B), [1, NaN, 2, NaN, 1, NaN]);
+%!test
+%! A = categorical ({'plane', 'car', 'train', 'car', 'plane', 'car'});
+%! B = removecats (A, string ('plane'));
+%! assert_equal (categories (B), {'car'; 'train'});
+%! assert_equal (double (B), [NaN, 1, 2, 1, NaN, 1]);
+%!test
+%! A = categorical ({'plane', 'car', 'train', 'car', 'plane', 'car'});
+%! B = removecats (A, {'car', 'train'});
+%! assert_equal (categories (B), {'plane'});
+%! assert_equal (double (B), [1, NaN, NaN, NaN, 1, NaN]);
+%!error<categorical.removecats: OLDCATS cannot be empty.> ...
+%! removecats (categorical, [])
+%!error<categorical.removecats: OLDCATS cannot be empty.> ...
+%! removecats (categorical, '')
+%!error<categorical.removecats: OLDCATS cannot be numeric or logical.> ...
+%! removecats (categorical, 1)
+%!error<categorical.removecats: OLDCATS cannot be numeric or logical.> ...
+%! removecats (categorical, true)
+%!error<categorical.removecats: OLDCATS cannot be converted to cellstr.> ...
+%! removecats (categorical, struct ('a', 1))
+
+%!test
+%! A = categorical ({'purple', 'blue', 'purple', 'red', 'red', 'blue'});
+%! B = renamecats (A, {'b', 'p', 'r'});
+%! cats = categories (B);
+%! assert_equal (cats, {'b'; 'p'; 'r'});
+%! assert_equal (cats(double (B)), {'p'; 'b'; 'p'; 'r'; 'r'; 'b'});
+%!test
+%! A = categorical ({'purple', 'blue', 'purple', 'red', 'red', 'blue'});
+%! B = renamecats (A, string ({'b', 'p', 'r'}));
+%! cats = categories (B);
+%! assert_equal (cats, {'b'; 'p'; 'r'});
+%! assert_equal (cats(double (B)), {'p'; 'b'; 'p'; 'r'; 'r'; 'b'});
+%!test
+%! A = categorical ({'purple', 'blue', 'purple', 'red', 'red', 'blue'});
+%! B = renamecats (A, 'purple', 'gold');
+%! cats = categories (B);
+%! assert_equal (cats, {'blue'; 'gold'; 'red'});
+%! assert_equal (cats(double (B)), {'gold'; 'blue'; 'gold'; 'red'; 'red'; 'blue'});
+%!test
+%! A = categorical ();
+%! B = renamecats (A, {});
+%! assert_equal (A, B);
+%!test
+%! A = categorical ({'purple', 'blue', 'purple', 'red', 'red', 'blue'});
+%! B = renamecats (A, {}, {});
+%! assert_equal (A, B);
+%!error<categorical.renamecats: too few input arguments.> ...
+%! renamecats (categorical)
+%!error<categorical.renamecats: NEWNAMES cannot be empty.> ...
+%! renamecats (categorical, '')
+%!error<categorical.renamecats: NEWNAMES cannot be numeric or logical.> ...
+%! renamecats (categorical, 1)
+%!error<categorical.renamecats: NEWNAMES cannot be numeric or logical.> ...
+%! renamecats (categorical, true)
+%!error<categorical.renamecats: NEWNAMES cannot be converted to cellstr.> ...
+%! renamecats (categorical, struct ('a', 'b'))
+%!error<categorical.renamecats: NEWNAMES must equal the number of existing categories in input array.> ...
+%! renamecats (categorical, string (missing))
+%!error<categorical.renamecats: OLDNAMES cannot be empty.> ...
+%! renamecats (categorical ({'a'}), '', 'a')
+%!error<categorical.renamecats: OLDNAMES cannot be numeric or logical.> ...
+%! renamecats (categorical ({'a'}), 1, 'a')
+%!error<categorical.renamecats: OLDNAMES cannot be numeric or logical.> ...
+%! renamecats (categorical ({'a'}), true, 'a')
+%!error<categorical.renamecats: OLDNAMES cannot be converted to cellstr.> ...
+%! renamecats (categorical ({'a'}), struct ('a', 'a'), 'a')
+%!error<categorical.renamecats: NEWNAMES cannot be empty.> ...
+%! renamecats (categorical ({'a'}), 'a', '')
+%!error<categorical.renamecats: NEWNAMES cannot be numeric or logical.> ...
+%! renamecats (categorical ({'a'}), 'a', 1)
+%!error<categorical.renamecats: NEWNAMES cannot be numeric or logical.> ...
+%! renamecats (categorical ({'a'}), 'a', true)
+%!error<categorical.renamecats: NEWNAMES cannot be converted to cellstr.> ...
+%! renamecats (categorical ({'a'}), 'a', struct ('a', 'a'))
+%!error<categorical.renamecats: OLDNAMES and NEWNAMES must have the same number of elements.> ...
+%! renamecats (categorical ({'a'}), 'a', {})
+%!error<categorical.renamecats: OLDNAMES and NEWNAMES must have the same number of elements.> ...
+%! renamecats (categorical ({'a'}), {}, 'a')
+%!error<categorical.renamecats: OLDNAMES must be a subset of existing categories.> ...
+%! renamecats (categorical ({'a'}), 'b', 'a')
+
+%!test
+%! X = categorical ({'Frog', 'Cat', 'Cat', 'Ant', 'Frog'});
+%! Xcats = categories (X);
+%! assert_equal (Xcats, {'Ant'; 'Cat'; 'Frog'});
+%! Y = categorical ({'Deer', 'Bear', 'Eagle', 'Deer'});
+%! Ycats = categories (Y);
+%! assert_equal (Ycats, {'Bear'; 'Deer'; 'Eagle'});
+%! A = [X, Y];
+%! Acats = categories (A);
+%! S = {'Frog'; 'Cat'; 'Cat'; 'Ant'; 'Frog'; 'Deer'; 'Bear'; 'Eagle'; 'Deer'};
+%! assert_equal (Acats, {'Ant'; 'Cat'; 'Frog'; 'Bear'; 'Deer'; 'Eagle'});
+%! assert_equal (Acats(double (A)), S);
+%! B = reordercats (A);
+%! Bcats = categories (B);
+%! assert_equal (Bcats, {'Ant'; 'Bear'; 'Cat'; 'Deer'; 'Eagle'; 'Frog'});
+%! assert_equal (Bcats(double (B)), S);
+%!test
+%! A = categorical ({'red', 'green', 'blue', 'red', 'green', 'red', 'blue', 'blue'});
+%! assert_equal (categories (A), {'blue'; 'green'; 'red'});
+%! B = reordercats (A, string ({'red', 'green', 'blue'}));
+%! assert_equal (categories (B), {'red'; 'green'; 'blue'});
+%!test
+%! A = categorical ({'plane', 'car', 'train', 'car', 'plane', 'car'}, ...
+%!                  {'car', 'train', 'plane'}, 'Ordinal', true);
+%! assert_equal (categories (A), {'car'; 'train'; 'plane'});
+%! A_out = categorical ({'plane', 'train', 'plane'}, ...
+%!                      {'car', 'train', 'plane'}, 'Ordinal', true);
+%! assert_equal (A(A > "car"), A_out);
+%! B = reordercats (A, {'train', 'car', 'plane'});
+%! assert_equal (categories (B), {'train'; 'car'; 'plane'});
+%! B_out = categorical ({'plane', 'plane'}, ...
+%!                      {'train', 'car', 'plane'}, 'Ordinal', true);
+%! assert_equal (B(B > "car"), B_out);
+%!test
+%! A = categorical ({'plane', 'car', 'train', 'car', 'car', 'plane', 'car'});
+%! assert_equal (categories (A), {'car'; 'plane'; 'train'});
+%! assert_equal (countcats (A), [4, 2, 1]);
+%! [~, neworder] = sort (countcats (A));
+%! B = reordercats (A, neworder);
+%! assert_equal (categories (B), {'train'; 'plane'; 'car'});
+%! assert_equal (A, B);
+%!error<categorical.reordercats: NEWORDER numeric input must be a vector of positive integers.> ...
+%! reordercats (categorical, 1.5)
+%!error<categorical.reordercats: NEWORDER numeric input must be a vector of positive integers.> ...
+%! reordercats (categorical, [0, 1, 2])
+%!error<categorical.reordercats: NEWORDER numeric input must be a vector of positive integers.> ...
+%! reordercats (categorical, [])
+%!error<categorical.reordercats: NEWORDER numeric input must index a permutation of existing categories.> ...
+%! reordercats (categorical ({'a', 'b', 'c'}), [1, 2, 2])
+%!error<categorical.reordercats: NEWORDER numeric input must index a permutation of existing categories.> ...
+%! reordercats (categorical ({'a', 'b', 'c'}), [1, 2, 4])
+%!error<categorical.reordercats: NEWORDER cannot be empty.> ...
+%! reordercats (categorical, '')
+%!error<categorical.reordercats: NEWORDER cannot be logical.> ...
+%! reordercats (categorical, true)
+%!error<categorical.reordercats: NEWORDER cannot be a character vector.> ...
+%! reordercats (categorical, 'a')
+%!error<categorical.reordercats: NEWORDER cannot be converted to cellstr.> ...
+%! reordercats (categorical, struct ('a', 1))
+%!error<categorical.reordercats: NEWORDER must contain the same set with the existing categories.> ...
+%! reordercats (categorical ({'a', 'b', 'c'}), {'a', 'd', 'c'})
 
 ################################################################################
 ##                   ** Sort, Filter, and Set Operations **                   ##
