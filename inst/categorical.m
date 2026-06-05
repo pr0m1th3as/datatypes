@@ -4511,7 +4511,7 @@ classdef categorical
             endif
             new_code = find (strcmp (this.cats, val));
             if (! isempty (new_code))   # category exists
-              this.code == new_code;
+              this.code(s.subs{:}) = new_code;
             else
               ## New category, check for protected status
               if (isprotected (this))
