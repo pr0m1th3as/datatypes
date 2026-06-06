@@ -2296,9 +2296,10 @@ classdef categorical
     ## new categories.
     ## @end itemize
     ##
-    ## @var{newcats} may be a cell array of character vectors or any type of
-    ## array that can be converted to a cell array of character vectors with the
-    ## @code{cellstr} function.
+    ## @var{newcats} can be a string array, a cell array of character vectors
+    ## or any type of array that can be converted to a cell array of character
+    ## vectors with the @code{cellstr} function.  When setting a single new
+    ## category, @var{newcats} can also be specified as a character vector.
     ##
     ## @end deftypefn
     function B = setcats (A, newcats)
@@ -2307,12 +2308,31 @@ classdef categorical
         error ("categorical.setcats: too few input arguments.");
       endif
 
+      ## NEWCATS input validation
+      if (isempty (newcats))
+        ## Empty cell removes all categories
+        if (iscell (newcats))
+          B = A;
+          B.cats = {};
+          sz = size (A);
+          B.code = uint16 (zeros (sz));
+          B.isMissing = true (sz);
+          return;
+        endif
+        error ("categorical.setcats: NEWCATS cannot be empty.");
+      elseif (isnumeric (newcats) || islogical (newcats))
+        error ("categorical.setcats: NEWCATS cannot be numeric or logical.");
+      endif
+
       ## Convert to cellstring
-      try
-        newcats = cellstr (newcats);
-      catch
-        error ("categorical.setcats: NEWCATS cannot be converted to cellstr.");
-      end_try_catch
+      if (! iscellstr (newcats))
+        try
+          newcats = cellstr (newcats);
+        catch
+          error ("categorical.setcats: NEWCATS cannot be converted to cellstr.");
+        end_try_catch
+      endif
+
       ## Find existing categories
       [TF, index] = ismember (A.cats, newcats);
       ## Remove and reorder categories
