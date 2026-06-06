@@ -2380,13 +2380,14 @@ classdef categorical
         error ("categorical.times: A and B must be categorical arrays.");
       endif
       newcats = {};
+      n_Bcats = numel (B.cats);
       for i = 1:numel (A.cats)
-        for j = 1:numel (B.cats)
+        for j = 1:n_Bcats
           newcats = [newcats; strjoin({A.cats{i}, B.cats{j}})];
         endfor
       endfor
       C = addcats (categorical, newcats);
-      C.code = A.code .* B.code;
+      C.code = A.code .* n_Bcats - (n_Bcats - B.code);
       C.isMissing = A.isMissing | B.isMissing;
     endfunction
 
