@@ -1596,6 +1596,44 @@
 %!error<categorical.reordercats: NEWORDER must contain the same set with the existing categories.> ...
 %! reordercats (categorical ({'a', 'b', 'c'}), {'a', 'd', 'c'})
 
+%!test
+%! A = categorical ({'blue', 'black', 'red', 'red', 'blue', 'black', 'black', 'red', 'blue'});
+%! B = setcats (A, string ({'red', 'black'}));
+%! assert_equal (categories (B), {'red'; 'black'});
+%! Bout = categorical ({'', 'black', 'red', 'red', '', 'black', 'black', 'red', ''}, ...
+%!                     {'red', 'black'});
+%! assert_equal (isequaln (B, Bout), true);
+%!test
+%! A = categorical ({'blue', 'black', 'red', 'red', 'blue', 'black', 'black', 'red', 'blue'});
+%! B = setcats (A, {'red', 'pink', 'blue'});
+%! assert_equal (categories (B), {'red'; 'pink'; 'blue'});
+%! Bout = categorical ({'blue', '', 'red', 'red', 'blue', '', '', 'red', 'blue'}, ...
+%!                     {'red', 'pink', 'blue'});
+%! assert_equal (isequaln (B, Bout), true);
+%!test
+%! A = setcats (categorical, {});
+%! assert_equal (categorical, categorical);
+%! assert_equal (isempty (A), true);
+%! assert_equal (categories (A), {});
+%!test
+%! A = setcats (categorical ({'a', 'b', 'b'}), {});
+%! assert_equal (double (A), [NaN, NaN, NaN]);
+%! assert_equal (categories (A), {});
+%!test
+%! A = setcats (categorical ({'a','b'}, 'Protected', true), {'e','a'});
+%! assert_equal (categories (A), {'e'; 'a'});
+%! assert_equal (double (A), [2, NaN]);
+%! assert_equal (isprotected (A), true);
+%!error<categorical.setcats: too few input arguments.> setcats (categorical)
+%!error<categorical.setcats: NEWCATS cannot be empty.> setcats (categorical, [])
+%!error<categorical.setcats: NEWCATS cannot be empty.> setcats (categorical, '')
+%!error<categorical.setcats: NEWCATS cannot be numeric or logical.> ...
+%! setcats (categorical, 1)
+%!error<categorical.setcats: NEWCATS cannot be numeric or logical.> ...
+%! setcats (categorical, true)
+%!error<categorical.setcats: NEWCATS cannot be converted to cellstr.> ...
+%! setcats (categorical, struct ('a', 1))
+
 ################################################################################
 ##                   ** Sort, Filter, and Set Operations **                   ##
 ################################################################################
