@@ -1634,6 +1634,37 @@
 %!error<categorical.setcats: NEWCATS cannot be converted to cellstr.> ...
 %! setcats (categorical, struct ('a', 1))
 
+%!test
+%! colors = categorical ({'blue', 'red', 'green', 'black'});
+%! signs = categorical ({'+', '-', '-', '+'});
+%! C = colors .* signs;
+%! cats = categories (C);
+%! assert_equal (cats, {'black +'; 'black -'; 'blue +' ; 'blue -'; ...
+%!                      'green +'; 'green -'; 'red +'; 'red -'});
+%! C_out = categorical ({'blue +', 'red -', 'green -', 'black +'}, cats);
+%! assert_equal (C, C_out);
+%!error<categorical.times: too few input arguments.> times (categorical)
+%!error<categorical.times: A and B must be categorical arrays.> ...
+%! categorical .* 1
+%!error<categorical.times: A and B must be categorical arrays.> ...
+%! categorical .* string ('a')
+%!error<categorical.times: A and B must be categorical arrays.> ...
+%! 'cat' .* categorical
+%!error<categorical.times: A and B must be categorical arrays.> ...
+%! {'cat'} .* categorical
+
+################################################################################
+##                        ** Relational Operations **                         ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'eq'               'ge'               'gt'               'le'              ##
+## 'lt'               'ne'                                                    ##
+##                                                                            ##
+################################################################################
+
+
+
 ################################################################################
 ##                   ** Sort, Filter, and Set Operations **                   ##
 ################################################################################
