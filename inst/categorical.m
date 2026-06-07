@@ -2835,8 +2835,8 @@ classdef categorical
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'min'              'mink'             'max'              'maxk'            ##
-## 'median'           'mode'             'histcounts'                         ##
+## 'min'              'max'              'median'           'mode'            ##
+## 'histcounts'                                                               ##
 ##                                                                            ##
 ################################################################################
 
@@ -2976,11 +2976,12 @@ classdef categorical
     ## @deftypefnx {categorical} {@var{C} =} max (@var{A}, @qcode{[]}, @var{dim})
     ## @deftypefnx {categorical} {@var{C} =} max (@var{A}, @qcode{[]}, @var{vecdim})
     ## @deftypefnx {categorical} {@var{C} =} max (@var{A}, @qcode{[]}, @qcode{'all'})
-    ## @deftypefnx {categorical} {[@var{C}, @var{index}] =} max (@var{A}, @qcode{[]}, @dots{})
+    ## @deftypefnx {categorical} {[@var{C}, @var{index}] =} max (@var{A}, @qcode{[]}, @qcode{'linear'})
+    ## @deftypefnx {categorical} {[@var{C}, @var{index}] =} max (@var{A}, @qcode{[]}, @dots{}, @qcode{'linear'})
     ## @deftypefnx {categorical} {@var{C} =} max (@var{A}, @var{B})
     ## @deftypefnx {categorical} {[@dots{}] =} max (@dots{}, @var{missingflag})
     ##
-    ## Largest element in an ordinal categorical array.
+    ## Largest elements in ordinal categorical arrays.
     ##
     ## @code{@var{C} = max (@var{A})} returns the largest element in ordinal
     ## categorical vector @var{A}.  If @var{A} is a matrix, @code{max (@var{A})}
@@ -3006,8 +3007,10 @@ classdef categorical
     ## dimensions and returns the largest element in @var{A}.
     ##
     ## @code{[@var{C}, @var{index}] = max (@var{A}, @qcode{[]}, @dots{})} also
-    ## returns the indices of the maximum values in @var{index}, using any of
-    ## the previous syntaxes.
+    ## returns the first index of the maximum values in @var{index}.  The second
+    ## output is only valid when @code{max} operates on a single input array.
+    ## Setting the @qcode{'linear'} flag returns the linear index to the
+    ## corresponding maximum values in @var{A}.
     ##
     ## @code{@var{C} = max (@var{A}, @var{B})} returns an ordinal categorical
     ## array @var{C} with the largest elements from @var{A} and @var{B}, which
@@ -3039,45 +3042,44 @@ classdef categorical
       if (! A.isOrdinal)
         error ("categorical.max: categorical array A is not ordinal.");
       endif
-      if (numel (varargin) > 2)
+      if (numel (varargin) > 3)
         error ("categorical.max: too many input arguments.");
       endif
-      ## Get missing flag
-      omitflag = true;
-      if (numel (varargin) > 0)
-        if (ischar (varargin{end}) || isa (varargin{end}, 'string'))
-          if (any (strcmpi (varargin{end}, {'includeundefined', 'includenan'})))
-            omitflag = false;
-            varargin(end) = [];
-          elseif (any (strcmpi (varargin{end}, {'omitundefined', 'omitnan'})))
-            omitflag = true;
-            varargin(end) = [];
-          elseif (! strcmpi (varargin{end}, 'all'))
-            error ("categorical.max: invalid missing flag.");
-          endif
-        endif
+      ## Handle categorical specific missing flag
+      idx = strcmp ('omitundefined', varargin);
+      if (any (idx))
+        varargin(idx) = 'omitnan';
       endif
-      ## Grab dim, vecdim, 'all'
-      if (isempty (varargin))
-        dim = [];
-      else
-        dim = varargin{1};
+      idx = strcmp ('includeundefined', varargin);
+      if (any (idx))
+        varargin(idx) = 'includenan';
       endif
       ## Create output array
       C = A;
+      ## Minimum of one array
+      if (isempty (B) && isa (B, 'double'))
+        A_d = double (A);
+        if (nargin == 1)
+          [C_d, index] = max (A_d);
+        else
+          [C_d, index] = max (A_d, [], varargin{:});
+        endif
+        ## Fix missing codes
+        C.isMissing = isnan (C_d);
+        C.code = uint16 (C_d);
       ## Minimum of two arrays
-      if (! isempty (B))
+      else
         ## No second output allowed
         if (nargout > 1)
-          error (strcat ("categorical.min: a second output is", ...
-                         " not supported with this syntax."));
+          error (strcat ("categorical.max: two output arguments are", ...
+                         " not supported for two input arrays."));
         endif
         ## Check for ordinal categorical array
         if (! isa (B, 'categorical'))
-          error ("categorical.max: array B must be categorical.");
+          error ("categorical.max: input array B must be categorical.");
         endif
         if (! B.isOrdinal)
-          error ("categorical.max: categorical array B is not ordinal.");
+          error ("categorical.max: categorical array B must be ordinal.");
         endif
         ## Check for same categories (including their order)
         Acats = categories (A);
@@ -3089,23 +3091,11 @@ classdef categorical
         ## Process codes and missing values
         A_d = double (A);
         B_d = double (B);
-        if (omitflag)
-          C_d = __nanmax__ (A_d, B_d);
-        else
-          C_d = __nanmax__ (A_d, B_d, true);
-        endif
-      ## Minimum of one array
-      else
-        A_d = double (A);
-        if (omitflag)
-          [C_d, index] = __nanmax__ (A_d, [], varargin{:});
-        else
-          [C_d, index] = __nanmax__ (A_d, [], varargin{:}, true);
-        endif
+        C_d = max (A_d, B_d, varargin{:});
+        ## Fix missing codes
+        C.isMissing = isnan (C_d);
+        C.code = uint16 (C_d);
       endif
-      ## Fix missing codes
-      C.isMissing = isnan (C_d);
-      C.code = uint16 (C_d);
     endfunction
 
     ## -*- texinfo -*-
