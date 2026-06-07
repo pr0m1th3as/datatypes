@@ -786,7 +786,7 @@ classdef string
     function TF = eq (A, B)
       ## Overload methods for certain data types
       if (any (isa (B, {'categorical', 'duration'})))
-        TF = eq (B, A);
+        TF = eq (cellstr (A), B);
         return;
       endif
       if (iscellstr (A) || ischar (A))
@@ -844,7 +844,7 @@ classdef string
     function TF = ge (A, B)
       ## Overload methods for certain data types
       if (any (isa (B, {'categorical', 'duration'})))
-        TF = le (B, A);
+        TF = ge (cellstr (A), B);
         return;
       endif
       if (iscellstr (A) || ischar (A))
@@ -903,7 +903,7 @@ classdef string
     function TF = gt (A, B)
       ## Overload methods for certain data types
       if (any (isa (B, {'categorical', 'duration'})))
-        TF = lt (B, A);
+        TF = gt (cellstr (A), B);
         return;
       endif
       if (iscellstr (A) || ischar (A))
@@ -963,7 +963,7 @@ classdef string
     function TF = le (A, B)
       ## Overload methods for certain data types
       if (any (isa (B, {'categorical', 'duration'})))
-        TF = ge (B, A);
+        TF = le (cellstr (A), B);
         return;
       endif
       if (iscellstr (A) || ischar (A))
@@ -1022,7 +1022,7 @@ classdef string
     function TF = lt (A, B)
       ## Overload methods for certain data types
       if (any (isa (B, {'categorical', 'duration'})))
-        TF = gt (B, A);
+        TF = lt (cellstr (A), B);
         return;
       endif
       if (iscellstr (A) || ischar (A))
@@ -1083,7 +1083,7 @@ classdef string
     function TF = ne (A, B)
       ## Overload methods for certain data types
       if (any (isa (B, {'categorical', 'duration'})))
-        TF = ne (B, A);
+        TF = ne (cellstr (A), B);
         return;
       endif
       if (iscellstr (A) || ischar (A))
