@@ -548,10 +548,10 @@
 %! assert_equal (size (s.Counts), [3, 10]);
 %! C = categorical ({'l','m','l','h','m','h','m','l','h',''}, ...
 %!                  {'l','m','h'}, {'l','m','h'}, 'Ordinal', true);
-%! assert_equal (s.Min, C);
+%! assert_equal (isequaln (s.Min, C), true);
 %! assert_equal (s.NumMissing, [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
-%! assert_equal (s.Max, C);
-%! assert_equal (s.Median, C);
+%! assert_equal (isequaln (s.Max, C), true);
+%! assert_equal (isequaln (s.Median, C), true);
 %!test
 %! s = summary (categorical ([1, 2, 1, 3, 2, 3, 2, 1, 3, NaN], [1, 2, 3], ...
 %!                           {'l','m','h'}, 'Ordinal', true), 1, ...
@@ -1660,6 +1660,242 @@
 ##                                                                            ##
 ## 'eq'               'ge'               'gt'               'le'              ##
 ## 'lt'               'ne'                                                    ##
+##                                                                            ##
+################################################################################
+
+%!assert_equal (categorical ({'a'}) == 'a', true)
+%!assert_equal (string ('1') == categorical ({'a'}), false)
+%!assert_equal (categorical ({'a', ''}) == {'a'}, [true, false])
+%!test
+%! A = categorical ({'a', 'b', 'c'});
+%! B = categorical ({'a'; 'b'; 'c'});
+%! assert_equal (A == B, logical (eye (3)));
+%!test
+%! A = categorical ({'a', 'b', 'c'});
+%! B = categorical ({'a'; 'b'; 'c'});
+%! B = repmat (B, 1, 3);
+%! assert_equal (A == B, logical (eye (3)));
+%!test
+%! X = categorical ([1, 2, NaN], [1, 2, 3], 'Ordinal', true);
+%! assert_equal (X == X, [true, true, false]);
+%! assert_equal (X == '1', [true, false, false]);
+%!error<categorical.eq: any text representation must specify a single categorical value.> ...
+%! categorical == {'a', 'b'}
+%!error<categorical.eq: any text representation must specify a single categorical value.> ...
+%! categorical ({'e', 'r'}) == string ({'e', 'r'})
+%!error<categorical.eq: any text representation must specify a single categorical value.> ...
+%! string ({'e', 'r'}) == categorical ({'e', 'r'})
+%!error<categorical.eq: any text representation must specify a single categorical value.> ...
+%! {'a', 'b'} == categorical
+%!error<categorical.eq: comparison between ordinal arrays requires that both have the same categories, which must be ordered in the same way.> ...
+%! categorical ({'e', 'r'}, {'e', 'r'}, 'Ordinal', true) == categorical ({'e', 'r'}, {'e'}, 'Ordinal', true)
+%!error<categorical.eq: cannot compare a categorical array that is ordinal with one that is not.> ...
+%! categorical ({'e', 'r'}, {'e', 'r'}, 'Ordinal', true) == categorical ({'e', 'r'})
+%!error<categorical.eq: arrays have incompatible sizes.> ...
+%! categorical ([1, 2, 3]) == categorical ([1, 2, 3, 4])
+%!error<categorical.eq: comparison is not defined between 'categorical' and 'double' arrays.> ...
+%! categorical ([1, 2, 3]) == 1
+%!error<categorical.eq: comparison is not defined between 'double' and 'categorical' arrays.> ...
+%! 1 == categorical ([1, 2, 3])
+
+%!test
+%! X = categorical ([1, 2, NaN], [1, 2, 3], 'Ordinal', true);
+%! assert_equal (X >= '2', [false, true, false]);
+%! assert_equal (X >= '1', [true, true, false]);
+%!test
+%! X = categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true);
+%! assert_equal (X >= {'2'}, [false, true, true]);
+%! assert_equal (X >= string ('1'), [true, true, true]);
+%!test
+%! X = categorical ([1, 2, NaN], [1, 2, 3], 'Ordinal', true);
+%! assert_equal ('2' >= X, [true, true, false]);
+%! assert_equal ('1' >= X, [true, false, false]);
+%!test
+%! X = categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true);
+%! assert_equal ({'2'} >= X, [true, true, false]);
+%! assert_equal (string ('1') >= X, [true, false, false]);
+%!test
+%! X = categorical ([1, 2, 4], [1, 2, 3], 'Ordinal', true);
+%! assert_equal (X >= X', logical ([1, 1, 0; 0, 1, 0; 0, 0, 0]));
+%!test
+%! X = categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true);
+%! assert_equal (X >= X', logical ([1, 1, 1; 0, 1, 1; 0, 0, 1]));
+%!error<categorical.ge: categorical array is not ordinal.> categorical >= '1'
+%!error<categorical.ge: categorical array is not ordinal.> {'1'} >= categorical
+%!error<categorical.ge: any text representation must specify a single categorical value.> ...
+%! categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true) >= {'1', '2'}
+%!error<categorical.ge: any text representation must specify a single categorical value.> ...
+%! string ({'1', '2'}) >= categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true)
+%!error<categorical.ge: category does not exist in array.> ...
+%! categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true) >= {'4'}
+%!error<categorical.ge: category does not exist in array.> ...
+%! '4' >= categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true)
+%!error<categorical.ge: relational comparison is not defined between 'categorical' and 'double' arrays.> ...
+%! categorical >= 1
+%!error<categorical.ge: relational comparison is not defined between 'double' and 'categorical' arrays.> ...
+%! 1 >= categorical
+%!error<categorical.ge: relational comparison is not allowed between non-ordinal categorical arrays.> ...
+%! categorical >= categorical
+
+%!test
+%! X = categorical ([1, 2, NaN], [1, 2, 3], 'Ordinal', true);
+%! assert_equal (X > '2', [false, false, false]);
+%! assert_equal (X > '1', [false, true, false]);
+%!test
+%! X = categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true);
+%! assert_equal (X > {'2'}, [false, false, true]);
+%! assert_equal (X > string ('1'), [false, true, true]);
+%!test
+%! X = categorical ([1, 2, NaN], [1, 2, 3], 'Ordinal', true);
+%! assert_equal ('2' > X, [true, false, false]);
+%! assert_equal ('1' > X, [false, false, false]);
+%!test
+%! X = categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true);
+%! assert_equal ({'2'} > X, [true, false, false]);
+%! assert_equal (string ('1') > X, [false, false, false]);
+%!test
+%! X = categorical ([1, 2, 4], [1, 2, 3], 'Ordinal', true);
+%! assert_equal (X > X', logical ([0, 1, 0; 0, 0, 0; 0, 0, 0]));
+%!test
+%! X = categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true);
+%! assert_equal (X > X', logical ([0, 1, 1; 0, 0, 1; 0, 0, 0]));
+%!error<categorical.gt: categorical array is not ordinal.> categorical > '1'
+%!error<categorical.gt: categorical array is not ordinal.> {'1'} > categorical
+%!error<categorical.gt: any text representation must specify a single categorical value.> ...
+%! categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true) > {'1', '2'}
+%!error<categorical.gt: any text representation must specify a single categorical value.> ...
+%! string ({'1', '2'}) > categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true)
+%!error<categorical.gt: category does not exist in array.> ...
+%! categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true) > {'4'}
+%!error<categorical.gt: category does not exist in array.> ...
+%! '4' > categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true)
+%!error<categorical.gt: relational comparison is not defined between 'categorical' and 'double' arrays.> ...
+%! categorical > 1
+%!error<categorical.gt: relational comparison is not defined between 'double' and 'categorical' arrays.> ...
+%! 1 > categorical
+%!error<categorical.gt: relational comparison is not allowed between non-ordinal categorical arrays.> ...
+%! categorical > categorical
+
+%!test
+%! X = categorical ([1, 2, NaN], [1, 2, 3], 'Ordinal', true);
+%! assert_equal (X <= '2', [true, true, false]);
+%! assert_equal (X <= '1', [true, false, false]);
+%!test
+%! X = categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true);
+%! assert_equal (X <= {'2'}, [true, true, false]);
+%! assert_equal (X <= string ('1'), [true, false, false]);
+%!test
+%! X = categorical ([1, 2, NaN], [1, 2, 3], 'Ordinal', true);
+%! assert_equal ('2' <= X, [false, true, false]);
+%! assert_equal ('1' <= X, [true, true, false]);
+%!test
+%! X = categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true);
+%! assert_equal ({'2'} <= X, [false, true, true]);
+%! assert_equal (string ('1') <= X, [true, true, true]);
+%!test
+%! X = categorical ([1, 2, 4], [1, 2, 3], 'Ordinal', true);
+%! assert_equal (X <= X', logical ([1, 0, 0; 1, 1, 0; 0, 0, 0]));
+%!test
+%! X = categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true);
+%! assert_equal (X <= X', logical ([1, 0, 0; 1, 1, 0; 1, 1, 1]));
+%!error<categorical.le: categorical array is not ordinal.> categorical <= '1'
+%!error<categorical.le: categorical array is not ordinal.> {'1'} <= categorical
+%!error<categorical.le: any text representation must specify a single categorical value.> ...
+%! categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true) <= {'1', '2'}
+%!error<categorical.le: any text representation must specify a single categorical value.> ...
+%! string ({'1', '2'}) <= categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true)
+%!error<categorical.le: category does not exist in array.> ...
+%! categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true) <= {'4'}
+%!error<categorical.le: category does not exist in array.> ...
+%! '4' <= categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true)
+%!error<categorical.le: relational comparison is not defined between 'categorical' and 'double' arrays.> ...
+%! categorical <= 1
+%!error<categorical.le: relational comparison is not defined between 'double' and 'categorical' arrays.> ...
+%! 1 <= categorical
+%!error<categorical.le: relational comparison is not allowed between non-ordinal categorical arrays.> ...
+%! categorical <= categorical
+
+%!test
+%! X = categorical ([1, 2, NaN], [1, 2, 3], 'Ordinal', true);
+%! assert_equal (X < '2', [true, false, false]);
+%! assert_equal (X < '1', [false, false, false]);
+%!test
+%! X = categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true);
+%! assert_equal (X < {'2'}, [true, false, false]);
+%! assert_equal (X < string ('1'), [false, false, false]);
+%!test
+%! X = categorical ([1, 2, NaN], [1, 2, 3], 'Ordinal', true);
+%! assert_equal ('2' < X, [false, false, false]);
+%! assert_equal ('1' < X, [false, true, false]);
+%!test
+%! X = categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true);
+%! assert_equal ({'2'} < X, [false, false, true]);
+%! assert_equal (string ('1') < X, [false, true, true]);
+%!test
+%! X = categorical ([1, 2, 4], [1, 2, 3], 'Ordinal', true);
+%! assert_equal (X < X', logical ([0, 0, 0; 1, 0, 0; 0, 0, 0]));
+%!test
+%! X = categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true);
+%! assert_equal (X < X', logical ([0, 0, 0; 1, 0, 0; 1, 1, 0]));
+%!error<categorical.lt: categorical array is not ordinal.> categorical < '1'
+%!error<categorical.lt: categorical array is not ordinal.> {'1'} < categorical
+%!error<categorical.lt: any text representation must specify a single categorical value.> ...
+%! categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true) < {'1', '2'}
+%!error<categorical.lt: any text representation must specify a single categorical value.> ...
+%! string ({'1', '2'}) < categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true)
+%!error<categorical.lt: category does not exist in array.> ...
+%! categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true) < {'4'}
+%!error<categorical.lt: category does not exist in array.> ...
+%! '4' < categorical ([1, 2, 3], [1, 2, 3], 'Ordinal', true)
+%!error<categorical.lt: relational comparison is not defined between 'categorical' and 'double' arrays.> ...
+%! categorical < 1
+%!error<categorical.lt: relational comparison is not defined between 'double' and 'categorical' arrays.> ...
+%! 1 < categorical
+%!error<categorical.lt: relational comparison is not allowed between non-ordinal categorical arrays.> ...
+%! categorical < categorical
+
+%!assert_equal (categorical ({'a'}) != 'a', false)
+%!assert_equal (string ('1') != categorical ({'a'}), true)
+%!assert_equal (categorical ({'a', ''}) != {'a'}, [false, true])
+%!test
+%! A = categorical ({'a', 'b', 'c'});
+%! B = categorical ({'a'; 'b'; 'c'});
+%! assert_equal (A != B, ! logical (eye (3)));
+%!test
+%! A = categorical ({'a', 'b', 'c'});
+%! B = categorical ({'a'; 'b'; 'c'});
+%! B = repmat (B, 1, 3);
+%! assert_equal (A != B, ! logical (eye (3)));
+%!test
+%! X = categorical ([1, 2, NaN], [1, 2, 3], 'Ordinal', true);
+%! assert_equal (X != X, [false, false, true]);
+%! assert_equal (X != '1', [false, true, true]);
+%!error<categorical.ne: any text representation must specify a single categorical value.> ...
+%! categorical != {'a', 'b'}
+%!error<categorical.ne: any text representation must specify a single categorical value.> ...
+%! categorical ({'e', 'r'}) != string ({'e', 'r'})
+%!error<categorical.ne: any text representation must specify a single categorical value.> ...
+%! string ({'e', 'r'}) != categorical ({'e', 'r'})
+%!error<categorical.ne: any text representation must specify a single categorical value.> ...
+%! {'a', 'b'} != categorical
+%!error<categorical.ne: comparison between ordinal arrays requires that both have the same categories, which must be ordered in the same way.> ...
+%! categorical ({'e', 'r'}, {'e', 'r'}, 'Ordinal', true) != categorical ({'e', 'r'}, {'e'}, 'Ordinal', true)
+%!error<categorical.ne: cannot compare a categorical array that is ordinal with one that is not.> ...
+%! categorical ({'e', 'r'}, {'e', 'r'}, 'Ordinal', true) != categorical ({'e', 'r'})
+%!error<categorical.ne: arrays have incompatible sizes.> ...
+%! categorical ([1, 2, 3]) != categorical ([1, 2, 3, 4])
+%!error<categorical.ne: comparison is not defined between 'categorical' and 'double' arrays.> ...
+%! categorical ([1, 2, 3]) != 1
+%!error<categorical.ne: comparison is not defined between 'double' and 'categorical' arrays.> ...
+%! 1 != categorical ([1, 2, 3])
+
+################################################################################
+##                        ** Arithmetic Operations **                         ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'min'              'mink'             'max'              'maxk'            ##
+## 'median'           'mode'             'histcounts'                         ##
 ##                                                                            ##
 ################################################################################
 
