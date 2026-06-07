@@ -2439,13 +2439,15 @@ classdef categorical
       if (iscellstr (B) || isa (B, 'string') || ischar (B))
         B = cellstr (B);
         if (! isscalar (B))
-          error ("categorical.eq: incompatible size for comparison.");
+          error (strcat ("categorical.eq: any text representation must", ...
+                         " specify a single categorical value."));
         endif
         TF = strcmp (B, cellstr (A));
       elseif (iscellstr (A) || isa (A, 'string') || ischar (A))
         A = cellstr (A);
         if (! isscalar (A))
-          error ("categorical.eq: incompatible size for comparison.");
+          error (strcat ("categorical.eq: any text representation must", ...
+                         " specify a single categorical value."));
         endif
         TF = strcmp (A, cellstr (B));
       elseif (iscategorical (A) && iscategorical (B))
@@ -2459,12 +2461,15 @@ classdef categorical
                            " categories, which must be ordered in the", ...
                            " same way."));
           endif
-          codes = cellfun (@(x) x.code, {A, B}, 'UniformOutput', false);
-          TF = codes{1} == codes{2};
+          TF = double (A) == double (B);
         elseif (A.isOrdinal || B.isOrdinal)
           error (strcat ("categorical.eq: cannot compare a categorical", ...
                          " array that is ordinal with one that is not."));
         else
+          [A, B, err] = csize_expand (A, B);
+          if (err)
+            error ("categorical.eq: arrays have incompatible sizes.");
+          endif
           TF = strcmp (cellstr (A), cellstr (B));
         endif
       else
@@ -2510,7 +2515,8 @@ classdef categorical
         endif
         B = cellstr (B);
         if (! isscalar (B))
-          error ("categorical.ge: incompatible size for relational comparison.");
+          error (strcat ("categorical.ge: any text representation must", ...
+                         " specify a single categorical value."));
         endif
         code = find (ismember (categories (A), B));
         if (isempty (code))
@@ -2518,10 +2524,25 @@ classdef categorical
         endif
         TF = double (A) >= code;
       elseif (iscellstr (A) || isa (A, 'string') || ischar (A))
-        TF = B <= A;
+        if (! B.isOrdinal)
+          error ("categorical.ge: categorical array is not ordinal.");
+        endif
+        A = cellstr (A);
+        if (! isscalar (A))
+          error (strcat ("categorical.ge: any text representation must", ...
+                         " specify a single categorical value."));
+        endif
+        code = find (ismember (categories (B), A));
+        if (isempty (code))
+          error ("categorical.ge: category does not exist in array.");
+        endif
+        TF = code >= double (B);
+      elseif (! iscategorical (A) || ! iscategorical (B))
+        error (strcat ("categorical.ge: relational comparison is not defined", ...
+                       " between '%s' and '%s' arrays."), class (A), class (B));
       elseif (! A.isOrdinal || ! B.isOrdinal)
         error (strcat ("categorical.ge: relational comparison is not", ...
-                       " allowed for non-ordinal categorical arrays."));
+                       " allowed between non-ordinal categorical arrays."));
       else
         TF = double (A) >= double (B);
       endif
@@ -2559,22 +2580,38 @@ classdef categorical
     function TF = gt (A, B)
       if (iscellstr (B) || isa (B, 'string') || ischar (B))
         if (! A.isOrdinal)
-          error ("categorical.lt: categorical array is not ordinal.");
+          error ("categorical.gt: categorical array is not ordinal.");
         endif
         B = cellstr (B);
         if (! isscalar (B))
-          error ("categorical.lt: incompatible size for relational comparison.");
+          error (strcat ("categorical.gt: any text representation must", ...
+                         " specify a single categorical value."));
         endif
         code = find (ismember (categories (A), B));
         if (isempty (code))
-          error ("categorical.lt: category does not exist in array.");
+          error ("categorical.gt: category does not exist in array.");
         endif
         TF = double (A) > code;
       elseif (iscellstr (A) || isa (A, 'string') || ischar (A))
-        TF = B < A;
+        if (! B.isOrdinal)
+          error ("categorical.gt: categorical array is not ordinal.");
+        endif
+        A = cellstr (A);
+        if (! isscalar (A))
+          error (strcat ("categorical.gt: any text representation must", ...
+                         " specify a single categorical value."));
+        endif
+        code = find (ismember (categories (B), A));
+        if (isempty (code))
+          error ("categorical.gt: category does not exist in array.");
+        endif
+        TF = code > double (B);
+      elseif (! iscategorical (A) || ! iscategorical (B))
+        error (strcat ("categorical.gt: relational comparison is not defined", ...
+                       " between '%s' and '%s' arrays."), class (A), class (B));
       elseif (! A.isOrdinal || ! B.isOrdinal)
-        error (strcat ("categorical.lt: relational comparison is not", ...
-                       " allowed for non-ordinal categorical arrays."));
+        error (strcat ("categorical.gt: relational comparison is not", ...
+                       " allowed between non-ordinal categorical arrays."));
       else
         TF = double (A) > double (B);
       endif
@@ -2617,7 +2654,8 @@ classdef categorical
         endif
         B = cellstr (B);
         if (! isscalar (B))
-          error ("categorical.le: incompatible size for relational comparison.");
+          error (strcat ("categorical.le: any text representation must", ...
+                         " specify a single categorical value."));
         endif
         code = find (ismember (categories (A), B));
         if (isempty (code))
@@ -2625,10 +2663,25 @@ classdef categorical
         endif
         TF = double (A) <= code;
       elseif (iscellstr (A) || isa (A, 'string') || ischar (A))
-        TF = B >= A;
+        if (! B.isOrdinal)
+          error ("categorical.le: categorical array is not ordinal.");
+        endif
+        A = cellstr (A);
+        if (! isscalar (A))
+          error (strcat ("categorical.le: any text representation must", ...
+                         " specify a single categorical value."));
+        endif
+        code = find (ismember (categories (B), A));
+        if (isempty (code))
+          error ("categorical.le: category does not exist in array.");
+        endif
+        TF = code <= double (B);
+      elseif (! iscategorical (A) || ! iscategorical (B))
+        error (strcat ("categorical.le: relational comparison is not defined", ...
+                       " between '%s' and '%s' arrays."), class (A), class (B));
       elseif (! A.isOrdinal || ! B.isOrdinal)
         error (strcat ("categorical.le: relational comparison is not", ...
-                       " allowed for non-ordinal categorical arrays."));
+                       " allowed between non-ordinal categorical arrays."));
       else
         TF = double (A) <= double (B);
       endif
@@ -2670,7 +2723,8 @@ classdef categorical
         endif
         B = cellstr (B);
         if (! isscalar (B))
-          error ("categorical.lt: incompatible size for relational comparison.");
+          error (strcat ("categorical.lt: any text representation must", ...
+                         " specify a single categorical value."));
         endif
         code = find (ismember (categories (A), B));
         if (isempty (code))
@@ -2678,10 +2732,25 @@ classdef categorical
         endif
         TF = double (A) < code;
       elseif (iscellstr (A) || isa (A, 'string') || ischar (A))
-        TF = B > A;
+        if (! B.isOrdinal)
+          error ("categorical.lt: categorical array is not ordinal.");
+        endif
+        A = cellstr (A);
+        if (! isscalar (A))
+          error (strcat ("categorical.lt: any text representation must", ...
+                         " specify a single categorical value."));
+        endif
+        code = find (ismember (categories (B), A));
+        if (isempty (code))
+          error ("categorical.lt: category does not exist in array.");
+        endif
+        TF = code < double (B);
+      elseif (! iscategorical (A) || ! iscategorical (B))
+        error (strcat ("categorical.lt: relational comparison is not defined", ...
+                       " between '%s' and '%s' arrays."), class (A), class (B));
       elseif (! A.isOrdinal || ! B.isOrdinal)
         error (strcat ("categorical.lt: relational comparison is not", ...
-                       " allowed for non-ordinal categorical arrays."));
+                       " allowed between non-ordinal categorical arrays."));
       else
         TF = double (A) < double (B);
       endif
@@ -2718,9 +2787,47 @@ classdef categorical
     ##
     ## @end deftypefn
     function TF = ne (A, B)
-      TF = ! eq (A, B);
+      if (iscellstr (B) || isa (B, 'string') || ischar (B))
+        B = cellstr (B);
+        if (! isscalar (B))
+          error (strcat ("categorical.ne: any text representation must", ...
+                         " specify a single categorical value."));
+        endif
+        TF = ! strcmp (B, cellstr (A));
+      elseif (iscellstr (A) || isa (A, 'string') || ischar (A))
+        A = cellstr (A);
+        if (! isscalar (A))
+          error (strcat ("categorical.ne: any text representation must", ...
+                         " specify a single categorical value."));
+        endif
+        TF = ! strcmp (A, cellstr (B));
+      elseif (iscategorical (A) && iscategorical (B))
+        if (A.isOrdinal && B.isOrdinal)
+          ## Check that both categorical arrays have the same categories
+          ## and they are in the same order
+          cats = cellfun (@(x) categories (x), {A, B}, 'UniformOutput', false);
+          if (! isequal (cats{:}))
+            error (strcat ("categorical.ne: comparison between ordinal", ...
+                           " arrays requires that both have the same", ...
+                           " categories, which must be ordered in the", ...
+                           " same way."));
+          endif
+          TF = double (A) != double (B);
+        elseif (A.isOrdinal || B.isOrdinal)
+          error (strcat ("categorical.ne: cannot compare a categorical", ...
+                         " array that is ordinal with one that is not."));
+        else
+          [A, B, err] = csize_expand (A, B);
+          if (err)
+            error ("categorical.ne: arrays have incompatible sizes.");
+          endif
+          TF = ! strcmp (cellstr (A), cellstr (B));
+        endif
+      else
+        error (strcat ("categorical.ne: comparison is not defined between", ...
+                       " '%s' and '%s' arrays."), class (A), class (B));
+      endif
     endfunction
-
   endmethods
 
 ################################################################################
@@ -4692,6 +4799,46 @@ classdef categorical
       ## Add codes and missing arrays
       C.code = uint16 (code);
       C.isMissing = C.code == 0;
+    endfunction
+
+    ## Expand categorical arrays of compatible sizes
+    function [A, B, err] = csize_expand (A, B)
+      err = false;
+      szA = size (A);
+      szB = size (B);
+      if (isscalar (A) && ! isscalar (B))
+        A = repmat (A, szB);
+      elseif (! isscalar (A) && isscalar (B))
+        B = repmat (B, szA);
+      elseif (! isequal (szA, szB))
+        ndA = numel (szA);
+        ndB = numel (szB);
+        if (ndA > ndB)
+          padones = ones (1, ndA - ndB);
+          szB = [szB, padones];
+        elseif (ndA < ndB)
+          padones = ones (1, ndB - ndA);
+          szA = [szA, padones];
+        endif
+        ## Check that sizes are compatible
+        must_equal = szA != 1 & szB != 1;
+        if (! isequal (szA(must_equal), szB(must_equal)))
+          err = true;
+          return;
+        endif
+        ## Create expansion vectors
+        dims = max (ndA, ndB);
+        repA = ones (1, dims);
+        repB = ones (1, dims);
+        ## Get dimensions that should be expanded
+        expA = szA == 1 & szB != 1;
+        repA(expA) = szB(expA);
+        expB = szB == 1 & szA != 1;
+        repB(expB) = szA(expB);
+        ## Expand accordingly
+        A = repmat (A, repA);
+        B = repmat (B, repB);
+      endif
     endfunction
 
   endmethods
