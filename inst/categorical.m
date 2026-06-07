@@ -2971,48 +2971,6 @@ classdef categorical
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn  {categorical} {@var{B} =} mink (@var{A}, @var{K})
-    ## @deftypefnx {categorical} {@var{B} =} mink (@var{A}, @var{K}, @var{dim})
-    ## @deftypefnx {categorical} {[@var{B}, @var{index}] =} mink (@dots{})
-    ##
-    ## Smallest K categories from an ordinal categorical array.
-    ##
-    ## @code{@var{B} = mink (@var{A}, @var{K})} returns the @var{K} smallest
-    ## categories in categorical vector @var{A}.  If @var{A} is a matrix,
-    ## @code{mink (@var{A})} returns the @var{K} smallest categories from each
-    ## column.  For multidimensional arrays, @code{mink (@var{A})} returns the
-    ## @var{K} smallest categories along the first non-singleton dimension.
-    ##
-    ## @code{@var{B} = mink (@var{A}, @var{K}, @var{dim})} returns the @var{K}
-    ## smallest elements in categorical array  @var{A} along the dimension
-    ## specified by @var{dim}.
-    ##
-    ## @code{[@var{B}, @var{index}] = mink (@dots{})} also returns the indices
-    ## of the @var{K} smallest elements in @var{index}, using any of the
-    ## previous syntaxes.
-    ##
-    ## @end deftypefn
-    function [B, index] = mink (A, K, dim = [])
-      ## Check input arguments
-      if (! A.isOrdinal)
-        error ("categorical.mink: categorical array A is not ordinal.");
-      endif
-      if (! (isscalar (K) && fix (K) == K && K > 0))
-        error ("categorical.mink: K must be a positive integer scalar.");
-      endif
-      if (isempty (dim))
-        dim = find (size (A) > 1)(1);
-      endif
-      ## Calculate subscript vector
-      idx = repmat ({':'}, 1, ndims (A));
-      idx{dim} = 1:K;
-      ## Sort array and keep K elements along DIM
-      [B, index] = sort (A, dim);
-      B = subset (B, idx{:});
-      index = index(1:K);
-    endfunction
-
-    ## -*- texinfo -*-
     ## @deftypefn  {categorical} {@var{C} =} max (@var{A})
     ## @deftypefnx {categorical} {[@var{C}, @var{index}] =} max (@var{A})
     ## @deftypefnx {categorical} {@var{C} =} max (@var{A}, @qcode{[]}, @var{dim})
@@ -3148,48 +3106,6 @@ classdef categorical
       ## Fix missing codes
       C.isMissing = isnan (C_d);
       C.code = uint16 (C_d);
-    endfunction
-
-    ## -*- texinfo -*-
-    ## @deftypefn  {categorical} {@var{B} =} maxk (@var{A}, @var{K})
-    ## @deftypefnx {categorical} {@var{B} =} maxk (@var{A}, @var{K}, @var{dim})
-    ## @deftypefnx {categorical} {[@var{B}, @var{index}] =} maxk (@dots{})
-    ##
-    ## Largest K categories from an ordinal categorical array.
-    ##
-    ## @code{@var{B} = maxk (@var{A}, @var{K})} returns the @var{K} largest
-    ## categories in categorical vector @var{A}.  If @var{A} is a matrix,
-    ## @code{maxk (@var{A})} returns the @var{K} largest categories from each
-    ## column.  For multidimensional arrays, @code{maxk (@var{A})} returns the
-    ## @var{K} largest categories along the first non-singleton dimension.
-    ##
-    ## @code{@var{B} = maxk (@var{A}, @var{K}, @var{dim})} returns the @var{K}
-    ## largest elements in categorical array  @var{A} along the dimension
-    ## specified by @var{dim}.
-    ##
-    ## @code{[@var{B}, @var{index}] = maxk (@dots{})} also returns the indices
-    ## of the @var{K} largest elements in @var{index}, using any of the
-    ## previous syntaxes.
-    ##
-    ## @end deftypefn
-    function [B, index] = maxk (A, K, dim = [])
-      ## Check input arguments
-      if (! A.isOrdinal)
-        error ("categorical.maxk: categorical array A is not ordinal.");
-      endif
-      if (! (isscalar (K) && fix (K) == K && K > 0))
-        error ("categorical.maxk: K must be a positive integer scalar.");
-      endif
-      if (isempty (dim))
-        dim = find (size (A) > 1)(1);
-      endif
-      ## Calculate subscript vector
-      idx = repmat ({':'}, 1, ndims (A));
-      idx{dim} = 1:K;
-      ## Sort array and keep K elements along DIM
-      [B, index] = sort (A, dim, 'descend', 'MissingPlacement', 'last');
-      B = subset (B, idx{:});
-      index = index(1:K);
     endfunction
 
     ## -*- texinfo -*-
