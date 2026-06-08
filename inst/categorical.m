@@ -4013,12 +4013,15 @@ classdef categorical
     ##
     ## @end deftypefn
     function out = cat (dim, varargin)
-      ## Remove empty inputs
-      varargin(cellfun (@(x) isempty(x), varargin)) = [];
+      ## Remove empty cell inputs
+      varargin(cellfun (@(x) isempty (x) && iscell (x), varargin)) = [];
       if (numel (varargin) == 1)
         out = varargin{1};
         return;
       endif
+      ## Identify non-categorical inputs for reordering categories
+      firstcatid = find (cellfun (@(x) iscategorical (x), varargin), 1);
+      ## Promote everything into categorical arrays
       args = varargin;
       [args{:}] = promote (varargin{:});
       ## Check that all dimensions except DIM are equal
@@ -4026,7 +4029,7 @@ classdef categorical
         error ("categorical.cat: DIM must be a valid dimension.");
       endif
       sz_dim = cellfun (@(x) size (x), args, "UniformOutput", false);
-      n_dims = cellfun (@(x) ndims (x), sz_dim, "UniformOutput", false);
+      n_dims = cellfun (@(x) ndims (x), args, "UniformOutput", false);
       if (! isequal (n_dims{:}))
         error ("categorical.cat: dimensions mismatch.");
       elseif (dim <= n_dims{1})
@@ -4034,7 +4037,7 @@ classdef categorical
         idx(dim) = [];
         rem_dims = cellfun (@(x) (x(idx)), sz_dim, "UniformOutput", false);
         if (! isequal (rem_dims{:}))
-          error ("categorical.cat: dimensions mismatch.");
+          error ("categorical.cat: size mismatch.");
         endif
       endif
       ## If any categorical value is ordinal, all must be
@@ -4093,30 +4096,37 @@ classdef categorical
       out = args{1};
       for i = 2:numel (args)
         ncats = numel (categories (args{i}));
-        idx = cell (1, ncats);
+        idx = cell (2, ncats);
         newcat = {};
-        n_code = [];
+        n_code = 0;
         for j = 1:ncats
           new_code = find (strcmp (out.cats, args{i}.cats(j)));
           if (! isempty (new_code))
-            idx{j} = args{i}.code == new_code;
-            n_code = [n_code, j];
+            idx{1,j} = args{i}.code == j;
+            idx{2,j} = new_code;
           else
-            idx{j} = args{i}.code == j;
-            next_c = numel (out.cats) + numel (n_code) + 1;
-            n_code = [n_code, next_c];
+            idx{1,j} = args{i}.code == j;
+            idx{2,j} = numel (out.cats) + n_code + 1;
+            n_code += 1;
             newcat = [newcat; args{i}.cats(j)];
           endif
         endfor
         out.cats = [out.cats; newcat];
         for j = 1:ncats
-          args{i}.code(idx{j}) = n_code(j);
+          args{i}.code(idx{1,j}) = idx{2,j};
         endfor
         fieldArgs = cellfun (@(x) x.code, args, 'UniformOutput', false);
         out.code = cat (dim, fieldArgs{:});
         fieldArgs = cellfun (@(x) x.isMissing, args, 'UniformOutput', false);
         out.isMissing = cat (dim, fieldArgs{:});
       endfor
+      ## The categories of the first categorical input array need go first
+      if (firstcatid > 1)
+        catstostart = categories (args{firstcatid});
+        catsremoved = out.cats(! ismember (out.cats, catstostart));
+        catsreorder = [catstostart; catsremoved];
+        out = reordercats (out, catsreorder);
+      endif
     endfunction
 
     ## -*- texinfo -*-
