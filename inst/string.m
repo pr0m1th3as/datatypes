@@ -2014,7 +2014,7 @@ classdef string
   endmethods
 
 ################################################################################
-##                 ** Overloaded methods for duration class **                ##
+##        ** Overloaded methods for duration and categorical classes **       ##
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
@@ -2051,50 +2051,50 @@ classdef string
       R = linspace (A, B, n);
     endfunction
 
-    ## Overload intersect for duration support
+    ## Overload intersect for duration or categorical support
     function [C, ixA, ixB] = intersect (A, B, varargin)
       ## Check for duration input
-      if (! isduration (B))
+      if (! (isduration (B) || iscategorical (B)))
         error ("string.intersect: unsupported input types.");
       endif
-      ## Convert first input (string) to duration
-      A = duration (A, 'Format', B.Format);
-      ## Call duration overloaded method
+      ## Convert first input (string) to cellstr
+      A = cellstr (A);
+      ## Call overloaded method
       [C, ixA, ixB] = intersect (A, B, varargin{:});
     endfunction
 
-    ## Overload setdiff for duration support
+    ## Overload setdiff for duration or categorical support
     function [C, index] = setdiff (A, B, varargin)
       ## Check for duration input
-      if (! isduration (B))
+      if (! (isduration (B) || iscategorical (B)))
         error ("string.setdiff: unsupported input types.");
       endif
-      ## Convert first input (string) to duration
-      A = duration (A, 'Format', B.Format);
+      ## Convert first input (string) to cellstr
+      A = cellstr (A);
       ## Call duration overloaded method
       [C, index] = setdiff (A, B, varargin{:});
     endfunction
 
-    ## Overload setxor for duration support
+    ## Overload setxor for duration or categorical support
     function [C, ixA, ixB] = setxor (A, B, varargin)
       ## Check for duration input
-      if (! isduration (B))
+      if (! (isduration (B) || iscategorical (B)))
         error ("string.setxor: unsupported input types.");
       endif
-      ## Convert first input (string) to duration
-      A = duration (A, 'Format', B.Format);
+      ## Convert first input (string) to cellstr
+      A = cellstr (A);
       ## Call duration overloaded method
       [C, ixA, ixB] = setxor (A, B, varargin{:});
     endfunction
 
-    ## Overload union for duration support
+    ## Overload union for duration or categorical support
     function [C, ixA, ixB] = union (A, B, varargin)
       ## Check for duration input
-      if (! isduration (B))
+      if (! (isduration (B) || iscategorical (B)))
         error ("string.union: unsupported input types.");
       endif
-      ## Convert first input (string) to duration
-      A = duration (A, 'Format', B.Format);
+      ## Convert first input (string) to cellstr
+      A = cellstr (A);
       ## Call duration overloaded method
       [C, ixA, ixB] = union (A, B, varargin{:});
     endfunction
