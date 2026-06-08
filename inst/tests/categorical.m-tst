@@ -2222,6 +2222,125 @@
 %!error<categorical.max: categorical arrays must have the same set of categories, including their order.> ...
 %! max (categorical ([], 1, 'Ordinal', true), categorical (1, 2, 'Ordinal', true))
 
+%!test
+%! M = median (categorical ([2, 4, 6, 8], 1:8, 'Ordinal', true));
+%! assert_equal (M, categorical (5, 1:8, 'Ordinal', true));
+%!test
+%! M = median (categorical ([8, 2, 6, 4], 1:8, 'Ordinal', true));
+%! assert_equal (M, categorical (5, 1:8, 'Ordinal', true));
+%!test
+%! M = median (categorical ([1, 2, 3, 4], 1:4, 'Ordinal', true));
+%! assert_equal (M, categorical (3, 1:4, 'Ordinal', true));
+%!test
+%! M = median (categorical ([1, 2, 3, 4], 1:3, 'Ordinal', true));
+%! assert_equal (isequaln (M, categorical (NaN, 1:3, 'Ordinal', true)), true);
+%!test
+%! M = median (categorical ([1, 2, 3, 4], 1:3, 'Ordinal', true), 'omitundefined');
+%! assert_equal (M, categorical (2, 1:3, 'Ordinal', true));
+%!test
+%! M = median (categorical (magic (3), 1:9, 'Ordinal', true));
+%! assert_equal (M, categorical ([4, 5, 6], 1:9, 'Ordinal', true));
+%!test
+%! M = median (categorical (magic (3), 1:9, 'Ordinal', true), 2);
+%! assert_equal (M, categorical ([6; 5; 4], 1:9, 'Ordinal', true));
+%!test
+%! M = median (categorical (magic (3), 1:9, 'Ordinal', true), 3);
+%! assert_equal (M, categorical (magic (3), 1:9, 'Ordinal', true));
+%!test
+%! M = median (categorical (magic (3), 1:9, 'Ordinal', true), [1, 2]);
+%! assert_equal (M, categorical (5, 1:9, 'Ordinal', true));
+%!test
+%! M = median (categorical (magic (3), 1:9, 'Ordinal', true), 'all');
+%! assert_equal (M, categorical (5, 1:9, 'Ordinal', true));
+%!test
+%! M = median (categorical (magic (4), 1:16, 'Ordinal', true));
+%! assert_equal (M, categorical ([7, 9, 8, 10], 1:16, 'Ordinal', true));
+%!test
+%! M = median (categorical (magic (4), 1:16, 'Ordinal', true), 2);
+%! assert_equal (M, categorical ([8; 9; 8; 9], 1:16, 'Ordinal', true));
+%!test
+%! M = median (categorical (magic (4), 1:16, 'Ordinal', true), 3);
+%! assert_equal (M, categorical (magic (4), 1:16, 'Ordinal', true));
+%!test
+%! M = median (categorical (magic (4), 1:16, 'Ordinal', true), [1, 2]);
+%! assert_equal (M, categorical (9, 1:16, 'Ordinal', true));
+%!test
+%! M = median (categorical (magic (4), 1:16, 'Ordinal', true), 'all');
+%! assert_equal (M, categorical (9, 1:16, 'Ordinal', true));
+%!test
+%! M = median (categorical (magic (4), 1:14, 'Ordinal', true));
+%! assert_equal (isequaln (M, categorical ([NaN, 9, NaN, 10], 1:14, 'Ordinal', true)), true);
+%!test
+%! M = median (categorical (magic (4), 1:14, 'Ordinal', true), 2);
+%! assert_equal (isequaln (M, categorical ([NaN; 9; 8; NaN], 1:14, 'Ordinal', true)), true);
+%!test
+%! M = median (categorical (magic (4), 1:14, 'Ordinal', true), 3);
+%! assert_equal (isequaln (M, categorical (magic (4), 1:14, 'Ordinal', true)), true);
+%!test
+%! M = median (categorical (magic (4), 1:14, 'Ordinal', true), [1, 2]);
+%! assert_equal (isequaln (M, categorical (NaN, 1:14, 'Ordinal', true)), true);
+%!test
+%! M = median (categorical (magic (4), 1:14, 'Ordinal', true), 'all');
+%! assert_equal (isequaln (M, categorical (NaN, 1:14, 'Ordinal', true)), true);
+%!test
+%! M = median (categorical (magic (4), 1:14, 'Ordinal', true), 'omitundefined');
+%! assert_equal (M, categorical ([5, 9, 6, 10], 1:14, 'Ordinal', true));
+%!test
+%! M = median (categorical (magic (4), 1:14, 'Ordinal', true), 2, 'omitundefined');
+%! assert_equal (M, categorical ([3; 9; 8; 4], 1:14, 'Ordinal', true));
+%!test
+%! M = median (categorical (magic (4), 1:14, 'Ordinal', true), 3, 'omitundefined');
+%! assert_equal (isequaln (M, categorical (magic (4), 1:14, 'Ordinal', true)), true);
+%!test
+%! M = median (categorical (magic (4), 1:14, 'Ordinal', true), [1, 2], 'omitundefined');
+%! assert_equal (M, categorical (8, 1:14, 'Ordinal', true));
+%!test
+%! M = median (categorical (magic (4), 1:14, 'Ordinal', true), 'all', 'omitundefined');
+%! assert_equal (M, categorical (8, 1:14, 'Ordinal', true));
+%!error<categorical.median: categorical array A is not ordinal.> ...
+%! median (categorical)
+%!error<categorical.median: too many input arguments.> ...
+%! median (categorical (1, 1, 'Ordinal', true), 1, 2, 3)
+
+%!test
+%! [m, f, c] = mode (categorical (toeplitz (1:5)));
+%! assert_equal (m, categorical ([1, 2, 2, 2, 1], 1:5));
+%! assert_equal (f, [1, 2, 2, 2, 1]);
+%! assert_equal (size (c), [1, 5]);
+%! assert_equal (c{1}, categorical ([1:5]', 1:5));
+%! assert_equal (c{2}, categorical (2, 1:5));
+%! assert_equal (c{3}, categorical ([2; 3], 1:5));
+%! assert_equal (c{4}, categorical (2, 1:5));
+%! assert_equal (c{5}, categorical ([1:5]', 1:5));
+%!test
+%! [m, f, c] = mode (categorical (toeplitz (1:5)), 2);
+%! assert_equal (m, categorical ([1; 2; 2; 2; 1], 1:5));
+%! assert_equal (f, [1; 2; 2; 2; 1]);
+%! assert_equal (size (c), [5, 1]);
+%! assert_equal (c{1}, categorical ([1:5]', 1:5));
+%! assert_equal (c{2}, categorical (2, 1:5));
+%! assert_equal (c{3}, categorical ([2; 3], 1:5));
+%! assert_equal (c{4}, categorical (2, 1:5));
+%! assert_equal (c{5}, categorical ([1:5]', 1:5));
+%!test
+%! [m, f, c] = mode (categorical (toeplitz (1:5)), 3);
+%! assert_equal (m, categorical (toeplitz (1:5), 1:5));
+%! assert_equal (f, ones (5));
+%! assert_equal (size (c), [5, 5]);
+%! C = arrayfun (@(x) categorical (x, 1:5), toeplitz (1:5), 'UniformOutput', false);
+%! assert_equal (c, C);
+%!test
+%! [m, f, c] = mode (categorical (toeplitz (1:5)), [1, 2]);
+%! assert_equal (m, categorical (2, 1:5));
+%! assert_equal (f, 8);
+%! assert_equal (isscalar (c), true);
+%! assert_equal (c{1}, categorical (2, 1:5));
+%!test
+%! [m, f, c] = mode (categorical (toeplitz (1:5)), 'all');
+%! assert_equal (m, categorical (2, 1:5));
+%! assert_equal (f, 8);
+%! assert_equal (isscalar (c), true);
+%! assert_equal (c{1}, categorical (2, 1:5));
 
 
 ################################################################################
