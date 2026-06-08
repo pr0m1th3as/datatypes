@@ -2342,6 +2342,72 @@
 %! assert_equal (isscalar (c), true);
 %! assert_equal (c{1}, categorical (2, 1:5));
 
+%!test
+%! A = [0 0 1 1 1 0 0 0 0 NaN NaN 1 0 0 0 1 0 1 0 1 0 0 0 1 1 1 1];
+%! C = categorical (A, [1, 0, NaN], {'yes', 'no', 'undecided'});
+%! [N, Cats] = histcounts (C);
+%! assert_equal (N, [11, 14, 2]);
+%! assert_equal (Cats, {'yes', 'no', 'undecided'});
+%! N = histcounts (C, 'Normalization', 'countdensity');
+%! assert_equal (N, [11, 14, 2]);
+%! N = histcounts (C, 'Normalization', 'probability');
+%! assert_equal (N, [0.4074, 0.5185, 0.0741], 1e-4);
+%! N = histcounts (C, 'Normalization', 'pdf');
+%! assert_equal (N, [0.4074, 0.5185, 0.0741], 1e-4);
+%! N = histcounts (C, 'Normalization', 'cumcount');
+%! assert_equal (N, [11, 25, 27]);
+%! N = histcounts (C, 'Normalization', 'cdf');
+%! assert_equal (N, [0.4074, 0.9259, 1.0000], 1e-4);
+%!test
+%! A = [0 0 1 1 1 0 0 0 0 NaN NaN 1 0 0 0 1 0 1 0 1 0 0 0 1 1 1 1];
+%! C = categorical (A, [1, 0, NaN], {'yes', 'no', 'undecided'});
+%! [N, Cats] = histcounts (C, {'yes', 'no'});
+%! assert_equal (N, [11, 14]);
+%! assert_equal (Cats, {'yes', 'no'});
+%! N = histcounts (C, {'yes', 'no'}, 'Normalization', 'countdensity');
+%! assert_equal (N, [11, 14]);
+%! N = histcounts (C, {'yes', 'no'}, 'Normalization', 'probability');
+%! assert_equal (N, [0.4074, 0.5185], 1e-4);
+%! N = histcounts (C, {'yes', 'no'}, 'Normalization', 'pdf');
+%! assert_equal (N, [0.4074, 0.5185], 1e-4);
+%! N = histcounts (C, {'yes', 'no'}, 'Normalization', 'cumcount');
+%! assert_equal (N, [11, 25]);
+%! N = histcounts (C, {'yes', 'no'}, 'Normalization', 'cdf');
+%! assert_equal (N, [0.4074, 0.9259], 1e-4);
+%!test
+%! A = [0 0 1 1 1 0 0 0 0 NaN NaN 1 0 0 0 1 0 1 0 1 0 0 0 1 1 1 1];
+%! C = categorical (A);
+%! [N, Cats] = histcounts (C);
+%! assert_equal (N, [14, 11]);
+%! assert_equal (Cats, {'0', '1'});
+%! N = histcounts (C, 'Normalization', 'countdensity');
+%! assert_equal (N, [14, 11]);
+%! N = histcounts (C, 'Normalization', 'probability');
+%! assert_equal (N, [0.5185, 0.4074], 1e-4);
+%! N = histcounts (C, 'Normalization', 'pdf');
+%! assert_equal (N, [0.5185, 0.4074], 1e-4);
+%! N = histcounts (C, 'Normalization', 'cumcount');
+%! assert_equal (N, [14, 25]);
+%! N = histcounts (C, 'Normalization', 'cdf');
+%! assert_equal (N, [0.5185, 0.9259], 1e-4);
+%!test
+%! [N, Cats] = histcounts (categorical, {});
+%! assert_equal (N, ones (1, 0));
+%! assert_equal (Cats, cell (1, 0));
+%!error<categorical.histcounts: invalid 'Normalization' type.> ...
+%! histcounts (categorical, 'Normalization', 'some')
+%!error<categorical.histcounts: invalid type for CATS input argument.> ...
+%! histcounts (categorical, 1)
+%!error<categorical.histcounts: invalid type for CATS input argument.> ...
+%! histcounts (categorical, '1')
+%!error<categorical.histcounts: invalid type for CATS input argument.> ...
+%! histcounts (categorical, {1})
+%!error<categorical.histcounts: input argument CATS references non-existing categories in A.> ...
+%! histcounts (categorical, {'1'})
+%!error<categorical.histcounts: input argument CATS references non-existing categories in A.> ...
+%! histcounts (categorical, categorical (1))
+%!error<categorical.histcounts: input argument CATS references non-existing categories in A.> ...
+%! histcounts (categorical, string ('a'))
 
 ################################################################################
 ##                   ** Sort, Filter, and Set Operations **                   ##
@@ -2890,7 +2956,6 @@
 %!error<categorical.topkrows: K must be a positive integer scalar.> ...
 %! topkrows (categorical (1), 0)
 
-
 %!assert_equal (unique (categorical ([1, 2, 2, 3, 4, 4])), categorical ([1:4]))
 %!assert_equal (unique (categorical ([1, 2, 2, 3, 4, 4]')), categorical ([1:4]'))
 %!test
@@ -2954,6 +3019,118 @@
 %!error<duration.unique: 'legacy' option is not supported.> ...
 %! unique (categorical ([1:3]), 'legacy')
 
+%!test
+%! A = categorical ([7 1 7 7 4]);
+%! B = categorical ([7 0 4 4 0]);
+%! [C, ixA, ixB] = intersect (A, B);
+%! assert_equal (C, categorical ([4, 7]));
+%! assert_equal (ixA, [5; 1]);
+%! assert_equal (ixB, [3; 1]);
+%!test
+%! A = categorical ([7 1 7 7 4]);
+%! B = categorical ([7 0 4 4 0]);
+%! [C, ixA, ixB] = intersect (A, B, 'sorted');
+%! assert_equal (C, categorical ([4, 7]));
+%! assert_equal (ixA, [5; 1]);
+%! assert_equal (ixB, [3; 1]);
+%!test
+%! A = categorical ([7 1 7 7 4]);
+%! B = categorical ([7 0 4 4 0]);
+%! [C, ixA, ixB] = intersect (A, B, 'stable');
+%! assert_equal (C, categorical ([7, 4]));
+%! assert_equal (ixA, [1; 5]);
+%! assert_equal (ixB, [1; 3]);
+%!test
+%! A = categorical ([2, 2, 2; 0, 0, 1; 1, 2, 3; 1, 1, 1]);
+%! B = categorical ([1, 2, 3; 2, 2, 2; 2, 2, 0]);
+%! [C, ixA, ixB] = intersect (A, B, 'rows');
+%! assert_equal (C, categorical ([1, 2, 3; 2, 2, 2]));
+%! assert_equal (ixA, [3; 1]);
+%! assert_equal (ixB, [1; 2]);
+%!test
+%! A = categorical ([2, 2, 2; 0, 0, 1; 1, 2, 3; 1, 1, 1]);
+%! B = categorical ([1, 2, 3; 2, 2, 2; 2, 2, 0]);
+%! [C, ixA, ixB] = intersect (A, B, 'sorted', 'rows');
+%! assert_equal (C, categorical ([1, 2, 3; 2, 2, 2]));
+%! assert_equal (ixA, [3; 1]);
+%! assert_equal (ixB, [1; 2]);
+%!test
+%! A = categorical ([2, 2, 2; 0, 0, 1; 1, 2, 3; 1, 1, 1]);
+%! B = categorical ([1, 2, 3; 2, 2, 2; 2, 2, 0]);
+%! [C, ixA, ixB] = intersect (A, B, 'stable', 'rows');
+%! assert_equal (C, categorical ([2, 2, 2; 1, 2, 3]));
+%! assert_equal (ixA, [1; 3]);
+%! assert_equal (ixB, [2; 1]);
+%!assert_equal (intersect (categorical ([1, 2]), '2'), categorical (2, [1, 2]))
+%!assert_equal (intersect (categorical ([1, 2]), {'1'}), categorical (1, [1, 2]))
+%!assert_equal (intersect (categorical ([1, 2]), string ('2')), categorical (2, [1, 2]))
+%!assert_equal (intersect ('2', categorical ([1, 2])), categorical (2, [1, 2]))
+%!assert_equal (intersect ({'1'}, categorical ([1, 2])), categorical (1, [1, 2]))
+%!assert_equal (intersect (string ('2'), categorical ([1, 2])), categorical (2, [1, 2]))
+%!error<categorical.intersect: 'legacy' option is not supported.> ...
+%! intersect (categorical, categorical, 'legacy')
+%!error<categorical.intersect: invalid type input arrays.> ...
+%! intersect (categorical, 1)
+%!error<categorical.intersect: if A is ordinal, B must be ordinal.> ...
+%! intersect (categorical, categorical (1, 1, 'Ordinal', true))
+%!error<categorical.intersect: ordinal arrays must have the same set of categories in the same order.> ...
+%! intersect (categorical (1, [1, 2], 'Ordinal', true), categorical (1, 1, 'Ordinal', true))
+
+%!test
+%! A = categorical ([3, 6, 2, 1, 5, 1, 1]);
+%! B = categorical ([2, 4, 6]);
+%! [C, index] = setdiff (A, B);
+%! assert_equal (C, categorical ([1, 3, 5]));
+%! assert_equal (index, [4; 1; 5]);
+%!test
+%! A = categorical ([3, 6, 2, 1, 5, 1, 1]);
+%! B = categorical ([2, 4, 6]);
+%! [C, index] = setdiff (A, B, 'sorted');
+%! assert_equal (C, categorical ([1, 3, 5]));
+%! assert_equal (index, [4; 1; 5]);
+%!test
+%! A = categorical ([3, 6, 2, 1, 5, 1, 1]);
+%! B = categorical ([2, 4, 6]);
+%! [C, index] = setdiff (A, B, 'stable');
+%! assert_equal (C, categorical ([3, 1, 5]));
+%! assert_equal (index, [1; 4; 5]);
+%!test
+%! A = categorical ([7, 9, 7; 0, 0, 0; 7, 9, 7; 5, 5, 5; 1, 4, 5]);
+%! B = categorical ([0, 0, 0; 5, 5, 5]);
+%! [C, index] = setdiff (A, B, 'rows');
+%! assert_equal (C, categorical ([1, 4, 5; 7, 9, 7]));
+%! assert_equal (index, [5; 1]);
+%!test
+%! A = categorical ([7, 9, 7; 0, 0, 0; 7, 9, 7; 5, 5, 5; 1, 4, 5]);
+%! B = categorical ([0, 0, 0; 5, 5, 5]);
+%! [C, index] = setdiff (A, B, 'sorted', 'rows');
+%! assert_equal (C, categorical ([1, 4, 5; 7, 9, 7]));
+%! assert_equal (index, [5; 1]);
+%!test
+%! A = categorical ([7, 9, 7; 0, 0, 0; 7, 9, 7; 5, 5, 5; 1, 4, 5]);
+%! B = categorical ([0, 0, 0; 5, 5, 5]);
+%! [C, index] = setdiff (A, B, 'stable', 'rows');
+%! assert_equal (C, categorical ([7, 9, 7; 1, 4, 5]));
+%! assert_equal (index, [1; 5]);
+%!assert_equal (setdiff (categorical ([1, 2]), '2'), categorical (1, [1, 2]))
+%!assert_equal (setdiff (categorical ([1, 2]), {'1'}), categorical (2, [1, 2]))
+%!assert_equal (setdiff (categorical ([1, 2]), string ('2')), categorical (1, [1, 2]))
+%!assert_equal (size (setdiff (categorical ([1, 2]), string ({'2', 1}))), [1, 0])
+%!assert_equal (class (setdiff (categorical ([1, 2]), string ({'2', 1}))), 'categorical')
+%!assert_equal (size (setdiff ('2', categorical ([1, 2]))), [1, 0])
+%!assert_equal (class (setdiff ('2', categorical ([1, 2]))), 'categorical')
+%!assert_equal (size (setdiff ({'1'}, categorical ([1, 2]))), [1, 0])
+%!assert_equal (class (setdiff ({'1'}, categorical ([1, 2]))), 'categorical')
+%!assert_equal (size (setdiff (string ({'1', '2'}), categorical ([1, 2]))), [1, 0])
+%!assert_equal (class (setdiff (string ({'1', '2'}), categorical ([1, 2]))), 'categorical')
+%!error<categorical.setdiff: 'legacy' option is not supported.> ...
+%! setdiff (categorical, categorical, 'legacy')
+%!error<categorical.setdiff: invalid type input arrays.> ...
+%! setdiff (categorical, 1)
+%!error<categorical.setdiff: if A is ordinal, B must be ordinal.> ...
+%! setdiff (categorical, categorical (1, 1, 'Ordinal', true))
+%!error<categorical.setdiff: ordinal arrays must have the same set of categories in the same order.> ...
+%! setdiff (categorical (1, [1, 2], 'Ordinal', true), categorical (1, 1, 'Ordinal', true))
 
 ################################################################################
 ##                  ** Reference and Assignment Operations **                 ##
