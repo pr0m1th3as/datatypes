@@ -3828,6 +3828,9 @@ classdef categorical
     ## @end deftypefn
     function [C, ixA, ixB] = intersect (A, B, varargin)
       [C, ixA, ixB] = setop (A, B, 'intersect', varargin{:});
+      if (! iscategorical (C))
+        error (C);
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -3871,6 +3874,9 @@ classdef categorical
     ## @end deftypefn
     function [C, ixA] = setdiff (A, B, varargin)
       [C, ixA] = setop (A, B, 'setdiff', varargin{:});
+      if (! iscategorical (C))
+        error (C);
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -3916,6 +3922,9 @@ classdef categorical
     ## @end deftypefn
     function [C, ixA, ixB] = setxor (A, B, varargin)
       [C, ixA, ixB] = setop (A, B, 'setxor', varargin{:});
+      if (! iscategorical (C))
+        error (C);
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -3961,6 +3970,9 @@ classdef categorical
     ## @end deftypefn
     function [C, ixA, ixB] = union (A, B, varargin)
       [C, ixA, ixB] = setop (A, B, 'union', varargin{:});
+      if (! iscategorical (C))
+        error (C);
+      endif
     endfunction
 
   endmethods
@@ -4547,9 +4559,20 @@ classdef categorical
 
     ## Common function for set operations
     function [C, ixA, ixB] = setop (A, B, fname, varargin)
-      if (ischar (A) || iscellstr (A) || isa (A, 'string'))
+      ixA = ixB = [];
+      ## 'legacy' option is not supported
+      if (any (strcmp ("legacy", varargin)))
+        C = sprintf (strcat ("categorical.%s: 'legacy'", ...
+                             " option is not supported."), fname);
+        return;
+      endif
+      if (ischar (A))
+        A = categorical (cellstr (A));
+      elseif (iscellstr (A) || isa (A, 'string'))
         A = categorical (A);
-      elseif (ischar (B) || iscellstr (B) || isa (B, 'string'))
+      elseif (ischar (B))
+        B = categorical (cellstr (B));
+      elseif (iscellstr (B) || isa (B, 'string'))
         B = categorical (B);
       endif
       if (! isa (A, 'categorical') || ! isa (B, 'categorical'))
