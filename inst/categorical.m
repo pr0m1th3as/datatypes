@@ -3155,31 +3155,21 @@ classdef categorical
       if (numel (varargin) > 2)
         error ("categorical.median: too many input arguments.");
       endif
-      ## Get missing flag
-      omitflag = 'omitnan';
-      if (numel (varargin) > 0)
-        if (ischar (varargin{end}) || isa (varargin{end}, 'string'))
-          if (any (strcmpi (varargin{end}, {'includeundefined', 'includenan'})))
-            omitflag = 'includenan';
-            varargin(end) = [];
-          elseif (any (strcmpi (varargin{end}, {'omitundefined', 'omitnan'})))
-            omitflag = 'omitnan';
-            varargin(end) = [];
-          elseif (! strcmpi (varargin{end}, 'all'))
-            error ("categorical.max: invalid missing flag.");
-          endif
-        endif
+      ## Handle categorical specific missing flag
+      idx = strcmp ('omitundefined', varargin);
+      if (any (idx))
+        varargin(idx) = 'omitnan';
       endif
-      ## Grab dim, vecdim, 'all' before computing median value
-      if (isempty (varargin))
-        B_d = median (double (A), omitflag);
-      else
-        B_d = median (double (A), varargin{1}, omitflag);
+      idx = strcmp ('includeundefined', varargin);
+      if (any (idx))
+        varargin(idx) = 'includenan';
       endif
+      ## Compute median
+      B_d = median (double (A), varargin{:});
       ## Save median to output array
       B = A;
       B.isMissing = isnan (B_d);
-      B.code = uint16 (B_d);
+      B.code = uint16 (round (B_d));
     endfunction
 
     ## -*- texinfo -*-
@@ -3224,18 +3214,12 @@ classdef categorical
     ##
     ## @end deftypefn
     function [M, F, C] = mode (A, dim = [])
-      ## Check for ordinal categorical array
-      if (! A.isOrdinal)
-        #error ("categorical.mode: categorical array A is not ordinal.");
-      endif
-
       ## Handle 'all' option first
       if (strcmpi (dim, 'all'))
         A = subset (A, ':');
         dim = [];
       endif
-
-      ## Simple case, only one input argument
+      ## Simple case, only one input argument (or 'all' flag used)
       if (isempty (dim))
         [m, F, c] = mode (double (A));
         M = A;
@@ -3248,11 +3232,8 @@ classdef categorical
           tmp.isMissing = isnan (c{i});
           C(i) = tmp;
         endfor
-
-      elseif (isscalar (dim)) # DIM
-        if (dim < 1 || fix (dim) != dim)
-          error ("categorical.mode: DIM must be a positive integer.");
-        endif
+      ## Second input argument is either DIM or VECDIM
+      else
         [m, F, c] = mode (double (A), dim);
         M = A;
         M.code = uint16 (m);
@@ -3264,81 +3245,6 @@ classdef categorical
           tmp.isMissing = isnan (c{i});
           C(i) = tmp;
         endfor
-
-      elseif (isvector (dim)) # VECDIM
-        vecdim = sort (dim);
-        if (! all (diff (vecdim)))
-           error (strcat ("categorical.mode: VECDIM must contain", ...
-                           " non-repeating positive integers."));
-        endif
-
-        ## Ignore dimensions in VECDIM larger than actual array
-        vecdim(find (vecdim > ndims (A))) = [];
-
-        ## Special case, no dimensions left in VECDIM, return input
-        if (isempty (vecdim))
-          M = A;
-          sz = size (A);
-          F = ones (sz);
-          C = cell (sz);
-          for i = 1:prod (sz)
-            C{i} = subset (A, i);
-          endfor
-
-        else
-          ## Calculate permutation vector
-          szx = size (A);
-          remdims = 1:ndims (A);      # All dimensions
-          remdims(vecdim) = [];       # Delete dimensions specified by vecdim
-          nremd = numel (remdims);
-
-          ## If all dimensions are given, it is equivalent to 'all' flag
-          if (nremd == 0)
-            A = subset (A, ':');
-            [m, F, c] = mode (double (A));
-            M = A;
-            M.code = uint16 (m);
-            M.isMissing = isnan (m);
-            C = cell (size (c));
-            for i = 1:numel (c)
-              tmp = A;
-              tmp.code = uint16 (c{i});
-              tmp.isMissing = isnan (c{i});
-              C(i) = tmp;
-            endfor
-
-          else
-            ## Permute to push vecdims to back
-            perm = [remdims, vecdim];
-            A = permute (A, perm);
-
-            ## Reshape to squash all vecdims in final dimension
-            sznew = [szx(remdims), prod(szx(vecdim))];
-            A = reshape (A, sznew);
-
-            ## Calculate mode on final dimension
-            dim = nremd + 1;
-            [m, F, c] = mode (double (A), dim);
-
-            ## Inverse permute back to correct dimensions
-            m = ipermute (m, perm);
-            F = ipermute (F, perm);
-            c = ipermute (c, perm);
-
-            M = A;
-            M.code = uint16 (m);
-            M.isMissing = isnan (m);
-            C = cell (size (c));
-            for i = 1:numel (c)
-              tmp = A;
-              tmp.code = uint16 (c{i});
-              tmp.isMissing = isnan (c{i});
-              C(i) = tmp;
-            endfor
-          endif
-        endif
-      else
-        error ("categorical.mode: invalid second input argument.");
       endif
     endfunction
 
