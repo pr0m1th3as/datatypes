@@ -4095,11 +4095,11 @@ classdef categorical
       ## to reflect the changes in category list of concatenated output array
       out = args{1};
       for i = 2:numel (args)
-        ncats = numel (categories (args{i}));
-        idx = cell (2, ncats);
+        n_cats = numel (categories (args{i}));
+        idx = cell (2, n_cats);
         newcat = {};
         n_code = 0;
-        for j = 1:ncats
+        for j = 1:n_cats
           new_code = find (strcmp (out.cats, args{i}.cats(j)));
           if (! isempty (new_code))
             idx{1,j} = args{i}.code == j;
@@ -4112,7 +4112,7 @@ classdef categorical
           endif
         endfor
         out.cats = [out.cats; newcat];
-        for j = 1:ncats
+        for j = 1:n_cats
           args{i}.code(idx{1,j}) = idx{2,j};
         endfor
         fieldArgs = cellfun (@(x) x.code, args, 'UniformOutput', false);
@@ -4446,7 +4446,7 @@ classdef categorical
       endif
       switch s.type
         case '()'
-          if (isempty (val))
+          if (isempty (val) && isa (val, 'double'))
             this.code(s.subs{:}) = [];
             this.isMissing(s.subs{:}) = [];
             return;
@@ -4455,30 +4455,20 @@ classdef categorical
             this.isMissing(s.subs{:}) = true;
             return;
           elseif (iscellstr (val) || ischar (val) || isstring (val))
-            val = cellstr (val);
-            if (! isscalar (val))
-              error (strcat ("categorical.subsasgn: assignment value must", ...
-                             " be a categorical array or text representing", ...
-                             " a single category."));
+            ## Convert to unprotected unordered categorical array and
+            ## handle it as usual below
+            if (ischar (val))
+              val = cellstr (val);
+            elseif (isempty (val))
+              error ("categorical.subsasgn: assignment value has no elements.");
             endif
-            new_code = find (strcmp (this.cats, val));
-            if (! isempty (new_code))   # category exists
-              this.code(s.subs{:}) = new_code;
-            else
-              ## New category, check for protected status
-              if (isprotected (this))
-                error (strcat ("categorical.subasgn: cannot assign new", ...
-                               " category to protected categorical array."));
-              endif
-              this.cats = [this.cats; val];
-            endif
-            return;
+            val = categorical (val);
           elseif (! isa (val, 'categorical'))
             error (strcat ("categorical.subsasgn: assignment value must", ...
                            " be a categorical array or text representing", ...
-                           " a single category."));
+                           " a single or multiple categories."));
           endif
-          ## After this point VAL is categorical array
+          ## After this point VAL is a categorical array
           ## If any categorical array is ordinal, all must be
           if (isordinal (this) && isordinal (val))
             ## Check that all categorical arrays have the same categories
@@ -4499,22 +4489,22 @@ classdef categorical
                            " categorical array to unordered categorical", ...
                            " array."));
           endif
-          ## If protected, all must have the same categories
-          if (isprotected (this) || isprotected (val))
-            ## Check that all categorical arrays have the same categories
-            ## but they are not necessarily in the same order
-            if (! all (ismember (this.cats, val.cats)))
+          ## If protected, no new categories can be assigned
+          if (isprotected (this))
+            if (! all (ismember (val.cats, this.cats)))
               error (strcat ("categorical.subsasgn: cannot assign new", ...
                              " categories to protected categorical array."));
             endif
             ## Reorder codes accordingly
-            idx = cell (1, numel (this.cats));
-            for j = 1:numel (this.cats)
-              new_code = find (strcmp (val.cats, this.cats(j)));
-              idx{j} = val.code == new_code;
+            n_cats = numel (val.cats);
+            idx = cell (2, n_cats);
+            for j = 1:n_cats
+              new_code = find (strcmp (this.cats, val.cats(j)));
+              idx{1,j} = val.code == j;
+              idx{2,j} = new_code;
             endfor
-            for j = 1:numel (this.cats)
-              val.code(idx{j}) = j;
+            for j = 1:n_cats
+              val.code(idx{1,j}) = idx{2,j};
             endfor
             this.code(s.subs{:}) = val.code;
             this.isMissing(s.subs{:}) = val.isMissing;
@@ -4524,23 +4514,24 @@ classdef categorical
           ## to reflect the changes in category list of assigned categorical array
           n_cats = numel (val.cats);
           maxcat = numel (this.cats);
-          idx = cell (1, n_cats);
+          idx = cell (2, n_cats);
           newcat = {};
-          n_code = [];
+          n_code = 0;
           for j = 1:n_cats
             new_code = find (strcmp (this.cats, val.cats(j)));
             if (! isempty (new_code))
-              idx{j} = val.code == j;
-              n_code = [n_code, new_code];
+              idx{1,j} = val.code == j;
+              idx{2,j} = new_code;
             else
-              idx{j} = val.code == j;
-              n_code = [n_code, maxcat++];
-              newcat = [newcat, val.cats(j)];
+              idx{1,j} = val.code == j;
+              idx{2,j} = maxcat + n_code + 1;
+              n_code += 1;
+              newcat = [newcat; val.cats(j)];
             endif
           endfor
           this.cats = [this.cats; newcat];
           for j = 1:n_cats
-            val.code(idx{j}) = n_code(j);
+            val.code(idx{1,j}) = idx{2,j};
           endfor
           this.code(s.subs{:}) = val.code;
           this.isMissing(s.subs{:}) = val.isMissing;
