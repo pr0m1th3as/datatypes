@@ -3878,20 +3878,10 @@ One-dimensional interpolation for duration arrays.
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">duration: <var>YI</var> = <b>interp1</b> (<var>X</var>, <var>Y</var>, <var>XI</var>)</code></h5></dt>
-</dl>
- <dl>
 <dt><code><h5 class="fs">duration: <var>YI</var> = <b>interp1</b> (<var>Y</var>, <var>XI</var>)</code></h5></dt>
-</dl>
- <dl>
 <dt><code><h5 class="fs">duration: <var>YI</var> = <b>interp1</b> (&hellip;, <var>method</var>)</code></h5></dt>
-</dl>
- <dl>
 <dt><code><h5 class="fs">duration: <var>YI</var> = <b>interp1</b> (&hellip;, <var>method</var>, <var>extrapolation</var>)</code></h5></dt>
-</dl>
- <dl>
 <dt><code><h5 class="fs">duration: <var>pp</var> = <b>interp1</b> (<var>X</var>, <var>Y</var>, <code>'pp'</code>)</code></h5></dt>
-</dl>
- <dl>
 <dt><code><h5 class="fs">duration: <var>pp</var> = <b>interp1</b> (<var>X</var>, <var>Y</var>, <var>method</var>, <code>'pp'</code>)</code></h5></dt>
 </dl>
 
@@ -4394,7 +4384,7 @@ Repeat copies of duration array elements.
  case it specifies the number of times to repeat each corresponding
  element of <var>A</var>.
 </p>
-<p> <code><var>B</var> =</code> repelem (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var> returns
+<p> <code><var>B</var> = repelem (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code> returns
  an array <var>B</var> with each element of <var>A</var> repeated according to the
  the list of input arguments <code><var>d1</var>, &hellip;, <var>dN</var></code> each
  corresponding to a different dimension <code>1:ndims (<var>A</var>)</code> of the
