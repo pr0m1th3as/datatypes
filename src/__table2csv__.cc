@@ -93,8 +93,8 @@ This is a helper IO function for the @qcode{table2csv} method of the \
         }
         else
         {
-          char tmp[30];
-          sprintf(tmp, "%.15g", value);
+          char tmp[32];
+          int cx = snprintf(tmp, 32, "%.15g", value);
           word += tmp;
         }
       }
