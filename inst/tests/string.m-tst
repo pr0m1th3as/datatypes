@@ -1,0 +1,243 @@
+## Copyright (C) 2026 Andreas Bertsatos <abertsatos@biol.uoa.gr>
+##
+## This file is part of the datatypes package for GNU Octave.
+##
+## This program is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free Software
+## Foundation; either version 3 of the License, or (at your option) any later
+## version.
+##
+## This program is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+## details.
+##
+## You should have received a copy of the GNU General Public License along with
+## this program; if not, see <http://www.gnu.org/licenses/>.
+
+################################################################################
+##                    ** Create String and Convert Type **                    ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'string'           'dispstrings'      'cellstr'          'cell'            ##
+## 'char'             'double'                                                ##
+##                                                                            ##
+################################################################################
+
+%!assert_equal (string, string (''))
+%!test
+%! str = string (["a";"b";"c"]);
+%! assert_equal (cellstr (str), {"a";"b";"c"});
+%!test
+%! str = string ({"a";"b";"c"});
+%! assert_equal (cellstr (str), {"a";"b";"c"});
+%!test
+%! str = string ({"a";"";"c"});
+%! tfM = ismissing (str);
+%! assert_equal (cell (str), {"a";"";"c"});
+%! assert_equal (tfM, logical ([0; 0; 0]));
+%!test
+%! str = string ([1 2 3 NaN 5]);
+%! tfM = ismissing (str);
+%! assert_equal (cellstr (str), {"1", "2", "3", "", "5"});
+%! assert_equal (tfM, logical ([0 0 0 1 0]));
+%!test
+%! str = string (duration ([3,4,5; NaN,NaN,NaN]));
+%! tfM = ismissing (str);
+%! assert_equal (cellstr (str), {"03:04:05"; ""});
+%! assert_equal (tfM, logical ([0; 1]));
+%!test
+%! str = string (calendarDuration ([3,4,5; NaN,NaN,NaN]));
+%! tfM = ismissing (str);
+%! assert_equal (cellstr (str), {"3y 4mo 5d"; ""});
+%! assert_equal (tfM, logical ([0; 1]));
+%!error<string: cell array must explicitly contain scalar elements.> ...
+%! string ({[1 2], false})
+%!error<string: cell array contains unsupported types.> string ({"d", @(x)x});
+%!error<string: unsupported input type: 'function_handle'> string (@(x)x);
+
+################################################################################
+##                         ** Summary Information **                          ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'size'             'ndims'            'numel'            'strlength'       ##
+## 'length'           'keyHash'                                               ##
+##                                                                            ##
+################################################################################
+
+%!assert_equal (keyHash (string), uint64 (11885290805827245494))
+%!assert_equal (keyHash (string (1:5)), uint64 (123959226970788855))
+%!assert_equal (keyHash (string ({'A', 'B'})), uint64 (10138706323013565148))
+%!assert_equal (keyHash (string ({'a', 'a'})), uint64 (16542844838776277277))
+%!assert_equal (keyHash (string (['A', 'B'])), uint64 (15822693213880664227))
+%!assert_equal (keyHash (string (['a', 'a'])), uint64 (14201447922909418088))
+%!assert_equal (keyHash (string ('AB')), uint64 (15822693213880664227))
+%!assert_equal (keyHash (string ('aa')), uint64 (14201447922909418088))
+%!assert_equal (keyHash (string ({'A'; 'B'})), uint64 (12731811233575238676))
+%!assert_equal (keyHash (string ({'a'; 'a'})), uint64 (16082861040433618837))
+%!assert_equal (keyHash (string (['A'; 'B'])), uint64 (12731811233575238676))
+%!assert_equal (keyHash (string (['a'; 'a'])), uint64 (16082861040433618837))
+%!assert_equal (keyHash (string ('')), uint64 (11885290805827245494))
+%!assert_equal (keyHash (string ({''})), uint64 (11885290805827245494))
+%!assert_equal (keyHash (string (NaN)), uint64 (11885291905338873705))
+%!assert_equal (keyHash (string (missing)), uint64 (11885291905338873705))
+%!assert_equal (keyHash (string ([missing, missing])), uint64 (2773158418737685269))
+%!assert_equal (keyHash (string ([missing; missing])), uint64 (3067086112843206157))
+%!assert_equal (keyHash (string ('1')), uint64 (15098403913664737211))
+%!test
+%! base_key = uint64 (14695981039346656037);
+%! key1 = keyHash (string ('1'), base_key);
+%! key2 = keyHash (string ('1'));
+%! assert_equal (key1, key2);
+%!test
+%! base_key = uint64 (2342124352342344234);
+%! key = keyHash (string ('1'), base_key);
+%! assert_equal (key, uint64 (325711939436065646));
+%!error<string.keyHash: BASE must be a UINT64 scalar.> ...
+%! keyHash (string (1:5), uint64 ([1, 2]))
+%!error<string.keyHash: BASE must be a UINT64 scalar.> ...
+%! keyHash (string (1:5), 2231107818551636405)
+
+################################################################################
+##                        ** Relational Operations **                         ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'eq'               'ge'               'gt'               'le'              ##
+## 'lt'               'ne'               'strcmp'           'strcmpi'         ##
+## 'strncmp'          'strncmpi'                                              ##
+##                                                                            ##
+################################################################################
+
+%!assert_equal (eq (string ('A'), string ('A')), true);
+%!assert_equal (eq (string ('A'), string ('b')), false);
+%!assert_equal (eq (string ('A'), {'A', 'b'}), [true, false]);
+%!assert_equal (eq ({'A', 'b'}, string ('A')), [true, false]);
+%!assert_equal (eq (string ({'A', 'b'}), 'A'), [true, false]);
+%!assert_equal (eq ('A', string ({"A", "b"})), [true, false]);
+%!assert_equal (eq (string ({'A', 'B'}), string ({'A'; 'B'})), logical (eye (2)))
+%!error <string.eq: comparison between 'string' and 'double' is not supported.> ...
+%! eq (string ('A'), 2)
+%!error <string.eq: comparison between 'double' and 'string' is not supported.> ...
+%! NaN == string ('A')
+%!error <string.eq: incompatible dimensions.> ...
+%! eq (string ({'A', 'B', 'A'; 'A', 'D', 'F'}), string ({'A', 'B'}))
+
+%!assert_equal (ge (string ('A'), string ('A')), true);
+%!assert_equal (ge (string ('A'), string ('b')), false);
+%!assert_equal (ge (string ('b'), {'A', 'b'}), [true, true]);
+%!assert_equal (ge ({'A', 'b'}, string ('b')), [false, true]);
+%!assert_equal (ge (string ({'A', 'b'}), 'A'), [true, true]);
+%!assert_equal (ge ('A', string ({'A', 'b'})), [true, false]);
+%!assert_equal (ge (string ({'A', 'B'}), string ({'A'; 'B'})), logical ([1, 1; 0, 1]))
+%!error <string.ge: comparison between 'string' and 'double' is not supported.> ...
+%! ge (string ('A'), 2)
+%!error <string.ge: comparison between 'double' and 'string' is not supported.> ...
+%! NaN >= string ('A')
+%!error <string.ge: incompatible dimensions.> ...
+%! ge (string ({'A', 'B', 'A'; 'A', 'D', 'F'}), string ({'A', 'B'}))
+
+%!assert_equal (gt (string ('A'), string ('A')), false);
+%!assert_equal (gt (string ('A'), string ('b')), false);
+%!assert_equal (gt (string ('b'), {'A', 'b'}), [true, false]);
+%!assert_equal (gt ({'A', 'b'}, string ('b')), [false, false]);
+%!assert_equal (gt (string ({'A', 'b'}), 'A'), [false, true]);
+%!assert_equal (gt ('A', string ({'A', 'b'})), [false, false]);
+%!assert_equal (gt (string ({'A', 'B'}), string ({'A'; 'B'})), logical ([0, 1; 0, 0]))
+%!error <string.gt: comparison between 'string' and 'double' is not supported.> ...
+%! gt (string ('A'), 2)
+%!error <string.gt: comparison between 'double' and 'string' is not supported.> ...
+%! NaN > string ('A')
+%!error <string.gt: incompatible dimensions.> ...
+%! gt (string ({'A', 'B', 'A'; 'A', 'D', 'F'}), string ({'A', 'B'}))
+
+%!assert_equal (le (string ('A'), string ('A')), true);
+%!assert_equal (le (string ('A'), string ('b')), true);
+%!assert_equal (le (string ('b'), {'A', 'b'}), [false, true]);
+%!assert_equal (le ({'A', 'b'}, string ('b')), [true, true]);
+%!assert_equal (le (string ({'A', 'b'}), 'A'), [true, false]);
+%!assert_equal (le ('A', string ({'A', 'b'})), [true, true]);
+%!assert_equal (le (string ({'A', 'B'}), string ({'A'; 'B'})), logical ([1, 0; 1, 1]))
+%!error <string.le: comparison between 'string' and 'double' is not supported.> ...
+%! le (string ('A'), 2)
+%!error <string.le: comparison between 'double' and 'string' is not supported.> ...
+%! NaN <= string ('A')
+%!error <string.le: incompatible dimensions.> ...
+%! le (string ({'A', 'B', 'A'; 'A', 'D', 'F'}), string ({'A', 'B'}))
+
+%!assert_equal (lt (string ('A'), string ('A')), false);
+%!assert_equal (lt (string ('A'), string ('b')), true);
+%!assert_equal (lt (string ('b'), {'A', 'b'}), [false, false]);
+%!assert_equal (lt ({'A', 'b'}, string ("b")), [true, false]);
+%!assert_equal (lt (string ({'A', 'b'}), 'A'), [false, false]);
+%!assert_equal (lt ('A', string ({'A', 'b'})), [false, true]);
+%!assert_equal (lt (string ({'A', 'B'}), string ({'A'; 'B'})), logical ([0, 0; 1, 0]))
+%!error <string.lt: comparison between 'string' and 'double' is not supported.> ...
+%! lt (string ('A'), 2)
+%!error <string.lt: comparison between 'double' and 'string' is not supported.> ...
+%! NaN < string ('A')
+%!error <string.lt: incompatible dimensions.> ...
+%! lt (string ({'A', 'B', 'A'; 'A', 'D', 'F'}), string ({'A', 'B'}))
+
+%!assert_equal (ne (string ('A'), string ('A')), false);
+%!assert_equal (ne (string ('A'), string ('b')), true);
+%!assert_equal (ne (string ('A'), {'A', 'b'}), [false, true]);
+%!assert_equal (ne ({'A', 'b'}, string ('A')), [false, true]);
+%!assert_equal (ne (string ({'A', 'b'}), 'A'), [false, true]);
+%!assert_equal (ne ('A', string ({'A', 'b'})), [false, true]);
+%!assert_equal (ne (string ({'A', 'B'}), string ({'A'; 'B'})), logical ([0, 1; 1, 0]))
+%!error <string.ne: comparison between 'string' and 'double' is not supported.> ...
+%! ne (string ('A'), 2)
+%!error <string.ne: comparison between 'double' and 'string' is not supported.> ...
+%! NaN != string ('A')
+%!error <string.ne: incompatible dimensions.> ...
+%! ne (string ({'A', 'B', 'A'; 'A', 'D', 'F'}), string ({'A', 'B'}))
+
+%!assert_equal (strcmp (string ("A"), string ("A")), true);
+%!assert_equal (strcmp (string ("A"), string ("b")), false);
+%!assert_equal (strcmp (string ("A"), {"A", "b"}), [true, false]);
+%!assert_equal (strcmp ({"A", "b"}, string ("A")), [true, false]);
+%!assert_equal (strcmp (string ({'A', 'b'}), 'A'), [true, false]);
+%!assert_equal (strcmp ('A', string ({"A", "b"})), [true, false]);
+%!error <string.strcmp: comparison between 'string' and 'double' is not supported.> ...
+%! strcmp (string ("A"), 2)
+%!error <string.strcmp: comparison between 'double' and 'string' is not supported.> ...
+%! strcmp (2, string ("A"))
+%!error <string.strcmp: inconsistent dimensions.> ...
+%! strcmp (string ({"A","B"}), string ({"A";"B"}))
+
+%!assert_equal (strcmpi (string ("A"), string ("a")), true);
+%!assert_equal (strcmpi (string ("A"), string ("b")), false);
+%!assert_equal (strcmpi (string ("a"), {"A", "b"}), [true, false]);
+%!assert_equal (strcmpi ({"A", "b"}, string ("a")), [true, false]);
+%!assert_equal (strcmpi (string ({'a', 'b'}), 'A'), [true, false]);
+%!assert_equal (strcmpi ('A', string ({"a", "b"})), [true, false]);
+%!error <string.strcmpi: comparison between 'string' and 'double' is not supported.> ...
+%! strcmpi (string ("A"), 2)
+%!error <string.strcmpi: comparison between 'double' and 'string' is not supported.> ...
+%! strcmpi (2, string ("A"))
+%!error <string.strcmpi: inconsistent dimensions.> ...
+%! strcmpi (string ({"A","B"}), string ({"a";"b"}))
+
+%!assert_equal (strncmp (string ("ASDFG"), "ASDER", 3), true);
+%!assert_equal (strncmp (string ("ASDFG"), "ASDER", 4), false);
+%!assert_equal (strncmp (string ("ASDFG"), {"ASDER","ASFGH"}, 3), [true, false]);
+%!assert_equal (strncmp (string ("ASDFG"), {"ASDER","ASFGH"}, 2), [true, true]);
+%!error <string.strncmp: comparison between 'string' and 'double' is not supported.> ...
+%! strncmp (string ("A"), 2)
+%!error <string.strncmp: comparison between 'double' and 'string' is not supported.> ...
+%! strncmp (2, string ("A"))
+%!error <string.strncmp: inconsistent dimensions.> ...
+%! strncmp (string ({"A","B"}), string ({"a";"b"}), 1)
+%!assert_equal (strncmpi (string ("asDFG"), "ASDER", 3), true);
+%!assert_equal (strncmpi (string ("ASDFG"), "asDER", 4), false);
+%!assert_equal (strncmpi (string ("asdfg"), {"ASDER","ASFGH"}, 3), [true, false]);
+%!assert_equal (strncmpi (string ("asdfg"), {"ASDER","ASFGH"}, 2), [true, true]);
+%!error <string.strncmpi: comparison between 'string' and 'double' is not supported.> ...
+%! strncmpi (string ("A"), 2)
+%!error <string.strncmpi: comparison between 'double' and 'string' is not supported.> ...
+%! strncmpi (2, string ("A"))
+%!error <string.strncmpi: inconsistent dimensions.> ...
+%! strncmpi (string ({"A","B"}), string ({"a";"b"}), 1)
