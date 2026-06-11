@@ -1855,7 +1855,7 @@ classdef categorical
       endif
 
       ## Parse optional Name-Value paired arguments
-      optNames = {"After", "Before"};
+      optNames = {'After', 'Before'};
       dfValues = {[], []};
       [After, Before] = parsePairedArguments (optNames, dfValues, varargin(:));
 
