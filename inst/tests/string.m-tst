@@ -26,6 +26,9 @@
 ################################################################################
 
 %!assert_equal (string, string (''))
+%!assert_equal (string, string ({''}))
+%!assert_equal (string (['a', 'b', 'c']), string ('abc'))
+%!assert_equal (string (['a', 'b', 'c']), string ({'abc'}))
 %!test
 %! str = string (["a";"b";"c"]);
 %! assert_equal (cellstr (str), {"a";"b";"c"});
@@ -56,6 +59,7 @@
 %! string ({[1 2], false})
 %!error<string: cell array contains unsupported types.> string ({"d", @(x)x});
 %!error<string: unsupported input type: 'function_handle'> string (@(x)x);
+%!error<string: unsupported input type: 'struct'> string (struct ())
 
 ################################################################################
 ##                         ** Summary Information **                          ##
