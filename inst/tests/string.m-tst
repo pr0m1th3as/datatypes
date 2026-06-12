@@ -109,7 +109,7 @@
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'contains'         'endsWith'         'matches'          'startsWith'      ##
+## 'contains'         'endsWith'         'startsWith'       'matches'         ##
 ## 'iscolumn'         'isempty'          'ismatrix'         'ismember'        ##
 ## 'ismissing'        'isrow'            'isscalar'         'issorted'        ##
 ## 'isstring'         'isvector'                                              ##
@@ -132,6 +132,23 @@
 %! str = string ({'a.doc', 'b.odt', 'c.doc', 'd.ods'});
 %! TF = endsWith (str, {'odt', 'ODS'}, 'IgnoreCase', true);
 %! assert_equal (TF, [false, true, false, true]);
+
+%!test
+%! str = string ({'ball', 'base', 'Balkan', 'bison'});
+%! TF = startsWith (str, 'ba');
+%! assert_equal (TF, [true, true, false, false]);
+%!test
+%! str = string ({'ball', 'base', 'Balkan', 'bison'});
+%! TF = startsWith (str, {'ba', 'bi'});
+%! assert_equal (TF, [true, true, false, true]);
+%!test
+%! str = string ({'ball', 'base', 'Balkan', 'bison'});
+%! TF = startsWith (str, {'ba', 'Bi'});
+%! assert_equal (TF, [true, true, false, false]);
+%!test
+%! str = string ({'ball', 'base', 'Balkan', 'bison'});
+%! TF = startsWith (str, {'ba', 'Bi'}, 'IgnoreCase', true);
+%! assert_equal (TF, [true, true, true, true]);
 
 
 ################################################################################
