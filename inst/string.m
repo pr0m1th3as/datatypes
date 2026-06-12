@@ -537,7 +537,7 @@ classdef string
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'contains'         'endsWith'         'matches'          'startsWith'      ##
+## 'contains'         'endsWith'         'startsWith'       'matches'         ##
 ## 'iscolumn'         'isempty'          'ismatrix'         'ismember'        ##
 ## 'ismissing'        'isrow'            'isscalar'         'issorted'        ##
 ## 'isstring'         'isvector'                                              ##
@@ -560,7 +560,7 @@ classdef string
     ## return @qcode{false}.
     ##
     ## @code{@var{TF} = endsWith (@var{str}, @var{pattern}, @qcode{'IgnoreCase'},
-    ## @qcode{true})} ignores case when determining ig @var{str} ends with
+    ## @qcode{true})} ignores case when determining if @var{str} ends with
     ## @var{pattern}.
     ##
     ## @end deftypefn
@@ -600,6 +600,61 @@ classdef string
       else
         for i = 1:numel (pattern)
           TF(vid) |= strncmp (str(vid), pattern{i}, length (pattern{i}));
+        endfor
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {string} {@var{TF} =} startsWith (@var{str}, @var{pattern})
+    ## @deftypefnx {string} {@var{TF} =} startsWith (@var{str}, @var{pattern}, @qcode{'IgnoreCase'}, @qcode{true})
+    ##
+    ## Test if strings start with pattern.
+    ##
+    ## @code{@var{TF} = startsWith (@var{str}, @var{pattern})} returns a logical
+    ## array @var{TF} of the same size as @var{A} containing @qcode{true} for
+    ## each corresponding element of @var{str} that starts with the specified
+    ## @var{pattern} and @qcode{false} otherwise.  Similarly to @qcode{NaN}
+    ## values, @qcode{<missing>} elements do not match any pattern and always
+    ## return @qcode{false}.
+    ##
+    ## @code{@var{TF} = startsWith (@var{str}, @var{pattern}, @qcode{'IgnoreCase'},
+    ## @qcode{true})} ignores case when determining if @var{str} starts with
+    ## @var{pattern}.
+    ##
+    ## @end deftypefn
+    function TF = startsWith (this, pattern, varargin)
+      ## Check pattern
+      if (ischar (pattern) || isstring (pattern))
+        pattern = cellstr (pattern);
+      elseif (! iscellstr (pattern))
+        error (strcat ("string.endsWith: PAT much be a character vector, a", ...
+                       " string array, or cell array of character vectors."));
+      endif
+
+      ## Parse optional Name-Value paired arguments
+      optNames = {'IgnoreCase'};
+      dfValues = {false};
+      [IgnoreCase, arg] = parsePairedArguments (optNames, dfValues, varargin(:));
+
+      ## Check optional Name-Value paired arguments
+      if (! (islogical (IgnoreCase) && isscalar (IgnoreCase)))
+        error ("string.endsWith: 'IgnoreCase' must be a logical scalar.");
+      elseif (! isempty (arg))
+        error ("string.endsWith: unrecognized input argument.");
+      endif
+
+      ## For each pattern, trim all elements of the input string array to the
+      ## length of the pattern and compare strings according to IgnoreCase
+      TF = false (size (this));
+      vid = ! this.isMissing;
+      str = this.strs(vid);
+      if (IgnoreCase)
+        for i = 1:numel (pattern)
+          TF(vid) |= strncmpi (str, pattern{i}, length (pattern{i}));
+        endfor
+      else
+        for i = 1:numel (pattern)
+          TF(vid) |= strncmp (str, pattern{i}, length (pattern{i}));
         endfor
       endif
     endfunction
