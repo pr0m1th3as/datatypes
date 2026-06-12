@@ -105,6 +105,36 @@
 %! keyHash (string (1:5), 2231107818551636405)
 
 ################################################################################
+##                          ** Query Operations **                            ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'contains'         'endsWith'         'matches'          'startsWith'      ##
+## 'iscolumn'         'isempty'          'ismatrix'         'ismember'        ##
+## 'ismissing'        'isrow'            'isscalar'         'issorted'        ##
+## 'isstring'         'isvector'                                              ##
+##                                                                            ##
+################################################################################
+
+%!test
+%! str = string ({'a.doc', 'b.odt', 'c.doc', 'd.ods'});
+%! TF = endsWith (str, 'odt');
+%! assert_equal (TF, [false, true, false, false]);
+%!test
+%! str = string ({'a.doc', 'b.odt', 'c.doc', 'd.ods'});
+%! TF = endsWith (str, {'odt', 'ods'});
+%! assert_equal (TF, [false, true, false, true]);
+%!test
+%! str = string ({'a.doc', 'b.odt', 'c.doc', 'd.ods'});
+%! TF = endsWith (str, {'odt', 'ODS'});
+%! assert_equal (TF, [false, true, false, false]);
+%!test
+%! str = string ({'a.doc', 'b.odt', 'c.doc', 'd.ods'});
+%! TF = endsWith (str, {'odt', 'ODS'}, 'IgnoreCase', true);
+%! assert_equal (TF, [false, true, false, true]);
+
+
+################################################################################
 ##                        ** Relational Operations **                         ##
 ################################################################################
 ##                             Available Methods                              ##
