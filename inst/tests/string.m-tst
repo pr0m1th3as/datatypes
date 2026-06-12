@@ -117,8 +117,45 @@
 ################################################################################
 
 %!test
+%! str = string ({'Mary Ann Jones', 'Paul Jay Burns', 'John Paul Smith'});
+%! TF = contains (str, 'Paul');
+%! assert_equal (TF, [false, true, true]);
+%!test
+%! str = string ({'Mary Ann Jones', 'Paul Jay Burns', 'John Paul Smith'});
+%! TF = contains (str, string ('Paul'));
+%! assert_equal (TF, [false, true, true]);
+%!test
+%! str = string ({'Mary Ann Jones', 'Paul Jay Burns', 'John Paul Smith'});
+%! TF = contains (str, 'paul');
+%! assert_equal (TF, [false, false, false]);
+%!test
+%! str = string ({'Mary Ann Jones', 'Paul Jay Burns', 'John Paul Smith'});
+%! TF = contains (str, 'paul', 'IgnoreCase', true);
+%! assert_equal (TF, [false, true, true]);
+%!test
+%! str = string ({'Anne', 'Elizabeth', 'Marianne', '"Tracy'});
+%! TF = contains (str, 'anne', 'IgnoreCase', true);
+%! assert_equal (TF, [true, false, true, false]);
+%!test
+%! str = string ({'Anne', 'Elizabeth', 'Marianne', '"Tracy'});
+%! TF = contains (str, {'anne', 'Anne'}, 'IgnoreCase', false);
+%! assert_equal (TF, [true, false, true, false]);
+%!error<string.contains: PAT much be a character vector, a string array, or cell array of character vectors.> ...
+%! contains (string ('a'), 1)
+%!error<string.contains: 'IgnoreCase' must be a logical scalar.> ...
+%! contains (string ('a'), 'a', 'IgnoreCase', 1)
+%!error<string.contains: 'IgnoreCase' must be a logical scalar.> ...
+%! contains (string ('a'), 'a', 'IgnoreCase', [true, true])
+%!error<string.contains: unrecognized input argument.> ...
+%! contains (string ('a'), 'a', 'whatever')
+
+%!test
 %! str = string ({'a.doc', 'b.odt', 'c.doc', 'd.ods'});
 %! TF = endsWith (str, 'odt');
+%! assert_equal (TF, [false, true, false, false]);
+%!test
+%! str = string ({'a.doc', 'b.odt', 'c.doc', 'd.ods'});
+%! TF = endsWith (str, string ('odt'));
 %! assert_equal (TF, [false, true, false, false]);
 %!test
 %! str = string ({'a.doc', 'b.odt', 'c.doc', 'd.ods'});
@@ -132,10 +169,22 @@
 %! str = string ({'a.doc', 'b.odt', 'c.doc', 'd.ods'});
 %! TF = endsWith (str, {'odt', 'ODS'}, 'IgnoreCase', true);
 %! assert_equal (TF, [false, true, false, true]);
+%!error<string.endsWith: PAT much be a character vector, a string array, or cell array of character vectors.> ...
+%! endsWith (string ('a'), 1)
+%!error<string.endsWith: 'IgnoreCase' must be a logical scalar.> ...
+%! endsWith (string ('a'), 'a', 'IgnoreCase', 1)
+%!error<string.endsWith: 'IgnoreCase' must be a logical scalar.> ...
+%! endsWith (string ('a'), 'a', 'IgnoreCase', [true, true])
+%!error<string.endsWith: unrecognized input argument.> ...
+%! endsWith (string ('a'), 'a', 'whatever')
 
 %!test
 %! str = string ({'ball', 'base', 'Balkan', 'bison'});
 %! TF = startsWith (str, 'ba');
+%! assert_equal (TF, [true, true, false, false]);
+%!test
+%! str = string ({'ball', 'base', 'Balkan', 'bison'});
+%! TF = startsWith (str, string ('ba'));
 %! assert_equal (TF, [true, true, false, false]);
 %!test
 %! str = string ({'ball', 'base', 'Balkan', 'bison'});
@@ -149,7 +198,51 @@
 %! str = string ({'ball', 'base', 'Balkan', 'bison'});
 %! TF = startsWith (str, {'ba', 'Bi'}, 'IgnoreCase', true);
 %! assert_equal (TF, [true, true, true, true]);
+%!error<string.startsWith: PAT much be a character vector, a string array, or cell array of character vectors.> ...
+%! startsWith (string ('a'), 1)
+%!error<string.startsWith: 'IgnoreCase' must be a logical scalar.> ...
+%! startsWith (string ('a'), 'a', 'IgnoreCase', 1)
+%!error<string.startsWith: 'IgnoreCase' must be a logical scalar.> ...
+%! startsWith (string ('a'), 'a', 'IgnoreCase', [true, true])
+%!error<string.startsWith: unrecognized input argument.> ...
+%! startsWith (string ('a'), 'a', 'whatever')
 
+%!test
+%! str = string ({'Mercury', 'Venus', 'Earth', 'Mars'});
+%! TF = matches (str, 'Earth');
+%! assert_equal (TF, [false, false, true, false]);
+%!test
+%! str = string ({'Mercury', 'Venus', 'Earth', 'Mars'});
+%! TF = matches (str, string ('Earth'));
+%! assert_equal (TF, [false, false, true, false]);
+%!test
+%! str = string ({'Mercury', 'Venus', 'Earth', 'Mars'});
+%! TF = matches (str, 'earth');
+%! assert_equal (TF, [false, false, false, false]);
+%!test
+%! str = string ({'Mercury', 'Venus', 'Earth', 'Mars'});
+%! TF = matches (str, 'earth', 'IgnoreCase', true);
+%! assert_equal (TF, [false, false, true, false]);
+%!test
+%! str = string ({'Mercury', 'Venus', 'Earth', 'Mars'});
+%! TF = matches (str, {'Earth', 'Mercury'});
+%! assert_equal (TF, [true, false, true, false]);
+%!test
+%! str = string ({'Mercury', 'Venus', 'Earth', 'Mars'});
+%! TF = matches (str, {'earth', 'mercury'});
+%! assert_equal (TF, [false, false, false, false]);
+%!test
+%! str = string ({'Mercury', 'Venus', 'Earth', 'Mars'});
+%! TF = matches (str, {'earth', 'mercury'}, 'IgnoreCase', true);
+%! assert_equal (TF, [true, false, true, false]);
+%!error<string.matches: PAT much be a character vector, a string array, or cell array of character vectors.> ...
+%! matches (string ('a'), 1)
+%!error<string.matches: 'IgnoreCase' must be a logical scalar.> ...
+%! matches (string ('a'), 'a', 'IgnoreCase', 1)
+%!error<string.matches: 'IgnoreCase' must be a logical scalar.> ...
+%! matches (string ('a'), 'a', 'IgnoreCase', [true, true])
+%!error<string.matches: unrecognized input argument.> ...
+%! matches (string ('a'), 'a', 'whatever')
 
 ################################################################################
 ##                        ** Relational Operations **                         ##
