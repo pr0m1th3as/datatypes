@@ -244,6 +244,25 @@
 %!error<string.matches: unrecognized input argument.> ...
 %! matches (string ('a'), 'a', 'whatever')
 
+%!assert_equal (iscolumn (string ([1, 2, 3, 4])), false)
+%!assert_equal (iscolumn (string ([1; 2; 3; 4])), true)
+%!assert_equal (iscolumn (string ([1, 2; 3, 4])), false)
+%!assert_equal (iscolumn (string ({'1', '2', '3', '4'})), false)
+%!assert_equal (iscolumn (string ({'1'; '2'; '3'; '4'})), true)
+%!assert_equal (iscolumn (string ({'1', '2'; '3', '4'})), false)
+%!assert_equal (iscolumn (string ([])), false)
+%!assert_equal (iscolumn (string (ones (1, 0))), false)
+%!assert_equal (iscolumn (string (ones (0, 1))), true)
+%!assert_equal (iscolumn (string (1)), true)
+%!assert_equal (iscolumn (string (ones (2, 3, 4))), false)
+
+%!assert_equal (isempty (string ([])), true)
+%!assert_equal (isempty (string ('')), false)
+%!assert_equal (isempty (string (ones (2, 0, 3))), true)
+%!assert_equal (isempty (string (ones (2, 1, 3))), false)
+%!assert_equal (isempty (string (1)), false)
+%!assert_equal (isempty (string), false)
+
 ################################################################################
 ##                        ** Relational Operations **                         ##
 ################################################################################
