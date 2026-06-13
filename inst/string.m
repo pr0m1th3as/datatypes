@@ -1574,9 +1574,9 @@ classdef string
 ## 'append'           'compose'          'erase'            'eraseBetween'    ##
 ## 'extract'          'extractAfter'     'extractBefore'    'extractBetween'  ##
 ## 'insertAfter'      'insertBefore'     'replace'          'replaceBetween'  ##
-## 'reverse'          'sort'             'split'            'strcat           ##
-## 'strip'            'pad'              'join'             'plus'            ##
-## 'lower'            'upper'                                                 ##
+## 'reverse'          'sort'             'split'            'splitlines'      ##
+## 'strcat'           'strip'            'pad'              'join'            ##
+## 'plus'             'lower'            'upper'            'unique'          ##
 ##                                                                            ##
 ################################################################################
 
@@ -1628,6 +1628,10 @@ classdef string
 
     function out = split (this, varargin)
       error ("string.split: not implemented yet.");
+    endfunction
+
+    function out = splitlines (this, varargin)
+      error ("string.splitlines: not implemented yet.");
     endfunction
 
     function out = strip (this, varargin)
