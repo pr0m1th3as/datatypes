@@ -389,8 +389,8 @@ classdef string
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'size'             'ndims'            'numel'            'strlength'       ##
-## 'length'           'keyHash'                                               ##
+## 'size'             'ndims'            'numel'            'length'          ##
+## 'strlength'        'count'            'keyHash'                            ##
 ##                                                                            ##
 ################################################################################
 
@@ -461,19 +461,6 @@ classdef string
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {string} {@var{out} =} strlength (@var{str})
-    ##
-    ## Length of text in string arrays.
-    ##
-    ## @end deftypefn
-    function out = strlength (this)
-      out = NaN (size(this));
-      fcn = @(x) __unicode_length__ (x);
-      TF = ! this.isMissing;
-      out(TF) = cell2mat (cellfun (fcn, this.strs(TF), "UniformOutput", false));
-    endfunction
-
-    ## -*- texinfo -*-
     ## @deftypefn {string} {@var{N} =} length (@var{str})
     ##
     ## Length of a string vector.
@@ -488,6 +475,70 @@ classdef string
         N = 0;
       else
         N = max (size (this.strs));
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {string} {@var{out} =} strlength (@var{str})
+    ##
+    ## Length of text in string arrays.
+    ##
+    ## @end deftypefn
+    function out = strlength (this)
+      out = NaN (size (this));
+      fcn = @(x) __unicode_length__ (x);
+      TF = ! this.isMissing;
+      out(TF) = cell2mat (cellfun (fcn, this.strs(TF), "UniformOutput", false));
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {string} {@var{out} =} count (@var{str}, @var{pattern})
+    ## @deftypefnx {string} {@var{out} =} count (@var{str}, @var{pattern}, @qcode{'IgnoreCase'}, @qcode{true})
+    ##
+    ## Count occurences of pattern in string array.
+    ##
+    ## @code{@var{out} = count (@var{str}, @var{pattern})} returns a numerical
+    ## array @var{out} of the same size as @var{str} containing the number of
+    ## occurences of @var{pattern} in each corresponding element of @var{str}.
+    ## @qcode{NaN} is returned for @qcode{<missing>} elements.
+    ##
+    ## @code{@var{out} = count (@var{str}, @var{pattern}, @qcode{'IgnoreCase'},
+    ## @qcode{true})} ignores case when identifying occurences of @var{pattern}.
+    ##
+    ## @end deftypefn
+    function out = count (this, pattern, varargin)
+      ## Check pattern
+      if (ischar (pattern) || isstring (pattern))
+        pattern = cellstr (pattern);
+      elseif (! iscellstr (pattern))
+        error (strcat ("string.count: PAT much be a character vector, a", ...
+                       " string array, or cell array of character vectors."));
+      endif
+
+      ## Parse optional Name-Value paired arguments
+      optNames = {'IgnoreCase'};
+      dfValues = {false};
+      [IgnoreCase, arg] = parsePairedArguments (optNames, dfValues, varargin(:));
+
+      ## Check optional Name-Value paired arguments
+      if (! (islogical (IgnoreCase) && isscalar (IgnoreCase)))
+        error ("string.count: 'IgnoreCase' must be a logical scalar.");
+      elseif (! isempty (arg))
+        error ("string.count: unrecognized input argument.");
+      endif
+
+      ## Accumulate the number of occurences of each pattern in each element
+      out = zeros (size (this));
+      vid = ! this.isMissing;
+      str = this.strs(vid);
+      if (IgnoreCase)
+        for i = 1:numel (pattern)
+          TF(vid) += cellfun ('numel', strfind (lower (str), lower (pattern{i})));
+        endfor
+      else
+        for i = 1:numel (pattern)
+          TF(vid) += cellfun ('numel', strfind (str, pattern{i}));
+        endfor
       endif
     endfunction
 
@@ -585,8 +636,8 @@ classdef string
         error ("string.contains: unrecognized input argument.");
       endif
 
-      ## For each pattern, trim all elements of the input string array to the
-      ## length of the pattern and compare strings according to IgnoreCase
+      ## Check for the occurence of each pattern in the nonmissing elements of
+      ## the input string array and boolean OR the results
       TF = false (size (this));
       vid = ! this.isMissing;
       str = this.strs(vid);
@@ -755,8 +806,8 @@ classdef string
         error ("string.matches: unrecognized input argument.");
       endif
 
-      ## For each pattern, trim all elements of the input string array to the
-      ## length of the pattern and compare strings according to IgnoreCase
+      ## Check for the matching of each pattern in the nonmissing elements of
+      ## the input string array and boolean OR the results
       TF = false (size (this));
       vid = ! this.isMissing;
       str = this.strs(vid);
@@ -791,7 +842,7 @@ classdef string
     ## @var{TF} is @qcode{true}, if string array @var{str} is empty.
     ##
     ## @end deftypefn
-    function TF = isempty(this)
+    function TF = isempty (this)
       TF = isempty (this.isMissing);
     endfunction
 
