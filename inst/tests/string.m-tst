@@ -66,10 +66,41 @@
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'size'             'ndims'            'numel'            'strlength'       ##
-## 'length'           'keyHash'                                               ##
+## 'size'             'ndims'            'numel'            'length'          ##
+## 'strlength'        'count'            'keyHash'                            ##
 ##                                                                            ##
 ################################################################################
+
+%!assert_equal (count (string ({'paired with red shoes'}), 'red'), 2)
+%!test
+%! str = string ({'red green red red blue blue green'; ...
+%!                'green red blue green green blue'});
+%! assert_equal (count (str, 'red'), [3; 1]);
+%!test
+%! str = string ({'red green red red blue blue green'; ...
+%!                'green red blue green green blue'});
+%! assert_equal (count (str, string ('blue')), [2; 2]);
+%!test
+%! str = string ({'red green blue'; 'green red blue green blue'});
+%! assert_equal (count (str, {'red', 'blue'}), [2; 3]);
+%!test
+%! str = string ({'Edgar Allan Poe', 'Louisa May Alcott'});
+%! assert_equal (count (str, 'E', 'IgnoreCase',true), [2, 0]);
+%!test
+%! str = [string({'Andreas', 'Thomas'}), missing, string('Collin')];
+%! assert_equal (count (str, 'a'), [1, 1, 0, 0]);
+%!test
+%! str = [string({'Andreas', 'Thomas'}), missing, string('Collin')];
+%! assert_equal (count (str, 'a', 'IgnoreCase', true), [2, 1, 0, 0]);
+%!error<string.count: PATTERN is required.> count (string)
+%!error<string.count: PATTERN much be a character vector, a string array, or cell array of character vectors.> ...
+%! count (string ('a'), 1)
+%!error<string.count: 'IgnoreCase' must be a logical scalar.> ...
+%! count (string ('a'), 'a', 'IgnoreCase', 1)
+%!error<string.count: 'IgnoreCase' must be a logical scalar.> ...
+%! count (string ('a'), 'a', 'IgnoreCase', [true, true])
+%!error<string.count: unrecognized input argument.> ...
+%! count (string ('a'), 'a', 'whatever')
 
 %!assert_equal (keyHash (string), uint64 (11885290805827245494))
 %!assert_equal (keyHash (string (1:5)), uint64 (123959226970788855))
@@ -140,7 +171,8 @@
 %! str = string ({'Anne', 'Elizabeth', 'Marianne', '"Tracy'});
 %! TF = contains (str, {'anne', 'Anne'}, 'IgnoreCase', false);
 %! assert_equal (TF, [true, false, true, false]);
-%!error<string.contains: PAT much be a character vector, a string array, or cell array of character vectors.> ...
+%!error<string.contains: PATTERN is required.> contains (string)
+%!error<string.contains: PATTERN much be a character vector, a string array, or cell array of character vectors.> ...
 %! contains (string ('a'), 1)
 %!error<string.contains: 'IgnoreCase' must be a logical scalar.> ...
 %! contains (string ('a'), 'a', 'IgnoreCase', 1)
@@ -169,7 +201,8 @@
 %! str = string ({'a.doc', 'b.odt', 'c.doc', 'd.ods'});
 %! TF = endsWith (str, {'odt', 'ODS'}, 'IgnoreCase', true);
 %! assert_equal (TF, [false, true, false, true]);
-%!error<string.endsWith: PAT much be a character vector, a string array, or cell array of character vectors.> ...
+%!error<string.endsWith: PATTERN is required.> endsWith (string)
+%!error<string.endsWith: PATTERN much be a character vector, a string array, or cell array of character vectors.> ...
 %! endsWith (string ('a'), 1)
 %!error<string.endsWith: 'IgnoreCase' must be a logical scalar.> ...
 %! endsWith (string ('a'), 'a', 'IgnoreCase', 1)
@@ -198,7 +231,8 @@
 %! str = string ({'ball', 'base', 'Balkan', 'bison'});
 %! TF = startsWith (str, {'ba', 'Bi'}, 'IgnoreCase', true);
 %! assert_equal (TF, [true, true, true, true]);
-%!error<string.startsWith: PAT much be a character vector, a string array, or cell array of character vectors.> ...
+%!error<string.startsWith: PATTERN is required.> startsWith (string)
+%!error<string.startsWith: PATTERN much be a character vector, a string array, or cell array of character vectors.> ...
 %! startsWith (string ('a'), 1)
 %!error<string.startsWith: 'IgnoreCase' must be a logical scalar.> ...
 %! startsWith (string ('a'), 'a', 'IgnoreCase', 1)
@@ -235,7 +269,8 @@
 %! str = string ({'Mercury', 'Venus', 'Earth', 'Mars'});
 %! TF = matches (str, {'earth', 'mercury'}, 'IgnoreCase', true);
 %! assert_equal (TF, [true, false, true, false]);
-%!error<string.matches: PAT much be a character vector, a string array, or cell array of character vectors.> ...
+%!error<string.matches: PATTERN is required.> matches (string)
+%!error<string.matches: PATTERN much be a character vector, a string array, or cell array of character vectors.> ...
 %! matches (string ('a'), 1)
 %!error<string.matches: 'IgnoreCase' must be a logical scalar.> ...
 %! matches (string ('a'), 'a', 'IgnoreCase', 1)
