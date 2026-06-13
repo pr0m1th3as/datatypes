@@ -533,11 +533,11 @@ classdef string
       str = this.strs(vid);
       if (IgnoreCase)
         for i = 1:numel (pattern)
-          TF(vid) += cellfun ('numel', strfind (lower (str), lower (pattern{i})));
+          out(vid) += cellfun ('numel', strfind (lower (str), lower (pattern{i})));
         endfor
       else
         for i = 1:numel (pattern)
-          TF(vid) += cellfun ('numel', strfind (str, pattern{i}));
+          out(vid) += cellfun ('numel', strfind (str, pattern{i}));
         endfor
       endif
     endfunction
