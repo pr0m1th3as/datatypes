@@ -500,7 +500,6 @@ classdef string
     ## @code{@var{out} = count (@var{str}, @var{pattern})} returns a numerical
     ## array @var{out} of the same size as @var{str} containing the number of
     ## occurences of @var{pattern} in each corresponding element of @var{str}.
-    ## @qcode{NaN} is returned for @qcode{<missing>} elements.
     ##
     ## @code{@var{out} = count (@var{str}, @var{pattern}, @qcode{'IgnoreCase'},
     ## @qcode{true})} ignores case when identifying occurences of @var{pattern}.
@@ -508,11 +507,13 @@ classdef string
     ## @end deftypefn
     function out = count (this, pattern, varargin)
       ## Check pattern
-      if (ischar (pattern) || isstring (pattern))
+      if (nargin < 2)
+        error ("string.count: PATTERN is required.");
+      elseif (ischar (pattern) || isstring (pattern))
         pattern = cellstr (pattern);
       elseif (! iscellstr (pattern))
-        error (strcat ("string.count: PAT much be a character vector, a", ...
-                       " string array, or cell array of character vectors."));
+        error (strcat ("string.count: PATTERN much be a character vector,", ...
+                       " a string array, or cell array of character vectors."));
       endif
 
       ## Parse optional Name-Value paired arguments
@@ -617,11 +618,13 @@ classdef string
     ## @end deftypefn
     function TF = contains (this, pattern, varargin)
       ## Check pattern
-      if (ischar (pattern) || isstring (pattern))
+      if (nargin < 2)
+        error ("string.contains: PATTERN is required.");
+      elseif (ischar (pattern) || isstring (pattern))
         pattern = cellstr (pattern);
       elseif (! iscellstr (pattern))
-        error (strcat ("string.contains: PAT much be a character vector, a", ...
-                       " string array, or cell array of character vectors."));
+        error (strcat ("string.contains: PATTERN much be a character vector,", ...
+                       " a string array, or cell array of character vectors."));
       endif
 
       ## Parse optional Name-Value paired arguments
@@ -674,11 +677,13 @@ classdef string
     ## @end deftypefn
     function TF = endsWith (this, pattern, varargin)
       ## Check pattern
-      if (ischar (pattern) || isstring (pattern))
+      if (nargin < 2)
+        error ("string.endsWith: PATTERN is required.");
+      elseif (ischar (pattern) || isstring (pattern))
         pattern = cellstr (pattern);
       elseif (! iscellstr (pattern))
-        error (strcat ("string.endsWith: PAT much be a character vector, a", ...
-                       " string array, or cell array of character vectors."));
+        error (strcat ("string.endsWith: PATTERN much be a character vector,", ...
+                       " a string array, or cell array of character vectors."));
       endif
 
       ## Parse optional Name-Value paired arguments
@@ -732,10 +737,12 @@ classdef string
     ## @end deftypefn
     function TF = startsWith (this, pattern, varargin)
       ## Check pattern
-      if (ischar (pattern) || isstring (pattern))
+      if (nargin < 2)
+        error ("string.startsWith: PATTERN is required.");
+      elseif (ischar (pattern) || isstring (pattern))
         pattern = cellstr (pattern);
       elseif (! iscellstr (pattern))
-        error (strcat ("string.startsWith: PAT much be a character vector,", ...
+        error (strcat ("string.startsWith: PATTERN much be a character vector,", ...
                        " a string array, or cell array of character vectors."));
       endif
 
@@ -787,10 +794,12 @@ classdef string
     ## @end deftypefn
     function TF = matches (this, pattern, varargin)
       ## Check pattern
-      if (ischar (pattern) || isstring (pattern))
+      if (nargin < 2)
+        error ("string.matches: PATTERN is required.");
+      elseif (ischar (pattern) || isstring (pattern))
         pattern = cellstr (pattern);
       elseif (! iscellstr (pattern))
-        error (strcat ("string.matches: PAT much be a character vector,", ...
+        error (strcat ("string.matches: PATTERN much be a character vector,", ...
                        " a string array, or cell array of character vectors."));
       endif
 
