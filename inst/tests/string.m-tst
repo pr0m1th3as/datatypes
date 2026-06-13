@@ -61,6 +61,25 @@
 %!error<string: unsupported input type: 'function_handle'> string (@(x)x);
 %!error<string: unsupported input type: 'struct'> string (struct ())
 
+%!assert_equal (dispstrings (string ('a')), {'"a"'})
+%!assert_equal (dispstrings (string ("a")), {'"a"'})
+%!assert_equal (dispstrings (string ('a\na')), {'"a\na"'})
+%!assert_equal (dispstrings (string (NaN)), {'<missing>'})
+
+%!assert_equal (cellstr (string ('a')), {'a'})
+%!assert_equal (cellstr (string ("a")), {'a'})
+%!assert_equal (cellstr (string ('a\na')), {'a\na'})
+%!assert_equal (cellstr (string (NaN)), {''})
+
+%!test
+%! str = string ({'3', 4, 'asd', [], NaN, hours(3)});
+%! out = {3, 4, 'asd', [], [], '3 hr'};
+%! assert_equal (cell (str), out);
+%!assert_equal (cell ([missing, string('')]), {[], ''})
+%!assert_equal (cell ([NaN, string('')]), {[], ''})
+%!assert_equal (cell (['', string('')]), {'', ''})
+%!assert_equal (cell ([string, string('')]), {'', ''})
+
 ################################################################################
 ##                         ** Summary Information **                          ##
 ################################################################################

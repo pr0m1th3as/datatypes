@@ -337,15 +337,22 @@ classdef string
     ## Convert string array to a cell array.
     ##
     ## @code{@var{c_arr} = cell (@var{str})} returns a cell array, @var{c_arr},
-    ## which has the same size as the input string @var{str}.  All strings are
-    ## converted to character vectors.  Empty strings are converted to
+    ## which has the same size as the input string @var{str}.  All elements in
+    ## @var{str} that represent real or complex numbers are converted to
+    ## equivalent double values, whereas all other non-missing elements are
+    ## converted to character vectors.  Zero-length strings are converted to
     ## @qcode{''} empty character vectors, while missing values are returned as
     ## @qcode{[]} empty numeric vectors.
     ##
     ## @end deftypefn
     function c_arr = cell (this)
-      c_arr = this.strs;
-      c_arr(this.isMissing) = [];
+      ## Convert numbers first
+      X = double (this);
+      c_arr = num2cell (X);
+      ## Grab everything else
+      is_text = isnan (X) & ! this.isMissing;
+      c_arr(is_text) = this.strs(is_text);
+      c_arr(this.isMissing) = {[]};
     endfunction
 
     ## -*- texinfo -*-
