@@ -55,6 +55,10 @@
 %! tfM = ismissing (str);
 %! assert_equal (cellstr (str), {"3y 4mo 5d"; ""});
 %! assert_equal (tfM, logical ([0; 1]));
+%!test
+%! str = string (repmat ('a', 3, 4, 5));
+%! assert_equal (str, repmat (string ('aaaa'), 3, 5));
+%! assert_equal (size (str), [3, 5]);
 %!error<string: cell array must explicitly contain scalar elements.> ...
 %! string ({[1 2], false})
 %!error<string: cell array contains unsupported types.> string ({"d", @(x)x});
@@ -80,6 +84,16 @@
 %!assert_equal (cell (['', string('')]), {'', ''})
 %!assert_equal (cell ([string, string('')]), {'', ''})
 
+%!assert_equal (char (string), '');
+%!assert_equal (char (string ('')), '');
+%!assert_equal (char (string ({'a', 's', 'd'})), ['a'; 's'; 'd'])
+
+%!assert_equal (double (string ({'a', 's', 'd'})), [NaN, NaN, NaN])
+%!assert_equal (double (string ({'a'; 's'; 'd'})), [NaN; NaN; NaN])
+%!assert_equal (double (string ([1, 2, NaN])), [1, 2, NaN])
+%!assert_equal (double (string ({1, 2, 'a', missing})), [1, 2, NaN, NaN])
+%!assert_equal (double ([string([1, 2]) 'a', missing]), [1, 2, NaN, NaN])
+
 ################################################################################
 ##                         ** Summary Information **                          ##
 ################################################################################
@@ -89,6 +103,42 @@
 ## 'strlength'        'count'            'keyHash'                            ##
 ##                                                                            ##
 ################################################################################
+
+%!assert_equal (size (string), [1, 1])
+%!assert_equal (size (char (string)), [0, 0])
+%!assert_equal (size (char (string (''))), [0, 0])
+%!assert_equal (size (string ('')), [1, 1])
+%!assert_equal (size (string ([])), [0, 0])
+%!assert_equal (size (string (ones (2, 0, 3, 4))), [2, 0, 3, 4])
+%!assert_equal (size (string (ones (2, 4))), [2, 4])
+%!assert_equal (size (string (ones (2, 4, 1, 1))), [2, 4])
+%!assert_equal (size (string (ones (2, 4, 1, 0))), [2, 4, 1, 0])
+%!assert_equal (size (string ('a')), [1, 1])
+%!assert_equal (size (string ('abcd')), [1, 1])
+%!assert_equal (size (string (repmat ('a', 3, 4))), [3, 1])
+
+%!assert_equal (ndims (string), 2)
+%!assert_equal (ndims (string ([])), 2)
+%!assert_equal (ndims (string (ones (2, 0, 3, 4))), 4)
+%!assert_equal (ndims (string (ones (2, 4))), 2)
+%!assert_equal (ndims (string (zeros (6, 3))), 2)
+
+%!assert_equal (numel (string), 1)
+%!assert_equal (numel (string ([])), 0)
+%!assert_equal (numel (string (ones (2, 0, 3, 4))), 0)
+%!assert_equal (numel (string (ones (2, 4))), 8)
+%!assert_equal (numel (string (zeros (6, 3))), 18)
+
+%!assert_equal (length (string ('1')), 1)
+%!assert_equal (length (string ('asd')), 1)
+%!assert_equal (length (string (1:5)), 5)
+%!assert_equal (length (string (repmat ('a', 2, 3, 4))), 4)
+%!assert_equal (length (string (ones (5, 3, 4), 0, 0)), 5)
+%!assert_equal (length (string (ones (2, 10, 4), 0, 0)), 10)
+
+%!test
+%! str = string ({'asd', '', missing, 'a\na', "a\na"});
+%! assert_equal (strlength (str), [3, 0, NaN, 4, 3]);
 
 %!assert_equal (count (string ({'paired with red shoes'}), 'red'), 2)
 %!test
