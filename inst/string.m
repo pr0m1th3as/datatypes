@@ -145,7 +145,17 @@ classdef string
         this.isMissing = isundefined (in);
 
       elseif (ischar (in))
-        this.strs = cellstr (in);
+        if (ndims (in) > 2)
+          sz = size (in);
+          nr = prod (sz([1,3:end]));
+          nc = sz(2);
+          in = reshape (in, nr, nc);
+          in = cellstr (in);
+          sz(2) = [];
+          this.strs = reshape (in, sz);
+        else
+          this.strs = cellstr (in);
+        endif
         this.isMissing = false (size (this.strs));
 
       elseif (iscellstr (in))
@@ -304,15 +314,25 @@ classdef string
     ## @code{@var{cstr} = dispstrings (@var{str})} returns a cellstr array of
     ## character vectors, @var{cstr}, which has the same size as the input
     ## string object, @var{str}.  These character vectors will either be the
-    ## string contents of the element, enclosed in @qcode{"..."}, and with CR/LF
-    ## characters replaced with @qcode{'\r'} and @qcode{'\n'} escape sequences,
-    ## or @qcode{<missing>} for missing values.
+    ## string contents of each corresponding element or @qcode{<missing>} for
+    ## missing values.
+    ##
+    ## Composed string elements, i.e. double quoted strings, are translated so
+    ## that any special characters are represented by their corresponding
+    ## escaped character sequence, unless the input string, @var{str}, is a
+    ## scalar, in which case text retains its original composition but newlines
+    ## are prepadded with four white space characters for aligned display.
     ##
     ## @end deftypefn
     function cstr = dispstrings (this)
       cstr = strcat ({'"'}, this.strs, {'"'});
-      cstr = strrep (cstr, sprintf ("\r"), '\r');
-      cstr = strrep (cstr, sprintf ("\n"), '\n');
+      if (! isscalar (this))
+        cstr = strrep (cstr, sprintf ("\r\n"), '↵');
+        cstr = strrep (cstr, sprintf ("\n"), '↵');
+        cstr = strrep (cstr, sprintf ("\t"), '→');
+      else
+        cstr = strrep (cstr, sprintf ("\n"), sprintf ("\n%s", '    '));
+      endif
       cstr(this.isMissing) = "<missing>";
     endfunction
 
@@ -367,7 +387,7 @@ classdef string
     ##
     ## @end deftypefn
     function c_mat = char (this)
-      c_mat = char (this.strs);
+      c_mat = char (this.strs{:});
     endfunction
 
     ## -*- texinfo -*-
