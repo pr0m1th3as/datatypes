@@ -947,6 +947,12 @@ classdef string
       if (! isstring (B))
         error ("string.ismember: second input argument must be text.");
       endif
+      if (nargin > 2 && any (strcmp (varargin, 'rows')))
+        if (columns (A) != columns (B))
+          error (strcat ("string.ismember: A and B must have the same", ...
+                         " number of columns with the 'rows' option."));
+        endif
+      endif
       ## Handle empty input array
       if (isempty (A) || isempty (B))
         sz = size (A);
