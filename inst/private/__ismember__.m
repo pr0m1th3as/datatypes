@@ -144,8 +144,8 @@ function [TF, index] = __ismember__ (a, s, varargin)
           jj = ii(jj(nj:end));
           TF = jj < nj;
           if (nargout > 1)
-            index = jj
-            index (jj > rows (s)) = 0
+            index = jj;
+            index (jj > rows (s)) = 0;
           endif
         endif
       endif
