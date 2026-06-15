@@ -115,6 +115,8 @@
 %!assert_equal (size (string (ones (2, 4, 1, 0))), [2, 4, 1, 0])
 %!assert_equal (size (string ('a')), [1, 1])
 %!assert_equal (size (string ('abcd')), [1, 1])
+%!assert_equal (size (string (char (0, 1))), [2, 1])
+%!assert_equal (size (string (char (1, 0))), [2, 1])
 %!assert_equal (size (string (repmat ('a', 3, 4))), [3, 1])
 
 %!assert_equal (ndims (string), 2)
@@ -139,6 +141,14 @@
 %!test
 %! str = string ({'asd', '', missing, 'a\na', "a\na"});
 %! assert_equal (strlength (str), [3, 0, NaN, 4, 3]);
+%!assert_equal (strlength (string (char (0, 1))), [1; 1])
+%!assert_equal (strlength (string (char (1, 0))), [1; 1])
+%!test
+%! str = string ('Hello, World');
+%! assert_equal (strlength (str), 12);
+%!test
+%! str = string ({'Amis', 'Chekhov', 'Joyce'; 'Stein', '', 'Proust'});
+%! assert_equal (strlength (str), [4, 7, 5; 5, 0, 6]);
 
 %!assert_equal (count (string ({'paired with red shoes'}), 'red'), 2)
 %!test
@@ -366,6 +376,55 @@
 %!assert_equal (isempty (string (ones (2, 1, 3))), false)
 %!assert_equal (isempty (string (1)), false)
 %!assert_equal (isempty (string), false)
+
+%!assert_equal (ismatrix (string), true)
+%!assert_equal (ismatrix (string ([])), true)
+%!assert_equal (ismatrix (string (ones (2, 4))), true)
+%!assert_equal (ismatrix (string (ones (2, 4, 1))), true)
+%!assert_equal (ismatrix (string (ones (2, 1, 4))), false)
+%!assert_equal (ismatrix (string (ones (2, 3, 4))), false)
+%!assert_equal (ismatrix (string (ones (0, 1))), true)
+%!assert_equal (ismatrix (string (ones (1, 0))), true)
+%!assert_equal (ismatrix (string (char (0, 1))), true)
+%!assert_equal (ismatrix (string (char (1, 0))), true)
+
+%!test
+%! A = string ({'dog', 'cat', 'fish', 'horse'});
+%! B = string ({'dog ', 'cat', 'fish ', 'horse'});
+%! [TF, index] = ismember (A, B);
+%! assert_equal (TF, [false, true, false, true]);
+%! assert_equal (index, [0, 2, 0, 4]);
+%!test
+%! A = string ({'dog', 'cat', 'fish', 'horse'});
+%! B = ['dog';'cat'];
+%! [TF, index] = ismember (A, B);
+%! assert_equal (TF, [true, true, false, false]);
+%! assert_equal (index, [1, 2, 0, 0]);
+%! [TF, index] = ismember (B, A);
+%! assert_equal (TF, [true; true]);
+%! assert_equal (index, [1; 2]);
+%!test
+%! A = string ({'dog', 'cat'; 'fish', 'horse'});
+%! B = string ({'dog ', 'cat'});
+%! [TF, index] = ismember (A, B);
+%! assert_equal (TF, [false, true; false, false]);
+%! assert_equal (index, [0, 2; 0, 0]);
+%! [TF, index] = ismember (A, B, 'rows');
+%! assert_equal (TF, [false; false]);
+%! assert_equal (index, [0; 0]);
+%!test
+%! A = string ({'dog', 'cat'; 'fish', 'horse'});
+%! B = string ({'dog', 'cat'});
+%! [TF, index] = ismember (A, B);
+%! assert_equal (TF, [true, true; false, false]);
+%! assert_equal (index, [1, 2; 0, 0]);
+%! [TF, index] = ismember (A, B, 'rows');
+%! assert_equal (TF, [true; false]);
+%! assert_equal (index, [1; 0]);
+%!error<string.ismember: first input argument must be text.> ismember (1, string)
+%!error<string.ismember: second input argument must be text.> ismember (string, 1)
+%!error<string.ismember: A and B must have the same number of columns with the 'rows' option.> ...
+%! ismember (string (1), string ([1, 2]), 'rows')
 
 ################################################################################
 ##                        ** Relational Operations **                         ##
