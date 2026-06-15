@@ -140,12 +140,12 @@ function [TF, index] = __ismember__ (a, s, varargin)
           endif
         else
           [~, ii, jj] = __unique__ ([s; a], 'rows', 'first');
-          nj = numel(jj) - (na-1);
+          nj = numel (jj) - (na - 1);
           jj = ii(jj(nj:end));
           TF = jj < nj;
           if (nargout > 1)
-            index = jj;
-            index (jj>nj) = 0;
+            index = jj
+            index (jj > rows (s)) = 0
           endif
         endif
       endif
