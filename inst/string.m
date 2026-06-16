@@ -1007,14 +1007,12 @@ classdef string
           if (ischar (indicator))
             TF(this == indicator) = true;
           elseif (isstring (indicator))
-            for i = 1:numel (indicator)
-              str = indicator.strs(i);
-              TF(this == str) = true;
+            for idx = 1:numel (indicator)
+              TF(this == indicator.strs(idx)) = true;
             endfor
           elseif (iscellstr (indicator))
-            for i = 1:numel (indicator)
-              str = indicator(i);
-              TF(this == str) = true;
+            for idx = 1:numel (indicator)
+              TF(this == indicator(idx)) = true;
             endfor
           else
             error ("string.ismissing: INDICATOR must be a text array.");

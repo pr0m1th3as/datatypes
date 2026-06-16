@@ -426,6 +426,63 @@
 %!error<string.ismember: A and B must have the same number of columns with the 'rows' option.> ...
 %! ismember (string (1), string ([1, 2]), 'rows')
 
+%!assert_equal (ismissing (string ('a'), 'a'), true)
+%!assert_equal (ismissing (string ('a'), string ({'a', 'c'})), true)
+%!assert_equal (ismissing (string ({'a', 'b'}), string ({'a', 'c'})), [true, false])
+%!test
+%! TF = ismissing (string ({'a', 'b', ''}), string ({'a', 'c'}));
+%! assert_equal (TF, logical ([1, 0, 0]));
+%!test
+%! TF = ismissing (string ({'a', 'b', ''}), string ({'a'; 'c'}));
+%! assert_equal (TF, logical ([1, 0, 0]));
+%!test
+%! TF = ismissing (string ({'a'; 'b'; ''}), string ({'a', 'c'}));
+%! assert_equal (TF, logical ([1; 0; 0]));
+%!test
+%! TF = ismissing ([string({'a', 'b', ''}), missing], string ({'a', 'c'}));
+%! assert_equal (TF, logical ([1, 0, 0, 0]));
+%!error<string.ismissing: too many input arguments.> ...
+%! ismissing (string, string, string)
+%!error<string.ismissing: INDICATOR must be a text array.> ...
+%! ismissing (string, 1)
+%!error<string.ismissing: INDICATOR must be a text array.> ...
+%! ismissing (string, {1})
+%!error<string.ismissing: INDICATOR must be a vector.> ...
+%! ismissing (string, string (ones (2)))
+
+%!assert_equal (isrow (string ([1, 2, 3, 4])), true)
+%!assert_equal (isrow (string ([1; 2; 3; 4])), false)
+%!assert_equal (isrow (string ([1, 2; 3, 4])), false)
+%!assert_equal (isrow (string ([])), false)
+%!assert_equal (isrow (string ()), true)
+%!assert_equal (isrow (string (ones (1, 0))), true)
+%!assert_equal (isrow (string (ones (0, 1))), false)
+%!assert_equal (isrow (string (1)), true)
+%!assert_equal (isrow (string (ones (2, 3, 4))), false)
+
+%!assert_equal (isscalar (string ([])), false)
+%!assert_equal (isscalar (string ()), true)
+%!assert_equal (isscalar (string (ones (1, 0))), false)
+%!assert_equal (isscalar (string (ones (0, 1))), false)
+%!assert_equal (isscalar (string (1)), true)
+%!assert_equal (isscalar (string (NaN)), true)
+%!assert_equal (isscalar (string (missing)), true)
+%!assert_equal (isscalar (string ([1, 2])), false)
+
+%!assert_equal (isstring (string), true)
+%!assert_equal (isstring (cellstr (string)), false)
+
+%!assert_equal (isvector (string ([1, 2, 3, 4])), true)
+%!assert_equal (isvector (string ([1; 2; 3; 4])), true)
+%!assert_equal (isvector (string ([1, 2; 3, 4])), false)
+%!assert_equal (isvector (string ([])), false)
+%!assert_equal (isvector (string ()), true)
+%!assert_equal (isvector (string ()), true)
+%!assert_equal (isvector (string (ones (1, 0))), true)
+%!assert_equal (isvector (string (ones (0, 1))), true)
+%!assert_equal (isvector (string (1)), true)
+%!assert_equal (isvector (string (ones (2, 3, 4))), false)
+
 ################################################################################
 ##                        ** Relational Operations **                         ##
 ################################################################################
