@@ -32,6 +32,15 @@
 %!test
 %! str = string (["a";"b";"c"]);
 %! assert_equal (cellstr (str), {"a";"b";"c"});
+## Constructing from a char vector preserves trailing whitespace (the core
+## 'cellstr' would deblank it); MATLAB's 'string' preserves it too.
+%!assert_equal (cellstr (string ('z ')), {'z '})
+%!assert_equal (cellstr (string (' z ')), {' z '})
+## Each row of a padded char matrix keeps its trailing whitespace.
+%!test
+%! str = string (['ab '; 'c  ']);
+%! assert_equal (cellstr (str), {'ab '; 'c  '});
+%! assert_equal (size (str), [2, 1]);
 %!test
 %! str = string ({"a";"b";"c"});
 %! assert_equal (cellstr (str), {"a";"b";"c"});
@@ -624,3 +633,111 @@
 %! strncmpi (2, string ("A"))
 %!error <string.strncmpi: inconsistent dimensions.> ...
 %! strncmpi (string ({"A","B"}), string ({"a";"b"}), 1)
+
+################################################################################
+##                          ** String Operations **                           ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'append'           'compose'          'erase'            'eraseBetween'    ##
+## 'extract'          'extractAfter'     'extractBefore'    'extractBetween'  ##
+## 'insertAfter'      'insertBefore'     'replace'          'replaceBetween'  ##
+## 'reverse'          'sort'             'split'            'splitlines'      ##
+## 'strcat'           'strip'            'pad'              'join'            ##
+## 'plus'             'lower'            'upper'            'unique'          ##
+##                                                                            ##
+################################################################################
+
+## append: concatenates corresponding elements of its inputs
+%!assert_equal (append (string ('Hello'), string (' World')), string ('Hello World'))
+%!assert_equal (append (string ('a'), string ('b'), string ('c')), string ('abc'))
+## append: preserves trailing whitespace (unlike 'strcat')
+%!assert_equal (append (string ('a '), string ('b')), string ('a b'))
+## append: char vectors are one element, cellstr arguments are accepted
+%!assert_equal (append (string ('x'), '_', string ('y')), string ('x_y'))
+%!assert_equal (append (string ('x'), {'_'}, string ('y')), string ('x_y'))
+## append: char matrices contribute one element per row (whitespace preserved)
+%!assert_equal (append (string ({'1'; '2'}), char ('a', 'bb')), string ({'1a '; '2bb'}))
+## append: element-wise over equal-sized arrays
+%!assert_equal (append (string ({'a'; 'b'}), string ({'1'; '2'})), string ({'a1'; 'b2'}))
+## append: scalar expands against a non-scalar argument
+%!assert_equal (append (string ('p_'), string ({'a'; 'b'; 'c'})), ...
+%!              string ({'p_a'; 'p_b'; 'p_c'}))
+## append: implicit expansion of a row and a column yields a matrix
+%!assert_equal (append (string ({'a', 'b'}), string ({'1'; '2'})), ...
+%!              string ({'a1', 'b1'; 'a2', 'b2'}))
+## append: a single argument is returned unchanged
+%!assert_equal (append (string ({'a'; 'b'})), string ({'a'; 'b'}))
+## append: a missing value propagates like NaN (any missing input -> missing),
+## and a missing element carries no text
+%!test
+%! str = append (string ('a'), string (NaN));
+%! assert_equal (ismissing (str), true);
+%! assert_equal (cellstr (str), {''});
+%!test
+%! str = append (string ({'a'; 'b'}), string ({missing; 'z'}));
+%! assert_equal (ismissing (str), [true; false]);
+%! assert_equal (cellstr (str), {''; 'bz'});
+## append: error branches
+%!error <string.append: input arguments must be string arrays, cell arrays of character vectors, or character matrices.> ...
+%! append (string ('a'), 5)
+%!error <string.append: inputs have incompatible sizes.> ...
+%! append (string ({'a'; 'b'; 'c'}), string ({'x'; 'y'}))
+
+## compose: formatting syntax -- single operator
+%!assert_equal (compose (string ('%d apples'), 3), string ('3 apples'))
+%!assert_equal (compose (string ('%d'), [1 2 3]), string ({'1', '2', '3'}))
+%!assert_equal (compose (string ('%d'), [1; 2; 3]), string ({'1'; '2'; '3'}))
+%!assert_equal (compose (string ('%d apples'), [1; 2; 3]), ...
+%!              string ({'1 apples'; '2 apples'; '3 apples'}))
+## compose: formatting syntax -- multiple operators per row
+%!assert_equal (compose (string ('%d + %d = %d'), [1 2 3]), string ('1 + 2 = 3'))
+%!assert_equal (compose (string ('%d %d %d'), [1 2 3; 4 5 6]), ...
+%!              string ({'1 2 3'; '4 5 6'}))
+## compose: FORMATSPEC repeats when A has more columns than operators
+%!assert_equal (compose (string ('%d-%d '), [1 2 3 4]), string ({'1-2 ', '3-4 '}))
+## compose: leftover operators are emitted unchanged
+%!assert_equal (compose (string ('%d and %d'), 5), string ('5 and %d'))
+## compose: multiple input arrays consumed left to right
+%!assert_equal (compose (string ('%s = %d'), string ('a'), 1), string ('a = 1'))
+%!assert_equal (compose (string ('%s=%d'), string ({'a'; 'b'}), [1; 2]), ...
+%!              string ({'a=1'; 'b=2'}))
+## compose: scalar input expands against a column vector
+%!assert_equal (compose (string ('%s%d'), string ('row'), [1; 2; 3]), ...
+%!              string ({'row1'; 'row2'; 'row3'}))
+## compose: accepted input types
+%!assert_equal (compose (string ('%s!'), 'hi'), string ('hi!'))
+%!assert_equal (compose (string ('%s!'), string ('hi')), string ('hi!'))
+%!assert_equal (compose (string ('%d'), true), string ('1'))
+%!assert_equal (compose (string ('%5.2f'), pi), string (' 3.14'))
+## compose: '*' dynamic field width consumes an extra value
+%!assert_equal (compose (string ('%*d'), [5 42]), string ('   42'))
+## compose: literal '%%' becomes a single '%'
+%!assert_equal (compose (string ('%d%% done'), 50), string ('50% done'))
+## compose: escape sequences in literal text of FORMATSPEC are translated
+%!assert_equal (compose (string ('Line %d\n'), [1; 2]), ...
+%!              string ({sprintf('Line 1\n'); sprintf('Line 2\n')}))
+## compose: zero-column input preserves size and applies no formatting
+%!test
+%! out = compose (string ('%d'), zeros (2, 0));
+%! assert_equal (class (out), 'string');
+%! assert_equal (size (out), [2, 0]);
+## compose: escape-translation syntax -- compose (TXT)
+%!assert_equal (compose (string ('a\tb\nc')), string (sprintf ('a\tb\nc')))
+%!assert_equal (compose (string ('100%% done')), string ('100% done'))
+## compose (TXT) leaves formatting operators unchanged
+%!assert_equal (compose (string ('val=%d\n')), string (sprintf ('val=%%d\n')))
+## compose (TXT) preserves size over a multi-element array
+%!test
+%! out = compose (string ({'a\tb'; 'c'; 'd\ne'}));
+%! assert_equal (size (out), [3, 1]);
+%! assert_equal (cellstr (out), {sprintf('a\tb'); 'c'; sprintf('d\ne')});
+## compose: error branches
+%!error <string.compose: FORMATSPEC must be a string scalar or a character vector.> ...
+%! compose (string ({'%d', '%d'}), 1)
+%!error <string.compose: FORMATSPEC cannot be a missing value.> ...
+%! compose (string (NaN), 1)
+%!error <string.compose: unsupported input type: 'cell'.> ...
+%! compose (string ('%d'), {1, 2})
+%!error <string.compose: input arrays must be of compatible sizes.> ...
+%! compose (string ('%d%d'), [1; 2; 3], [1; 2])
