@@ -1713,17 +1713,23 @@ classdef string
         varargin(ctypes) = cellfun (@(x) string (char (x)), ...
                                     varargin(ctypes), "UniformOutput", false);
       endif
-      ## Handle compatible dimensions
+      ## A single argument is returned unchanged
       out = varargin{1};
+      if (numel (varargin) == 1)
+        return;
+      endif
+      ## Handle compatible dimensions.  An element is missing whenever any input
+      ## contributes a missing value at that position, since a missing string
+      ## propagates like NaN through concatenation.
       in_sz = cellfun (@size, varargin, "UniformOutput", false);
       strArgs = cellfun (@(x) x.strs, varargin, 'UniformOutput', false);
       ismArgs = cellfun (@(x) x.isMissing, varargin, 'UniformOutput', false);
       if (isequal (in_sz{:}))
         out.strs = strcat (strArgs{:});
-        out.isMissing = and (ismArgs{:});
+        out.isMissing = or (ismArgs{:});
       else
         try
-          out.isMissing = and (ismArgs{:});
+          out.isMissing = or (ismArgs{:});
           szo = size (out.isMissing);
         catch
           error ("string.append: inputs have incompatible sizes.");
@@ -1735,6 +1741,8 @@ classdef string
         endfor
         out.strs = strcat (strArgs{:});
       endif
+      ## Missing elements carry no text, as elsewhere in the class
+      out.strs(out.isMissing) = {''};
     endfunction
 
     ## -*- texinfo -*-
