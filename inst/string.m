@@ -1684,7 +1684,7 @@ classdef string
     ## -*- texinfo -*-
     ## @deftypefn {string} {@var{newstr} =} append (@var{str1}, @dots{}, @var{strN})
     ##
-    ## Remove content from string array.
+    ## Combine string arrays.
     ##
     ## @code{@var{newstr} = append (@var{str1}, @dots{}, @var{strN})} combines
     ## the text from each input argument, @var{str1}, @dots{}, @var{strN}),
