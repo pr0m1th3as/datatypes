@@ -91,8 +91,9 @@ classdef string
     ## options:
     ##
     ## @itemize
-    ## @item character arrays and cell arrays of character vectors are converted
-    ## via the core @code{cellstr} function.
+    ## @item character arrays are converted so that each row becomes a string
+    ## element, with any trailing whitespace preserved; cell arrays of character
+    ## vectors are stored as-is.
     ## @item numeric arrays are converted via the code @code{num2str} function.
     ## @item logical arrays are converted to either @qcode{false} or
     ## @qcode{true} character sequences.
@@ -145,16 +146,22 @@ classdef string
         this.isMissing = isundefined (in);
 
       elseif (ischar (in))
-        if (ndims (in) > 2)
+        ## Convert each row to a string element with 'num2cell' rather than
+        ## 'cellstr', which would deblank and silently drop trailing whitespace
+        ## (MATLAB's 'string' preserves it).  An empty char array yields a single
+        ## empty string element, matching the no-argument constructor.
+        if (isempty (in))
+          this.strs = {''};
+        elseif (ndims (in) > 2)
           sz = size (in);
           nr = prod (sz([1,3:end]));
           nc = sz(2);
           in = reshape (in, nr, nc);
-          in = cellstr (in);
+          in = num2cell (in, 2);
           sz(2) = [];
           this.strs = reshape (in, sz);
         else
-          this.strs = cellstr (in);
+          this.strs = num2cell (in, 2);
         endif
         this.isMissing = false (size (this.strs));
 
@@ -1613,10 +1620,6 @@ classdef string
 
   methods (Hidden)
 
-    function out = compose (this, varargin)
-      error ("string.compose: not implemented yet.");
-    endfunction
-
     function out = eraseBetween (this, start, stop)
       error ("string.eraseBetween: not implemented yet.");
     endfunction
@@ -1732,6 +1735,157 @@ classdef string
         endfor
         out.strs = strcat (strArgs{:});
       endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {string} {@var{str} =} compose (@var{formatSpec}, @var{A})
+    ## @deftypefnx {string} {@var{str} =} compose (@var{formatSpec}, @var{A1}, @dots{}, @var{AN})
+    ## @deftypefnx {string} {@var{str} =} compose (@var{txt})
+    ##
+    ## Format data into a string array or translate escape-character sequences.
+    ##
+    ## @code{@var{str} = compose (@var{formatSpec}, @var{A})} formats the data
+    ## in the array @var{A} according to the formatting operators in
+    ## @var{formatSpec}, which must be a string scalar or character vector, and
+    ## returns the result in the string array @var{str}.  The formatting
+    ## operators are the same as those accepted by the @code{sprintf} function.
+    ## Unlike @code{sprintf}, which returns a single character vector,
+    ## @code{compose} returns a string array whose elements correspond to the
+    ## rows of @var{A}.
+    ##
+    ## @code{compose} applies @var{formatSpec} to each row of @var{A} so that
+    ## @var{str} has the same number of rows as @var{A}.  The size of @var{str}
+    ## is further determined as follows:
+    ##
+    ## @itemize
+    ## @item If the number of columns in @var{A} exceeds the number of
+    ## formatting operators in @var{formatSpec}, then @var{formatSpec} is
+    ## applied repeatedly along each row of @var{A}, adding columns to @var{str}.
+    ## @item If the number of columns in @var{A} is less than the number of
+    ## formatting operators, then the operators left without a corresponding
+    ## value appear unchanged in @var{str}.
+    ## @item If @var{A} has zero columns, then @var{str} has the same size as
+    ## @var{A} and no formatting operators are applied.
+    ## @end itemize
+    ##
+    ## @code{@var{str} = compose (@var{formatSpec}, @var{A1}, @dots{}, @var{AN})}
+    ## formats the data from the arrays @var{A1}, @dots{}, @var{AN}.  The
+    ## formatting operators are assigned to the input arrays in order: once an
+    ## operator has consumed a value from an input array, it becomes unavailable
+    ## to the following arrays.  All input arrays must be of compatible sizes.
+    ##
+    ## @code{@var{str} = compose (@var{txt})} translates escape-character
+    ## sequences, such as @qcode{'\n'} and @qcode{'\t'}, in @var{txt} and
+    ## returns the result in @var{str}, which has the same size as @var{txt}.
+    ## Any formatting operators in @var{txt} are left unchanged.
+    ##
+    ## In all syntaxes, escape-character sequences appearing in literal text are
+    ## translated and each @qcode{'%%'} literal is converted to a single
+    ## @qcode{'%'} character, following the same rules as the @code{sprintf}
+    ## function.  The only difference from @code{sprintf} is that a formatting
+    ## operator left without a corresponding value is emitted unchanged rather
+    ## than dropped.
+    ##
+    ## @end deftypefn
+    function out = compose (this, varargin)
+
+      ## Escape-sequence translation syntax: compose (TXT)
+      if (nargin == 1)
+        out = this;
+        cstr = this.strs;
+        for k = 1:numel (cstr)
+          if (this.isMissing(k))
+            continue;
+          endif
+          cstr{k} = compose_apply (compose_tokenize (cstr{k}), {});
+        endfor
+        out.strs = cstr;
+        return;
+      endif
+
+      ## Formatting syntax: compose (FORMATSPEC, A1, ..., AN)
+      if (! isscalar (this))
+        error (strcat ("string.compose: FORMATSPEC must be a", ...
+                       " string scalar or a character vector."));
+      endif
+      if (this.isMissing)
+        error ("string.compose: FORMATSPEC cannot be a missing value.");
+      endif
+      tok = compose_tokenize (this.strs{1});
+
+      ## Count the values consumed by one full pass of FORMATSPEC
+      vpa = 0;
+      for t = 1:numel (tok)
+        if (strcmp (tok{t}.type, 'op'))
+          vpa += tok{t}.nval;
+        endif
+      endfor
+
+      ## Normalize each input array to a 2-D cell matrix of values
+      N = numel (varargin);
+      C = cell (1, N);
+      nrows = ones (1, N);
+      for n = 1:N
+        A = varargin{n};
+        if (ischar (A))
+          Cn = cellstr (A);
+        elseif (isa (A, 'string'))
+          Cn = cellstr (A);
+        elseif (isnumeric (A) || islogical (A))
+          Cn = num2cell (A);
+        else
+          error ("string.compose: unsupported input type: '%s'.", class (A));
+        endif
+        Cn = reshape (Cn, size (Cn, 1), []);
+        C{n} = Cn;
+        nrows(n) = size (Cn, 1);
+      endfor
+
+      ## Determine the common number of rows (singletons expand)
+      R = max (nrows);
+      for n = 1:N
+        rn = size (C{n}, 1);
+        if (rn == R)
+          continue;
+        elseif (rn == 1)
+          C{n} = repmat (C{n}, R, 1);
+        else
+          error ("string.compose: input arrays must be of compatible sizes.");
+        endif
+      endfor
+
+      ## Combine all values per row, in column order across input arrays
+      vals = [C{:}];
+      V = columns (vals);
+
+      ## With zero data columns no formatting is applied (size preserved)
+      if (V == 0)
+        out = string (cell (R, 0));
+        return;
+      endif
+
+      ## Number of times FORMATSPEC is applied per row
+      if (vpa == 0)
+        nApp = 1;
+      else
+        nApp = max (1, ceil (V / vpa));
+      endif
+
+      ## Apply FORMATSPEC, consuming VPA values at a time
+      outc = cell (R, nApp);
+      for r = 1:R
+        for a = 1:nApp
+          lo = (a - 1) * vpa + 1;
+          if (vpa == 0 || lo > V)
+            slice = {};
+          else
+            slice = vals(r, lo:min (a * vpa, V));
+          endif
+          outc{r,a} = compose_apply (tok, slice);
+        endfor
+      endfor
+
+      out = string (outc);
     endfunction
 
     ## -*- texinfo -*-
@@ -2496,4 +2650,54 @@ function out = sign_strings (A, B)
   Bcode = cellfun (fcn, B, "UniformOutput", false);
   Bcode(cellfun ('isempty', Bcode)) = 0;
   out = cellfun (@cmp_uint32, Acode, Bcode);
+endfunction
+
+## Split a format specifier into an ordered list of literal and operator tokens.
+## Each token is a scalar struct with the fields:
+##   'type' : 'lit' for literal text or 'op' for a conversion operator
+##   'text' : the corresponding piece of text from the format specifier
+##   'nval' : number of values an operator consumes (1, plus 1 per '*'), or 0
+## The '%%' literal is collapsed to a single '%' and kept as a 'lit' token.
+function tok = compose_tokenize (fmt)
+  pat = '%%|%[-+ #0]*(?:\d+|\*)?(?:\.(?:\d+|\*))?[diouxXeEfgGcs]';
+  [mt, sp] = regexp (fmt, pat, 'match', 'split');
+  tok = {};
+  for k = 1:numel (mt)
+    if (! isempty (sp{k}))
+      tok{end+1} = struct ('type', 'lit', 'text', sp{k}, 'nval', 0);
+    endif
+    if (strcmp (mt{k}, '%%'))
+      tok{end+1} = struct ('type', 'lit', 'text', '%', 'nval', 0);
+    else
+      nstar = numel (strfind (mt{k}, '*'));
+      tok{end+1} = struct ('type', 'op', 'text', mt{k}, 'nval', 1 + nstar);
+    endif
+  endfor
+  if (! isempty (sp{end}))
+    tok{end+1} = struct ('type', 'lit', 'text', sp{end}, 'nval', 0);
+  endif
+endfunction
+
+## Format a single string from a token list and a cell of input values.  Each
+## operator consumes its values in order; operators left without a corresponding
+## value are emitted unchanged.  Literal text has its escape sequences translated
+## following the same rules as the 'sprintf' function.
+function out = compose_apply (tok, vals)
+  parts = cell (1, numel (tok));
+  vi = 1;
+  nv = numel (vals);
+  for t = 1:numel (tok)
+    if (strcmp (tok{t}.type, 'op') && vi + tok{t}.nval - 1 <= nv)
+      args = vals(vi:vi + tok{t}.nval - 1);
+      parts{t} = sprintf (tok{t}.text, args{:});
+      vi += tok{t}.nval;
+    elseif (strcmp (tok{t}.type, 'op'))
+      parts{t} = tok{t}.text;
+    elseif (strcmp (tok{t}.text, '%'))
+      parts{t} = '%';
+    else
+      parts{t} = do_string_escapes (tok{t}.text);
+    endif
+  endfor
+  out = ['', parts{:}];
 endfunction
