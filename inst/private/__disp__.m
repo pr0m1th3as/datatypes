@@ -70,7 +70,7 @@ function dispcstrmatrix (cstr)
   if (sum (optLens + 4) <= cols) # all columns fit in terminal size
     rowSpat = "";
     for iCol = 1:size (cstr, 2)
-      rowSpat = [rowSpat, sprintf("%%+%ds", optLens(iCol)), colgap];
+      rowSpat = [rowSpat, sprintf("%%-%ds", optLens(iCol)), colgap];
     endfor
     for iRow = 1:size (cstr, 1)
       strrow = sprintf (rowSpat, cstr{iRow,:});
