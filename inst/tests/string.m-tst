@@ -1303,3 +1303,99 @@
 %!               append (string ('c'), emoji, string ('b'), euro, string ('a')));
 %! ## reversing twice restores the multibyte original exactly
 %! assert_equal (reverse (reverse (s)), s);
+
+## strcat: concatenates corresponding elements (verbatim MATLAB example)
+%!assert_equal (strcat (string ({'John ', 'Mary '}), string ({'Smith', 'Jones'})), ...
+%!              string ({'John Smith', 'Mary Jones'}))
+## strcat: string inputs preserve trailing whitespace (unlike char strcat)
+%!assert_equal (strcat (string ('a '), string ('b')), string ('a b'))
+## strcat: a scalar argument expands, and char/cellstr may be mixed in
+%!assert_equal (strcat (string ({'x', 'y'}), '_', string ('Z')), ...
+%!              string ({'x_Z', 'y_Z'}))
+%!assert_equal (strcat (string ({'a', 'b'}), {'1', '2'}), string ({'a1', 'b2'}))
+## strcat: a single argument is returned as a string
+%!assert_equal (strcat (string ('hi')), string ('hi'))
+## strcat: output is a string array
+%!test
+%! r = strcat (string ({'a', 'b'}), string ('!'));
+%! assert_equal (isa (r, 'string'), true);
+%! assert_equal (cellstr (r), {'a!', 'b!'});
+## strcat: error branch
+%!error <string.strcat: incompatible data type: 'double'> ...
+%! strcat (string ('a'), 5)
+
+## plus: appends STR2 to STR1, equivalent to the '+' operator
+%!assert_equal (string ('foo') + string ('bar'), string ('foobar'))
+%!assert_equal (plus (string ('foo'), string ('bar')), string ('foobar'))
+## plus: applied element-wise across equal-sized arrays
+%!assert_equal (string ({'a', 'b'}) + string ({'1', '2'}), string ({'a1', 'b2'}))
+## plus: a scalar operand broadcasts over the array
+%!assert_equal (string ({'a', 'b'}) + string ('!'), string ({'a!', 'b!'}))
+## plus: a missing value propagates (any missing operand -> missing)
+%!test
+%! r = string ({'a', missing}) + string ('X');
+%! assert_equal (ismissing (r), [false, true]);
+%! assert_equal (cellstr (r), {'aX', ''});
+## plus: error branch -- both operands must be string arrays
+%!error <string.plus: both STR1 and STR2 must be string arrays.> ...
+%! string ('a') + 5
+
+## lower: converts uppercase characters to lowercase (verbatim MATLAB example)
+%!assert_equal (lower (string ('The SOONER,')), string ('the sooner,'))
+## lower: digits, punctuation, and already-lowercase letters are unchanged
+%!assert_equal (lower (string ('aB3!Cd')), string ('ab3!cd'))
+## lower: applied element-wise across an array, preserving its size
+%!assert_equal (lower (string ({'AB', 'Cd'; 'eF', 'GH'})), ...
+%!              string ({'ab', 'cd'; 'ef', 'gh'}))
+## lower: an empty string stays empty
+%!assert_equal (lower (string ('')), string (''))
+## lower: missing values are preserved and carry no text
+%!test
+%! r = lower (string ({'AB', missing}));
+%! assert_equal (ismissing (r), [false, true]);
+%! assert_equal (cellstr (r), {'ab', ''});
+
+## upper: converts lowercase characters to uppercase (verbatim MATLAB example)
+%!assert_equal (upper (string ('Hello, World.')), string ('HELLO, WORLD.'))
+## upper: digits, punctuation, and already-uppercase letters are unchanged
+%!assert_equal (upper (string ('aB3!cD')), string ('AB3!CD'))
+## upper: applied element-wise across an array, preserving its size
+%!assert_equal (upper (string ({'ab', 'cD'; 'Ef', 'gh'})), ...
+%!              string ({'AB', 'CD'; 'EF', 'GH'}))
+## upper: an empty string stays empty
+%!assert_equal (upper (string ('')), string (''))
+## upper: missing values are preserved and carry no text
+%!test
+%! r = upper (string ({'ab', missing}));
+%! assert_equal (ismissing (r), [false, true]);
+%! assert_equal (cellstr (r), {'AB', ''});
+
+## unique: returns sorted unique elements with index vectors B=A(ixA), A=B(ixB)
+%!test
+%! A = string ({'b', 'a', 'b', 'c', 'a'});
+%! [B, ixA, ixB] = unique (A);
+%! assert_equal (B, string ({'a', 'b', 'c'}));
+%! assert_equal (ixA, [2; 1; 4]);
+%! assert_equal (ixB, [2; 1; 2; 3; 1]);
+## unique: 'stable' keeps first-seen order
+%!assert_equal (unique (string ({'b', 'a', 'b', 'c', 'a'}), 'stable'), ...
+%!              string ({'b', 'a', 'c'}))
+## unique: 'first' and 'last' select which occurrence the index points to
+%!test
+%! [~, iaF] = unique (string ({'b', 'a', 'b', 'c', 'a'}), 'first');
+%! [~, iaL] = unique (string ({'b', 'a', 'b', 'c', 'a'}), 'last');
+%! assert_equal (iaF, [2; 1; 4]);
+%! assert_equal (iaL, [5; 3; 4]);
+## unique: 'rows' returns the unique rows of a 2-D string matrix
+%!assert_equal (unique (string ({'a', 'b'; 'a', 'b'; 'c', 'd'}), 'rows'), ...
+%!              string ({'a', 'b'; 'c', 'd'}))
+## unique: missing values are not de-duplicated and are appended at the end
+%!test
+%! B = unique (string ({'b', missing, 'a', missing}));
+%! assert_equal (ismissing (B), [false, false, true, true]);
+%! assert_equal (cellstr (B(~ismissing (B))), {'a', 'b'});
+## unique: error branches
+%!error <string.unique: invalid option 'bogus'.> ...
+%! unique (string ('a'), 'bogus')
+%!error <string.unique: 'rows' applies only to 2-D matrices.> ...
+%! unique (reshape (string ({'a','b','c','d','e','f','g','h'}), 2, 2, 2), 'rows')
