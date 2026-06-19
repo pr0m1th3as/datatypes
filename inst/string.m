@@ -1625,10 +1625,6 @@ classdef string
       error ("string.sort: not implemented yet.");
     endfunction
 
-    function out = splitlines (this, varargin)
-      error ("string.splitlines: not implemented yet.");
-    endfunction
-
     function out = strip (this, varargin)
       error ("string.strip: not implemented yet.");
     endfunction
@@ -2707,10 +2703,8 @@ classdef string
                 sprintf("\f"), sprintf("\v")};
       endif
 
-      sz = size (this.strs);
-      ne = numel (this.strs);
-
-      ## Select the split dimension
+      ## Validate an explicit split dimension (auto-selected otherwise)
+      dim = [];
       if (numel (varargin) >= 2)
         dim = varargin{2};
         if (! (isnumeric (dim) && isscalar (dim) && dim == fix (dim) ...
@@ -2720,57 +2714,46 @@ classdef string
         if (size (this.strs, dim) != 1)
           error ("string.split: STR must have size 1 along dimension DIM.");
         endif
-      elseif (isscalar (this.strs))
-        dim = 1;
-      else
-        dim = 2;
-        while (size (this.strs, dim) != 1)
-          dim += 1;
-        endwhile
       endif
 
-      ## Split every element, requiring a common piece count
-      pieces = cell (ne, 1);
-      matches = cell (ne, 1);
-      counts = zeros (ne, 1);
-      for k = 1:ne
-        if (this.isMissing(k))
-          pieces{k} = {''};
-          matches{k} = cell (1, 0);
-          counts(k) = 1;
-        else
-          [pieces{k}, matches{k}] = split_one (this.strs{k}, dlms);
-          counts(k) = numel (pieces{k});
-        endif
-      endfor
-      if (ne > 0 && any (counts != counts(1)))
-        error (strcat ("string.split: each element of STR must split into", ...
-                       " the same number of substrings."));
+      [newstr, matchstr, errmsg] = split_core (this, dlms, dim);
+      if (! isempty (errmsg))
+        error ("string.split: %s", errmsg);
       endif
-      N = 0;
-      if (ne > 0)
-        N = counts(1);
-      endif
+    endfunction
 
-      ## Assemble the pieces (and matches) into element x count matrices
-      pc = cell (ne, N);
-      pm = false (ne, N);
-      mc = cell (ne, max (N - 1, 0));
-      for k = 1:ne
-        pc(k,:) = pieces{k};
-        mc(k,:) = matches{k};
-        if (this.isMissing(k))
-          pm(k,1) = true;
-        endif
-      endfor
-
-      newstr = this;
-      [newstr.strs, newstr.isMissing] = split_place (pc, pm, sz, dim, N);
-      if (nargout >= 2)
-        Nm = max (N - 1, 0);
-        matchstr = this;
-        [matchstr.strs, matchstr.isMissing] = ...
-                            split_place (mc, false (ne, Nm), sz, dim, Nm);
+    ## -*- texinfo -*-
+    ## @deftypefn {string} {@var{newstr} =} splitlines (@var{str})
+    ##
+    ## Split string array at newline characters.
+    ##
+    ## @code{@var{newstr} = splitlines (@var{str})} divides each element of
+    ## @var{str} at its newline characters and returns the lines as a string
+    ## array.  The recognized newline characters are the line feed, the carriage
+    ## return, a carriage return followed by a line feed (treated as a single
+    ## boundary), the vertical tab, the form feed, and the Unicode next-line
+    ## (@code{U+0085}), line-separator (@code{U+2028}), and paragraph-separator
+    ## (@code{U+2029}) characters.
+    ##
+    ## The lines are laid out along a new dimension exactly as for @code{split}:
+    ## a string scalar with @var{n} lines yields an @code{@var{n}x1} array, and
+    ## an @code{Mx1} column yields an @code{Mx@var{n}} array.  Every element of
+    ## @var{str} must contain the same number of newlines.  Missing values in
+    ## @var{str} are preserved and count as a single line.
+    ##
+    ## @end deftypefn
+    function out = splitlines (this)
+      cr = sprintf ("\r");
+      nl = sprintf ("\n");
+      ## A carriage return + line feed is tried first so it is consumed as a
+      ## single boundary rather than as two separate ones.
+      dlms = {[cr, nl], nl, cr, sprintf("\v"), sprintf("\f"), ...
+              native2unicode(uint8 ([194, 133]), "UTF-8"), ...
+              native2unicode(uint8 ([226, 128, 168]), "UTF-8"), ...
+              native2unicode(uint8 ([226, 128, 169]), "UTF-8")};
+      [out, ~, errmsg] = split_core (this, dlms, []);
+      if (! isempty (errmsg))
+        error ("string.splitlines: %s", errmsg);
       endif
     endfunction
 
@@ -3641,6 +3624,73 @@ classdef string
 
       out.strs = cstr;
       out.isMissing = isMiss;
+    endfunction
+
+    ## Shared engine for split/splitlines.  Splits every element at the DLMS
+    ## delimiters and lays the pieces out along dimension DIM (auto-selected
+    ## when DIM is empty: the first trailing singleton dimension, or dimension 1
+    ## for a scalar).  Returns the split array NEWSTR, the matched delimiters
+    ## MATCHSTR (one fewer along DIM), and a non-empty ERRMSG if the elements do
+    ## not all split into the same number of pieces; the caller emits the error
+    ## under its own name.  Missing elements count as a single (missing) piece.
+    function [newstr, matchstr, errmsg] = split_core (this, dlms, dim)
+      newstr = this;
+      matchstr = this;
+      errmsg = '';
+      sz = size (this.strs);
+      ne = numel (this.strs);
+
+      if (isempty (dim))
+        if (isscalar (this.strs))
+          dim = 1;
+        else
+          dim = 2;
+          while (size (this.strs, dim) != 1)
+            dim += 1;
+          endwhile
+        endif
+      endif
+
+      ## Split every element, requiring a common piece count
+      pieces = cell (ne, 1);
+      matches = cell (ne, 1);
+      counts = zeros (ne, 1);
+      for k = 1:ne
+        if (this.isMissing(k))
+          pieces{k} = {''};
+          matches{k} = cell (1, 0);
+          counts(k) = 1;
+        else
+          [pieces{k}, matches{k}] = split_one (this.strs{k}, dlms);
+          counts(k) = numel (pieces{k});
+        endif
+      endfor
+      if (ne > 0 && any (counts != counts(1)))
+        errmsg = strcat ("each element of STR must split into the same", ...
+                         " number of substrings.");
+        return;
+      endif
+      N = 0;
+      if (ne > 0)
+        N = counts(1);
+      endif
+
+      ## Assemble the pieces (and matches) into element x count matrices
+      pc = cell (ne, N);
+      pm = false (ne, N);
+      mc = cell (ne, max (N - 1, 0));
+      for k = 1:ne
+        pc(k,:) = pieces{k};
+        mc(k,:) = matches{k};
+        if (this.isMissing(k))
+          pm(k,1) = true;
+        endif
+      endfor
+
+      [newstr.strs, newstr.isMissing] = split_place (pc, pm, sz, dim, N);
+      Nm = max (N - 1, 0);
+      [matchstr.strs, matchstr.isMissing] = ...
+                            split_place (mc, false (ne, Nm), sz, dim, Nm);
     endfunction
 
   endmethods

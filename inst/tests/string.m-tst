@@ -1357,6 +1357,34 @@
 %!error <string.split: each element of STR must split into the same number of substrings.> ...
 %! split (string ({'a-b', 'c'}), '-')
 
+## splitlines: a scalar splits into an Nx1 column at line feeds
+%!assert_equal (splitlines (string (sprintf ("a\nb\nc"))), string ({'a'; 'b'; 'c'}))
+## splitlines: a CR+LF pair is a single boundary (no empty line between)
+%!assert_equal (splitlines (string (sprintf ("a\r\nb"))), string ({'a'; 'b'}))
+## splitlines: a lone carriage return is also a boundary
+%!assert_equal (splitlines (string (sprintf ("a\rb"))), string ({'a'; 'b'}))
+## splitlines: consecutive newlines are not collapsed (empty line between)
+%!assert_equal (splitlines (string (sprintf ("a\n\nb"))), string ({'a'; ''; 'b'}))
+## splitlines: vertical tab and form feed are boundaries too
+%!assert_equal (splitlines (string (sprintf ("a\vb\fc"))), string ({'a'; 'b'; 'c'}))
+## splitlines: the Unicode line separator (U+2028) is a boundary
+%!test
+%! ls = native2unicode (uint8 ([226, 128, 168]), "UTF-8");
+%! assert_equal (splitlines (string (["a", ls, "b"])), string ({'a'; 'b'}));
+## splitlines: an Mx1 column splits into an MxN array
+%!assert_equal (splitlines (string ({sprintf("a\nb"); sprintf("c\nd")})), ...
+%!              string ({'a', 'b'; 'c', 'd'}))
+## splitlines: a string with no newline returns itself (single line)
+%!assert_equal (splitlines (string ('abc')), string ('abc'))
+## splitlines: missing values are preserved and count as a single line
+%!test
+%! r = splitlines (string ({'ab', missing}));
+%! assert_equal (ismissing (r), [false, true]);
+%! assert_equal (cellstr (r), {'ab', ''});
+## splitlines: error branch -- elements must have the same number of lines
+%!error <string.splitlines: each element of STR must split into the same number of substrings.> ...
+%! splitlines (string ({sprintf("a\nb"), 'c'}))
+
 ## strcat: concatenates corresponding elements (verbatim MATLAB example)
 %!assert_equal (strcat (string ({'John ', 'Mary '}), string ({'Smith', 'Jones'})), ...
 %!              string ({'John Smith', 'Mary Jones'}))
