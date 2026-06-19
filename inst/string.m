@@ -593,9 +593,10 @@ classdef string
     ## this syntax to cascade @code{keyHash} on multiple objects for which a
     ## single hash code is required.
     ##
-    ## Note that unlike MATLAB, this implementation does not use any random seed.
-    ## As a result, @code{keyHash} will always generate the exact same hash key
-    ## for any particular input across different workers and Octave sessions.
+    ## Note that unlike MATLAB, this implementation does not use any random
+    ## seed.  As a result, @code{keyHash} will always generate the exact same
+    ## hash key for any particular input across different workers and Octave
+    ## sessions.
     ##
     ## @end deftypefn
     function key = keyHash (this, base = [])
@@ -645,9 +646,9 @@ classdef string
     ## values, @qcode{<missing>} elements do not match any pattern and always
     ## return @qcode{false}.
     ##
-    ## @code{@var{TF} = contains (@var{str}, @var{pattern}, @qcode{'IgnoreCase'},
-    ## @qcode{true})} ignores case when determining if @var{str} ends with
-    ## @var{pattern}.
+    ## @code{@var{TF} = contains (@var{str}, @var{pattern},
+    ## @qcode{'IgnoreCase'}, @qcode{true})} ignores case when determining if
+    ## @var{str} ends with @var{pattern}.
     ##
     ## @end deftypefn
     function TF = contains (this, pattern, varargin)
@@ -704,9 +705,9 @@ classdef string
     ## values, @qcode{<missing>} elements do not match any pattern and always
     ## return @qcode{false}.
     ##
-    ## @code{@var{TF} = endsWith (@var{str}, @var{pattern}, @qcode{'IgnoreCase'},
-    ## @qcode{true})} ignores case when determining if @var{str} ends with
-    ## @var{pattern}.
+    ## @code{@var{TF} = endsWith (@var{str}, @var{pattern},
+    ## @qcode{'IgnoreCase'}, @qcode{true})} ignores case when determining if
+    ## @var{str} ends with @var{pattern}.
     ##
     ## @end deftypefn
     function TF = endsWith (this, pattern, varargin)
@@ -764,9 +765,9 @@ classdef string
     ## values, @qcode{<missing>} elements do not match any pattern and always
     ## return @qcode{false}.
     ##
-    ## @code{@var{TF} = startsWith (@var{str}, @var{pattern}, @qcode{'IgnoreCase'},
-    ## @qcode{true})} ignores case when determining if @var{str} starts with
-    ## @var{pattern}.
+    ## @code{@var{TF} = startsWith (@var{str}, @var{pattern},
+    ## @qcode{'IgnoreCase'}, @qcode{true})} ignores case when determining if
+    ## @var{str} starts with @var{pattern}.
     ##
     ## @end deftypefn
     function TF = startsWith (this, pattern, varargin)
@@ -1732,7 +1733,8 @@ classdef string
     ## @itemize
     ## @item If the number of columns in @var{A} exceeds the number of
     ## formatting operators in @var{formatSpec}, then @var{formatSpec} is
-    ## applied repeatedly along each row of @var{A}, adding columns to @var{str}.
+    ## applied repeatedly along each row of @var{A}, adding columns to
+    ## @var{str}.
     ## @item If the number of columns in @var{A} is less than the number of
     ## formatting operators, then the operators left without a corresponding
     ## value appear unchanged in @var{str}.
@@ -1740,11 +1742,12 @@ classdef string
     ## @var{A} and no formatting operators are applied.
     ## @end itemize
     ##
-    ## @code{@var{str} = compose (@var{formatSpec}, @var{A1}, @dots{}, @var{AN})}
-    ## formats the data from the arrays @var{A1}, @dots{}, @var{AN}.  The
-    ## formatting operators are assigned to the input arrays in order: once an
-    ## operator has consumed a value from an input array, it becomes unavailable
-    ## to the following arrays.  All input arrays must be of compatible sizes.
+    ## @code{@var{str} = compose (@var{formatSpec}, @var{A1}, @dots{},
+    ## @var{AN})} formats the data from the arrays @var{A1}, @dots{}, @var{AN}.
+    ## The formatting operators are assigned to the input arrays in order: once
+    ## an operator has consumed a value from an input array, it becomes
+    ## unavailable to the following arrays.  All input arrays must be of
+    ## compatible sizes.
     ##
     ## @code{@var{str} = compose (@var{txt})} translates escape-character
     ## sequences, such as @qcode{'\n'} and @qcode{'\t'}, in @var{txt} and
@@ -1900,34 +1903,35 @@ classdef string
     ##
     ## Erase content between start and end boundaries.
     ##
-    ## @code{@var{newstr} = eraseBetween (@var{str}, @var{startPat}, @var{endPat})}
-    ## removes from each element of the string array @var{str} the text that
-    ## occurs between the substrings @var{startPat} and @var{endPat}, keeping the
-    ## boundary substrings themselves.  @var{startPat} and @var{endPat} can be
-    ## string arrays, character vectors, or cell arrays of character vectors.
-    ## For each element, the first occurrence of @var{startPat} is matched and
-    ## then the first occurrence of @var{endPat} that begins after it; if either
-    ## boundary is not found, the element is returned unchanged.
+    ## @code{@var{newstr} = eraseBetween (@var{str}, @var{startPat},
+    ## @var{endPat})} removes from each element of the string array @var{str}
+    ## the text that occurs between the substrings @var{startPat} and
+    ## @var{endPat}, keeping the boundary substrings themselves.  @var{startPat}
+    ## and @var{endPat} can be string arrays, character vectors, or cell arrays
+    ## of character vectors.  For each element, the first occurrence of
+    ## @var{startPat} is matched and then the first occurrence of @var{endPat}
+    ## that begins after it; if either boundary is not found, the element is
+    ## returned unchanged.
     ##
-    ## @code{@var{newstr} = eraseBetween (@var{str}, @var{startPos}, @var{endPos})}
-    ## removes the text between the character positions @var{startPos} and
-    ## @var{endPos}, inclusive of the characters at those positions.
-    ## @var{startPos} and @var{endPos} must be positive integers with
-    ## @var{startPos} not exceeding @var{endPos} and both within the length of
-    ## the corresponding element of @var{str}.
+    ## @code{@var{newstr} = eraseBetween (@var{str}, @var{startPos},
+    ## @var{endPos})} removes the text between the character positions
+    ## @var{startPos} and @var{endPos}, inclusive of the characters at those
+    ## positions.  @var{startPos} and @var{endPos} must be positive integers
+    ## with @var{startPos} not exceeding @var{endPos} and both within the
+    ## length of the corresponding element of @var{str}.
     ##
-    ## @code{@var{newstr} = eraseBetween (@dots{}, @qcode{"Boundaries"}, @var{bounds})}
-    ## specifies whether the boundaries are included in or excluded from the
-    ## erased text.  @var{bounds} can be either @qcode{"inclusive"} or
-    ## @qcode{"exclusive"}.  When boundaries are given as substrings, the default
-    ## is @qcode{"exclusive"} and the boundary substrings are preserved; when
-    ## given as positions, the default is @qcode{"inclusive"} and the characters
-    ## at those positions are erased.
+    ## @code{@var{newstr} = eraseBetween (@dots{}, @qcode{"Boundaries"},
+    ## @var{bounds})} specifies whether the boundaries are included in or
+    ## excluded from the erased text.  @var{bounds} can be either
+    ## @qcode{"inclusive"} or @qcode{"exclusive"}.  When boundaries are given
+    ## as substrings, the default is @qcode{"exclusive"} and the boundary
+    ## substrings are preserved; when given as positions, the default is
+    ## @qcode{"inclusive"} and the characters at those positions are erased.
     ##
-    ## @var{startPat}/@var{endPat} and @var{startPos}/@var{endPos} must either be
-    ## scalars, applied to every element of @var{str}, or be of the same size as
-    ## @var{str} and applied element-wise.  @var{newstr} is a string array of the
-    ## same size as @var{str}.  Missing values in @var{str} are preserved.
+    ## @var{startPat}/@var{endPat} and @var{startPos}/@var{endPos} must either
+    ## be scalars, applied to every element of @var{str}, or be of the same size
+    ## as @var{str} and applied element-wise.  @var{newstr} is a string array of
+    ## the same size as @var{str}.  Missing values in @var{str} are preserved.
     ##
     ## @end deftypefn
     function out = eraseBetween (this, start, stop, varargin)
@@ -2024,20 +2028,20 @@ classdef string
     ## overlap; where alternatives match at the same position, the first listed
     ## in @var{pat} is taken.
     ##
-    ## The matches of an element occupy a row of @var{newstr}, so the matches run
-    ## along the second dimension and every element of @var{str} must yield the
-    ## same number of matches.  For a string scalar with @var{n} matches,
-    ## @var{newstr} is @code{1x@var{n}}; for a non-scalar @var{str}, @var{newstr}
-    ## has one row per element (taken in column-major order) and one column per
-    ## match.  Elements with no match, including missing values, are treated as
-    ## having zero matches.
+    ## The matches of an element occupy a row of @var{newstr}, so the matches
+    ## run along the second dimension and every element of @var{str} must yield
+    ## the same number of matches.  For a string scalar with @var{n} matches,
+    ## @var{newstr} is @code{1x@var{n}}; for a non-scalar @var{str},
+    ## @var{newstr} has one row per element (taken in column-major order) and
+    ## one column per match.  Elements with no match, including missing values,
+    ## are treated as having zero matches.
     ##
     ## @code{@var{newstr} = extract (@var{str}, @var{pos})} returns the single
     ## character located at position @var{pos} in each element of @var{str}.
     ## @var{pos} must be a positive integer that is either a scalar, applied to
     ## every element, or the same size as @var{str}, applied element-wise.  In
-    ## this syntax @var{newstr} has the same size as @var{str} and missing values
-    ## are preserved.
+    ## this syntax @var{newstr} has the same size as @var{str} and missing
+    ## values are preserved.
     ##
     ## @end deftypefn
     function out = extract (this, pat)
@@ -2127,15 +2131,16 @@ classdef string
     ## each element of @var{str}, the part of the text that follows the first
     ## occurrence of @var{pat}, excluding @var{pat} itself.  @var{pat} can be a
     ## string array, a character vector, or a cell array of character vectors,
-    ## and must either be a scalar, applied to every element of @var{str}, or be
-    ## of the same size as @var{str} and applied element-wise.  If @var{pat} is
-    ## not found in an element, the corresponding element of @var{newstr} is a
-    ## missing value.
+    ## and must either be a scalar, applied to every element of @var{str}, or
+    ## be of the same size as @var{str} and applied element-wise.  If @var{pat}
+    ## is not found in an element, the corresponding element of @var{newstr} is
+    ## a missing value.
     ##
-    ## @code{@var{newstr} = extractAfter (@var{str}, @var{pos})} returns the part
-    ## of each element of @var{str} that follows the character position
-    ## @var{pos}, that is, from @code{@var{pos}+1} to the end.  @var{pos} must be
-    ## a positive integer that is either a scalar or the same size as @var{str}.
+    ## @code{@var{newstr} = extractAfter (@var{str}, @var{pos})} returns the
+    ## part of each element of @var{str} that follows the character position
+    ## @var{pos}, that is, from @code{@var{pos}+1} to the end.  @var{pos} must
+    ## be a positive integer that is either a scalar or the same size as
+    ## @var{str}.
     ##
     ## @var{newstr} is a string array of the same size as @var{str}.  Missing
     ## values in @var{str} are preserved.
@@ -2161,10 +2166,10 @@ classdef string
     ## each element of @var{str}, the part of the text that precedes the first
     ## occurrence of @var{pat}, excluding @var{pat} itself.  @var{pat} can be a
     ## string array, a character vector, or a cell array of character vectors,
-    ## and must either be a scalar, applied to every element of @var{str}, or be
-    ## of the same size as @var{str} and applied element-wise.  If @var{pat} is
-    ## not found in an element, the corresponding element of @var{newstr} is a
-    ## missing value.
+    ## and must either be a scalar, applied to every element of @var{str}, or
+    ## be of the same size as @var{str} and applied element-wise.  If @var{pat}
+    ## is not found in an element, the corresponding element of @var{newstr} is
+    ## a missing value.
     ##
     ## @code{@var{newstr} = extractBefore (@var{str}, @var{pos})} returns the
     ## part of each element of @var{str} that precedes the character position
@@ -2193,36 +2198,36 @@ classdef string
     ##
     ## Extract the substrings between start and end boundaries.
     ##
-    ## @code{@var{newstr} = extractBetween (@var{str}, @var{startPat}, @var{endPat})}
-    ## returns the text that occurs between the substrings @var{startPat} and
-    ## @var{endPat} in each element of @var{str}.  @var{startPat} and
-    ## @var{endPat} can be string arrays, character vectors, or cell arrays of
-    ## character vectors.  Within each element the boundary pairs are matched
-    ## from left to right and do not overlap, so an element may yield several
-    ## substrings; these run along the second dimension, and every element of
-    ## @var{str} must yield the same number of matches.  For a string scalar with
-    ## @var{n} matches, @var{newstr} is @code{1x@var{n}}; for a non-scalar
-    ## @var{str}, @var{newstr} has one row per element (taken in column-major
-    ## order) and one column per match.  Elements with no match, including
-    ## missing values, are treated as having zero matches.
+    ## @code{@var{newstr} = extractBetween (@var{str}, @var{startPat},
+    ## @var{endPat})} returns the text that occurs between the substrings
+    ## @var{startPat} and @var{endPat} in each element of @var{str}.
+    ## @var{startPat} and @var{endPat} can be string arrays, character vectors,
+    ## or cell arrays of character vectors.  Within each element the boundary
+    ## pairs are matched from left to right and do not overlap, so an element
+    ## may yield several substrings; these run along the second dimension, and
+    ## every element of @var{str} must yield the same number of matches.  For a
+    ## string scalar with @var{n} matches, @var{newstr} is @code{1x@var{n}};
+    ## for a non-scalar @var{str}, @var{newstr} has one row per element (taken
+    ## in column-major order) and one column per match.  Elements with no match,
+    ## including missing values, are treated as having zero matches.
     ##
-    ## @code{@var{newstr} = extractBetween (@var{str}, @var{startPos}, @var{endPos})}
-    ## returns the substring between the character positions @var{startPos} and
-    ## @var{endPos}, inclusive of the characters at those positions.  This syntax
-    ## extracts a single substring per element, so @var{newstr} has the same size
-    ## as @var{str}.
+    ## @code{@var{newstr} = extractBetween (@var{str}, @var{startPos},
+    ## @var{endPos})} returns the substring between the character positions
+    ## @var{startPos} and @var{endPos}, inclusive of the characters at those
+    ## positions.  This syntax extracts a single substring per element, so
+    ## @var{newstr} has the same size as @var{str}.
     ##
-    ## @code{@var{newstr} = extractBetween (@dots{}, @qcode{"Boundaries"}, @var{bounds})}
-    ## specifies whether the boundaries are included in or excluded from the
-    ## extracted text.  @var{bounds} can be either @qcode{"inclusive"} or
-    ## @qcode{"exclusive"}.  When boundaries are given as substrings, the default
-    ## is @qcode{"exclusive"} and the boundary substrings are not included; when
-    ## given as positions, the default is @qcode{"inclusive"} and the characters
-    ## at those positions are included.
+    ## @code{@var{newstr} = extractBetween (@dots{}, @qcode{"Boundaries"},
+    ## @var{bounds})} specifies whether the boundaries are included in or
+    ## excluded from the extracted text.  @var{bounds} can be either
+    ## @qcode{"inclusive"} or @qcode{"exclusive"}.  When boundaries are given
+    ## as substrings, the default is @qcode{"exclusive"} and the boundary
+    ## substrings are not included; when given as positions, the default is
+    ## @qcode{"inclusive"} and the characters at those positions are included.
     ##
-    ## @var{startPat}/@var{endPat} and @var{startPos}/@var{endPos} must either be
-    ## scalars, applied to every element of @var{str}, or be of the same size as
-    ## @var{str}.  Missing values in @var{str} are preserved.
+    ## @var{startPat}/@var{endPat} and @var{startPos}/@var{endPos} must either
+    ## be scalars, applied to every element of @var{str}, or be of the same size
+    ## as @var{str}.  Missing values in @var{str} are preserved.
     ##
     ## @end deftypefn
     function out = extractBetween (this, start, stop, varargin)
@@ -2339,12 +2344,13 @@ classdef string
     ## Insert text after a pattern or position.
     ##
     ## @code{@var{newstr} = insertAfter (@var{str}, @var{pat}, @var{newtext})}
-    ## inserts the text @var{newtext} into each element of @var{str} after every
-    ## non-overlapping occurrence of the substring @var{pat}.  @var{pat} can be a
-    ## string array, a character vector, or a cell array of character vectors,
-    ## and must either be a scalar, applied to every element of @var{str}, or be
-    ## of the same size as @var{str} and applied element-wise.  If @var{pat} is
-    ## not found in an element, that element is returned unchanged.
+    ## inserts the text @var{newtext} into each element of @var{str} after
+    ## every non-overlapping occurrence of the substring @var{pat}.  @var{pat}
+    ## can be a string array, a character vector, or a cell array of character
+    ## vectors, and must either be a scalar, applied to every element of
+    ## @var{str}, or be of the same size as @var{str} and applied
+    ## element-wise.  If @var{pat} is not found in an element, that element is
+    ## returned unchanged.
     ##
     ## @code{@var{newstr} = insertAfter (@var{str}, @var{pos}, @var{newtext})}
     ## inserts @var{newtext} after the character position @var{pos}, that is,
@@ -2378,12 +2384,13 @@ classdef string
     ## Insert text before a pattern or position.
     ##
     ## @code{@var{newstr} = insertBefore (@var{str}, @var{pat}, @var{newtext})}
-    ## inserts the text @var{newtext} into each element of @var{str} before every
-    ## non-overlapping occurrence of the substring @var{pat}.  @var{pat} can be a
-    ## string array, a character vector, or a cell array of character vectors,
-    ## and must either be a scalar, applied to every element of @var{str}, or be
-    ## of the same size as @var{str} and applied element-wise.  If @var{pat} is
-    ## not found in an element, that element is returned unchanged.
+    ## inserts the text @var{newtext} into each element of @var{str} before
+    ## every non-overlapping occurrence of the substring @var{pat}.  @var{pat}
+    ## can be a string array, a character vector, or a cell array of character
+    ## vectors, and must either be a scalar, applied to every element of
+    ## @var{str}, or be of the same size as @var{str} and applied
+    ## element-wise.  If @var{pat} is not found in an element, that element is
+    ## returned unchanged.
     ##
     ## @code{@var{newstr} = insertBefore (@var{str}, @var{pos}, @var{newtext})}
     ## inserts @var{newtext} before the character position @var{pos}, that is,
@@ -2416,23 +2423,23 @@ classdef string
     ## Replace substrings in string array.
     ##
     ## @code{@var{newstr} = replace (@var{str}, @var{old}, @var{new})} replaces
-    ## every occurrence of the substring @var{old} with @var{new} in each element
-    ## of the string array @var{str}.  @var{old} and @var{new} can be string
-    ## arrays, character vectors, or cell arrays of character vectors.
+    ## every occurrence of the substring @var{old} with @var{new} in each
+    ## element of the string array @var{str}.  @var{old} and @var{new} can be
+    ## string arrays, character vectors, or cell arrays of character vectors.
     ##
     ## When @var{old} contains several substrings, @var{new} must either be a
     ## single substring, used to replace all of them, or be of the same size as
     ## @var{old}, replacing each substring of @var{old} with the corresponding
     ## element of @var{new}.  All substrings are replaced in a single left to
-    ## right pass over each element: at each position the substrings of @var{old}
-    ## are tried in order, the first that matches is replaced, and the scan
-    ## resumes past the inserted text, so replacements are not themselves
-    ## re-scanned.  @var{old} and @var{new} are applied to every element of
-    ## @var{str}; their size need not match the size of @var{str}.
+    ## right pass over each element: at each position the substrings of
+    ## @var{old} are tried in order, the first that matches is replaced, and
+    ## the scan resumes past the inserted text, so replacements are not
+    ## themselves re-scanned.  @var{old} and @var{new} are applied to every
+    ## element of @var{str}; their size need not match the size of @var{str}.
     ##
-    ## @var{newstr} is a string array of the same size as @var{str}.  A substring
-    ## of @var{old} that does not occur leaves the text unchanged, and missing
-    ## values in @var{str} are preserved.
+    ## @var{newstr} is a string array of the same size as @var{str}.  A
+    ## substring of @var{old} that does not occur leaves the text unchanged, and
+    ## missing values in @var{str} are preserved.
     ##
     ## @end deftypefn
     function out = replace (this, old, new)
@@ -2495,39 +2502,39 @@ classdef string
     ##
     ## Replace content between start and end boundaries.
     ##
-    ## @code{@var{newstr} = replaceBetween (@var{str}, @var{startPat}, @var{endPat}, @var{newtext})}
-    ## replaces, in each element of the string array @var{str}, the text that
-    ## occurs between the substrings @var{startPat} and @var{endPat} with
-    ## @var{newtext}, keeping the boundary substrings themselves.  @var{startPat}
-    ## and @var{endPat} can be string arrays, character vectors, or cell arrays of
-    ## character vectors.  For each element, the first occurrence of
-    ## @var{startPat} is matched and then the first occurrence of @var{endPat}
-    ## that begins after it; if either boundary is not found, the element is
-    ## returned unchanged.
+    ## @code{@var{newstr} = replaceBetween (@var{str}, @var{startPat},
+    ## @var{endPat}, @var{newtext})} replaces, in each element of the string
+    ## array @var{str}, the text that occurs between the substrings
+    ## @var{startPat} and @var{endPat} with @var{newtext}, keeping the boundary
+    ## substrings themselves.  @var{startPat} and @var{endPat} can be string
+    ## arrays, character vectors, or cell arrays of character vectors.  For each
+    ## element, the first occurrence of @var{startPat} is matched and then the
+    ## first occurrence of @var{endPat} that begins after it; if either boundary
+    ## is not found, the element is returned unchanged.
     ##
-    ## @code{@var{newstr} = replaceBetween (@var{str}, @var{startPos}, @var{endPos}, @var{newtext})}
-    ## replaces the text between the character positions @var{startPos} and
-    ## @var{endPos}, inclusive of the characters at those positions, with
-    ## @var{newtext}.  @var{startPos} and @var{endPos} must be positive integers
-    ## with @var{startPos} not exceeding @var{endPos} and both within the length
-    ## of the corresponding element of @var{str}.
+    ## @code{@var{newstr} = replaceBetween (@var{str}, @var{startPos},
+    ## @var{endPos}, @var{newtext})} replaces the text between the character
+    ## positions @var{startPos} and @var{endPos}, inclusive of the characters at
+    ## those positions, with @var{newtext}.  @var{startPos} and @var{endPos}
+    ## must be positive integers with @var{startPos} not exceeding @var{endPos}
+    ## and both within the length of the corresponding element of @var{str}.
     ##
-    ## @code{@var{newstr} = replaceBetween (@dots{}, @qcode{"Boundaries"}, @var{bounds})}
-    ## specifies whether the boundaries are included in or excluded from the
-    ## replaced text.  @var{bounds} can be either @qcode{"inclusive"} or
-    ## @qcode{"exclusive"}.  When boundaries are given as substrings, the default
-    ## is @qcode{"exclusive"} and the boundary substrings are preserved; when
-    ## given as positions, the default is @qcode{"inclusive"} and the characters
-    ## at those positions are replaced.
+    ## @code{@var{newstr} = replaceBetween (@dots{}, @qcode{"Boundaries"},
+    ## @var{bounds})} specifies whether the boundaries are included in or
+    ## excluded from the replaced text.  @var{bounds} can be either
+    ## @qcode{"inclusive"} or @qcode{"exclusive"}.  When boundaries are given
+    ## as substrings, the default is @qcode{"exclusive"} and the boundary
+    ## substrings are preserved; when given as positions, the default is
+    ## @qcode{"inclusive"} and the characters at those positions are replaced.
     ##
-    ## @var{startPat}/@var{endPat} and @var{startPos}/@var{endPos} must either be
-    ## scalars, applied to every element of @var{str}, or be of the same size as
-    ## @var{str} and applied element-wise.  @var{newtext} can be a string array, a
-    ## character vector, or a cell array of character vectors, and must be either a
-    ## scalar or the same size as @var{str}.  @var{newstr} is a string array of the
-    ## same size as @var{str}.  Missing values in @var{str} are preserved, and a
-    ## missing value in @var{newtext} makes the corresponding element of
-    ## @var{newstr} missing.
+    ## @var{startPat}/@var{endPat} and @var{startPos}/@var{endPos} must either
+    ## be scalars, applied to every element of @var{str}, or be of the same size
+    ## as @var{str} and applied element-wise.  @var{newtext} can be a string
+    ## array, a character vector, or a cell array of character vectors, and must
+    ## be either a scalar or the same size as @var{str}.  @var{newstr} is a
+    ## string array of the same size as @var{str}.  Missing values in @var{str}
+    ## are preserved, and a missing value in @var{newtext} makes the
+    ## corresponding element of @var{newstr} missing.
     ##
     ## @end deftypefn
     function out = replaceBetween (this, start, stop, new, varargin)
