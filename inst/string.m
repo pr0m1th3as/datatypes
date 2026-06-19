@@ -1620,10 +1620,6 @@ classdef string
 
   methods (Hidden)
 
-    function out = replaceBetween (this, start, stop, new)
-      error ("string.replaceBetween: not implemented yet.");
-    endfunction
-
     function out = sort (this, varargin)
       error ("string.sort: not implemented yet.");
     endfunction
@@ -2001,9 +1997,14 @@ classdef string
           continue;
         endif
         if (posMode)
-          cstr{k} = eb_between (cstr{k}, start(k), stop(k), true, inclusive);
+          [cstr{k}, errmsg] = eb_between (cstr{k}, start(k), stop(k), true, ...
+                                         inclusive);
         else
-          cstr{k} = eb_between (cstr{k}, start{k}, stop{k}, false, inclusive);
+          [cstr{k}, errmsg] = eb_between (cstr{k}, start{k}, stop{k}, false, ...
+                                         inclusive);
+        endif
+        if (! isempty (errmsg))
+          error ("string.eraseBetween: %s", errmsg);
         endif
       endfor
       out.strs = cstr;
@@ -2274,7 +2275,10 @@ classdef string
           if (this.isMissing(k))
             continue;
           endif
-          cstr{k} = eb_span (cstr{k}, start(k), stop(k), inclusive);
+          [cstr{k}, errmsg] = eb_span (cstr{k}, start(k), stop(k), inclusive);
+          if (! isempty (errmsg))
+            error ("string.extractBetween: %s", errmsg);
+          endif
         endfor
         out.strs = cstr;
         return;
@@ -2482,6 +2486,139 @@ classdef string
         endfor
         out.strs = cstr;
       endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {string} {@var{newstr} =} replaceBetween (@var{str}, @var{startPat}, @var{endPat}, @var{newtext})
+    ## @deftypefnx {string} {@var{newstr} =} replaceBetween (@var{str}, @var{startPos}, @var{endPos}, @var{newtext})
+    ## @deftypefnx {string} {@var{newstr} =} replaceBetween (@dots{}, @qcode{"Boundaries"}, @var{bounds})
+    ##
+    ## Replace content between start and end boundaries.
+    ##
+    ## @code{@var{newstr} = replaceBetween (@var{str}, @var{startPat}, @var{endPat}, @var{newtext})}
+    ## replaces, in each element of the string array @var{str}, the text that
+    ## occurs between the substrings @var{startPat} and @var{endPat} with
+    ## @var{newtext}, keeping the boundary substrings themselves.  @var{startPat}
+    ## and @var{endPat} can be string arrays, character vectors, or cell arrays of
+    ## character vectors.  For each element, the first occurrence of
+    ## @var{startPat} is matched and then the first occurrence of @var{endPat}
+    ## that begins after it; if either boundary is not found, the element is
+    ## returned unchanged.
+    ##
+    ## @code{@var{newstr} = replaceBetween (@var{str}, @var{startPos}, @var{endPos}, @var{newtext})}
+    ## replaces the text between the character positions @var{startPos} and
+    ## @var{endPos}, inclusive of the characters at those positions, with
+    ## @var{newtext}.  @var{startPos} and @var{endPos} must be positive integers
+    ## with @var{startPos} not exceeding @var{endPos} and both within the length
+    ## of the corresponding element of @var{str}.
+    ##
+    ## @code{@var{newstr} = replaceBetween (@dots{}, @qcode{"Boundaries"}, @var{bounds})}
+    ## specifies whether the boundaries are included in or excluded from the
+    ## replaced text.  @var{bounds} can be either @qcode{"inclusive"} or
+    ## @qcode{"exclusive"}.  When boundaries are given as substrings, the default
+    ## is @qcode{"exclusive"} and the boundary substrings are preserved; when
+    ## given as positions, the default is @qcode{"inclusive"} and the characters
+    ## at those positions are replaced.
+    ##
+    ## @var{startPat}/@var{endPat} and @var{startPos}/@var{endPos} must either be
+    ## scalars, applied to every element of @var{str}, or be of the same size as
+    ## @var{str} and applied element-wise.  @var{newtext} can be a string array, a
+    ## character vector, or a cell array of character vectors, and must be either a
+    ## scalar or the same size as @var{str}.  @var{newstr} is a string array of the
+    ## same size as @var{str}.  Missing values in @var{str} are preserved, and a
+    ## missing value in @var{newtext} makes the corresponding element of
+    ## @var{newstr} missing.
+    ##
+    ## @end deftypefn
+    function out = replaceBetween (this, start, stop, new, varargin)
+      if (nargin < 4)
+        error ("string.replaceBetween: not enough input arguments.");
+      endif
+
+      ## Position boundaries are numeric, pattern boundaries are text; the two
+      ## modes cannot be mixed and have different default 'Boundaries' values.
+      istxt = @(x) ischar (x) || iscellstr (x) || isa (x, 'string');
+      if (isnumeric (start) && isnumeric (stop))
+        posMode = true;
+        dfBounds = 'inclusive';
+      elseif (istxt (start) && istxt (stop))
+        posMode = false;
+        dfBounds = 'exclusive';
+      else
+        error (strcat ("string.replaceBetween: START and STOP must be either", ...
+                       " both numeric positions or both text patterns."));
+      endif
+
+      ## Parse the optional 'Boundaries' Name/Value pair
+      [bounds, rem] = parsePairedArguments ({'Boundaries'}, {dfBounds}, varargin);
+      if (! isempty (rem))
+        error ("string.replaceBetween: invalid optional arguments.");
+      endif
+      if (isa (bounds, 'string'))
+        bounds = char (bounds);
+      endif
+      if (! ischar (bounds) || ! any (strcmpi (bounds, {'inclusive', 'exclusive'})))
+        error (strcat ("string.replaceBetween: BOUNDARIES must be", ...
+                       " 'inclusive' or 'exclusive'."));
+      endif
+      inclusive = strcmpi (bounds, 'inclusive');
+
+      ## Normalize text boundaries to cell arrays of character vectors.  Route
+      ## char/cellstr through the constructor, which keeps trailing whitespace
+      ## that bare 'cellstr' would deblank.
+      if (! posMode)
+        if (isa (start, 'string'))
+          start = cellstr (start);
+        else
+          start = cellstr (string (start));
+        endif
+        if (isa (stop, 'string'))
+          stop = cellstr (stop);
+        else
+          stop = cellstr (string (stop));
+        endif
+      endif
+
+      ## Broadcast scalar boundaries and the replacement; otherwise match STR
+      sz = size (this.strs);
+      [start, errmsg] = eb_expand (start, sz, 'START');
+      if (! isempty (errmsg))
+        error ("string.replaceBetween: %s", errmsg);
+      endif
+      [stop, errmsg] = eb_expand (stop, sz, 'STOP');
+      if (! isempty (errmsg))
+        error ("string.replaceBetween: %s", errmsg);
+      endif
+      [newc, newMiss, errmsg] = norm_new (new, sz);
+      if (! isempty (errmsg))
+        error ("string.replaceBetween: %s", errmsg);
+      endif
+
+      out = this;
+      cstr = this.strs;
+      isMiss = this.isMissing;
+      for k = 1:numel (cstr)
+        if (isMiss(k))
+          continue;
+        endif
+        if (newMiss(k))
+          cstr{k} = '';
+          isMiss(k) = true;
+          continue;
+        endif
+        if (posMode)
+          [cstr{k}, errmsg] = rb_between (cstr{k}, start(k), stop(k), true, ...
+                                         inclusive, newc{k});
+        else
+          [cstr{k}, errmsg] = rb_between (cstr{k}, start{k}, stop{k}, false, ...
+                                         inclusive, newc{k});
+        endif
+        if (! isempty (errmsg))
+          error ("string.replaceBetween: %s", errmsg);
+        endif
+      endfor
+      out.strs = cstr;
+      out.isMissing = isMiss;
     endfunction
 
     ## -*- texinfo -*-
@@ -3394,13 +3531,16 @@ endfunction
 ## Erase the content of a single character vector S between two boundaries.
 ## When ISPOS is true, A and B are numeric character positions; otherwise they
 ## are the start and end boundary substrings.  INCLUSIVE selects whether the
-## boundaries themselves are erased.
-function s = eb_between (s, a, b, isPos, inclusive)
+## boundaries themselves are erased.  On an out-of-range position returns a
+## non-empty ERRMSG; the calling method emits the error under its own name.
+function [s, errmsg] = eb_between (s, a, b, isPos, inclusive)
+  errmsg = '';
   if (isPos)
     cp = str2cp (s);
     n = numel (cp);
     if (a != fix (a) || b != fix (b) || a < 1 || a > b || b > n)
-      error ("string.eraseBetween: position indices out of range.");
+      errmsg = "position indices out of range.";
+      return;
     endif
     if (inclusive)
       cp(a:b) = [];
@@ -3428,6 +3568,54 @@ function s = eb_between (s, a, b, isPos, inclusive)
       s(i:(j + numel (b) - 1)) = [];
     elseif (aEnd + 1 <= j - 1)
       s((aEnd + 1):(j - 1)) = [];
+    endif
+  endif
+endfunction
+
+## Replace the content of a single character vector S between two boundaries with
+## the text NEW.  When ISPOS is true, A and B are numeric character positions;
+## otherwise they are the start and end boundary substrings, matched at their
+## first occurrence (an unmatched boundary leaves S unchanged).  INCLUSIVE selects
+## whether the boundaries themselves are replaced.  The replaced span may be
+## empty, in which case NEW is inserted between the boundaries.  On an
+## out-of-range position returns a non-empty ERRMSG; the calling method emits
+## the error under its own name.
+function [s, errmsg] = rb_between (s, a, b, isPos, inclusive, new)
+  errmsg = '';
+  if (isPos)
+    cp = str2cp (s);
+    n = numel (cp);
+    if (a != fix (a) || b != fix (b) || a < 1 || a > b || b > n)
+      errmsg = "position indices out of range.";
+      return;
+    endif
+    ncp = str2cp (new);
+    if (inclusive)
+      cp = [cp(1:(a - 1)), ncp, cp((b + 1):end)];
+    else
+      cp = [cp(1:a), ncp, cp(b:end)];
+    endif
+    s = cp2str (cp);
+  else
+    if (isempty (a) || isempty (b))
+      return;                       # an empty boundary matches nothing
+    endif
+    i = strfind (s, a);
+    if (isempty (i))
+      return;                       # start boundary not found
+    endif
+    i = i(1);
+    aEnd = i + numel (a) - 1;
+    j = strfind (s, b);
+    j = j(j >= aEnd + 1);           # end boundary must follow the start match
+    if (isempty (j))
+      return;                       # end boundary not found
+    endif
+    j = j(1);
+    if (inclusive)
+      s = [s(1:(i - 1)), new, s((j + numel (b)):end)];
+    else
+      s = [s(1:aEnd), new, s(j:end)];
     endif
   endif
 endfunction
@@ -3462,12 +3650,16 @@ function [newc, newMiss, errmsg] = norm_new (new, sz)
 endfunction
 
 ## Extract a single span of S between positions A and B.  INCLUSIVE selects
-## whether the characters at A and B are kept.
-function s = eb_span (s, a, b, inclusive)
+## whether the characters at A and B are kept.  On an out-of-range position
+## returns a non-empty ERRMSG; the calling method emits the error under its own
+## name.
+function [s, errmsg] = eb_span (s, a, b, inclusive)
+  errmsg = '';
   cp = str2cp (s);
   n = numel (cp);
   if (a != fix (a) || b != fix (b) || a < 1 || a > b || b > n)
-    error ("string.extractBetween: position indices out of range.");
+    errmsg = "position indices out of range.";
+    return;
   endif
   if (inclusive)
     s = cp2str (cp(a:b));

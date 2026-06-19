@@ -1179,3 +1179,73 @@
 %! replace (string ('ab'), 'a', {1, 2})
 %!error <string.replace: NEW must be a single substring or the same size as OLD.> ...
 %! replace (string ('ab'), {'a', 'b'}, {'1', '2', '3'})
+
+## replaceBetween: pattern syntax replaces between the boundaries (default exclusive)
+%!assert_equal (replaceBetween (string ('The quick brown fox'), 'quick ', ' fox', 'red'), ...
+%!              string ('The quick red fox'))
+## replaceBetween: pattern syntax with explicit exclusive boundaries
+%!assert_equal (replaceBetween (string ('a[x]b'), '[', ']', 'Y', 'Boundaries', 'exclusive'), ...
+%!              string ('a[Y]b'))
+## replaceBetween: pattern syntax with inclusive boundaries replaces them too
+%!assert_equal (replaceBetween (string ('a[x]b'), '[', ']', 'Y', 'Boundaries', 'inclusive'), ...
+%!              string ('aYb'))
+## replaceBetween: exclusive boundaries with an empty span insert NEW between them
+%!assert_equal (replaceBetween (string ('ab'), 'a', 'b', 'X', 'Boundaries', 'exclusive'), ...
+%!              string ('aXb'))
+## replaceBetween: a scalar boundary broadcasts over the array
+%!assert_equal (replaceBetween (string ({'[1]', '[2]'}), '[', ']', '#'), ...
+%!              string ({'[#]', '[#]'}))
+## replaceBetween: boundaries and NEW given per element
+%!assert_equal (replaceBetween (string ({'(a)'; '<b>'}), string ({'('; '<'}), ...
+%!                              string ({')'; '>'}), string ({'1'; '2'})), ...
+%!              string ({'(1)'; '<2>'}))
+## replaceBetween: an unmatched boundary leaves the element unchanged
+%!assert_equal (replaceBetween (string ('abc'), '[', ']', 'X'), string ('abc'))
+## replaceBetween: position syntax replaces the span (inclusive by default)
+%!assert_equal (replaceBetween (string ('abcde'), 2, 4, 'X'), string ('aXe'))
+## replaceBetween: position syntax with exclusive boundaries keeps the endpoints
+%!assert_equal (replaceBetween (string ('abcde'), 2, 4, 'X', 'Boundaries', 'exclusive'), ...
+%!              string ('abXde'))
+## replaceBetween: equal positions replace a single character (inclusive)
+%!assert_equal (replaceBetween (string ('abc'), 2, 2, 'XY'), string ('aXYc'))
+## replaceBetween: the 'Boundaries' name and string-valued option are case-insensitive
+%!assert_equal (replaceBetween (string ('a[x]b'), '[', ']', 'Y', 'boundaries', string ('Inclusive')), ...
+%!              string ('aYb'))
+## replaceBetween: missing values in STR are preserved
+%!test
+%! str = replaceBetween (string ({'[x]', missing}), '[', ']', 'Y');
+%! assert_equal (ismissing (str), [false, true]);
+%! assert_equal (cellstr (str), {'[Y]', ''});
+## replaceBetween: a missing NEW makes the corresponding element missing
+%!test
+%! str = replaceBetween (string ('a[x]b'), '[', ']', string (missing));
+%! assert_equal (ismissing (str), true);
+## replaceBetween: error branches
+%!error <string.replaceBetween: not enough input arguments.> ...
+%! replaceBetween (string ('ab'), 'a', 'b')
+%!error <string.replaceBetween: START and STOP must be either both numeric positions or both text patterns.> ...
+%! replaceBetween (string ('ab'), 1, 'x', 'Y')
+%!error <string.replaceBetween: BOUNDARIES must be 'inclusive' or 'exclusive'.> ...
+%! replaceBetween (string ('a[x]b'), '[', ']', 'Y', 'Boundaries', 'foo')
+%!error <string.replaceBetween: invalid optional arguments.> ...
+%! replaceBetween (string ('ab'), 1, 2, 'Y', 'Foo', 'bar')
+%!error <string.replaceBetween: position indices out of range.> ...
+%! replaceBetween (string ('abc'), 2, 9, 'Y')
+%!error <string.replaceBetween: STOP must be scalar or the same size as STR.> ...
+%! replaceBetween (string ({'a', 'b', 'c'}), 1, [1, 2], 'Y')
+%!error <string.replaceBetween: NEW must be scalar or the same size as STR.> ...
+%! replaceBetween (string ({'a', 'b'}), 1, 1, string ({'1', '2', '3'}))
+%!error <string.replaceBetween: NEW must be a string array, a character vector, or a cell array of character vectors.> ...
+%! replaceBetween (string ('a[x]b'), '[', ']', {1, 2})
+
+## Code-point positions for replaceBetween: numeric indexing counts whole
+## characters, not UTF-8 bytes (same multibyte text as above): a euro b emoji c.
+%!test
+%! s = string (native2unicode (uint8 ([97 226 130 172 98 240 159 152 128 99]), 'UTF-8'));
+%! euro = string (native2unicode (uint8 ([226 130 172]), 'UTF-8'));
+%! emoji = string (native2unicode (uint8 ([240 159 152 128]), 'UTF-8'));
+%! ## inclusive default replaces chars 2..4 (euro,b,emoji) with 'X'
+%! assert_equal (replaceBetween (s, 2, 4, string ('X')), string ('aXc'));
+%! ## exclusive keeps chars 2 and 4, replacing char 3 (b) with 'X'
+%! assert_equal (replaceBetween (s, 2, 4, string ('X'), 'Boundaries', 'exclusive'), ...
+%!               append (string ('a'), euro, string ('X'), emoji, string ('c')));
