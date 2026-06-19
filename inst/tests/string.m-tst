@@ -1044,3 +1044,99 @@
 %! ## extractBetween (inclusive default keeps chars 2..4; exclusive keeps char 3)
 %! assert_equal (extractBetween (s, 2, 4), append (euro, string ('b'), emoji));
 %! assert_equal (extractBetween (s, 2, 4, 'Boundaries', 'exclusive'), string ('b'));
+
+## insertAfter: pattern form inserts after the match (single occurrence)
+%!assert_equal (insertAfter (string ('The quick fox'), 'quick', ' brown'), ...
+%!              string ('The quick brown fox'))
+## insertAfter: pattern form inserts after EVERY non-overlapping occurrence
+%!assert_equal (insertAfter (string ('a-b-c'), '-', 'X'), string ('a-Xb-Xc'))
+## insertAfter: boundary pattern and NEW given per element
+%!assert_equal (insertAfter (string ({'foo'; 'bar'}), string ({'o'; 'r'}), ...
+%!                           string ({'1'; '2'})), string ({'fo1o1'; 'bar2'}))
+## insertAfter: a scalar pattern and scalar NEW broadcast over the array
+%!assert_equal (insertAfter (string ({'a:1', 'a:2'}), 'a', '_'), ...
+%!              string ({'a_:1', 'a_:2'}))
+## insertAfter: a pattern that is not found leaves the element unchanged
+%!assert_equal (insertAfter (string ('hello'), 'z', 'X'), string ('hello'))
+## insertAfter: NEW preserves trailing whitespace (bare cellstr would deblank)
+%!assert_equal (insertAfter (string ('ab'), 'a', 'X '), string ('aX b'))
+## insertAfter: position form inserts after POS
+%!assert_equal (insertAfter (string ('abcde'), 3, '_'), string ('abc_de'))
+%!assert_equal (insertAfter (string ({'abcd'; 'wxyz'}), [1; 2], '_'), ...
+%!              string ({'a_bcd'; 'wx_yz'}))
+## insertAfter: POS at the last character appends NEW
+%!assert_equal (insertAfter (string ('abc'), 3, 'X'), string ('abcX'))
+## insertAfter: missing values in STR are preserved
+%!test
+%! str = insertAfter (string ({'a-b', missing}), '-', 'X');
+%! assert_equal (ismissing (str), [false, true]);
+%! assert_equal (cellstr (str), {'a-Xb', ''});
+## insertAfter: a missing NEW makes the corresponding element missing
+%!test
+%! str = insertAfter (string ('abc'), 'a', string (missing));
+%! assert_equal (ismissing (str), true);
+## insertAfter: error branches
+%!error <string.insertAfter: not enough input arguments.> ...
+%! insertAfter (string ('ab'), 'a')
+%!error <string.insertAfter: PAT must be a string array, a character vector, or a cell array of character vectors.> ...
+%! insertAfter (string ('ab'), {1, 2}, 'x')
+%!error <string.insertAfter: PAT must be scalar or the same size as STR.> ...
+%! insertAfter (string ('ab'), string ({'a', 'b'}), 'x')
+%!error <string.insertAfter: NEW must be a string array, a character vector, or a cell array of character vectors.> ...
+%! insertAfter (string ('ab'), 'a', {1, 2})
+%!error <string.insertAfter: NEW must be scalar or the same size as STR.> ...
+%! insertAfter (string ({'a', 'b'}), 'x', string ({'1', '2', '3'}))
+%!error <string.insertAfter: POS must be a positive integer.> ...
+%! insertAfter (string ('ab'), 0, 'x')
+%!error <string.insertAfter: POS exceeds the length of the string.> ...
+%! insertAfter (string ('ab'), 5, 'x')
+
+## insertBefore: pattern form inserts before the match (single occurrence)
+%!assert_equal (insertBefore (string ('The quick fox'), 'fox', 'brown '), ...
+%!              string ('The quick brown fox'))
+## insertBefore: pattern form inserts before EVERY non-overlapping occurrence
+%!assert_equal (insertBefore (string ('a-b-c'), '-', 'X'), string ('aX-bX-c'))
+## insertBefore: a scalar pattern and scalar NEW broadcast over the array
+%!assert_equal (insertBefore (string ({'cat', 'dog'}), string ({'c', 'd'}), '_'), ...
+%!              string ({'_cat', '_dog'}))
+## insertBefore: a pattern that is not found leaves the element unchanged
+%!assert_equal (insertBefore (string ('hello'), 'z', 'X'), string ('hello'))
+## insertBefore: position form inserts before POS
+%!assert_equal (insertBefore (string ('abcde'), 3, '_'), string ('ab_cde'))
+%!assert_equal (insertBefore (string ({'abcd'; 'wxyz'}), [3; 2], '_'), ...
+%!              string ({'ab_cd'; 'w_xyz'}))
+## insertBefore: POS at the first character prepends NEW
+%!assert_equal (insertBefore (string ('abc'), 1, 'X'), string ('Xabc'))
+## insertBefore: missing values in STR are preserved
+%!test
+%! str = insertBefore (string ({'a-b', missing}), '-', 'X');
+%! assert_equal (ismissing (str), [false, true]);
+%! assert_equal (cellstr (str), {'aX-b', ''});
+## insertBefore: a missing NEW makes the corresponding element missing
+%!test
+%! str = insertBefore (string ('abc'), 'c', string (missing));
+%! assert_equal (ismissing (str), true);
+## insertBefore: error branches
+%!error <string.insertBefore: not enough input arguments.> ...
+%! insertBefore (string ('ab'), 'a')
+%!error <string.insertBefore: PAT must be a string array, a character vector, or a cell array of character vectors.> ...
+%! insertBefore (string ('ab'), {1, 2}, 'x')
+%!error <string.insertBefore: NEW must be a string array, a character vector, or a cell array of character vectors.> ...
+%! insertBefore (string ('ab'), 'a', {1, 2})
+%!error <string.insertBefore: POS must be a positive integer.> ...
+%! insertBefore (string ('ab'), 0, 'x')
+%!error <string.insertBefore: POS exceeds the length of the string.> ...
+%! insertBefore (string ('ab'), 5, 'x')
+
+## Code-point positions for insertAfter / insertBefore: numeric indexing counts
+## whole characters, not UTF-8 bytes (same multibyte text as above).
+%!test
+%! s = string (native2unicode (uint8 ([97 226 130 172 98 240 159 152 128 99]), 'UTF-8'));
+%! euro = string (native2unicode (uint8 ([226 130 172]), 'UTF-8'));
+%! emoji = string (native2unicode (uint8 ([240 159 152 128]), 'UTF-8'));
+%! ## insertAfter after the euro (position 2) lands on a character boundary
+%! assert_equal (insertAfter (s, 2, string ('X')), ...
+%!               append (string ('a'), euro, string ('Xb'), emoji, string ('c')));
+%! ## insertBefore the emoji (position 4) lands on a character boundary
+%! assert_equal (insertBefore (s, 4, string ('X')), ...
+%!               append (string ('a'), euro, string ('bX'), emoji, string ('c')));
