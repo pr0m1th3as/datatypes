@@ -741,3 +741,165 @@
 %! compose (string ('%d'), {1, 2})
 %!error <string.compose: input arrays must be of compatible sizes.> ...
 %! compose (string ('%d%d'), [1; 2; 3], [1; 2])
+
+## erase: removes every occurrence of a single match from each element
+%!assert_equal (erase (string ('the quick brown fox'), 'o'), ...
+%!              string ('the quick brwn fx'))
+%!assert_equal (erase (string ('Hello World'), ' World'), string ('Hello'))
+## erase: a match that does not occur leaves the text unchanged
+%!assert_equal (erase (string ('abc'), 'z'), string ('abc'))
+## erase: an empty match removes nothing
+%!assert_equal (erase (string ('abc'), ''), string ('abc'))
+## erase: accepts char vectors, cell arrays of char vectors, and string scalars
+%!assert_equal (erase (string ('abcabc'), string ('bc')), string ('aa'))
+%!assert_equal (erase (string ('aXa'), {'X'}), string ('aa'))
+## erase: applied element-wise across an array, preserving its size
+%!assert_equal (erase (string ({'aXa', 'bXb'}), 'X'), string ({'aa', 'bb'}))
+%!assert_equal (erase (string ({'a.b'; 'c.d'}), '.'), string ({'ab'; 'cd'}))
+## erase: a multi-element match deletes every occurrence of every element
+%!assert_equal (erase (string ('The quick brown fox'), string ({'The ', 'quick '})), ...
+%!              string ('brown fox'))
+%!assert_equal (erase (string ('aXbYc'), {'X', 'Y'}), string ('abc'))
+## erase: MATCH size need not match STR size (every element is removed from all)
+%!assert_equal (erase (string ({'aXbYc', 'XYZ'}), string ({'X', 'Y'})), ...
+%!              string ({'abc', 'Z'}))
+## erase: erasing the entire content yields an empty, non-missing string
+%!test
+%! str = erase (string ('abc'), 'abc');
+%! assert_equal (str, string (''));
+%! assert_equal (ismissing (str), false);
+## erase: missing values are preserved and carry no text
+%!test
+%! str = erase (string ({'a.b.c', missing}), '.');
+%! assert_equal (ismissing (str), [false, true]);
+%! assert_equal (cellstr (str), {'abc', ''});
+## erase: error branch
+%!error <string.erase: MATCH must be a string array, a character vector, or a cell array of character vectors.> ...
+%! erase (string ('ab'), 5)
+
+## eraseBetween: pattern syntax erases between the boundaries (default exclusive)
+%!assert_equal (eraseBetween (string ('The quick brown fox'), 'quick', ' fox'), ...
+%!              string ('The quick fox'))
+## eraseBetween: pattern syntax with explicit exclusive boundaries
+%!assert_equal (eraseBetween (string ('a[xyz]b'), '[', ']', 'Boundaries', 'exclusive'), ...
+%!              string ('a[]b'))
+## eraseBetween: pattern syntax with inclusive boundaries erases the boundaries too
+%!assert_equal (eraseBetween (string ('The quick brown fox jumps over the lazy dog'), ...
+%!                            ' brown', 'lazy', 'Boundaries', 'inclusive'), ...
+%!              string ('The quick dog'))
+%!assert_equal (eraseBetween (string ('a[xyz]b'), '[', ']', 'Boundaries', 'inclusive'), ...
+%!              string ('ab'))
+## eraseBetween: boundary substrings accepted as char, cellstr, or string
+%!assert_equal (eraseBetween (string ('a<x>b'), '<', '>'), string ('a<>b'))
+%!assert_equal (eraseBetween (string ('a<x>b'), {'<'}, {'>'}), string ('a<>b'))
+%!assert_equal (eraseBetween (string ('a<x>b'), string ('<'), string ('>')), ...
+%!              string ('a<>b'))
+## eraseBetween: a missing boundary leaves the element unchanged
+%!assert_equal (eraseBetween (string ('hello'), 'X', 'o'), string ('hello'))
+%!assert_equal (eraseBetween (string ('hello'), 'h', 'X'), string ('hello'))
+## eraseBetween: the end boundary must follow the start match
+%!assert_equal (eraseBetween (string ('a|b|c'), 'b', 'a'), string ('a|b|c'))
+## eraseBetween: a scalar boundary pair broadcasts over an array
+%!assert_equal (eraseBetween (string ({'<a>1', '<bb>2'}), '<', '>', ...
+%!                            'Boundaries', 'inclusive'), string ({'1', '2'}))
+## eraseBetween: boundary pairs given element-wise, preserving size
+%!assert_equal (eraseBetween (string ({'aXbYc'; '1P2Q3'}), string ({'X'; 'P'}), ...
+%!                            string ({'Y'; 'Q'})), string ({'aXYc'; '1PQ3'}))
+## eraseBetween: position syntax erases between positions (default inclusive)
+%!assert_equal (eraseBetween (string ('Edgar Allen Poe'), 6, 11), string ('Edgar Poe'))
+%!assert_equal (eraseBetween (string ('mushrooms, peppers, and onions'), 10, 19), ...
+%!              string ('mushrooms and onions'))
+## eraseBetween: position syntax with exclusive boundaries keeps the endpoints
+%!assert_equal (eraseBetween (string ('small|medium|large'), 6, 13, ...
+%!                            'Boundaries', 'exclusive'), string ('small||large'))
+## eraseBetween: equal positions erase a single character (inclusive) or none
+%!assert_equal (eraseBetween (string ('abcde'), 3, 3), string ('abde'))
+%!assert_equal (eraseBetween (string ('abcde'), 3, 3, 'Boundaries', 'exclusive'), ...
+%!              string ('abcde'))
+## eraseBetween: scalar positions broadcast and element-wise positions map by element
+%!assert_equal (eraseBetween (string ({'abcdef'; 'ABCDEF'}), 2, 4), ...
+%!              string ({'aef'; 'AEF'}))
+%!assert_equal (eraseBetween (string ({'abcdef'; 'ABCDEF'}), [2; 3], [4; 5]), ...
+%!              string ({'aef'; 'ABF'}))
+## eraseBetween: the 'Boundaries' name and string-valued option are case-insensitive
+%!assert_equal (eraseBetween (string ('small|medium|large'), 6, 13, ...
+%!                            'boundaries', string ('exclusive')), string ('small||large'))
+## eraseBetween: missing values are preserved and carry no text
+%!test
+%! str = eraseBetween (string ({'a[x]b', missing}), '[', ']', 'Boundaries', 'inclusive');
+%! assert_equal (ismissing (str), [false, true]);
+%! assert_equal (cellstr (str), {'ab', ''});
+## eraseBetween: error branches
+%!error <string.eraseBetween: not enough input arguments.> ...
+%! eraseBetween (string ('ab'), 1)
+%!error <string.eraseBetween: START and STOP must be either both numeric positions or both text patterns.> ...
+%! eraseBetween (string ('ab'), 1, 'x')
+%!error <string.eraseBetween: BOUNDARIES must be 'inclusive' or 'exclusive'.> ...
+%! eraseBetween (string ('ab'), 'a', 'b', 'Boundaries', 'foo')
+%!error <string.eraseBetween: invalid optional arguments.> ...
+%! eraseBetween (string ('ab'), 1, 2, 'Foo', 'bar')
+%!error <string.eraseBetween: position indices out of range.> ...
+%! eraseBetween (string ('abc'), 2, 9)
+%!error <string.eraseBetween: position indices out of range.> ...
+%! eraseBetween (string ('abc'), 0, 2)
+%!error <string.eraseBetween: position indices out of range.> ...
+%! eraseBetween (string ('abc'), 1.5, 2)
+%!error <string.eraseBetween: position indices out of range.> ...
+%! eraseBetween (string ('abcde'), 4, 2)
+%!error <string.eraseBetween: START must be scalar or the same size as STR.> ...
+%! eraseBetween (string ({'a', 'b', 'c'}), [1, 2], [1, 2])
+%!error <string.eraseBetween: STOP must be scalar or the same size as STR.> ...
+%! eraseBetween (string ({'a', 'b', 'c'}), 1, [1, 2])
+
+## extract: pattern form returns each match of PAT along the columns
+%!assert_equal (extract (string ('xax ax'), 'ax'), string ({'ax', 'ax'}))
+%!assert_equal (extract (string ('hello world'), 'o'), string ({'o', 'o'}))
+## extract: a multi-element PAT matches any alternative, first listed winning
+%!assert_equal (extract (string ('cabbage'), {'a', 'b'}), ...
+%!              string ({'a', 'b', 'b', 'a'}))
+%!assert_equal (extract (string ('ababab'), string ({'ab', 'a'})), ...
+%!              string ({'ab', 'ab', 'ab'}))
+## extract: matches do not overlap and are taken left to right
+%!assert_equal (extract (string ('aaaa'), 'aa'), string ({'aa', 'aa'}))
+## extract: a scalar with one match yields a 1x1 string
+%!assert_equal (extract (string ('a-b'), '-'), string ('-'))
+## extract: no match yields an empty string array
+%!test
+%! str = extract (string ('hello'), 'z');
+%! assert_equal (class (str), 'string');
+%! assert_equal (size (str), [1, 0]);
+## extract: a non-scalar STR gives one row per element and one column per match
+%!assert_equal (extract (string ({'p.q.r'; 'x.y.z'}), '.'), ...
+%!              string ({'.', '.'; '.', '.'}))
+## extract: elements that do not match are treated as having zero matches
+%!test
+%! str = extract (string ({'ab', missing}), '.');
+%! assert_equal (class (str), 'string');
+%! assert_equal (size (str), [2, 0]);
+## extract: position form returns the single character at POS
+%!assert_equal (extract (string ("All's well that ends well"), 1), string ('A'))
+%!assert_equal (extract (string ("All's well that ends well"), 25), string ('l'))
+## extract: position form is element-wise and preserves the size of STR
+%!assert_equal (extract (string ({'abc'; 'xyz'}), [1; 3]), string ({'a'; 'z'}))
+## extract: a scalar position broadcasts over the array
+%!assert_equal (extract (string ({'abc', 'xyz'}), 2), string ({'b', 'y'}))
+## extract: position form preserves missing values
+%!test
+%! str = extract (string ({'abc', missing}), 1);
+%! assert_equal (ismissing (str), [false, true]);
+%! assert_equal (cellstr (str), {'a', ''});
+## extract: error branches
+%!error <string.extract: not enough input arguments.> ...
+%! extract (string ('ab'))
+%!error <string.extract: PAT must be a string array, a character vector, or a cell array of character vectors.> ...
+%! extract (string ('ab'), {1, 2})
+%!error <string.extract: all elements of STR must have the same number of matches.> ...
+%! extract (string ({'a.b'; 'c.d.e'}), '.')
+%!error <string.extract: POS must be scalar or the same size as STR.> ...
+%! extract (string ({'a', 'b', 'c'}), [1, 2])
+%!error <string.extract: POS must be a positive integer.> ...
+%! extract (string ('ab'), 0)
+%!error <string.extract: POS must be a positive integer.> ...
+%! extract (string ('ab'), 1.5)
+%!error <string.extract: POS exceeds the length of the string.> ...
+%! extract (string ('ab'), 5)
