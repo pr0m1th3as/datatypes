@@ -1625,10 +1625,6 @@ classdef string
       error ("string.sort: not implemented yet.");
     endfunction
 
-    function out = strip (this, varargin)
-      error ("string.strip: not implemented yet.");
-    endfunction
-
     function out = pad (this, varargin)
       error ("string.pad: not implemented yet.");
     endfunction
@@ -2784,6 +2780,99 @@ classdef string
         endif
       endfor
       out = string (strcat (args{:}));
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {string} {@var{newstr} =} strip (@var{str})
+    ## @deftypefnx {string} {@var{newstr} =} strip (@var{str}, @var{side})
+    ## @deftypefnx {string} {@var{newstr} =} strip (@var{str}, @var{stripchar})
+    ## @deftypefnx {string} {@var{newstr} =} strip (@var{str}, @var{side}, @var{stripchar})
+    ##
+    ## Remove leading and trailing characters from string array.
+    ##
+    ## @code{@var{newstr} = strip (@var{str})} removes all consecutive
+    ## whitespace characters from the beginning and end of each element of
+    ## @var{str}.  The whitespace characters are the space, tab, newline,
+    ## carriage return, form feed, and vertical tab.
+    ##
+    ## @code{@var{newstr} = strip (@var{str}, @var{side})} removes whitespace
+    ## from the side given by @var{side}, which can be @qcode{"left"},
+    ## @qcode{"right"}, or @qcode{"both"} (the default).
+    ##
+    ## @code{@var{newstr} = strip (@var{str}, @var{stripchar})} removes the
+    ## single character @var{stripchar} instead of whitespace.  Because the side
+    ## keywords are longer than one character, a single-character second
+    ## argument is always treated as @var{stripchar}.
+    ##
+    ## @code{@var{newstr} = strip (@var{str}, @var{side}, @var{stripchar})}
+    ## removes @var{stripchar} from the given @var{side}.
+    ##
+    ## @var{newstr} is a string array of the same size as @var{str}.  Missing
+    ## values in @var{str} are preserved.
+    ##
+    ## @end deftypefn
+    function out = strip (this, varargin)
+      if (numel (varargin) > 2)
+        error ("string.strip: too many input arguments.");
+      endif
+
+      istext = @(x) ischar (x) || (isa (x, 'string') && isscalar (x));
+      side = 'both';
+      stripchar = '';
+      haveChar = false;
+
+      if (numel (varargin) == 1)
+        a = varargin{1};
+        if (! istext (a))
+          error (strcat ("string.strip: the second argument must be a side", ...
+                         " ('left', 'right', or 'both') or a single", ...
+                         " character."));
+        endif
+        a = char (a);
+        if (numel (str2cp (a)) == 1)
+          stripchar = a;
+          haveChar = true;
+        elseif (any (strcmpi (a, {'left', 'right', 'both'})))
+          side = a;
+        else
+          error ("string.strip: SIDE must be 'left', 'right', or 'both'.");
+        endif
+      elseif (numel (varargin) == 2)
+        s = varargin{1};
+        c = varargin{2};
+        if (! istext (s) || ! any (strcmpi (char (s), {'left', 'right', 'both'})))
+          error ("string.strip: SIDE must be 'left', 'right', or 'both'.");
+        endif
+        if (! istext (c))
+          error ("string.strip: STRIPCHAR must be a single character.");
+        endif
+        side = char (s);
+        stripchar = char (c);
+        haveChar = true;
+      endif
+
+      if (haveChar)
+        cp = str2cp (stripchar);
+        if (numel (cp) != 1)
+          error ("string.strip: STRIPCHAR must be a single character.");
+        endif
+        stripcps = cp;
+      else
+        stripcps = uint32 ([9, 10, 11, 12, 13, 32]);
+      endif
+
+      sl = any (strcmpi (side, {'left', 'both'}));
+      sr = any (strcmpi (side, {'right', 'both'}));
+
+      out = this;
+      cstr = this.strs;
+      for k = 1:numel (cstr)
+        if (this.isMissing(k))
+          continue;
+        endif
+        cstr{k} = strip_one (cstr{k}, sl, sr, stripcps);
+      endfor
+      out.strs = cstr;
     endfunction
 
     ## -*- texinfo -*-
@@ -4005,6 +4094,26 @@ function [oc, om] = split_place (pc, pm, sz, dim, N)
     oc(idx{:}) = reshape (pc(:,n), shp);
     om(idx{:}) = reshape (pm(:,n), shp);
   endfor
+endfunction
+
+## Strip the leading (when SL is true) and trailing (when SR is true) characters
+## of the character vector S whose code points are listed in STRIPCPS.  Works in
+## code-point space so a multibyte strip character is matched as a whole.
+function s = strip_one (s, sl, sr, stripcps)
+  cp = str2cp (s);
+  lo = 1;
+  hi = numel (cp);
+  if (sl)
+    while (lo <= hi && any (cp(lo) == stripcps))
+      lo += 1;
+    endwhile
+  endif
+  if (sr)
+    while (hi >= lo && any (cp(hi) == stripcps))
+      hi -= 1;
+    endwhile
+  endif
+  s = cp2str (cp(lo:hi));
 endfunction
 
 function out = cmp_uint32 (Acode, Bcode)

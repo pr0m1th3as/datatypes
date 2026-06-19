@@ -1405,6 +1405,48 @@
 %!error <string.strcat: incompatible data type: 'double'> ...
 %! strcat (string ('a'), 5)
 
+## strip: removes leading and trailing whitespace from both sides by default
+%!assert_equal (strip (string ('  Ann Marie   ')), string ('Ann Marie'))
+## strip: 'right' removes trailing whitespace only
+%!assert_equal (strip (string ('   Ann Marie   '), 'right'), string ('   Ann Marie'))
+## strip: 'left' removes leading whitespace only
+%!assert_equal (strip (string ('   Ann Marie   '), 'left'), string ('Ann Marie   '))
+## strip: a custom strip character on a given side (verbatim MATLAB example)
+%!assert_equal (strip (string ('0095.36'), 'left', '0'), string ('95.36'))
+## strip: a single-character second argument is the strip character
+%!assert_equal (strip (string ('xxhixx'), 'x'), string ('hi'))
+## strip: 'both' with an explicit strip character
+%!assert_equal (strip (string ('--a--'), 'both', '-'), string ('a'))
+## strip: the default whitespace set includes tab and newline
+%!assert_equal (strip (string (sprintf ("\t a \n"))), string ('a'))
+## strip: an all-whitespace string becomes empty
+%!assert_equal (strip (string ('   ')), string (''))
+## strip: an empty string stays empty
+%!assert_equal (strip (string ('')), string (''))
+## strip: applied element-wise across an array, preserving its size
+%!assert_equal (strip (string ({'  a  ', ' b '})), string ({'a', 'b'}))
+## strip: a non-breaking space (char 160) is not treated as whitespace
+%!test
+%! nbsp = native2unicode (uint8 ([194, 160]), "UTF-8");
+%! s = string ([nbsp, 'a', nbsp]);
+%! assert_equal (strip (s), s);
+## strip: a multibyte strip character is matched as a whole code point
+%!test
+%! euro = native2unicode (uint8 ([226, 130, 172]), "UTF-8");
+%! assert_equal (strip (string ([euro, euro, 'a', euro]), euro), string ('a'));
+## strip: missing values are preserved and carry no text
+%!test
+%! r = strip (string ({'  a  ', missing}));
+%! assert_equal (ismissing (r), [false, true]);
+%! assert_equal (cellstr (r), {'a', ''});
+## strip: error branches
+%!error <string.strip: too many input arguments.> ...
+%! strip (string ('a'), 'left', '-', 'extra')
+%!error <string.strip: SIDE must be 'left', 'right', or 'both'.> ...
+%! strip (string ('a'), 'middle')
+%!error <string.strip: STRIPCHAR must be a single character.> ...
+%! strip (string ('a'), 'left', 'xy')
+
 ## plus: appends STR2 to STR1, equivalent to the '+' operator
 %!assert_equal (string ('foo') + string ('bar'), string ('foobar'))
 %!assert_equal (plus (string ('foo'), string ('bar')), string ('foobar'))
