@@ -1620,18 +1620,6 @@ classdef string
 
   methods (Hidden)
 
-    function out = extractAfter (this, pat)
-      error ("string.extractAfter: not implemented yet.");
-    endfunction
-
-    function out = extractBefore (this, pat)
-      error ("string.extractBefore: not implemented yet.");
-    endfunction
-
-    function out = extractBetween (this, start, stop)
-      error ("string.extractBetween: not implemented yet.");
-    endfunction
-
     function out = insertAfter (this, pat, new)
       error ("string.insertAfter: not implemented yet.");
     endfunction
@@ -1904,12 +1892,8 @@ classdef string
     ##
     ## @end deftypefn
     function out = erase (this, match)
-      if (isa (match, 'string'))
-        pats = cellstr (match);
-      elseif (iscellstr (match))
-        pats = match;
-      elseif (ischar (match))
-        pats = cellstr (match);
+      if (isa (match, 'string') || iscellstr (match) || ischar (match))
+        pats = text2cellstr (match);
       else
         error (strcat ("string.erase: MATCH must be a string array, a", ...
                        " character vector, or a cell array of character", ...
@@ -1996,18 +1980,14 @@ classdef string
 
       ## Normalize text boundaries to cell arrays of character vectors
       if (! posMode)
-        if (! iscell (start))
-          start = cellstr (start);
-        endif
-        if (! iscell (stop))
-          stop = cellstr (stop);
-        endif
+        start = text2cellstr (start);
+        stop = text2cellstr (stop);
       endif
 
       ## Broadcast scalar boundaries; otherwise sizes must match STR
       sz = size (this.strs);
-      start = eb_expand (start, sz, 'START');
-      stop = eb_expand (stop, sz, 'STOP');
+      start = eb_expand (start, sz, 'string.eraseBetween', 'START');
+      stop = eb_expand (stop, sz, 'string.eraseBetween', 'STOP');
 
       out = this;
       cstr = this.strs;
@@ -2092,12 +2072,8 @@ classdef string
       endif
 
       ## Text pattern form
-      if (isa (pat, 'string'))
-        pats = cellstr (pat);
-      elseif (iscellstr (pat))
-        pats = pat;
-      elseif (ischar (pat))
-        pats = cellstr (pat);
+      if (isa (pat, 'string') || iscellstr (pat) || ischar (pat))
+        pats = text2cellstr (pat);
       else
         error (strcat ("string.extract: PAT must be a string array, a", ...
                        " character vector, or a cell array of character", ...
@@ -2122,6 +2098,198 @@ classdef string
       if (ne > 0 && any (counts != counts(1)))
         error (strcat ("string.extract: all elements of STR must have the", ...
                        " same number of matches."));
+      endif
+      ncol = 0;
+      if (ne > 0)
+        ncol = counts(1);
+      endif
+      outc = cell (ne, ncol);
+      for e = 1:ne
+        outc(e,:) = matches{e};
+      endfor
+      out = string (outc);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {string} {@var{newstr} =} extractAfter (@var{str}, @var{pat})
+    ## @deftypefnx {string} {@var{newstr} =} extractAfter (@var{str}, @var{pos})
+    ##
+    ## Extract the substring after a position or pattern.
+    ##
+    ## @code{@var{newstr} = extractAfter (@var{str}, @var{pat})} returns, for
+    ## each element of @var{str}, the part of the text that follows the first
+    ## occurrence of @var{pat}, excluding @var{pat} itself.  @var{pat} can be a
+    ## string array, a character vector, or a cell array of character vectors,
+    ## and must either be a scalar, applied to every element of @var{str}, or be
+    ## of the same size as @var{str} and applied element-wise.  If @var{pat} is
+    ## not found in an element, the corresponding element of @var{newstr} is a
+    ## missing value.
+    ##
+    ## @code{@var{newstr} = extractAfter (@var{str}, @var{pos})} returns the part
+    ## of each element of @var{str} that follows the character position
+    ## @var{pos}, that is, from @code{@var{pos}+1} to the end.  @var{pos} must be
+    ## a positive integer that is either a scalar or the same size as @var{str}.
+    ##
+    ## @var{newstr} is a string array of the same size as @var{str}.  Missing
+    ## values in @var{str} are preserved.  Character positions are counted by
+    ## bytes, so results for multibyte characters may differ from MATLAB.
+    ##
+    ## @end deftypefn
+    function out = extractAfter (this, pat)
+      if (nargin < 2)
+        error ("string.extractAfter: not enough input arguments.");
+      endif
+      out = this;
+      [out.strs, out.isMissing] = extract_side (this.strs, this.isMissing, ...
+                                                pat, true, 'string.extractAfter');
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {string} {@var{newstr} =} extractBefore (@var{str}, @var{pat})
+    ## @deftypefnx {string} {@var{newstr} =} extractBefore (@var{str}, @var{pos})
+    ##
+    ## Extract the substring before a position or pattern.
+    ##
+    ## @code{@var{newstr} = extractBefore (@var{str}, @var{pat})} returns, for
+    ## each element of @var{str}, the part of the text that precedes the first
+    ## occurrence of @var{pat}, excluding @var{pat} itself.  @var{pat} can be a
+    ## string array, a character vector, or a cell array of character vectors,
+    ## and must either be a scalar, applied to every element of @var{str}, or be
+    ## of the same size as @var{str} and applied element-wise.  If @var{pat} is
+    ## not found in an element, the corresponding element of @var{newstr} is a
+    ## missing value.
+    ##
+    ## @code{@var{newstr} = extractBefore (@var{str}, @var{pos})} returns the
+    ## part of each element of @var{str} that precedes the character position
+    ## @var{pos}, that is, from the start up to @code{@var{pos}-1}.  @var{pos}
+    ## must be a positive integer that is either a scalar or the same size as
+    ## @var{str}.
+    ##
+    ## @var{newstr} is a string array of the same size as @var{str}.  Missing
+    ## values in @var{str} are preserved.  Character positions are counted by
+    ## bytes, so results for multibyte characters may differ from MATLAB.
+    ##
+    ## @end deftypefn
+    function out = extractBefore (this, pat)
+      if (nargin < 2)
+        error ("string.extractBefore: not enough input arguments.");
+      endif
+      out = this;
+      [out.strs, out.isMissing] = extract_side (this.strs, this.isMissing, ...
+                                                pat, false, 'string.extractBefore');
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {string} {@var{newstr} =} extractBetween (@var{str}, @var{startPat}, @var{endPat})
+    ## @deftypefnx {string} {@var{newstr} =} extractBetween (@var{str}, @var{startPos}, @var{endPos})
+    ## @deftypefnx {string} {@var{newstr} =} extractBetween (@dots{}, @qcode{"Boundaries"}, @var{bounds})
+    ##
+    ## Extract the substrings between start and end boundaries.
+    ##
+    ## @code{@var{newstr} = extractBetween (@var{str}, @var{startPat}, @var{endPat})}
+    ## returns the text that occurs between the substrings @var{startPat} and
+    ## @var{endPat} in each element of @var{str}.  @var{startPat} and
+    ## @var{endPat} can be string arrays, character vectors, or cell arrays of
+    ## character vectors.  Within each element the boundary pairs are matched
+    ## from left to right and do not overlap, so an element may yield several
+    ## substrings; these run along the second dimension, and every element of
+    ## @var{str} must yield the same number of matches.  For a string scalar with
+    ## @var{n} matches, @var{newstr} is @code{1x@var{n}}; for a non-scalar
+    ## @var{str}, @var{newstr} has one row per element (taken in column-major
+    ## order) and one column per match.  Elements with no match, including
+    ## missing values, are treated as having zero matches.
+    ##
+    ## @code{@var{newstr} = extractBetween (@var{str}, @var{startPos}, @var{endPos})}
+    ## returns the substring between the character positions @var{startPos} and
+    ## @var{endPos}, inclusive of the characters at those positions.  This syntax
+    ## extracts a single substring per element, so @var{newstr} has the same size
+    ## as @var{str}.
+    ##
+    ## @code{@var{newstr} = extractBetween (@dots{}, @qcode{"Boundaries"}, @var{bounds})}
+    ## specifies whether the boundaries are included in or excluded from the
+    ## extracted text.  @var{bounds} can be either @qcode{"inclusive"} or
+    ## @qcode{"exclusive"}.  When boundaries are given as substrings, the default
+    ## is @qcode{"exclusive"} and the boundary substrings are not included; when
+    ## given as positions, the default is @qcode{"inclusive"} and the characters
+    ## at those positions are included.
+    ##
+    ## @var{startPat}/@var{endPat} and @var{startPos}/@var{endPos} must either be
+    ## scalars, applied to every element of @var{str}, or be of the same size as
+    ## @var{str}.  Missing values in @var{str} are preserved.  Character
+    ## positions are counted by bytes, so results for multibyte characters may
+    ## differ from MATLAB.
+    ##
+    ## @end deftypefn
+    function out = extractBetween (this, start, stop, varargin)
+      if (nargin < 3)
+        error ("string.extractBetween: not enough input arguments.");
+      endif
+
+      istxt = @(x) ischar (x) || iscellstr (x) || isa (x, 'string');
+      if (isnumeric (start) && isnumeric (stop))
+        posMode = true;
+        dfBounds = 'inclusive';
+      elseif (istxt (start) && istxt (stop))
+        posMode = false;
+        dfBounds = 'exclusive';
+      else
+        error (strcat ("string.extractBetween: START and STOP must be", ...
+                       " either both numeric positions or both text", ...
+                       " patterns."));
+      endif
+
+      [bounds, rem] = parsePairedArguments ({'Boundaries'}, {dfBounds}, varargin);
+      if (! isempty (rem))
+        error ("string.extractBetween: invalid optional arguments.");
+      endif
+      if (isa (bounds, 'string'))
+        bounds = char (bounds);
+      endif
+      if (! ischar (bounds) || ! any (strcmpi (bounds, {'inclusive', 'exclusive'})))
+        error (strcat ("string.extractBetween: BOUNDARIES must be", ...
+                       " 'inclusive' or 'exclusive'."));
+      endif
+      inclusive = strcmpi (bounds, 'inclusive');
+
+      sz = size (this.strs);
+      ne = numel (this.strs);
+
+      if (posMode)
+        start = eb_expand (start, sz, 'string.extractBetween', 'START');
+        stop = eb_expand (stop, sz, 'string.extractBetween', 'STOP');
+        ## One span per element, so the output matches the size of STR
+        out = this;
+        cstr = this.strs;
+        for k = 1:ne
+          if (this.isMissing(k))
+            continue;
+          endif
+          cstr{k} = eb_span (cstr{k}, start(k), stop(k), inclusive);
+        endfor
+        out.strs = cstr;
+        return;
+      endif
+
+      ## Pattern mode: each element may contribute several substrings
+      start = text2cellstr (start);
+      stop = text2cellstr (stop);
+      start = eb_expand (start, sz, 'string.extractBetween', 'START');
+      stop = eb_expand (stop, sz, 'string.extractBetween', 'STOP');
+
+      matches = cell (ne, 1);
+      counts = zeros (ne, 1);
+      for k = 1:ne
+        if (this.isMissing(k))
+          matches{k} = {};
+        else
+          matches{k} = extract_between_matches (this.strs{k}, start{k}, ...
+                                                stop{k}, inclusive);
+        endif
+        counts(k) = numel (matches{k});
+      endfor
+      if (ne > 0 && any (counts != counts(1)))
+        error (strcat ("string.extractBetween: all elements of STR must", ...
+                       " have the same number of matches."));
       endif
       ncol = 0;
       if (ne > 0)
@@ -2860,14 +3028,14 @@ classdef string
 
 endclassdef
 
-## Broadcast a scalar START/STOP argument to the size of STR, or verify that it
+## Broadcast a scalar boundary argument to the size of STR, or verify that it
 ## already matches.  Works for both numeric arrays and cell arrays of patterns.
-function arg = eb_expand (arg, sz, name)
+## FCN is the calling method name, used to prefix the error message.
+function arg = eb_expand (arg, sz, fcn, name)
   if (numel (arg) == 1)
     arg = repmat (arg, sz);
   elseif (! isequal (size (arg), sz))
-    error ("string.eraseBetween: %s must be scalar or the same size as STR.", ...
-           name);
+    error ("%s: %s must be scalar or the same size as STR.", fcn, name);
   endif
 endfunction
 
@@ -2907,6 +3075,127 @@ function s = eb_between (s, a, b, isPos, inclusive)
     elseif (aEnd + 1 <= j - 1)
       s((aEnd + 1):(j - 1)) = [];
     endif
+  endif
+endfunction
+
+## Shared implementation of extractAfter (AFTER true) and extractBefore (AFTER
+## false).  Operates on the raw CSTR/ISMISS arrays (local functions cannot set
+## the class's private properties) and returns the updated arrays.  PAT may be
+## numeric positions or text boundaries; an unmatched text boundary yields a
+## missing value.  FCN is the calling method name.
+function [cstr, isMiss] = extract_side (cstr, isMiss, pat, after, fcn)
+  sz = size (cstr);
+
+  if (isnumeric (pat))
+    pos = eb_expand (pat, sz, fcn, 'POS');
+    if (any (pos(:) != fix (pos(:))) || any (pos(:) < 1))
+      error ("%s: POS must be a positive integer.", fcn);
+    endif
+    for k = 1:numel (cstr)
+      if (isMiss(k))
+        continue;
+      endif
+      s = cstr{k};
+      if (pos(k) > numel (s))
+        error ("%s: POS exceeds the length of the string.", fcn);
+      endif
+      if (after)
+        cstr{k} = s((pos(k) + 1):end);
+      else
+        cstr{k} = s(1:(pos(k) - 1));
+      endif
+    endfor
+  else
+    if (isa (pat, 'string') || ischar (pat) || iscellstr (pat))
+      pat = text2cellstr (pat);
+    else
+      error (strcat (fcn, ": PAT must be a string array, a character", ...
+                     " vector, or a cell array of character vectors."));
+    endif
+    pat = eb_expand (pat, sz, fcn, 'PAT');
+    for k = 1:numel (cstr)
+      if (isMiss(k))
+        continue;
+      endif
+      s = cstr{k};
+      p = pat{k};
+      i = [];
+      if (! isempty (p))
+        i = strfind (s, p);
+      endif
+      if (isempty (i))
+        cstr{k} = '';            # PAT not found -> missing
+        isMiss(k) = true;
+        continue;
+      endif
+      i = i(1);
+      if (after)
+        cstr{k} = s((i + numel (p)):end);
+      else
+        cstr{k} = s(1:(i - 1));
+      endif
+    endfor
+  endif
+endfunction
+
+## Extract a single span of S between positions A and B.  INCLUSIVE selects
+## whether the characters at A and B are kept.
+function s = eb_span (s, a, b, inclusive)
+  n = numel (s);
+  if (a != fix (a) || b != fix (b) || a < 1 || a > b || b > n)
+    error ("string.extractBetween: position indices out of range.");
+  endif
+  if (inclusive)
+    s = s(a:b);
+  elseif (a + 1 <= b - 1)
+    s = s((a + 1):(b - 1));
+  else
+    s = '';
+  endif
+endfunction
+
+## Collect the non-overlapping substrings of S that lie between successive START
+## and END boundary substrings, scanning left to right.  INCLUSIVE selects
+## whether the boundary substrings themselves are included.
+function m = extract_between_matches (s, sp, ep, inclusive)
+  m = {};
+  if (isempty (sp) || isempty (ep))
+    return;
+  endif
+  i = 1;
+  n = numel (s);
+  while (i <= n)
+    si = strfind (s(i:end), sp);
+    if (isempty (si))
+      break;
+    endif
+    si = i + si(1) - 1;                   # absolute start of START match
+    aEnd = si + numel (sp) - 1;
+    ei = strfind (s((aEnd + 1):end), ep);
+    if (isempty (ei))
+      break;
+    endif
+    ei = aEnd + ei(1);                    # absolute start of END match
+    if (inclusive)
+      m{end+1} = s(si:(ei + numel (ep) - 1));
+    elseif (aEnd + 1 <= ei - 1)
+      m{end+1} = s((aEnd + 1):(ei - 1));
+    else
+      m{end+1} = '';
+    endif
+    i = ei + numel (ep);                  # resume past the END match
+  endwhile
+endfunction
+
+## Convert a text argument (string array, char, or cell array of char vectors)
+## to a cell array of character vectors, preserving trailing whitespace.  Bare
+## 'cellstr' on a char vector deblanks it, so route char/cellstr through the
+## 'string' constructor, which keeps trailing whitespace.
+function c = text2cellstr (x)
+  if (isa (x, 'string'))
+    c = cellstr (x);
+  else
+    c = cellstr (string (x));
   endif
 endfunction
 
