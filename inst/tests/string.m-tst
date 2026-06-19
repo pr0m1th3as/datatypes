@@ -1022,3 +1022,25 @@
 %! extractBetween (string ('abc'), 2, 9)
 %!error <string.extractBetween: STOP must be scalar or the same size as STR.> ...
 %! extractBetween (string ({'a', 'b', 'c'}), 1, [1, 2])
+
+## Code-point positions: numeric indexing counts whole characters, not UTF-8
+## bytes.  The test text "a<euro>b<grinning-face>c" has 5 code points spanning
+## 1-, 3-, and 4-byte UTF-8 sequences (built from raw bytes so this file stays
+## ASCII): a(1) euro(2) b(3) emoji(4) c(5).
+%!test
+%! s = string (native2unicode (uint8 ([97 226 130 172 98 240 159 152 128 99]), 'UTF-8'));
+%! euro = string (native2unicode (uint8 ([226 130 172]), 'UTF-8'));
+%! emoji = string (native2unicode (uint8 ([240 159 152 128]), 'UTF-8'));
+%! ## extract: the 4th character is the whole emoji, not a stray byte
+%! assert_equal (extract (s, 4), emoji);
+%! assert_equal (extract (s, 2), euro);
+%! ## extractBefore / extractAfter split on character boundaries
+%! assert_equal (extractBefore (s, 4), append (string ('a'), euro, string ('b')));
+%! assert_equal (extractAfter (s, 2), append (string ('b'), emoji, string ('c')));
+%! ## eraseBetween (inclusive default removes chars 2..4; exclusive removes char 3)
+%! assert_equal (eraseBetween (s, 2, 4), string ('ac'));
+%! assert_equal (eraseBetween (s, 2, 4, 'Boundaries', 'exclusive'), ...
+%!               append (string ('a'), euro, emoji, string ('c')));
+%! ## extractBetween (inclusive default keeps chars 2..4; exclusive keeps char 3)
+%! assert_equal (extractBetween (s, 2, 4), append (euro, string ('b'), emoji));
+%! assert_equal (extractBetween (s, 2, 4, 'Boundaries', 'exclusive'), string ('b'));
