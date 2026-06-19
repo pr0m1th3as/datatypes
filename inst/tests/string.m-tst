@@ -750,7 +750,7 @@
 %!assert_equal (erase (string ('abc'), 'z'), string ('abc'))
 ## erase: an empty match removes nothing
 %!assert_equal (erase (string ('abc'), ''), string ('abc'))
-## erase: a char-vector match keeps its trailing whitespace (bare cellstr deblanks)
+## erase: a char-vector match keeps trailing whitespace (bare cellstr deblanks)
 %!assert_equal (erase (string ('the quick brown'), 'quick '), string ('the brown'))
 ## erase: accepts char vectors, cell arrays of char vectors, and string scalars
 %!assert_equal (erase (string ('abcabc'), string ('bc')), string ('aa'))
@@ -779,19 +779,19 @@
 %!error <string.erase: MATCH must be a string array, a character vector, or a cell array of character vectors.> ...
 %! erase (string ('ab'), 5)
 
-## eraseBetween: pattern syntax erases between the boundaries (default exclusive)
+## eraseBetween: pattern syntax erases between boundaries (default exclusive)
 %!assert_equal (eraseBetween (string ('The quick brown fox'), 'quick', ' fox'), ...
 %!              string ('The quick fox'))
 ## eraseBetween: pattern syntax with explicit exclusive boundaries
 %!assert_equal (eraseBetween (string ('a[xyz]b'), '[', ']', 'Boundaries', 'exclusive'), ...
 %!              string ('a[]b'))
-## eraseBetween: pattern syntax with inclusive boundaries erases the boundaries too
+## eraseBetween: pattern syntax with inclusive boundaries erases them too
 %!assert_equal (eraseBetween (string ('The quick brown fox jumps over the lazy dog'), ...
 %!                            ' brown', 'lazy', 'Boundaries', 'inclusive'), ...
 %!              string ('The quick dog'))
 %!assert_equal (eraseBetween (string ('a[xyz]b'), '[', ']', 'Boundaries', 'inclusive'), ...
 %!              string ('ab'))
-## eraseBetween: char-vector boundaries keep trailing whitespace (cellstr deblanks)
+## eraseBetween: char boundaries keep trailing whitespace (cellstr deblanks)
 %!assert_equal (eraseBetween (string ('a quick b'), 'a ', ' b', ...
 %!                            'Boundaries', 'inclusive'), string (''))
 ## eraseBetween: boundary substrings accepted as char, cellstr, or string
@@ -821,12 +821,12 @@
 %!assert_equal (eraseBetween (string ('abcde'), 3, 3), string ('abde'))
 %!assert_equal (eraseBetween (string ('abcde'), 3, 3, 'Boundaries', 'exclusive'), ...
 %!              string ('abcde'))
-## eraseBetween: scalar positions broadcast and element-wise positions map by element
+## eraseBetween: scalar positions broadcast; array positions map by element
 %!assert_equal (eraseBetween (string ({'abcdef'; 'ABCDEF'}), 2, 4), ...
 %!              string ({'aef'; 'AEF'}))
 %!assert_equal (eraseBetween (string ({'abcdef'; 'ABCDEF'}), [2; 3], [4; 5]), ...
 %!              string ({'aef'; 'ABF'}))
-## eraseBetween: the 'Boundaries' name and string-valued option are case-insensitive
+## eraseBetween: 'Boundaries' name and string option are case-insensitive
 %!assert_equal (eraseBetween (string ('small|medium|large'), 6, 13, ...
 %!                            'boundaries', string ('exclusive')), string ('small||large'))
 ## eraseBetween: missing values are preserved and carry no text
@@ -999,7 +999,7 @@
 %! str = extractBetween (string ('hello'), '[', ']');
 %! assert_equal (class (str), 'string');
 %! assert_equal (size (str), [1, 0]);
-## extractBetween: the 'Boundaries' name and string-valued option are case-insensitive
+## extractBetween: 'Boundaries' name and string option are case-insensitive
 %!assert_equal (extractBetween (string ('small|medium|large'), 6, 13, ...
 %!                              'boundaries', string ('exclusive')), string ('medium'))
 ## extractBetween: missing values are preserved (position form)
@@ -1037,11 +1037,11 @@
 %! ## extractBefore / extractAfter split on character boundaries
 %! assert_equal (extractBefore (s, 4), append (string ('a'), euro, string ('b')));
 %! assert_equal (extractAfter (s, 2), append (string ('b'), emoji, string ('c')));
-%! ## eraseBetween (inclusive default removes chars 2..4; exclusive removes char 3)
+%! ## eraseBetween (inclusive removes chars 2..4; exclusive removes char 3)
 %! assert_equal (eraseBetween (s, 2, 4), string ('ac'));
 %! assert_equal (eraseBetween (s, 2, 4, 'Boundaries', 'exclusive'), ...
 %!               append (string ('a'), euro, emoji, string ('c')));
-%! ## extractBetween (inclusive default keeps chars 2..4; exclusive keeps char 3)
+%! ## extractBetween (inclusive keeps chars 2..4; exclusive keeps char 3)
 %! assert_equal (extractBetween (s, 2, 4), append (euro, string ('b'), emoji));
 %! assert_equal (extractBetween (s, 2, 4, 'Boundaries', 'exclusive'), string ('b'));
 
@@ -1153,7 +1153,7 @@
 ## replace: a multi-element OLD pairs up with a same-size NEW
 %!assert_equal (replace (string ('a-b_c'), {'-', '_'}, {'+', '='}), ...
 %!              string ('a+b=c'))
-## replace: multiple patterns are applied simultaneously (a swap, not sequential)
+## replace: multiple patterns applied simultaneously (a swap, not sequential)
 %!assert_equal (replace (string ('ab'), {'a', 'b'}, {'b', 'a'}), string ('ba'))
 ## replace: at each position the OLD substrings are tried in order, first wins
 %!assert_equal (replace (string ('aaa'), {'aa', 'a'}, {'X', 'Y'}), string ('XY'))
@@ -1180,7 +1180,7 @@
 %!error <string.replace: NEW must be a single substring or the same size as OLD.> ...
 %! replace (string ('ab'), {'a', 'b'}, {'1', '2', '3'})
 
-## replaceBetween: pattern syntax replaces between the boundaries (default exclusive)
+## replaceBetween: pattern replaces between boundaries (default exclusive)
 %!assert_equal (replaceBetween (string ('The quick brown fox'), 'quick ', ' fox', 'red'), ...
 %!              string ('The quick red fox'))
 ## replaceBetween: pattern syntax with explicit exclusive boundaries
@@ -1189,7 +1189,7 @@
 ## replaceBetween: pattern syntax with inclusive boundaries replaces them too
 %!assert_equal (replaceBetween (string ('a[x]b'), '[', ']', 'Y', 'Boundaries', 'inclusive'), ...
 %!              string ('aYb'))
-## replaceBetween: exclusive boundaries with an empty span insert NEW between them
+## replaceBetween: an empty exclusive span inserts NEW between boundaries
 %!assert_equal (replaceBetween (string ('ab'), 'a', 'b', 'X', 'Boundaries', 'exclusive'), ...
 %!              string ('aXb'))
 ## replaceBetween: a scalar boundary broadcasts over the array
@@ -1208,7 +1208,7 @@
 %!              string ('abXde'))
 ## replaceBetween: equal positions replace a single character (inclusive)
 %!assert_equal (replaceBetween (string ('abc'), 2, 2, 'XY'), string ('aXYc'))
-## replaceBetween: the 'Boundaries' name and string-valued option are case-insensitive
+## replaceBetween: 'Boundaries' name and string option are case-insensitive
 %!assert_equal (replaceBetween (string ('a[x]b'), '[', ']', 'Y', 'boundaries', string ('Inclusive')), ...
 %!              string ('aYb'))
 ## replaceBetween: missing values in STR are preserved

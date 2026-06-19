@@ -148,8 +148,8 @@ classdef string
       elseif (ischar (in))
         ## Convert each row to a string element with 'num2cell' rather than
         ## 'cellstr', which would deblank and silently drop trailing whitespace
-        ## (MATLAB's 'string' preserves it).  An empty char array yields a single
-        ## empty string element, matching the no-argument constructor.
+        ## (MATLAB's 'string' preserves it).  An empty char array yields a
+        ## single empty string element, matching the no-argument constructor.
         if (isempty (in))
           this.strs = {''};
         elseif (ndims (in) > 2)
@@ -3436,7 +3436,8 @@ classdef string
     ## boundary leaves the element unchanged).  NEW is the text to insert,
     ## scalar or the same size as STR; a missing NEW makes the corresponding
     ## element missing.  On invalid input returns a non-empty ERRMSG, leaving
-    ## OUT unchanged, so the calling method can emit the error under its own name.
+    ## OUT unchanged, so the calling method can emit the error under its own
+    ## name.
     function [out, errmsg] = insert_side (this, pat, new, after)
       out = this;
       cstr = this.strs;
@@ -3579,14 +3580,14 @@ function [s, errmsg] = eb_between (s, a, b, isPos, inclusive)
   endif
 endfunction
 
-## Replace the content of a single character vector S between two boundaries with
-## the text NEW.  When ISPOS is true, A and B are numeric character positions;
-## otherwise they are the start and end boundary substrings, matched at their
-## first occurrence (an unmatched boundary leaves S unchanged).  INCLUSIVE selects
-## whether the boundaries themselves are replaced.  The replaced span may be
-## empty, in which case NEW is inserted between the boundaries.  On an
-## out-of-range position returns a non-empty ERRMSG; the calling method emits
-## the error under its own name.
+## Replace the content of a single character vector S between two boundaries
+## with the text NEW.  When ISPOS is true, A and B are numeric character
+## positions; otherwise they are the start and end boundary substrings, matched
+## at their first occurrence (an unmatched boundary leaves S unchanged).
+## INCLUSIVE selects whether the boundaries themselves are replaced.  The
+## replaced span may be empty, in which case NEW is inserted between the
+## boundaries.  On an out-of-range position returns a non-empty ERRMSG; the
+## calling method emits the error under its own name.
 function [s, errmsg] = rb_between (s, a, b, isPos, inclusive, new)
   errmsg = '';
   if (isPos)
@@ -3753,7 +3754,8 @@ endfunction
 ## with the corresponding NEWS substrings, in a single left to right pass.  At
 ## each position the OLDS are tried in order and the first that matches is
 ## replaced; the scan resumes past the inserted NEWS text, so replacements are
-## not re-scanned.  Unmatched runs are flushed in bulk to avoid quadratic growth.
+## not re-scanned.  Unmatched runs are flushed in bulk to avoid quadratic
+## growth.
 function s = replace_pairs (s, olds, news)
   parts = {};
   i = 1;
@@ -3830,9 +3832,9 @@ function tok = compose_tokenize (fmt)
 endfunction
 
 ## Format a single string from a token list and a cell of input values.  Each
-## operator consumes its values in order; operators left without a corresponding
-## value are emitted unchanged.  Literal text has its escape sequences translated
-## following the same rules as the 'sprintf' function.
+## operator consumes its values in order; operators left without a
+## corresponding value are emitted unchanged.  Literal text has its escape
+## sequences translated following the same rules as the 'sprintf' function.
 function out = compose_apply (tok, vals)
   parts = cell (1, numel (tok));
   vi = 1;
