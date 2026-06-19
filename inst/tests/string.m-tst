@@ -750,6 +750,8 @@
 %!assert_equal (erase (string ('abc'), 'z'), string ('abc'))
 ## erase: an empty match removes nothing
 %!assert_equal (erase (string ('abc'), ''), string ('abc'))
+## erase: a char-vector match keeps its trailing whitespace (bare cellstr deblanks)
+%!assert_equal (erase (string ('the quick brown'), 'quick '), string ('the brown'))
 ## erase: accepts char vectors, cell arrays of char vectors, and string scalars
 %!assert_equal (erase (string ('abcabc'), string ('bc')), string ('aa'))
 %!assert_equal (erase (string ('aXa'), {'X'}), string ('aa'))
@@ -789,6 +791,9 @@
 %!              string ('The quick dog'))
 %!assert_equal (eraseBetween (string ('a[xyz]b'), '[', ']', 'Boundaries', 'inclusive'), ...
 %!              string ('ab'))
+## eraseBetween: char-vector boundaries keep trailing whitespace (cellstr deblanks)
+%!assert_equal (eraseBetween (string ('a quick b'), 'a ', ' b', ...
+%!                            'Boundaries', 'inclusive'), string (''))
 ## eraseBetween: boundary substrings accepted as char, cellstr, or string
 %!assert_equal (eraseBetween (string ('a<x>b'), '<', '>'), string ('a<>b'))
 %!assert_equal (eraseBetween (string ('a<x>b'), {'<'}, {'>'}), string ('a<>b'))
@@ -903,3 +908,117 @@
 %! extract (string ('ab'), 1.5)
 %!error <string.extract: POS exceeds the length of the string.> ...
 %! extract (string ('ab'), 5)
+
+## extractAfter: pattern form returns the text after the first match of PAT
+%!assert_equal (extractAfter (string ('The quick brown fox'), 'quick '), ...
+%!              string ('brown fox'))
+%!assert_equal (extractAfter (string ('a-b-c'), '-'), string ('b-c'))
+## extractAfter: boundary pattern given per element
+%!assert_equal (extractAfter (string ({'The quick brown fox jumps'; 'over the lazy dog'}), ...
+%!                            string ({'quick '; 'the '})), ...
+%!              string ({'brown fox jumps'; 'lazy dog'}))
+## extractAfter: a scalar pattern broadcasts over the array
+%!assert_equal (extractAfter (string ({'a:1', 'a:2'}), 'a:'), string ({'1', '2'}))
+## extractAfter: a pattern that is not found yields a missing value
+%!test
+%! str = extractAfter (string ('hello'), 'z');
+%! assert_equal (ismissing (str), true);
+## extractAfter: position form returns the text after POS
+%!assert_equal (extractAfter (string ('Edgar Allen Poe'), 12), string ('Poe'))
+%!assert_equal (extractAfter (string ({'abcd'; 'wxyz'}), [1; 2]), string ({'bcd'; 'yz'}))
+## extractAfter: POS at the last character yields an empty string
+%!assert_equal (extractAfter (string ('abc'), 3), string (''))
+## extractAfter: missing values are preserved
+%!test
+%! str = extractAfter (string ({'a-b', missing}), '-');
+%! assert_equal (ismissing (str), [false, true]);
+%! assert_equal (cellstr (str), {'b', ''});
+## extractAfter: error branches
+%!error <string.extractAfter: not enough input arguments.> ...
+%! extractAfter (string ('ab'))
+%!error <string.extractAfter: PAT must be a string array, a character vector, or a cell array of character vectors.> ...
+%! extractAfter (string ('ab'), {1, 2})
+%!error <string.extractAfter: PAT must be scalar or the same size as STR.> ...
+%! extractAfter (string ('ab'), string ({'a', 'b'}))
+%!error <string.extractAfter: POS must be a positive integer.> ...
+%! extractAfter (string ('ab'), 0)
+%!error <string.extractAfter: POS exceeds the length of the string.> ...
+%! extractAfter (string ('ab'), 5)
+
+## extractBefore: pattern form returns the text before the first match of PAT
+%!assert_equal (extractBefore (string ('The quick brown fox'), ' brown'), ...
+%!              string ('The quick'))
+%!assert_equal (extractBefore (string ('a-b-c'), '-'), string ('a'))
+## extractBefore: a scalar pattern broadcasts over the array
+%!assert_equal (extractBefore (string ({'1:a', '2:a'}), ':a'), string ({'1', '2'}))
+## extractBefore: a pattern that is not found yields a missing value
+%!test
+%! str = extractBefore (string ('hello'), 'z');
+%! assert_equal (ismissing (str), true);
+## extractBefore: position form returns the text before POS
+%!assert_equal (extractBefore (string ('Edgar Allen Poe'), 6), string ('Edgar'))
+%!assert_equal (extractBefore (string ({'abcd'; 'wxyz'}), [3; 2]), string ({'ab'; 'w'}))
+## extractBefore: POS at the first character yields an empty string
+%!assert_equal (extractBefore (string ('abc'), 1), string (''))
+## extractBefore: missing values are preserved
+%!test
+%! str = extractBefore (string ({'a-b', missing}), '-');
+%! assert_equal (ismissing (str), [false, true]);
+%! assert_equal (cellstr (str), {'a', ''});
+## extractBefore: error branches
+%!error <string.extractBefore: not enough input arguments.> ...
+%! extractBefore (string ('ab'))
+%!error <string.extractBefore: PAT must be a string array, a character vector, or a cell array of character vectors.> ...
+%! extractBefore (string ('ab'), {1, 2})
+%!error <string.extractBefore: POS exceeds the length of the string.> ...
+%! extractBefore (string ('ab'), 5)
+
+## extractBetween: pattern form returns the text between boundaries (exclusive)
+%!assert_equal (extractBetween (string ('The quick brown fox'), 'quick ', ' fox'), ...
+%!              string ('brown'))
+## extractBetween: pattern form with inclusive boundaries keeps the boundaries
+%!assert_equal (extractBetween (string ('The quick brown fox jumps'), ' brown', ...
+%!                              'fox', 'Boundaries', 'inclusive'), string (' brown fox'))
+## extractBetween: position form returns the span (inclusive by default)
+%!assert_equal (extractBetween (string ('Edgar Allen Poe'), 7, 11), string ('Allen'))
+## extractBetween: position form with exclusive boundaries drops the endpoints
+%!assert_equal (extractBetween (string ('small|medium|large'), 6, 13, ...
+%!                              'Boundaries', 'exclusive'), string ('medium'))
+## extractBetween: equal positions extract a single character (inclusive)
+%!assert_equal (extractBetween (string ('abcde'), 3, 3), string ('c'))
+## extractBetween: a scalar string with several matches gives a 1xN row
+%!assert_equal (extractBetween (string ('a[1][2][3]b'), '[', ']'), ...
+%!              string ({'1', '2', '3'}))
+## extractBetween: one match per element preserves the size of STR
+%!assert_equal (extractBetween (string ({'<a>'; '<bb>'}), '<', '>'), ...
+%!              string ({'a'; 'bb'}))
+%!assert_equal (extractBetween (string ({'(x)'; '(yy)'}), '(', ')'), ...
+%!              string ({'x'; 'yy'}))
+## extractBetween: no match yields an empty string array
+%!test
+%! str = extractBetween (string ('hello'), '[', ']');
+%! assert_equal (class (str), 'string');
+%! assert_equal (size (str), [1, 0]);
+## extractBetween: the 'Boundaries' name and string-valued option are case-insensitive
+%!assert_equal (extractBetween (string ('small|medium|large'), 6, 13, ...
+%!                              'boundaries', string ('exclusive')), string ('medium'))
+## extractBetween: missing values are preserved (position form)
+%!test
+%! str = extractBetween (string ({'abcd', missing}), 2, 3);
+%! assert_equal (ismissing (str), [false, true]);
+%! assert_equal (cellstr (str), {'bc', ''});
+## extractBetween: error branches
+%!error <string.extractBetween: not enough input arguments.> ...
+%! extractBetween (string ('ab'), 1)
+%!error <string.extractBetween: START and STOP must be either both numeric positions or both text patterns.> ...
+%! extractBetween (string ('ab'), 1, 'x')
+%!error <string.extractBetween: BOUNDARIES must be 'inclusive' or 'exclusive'.> ...
+%! extractBetween (string ('ab'), 'a', 'b', 'Boundaries', 'foo')
+%!error <string.extractBetween: invalid optional arguments.> ...
+%! extractBetween (string ('ab'), 1, 2, 'Foo', 'bar')
+%!error <string.extractBetween: all elements of STR must have the same number of matches.> ...
+%! extractBetween (string ({'[1]'; '[1][2]'}), '[', ']')
+%!error <string.extractBetween: position indices out of range.> ...
+%! extractBetween (string ('abc'), 2, 9)
+%!error <string.extractBetween: STOP must be scalar or the same size as STR.> ...
+%! extractBetween (string ({'a', 'b', 'c'}), 1, [1, 2])
