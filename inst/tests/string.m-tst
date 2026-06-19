@@ -1249,3 +1249,57 @@
 %! ## exclusive keeps chars 2 and 4, replacing char 3 (b) with 'X'
 %! assert_equal (replaceBetween (s, 2, 4, string ('X'), 'Boundaries', 'exclusive'), ...
 %!               append (string ('a'), euro, string ('X'), emoji, string ('c')));
+
+## reverse: reverses the order of the characters in a string scalar
+%!assert_equal (reverse (string ('hello')), string ('olleh'))
+## reverse: the verbatim MATLAB documentation example
+%!assert_equal (reverse (string ({'airport', 'control tower', 'radar', 'runway'})), ...
+%!              string ({'tropria', 'rewot lortnoc', 'radar', 'yawnur'}))
+## reverse: a palindrome is returned unchanged
+%!assert_equal (reverse (string ('radar')), string ('radar'))
+## reverse: applied element-wise across an array, preserving its size
+%!assert_equal (reverse (string ({'ab', 'cd'; 'ef', 'gh'})), ...
+%!              string ({'ba', 'dc'; 'fe', 'hg'}))
+## reverse: a column vector keeps its shape
+%!assert_equal (reverse (string ({'ab'; 'cde'})), string ({'ba'; 'edc'}))
+## reverse: output is a string array of the same size as the input
+%!test
+%! r = reverse (string ({'ab', 'cd', 'ef'}));
+%! assert_equal (isa (r, 'string'), true);
+%! assert_equal (size (r), [1, 3]);
+## reverse: a single character is unchanged
+%!assert_equal (reverse (string ('x')), string ('x'))
+## reverse: an empty string stays empty
+%!assert_equal (reverse (string ('')), string (''))
+## reverse: an empty (0x0) string array is returned unchanged
+%!test
+%! r = reverse (string ([]));
+%! assert_equal (isa (r, 'string'), true);
+%! assert_equal (size (r), [0, 0]);
+## reverse: leading and trailing whitespace is preserved (and moved)
+%!assert_equal (reverse (string ('ab ')), string (' ba'))
+%!assert_equal (reverse (string (' ab')), string ('ba '))
+%!assert_equal (reverse (string ('a b c')), string ('c b a'))
+## reverse: applying reverse twice restores the original
+%!test
+%! s = string ({'hello', 'world'; 'foo bar', 'baz'});
+%! assert_equal (reverse (reverse (s)), s);
+## reverse: missing values are preserved and carry no text
+%!test
+%! r = reverse (string ({'ab', missing, 'cd'}));
+%! assert_equal (ismissing (r), [false, true, false]);
+%! assert_equal (cellstr (r), {'ba', '', 'dc'});
+## reverse: an all-missing array stays all missing
+%!test
+%! r = reverse (string ({missing, missing}));
+%! assert_equal (ismissing (r), [true, true]);
+## reverse: counts whole characters, not UTF-8 bytes (multibyte text
+## a euro b emoji c reverses to c emoji b euro a)
+%!test
+%! s = string (native2unicode (uint8 ([97 226 130 172 98 240 159 152 128 99]), 'UTF-8'));
+%! euro = string (native2unicode (uint8 ([226 130 172]), 'UTF-8'));
+%! emoji = string (native2unicode (uint8 ([240 159 152 128]), 'UTF-8'));
+%! assert_equal (reverse (s), ...
+%!               append (string ('c'), emoji, string ('b'), euro, string ('a')));
+%! ## reversing twice restores the multibyte original exactly
+%! assert_equal (reverse (reverse (s)), s);
