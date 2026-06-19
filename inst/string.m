@@ -1625,10 +1625,6 @@ classdef string
       error ("string.sort: not implemented yet.");
     endfunction
 
-    function out = split (this, varargin)
-      error ("string.split: not implemented yet.");
-    endfunction
-
     function out = splitlines (this, varargin)
       error ("string.splitlines: not implemented yet.");
     endfunction
@@ -2648,6 +2644,134 @@ classdef string
       code = cellfun (frev, code, "UniformOutput", false);
       out.strs(notempty) = cellfun (fn2u, code, "UniformOutput", false);
       out.isMissing = this.isMissing;
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {string} {@var{newstr} =} split (@var{str})
+    ## @deftypefnx {string} {@var{newstr} =} split (@var{str}, @var{delimiter})
+    ## @deftypefnx {string} {@var{newstr} =} split (@var{str}, @var{delimiter}, @var{dim})
+    ## @deftypefnx {string} {[@var{newstr}, @var{match}] =} split (@dots{})
+    ##
+    ## Split string array at delimiters.
+    ##
+    ## @code{@var{newstr} = split (@var{str})} divides each element of @var{str}
+    ## at whitespace characters and returns the pieces as a string array.  The
+    ## whitespace characters are the space, tab, newline, carriage return, form
+    ## feed, and vertical tab.
+    ##
+    ## @code{@var{newstr} = split (@var{str}, @var{delimiter})} divides each
+    ## element at the substrings specified by @var{delimiter}, which can be a
+    ## string array, a character vector, or a cell array of character vectors.
+    ## When @var{delimiter} contains several substrings they are all used; at a
+    ## given position the substrings are tried in order and the first that
+    ## matches is taken.  Delimiters are not collapsed, so consecutive
+    ## delimiters yield empty strings in @var{newstr}.
+    ##
+    ## The pieces of each element are laid out along a new dimension.  For a
+    ## string scalar that splits into @var{n} pieces, @var{newstr} is
+    ## @code{@var{n}x1}; for an @code{Mx1} column it is @code{Mx@var{n}}; for a
+    ## @code{1xM} row it is @code{1xMx@var{n}}; and in general the pieces extend
+    ## the first trailing singleton dimension.  Every element of @var{str} must
+    ## split into the same number of pieces.  Missing values in @var{str} are
+    ## preserved and count as a single piece.
+    ##
+    ## @code{@var{newstr} = split (@var{str}, @var{delimiter}, @var{dim})} lays
+    ## the pieces out along dimension @var{dim}, which must be a dimension along
+    ## which @var{str} has size 1.
+    ##
+    ## @code{[@var{newstr}, @var{match}] = split (@dots{})} also returns the
+    ## delimiters matched between the pieces.  @var{match} has the same layout
+    ## as @var{newstr} but with one fewer element along the split dimension.
+    ##
+    ## @end deftypefn
+    function [newstr, matchstr] = split (this, varargin)
+      if (numel (varargin) > 2)
+        error ("string.split: too many input arguments.");
+      endif
+
+      ## Determine the delimiters (default: whitespace characters)
+      if (numel (varargin) >= 1)
+        delim = varargin{1};
+        if (isa (delim, 'string'))
+          dlms = cellstr (delim);
+        elseif (ischar (delim) || iscellstr (delim))
+          dlms = cellstr (string (delim));
+        else
+          error (strcat ("string.split: DELIMITER must be a string array,", ...
+                         " a character vector, or a cell array of character", ...
+                         " vectors."));
+        endif
+        dlms = dlms(:).';
+      else
+        dlms = {" ", sprintf("\t"), sprintf("\n"), sprintf("\r"), ...
+                sprintf("\f"), sprintf("\v")};
+      endif
+
+      sz = size (this.strs);
+      ne = numel (this.strs);
+
+      ## Select the split dimension
+      if (numel (varargin) >= 2)
+        dim = varargin{2};
+        if (! (isnumeric (dim) && isscalar (dim) && dim == fix (dim) ...
+               && dim >= 1))
+          error ("string.split: DIM must be a positive integer scalar.");
+        endif
+        if (size (this.strs, dim) != 1)
+          error ("string.split: STR must have size 1 along dimension DIM.");
+        endif
+      elseif (isscalar (this.strs))
+        dim = 1;
+      else
+        dim = 2;
+        while (size (this.strs, dim) != 1)
+          dim += 1;
+        endwhile
+      endif
+
+      ## Split every element, requiring a common piece count
+      pieces = cell (ne, 1);
+      matches = cell (ne, 1);
+      counts = zeros (ne, 1);
+      for k = 1:ne
+        if (this.isMissing(k))
+          pieces{k} = {''};
+          matches{k} = cell (1, 0);
+          counts(k) = 1;
+        else
+          [pieces{k}, matches{k}] = split_one (this.strs{k}, dlms);
+          counts(k) = numel (pieces{k});
+        endif
+      endfor
+      if (ne > 0 && any (counts != counts(1)))
+        error (strcat ("string.split: each element of STR must split into", ...
+                       " the same number of substrings."));
+      endif
+      N = 0;
+      if (ne > 0)
+        N = counts(1);
+      endif
+
+      ## Assemble the pieces (and matches) into element x count matrices
+      pc = cell (ne, N);
+      pm = false (ne, N);
+      mc = cell (ne, max (N - 1, 0));
+      for k = 1:ne
+        pc(k,:) = pieces{k};
+        mc(k,:) = matches{k};
+        if (this.isMissing(k))
+          pm(k,1) = true;
+        endif
+      endfor
+
+      newstr = this;
+      [newstr.strs, newstr.isMissing] = split_place (pc, pm, sz, dim, N);
+      if (nargout >= 2)
+        Nm = max (N - 1, 0);
+        matchstr = this;
+        [matchstr.strs, matchstr.isMissing] = ...
+                            split_place (mc, false (ne, Nm), sz, dim, Nm);
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -3781,6 +3905,56 @@ function s = replace_pairs (s, olds, news)
   endwhile
   parts{end+1} = s(last:end);
   s = [parts{:}];
+endfunction
+
+## Split the character vector S at the DLMS delimiters, scanning left to right.
+## At each position the delimiters are tried in order and the first that matches
+## is taken; the scan resumes past it.  Delimiters are not collapsed.  Returns
+## the PIECES (a 1xK row) and the MATCHES between them (a 1x(K-1) row).
+function [pieces, matches] = split_one (s, dlms)
+  pieces = {};
+  matches = {};
+  i = 1;
+  n = numel (s);
+  last = 1;                       # start of the current piece
+  while (i <= n)
+    hit = 0;
+    for d = 1:numel (dlms)
+      L = numel (dlms{d});
+      if (L > 0 && i + L - 1 <= n && strncmp (s(i:i+L-1), dlms{d}, L))
+        pieces{end+1} = s(last:(i - 1));
+        matches{end+1} = dlms{d};
+        i += L;
+        last = i;
+        hit = 1;
+        break;
+      endif
+    endfor
+    if (! hit)
+      i += 1;
+    endif
+  endwhile
+  pieces{end+1} = s(last:end);
+endfunction
+
+## Lay out the per-element pieces (the columns of cell matrix PC, with logical
+## missing mask PM) along dimension DIM of an array whose other dimensions match
+## the input size SZ.  N is the number of pieces.  Returns the cellstr OC and
+## logical missing mask OM of the resulting array.
+function [oc, om] = split_place (pc, pm, sz, dim, N)
+  nd = max (numel (sz), dim);
+  outsz = [sz, ones(1, nd - numel (sz))];
+  outsz(dim) = N;
+  oc = cell (outsz);
+  om = false (outsz);
+  idx = repmat ({':'}, 1, nd);
+  shp = outsz;
+  shp(dim) = 1;
+  for n = 1:N
+    idx{dim} = n;
+    oc(idx{:}) = reshape (pc(:,n), shp);
+    om(idx{:}) = reshape (pm(:,n), shp);
+  endfor
 endfunction
 
 function out = cmp_uint32 (Acode, Bcode)
