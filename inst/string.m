@@ -1625,10 +1625,6 @@ classdef string
       error ("string.sort: not implemented yet.");
     endfunction
 
-    function out = pad (this, varargin)
-      error ("string.pad: not implemented yet.");
-    endfunction
-
     function out = join (this, varargin)
       error ("string.join: not implemented yet.");
     endfunction
@@ -2876,6 +2872,114 @@ classdef string
     endfunction
 
     ## -*- texinfo -*-
+    ## @deftypefn  {string} {@var{newstr} =} pad (@var{str})
+    ## @deftypefnx {string} {@var{newstr} =} pad (@var{str}, @var{nchars})
+    ## @deftypefnx {string} {@var{newstr} =} pad (@var{str}, @var{side})
+    ## @deftypefnx {string} {@var{newstr} =} pad (@var{str}, @var{nchars}, @var{side})
+    ## @deftypefnx {string} {@var{newstr} =} pad (@dots{}, @var{padchar})
+    ##
+    ## Add leading or trailing characters to string array.
+    ##
+    ## @code{@var{newstr} = pad (@var{str})} pads each element of @var{str} with
+    ## trailing spaces so that every element is as long as the longest one.
+    ##
+    ## @code{@var{newstr} = pad (@var{str}, @var{nchars})} pads each element to
+    ## @var{nchars} characters.  Elements that already have more than
+    ## @var{nchars} characters are left unchanged; @code{pad} never truncates.
+    ##
+    ## @code{@var{newstr} = pad (@var{str}, @var{side})} and
+    ## @code{@var{newstr} = pad (@var{str}, @var{nchars}, @var{side})} add the
+    ## padding on the side given by @var{side}, which can be @qcode{"left"},
+    ## @qcode{"right"}, or @qcode{"both"}.  The default is @qcode{"right"}; for
+    ## @qcode{"both"}, an odd number of pad characters places the extra one on
+    ## the right.
+    ##
+    ## @code{@var{newstr} = pad (@dots{}, @var{padchar})} pads with the single
+    ## character @var{padchar} instead of a space.  As @var{padchar} is the last
+    ## argument and a single character, it is told apart from @var{side} by its
+    ## length.
+    ##
+    ## Length is measured in characters, not bytes.  @var{newstr} is a string
+    ## array of the same size as @var{str}, and missing values in @var{str} are
+    ## preserved.
+    ##
+    ## @end deftypefn
+    function out = pad (this, varargin)
+      if (numel (varargin) > 3)
+        error ("string.pad: too many input arguments.");
+      endif
+
+      istext = @(x) ischar (x) || (isa (x, 'string') && isscalar (x));
+      N = [];
+      side = 'right';
+      padchar = ' ';
+      args = varargin;
+      i = 1;
+
+      ## Optional NCHARS comes first when numeric
+      if (i <= numel (args) && isnumeric (args{i}))
+        N = args{i};
+        if (! (isscalar (N) && isreal (N) && N == fix (N) && N >= 0))
+          error (strcat ("string.pad: NCHARS must be a nonnegative integer", ...
+                         " scalar."));
+        endif
+        i += 1;
+      endif
+
+      ## A multi-character text argument is the SIDE
+      if (i <= numel (args) && istext (args{i}) ...
+          && numel (str2cp (char (args{i}))) != 1)
+        a = char (args{i});
+        if (! any (strcmpi (a, {'left', 'right', 'both'})))
+          error ("string.pad: SIDE must be 'left', 'right', or 'both'.");
+        endif
+        side = a;
+        i += 1;
+      endif
+
+      ## A single-character text argument is the PADCHAR
+      if (i <= numel (args) && istext (args{i}))
+        padchar = char (args{i});
+        if (numel (str2cp (padchar)) != 1)
+          error ("string.pad: PADCHAR must be a single character.");
+        endif
+        i += 1;
+      endif
+
+      if (i <= numel (args))
+        error ("string.pad: invalid combination of input arguments.");
+      endif
+
+      ## Measure element lengths in code points; default NCHARS is the longest
+      ne = numel (this.strs);
+      lens = zeros (ne, 1);
+      for k = 1:ne
+        if (! this.isMissing(k))
+          lens(k) = numel (str2cp (this.strs{k}));
+        endif
+      endfor
+      if (isempty (N))
+        if (any (! this.isMissing(:)))
+          N = max (lens(! this.isMissing(:)));
+        else
+          N = 0;
+        endif
+      endif
+
+      padcp = str2cp (padchar);
+      side = lower (side);
+      out = this;
+      cstr = this.strs;
+      for k = 1:ne
+        if (this.isMissing(k))
+          continue;
+        endif
+        cstr{k} = pad_one (cstr{k}, N, side, padcp);
+      endfor
+      out.strs = cstr;
+    endfunction
+
+    ## -*- texinfo -*-
     ## @deftypefn {string} {@var{newstr} =} plus (@var{str1}, @var{str2})
     ##
     ## Append strings.
@@ -4114,6 +4218,30 @@ function s = strip_one (s, sl, sr, stripcps)
     endwhile
   endif
   s = cp2str (cp(lo:hi));
+endfunction
+
+## Pad the character vector S to N code points with the PADCP code point, on the
+## given SIDE ('left', 'right', or 'both').  S is returned unchanged when it is
+## already at least N long.  For 'both', an odd count puts the extra on the
+## right.
+function s = pad_one (s, N, side, padcp)
+  cp = str2cp (s);
+  total = max (N, numel (cp)) - numel (cp);
+  if (total <= 0)
+    return;
+  endif
+  switch (side)
+    case 'left'
+      lpad = total;
+      rpad = 0;
+    case 'right'
+      lpad = 0;
+      rpad = total;
+    otherwise
+      lpad = floor (total / 2);
+      rpad = total - lpad;
+  endswitch
+  s = cp2str ([repmat(padcp, 1, lpad), cp, repmat(padcp, 1, rpad)]);
 endfunction
 
 function out = cmp_uint32 (Acode, Bcode)

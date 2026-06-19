@@ -1447,6 +1447,44 @@
 %!error <string.strip: STRIPCHAR must be a single character.> ...
 %! strip (string ('a'), 'left', 'xy')
 
+## pad: by default pads with trailing spaces to the longest element
+%!assert_equal (pad (string ({'a'; 'bbb'; 'cc'})), string ({'a  '; 'bbb'; 'cc '}))
+## pad: a single element is returned unchanged (it is the longest)
+%!assert_equal (pad (string ('abc')), string ('abc'))
+## pad: NCHARS gives an explicit width, padding on the right by default
+%!assert_equal (pad (string ('ab'), 5), string ('ab   '))
+## pad: 'left' adds the padding before the text
+%!assert_equal (pad (string ('ab'), 5, 'left'), string ('   ab'))
+## pad: 'both' splits the padding, putting an odd extra on the right
+%!assert_equal (pad (string ('ab'), 5, 'both'), string (' ab  '))
+%!assert_equal (pad (string ('ab'), 6, 'both'), string ('  ab  '))
+## pad: a custom pad character on a given side
+%!assert_equal (pad (string ('7'), 4, 'left', '0'), string ('0007'))
+## pad: a single-character second argument is the pad character (to longest)
+%!assert_equal (pad (string ({'a'; 'bbb'}), '*'), string ({'a**'; 'bbb'}))
+## pad: a SIDE-only second argument pads to the longest element
+%!assert_equal (pad (string ({'a'; 'bbb'}), 'left'), string ({'  a'; 'bbb'}))
+## pad: elements longer than NCHARS are not truncated
+%!assert_equal (pad (string ('abcdef'), 3), string ('abcdef'))
+## pad: width is measured in characters (code points), not bytes
+%!test
+%! euro = native2unicode (uint8 ([226, 130, 172]), "UTF-8");
+%! assert_equal (pad (string (euro), 3), string ([euro, '  ']));
+## pad: missing values are preserved and ignored when finding the longest
+%!test
+%! r = pad (string ({'a', missing, 'ccc'}));
+%! assert_equal (ismissing (r), [false, true, false]);
+%! assert_equal (cellstr (r), {'a  ', '', 'ccc'});
+## pad: error branches
+%!error <string.pad: too many input arguments.> ...
+%! pad (string ('a'), 1, 'left', '-', 'extra')
+%!error <string.pad: NCHARS must be a nonnegative integer scalar.> ...
+%! pad (string ('a'), -1)
+%!error <string.pad: SIDE must be 'left', 'right', or 'both'.> ...
+%! pad (string ('a'), 'middle')
+%!error <string.pad: PADCHAR must be a single character.> ...
+%! pad (string ('a'), 5, 'left', 'xy')
+
 ## plus: appends STR2 to STR1, equivalent to the '+' operator
 %!assert_equal (string ('foo') + string ('bar'), string ('foobar'))
 %!assert_equal (plus (string ('foo'), string ('bar')), string ('foobar'))
