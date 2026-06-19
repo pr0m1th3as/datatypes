@@ -1620,10 +1620,6 @@ classdef string
 
   methods (Hidden)
 
-    function out = replace (this, pat, new)
-      error ("string.replace: not implemented yet.");
-    endfunction
-
     function out = replaceBetween (this, start, stop, new)
       error ("string.replaceBetween: not implemented yet.");
     endfunction
@@ -2407,6 +2403,84 @@ classdef string
       [out, errmsg] = insert_side (this, pat, new, false);
       if (! isempty (errmsg))
         error ("string.insertBefore: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {string} {@var{newstr} =} replace (@var{str}, @var{old}, @var{new})
+    ##
+    ## Replace substrings in string array.
+    ##
+    ## @code{@var{newstr} = replace (@var{str}, @var{old}, @var{new})} replaces
+    ## every occurrence of the substring @var{old} with @var{new} in each element
+    ## of the string array @var{str}.  @var{old} and @var{new} can be string
+    ## arrays, character vectors, or cell arrays of character vectors.
+    ##
+    ## When @var{old} contains several substrings, @var{new} must either be a
+    ## single substring, used to replace all of them, or be of the same size as
+    ## @var{old}, replacing each substring of @var{old} with the corresponding
+    ## element of @var{new}.  All substrings are replaced in a single left to
+    ## right pass over each element: at each position the substrings of @var{old}
+    ## are tried in order, the first that matches is replaced, and the scan
+    ## resumes past the inserted text, so replacements are not themselves
+    ## re-scanned.  @var{old} and @var{new} are applied to every element of
+    ## @var{str}; their size need not match the size of @var{str}.
+    ##
+    ## @var{newstr} is a string array of the same size as @var{str}.  A substring
+    ## of @var{old} that does not occur leaves the text unchanged, and missing
+    ## values in @var{str} are preserved.
+    ##
+    ## @end deftypefn
+    function out = replace (this, old, new)
+      if (nargin < 3)
+        error ("string.replace: not enough input arguments.");
+      endif
+
+      ## Normalize OLD and NEW to cell arrays of character vectors.  Route
+      ## char/cellstr through the constructor, which keeps trailing whitespace
+      ## that bare 'cellstr' would deblank.
+      if (isa (old, 'string'))
+        olds = cellstr (old);
+      elseif (ischar (old) || iscellstr (old))
+        olds = cellstr (string (old));
+      else
+        error (strcat ("string.replace: OLD must be a string array, a", ...
+                       " character vector, or a cell array of character", ...
+                       " vectors."));
+      endif
+      if (isa (new, 'string'))
+        news = cellstr (new);
+      elseif (ischar (new) || iscellstr (new))
+        news = cellstr (string (new));
+      else
+        error (strcat ("string.replace: NEW must be a string array, a", ...
+                       " character vector, or a cell array of character", ...
+                       " vectors."));
+      endif
+
+      ## NEW must be a single substring or pair up with the OLD substrings
+      if (numel (news) == 1)
+        news = repmat (news, size (olds));
+      elseif (numel (news) != numel (olds))
+        error (strcat ("string.replace: NEW must be a single substring or", ...
+                       " the same size as OLD."));
+      endif
+
+      out = this;
+      if (numel (olds) == 1)
+        ## Single pattern: a vectorised strrep replaces every occurrence and
+        ## leaves missing elements (stored as '') untouched
+        out.strs = strrep (this.strs, olds{1}, news{1});
+      else
+        ## Multiple patterns are applied simultaneously, in one pass per element
+        cstr = this.strs;
+        for k = 1:numel (cstr)
+          if (this.isMissing(k))
+            continue;
+          endif
+          cstr{k} = replace_pairs (cstr{k}, olds, news);
+        endfor
+        out.strs = cstr;
       endif
     endfunction
 
@@ -3474,6 +3548,38 @@ function m = extract_matches (s, pats)
       i += 1;
     endif
   endwhile
+endfunction
+
+## Replace, in the character vector S, every occurrence of the OLDS substrings
+## with the corresponding NEWS substrings, in a single left to right pass.  At
+## each position the OLDS are tried in order and the first that matches is
+## replaced; the scan resumes past the inserted NEWS text, so replacements are
+## not re-scanned.  Unmatched runs are flushed in bulk to avoid quadratic growth.
+function s = replace_pairs (s, olds, news)
+  parts = {};
+  i = 1;
+  n = numel (s);
+  last = 1;                       # start of the current unmatched run
+  while (i <= n)
+    hit = 0;
+    for p = 1:numel (olds)
+      L = numel (olds{p});
+      if (L > 0 && i + L - 1 <= n && strncmp (s(i:i+L-1), olds{p}, L))
+        parts{end+1} = s(last:(i - 1));
+        parts{end+1} = news{p};
+        hit = L;
+        break;
+      endif
+    endfor
+    if (hit > 0)
+      i += hit;
+      last = i;
+    else
+      i += 1;
+    endif
+  endwhile
+  parts{end+1} = s(last:end);
+  s = [parts{:}];
 endfunction
 
 function out = cmp_uint32 (Acode, Bcode)

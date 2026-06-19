@@ -1140,3 +1140,42 @@
 %! ## insertBefore the emoji (position 4) lands on a character boundary
 %! assert_equal (insertBefore (s, 4, string ('X')), ...
 %!               append (string ('a'), euro, string ('bX'), emoji, string ('c')));
+
+## replace: replaces every occurrence of a single substring
+%!assert_equal (replace (string ('a-b-c'), '-', '_'), string ('a_b_c'))
+## replace: a substring that does not occur leaves the text unchanged
+%!assert_equal (replace (string ('abc'), 'z', 'Y'), string ('abc'))
+## replace: applied element-wise across an array, preserving its size
+%!assert_equal (replace (string ({'a.b', 'c.d'}), '.', '/'), ...
+%!              string ({'a/b', 'c/d'}))
+## replace: OLD/NEW size is independent of STR size
+%!assert_equal (replace (string ('a-b_c'), {'-', '_'}, '/'), string ('a/b/c'))
+## replace: a multi-element OLD pairs up with a same-size NEW
+%!assert_equal (replace (string ('a-b_c'), {'-', '_'}, {'+', '='}), ...
+%!              string ('a+b=c'))
+## replace: multiple patterns are applied simultaneously (a swap, not sequential)
+%!assert_equal (replace (string ('ab'), {'a', 'b'}, {'b', 'a'}), string ('ba'))
+## replace: at each position the OLD substrings are tried in order, first wins
+%!assert_equal (replace (string ('aaa'), {'aa', 'a'}, {'X', 'Y'}), string ('XY'))
+## replace: an empty OLD element matches nothing (single and multi-pattern)
+%!assert_equal (replace (string ('abc'), '', 'X'), string ('abc'))
+%!assert_equal (replace (string ('abc'), {'', 'b'}, {'X', 'Y'}), string ('aYc'))
+## replace: trailing whitespace is preserved in both OLD and NEW
+%!assert_equal (replace (string ('a b'), 'a ', 'Z'), string ('Zb'))
+%!assert_equal (replace (string ('ab'), 'a', 'X '), string ('X b'))
+## replace: accepts char vectors, cell arrays of char vectors, and string arrays
+%!assert_equal (replace (string ('a-b'), string ('-'), string ('_')), string ('a_b'))
+## replace: missing values are preserved and carry no text
+%!test
+%! str = replace (string ({'a-b', missing}), '-', '_');
+%! assert_equal (ismissing (str), [false, true]);
+%! assert_equal (cellstr (str), {'a_b', ''});
+## replace: error branches
+%!error <string.replace: not enough input arguments.> ...
+%! replace (string ('ab'), 'a')
+%!error <string.replace: OLD must be a string array, a character vector, or a cell array of character vectors.> ...
+%! replace (string ('ab'), {1, 2}, 'x')
+%!error <string.replace: NEW must be a string array, a character vector, or a cell array of character vectors.> ...
+%! replace (string ('ab'), 'a', {1, 2})
+%!error <string.replace: NEW must be a single substring or the same size as OLD.> ...
+%! replace (string ('ab'), {'a', 'b'}, {'1', '2', '3'})
