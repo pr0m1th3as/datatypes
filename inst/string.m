@@ -1625,10 +1625,6 @@ classdef string
       error ("string.sort: not implemented yet.");
     endfunction
 
-    function out = join (this, varargin)
-      error ("string.join: not implemented yet.");
-    endfunction
-
   endmethods
 
   methods (Access = public)
@@ -2980,6 +2976,147 @@ classdef string
     endfunction
 
     ## -*- texinfo -*-
+    ## @deftypefn  {string} {@var{newstr} =} join (@var{str})
+    ## @deftypefnx {string} {@var{newstr} =} join (@var{str}, @var{delimiter})
+    ## @deftypefnx {string} {@var{newstr} =} join (@var{str}, @var{dim})
+    ## @deftypefnx {string} {@var{newstr} =} join (@var{str}, @var{delimiter}, @var{dim})
+    ##
+    ## Combine string array elements.
+    ##
+    ## @code{@var{newstr} = join (@var{str})} combines the elements of @var{str}
+    ## along the last dimension whose size is not 1, placing a single space
+    ## between consecutive elements.  That dimension is reduced to size 1.
+    ##
+    ## @code{@var{newstr} = join (@var{str}, @var{delimiter})} uses
+    ## @var{delimiter} instead of a space.  @var{delimiter} can be a string
+    ## array, a character vector, or a cell array of character vectors.  A
+    ## scalar @var{delimiter} is placed between every pair of elements.  An
+    ## array @var{delimiter} supplies the text placed between consecutive
+    ## elements and must have one fewer element than @var{str} along the joined
+    ## dimension; its other dimensions must be 1 or match @var{str}.
+    ##
+    ## @code{@var{newstr} = join (@var{str}, @var{dim})} and
+    ## @code{@var{newstr} = join (@var{str}, @var{delimiter}, @var{dim})}
+    ## combine the elements along dimension @var{dim}.
+    ##
+    ## @var{newstr} has the size of @var{str} with the joined dimension reduced
+    ## to 1.  If any element being combined, or any delimiter placed between
+    ## them, is a missing value, the corresponding element of @var{newstr} is a
+    ## missing value.
+    ##
+    ## @end deftypefn
+    function newstr = join (this, varargin)
+      if (numel (varargin) > 2)
+        error ("string.join: too many input arguments.");
+      endif
+
+      istext = @(x) ischar (x) || iscellstr (x) || isa (x, 'string');
+      delim = [];
+      dim = [];
+      if (numel (varargin) == 1)
+        if (isnumeric (varargin{1}))
+          dim = varargin{1};
+        elseif (istext (varargin{1}))
+          delim = varargin{1};
+        else
+          error (strcat ("string.join: the second argument must be a", ...
+                         " delimiter or a dimension."));
+        endif
+      elseif (numel (varargin) == 2)
+        delim = varargin{1};
+        dim = varargin{2};
+        if (! istext (delim))
+          error (strcat ("string.join: DELIMITER must be a string array, a", ...
+                         " character vector, or a cell array of character", ...
+                         " vectors."));
+        endif
+      endif
+
+      sz = size (this.strs);
+      if (isempty (dim))
+        d = find (sz != 1, 1, 'last');
+        if (isempty (d))
+          dim = 2;
+        else
+          dim = d;
+        endif
+      elseif (! (isscalar (dim) && isreal (dim) && dim == fix (dim) ...
+                 && dim >= 1))
+        error ("string.join: DIM must be a positive integer scalar.");
+      endif
+
+      N = size (this.strs, dim);
+
+      ## Normalize the delimiter to a cell array DC + missing mask DM sized like
+      ## STR but with N-1 elements along DIM (broadcasting on the other dims)
+      tsz = sz;
+      tsz(dim) = max (N - 1, 0);
+      if (isempty (delim))
+        Dc = repmat ({' '}, tsz);
+        Dm = false (tsz);
+      else
+        if (isa (delim, 'string'))
+          dc0 = cellstr (delim);
+          dm0 = ismissing (delim);
+        else
+          dc0 = cellstr (string (delim));
+          dm0 = false (size (dc0));
+        endif
+        if (isscalar (dc0))
+          Dc = repmat (dc0, tsz);
+          Dm = repmat (dm0, tsz);
+        else
+          [Dc, Dm, ok] = join_bcast (dc0, dm0, tsz, dim);
+          if (! ok)
+            error (strcat ("string.join: DELIMITER must have one fewer", ...
+                           " element than STR along the joined dimension."));
+          endif
+        endif
+      endif
+
+      ## Permute the joined dimension to the front and join each column
+      nd = max (numel (sz), dim);
+      perm = [dim, setdiff(1:nd, dim)];
+      cperm = permute (this.strs, perm);
+      mperm = permute (this.isMissing, perm);
+      pszc = size (cperm);
+      R = prod (pszc(2:end));
+      C = reshape (cperm, N, R);
+      Mi = reshape (mperm, N, R);
+      D = reshape (permute (Dc, perm), max (N - 1, 0), R);
+      Dm = reshape (permute (Dm, perm), max (N - 1, 0), R);
+
+      outc = cell (1, R);
+      outm = false (1, R);
+      for r = 1:R
+        if (any (Mi(:,r)) || (N >= 2 && any (Dm(:,r))))
+          outm(r) = true;
+          outc{r} = '';
+        elseif (N == 0)
+          outc{r} = '';
+        else
+          pieces = cell (1, 2 * N - 1);
+          p = 0;
+          for j = 1:N
+            p += 1;
+            pieces{p} = C{j,r};
+            if (j < N)
+              p += 1;
+              pieces{p} = D{j,r};
+            endif
+          endfor
+          outc{r} = [pieces{:}];
+        endif
+      endfor
+
+      opsz = pszc;
+      opsz(1) = 1;
+      newstr = this;
+      newstr.strs = ipermute (reshape (outc, opsz), perm);
+      newstr.isMissing = ipermute (reshape (outm, opsz), perm);
+    endfunction
+
+    ## -*- texinfo -*-
     ## @deftypefn {string} {@var{newstr} =} plus (@var{str1}, @var{str2})
     ##
     ## Append strings.
@@ -4242,6 +4379,37 @@ function s = pad_one (s, N, side, padcp)
       rpad = total - lpad;
   endswitch
   s = cp2str ([repmat(padcp, 1, lpad), cp, repmat(padcp, 1, rpad)]);
+endfunction
+
+## Broadcast a non-scalar delimiter (cell array DC0 with missing mask DM0) to
+## the target size TSZ (the size of STR with N-1 elements along DIM).  The delim
+## must already have N-1 along DIM; other dimensions of size 1 are replicated to
+## match.  Returns the broadcast DC/DM and a logical OK (false on a size clash).
+function [Dc, Dm, ok] = join_bcast (dc0, dm0, tsz, dim)
+  Dc = {};
+  Dm = [];
+  ok = true;
+  nd = numel (tsz);
+  dsz = [size(dc0), ones(1, nd - ndims (dc0))];
+  if (dsz(dim) != tsz(dim))
+    ok = false;
+    return;
+  endif
+  reps = ones (1, nd);
+  for d = 1:nd
+    if (d == dim)
+      continue;
+    elseif (dsz(d) == tsz(d))
+      ## already matches
+    elseif (dsz(d) == 1)
+      reps(d) = tsz(d);
+    else
+      ok = false;
+      return;
+    endif
+  endfor
+  Dc = repmat (dc0, reps);
+  Dm = repmat (dm0, reps);
 endfunction
 
 function out = cmp_uint32 (Acode, Bcode)

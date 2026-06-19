@@ -1485,6 +1485,44 @@
 %!error <string.pad: PADCHAR must be a single character.> ...
 %! pad (string ('a'), 5, 'left', 'xy')
 
+## join: combines along the last non-singleton dimension with a space (verbatim)
+%!assert_equal (join (string ({'Carlos', 'Sada'; 'Ella', 'Olsen'; 'Diana', 'Lee'})), ...
+%!              string ({'Carlos Sada'; 'Ella Olsen'; 'Diana Lee'}))
+## join: a single custom delimiter is placed between all elements (verbatim)
+%!assert_equal (join (string ({'x', 'y', 'z'; 'a', 'b', 'c'}), '-'), ...
+%!              string ({'x-y-z'; 'a-b-c'}))
+## join: an array of delimiters goes between consecutive elements (verbatim)
+%!assert_equal (join (string ({'x', 'y', 'z'; 'a', 'b', 'c'}), ...
+%!                    string ({' + ', ' = '; ' - ', ' = '})), ...
+%!              string ({'x + y = z'; 'a - b = c'}))
+## join: DIM selects the joined dimension (verbatim example, dim 1)
+%!assert_equal (join (string ({'Carlos', 'Sada'; 'Ella', 'Olsen'; 'Diana', 'Lee'}), 1), ...
+%!              string ({'Carlos Ella Diana', 'Sada Olsen Lee'}))
+## join: a row or column vector collapses to a string scalar
+%!assert_equal (join (string ({'a', 'b', 'c'})), string ('a b c'))
+%!assert_equal (join (string ({'a'; 'b'; 'c'})), string ('a b c'))
+## join: a string scalar is returned unchanged
+%!assert_equal (join (string ('solo')), string ('solo'))
+## join: a delimiter and a dimension together
+%!assert_equal (join (string ({'a', 'b'; 'c', 'd'}), '-', 1), ...
+%!              string ({'a-c', 'b-d'}))
+## join: join is the inverse of split for a single delimiter
+%!assert_equal (join (split (string ('a-b-c'), '-'), '-'), string ('a-b-c'))
+## join: a missing element (or delimiter) propagates to the joined result
+%!test
+%! r = join (string ({'a', 'b'; 'c', missing}));
+%! assert_equal (ismissing (r), [false; true]);
+%! assert_equal (cellstr (r(1)), {'a b'});
+## join: error branches
+%!error <string.join: too many input arguments.> ...
+%! join (string ('a'), '-', 2, 3)
+%!error <string.join: the second argument must be a delimiter or a dimension.> ...
+%! join (string ('a'), {1, 2})
+%!error <string.join: DELIMITER must have one fewer element than STR along the joined dimension.> ...
+%! join (string ({'a', 'b'}), string ({'-', '-'}))
+%!error <string.join: DIM must be a positive integer scalar.> ...
+%! join (string ('a'), '-', 0)
+
 ## plus: appends STR2 to STR1, equivalent to the '+' operator
 %!assert_equal (string ('foo') + string ('bar'), string ('foobar'))
 %!assert_equal (plus (string ('foo'), string ('bar')), string ('foobar'))
