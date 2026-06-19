@@ -1941,9 +1941,6 @@ classdef string
     ## @var{str} and applied element-wise.  @var{newstr} is a string array of the
     ## same size as @var{str}.  Missing values in @var{str} are preserved.
     ##
-    ## Note: character positions are counted by bytes, so results for text with
-    ## multibyte characters may differ from MATLAB.
-    ##
     ## @end deftypefn
     function out = eraseBetween (this, start, stop, varargin)
       if (nargin < 3)
@@ -2033,9 +2030,6 @@ classdef string
     ## this syntax @var{newstr} has the same size as @var{str} and missing values
     ## are preserved.
     ##
-    ## Note: character positions are counted by bytes, so results for text with
-    ## multibyte characters may differ from MATLAB.
-    ##
     ## @end deftypefn
     function out = extract (this, pat)
       if (nargin < 2)
@@ -2061,11 +2055,11 @@ classdef string
           if (this.isMissing(k))
             continue;
           endif
-          s = cstr{k};
-          if (pos(k) > numel (s))
+          cp = str2cp (cstr{k});
+          if (pos(k) > numel (cp))
             error ("string.extract: POS exceeds the length of the string.");
           endif
-          cstr{k} = s(pos(k));
+          cstr{k} = cp2str (cp(pos(k)));
         endfor
         out.strs = cstr;
         return;
@@ -2131,8 +2125,7 @@ classdef string
     ## a positive integer that is either a scalar or the same size as @var{str}.
     ##
     ## @var{newstr} is a string array of the same size as @var{str}.  Missing
-    ## values in @var{str} are preserved.  Character positions are counted by
-    ## bytes, so results for multibyte characters may differ from MATLAB.
+    ## values in @var{str} are preserved.
     ##
     ## @end deftypefn
     function out = extractAfter (this, pat)
@@ -2166,8 +2159,7 @@ classdef string
     ## @var{str}.
     ##
     ## @var{newstr} is a string array of the same size as @var{str}.  Missing
-    ## values in @var{str} are preserved.  Character positions are counted by
-    ## bytes, so results for multibyte characters may differ from MATLAB.
+    ## values in @var{str} are preserved.
     ##
     ## @end deftypefn
     function out = extractBefore (this, pat)
@@ -2215,9 +2207,7 @@ classdef string
     ##
     ## @var{startPat}/@var{endPat} and @var{startPos}/@var{endPos} must either be
     ## scalars, applied to every element of @var{str}, or be of the same size as
-    ## @var{str}.  Missing values in @var{str} are preserved.  Character
-    ## positions are counted by bytes, so results for multibyte characters may
-    ## differ from MATLAB.
+    ## @var{str}.  Missing values in @var{str} are preserved.
     ##
     ## @end deftypefn
     function out = extractBetween (this, start, stop, varargin)
@@ -3045,15 +3035,17 @@ endfunction
 ## boundaries themselves are erased.
 function s = eb_between (s, a, b, isPos, inclusive)
   if (isPos)
-    n = numel (s);
+    cp = str2cp (s);
+    n = numel (cp);
     if (a != fix (a) || b != fix (b) || a < 1 || a > b || b > n)
       error ("string.eraseBetween: position indices out of range.");
     endif
     if (inclusive)
-      s(a:b) = [];
+      cp(a:b) = [];
     elseif (a + 1 <= b - 1)
-      s((a + 1):(b - 1)) = [];
+      cp((a + 1):(b - 1)) = [];
     endif
+    s = cp2str (cp);
   else
     if (isempty (a) || isempty (b))
       return;                       # an empty boundary matches nothing
@@ -3095,14 +3087,14 @@ function [cstr, isMiss] = extract_side (cstr, isMiss, pat, after, fcn)
       if (isMiss(k))
         continue;
       endif
-      s = cstr{k};
-      if (pos(k) > numel (s))
+      cp = str2cp (cstr{k});
+      if (pos(k) > numel (cp))
         error ("%s: POS exceeds the length of the string.", fcn);
       endif
       if (after)
-        cstr{k} = s((pos(k) + 1):end);
+        cstr{k} = cp2str (cp((pos(k) + 1):end));
       else
-        cstr{k} = s(1:(pos(k) - 1));
+        cstr{k} = cp2str (cp(1:(pos(k) - 1)));
       endif
     endfor
   else
@@ -3141,14 +3133,15 @@ endfunction
 ## Extract a single span of S between positions A and B.  INCLUSIVE selects
 ## whether the characters at A and B are kept.
 function s = eb_span (s, a, b, inclusive)
-  n = numel (s);
+  cp = str2cp (s);
+  n = numel (cp);
   if (a != fix (a) || b != fix (b) || a < 1 || a > b || b > n)
     error ("string.extractBetween: position indices out of range.");
   endif
   if (inclusive)
-    s = s(a:b);
+    s = cp2str (cp(a:b));
   elseif (a + 1 <= b - 1)
-    s = s((a + 1):(b - 1));
+    s = cp2str (cp((a + 1):(b - 1)));
   else
     s = '';
   endif
@@ -3185,6 +3178,20 @@ function m = extract_between_matches (s, sp, ep, inclusive)
     endif
     i = ei + numel (ep);                  # resume past the END match
   endwhile
+endfunction
+
+## Convert a character vector to/from a row of Unicode code points (uint32), so
+## that character positions index whole characters rather than UTF-8 bytes.
+function cp = str2cp (s)
+  cp = typecast (unicode2native (s, 'UTF-32LE'), 'uint32');
+endfunction
+
+function s = cp2str (cp)
+  if (isempty (cp))
+    s = '';
+  else
+    s = native2unicode (typecast (uint32 (cp), 'uint8'), 'UTF-32LE');
+  endif
 endfunction
 
 ## Convert a text argument (string array, char, or cell array of char vectors)
