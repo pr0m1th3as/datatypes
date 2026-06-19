@@ -1620,14 +1620,6 @@ classdef string
 
   methods (Hidden)
 
-    function out = insertAfter (this, pat, new)
-      error ("string.insertAfter: not implemented yet.");
-    endfunction
-
-    function out = insertBefore (this, pat, new)
-      error ("string.insertBefore: not implemented yet.");
-    endfunction
-
     function out = replace (this, pat, new)
       error ("string.replace: not implemented yet.");
     endfunction
@@ -1892,8 +1884,12 @@ classdef string
     ##
     ## @end deftypefn
     function out = erase (this, match)
-      if (isa (match, 'string') || iscellstr (match) || ischar (match))
-        pats = text2cellstr (match);
+      if (isa (match, 'string'))
+        pats = cellstr (match);
+      elseif (ischar (match) || iscellstr (match))
+        ## Route char/cellstr through the constructor, which keeps trailing
+        ## whitespace that bare 'cellstr' would deblank
+        pats = cellstr (string (match));
       else
         error (strcat ("string.erase: MATCH must be a string array, a", ...
                        " character vector, or a cell array of character", ...
@@ -1975,16 +1971,32 @@ classdef string
       endif
       inclusive = strcmpi (bounds, 'inclusive');
 
-      ## Normalize text boundaries to cell arrays of character vectors
+      ## Normalize text boundaries to cell arrays of character vectors.  Route
+      ## char/cellstr through the constructor, which keeps trailing whitespace
+      ## that bare 'cellstr' would deblank.
       if (! posMode)
-        start = text2cellstr (start);
-        stop = text2cellstr (stop);
+        if (isa (start, 'string'))
+          start = cellstr (start);
+        else
+          start = cellstr (string (start));
+        endif
+        if (isa (stop, 'string'))
+          stop = cellstr (stop);
+        else
+          stop = cellstr (string (stop));
+        endif
       endif
 
       ## Broadcast scalar boundaries; otherwise sizes must match STR
       sz = size (this.strs);
-      start = eb_expand (start, sz, 'string.eraseBetween', 'START');
-      stop = eb_expand (stop, sz, 'string.eraseBetween', 'STOP');
+      [start, errmsg] = eb_expand (start, sz, 'START');
+      if (! isempty (errmsg))
+        error ("string.eraseBetween: %s", errmsg);
+      endif
+      [stop, errmsg] = eb_expand (stop, sz, 'STOP');
+      if (! isempty (errmsg))
+        error ("string.eraseBetween: %s", errmsg);
+      endif
 
       out = this;
       cstr = this.strs;
@@ -2066,8 +2078,12 @@ classdef string
       endif
 
       ## Text pattern form
-      if (isa (pat, 'string') || iscellstr (pat) || ischar (pat))
-        pats = text2cellstr (pat);
+      if (isa (pat, 'string'))
+        pats = cellstr (pat);
+      elseif (ischar (pat) || iscellstr (pat))
+        ## Route char/cellstr through the constructor, which keeps trailing
+        ## whitespace that bare 'cellstr' would deblank
+        pats = cellstr (string (pat));
       else
         error (strcat ("string.extract: PAT must be a string array, a", ...
                        " character vector, or a cell array of character", ...
@@ -2132,9 +2148,10 @@ classdef string
       if (nargin < 2)
         error ("string.extractAfter: not enough input arguments.");
       endif
-      out = this;
-      [out.strs, out.isMissing] = extract_side (this.strs, this.isMissing, ...
-                                                pat, true, 'string.extractAfter');
+      [out, errmsg] = extract_side (this, pat, true);
+      if (! isempty (errmsg))
+        error ("string.extractAfter: %s", errmsg);
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -2166,9 +2183,10 @@ classdef string
       if (nargin < 2)
         error ("string.extractBefore: not enough input arguments.");
       endif
-      out = this;
-      [out.strs, out.isMissing] = extract_side (this.strs, this.isMissing, ...
-                                                pat, false, 'string.extractBefore');
+      [out, errmsg] = extract_side (this, pat, false);
+      if (! isempty (errmsg))
+        error ("string.extractBefore: %s", errmsg);
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -2245,8 +2263,14 @@ classdef string
       ne = numel (this.strs);
 
       if (posMode)
-        start = eb_expand (start, sz, 'string.extractBetween', 'START');
-        stop = eb_expand (stop, sz, 'string.extractBetween', 'STOP');
+        [start, errmsg] = eb_expand (start, sz, 'START');
+        if (! isempty (errmsg))
+          error ("string.extractBetween: %s", errmsg);
+        endif
+        [stop, errmsg] = eb_expand (stop, sz, 'STOP');
+        if (! isempty (errmsg))
+          error ("string.extractBetween: %s", errmsg);
+        endif
         ## One span per element, so the output matches the size of STR
         out = this;
         cstr = this.strs;
@@ -2260,11 +2284,27 @@ classdef string
         return;
       endif
 
-      ## Pattern mode: each element may contribute several substrings
-      start = text2cellstr (start);
-      stop = text2cellstr (stop);
-      start = eb_expand (start, sz, 'string.extractBetween', 'START');
-      stop = eb_expand (stop, sz, 'string.extractBetween', 'STOP');
+      ## Pattern mode: each element may contribute several substrings.  Route
+      ## char/cellstr through the constructor, which keeps trailing whitespace
+      ## that bare 'cellstr' would deblank.
+      if (isa (start, 'string'))
+        start = cellstr (start);
+      else
+        start = cellstr (string (start));
+      endif
+      if (isa (stop, 'string'))
+        stop = cellstr (stop);
+      else
+        stop = cellstr (string (stop));
+      endif
+      [start, errmsg] = eb_expand (start, sz, 'START');
+      if (! isempty (errmsg))
+        error ("string.extractBetween: %s", errmsg);
+      endif
+      [stop, errmsg] = eb_expand (stop, sz, 'STOP');
+      if (! isempty (errmsg))
+        error ("string.extractBetween: %s", errmsg);
+      endif
 
       matches = cell (ne, 1);
       counts = zeros (ne, 1);
@@ -2290,6 +2330,84 @@ classdef string
         outc(e,:) = matches{e};
       endfor
       out = string (outc);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {string} {@var{newstr} =} insertAfter (@var{str}, @var{pat}, @var{newtext})
+    ## @deftypefnx {string} {@var{newstr} =} insertAfter (@var{str}, @var{pos}, @var{newtext})
+    ##
+    ## Insert text after a pattern or position.
+    ##
+    ## @code{@var{newstr} = insertAfter (@var{str}, @var{pat}, @var{newtext})}
+    ## inserts the text @var{newtext} into each element of @var{str} after every
+    ## non-overlapping occurrence of the substring @var{pat}.  @var{pat} can be a
+    ## string array, a character vector, or a cell array of character vectors,
+    ## and must either be a scalar, applied to every element of @var{str}, or be
+    ## of the same size as @var{str} and applied element-wise.  If @var{pat} is
+    ## not found in an element, that element is returned unchanged.
+    ##
+    ## @code{@var{newstr} = insertAfter (@var{str}, @var{pos}, @var{newtext})}
+    ## inserts @var{newtext} after the character position @var{pos}, that is,
+    ## between the characters at positions @var{pos} and @code{@var{pos}+1}.
+    ## @var{pos} must be a positive integer not exceeding the length of the
+    ## corresponding element of @var{str}, and must be either a scalar or the
+    ## same size as @var{str}.
+    ##
+    ## @var{newtext} can be a string array, a character vector, or a cell array
+    ## of character vectors, and must be either a scalar, inserted at every
+    ## position, or of the same size as @var{str}.  @var{newstr} is a string
+    ## array of the same size as @var{str}.  Missing values in @var{str} are
+    ## preserved, and a missing value in @var{newtext} makes the corresponding
+    ## element of @var{newstr} missing.
+    ##
+    ## @end deftypefn
+    function out = insertAfter (this, pat, new)
+      if (nargin < 3)
+        error ("string.insertAfter: not enough input arguments.");
+      endif
+      [out, errmsg] = insert_side (this, pat, new, true);
+      if (! isempty (errmsg))
+        error ("string.insertAfter: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {string} {@var{newstr} =} insertBefore (@var{str}, @var{pat}, @var{newtext})
+    ## @deftypefnx {string} {@var{newstr} =} insertBefore (@var{str}, @var{pos}, @var{newtext})
+    ##
+    ## Insert text before a pattern or position.
+    ##
+    ## @code{@var{newstr} = insertBefore (@var{str}, @var{pat}, @var{newtext})}
+    ## inserts the text @var{newtext} into each element of @var{str} before every
+    ## non-overlapping occurrence of the substring @var{pat}.  @var{pat} can be a
+    ## string array, a character vector, or a cell array of character vectors,
+    ## and must either be a scalar, applied to every element of @var{str}, or be
+    ## of the same size as @var{str} and applied element-wise.  If @var{pat} is
+    ## not found in an element, that element is returned unchanged.
+    ##
+    ## @code{@var{newstr} = insertBefore (@var{str}, @var{pos}, @var{newtext})}
+    ## inserts @var{newtext} before the character position @var{pos}, that is,
+    ## between the characters at positions @code{@var{pos}-1} and @var{pos}.
+    ## @var{pos} must be a positive integer not exceeding the length of the
+    ## corresponding element of @var{str}, and must be either a scalar or the
+    ## same size as @var{str}.
+    ##
+    ## @var{newtext} can be a string array, a character vector, or a cell array
+    ## of character vectors, and must be either a scalar, inserted at every
+    ## position, or of the same size as @var{str}.  @var{newstr} is a string
+    ## array of the same size as @var{str}.  Missing values in @var{str} are
+    ## preserved, and a missing value in @var{newtext} makes the corresponding
+    ## element of @var{newstr} missing.
+    ##
+    ## @end deftypefn
+    function out = insertBefore (this, pat, new)
+      if (nargin < 3)
+        error ("string.insertBefore: not enough input arguments.");
+      endif
+      [out, errmsg] = insert_side (this, pat, new, false);
+      if (! isempty (errmsg))
+        error ("string.insertBefore: %s", errmsg);
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -3014,18 +3132,188 @@ classdef string
       this.isMissing = this.isMissing(varargin{:});
     endfunction
 
+    ## Shared implementation of extractAfter (AFTER true) and extractBefore
+    ## (AFTER false).  PAT may be numeric positions or text boundaries; an
+    ## unmatched text boundary yields a missing value.  On invalid input returns
+    ## a non-empty ERRMSG describing the fault, leaving OUT unchanged, so the
+    ## calling method can emit the error under its own name.
+    function [out, errmsg] = extract_side (this, pat, after)
+      out = this;
+      errmsg = '';
+      cstr = this.strs;
+      isMiss = this.isMissing;
+      sz = size (cstr);
+
+      if (isnumeric (pat))
+        [pos, errmsg] = eb_expand (pat, sz, 'POS');
+        if (! isempty (errmsg))
+          return;
+        endif
+        if (any (pos(:) != fix (pos(:))) || any (pos(:) < 1))
+          errmsg = "POS must be a positive integer.";
+          return;
+        endif
+        for k = 1:numel (cstr)
+          if (isMiss(k))
+            continue;
+          endif
+          cp = str2cp (cstr{k});
+          if (pos(k) > numel (cp))
+            errmsg = "POS exceeds the length of the string.";
+            return;
+          endif
+          if (after)
+            cstr{k} = cp2str (cp((pos(k) + 1):end));
+          else
+            cstr{k} = cp2str (cp(1:(pos(k) - 1)));
+          endif
+        endfor
+      else
+        if (isa (pat, 'string'))
+          pat = cellstr (pat);
+        elseif (ischar (pat) || iscellstr (pat))
+          ## Route char/cellstr through the constructor, which keeps trailing
+          ## whitespace that bare 'cellstr' would deblank
+          pat = cellstr (string (pat));
+        else
+          errmsg = strcat ("PAT must be a string array, a character", ...
+                           " vector, or a cell array of character vectors.");
+          return;
+        endif
+        [pat, errmsg] = eb_expand (pat, sz, 'PAT');
+        if (! isempty (errmsg))
+          return;
+        endif
+        for k = 1:numel (cstr)
+          if (isMiss(k))
+            continue;
+          endif
+          s = cstr{k};
+          p = pat{k};
+          i = [];
+          if (! isempty (p))
+            i = strfind (s, p);
+          endif
+          if (isempty (i))
+            cstr{k} = '';            # PAT not found -> missing
+            isMiss(k) = true;
+            continue;
+          endif
+          i = i(1);
+          if (after)
+            cstr{k} = s((i + numel (p)):end);
+          else
+            cstr{k} = s(1:(i - 1));
+          endif
+        endfor
+      endif
+
+      out.strs = cstr;
+      out.isMissing = isMiss;
+    endfunction
+
+    ## Shared implementation of insertAfter (AFTER true) and insertBefore
+    ## (AFTER false).  PAT may be numeric positions or text boundaries; text
+    ## boundaries are matched at every non-overlapping occurrence (an unmatched
+    ## boundary leaves the element unchanged).  NEW is the text to insert,
+    ## scalar or the same size as STR; a missing NEW makes the corresponding
+    ## element missing.  On invalid input returns a non-empty ERRMSG, leaving
+    ## OUT unchanged, so the calling method can emit the error under its own name.
+    function [out, errmsg] = insert_side (this, pat, new, after)
+      out = this;
+      cstr = this.strs;
+      isMiss = this.isMissing;
+      sz = size (cstr);
+      [newc, newMiss, errmsg] = norm_new (new, sz);
+      if (! isempty (errmsg))
+        return;
+      endif
+
+      if (isnumeric (pat))
+        [pos, errmsg] = eb_expand (pat, sz, 'POS');
+        if (! isempty (errmsg))
+          return;
+        endif
+        if (any (pos(:) != fix (pos(:))) || any (pos(:) < 1))
+          errmsg = "POS must be a positive integer.";
+          return;
+        endif
+        for k = 1:numel (cstr)
+          if (isMiss(k))
+            continue;
+          endif
+          if (newMiss(k))
+            cstr{k} = '';
+            isMiss(k) = true;
+            continue;
+          endif
+          cp = str2cp (cstr{k});
+          if (pos(k) > numel (cp))
+            errmsg = "POS exceeds the length of the string.";
+            return;
+          endif
+          ncp = str2cp (newc{k});
+          if (after)
+            cstr{k} = cp2str ([cp(1:pos(k)), ncp, cp((pos(k) + 1):end)]);
+          else
+            cstr{k} = cp2str ([cp(1:(pos(k) - 1)), ncp, cp(pos(k):end)]);
+          endif
+        endfor
+      else
+        if (isa (pat, 'string'))
+          pat = cellstr (pat);
+        elseif (ischar (pat) || iscellstr (pat))
+          ## Route char/cellstr through the constructor, which keeps trailing
+          ## whitespace that bare 'cellstr' would deblank
+          pat = cellstr (string (pat));
+        else
+          errmsg = strcat ("PAT must be a string array, a character", ...
+                           " vector, or a cell array of character vectors.");
+          return;
+        endif
+        [pat, errmsg] = eb_expand (pat, sz, 'PAT');
+        if (! isempty (errmsg))
+          return;
+        endif
+        for k = 1:numel (cstr)
+          if (isMiss(k))
+            continue;
+          endif
+          if (newMiss(k))
+            cstr{k} = '';
+            isMiss(k) = true;
+            continue;
+          endif
+          p = pat{k};
+          if (isempty (p))
+            continue;                # an empty boundary matches nothing
+          endif
+          if (after)
+            cstr{k} = strrep (cstr{k}, p, [p, newc{k}]);
+          else
+            cstr{k} = strrep (cstr{k}, p, [newc{k}, p]);
+          endif
+        endfor
+      endif
+
+      out.strs = cstr;
+      out.isMissing = isMiss;
+    endfunction
+
   endmethods
 
 endclassdef
 
 ## Broadcast a scalar boundary argument to the size of STR, or verify that it
 ## already matches.  Works for both numeric arrays and cell arrays of patterns.
-## FCN is the calling method name, used to prefix the error message.
-function arg = eb_expand (arg, sz, fcn, name)
+## On a size mismatch returns a non-empty ERRMSG naming the offending argument;
+## the calling method emits the error under its own name.
+function [arg, errmsg] = eb_expand (arg, sz, name)
+  errmsg = '';
   if (numel (arg) == 1)
     arg = repmat (arg, sz);
   elseif (! isequal (size (arg), sz))
-    error ("%s: %s must be scalar or the same size as STR.", fcn, name);
+    errmsg = sprintf ("%s must be scalar or the same size as STR.", name);
   endif
 endfunction
 
@@ -3070,64 +3358,33 @@ function s = eb_between (s, a, b, isPos, inclusive)
   endif
 endfunction
 
-## Shared implementation of extractAfter (AFTER true) and extractBefore (AFTER
-## false).  Operates on the raw CSTR/ISMISS arrays (local functions cannot set
-## the class's private properties) and returns the updated arrays.  PAT may be
-## numeric positions or text boundaries; an unmatched text boundary yields a
-## missing value.  FCN is the calling method name.
-function [cstr, isMiss] = extract_side (cstr, isMiss, pat, after, fcn)
-  sz = size (cstr);
-
-  if (isnumeric (pat))
-    pos = eb_expand (pat, sz, fcn, 'POS');
-    if (any (pos(:) != fix (pos(:))) || any (pos(:) < 1))
-      error ("%s: POS must be a positive integer.", fcn);
-    endif
-    for k = 1:numel (cstr)
-      if (isMiss(k))
-        continue;
-      endif
-      cp = str2cp (cstr{k});
-      if (pos(k) > numel (cp))
-        error ("%s: POS exceeds the length of the string.", fcn);
-      endif
-      if (after)
-        cstr{k} = cp2str (cp((pos(k) + 1):end));
-      else
-        cstr{k} = cp2str (cp(1:(pos(k) - 1)));
-      endif
-    endfor
+## Normalize the inserted-text argument NEW to a cell array of character vectors
+## NEWC plus a logical missing mask NEWMISS, each broadcast to the size SZ of
+## STR.  Mirrors the boundary-broadcasting rules of the insert/extract family.
+## On invalid input returns a non-empty ERRMSG; the calling method emits the
+## error under its own name.
+function [newc, newMiss, errmsg] = norm_new (new, sz)
+  newc = {};
+  newMiss = [];
+  errmsg = '';
+  if (isa (new, 'string'))
+    newc = cellstr (new);
+    newMiss = ismissing (new);
+  elseif (ischar (new) || iscellstr (new))
+    ## Route char/cellstr through the constructor, which keeps trailing
+    ## whitespace that bare 'cellstr' would deblank
+    newc = cellstr (string (new));
+    newMiss = false (size (newc));
   else
-    if (isa (pat, 'string') || ischar (pat) || iscellstr (pat))
-      pat = text2cellstr (pat);
-    else
-      error (strcat (fcn, ": PAT must be a string array, a character", ...
-                     " vector, or a cell array of character vectors."));
-    endif
-    pat = eb_expand (pat, sz, fcn, 'PAT');
-    for k = 1:numel (cstr)
-      if (isMiss(k))
-        continue;
-      endif
-      s = cstr{k};
-      p = pat{k};
-      i = [];
-      if (! isempty (p))
-        i = strfind (s, p);
-      endif
-      if (isempty (i))
-        cstr{k} = '';            # PAT not found -> missing
-        isMiss(k) = true;
-        continue;
-      endif
-      i = i(1);
-      if (after)
-        cstr{k} = s((i + numel (p)):end);
-      else
-        cstr{k} = s(1:(i - 1));
-      endif
-    endfor
+    errmsg = strcat ("NEW must be a string array, a character", ...
+                     " vector, or a cell array of character vectors.");
+    return;
   endif
+  [newc, errmsg] = eb_expand (newc, sz, 'NEW');
+  if (! isempty (errmsg))
+    return;
+  endif
+  newMiss = eb_expand (newMiss, sz, 'NEW');
 endfunction
 
 ## Extract a single span of S between positions A and B.  INCLUSIVE selects
@@ -3191,18 +3448,6 @@ function s = cp2str (cp)
     s = '';
   else
     s = native2unicode (typecast (uint32 (cp), 'uint8'), 'UTF-32LE');
-  endif
-endfunction
-
-## Convert a text argument (string array, char, or cell array of char vectors)
-## to a cell array of character vectors, preserving trailing whitespace.  Bare
-## 'cellstr' on a char vector deblanks it, so route char/cellstr through the
-## 'string' constructor, which keeps trailing whitespace.
-function c = text2cellstr (x)
-  if (isa (x, 'string'))
-    c = cellstr (x);
-  else
-    c = cellstr (string (x));
   endif
 endfunction
 
