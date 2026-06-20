@@ -627,7 +627,7 @@ classdef string
 ## 'contains'         'endsWith'         'startsWith'       'matches'         ##
 ## 'iscolumn'         'isempty'          'ismatrix'         'ismember'        ##
 ## 'ismissing'        'isrow'            'isscalar'         'issorted'        ##
-## 'isstring'         'isvector'                                              ##
+## 'issortedrows'     'isstring'         'isvector'                           ##
 ##                                                                            ##
 ################################################################################
 
@@ -1055,6 +1055,363 @@ classdef string
     ## @end deftypefn
     function TF = isscalar (this)
       TF = isscalar (this.isMissing);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {string} {@var{TF} =} issorted (@var{str})
+    ## @deftypefnx {string} {@var{TF} =} issorted (@var{str}, @var{dim})
+    ## @deftypefnx {string} {@var{TF} =} issorted (@var{str}, @var{direction})
+    ## @deftypefnx {string} {@var{TF} =} issorted (@var{str}, @var{dim}, @var{direction})
+    ## @deftypefnx {string} {@var{TF} =} issorted (@dots{}, @qcode{'MissingPlacement'}, @var{MP})
+    ##
+    ## Return true if string array is sorted.
+    ##
+    ## @code{@var{TF} = issorted (@var{str})} returns a logical scalar @var{TF},
+    ## which is @qcode{true}, if the string array @var{str} is sorted in
+    ## ascending order, and @qcode{false} otherwise.
+    ##
+    ## @code{@var{TF} = issorted (@var{str}, @var{dim})} returns a logical
+    ## scalar @var{TF}, which is @qcode{true}, if the string array @var{str}
+    ## is sorted in ascending order along the dimension @var{dim}, and
+    ## @qcode{false} otherwise.
+    ##
+    ## @code{@var{TF} = issorted (@var{str}, @var{direction})} returns a logical
+    ## scalar @var{TF}, which is @qcode{true}, if the string array @var{str} is
+    ## sorted in the direction specified by @var{direction}, and @qcode{false}
+    ## otherwise.  @var{direction} can be any of the following options:
+    ##
+    ## @itemize
+    ## @item @qcode{'ascend'}, which is the default, checks if elements are in
+    ## ascending order.
+    ## @item @qcode{'descend'} checks if elements are in descending order.
+    ## @item @qcode{'monotonic'} checks if elements are either in ascending or
+    ## descending order.
+    ## @item @qcode{'strictascend'} checks if elements are in ascending order
+    ## and there are no duplicate or missing elements.
+    ## @item @qcode{'strictdescend'} checks if elements are in descending order
+    ## and there are no duplicate or missing elements.
+    ## @item @qcode{'strictmonotonic'} checks if elements are either in
+    ## ascending or descending order and there are no duplicate or missing
+    ## elements.
+    ## @end itemize
+    ##
+    ## @code{@var{TF} = issorted (@dots{}, @qcode{'MissingPlacement'},
+    ## @var{MP})} specifies where missing elements (@qcode{<missing>}) are
+    ## placed with one of the following options specified in @var{MP}:
+    ##
+    ## @itemize
+    ## @item @qcode{'auto'}, which is the default, places missing elements last
+    ## for ascending sort and first for descending sort.
+    ## @item @qcode{'first'} places missing elements first.
+    ## @item @qcode{'last'} places missing elements last.
+    ## @end itemize
+    ##
+    ## @end deftypefn
+    function TF = issorted (this, varargin)
+      ## Single input argument
+      if (nargin == 1)
+        TF = isequaln (this, sort (this));
+        return;
+      endif
+
+      ## Get operating dimension
+      cid = cellfun (@isnumeric, varargin);
+      if (any (cid))
+        dim = varargin{cid};
+      else
+        sz = size (this);
+        dim = find (sz != 1, 1);
+        if (isempty (dim)) # scalar
+          dim = 1;
+        endif
+      endif
+
+      ## Parse and validate optional 'MissingPlacement' paired argument
+      optNames = {'MissingPlacement'};
+      dfValues = {'auto'};
+      [MP, args] = parsePairedArguments (optNames, dfValues, varargin(:));
+      if (! ismember (MP, {'auto', 'first', 'last'}))
+        error ("string.issorted: invalid value for 'MissingPlacement'.");
+      endif
+
+      ## Force strings to character vectors
+      [args{:}] = convertStringsToChars (args{:});
+
+      ## Get direction
+      cid = cellfun (@(x) ischar (x), args);
+      if (any (cid))
+        direction = args{cid};
+        ## Check for type of direction
+        valid_direction = {'ascend', 'descend', 'monotonic', 'strictascend', ...
+                           'strictdescend', 'strictmonotonic'};
+        if (! ismember (direction, valid_direction))
+          error ("string.issorted: invalid DIRECTION value.");
+        endif
+        switch (direction)
+          case {'ascend', 'descend'}
+            TF = isequaln (this, sort (this, args{:}, 'MissingPlacement', MP));
+
+          case {'strictascend', 'strictdescend'}
+            ## Check for missing values first (fast)
+            if (any (this.isMissing, 'all'))
+              TF = false;
+              return;
+            endif
+            args{cid} = strrep (direction, 'strict', '');
+            sorted = sort (this, args{:}, 'MissingPlacement', MP);
+            ## Detect duplicate adjacent elements through a numeric rank proxy
+            ## (unique ranks preserve order); equal strings share a rank.
+            [~, ~, ic] = unique (sorted.strs);
+            ranks = reshape (ic, size (sorted));
+            if (any (diff (ranks, 1, dim) == 0, 'all'))
+              TF = false;
+              return;
+            endif
+            TF = isequal (this, sorted);
+
+          case 'monotonic'
+            ## Check for either ascending or descending
+            args{cid} = 'ascend';
+            TF = isequaln (this, sort (this, args{:}, 'MissingPlacement', MP));
+            if (TF)
+              return;
+            endif
+            args{cid} = 'descend';
+            TF = isequaln (this, sort (this, args{:}, 'MissingPlacement', MP));
+
+          case 'strictmonotonic'
+            ## Check missing values first (fast)
+            if (any (this.isMissing, 'all'))
+              TF = false;
+              return;
+            endif
+            ## Check for either ascending or descending
+            args{cid} = 'ascend';
+            sorted = sort (this, args{:}, 'MissingPlacement', MP);
+            [~, ~, ic] = unique (sorted.strs);
+            ranks = reshape (ic, size (sorted));
+            if (any (diff (ranks, 1, dim) == 0, 'all'))
+              TF = false;
+              return;
+            endif
+            TF = isequal (this, sorted);
+            if (TF)
+              return;
+            endif
+            args{cid} = 'descend';
+            sorted = sort (this, args{:}, 'MissingPlacement', MP);
+            [~, ~, ic] = unique (sorted.strs);
+            ranks = reshape (ic, size (sorted));
+            if (any (diff (ranks, 1, dim) == 0, 'all'))
+              TF = false;
+              return;
+            endif
+            TF = isequal (this, sorted);
+        endswitch
+      else
+        ## No DIRECTION input argument
+        TF = isequaln (this, sort (this, args{:}, 'MissingPlacement', MP));
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {string} {@var{TF} =} issortedrows (@var{str})
+    ## @deftypefnx {string} {@var{TF} =} issortedrows (@var{str}, @var{col})
+    ## @deftypefnx {string} {@var{TF} =} issortedrows (@var{str}, @var{direction})
+    ## @deftypefnx {string} {@var{TF} =} issortedrows (@var{str}, @var{col}, @var{direction})
+    ## @deftypefnx {string} {@var{TF} =} issortedrows (@dots{}, @qcode{'MissingPlacement'}, @var{MP})
+    ##
+    ## Return true if string matrix rows are sorted.
+    ##
+    ## @code{@var{TF} = issortedrows (@var{str})} returns a logical scalar
+    ## @var{TF}, which is @qcode{true}, if the rows in the 2-D string array
+    ## @var{str} are sorted in ascending order, and @qcode{false} otherwise.
+    ##
+    ## @code{@var{TF} = issortedrows (@var{str}, @var{col})} returns a logical
+    ## scalar @var{TF}, which is @qcode{true}, if the string array @var{str} is
+    ## sorted according to the columns specified by the vector @var{col}, and
+    ## @qcode{false} otherwise.  @var{col} must explicitly contain non-zero
+    ## integers whose absolute values index existing columns in @var{str}.
+    ## Positive elements sort the corresponding columns in ascending order,
+    ## while negative elements sort the corresponding columns in descending
+    ## order.
+    ##
+    ## @code{@var{TF} = issortedrows (@var{str}, @var{direction})} checks if the
+    ## rows in @var{str} are sorted according to the specified direction, which
+    ## can be one of the following options:
+    ##
+    ## @itemize
+    ## @item @qcode{'ascend'}, which is the default, checks if elements are in
+    ## ascending order.
+    ## @item @qcode{'descend'} checks if elements are in descending order.
+    ## @item @qcode{'monotonic'} checks if elements are either in ascending or
+    ## descending order.
+    ## @item @qcode{'strictascend'} checks if elements are in ascending order
+    ## and there are no duplicate or missing elements.
+    ## @item @qcode{'strictdescend'} checks if elements are in descending order
+    ## and there are no duplicate or missing elements.
+    ## @item @qcode{'strictmonotonic'} checks if elements are either in
+    ## ascending or descending order and there are no duplicate or missing
+    ## elements.
+    ## @end itemize
+    ##
+    ## Alternatively, @var{direction} can be a cell array of character vectors
+    ## specifying the sorting direction for each individual column of @var{str},
+    ## in which case the number of elements in @var{direction} must equal the
+    ## number of columns in @var{str}.
+    ##
+    ## @code{@var{TF} = issortedrows (@var{str}, @var{col}, @var{direction})}
+    ## checks if the rows in the string array @var{str} are sorted according to
+    ## the columns specified in @var{col} using the corresponding sorting
+    ## direction specified in @var{direction}.  In this case, the sign of the
+    ## values in @var{col} is ignored.  @var{col} and @var{direction} must have
+    ## the same length, but not necessarily the same number of elements as the
+    ## columns in @var{str}.
+    ##
+    ## @code{@var{TF} = issortedrows (@dots{}, @qcode{'MissingPlacement'},
+    ## @var{MP})} specifies where missing elements (@qcode{<missing>}) are
+    ## placed with one of the following options specified in @var{MP}:
+    ##
+    ## @itemize
+    ## @item @qcode{'auto'}, which is the default, places missing elements last
+    ## for ascending sort and first for descending sort.
+    ## @item @qcode{'first'} places missing elements first.
+    ## @item @qcode{'last'} places missing elements last.
+    ## @end itemize
+    ##
+    ## @end deftypefn
+    function TF = issortedrows (this, varargin)
+      ## Single input argument
+      if (nargin == 1)
+        TF = isequaln (this, sortrows (this));
+        return;
+      endif
+
+      ## Force strings to character vectors or cell arrays of character vectors
+      [varargin{:}] = convertStringsToChars (varargin{:});
+
+      ## Get valid direction(s) from input argument list
+      valid = {'ascend', 'descend', 'monotonic', 'strictascend', ...
+               'strictdescend', 'strictmonotonic'};
+      fcn = @(x) (ischar (x) && ismember (x, valid)) || iscellstr (x);
+      cid = cellfun (fcn, varargin);
+      if (! any (cid))
+        ## No DIRECTION input argument
+        TF = isequaln (this, sortrows (this, varargin{:}));
+        return;
+      endif
+
+      direction = cellstr (varargin{cid});
+
+      ## Check for valid type of directions in cellstring
+      if (! all (cellfun (@(x) ismember (x, valid), direction)))
+        error ("string.issortedrows: invalid DIRECTION value.");
+      endif
+
+      ## Handle purely non-strict directions (ascend/descend)
+      if (all (cellfun (@(x) ismember (x, {'ascend', 'descend'}), direction)))
+        TF = isequaln (this, sortrows (this, varargin{:}));
+        return;
+      endif
+
+      ## ... and the simple set including 'monotonic' but no strict modes
+      simple_types = {'ascend', 'descend', 'monotonic'};
+      if (all (cellfun (@(x) ismember (x, simple_types), direction)))
+        idx = strcmp (direction, 'monotonic');
+        direction(idx) = {'ascend'};
+        varargin{cid} = direction;
+        TF = isequaln (this, sortrows (this, varargin{:}));
+        if (TF)
+          return;
+        endif
+        direction(idx) = {'descend'};
+        varargin{cid} = direction;
+        TF = isequaln (this, sortrows (this, varargin{:}));
+        return;
+      endif
+
+      ## Handle strict modes.  Determine the sort-key column order and the
+      ## sort position holding the first strict direction, then derive the
+      ## prefix (the columns sorted up to and including that position, on
+      ## which the duplicate test operates) and the binding strict column
+      ## (the single column on which the missing test operates).  A missing
+      ## value in the binding column, or two consecutive sorted rows equal
+      ## across the prefix columns, rules out a strict ordering; strict
+      ## positions after the first are subsumed by it.
+      strict_types = {'strictascend', 'strictdescend', 'strictmonotonic'};
+      sflag = cellfun (@(x) ismember (x, strict_types), direction);
+
+      nc = size (this, 2);
+      nummask = cellfun (@isnumeric, varargin);
+      if (any (nummask))
+        col = varargin{nummask};
+        ocols = abs (col(:)');
+        if (isscalar (direction))
+          sflag = repmat (sflag, 1, numel (col));
+        elseif (numel (direction) != numel (col))
+          error ("string.issortedrows: COL and DIRECTION mismatch.");
+        endif
+      else
+        ocols = 1:nc;
+        if (isscalar (direction))
+          sflag = repmat (sflag, 1, nc);
+        endif
+      endif
+      K = find (sflag, 1);
+      prefix = ocols(1:K);
+      bindcol = ocols(K);
+
+      ## A missing value in the binding strict column rules out strictness.
+      if (any (this.isMissing(:,bindcol), 'all'))
+        TF = false;
+        return;
+      endif
+
+      ## Replace strict modes with their plain counterparts for the sort.
+      direction = strrep (direction, 'strict', '');
+      varargin{cid} = direction;
+
+      if (all (cellfun (@(x) ismember (x, {'ascend', 'descend'}), direction)))
+        sorted = sortrows (this, varargin{:});
+        ## No two consecutive rows may tie across the prefix columns; a numeric
+        ## rank proxy (unique ranks) gives equal strings an equal rank.
+        [~, ~, ic] = unique (sorted.strs);
+        ranks = reshape (ic, size (sorted));
+        tmpcol = ranks(:, prefix);
+        if (any (all (diff (tmpcol, 1, 1) == 0, 2)))
+          TF = false;
+          return;
+        endif
+        TF = isequaln (this, sorted);
+
+      else  # a 'monotonic' position also exists
+        idx = strcmp (direction, 'monotonic');
+        direction(idx) = {'ascend'};
+        varargin{cid} = direction;
+        sorted = sortrows (this, varargin{:});
+        [~, ~, ic] = unique (sorted.strs);
+        ranks = reshape (ic, size (sorted));
+        tmpcol = ranks(:, prefix);
+        if (any (all (diff (tmpcol, 1, 1) == 0, 2)))
+          TF = false;
+          return;
+        endif
+        TF = isequaln (this, sorted);
+        if (TF)
+          return;
+        endif
+        direction(idx) = {'descend'};
+        varargin{cid} = direction;
+        sorted = sortrows (this, varargin{:});
+        [~, ~, ic] = unique (sorted.strs);
+        ranks = reshape (ic, size (sorted));
+        tmpcol = ranks(:, prefix);
+        if (any (all (diff (tmpcol, 1, 1) == 0, 2)))
+          TF = false;
+          return;
+        endif
+        TF = isequaln (this, sorted);
+      endif
     endfunction
 
     ## -*- texinfo -*-

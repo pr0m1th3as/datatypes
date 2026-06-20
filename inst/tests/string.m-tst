@@ -231,7 +231,7 @@
 ## 'contains'         'endsWith'         'startsWith'       'matches'         ##
 ## 'iscolumn'         'isempty'          'ismatrix'         'ismember'        ##
 ## 'ismissing'        'isrow'            'isscalar'         'issorted'        ##
-## 'isstring'         'isvector'                                              ##
+## 'issortedrows'     'isstring'         'isvector'                           ##
 ##                                                                            ##
 ################################################################################
 
@@ -477,6 +477,49 @@
 %!assert_equal (isscalar (string (NaN)), true)
 %!assert_equal (isscalar (string (missing)), true)
 %!assert_equal (isscalar (string ([1, 2])), false)
+
+%!test  ## issorted, verified against MATLAB R2026a
+%! assert (issorted (string ({'a', 'b', 'c'})), true);
+%! assert (issorted (string ({'a', 'b', 'c'}), 'strictascend'), true);
+%! assert (issorted (string ({'a', 'a', 'b'}), 'strictascend'), false);
+%! assert (issorted (string ({'c', 'b', 'a'}), 'descend'), true);
+%! assert (issorted (string ({'a', 'b', 'c'}), 'monotonic'), true);
+%! assert (issorted (string ({'b', 'a', 'c'}), 'monotonic'), false);
+%! assert (issorted ([string('a') string('b') missing], 'ascend'), true);
+%! assert (issorted ([string('a') string('b') missing], 'strictascend'), false);
+%!error<string.issorted: invalid value for 'MissingPlacement'.> ...
+%! issorted (string ({'a', 'b'}), 'MissingPlacement', 'bad')
+%!error<string.issorted: invalid DIRECTION value.> ...
+%! issorted (string ({'a', 'b'}), 'asd')
+
+%!test  ## strict issortedrows semantics, verified against MATLAB R2026a
+%! assert (issortedrows (string ({'a', 'x'; 'a', 'y'}), 'strictascend'), false);
+%! assert (issortedrows (string ({'a', 'x'; 'a', 'x'}), 'strictascend'), false);
+%! assert (issortedrows (string ({'a', 'p'; 'a', 'q'}), ...
+%!                       {'strictascend', 'ascend'}), false);
+%! assert (issortedrows (string ({'a', 'p'; 'b', 'p'}), ...
+%!                       {'ascend', 'strictascend'}), true);
+%! assert (issortedrows (string ({'b', 'z'; 'a', 'y'}), 'monotonic'), true);
+%! assert (issortedrows (string ({'b', 'z'; 'a', 'y'}), 'descend'), true);
+%! assert (issortedrows (string ({'a', 'q'; 'b', 'p'}), 2, ...
+%!                       'strictascend'), false);
+%! assert (issortedrows (string ({'b', 'p'; 'a', 'q'}), 2, ...
+%!                       'strictascend'), true);
+%!test  ## strict issortedrows with missing values (vs MATLAB R2026a)
+%! assert (issortedrows ([string('a') string('p'); missing string('q')], ...
+%!                       {'strictascend', 'ascend'}), false);
+%! assert (issortedrows ([string('a') string('p'); missing string('q')], ...
+%!                       {'ascend', 'strictascend'}), true);
+%! assert (issortedrows ([missing string('p') string('z'); ...
+%!                        string('x') string('q') string('y')], ...
+%!                       2, 'strictascend'), true);
+%! assert (issortedrows ([string('a') missing; string('b') string('y')], ...
+%!                       'strictascend'), true);
+%!error<string.issortedrows: invalid DIRECTION value.> ...
+%! issortedrows (string ({'a', 'b'}), {'asd'})
+%!error<string.issortedrows: COL and DIRECTION mismatch.> ...
+%! issortedrows (string ({'a', 'b'; 'c', 'd'}), [1, 2], ...
+%!               {'strictascend', 'ascend', 'descend'})
 
 %!assert_equal (isstring (string), true)
 %!assert_equal (isstring (cellstr (string)), false)
