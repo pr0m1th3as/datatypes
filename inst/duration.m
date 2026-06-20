@@ -1561,55 +1561,67 @@ classdef duration
           endif
           direction{idx} = 'descend';
           varargin{cid} = direction;
-          TF = isequaln (this, sort (this, varargin{:}));
+          TF = isequaln (this, sortrows (this, varargin{:}));
           return;
         endif
 
-        ## Handle strict modes
+        ## Handle strict modes.  Determine the sort-key column order and the
+        ## sort position holding the first strict direction, then derive the
+        ## prefix (the columns sorted up to and including that position, on
+        ## which the duplicate test operates) and the binding strict column
+        ## (the single column on which the missing test operates).  A missing
+        ## value in the binding column, or two consecutive sorted rows equal
+        ## across the prefix columns, rules out a strict ordering; strict
+        ## positions after the first are subsumed by it.
         strict_types = {'strictascend', 'strictdescend', 'strictmonotonic'};
-        idx = cellfun (@(x) ismember (x, strict_types), direction);
+        sflag = cellfun (@(x) ismember (x, strict_types), direction);
 
-        ## Get COL vector (if given) from input arguments and find
-        ## the corresponding columns for which strict modes apply.
-        col = cellfun (@isnumeric, varargin);
-        if (col)   # COL is available
-          col = varargin{col};
-          if (numel (direction) != numel (col))
+        nc = size (this, 2);
+        nummask = cellfun (@isnumeric, varargin);
+        if (any (nummask))
+          col = varargin{nummask};
+          ocols = abs (col(:)');
+          if (isscalar (direction))
+            sflag = repmat (sflag, 1, numel (col));
+          elseif (numel (direction) != numel (col))
             error ("duration.issortedrows: COL and DIRECTION mismatch.");
           endif
-          strict_idx = abs (col(idx));  # remove negative numbers (if any)
-        else       # only DIRECTION is available
-          strict_idx = idx;
+        else
+          ocols = 1:nc;
+          if (isscalar (direction))
+            sflag = repmat (sflag, 1, nc);
+          endif
         endif
+        K = find (sflag, 1);
+        prefix = ocols(1:K);
+        bindcol = ocols(K);
 
-        ## Check for missing values first (fast)
-        if (any (ismissing (this(:,strict_idx)), 'all'))
+        ## A missing value in the binding strict column rules out strictness.
+        if (any (isnan (this.Days(:,bindcol)), 'all'))
           TF = false;
           return;
         endif
 
-        ## Change strict modes to simple modes
+        ## Replace strict modes with their plain counterparts for the sort.
         direction = strrep (direction, 'strict', '');
         varargin{cid} = direction;
 
-        ## Operate with simple modes and check strictness on selected columns
         if (all (cellfun (@(x) ismember (x, {'ascend', 'descend'}), direction)))
           sorted = sortrows (this, varargin{:});
-          ## Test 'strictness' on specific columns for unique rows
-          tmpcol = sorted.Days(:, strict_idx);
+          ## No two consecutive rows may tie across the prefix columns.
+          tmpcol = sorted.Days(:, prefix);
           if (any (all (diff (tmpcol, 1, 1) == 0, 2)))
             TF = false;
             return;
           endif
           TF = isequaln (this, sorted);
 
-        else  # 'monotonic' mode also exists
+        else  # a 'monotonic' position also exists
           idx = strcmp (direction, 'monotonic');
-          direction{idx} = 'ascend';
+          direction(idx) = {'ascend'};
           varargin{cid} = direction;
           sorted = sortrows (this, varargin{:});
-          ## Test 'strictness' on specific columns for unique rows
-          tmpcol = sorted.Days(:, strict_idx);
+          tmpcol = sorted.Days(:, prefix);
           if (any (all (diff (tmpcol, 1, 1) == 0, 2)))
             TF = false;
             return;
@@ -1618,11 +1630,10 @@ classdef duration
           if (TF)
             return;
           endif
-          direction{idx} = 'descend';
+          direction(idx) = {'descend'};
           varargin{cid} = direction;
           sorted = sortrows (this, varargin{:});
-          ## Test 'strictness' on specific columns for unique rows
-          tmpcol = sorted.Days(:, strict_idx);
+          tmpcol = sorted.Days(:, prefix);
           if (any (all (diff (tmpcol, 1, 1) == 0, 2)))
             TF = false;
             return;

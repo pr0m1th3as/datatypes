@@ -1097,6 +1097,13 @@
 %! assert (issorted (sort (C, 2, string ('descend'), 'MissingPlacement', 'last'), 2, 'descend'), false);
 %! assert (issorted (sort (C, 2, string ('descend'), 'MissingPlacement', 'first'), 2, ...
 %!                   'descend', 'MissingPlacement', 'first'), true);
+%!test  ## strictmonotonic honours an explicit MissingPlacement argument
+%! assert (issorted (categorical ([3, 2, 1]), 'strictmonotonic', ...
+%!                   'MissingPlacement', 'last'), true);
+%! assert (issorted (categorical ([3, 2, 1]), 'strictmonotonic', ...
+%!                   'MissingPlacement', 'first'), true);
+%! assert (issorted (categorical ([1, 1, 2]), 'strictmonotonic', ...
+%!                   'MissingPlacement', 'last'), false);
 %!error<categorical.issorted: invalid value for 'MissingPlacement'.> ...
 %! issorted (sort (categorical), 'MissingPlacement', 'some')
 %!error<categorical.issorted: invalid DIRECTION value.> ...
@@ -1158,6 +1165,24 @@
 %!         [-1, -2, -3]), true);
 %! assert (issortedrows (sortrows (C, [-1, -2, -3], 'MissingPlacement', 'first'), ...
 %!         [1, -2,-3], string ({'descend', 'descend', 'descend'})), true);
+%!test  ## strict issortedrows semantics, verified against MATLAB R2026a
+%! assert (issortedrows (categorical ([1, 3; 1, 4]), 'strictascend'), false);
+%! assert (issortedrows (categorical ([1, 3; 1, 3]), 'strictascend'), false);
+%! assert (issortedrows (categorical ([1, 3; 1, 4]), ...
+%!                       {'strictascend', 'ascend'}), false);
+%! assert (issortedrows (categorical ([1, 3; 2, 3]), ...
+%!                       {'ascend', 'strictascend'}), true);
+%! assert (issortedrows (categorical ([2, 4; 1, 3]), 'monotonic'), true);
+%! assert (issortedrows (categorical ([2, 4; 1, 3]), 'descend'), true);
+%! assert (issortedrows (categorical ([1, 4; 2, 3]), 2, 'strictascend'), false);
+%! assert (issortedrows (categorical ([2, 3; 1, 4]), 2, 'strictascend'), true);
+%!test  ## strict issortedrows with missing values (vs MATLAB R2026a)
+%! assert (issortedrows (categorical ([1, 3; NaN, 4]), ...
+%!                       {'strictascend', 'ascend'}), false);
+%! assert (issortedrows (categorical ([1, 3; NaN, 4]), ...
+%!                       {'ascend', 'strictascend'}), true);
+%! assert (issortedrows (categorical ([NaN, 3; 2, 4]), 2, 'strictascend'), true);
+%! assert (issortedrows (categorical ([1, NaN; 2, 4]), 'strictascend'), true);
 
 %!assert (isundefined (categorical ([1:10])), false (1, 10))
 %!assert (isundefined (categorical ([1, 2, NaN, 4, NaN])), logical ([0, 0, 1, 0, 1]))
