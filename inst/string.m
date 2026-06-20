@@ -1613,9 +1613,10 @@ classdef string
 ## 'append'           'compose'          'erase'            'eraseBetween'    ##
 ## 'extract'          'extractAfter'     'extractBefore'    'extractBetween'  ##
 ## 'insertAfter'      'insertBefore'     'replace'          'replaceBetween'  ##
-## 'reverse'          'sort'             'split'            'splitlines'      ##
-## 'strcat'           'strip'            'pad'              'join'            ##
-## 'plus'             'lower'            'upper'            'unique'          ##
+## 'reverse'          'sort'             'sortrows'         'split'           ##
+## 'splitlines'       'strcat'           'strip'            'pad'             ##
+## 'join'             'plus'             'lower'            'upper'           ##
+## 'unique'                                                                   ##
 ##                                                                            ##
 ################################################################################
 
@@ -1623,6 +1624,10 @@ classdef string
 
     function out = sort (this, varargin)
       error ("string.sort: not implemented yet.");
+    endfunction
+
+    function out = sortrows (this, varargin)
+      error ("string.sortrows: not implemented yet.");
     endfunction
 
   endmethods
