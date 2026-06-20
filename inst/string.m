@@ -1620,18 +1620,6 @@ classdef string
 ##                                                                            ##
 ################################################################################
 
-  methods (Hidden)
-
-    function out = sort (this, varargin)
-      error ("string.sort: not implemented yet.");
-    endfunction
-
-    function out = sortrows (this, varargin)
-      error ("string.sortrows: not implemented yet.");
-    endfunction
-
-  endmethods
-
   methods (Access = public)
 
     ## -*- texinfo -*-
@@ -2633,6 +2621,319 @@ classdef string
       code = cellfun (frev, code, "UniformOutput", false);
       out.strs(notempty) = cellfun (fn2u, code, "UniformOutput", false);
       out.isMissing = this.isMissing;
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {string} {@var{B} =} sort (@var{A})
+    ## @deftypefnx {string} {@var{B} =} sort (@var{A}, @var{dim})
+    ## @deftypefnx {string} {@var{B} =} sort (@var{A}, @var{direction})
+    ## @deftypefnx {string} {@var{B} =} sort (@var{A}, @var{dim}, @var{direction})
+    ## @deftypefnx {string} {@var{B} =} sort (@dots{}, @qcode{'MissingPlacement'}, @var{MP})
+    ## @deftypefnx {string} {[@var{B}, @var{index}] =} sort (@var{A}, @dots{})
+    ##
+    ## Sort elements in a string array.
+    ##
+    ## @code{@var{B} = sort (@var{A})} sorts the elements of the string array
+    ## @var{A} in ascending order.  Elements are compared lexicographically by
+    ## their Unicode code points, with the empty string @qcode{""} sorting
+    ## before any non-empty string.  If @var{A} is a matrix,
+    ## @code{sort (@var{A})} sorts each column of @var{A} in ascending order.
+    ## For multidimensional arrays, @code{sort (@var{A})} sorts along the first
+    ## non-singleton dimension.
+    ##
+    ## @code{@var{B} = sort (@var{A}, @var{dim})} sorts along the dimension
+    ## specified by @var{dim}.
+    ##
+    ## @code{@var{B} = sort (@var{A}, @var{direction})} also specifies the
+    ## sorting direction, which can be either @qcode{'ascend'} (default) or
+    ## @qcode{'descend'}.
+    ##
+    ## @code{@var{B} = sort (@dots{}, @qcode{'MissingPlacement'}, @var{MP})}
+    ## specifies where to place the missing elements (@qcode{<missing>})
+    ## returned in @var{B} with any of the following options specified in
+    ## @var{MP}:
+    ##
+    ## @itemize
+    ## @item @qcode{'auto'}, which is the default, places missing elements last
+    ## for ascending sort and first for descending sort.
+    ## @item @qcode{'first'} places missing elements first.
+    ## @item @qcode{'last'} places missing elements last.
+    ## @end itemize
+    ##
+    ## @code{[@var{B}, @var{index}] = sort (@var{A}, @dots{})} also returns a
+    ## sorting index containing the original indices of the elements in the
+    ## sorted array.
+    ##
+    ## @itemize
+    ## @item If @var{A} is a vector, then @var{index} contains the original
+    ## linear indices of the elements in the sorted vector @var{B} such that
+    ## @code{@var{B} = @var{A}(@var{index})}.
+    ## @item If @var{A} is an @math{MxN} matrix and @qcode{@var{dim} = 1}, then
+    ## @var{index} contains the original row indices of the elements in the
+    ## sorted vector @var{B} such that for @qcode{j = 1:N},
+    ## @code{@var{B}(:,j) = @var{A}(@var{index}(:,j),j)}.
+    ## @end itemize
+    ##
+    ## @end deftypefn
+    function [B, index] = sort (A, varargin)
+      ## Parse and validate optional 'MissingPlacement' paired argument
+      optNames = {'MissingPlacement'};
+      dfValues = {'auto'};
+      [MP, args] = parsePairedArguments (optNames, dfValues, varargin(:));
+      if (! ismember (MP, {'auto', 'first', 'last'}))
+        error ("string.sort: invalid value for 'MissingPlacement'.");
+      endif
+
+      ## Force strings to character vectors
+      [args{:}] = convertStringsToChars (args{:});
+
+      ## Get direction
+      cid = cellfun (@ischar, args);
+      if (any (cid))
+        dir = args{cid};
+      else
+        dir = 'ascend';
+      endif
+      ## Get operating dimension
+      szA = size (A);
+      cid = cellfun (@isnumeric, args);
+      if (any (cid))
+        dim = args{cid};
+      else
+        dim = find (szA != 1, 1);
+        if (isempty (dim)) # scalar
+          dim = 1;
+        endif
+      endif
+
+      ## Encode the text as numeric ranks that preserve lexicographic order, so
+      ## that the missing elements (stored internally as '') can be told apart
+      ## from genuine empty strings and placed according to 'MissingPlacement'.
+      ## Missing elements are flagged as NaN, mirroring the numeric-backed
+      ## classes, which lets the workaround below reuse the same logic.
+      [~, ~, ic] = unique (A.strs);
+      data = reshape (ic, szA);
+      data(A.isMissing) = NaN;
+
+      ## Special handling for missing elements when missing placement overrides
+      ## default behavior (only if missing data actually exist).
+      is_nan = isnan (data);
+      if (any (is_nan, 'all'))
+        ## FIX ME: this workaround will be removed once the 'sort' function
+        ## in core Octave supports the 'MissingPlacement' optional argument.
+        ## The default core behavior already matches 'auto' (missing last for
+        ## ascending, first for descending), so only the overriding cases are
+        ## handled here.  Ranks are positive integers, so -Inf never collides.
+        if ((strcmp (dir, 'ascend') && strcmp (MP, 'first')) ||
+            (strcmp (dir, 'descend') && strcmp (MP, 'last')))
+          ## Convert missing values to -Inf so that they are placed first
+          ## (ascending) or last (descending), overriding the default.
+          data(is_nan) = -Inf;
+        endif
+      endif
+
+      ## Sort the numeric proxy
+      [~, index] = sort (data, args{:});
+
+      ## Calculate linear index
+      n_dims = ndims (A);
+      dimarg = cell (1, n_dims);
+      for i = 1:n_dims
+        if (i == dim)
+          dimarg{i} = index;
+        else
+          dim_sz = szA(i);
+          tmpvec = ones (1, n_dims);
+          tmpvec(i) = dim_sz;
+          tmp_sz = szA;
+          tmp_sz(i) = 1;
+          dimarg{i} = repmat (reshape ([1:dim_sz], tmpvec), tmp_sz);
+        endif
+      endfor
+
+      ## Return sorted string array
+      B = subset (A, sub2ind (szA, dimarg{:}));
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {string} {@var{B} =} sortrows (@var{A})
+    ## @deftypefnx {string} {@var{B} =} sortrows (@var{A}, @var{col})
+    ## @deftypefnx {string} {@var{B} =} sortrows (@var{A}, @var{direction})
+    ## @deftypefnx {string} {@var{B} =} sortrows (@var{A}, @var{col}, @var{direction})
+    ## @deftypefnx {string} {@var{B} =} sortrows (@dots{}, @qcode{'MissingPlacement'}, @var{MP})
+    ## @deftypefnx {string} {[@var{B}, @var{index}] =} sortrows (@var{A}, @dots{})
+    ##
+    ## Sort rows in a string array.
+    ##
+    ## @code{@var{B} = sortrows (@var{A})} sorts the rows of the 2-D string
+    ## array @var{A} in ascending order.  The sorted array @var{B} has the same
+    ## size as @var{A}.
+    ##
+    ## @code{@var{B} = sortrows (@var{A}, @var{col})} sorts @var{A} according to
+    ## the columns specified by the numeric vector @var{col}, which must
+    ## explicitly contain non-zero integers whose absolute values index existing
+    ## columns in @var{A}.  Positive elements sort the corresponding columns in
+    ## ascending order, while negative elements sort the corresponding columns
+    ## in descending order.
+    ##
+    ## @code{@var{B} = sortrows (@var{A}, @var{direction})} also specifies the
+    ## sorting direction, which can be either @qcode{'ascend'} (default) or
+    ## @qcode{'descend'} applying to all columns in @var{A}.  Alternatively,
+    ## @var{direction} can be either a string array or a cell array of character
+    ## vectors specifying the sorting direction for each individual column of
+    ## @var{A}, in which case the number of elements in @var{direction} must
+    ## equal the number of columns in @var{A}.
+    ##
+    ## @code{@var{B} = sortrows (@var{A}, @var{col}, @var{direction})} sorts the
+    ## string array @var{A} according to the columns specified in @var{col}
+    ## using the corresponding sorting direction specified in @var{direction}.
+    ## In this case, the sign of the values in @var{col} is ignored.  @var{col}
+    ## and @var{direction} must have the same number of elements, but not
+    ## necessarily equal to the columns of @var{A}.
+    ##
+    ## @code{@var{B} = sortrows (@dots{}, @qcode{'MissingPlacement'}, @var{MP})}
+    ## specifies where to place the missing elements (@qcode{<missing>})
+    ## returned in @var{B} with any of the following options specified in
+    ## @var{MP}:
+    ##
+    ## @itemize
+    ## @item @qcode{'auto'}, which is the default, places missing elements last
+    ## for ascending sort and first for descending sort.
+    ## @item @qcode{'first'} places missing elements first.
+    ## @item @qcode{'last'} places missing elements last.
+    ## @end itemize
+    ##
+    ## @code{[@var{B}, @var{index}] = sortrows (@var{A}, @dots{})} also returns
+    ## an index vector containing the original row indices of @var{A} in the
+    ## sorted matrix @var{B} such that @code{@var{B} = @var{A}(@var{index},:)}.
+    ##
+    ## @end deftypefn
+    function [B, index] = sortrows (A, varargin)
+      ## Input array must be a matrix
+      if (ndims (A) != 2)
+        error ("string.sortrows: A must be a 2-D matrix.");
+      endif
+
+      ## Parse and validate optional 'MissingPlacement' paired argument
+      optNames = {'MissingPlacement'};
+      dfValues = {'auto'};
+      [MP, args] = parsePairedArguments (optNames, dfValues, varargin(:));
+      if (! any (strcmp (MP, {'auto', 'first', 'last'})))
+        error ("string.sortrows: invalid value for 'MissingPlacement'.");
+      endif
+
+      ## Parse COL / DIRECTION input
+      nc = size (A, 2);
+      col = [1:nc];  # default ascending direction
+      dir_flag = false;
+      if (numel (args) > 2)
+        error ("string.sortrows: too many input arguments.");
+      endif
+      if (numel (args) > 0)
+        col = args{1};
+        if (isnumeric (col))
+          if (! isvector (col) || any (fix (col) != col) || any (col == 0))
+            error (strcat ("string.sortrows: COL must be a vector", ...
+                           " of nonzero integers indexing columns in A."));
+          endif
+          if (max (abs (col)) > nc)
+            error ("string.sortrows: COL indexes non-existing column.");
+          endif
+        elseif (isvector (col) && (ischar (col) || iscellstr (col) ||
+                                   isa (col, 'string')))
+          direction = cellstr (col);
+          if (! all (ismember (direction, {'ascend', 'descend'})))
+            error (strcat ("string.sortrows: DIRECTION input must", ...
+                           " contain either 'ascend' or 'descend' values."));
+          endif
+          ## Apply scalar expansion
+          if (isscalar (direction))
+            direction = repmat (direction, 1, nc);
+          endif
+          if (numel (direction) != nc)
+            error (strcat ("string.sortrows: DIRECTION", ...
+                           " does not match the columns in A."));
+          endif
+          ## Assign DIRECTION to COL
+          col = [1:nc];
+          idx = strcmp (direction, 'descend');
+          col(idx) = - col(idx);
+          dir_flag = true;
+        else
+          error ("string.sortrows: invalid type for COL argument.");
+        endif
+      endif
+      if (numel (args) > 1)
+        if (dir_flag)
+          error ("string.sortrows: invalid third input argument.");
+        endif
+        if ((isvector (args{2}) && ischar (args{2})) || isa (args{2}, 'string'))
+          direction = cellstr (args{2});
+        elseif (isvector (args{2}) && iscellstr (args{2}))
+          direction = args{2};
+        else
+          error ("string.sortrows: invalid type for DIRECTION argument.");
+        endif
+        if (! all (ismember (direction, {'ascend', 'descend'})))
+          error (strcat ("string.sortrows: DIRECTION input must", ...
+                         " contain either 'ascend' or 'descend' values."));
+        endif
+        ## Assign DIRECTION to COL
+        if (isscalar (direction) && strcmp (direction, 'ascend'))
+          col = abs (col);
+        elseif (isscalar (direction) && strcmp (direction, 'descend'))
+          col = - abs (col);
+        else
+          if (numel (direction) != numel (col))
+            error (strcat ("string.sortrows: DIRECTION does", ...
+                           " not match the elements in COL."));
+          endif
+          col = abs (col);
+          idx = strcmp (direction, 'descend');
+          col(idx) = - col(idx);
+        endif
+      endif
+
+      ## Encode the text as numeric ranks that preserve lexicographic order, so
+      ## that the missing elements (stored internally as '') can be told apart
+      ## from genuine empty strings and placed according to 'MissingPlacement'.
+      ## Missing elements are flagged as NaN, mirroring the numeric-backed
+      ## classes, which lets the workaround below reuse the same logic.
+      [~, ~, ic] = unique (A.strs);
+      data = reshape (ic, size (A));
+      data(A.isMissing) = NaN;
+
+      ## FIX ME: this workaround will be removed once the 'sortrows' function
+      ## in core Octave supports the 'MissingPlacement' optional argument.
+      ## The default core behavior already matches 'auto' (missing last for
+      ## ascending columns, first for descending columns), so only the
+      ## overriding cases are handled here.  Ranks are positive integers, so
+      ## -Inf never collides with an existing value.
+      pos_dir = col > 0;
+      neg_dir = col < 0;
+      fix_pos_dir = any (pos_dir) && strcmp (MP, 'first');
+      fix_neg_dir = any (neg_dir) && strcmp (MP, 'last');
+      if (fix_pos_dir || fix_neg_dir)
+        if (fix_pos_dir)
+          col_idx = col(pos_dir);
+        else  # must be fix_neg_dir
+          col_idx = - col(neg_dir);
+        endif
+        cdata = data(:,col_idx);
+        is_nan = isnan (cdata);
+        if (any (is_nan, 'all'))
+          ## Convert missing values to -Inf so that they are placed first
+          ## (ascending) or last (descending), overriding the default.
+          cdata(is_nan) = -Inf;
+          data(:,col_idx) = cdata;
+        endif
+      endif
+
+      ## Sort the numeric proxy
+      [~, index] = sortrows (data, col);
+
+      ## Return sorted string array
+      B = subset (A, index, ':');
     endfunction
 
     ## -*- texinfo -*-
