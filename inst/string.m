@@ -4114,21 +4114,24 @@ classdef string
           errmsg = "POS must be a positive integer.";
           return;
         endif
-        for k = 1:numel (cstr)
-          if (isMiss(k))
-            continue;
-          endif
-          cp = str2cp (cstr{k});
-          if (pos(k) > numel (cp))
-            errmsg = "POS exceeds the length of the string.";
-            return;
-          endif
-          if (after)
-            cstr{k} = cp2str (cp((pos(k) + 1):end));
-          else
-            cstr{k} = cp2str (cp(1:(pos(k) - 1)));
-          endif
-        endfor
+        sel = ! isMiss;
+        cps = cell (size (cstr));
+        cps(sel) = cellfun (@str2cp, cstr(sel), 'UniformOutput', false);
+        lens = cellfun (@numel, cps);        # 0 for missing entries
+        if (any (pos(sel) > lens(sel)))
+          errmsg = "POS exceeds the length of the string.";
+          return;
+        endif
+        if (after)
+          cps(sel) = cellfun (@(cp, p) cp((p + 1):end), ...
+                              cps(sel), num2cell (pos(sel)), ...
+                              'UniformOutput', false);
+        else
+          cps(sel) = cellfun (@(cp, p) cp(1:(p - 1)), ...
+                              cps(sel), num2cell (pos(sel)), ...
+                              'UniformOutput', false);
+        endif
+        cstr(sel) = cellfun (@cp2str, cps(sel), 'UniformOutput', false);
       else
         if (isa (pat, 'string'))
           pat = cellstr (pat);
@@ -4200,27 +4203,29 @@ classdef string
           errmsg = "POS must be a positive integer.";
           return;
         endif
-        for k = 1:numel (cstr)
-          if (isMiss(k))
-            continue;
-          endif
-          if (newMiss(k))
-            cstr{k} = '';
-            isMiss(k) = true;
-            continue;
-          endif
-          cp = str2cp (cstr{k});
-          if (pos(k) > numel (cp))
-            errmsg = "POS exceeds the length of the string.";
-            return;
-          endif
-          ncp = str2cp (newc{k});
-          if (after)
-            cstr{k} = cp2str ([cp(1:pos(k)), ncp, cp((pos(k) + 1):end)]);
-          else
-            cstr{k} = cp2str ([cp(1:(pos(k) - 1)), ncp, cp(pos(k):end)]);
-          endif
-        endfor
+        proc = ! isMiss;                     # elements to act on
+        gone = proc & newMiss;               # missing NEW -> element missing
+        do_  = proc & ! newMiss;             # elements actually spliced
+        cstr(gone) = {''};
+        isMiss(gone) = true;
+        cps = cell (size (cstr));
+        cps(do_) = cellfun (@str2cp, cstr(do_), 'UniformOutput', false);
+        lens = cellfun (@numel, cps);        # 0 outside do_
+        if (any (pos(do_) > lens(do_)))
+          errmsg = "POS exceeds the length of the string.";
+          return;
+        endif
+        ncps = cellfun (@str2cp, newc(do_), 'UniformOutput', false);
+        if (after)
+          cps(do_) = cellfun (@(cp, ncp, p) [cp(1:p), ncp, cp((p + 1):end)], ...
+                              cps(do_), ncps, num2cell (pos(do_)), ...
+                              'UniformOutput', false);
+        else
+          cps(do_) = cellfun (@(cp, ncp, p) [cp(1:(p - 1)), ncp, cp(p:end)], ...
+                              cps(do_), ncps, num2cell (pos(do_)), ...
+                              'UniformOutput', false);
+        endif
+        cstr(do_) = cellfun (@cp2str, cps(do_), 'UniformOutput', false);
       else
         if (isa (pat, 'string'))
           pat = cellstr (pat);
@@ -4312,16 +4317,17 @@ classdef string
       endif
 
       ## Assemble the pieces (and matches) into element x count matrices
-      pc = cell (ne, N);
+      if (ne > 0)
+        pc = vertcat (pieces{:});           # ne x N
+        mc = vertcat (matches{:});          # ne x (N - 1)
+      else
+        pc = cell (0, N);
+        mc = cell (0, max (N - 1, 0));
+      endif
       pm = false (ne, N);
-      mc = cell (ne, max (N - 1, 0));
-      for k = 1:ne
-        pc(k,:) = pieces{k};
-        mc(k,:) = matches{k};
-        if (this.isMissing(k))
-          pm(k,1) = true;
-        endif
-      endfor
+      if (ne > 0)
+        pm(:,1) = this.isMissing(:);
+      endif
 
       [newstr.strs, newstr.isMissing] = split_place (pc, pm, sz, dim, N);
       Nm = max (N - 1, 0);
