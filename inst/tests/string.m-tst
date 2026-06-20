@@ -642,9 +642,10 @@
 ## 'append'           'compose'          'erase'            'eraseBetween'    ##
 ## 'extract'          'extractAfter'     'extractBefore'    'extractBetween'  ##
 ## 'insertAfter'      'insertBefore'     'replace'          'replaceBetween'  ##
-## 'reverse'          'sort'             'split'            'splitlines'      ##
-## 'strcat'           'strip'            'pad'              'join'            ##
-## 'plus'             'lower'            'upper'            'unique'          ##
+## 'reverse'          'sort'             'sortrows'         'split'           ##
+## 'splitlines'       'strcat'           'strip'            'pad'             ##
+## 'join'             'plus'             'lower'            'upper'           ##
+## 'unique'                                                                   ##
 ##                                                                            ##
 ################################################################################
 
@@ -1303,6 +1304,121 @@
 %!               append (string ('c'), emoji, string ('b'), euro, string ('a')));
 %! ## reversing twice restores the multibyte original exactly
 %! assert_equal (reverse (reverse (s)), s);
+
+## sort: a vector is sorted in ascending order by default
+%!assert_equal (sort (string ({'b', 'c', 'a'})), string ({'a', 'b', 'c'}))
+## sort: a column vector keeps its shape
+%!assert_equal (sort (string ({'b'; 'a'; 'c'})), string ({'a'; 'b'; 'c'}))
+## sort: the second output indexes the original elements (B = A(index))
+%!test
+%! a = string ({'b', 'c', 'a'});
+%! [b, i] = sort (a);
+%! assert_equal (i, [3, 1, 2]);
+%! assert_equal (b, a(i));
+## sort: 'descend' reverses the order
+%!assert_equal (sort (string ({'b', 'c', 'a'}), 'descend'), ...
+%!              string ({'c', 'b', 'a'}))
+## sort: a matrix is sorted column-wise by default
+%!assert_equal (sort (string ({'d', 'a'; 'b', 'c'})), ...
+%!              string ({'b', 'a'; 'd', 'c'}))
+## sort: DIM selects the operating dimension
+%!assert_equal (sort (string ({'d', 'a'; 'b', 'c'}), 2), ...
+%!              string ({'a', 'd'; 'b', 'c'}))
+## sort: DIM and DIRECTION can be combined
+%!assert_equal (sort (string ({'d', 'a'; 'b', 'c'}), 2, 'descend'), ...
+%!              string ({'d', 'a'; 'c', 'b'}))
+## sort: the empty string sorts before any non-empty string
+%!assert_equal (sort (string ({'b', '', 'a'})), string ({'', 'a', 'b'}))
+## sort: a scalar is returned unchanged
+%!assert_equal (sort (string ('x')), string ('x'))
+## sort: ties are stable -- equal elements keep their original order
+%!test
+%! [~, i] = sort (string ({'b', 'a', 'b'}));
+%! assert_equal (i, [2, 1, 3]);
+## sort: missing values go last for ascending order ('auto' default)
+%!test
+%! r = sort (string ({'b', missing, 'a'}));
+%! assert_equal (ismissing (r), [false, false, true]);
+%! assert_equal (cellstr (r), {'a', 'b', ''});
+## sort: missing values go first for descending order ('auto' default)
+%!test
+%! r = sort (string ({'b', missing, 'a'}), 'descend');
+%! assert_equal (ismissing (r), [true, false, false]);
+%! assert_equal (cellstr (r), {'', 'b', 'a'});
+## sort: 'MissingPlacement','first' forces missing to the front
+%!test
+%! r = sort (string ({'b', missing, 'a'}), 'MissingPlacement', 'first');
+%! assert_equal (ismissing (r), [true, false, false]);
+%! assert_equal (cellstr (r), {'', 'a', 'b'});
+## sort: 'MissingPlacement','last' forces missing to the end (descending)
+%!test
+%! r = sort (string ({'b', missing, 'a'}), 'descend', ...
+%!           'MissingPlacement', 'last');
+%! assert_equal (ismissing (r), [false, false, true]);
+%! assert_equal (cellstr (r), {'b', 'a', ''});
+## sort: error branches
+%!error <string.sort: invalid value for 'MissingPlacement'.> ...
+%! sort (string ('a'), 'MissingPlacement', 'bogus')
+
+## sortrows: rows are sorted ascending, ties broken by later columns
+%!assert_equal (sortrows (string ({'b', 'x'; 'a', 'z'; 'b', 'a'})), ...
+%!              string ({'a', 'z'; 'b', 'a'; 'b', 'x'}))
+## sortrows: the second output indexes the original rows (B = A(index,:))
+%!test
+%! a = string ({'b', 'x'; 'a', 'z'; 'b', 'a'});
+%! [b, i] = sortrows (a);
+%! assert_equal (i, [2; 3; 1]);
+%! assert_equal (b, a(i, :));
+## sortrows: COL selects columns; a negative index sorts that column descending
+%!assert_equal (sortrows (string ({'b', 'x'; 'a', 'z'; 'b', 'a'}), [1, -2]), ...
+%!              string ({'a', 'z'; 'b', 'x'; 'b', 'a'}))
+## sortrows: a single DIRECTION applies to all columns
+%!assert_equal (sortrows (string ({'b', 'x'; 'a', 'z'; 'b', 'a'}), 'descend'), ...
+%!              string ({'b', 'x'; 'b', 'a'; 'a', 'z'}))
+## sortrows: DIRECTION can be a cell array, one entry per column
+%!assert_equal (sortrows (string ({'b', 'x'; 'a', 'z'; 'b', 'a'}), ...
+%!                        {'ascend', 'descend'}), ...
+%!              string ({'a', 'z'; 'b', 'x'; 'b', 'a'}))
+## sortrows: COL and DIRECTION together (the sign of COL is ignored)
+%!assert_equal (sortrows (string ({'b', 'x'; 'a', 'z'; 'b', 'a'}), ...
+%!                        [1, 2], {'ascend', 'descend'}), ...
+%!              string ({'a', 'z'; 'b', 'x'; 'b', 'a'}))
+## sortrows: a missing element sends its row last for ascending ('auto')
+%!test
+%! a = string ({'b', 'x'; 'a', 'z'});
+%! a(1,1) = string (missing);
+%! r = sortrows (a);
+%! assert_equal (cellstr (r), {'a', 'z'; '', 'x'});
+%! assert_equal (ismissing (r), [false, false; true, false]);
+## sortrows: 'MissingPlacement','first' sends the missing row first
+%!test
+%! a = string ({'b', 'x'; 'a', 'z'});
+%! a(1,1) = string (missing);
+%! r = sortrows (a, 'MissingPlacement', 'first');
+%! assert_equal (cellstr (r), {'', 'x'; 'a', 'z'});
+## sortrows: 'MissingPlacement','last' keeps the missing row last (descending)
+%!test
+%! a = string ({'b', 'x'; 'a', 'z'});
+%! a(1,1) = string (missing);
+%! r = sortrows (a, 'descend', 'MissingPlacement', 'last');
+%! assert_equal (cellstr (r), {'a', 'z'; '', 'x'});
+## sortrows: error branches
+%!error <string.sortrows: A must be a 2-D matrix.> ...
+%! sortrows (string (reshape (1:8, [2, 2, 2])))
+%!error <string.sortrows: invalid value for 'MissingPlacement'.> ...
+%! sortrows (string ({'a', 'b'}), 'MissingPlacement', 'bogus')
+%!error <string.sortrows: COL must be a vector of nonzero integers indexing columns in A.> ...
+%! sortrows (string ({'a', 'b'}), [1.5])
+%!error <string.sortrows: COL must be a vector of nonzero integers indexing columns in A.> ...
+%! sortrows (string ({'a', 'b'}), [0])
+%!error <string.sortrows: COL indexes non-existing column.> ...
+%! sortrows (string ({'a', 'b'}), [3])
+%!error <string.sortrows: DIRECTION input must contain either 'ascend' or 'descend' values.> ...
+%! sortrows (string ({'a', 'b'}), {'up', 'down'})
+%!error <string.sortrows: too many input arguments.> ...
+%! sortrows (string ({'a', 'b'}), [1, 2], {'ascend', 'descend'}, 'x')
+%!error <string.sortrows: invalid third input argument.> ...
+%! sortrows (string ({'a', 'b'}), {'ascend', 'descend'}, 'ascend')
 
 ## split: a scalar splits into an Nx1 column at the delimiter
 %!assert_equal (split (string ('a-b-c'), '-'), string ({'a'; 'b'; 'c'}))
