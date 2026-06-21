@@ -4253,8 +4253,8 @@ classdef string
           out = this.strs(s.subs{:});
 
         case '.'
-          error (["string.subsasgn: '.' invalid indexing", ...
-                  " for referencing values. Use '()' instead."]);
+          error (strcat ("string.subsref: '.' invalid indexing", ...
+                         " for referencing values. Use '()' instead."));
       endswitch
 
       ## Chained references
@@ -4287,24 +4287,34 @@ classdef string
           elseif (! isa (rhs, "string"))
             rhs = string (rhs);
           endif
+          oldnum = numel (this.strs);
           this.strs(s.subs{:}) = rhs.strs;
           this.isMissing(s.subs{:}) = rhs.isMissing;
+          ## Growing past the end auto-fills gap cells with [] (and isMissing
+          ## false); MATLAB fills such gaps with <missing>, so mark them.  A
+          ## genuine missing element stores '' (char), so 'ischar' separates
+          ## real entries from the numeric-empty gaps.
+          if (numel (this.strs) > oldnum)
+            gaps = ! cellfun ('ischar', this.strs);
+            this.strs(gaps) = {''};
+            this.isMissing(gaps) = true;
+          endif
 
         case '{}'
           if (! ischar (rhs) || ! isvector (rhs))
-            error (["string.subsasgn: '{}' indexed assignment", ...
-                    " requires a character vector."]);
+            error (strcat ("string.subsasgn: '{}' indexed assignment", ...
+                           " requires a character vector."));
           endif
           if (numel (this.strs(s.subs{:})) != 1)
-            error (["string.subsasgn: '{}' indexing can", ...
-                    " only be used for simple assignment."]);
+            error (strcat ("string.subsasgn: '{}' indexing can", ...
+                           " only be used for simple assignment."));
           endif
           this.strs(s.subs{:}) = {rhs};
           this.isMissing(s.subs{:}) = false;
 
         case '.'
-          error (["string.subsasgn: '.' invalid indexing for", ...
-                  " assigning values. Use '()' or '{}' instead."]);
+          error (strcat ("string.subsasgn: '.' invalid indexing for", ...
+                         " assigning values. Use '()' or '{}' instead."));
       endswitch
 
     endfunction
