@@ -161,8 +161,8 @@ classdef duration
       ## Parse optional Name-Value paired arguments
       optNames = {'Format', 'InputFormat'};
       dfValues = {[], []};
-      [Format, inputFormat, args] = parsePairedArguments (optNames, ...
-                                                          dfValues, varargin(:));
+      [Format, inputFormat, args] = ...
+            parsePairedArguments (optNames, dfValues, varargin(:));
 
       ## Check optional 'Format' and 'InputFormat' arguments
       if (! isempty (Format))
@@ -228,7 +228,8 @@ classdef duration
             [~, this.Days] = hms2days (H, MI, S);
             ## Return a warning if InputFormat is defined
             if (! isempty (inputFormat))
-              warning ("duration: 'InputFormat' has no effect on numeric data.");
+              warning (strcat ("duration: 'InputFormat' has no effect", ...
+                               " on numeric data."));
             endif
 
           elseif (iscellstr (X) || ischar (X) || isa (X, "string"))
@@ -263,7 +264,8 @@ classdef duration
         ## this = duration (H, MI, S, MS)
         case 4
           [H, MI, S, MS] = args{:};
-          if (! (isnumeric (H) && isnumeric (MI) && isnumeric (S) && isnumeric (MS)))
+          if (! (isnumeric (H) && isnumeric (MI) && isnumeric (S) && ...
+                 isnumeric (MS)))
             error ("duration: H, MI, S, and MS must be numeric arrays.");
           endif
           if (! (isreal (H) && isreal (MI) && isreal (S) && isreal (MS)))
@@ -272,7 +274,8 @@ classdef duration
           ## Expansion is handled by the helper function
           [err, days] = hms2days (H, MI, S, MS);
           if (err > 0)
-            error ("duration: H, MI, S, and MS must be of common size or scalars.");
+            error (strcat ("duration: H, MI, S, and MS must be of", ...
+                           " common size or scalars."));
           endif
           this.Days = days;
           ## Return a warning if InputFormat is defined
@@ -901,9 +904,10 @@ classdef duration
     ## this syntax to cascade @code{keyHash} on multiple objects for which a
     ## single hash code is required.
     ##
-    ## Note that unlike MATLAB, this implementation does not use any random seed.
-    ## As a result, @code{keyHash} will always generate the exact same hash key
-    ## for any particular input across different workers and Octave sessions.
+    ## Note that unlike MATLAB, this implementation does not use any random
+    ## seed.  As a result, @code{keyHash} will always generate the exact same
+    ## hash key for any particular input across different workers and Octave
+    ## sessions.
     ##
     ## @end deftypefn
     function key = keyHash (this, base = [])
@@ -1071,10 +1075,10 @@ classdef duration
     ## specified as a character vector, a cell array of character vectors or a
     ## string array containing valid text duration representations.
     ##
-    ## @code{@var{TF} = isequaln (@var{D1}, @var{D2}, @dots{})} returns a logical
-    ## scalar @var{TF}, which is @qcode{true}, if all input arguments are equal
-    ## under the assumption that missing elements are equal, and @qcode{false}
-    ## otherwise.
+    ## @code{@var{TF} = isequaln (@var{D1}, @var{D2}, @dots{})} returns a
+    ## logical scalar @var{TF}, which is @qcode{true}, if all input arguments
+    ## are equal under the assumption that missing elements are equal, and
+    ## @qcode{false} otherwise.
     ##
     ## @end deftypefn
     function TF = isequaln (varargin)
@@ -1171,8 +1175,10 @@ classdef duration
       if (! isempty (varargin))
         if (! cellfun ('ischar', varargin));
           error ("duration.ismember: all options must be character vectors.");
-        elseif (! all (strcmpi (varargin, 'rows') | strcmpi (varargin, 'legacy')))
-          error ("duration.ismember: only 'rows' and 'legacy' are valid options.");
+        elseif (! all (strcmpi (varargin, 'rows') | ...
+                       strcmpi (varargin, 'legacy')))
+          error (strcat ("duration.ismember: only 'rows' and 'legacy'", ...
+                         " are valid options."));
         endif
         do_rows = any (strcmpi ('rows', varargin));
         if (do_rows)
@@ -1180,11 +1186,13 @@ classdef duration
             error ("duration.ismember: 'rows' applies only to 2-D matrices.");
           endif
           if (size (A, 2) != size (B, 2))
-            error ("duration.ismember: 'rows' requires same number of columns.");
+            error (strcat ("duration.ismember: 'rows' requires same", ...
+                           " number of columns."));
           endif
         endif
         if (nargout > 1)
-          [varargout{1}, varargout{2}] = __ismember__ (A.Days, B.Days, varargin{:});
+          [varargout{1}, varargout{2}] = __ismember__ (A.Days, B.Days, ...
+                                                       varargin{:});
         else
           varargout{1} = __ismember__ (A.Days, B.Days, varargin{:});
         endif
@@ -1321,7 +1329,8 @@ classdef duration
     ## elements.
     ## @end itemize
     ##
-    ## @code{@var{TF} = issorted (@dots{}, @qcode{'MissingPlacement'}, @var{MP})}
+    ## @code{@var{TF} = issorted (@dots{}, @qcode{'MissingPlacement'},
+    ## @var{MP})}
     ## specifies where missing elements (@qcode{NaN}) are placed with one of the
     ## following options specified in @var{MP}:
     ##
@@ -1332,7 +1341,8 @@ classdef duration
     ## @item @qcode{'last'} places missing elements last.
     ## @end itemize
     ##
-    ## @code{@var{TF} = issorted (@dots{}, @qcode{'ComparisonMethod'}, @var{CM})}
+    ## @code{@var{TF} = issorted (@dots{}, @qcode{'ComparisonMethod'},
+    ## @var{CM})}
     ## specifies the comparison method for determining the order of elements
     ## with one of following options specified in @var{CM}:
     ##
@@ -2282,7 +2292,8 @@ classdef duration
         endif
         varargout{1} = M;
       else
-        ## Force strings to character vectors or cell arrays of character vectors
+        ## Force strings to character vectors or cell arrays of character
+        ## vectors
         if (any (cellfun ('isstring', varargin)))
           [varargin{:}] = convertStringsToChars (varargin{:});
         endif
@@ -2335,7 +2346,8 @@ classdef duration
         endif
         varargout{1} = this;
       else
-        ## Force strings to character vectors or cell arrays of character vectors
+        ## Force strings to character vectors or cell arrays of character
+        ## vectors
         if (any (cellfun ('isstring', varargin)))
           [varargin{:}] = convertStringsToChars (varargin{:});
         endif
@@ -2378,7 +2390,8 @@ classdef duration
         endif
         varargout{1} = M;
       else
-        ## Force strings to character vectors or cell arrays of character vectors
+        ## Force strings to character vectors or cell arrays of character
+        ## vectors
         if (any (cellfun ('isstring', varargin)))
           [varargin{:}] = convertStringsToChars (varargin{:});
         endif
@@ -2431,7 +2444,8 @@ classdef duration
         endif
         varargout{1} = this;
       else
-        ## Force strings to character vectors or cell arrays of character vectors
+        ## Force strings to character vectors or cell arrays of character
+        ## vectors
         if (any (cellfun ('isstring', varargin)))
           [varargin{:}] = convertStringsToChars (varargin{:});
         endif
@@ -3472,7 +3486,8 @@ classdef duration
             tmp = varargin{extrap};
             ExtDur = isduration (tmp);
             if (xor (ExtDur, X_isDur))
-              error ("duration.interp1: EXTRAPOLATION scalar value must match Y.");
+              error (strcat ("duration.interp1: EXTRAPOLATION scalar", ...
+                             " value must match Y."));
             elseif (ExtDur)
               varargin{extrap} = days (tmp);
             endif
@@ -3492,7 +3507,8 @@ classdef duration
           Y_isDur = isa (Y, 'duration');
           XIisDur = isa (XI, 'duration');
           if (xor (X_isDur, XIisDur))
-            error ("duration.interp1: if X is a duration array, XI must be also.");
+            error (strcat ("duration.interp1: if X is a duration array,", ...
+                           " XI must be also."));
           endif
           ## Handle numeric extrapolation input
           extrap = cellfun (@(x) isduration (x) || isnumeric (x), varargin);
@@ -3500,7 +3516,8 @@ classdef duration
             tmp = varargin{extrap};
             ExtDur = isduration (tmp);
             if (xor (ExtDur, Y_isDur))
-              error ("duration.interp1: EXTRAPOLATION scalar value must match Y.");
+              error (strcat ("duration.interp1: EXTRAPOLATION scalar", ...
+                             " value must match Y."));
             elseif (ExtDur)
               varargin{extrap} = days (tmp);
             endif
@@ -4208,15 +4225,18 @@ function days = timestrings2days (TS, inputFormat)
     if (nDots)
       cstr = strsplit (str1, '.');
       if (! isempty (cstr{2}) && isnan (str2double (cstr{2})))
-        error ("duration: could not recognize time string format of '%s'.", str1);
+        error (strcat ("duration: could not recognize time string", ...
+                       " format of '%s'."), str1);
       endif
       cstr = strsplit (cstr{1}, ':');
       if (numel (cstr) != nCols + 1)
-        error ("duration: could not recognize time string format of '%s'.", str1);
+        error (strcat ("duration: could not recognize time string", ...
+                       " format of '%s'."), str1);
       endif
       for i = 1:nCols + 1
         if (isnan (str2double (cstr{i})))
-          error ("duration: could not recognize time string format of '%s'.", str1);
+          error (strcat ("duration: could not recognize time string", ...
+                         " format of '%s'."), str1);
         endif
       endfor
     endif
@@ -4343,7 +4363,8 @@ endfunction
 function errmsg = checkFormatString (Format)
   errmsg = "";
   Format = strsplit (Format, '.')';
-  validFmt = {'y', 'd', 'h', 'm', 's', 'dd:hh:mm:ss','hh:mm:ss','mm:ss','hh:mm'};
+  validFmt = {'y', 'd', 'h', 'm', 's', 'dd:hh:mm:ss', 'hh:mm:ss', ...
+              'mm:ss', 'hh:mm'};
   foundFmt = ismember (validFmt, Format(1));
   if (! any (foundFmt) || numel (Format) > 2)
     errmsg = "invalid display format.";

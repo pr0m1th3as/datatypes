@@ -109,7 +109,8 @@ function tbl = struct2table (S, varargin)
   ## Handle remaining paired arguments
   if (! isempty (rowNames))
     if (numel (rowNames) != nrows)
-      error ("struct2table: 'RowNames' must match the rows in input structure.");
+      error (strcat ("struct2table: 'RowNames' must match the rows", ...
+                     " in input structure."));
     endif
     optArgs = [optArgs {'RowNames', rowNames}];
   endif
@@ -130,7 +131,7 @@ endfunction
 %! S(2).A = [3, 4];
 %! S(1).B = 5;
 %! S(2).B = 6;
-%! tbl = struct2table(S);
+%! tbl = struct2table (S);
 %! assert (tbl.A, [1, 2; 3, 4]);
 %! assert (tbl.B, [5; 6]);
 %! assert (numel (S), rows (tbl));
@@ -139,7 +140,7 @@ endfunction
 %! S(2).A = [3, 4, 5, 6];
 %! S(1).B = 7;
 %! S(2).B = 8;
-%! tbl = struct2table(S);
+%! tbl = struct2table (S);
 %! assert (isa (tbl.A, 'cell'), true);
 %! assert (isa (tbl.B, 'double'), true);
 %! assert (numel (S), rows (tbl));
@@ -149,7 +150,7 @@ endfunction
 %!test
 %! S.A = [1; 2; 3];
 %! S.B = [4, 5; 6, 7; 8, 9];
-%! tbl = struct2table(S);
+%! tbl = struct2table (S);
 %! assert (isa (tbl.A, 'double'), true);
 %! assert (isa (tbl.B, 'double'), true);
 %! assert (tbl.A, [1; 2; 3]);

@@ -95,10 +95,11 @@ function tbl = cell2table (C, varargin)
   ## Handle variable names
   if (! isempty (varNames))
     if (numel (varNames) != varN)
-      error ("cell2table: 'VariableNames' must match the columns in input cell.");
+      error (strcat ("cell2table: 'VariableNames' must match the", ...
+                     " columns in input cell."));
     endif
   else
-    varName = inputname(1);
+    varName = inputname (1);
     if (isempty (varName))
       varName = 'Var';
     endif
@@ -161,13 +162,15 @@ endfunction
 %! assert (tbl.A, {});
 %! assert (tbl.B, {1, ''; 3, 4});
 %!test
-%! tbl = cell2table ({1, ''; 3, 4}, "RowNames", {'A', 'B'}, "DimensionNames", {'A', 'B'});
+%! tbl = cell2table ({1, ''; 3, 4}, "RowNames", {'A', 'B'}, ...
+%!                   "DimensionNames", {'A', 'B'});
 %! assert (tbl.Var1, [1; 3]);
 %! assert (tbl.Var2, {''; 4});
 %! assert (tbl.A, {'A'; 'B'});
 %! assert (tbl.B, {1, ''; 3, 4});
 %!test
-%! tbl = cell2table ({1, string(''); 3, 4}, "RowNames", {'R1', 'R2'}, "DimensionNames", {'A', 'B'});
+%! tbl = cell2table ({1, string(''); 3, 4}, "RowNames", {'R1', 'R2'}, ...
+%!                   "DimensionNames", {'A', 'B'});
 %! assert (class (tbl('R1', :)), 'table');
 %! assert (class (tbl{'R1', :}), 'string');
 %! assert (cellstr (tbl{'R1', :}), {'1', ''});

@@ -133,7 +133,7 @@ function disp_summary_low (C, show_stats = false)
     page_num = size (page_ixs, 1);
     for ix = 1:page_num
       p_ix = page_ixs(ix,:);
-      pagestr = sprintf (strjoin(repmat ({'%d'}, 1, numel (p_ix)), ','), p_ix);
+      pagestr = sprintf (strjoin (repmat ({'%d'}, 1, numel (p_ix)), ','), p_ix);
       if (show_stats)
         fprintf ('(:,:,%s) summary:\n\n', pagestr);
       else
@@ -178,7 +178,8 @@ function disp_summary_high (C, D, DIM, show_stats = false)
     cidx = p_ix(DIM);
     p_ixx = arrayfun (@(x) cellstr (num2str (x)), p_ix);
     p_ixx(DIM) = D(cidx);
-    pagestr = sprintf (strjoin(repmat ({'%s'}, 1, numel (p_ix)), ','), p_ixx{:});
+    pagestr = sprintf (strjoin (repmat ({'%s'}, 1, numel (p_ix)), ','), ...
+                       p_ixx{:});
     if (show_stats)
       fprintf ('(:,:,%s) summary:\n\n', pagestr);
     else
@@ -371,7 +372,8 @@ function [dispstr, optLen]  = mixedcell2str (data, cols)
       do_idx = find (cumsum (cellfun ('length', strsplit (dispstr{hm_idx})) ...
                              + 4) > cols - 6, 1) - 1;
       if (! isempty (do_idx))
-        sf = @(x) sprintf ("%s ... ", strjoin (dispstrings (x(1:do_idx)), '    '));
+        sf = @(x) sprintf ("%s ... ", ...
+                           strjoin (dispstrings (x(1:do_idx)), '    '));
         dispstr(hm_idx) = cellfun (sf, data(hm_idx), "UniformOutput", false);
       endif
     endfor
@@ -389,17 +391,17 @@ function [dispstr, optLen]  = mixedcell2str (data, cols)
 
   ## Pad data according to optimal length
   ## numeric and logical is right aligned, everything else is left aligned
-  Ra_wB = sprintf("%%+%ds", optLen);
+  Ra_wB = sprintf ("%%+%ds", optLen);
   fcn = @(x) sprintf (Ra_wB, x);
   idx = pad_B & brackets;
   dispstr(idx) = cellfun (fcn, dispstr(idx), "UniformOutput", false);
 
-  La_wB = sprintf("%%-%ds", optLen);
+  La_wB = sprintf ("%%-%ds", optLen);
   fcn = @(x) sprintf (La_wB, x);
   idx = ! pad_B & brackets;
   dispstr(idx) = cellfun (fcn, dispstr(idx), "UniformOutput", false);
 
-  La_nB = sprintf("%%-%ds", optLen);
+  La_nB = sprintf ("%%-%ds", optLen);
   fcn = @(x) sprintf (La_nB, x);
   idx = (! pad_B & ! brackets) | me;
   dispstr(idx) = cellfun (fcn, dispstr(idx), "UniformOutput", false);

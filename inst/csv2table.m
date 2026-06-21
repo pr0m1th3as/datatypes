@@ -163,7 +163,7 @@ function tbl = csv2table (name, varargin)
   ## Check first input is a character vector or a string scalar
   if (ischar (name) && isvector (name))
     C = __csv2table__ (name);
-  elseif (isa  (name, 'string') && isscalar (name))
+  elseif (isa (name, 'string') && isscalar (name))
     C = __csv2table__ (char (name));
   else
     error ("csv2table: NAME must be a character vector or a string scalar.");
@@ -419,7 +419,8 @@ function tbl = cell2tbl (C, T, N, D, U, RowNames);
         varValues{ix} = cell2struct (varC, varN(2,:), 2);
       ## Check for table
       elseif (all (strcmp (varT(1,:), 'table')))
-        varValues{ix} = cell2tbl (varC, varT(2:end,:), varN(2:end,:), [], [], []);
+        varValues{ix} = cell2tbl (varC, varT(2:end,:), varN(2:end,:), ...
+                                  [], [], []);
       endif
     endfor
   endif
@@ -431,7 +432,8 @@ function tbl = cell2tbl (C, T, N, D, U, RowNames);
   endif
 endfunction
 
-function varValue = cell2auto (C, textType, datetimeType, durationTypes, hexType)
+function varValue = cell2auto (C, textType, datetimeType, durationTypes, ...
+                               hexType)
   ## Index empty cells
   idx = cellfun ('isempty', C);
   ## Numeric columns are always returned as doubles

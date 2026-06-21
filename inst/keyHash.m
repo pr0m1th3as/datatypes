@@ -49,17 +49,17 @@ function key = keyHash (x = [], base = [])
     if (! (isscalar (base) && isa (base, 'uint64')))
       error ("keyHash: BASE must be a UINT64 scalar.");
     endif
-    key = __ckeyHash__(init_str, base);
+    key = __ckeyHash__ (init_str, base);
   else
-    key = __ckeyHash__(init_str);
+    key = __ckeyHash__ (init_str);
   endif
   ## Select data type
   if (isnumeric (x) || islogical (x))
-    key = __nkeyHash__(x(:), key);
+    key = __nkeyHash__ (x(:), key);
   elseif (ischar (x))
-    key = __ckeyHash__(x(:), key);
+    key = __ckeyHash__ (x(:), key);
   elseif (iscellstr (x))
-    key = __ckeyHash__([x{:}], key);
+    key = __ckeyHash__ ([x{:}], key);
   else
     error ("keyHash: unsupported input type.");
   endif
@@ -91,15 +91,15 @@ endfunction
 %! assert (isequal (key1, key2), false);
 %!test
 %! A = '';
-%! E = uint64(15921358368119480423);
+%! E = uint64 (15921358368119480423);
 %! key = keyHash (A);
-%! assert (isequal(key, E), sprintf("k: %lx e: %lx d: %lx", key, E, key - E));
+%! assert (isequal (key, E), sprintf ("k: %lx e: %lx d: %lx", key, E, key - E));
 %! assert (key, E);
 %!test
-%! A = uint64(128);
-%! E = uint64(8038837787959150693);
+%! A = uint64 (128);
+%! E = uint64 (8038837787959150693);
 %! key = keyHash (A);
-%! assert (isequal(key, E), sprintf("k: %lx e: %lx d: %lx", key, E, key - E));
+%! assert (isequal (key, E), sprintf ("k: %lx e: %lx d: %lx", key, E, key - E));
 %! assert (key, E);
 
 ## Add more tests on endianness (see GitHub issue 43)
@@ -131,7 +131,8 @@ endfunction
 ## Add more tests on different architectures (see GitHub issues 38 and 40)
 %!assert_equal (__nkeyHash__ (uint8 (128)), uint64 (5808531584386460767))
 %!assert_equal (keyHash (uint8 (128)), uint64 (10759574069356082695))
-%!assert_equal (__nkeyHash__ (uint32 (0xdeadbeef)), uint64 (12840711468051582507))
+%!assert_equal (__nkeyHash__ (uint32 (0xdeadbeef)), ...
+%!              uint64 (12840711468051582507))
 %!assert_equal (keyHash (uint32 (0xdeadbeef)), uint64 (3790509136731937468))
 
 %!error<Invalid call to keyHash.  Correct usage is:> keyHash ();

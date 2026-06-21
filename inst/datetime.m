@@ -230,8 +230,10 @@ classdef datetime
 
       ## Check optional 'Format' and 'InputFormat' arguments
       if (! isempty (ConvertFrom))
-        ## Call __datetime__ to check for valid ConvertFrom string and data input
-        [~,~,~,~,~,~,errmsg] = __datetime__ (args{:}, 'ConvertFrom', ConvertFrom);
+        ## Call __datetime__ to check for valid ConvertFrom string and
+        ## data input
+        [~,~,~,~,~,~,errmsg] = __datetime__ (args{:}, 'ConvertFrom', ...
+                                             ConvertFrom);
         if (! isnumeric (errmsg))
           error ("datetime: %s ", errmsg);
         elseif (! isempty (inputFormat))
@@ -306,7 +308,8 @@ classdef datetime
             if (! isempty (inputFormat))
               error ("datetime: invalid 'inputFormat'.");
             else
-              error ("datetime: could not recognize date/time format from input.");
+              error (strcat ("datetime: could not recognize date/time", ...
+                             " format from input."));
             endif
           end_try_catch
           ## Split DATEVEC into individual date/time units and reshape
@@ -802,9 +805,10 @@ classdef datetime
     ## this syntax to cascade @code{keyHash} on multiple objects for which a
     ## single hash code is required.
     ##
-    ## Note that unlike MATLAB, this implementation does not use any random seed.
-    ## As a result, @code{keyHash} will always generate the exact same hash key
-    ## for any particular input across different workers and Octave sessions.
+    ## Note that unlike MATLAB, this implementation does not use any random
+    ## seed.  As a result, @code{keyHash} will always generate the exact same
+    ## hash key for any particular input across different workers and Octave
+    ## sessions.
     ##
     ## @end deftypefn
     function key = keyHash (this, base = [])
@@ -962,7 +966,8 @@ classdef datetime
             error ("datetime.ismember: 'rows' applies only to 2-D matrices.");
           endif
           if (size (A, 2) != size (B, 2))
-            error ("datetime.ismember: 'rows' requires same number of columns.");
+            error (strcat ("datetime.ismember: 'rows' requires same", ...
+                           " number of columns."));
           endif
         else
           error ("datetime.ismember: invalid optional argument.");

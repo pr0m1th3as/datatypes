@@ -569,7 +569,7 @@ classdef missing
               case 'calendarDuration'
                 args{i} = calendarDuration (NaN (size (varargin{i})), NaN, NaN);
               case 'cellstr'
-                args{i} = repmat({''}, size (varargin{i}));
+                args{i} = repmat ({''}, size (varargin{i}));
               case 'categorical'
                 args{i} = categorical (NaN (size (varargin{i})));
               case 'datetime'

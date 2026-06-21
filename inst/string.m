@@ -189,8 +189,9 @@ classdef string
         class_types = {"duration", "calendarDuration"};
         is_duration = cellfun (@(x) any (isa (x, class_types)), in);
         ## Check for unsupported classes
-        all_support = all (is_numeric | is_logical | is_cellstr | is_charvec | ...
-                           is_strings | is_missing | is_datetime | is_duration);
+        all_support = all (is_numeric | is_logical | is_cellstr | ...
+                           is_charvec | is_strings | is_missing | ...
+                           is_datetime | is_duration);
         if (! all_support)
           error ("string: cell array contains unsupported types.");
         endif
@@ -546,14 +547,15 @@ classdef string
       elseif (ischar (pattern) || isstring (pattern))
         pattern = cellstr (pattern);
       elseif (! iscellstr (pattern))
-        error (strcat ("string.count: PATTERN much be a character vector,", ...
+        error (strcat ("string.count: PATTERN must be a character vector,", ...
                        " a string array, or cell array of character vectors."));
       endif
 
       ## Parse optional Name-Value paired arguments
       optNames = {'IgnoreCase'};
       dfValues = {false};
-      [IgnoreCase, arg] = parsePairedArguments (optNames, dfValues, varargin(:));
+      [IgnoreCase, arg] = parsePairedArguments (optNames, dfValues, ...
+                                                varargin(:));
 
       ## Check optional Name-Value paired arguments
       if (! (islogical (IgnoreCase) && isscalar (IgnoreCase)))
@@ -568,7 +570,8 @@ classdef string
       str = this.strs(vid);
       if (IgnoreCase)
         for i = 1:numel (pattern)
-          out(vid) += cellfun ('numel', strfind (lower (str), lower (pattern{i})));
+          out(vid) += cellfun ('numel', ...
+                               strfind (lower (str), lower (pattern{i})));
         endfor
       else
         for i = 1:numel (pattern)
@@ -658,14 +661,16 @@ classdef string
       elseif (ischar (pattern) || isstring (pattern))
         pattern = cellstr (pattern);
       elseif (! iscellstr (pattern))
-        error (strcat ("string.contains: PATTERN much be a character vector,", ...
-                       " a string array, or cell array of character vectors."));
+        error (strcat ("string.contains: PATTERN must be a character", ...
+                       " vector, a string array, or cell array of", ...
+                       " character vectors."));
       endif
 
       ## Parse optional Name-Value paired arguments
       optNames = {'IgnoreCase'};
       dfValues = {false};
-      [IgnoreCase, arg] = parsePairedArguments (optNames, dfValues, varargin(:));
+      [IgnoreCase, arg] = parsePairedArguments (optNames, dfValues, ...
+                                                varargin(:));
 
       ## Check optional Name-Value paired arguments
       if (! (islogical (IgnoreCase) && isscalar (IgnoreCase)))
@@ -717,14 +722,16 @@ classdef string
       elseif (ischar (pattern) || isstring (pattern))
         pattern = cellstr (pattern);
       elseif (! iscellstr (pattern))
-        error (strcat ("string.endsWith: PATTERN much be a character vector,", ...
-                       " a string array, or cell array of character vectors."));
+        error (strcat ("string.endsWith: PATTERN must be a character", ...
+                       " vector, a string array, or cell array of", ...
+                       " character vectors."));
       endif
 
       ## Parse optional Name-Value paired arguments
       optNames = {'IgnoreCase'};
       dfValues = {false};
-      [IgnoreCase, arg] = parsePairedArguments (optNames, dfValues, varargin(:));
+      [IgnoreCase, arg] = parsePairedArguments (optNames, dfValues, ...
+                                                varargin(:));
 
       ## Check optional Name-Value paired arguments
       if (! (islogical (IgnoreCase) && isscalar (IgnoreCase)))
@@ -777,14 +784,16 @@ classdef string
       elseif (ischar (pattern) || isstring (pattern))
         pattern = cellstr (pattern);
       elseif (! iscellstr (pattern))
-        error (strcat ("string.startsWith: PATTERN much be a character vector,", ...
-                       " a string array, or cell array of character vectors."));
+        error (strcat ("string.startsWith: PATTERN must be a character", ...
+                       " vector, a string array, or cell array of", ...
+                       " character vectors."));
       endif
 
       ## Parse optional Name-Value paired arguments
       optNames = {'IgnoreCase'};
       dfValues = {false};
-      [IgnoreCase, arg] = parsePairedArguments (optNames, dfValues, varargin(:));
+      [IgnoreCase, arg] = parsePairedArguments (optNames, dfValues, ...
+                                                varargin(:));
 
       ## Check optional Name-Value paired arguments
       if (! (islogical (IgnoreCase) && isscalar (IgnoreCase)))
@@ -834,14 +843,16 @@ classdef string
       elseif (ischar (pattern) || isstring (pattern))
         pattern = cellstr (pattern);
       elseif (! iscellstr (pattern))
-        error (strcat ("string.matches: PATTERN much be a character vector,", ...
-                       " a string array, or cell array of character vectors."));
+        error (strcat ("string.matches: PATTERN must be a character", ...
+                       " vector, a string array, or cell array of", ...
+                       " character vectors."));
       endif
 
       ## Parse optional Name-Value paired arguments
       optNames = {'IgnoreCase'};
       dfValues = {false};
-      [IgnoreCase, arg] = parsePairedArguments (optNames, dfValues, varargin(:));
+      [IgnoreCase, arg] = parsePairedArguments (optNames, dfValues, ...
+                                                varargin(:));
 
       ## Check optional Name-Value paired arguments
       if (! (islogical (IgnoreCase) && isscalar (IgnoreCase)))
@@ -2284,14 +2295,16 @@ classdef string
       endif
 
       ## Parse the optional 'Boundaries' Name/Value pair
-      [bounds, rem] = parsePairedArguments ({'Boundaries'}, {dfBounds}, varargin);
+      [bounds, rem] = parsePairedArguments ({'Boundaries'}, {dfBounds}, ...
+                                            varargin);
       if (! isempty (rem))
         error ("string.eraseBetween: invalid optional arguments.");
       endif
       if (isa (bounds, 'string'))
         bounds = char (bounds);
       endif
-      if (! ischar (bounds) || ! any (strcmpi (bounds, {'inclusive', 'exclusive'})))
+      if (! ischar (bounds) || ...
+          ! any (strcmpi (bounds, {'inclusive', 'exclusive'})))
         error (strcat ("string.eraseBetween: BOUNDARIES must be", ...
                        " 'inclusive' or 'exclusive'."));
       endif
@@ -2578,14 +2591,16 @@ classdef string
                        " patterns."));
       endif
 
-      [bounds, rem] = parsePairedArguments ({'Boundaries'}, {dfBounds}, varargin);
+      [bounds, rem] = parsePairedArguments ({'Boundaries'}, {dfBounds}, ...
+                                            varargin);
       if (! isempty (rem))
         error ("string.extractBetween: invalid optional arguments.");
       endif
       if (isa (bounds, 'string'))
         bounds = char (bounds);
       endif
-      if (! ischar (bounds) || ! any (strcmpi (bounds, {'inclusive', 'exclusive'})))
+      if (! ischar (bounds) || ...
+          ! any (strcmpi (bounds, {'inclusive', 'exclusive'})))
         error (strcat ("string.extractBetween: BOUNDARIES must be", ...
                        " 'inclusive' or 'exclusive'."));
       endif
@@ -2882,19 +2897,22 @@ classdef string
         posMode = false;
         dfBounds = 'exclusive';
       else
-        error (strcat ("string.replaceBetween: START and STOP must be either", ...
-                       " both numeric positions or both text patterns."));
+        error (strcat ("string.replaceBetween: START and STOP must be", ...
+                       " either both numeric positions or both text", ...
+                       " patterns."));
       endif
 
       ## Parse the optional 'Boundaries' Name/Value pair
-      [bounds, rem] = parsePairedArguments ({'Boundaries'}, {dfBounds}, varargin);
+      [bounds, rem] = parsePairedArguments ({'Boundaries'}, {dfBounds}, ...
+                                            varargin);
       if (! isempty (rem))
         error ("string.replaceBetween: invalid optional arguments.");
       endif
       if (isa (bounds, 'string'))
         bounds = char (bounds);
       endif
-      if (! ischar (bounds) || ! any (strcmpi (bounds, {'inclusive', 'exclusive'})))
+      if (! ischar (bounds) || ...
+          ! any (strcmpi (bounds, {'inclusive', 'exclusive'})))
         error (strcat ("string.replaceBetween: BOUNDARIES must be", ...
                        " 'inclusive' or 'exclusive'."));
       endif
@@ -3345,8 +3363,8 @@ classdef string
           dlms = cellstr (string (delim));
         else
           error (strcat ("string.split: DELIMITER must be a string array,", ...
-                         " a character vector, or a cell array of character", ...
-                         " vectors."));
+                         " a character vector, or a cell array of", ...
+                         " character vectors."));
         endif
         dlms = dlms(:).';
       else
@@ -3495,7 +3513,8 @@ classdef string
       elseif (numel (varargin) == 2)
         s = varargin{1};
         c = varargin{2};
-        if (! istext (s) || ! any (strcmpi (char (s), {'left', 'right', 'both'})))
+        if (! istext (s) || ...
+            ! any (strcmpi (char (s), {'left', 'right', 'both'})))
           error ("string.strip: SIDE must be 'left', 'right', or 'both'.");
         endif
         if (! istext (c))

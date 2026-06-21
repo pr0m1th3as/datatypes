@@ -33,13 +33,14 @@ function [g, gn, gl] = __grp2idx__ (s)
     s_was_char = true;
     s = cellstr (s);
   elseif (! isvector (s))
-    error ("grp2idx: S must be a vector, cell array of strings, or char matrix.");
+    error (strcat ("grp2idx: S must be a vector, cell array of", ...
+                   " strings, or char matrix."));
   endif
 
   [gl, I, g] = unique (s(:));
   ## Fix order in here, since unique does not support this yet
   if (iscellstr (s))
-    I = sort(I);
+    I = sort (I);
     for i = 1:length (gl)
       gl_s(i) = gl(g(I(i)));
       idx(i,:) = (g == g(I(i)));
@@ -50,7 +51,7 @@ function [g, gn, gl] = __grp2idx__ (s)
     gl = gl_s;
     gl = gl';
   else
-    I = sort(I);
+    I = sort (I);
     for i = 1:length (gl)
       gl_s(i) = gl(g(I(i)));
       idx(i,:) = (g == g(I(i)));

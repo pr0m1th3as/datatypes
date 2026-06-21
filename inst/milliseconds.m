@@ -21,11 +21,11 @@
 ## Fixed-time duration in milliseconds.
 ##
 ## @code{@var{D} = milliseconds (@var{X})} returns a @qcode{duration} array
-## representing fixed-time duration milliseconds equivalent to the values in @var{X},
-## which must be a numeric array.
+## representing fixed-time duration milliseconds equivalent to the values in
+## @var{X}, which must be a numeric array.
 ##
-## @code{milliseconds} is also available as a method for @qcode{duration} arrays, in
-## which case it performs the opposite conversion.
+## @code{milliseconds} is also available as a method for @qcode{duration}
+## arrays, in which case it performs the opposite conversion.
 ##
 ## @seealso{duration, years, days, hours, minutes, seconds,
 ## duration.milliseconds}

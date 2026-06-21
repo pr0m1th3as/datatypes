@@ -47,7 +47,8 @@
 ## dfValues = @{1, 2, 3@};
 ##
 ## ## Parse optional Name-Value paired arguments
-## [var_A, var_B, var_C, args] = parsePairedArguments (optNames, dfValues, args);
+## [var_A, var_B, var_C, args] = ...
+##              parsePairedArguments (optNames, dfValues, args);
 ## @end example
 ##
 ## @end deftypefn
@@ -131,7 +132,8 @@ endfunction
 %! assert (b, [1, 2]);
 %! assert (c, 'text');
 %!test
-%! [a, b, c] = parsePairedArguments (optNames, dfValues, {'A', 5, 'b', 1, 'C', 'test'});
+%! [a, b, c] = parsePairedArguments (optNames, dfValues, ...
+%!                                   {'A', 5, 'b', 1, 'C', 'test'});
 %! assert (a, 5);
 %! assert (b, 1);
 %! assert (c, 'test');

@@ -204,7 +204,8 @@ classdef categorical
             endif
             if (any (isnanvset))
               if (numel (args) == 1)
-                error ("categorical: VALUESET with missing value requires CATNAMES.");
+                error (strcat ("categorical: VALUESET with missing value", ...
+                               " requires CATNAMES."));
               endif
               ## Keep index of missing values in x
               isnanx = this.isMissing;
@@ -216,10 +217,12 @@ classdef categorical
               catnames = cellstr (catnames);
               ## codevset must include 0 since there is an undefined element
               if (numel (codevset) != numel (catnames))
-                error ("categorical: CATNAMES and VALUESET lengths do not match.");
+                error (strcat ("categorical: CATNAMES and VALUESET", ...
+                               " lengths do not match."));
               endif
               if (any (cellfun (fmt, catnames)))
-                error ("categorical: CATNAMES contain empty or missing strings.");
+                error (strcat ("categorical: CATNAMES contain empty or", ...
+                               " missing strings."));
               endif
               ## Separate missing from nonmissing catnames
               valueset = catvset.cats(codevset(! isnanvset));
@@ -244,16 +247,19 @@ classdef categorical
                 endif
                 catnames = cellstr (catnames);
                 if (numel (valueset) != numel (catnames))
-                  error ("categorical: CATNAMES and VALUESET lengths do not match.");
+                  error (strcat ("categorical: CATNAMES and VALUESET", ...
+                                 " lengths do not match."));
                 endif
                 if (any (cellfun (fmt, catnames)))
-                  error ("categorical: CATNAMES contain empty or missing strings.");
+                  error (strcat ("categorical: CATNAMES contain empty or", ...
+                                 " missing strings."));
                 endif
                 this.cats = catnames(:);
               endif
             endif
             ## In case of duplicate catnames, regrouping is required
-            if (numel (args) > 1 && numel (unique (catnames)) != numel (catnames))
+            if (numel (args) > 1 && ...
+                numel (unique (catnames)) != numel (catnames))
               ## Generate regrouping index to unique categories
               index2cat = __grp2idx__ (catnames);
               idx = ! this.isMissing;
@@ -697,7 +703,8 @@ classdef categorical
           error ("categorical.summary: unrecognized input argument.");
         endif
         dim = args{1};
-        if (! (isnumeric (dim) && isscalar (dim) && fix (dim) == dim && dim > 0))
+        if (! (isnumeric (dim) && isscalar (dim) && fix (dim) == dim && ...
+               dim > 0))
           error ("categorical.summary: DIM must be a positive integer.");
         endif
       endif
@@ -795,7 +802,8 @@ classdef categorical
       nc = numel (this.cats);
       if (isempty (dim))
         (dim = find (sz > 1, 1)) || (dim = 1);
-      elseif (! (isnumeric (dim) && isscalar (dim) && fix (dim) == dim && dim > 0))
+      elseif (! (isnumeric (dim) && isscalar (dim) && fix (dim) == dim && ...
+                 dim > 0))
         error ("categorical.countcats: DIM must be a positive integer.");
       endif
       if (nc == 0)
@@ -817,7 +825,8 @@ classdef categorical
         iidx = idx;
 
         ## In case of matrix input, we adjust the indices.
-        no_vector = (isrow (codes) && dim == 1) || (iscolumn (codes) && dim == 2);
+        no_vector = (isrow (codes) && dim == 1) || ...
+                    (iscolumn (codes) && dim == 2);
         if (! isvector (codes) || no_vector)
           nl = prod (sz(1:dim-1));
           nn = sz(dim);
@@ -948,9 +957,10 @@ classdef categorical
     ## this syntax to cascade @code{keyHash} on multiple objects for which a
     ## single hash code is required.
     ##
-    ## Note that unlike MATLAB, this implementation does not use any random seed.
-    ## As a result, @code{keyHash} will always generate the exact same hash key
-    ## for any particular input across different workers and Octave sessions.
+    ## Note that unlike MATLAB, this implementation does not use any random
+    ## seed.  As a result, @code{keyHash} will always generate the exact same
+    ## hash key for any particular input across different workers and Octave
+    ## sessions.
     ##
     ## @end deftypefn
     function key = keyHash (this, base = [])
@@ -1147,7 +1157,8 @@ classdef categorical
         TF = false;
       else
         ## Compare the category names of each element
-        fcn = @(x) reshape ((['<undefined>'; x.cats])(x.code + 1), size (x.code));
+        fcn = @(x) reshape ((['<undefined>'; x.cats])(x.code + 1), ...
+                            size (x.code));
         fieldArgs = cellfun (fcn, args, 'UniformOutput', false);
         TF = isequal (fieldArgs{:});
       endif
@@ -1229,16 +1240,21 @@ classdef categorical
       ## Check for 'rows' and 'legacy' optional arguments
       if (! isempty (varargin))
         if (! cellfun ('ischar', varargin));
-          error ("categorical.ismember: all options must be character vectors.");
-        elseif (! all (strcmpi (varargin, 'rows') | strcmpi (varargin, 'legacy')))
-          error ("categorical.ismember: only 'rows' and 'legacy' are valid options.");
+          error (strcat ("categorical.ismember: all options must be", ...
+                         " character vectors."));
+        elseif (! all (strcmpi (varargin, 'rows') | ...
+                       strcmpi (varargin, 'legacy')))
+          error (strcat ("categorical.ismember: only 'rows' and", ...
+                         " 'legacy' are valid options."));
         endif
         if (any (strcmpi ('rows', varargin)))
           if (ndims (A) != 2 || ndims (A) != ndims (B))
-            error ("categorical.ismember: 'rows' applies only to 2-D matrices.");
+            error (strcat ("categorical.ismember: 'rows' applies only", ...
+                           " to 2-D matrices."));
           endif
           if (size (A, 2) != size (B, 2))
-            error ("categorical.ismember: 'rows' requires same number of columns.");
+            error (strcat ("categorical.ismember: 'rows' requires same", ...
+                           " number of columns."));
           endif
         endif
       endif
@@ -1258,13 +1274,14 @@ classdef categorical
                          " must have the same ordered set of categories."));
         endif
         if (nargout > 1)
-          [varargout{1}, varargout{2}] = __ismember__ (double (A), double (B), ...
-                                                       varargin{:});
+          [varargout{1}, varargout{2}] = __ismember__ (double (A), ...
+                                                       double (B), varargin{:});
         else
           varargout{1} = __ismember__ (double (A), double (B), varargin{:});
         endif
       elseif (isordinal (A) || isordinal (B))
-        error ("categorical.ismember: both categorical arrays must be ordinal.");
+        error (strcat ("categorical.ismember: both categorical arrays", ...
+                       " must be ordinal."));
       else
         ## Compare the category names of each element (except undefined)
         A_idx = A.code != 0;
@@ -1363,9 +1380,9 @@ classdef categorical
     ##
     ## Test if categorical array is protected.
     ##
-    ## @code{@var{TF} = isprotected (@var{C})} returns a logical scalar @var{TF},
-    ## which is @qcode{true}, if the categorical array @var{C} is protected, and
-    ## @qcode{false} otherwise.
+    ## @code{@var{TF} = isprotected (@var{C})} returns a logical scalar
+    ## @var{TF}, which is @qcode{true}, if the categorical array @var{C} is
+    ## protected, and @qcode{false} otherwise.
     ##
     ## @end deftypefn
     function TF = isprotected (this)
@@ -1442,8 +1459,9 @@ classdef categorical
     ## elements.
     ## @end itemize
     ##
-    ## @code{@var{TF} = issorted (@dots{}, @qcode{'MissingPlacement'}, @var{MP})}
-    ## specifies where missing elements (@qcode{<undefined>}) are placed with
+    ## @code{@var{TF} = issorted (@dots{}, @qcode{'MissingPlacement'},
+    ## @var{MP})} specifies where missing elements (@qcode{<undefined>}) are
+    ## placed with
     ## one of the following options specified in @var{MP}:
     ##
     ## @itemize
@@ -1837,7 +1855,8 @@ classdef categorical
         try
           newcats = cellstr (newcats);
         catch
-          error ("categorical.addcats: NEWCATS cannot be converted to cellstr.");
+          error (strcat ("categorical.addcats: NEWCATS cannot be", ...
+                         " converted to cellstr."));
         end_try_catch
       endif
 
@@ -1860,7 +1879,8 @@ classdef categorical
 
       ## Check optional Name-Value paired arguments
       if (! isempty (After) && ! isempty (Before))
-        error ("categorical.addcats: cannot specify both 'After' and 'Before'.");
+        error (strcat ("categorical.addcats: cannot specify both", ...
+                       " 'After' and 'Before'."));
       endif
 
       ## Add categories
@@ -1868,7 +1888,8 @@ classdef categorical
         maxcode = numel (A.cats);
         idxcode = find (strcmp (After, A.cats));
         if (isempty (idxcode))
-          error ("categorical.addcats: 'After' indexes a non-existing category.");
+          error (strcat ("categorical.addcats: 'After' indexes a", ...
+                         " non-existing category."));
         elseif (idxcode == maxcode)
           B = A;
           B.cats = [B.cats; newcats];
@@ -1885,7 +1906,8 @@ classdef categorical
         maxcode = numel (A.cats);
         idxcode = find (strcmp (Before, A.cats));
         if (isempty (idxcode))
-          error ("categorical.addcats: 'Before' indexes a non-existing category.");
+          error (strcat ("categorical.addcats: 'Before' indexes a", ...
+                         " non-existing category."));
         elseif (idxcode == 1)
           B = A;
           B.cats = [newcats; B.cats];
@@ -1948,7 +1970,8 @@ classdef categorical
         try
           oldcats = cellstr (oldcats);
         catch
-          error ("categorical.mergecats: OLDCATS cannot be converted to cellstr.");
+          error (strcat ("categorical.mergecats: OLDCATS cannot be", ...
+                         " converted to cellstr."));
         end_try_catch
       endif
 
@@ -2034,7 +2057,7 @@ classdef categorical
       if (nargin == 1)
         usedcodes = __unique__ (A.code);
         usedcodes(usedcodes == 0) = [];
-        remcodes = setdiff (1:numel(A.cats), usedcodes);
+        remcodes = setdiff (1:numel (A.cats), usedcodes);
         B = A;
         B.cats(remcodes) = [];
         remcodes = sort (remcodes, 'descend');
@@ -2053,7 +2076,8 @@ classdef categorical
           endif
           error ("categorical.removecats: OLDCATS cannot be empty.");
         elseif (isnumeric (oldcats) || islogical (oldcats))
-          error ("categorical.removecats: OLDCATS cannot be numeric or logical.");
+          error (strcat ("categorical.removecats: OLDCATS cannot be", ...
+                         " numeric or logical."));
         endif
         ## Convert to cellstring
         if (! iscellstr (oldcats))
@@ -2065,7 +2089,8 @@ classdef categorical
           end_try_catch
         endif
 
-        ## Keep old cat names that reference existing categories, ignore the rest
+        ## Keep old cat names that reference existing categories, ignore the
+        ## rest
         [TF, remcodes] = ismember (oldcats, A.cats);
         if (! any (TF, 'all'))
           B = A;
@@ -2131,7 +2156,8 @@ classdef categorical
           endif
           error ("categorical.renamecats: NEWNAMES cannot be empty.");
         elseif (isnumeric (newnames) || islogical (newnames))
-          error ("categorical.renamecats: NEWNAMES cannot be numeric or logical.");
+          error (strcat ("categorical.renamecats: NEWNAMES cannot be", ...
+                         " numeric or logical."));
         endif
 
         ## Convert to cellstring
@@ -2159,7 +2185,8 @@ classdef categorical
         if (isempty (oldnames) && ! iscell (oldnames))
           error ("categorical.renamecats: OLDNAMES cannot be empty.");
         elseif (isnumeric (oldnames) || islogical (oldnames))
-          error ("categorical.renamecats: OLDNAMES cannot be numeric or logical.");
+          error (strcat ("categorical.renamecats: OLDNAMES cannot be", ...
+                         " numeric or logical."));
         endif
         ## Convert to cellstring
         if (! iscellstr (oldnames))
@@ -2175,7 +2202,8 @@ classdef categorical
         if (isempty (newnames) && ! iscell (newnames))
           error ("categorical.renamecats: NEWNAMES cannot be empty.");
         elseif (isnumeric (newnames) || islogical (newnames))
-          error ("categorical.renamecats: NEWNAMES cannot be numeric or logical.");
+          error (strcat ("categorical.renamecats: NEWNAMES cannot be", ...
+                         " numeric or logical."));
         endif
         ## Convert to cellstring
         if (! iscellstr (newnames))
@@ -2233,13 +2261,15 @@ classdef categorical
         ## NEWORDER input validation
         if (isnumeric (neworder))
           catidx = 1:numel (A.cats);
-          if (! (isvector (neworder) && neworder > 0 && fix (neworder) == neworder))
+          if (! (isvector (neworder) && neworder > 0 && ...
+                 fix (neworder) == neworder))
             error (strcat ("categorical.reordercats: NEWORDER numeric", ...
                            " input must be a vector of positive integers."));
           endif
           if (! isequal (sort (neworder)(:), catidx(:)))
-            error (strcat ("categorical.reordercats: NEWORDER numeric input", ...
-                           " must index a permutation of existing categories."));
+            error (strcat ("categorical.reordercats: NEWORDER numeric", ...
+                           " input must index a permutation of existing", ...
+                           " categories."));
           endif
           neworder = A.cats(neworder);
         elseif (isempty (neworder))
@@ -2247,7 +2277,8 @@ classdef categorical
         elseif (islogical (neworder))
           error ("categorical.reordercats: NEWORDER cannot be logical.");
         elseif (ischar (neworder))
-          error ("categorical.reordercats: NEWORDER cannot be a character vector.");
+          error (strcat ("categorical.reordercats: NEWORDER cannot be", ...
+                         " a character vector."));
         endif
 
         ## Convert to cellstring
@@ -2328,7 +2359,8 @@ classdef categorical
         try
           newcats = cellstr (newcats);
         catch
-          error ("categorical.setcats: NEWCATS cannot be converted to cellstr.");
+          error (strcat ("categorical.setcats: NEWCATS cannot be", ...
+                         " converted to cellstr."));
         end_try_catch
       endif
 
@@ -2537,8 +2569,9 @@ classdef categorical
         endif
         TF = code >= double (B);
       elseif (! iscategorical (A) || ! iscategorical (B))
-        error (strcat ("categorical.ge: relational comparison is not defined", ...
-                       " between '%s' and '%s' arrays."), class (A), class (B));
+        error (strcat ("categorical.ge: relational comparison is not", ...
+                       " defined between '%s' and '%s' arrays."), ...
+               class (A), class (B));
       elseif (! A.isOrdinal || ! B.isOrdinal)
         error (strcat ("categorical.ge: relational comparison is not", ...
                        " allowed between non-ordinal categorical arrays."));
@@ -2606,8 +2639,9 @@ classdef categorical
         endif
         TF = code > double (B);
       elseif (! iscategorical (A) || ! iscategorical (B))
-        error (strcat ("categorical.gt: relational comparison is not defined", ...
-                       " between '%s' and '%s' arrays."), class (A), class (B));
+        error (strcat ("categorical.gt: relational comparison is not", ...
+                       " defined between '%s' and '%s' arrays."), ...
+               class (A), class (B));
       elseif (! A.isOrdinal || ! B.isOrdinal)
         error (strcat ("categorical.gt: relational comparison is not", ...
                        " allowed between non-ordinal categorical arrays."));
@@ -2676,8 +2710,9 @@ classdef categorical
         endif
         TF = code <= double (B);
       elseif (! iscategorical (A) || ! iscategorical (B))
-        error (strcat ("categorical.le: relational comparison is not defined", ...
-                       " between '%s' and '%s' arrays."), class (A), class (B));
+        error (strcat ("categorical.le: relational comparison is not", ...
+                       " defined between '%s' and '%s' arrays."), ...
+               class (A), class (B));
       elseif (! A.isOrdinal || ! B.isOrdinal)
         error (strcat ("categorical.le: relational comparison is not", ...
                        " allowed between non-ordinal categorical arrays."));
@@ -2745,8 +2780,9 @@ classdef categorical
         endif
         TF = code < double (B);
       elseif (! iscategorical (A) || ! iscategorical (B))
-        error (strcat ("categorical.lt: relational comparison is not defined", ...
-                       " between '%s' and '%s' arrays."), class (A), class (B));
+        error (strcat ("categorical.lt: relational comparison is not", ...
+                       " defined between '%s' and '%s' arrays."), ...
+               class (A), class (B));
       elseif (! A.isOrdinal || ! B.isOrdinal)
         error (strcat ("categorical.lt: relational comparison is not", ...
                        " allowed between non-ordinal categorical arrays."));
@@ -2957,7 +2993,8 @@ classdef categorical
         Bcats = categories (B);
         if (! isequal (Acats, Bcats))
           error (strcat ("categorical.min: categorical arrays must have", ...
-                         " the same set of categories, including their order."));
+                         " the same set of categories, including their", ...
+                         " order."));
         endif
         ## Process codes and missing values
         A_d = double (A);
@@ -3085,7 +3122,8 @@ classdef categorical
         Bcats = categories (B);
         if (! isequal (Acats, Bcats))
           error (strcat ("categorical.max: categorical arrays must have", ...
-                         " the same set of categories, including their order."));
+                         " the same set of categories, including their", ...
+                         " order."));
         endif
         ## Process codes and missing values
         A_d = double (A);
@@ -4060,7 +4098,8 @@ classdef categorical
         error (strcat ("categorical.cat: cannot concatenate ordinal", ...
                        " with non-ordinal categorical arrays."));
       endif
-      ## If any categorical array is protected, all must have the same categories
+      ## If any categorical array is protected, all must have the same
+      ## categories
       is_protected = cellfun (@isprotected, args);
       if (any (is_protected))
         ## Check that all categorical arrays have the same categories
@@ -4074,7 +4113,7 @@ classdef categorical
         out = args{1};
         out.isProtected = true; # returning array must also be protected
         ## Go through remaining categorical arrays and reorder codes accordingly
-        idx = cell (1, numel(cats{1}));
+        idx = cell (1, numel (cats{1}));
         for i = 2:numel (args)
           for j = 1:numel (out.cats)
             new_code = find (strcmp (args{i}.cats, out.cats(j)));
@@ -4509,8 +4548,9 @@ classdef categorical
             this.isMissing(s.subs{:}) = val.isMissing;
             return;
           endif
-          ## No constrains, add new categories as necessary and bump code indexing
-          ## to reflect the changes in category list of assigned categorical array
+          ## No constrains, add new categories as necessary and bump code
+          ## indexing to reflect the changes in category list of assigned
+          ## categorical array
           n_cats = numel (val.cats);
           maxcat = numel (this.cats);
           idx = cell (2, n_cats);
@@ -4774,11 +4814,11 @@ function [dispstr, optLen]  = mixedcell2str (data)
   optLen = max (cellfun (@length, dispstr));
 
   ## Pad data according to optimal length
-  Ra_wB = sprintf("%%-%ds", optLen);
+  Ra_wB = sprintf ("%%-%ds", optLen);
   fcn = @(x) sprintf (Ra_wB, x);
   dispstr(is_numb) = cellfun (fcn, dispstr(is_numb), "UniformOutput", false);
 
-  La_wB = sprintf("%%+%ds", optLen);
+  La_wB = sprintf ("%%+%ds", optLen);
   fcn = @(x) sprintf (La_wB, x);
   dispstr(is_char) = cellfun (fcn, dispstr(is_char), "UniformOutput", false);
 endfunction

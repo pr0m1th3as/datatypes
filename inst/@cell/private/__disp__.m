@@ -37,7 +37,7 @@ function __disp__ (C, name = 'ans')
     page_ixs = combvec (high_ixs);
     for ix = 1:size (page_ixs, 1)
       p_ix = page_ixs(ix,:);
-      pagestr = sprintf (strjoin(repmat ({'%d'}, 1, numel (p_ix)), ':'), p_ix);
+      pagestr = sprintf (strjoin (repmat ({'%d'}, 1, numel (p_ix)), ':'), p_ix);
       fprintf ('%s(:,:,%s) = \n\n', name, pagestr);
       page_C = C(:,:,p_ix);
       dispcellmatrix (page_C);
@@ -226,7 +226,8 @@ function [dispstr, optLen]  = mixedcell2str (data, cols)
       do_idx = find (cumsum (cellfun ('length', strsplit (dispstr{hm_idx})) ...
                              + 4) > cols - 6, 1) - 1;
       if (! isempty (do_idx))
-        sf = @(x) sprintf ("%s ... ", strjoin (dispstrings (x(1:do_idx)), '    '));
+        sf = @(x) sprintf ("%s ... ", ...
+                           strjoin (dispstrings (x(1:do_idx)), '    '));
         dispstr(hm_idx) = cellfun (sf, data(hm_idx), "UniformOutput", false);
       endif
     endfor
@@ -244,17 +245,17 @@ function [dispstr, optLen]  = mixedcell2str (data, cols)
 
   ## Pad data according to optimal length
   ## numeric and logical is right aligned, everything else is left aligned
-  Ra_wB = sprintf("{[%%+%ds]}", optLen - 2);
+  Ra_wB = sprintf ("{[%%+%ds]}", optLen - 2);
   fcn = @(x) sprintf (Ra_wB, x);
   idx = pad_B & brackets;
   dispstr(idx) = cellfun (fcn, dispstr(idx), "UniformOutput", false);
 
-  La_wB = sprintf("{[%%-%ds]}", optLen - 2);
+  La_wB = sprintf ("{[%%-%ds]}", optLen - 2);
   fcn = @(x) sprintf (La_wB, x);
   idx = ! pad_B & brackets;
   dispstr(idx) = cellfun (fcn, dispstr(idx), "UniformOutput", false);
 
-  La_nB = sprintf("{%%-%ds}", optLen);
+  La_nB = sprintf ("{%%-%ds}", optLen);
   fcn = @(x) sprintf (La_nB, x);
   idx = (! pad_B & ! brackets) | me;
   dispstr(idx) = cellfun (fcn, dispstr(idx), "UniformOutput", false);

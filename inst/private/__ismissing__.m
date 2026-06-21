@@ -67,7 +67,7 @@ function TF = __ismissing__ (A, indicator)
   else
     ## Indicator specified for missing data
     TF = false (size (A));
-    if (isnumeric(A) || islogical (A))
+    if (isnumeric (A) || islogical (A))
       for iter = 1:numel (indicator)
         if (isnan (indicator(iter)))
           TF(isnan(A)) = true;

@@ -29,8 +29,8 @@
 ## array, as long they are constraint to 2 dimensions.  However, in the case of
 ## a cell array @code{array2table} does not extract the contents of its cells,
 ## resulting to a table with each variable being a column of cells.  Use
-## @code{cell2table} if you want to create a table from the contents of the cells
-## in @var{A}.
+## @code{cell2table} if you want to create a table from the contents of the
+## cells in @var{A}.
 ##
 ## @code{@var{tbl} = array2table (@var{A}, @var{Name}, @var{Value})} specifies
 ## optional parameters for creating the table @var{tbl} with the following
@@ -78,10 +78,11 @@ function tbl = array2table (A, varargin)
   ## Handle variable names
   if (! isempty (varNames))
     if (numel (varNames) != varN)
-      error ("array2table: 'VariableNames' must match the columns in input array.");
+      error (strcat ("array2table: 'VariableNames' must match the", ...
+                     " columns in input array."));
     endif
   else
-    varName = inputname(1);
+    varName = inputname (1);
     if (isempty (varName))
       varName = 'Var';
     endif
@@ -141,7 +142,8 @@ endfunction
 %! assert (tbl.A, {});
 %! assert (tbl.B, [1, 2; 3, 4]);
 %!test
-%! tbl = array2table ([1, 2; 3, 4], "RowNames", {'A', 'B'}, "DimensionNames", {'A', 'B'});
+%! tbl = array2table ([1, 2; 3, 4], "RowNames", {'A', 'B'}, ...
+%!                    "DimensionNames", {'A', 'B'});
 %! assert (tbl.Var1, [1; 3]);
 %! assert (tbl.Var2, [2; 4]);
 %! assert (tbl.A, {'A'; 'B'});

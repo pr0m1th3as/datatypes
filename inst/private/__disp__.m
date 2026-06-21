@@ -50,7 +50,7 @@ function __disp__ (this, datatype, name = 'ans')
     for ix = 1:size (page_ixs, 1)
       p_ix = page_ixs(ix,:);
       idx.subs = {":", ":", num2cell(p_ix){:}};
-      pagestr = sprintf (strjoin(repmat ({'%d'}, 1, numel (p_ix)), ':'), p_ix);
+      pagestr = sprintf (strjoin (repmat ({'%d'}, 1, numel (p_ix)), ':'), p_ix);
       fprintf ('%s(:,:,%s) = \n\n', name, pagestr);
       page_this = subsref (this, idx);
       dispcstrmatrix (dispstrings (page_this));

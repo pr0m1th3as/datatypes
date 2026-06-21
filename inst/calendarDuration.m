@@ -261,7 +261,8 @@ classdef calendarDuration
           endif
           ## Expand as necessary
           t = ones (size (T));
-          if (! isscalar (Y) || ! isscalar (M) || ! isscalar (D) || ! isscalar (t))
+          if (! isscalar (Y) || ! isscalar (M) || ! isscalar (D) || ...
+              ! isscalar (t))
             [err, Y, M, D, t] = common_size (Y, M, D, t);
             if (err > 0)
               error (strcat ("calendarDuration: Y, MO, D, and T", ...
@@ -418,7 +419,8 @@ classdef calendarDuration
             if (msec >= 1)
               str = sprintf ('%ds', msec / 1000);
               str(1) = [];
-              els{end+1} = sprintf ('%dh %dm %d%s', hours, minutes, seconds, str);
+              els{end+1} = sprintf ('%dh %dm %d%s', hours, minutes, ...
+                                    seconds, str);
             elseif (fracSec > 0 && fracSec < 0.001 && seconds == 0)
               els{end+1} = sprintf ('%dh %dm %0.0es', hours, minutes, fracSec);
             else
@@ -688,8 +690,8 @@ classdef calendarDuration
     ##
     ## Calendar duration in quarters.
     ##
-    ## @code{@var{X} = calquarters (@var{calD})} returns a numeric array with the
-    ## number of quarters as represented in @var{calD}.
+    ## @code{@var{X} = calquarters (@var{calD})} returns a numeric array with
+    ## the number of quarters as represented in @var{calD}.
     ##
     ## @code{calquarters} is also available as a function, in which case it
     ## performs the opposite conversion.
@@ -852,9 +854,10 @@ classdef calendarDuration
     ## this syntax to cascade @code{keyHash} on multiple objects for which a
     ## single hash code is required.
     ##
-    ## Note that unlike MATLAB, this implementation does not use any random seed.
-    ## As a result, @code{keyHash} will always generate the exact same hash key
-    ## for any particular input across different workers and Octave sessions.
+    ## Note that unlike MATLAB, this implementation does not use any random
+    ## seed.  As a result, @code{keyHash} will always generate the exact same
+    ## hash key for any particular input across different workers and Octave
+    ## sessions.
     ##
     ## @end deftypefn
     function key = keyHash (this, base = [])
@@ -1378,8 +1381,9 @@ classdef calendarDuration
         out.Days = tmp * B.Days;
         out.Time = tmp * B.Time;
       else
-        error (strcat ("calendarDuration: matrix multiplication is not defined", ...
-                       " between '%s' and '%s' arrays."), class (A), class (B));
+        error (strcat ("calendarDuration: matrix multiplication is", ...
+                       " not defined between '%s' and '%s' arrays."), ...
+               class (A), class (B));
       endif
     endfunction
 
@@ -1868,8 +1872,8 @@ classdef calendarDuration
             case 'Format'
               out = this.Format;
             otherwise
-              error ("calendarDuration.subsref: unrecognized property: '%s'", ...
-                     s.subs);
+              error (strcat ("calendarDuration.subsref: unrecognized", ...
+                             " property: '%s'"), s.subs);
           endswitch
       endswitch
 
@@ -1933,8 +1937,8 @@ classdef calendarDuration
               endif
               this.Format = val;
             otherwise
-              error ("calendarDuration.subsasgn: unrecognized property: '%s'", ...
-                     s.subs);
+              error (strcat ("calendarDuration.subsasgn: unrecognized", ...
+                             " property: '%s'"), s.subs);
           endswitch
       endswitch
 
