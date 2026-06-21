@@ -642,9 +642,9 @@
 %!assert_equal (ndims (categorical (ones (2, 3, 4))), 3)
 %!assert_equal (ndims (categorical (ones (2, 3, 0, 4))), 4)
 
-%!assert_equal (numel (categorical), 1)
-%!assert_equal (numel (categorical (1:5)), 1)
-%!assert_equal (numel (categorical (ones (2, 3, 4))), 1)
+%!assert_equal (numel (categorical), 0)
+%!assert_equal (numel (categorical (1:5)), 5)
+%!assert_equal (numel (categorical (ones (2, 3, 4))), 24)
 
 %!assert (keyHash (categorical), uint64 (600793793929482348))
 %!assert (keyHash (categorical (1:5)), uint64 (6763637898068551630))

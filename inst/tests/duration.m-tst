@@ -519,10 +519,10 @@
 %!assert (ndims (duration (zeros (6, 3))), 2)
 
 %!assert (numel (duration), 1)
-%!assert (numel (days ([])), 1)
-%!assert (numel (days (ones (2, 0, 3, 4))), 1)
-%!assert (numel (duration (ones (2, 4), 0, 0)), 1)
-%!assert (numel (duration (zeros (6, 3))), 1)
+%!assert (numel (days ([])), 0)
+%!assert (numel (days (ones (2, 0, 3, 4))), 0)
+%!assert (numel (duration (ones (2, 4), 0, 0)), 8)
+%!assert (numel (duration (zeros (6, 3))), 6)
 
 %!assert (nnz (days ([])), 0)
 %!assert (nnz (duration), 0)

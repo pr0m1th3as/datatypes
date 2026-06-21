@@ -924,12 +924,12 @@ classdef categorical
     ##
     ## Total number of elements in a categorical array.
     ##
-    ## For compatibility reasons with Octave's OOP interface and @code{subsasgn}
-    ## behavior, categorical's @code{numel} is defined to always return 1.
+    ## @code{@var{out} = numel (@var{C})} returns the number of elements in the
+    ## categorical array @var{C}.
     ##
     ## @end deftypefn
     function out = numel (this, varargin)
-      out = 1;
+      out = numel (this.code);
     endfunction
 
     ## -*- texinfo -*-

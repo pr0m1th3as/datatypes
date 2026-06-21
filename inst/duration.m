@@ -846,12 +846,12 @@ classdef duration
     ##
     ## Total number of elements in a duration array.
     ##
-    ## For compatibility reasons with Octave's OOP interface and @code{subsasgn}
-    ## behavior, duration's @code{numel} is defined to always return 1.
+    ## @code{@var{out} = numel (@var{D})} returns the number of elements in the
+    ## duration array @var{D}.
     ##
     ## @end deftypefn
     function out = numel (this, varargin)
-      out = 1;
+      out = numel (this.Days);
     endfunction
 
     ## -*- texinfo -*-
