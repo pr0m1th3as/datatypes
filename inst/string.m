@@ -3988,8 +3988,8 @@ classdef string
     ##
     ## Horizontal concatenation of string arrays.
     ##
-    ## @code{@var{C} = horzcat (@var{A}, @var{B}, @dots{}} is the equivalent of
-    ## the syntax @code{@var{B} = [@var{A}, @var{B}, @dots{}]} and horizontally
+    ## @code{@var{C} = horzcat (@var{A}, @var{B}, @dots{})} is the equivalent of
+    ## the syntax @code{@var{C} = [@var{A}, @var{B}, @dots{}]} and horizontally
     ## concatenates the string arrays @var{A}, @var{B}, @dots{}.  All input
     ## arrays must have the same size except along the second dimension.  Any of
     ## the input arrays may also be character matrixes, cell arrays of character
@@ -4005,10 +4005,10 @@ classdef string
     ##
     ## Vertical concatenation of string arrays.
     ##
-    ## @code{@var{C} = vertcat (@var{A}, @var{B}, @dots{}} is the equivalent of
-    ## the syntax @code{@var{B} = [@var{A}; @var{B}; @dots{}]} and vertically
+    ## @code{@var{C} = vertcat (@var{A}, @var{B}, @dots{})} is the equivalent of
+    ## the syntax @code{@var{C} = [@var{A}; @var{B}; @dots{}]} and vertically
     ## concatenates the string arrays @var{A}, @var{B}, @dots{}.  All input
-    ## arrays must have the same size except along the second dimension.  Any of
+    ## arrays must have the same size except along the first dimension.  Any of
     ## the input arrays may also be character matrixes, cell arrays of character
     ## vectors, numeric arrays, or logical arrays of compatible size.
     ##
