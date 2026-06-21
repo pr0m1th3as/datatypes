@@ -2069,3 +2069,87 @@
 ## subsasgn: '.' indexing for assignment is an error
 %!error <string.subsasgn: '.' invalid indexing for assigning values. Use '\(\)' or '{}' instead.> ...
 %! (subsasgn (string ({'a', 'b'}), substruct ('.', 'foo'), 1))
+
+################################################################################
+##        ** Overloaded methods for duration and categorical classes **       ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'colon'            'linspace'         'intersect'        'setdiff'         ##
+## 'setxor'           'union'            'isequal'          'isequaln'        ##
+##                                                                            ##
+################################################################################
+
+## colon: a duration operand makes the string range delegate to duration
+%!assert_equal (class (string ('1:00:00'):hours (5)), 'duration')
+## colon: without a duration (or categorical) operand it is an error
+%!error <string.colon: unsupported input types.> ...
+%! colon (string ('a'), string ('b'))
+
+## linspace: a duration endpoint makes the result a duration array
+%!assert_equal (class (linspace (string ('0:00:00'), hours (5), 6)), 'duration')
+## linspace: a non-duration second argument is an error
+%!error <string.linspace: unsupported input types.> ...
+%! linspace (string ('a'), string ('b'), 5)
+
+## intersect: with a categorical it returns the common elements (categorical)
+%!test
+%! C = intersect (string ({'a', 'b', 'c'}), categorical ({'b', 'c', 'd'}));
+%! assert_equal (class (C), 'categorical');
+%! assert_equal (cellstr (C), {'b', 'c'});
+## intersect: a non-duration, non-categorical second argument is an error
+%!error <string.intersect: unsupported input types.> ...
+%! intersect (string ({'a'}), string ({'b'}))
+
+## setdiff: with a categorical it returns the elements of A that are not in B
+%!test
+%! C = setdiff (string ({'a', 'b', 'c'}), categorical ({'b'}));
+%! assert_equal (class (C), 'categorical');
+%! assert_equal (cellstr (C), {'a', 'c'});
+## setdiff: a non-duration, non-categorical second argument is an error
+%!error <string.setdiff: unsupported input types.> ...
+%! setdiff (string ({'a'}), string ({'b'}))
+
+## setxor: with a categorical it returns the symmetric difference
+%!test
+%! C = setxor (string ({'a', 'b'}), categorical ({'b', 'c'}));
+%! assert_equal (class (C), 'categorical');
+%! assert_equal (cellstr (C), {'a', 'c'});
+## setxor: a non-duration, non-categorical second argument is an error
+%!error <string.setxor: unsupported input types.> ...
+%! setxor (string ({'a'}), string ({'b'}))
+
+## union: with a categorical it returns the combined unique elements
+%!test
+%! C = union (string ({'a', 'b'}), categorical ({'b', 'c'}));
+%! assert_equal (class (C), 'categorical');
+%! assert_equal (cellstr (C), {'a', 'b', 'c'});
+## union: a non-duration, non-categorical second argument is an error
+%!error <string.union: unsupported input types.> ...
+%! union (string ({'a'}), string ({'b'}))
+
+## isequal: true for equal string arrays, false otherwise
+%!assert_equal (isequal (string ({'a', 'b'}), string ({'a', 'b'})), true)
+%!assert_equal (isequal (string ({'a', 'b'}), string ({'a', 'c'})), false)
+## isequal: a missing element is never equal, even to another missing
+%!assert_equal (isequal (string ({'a', missing}), ...
+%!                       string ({'a', missing})), false)
+## isequal: accepts more than two string arrays
+%!assert_equal (isequal (string ('a'), string ('a'), string ('a')), true)
+## isequal: a categorical operand delegates to categorical isequal
+%!assert_equal (isequal (string ({'a', 'b'}), categorical ({'a', 'b'})), true)
+## isequal: a non-string, non-categorical operand is an error
+%!error <string.isequal: unsupported input types.> ...
+%! isequal (string ({'a'}), 5)
+
+## isequaln: like isequal but treats same-position missing values as equal
+%!assert_equal (isequaln (string ({'a', missing}), ...
+%!                        string ({'a', missing})), true)
+%!assert_equal (isequaln (string ({'a', missing}), string ({'a', 'b'})), false)
+## isequaln: true for equal string arrays
+%!assert_equal (isequaln (string ({'a', 'b'}), string ({'a', 'b'})), true)
+## isequaln: a categorical operand delegates to categorical isequaln
+%!assert_equal (isequaln (string ({'a', 'b'}), categorical ({'a', 'b'})), true)
+## isequaln: a non-string, non-categorical operand is an error
+%!error <string.isequaln: unsupported input types.> ...
+%! isequaln (string ({'a'}), 5)
