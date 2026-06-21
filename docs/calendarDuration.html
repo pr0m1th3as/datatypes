@@ -828,8 +828,8 @@ Calendar duration in quarters.
 </dl>
 
 <p> </p>
-<p> <code><var>X</var> = calquarters (<var>calD</var>)</code> returns a numeric array with the
- number of quarters as represented in <var>calD</var>.
+<p> <code><var>X</var> = calquarters (<var>calD</var>)</code> returns a numeric array with
+ the number of quarters as represented in <var>calD</var>.
 </p>
 <p> <code>calquarters</code> is also available as a function, in which case it
  performs the opposite conversion.
@@ -992,8 +992,8 @@ Total number of elements in a calendarDuration array.
 </dl>
 
 <p> </p>
-<p> For compatibility reasons with Octave&rsquo;s OOP interface and <code>subsasgn</code>
- behavior, calendarDuration&rsquo;s <code>numel</code> is defined to always return 1.
+<p> <code><var>out</var> = numel (<var>calD</var>)</code> returns the number of elements in
+ the calendarDuration array <var>calD</var>.
 </p>
 
 
@@ -1105,9 +1105,10 @@ Generate a hash code for a calendarDuration array.
  this syntax to cascade <code>keyHash</code> on multiple objects for which a
  single hash code is required.
 </p>
-<p> Note that unlike MATLAB, this implementation does not use any random seed.
- As a result, <code>keyHash</code> will always generate the exact same hash key
- for any particular input across different workers and Octave sessions.
+<p> Note that unlike MATLAB, this implementation does not use any random
+ seed.  As a result, <code>keyHash</code> will always generate the exact same
+ hash key for any particular input across different workers and Octave
+ sessions.
 </p>
 
 

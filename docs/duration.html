@@ -933,8 +933,8 @@ Total number of elements in a duration array.
 </dl>
 
 <p> </p>
-<p> For compatibility reasons with Octave&rsquo;s OOP interface and <code>subsasgn</code>
- behavior, duration&rsquo;s <code>numel</code> is defined to always return 1.
+<p> <code><var>out</var> = numel (<var>D</var>)</code> returns the number of elements in the
+ duration array <var>D</var>.
 </p>
 
 
@@ -1043,9 +1043,10 @@ Generate a hash code for duration array.
  this syntax to cascade <code>keyHash</code> on multiple objects for which a
  single hash code is required.
 </p>
-<p> Note that unlike MATLAB, this implementation does not use any random seed.
- As a result, <code>keyHash</code> will always generate the exact same hash key
- for any particular input across different workers and Octave sessions.
+<p> Note that unlike MATLAB, this implementation does not use any random
+ seed.  As a result, <code>keyHash</code> will always generate the exact same
+ hash key for any particular input across different workers and Octave
+ sessions.
 </p>
 
 
@@ -1257,10 +1258,10 @@ Return true if duration arrays are equal under the assumption that
  specified as a character vector, a cell array of character vectors or a
  string array containing valid text duration representations.
 </p>
-<p> <code><var>TF</var> = isequaln (<var>D1</var>, <var>D2</var>, &hellip;)</code> returns a logical
- scalar <var>TF</var>, which is <code>true</code>, if all input arguments are equal
- under the assumption that missing elements are equal, and <code>false</code>
- otherwise.
+<p> <code><var>TF</var> = isequaln (<var>D1</var>, <var>D2</var>, &hellip;)</code> returns a
+ logical scalar <var>TF</var>, which is <code>true</code>, if all input arguments
+ are equal under the assumption that missing elements are equal, and
+ <code>false</code> otherwise.
 </p>
 
 
@@ -1634,7 +1635,8 @@ Return true if duration array is sorted.
  elements.
  </li></ul>
 
-<p> <code><var>TF</var> = issorted (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
+<p> <code><var>TF</var> = issorted (&hellip;, <code>'MissingPlacement'</code>,
+ <var>MP</var>)</code>
  specifies where missing elements (<code>NaN</code>) are placed with one of the
  following options specified in <var>MP</var>:
 </p>
@@ -1645,7 +1647,8 @@ Return true if duration array is sorted.
  </li><li> <code>'last'</code> places missing elements last.
  </li></ul>
 
-<p> <code><var>TF</var> = issorted (&hellip;, <code>'ComparisonMethod'</code>, <var>CM</var>)</code>
+<p> <code><var>TF</var> = issorted (&hellip;, <code>'ComparisonMethod'</code>,
+ <var>CM</var>)</code>
  specifies the comparison method for determining the order of elements
  with one of following options specified in <var>CM</var>:
 </p>

@@ -1085,8 +1085,8 @@ Total number of elements in a categorical array.
 </dl>
 
 <p> </p>
-<p> For compatibility reasons with Octave&rsquo;s OOP interface and <code>subsasgn</code>
- behavior, categorical&rsquo;s <code>numel</code> is defined to always return 1.
+<p> <code><var>out</var> = numel (<var>C</var>)</code> returns the number of elements in the
+ categorical array <var>C</var>.
 </p>
 
 
@@ -1129,9 +1129,10 @@ Generate a hash code for a categorical array.
  this syntax to cascade <code>keyHash</code> on multiple objects for which a
  single hash code is required.
 </p>
-<p> Note that unlike MATLAB, this implementation does not use any random seed.
- As a result, <code>keyHash</code> will always generate the exact same hash key
- for any particular input across different workers and Octave sessions.
+<p> Note that unlike MATLAB, this implementation does not use any random
+ seed.  As a result, <code>keyHash</code> will always generate the exact same
+ hash key for any particular input across different workers and Octave
+ sessions.
 </p>
 
 
@@ -1543,9 +1544,9 @@ Test if categorical array is protected.
 </dl>
 
 <p> </p>
-<p> <code><var>TF</var> = isprotected (<var>C</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code>, if the categorical array <var>C</var> is protected, and
- <code>false</code> otherwise.
+<p> <code><var>TF</var> = isprotected (<var>C</var>)</code> returns a logical scalar
+ <var>TF</var>, which is <code>true</code>, if the categorical array <var>C</var> is
+ protected, and <code>false</code> otherwise.
 </p>
 
 
@@ -1682,8 +1683,9 @@ Return true if categorical array is sorted.
  elements.
  </li></ul>
 
-<p> <code><var>TF</var> = issorted (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
- specifies where missing elements (<code>&lt;undefined&gt;</code>) are placed with
+<p> <code><var>TF</var> = issorted (&hellip;, <code>'MissingPlacement'</code>,
+ <var>MP</var>)</code> specifies where missing elements (<code>&lt;undefined&gt;</code>) are
+ placed with
  one of the following options specified in <var>MP</var>:
 </p>
  <ul>

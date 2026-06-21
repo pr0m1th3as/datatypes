@@ -330,8 +330,9 @@ Create a new string array.
  options:
 </p>
  <ul>
-<li> character arrays and cell arrays of character vectors are converted
- via the core <code>cellstr</code> function.
+<li> character arrays are converted so that each row becomes a string
+ element, with any trailing whitespace preserved; cell arrays of character
+ vectors are stored as-is.
  </li><li> numeric arrays are converted via the code <code>num2str</code> function.
  </li><li> logical arrays are converted to either <code>false</code> or
  <code>true</code> character sequences.
@@ -393,9 +394,14 @@ Get display formatted strings for each element of a string object.
 <p> <code><var>cstr</var> = dispstrings (<var>str</var>)</code> returns a cellstr array of
  character vectors, <var>cstr</var>, which has the same size as the input
  string object, <var>str</var>.  These character vectors will either be the
- string contents of the element, enclosed in <code>&quot;...&quot;</code>, and with CR/LF
- characters replaced with <code>'\r'</code> and <code>'\n'</code> escape sequences,
- or <code>&lt;missing&gt;</code> for missing values.
+ string contents of each corresponding element or <code>&lt;missing&gt;</code> for
+ missing values.
+</p>
+<p> Composed string elements, i.e. double quoted strings, are translated so
+ that any special characters are represented by their corresponding
+ escaped character sequence, unless the input string, <var>str</var>, is a
+ scalar, in which case text retains its original composition but newlines
+ are prepadded with four white space characters for aligned display.
 </p>
 
 
@@ -463,8 +469,10 @@ Convert string array to a cell array.
 
 <p> </p>
 <p> <code><var>c_arr</var> = cell (<var>str</var>)</code> returns a cell array, <var>c_arr</var>,
- which has the same size as the input string <var>str</var>.  All strings are
- converted to character vectors.  Empty strings are converted to
+ which has the same size as the input string <var>str</var>.  All elements in
+ <var>str</var> that represent real or complex numbers are converted to
+ equivalent double values, whereas all other non-missing elements are
+ converted to character vectors.  Zero-length strings are converted to
  <code>''</code> empty character vectors, while missing values are returned as
  <code>[]</code> empty numeric vectors.
 </p>
@@ -662,36 +670,6 @@ Total number of elements in a string array.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>strlength</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Length of text in string arrays.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod9">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">string: <var>out</var> = <b>strlength</b> (<var>str</var>)</code></h5></dt>
-</dl>
-
-<p> </p>
-
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod10"
-              aria-expanded="false" aria-controls="collapseMethod10">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
                     <b><code>length</code></b>
                   </h4>
                 </div>
@@ -700,7 +678,7 @@ Length of a string vector.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod10">
+          <div class="collapse multi-collapse" id="collapseMethod9">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>N</var> = <b>length</b> (<var>str</var>)</code></h5></dt>
@@ -721,8 +699,76 @@ Length of a string vector.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod10"
+              aria-expanded="false" aria-controls="collapseMethod10">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>strlength</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Length of text in string arrays.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod10">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>out</var> = <b>strlength</b> (<var>str</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
               data-bs-toggle="collapse" data-bs-target="#collapseMethod11"
               aria-expanded="false" aria-controls="collapseMethod11">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>count</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Count occurences of pattern in string array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod11">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>out</var> = <b>count</b> (<var>str</var>, <var>pattern</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>out</var> = <b>count</b> (<var>str</var>, <var>pattern</var>, <code>'IgnoreCase'</code>, <code>true</code>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>out</var> = count (<var>str</var>, <var>pattern</var>)</code> returns a numerical
+ array <var>out</var> of the same size as <var>str</var> containing the number of
+ occurences of <var>pattern</var> in each corresponding element of <var>str</var>.
+</p>
+<p> <code><var>out</var> = count (<var>str</var>, <var>pattern</var>, <code>'IgnoreCase'</code>,
+ <code>true</code>)</code> ignores case when identifying occurences of <var>pattern</var>.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod12"
+              aria-expanded="false" aria-controls="collapseMethod12">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -734,7 +780,7 @@ Generate a hash code for string array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod11">
+          <div class="collapse multi-collapse" id="collapseMethod12">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>hey</var> = <b>keyHash</b> (<var>str</var>)</code></h5></dt>
@@ -752,9 +798,10 @@ Generate a hash code for string array.
  this syntax to cascade <code>keyHash</code> on multiple objects for which a
  single hash code is required.
 </p>
-<p> Note that unlike MATLAB, this implementation does not use any random seed.
- As a result, <code>keyHash</code> will always generate the exact same hash key
- for any particular input across different workers and Octave sessions.
+<p> Note that unlike MATLAB, this implementation does not use any random
+ seed.  As a result, <code>keyHash</code> will always generate the exact same
+ hash key for any particular input across different workers and Octave
+ sessions.
 </p>
 
 
@@ -766,8 +813,176 @@ Generate a hash code for string array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod12"
-              aria-expanded="false" aria-controls="collapseMethod12">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod13"
+              aria-expanded="false" aria-controls="collapseMethod13">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>contains</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Test if strings contain pattern.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod13">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>contains</b> (<var>str</var>, <var>pattern</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>contains</b> (<var>str</var>, <var>pattern</var>, <code>'IgnoreCase'</code>, <code>true</code>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = contains (<var>str</var>, <var>pattern</var>)</code> returns a logical
+ array <var>TF</var> of the same size as <var>A</var> containing <code>true</code> for
+ each corresponding element of <var>str</var> that contains the specified
+ <var>pattern</var> and <code>false</code> otherwise.  Similarly to <code>NaN</code>
+ values, <code>&lt;missing&gt;</code> elements do not match any pattern and always
+ return <code>false</code>.
+</p>
+<p> <code><var>TF</var> = contains (<var>str</var>, <var>pattern</var>,
+ <code>'IgnoreCase'</code>, <code>true</code>)</code> ignores case when determining if
+ <var>str</var> ends with <var>pattern</var>.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod14"
+              aria-expanded="false" aria-controls="collapseMethod14">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>endsWith</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Test if strings end with pattern.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod14">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>endsWith</b> (<var>str</var>, <var>pattern</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>endsWith</b> (<var>str</var>, <var>pattern</var>, <code>'IgnoreCase'</code>, <code>true</code>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = endsWith (<var>str</var>, <var>pattern</var>)</code> returns a logical
+ array <var>TF</var> of the same size as <var>A</var> containing <code>true</code> for
+ each corresponding element of <var>str</var> that ends with the specified
+ <var>pattern</var> and <code>false</code> otherwise.  Similarly to <code>NaN</code>
+ values, <code>&lt;missing&gt;</code> elements do not match any pattern and always
+ return <code>false</code>.
+</p>
+<p> <code><var>TF</var> = endsWith (<var>str</var>, <var>pattern</var>,
+ <code>'IgnoreCase'</code>, <code>true</code>)</code> ignores case when determining if
+ <var>str</var> ends with <var>pattern</var>.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod15"
+              aria-expanded="false" aria-controls="collapseMethod15">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>startsWith</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Test if strings start with pattern.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod15">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>startsWith</b> (<var>str</var>, <var>pattern</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>startsWith</b> (<var>str</var>, <var>pattern</var>, <code>'IgnoreCase'</code>, <code>true</code>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = startsWith (<var>str</var>, <var>pattern</var>)</code> returns a logical
+ array <var>TF</var> of the same size as <var>A</var> containing <code>true</code> for
+ each corresponding element of <var>str</var> that starts with the specified
+ <var>pattern</var> and <code>false</code> otherwise.  Similarly to <code>NaN</code>
+ values, <code>&lt;missing&gt;</code> elements do not match any pattern and always
+ return <code>false</code>.
+</p>
+<p> <code><var>TF</var> = startsWith (<var>str</var>, <var>pattern</var>,
+ <code>'IgnoreCase'</code>, <code>true</code>)</code> ignores case when determining if
+ <var>str</var> starts with <var>pattern</var>.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod16"
+              aria-expanded="false" aria-controls="collapseMethod16">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>matches</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Test if strings match pattern.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod16">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>matches</b> (<var>str</var>, <var>pattern</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>matches</b> (<var>str</var>, <var>pattern</var>, <code>'IgnoreCase'</code>, <code>true</code>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = matches (<var>str</var>, <var>pattern</var>)</code> returns a logical
+ array <var>TF</var> of the same size as <var>A</var> containing <code>true</code> for
+ each corresponding element of <var>str</var> that matches the specified
+ <var>pattern</var> and <code>false</code> otherwise.  Similarly to <code>NaN</code>
+ values, <code>&lt;missing&gt;</code> elements do not match any pattern and always
+ return <code>false</code>.
+</p>
+<p> <code><var>TF</var> = matches (<var>str</var>, <var>pattern</var>, <code>'IgnoreCase'</code>,
+ <code>true</code>)</code> ignores case when determining if <var>str</var> starts with
+ <var>pattern</var>.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod17"
+              aria-expanded="false" aria-controls="collapseMethod17">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -779,7 +994,7 @@ Test if string array is a column vector.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod12">
+          <div class="collapse multi-collapse" id="collapseMethod17">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>iscolumn</b> (<var>str</var>)</code></h5></dt>
@@ -798,8 +1013,8 @@ Test if string array is a column vector.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod13"
-              aria-expanded="false" aria-controls="collapseMethod13">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod18"
+              aria-expanded="false" aria-controls="collapseMethod18">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -811,7 +1026,7 @@ Test if string array is empty.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod13">
+          <div class="collapse multi-collapse" id="collapseMethod18">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>isempty</b> (<var>str</var>)</code></h5></dt>
@@ -830,8 +1045,8 @@ Test if string array is empty.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod14"
-              aria-expanded="false" aria-controls="collapseMethod14">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod19"
+              aria-expanded="false" aria-controls="collapseMethod19">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -843,7 +1058,7 @@ Test if string array is a matrix.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod14">
+          <div class="collapse multi-collapse" id="collapseMethod19">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>ismatrix</b> (<var>str</var>)</code></h5></dt>
@@ -862,8 +1077,8 @@ Test if string array is a matrix.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod15"
-              aria-expanded="false" aria-controls="collapseMethod15">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod20"
+              aria-expanded="false" aria-controls="collapseMethod20">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -875,7 +1090,7 @@ Find string elements in a set.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod15">
+          <div class="collapse multi-collapse" id="collapseMethod20">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>ismember</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -918,8 +1133,8 @@ Find string elements in a set.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod16"
-              aria-expanded="false" aria-controls="collapseMethod16">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod21"
+              aria-expanded="false" aria-controls="collapseMethod21">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -931,7 +1146,7 @@ Find missing elements in string array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod16">
+          <div class="collapse multi-collapse" id="collapseMethod21">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>ismissing</b> (<var>str</var>)</code></h5></dt>
@@ -963,8 +1178,8 @@ Find missing elements in string array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod17"
-              aria-expanded="false" aria-controls="collapseMethod17">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod22"
+              aria-expanded="false" aria-controls="collapseMethod22">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -976,7 +1191,7 @@ Test if string array is a row vector.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod17">
+          <div class="collapse multi-collapse" id="collapseMethod22">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>isrow</b> (<var>str</var>)</code></h5></dt>
@@ -995,8 +1210,8 @@ Test if string array is a row vector.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod18"
-              aria-expanded="false" aria-controls="collapseMethod18">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod23"
+              aria-expanded="false" aria-controls="collapseMethod23">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1008,7 +1223,7 @@ Test if string array is a scalar.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod18">
+          <div class="collapse multi-collapse" id="collapseMethod23">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>isscalar</b> (<var>str</var>)</code></h5></dt>
@@ -1027,8 +1242,172 @@ Test if string array is a scalar.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod19"
-              aria-expanded="false" aria-controls="collapseMethod19">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod24"
+              aria-expanded="false" aria-controls="collapseMethod24">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>issorted</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Return true if string array is sorted.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod24">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>issorted</b> (<var>str</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>issorted</b> (<var>str</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>issorted</b> (<var>str</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>issorted</b> (<var>str</var>, <var>dim</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>issorted</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = issorted (<var>str</var>)</code> returns a logical scalar <var>TF</var>,
+ which is <code>true</code>, if the string array <var>str</var> is sorted in
+ ascending order, and <code>false</code> otherwise.
+</p>
+<p> <code><var>TF</var> = issorted (<var>str</var>, <var>dim</var>)</code> returns a logical
+ scalar <var>TF</var>, which is <code>true</code>, if the string array <var>str</var>
+ is sorted in ascending order along the dimension <var>dim</var>, and
+ <code>false</code> otherwise.
+</p>
+<p> <code><var>TF</var> = issorted (<var>str</var>, <var>direction</var>)</code> returns a logical
+ scalar <var>TF</var>, which is <code>true</code>, if the string array <var>str</var> is
+ sorted in the direction specified by <var>direction</var>, and <code>false</code>
+ otherwise.  <var>direction</var> can be any of the following options:
+</p>
+ <ul>
+<li> <code>'ascend'</code>, which is the default, checks if elements are in
+ ascending order.
+ </li><li> <code>'descend'</code> checks if elements are in descending order.
+ </li><li> <code>'monotonic'</code> checks if elements are either in ascending or
+ descending order.
+ </li><li> <code>'strictascend'</code> checks if elements are in ascending order
+ and there are no duplicate or missing elements.
+ </li><li> <code>'strictdescend'</code> checks if elements are in descending order
+ and there are no duplicate or missing elements.
+ </li><li> <code>'strictmonotonic'</code> checks if elements are either in
+ ascending or descending order and there are no duplicate or missing
+ elements.
+ </li></ul>
+
+<p> <code><var>TF</var> = issorted (&hellip;, <code>'MissingPlacement'</code>,
+ <var>MP</var>)</code> specifies where missing elements (<code>&lt;missing&gt;</code>) are
+ placed with one of the following options specified in <var>MP</var>:
+</p>
+ <ul>
+<li> <code>'auto'</code>, which is the default, places missing elements last
+ for ascending sort and first for descending sort.
+ </li><li> <code>'first'</code> places missing elements first.
+ </li><li> <code>'last'</code> places missing elements last.
+ </li></ul>
+
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod25"
+              aria-expanded="false" aria-controls="collapseMethod25">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>issortedrows</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Return true if string matrix rows are sorted.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod25">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>issortedrows</b> (<var>str</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>issortedrows</b> (<var>str</var>, <var>col</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>issortedrows</b> (<var>str</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>issortedrows</b> (<var>str</var>, <var>col</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>TF</var> = <b>issortedrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>TF</var> = issortedrows (<var>str</var>)</code> returns a logical scalar
+ <var>TF</var>, which is <code>true</code>, if the rows in the 2-D string array
+ <var>str</var> are sorted in ascending order, and <code>false</code> otherwise.
+</p>
+<p> <code><var>TF</var> = issortedrows (<var>str</var>, <var>col</var>)</code> returns a logical
+ scalar <var>TF</var>, which is <code>true</code>, if the string array <var>str</var> is
+ sorted according to the columns specified by the vector <var>col</var>, and
+ <code>false</code> otherwise.  <var>col</var> must explicitly contain non-zero
+ integers whose absolute values index existing columns in <var>str</var>.
+ Positive elements sort the corresponding columns in ascending order,
+ while negative elements sort the corresponding columns in descending
+ order.
+</p>
+<p> <code><var>TF</var> = issortedrows (<var>str</var>, <var>direction</var>)</code> checks if the
+ rows in <var>str</var> are sorted according to the specified direction, which
+ can be one of the following options:
+</p>
+ <ul>
+<li> <code>'ascend'</code>, which is the default, checks if elements are in
+ ascending order.
+ </li><li> <code>'descend'</code> checks if elements are in descending order.
+ </li><li> <code>'monotonic'</code> checks if elements are either in ascending or
+ descending order.
+ </li><li> <code>'strictascend'</code> checks if elements are in ascending order
+ and there are no duplicate or missing elements.
+ </li><li> <code>'strictdescend'</code> checks if elements are in descending order
+ and there are no duplicate or missing elements.
+ </li><li> <code>'strictmonotonic'</code> checks if elements are either in
+ ascending or descending order and there are no duplicate or missing
+ elements.
+ </li></ul>
+
+<p> Alternatively, <var>direction</var> can be a cell array of character vectors
+ specifying the sorting direction for each individual column of <var>str</var>,
+ in which case the number of elements in <var>direction</var> must equal the
+ number of columns in <var>str</var>.
+</p>
+<p> <code><var>TF</var> = issortedrows (<var>str</var>, <var>col</var>, <var>direction</var>)</code>
+ checks if the rows in the string array <var>str</var> are sorted according to
+ the columns specified in <var>col</var> using the corresponding sorting
+ direction specified in <var>direction</var>.  In this case, the sign of the
+ values in <var>col</var> is ignored.  <var>col</var> and <var>direction</var> must have
+ the same length, but not necessarily the same number of elements as the
+ columns in <var>str</var>.
+</p>
+<p> <code><var>TF</var> = issortedrows (&hellip;, <code>'MissingPlacement'</code>,
+ <var>MP</var>)</code> specifies where missing elements (<code>&lt;missing&gt;</code>) are
+ placed with one of the following options specified in <var>MP</var>:
+</p>
+ <ul>
+<li> <code>'auto'</code>, which is the default, places missing elements last
+ for ascending sort and first for descending sort.
+ </li><li> <code>'first'</code> places missing elements first.
+ </li><li> <code>'last'</code> places missing elements last.
+ </li></ul>
+
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod26"
+              aria-expanded="false" aria-controls="collapseMethod26">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1040,7 +1419,7 @@ Test for string array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod19">
+          <div class="collapse multi-collapse" id="collapseMethod26">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>isstring</b> (<var>str</var>)</code></h5></dt>
@@ -1059,8 +1438,8 @@ Test for string array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod20"
-              aria-expanded="false" aria-controls="collapseMethod20">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod27"
+              aria-expanded="false" aria-controls="collapseMethod27">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1072,7 +1451,7 @@ Test if string array is a vector.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod20">
+          <div class="collapse multi-collapse" id="collapseMethod27">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>isvector</b> (<var>str</var>)</code></h5></dt>
@@ -1091,8 +1470,8 @@ Test if string array is a vector.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod21"
-              aria-expanded="false" aria-controls="collapseMethod21">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod28"
+              aria-expanded="false" aria-controls="collapseMethod28">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1104,7 +1483,7 @@ Test for equality.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod21">
+          <div class="collapse multi-collapse" id="collapseMethod28">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -1126,8 +1505,8 @@ Test for equality.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod22"
-              aria-expanded="false" aria-controls="collapseMethod22">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod29"
+              aria-expanded="false" aria-controls="collapseMethod29">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1139,7 +1518,7 @@ Test for greater than or equal to.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod22">
+          <div class="collapse multi-collapse" id="collapseMethod29">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>ge</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -1161,8 +1540,8 @@ Test for greater than or equal to.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod23"
-              aria-expanded="false" aria-controls="collapseMethod23">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod30"
+              aria-expanded="false" aria-controls="collapseMethod30">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1174,7 +1553,7 @@ Test for greater than.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod23">
+          <div class="collapse multi-collapse" id="collapseMethod30">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>gt</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -1195,8 +1574,8 @@ Test for greater than.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod24"
-              aria-expanded="false" aria-controls="collapseMethod24">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod31"
+              aria-expanded="false" aria-controls="collapseMethod31">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1208,7 +1587,7 @@ Test for less than or equal to.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod24">
+          <div class="collapse multi-collapse" id="collapseMethod31">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>le</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -1230,8 +1609,8 @@ Test for less than or equal to.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod25"
-              aria-expanded="false" aria-controls="collapseMethod25">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod32"
+              aria-expanded="false" aria-controls="collapseMethod32">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1243,7 +1622,7 @@ Test for less than.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod25">
+          <div class="collapse multi-collapse" id="collapseMethod32">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>lt</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -1264,8 +1643,8 @@ Test for less than.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod26"
-              aria-expanded="false" aria-controls="collapseMethod26">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod33"
+              aria-expanded="false" aria-controls="collapseMethod33">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1277,7 +1656,7 @@ Test for inequality.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod26">
+          <div class="collapse multi-collapse" id="collapseMethod33">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>ne</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -1300,8 +1679,8 @@ Test for inequality.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod27"
-              aria-expanded="false" aria-controls="collapseMethod27">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod34"
+              aria-expanded="false" aria-controls="collapseMethod34">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1313,7 +1692,7 @@ Compare strings.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod27">
+          <div class="collapse multi-collapse" id="collapseMethod34">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>strcmp</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -1341,8 +1720,8 @@ Compare strings.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod28"
-              aria-expanded="false" aria-controls="collapseMethod28">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod35"
+              aria-expanded="false" aria-controls="collapseMethod35">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1354,7 +1733,7 @@ Compare strings (case insensitive).
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod28">
+          <div class="collapse multi-collapse" id="collapseMethod35">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>strcmpi</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
@@ -1383,8 +1762,8 @@ Compare strings (case insensitive).
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod29"
-              aria-expanded="false" aria-controls="collapseMethod29">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod36"
+              aria-expanded="false" aria-controls="collapseMethod36">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1396,7 +1775,7 @@ Compare first <var>n</var> characters of strings.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod29">
+          <div class="collapse multi-collapse" id="collapseMethod36">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>strncmp</b> (<var>A</var>, <var>B</var>, <var>n</var>)</code></h5></dt>
@@ -1425,8 +1804,8 @@ Compare first <var>n</var> characters of strings.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod30"
-              aria-expanded="false" aria-controls="collapseMethod30">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod37"
+              aria-expanded="false" aria-controls="collapseMethod37">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1438,7 +1817,7 @@ Compare first <var>n</var> characters of strings (case insensitive).
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod30">
+          <div class="collapse multi-collapse" id="collapseMethod37">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>strncmpi</b> (<var>A</var>, <var>B</var>, <var>n</var>)</code></h5></dt>
@@ -1468,8 +1847,8 @@ Compare first <var>n</var> characters of strings (case insensitive).
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod31"
-              aria-expanded="false" aria-controls="collapseMethod31">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod38"
+              aria-expanded="false" aria-controls="collapseMethod38">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1477,11 +1856,11 @@ Compare first <var>n</var> characters of strings (case insensitive).
                   </h4>
                 </div>
                 <div class="col-8">
-Remove content from string array.
+Combine string arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod31">
+          <div class="collapse multi-collapse" id="collapseMethod38">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>append</b> (<var>str1</var>, &hellip;, <var>strN</var>)</code></h5></dt>
@@ -1506,29 +1885,71 @@ Remove content from string array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod32"
-              aria-expanded="false" aria-controls="collapseMethod32">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod39"
+              aria-expanded="false" aria-controls="collapseMethod39">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
-                    <b><code>erase</code></b>
+                    <b><code>compose</code></b>
                   </h4>
                 </div>
                 <div class="col-8">
-Remove content from string array.
+Format data into a string array or translate escape-character sequences.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod32">
+          <div class="collapse multi-collapse" id="collapseMethod39">
             <div class="border-bottom py-2">
 <dl>
-<dt><code><h5 class="fs">string: <var>newstr</var> = <b>erase</b> (<var>str</var>, <var>pat</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>str</var> = <b>compose</b> (<var>formatSpec</var>, <var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>str</var> = <b>compose</b> (<var>formatSpec</var>, <var>A1</var>, &hellip;, <var>AN</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>str</var> = <b>compose</b> (<var>txt</var>)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>newstr</var> = erase (<var>str</var>, <var>pat</var>)</code> removes the
- occurrences of <var>pat</var> from each element of the string array <var>str</var>.
- <var>newstr</var> is a string array of the same size as <var>str</var>.
+<p> <code><var>str</var> = compose (<var>formatSpec</var>, <var>A</var>)</code> formats the data
+ in the array <var>A</var> according to the formatting operators in
+ <var>formatSpec</var>, which must be a string scalar or character vector, and
+ returns the result in the string array <var>str</var>.  The formatting
+ operators are the same as those accepted by the <code>sprintf</code> function.
+ Unlike <code>sprintf</code>, which returns a single character vector,
+ <code>compose</code> returns a string array whose elements correspond to the
+ rows of <var>A</var>.
+</p>
+<p> <code>compose</code> applies <var>formatSpec</var> to each row of <var>A</var> so that
+ <var>str</var> has the same number of rows as <var>A</var>.  The size of <var>str</var>
+ is further determined as follows:
+</p>
+ <ul>
+<li> If the number of columns in <var>A</var> exceeds the number of
+ formatting operators in <var>formatSpec</var>, then <var>formatSpec</var> is
+ applied repeatedly along each row of <var>A</var>, adding columns to
+ <var>str</var>.
+ </li><li> If the number of columns in <var>A</var> is less than the number of
+ formatting operators, then the operators left without a corresponding
+ value appear unchanged in <var>str</var>.
+ </li><li> If <var>A</var> has zero columns, then <var>str</var> has the same size as
+ <var>A</var> and no formatting operators are applied.
+ </li></ul>
+
+<p> <code><var>str</var> = compose (<var>formatSpec</var>, <var>A1</var>, &hellip;,
+ <var>AN</var>)</code> formats the data from the arrays <var>A1</var>, &hellip;, <var>AN</var>.
+ The formatting operators are assigned to the input arrays in order: once
+ an operator has consumed a value from an input array, it becomes
+ unavailable to the following arrays.  All input arrays must be of
+ compatible sizes.
+</p>
+<p> <code><var>str</var> = compose (<var>txt</var>)</code> translates escape-character
+ sequences, such as <code>'\n'</code> and <code>'\t'</code>, in <var>txt</var> and
+ returns the result in <var>str</var>, which has the same size as <var>txt</var>.
+ Any formatting operators in <var>txt</var> are left unchanged.
+</p>
+<p> In all syntaxes, escape-character sequences appearing in literal text are
+ translated and each <code>'%%'</code> literal is converted to a single
+ <code>'%'</code> character, following the same rules as the <code>sprintf</code>
+ function.  The only difference from <code>sprintf</code> is that a formatting
+ operator left without a corresponding value is emitted unchanged rather
+ than dropped.
 </p>
 
 
@@ -1540,8 +1961,547 @@ Remove content from string array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod33"
-              aria-expanded="false" aria-controls="collapseMethod33">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod40"
+              aria-expanded="false" aria-controls="collapseMethod40">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>erase</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Remove content from string array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod40">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>erase</b> (<var>str</var>, <var>match</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>newstr</var> = erase (<var>str</var>, <var>match</var>)</code> removes the
+ occurrences of <var>match</var> from each element of the string array
+ <var>str</var>.  <var>match</var> can be a string array, a character vector, or a
+ cell array of character vectors.  When <var>match</var> contains more than one
+ piece of text, every occurrence of every element of <var>match</var> is
+ removed.  <var>newstr</var> is a string array of the same size as <var>str</var>;
+ the size of <var>match</var> need not match the size of <var>str</var>.  Missing
+ values in <var>str</var> are preserved.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod41"
+              aria-expanded="false" aria-controls="collapseMethod41">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>eraseBetween</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Erase content between start and end boundaries.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod41">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>eraseBetween</b> (<var>str</var>, <var>startPat</var>, <var>endPat</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>eraseBetween</b> (<var>str</var>, <var>startPos</var>, <var>endPos</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>eraseBetween</b> (&hellip;, <code>&quot;Boundaries&quot;</code>, <var>bounds</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>newstr</var> = eraseBetween (<var>str</var>, <var>startPat</var>,
+ <var>endPat</var>)</code> removes from each element of the string array <var>str</var>
+ the text that occurs between the substrings <var>startPat</var> and
+ <var>endPat</var>, keeping the boundary substrings themselves.  <var>startPat</var>
+ and <var>endPat</var> can be string arrays, character vectors, or cell arrays
+ of character vectors.  For each element, the first occurrence of
+ <var>startPat</var> is matched and then the first occurrence of <var>endPat</var>
+ that begins after it; if either boundary is not found, the element is
+ returned unchanged.
+</p>
+<p> <code><var>newstr</var> = eraseBetween (<var>str</var>, <var>startPos</var>,
+ <var>endPos</var>)</code> removes the text between the character positions
+ <var>startPos</var> and <var>endPos</var>, inclusive of the characters at those
+ positions.  <var>startPos</var> and <var>endPos</var> must be positive integers
+ with <var>startPos</var> not exceeding <var>endPos</var> and both within the
+ length of the corresponding element of <var>str</var>.
+</p>
+<p> <code><var>newstr</var> = eraseBetween (&hellip;, <code>&quot;Boundaries&quot;</code>,
+ <var>bounds</var>)</code> specifies whether the boundaries are included in or
+ excluded from the erased text.  <var>bounds</var> can be either
+ <code>&quot;inclusive&quot;</code> or <code>&quot;exclusive&quot;</code>.  When boundaries are given
+ as substrings, the default is <code>&quot;exclusive&quot;</code> and the boundary
+ substrings are preserved; when given as positions, the default is
+ <code>&quot;inclusive&quot;</code> and the characters at those positions are erased.
+</p>
+<p> <var>startPat</var>/<var>endPat</var> and <var>startPos</var>/<var>endPos</var> must either
+ be scalars, applied to every element of <var>str</var>, or be of the same size
+ as <var>str</var> and applied element-wise.  <var>newstr</var> is a string array of
+ the same size as <var>str</var>.  Missing values in <var>str</var> are preserved.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod42"
+              aria-expanded="false" aria-controls="collapseMethod42">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>extract</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Extract substrings from a string array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod42">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>extract</b> (<var>str</var>, <var>pat</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>extract</b> (<var>str</var>, <var>pos</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>newstr</var> = extract (<var>str</var>, <var>pat</var>)</code> returns the
+ substrings of <var>str</var> that match <var>pat</var>.  <var>pat</var> can be a string
+ array, a character vector, or a cell array of character vectors; when it
+ contains more than one piece of text, any of them may match.  Within each
+ element of <var>str</var> the matches are found left to right and do not
+ overlap; where alternatives match at the same position, the first listed
+ in <var>pat</var> is taken.
+</p>
+<p> The matches of an element occupy a row of <var>newstr</var>, so the matches
+ run along the second dimension and every element of <var>str</var> must yield
+ the same number of matches.  For a string scalar with <var>n</var> matches,
+ <var>newstr</var> is <code>1x<var>n</var></code>; for a non-scalar <var>str</var>,
+ <var>newstr</var> has one row per element (taken in column-major order) and
+ one column per match.  Elements with no match, including missing values,
+ are treated as having zero matches.
+</p>
+<p> <code><var>newstr</var> = extract (<var>str</var>, <var>pos</var>)</code> returns the single
+ character located at position <var>pos</var> in each element of <var>str</var>.
+ <var>pos</var> must be a positive integer that is either a scalar, applied to
+ every element, or the same size as <var>str</var>, applied element-wise.  In
+ this syntax <var>newstr</var> has the same size as <var>str</var> and missing
+ values are preserved.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod43"
+              aria-expanded="false" aria-controls="collapseMethod43">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>extractAfter</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Extract the substring after a position or pattern.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod43">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>extractAfter</b> (<var>str</var>, <var>pat</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>extractAfter</b> (<var>str</var>, <var>pos</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>newstr</var> = extractAfter (<var>str</var>, <var>pat</var>)</code> returns, for
+ each element of <var>str</var>, the part of the text that follows the first
+ occurrence of <var>pat</var>, excluding <var>pat</var> itself.  <var>pat</var> can be a
+ string array, a character vector, or a cell array of character vectors,
+ and must either be a scalar, applied to every element of <var>str</var>, or
+ be of the same size as <var>str</var> and applied element-wise.  If <var>pat</var>
+ is not found in an element, the corresponding element of <var>newstr</var> is
+ a missing value.
+</p>
+<p> <code><var>newstr</var> = extractAfter (<var>str</var>, <var>pos</var>)</code> returns the
+ part of each element of <var>str</var> that follows the character position
+ <var>pos</var>, that is, from <code><var>pos</var>+1</code> to the end.  <var>pos</var> must
+ be a positive integer that is either a scalar or the same size as
+ <var>str</var>.
+</p>
+<p> <var>newstr</var> is a string array of the same size as <var>str</var>.  Missing
+ values in <var>str</var> are preserved.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod44"
+              aria-expanded="false" aria-controls="collapseMethod44">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>extractBefore</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Extract the substring before a position or pattern.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod44">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>extractBefore</b> (<var>str</var>, <var>pat</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>extractBefore</b> (<var>str</var>, <var>pos</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>newstr</var> = extractBefore (<var>str</var>, <var>pat</var>)</code> returns, for
+ each element of <var>str</var>, the part of the text that precedes the first
+ occurrence of <var>pat</var>, excluding <var>pat</var> itself.  <var>pat</var> can be a
+ string array, a character vector, or a cell array of character vectors,
+ and must either be a scalar, applied to every element of <var>str</var>, or
+ be of the same size as <var>str</var> and applied element-wise.  If <var>pat</var>
+ is not found in an element, the corresponding element of <var>newstr</var> is
+ a missing value.
+</p>
+<p> <code><var>newstr</var> = extractBefore (<var>str</var>, <var>pos</var>)</code> returns the
+ part of each element of <var>str</var> that precedes the character position
+ <var>pos</var>, that is, from the start up to <code><var>pos</var>-1</code>.  <var>pos</var>
+ must be a positive integer that is either a scalar or the same size as
+ <var>str</var>.
+</p>
+<p> <var>newstr</var> is a string array of the same size as <var>str</var>.  Missing
+ values in <var>str</var> are preserved.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod45"
+              aria-expanded="false" aria-controls="collapseMethod45">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>extractBetween</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Extract the substrings between start and end boundaries.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod45">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>extractBetween</b> (<var>str</var>, <var>startPat</var>, <var>endPat</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>extractBetween</b> (<var>str</var>, <var>startPos</var>, <var>endPos</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>extractBetween</b> (&hellip;, <code>&quot;Boundaries&quot;</code>, <var>bounds</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>newstr</var> = extractBetween (<var>str</var>, <var>startPat</var>,
+ <var>endPat</var>)</code> returns the text that occurs between the substrings
+ <var>startPat</var> and <var>endPat</var> in each element of <var>str</var>.
+ <var>startPat</var> and <var>endPat</var> can be string arrays, character vectors,
+ or cell arrays of character vectors.  Within each element the boundary
+ pairs are matched from left to right and do not overlap, so an element
+ may yield several substrings; these run along the second dimension, and
+ every element of <var>str</var> must yield the same number of matches.  For a
+ string scalar with <var>n</var> matches, <var>newstr</var> is <code>1x<var>n</var></code>;
+ for a non-scalar <var>str</var>, <var>newstr</var> has one row per element (taken
+ in column-major order) and one column per match.  Elements with no match,
+ including missing values, are treated as having zero matches.
+</p>
+<p> <code><var>newstr</var> = extractBetween (<var>str</var>, <var>startPos</var>,
+ <var>endPos</var>)</code> returns the substring between the character positions
+ <var>startPos</var> and <var>endPos</var>, inclusive of the characters at those
+ positions.  This syntax extracts a single substring per element, so
+ <var>newstr</var> has the same size as <var>str</var>.
+</p>
+<p> <code><var>newstr</var> = extractBetween (&hellip;, <code>&quot;Boundaries&quot;</code>,
+ <var>bounds</var>)</code> specifies whether the boundaries are included in or
+ excluded from the extracted text.  <var>bounds</var> can be either
+ <code>&quot;inclusive&quot;</code> or <code>&quot;exclusive&quot;</code>.  When boundaries are given
+ as substrings, the default is <code>&quot;exclusive&quot;</code> and the boundary
+ substrings are not included; when given as positions, the default is
+ <code>&quot;inclusive&quot;</code> and the characters at those positions are included.
+</p>
+<p> <var>startPat</var>/<var>endPat</var> and <var>startPos</var>/<var>endPos</var> must either
+ be scalars, applied to every element of <var>str</var>, or be of the same size
+ as <var>str</var>.  Missing values in <var>str</var> are preserved.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod46"
+              aria-expanded="false" aria-controls="collapseMethod46">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>insertAfter</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Insert text after a pattern or position.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod46">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>insertAfter</b> (<var>str</var>, <var>pat</var>, <var>newtext</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>insertAfter</b> (<var>str</var>, <var>pos</var>, <var>newtext</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>newstr</var> = insertAfter (<var>str</var>, <var>pat</var>, <var>newtext</var>)</code>
+ inserts the text <var>newtext</var> into each element of <var>str</var> after
+ every non-overlapping occurrence of the substring <var>pat</var>.  <var>pat</var>
+ can be a string array, a character vector, or a cell array of character
+ vectors, and must either be a scalar, applied to every element of
+ <var>str</var>, or be of the same size as <var>str</var> and applied
+ element-wise.  If <var>pat</var> is not found in an element, that element is
+ returned unchanged.
+</p>
+<p> <code><var>newstr</var> = insertAfter (<var>str</var>, <var>pos</var>, <var>newtext</var>)</code>
+ inserts <var>newtext</var> after the character position <var>pos</var>, that is,
+ between the characters at positions <var>pos</var> and <code><var>pos</var>+1</code>.
+ <var>pos</var> must be a positive integer not exceeding the length of the
+ corresponding element of <var>str</var>, and must be either a scalar or the
+ same size as <var>str</var>.
+</p>
+<p> <var>newtext</var> can be a string array, a character vector, or a cell array
+ of character vectors, and must be either a scalar, inserted at every
+ position, or of the same size as <var>str</var>.  <var>newstr</var> is a string
+ array of the same size as <var>str</var>.  Missing values in <var>str</var> are
+ preserved, and a missing value in <var>newtext</var> makes the corresponding
+ element of <var>newstr</var> missing.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod47"
+              aria-expanded="false" aria-controls="collapseMethod47">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>insertBefore</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Insert text before a pattern or position.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod47">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>insertBefore</b> (<var>str</var>, <var>pat</var>, <var>newtext</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>insertBefore</b> (<var>str</var>, <var>pos</var>, <var>newtext</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>newstr</var> = insertBefore (<var>str</var>, <var>pat</var>, <var>newtext</var>)</code>
+ inserts the text <var>newtext</var> into each element of <var>str</var> before
+ every non-overlapping occurrence of the substring <var>pat</var>.  <var>pat</var>
+ can be a string array, a character vector, or a cell array of character
+ vectors, and must either be a scalar, applied to every element of
+ <var>str</var>, or be of the same size as <var>str</var> and applied
+ element-wise.  If <var>pat</var> is not found in an element, that element is
+ returned unchanged.
+</p>
+<p> <code><var>newstr</var> = insertBefore (<var>str</var>, <var>pos</var>, <var>newtext</var>)</code>
+ inserts <var>newtext</var> before the character position <var>pos</var>, that is,
+ between the characters at positions <code><var>pos</var>-1</code> and <var>pos</var>.
+ <var>pos</var> must be a positive integer not exceeding the length of the
+ corresponding element of <var>str</var>, and must be either a scalar or the
+ same size as <var>str</var>.
+</p>
+<p> <var>newtext</var> can be a string array, a character vector, or a cell array
+ of character vectors, and must be either a scalar, inserted at every
+ position, or of the same size as <var>str</var>.  <var>newstr</var> is a string
+ array of the same size as <var>str</var>.  Missing values in <var>str</var> are
+ preserved, and a missing value in <var>newtext</var> makes the corresponding
+ element of <var>newstr</var> missing.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod48"
+              aria-expanded="false" aria-controls="collapseMethod48">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>replace</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Replace substrings in string array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod48">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>replace</b> (<var>str</var>, <var>old</var>, <var>new</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>newstr</var> = replace (<var>str</var>, <var>old</var>, <var>new</var>)</code> replaces
+ every occurrence of the substring <var>old</var> with <var>new</var> in each
+ element of the string array <var>str</var>.  <var>old</var> and <var>new</var> can be
+ string arrays, character vectors, or cell arrays of character vectors.
+</p>
+<p> When <var>old</var> contains several substrings, <var>new</var> must either be a
+ single substring, used to replace all of them, or be of the same size as
+ <var>old</var>, replacing each substring of <var>old</var> with the corresponding
+ element of <var>new</var>.  All substrings are replaced in a single left to
+ right pass over each element: at each position the substrings of
+ <var>old</var> are tried in order, the first that matches is replaced, and
+ the scan resumes past the inserted text, so replacements are not
+ themselves re-scanned.  <var>old</var> and <var>new</var> are applied to every
+ element of <var>str</var>; their size need not match the size of <var>str</var>.
+</p>
+<p> <var>newstr</var> is a string array of the same size as <var>str</var>.  A
+ substring of <var>old</var> that does not occur leaves the text unchanged, and
+ missing values in <var>str</var> are preserved.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod49"
+              aria-expanded="false" aria-controls="collapseMethod49">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>replaceBetween</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Replace content between start and end boundaries.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod49">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>replaceBetween</b> (<var>str</var>, <var>startPat</var>, <var>endPat</var>, <var>newtext</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>replaceBetween</b> (<var>str</var>, <var>startPos</var>, <var>endPos</var>, <var>newtext</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>replaceBetween</b> (&hellip;, <code>&quot;Boundaries&quot;</code>, <var>bounds</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>newstr</var> = replaceBetween (<var>str</var>, <var>startPat</var>,
+ <var>endPat</var>, <var>newtext</var>)</code> replaces, in each element of the string
+ array <var>str</var>, the text that occurs between the substrings
+ <var>startPat</var> and <var>endPat</var> with <var>newtext</var>, keeping the boundary
+ substrings themselves.  <var>startPat</var> and <var>endPat</var> can be string
+ arrays, character vectors, or cell arrays of character vectors.  For each
+ element, the first occurrence of <var>startPat</var> is matched and then the
+ first occurrence of <var>endPat</var> that begins after it; if either boundary
+ is not found, the element is returned unchanged.
+</p>
+<p> <code><var>newstr</var> = replaceBetween (<var>str</var>, <var>startPos</var>,
+ <var>endPos</var>, <var>newtext</var>)</code> replaces the text between the character
+ positions <var>startPos</var> and <var>endPos</var>, inclusive of the characters at
+ those positions, with <var>newtext</var>.  <var>startPos</var> and <var>endPos</var>
+ must be positive integers with <var>startPos</var> not exceeding <var>endPos</var>
+ and both within the length of the corresponding element of <var>str</var>.
+</p>
+<p> <code><var>newstr</var> = replaceBetween (&hellip;, <code>&quot;Boundaries&quot;</code>,
+ <var>bounds</var>)</code> specifies whether the boundaries are included in or
+ excluded from the replaced text.  <var>bounds</var> can be either
+ <code>&quot;inclusive&quot;</code> or <code>&quot;exclusive&quot;</code>.  When boundaries are given
+ as substrings, the default is <code>&quot;exclusive&quot;</code> and the boundary
+ substrings are preserved; when given as positions, the default is
+ <code>&quot;inclusive&quot;</code> and the characters at those positions are replaced.
+</p>
+<p> <var>startPat</var>/<var>endPat</var> and <var>startPos</var>/<var>endPos</var> must either
+ be scalars, applied to every element of <var>str</var>, or be of the same size
+ as <var>str</var> and applied element-wise.  <var>newtext</var> can be a string
+ array, a character vector, or a cell array of character vectors, and must
+ be either a scalar or the same size as <var>str</var>.  <var>newstr</var> is a
+ string array of the same size as <var>str</var>.  Missing values in <var>str</var>
+ are preserved, and a missing value in <var>newtext</var> makes the
+ corresponding element of <var>newstr</var> missing.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod50"
+              aria-expanded="false" aria-controls="collapseMethod50">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1553,7 +2513,7 @@ Reverse order of characters in string array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod33">
+          <div class="collapse multi-collapse" id="collapseMethod50">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>reverse</b> (<var>str</var>)</code></h5></dt>
@@ -1574,8 +2534,267 @@ Reverse order of characters in string array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod34"
-              aria-expanded="false" aria-controls="collapseMethod34">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod51"
+              aria-expanded="false" aria-controls="collapseMethod51">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>sort</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Sort elements in a string array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod51">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>B</var> = <b>sort</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>B</var> = <b>sort</b> (<var>A</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>B</var> = <b>sort</b> (<var>A</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>B</var> = <b>sort</b> (<var>A</var>, <var>dim</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>B</var> = <b>sort</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: [<var>B</var>, <var>index</var>] = <b>sort</b> (<var>A</var>, &hellip;)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>B</var> = sort (<var>A</var>)</code> sorts the elements of the string array
+ <var>A</var> in ascending order.  Elements are compared lexicographically by
+ their Unicode code points, with the empty string <code>&quot;&quot;</code> sorting
+ before any non-empty string.  If <var>A</var> is a matrix,
+ <code>sort (<var>A</var>)</code> sorts each column of <var>A</var> in ascending order.
+ For multidimensional arrays, <code>sort (<var>A</var>)</code> sorts along the first
+ non-singleton dimension.
+</p>
+<p> <code><var>B</var> = sort (<var>A</var>, <var>dim</var>)</code> sorts along the dimension
+ specified by <var>dim</var>.
+</p>
+<p> <code><var>B</var> = sort (<var>A</var>, <var>direction</var>)</code> also specifies the
+ sorting direction, which can be either <code>'ascend'</code> (default) or
+ <code>'descend'</code>.
+</p>
+<p> <code><var>B</var> = sort (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
+ specifies where to place the missing elements (<code>&lt;missing&gt;</code>)
+ returned in <var>B</var> with any of the following options specified in
+ <var>MP</var>:
+</p>
+ <ul>
+<li> <code>'auto'</code>, which is the default, places missing elements last
+ for ascending sort and first for descending sort.
+ </li><li> <code>'first'</code> places missing elements first.
+ </li><li> <code>'last'</code> places missing elements last.
+ </li></ul>
+
+<p> <code>[<var>B</var>, <var>index</var>] = sort (<var>A</var>, &hellip;)</code> also returns a
+ sorting index containing the original indices of the elements in the
+ sorted array.
+</p>
+ <ul>
+<li> If <var>A</var> is a vector, then <var>index</var> contains the original
+ linear indices of the elements in the sorted vector <var>B</var> such that
+ <code><var>B</var> = <var>A</var>(<var>index</var>)</code>.
+ </li><li> If <var>A</var> is an <math>M&times;N</math> matrix and <code><var>dim</var> = 1</code>, then
+ <var>index</var> contains the original row indices of the elements in the
+ sorted vector <var>B</var> such that for <code>j = 1:N</code>,
+ <code><var>B</var>(:,j) = <var>A</var>(<var>index</var>(:,j),j)</code>.
+ </li></ul>
+
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod52"
+              aria-expanded="false" aria-controls="collapseMethod52">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>sortrows</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Sort rows in a string array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod52">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>B</var> = <b>sortrows</b> (<var>A</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>, <var>direction</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>B</var> = <b>sortrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: [<var>B</var>, <var>index</var>] = <b>sortrows</b> (<var>A</var>, &hellip;)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>B</var> = sortrows (<var>A</var>)</code> sorts the rows of the 2-D string
+ array <var>A</var> in ascending order.  The sorted array <var>B</var> has the same
+ size as <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>)</code> sorts <var>A</var> according to
+ the columns specified by the numeric vector <var>col</var>, which must
+ explicitly contain non-zero integers whose absolute values index existing
+ columns in <var>A</var>.  Positive elements sort the corresponding columns in
+ ascending order, while negative elements sort the corresponding columns
+ in descending order.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>direction</var>)</code> also specifies the
+ sorting direction, which can be either <code>'ascend'</code> (default) or
+ <code>'descend'</code> applying to all columns in <var>A</var>.  Alternatively,
+ <var>direction</var> can be either a string array or a cell array of character
+ vectors specifying the sorting direction for each individual column of
+ <var>A</var>, in which case the number of elements in <var>direction</var> must
+ equal the number of columns in <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (<var>A</var>, <var>col</var>, <var>direction</var>)</code> sorts the
+ string array <var>A</var> according to the columns specified in <var>col</var>
+ using the corresponding sorting direction specified in <var>direction</var>.
+ In this case, the sign of the values in <var>col</var> is ignored.  <var>col</var>
+ and <var>direction</var> must have the same number of elements, but not
+ necessarily equal to the columns of <var>A</var>.
+</p>
+<p> <code><var>B</var> = sortrows (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
+ specifies where to place the missing elements (<code>&lt;missing&gt;</code>)
+ returned in <var>B</var> with any of the following options specified in
+ <var>MP</var>:
+</p>
+ <ul>
+<li> <code>'auto'</code>, which is the default, places missing elements last
+ for ascending sort and first for descending sort.
+ </li><li> <code>'first'</code> places missing elements first.
+ </li><li> <code>'last'</code> places missing elements last.
+ </li></ul>
+
+<p> <code>[<var>B</var>, <var>index</var>] = sortrows (<var>A</var>, &hellip;)</code> also returns
+ an index vector containing the original row indices of <var>A</var> in the
+ sorted matrix <var>B</var> such that <code><var>B</var> = <var>A</var>(<var>index</var>,:)</code>.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod53"
+              aria-expanded="false" aria-controls="collapseMethod53">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>split</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Split string array at delimiters.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod53">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>split</b> (<var>str</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>split</b> (<var>str</var>, <var>delimiter</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>split</b> (<var>str</var>, <var>delimiter</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: [<var>newstr</var>, <var>match</var>] = <b>split</b> (&hellip;)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>newstr</var> = split (<var>str</var>)</code> divides each element of <var>str</var>
+ at whitespace characters and returns the pieces as a string array.  The
+ whitespace characters are the space, tab, newline, carriage return, form
+ feed, and vertical tab.
+</p>
+<p> <code><var>newstr</var> = split (<var>str</var>, <var>delimiter</var>)</code> divides each
+ element at the substrings specified by <var>delimiter</var>, which can be a
+ string array, a character vector, or a cell array of character vectors.
+ When <var>delimiter</var> contains several substrings they are all used; at a
+ given position the substrings are tried in order and the first that
+ matches is taken.  Delimiters are not collapsed, so consecutive
+ delimiters yield empty strings in <var>newstr</var>.
+</p>
+<p> The pieces of each element are laid out along a new dimension.  For a
+ string scalar that splits into <var>n</var> pieces, <var>newstr</var> is
+ <code><var>n</var>x1</code>; for an <code>Mx1</code> column it is <code>Mx<var>n</var></code>; for a
+ <code>1xM</code> row it is <code>1xMx<var>n</var></code>; and in general the pieces extend
+ the first trailing singleton dimension.  Every element of <var>str</var> must
+ split into the same number of pieces.  Missing values in <var>str</var> are
+ preserved and count as a single piece.
+</p>
+<p> <code><var>newstr</var> = split (<var>str</var>, <var>delimiter</var>, <var>dim</var>)</code> lays
+ the pieces out along dimension <var>dim</var>, which must be a dimension along
+ which <var>str</var> has size 1.
+</p>
+<p> <code>[<var>newstr</var>, <var>match</var>] = split (&hellip;)</code> also returns the
+ delimiters matched between the pieces.  <var>match</var> has the same layout
+ as <var>newstr</var> but with one fewer element along the split dimension.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod54"
+              aria-expanded="false" aria-controls="collapseMethod54">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>splitlines</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Split string array at newline characters.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod54">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>splitlines</b> (<var>str</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>newstr</var> = splitlines (<var>str</var>)</code> divides each element of
+ <var>str</var> at its newline characters and returns the lines as a string
+ array.  The recognized newline characters are the line feed, the carriage
+ return, a carriage return followed by a line feed (treated as a single
+ boundary), the vertical tab, the form feed, and the Unicode next-line
+ (<code>U+0085</code>), line-separator (<code>U+2028</code>), and paragraph-separator
+ (<code>U+2029</code>) characters.
+</p>
+<p> The lines are laid out along a new dimension exactly as for <code>split</code>:
+ a string scalar with <var>n</var> lines yields an <code><var>n</var>x1</code> array, and
+ an <code>Mx1</code> column yields an <code>Mx<var>n</var></code> array.  Every element of
+ <var>str</var> must contain the same number of newlines.  Missing values in
+ <var>str</var> are preserved and count as a single line.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod55"
+              aria-expanded="false" aria-controls="collapseMethod55">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1587,7 +2806,7 @@ Horizontal concatenation of texts in string array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod34">
+          <div class="collapse multi-collapse" id="collapseMethod55">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>strcat</b> (<var>str1</var>, <var>str2</var>, &hellip;)</code></h5></dt>
@@ -1610,8 +2829,172 @@ Horizontal concatenation of texts in string array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod35"
-              aria-expanded="false" aria-controls="collapseMethod35">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod56"
+              aria-expanded="false" aria-controls="collapseMethod56">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>strip</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Remove leading and trailing characters from string array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod56">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>strip</b> (<var>str</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>strip</b> (<var>str</var>, <var>side</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>strip</b> (<var>str</var>, <var>stripchar</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>strip</b> (<var>str</var>, <var>side</var>, <var>stripchar</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>newstr</var> = strip (<var>str</var>)</code> removes all consecutive
+ whitespace characters from the beginning and end of each element of
+ <var>str</var>.  The whitespace characters are the space, tab, newline,
+ carriage return, form feed, and vertical tab.
+</p>
+<p> <code><var>newstr</var> = strip (<var>str</var>, <var>side</var>)</code> removes whitespace
+ from the side given by <var>side</var>, which can be <code>&quot;left&quot;</code>,
+ <code>&quot;right&quot;</code>, or <code>&quot;both&quot;</code> (the default).
+</p>
+<p> <code><var>newstr</var> = strip (<var>str</var>, <var>stripchar</var>)</code> removes the
+ single character <var>stripchar</var> instead of whitespace.  Because the side
+ keywords are longer than one character, a single-character second
+ argument is always treated as <var>stripchar</var>.
+</p>
+<p> <code><var>newstr</var> = strip (<var>str</var>, <var>side</var>, <var>stripchar</var>)</code>
+ removes <var>stripchar</var> from the given <var>side</var>.
+</p>
+<p> <var>newstr</var> is a string array of the same size as <var>str</var>.  Missing
+ values in <var>str</var> are preserved.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod57"
+              aria-expanded="false" aria-controls="collapseMethod57">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>pad</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Add leading or trailing characters to string array.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod57">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>pad</b> (<var>str</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>pad</b> (<var>str</var>, <var>nchars</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>pad</b> (<var>str</var>, <var>side</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>pad</b> (<var>str</var>, <var>nchars</var>, <var>side</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>pad</b> (&hellip;, <var>padchar</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>newstr</var> = pad (<var>str</var>)</code> pads each element of <var>str</var> with
+ trailing spaces so that every element is as long as the longest one.
+</p>
+<p> <code><var>newstr</var> = pad (<var>str</var>, <var>nchars</var>)</code> pads each element to
+ <var>nchars</var> characters.  Elements that already have more than
+ <var>nchars</var> characters are left unchanged; <code>pad</code> never truncates.
+</p>
+<p> <code><var>newstr</var> = pad (<var>str</var>, <var>side</var>)</code> and
+ <code><var>newstr</var> = pad (<var>str</var>, <var>nchars</var>, <var>side</var>)</code> add the
+ padding on the side given by <var>side</var>, which can be <code>&quot;left&quot;</code>,
+ <code>&quot;right&quot;</code>, or <code>&quot;both&quot;</code>.  The default is <code>&quot;right&quot;</code>; for
+ <code>&quot;both&quot;</code>, an odd number of pad characters places the extra one on
+ the right.
+</p>
+<p> <code><var>newstr</var> = pad (&hellip;, <var>padchar</var>)</code> pads with the single
+ character <var>padchar</var> instead of a space.  As <var>padchar</var> is the last
+ argument and a single character, it is told apart from <var>side</var> by its
+ length.
+</p>
+<p> Length is measured in characters, not bytes.  <var>newstr</var> is a string
+ array of the same size as <var>str</var>, and missing values in <var>str</var> are
+ preserved.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod58"
+              aria-expanded="false" aria-controls="collapseMethod58">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>join</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Combine string array elements.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod58">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>join</b> (<var>str</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>join</b> (<var>str</var>, <var>delimiter</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>join</b> (<var>str</var>, <var>dim</var>)</code></h5></dt>
+<dt><code><h5 class="fs">string: <var>newstr</var> = <b>join</b> (<var>str</var>, <var>delimiter</var>, <var>dim</var>)</code></h5></dt>
+</dl>
+
+<p> </p>
+<p> <code><var>newstr</var> = join (<var>str</var>)</code> combines the elements of <var>str</var>
+ along the last dimension whose size is not 1, placing a single space
+ between consecutive elements.  That dimension is reduced to size 1.
+</p>
+<p> <code><var>newstr</var> = join (<var>str</var>, <var>delimiter</var>)</code> uses
+ <var>delimiter</var> instead of a space.  <var>delimiter</var> can be a string
+ array, a character vector, or a cell array of character vectors.  A
+ scalar <var>delimiter</var> is placed between every pair of elements.  An
+ array <var>delimiter</var> supplies the text placed between consecutive
+ elements and must have one fewer element than <var>str</var> along the joined
+ dimension; its other dimensions must be 1 or match <var>str</var>.
+</p>
+<p> <code><var>newstr</var> = join (<var>str</var>, <var>dim</var>)</code> and
+ <code><var>newstr</var> = join (<var>str</var>, <var>delimiter</var>, <var>dim</var>)</code>
+ combine the elements along dimension <var>dim</var>.
+</p>
+<p> <var>newstr</var> has the size of <var>str</var> with the joined dimension reduced
+ to 1.  If any element being combined, or any delimiter placed between
+ them, is a missing value, the corresponding element of <var>newstr</var> is a
+ missing value.
+</p>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod59"
+              aria-expanded="false" aria-controls="collapseMethod59">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1623,7 +3006,7 @@ Append strings.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod35">
+          <div class="collapse multi-collapse" id="collapseMethod59">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>plus</b> (<var>str1</var>, <var>str2</var>)</code></h5></dt>
@@ -1645,8 +3028,8 @@ Append strings.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod36"
-              aria-expanded="false" aria-controls="collapseMethod36">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod60"
+              aria-expanded="false" aria-controls="collapseMethod60">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1658,7 +3041,7 @@ Convert contents of string array to lower case.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod36">
+          <div class="collapse multi-collapse" id="collapseMethod60">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>lower</b> (<var>str</var>)</code></h5></dt>
@@ -1679,8 +3062,8 @@ Convert contents of string array to lower case.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod37"
-              aria-expanded="false" aria-controls="collapseMethod37">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod61"
+              aria-expanded="false" aria-controls="collapseMethod61">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1692,7 +3075,7 @@ Convert contents of string array to upper case.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod37">
+          <div class="collapse multi-collapse" id="collapseMethod61">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>upper</b> (<var>str</var>)</code></h5></dt>
@@ -1713,8 +3096,8 @@ Convert contents of string array to upper case.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod38"
-              aria-expanded="false" aria-controls="collapseMethod38">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod62"
+              aria-expanded="false" aria-controls="collapseMethod62">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1726,7 +3109,7 @@ Unique values in a string array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod38">
+          <div class="collapse multi-collapse" id="collapseMethod62">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>B</var> = <b>unique</b> (<var>A</var>)</code></h5></dt>
@@ -1775,8 +3158,8 @@ Unique values in a string array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod39"
-              aria-expanded="false" aria-controls="collapseMethod39">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod63"
+              aria-expanded="false" aria-controls="collapseMethod63">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1788,7 +3171,7 @@ Concatenate string arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod39">
+          <div class="collapse multi-collapse" id="collapseMethod63">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>C</var> = <b>cat</b> (<var>dim</var>, <var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
@@ -1812,8 +3195,8 @@ Concatenate string arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod40"
-              aria-expanded="false" aria-controls="collapseMethod40">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod64"
+              aria-expanded="false" aria-controls="collapseMethod64">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1825,15 +3208,15 @@ Horizontal concatenation of string arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod40">
+          <div class="collapse multi-collapse" id="collapseMethod64">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>C</var> = <b>horzcat</b> (<var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>C</var> = horzcat (<var>A</var>, <var>B</var>, &hellip;</code> is the equivalent of
- the syntax <code><var>B</var> = [<var>A</var>, <var>B</var>, &hellip;]</code> and horizontally
+<p> <code><var>C</var> = horzcat (<var>A</var>, <var>B</var>, &hellip;)</code> is the equivalent of
+ the syntax <code><var>C</var> = [<var>A</var>, <var>B</var>, &hellip;]</code> and horizontally
  concatenates the string arrays <var>A</var>, <var>B</var>, &hellip;.  All input
  arrays must have the same size except along the second dimension.  Any of
  the input arrays may also be character matrixes, cell arrays of character
@@ -1849,8 +3232,8 @@ Horizontal concatenation of string arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod41"
-              aria-expanded="false" aria-controls="collapseMethod41">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod65"
+              aria-expanded="false" aria-controls="collapseMethod65">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1862,17 +3245,17 @@ Vertical concatenation of string arrays.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod41">
+          <div class="collapse multi-collapse" id="collapseMethod65">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>C</var> = <b>vertcat</b> (<var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
 </dl>
 
 <p> </p>
-<p> <code><var>C</var> = vertcat (<var>A</var>, <var>B</var>, &hellip;</code> is the equivalent of
- the syntax <code><var>B</var> = [<var>A</var>; <var>B</var>; &hellip;]</code> and vertically
+<p> <code><var>C</var> = vertcat (<var>A</var>, <var>B</var>, &hellip;)</code> is the equivalent of
+ the syntax <code><var>C</var> = [<var>A</var>; <var>B</var>; &hellip;]</code> and vertically
  concatenates the string arrays <var>A</var>, <var>B</var>, &hellip;.  All input
- arrays must have the same size except along the second dimension.  Any of
+ arrays must have the same size except along the first dimension.  Any of
  the input arrays may also be character matrixes, cell arrays of character
  vectors, numeric arrays, or logical arrays of compatible size.
 </p>
@@ -1886,8 +3269,8 @@ Vertical concatenation of string arrays.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod42"
-              aria-expanded="false" aria-controls="collapseMethod42">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod66"
+              aria-expanded="false" aria-controls="collapseMethod66">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1899,7 +3282,7 @@ Repeat copies of a string array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod42">
+          <div class="collapse multi-collapse" id="collapseMethod66">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>B</var> = <b>repmat</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
@@ -1930,8 +3313,8 @@ Repeat copies of a string array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod43"
-              aria-expanded="false" aria-controls="collapseMethod43">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod67"
+              aria-expanded="false" aria-controls="collapseMethod67">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1943,7 +3326,7 @@ Repeat copies of string array elements.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod43">
+          <div class="collapse multi-collapse" id="collapseMethod67">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>B</var> = <b>repelem</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
@@ -1978,8 +3361,8 @@ Repeat copies of string array elements.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod44"
-              aria-expanded="false" aria-controls="collapseMethod44">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod68"
+              aria-expanded="false" aria-controls="collapseMethod68">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -1991,7 +3374,7 @@ Construct a vector of repeated elements from a string array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod44">
+          <div class="collapse multi-collapse" id="collapseMethod68">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>B</var> = <b>repelems</b> (<var>A</var>, <var>R</var>)</code></h5></dt>
@@ -2015,8 +3398,8 @@ Construct a vector of repeated elements from a string array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod45"
-              aria-expanded="false" aria-controls="collapseMethod45">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod69"
+              aria-expanded="false" aria-controls="collapseMethod69">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -2028,7 +3411,7 @@ Reshape string array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod45">
+          <div class="collapse multi-collapse" id="collapseMethod69">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>B</var> = <b>reshape</b> (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code></h5></dt>
@@ -2060,8 +3443,8 @@ Reshape string array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod46"
-              aria-expanded="false" aria-controls="collapseMethod46">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod70"
+              aria-expanded="false" aria-controls="collapseMethod70">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -2073,7 +3456,7 @@ Circularly shift the elements in a string array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod46">
+          <div class="collapse multi-collapse" id="collapseMethod70">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>B</var> = <b>circshift</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
@@ -2105,8 +3488,8 @@ Circularly shift the elements in a string array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod47"
-              aria-expanded="false" aria-controls="collapseMethod47">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod71"
+              aria-expanded="false" aria-controls="collapseMethod71">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -2118,7 +3501,7 @@ Generalized transpose for a string N-D array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod47">
+          <div class="collapse multi-collapse" id="collapseMethod71">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>B</var> = <b>permute</b> (<var>A</var>, <var>dims</var>)</code></h5></dt>
@@ -2144,8 +3527,8 @@ Generalized transpose for a string N-D array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod48"
-              aria-expanded="false" aria-controls="collapseMethod48">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod72"
+              aria-expanded="false" aria-controls="collapseMethod72">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -2157,7 +3540,7 @@ Inverse of the generalized transpose for a string N-D array.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod48">
+          <div class="collapse multi-collapse" id="collapseMethod72">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>A</var> = <b>ipermute</b> (<var>B</var>, <var>dims</var>)</code></h5></dt>
@@ -2184,8 +3567,8 @@ Inverse of the generalized transpose for a string N-D array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod49"
-              aria-expanded="false" aria-controls="collapseMethod49">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod73"
+              aria-expanded="false" aria-controls="collapseMethod73">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -2197,7 +3580,7 @@ Transpose a string matrix.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod49">
+          <div class="collapse multi-collapse" id="collapseMethod73">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>B</var> = <b>transpose</b> (<var>A</var>)</code></h5></dt>
@@ -2218,8 +3601,8 @@ Transpose a string matrix.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod50"
-              aria-expanded="false" aria-controls="collapseMethod50">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod74"
+              aria-expanded="false" aria-controls="collapseMethod74">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -2231,7 +3614,7 @@ Transpose a string matrix.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod50">
+          <div class="collapse multi-collapse" id="collapseMethod74">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">string: <var>B</var> = <b>ctranspose</b> (<var>A</var>)</code></h5></dt>
