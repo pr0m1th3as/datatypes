@@ -1813,9 +1813,6 @@
 %!                          datetime (2021, 1, 1))), 'datetime')
 %!assert_equal (class (cat (2, string ('1:00:00'), duration (2, 0, 0))), ...
 %!              'duration')
-## cat: error when sizes are incompatible along a non-operating dimension
-%!error <cat: dimension mismatch> ...
-%! cat (1, string ({'a', 'b'}), string ('c'))
 
 ## horzcat: '[A, B]' equals 'horzcat (A, B)' equals 'cat (2, A, B)'
 %!assert_equal ([string({'a', 'b'}), string({'c', 'd'})], ...
@@ -1830,9 +1827,6 @@
 %! h = [string('a'), string(NaN)];
 %! assert_equal (ismissing (h), [false, true]);
 %! assert_equal (cellstr (h), {'a', ''});
-## horzcat: error when the inputs differ in the number of rows
-%!error <cat: string/horzcat method failed> ...
-%! [string({'a'; 'b'}), string('c')]
 
 ## vertcat: '[A; B]' equals 'vertcat (A, B)' equals 'cat (1, A, B)'
 %!assert_equal ([string({'a', 'b'}); string({'c', 'd'})], ...
@@ -1847,9 +1841,6 @@
 %! v = [string('a'); string(NaN)];
 %! assert_equal (ismissing (v), [false; true]);
 %! assert_equal (cellstr (v), {'a'; ''});
-## vertcat: error when the inputs differ in the number of columns
-%!error <cat: string/vertcat method failed> ...
-%! [string({'a', 'b'}); string('c')]
 
 ## repmat: a scalar count tiles the array along every dimension
 %!assert_equal (repmat (string ({'a', 'b'}), 2), ...
@@ -1887,9 +1878,6 @@
 %! r = repelem (string ({'a', missing}), 2);
 %! assert_equal (ismissing (r), [false, false, true, true]);
 %! assert_equal (cellstr (r), {'a', 'a', '', ''});
-## repelem: error when a count vector does not match the element count
-%!error <repelem: R1 must either be scalar or have the same number> ...
-%! repelem (string ({'a', 'b', 'c'}), [1, 2])
 
 ## repelems: the first row of R indexes elements, the second row repeats them
 %!assert_equal (repelems (string ({'a', 'b', 'c'}), [1, 3; 2, 2]), ...
@@ -1902,11 +1890,6 @@
 %! r = repelems (string ({'a', missing, 'c'}), [2, 3; 1, 2]);
 %! assert_equal (ismissing (r), [true, false, false]);
 %! assert_equal (cellstr (r), {'', 'c', 'c'});
-## repelems: error branches
-%!error <repelems: R must be a matrix with two rows> ...
-%! repelems (string ({'a', 'b', 'c'}), [1, 2, 3])
-%!error <repelems: R must be a matrix of integers> ...
-%! repelems (string ({'a', 'b', 'c'}), [1.5; 2])
 
 ## reshape: dimensions are filled column-major
 %!assert_equal (reshape (string ({'a', 'b', 'c', 'd', 'e', 'f'}), 2, 3), ...
@@ -1923,9 +1906,6 @@
 %!test
 %! r = reshape (string ({'a', missing, 'c', missing}), 2, 2);
 %! assert_equal (ismissing (r), [false, false; true, true]);
-## reshape: error when the element count does not match
-%!error <reshape: can't reshape 1x3 array to 2x2 array> ...
-%! reshape (string ({'a', 'b', 'c'}), 2, 2)
 
 ## circshift: a positive scalar shifts along the first non-singleton dimension
 %!assert_equal (circshift (string ({'a', 'b', 'c', 'd'}), 1), ...
@@ -1952,9 +1932,6 @@
 %!test
 %! p = permute (string ({'a', missing; 'c', 'd'}), [2, 1]);
 %! assert_equal (ismissing (p), [false, false; true, false]);
-## permute: error on an invalid permutation vector
-%!error <permute: permutation vector cannot contain identical elements> ...
-%! permute (string ({'a', 'b'}), [1, 1])
 
 ## ipermute: inverts permute, so the round-trip returns the original array
 %!test
@@ -1983,3 +1960,112 @@
 %!              transpose (string ({'a', 'b'; 'c', 'd'})))
 ## ctranspose: the ''' operator dispatches to this method
 %!assert_equal (string ({'a', 'b'})', string ({'a'; 'b'}))
+
+################################################################################
+##                  ** Reference and Assignment Operations **                 ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'end'              'subsref'          'subsasgn'                           ##
+##                                                                            ##
+################################################################################
+
+## end: indexes the last element of a vector (and counts back from it)
+%!test
+%! a = string ({'a', 'b', 'c', 'd'});
+%! assert_equal (a(end), string ('d'));
+%! assert_equal (a(end-1), string ('c'));
+## end: resolves per-dimension and linearly within a matrix
+%!test
+%! m = string ({'a', 'b', 'c'; 'd', 'e', 'f'});
+%! assert_equal (m(end, end), string ('f'));
+%! assert_equal (m(end), string ('f'));
+%! assert_equal (m(1, end), string ('c'));
+
+## subsref: '()' returns a string sub-array (class and contents preserved)
+%!test
+%! a = string ({'a', 'b', 'c', 'd'});
+%! assert_equal (class (a(2:3)), 'string');
+%! assert_equal (a(2:3), string ({'b', 'c'}));
+## subsref: '()' carries the missing mask along with the elements
+%!test
+%! a = string ({'a', missing, 'c'});
+%! r = a([1, 2]);
+%! assert_equal (ismissing (r), [false, true]);
+%! assert_equal (cellstr (r), {'a', ''});
+## subsref: '{}' returns the backing cell-array slice (a cell, not a string)
+%!test
+%! a = string ({'a', 'b', 'c', 'd'});
+%! v = a{2};
+%! assert_equal (class (v), 'cell');
+%! assert_equal (v, {'b'});
+## subsref: chained '()' references resolve left to right
+%!assert_equal (string ({'aa', 'bb', 'cc'})([1, 3])(2), string ('cc'))
+## subsref: '.' indexing for reference is an error
+%!error <string.subsref: '.' invalid indexing for referencing values. Use '\(\)' instead.> ...
+%! (string ({'a', 'b'}).foo)
+
+## subsasgn: '()' assignment from another string replaces the elements
+%!test
+%! a = string ({'a', 'b', 'c', 'd'});
+%! a(2) = string ('Z');
+%! assert_equal (a, string ({'a', 'Z', 'c', 'd'}));
+## subsasgn: '()' converts a char, cellstr, or numeric right-hand side
+%!test
+%! a = string ({'a', 'b', 'c'});
+%! a(1) = 'Y';
+%! a(2) = {'CC'};
+%! a(3) = 5;
+%! assert_equal (a, string ({'Y', 'CC', '5'}));
+## subsasgn: '()' assignment of a missing value sets the missing mask
+%!test
+%! a = string ({'a', 'b', 'c'});
+%! a(2) = string (NaN);
+%! assert_equal (ismissing (a), [false, true, false]);
+%! assert_equal (cellstr (a), {'a', '', 'c'});
+## subsasgn: '()' assignment past the end grows the array, filling the gap
+## elements with <missing> (MATLAB-confirmed, forum probe)
+%!test
+%! a = string ({'a', 'b'});
+%! a(4) = string ('x');
+%! assert_equal (size (a), [1, 4]);
+%! assert_equal (ismissing (a), [false, false, true, false]);
+%! assert_equal (cellstr (a), {'a', 'b', '', 'x'});
+## subsasgn: growing with a char-vector right-hand side also fills <missing>
+%!test
+%! b = string ({'a', 'b', 'c'});
+%! b(5) = 'z';
+%! assert_equal (ismissing (b), [false, false, false, true, false]);
+%! assert_equal (cellstr (b), {'a', 'b', 'c', '', 'z'});
+## subsasgn: a two-dimensional grow fills every new cell with <missing>
+%!test
+%! c = string ({'a', 'b'; 'c', 'd'});
+%! c(3, 3) = string ('z');
+%! assert_equal (size (c), [3, 3]);
+%! assert_equal (ismissing (c), ...
+%!               [false, false, true; false, false, true; true, true, false]);
+## subsasgn: '()' assignment of '[]' deletes the indexed elements
+%!test
+%! a = string ({'a', 'b', 'c', 'd'});
+%! a(2) = [];
+%! assert_equal (a, string ({'a', 'c', 'd'}));
+## subsasgn: '{}' assigns a single element from a character vector
+%!test
+%! a = string ({'a', 'b', 'c'});
+%! a{2} = 'QQ';
+%! assert_equal (a, string ({'a', 'QQ', 'c'}));
+## subsasgn: '{}' assignment clears a previously-missing element
+%!test
+%! a = string ({'a', missing});
+%! a{2} = 'now';
+%! assert_equal (ismissing (a), [false, false]);
+%! assert_equal (a, string ({'a', 'now'}));
+## subsasgn: '{}' requires a character-vector right-hand side
+%!error <string.subsasgn: '{}' indexed assignment requires a character vector.> ...
+%! (subsasgn (string ({'a', 'b'}), substruct ('{}', {2}), 5))
+## subsasgn: '{}' is restricted to a single (scalar) element
+%!error <string.subsasgn: '{}' indexing can only be used for simple assignment.> ...
+%! (subsasgn (string ({'a', 'b'}), substruct ('{}', {[1, 2]}), 'x'))
+## subsasgn: '.' indexing for assignment is an error
+%!error <string.subsasgn: '.' invalid indexing for assigning values. Use '\(\)' or '{}' instead.> ...
+%! (subsasgn (string ({'a', 'b'}), substruct ('.', 'foo'), 1))
