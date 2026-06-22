@@ -1483,6 +1483,37 @@
 %! TF = ismissing (table (days ([1; 2; NaN; 4]), calweeks ([1; 2; NaN; 4])));
 %! assert (TF, [false, false; false, false; true, true; false, false]);
 
+## Test 'rmmissing' method
+%!test  # removes every row that contains a missing value
+%! T = table ([1; NaN; 3], {'a'; 'b'; ''}, 'VariableNames', {'x', 'y'});
+%! R = rmmissing (T);
+%! assert (size (R), [1, 2]);
+%! assert (R.x, 1);
+%! assert (R.y, {'a'});
+%!test  # the second output is the removed-row mask
+%! T = table ([1; NaN; 3], {'a'; 'b'; ''}, 'VariableNames', {'x', 'y'});
+%! [~, TF] = rmmissing (T);
+%! assert (TF, [false; true; true]);
+%!test  # a table with no missing values is returned unchanged
+%! T = table ([1; 2; 3], 'VariableNames', {'x'});
+%! [R, TF] = rmmissing (T);
+%! assert (isequal (R, T), true);
+%! assert (TF, [false; false; false]);
+%!test  # 'DataVariables' restricts which variables are inspected
+%! T = table ([1; NaN; 3], {'a'; 'b'; ''}, 'VariableNames', {'x', 'y'});
+%! [R, TF] = rmmissing (T, 'DataVariables', 'x');
+%! assert (TF, [false; true; false]);
+%! assert (R.x, [1; 3]);
+%!test  # 'MinNumMissing' needs at least N missing values in a row
+%! T = table ([1; NaN; NaN], {'a'; 'b'; ''}, 'VariableNames', {'x', 'y'});
+%! [R, TF] = rmmissing (T, 'MinNumMissing', 2);
+%! assert (TF, [false; false; true]);
+%! assert (height (R), 2);
+
+## Test input validation for 'rmmissing' method
+%!error <table.rmmissing: 'MinNumMissing' must be a positive integer.> ...
+%! rmmissing (table ([1; NaN]), 'MinNumMissing', 1.5);
+
 
 ################################################################################
 ##                       **    Auxiliary Methods    **                        ##
@@ -1670,3 +1701,108 @@
 %! repmat (table (1), 1, 0);
 %!error <table.repmat: COLUMNS must be a positive integer.> ...
 %! repmat (table (1), 2, 1.5);
+
+
+################################################################################
+##                       **    Custom Properties    **                        ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'addprop'          'rmprop'                                                ##
+##                                                                            ##
+################################################################################
+
+## Test 'addprop' method
+%!test  # custom properties of both kinds are added
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'x', 'y'});
+%! T = addprop (T, {'Note', 'Flags'}, {'table', 'variable'});
+%! assert (fieldnames (T.Properties.CustomProperties), {'Note'; 'Flags'});
+%!test  # values are assigned to a custom property with dot syntax
+%! T = table ([1; 2], 'VariableNames', {'x'});
+%! T = addprop (T, 'Note', 'table');
+%! T.Properties.CustomProperties.Note = 'hello';
+%! assert (T.Properties.CustomProperties.Note, 'hello');
+
+## Test 'rmprop' method
+%!test  # a custom property is removed, others are kept
+%! T = table ([1; 2], 'VariableNames', {'x'});
+%! T = addprop (T, {'Note', 'Flags'}, {'table', 'variable'});
+%! T = rmprop (T, 'Note');
+%! assert (fieldnames (T.Properties.CustomProperties), {'Flags'});
+
+## Test input validation for 'addprop' method
+%!error <table.addprop: too few input arguments.> ...
+%! addprop (table (1), {'a'});
+%!error <table.addprop: invalid input type for 'propertyNames'.> ...
+%! addprop (table (1), 5, 'table');
+%!error <table.addprop: invalid input type for 'propertyTypes'.> ...
+%! addprop (table (1), 'a', 5);
+%!error <table.addprop: the number of 'propertyTypes' must equal the number of 'propertyNames'.> ...
+%! addprop (table (1), {'a', 'b'}, {'table'});
+%!error <table.addprop: custom property 'Note' already exists.> ...
+%! addprop (addprop (table (1), 'Note', 'table'), 'Note', 'table');
+%!error <table.addprop: custom property '1bad' does not have a valid name.> ...
+%! addprop (table (1), '1bad', 'table');
+%!error <table.addprop: invalid value for 'propertyTypes'.> ...
+%! addprop (table (1), 'a', 'foo');
+
+## Test input validation for 'rmprop' method
+%!error <table.rmprop: too few input arguments.> ...
+%! rmprop (table (1));
+%!error <table.rmprop: invalid input type for 'propertyNames'.> ...
+%! rmprop (table (1), 5);
+%!error <table.rmprop: custom property 'Missing' does not exist.> ...
+%! rmprop (addprop (table (1), 'Note', 'table'), 'Missing');
+%!error <table.rmprop: table does not contain any custom properties.> ...
+%! rmprop (table (1), 'x');
+
+
+################################################################################
+##                          **    CSV Export    **                            ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'table2csv'                                                                ##
+##                                                                            ##
+################################################################################
+
+## Test 'table2csv' method (round-trip through 'csv2table')
+%!test
+%! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, [1.5; 2.5; 3.5], ...
+%!            'VariableNames', {'id', 'name', 'val'});
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   assert (R.Properties.VariableNames, {'id', 'name', 'val'});
+%!   assert (R.id, [1; 2; 3]);
+%!   assert (R.val, [1.5; 2.5; 3.5]);
+%!   assert (R.name, {'a'; 'b'; 'c'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+
+
+################################################################################
+##                       **    Forbidden Methods    **                        ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'repelems'         'reshape'          'resize'           'shiftdims'       ##
+## 'vec'                                                                      ##
+##                                                                            ##
+################################################################################
+
+## These methods are unsupported by design and only emit an error
+%!error <Function 'repelems' is not supported for tables> ...
+%! repelems (table (1));
+%!error <Function 'reshape' is not supported for tables> ...
+%! reshape (table (1), 1, 1);
+%!error <Function 'resize' is not supported for tables> ...
+%! resize (table (1), 1);
+%!error <Function 'shiftdims' is not supported for tables> ...
+%! shiftdims (table (1), 1);
+%!error <Function 'vec' is not supported for tables> ...
+%! vec (table (1));
