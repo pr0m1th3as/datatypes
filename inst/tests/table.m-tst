@@ -1532,3 +1532,141 @@
 %!assert (numel (table (1, 2, 3, 4)), 4)
 %!assert (numel (table ([1; 2; 3], [4; 5; 6])), 6)
 %!assert (numel (table (1, 2, 3, 4)), prod (size (table (1, 2, 3, 4))))
+
+## 'horzcat' combines variables of equal-height tables
+%!test
+%! T1 = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
+%! T2 = table ([10; 20; 30], 'VariableNames', {'z'});
+%! H = horzcat (T1, T2);
+%! assert (size (H), [3, 3]);
+%! assert (H.Properties.VariableNames, {'x', 'y', 'z'});
+%! assert (H.x, [1; 2; 3]);
+%! assert (H.z, [10; 20; 30]);
+%!test  # '[ , ]' operator dispatches to horzcat
+%! T1 = table ([1; 2; 3], 'VariableNames', {'x'});
+%! T2 = table ([10; 20; 30], 'VariableNames', {'z'});
+%! H = [T1, T2];
+%! assert (size (H), [3, 2]);
+%! assert (H.Properties.VariableNames, {'x', 'z'});
+%!test  # row names of an input table are carried over
+%! T1 = table ([1; 2], 'VariableNames', {'x'}, 'RowNames', {'r1', 'r2'});
+%! T2 = table ([3; 4], 'VariableNames', {'y'});
+%! H = horzcat (T1, T2);
+%! assert (H.Properties.VariableNames, {'x', 'y'});
+%! assert (H.Properties.RowNames, {'r1'; 'r2'});
+
+## 'vertcat' stacks rows of tables sharing variable names
+%!test
+%! T1 = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
+%! T2 = table ([4; 5], {'d'; 'e'}, 'VariableNames', {'x', 'y'});
+%! V = [T1; T2];
+%! assert (size (V), [5, 2]);
+%! assert (V.x, [1; 2; 3; 4; 5]);
+%! assert (V.y, {'a'; 'b'; 'c'; 'd'; 'e'});
+%!test  # variables are matched by name, not position
+%! T1 = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
+%! T2 = table ({'f'}, 6, 'VariableNames', {'y', 'x'});
+%! V = vertcat (T1, T2);
+%! assert (V.x, [1; 2; 3; 6]);
+%! assert (V.y, {'a'; 'b'; 'c'; 'f'});
+
+## 'repelem' replicates rows and variables in place
+%!test  # rows replicated consecutively (1 1 2 2 3 3)
+%! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
+%! R = repelem (T, 2, 1);
+%! assert (size (R), [6, 2]);
+%! assert (R.x, [1; 1; 2; 2; 3; 3]);
+%! assert (R.y, {'a'; 'a'; 'b'; 'b'; 'c'; 'c'});
+%!test  # columns replicated; copied variables get a '_N' suffix
+%! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
+%! R = repelem (T, 1, 2);
+%! assert (size (R), [3, 4]);
+%! assert (R.Properties.VariableNames, {'x', 'x_1', 'y', 'y_1'});
+%! assert (R.x, [1; 2; 3]);
+%! assert (R.x_1, [1; 2; 3]);
+%!test  # a scalar count applies to both dimensions
+%! T = table ([1; 2; 3], 'VariableNames', {'x'});
+%! R = repelem (T, 2);
+%! assert (size (R), [6, 2]);
+%! assert (R.x, [1; 1; 2; 2; 3; 3]);
+%! assert (R.Properties.VariableNames, {'x', 'x_1'});
+%!test  # repelem (T, 1, 1) leaves the table unchanged
+%! T = table ([1; 2; 3], 'VariableNames', {'x'});
+%! assert (isequal (repelem (T, 1, 1), T), true);
+
+## 'repmat' tiles whole rows and variables of a table
+%!test  # rows tiled as a block (1 2 3 1 2 3)
+%! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
+%! M = repmat (T, 2, 1);
+%! assert (size (M), [6, 2]);
+%! assert (M.x, [1; 2; 3; 1; 2; 3]);
+%! assert (M.y, {'a'; 'b'; 'c'; 'a'; 'b'; 'c'});
+%!test  # columns tiled; the variable block is repeated then suffixed
+%! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
+%! M = repmat (T, 1, 2);
+%! assert (size (M), [3, 4]);
+%! assert (M.Properties.VariableNames, {'x', 'y', 'x_1', 'y_1'});
+%!test  # a scalar count applies to both dimensions
+%! T = table ([1; 2], 'VariableNames', {'x'});
+%! M = repmat (T, 2);
+%! assert (size (M), [4, 2]);
+%! assert (M.x, [1; 2; 1; 2]);
+%!test  # repmat (T, 1, 1) leaves the table unchanged
+%! T = table ([1; 2; 3], 'VariableNames', {'x'});
+%! assert (isequal (repmat (T, 1, 1), T), true);
+
+## 'squeeze' is a no-op for tables (always two-dimensional)
+%!test
+%! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
+%! assert (isequal (squeeze (T), T), true);
+%!assert (isequal (squeeze (table ()), table ()), true)
+
+## Test input validation for 'horzcat' method
+%!error <table.horzcat: all inputs must be tables.> ...
+%! horzcat (table (1), 5);
+%!error <table.horzcat: all input tables must have unique variable names.> ...
+%! horzcat (table (1, 'VariableNames', {'x'}), ...
+%!          table (2, 'VariableNames', {'x'}));
+%!error <table.horzcat: all input tables must have the same height.> ...
+%! horzcat (table ([1; 2], 'VariableNames', {'x'}), ...
+%!          table (3, 'VariableNames', {'y'}));
+
+## Test input validation for 'vertcat' method
+%!error <table.vertcat: all inputs must be tables.> ...
+%! vertcat (table (1), 5);
+%!error <table.vertcat: input tables must have identical variable names.> ...
+%! vertcat (table (1, 'VariableNames', {'x'}), ...
+%!          table (2, 'VariableNames', {'y'}));
+%!error <table.vertcat: all input tables must have unique row names.> ...
+%! vertcat (table (1, 'VariableNames', {'x'}, 'RowNames', {'r1'}), ...
+%!          table (2, 'VariableNames', {'x'}, 'RowNames', {'r1'}));
+
+## Test input validation for 'repelem' method
+%!error <table.repelem: too few input arguments for table input.> ...
+%! repelem (table (1));
+%!error <table.repelem: only 2 dimensions are supported for tables.> ...
+%! repelem (table (1), 1, 2, 3);
+%!error <table.repelem: SZ must be a positive integer.> ...
+%! repelem (table (1), 1.5);
+%!error <table.repelem: SZ must be a positive integer.> ...
+%! repelem (table (1), 0);
+%!error <table.repelem: ROWS must be a positive integer.> ...
+%! repelem (table (1), 1.5, 1);
+%!error <table.repelem: COLUMNS must be a positive integer.> ...
+%! repelem (table (1), 1, 0);
+%!error <table.repelem: COLUMNS must be a positive integer.> ...
+%! repelem (table (1), 2, 1.5);
+
+## Test input validation for 'repmat' method
+%!error <table.repmat: too few input arguments for table input.> ...
+%! repmat (table (1));
+%!error <table.repmat: only 2 dimensions are supported for tables.> ...
+%! repmat (table (1), 1, 2, 3);
+%!error <table.repmat: SZ must be a positive integer.> ...
+%! repmat (table (1), 1.5);
+%!error <table.repmat: ROWS must be a positive integer.> ...
+%! repmat (table (1), 1.5, 1);
+%!error <table.repmat: COLUMNS must be a positive integer.> ...
+%! repmat (table (1), 1, 0);
+%!error <table.repmat: COLUMNS must be a positive integer.> ...
+%! repmat (table (1), 2, 1.5);

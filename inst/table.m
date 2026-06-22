@@ -4482,7 +4482,7 @@ classdef table
           error ("table.repelem: ROWS must be a positive integer.");
         endif
       endif
-      if (cols < 1 || fix (rows) != rows || ! isnumeric (rows))
+      if (cols < 1 || fix (cols) != cols || ! isnumeric (cols))
         error ("table.repelem: COLUMNS must be a positive integer.");
       endif
 
@@ -4513,7 +4513,7 @@ classdef table
         tbl.VariableDescriptions = repelem (tbl.VariableDescriptions, 1, cols);
         tbl.VariableUnits = repelem (tbl.VariableUnits, 1, cols);
         ## Fix variable name repetitions
-        idx = num2cell (1:cols - 1)
+        idx = num2cell (1:cols - 1);
         newNames = {};
         for i = 1:width (this)
           newNames = [newNames, this.VariableNames{i}];
@@ -4574,7 +4574,7 @@ classdef table
           error ("table.repmat: ROWS must be a positive integer.");
         endif
       endif
-      if (cols < 1 || fix (rows) != rows || ! isnumeric (rows))
+      if (cols < 1 || fix (cols) != cols || ! isnumeric (cols))
         error ("table.repmat: COLUMNS must be a positive integer.");
       endif
 
