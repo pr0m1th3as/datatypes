@@ -4436,13 +4436,16 @@ classdef table
     ##
     ## Total number of elements in table.
     ##
-    ## For compatibility reasons with Octave's OOP interface and @code{subsasgn}
-    ## behavior, table's numel is defined to always return 1.  This is an
-    ## incompatibility with Matlab.
+    ## @code{@var{out} = numel (@var{tbl})} returns the number of elements in
+    ## the table, @var{tbl}, equivalent to @qcode{prod (size (@var{tbl}))}.  A
+    ## table is treated as a two-dimensional container, so this is the number of
+    ## rows times the number of variables.  Variables may themselves span
+    ## multiple columns, but @code{numel} only accounts for the number of rows
+    ## and the number of variables, not the underlying columns.
     ##
     ## @end deftypefn
     function out = numel (this, varargin)
-      out = 1;
+      out = prod (size (this));
     endfunction
 
     ## -*- texinfo -*-
