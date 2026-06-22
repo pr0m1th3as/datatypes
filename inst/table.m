@@ -4268,16 +4268,83 @@ classdef table
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn  {table} {@var{tbl} =} standardizeMissing (@var{tblA}, @var{indicator})
-    ## @deftypefnx {table} {@var{tbl} =} standardizeMissing (@dots{}, @var{Name}, @var{Value})
+    ## @deftypefn  {table} {@var{tblB} =} standardizeMissing (@var{tblA}, @var{indicator})
+    ## @deftypefnx {table} {@var{tblB} =} standardizeMissing (@dots{}, @var{Name}, @var{Value})
     ##
-    ## Remove missing table elements by rows. (unimplemented)
+    ## Insert standard missing values into a table.
     ##
+    ## @code{@var{tblB} = standardizeMissing (@var{tblA}, @var{indicator})}
+    ## replaces every entry of @var{tblA} that matches a value in
+    ## @var{indicator} with the standard missing value of that variable's data
+    ## type (@code{NaN}
+    ## for @code{double}/@code{single}, @code{@qcode{''}} for cell arrays of
+    ## character vectors, @code{<missing>} for @code{string}, and
+    ## @code{<undefined>} for @code{categorical}).
     ##
+    ## @var{indicator} may be a numeric scalar or vector, a character vector, a
+    ## @code{string} array, a cell array of character vectors, or a cell array
+    ## mixing numeric and text indicators.  Each indicator is applied only to
+    ## the variables whose type is compatible with it: numeric indicators match
+    ## @code{double} and @code{single} variables, while text indicators (char,
+    ## @code{string}, or cellstr) match cell-array-of-character-vector,
+    ## @code{string}, and @code{categorical} variables.
+    ##
+    ## The @qcode{'DataVariables'} @var{Name}/@var{Value} pair restricts the
+    ## operation to a subset of variables, using the same variable referencing
+    ## as the other @code{table} methods.  Variables not selected pass through
+    ## unchanged.
+    ##
+    ## Logical and integer variables (which have no standard missing value) and
+    ## @code{duration}, @code{datetime}, and @code{calendarDuration} variables
+    ## pass through unchanged.
     ##
     ## @end deftypefn
-    function tbl = standardizeMissing (tblA, indicator)
-      error ("table.standardizeMissing: not implemented yet.");
+    function tbl = standardizeMissing (tblA, indicator, varargin)
+
+      ## Check input arguments
+      if (nargin < 2)
+        error ("table.standardizeMissing: too few input arguments.");
+      endif
+
+      ## Parse optional Name-Value paired arguments
+      optNames = {'DataVariables'};
+      dfValues = {[]};
+      dVars = parsePairedArguments (optNames, dfValues, varargin(:));
+
+      ## Resolve targeted variables
+      if (isempty (dVars))
+        ixVars = 1:width (tblA);
+      else
+        ixVars = resolveVarRef (tblA, dVars, "lenient");
+        if (any (ixVars == 0))
+          badpos = find (ixVars == 0)(1);
+          dv = dVars;
+          if (isa (dv, 'string'))
+            dv = cellstr (dv);
+          endif
+          if (ischar (dv))
+            badname = dv;
+          elseif (iscellstr (dv))
+            badname = dv{badpos};
+          else
+            badname = "<unknown>";
+          endif
+          error (strcat ("table.standardizeMissing: 'DataVariables' index", ...
+                         " a non-existing variable: '%s'."), badname);
+        endif
+      endif
+
+      ## Split the indicator into numeric and text indicator values
+      [numInd, txtInd] = std_normalize_indicator (indicator);
+
+      ## Standardize each targeted variable
+      tbl = tblA;
+      for k = 1:numel (ixVars)
+        iv = ixVars(k);
+        v = std_apply_indicator (tbl.VariableValues{iv}, numInd, txtInd);
+        tbl.VariableValues{iv} = v;
+      endfor
+
     endfunction
 
   endmethods
@@ -6690,6 +6757,67 @@ function [col, filled] = fill_linear (col, m, endVals)
                      " 'none', or a numeric scalar."));
     endif
   endif
+endfunction
+
+## Split a 'standardizeMissing' indicator into a numeric row vector NUMIND and a
+## cellstr row TXTIND of text indicators.  Used by 'standardizeMissing'.
+function [numInd, txtInd] = std_normalize_indicator (indicator)
+  numInd = [];
+  txtInd = {};
+  if (iscell (indicator) && ! iscellstr (indicator))
+    for i = 1:numel (indicator)
+      e = indicator{i};
+      if (ischar (e))
+        txtInd{end+1} = e;
+      elseif (isa (e, 'string'))
+        tmp = cellstr (e);
+        txtInd = [txtInd, tmp(:)'];
+      elseif (iscellstr (e))
+        txtInd = [txtInd, e(:)'];
+      elseif (isnumeric (e) || islogical (e))
+        numInd = [numInd, double(e(:)')];
+      else
+        error (strcat ("table.standardizeMissing: unsupported indicator", ...
+                       " element of class '%s'."), class (e));
+      endif
+    endfor
+  elseif (iscellstr (indicator))
+    txtInd = indicator(:)';
+  elseif (ischar (indicator))
+    txtInd = {indicator};
+  elseif (isa (indicator, 'string'))
+    tmp = cellstr (indicator);
+    txtInd = tmp(:)';
+  elseif (isnumeric (indicator) || islogical (indicator))
+    numInd = double (indicator(:)');
+  else
+    error (strcat ("table.standardizeMissing: invalid INDICATOR of class", ...
+                   " '%s'."), class (indicator));
+  endif
+endfunction
+
+## Replace entries of variable V that match a (type-compatible) indicator with
+## the standard missing value of V's class.  Used by 'standardizeMissing'.
+function v = std_apply_indicator (v, numInd, txtInd)
+  if (isfloat (v))
+    if (! isempty (numInd))
+      v(ismember (v, numInd)) = NaN;
+    endif
+  elseif (iscellstr (v))
+    if (! isempty (txtInd))
+      v(ismember (v, txtInd)) = {''};
+    endif
+  elseif (isa (v, 'string'))
+    if (! isempty (txtInd))
+      v(ismember (cellstr (v), txtInd)) = string (missing);
+    endif
+  elseif (isa (v, 'categorical'))
+    if (! isempty (txtInd))
+      v(ismember (cellstr (v), txtInd)) = categorical (missing);
+    endif
+  endif
+  ## logical, integer, duration, datetime, calendarDuration, and nested table
+  ## variables have no compatible standard missing value here; pass through.
 endfunction
 
 ## Special function to convert a mixed cell array to cellstr array

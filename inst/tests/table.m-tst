@@ -1644,6 +1644,58 @@
 %!error <table.fillmissing: 'ReplaceValues' set to false is not supported yet.> ...
 %! fillmissing (table (1), 'previous', 'ReplaceValues', false);
 
+## Test 'standardizeMissing' method
+%!test  # a numeric scalar indicator becomes NaN in numeric variables
+%! T = table ([1; 99; 3], 'VariableNames', {'x'});
+%! R = standardizeMissing (T, 99);
+%! assert (R.x, [1; NaN; 3]);
+%!test  # a numeric vector indicator matches any of its values
+%! T = table ([1; -99; 3; 0], 'VariableNames', {'x'});
+%! R = standardizeMissing (T, [-99, 0]);
+%! assert (R.x, [1; NaN; 3; NaN]);
+%!test  # a text indicator standardizes a cellstr variable to ''
+%! T = table ({'a'; 'NA'; 'c'}, 'VariableNames', {'y'});
+%! R = standardizeMissing (T, 'NA');
+%! assert (R.y, {'a'; ''; 'c'});
+%! assert (cellfun (@isempty, R.y), [false; true; false]);
+%!test  # a text indicator standardizes a string variable to <missing>
+%! T = table (string ({'a'; 'NA'; 'c'}), 'VariableNames', {'s'});
+%! R = standardizeMissing (T, 'NA');
+%! assert (ismissing (R.s), [false; true; false]);
+%!test  # a text indicator standardizes a categorical variable to <undefined>
+%! T = table (categorical ({'a'; 'NA'; 'c'}), 'VariableNames', {'c'});
+%! R = standardizeMissing (T, {'NA'});
+%! assert (ismissing (R.c), [false; true; false]);
+%!test  # a cell indicator mixes numeric and text across a mixed table
+%! T = table ([1; 5; 99], {'a'; 'x'; 'c'}, 'VariableNames', {'n', 't'});
+%! R = standardizeMissing (T, {99, 'x'});
+%! assert (R.n, [1; 5; NaN]);
+%! assert (R.t, {'a'; ''; 'c'});
+%!test  # numeric and text indicators only touch compatible variables
+%! T = table ([1; 5; 99], {'a'; '99'; 'c'}, 'VariableNames', {'n', 't'});
+%! R = standardizeMissing (T, 99);
+%! assert (R.n, [1; 5; NaN]);
+%! assert (R.t, {'a'; '99'; 'c'});
+%!test  # 'DataVariables' restricts the standardization to a subset
+%! T = table ([1; 99], [99; 2], 'VariableNames', {'a', 'b'});
+%! R = standardizeMissing (T, 99, 'DataVariables', 'a');
+%! assert (R.a, [1; NaN]);
+%! assert (R.b, [99; 2]);
+%!test  # integer variables have no standard missing value; pass through
+%! T = table (int32 ([1; 99; 3]), 'VariableNames', {'x'});
+%! R = standardizeMissing (T, 99);
+%! assert (R.x, int32 ([1; 99; 3]));
+
+## Test input validation for 'standardizeMissing' method
+%!error <table.standardizeMissing: too few input arguments.> ...
+%! standardizeMissing (table (1));
+%!error <table.standardizeMissing: invalid INDICATOR of class 'struct'.> ...
+%! standardizeMissing (table (1), struct ('a', 1));
+%!error <table.standardizeMissing: unsupported indicator element of class 'struct'.> ...
+%! standardizeMissing (table (1), {struct('a', 1)});
+%!error <table.standardizeMissing: 'DataVariables' index a non-existing variable: 'zzz'.> ...
+%! standardizeMissing (table ([1; 99], 'VariableNames', {'x'}), 99, 'DataVariables', 'zzz');
+
 
 ################################################################################
 ##                       **    Auxiliary Methods    **                        ##
