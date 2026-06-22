@@ -4083,23 +4083,188 @@ classdef table
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn  {table} {@var{tbl} =} fillmissing (@var{tblA}, @qcode{'constant'}, @var{val})
-    ## @deftypefnx {table} {@var{tbl} =} fillmissing (@var{tblA}, @var{method})
-    ## @deftypefnx {table} {@var{tbl} =} fillmissing (@var{tblA}, @var{movmethod}, @var{window})
-    ## @deftypefnx {table} {@var{tbl} =} fillmissing (@var{tblA}, @qcode{'knn'})
-    ## @deftypefnx {table} {@var{tbl} =} fillmissing (@var{tblA}, @qcode{'knn'}, @var{k})
-    ## @deftypefnx {table} {@var{tbl} =} fillmissing (@var{tblA}, @var{fillfun}, @var{gapwindow})
-    ## @deftypefnx {table} {@var{tbl} =} fillmissing (@dots{}, @var{dim})
-    ## @deftypefnx {table} {@var{tbl} =} fillmissing (@dots{}, @var{Name}, @var{Value})
-    ## @deftypefnx {table} {[@var{tbl}, @var{TF}] =} fillmissing (@dots{})
+    ## @deftypefn  {table} {@var{tblB} =} fillmissing (@var{tblA}, @qcode{'constant'}, @var{val})
+    ## @deftypefnx {table} {@var{tblB} =} fillmissing (@var{tblA}, @var{method})
+    ## @deftypefnx {table} {@var{tblB} =} fillmissing (@dots{}, @var{Name}, @var{Value})
+    ## @deftypefnx {table} {[@var{tblB}, @var{TF}] =} fillmissing (@dots{})
     ##
-    ## Fill missing table elements. (unimplemented)
+    ## Fill missing entries of a table, variable by variable.
     ##
+    ## @code{@var{tblB} = fillmissing (@var{tblA}, @qcode{'constant'},
+    ## @var{val})} replaces the missing entries of each table variable with the
+    ## fill value @var{val}.  @var{val} can be a scalar that is broadcast to
+    ## every targeted variable, a vector with one element per targeted
+    ## variable, or a cell array with one fill value per targeted variable.
+    ## The fill value of each variable must be compatible with that variable's
+    ## data type.
     ##
+    ## @code{@var{tblB} = fillmissing (@var{tblA}, @var{method})} fills missing
+    ## entries using the gap-filling method @var{method}, which can be one of:
+    ##
+    ## @table @asis
+    ## @item @qcode{'previous'}
+    ## Fill with the previous non-missing entry along each column.
+    ##
+    ## @item @qcode{'next'}
+    ## Fill with the next non-missing entry along each column.
+    ##
+    ## @item @qcode{'nearest'}
+    ## Fill with the nearest non-missing entry along each column.  When two
+    ## non-missing entries are equidistant, the later (next) one is used.
+    ##
+    ## @item @qcode{'linear'}
+    ## Fill numeric variables by linear interpolation of neighboring
+    ## non-missing entries.  Non-numeric variables are left unchanged.
+    ## @end table
+    ##
+    ## The @qcode{'previous'}, @qcode{'next'}, and @qcode{'nearest'} methods
+    ## operate on variables of any data type.  Leading or trailing missing
+    ## entries that cannot be reached by the method are left missing.
+    ##
+    ## The following @var{Name}/@var{Value} pairs are supported:
+    ##
+    ## @table @asis
+    ## @item @qcode{'DataVariables'}
+    ## Restrict the operation to the indicated subset of table variables.  The
+    ## value uses the same variable referencing as the rest of the @code{table}
+    ## methods.  By default, every variable is targeted.
+    ##
+    ## @item @qcode{'EndValues'}
+    ## Control how the @qcode{'linear'} method treats leading and trailing
+    ## missing entries.  Valid values are @qcode{'extrap'} (default, linear
+    ## extrapolation), @qcode{'none'} (leave them missing), or a numeric scalar
+    ## used as a constant for the end gaps.
+    ## @end table
+    ##
+    ## @code{[@var{tblB}, @var{TF}] = fillmissing (@dots{})} also returns a
+    ## logical array @var{TF} with @code{height (@var{tblA})} rows and one
+    ## column per table variable.  @code{@var{TF}(i,j)} is @qcode{true} when an
+    ## entry of the j-th variable in the i-th row was missing and has been
+    ## filled.
+    ##
+    ## Not yet supported: the @qcode{'spline'}, @qcode{'pchip'},
+    ## @qcode{'makima'}, @qcode{'movmean'}, @qcode{'movmedian'},
+    ## @qcode{'mean'}, @qcode{'median'}, @qcode{'mode'}, and @qcode{'knn'}
+    ## methods, as well as the @qcode{'ReplaceValues'}, @qcode{'MaxGap'},
+    ## @qcode{'SamplePoints'}, and @qcode{'MissingLocations'} options.
     ##
     ## @end deftypefn
     function [tbl, TF] = fillmissing (tblA, varargin)
-      error ("table.fillmissing: not implemented yet.");
+
+      ## Check input arguments
+      if (nargin < 2)
+        error ("table.fillmissing: too few input arguments.");
+      endif
+
+      ## Resolve the fill method (and the value for the 'constant' method)
+      method = varargin{1};
+      if (isa (method, 'string') && isscalar (method))
+        method = char (method);
+      endif
+      if (! (ischar (method) && isrow (method)))
+        error ("table.fillmissing: METHOD must be a character vector.");
+      endif
+      method = lower (method);
+      rest = varargin(2:end);
+      constVal = [];
+      switch (method)
+        case 'constant'
+          if (isempty (rest))
+            error (strcat ("table.fillmissing: the 'constant' method", ...
+                           " requires a fill value."));
+          endif
+          constVal = rest{1};
+          rest = rest(2:end);
+        case {'previous', 'next', 'nearest', 'linear'}
+          ## supported; no extra positional argument
+        case {'movmean', 'movmedian', 'spline', 'pchip', 'makima', 'knn', ...
+              'mean', 'median', 'mode'}
+          error (strcat ("table.fillmissing: method '%s' is not supported", ...
+                         " yet."), method);
+        otherwise
+          error ("table.fillmissing: unknown method '%s'.", method);
+      endswitch
+
+      ## Parse optional Name-Value paired arguments
+      optNames = {'DataVariables', 'EndValues', 'ReplaceValues'};
+      dfValues = {[], 'extrap', true};
+      [dVars, endVals, replace] = parsePairedArguments (optNames, dfValues, ...
+                                                        rest(:));
+      if (! (islogical (replace) && isscalar (replace)))
+        error ("table.fillmissing: 'ReplaceValues' must be a logical scalar.");
+      endif
+      if (! replace)
+        error (strcat ("table.fillmissing: 'ReplaceValues' set to false is", ...
+                       " not supported yet."));
+      endif
+
+      ## Resolve targeted variables
+      if (isempty (dVars))
+        ixVars = 1:width (tblA);
+      else
+        ixVars = resolveVarRef (tblA, dVars, "lenient");
+        if (any (ixVars == 0))
+          badpos = find (ixVars == 0)(1);
+          dv = dVars;
+          if (isa (dv, 'string'))
+            dv = cellstr (dv);
+          endif
+          if (ischar (dv))
+            badname = dv;
+          elseif (iscellstr (dv))
+            badname = dv{badpos};
+          else
+            badname = "<unknown>";
+          endif
+          error (strcat ("table.fillmissing: 'DataVariables' index a", ...
+                         " non-existing variable: '%s'."), badname);
+        endif
+      endif
+
+      ## Resolve per-variable fill values for the 'constant' method
+      if (strcmp (method, 'constant'))
+        fillVals = resolve_const_values (constVal, numel (ixVars));
+      endif
+
+      ## Initialize outputs (TF has one column per table variable)
+      tbl = tblA;
+      TF = false (height (tblA), width (tblA));
+
+      ## Fill each targeted variable
+      for k = 1:numel (ixVars)
+        iv = ixVars(k);
+        v = tbl.VariableValues{iv};
+        M = var_missing_mask (v);
+        if (! any (M(:)))
+          continue;
+        endif
+        filled = false (size (M));
+        if (strcmp (method, 'constant'))
+          [v, filled] = fill_constant (v, M, fillVals{k}, ...
+                                       tbl.VariableNames{iv});
+        elseif (strcmp (method, 'linear') && ! (isnumeric (v) || islogical (v)))
+          ## 'linear' applies only to numeric variables; skip others
+          continue;
+        else
+          for c = 1:columns (M)
+            m = M(:,c);
+            if (! any (m))
+              continue;
+            endif
+            if (strcmp (method, 'linear'))
+              [v(:,c), filled(:,c)] = fill_linear (v(:,c), m, endVals);
+            else
+              si = fill_neighbor_idx (m, method);
+              rows = m & si > 0;
+              v(rows,c) = v(si(rows),c);
+              filled(:,c) = rows;
+            endif
+          endfor
+        endif
+        tbl.VariableValues{iv} = v;
+        TF(:,iv) = any (filled, 2);
+      endfor
+
     endfunction
 
     ## -*- texinfo -*-
@@ -6380,6 +6545,152 @@ classdef table
   endmethods
 
 endclassdef
+
+## Return a logical mask, the same size as a table variable V, that flags the
+## missing entries.  Used by 'fillmissing'.  Char arrays have no standard
+## missing value and nested tables are treated as non-missing.
+function M = var_missing_mask (v)
+  if (isa (v, 'table'))
+    M = false (size (v));
+  elseif (any (isa (v, {'calendarDuration', 'categorical', 'datetime', ...
+                        'duration', 'string'})))
+    M = ismissing (v);
+  elseif (ischar (v))
+    M = false (size (v));
+  else  # numeric, logical, cellstr
+    M = __ismissing__ (v);
+  endif
+endfunction
+
+## Expand the 'constant' fill value into a 1-by-NVARS cell, one value per
+## targeted variable (scalar broadcast, per-variable vector, or per-variable
+## cell).  Used by 'fillmissing'.
+function fvals = resolve_const_values (constVal, nvars)
+  if (iscell (constVal))
+    if (isscalar (constVal))
+      fvals = repmat (constVal, 1, nvars);
+    elseif (numel (constVal) == nvars)
+      fvals = reshape (constVal, 1, nvars);
+    else
+      error (strcat ("table.fillmissing: a cell array of fill values must", ...
+                     " have one element per targeted variable."));
+    endif
+  elseif (ischar (constVal) || isscalar (constVal))
+    fvals = repmat ({constVal}, 1, nvars);
+  elseif (isvector (constVal) && numel (constVal) == nvars)
+    fvals = num2cell (reshape (constVal, 1, nvars));
+  else
+    error (strcat ("table.fillmissing: the fill value must be a scalar, a", ...
+                   " vector with one element per targeted variable, or a", ...
+                   " cell array of per-variable values."));
+  endif
+endfunction
+
+## Fill every missing entry of variable V (mask M) with the constant FV.  Used
+## by 'fillmissing'.  VARNAME names the variable for error reporting.
+function [v, filled] = fill_constant (v, M, fv, varname)
+  filled = M;
+  try
+    if (iscellstr (v))
+      if (ischar (fv))
+        fv = {fv};
+      elseif (! (iscellstr (fv) && isscalar (fv)))
+        error ("incompatible");
+      endif
+      v(M) = fv;
+    else
+      v(M) = fv;
+    endif
+  catch
+    error (strcat ("table.fillmissing: the fill value is incompatible", ...
+                   " with variable '%s'."), varname);
+  end_try_catch
+endfunction
+
+## For a column with logical missing mask M, return the source row index SI for
+## each row: SI(i) is the row whose value should fill row i (0 when none is
+## reachable).  METHOD is 'previous', 'next', or 'nearest'.  Used by
+## 'fillmissing'.
+function si = fill_neighbor_idx (m, method)
+  m = m(:);
+  n = numel (m);
+  idx = (1:n)';
+  vp = idx;
+  vp(m) = 0;
+  sp = cummax (vp);                 # previous non-missing index (0 if none)
+  vn = idx;
+  vn(m) = n + 1;
+  sn = flipud (cummin (flipud (vn)));
+  sn(sn == n + 1) = 0;              # next non-missing index (0 if none)
+  switch (method)
+    case 'previous'
+      si = sp;
+    case 'next'
+      si = sn;
+    case 'nearest'
+      si = idx;
+      for i = find (m)'
+        if (sp(i) == 0 && sn(i) == 0)
+          si(i) = 0;
+        elseif (sp(i) == 0)
+          si(i) = sn(i);
+        elseif (sn(i) == 0)
+          si(i) = sp(i);
+        elseif (sn(i) - i <= i - sp(i))
+          si(i) = sn(i);            # tie favors the later (next) value
+        else
+          si(i) = sp(i);
+        endif
+      endfor
+  endswitch
+endfunction
+
+## Linearly interpolate the missing entries of numeric column COL (mask M).
+## ENDVALS controls leading/trailing gaps ('extrap', 'none', or a numeric
+## scalar).  Returns the filled column and a logical mask of filled rows.  Used
+## by 'fillmissing'.
+function [col, filled] = fill_linear (col, m, endVals)
+  m = m(:);
+  n = numel (m);
+  filled = false (n, 1);
+  known = ! m;
+  if (sum (known) < 2)
+    return;                         # need at least two anchors to interpolate
+  endif
+  x = (1:n)';
+  xk = x(known);
+  yk = double (col(known));
+  lo = xk(1);
+  hi = xk(end);
+  ## Interior gaps via linear interpolation
+  interior = m & x > lo & x < hi;
+  if (any (interior))
+    col(interior) = interp1 (xk, yk, x(interior), 'linear');
+    filled(interior) = true;
+  endif
+  ## Leading and trailing gaps via the 'EndValues' option
+  ends = m & (x < lo | x > hi);
+  if (any (ends))
+    if (ischar (endVals) || (isa (endVals, 'string') && isscalar (endVals)))
+      switch (lower (char (endVals)))
+        case 'extrap'
+          col(ends) = interp1 (xk, yk, x(ends), 'linear', 'extrap');
+          filled(ends) = true;
+        case 'none'
+          ## leave the end gaps missing
+        otherwise
+          error (strcat ("table.fillmissing: unsupported 'EndValues'", ...
+                         " option '%s'."), lower (char (endVals)));
+      endswitch
+    elseif (isnumeric (endVals) && isscalar (endVals))
+      col(ends) = endVals;
+      filled(ends) = true;
+    else
+      error (strcat ("table.fillmissing: 'EndValues' must be 'extrap',", ...
+                     " 'none', or a numeric scalar."));
+    endif
+  endif
+endfunction
 
 ## Special function to convert a mixed cell array to cellstr array
 ## that keeps MATLAB like formatting for each type of element
