@@ -571,7 +571,7 @@ classdef table
         if (nargin != 3)
           error ("table.table2struct: wrong number of input arguments.");
         endif
-        if (strcmpi (varargin{1}, "ToScalar") && isequal (varargin{2}, 1))
+        if (strcmpi (varargin{1}, 'ToScalar') && isequal (varargin{2}, 1))
           toScalar = true;
         elseif (strcmpi (varargin{1}, 'ToScalar'))
           toScalar = false;
@@ -780,7 +780,7 @@ classdef table
             endif
           endif
           ## Print custom properties (if available)
-          if (isfield (var, "CustomProperties"))
+          if (isfield (var, 'CustomProperties'))
             if (! isempty (var.CustomProperties))
               fprintf ("%s    Custom Properties:\n", tab);
               cpNames = fieldnames (var.CustomProperties);
@@ -797,7 +797,7 @@ classdef table
             if (var.Size(2) > 1)
               ## Check for numeric, time, or logical and find max length for
               ## properly aligning the numerical columns
-              if (isfield (var, "Min") && ! isfield (var, "TimeStep"))
+              if (isfield (var, 'Min') && ! isfield (var, 'TimeStep'))
                 ## numeric
                 minLen = max (cell2mat (arrayfun (@(x) length (num2str (x)), ...
                                var.Min, 'UniformOutput', false)));
@@ -834,7 +834,7 @@ classdef table
               fprintf ("%s                  %s\n", tab, strhead);
               fprintf ("%s                  %s\n", tab, strline);
               ## Print multicolumnar variable statistics
-              if (isfield (var, "Min") && ! isfield (var, "TimeStep"))
+              if (isfield (var, 'Min') && ! isfield (var, 'TimeStep'))
                 ## numeric
                 strMin = '';
                 strMed = '';
@@ -848,7 +848,7 @@ classdef table
                 fprintf ("%s        Min       %s\n", tab, strMin);
                 fprintf ("%s        Median    %s\n", tab, strMed);
                 fprintf ("%s        Max       %s\n\n", tab, strMax);
-              elseif (isfield (var, "TimeStep"))
+              elseif (isfield (var, 'TimeStep'))
                 ## datetime, duration, calendarDuration
                 strMin = "";
                 strMed = "";
@@ -885,12 +885,12 @@ classdef table
             ## Print single column variable
             else
               ## Check for numeric, time, or logical
-              if (isfield (var, "Min") && ! isfield (var, "TimeStep"))
+              if (isfield (var, 'Min') && ! isfield (var, 'TimeStep'))
                 ## numeric
                 fprintf ("%s        Min       %g\n", tab, var.Min);
                 fprintf ("%s        Median    %g\n", tab, var.Median);
                 fprintf ("%s        Max       %g\n", tab, var.Max);
-              elseif (isfield (var, "TimeStep"))
+              elseif (isfield (var, 'TimeStep'))
                 ## datetime, duration, calendarDuration
                 fprintf ("%s        Min       %s\n", ...
                          tab, dispstrs (var.Min){:});
@@ -1233,13 +1233,13 @@ classdef table
             endif
           else
             direction = cell (1, numel (varRef));
-            direction(sign (varRef) > 0) = "ascend";
-            direction(sign (varRef) < 0) = "descend";
+            direction(sign (varRef) > 0) = 'ascend';
+            direction(sign (varRef) < 0) = 'descend';
             varRef = abs (varRef);
           endif
-        elseif (ischar (arg1) || iscellstr (arg1) || isa (arg1, "string"))
+        elseif (ischar (arg1) || iscellstr (arg1) || isa (arg1, 'string'))
           varRef = cellstr (arg1);
-          if (isscalar (varRef) && strcmp (varRef, ":"))
+          if (isscalar (varRef) && strcmp (varRef, ':'))
             varRef = ':';
           elseif (! all (ismember (varRef, [this.VariableNames, {'RowNames'}])))
             error ("table.sortrows: VARS indexes non-existing variable names.");
@@ -1253,11 +1253,11 @@ classdef table
             endif
           endif
           ## Check whether 'RowNames' are included in the indexed variables
-          if (any (ismember (varRef, "RowNames")))
-            inRowNames = find (strcmp (varRef, "RowNames"));
+          if (any (ismember (varRef, 'RowNames')))
+            inRowNames = find (strcmp (varRef, 'RowNames'));
             varRef(inRowNames) = [];
           endif
-        elseif (isa (arg1, "vartype"))
+        elseif (isa (arg1, 'vartype'))
           varRef = arg1;
           ## Check user's direction is scalar
           if (dir_given && numel (direction) != 1)
@@ -1300,29 +1300,29 @@ classdef table
       for ix = 1:numel (varVal)
 
         tmpVal = varVal{ix};
-        if (strcmpi (direction{ix}, "ascend"))
+        if (strcmpi (direction{ix}, 'ascend'))
           tmpDir = 1;
         else
           tmpDir = -1;
         endif
 
-        if (isa (tmpVal, "categorical"))
+        if (isa (tmpVal, 'categorical'))
           tmpVal = double (tmpVal);
           varValIdx = [varValIdx, tmpVal];
 
-        elseif (isa (tmpVal, "calendarDuration"))
+        elseif (isa (tmpVal, 'calendarDuration'))
           tmpVal = tmpVal.proxyArray;
           varValIdx = [varValIdx, tmpVal];
 
-        elseif (isa (tmpVal, "datetime"))
+        elseif (isa (tmpVal, 'datetime'))
           tmpVal = datenum (tmpVal);
           varValIdx = [varValIdx, tmpVal];
 
-        elseif (isa (tmpVal, "duration"))
+        elseif (isa (tmpVal, 'duration'))
           tmpVal = tmpVal.days;
           varValIdx = [varValIdx, tmpVal];
 
-        elseif (isa (tmpVal, "string"))
+        elseif (isa (tmpVal, 'string'))
           tmpVal = cellstr (tmpVal);
           [~, ~, idx] = __unique__ (tmpVal, 'rows');
           varValIdx = [varValIdx, idx];
@@ -1336,9 +1336,9 @@ classdef table
           error ("table.sortrows: cannot sort variables of 'cell' type.");
 
         elseif (isnumeric (tmpVal))
-          if (strcmpi (CM, "real") && iscomplex (tmpVal))
+          if (strcmpi (CM, 'real') && iscomplex (tmpVal))
             tmpVal = real (tmpVal);
-          elseif (strcmpi (CM, "abs") && isreal (tmpVal))
+          elseif (strcmpi (CM, 'abs') && isreal (tmpVal))
             tmpVal = abs (tmpVal);
           endif
           varValIdx = [varValIdx, tmpVal];
@@ -1347,7 +1347,7 @@ classdef table
           ## Sorting structure data is not supported
           error ("table.sortrows: cannot sort variables of 'struct' type.");
 
-        elseif (isa (tmpVal, "table"))
+        elseif (isa (tmpVal, 'table'))
           try
             tmpVal = table2array (varVal{ix});
             varValIdx = [varValIdx, tmpVal];
@@ -1374,9 +1374,9 @@ classdef table
       if (any (TFvec) && ! all (TFvec))
         is_nan = index(TFvec);
         no_nan = index(! TFvec);
-        if (any (find (TFvec) == 1) && strcmpi (MP, "last"))
+        if (any (find (TFvec) == 1) && strcmpi (MP, 'last'))
           index = [no_nan; is_nan];
-        elseif (any (find (TFvec) == numel (index)) && strcmpi (MP, "first"))
+        elseif (any (find (TFvec) == numel (index)) && strcmpi (MP, 'first'))
           index = [is_nan; no_nan];
         endif
         tbl = subsetrows (this, index);
@@ -1432,7 +1432,7 @@ classdef table
       endif
 
       ## Handle 'setOrder' and 'occurrence' options
-      opt = "sorted";
+      opt = 'sorted';
       if (! isempty (varargin))
         if (any (strcmp (varargin{1}, {'sorted', 'stable', 'first', 'last'})))
           opt = varargin{1};
@@ -1446,29 +1446,29 @@ classdef table
       for ix = 1:width (this)
 
         varVal = this.VariableValues{ix};
-        if (isa (varVal, "categorical"))
+        if (isa (varVal, 'categorical'))
           varVal = double (varVal);
           varProxy = [varProxy, varVal];
 
-        elseif (isa (varVal, "calendarDuration"))
+        elseif (isa (varVal, 'calendarDuration'))
           varVal = varVal.proxyArray;
           varProxy = [varProxy, varVal];
 
-        elseif (isa (varVal, "datetime"))
+        elseif (isa (varVal, 'datetime'))
           varVal = datenum (varVal);
           varProxy = [varProxy, varVal];
 
-        elseif (isa (varVal, "duration"))
+        elseif (isa (varVal, 'duration'))
           varVal = varVal.days;
           varProxy = [varProxy, varVal];
 
-        elseif (isa (varVal, "string"))
+        elseif (isa (varVal, 'string'))
           varVal = cellstr (varVal);
-          [~, ~, idx] = __unique__ (varVal, "stable", "rows");
+          [~, ~, idx] = __unique__ (varVal, 'stable', 'rows');
           varProxy = [varProxy, idx];
 
         elseif (iscellstr (varVal))
-          [~, ~, idx] = __unique__ (varVal, "stable", "rows");
+          [~, ~, idx] = __unique__ (varVal, 'stable', 'rows');
           varProxy = [varProxy, idx];
 
         elseif (iscell (varVal))
@@ -1482,7 +1482,7 @@ classdef table
           ## Sorting structure data is not supported
           error ("table.sortrows: cannot sort variables of 'struct' type.");
 
-        elseif (isa (varVal, "table"))
+        elseif (isa (varVal, 'table'))
           try
             varVal = table2array (varVal{ix});
             varProxy = [varProxy, varVal];
@@ -1494,7 +1494,7 @@ classdef table
       endfor
 
       ## Find unique rows in proxy table
-      [~, ia, ic] = __unique__ (varProxy, opt, "rows");
+      [~, ia, ic] = __unique__ (varProxy, opt, 'rows');
       ## Return unique table
       tbl = subsetrows (this, ia);
 
@@ -1888,7 +1888,7 @@ classdef table
       if (nargin < 3 || isempty (vars) || isempty (newNames))
         error ("table.renamevars: too few input arguments.");
       endif
-      if (! iscellstr (newNames) && ! isa (newNames, "string") &&
+      if (! iscellstr (newNames) && ! isa (newNames, 'string') &&
           ! (ischar (newNames) && isvector (newNames)))
         error (strcat ("table.renamevars: NEWNAMES must be either a", ...
                        " character vector, a cell array of character", ...
@@ -1900,7 +1900,7 @@ classdef table
       if (numel (__unique__ (newNames)) != numel (newNames))
         error ("table.renamevars: NEWNAMES contains duplicate names.");
       endif
-      ixVars = resolveVarRef (this, vars, "lenient");
+      ixVars = resolveVarRef (this, vars, 'lenient');
 
       ## Check selected variables
       if (any (ixVars == 0))
@@ -1998,9 +1998,9 @@ classdef table
           After = Before;
         endif
         if ((isnumeric (After) && isscalar (After)) || ischar (After))
-          ix_insert = resolveVarRef (this, After, "lenient");
+          ix_insert = resolveVarRef (this, After, 'lenient');
         elseif (isvector (After) && islogical (After))
-          ix_insert = resolveVarRef (this, After, "lenient");
+          ix_insert = resolveVarRef (this, After, 'lenient');
           if (numel (ix_insert) > 1)
             error (msg_error1);
           endif
@@ -2014,7 +2014,7 @@ classdef table
       endif
 
       ## Get variables to be moved
-      mvVar = resolveVarRef (this, vars, "lenient");
+      mvVar = resolveVarRef (this, vars, 'lenient');
       if (any (mvVar == 0))
         vars = cellstr (vars);
         error ("table.movevars: cannot index non-existing variable: '%s'.", ...
@@ -2283,7 +2283,7 @@ classdef table
             if (! iscellstr (newNames) && iscell (newNames))
               if (iscellstr (newNames{idc}))
                 varNames = newNames{idc};
-              elseif (isa (newNames{idc}, "string"))
+              elseif (isa (newNames{idc}, 'string'))
                 varNames = cellstr (newNames{idc});
               else
                 error (strcat ("table.splitvars: invalid input for", ...
@@ -2427,7 +2427,7 @@ classdef table
         newVarName = cellstr (sprintf ("Var%d", location));
       else
         ## Check user input for 'NewVariableName'
-        if (isa (newVarName, "string") && isscalar (newVarName))
+        if (isa (newVarName, 'string') && isscalar (newVarName))
           newVarName = cellstr (newVarName);
         elseif (ischar (newVarName) && isvector (newVarName))
           newVarName = cellstr (newVarName);
@@ -2532,7 +2532,7 @@ classdef table
         if (! isvector (dataType))
           error ("table.convertvars: DATATYPE must be a character vector.");
         endif
-      elseif (! isa (dataType, "function_handle"))
+      elseif (! isa (dataType, 'function_handle'))
         error (strcat ("table.convertvars: DATATYPE must be either a", ...
                        " character vector or a function handle; got a", ...
                        " '%s'."), ...
@@ -2629,7 +2629,7 @@ classdef table
 
       ## Check user input for 'DataVariables'
       if (! isempty (varRef))
-        ixVar = resolveVarRef (this, varRef, "lenient");
+        ixVar = resolveVarRef (this, varRef, 'lenient');
         if (any (ixVar == 0))
           varRef = cellstr (varRef);
           error (strcat ("table.rows2vars: 'DataVariables' index a", ...
@@ -2643,7 +2643,7 @@ classdef table
 
       ## Check user input for 'VariableNamesSource'
       if (! isempty (source))
-        srcVar = resolveVarRef (this, source, "lenient");
+        srcVar = resolveVarRef (this, source, 'lenient');
         if (! isscalar (srcVar))
           error (strcat ("table.rows2vars: 'VariableNamesSource' must", ...
                          " index a single variable."));
@@ -2693,19 +2693,19 @@ classdef table
       endif
 
       ## Handle variable naming rule
-      if (strcmpi (rule, "modify"))
+      if (strcmpi (rule, 'modify'))
         for i = 1:numel (newVarNames)
           if (! isvarname (newVarNames{i}))
             newVarNames{i} = matlab.lang.makeValidName (newVarNames{i});
           endif
         endfor
-      elseif (! strcmpi (rule, "preserve"))
+      elseif (! strcmpi (rule, 'preserve'))
         error ("table.rows2vars: invalid input for 'VariableNamingRule'.");
       endif
 
       ## Check for multicolumn variables and nested tables
       for i = 1:width (tbl)
-        if (isa (tbl.VariableValues{i}, "table"))
+        if (isa (tbl.VariableValues{i}, 'table'))
           error (strcat ("table.rows2vars: input table must not contain", ...
                          " nested tables."));
         elseif (size (tbl.VariableValues{i}, 2) > 1)
@@ -2720,7 +2720,7 @@ classdef table
       if (isscalar (__unique__ (col_types)))
         matrix = cat (2, tbl.VariableValues{:})';
         new_var_values = num2cell (matrix, 1);
-        out = table (new_var_values{:}, "VariableNames", newVarNames);
+        out = table (new_var_values{:}, 'VariableNames', newVarNames);
       else
         cols_as_cells = cell (1, width (tbl));
         for i = 1:width (tbl)
@@ -2735,7 +2735,7 @@ classdef table
         matrix = cat (2, cols_as_cells{:})';
         out = table ();
         for i = 1:height (tbl)
-          tmp = table (matrix(:,i), "VariableNames", newVarNames(i));
+          tmp = table (matrix(:,i), 'VariableNames', newVarNames(i));
           out = [out tmp];
         endfor
       endif
@@ -2841,7 +2841,7 @@ classdef table
                   parsePairedArguments (optNames, dfValues, varargin(:));
 
       ## Get variables to stack
-      [ixVars, varNames] = resolveVarRef (this, vars, "lenient");
+      [ixVars, varNames] = resolveVarRef (this, vars, 'lenient');
       if (any (ixVars == 0))
         vars = cellstr (vars);
         error ("table.stack: VARS index a non-existing variable: '%s'.", ...
@@ -2852,7 +2852,7 @@ classdef table
       if (isempty (constVars))
         cIxVars = setdiff (1:width (this), ixVars);
       else
-        cIxVars = resolveVarRef (this, constVars, "lenient");
+        cIxVars = resolveVarRef (this, constVars, 'lenient');
         if (any (cIxVars == 0))
           constVars = cellstr (constVars);
           error (strcat ("table.stack: 'ConstantVariables' index a", ...
@@ -2871,7 +2871,7 @@ classdef table
         newVarName = strjoin (varNames, '_');
       else
         if (! (iscellstr (newVarName) && isscalar (newVarName)) &&
-            ! (isa (newVarName, "string") && isscalar (newVarName)) &&
+            ! (isa (newVarName, 'string') && isscalar (newVarName)) &&
             ! (ischar (newVarName) && isvector (newVarName)))
           error (strcat ("table.stack: 'NewDataVariableName' must be", ...
                          " either a character vector, or a cellstring or", ...
@@ -2882,7 +2882,7 @@ classdef table
         idxVarName = strcat (newVarName, '_Indicator');
       else
         if (! (iscellstr (idxVarName) && isscalar (idxVarName)) &&
-            ! (isa (idxVarName, "string") && isscalar (idxVarName)) &&
+            ! (isa (idxVarName, 'string') && isscalar (idxVarName)) &&
             ! (ischar (idxVarName) && isvector (idxVarName)))
           error (strcat ("table.stack: 'IndexVariableName' must be", ...
                          " either a character vector, or a cellstring or", ...
@@ -3024,12 +3024,12 @@ classdef table
       optNames = {'GroupingVariables', 'ConstantVariables', ...
                   'NewDataVariableNames', 'AggregationFunction', ...
                   'VariableNamingRule'};
-      dfValues = {[], [], [], [], "modify"};
+      dfValues = {[], [], [], [], 'modify'};
       [groupVars, constVars, newVarNames, aggrFcn, rule] = ...
                   parsePairedArguments (optNames, dfValues, varargin(:));
 
       ## Get variables to unstack
-      [ixVars, ~] = resolveVarRef (this, vars, "lenient");
+      [ixVars, ~] = resolveVarRef (this, vars, 'lenient');
       if (any (ixVars == 0))
         vars = cellstr (vars);
         error ("table.unstack: VARS index a non-existing variable: '%s'.", ...
@@ -3037,7 +3037,7 @@ classdef table
       endif
       ## Check that variables to unstack do not contain nested tables
       for i = ixVars
-        if (isa (this.VariableValues{i}, "table"))
+        if (isa (this.VariableValues{i}, 'table'))
           error ("table.unstack: VARS must not index nested tables.");
         endif
       endfor
@@ -3045,7 +3045,7 @@ classdef table
       VarsTable = subsetvars (this, ixVars);
 
       ## Get indicator variable
-      [ixIvar, ~] = resolveVarRef (this, ivar, "lenient");
+      [ixIvar, ~] = resolveVarRef (this, ivar, 'lenient');
       if (! isscalar (ixIvar))
         error ("table.unstack: IVAR must index a single variable.");
       elseif (ixIvar == 0)
@@ -3083,7 +3083,7 @@ classdef table
 
       ## Get constant variables
       if (! isempty (constVars))
-        cIxVars = resolveVarRef (this, constVars, "lenient");
+        cIxVars = resolveVarRef (this, constVars, 'lenient');
         if (any (cIxVars == 0))
           constVars = cellstr (constVars);
           error (strcat ("table.unstack: 'ConstantVariables' index a", ...
@@ -3108,7 +3108,7 @@ classdef table
       if (isempty (groupVars))
         gIxVars = setdiff (1:width (this), [ixVars, ixIvar, cIxVars]);
       else
-        gIxVars = resolveVarRef (this, groupVars, "lenient");
+        gIxVars = resolveVarRef (this, groupVars, 'lenient');
         if (any (gIxVars == 0))
           groupVars = cellstr (groupVars);
           error (strcat ("table.unstack: 'GroupingVariables' index a", ...
@@ -3159,7 +3159,7 @@ classdef table
       if (isempty (newVarNames))
         newVarNames = IvarNames';
       else
-        if (! (iscellstr (newVarNames) && ! (isa (newVarNames, "string"))))
+        if (! (iscellstr (newVarNames) && ! (isa (newVarNames, 'string'))))
           error (strcat ("table.unstack: 'NewDataVariableNames' must be", ...
                          " either a cell array of character vectors, or", ...
                          " a string array."));
@@ -3184,10 +3184,10 @@ classdef table
       if (! isempty (GvarTable))
         ## Remove missing values
         GvarTable = rmmissing (GvarTable);
-        [GvarTable, I, J] = unique (GvarTable, "stable");
+        [GvarTable, I, J] = unique (GvarTable, 'stable');
         nrows = numel (I);
       else
-        [~, I, J] = __unique__ (IvarValues, "stable", "rows");
+        [~, I, J] = __unique__ (IvarValues, 'stable', 'rows');
         nrows = 1;
       endif
 
@@ -3195,13 +3195,13 @@ classdef table
       if (isscalar (ixVars))  # single variable to unstack
         ## Handle variable naming rule
         ncols = numel (newVarNames);
-        if (strcmpi (rule, "modify"))
+        if (strcmpi (rule, 'modify'))
           for i = 1:ncols
             if (! isvarname (newVarNames{i}))
               newVarNames{i} = matlab.lang.makeValidName (newVarNames{i});
             endif
           endfor
-        elseif (! strcmpi (rule, "preserve"))
+        elseif (! strcmpi (rule, 'preserve'))
           error ("table.unstack: invalid input for 'VariableNamingRule'.");
         endif
 
@@ -3282,13 +3282,13 @@ classdef table
         endfor
 
         ## Handle variable naming rule
-        if (strcmpi (rule, "modify"))
+        if (strcmpi (rule, 'modify'))
           for i = 1:numel (expVarNames)
             if (! isvarname (expVarNames{i}))
               expVarNames{i} = matlab.lang.makeValidName (expVarNames{i});
             endif
           endfor
-        elseif (! strcmpi (rule, "preserve"))
+        elseif (! strcmpi (rule, 'preserve'))
           error ("table.unstack: invalid input for 'VariableNamingRule'.");
         endif
 
@@ -4025,7 +4025,7 @@ classdef table
         error ("table.rmmissing: 'MinNumMissing' must be a positive integer.");
       endif
       if (! isempty (dVars))
-        dIxVars = resolveVarRef (this, dVars, "lenient");
+        dIxVars = resolveVarRef (this, dVars, 'lenient');
         if (any (dIxVars == 0))
           tableVars = this.VariableNames;
           error (strcat ("table.unstack: 'DataVariables' index a", ...
@@ -4046,7 +4046,7 @@ classdef table
           endif
           TF = sum (mLocs, 2) >= minNum;
           tbl = subsetrows (this, ! TF);
-        elseif (isa (mLocs, "table"))
+        elseif (isa (mLocs, 'table'))
           ix = ismember (mLocs.VariableNames, tmpT.VariableNames);
           if (! all (ix))
             error (strcat ("table.rmmissing: 'MissingLocations' must be", ...
@@ -4063,7 +4063,7 @@ classdef table
                              " as the input table or the part of it", ...
                              " referenced by 'DataVariables'."));
             endif
-            if (isa (varTF, "logical"))
+            if (isa (varTF, 'logical'))
               TF = [TF, varTF];
             else
               error (strcat ("table.rmmissing: 'MissingLocations' must", ...
@@ -4202,7 +4202,7 @@ classdef table
       if (isempty (dVars))
         ixVars = 1:width (tblA);
       else
-        ixVars = resolveVarRef (tblA, dVars, "lenient");
+        ixVars = resolveVarRef (tblA, dVars, 'lenient');
         if (any (ixVars == 0))
           badpos = find (ixVars == 0)(1);
           dv = dVars;
@@ -4315,7 +4315,7 @@ classdef table
       if (isempty (dVars))
         ixVars = 1:width (tblA);
       else
-        ixVars = resolveVarRef (tblA, dVars, "lenient");
+        ixVars = resolveVarRef (tblA, dVars, 'lenient');
         if (any (ixVars == 0))
           badpos = find (ixVars == 0)(1);
           dv = dVars;
@@ -5129,7 +5129,7 @@ classdef table
                            " character vector."));
           endif
           ## Handle special cases: "Properties" and "DimensionNames"
-          if (isequal (s.subs, "Properties"))
+          if (isequal (s.subs, 'Properties'))
             if (nargout == 0 && isempty (chain_s))
               print_properties (this);
               return;
@@ -5163,7 +5163,7 @@ classdef table
       ## Chained subscripts
       chain_s = s(2:end);
       s = s(1);
-      if (! isempty (chain_s) && ! isequal (s.subs, "Properties"))
+      if (! isempty (chain_s) && ! isequal (s.subs, 'Properties'))
         rhs_in = single_subref (this, s);
         rhs = subsasgn (rhs_in, chain_s, val);
       else
@@ -5183,10 +5183,10 @@ classdef table
             error ("table.subsasgn: input data mismatch indexed dimensions.");
           endif
           ## Handle different cases of input data
-          if (isa (rhs, "table"))     # MATLAB compatible
+          if (isa (rhs, 'table'))     # MATLAB compatible
             rhs = table2cell (rhs);
           endif
-          if (isa (rhs, "cell"))      # MATLAB compatible
+          if (isa (rhs, 'cell'))      # MATLAB compatible
             for i = 1:numel (ixVar)
               varData = this.VariableValues{ixVar(i)};
               try
@@ -5221,7 +5221,7 @@ classdef table
                            " character vector."));
           endif
           ## Grab Properties
-          if (isequal (s.subs, "Properties"))
+          if (isequal (s.subs, 'Properties'))
             ## no further recursion, everything is handled here
             if (isempty (chain_s))
               error ("table.subsasgn: cannot assign new properties.");
@@ -5229,9 +5229,9 @@ classdef table
             s = chain_s(1);
 
             ## Handle table properties
-            if (isequal (s.subs, "Description"))
+            if (isequal (s.subs, 'Description'))
               ## Check for valid input: character vector of string
-              if (isa (val, "string"))
+              if (isa (val, 'string'))
                 if (numel (val) > 1)
                   error (strcat ("table.subsasgn: Table description must", ...
                                  " be a character vector or a string", ...
@@ -5246,12 +5246,12 @@ classdef table
               this.Description = val;
               tbl = this;
 
-            elseif (isequal (s.subs, "UserData"))
+            elseif (isequal (s.subs, 'UserData'))
               ## Any kind !!
               this.UserData = val;
               tbl = this;
 
-            elseif (isequal (s.subs, "DimensionNames"))
+            elseif (isequal (s.subs, 'DimensionNames'))
               ## Check for further indexing of specific variable(s)
               if (numel (chain_s) > 1)
                 idx = chain_s(2).subs;
@@ -5262,14 +5262,14 @@ classdef table
                                  " multiple DimensionNames at once."));
                 endif
                 idx = cell2mat (idx);
-                if (isequal (idx, ":"))
+                if (isequal (idx, ':'))
                   idx = [1:2];
                 endif
                 if (! all (ismember (idx, [1:2])))
                   error (strcat ("table.subsasgn: out of bound index for", ...
                                  " DimensionNames."));
                 endif
-                if (ischar (val) || isa (val, "string"))
+                if (ischar (val) || isa (val, 'string'))
                   val = cellstr (val);
                 endif
                 if (! (iscellstr (val) && numel (val) == numel (idx)))
@@ -5283,7 +5283,7 @@ classdef table
                 return
               endif
               ## Check for valid input: two-element cellstring or string array
-              if (ischar (val) || isa (val, "string"))
+              if (ischar (val) || isa (val, 'string'))
                 val = cellstr (val);
               endif
               if (! (iscellstr (val) && numel (val) == 2))
@@ -5294,7 +5294,7 @@ classdef table
               this.DimensionNames = val;
               tbl = this;
 
-            elseif (isequal (s.subs, "VariableNames"))
+            elseif (isequal (s.subs, 'VariableNames'))
               ## Check for further indexing of specific variable(s)
               if (numel (chain_s) > 1)
                 idx = chain_s(2).subs;
@@ -5305,14 +5305,14 @@ classdef table
                                  " multiple VariableNames at once."));
                 endif
                 idx = cell2mat (idx);
-                if (isequal (idx, ":"))
+                if (isequal (idx, ':'))
                   idx = [1:width(this)];
                 endif
                 if (! all (ismember (idx, [1:width(this)])))
                   error (strcat ("table.subsasgn: out of bound index for", ...
                                  " VariableNames."));
                 endif
-                if (ischar (val) || isa (val, "string"))
+                if (ischar (val) || isa (val, 'string'))
                   val = cellstr (val);
                 endif
                 if (! (iscellstr (val) && numel (val) == numel (idx)))
@@ -5327,7 +5327,7 @@ classdef table
               endif
               ## Check for valid input: cellstring or string array matching
               ## the number of variables in the table
-              if (ischar (val) || isa (val, "string"))
+              if (ischar (val) || isa (val, 'string'))
                 val = cellstr (val);
               endif
               if (! (iscellstr (val) && numel (val) == width (this)))
@@ -5339,7 +5339,7 @@ classdef table
               this.VariableNames = val;
               tbl = this;
 
-            elseif (isequal (s.subs, "VariableTypes"))
+            elseif (isequal (s.subs, 'VariableTypes'))
               ## Check for further indexing of specific variable(s)
               if (numel (chain_s) > 1)
                 idx = chain_s(2).subs;
@@ -5350,14 +5350,14 @@ classdef table
                                  " multiple VariableTypes at once."));
                 endif
                 idx = cell2mat (idx);
-                if (isequal (idx, ":"))
+                if (isequal (idx, ':'))
                   idx = [1:width(this)];
                 endif
                 if (! all (ismember (idx, [1:width(this)])))
                   error (strcat ("table.subsasgn: out of bound index for", ...
                                  " VariableTypes"));
                 endif
-                if (ischar (val) || isa (val, "string"))
+                if (ischar (val) || isa (val, 'string'))
                   val = cellstr (val);
                 endif
                 if (! (iscellstr (val) && numel (val) == numel (idx)))
@@ -5375,7 +5375,7 @@ classdef table
               endif
               ## Check for valid input: cellstring or string array matching
               ## the number of variables in the table
-              if (ischar (val) || isa (val, "string"))
+              if (ischar (val) || isa (val, 'string'))
                 val = cellstr (val);
               endif
               if (! (iscellstr (val) && numel (val) == width (this)))
@@ -5385,12 +5385,12 @@ classdef table
                                " variables."));
               endif
               ## Covnert variables to new data types
-              tbl = convertvars (this, ":", val)
+              tbl = convertvars (this, ':', val)
               ## Save new datatypes to VariableTypes property
               this.VariableDescriptions = val;
               tbl = this;
 
-            elseif (isequal (s.subs, "VariableDescriptions"))
+            elseif (isequal (s.subs, 'VariableDescriptions'))
               ## Check for further indexing of specific variable(s)
               if (numel (chain_s) > 1)
                 idx = chain_s(2).subs;
@@ -5402,14 +5402,14 @@ classdef table
                                  " once."));
                 endif
                 idx = cell2mat (idx);
-                if (isequal (idx, ":"))
+                if (isequal (idx, ':'))
                   idx = [1:width(this)];
                 endif
                 if (! all (ismember (idx, [1:width(this)])))
                   error (strcat ("table.subsasgn: out of bound index for", ...
                                  " VariableDescriptions"));
                 endif
-                if (ischar (val) || isa (val, "string"))
+                if (ischar (val) || isa (val, 'string'))
                   val = cellstr (val);
                 endif
                 if (! (iscellstr (val) && numel (val) == numel (idx)))
@@ -5424,7 +5424,7 @@ classdef table
               endif
               ## Check for valid input: cellstring or string array matching
               ## the number of variables in the table
-              if (ischar (val) || isa (val, "string"))
+              if (ischar (val) || isa (val, 'string'))
                 val = cellstr (val);
               endif
               if (! (iscellstr (val) && numel (val) == width (this)))
@@ -5436,7 +5436,7 @@ classdef table
               this.VariableDescriptions = val;
               tbl = this;
 
-            elseif (isequal (s.subs, "VariableUnits"))
+            elseif (isequal (s.subs, 'VariableUnits'))
               ## Check for further indexing of specific variable(s)
               if (numel (chain_s) > 1)
                 idx = chain_s(2).subs;
@@ -5447,14 +5447,14 @@ classdef table
                                  " multiple VariableUnits at once."));
                 endif
                 idx = cell2mat (idx);
-                if (isequal (idx, ":"))
+                if (isequal (idx, ':'))
                   idx = [1:width(this)];
                 endif
                 if (! all (ismember (idx, [1:width(this)])))
                   error (strcat ("table.subsasgn: out of bound index for", ...
                                  " VariableUnits."));
                 endif
-                if (ischar (val) || isa (val, "string"))
+                if (ischar (val) || isa (val, 'string'))
                   val = cellstr (val);
                 endif
                 if (! (iscellstr (val) && numel (val) == numel (idx)))
@@ -5469,7 +5469,7 @@ classdef table
               endif
               ## Check for valid input: cellstring or string array matching
               ## the number of variables in the table
-              if (ischar (val) || isa (val, "string"))
+              if (ischar (val) || isa (val, 'string'))
                 val = cellstr (val);
               endif
               if (! (iscellstr (val) && numel (val) == width (this)))
@@ -5481,7 +5481,7 @@ classdef table
               this.VariableUnits = val;
               tbl = this;
 
-            elseif (isequal (s.subs, "RowNames"))
+            elseif (isequal (s.subs, 'RowNames'))
               ## Check for empty input to remove RowNames from table.
               if (isempty (val))
                 this.RowNames = {};
@@ -5493,19 +5493,19 @@ classdef table
               ## type, or a numeric scalar referencing an existing VariableName
               ## of appropriate type.
               if ((ischar (val) && size (val, 1) == 1) ||
-                 ((iscellstr (val) || isa (val, "string") || isnumeric (val)) &&
+                 ((iscellstr (val) || isa (val, 'string') || isnumeric (val)) &&
                   numel (val) == 1))
-                if (ischar (val) || isa (val, "string"))
+                if (ischar (val) || isa (val, 'string'))
                   val = cellstr (val);
                 endif
-                [ixVar, ~] = resolveVarRef (this, val, "lenient");
+                [ixVar, ~] = resolveVarRef (this, val, 'lenient');
                 ##
                 ## If variable name exists check for appropriate varTypes
                 if (ixVar != 0)
                   selvar = this.VariableValues{ixVar};
                   if (iscellstr (selvar) || ischar (selvar)
-                                         || isa (selvar, "string"))
-                    if (ischar (selvar) || isa (selvar, "string"))
+                                         || isa (selvar, 'string'))
+                    if (ischar (selvar) || isa (selvar, 'string'))
                       selvar = cellstr (selvar);
                     endif
                     ## When RowNames as set this way, the referenced Variable
@@ -5519,7 +5519,7 @@ classdef table
               endif
               ## Check for valid input: cellstring, char, or string array
               ## matching the number of rows in the table
-              if (ischar (val) || isa (val, "string"))
+              if (ischar (val) || isa (val, 'string'))
                 val = cellstr (val);
               endif
               if (! (iscellstr (val) && numel (val) == height (this)))
@@ -5534,7 +5534,7 @@ classdef table
               this.RowNames = val;
               tbl = this;
 
-            elseif (isequal (s.subs, "CustomProperties"))
+            elseif (isequal (s.subs, 'CustomProperties'))
               ## Check that a custom property name is indexed
               if (numel (chain_s) < 2)
                 if (isempty (val))
@@ -5571,7 +5571,7 @@ classdef table
               endif
               ## Get type of custom property
               cpType = this.CustomPropTypes{strcmp (cpName, existingNames)};
-              if (strcmp (cpType, "table"))
+              if (strcmp (cpType, 'table'))
                 if (! ischar (val) && numel (val) > 1)
                   error (strcat ("table.subsasgn: custom property '%s'", ...
                                  " is a table property and only a scalar", ...
@@ -5609,7 +5609,7 @@ classdef table
                                    " than one dimension."));
                   endif
                   cpIdx = cell2mat (cpIdx);
-                  if (isequal (cpIdx, ":"))
+                  if (isequal (cpIdx, ':'))
                     cpIdx = [1:maxIdx];
                   endif
                   if (! all (ismember (cpIdx, [1:maxIdx])))
@@ -5660,7 +5660,7 @@ classdef table
     ## index and '' for the name for each variable which could not be resolved.
     function [ixVar, varNames] = resolveVarRef (this, varRef, strictness)
       if (nargin < 3 || isempty (strictness))
-        strictness = "strict";
+        strictness = 'strict';
       endif
       if (! isvector (varRef))
         error ("table: variable index must be a vector.");
@@ -5681,12 +5681,12 @@ classdef table
                          " index %d; table has %d variables."), ...
                  ixVar(ix_bad(1)), nvars);
         endif
-      elseif (isequal (varRef, ":"))
+      elseif (isequal (varRef, ':'))
         ixVar = 1:nvars;
-      elseif (ischar (varRef) || iscellstr (varRef) || isa (varRef, "string"))
+      elseif (ischar (varRef) || iscellstr (varRef) || isa (varRef, 'string'))
         varRef = cellstr (varRef);
         [tf, ixVar] = ismember (varRef, this.VariableNames);
-        if (isequal (strictness, "strict"))
+        if (isequal (strictness, 'strict'))
           if (! all (tf))
             if (sum (! tf) == 1)
               error ("table: no such variable in table: '%s'.", varRef{! tf});
@@ -5699,7 +5699,7 @@ classdef table
         else
           ixVar(! tf) = 0;
         endif
-      elseif (isa (varRef, "vartype"))
+      elseif (isa (varRef, 'vartype'))
         ixVar = [];
         for i = 1:nvars
           if (varRef.varMatch (this.VariableValues{i}))
@@ -5727,9 +5727,9 @@ classdef table
     function [ixRow, ixVar] = resolveRowVarRefs (this, rowRef, varRef)
       if (isnumeric (rowRef) || islogical (rowRef))
         ixRow = rowRef;
-      elseif (isequal (rowRef, ":"))
+      elseif (isequal (rowRef, ':'))
         ixRow = 1:height (this);
-      elseif (ischar (rowRef) || iscellstr (rowRef) || isa (rowRef, "string"))
+      elseif (ischar (rowRef) || iscellstr (rowRef) || isa (rowRef, 'string'))
         rowRef = cellstr (rowRef);
         if (isempty (this.RowNames))
           error ("table: this table has no RowNames.");
@@ -5749,7 +5749,7 @@ classdef table
     ## Return a subset of rows defined by the numerical or logical vector ixRows
     function tbl = subsetrows (this, ixRows)
       tbl = this;
-      s = struct ("type", "()", "subs", {{ixRows,":"}});
+      s = struct ('type', '()', 'subs', {{ixRows,':'}});
       for i = 1:width (this)
         tbl.VariableValues{i} = subsref (tbl.VariableValues{i}, s);
       endfor
@@ -5866,7 +5866,7 @@ classdef table
                   tmp(end+1) = NaN;
                 elseif (islogical (tmp))
                   tmp(end+1) = false;
-                elseif (isa (tmp, "string"))
+                elseif (isa (tmp, 'string'))
                   tmp(end+1) = string (NaN);
                 elseif (iscell (tmp))
                   tmp{end+1} = [];
@@ -5902,7 +5902,7 @@ classdef table
                            " character vector."));
           endif
           ## Handle special cases: "Properties" and "DimensionNames"
-          if isequal (s.subs, "Properties")
+          if isequal (s.subs, 'Properties')
             out = getProperties (this);
           elseif isequal (s.subs, this.DimensionNames{1})
             out = this.RowNames;
@@ -5935,7 +5935,7 @@ classdef table
         UD = strjoin (strs, "-by-");
         UD = [UD, " of type ", class(this.UserData)];
         if (iscellstr (this.UserData))
-          UD = strrep (UD, "cell", "cellstr");
+          UD = strrep (UD, 'cell', 'cellstr');
         endif
       endif
       DN = sprintf ("{'%s'  '%s'}", this.DimensionNames{:});
@@ -5977,7 +5977,7 @@ classdef table
           elseif (iscellstr (cpValue))
             strValue = strtrim (sprintf ("'%s'  ", cpValue{:}));
             CP = [CP, sprintf("\n%+24s: {%s}", cpNames{i}, strValue)];
-          elseif (isa (cpValue, "string"))
+          elseif (isa (cpValue, 'string'))
             cpValue = cellstr (cpValue);
             strValue = strtrim (sprintf ("""%s""  ", cpValue{:}));
             CP = [CP, sprintf("\n%+24s: [%s]", cpNames{i}, strValue)];
@@ -5994,7 +5994,7 @@ classdef table
               elseif (iscellstr (cpValue{idx}))
                 tmp = sprintf ("{'%s'}", cpValue{idx})
                 strValue = [strValue, sprintf("  %s", tmp)];
-              elseif (isa (cpValue{idx}, "string"))
+              elseif (isa (cpValue{idx}, 'string'))
                 tmp = cellstr (cpValue{idx});
                 tmp = sprintf ("""%s""", tmp{:})
                 strValue = [strValue, sprintf("  %s", tmp)];
@@ -6008,14 +6008,14 @@ classdef table
       endif
       ## Print info
       fprintf ("\n  TableProperties with properties:\n\n");
-      fprintf ("%+24s: '%s'\n", "Description", D);
-      fprintf ("%+24s: %s\n", "UserData", UD);
-      fprintf ("%+24s: %s\n", "DimensionNames", DN);
-      fprintf ("%+24s: %s\n", "VariableNames", VN);
-      fprintf ("%+24s: %s\n", "VariableDescriptions", VD);
-      fprintf ("%+24s: %s\n", "VariableUnits", VU);
-      fprintf ("%+24s: %s\n", "VariableContinuity", VC);
-      fprintf ("%+24s: %s\n", "RowNames", RN);
+      fprintf ("%+24s: '%s'\n", 'Description', D);
+      fprintf ("%+24s: %s\n", 'UserData', UD);
+      fprintf ("%+24s: %s\n", 'DimensionNames', DN);
+      fprintf ("%+24s: %s\n", 'VariableNames', VN);
+      fprintf ("%+24s: %s\n", 'VariableDescriptions', VD);
+      fprintf ("%+24s: %s\n", 'VariableUnits', VU);
+      fprintf ("%+24s: %s\n", 'VariableContinuity', VC);
+      fprintf ("%+24s: %s\n", 'RowNames', RN);
       fprintf ("%s\n", CP);
     endfunction
 
@@ -6272,7 +6272,7 @@ classdef table
             rowSpat = [rowSpat, sprintf("%%+%ds", optLen), colgap];
           endif
         ## String
-        elseif (isa (data, "string"))
+        elseif (isa (data, 'string'))
           if (cols > 1)
             colLen = zeros (1, cols);
             rowSpat_c = "";
@@ -6355,7 +6355,7 @@ classdef table
             rowSpat = [rowSpat, sprintf("%%-%ds", optLen), colgap];
           endif
         ## Structures
-        elseif (isa (data, "struct"))
+        elseif (isa (data, 'struct'))
           if (cols > 1)
             rowSpat_c = "";
             for c = 1:cols
@@ -6377,7 +6377,7 @@ classdef table
             rowSpat = [rowSpat, sprintf("%%-%ds", optLen), colgap];
           endif
         ## Tables (nested)
-        elseif (isa (data, "table"))
+        elseif (isa (data, 'table'))
           if (nested)
             tmpData = repmat ({'<table>'}, [height(data), 1]);
             colData = [colData, tmpData];
@@ -6413,10 +6413,10 @@ classdef table
           s.(varName).Units = "";
         endif
         s.(varName).Continuity = [];
-        if (isa (this.VariableValues{v}, "logical"))
+        if (isa (this.VariableValues{v}, 'logical'))
           s.(varName).True = sum (this.VariableValues{v});
           s.(varName).False = sum (! this.VariableValues{v});
-        elseif (isa (this.VariableValues{v}, "duration"))
+        elseif (isa (this.VariableValues{v}, 'duration'))
           sec = seconds (this.VariableValues{v});
           nat = isnan (sec);
           s.(varName).Min = min (sec(! nat));
@@ -6430,7 +6430,7 @@ classdef table
           else
             s.(varName).TimeStep = NaN;
           endif
-        elseif (isa (this.VariableValues{v}, "datetime"))
+        elseif (isa (this.VariableValues{v}, 'datetime'))
           day = this.VariableValues{v}.dnums;
           nat = isnan (day);
           s.(varName).Min = min (day(! nat));
@@ -6444,7 +6444,7 @@ classdef table
           else
             s.(varName).TimeStep = NaN;
           endif
-        elseif (isa (this.VariableValues{v}, "calendarDuration"))
+        elseif (isa (this.VariableValues{v}, 'calendarDuration'))
           day = datetime ([0, 0, 0]) + this.VariableValues{v};
           day = day.dnums;
           nat = isnan (day);
@@ -6461,7 +6461,7 @@ classdef table
           endif
         elseif (isnumeric (this.VariableValues{v}))
           s.(varName).Min = __nanmin__ (this.VariableValues{v});
-          s.(varName).Median = median (this.VariableValues{v}, "omitnan");
+          s.(varName).Median = median (this.VariableValues{v}, 'omitnan');
           s.(varName).Max = __nanmax__ (this.VariableValues{v});
           s.(varName).NumMissing = sum (isnan (this.VariableValues{v}));
         endif
@@ -6907,45 +6907,45 @@ function [outData, optLen]  = mixedcell2str (data, varLen)
     ## 'char' arrays
     tmp = cell2mat (cellfun (@ischar, data(me), 'UniformOutput', false));
     idx_charvec(me) = tmp;
-    sf = @(x) sprintf (strcat ([strjoin(repmat ({'%d'}, 1, ndims (x)), 'x'), ...
-                                   ' char']), size (x));
+    sf = @(x) sprintf (strcat (strjoin (repmat ({'%d'}, 1, ndims (x)), 'x'), ...
+                               ' char'), size (x));
     out_str(idx_charvec) = (cellfun (sf, data(idx_charvec), ...
                             'UniformOutput', false));
     ## 'logical' arrays
     tmp = cell2mat (cellfun (@islogical, data(me), ...
                              'UniformOutput', false)) == 1;
     idx_logical(me) = tmp;
-    sf = @(x) sprintf (strcat ([strjoin(repmat ({'%d'}, 1, ndims (x)), 'x'), ...
-                                   ' logical']), size (x));
+    sf = @(x) sprintf (strcat (strjoin (repmat ({'%d'}, 1, ndims (x)), 'x'), ...
+                               ' logical'), size (x));
     out_str(idx_logical) = (cellfun (sf, data(idx_logical), ...
                             'UniformOutput', false));
     ## 'numeric' arrays
     tmp = cell2mat (cellfun (@isnumeric, data(me), ...
                              'UniformOutput', false)) == 1;
     idx_numeric(me) = tmp;
-    sf = @(x) sprintf (strcat ([strjoin(repmat ({'%d'}, 1, ndims (x)), 'x'), ...
-                                   ' array']), size (x));
+    sf = @(x) sprintf (strcat (strjoin (repmat ({'%d'}, 1, ndims (x)), 'x'), ...
+                               ' array'), size (x));
     out_str(idx_numeric) = (cellfun (sf, data(idx_numeric), ...
                             'UniformOutput', false));
     ## 'object' arrays
     tmp = cell2mat (cellfun (@isstring, data(me), 'UniformOutput', false)) == 1;
     idx_string(me) = tmp;
-    sf = @(x) sprintf (strcat ([strjoin(repmat ({'%d'}, 1, ndims (x)), 'x'), ...
-                                   ' %s']), size (x), class (x));
+    sf = @(x) sprintf (strcat (strjoin (repmat ({'%d'}, 1, ndims (x)), 'x'), ...
+                               ' %s'), size (x), class (x));
     out_str(idx_string) = (cellfun (sf, data(idx_string), ...
                            'UniformOutput', false));
     ## 'string' arrays
     tmp = cell2mat (cellfun (@isstring, data(me), 'UniformOutput', false)) == 1;
     idx_string(me) = tmp;
-    sf = @(x) sprintf (strcat ([strjoin(repmat ({'%d'}, 1, ndims (x)), 'x'), ...
-                                   ' string']), size (x));
+    sf = @(x) sprintf (strcat (strjoin (repmat ({'%d'}, 1, ndims (x)), 'x'), ...
+                               ' string'), size (x));
     out_str(idx_string) = (cellfun (sf, data(idx_string), ...
                            'UniformOutput', false));
     ## 'struct' arrays
     tmp = cell2mat (cellfun (@isstruct, data(me), 'UniformOutput', false)) == 1;
     idx_struct(me) = tmp;
-    sf = @(x) sprintf (strcat ([strjoin(repmat ({'%d'}, 1, ndims (x)), 'x'), ...
-                                   ' struct']), size (x));
+    sf = @(x) sprintf (strcat (strjoin (repmat ({'%d'}, 1, ndims (x)), 'x'), ...
+                               ' struct'), size (x));
     out_str(idx_struct) = (cellfun (sf, data(idx_struct), ...
                            'UniformOutput', false));
   endif
@@ -6972,7 +6972,7 @@ function [mcvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, aggrFcn)
   vcols = size (vvals, 2);
   ## Handle each specific data type
   if (any (isa (vvals, {'single', 'double'})))
-    mcvec =  NaN (nrows, vcols, "like", vvals);
+    mcvec =  NaN (nrows, vcols, 'like', vvals);
     if (isempty (aggrFcn))  # add default aggrevation function
       aggrFcn = @sum;
     else  # check that it produces correct output
@@ -6989,7 +6989,7 @@ function [mcvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, aggrFcn)
       endif
     endif
   elseif (isnumeric (vvals))  # integer types have no missing value, use 0
-    mcvec =  zeros (nrows, vcols, "like", vvals);
+    mcvec =  zeros (nrows, vcols, 'like', vvals);
     if (isempty (aggrFcn))  # add default aggrevation function
       aggrFcn = @sum;
     else  # check that it produces correct output
