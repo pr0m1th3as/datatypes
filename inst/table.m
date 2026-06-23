@@ -3546,11 +3546,173 @@ classdef table
     ##
     ## Combine two tables by rows using key variables.
     ##
+    ## @code{@var{tbl} = join (@var{tblL}, @var{tblR})} combines @var{tblL} and
+    ## @var{tblR} by matching the values of their @emph{key variables}, which by
+    ## default are the variables that share the same name in both tables.
+    ## @var{tbl} contains one row for each row of @var{tblL}, in the same order;
+    ## each is completed with the single row of @var{tblR} whose key variables
+    ## match.  The key variables of @var{tblR} must contain unique combinations of
+    ## values, and every key combination in @var{tblL} must be present in
+    ## @var{tblR}.
     ##
+    ## By default @var{tbl} contains all the variables of @var{tblL} followed by
+    ## the non-key variables of @var{tblR}.  Whenever a non-key variable name
+    ## appears in both tables, a suffix derived from each input's argument name is
+    ## appended to the conflicting names (for inputs named @var{tblL} and
+    ## @var{tblR}, the suffixes @qcode{'_tblL'} and @qcode{'_tblR'}; when an input
+    ## has no name, @qcode{'_left'} and @qcode{'_right'} are used).  The row names
+    ## of @var{tblL}, if any, are preserved.
+    ##
+    ## @code{@var{tbl} = join (@var{tblL}, @var{tblR}, @var{Name}, @var{Value})}
+    ## customizes the join with the following options:
+    ##
+    ## @table @asis
+    ## @item @qcode{'Keys'}
+    ## Variables to use as keys in both tables, given as variable names or
+    ## indices.  It cannot be combined with @qcode{'LeftKeys'} or
+    ## @qcode{'RightKeys'}.
+    ##
+    ## @item @qcode{'LeftKeys'}, @qcode{'RightKeys'}
+    ## Variables to use as keys in @var{tblL} and @var{tblR}, respectively, when
+    ## the key variables have different names.  They must be specified together
+    ## and reference the same number of variables.
+    ##
+    ## @item @qcode{'LeftVariables'}, @qcode{'RightVariables'}
+    ## Variables of @var{tblL} and @var{tblR} to include in @var{tbl}.  By default
+    ## @qcode{'LeftVariables'} is all the variables of @var{tblL} and
+    ## @qcode{'RightVariables'} is the non-key variables of @var{tblR}.
+    ##
+    ## @item @qcode{'KeepOneCopy'}
+    ## Names of non-key variables that occur in both tables for which only the
+    ## copy from @var{tblL} is kept (no suffix is added and the @var{tblR} copy is
+    ## dropped).
+    ## @end table
+    ##
+    ## @code{[@var{tbl}, @var{ixR}] = join (@dots{})} also returns the index vector
+    ## @var{ixR} that identifies, for each row of @var{tbl}, the matching row of
+    ## @var{tblR}.
     ##
     ## @end deftypefn
     function [tbl, ixR] = join (tblL, tblR, varargin)
-      error ("table.join: not implemented yet.");
+
+      ## Check input arguments
+      if (nargin < 2)
+        error ("table.join: too few input arguments.");
+      endif
+      if (! istable (tblL) || ! istable (tblR))
+        error ("table.join: both inputs must be tables.");
+      endif
+
+      ## Parse Name/Value options
+      optNames = {'Keys', 'LeftKeys', 'RightKeys', 'LeftVariables', ...
+                  'RightVariables', 'KeepOneCopy'};
+      dfValues = {[], [], [], [], [], []};
+      [Keys, LeftKeys, RightKeys, LeftVariables, RightVariables, KeepOneCopy, ...
+       rem] = parsePairedArguments (optNames, dfValues, varargin(:));
+      if (! isempty (rem))
+        error ("table.join: invalid optional input argument.");
+      endif
+
+      ## Resolve key variables on each side
+      if (! isempty (Keys))
+        if (! isempty (LeftKeys) || ! isempty (RightKeys))
+          error (strcat ("table.join: 'Keys' cannot be combined with", ...
+                         " 'LeftKeys' or 'RightKeys'."));
+        endif
+        lKeyIdx = resolveVarRef (tblL, Keys);
+        rKeyIdx = resolveVarRef (tblR, Keys);
+      elseif (! isempty (LeftKeys) || ! isempty (RightKeys))
+        if (isempty (LeftKeys) || isempty (RightKeys))
+          error (strcat ("table.join: 'LeftKeys' and 'RightKeys' must be", ...
+                         " specified together."));
+        endif
+        lKeyIdx = resolveVarRef (tblL, LeftKeys);
+        rKeyIdx = resolveVarRef (tblR, RightKeys);
+        if (numel (lKeyIdx) != numel (rKeyIdx))
+          error (strcat ("table.join: 'LeftKeys' and 'RightKeys' must", ...
+                         " reference the same number of variables."));
+        endif
+      else
+        ## Default keys are the variables common to both tables (left order)
+        isCommon = ismember (tblL.VariableNames, tblR.VariableNames);
+        lKeyIdx = find (isCommon);
+        if (isempty (lKeyIdx))
+          error (strcat ("table.join: cannot find any common key variables", ...
+                         " between the two tables."));
+        endif
+        [~, rKeyIdx] = ismember (tblL.VariableNames(lKeyIdx), ...
+                                 tblR.VariableNames);
+      endif
+
+      ## Resolve output variables on each side
+      if (isempty (LeftVariables))
+        lVarIdx = 1:width (tblL);
+      else
+        lVarIdx = resolveVarRef (tblL, LeftVariables);
+      endif
+      if (isempty (RightVariables))
+        rVarIdx = setdiff (1:width (tblR), rKeyIdx);
+      else
+        rVarIdx = resolveVarRef (tblR, RightVariables);
+      endif
+
+      ## Drop the right copy of any 'KeepOneCopy' variable shared with the left
+      if (! isempty (KeepOneCopy))
+        keepNames = cellstr (KeepOneCopy);
+        rNames = tblR.VariableNames(rVarIdx);
+        lNames = tblL.VariableNames(lVarIdx);
+        dropMask = ismember (rNames, keepNames) & ismember (rNames, lNames);
+        rVarIdx(dropMask) = [];
+      endif
+
+      ## Build consistent numeric key proxies for both tables
+      leftProxy = [];
+      rightProxy = [];
+      for k = 1:numel (lKeyIdx)
+        lcol = tblL.VariableValues{lKeyIdx(k)};
+        rcol = tblR.VariableValues{rKeyIdx(k)};
+        [lp, rp, errmsg] = key_col_proxy (lcol, rcol);
+        if (! isempty (errmsg))
+          error ("table.join: %s", errmsg);
+        endif
+        leftProxy = [leftProxy, lp];
+        rightProxy = [rightProxy, rp];
+      endfor
+
+      ## The right key combinations must be unique
+      if (rows (unique (rightProxy, 'rows')) != rows (rightProxy))
+        error (strcat ("table.join: the key variables of TBLR must contain", ...
+                       " unique combinations of values."));
+      endif
+
+      ## Match each left row to its unique right row
+      [tf, ixR] = ismember (leftProxy, rightProxy, 'rows');
+      if (! all (tf))
+        error (strcat ("table.join: the key variables of TBLR must contain", ...
+                       " all values of the key variables of TBLL."));
+      endif
+
+      ## Assemble the output: all selected left rows + matched right rows
+      Lpart = subsetvars (tblL, lVarIdx);
+      Rpart = subsetrows (subsetvars (tblR, rVarIdx), ixR);
+      Rpart.RowNames = {};
+      ## Suffix any non-key variable names shared by both sides
+      shared = intersect (Lpart.VariableNames, Rpart.VariableNames);
+      if (! isempty (shared))
+        [lsuf, rsuf] = join_suffixes (inputname (1), inputname (2));
+        lNames = Lpart.VariableNames;
+        rNames = Rpart.VariableNames;
+        for i = find (ismember (lNames, shared))
+          lNames{i} = [lNames{i}, lsuf];
+        endfor
+        for i = find (ismember (rNames, shared))
+          rNames{i} = [rNames{i}, rsuf];
+        endfor
+        Lpart.VariableNames = lNames;
+        Rpart.VariableNames = rNames;
+      endif
+      tbl = horzcat (Lpart, Rpart);
+
     endfunction
 
     ## -*- texinfo -*-
