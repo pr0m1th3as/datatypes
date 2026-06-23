@@ -3560,11 +3560,167 @@ classdef table
     ##
     ## Inner join between two tables by rows using key variables.
     ##
+    ## @code{@var{tbl} = innerjoin (@var{tblL}, @var{tblR})} combines the tables
+    ## @var{tblL} and @var{tblR} by matching the values of their @emph{key
+    ## variables}, which by default are the variables that share the same name in
+    ## both tables.  Each row of @var{tbl} is formed by horizontally
+    ## concatenating a row of @var{tblL} with a row of @var{tblR} whose key
+    ## variables share the same combination of values.  If @math{m} rows in
+    ## @var{tblL} and @math{n} rows in @var{tblR} share the same key combination,
+    ## then @var{tbl} contains all @math{m*n} pairings for that combination.  The
+    ## rows of @var{tbl} are sorted by the values of the key variables, and any
+    ## row names are dropped.
     ##
+    ## By default @var{tbl} contains all the variables of @var{tblL} followed by
+    ## the non-key variables of @var{tblR}.  Whenever a non-key variable name
+    ## appears in both tables, a suffix derived from each input's argument name
+    ## is appended to the conflicting names in @var{tbl} (for inputs named
+    ## @var{tblL} and @var{tblR}, the suffixes @qcode{'_tblL'} and
+    ## @qcode{'_tblR'}; when an input has no name, @qcode{'_left'} and
+    ## @qcode{'_right'} are used).
+    ##
+    ## @code{@var{tbl} = innerjoin (@var{tblL}, @var{tblR}, @var{Name},
+    ## @var{Value})} customizes the join with the following options:
+    ##
+    ## @table @asis
+    ## @item @qcode{'Keys'}
+    ## Variables to use as keys in both tables, given as variable names or
+    ## indices.  It cannot be combined with @qcode{'LeftKeys'} or
+    ## @qcode{'RightKeys'}.
+    ##
+    ## @item @qcode{'LeftKeys'}, @qcode{'RightKeys'}
+    ## Variables to use as keys in @var{tblL} and @var{tblR}, respectively, when
+    ## the key variables have different names.  They must be specified together
+    ## and reference the same number of variables.
+    ##
+    ## @item @qcode{'LeftVariables'}, @qcode{'RightVariables'}
+    ## Variables of @var{tblL} and @var{tblR} to include in @var{tbl}.  They may
+    ## include or exclude key variables.  By default @qcode{'LeftVariables'} is
+    ## all the variables of @var{tblL} and @qcode{'RightVariables'} is the
+    ## non-key variables of @var{tblR}.
+    ## @end table
+    ##
+    ## @code{[@var{tbl}, @var{ixL}, @var{ixR}] = innerjoin (@dots{})} also returns
+    ## the row-index vectors @var{ixL} and @var{ixR} such that @var{tbl} is the
+    ## horizontal concatenation of @code{@var{tblL}(@var{ixL}, leftVars)} and
+    ## @code{@var{tblR}(@var{ixR}, rightVars)}.
     ##
     ## @end deftypefn
     function [tbl, ixL, ixR] = innerjoin (tblL, tblR, varargin)
-      error ("table.innerjoin: not implemented yet.");
+
+      ## Check input arguments
+      if (nargin < 2)
+        error ("table.innerjoin: too few input arguments.");
+      endif
+      if (! istable (tblL) || ! istable (tblR))
+        error ("table.innerjoin: both inputs must be tables.");
+      endif
+
+      ## Parse Name/Value options
+      optNames = {'Keys', 'LeftKeys', 'RightKeys', 'LeftVariables', ...
+                  'RightVariables'};
+      dfValues = {[], [], [], [], []};
+      [Keys, LeftKeys, RightKeys, LeftVariables, RightVariables, rem] = ...
+        parsePairedArguments (optNames, dfValues, varargin(:));
+      if (! isempty (rem))
+        error ("table.innerjoin: invalid optional input argument.");
+      endif
+
+      ## Resolve key variables on each side
+      if (! isempty (Keys))
+        if (! isempty (LeftKeys) || ! isempty (RightKeys))
+          error (strcat ("table.innerjoin: 'Keys' cannot be combined with", ...
+                         " 'LeftKeys' or 'RightKeys'."));
+        endif
+        lKeyIdx = resolveVarRef (tblL, Keys);
+        rKeyIdx = resolveVarRef (tblR, Keys);
+      elseif (! isempty (LeftKeys) || ! isempty (RightKeys))
+        if (isempty (LeftKeys) || isempty (RightKeys))
+          error (strcat ("table.innerjoin: 'LeftKeys' and 'RightKeys' must", ...
+                         " be specified together."));
+        endif
+        lKeyIdx = resolveVarRef (tblL, LeftKeys);
+        rKeyIdx = resolveVarRef (tblR, RightKeys);
+        if (numel (lKeyIdx) != numel (rKeyIdx))
+          error (strcat ("table.innerjoin: 'LeftKeys' and 'RightKeys' must", ...
+                         " reference the same number of variables."));
+        endif
+      else
+        ## Default keys are the variables common to both tables (left order)
+        isCommon = ismember (tblL.VariableNames, tblR.VariableNames);
+        lKeyIdx = find (isCommon);
+        if (isempty (lKeyIdx))
+          error (strcat ("table.innerjoin: cannot find any common key", ...
+                         " variables between the two tables."));
+        endif
+        [~, rKeyIdx] = ismember (tblL.VariableNames(lKeyIdx), ...
+                                 tblR.VariableNames);
+      endif
+
+      ## Resolve output variables on each side
+      if (isempty (LeftVariables))
+        lVarIdx = 1:width (tblL);
+      else
+        lVarIdx = resolveVarRef (tblL, LeftVariables);
+      endif
+      if (isempty (RightVariables))
+        rVarIdx = setdiff (1:width (tblR), rKeyIdx);
+      else
+        rVarIdx = resolveVarRef (tblR, RightVariables);
+      endif
+
+      ## Build consistent numeric key proxies for both tables
+      leftProxy = [];
+      rightProxy = [];
+      for k = 1:numel (lKeyIdx)
+        lcol = tblL.VariableValues{lKeyIdx(k)};
+        rcol = tblR.VariableValues{rKeyIdx(k)};
+        [lp, rp, errmsg] = key_col_proxy (lcol, rcol);
+        if (! isempty (errmsg))
+          error ("table.innerjoin: %s", errmsg);
+        endif
+        leftProxy = [leftProxy, lp];
+        rightProxy = [rightProxy, rp];
+      endfor
+
+      ## Match key rows and lay out the Cartesian product, key-sorted
+      Nl = height (tblL);
+      [uKeys, ~, ic] = unique ([leftProxy; rightProxy], 'rows');
+      icL = ic(1:Nl);
+      icR = ic(Nl+1:end);
+      ixL = [];
+      ixR = [];
+      for g = 1:rows (uKeys)
+        lr = find (icL == g);
+        rr = find (icR == g);
+        if (! isempty (lr) && ! isempty (rr))
+          ixL = [ixL; repelem(lr(:), numel (rr))];
+          ixR = [ixR; repmat(rr(:), numel (lr), 1)];
+        endif
+      endfor
+
+      ## Assemble the output table
+      Lpart = subsetrows (subsetvars (tblL, lVarIdx), ixL);
+      Rpart = subsetrows (subsetvars (tblR, rVarIdx), ixR);
+      Lpart.RowNames = {};
+      Rpart.RowNames = {};
+      ## Suffix any non-key variable names shared by both sides
+      shared = intersect (Lpart.VariableNames, Rpart.VariableNames);
+      if (! isempty (shared))
+        [lsuf, rsuf] = join_suffixes (inputname (1), inputname (2));
+        lNames = Lpart.VariableNames;
+        rNames = Rpart.VariableNames;
+        for i = find (ismember (lNames, shared))
+          lNames{i} = [lNames{i}, lsuf];
+        endfor
+        for i = find (ismember (rNames, shared))
+          rNames{i} = [rNames{i}, rsuf];
+        endfor
+        Lpart.VariableNames = lNames;
+        Rpart.VariableNames = rNames;
+      endif
+      tbl = horzcat (Lpart, Rpart);
+
     endfunction
 
     ## -*- texinfo -*-
@@ -3574,11 +3730,235 @@ classdef table
     ##
     ## Outer join between two tables by rows using key variables.
     ##
+    ## @code{@var{tbl} = outerjoin (@var{tblL}, @var{tblR})} combines the tables
+    ## @var{tblL} and @var{tblR} by matching the values of their @emph{key
+    ## variables}, which by default are the variables that share the same name in
+    ## both tables.  Unlike @code{innerjoin}, an outer join also keeps the rows of
+    ## each table that have no match in the other table, filling the variables
+    ## taken from the non-matching table with missing values (@qcode{NaN},
+    ## @qcode{NaT}, @qcode{<undefined>}, empty string, etc., as appropriate).  If
+    ## @math{m} rows in @var{tblL} and @math{n} rows in @var{tblR} share the same
+    ## key combination, then @var{tbl} contains all @math{m*n} pairings for that
+    ## combination.  The rows of @var{tbl} are sorted by the values of the key
+    ## variables and any row names are dropped.
     ##
+    ## By default @var{tbl} contains all the variables of @var{tblL} followed by
+    ## all the variables of @var{tblR}.  Because the key variables are kept from
+    ## both tables, conflicting names receive a suffix derived from each input's
+    ## argument name (for inputs named @var{tblL} and @var{tblR}, the suffixes
+    ## @qcode{'_tblL'} and @qcode{'_tblR'}; when an input has no name,
+    ## @qcode{'_left'} and @qcode{'_right'} are used).  See @qcode{'MergeKeys'} to
+    ## combine the keys into single columns instead.
+    ##
+    ## @code{@var{tbl} = outerjoin (@var{tblL}, @var{tblR}, @var{Name},
+    ## @var{Value})} customizes the join with the following options:
+    ##
+    ## @table @asis
+    ## @item @qcode{'Type'}
+    ## The type of outer join: @qcode{'full'} (default) keeps unmatched rows from
+    ## both tables, @qcode{'left'} keeps all rows of @var{tblL} and only matching
+    ## rows of @var{tblR}, and @qcode{'right'} keeps all rows of @var{tblR} and
+    ## only matching rows of @var{tblL}.
+    ##
+    ## @item @qcode{'MergeKeys'}
+    ## A logical scalar (default @qcode{false}).  When @qcode{true}, each pair of
+    ## key variables is merged into a single variable that takes the value from
+    ## @var{tblL} where a matching left row exists and from @var{tblR} otherwise.
+    ## The merged variable is named after the left key when both keys share the
+    ## same name, or @qcode{'leftName_rightName'} when their names differ.
+    ##
+    ## @item @qcode{'Keys'}
+    ## Variables to use as keys in both tables, given as variable names or
+    ## indices.  It cannot be combined with @qcode{'LeftKeys'} or
+    ## @qcode{'RightKeys'}.
+    ##
+    ## @item @qcode{'LeftKeys'}, @qcode{'RightKeys'}
+    ## Variables to use as keys in @var{tblL} and @var{tblR}, respectively, when
+    ## the key variables have different names.  They must be specified together
+    ## and reference the same number of variables.
+    ##
+    ## @item @qcode{'LeftVariables'}, @qcode{'RightVariables'}
+    ## Variables of @var{tblL} and @var{tblR} to include in @var{tbl}.  By default
+    ## all the variables of each table are included.
+    ## @end table
+    ##
+    ## @code{[@var{tbl}, @var{ixL}, @var{ixR}] = outerjoin (@dots{})} also returns
+    ## the row-index vectors @var{ixL} and @var{ixR} that identify the row of
+    ## @var{tblL} and @var{tblR}, respectively, corresponding to each row of
+    ## @var{tbl}.  A zero indicates a row of @var{tbl} that has no corresponding
+    ## row in that table.
     ##
     ## @end deftypefn
     function [tbl, ixL, ixR] = outerjoin (tblL, tblR, varargin)
-      error ("table.outerjoin: not implemented yet.");
+
+      ## Check input arguments
+      if (nargin < 2)
+        error ("table.outerjoin: too few input arguments.");
+      endif
+      if (! istable (tblL) || ! istable (tblR))
+        error ("table.outerjoin: both inputs must be tables.");
+      endif
+
+      ## Parse Name/Value options
+      optNames = {'Keys', 'LeftKeys', 'RightKeys', 'LeftVariables', ...
+                  'RightVariables', 'Type', 'MergeKeys'};
+      dfValues = {[], [], [], [], [], 'full', false};
+      [Keys, LeftKeys, RightKeys, LeftVariables, RightVariables, Type, ...
+       MergeKeys, rem] = parsePairedArguments (optNames, dfValues, varargin(:));
+      if (! isempty (rem))
+        error ("table.outerjoin: invalid optional input argument.");
+      endif
+
+      ## Validate 'Type' and 'MergeKeys'
+      if (! (ischar (Type) && isrow (Type))
+          || ! any (strcmpi (Type, {'full', 'left', 'right'})))
+        error (strcat ("table.outerjoin: 'Type' must be 'full', 'left', or", ...
+                       " 'right'."));
+      endif
+      Type = lower (Type);
+      if (! (islogical (MergeKeys) && isscalar (MergeKeys)))
+        error ("table.outerjoin: 'MergeKeys' must be a logical scalar.");
+      endif
+
+      ## Resolve key variables on each side
+      if (! isempty (Keys))
+        if (! isempty (LeftKeys) || ! isempty (RightKeys))
+          error (strcat ("table.outerjoin: 'Keys' cannot be combined with", ...
+                         " 'LeftKeys' or 'RightKeys'."));
+        endif
+        lKeyIdx = resolveVarRef (tblL, Keys);
+        rKeyIdx = resolveVarRef (tblR, Keys);
+      elseif (! isempty (LeftKeys) || ! isempty (RightKeys))
+        if (isempty (LeftKeys) || isempty (RightKeys))
+          error (strcat ("table.outerjoin: 'LeftKeys' and 'RightKeys' must", ...
+                         " be specified together."));
+        endif
+        lKeyIdx = resolveVarRef (tblL, LeftKeys);
+        rKeyIdx = resolveVarRef (tblR, RightKeys);
+        if (numel (lKeyIdx) != numel (rKeyIdx))
+          error (strcat ("table.outerjoin: 'LeftKeys' and 'RightKeys' must", ...
+                         " reference the same number of variables."));
+        endif
+      else
+        ## Default keys are the variables common to both tables (left order)
+        isCommon = ismember (tblL.VariableNames, tblR.VariableNames);
+        lKeyIdx = find (isCommon);
+        if (isempty (lKeyIdx))
+          error (strcat ("table.outerjoin: cannot find any common key", ...
+                         " variables between the two tables."));
+        endif
+        [~, rKeyIdx] = ismember (tblL.VariableNames(lKeyIdx), ...
+                                 tblR.VariableNames);
+      endif
+
+      ## Resolve output variables (defaults: all variables of each table)
+      if (isempty (LeftVariables))
+        lVarIdx = 1:width (tblL);
+      else
+        lVarIdx = resolveVarRef (tblL, LeftVariables);
+      endif
+      if (isempty (RightVariables))
+        rVarIdx = 1:width (tblR);
+      else
+        rVarIdx = resolveVarRef (tblR, RightVariables);
+      endif
+
+      ## Build consistent numeric key proxies for both tables
+      leftProxy = [];
+      rightProxy = [];
+      for k = 1:numel (lKeyIdx)
+        lcol = tblL.VariableValues{lKeyIdx(k)};
+        rcol = tblR.VariableValues{rKeyIdx(k)};
+        [lp, rp, errmsg] = key_col_proxy (lcol, rcol);
+        if (! isempty (errmsg))
+          error ("table.outerjoin: %s", errmsg);
+        endif
+        leftProxy = [leftProxy, lp];
+        rightProxy = [rightProxy, rp];
+      endfor
+
+      ## Match key rows, producing zero-filled index vectors per join type
+      Nl = height (tblL);
+      [uKeys, ~, ic] = unique ([leftProxy; rightProxy], 'rows');
+      icL = ic(1:Nl);
+      icR = ic(Nl+1:end);
+      keepL = any (strcmp (Type, {'full', 'left'}));
+      keepR = any (strcmp (Type, {'full', 'right'}));
+      ixL = [];
+      ixR = [];
+      for g = 1:rows (uKeys)
+        lr = find (icL == g);
+        rr = find (icR == g);
+        nl = numel (lr);
+        nr = numel (rr);
+        if (nl > 0 && nr > 0)
+          ixL = [ixL; repelem(lr(:), nr)];
+          ixR = [ixR; repmat(rr(:), nl, 1)];
+        elseif (nl > 0 && keepL)
+          ixL = [ixL; lr(:)];
+          ixR = [ixR; zeros(nl, 1)];
+        elseif (nr > 0 && keepR)
+          ixL = [ixL; zeros(nr, 1)];
+          ixR = [ixR; rr(:)];
+        endif
+      endfor
+
+      ## Assemble each side, filling unmatched rows with missing values
+      [Lout, emsg] = joinBuildSide (subsetvars (tblL, lVarIdx), ixL);
+      if (! isempty (emsg))
+        error ("table.outerjoin: %s", emsg);
+      endif
+      [Rout, emsg] = joinBuildSide (subsetvars (tblR, rVarIdx), ixR);
+      if (! isempty (emsg))
+        error ("table.outerjoin: %s", emsg);
+      endif
+
+      ## Optionally merge each key pair into a single variable.  A merged key
+      ## keeps the left position; its name is the left key name when both keys
+      ## share it, or 'leftName_rightName' when they differ.
+      if (MergeKeys)
+        [tfL, posL] = ismember (lKeyIdx, lVarIdx);
+        [tfR, posR] = ismember (rKeyIdx, rVarIdx);
+        dropR = [];
+        fillRows = (ixL == 0);
+        lNames = Lout.VariableNames;
+        for k = 1:numel (lKeyIdx)
+          if (tfL(k) && tfR(k))
+            mcol = Lout.VariableValues{posL(k)};
+            rcol = Rout.VariableValues{posR(k)};
+            mcol(fillRows,:) = rcol(fillRows,:);
+            Lout.VariableValues{posL(k)} = mcol;
+            lkn = tblL.VariableNames{lKeyIdx(k)};
+            rkn = tblR.VariableNames{rKeyIdx(k)};
+            if (! strcmp (lkn, rkn))
+              lNames{posL(k)} = [lkn, '_', rkn];
+            endif
+            dropR = [dropR, posR(k)];
+          endif
+        endfor
+        Lout.VariableNames = lNames;
+        if (! isempty (dropR))
+          Rout = subsetvars (Rout, setdiff (1:width (Rout), dropR));
+        endif
+      endif
+
+      ## Suffix any variable names shared by both sides
+      shared = intersect (Lout.VariableNames, Rout.VariableNames);
+      if (! isempty (shared))
+        [lsuf, rsuf] = join_suffixes (inputname (1), inputname (2));
+        lNames = Lout.VariableNames;
+        rNames = Rout.VariableNames;
+        for i = find (ismember (lNames, shared))
+          lNames{i} = [lNames{i}, lsuf];
+        endfor
+        for i = find (ismember (rNames, shared))
+          rNames{i} = [rNames{i}, rsuf];
+        endfor
+        Lout.VariableNames = lNames;
+        Rout.VariableNames = rNames;
+      endif
+      tbl = horzcat (Lout, Rout);
+
     endfunction
 
     ## -*- texinfo -*-
@@ -5758,6 +6138,32 @@ classdef table
       endif
     endfunction
 
+    ## Build one side of an outer join from a row-index vector IDX (zeros mark
+    ## rows with no match, filled with missing values).  Returns an errmsg body
+    ## (empty on success) emitted by the caller under its own name.
+    function [out, errmsg] = joinBuildSide (this, idx)
+      out = this;
+      errmsg = '';
+      nout = numel (idx);
+      pos = (idx > 0);
+      for j = 1:width (this)
+        p = this.VariableValues{j};
+        if (any (pos))
+          src = idx;
+          src(! pos) = idx(find (pos, 1));
+          col = p(src, :);
+          [col, errmsg] = set_var_missing (col, ! pos);
+        else
+          [col, errmsg] = missing_rows (p, nout);
+        endif
+        if (! isempty (errmsg))
+          return;
+        endif
+        out.VariableValues{j} = col;
+      endfor
+      out.RowNames = {};
+    endfunction
+
     ## Return a subset of variables defined by the numerical vector ixVars
     function tbl = subsetvars (this, ixVars)
       tbl = this;
@@ -7078,5 +7484,152 @@ function [mcvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, aggrFcn)
     if (isempty (aggrFcn))  # add default aggrevation function
       aggrFcn = @(x) __unique__ (x)(1);
     endif
+  endif
+endfunction
+
+## Map a key variable kind to a comparison category.  Returns an empty
+## character vector for types that cannot be used as keys.
+function k = key_kind (col)
+  if (isa (col, 'categorical') || isa (col, 'string') || iscellstr (col)
+      || ischar (col))
+    k = 'text';
+  elseif (isa (col, 'datetime'))
+    k = 'datetime';
+  elseif (isa (col, 'duration'))
+    k = 'duration';
+  elseif (isa (col, 'calendarDuration'))
+    k = 'calendarDuration';
+  elseif (isnumeric (col) || islogical (col))
+    k = 'numeric';
+  else
+    k = '';
+  endif
+endfunction
+
+## Build the disambiguation suffixes used by the join methods when a variable
+## name is shared by both tables.  MATLAB derives them from the input argument
+## names (e.g. inputs L and R give '_L'/'_R'); fall back to '_left'/'_right'
+## when an input has no workspace name.
+function [lsuf, rsuf] = join_suffixes (leftName, rightName)
+  if (isempty (leftName))
+    leftName = 'left';
+  endif
+  if (isempty (rightName))
+    rightName = 'right';
+  endif
+  lsuf = ['_', leftName];
+  rsuf = ['_', rightName];
+endfunction
+
+## Encode two cellstr key columns into consistent integer codes so that equal
+## strings (across both columns) map to the same code.
+function [lp, rp] = text_codes (lc, rc)
+  nl = numel (lc);
+  [~, ~, ic] = unique ([lc(:); rc(:)]);
+  lp = ic(1:nl);
+  rp = ic(nl+1:end);
+endfunction
+
+## Build consistent numeric key proxies for the same key variable taken from
+## two tables, so that equal key values map to equal proxy rows.  Returns an
+## errmsg body (empty on success) emitted by the caller under its own name.
+function [lp, rp, errmsg] = key_col_proxy (lcol, rcol)
+  lp = [];
+  rp = [];
+  errmsg = '';
+  kl = key_kind (lcol);
+  kr = key_kind (rcol);
+  if (isempty (kl))
+    errmsg = sprintf ("unsupported key variable type '%s'.", class (lcol));
+    return;
+  elseif (isempty (kr))
+    errmsg = sprintf ("unsupported key variable type '%s'.", class (rcol));
+    return;
+  elseif (! strcmp (kl, kr))
+    errmsg = "key variables have incompatible types.";
+    return;
+  endif
+  switch (kl)
+    case 'text'
+      [lp, rp] = text_codes (cellstr (lcol), cellstr (rcol));
+    case 'datetime'
+      lp = datenum (lcol);
+      rp = datenum (rcol);
+    case 'duration'
+      lp = lcol.days;
+      rp = rcol.days;
+    case 'calendarDuration'
+      lp = lcol.proxyArray;
+      rp = rcol.proxyArray;
+    case 'numeric'
+      lp = double (lcol);
+      rp = double (rcol);
+  endswitch
+  if (size (lp, 2) != size (rp, 2))
+    lp = [];
+    rp = [];
+    errmsg = "key variables have incompatible sizes.";
+  endif
+endfunction
+
+## Set the rows of a variable V selected by the logical MASK to the standard
+## missing value for V's type.  Returns an errmsg body for unsupported types.
+function [v, errmsg] = set_var_missing (v, mask)
+  errmsg = '';
+  if (! any (mask))
+    return;
+  endif
+  if (isa (v, 'string'))
+    v(mask) = string (missing);
+  elseif (isa (v, 'categorical'))
+    v(mask) = categorical (missing);
+  elseif (isa (v, 'datetime'))
+    v(mask) = NaT;
+  elseif (isa (v, 'duration'))
+    v(mask) = missing;
+  elseif (isa (v, 'calendarDuration'))
+    v(mask,:) = NaN;
+  elseif (iscellstr (v))
+    v(mask) = {''};
+  elseif (islogical (v))
+    v(mask,:) = false;
+  elseif (isinteger (v))
+    v(mask,:) = 0;
+  elseif (isfloat (v))
+    v(mask,:) = NaN;
+  else
+    errmsg = sprintf (strcat ("cannot create missing values for a variable", ...
+                              " of type '%s'."), class (v));
+  endif
+endfunction
+
+## Create an N-row array of standard missing values matching the type and width
+## of PROTO.  Used when one input table has no rows to replicate from.  Returns
+## an errmsg body for unsupported types.
+function [col, errmsg] = missing_rows (proto, n)
+  errmsg = '';
+  col = [];
+  w = max (size (proto, 2), 1);
+  if (isa (proto, 'string'))
+    col = repmat (string (missing), n, w);
+  elseif (isa (proto, 'categorical'))
+    col = repmat (categorical (missing), n, w);
+  elseif (isa (proto, 'datetime'))
+    col = repmat (NaT, n, w);
+  elseif (isa (proto, 'duration'))
+    col = hours (NaN (n, w));
+  elseif (isa (proto, 'calendarDuration'))
+    col = calmonths (NaN (n, w));
+  elseif (iscellstr (proto))
+    col = repmat ({''}, n, w);
+  elseif (islogical (proto))
+    col = false (n, w);
+  elseif (isinteger (proto))
+    col = zeros (n, w, class (proto));
+  elseif (isfloat (proto))
+    col = NaN (n, w);
+  else
+    errmsg = sprintf (strcat ("cannot create missing values for a variable", ...
+                              " of type '%s'."), class (proto));
   endif
 endfunction
