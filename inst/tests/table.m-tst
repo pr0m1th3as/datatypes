@@ -1683,6 +1683,124 @@
 %! outerjoin (table ([1;2], 'VariableNames', {'K'}), ...
 %!            table ({'1';'2'}, 'VariableNames', {'K'}));
 
+## Test 'union' method
+%!test
+%! A = table ([3;1;2;1], {'c';'a';'b';'a'}, 'VariableNames', {'N', 'S'});
+%! B = table ([2;5;1], {'b';'e';'a'}, 'VariableNames', {'N', 'S'});
+%! [U, ia, ib] = union (A, B);
+%! assert (U.Properties.VariableNames, {'N', 'S'});
+%! assert (U.N, [1;2;3;5]);
+%! assert (U.S, {'a';'b';'c';'e'});
+%! assert (ia, [2;3;1]);
+%! assert (ib, 2);
+
+## 'union' with 'stable' set order
+%!test
+%! A = table ([3;1;2;1], {'c';'a';'b';'a'}, 'VariableNames', {'N', 'S'});
+%! B = table ([2;5;1], {'b';'e';'a'}, 'VariableNames', {'N', 'S'});
+%! U = union (A, B, 'stable');
+%! assert (U.N, [3;1;2;5]);
+%! assert (U.S, {'c';'a';'b';'e'});
+
+## 'union' ignores variable order (output keeps the first table's order)
+%!test
+%! A = table ([3;1], {'c';'a'}, 'VariableNames', {'N', 'S'});
+%! B = table ({'a';'e'}, [1;5], 'VariableNames', {'S', 'N'});
+%! U = union (A, B);
+%! assert (U.Properties.VariableNames, {'N', 'S'});
+%! assert (U.N, [1;3;5]);
+%! assert (U.S, {'a';'c';'e'});
+
+## Test 'intersect' method
+%!test
+%! A = table ([3;1;2;1], {'c';'a';'b';'a'}, 'VariableNames', {'N', 'S'});
+%! B = table ([2;5;1], {'b';'e';'a'}, 'VariableNames', {'N', 'S'});
+%! [I, ia, ib] = intersect (A, B);
+%! assert (I.N, [1;2]);
+%! assert (I.S, {'a';'b'});
+%! assert (ia, [2;3]);
+%! assert (ib, [3;1]);
+
+## 'intersect' with no common rows yields an empty table
+%!test
+%! A = table ([1;2], {'a';'b'}, 'VariableNames', {'N', 'S'});
+%! B = table ([8;9], {'x';'y'}, 'VariableNames', {'N', 'S'});
+%! I = intersect (A, B);
+%! assert (height (I), 0);
+%! assert (I.Properties.VariableNames, {'N', 'S'});
+
+## Test 'setdiff' method
+%!test
+%! A = table ([3;1;2;1], {'c';'a';'b';'a'}, 'VariableNames', {'N', 'S'});
+%! B = table ([2;5;1], {'b';'e';'a'}, 'VariableNames', {'N', 'S'});
+%! [D, ia] = setdiff (A, B);
+%! assert (D.N, 3);
+%! assert (D.S, {'c'});
+%! assert (ia, 1);
+
+## 'setdiff' with 'stable' set order
+%!test
+%! A = table ([5;3;5], {'e';'c';'e'}, 'VariableNames', {'N', 'S'});
+%! B = table ([1], {'a'}, 'VariableNames', {'N', 'S'});
+%! D = setdiff (A, B, 'stable');
+%! assert (D.N, [5;3]);
+
+## Test 'setxor' method
+%!test
+%! A = table ([3;1;2;1], {'c';'a';'b';'a'}, 'VariableNames', {'N', 'S'});
+%! B = table ([2;5;1], {'b';'e';'a'}, 'VariableNames', {'N', 'S'});
+%! [X, ia, ib] = setxor (A, B);
+%! assert (X.N, [3;5]);
+%! assert (X.S, {'c';'e'});
+%! assert (ia, 1);
+%! assert (ib, 2);
+
+## Test 'ismember' method
+%!test
+%! A = table ([3;1;2;1], {'c';'a';'b';'a'}, 'VariableNames', {'N', 'S'});
+%! B = table ([2;5;1], {'b';'e';'a'}, 'VariableNames', {'N', 'S'});
+%! [TF, ixB] = ismember (A, B);
+%! assert (TF, [false;true;true;true]);
+%! assert (ixB, [0;3;1;3]);
+
+## Set operations work on text and numeric keys via the row proxy
+%!test
+%! A = table (categorical ({'a';'b';'c'}), [1;2;3], 'VariableNames', {'C', 'N'});
+%! B = table (categorical ({'b';'d'}), [2;4], 'VariableNames', {'C', 'N'});
+%! I = intersect (A, B);
+%! assert (cellstr (I.C), {'b'});
+%! assert (I.N, 2);
+
+%!error <table.union: too few input arguments.> ...
+%! union (table ([1;2]));
+%!error <table.union: both inputs must be tables.> ...
+%! union (table ([1;2]), 5);
+%!error <table.union: the two tables must have the same variable names.> ...
+%! union (table ([1;2], 'VariableNames', {'N'}), ...
+%!        table ([1;2], 'VariableNames', {'Z'}));
+%!error <table.union: SETORDER must be either 'sorted' or 'stable'.> ...
+%! union (table ([1;2], 'VariableNames', {'N'}), ...
+%!        table ([1;2], 'VariableNames', {'N'}), 'bogus');
+%!error <table.union: too many input arguments.> ...
+%! union (table ([1;2], 'VariableNames', {'N'}), ...
+%!        table ([1;2], 'VariableNames', {'N'}), 'sorted', 'extra');
+%!error <table.intersect: both inputs must be tables.> ...
+%! intersect (table ([1;2]), 5);
+%!error <table.intersect: the two tables must have the same variable names.> ...
+%! intersect (table ([1;2], 'VariableNames', {'N'}), ...
+%!            table ([1;2], 'VariableNames', {'Z'}));
+%!error <table.setdiff: both inputs must be tables.> ...
+%! setdiff (table ([1;2]), 5);
+%!error <table.setxor: both inputs must be tables.> ...
+%! setxor (table ([1;2]), 5);
+%!error <table.ismember: too few input arguments.> ...
+%! ismember (table ([1;2]));
+%!error <table.ismember: both inputs must be tables.> ...
+%! ismember (table ([1;2]), 5);
+%!error <table.ismember: the two tables must have the same variable names.> ...
+%! ismember (table ([1;2], 'VariableNames', {'N'}), ...
+%!           table ([1;2], 'VariableNames', {'Z'}));
+
 
 ################################################################################
 ##                           ** Missing Values **                             ##
