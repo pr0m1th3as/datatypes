@@ -1319,7 +1319,7 @@ classdef table
           varValIdx = [varValIdx, tmpVal];
 
         elseif (isa (tmpVal, 'duration'))
-          tmpVal = tmpVal.days;
+          tmpVal = days (tmpVal);
           varValIdx = [varValIdx, tmpVal];
 
         elseif (isa (tmpVal, 'string'))
@@ -1459,7 +1459,7 @@ classdef table
           varProxy = [varProxy, varVal];
 
         elseif (isa (varVal, 'duration'))
-          varVal = varVal.days;
+          varVal = days (varVal);
           varProxy = [varProxy, varVal];
 
         elseif (isa (varVal, 'string'))
@@ -7897,8 +7897,8 @@ function [lp, rp, errmsg] = key_col_proxy (lcol, rcol)
       lp = datenum (lcol);
       rp = datenum (rcol);
     case 'duration'
-      lp = lcol.days;
-      rp = rcol.days;
+      lp = days (lcol);
+      rp = days (rcol);
     case 'calendarDuration'
       lp = lcol.proxyArray;
       rp = rcol.proxyArray;
