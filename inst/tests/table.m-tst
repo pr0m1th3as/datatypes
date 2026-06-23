@@ -1396,6 +1396,295 @@
 
 
 ################################################################################
+##                       ** Join and Set Operations **                        ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'join'             'innerjoin'        'outerjoin'        'union'           ##
+## 'intersect'        'ismember'         'setdiff'          'setxor'          ##
+##                                                                            ##
+################################################################################
+
+## Test 'innerjoin' method
+%!test
+%! L = table ([1;2;3;2], {'a';'b';'c';'d'}, 'VariableNames', {'Key', 'L'});
+%! R = table ([2;3;5], {'x';'y';'z'}, 'VariableNames', {'Key', 'R'});
+%! [T, ixL, ixR] = innerjoin (L, R);
+%! assert (T.Properties.VariableNames, {'Key', 'L', 'R'});
+%! assert (T.Key, [2;2;3]);
+%! assert (T.L, {'b';'d';'c'});
+%! assert (T.R, {'x';'x';'y'});
+%! assert (ixL, [2;4;3]);
+%! assert (ixR, [1;1;2]);
+
+## Inner join drops row names
+%!test
+%! L = table ([1;2], {'a';'b'}, 'VariableNames', {'Key', 'L'}, ...
+%!            'RowNames', {'r1', 'r2'});
+%! R = table ([2;1], {'x';'y'}, 'VariableNames', {'Key', 'R'});
+%! T = innerjoin (L, R);
+%! assert (isempty (T.Properties.RowNames), true);
+
+## Cartesian product on repeated keys (m*n rows)
+%!test
+%! L = table ([1;1], {'a';'b'}, 'VariableNames', {'K', 'L'});
+%! R = table ([1;1], {'x';'y'}, 'VariableNames', {'K', 'R'});
+%! [T, ixL, ixR] = innerjoin (L, R);
+%! assert (height (T), 4);
+%! assert (T.L, {'a';'a';'b';'b'});
+%! assert (T.R, {'x';'y';'x';'y'});
+%! assert (ixL, [1;1;2;2]);
+%! assert (ixR, [1;2;1;2]);
+
+## No matching keys yields an empty result with the correct variables
+%!test
+%! L = table ([1;2], {'a';'b'}, 'VariableNames', {'K', 'L'});
+%! R = table ([8;9], {'x';'y'}, 'VariableNames', {'K', 'R'});
+%! T = innerjoin (L, R);
+%! assert (height (T), 0);
+%! assert (T.Properties.VariableNames, {'K', 'L', 'R'});
+
+## Cellstr key variable
+%!test
+%! L = table ({'a';'b';'c'}, (1:3)', 'VariableNames', {'K', 'N'});
+%! R = table ({'b';'a'}, {'Y';'X'}, 'VariableNames', {'K', 'M'});
+%! T = innerjoin (L, R);
+%! assert (T.K, {'a';'b'});
+%! assert (T.N, [1;2]);
+%! assert (T.M, {'X';'Y'});
+
+## String key variable
+%!test
+%! L = table (string ({'a';'b'}), (1:2)', 'VariableNames', {'K', 'N'});
+%! R = table (string ({'b'}), {'Z'}, 'VariableNames', {'K', 'M'});
+%! T = innerjoin (L, R);
+%! assert (cellstr (T.K), {'b'});
+%! assert (T.N, 2);
+%! assert (T.M, {'Z'});
+
+## Categorical key variable, sorted by category code
+%!test
+%! L = table (categorical ({'a';'b';'c'}), (1:3)', 'VariableNames', {'K', 'N'});
+%! R = table (categorical ({'c';'a'}), {'P';'Q'}, 'VariableNames', {'K', 'M'});
+%! T = innerjoin (L, R);
+%! assert (cellstr (T.K), {'a';'c'});
+%! assert (T.N, [1;3]);
+%! assert (T.M, {'Q';'P'});
+
+## 'Keys' option selects the key explicitly
+%!test
+%! L = table ([1;2;3], (1:3)', 'VariableNames', {'K', 'A'});
+%! R = table ([2;3], {'x';'y'}, 'VariableNames', {'K', 'B'});
+%! T = innerjoin (L, R, 'Keys', 'K');
+%! assert (T.Properties.VariableNames, {'K', 'A', 'B'});
+%! assert (T.K, [2;3]);
+
+## 'LeftKeys'/'RightKeys' for differently-named keys
+%!test
+%! L = table ([1;2;3], (10:12)', 'VariableNames', {'KL', 'A'});
+%! R = table ([2;3], {'x';'y'}, 'VariableNames', {'KR', 'B'});
+%! [T, ixL, ixR] = innerjoin (L, R, 'LeftKeys', 'KL', 'RightKeys', 'KR');
+%! assert (T.Properties.VariableNames, {'KL', 'A', 'B'});
+%! assert (T.KL, [2;3]);
+%! assert (T.A, [11;12]);
+%! assert (T.B, {'x';'y'});
+%! assert (ixL, [2;3]);
+%! assert (ixR, [1;2]);
+
+## 'LeftVariables' and 'RightVariables' restrict the output columns
+%!test
+%! L = table ([1;2;3], (10:12)', {'p';'q';'r'}, ...
+%!            'VariableNames', {'K', 'A', 'C'});
+%! R = table ([2;3], {'x';'y'}, (5:6)', 'VariableNames', {'K', 'B', 'D'});
+%! T = innerjoin (L, R, 'LeftVariables', 'A', 'RightVariables', 'B');
+%! assert (T.Properties.VariableNames, {'A', 'B'});
+%! assert (T.A, [11;12]);
+%! assert (T.B, {'x';'y'});
+
+## Shared non-key variable names get '_Tleft'/'_Tright' suffixes
+%!test
+%! L = table ([1;2], {'a';'b'}, 'VariableNames', {'KeyL', 'V'});
+%! R = table ([2;1], {'p';'q'}, 'VariableNames', {'KeyR', 'V'});
+%! T = innerjoin (L, R, 'LeftKeys', 'KeyL', 'RightKeys', 'KeyR');
+%! assert (T.Properties.VariableNames, {'KeyL', 'V_L', 'V_R'});
+%! assert (T.V_L, {'a';'b'});
+%! assert (T.V_R, {'q';'p'});
+
+## Multiple key variables
+%!test
+%! L = table ([1;1;2], {'a';'b';'a'}, (1:3)', ...
+%!            'VariableNames', {'K1', 'K2', 'N'});
+%! R = table ([1;2], {'b';'a'}, {'x';'y'}, ...
+%!            'VariableNames', {'K1', 'K2', 'M'});
+%! T = innerjoin (L, R);
+%! assert (T.Properties.VariableNames, {'K1', 'K2', 'N', 'M'});
+%! assert (T.K1, [1;2]);
+%! assert (T.K2, {'b';'a'});
+%! assert (T.N, [2;3]);
+%! assert (T.M, {'x';'y'});
+
+%!error <table.innerjoin: too few input arguments.> ...
+%! innerjoin (table ([1;2]));
+%!error <table.innerjoin: both inputs must be tables.> ...
+%! innerjoin (table ([1;2]), 5);
+%!error <table.innerjoin: 'Keys' cannot be combined with 'LeftKeys' or 'RightKeys'.> ...
+%! innerjoin (table (1), table (1), 'Keys', 1, 'LeftKeys', 1);
+%!error <table.innerjoin: 'LeftKeys' and 'RightKeys' must be specified together.> ...
+%! innerjoin (table (1, 'VariableNames', {'a'}), ...
+%!            table (1, 'VariableNames', {'b'}), 'LeftKeys', 'a');
+%!error <table.innerjoin: 'LeftKeys' and 'RightKeys' must reference the same number of variables.> ...
+%! innerjoin (table ([1;2], [1;2], 'VariableNames', {'a', 'b'}), ...
+%!            table ([1;2], 'VariableNames', {'c'}), ...
+%!            'LeftKeys', {'a', 'b'}, 'RightKeys', 'c');
+%!error <table.innerjoin: cannot find any common key variables between the two tables.> ...
+%! innerjoin (table ((1:3)', 'VariableNames', {'AA'}), ...
+%!            table ((1:3)', 'VariableNames', {'BB'}));
+%!error <table.innerjoin: invalid optional input argument.> ...
+%! innerjoin (table ([1;2], 'VariableNames', {'K'}), ...
+%!            table ([1;2], 'VariableNames', {'K'}), 'BadOption', 1);
+%!error <table.innerjoin: key variables have incompatible types.> ...
+%! innerjoin (table ([1;2], 'VariableNames', {'K'}), ...
+%!            table ({'1';'2'}, 'VariableNames', {'K'}));
+
+## Test 'outerjoin' method
+%!test
+%! L = table ([1;2;3], {'a';'b';'c'}, 'VariableNames', {'Key', 'L'});
+%! R = table ([2;3;5], {'x';'y';'z'}, 'VariableNames', {'Key', 'R'});
+%! [T, ixL, ixR] = outerjoin (L, R);
+%! assert (T.Properties.VariableNames, {'Key_L', 'L', 'Key_R', 'R'});
+%! assert (height (T), 4);
+%! assert (T.Key_L, [1;2;3;NaN]);
+%! assert (T.Key_R, [NaN;2;3;5]);
+%! assert (T.L, {'a';'b';'c';''});
+%! assert (T.R, {'';'x';'y';'z'});
+%! assert (ixL, [1;2;3;0]);
+%! assert (ixR, [0;1;2;3]);
+
+## Outer join drops row names
+%!test
+%! L = table ([1;2], {'a';'b'}, 'VariableNames', {'Key', 'L'}, ...
+%!            'RowNames', {'r1', 'r2'});
+%! R = table ([2;1], {'x';'y'}, 'VariableNames', {'Key', 'R'});
+%! T = outerjoin (L, R);
+%! assert (isempty (T.Properties.RowNames), true);
+
+## 'Type' 'left' keeps all left rows and only matching right rows
+%!test
+%! L = table ([1;2;3], {'a';'b';'c'}, 'VariableNames', {'Key', 'L'});
+%! R = table ([2;3;5], {'x';'y';'z'}, 'VariableNames', {'Key', 'R'});
+%! [T, ixL, ixR] = outerjoin (L, R, 'Type', 'left');
+%! assert (height (T), 3);
+%! assert (T.Key_L, [1;2;3]);
+%! assert (ixL, [1;2;3]);
+%! assert (ixR, [0;1;2]);
+
+## 'Type' 'right' keeps all right rows and only matching left rows
+%!test
+%! L = table ([1;2;3], {'a';'b';'c'}, 'VariableNames', {'Key', 'L'});
+%! R = table ([2;3;5], {'x';'y';'z'}, 'VariableNames', {'Key', 'R'});
+%! [T, ixL, ixR] = outerjoin (L, R, 'Type', 'right');
+%! assert (height (T), 3);
+%! assert (T.Key_R, [2;3;5]);
+%! assert (ixL, [2;3;0]);
+%! assert (ixR, [1;2;3]);
+
+## 'MergeKeys' merges the key pair into a single column
+%!test
+%! L = table ([1;2;3], {'a';'b';'c'}, 'VariableNames', {'Key', 'L'});
+%! R = table ([2;3;5], {'x';'y';'z'}, 'VariableNames', {'Key', 'R'});
+%! T = outerjoin (L, R, 'MergeKeys', true);
+%! assert (T.Properties.VariableNames, {'Key', 'L', 'R'});
+%! assert (T.Key, [1;2;3;5]);
+%! assert (T.L, {'a';'b';'c';''});
+%! assert (T.R, {'';'x';'y';'z'});
+
+## 'MergeKeys' with differently-named keys uses the left key name
+%!test
+%! L = table ([1;2], (10:11)', 'VariableNames', {'KL', 'A'});
+%! R = table ([2;3], {'x';'y'}, 'VariableNames', {'KR', 'B'});
+%! T = outerjoin (L, R, 'LeftKeys', 'KL', 'RightKeys', 'KR', ...
+%!                'MergeKeys', true);
+%! assert (T.Properties.VariableNames, {'KL_KR', 'A', 'B'});
+%! assert (T.KL_KR, [1;2;3]);
+%! assert (T.A, [10;11;NaN]);
+%! assert (T.B, {'';'x';'y'});
+
+## String variables in unmatched rows are filled with <missing>
+%!test
+%! L = table ([1;2], string ({'a';'b'}), 'VariableNames', {'K', 'S'});
+%! R = table ([2;3], {'p';'q'}, 'VariableNames', {'K', 'R'});
+%! T = outerjoin (L, R);
+%! assert (ismissing (T.S), [false;false;true]);
+%! assert (T.R, {'';'p';'q'});
+
+## Categorical variables in unmatched rows are filled with <undefined>
+%!test
+%! L = table ([1;2], {'a';'b'}, 'VariableNames', {'K', 'L'});
+%! R = table ([2;3], categorical ({'p';'q'}), 'VariableNames', {'K', 'C'});
+%! T = outerjoin (L, R);
+%! assert (ismissing (T.C), [true;false;false]);
+
+## Cartesian product on repeated keys in a full outer join
+%!test
+%! L = table ([1;1;9], {'a';'b';'z'}, 'VariableNames', {'K', 'L'});
+%! R = table ([1;1], {'x';'y'}, 'VariableNames', {'K', 'R'});
+%! T = outerjoin (L, R);
+%! assert (height (T), 5);
+%! assert (T.L, {'a';'a';'b';'b';'z'});
+%! assert (T.R, {'x';'y';'x';'y';''});
+
+## An empty input table yields all-missing fill on that side
+%!test
+%! E = table (zeros (0, 1), cell (0, 1), 'VariableNames', {'K', 'L'});
+%! R = table ([1;2], {'x';'y'}, 'VariableNames', {'K', 'R'});
+%! T = outerjoin (E, R);
+%! assert (height (T), 2);
+%! assert (T.K_R, [1;2]);
+%! assert (T.L, {'';''});
+%! assert (T.R, {'x';'y'});
+
+## 'LeftVariables'/'RightVariables' restrict the output columns
+%!test
+%! L = table ([1;2;3], (10:12)', {'p';'q';'r'}, ...
+%!            'VariableNames', {'K', 'A', 'C'});
+%! R = table ([2;3], {'x';'y'}, 'VariableNames', {'K', 'B'});
+%! T = outerjoin (L, R, 'LeftVariables', 'A', 'RightVariables', 'B', ...
+%!                'Type', 'left');
+%! assert (T.Properties.VariableNames, {'A', 'B'});
+%! assert (T.A, [10;11;12]);
+%! assert (T.B, {'';'x';'y'});
+
+%!error <table.outerjoin: too few input arguments.> ...
+%! outerjoin (table ([1;2]));
+%!error <table.outerjoin: both inputs must be tables.> ...
+%! outerjoin (table ([1;2]), 5);
+%!error <table.outerjoin: 'Type' must be 'full', 'left', or 'right'.> ...
+%! outerjoin (table ([1;2], 'VariableNames', {'K'}), ...
+%!            table ([1;2], 'VariableNames', {'K'}), 'Type', 'bogus');
+%!error <table.outerjoin: 'MergeKeys' must be a logical scalar.> ...
+%! outerjoin (table ([1;2], 'VariableNames', {'K'}), ...
+%!            table ([1;2], 'VariableNames', {'K'}), 'MergeKeys', 3);
+%!error <table.outerjoin: 'Keys' cannot be combined with 'LeftKeys' or 'RightKeys'.> ...
+%! outerjoin (table (1), table (1), 'Keys', 1, 'LeftKeys', 1);
+%!error <table.outerjoin: 'LeftKeys' and 'RightKeys' must be specified together.> ...
+%! outerjoin (table (1, 'VariableNames', {'a'}), ...
+%!            table (1, 'VariableNames', {'b'}), 'LeftKeys', 'a');
+%!error <table.outerjoin: 'LeftKeys' and 'RightKeys' must reference the same number of variables.> ...
+%! outerjoin (table ([1;2], [1;2], 'VariableNames', {'a', 'b'}), ...
+%!            table ([1;2], 'VariableNames', {'c'}), ...
+%!            'LeftKeys', {'a', 'b'}, 'RightKeys', 'c');
+%!error <table.outerjoin: cannot find any common key variables between the two tables.> ...
+%! outerjoin (table ((1:3)', 'VariableNames', {'AA'}), ...
+%!            table ((1:3)', 'VariableNames', {'BB'}));
+%!error <table.outerjoin: invalid optional input argument.> ...
+%! outerjoin (table ([1;2], 'VariableNames', {'K'}), ...
+%!            table ([1;2], 'VariableNames', {'K'}), 'BadOption', 1);
+%!error <table.outerjoin: key variables have incompatible types.> ...
+%! outerjoin (table ([1;2], 'VariableNames', {'K'}), ...
+%!            table ({'1';'2'}, 'VariableNames', {'K'}));
+
+
+################################################################################
 ##                           ** Missing Values **                             ##
 ################################################################################
 ##                             Available Methods                              ##
