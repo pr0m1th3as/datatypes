@@ -2217,7 +2217,7 @@ classdef table
             ix_names = [ix_names, tmp.VariableNames];
           else
             fcn = @(x) sprintf ("%s_%d", this.VariableNames{ix}, x);
-            newnames = arrayfun (fcn, 1:col, "UniformOutput", false);
+            newnames = arrayfun (fcn, 1:col, 'UniformOutput', false);
             ix_names = [ix_names, newnames];
           endif
           ixCols(end+1) = col;
@@ -2248,14 +2248,14 @@ classdef table
               if (any (ismember (dup_names, tmp.VariableNames)))
                 fcn = @(x) sprintf ("%s_%s", this.VariableNames{ix}, x);
                 newnames = cellfun (fcn, tmp.VariableNames, ...
-                                    "UniformOutput", false);
+                                    'UniformOutput', false);
                 ix_names = [ix_names, newnames];
               else
                 ix_names = [ix_names, tmp.VariableNames];
               endif
             else
               fcn = @(x) sprintf ("%s_%d", this.VariableNames{ix}, x);
-              newnames = arrayfun (fcn, 1:col, "UniformOutput", false);
+              newnames = arrayfun (fcn, 1:col, 'UniformOutput', false);
               ix_names = [ix_names, newnames];
             endif
             ixCols(end+1) = col;
@@ -2716,7 +2716,7 @@ classdef table
 
       ## Check column types to decide whether to return arrays or cell arrays
       col_types = cellfun (@(x) class (x), tbl.VariableValues, ...
-                           "UniformOutput", false);
+                           'UniformOutput', false);
       if (isscalar (__unique__ (col_types)))
         matrix = cat (2, tbl.VariableValues{:})';
         new_var_values = num2cell (matrix, 1);
@@ -2750,7 +2750,7 @@ classdef table
       tbl.VariableUnits = repmat ({''}, 1, size (tbl, 2));
 
       ## Assign variable types in the new table
-      new_types = cellfun ('class', tbl.VariableValues, "UniformOutput", false);
+      new_types = cellfun ('class', tbl.VariableValues, 'UniformOutput', false);
       tbl.VariableTypes = new_types;
 
       ## Remove any custom variable properties
@@ -2909,7 +2909,7 @@ classdef table
       tbl = [constTable, stackedTable];
 
       ## Assign variable types in the new table
-      new_types = cellfun ('class', tbl.VariableValues, "UniformOutput", false);
+      new_types = cellfun ('class', tbl.VariableValues, 'UniformOutput', false);
       tbl.VariableTypes = new_types;
 
       ## Return index vector (if requested)
@@ -4439,7 +4439,7 @@ classdef table
       endif
       ## All tables must have unique variable names
       varNames = cellfun (@(obj) obj.VariableNames, varargin, ...
-                          "UniformOutput", false);
+                          'UniformOutput', false);
       is_empty = cellfun (@isempty, varNames);
       varNames = [varNames{:}];
       if (numel (varNames) != numel (unique (varNames)))
@@ -4495,8 +4495,8 @@ classdef table
         ## First we need to ensure that all tables with RowNames share the
         ## same unique RowNames (in any order)
         rowNames = cellfun (@(obj) obj.RowNames, varargin(has_RowNames), ...
-                            "UniformOutput", false);
-        sortedRowNames = cellfun (@sort, rowNames, "UniformOutput", false);
+                            'UniformOutput', false);
+        sortedRowNames = cellfun (@sort, rowNames, 'UniformOutput', false);
         if (! isequal (sortedRowNames{:}))
           error ("table.horzcat: input tables must have identical RowNames.");
         endif
@@ -4549,7 +4549,7 @@ classdef table
       endif
 
       ## Assign variable types in the new table
-      new_types = cellfun ('class', tbl.VariableValues, "UniformOutput", false);
+      new_types = cellfun ('class', tbl.VariableValues, 'UniformOutput', false);
       tbl.VariableTypes = new_types;
     endfunction
 
@@ -4732,7 +4732,7 @@ classdef table
             vec = i + 1:rows:height (tbl);
             fcn = eval (["@(x) sprintf (""%s_", sprintf("%d", i), """, x)"]);
             tbl.RowNames(vec) = cellfun (fcn, tbl.RowNames(vec), ...
-                                         "UniformOutput", false);
+                                         'UniformOutput', false);
           endfor
         endif
       endif
@@ -4750,7 +4750,7 @@ classdef table
         for i = 1:width (this)
           newNames = [newNames, this.VariableNames{i}];
           fnc = eval (["@(x) sprintf (""", this.VariableNames{i}, "_%d"", x)"]);
-          addNames = cellfun (fnc, idx, "UniformOutput", false);
+          addNames = cellfun (fnc, idx, 'UniformOutput', false);
           newNames = [newNames, addNames];
         endfor
         tbl.VariableNames = newNames;
@@ -4825,7 +4825,7 @@ classdef table
             vec = i * rep + 1:rep * (i + 1);
             fcn = eval (["@(x) sprintf (""%s_", sprintf("%d", i), """, x)"]);
             tbl.RowNames(vec) = cellfun (fcn, tbl.RowNames(vec), ...
-                                         "UniformOutput", false);
+                                         'UniformOutput', false);
           endfor
         endif
       endif
@@ -4841,7 +4841,7 @@ classdef table
         newNames = this.VariableNames;
         for i = 1:cols - 1
           fnc = eval (["@(x) sprintf (""%s_", sprintf("%d", i), """, x)"]);
-          addNames = cellfun (fnc, this.VariableNames, "UniformOutput", false);
+          addNames = cellfun (fnc, this.VariableNames, 'UniformOutput', false);
           newNames = [newNames, addNames];
         endfor
         tbl.VariableNames = newNames;
@@ -4934,10 +4934,10 @@ classdef table
       endif
       ## All tables must have the same variable names
       varNames = cellfun (@(obj) obj.VariableNames, varargin, ...
-                          "UniformOutput", false);
+                          'UniformOutput', false);
       is_empty = cellfun (@isempty, varNames);
       sortedVarNames = cellfun (@sort, varNames(! is_empty), ...
-                                "UniformOutput", false);
+                                'UniformOutput', false);
       if (! isequal (sortedVarNames{:}))
         error (strcat ("table.vertcat: input tables must have identical", ...
                        " variable names."));
@@ -4959,7 +4959,7 @@ classdef table
       has_RowNames = ! cellfun (@(obj) isempty (obj.RowNames), varargin);
       ## Check that all RowNames are unique across tables
       rowNames = cellfun (@(obj) obj.RowNames, varargin(has_RowNames), ...
-                          "UniformOutput", false);
+                          'UniformOutput', false);
       rowNames = [rowNames{:}];
       if (numel (rowNames) != numel (unique (rowNames)))
         error (strcat ("table.vertcat: all input tables must have unique", ...
@@ -6115,7 +6115,7 @@ classdef table
         rnLen = max (cellfun (@length, this.RowNames)) + 4;
         padPT = sprintf ("%%-%ds", rnLen);
         padfn = @(x) sprintf (padPT, x);
-        rowNM = cellfun (padfn, this.RowNames, "UniformOutput", false);
+        rowNM = cellfun (padfn, this.RowNames, 'UniformOutput', false);
         ## Print table header
         fprintf ("    %s%s\n", repmat (" ", [1, rnLen]), strhead1);
         fprintf ("    %s%s\n\n", repmat (" ", [1, rnLen]), strline1);
@@ -6177,7 +6177,7 @@ classdef table
             rowSpat_c = "";
             for c = 1:cols
               ## Prepare data values to char vector
-              tmpData = arrayfun (numfun, data(:,c), "UniformOutput", false);
+              tmpData = arrayfun (numfun, data(:,c), 'UniformOutput', false);
               colData = [colData, tmpData];
               ## Get max length and append row string pattern
               colLen(c) = max (cellfun (@length, tmpData));
@@ -6190,7 +6190,7 @@ classdef table
             rowSpat = [rowSpat, prePad, rowSpat_c];
           else
             ## Prepare data values to char vector
-            tmpData = arrayfun (numfun, data, "UniformOutput", false);
+            tmpData = arrayfun (numfun, data, 'UniformOutput', false);
             colData = [colData, tmpData];
             ## Get max length and append row string pattern
             dataLen = max (cellfun (@length, tmpData));
@@ -6314,7 +6314,7 @@ classdef table
             colLen = zeros (1, cols);
             rowSpat_c = "";
             for c = 1:cols
-              tmpData = cellfun (fcn, data(:,c), "UniformOutput", false);
+              tmpData = cellfun (fcn, data(:,c), 'UniformOutput', false);
               colData = [colData, tmpData];
               colLen(c) = max (cellfun (@length, tmpData)) + 2;
               rowSpat_c = [rowSpat_c, sprintf("{%%-%ds}", ...
@@ -6326,7 +6326,7 @@ classdef table
             prePad = repmat (" ", [1, optLen-dataLen]);
             rowSpat = [rowSpat, prePad, rowSpat_c];
           else
-            tmpData = cellfun (fcn, data, "UniformOutput", false);
+            tmpData = cellfun (fcn, data, 'UniformOutput', false);
             colData = [colData, tmpData];
             dataLen = max (cellfun (@length, tmpData)) + 2;
             optLen = max ([varNLen, dataLen, minLen]);
@@ -6833,51 +6833,51 @@ function [outData, optLen]  = mixedcell2str (data, varLen)
   idx_struct = idx_cell;
 
   ## Find scalars or row vectors
-  se = cell2mat (cellfun (@(x) numel (x), data, "UniformOutput", false)) == 1;
-  ve = cell2mat (cellfun (@(x) size (x,1), data, "UniformOutput", false)) == 1;
+  se = cell2mat (cellfun (@(x) numel (x), data, 'UniformOutput', false)) == 1;
+  ve = cell2mat (cellfun (@(x) size (x,1), data, 'UniformOutput', false)) == 1;
 
   ## Catch 'cell' scalars
-  tmp = cell2mat (cellfun (@iscell, data(se), "UniformOutput", false)) == 1;
+  tmp = cell2mat (cellfun (@iscell, data(se), 'UniformOutput', false)) == 1;
   idx_cell(se) = tmp;
   sf = @(x) sprintf ("1x1 cell");
   out_str(idx_cell) = (cellfun (sf, data(idx_cell), ...
-                       "UniformOutput", false));
+                       'UniformOutput', false));
   ## Catch 'char' scalars or row vectors
-  tmp = cell2mat (cellfun (@ischar, data(ve), "UniformOutput", false));
+  tmp = cell2mat (cellfun (@ischar, data(ve), 'UniformOutput', false));
   idx_charvec(ve) = tmp;
   sf = @(x) sprintf ("'%s'", x);
   out_str(idx_charvec) = (cellfun (sf, data(idx_charvec), ...
-                          "UniformOutput", false));
+                          'UniformOutput', false));
   ## Catch 'logical' scalars or row vectors
-  tmp = cell2mat (cellfun (@islogical, data(ve), "UniformOutput", false)) == 1;
+  tmp = cell2mat (cellfun (@islogical, data(ve), 'UniformOutput', false)) == 1;
   idx_logical(ve) = tmp;
   sf = @(x) sprintf ("[%s]", strtrim (sprintf ("%d ", x)));
   out_str(idx_logical) = (cellfun (sf, data(idx_logical), ...
-                          "UniformOutput", false));
+                          'UniformOutput', false));
   ## Catch 'numeric' scalars or row vectors
-  tmp = cell2mat (cellfun (@isnumeric, data(ve), "UniformOutput", false)) == 1;
+  tmp = cell2mat (cellfun (@isnumeric, data(ve), 'UniformOutput', false)) == 1;
   idx_numeric(ve) = tmp;
   sf = @(x) sprintf ("[%s]", strtrim (sprintf ("%g ", x)));
   out_str(idx_numeric) = (cellfun (sf, data(idx_numeric), ...
-                          "UniformOutput", false));
+                          'UniformOutput', false));
   ## Catch 'object' scalars
-  tmp = cell2mat (cellfun (@isobject, data(se), "UniformOutput", false)) == 1;
+  tmp = cell2mat (cellfun (@isobject, data(se), 'UniformOutput', false)) == 1;
   idx_struct(se) = tmp;
   sf = @(x) sprintf ("1x1 %s", class (x));
   out_str(idx_struct) = (cellfun (sf, data(idx_struct), ...
-                         "UniformOutput", false));
+                         'UniformOutput', false));
   ## Catch 'string' scalars or row vectors
-  tmp = cell2mat (cellfun (@isstring, data(ve), "UniformOutput", false)) == 1;
+  tmp = cell2mat (cellfun (@isstring, data(ve), 'UniformOutput', false)) == 1;
   idx_string(ve) = tmp;
   sf = @(x) sprintf ("[%s]", strtrim (sprintf ("%s    ", dispstrings (x){:})));
   out_str(idx_string) = (cellfun (sf, data(idx_string), ...
-                         "UniformOutput", false));
+                         'UniformOutput', false));
   ## Catch scalar elements of struct type
-  tmp = cell2mat (cellfun (@isstruct, data(se), "UniformOutput", false)) == 1;
+  tmp = cell2mat (cellfun (@isstruct, data(se), 'UniformOutput', false)) == 1;
   idx_struct(se) = tmp;
   sf = @(x) sprintf ("1x1 struct");
   out_str(idx_struct) = (cellfun (sf, data(idx_struct), ...
-                         "UniformOutput", false));
+                         'UniformOutput', false));
 
   ## Keep indexes for numerical and logical values to right alignment
   pad_B = idx_numeric | idx_logical;  # pad before: sprintf("{%%-%ds}"
@@ -6898,56 +6898,56 @@ function [outData, optLen]  = mixedcell2str (data, varLen)
 
   if (any (me))
     ## 'cell' arrays
-    tmp = cell2mat (cellfun (@iscell, data(me), "UniformOutput", false)) == 1;
+    tmp = cell2mat (cellfun (@iscell, data(me), 'UniformOutput', false)) == 1;
     idx_cell(me) = tmp;
     sf = @(x) sprintf (strcat ([strjoin(repmat ({'%d'}, 1, ndims (x)), 'x'), ...
                                    ' cell']), size (x));
     out_str(idx_cell) = (cellfun (sf, data(idx_cell), ...
-                         "UniformOutput", false));
+                         'UniformOutput', false));
     ## 'char' arrays
-    tmp = cell2mat (cellfun (@ischar, data(me), "UniformOutput", false));
+    tmp = cell2mat (cellfun (@ischar, data(me), 'UniformOutput', false));
     idx_charvec(me) = tmp;
     sf = @(x) sprintf (strcat ([strjoin(repmat ({'%d'}, 1, ndims (x)), 'x'), ...
                                    ' char']), size (x));
     out_str(idx_charvec) = (cellfun (sf, data(idx_charvec), ...
-                            "UniformOutput", false));
+                            'UniformOutput', false));
     ## 'logical' arrays
     tmp = cell2mat (cellfun (@islogical, data(me), ...
-                             "UniformOutput", false)) == 1;
+                             'UniformOutput', false)) == 1;
     idx_logical(me) = tmp;
     sf = @(x) sprintf (strcat ([strjoin(repmat ({'%d'}, 1, ndims (x)), 'x'), ...
                                    ' logical']), size (x));
     out_str(idx_logical) = (cellfun (sf, data(idx_logical), ...
-                            "UniformOutput", false));
+                            'UniformOutput', false));
     ## 'numeric' arrays
     tmp = cell2mat (cellfun (@isnumeric, data(me), ...
-                             "UniformOutput", false)) == 1;
+                             'UniformOutput', false)) == 1;
     idx_numeric(me) = tmp;
     sf = @(x) sprintf (strcat ([strjoin(repmat ({'%d'}, 1, ndims (x)), 'x'), ...
                                    ' array']), size (x));
     out_str(idx_numeric) = (cellfun (sf, data(idx_numeric), ...
-                            "UniformOutput", false));
+                            'UniformOutput', false));
     ## 'object' arrays
-    tmp = cell2mat (cellfun (@isstring, data(me), "UniformOutput", false)) == 1;
+    tmp = cell2mat (cellfun (@isstring, data(me), 'UniformOutput', false)) == 1;
     idx_string(me) = tmp;
     sf = @(x) sprintf (strcat ([strjoin(repmat ({'%d'}, 1, ndims (x)), 'x'), ...
                                    ' %s']), size (x), class (x));
     out_str(idx_string) = (cellfun (sf, data(idx_string), ...
-                           "UniformOutput", false));
+                           'UniformOutput', false));
     ## 'string' arrays
-    tmp = cell2mat (cellfun (@isstring, data(me), "UniformOutput", false)) == 1;
+    tmp = cell2mat (cellfun (@isstring, data(me), 'UniformOutput', false)) == 1;
     idx_string(me) = tmp;
     sf = @(x) sprintf (strcat ([strjoin(repmat ({'%d'}, 1, ndims (x)), 'x'), ...
                                    ' string']), size (x));
     out_str(idx_string) = (cellfun (sf, data(idx_string), ...
-                           "UniformOutput", false));
+                           'UniformOutput', false));
     ## 'struct' arrays
-    tmp = cell2mat (cellfun (@isstruct, data(me), "UniformOutput", false)) == 1;
+    tmp = cell2mat (cellfun (@isstruct, data(me), 'UniformOutput', false)) == 1;
     idx_struct(me) = tmp;
     sf = @(x) sprintf (strcat ([strjoin(repmat ({'%d'}, 1, ndims (x)), 'x'), ...
                                    ' struct']), size (x));
     out_str(idx_struct) = (cellfun (sf, data(idx_struct), ...
-                           "UniformOutput", false));
+                           'UniformOutput', false));
   endif
 
   ## Get optimal length
@@ -6959,9 +6959,9 @@ function [outData, optLen]  = mixedcell2str (data, varLen)
   Ra = sprintf ("{%%+%ds}", optLen - 2);
   La = sprintf ("{%%-%ds}", optLen - 2);
   fcn = @(x) sprintf (Ra, x);
-  outData(pad_B) = cellfun (fcn, out_str(pad_B), "UniformOutput", false);
+  outData(pad_B) = cellfun (fcn, out_str(pad_B), 'UniformOutput', false);
   fcn = @(x) sprintf (La, x);
-  outData(pad_A) = cellfun (fcn, out_str(pad_A), "UniformOutput", false);
+  outData(pad_A) = cellfun (fcn, out_str(pad_A), 'UniformOutput', false);
   outData = outData(:);
 endfunction
 
@@ -6980,12 +6980,12 @@ function [mcvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, aggrFcn)
       try
         tmpval = aggrFcn (tmpval);
       catch
-        aggrFcn = strcat (["table.unstack: invalid 'AggregationFunction'", ...
-                           " for numeric data."]);
+        aggrFcn = strcat ("table.unstack: invalid 'AggregationFunction'", ...
+                          " for numeric data.");
       end_try_catch
       if (! isscalar (tmpval))
-        aggrFcn = strcat (["table.unstack: 'AggregationFunction'", ...
-                           " must return a scalar value."]);
+        aggrFcn = strcat ("table.unstack: 'AggregationFunction'", ...
+                          " must return a scalar value.");
       endif
     endif
   elseif (isnumeric (vvals))  # integer types have no missing value, use 0
@@ -6997,15 +6997,15 @@ function [mcvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, aggrFcn)
       try
         tmpval = aggrFcn (tmpval);
       catch
-        aggrFcn = strcat (["table.unstack: invalid 'AggregationFunction'", ...
-                           " for numeric data."]);
+        aggrFcn = strcat ("table.unstack: invalid 'AggregationFunction'", ...
+                          " for numeric data.");
       end_try_catch
       if (! isscalar (tmpval))
-        aggrFcn = strcat (["table.unstack: 'AggregationFunction'", ...
-                           " must return a scalar value."]);
+        aggrFcn = strcat ("table.unstack: 'AggregationFunction'", ...
+                          " must return a scalar value.");
       endif
     endif
-  elseif (isa (vvals, "calendarDuration"))
+  elseif (isa (vvals, 'calendarDuration'))
     mcvec =  repmat (calendarDuration ([NaN, NaN, NaN]), nrows, vcols);
     if (isempty (aggrFcn))  # add default aggrevation function
       aggrFcn = @sum;
@@ -7014,15 +7014,15 @@ function [mcvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, aggrFcn)
       try
         tmpval = aggrFcn (tmpval);
       catch
-        aggrFcn = strcat (["table.unstack: invalid 'AggregationFunction'", ...
-                           " for calendarDuration data."]);
+        aggrFcn = strcat ("table.unstack: invalid 'AggregationFunction'", ...
+                          " for calendarDuration data.");
       end_try_catch
       if (! isscalar (tmpval))
-        aggrFcn = strcat (["table.unstack: 'AggregationFunction'", ...
-                           " must return a scalar value."]);
+        aggrFcn = strcat ("table.unstack: 'AggregationFunction'", ...
+                          " must return a scalar value.");
       endif
     endif
-  elseif (isa (vvals, "duration"))
+  elseif (isa (vvals, 'duration'))
     mcvec =  repmat (duration ([NaN, NaN, NaN]), nrows, vcols);
     if (isempty (aggrFcn))  # add default aggrevation function
       aggrFcn = @sum;
@@ -7031,12 +7031,12 @@ function [mcvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, aggrFcn)
       try
         tmpval = aggrFcn (tmpval);
       catch
-        aggrFcn = strcat (["table.unstack: invalid 'AggregationFunction'", ...
-                           " for duration data."]);
+        aggrFcn = strcat ("table.unstack: invalid 'AggregationFunction'", ...
+                          " for duration data.");
       end_try_catch
       if (! isscalar (tmpval))
-        aggrFcn = strcat (["table.unstack: 'AggregationFunction'", ...
-                           " must return a scalar value."]);
+        aggrFcn = strcat ("table.unstack: 'AggregationFunction'", ...
+                          " must return a scalar value.");
       endif
     endif
   elseif (islogical (vvals))  # mode is used for boolean values
@@ -7048,15 +7048,15 @@ function [mcvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, aggrFcn)
       try
         tmpval = aggrFcn (tmpval);
       catch
-        aggrFcn = strcat (["table.unstack: invalid 'AggregationFunction'", ...
-                           " for logical data."]);
+        aggrFcn = strcat ("table.unstack: invalid 'AggregationFunction'", ...
+                          " for logical data.");
       end_try_catch
       if (! isscalar (tmpval))
-        aggrFcn = strcat (["table.unstack: 'AggregationFunction'", ...
-                           " must return a scalar value."]);
+        aggrFcn = strcat ("table.unstack: 'AggregationFunction'", ...
+                          " must return a scalar value.");
       endif
     endif
-  elseif (isa (vvals, "categorical"))
+  elseif (isa (vvals, 'categorical'))
     mcvec =  repmat (categorical (NaN), nrows, vcols);
     if (isempty (aggrFcn))  # add default aggrevation function
       aggrFcn = @mode;
@@ -7065,12 +7065,12 @@ function [mcvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, aggrFcn)
       try
         tmpval = aggrFcn (tmpval);
       catch
-        aggrFcn = strcat (["table.unstack: invalid 'AggregationFunction'", ...
-                           " for categorical data."]);
+        aggrFcn = strcat ("table.unstack: invalid 'AggregationFunction'", ...
+                          " for categorical data.");
       end_try_catch
       if (! isscalar (tmpval))
-        aggrFcn = strcat (["table.unstack: 'AggregationFunction'", ...
-                           " must return a scalar value."]);
+        aggrFcn = strcat ("table.unstack: 'AggregationFunction'", ...
+                          " must return a scalar value.");
       endif
     endif
   else  # all other data types
