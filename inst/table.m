@@ -3968,11 +3968,41 @@ classdef table
     ##
     ## Union of two tables by rows.
     ##
+    ## @code{@var{tbl} = union (@var{tblA}, @var{tblB})} returns the combined set
+    ## of rows of @var{tblA} and @var{tblB}, with duplicate rows removed.  Both
+    ## tables must have the same variable names, although not necessarily in the
+    ## same order; @var{tbl} keeps the variable order of @var{tblA}.  Rows are
+    ## compared by their variable values only (row names are ignored), and by
+    ## default @var{tbl} is sorted by those values.
     ##
+    ## @code{@var{tbl} = union (@var{tblA}, @var{tblB}, @var{setOrder})} controls
+    ## the ordering of @var{tbl}.  @var{setOrder} is either @qcode{'sorted'}
+    ## (default) for ascending order, or @qcode{'stable'} to keep the order in
+    ## which the rows appear in @var{tblA} and @var{tblB}.
+    ##
+    ## @code{[@var{tbl}, @var{ixA}, @var{ixB}] = union (@dots{})} also returns the
+    ## index vectors @var{ixA} and @var{ixB} such that @var{tbl} is the vertical
+    ## concatenation of @code{@var{tblA}(@var{ixA},:)} and
+    ## @code{@var{tblB}(@var{ixB},:)}.
     ##
     ## @end deftypefn
     function [tbl, ixA, ixB] = union (tblA, tblB, varargin)
-      error ("table.union: not implemented yet.");
+      if (nargin < 2)
+        error ("table.union: too few input arguments.");
+      endif
+      if (! istable (tblA) || ! istable (tblB))
+        error ("table.union: both inputs must be tables.");
+      endif
+      [order, emsg] = parse_set_order (varargin);
+      if (! isempty (emsg))
+        error ("table.union: %s", emsg);
+      endif
+      [proxyA, proxyB, emsg] = rowProxies (tblA, tblB);
+      if (! isempty (emsg))
+        error ("table.union: %s", emsg);
+      endif
+      [~, ixA, ixB] = union (proxyA, proxyB, 'rows', order);
+      tbl = vertcat (subsetrows (tblA, ixA), subsetrows (tblB, ixB));
     endfunction
 
     ## -*- texinfo -*-
@@ -3982,11 +4012,39 @@ classdef table
     ##
     ## Intersection of two tables by rows.
     ##
+    ## @code{@var{tbl} = intersect (@var{tblA}, @var{tblB})} returns the set of
+    ## rows common to both @var{tblA} and @var{tblB}, with duplicate rows removed.
+    ## Both tables must have the same variable names, although not necessarily in
+    ## the same order; @var{tbl} keeps the variable order of @var{tblA}.  Rows are
+    ## compared by their variable values only (row names are ignored), and by
+    ## default @var{tbl} is sorted by those values.
     ##
+    ## @code{@var{tbl} = intersect (@var{tblA}, @var{tblB}, @var{setOrder})}
+    ## controls the ordering of @var{tbl}, either @qcode{'sorted'} (default) or
+    ## @qcode{'stable'}.
+    ##
+    ## @code{[@var{tbl}, @var{ixA}, @var{ixB}] = intersect (@dots{})} also returns
+    ## index vectors @var{ixA} and @var{ixB} such that @var{tbl} equals
+    ## @code{@var{tblA}(@var{ixA},:)} and @code{@var{tblB}(@var{ixB},:)}.
     ##
     ## @end deftypefn
     function [tbl, ixA, ixB] = intersect (tblA, tblB, varargin)
-      error ("table.intersect: not implemented yet.");
+      if (nargin < 2)
+        error ("table.intersect: too few input arguments.");
+      endif
+      if (! istable (tblA) || ! istable (tblB))
+        error ("table.intersect: both inputs must be tables.");
+      endif
+      [order, emsg] = parse_set_order (varargin);
+      if (! isempty (emsg))
+        error ("table.intersect: %s", emsg);
+      endif
+      [proxyA, proxyB, emsg] = rowProxies (tblA, tblB);
+      if (! isempty (emsg))
+        error ("table.intersect: %s", emsg);
+      endif
+      [~, ixA, ixB] = intersect (proxyA, proxyB, 'rows', order);
+      tbl = subsetrows (tblA, ixA);
     endfunction
 
     ## -*- texinfo -*-
@@ -3995,24 +4053,72 @@ classdef table
     ##
     ## Find set members between two tables by rows.
     ##
+    ## @code{@var{TF} = ismember (@var{tblA}, @var{tblB})} returns a logical
+    ## column vector @var{TF} with one element per row of @var{tblA}, where
+    ## @code{@var{TF}(i)} is @qcode{true} when the @math{i}-th row of @var{tblA}
+    ## also appears as a row of @var{tblB}.  Both tables must have the same
+    ## variable names, although not necessarily in the same order, and rows are
+    ## compared by their variable values only (row names are ignored).
     ##
+    ## @code{[@var{TF}, @var{ixB}] = ismember (@var{tblA}, @var{tblB})} also
+    ## returns a column vector @var{ixB} containing, for each row of @var{tblA},
+    ## the index of the lowest matching row in @var{tblB}, or @qcode{0} if there
+    ## is no match.
     ##
     ## @end deftypefn
     function [TF, ixB] = ismember (tblA, tblB)
-      error ("table.ismember: not implemented yet.");
+      if (nargin < 2)
+        error ("table.ismember: too few input arguments.");
+      endif
+      if (! istable (tblA) || ! istable (tblB))
+        error ("table.ismember: both inputs must be tables.");
+      endif
+      [proxyA, proxyB, emsg] = rowProxies (tblA, tblB);
+      if (! isempty (emsg))
+        error ("table.ismember: %s", emsg);
+      endif
+      [TF, ixB] = ismember (proxyA, proxyB, 'rows');
     endfunction
 
     ## -*- texinfo -*-
     ## @deftypefn  {table} {@var{tbl} =} setdiff (@var{tblA}, @var{tblB})
-    ## @deftypefnx {table} {[@var{tbl}, @var{ixA}] =} setdiff (@var{tblA}, @var{tblB})
+    ## @deftypefnx {table} {@var{tbl} =} setdiff (@var{tblA}, @var{tblB}, @var{setOrder})
+    ## @deftypefnx {table} {[@var{tbl}, @var{ixA}] =} setdiff (@dots{})
     ##
     ## Difference between two tables by rows.
     ##
+    ## @code{@var{tbl} = setdiff (@var{tblA}, @var{tblB})} returns the set of rows
+    ## that are present in @var{tblA} but not in @var{tblB}, with duplicate rows
+    ## removed.  Both tables must have the same variable names, although not
+    ## necessarily in the same order; @var{tbl} keeps the variable order of
+    ## @var{tblA}.  Rows are compared by their variable values only (row names are
+    ## ignored), and by default @var{tbl} is sorted by those values.
     ##
+    ## @code{@var{tbl} = setdiff (@var{tblA}, @var{tblB}, @var{setOrder})}
+    ## controls the ordering of @var{tbl}, either @qcode{'sorted'} (default) or
+    ## @qcode{'stable'}.
+    ##
+    ## @code{[@var{tbl}, @var{ixA}] = setdiff (@dots{})} also returns the index
+    ## vector @var{ixA} such that @var{tbl} equals @code{@var{tblA}(@var{ixA},:)}.
     ##
     ## @end deftypefn
-    function [tbl, ixA] = setdiff (tblA, tblB)
-      error ("table.setdiff: not implemented yet.");
+    function [tbl, ixA] = setdiff (tblA, tblB, varargin)
+      if (nargin < 2)
+        error ("table.setdiff: too few input arguments.");
+      endif
+      if (! istable (tblA) || ! istable (tblB))
+        error ("table.setdiff: both inputs must be tables.");
+      endif
+      [order, emsg] = parse_set_order (varargin);
+      if (! isempty (emsg))
+        error ("table.setdiff: %s", emsg);
+      endif
+      [proxyA, proxyB, emsg] = rowProxies (tblA, tblB);
+      if (! isempty (emsg))
+        error ("table.setdiff: %s", emsg);
+      endif
+      [~, ixA] = setdiff (proxyA, proxyB, 'rows', order);
+      tbl = subsetrows (tblA, ixA);
     endfunction
 
     ## -*- texinfo -*-
@@ -4022,11 +4128,40 @@ classdef table
     ##
     ## Exclusive OR of two tables by rows.
     ##
+    ## @code{@var{tbl} = setxor (@var{tblA}, @var{tblB})} returns the set of rows
+    ## that are present in either @var{tblA} or @var{tblB} but not in both, with
+    ## duplicate rows removed.  Both tables must have the same variable names,
+    ## although not necessarily in the same order; @var{tbl} keeps the variable
+    ## order of @var{tblA}.  Rows are compared by their variable values only (row
+    ## names are ignored), and by default @var{tbl} is sorted by those values.
     ##
+    ## @code{@var{tbl} = setxor (@var{tblA}, @var{tblB}, @var{setOrder})} controls
+    ## the ordering of @var{tbl}, either @qcode{'sorted'} (default) or
+    ## @qcode{'stable'}.
+    ##
+    ## @code{[@var{tbl}, @var{ixA}, @var{ixB}] = setxor (@dots{})} also returns
+    ## index vectors @var{ixA} and @var{ixB} such that @var{tbl} is the vertical
+    ## concatenation of @code{@var{tblA}(@var{ixA},:)} and
+    ## @code{@var{tblB}(@var{ixB},:)}.
     ##
     ## @end deftypefn
     function [tbl, ixA, ixB] = setxor (tblA, tblB, varargin)
-      error ("table.setxor: not implemented yet.");
+      if (nargin < 2)
+        error ("table.setxor: too few input arguments.");
+      endif
+      if (! istable (tblA) || ! istable (tblB))
+        error ("table.setxor: both inputs must be tables.");
+      endif
+      [order, emsg] = parse_set_order (varargin);
+      if (! isempty (emsg))
+        error ("table.setxor: %s", emsg);
+      endif
+      [proxyA, proxyB, emsg] = rowProxies (tblA, tblB);
+      if (! isempty (emsg))
+        error ("table.setxor: %s", emsg);
+      endif
+      [~, ixA, ixB] = setxor (proxyA, proxyB, 'rows', order);
+      tbl = vertcat (subsetrows (tblA, ixA), subsetrows (tblB, ixB));
     endfunction
 
   endmethods
@@ -6138,6 +6273,32 @@ classdef table
       endif
     endfunction
 
+    ## Build consistent numeric row proxies for two tables sharing the same set
+    ## of variable names, so that equal rows (compared by variable value, in the
+    ## variable order of TBLA) map to equal proxy rows.  Returns an errmsg body
+    ## (empty on success) emitted by the caller under its own name.
+    function [proxyA, proxyB, errmsg] = rowProxies (tblA, tblB)
+      proxyA = [];
+      proxyB = [];
+      errmsg = '';
+      if (width (tblA) != width (tblB)
+          || ! isempty (setdiff (tblA.VariableNames, tblB.VariableNames)))
+        errmsg = "the two tables must have the same variable names.";
+        return;
+      endif
+      for ix = 1:width (tblA)
+        jx = find (strcmp (tblA.VariableNames{ix}, tblB.VariableNames), 1);
+        [pa, pb, e] = key_col_proxy (tblA.VariableValues{ix}, ...
+                                     tblB.VariableValues{jx});
+        if (! isempty (e))
+          errmsg = e;
+          return;
+        endif
+        proxyA = [proxyA, pa];
+        proxyB = [proxyB, pb];
+      endfor
+    endfunction
+
     ## Build one side of an outer join from a row-index vector IDX (zeros mark
     ## rows with no match, filled with missing values).  Returns an errmsg body
     ## (empty on success) emitted by the caller under its own name.
@@ -7503,6 +7664,24 @@ function k = key_kind (col)
     k = 'numeric';
   else
     k = '';
+  endif
+endfunction
+
+## Validate the optional SETORDER argument shared by the set operations.
+## Returns the lower-cased order ('sorted' default) and an errmsg body (empty on
+## success) emitted by the caller under its own name.
+function [order, errmsg] = parse_set_order (args)
+  order = 'sorted';
+  errmsg = '';
+  if (! isempty (args))
+    if (numel (args) > 1)
+      errmsg = "too many input arguments.";
+    elseif (! (ischar (args{1}) && isrow (args{1})
+               && any (strcmpi (args{1}, {'sorted', 'stable'}))))
+      errmsg = "SETORDER must be either 'sorted' or 'stable'.";
+    else
+      order = lower (args{1});
+    endif
   endif
 endfunction
 
