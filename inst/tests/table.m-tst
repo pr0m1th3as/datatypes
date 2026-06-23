@@ -202,6 +202,12 @@
 %! [sorted_tblA, index] = sortrows (tblA, "RowNames", "descend");
 %! assert (index, [1; 3; 2; 4; 5]);
 %! assert (issortedrows (sorted_tblA, "RowNames", "descend"), true);
+%!test  # duration variable (regression: 'days' is a method, not a property)
+%! A = table (hours ([3;1;2]), {'a';'b';'c'}, 'VariableNames', {'D', 'S'});
+%! [S, index] = sortrows (A);
+%! assert (hours (S.D), [1;2;3]);
+%! assert (S.S, {'b';'c';'a'});
+%! assert (index, [2;3;1]);
 %!test
 %! tblA.Properties.DimensionNames(1) = "Patients";
 %! assert (issortedrows (tblA, "Patients"), false);
@@ -336,6 +342,11 @@
 %! assert (C.Height, [64; 71; 67; 69]);
 %! assert (C.Weight, [131; 176; 185; 163]);
 %! assert (C.Properties.RowNames, {'Bob'; 'Fred'; 'George'; 'Betty'});
+%!test  # duration variable (regression: 'days' is a method, not a property)
+%! A = table (hours ([2;1;2;3]), {'a';'b';'c';'a'}, 'VariableNames', {'D','S'});
+%! C = unique (A);
+%! assert (hours (C.D), [1;2;2;3]);
+%! assert (C.S, {'b';'a';'c';'a'});
 %!test
 %! Name = {'Fred'; 'Betty'; 'Bob'; 'George'; 'Jane'};
 %! Age = [38; 43; 38; 40; 38];
@@ -1449,6 +1460,25 @@
 %! assert (T.Properties.VariableNames, {'KeyL', 'V'});
 %! assert (T.V, {'a';'b'});
 
+## 'join' on a duration key variable
+%!test
+%! L = table (hours ([3;1;2]), {'a';'b';'c'}, 'VariableNames', {'K', 'L'});
+%! R = table (hours ([1;2;3]), {'x';'y';'z'}, 'VariableNames', {'K', 'R'});
+%! [T, ixR] = join (L, R);
+%! assert (hours (T.K), [3;1;2]);
+%! assert (T.R, {'z';'x';'y'});
+%! assert (ixR, [3;1;2]);
+
+## 'join' carries a categorical key and a calendarDuration variable
+%!test
+%! L = table (categorical ({'a';'b'}), calmonths ([5;6]), ...
+%!            'VariableNames', {'K', 'M'});
+%! R = table (categorical ({'b';'a'}), {'x';'y'}, 'VariableNames', {'K', 'R'});
+%! T = join (L, R);
+%! assert (cellstr (T.K), {'a';'b'});
+%! assert (calmonths (T.M), [5;6]);
+%! assert (T.R, {'y';'x'});
+
 %!error <table.join: too few input arguments.> ...
 %! join (table ([1;2]));
 %!error <table.join: both inputs must be tables.> ...
@@ -1593,6 +1623,27 @@
 %! assert (T.N, [2;3]);
 %! assert (T.M, {'x';'y'});
 
+## 'innerjoin' on a duration key variable
+%!test
+%! L = table (hours ([3;1;2]), {'a';'b';'c'}, 'VariableNames', {'K', 'L'});
+%! R = table (hours ([1;2;3]), {'x';'y';'z'}, 'VariableNames', {'K', 'R'});
+%! [T, ixL, ixR] = innerjoin (L, R);
+%! assert (hours (T.K), [1;2;3]);
+%! assert (T.R, {'x';'y';'z'});
+%! assert (ixL, [2;3;1]);
+%! assert (ixR, [1;2;3]);
+
+## 'innerjoin' on a calendarDuration key variable
+%!test
+%! L = table (calmonths ([3;1;2]), {'a';'b';'c'}, 'VariableNames', {'K', 'L'});
+%! R = table (calmonths ([2;1]), {'x';'y'}, 'VariableNames', {'K', 'R'});
+%! [T, ixL, ixR] = innerjoin (L, R);
+%! assert (calmonths (T.K), [1;2]);
+%! assert (T.L, {'b';'c'});
+%! assert (T.R, {'y';'x'});
+%! assert (ixL, [2;3]);
+%! assert (ixR, [2;1]);
+
 %!error <table.innerjoin: too few input arguments.> ...
 %! innerjoin (table ([1;2]));
 %!error <table.innerjoin: both inputs must be tables.> ...
@@ -1724,6 +1775,39 @@
 %! assert (T.A, [10;11;12]);
 %! assert (T.B, {'';'x';'y'});
 
+## 'outerjoin' on a duration key fills unmatched keys with missing
+%!test
+%! L = table (hours ([3;1;2]), {'a';'b';'c'}, 'VariableNames', {'K', 'L'});
+%! R = table (hours ([2;5]), {'p';'q'}, 'VariableNames', {'K', 'R'});
+%! [T, ixL, ixR] = outerjoin (L, R);
+%! assert (hours (T.K_L), [1;2;3;NaN]);
+%! assert (ismissing (T.K_L), [false;false;false;true]);
+%! assert (T.R, {'';'p';'';'q'});
+%! assert (ixL, [2;3;1;0]);
+%! assert (ixR, [0;1;0;2]);
+
+## 'outerjoin' fills an unmatched duration variable with missing
+%!test
+%! L = table ([1;2], hours ([10;20]), 'VariableNames', {'K', 'D'});
+%! R = table ([2;3], {'x';'y'}, 'VariableNames', {'K', 'R'});
+%! T = outerjoin (L, R);
+%! assert (ismissing (T.D), [false;false;true]);
+%! assert (hours (T.D), [10;20;NaN]);
+
+## 'outerjoin' fills an unmatched calendarDuration variable with missing
+%!test
+%! L = table ([1;2], calmonths ([5;6]), 'VariableNames', {'K', 'CD'});
+%! R = table ([2;3], {'x';'y'}, 'VariableNames', {'K', 'R'});
+%! T = outerjoin (L, R);
+%! assert (ismissing (T.CD), [false;false;true]);
+
+## 'outerjoin' fills an unmatched string variable with <missing>
+%!test
+%! L = table ([1;2], string ({'a';'b'}), 'VariableNames', {'K', 'S'});
+%! R = table ([2;3], {'x';'y'}, 'VariableNames', {'K', 'R'});
+%! T = outerjoin (L, R);
+%! assert (ismissing (T.S), [false;false;true]);
+
 %!error <table.outerjoin: too few input arguments.> ...
 %! outerjoin (table ([1;2]));
 %!error <table.outerjoin: both inputs must be tables.> ...
@@ -1840,6 +1924,65 @@
 %! I = intersect (A, B);
 %! assert (cellstr (I.C), {'b'});
 %! assert (I.N, 2);
+
+## 'union' over string, categorical, duration and calendarDuration variables
+%!test
+%! A = table (string ({'a';'b';'c'}), categorical ({'x';'y';'z'}), ...
+%!            hours ([1;2;3]), calmonths ([1;2;3]), ...
+%!            'VariableNames', {'S', 'C', 'D', 'M'});
+%! B = table (string ({'b';'d'}), categorical ({'y';'w'}), hours ([2;4]), ...
+%!            calmonths ([2;4]), 'VariableNames', {'S', 'C', 'D', 'M'});
+%! U = union (A, B);
+%! assert (cellstr (U.S), {'a';'b';'c';'d'});
+%! assert (cellstr (U.C), {'x';'y';'z';'w'});
+%! assert (hours (U.D), [1;2;3;4]);
+%! assert (calmonths (U.M), [1;2;3;4]);
+
+## 'intersect' over string, categorical, duration and calendarDuration variables
+%!test
+%! A = table (string ({'a';'b';'c'}), categorical ({'x';'y';'z'}), ...
+%!            hours ([1;2;3]), calmonths ([1;2;3]), ...
+%!            'VariableNames', {'S', 'C', 'D', 'M'});
+%! B = table (string ({'b';'d'}), categorical ({'y';'w'}), hours ([2;4]), ...
+%!            calmonths ([2;4]), 'VariableNames', {'S', 'C', 'D', 'M'});
+%! I = intersect (A, B);
+%! assert (cellstr (I.S), {'b'});
+%! assert (cellstr (I.C), {'y'});
+%! assert (hours (I.D), 2);
+%! assert (calmonths (I.M), 2);
+
+## 'setdiff' over string, categorical, duration and calendarDuration variables
+%!test
+%! A = table (string ({'a';'b';'c'}), categorical ({'x';'y';'z'}), ...
+%!            hours ([1;2;3]), calmonths ([1;2;3]), ...
+%!            'VariableNames', {'S', 'C', 'D', 'M'});
+%! B = table (string ({'b';'d'}), categorical ({'y';'w'}), hours ([2;4]), ...
+%!            calmonths ([2;4]), 'VariableNames', {'S', 'C', 'D', 'M'});
+%! D = setdiff (A, B);
+%! assert (cellstr (D.S), {'a';'c'});
+%! assert (hours (D.D), [1;3]);
+
+## 'setxor' over string, categorical, duration and calendarDuration variables
+%!test
+%! A = table (string ({'a';'b';'c'}), categorical ({'x';'y';'z'}), ...
+%!            hours ([1;2;3]), calmonths ([1;2;3]), ...
+%!            'VariableNames', {'S', 'C', 'D', 'M'});
+%! B = table (string ({'b';'d'}), categorical ({'y';'w'}), hours ([2;4]), ...
+%!            calmonths ([2;4]), 'VariableNames', {'S', 'C', 'D', 'M'});
+%! X = setxor (A, B);
+%! assert (cellstr (X.S), {'a';'c';'d'});
+%! assert (hours (X.D), [1;3;4]);
+
+## 'ismember' over string, categorical, duration and calendarDuration variables
+%!test
+%! A = table (string ({'a';'b';'c'}), categorical ({'x';'y';'z'}), ...
+%!            hours ([1;2;3]), calmonths ([1;2;3]), ...
+%!            'VariableNames', {'S', 'C', 'D', 'M'});
+%! B = table (string ({'b';'d'}), categorical ({'y';'w'}), hours ([2;4]), ...
+%!            calmonths ([2;4]), 'VariableNames', {'S', 'C', 'D', 'M'});
+%! [TF, ixB] = ismember (A, B);
+%! assert (TF, [false;true;false]);
+%! assert (ixB, [0;1;0]);
 
 %!error <table.union: too few input arguments.> ...
 %! union (table ([1;2]));
