@@ -25,14 +25,14 @@ using namespace std;
 
 static inline constexpr uint64_t fnv1a64 (const char* buf, size_t len, uint64_t out)
 {
-	for (size_t i = 0; i < len; i++)
+  for (size_t i = 0; i < len; i++)
   {
     // default char signedness depends on architecture, for signed for
     // backwards compatibility
     const unsigned char b = buf[i];
     out = (out ^ b) * FNV1A64_PRIME;
   }
-	return out;
+  return out;
 }
 
 namespace /* tests */ {
