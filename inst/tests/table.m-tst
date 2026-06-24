@@ -772,13 +772,140 @@
 %! BloodPressure = [124, 93; 109, 77; 125, 83; 117, 75; 122, 80];
 %! T = table (Age, Smoker, Height, Weight, BloodPressure);
 
-## Test 'summary', 'height', 'width', 'head', and 'tail' methods
+## Test 'summary' returns a struct with the expected per-variable fields
 %!test
-%! t = summary (T);
-%! assert_equal (isstruct (t), true);
-%! assert_equal ([t.Age.Min, t.Age.Median, t.Age.Max], [38, 40, 49]);
-%! assert_equal (t.Smoker.Size, [5, 1]);
-%! assert_equal (t.BloodPressure.Size, [5, 2]);
+%! tt = table (Age, Smoker, BloodPressure);
+%! ss = summary (tt);
+%! assert_equal (isstruct (ss), true);
+%! assert_equal (fieldnames (ss), {'Age'; 'Smoker'; 'BloodPressure'});
+%! assert_equal (ss.Age.Size, [5, 1]);
+%! assert_equal (ss.Age.Type, 'double');
+%! assert_equal ([ss.Age.Min, ss.Age.Median, ss.Age.Max], [38, 40, 49]);
+%! assert_equal (ss.Age.NumMissing, 0);
+%! assert_equal (ss.Smoker.Size, [5, 1]);
+%! assert_equal (ss.Smoker.True, 3);
+%! assert_equal (ss.Smoker.False, 2);
+%! assert_equal (ss.BloodPressure.Size, [5, 2]);
+## Test 'summary' numeric NaN handling and per-column statistics
+%!test
+%! ss = summary (table ([1; 2; NaN; 4], [NaN, 2; 3, NaN; 5, 6; 7, 8], ...
+%!                      'VariableNames', {'a', 'b'}));
+%! assert_equal ([ss.a.Min, ss.a.Median, ss.a.Max], [1, 2, 4]);
+%! assert_equal (ss.a.NumMissing, 1);
+%! assert_equal (ss.b.Min, [3, 2]);
+%! assert_equal (ss.b.Median, [5, 6]);
+%! assert_equal (ss.b.Max, [7, 8]);
+%! assert_equal (ss.b.NumMissing, [1, 1]);
+## Test 'summary' of logical, string, cell, and categorical variables
+%!test
+%! ss = summary (table (logical ([1; 1; 0]), string ({'a'; 'b'; 'c'}), ...
+%!                      {'x'; 'y'; 'z'}, categorical ({'p'; 'q'; 'p'}), ...
+%!                      'VariableNames', {'L', 'S', 'C', 'Cat'}));
+%! assert_equal (ss.L.True, 2);
+%! assert_equal (ss.L.False, 1);
+%! assert_equal (isfield (ss.S, 'Min'), false);
+%! assert_equal (isfield (ss.C, 'Min'), false);
+%! assert_equal (isfield (ss.Cat, 'Min'), false);
+%! assert_equal (ss.Cat.Type, 'categorical');
+## Test 'summary' of a duration variable (typed stats, no TimeStep field)
+%!test
+%! Dv = duration ([1; 2; 3], [0; 30; 0], [0; 0; 0]);
+%! ss = summary (table (Dv, 'VariableNames', {'D'}));
+%! assert_equal (ss.D.Type, 'duration');
+%! assert_equal (class (ss.D.Min), 'duration');
+%! assert_equal (seconds (ss.D.Min), 3600);
+%! assert_equal (seconds (ss.D.Median), 9000);
+%! assert_equal (seconds (ss.D.Max), 10800);
+%! assert_equal (ss.D.NumMissing, 0);
+%! assert_equal (isfield (ss.D, 'TimeStep'), false);
+## Test 'summary' duration omits NaN from statistics and counts missing
+%!test
+%! Dv = duration ([1; NaN; 3], [0; 0; 0], [0; 0; 0]);
+%! ss = summary (table (Dv, 'VariableNames', {'D'}));
+%! assert_equal (seconds (ss.D.Min), 3600);
+%! assert_equal (seconds (ss.D.Max), 10800);
+%! assert_equal (seconds (ss.D.Median), 7200);
+%! assert_equal (ss.D.NumMissing, 1);
+## Test 'summary' of a datetime variable (typed stats, no TimeStep field)
+%!test
+%! Tv = datetime ([2020; 2021; 2022], 1, 1);
+%! ss = summary (table (Tv, 'VariableNames', {'T'}));
+%! assert_equal (ss.T.Type, 'datetime');
+%! assert_equal (class (ss.T.Min), 'datetime');
+%! assert_equal (datevec (ss.T.Min), [2020, 1, 1, 0, 0, 0]);
+%! assert_equal (datevec (ss.T.Median), [2021, 1, 1, 0, 0, 0]);
+%! assert_equal (datevec (ss.T.Max), [2022, 1, 1, 0, 0, 0]);
+%! assert_equal (ss.T.NumMissing, 0);
+%! assert_equal (isfield (ss.T, 'TimeStep'), false);
+## Test 'summary' datetime excludes NaT and counts it as missing
+%!test
+%! Tv = datetime ([2020; NaN; 2022], 1, 1);
+%! ss = summary (table (Tv, 'VariableNames', {'T'}));
+%! assert_equal (datevec (ss.T.Min), [2020, 1, 1, 0, 0, 0]);
+%! assert_equal (datevec (ss.T.Max), [2022, 1, 1, 0, 0, 0]);
+%! assert_equal (ss.T.NumMissing, 1);
+## Test 'summary' of calendarDuration reports only Size, Type, and NumMissing
+%!test
+%! Cv = calendarDuration ([1; 2; 3], [0; 1; 2], [0; 0; 0]);
+%! ss = summary (table (Cv, 'VariableNames', {'C'}));
+%! assert_equal (ss.C.Type, 'calendarDuration');
+%! assert_equal (ss.C.Size, [3, 1]);
+%! assert_equal (isfield (ss.C, 'Min'), false);
+%! assert_equal (ss.C.NumMissing, 0);
+%! ss = summary (table (calendarDuration ([1; NaN], 0, 0), ...
+%!                      'VariableNames', {'C'}));
+%! assert_equal (ss.C.NumMissing, 1);
+## Test 'summary' captures variable Description and Units in the struct
+%!test
+%! tt = table ([1; 2; 3], 'VariableNames', {'v'});
+%! tt.Properties.VariableUnits = {'kg'};
+%! tt.Properties.VariableDescriptions = {'a weight'};
+%! ss = summary (tt);
+%! assert_equal (ss.v.Units, 'kg');
+%! assert_equal (ss.v.Description, 'a weight');
+## Test 'summary' of an empty table does not error
+%!test
+%! et = table ('Size', [0, 2], 'VariableTypes', {'double', 'double'}, ...
+%!             'VariableNames', {'a', 'b'});
+%! ss = summary (et);
+%! assert_equal (fieldnames (ss), {'a'; 'b'});
+%! str = evalc ("summary (et);");
+%! assert_equal (! isempty (strfind (str, 'Variables:')), true);
+## Test 'summary' printed output for numeric, logical, and missing values
+%!test
+%! str = evalc (["summary (table ([1; 2; NaN], logical ([1; 0; 1]), ", ...
+%!               "'VariableNames', {'a', 'b'}));"]);
+%! assert_equal (! isempty (strfind (str, 'Variables:')), true);
+%! assert_equal (! isempty (strfind (str, 'Median')), true);
+%! assert_equal (! isempty (strfind (str, 'NumMissing 1')), true);
+%! assert_equal (! isempty (strfind (str, 'True')), true);
+%! assert_equal (! isempty (strfind (str, 'False')), true);
+## Test 'summary' printed output shows table and variable Description
+%!test
+%! tt = table ([1; 2; 3], 'VariableNames', {'v'});
+%! tt.Properties.Description = 'My table';
+%! tt.Properties.VariableDescriptions = {'a weight'};
+%! str = evalc ("summary (tt);");
+%! assert_equal (! isempty (strfind (str, 'Description:  My table')), true);
+%! assert_equal (! isempty (strfind (str, 'Description: a weight')), true);
+## Test 'summary' printed output for datetime and duration variables
+%!test
+%! sd = evalc (["summary (table (duration ([1; 2; 3], 0, 0), ", ...
+%!              "'VariableNames', {'D'}));"]);
+%! assert_equal (! isempty (strfind (sd, 'Min       01:00:00')), true);
+%! assert_equal (! isempty (strfind (sd, 'Max       03:00:00')), true);
+%! st = evalc (["summary (table (datetime (2020, 1, [1; 2; 3]), ", ...
+%!              "'VariableNames', {'T'}));"]);
+%! assert_equal (! isempty (strfind (st, 'Min       01-Jan-2020')), true);
+%! assert_equal (! isempty (strfind (st, 'Max       03-Jan-2020')), true);
+## Test 'summary' printed output for calendarDuration shows only NumMissing
+%!test
+%! sc = evalc (["summary (table (calendarDuration ([1; NaN], 0, 0), ", ...
+%!              "'VariableNames', {'C'}));"]);
+%! assert_equal (! isempty (strfind (sc, 'NumMissing 1')), true);
+%! assert_equal (isempty (strfind (sc, 'Min')), true);
+
+## Test 'height', 'width', 'head', and 'tail' methods
 %!assert_equal (height (T), 5);
 %!assert_equal (width (T), 5);
 %!assert_equal (height (head (T, 3)), 3);

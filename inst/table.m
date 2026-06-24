@@ -787,16 +787,17 @@ classdef table
     ##
     ## Print a summary of a table.
     ##
-    ## @code{summary (@var{tbl}} prints the description from
-    ## @qcode{@var{tbl}.Properties.Description} (not implemented yet) followed
-    ## by a summary of each table variable's values and their properties as
-    ## defined in @qcode{@var{tbl}.Properties.VariableUnits} and
-    ## @qcode{@var{tbl}.Properties.VariableDescriptions} (not implemented yet).
+    ## @code{summary (@var{tbl})} prints the description from
+    ## @qcode{@var{tbl}.Properties.Description} followed by a summary of each
+    ## table variable's values and their properties as defined in
+    ## @qcode{@var{tbl}.Properties.VariableUnits} and
+    ## @qcode{@var{tbl}.Properties.VariableDescriptions}.
     ##
-    ## @code{@var{s} = summary (@var{tbl}} returns a structure, @var{s}, that
+    ## @code{@var{s} = summary (@var{tbl})} returns a structure, @var{s}, that
     ## contains a summary of the input table, @var{tbl}.  Each field of @var{s}
     ## is a structure that summarizes the values in the corresponding variable
-    ## of @var{tbl}.
+    ## of @var{tbl}.  Where applicable, the number of missing values is reported
+    ## in a @qcode{NumMissing} field and printed when it is greater than zero.
     ##
     ## @itemize
     ## @item For numerical variables of @qcode{double}, @qcode{single} or any
@@ -807,13 +808,17 @@ classdef table
     ## @item For variables of @qcode{logical} type, it prints the occurrences
     ## of @qcode{True} and @qcode{False}.
     ##
-    ## @item For variables of type @qcode{datetime}, @qcode{duration}, and
-    ## @qcode{calendarDuration} it prints the minimum, median, and maximum
-    ## values along with the TimeStep, which is only calculated for fixed
-    ## intervals present in the data, otherwise @qcode{NaN} is returned.
+    ## @item For variables of type @qcode{datetime} and @qcode{duration} it
+    ## prints the minimum, median, and maximum values, computed after excluding
+    ## any missing (@qcode{NaT} or @qcode{NaN}) elements.
     ##
-    ## @item For variables of type @qcode{cellstr}, @qcode{cell}, @qcode{string}
-    ## and @qcode{struct} it prints the size and the type of variable.
+    ## @item For variables of type @qcode{calendarDuration}, which are not
+    ## totally ordered, only the size, the type, and the number of missing
+    ## values are reported.
+    ##
+    ## @item For variables of type @qcode{cellstr}, @qcode{cell},
+    ## @qcode{string}, @qcode{categorical}, and @qcode{struct} it prints the
+    ## size and the type of variable.
     ## @end itemize
     ##
     ## @end deftypefn
@@ -856,36 +861,25 @@ classdef table
               endfor
             endif
           endif
-          ## Print values (either {Min Median Max TimeStep} or {True False})
+          ## Print values (numeric/datetime/duration Min Median Max, logical
+          ## True False) followed by the count of missing values, if any.
           if (isfield (var, 'Min') || isfield (var, 'True'))
             fprintf ("%s    Values:\n", tab);
+            isLogical = isfield (var, 'True');
+            isNumeric = isfield (var, 'Min') && isnumeric (var.Min);
             ## Check for multicolumnar variable
             if (var.Size(2) > 1)
-              ## Check for numeric, time, or logical and find max length for
-              ## properly aligning the numerical columns
-              if (isfield (var, 'Min') && ! isfield (var, 'TimeStep'))
-                ## numeric
-                minLen = max (cell2mat (arrayfun (@(x) length (num2str (x)), ...
-                               var.Min, 'UniformOutput', false)));
-                medLen = max (cell2mat (arrayfun (@(x) length (num2str (x)), ...
-                               var.Median, 'UniformOutput', false)));
-                maxLen = max (cell2mat (arrayfun (@(x) length (num2str (x)), ...
-                               var.Max, 'UniformOutput', false)));
-                mLen = max ([minLen, medLen, maxLen]);
-              elseif (isfield (var, 'TimeStep'))
-                ## datetime, duration, calendarDuration
-                minLen = max (cellfun (@length, dispstrs (var.Min)));
-                medLen = max (cellfun (@length, dispstrs (var.Median)));
-                maxLen = max (cellfun (@length, dispstrs (var.Max)));
-                tspLen = max (cellfun (@length, dispstrs (var.TimeStep)));
-                mLen = max ([minLen, medLen, maxLen, tspLen]);
+              ## Find max element length for aligning the columns
+              if (isNumeric)
+                mLen = max (arrayfun (@(x) length (num2str (x)), ...
+                            [var.Min, var.Median, var.Max]));
+              elseif (isLogical)
+                mLen = max (arrayfun (@(x) length (num2str (x)), ...
+                            [var.True, var.False]));
               else
-                ## logical
-                tLen = max (cell2mat (arrayfun (@(x) length (num2str (x)), ...
-                            var.True, 'UniformOutput', false)));
-                fLen = max (cell2mat (arrayfun (@(x) length (num2str (x)), ...
-                            var.False, 'UniformOutput', false)));
-                mLen = max (tLen, fLen);
+                strs = [dispstrings(var.Min), dispstrings(var.Median), ...
+                        dispstrings(var.Max)];
+                mLen = max (cellfun (@length, strs));
               endif
               ## Create padding character vectors
               mLen = max (8, mLen);
@@ -900,12 +894,11 @@ classdef table
               fprintf ("%s                  %s\n", tab, strhead);
               fprintf ("%s                  %s\n", tab, strline);
               ## Print multicolumnar variable statistics
-              if (isfield (var, 'Min') && ! isfield (var, 'TimeStep'))
-                ## numeric
+              if (isNumeric)
+                template = ["%s%", sprintf("%d", mLen), "g    "];
                 strMin = '';
                 strMed = '';
                 strMax = '';
-                template = ["%s%", sprintf("%d", mLen), "g    "];
                 for c = 1:numel (var.Min)
                   strMin = [strMin, sprintf(template, pad, var.Min(c))];
                   strMed = [strMed, sprintf(template, pad, var.Median(c))];
@@ -913,65 +906,65 @@ classdef table
                 endfor
                 fprintf ("%s        Min       %s\n", tab, strMin);
                 fprintf ("%s        Median    %s\n", tab, strMed);
-                fprintf ("%s        Max       %s\n\n", tab, strMax);
-              elseif (isfield (var, 'TimeStep'))
-                ## datetime, duration, calendarDuration
-                strMin = "";
-                strMed = "";
-                strMax = "";
-                strTSp = "";
-                template = ["%s%", sprintf("%s", mLen), "g    "];
-                for c = 1:numel (var.Min)
-                  strMin = [strMin, sprintf(template, pad, ...
-                                            dispstrs(var.Min(c)){:})];
-                  strMed = [strMed, sprintf(template, pad, ...
-                                            dispstrs(var.Median(c)){:})];
-                  strMax = [strMax, sprintf(template, pad, ...
-                                            dispstrs(var.Max(c)){:})];
-                  strTSp = [strTSp, sprintf(template, pad, ...
-                                            dispstrs(var.TimeStep(c)){:})];
-                endfor
-                fprintf ("%s        Min       %s\n", tab, strMin);
-                fprintf ("%s        Median    %s\n", tab, strMed);
                 fprintf ("%s        Max       %s\n", tab, strMax);
-                fprintf ("%s        TimeStep  %s\n\n", tab, strTSp);
-              else
-                ## logical
-                strTrue = "";
-                strFalse = "";
+              elseif (isLogical)
                 template = ["%s%", sprintf("%d", mLen), "g    "];
+                strTrue = '';
+                strFalse = '';
                 for c = 1:numel (var.True)
                   strTrue = [strTrue, sprintf(template, pad, var.True(c))];
                   strFalse = [strFalse, sprintf(template, pad, var.False(c))];
                 endfor
                 fprintf ("%s        True      %s\n", tab, strTrue);
-                fprintf ("%s        False     %s\n\n", tab, strFalse);
+                fprintf ("%s        False     %s\n", tab, strFalse);
+              else
+                ## datetime or duration
+                template = ["%s%", sprintf("%d", mLen), "s    "];
+                minStr = dispstrings (var.Min);
+                medStr = dispstrings (var.Median);
+                maxStr = dispstrings (var.Max);
+                strMin = '';
+                strMed = '';
+                strMax = '';
+                for c = 1:numel (minStr)
+                  strMin = [strMin, sprintf(template, pad, minStr{c})];
+                  strMed = [strMed, sprintf(template, pad, medStr{c})];
+                  strMax = [strMax, sprintf(template, pad, maxStr{c})];
+                endfor
+                fprintf ("%s        Min       %s\n", tab, strMin);
+                fprintf ("%s        Median    %s\n", tab, strMed);
+                fprintf ("%s        Max       %s\n", tab, strMax);
               endif
-
             ## Print single column variable
             else
-              ## Check for numeric, time, or logical
-              if (isfield (var, 'Min') && ! isfield (var, 'TimeStep'))
-                ## numeric
+              if (isNumeric)
                 fprintf ("%s        Min       %g\n", tab, var.Min);
                 fprintf ("%s        Median    %g\n", tab, var.Median);
                 fprintf ("%s        Max       %g\n", tab, var.Max);
-              elseif (isfield (var, 'TimeStep'))
-                ## datetime, duration, calendarDuration
-                fprintf ("%s        Min       %s\n", ...
-                         tab, dispstrs (var.Min){:});
-                fprintf ("%s        Median    %s\n", ...
-                         tab, dispstrs (var.Median){:});
-                fprintf ("%s        Max       %s\n", ...
-                         tab, dispstrs (var.Max){:});
-                fprintf ("%s        TimeStep  %s\n\n", ...
-                         tab, dispstrs (var.TimeStep){:});
-              else
-                ## logical
+              elseif (isLogical)
                 fprintf ("%s        True      %d\n", tab, var.True);
-                fprintf ("%s        False     %d\n\n", tab, var.False);
+                fprintf ("%s        False     %d\n", tab, var.False);
+              else
+                ## datetime or duration
+                fprintf ("%s        Min       %s\n", tab, ...
+                         dispstrings (var.Min){:});
+                fprintf ("%s        Median    %s\n", tab, ...
+                         dispstrings (var.Median){:});
+                fprintf ("%s        Max       %s\n", tab, ...
+                         dispstrings (var.Max){:});
               endif
             endif
+            ## Print number of missing values, if any
+            if (isfield (var, 'NumMissing') && any (var.NumMissing(:) > 0))
+              fprintf ("%s        NumMissing%s\n", tab, ...
+                       sprintf (" %d", var.NumMissing));
+            endif
+            fprintf ("\n");
+          ## Variables carrying only a missing-value count (calendarDuration)
+          elseif (isfield (var, 'NumMissing') && any (var.NumMissing(:) > 0))
+            fprintf ("%s    Values:\n", tab);
+            fprintf ("%s        NumMissing%s\n\n", tab, ...
+                     sprintf (" %d", var.NumMissing));
           endif
         endfor
       endif
@@ -7192,11 +7185,12 @@ classdef table
     endfunction
 
     ## Summary internal function
-    function s = summary_for_variables (this);
+    function s = summary_for_variables (this)
       for v = 1:width (this)
         varName = this.VariableNames{v};
-        s.(varName).Size = size (this.VariableValues{v});
-        s.(varName).Type = class (this.VariableValues{v});
+        val = this.VariableValues{v};
+        s.(varName).Size = size (val);
+        s.(varName).Type = class (val);
         if (! isempty (this.VariableDescriptions{v}))
           s.(varName).Description = this.VariableDescriptions{v};
         else
@@ -7208,60 +7202,48 @@ classdef table
           s.(varName).Units = "";
         endif
         s.(varName).Continuity = [];
-        if (isa (this.VariableValues{v}, 'logical'))
-          s.(varName).True = sum (this.VariableValues{v});
-          s.(varName).False = sum (! this.VariableValues{v});
-        elseif (isa (this.VariableValues{v}, 'duration'))
-          sec = seconds (this.VariableValues{v});
-          nat = isnan (sec);
-          s.(varName).Min = min (sec(! nat));
-          s.(varName).Median = median (sec(! nat));
-          s.(varName).Max = max (sec(! nat));
-          s.(varName).NumMissing = sum (nat);
-          ## Check for TimeStep
-          TimeStep = __unique__ (diff (sort (sec)))
-          if (numel (TimeStep) == 1)
-            s.(varName).TimeStep = TimeStep;
-          else
-            s.(varName).TimeStep = NaN;
-          endif
-        elseif (isa (this.VariableValues{v}, 'datetime'))
-          day = this.VariableValues{v}.dnums;
-          nat = isnan (day);
-          s.(varName).Min = min (day(! nat));
-          s.(varName).Median = median (day(! nat));
-          s.(varName).Max = max (day(! nat));
-          s.(varName).NumMissing = sum (nat);
-          ## Check for TimeStep
-          TimeStep = __unique__ (diff (sort (day)))
-          if (numel (TimeStep) == 1)
-            s.(varName).TimeStep = TimeStep;
-          else
-            s.(varName).TimeStep = NaN;
-          endif
-        elseif (isa (this.VariableValues{v}, 'calendarDuration'))
-          day = datetime ([0, 0, 0]) + this.VariableValues{v};
-          day = day.dnums;
-          nat = isnan (day);
-          s.(varName).Min = min (day(! nat));
-          s.(varName).Median = median (day(! nat));
-          s.(varName).Max = max (day(! nat));
-          s.(varName).NumMissing = sum (nat);
-          ## Check for TimeStep
-          TimeStep = __unique__ (diff (sort (day)))
-          if (numel (TimeStep) == 1)
-            s.(varName).TimeStep = TimeStep;
-          else
-            s.(varName).TimeStep = NaN;
-          endif
-        elseif (isnumeric (this.VariableValues{v}))
-          s.(varName).Min = __nanmin__ (this.VariableValues{v});
-          s.(varName).Median = median (this.VariableValues{v}, 'omitnan');
-          s.(varName).Max = __nanmax__ (this.VariableValues{v});
-          s.(varName).NumMissing = sum (isnan (this.VariableValues{v}));
+        if (islogical (val))
+          s.(varName).True = sum (val, 1);
+          s.(varName).False = sum (! val, 1);
+        elseif (isa (val, 'duration'))
+          ## Work in seconds (native 'median' does not omit NaN), then
+          ## rebuild durations preserving the variable's display format.
+          sec = seconds (val);
+          fmt = val.Format;
+          mn = seconds (__nanmin__ (sec));
+          md = seconds (median (sec, 'omitnan'));
+          mx = seconds (__nanmax__ (sec));
+          mn.Format = fmt;
+          md.Format = fmt;
+          mx.Format = fmt;
+          s.(varName).Min = mn;
+          s.(varName).Median = md;
+          s.(varName).Max = mx;
+          s.(varName).NumMissing = sum (isnan (sec), 1);
+        elseif (isa (val, 'datetime'))
+          ## Operate on datenum-valued doubles (NaT mapped to NaN), then
+          ## rebuild datetimes from the resulting statistics.
+          dn = datetime_to_datenum (val);
+          s.(varName).Min = datetime (__nanmin__ (dn), ...
+                                      'ConvertFrom', 'datenum');
+          s.(varName).Median = datetime (median (dn, 'omitnan'), ...
+                                         'ConvertFrom', 'datenum');
+          s.(varName).Max = datetime (__nanmax__ (dn), ...
+                                      'ConvertFrom', 'datenum');
+          s.(varName).NumMissing = sum (isnan (dn), 1);
+        elseif (isa (val, 'calendarDuration'))
+          ## 'calendarDuration' is not totally ordered (months and days are
+          ## not interconvertible), so Min/Median/Max are undefined; report
+          ## only the count of missing values.
+          s.(varName).NumMissing = sum (ismissing (val), 1);
+        elseif (isnumeric (val))
+          s.(varName).Min = __nanmin__ (val);
+          s.(varName).Median = median (val, 'omitnan');
+          s.(varName).Max = __nanmax__ (val);
+          s.(varName).NumMissing = sum (isnan (val), 1);
         endif
         ## No need to summarize values in 'cell', 'cellstr', 'string',
-        ## and 'struct' variable types .
+        ## 'categorical', and 'struct' variable types.
 
         ## Fix me: as soon as CustomProperties are introduced in table class
       endfor
@@ -7407,6 +7389,21 @@ classdef table
   endmethods
 
 endclassdef
+
+## Convert a datetime array to datenum-valued doubles of the same size,
+## mapping NaT to NaN.  Used by 'summary'.  Core 'datenum' cannot process the
+## NaN date components of a NaT, so those rows are substituted with a valid
+## placeholder before conversion and set back to NaN afterwards.
+function dn = datetime_to_datenum (v)
+  sz = size (v);
+  DV = datevec (v);                     # (numel)-by-6 in column-major order
+  nat = any (isnan (DV), 2);
+  DV(nat,:) = 0;
+  DV(nat,2:3) = 1;                      # valid month/day placeholder
+  dn = datenum (DV);
+  dn(nat) = NaN;
+  dn = reshape (dn, sz);
+endfunction
 
 ## Return a logical mask, the same size as a table variable V, that flags the
 ## missing entries.  Used by 'fillmissing'.  Char arrays have no standard
