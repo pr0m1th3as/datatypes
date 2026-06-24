@@ -309,6 +309,9 @@ classdef table
                          " array of character vectors or a string array."));
         endif
         VariableNames = cellstr (VariableNames);
+        if (any (cellfun (@isempty, VariableNames)))
+          error ("table: 'VariableNames' must contain nonempty names.");
+        endif
       endif
       if (! isempty (RowNames))
         if (! (iscellstr (RowNames) || isa (RowNames, 'string')))
@@ -324,6 +327,13 @@ classdef table
                        " a two-element string array."));
       endif
       this.DimensionNames = cellstr (DimensionNames);
+      ## Dimension names cannot match reserved table identifiers
+      reserved = {'Properties', 'RowNames', 'VariableNames', ':'};
+      idr = ismember (this.DimensionNames, reserved);
+      if (any (idr))
+        error (strcat ("table: 'DimensionNames' cannot include the", ...
+                       " reserved name: '%s'."), this.DimensionNames{idr});
+      endif
       ## Check for conflict between VariableNames and DimensionNames
       idx = ismember (this.DimensionNames, VariableNames);
       if (any (idx))
@@ -334,6 +344,10 @@ classdef table
       ## Construct a preallocated table with default values
       if (numel (args) == 4 && strcmpi (args{1}, 'Size') &&
                                strcmpi (args{3}, 'VariableTypes'))
+        ## Validate the size specifier
+        if (! isnumeric (args{2}) || numel (args{2}) != 2)
+          error ("table: 'Size' must be a two-element numeric vector.");
+        endif
         ## Get number of rows and variables
         nr = args{2}(1);
         nv = args{2}(2);
@@ -385,7 +399,7 @@ classdef table
               VariableValues{i} = calendarDuration (zeros (nr, 3));
             case 'string'
               VariableValues{i} = string (NaN (nr, 1));
-            case 'cellstr'
+            case {'cellstr', 'char'}
               VariableValues{i} = repmat (cellstr (""), nr, 1);
             case 'cell'
               VariableValues{i} = cell (nr, 1);
@@ -395,6 +409,8 @@ classdef table
               VariableValues{i} = table([]);
             case 'timetable'
               error ("table: 'timetable' variable type not supported yet.");
+            otherwise
+              error ("table: unsupported variable type: '%s'.", varTypes{i});
           endswitch
         endfor
 
@@ -458,7 +474,16 @@ classdef table
       this.VariableTypes = cellfun ('class', VariableValues, ...
                                     'UniformOutput', false);
       if (! isempty (RowNames))
-        if (numel (__unique__ (RowNames)) != size (VariableValues{1}, 1))
+        if (isempty (VariableValues))
+          nrows = 0;
+        else
+          nrows = size (VariableValues{1}, 1);
+        endif
+        if (numel (RowNames) != nrows)
+          error (strcat ("table: the number of 'RowNames' (%d) must", ...
+                         " equal the number of rows (%d)."), ...
+                 numel (RowNames), nrows);
+        elseif (numel (__unique__ (RowNames)) != numel (RowNames))
           error ("table: elements in 'RowNames' must be unique.");
         endif
         this.RowNames = RowNames(:);
@@ -516,9 +541,6 @@ classdef table
     ##
     ## @end deftypefn
     function C = table2cell (this, varargin)
-      if (nargout > 1)
-        error ("table.table2cell: too many output arguments.");
-      endif
       C = cell (size (this));
       for i = 1:width (this)
         varVal = this.VariableValues{i};
@@ -540,7 +562,7 @@ classdef table
             C(:,i) = tmpVal;
           endif
         elseif (isa (varVal, 'struct'))
-          C(:,i) = struct2cell (varVal(:))';
+          C(:,i) = num2cell (varVal(:));
         endif
       endfor
     endfunction
@@ -587,6 +609,19 @@ classdef table
         endfor
       else
         C = table2cell (this);
+        ## 'table2cell' renders categorical, datetime, duration,
+        ## calendarDuration, and string variables as character vectors; restore
+        ## the original typed values so the structure array preserves the
+        ## variable types, consistent with the 'ToScalar' output and MATLAB.
+        for i = 1:width (this)
+          vv = this.VariableValues{i};
+          if (any (isa (vv, {'categorical', 'datetime', 'duration', ...
+                             'calendarDuration', 'string'})))
+            for r = 1:size (vv, 1)
+              C{r,i} = vv(r,:);
+            endfor
+          endif
+        endfor
         F = this.VariableNames(:);
         S = cell2struct (C, F, 2);
       endif
