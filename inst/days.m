@@ -44,16 +44,16 @@ endfunction
 %!test
 %! X = magic (3);
 %! D = days (X);
-%! assert (size (D), size (X));
+%! assert_equal (size (D), size (X));
 %!test
 %! D = days ([1, 2, 3]);
-%! assert (days (D), [1, 2, 3]);
+%! assert_equal (days (D), [1, 2, 3]);
 %!test
 %! D = days (int16 (1));
-%! assert (days (D), 1);
+%! assert_equal (days (D), 1);
 %!test
 %! D = days ();
-%! assert (days (D), 1);
+%! assert_equal (days (D), 1);
 
 %!error<days: input array must be numeric.> days ("asd");
 %!error<days: input array must be real.> days (1+i);

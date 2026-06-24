@@ -132,34 +132,34 @@ endfunction
 %! S(1).B = 5;
 %! S(2).B = 6;
 %! tbl = struct2table (S);
-%! assert (tbl.A, [1, 2; 3, 4]);
-%! assert (tbl.B, [5; 6]);
-%! assert (numel (S), rows (tbl));
+%! assert_equal (tbl.A, [1, 2; 3, 4]);
+%! assert_equal (tbl.B, [5; 6]);
+%! assert_equal (numel (S), rows (tbl));
 %!test
 %! S(1).A = [1, 2];
 %! S(2).A = [3, 4, 5, 6];
 %! S(1).B = 7;
 %! S(2).B = 8;
 %! tbl = struct2table (S);
-%! assert (isa (tbl.A, 'cell'), true);
-%! assert (isa (tbl.B, 'double'), true);
-%! assert (numel (S), rows (tbl));
-%! assert (tbl.A(1){1}, [1, 2]);
-%! assert (tbl.A(2){1}, [3, 4, 5, 6]);
-%! assert (tbl.B, [7; 8]);
+%! assert_equal (isa (tbl.A, 'cell'), true);
+%! assert_equal (isa (tbl.B, 'double'), true);
+%! assert_equal (numel (S), rows (tbl));
+%! assert_equal (tbl.A(1){1}, [1, 2]);
+%! assert_equal (tbl.A(2){1}, [3, 4, 5, 6]);
+%! assert_equal (tbl.B, [7; 8]);
 %!test
 %! S.A = [1; 2; 3];
 %! S.B = [4, 5; 6, 7; 8, 9];
 %! tbl = struct2table (S);
-%! assert (isa (tbl.A, 'double'), true);
-%! assert (isa (tbl.B, 'double'), true);
-%! assert (tbl.A, [1; 2; 3]);
-%! assert (tbl.B, [4, 5; 6, 7; 8, 9]);
+%! assert_equal (isa (tbl.A, 'double'), true);
+%! assert_equal (isa (tbl.B, 'double'), true);
+%! assert_equal (tbl.A, [1; 2; 3]);
+%! assert_equal (tbl.B, [4, 5; 6, 7; 8, 9]);
 %!test
 %! tbl = struct2table (struct ('A', 1, 'B', [1; 2]), 'AsArray', true);
-%! assert (iscell (tbl.A), true);
-%! assert (iscell (tbl.B), true);
-%! assert (size (tbl.B{1}), [2, 1]);
+%! assert_equal (iscell (tbl.A), true);
+%! assert_equal (iscell (tbl.B), true);
+%! assert_equal (size (tbl.B{1}), [2, 1]);
 
 %!error<struct2table: input array must be a structure.> struct2table ({1});
 %!error<struct2table: fields have different rows. Use 'AsArray' option.> ...

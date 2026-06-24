@@ -28,8 +28,8 @@ function TF = isdatetime (x)
   TF = isa (x, 'datetime');
 endfunction
 
-%!assert (isdatetime (datetime ([1, 2, 3])), true);
-%!assert (isdatetime (datetime ([1, 2, 0; 1, 4, 0])), true);
-%!assert (isdatetime ([0, 1, 2]), false);
-%!assert (isdatetime ({true, false}), false);
-%!assert (isdatetime ({datetime([1, 2, 3])}), false);
+%!assert_equal (isdatetime (datetime ([1, 2, 3])), true);
+%!assert_equal (isdatetime (datetime ([1, 2, 0; 1, 4, 0])), true);
+%!assert_equal (isdatetime ([0, 1, 2]), false);
+%!assert_equal (isdatetime ({true, false}), false);
+%!assert_equal (isdatetime ({datetime([1, 2, 3])}), false);

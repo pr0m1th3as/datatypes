@@ -26,112 +26,112 @@
 ##                                                                            ##
 ################################################################################
 
-%!assert (isscalar (calendarDuration ()), true)
-%!assert (isempty (calendarDuration ()), false)
-%!assert (class (calendarDuration), 'calendarDuration')
-%!assert (dispstrings (calendarDuration ()), {'0d'})
-%!assert (size (calendarDuration (zeros (4, 3))), [4, 1])
-%!assert (size (calendarDuration (ones (5, 6))), [5, 1])
+%!assert_equal (isscalar (calendarDuration ()), true)
+%!assert_equal (isempty (calendarDuration ()), false)
+%!assert_equal (class (calendarDuration), 'calendarDuration')
+%!assert_equal (dispstrings (calendarDuration ()), {'0d'})
+%!assert_equal (size (calendarDuration (zeros (4, 3))), [4, 1])
+%!assert_equal (size (calendarDuration (ones (5, 6))), [5, 1])
 %!test
 %! X = calendarDuration ([0, 0, 1]);
-%! assert (caldays (X), 1);
-%! assert (dispstrings (X), {'1d'});
-%! assert (char (X), '1d');
+%! assert_equal (caldays (X), 1);
+%! assert_equal (dispstrings (X), {'1d'});
+%! assert_equal (char (X), '1d');
 %!test
 %! X = calendarDuration ([0, 2, 14]);
-%! assert (caldays (X), 14);
-%! assert (calweeks (X), 2);
-%! assert (calmonths (X), 2);
-%! assert (char (X), '2mo 14d');
+%! assert_equal (caldays (X), 14);
+%! assert_equal (calweeks (X), 2);
+%! assert_equal (calmonths (X), 2);
+%! assert_equal (char (X), '2mo 14d');
 %!test
 %! X = calendarDuration ([1, 5, 15]);
-%! assert (caldays (X), 15);
-%! assert (calweeks (X), 2);
-%! assert (calmonths (X), 17);
-%! assert (calquarters (X), 5);
-%! assert (dispstrings (X), {'1y 5mo 15d'});
-%! assert (char (X, 'mdt'), '17mo 15d');
-%! assert (cellstr (X, 'mwdt'), {'17mo 2w 1d'});
+%! assert_equal (caldays (X), 15);
+%! assert_equal (calweeks (X), 2);
+%! assert_equal (calmonths (X), 17);
+%! assert_equal (calquarters (X), 5);
+%! assert_equal (dispstrings (X), {'1y 5mo 15d'});
+%! assert_equal (char (X, 'mdt'), '17mo 15d');
+%! assert_equal (cellstr (X, 'mwdt'), {'17mo 2w 1d'});
 %!test
 %! X = calendarDuration ([1, 0, 0, 12, 30, 6.5]);
-%! assert (caldays (X), 0);
-%! assert (calweeks (X), 0);
-%! assert (calmonths (X), 12);
-%! assert (calquarters (X), 4);
-%! assert (dispstrings (X), {'1y 12h 30m 6.5s'});
-%! assert (class (time (X)), 'duration');
-%! assert (hours (time (X)), 12.5018, 1e-4);
-%! assert (minutes (time (X)), 750.1083, 1e-4);
-%! assert (seconds (time (X)), 45006.5);
-%!assert (size (calendarDuration ([1, 2; 9, 8], 0, 1)), [2, 2])
-%!assert (size (calendarDuration (1, zeros (2, 3, 4), 1)), [2, 3, 4])
+%! assert_equal (caldays (X), 0);
+%! assert_equal (calweeks (X), 0);
+%! assert_equal (calmonths (X), 12);
+%! assert_equal (calquarters (X), 4);
+%! assert_equal (dispstrings (X), {'1y 12h 30m 6.5s'});
+%! assert_equal (class (time (X)), 'duration');
+%! assert_equal (hours (time (X)), 12.5018, 1e-4);
+%! assert_equal (minutes (time (X)), 750.1083, 1e-4);
+%! assert_equal (seconds (time (X)), 45006.5);
+%!assert_equal (size (calendarDuration ([1, 2; 9, 8], 0, 1)), [2, 2])
+%!assert_equal (size (calendarDuration (1, zeros (2, 3, 4), 1)), [2, 3, 4])
 %!test
 %! X = calendarDuration (0, 0, 1);
-%! assert (caldays (X), 1);
-%! assert (dispstrings (X), {'1d'});
-%! assert (char (X), '1d');
+%! assert_equal (caldays (X), 1);
+%! assert_equal (dispstrings (X), {'1d'});
+%! assert_equal (char (X), '1d');
 %!test
 %! X = calendarDuration ([0, 2, 14]);
-%! assert (caldays (X), 14);
-%! assert (calweeks (X), 2);
-%! assert (calmonths (X), 2);
-%! assert (char (X), '2mo 14d');
+%! assert_equal (caldays (X), 14);
+%! assert_equal (calweeks (X), 2);
+%! assert_equal (calmonths (X), 2);
+%! assert_equal (char (X), '2mo 14d');
 %!test
 %! X = calendarDuration (1, 5, 15);
-%! assert (caldays (X), 15);
-%! assert (calweeks (X), 2);
-%! assert (calmonths (X), 17);
-%! assert (calquarters (X), 5);
-%! assert (dispstrings (X), {'1y 5mo 15d'});
-%! assert (char (X, 'mdt'), '17mo 15d');
-%! assert (cellstr (X, 'mwdt'), {'17mo 2w 1d'});
+%! assert_equal (caldays (X), 15);
+%! assert_equal (calweeks (X), 2);
+%! assert_equal (calmonths (X), 17);
+%! assert_equal (calquarters (X), 5);
+%! assert_equal (dispstrings (X), {'1y 5mo 15d'});
+%! assert_equal (char (X, 'mdt'), '17mo 15d');
+%! assert_equal (cellstr (X, 'mwdt'), {'17mo 2w 1d'});
 %!test
 %! X = calendarDuration ([1;NaN], 2, 3);
-%! assert (char (X(1)), '1y 2mo 3d');
-%! assert (char (X(2)), 'NaN');
-%!assert (size (calendarDuration (1, 2, 1, days (ones (2, 3, 4)))), [2, 3, 4])
+%! assert_equal (char (X(1)), '1y 2mo 3d');
+%! assert_equal (char (X(2)), 'NaN');
+%!assert_equal (size (calendarDuration (1, 2, 1, days (ones (2, 3, 4)))), [2, 3, 4])
 %!test
 %! X = calendarDuration (1, 0, 0, duration (12, 30, 6.5));
-%! assert (caldays (X), 0);
-%! assert (calweeks (X), 0);
-%! assert (calmonths (X), 12);
-%! assert (calquarters (X), 4);
-%! assert (dispstrings (X), {'1y 12h 30m 6.5s'});
-%! assert (class (time (X)), 'duration');
-%! assert (hours (time (X)), 12.5018, 1e-4);
-%! assert (minutes (time (X)), 750.1083, 1e-4);
-%! assert (seconds (time (X)), 45006.5);
+%! assert_equal (caldays (X), 0);
+%! assert_equal (calweeks (X), 0);
+%! assert_equal (calmonths (X), 12);
+%! assert_equal (calquarters (X), 4);
+%! assert_equal (dispstrings (X), {'1y 12h 30m 6.5s'});
+%! assert_equal (class (time (X)), 'duration');
+%! assert_equal (hours (time (X)), 12.5018, 1e-4);
+%! assert_equal (minutes (time (X)), 750.1083, 1e-4);
+%! assert_equal (seconds (time (X)), 45006.5);
 %!test
 %! X = calendarDuration (1, 0, 0, 12, 30, 6.5);
-%! assert (caldays (X), 0);
-%! assert (calweeks (X), 0);
-%! assert (calmonths (X), 12);
-%! assert (calquarters (X), 4);
-%! assert (dispstrings (X), {'1y 12h 30m 6.5s'});
-%! assert (class (time (X)), 'duration');
-%! assert (hours (time (X)), 12.5018, 1e-4);
-%! assert (minutes (time (X)), 750.1083, 1e-4);
-%! assert (seconds (time (X)), 45006.5);
+%! assert_equal (caldays (X), 0);
+%! assert_equal (calweeks (X), 0);
+%! assert_equal (calmonths (X), 12);
+%! assert_equal (calquarters (X), 4);
+%! assert_equal (dispstrings (X), {'1y 12h 30m 6.5s'});
+%! assert_equal (class (time (X)), 'duration');
+%! assert_equal (hours (time (X)), 12.5018, 1e-4);
+%! assert_equal (minutes (time (X)), 750.1083, 1e-4);
+%! assert_equal (seconds (time (X)), 45006.5);
 %!test
 %! X = calendarDuration ([1, NaN], 0, 0, 12, 30, 6.5);
-%! assert (caldays (X(1)), 0);
-%! assert (calweeks (X(1)), 0);
-%! assert (calmonths (X(1)), 12);
-%! assert (calquarters (X(1)), 4);
-%! assert (dispstrings (X(1)), {'1y 12h 30m 6.5s'});
-%! assert (class (time (X(1))), 'duration');
-%! assert (hours (time (X(1))), 12.5018, 1e-4);
-%! assert (minutes (time (X(1))), 750.1083, 1e-4);
-%! assert (seconds (time (X(1))), 45006.5);
-%! assert (caldays (X(2)), NaN);
-%! assert (calweeks (X(2)), NaN);
-%! assert (calmonths (X(2)), NaN);
-%! assert (calquarters (X(2)), NaN);
-%! assert (char (X(2)), 'NaN');
-%! assert (class (time (X(2))), 'duration');
-%! assert (hours (time (X(2))), NaN);
-%! assert (minutes (time (X(2))), NaN);
-%! assert (seconds (time (X(2))), NaN);
+%! assert_equal (caldays (X(1)), 0);
+%! assert_equal (calweeks (X(1)), 0);
+%! assert_equal (calmonths (X(1)), 12);
+%! assert_equal (calquarters (X(1)), 4);
+%! assert_equal (dispstrings (X(1)), {'1y 12h 30m 6.5s'});
+%! assert_equal (class (time (X(1))), 'duration');
+%! assert_equal (hours (time (X(1))), 12.5018, 1e-4);
+%! assert_equal (minutes (time (X(1))), 750.1083, 1e-4);
+%! assert_equal (seconds (time (X(1))), 45006.5);
+%! assert_equal (caldays (X(2)), NaN);
+%! assert_equal (calweeks (X(2)), NaN);
+%! assert_equal (calmonths (X(2)), NaN);
+%! assert_equal (calquarters (X(2)), NaN);
+%! assert_equal (char (X(2)), 'NaN');
+%! assert_equal (class (time (X(2))), 'duration');
+%! assert_equal (hours (time (X(2))), NaN);
+%! assert_equal (minutes (time (X(2))), NaN);
+%! assert_equal (seconds (time (X(2))), NaN);
 %!error<calendarDuration: 'Format' must be a character vector.> ...
 %! calendarDuration ([0, 0, 1], 'Format', 1)
 %!error<calendarDuration: 'Format' must be a character vector.> ...
@@ -245,57 +245,57 @@
 %!error<calendarDuration: invalid number of input arguments.> ...
 %! calendarDuration (1, [0.1, NaN], 1, 12, 30)
 
-%!assert (dispstrings (calendarDuration ([0, 0, NaN])), {'NaN'})
-%!assert (dispstrings (calendarDuration ([0, 0, Inf])), {'Inf'})
-%!assert (dispstrings (calendarDuration ([0, NaN, Inf])), {'NaN'})
-%!assert (dispstrings (calendarDuration ([0, 0, -Inf])), {'-Inf'})
-%!assert (dispstrings (calendarDuration ([0, Inf, -Inf])), {'NaN'})
-%!assert (char (calendarDuration (0, 0, NaN)), 'NaN')
-%!assert (char (calendarDuration (0, 0, Inf)), 'Inf')
-%!assert (char (calendarDuration (0, NaN, Inf)), 'NaN')
-%!assert (char (calendarDuration (0, 0, -Inf)), '-Inf')
-%!assert (char (calendarDuration (0, Inf, -Inf)), 'NaN')
-%!assert (dispstrings (calendarDuration (1, 3, 1, 'Format', 'mwdt')), {'15mo 1d'})
-%!assert (dispstrings (calendarDuration (1, 3, 1, 'Format', 'ymwdt')), {'1y 3mo 1d'})
-%!assert (dispstrings (calendarDuration (1, 3, 15, 'Format', 'ymwdt')), {'1y 3mo 2w 1d'})
-%!assert (dispstrings (calendarDuration (1, 3, 15, 'Format', 'mwdt')), {'15mo 2w 1d'})
-%!assert (dispstrings (calendarDuration (1, 3, 15, 'Format', 'ymdt')), {'1y 3mo 15d'})
-%!assert (dispstrings (calendarDuration (1, 3, 15, 'Format', 'mdt')), {'15mo 15d'})
-%!assert (dispstrings (calendarDuration (0, 15, 15, 'Format', 'ymdt')), {'1y 3mo 15d'})
-%!assert (dispstrings (calendarDuration (0, 0, 0)), {'0d'})
-%!assert (dispstrings (calendarDuration (1, 0, 0)), {'1y'})
-%!assert (dispstrings (calendarDuration (0, 1, 0)), {'1mo'})
-%!assert (dispstrings (calendarDuration (0, 12, 0)), {'1y'})
-%!assert (dispstrings (calendarDuration (0, 0, 1)), {'1d'})
-%!assert (dispstrings (calendarDuration (0, 0, 14)), {'14d'})
-%!assert (dispstrings (calendarDuration (0, 0, 14, 'Format', 'mwdt')), {'2w'})
-%!assert (dispstrings (calendarDuration (0, 1, 0, minutes (5))), {'1mo 0h 5m 0s'})
-%!assert (dispstrings (calendarDuration (0, 0, 0, minutes (5))), {'0h 5m 0s'})
-%!assert (dispstrings (calendarDuration (0, 0, 0, minutes (50.05))), {'0h 50m 3s'})
-%!assert (dispstrings (calendarDuration (0, 0, 0, minutes (5.005))), {'0h 5m 0.3s'})
-%!assert (dispstrings (calendarDuration (0, 0, 0, minutes (5.000005))), {'0h 5m 3e-04s'})
-%!assert (dispstrings (calendarDuration (0, 0, 0, duration (3, 5, 0.3))), {'3h 5m 0.3s'})
+%!assert_equal (dispstrings (calendarDuration ([0, 0, NaN])), {'NaN'})
+%!assert_equal (dispstrings (calendarDuration ([0, 0, Inf])), {'Inf'})
+%!assert_equal (dispstrings (calendarDuration ([0, NaN, Inf])), {'NaN'})
+%!assert_equal (dispstrings (calendarDuration ([0, 0, -Inf])), {'-Inf'})
+%!assert_equal (dispstrings (calendarDuration ([0, Inf, -Inf])), {'NaN'})
+%!assert_equal (char (calendarDuration (0, 0, NaN)), 'NaN')
+%!assert_equal (char (calendarDuration (0, 0, Inf)), 'Inf')
+%!assert_equal (char (calendarDuration (0, NaN, Inf)), 'NaN')
+%!assert_equal (char (calendarDuration (0, 0, -Inf)), '-Inf')
+%!assert_equal (char (calendarDuration (0, Inf, -Inf)), 'NaN')
+%!assert_equal (dispstrings (calendarDuration (1, 3, 1, 'Format', 'mwdt')), {'15mo 1d'})
+%!assert_equal (dispstrings (calendarDuration (1, 3, 1, 'Format', 'ymwdt')), {'1y 3mo 1d'})
+%!assert_equal (dispstrings (calendarDuration (1, 3, 15, 'Format', 'ymwdt')), {'1y 3mo 2w 1d'})
+%!assert_equal (dispstrings (calendarDuration (1, 3, 15, 'Format', 'mwdt')), {'15mo 2w 1d'})
+%!assert_equal (dispstrings (calendarDuration (1, 3, 15, 'Format', 'ymdt')), {'1y 3mo 15d'})
+%!assert_equal (dispstrings (calendarDuration (1, 3, 15, 'Format', 'mdt')), {'15mo 15d'})
+%!assert_equal (dispstrings (calendarDuration (0, 15, 15, 'Format', 'ymdt')), {'1y 3mo 15d'})
+%!assert_equal (dispstrings (calendarDuration (0, 0, 0)), {'0d'})
+%!assert_equal (dispstrings (calendarDuration (1, 0, 0)), {'1y'})
+%!assert_equal (dispstrings (calendarDuration (0, 1, 0)), {'1mo'})
+%!assert_equal (dispstrings (calendarDuration (0, 12, 0)), {'1y'})
+%!assert_equal (dispstrings (calendarDuration (0, 0, 1)), {'1d'})
+%!assert_equal (dispstrings (calendarDuration (0, 0, 14)), {'14d'})
+%!assert_equal (dispstrings (calendarDuration (0, 0, 14, 'Format', 'mwdt')), {'2w'})
+%!assert_equal (dispstrings (calendarDuration (0, 1, 0, minutes (5))), {'1mo 0h 5m 0s'})
+%!assert_equal (dispstrings (calendarDuration (0, 0, 0, minutes (5))), {'0h 5m 0s'})
+%!assert_equal (dispstrings (calendarDuration (0, 0, 0, minutes (50.05))), {'0h 50m 3s'})
+%!assert_equal (dispstrings (calendarDuration (0, 0, 0, minutes (5.005))), {'0h 5m 0.3s'})
+%!assert_equal (dispstrings (calendarDuration (0, 0, 0, minutes (5.000005))), {'0h 5m 3e-04s'})
+%!assert_equal (dispstrings (calendarDuration (0, 0, 0, duration (3, 5, 0.3))), {'3h 5m 0.3s'})
 
-%!assert (cellstr (calendarDuration (1, 3, 1), 'mwdt'), {'15mo 1d'})
-%!assert (cellstr (calendarDuration (1, 3, 1), 'ymwdt'), {'1y 3mo 1d'})
-%!assert (cellstr (calendarDuration (1, 3, 15), 'ymwdt'), {'1y 3mo 2w 1d'})
-%!assert (cellstr (calendarDuration (1, 3, 15), 'mwdt'), {'15mo 2w 1d'})
-%!assert (cellstr (calendarDuration (1, 3, 15), 'ymdt'), {'1y 3mo 15d'})
-%!assert (cellstr (calendarDuration (1, 3, 15), 'mdt'), {'15mo 15d'})
-%!assert (cellstr (calendarDuration (0, 15, 15), 'ymdt'), {'1y 3mo 15d'})
-%!assert (cellstr (calendarDuration (0, 0, 0)), {'0d'})
-%!assert (cellstr (calendarDuration (1, 0, 0)), {'1y'})
-%!assert (cellstr (calendarDuration (0, 1, 0)), {'1mo'})
-%!assert (cellstr (calendarDuration (0, 12, 0)), {'1y'})
-%!assert (cellstr (calendarDuration (0, 0, 1)), {'1d'})
-%!assert (cellstr (calendarDuration (0, 0, 14)), {'14d'})
-%!assert (cellstr (calendarDuration (0, 0, 14), 'mwdt'), {'2w'})
-%!assert (cellstr (calendarDuration (0, 1, 0, minutes (5))), {'1mo 0h 5m 0s'})
-%!assert (cellstr (calendarDuration (0, 0, 0, minutes (5))), {'0h 5m 0s'})
-%!assert (cellstr (calendarDuration (0, 0, 0, minutes (50.05))), {'0h 50m 3s'})
-%!assert (cellstr (calendarDuration (0, 0, 0, minutes (5.005))), {'0h 5m 0.3s'})
-%!assert (cellstr (calendarDuration (0, 0, 0, minutes (5.000005))), {'0h 5m 3e-04s'})
-%!assert (cellstr (calendarDuration (0, 0, 0, duration (3, 5, 0.3))), {'3h 5m 0.3s'})
+%!assert_equal (cellstr (calendarDuration (1, 3, 1), 'mwdt'), {'15mo 1d'})
+%!assert_equal (cellstr (calendarDuration (1, 3, 1), 'ymwdt'), {'1y 3mo 1d'})
+%!assert_equal (cellstr (calendarDuration (1, 3, 15), 'ymwdt'), {'1y 3mo 2w 1d'})
+%!assert_equal (cellstr (calendarDuration (1, 3, 15), 'mwdt'), {'15mo 2w 1d'})
+%!assert_equal (cellstr (calendarDuration (1, 3, 15), 'ymdt'), {'1y 3mo 15d'})
+%!assert_equal (cellstr (calendarDuration (1, 3, 15), 'mdt'), {'15mo 15d'})
+%!assert_equal (cellstr (calendarDuration (0, 15, 15), 'ymdt'), {'1y 3mo 15d'})
+%!assert_equal (cellstr (calendarDuration (0, 0, 0)), {'0d'})
+%!assert_equal (cellstr (calendarDuration (1, 0, 0)), {'1y'})
+%!assert_equal (cellstr (calendarDuration (0, 1, 0)), {'1mo'})
+%!assert_equal (cellstr (calendarDuration (0, 12, 0)), {'1y'})
+%!assert_equal (cellstr (calendarDuration (0, 0, 1)), {'1d'})
+%!assert_equal (cellstr (calendarDuration (0, 0, 14)), {'14d'})
+%!assert_equal (cellstr (calendarDuration (0, 0, 14), 'mwdt'), {'2w'})
+%!assert_equal (cellstr (calendarDuration (0, 1, 0, minutes (5))), {'1mo 0h 5m 0s'})
+%!assert_equal (cellstr (calendarDuration (0, 0, 0, minutes (5))), {'0h 5m 0s'})
+%!assert_equal (cellstr (calendarDuration (0, 0, 0, minutes (50.05))), {'0h 50m 3s'})
+%!assert_equal (cellstr (calendarDuration (0, 0, 0, minutes (5.005))), {'0h 5m 0.3s'})
+%!assert_equal (cellstr (calendarDuration (0, 0, 0, minutes (5.000005))), {'0h 5m 3e-04s'})
+%!assert_equal (cellstr (calendarDuration (0, 0, 0, duration (3, 5, 0.3))), {'3h 5m 0.3s'})
 %!error<calendarDuration.cellstr: FMT must be a character vector.> ...
 %! cellstr (calendarDuration ([0, 0, 1]), 1)
 %!error<calendarDuration.cellstr: FMT must be a character vector.> ...
@@ -307,26 +307,26 @@
 %!error<calendarDuration.cellstr: FMT has invalid order of characters.> ...
 %! cellstr (calendarDuration ([0, 0, 1]), 'mtd')
 
-%!assert (char (calendarDuration (1, 3, 1), 'mwdt'), '15mo 1d')
-%!assert (char (calendarDuration (1, 3, 1), 'ymwdt'), '1y 3mo 1d')
-%!assert (char (calendarDuration (1, 3, 15), 'ymwdt'), '1y 3mo 2w 1d')
-%!assert (char (calendarDuration (1, 3, 15), 'mwdt'), '15mo 2w 1d')
-%!assert (char (calendarDuration (1, 3, 15), 'ymdt'), '1y 3mo 15d')
-%!assert (char (calendarDuration (1, 3, 15), 'mdt'), '15mo 15d')
-%!assert (char (calendarDuration (0, 15, 15), 'ymdt'), '1y 3mo 15d')
-%!assert (char (calendarDuration (0, 0, 0)), '0d')
-%!assert (char (calendarDuration (1, 0, 0)), '1y')
-%!assert (char (calendarDuration (0, 1, 0)), '1mo')
-%!assert (char (calendarDuration (0, 12, 0)), '1y')
-%!assert (char (calendarDuration (0, 0, 1)), '1d')
-%!assert (char (calendarDuration (0, 0, 14)), '14d')
-%!assert (char (calendarDuration (0, 0, 14), 'mwdt'), '2w')
-%!assert (char (calendarDuration (0, 1, 0, minutes (5))), '1mo 0h 5m 0s')
-%!assert (char (calendarDuration (0, 0, 0, minutes (5))), '0h 5m 0s')
-%!assert (char (calendarDuration (0, 0, 0, minutes (50.05))), '0h 50m 3s')
-%!assert (char (calendarDuration (0, 0, 0, minutes (5.005))), '0h 5m 0.3s')
-%!assert (char (calendarDuration (0, 0, 0, minutes (5.000005))), '0h 5m 3e-04s')
-%!assert (char (calendarDuration (0, 0, 0, duration (3, 5, 0.3))), '3h 5m 0.3s')
+%!assert_equal (char (calendarDuration (1, 3, 1), 'mwdt'), '15mo 1d')
+%!assert_equal (char (calendarDuration (1, 3, 1), 'ymwdt'), '1y 3mo 1d')
+%!assert_equal (char (calendarDuration (1, 3, 15), 'ymwdt'), '1y 3mo 2w 1d')
+%!assert_equal (char (calendarDuration (1, 3, 15), 'mwdt'), '15mo 2w 1d')
+%!assert_equal (char (calendarDuration (1, 3, 15), 'ymdt'), '1y 3mo 15d')
+%!assert_equal (char (calendarDuration (1, 3, 15), 'mdt'), '15mo 15d')
+%!assert_equal (char (calendarDuration (0, 15, 15), 'ymdt'), '1y 3mo 15d')
+%!assert_equal (char (calendarDuration (0, 0, 0)), '0d')
+%!assert_equal (char (calendarDuration (1, 0, 0)), '1y')
+%!assert_equal (char (calendarDuration (0, 1, 0)), '1mo')
+%!assert_equal (char (calendarDuration (0, 12, 0)), '1y')
+%!assert_equal (char (calendarDuration (0, 0, 1)), '1d')
+%!assert_equal (char (calendarDuration (0, 0, 14)), '14d')
+%!assert_equal (char (calendarDuration (0, 0, 14), 'mwdt'), '2w')
+%!assert_equal (char (calendarDuration (0, 1, 0, minutes (5))), '1mo 0h 5m 0s')
+%!assert_equal (char (calendarDuration (0, 0, 0, minutes (5))), '0h 5m 0s')
+%!assert_equal (char (calendarDuration (0, 0, 0, minutes (50.05))), '0h 50m 3s')
+%!assert_equal (char (calendarDuration (0, 0, 0, minutes (5.005))), '0h 5m 0.3s')
+%!assert_equal (char (calendarDuration (0, 0, 0, minutes (5.000005))), '0h 5m 3e-04s')
+%!assert_equal (char (calendarDuration (0, 0, 0, duration (3, 5, 0.3))), '3h 5m 0.3s')
 %!error<calendarDuration.char: FMT must be a character vector.> ...
 %! char (calendarDuration ([0, 0, 1]), 1)
 %!error<calendarDuration.char: FMT must be a character vector.> ...
@@ -341,205 +341,205 @@
 %!test
 %! X = calendarDuration ([1:5]', 3, 15);
 %! DV = datevec (X);
-%! assert (size (X), [5, 1]);
-%! assert (size (DV), [5, 6]);
-%! assert (DV(:,1:3), [1, 3, 15; 2, 3, 15; 3, 3, 15; 4, 3, 15; 5, 3, 15]);
-%! assert (DV(:,4:6), zeros (5, 3));
+%! assert_equal (size (X), [5, 1]);
+%! assert_equal (size (DV), [5, 6]);
+%! assert_equal (DV(:,1:3), [1, 3, 15; 2, 3, 15; 3, 3, 15; 4, 3, 15; 5, 3, 15]);
+%! assert_equal (DV(:,4:6), zeros (5, 3));
 %!test
 %! X = calendarDuration ([1:5]', 3, 15);
 %! [Y, MO, D] = datevec (X);
-%! assert (size (Y), [5, 1]);
-%! assert (size (MO), [5, 1]);
-%! assert (size (D), [5, 1]);
-%! assert (Y, [1:5]');
-%! assert (MO, [3; 3; 3; 3; 3]);
-%! assert (D, 15 * ones (5, 1));
+%! assert_equal (size (Y), [5, 1]);
+%! assert_equal (size (MO), [5, 1]);
+%! assert_equal (size (D), [5, 1]);
+%! assert_equal (Y, [1:5]');
+%! assert_equal (MO, [3; 3; 3; 3; 3]);
+%! assert_equal (D, 15 * ones (5, 1));
 %!test
 %! X = calendarDuration ([1:5]', 3, 15);
 %! [~, ~, ~, H, MI, S] = datevec (X);
-%! assert (size (H), [5, 1]);
-%! assert (size (MI), [5, 1]);
-%! assert (size (S), [5, 1]);
-%! assert (H, zeros (5, 1));
-%! assert (MI, zeros (5, 1));
-%! assert (S, zeros (5, 1));
+%! assert_equal (size (H), [5, 1]);
+%! assert_equal (size (MI), [5, 1]);
+%! assert_equal (size (S), [5, 1]);
+%! assert_equal (H, zeros (5, 1));
+%! assert_equal (MI, zeros (5, 1));
+%! assert_equal (S, zeros (5, 1));
 %!test
 %! X = calendarDuration (reshape (1:24, 2, 3, 4), 0, reshape (25:48, 2, 3, 4));
 %! DV = datevec (X);
-%! assert (size (X), [2, 3, 4]);
-%! assert (size (DV), [24, 6]);
-%! assert (DV(:,1), [1:24]');
-%! assert (DV(:,2), zeros (24, 1));
-%! assert (DV(:,3), [25:48]');
-%! assert (DV(:,4:6), zeros (24, 3));
+%! assert_equal (size (X), [2, 3, 4]);
+%! assert_equal (size (DV), [24, 6]);
+%! assert_equal (DV(:,1), [1:24]');
+%! assert_equal (DV(:,2), zeros (24, 1));
+%! assert_equal (DV(:,3), [25:48]');
+%! assert_equal (DV(:,4:6), zeros (24, 3));
 %!test
 %! X = calendarDuration (reshape (1:24, 2, 3, 4), 0, reshape (25:48, 2, 3, 4));
 %! [Y, MO, D] = datevec (X);
-%! assert (size (Y), [2, 3, 4]);
-%! assert (size (MO), [2, 3, 4]);
-%! assert (size (D), [2, 3, 4]);
-%! assert (Y, reshape (1:24, 2, 3, 4));
-%! assert (MO, zeros (2, 3, 4));
-%! assert (D, reshape (25:48, 2, 3, 4));
+%! assert_equal (size (Y), [2, 3, 4]);
+%! assert_equal (size (MO), [2, 3, 4]);
+%! assert_equal (size (D), [2, 3, 4]);
+%! assert_equal (Y, reshape (1:24, 2, 3, 4));
+%! assert_equal (MO, zeros (2, 3, 4));
+%! assert_equal (D, reshape (25:48, 2, 3, 4));
 %!test
 %! X = calendarDuration (reshape (1:24, 2, 3, 4), 0, reshape (25:48, 2, 3, 4));
 %! [~, ~, ~, H, MI, S] = datevec (X);
-%! assert (size (H), [2, 3, 4]);
-%! assert (size (MI), [2, 3, 4]);
-%! assert (size (S), [2, 3, 4]);
-%! assert (H, zeros (2, 3, 4));
-%! assert (MI, zeros (2, 3, 4));
-%! assert (S, zeros (2, 3, 4));
+%! assert_equal (size (H), [2, 3, 4]);
+%! assert_equal (size (MI), [2, 3, 4]);
+%! assert_equal (size (S), [2, 3, 4]);
+%! assert_equal (H, zeros (2, 3, 4));
+%! assert_equal (MI, zeros (2, 3, 4));
+%! assert_equal (S, zeros (2, 3, 4));
 %!test
 %! D = days (0.51);
 %! X = calendarDuration (1, 0, 0, D);
 %! [Y, ~, ~, H, MI, S] = datevec (X);
 %! [h, mi, s] = hms (D);
-%! assert (Y, 1);
-%! assert (H, h);
-%! assert (MI, mi);
-%! assert (S, s);
+%! assert_equal (Y, 1);
+%! assert_equal (H, h);
+%! assert_equal (MI, mi);
+%! assert_equal (S, s);
 %!test
 %! D = days (repmat ([0.51, 0.46; 0.2, 1.23], 1, 2, 3));
 %! X = calendarDuration (1, 0, 0, D);
 %! [Y, ~, ~, H, MI, S] = datevec (X);
 %! [h, mi, s] = hms (D);
-%! assert (Y, ones (2, 4, 3));
-%! assert (H, h);
-%! assert (MI, mi);
-%! assert (S, s);
+%! assert_equal (Y, ones (2, 4, 3));
+%! assert_equal (H, h);
+%! assert_equal (MI, mi);
+%! assert_equal (S, s);
 %!test
 %! X = calendarDuration (1, 0, 1, 0, reshape (1:24, 2, 3, 4), 0);
 %! [Y, MO, D, H, MI, S] = datevec (X);
-%! assert (Y, ones (2, 3, 4));
-%! assert (MO, zeros (2, 3, 4));
-%! assert (D, ones (2, 3, 4));
-%! assert (H, zeros (2, 3, 4));
-%! assert (MI, reshape (1:24, 2, 3, 4));
-%! assert (S, zeros (2, 3, 4));
+%! assert_equal (Y, ones (2, 3, 4));
+%! assert_equal (MO, zeros (2, 3, 4));
+%! assert_equal (D, ones (2, 3, 4));
+%! assert_equal (H, zeros (2, 3, 4));
+%! assert_equal (MI, reshape (1:24, 2, 3, 4));
+%! assert_equal (S, zeros (2, 3, 4));
 %! DV = datevec (X);
-%! assert (DV(:,[1, 3]), ones (24, 2));
-%! assert (DV(:,[2, 4, 6]), zeros (24, 3));
-%! assert (DV(:,5), [1:24]');
+%! assert_equal (DV(:,[1, 3]), ones (24, 2));
+%! assert_equal (DV(:,[2, 4, 6]), zeros (24, 3));
+%! assert_equal (DV(:,5), [1:24]');
 %!error<calendarDuration.datevec: too many output arguments.> ...
 %! [Y, MO, D, H, MI, S, MS] = datevec (calendarDuration)
 
-%!assert (size (time (calendarDuration (1, 1, 1))), [1, 1])
-%!assert (size (time (calendarDuration (ones (2, 3, 4), 1, 1))), [2, 3, 4])
-%!assert (size (time (calendarDuration (1, 1, 1, days (1)))), [1, 1])
-%!assert (size (time (calendarDuration (0, 0, 0, ones (2, 3, 4), 1, 1))), [2, 3, 4])
+%!assert_equal (size (time (calendarDuration (1, 1, 1))), [1, 1])
+%!assert_equal (size (time (calendarDuration (ones (2, 3, 4), 1, 1))), [2, 3, 4])
+%!assert_equal (size (time (calendarDuration (1, 1, 1, days (1)))), [1, 1])
+%!assert_equal (size (time (calendarDuration (0, 0, 0, ones (2, 3, 4), 1, 1))), [2, 3, 4])
 %!test
 %! t = time (calendarDuration (1, 1, 1));
-%! assert (class (t), 'duration');
+%! assert_equal (class (t), 'duration');
 %! [h, m, s] = hms (t);
-%! assert (h, 0);
-%! assert (m, 0);
-%! assert (s, 0);
+%! assert_equal (h, 0);
+%! assert_equal (m, 0);
+%! assert_equal (s, 0);
 %!test
 %! t = time (calendarDuration (1, ones (2), 1, hours (1.5)));
-%! assert (size (t), [2, 2]);
+%! assert_equal (size (t), [2, 2]);
 %! [h, m, s] = hms (t);
-%! assert (h, ones (2));
-%! assert (m, 30 * ones (2));
-%! assert (s, zeros (2));
+%! assert_equal (h, ones (2));
+%! assert_equal (m, 30 * ones (2));
+%! assert_equal (s, zeros (2));
 %!test
 %! t = time (calendarDuration (1, ones (2), 1, 0, 0, 0.0251));
-%! assert (size (t), [2, 2]);
+%! assert_equal (size (t), [2, 2]);
 %! [h, m, s] = hms (t);
-%! assert (s, [0.0251, 0.0251; 0.0251, 0.0251]);
-%!assert (seconds (time (calendarDuration (0, 0, 0, 1, 0, 1))), 3601)
-%!assert (seconds (time (calendarDuration (0, 0, 1, 1, 0, 1))), 3601)
-%!assert (seconds (time (calendarDuration (0, 0, 0, 1, 30, 2.5))), 5402.5)
-%!assert (seconds (time (calendarDuration (0, 1, 0, 1, 30, 2.5))), 5402.5)
-%!assert (minutes (time (calendarDuration (0, 0, 0, 1, 0, 1))), 60.017, 1e-3)
-%!assert (minutes (time (calendarDuration (0, 1, 1, 1, 0, 1))), 60.017, 1e-3)
-%!assert (minutes (time (calendarDuration (0, 0, 1, 1, 30, 2.5))), 90.042, 1e-3)
-%!assert (minutes (time (calendarDuration (1, 1, 0, 1, 30, 62.5))), 91.042, 1e-3)
-%!assert (fix (minutes (time (calendarDuration (0, 0, 0, 1, 0, 1)))), 60)
-%!assert (fix (minutes (time (calendarDuration (0, 1, 1, 1, 0, 1)))), 60)
-%!assert (fix (minutes (time (calendarDuration (0, 0, 1, 1, 30, 2.5)))), 90)
-%!assert (fix (minutes (time (calendarDuration (1, 1, 0, 1, 30, 62.5)))), 91)
-%!assert (hours (time (calendarDuration (0, 0, 1, 1, 0, 0))), 1)
-%!assert (hours (time (calendarDuration (0, 0, 1, 1, 30, 0))), 1.5)
-%!assert (hours (time (calendarDuration (0, 0, 1, 1, 0, 1800))), 1.5)
-%!assert (hours (time (calendarDuration (0, [1, 2], 1, 1, 0, 0))), [1, 1])
-%!assert (hours (time (calendarDuration (0, 0, 1, [1; 2], 30, 0))), [1.5; 2.5])
-%!assert (hours (time (calendarDuration (0, 0, 1, 1, [0, 0], 1800))), [1.5, 1.5])
+%! assert_equal (s, [0.0251, 0.0251; 0.0251, 0.0251]);
+%!assert_equal (seconds (time (calendarDuration (0, 0, 0, 1, 0, 1))), 3601)
+%!assert_equal (seconds (time (calendarDuration (0, 0, 1, 1, 0, 1))), 3601)
+%!assert_equal (seconds (time (calendarDuration (0, 0, 0, 1, 30, 2.5))), 5402.5)
+%!assert_equal (seconds (time (calendarDuration (0, 1, 0, 1, 30, 2.5))), 5402.5)
+%!assert_equal (minutes (time (calendarDuration (0, 0, 0, 1, 0, 1))), 60.017, 1e-3)
+%!assert_equal (minutes (time (calendarDuration (0, 1, 1, 1, 0, 1))), 60.017, 1e-3)
+%!assert_equal (minutes (time (calendarDuration (0, 0, 1, 1, 30, 2.5))), 90.042, 1e-3)
+%!assert_equal (minutes (time (calendarDuration (1, 1, 0, 1, 30, 62.5))), 91.042, 1e-3)
+%!assert_equal (fix (minutes (time (calendarDuration (0, 0, 0, 1, 0, 1)))), 60)
+%!assert_equal (fix (minutes (time (calendarDuration (0, 1, 1, 1, 0, 1)))), 60)
+%!assert_equal (fix (minutes (time (calendarDuration (0, 0, 1, 1, 30, 2.5)))), 90)
+%!assert_equal (fix (minutes (time (calendarDuration (1, 1, 0, 1, 30, 62.5)))), 91)
+%!assert_equal (hours (time (calendarDuration (0, 0, 1, 1, 0, 0))), 1)
+%!assert_equal (hours (time (calendarDuration (0, 0, 1, 1, 30, 0))), 1.5)
+%!assert_equal (hours (time (calendarDuration (0, 0, 1, 1, 0, 1800))), 1.5)
+%!assert_equal (hours (time (calendarDuration (0, [1, 2], 1, 1, 0, 0))), [1, 1])
+%!assert_equal (hours (time (calendarDuration (0, 0, 1, [1; 2], 30, 0))), [1.5; 2.5])
+%!assert_equal (hours (time (calendarDuration (0, 0, 1, 1, [0, 0], 1800))), [1.5, 1.5])
 
 %!test
 %! X = calendarDuration (1, 0, 15);
-%! assert (split (X, 'years'), 1);
+%! assert_equal (split (X, 'years'), 1);
 %! [Y, Q, W, D] = split (X, {'years', 'quarters', 'weeks', 'days'});
-%! assert (Y, 1);
-%! assert (Q, 0);
-%! assert (W, 2);
-%! assert (D, 1);
+%! assert_equal (Y, 1);
+%! assert_equal (Q, 0);
+%! assert_equal (W, 2);
+%! assert_equal (D, 1);
 %!test
 %! X = calendarDuration (1, 0, 15);
 %! T = split (X, 'time');
-%! assert (isduration (T), true);
-%! assert (hours (T), 0);
-%! assert (minutes (T), 0);
-%! assert (seconds (T), 0);
-%! assert (dispstrings (T), {'00:00:00'});
+%! assert_equal (isduration (T), true);
+%! assert_equal (hours (T), 0);
+%! assert_equal (minutes (T), 0);
+%! assert_equal (seconds (T), 0);
+%! assert_equal (dispstrings (T), {'00:00:00'});
 %!test
 %! X = calendarDuration (1, ones (2), 15);
 %! T = split (X, 'time');
-%! assert (isduration (T), true);
-%! assert (hours (T), zeros (2));
-%! assert (minutes (T), zeros (2));
-%! assert (seconds (T), zeros (2));
-%! assert (dispstrings (T), repmat ({'00:00:00'}, 2, 2));
+%! assert_equal (isduration (T), true);
+%! assert_equal (hours (T), zeros (2));
+%! assert_equal (minutes (T), zeros (2));
+%! assert_equal (seconds (T), zeros (2));
+%! assert_equal (dispstrings (T), repmat ({'00:00:00'}, 2, 2));
 %!test
 %! X = calendarDuration (1, 0, 15);
-%! assert (split (X, 'years'), 1);
+%! assert_equal (split (X, 'years'), 1);
 %! [Q, W, D] = split (X, {'quarters', 'weeks', 'days'});
-%! assert (Q, 4);
-%! assert (W, 2);
-%! assert (D, 1);
+%! assert_equal (Q, 4);
+%! assert_equal (W, 2);
+%! assert_equal (D, 1);
 %!test
 %! X = calendarDuration (1, zeros (2, 3, 4), 15);
-%! assert (split (X, 'years'), ones (2, 3, 4));
+%! assert_equal (split (X, 'years'), ones (2, 3, 4));
 %! [Q, W, D] = split (X, {'quarters', 'weeks', 'days'});
-%! assert (Q, 4 * ones (2, 3, 4));
-%! assert (W, 2 * ones (2, 3, 4));
-%! assert (D, 1 * ones (2, 3, 4));
+%! assert_equal (Q, 4 * ones (2, 3, 4));
+%! assert_equal (W, 2 * ones (2, 3, 4));
+%! assert_equal (D, 1 * ones (2, 3, 4));
 %!test
 %! X = calendarDuration (1, 0, 15);
-%! assert (split (X, 'years'), 1);
+%! assert_equal (split (X, 'years'), 1);
 %! [Q, D] = split (X, {'quarters', 'days'});
-%! assert (Q, 4);
-%! assert (D, 15);
+%! assert_equal (Q, 4);
+%! assert_equal (D, 15);
 %!test
 %! X = calendarDuration (1, 4, 64);
-%! assert (split (X, 'years'), 1);
+%! assert_equal (split (X, 'years'), 1);
 %! [Q, M, D] = split (X, {'quarters', 'months', 'days'});
-%! assert (Q, 5);
-%! assert (M, 1);
-%! assert (D, 64);
+%! assert_equal (Q, 5);
+%! assert_equal (M, 1);
+%! assert_equal (D, 64);
 %!test
 %! X = calendarDuration (1, 4, 64:69);
-%! assert (split (X, 'years'), ones (1, 6));
+%! assert_equal (split (X, 'years'), ones (1, 6));
 %! [Q, M, D] = split (X, {'quarters', 'months', 'days'});
-%! assert (Q, [5, 5, 5, 5, 5, 5]);
-%! assert (M, [1, 1, 1, 1, 1, 1]);
-%! assert (D, [64:69]);
+%! assert_equal (Q, [5, 5, 5, 5, 5, 5]);
+%! assert_equal (M, [1, 1, 1, 1, 1, 1]);
+%! assert_equal (D, [64:69]);
 %!test
 %! X = calendarDuration (1, 4, 64, 0, 35, 30);
 %! [Q, M, W, T] = split (X, {'quarters', 'months', 'weeks', 'time'});
-%! assert (Q, 5);
-%! assert (M, 1);
-%! assert (W, 9);
-%! assert (minutes (T), 35.5);
-%! assert (seconds (T), 2130);
+%! assert_equal (Q, 5);
+%! assert_equal (M, 1);
+%! assert_equal (W, 9);
+%! assert_equal (minutes (T), 35.5);
+%! assert_equal (seconds (T), 2130);
 %!test
 %! X = calendarDuration (1, 4, 64, 0, 35, [30; 60]);
 %! [Q, M, W, T] = split (X, {'quarters', 'months', 'weeks', 'time'});
-%! assert (Q, [5; 5]);
-%! assert (M, [1; 1]);
-%! assert (W, [9; 9]);
-%! assert (minutes (T), [35.5; 36]);
-%! assert (seconds (T), [2130; 2160]);
+%! assert_equal (Q, [5; 5]);
+%! assert_equal (M, [1; 1]);
+%! assert_equal (W, [9; 9]);
+%! assert_equal (minutes (T), [35.5; 36]);
+%! assert_equal (seconds (T), [2130; 2160]);
 %!error<calendarDuration.split: too few input arguments.> split (calendarDuration)
 %!error<calendarDuration.split: invalid input type for UNITS.> ...
 %! split (calendarDuration, 1)
@@ -560,45 +560,45 @@
 %!error<calendarDuration.split: wrong number of output arguments.> ...
 %! [Y, M, D] = split (calendarDuration, {'years', 'months'})
 
-%!assert (caldays (caldays (5)), 5)
-%!assert (caldays (caldays (1:10)), 1:10)
-%!assert (caldays (caldays (ones (2, 3, 4))), ones (2, 3, 4))
-%!assert (caldays (calendarDuration (0, 0, [1, 2; 3, 4])), [1, 2; 3, 4])
+%!assert_equal (caldays (caldays (5)), 5)
+%!assert_equal (caldays (caldays (1:10)), 1:10)
+%!assert_equal (caldays (caldays (ones (2, 3, 4))), ones (2, 3, 4))
+%!assert_equal (caldays (calendarDuration (0, 0, [1, 2; 3, 4])), [1, 2; 3, 4])
 %!test
 %! x = randi (20, 2, 3);
-%! assert (caldays (calendarDuration (0, 0, x)), x);
+%! assert_equal (caldays (calendarDuration (0, 0, x)), x);
 
-%!assert (calweeks (calweeks (5)), 5)
-%!assert (calweeks (calweeks (1:10)), 1:10)
-%!assert (calweeks (calweeks (ones (2, 3, 4))), ones (2, 3, 4))
-%!assert (calweeks (calendarDuration (0, 0, 7 * [1, 2; 3, 4])), [1, 2; 3, 4])
+%!assert_equal (calweeks (calweeks (5)), 5)
+%!assert_equal (calweeks (calweeks (1:10)), 1:10)
+%!assert_equal (calweeks (calweeks (ones (2, 3, 4))), ones (2, 3, 4))
+%!assert_equal (calweeks (calendarDuration (0, 0, 7 * [1, 2; 3, 4])), [1, 2; 3, 4])
 %!test
 %! x = randi (20, 2, 3, 4);
-%! assert (calweeks (calendarDuration (0, 0, x * 7)), x);
+%! assert_equal (calweeks (calendarDuration (0, 0, x * 7)), x);
 
-%!assert (calmonths (calmonths (5)), 5)
-%!assert (calmonths (calmonths (1:10)), 1:10)
-%!assert (calmonths (calmonths (ones (2, 3, 4))), ones (2, 3, 4))
-%!assert (calmonths (calendarDuration (0, [1, 2; 3, 4], 0)), [1, 2; 3, 4])
+%!assert_equal (calmonths (calmonths (5)), 5)
+%!assert_equal (calmonths (calmonths (1:10)), 1:10)
+%!assert_equal (calmonths (calmonths (ones (2, 3, 4))), ones (2, 3, 4))
+%!assert_equal (calmonths (calendarDuration (0, [1, 2; 3, 4], 0)), [1, 2; 3, 4])
 %!test
 %! x = randi (20, 2, 3);
-%! assert (calmonths (calendarDuration (0, x, 0)), x);
+%! assert_equal (calmonths (calendarDuration (0, x, 0)), x);
 
-%!assert (calquarters (calquarters (5)), 5)
-%!assert (calquarters (calquarters (1:10)), 1:10)
-%!assert (calquarters (calquarters (ones (2, 3, 4))), ones (2, 3, 4))
-%!assert (calquarters (calendarDuration (0, 3 * [1, 2; 3, 4], 0)), [1, 2; 3, 4])
+%!assert_equal (calquarters (calquarters (5)), 5)
+%!assert_equal (calquarters (calquarters (1:10)), 1:10)
+%!assert_equal (calquarters (calquarters (ones (2, 3, 4))), ones (2, 3, 4))
+%!assert_equal (calquarters (calendarDuration (0, 3 * [1, 2; 3, 4], 0)), [1, 2; 3, 4])
 %!test
 %! x = randi (20, 2, 3, 4);
-%! assert (calquarters (calendarDuration (0, x * 3, 0)), x);
+%! assert_equal (calquarters (calendarDuration (0, x * 3, 0)), x);
 
-%!assert (calyears (calyears (5)), 5)
-%!assert (calyears (calyears (1:10)), 1:10)
-%!assert (calyears (calyears (ones (2, 3, 4))), ones (2, 3, 4))
-%!assert (calyears (calendarDuration ([1, 2; 3, 4], 0, 0)), [1, 2; 3, 4])
+%!assert_equal (calyears (calyears (5)), 5)
+%!assert_equal (calyears (calyears (1:10)), 1:10)
+%!assert_equal (calyears (calyears (ones (2, 3, 4))), ones (2, 3, 4))
+%!assert_equal (calyears (calendarDuration ([1, 2; 3, 4], 0, 0)), [1, 2; 3, 4])
 %!test
 %! x = randi (20, 2, 3);
-%! assert (calyears (calendarDuration (x, 0, 0)), x);
+%! assert_equal (calyears (calendarDuration (x, 0, 0)), x);
 
 ################################################################################
 ##                         ** Summary Information **                          ##
@@ -610,78 +610,78 @@
 ##                                                                            ##
 ################################################################################
 
-%!assert (size (calendarDuration), [1, 1])
-%!assert (size (calendarDuration ([], [], [])), [0, 0])
-%!assert (size (calendarDuration (ones (0, 3))), [0, 1])
-%!assert (size (calendarDuration (ones (0, 1), ones (0, 1), ones (0, 1))), [0, 1])
-%!assert (size (calendarDuration (ones (0, 3), ones (0, 3), ones (0, 3))), [0, 3])
-%!assert (size (calendarDuration (ones (1, 0), ones (1, 0), ones (1, 0))), [1, 0])
-%!assert (size (calendarDuration (ones (5, 3))), [5, 1])
-%!assert (size (calendarDuration (ones (5, 6))), [5, 1])
-%!assert (size (calendarDuration (ones (2, 3, 4), 0, 0)), [2, 3, 4])
-%!assert (size (calendarDuration (ones (1:10), 0, 0)), 1:10)
+%!assert_equal (size (calendarDuration), [1, 1])
+%!assert_equal (size (calendarDuration ([], [], [])), [0, 0])
+%!assert_equal (size (calendarDuration (ones (0, 3))), [0, 1])
+%!assert_equal (size (calendarDuration (ones (0, 1), ones (0, 1), ones (0, 1))), [0, 1])
+%!assert_equal (size (calendarDuration (ones (0, 3), ones (0, 3), ones (0, 3))), [0, 3])
+%!assert_equal (size (calendarDuration (ones (1, 0), ones (1, 0), ones (1, 0))), [1, 0])
+%!assert_equal (size (calendarDuration (ones (5, 3))), [5, 1])
+%!assert_equal (size (calendarDuration (ones (5, 6))), [5, 1])
+%!assert_equal (size (calendarDuration (ones (2, 3, 4), 0, 0)), [2, 3, 4])
+%!assert_equal (size (calendarDuration (ones (1:10), 0, 0)), 1:10)
 %!test
 %! X = calendarDuration (ones (2, 3, 4), 0, 0);
 %! [d1, d2, d3] = size (X);
-%! assert (d1, 2);
-%! assert (d2, 3);
-%! assert (d3, 4);
+%! assert_equal (d1, 2);
+%! assert_equal (d2, 3);
+%! assert_equal (d3, 4);
 %!test
 %! X = calendarDuration (0, 0, 0, minutes (randi (30, 2, 3, 4)));
 %! [d1, d2, d3] = size (X);
-%! assert (d1, 2);
-%! assert (d2, 3);
-%! assert (d3, 4);
+%! assert_equal (d1, 2);
+%! assert_equal (d2, 3);
+%! assert_equal (d3, 4);
 %!test
 %! X = calendarDuration (0, 0, 0, minutes (randi (30, 2, 3, 4)));
 %! [d1, d2, d3] = size (X);
-%! assert (size (X, 1), 2);
-%! assert (size (X, 2), 3);
-%! assert (size (X, 3), 4);
+%! assert_equal (size (X, 1), 2);
+%! assert_equal (size (X, 2), 3);
+%! assert_equal (size (X, 3), 4);
 %!error<calendarDuration.size: number of output arguments does not match number of requested dimensions.> ...
 %! [d1, d2] = size (calendarDuration (ones (2, 3, 4), 0, 0))
 
-%!assert (ndims (calendarDuration ([], [], [])), 2)
-%!assert (ndims (calendarDuration (1, 1, 1)), 2)
-%!assert (ndims (calendarDuration), 2)
-%!assert (ndims (calendarDuration (ones (2), 1, 1)), 2)
-%!assert (ndims (calendarDuration (ones (2, 3, 4), 1, 1)), 3)
-%!assert (ndims (calendarDuration (ones (1:10), 1, 1)), 10)
+%!assert_equal (ndims (calendarDuration ([], [], [])), 2)
+%!assert_equal (ndims (calendarDuration (1, 1, 1)), 2)
+%!assert_equal (ndims (calendarDuration), 2)
+%!assert_equal (ndims (calendarDuration (ones (2), 1, 1)), 2)
+%!assert_equal (ndims (calendarDuration (ones (2, 3, 4), 1, 1)), 3)
+%!assert_equal (ndims (calendarDuration (ones (1:10), 1, 1)), 10)
 
-%!assert (numel (calendarDuration ([], [], [])), 0)
-%!assert (numel (calendarDuration (1, 1, 1)), 1)
-%!assert (numel (calendarDuration), 1)
-%!assert (numel (calendarDuration (ones (2), 1, 1)), 4)
-%!assert (numel (calendarDuration (ones (2, 3, 4), 1, 1)), 24)
-%!assert (numel (calendarDuration (ones (1, 10), 1, 1)), 10)
+%!assert_equal (numel (calendarDuration ([], [], [])), 0)
+%!assert_equal (numel (calendarDuration (1, 1, 1)), 1)
+%!assert_equal (numel (calendarDuration), 1)
+%!assert_equal (numel (calendarDuration (ones (2), 1, 1)), 4)
+%!assert_equal (numel (calendarDuration (ones (2, 3, 4), 1, 1)), 24)
+%!assert_equal (numel (calendarDuration (ones (1, 10), 1, 1)), 10)
 
-%!assert (nnz (calendarDuration (1, 1, 1)), 1)
-%!assert (nnz (calendarDuration (0, 0, 0)), 0)
-%!assert (nnz (calendarDuration (0:5, 0, 0)), 5)
-%!assert (nnz (calendarDuration ([0, 0, 0, 1, 1], 0, 0)), 2)
-%!assert (nnz (calendarDuration (ones (2, 3, 4), 0, 0)), 24)
+%!assert_equal (nnz (calendarDuration (1, 1, 1)), 1)
+%!assert_equal (nnz (calendarDuration (0, 0, 0)), 0)
+%!assert_equal (nnz (calendarDuration (0:5, 0, 0)), 5)
+%!assert_equal (nnz (calendarDuration ([0, 0, 0, 1, 1], 0, 0)), 2)
+%!assert_equal (nnz (calendarDuration (ones (2, 3, 4), 0, 0)), 24)
 
-%!assert (length (calendarDuration (1, 1, 1)), 1)
-%!assert (length (calendarDuration (0, 0, 0)), 1)
-%!assert (length (calendarDuration (0:5, 0, 0)), 6)
-%!assert (length (calendarDuration ([0, 0, 0, 1, 1], 0, 0)), 5)
-%!assert (length (calendarDuration (ones (2, 3, 4), 0, 0)), 4)
-%!assert (length (calendarDuration (ones (2, 10, 4), 0, 0)), 10)
+%!assert_equal (length (calendarDuration (1, 1, 1)), 1)
+%!assert_equal (length (calendarDuration (0, 0, 0)), 1)
+%!assert_equal (length (calendarDuration (0:5, 0, 0)), 6)
+%!assert_equal (length (calendarDuration ([0, 0, 0, 1, 1], 0, 0)), 5)
+%!assert_equal (length (calendarDuration (ones (2, 3, 4), 0, 0)), 4)
+%!assert_equal (length (calendarDuration (ones (2, 10, 4), 0, 0)), 10)
 
-%!assert (keyHash (calendarDuration), uint64 (9404037721690811995))
-%!assert (keyHash (calendarDuration (0, 0, 0)), uint64 (9404037721690811995))
-%!assert (keyHash (calendarDuration ([], [], [])), uint64 (10790283023733344549))
-%!assert (keyHash (calendarDuration (1, 1, 1)), uint64 (11245130726649642670))
+%!assert_equal (keyHash (calendarDuration), uint64 (9404037721690811995))
+%!assert_equal (keyHash (calendarDuration (0, 0, 0)), uint64 (9404037721690811995))
+%!assert_equal (keyHash (calendarDuration ([], [], [])), uint64 (10790283023733344549))
+%!assert_equal (keyHash (calendarDuration (1, 1, 1)), uint64 (11245130726649642670))
 %!test
 %! key = keyHash (calendarDuration ([1, 2; 3, 4], 1, 1));
-%! assert (key, uint64 (3011565863366139772));
+%! assert_equal (key, uint64 (3011565863366139772));
 %!test
 %! key = keyHash (calendarDuration (0, 0, 0, days ([1, 2, 3])));
-%! assert (key, uint64 (10002591001239839942));
+%! assert_equal (key, uint64 (10002591001239839942));
 %!test
 %! base_key = uint64 (2342124352342344234);
 %! key = keyHash (calendarDuration (0, 0, 0, days ([1, 2, 3])), base_key);
-%! assert (key, uint64 (2231107818551636405));
+%! assert_equal (key, uint64 (2231107818551636405));
 %!error<calendarDuration.keyHash: BASE must be a UINT64 scalar.> ...
 %! keyHash (calendarDuration (0, 0, 0), uint64 ([1, 2]))
 %!error<calendarDuration.keyHash: BASE must be a UINT64 scalar.> ...
@@ -699,53 +699,53 @@
 ##                                                                            ##
 ################################################################################
 
-%!assert (iscolumn (calendarDuration (0, 0, 0)), true)
-%!assert (iscolumn (calendarDuration ([], [], [])), false)
-%!assert (iscolumn (calendarDuration (ones (1, 0), ones (1, 0), ones (1, 0))), false)
-%!assert (iscolumn (calendarDuration (ones (0, 1), ones (0, 1), ones (0, 1))), true)
-%!assert (iscolumn (calendarDuration ([1, 1], 1, 1)), false)
-%!assert (iscolumn (calendarDuration ([1; 1], 1, 1)), true)
-%!assert (iscolumn (calendarDuration (ones (2), 1, 1)), false)
-%!assert (iscolumn (calendarDuration (1, 1, zeros (2, 3, 4))), false)
+%!assert_equal (iscolumn (calendarDuration (0, 0, 0)), true)
+%!assert_equal (iscolumn (calendarDuration ([], [], [])), false)
+%!assert_equal (iscolumn (calendarDuration (ones (1, 0), ones (1, 0), ones (1, 0))), false)
+%!assert_equal (iscolumn (calendarDuration (ones (0, 1), ones (0, 1), ones (0, 1))), true)
+%!assert_equal (iscolumn (calendarDuration ([1, 1], 1, 1)), false)
+%!assert_equal (iscolumn (calendarDuration ([1; 1], 1, 1)), true)
+%!assert_equal (iscolumn (calendarDuration (ones (2), 1, 1)), false)
+%!assert_equal (iscolumn (calendarDuration (1, 1, zeros (2, 3, 4))), false)
 
-%!assert (isempty (calendarDuration (0, 0, 0)), false)
-%!assert (isempty (calendarDuration ([], [], [])), true)
-%!assert (isempty (calendarDuration (ones (1, 0), ones (1, 0), ones (1, 0))), true)
-%!assert (isempty (calendarDuration (ones (0, 1), ones (0, 1), ones (0, 1))), true)
+%!assert_equal (isempty (calendarDuration (0, 0, 0)), false)
+%!assert_equal (isempty (calendarDuration ([], [], [])), true)
+%!assert_equal (isempty (calendarDuration (ones (1, 0), ones (1, 0), ones (1, 0))), true)
+%!assert_equal (isempty (calendarDuration (ones (0, 1), ones (0, 1), ones (0, 1))), true)
 %!test
 %! x = ones ([2, 3, 0, 2]);
-%! assert (isempty (calendarDuration (x, x, x)), true);
-%! assert (isempty (calendarDuration (x, x, x, x, x, x)), true)
-%! assert (isempty (calendarDuration (x, x, x, hours (x))), true);
+%! assert_equal (isempty (calendarDuration (x, x, x)), true);
+%! assert_equal (isempty (calendarDuration (x, x, x, x, x, x)), true)
+%! assert_equal (isempty (calendarDuration (x, x, x, hours (x))), true);
 %!test
 %! x = ones ([2, 3, 1, 2]);
-%! assert (isempty (calendarDuration (x, x, x)), false);
-%! assert (isempty (calendarDuration (x, x, x, x, x, x)), false)
-%! assert (isempty (calendarDuration (x, x, x, hours (x))), false);
+%! assert_equal (isempty (calendarDuration (x, x, x)), false);
+%! assert_equal (isempty (calendarDuration (x, x, x, x, x, x)), false)
+%! assert_equal (isempty (calendarDuration (x, x, x, hours (x))), false);
 
-%!assert (isequal (caldays (5), caldays (5)), true)
-%!assert (isequal (caldays (NaN), caldays (NaN)), false)
-%!assert (isequal (caldays (5), caldays (6)), false)
-%!assert (isequal (caldays ([5, NaN]), caldays ([5, NaN])), false)
-%!assert (isequal (caldays (5), caldays (5), caldays (5)), true)
-%!assert (isequal (caldays (5), caldays (6), calweeks (1)), false)
-%!assert (isequal (caldays (7), caldays (7), calweeks (1)), true)
-%!assert (isequal (caldays ([1:3]), caldays ([1, 2, 3])), true)
-%!assert (isequal (caldays ([1:3]), caldays ([1, NaN, 3])), false)
-%!assert (isequal (calmonths (5), calmonths (5)), true)
-%!assert (isequal (calmonths (5), calmonths (6)), false)
-%!assert (isequal (calmonths (NaN), calmonths (NaN)), false)
-%!assert (isequal (calmonths (5), calmonths (5), calmonths (5)), true)
-%!assert (isequal (calmonths (5), calmonths (6), calquarters (2)), false)
-%!assert (isequal (calmonths (6), calmonths (6), calquarters (2)), true)
-%!assert (isequal (calmonths ([1:3]), calmonths ([1, 2, 3])), true)
-%!assert (isequal (calmonths ([1:3]), calmonths ([1, NaN, 3])), false)
-%!assert (isequal (calmonths ([1, NaN, 3]), calmonths ([1, NaN, 3])), false)
-%!assert (isequal (calendarDuration (0, 0, 0, hours (ones (3))), ...
+%!assert_equal (isequal (caldays (5), caldays (5)), true)
+%!assert_equal (isequal (caldays (NaN), caldays (NaN)), false)
+%!assert_equal (isequal (caldays (5), caldays (6)), false)
+%!assert_equal (isequal (caldays ([5, NaN]), caldays ([5, NaN])), false)
+%!assert_equal (isequal (caldays (5), caldays (5), caldays (5)), true)
+%!assert_equal (isequal (caldays (5), caldays (6), calweeks (1)), false)
+%!assert_equal (isequal (caldays (7), caldays (7), calweeks (1)), true)
+%!assert_equal (isequal (caldays ([1:3]), caldays ([1, 2, 3])), true)
+%!assert_equal (isequal (caldays ([1:3]), caldays ([1, NaN, 3])), false)
+%!assert_equal (isequal (calmonths (5), calmonths (5)), true)
+%!assert_equal (isequal (calmonths (5), calmonths (6)), false)
+%!assert_equal (isequal (calmonths (NaN), calmonths (NaN)), false)
+%!assert_equal (isequal (calmonths (5), calmonths (5), calmonths (5)), true)
+%!assert_equal (isequal (calmonths (5), calmonths (6), calquarters (2)), false)
+%!assert_equal (isequal (calmonths (6), calmonths (6), calquarters (2)), true)
+%!assert_equal (isequal (calmonths ([1:3]), calmonths ([1, 2, 3])), true)
+%!assert_equal (isequal (calmonths ([1:3]), calmonths ([1, NaN, 3])), false)
+%!assert_equal (isequal (calmonths ([1, NaN, 3]), calmonths ([1, NaN, 3])), false)
+%!assert_equal (isequal (calendarDuration (0, 0, 0, hours (ones (3))), ...
 %!                 calendarDuration (0, 0, 0, hours (ones (3)))), true)
-%!assert (isequal (calendarDuration (0, 0, 0, hours (nan (3))), ...
+%!assert_equal (isequal (calendarDuration (0, 0, 0, hours (nan (3))), ...
 %!                 calendarDuration (0, 0, 0, hours (nan (3)))), false)
-%!assert (isequal (calendarDuration (0, 0, 0, hours (ones (3, 3, 2))), ...
+%!assert_equal (isequal (calendarDuration (0, 0, 0, hours (ones (3, 3, 2))), ...
 %!                 calendarDuration (0, 0, 0, hours (ones (3, 3, 3)))), false)
 %!error<calendarDuration.isequal: too few input arguments.> isequal (caldays (3))
 %!error<calendarDuration.isequal: all input arguments must be calendarDuration arrays.> ...
@@ -755,33 +755,33 @@
 %!error<calendarDuration.isequal: all input arguments must be calendarDuration arrays.> ...
 %! isequal (caldays (3), caldays (3), days (1))
 
-%!assert (isequaln (caldays (5), caldays (5)), true)
-%!assert (isequaln (caldays (NaN), caldays (NaN)), true)
-%!assert (isequaln (caldays (5), caldays (6)), false)
-%!assert (isequaln (caldays ([5, NaN]), caldays ([5, NaN])), true)
-%!assert (isequaln (caldays (5), caldays (5), caldays (5)), true)
-%!assert (isequaln (caldays (5), caldays (6), calweeks (1)), false)
-%!assert (isequaln (caldays (7), caldays (7), calweeks (1)), true)
-%!assert (isequaln (caldays ([1:3]), caldays ([1, 2, 3])), true)
-%!assert (isequaln (caldays ([1:3]), caldays ([1, NaN, 3])), false)
-%!assert (isequaln (calmonths (5), calmonths (5)), true)
-%!assert (isequaln (calmonths (NaN), calmonths (NaN)), true)
-%!assert (isequaln (calmonths (5), calmonths (6)), false)
-%!assert (isequaln (calmonths (5), calmonths (5), calmonths (5)), true)
-%!assert (isequaln (calmonths (5), calmonths (6), calquarters (2)), false)
-%!assert (isequaln (calmonths (6), calmonths (6), calquarters (2)), true)
-%!assert (isequaln (calmonths ([1:3]), calmonths ([1, 2, 3])), true)
-%!assert (isequaln (calmonths ([1:3]), calmonths ([1, NaN, 3])), false)
-%!assert (isequaln (calmonths ([1, NaN, 3]), calmonths ([1, NaN, 3])), true)
-%!assert (isequaln (calendarDuration (0, 0, 0, hours (ones (3))), ...
+%!assert_equal (isequaln (caldays (5), caldays (5)), true)
+%!assert_equal (isequaln (caldays (NaN), caldays (NaN)), true)
+%!assert_equal (isequaln (caldays (5), caldays (6)), false)
+%!assert_equal (isequaln (caldays ([5, NaN]), caldays ([5, NaN])), true)
+%!assert_equal (isequaln (caldays (5), caldays (5), caldays (5)), true)
+%!assert_equal (isequaln (caldays (5), caldays (6), calweeks (1)), false)
+%!assert_equal (isequaln (caldays (7), caldays (7), calweeks (1)), true)
+%!assert_equal (isequaln (caldays ([1:3]), caldays ([1, 2, 3])), true)
+%!assert_equal (isequaln (caldays ([1:3]), caldays ([1, NaN, 3])), false)
+%!assert_equal (isequaln (calmonths (5), calmonths (5)), true)
+%!assert_equal (isequaln (calmonths (NaN), calmonths (NaN)), true)
+%!assert_equal (isequaln (calmonths (5), calmonths (6)), false)
+%!assert_equal (isequaln (calmonths (5), calmonths (5), calmonths (5)), true)
+%!assert_equal (isequaln (calmonths (5), calmonths (6), calquarters (2)), false)
+%!assert_equal (isequaln (calmonths (6), calmonths (6), calquarters (2)), true)
+%!assert_equal (isequaln (calmonths ([1:3]), calmonths ([1, 2, 3])), true)
+%!assert_equal (isequaln (calmonths ([1:3]), calmonths ([1, NaN, 3])), false)
+%!assert_equal (isequaln (calmonths ([1, NaN, 3]), calmonths ([1, NaN, 3])), true)
+%!assert_equal (isequaln (calendarDuration (0, 0, 0, hours (ones (3))), ...
 %!                 calendarDuration (0, 0, 0, hours (ones (3)))), true)
-%!assert (isequaln (calendarDuration (0, 0, 0, hours (nan (3))), ...
+%!assert_equal (isequaln (calendarDuration (0, 0, 0, hours (nan (3))), ...
 %!                 calendarDuration (0, 0, 0, hours (nan (3)))), true)
-%!assert (isequaln (calendarDuration (0, 0, 0, hours (ones (3, 3, 2))), ...
+%!assert_equal (isequaln (calendarDuration (0, 0, 0, hours (ones (3, 3, 2))), ...
 %!                 calendarDuration (0, 0, 0, hours (ones (3, 3, 3)))), false)
-%!assert (isequaln (calendarDuration (0, NaN, 0, hours (ones (3))), ...
+%!assert_equal (isequaln (calendarDuration (0, NaN, 0, hours (ones (3))), ...
 %!                 calendarDuration (0, NaN, 0, hours (ones (3)))), true)
-%!assert (isequaln (calendarDuration (0, 0, NaN, hours (nan (3, 3, 3))), ...
+%!assert_equal (isequaln (calendarDuration (0, 0, NaN, hours (nan (3, 3, 3))), ...
 %!                 calendarDuration (0, 0, NaN, hours (nan (3, 3, 3)))), true)
 %!error<calendarDuration.isequaln: too few input arguments.> isequaln (caldays (3))
 %!error<calendarDuration.isequaln: all input arguments must be calendarDuration arrays.> ...
@@ -791,115 +791,115 @@
 %!error<calendarDuration.isequaln: all input arguments must be calendarDuration arrays.> ...
 %! isequaln (caldays (3), caldays (3), days (1))
 
-%!assert (isfinite (caldays (1)), true)
-%!assert (isfinite (caldays (NaN)), false)
-%!assert (isfinite (caldays (Inf)), false)
-%!assert (isfinite (caldays (-Inf)), false)
-%!assert (isfinite (calendarDuration ([1, 0, 1])), true)
-%!assert (isfinite (calendarDuration (nan (2), 1, 0)), false (2))
-%!assert (isfinite (calendarDuration (Inf (3), 0, 0)), false (3))
-%!assert (isfinite (calendarDuration (1, -Inf, [0; 0])), false (2, 1))
-%!assert (size (isfinite (caldays ([]))), [0, 0])
-%!assert (size (isfinite (caldays (ones (1, 2, 0, 2)))), [1, 2, 0, 2])
+%!assert_equal (isfinite (caldays (1)), true)
+%!assert_equal (isfinite (caldays (NaN)), false)
+%!assert_equal (isfinite (caldays (Inf)), false)
+%!assert_equal (isfinite (caldays (-Inf)), false)
+%!assert_equal (isfinite (calendarDuration ([1, 0, 1])), true)
+%!assert_equal (isfinite (calendarDuration (nan (2), 1, 0)), false (2))
+%!assert_equal (isfinite (calendarDuration (Inf (3), 0, 0)), false (3))
+%!assert_equal (isfinite (calendarDuration (1, -Inf, [0; 0])), false (2, 1))
+%!assert_equal (size (isfinite (caldays ([]))), [0, 0])
+%!assert_equal (size (isfinite (caldays (ones (1, 2, 0, 2)))), [1, 2, 0, 2])
 
-%!assert (isinf (caldays (1)), false)
-%!assert (isinf (caldays (NaN)), false)
-%!assert (isinf (caldays (Inf)), true)
-%!assert (isinf (caldays (-Inf)), true)
-%!assert (isinf (calendarDuration ([1, 0, NaN])), false)
-%!assert (isinf (calendarDuration ([1, Inf, -Inf])), false)
-%!assert (isinf (calendarDuration (nan (2), 1, 0)), false (2))
-%!assert (isinf (calendarDuration (Inf (3), 0, 0)), true (3))
-%!assert (isinf (calendarDuration (1, -Inf, [0; 0])), true (2, 1))
-%!assert (size (isinf (caldays ([]))), [0, 0])
-%!assert (size (isinf (caldays (Inf (1, 2, 0, 2)))), [1, 2, 0, 2])
+%!assert_equal (isinf (caldays (1)), false)
+%!assert_equal (isinf (caldays (NaN)), false)
+%!assert_equal (isinf (caldays (Inf)), true)
+%!assert_equal (isinf (caldays (-Inf)), true)
+%!assert_equal (isinf (calendarDuration ([1, 0, NaN])), false)
+%!assert_equal (isinf (calendarDuration ([1, Inf, -Inf])), false)
+%!assert_equal (isinf (calendarDuration (nan (2), 1, 0)), false (2))
+%!assert_equal (isinf (calendarDuration (Inf (3), 0, 0)), true (3))
+%!assert_equal (isinf (calendarDuration (1, -Inf, [0; 0])), true (2, 1))
+%!assert_equal (size (isinf (caldays ([]))), [0, 0])
+%!assert_equal (size (isinf (caldays (Inf (1, 2, 0, 2)))), [1, 2, 0, 2])
 
-%!assert (ismatrix (caldays (3)), true)
-%!assert (ismatrix (caldays ([3, 3; 2, 1])), true)
-%!assert (ismatrix (caldays ([3, 3, 2, 1])), true)
-%!assert (ismatrix (caldays (ones (3, 3, 2))), false)
-%!assert (ismatrix (calmonths (3)), true)
-%!assert (ismatrix (calmonths ([3, 3; 2, 1])), true)
-%!assert (ismatrix (calmonths ([3, 3, 2, 1])), true)
-%!assert (ismatrix (calmonths (ones (3, 3, 2))), false)
-%!assert (ismatrix (calendarDuration (0, 0, 3)), true)
-%!assert (ismatrix (calendarDuration ([3, 3; 2, 1], 0, 0)), true)
-%!assert (ismatrix (calendarDuration ([3, 3, 2, 1], 0, 1)), true)
-%!assert (ismatrix (calendarDuration (ones (3, 3, 2), 0, 0)), false)
-%!assert (ismatrix (calendarDuration (0, 0, 1, hours (ones (3, 3)))), true)
-%!assert (ismatrix (calendarDuration (0, 0, 1, hours (ones (3, 3, 2)))), false)
+%!assert_equal (ismatrix (caldays (3)), true)
+%!assert_equal (ismatrix (caldays ([3, 3; 2, 1])), true)
+%!assert_equal (ismatrix (caldays ([3, 3, 2, 1])), true)
+%!assert_equal (ismatrix (caldays (ones (3, 3, 2))), false)
+%!assert_equal (ismatrix (calmonths (3)), true)
+%!assert_equal (ismatrix (calmonths ([3, 3; 2, 1])), true)
+%!assert_equal (ismatrix (calmonths ([3, 3, 2, 1])), true)
+%!assert_equal (ismatrix (calmonths (ones (3, 3, 2))), false)
+%!assert_equal (ismatrix (calendarDuration (0, 0, 3)), true)
+%!assert_equal (ismatrix (calendarDuration ([3, 3; 2, 1], 0, 0)), true)
+%!assert_equal (ismatrix (calendarDuration ([3, 3, 2, 1], 0, 1)), true)
+%!assert_equal (ismatrix (calendarDuration (ones (3, 3, 2), 0, 0)), false)
+%!assert_equal (ismatrix (calendarDuration (0, 0, 1, hours (ones (3, 3)))), true)
+%!assert_equal (ismatrix (calendarDuration (0, 0, 1, hours (ones (3, 3, 2)))), false)
 
-%!assert (ismissing (caldays (1)), false)
-%!assert (ismissing (caldays (NaN)), true)
-%!assert (ismissing (caldays (Inf)), false)
-%!assert (ismissing (caldays (-Inf)), false)
-%!assert (ismissing (calendarDuration ([1, 0, NaN])), true)
-%!assert (ismissing (calendarDuration ([1, Inf, -Inf])), true)
-%!assert (ismissing (calendarDuration (nan (2), 1, 0)), true (2))
-%!assert (ismissing (calendarDuration (Inf (3), 0, 0)), false (3))
-%!assert (ismissing (calendarDuration (1, -Inf, [0; NaN])), [false; true])
-%!assert (size (ismissing (caldays ([]))), [0, 0])
-%!assert (ismissing (caldays (nan (1, 2, 0, 2))), true (1, 2, 0, 2))
-%!assert (size (ismissing (caldays (nan (1, 2, 0, 2)))), [1, 2, 0, 2])
+%!assert_equal (ismissing (caldays (1)), false)
+%!assert_equal (ismissing (caldays (NaN)), true)
+%!assert_equal (ismissing (caldays (Inf)), false)
+%!assert_equal (ismissing (caldays (-Inf)), false)
+%!assert_equal (ismissing (calendarDuration ([1, 0, NaN])), true)
+%!assert_equal (ismissing (calendarDuration ([1, Inf, -Inf])), true)
+%!assert_equal (ismissing (calendarDuration (nan (2), 1, 0)), true (2))
+%!assert_equal (ismissing (calendarDuration (Inf (3), 0, 0)), false (3))
+%!assert_equal (ismissing (calendarDuration (1, -Inf, [0; NaN])), [false; true])
+%!assert_equal (size (ismissing (caldays ([]))), [0, 0])
+%!assert_equal (ismissing (caldays (nan (1, 2, 0, 2))), true (1, 2, 0, 2))
+%!assert_equal (size (ismissing (caldays (nan (1, 2, 0, 2)))), [1, 2, 0, 2])
 %!error<calendarDuration.ismissing: Indicators are not supported.> ...
 %! ismissing (caldays (3), 3)
 
-%!assert (isnan (caldays (1)), false)
-%!assert (isnan (caldays (NaN)), true)
-%!assert (isnan (caldays (Inf)), false)
-%!assert (isnan (caldays (-Inf)), false)
-%!assert (isnan (calendarDuration ([1, 0, NaN])), true)
-%!assert (isnan (calendarDuration ([1, Inf, -Inf])), true)
-%!assert (isnan (calendarDuration (nan (2), 1, 0)), true (2))
-%!assert (isnan (calendarDuration (Inf (3), 0, 0)), false (3))
-%!assert (isnan (calendarDuration (1, -Inf, [0; NaN])), [false; true])
-%!assert (size (isnan (caldays ([]))), [0, 0])
-%!assert (isnan (caldays (nan (1, 2, 0, 2))), true (1, 2, 0, 2))
-%!assert (size (isnan (caldays (nan (1, 2, 0, 2)))), [1, 2, 0, 2])
+%!assert_equal (isnan (caldays (1)), false)
+%!assert_equal (isnan (caldays (NaN)), true)
+%!assert_equal (isnan (caldays (Inf)), false)
+%!assert_equal (isnan (caldays (-Inf)), false)
+%!assert_equal (isnan (calendarDuration ([1, 0, NaN])), true)
+%!assert_equal (isnan (calendarDuration ([1, Inf, -Inf])), true)
+%!assert_equal (isnan (calendarDuration (nan (2), 1, 0)), true (2))
+%!assert_equal (isnan (calendarDuration (Inf (3), 0, 0)), false (3))
+%!assert_equal (isnan (calendarDuration (1, -Inf, [0; NaN])), [false; true])
+%!assert_equal (size (isnan (caldays ([]))), [0, 0])
+%!assert_equal (isnan (caldays (nan (1, 2, 0, 2))), true (1, 2, 0, 2))
+%!assert_equal (size (isnan (caldays (nan (1, 2, 0, 2)))), [1, 2, 0, 2])
 
-%!assert (isscalar (isreal (caldays (ones (2, 2, 2)))), true)
-%!assert (isreal (calendarDuration ([1, 1, 1])), true)
+%!assert_equal (isscalar (isreal (caldays (ones (2, 2, 2)))), true)
+%!assert_equal (isreal (calendarDuration ([1, 1, 1])), true)
 
-%!assert (isrow (calendarDuration (0, 0, 0)), true)
-%!assert (isrow (calendarDuration ([], [], [])), false)
-%!assert (isrow (calendarDuration (ones (1, 0), ones (1, 0), ones (1, 0))), true)
-%!assert (isrow (calendarDuration (ones (0, 1), ones (0, 1), ones (0, 1))), false)
-%!assert (isrow (calmonths (1)), true)
-%!assert (isrow (calmonths ([1, 2, 3])), true)
-%!assert (isrow (calyears ([1; 2; 3])), false)
-%!assert (isrow (calendarDuration (1, 1, 1, 1, 1, 1)), true)
-%!assert (isrow (calendarDuration (1, 1, 1, 1, 1, [1, 2, 3])), true)
-%!assert (isrow (calendarDuration (1, 1, 1, 1, 1, ones (2))), false)
-%!assert (isrow (calendarDuration (1, 1, ones (1, 1, 2))), false)
-%!assert (isrow (calendarDuration (1, 1, ones (1, 2, 1))), true)
+%!assert_equal (isrow (calendarDuration (0, 0, 0)), true)
+%!assert_equal (isrow (calendarDuration ([], [], [])), false)
+%!assert_equal (isrow (calendarDuration (ones (1, 0), ones (1, 0), ones (1, 0))), true)
+%!assert_equal (isrow (calendarDuration (ones (0, 1), ones (0, 1), ones (0, 1))), false)
+%!assert_equal (isrow (calmonths (1)), true)
+%!assert_equal (isrow (calmonths ([1, 2, 3])), true)
+%!assert_equal (isrow (calyears ([1; 2; 3])), false)
+%!assert_equal (isrow (calendarDuration (1, 1, 1, 1, 1, 1)), true)
+%!assert_equal (isrow (calendarDuration (1, 1, 1, 1, 1, [1, 2, 3])), true)
+%!assert_equal (isrow (calendarDuration (1, 1, 1, 1, 1, ones (2))), false)
+%!assert_equal (isrow (calendarDuration (1, 1, ones (1, 1, 2))), false)
+%!assert_equal (isrow (calendarDuration (1, 1, ones (1, 2, 1))), true)
 
-%!assert (isscalar (calmonths (1)), true)
-%!assert (isscalar (calmonths ([1, 2, 3])), false)
-%!assert (isscalar (calyears ([1; 2; 3])), false)
-%!assert (isscalar (calendarDuration (0, 0, 0)), true)
-%!assert (isscalar (calendarDuration ([], [], [])), false)
-%!assert (isscalar (calendarDuration (1, 1, 1, 1, 1, 1)), true)
-%!assert (isscalar (calendarDuration (1, 1, 1, 1, 1, [1, 2, 3])), false)
-%!assert (isscalar (calendarDuration (1, 1, 1, 1, 1, ones (2))), false)
-%!assert (isscalar (calendarDuration (1, 1, ones (1, 1, 2))), false)
-%!assert (isscalar (calendarDuration (1, 1, ones (1, 2, 1))), false)
-%!assert (isscalar (calendarDuration (1, 1, ones (1, 1, 1))), true)
-%!assert (isscalar (calendarDuration (1, 1, 1, hours (5))), true)
+%!assert_equal (isscalar (calmonths (1)), true)
+%!assert_equal (isscalar (calmonths ([1, 2, 3])), false)
+%!assert_equal (isscalar (calyears ([1; 2; 3])), false)
+%!assert_equal (isscalar (calendarDuration (0, 0, 0)), true)
+%!assert_equal (isscalar (calendarDuration ([], [], [])), false)
+%!assert_equal (isscalar (calendarDuration (1, 1, 1, 1, 1, 1)), true)
+%!assert_equal (isscalar (calendarDuration (1, 1, 1, 1, 1, [1, 2, 3])), false)
+%!assert_equal (isscalar (calendarDuration (1, 1, 1, 1, 1, ones (2))), false)
+%!assert_equal (isscalar (calendarDuration (1, 1, ones (1, 1, 2))), false)
+%!assert_equal (isscalar (calendarDuration (1, 1, ones (1, 2, 1))), false)
+%!assert_equal (isscalar (calendarDuration (1, 1, ones (1, 1, 1))), true)
+%!assert_equal (isscalar (calendarDuration (1, 1, 1, hours (5))), true)
 
-%!assert (isvector (calendarDuration (0, 0, 0)), true)
-%!assert (isvector (calendarDuration ([], [], [])), false)
-%!assert (isvector (calendarDuration (ones (1, 0), ones (1, 0), ones (1, 0))), true)
-%!assert (isvector (calendarDuration (ones (0, 1), ones (0, 1), ones (0, 1))), true)
-%!assert (isvector (calmonths (1)), true)
-%!assert (isvector (calmonths ([1, 2, 3])), true)
-%!assert (isvector (calyears ([1; 2; 3])), true)
-%!assert (isvector (calendarDuration (1, 1, 1, 1, 1, 1)), true)
-%!assert (isvector (calendarDuration (1, 1, 1, 1, 1, [1, 2, 3])), true)
-%!assert (isvector (calendarDuration (1, 1, 1, 1, 1, ones (2))), false)
-%!assert (isvector (calendarDuration (1, 1, ones (1, 1, 2))), false)
-%!assert (isvector (calendarDuration (1, 1, ones (2, 1, 2))), false)
-%!assert (isvector (calendarDuration (1, 1, ones (1, 2, 1))), true)
-%!assert (isvector (calendarDuration (1, 1, ones (2, 1, 1))), true)
+%!assert_equal (isvector (calendarDuration (0, 0, 0)), true)
+%!assert_equal (isvector (calendarDuration ([], [], [])), false)
+%!assert_equal (isvector (calendarDuration (ones (1, 0), ones (1, 0), ones (1, 0))), true)
+%!assert_equal (isvector (calendarDuration (ones (0, 1), ones (0, 1), ones (0, 1))), true)
+%!assert_equal (isvector (calmonths (1)), true)
+%!assert_equal (isvector (calmonths ([1, 2, 3])), true)
+%!assert_equal (isvector (calyears ([1; 2; 3])), true)
+%!assert_equal (isvector (calendarDuration (1, 1, 1, 1, 1, 1)), true)
+%!assert_equal (isvector (calendarDuration (1, 1, 1, 1, 1, [1, 2, 3])), true)
+%!assert_equal (isvector (calendarDuration (1, 1, 1, 1, 1, ones (2))), false)
+%!assert_equal (isvector (calendarDuration (1, 1, ones (1, 1, 2))), false)
+%!assert_equal (isvector (calendarDuration (1, 1, ones (2, 1, 2))), false)
+%!assert_equal (isvector (calendarDuration (1, 1, ones (1, 2, 1))), true)
+%!assert_equal (isvector (calendarDuration (1, 1, ones (2, 1, 1))), true)
 
 ################################################################################
 ##                       ** Mathematical Operations **                        ##
@@ -914,32 +914,32 @@
 %!test
 %! A = caldays ([1, 2, 3]);
 %! B = caldays (1);
-%! assert (caldays (A - B), [0, 1, 2]);
-%! assert (caldays (B - A), [0, -1, -2]);
+%! assert_equal (caldays (A - B), [0, 1, 2]);
+%! assert_equal (caldays (B - A), [0, -1, -2]);
 %!test
 %! A = calweeks (1);
 %! B = days ([2, 2]);
 %! [c1, c2] = split (A - B, {'days', 'time'});
-%! assert (c1, [7, 7]);
-%! assert (days (c2), [-2, -2]);
+%! assert_equal (c1, [7, 7]);
+%! assert_equal (days (c2), [-2, -2]);
 %!test
 %! A = calweeks (1);
 %! B = [2, 2];
 %! [c1, c2] = split (A - B, {'days', 'time'});
-%! assert (c1, [7, 7]);
-%! assert (days (c2), [-2, -2]);
+%! assert_equal (c1, [7, 7]);
+%! assert_equal (days (c2), [-2, -2]);
 %!test
 %! A = days ([2, 2]);
 %! B = calweeks (1);
 %! [c1, c2] = split (A - B, {'days', 'time'});
-%! assert (c1, [-7, -7]);
-%! assert (days (c2), [2, 2]);
+%! assert_equal (c1, [-7, -7]);
+%! assert_equal (days (c2), [2, 2]);
 %!test
 %! A = [2, 2];
 %! B = calweeks (1);
 %! [c1, c2] = split (A - B, {'days', 'time'});
-%! assert (c1, [-7, -7]);
-%! assert (days (c2), [2, 2]);
+%! assert_equal (c1, [-7, -7]);
+%! assert_equal (days (c2), [2, 2]);
 %!error <calendarDuration: subtraction is not defined between 'calendarDuration' and 'char' arrays.> ...
 %! calweeks (1) - 'a'
 %!error <calendarDuration: subtraction is not defined between 'calendarDuration' and 'cell' arrays.> ...
@@ -949,42 +949,42 @@
 
 %!test
 %! A = caldays ([1, 2, 3]);
-%! assert (caldays (-A), [-1, -2, -3]);
+%! assert_equal (caldays (-A), [-1, -2, -3]);
 %!test
 %! A = randi (10, 3, 4, 5);
 %! B = caldays (A);
 %! C = - caldays (A);
-%! assert (caldays (B + C), zeros (3, 4, 5));
+%! assert_equal (caldays (B + C), zeros (3, 4, 5));
 
 %!test
 %! A = caldays ([1, 2, 3]);
 %! B = caldays (1);
-%! assert (caldays (A + B), [2, 3, 4]);
-%! assert (caldays (B + A), [2, 3, 4]);
+%! assert_equal (caldays (A + B), [2, 3, 4]);
+%! assert_equal (caldays (B + A), [2, 3, 4]);
 %!test
 %! A = calweeks (1);
 %! B = days ([2, 2]);
 %! [c1, c2] = split (A + B, {'days', 'time'});
-%! assert (c1, [7, 7]);
-%! assert (days (c2), [2, 2]);
+%! assert_equal (c1, [7, 7]);
+%! assert_equal (days (c2), [2, 2]);
 %!test
 %! A = calweeks (1);
 %! B = [2, 2];
 %! [c1, c2] = split (A + B, {'days', 'time'});
-%! assert (c1, [7, 7]);
-%! assert (days (c2), [2, 2]);
+%! assert_equal (c1, [7, 7]);
+%! assert_equal (days (c2), [2, 2]);
 %!test
 %! A = days ([2, 2]);
 %! B = calweeks (1);
 %! [c1, c2] = split (A + B, {'days', 'time'});
-%! assert (c1, [7, 7]);
-%! assert (days (c2), [2, 2]);
+%! assert_equal (c1, [7, 7]);
+%! assert_equal (days (c2), [2, 2]);
 %!test
 %! A = [2, 2];
 %! B = calweeks (1);
 %! [c1, c2] = split (A + B, {'days', 'time'});
-%! assert (c1, [7, 7]);
-%! assert (days (c2), [2, 2]);
+%! assert_equal (c1, [7, 7]);
+%! assert_equal (days (c2), [2, 2]);
 %!error <calendarDuration: addition is not defined between 'calendarDuration' and 'char' arrays.> ...
 %! calweeks (1) + 'a'
 %!error <calendarDuration: addition is not defined between 'calendarDuration' and 'cell' arrays.> ...
@@ -996,34 +996,34 @@
 %! A = calendarDuration ([1, 1, 5, 4, 30, 2]);
 %! B = A .* [1, 3];
 %! [y, m, d, t] = split (B, {'years', 'months', 'days', 'time'});
-%! assert (y, [1, 3]);
-%! assert (m, [1, 3]);
-%! assert (d, [5, 15]);
-%! assert (seconds (t), [16202, 48606], 4e-12);
+%! assert_equal (y, [1, 3]);
+%! assert_equal (m, [1, 3]);
+%! assert_equal (d, [5, 15]);
+%! assert_equal (seconds (t), [16202, 48606], 4e-12);
 %!test
 %! A = calendarDuration ([1, 1, 5, 4, 30, 2]);
 %! B = A .* [1; 3];
 %! [y, m, d, t] = split (B, {'years', 'months', 'days', 'time'});
-%! assert (y, [1; 3]);
-%! assert (m, [1; 3]);
-%! assert (d, [5; 15]);
-%! assert (seconds (t), [16202; 48606], 4e-12);
+%! assert_equal (y, [1; 3]);
+%! assert_equal (m, [1; 3]);
+%! assert_equal (d, [5; 15]);
+%! assert_equal (seconds (t), [16202; 48606], 4e-12);
 %!test
 %! A = calendarDuration ([1, 1, 5, 4, 30, 2]);
 %! B = [1; 3] .* A;
 %! [y, m, d, t] = split (B, {'years', 'months', 'days', 'time'});
-%! assert (y, [1; 3]);
-%! assert (m, [1; 3]);
-%! assert (d, [5; 15]);
-%! assert (seconds (t), [16202; 48606], 4e-12);
+%! assert_equal (y, [1; 3]);
+%! assert_equal (m, [1; 3]);
+%! assert_equal (d, [5; 15]);
+%! assert_equal (seconds (t), [16202; 48606], 4e-12);
 %!test
 %! A = calendarDuration ([1, 1, 5, 4, 30, 2]);
 %! B = 2 .* A;
 %! [y, m, d, t] = split (B, {'years', 'months', 'days', 'time'});
-%! assert (y, 2);
-%! assert (m, 2);
-%! assert (d, 10);
-%! assert (seconds (t), 32404, 4e-12);
+%! assert_equal (y, 2);
+%! assert_equal (m, 2);
+%! assert_equal (d, 10);
+%! assert_equal (seconds (t), 32404, 4e-12);
 %!error <calendarDuration: multiplication is not defined between 'calendarDuration' and 'char' arrays.> ...
 %! calweeks (1) .* 'a'
 %!error <calendarDuration: multiplication is not defined between 'calendarDuration' and 'cell' arrays.> ...
@@ -1035,28 +1035,28 @@
 %! A = calendarDuration ([1, 1, 5, 4, 30, 2]);
 %! B = 2 * A;
 %! [y, m, d, t] = split (B, {'years', 'months', 'days', 'time'});
-%! assert (y, 2);
-%! assert (m, 2);
-%! assert (d, 10);
-%! assert (seconds (t), 32404, 4e-12);
+%! assert_equal (y, 2);
+%! assert_equal (m, 2);
+%! assert_equal (d, 10);
+%! assert_equal (seconds (t), 32404, 4e-12);
 %!test
 %! A = calendarDuration ([1, 2], 0, [4, 5]);
 %! B = A * [1; 2];
 %! [y, d] = split (B, {'years', 'days'});
-%! assert (y, [1, 2] * [1; 2]);
-%! assert (d, [4, 5] * [1; 2]);
+%! assert_equal (y, [1, 2] * [1; 2]);
+%! assert_equal (d, [4, 5] * [1; 2]);
 %!test
 %! A = calendarDuration ([1, 2], 0, [4, 5]);
 %! B = A * [4; 2];
 %! [y, d] = split (B, {'years', 'days'});
-%! assert (y, [1, 2] * [4; 2]);
-%! assert (d, [4, 5] * [4; 2]);
+%! assert_equal (y, [1, 2] * [4; 2]);
+%! assert_equal (d, [4, 5] * [4; 2]);
 %!test
 %! A = calendarDuration ([1, 2], 0, [4, 5]);
 %! B = [4; 2] * A;
 %! [y, d] = split (B, {'years', 'days'});
-%! assert (y, [4; 2] * [1, 2]);
-%! assert (d, [4; 2] * [4, 5]);
+%! assert_equal (y, [4; 2] * [1, 2]);
+%! assert_equal (d, [4; 2] * [4, 5]);
 %!error <calendarDuration: matrix multiplication is not defined between 'calendarDuration' and 'char' arrays.> ...
 %! calweeks (1) * 'a'
 %!error <calendarDuration: matrix multiplication is not defined between 'calendarDuration' and 'cell' arrays.> ...
@@ -1073,17 +1073,17 @@
 ##                                                                            ##
 ################################################################################
 
-%!assert (caldays (3) == caldays (3), true)
-%!assert (caldays (3) == caldays (4), false)
-%!assert (caldays (14) == calweeks (2), true)
-%!assert (calmonths (15) == calquarters (5), true)
-%!assert (calmonths ([15, 12, NaN]) == calquarters ([5, 4, 3]), [true, true, false])
-%!assert (calyears (ones (2)) == calmonths ([12, 15]), logical ([1, 0; 1, 0]))
-%!assert (calyears (ones (2)) == calmonths ([12; 15]), logical ([1, 1; 0, 0]))
-%!assert (calmonths ([3, 4]) == calmonths ([3, 4]), [true, true])
-%!assert (calmonths ([3, NaN]) == calmonths ([3, 4]), [true, false])
-%!assert (calmonths ([3; NaN]) == calmonths ([3; NaN]), [true; false])
-%!assert (calendarDuration ([1; 2], 0, 0) == calyears ([1, 2]), logical (eye (2)))
+%!assert_equal (caldays (3) == caldays (3), true)
+%!assert_equal (caldays (3) == caldays (4), false)
+%!assert_equal (caldays (14) == calweeks (2), true)
+%!assert_equal (calmonths (15) == calquarters (5), true)
+%!assert_equal (calmonths ([15, 12, NaN]) == calquarters ([5, 4, 3]), [true, true, false])
+%!assert_equal (calyears (ones (2)) == calmonths ([12, 15]), logical ([1, 0; 1, 0]))
+%!assert_equal (calyears (ones (2)) == calmonths ([12; 15]), logical ([1, 1; 0, 0]))
+%!assert_equal (calmonths ([3, 4]) == calmonths ([3, 4]), [true, true])
+%!assert_equal (calmonths ([3, NaN]) == calmonths ([3, 4]), [true, false])
+%!assert_equal (calmonths ([3; NaN]) == calmonths ([3; NaN]), [true; false])
+%!assert_equal (calendarDuration ([1; 2], 0, 0) == calyears ([1, 2]), logical (eye (2)))
 %!error<calendarDuration.eq: equality is not defined between 'calendarDuration' and 'double' arrays.> ...
 %! caldays (3) == NaN
 %!error<calendarDuration.eq: equality is not defined between 'calendarDuration' and 'duration' arrays.> ...
@@ -1093,17 +1093,17 @@
 %!error<calendarDuration.eq: equality is not defined between 'char' and 'calendarDuration' arrays.> ...
 %! '1y' == calyears(1)
 
-%!assert (caldays (3) != caldays (3), false)
-%!assert (caldays (3) != caldays (4), true)
-%!assert (caldays (14) != calweeks (2), false)
-%!assert (calmonths (15) != calquarters (5), false)
-%!assert (calmonths ([15, 12, NaN]) != calquarters ([5, 4, 3]), [false, false, true])
-%!assert (calyears (ones (2)) != calmonths ([12, 15]), logical ([0, 1; 0, 1]))
-%!assert (calyears (ones (2)) != calmonths ([12; 15]), logical ([0, 0; 1, 1]))
-%!assert (calmonths ([3, 4]) != calmonths ([3, 4]), [false, false])
-%!assert (calmonths ([3, NaN]) != calmonths ([3, 4]), [false, true])
-%!assert (calmonths ([3; NaN]) != calmonths ([3; NaN]), [false; true])
-%!assert (calendarDuration ([1; 2], 0, 0) != calyears ([2, 1]), logical (eye (2)))
+%!assert_equal (caldays (3) != caldays (3), false)
+%!assert_equal (caldays (3) != caldays (4), true)
+%!assert_equal (caldays (14) != calweeks (2), false)
+%!assert_equal (calmonths (15) != calquarters (5), false)
+%!assert_equal (calmonths ([15, 12, NaN]) != calquarters ([5, 4, 3]), [false, false, true])
+%!assert_equal (calyears (ones (2)) != calmonths ([12, 15]), logical ([0, 1; 0, 1]))
+%!assert_equal (calyears (ones (2)) != calmonths ([12; 15]), logical ([0, 0; 1, 1]))
+%!assert_equal (calmonths ([3, 4]) != calmonths ([3, 4]), [false, false])
+%!assert_equal (calmonths ([3, NaN]) != calmonths ([3, 4]), [false, true])
+%!assert_equal (calmonths ([3; NaN]) != calmonths ([3; NaN]), [false; true])
+%!assert_equal (calendarDuration ([1; 2], 0, 0) != calyears ([2, 1]), logical (eye (2)))
 %!error<calendarDuration.ne: inequality is not defined between 'calendarDuration' and 'double' arrays.> ...
 %! caldays (3) != NaN
 %!error<calendarDuration.ne: inequality is not defined between 'calendarDuration' and 'duration' arrays.> ...
@@ -1115,63 +1115,63 @@
 
 %!test
 %! U = unique (caldays ([1, 2, 2, 3]));
-%! assert (caldays (U), [1, 2, 3]);
+%! assert_equal (caldays (U), [1, 2, 3]);
 %!test
 %! U = unique (caldays ([1, 2; 2, 3; 1, 2]), 'rows');
-%! assert (caldays (U), [1, 2; 2, 3]);
+%! assert_equal (caldays (U), [1, 2; 2, 3]);
 %!test
 %! U = unique (caldays ([1, 3, 2, 2]));
-%! assert (caldays (U), [1, 2, 3]);
+%! assert_equal (caldays (U), [1, 2, 3]);
 %!test
 %! U = unique (caldays ([1, 3, 2, 2]), 'sorted');
-%! assert (caldays (U), [1, 2, 3]);
+%! assert_equal (caldays (U), [1, 2, 3]);
 %!test
 %! U = unique (caldays ([1, 3, 2, 2]), 'stable');
-%! assert (caldays (U), [1, 3, 2]);
+%! assert_equal (caldays (U), [1, 3, 2]);
 %!test
 %! [U, idx] = unique (caldays ([1, 3, 2, 2]), 'first');
-%! assert (caldays (U), [1, 2, 3]);
-%! assert (idx, [1; 3; 2]);
+%! assert_equal (caldays (U), [1, 2, 3]);
+%! assert_equal (idx, [1; 3; 2]);
 %!test
 %! [U, idx] = unique (caldays ([1, 3, 2, 2]), 'last');
-%! assert (caldays (U), [1, 2, 3]);
-%! assert (idx, [1; 4; 2]);
+%! assert_equal (caldays (U), [1, 2, 3]);
+%! assert_equal (idx, [1; 4; 2]);
 %!test
 %! [U, idx] = unique (caldays ([1, 3, 2, 2]), 'sorted', 'first');
-%! assert (caldays (U), [1, 2, 3]);
-%! assert (idx, [1; 3; 2]);
+%! assert_equal (caldays (U), [1, 2, 3]);
+%! assert_equal (idx, [1; 3; 2]);
 %!test
 %! [U, idx] = unique (caldays ([1, 3, 2, 2]), 'stable', 'first');
-%! assert (caldays (U), [1, 3, 2]);
-%! assert (idx, [1; 2; 3]);
+%! assert_equal (caldays (U), [1, 3, 2]);
+%! assert_equal (idx, [1; 2; 3]);
 %!test
 %! [U, idx] = unique (caldays ([1, 3, 2, 2]), 'sorted', 'last');
-%! assert (caldays (U), [1, 2, 3]);
-%! assert (idx, [1; 4; 2]);
+%! assert_equal (caldays (U), [1, 2, 3]);
+%! assert_equal (idx, [1; 4; 2]);
 %!test
 %! [U, idx] = unique (caldays ([1, 3, 2, 2]), 'stable', 'last');
-%! assert (caldays (U), [1, 3, 2]);
-%! assert (idx, [1; 2; 4]);
+%! assert_equal (caldays (U), [1, 3, 2]);
+%! assert_equal (idx, [1; 2; 4]);
 %!test
 %! [B, ixA, ixB] = unique (caldays ([1, 2; 2, 3; 1, 2]), 'rows', 'sorted', 'first');
-%! assert (caldays (B), [1, 2; 2, 3]);
-%! assert (ixA, [1; 2]);
-%! assert (ixB, [1; 2; 1]);
+%! assert_equal (caldays (B), [1, 2; 2, 3]);
+%! assert_equal (ixA, [1; 2]);
+%! assert_equal (ixB, [1; 2; 1]);
 %!test
 %! [B, ixA, ixB] = unique (caldays ([1, 2; 2, 3; 1, 2]), 'rows', 'stable', 'first');
-%! assert (caldays (B), [1, 2; 2, 3]);
-%! assert (ixA, [1; 2]);
-%! assert (ixB, [1; 2; 1]);
+%! assert_equal (caldays (B), [1, 2; 2, 3]);
+%! assert_equal (ixA, [1; 2]);
+%! assert_equal (ixB, [1; 2; 1]);
 %!test
 %! [B, ixA, ixB] = unique (caldays ([1, 2; 2, 3; 1, 2]), 'rows', 'sorted', 'last');
-%! assert (caldays (B), [1, 2; 2, 3]);
-%! assert (ixA, [3; 2]);
-%! assert (ixB, [1; 2; 1]);
+%! assert_equal (caldays (B), [1, 2; 2, 3]);
+%! assert_equal (ixA, [3; 2]);
+%! assert_equal (ixB, [1; 2; 1]);
 %!test
 %! [B, ixA, ixB] = unique (caldays ([1, 2; 2, 3; 1, 2]), 'rows', 'stable', 'last');
-%! assert (caldays (B), [2, 3; 1, 2]);
-%! assert (ixA, [2; 3]);
-%! assert (ixB, [2; 1; 2]);
+%! assert_equal (caldays (B), [2, 3; 1, 2]);
+%! assert_equal (ixA, [2; 3]);
+%! assert_equal (ixB, [2; 1; 2]);
 %!error<calendarDuration.unique: 'legacy' option is not supported.> ...
 %! unique (caldays ([1, 2; 2, 3; 1, 2]), 'legacy')
 
@@ -1188,48 +1188,48 @@
 
 %!test
 %! cD = cat (1, 2, caldays ([3; 4]));
-%! assert (caldays (cD), [0; 3; 4]);
-%! assert (days (time (cD)), [2; 0; 0]);
+%! assert_equal (caldays (cD), [0; 3; 4]);
+%! assert_equal (days (time (cD)), [2; 0; 0]);
 %!test
 %! cD = cat (1, caldays ([3; 4]), 5);
-%! assert (caldays (cD), [3; 4; 0]);
-%! assert (days (time (cD)), [0; 0; 5]);
+%! assert_equal (caldays (cD), [3; 4; 0]);
+%! assert_equal (days (time (cD)), [0; 0; 5]);
 %!test
 %! cD = cat (2, 2, caldays ([3, 4]));
-%! assert (caldays (cD), [0, 3, 4]);
-%! assert (days (time (cD)), [2, 0, 0]);
+%! assert_equal (caldays (cD), [0, 3, 4]);
+%! assert_equal (days (time (cD)), [2, 0, 0]);
 %!test
 %! cD = cat (2, caldays ([3, 4]), 5);
-%! assert (caldays (cD), [3, 4, 0]);
-%! assert (days (time (cD)), [0, 0, 5]);
+%! assert_equal (caldays (cD), [3, 4, 0]);
+%! assert_equal (days (time (cD)), [0, 0, 5]);
 %!test
 %! cD = cat (1, [0; 1; 2], caldays ([3; 4]));
-%! assert (caldays (cD), [0; 0; 0; 3; 4]);
-%! assert (days (time (cD)), [0; 1; 2; 0; 0]);
+%! assert_equal (caldays (cD), [0; 0; 0; 3; 4]);
+%! assert_equal (days (time (cD)), [0; 1; 2; 0; 0]);
 %!test
 %! cD = cat (1, caldays ([3; 4]), [0; 2; 5]);
-%! assert (caldays (cD), [3; 4; 0; 0; 0]);
-%! assert (days (time (cD)), [0; 0; 0; 2; 5]);
+%! assert_equal (caldays (cD), [3; 4; 0; 0; 0]);
+%! assert_equal (days (time (cD)), [0; 0; 0; 2; 5]);
 %!test
 %! cD = cat (2, [0, 1, 2], caldays ([3, 4]));
-%! assert (caldays (cD), [0, 0, 0, 3, 4]);
-%! assert (days (time (cD)), [0, 1, 2, 0, 0]);
+%! assert_equal (caldays (cD), [0, 0, 0, 3, 4]);
+%! assert_equal (days (time (cD)), [0, 1, 2, 0, 0]);
 %!test
 %! cD = cat (2, caldays ([3, 4]), [0, 2, 5]);
-%! assert (caldays (cD), [3, 4, 0, 0, 0]);
-%! assert (days (time (cD)), [0, 0, 0, 2, 5]);
+%! assert_equal (caldays (cD), [3, 4, 0, 0, 0]);
+%! assert_equal (days (time (cD)), [0, 0, 0, 2, 5]);
 %!test
 %! cD = cat (1, caldays ([1, 2]), caldays ([3, 4]));
-%! assert (caldays (cD), [1, 2; 3, 4]);
+%! assert_equal (caldays (cD), [1, 2; 3, 4]);
 %!test
 %! cD = cat (2, caldays ([1, 2]), caldays ([3, 4]));
-%! assert (caldays (cD), [1, 2, 3, 4]);
+%! assert_equal (caldays (cD), [1, 2, 3, 4]);
 %!test
 %! cD = cat (3, caldays ([1, 2]), caldays ([3, 4]));
-%! assert (caldays (cD), reshape ([1, 2, 3, 4], 1, 2, 2));
+%! assert_equal (caldays (cD), reshape ([1, 2, 3, 4], 1, 2, 2));
 %!test
 %! cD = cat (4, caldays ([1, 2]), caldays ([3, 4]));
-%! assert (caldays (cD), reshape ([1, 2, 3, 4], 1, 2, 1, 2));
+%! assert_equal (caldays (cD), reshape ([1, 2, 3, 4], 1, 2, 1, 2));
 %!error<cat: dimension mismatch> cat (1, caldays ([3, 4]), [0; 2; 5])
 %!error<cat: dimension mismatch> cat (1, caldays ([3; 4]), [0, 2; 5, 2])
 %!error<cat: dimension mismatch> cat (2, caldays ([3; 4]), [0; 2; 5])
@@ -1245,137 +1245,137 @@
 
 %!test
 %! cD = [days(1), caldays(2)];
-%! assert (caldays (cD), [0, 2]);
-%! assert (days (time (cD)), [1, 0]);
+%! assert_equal (caldays (cD), [0, 2]);
+%! assert_equal (days (time (cD)), [1, 0]);
 %!test
 %! cD = [days(1), 1, caldays(2)];
-%! assert (caldays (cD), [0, 0, 2]);
-%! assert (days (time (cD)), [1, 1, 0]);
+%! assert_equal (caldays (cD), [0, 0, 2]);
+%! assert_equal (days (time (cD)), [1, 1, 0]);
 %!test
 %! cD = [caldays(1), days(2)];
-%! assert (caldays (cD), [1, 0]);
-%! assert (days (time (cD)), [0, 2]);
+%! assert_equal (caldays (cD), [1, 0]);
+%! assert_equal (days (time (cD)), [0, 2]);
 %!test
 %! cD = [caldays(1), 1, days(2)];
-%! assert (caldays (cD), [1, 0, 0]);
-%! assert (days (time (cD)), [0, 1, 2]);
+%! assert_equal (caldays (cD), [1, 0, 0]);
+%! assert_equal (days (time (cD)), [0, 1, 2]);
 %!test
 %! cD = [days(1), [], caldays(2)];
-%! assert (caldays (cD), [0, 2]);
-%! assert (days (time (cD)), [1, 0]);
+%! assert_equal (caldays (cD), [0, 2]);
+%! assert_equal (days (time (cD)), [1, 0]);
 %!test
 %! cD = [caldays(1), [], days(2)];
-%! assert (caldays (cD), [1, 0]);
-%! assert (days (time (cD)), [0, 2]);
+%! assert_equal (caldays (cD), [1, 0]);
+%! assert_equal (days (time (cD)), [0, 2]);
 %!test
 %! cD = [days(1), ones(0, 1), caldays(2)];
-%! assert (caldays (cD), [0, 2]);
-%! assert (days (time (cD)), [1, 0]);
+%! assert_equal (caldays (cD), [0, 2]);
+%! assert_equal (days (time (cD)), [1, 0]);
 %!test
 %! cD = [caldays(1), ones(0, 1), days(2)];
-%! assert (caldays (cD), [1, 0]);
-%! assert (days (time (cD)), [0, 2]);
+%! assert_equal (caldays (cD), [1, 0]);
+%! assert_equal (days (time (cD)), [0, 2]);
 %!test
 %! cD = [days(1), ones(0, 1), caldays(2), ones(1, 0)];
-%! assert (caldays (cD), [0, 2]);
-%! assert (days (time (cD)), [1, 0]);
+%! assert_equal (caldays (cD), [0, 2]);
+%! assert_equal (days (time (cD)), [1, 0]);
 %!test
 %! cD = [caldays(1), ones(0, 1), days(2), ones(1, 0)];
-%! assert (caldays (cD), [1, 0]);
-%! assert (days (time (cD)), [0, 2]);
+%! assert_equal (caldays (cD), [1, 0]);
+%! assert_equal (days (time (cD)), [0, 2]);
 %!test
 %! cD = [days(1), ones(2, 0, 1), caldays(2)];
-%! assert (caldays (cD), [0, 2]);
-%! assert (days (time (cD)), [1, 0]);
+%! assert_equal (caldays (cD), [0, 2]);
+%! assert_equal (days (time (cD)), [1, 0]);
 %!test
 %! cD = [caldays(1), ones(2, 0, 1), days(2)];
-%! assert (caldays (cD), [1, 0]);
-%! assert (days (time (cD)), [0, 2]);
+%! assert_equal (caldays (cD), [1, 0]);
+%! assert_equal (days (time (cD)), [0, 2]);
 
 %!test
 %! cD = [days(1); caldays(2)];
-%! assert (caldays (cD), [0; 2]);
-%! assert (days (time (cD)), [1; 0]);
+%! assert_equal (caldays (cD), [0; 2]);
+%! assert_equal (days (time (cD)), [1; 0]);
 %!test
 %! cD = [days(1); 1; caldays(2)];
-%! assert (caldays (cD), [0; 0; 2]);
-%! assert (days (time (cD)), [1; 1; 0]);
+%! assert_equal (caldays (cD), [0; 0; 2]);
+%! assert_equal (days (time (cD)), [1; 1; 0]);
 %!test
 %! cD = [caldays(1); days(2)];
-%! assert (caldays (cD), [1; 0]);
-%! assert (days (time (cD)), [0; 2]);
+%! assert_equal (caldays (cD), [1; 0]);
+%! assert_equal (days (time (cD)), [0; 2]);
 %!test
 %! cD = [caldays(1); 1; days(2)];
-%! assert (caldays (cD), [1; 0; 0]);
-%! assert (days (time (cD)), [0; 1; 2]);
+%! assert_equal (caldays (cD), [1; 0; 0]);
+%! assert_equal (days (time (cD)), [0; 1; 2]);
 %!test
 %! cD = [days(1); []; caldays(2)];
-%! assert (caldays (cD), [0; 2]);
-%! assert (days (time (cD)), [1; 0]);
+%! assert_equal (caldays (cD), [0; 2]);
+%! assert_equal (days (time (cD)), [1; 0]);
 %!test
 %! cD = [caldays(1); []; days(2)];
-%! assert (caldays (cD), [1; 0]);
-%! assert (days (time (cD)), [0; 2]);
+%! assert_equal (caldays (cD), [1; 0]);
+%! assert_equal (days (time (cD)), [0; 2]);
 %!test
 %! cD = [days(1); ones(0, 1); caldays(2)];
-%! assert (caldays (cD), [0; 2]);
-%! assert (days (time (cD)), [1; 0]);
+%! assert_equal (caldays (cD), [0; 2]);
+%! assert_equal (days (time (cD)), [1; 0]);
 %!test
 %! cD = [caldays(1); ones(0, 1); days(2)];
-%! assert (caldays (cD), [1; 0]);
-%! assert (days (time (cD)), [0; 2]);
+%! assert_equal (caldays (cD), [1; 0]);
+%! assert_equal (days (time (cD)), [0; 2]);
 %!test
 %! cD = [days(1); ones(0, 1); caldays(2); ones(1, 0)];
-%! assert (caldays (cD), [0; 2]);
-%! assert (days (time (cD)), [1; 0]);
+%! assert_equal (caldays (cD), [0; 2]);
+%! assert_equal (days (time (cD)), [1; 0]);
 %!test
 %! cD = [caldays(1); ones(0, 1); days(2); ones(1, 0)];
-%! assert (caldays (cD), [1; 0]);
-%! assert (days (time (cD)), [0; 2]);
+%! assert_equal (caldays (cD), [1; 0]);
+%! assert_equal (days (time (cD)), [0; 2]);
 %!test
 %! cD = [days(1); ones(2, 0, 1); caldays(2)];
-%! assert (caldays (cD), [0; 2]);
-%! assert (days (time (cD)), [1; 0]);
+%! assert_equal (caldays (cD), [0; 2]);
+%! assert_equal (days (time (cD)), [1; 0]);
 %!test
 %! cD = [caldays(1); ones(2, 0, 1); days(2)];
-%! assert (caldays (cD), [1; 0]);
-%! assert (days (time (cD)), [0; 2]);
+%! assert_equal (caldays (cD), [1; 0]);
+%! assert_equal (days (time (cD)), [0; 2]);
 
 %!shared x1, x2
 %! x1 = [2, 3];
 %! x2 = magic (3);
-%!assert (caldays (repmat (caldays (x1), 3)), repmat (x1, 3))
-%!assert (caldays (repmat (caldays (x1), 2, 3)), repmat (x1, 2, 3))
-%!assert (caldays (repmat (caldays (x1), 1, 1, 3)), repmat (x1, 1, 1, 3))
-%!assert (caldays (repmat (caldays (x1), [1, 1, 3])), repmat (x1, [1, 1, 3]))
-%!assert (caldays (repmat (caldays (x1), 1, 0, 3)), repmat (x1, 1, 0, 3))
-%!assert (caldays (repmat (caldays (x1), [1, 0, 3])), repmat (x1, 1, 0, 3))
-%!assert (caldays (repelem (caldays (x1), 3)), repelem (x1, 3))
-%!assert (caldays (repelem (caldays (x1), 2, 3)), repelem (x1, 2, 3))
-%!assert (caldays (repelem (caldays (x1), [1, 3])), repelem (x1, [1, 3]))
-%!assert (caldays (repelem (caldays (x2), 1, [1, 1, 3])), repelem (x2, 1, [1, 1, 3]))
-%!assert (caldays (repelem (caldays (x2), [2, 3, 4], [1, 0, 3])), repelem (x2, [2, 3, 4], [1, 0, 3]))
-%!assert (caldays (repelem (caldays (x2), 2, [1, 0, 3])), repelem (x2, 2, [1, 0, 3]))
-%!assert (caldays (repelems (caldays (x2), [1, 3, 4; 4, 2, 5])), repelems (x2, [1, 3, 4; 4, 2, 5]))
-%!assert (isempty (repelems (caldays (x2), [1, 3, 4; 0, 0, 0])), true)
-%!assert (size (reshape (caldays (x2), 1, 9)), [1, 9])
-%!assert (caldays (reshape (caldays (x2), 1, 9)), reshape (x2, 1, 9))
-%!assert (caldays (reshape (caldays (x2), 1, 1, 9)), reshape (x2, 1, 1, 9))
-%!assert (caldays (reshape (caldays (x2), 1, 1, 3, 1, 3)), reshape (x2, 1, 1, 3, 1, 3))
-%!assert (caldays (circshift (caldays (x2), 1)), circshift (x2, 1))
-%!assert (caldays (circshift (caldays (x2), -2)), circshift (x2, -2))
-%!assert (caldays (circshift (caldays (x2), [1, -2])), circshift (x2, [1, -2]))
-%!assert (caldays (circshift (caldays (x2), -1, 2)), circshift (x2, -1, 2))
+%!assert_equal (caldays (repmat (caldays (x1), 3)), repmat (x1, 3))
+%!assert_equal (caldays (repmat (caldays (x1), 2, 3)), repmat (x1, 2, 3))
+%!assert_equal (caldays (repmat (caldays (x1), 1, 1, 3)), repmat (x1, 1, 1, 3))
+%!assert_equal (caldays (repmat (caldays (x1), [1, 1, 3])), repmat (x1, [1, 1, 3]))
+%!assert_equal (caldays (repmat (caldays (x1), 1, 0, 3)), repmat (x1, 1, 0, 3))
+%!assert_equal (caldays (repmat (caldays (x1), [1, 0, 3])), repmat (x1, 1, 0, 3))
+%!assert_equal (caldays (repelem (caldays (x1), 3)), repelem (x1, 3))
+%!assert_equal (caldays (repelem (caldays (x1), 2, 3)), repelem (x1, 2, 3))
+%!assert_equal (caldays (repelem (caldays (x1), [1, 3])), repelem (x1, [1, 3]))
+%!assert_equal (caldays (repelem (caldays (x2), 1, [1, 1, 3])), repelem (x2, 1, [1, 1, 3]))
+%!assert_equal (caldays (repelem (caldays (x2), [2, 3, 4], [1, 0, 3])), repelem (x2, [2, 3, 4], [1, 0, 3]))
+%!assert_equal (caldays (repelem (caldays (x2), 2, [1, 0, 3])), repelem (x2, 2, [1, 0, 3]))
+%!assert_equal (caldays (repelems (caldays (x2), [1, 3, 4; 4, 2, 5])), repelems (x2, [1, 3, 4; 4, 2, 5]))
+%!assert_equal (isempty (repelems (caldays (x2), [1, 3, 4; 0, 0, 0])), true)
+%!assert_equal (size (reshape (caldays (x2), 1, 9)), [1, 9])
+%!assert_equal (caldays (reshape (caldays (x2), 1, 9)), reshape (x2, 1, 9))
+%!assert_equal (caldays (reshape (caldays (x2), 1, 1, 9)), reshape (x2, 1, 1, 9))
+%!assert_equal (caldays (reshape (caldays (x2), 1, 1, 3, 1, 3)), reshape (x2, 1, 1, 3, 1, 3))
+%!assert_equal (caldays (circshift (caldays (x2), 1)), circshift (x2, 1))
+%!assert_equal (caldays (circshift (caldays (x2), -2)), circshift (x2, -2))
+%!assert_equal (caldays (circshift (caldays (x2), [1, -2])), circshift (x2, [1, -2]))
+%!assert_equal (caldays (circshift (caldays (x2), -1, 2)), circshift (x2, -1, 2))
 %!test
 %! cD = permute (caldays (x2), [2, 1]);
-%! assert (caldays (cD), permute (x2, [2, 1]));
+%! assert_equal (caldays (cD), permute (x2, [2, 1]));
 %!test
 %! cD = ipermute (permute (caldays (x2), [2, 1]), [2, 1]);
-%! assert (caldays (cD), x2);
-%!assert (caldays (caldays (x2)'), x2');
-%!assert (caldays (caldays (x2).'), x2');
-%!assert (caldays (ctranspose (caldays (x2))), x2');
-%!assert (caldays (ctranspose (caldays (x2))), caldays (transpose (caldays (x2))));
+%! assert_equal (caldays (cD), x2);
+%!assert_equal (caldays (caldays (x2)'), x2');
+%!assert_equal (caldays (caldays (x2).'), x2');
+%!assert_equal (caldays (ctranspose (caldays (x2))), x2');
+%!assert_equal (caldays (ctranspose (caldays (x2))), caldays (transpose (caldays (x2))));
 
 ################################################################################
 ##                  ** Reference and Assignment Operations **                 ##
@@ -1388,38 +1388,38 @@
 
 %!test
 %! cD = caldays (x2);
-%! assert (caldays (cD(end)), 2);
-%! assert (caldays (cD(1:end)), x2(:)');
-%! assert (caldays (cD(1:end)'), x2(:));
+%! assert_equal (caldays (cD(end)), 2);
+%! assert_equal (caldays (cD(1:end)), x2(:)');
+%! assert_equal (caldays (cD(1:end)'), x2(:));
 %!test
 %! cD = caldays ([x2, x2]);
-%! assert (caldays (cD(1, 2:end-1)), [1, 6, 8, 1]);
-%! assert (caldays (cD(1:end-1, 2:end-1)), [1, 6, 8, 1; 5, 7, 3, 5]);
-%! assert (size (cD(1:end, 2:end-1)), [3, 4]);
+%! assert_equal (caldays (cD(1, 2:end-1)), [1, 6, 8, 1]);
+%! assert_equal (caldays (cD(1:end-1, 2:end-1)), [1, 6, 8, 1; 5, 7, 3, 5]);
+%! assert_equal (size (cD(1:end, 2:end-1)), [3, 4]);
 
 %!test
 %! cD = caldays ([x2, x2]);
-%! assert (class (cD(1)), 'calendarDuration');
-%! assert (length (cD(1)), 1);
-%! assert (class (cD(1,:)), 'calendarDuration');
-%! assert (length (cD(1,:)), 6);
-%! assert (length (cD(:,2)), 3);
+%! assert_equal (class (cD(1)), 'calendarDuration');
+%! assert_equal (length (cD(1)), 1);
+%! assert_equal (class (cD(1,:)), 'calendarDuration');
+%! assert_equal (length (cD(1,:)), 6);
+%! assert_equal (length (cD(:,2)), 3);
 %!test
 %! cD = caldays (x1);
-%! assert (cD.proxyArray, [0, 2, 0, 0, 3, 0]);
-%! assert (cD.Format, 'ymdt');
+%! assert_equal (cD.proxyArray, [0, 2, 0, 0, 3, 0]);
+%! assert_equal (cD.Format, 'ymdt');
 %!test
 %! cD = caldays (x1');
-%! assert (cD.proxyArray, [0, 2, 0; 0, 3, 0]);
-%! assert (cD.Format, 'ymdt');
+%! assert_equal (cD.proxyArray, [0, 2, 0; 0, 3, 0]);
+%! assert_equal (cD.Format, 'ymdt');
 %!test
 %! cD = calendarDuration ([1; 2], 4, [2; 4]);
-%! assert (cD.proxyArray, [16, 2, 0; 28, 4, 0]);
-%! assert (cD.Format, 'ymdt');
+%! assert_equal (cD.proxyArray, [16, 2, 0; 28, 4, 0]);
+%! assert_equal (cD.Format, 'ymdt');
 %!test
 %! cD = calendarDuration ([1; 2], 4, [2; 4], hours ([8.5; 14.2]), 'Format', 'qmdt');
-%! assert (cD.proxyArray, [16, 2, 8.5; 28, 4, 14.2]);
-%! assert (cD.Format, 'qmdt');
+%! assert_equal (cD.proxyArray, [16, 2, 8.5; 28, 4, 14.2]);
+%! assert_equal (cD.Format, 'qmdt');
 %!error<calendarDuration.subsref: '{}' invalid indexing for referencing values. Use '\(\)' instead.> ...
 %! caldays (3){1}
 %!error<calendarDuration.subsref: '.' index argument must be a character vector.> ...
@@ -1430,62 +1430,62 @@
 %!test
 %! cD = calendarDuration ([1; 2], 4, [2; 4]);
 %! cD(1) = calyears (2) + calmonths (1) + caldays (14);
-%! assert (calyears (cD), [2; 2]);
-%! assert (calmonths (cD), [25; 28]);
-%! assert (caldays (cD), [14; 4]);
-%! assert (days (time (cD)), [0; 0])
+%! assert_equal (calyears (cD), [2; 2]);
+%! assert_equal (calmonths (cD), [25; 28]);
+%! assert_equal (caldays (cD), [14; 4]);
+%! assert_equal (days (time (cD)), [0; 0])
 %!test
 %! cD = calendarDuration ([1; 2], 4, [2; 4]);
 %! cD(end) = 180;
-%! assert (calyears (cD), [1; 0]);
-%! assert (calmonths (cD), [16; 0]);
-%! assert (caldays (cD), [2; 0]);
-%! assert (days (time (cD)), [0; 180])
+%! assert_equal (calyears (cD), [1; 0]);
+%! assert_equal (calmonths (cD), [16; 0]);
+%! assert_equal (caldays (cD), [2; 0]);
+%! assert_equal (days (time (cD)), [0; 180])
 %!test
 %! cD = calendarDuration ([1; 2], 4, [2; 4]);
 %! cD(end) = hours (12);
-%! assert (calyears (cD), [1; 0]);
-%! assert (calmonths (cD), [16; 0]);
-%! assert (caldays (cD), [2; 0]);
-%! assert (days (time (cD)), [0; 0.5])
+%! assert_equal (calyears (cD), [1; 0]);
+%! assert_equal (calmonths (cD), [16; 0]);
+%! assert_equal (caldays (cD), [2; 0]);
+%! assert_equal (days (time (cD)), [0; 0.5])
 %!test
 %! cD = calendarDuration ([1; 2], 4, [2; 4]);
 %! cD(1) = [];
-%! assert (calyears (cD), 2);
-%! assert (calmonths (cD), 28);
-%! assert (caldays (cD), 4);
+%! assert_equal (calyears (cD), 2);
+%! assert_equal (calmonths (cD), 28);
+%! assert_equal (caldays (cD), 4);
 %!test
 %! cD = calendarDuration ([1, 3; 2, 2], 4, 0);
 %! cD(1,:) = [];
-%! assert (calyears (cD), [2, 2]);
-%! assert (calmonths (cD), [28, 28]);
-%! assert (caldays (cD), [0, 0]);
+%! assert_equal (calyears (cD), [2, 2]);
+%! assert_equal (calmonths (cD), [28, 28]);
+%! assert_equal (caldays (cD), [0, 0]);
 %! cD(end+1, :) = caldays ([2; 3]);
-%! assert (caldays (cD(2,:)), [2, 3]);
+%! assert_equal (caldays (cD(2,:)), [2, 3]);
 %!test
 %! cD = calendarDuration ([1, 3; 2, 2], 4, 0);
 %! cD(:, 2) = [];
-%! assert (calyears (cD), [1; 2]);
-%! assert (calmonths (cD), [16; 28]);
-%! assert (caldays (cD), [0; 0]);
+%! assert_equal (calyears (cD), [1; 2]);
+%! assert_equal (calmonths (cD), [16; 28]);
+%! assert_equal (caldays (cD), [0; 0]);
 %! cD(:, end+1) = calmonths ([2; 3]);
-%! assert (calmonths (cD(:,2)), [2; 3]);
+%! assert_equal (calmonths (cD(:,2)), [2; 3]);
 %! cD(:, end+1) = calmonths ([2, 3]);
-%! assert (calmonths (cD(2,:)), [28, 3, 3]);
-%! assert (calmonths (cD(:,[2,3])), [2, 2; 3, 3]);
+%! assert_equal (calmonths (cD(2,:)), [28, 3, 3]);
+%! assert_equal (calmonths (cD(:,[2,3])), [2, 2; 3, 3]);
 %!test
 %! cD = calendarDuration ([1; 2], 4, [2; 4]);
 %! cD(2) = [];
-%! assert (calyears (cD), 1);
-%! assert (calmonths (cD), 16);
-%! assert (caldays (cD), 2);
+%! assert_equal (calyears (cD), 1);
+%! assert_equal (calmonths (cD), 16);
+%! assert_equal (caldays (cD), 2);
 %!test
 %! cD = calendarDuration ([1; 2], 4, [2; 4]);
-%! assert (cD.Format, 'ymdt');
+%! assert_equal (cD.Format, 'ymdt');
 %! cD.Format = 'qmdt';
-%! assert (cD.Format, 'qmdt');
+%! assert_equal (cD.Format, 'qmdt');
 %! cD.Format = 'qmwdt';
-%! assert (cD.Format, 'qmwdt');
+%! assert_equal (cD.Format, 'qmwdt');
 %!error<calendarDuration.subsasgn: assignment value must be calendarDuration or duration array or a numeric array representing 24-hour days.> ...
 %! cD = caldays([1:5]); cD(2) = {1}
 %!error<calendarDuration.subsasgn: '{}' invalid indexing for assigning values. Use '\(\)' instead.> ...

@@ -28,8 +28,8 @@ function TF = iscategorical (x)
   TF = isa (x, 'categorical');
 endfunction
 
-%!assert (iscategorical (categorical ([1, 2, 3])), true);
-%!assert (iscategorical (categorical ([1, 2; 1, 4])), true);
-%!assert (iscategorical ([0, 1, 2]), false);
-%!assert (iscategorical ({true, false}), false);
-%!assert (iscategorical ({categorical([1, 2, 2])}), false);
+%!assert_equal (iscategorical (categorical ([1, 2, 3])), true);
+%!assert_equal (iscategorical (categorical ([1, 2; 1, 4])), true);
+%!assert_equal (iscategorical ([0, 1, 2]), false);
+%!assert_equal (iscategorical ({true, false}), false);
+%!assert_equal (iscategorical ({categorical([1, 2, 2])}), false);

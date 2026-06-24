@@ -50,19 +50,19 @@ endfunction
 %!test
 %! X = magic (3);
 %! D = calweeks (X);
-%! assert (size (D), size (X));
+%! assert_equal (size (D), size (X));
 %!test
 %! D = calweeks ([1, 2, 3]);
-%! assert (calweeks (D), [1, 2, 3]);
+%! assert_equal (calweeks (D), [1, 2, 3]);
 %!test
 %! D = calweeks ([1, 2, NaN, 4]);
-%! assert (calweeks (D), [1, 2, NaN, 4]);
+%! assert_equal (calweeks (D), [1, 2, NaN, 4]);
 %!test
 %! D = calweeks (int16 (1));
-%! assert (calweeks (D), 1);
+%! assert_equal (calweeks (D), 1);
 %!test
 %! D = calweeks ();
-%! assert (calweeks (D), 1);
+%! assert_equal (calweeks (D), 1);
 
 %!error<calweeks: input array must be numeric.> calweeks ("asd");
 %!error<calweeks: input array must be real.> calweeks (1+i);

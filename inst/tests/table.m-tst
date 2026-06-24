@@ -4,11 +4,11 @@
 %! Age = [23; 34; 42; 28];
 %! Height = [167; 163; 183; 178];
 %! T = table (Name, Age, Height);
-%! assert (size (T), [4, 3]);
-%! assert (size (T.Age), [4, 1]);
-%! assert (mean (T.Age), 31.75);
+%! assert_equal (size (T), [4, 3]);
+%! assert_equal (size (T.Age), [4, 1]);
+%! assert_equal (mean (T.Age), 31.75);
 %! varnames = T.Properties.VariableNames;
-%! assert (varnames, {"Name", "Age", "Height"});
+%! assert_equal (varnames, {"Name", "Age", "Height"});
 %!test
 %! Name = {"John"; "Mary"; "Peter"; "Barbara"};
 %! Age = [23; 34; 42; 28];
@@ -16,37 +16,37 @@
 %! T = table (Name, Age, Height);
 %! BloodPressure = [114 83; 119 75; 115 73; 107 80];
 %! T = table (Name, Age, Height, BloodPressure);
-%! assert (size (T), [4, 4]);
-%! assert (size (T.BloodPressure), [4, 2]);
+%! assert_equal (size (T), [4, 4]);
+%! assert_equal (size (T.BloodPressure), [4, 2]);
 %!test
 %! Name = {"John"; "Mary"; "Peter"; "Barbara"};
 %! Age = [23; 34; 42; 28];
 %! Height = [167; 163; 183; 178];
 %! T = table (Name, Age, Height, "VariableNames", {"A", "B", "C"});
-%! assert (T.Properties.VariableNames, {"A", "B", "C"});
+%! assert_equal (T.Properties.VariableNames, {"A", "B", "C"});
 %!test
 %! sz = [4 3];
 %! varTypes = {"double", "datetime", "string"};
 %! T = table("Size", sz, "VariableTypes", varTypes);
-%! assert (size (T), [4, 3]);
-%! assert (T.Properties.VariableNames, {"Var1", "Var2", "Var3"});
+%! assert_equal (size (T), [4, 3]);
+%! assert_equal (T.Properties.VariableNames, {"Var1", "Var2", "Var3"});
 %!test
 %! sz = [4 3];
 %! varTypes = {"double", "datetime", "string"};
 %! T = table("Size", sz, "VariableTypes", varTypes, ...
 %!           "VariableNames", {"A", "B", "C"});
-%! assert (size (T), [4, 3]);
-%! assert (T.Properties.VariableNames, {"A", "B", "C"});
+%! assert_equal (size (T), [4, 3]);
+%! assert_equal (T.Properties.VariableNames, {"A", "B", "C"});
 %!test
 %! sz = [4 3];
 %! varTypes = {"double", "datetime", "table"};
 %! T = table("Size", sz, "VariableTypes", varTypes, ...
 %!           "VariableNames", {"A", "B", "C"});
-%! assert (size (T), [4, 3]);
-%! assert (size (T.C), [0, 1]);
-%! assert (class (T.A), "double");
-%! assert (class (T.B), "datetime");
-%! assert (class (T.C), "table");
+%! assert_equal (size (T), [4, 3]);
+%! assert_equal (size (T.C), [0, 1]);
+%! assert_equal (class (T.A), "double");
+%! assert_equal (class (T.B), "datetime");
+%! assert_equal (class (T.C), "table");
 
 ## Test 'subref' and 'subsasgn' methods
 %!shared LastName, Age, Smoker, Height, Weight, BloodPressure, T, tblA
@@ -57,47 +57,47 @@
 %! Weight = [176; 163; 131; 133; 119];
 %! BloodPressure = [124, 93; 109, 77; 125, 83; 117, 75; 122, 80];
 %! T = table (Age, Smoker, Height, Weight, BloodPressure);
-%!assert (size (T(1,:)), [1, 5]);
-%!assert (class (T(1,:)), "table");
-%!assert (size (T{1,:}), [1, 6]);
-%!assert (T{1,:}, [38, 1, 71, 176, 124, 93]);
-%!assert (T{:,2}, logical([1; 0; 1; 0; 1]));
-%!assert (T{:,"Smoker"}, logical([1; 0; 1; 0; 1]));
-%!assert (T{:,"Height"}, [71; 69; 64; 67; 64]);
-%!assert (size(T{:,"Smoker"}), [5, 1]);
-%!assert (size(T{:,"Height"}), [5, 1]);
-%!assert (T.Variables, [Age, Smoker, Height, Weight, BloodPressure]);
-%!assert (isempty (T.Properties.RowNames), true);
-%!assert (numel (T.Properties.VariableNames), 5);
+%!assert_equal (size (T(1,:)), [1, 5]);
+%!assert_equal (class (T(1,:)), "table");
+%!assert_equal (size (T{1,:}), [1, 6]);
+%!assert_equal (T{1,:}, [38, 1, 71, 176, 124, 93]);
+%!assert_equal (T{:,2}, logical([1; 0; 1; 0; 1]));
+%!assert_equal (T{:,"Smoker"}, logical([1; 0; 1; 0; 1]));
+%!assert_equal (T{:,"Height"}, [71; 69; 64; 67; 64]);
+%!assert_equal (size(T{:,"Smoker"}), [5, 1]);
+%!assert_equal (size(T{:,"Height"}), [5, 1]);
+%!assert_equal (T.Variables, [Age, Smoker, Height, Weight, BloodPressure]);
+%!assert_equal (isempty (T.Properties.RowNames), true);
+%!assert_equal (numel (T.Properties.VariableNames), 5);
 %!test
 %! T.Properties.Description = "text";
-%! assert (T.Properties.Description, "text");
-%!assert (size (T(:,{"Age", "Smoker"})), [5, 2]);
-%!assert (T{:,{"Age", "Smoker"}}, [Age, Smoker]);
+%! assert_equal (T.Properties.Description, "text");
+%!assert_equal (size (T(:,{"Age", "Smoker"})), [5, 2]);
+%!assert_equal (T{:,{"Age", "Smoker"}}, [Age, Smoker]);
 %!test
 %! T = table (Age, Smoker);
 %! T.("29-May-2019 Blood Pressure Reading") = BloodPressure;
-%! assert (T.("29-May-2019 Blood Pressure Reading"), BloodPressure);
+%! assert_equal (T.("29-May-2019 Blood Pressure Reading"), BloodPressure);
 %!test
 %! T = table (Age, Smoker);
 %! T.Height = Height;
 %! T.Weight = Weight;
-%! assert (size (T), [5, 4]);
-%! assert (T.Weight, Weight);
-%! assert (T.Weight, T{:,"Weight"});
-%! assert (T.Weight, T{:,4});
+%! assert_equal (size (T), [5, 4]);
+%! assert_equal (T.Weight, Weight);
+%! assert_equal (T.Weight, T{:,"Weight"});
+%! assert_equal (T.Weight, T{:,4});
 %!test
 %! T.Weight(1) = 25;
-%! assert (T.Weight, [25;Weight(2:end)]);
+%! assert_equal (T.Weight, [25;Weight(2:end)]);
 %!test
 %! T.Weight([1,3]) = 25;
-%! assert (T.Weight, [25;Weight(2);25;Weight(4:end)]);
+%! assert_equal (T.Weight, [25;Weight(2);25;Weight(4:end)]);
 %!test
 %! T.Weight([1,3]) = 25;
-%! assert (T.Weight, [25;Weight(2);25;Weight(4:end)]);
+%! assert_equal (T.Weight, [25;Weight(2);25;Weight(4:end)]);
 %!test
 %! T.Weight([1:3,5]) = 25;
-%! assert (T.Weight, [25;25;25;Weight(4);25]);
+%! assert_equal (T.Weight, [25;25;25;Weight(4);25]);
 %!test
 %! T = table (LastName, Age, Smoker, Height, Weight);
 %! T.Properties.RowNames = string (LastName);
@@ -112,221 +112,221 @@
 %! T.Properties.RowNames = ['LastName'];
 %!test
 %! T = table (LastName, Age, Smoker, Height, Weight);
-%! assert (isempty (T.Row), true);
+%! assert_equal (isempty (T.Row), true);
 %! T.Properties.DimensionNames(1) = 'Patients';
-%! assert (isempty (T.Patients), true);
+%! assert_equal (isempty (T.Patients), true);
 %!test
 %! T.Properties.RowNames = "LastName";
-%! assert (isempty (T.Patients), false);
+%! assert_equal (isempty (T.Patients), false);
 %! T.Properties.DimensionNames(2) = 'Data';
-%! assert (T.Data, [Age,Smoker,Height,Weight]);
+%! assert_equal (T.Data, [Age,Smoker,Height,Weight]);
 %!test
 %! T = table (Age, Smoker, Height, Weight, BloodPressure);
-%! assert (T{1, @isnumeric}, [38, 71, 176, 124, 93]);
-%! assert (T{1, vartype ("numeric")}, [38, 71, 176, 124, 93]);
+%! assert_equal (T{1, @isnumeric}, [38, 71, 176, 124, 93]);
+%! assert_equal (T{1, vartype ("numeric")}, [38, 71, 176, 124, 93]);
 %!test
 %! T1 = table (LastName, Age);
-%! assert (T1{:, @iscellstr}, LastName);
-%! assert (T1{:, @isnumeric}, Age);
-%! assert (T1(:, @iscellstr).LastName, LastName)
-%! assert (T1(:, @isnumeric).Age, Age)
+%! assert_equal (T1{:, @iscellstr}, LastName);
+%! assert_equal (T1{:, @isnumeric}, Age);
+%! assert_equal (T1(:, @iscellstr).LastName, LastName)
+%! assert_equal (T1(:, @isnumeric).Age, Age)
 %!test
 %! T1 = table (LastName, Age);
-%! assert (T1{:, @iscellstr}, LastName);
-%! assert (T1{:, @isnumeric}, Age);
+%! assert_equal (T1{:, @iscellstr}, LastName);
+%! assert_equal (T1{:, @isnumeric}, Age);
 %!test
 %! T1 = table (LastName, Age, Height);
-%! assert (T1{:, @iscellstr}, LastName);
-%! assert (class (T1(:, @isnumeric)), "table");
-%! assert (size (T1(:, @isnumeric)), [5, 2]);
+%! assert_equal (T1{:, @iscellstr}, LastName);
+%! assert_equal (class (T1(:, @isnumeric)), "table");
+%! assert_equal (size (T1(:, @isnumeric)), [5, 2]);
 
 ## Test "end" keyword
 %!test
 %! t = table ([1;2;3], [4;5;6], [7;8;9], 'VariableNames', {'A', 'B', 'C'}, ...
 %!                                       'RowNames', {'Row1', 'Row2', 'Row3'});
 %! out = t(:,end);
-%! assert (out.Properties.VariableNames, {'C'});
-%! assert (out.Properties.RowNames, {'Row1'; 'Row2'; 'Row3'});
-%! assert (out.C, [7; 8; 9]);
+%! assert_equal (out.Properties.VariableNames, {'C'});
+%! assert_equal (out.Properties.RowNames, {'Row1'; 'Row2'; 'Row3'});
+%! assert_equal (out.C, [7; 8; 9]);
 %! out = t{:,end};
-%! assert (out, [7; 8; 9]);
+%! assert_equal (out, [7; 8; 9]);
 %!test
 %! t = table ([1;2;3], [4;5;6], [7;8;9], 'VariableNames', {'A', 'B', 'C'}, ...
 %!                                       'RowNames', {'Row1', 'Row2', 'Row3'});
 %! out = t(end, :);
-%! assert (out.Properties.VariableNames, {'A', 'B', 'C'});
-%! assert (out.Properties.RowNames, {'Row3'});
-%! assert ([out.A, out.B, out.C], [3, 6, 9]);
+%! assert_equal (out.Properties.VariableNames, {'A', 'B', 'C'});
+%! assert_equal (out.Properties.RowNames, {'Row3'});
+%! assert_equal ([out.A, out.B, out.C], [3, 6, 9]);
 %! out = t{end,:};
-%! assert (out, [3, 6, 9]);
+%! assert_equal (out, [3, 6, 9]);
 
 ## Test **summary information** methods
 %!test
 %! T = table (Age, Smoker, Height, Weight, BloodPressure);
-%! assert (table2array (T), [Age, Smoker, Height, Weight, BloodPressure]);
+%! assert_equal (table2array (T), [Age, Smoker, Height, Weight, BloodPressure]);
 %!test
 %! C = table2cell (T);
-%! assert (cell2mat (C(:,[1:4])), [Age, Smoker, Height, Weight]);
+%! assert_equal (cell2mat (C(:,[1:4])), [Age, Smoker, Height, Weight]);
 %!test
 %! S = table2struct (T);
-%! assert ([S.Age], Age');
-%! assert (reshape ([S.BloodPressure], 2, 5)', BloodPressure);
-%! assert (numel (S), height (T));
+%! assert_equal ([S.Age], Age');
+%! assert_equal (reshape ([S.BloodPressure], 2, 5)', BloodPressure);
+%! assert_equal (numel (S), height (T));
 %!test
 %! S = table2struct (T, "ToScalar", true);
-%! assert (S.Age, Age);
-%! assert (S.BloodPressure, BloodPressure);
-%! assert (numel (S), 1);
+%! assert_equal (S.Age, Age);
+%! assert_equal (S.BloodPressure, BloodPressure);
+%! assert_equal (numel (S), 1);
 %!test
 %! t = summary (T);
-%! assert (isstruct (t), true);
-%! assert ([t.Age.Min, t.Age.Median, t.Age.Max], [38, 40, 49]);
-%! assert (t.Smoker.Size, [5, 1]);
-%! assert (t.BloodPressure.Size, [5, 2]);
-%!assert (height (T), 5);
-%!assert (width (T), 5);
-%!assert (height (head (T, 3)), 3);
-%!assert (height (head (T, 8)), 5);
-%!assert (height (head (T)), 5);
-%!assert (height (tail (T, 3)), 3);
-%!assert (height (tail (T, 8)), 5);
-%!assert (height (tail (T)), 5);
+%! assert_equal (isstruct (t), true);
+%! assert_equal ([t.Age.Min, t.Age.Median, t.Age.Max], [38, 40, 49]);
+%! assert_equal (t.Smoker.Size, [5, 1]);
+%! assert_equal (t.BloodPressure.Size, [5, 2]);
+%!assert_equal (height (T), 5);
+%!assert_equal (width (T), 5);
+%!assert_equal (height (head (T, 3)), 3);
+%!assert_equal (height (head (T, 8)), 5);
+%!assert_equal (height (head (T)), 5);
+%!assert_equal (height (tail (T, 3)), 3);
+%!assert_equal (height (tail (T, 8)), 5);
+%!assert_equal (height (tail (T)), 5);
 
 ## Test 'sortrows' and 'issortedrows' methods
 %!test
 %! tblA = table (Age, Height, Weight, BloodPressure, 'RowNames', LastName);
-%! assert (issortedrows (tblA, "RowNames"), false);
+%! assert_equal (issortedrows (tblA, "RowNames"), false);
 %! [sorted_tblA, index] = sortrows (tblA, "RowNames");
-%! assert (index, [5; 4; 2; 3; 1]);
-%! assert (issortedrows (sorted_tblA, "RowNames"), true);
+%! assert_equal (index, [5; 4; 2; 3; 1]);
+%! assert_equal (issortedrows (sorted_tblA, "RowNames"), true);
 %! [sorted_tblA, index] = sortrows (tblA, "RowNames", "descend");
-%! assert (index, [1; 3; 2; 4; 5]);
-%! assert (issortedrows (sorted_tblA, "RowNames", "descend"), true);
+%! assert_equal (index, [1; 3; 2; 4; 5]);
+%! assert_equal (issortedrows (sorted_tblA, "RowNames", "descend"), true);
 %!test  # duration variable (regression: 'days' is a method, not a property)
 %! A = table (hours ([3;1;2]), {'a';'b';'c'}, 'VariableNames', {'D', 'S'});
 %! [S, index] = sortrows (A);
-%! assert (hours (S.D), [1;2;3]);
-%! assert (S.S, {'b';'c';'a'});
-%! assert (index, [2;3;1]);
+%! assert_equal (hours (S.D), [1;2;3]);
+%! assert_equal (S.S, {'b';'c';'a'});
+%! assert_equal (index, [2;3;1]);
 %!test
 %! tblA.Properties.DimensionNames(1) = "Patients";
-%! assert (issortedrows (tblA, "Patients"), false);
+%! assert_equal (issortedrows (tblA, "Patients"), false);
 %! [sorted_tblA, index] = sortrows (tblA, "Patients");
-%! assert (index, [5; 4; 2; 3; 1]);
-%! assert (issortedrows (sorted_tblA, "Patients"), true);
+%! assert_equal (index, [5; 4; 2; 3; 1]);
+%! assert_equal (issortedrows (sorted_tblA, "Patients"), true);
 %! [sorted_tblA, index] = sortrows (tblA, "Patients", "descend");
-%! assert (index, [1; 3; 2; 4; 5]);
-%! assert (issortedrows (sorted_tblA, "Patients", "descend"), true);
+%! assert_equal (index, [1; 3; 2; 4; 5]);
+%! assert_equal (issortedrows (sorted_tblA, "Patients", "descend"), true);
 %!test
 %! [sorted_tblA, index] = sortrows (tblA);
-%! assert (index, [3; 1; 4; 2; 5]);
-%! assert (issortedrows (sorted_tblA), true);
+%! assert_equal (index, [3; 1; 4; 2; 5]);
+%! assert_equal (issortedrows (sorted_tblA), true);
 %! [sorted_tblA, index] = sortrows (tblA, [], "ascend");
-%! assert (index, [3; 1; 4; 2; 5]);
-%! assert (issortedrows (sorted_tblA, [], "ascend"), true);
+%! assert_equal (index, [3; 1; 4; 2; 5]);
+%! assert_equal (issortedrows (sorted_tblA, [], "ascend"), true);
 %! [sorted_tblA, index] = sortrows (tblA, [], "descend");
-%! assert (index, [5; 2; 4; 1; 3]);
-%! assert (issortedrows (sorted_tblA, [], "descend"), true);
+%! assert_equal (index, [5; 2; 4; 1; 3]);
+%! assert_equal (issortedrows (sorted_tblA, [], "descend"), true);
 %!test
 %! [tblB, index] = sortrows (tblA, "Height");
-%! assert (index, [3; 5; 4; 2; 1]);
-%! assert (tblB.Properties.RowNames, ...
+%! assert_equal (index, [3; 5; 4; 2; 1]);
+%! assert_equal (tblB.Properties.RowNames, ...
 %!         {"Li"; "Brown"; "Diaz"; "Johnson"; "Sanchez"})
-%! assert (issortedrows (tblB, "Height"), true);
+%! assert_equal (issortedrows (tblB, "Height"), true);
 %!test
 %! LastName = {"Sweet"; "Jacobson"; "Wang"; "Joiner"; "Berger"};
 %! tblA = table (Age, Height, Weight, BloodPressure, 'RowNames', LastName);
 %! [tblB, index] = sortrows (tblA, {"Height", "Weight"}, {"ascend", "descend"});
-%! assert (index, [3; 5; 4; 2; 1]);
-%! assert (tblB.Properties.RowNames, ...
+%! assert_equal (index, [3; 5; 4; 2; 1]);
+%! assert_equal (tblB.Properties.RowNames, ...
 %!         {"Wang"; "Berger"; "Joiner"; "Jacobson"; "Sweet"})
-%! assert (issortedrows (tblB, {"Height", "Weight"}, ...
+%! assert_equal (issortedrows (tblB, {"Height", "Weight"}, ...
 %!                             {"ascend", "descend"}), true);
 %!test
 %! [tblB, index] = sortrows (tblA, {"BloodPressure"}, {"ascend"});
-%! assert (index, [2; 4; 5; 1; 3]);
-%! assert (tblB.BloodPressure, sortrows (BloodPressure));
-%! assert (issortedrows (tblB, {"BloodPressure"}, {"ascend"}), true);
+%! assert_equal (index, [2; 4; 5; 1; 3]);
+%! assert_equal (tblB.BloodPressure, sortrows (BloodPressure));
+%! assert_equal (issortedrows (tblB, {"BloodPressure"}, {"ascend"}), true);
 %! [tblB, index] = sortrows (tblA, {"BloodPressure"}, {"descend"});
-%! assert (index, flip ([2; 4; 5; 1; 3]));
-%! assert (tblB.BloodPressure, sortrows (BloodPressure, -1));
-%! assert (issortedrows (tblB, "BloodPressure", "descend"), true);
+%! assert_equal (index, flip ([2; 4; 5; 1; 3]));
+%! assert_equal (tblB.BloodPressure, sortrows (BloodPressure, -1));
+%! assert_equal (issortedrows (tblB, "BloodPressure", "descend"), true);
 %!test
 %! [tblB, index] = sortrows (tblA, {"Height", "RowNames"}, {"ascend"});
-%! assert (index, [5; 3; 4; 2; 1]);
-%! assert (tblB.Properties.RowNames, ...
+%! assert_equal (index, [5; 3; 4; 2; 1]);
+%! assert_equal (tblB.Properties.RowNames, ...
 %!         {"Berger"; "Wang"; "Joiner"; "Jacobson"; "Sweet"})
-%! assert (tblB.Height, sortrows (Height));
-%! assert (issortedrows (tblB, {"Height", "RowNames"}, {"ascend"}), true);
+%! assert_equal (tblB.Height, sortrows (Height));
+%! assert_equal (issortedrows (tblB, {"Height", "RowNames"}, {"ascend"}), true);
 %! [tblB, index] = sortrows (tblA, {"Height", "RowNames"}, ...
 %!                                 {"ascend", "descend"});
-%! assert (index, [3; 5; 4; 2; 1]);
-%! assert (tblB.Properties.RowNames, ...
+%! assert_equal (index, [3; 5; 4; 2; 1]);
+%! assert_equal (tblB.Properties.RowNames, ...
 %!         {"Wang"; "Berger"; "Joiner"; "Jacobson"; "Sweet"})
-%! assert (issortedrows (tblB, {"Height", "RowNames"}, ...
+%! assert_equal (issortedrows (tblB, {"Height", "RowNames"}, ...
 %!                             {"ascend", "descend"}), true);
 %!test
 %! [tblB, index] = sortrows (tblA, [true, true, false, false]);
-%! assert (index, [3; 1; 4; 2; 5]);
-%! assert (issortedrows (tblB, [true, true, false, false]), true);
+%! assert_equal (index, [3; 1; 4; 2; 5]);
+%! assert_equal (issortedrows (tblB, [true, true, false, false]), true);
 %! [tblB, index] = sortrows (tblA, [true, true, false, false], "ascend");
-%! assert (index, [3; 1; 4; 2; 5]);
-%! assert (issortedrows (tblB, [true, true, false, false], "ascend"), true);
+%! assert_equal (index, [3; 1; 4; 2; 5]);
+%! assert_equal (issortedrows (tblB, [true, true, false, false], "ascend"), true);
 %! [tblB, index] = sortrows (tblA, [true, true, false, false], "descend");
-%! assert (index, flip ([3; 1; 4; 2; 5]));
-%! assert (issortedrows (tblB, [true, true, false, false], "descend"), true);
+%! assert_equal (index, flip ([3; 1; 4; 2; 5]));
+%! assert_equal (issortedrows (tblB, [true, true, false, false], "descend"), true);
 %! [tblB, index] = sortrows (tblA, [true, true, false, false], ...
 %!                                 {"ascend", "descend"});
-%! assert (index, [1; 3; 4; 2; 5]);
-%! assert (issortedrows (tblB, [true, true, false, false], ...
+%! assert_equal (index, [1; 3; 4; 2; 5]);
+%! assert_equal (issortedrows (tblB, [true, true, false, false], ...
 %!                             {"ascend", "descend"}), true);
 %!test
 %! [sorted_tblA, indexN] = sortrows (tblA, 1);
-%! assert (issortedrows (sorted_tblA, 1), true);
+%! assert_equal (issortedrows (sorted_tblA, 1), true);
 %! [sorted_tblA, indexV] = sortrows (tblA, "Age");
-%! assert (issortedrows (sorted_tblA, "Age"), true);
-%! assert (indexN, indexV);
+%! assert_equal (issortedrows (sorted_tblA, "Age"), true);
+%! assert_equal (indexN, indexV);
 %! [sorted_tblA, indexN] = sortrows (tblA, -1);
-%! assert (issortedrows (sorted_tblA, -1), true);
+%! assert_equal (issortedrows (sorted_tblA, -1), true);
 %! [sorted_tblA, indexV] = sortrows (tblA, "Age", "descend");
-%! assert (issortedrows (sorted_tblA, "Age", "descend"), true);
-%! assert (indexN, indexV);
+%! assert_equal (issortedrows (sorted_tblA, "Age", "descend"), true);
+%! assert_equal (indexN, indexV);
 %! [sorted_tblA, indexN] = sortrows (tblA, -1, "ascend");
-%! assert (issortedrows (sorted_tblA, -1, "ascend"), true);
+%! assert_equal (issortedrows (sorted_tblA, -1, "ascend"), true);
 %! [~, indexV] = sortrows (tblA, "Age");
-%! assert (indexN, indexV);
+%! assert_equal (indexN, indexV);
 %! [sorted_tblA, indexN] = sortrows (tblA, [-1, 2]);
-%! assert (issortedrows (sorted_tblA, [-1, 2]), true);
+%! assert_equal (issortedrows (sorted_tblA, [-1, 2]), true);
 %! [~, indexV] = sortrows (tblA, {"Age", "Height"}, {"descend", "ascend"});
-%! assert (indexN, indexV);
+%! assert_equal (indexN, indexV);
 %!test
 %! TT = table (Age, table (Age, Height), BloodPressure, 'RowNames', LastName);
 %! [sorted_TT, index] = sortrows (TT);
-%! assert (index, [3; 1; 4; 2; 5]);
-%! assert (issortedrows (sorted_TT), true);
+%! assert_equal (index, [3; 1; 4; 2; 5]);
+%! assert_equal (issortedrows (sorted_TT), true);
 %! [sorted_TT, index] = sortrows (TT, [1, 2]);
-%! assert (index, [3; 1; 4; 2; 5]);
-%! assert (issortedrows (sorted_TT, [1, 2]), true);
+%! assert_equal (index, [3; 1; 4; 2; 5]);
+%! assert_equal (issortedrows (sorted_TT, [1, 2]), true);
 %! [sorted_TT, index] = sortrows (TT, [1, -2]);
-%! assert (index, [1; 3; 4; 2; 5]);
-%! assert (issortedrows (sorted_TT, [1, -2]), true);
+%! assert_equal (index, [1; 3; 4; 2; 5]);
+%! assert_equal (issortedrows (sorted_TT, [1, -2]), true);
 %!test
 %! Weights = [176;NaN;131;133;NaN];
 %! tblN = table (Age, Height, Weights, BloodPressure, 'RowNames', LastName);
 %! [tblB, index] = sortrows (tblN, "Weights", "MissingPlacement", "first");
-%! assert (index, [2; 5; 3; 4; 1]);
-%! assert (issortedrows (tblB, "Weights", "MissingPlacement", "first"), true);
+%! assert_equal (index, [2; 5; 3; 4; 1]);
+%! assert_equal (issortedrows (tblB, "Weights", "MissingPlacement", "first"), true);
 %! [tblB, index] = sortrows (tblN, "Weights");
-%! assert (index, [3; 4; 1; 2; 5]);
-%! assert (issortedrows (tblB, "Weights"), true);
+%! assert_equal (index, [3; 4; 1; 2; 5]);
+%! assert_equal (issortedrows (tblB, "Weights"), true);
 %!test
 %! tblN = table (Age, Height, Weight, BloodPressure, LastName);
 %! [tblB, index] = sortrows (tblN, vartype ("numeric"));
-%! assert (index, [3; 1; 4; 2; 5]);
-%! assert (issortedrows (tblB, vartype ("numeric")), true);
+%! assert_equal (index, [3; 1; 4; 2; 5]);
+%! assert_equal (issortedrows (tblB, vartype ("numeric")), true);
 %! [tblB, index] = sortrows (tblN, vartype ("cellstr"));
-%! assert (index, [5; 2; 4; 1; 3]);
-%! assert (issortedrows (tblB, vartype ("cellstr")), true);
+%! assert_equal (index, [5; 2; 4; 1; 3]);
+%! assert_equal (issortedrows (tblB, vartype ("cellstr")), true);
 
 ## Test 'unique' method
 %!test
@@ -336,17 +336,17 @@
 %! Weight = [176; 163; 131; 185; 131];
 %! A = table (Age, Height, Weight, 'RowNames', Name);
 %! [C, ia, ic] = unique (A);
-%! assert (ia, [3; 1; 4; 2]);
-%! assert (ic, [2; 4; 1; 3; 1]);
-%! assert (C.Age, [38; 38; 40; 43]);
-%! assert (C.Height, [64; 71; 67; 69]);
-%! assert (C.Weight, [131; 176; 185; 163]);
-%! assert (C.Properties.RowNames, {'Bob'; 'Fred'; 'George'; 'Betty'});
+%! assert_equal (ia, [3; 1; 4; 2]);
+%! assert_equal (ic, [2; 4; 1; 3; 1]);
+%! assert_equal (C.Age, [38; 38; 40; 43]);
+%! assert_equal (C.Height, [64; 71; 67; 69]);
+%! assert_equal (C.Weight, [131; 176; 185; 163]);
+%! assert_equal (C.Properties.RowNames, {'Bob'; 'Fred'; 'George'; 'Betty'});
 %!test  # duration variable (regression: 'days' is a method, not a property)
 %! A = table (hours ([2;1;2;3]), {'a';'b';'c';'a'}, 'VariableNames', {'D','S'});
 %! C = unique (A);
-%! assert (hours (C.D), [1;2;2;3]);
-%! assert (C.S, {'b';'a';'c';'a'});
+%! assert_equal (hours (C.D), [1;2;2;3]);
+%! assert_equal (C.S, {'b';'a';'c';'a'});
 %!test
 %! Name = {'Fred'; 'Betty'; 'Bob'; 'George'; 'Jane'};
 %! Age = [38; 43; 38; 40; 38];
@@ -354,12 +354,12 @@
 %! Weight = [176; 163; 131; 185; 131];
 %! A = table (Age, Height, Weight, 'RowNames', Name);
 %! [C, ia, ic] = unique (A, "sorted");
-%! assert (ia, [3; 1; 4; 2]);
-%! assert (ic, [2; 4; 1; 3; 1]);
-%! assert (C.Age, [38; 38; 40; 43]);
-%! assert (C.Height, [64; 71; 67; 69]);
-%! assert (C.Weight, [131; 176; 185; 163]);
-%! assert (C.Properties.RowNames, {'Bob'; 'Fred'; 'George'; 'Betty'});
+%! assert_equal (ia, [3; 1; 4; 2]);
+%! assert_equal (ic, [2; 4; 1; 3; 1]);
+%! assert_equal (C.Age, [38; 38; 40; 43]);
+%! assert_equal (C.Height, [64; 71; 67; 69]);
+%! assert_equal (C.Weight, [131; 176; 185; 163]);
+%! assert_equal (C.Properties.RowNames, {'Bob'; 'Fred'; 'George'; 'Betty'});
 %!test
 %! Name = {'Fred'; 'Betty'; 'Bob'; 'George'; 'Jane'};
 %! Age = [38; 43; 38; 40; 38];
@@ -367,12 +367,12 @@
 %! Weight = [176; 163; 131; 185; 131];
 %! A = table (Age, Height, Weight, 'RowNames', Name);
 %! [C, ia, ic] = unique (A, "stable");
-%! assert (ia, [1; 2; 3; 4]);
-%! assert (ic, [1; 2; 3; 4; 3]);
-%! assert (C.Age, [38; 43; 38; 40]);
-%! assert (C.Height, [71; 69; 64; 67]);
-%! assert (C.Weight, [176; 163; 131; 185]);
-%! assert (C.Properties.RowNames, {'Fred'; 'Betty'; 'Bob'; 'George'});
+%! assert_equal (ia, [1; 2; 3; 4]);
+%! assert_equal (ic, [1; 2; 3; 4; 3]);
+%! assert_equal (C.Age, [38; 43; 38; 40]);
+%! assert_equal (C.Height, [71; 69; 64; 67]);
+%! assert_equal (C.Weight, [176; 163; 131; 185]);
+%! assert_equal (C.Properties.RowNames, {'Fred'; 'Betty'; 'Bob'; 'George'});
 %!test
 %! Name = {'Fred'; 'Betty'; 'Bob'; 'George'; 'Jane'};
 %! Age = [38; 43; 38; 40; 38];
@@ -380,12 +380,12 @@
 %! Weight = [176; 163; 131; 185; 131];
 %! A = table (Age, Height, Weight, 'RowNames', Name);
 %! [C, ia, ic] = unique (A, "first");
-%! assert (ia, [3; 1; 4; 2]);
-%! assert (ic, [2; 4; 1; 3; 1]);
-%! assert (C.Age, [38; 38; 40; 43]);
-%! assert (C.Height, [64; 71; 67; 69]);
-%! assert (C.Weight, [131; 176; 185; 163]);
-%! assert (C.Properties.RowNames, {'Bob'; 'Fred'; 'George'; 'Betty'});
+%! assert_equal (ia, [3; 1; 4; 2]);
+%! assert_equal (ic, [2; 4; 1; 3; 1]);
+%! assert_equal (C.Age, [38; 38; 40; 43]);
+%! assert_equal (C.Height, [64; 71; 67; 69]);
+%! assert_equal (C.Weight, [131; 176; 185; 163]);
+%! assert_equal (C.Properties.RowNames, {'Bob'; 'Fred'; 'George'; 'Betty'});
 %!test
 %! Name = {'Fred'; 'Betty'; 'Bob'; 'George'; 'Jane'};
 %! Age = [38; 43; 38; 40; 38];
@@ -393,12 +393,12 @@
 %! Weight = [176; 163; 131; 185; 131];
 %! A = table (Age, Height, Weight, 'RowNames', Name);
 %! [C, ia, ic] = unique (A, "last");
-%! assert (ia, [5; 1; 4; 2]);
-%! assert (ic, [2; 4; 1; 3; 1]);
-%! assert (C.Age, [38; 38; 40; 43]);
-%! assert (C.Height, [64; 71; 67; 69]);
-%! assert (C.Weight, [131; 176; 185; 163]);
-%! assert (C.Properties.RowNames, {'Jane'; 'Fred'; 'George'; 'Betty'});
+%! assert_equal (ia, [5; 1; 4; 2]);
+%! assert_equal (ic, [2; 4; 1; 3; 1]);
+%! assert_equal (C.Age, [38; 38; 40; 43]);
+%! assert_equal (C.Height, [64; 71; 67; 69]);
+%! assert_equal (C.Weight, [131; 176; 185; 163]);
+%! assert_equal (C.Properties.RowNames, {'Jane'; 'Fred'; 'George'; 'Betty'});
 
 ## Test 'topkrows' method
 %!test
@@ -410,268 +410,268 @@
 %! BloodPressure = [124, 93; 109, 77; 125, 83; 117, 75; 122, 80];
 %! tblA = table (Age, Height, Weight, BloodPressure, 'RowNames', LastName);
 %! [sorted_tblA, index] = topkrows (tblA, 3, "RowNames");
-%! assert (index, [5; 4; 2]);
-%! assert (issortedrows (sorted_tblA, "RowNames"), true);
+%! assert_equal (index, [5; 4; 2]);
+%! assert_equal (issortedrows (sorted_tblA, "RowNames"), true);
 %! [sorted_tblA, index] = topkrows (tblA, 4, "RowNames", "descend");
-%! assert (index, [1; 3; 2; 4]);
-%! assert (issortedrows (sorted_tblA, "RowNames", "descend"), true);
+%! assert_equal (index, [1; 3; 2; 4]);
+%! assert_equal (issortedrows (sorted_tblA, "RowNames", "descend"), true);
 %!test
 %! tblA.Properties.DimensionNames(1) = "Patients";
-%! assert (issortedrows (tblA, "Patients"), false);
+%! assert_equal (issortedrows (tblA, "Patients"), false);
 %! [sorted_tblA, index] = topkrows (tblA, 2, "Patients");
-%! assert (index, [5; 4]);
-%! assert (issortedrows (sorted_tblA, "Patients"), true);
+%! assert_equal (index, [5; 4]);
+%! assert_equal (issortedrows (sorted_tblA, "Patients"), true);
 %! [sorted_tblA, index] = topkrows (tblA, 5, "Patients", "descend");
-%! assert (index, [1; 3; 2; 4; 5]);
-%! assert (issortedrows (sorted_tblA, "Patients", "descend"), true);
+%! assert_equal (index, [1; 3; 2; 4; 5]);
+%! assert_equal (issortedrows (sorted_tblA, "Patients", "descend"), true);
 %!test
 %! [sorted_tblA, index] = topkrows (tblA, 3);
-%! assert (index, [3; 1; 4]);
-%! assert (issortedrows (sorted_tblA), true);
+%! assert_equal (index, [3; 1; 4]);
+%! assert_equal (issortedrows (sorted_tblA), true);
 %! [sorted_tblA, index] = topkrows (tblA, 3, ":", "ascend");
-%! assert (index, [3; 1; 4]);
-%! assert (issortedrows (sorted_tblA, [], "ascend"), true);
+%! assert_equal (index, [3; 1; 4]);
+%! assert_equal (issortedrows (sorted_tblA, [], "ascend"), true);
 %! [sorted_tblA, index] = topkrows (tblA, 3, [], "descend");
-%! assert (index, [5; 2; 4]);
-%! assert (issortedrows (sorted_tblA, [], "descend"), true);
+%! assert_equal (index, [5; 2; 4]);
+%! assert_equal (issortedrows (sorted_tblA, [], "descend"), true);
 %!test
 %! [tblB, index] = topkrows (tblA, 3, "Height");
-%! assert (index, [3; 5; 4]);
-%! assert (tblB.Properties.RowNames, {"Li"; "Brown"; "Diaz"});
-%! assert (issortedrows (tblB, "Height"), true);
+%! assert_equal (index, [3; 5; 4]);
+%! assert_equal (tblB.Properties.RowNames, {"Li"; "Brown"; "Diaz"});
+%! assert_equal (issortedrows (tblB, "Height"), true);
 %!test
 %! LastName = {"Sweet"; "Jacobson"; "Wang"; "Joiner"; "Berger"};
 %! tblA = table (Age, Height, Weight, BloodPressure, 'RowNames', LastName);
 %! [tblB, index] = topkrows (tblA, 2, {"Height", "Weight"}, ...
 %!                                    {"ascend", "descend"});
-%! assert (index, [3; 5]);
-%! assert (tblB.Properties.RowNames, {"Wang"; "Berger"});
-%! assert (issortedrows (tblB, {"Height", "Weight"}, ...
+%! assert_equal (index, [3; 5]);
+%! assert_equal (tblB.Properties.RowNames, {"Wang"; "Berger"});
+%! assert_equal (issortedrows (tblB, {"Height", "Weight"}, ...
 %!                             {"ascend", "descend"}), true);
 %!test
 %! [tblB, index] = topkrows (tblA, 4, {"BloodPressure"}, {"ascend"});
-%! assert (index, [2; 4; 5; 1]);
-%! assert (issortedrows (tblB, {"BloodPressure"}, {"ascend"}), true);
+%! assert_equal (index, [2; 4; 5; 1]);
+%! assert_equal (issortedrows (tblB, {"BloodPressure"}, {"ascend"}), true);
 %! [tblB, index] = topkrows (tblA, 3, {"BloodPressure"}, {"descend"});
-%! assert (index, [3; 1; 5]);
-%! assert (issortedrows (tblB, "BloodPressure", "descend"), true);
+%! assert_equal (index, [3; 1; 5]);
+%! assert_equal (issortedrows (tblB, "BloodPressure", "descend"), true);
 %!test
 %! [tblB, index] = topkrows (tblA, 3, {"Height", "RowNames"}, {"ascend"});
-%! assert (index, [5; 3; 4]);
-%! assert (tblB.Properties.RowNames, {"Berger"; "Wang"; "Joiner"})
-%! assert (issortedrows (tblB, {"Height", "RowNames"}, {"ascend"}), true);
+%! assert_equal (index, [5; 3; 4]);
+%! assert_equal (tblB.Properties.RowNames, {"Berger"; "Wang"; "Joiner"})
+%! assert_equal (issortedrows (tblB, {"Height", "RowNames"}, {"ascend"}), true);
 %! [tblB, index] = topkrows (tblA, 4, {"Height", "RowNames"}, ...
 %!                                    {"ascend", "descend"});
-%! assert (index, [3; 5; 4; 2]);
-%! assert (tblB.Properties.RowNames, {"Wang"; "Berger"; "Joiner"; "Jacobson"});
-%! assert (issortedrows (tblB, {"Height", "RowNames"}, ...
+%! assert_equal (index, [3; 5; 4; 2]);
+%! assert_equal (tblB.Properties.RowNames, {"Wang"; "Berger"; "Joiner"; "Jacobson"});
+%! assert_equal (issortedrows (tblB, {"Height", "RowNames"}, ...
 %!                             {"ascend", "descend"}), true);
 %!test
 %! [tblB, index] = topkrows (tblA, 3, [true, true, false, false]);
-%! assert (index, [3; 1; 4]);
-%! assert (issortedrows (tblB, [true, true, false, false]), true);
+%! assert_equal (index, [3; 1; 4]);
+%! assert_equal (issortedrows (tblB, [true, true, false, false]), true);
 %! [tblB, index] = topkrows (tblA, 2, [true, true, false, false], "ascend");
-%! assert (index, [3; 1]);
-%! assert (issortedrows (tblB, [true, true, false, false], "ascend"), true);
+%! assert_equal (index, [3; 1]);
+%! assert_equal (issortedrows (tblB, [true, true, false, false], "ascend"), true);
 %! [tblB, index] = topkrows (tblA, 5, [true, true, false, false], "descend");
-%! assert (index, flip ([3; 1; 4; 2; 5]));
-%! assert (issortedrows (tblB, [true, true, false, false], "descend"), true);
+%! assert_equal (index, flip ([3; 1; 4; 2; 5]));
+%! assert_equal (issortedrows (tblB, [true, true, false, false], "descend"), true);
 %! [tblB, index] = topkrows (tblA, 6, [true, true, false, false], ...
 %!                                    {"ascend", "descend"});
-%! assert (index, [1; 3; 4; 2; 5]);
-%! assert (issortedrows (tblB, [true, true, false, false], ...
+%! assert_equal (index, [1; 3; 4; 2; 5]);
+%! assert_equal (issortedrows (tblB, [true, true, false, false], ...
 %!                             {"ascend", "descend"}), true);
 %!test
 %! [sorted_tblA, indexN] = topkrows (tblA, 2, 1);
-%! assert (issortedrows (sorted_tblA, 1), true);
+%! assert_equal (issortedrows (sorted_tblA, 1), true);
 %! [sorted_tblA, indexV] = topkrows (tblA, 2, "Age");
-%! assert (issortedrows (sorted_tblA, "Age"), true);
-%! assert (indexN, indexV);
+%! assert_equal (issortedrows (sorted_tblA, "Age"), true);
+%! assert_equal (indexN, indexV);
 %! [sorted_tblA, indexN] = topkrows (tblA, 3, -1);
-%! assert (issortedrows (sorted_tblA, -1), true);
+%! assert_equal (issortedrows (sorted_tblA, -1), true);
 %! [sorted_tblA, indexV] = topkrows (tblA, 3, "Age", "descend");
-%! assert (issortedrows (sorted_tblA, "Age", "descend"), true);
-%! assert (indexN, indexV);
+%! assert_equal (issortedrows (sorted_tblA, "Age", "descend"), true);
+%! assert_equal (indexN, indexV);
 %! [sorted_tblA, indexN] = topkrows (tblA, 5, -1, "ascend");
-%! assert (issortedrows (sorted_tblA, -1, "ascend"), true);
+%! assert_equal (issortedrows (sorted_tblA, -1, "ascend"), true);
 %! [~, indexV] = topkrows (tblA, 5, "Age");
-%! assert (indexN, indexV);
+%! assert_equal (indexN, indexV);
 %! [sorted_tblA, indexN] = topkrows (tblA, 3, [-1, 2]);
-%! assert (issortedrows (sorted_tblA, [-1, 2]), true);
+%! assert_equal (issortedrows (sorted_tblA, [-1, 2]), true);
 %! [~, indexV] = topkrows (tblA, 3, {"Age", "Height"}, {"descend", "ascend"});
-%! assert (indexN, indexV);
+%! assert_equal (indexN, indexV);
 %!test
 %! TT = table (Age, table (Age, Height), BloodPressure, 'RowNames', LastName);
 %! [sorted_TT, index] = topkrows (TT, 4);
-%! assert (index, [3; 1; 4; 2]);
-%! assert (issortedrows (sorted_TT), true);
+%! assert_equal (index, [3; 1; 4; 2]);
+%! assert_equal (issortedrows (sorted_TT), true);
 %! [sorted_TT, index] = topkrows (TT, 3, [1, 2]);
-%! assert (index, [3; 1; 4]);
-%! assert (issortedrows (sorted_TT, [1, 2]), true);
+%! assert_equal (index, [3; 1; 4]);
+%! assert_equal (issortedrows (sorted_TT, [1, 2]), true);
 %! [sorted_TT, index] = topkrows (TT, 2, [1, -2]);
-%! assert (index, [1; 3]);
-%! assert (issortedrows (sorted_TT, [1, -2]), true);
+%! assert_equal (index, [1; 3]);
+%! assert_equal (issortedrows (sorted_TT, [1, -2]), true);
 %!test
 %! Weights = [176;NaN;131;133;NaN];
 %! tblN = table (Age, Height, Weights, BloodPressure, 'RowNames', LastName);
 %! [tblB, index] = topkrows (tblN, 4, "Weights", "MissingPlacement", "first");
-%! assert (index, [2; 5; 3; 4]);
-%! assert (issortedrows (tblB, "Weights", "MissingPlacement", "first"), true);
+%! assert_equal (index, [2; 5; 3; 4]);
+%! assert_equal (issortedrows (tblB, "Weights", "MissingPlacement", "first"), true);
 %! [tblB, index] = topkrows (tblN, 3, "Weights");
-%! assert (index, [3; 4; 1]);
-%! assert (issortedrows (tblB, "Weights"), true);
+%! assert_equal (index, [3; 4; 1]);
+%! assert_equal (issortedrows (tblB, "Weights"), true);
 %!test
 %! tblN = table (Age, Height, Weight, BloodPressure, LastName);
 %! [tblB, index] = topkrows (tblN, 3, vartype ("numeric"));
-%! assert (index, [3; 1; 4]);
-%! assert (issortedrows (tblB, vartype ("numeric")), true);
+%! assert_equal (index, [3; 1; 4]);
+%! assert_equal (issortedrows (tblB, vartype ("numeric")), true);
 %! [tblB, index] = topkrows (tblN, 3, vartype ("cellstr"));
-%! assert (index, [5; 2; 4]);
-%! assert (issortedrows (tblB, vartype ("cellstr")), true);
+%! assert_equal (index, [5; 2; 4]);
+%! assert_equal (issortedrows (tblB, vartype ("cellstr")), true);
 
 ## Test 'addvars' method
 %!test
 %! load patients
 %! T1 = table (Age, Height, Weight);
 %! T2 = addvars (T1, ones (size (Age)));
-%! assert (size (head (T2, 3)), [3, 4]);
-%! assert (T2.Properties.VariableNames, {'Age', 'Height', 'Weight', 'Var4'});
+%! assert_equal (size (head (T2, 3)), [3, 4]);
+%! assert_equal (T2.Properties.VariableNames, {'Age', 'Height', 'Weight', 'Var4'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Height, Weight);
-%! assert (size (head (T1, 3)), [3, 4]);
-%! assert (T1.Properties.VariableNames, {'LastName', 'Age', 'Height', 'Weight'});
+%! assert_equal (size (head (T1, 3)), [3, 4]);
+%! assert_equal (T1.Properties.VariableNames, {'LastName', 'Age', 'Height', 'Weight'});
 %! T2 = addvars (T1, Gender, Smoker);
-%! assert (size (head (T2, 3)), [3, 6]);
-%! assert (T2.Properties.VariableNames, ...
+%! assert_equal (size (head (T2, 3)), [3, 6]);
+%! assert_equal (T2.Properties.VariableNames, ...
 %!         {'LastName', 'Age', 'Height', 'Weight', 'Gender', 'Smoker'});
 %!test
 %! load patients
 %! T1 = table (LastName, Gender);
-%! assert (size (head (T1, 3)), [3, 2]);
-%! assert (T1.Properties.VariableNames, {'LastName', 'Gender'});
+%! assert_equal (size (head (T1, 3)), [3, 2]);
+%! assert_equal (T1.Properties.VariableNames, {'LastName', 'Gender'});
 %! T2 = addvars (T1, Age, 'Before', 'Gender');
-%! assert (size (head (T2, 5)), [5, 3]);
-%! assert (T2.Properties.VariableNames, {'LastName', 'Age', 'Gender'});
+%! assert_equal (size (head (T2, 5)), [5, 3]);
+%! assert_equal (T2.Properties.VariableNames, {'LastName', 'Age', 'Gender'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender);
-%! assert (size (head (T1, 4)), [4, 3]);
-%! assert (T1.Properties.VariableNames, {'LastName', 'Age', 'Gender'});
+%! assert_equal (size (head (T1, 4)), [4, 3]);
+%! assert_equal (T1.Properties.VariableNames, {'LastName', 'Age', 'Gender'});
 %! T2 = addvars (T1, Height, Weight, 'After', 'Age');
-%! assert (size (head (T2, 4)), [4, 5]);
-%! assert (T2.Properties.VariableNames, ...
+%! assert_equal (size (head (T2, 4)), [4, 5]);
+%! assert_equal (T2.Properties.VariableNames, ...
 %!         {'LastName', 'Age', 'Height', 'Weight', 'Gender'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Height, Weight, Gender);
-%! assert (size (head (T1, 3)), [3, 5]);
-%! assert (T1.Properties.VariableNames, ...
+%! assert_equal (size (head (T1, 3)), [3, 5]);
+%! assert_equal (T1.Properties.VariableNames, ...
 %!         {'LastName', 'Age', 'Height', 'Weight', 'Gender'});
 %! T2 = addvars (T1, Smoker, 'After', 1);
-%! assert (size (head (T2, 3)), [3, 6]);
-%! assert (T2.Properties.VariableNames, ...
+%! assert_equal (size (head (T2, 3)), [3, 6]);
+%! assert_equal (T2.Properties.VariableNames, ...
 %!         {'LastName', 'Smoker', 'Age', 'Height', 'Weight', 'Gender'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
-%! assert (size (head (T1, 3)), [3, 4]);
-%! assert (T1.Properties.VariableNames, {'LastName', 'Age', 'Gender', 'Smoker'});
+%! assert_equal (size (head (T1, 3)), [3, 4]);
+%! assert_equal (T1.Properties.VariableNames, {'LastName', 'Age', 'Gender', 'Smoker'});
 %! T2 = addvars (T1, [Diastolic Systolic], 'NewVariableNames', 'BloodPressure');
-%! assert (size (head (T2, 3)), [3, 5]);
-%! assert (T2.Properties.VariableNames, ...
+%! assert_equal (size (head (T2, 3)), [3, 5]);
+%! assert_equal (T2.Properties.VariableNames, ...
 %!         {'LastName', 'Age', 'Gender', 'Smoker', 'BloodPressure'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
-%! assert (size (head (T1, 3)), [3, 4]);
-%! assert (T1.Properties.VariableNames, {'LastName', 'Age', 'Gender', 'Smoker'});
+%! assert_equal (size (head (T1, 3)), [3, 4]);
+%! assert_equal (T1.Properties.VariableNames, {'LastName', 'Age', 'Gender', 'Smoker'});
 %! T2 = addvars (T1, Height, Weight, 'Before', 'Smoker', ...
 %!                                   'NewVariableNames', {'Inches', 'Pounds'});
-%! assert (size (head (T2, 3)), [3, 6]);
-%! assert (T2.Properties.VariableNames, ...
+%! assert_equal (size (head (T2, 3)), [3, 6]);
+%! assert_equal (T2.Properties.VariableNames, ...
 %!         {'LastName', 'Age', 'Gender', 'Inches', 'Pounds', 'Smoker'});
 
 ## Test 'rename' method
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
-%! assert (T1.Properties.VariableNames, {'LastName', 'Age', 'Gender', 'Smoker'});
+%! assert_equal (T1.Properties.VariableNames, {'LastName', 'Age', 'Gender', 'Smoker'});
 %! T2 = renamevars (T1, {'LastName', 'Gender'}, {'Name', 'Sex'});
-%! assert (T2.Properties.VariableNames, {'Name', 'Age', 'Sex', 'Smoker'});
+%! assert_equal (T2.Properties.VariableNames, {'Name', 'Age', 'Sex', 'Smoker'});
 %!test
 %! T1 = array2table (rand (5, 3));
-%! assert (T1.Properties.VariableNames, {'Var1', 'Var2', 'Var3'});
+%! assert_equal (T1.Properties.VariableNames, {'Var1', 'Var2', 'Var3'});
 %! allVars = 1:width (T1);
 %! newNames = cellfun (@(x) sprintf ("Rand%i",x), num2cell (allVars), ...
 %!                     "UniformOutput", false);
 %! T2 = renamevars (T1, allVars, newNames);
-%! assert (T2.Properties.VariableNames, {'Rand1', 'Rand2', 'Rand3'});
+%! assert_equal (T2.Properties.VariableNames, {'Rand1', 'Rand2', 'Rand3'});
 
 ## Test 'movevars' method
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
-%! assert (T1.Properties.VariableNames, {'LastName', 'Age', 'Gender', 'Smoker'});
+%! assert_equal (T1.Properties.VariableNames, {'LastName', 'Age', 'Gender', 'Smoker'});
 %! T2 = movevars (T1, {'LastName', 'Gender'});
-%! assert (T2.Properties.VariableNames, {'Age', 'Smoker', 'LastName', 'Gender'});
+%! assert_equal (T2.Properties.VariableNames, {'Age', 'Smoker', 'LastName', 'Gender'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! T2 = movevars (T1, vartype ("cellstr"));
-%! assert (T2.Properties.VariableNames, {'Age', 'Smoker', 'LastName', 'Gender'});
+%! assert_equal (T2.Properties.VariableNames, {'Age', 'Smoker', 'LastName', 'Gender'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! T2 = movevars (T1, vartype ("numeric"));
-%! assert (T2.Properties.VariableNames, {'LastName', 'Gender', 'Smoker', 'Age'});
+%! assert_equal (T2.Properties.VariableNames, {'LastName', 'Gender', 'Smoker', 'Age'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! T2 = movevars (T1, {'LastName', 'Gender'}, 'After', 'Age');
-%! assert (T2.Properties.VariableNames, {'Age', 'LastName', 'Gender', 'Smoker'});
+%! assert_equal (T2.Properties.VariableNames, {'Age', 'LastName', 'Gender', 'Smoker'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! T2 = movevars (T1, [true, false, true, false], 'After', 'Age');
-%! assert (T2.Properties.VariableNames, {'Age', 'LastName', 'Gender', 'Smoker'});
+%! assert_equal (T2.Properties.VariableNames, {'Age', 'LastName', 'Gender', 'Smoker'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! T2 = movevars (T1, [3, 4], 'Before', 'Age');
-%! assert (T2.Properties.VariableNames, {'LastName', 'Gender', 'Smoker', 'Age'});
+%! assert_equal (T2.Properties.VariableNames, {'LastName', 'Gender', 'Smoker', 'Age'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! T2 = movevars (T1, [3, 4], 'Before', 2);
-%! assert (T2.Properties.VariableNames, {'LastName', 'Gender', 'Smoker', 'Age'});
+%! assert_equal (T2.Properties.VariableNames, {'LastName', 'Gender', 'Smoker', 'Age'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! T2 = movevars (T1, [3, 4], 'Before', [false, true, false, false]);
-%! assert (T2.Properties.VariableNames, {'LastName', 'Gender', 'Smoker', 'Age'});
+%! assert_equal (T2.Properties.VariableNames, {'LastName', 'Gender', 'Smoker', 'Age'});
 
 ## Test 'removevars' method
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! T2 = removevars (T1, {'LastName', 'Gender'});
-%! assert (T2.Properties.VariableNames, {'Age', 'Smoker'});
+%! assert_equal (T2.Properties.VariableNames, {'Age', 'Smoker'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! T2 = removevars (T1, [true, false, true, false]);
-%! assert (T2.Properties.VariableNames, {'Age', 'Smoker'});
+%! assert_equal (T2.Properties.VariableNames, {'Age', 'Smoker'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! T2 = removevars (T1, [1, 3]);
-%! assert (T2.Properties.VariableNames, {'Age', 'Smoker'});
+%! assert_equal (T2.Properties.VariableNames, {'Age', 'Smoker'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! T2 = removevars (T1, vartype ("numeric"));
-%! assert (T2.Properties.VariableNames, {'LastName', 'Gender', 'Smoker'});
+%! assert_equal (T2.Properties.VariableNames, {'LastName', 'Gender', 'Smoker'});
 
 ## Test 'splitvars' method
 %!test
@@ -681,7 +681,7 @@
 %! D = {"A"; "B"; "C"};
 %! T1 = table (A, B, C, D);
 %! T2 = splitvars (T1);
-%! assert (T2.Properties.VariableNames, ...
+%! assert_equal (T2.Properties.VariableNames, ...
 %!         {'A', 'B_1', 'B_2', 'B_3', 'C_1', 'C_2', 'D'});
 %!test
 %! A = [1:3]';
@@ -690,11 +690,11 @@
 %! D = {"A"; "B"; "C"};
 %! T1 = table (A, B, C, D);
 %! T2 = addvars (T1, table ([5; 5; 5]));
-%! assert (size (T2.Var5), [3, 1]);
+%! assert_equal (size (T2.Var5), [3, 1]);
 %! T3 = splitvars (T2);
-%! assert (T3.Properties.VariableNames, ...
+%! assert_equal (T3.Properties.VariableNames, ...
 %!         {'A', 'B_1', 'B_2', 'B_3', 'C_1', 'C_2', 'D', 'Var1'});
-%! assert (size (T3.Var1), [3, 1]);
+%! assert_equal (size (T3.Var1), [3, 1]);
 %!test
 %! A = [1:3]';
 %! B = rand (3);
@@ -702,11 +702,11 @@
 %! D = {"A"; "B"; "C"};
 %! T1 = table (A, B, C, D);
 %! T2 = addvars (T1, table ([5, 6; 5, 6; 5, 6]));
-%! assert (size (T2.Var5), [3, 1]);
+%! assert_equal (size (T2.Var5), [3, 1]);
 %! T3 = splitvars (T2);
-%! assert (T3.Properties.VariableNames, ...
+%! assert_equal (T3.Properties.VariableNames, ...
 %!         {'A', 'B_1', 'B_2', 'B_3', 'C_1', 'C_2', 'D', 'Var1'});
-%! assert (size (T3.Var1), [3, 2]);
+%! assert_equal (size (T3.Var1), [3, 2]);
 %!test
 %! A = [1:3]';
 %! B = rand (3);
@@ -716,7 +716,7 @@
 %! A = [5; 5; 5];
 %! T2 = addvars (T1, table (A));
 %! T3 = splitvars (T2);
-%! assert (T3.Properties.VariableNames, ...
+%! assert_equal (T3.Properties.VariableNames, ...
 %!         {'A', 'B_1', 'B_2', 'B_3', 'C_1', 'C_2', 'D', 'Var5_A'});
 %!test
 %! A = [1:3]';
@@ -727,7 +727,7 @@
 %! A = [5; 5; 5];
 %! T2 = addvars (T1, table ([5, 6; 5, 6; 5, 6]), table (A));
 %! T3 = splitvars (T2);
-%! assert (T3.Properties.VariableNames, ...
+%! assert_equal (T3.Properties.VariableNames, ...
 %!         {'A', 'B_1', 'B_2', 'B_3', 'C_1', 'C_2', 'D', 'Var1', 'Var6_A'});
 %!test
 %! load patients
@@ -736,7 +736,7 @@
 %! BloodPressure = table (Systolic, Diastolic);
 %! T1 = table (LastName, Personal_Data, BMI_Data, BloodPressure);
 %! T2 = splitvars (T1, 'BloodPressure');
-%! assert (T2.Properties.VariableNames, ...
+%! assert_equal (T2.Properties.VariableNames, ...
 %!         {'LastName', 'Personal_Data', 'BMI_Data', 'Systolic', 'Diastolic'});
 %!test
 %! load patients
@@ -745,7 +745,7 @@
 %! BloodPressure = table (Systolic, Diastolic);
 %! T1 = table (LastName, Personal_Data, BMI_Data, BloodPressure);
 %! T2 = splitvars (T1, {'BMI_Data', 'BloodPressure'});
-%! assert (T2.Properties.VariableNames, {'LastName', 'Personal_Data', ...
+%! assert_equal (T2.Properties.VariableNames, {'LastName', 'Personal_Data', ...
 %!         'Height', 'Weight', 'Systolic', 'Diastolic'});
 %!test
 %! load patients
@@ -754,7 +754,7 @@
 %! BloodPressure = table (Systolic, Diastolic);
 %! T1 = table (LastName, Personal_Data, BMI_Data, BloodPressure);
 %! T2 = splitvars (T1, [2, 4]);
-%! assert (T2.Properties.VariableNames, {'LastName', 'Gender', 'Age', ...
+%! assert_equal (T2.Properties.VariableNames, {'LastName', 'Gender', 'Age', ...
 %!                                       'BMI_Data', 'Systolic', 'Diastolic'});
 %!test
 %! load patients
@@ -763,7 +763,7 @@
 %! BloodPressure = table (Systolic, Diastolic);
 %! T1 = table (LastName, Personal_Data, BMI_Data, BloodPressure);
 %! T2 = splitvars (T1, [false, true, false, true]);
-%! assert (T2.Properties.VariableNames, {'LastName', 'Gender', 'Age', ...
+%! assert_equal (T2.Properties.VariableNames, {'LastName', 'Gender', 'Age', ...
 %!                                       'BMI_Data', 'Systolic', 'Diastolic'});
 %!test
 %! load patients
@@ -772,7 +772,7 @@
 %! T1 = table (LastName, Gender, Personal_Data, BloodPressure);
 %! T2 = splitvars (T1, 'BloodPressure', ...
 %!                 'NewVariableNames', {'Systolic','Diastolic'});
-%! assert (T2.Properties.VariableNames, ...
+%! assert_equal (T2.Properties.VariableNames, ...
 %!         {'LastName', 'Gender', 'Personal_Data', 'Systolic', 'Diastolic'});
 %!test
 %! load patients
@@ -782,7 +782,7 @@
 %! T2 = splitvars (T1, {'Personal_Data', 'BloodPressure'}, ...
 %!                 'NewVariableNames', {{'Age', 'Height', 'Weight'}, ...
 %!                                      {'Systolic', 'Diastolic'}});
-%! assert (T2.Properties.VariableNames, {'LastName', 'Gender', ...
+%! assert_equal (T2.Properties.VariableNames, {'LastName', 'Gender', ...
 %!         'Age', 'Height', 'Weight', 'Systolic', 'Diastolic'});
 %!test
 %! load patients
@@ -792,7 +792,7 @@
 %! new_PD = string ({'Age', 'Height', 'Weight'});
 %! T2 = splitvars (T1, {'Personal_Data', 'BloodPressure'}, ...
 %!                 'NewVariableNames', {new_PD, {'Systolic', 'Diastolic'}});
-%! assert (T2.Properties.VariableNames, {'LastName', 'Gender', ...
+%! assert_equal (T2.Properties.VariableNames, {'LastName', 'Gender', ...
 %!         'Age', 'Height', 'Weight', 'Systolic', 'Diastolic'});
 
 ## Test 'mergevars' method
@@ -803,8 +803,8 @@
 %! D = string ({"a"; "b"; "c"});
 %! T1 = table (A, B, C, D);
 %! T2 = mergevars (T1, [2, 3]);
-%! assert (T2.Properties.VariableNames, {'A', 'Var2', 'D'});
-%! assert (isequal (T2.Var2, cat (2, B, C)), true);
+%! assert_equal (T2.Properties.VariableNames, {'A', 'Var2', 'D'});
+%! assert_equal (isequal (T2.Var2, cat (2, B, C)), true);
 %!test
 %! A = [1:3]';
 %! B = [5; 11; 12];
@@ -812,8 +812,8 @@
 %! D = string ({"a"; "b"; "c"});
 %! T1 = table (A, B, C, D);
 %! T2 = mergevars (T1, [2, 3], 'NewVariableName', 'Merged');
-%! assert (T2.Properties.VariableNames, {'A', 'Merged', 'D'});
-%! assert (isequal (T2.Merged, cat (2, B, C)), true);
+%! assert_equal (T2.Properties.VariableNames, {'A', 'Merged', 'D'});
+%! assert_equal (isequal (T2.Merged, cat (2, B, C)), true);
 %!test
 %! A = [1:3]';
 %! B = [5; 11; 12];
@@ -821,8 +821,8 @@
 %! D = string ({"a"; "b"; "c"});
 %! T1 = table (A, B, C, D);
 %! T2 = mergevars (T1, [2, 3], 'MergeAsTable', true);
-%! assert (T2.Properties.VariableNames, {'A', 'Var2', 'D'});
-%! assert (isequal (T2.Var2, table (B, C)), true);
+%! assert_equal (T2.Properties.VariableNames, {'A', 'Var2', 'D'});
+%! assert_equal (isequal (T2.Var2, table (B, C)), true);
 %!test
 %! A = [1:3]';
 %! B = [5; 11; 12];
@@ -830,8 +830,8 @@
 %! D = string ({"a"; "b"; "c"});
 %! T1 = table (A, B, C, D);
 %! T2 = mergevars (T1, [2, 3], 'NewVariableName', 'Merged', 'MergeAsTable', 1);
-%! assert (T2.Properties.VariableNames, {'A', 'Merged', 'D'});
-%! assert (isequal (T2.Merged, table (B, C)), true);
+%! assert_equal (T2.Properties.VariableNames, {'A', 'Merged', 'D'});
+%! assert_equal (isequal (T2.Merged, table (B, C)), true);
 %!test
 %! A = [1:3]';
 %! B = [5; 11; 12];
@@ -839,8 +839,8 @@
 %! D = string ({"a"; "b"; "c"});
 %! T1 = table (A, B, C, D);
 %! T2 = mergevars (T1, {"A", "B"});
-%! assert (T2.Properties.VariableNames, {'Var1', 'C', 'D'});
-%! assert (isequal (T2.Var1, cat (2, A, B)), true);
+%! assert_equal (T2.Properties.VariableNames, {'Var1', 'C', 'D'});
+%! assert_equal (isequal (T2.Var1, cat (2, A, B)), true);
 %!test
 %! A = [1:3]';
 %! B = [5; 11; 12];
@@ -848,8 +848,8 @@
 %! D = string ({"a"; "b"; "c"});
 %! T1 = table (A, B, C, D);
 %! T2 = mergevars (T1, {"A", "B"}, 'NewVariableName', 'Merged');
-%! assert (T2.Properties.VariableNames, {'Merged', 'C', 'D'});
-%! assert (isequal (T2.Merged, cat (2, A, B)), true);
+%! assert_equal (T2.Properties.VariableNames, {'Merged', 'C', 'D'});
+%! assert_equal (isequal (T2.Merged, cat (2, A, B)), true);
 %!test
 %! A = [1:3]';
 %! B = [5; 11; 12];
@@ -857,8 +857,8 @@
 %! D = string ({"a"; "b"; "c"});
 %! T1 = table (A, B, C, D);
 %! T2 = mergevars (T1, {"A", "B"}, 'MergeAsTable', true);
-%! assert (T2.Properties.VariableNames, {'Var1', 'C', 'D'});
-%! assert (isequal (T2.Var1, table (A, B)), true);
+%! assert_equal (T2.Properties.VariableNames, {'Var1', 'C', 'D'});
+%! assert_equal (isequal (T2.Var1, table (A, B)), true);
 %!test
 %! A = [1:3]';
 %! B = [5; 11; 12];
@@ -867,8 +867,8 @@
 %! T1 = table (A, B, C, D);
 %! T2 = mergevars (T1, {"A", "B"}, 'NewVariableName', 'Merged', ...
 %!                                 'MergeAsTable', true);
-%! assert (T2.Properties.VariableNames, {'Merged', 'C', 'D'});
-%! assert (isequal (T2.Merged, table (A, B)), true);
+%! assert_equal (T2.Properties.VariableNames, {'Merged', 'C', 'D'});
+%! assert_equal (isequal (T2.Merged, table (A, B)), true);
 
 ## Test 'convertvars' method
 %!test
@@ -877,42 +877,42 @@
 %! C = [3.14; 2.72; 1.37];
 %! D = string ({"a"; "b"; "c"});
 %! T1 = table (A, B, C, D);
-%! assert (isa (T1.A, "numeric"), true);
-%! assert (isa (T1.B, "numeric"), true);
+%! assert_equal (isa (T1.A, "numeric"), true);
+%! assert_equal (isa (T1.B, "numeric"), true);
 %! T2 = convertvars (T1, {"A", "B"}, "string");
-%! assert (isa (T2.A, "string"), true);
-%! assert (isa (T2.B, "string"), true);
+%! assert_equal (isa (T2.A, "string"), true);
+%! assert_equal (isa (T2.B, "string"), true);
 %!test
 %! A = [1:3]';
 %! B = [5; 11; 12];
 %! C = [3.14; 2.72; 1.37];
 %! D = string ({"a"; "b"; "c"});
 %! T1 = table (A, B, C, D);
-%! assert (isa (T1.D, "string"), true);
+%! assert_equal (isa (T1.D, "string"), true);
 %! T2 = convertvars (T1, 4, "cellstr");
-%! assert (iscellstr (T2.D), true);
+%! assert_equal (iscellstr (T2.D), true);
 %!test
 %! A = [1:3]';
 %! B = [5; 11; 12];
 %! C = [3.14; 2.72; 1.37];
 %! D = string ({"a"; "b"; "c"});
 %! T1 = table (A, B, C, D);
-%! assert (isa (T1.D, "string"), true);
+%! assert_equal (isa (T1.D, "string"), true);
 %! T2 = convertvars (T1, [1:3], @(x) sqrt (x));
-%! assert (isequal (T2.A, sqrt (A)), true);
-%! assert (isequal (T2.B, sqrt (B)), true);
-%! assert (isequal (T2.C, sqrt (C)), true);
+%! assert_equal (isequal (T2.A, sqrt (A)), true);
+%! assert_equal (isequal (T2.B, sqrt (B)), true);
+%! assert_equal (isequal (T2.C, sqrt (C)), true);
 %!test
 %! A = [1:3]';
 %! B = [5; 11; 12];
 %! C = [3.14; 2.72; 1.37];
 %! D = string ({"a"; "b"; "c"});
 %! T1 = table (A, B, C, D);
-%! assert (isa (T1.D, "string"), true);
+%! assert_equal (isa (T1.D, "string"), true);
 %! T2 = convertvars (T1, [1:3], @(x) [x, x, x]);
-%! assert (size (T2.A, 2), 3);
-%! assert (size (T2.B, 2), 3);
-%! assert (size (T2.C, 2), 3);
+%! assert_equal (size (T2.A, 2), 3);
+%! assert_equal (size (T2.B, 2), 3);
+%! assert_equal (size (T2.C, 2), 3);
 %!test
 %! A = [1:3]';
 %! B = [5; 11; 12];
@@ -920,49 +920,49 @@
 %! D = {"a"; "b"; "c"};
 %! T1 = table (A, B, C, D);
 %! T2 = convertvars (T1, "D", @(x) cellstr (upper (char (x))));
-%! assert (T2.D, {"A"; "B"; "C"});
+%! assert_equal (T2.D, {"A"; "B"; "C"});
 
 ## Test 'rows2vars' method
 %!test
 %! load patients
 %! T1 = table (LastName, Gender, Age, Height, Weight);
 %! T2 = rows2vars (T1);
-%! assert (size (T1, 2), size (T2, 1));
-%! assert (size (T1, 1) + 1, size (T2, 2));
-%! assert (T2.OriginalVariableNames, ...
+%! assert_equal (size (T1, 2), size (T2, 1));
+%! assert_equal (size (T1, 1) + 1, size (T2, 2));
+%! assert_equal (T2.OriginalVariableNames, ...
 %!         {"LastName"; "Gender"; "Age"; "Height"; "Weight"});
-%! assert (T2.Var1, {"Smith"; "Male"; 38; 71; 176});
+%! assert_equal (T2.Var1, {"Smith"; "Male"; 38; 71; 176});
 %!test
 %! load patients
 %! T1 = table (Gender, Age, Height, Weight, "RowNames", LastName);
 %! T2 = rows2vars (T1);
-%! assert (T2.OriginalVariableNames, {"Gender"; "Age"; "Height"; "Weight"});
-%! assert (T2.Smith, {"Male"; 38; 71; 176});
-%! assert (T2.Johnson, {"Male"; 43; 69; 163});
-%! assert (T2.Williams, {"Female"; 38; 64; 131});
+%! assert_equal (T2.OriginalVariableNames, {"Gender"; "Age"; "Height"; "Weight"});
+%! assert_equal (T2.Smith, {"Male"; 38; 71; 176});
+%! assert_equal (T2.Johnson, {"Male"; 43; 69; 163});
+%! assert_equal (T2.Williams, {"Female"; 38; 64; 131});
 %!test
 %! load patients
 %! T1 = table (LastName, Gender, Age, Height, Weight);
 %! T2 = rows2vars (T1, "VariableNamesSource", "LastName");
-%! assert (T2.OriginalVariableNames, {"Gender"; "Age"; "Height"; "Weight"});
-%! assert (T2.Smith, {"Male"; 38; 71; 176});
-%! assert (T2.Johnson, {"Male"; 43; 69; 163});
-%! assert (T2.Williams, {"Female"; 38; 64; 131})
+%! assert_equal (T2.OriginalVariableNames, {"Gender"; "Age"; "Height"; "Weight"});
+%! assert_equal (T2.Smith, {"Male"; 38; 71; 176});
+%! assert_equal (T2.Johnson, {"Male"; 43; 69; 163});
+%! assert_equal (T2.Williams, {"Female"; 38; 64; 131})
 %!test
 %! load patients
 %! T1 = table (LastName, Gender, Age, Height, Weight);
 %! T2 = rows2vars (T1, "DataVariables", {"LastName", "Gender", "Age"});
-%! assert (size (T2, 1), 3);
-%! assert (size (T1, 1) + 1, size (T2, 2));
-%! assert (T2.OriginalVariableNames, {"LastName"; "Gender"; "Age"});
-%! assert (T2.Var1, {"Smith"; "Male"; 38});
+%! assert_equal (size (T2, 1), 3);
+%! assert_equal (size (T1, 1) + 1, size (T2, 2));
+%! assert_equal (T2.OriginalVariableNames, {"LastName"; "Gender"; "Age"});
+%! assert_equal (T2.Var1, {"Smith"; "Male"; 38});
 %!test
 %! A = [1:3]';
 %! B = [5; 11; 12];
 %! C = [3.14; 2.72; 1.37];
 %! T1 = table (A, B, C);
 %! T2 = rows2vars (T1);
-%! assert (class (T2.Var1), "double");
+%! assert_equal (class (T2.Var1), "double");
 %!test
 %! A = [1:3]';
 %! B = [5; 11; 12];
@@ -970,17 +970,17 @@
 %! D = {"a"; "b"; "c"};
 %! T1 = table (A, B, C, D);
 %! T2 = rows2vars (T1);
-%! assert (class (T2.Var1), "cell");
+%! assert_equal (class (T2.Var1), "cell");
 %!test
 %! A = [1:3]';
 %! B = [5; 11; 12];
 %! C = [3.14; 2.72; 1.37];
 %! T1 = table (A, B, C);
 %! T2 = rows2vars (T1, "VariableNamesSource", "A");
-%! assert (size (T2), [2, 4]);
-%! assert (T2.Properties.VariableNames(1), {"OriginalVariableNames"});
-%! assert (T2.Properties.VariableNames(2:4), {"x1", "x2", "x3"});
-%! assert (T2.x1, [5; 3.14]);
+%! assert_equal (size (T2), [2, 4]);
+%! assert_equal (T2.Properties.VariableNames(1), {"OriginalVariableNames"});
+%! assert_equal (T2.Properties.VariableNames(2:4), {"x1", "x2", "x3"});
+%! assert_equal (T2.x1, [5; 3.14]);
 %!test
 %! A = [1:3]';
 %! B = [5; 11; 12];
@@ -988,10 +988,10 @@
 %! T1 = table (A, B, C);
 %! T2 = rows2vars (T1, "VariableNamesSource", "A", ...
 %!                     "VariableNamingRule", "preserve");
-%! assert (size (T2), [2, 4]);
-%! assert (T2.Properties.VariableNames(1), {"OriginalVariableNames"});
-%! assert (T2.Properties.VariableNames(2:4), {"1", "2", "3"});
-%! assert (T2.('1'), [5; 3.14]);
+%! assert_equal (size (T2), [2, 4]);
+%! assert_equal (T2.Properties.VariableNames(1), {"OriginalVariableNames"});
+%! assert_equal (T2.Properties.VariableNames(2:4), {"1", "2", "3"});
+%! assert_equal (T2.('1'), [5; 3.14]);
 
 ## Test 'stack' method
 %!test
@@ -1000,21 +1000,21 @@
 %! Test3 = [95; 62; 89; 91];
 %! U = table (Test1, Test2, Test3);
 %! S = stack (U, 1:3);
-%! assert (size (S), [12, 2]);
-%! assert (class (S.Test1_Test2_Test3_Indicator), "categorical");
-%! assert (cellstr (S.Test1_Test2_Test3_Indicator), ...
+%! assert_equal (size (S), [12, 2]);
+%! assert_equal (class (S.Test1_Test2_Test3_Indicator), "categorical");
+%! assert_equal (cellstr (S.Test1_Test2_Test3_Indicator), ...
 %!         repmat ({"Test1"; "Test2"; "Test3"}, 4, 1));
-%! assert (S.Test1_Test2_Test3, [Test1';Test2';Test3'](:));
+%! assert_equal (S.Test1_Test2_Test3, [Test1';Test2';Test3'](:));
 %!test
 %! Test1 = [93; 57; 87; 89];
 %! Test2 = [89; 77; 92; 86];
 %! Test3 = [95; 62; 89; 91];
 %! U = table (Test1, Test2, Test3);
 %! [S, idx] = stack (U, 1:2);
-%! assert (idx, [1; 1; 2; 2; 3; 3; 4; 4]);
-%! assert (cellstr (S.Test1_Test2_Indicator), ...
+%! assert_equal (idx, [1; 1; 2; 2; 3; 3; 4; 4]);
+%! assert_equal (cellstr (S.Test1_Test2_Indicator), ...
 %!         repmat ({"Test1"; "Test2"}, 4, 1));
-%! assert (S.Test3, repelem (Test3, 2, 1));
+%! assert_equal (S.Test3, repelem (Test3, 2, 1));
 %!test
 %! Test1 = [93; 57; 87; 89];
 %! Test2 = [89; 77; 92; 86];
@@ -1022,10 +1022,10 @@
 %! U = table (Test1, Test2, Test3);
 %! S = stack (U, 1:3, 'NewDataVariableName', 'NewData', ...
 %!                    'IndexVariableName', 'Index');
-%! assert (size (S), [12, 2]);
-%! assert (class (S.Index), "categorical");
-%! assert (cellstr (S.Index), repmat ({"Test1"; "Test2"; "Test3"}, 4, 1));
-%! assert (S.NewData, [Test1';Test2';Test3'](:));
+%! assert_equal (size (S), [12, 2]);
+%! assert_equal (class (S.Index), "categorical");
+%! assert_equal (cellstr (S.Index), repmat ({"Test1"; "Test2"; "Test3"}, 4, 1));
+%! assert_equal (S.NewData, [Test1';Test2';Test3'](:));
 %!test
 %! Test1 = [93; 57; 87; 89];
 %! Test2 = [89; 77; 92; 86];
@@ -1033,7 +1033,7 @@
 %! Test4 = [95; 62; 89; 91];
 %! U = table (Test1, Test2, Test3, Test4);
 %! S = stack (U, 1:2, 'ConstantVariables', "Test4");
-%! assert (S.Properties.VariableNames, ...
+%! assert_equal (S.Properties.VariableNames, ...
 %!         {"Test4", "Test1_Test2_Indicator", "Test1_Test2"});
 %!test
 %! Test1 = [93; 57; 87; 89];
@@ -1042,7 +1042,7 @@
 %! Test4 = [95; 62; 89; 91];
 %! U = table (Test1, Test2, Test3, Test4);
 %! S = stack (U, {"Test1", "Test4"}, 'ConstantVariables', "Test2");
-%! assert (S.Properties.VariableNames, ...
+%! assert_equal (S.Properties.VariableNames, ...
 %!         {"Test2", "Test1_Test4_Indicator", "Test1_Test4"});
 %!test
 %! Test1 = [93; 57; 87; 89];
@@ -1052,7 +1052,7 @@
 %! U = table (Test1, Test2, Test3, Test4);
 %! S = stack (U, {"Test1", "Test4"}, 'ConstantVariables', "Test2", ...
 %!            'NewDataVariableName', 'NewData', 'IndexVariableName', 'Index');
-%! assert (S.Properties.VariableNames, ...
+%! assert_equal (S.Properties.VariableNames, ...
 %!         {"Test2", "Index", "NewData"});
 
 ## Test 'unstack' method
@@ -1063,8 +1063,8 @@
 %! Snowfall = [0; 3; 5; 5; 9; 10; 12; 13; 15; 16; 17; 21];
 %! S = table (Storm, Town, Snowfall);
 %! U = unstack (S, 'Snowfall', 'Town');
-%! assert (U.Storm, [3; 1; 4; 2]);
-%! assert (U.Properties.VariableNames, {'Storm', 'Boston', 'Natick', 'Worcester'});
+%! assert_equal (U.Storm, [3; 1; 4; 2]);
+%! assert_equal (U.Properties.VariableNames, {'Storm', 'Boston', 'Natick', 'Worcester'});
 
 
 
@@ -1422,52 +1422,52 @@
 %!            'RowNames', {'r1', 'r2', 'r3', 'r4'});
 %! R = table ([1;2;3], {'x';'y';'z'}, 'VariableNames', {'Key', 'R'});
 %! [T, ixR] = join (L, R);
-%! assert (T.Properties.VariableNames, {'Key', 'L', 'R'});
-%! assert (T.Key, [3;1;2;1]);
-%! assert (T.R, {'z';'x';'y';'x'});
-%! assert (ixR, [3;1;2;1]);
-%! assert (T.Properties.RowNames, {'r1';'r2';'r3';'r4'});
+%! assert_equal (T.Properties.VariableNames, {'Key', 'L', 'R'});
+%! assert_equal (T.Key, [3;1;2;1]);
+%! assert_equal (T.R, {'z';'x';'y';'x'});
+%! assert_equal (ixR, [3;1;2;1]);
+%! assert_equal (T.Properties.RowNames, {'r1';'r2';'r3';'r4'});
 
 ## 'join' with 'LeftKeys'/'RightKeys'
 %!test
 %! L = table ([1;2], (10:11)', 'VariableNames', {'KL', 'A'});
 %! R = table ([2;1], {'x';'y'}, 'VariableNames', {'KR', 'B'});
 %! T = join (L, R, 'LeftKeys', 'KL', 'RightKeys', 'KR');
-%! assert (T.Properties.VariableNames, {'KL', 'A', 'B'});
-%! assert (T.A, [10;11]);
-%! assert (T.B, {'y';'x'});
+%! assert_equal (T.Properties.VariableNames, {'KL', 'A', 'B'});
+%! assert_equal (T.A, [10;11]);
+%! assert_equal (T.B, {'y';'x'});
 
 ## 'join' with 'Keys' and 'RightVariables'
 %!test
 %! L = table ([1;2;3], (1:3)', 'VariableNames', {'K', 'A'});
 %! R = table ([3;2;1], {'x';'y';'z'}, (4:6)', 'VariableNames', {'K', 'B', 'C'});
 %! T = join (L, R, 'Keys', 'K', 'RightVariables', 'B');
-%! assert (T.Properties.VariableNames, {'K', 'A', 'B'});
-%! assert (T.B, {'z';'y';'x'});
+%! assert_equal (T.Properties.VariableNames, {'K', 'A', 'B'});
+%! assert_equal (T.B, {'z';'y';'x'});
 
 ## 'join' suffixes shared non-key names with the input argument names
 %!test
 %! L = table ([1;2], {'a';'b'}, 'VariableNames', {'KeyL', 'V'});
 %! R = table ([1;2], {'p';'q'}, 'VariableNames', {'KeyR', 'V'});
 %! T = join (L, R, 'LeftKeys', 'KeyL', 'RightKeys', 'KeyR');
-%! assert (T.Properties.VariableNames, {'KeyL', 'V_L', 'V_R'});
+%! assert_equal (T.Properties.VariableNames, {'KeyL', 'V_L', 'V_R'});
 
 ## 'join' with 'KeepOneCopy' drops the right copy of the named variable
 %!test
 %! L = table ([1;2], {'a';'b'}, 'VariableNames', {'KeyL', 'V'});
 %! R = table ([1;2], {'p';'q'}, 'VariableNames', {'KeyR', 'V'});
 %! T = join (L, R, 'LeftKeys', 'KeyL', 'RightKeys', 'KeyR', 'KeepOneCopy', 'V');
-%! assert (T.Properties.VariableNames, {'KeyL', 'V'});
-%! assert (T.V, {'a';'b'});
+%! assert_equal (T.Properties.VariableNames, {'KeyL', 'V'});
+%! assert_equal (T.V, {'a';'b'});
 
 ## 'join' on a duration key variable
 %!test
 %! L = table (hours ([3;1;2]), {'a';'b';'c'}, 'VariableNames', {'K', 'L'});
 %! R = table (hours ([1;2;3]), {'x';'y';'z'}, 'VariableNames', {'K', 'R'});
 %! [T, ixR] = join (L, R);
-%! assert (hours (T.K), [3;1;2]);
-%! assert (T.R, {'z';'x';'y'});
-%! assert (ixR, [3;1;2]);
+%! assert_equal (hours (T.K), [3;1;2]);
+%! assert_equal (T.R, {'z';'x';'y'});
+%! assert_equal (ixR, [3;1;2]);
 
 ## 'join' carries a categorical key and a calendarDuration variable
 %!test
@@ -1475,9 +1475,9 @@
 %!            'VariableNames', {'K', 'M'});
 %! R = table (categorical ({'b';'a'}), {'x';'y'}, 'VariableNames', {'K', 'R'});
 %! T = join (L, R);
-%! assert (cellstr (T.K), {'a';'b'});
-%! assert (calmonths (T.M), [5;6]);
-%! assert (T.R, {'y';'x'});
+%! assert_equal (cellstr (T.K), {'a';'b'});
+%! assert_equal (calmonths (T.M), [5;6]);
+%! assert_equal (T.R, {'y';'x'});
 
 %!error <table.join: too few input arguments.> ...
 %! join (table ([1;2]));
@@ -1510,12 +1510,12 @@
 %! L = table ([1;2;3;2], {'a';'b';'c';'d'}, 'VariableNames', {'Key', 'L'});
 %! R = table ([2;3;5], {'x';'y';'z'}, 'VariableNames', {'Key', 'R'});
 %! [T, ixL, ixR] = innerjoin (L, R);
-%! assert (T.Properties.VariableNames, {'Key', 'L', 'R'});
-%! assert (T.Key, [2;2;3]);
-%! assert (T.L, {'b';'d';'c'});
-%! assert (T.R, {'x';'x';'y'});
-%! assert (ixL, [2;4;3]);
-%! assert (ixR, [1;1;2]);
+%! assert_equal (T.Properties.VariableNames, {'Key', 'L', 'R'});
+%! assert_equal (T.Key, [2;2;3]);
+%! assert_equal (T.L, {'b';'d';'c'});
+%! assert_equal (T.R, {'x';'x';'y'});
+%! assert_equal (ixL, [2;4;3]);
+%! assert_equal (ixR, [1;1;2]);
 
 ## Inner join drops row names
 %!test
@@ -1523,73 +1523,73 @@
 %!            'RowNames', {'r1', 'r2'});
 %! R = table ([2;1], {'x';'y'}, 'VariableNames', {'Key', 'R'});
 %! T = innerjoin (L, R);
-%! assert (isempty (T.Properties.RowNames), true);
+%! assert_equal (isempty (T.Properties.RowNames), true);
 
 ## Cartesian product on repeated keys (m*n rows)
 %!test
 %! L = table ([1;1], {'a';'b'}, 'VariableNames', {'K', 'L'});
 %! R = table ([1;1], {'x';'y'}, 'VariableNames', {'K', 'R'});
 %! [T, ixL, ixR] = innerjoin (L, R);
-%! assert (height (T), 4);
-%! assert (T.L, {'a';'a';'b';'b'});
-%! assert (T.R, {'x';'y';'x';'y'});
-%! assert (ixL, [1;1;2;2]);
-%! assert (ixR, [1;2;1;2]);
+%! assert_equal (height (T), 4);
+%! assert_equal (T.L, {'a';'a';'b';'b'});
+%! assert_equal (T.R, {'x';'y';'x';'y'});
+%! assert_equal (ixL, [1;1;2;2]);
+%! assert_equal (ixR, [1;2;1;2]);
 
 ## No matching keys yields an empty result with the correct variables
 %!test
 %! L = table ([1;2], {'a';'b'}, 'VariableNames', {'K', 'L'});
 %! R = table ([8;9], {'x';'y'}, 'VariableNames', {'K', 'R'});
 %! T = innerjoin (L, R);
-%! assert (height (T), 0);
-%! assert (T.Properties.VariableNames, {'K', 'L', 'R'});
+%! assert_equal (height (T), 0);
+%! assert_equal (T.Properties.VariableNames, {'K', 'L', 'R'});
 
 ## Cellstr key variable
 %!test
 %! L = table ({'a';'b';'c'}, (1:3)', 'VariableNames', {'K', 'N'});
 %! R = table ({'b';'a'}, {'Y';'X'}, 'VariableNames', {'K', 'M'});
 %! T = innerjoin (L, R);
-%! assert (T.K, {'a';'b'});
-%! assert (T.N, [1;2]);
-%! assert (T.M, {'X';'Y'});
+%! assert_equal (T.K, {'a';'b'});
+%! assert_equal (T.N, [1;2]);
+%! assert_equal (T.M, {'X';'Y'});
 
 ## String key variable
 %!test
 %! L = table (string ({'a';'b'}), (1:2)', 'VariableNames', {'K', 'N'});
 %! R = table (string ({'b'}), {'Z'}, 'VariableNames', {'K', 'M'});
 %! T = innerjoin (L, R);
-%! assert (cellstr (T.K), {'b'});
-%! assert (T.N, 2);
-%! assert (T.M, {'Z'});
+%! assert_equal (cellstr (T.K), {'b'});
+%! assert_equal (T.N, 2);
+%! assert_equal (T.M, {'Z'});
 
 ## Categorical key variable, sorted by category code
 %!test
 %! L = table (categorical ({'a';'b';'c'}), (1:3)', 'VariableNames', {'K', 'N'});
 %! R = table (categorical ({'c';'a'}), {'P';'Q'}, 'VariableNames', {'K', 'M'});
 %! T = innerjoin (L, R);
-%! assert (cellstr (T.K), {'a';'c'});
-%! assert (T.N, [1;3]);
-%! assert (T.M, {'Q';'P'});
+%! assert_equal (cellstr (T.K), {'a';'c'});
+%! assert_equal (T.N, [1;3]);
+%! assert_equal (T.M, {'Q';'P'});
 
 ## 'Keys' option selects the key explicitly
 %!test
 %! L = table ([1;2;3], (1:3)', 'VariableNames', {'K', 'A'});
 %! R = table ([2;3], {'x';'y'}, 'VariableNames', {'K', 'B'});
 %! T = innerjoin (L, R, 'Keys', 'K');
-%! assert (T.Properties.VariableNames, {'K', 'A', 'B'});
-%! assert (T.K, [2;3]);
+%! assert_equal (T.Properties.VariableNames, {'K', 'A', 'B'});
+%! assert_equal (T.K, [2;3]);
 
 ## 'LeftKeys'/'RightKeys' for differently-named keys
 %!test
 %! L = table ([1;2;3], (10:12)', 'VariableNames', {'KL', 'A'});
 %! R = table ([2;3], {'x';'y'}, 'VariableNames', {'KR', 'B'});
 %! [T, ixL, ixR] = innerjoin (L, R, 'LeftKeys', 'KL', 'RightKeys', 'KR');
-%! assert (T.Properties.VariableNames, {'KL', 'A', 'B'});
-%! assert (T.KL, [2;3]);
-%! assert (T.A, [11;12]);
-%! assert (T.B, {'x';'y'});
-%! assert (ixL, [2;3]);
-%! assert (ixR, [1;2]);
+%! assert_equal (T.Properties.VariableNames, {'KL', 'A', 'B'});
+%! assert_equal (T.KL, [2;3]);
+%! assert_equal (T.A, [11;12]);
+%! assert_equal (T.B, {'x';'y'});
+%! assert_equal (ixL, [2;3]);
+%! assert_equal (ixR, [1;2]);
 
 ## 'LeftVariables' and 'RightVariables' restrict the output columns
 %!test
@@ -1597,18 +1597,18 @@
 %!            'VariableNames', {'K', 'A', 'C'});
 %! R = table ([2;3], {'x';'y'}, (5:6)', 'VariableNames', {'K', 'B', 'D'});
 %! T = innerjoin (L, R, 'LeftVariables', 'A', 'RightVariables', 'B');
-%! assert (T.Properties.VariableNames, {'A', 'B'});
-%! assert (T.A, [11;12]);
-%! assert (T.B, {'x';'y'});
+%! assert_equal (T.Properties.VariableNames, {'A', 'B'});
+%! assert_equal (T.A, [11;12]);
+%! assert_equal (T.B, {'x';'y'});
 
 ## Shared non-key variable names get '_Tleft'/'_Tright' suffixes
 %!test
 %! L = table ([1;2], {'a';'b'}, 'VariableNames', {'KeyL', 'V'});
 %! R = table ([2;1], {'p';'q'}, 'VariableNames', {'KeyR', 'V'});
 %! T = innerjoin (L, R, 'LeftKeys', 'KeyL', 'RightKeys', 'KeyR');
-%! assert (T.Properties.VariableNames, {'KeyL', 'V_L', 'V_R'});
-%! assert (T.V_L, {'a';'b'});
-%! assert (T.V_R, {'q';'p'});
+%! assert_equal (T.Properties.VariableNames, {'KeyL', 'V_L', 'V_R'});
+%! assert_equal (T.V_L, {'a';'b'});
+%! assert_equal (T.V_R, {'q';'p'});
 
 ## Multiple key variables
 %!test
@@ -1617,32 +1617,32 @@
 %! R = table ([1;2], {'b';'a'}, {'x';'y'}, ...
 %!            'VariableNames', {'K1', 'K2', 'M'});
 %! T = innerjoin (L, R);
-%! assert (T.Properties.VariableNames, {'K1', 'K2', 'N', 'M'});
-%! assert (T.K1, [1;2]);
-%! assert (T.K2, {'b';'a'});
-%! assert (T.N, [2;3]);
-%! assert (T.M, {'x';'y'});
+%! assert_equal (T.Properties.VariableNames, {'K1', 'K2', 'N', 'M'});
+%! assert_equal (T.K1, [1;2]);
+%! assert_equal (T.K2, {'b';'a'});
+%! assert_equal (T.N, [2;3]);
+%! assert_equal (T.M, {'x';'y'});
 
 ## 'innerjoin' on a duration key variable
 %!test
 %! L = table (hours ([3;1;2]), {'a';'b';'c'}, 'VariableNames', {'K', 'L'});
 %! R = table (hours ([1;2;3]), {'x';'y';'z'}, 'VariableNames', {'K', 'R'});
 %! [T, ixL, ixR] = innerjoin (L, R);
-%! assert (hours (T.K), [1;2;3]);
-%! assert (T.R, {'x';'y';'z'});
-%! assert (ixL, [2;3;1]);
-%! assert (ixR, [1;2;3]);
+%! assert_equal (hours (T.K), [1;2;3]);
+%! assert_equal (T.R, {'x';'y';'z'});
+%! assert_equal (ixL, [2;3;1]);
+%! assert_equal (ixR, [1;2;3]);
 
 ## 'innerjoin' on a calendarDuration key variable
 %!test
 %! L = table (calmonths ([3;1;2]), {'a';'b';'c'}, 'VariableNames', {'K', 'L'});
 %! R = table (calmonths ([2;1]), {'x';'y'}, 'VariableNames', {'K', 'R'});
 %! [T, ixL, ixR] = innerjoin (L, R);
-%! assert (calmonths (T.K), [1;2]);
-%! assert (T.L, {'b';'c'});
-%! assert (T.R, {'y';'x'});
-%! assert (ixL, [2;3]);
-%! assert (ixR, [2;1]);
+%! assert_equal (calmonths (T.K), [1;2]);
+%! assert_equal (T.L, {'b';'c'});
+%! assert_equal (T.R, {'y';'x'});
+%! assert_equal (ixL, [2;3]);
+%! assert_equal (ixR, [2;1]);
 
 %!error <table.innerjoin: too few input arguments.> ...
 %! innerjoin (table ([1;2]));
@@ -1672,14 +1672,14 @@
 %! L = table ([1;2;3], {'a';'b';'c'}, 'VariableNames', {'Key', 'L'});
 %! R = table ([2;3;5], {'x';'y';'z'}, 'VariableNames', {'Key', 'R'});
 %! [T, ixL, ixR] = outerjoin (L, R);
-%! assert (T.Properties.VariableNames, {'Key_L', 'L', 'Key_R', 'R'});
-%! assert (height (T), 4);
-%! assert (T.Key_L, [1;2;3;NaN]);
-%! assert (T.Key_R, [NaN;2;3;5]);
-%! assert (T.L, {'a';'b';'c';''});
-%! assert (T.R, {'';'x';'y';'z'});
-%! assert (ixL, [1;2;3;0]);
-%! assert (ixR, [0;1;2;3]);
+%! assert_equal (T.Properties.VariableNames, {'Key_L', 'L', 'Key_R', 'R'});
+%! assert_equal (height (T), 4);
+%! assert_equal (T.Key_L, [1;2;3;NaN]);
+%! assert_equal (T.Key_R, [NaN;2;3;5]);
+%! assert_equal (T.L, {'a';'b';'c';''});
+%! assert_equal (T.R, {'';'x';'y';'z'});
+%! assert_equal (ixL, [1;2;3;0]);
+%! assert_equal (ixR, [0;1;2;3]);
 
 ## Outer join drops row names
 %!test
@@ -1687,37 +1687,37 @@
 %!            'RowNames', {'r1', 'r2'});
 %! R = table ([2;1], {'x';'y'}, 'VariableNames', {'Key', 'R'});
 %! T = outerjoin (L, R);
-%! assert (isempty (T.Properties.RowNames), true);
+%! assert_equal (isempty (T.Properties.RowNames), true);
 
 ## 'Type' 'left' keeps all left rows and only matching right rows
 %!test
 %! L = table ([1;2;3], {'a';'b';'c'}, 'VariableNames', {'Key', 'L'});
 %! R = table ([2;3;5], {'x';'y';'z'}, 'VariableNames', {'Key', 'R'});
 %! [T, ixL, ixR] = outerjoin (L, R, 'Type', 'left');
-%! assert (height (T), 3);
-%! assert (T.Key_L, [1;2;3]);
-%! assert (ixL, [1;2;3]);
-%! assert (ixR, [0;1;2]);
+%! assert_equal (height (T), 3);
+%! assert_equal (T.Key_L, [1;2;3]);
+%! assert_equal (ixL, [1;2;3]);
+%! assert_equal (ixR, [0;1;2]);
 
 ## 'Type' 'right' keeps all right rows and only matching left rows
 %!test
 %! L = table ([1;2;3], {'a';'b';'c'}, 'VariableNames', {'Key', 'L'});
 %! R = table ([2;3;5], {'x';'y';'z'}, 'VariableNames', {'Key', 'R'});
 %! [T, ixL, ixR] = outerjoin (L, R, 'Type', 'right');
-%! assert (height (T), 3);
-%! assert (T.Key_R, [2;3;5]);
-%! assert (ixL, [2;3;0]);
-%! assert (ixR, [1;2;3]);
+%! assert_equal (height (T), 3);
+%! assert_equal (T.Key_R, [2;3;5]);
+%! assert_equal (ixL, [2;3;0]);
+%! assert_equal (ixR, [1;2;3]);
 
 ## 'MergeKeys' merges the key pair into a single column
 %!test
 %! L = table ([1;2;3], {'a';'b';'c'}, 'VariableNames', {'Key', 'L'});
 %! R = table ([2;3;5], {'x';'y';'z'}, 'VariableNames', {'Key', 'R'});
 %! T = outerjoin (L, R, 'MergeKeys', true);
-%! assert (T.Properties.VariableNames, {'Key', 'L', 'R'});
-%! assert (T.Key, [1;2;3;5]);
-%! assert (T.L, {'a';'b';'c';''});
-%! assert (T.R, {'';'x';'y';'z'});
+%! assert_equal (T.Properties.VariableNames, {'Key', 'L', 'R'});
+%! assert_equal (T.Key, [1;2;3;5]);
+%! assert_equal (T.L, {'a';'b';'c';''});
+%! assert_equal (T.R, {'';'x';'y';'z'});
 
 ## 'MergeKeys' with differently-named keys uses the left key name
 %!test
@@ -1725,44 +1725,44 @@
 %! R = table ([2;3], {'x';'y'}, 'VariableNames', {'KR', 'B'});
 %! T = outerjoin (L, R, 'LeftKeys', 'KL', 'RightKeys', 'KR', ...
 %!                'MergeKeys', true);
-%! assert (T.Properties.VariableNames, {'KL_KR', 'A', 'B'});
-%! assert (T.KL_KR, [1;2;3]);
-%! assert (T.A, [10;11;NaN]);
-%! assert (T.B, {'';'x';'y'});
+%! assert_equal (T.Properties.VariableNames, {'KL_KR', 'A', 'B'});
+%! assert_equal (T.KL_KR, [1;2;3]);
+%! assert_equal (T.A, [10;11;NaN]);
+%! assert_equal (T.B, {'';'x';'y'});
 
 ## String variables in unmatched rows are filled with <missing>
 %!test
 %! L = table ([1;2], string ({'a';'b'}), 'VariableNames', {'K', 'S'});
 %! R = table ([2;3], {'p';'q'}, 'VariableNames', {'K', 'R'});
 %! T = outerjoin (L, R);
-%! assert (ismissing (T.S), [false;false;true]);
-%! assert (T.R, {'';'p';'q'});
+%! assert_equal (ismissing (T.S), [false;false;true]);
+%! assert_equal (T.R, {'';'p';'q'});
 
 ## Categorical variables in unmatched rows are filled with <undefined>
 %!test
 %! L = table ([1;2], {'a';'b'}, 'VariableNames', {'K', 'L'});
 %! R = table ([2;3], categorical ({'p';'q'}), 'VariableNames', {'K', 'C'});
 %! T = outerjoin (L, R);
-%! assert (ismissing (T.C), [true;false;false]);
+%! assert_equal (ismissing (T.C), [true;false;false]);
 
 ## Cartesian product on repeated keys in a full outer join
 %!test
 %! L = table ([1;1;9], {'a';'b';'z'}, 'VariableNames', {'K', 'L'});
 %! R = table ([1;1], {'x';'y'}, 'VariableNames', {'K', 'R'});
 %! T = outerjoin (L, R);
-%! assert (height (T), 5);
-%! assert (T.L, {'a';'a';'b';'b';'z'});
-%! assert (T.R, {'x';'y';'x';'y';''});
+%! assert_equal (height (T), 5);
+%! assert_equal (T.L, {'a';'a';'b';'b';'z'});
+%! assert_equal (T.R, {'x';'y';'x';'y';''});
 
 ## An empty input table yields all-missing fill on that side
 %!test
 %! E = table (zeros (0, 1), cell (0, 1), 'VariableNames', {'K', 'L'});
 %! R = table ([1;2], {'x';'y'}, 'VariableNames', {'K', 'R'});
 %! T = outerjoin (E, R);
-%! assert (height (T), 2);
-%! assert (T.K_R, [1;2]);
-%! assert (T.L, {'';''});
-%! assert (T.R, {'x';'y'});
+%! assert_equal (height (T), 2);
+%! assert_equal (T.K_R, [1;2]);
+%! assert_equal (T.L, {'';''});
+%! assert_equal (T.R, {'x';'y'});
 
 ## 'LeftVariables'/'RightVariables' restrict the output columns
 %!test
@@ -1771,42 +1771,42 @@
 %! R = table ([2;3], {'x';'y'}, 'VariableNames', {'K', 'B'});
 %! T = outerjoin (L, R, 'LeftVariables', 'A', 'RightVariables', 'B', ...
 %!                'Type', 'left');
-%! assert (T.Properties.VariableNames, {'A', 'B'});
-%! assert (T.A, [10;11;12]);
-%! assert (T.B, {'';'x';'y'});
+%! assert_equal (T.Properties.VariableNames, {'A', 'B'});
+%! assert_equal (T.A, [10;11;12]);
+%! assert_equal (T.B, {'';'x';'y'});
 
 ## 'outerjoin' on a duration key fills unmatched keys with missing
 %!test
 %! L = table (hours ([3;1;2]), {'a';'b';'c'}, 'VariableNames', {'K', 'L'});
 %! R = table (hours ([2;5]), {'p';'q'}, 'VariableNames', {'K', 'R'});
 %! [T, ixL, ixR] = outerjoin (L, R);
-%! assert (hours (T.K_L), [1;2;3;NaN]);
-%! assert (ismissing (T.K_L), [false;false;false;true]);
-%! assert (T.R, {'';'p';'';'q'});
-%! assert (ixL, [2;3;1;0]);
-%! assert (ixR, [0;1;0;2]);
+%! assert_equal (hours (T.K_L), [1;2;3;NaN]);
+%! assert_equal (ismissing (T.K_L), [false;false;false;true]);
+%! assert_equal (T.R, {'';'p';'';'q'});
+%! assert_equal (ixL, [2;3;1;0]);
+%! assert_equal (ixR, [0;1;0;2]);
 
 ## 'outerjoin' fills an unmatched duration variable with missing
 %!test
 %! L = table ([1;2], hours ([10;20]), 'VariableNames', {'K', 'D'});
 %! R = table ([2;3], {'x';'y'}, 'VariableNames', {'K', 'R'});
 %! T = outerjoin (L, R);
-%! assert (ismissing (T.D), [false;false;true]);
-%! assert (hours (T.D), [10;20;NaN]);
+%! assert_equal (ismissing (T.D), [false;false;true]);
+%! assert_equal (hours (T.D), [10;20;NaN]);
 
 ## 'outerjoin' fills an unmatched calendarDuration variable with missing
 %!test
 %! L = table ([1;2], calmonths ([5;6]), 'VariableNames', {'K', 'CD'});
 %! R = table ([2;3], {'x';'y'}, 'VariableNames', {'K', 'R'});
 %! T = outerjoin (L, R);
-%! assert (ismissing (T.CD), [false;false;true]);
+%! assert_equal (ismissing (T.CD), [false;false;true]);
 
 ## 'outerjoin' fills an unmatched string variable with <missing>
 %!test
 %! L = table ([1;2], string ({'a';'b'}), 'VariableNames', {'K', 'S'});
 %! R = table ([2;3], {'x';'y'}, 'VariableNames', {'K', 'R'});
 %! T = outerjoin (L, R);
-%! assert (ismissing (T.S), [false;false;true]);
+%! assert_equal (ismissing (T.S), [false;false;true]);
 
 %!error <table.outerjoin: too few input arguments.> ...
 %! outerjoin (table ([1;2]));
@@ -1842,88 +1842,88 @@
 %! A = table ([3;1;2;1], {'c';'a';'b';'a'}, 'VariableNames', {'N', 'S'});
 %! B = table ([2;5;1], {'b';'e';'a'}, 'VariableNames', {'N', 'S'});
 %! [U, ia, ib] = union (A, B);
-%! assert (U.Properties.VariableNames, {'N', 'S'});
-%! assert (U.N, [1;2;3;5]);
-%! assert (U.S, {'a';'b';'c';'e'});
-%! assert (ia, [2;3;1]);
-%! assert (ib, 2);
+%! assert_equal (U.Properties.VariableNames, {'N', 'S'});
+%! assert_equal (U.N, [1;2;3;5]);
+%! assert_equal (U.S, {'a';'b';'c';'e'});
+%! assert_equal (ia, [2;3;1]);
+%! assert_equal (ib, 2);
 
 ## 'union' with 'stable' set order
 %!test
 %! A = table ([3;1;2;1], {'c';'a';'b';'a'}, 'VariableNames', {'N', 'S'});
 %! B = table ([2;5;1], {'b';'e';'a'}, 'VariableNames', {'N', 'S'});
 %! U = union (A, B, 'stable');
-%! assert (U.N, [3;1;2;5]);
-%! assert (U.S, {'c';'a';'b';'e'});
+%! assert_equal (U.N, [3;1;2;5]);
+%! assert_equal (U.S, {'c';'a';'b';'e'});
 
 ## 'union' ignores variable order (output keeps the first table's order)
 %!test
 %! A = table ([3;1], {'c';'a'}, 'VariableNames', {'N', 'S'});
 %! B = table ({'a';'e'}, [1;5], 'VariableNames', {'S', 'N'});
 %! U = union (A, B);
-%! assert (U.Properties.VariableNames, {'N', 'S'});
-%! assert (U.N, [1;3;5]);
-%! assert (U.S, {'a';'c';'e'});
+%! assert_equal (U.Properties.VariableNames, {'N', 'S'});
+%! assert_equal (U.N, [1;3;5]);
+%! assert_equal (U.S, {'a';'c';'e'});
 
 ## Test 'intersect' method
 %!test
 %! A = table ([3;1;2;1], {'c';'a';'b';'a'}, 'VariableNames', {'N', 'S'});
 %! B = table ([2;5;1], {'b';'e';'a'}, 'VariableNames', {'N', 'S'});
 %! [I, ia, ib] = intersect (A, B);
-%! assert (I.N, [1;2]);
-%! assert (I.S, {'a';'b'});
-%! assert (ia, [2;3]);
-%! assert (ib, [3;1]);
+%! assert_equal (I.N, [1;2]);
+%! assert_equal (I.S, {'a';'b'});
+%! assert_equal (ia, [2;3]);
+%! assert_equal (ib, [3;1]);
 
 ## 'intersect' with no common rows yields an empty table
 %!test
 %! A = table ([1;2], {'a';'b'}, 'VariableNames', {'N', 'S'});
 %! B = table ([8;9], {'x';'y'}, 'VariableNames', {'N', 'S'});
 %! I = intersect (A, B);
-%! assert (height (I), 0);
-%! assert (I.Properties.VariableNames, {'N', 'S'});
+%! assert_equal (height (I), 0);
+%! assert_equal (I.Properties.VariableNames, {'N', 'S'});
 
 ## Test 'setdiff' method
 %!test
 %! A = table ([3;1;2;1], {'c';'a';'b';'a'}, 'VariableNames', {'N', 'S'});
 %! B = table ([2;5;1], {'b';'e';'a'}, 'VariableNames', {'N', 'S'});
 %! [D, ia] = setdiff (A, B);
-%! assert (D.N, 3);
-%! assert (D.S, {'c'});
-%! assert (ia, 1);
+%! assert_equal (D.N, 3);
+%! assert_equal (D.S, {'c'});
+%! assert_equal (ia, 1);
 
 ## 'setdiff' with 'stable' set order
 %!test
 %! A = table ([5;3;5], {'e';'c';'e'}, 'VariableNames', {'N', 'S'});
 %! B = table ([1], {'a'}, 'VariableNames', {'N', 'S'});
 %! D = setdiff (A, B, 'stable');
-%! assert (D.N, [5;3]);
+%! assert_equal (D.N, [5;3]);
 
 ## Test 'setxor' method
 %!test
 %! A = table ([3;1;2;1], {'c';'a';'b';'a'}, 'VariableNames', {'N', 'S'});
 %! B = table ([2;5;1], {'b';'e';'a'}, 'VariableNames', {'N', 'S'});
 %! [X, ia, ib] = setxor (A, B);
-%! assert (X.N, [3;5]);
-%! assert (X.S, {'c';'e'});
-%! assert (ia, 1);
-%! assert (ib, 2);
+%! assert_equal (X.N, [3;5]);
+%! assert_equal (X.S, {'c';'e'});
+%! assert_equal (ia, 1);
+%! assert_equal (ib, 2);
 
 ## Test 'ismember' method
 %!test
 %! A = table ([3;1;2;1], {'c';'a';'b';'a'}, 'VariableNames', {'N', 'S'});
 %! B = table ([2;5;1], {'b';'e';'a'}, 'VariableNames', {'N', 'S'});
 %! [TF, ixB] = ismember (A, B);
-%! assert (TF, [false;true;true;true]);
-%! assert (ixB, [0;3;1;3]);
+%! assert_equal (TF, [false;true;true;true]);
+%! assert_equal (ixB, [0;3;1;3]);
 
 ## Set operations work on text and numeric keys via the row proxy
 %!test
 %! A = table (categorical ({'a';'b';'c'}), [1;2;3], 'VariableNames', {'C', 'N'});
 %! B = table (categorical ({'b';'d'}), [2;4], 'VariableNames', {'C', 'N'});
 %! I = intersect (A, B);
-%! assert (cellstr (I.C), {'b'});
-%! assert (I.N, 2);
+%! assert_equal (cellstr (I.C), {'b'});
+%! assert_equal (I.N, 2);
 
 ## 'union' over string, categorical, duration and calendarDuration variables
 %!test
@@ -1933,10 +1933,10 @@
 %! B = table (string ({'b';'d'}), categorical ({'y';'w'}), hours ([2;4]), ...
 %!            calmonths ([2;4]), 'VariableNames', {'S', 'C', 'D', 'M'});
 %! U = union (A, B);
-%! assert (cellstr (U.S), {'a';'b';'c';'d'});
-%! assert (cellstr (U.C), {'x';'y';'z';'w'});
-%! assert (hours (U.D), [1;2;3;4]);
-%! assert (calmonths (U.M), [1;2;3;4]);
+%! assert_equal (cellstr (U.S), {'a';'b';'c';'d'});
+%! assert_equal (cellstr (U.C), {'x';'y';'z';'w'});
+%! assert_equal (hours (U.D), [1;2;3;4]);
+%! assert_equal (calmonths (U.M), [1;2;3;4]);
 
 ## 'intersect' over string, categorical, duration and calendarDuration variables
 %!test
@@ -1946,10 +1946,10 @@
 %! B = table (string ({'b';'d'}), categorical ({'y';'w'}), hours ([2;4]), ...
 %!            calmonths ([2;4]), 'VariableNames', {'S', 'C', 'D', 'M'});
 %! I = intersect (A, B);
-%! assert (cellstr (I.S), {'b'});
-%! assert (cellstr (I.C), {'y'});
-%! assert (hours (I.D), 2);
-%! assert (calmonths (I.M), 2);
+%! assert_equal (cellstr (I.S), {'b'});
+%! assert_equal (cellstr (I.C), {'y'});
+%! assert_equal (hours (I.D), 2);
+%! assert_equal (calmonths (I.M), 2);
 
 ## 'setdiff' over string, categorical, duration and calendarDuration variables
 %!test
@@ -1959,8 +1959,8 @@
 %! B = table (string ({'b';'d'}), categorical ({'y';'w'}), hours ([2;4]), ...
 %!            calmonths ([2;4]), 'VariableNames', {'S', 'C', 'D', 'M'});
 %! D = setdiff (A, B);
-%! assert (cellstr (D.S), {'a';'c'});
-%! assert (hours (D.D), [1;3]);
+%! assert_equal (cellstr (D.S), {'a';'c'});
+%! assert_equal (hours (D.D), [1;3]);
 
 ## 'setxor' over string, categorical, duration and calendarDuration variables
 %!test
@@ -1970,8 +1970,8 @@
 %! B = table (string ({'b';'d'}), categorical ({'y';'w'}), hours ([2;4]), ...
 %!            calmonths ([2;4]), 'VariableNames', {'S', 'C', 'D', 'M'});
 %! X = setxor (A, B);
-%! assert (cellstr (X.S), {'a';'c';'d'});
-%! assert (hours (X.D), [1;3;4]);
+%! assert_equal (cellstr (X.S), {'a';'c';'d'});
+%! assert_equal (hours (X.D), [1;3;4]);
 
 ## 'ismember' over string, categorical, duration and calendarDuration variables
 %!test
@@ -1981,8 +1981,8 @@
 %! B = table (string ({'b';'d'}), categorical ({'y';'w'}), hours ([2;4]), ...
 %!            calmonths ([2;4]), 'VariableNames', {'S', 'C', 'D', 'M'});
 %! [TF, ixB] = ismember (A, B);
-%! assert (TF, [false;true;false]);
-%! assert (ixB, [0;1;0]);
+%! assert_equal (TF, [false;true;false]);
+%! assert_equal (ixB, [0;1;0]);
 
 %!error <table.union: too few input arguments.> ...
 %! union (table ([1;2]));
@@ -2028,107 +2028,107 @@
 ## Test 'anymissing' method
 %!test
 %! T = table (categorical ({'1';'2';'';'4'}));
-%! assert (anymissing (T), true);
+%! assert_equal (anymissing (T), true);
 %!test
 %! T = table (categorical ({'1';'2';'3';'4'}));
-%! assert (anymissing (T), false);
+%! assert_equal (anymissing (T), false);
 %!test
 %! T = table (calyears ([1; 2; NaN; 4]));
-%! assert (anymissing (T), true);
+%! assert_equal (anymissing (T), true);
 %!test
 %! T = table (calyears ([1; 2; 3; 4]));
-%! assert (anymissing (T), false);
+%! assert_equal (anymissing (T), false);
 %!test
 %! T = table (days ([1; 2; NaN; 4]));
-%! assert (anymissing (T), true);
+%! assert_equal (anymissing (T), true);
 %!test
 %! T = table (days ([1; 2; 3; 4]));
-%! assert (anymissing (T), false);
+%! assert_equal (anymissing (T), false);
 %!test
 %! T = table (string ([1; 2; NaN; 4]));
-%! assert (anymissing (T), true);
+%! assert_equal (anymissing (T), true);
 %!test
 %! T = table (string ([1; 2; 3; 4]));
-%! assert (anymissing (T), false);
+%! assert_equal (anymissing (T), false);
 %!test
 %! T = table ({'1'; '2'; ''; '4'});
-%! assert (anymissing (T), true);
+%! assert_equal (anymissing (T), true);
 %!test
 %! T = table ({'1'; '2'; 'NaN'; '4'});
-%! assert (anymissing (T), false);
+%! assert_equal (anymissing (T), false);
 %!test
 %! T = table (['1'; '2'; ' '; '4']);
-%! assert (anymissing (T), true);
+%! assert_equal (anymissing (T), true);
 %!test
 %! T = table (['1'; '2'; 'NaN'; '4']);
-%! assert (anymissing (T), false);
+%! assert_equal (anymissing (T), false);
 %!test
 %! T = table (['1'; '2'; 'N'; '4']);
-%! assert (anymissing (T), false);
+%! assert_equal (anymissing (T), false);
 
 ## Test 'ismissing' method
 %!test
 %! TF = ismissing (table (['   '; ' 2 '; 'NaN'; '4  ']), ' 2');
-%! assert (TF, [false; true; false; false]);
+%! assert_equal (TF, [false; true; false; false]);
 %!test
 %! TF = ismissing (table (['   '; ' 2 '; 'NaN'; '4  ']), '2');
-%! assert (TF, [false; false; false; false]);
+%! assert_equal (TF, [false; false; false; false]);
 %!test
 %! TF = ismissing (table (['   '; '2  '; 'NaN'; '4  ']), '2');
-%! assert (TF, [false; true; false; false]);
+%! assert_equal (TF, [false; true; false; false]);
 %!test
 %! TF = ismissing (table (['   '; ' 2 '; 'NaN'; '4  ']));
-%! assert (TF, [true; false; false; false]);
+%! assert_equal (TF, [true; false; false; false]);
 %!test
 %! TF = ismissing (table ({'1'; '2'; ''; '4'}));
-%! assert (TF, [false; false; true; false]);
+%! assert_equal (TF, [false; false; true; false]);
 %!test
 %! TF = ismissing (table ({'1'; '2'; ''; '4'}), 'OutputFormat', 'tabular');
-%! assert (class (TF), 'table');
-%! assert (TF.Var1, [false; false; true; false]);
+%! assert_equal (class (TF), 'table');
+%! assert_equal (TF.Var1, [false; false; true; false]);
 %!test
 %! TF = ismissing (table ({'1'; '2'; ''; '4'}), {'4'}, 'OutputFormat', 'tabular');
-%! assert (class (TF), 'table');
-%! assert (TF.Var1, [false; false; false; true]);
+%! assert_equal (class (TF), 'table');
+%! assert_equal (TF.Var1, [false; false; false; true]);
 %!test
 %! TF = ismissing (table ({'1'; '2'; ''; '4'}, string ([1; 2; 3; 4])), {'4', '3'}, 'OutputFormat', 'tabular');
-%! assert (class (TF), 'table');
-%! assert (TF.Var1, [false; false; false; true]);
-%! assert (TF.Var2, [false; false; true; true]);
+%! assert_equal (class (TF), 'table');
+%! assert_equal (TF.Var1, [false; false; false; true]);
+%! assert_equal (TF.Var2, [false; false; true; true]);
 %!test
 %! TF = ismissing (table ({'1'; '2'; ''; '4'}, string ([1; 2; 3; 4])), {'4', '3'});
-%! assert (class (TF), 'logical');
-%! assert (TF, [false, false; false, false; false, true; true, true]);
+%! assert_equal (class (TF), 'logical');
+%! assert_equal (TF, [false, false; false, false; false, true; true, true]);
 %!test
 %! TF = ismissing (table (days ([1; 2; NaN; 4]), calweeks ([1; 2; NaN; 4])));
-%! assert (TF, [false, false; false, false; true, true; false, false]);
+%! assert_equal (TF, [false, false; false, false; true, true; false, false]);
 
 ## Test 'rmmissing' method
 %!test  # removes every row that contains a missing value
 %! T = table ([1; NaN; 3], {'a'; 'b'; ''}, 'VariableNames', {'x', 'y'});
 %! R = rmmissing (T);
-%! assert (size (R), [1, 2]);
-%! assert (R.x, 1);
-%! assert (R.y, {'a'});
+%! assert_equal (size (R), [1, 2]);
+%! assert_equal (R.x, 1);
+%! assert_equal (R.y, {'a'});
 %!test  # the second output is the removed-row mask
 %! T = table ([1; NaN; 3], {'a'; 'b'; ''}, 'VariableNames', {'x', 'y'});
 %! [~, TF] = rmmissing (T);
-%! assert (TF, [false; true; true]);
+%! assert_equal (TF, [false; true; true]);
 %!test  # a table with no missing values is returned unchanged
 %! T = table ([1; 2; 3], 'VariableNames', {'x'});
 %! [R, TF] = rmmissing (T);
-%! assert (isequal (R, T), true);
-%! assert (TF, [false; false; false]);
+%! assert_equal (isequal (R, T), true);
+%! assert_equal (TF, [false; false; false]);
 %!test  # 'DataVariables' restricts which variables are inspected
 %! T = table ([1; NaN; 3], {'a'; 'b'; ''}, 'VariableNames', {'x', 'y'});
 %! [R, TF] = rmmissing (T, 'DataVariables', 'x');
-%! assert (TF, [false; true; false]);
-%! assert (R.x, [1; 3]);
+%! assert_equal (TF, [false; true; false]);
+%! assert_equal (R.x, [1; 3]);
 %!test  # 'MinNumMissing' needs at least N missing values in a row
 %! T = table ([1; NaN; NaN], {'a'; 'b'; ''}, 'VariableNames', {'x', 'y'});
 %! [R, TF] = rmmissing (T, 'MinNumMissing', 2);
-%! assert (TF, [false; false; true]);
-%! assert (height (R), 2);
+%! assert_equal (TF, [false; false; true]);
+%! assert_equal (height (R), 2);
 
 ## Test input validation for 'rmmissing' method
 %!error <table.rmmissing: 'MinNumMissing' must be a positive integer.> ...
@@ -2138,107 +2138,107 @@
 %!test  # a scalar fill value is broadcast to the targeted numeric variable
 %! T = table ([1; NaN; 3; NaN], 'VariableNames', {'x'});
 %! [R, TF] = fillmissing (T, 'constant', 0);
-%! assert (R.x, [1; 0; 3; 0]);
-%! assert (TF, [false; true; false; true]);
+%! assert_equal (R.x, [1; 0; 3; 0]);
+%! assert_equal (TF, [false; true; false; true]);
 %!test  # a cell array gives one fill value per variable
 %! T = table ([1; NaN; 3], {'a'; ''; 'c'}, 'VariableNames', {'x', 'y'});
 %! R = fillmissing (T, 'constant', {0, 'z'});
-%! assert (R.x, [1; 0; 3]);
-%! assert (R.y, {'a'; 'z'; 'c'});
+%! assert_equal (R.x, [1; 0; 3]);
+%! assert_equal (R.y, {'a'; 'z'; 'c'});
 %!test  # a vector gives one fill value per variable
 %! T = table ([1; NaN], [NaN; 4], 'VariableNames', {'a', 'b'});
 %! R = fillmissing (T, 'constant', [7, 9]);
-%! assert (R.a, [1; 7]);
-%! assert (R.b, [9; 4]);
+%! assert_equal (R.a, [1; 7]);
+%! assert_equal (R.b, [9; 4]);
 %!test  # 'constant' fills a string variable
 %! s = string ({'a'; 'b'; 'c'});
 %! s(2) = string (missing);
 %! R = fillmissing (table (s, 'VariableNames', {'s'}), 'constant', ...
 %!                  string ('Z'));
-%! assert (cellstr (R.s), {'a'; 'Z'; 'c'});
+%! assert_equal (cellstr (R.s), {'a'; 'Z'; 'c'});
 %!test  # 'constant' fills a categorical variable
 %! c = categorical ({'p'; ''; 'r'});
 %! R = fillmissing (table (c, 'VariableNames', {'c'}), 'constant', ...
 %!                  categorical ({'q'}));
-%! assert (cellstr (R.c), {'p'; 'q'; 'r'});
+%! assert_equal (cellstr (R.c), {'p'; 'q'; 'r'});
 %!test  # 'DataVariables' restricts the fill to a subset of variables
 %! T = table ([1; NaN], [NaN; 4], 'VariableNames', {'a', 'b'});
 %! [R, TF] = fillmissing (T, 'constant', 0, 'DataVariables', 'a');
-%! assert (R.a, [1; 0]);
-%! assert (R.b, [NaN; 4]);
-%! assert (TF, [false, false; true, false]);
+%! assert_equal (R.a, [1; 0]);
+%! assert_equal (R.b, [NaN; 4]);
+%! assert_equal (TF, [false, false; true, false]);
 
 ## Test 'fillmissing' method -- 'previous'/'next'/'nearest' methods
 %!test  # 'previous' carries the last non-missing value forward
 %! T = table ([1; NaN; NaN; 4], 'VariableNames', {'x'});
 %! [R, TF] = fillmissing (T, 'previous');
-%! assert (R.x, [1; 1; 1; 4]);
-%! assert (TF, [false; true; true; false]);
+%! assert_equal (R.x, [1; 1; 1; 4]);
+%! assert_equal (TF, [false; true; true; false]);
 %!test  # 'next' carries the next non-missing value backward
 %! T = table ([1; NaN; NaN; 4], 'VariableNames', {'x'});
 %! R = fillmissing (T, 'next');
-%! assert (R.x, [1; 4; 4; 4]);
+%! assert_equal (R.x, [1; 4; 4; 4]);
 %!test  # 'nearest' uses the closest value; ties favor the next one
 %! T = table ([1; NaN; NaN; NaN; 5], 'VariableNames', {'x'});
 %! R = fillmissing (T, 'nearest');
-%! assert (R.x, [1; 1; 5; 5; 5]);
+%! assert_equal (R.x, [1; 1; 5; 5; 5]);
 %!test  # leading missing entries are left missing by 'previous'
 %! T = table ([NaN; NaN; 3], 'VariableNames', {'x'});
 %! [R, TF] = fillmissing (T, 'previous');
-%! assert (R.x, [NaN; NaN; 3]);
-%! assert (TF, [false; false; false]);
+%! assert_equal (R.x, [NaN; NaN; 3]);
+%! assert_equal (TF, [false; false; false]);
 %!test  # the neighbor methods work on a string variable
 %! s = string ({'a'; 'b'; 'c'; 'd'});
 %! s(2) = string (missing);
 %! s(3) = string (missing);
 %! R = fillmissing (table (s, 'VariableNames', {'s'}), 'previous');
-%! assert (cellstr (R.s), {'a'; 'a'; 'a'; 'd'});
+%! assert_equal (cellstr (R.s), {'a'; 'a'; 'a'; 'd'});
 %!test  # the neighbor methods work on a categorical variable
 %! c = categorical ({'p'; ''; ''; 's'});
 %! R = fillmissing (table (c, 'VariableNames', {'c'}), 'next');
-%! assert (cellstr (R.c), {'p'; 's'; 's'; 's'});
+%! assert_equal (cellstr (R.c), {'p'; 's'; 's'; 's'});
 %!test  # a multicolumn variable is filled column by column
 %! T = table ([1, 10; NaN, NaN; 3, 30]);
 %! [R, TF] = fillmissing (T, 'previous');
-%! assert (R.Var1, [1, 10; 1, 10; 3, 30]);
-%! assert (TF, [false; true; false]);
+%! assert_equal (R.Var1, [1, 10; 1, 10; 3, 30]);
+%! assert_equal (TF, [false; true; false]);
 %!test  # the method name is case-insensitive
 %! T = table ([1; NaN; 3], 'VariableNames', {'x'});
 %! R = fillmissing (T, 'Previous');
-%! assert (R.x, [1; 1; 3]);
+%! assert_equal (R.x, [1; 1; 3]);
 
 ## Test 'fillmissing' method -- 'linear' method
 %!test  # interior gaps are linearly interpolated
 %! T = table ([1; NaN; NaN; 4], 'VariableNames', {'x'});
 %! [R, TF] = fillmissing (T, 'linear');
-%! assert (R.x, [1; 2; 3; 4]);
-%! assert (TF, [false; true; true; false]);
+%! assert_equal (R.x, [1; 2; 3; 4]);
+%! assert_equal (TF, [false; true; true; false]);
 %!test  # 'EndValues' defaults to 'extrap' (linear extrapolation)
 %! T = table ([NaN; 2; 4; NaN], 'VariableNames', {'x'});
 %! R = fillmissing (T, 'linear');
-%! assert (R.x, [0; 2; 4; 6]);
+%! assert_equal (R.x, [0; 2; 4; 6]);
 %!test  # 'EndValues' 'none' leaves leading and trailing gaps missing
 %! T = table ([NaN; 2; 4; NaN], 'VariableNames', {'x'});
 %! R = fillmissing (T, 'linear', 'EndValues', 'none');
-%! assert (R.x, [NaN; 2; 4; NaN]);
+%! assert_equal (R.x, [NaN; 2; 4; NaN]);
 %!test  # 'EndValues' accepts a numeric constant for the end gaps
 %! T = table ([NaN; 2; 4; NaN], 'VariableNames', {'x'});
 %! R = fillmissing (T, 'linear', 'EndValues', 0);
-%! assert (R.x, [0; 2; 4; 0]);
+%! assert_equal (R.x, [0; 2; 4; 0]);
 %!test  # 'linear' leaves non-numeric variables unchanged
 %! T = table ([1; NaN; 3], {'a'; ''; 'c'}, 'VariableNames', {'x', 'y'});
 %! R = fillmissing (T, 'linear');
-%! assert (R.x, [1; 2; 3]);
-%! assert (R.y, {'a'; ''; 'c'});
+%! assert_equal (R.x, [1; 2; 3]);
+%! assert_equal (R.y, {'a'; ''; 'c'});
 %!test  # fewer than two anchors cannot be interpolated
 %! T = table ([NaN; 5; NaN], 'VariableNames', {'x'});
 %! R = fillmissing (T, 'linear', 'EndValues', 'none');
-%! assert (R.x, [NaN; 5; NaN]);
+%! assert_equal (R.x, [NaN; 5; NaN]);
 %!test  # a table without missing values is returned unchanged
 %! T = table ([1; 2; 3], 'VariableNames', {'x'});
 %! [R, TF] = fillmissing (T, 'previous');
-%! assert (isequal (R, T), true);
-%! assert (TF, [false; false; false]);
+%! assert_equal (isequal (R, T), true);
+%! assert_equal (TF, [false; false; false]);
 
 ## Test input validation for 'fillmissing' method
 %!error <table.fillmissing: too few input arguments.> ...
@@ -2268,43 +2268,43 @@
 %!test  # a numeric scalar indicator becomes NaN in numeric variables
 %! T = table ([1; 99; 3], 'VariableNames', {'x'});
 %! R = standardizeMissing (T, 99);
-%! assert (R.x, [1; NaN; 3]);
+%! assert_equal (R.x, [1; NaN; 3]);
 %!test  # a numeric vector indicator matches any of its values
 %! T = table ([1; -99; 3; 0], 'VariableNames', {'x'});
 %! R = standardizeMissing (T, [-99, 0]);
-%! assert (R.x, [1; NaN; 3; NaN]);
+%! assert_equal (R.x, [1; NaN; 3; NaN]);
 %!test  # a text indicator standardizes a cellstr variable to ''
 %! T = table ({'a'; 'NA'; 'c'}, 'VariableNames', {'y'});
 %! R = standardizeMissing (T, 'NA');
-%! assert (R.y, {'a'; ''; 'c'});
-%! assert (cellfun (@isempty, R.y), [false; true; false]);
+%! assert_equal (R.y, {'a'; ''; 'c'});
+%! assert_equal (cellfun (@isempty, R.y), [false; true; false]);
 %!test  # a text indicator standardizes a string variable to <missing>
 %! T = table (string ({'a'; 'NA'; 'c'}), 'VariableNames', {'s'});
 %! R = standardizeMissing (T, 'NA');
-%! assert (ismissing (R.s), [false; true; false]);
+%! assert_equal (ismissing (R.s), [false; true; false]);
 %!test  # a text indicator standardizes a categorical variable to <undefined>
 %! T = table (categorical ({'a'; 'NA'; 'c'}), 'VariableNames', {'c'});
 %! R = standardizeMissing (T, {'NA'});
-%! assert (ismissing (R.c), [false; true; false]);
+%! assert_equal (ismissing (R.c), [false; true; false]);
 %!test  # a cell indicator mixes numeric and text across a mixed table
 %! T = table ([1; 5; 99], {'a'; 'x'; 'c'}, 'VariableNames', {'n', 't'});
 %! R = standardizeMissing (T, {99, 'x'});
-%! assert (R.n, [1; 5; NaN]);
-%! assert (R.t, {'a'; ''; 'c'});
+%! assert_equal (R.n, [1; 5; NaN]);
+%! assert_equal (R.t, {'a'; ''; 'c'});
 %!test  # numeric and text indicators only touch compatible variables
 %! T = table ([1; 5; 99], {'a'; '99'; 'c'}, 'VariableNames', {'n', 't'});
 %! R = standardizeMissing (T, 99);
-%! assert (R.n, [1; 5; NaN]);
-%! assert (R.t, {'a'; '99'; 'c'});
+%! assert_equal (R.n, [1; 5; NaN]);
+%! assert_equal (R.t, {'a'; '99'; 'c'});
 %!test  # 'DataVariables' restricts the standardization to a subset
 %! T = table ([1; 99], [99; 2], 'VariableNames', {'a', 'b'});
 %! R = standardizeMissing (T, 99, 'DataVariables', 'a');
-%! assert (R.a, [1; NaN]);
-%! assert (R.b, [99; 2]);
+%! assert_equal (R.a, [1; NaN]);
+%! assert_equal (R.b, [99; 2]);
 %!test  # integer variables have no standard missing value; pass through
 %! T = table (int32 ([1; 99; 3]), 'VariableNames', {'x'});
 %! R = standardizeMissing (T, 99);
-%! assert (R.x, int32 ([1; 99; 3]));
+%! assert_equal (R.x, int32 ([1; 99; 3]));
 
 ## Test input validation for 'standardizeMissing' method
 %!error <table.standardizeMissing: too few input arguments.> ...
@@ -2329,130 +2329,130 @@
 ##                                                                            ##
 ################################################################################
 
-%!assert (iscolumn (table ([1; 2; 3])), true)
-%!assert (iscolumn (table ([1, 2, 3])), true)
-%!assert (iscolumn (table (1, 2, 3)), false)
-%!assert (isempty (table ()), true)
-%!assert (isempty (table ([])), true)
-%!assert (isempty (table (1)), false)
-%!assert (ismatrix (table ([])), true)
-%!assert (ismatrix (table (1)), true)
-%!assert (isrow (table ([1, 2, 3])), true)
-%!assert (isrow (table (1, 2, 3)), true)
-%!assert (isrow (table ([1; 2; 3])), false)
-%!assert (isscalar (table (1)), true)
-%!assert (isscalar (table ([1, 2, 3])), true)
-%!assert (isscalar (table (1, 2, 3)), false)
-%!assert (isscalar (table ([1; 2; 3])), false)
-%!assert (istable (table ()), true)
-%!assert (isvector (table (1)), true)
-%!assert (isvector (table (1, 2, 3)), true)
-%!assert (isvector (table ([1, 2, 3])), true)
-%!assert (isvector (table ([1; 2; 3])), true)
-%!assert (isvector (table ([1; 2], {'a'; 'b'})), false)
-%!assert (length (table (1)), 1)
-%!assert (length (table ([1; 2; 3])), 3)
-%!assert (length (table ([1, 2, 3])), 1)
-%!assert (length (table ([1; 2; 3], [2; 3; 4])), 3)
-%!assert (length (table ([1; 2], [2; 3], [3; 4], [4; 5])), 4)
-%!assert (ndims (table ()), 2)
-%!assert (ndims (table ([])), 2)
-%!assert (ndims (table ([1, 2, 3, 4])), 2)
-%!assert (ndims (table ([1; 2], {'a'; 'b'})), 2)
+%!assert_equal (iscolumn (table ([1; 2; 3])), true)
+%!assert_equal (iscolumn (table ([1, 2, 3])), true)
+%!assert_equal (iscolumn (table (1, 2, 3)), false)
+%!assert_equal (isempty (table ()), true)
+%!assert_equal (isempty (table ([])), true)
+%!assert_equal (isempty (table (1)), false)
+%!assert_equal (ismatrix (table ([])), true)
+%!assert_equal (ismatrix (table (1)), true)
+%!assert_equal (isrow (table ([1, 2, 3])), true)
+%!assert_equal (isrow (table (1, 2, 3)), true)
+%!assert_equal (isrow (table ([1; 2; 3])), false)
+%!assert_equal (isscalar (table (1)), true)
+%!assert_equal (isscalar (table ([1, 2, 3])), true)
+%!assert_equal (isscalar (table (1, 2, 3)), false)
+%!assert_equal (isscalar (table ([1; 2; 3])), false)
+%!assert_equal (istable (table ()), true)
+%!assert_equal (isvector (table (1)), true)
+%!assert_equal (isvector (table (1, 2, 3)), true)
+%!assert_equal (isvector (table ([1, 2, 3])), true)
+%!assert_equal (isvector (table ([1; 2; 3])), true)
+%!assert_equal (isvector (table ([1; 2], {'a'; 'b'})), false)
+%!assert_equal (length (table (1)), 1)
+%!assert_equal (length (table ([1; 2; 3])), 3)
+%!assert_equal (length (table ([1, 2, 3])), 1)
+%!assert_equal (length (table ([1; 2; 3], [2; 3; 4])), 3)
+%!assert_equal (length (table ([1; 2], [2; 3], [3; 4], [4; 5])), 4)
+%!assert_equal (ndims (table ()), 2)
+%!assert_equal (ndims (table ([])), 2)
+%!assert_equal (ndims (table ([1, 2, 3, 4])), 2)
+%!assert_equal (ndims (table ([1; 2], {'a'; 'b'})), 2)
 ## 'numel' returns rows times variables, i.e. prod (size (tbl))
-%!assert (numel (table ()), 0)
-%!assert (numel (table (1)), 1)
-%!assert (numel (table (1, 2, 3, 4)), 4)
-%!assert (numel (table ([1; 2; 3], [4; 5; 6])), 6)
-%!assert (numel (table (1, 2, 3, 4)), prod (size (table (1, 2, 3, 4))))
+%!assert_equal (numel (table ()), 0)
+%!assert_equal (numel (table (1)), 1)
+%!assert_equal (numel (table (1, 2, 3, 4)), 4)
+%!assert_equal (numel (table ([1; 2; 3], [4; 5; 6])), 6)
+%!assert_equal (numel (table (1, 2, 3, 4)), prod (size (table (1, 2, 3, 4))))
 
 ## 'horzcat' combines variables of equal-height tables
 %!test
 %! T1 = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
 %! T2 = table ([10; 20; 30], 'VariableNames', {'z'});
 %! H = horzcat (T1, T2);
-%! assert (size (H), [3, 3]);
-%! assert (H.Properties.VariableNames, {'x', 'y', 'z'});
-%! assert (H.x, [1; 2; 3]);
-%! assert (H.z, [10; 20; 30]);
+%! assert_equal (size (H), [3, 3]);
+%! assert_equal (H.Properties.VariableNames, {'x', 'y', 'z'});
+%! assert_equal (H.x, [1; 2; 3]);
+%! assert_equal (H.z, [10; 20; 30]);
 %!test  # '[ , ]' operator dispatches to horzcat
 %! T1 = table ([1; 2; 3], 'VariableNames', {'x'});
 %! T2 = table ([10; 20; 30], 'VariableNames', {'z'});
 %! H = [T1, T2];
-%! assert (size (H), [3, 2]);
-%! assert (H.Properties.VariableNames, {'x', 'z'});
+%! assert_equal (size (H), [3, 2]);
+%! assert_equal (H.Properties.VariableNames, {'x', 'z'});
 %!test  # row names of an input table are carried over
 %! T1 = table ([1; 2], 'VariableNames', {'x'}, 'RowNames', {'r1', 'r2'});
 %! T2 = table ([3; 4], 'VariableNames', {'y'});
 %! H = horzcat (T1, T2);
-%! assert (H.Properties.VariableNames, {'x', 'y'});
-%! assert (H.Properties.RowNames, {'r1'; 'r2'});
+%! assert_equal (H.Properties.VariableNames, {'x', 'y'});
+%! assert_equal (H.Properties.RowNames, {'r1'; 'r2'});
 
 ## 'vertcat' stacks rows of tables sharing variable names
 %!test
 %! T1 = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
 %! T2 = table ([4; 5], {'d'; 'e'}, 'VariableNames', {'x', 'y'});
 %! V = [T1; T2];
-%! assert (size (V), [5, 2]);
-%! assert (V.x, [1; 2; 3; 4; 5]);
-%! assert (V.y, {'a'; 'b'; 'c'; 'd'; 'e'});
+%! assert_equal (size (V), [5, 2]);
+%! assert_equal (V.x, [1; 2; 3; 4; 5]);
+%! assert_equal (V.y, {'a'; 'b'; 'c'; 'd'; 'e'});
 %!test  # variables are matched by name, not position
 %! T1 = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
 %! T2 = table ({'f'}, 6, 'VariableNames', {'y', 'x'});
 %! V = vertcat (T1, T2);
-%! assert (V.x, [1; 2; 3; 6]);
-%! assert (V.y, {'a'; 'b'; 'c'; 'f'});
+%! assert_equal (V.x, [1; 2; 3; 6]);
+%! assert_equal (V.y, {'a'; 'b'; 'c'; 'f'});
 
 ## 'repelem' replicates rows and variables in place
 %!test  # rows replicated consecutively (1 1 2 2 3 3)
 %! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
 %! R = repelem (T, 2, 1);
-%! assert (size (R), [6, 2]);
-%! assert (R.x, [1; 1; 2; 2; 3; 3]);
-%! assert (R.y, {'a'; 'a'; 'b'; 'b'; 'c'; 'c'});
+%! assert_equal (size (R), [6, 2]);
+%! assert_equal (R.x, [1; 1; 2; 2; 3; 3]);
+%! assert_equal (R.y, {'a'; 'a'; 'b'; 'b'; 'c'; 'c'});
 %!test  # columns replicated; copied variables get a '_N' suffix
 %! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
 %! R = repelem (T, 1, 2);
-%! assert (size (R), [3, 4]);
-%! assert (R.Properties.VariableNames, {'x', 'x_1', 'y', 'y_1'});
-%! assert (R.x, [1; 2; 3]);
-%! assert (R.x_1, [1; 2; 3]);
+%! assert_equal (size (R), [3, 4]);
+%! assert_equal (R.Properties.VariableNames, {'x', 'x_1', 'y', 'y_1'});
+%! assert_equal (R.x, [1; 2; 3]);
+%! assert_equal (R.x_1, [1; 2; 3]);
 %!test  # a scalar count applies to both dimensions
 %! T = table ([1; 2; 3], 'VariableNames', {'x'});
 %! R = repelem (T, 2);
-%! assert (size (R), [6, 2]);
-%! assert (R.x, [1; 1; 2; 2; 3; 3]);
-%! assert (R.Properties.VariableNames, {'x', 'x_1'});
+%! assert_equal (size (R), [6, 2]);
+%! assert_equal (R.x, [1; 1; 2; 2; 3; 3]);
+%! assert_equal (R.Properties.VariableNames, {'x', 'x_1'});
 %!test  # repelem (T, 1, 1) leaves the table unchanged
 %! T = table ([1; 2; 3], 'VariableNames', {'x'});
-%! assert (isequal (repelem (T, 1, 1), T), true);
+%! assert_equal (isequal (repelem (T, 1, 1), T), true);
 
 ## 'repmat' tiles whole rows and variables of a table
 %!test  # rows tiled as a block (1 2 3 1 2 3)
 %! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
 %! M = repmat (T, 2, 1);
-%! assert (size (M), [6, 2]);
-%! assert (M.x, [1; 2; 3; 1; 2; 3]);
-%! assert (M.y, {'a'; 'b'; 'c'; 'a'; 'b'; 'c'});
+%! assert_equal (size (M), [6, 2]);
+%! assert_equal (M.x, [1; 2; 3; 1; 2; 3]);
+%! assert_equal (M.y, {'a'; 'b'; 'c'; 'a'; 'b'; 'c'});
 %!test  # columns tiled; the variable block is repeated then suffixed
 %! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
 %! M = repmat (T, 1, 2);
-%! assert (size (M), [3, 4]);
-%! assert (M.Properties.VariableNames, {'x', 'y', 'x_1', 'y_1'});
+%! assert_equal (size (M), [3, 4]);
+%! assert_equal (M.Properties.VariableNames, {'x', 'y', 'x_1', 'y_1'});
 %!test  # a scalar count applies to both dimensions
 %! T = table ([1; 2], 'VariableNames', {'x'});
 %! M = repmat (T, 2);
-%! assert (size (M), [4, 2]);
-%! assert (M.x, [1; 2; 1; 2]);
+%! assert_equal (size (M), [4, 2]);
+%! assert_equal (M.x, [1; 2; 1; 2]);
 %!test  # repmat (T, 1, 1) leaves the table unchanged
 %! T = table ([1; 2; 3], 'VariableNames', {'x'});
-%! assert (isequal (repmat (T, 1, 1), T), true);
+%! assert_equal (isequal (repmat (T, 1, 1), T), true);
 
 ## 'squeeze' is a no-op for tables (always two-dimensional)
 %!test
 %! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
-%! assert (isequal (squeeze (T), T), true);
-%!assert (isequal (squeeze (table ()), table ()), true)
+%! assert_equal (isequal (squeeze (T), T), true);
+%!assert_equal (isequal (squeeze (table ()), table ()), true)
 
 ## Test input validation for 'horzcat' method
 %!error <table.horzcat: all inputs must be tables.> ...
@@ -2518,19 +2518,19 @@
 %!test  # custom properties of both kinds are added
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'x', 'y'});
 %! T = addprop (T, {'Note', 'Flags'}, {'table', 'variable'});
-%! assert (fieldnames (T.Properties.CustomProperties), {'Note'; 'Flags'});
+%! assert_equal (fieldnames (T.Properties.CustomProperties), {'Note'; 'Flags'});
 %!test  # values are assigned to a custom property with dot syntax
 %! T = table ([1; 2], 'VariableNames', {'x'});
 %! T = addprop (T, 'Note', 'table');
 %! T.Properties.CustomProperties.Note = 'hello';
-%! assert (T.Properties.CustomProperties.Note, 'hello');
+%! assert_equal (T.Properties.CustomProperties.Note, 'hello');
 
 ## Test 'rmprop' method
 %!test  # a custom property is removed, others are kept
 %! T = table ([1; 2], 'VariableNames', {'x'});
 %! T = addprop (T, {'Note', 'Flags'}, {'table', 'variable'});
 %! T = rmprop (T, 'Note');
-%! assert (fieldnames (T.Properties.CustomProperties), {'Flags'});
+%! assert_equal (fieldnames (T.Properties.CustomProperties), {'Flags'});
 
 ## Test input validation for 'addprop' method
 %!error <table.addprop: too few input arguments.> ...
@@ -2576,10 +2576,10 @@
 %! unwind_protect
 %!   table2csv (T, fn);
 %!   R = csv2table (fn);
-%!   assert (R.Properties.VariableNames, {'id', 'name', 'val'});
-%!   assert (R.id, [1; 2; 3]);
-%!   assert (R.val, [1.5; 2.5; 3.5]);
-%!   assert (R.name, {'a'; 'b'; 'c'});
+%!   assert_equal (R.Properties.VariableNames, {'id', 'name', 'val'});
+%!   assert_equal (R.id, [1; 2; 3]);
+%!   assert_equal (R.val, [1.5; 2.5; 3.5]);
+%!   assert_equal (R.name, {'a'; 'b'; 'c'});
 %! unwind_protect_cleanup
 %!   if (exist (fn, 'file'))
 %!     delete (fn);

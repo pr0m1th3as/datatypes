@@ -52,19 +52,19 @@ endfunction
 %! B = [1, 2, 3];
 %! C = string ("test");
 %! [A1, B1, C1] = convertStringsToChars (A, B, C);
-%! assert (A, A1);
-%! assert (B, B1);
-%! assert (ischar (C1), true);
+%! assert_equal (A, A1);
+%! assert_equal (B, B1);
+%! assert_equal (ischar (C1), true);
 %!test
 %! A = string ({'asd', 'ert'; 'xcv', 'dfg'});
 %! A1 = convertStringsToChars (A);
-%! assert (isequal (size (A), size (A1)));
-%! assert (iscellstr (A1), true);
+%! assert_equal (isequal (size (A), size (A1)), true);
+%! assert_equal (iscellstr (A1), true);
 %!test
 %! A = categorical (NaN);
 %! B = duration;
 %! C = 'text';
 %! [A1, B1, C1] = convertStringsToChars (A, B, C);
-%! assert (iscategorical (A1), true);
-%! assert (isduration (B1), true);
-%! assert (ischar (C1), true);
+%! assert_equal (iscategorical (A1), true);
+%! assert_equal (isduration (B1), true);
+%! assert_equal (ischar (C1), true);

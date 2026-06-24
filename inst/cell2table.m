@@ -132,51 +132,51 @@ endfunction
 %!test
 %! C = {1, 2; 3, 4};
 %! tbl = cell2table (C);
-%! assert (tbl.C1, [1; 3]);
-%! assert (tbl.C2, [2; 4]);
-%! assert (size (C), size (tbl));
-%! assert (isa (tbl.C1, 'double'), true);
+%! assert_equal (tbl.C1, [1; 3]);
+%! assert_equal (tbl.C2, [2; 4]);
+%! assert_equal (size (C), size (tbl));
+%! assert_equal (isa (tbl.C1, 'double'), true);
 %!test
 %! tbl = cell2table ({1, 2; 3, 4});
-%! assert (tbl.Var1, [1; 3]);
-%! assert (tbl.Var2, [2; 4]);
-%! assert (size (tbl), [2, 2]);
-%! assert (isa (tbl.Var1, 'double'), true);
+%! assert_equal (tbl.Var1, [1; 3]);
+%! assert_equal (tbl.Var2, [2; 4]);
+%! assert_equal (size (tbl), [2, 2]);
+%! assert_equal (isa (tbl.Var1, 'double'), true);
 %!test
 %! tbl = cell2table ({1, ''; 3, 4}, 'VariableNames', {'A', 'B'});
-%! assert (tbl.A, [1; 3]);
-%! assert (tbl.B, {''; 4});
-%! assert (isa (tbl.A, 'double'), true);
-%! assert (isa (tbl.B, 'double'), false);
+%! assert_equal (tbl.A, [1; 3]);
+%! assert_equal (tbl.B, {''; 4});
+%! assert_equal (isa (tbl.A, 'double'), true);
+%! assert_equal (isa (tbl.B, 'double'), false);
 %!test
 %! tbl = cell2table ({1, ''; 3, 4}, "RowNames", {'A', 'B'});
-%! assert (tbl.Var1, [1; 3]);
-%! assert (tbl.Var2, {''; 4});
-%! assert (tbl.Properties.RowNames, {'A'; 'B'});
-%! assert (class (tbl('A', :)), 'table');
-%! assert (tbl{'A', :}, {1, ''});
+%! assert_equal (tbl.Var1, [1; 3]);
+%! assert_equal (tbl.Var2, {''; 4});
+%! assert_equal (tbl.Properties.RowNames, {'A'; 'B'});
+%! assert_equal (class (tbl('A', :)), 'table');
+%! assert_equal (tbl{'A', :}, {1, ''});
 %!test
 %! tbl = cell2table ({1, ''; 3, 4}, string ('DimensionNames'), {'A', 'B'});
-%! assert (tbl.Var1, [1; 3]);
-%! assert (tbl.Var2, {""; 4});
-%! assert (tbl.A, {});
-%! assert (tbl.B, {1, ''; 3, 4});
+%! assert_equal (tbl.Var1, [1; 3]);
+%! assert_equal (tbl.Var2, {""; 4});
+%! assert_equal (tbl.A, {});
+%! assert_equal (tbl.B, {1, ''; 3, 4});
 %!test
 %! tbl = cell2table ({1, ''; 3, 4}, "RowNames", {'A', 'B'}, ...
 %!                   "DimensionNames", {'A', 'B'});
-%! assert (tbl.Var1, [1; 3]);
-%! assert (tbl.Var2, {''; 4});
-%! assert (tbl.A, {'A'; 'B'});
-%! assert (tbl.B, {1, ''; 3, 4});
+%! assert_equal (tbl.Var1, [1; 3]);
+%! assert_equal (tbl.Var2, {''; 4});
+%! assert_equal (tbl.A, {'A'; 'B'});
+%! assert_equal (tbl.B, {1, ''; 3, 4});
 %!test
 %! tbl = cell2table ({1, string(''); 3, 4}, "RowNames", {'R1', 'R2'}, ...
 %!                   "DimensionNames", {'A', 'B'});
-%! assert (class (tbl('R1', :)), 'table');
-%! assert (class (tbl{'R1', :}), 'string');
-%! assert (cellstr (tbl{'R1', :}), {'1', ''});
-%! assert (tbl.A, {'R1'; 'R2'});
-%! assert (class (tbl.B), 'string');
-%! assert (cellstr (tbl.B), {'1', ''; '3', '4'});
+%! assert_equal (class (tbl('R1', :)), 'table');
+%! assert_equal (class (tbl{'R1', :}), 'string');
+%! assert_equal (cellstr (tbl{'R1', :}), {'1', ''});
+%! assert_equal (tbl.A, {'R1'; 'R2'});
+%! assert_equal (class (tbl.B), 'string');
+%! assert_equal (cellstr (tbl.B), {'1', ''; '3', '4'});
 
 %!error<cell2table: input array must be a 2-D cell array.> ...
 %! cell2table (cell (3, 3, 3));

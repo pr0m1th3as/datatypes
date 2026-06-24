@@ -115,39 +115,39 @@ endfunction
 %!test
 %! A = [1, 2; 3, 4];
 %! tbl = array2table (A);
-%! assert (tbl.A1, [1; 3]);
-%! assert (tbl.A2, [2; 4]);
-%! assert (size (A), size (tbl));
+%! assert_equal (tbl.A1, [1; 3]);
+%! assert_equal (tbl.A2, [2; 4]);
+%! assert_equal (size (A), size (tbl));
 %!test
 %! tbl = array2table ([1, 2; 3, 4]);
-%! assert (tbl.Var1, [1; 3]);
-%! assert (tbl.Var2, [2; 4]);
-%! assert (size (tbl), [2, 2]);
+%! assert_equal (tbl.Var1, [1; 3]);
+%! assert_equal (tbl.Var2, [2; 4]);
+%! assert_equal (size (tbl), [2, 2]);
 %!test
 %! tbl = array2table ([1, 2; 3, 4], 'VariableNames', {'A', 'B'});
-%! assert (tbl.A, [1; 3]);
-%! assert (tbl.B, [2; 4]);
-%! assert (isa (tbl.A, "double"), true);
+%! assert_equal (tbl.A, [1; 3]);
+%! assert_equal (tbl.B, [2; 4]);
+%! assert_equal (isa (tbl.A, "double"), true);
 %!test
 %! tbl = array2table ([1, 2; 3, 4], "RowNames", {'A', 'B'});
-%! assert (tbl.Var1, [1; 3]);
-%! assert (tbl.Var2, [2; 4]);
-%! assert (tbl.Properties.RowNames, {'A'; 'B'});
-%! assert (class (tbl('A', :)), 'table');
-%! assert (tbl{'A', :}, [1, 2]);
+%! assert_equal (tbl.Var1, [1; 3]);
+%! assert_equal (tbl.Var2, [2; 4]);
+%! assert_equal (tbl.Properties.RowNames, {'A'; 'B'});
+%! assert_equal (class (tbl('A', :)), 'table');
+%! assert_equal (tbl{'A', :}, [1, 2]);
 %!test
 %! tbl = array2table ([1, 2; 3, 4], string ('DimensionNames'), {'A', 'B'});
-%! assert (tbl.Var1, [1; 3]);
-%! assert (tbl.Var2, [2; 4]);
-%! assert (tbl.A, {});
-%! assert (tbl.B, [1, 2; 3, 4]);
+%! assert_equal (tbl.Var1, [1; 3]);
+%! assert_equal (tbl.Var2, [2; 4]);
+%! assert_equal (tbl.A, {});
+%! assert_equal (tbl.B, [1, 2; 3, 4]);
 %!test
 %! tbl = array2table ([1, 2; 3, 4], "RowNames", {'A', 'B'}, ...
 %!                    "DimensionNames", {'A', 'B'});
-%! assert (tbl.Var1, [1; 3]);
-%! assert (tbl.Var2, [2; 4]);
-%! assert (tbl.A, {'A'; 'B'});
-%! assert (tbl.B, [1, 2; 3, 4]);
+%! assert_equal (tbl.Var1, [1; 3]);
+%! assert_equal (tbl.Var2, [2; 4]);
+%! assert_equal (tbl.A, {'A'; 'B'});
+%! assert_equal (tbl.B, [1, 2; 3, 4]);
 
 %!error<array2table: input array must be a 2-D array.> ...
 %! array2table (ones (3, 3, 3));

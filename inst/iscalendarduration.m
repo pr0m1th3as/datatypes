@@ -28,8 +28,8 @@ function TF = iscalendarduration (x)
   TF = isa (x, 'calendarDuration');
 endfunction
 
-%!assert (iscalendarduration (calendarDuration (0, 0, 0)), true);
-%!assert (iscalendarduration (calendarDuration ([1, 2], 0, 0)), true);
-%!assert (iscalendarduration ([0, 0, 0]), false);
-%!assert (iscalendarduration ({0, 0, 0}), false);
-%!assert (iscalendarduration ({calendarDuration(0, 0, 0)}), false);
+%!assert_equal (iscalendarduration (calendarDuration (0, 0, 0)), true);
+%!assert_equal (iscalendarduration (calendarDuration ([1, 2], 0, 0)), true);
+%!assert_equal (iscalendarduration ([0, 0, 0]), false);
+%!assert_equal (iscalendarduration ({0, 0, 0}), false);
+%!assert_equal (iscalendarduration ({calendarDuration(0, 0, 0)}), false);

@@ -50,19 +50,19 @@ endfunction
 %!test
 %! X = magic (3);
 %! D = calyears (X);
-%! assert (size (D), size (X));
+%! assert_equal (size (D), size (X));
 %!test
 %! D = calyears ([1, 2, 3]);
-%! assert (calyears (D), [1, 2, 3]);
+%! assert_equal (calyears (D), [1, 2, 3]);
 %!test
 %! D = calyears ([1, 2, NaN, 4]);
-%! assert (calyears (D), [1, 2, NaN, 4]);
+%! assert_equal (calyears (D), [1, 2, NaN, 4]);
 %!test
 %! D = calyears (int16 (1));
-%! assert (calyears (D), 1);
+%! assert_equal (calyears (D), 1);
 %!test
 %! D = calyears ();
-%! assert (calyears (D), 1);
+%! assert_equal (calyears (D), 1);
 
 %!error<calyears: input array must be numeric.> calyears ("asd");
 %!error<calyears: input array must be real.> calyears (1+i);

@@ -50,19 +50,19 @@ endfunction
 %!test
 %! X = magic (3);
 %! D = calmonths (X);
-%! assert (size (D), size (X));
+%! assert_equal (size (D), size (X));
 %!test
 %! D = calmonths ([1, 2, 3]);
-%! assert (calmonths (D), [1, 2, 3]);
+%! assert_equal (calmonths (D), [1, 2, 3]);
 %!test
 %! D = calmonths ([1, 2, NaN, 4]);
-%! assert (calmonths (D), [1, 2, NaN, 4]);
+%! assert_equal (calmonths (D), [1, 2, NaN, 4]);
 %!test
 %! D = calmonths (int16 (1));
-%! assert (calmonths (D), 1);
+%! assert_equal (calmonths (D), 1);
 %!test
 %! D = calmonths ();
-%! assert (calmonths (D), 1);
+%! assert_equal (calmonths (D), 1);
 
 %!error<calmonths: input array must be numeric.> calmonths ("asd");
 %!error<calmonths: input array must be real.> calmonths (1+i);

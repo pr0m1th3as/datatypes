@@ -28,8 +28,8 @@ function TF = istable (x)
   TF = isa (x, 'table');
 endfunction
 
-%!assert (istable (table ([1, 2, 3])), true);
-%!assert (istable (table ([1, 2, 0; 1, 4, 0])), true);
-%!assert (istable ([0, 1, 2]), false);
-%!assert (istable ({true, false}), false);
-%!assert (istable ({table([1, 2, 3])}), false);
+%!assert_equal (istable (table ([1, 2, 3])), true);
+%!assert_equal (istable (table ([1, 2, 0; 1, 4, 0])), true);
+%!assert_equal (istable ([0, 1, 2]), false);
+%!assert_equal (istable ({true, false}), false);
+%!assert_equal (istable ({table([1, 2, 3])}), false);

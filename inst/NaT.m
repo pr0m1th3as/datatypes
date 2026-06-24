@@ -94,10 +94,10 @@ function T = NaT (varargin)
 
 endfunction
 
-%!assert (isscalar (NaT), true);
-%!assert (isnat (NaT), true);
-%!assert (size (NaT (3)), [3, 3]);
-%!assert (size (NaT (2, 3, 4)), [2, 3, 4]);
+%!assert_equal (isscalar (NaT), true);
+%!assert_equal (isnat (NaT), true);
+%!assert_equal (size (NaT (3)), [3, 3]);
+%!assert_equal (size (NaT (2, 3, 4)), [2, 3, 4]);
 
 %!error<NaT: 'Format' must be either a character vector or a string scalar.> ...
 %! NaT (1, 'Format', 2);

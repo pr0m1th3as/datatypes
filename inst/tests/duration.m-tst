@@ -26,30 +26,30 @@
 ##                                                                            ##
 ################################################################################
 
-%!assert (isscalar (duration ()), true)
-%!assert (isempty (duration ()), false)
-%!assert (class (duration), 'duration')
-%!assert (dispstrings (duration ()), {'00:00:00'})
-%!assert (size (duration (zeros (4, 3))), [4, 1])
-%!assert (isempty (duration (ones (0, 3))), true)
-%!assert (seconds (duration ([0, 0, 15])), 15)
-%!assert (minutes (duration ([0, 50, 30])), 50.5)
-%!assert (hours (duration ([1, 0, 3600; 5, 60, 0])), [2; 6])
-%!assert (seconds (duration ('30:15', 'InputFormat', 'mm:ss')), 1815)
-%!assert (hours (duration ({'01:00', '02:30'}, 'InputFormat', 'hh:mm')), [1, 2.5])
-%!assert (minutes (duration ({'01:00:30'}, 'InputFormat', 'hh:mm:ss')), 60.5)
-%!assert (minutes (duration ({'01:00:45'}, 'InputFormat', 'hh:mm:ss')), 60.75)
-%!assert (days (duration ({'24:00:00'}, 'InputFormat', 'hh:mm:ss')), 1)
-%!assert (days (duration ({'1:12:00:00'}, 'InputFormat', 'dd:hh:mm:ss')), 1.5)
-%!assert (seconds (duration (0, 0, 15)), 15)
-%!assert (seconds (duration (0, zeros (4), 15)), ones (4) * 15)
-%!assert (minutes (duration (0, 50, 30)), 50.5)
-%!assert (minutes (duration (0, 40:50, 30)), [40:50] + 0.5)
-%!assert (seconds (duration (0, 0, 0, 15)), 0.015)
-%!assert (size (duration (ones (2, 4, 3), 0, 0)), [2, 4, 3])
-%!assert (size (duration (0, ones (2, 3, 4), 0)), [2, 3, 4])
-%!assert (size (duration (zeros (4), zeros (4), 0, 0)), [4, 4])
-%!assert (size (duration (zeros (4), 0, 0, zeros (4))), [4, 4])
+%!assert_equal (isscalar (duration ()), true)
+%!assert_equal (isempty (duration ()), false)
+%!assert_equal (class (duration), 'duration')
+%!assert_equal (dispstrings (duration ()), {'00:00:00'})
+%!assert_equal (size (duration (zeros (4, 3))), [4, 1])
+%!assert_equal (isempty (duration (ones (0, 3))), true)
+%!assert_equal (seconds (duration ([0, 0, 15])), 15)
+%!assert_equal (minutes (duration ([0, 50, 30])), 50.5)
+%!assert_equal (hours (duration ([1, 0, 3600; 5, 60, 0])), [2; 6])
+%!assert_equal (seconds (duration ('30:15', 'InputFormat', 'mm:ss')), 1815)
+%!assert_equal (hours (duration ({'01:00', '02:30'}, 'InputFormat', 'hh:mm')), [1, 2.5])
+%!assert_equal (minutes (duration ({'01:00:30'}, 'InputFormat', 'hh:mm:ss')), 60.5)
+%!assert_equal (minutes (duration ({'01:00:45'}, 'InputFormat', 'hh:mm:ss')), 60.75)
+%!assert_equal (days (duration ({'24:00:00'}, 'InputFormat', 'hh:mm:ss')), 1)
+%!assert_equal (days (duration ({'1:12:00:00'}, 'InputFormat', 'dd:hh:mm:ss')), 1.5)
+%!assert_equal (seconds (duration (0, 0, 15)), 15)
+%!assert_equal (seconds (duration (0, zeros (4), 15)), ones (4) * 15)
+%!assert_equal (minutes (duration (0, 50, 30)), 50.5)
+%!assert_equal (minutes (duration (0, 40:50, 30)), [40:50] + 0.5)
+%!assert_equal (seconds (duration (0, 0, 0, 15)), 0.015)
+%!assert_equal (size (duration (ones (2, 4, 3), 0, 0)), [2, 4, 3])
+%!assert_equal (size (duration (0, ones (2, 3, 4), 0)), [2, 3, 4])
+%!assert_equal (size (duration (zeros (4), zeros (4), 0, 0)), [4, 4])
+%!assert_equal (size (duration (zeros (4), 0, 0, zeros (4))), [4, 4])
 %!error<duration: 'Format' must be a character vector or a string scalar.> ...
 %! duration (0, 0, 0, 'Format', 5)
 %!error<duration: 'Format' must be a character vector or a string scalar.> ...
@@ -110,140 +110,140 @@
 %!warning<duration: 'InputFormat' has no effect on numeric data.> ...
 %! duration (0, 0, 0, 0, 'InputFormat', 'hh:mm');
 
-%!assert (dispstrings (years (1)), {'1 yr'})
-%!assert (dispstrings (years (2)), {'2 yrs'})
-%!assert (dispstrings (years ([1, 2, 2.4])), {'1 yr', '2 yrs', '2.4 yrs'})
-%!assert (dispstrings (years ([1; 2; 2.4])), {'1 yr'; '2 yrs'; '2.4 yrs'})
-%!assert (dispstrings (days (1)), {'1 day'})
-%!assert (dispstrings (days (2)), {'2 days'})
-%!assert (dispstrings (days ([1, 2, 2.4])), {'1 day', '2 days', '2.4 days'})
-%!assert (dispstrings (days ([1; 2; 2.4])), {'1 day'; '2 days'; '2.4 days'})
-%!assert (dispstrings (duration (36, 0, 0)), {'36:00:00'})
-%!assert (dispstrings (duration (-36, 0, 0)), {'-36:00:00'})
-%!assert (dispstrings (duration (36, 0, 0, 'Format', 'y')), {'0.00410686 yrs'})
-%!assert (dispstrings (duration (36, 0, 0, 'Format', 'd')), {'1.5 days'})
-%!assert (dispstrings (duration (36, 0, 0, 'Format', 'h')), {'36 hr'})
-%!assert (dispstrings (duration (36, 0, 0, 'Format', 'm')), {'2160 min'})
-%!assert (dispstrings (duration (36, 0, 0, 'Format', 's')), {'129600 sec'})
-%!assert (dispstrings (duration (36, 0, 0, 'Format', 'dd:hh:mm:ss.SSSSS')), {'01:12:00:00.00000'})
-%!assert (dispstrings (duration (36, 0, 0, 'Format', 'hh:mm:ss.SSSSS')), {'36:00:00.00000'})
-%!assert (dispstrings (duration (36, 0, 0, 'Format', 'hh:mm:ss.SSSS')), {'36:00:00.0000'})
-%!assert (dispstrings (duration (36, 0, 0, 'Format', 'hh:mm:ss.SSS')), {'36:00:00.000'})
-%!assert (dispstrings (duration (36, 0, 0, 'Format', 'hh:mm:ss.SS')), {'36:00:00.00'})
-%!assert (dispstrings (duration (36, 0, 0, 'Format', 'hh:mm:ss.S')), {'36:00:00.0'})
-%!assert (dispstrings (duration (36, 0, 0, 'Format', 'hh:mm')), {'36:00'})
-%!assert (dispstrings (duration (36, 0, 0.025, 'Format', 'hh:mm')), {'36:00'})
-%!assert (dispstrings (duration (36, 0, 55.025, 'Format', 'hh:mm')), {'36:00'})
-%!assert (dispstrings (duration (36, 0, 0, 'Format', 'mm:ss.SSSSS')), {'2160:00.00000'})
-%!assert (dispstrings (duration (36, 0, 0, 'Format', 'mm:ss.SSSSSS')), {'2160:00.000000'})
-%!assert (dispstrings (duration (36, 0, 0, 'Format', 'mm:ss.SSSSSSS')), {'2160:00.0000000'})
-%!assert (dispstrings (duration (36, 0, 0, 'Format', 'mm:ss.SSSSSSSS')), {'2160:00.00000000'})
-%!assert (dispstrings (duration (36, 0, 0, 'Format', 'mm:ss.SSSSSSSSS')), {'2160:00.000000000'})
-%!assert (dispstrings (duration (0, 36, 0)), {'00:36:00'})
-%!assert (dispstrings (duration (0, 36, 0, 'Format', 'y')), {'6.84477e-05 yrs'})
-%!assert (dispstrings (duration (0, 36, 0, 'Format', 'd')), {'0.025 days'})
-%!assert (dispstrings (duration (0, 36, 0, 'Format', 'h')), {'0.6 hr'})
-%!assert (dispstrings (duration (0, 36, 0, 'Format', 'm')), {'36 min'})
-%!assert (dispstrings (duration (0, 36, 0, 'Format', 's')), {'2160 sec'})
-%!assert (dispstrings (duration (0, 36, 0.025, 'Format', 'dd:hh:mm:ss.SSSSS')), {'00:36:00.02500'})
-%!assert (dispstrings (duration (0, 36, 0.025, 'Format', 'hh:mm:ss.SSSSS')), {'00:36:00.02500'})
-%!assert (dispstrings (duration (0, 36, 0.025, 'Format', 'hh:mm:ss.SSSS')), {'00:36:00.0250'})
-%!assert (dispstrings (duration (0, 36, 0.025, 'Format', 'hh:mm:ss.SSS')), {'00:36:00.025'})
-%!assert (dispstrings (duration (0, 36, 0.025, 'Format', 'hh:mm:ss.SS')), {'00:36:00.02'})
-%!assert (dispstrings (duration (0, 36, 0.025, 'Format', 'hh:mm:ss.S')), {'00:36:00.0'})
-%!assert (dispstrings (duration (0, 36, 0.025, 'Format', 'hh:mm')), {'00:36'})
-%!assert (dispstrings (duration (0, 36, 5.025, 'Format', 'hh:mm')), {'00:36'})
-%!assert (dispstrings (duration (0, 36, 0.025, 'Format', 'mm:ss.SSSSS')), {'36:00.02500'})
-%!assert (dispstrings (duration (0, 36, 0.025, 'Format', 'mm:ss.SSSSSS')), {'36:00.025000'})
-%!assert (dispstrings (duration (0, 36, 0.025, 'Format', 'mm:ss.SSSSSSS')), {'36:00.0250000'})
-%!assert (dispstrings (duration (0, 36, 0.025, 'Format', 'mm:ss.SSSSSSSS')), {'36:00.02500000'})
-%!assert (dispstrings (duration (0, 36, 0.025, 'Format', 'mm:ss.SSSSSSSSS')), {'36:00.025000000'})
+%!assert_equal (dispstrings (years (1)), {'1 yr'})
+%!assert_equal (dispstrings (years (2)), {'2 yrs'})
+%!assert_equal (dispstrings (years ([1, 2, 2.4])), {'1 yr', '2 yrs', '2.4 yrs'})
+%!assert_equal (dispstrings (years ([1; 2; 2.4])), {'1 yr'; '2 yrs'; '2.4 yrs'})
+%!assert_equal (dispstrings (days (1)), {'1 day'})
+%!assert_equal (dispstrings (days (2)), {'2 days'})
+%!assert_equal (dispstrings (days ([1, 2, 2.4])), {'1 day', '2 days', '2.4 days'})
+%!assert_equal (dispstrings (days ([1; 2; 2.4])), {'1 day'; '2 days'; '2.4 days'})
+%!assert_equal (dispstrings (duration (36, 0, 0)), {'36:00:00'})
+%!assert_equal (dispstrings (duration (-36, 0, 0)), {'-36:00:00'})
+%!assert_equal (dispstrings (duration (36, 0, 0, 'Format', 'y')), {'0.00410686 yrs'})
+%!assert_equal (dispstrings (duration (36, 0, 0, 'Format', 'd')), {'1.5 days'})
+%!assert_equal (dispstrings (duration (36, 0, 0, 'Format', 'h')), {'36 hr'})
+%!assert_equal (dispstrings (duration (36, 0, 0, 'Format', 'm')), {'2160 min'})
+%!assert_equal (dispstrings (duration (36, 0, 0, 'Format', 's')), {'129600 sec'})
+%!assert_equal (dispstrings (duration (36, 0, 0, 'Format', 'dd:hh:mm:ss.SSSSS')), {'01:12:00:00.00000'})
+%!assert_equal (dispstrings (duration (36, 0, 0, 'Format', 'hh:mm:ss.SSSSS')), {'36:00:00.00000'})
+%!assert_equal (dispstrings (duration (36, 0, 0, 'Format', 'hh:mm:ss.SSSS')), {'36:00:00.0000'})
+%!assert_equal (dispstrings (duration (36, 0, 0, 'Format', 'hh:mm:ss.SSS')), {'36:00:00.000'})
+%!assert_equal (dispstrings (duration (36, 0, 0, 'Format', 'hh:mm:ss.SS')), {'36:00:00.00'})
+%!assert_equal (dispstrings (duration (36, 0, 0, 'Format', 'hh:mm:ss.S')), {'36:00:00.0'})
+%!assert_equal (dispstrings (duration (36, 0, 0, 'Format', 'hh:mm')), {'36:00'})
+%!assert_equal (dispstrings (duration (36, 0, 0.025, 'Format', 'hh:mm')), {'36:00'})
+%!assert_equal (dispstrings (duration (36, 0, 55.025, 'Format', 'hh:mm')), {'36:00'})
+%!assert_equal (dispstrings (duration (36, 0, 0, 'Format', 'mm:ss.SSSSS')), {'2160:00.00000'})
+%!assert_equal (dispstrings (duration (36, 0, 0, 'Format', 'mm:ss.SSSSSS')), {'2160:00.000000'})
+%!assert_equal (dispstrings (duration (36, 0, 0, 'Format', 'mm:ss.SSSSSSS')), {'2160:00.0000000'})
+%!assert_equal (dispstrings (duration (36, 0, 0, 'Format', 'mm:ss.SSSSSSSS')), {'2160:00.00000000'})
+%!assert_equal (dispstrings (duration (36, 0, 0, 'Format', 'mm:ss.SSSSSSSSS')), {'2160:00.000000000'})
+%!assert_equal (dispstrings (duration (0, 36, 0)), {'00:36:00'})
+%!assert_equal (dispstrings (duration (0, 36, 0, 'Format', 'y')), {'6.84477e-05 yrs'})
+%!assert_equal (dispstrings (duration (0, 36, 0, 'Format', 'd')), {'0.025 days'})
+%!assert_equal (dispstrings (duration (0, 36, 0, 'Format', 'h')), {'0.6 hr'})
+%!assert_equal (dispstrings (duration (0, 36, 0, 'Format', 'm')), {'36 min'})
+%!assert_equal (dispstrings (duration (0, 36, 0, 'Format', 's')), {'2160 sec'})
+%!assert_equal (dispstrings (duration (0, 36, 0.025, 'Format', 'dd:hh:mm:ss.SSSSS')), {'00:36:00.02500'})
+%!assert_equal (dispstrings (duration (0, 36, 0.025, 'Format', 'hh:mm:ss.SSSSS')), {'00:36:00.02500'})
+%!assert_equal (dispstrings (duration (0, 36, 0.025, 'Format', 'hh:mm:ss.SSSS')), {'00:36:00.0250'})
+%!assert_equal (dispstrings (duration (0, 36, 0.025, 'Format', 'hh:mm:ss.SSS')), {'00:36:00.025'})
+%!assert_equal (dispstrings (duration (0, 36, 0.025, 'Format', 'hh:mm:ss.SS')), {'00:36:00.02'})
+%!assert_equal (dispstrings (duration (0, 36, 0.025, 'Format', 'hh:mm:ss.S')), {'00:36:00.0'})
+%!assert_equal (dispstrings (duration (0, 36, 0.025, 'Format', 'hh:mm')), {'00:36'})
+%!assert_equal (dispstrings (duration (0, 36, 5.025, 'Format', 'hh:mm')), {'00:36'})
+%!assert_equal (dispstrings (duration (0, 36, 0.025, 'Format', 'mm:ss.SSSSS')), {'36:00.02500'})
+%!assert_equal (dispstrings (duration (0, 36, 0.025, 'Format', 'mm:ss.SSSSSS')), {'36:00.025000'})
+%!assert_equal (dispstrings (duration (0, 36, 0.025, 'Format', 'mm:ss.SSSSSSS')), {'36:00.0250000'})
+%!assert_equal (dispstrings (duration (0, 36, 0.025, 'Format', 'mm:ss.SSSSSSSS')), {'36:00.02500000'})
+%!assert_equal (dispstrings (duration (0, 36, 0.025, 'Format', 'mm:ss.SSSSSSSSS')), {'36:00.025000000'})
 %!test
 %! D = duration ([1, 2.3, NaN, Inf, -Inf], 0, 0, 'Format', 'y');
-%! assert (dispstrings (D), {'0.000114079 yrs', '0.000262383 yrs', 'NaN yrs', 'Inf yrs', '-Inf yrs'});
+%! assert_equal (dispstrings (D), {'0.000114079 yrs', '0.000262383 yrs', 'NaN yrs', 'Inf yrs', '-Inf yrs'});
 %!test
 %! D = duration ([1, 2.3, NaN, Inf, -Inf], 0, 0, 'Format', 'd');
-%! assert (dispstrings (D), {'0.0416667 days', '0.0958333 days', 'NaN days', 'Inf days', '-Inf days'});
+%! assert_equal (dispstrings (D), {'0.0416667 days', '0.0958333 days', 'NaN days', 'Inf days', '-Inf days'});
 %!test
 %! D = duration ([1, 2.3, NaN, Inf, -Inf], 0, 0, 'Format', 'h');
-%! assert (dispstrings (D), {'1 hr', '2.3 hr', 'NaN hr', 'Inf hr', '-Inf hr'});
+%! assert_equal (dispstrings (D), {'1 hr', '2.3 hr', 'NaN hr', 'Inf hr', '-Inf hr'});
 %!test
 %! D = duration ([1, 2.3, NaN, Inf, -Inf], 0, 0, 'Format', 'm');
-%! assert (dispstrings (D), {'60 min', '138 min', 'NaN min', 'Inf min', '-Inf min'});
+%! assert_equal (dispstrings (D), {'60 min', '138 min', 'NaN min', 'Inf min', '-Inf min'});
 %!test
 %! D = duration ([1, 2.3, NaN, Inf, -Inf], 0, 0, 'Format', 's');
-%! assert (dispstrings (D), {'3600 sec', '8280 sec', 'NaN sec', 'Inf sec', '-Inf sec'});
+%! assert_equal (dispstrings (D), {'3600 sec', '8280 sec', 'NaN sec', 'Inf sec', '-Inf sec'});
 %!test
 %! D = duration ([1, 2.3, NaN, Inf, -Inf], 0, 0, 'Format', 'hh:mm');
-%! assert (dispstrings (D), {'01:00', '02:18', 'NaN', 'Inf', '-Inf'});
+%! assert_equal (dispstrings (D), {'01:00', '02:18', 'NaN', 'Inf', '-Inf'});
 %!test
 %! D = duration ([1, 2.3, NaN, Inf, -Inf], 0, 0, 'Format', 'mm:ss');
-%! assert (dispstrings (D), {'60:00', '138:00', 'NaN', 'Inf', '-Inf'});
+%! assert_equal (dispstrings (D), {'60:00', '138:00', 'NaN', 'Inf', '-Inf'});
 %!test
 %! D = duration ([1, 2.3, NaN, Inf, -Inf], 0, 0, 'Format', 'hh:mm:ss');
-%! assert (dispstrings (D), {'01:00:00', '02:18:00', 'NaN', 'Inf', '-Inf'});
+%! assert_equal (dispstrings (D), {'01:00:00', '02:18:00', 'NaN', 'Inf', '-Inf'});
 %!test
 %! D = duration ([1, 2.3, NaN, Inf, -Inf], 0, 0, 'Format', 'hh:mm:ss.SS');
-%! assert (dispstrings (D), {'01:00:00.00', '02:18:00.00', 'NaN', 'Inf', '-Inf'});
+%! assert_equal (dispstrings (D), {'01:00:00.00', '02:18:00.00', 'NaN', 'Inf', '-Inf'});
 %!test
 %! D = duration ([1, 2.3, NaN, Inf, -Inf], 0, 0, 'Format', 'dd:hh:mm:ss');
-%! assert (dispstrings (D), {'01:00:00', '02:18:00', 'NaN', 'Inf', '-Inf'});
+%! assert_equal (dispstrings (D), {'01:00:00', '02:18:00', 'NaN', 'Inf', '-Inf'});
 %!test
 %! D = duration ([1, 2.3, NaN, Inf, -Inf], 0, 0, 'Format', 'dd:hh:mm:ss.SS');
-%! assert (dispstrings (D), {'01:00:00.00', '02:18:00.00', 'NaN', 'Inf', '-Inf'});
+%! assert_equal (dispstrings (D), {'01:00:00.00', '02:18:00.00', 'NaN', 'Inf', '-Inf'});
 %!test
 %! D = duration ([24.001, 2.3001, NaN, Inf, -Inf], 0, 0, 'Format', 'dd:hh:mm:ss');
-%! assert (dispstrings (D), {'01:00:00:03', '02:18:00', 'NaN', 'Inf', '-Inf'});
+%! assert_equal (dispstrings (D), {'01:00:00:03', '02:18:00', 'NaN', 'Inf', '-Inf'});
 %!test
 %! D = duration ([24.001, 2.3001, NaN, Inf, -Inf], 0, 0, 'Format', 'dd:hh:mm:ss.SSS');
-%! assert (dispstrings (D), {'01:00:00:03.600', '02:18:00.360', 'NaN', 'Inf', '-Inf'});
+%! assert_equal (dispstrings (D), {'01:00:00:03.600', '02:18:00.360', 'NaN', 'Inf', '-Inf'});
 
-%!assert (cellstr (years (1)), {'1 yr'})
-%!assert (cellstr (years (1), 'd'), {'365.243 days'})
-%!assert (cellstr (years (2)), {'2 yrs'})
-%!assert (cellstr (years (2), 'd'), {'730.485 days'})
-%!assert (cellstr (days (1)), {'1 day'})
-%!assert (cellstr (days (1), 'y'), {'0.00273791 yrs'})
-%!assert (cellstr (days (2), 'm'), {'2880 min'})
-%!assert (cellstr (duration (36, 0, 0)), {'36:00:00'})
-%!assert (cellstr (duration (36, 0, 0), 'y'), {'0.00410686 yrs'})
-%!assert (cellstr (duration (36, 0, 0), 'd'), {'1.5 days'})
-%!assert (cellstr (duration (36, 0, 0), 'h'), {'36 hr'})
-%!assert (cellstr (duration (36, 0, 0), 'm'), {'2160 min'})
-%!assert (cellstr (duration (36, 0, 0), 's'), {'129600 sec'})
-%!assert (cellstr (duration (36, 0, 0), 'dd:hh:mm:ss.SSSSS'), {'01:12:00:00.00000'})
-%!assert (cellstr (duration (36, 0, 0), 'hh:mm:ss.SSSSS'), {'36:00:00.00000'})
-%!assert (cellstr (duration (36, 0, 0), 'hh:mm:ss.SSSS'), {'36:00:00.0000'})
-%!assert (cellstr (duration (36, 0, 0), 'hh:mm:ss.SSS'), {'36:00:00.000'})
-%!assert (cellstr (duration (36, 0, 0), 'hh:mm:ss.SS'), {'36:00:00.00'})
-%!assert (cellstr (duration (36, 0, 0), 'hh:mm:ss.S'), {'36:00:00.0'})
-%!assert (cellstr (duration (36, 0, 0), 'hh:mm'), {'36:00'})
-%!assert (cellstr (duration (36, 0, 0.025), 'hh:mm'), {'36:00'})
-%!assert (cellstr (duration (36, 0, 55.025), 'hh:mm'), {'36:00'})
-%!assert (cellstr (duration (36, 0, 0), 'mm:ss.SSSSS'), {'2160:00.00000'})
-%!assert (cellstr (duration (36, 0, 0), 'mm:ss.SSSSSS'), {'2160:00.000000'})
-%!assert (cellstr (duration (36, 0, 0), 'mm:ss.SSSSSSS'), {'2160:00.0000000'})
-%!assert (cellstr (duration (36, 0, 0), 'mm:ss.SSSSSSSS'), {'2160:00.00000000'})
-%!assert (cellstr (duration (36, 0, 0), 'mm:ss.SSSSSSSSS'), {'2160:00.000000000'})
-%!assert (cellstr (duration (0, 36, 0)), {'00:36:00'})
-%!assert (cellstr (duration (0, 36, 0), 'y'), {'6.84477e-05 yrs'})
-%!assert (cellstr (duration (0, 36, 0), 'd'), {'0.025 days'})
-%!assert (cellstr (duration (0, 36, 0), 'h'), {'0.6 hr'})
-%!assert (cellstr (duration (0, 36, 0), 'm'), {'36 min'})
-%!assert (cellstr (duration (0, 36, 0), 's'), {'2160 sec'})
-%!assert (cellstr (duration (0, 36, 0.025), 'dd:hh:mm:ss.SSSSS'), {'00:36:00.02500'})
-%!assert (cellstr (duration (0, 36, 0.025), 'hh:mm:ss.SSSSS'), {'00:36:00.02500'})
-%!assert (cellstr (duration (0, 36, 0.025), 'hh:mm:ss.SSSS'), {'00:36:00.0250'})
-%!assert (cellstr (duration (0, 36, 0.025), 'hh:mm:ss.SSS'), {'00:36:00.025'})
-%!assert (cellstr (duration (0, 36, 0.025), 'hh:mm:ss.SS'), {'00:36:00.02'})
-%!assert (cellstr (duration (0, 36, 0.025), 'hh:mm:ss.S'), {'00:36:00.0'})
-%!assert (cellstr (duration (0, 36, 0.025), 'hh:mm'), {'00:36'})
-%!assert (cellstr (duration (0, 36, 5.025), 'hh:mm'), {'00:36'})
-%!assert (cellstr (duration (0, 36, 0.025), 'mm:ss.SSSSS'), {'36:00.02500'})
-%!assert (cellstr (duration (0, 36, 0.025), 'mm:ss.SSSSSS'), {'36:00.025000'})
-%!assert (cellstr (duration (0, 36, 0.025), 'mm:ss.SSSSSSS'), {'36:00.0250000'})
-%!assert (cellstr (duration (0, 36, 0.025), 'mm:ss.SSSSSSSS'), {'36:00.02500000'})
-%!assert (cellstr (duration (0, 36, 0.025), 'mm:ss.SSSSSSSSS'), {'36:00.025000000'})
+%!assert_equal (cellstr (years (1)), {'1 yr'})
+%!assert_equal (cellstr (years (1), 'd'), {'365.243 days'})
+%!assert_equal (cellstr (years (2)), {'2 yrs'})
+%!assert_equal (cellstr (years (2), 'd'), {'730.485 days'})
+%!assert_equal (cellstr (days (1)), {'1 day'})
+%!assert_equal (cellstr (days (1), 'y'), {'0.00273791 yrs'})
+%!assert_equal (cellstr (days (2), 'm'), {'2880 min'})
+%!assert_equal (cellstr (duration (36, 0, 0)), {'36:00:00'})
+%!assert_equal (cellstr (duration (36, 0, 0), 'y'), {'0.00410686 yrs'})
+%!assert_equal (cellstr (duration (36, 0, 0), 'd'), {'1.5 days'})
+%!assert_equal (cellstr (duration (36, 0, 0), 'h'), {'36 hr'})
+%!assert_equal (cellstr (duration (36, 0, 0), 'm'), {'2160 min'})
+%!assert_equal (cellstr (duration (36, 0, 0), 's'), {'129600 sec'})
+%!assert_equal (cellstr (duration (36, 0, 0), 'dd:hh:mm:ss.SSSSS'), {'01:12:00:00.00000'})
+%!assert_equal (cellstr (duration (36, 0, 0), 'hh:mm:ss.SSSSS'), {'36:00:00.00000'})
+%!assert_equal (cellstr (duration (36, 0, 0), 'hh:mm:ss.SSSS'), {'36:00:00.0000'})
+%!assert_equal (cellstr (duration (36, 0, 0), 'hh:mm:ss.SSS'), {'36:00:00.000'})
+%!assert_equal (cellstr (duration (36, 0, 0), 'hh:mm:ss.SS'), {'36:00:00.00'})
+%!assert_equal (cellstr (duration (36, 0, 0), 'hh:mm:ss.S'), {'36:00:00.0'})
+%!assert_equal (cellstr (duration (36, 0, 0), 'hh:mm'), {'36:00'})
+%!assert_equal (cellstr (duration (36, 0, 0.025), 'hh:mm'), {'36:00'})
+%!assert_equal (cellstr (duration (36, 0, 55.025), 'hh:mm'), {'36:00'})
+%!assert_equal (cellstr (duration (36, 0, 0), 'mm:ss.SSSSS'), {'2160:00.00000'})
+%!assert_equal (cellstr (duration (36, 0, 0), 'mm:ss.SSSSSS'), {'2160:00.000000'})
+%!assert_equal (cellstr (duration (36, 0, 0), 'mm:ss.SSSSSSS'), {'2160:00.0000000'})
+%!assert_equal (cellstr (duration (36, 0, 0), 'mm:ss.SSSSSSSS'), {'2160:00.00000000'})
+%!assert_equal (cellstr (duration (36, 0, 0), 'mm:ss.SSSSSSSSS'), {'2160:00.000000000'})
+%!assert_equal (cellstr (duration (0, 36, 0)), {'00:36:00'})
+%!assert_equal (cellstr (duration (0, 36, 0), 'y'), {'6.84477e-05 yrs'})
+%!assert_equal (cellstr (duration (0, 36, 0), 'd'), {'0.025 days'})
+%!assert_equal (cellstr (duration (0, 36, 0), 'h'), {'0.6 hr'})
+%!assert_equal (cellstr (duration (0, 36, 0), 'm'), {'36 min'})
+%!assert_equal (cellstr (duration (0, 36, 0), 's'), {'2160 sec'})
+%!assert_equal (cellstr (duration (0, 36, 0.025), 'dd:hh:mm:ss.SSSSS'), {'00:36:00.02500'})
+%!assert_equal (cellstr (duration (0, 36, 0.025), 'hh:mm:ss.SSSSS'), {'00:36:00.02500'})
+%!assert_equal (cellstr (duration (0, 36, 0.025), 'hh:mm:ss.SSSS'), {'00:36:00.0250'})
+%!assert_equal (cellstr (duration (0, 36, 0.025), 'hh:mm:ss.SSS'), {'00:36:00.025'})
+%!assert_equal (cellstr (duration (0, 36, 0.025), 'hh:mm:ss.SS'), {'00:36:00.02'})
+%!assert_equal (cellstr (duration (0, 36, 0.025), 'hh:mm:ss.S'), {'00:36:00.0'})
+%!assert_equal (cellstr (duration (0, 36, 0.025), 'hh:mm'), {'00:36'})
+%!assert_equal (cellstr (duration (0, 36, 5.025), 'hh:mm'), {'00:36'})
+%!assert_equal (cellstr (duration (0, 36, 0.025), 'mm:ss.SSSSS'), {'36:00.02500'})
+%!assert_equal (cellstr (duration (0, 36, 0.025), 'mm:ss.SSSSSS'), {'36:00.025000'})
+%!assert_equal (cellstr (duration (0, 36, 0.025), 'mm:ss.SSSSSSS'), {'36:00.0250000'})
+%!assert_equal (cellstr (duration (0, 36, 0.025), 'mm:ss.SSSSSSSS'), {'36:00.02500000'})
+%!assert_equal (cellstr (duration (0, 36, 0.025), 'mm:ss.SSSSSSSSS'), {'36:00.025000000'})
 %!error<duration.cellstr: FORMAT must be a character vector or a string scalar.> ...
 %! cellstr (days (2), string ({'m', 'y'}))
 %!error<duration.cellstr: FORMAT must be a character vector or a string scalar.> ...
@@ -262,54 +262,54 @@
 %!error<duration.cellstr: more than nine fractional second digits in display format.> ...
 %! cellstr (duration (0, 0, 0), 'hh:mm:ss.SSSSSSSSSS')
 
-%!assert (char (years (1)), '1 yr')
-%!assert (char (years ([1, 2])), ['1 yr '; '2 yrs'])
-%!assert (char (years (1), 'd'), '365.243 days')
-%!assert (char (years (2)), '2 yrs')
-%!assert (char (years (2), 'd'), '730.485 days')
-%!assert (char (days (1)), '1 day')
-%!assert (char (days ([1; 2])), ['1 day '; '2 days'])
-%!assert (char (days (1), 'y'), '0.00273791 yrs')
-%!assert (char (days (2), 'm'), '2880 min')
-%!assert (char (duration (36, 0, 0)), '36:00:00')
-%!assert (char (duration (36, 0, 0), 'y'), '0.00410686 yrs')
-%!assert (char (duration (36, 0, 0), 'd'), '1.5 days')
-%!assert (char (duration (36, 0, 0), 'h'), '36 hr')
-%!assert (char (duration (36, 0, 0), 'm'), '2160 min')
-%!assert (char (duration (36, 0, 0), 's'), '129600 sec')
-%!assert (char (duration (36, 0, 0), 'dd:hh:mm:ss.SSSSS'), '01:12:00:00.00000')
-%!assert (char (duration (36, 0, 0), 'hh:mm:ss.SSSSS'), '36:00:00.00000')
-%!assert (char (duration (36, 0, 0), 'hh:mm:ss.SSSS'), '36:00:00.0000')
-%!assert (char (duration (36, 0, 0), 'hh:mm:ss.SSS'), '36:00:00.000')
-%!assert (char (duration (36, 0, 0), 'hh:mm:ss.SS'), '36:00:00.00')
-%!assert (char (duration (36, 0, 0), 'hh:mm:ss.S'), '36:00:00.0')
-%!assert (char (duration (36, 0, 0), 'hh:mm'), '36:00')
-%!assert (char (duration (36, 0, 0.025), 'hh:mm'), '36:00')
-%!assert (char (duration (36, 0, 55.025), 'hh:mm'), '36:00')
-%!assert (char (duration (36, 0, 0), 'mm:ss.SSSSS'), '2160:00.00000')
-%!assert (char (duration (36, 0, 0), 'mm:ss.SSSSSS'), '2160:00.000000')
-%!assert (char (duration (36, 0, 0), 'mm:ss.SSSSSSS'), '2160:00.0000000')
-%!assert (char (duration (36, 0, 0), 'mm:ss.SSSSSSSS'), '2160:00.00000000')
-%!assert (char (duration (36, 0, 0), 'mm:ss.SSSSSSSSS'), '2160:00.000000000')
-%!assert (char (duration (0, 36, 0)), '00:36:00')
-%!assert (char (duration (0, 36, 0), 'y'), '6.84477e-05 yrs')
-%!assert (char (duration (0, 36, 0), 'd'), '0.025 days')
-%!assert (char (duration (0, 36, 0), 'h'), '0.6 hr')
-%!assert (char (duration (0, 36, 0), 'm'), '36 min')
-%!assert (char (duration (0, 36, 0), 's'), '2160 sec')
-%!assert (char (duration (0, 36, 0.025), 'dd:hh:mm:ss.SSSSS'), '00:36:00.02500')
-%!assert (char (duration (0, 36, 0.025), 'hh:mm:ss.SSSSS'), '00:36:00.02500')
-%!assert (char (duration (0, 36, 0.025), 'hh:mm:ss.SSSS'), '00:36:00.0250')
-%!assert (char (duration (0, 36, 0.025), 'hh:mm:ss.SSS'), '00:36:00.025')
-%!assert (char (duration (0, 36, 0.025), 'hh:mm:ss.SS'), '00:36:00.02')
-%!assert (char (duration (0, 36, 0.025), 'hh:mm:ss.S'), '00:36:00.0')
-%!assert (char (duration (0, 36, 0.025), 'hh:mm'), '00:36')
-%!assert (char (duration (0, 36, 5.025), 'hh:mm'), '00:36')
-%!assert (char (duration (0, 36, 0.025), 'mm:ss.SSSSS'), '36:00.02500')
-%!assert (char (duration (0, 36, 0.025), 'mm:ss.SSSSSS'), '36:00.025000')
-%!assert (char (duration (0, 36, 0.025), 'mm:ss.SSSSSSS'), '36:00.0250000')
-%!assert (char (duration (0, 36, 0.025), 'mm:ss.SSSSSSSS'), '36:00.02500000')
-%!assert (char (duration (0, 36, 0.025), 'mm:ss.SSSSSSSSS'), '36:00.025000000')
+%!assert_equal (char (years (1)), '1 yr')
+%!assert_equal (char (years ([1, 2])), ['1 yr '; '2 yrs'])
+%!assert_equal (char (years (1), 'd'), '365.243 days')
+%!assert_equal (char (years (2)), '2 yrs')
+%!assert_equal (char (years (2), 'd'), '730.485 days')
+%!assert_equal (char (days (1)), '1 day')
+%!assert_equal (char (days ([1; 2])), ['1 day '; '2 days'])
+%!assert_equal (char (days (1), 'y'), '0.00273791 yrs')
+%!assert_equal (char (days (2), 'm'), '2880 min')
+%!assert_equal (char (duration (36, 0, 0)), '36:00:00')
+%!assert_equal (char (duration (36, 0, 0), 'y'), '0.00410686 yrs')
+%!assert_equal (char (duration (36, 0, 0), 'd'), '1.5 days')
+%!assert_equal (char (duration (36, 0, 0), 'h'), '36 hr')
+%!assert_equal (char (duration (36, 0, 0), 'm'), '2160 min')
+%!assert_equal (char (duration (36, 0, 0), 's'), '129600 sec')
+%!assert_equal (char (duration (36, 0, 0), 'dd:hh:mm:ss.SSSSS'), '01:12:00:00.00000')
+%!assert_equal (char (duration (36, 0, 0), 'hh:mm:ss.SSSSS'), '36:00:00.00000')
+%!assert_equal (char (duration (36, 0, 0), 'hh:mm:ss.SSSS'), '36:00:00.0000')
+%!assert_equal (char (duration (36, 0, 0), 'hh:mm:ss.SSS'), '36:00:00.000')
+%!assert_equal (char (duration (36, 0, 0), 'hh:mm:ss.SS'), '36:00:00.00')
+%!assert_equal (char (duration (36, 0, 0), 'hh:mm:ss.S'), '36:00:00.0')
+%!assert_equal (char (duration (36, 0, 0), 'hh:mm'), '36:00')
+%!assert_equal (char (duration (36, 0, 0.025), 'hh:mm'), '36:00')
+%!assert_equal (char (duration (36, 0, 55.025), 'hh:mm'), '36:00')
+%!assert_equal (char (duration (36, 0, 0), 'mm:ss.SSSSS'), '2160:00.00000')
+%!assert_equal (char (duration (36, 0, 0), 'mm:ss.SSSSSS'), '2160:00.000000')
+%!assert_equal (char (duration (36, 0, 0), 'mm:ss.SSSSSSS'), '2160:00.0000000')
+%!assert_equal (char (duration (36, 0, 0), 'mm:ss.SSSSSSSS'), '2160:00.00000000')
+%!assert_equal (char (duration (36, 0, 0), 'mm:ss.SSSSSSSSS'), '2160:00.000000000')
+%!assert_equal (char (duration (0, 36, 0)), '00:36:00')
+%!assert_equal (char (duration (0, 36, 0), 'y'), '6.84477e-05 yrs')
+%!assert_equal (char (duration (0, 36, 0), 'd'), '0.025 days')
+%!assert_equal (char (duration (0, 36, 0), 'h'), '0.6 hr')
+%!assert_equal (char (duration (0, 36, 0), 'm'), '36 min')
+%!assert_equal (char (duration (0, 36, 0), 's'), '2160 sec')
+%!assert_equal (char (duration (0, 36, 0.025), 'dd:hh:mm:ss.SSSSS'), '00:36:00.02500')
+%!assert_equal (char (duration (0, 36, 0.025), 'hh:mm:ss.SSSSS'), '00:36:00.02500')
+%!assert_equal (char (duration (0, 36, 0.025), 'hh:mm:ss.SSSS'), '00:36:00.0250')
+%!assert_equal (char (duration (0, 36, 0.025), 'hh:mm:ss.SSS'), '00:36:00.025')
+%!assert_equal (char (duration (0, 36, 0.025), 'hh:mm:ss.SS'), '00:36:00.02')
+%!assert_equal (char (duration (0, 36, 0.025), 'hh:mm:ss.S'), '00:36:00.0')
+%!assert_equal (char (duration (0, 36, 0.025), 'hh:mm'), '00:36')
+%!assert_equal (char (duration (0, 36, 5.025), 'hh:mm'), '00:36')
+%!assert_equal (char (duration (0, 36, 0.025), 'mm:ss.SSSSS'), '36:00.02500')
+%!assert_equal (char (duration (0, 36, 0.025), 'mm:ss.SSSSSS'), '36:00.025000')
+%!assert_equal (char (duration (0, 36, 0.025), 'mm:ss.SSSSSSS'), '36:00.0250000')
+%!assert_equal (char (duration (0, 36, 0.025), 'mm:ss.SSSSSSSS'), '36:00.02500000')
+%!assert_equal (char (duration (0, 36, 0.025), 'mm:ss.SSSSSSSSS'), '36:00.025000000')
 %!error<duration.char: FORMAT must be a character vector or a string scalar.> ...
 %! char (days (2), string ({'m', 'y'}))
 %!error<duration.char: FORMAT must be a character vector or a string scalar.> ...
@@ -330,115 +330,115 @@
 
 %!test
 %! [y, mo, d, h, mi, s] = datevec (years (1));
-%! assert (y, 1);
-%! assert (mo, 0);
-%! assert (d, 0);
-%! assert (h, 0);
-%! assert (mi, 0);
-%! assert (s, 0);
+%! assert_equal (y, 1);
+%! assert_equal (mo, 0);
+%! assert_equal (d, 0);
+%! assert_equal (h, 0);
+%! assert_equal (mi, 0);
+%! assert_equal (s, 0);
 %!test
 %! [y, mo, d, h, mi, s] = datevec (years (1.0258123));
-%! assert (y, 1);
-%! assert (mo, 0);
-%! assert (d, 9);
-%! assert (h, 10);
-%! assert (mi, 15);
-%! assert (s, 57.5121, 1E-4);
+%! assert_equal (y, 1);
+%! assert_equal (mo, 0);
+%! assert_equal (d, 9);
+%! assert_equal (h, 10);
+%! assert_equal (mi, 15);
+%! assert_equal (s, 57.5121, 1E-4);
 %!test
 %! [y, mo, d, h, mi, s] = datevec (years (1.5));
-%! assert (y, 1);
-%! assert (mo, 0);
-%! assert (d, 182);
-%! assert (h, 14);
-%! assert (mi, 54);
-%! assert (s, 36, 1e-8);
+%! assert_equal (y, 1);
+%! assert_equal (mo, 0);
+%! assert_equal (d, 182);
+%! assert_equal (h, 14);
+%! assert_equal (mi, 54);
+%! assert_equal (s, 36, 1e-8);
 %!test
 %! [y, mo, d, h, mi, s] = datevec (days (1));
-%! assert (y, 0);
-%! assert (mo, 0);
-%! assert (d, 1);
-%! assert (h, 0);
-%! assert (mi, 0);
-%! assert (s, 0);
+%! assert_equal (y, 0);
+%! assert_equal (mo, 0);
+%! assert_equal (d, 1);
+%! assert_equal (h, 0);
+%! assert_equal (mi, 0);
+%! assert_equal (s, 0);
 %!test
 %! [y, mo, d, h, mi, s] = datevec (days (1.0258123));
-%! assert (y, 0);
-%! assert (mo, 0);
-%! assert (d, 1);
-%! assert (h, 0);
-%! assert (mi, 37);
-%! assert (s, 10.1827, 1E-4);
+%! assert_equal (y, 0);
+%! assert_equal (mo, 0);
+%! assert_equal (d, 1);
+%! assert_equal (h, 0);
+%! assert_equal (mi, 37);
+%! assert_equal (s, 10.1827, 1E-4);
 %!test
 %! [y, mo, d, h, mi, s] = datevec (days (1.5));
-%! assert (y, 0);
-%! assert (mo, 0);
-%! assert (d, 1);
-%! assert (h, 12);
-%! assert (mi, 0);
-%! assert (s, 0, 1e-8);
-%!assert (datevec (years (1)), [1, 0, 0, 0, 0, 0])
-%!assert (datevec (years (1.0258123)), [1, 0, 9, 10, 15, 57.5121], 1e-4)
-%!assert (datevec (years (1.5)), [1, 0, 182, 14, 54, 36], 1e-8)
-%!assert (datevec (days (1)), [0, 0, 1, 0, 0, 0])
-%!assert (datevec (days (1.0258123)), [0, 0, 1, 0, 37, 10.1827], 1e-4)
-%!assert (datevec (days (1.5)), [0, 0, 1, 12, 0, 0])
+%! assert_equal (y, 0);
+%! assert_equal (mo, 0);
+%! assert_equal (d, 1);
+%! assert_equal (h, 12);
+%! assert_equal (mi, 0);
+%! assert_equal (s, 0, 1e-8);
+%!assert_equal (datevec (years (1)), [1, 0, 0, 0, 0, 0])
+%!assert_equal (datevec (years (1.0258123)), [1, 0, 9, 10, 15, 57.5121], 1e-4)
+%!assert_equal (datevec (years (1.5)), [1, 0, 182, 14, 54, 36], 1e-8)
+%!assert_equal (datevec (days (1)), [0, 0, 1, 0, 0, 0])
+%!assert_equal (datevec (days (1.0258123)), [0, 0, 1, 0, 37, 10.1827], 1e-4)
+%!assert_equal (datevec (days (1.5)), [0, 0, 1, 12, 0, 0])
 %!test
 %! [y, mo, d, h, mi, s] = datevec (days (magic (3)));
-%! assert (y, zeros (3));
-%! assert (mo, zeros (3));
-%! assert (d, magic (3));
-%! assert (h, zeros (3));
-%! assert (mi, zeros (3));
-%! assert (s, zeros (3));
+%! assert_equal (y, zeros (3));
+%! assert_equal (mo, zeros (3));
+%! assert_equal (d, magic (3));
+%! assert_equal (h, zeros (3));
+%! assert_equal (mi, zeros (3));
+%! assert_equal (s, zeros (3));
 %!test
 %! DV = datevec (days (magic (3)));
 %! out = zeros (9, 6);
 %! out(:,3) = magic (3)(:);
-%! assert (DV, out);
+%! assert_equal (DV, out);
 %!test
 %! [y, mo, d, h, mi, s] = datevec (days (ones (2, 3, 4)));
-%! assert (y, zeros (2, 3, 4));
-%! assert (mo, zeros (2, 3, 4));
-%! assert (d, ones (2, 3, 4));
-%! assert (h, zeros (2, 3, 4));
-%! assert (mi, zeros (2, 3, 4));
-%! assert (s, zeros (2, 3, 4));
+%! assert_equal (y, zeros (2, 3, 4));
+%! assert_equal (mo, zeros (2, 3, 4));
+%! assert_equal (d, ones (2, 3, 4));
+%! assert_equal (h, zeros (2, 3, 4));
+%! assert_equal (mi, zeros (2, 3, 4));
+%! assert_equal (s, zeros (2, 3, 4));
 %!test
 %! DV = datevec (days (ones (2, 3, 4)));
 %! out = zeros (24, 6);
 %! out(:,3) = ones (24, 1);
-%! assert (DV, out);
+%! assert_equal (DV, out);
 %!test
 %! DV = datevec (years (reshape ([1:24], 2, 3, 4)));
 %! out = zeros (24, 6);
 %! out(:,1) = [1:24]';
-%! assert (DV, out);
+%! assert_equal (DV, out);
 %!test
 %! DV = datevec (days (reshape ([1:24], 2, 3, 4)));
 %! out = zeros (24, 6);
 %! out(:,3) = [1:24]';
-%! assert (DV, out);
+%! assert_equal (DV, out);
 %!test
 %! DV = datevec (hours (reshape ([1:24], 2, 3, 4)));
 %! out = zeros (24, 6);
 %! out(:,4) = [1:23,0]';
 %! out(24,3) = 1;
-%! assert (DV, out);
+%! assert_equal (DV, out);
 %!test
 %! DV = datevec (minutes (reshape ([1:24], 2, 3, 4)));
 %! out = zeros (24, 6);
 %! out(:,5) = [1:24]';
-%! assert (DV, out);
+%! assert_equal (DV, out);
 %!test
 %! DV = datevec (seconds (reshape ([1:24], 2, 3, 4)));
 %! out = zeros (24, 6);
 %! out(:,6) = [1:24]';
-%! assert (DV, out, 2e-15);
+%! assert_equal (DV, out, 2e-15);
 %!test
 %! DV = datevec (milliseconds (reshape ([1:24], 2, 3, 4)));
 %! out = zeros (24, 6);
 %! out(:,6) = 1e-3 * [1:24]';
-%! assert (DV, out, 2e-15);
+%! assert_equal (DV, out, 2e-15);
 %!test
 %! X = reshape ([1:24], 2, 3, 4);
 %! X([12,17]) = NaN;
@@ -446,7 +446,7 @@
 %! out = zeros (24, 6);
 %! out(:, 3) = [1:24]';
 %! out([12,17],:) = NaN;
-%! assert (DV, out);
+%! assert_equal (DV, out);
 %!test
 %! X = reshape ([1:24], 2, 3, 4);
 %! X([12,17]) = NaN;
@@ -455,43 +455,43 @@
 %! d_out = X;
 %! y_out([12,17]) = mo_out([12,17]) = NaN;
 %! h_out([12,17]) = mi_out([12,17]) = s_out([12,17]) = NaN;
-%! assert (y, y_out);
-%! assert (mo, mo_out);
-%! assert (d, d_out);
-%! assert (h, h_out);
-%! assert (mi, mi_out);
-%! assert (s, s_out);
+%! assert_equal (y, y_out);
+%! assert_equal (mo, mo_out);
+%! assert_equal (d, d_out);
+%! assert_equal (h, h_out);
+%! assert_equal (mi, mi_out);
+%! assert_equal (s, s_out);
 
-%!assert (hms (hours ([1:5])), [1:5])
-%!assert (hms (days ([1:5])), 24 * [1:5])
-%!assert (hms (hours (reshape ([1:24], 2, 3, 4))), reshape ([1:24], 2, 3, 4))
+%!assert_equal (hms (hours ([1:5])), [1:5])
+%!assert_equal (hms (days ([1:5])), 24 * [1:5])
+%!assert_equal (hms (hours (reshape ([1:24], 2, 3, 4))), reshape ([1:24], 2, 3, 4))
 %!test
 %! [h, m, s] = hms (days (0.25 * reshape ([1:24], 2, 3, 4)));
-%! assert (h, 6 * reshape ([1:24], 2, 3, 4));
-%! assert (m, zeros (2, 3, 4));
-%! assert (s, zeros (2, 3, 4));
+%! assert_equal (h, 6 * reshape ([1:24], 2, 3, 4));
+%! assert_equal (m, zeros (2, 3, 4));
+%! assert_equal (s, zeros (2, 3, 4));
 %!test
 %! [h, m, s] = hms (years (0.25 * reshape ([1:24], 2, 3, 4)));
 %! h_out = fix (hours (years (0.25 * reshape ([1:24], 2, 3, 4))));
-%! assert (h, h_out);
+%! assert_equal (h, h_out);
 %! m_out = fix (minutes (years (0.25 * reshape ([1:24], 2, 3, 4)))) - h_out * 60;
-%! assert (m, m_out);
+%! assert_equal (m, m_out);
 %! s_out = round (seconds (years (0.25 * reshape ([1:24], 2, 3, 4))));
-%! assert (s, s_out - (h_out * 3600 + m_out * 60), 5e-8);
+%! assert_equal (s, s_out - (h_out * 3600 + m_out * 60), 5e-8);
 %!test
 %! [h, m, s] = hms (hours ([1:5]));
-%! assert (m, zeros (1, 5));
-%! assert (s, zeros (1, 5));
+%! assert_equal (m, zeros (1, 5));
+%! assert_equal (s, zeros (1, 5));
 %!test
 %! [h, m, s] = hms (minutes ([1:5]));
-%! assert (h, zeros (1, 5));
-%! assert (m, [1:5]);
-%! assert (s, zeros (1, 5));
+%! assert_equal (h, zeros (1, 5));
+%! assert_equal (m, [1:5]);
+%! assert_equal (s, zeros (1, 5));
 %!test
 %! [h, m, s] = hms (seconds ([1:5]));
-%! assert (h, zeros (1, 5));
-%! assert (m, zeros (1, 5));
-%! assert (s, [1:5]);
+%! assert_equal (h, zeros (1, 5));
+%! assert_equal (m, zeros (1, 5));
+%! assert_equal (s, [1:5]);
 %!error<duration.hms: too many output arguments.> [h, m, s, ms] = hms (days (1))
 
 ################################################################################
@@ -504,56 +504,56 @@
 ##                                                                            ##
 ################################################################################
 
-%!assert (size (duration), [1, 1])
-%!assert (size (days ([])), [0, 0])
-%!assert (size (days (ones (2, 0, 3, 4))), [2, 0, 3, 4])
-%!assert (size (duration (ones (2, 4), 0, 0)), [2, 4])
-%!assert (size (duration (ones (2, 4, 1, 1), 0, 0)), [2, 4])
-%!assert (size (duration (ones (2, 4, 1, 0), 0, 0)), [2, 4, 1, 0])
-%!assert (size (duration (zeros (6, 3))), [6, 1])
+%!assert_equal (size (duration), [1, 1])
+%!assert_equal (size (days ([])), [0, 0])
+%!assert_equal (size (days (ones (2, 0, 3, 4))), [2, 0, 3, 4])
+%!assert_equal (size (duration (ones (2, 4), 0, 0)), [2, 4])
+%!assert_equal (size (duration (ones (2, 4, 1, 1), 0, 0)), [2, 4])
+%!assert_equal (size (duration (ones (2, 4, 1, 0), 0, 0)), [2, 4, 1, 0])
+%!assert_equal (size (duration (zeros (6, 3))), [6, 1])
 
-%!assert (ndims (duration), 2)
-%!assert (ndims (days ([])), 2)
-%!assert (ndims (days (ones (2, 0, 3, 4))), 4)
-%!assert (ndims (duration (ones (2, 4), 0, 0)), 2)
-%!assert (ndims (duration (zeros (6, 3))), 2)
+%!assert_equal (ndims (duration), 2)
+%!assert_equal (ndims (days ([])), 2)
+%!assert_equal (ndims (days (ones (2, 0, 3, 4))), 4)
+%!assert_equal (ndims (duration (ones (2, 4), 0, 0)), 2)
+%!assert_equal (ndims (duration (zeros (6, 3))), 2)
 
-%!assert (numel (duration), 1)
-%!assert (numel (days ([])), 0)
-%!assert (numel (days (ones (2, 0, 3, 4))), 0)
-%!assert (numel (duration (ones (2, 4), 0, 0)), 8)
-%!assert (numel (duration (zeros (6, 3))), 6)
+%!assert_equal (numel (duration), 1)
+%!assert_equal (numel (days ([])), 0)
+%!assert_equal (numel (days (ones (2, 0, 3, 4))), 0)
+%!assert_equal (numel (duration (ones (2, 4), 0, 0)), 8)
+%!assert_equal (numel (duration (zeros (6, 3))), 6)
 
-%!assert (nnz (days ([])), 0)
-%!assert (nnz (duration), 0)
-%!assert (nnz (days (ones (2, 0, 3, 4))), 0)
-%!assert (nnz (days (zeros (2, 0, 3, 4))), 0)
-%!assert (nnz (days (zeros (2, 1, 3, 4))), 0)
-%!assert (nnz (days (ones (2, 1, 3, 4))), 24)
-%!assert (nnz (days ([1, 4, 0, 9, 0, 8])), 4)
-%!assert (nnz (days ([1, 4, 0; 9, 0, 8])), 4)
+%!assert_equal (nnz (days ([])), 0)
+%!assert_equal (nnz (duration), 0)
+%!assert_equal (nnz (days (ones (2, 0, 3, 4))), 0)
+%!assert_equal (nnz (days (zeros (2, 0, 3, 4))), 0)
+%!assert_equal (nnz (days (zeros (2, 1, 3, 4))), 0)
+%!assert_equal (nnz (days (ones (2, 1, 3, 4))), 24)
+%!assert_equal (nnz (days ([1, 4, 0, 9, 0, 8])), 4)
+%!assert_equal (nnz (days ([1, 4, 0; 9, 0, 8])), 4)
 
-%!assert (length (duration (1, 1, 1)), 1)
-%!assert (length (duration (0, 0, 0)), 1)
-%!assert (length (duration (0:5, 0, 0)), 6)
-%!assert (length (duration ([0, 0, 0, 1, 1], 0, 0)), 5)
-%!assert (length (duration (ones (2, 3, 4), 0, 0)), 4)
-%!assert (length (duration (ones (2, 10, 4), 0, 0)), 10)
+%!assert_equal (length (duration (1, 1, 1)), 1)
+%!assert_equal (length (duration (0, 0, 0)), 1)
+%!assert_equal (length (duration (0:5, 0, 0)), 6)
+%!assert_equal (length (duration ([0, 0, 0, 1, 1], 0, 0)), 5)
+%!assert_equal (length (duration (ones (2, 3, 4), 0, 0)), 4)
+%!assert_equal (length (duration (ones (2, 10, 4), 0, 0)), 10)
 
-%!assert (keyHash (duration), uint64 (8095976253982599603))
-%!assert (keyHash (duration (0, 0, 0)), uint64 (8095976253982599603))
-%!assert (keyHash (duration ([], [], [])), uint64 (14859204025010592219))
-%!assert (keyHash (duration (1, 1, 1)), uint64 (13776124020415645612))
+%!assert_equal (keyHash (duration), uint64 (8095976253982599603))
+%!assert_equal (keyHash (duration (0, 0, 0)), uint64 (8095976253982599603))
+%!assert_equal (keyHash (duration ([], [], [])), uint64 (14859204025010592219))
+%!assert_equal (keyHash (duration (1, 1, 1)), uint64 (13776124020415645612))
 %!test
 %! key = keyHash (duration ([1, 2; 3, 4], 1, 1));
-%! assert (key, uint64 (9389203521563080232));
+%! assert_equal (key, uint64 (9389203521563080232));
 %!test
 %! key = keyHash (duration (0, 0, 0, [1, 2, 3]));
-%! assert (key, uint64 (7422929858764574817));
+%! assert_equal (key, uint64 (7422929858764574817));
 %!test
 %! base_key = uint64 (2342124352342344234);
 %! key = keyHash (duration (0, 0, 0, [1, 2, 3]), base_key);
-%! assert (key, uint64 (13938388645620099040));
+%! assert_equal (key, uint64 (13938388645620099040));
 %!error<duration.keyHash: BASE must be a UINT64 scalar.> ...
 %! keyHash (duration (0, 0, 0), uint64 ([1, 2]))
 %!error<duration.keyHash: BASE must be a UINT64 scalar.> ...
@@ -574,65 +574,65 @@
 
 %!test
 %! TF = isbetween (days ([0:5]), days (2), days (3));
-%! assert (TF, logical ([0, 0, 1, 1, 0, 0,]));
+%! assert_equal (TF, logical ([0, 0, 1, 1, 0, 0,]));
 %!test
 %! TF = isbetween (days ([0:5]), duration ('02:00:00:00'), days (3));
-%! assert (TF, logical ([0, 0, 1, 1, 0, 0,]));
+%! assert_equal (TF, logical ([0, 0, 1, 1, 0, 0,]));
 %!test
 %! TF = isbetween (days ([0:5]), duration ("1:00:00:00"), days (3));
-%! assert (TF, logical ([0, 1, 1, 1, 0, 0,]));
+%! assert_equal (TF, logical ([0, 1, 1, 1, 0, 0,]));
 %!test
 %! TF = isbetween (days ([0:5]), duration ("1:00:00:00"), days (4));
-%! assert (TF, logical ([0, 1, 1, 1, 1, 0,]));
+%! assert_equal (TF, logical ([0, 1, 1, 1, 1, 0,]));
 %!test
 %! TF =  isbetween (days ([0:5]), days (2), days (3), 'open');
-%! assert (TF, false (1, 6));
+%! assert_equal (TF, false (1, 6));
 %!test
 %! TF = isbetween (days ([0:5]), duration ('02:00:00:00'), days (3), 'open');
-%! assert (TF, false (1, 6));
+%! assert_equal (TF, false (1, 6));
 %!test
 %! TF = isbetween (days ([0:5]), duration ('01:00:00:00'), days (3), 'open');
-%! assert (TF, logical ([0, 0, 1, 0, 0, 0,]));
+%! assert_equal (TF, logical ([0, 0, 1, 0, 0, 0,]));
 %!test
 %! TF = isbetween (days ([0:5]), duration ('01:00:00:00'), days (4), 'open');
-%! assert (TF, logical ([0, 0, 1, 1, 0, 0,]));
+%! assert_equal (TF, logical ([0, 0, 1, 1, 0, 0,]));
 %!test
 %! TF = isbetween (days ([0:5]), days (2), hours (72), 'open');
-%! assert (TF, false (1, 6));
+%! assert_equal (TF, false (1, 6));
 %!test
 %! TF =  isbetween (days ([0:5]), days (2), days (3), 'openleft');
-%! assert (TF, logical ([0, 0, 0, 1, 0, 0,]));
+%! assert_equal (TF, logical ([0, 0, 0, 1, 0, 0,]));
 %!test
 %! TF = isbetween (days ([0:5]), duration ('02:00:00:00'), days (3), 'openleft');
-%! assert (TF, logical ([0, 0, 0, 1, 0, 0,]));
+%! assert_equal (TF, logical ([0, 0, 0, 1, 0, 0,]));
 %!test
 %! TF = isbetween (days ([0:5]), duration ('01:00:00:00'), days (3), 'openleft');
-%! assert (TF, logical ([0, 0, 1, 1, 0, 0,]));
+%! assert_equal (TF, logical ([0, 0, 1, 1, 0, 0,]));
 %!test
 %! TF = isbetween (days ([0:5]), duration ('01:00:00:00'), days (4), 'openleft');
-%! assert (TF, logical ([0, 0, 1, 1, 1, 0,]));
+%! assert_equal (TF, logical ([0, 0, 1, 1, 1, 0,]));
 %!test
 %! TF = isbetween (days ([0:5]), days (2), hours (72), 'openleft');
-%! assert (TF, logical ([0, 0, 0, 1, 0, 0,]));
+%! assert_equal (TF, logical ([0, 0, 0, 1, 0, 0,]));
 %!test
 %! TF =  isbetween (days ([0:5]), days (2), days (3), 'closedleft');
-%! assert (TF, logical ([0, 0, 1, 0, 0, 0,]));
+%! assert_equal (TF, logical ([0, 0, 1, 0, 0, 0,]));
 %!test
 %! TF = isbetween (days ([0:5]), duration ('02:00:00:00'), days (3), 'closedleft');
-%! assert (TF, logical ([0, 0, 1, 0, 0, 0,]));
+%! assert_equal (TF, logical ([0, 0, 1, 0, 0, 0,]));
 %!test
 %! TF = isbetween (days ([0:5]), duration ('01:00:00:00'), days (3), 'closedleft');
-%! assert (TF, logical ([0, 1, 1, 0, 0, 0,]));
+%! assert_equal (TF, logical ([0, 1, 1, 0, 0, 0,]));
 %!test
 %! TF = isbetween (days ([0:5]), duration ('01:00:00:00'), days (4), 'closedleft');
-%! assert (TF, logical ([0, 1, 1, 1, 0, 0,]));
+%! assert_equal (TF, logical ([0, 1, 1, 1, 0, 0,]));
 %!test
 %! TF = isbetween (days ([0:5]), days (2), hours (72), 'closedleft');
-%! assert (TF, logical ([0, 0, 1, 0, 0, 0,]));
+%! assert_equal (TF, logical ([0, 0, 1, 0, 0, 0,]));
 %!test
 %! TF = isbetween (days ([0:5]),'1:23:00:00', hours (72));
-%! assert (TF, logical ([0, 0, 1, 1, 0, 0,]));
-%!assert (isbetween (years (1), years (1), years (1)), true)
+%! assert_equal (TF, logical ([0, 0, 1, 1, 0, 0,]));
+%!assert_equal (isbetween (years (1), years (1), years (1)), true)
 %!error<duration.isbetween: too few input arguments.> ...
 %! isbetween (days (1), days (1))
 %!error<duration.isbetween: optional paired arguments are not supported for duration arrays.> ...
@@ -642,126 +642,126 @@
 %!error<duration.isbetween: invalid INTERVALTYPE option.> ...
 %! isbetween (days (1), days (1), days (1), 'asd')
 
-%!assert (iscolumn (days ([1, 2, 3, 4])), false)
-%!assert (iscolumn (days ([1; 2; 3; 4])), true)
-%!assert (iscolumn (days ([1, 2; 3, 4])), false)
-%!assert (iscolumn (days ([])), false)
-%!assert (iscolumn (days (ones (1, 0))), false)
-%!assert (iscolumn (days (ones (0, 1))), true)
-%!assert (iscolumn (days (1)), true)
-%!assert (iscolumn (days (ones (2, 3, 4))), false)
+%!assert_equal (iscolumn (days ([1, 2, 3, 4])), false)
+%!assert_equal (iscolumn (days ([1; 2; 3; 4])), true)
+%!assert_equal (iscolumn (days ([1, 2; 3, 4])), false)
+%!assert_equal (iscolumn (days ([])), false)
+%!assert_equal (iscolumn (days (ones (1, 0))), false)
+%!assert_equal (iscolumn (days (ones (0, 1))), true)
+%!assert_equal (iscolumn (days (1)), true)
+%!assert_equal (iscolumn (days (ones (2, 3, 4))), false)
 
-%!assert (isempty (days ([])), true)
-%!assert (isempty (days (ones (2, 0, 3))), true)
-%!assert (isempty (days (ones (2, 1, 3))), false)
-%!assert (isempty (days (1)), false)
-%!assert (isempty (duration), false)
+%!assert_equal (isempty (days ([])), true)
+%!assert_equal (isempty (days (ones (2, 0, 3))), true)
+%!assert_equal (isempty (days (ones (2, 1, 3))), false)
+%!assert_equal (isempty (days (1)), false)
+%!assert_equal (isempty (duration), false)
 
-%!assert (isequal (duration (24, 0, 0), days (1)), true)
-%!assert (isequal (duration (24, 0, 0), '24:00:00'), true)
-%!assert (isequal (duration (24, 0, 0), '24:00:01'), false)
-%!assert (isequal (duration (24, 0, 1), {'24:00:01'}), true)
-%!assert (isequal (duration (24, 0, 1), {'24:00:00'}), false)
-%!assert (isequal (days ([1, 2]), string ({'24:00:00', '48:00:00'})), true)
-%!assert (isequal (days ([1, 2]), string ({'24:00:00'; '48:00:00'})), false)
-%!assert (isequal (days ([1; 2]), string ({'24:00:00'; '48:00:00'})), true)
-%!assert (isequal (days ([1; 2]), string ({'24:00:00', '48:00:00'})), false)
-%!assert (isequal (days (ones (2, 3, 4)), days (ones (2, 3, 4))), true)
-%!assert (isequal (duration (ones (2, 3, 4) * 24, 0, 0), days (ones (2, 3, 4))), true)
-%!assert (isequal (repmat ({'24:00:00'}, 2, 3, 4), days (ones (2, 3, 4))), true)
-%!assert (isequal (repmat ({'24:00:05'}, 2, 3, 4), duration (24 * ones (2, 3, 4), 0, 5)), true)
-%!assert (isequal (days (1), duration (24, 0, 0), '24:00:00'), true)
-%!assert (isequal (days ([1, NaN]), duration ([24, NaN], 0, 0)), false)
+%!assert_equal (isequal (duration (24, 0, 0), days (1)), true)
+%!assert_equal (isequal (duration (24, 0, 0), '24:00:00'), true)
+%!assert_equal (isequal (duration (24, 0, 0), '24:00:01'), false)
+%!assert_equal (isequal (duration (24, 0, 1), {'24:00:01'}), true)
+%!assert_equal (isequal (duration (24, 0, 1), {'24:00:00'}), false)
+%!assert_equal (isequal (days ([1, 2]), string ({'24:00:00', '48:00:00'})), true)
+%!assert_equal (isequal (days ([1, 2]), string ({'24:00:00'; '48:00:00'})), false)
+%!assert_equal (isequal (days ([1; 2]), string ({'24:00:00'; '48:00:00'})), true)
+%!assert_equal (isequal (days ([1; 2]), string ({'24:00:00', '48:00:00'})), false)
+%!assert_equal (isequal (days (ones (2, 3, 4)), days (ones (2, 3, 4))), true)
+%!assert_equal (isequal (duration (ones (2, 3, 4) * 24, 0, 0), days (ones (2, 3, 4))), true)
+%!assert_equal (isequal (repmat ({'24:00:00'}, 2, 3, 4), days (ones (2, 3, 4))), true)
+%!assert_equal (isequal (repmat ({'24:00:05'}, 2, 3, 4), duration (24 * ones (2, 3, 4), 0, 5)), true)
+%!assert_equal (isequal (days (1), duration (24, 0, 0), '24:00:00'), true)
+%!assert_equal (isequal (days ([1, NaN]), duration ([24, NaN], 0, 0)), false)
 
-%!assert (isequaln (duration (24, 0, 0), days (1)), true)
-%!assert (isequaln (duration (24, 0, 0), '24:00:00'), true)
-%!assert (isequaln (duration (24, 0, 0), '24:00:01'), false)
-%!assert (isequaln (duration (24, 0, 1), {'24:00:01'}), true)
-%!assert (isequaln (duration (24, 0, 1), {'24:00:00'}), false)
-%!assert (isequaln (days ([1, 2]), string ({'24:00:00', '48:00:00'})), true)
-%!assert (isequaln (days ([1, 2]), string ({'24:00:00'; '48:00:00'})), false)
-%!assert (isequaln (days ([1; 2]), string ({'24:00:00'; '48:00:00'})), true)
-%!assert (isequaln (days ([1; 2]), string ({'24:00:00', '48:00:00'})), false)
-%!assert (isequaln (days (ones (2, 3, 4)), days (ones (2, 3, 4))), true)
-%!assert (isequaln (duration (ones (2, 3, 4) * 24, 0, 0), days (ones (2, 3, 4))), true)
-%!assert (isequaln (repmat ({'24:00:00'}, 2, 3, 4), days (ones (2, 3, 4))), true)
-%!assert (isequaln (repmat ({'24:00:05'}, 2, 3, 4), duration (24 * ones (2, 3, 4), 0, 5)), true)
-%!assert (isequaln (days (1), duration (24, 0, 0), '24:00:00'), true)
-%!assert (isequaln (days ([1, NaN]), duration ([24, NaN], 0, 0)), true)
+%!assert_equal (isequaln (duration (24, 0, 0), days (1)), true)
+%!assert_equal (isequaln (duration (24, 0, 0), '24:00:00'), true)
+%!assert_equal (isequaln (duration (24, 0, 0), '24:00:01'), false)
+%!assert_equal (isequaln (duration (24, 0, 1), {'24:00:01'}), true)
+%!assert_equal (isequaln (duration (24, 0, 1), {'24:00:00'}), false)
+%!assert_equal (isequaln (days ([1, 2]), string ({'24:00:00', '48:00:00'})), true)
+%!assert_equal (isequaln (days ([1, 2]), string ({'24:00:00'; '48:00:00'})), false)
+%!assert_equal (isequaln (days ([1; 2]), string ({'24:00:00'; '48:00:00'})), true)
+%!assert_equal (isequaln (days ([1; 2]), string ({'24:00:00', '48:00:00'})), false)
+%!assert_equal (isequaln (days (ones (2, 3, 4)), days (ones (2, 3, 4))), true)
+%!assert_equal (isequaln (duration (ones (2, 3, 4) * 24, 0, 0), days (ones (2, 3, 4))), true)
+%!assert_equal (isequaln (repmat ({'24:00:00'}, 2, 3, 4), days (ones (2, 3, 4))), true)
+%!assert_equal (isequaln (repmat ({'24:00:05'}, 2, 3, 4), duration (24 * ones (2, 3, 4), 0, 5)), true)
+%!assert_equal (isequaln (days (1), duration (24, 0, 0), '24:00:00'), true)
+%!assert_equal (isequaln (days ([1, NaN]), duration ([24, NaN], 0, 0)), true)
 
-%!assert (isfinite (days ([1, -Inf, NaN, Inf])), [true, false, false, false])
-%!assert (isfinite (days ([1, -Inf; NaN, Inf])), [true, false; false, false])
-%!assert (isfinite (days (ones (0, 1))), true (0, 1))
-%!assert (isfinite (days (ones (1, 0))), true (1, 0))
-%!assert (isfinite (days ([])), true ([]))
-%!assert (isfinite (duration (ones (2, 3, 4), 0, 0)), true (2, 3, 4))
-%!assert (isfinite (duration (Inf (2, 3, 4), 0, 0)), false (2, 3, 4))
-%!assert (isfinite (duration (-Inf (2, 3, 4), 0, 0)), false (2, 3, 4))
-%!assert (isfinite (duration (NaN (2, 3, 4), 0, 0)), false (2, 3, 4))
+%!assert_equal (isfinite (days ([1, -Inf, NaN, Inf])), [true, false, false, false])
+%!assert_equal (isfinite (days ([1, -Inf; NaN, Inf])), [true, false; false, false])
+%!assert_equal (isfinite (days (ones (0, 1))), true (0, 1))
+%!assert_equal (isfinite (days (ones (1, 0))), true (1, 0))
+%!assert_equal (isfinite (days ([])), true ([]))
+%!assert_equal (isfinite (duration (ones (2, 3, 4), 0, 0)), true (2, 3, 4))
+%!assert_equal (isfinite (duration (Inf (2, 3, 4), 0, 0)), false (2, 3, 4))
+%!assert_equal (isfinite (duration (-Inf (2, 3, 4), 0, 0)), false (2, 3, 4))
+%!assert_equal (isfinite (duration (NaN (2, 3, 4), 0, 0)), false (2, 3, 4))
 
-%!assert (isinf (days ([1, -Inf, NaN, Inf])), [false, true, false, true])
-%!assert (isinf (days ([1, -Inf; NaN, Inf])), [false, true; false, true])
-%!assert (isinf (days (ones (0, 1))), true (0, 1))
-%!assert (isinf (days (ones (1, 0))), true (1, 0))
-%!assert (isinf (days ([])), true ([]))
-%!assert (isinf (duration (ones (2, 3, 4), 0, 0)), false (2, 3, 4))
-%!assert (isinf (duration (Inf (2, 3, 4), 0, 0)), true (2, 3, 4))
-%!assert (isinf (duration (-Inf (2, 3, 4), 0, 0)), true (2, 3, 4))
-%!assert (isinf (duration (NaN (2, 3, 4), 0, 0)), false (2, 3, 4))
+%!assert_equal (isinf (days ([1, -Inf, NaN, Inf])), [false, true, false, true])
+%!assert_equal (isinf (days ([1, -Inf; NaN, Inf])), [false, true; false, true])
+%!assert_equal (isinf (days (ones (0, 1))), true (0, 1))
+%!assert_equal (isinf (days (ones (1, 0))), true (1, 0))
+%!assert_equal (isinf (days ([])), true ([]))
+%!assert_equal (isinf (duration (ones (2, 3, 4), 0, 0)), false (2, 3, 4))
+%!assert_equal (isinf (duration (Inf (2, 3, 4), 0, 0)), true (2, 3, 4))
+%!assert_equal (isinf (duration (-Inf (2, 3, 4), 0, 0)), true (2, 3, 4))
+%!assert_equal (isinf (duration (NaN (2, 3, 4), 0, 0)), false (2, 3, 4))
 
-%!assert (ismatrix (duration), true)
-%!assert (ismatrix (duration ([], [], [])), true)
-%!assert (ismatrix (duration (ones (2, 4), 0, 0)), true)
-%!assert (ismatrix (duration (ones (2, 4, 1), 0, 0)), true)
-%!assert (ismatrix (duration (ones (2, 1, 4), 0, 0)), false)
-%!assert (ismatrix (duration (ones (2, 3, 4), 0, 0)), false)
-%!assert (ismatrix (days (ones (0, 1))), true)
-%!assert (ismatrix (days (ones (1, 0))), true)
+%!assert_equal (ismatrix (duration), true)
+%!assert_equal (ismatrix (duration ([], [], [])), true)
+%!assert_equal (ismatrix (duration (ones (2, 4), 0, 0)), true)
+%!assert_equal (ismatrix (duration (ones (2, 4, 1), 0, 0)), true)
+%!assert_equal (ismatrix (duration (ones (2, 1, 4), 0, 0)), false)
+%!assert_equal (ismatrix (duration (ones (2, 3, 4), 0, 0)), false)
+%!assert_equal (ismatrix (days (ones (0, 1))), true)
+%!assert_equal (ismatrix (days (ones (1, 0))), true)
 
-%!assert (ismember (days (1), days ([1, 2])), true)
-%!assert (ismember (days ([1, 2]), days (1)), [true, false])
-%!assert (ismember (days ([1; 2]), days (1)), [true; false])
-%!assert (ismember (days (1), days ([1; 2])), true)
+%!assert_equal (ismember (days (1), days ([1, 2])), true)
+%!assert_equal (ismember (days ([1, 2]), days (1)), [true, false])
+%!assert_equal (ismember (days ([1; 2]), days (1)), [true; false])
+%!assert_equal (ismember (days (1), days ([1; 2])), true)
 %!test
 %! [TF, index] = ismember (days (1), days (ones (2, 3, 4)));
-%! assert (TF, true);
-%! assert (index, 1);
+%! assert_equal (TF, true);
+%! assert_equal (index, 1);
 %!test
 %! [TF, index] = ismember (days (1), days (ones (2, 3, 4)), 'legacy');
-%! assert (TF, true);
-%! assert (index, 24);
+%! assert_equal (TF, true);
+%! assert_equal (index, 24);
 %!test
 %! x = ones (2, 3, 4);
 %! x(1) = 2;
 %! [TF, index] = ismember (days (1), days (x));
-%! assert (TF, true);
-%! assert (index, 2); # This is MATLAB incompatible
+%! assert_equal (TF, true);
+%! assert_equal (index, 2); # This is MATLAB incompatible
 %!test
 %! x = ones (2, 3, 4);
 %! x(1) = 2;
 %! [TF, index] = ismember (days (1), days (x), 'legacy');
-%! assert (TF, true);
-%! assert (index, 24);
+%! assert_equal (TF, true);
+%! assert_equal (index, 24);
 %!test
 %! [TF, index] = ismember (days ([0:4]), days ([1, 2]));
-%! assert (TF, [false, true, true, false, false]);
-%! assert (index, [0, 1, 2, 0, 0]);
+%! assert_equal (TF, [false, true, true, false, false]);
+%! assert_equal (index, [0, 1, 2, 0, 0]);
 %!test
 %! [TF, index] = ismember (days ([0:4]), days ([-1, 2]));
-%! assert (TF, [false, false, true, false, false]);
-%! assert (index, [0, 0, 2, 0, 0]);
+%! assert_equal (TF, [false, false, true, false, false]);
+%! assert_equal (index, [0, 0, 2, 0, 0]);
 %!test
 %! [TF, index] = ismember (days ([0:4]), [-1, 2]);
-%! assert (TF, [false, false, true, false, false]);
-%! assert (index, [0, 0, 2, 0, 0]);
+%! assert_equal (TF, [false, false, true, false, false]);
+%! assert_equal (index, [0, 0, 2, 0, 0]);
 %!test
 %! [TF, index] = ismember (days ([0:4]), {'24:00:00', '18:00:00'});
-%! assert (TF, [false, true, false, false, false]);
-%! assert (index, [0, 1, 0, 0, 0]);
+%! assert_equal (TF, [false, true, false, false, false]);
+%! assert_equal (index, [0, 1, 0, 0, 0]);
 %!test
 %! [TF, index] = ismember (days ([2,3;1,2;-1,2;4,5]), days ([-1, 2]), 'rows');
-%! assert (TF, [false; false; true; false]);
-%! assert (index, [0; 0; 1; 0]);
+%! assert_equal (TF, [false; false; true; false]);
+%! assert_equal (index, [0; 0; 1; 0]);
 %!error<duration.ismember: 'rows' applies only to 2-D matrices.> ...
 %! ismember (days (1), days (ones (2, 3, 4)), 'rows')
 %!error<duration.ismember: 'rows' requires same number of columns.> ...
@@ -771,14 +771,14 @@
 %!error<duration.ismember: only 'rows' and 'legacy' are valid options.> ...
 %! ismember (days (1), days (1), 'row')
 
-%!assert (ismissing (days ([1, 2, 3, NaN, 5])), logical ([0, 0, 0, 1, 0]))
-%!assert (ismissing (days ([1, 2, 3, NaN, 5]), days (1)), logical ([1, 0, 0, 0, 0]))
-%!assert (ismissing (days ([1, 2, 3, NaN, 5]), duration (24, 0, 0)), logical ([1, 0, 0, 0, 0]))
-%!assert (ismissing (days ([1, 2, 3, NaN, 5]), duration ('48:00:00')), logical ([0, 1, 0, 0, 0]))
-%!assert (ismissing (seconds ([1:5]), duration (0, 0, [1:3])), logical ([1, 1, 1, 0, 0]))
-%!assert (ismissing (days ([1, 2, 3, NaN, 5]), days ([1, 3])), logical ([1, 0, 1, 0, 0]))
-%!assert (ismissing (days ([1, 2, 3, NaN, 5]), days ([1, 6])), logical ([1, 0, 0, 0, 0]))
-%!assert (ismissing (days ([1, 2, 3, NaN, 5]), days ([1, 5, 6])), logical ([1, 0, 0, 0, 1]))
+%!assert_equal (ismissing (days ([1, 2, 3, NaN, 5])), logical ([0, 0, 0, 1, 0]))
+%!assert_equal (ismissing (days ([1, 2, 3, NaN, 5]), days (1)), logical ([1, 0, 0, 0, 0]))
+%!assert_equal (ismissing (days ([1, 2, 3, NaN, 5]), duration (24, 0, 0)), logical ([1, 0, 0, 0, 0]))
+%!assert_equal (ismissing (days ([1, 2, 3, NaN, 5]), duration ('48:00:00')), logical ([0, 1, 0, 0, 0]))
+%!assert_equal (ismissing (seconds ([1:5]), duration (0, 0, [1:3])), logical ([1, 1, 1, 0, 0]))
+%!assert_equal (ismissing (days ([1, 2, 3, NaN, 5]), days ([1, 3])), logical ([1, 0, 1, 0, 0]))
+%!assert_equal (ismissing (days ([1, 2, 3, NaN, 5]), days ([1, 6])), logical ([1, 0, 0, 0, 0]))
+%!assert_equal (ismissing (days ([1, 2, 3, NaN, 5]), days ([1, 5, 6])), logical ([1, 0, 0, 0, 1]))
 %!error<duration.ismissing: too many input arguments.> ...
 %! ismissing (days (1), days (1), days (1))
 %!error<duration.ismissing: INDICATOR must be a 'duration' array.> ...
@@ -788,335 +788,335 @@
 %!error<duration.ismissing: INDICATOR must be a 'duration' array.> ...
 %! ismissing (days ([1, 2, 3, NaN, 5]), string ('24:00:00'))
 
-%!assert (isnan (minutes ([1:10])), false (1, 10))
-%!assert (isnan (days ([1, 2, NaN, 4, NaN])), logical ([0, 0, 1, 0, 1]))
-%!assert (isnan (duration (NaN (3, 4, 5), 0, 0)), true (3, 4, 5))
-%!assert (isnan (duration (zeros (3, 4, 5), 0, 0)), false (3, 4, 5))
+%!assert_equal (isnan (minutes ([1:10])), false (1, 10))
+%!assert_equal (isnan (days ([1, 2, NaN, 4, NaN])), logical ([0, 0, 1, 0, 1]))
+%!assert_equal (isnan (duration (NaN (3, 4, 5), 0, 0)), true (3, 4, 5))
+%!assert_equal (isnan (duration (zeros (3, 4, 5), 0, 0)), false (3, 4, 5))
 
-%!assert (isrow (days ([1, 2, 3, 4])), true)
-%!assert (isrow (days ([1; 2; 3; 4])), false)
-%!assert (isrow (days ([1, 2; 3, 4])), false)
-%!assert (isrow (days ([])), false)
-%!assert (isrow (days (ones (1, 0))), true)
-%!assert (isrow (days (ones (0, 1))), false)
-%!assert (isrow (days (1)), true)
-%!assert (isrow (days (ones (2, 3, 4))), false)
+%!assert_equal (isrow (days ([1, 2, 3, 4])), true)
+%!assert_equal (isrow (days ([1; 2; 3; 4])), false)
+%!assert_equal (isrow (days ([1, 2; 3, 4])), false)
+%!assert_equal (isrow (days ([])), false)
+%!assert_equal (isrow (days (ones (1, 0))), true)
+%!assert_equal (isrow (days (ones (0, 1))), false)
+%!assert_equal (isrow (days (1)), true)
+%!assert_equal (isrow (days (ones (2, 3, 4))), false)
 
-%!assert (isscalar (days ([])), false)
-%!assert (isscalar (days (ones (1, 0))), false)
-%!assert (isscalar (days (ones (0, 1))), false)
-%!assert (isscalar (days (1)), true)
-%!assert (isscalar (days (NaN)), true)
-%!assert (isscalar (days ([1, 2])), false)
+%!assert_equal (isscalar (days ([])), false)
+%!assert_equal (isscalar (days (ones (1, 0))), false)
+%!assert_equal (isscalar (days (ones (0, 1))), false)
+%!assert_equal (isscalar (days (1)), true)
+%!assert_equal (isscalar (days (NaN)), true)
+%!assert_equal (isscalar (days ([1, 2])), false)
 
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
-%! assert (issorted (sort (D)), true);
-%! assert (issorted (sort (D), 'ascend'), true);
-%! assert (issorted (sort (D), 'descend'), false);
-%! assert (issorted (sort (D), 'monotonic'), true);
-%! assert (issorted (sort (D), 'strictascend'), false);
-%! assert (issorted (sort (D), 'strictdescend'), false);
-%! assert (issorted (sort (D), 'strictmonotonic'), false);
+%! assert_equal (issorted (sort (D)), true);
+%! assert_equal (issorted (sort (D), 'ascend'), true);
+%! assert_equal (issorted (sort (D), 'descend'), false);
+%! assert_equal (issorted (sort (D), 'monotonic'), true);
+%! assert_equal (issorted (sort (D), 'strictascend'), false);
+%! assert_equal (issorted (sort (D), 'strictdescend'), false);
+%! assert_equal (issorted (sort (D), 'strictmonotonic'), false);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
-%! assert (issorted (sort (D, 2), 2), true);
-%! assert (issorted (sort (D, 2), 2, 'ascend'), true);
-%! assert (issorted (sort (D, 2), 2, 'descend'), false);
-%! assert (issorted (sort (D, 2), 2, 'monotonic'), true);
-%! assert (issorted (sort (D, 2), 2, 'strictascend'), true);
-%! assert (issorted (sort (D, 2), 2, 'strictdescend'), false);
-%! assert (issorted (sort (D, 2), 2, 'strictmonotonic'), true);
+%! assert_equal (issorted (sort (D, 2), 2), true);
+%! assert_equal (issorted (sort (D, 2), 2, 'ascend'), true);
+%! assert_equal (issorted (sort (D, 2), 2, 'descend'), false);
+%! assert_equal (issorted (sort (D, 2), 2, 'monotonic'), true);
+%! assert_equal (issorted (sort (D, 2), 2, 'strictascend'), true);
+%! assert_equal (issorted (sort (D, 2), 2, 'strictdescend'), false);
+%! assert_equal (issorted (sort (D, 2), 2, 'strictmonotonic'), true);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
-%! assert (issorted (sort (D, 2), 'ascend'), false);
-%! assert (issorted (sort (D, 2), 'descend'), false);
-%! assert (issorted (sort (D, 2), 'monotonic'), false);
-%! assert (issorted (sort (D, 2), 'strictascend'), false);
-%! assert (issorted (sort (D, 2), 'strictdescend'), false);
-%! assert (issorted (sort (D, 2), 'strictmonotonic'), false);
+%! assert_equal (issorted (sort (D, 2), 'ascend'), false);
+%! assert_equal (issorted (sort (D, 2), 'descend'), false);
+%! assert_equal (issorted (sort (D, 2), 'monotonic'), false);
+%! assert_equal (issorted (sort (D, 2), 'strictascend'), false);
+%! assert_equal (issorted (sort (D, 2), 'strictdescend'), false);
+%! assert_equal (issorted (sort (D, 2), 'strictmonotonic'), false);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
-%! assert (issorted (sort (D, 'descend'), 'ascend'), false);
-%! assert (issorted (sort (D, 'descend'), 'descend'), true);
-%! assert (issorted (sort (D, 'descend'), 'monotonic'), true);
-%! assert (issorted (sort (D, 'descend'), 'strictascend'), false);
-%! assert (issorted (sort (D, 'descend'), 'strictdescend'), false);
-%! assert (issorted (sort (D, 'descend'), 'strictmonotonic'), false);
+%! assert_equal (issorted (sort (D, 'descend'), 'ascend'), false);
+%! assert_equal (issorted (sort (D, 'descend'), 'descend'), true);
+%! assert_equal (issorted (sort (D, 'descend'), 'monotonic'), true);
+%! assert_equal (issorted (sort (D, 'descend'), 'strictascend'), false);
+%! assert_equal (issorted (sort (D, 'descend'), 'strictdescend'), false);
+%! assert_equal (issorted (sort (D, 'descend'), 'strictmonotonic'), false);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
-%! assert (issorted (sort (D, 2, 'descend'), 2, 'ascend'), false);
-%! assert (issorted (sort (D, 2, 'descend'), 2, 'descend'), true);
-%! assert (issorted (sort (D, 2, 'descend'), 2, 'monotonic'), true);
-%! assert (issorted (sort (D, 2, 'descend'), 2, 'strictascend'), false);
-%! assert (issorted (sort (D, 2, 'descend'), 2, 'strictdescend'), true);
-%! assert (issorted (sort (D, 2, 'descend'), 2, 'strictmonotonic'), true);
+%! assert_equal (issorted (sort (D, 2, 'descend'), 2, 'ascend'), false);
+%! assert_equal (issorted (sort (D, 2, 'descend'), 2, 'descend'), true);
+%! assert_equal (issorted (sort (D, 2, 'descend'), 2, 'monotonic'), true);
+%! assert_equal (issorted (sort (D, 2, 'descend'), 2, 'strictascend'), false);
+%! assert_equal (issorted (sort (D, 2, 'descend'), 2, 'strictdescend'), true);
+%! assert_equal (issorted (sort (D, 2, 'descend'), 2, 'strictmonotonic'), true);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
-%! assert (issorted (sort (D, 2, 'descend'), 'ascend'), false);
-%! assert (issorted (sort (D, 2, 'descend'), 'descend'), false);
-%! assert (issorted (sort (D, 2, 'descend'), 'monotonic'), false);
-%! assert (issorted (sort (D, 2, 'descend'), 'strictascend'), false);
-%! assert (issorted (sort (D, 2, 'descend'), 'strictdescend'), false);
-%! assert (issorted (sort (D, 2, 'descend'), 'strictmonotonic'), false);
+%! assert_equal (issorted (sort (D, 2, 'descend'), 'ascend'), false);
+%! assert_equal (issorted (sort (D, 2, 'descend'), 'descend'), false);
+%! assert_equal (issorted (sort (D, 2, 'descend'), 'monotonic'), false);
+%! assert_equal (issorted (sort (D, 2, 'descend'), 'strictascend'), false);
+%! assert_equal (issorted (sort (D, 2, 'descend'), 'strictdescend'), false);
+%! assert_equal (issorted (sort (D, 2, 'descend'), 'strictmonotonic'), false);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
-%! assert (issorted (sort (D, 'ComparisonMethod', 'real')), true);
-%! assert (issorted (sort (D, 'ComparisonMethod', 'abs')), false);
-%! assert (issorted (sort (D, 'ComparisonMethod', 'abs'), ...
+%! assert_equal (issorted (sort (D, 'ComparisonMethod', 'real')), true);
+%! assert_equal (issorted (sort (D, 'ComparisonMethod', 'abs')), false);
+%! assert_equal (issorted (sort (D, 'ComparisonMethod', 'abs'), ...
 %!                   'ComparisonMethod', 'abs'), true);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
-%! assert (issorted (sort (D, 2, 'ComparisonMethod', 'real'), 2), true);
-%! assert (issorted (sort (D, 2, 'ComparisonMethod', 'abs'), 2), false);
-%! assert (issorted (sort (D, 2, 'ComparisonMethod', 'abs'), 2, ...
+%! assert_equal (issorted (sort (D, 2, 'ComparisonMethod', 'real'), 2), true);
+%! assert_equal (issorted (sort (D, 2, 'ComparisonMethod', 'abs'), 2), false);
+%! assert_equal (issorted (sort (D, 2, 'ComparisonMethod', 'abs'), 2, ...
 %!                   'ComparisonMethod', 'abs'), true);
 %!test
 %! D = days ([1, 2; 2, 3; 3, 4; 4, 5]);
-%! assert (issorted (sort (D), 'ascend'), true);
-%! assert (issorted (sort (D), 'descend'), false);
-%! assert (issorted (sort (D), 'monotonic'), true);
-%! assert (issorted (sort (D), 'strictascend'), true);
-%! assert (issorted (sort (D), 'strictdescend'), false);
-%! assert (issorted (sort (D), 'strictmonotonic'), true);
+%! assert_equal (issorted (sort (D), 'ascend'), true);
+%! assert_equal (issorted (sort (D), 'descend'), false);
+%! assert_equal (issorted (sort (D), 'monotonic'), true);
+%! assert_equal (issorted (sort (D), 'strictascend'), true);
+%! assert_equal (issorted (sort (D), 'strictdescend'), false);
+%! assert_equal (issorted (sort (D), 'strictmonotonic'), true);
 %!test
 %! D = days ([1, 2; 2, 3; 3, 4; 4, 5]);
-%! assert (issorted (sort (D, 'descend'), 'ascend'), false);
-%! assert (issorted (sort (D, 'descend'), 'descend'), true);
-%! assert (issorted (sort (D, 'descend'), 'monotonic'), true);
-%! assert (issorted (sort (D, 'descend'), 'strictascend'), false);
-%! assert (issorted (sort (D, 'descend'), 'strictdescend'), true);
-%! assert (issorted (sort (D, 'descend'), 'strictmonotonic'), true);
+%! assert_equal (issorted (sort (D, 'descend'), 'ascend'), false);
+%! assert_equal (issorted (sort (D, 'descend'), 'descend'), true);
+%! assert_equal (issorted (sort (D, 'descend'), 'monotonic'), true);
+%! assert_equal (issorted (sort (D, 'descend'), 'strictascend'), false);
+%! assert_equal (issorted (sort (D, 'descend'), 'strictdescend'), true);
+%! assert_equal (issorted (sort (D, 'descend'), 'strictmonotonic'), true);
 %!test
 %! D = days ([1, 2; 2, 3; 3, 4; 4, NaN]);
-%! assert (issorted (sort (D)), true);
-%! assert (issorted (sort (D), 'ascend'), true);
-%! assert (issorted (sort (D), 'descend'), false);
-%! assert (issorted (sort (D), 'monotonic'), true);
-%! assert (issorted (sort (D), 'strictascend'), false);
-%! assert (issorted (sort (D), 'strictdescend'), false);
-%! assert (issorted (sort (D), 'strictmonotonic'), false);
+%! assert_equal (issorted (sort (D)), true);
+%! assert_equal (issorted (sort (D), 'ascend'), true);
+%! assert_equal (issorted (sort (D), 'descend'), false);
+%! assert_equal (issorted (sort (D), 'monotonic'), true);
+%! assert_equal (issorted (sort (D), 'strictascend'), false);
+%! assert_equal (issorted (sort (D), 'strictdescend'), false);
+%! assert_equal (issorted (sort (D), 'strictmonotonic'), false);
 %!test
 %! D = days ([1, 2; 2, 3; 3, 4; 4, NaN]);
-%! assert (issorted (sort (D, 'descend'), 'ascend'), false);
-%! assert (issorted (sort (D, 'descend'), 'descend'), true);
-%! assert (issorted (sort (D, 'descend'), 'monotonic'), true);
-%! assert (issorted (sort (D, 'descend'), 'strictascend'), false);
-%! assert (issorted (sort (D, 'descend'), 'strictdescend'), false);
-%! assert (issorted (sort (D, 'descend'), 'strictmonotonic'), false);
+%! assert_equal (issorted (sort (D, 'descend'), 'ascend'), false);
+%! assert_equal (issorted (sort (D, 'descend'), 'descend'), true);
+%! assert_equal (issorted (sort (D, 'descend'), 'monotonic'), true);
+%! assert_equal (issorted (sort (D, 'descend'), 'strictascend'), false);
+%! assert_equal (issorted (sort (D, 'descend'), 'strictdescend'), false);
+%! assert_equal (issorted (sort (D, 'descend'), 'strictmonotonic'), false);
 %!test
 %! D = days ([1, 2; 2, 3; 3, 4; 4, NaN]);
-%! assert (issorted (sort (D, 'MissingPlacement', 'auto')), true);
-%! assert (issorted (sort (D, 'MissingPlacement', 'first')), false);
-%! assert (issorted (sort (D, 'MissingPlacement', 'first'), ...
+%! assert_equal (issorted (sort (D, 'MissingPlacement', 'auto')), true);
+%! assert_equal (issorted (sort (D, 'MissingPlacement', 'first')), false);
+%! assert_equal (issorted (sort (D, 'MissingPlacement', 'first'), ...
 %!                   'MissingPlacement', 'first'), true);
 %!test
 %! D = days ([1, 2; 2, 3; 3, 4; 4, NaN]);
-%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'auto'), 'descend'), true);
-%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'last'), 'descend'), false);
-%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'first'), ...
+%! assert_equal (issorted (sort (D, 'descend', 'MissingPlacement', 'auto'), 'descend'), true);
+%! assert_equal (issorted (sort (D, 'descend', 'MissingPlacement', 'last'), 'descend'), false);
+%! assert_equal (issorted (sort (D, 'descend', 'MissingPlacement', 'first'), ...
 %!                   'descend', 'MissingPlacement', 'first'), true);
 %!test
 %! D = days ([1, 2; 2, 3; 3, 4; 4, NaN]);
-%! assert (issorted (sort (D, 2, 'MissingPlacement', 'auto'), 2), true);
-%! assert (issorted (sort (D, 2, 'MissingPlacement', 'first'), 2), false);
-%! assert (issorted (sort (D, 2, 'MissingPlacement', 'first'), 2, ...
+%! assert_equal (issorted (sort (D, 2, 'MissingPlacement', 'auto'), 2), true);
+%! assert_equal (issorted (sort (D, 2, 'MissingPlacement', 'first'), 2), false);
+%! assert_equal (issorted (sort (D, 2, 'MissingPlacement', 'first'), 2, ...
 %!                   'MissingPlacement', 'first'), true);
 %!test
 %! D = days ([1, 2; 2, 3; 3, 4; 4, NaN]);
-%! assert (issorted (sort (D, 2, 'descend', 'MissingPlacement', 'auto'), 2, 'descend'), true);
-%! assert (issorted (sort (D, 2, 'descend', 'MissingPlacement', 'last'), 2, 'descend'), false);
-%! assert (issorted (sort (D, 2, 'descend', 'MissingPlacement', 'first'), 2, ...
+%! assert_equal (issorted (sort (D, 2, 'descend', 'MissingPlacement', 'auto'), 2, 'descend'), true);
+%! assert_equal (issorted (sort (D, 2, 'descend', 'MissingPlacement', 'last'), 2, 'descend'), false);
+%! assert_equal (issorted (sort (D, 2, 'descend', 'MissingPlacement', 'first'), 2, ...
 %!                   'descend', 'MissingPlacement', 'first'), true);
 %!test
 %! D = days ([1, 2; 2, 3; 3, 4; 4, NaN]);
-%! assert (issorted (sort (D, 2, string ('ascend'), 'MissingPlacement', 'auto'), 2), true);
-%! assert (issorted (sort (D, 2, string ('ascend'), 'MissingPlacement', 'first'), 2), false);
-%! assert (issorted (sort (D, 2, string ('ascend'), 'MissingPlacement', 'first'), 2, ...
+%! assert_equal (issorted (sort (D, 2, string ('ascend'), 'MissingPlacement', 'auto'), 2), true);
+%! assert_equal (issorted (sort (D, 2, string ('ascend'), 'MissingPlacement', 'first'), 2), false);
+%! assert_equal (issorted (sort (D, 2, string ('ascend'), 'MissingPlacement', 'first'), 2, ...
 %!                   'MissingPlacement', 'first'), true);
 %!test
 %! D = days ([1, 2; 2, 3; 3, 4; 4, NaN]);
-%! assert (issorted (sort (D, 2, string ('descend'), 'MissingPlacement', 'auto'), 2, 'descend'), true);
-%! assert (issorted (sort (D, 2, string ('descend'), 'MissingPlacement', 'last'), 2, 'descend'), false);
-%! assert (issorted (sort (D, 2, string ('descend'), 'MissingPlacement', 'first'), 2, ...
+%! assert_equal (issorted (sort (D, 2, string ('descend'), 'MissingPlacement', 'auto'), 2, 'descend'), true);
+%! assert_equal (issorted (sort (D, 2, string ('descend'), 'MissingPlacement', 'last'), 2, 'descend'), false);
+%! assert_equal (issorted (sort (D, 2, string ('descend'), 'MissingPlacement', 'first'), 2, ...
 %!                   'descend', 'MissingPlacement', 'first'), true);
 %!test
 %! D = days ([1, 2; 2, -3; 3, 4; 4, NaN]);
-%! assert (issorted (sort (D, 'MissingPlacement', 'auto', ...
+%! assert_equal (issorted (sort (D, 'MissingPlacement', 'auto', ...
 %!                         'ComparisonMethod', 'real')), true);
-%! assert (issorted (sort (D, 'MissingPlacement', 'auto', ...
+%! assert_equal (issorted (sort (D, 'MissingPlacement', 'auto', ...
 %!                         'ComparisonMethod', 'abs')), false);
-%! assert (issorted (sort (D, 'MissingPlacement', 'auto', ...
+%! assert_equal (issorted (sort (D, 'MissingPlacement', 'auto', ...
 %!                         'ComparisonMethod', 'abs'), 'ComparisonMethod', 'abs'), true);
-%! assert (issorted (sort (D, 'MissingPlacement', 'last', ...
+%! assert_equal (issorted (sort (D, 'MissingPlacement', 'last', ...
 %!                         'ComparisonMethod', 'abs')), false);
-%! assert (issorted (sort (D, 'MissingPlacement', 'last', ...
+%! assert_equal (issorted (sort (D, 'MissingPlacement', 'last', ...
 %!                         'ComparisonMethod', 'abs'), 'ComparisonMethod', 'abs'), true);
-%! assert (issorted (sort (D, 'MissingPlacement', 'first', ...
+%! assert_equal (issorted (sort (D, 'MissingPlacement', 'first', ...
 %!                         'ComparisonMethod', 'abs'), ...
 %!                   'MissingPlacement', 'first', 'ComparisonMethod', 'abs'), true);
 %!test
 %! D = days ([1, 2; 2, -3; 3, 4; 4, NaN]);
-%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'auto', ...
+%! assert_equal (issorted (sort (D, 'descend', 'MissingPlacement', 'auto', ...
 %!                         'ComparisonMethod', 'real'), 'descend'), true);
-%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'auto', ...
+%! assert_equal (issorted (sort (D, 'descend', 'MissingPlacement', 'auto', ...
 %!                         'ComparisonMethod', 'abs'), 'descend'), false);
-%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'auto', ...
+%! assert_equal (issorted (sort (D, 'descend', 'MissingPlacement', 'auto', ...
 %!                         'ComparisonMethod', 'abs'), ...
 %!                   'descend', 'ComparisonMethod', 'abs'), true);
-%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'last', ...
+%! assert_equal (issorted (sort (D, 'descend', 'MissingPlacement', 'last', ...
 %!                         'ComparisonMethod', 'abs'), 'descend'), false);
-%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'last', ...
+%! assert_equal (issorted (sort (D, 'descend', 'MissingPlacement', 'last', ...
 %!                         'ComparisonMethod', 'abs'), ...
 %!                   'descend', 'ComparisonMethod', 'abs'), false);
-%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'first', ...
+%! assert_equal (issorted (sort (D, 'descend', 'MissingPlacement', 'first', ...
 %!                         'ComparisonMethod', 'abs'), 'descend'), false);
-%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'first', ...
+%! assert_equal (issorted (sort (D, 'descend', 'MissingPlacement', 'first', ...
 %!                         'ComparisonMethod', 'abs'), ...
 %!                   'descend', 'ComparisonMethod', 'abs'), true);
-%! assert (issorted (sort (D, 'descend', 'MissingPlacement', 'first', ...
+%! assert_equal (issorted (sort (D, 'descend', 'MissingPlacement', 'first', ...
 %!                         'ComparisonMethod', 'abs'), 'descend', ...
 %!                   'MissingPlacement', 'first', 'ComparisonMethod', 'abs'), true);
 
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
-%! assert (issortedrows (sortrows (D)), true);
-%! assert (issortedrows (sortrows (D, 1)), true);
-%! assert (issortedrows (sortrows (D, 1), -1), false);
-%! assert (issortedrows (sortrows (D, 1), 1), true);
-%! assert (issortedrows (sortrows (D, 2)), false);
-%! assert (issortedrows (sortrows (D, 2), 2), true);
-%! assert (issortedrows (sortrows (D, 2), -2), false);
-%! assert (issortedrows (sortrows (D, -2), 2), false);
-%! assert (issortedrows (sortrows (D, -2), -2), true);
+%! assert_equal (issortedrows (sortrows (D)), true);
+%! assert_equal (issortedrows (sortrows (D, 1)), true);
+%! assert_equal (issortedrows (sortrows (D, 1), -1), false);
+%! assert_equal (issortedrows (sortrows (D, 1), 1), true);
+%! assert_equal (issortedrows (sortrows (D, 2)), false);
+%! assert_equal (issortedrows (sortrows (D, 2), 2), true);
+%! assert_equal (issortedrows (sortrows (D, 2), -2), false);
+%! assert_equal (issortedrows (sortrows (D, -2), 2), false);
+%! assert_equal (issortedrows (sortrows (D, -2), -2), true);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
-%! assert (issortedrows (sortrows (D, 'ComparisonMethod', 'abs')), false);
-%! assert (issortedrows (sortrows (D, 'ComparisonMethod', 'real')), true);
-%! assert (issortedrows (sortrows (D, 'ComparisonMethod', 'abs'), ...
+%! assert_equal (issortedrows (sortrows (D, 'ComparisonMethod', 'abs')), false);
+%! assert_equal (issortedrows (sortrows (D, 'ComparisonMethod', 'real')), true);
+%! assert_equal (issortedrows (sortrows (D, 'ComparisonMethod', 'abs'), ...
 %!                       'ComparisonMethod', 'abs'), true);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
-%! assert (issortedrows (sortrows (D, 2, 'ComparisonMethod', 'abs'), 2), false);
-%! assert (issortedrows (sortrows (D, 2, 'ComparisonMethod', 'real'), 2), true);
-%! assert (issortedrows (sortrows (D, 2, 'ComparisonMethod', 'abs'), 2, ...
+%! assert_equal (issortedrows (sortrows (D, 2, 'ComparisonMethod', 'abs'), 2), false);
+%! assert_equal (issortedrows (sortrows (D, 2, 'ComparisonMethod', 'real'), 2), true);
+%! assert_equal (issortedrows (sortrows (D, 2, 'ComparisonMethod', 'abs'), 2, ...
 %!                       'ComparisonMethod', 'abs'), true);
-%! assert (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'abs'), ...
+%! assert_equal (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'abs'), ...
 %!                       {'ascend', 'ascend'}), false);
-%! assert (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'abs'), ...
+%! assert_equal (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'abs'), ...
 %!                       {'ascend', 'ascend'}, 'ComparisonMethod', 'abs'), true);
-%! assert (issortedrows (sortrows (D, 2, 'ComparisonMethod', 'real'), 2), true);
-%! assert (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'real'), ...
+%! assert_equal (issortedrows (sortrows (D, 2, 'ComparisonMethod', 'real'), 2), true);
+%! assert_equal (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'real'), ...
 %!                       {'ascend', 'ascend'}, 'ComparisonMethod', 'auto'), true);
-%! assert (issortedrows (sortrows (D, [-1, 2], 'ComparisonMethod', 'abs'), ...
+%! assert_equal (issortedrows (sortrows (D, [-1, 2], 'ComparisonMethod', 'abs'), ...
 %!                       {'ascend', 'ascend'}, 'ComparisonMethod', 'abs'), false);
-%! assert (issortedrows (sortrows (D, 2, 'ComparisonMethod', 'real'), -2), false);
-%! assert (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'real'), ...
+%! assert_equal (issortedrows (sortrows (D, 2, 'ComparisonMethod', 'real'), -2), false);
+%! assert_equal (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'real'), ...
 %!                       {'ascend', 'descend'}, 'ComparisonMethod', 'auto'), false);
-%! assert (issortedrows (sortrows (D, [1, -2], 'ComparisonMethod', 'real'), ...
+%! assert_equal (issortedrows (sortrows (D, [1, -2], 'ComparisonMethod', 'real'), ...
 %!                       {'ascend', 'descend'}, 'ComparisonMethod', 'auto'), true);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
-%! assert (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'abs'), ...
+%! assert_equal (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'abs'), ...
 %!                       [1, 2], string ({'ascend', 'ascend'})), false);
-%! assert (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'abs'), ...
+%! assert_equal (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'abs'), ...
 %!                       [1, 2], string ({'ascend', 'ascend'}), ...
 %!                       'ComparisonMethod', 'abs'), true);
-%! assert (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'abs'), ...
+%! assert_equal (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'abs'), ...
 %!                       [1, -2], string ({'ascend', 'ascend'}), ...
 %!                       'ComparisonMethod', 'abs'), true);
-%! assert (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'real'), ...
+%! assert_equal (issortedrows (sortrows (D, [1, 2], 'ComparisonMethod', 'real'), ...
 %!                       [1, 2], string ({'ascend', 'ascend'}), ...
 %!                       'ComparisonMethod', 'auto'), true);
-%! assert (issortedrows (sortrows (D, [1, -2], string ({'ascend', 'ascend'}), ...
+%! assert_equal (issortedrows (sortrows (D, [1, -2], string ({'ascend', 'ascend'}), ...
 %!                                 'ComparisonMethod', 'real'), ...
 %!                       [1, 2], string ({'ascend', 'ascend'}), ...
 %!                       'ComparisonMethod', 'auto'), true);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
-%! assert (issortedrows (sortrows (D)), true);
+%! assert_equal (issortedrows (sortrows (D)), true);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
-%! assert (issortedrows (sortrows (D, -2, 'MissingPlacement', 'first')), false);
-%! assert (issortedrows (sortrows (D, -2, 'MissingPlacement', 'first'), -2), true);
-%! assert (issortedrows (sortrows (D, -2, 'MissingPlacement', 'last'), -2), false);
-%! assert (issortedrows (sortrows (D, -2, 'MissingPlacement', 'last'), -2, ...
+%! assert_equal (issortedrows (sortrows (D, -2, 'MissingPlacement', 'first')), false);
+%! assert_equal (issortedrows (sortrows (D, -2, 'MissingPlacement', 'first'), -2), true);
+%! assert_equal (issortedrows (sortrows (D, -2, 'MissingPlacement', 'last'), -2), false);
+%! assert_equal (issortedrows (sortrows (D, -2, 'MissingPlacement', 'last'), -2, ...
 %!                       'MissingPlacement', 'last'), true);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
-%! assert (issortedrows (sortrows (D, 2, 'MissingPlacement', 'last')), false);
-%! assert (issortedrows (sortrows (D, 2, 'MissingPlacement', 'last'), 2), true);
-%! assert (issortedrows (sortrows (D, 2, 'MissingPlacement', 'first'), 2), false);
-%! assert (issortedrows (sortrows (D, 2, 'MissingPlacement', 'first'), 2, ...
+%! assert_equal (issortedrows (sortrows (D, 2, 'MissingPlacement', 'last')), false);
+%! assert_equal (issortedrows (sortrows (D, 2, 'MissingPlacement', 'last'), 2), true);
+%! assert_equal (issortedrows (sortrows (D, 2, 'MissingPlacement', 'first'), 2), false);
+%! assert_equal (issortedrows (sortrows (D, 2, 'MissingPlacement', 'first'), 2, ...
 %!                       'MissingPlacement', 'first'), true);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
-%! assert (issortedrows (sortrows (D, 'ComparisonMethod', 'abs', ...
+%! assert_equal (issortedrows (sortrows (D, 'ComparisonMethod', 'abs', ...
 %!                                 'MissingPlacement', 'first'), ...
 %!                       'ComparisonMethod', 'abs', ...
 %!                       'MissingPlacement', 'first'), true);
-%! assert (issortedrows (sortrows (D, 'ComparisonMethod', 'abs', ...
+%! assert_equal (issortedrows (sortrows (D, 'ComparisonMethod', 'abs', ...
 %!                                 'MissingPlacement', 'last'), ...
 %!                       'ComparisonMethod', 'abs', ...
 %!                       'MissingPlacement', 'first'), false);
-%! assert (issortedrows (sortrows (D, 'ComparisonMethod', 'abs', ...
+%! assert_equal (issortedrows (sortrows (D, 'ComparisonMethod', 'abs', ...
 %!                                 'MissingPlacement', 'last'), ...
 %!                       'ComparisonMethod', 'abs', ...
 %!                       'MissingPlacement', 'auto'), true);
-%! assert (issortedrows (sortrows (D, 'ComparisonMethod', 'abs', ...
+%! assert_equal (issortedrows (sortrows (D, 'ComparisonMethod', 'abs', ...
 %!                                 'MissingPlacement', 'last'), ...
 %!                       'ComparisonMethod', 'abs'), true);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
-%! assert (issortedrows (sortrows (D, [1, -2, 3]), [1, -2, 3]), true);
-%! assert (issortedrows (sortrows (D, [1, 2, -3]), [1, -2, 3]), false);
+%! assert_equal (issortedrows (sortrows (D, [1, -2, 3]), [1, -2, 3]), true);
+%! assert_equal (issortedrows (sortrows (D, [1, 2, -3]), [1, -2, 3]), false);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
-%! assert (issortedrows (sortrows (D, string ({'ascend', 'descend', 'ascend'})), ...
+%! assert_equal (issortedrows (sortrows (D, string ({'ascend', 'descend', 'ascend'})), ...
 %!                       string ({'ascend', 'descend', 'ascend'})), true);
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
-%! assert (issortedrows (sortrows (D, string ({'ascend', 'descend', 'ascend'})), ...
+%! assert_equal (issortedrows (sortrows (D, string ({'ascend', 'descend', 'ascend'})), ...
 %!                       string ({'descend', 'ascend', 'ascend'})), false);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
-%! assert (issortedrows (sortrows (D, [2, 3], string ({'descend', 'ascend'})), ...
+%! assert_equal (issortedrows (sortrows (D, [2, 3], string ({'descend', 'ascend'})), ...
 %!                       [2, 3], string ({'descend', 'ascend'})), true);
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
-%! assert (issortedrows (sortrows (D, [2, 3], string ({'ascend', 'descend'})), ...
+%! assert_equal (issortedrows (sortrows (D, [2, 3], string ({'ascend', 'descend'})), ...
 %!                       [2, -3]), true);
-%! assert (issortedrows (sortrows (D, [2, 3], string ({'descend', 'descend'})), ...
+%! assert_equal (issortedrows (sortrows (D, [2, 3], string ({'descend', 'descend'})), ...
 %!                       [2, -3], string ({'descend', 'ascend'})), false);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
-%! assert (issortedrows (sortrows (D, [1, -2, 3], 'MissingPlacement', 'first'), ...
+%! assert_equal (issortedrows (sortrows (D, [1, -2, 3], 'MissingPlacement', 'first'), ...
 %!         [1, -2, 3], 'MissingPlacement', 'first'), true);
-%! assert (issortedrows (sortrows (D, [-1, -2, -3], 'MissingPlacement', 'first'), ...
+%! assert_equal (issortedrows (sortrows (D, [-1, -2, -3], 'MissingPlacement', 'first'), ...
 %!         [-1, -2, -3]), true);
-%! assert (issortedrows (sortrows (D, [-1, -2, -3], 'MissingPlacement', 'first'), ...
+%! assert_equal (issortedrows (sortrows (D, [-1, -2, -3], 'MissingPlacement', 'first'), ...
 %!         [1, -2,-3], string ({'descend', 'descend', 'descend'})), true);
 %!test  ## strict issortedrows semantics, verified against MATLAB R2026a
-%! assert (issortedrows (days ([1, 3; 1, 4]), 'strictascend'), false);
-%! assert (issortedrows (days ([1, 3; 1, 3]), 'strictascend'), false);
-%! assert (issortedrows (days ([1, 3; 1, 4]), {'strictascend', 'ascend'}), false);
-%! assert (issortedrows (days ([1, 3; 2, 3]), {'ascend', 'strictascend'}), true);
-%! assert (issortedrows (days ([2, 4; 1, 3]), 'monotonic'), true);
-%! assert (issortedrows (days ([2, 4; 1, 3]), 'descend'), true);
-%! assert (issortedrows (days ([1, 4; 2, 3]), 2, 'strictascend'), false);
-%! assert (issortedrows (days ([2, 3; 1, 4]), 2, 'strictascend'), true);
+%! assert_equal (issortedrows (days ([1, 3; 1, 4]), 'strictascend'), false);
+%! assert_equal (issortedrows (days ([1, 3; 1, 3]), 'strictascend'), false);
+%! assert_equal (issortedrows (days ([1, 3; 1, 4]), {'strictascend', 'ascend'}), false);
+%! assert_equal (issortedrows (days ([1, 3; 2, 3]), {'ascend', 'strictascend'}), true);
+%! assert_equal (issortedrows (days ([2, 4; 1, 3]), 'monotonic'), true);
+%! assert_equal (issortedrows (days ([2, 4; 1, 3]), 'descend'), true);
+%! assert_equal (issortedrows (days ([1, 4; 2, 3]), 2, 'strictascend'), false);
+%! assert_equal (issortedrows (days ([2, 3; 1, 4]), 2, 'strictascend'), true);
 %!test  ## strict issortedrows with missing values (vs MATLAB R2026a)
-%! assert (issortedrows (days ([1, 3; NaN, 4]), {'strictascend', 'ascend'}), false);
-%! assert (issortedrows (days ([1, 3; NaN, 4]), {'ascend', 'strictascend'}), true);
-%! assert (issortedrows (days ([NaN, 3; 2, 4]), 2, 'strictascend'), true);
-%! assert (issortedrows (days ([1, NaN; 2, 4]), 'strictascend'), true);
+%! assert_equal (issortedrows (days ([1, 3; NaN, 4]), {'strictascend', 'ascend'}), false);
+%! assert_equal (issortedrows (days ([1, 3; NaN, 4]), {'ascend', 'strictascend'}), true);
+%! assert_equal (issortedrows (days ([NaN, 3; 2, 4]), 2, 'strictascend'), true);
+%! assert_equal (issortedrows (days ([1, NaN; 2, 4]), 'strictascend'), true);
 
-%!assert (isvector (days ([1, 2, 3, 4])), true)
-%!assert (isvector (days ([1; 2; 3; 4])), true)
-%!assert (isvector (days ([1, 2; 3, 4])), false)
-%!assert (isvector (days ([])), false)
-%!assert (isvector (days (ones (1, 0))), true)
-%!assert (isvector (days (ones (0, 1))), true)
-%!assert (isvector (days (1)), true)
-%!assert (isvector (days (ones (2, 3, 4))), false)
+%!assert_equal (isvector (days ([1, 2, 3, 4])), true)
+%!assert_equal (isvector (days ([1; 2; 3; 4])), true)
+%!assert_equal (isvector (days ([1, 2; 3, 4])), false)
+%!assert_equal (isvector (days ([])), false)
+%!assert_equal (isvector (days (ones (1, 0))), true)
+%!assert_equal (isvector (days (ones (0, 1))), true)
+%!assert_equal (isvector (days (1)), true)
+%!assert_equal (isvector (days (ones (2, 3, 4))), false)
 
 ################################################################################
 ##                        ** Relational Operations **                         ##
@@ -1128,161 +1128,161 @@
 ##                                                                            ##
 ################################################################################
 
-%!assert (duration (1, 0, 0) == '01:00:00', true)
-%!assert (duration (1, 0, 0) == '01:00:01', false)
-%!assert (duration (1, 0, 0) == {'01:00:00'}, true)
-%!assert (duration (1, 0, 1) == {'01:00:00'}, false)
-%!assert (duration (1, 0, 0) == string ('01:00:00'), true)
-%!assert (duration (NaN, 0, 0) == string ('01:00:00'), false)
-%!assert (duration (24, 0, 0) == 1, true)
-%!assert (duration (NaN, 0, 0) == NaN, false)
-%!assert (duration (24, 0, 0) == days (1), true)
-%!assert ('01:00:00' == duration (1, 0, 0), true)
-%!assert ({'01:00:00'} == duration (1, 0, 0), true)
-%!assert (string ('01:00:00') == duration (1, 0, 0), true)
-%!assert (1 == duration (24, 0, 0), true)
-%!assert (days (1) == duration (24, 0, 0), true)
-%!assert (days (NaN) == duration (NaN, 0, 0), false)
-%!assert (duration (1, 0, 0) == hours (1), true)
-%!assert (duration (0, 1, 0) == minutes (1), true)
-%!assert (duration (0, 0, 1) == seconds (1), true)
-%!assert (days ([1, 2]) == 1, [true, false])
-%!assert (days ([1; 2]) == 1, [true; false])
-%!assert (days ([1, 2]) == [1, 2], [true, true])
-%!assert (days ([1, 2]) == [1; 2], logical (eye (2)))
+%!assert_equal (duration (1, 0, 0) == '01:00:00', true)
+%!assert_equal (duration (1, 0, 0) == '01:00:01', false)
+%!assert_equal (duration (1, 0, 0) == {'01:00:00'}, true)
+%!assert_equal (duration (1, 0, 1) == {'01:00:00'}, false)
+%!assert_equal (duration (1, 0, 0) == string ('01:00:00'), true)
+%!assert_equal (duration (NaN, 0, 0) == string ('01:00:00'), false)
+%!assert_equal (duration (24, 0, 0) == 1, true)
+%!assert_equal (duration (NaN, 0, 0) == NaN, false)
+%!assert_equal (duration (24, 0, 0) == days (1), true)
+%!assert_equal ('01:00:00' == duration (1, 0, 0), true)
+%!assert_equal ({'01:00:00'} == duration (1, 0, 0), true)
+%!assert_equal (string ('01:00:00') == duration (1, 0, 0), true)
+%!assert_equal (1 == duration (24, 0, 0), true)
+%!assert_equal (days (1) == duration (24, 0, 0), true)
+%!assert_equal (days (NaN) == duration (NaN, 0, 0), false)
+%!assert_equal (duration (1, 0, 0) == hours (1), true)
+%!assert_equal (duration (0, 1, 0) == minutes (1), true)
+%!assert_equal (duration (0, 0, 1) == seconds (1), true)
+%!assert_equal (days ([1, 2]) == 1, [true, false])
+%!assert_equal (days ([1; 2]) == 1, [true; false])
+%!assert_equal (days ([1, 2]) == [1, 2], [true, true])
+%!assert_equal (days ([1, 2]) == [1; 2], logical (eye (2)))
 
-%!assert (duration (1, 0, 0) >= '01:00:00', true)
-%!assert (duration (1, 0, 0) >= '01:00:01', false)
-%!assert (duration (1, 0, 0) >= {'01:00:00'}, true)
-%!assert (duration (1, 0, 1) >= {'01:00:00'}, true)
-%!assert (duration (1, 0, 0) >= string ('01:00:00'), true)
-%!assert (duration (NaN, 0, 0) >= string ('01:00:00'), false)
-%!assert (duration (24, 0, 0) >= 1, true)
-%!assert (duration (NaN, 0, 0) >= NaN, false)
-%!assert (duration (24, 0, 0) >= days (1), true)
-%!assert ('01:00:00' >= duration (1, 0, 0), true)
-%!assert ('01:00:00' >= duration (1, 0, 1), false)
-%!assert ({'01:00:00'} >= duration (1, 0, 0), true)
-%!assert (string ('01:00:00') >= duration (1, 0, 0), true)
-%!assert (string ('01:00:01') >= duration (1, 0, 0), true)
-%!assert (string ('01:00:00') >= duration (1, 1, 0), false)
-%!assert (1 >= duration (24, 0, 0), true)
-%!assert (days (1) >= duration (24, 0, 0), true)
-%!assert (days (NaN) >= duration (NaN, 0, 0), false)
-%!assert (duration (1, 0, 0) >= hours (1), true)
-%!assert (duration (0, 1, 0) >= minutes (1), true)
-%!assert (duration (0, 0, 1) >= seconds (1), true)
-%!assert (days ([1, 2]) >= 1, [true, true])
-%!assert (days ([1; 2]) >= 1, [true; true])
-%!assert (days ([1, 2]) >= [1, 2], [true, true])
-%!assert (days ([1, 2]) >= [1; 2], [true, true; false, true])
+%!assert_equal (duration (1, 0, 0) >= '01:00:00', true)
+%!assert_equal (duration (1, 0, 0) >= '01:00:01', false)
+%!assert_equal (duration (1, 0, 0) >= {'01:00:00'}, true)
+%!assert_equal (duration (1, 0, 1) >= {'01:00:00'}, true)
+%!assert_equal (duration (1, 0, 0) >= string ('01:00:00'), true)
+%!assert_equal (duration (NaN, 0, 0) >= string ('01:00:00'), false)
+%!assert_equal (duration (24, 0, 0) >= 1, true)
+%!assert_equal (duration (NaN, 0, 0) >= NaN, false)
+%!assert_equal (duration (24, 0, 0) >= days (1), true)
+%!assert_equal ('01:00:00' >= duration (1, 0, 0), true)
+%!assert_equal ('01:00:00' >= duration (1, 0, 1), false)
+%!assert_equal ({'01:00:00'} >= duration (1, 0, 0), true)
+%!assert_equal (string ('01:00:00') >= duration (1, 0, 0), true)
+%!assert_equal (string ('01:00:01') >= duration (1, 0, 0), true)
+%!assert_equal (string ('01:00:00') >= duration (1, 1, 0), false)
+%!assert_equal (1 >= duration (24, 0, 0), true)
+%!assert_equal (days (1) >= duration (24, 0, 0), true)
+%!assert_equal (days (NaN) >= duration (NaN, 0, 0), false)
+%!assert_equal (duration (1, 0, 0) >= hours (1), true)
+%!assert_equal (duration (0, 1, 0) >= minutes (1), true)
+%!assert_equal (duration (0, 0, 1) >= seconds (1), true)
+%!assert_equal (days ([1, 2]) >= 1, [true, true])
+%!assert_equal (days ([1; 2]) >= 1, [true; true])
+%!assert_equal (days ([1, 2]) >= [1, 2], [true, true])
+%!assert_equal (days ([1, 2]) >= [1; 2], [true, true; false, true])
 
-%!assert (duration (1, 0, 0) > '01:00:00', false)
-%!assert (duration (1, 0, 0) > '01:00:01', false)
-%!assert (duration (1, 0, 0) > {'01:00:00'}, false)
-%!assert (duration (1, 0, 1) > {'01:00:00'}, true)
-%!assert (duration (1, 0, 0) > string ('01:00:00'), false)
-%!assert (duration (NaN, 0, 0) > string ('01:00:00'), false)
-%!assert (duration (24, 0, 0) > 1, false)
-%!assert (duration (NaN, 0, 0) > NaN, false)
-%!assert (duration (24, 0, 0) > days (1), false)
-%!assert (duration (24, 0, 1) > days (1), true)
-%!assert ('01:00:00' > duration (1, 0, 0), false)
-%!assert ('01:00:01' > duration (1, 0, 0), true)
-%!assert ('01:00:00' > duration (1, 0, 1), false)
-%!assert ({'01:00:00'} > duration (1, 0, 0), false)
-%!assert (string ('01:00:00') > duration (1, 0, 0), false)
-%!assert (string ('01:00:01') > duration (1, 0, 0), true)
-%!assert (string ('01:00:00') > duration (1, 1, 0), false)
-%!assert (1 > duration (24, 0, 0), false)
-%!assert (days (1) > duration (24, 0, 0), false)
-%!assert (days (1.05) > duration (24, 0, 0), true)
-%!assert (days (NaN) > duration (NaN, 0, 0), false)
-%!assert (duration (1, 0, 0) > hours (1), false)
-%!assert (duration (0, 1, 0) > minutes (1), false)
-%!assert (duration (0, 0, 1) > seconds (1), false)
-%!assert (days ([1, 2]) > 1, [false, true])
-%!assert (days ([1; 2]) > 1, [false; true])
-%!assert (days ([1, 2]) > [1, 2], [false, false])
-%!assert (days ([1, 2]) > [1; 2], [false, true; false, false])
+%!assert_equal (duration (1, 0, 0) > '01:00:00', false)
+%!assert_equal (duration (1, 0, 0) > '01:00:01', false)
+%!assert_equal (duration (1, 0, 0) > {'01:00:00'}, false)
+%!assert_equal (duration (1, 0, 1) > {'01:00:00'}, true)
+%!assert_equal (duration (1, 0, 0) > string ('01:00:00'), false)
+%!assert_equal (duration (NaN, 0, 0) > string ('01:00:00'), false)
+%!assert_equal (duration (24, 0, 0) > 1, false)
+%!assert_equal (duration (NaN, 0, 0) > NaN, false)
+%!assert_equal (duration (24, 0, 0) > days (1), false)
+%!assert_equal (duration (24, 0, 1) > days (1), true)
+%!assert_equal ('01:00:00' > duration (1, 0, 0), false)
+%!assert_equal ('01:00:01' > duration (1, 0, 0), true)
+%!assert_equal ('01:00:00' > duration (1, 0, 1), false)
+%!assert_equal ({'01:00:00'} > duration (1, 0, 0), false)
+%!assert_equal (string ('01:00:00') > duration (1, 0, 0), false)
+%!assert_equal (string ('01:00:01') > duration (1, 0, 0), true)
+%!assert_equal (string ('01:00:00') > duration (1, 1, 0), false)
+%!assert_equal (1 > duration (24, 0, 0), false)
+%!assert_equal (days (1) > duration (24, 0, 0), false)
+%!assert_equal (days (1.05) > duration (24, 0, 0), true)
+%!assert_equal (days (NaN) > duration (NaN, 0, 0), false)
+%!assert_equal (duration (1, 0, 0) > hours (1), false)
+%!assert_equal (duration (0, 1, 0) > minutes (1), false)
+%!assert_equal (duration (0, 0, 1) > seconds (1), false)
+%!assert_equal (days ([1, 2]) > 1, [false, true])
+%!assert_equal (days ([1; 2]) > 1, [false; true])
+%!assert_equal (days ([1, 2]) > [1, 2], [false, false])
+%!assert_equal (days ([1, 2]) > [1; 2], [false, true; false, false])
 
-%!assert (duration (1, 0, 0) <= '01:00:00', true)
-%!assert (duration (1, 0, 0) <= '01:00:01', true)
-%!assert (duration (1, 0, 0) <= {'01:00:00'}, true)
-%!assert (duration (1, 0, 1) <= {'01:00:00'}, false)
-%!assert (duration (1, 0, 0) <= string ('01:00:00'), true)
-%!assert (duration (NaN, 0, 0) <= string ('01:00:00'), false)
-%!assert (duration (24, 0, 0) <= 1, true)
-%!assert (duration (NaN, 0, 0) <= NaN, false)
-%!assert (duration (24, 0, 0) <= days (1), true)
-%!assert ('01:00:00' <= duration (1, 0, 0), true)
-%!assert ('01:00:00' <= duration (1, 0, 1), true)
-%!assert ({'01:00:00'} <= duration (1, 0, 0), true)
-%!assert (string ('01:00:00') <= duration (1, 0, 0), true)
-%!assert (string ('01:00:01') <= duration (1, 0, 0), false)
-%!assert (string ('01:00:00') <= duration (1, 1, 0), true)
-%!assert (1 <= duration (24, 0, 0), true)
-%!assert (days (1) <= duration (24, 0, 0), true)
-%!assert (days (NaN) <= duration (NaN, 0, 0), false)
-%!assert (duration (1, 0, 0) <= hours (1), true)
-%!assert (duration (0, 1, 0) <= minutes (1), true)
-%!assert (duration (0, 0, 1) <= seconds (1), true)
-%!assert (days ([1, 2]) <= 1, [true, false])
-%!assert (days ([1; 2]) <= 1, [true; false])
-%!assert (days ([1, 2]) <= [1, 2], [true, true])
-%!assert (days ([1, 2]) <= [1; 2], [true, false; true, true])
+%!assert_equal (duration (1, 0, 0) <= '01:00:00', true)
+%!assert_equal (duration (1, 0, 0) <= '01:00:01', true)
+%!assert_equal (duration (1, 0, 0) <= {'01:00:00'}, true)
+%!assert_equal (duration (1, 0, 1) <= {'01:00:00'}, false)
+%!assert_equal (duration (1, 0, 0) <= string ('01:00:00'), true)
+%!assert_equal (duration (NaN, 0, 0) <= string ('01:00:00'), false)
+%!assert_equal (duration (24, 0, 0) <= 1, true)
+%!assert_equal (duration (NaN, 0, 0) <= NaN, false)
+%!assert_equal (duration (24, 0, 0) <= days (1), true)
+%!assert_equal ('01:00:00' <= duration (1, 0, 0), true)
+%!assert_equal ('01:00:00' <= duration (1, 0, 1), true)
+%!assert_equal ({'01:00:00'} <= duration (1, 0, 0), true)
+%!assert_equal (string ('01:00:00') <= duration (1, 0, 0), true)
+%!assert_equal (string ('01:00:01') <= duration (1, 0, 0), false)
+%!assert_equal (string ('01:00:00') <= duration (1, 1, 0), true)
+%!assert_equal (1 <= duration (24, 0, 0), true)
+%!assert_equal (days (1) <= duration (24, 0, 0), true)
+%!assert_equal (days (NaN) <= duration (NaN, 0, 0), false)
+%!assert_equal (duration (1, 0, 0) <= hours (1), true)
+%!assert_equal (duration (0, 1, 0) <= minutes (1), true)
+%!assert_equal (duration (0, 0, 1) <= seconds (1), true)
+%!assert_equal (days ([1, 2]) <= 1, [true, false])
+%!assert_equal (days ([1; 2]) <= 1, [true; false])
+%!assert_equal (days ([1, 2]) <= [1, 2], [true, true])
+%!assert_equal (days ([1, 2]) <= [1; 2], [true, false; true, true])
 
-%!assert (duration (1, 0, 0) < '01:00:00', false)
-%!assert (duration (1, 0, 0) < '01:00:01', true)
-%!assert (duration (1, 0, 0) < {'01:00:00'}, false)
-%!assert (duration (1, 0, 1) < {'01:00:00'}, false)
-%!assert (duration (1, 0, 0) < string ('01:00:00'), false)
-%!assert (duration (NaN, 0, 0) < string ('01:00:00'), false)
-%!assert (duration (24, 0, 0) < 1, false)
-%!assert (duration (NaN, 0, 0) < NaN, false)
-%!assert (duration (24, 0, 0) < days (1), false)
-%!assert (duration (24, 0, 1) < days (1), false)
-%!assert ('01:00:00' < duration (1, 0, 0), false)
-%!assert ('01:00:01' < duration (1, 0, 0), false)
-%!assert ('01:00:00' < duration (1, 0, 1), true)
-%!assert ({'01:00:00'} < duration (1, 0, 0), false)
-%!assert (string ('01:00:00') < duration (1, 0, 0), false)
-%!assert (string ('01:00:01') < duration (1, 0, 0), false)
-%!assert (string ('01:00:00') < duration (1, 1, 0), true)
-%!assert (1 < duration (24, 0, 0), false)
-%!assert (days (1) < duration (24, 0, 0), false)
-%!assert (days (1.05) < duration (24, 0, 0), false)
-%!assert (days (NaN) < duration (NaN, 0, 0), false)
-%!assert (duration (1, 0, 0) < hours (1), false)
-%!assert (duration (0, 1, 0) < minutes (1), false)
-%!assert (duration (0, 0, 1) < seconds (1), false)
-%!assert (days ([1, 2]) < 1, [false, false])
-%!assert (days ([1; 2]) < 1, [false; false])
-%!assert (days ([1, 2]) < [1, 2], [false, false])
-%!assert (days ([1, 2]) < [1; 2], [false, false; true, false])
+%!assert_equal (duration (1, 0, 0) < '01:00:00', false)
+%!assert_equal (duration (1, 0, 0) < '01:00:01', true)
+%!assert_equal (duration (1, 0, 0) < {'01:00:00'}, false)
+%!assert_equal (duration (1, 0, 1) < {'01:00:00'}, false)
+%!assert_equal (duration (1, 0, 0) < string ('01:00:00'), false)
+%!assert_equal (duration (NaN, 0, 0) < string ('01:00:00'), false)
+%!assert_equal (duration (24, 0, 0) < 1, false)
+%!assert_equal (duration (NaN, 0, 0) < NaN, false)
+%!assert_equal (duration (24, 0, 0) < days (1), false)
+%!assert_equal (duration (24, 0, 1) < days (1), false)
+%!assert_equal ('01:00:00' < duration (1, 0, 0), false)
+%!assert_equal ('01:00:01' < duration (1, 0, 0), false)
+%!assert_equal ('01:00:00' < duration (1, 0, 1), true)
+%!assert_equal ({'01:00:00'} < duration (1, 0, 0), false)
+%!assert_equal (string ('01:00:00') < duration (1, 0, 0), false)
+%!assert_equal (string ('01:00:01') < duration (1, 0, 0), false)
+%!assert_equal (string ('01:00:00') < duration (1, 1, 0), true)
+%!assert_equal (1 < duration (24, 0, 0), false)
+%!assert_equal (days (1) < duration (24, 0, 0), false)
+%!assert_equal (days (1.05) < duration (24, 0, 0), false)
+%!assert_equal (days (NaN) < duration (NaN, 0, 0), false)
+%!assert_equal (duration (1, 0, 0) < hours (1), false)
+%!assert_equal (duration (0, 1, 0) < minutes (1), false)
+%!assert_equal (duration (0, 0, 1) < seconds (1), false)
+%!assert_equal (days ([1, 2]) < 1, [false, false])
+%!assert_equal (days ([1; 2]) < 1, [false; false])
+%!assert_equal (days ([1, 2]) < [1, 2], [false, false])
+%!assert_equal (days ([1, 2]) < [1; 2], [false, false; true, false])
 
-%!assert (duration (1, 0, 0) != '01:00:00', false)
-%!assert (duration (1, 0, 0) != '01:00:01', true)
-%!assert (duration (1, 0, 0) != {'01:00:00'}, false)
-%!assert (duration (1, 0, 1) != {'01:00:00'}, true)
-%!assert (duration (1, 0, 0) != string ('01:00:00'), false)
-%!assert (duration (NaN, 0, 0) != string ('01:00:00'), true)
-%!assert (duration (24, 0, 0) != 1, false)
-%!assert (duration (NaN, 0, 0) != NaN, true)
-%!assert (duration (24, 0, 0) != days (1), false)
-%!assert ('01:00:00' != duration (1, 0, 0), false)
-%!assert ({'01:00:00'} != duration (1, 0, 0), false)
-%!assert (string ('01:00:00') != duration (1, 0, 0), false)
-%!assert (1 != duration (24, 0, 0), false)
-%!assert (days (1) != duration (24, 0, 0), false)
-%!assert (days (NaN) != duration (NaN, 0, 0), true)
-%!assert (duration (1, 0, 0) != hours (1), false)
-%!assert (duration (0, 1, 0) != minutes (1), false)
-%!assert (duration (0, 0, 1) != seconds (1), false)
-%!assert (days ([1, 2]) != 1, [false, true])
-%!assert (days ([1; 2]) != 1, [false; true])
-%!assert (days ([1, 2]) != [1, 2], [false, false])
-%!assert (days ([1, 2]) != [1; 2], [false, true; true, false])
+%!assert_equal (duration (1, 0, 0) != '01:00:00', false)
+%!assert_equal (duration (1, 0, 0) != '01:00:01', true)
+%!assert_equal (duration (1, 0, 0) != {'01:00:00'}, false)
+%!assert_equal (duration (1, 0, 1) != {'01:00:00'}, true)
+%!assert_equal (duration (1, 0, 0) != string ('01:00:00'), false)
+%!assert_equal (duration (NaN, 0, 0) != string ('01:00:00'), true)
+%!assert_equal (duration (24, 0, 0) != 1, false)
+%!assert_equal (duration (NaN, 0, 0) != NaN, true)
+%!assert_equal (duration (24, 0, 0) != days (1), false)
+%!assert_equal ('01:00:00' != duration (1, 0, 0), false)
+%!assert_equal ({'01:00:00'} != duration (1, 0, 0), false)
+%!assert_equal (string ('01:00:00') != duration (1, 0, 0), false)
+%!assert_equal (1 != duration (24, 0, 0), false)
+%!assert_equal (days (1) != duration (24, 0, 0), false)
+%!assert_equal (days (NaN) != duration (NaN, 0, 0), true)
+%!assert_equal (duration (1, 0, 0) != hours (1), false)
+%!assert_equal (duration (0, 1, 0) != minutes (1), false)
+%!assert_equal (duration (0, 0, 1) != seconds (1), false)
+%!assert_equal (days ([1, 2]) != 1, [false, true])
+%!assert_equal (days ([1; 2]) != 1, [false; true])
+%!assert_equal (days ([1, 2]) != [1, 2], [false, false])
+%!assert_equal (days ([1, 2]) != [1; 2], [false, true; true, false])
 
 ################################################################################
 ##                       ** Mathematical Operations **                        ##
@@ -1298,18 +1298,18 @@
 ##                                                                            ##
 ################################################################################
 
-%!assert (days (abs (days ([1, -1, NaN, -Inf, Inf]))), [1, 1, NaN, Inf, Inf])
-%!assert (days (abs (days (- ones (2, 3, 4)))), ones (2, 3, 4))
+%!assert_equal (days (abs (days ([1, -1, NaN, -Inf, Inf]))), [1, 1, NaN, Inf, Inf])
+%!assert_equal (days (abs (days (- ones (2, 3, 4)))), ones (2, 3, 4))
 
-%!assert (days (days ([1, 2; NaN, Inf]) + [2, 3]), [3, 5; NaN, Inf])
-%!assert (days (days ([1, 2; NaN, Inf]) + days ([2, 3])), [3, 5; NaN, Inf])
-%!assert (days ([2, 3] + days ([1, 2; NaN, Inf])), [3, 5; NaN, Inf])
-%!assert (days (days ([2, 3]) + days ([1, 2; NaN, Inf])), [3, 5; NaN, Inf])
-%!assert (caldays (days (1) + calendarDuration), 0)
-%!assert (caldays (days (1) + calendarDuration (0, 0, 1)), 1)
-%!assert (hours (time (days (1) + calendarDuration)), 24)
-%!assert (hours (time (days (1) + calendarDuration (0, 0, 1))), 24)
-%!assert (class (days (1) + calendarDuration), 'calendarDuration')
+%!assert_equal (days (days ([1, 2; NaN, Inf]) + [2, 3]), [3, 5; NaN, Inf])
+%!assert_equal (days (days ([1, 2; NaN, Inf]) + days ([2, 3])), [3, 5; NaN, Inf])
+%!assert_equal (days ([2, 3] + days ([1, 2; NaN, Inf])), [3, 5; NaN, Inf])
+%!assert_equal (days (days ([2, 3]) + days ([1, 2; NaN, Inf])), [3, 5; NaN, Inf])
+%!assert_equal (caldays (days (1) + calendarDuration), 0)
+%!assert_equal (caldays (days (1) + calendarDuration (0, 0, 1)), 1)
+%!assert_equal (hours (time (days (1) + calendarDuration)), 24)
+%!assert_equal (hours (time (days (1) + calendarDuration (0, 0, 1))), 24)
+%!assert_equal (class (days (1) + calendarDuration), 'calendarDuration')
 %!error<duration: addition is not defined between 'duration' and 'char' arrays.> ...
 %! days (1) + '24:00:00'
 %!error<duration: addition is not defined between 'duration' and 'cell' arrays.> ...
@@ -1317,18 +1317,18 @@
 %!error<duration: addition is not defined between 'duration' and 'string' arrays.> ...
 %! days (1) + string('24:00:00')
 
-%!assert (days (+ days (-3)), -3)
-%!assert (days (+ days (magic (3))), magic (3))
+%!assert_equal (days (+ days (-3)), -3)
+%!assert_equal (days (+ days (magic (3))), magic (3))
 
-%!assert (days (days ([3, 5; NaN, Inf]) - [2, 3]), [1, 2; NaN, Inf])
-%!assert (days (days ([3, 5; NaN, Inf]) - days ([2, 3])), [1, 2; NaN, Inf])
-%!assert (days ([3, 5] - days ([2, 3; NaN, Inf])), [1, 2; NaN, -Inf])
-%!assert (days (days ([3, 5]) - days ([2, 3; NaN, Inf])), [1, 2; NaN, -Inf])
-%!assert (caldays (days (1) - calendarDuration), 0)
-%!assert (caldays (days (1) - calendarDuration (0, 0, 1)), -1)
-%!assert (hours (time (days (1) - calendarDuration)), 24)
-%!assert (hours (time (days (1) - calendarDuration (0, 0, 1))), 24)
-%!assert (class (days (1) - calendarDuration), 'calendarDuration')
+%!assert_equal (days (days ([3, 5; NaN, Inf]) - [2, 3]), [1, 2; NaN, Inf])
+%!assert_equal (days (days ([3, 5; NaN, Inf]) - days ([2, 3])), [1, 2; NaN, Inf])
+%!assert_equal (days ([3, 5] - days ([2, 3; NaN, Inf])), [1, 2; NaN, -Inf])
+%!assert_equal (days (days ([3, 5]) - days ([2, 3; NaN, Inf])), [1, 2; NaN, -Inf])
+%!assert_equal (caldays (days (1) - calendarDuration), 0)
+%!assert_equal (caldays (days (1) - calendarDuration (0, 0, 1)), -1)
+%!assert_equal (hours (time (days (1) - calendarDuration)), 24)
+%!assert_equal (hours (time (days (1) - calendarDuration (0, 0, 1))), 24)
+%!assert_equal (class (days (1) - calendarDuration), 'calendarDuration')
 %!error<duration: subtraction is not defined between 'duration' and 'char' arrays.> ...
 %! days (1) - '24:00:00'
 %!error<duration: subtraction is not defined between 'duration' and 'cell' arrays.> ...
@@ -1336,17 +1336,17 @@
 %!error<duration: subtraction is not defined between 'duration' and 'string' arrays.> ...
 %! days (1) - string('24:00:00')
 
-%!assert (days (- days (-3)), 3)
-%!assert (days (- days (3)), -3)
-%!assert (days (- days (magic (3))), - magic (3))
+%!assert_equal (days (- days (-3)), 3)
+%!assert_equal (days (- days (3)), -3)
+%!assert_equal (days (- days (magic (3))), - magic (3))
 
-%!assert (days (days ([1:3]) .* [1:3]), [1, 4, 9])
-%!assert (days ([1:3] .* days ([1:3])), [1, 4, 9])
-%!assert (days (days ([1:3]) .* [1; 2]), [1, 2, 3; 2, 4, 6])
-%!assert (days ([1; 2] .* days ([1:3])), [1, 2, 3; 2, 4, 6])
-%!assert (class (1 .* duration), 'duration')
-%!assert (class (duration .* magic (3)), 'duration')
-%!assert (hours (duration .* magic (3)), zeros (3))
+%!assert_equal (days (days ([1:3]) .* [1:3]), [1, 4, 9])
+%!assert_equal (days ([1:3] .* days ([1:3])), [1, 4, 9])
+%!assert_equal (days (days ([1:3]) .* [1; 2]), [1, 2, 3; 2, 4, 6])
+%!assert_equal (days ([1; 2] .* days ([1:3])), [1, 2, 3; 2, 4, 6])
+%!assert_equal (class (1 .* duration), 'duration')
+%!assert_equal (class (duration .* magic (3)), 'duration')
+%!assert_equal (hours (duration .* magic (3)), zeros (3))
 %!error<duration: multiplication is not defined between 'duration' and 'duration' arrays.> ...
 %! days (1) .* days (1)
 %!error<duration: multiplication is not defined between 'duration' and 'char' arrays.> ...
@@ -1356,14 +1356,14 @@
 %!error<duration: multiplication is not defined between 'cell' and 'duration' arrays.> ...
 %! {'asd'} .*  days (1)
 
-%!assert (days (days ([1:3]) * [1:3]'), 14)
-%!assert (days (days ([1:3]') * [1:3]), [1, 2, 3; 2, 4, 6; 3, 6, 9])
-%!assert (days ([1:3] * days ([1:3]')), 14)
-%!assert (days ([1:3]' * days ([1:3])), [1, 2, 3; 2, 4, 6; 3, 6, 9])
-%!assert (class (1 * duration), 'duration')
-%!assert (class (days (magic (3)) * magic (3)), 'duration')
-%!assert (days (days (magic (3)) * magic (3)), magic (3) * magic (3))
-%!assert (days (magic (3) * days (magic (3))), magic (3) * magic (3))
+%!assert_equal (days (days ([1:3]) * [1:3]'), 14)
+%!assert_equal (days (days ([1:3]') * [1:3]), [1, 2, 3; 2, 4, 6; 3, 6, 9])
+%!assert_equal (days ([1:3] * days ([1:3]')), 14)
+%!assert_equal (days ([1:3]' * days ([1:3])), [1, 2, 3; 2, 4, 6; 3, 6, 9])
+%!assert_equal (class (1 * duration), 'duration')
+%!assert_equal (class (days (magic (3)) * magic (3)), 'duration')
+%!assert_equal (days (days (magic (3)) * magic (3)), magic (3) * magic (3))
+%!assert_equal (days (magic (3) * days (magic (3))), magic (3) * magic (3))
 %!error<duration: matrix multiplication is not defined between 'duration' and 'duration' arrays.> ...
 %! days (1) * days (1)
 %!error<duration: matrix multiplication is not defined between 'duration' and 'char' arrays.> ...
@@ -1373,21 +1373,21 @@
 %!error<duration: matrix multiplication is not defined between 'cell' and 'duration' arrays.> ...
 %! {'asd'} *  days (1)
 
-%!assert (days ([1:3]) .\ days ([1:3]), [1, 1, 1])
-%!assert (days ([1:3] .\ days ([1:3])), [1, 1, 1])
-%!assert (days ([1; 2] .\ days ([1:3])), [1, 2, 3; 0.5, 1, 1.5])
-%!assert (class (1 .\ duration), 'duration')
-%!assert (class (duration .\ duration), 'double')
+%!assert_equal (days ([1:3]) .\ days ([1:3]), [1, 1, 1])
+%!assert_equal (days ([1:3] .\ days ([1:3])), [1, 1, 1])
+%!assert_equal (days ([1; 2] .\ days ([1:3])), [1, 2, 3; 0.5, 1, 1.5])
+%!assert_equal (class (1 .\ duration), 'duration')
+%!assert_equal (class (duration .\ duration), 'double')
 %!error<duration: right-hand side must be a duration array for left division: got 'double'> ...
 %! days (1) .\ 1
 %!error<duration: left division is not defined between 'char' and 'duration' arrays.> ...
 %! 'asd' .\ days (1)
 
-%!assert (days ([1:3]) ./ days ([1:3]), [1, 1, 1])
-%!assert (days (days ([1:3]) ./ [1:3]), [1, 1, 1])
-%!assert (days (days ([1; 2]) ./ [1:3]), [1, 0.5, 1/3; 2, 1, 2/3])
-%!assert (class (duration ./ 1), 'duration')
-%!assert (class (duration ./ duration), 'double')
+%!assert_equal (days ([1:3]) ./ days ([1:3]), [1, 1, 1])
+%!assert_equal (days (days ([1:3]) ./ [1:3]), [1, 1, 1])
+%!assert_equal (days (days ([1; 2]) ./ [1:3]), [1, 0.5, 1/3; 2, 1, 2/3])
+%!assert_equal (class (duration ./ 1), 'duration')
+%!assert_equal (class (duration ./ duration), 'double')
 %!error<duration: left-hand side must be a duration array for right division: got 'double'> ...
 %! 1 ./ days (1)
 %!error<duration: right division is not defined between 'duration' and 'char' arrays.> ...
@@ -1439,10 +1439,10 @@
 %!error<duration.linspace: too few input arguments.> ...
 %! linspace (days (1))
 
-%!assert (days (diff (days (magic (3)))), diff (magic (3)))
-%!assert (days (diff (days (magic (3)), 2)), diff (magic (3), 2))
-%!assert (days (diff (days (magic (3)), 1, 1)), diff (magic (3), 1, 1))
-%!assert (days (diff (days (magic (3)), 1, 2)), diff (magic (3), 1, 2))
+%!assert_equal (days (diff (days (magic (3)))), diff (magic (3)))
+%!assert_equal (days (diff (days (magic (3)), 2)), diff (magic (3), 2))
+%!assert_equal (days (diff (days (magic (3)), 1, 1)), diff (magic (3), 1, 1))
+%!assert_equal (days (diff (days (magic (3)), 1, 2)), diff (magic (3), 1, 2))
 
 %!assert_equal (sum (days ([1, 2, 3])), days (6))
 %!assert_equal (sum (days ([-1; -2; -3])), days (-6))
@@ -1471,11 +1471,11 @@
 %!test
 %! x = days (ones (3, 4, 5));
 %! x(1) = NaN;
-%! assert (isequaln (sum (x)(:,:,1), days ([NaN, 3, 3, 3])), true);
-%! assert (isequaln (sum (x, "includenan")(:,:,1), days ([NaN, 3, 3, 3])), true);
+%! assert_equal (isequaln (sum (x)(:,:,1), days ([NaN, 3, 3, 3])), true);
+%! assert_equal (isequaln (sum (x, "includenan")(:,:,1), days ([NaN, 3, 3, 3])), true);
 %! assert_equal (sum (x, "omitnan")(:,:,1), days ([2, 3, 3, 3]));
 %! assert_equal (sum (x, "omitmissing")(:,:,1), days ([2, 3, 3, 3]));
-%! assert (isequaln (sum (x, [2 3]), days ([NaN; 20; 20])), true);
+%! assert_equal (isequaln (sum (x, [2 3]), days ([NaN; 20; 20])), true);
 %! assert_equal (sum (x, [2 3], "omitnan"), days ([19; 20; 20]));
 
 %!assert_equal (cumsum (days ([1, 2, 3])), days ([1, 3, 6]))
@@ -1511,7 +1511,7 @@
 %! assert_equal (cumsum (x, 2), cumsum (x, [2, 4]));
 %! assert_equal (cumsum (x, 2, "reverse"), cumsum (x, [2, 4], "reverse"));
 %! x(3) = NaN;
-%! assert (isequaln (cumsum (x, 4), x), true);
+%! assert_equal (isequaln (cumsum (x, 4), x), true);
 %! y = x;
 %! y(3) = 0;
 %! assert_equal (cumsum (x, 4, "omitnan"), y);
@@ -1545,15 +1545,15 @@
 %! assert_equal (min (2, x), days ([1, 2, 2, 2]));
 %!test
 %! [m, i] = min (days ([1, 2, 3; 4, 3, NaN; 4, 5, 6]), [], 2, "includenan");
-%! assert (isequaln (m, days ([1; NaN; 4])), true);
-%! assert (i, [1; 3; 1]);
+%! assert_equal (isequaln (m, days ([1; NaN; 4])), true);
+%! assert_equal (i, [1; 3; 1]);
 %! [m,i] = min (days ([1, 2, 3; 4, NaN, NaN; 4, 5, 6]), [], 2, "includenan");
-%! assert (isequaln (m, [1; NaN; 4]), true);
-%! assert (i, [1; 2; 1]);
+%! assert_equal (isequaln (m, [1; NaN; 4]), true);
+%! assert_equal (i, [1; 2; 1]);
 %!test
 %! x = days (magic (3));
 %! x(2, 3) = NaN;
-%! assert (isequaln (min (x, [], 2, "includenan"), days ([1; NaN; 2])), true);
+%! assert_equal (isequaln (min (x, [], 2, "includenan"), days ([1; NaN; 2])), true);
 %!assert_equal (size (min (days (0), days (zeros (0, 1)))), [0, 1])
 %!assert_equal (size (min (days ([]), days (zeros (0, 1)))), [0, 0])
 %!assert_equal (size (min (days (zeros (0, 1)), days ([]))), [0, 0])
@@ -1583,10 +1583,10 @@
 %! assert_equal (w, repmat (days ([1, 3; 2, 4]), [1, 1, 2]));
 %! assert_equal (ndims (iw), 3);
 %! assert_equal (iw, ones (2, 2, 2));
-%!assert (isequaln (cummin (days ([1; -10; NaN; -2]), 'includenan'), days ([1; -10; NaN; NaN])))
-%!assert (isequaln (cummin (days ([1; -10; NaN; -2]), 'reverse', 'includenan'), days ([NaN(3,1); -2])))
-%!assert (isequaln (cummin (days ([1, -10, NaN, -2]), 'includenan'), days ([1, -10, NaN, NaN])))
-%!assert (isequaln (cummin (days ([1, -10, NaN, -2]), 'reverse', 'includenan'), days ([NaN(1,3), -2])))
+%!assert_equal (isequaln (cummin (days ([1; -10; NaN; -2]), 'includenan'), days ([1; -10; NaN; NaN])), true)
+%!assert_equal (isequaln (cummin (days ([1; -10; NaN; -2]), 'reverse', 'includenan'), days ([NaN(3,1); -2])), true)
+%!assert_equal (isequaln (cummin (days ([1, -10, NaN, -2]), 'includenan'), days ([1, -10, NaN, NaN])), true)
+%!assert_equal (isequaln (cummin (days ([1, -10, NaN, -2]), 'reverse', 'includenan'), days ([NaN(1,3), -2])), true)
 %!shared A
 %! A = days ([3, 5, NaN, 4, 2; 2, 6, 2, 9, 4; 1, 3, 0, NaN, 1; 5, 3, 4, 2, 0]);
 %!test
@@ -1594,14 +1594,14 @@
 %! m_exp = days ([3, 5, NaN, 4, 2; 2, 5, NaN, 4, 2; ...
 %!                1, 3, NaN, NaN, 1; 1, 3, NaN, NaN, 0]);
 %! i_exp = [1, 1, 1, 1, 1; 2, 1, 1, 1, 1; 3, 3, 1, 3, 3; 3, 3, 1, 3, 4];
-%! assert (isequaln (m, m_exp));
+%! assert_equal (isequaln (m, m_exp), true);
 %! assert_equal (i, i_exp);
 %!test
 %! [m, i] = cummin (A, 'includenan', 'reverse');
 %! m_exp = days ([1, 3, NaN, NaN, 0; 1, 3, 0, NaN, 0; ...
 %!                1, 3, 0, NaN, 0; 5, 3, 4, 2, 0]);
 %! i_exp = [3, 4, 1, 3, 4; 3, 4, 3, 3, 4; 3, 4, 3, 3, 4; 4, 4, 4, 4, 4];
-%! assert (isequaln (m, m_exp));
+%! assert_equal (isequaln (m, m_exp), true);
 %! assert_equal (i, i_exp);
 %!test
 %! [m, i] = cummin (A, 'reverse');
@@ -1613,20 +1613,20 @@
 %! [m, i] = cummin (A);
 %! m_exp = days ([3, 5, NaN, 4, 2; 2, 5, 2, 4, 2; 1, 3, 0, 4, 1; 1, 3, 0, 2, 0]);
 %! i_exp = [1, 1, 1, 1, 1; 2, 1, 2, 1, 1; 3, 3, 3, 1, 3; 3, 3, 3, 4, 4];
-%! assert (isequaln (m, m_exp));
+%! assert_equal (isequaln (m, m_exp), true);
 %! assert_equal (i, i_exp);
 %!test
 %! [m, i] = cummin (A, 2, 'includenan');
 %! m_exp = days ([3, 3, NaN, NaN, NaN; 2, 2, 2, 2, 2; 1, 1, 0, NaN, NaN; 5, 3, 3, 2, 0]);
 %! i_exp = [1, 1, 3, 3, 3; 1, 1, 1, 1, 1; 1, 1, 3, 4, 4; 1, 2, 2, 4, 5];
-%! assert (isequaln (m, m_exp));
+%! assert_equal (isequaln (m, m_exp), true);
 %! assert_equal (i, i_exp);
 %!test
 %! [m, i] = cummin (A, 2, 'includenan', 'reverse');
 %! m_exp = days ([NaN, NaN, NaN, 2, 2; 2, 2, 2, 4, 4; ...
 %!                NaN, NaN, NaN, NaN, 1; 0, 0, 0, 0, 0]);
 %! i_exp = [3, 3, 3, 5, 5; 3, 3, 3, 5, 5; 4, 4, 4, 4, 5; 5, 5, 5, 5, 5];
-%! assert (isequaln (m, m_exp));
+%! assert_equal (isequaln (m, m_exp), true);
 %! assert_equal (i, i_exp);
 %!test
 %! [m, i] = cummin (A, 2, 'reverse');
@@ -1642,28 +1642,28 @@
 %! assert_equal (i, i_exp);
 %!test
 %! [~, i_lin] = cummin (A, 'includenan', 'linear');
-%! assert (isequaln (cummin (A, 'includenan'), A(i_lin)));
+%! assert_equal (isequaln (cummin (A, 'includenan'), A(i_lin)), true);
 %!test
 %! [~, i_lin] = cummin (A, 'includenan', 'reverse', 'linear');
-%! assert (isequaln (cummin (A, 'includenan', 'reverse'), A(i_lin)));
+%! assert_equal (isequaln (cummin (A, 'includenan', 'reverse'), A(i_lin)), true);
 %!test
 %! [~, i_lin] = cummin (A, 'reverse', 'linear');
-%! assert (isequaln (cummin (A, 'reverse'), A(i_lin)));
+%! assert_equal (isequaln (cummin (A, 'reverse'), A(i_lin)), true);
 %!test
 %! [~, i_lin] = cummin (A, 'linear');
-%! assert (isequaln (cummin (A), A(i_lin)));
+%! assert_equal (isequaln (cummin (A), A(i_lin)), true);
 %!test
 %! [~, i_lin] = cummin (A, 2, 'includenan', 'linear');
-%! assert (isequaln (cummin (A, 2, 'includenan'), A(i_lin)));
+%! assert_equal (isequaln (cummin (A, 2, 'includenan'), A(i_lin)), true);
 %!test
 %! [~, i_lin] = cummin (A, 2, 'includenan', 'reverse', 'linear');
-%! assert (isequaln (cummin (A, 2, 'includenan', 'reverse'), A(i_lin)));
+%! assert_equal (isequaln (cummin (A, 2, 'includenan', 'reverse'), A(i_lin)), true);
 %!test
 %! [~, i_lin] = cummin (A, 2, 'reverse', 'linear');
-%! assert (isequaln (cummin (A, 2, 'reverse'), A(i_lin)));
+%! assert_equal (isequaln (cummin (A, 2, 'reverse'), A(i_lin)), true);
 %!test
 %! [~, i_lin] = cummin (A, 2, 'linear');
-%! assert (isequaln (cummin (A, 2), A(i_lin)));
+%! assert_equal (isequaln (cummin (A, 2), A(i_lin)), true);
 %!shared x
 %! x = days (randi ([-10, 10], 3, 4, 5, 2));
 %!test
@@ -1710,15 +1710,15 @@
 %! assert_equal (max (2, x), days ([2, 2, 3, 4]));
 %!test
 %! [m, i] = max (days ([1, 2, 3; 4, 3, NaN; 4, 5, 6]), [], 2, "includenan");
-%! assert (isequaln (m, days ([3; NaN; 6])), true);
-%! assert (i, [3; 3; 3]);
+%! assert_equal (isequaln (m, days ([3; NaN; 6])), true);
+%! assert_equal (i, [3; 3; 3]);
 %! [m,i] = max (days ([1, 2, 3; 4, NaN, NaN; 4, 5, 6]), [], 2, "includenan");
-%! assert (isequaln (m, [3; NaN; 6]), true);
-%! assert (i, [3; 2; 3]);
+%! assert_equal (isequaln (m, [3; NaN; 6]), true);
+%! assert_equal (i, [3; 2; 3]);
 %!test
 %! x = days (magic (3));
 %! x(2, 3) = NaN;
-%! assert (isequaln (max (x, [], 2, "includenan"), days ([8; NaN; 9])), true);
+%! assert_equal (isequaln (max (x, [], 2, "includenan"), days ([8; NaN; 9])), true);
 %!assert_equal (size (max (days (0), days (zeros (0, 1)))), [0, 1])
 %!assert_equal (size (max (days ([]), days (zeros (0, 1)))), [0, 0])
 %!assert_equal (size (max (days (zeros (0, 1)), days ([]))), [0, 0])
@@ -1748,10 +1748,10 @@
 %! assert_equal (w, repmat (days ([8, 6; 7, 5]), [1, 1, 2]));
 %! assert_equal (ndims (iw), 3);
 %! assert_equal (iw, ones (2, 2, 2));
-%!assert (isequaln (cummax (days ([1; -10; NaN; -2]), 'includenan'), days ([1; 1; NaN; NaN])))
-%!assert (isequaln (cummax (days ([1; -10; NaN; -2]), 'reverse', 'includenan'), days ([NaN(3,1); -2])))
-%!assert (isequaln (cummax (days ([1, -10, NaN, -2]), 'includenan'), days ([1, 1, NaN, NaN])))
-%!assert (isequaln (cummax (days ([1, -10, NaN, -2]), 'reverse', 'includenan'), days ([NaN(1,3), -2])))
+%!assert_equal (isequaln (cummax (days ([1; -10; NaN; -2]), 'includenan'), days ([1; 1; NaN; NaN])), true)
+%!assert_equal (isequaln (cummax (days ([1; -10; NaN; -2]), 'reverse', 'includenan'), days ([NaN(3,1); -2])), true)
+%!assert_equal (isequaln (cummax (days ([1, -10, NaN, -2]), 'includenan'), days ([1, 1, NaN, NaN])), true)
+%!assert_equal (isequaln (cummax (days ([1, -10, NaN, -2]), 'reverse', 'includenan'), days ([NaN(1,3), -2])), true)
 %!shared A
 %! A = days ([3, 5, NaN, 4, 2; 2, 6, 2, 9, 4; 1, 3, 0, NaN, 1; 5, 3, 4, 2, 0]);
 %!test
@@ -1759,14 +1759,14 @@
 %! m_exp = days ([3, 5, NaN, 4, 2; 3, 6, NaN, 9, 4; ...
 %!                3, 6, NaN, NaN, 4; 5, 6, NaN, NaN, 4]);
 %! i_exp = [1, 1, 1, 1, 1; 1, 2, 1, 2, 2; 1, 2, 1, 3, 2; 4, 2, 1, 3, 2];
-%! assert (isequaln (m, m_exp));
+%! assert_equal (isequaln (m, m_exp), true);
 %! assert_equal (i, i_exp);
 %!test
 %! [m, i] = cummax (A, 'includenan', 'reverse');
 %! m_exp = days ([5, 6, NaN, NaN, 4; 5, 6, 4, NaN, 4; ...
 %!                5, 3, 4, NaN, 1; 5, 3, 4, 2, 0]);
 %! i_exp = [4, 2, 1, 3, 2; 4, 2, 4, 3, 2; 4, 4, 4, 3, 3; 4, 4, 4, 4, 4];
-%! assert (isequaln (m, m_exp));
+%! assert_equal (isequaln (m, m_exp), true);
 %! assert_equal (i, i_exp);
 %!test
 %! [m, i] = cummax (A, 'reverse');
@@ -1778,20 +1778,20 @@
 %! [m, i] = cummax (A);
 %! m_exp = days ([3, 5, NaN, 4, 2; 3, 6, 2, 9, 4; 3, 6, 2, 9, 4; 5, 6, 4, 9, 4]);
 %! i_exp = [1, 1, 1, 1, 1; 1, 2, 2, 2, 2; 1, 2, 2, 2, 2; 4, 2, 4, 2, 2];
-%! assert (isequaln (m, m_exp));
+%! assert_equal (isequaln (m, m_exp), true);
 %! assert_equal (i, i_exp);
 %!test
 %! [m, i] = cummax (A, 2, 'includenan');
 %! m_exp = days ([3, 5, NaN, NaN, NaN; 2, 6, 6, 9, 9; 1, 3, 3, NaN, NaN; 5, 5, 5, 5, 5]);
 %! i_exp = [1, 2, 3, 3, 3; 1, 2, 2, 4, 4; 1, 2, 2, 4, 4; 1, 1, 1, 1, 1];
-%! assert (isequaln (m, m_exp));
+%! assert_equal (isequaln (m, m_exp), true);
 %! assert_equal (i, i_exp);
 %!test
 %! [m, i] = cummax (A, 2, 'includenan', 'reverse');
 %! m_exp = days ([NaN, NaN, NaN, 4, 2; 9, 9, 9, 9, 4; ...
 %!                NaN, NaN, NaN, NaN, 1; 5, 4, 4, 2, 0]);
 %! i_exp = [3, 3, 3, 4, 5; 4, 4, 4, 4, 5; 4, 4, 4, 4, 5; 1, 3, 3, 4, 5];
-%! assert (isequaln (m, m_exp));
+%! assert_equal (isequaln (m, m_exp), true);
 %! assert_equal (i, i_exp);
 %!test
 %! [m, i] = cummax (A, 2, 'reverse');
@@ -1807,28 +1807,28 @@
 %! assert_equal (i, i_exp);
 %!test
 %! [~, i_lin] = cummax (A, 'includenan', 'linear');
-%! assert (isequaln (cummax (A, 'includenan'), A(i_lin)));
+%! assert_equal (isequaln (cummax (A, 'includenan'), A(i_lin)), true);
 %!test
 %! [~, i_lin] = cummax (A, 'includenan', 'reverse', 'linear');
-%! assert (isequaln (cummax (A, 'includenan', 'reverse'), A(i_lin)));
+%! assert_equal (isequaln (cummax (A, 'includenan', 'reverse'), A(i_lin)), true);
 %!test
 %! [~, i_lin] = cummax (A, 'reverse', 'linear');
-%! assert (isequaln (cummax (A, 'reverse'), A(i_lin)));
+%! assert_equal (isequaln (cummax (A, 'reverse'), A(i_lin)), true);
 %!test
 %! [~, i_lin] = cummax (A, 'linear');
-%! assert (isequaln (cummax (A), A(i_lin)));
+%! assert_equal (isequaln (cummax (A), A(i_lin)), true);
 %!test
 %! [~, i_lin] = cummax (A, 2, 'includenan', 'linear');
-%! assert (isequaln (cummax (A, 2, 'includenan'), A(i_lin)));
+%! assert_equal (isequaln (cummax (A, 2, 'includenan'), A(i_lin)), true);
 %!test
 %! [~, i_lin] = cummax (A, 2, 'includenan', 'reverse', 'linear');
-%! assert (isequaln (cummax (A, 2, 'includenan', 'reverse'), A(i_lin)));
+%! assert_equal (isequaln (cummax (A, 2, 'includenan', 'reverse'), A(i_lin)), true);
 %!test
 %! [~, i_lin] = cummax (A, 2, 'reverse', 'linear');
-%! assert (isequaln (cummax (A, 2, 'reverse'), A(i_lin)));
+%! assert_equal (isequaln (cummax (A, 2, 'reverse'), A(i_lin)), true);
 %!test
 %! [~, i_lin] = cummax (A, 2, 'linear');
-%! assert (isequaln (cummax (A, 2), A(i_lin)));
+%! assert_equal (isequaln (cummax (A, 2), A(i_lin)), true);
 %!shared x
 %! x = days (randi ([-10, 10], 3, 4, 5, 2));
 %!test
@@ -1927,10 +1927,10 @@
 %! x(2,3) = NaN;
 %! assert_equal (bounds (x), days ([3, 1, 2]));
 %! assert_equal (bounds (x, "omitnan"), days ([3, 1, 2]));
-%! assert (isequaln (bounds (x, "includenan"), days ([3, 1, NaN])));
+%! assert_equal (isequaln (bounds (x, "includenan"), days ([3, 1, NaN])), true);
 %! assert_equal (bounds (x, 2), days ([1; 3; 2]));
 %! assert_equal (bounds (x, 2, "omitnan"), days ([1; 3; 2]));
-%! assert (isequaln (bounds (x, 2, "includenan"), days ([1; NaN; 2])));
+%! assert_equal (isequaln (bounds (x, 2, "includenan"), days ([1; NaN; 2])), true);
 %!test
 %! x = reshape (days (1:27), [3, 3, 3]);
 %! [s, l] = bounds (x, 3);
@@ -1967,8 +1967,8 @@
 %! assert_equal (isnan (l), true);
 %!test
 %! [s,l] = bounds (x, "includenan");
-%! assert (isequaln (s, min (x, [], "includenan")));
-%! assert (isequaln (l, max (x, [], "includenan")));
+%! assert_equal (isequaln (s, min (x, [], "includenan")), true);
+%! assert_equal (isequaln (l, max (x, [], "includenan")), true);
 
 %!assert_equal (center (days ([1, 2, 3])), days ([-1,0,1]))
 %!assert_equal (center (days (ones (3, 2, 0, 2))), days (zeros (3, 2, 0,2 )))
@@ -1979,13 +1979,13 @@
 %!assert_equal (center (repmat (days ([1, 2, 3]), 5, 1), 2), repmat (days ([-1, 0, 1]), 5, 1))
 %!test
 %! out = center (days ([1, 3, 2; 2, NaN, 1]));
-%! assert (isequaln (out, days ([-0.5, NaN, 0.5; 0.5, NaN, -0.5])));
+%! assert_equal (isequaln (out, days ([-0.5, NaN, 0.5; 0.5, NaN, -0.5])), true);
 %!test
 %! out = center (days ([1, 3, 2; 2, NaN, 1]), 'omitnan');
-%! assert (isequaln (out, days ([-0.5, 0, 0.5; 0.5, NaN, -0.5])));
+%! assert_equal (isequaln (out, days ([-0.5, 0, 0.5; 0.5, NaN, -0.5])), true);
 %!test
 %! out = center (days ([1, 3, 2; 2, NaN, 1]), 2, 'omitnan');
-%! assert (isequaln (out, days ([-1, 1, 0; 0.5, NaN, -0.5])));
+%! assert_equal (isequaln (out, days ([-1, 1, 0; 0.5, NaN, -0.5])), true);
 
 %!test
 %! x = linspace (days (0), days (10), 1001);
@@ -2041,7 +2041,7 @@
 %!test
 %! x = [-1; 0; 0; 0; 1];
 %! y = days ([x, 2*x]);
-%! assert (kurtosis (y), [2.5, 2.5], sqrt (eps));
+%! assert_equal (kurtosis (y), [2.5, 2.5], sqrt (eps));
 %!assert_equal (kurtosis (days ([-3, 0, 1])), kurtosis (days ([-1, 0, 3])))
 %!assert_equal (kurtosis (days (ones (3, 5))), NaN (1, 5))
 %!assert_equal (kurtosis (days (1), [], 3), NaN)
@@ -2053,25 +2053,25 @@
 %!             0.7147 1.4090 0.7172; -0.2050, 1.4172, 1.6302];
 %! y = kurtosis (days (x));
 %! assert_equal (class (y), 'double');
-%! assert (y(:,:,1), [2.1350, 1.7060, 2.2789], 1e-4);
-%! assert (y(:,:,2), [1.0542, 2.3278, 2.0996], 1e-4);
+%! assert_equal (y(:,:,1), [2.1350, 1.7060, 2.2789], 1e-4);
+%! assert_equal (y(:,:,2), [1.0542, 2.3278, 2.0996], 1e-4);
 %! y = kurtosis (days (x), 1, 2);
-%! assert (y(:,:,1), [1.5; 1.5; 1.5; 1.5], 8 * eps);
-%! assert (y(:,:,2), [1.5; 1.5; 1.5; 1.5], 8 * eps);
+%! assert_equal (y(:,:,1), [1.5; 1.5; 1.5; 1.5], 8 * eps);
+%! assert_equal (y(:,:,2), [1.5; 1.5; 1.5; 1.5], 8 * eps);
 %! y = kurtosis (days (x), 1, 3);
-%! assert (y, ones (4, 3), 8 * eps);
+%! assert_equal (y, ones (4, 3), 8 * eps);
 %!test
 %! x(:,:,1) = [0.5377, 0.3188, 3.5784; 1.8339, -1.3077, 2.7694; ...
 %!             -2.2588, -0.4336, -1.3499; 0.8622, 0.3426, 3.0349];
 %! x(:,:,2) = [0.7254, -0.1241, 0.6715; -0.0631, 1.4897, -1.2075; ...
 %!             0.7147 1.4090 0.7172; -0.2050, 1.4172, 1.6302];
 %! y = kurtosis (days (x), 1, "all");
-%! assert (y, 2.8029, 1e-4);
+%! assert_equal (y, 2.8029, 1e-4);
 %! y = kurtosis (days (x), 1, [1, 2]);
-%! assert (y(:,:,1), 1.9345, 1e-4);
-%! assert (y(:,:,2), 2.5877, 1e-4);
+%! assert_equal (y(:,:,1), 1.9345, 1e-4);
+%! assert_equal (y(:,:,2), 2.5877, 1e-4);
 %! y = kurtosis (days (x), 1, [2, 3]);
-%! assert (y, [3.8457; 1.4306; 1.7094; 2.3378], 1e-4);
+%! assert_equal (y, [3.8457; 1.4306; 1.7094; 2.3378], 1e-4);
 
 %!assert_equal (mad (days (123)), duration)
 %!assert_equal (isnan (mad (days (Inf))), true)
@@ -2097,80 +2097,80 @@
 %!assert_equal (mad (days (magic (4)), 1, [1 2 3]), days (4))
 %!assert_equal (mad (days (magic (4)), 0, [3 4 99]), days (zeros (4)))
 %!assert_equal (mad (days (magic (4)), 1, [3 4 99]), days (zeros (4)))
-%!assert (isequaln (mad (days (NaN)), days (NaN)))
-%!assert (isequaln (mad (days (NaN (2))), days (NaN (1, 2))))
+%!assert_equal (isequaln (mad (days (NaN)), days (NaN)), true)
+%!assert_equal (isequaln (mad (days (NaN (2))), days (NaN (1, 2))), true)
 %!assert_equal (mad (days ([1, 2; 3, NaN])), days ([1, 0]))
-%!assert (isequaln (mad (days ([1, 2; 3, NaN]), [], 1), days ([1, 0])))
-%!assert (isequaln (mad (days ([1, NaN; 3, NaN]), [], 1), days ([1, NaN])))
+%!assert_equal (isequaln (mad (days ([1, 2; 3, NaN]), [], 1), days ([1, 0])), true)
+%!assert_equal (isequaln (mad (days ([1, NaN; 3, NaN]), [], 1), days ([1, NaN])), true)
 %!assert_equal (mad (days ([1, NaN; 3, NaN]), [], 2), days ([0; 0]))
 
 %!test
 %! F = days ([2, 11, 6]);
 %! A = days ([3, 10, 8]);
-%! assert (mape (F, A), 22.7778, 1e-4);
-%! assert (mape (F, A, 1), [33.3333, 10.0000, 25.0000], 1e-4);
-%! assert (mape (F, A, 2), 22.7778, 1e-4);
-%! assert (mape (F, A, 3), [33.3333, 10.0000, 25.0000], 1e-4);
-%! assert (mape (F, A, 'all'), 22.7778, 1e-4);
+%! assert_equal (mape (F, A), 22.7778, 1e-4);
+%! assert_equal (mape (F, A, 1), [33.3333, 10.0000, 25.0000], 1e-4);
+%! assert_equal (mape (F, A, 2), 22.7778, 1e-4);
+%! assert_equal (mape (F, A, 3), [33.3333, 10.0000, 25.0000], 1e-4);
+%! assert_equal (mape (F, A, 'all'), 22.7778, 1e-4);
 %!test
 %! F = days ([3; 7; 4; NaN]);
 %! A = days ([4; 0; 6; 4]);
-%! assert (mape (F, A), NaN);
-%! assert (mape (F, A, 'omitnan'), Inf);
-%! assert (mape (F, A, 'omitzero'), NaN);
-%! assert (mape (F, A, 'omitnan', 'omitzero'), 29.1667, 1e-4);
-%! assert (mape (F, A, 1, 'omitnan', 'omitzero'), 29.1667, 1e-4);
+%! assert_equal (mape (F, A), NaN);
+%! assert_equal (mape (F, A, 'omitnan'), Inf);
+%! assert_equal (mape (F, A, 'omitzero'), NaN);
+%! assert_equal (mape (F, A, 'omitnan', 'omitzero'), 29.1667, 1e-4);
+%! assert_equal (mape (F, A, 1, 'omitnan', 'omitzero'), 29.1667, 1e-4);
 %! E = mape (F, A, 2, 'omitnan', 'omitzero');
-%! assert (E, [25; NaN; 33.3333; NaN], 1e-4);
+%! assert_equal (E, [25; NaN; 33.3333; NaN], 1e-4);
 %!test
 %! F = days ([17, 21; 1, 5; 13, 17]);
 %! A = days ([18, 19; 5, 4; 15, 13]);
-%! assert (mape (F, A), [32.9630, 22.0985], 1e-4);
-%! assert (mape (F, A, 1), [32.9630, 22.0985], 1e-4);
-%! assert (mape (F, A, 2), [8.0409; 52.5000; 22.0513], 1e-4);
-%! assert (mape (F, A, 'all'), 27.5307, 1e-4);
-%! assert (mape (F, A, [1, 2]), 27.5307, 1e-4);
+%! assert_equal (mape (F, A), [32.9630, 22.0985], 1e-4);
+%! assert_equal (mape (F, A, 1), [32.9630, 22.0985], 1e-4);
+%! assert_equal (mape (F, A, 2), [8.0409; 52.5000; 22.0513], 1e-4);
+%! assert_equal (mape (F, A, 'all'), 27.5307, 1e-4);
+%! assert_equal (mape (F, A, [1, 2]), 27.5307, 1e-4);
 %!test
 %! F = days ([3, 5; -1, 2]);
 %! F(:,:,2) = days ([4, 2; 7, -4]);
 %! A = days ([6, 5; 0, 3]);
 %! E = mape (F, A, [1, 2]);
-%! assert (E(:,:,1), Inf);
-%! assert (E(:,:,2), Inf);
+%! assert_equal (E(:,:,1), Inf);
+%! assert_equal (E(:,:,2), Inf);
 %! E = mape (F, A, [1, 2], 'omitzero');
-%! assert (E(:,:,1), 27.7778, 1e-4);
-%! assert (E(:,:,2), 108.8889, 1e-4);
-%! assert (mape (F, A, [1, 3]), [Inf, 81.6667], 1e-4);
-%! assert (mape (F, A, [1, 3], 'omitzero'), [41.6667, 81.6667], 1e-4);
-%! assert (mape (F, A, [2, 3]), [35.8333; Inf], 1e-4);
-%! assert (mape (F, A, [2, 3], 'omitzero'), [35.8333; 133.3333], 1e-4);
-%!assert (mape ([1:4], zeros (1, 4)), Inf)
-%!assert (mape ([1:4], zeros (1, 4), "omitzero"), NaN)
+%! assert_equal (E(:,:,1), 27.7778, 1e-4);
+%! assert_equal (E(:,:,2), 108.8889, 1e-4);
+%! assert_equal (mape (F, A, [1, 3]), [Inf, 81.6667], 1e-4);
+%! assert_equal (mape (F, A, [1, 3], 'omitzero'), [41.6667, 81.6667], 1e-4);
+%! assert_equal (mape (F, A, [2, 3]), [35.8333; Inf], 1e-4);
+%! assert_equal (mape (F, A, [2, 3], 'omitzero'), [35.8333; 133.3333], 1e-4);
+%!assert_equal (mape ([1:4], zeros (1, 4)), Inf)
+%!assert_equal (mape ([1:4], zeros (1, 4), "omitzero"), NaN)
 %!test
 %! F = days ([2, 11, 6]);
 %! A = days ([3, 10, 8]);
 %! W = [1, 2, 1];
-%! assert (mape (F, A, 'Weights', W), 19.5833, 1e-4);
-%! assert (mape (F, A, 1, 'Weights', W), [33.3333, 10, 25], 1e-4);
-%! assert (mape (F, A, 2, 'Weights', W), 19.5833, 1e-4);
-%! assert (mape (F, A, 3, 'Weights', W), [33.3333, 10, 25], 1e-4);
+%! assert_equal (mape (F, A, 'Weights', W), 19.5833, 1e-4);
+%! assert_equal (mape (F, A, 1, 'Weights', W), [33.3333, 10, 25], 1e-4);
+%! assert_equal (mape (F, A, 2, 'Weights', W), 19.5833, 1e-4);
+%! assert_equal (mape (F, A, 3, 'Weights', W), [33.3333, 10, 25], 1e-4);
 %!test
 %! F = days ([3; 7; 4; NaN]);
 %! A = days ([4; 0; 6; 4]);
 %! W = [1, 2, 1, 2];
-%! assert (mape (F, A, 'Weights', W), NaN);
-%! assert (mape (F, A, 'omitnan', 'Weights', W), Inf);
-%! assert (mape (F, A, 'omitzero', 'Weights', W), NaN);
-%! assert (mape (F, A, 'omitnan', 'omitzero', 'Weights', W), 29.1667, 1e-4);
-%! assert (mape (F, A, 1, 'omitnan', 'omitzero', 'Weights', W), 29.1667, 1e-4);
+%! assert_equal (mape (F, A, 'Weights', W), NaN);
+%! assert_equal (mape (F, A, 'omitnan', 'Weights', W), Inf);
+%! assert_equal (mape (F, A, 'omitzero', 'Weights', W), NaN);
+%! assert_equal (mape (F, A, 'omitnan', 'omitzero', 'Weights', W), 29.1667, 1e-4);
+%! assert_equal (mape (F, A, 1, 'omitnan', 'omitzero', 'Weights', W), 29.1667, 1e-4);
 %!test
 %! F = days ([3; 7; 4; NaN]);
 %! A = days ([4; 0; 6; 4]);
 %! W = [1; 2; 1; 2];
 %! E = mape (F, A, 2, 'omitnan', 'omitzero', 'Weights', W);
-%! assert (E, [25; NaN; 33.3333; NaN], 1e-4);
+%! assert_equal (E, [25; NaN; 33.3333; NaN], 1e-4);
 %! E = mape (F, A, 3, 'omitnan', 'omitzero', 'Weights', W);
-%! assert (E, [25; NaN; 33.3333; NaN], 1e-4);
+%! assert_equal (E, [25; NaN; 33.3333; NaN], 1e-4);
 %!test
 %! F = days ([3, 5; -1, 2]);
 %! F(:,:,2) = days ([4, 2; 7, -4]);
@@ -2178,13 +2178,13 @@
 %! W = [1, 1; 1, 1];
 %! Ew = mape (F, A, [1, 2], 'omitzero', 'Weights', W);
 %! E = mape (F, A, [1, 2], 'omitzero');
-%! assert (Ew, E);
+%! assert_equal (Ew, E);
 %! Ew = mape (F, A, [1, 3], 'omitzero', 'Weights', W);
 %! E = mape (F, A, [1, 3], 'omitzero');
-%! assert (Ew, E);
+%! assert_equal (Ew, E);
 %! Ew = mape (F, A, [2, 3], 'omitzero', 'Weights', W);
 %! E = mape (F, A, [2, 3], 'omitzero');
-%! assert (Ew, E);
+%! assert_equal (Ew, E);
 %!test
 %! F = days ([3, 5; -1, 2]);
 %! F(:,:,2) = days ([4, NaN; 7, -4]);
@@ -2192,13 +2192,13 @@
 %! W = [1, 1; 1, 1];
 %! Ew = mape (F, A, [1, 2], 'omitnan', 'Weights', W);
 %! E = mape (F, A, [1, 2], 'omitnan');
-%! assert (Ew, E);
+%! assert_equal (Ew, E);
 %! Ew = mape (F, A, [1, 3], 'omitnan','Weights', W);
 %! E = mape (F, A, [1, 3], 'omitnan');
-%! assert (Ew, E);
+%! assert_equal (Ew, E);
 %! Ew = mape (F, A, [2, 3], 'omitnan','Weights', W);
 %! E = mape (F, A, [2, 3], 'omitnan');
-%! assert (Ew, E);
+%! assert_equal (Ew, E);
 %!error<duration.mape: both F and A must be duration arrays.> ...
 %! mape (days ([1, 2, 3]), 1:3)
 %!error<duration.mape: both F and A must be duration arrays.> ...
@@ -2213,18 +2213,18 @@
 %! assert_equal (mean (y, 2), days ([0, 5, -5]'));
 %! assert_equal (mean (y, 'all'), days (0));
 %! y(2,4) = NaN;
-%! assert (all (mean (y', 'omitnan') - days ([0, 5.35, -5]) < 1e-14));
+%! assert_equal (all (mean (y', 'omitnan') - days ([0, 5.35, -5]) < 1e-14), true);
 %! z = y + 20;
-%! assert (isequaln (mean (z, "all"), days (NaN)));
-%! assert (isequaln (mean (z, "all", "includenan"), days (NaN)));
-%! assert (days (mean (z, "all", "omitnan")), 20.03225806451613, 4e-14);
+%! assert_equal (isequaln (mean (z, "all"), days (NaN)), true);
+%! assert_equal (isequaln (mean (z, "all", "includenan"), days (NaN)), true);
+%! assert_equal (days (mean (z, "all", "omitnan")), 20.03225806451613, 4e-14);
 %!test
 %! x = repmat ([1:20;6:25], [5 2 6 3]);
-%! assert (size (mean (x, [3 2])), [10 1 1 3]);
-%! assert (size (mean (x, [1 2])), [1 1 6 3]);
-%! assert (size (mean (x, [1 2 4])), [1 1 6]);
-%! assert (size (mean (x, [1 4 3])), [1 40]);
-%! assert (size (mean (x, [1 2 3 4])), [1 1]);
+%! assert_equal (size (mean (x, [3 2])), [10 1 1 3]);
+%! assert_equal (size (mean (x, [1 2])), [1 1 6 3]);
+%! assert_equal (size (mean (x, [1 2 4])), [1 1 6]);
+%! assert_equal (size (mean (x, [1 4 3])), [1 40]);
+%! assert_equal (size (mean (x, [1 2 3 4])), [1 1]);
 
 ## Test exceeding dimensions
 %!assert_equal (mean (days (ones (2, 2)), 3), days (ones (2, 2)))
@@ -2235,25 +2235,25 @@
 %!test
 %! x = days ([1, 1; 7, 9; 1, 9; 1, 9; 6, 2]);
 %! w = [1; 2; 1; 2; 3];
-%! assert (days (mean (x, 'Weights', w)), [4, 5.7778], 1e-4);
-%! assert (days (mean (x, 'Weights', w')), [4, 5.7778], 1e-4);
-%! assert (days (mean (x, 1, 'Weights', w)), [4, 5.7778], 1e-4);
-%! assert (days (mean (x, 1, 'Weights', w')), [4, 5.7778], 1e-4);
-%! assert (days (mean (x', 2, 'Weights', w)), [4; 5.7778], 1e-4);
-%! assert (days (mean (x', 2, 'Weights', w')), [4; 5.7778], 1e-4);
+%! assert_equal (days (mean (x, 'Weights', w)), [4, 5.7778], 1e-4);
+%! assert_equal (days (mean (x, 'Weights', w')), [4, 5.7778], 1e-4);
+%! assert_equal (days (mean (x, 1, 'Weights', w)), [4, 5.7778], 1e-4);
+%! assert_equal (days (mean (x, 1, 'Weights', w')), [4, 5.7778], 1e-4);
+%! assert_equal (days (mean (x', 2, 'Weights', w)), [4; 5.7778], 1e-4);
+%! assert_equal (days (mean (x', 2, 'Weights', w')), [4; 5.7778], 1e-4);
 %!test
 %! x = days ([1, 1; 7, 9; 1, 9; 1, 9; 6, 2]);
 %! x = reshape (x', [1, 2, 5]);
 %! w = [1, 2, 1, 2, 3];
-%! assert (size (x)([1, 3]), size (w));
-%! assert (days (mean (x, [1, 3], 'Weights', w)), [4, 5.7778], 1e-4);
+%! assert_equal (size (x)([1, 3]), size (w));
+%! assert_equal (days (mean (x, [1, 3], 'Weights', w)), [4, 5.7778], 1e-4);
 %!test
 %! x = days ([1, 1; 7, 9; 1, 9; 1, 9; 6, 2]);
 %! x = reshape (x', [1, 2, 5]);
 %! w = ones (1, 2, 5);
-%! assert (size (x), size (w));
-%! assert (days (mean (x, 'all', 'Weights', w)), days (mean (x, 'all')), 1e-4);
-%! assert (days (mean (x, [1, 2, 3], 'Weights', w)), days (mean (x, [1, 2, 3])), 1e-4);
+%! assert_equal (size (x), size (w));
+%! assert_equal (days (mean (x, 'all', 'Weights', w)), days (mean (x, 'all')), 1e-4);
+%! assert_equal (days (mean (x, [1, 2, 3], 'Weights', w)), days (mean (x, [1, 2, 3])), 1e-4);
 
 %!assert_equal (median (days (1)), days (1))
 %!assert_equal (median (days ([1, 2, 3])), days (2))
@@ -2269,24 +2269,24 @@
 %! y = days ([1, 2, 3, 4, 5, 6, 7]);
 %! y2 = y';
 %!
-%! assert (median (x) == median (x2) && median (x) == days (3.5));
-%! assert (median (y) == median (y2) && median (y) == days (4));
+%! assert_equal (median (x) == median (x2) && median (x) == days (3.5), true);
+%! assert_equal (median (y) == median (y2) && median (y) == days (4), true);
 %! assert_equal (median ([x2, 2 * x2]), days ([3.5, 7]));
 %! assert_equal (median ([y2, 3 * y2]), days ([4, 12]));
 %!test
 %! x = repmat (days ([2 2.1 2.2 2 NaN; 3 1 2 NaN 5; 1 1.1 1.4 5 3]), [1, 1, 4]);
 %! y = repmat (days ([2 1.1 2 NaN NaN]), [1, 1, 4]);
-%! assert (isequaln (median (x), y));
-%! assert (isequaln (median (x, 1), y));
+%! assert_equal (isequaln (median (x), y), true);
+%! assert_equal (isequaln (median (x, 1), y), true);
 %! y = repmat (days ([2, 1.1, 2, 3.5, 4]), [1, 1, 4]);
 %! assert_equal (median (x, "omitnan"), y);
 %! assert_equal (median (x, 1, "omitnan"), y);
 %! y = repmat (days ([2.05; 2.5; 1.4]), [1, 1, 4]);
 %! assert_equal (median (x, 2, "omitnan"), y);
 %! y = repmat (days ([NaN; NaN; 1.4]), [1, 1, 4]);
-%! assert (isequaln (median (x, 2), y));
-%! assert (isequaln (median (x, "all"), NaN));
-%! assert (isequaln (median (x, "all", "omitnan"), 2));
+%! assert_equal (isequaln (median (x, 2), y), true);
+%! assert_equal (isequaln (median (x, "all"), NaN), true);
+%! assert_equal (isequaln (median (x, "all", "omitnan"), 2), true);
 %!assert_equal (median (cat (3, 3, 1, NaN, 2), "omitnan"), 2)
 %!assert_equal (median (cat (3, 3, 1, NaN, 2), 3, "omitnan"), 2)
 
@@ -2370,10 +2370,10 @@
 %! tol = 0.0001;
 %! q = days (prctile (days (x), pct, 1));
 %! qa = [0.2795, 0.7978, 0.3296, 0.5567, 0.7307];
-%! assert (q, qa, tol);
+%! assert_equal (q, qa, tol);
 %! q = days (prctile (days (x), pct, 2));
 %! qa = [0.1148; 0.2041; 0.5567; 0.6477; 0.9312];
-%! assert (q, qa, tol);
+%! assert_equal (q, qa, tol);
 %!test
 %! pct = 50;
 %! tol = 0.0001;
@@ -2385,15 +2385,15 @@
 %! x(5,5) = Inf;
 %! q = days (prctile (days (x), pct, 1));
 %! qa = [0.2795, 0.7978, 0.3296, 0.5567, 0.7307];
-%! assert (q, qa, tol);
+%! assert_equal (q, qa, tol);
 %! x(5,5) = -Inf;
 %! q = days (prctile (days (x), pct, 1));
 %! qa = [0.2795, 0.7978, 0.3296, 0.5567, 0.1585];
-%! assert (q, qa, tol);
+%! assert_equal (q, qa, tol);
 %! x(1,1) = Inf;
 %! q = days (prctile (days (x), pct, 1));
 %! qa = [0.4288, 0.7978, 0.3296, 0.5567, 0.1585];
-%! assert (q, qa, tol);
+%! assert_equal (q, qa, tol);
 %!test
 %! pct = 50;
 %! tol = 0.0001;
@@ -2405,10 +2405,10 @@
 %! x(3,3) = Inf;
 %! q = days (prctile (days (x), pct, 1));
 %! qa = [0.2795, 0.7978, 0.6477, 0.5567, 0.7307];
-%! assert (q, qa, tol);
+%! assert_equal (q, qa, tol);
 %! q = days (prctile (days (x), pct, 2));
 %! qa = [0.1148; 0.2041; 0.7307; 0.6477; 0.9312];
-%! assert (q, qa, tol);
+%! assert_equal (q, qa, tol);
 %!test
 %! pct = 50;
 %! tol = 0.0001;
@@ -2420,15 +2420,15 @@
 %! x(5,5) = NaN;
 %! q = days (prctile (days (x), pct, 2));
 %! qa = [0.1148; 0.2041; 0.5567; 0.6477; 0.9322];
-%! assert (q, qa, tol);
+%! assert_equal (q, qa, tol);
 %! x(1,1) = NaN;
 %! q = days (prctile (days (x), pct, 2));
 %! qa = [0.1270; 0.2041; 0.5567; 0.6477; 0.9322];
-%! assert (q, qa, tol);
+%! assert_equal (q, qa, tol);
 %! x(3,3) = NaN;
 %! q = days (prctile (days (x), pct, 2));
 %! qa = [0.1270; 0.2041; 0.6437; 0.6477; 0.9322];
-%! assert (q, qa, tol);
+%! assert_equal (q, qa, tol);
 %!assert_equal (prctile (days ([1:10]), 1, 3), days ([1:10]))
 
 %!test
@@ -2479,10 +2479,10 @@
 %! x(2,3) = NaN;
 %! assert_equal (range (x), days ([5, 8, 4]));
 %! assert_equal (range (x, "omitnan"), days ([5, 8, 4]));
-%! assert (isequaln (range (x, "includenan"), days ([5, 8, NaN])));
+%! assert_equal (isequaln (range (x, "includenan"), days ([5, 8, NaN])), true);
 %! assert_equal (range (x, 2), days ([7; 2; 7]));
 %! assert_equal (range (x, 2, "omitnan"), days ([7; 2; 7]));
-%! assert (isequaln (range (x, 2, "includenan"), days ([7; NaN; 7])));
+%! assert_equal (isequaln (range (x, 2, "includenan"), days ([7; NaN; 7])), true);
 %!test
 %! x = reshape (days (1:27), [3, 3, 3]);
 %! assert_equal (range (x, 3), x(:,:,3) - x(:,:,1));
@@ -2509,94 +2509,94 @@
 %!test
 %! x = reshape (days (1:27), [3, 3, 3]);
 %! x(3) = NaN;
-%! assert (isequaln (range (x, "all", "includenan"), days (NaN)));
+%! assert_equal (isequaln (range (x, "all", "includenan"), days (NaN)), true);
 %!test
 %! x = reshape (days (1:27), [3, 3, 3]);
 %! x(3) = NaN;
 %! s = min (x, [], "includenan");
 %! l = max (x, [], "includenan");
-%! assert (isequaln (range (x, "includenan"), l - s));
+%! assert_equal (isequaln (range (x, "includenan"), l - s), true);
 %!test
 %! x = reshape (days (1:27), [3, 3, 3]);
 %! x(3) = NaN;
 %! y = range (x, 3, "includenan");
-%! assert (isequaln (y(3), days (NaN)));
+%! assert_equal (isequaln (y(3), days (NaN)), true);
 
 %!test
 %! F = days ([2, 11, 6]);
 %! A = days ([3, 10, 8]);
-%! assert (days (rmse (F, A)), sqrt (2), eps);
-%! assert (days (rmse (F, A, 1)), [1, 1, 2], eps);
-%! assert (days (rmse (F, A, 2)), sqrt (2), eps);
-%! assert (days (rmse (F, A, 3)), [1, 1, 2], eps);
-%! assert (days (rmse (F, A, 'all')), sqrt (2), eps);
+%! assert_equal (days (rmse (F, A)), sqrt (2), eps);
+%! assert_equal (days (rmse (F, A, 1)), [1, 1, 2], eps);
+%! assert_equal (days (rmse (F, A, 2)), sqrt (2), eps);
+%! assert_equal (days (rmse (F, A, 3)), [1, 1, 2], eps);
+%! assert_equal (days (rmse (F, A, 'all')), sqrt (2), eps);
 %!test
 %! F = days ([3; 7; 4; NaN]);
 %! A = days ([4; 0; 6; 4]);
-%! assert (days (rmse (F, A)), NaN);
-%! assert (days (rmse (F, A, 'omitnan')), 4.2426, 1e-4);
-%! assert (days (rmse (F, A, 1, 'omitnan')), 4.2426, 1e-4);
-%! assert (days (rmse (F, A, 2, 'omitnan')), [1; 7; 2; NaN]);
+%! assert_equal (days (rmse (F, A)), NaN);
+%! assert_equal (days (rmse (F, A, 'omitnan')), 4.2426, 1e-4);
+%! assert_equal (days (rmse (F, A, 1, 'omitnan')), 4.2426, 1e-4);
+%! assert_equal (days (rmse (F, A, 2, 'omitnan')), [1; 7; 2; NaN]);
 %!test
 %! F = days ([17, 21; 1, 5; 13, 17]);
 %! A = days ([18, 19; 5, 4; 15, 13]);
-%! assert (days (rmse (F, A)), [2.6458, 2.6458], 1e-4);
-%! assert (days (rmse (F, A, 1)), [2.6458, 2.6458], 1e-4);
-%! assert (days (rmse (F, A, 2)), [1.5811; 2.9155; 3.1623], 1e-4);
-%! assert (days (rmse (F, A, 'all')), 2.6458, 1e-4);
-%! assert (days (rmse (F, A, [1, 2])), 2.6458, 1e-4);
+%! assert_equal (days (rmse (F, A)), [2.6458, 2.6458], 1e-4);
+%! assert_equal (days (rmse (F, A, 1)), [2.6458, 2.6458], 1e-4);
+%! assert_equal (days (rmse (F, A, 2)), [1.5811; 2.9155; 3.1623], 1e-4);
+%! assert_equal (days (rmse (F, A, 'all')), 2.6458, 1e-4);
+%! assert_equal (days (rmse (F, A, [1, 2])), 2.6458, 1e-4);
 %!test
 %! F = days ([3, 5; -1, 2]);
 %! F(:,:,2) = days ([4, 2; 7, -4]);
 %! A = days ([6, 5; NaN, 3]);
 %! E = days (rmse (F, A, [1, 2]));
-%! assert (E(:,:,1), NaN);
-%! assert (E(:,:,2), NaN);
+%! assert_equal (E(:,:,1), NaN);
+%! assert_equal (E(:,:,2), NaN);
 %! E = days (rmse (F, A, [1, 2], 'omitnan'));
-%! assert (E(:,:,1), 1.8257, 1e-4);
-%! assert (E(:,:,2), 4.5461, 1e-4);
-%! assert (days (rmse (F, A, [1, 3])), [NaN, 3.8406], 1e-4);
-%! assert (days (rmse (F, A, [1, 3], 'omitnan')), [2.5495, 3.8406], 1e-4);
-%! assert (days (rmse (F, A, [2, 3])), [2.3452; NaN], 1e-4);
-%! assert (days (rmse (F, A, [2, 3], 'omitnan')), [2.3452; 5], 1e-4);
+%! assert_equal (E(:,:,1), 1.8257, 1e-4);
+%! assert_equal (E(:,:,2), 4.5461, 1e-4);
+%! assert_equal (days (rmse (F, A, [1, 3])), [NaN, 3.8406], 1e-4);
+%! assert_equal (days (rmse (F, A, [1, 3], 'omitnan')), [2.5495, 3.8406], 1e-4);
+%! assert_equal (days (rmse (F, A, [2, 3])), [2.3452; NaN], 1e-4);
+%! assert_equal (days (rmse (F, A, [2, 3], 'omitnan')), [2.3452; 5], 1e-4);
 %!test
 %! F = days ([2, 11, 6]);
 %! A = days ([3, 10, 8]);
 %! W = [1, 2, 1];
-%! assert (days (rmse (F, A, 'Weights', W)), 1.3229, 1e-4);
-%! assert (days (rmse (F, A, 1, 'Weights', W)), [1, 1, 2]);
-%! assert (days (rmse (F, A, 2, 'Weights', W)), 1.3229, 1e-4);
-%! assert (days (rmse (F, A, 3, 'Weights', W)), [1, 1, 2]);
+%! assert_equal (days (rmse (F, A, 'Weights', W)), 1.3229, 1e-4);
+%! assert_equal (days (rmse (F, A, 1, 'Weights', W)), [1, 1, 2]);
+%! assert_equal (days (rmse (F, A, 2, 'Weights', W)), 1.3229, 1e-4);
+%! assert_equal (days (rmse (F, A, 3, 'Weights', W)), [1, 1, 2]);
 %!test
 %! F = days ([3; 7; 4; NaN]);
 %! A = days ([4; 0; 6; 4]);
 %! W = [1, 2, 1, 2];
-%! assert (days (rmse (F, A, 'Weights', W)), NaN);
-%! assert (days (rmse (F, A, 'omitnan', 'Weights', W)), 5.0744, 1e-4);
-%! assert (days (rmse (F, A, 1, 'omitnan', 'Weights', W)), 5.0744, 1e-4);
+%! assert_equal (days (rmse (F, A, 'Weights', W)), NaN);
+%! assert_equal (days (rmse (F, A, 'omitnan', 'Weights', W)), 5.0744, 1e-4);
+%! assert_equal (days (rmse (F, A, 1, 'omitnan', 'Weights', W)), 5.0744, 1e-4);
 %!test
 %! F = days ([3; 7; 4; NaN]);
 %! A = days ([4; 0; 6; 4]);
 %! W = [1; 2; 1; 2];
-%! assert (days (rmse (F, A, 2, 'Weights', W)), [1; 7; 2; NaN], 1e-4);
-%! assert (days (rmse (F, A, 2, 'omitnan', 'Weights', W)), [1; 7; 2; NaN], 1e-4);
-%! assert (days (rmse (F, A, 3, 'Weights', W)), [1; 7; 2; NaN], 1e-4);
-%! assert (days (rmse (F, A, 3, 'omitnan', 'Weights', W)), [1; 7; 2; NaN], 1e-4);
+%! assert_equal (days (rmse (F, A, 2, 'Weights', W)), [1; 7; 2; NaN], 1e-4);
+%! assert_equal (days (rmse (F, A, 2, 'omitnan', 'Weights', W)), [1; 7; 2; NaN], 1e-4);
+%! assert_equal (days (rmse (F, A, 3, 'Weights', W)), [1; 7; 2; NaN], 1e-4);
+%! assert_equal (days (rmse (F, A, 3, 'omitnan', 'Weights', W)), [1; 7; 2; NaN], 1e-4);
 %!test
 %! F = days ([3, 4; 7, 5; 4, 3; NaN, 8]);
 %! A = days ([4; 0; 6; 4]);
 %! W = [3; 1; 2; 2];
 %! E = days (rmse (F, A, 1, 'omitnan', 'Weights', W));
-%! assert (E, [3.1623, 3.0619], 1e-4);
+%! assert_equal (E, [3.1623, 3.0619], 1e-4);
 %!test
 %! F = days ([3, 4; 7, 5; 4, 3; NaN, 8]);
 %! A = days ([4; 0; 6; 4]);
 %! W = [3, 0.4; 1, 0.2; 2, 0.2; 2, 0.2];
-%! assert (days (rmse (F, A, 1, 'Weights', W)), [NaN, 3.1623], 1e-4);
-%! assert (days (rmse (F, A, 1, 'omitnan', 'Weights', W)), [3.1623, 3.1623], 1e-4);
-%! assert (days (rmse (F, A, 2, 'Weights', W)), [0.9393; 6.7082; 2.1106; NaN], 1e-4);
+%! assert_equal (days (rmse (F, A, 1, 'Weights', W)), [NaN, 3.1623], 1e-4);
+%! assert_equal (days (rmse (F, A, 1, 'omitnan', 'Weights', W)), [3.1623, 3.1623], 1e-4);
+%! assert_equal (days (rmse (F, A, 2, 'Weights', W)), [0.9393; 6.7082; 2.1106; NaN], 1e-4);
 %! E = rmse (F, A, 2, 'omitnan', 'Weights', W);
-%! assert (days (E), [0.9393; 6.7082; 2.1106; 4], 1e-4);
+%! assert_equal (days (E), [0.9393; 6.7082; 2.1106; 4], 1e-4);
 %!test
 %! F = days ([3, 5; -1, 2]);
 %! F(:,:,2) = days ([4, NaN; 7, -4]);
@@ -2620,11 +2620,11 @@
 %! A1 = reshape (A, 1, 4);
 %! W1 = reshape (W, 1, 4);
 %! E1w = days (rmse (F1, A1, 2, 'Weights', W1));
-%! assert (E1w(:,:,1), 1.4832, 1e-4);
-%! assert (E1w(:,:,2), 4.8990, 1e-4);
+%! assert_equal (E1w(:,:,1), 1.4832, 1e-4);
+%! assert_equal (E1w(:,:,2), 4.8990, 1e-4);
 %! E1 = days (rmse (F1, A1, 2));
-%! assert (E1(:,:,1), 1.6583, 1e-4);
-%! assert (E1(:,:,2), 5.2678, 1e-4);
+%! assert_equal (E1(:,:,1), 1.6583, 1e-4);
+%! assert_equal (E1(:,:,2), 5.2678, 1e-4);
 %! assert_equal (rmse (F, A, [1, 2], 'Weights', W), days (E1w));
 %! assert_equal (rmse (F, A, [1, 2]), days (E1));
 %!test
@@ -2636,9 +2636,9 @@
 %! A1 = reshape (repmat (A, 1, 1, 2), 2, 4, 1);
 %! W1 = [0.5, 1, 2, 3; 0.5, 1, 2, 3];
 %! E1w = rmse (F1, A1, 2, 'Weights', W1);
-%! assert (days (E1w), [2.4651; 6.1582], 1e-4);
+%! assert_equal (days (E1w), [2.4651; 6.1582], 1e-4);
 %! E1 = rmse (F1, A1, 2);
-%! assert (days (E1), [2.3452; 5], 1e-4);
+%! assert_equal (days (E1), [2.3452; 5], 1e-4);
 %! assert_equal (rmse (F, A, [2, 3], 'Weights', W), E1w);
 %! assert_equal (rmse (F, A, [2, 3]), E1);
 %!error<duration.rmse: both F and A must be duration arrays.> ...
@@ -2646,54 +2646,54 @@
 %!error<duration.rmse: both F and A must be duration arrays.> ...
 %! rmse (1:3, days ([1, 2, 3]))
 
-%!assert (skewness (days ([-1, 0, 1])), 0)
-%!assert (skewness (days ([-2, 0, 1])) < 0)
-%!assert (skewness (days ([-1, 0, 2])) > 0)
-%!assert (skewness (days ([-3, 0, 1])) == -1 * skewness ([-1, 0, 3]))
-%!assert (skewness (days (ones (3, 5))), NaN (1, 5))
-%!assert (skewness (days (1), [], 3), NaN)
+%!assert_equal (skewness (days ([-1, 0, 1])), 0)
+%!assert_equal (skewness (days ([-2, 0, 1])) < 0, true)
+%!assert_equal (skewness (days ([-1, 0, 2])) > 0, true)
+%!assert_equal (skewness (days ([-3, 0, 1])) == -1 * skewness ([-1, 0, 3]), true)
+%!assert_equal (skewness (days (ones (3, 5))), NaN (1, 5))
+%!assert_equal (skewness (days (1), [], 3), NaN)
 %!test
 %! x = [0; 0; 0; 1];
 %! y = days ([x, 2*x]);
-%! assert (skewness (y), 1.154700538379251 * [1 1], 5*eps);
-%!assert (skewness (days ([1:5, 10; 1:5, 10]),  0, 2), 1.439590274527954 * [1; 1], eps)
-%!assert (skewness (days ([1:5, 10; 1:5, 10]),  1, 2), 1.051328089232020 * [1; 1], 2*eps)
-%!assert (skewness (days ([1:5, 10; 1:5, 10]), [], 2), 1.051328089232020 * [1; 1], 2*eps)
+%! assert_equal (skewness (y), 1.154700538379251 * [1 1], 5*eps);
+%!assert_equal (skewness (days ([1:5, 10; 1:5, 10]),  0, 2), 1.439590274527954 * [1; 1], eps)
+%!assert_equal (skewness (days ([1:5, 10; 1:5, 10]),  1, 2), 1.051328089232020 * [1; 1], 2*eps)
+%!assert_equal (skewness (days ([1:5, 10; 1:5, 10]), [], 2), 1.051328089232020 * [1; 1], 2*eps)
 %!test
 %! x(:,:,1) = [0.5377, 0.3188, 3.5784; 1.8339, -1.3077, 2.7694; ...
 %!             -2.2588, -0.4336, -1.3499; 0.8622, 0.3426, 3.0349];
 %! x(:,:,2) = [0.7254, -0.1241, 0.6715; -0.0631, 1.4897, -1.2075; ...
 %!             0.7147 1.4090 0.7172; -0.2050, 1.4172, 1.6302];
 %! y = skewness (days (x));
-%! assert (y(:,:,1), [-0.8084, -0.5578, -1.0772], 1e-4);
-%! assert (y(:,:,2), [-0.0403, -1.1472, -0.6632], 1e-4);
+%! assert_equal (y(:,:,1), [-0.8084, -0.5578, -1.0772], 1e-4);
+%! assert_equal (y(:,:,2), [-0.0403, -1.1472, -0.6632], 1e-4);
 %! y = skewness (days (x), 1, 2);
-%! assert (y(:,:,1), [0.6956; -0.5575; 0.0049; 0.6033], 1e-4);
-%! assert (y(:,:,2), [-0.6969; 0.1828; 0.7071; -0.6714], 1e-4);
+%! assert_equal (y(:,:,1), [0.6956; -0.5575; 0.0049; 0.6033], 1e-4);
+%! assert_equal (y(:,:,2), [-0.6969; 0.1828; 0.7071; -0.6714], 1e-4);
 %! y = skewness (days (x), 1, 3);
-%! assert (y, zeros (4, 3), 8 * eps);
+%! assert_equal (y, zeros (4, 3), 8 * eps);
 %!test
 %! x(:,:,1) = [0.5377, 0.3188, 3.5784; 1.8339, -1.3077, 2.7694; ...
 %!             -2.2588, -0.4336, -1.3499; 0.8622, 0.3426, 3.0349];
 %! x(:,:,2) = [0.7254, -0.1241, 0.6715; -0.0631, 1.4897, -1.2075; ...
 %!             0.7147 1.4090 0.7172; -0.2050, 1.4172, 1.6302];
 %! y = skewness (days (x), 1, "all");
-%! assert (y, 0.0916, 1e-4);
+%! assert_equal (y, 0.0916, 1e-4);
 %! y = skewness (days (x), 1, [1, 2]);
-%! assert (y(:,:,1), 0.1070, 1e-4);
-%! assert (y(:,:,2), -0.6263, 1e-4);
+%! assert_equal (y(:,:,1), 0.1070, 1e-4);
+%! assert_equal (y(:,:,2), -0.6263, 1e-4);
 %! y = skewness (days (x), 1, [1, 3]);
-%! assert (y, [-1.0755, -0.3108, -0.2209], 1e-4);
+%! assert_equal (y, [-1.0755, -0.3108, -0.2209], 1e-4);
 
 %!test
 %! x = days (ones (10, 2));
 %! y = days ([1, 3]);
 %! assert_equal (std (x), days ([0, 0]));
-%! assert (days (std (y)), sqrt (2), sqrt (eps));
+%! assert_equal (days (std (y)), sqrt (2), sqrt (eps));
 %! assert_equal (std (x, 0, 2), days (zeros (10, 1)));
 %!assert_equal (std (days (ones (3, 1, 2)), 0, 2), days (zeros (3, 1, 2)))
-%!assert (days (std (days ([1, 2]), 0)), sqrt (2)/2, 5*eps)
-%!assert (days (std (days ([1, 2]), 1)), 0.5, 5*eps)
+%!assert_equal (days (std (days ([1, 2]), 0)), sqrt (2)/2, 5*eps)
+%!assert_equal (days (std (days ([1, 2]), 1)), 0.5, 5*eps)
 %!assert_equal (std (days (1)), duration)
 %!assert_equal (std (days ([1, 2, 3]), [], 3), days ([0, 0, 0]))
 %!test
@@ -2702,37 +2702,37 @@
 %! assert_equal (std (x), days (sqrt (38.5)));
 %! assert_equal (std (y, [], 2), days (sqrt ([38.5; 38.5; 38.5])));
 %! assert_equal (std (y, 0, 2), days (sqrt ([38.5; 38.5; 38.5])));
-%! assert (days (std (y, 1, 2)), sqrt (ones (3,1) * 36.66666666666666), 1e-14);
-%! assert (days (std (y, "all")), sqrt (54.19354838709678), 1e-14);
+%! assert_equal (days (std (y, 1, 2)), sqrt (ones (3,1) * 36.66666666666666), 1e-14);
+%! assert_equal (days (std (y, "all")), sqrt (54.19354838709678), 1e-14);
 %! y(2,4) = NaN;
-%! assert (isequaln (std (y, "all"), days (NaN)));
-%! assert (isequaln (std (y, "all", "includenan"), days (NaN)));
-%! assert (days (std (y, "all", "omitnan")), sqrt (55.01533580116342), 1e-14);
-%! assert (isequaln (std (y, 0, 2, "includenan"), days (sqrt ([38.5; NaN; 38.5]))));
-%! assert (isequaln (std (y, [], 2), days (sqrt ([38.5; NaN; 38.5]))));
-%! assert (days (std (y, [], 2, "omitnan")), sqrt ([38.5; 37.81842105263158; 38.5]), 1e-14);
-%!assert (days (std (days ([1, NaN, 3]), [1 2 3], "omitnan")), sqrt (0.75), eps)
-%!assert (days (std (days ([1, 2, 3]), [1 NaN 3], "omitnan")), sqrt (0.75), eps)
-%!assert (days (std (days (magic (3)), [1 NaN 3], "omitnan")), sqrt ([3, 12, 3]), eps)
-%!assert (days (std (days ([1, NaN, 3]), [1 2 3], "omitnan", "all")), sqrt (0.75), eps)
-%!assert (days (std (days ([1, NaN, 3]), [1 2 3], "all", "omitnan")), sqrt (0.75), eps)
-%!assert (days (std (days ([1, 2, 3]), [1 NaN 3], "omitnan", "all")), sqrt (0.75), eps)
-%!assert (days (std (days ([1, NaN, 3]), [1 2 3], 2, "omitnan")), sqrt (0.75), eps)
-%!assert (days (std (days ([1, 2, 3]), [1 NaN 3], 2, "omitnan")), sqrt (0.75), eps)
-%!assert (days (std (days (magic (3)), [1 NaN 3], 1, "omitnan")), sqrt ([3, 12, 3]), eps)
-%!assert (days (std (days (magic (3)), [1 NaN 3], 2, "omitnan")), sqrt ([0.75;3;0.75]), eps)
-%!assert (days (std (days ([4, 4; 4, 6; 6, 6]), [1 3], 2, 'omitnan')), sqrt ([0;0.75;0]), eps)
-%!assert (days (std (days ([4, NaN; 4, 6; 6, 6]), [1, 2, 3], 1, 'omitnan')), sqrt ([1 0]))
-%!assert (days (std (days ([4, NaN; 4, 6; 6, 6]), [1, 3], 2, 'omitnan')), sqrt ([0;0.75;0]), eps)
-%!assert (days (std (days (3*reshape(1:18, [3, 3, 2])), [1, 2, 3], 1, 'omitnan')), ...
+%! assert_equal (isequaln (std (y, "all"), days (NaN)), true);
+%! assert_equal (isequaln (std (y, "all", "includenan"), days (NaN)), true);
+%! assert_equal (days (std (y, "all", "omitnan")), sqrt (55.01533580116342), 1e-14);
+%! assert_equal (isequaln (std (y, 0, 2, "includenan"), days (sqrt ([38.5; NaN; 38.5]))), true);
+%! assert_equal (isequaln (std (y, [], 2), days (sqrt ([38.5; NaN; 38.5]))), true);
+%! assert_equal (days (std (y, [], 2, "omitnan")), sqrt ([38.5; 37.81842105263158; 38.5]), 1e-14);
+%!assert_equal (days (std (days ([1, NaN, 3]), [1 2 3], "omitnan")), sqrt (0.75), eps)
+%!assert_equal (days (std (days ([1, 2, 3]), [1 NaN 3], "omitnan")), sqrt (0.75), eps)
+%!assert_equal (days (std (days (magic (3)), [1 NaN 3], "omitnan")), sqrt ([3, 12, 3]), eps)
+%!assert_equal (days (std (days ([1, NaN, 3]), [1 2 3], "omitnan", "all")), sqrt (0.75), eps)
+%!assert_equal (days (std (days ([1, NaN, 3]), [1 2 3], "all", "omitnan")), sqrt (0.75), eps)
+%!assert_equal (days (std (days ([1, 2, 3]), [1 NaN 3], "omitnan", "all")), sqrt (0.75), eps)
+%!assert_equal (days (std (days ([1, NaN, 3]), [1 2 3], 2, "omitnan")), sqrt (0.75), eps)
+%!assert_equal (days (std (days ([1, 2, 3]), [1 NaN 3], 2, "omitnan")), sqrt (0.75), eps)
+%!assert_equal (days (std (days (magic (3)), [1 NaN 3], 1, "omitnan")), sqrt ([3, 12, 3]), eps)
+%!assert_equal (days (std (days (magic (3)), [1 NaN 3], 2, "omitnan")), sqrt ([0.75;3;0.75]), eps)
+%!assert_equal (days (std (days ([4, 4; 4, 6; 6, 6]), [1 3], 2, 'omitnan')), sqrt ([0;0.75;0]), eps)
+%!assert_equal (days (std (days ([4, NaN; 4, 6; 6, 6]), [1, 2, 3], 1, 'omitnan')), sqrt ([1 0]))
+%!assert_equal (days (std (days ([4, NaN; 4, 6; 6, 6]), [1, 3], 2, 'omitnan')), sqrt ([0;0.75;0]), eps)
+%!assert_equal (days (std (days (3*reshape(1:18, [3, 3, 2])), [1, 2, 3], 1, 'omitnan')), ...
 %!        sqrt (ones (1, 3, 2) * 5))
-%!assert (days (std (reshape (days (1:18), [3, 3, 2]), [1, 2, 3], 2, 'omitnan')), ...
+%!assert_equal (days (std (reshape (days (1:18), [3, 3, 2]), [1, 2, 3], 2, 'omitnan')), ...
 %!        sqrt (5 * ones(3, 1, 2)))
-%!assert (days (std (3 * reshape (days (1:18), [3, 3, 2]), ones (3,3,2), [1 2], 'omitnan')), ...
+%!assert_equal (days (std (3 * reshape (days (1:18), [3, 3, 2]), ones (3,3,2), [1 2], 'omitnan')), ...
 %!        sqrt (60 * ones (1, 1, 2)))
-%!assert (days (std (3*reshape(days (1:18), [3, 3, 2]), ones (3,3,2), [1 4], 'omitnan')), ...
+%!assert_equal (days (std (3*reshape(days (1:18), [3, 3, 2]), ones (3,3,2), [1 4], 'omitnan')), ...
 %!        sqrt (6 * ones (1, 3, 2)))
-%!assert (days (std (6 * reshape (days (1:18), [3, 3, 2]), ones (3,3,2), [1:3], 'omitnan')), sqrt (969))
+%!assert_equal (days (std (6 * reshape (days (1:18), [3, 3, 2]), ones (3,3,2), [1:3], 'omitnan')), sqrt (969))
 %!test
 %! x = reshape (days (1:18), [3, 3, 2]);
 %! x([2, 14]) = NaN;
@@ -2752,423 +2752,423 @@
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
 %! [B, I] = sort (D);
-%! assert (days (B), [1, -4; 1, 1; 2, 2; 2, 3]);
+%! assert_equal (days (B), [1, -4; 1, 1; 2, 2; 2, 3]);
 %! assert_equal (I, [1, 3; 2, 4; 3, 1; 4, 2]);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
 %! [B, I] = sort (D, 1);
-%! assert (days (B), [1, -4; 1, 1; 2, 2; 2, 3]);
+%! assert_equal (days (B), [1, -4; 1, 1; 2, 2; 2, 3]);
 %! assert_equal (I, [1, 3; 2, 4; 3, 1; 4, 2]);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
 %! [B, I] = sort (D, 2);
-%! assert (days (B), [1, 2; 1, 3; -4, 2; 1, 2]);
+%! assert_equal (days (B), [1, 2; 1, 3; -4, 2; 1, 2]);
 %! assert_equal (I, [1, 2; 1, 2; 2, 1; 2, 1]);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
 %! [B, I] = sort (D, 1, 'ComparisonMethod', 'abs');
-%! assert (days (B), [1, 1; 1, 2; 2, 3; 2, -4]);
+%! assert_equal (days (B), [1, 1; 1, 2; 2, 3; 2, -4]);
 %! assert_equal (I, [1, 4; 2, 1; 3, 2; 4, 3]);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
 %! [B, I] = sort (D, 2, 'ComparisonMethod', 'abs');
-%! assert (days (B), [1, 2; 1, 3; 2, -4; 1, 2]);
+%! assert_equal (days (B), [1, 2; 1, 3; 2, -4; 1, 2]);
 %! assert_equal (I, [1, 2; 1, 2; 1, 2; 2, 1]);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
 %! [B, I] = sort (D, 'descend');
-%! assert (days (B), [2, 3; 2, 2; 1, 1; 1, -4]);
+%! assert_equal (days (B), [2, 3; 2, 2; 1, 1; 1, -4]);
 %! assert_equal (I, [3, 2; 4, 1; 1, 4; 2, 3]);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
 %! [B, I] = sort (D, 1, 'descend');
-%! assert (days (B), [2, 3; 2, 2; 1, 1; 1, -4]);
+%! assert_equal (days (B), [2, 3; 2, 2; 1, 1; 1, -4]);
 %! assert_equal (I, [3, 2; 4, 1; 1, 4; 2, 3]);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
 %! [B, I] = sort (D, 2, 'descend');
-%! assert (days (B), [2, 1; 3, 1; 2, -4; 2, 1]);
+%! assert_equal (days (B), [2, 1; 3, 1; 2, -4; 2, 1]);
 %! assert_equal (I, [2, 1; 2, 1; 1, 2; 1, 2]);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
 %! [B, I] = sort (D, 1, 'descend', 'ComparisonMethod', 'abs');
-%! assert (days (B), [2, -4; 2, 3; 1, 2; 1, 1]);
+%! assert_equal (days (B), [2, -4; 2, 3; 1, 2; 1, 1]);
 %! assert_equal (I, [3, 3; 4, 2; 1, 1; 2, 4]);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
 %! [B, I] = sort (D, 2, 'descend', 'ComparisonMethod', 'abs');
-%! assert (days (B), [2, 1; 3, 1; -4, 2; 2, 1]);
+%! assert_equal (days (B), [2, 1; 3, 1; -4, 2; 2, 1]);
 %! assert_equal (I, [2, 1; 2, 1; 2, 1; 1, 2]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D);
 %! X = [-2, -4, 1; 1, 1, 2; 1, 2, 2; 1, 3, 2; 2, 3, 3; 2, NaN, NaN];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [5, 3, 2; 1, 4, 1; 2, 1, 3; 6, 2, 6; 3, 6, 5; 4, 5, 4]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 1);
 %! X = [-2, -4, 1; 1, 1, 2; 1, 2, 2; 1, 3, 2; 2, 3, 3; 2, NaN, NaN];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [5, 3, 2; 1, 4, 1; 2, 1, 3; 6, 2, 6; 3, 6, 5; 4, 5, 4]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 2);
 %! X = [1, 2, 2; 1, 1, 3; -4, 2, 2; 1, 2, NaN; -2, 3, NaN; 1, 2, 3];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [1, 2, 3; 1, 3, 2; 2, 1, 3; 2, 1, 3; 1, 3, 2; 1, 3, 2]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 1, 'ComparisonMethod', 'abs');
 %! X = [1, 1, 1; 1, 2, 2; 1, 3, 2; 2, 3, 2; 2, -4, 3; -2, NaN, NaN];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [1, 4, 2; 2, 1, 1; 6, 2, 3; 3, 6, 6; 4, 3, 5; 5, 5, 4]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 2, 'ComparisonMethod', 'abs');
 %! X = [1, 2, 2; 1, 1, 3; 2, 2, -4; 1, 2, NaN; -2, 3, NaN; 1, 2, 3];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [1, 2, 3; 1, 3, 2; 1, 3, 2; 2, 1, 3; 1, 3, 2; 1, 3, 2]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 1, 'MissingPlacement', 'first');
 %! X = [-2, NaN, NaN; 1, -4, 1; 1, 1, 2; 1, 2, 2; 2, 3, 2; 2, 3, 3];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [5, 5, 4; 1, 3, 2; 2, 4, 1; 6, 1, 3; 3, 2, 6; 4, 6, 5]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 2, 'MissingPlacement', 'first');
 %! X = [1, 2, 2; 1, 1, 3; -4, 2, 2; NaN, 1, 2; NaN, -2, 3; 1, 2, 3];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [1, 2, 3; 1, 3, 2; 2, 1, 3; 3, 2, 1; 2, 1, 3; 1, 3, 2]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 1, 'MissingPlacement', 'last');
 %! X = [-2, -4, 1; 1, 1, 2; 1, 2, 2; 1, 3, 2; 2, 3, 3; 2, NaN, NaN];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [5, 3, 2; 1, 4, 1; 2, 1, 3; 6, 2, 6; 3, 6, 5; 4, 5, 4]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 2, 'MissingPlacement', 'last');
 %! X = [1, 2, 2; 1, 1, 3; -4, 2, 2; 1, 2, NaN; -2, 3, NaN; 1, 2, 3];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [1, 2, 3; 1, 3, 2; 2, 1, 3; 2, 1, 3; 1, 3, 2; 1, 3, 2]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 'descend');
 %! X = [2, NaN, NaN; 2, 3, 3; 1, 3, 2; 1, 2, 2; 1, 1, 2; -2, -4, 1];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [3, 5, 4; 4, 2, 5; 1, 6, 1; 2, 1, 3; 6, 4, 6; 5, 3, 2]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 1, 'descend');
 %! X = [2, NaN, NaN; 2, 3, 3; 1, 3, 2; 1, 2, 2; 1, 1, 2; -2, -4, 1];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [3, 5, 4; 4, 2, 5; 1, 6, 1; 2, 1, 3; 6, 4, 6; 5, 3, 2]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 2, 'descend');
 %! X = [2, 2, 1; 3, 1, 1; 2, 2, -4; NaN, 2, 1; NaN, 3, -2; 3, 2, 1];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [2, 3, 1; 2, 1, 3; 1, 3, 2; 3, 1, 2; 2, 3, 1; 2, 3, 1]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 1, 'descend', 'ComparisonMethod', 'abs');
 %! X = [2, NaN, NaN; 2, -4, 3; -2, 3, 2; 1, 3, 2; 1, 2, 2; 1, 1, 1];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [3, 5, 4; 4, 3, 5; 5, 2, 1; 1, 6, 3; 2, 1, 6; 6, 4, 2]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 2, 'descend', 'ComparisonMethod', 'abs');
 %! X = [2, 2, 1; 3, 1, 1; -4, 2, 2; NaN, 2, 1; NaN, 3, -2; 3, 2, 1];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [2, 3, 1; 2, 1, 3; 2, 1, 3; 3, 1, 2; 2, 3, 1; 2, 3, 1]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 1, 'descend', 'MissingPlacement', 'first');
 %! X = [2, NaN, NaN; 2, 3, 3; 1, 3, 2; 1, 2, 2; 1, 1, 2; -2, -4, 1];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [3, 5, 4; 4, 2, 5; 1, 6, 1; 2, 1, 3; 6, 4, 6; 5, 3, 2]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 2, 'descend', 'MissingPlacement', 'first');
 %! X = [2, 2, 1; 3, 1, 1; 2, 2, -4; NaN, 2, 1; NaN, 3, -2; 3, 2, 1];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [2, 3, 1; 2, 1, 3; 1, 3, 2; 3, 1, 2; 2, 3, 1; 2, 3, 1]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 1, 'descend', 'MissingPlacement', 'last');
 %! X = [2, 3, 3; 2, 3, 2; 1, 2, 2; 1, 1, 2; 1, -4, 1; -2, NaN, NaN];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [3, 2, 5; 4, 6, 1; 1, 1, 3; 2, 4, 6; 6, 3, 2; 5, 5, 4]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 2, 'descend', 'MissingPlacement', 'last');
 %! X = [2, 2, 1; 3, 1, 1; 2, 2, -4; 2, 1, NaN; 3, -2, NaN; 3, 2, 1];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [2, 3, 1; 2, 1, 3; 1, 3, 2; 1, 2, 3; 3, 1, 2; 2, 3, 1]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 1, 'MissingPlacement', 'first', 'ComparisonMethod', 'abs');
 %! X = [1, NaN, NaN; 1, 1, 1; 1, 2, 2; 2, 3, 2; 2, 3, 2; -2, -4, 3];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [1, 5, 4; 2, 4, 2; 6, 1, 1; 3, 2, 3; 4, 6, 6; 5, 3, 5]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 2, 'MissingPlacement', 'first', 'ComparisonMethod', 'abs');
 %! X = [1, 2, 2; 1, 1, 3; 2, 2, -4; NaN, 1, 2; NaN, -2, 3; 1, 2, 3];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [1, 2, 3; 1, 3, 2; 1, 3, 2; 3, 2, 1; 2, 1, 3; 1, 3, 2]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 1, 'MissingPlacement', 'last', 'ComparisonMethod', 'abs');
 %! X = [1, 1, 1; 1, 2, 2; 1, 3, 2; 2, 3, 2; 2, -4, 3; -2, NaN, NaN];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [1, 4, 2; 2, 1, 1; 6, 2, 3; 3, 6, 6; 4, 3, 5; 5, 5, 4]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 2, 'MissingPlacement', 'last', 'ComparisonMethod', 'abs');
 %! X = [1, 2, 2; 1, 1, 3; 2, 2, -4; 1, 2, NaN; -2, 3, NaN; 1, 2, 3];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [1, 2, 3; 1, 3, 2; 1, 3, 2; 2, 1, 3; 1, 3, 2; 1, 3, 2]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 1, 'descend', 'MissingPlacement', 'first', 'ComparisonMethod', 'abs');
 %! X = [2, NaN, NaN; 2, -4, 3; -2, 3, 2; 1, 3, 2; 1, 2, 2; 1, 1, 1];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [3, 5, 4; 4, 3, 5; 5, 2, 1; 1, 6, 3; 2, 1, 6; 6, 4, 2]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 2, 'descend', 'MissingPlacement', 'first', 'ComparisonMethod', 'abs');
 %! X = [2, 2, 1; 3, 1, 1; -4, 2, 2; NaN, 2, 1; NaN, 3, -2; 3, 2, 1];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [2, 3, 1; 2, 1, 3; 2, 1, 3; 3, 1, 2; 2, 3, 1; 2, 3, 1]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 1, 'descend', 'MissingPlacement', 'last', 'ComparisonMethod', 'abs');
 %! X = [2, -4, 3; 2, 3, 2; -2, 3, 2; 1, 2, 2; 1, 1, 1; 1, NaN, NaN];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [3, 3, 5; 4, 2, 1; 5, 6, 3; 1, 1, 6; 2, 4, 2; 6, 5, 4]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! [B, I] = sort (D, 2, 'descend', 'MissingPlacement', 'last', 'ComparisonMethod', 'abs');
 %! X = [2, 2, 1; 3, 1, 1; -4, 2, 2; 2, 1, NaN; 3, -2, NaN; 3, 2, 1];
-%! assert (days (B), X);
+%! assert_equal (days (B), X);
 %! assert_equal (I, [2, 3, 1; 2, 1, 3; 2, 1, 3; 1, 2, 3; 3, 1, 2; 2, 3, 1]);
 
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
 %! D = sortrows (D);
-%! assert (days (D), [1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert_equal (days (D), [1, 2; 1, 3; 2, -4; 2, 1]);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
 %! D = sortrows (D, 'ComparisonMethod', 'abs');
-%! assert (days (D), [1, 2; 1, 3; 2, 1; 2, -4]);
+%! assert_equal (days (D), [1, 2; 1, 3; 2, 1; 2, -4]);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
 %! D = sortrows (D, 1, 'ComparisonMethod', 'abs');
-%! assert (days (D), [1, 2; 1, 3; 2, -4; 2, 1]);
+%! assert_equal (days (D), [1, 2; 1, 3; 2, -4; 2, 1]);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
 %! D = sortrows (D, 2, 'ComparisonMethod', 'abs');
-%! assert (days (D), [2, 1; 1, 2; 1, 3; 2, -4]);
+%! assert_equal (days (D), [2, 1; 1, 2; 1, 3; 2, -4]);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
 %! D = sortrows (D, -1, 'ComparisonMethod', 'abs');
-%! assert (days (D), [2, -4; 2, 1; 1, 2; 1, 3]);
+%! assert_equal (days (D), [2, -4; 2, 1; 1, 2; 1, 3]);
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
 %! D = sortrows (D, -2, 'ComparisonMethod', 'abs');
-%! assert (days (D), [2, -4; 1, 3; 1, 2; 2, 1]);
+%! assert_equal (days (D), [2, -4; 1, 3; 1, 2; 2, 1]);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D);
 %! X = [-2, NaN, 3; 1, 2, 2; 1, 3, 1; 1, 3, 2; 2, -4, 2; 2, 1, NaN];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, -2, 'MissingPlacement', 'first');
 %! X = [-2, NaN, 3; 1, 3, 1; 1, 3, 2; 1, 2, 2; 2, 1, NaN; 2, -4, 2];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, -2, 'MissingPlacement', 'last');
 %! X = [1, 3, 1; 1, 3, 2; 1, 2, 2; 2, 1, NaN; 2, -4, 2; -2, NaN, 3];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, 2, 'MissingPlacement', 'first');
 %! X = [-2, NaN, 3; 2, -4, 2; 2, 1, NaN; 1, 2, 2; 1, 3, 1; 1, 3, 2];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, 2, 'MissingPlacement', 'last');
 %! X = [2, -4, 2; 2, 1, NaN; 1, 2, 2; 1, 3, 1; 1, 3, 2; -2, NaN, 3];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, 'ComparisonMethod', 'abs', 'MissingPlacement', 'first');
 %! X = [1, 2, 2; 1, 3, 1; 1, 3, 2; -2, NaN, 3; 2, 1, NaN; 2, -4, 2];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, 'ComparisonMethod', 'abs', 'MissingPlacement', 'last');
 %! X = [1, 2, 2; 1, 3, 1; 1, 3, 2; 2, 1, NaN; 2, -4, 2; -2, NaN, 3];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [1, -2, 3]);
 %! X = [-2, NaN, 3; 1, 3, 1; 1, 3, 2; 1, 2, 2; 2, 1, NaN; 2, -4, 2];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [-1, -2, 3]);
 %! X = [2, 1, NaN; 2, -4, 2; 1, 3, 1; 1, 3, 2; 1, 2, 2; -2, NaN, 3];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [1, -2, -3]);
 %! X = [-2, NaN, 3; 1, 3, 2; 1, 3, 1; 1, 2, 2; 2, 1, NaN; 2, -4, 2];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [1, -2], {'ascend', 'descend'});
 %! X = [-2, NaN, 3; 1, 3, 1; 1, 3, 2; 1, 2, 2; 2, 1, NaN; 2, -4, 2];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [1, -2], {'descend', 'ascend'});
 %! X = [2, -4, 2; 2, 1, NaN; 1, 2, 2; 1, 3, 1; 1, 3, 2; -2, NaN, 3];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [-1, -2, 3], {'ascend', 'ascend', 'descend'});
 %! X = [-2, NaN, 3; 1, 2, 2; 1, 3, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [1, -2, -3], string ({'ascend', 'ascend', 'descend'}));
 %! X = [-2, NaN, 3; 1, 2, 2; 1, 3, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, string ({'ascend', 'ascend', 'descend'}));
 %! X = [-2, NaN, 3; 1, 2, 2; 1, 3, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, string ({'ascend', 'ascend', 'descend'}));
 %! X = [-2, NaN, 3; 1, 2, 2; 1, 3, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [1, 2, -3]);
 %! X = [-2, NaN, 3; 1, 2, 2; 1, 3, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [1, -2, 3], 'MissingPlacement', 'first');
 %! X = [-2, NaN, 3; 1, 3, 1; 1, 3, 2; 1, 2, 2; 2, 1, NaN; 2, -4, 2];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [-1, -2, 3], 'MissingPlacement', 'first');
 %! X = [2, 1, NaN; 2, -4, 2; 1, 3, 1; 1, 3, 2; 1, 2, 2; -2, NaN, 3];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [1, -2, -3], 'MissingPlacement', 'first');
 %! X = [-2, NaN, 3; 1, 3, 2; 1, 3, 1; 1, 2, 2; 2, 1, NaN; 2, -4, 2];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [1, -2, 3], 'MissingPlacement', 'last');
 %! X = [-2, NaN, 3; 1, 3, 1; 1, 3, 2; 1, 2, 2; 2, 1, NaN; 2, -4, 2];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [-1, -2, 3], 'MissingPlacement', 'last');
 %! X = [2, 1, NaN; 2, -4, 2; 1, 3, 1; 1, 3, 2; 1, 2, 2; -2, NaN, 3];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [1, -2, -3], 'MissingPlacement', 'last');
 %! X = [-2, NaN, 3; 1, 3, 2; 1, 3, 1; 1, 2, 2; 2, 1, NaN; 2, -4, 2];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [1, -2, 3], 'MissingPlacement', 'first', 'ComparisonMethod', 'abs');
 %! X = [1, 3, 1; 1, 3, 2; 1, 2, 2; -2, NaN, 3; 2, -4, 2; 2, 1, NaN];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [-1, -2, 3], 'MissingPlacement', 'first', 'ComparisonMethod', 'abs');
 %! X = [-2, NaN, 3; 2, -4, 2; 2, 1, NaN; 1, 3, 1; 1, 3, 2; 1, 2, 2];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [1, -2, -3], 'MissingPlacement', 'first', 'ComparisonMethod', 'abs');
 %! X = [1, 3, 2; 1, 3, 1; 1, 2, 2; -2, NaN, 3; 2, -4, 2; 2, 1, NaN];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [1, -2, 3], 'MissingPlacement', 'last', 'ComparisonMethod', 'abs');
 %! X = [1, 3, 1; 1, 3, 2; 1, 2, 2; 2, -4, 2; 2, 1, NaN; -2, NaN, 3];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [-1, -2, 3], 'MissingPlacement', 'last', 'ComparisonMethod', 'abs');
 %! X = [2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 1; 1, 3, 2; 1, 2, 2];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [1, -2, -3], 'MissingPlacement', 'last', 'ComparisonMethod', 'abs');
 %! X = [1, 3, 2; 1, 3, 1; 1, 2, 2; 2, -4, 2; 2, 1, NaN; -2, NaN, 3];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [1, -2], {'ascend', 'descend'}, 'MissingPlacement', 'first');
 %! X = [-2, NaN, 3; 1, 3, 1; 1, 3, 2; 1, 2, 2; 2, 1, NaN; 2, -4, 2];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [1, -2], {'descend', 'ascend'}, 'MissingPlacement', 'last');
 %! X = [2, -4, 2; 2, 1, NaN; 1, 2, 2; 1, 3, 1; 1, 3, 2; -2, NaN, 3];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [-1, -2, 3], {'ascend', 'ascend', 'descend'}, ...
 %!               'ComparisonMethod', 'abs', 'MissingPlacement', 'first');
 %! X = [1, 2, 2; 1, 3, 2; 1, 3, 1; -2, NaN, 3; 2, 1, NaN; 2, -4, 2];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [1, -2, -3], {'ascend', 'ascend', 'descend'}, ...
 %!               'ComparisonMethod', 'abs', 'MissingPlacement', 'first');
 %! X = [1, 2, 2; 1, 3, 2; 1, 3, 1; -2, NaN, 3; 2, 1, NaN; 2, -4, 2];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [-1, -2, 3], {'ascend', 'ascend', 'descend'}, ...
 %!               'ComparisonMethod', 'abs', 'MissingPlacement', 'last');
 %! X = [1, 2, 2; 1, 3, 2; 1, 3, 1; 2, 1, NaN; 2, -4, 2; -2, NaN, 3];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [1, -2, -3], {'ascend', 'ascend', 'descend'}, ...
 %!               'ComparisonMethod', 'abs', 'MissingPlacement', 'last');
 %! X = [1, 2, 2; 1, 3, 2; 1, 3, 1; 2, 1, NaN; 2, -4, 2; -2, NaN, 3];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, {'ascend', 'ascend', 'descend'}, 'ComparisonMethod', 'abs');
 %! X = [1, 2, 2; 1, 3, 2; 1, 3, 1; 2, 1, NaN; 2, -4, 2; -2, NaN, 3];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!test
 %! D = days ([1, 2, 2; 1, 3, 1; 2, -4, 2; 2, 1, NaN; -2, NaN, 3; 1, 3, 2]);
 %! D = sortrows (D, [1, 2, -3], 'ComparisonMethod', 'abs');
 %! X = [1, 2, 2; 1, 3, 2; 1, 3, 1; 2, 1, NaN; 2, -4, 2; -2, NaN, 3];
-%! assert (days (D), X);
+%! assert_equal (days (D), X);
 %!error<duration.sortrows: A must be a 2-D matrix.> ...
 %! sortrows (days (ones (2, 3, 4)))
 %!error<duration.sortrows: invalid value for 'MissingPlacement'.> ...
@@ -3273,11 +3273,11 @@
 %!              days ([1.5, 2.5, 3.5, 4.5]))
 %!assert_equal (interp1 (days ([1:5]), days ([1:5]), days ([1.5, 2.5, 3.5, 4.5])), ...
 %!              days ([1.5, 2.5, 3.5, 4.5]))
-%!assert (isequaln (interp1 (1:5, days ([1:5]), [-1.5, 2.5, 3.5, 6.5]), ...
-%!        days ([NaN, 2.5, 3.5, NaN])))
+%!assert_equal (isequaln (interp1 (1:5, days ([1:5]), [-1.5, 2.5, 3.5, 6.5]), ...
+%!        days ([NaN, 2.5, 3.5, NaN])), true)
 %!assert_equal (class (interp1 (1:5, days ([1:5]), 'pp')), 'struct')
-%!assert (isequaln (interp1 (1:5, days ([1:5]), [-1.5, 2.5, 3.5, 6.5], 'linear'), ...
-%!                  days ([NaN, 2.5, 3.5, NaN])))
+%!assert_equal (isequaln (interp1 (1:5, days ([1:5]), [-1.5, 2.5, 3.5, 6.5], 'linear'), ...
+%!                  days ([NaN, 2.5, 3.5, NaN])), true)
 %!assert_equal (interp1 (1:5, days ([1:5]), [-1.5, 2.5, 3.5, 6.5], 'linear', days (2)), ...
 %!              days ([2, 2.5, 3.5, 2]))
 %!assert_equal (interp1 (1:5, days ([1:5]), [-1.5, 2.5, 3.5, 6.5], 'linear', 'extrap'), ...
@@ -3410,7 +3410,7 @@
 %! assert_equal (index, [1; 5]);
 %!test
 %! C = setdiff (days ([5, NaN, NaN]), days ([5, NaN, NaN]));
-%! assert (isequaln (C, days ([NaN, NaN])));
+%! assert_equal (isequaln (C, days ([NaN, NaN])), true);
 %!assert_equal (setdiff (days ([1, 2]), days (2)), days (1))
 %!assert_equal (setdiff (days ([1, 2]), '48:00:00'), days (1))
 %!assert_equal (setdiff (days ([1, 2]), string ({'48:00:00'})), days (1))
@@ -3477,7 +3477,7 @@
 %! assert_equal (ixB, [3]);
 %!test
 %! C = setxor (days ([5, NaN, NaN]), days ([5, NaN, NaN]));
-%! assert (isequaln (C, days ([NaN, NaN, NaN, NaN])));
+%! assert_equal (isequaln (C, days ([NaN, NaN, NaN, NaN])), true);
 %!assert_equal (setxor (days ([1, 2]), days (2)), days (1))
 %!assert_equal (setxor (days ([1, 2]), '48:00:00'), days (1))
 %!assert_equal (setxor (days ([1, 2]), string ('48:00:00')), days (1))
@@ -3545,7 +3545,7 @@
 %! assert_equal (ixB, 1);
 %!test
 %! C = union (days ([5, NaN, 1]), days ([4, NaN, NaN]));
-%! assert (isequaln (C, days ([1, 4, 5, NaN, NaN, NaN])));
+%! assert_equal (isequaln (C, days ([1, 4, 5, NaN, NaN, NaN])), true);
 %!assert_equal (union (days ([1, 3]), days (2)), days ([1, 2, 3]))
 %!assert_equal (union (days ([1, 3]), '48:00:00'), days ([1, 2, 3]))
 %!assert_equal (union (days ([1, 4]), string ('48:00:00')), days ([1, 2, 4]))
@@ -3737,26 +3737,26 @@
 %!test
 %! X = magic (3);
 %! D = days (X);
-%! assert (days (D(:, end)), X(:,end));
+%! assert_equal (days (D(:, end)), X(:,end));
 %!test
 %! X = magic (3);
 %! D = days (X);
-%! assert (days (D([1:end-1], end)), [6; 7]);
+%! assert_equal (days (D([1:end-1], end)), [6; 7]);
 
 %!test
 %! D = duration ([1:5], 0, 0);
 %! out = D([2,3]);
-%! assert (size (out), [1, 2]);
-%! assert (hours (out), [2, 3]);
+%! assert_equal (size (out), [1, 2]);
+%! assert_equal (hours (out), [2, 3]);
 %!test
 %! D = duration ([1:5], 0, 0);
-%! assert (D.Format, 'hh:mm:ss');
+%! assert_equal (D.Format, 'hh:mm:ss');
 %!test
 %! D = duration ([1:5], 0, 0, 'Format', 'hh:mm');
-%! assert (D.Format, 'hh:mm');
+%! assert_equal (D.Format, 'hh:mm');
 %!test
 %! D = duration ([1:5], 0, 0, 'Format', 'y');
-%! assert (D.Format, 'y');
+%! assert_equal (D.Format, 'y');
 %!error<duration.subsref: '{}' invalid indexing for referencing values. Use '\(\)' instead.> ...
 %! D = duration ([1:5], 0, 0); D{1}
 %!error<duration.subsref: unrecognized property: 'form'> ...
@@ -3765,63 +3765,63 @@
 %!test
 %! D = duration ([1:5], 0, 0);
 %! D([2,3]) = [4, 5];
-%! assert (hours (D), [1, 96, 120, 4, 5]);
+%! assert_equal (hours (D), [1, 96, 120, 4, 5]);
 %!test
 %! D = duration ([1:5], 0, 0);
 %! D([2,3]) = hours ([4, 5]);
-%! assert (hours (D), [1, 4, 5, 4, 5]);
+%! assert_equal (hours (D), [1, 4, 5, 4, 5]);
 %!test
 %! D = days ([1:5]);
 %! D([2,3]) = {'12:23:42', '00:12:23'};
-%! assert (days (D), [1, 0.51646, 0.0085995, 4, 5], 1e-5);
+%! assert_equal (days (D), [1, 0.51646, 0.0085995, 4, 5], 1e-5);
 %!test
 %! D = days ([1:5]);
 %! D([2,3]) = string ({'12:23:42', '00:12:23'});
-%! assert (days (D), [1, 0.51646, 0.0085995, 4, 5], 1e-5);
+%! assert_equal (days (D), [1, 0.51646, 0.0085995, 4, 5], 1e-5);
 %!test
 %! D = days ([1:5]);
 %! D([2,3]) = ['12:23:42'; '00:12:23'];
-%! assert (days (D), [1, 0.51646, 0.0085995, 4, 5], 1e-5);
+%! assert_equal (days (D), [1, 0.51646, 0.0085995, 4, 5], 1e-5);
 %!test
 %! D = days ([1:5]);
 %! D([2,3]) = {'05:12:00:00', '01:00:00:00'};
-%! assert (days (D), [1, 5.5, 1, 4, 5]);
+%! assert_equal (days (D), [1, 5.5, 1, 4, 5]);
 %!test
 %! D = days ([1:5]);
 %! D([2,3]) = string ({'05:12:00:00', '01:00:00:00'});
-%! assert (days (D), [1, 5.5, 1, 4, 5]);
+%! assert_equal (days (D), [1, 5.5, 1, 4, 5]);
 %!test
 %! D = days ([1:5]);
 %! D([2,3]) = ['05:12:00:00'; '01:00:00:00'];
-%! assert (days (D), [1, 5.5, 1, 4, 5]);
+%! assert_equal (days (D), [1, 5.5, 1, 4, 5]);
 %!test
 %! D = days ([1:5]);
 %! D([2,3]) = NaN;
-%! assert (days (D), [1, NaN, NaN, 4, 5]);
-%! assert (dispstrings (D), {'1 day', 'NaN days', 'NaN days', '4 days', '5 days'});
+%! assert_equal (days (D), [1, NaN, NaN, 4, 5]);
+%! assert_equal (dispstrings (D), {'1 day', 'NaN days', 'NaN days', '4 days', '5 days'});
 %!test
 %! D = days ([1:5]);
 %! D([1:3]) = missing;
-%! assert (days (D), [NaN, NaN, NaN, 4, 5]);
-%! assert (dispstrings (D), {'NaN days', 'NaN days', 'NaN days', '4 days', '5 days'});
+%! assert_equal (days (D), [NaN, NaN, NaN, 4, 5]);
+%! assert_equal (dispstrings (D), {'NaN days', 'NaN days', 'NaN days', '4 days', '5 days'});
 %!test
 %! D = days ([1:5]);
 %! D([2,3]) = [Inf, -Inf];
-%! assert (days (D), [1, Inf, -Inf, 4, 5]);
-%! assert (dispstrings (D), {'1 day', 'Inf days', '-Inf days', '4 days', '5 days'});
+%! assert_equal (days (D), [1, Inf, -Inf, 4, 5]);
+%! assert_equal (dispstrings (D), {'1 day', 'Inf days', '-Inf days', '4 days', '5 days'});
 %!test
 %! D = days ([1:5]);
 %! D([1:3]) = 2;
-%! assert (days (D), [2, 2, 2, 4, 5]);
+%! assert_equal (days (D), [2, 2, 2, 4, 5]);
 %!test
 %! D = days ([1:5]);
 %! D([1:3]) = [NaN, 2, 3];
-%! assert (days (D), [NaN, 2, 3, 4, 5]);
+%! assert_equal (days (D), [NaN, 2, 3, 4, 5]);
 %!test
 %! D = duration (0, [1:5], 0);
 %! D([1:3]) = [NaN, 2, 3];
-%! assert (minutes (D), [NaN, 48 * 60, 72 * 60, 4, 5]);
-%! assert (dispstrings (D), {'NaN', '48:00:00', '72:00:00', '00:04:00', '00:05:00'});
+%! assert_equal (minutes (D), [NaN, 48 * 60, 72 * 60, 4, 5]);
+%! assert_equal (dispstrings (D), {'NaN', '48:00:00', '72:00:00', '00:04:00', '00:05:00'});
 %!error<duration.subsasgn: chained subscripts not allowed.> ...
 %! D = duration (); D(1)(1) = 1
 %!error<duration.subsasgn: assignment value must be a duration array, a numeric array of days, or a text represention of durations.> ...

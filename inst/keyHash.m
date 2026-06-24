@@ -67,40 +67,40 @@ endfunction
 
 %!test
 %! key = keyHash (1);
-%! assert (isscalar (key), true);
+%! assert_equal (isscalar (key), true);
 %! key = keyHash ([1:5]);
-%! assert (isscalar (key), true);
+%! assert_equal (isscalar (key), true);
 %!test
 %! key1 = keyHash (1);
 %! key2 = keyHash (1, 0xcbf29ce484222325); # default offset basis
-%! assert (key1, key2);
+%! assert_equal (key1, key2);
 %!test
 %! key1 = keyHash (0);
-%! assert (class (key1), 'uint64');
+%! assert_equal (class (key1), 'uint64');
 %!test
 %! A = [1:5];
 %! B = [1:5];
 %! key1 = keyHash (A);
 %! key2 = keyHash (B);
-%! assert (key1, key2);
+%! assert_equal (key1, key2);
 %!test
 %! A = [1:5];
 %! B = [1:5]';
 %! key1 = keyHash (A);
 %! key2 = keyHash (B);
-%! assert (isequal (key1, key2), false);
+%! assert_equal (isequal (key1, key2), false);
 %!test
 %! A = '';
 %! E = uint64 (15921358368119480423);
 %! key = keyHash (A);
 %! assert (isequal (key, E), sprintf ("k: %lx e: %lx d: %lx", key, E, key - E));
-%! assert (key, E);
+%! assert_equal (key, E);
 %!test
 %! A = uint64 (128);
 %! E = uint64 (8038837787959150693);
 %! key = keyHash (A);
 %! assert (isequal (key, E), sprintf ("k: %lx e: %lx d: %lx", key, E, key - E));
-%! assert (key, E);
+%! assert_equal (key, E);
 
 ## Add more tests on endianness (see GitHub issue 43)
 %!assert_equal (keyHash ([1, 2]), uint64 (1291405323040189622))

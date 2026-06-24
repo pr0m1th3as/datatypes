@@ -51,24 +51,24 @@ endfunction
 %! B = [1, 2, 3];
 %! C = string ("test");
 %! [A1, B1, C1] = convertCharsToStrings (A, B, C);
-%! assert (isstring (A1), true);
-%! assert (B, B1);
-%! assert (C == C1, true);
+%! assert_equal (isstring (A1), true);
+%! assert_equal (B, B1);
+%! assert_equal (C == C1, true);
 %!test
 %! A = {'asd', 'ert'; 'xcv', 'dfg'};
 %! A1 = convertCharsToStrings (A);
-%! assert (isequal (size (A), size (A1)));
-%! assert (isstring (A1), true);
+%! assert_equal (isequal (size (A), size (A1)), true);
+%! assert_equal (isstring (A1), true);
 %!test
 %! A = categorical (NaN);
 %! B = duration;
 %! C = 'text';
 %! [A1, B1, C1] = convertCharsToStrings (A, B, C);
-%! assert (iscategorical (A1), true);
-%! assert (isduration (B1), true);
-%! assert (isstring (C1), true);
+%! assert_equal (iscategorical (A1), true);
+%! assert_equal (isduration (B1), true);
+%! assert_equal (isstring (C1), true);
 %!test
 %! A = ['e','r';'v','b'];
 %! A1 = convertCharsToStrings (A);
-%! assert (isscalar (A1), true);
-%! assert (strcmp (char (A1), 'evrb'), true);
+%! assert_equal (isscalar (A1), true);
+%! assert_equal (strcmp (char (A1), 'evrb'), true);

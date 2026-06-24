@@ -121,28 +121,28 @@ endfunction
 %! dfValues = {{3}, [1, 2], 'text'};
 %!test
 %! [a, b, c] = parsePairedArguments (optNames, dfValues, {'A', 5});
-%! assert (a, 5);
-%! assert (b, [1, 2]);
-%! assert (c, 'text');
+%! assert_equal (a, 5);
+%! assert_equal (b, [1, 2]);
+%! assert_equal (c, 'text');
 %!test
 %! [a, b, c, args] = parsePairedArguments (optNames, dfValues, {4, 'D', 5});
-%! assert (numel (args), 3);
-%! assert (args{2}, 'D');
-%! assert (a, {3});
-%! assert (b, [1, 2]);
-%! assert (c, 'text');
+%! assert_equal (numel (args), 3);
+%! assert_equal (args{2}, 'D');
+%! assert_equal (a, {3});
+%! assert_equal (b, [1, 2]);
+%! assert_equal (c, 'text');
 %!test
 %! [a, b, c] = parsePairedArguments (optNames, dfValues, ...
 %!                                   {'A', 5, 'b', 1, 'C', 'test'});
-%! assert (a, 5);
-%! assert (b, 1);
-%! assert (c, 'test');
+%! assert_equal (a, 5);
+%! assert_equal (b, 1);
+%! assert_equal (c, 'test');
 %!test
 %! [a, b, c, args] = parsePairedArguments (optNames, dfValues, {1});
-%! assert (args, {1});
-%! assert (a, {3});
-%! assert (b, [1, 2]);
-%! assert (c, 'text');
+%! assert_equal (args, {1});
+%! assert_equal (a, {3});
+%! assert_equal (b, [1, 2]);
+%! assert_equal (c, 'text');
 
 %!error <parsePairedArguments: invalid number of input arguments.> ...
 %! parsePairedArguments (optNames, dfValues)

@@ -106,33 +106,33 @@ endclassdef
 ## Test output
 %!test
 %! S = vartype ('cellstr');
-%! assert (isa (S, "vartype"), true);
+%! assert_equal (isa (S, "vartype"), true);
 %!test
 %! S = vartype ('cellstr');
-%! assert (S.varMatch ({2343}), false);
-%! assert (S.varMatch ({'as'}), true);
+%! assert_equal (S.varMatch ({2343}), false);
+%! assert_equal (S.varMatch ({'as'}), true);
 %!test
 %! S = vartype ('string');
-%! assert (S.varMatch (string ('as')), true);
-%! assert (S.varMatch ({'as'}), false);
+%! assert_equal (S.varMatch (string ('as')), true);
+%! assert_equal (S.varMatch ({'as'}), false);
 %!test
 %! S = vartype ('single');
-%! assert (S.varMatch (34.5), false);
-%! assert (S.varMatch (single (34.5)), true);
+%! assert_equal (S.varMatch (34.5), false);
+%! assert_equal (S.varMatch (single (34.5)), true);
 %!test
 %! S = vartype ('numeric');
-%! assert (S.varMatch (int8 (34)), true);
-%! assert (S.varMatch (single (34.5)), true);
+%! assert_equal (S.varMatch (int8 (34)), true);
+%! assert_equal (S.varMatch (single (34.5)), true);
 %!test
 %! S = vartype ('duration');
-%! assert (S.varMatch (int8 (34)), false);
-%! assert (S.varMatch (calweeks (3)), false);
-%! assert (S.varMatch (hours (12)), true);
+%! assert_equal (S.varMatch (int8 (34)), false);
+%! assert_equal (S.varMatch (calweeks (3)), false);
+%! assert_equal (S.varMatch (hours (12)), true);
 %!test
 %! S = vartype ('calendarDuration');
-%! assert (S.varMatch ('char'), false);
-%! assert (S.varMatch (calweeks (3)), true);
-%! assert (S.varMatch (hours (12)), false);
+%! assert_equal (S.varMatch ('char'), false);
+%! assert_equal (S.varMatch (calweeks (3)), true);
+%! assert_equal (S.varMatch (hours (12)), false);
 
 ## Test input validation
 %!error <vartype: TYPE  must be either a character vector or a string scalar.> ...

@@ -50,19 +50,19 @@ endfunction
 %!test
 %! X = magic (3);
 %! D = calquarters (X);
-%! assert (size (D), size (X));
+%! assert_equal (size (D), size (X));
 %!test
 %! D = calquarters ([1, 2, 3]);
-%! assert (calquarters (D), [1, 2, 3]);
+%! assert_equal (calquarters (D), [1, 2, 3]);
 %!test
 %! D = calquarters ([1, 2, NaN, 4]);
-%! assert (calquarters (D), [1, 2, NaN, 4]);
+%! assert_equal (calquarters (D), [1, 2, NaN, 4]);
 %!test
 %! D = calquarters (int16 (1));
-%! assert (calquarters (D), 1);
+%! assert_equal (calquarters (D), 1);
 %!test
 %! D = calquarters ();
-%! assert (calquarters (D), 1);
+%! assert_equal (calquarters (D), 1);
 
 %!error<calquarters: input array must be numeric.> calquarters ("asd");
 %!error<calquarters: input array must be real.> calquarters (1+i);

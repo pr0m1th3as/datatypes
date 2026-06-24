@@ -45,13 +45,13 @@ endfunction
 %!test
 %! X = magic (3);
 %! D = years (X);
-%! assert (size (D), size (X));
+%! assert_equal (size (D), size (X));
 %!test
 %! D = years ([1, 2, 3]);
-%! assert (years (D), [1, 2, 3]);
+%! assert_equal (years (D), [1, 2, 3]);
 %!test
 %! D = years ();
-%! assert (years (D), 1);
+%! assert_equal (years (D), 1);
 
 %!error<years: input array must be numeric.> years ("asd");
 %!error<years: input array must be real.> years (1+i);

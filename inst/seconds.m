@@ -44,16 +44,16 @@ endfunction
 %!test
 %! X = magic (3);
 %! D = seconds (X);
-%! assert (size (D), size (X));
+%! assert_equal (size (D), size (X));
 %!test
 %! D = seconds ([1, 2, 3]);
-%! assert (seconds (D), [1, 2, 3]);
+%! assert_equal (seconds (D), [1, 2, 3]);
 %!test
 %! D = seconds (int16 (1));
-%! assert (seconds (D), 1);
+%! assert_equal (seconds (D), 1);
 %!test
 %! D = seconds ();
-%! assert (seconds (D), 1);
+%! assert_equal (seconds (D), 1);
 
 %!error<seconds: input array must be numeric.> seconds ("asd");
 %!error<seconds: input array must be real.> seconds (1+i);

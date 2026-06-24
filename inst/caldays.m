@@ -50,19 +50,19 @@ endfunction
 %!test
 %! X = magic (3);
 %! D = caldays (X);
-%! assert (size (D), size (X));
+%! assert_equal (size (D), size (X));
 %!test
 %! D = caldays ([1, 2, 3]);
-%! assert (caldays (D), [1, 2, 3]);
+%! assert_equal (caldays (D), [1, 2, 3]);
 %!test
 %! D = caldays ([1, 2, NaN, 4]);
-%! assert (caldays (D), [1, 2, NaN, 4]);
+%! assert_equal (caldays (D), [1, 2, NaN, 4]);
 %!test
 %! D = caldays (int16 (1));
-%! assert (caldays (D), 1);
+%! assert_equal (caldays (D), 1);
 %!test
 %! D = caldays ();
-%! assert (caldays (D), 1);
+%! assert_equal (caldays (D), 1);
 
 %!error<caldays: input array must be numeric.> caldays ("asd");
 %!error<caldays: input array must be real.> caldays (1+i);

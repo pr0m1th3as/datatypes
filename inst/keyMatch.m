@@ -40,9 +40,9 @@ function TF = keyMatch (A, B)
   endif
 endfunction
 
-%!assert (keyMatch (1, {'1'}), false);
-%!assert (keyMatch (ones (2), 2), false);
-%!assert (keyMatch (1, 2), false);
-%!assert (keyMatch (1, 1), true);
+%!assert_equal (keyMatch (1, {'1'}), false);
+%!assert_equal (keyMatch (ones (2), 2), false);
+%!assert_equal (keyMatch (1, 2), false);
+%!assert_equal (keyMatch (1, 1), true);
 
 %!error<Invalid call to keyMatch.  Correct usage is:> keyMatch (2);

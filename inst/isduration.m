@@ -28,8 +28,8 @@ function TF = isduration (x)
   TF = isa (x, 'duration');
 endfunction
 
-%!assert (isduration (duration ([1, 2, 3])), true);
-%!assert (isduration (duration ([1, 2, 0; 1, 4, 0])), true);
-%!assert (isduration ([0, 1, 2]), false);
-%!assert (isduration ({true, false}), false);
-%!assert (isduration ({duration([1, 2, 3])}), false);
+%!assert_equal (isduration (duration ([1, 2, 3])), true);
+%!assert_equal (isduration (duration ([1, 2, 0; 1, 4, 0])), true);
+%!assert_equal (isduration ([0, 1, 2]), false);
+%!assert_equal (isduration ({true, false}), false);
+%!assert_equal (isduration ({duration([1, 2, 3])}), false);
