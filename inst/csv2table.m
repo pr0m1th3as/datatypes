@@ -415,7 +415,7 @@ function tbl = cell2tbl (C, T, N, D, U, RowNames);
       if (all (__ismissing__ (varT(2,:))))
         varValues{ix} = cell2var (varC, varT{1});
       ## Check for structure
-      elseif (all (strcmp (varT(1,:), 'structure')))
+      elseif (all (strcmp (varT(1,:), 'struct')))
         varValues{ix} = cell2struct (varC, varN(2,:), 2);
       ## Check for table
       elseif (all (strcmp (varT(1,:), 'table')))
@@ -429,6 +429,19 @@ function tbl = cell2tbl (C, T, N, D, U, RowNames);
     tbl = table (varValues{:}, 'VariableNames', varNames);
   else
     tbl = table (varValues{:}, 'VariableNames', varNames, 'RowNames', RowNames);
+  endif
+  ## Restore variable descriptions and units, when present.  They hold one
+  ## entry per output column; multicolumn variables repeat them across the
+  ## split columns, so take the first column belonging to each variable.
+  ## Restricted to flat tables: nested tables/structures are not serialized
+  ## with usable descriptions or units.
+  if (size (T, 1) == 1)
+    if (! isempty (D))
+      tbl.Properties.VariableDescriptions = D(1,ii);
+    endif
+    if (! isempty (U))
+      tbl.Properties.VariableUnits = U(1,ii);
+    endif
   endif
 endfunction
 
