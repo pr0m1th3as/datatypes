@@ -26,6 +26,7 @@ this program; if not, see <http://www.gnu.org/licenses/>.
 #include <octave/oct.h>
 #include <octave/Cell.h>
 #include <octave/file-ops.h>
+#include <octave/lo-ieee.h>
 
 using namespace std;
 
@@ -140,11 +141,22 @@ call it directly. \n\
         const char *word_str = word.c_str ();
         char *err;
         double val = strtod (word_str, &err);
+        // The "NA" token (Octave's missing value, as written by 'table2csv')
+        // is not recognized by strtod; map it to NA explicitly.
+        bool is_na = (! oinside) && (word == "NA");
         // Store into the cell; check if it is in address argument range
         if (col < cols)
         {
-          C(row, col) = ((word == "") || oinside || (err != word_str + word.length())) ?
-                        octave_value (word) : octave_value (val);
+          if (is_na)
+          {
+            C(row, col) = octave_value (octave::numeric_limits<double>::NA ());
+          }
+          else
+          {
+            C(row, col) = ((word == "") || oinside ||
+                           (err != word_str + word.length())) ?
+                          octave_value (word) : octave_value (val);
+          }
         }
         col++;
         word = "";
