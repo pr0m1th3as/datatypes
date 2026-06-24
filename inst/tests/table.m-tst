@@ -25,7 +25,7 @@
 ################################################################################
 
 ## Test the constructor
-%!test
+%!test  # variables become table columns; names auto-detected from inputname
 %! Name = {"John"; "Mary"; "Peter"; "Barbara"};
 %! Age = [23; 34; 42; 28];
 %! Height = [167; 163; 183; 178];
@@ -33,46 +33,132 @@
 %! assert_equal (size (T), [4, 3]);
 %! assert_equal (size (T.Age), [4, 1]);
 %! assert_equal (mean (T.Age), 31.75);
-%! varnames = T.Properties.VariableNames;
-%! assert_equal (varnames, {"Name", "Age", "Height"});
-%!test
-%! Name = {"John"; "Mary"; "Peter"; "Barbara"};
-%! Age = [23; 34; 42; 28];
-%! Height = [167; 163; 183; 178];
-%! T = table (Name, Age, Height);
-%! BloodPressure = [114 83; 119 75; 115 73; 107 80];
-%! T = table (Name, Age, Height, BloodPressure);
-%! assert_equal (size (T), [4, 4]);
-%! assert_equal (size (T.BloodPressure), [4, 2]);
-%!test
+%! assert_equal (T.Properties.VariableNames, {"Name", "Age", "Height"});
+%!test  # an empty constructor yields a 0x0 table
+%! T = table ();
+%! assert_equal (size (T), [0, 0]);
+%! assert_equal (height (T), 0);
+%! assert_equal (width (T), 0);
+%! assert_equal (class (T), "table");
+%! assert_equal (istable (T), true);
+%!test  # a single variable gives a one-variable table with an auto name
+%! x = [1; 2; 3];
+%! T = table (x);
+%! assert_equal (size (T), [3, 1]);
+%! assert_equal (T.Properties.VariableNames, {"x"});
+%! assert_equal (T.x, [1; 2; 3]);
+%!test  # an unnamed expression falls back to 'Var<N>' names
+%! T = table ([1; 2], [3; 4]);
+%! assert_equal (T.Properties.VariableNames, {"Var1", "Var2"});
+%!test  # a multicolumn variable counts as a single table variable
+%! T = table ([1, 2; 3, 4; 5, 6], 'VariableNames', {'bp'});
+%! assert_equal (size (T), [3, 1]);
+%! assert_equal (width (T), 1);
+%! assert_equal (size (T.bp), [3, 2]);
+%!test  # 'VariableNames' overrides the detected names
 %! Name = {"John"; "Mary"; "Peter"; "Barbara"};
 %! Age = [23; 34; 42; 28];
 %! Height = [167; 163; 183; 178];
 %! T = table (Name, Age, Height, "VariableNames", {"A", "B", "C"});
 %! assert_equal (T.Properties.VariableNames, {"A", "B", "C"});
-%!test
-%! sz = [4 3];
-%! varTypes = {"double", "datetime", "string"};
-%! T = table("Size", sz, "VariableTypes", varTypes);
+%!test  # 'VariableNames' may be given as a string array
+%! T = table (1, 2, 'VariableNames', string ({'AA', 'BB'}));
+%! assert_equal (T.Properties.VariableNames, {'AA', 'BB'});
+%! assert_equal (class (T.Properties.VariableNames), 'cell');
+%!test  # a multicolumn variable is kept intact
+%! Name = {"John"; "Mary"; "Peter"; "Barbara"};
+%! Age = [23; 34; 42; 28];
+%! Height = [167; 163; 183; 178];
+%! BloodPressure = [114, 83; 119, 75; 115, 73; 107, 80];
+%! T = table (Name, Age, Height, BloodPressure);
+%! assert_equal (size (T), [4, 4]);
+%! assert_equal (size (T.BloodPressure), [4, 2]);
+%!test  # 'RowNames' labels the rows without adding a variable
+%! T = table ([1; 2; 3], 'VariableNames', {'x'}, ...
+%!            'RowNames', {'a'; 'b'; 'c'});
+%! assert_equal (size (T), [3, 1]);
+%! assert_equal (T.Properties.RowNames, {'a'; 'b'; 'c'});
+%!test  # 'RowNames' may be given as a string array
+%! T = table ([1; 2], 'VariableNames', {'x'}, 'RowNames', string ({'a', 'b'}));
+%! assert_equal (T.Properties.RowNames, {'a'; 'b'});
+%!test  # 'DimensionNames' sets the row/variable dimension labels
+%! T = table ([1; 2], 'VariableNames', {'x'}, ...
+%!            'DimensionNames', {'Samples', 'Measures'});
+%! assert_equal (T.Properties.DimensionNames, {'Samples', 'Measures'});
+%!test  # the default dimension names are 'Row' and 'Variables'
+%! T = table ([1; 2]);
+%! assert_equal (T.Properties.DimensionNames, {'Row', 'Variables'});
+%!test  # heterogeneous variable types are preserved
+%! T = table ([1; 2], logical ([1; 0]), {'a'; 'b'}, string ({'c'; 'd'}), ...
+%!            'VariableNames', {'n', 'l', 'c', 's'});
+%! assert_equal (class (T.n), 'double');
+%! assert_equal (class (T.l), 'logical');
+%! assert_equal (class (T.c), 'cell');
+%! assert_equal (class (T.s), 'string');
+%!test  # variables with zero rows are allowed
+%! T = table (zeros (0, 1), cell (0, 1), 'VariableNames', {'a', 'b'});
+%! assert_equal (size (T), [0, 2]);
+%! assert_equal (height (T), 0);
+%! assert_equal (width (T), 2);
+%!test  # 'VariableDescriptions' and 'VariableUnits' default to empty
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
+%! assert_equal (T.Properties.VariableDescriptions, {'', ''});
+%! assert_equal (T.Properties.VariableUnits, {'', ''});
+%!test  # a nested table is accepted as a variable
+%! T = table ([1; 2], table ([3; 4], [5; 6]), 'VariableNames', {'a', 'b'});
+%! assert_equal (width (T), 2);
+%! assert_equal (class (T.b), 'table');
+
+## Test the constructor -- 'Size'/'VariableTypes' preallocation
+%!test  # preallocates a table of the requested size with default values
+%! T = table ('Size', [4, 3], 'VariableTypes', {'double', 'datetime', 'string'});
 %! assert_equal (size (T), [4, 3]);
-%! assert_equal (T.Properties.VariableNames, {"Var1", "Var2", "Var3"});
-%!test
-%! sz = [4 3];
-%! varTypes = {"double", "datetime", "string"};
-%! T = table("Size", sz, "VariableTypes", varTypes, ...
-%!           "VariableNames", {"A", "B", "C"});
+%! assert_equal (T.Properties.VariableNames, {'Var1', 'Var2', 'Var3'});
+%!test  # 'VariableNames' names the preallocated variables
+%! T = table ('Size', [4, 3], 'VariableTypes', {'double', 'datetime', 'string'}, ...
+%!            'VariableNames', {'A', 'B', 'C'});
+%! assert_equal (T.Properties.VariableNames, {'A', 'B', 'C'});
+%!test  # numeric and logical types default to zeros/false
+%! T = table ('Size', [2, 3], 'VariableTypes', {'double', 'int8', 'logical'});
+%! assert_equal (T.Var1, [0; 0]);
+%! assert_equal (T.Var2, int8 ([0; 0]));
+%! assert_equal (class (T.Var2), 'int8');
+%! assert_equal (T.Var3, [false; false]);
+%!test  # the 'doublenan'/'singlenan' types default to NaN
+%! T = table ('Size', [3, 2], 'VariableTypes', {'doublenan', 'singlenan'});
+%! assert_equal (all (isnan (T.Var1)), true);
+%! assert_equal (class (T.Var2), 'single');
+%! assert_equal (all (isnan (T.Var2)), true);
+%!test  # categorical, datetime, duration and string default to missing
+%! T = table ('Size', [2, 4], 'VariableTypes', ...
+%!            {'categorical', 'datetime', 'duration', 'string'});
+%! assert_equal (all (ismissing (T.Var1)), true);
+%! assert_equal (all (isnat (T.Var2)), true);
+%! assert_equal (seconds (T.Var3), [0; 0]);
+%! assert_equal (all (ismissing (T.Var4)), true);
+%!test  # cellstr, cell and struct types preallocate accordingly
+%! T = table ('Size', [3, 3], 'VariableTypes', {'cellstr', 'cell', 'struct'});
+%! assert_equal (iscellstr (T.Var1), true);
+%! assert_equal (T.Var1, {''; ''; ''});
+%! assert_equal (class (T.Var2), 'cell');
+%! assert_equal (class (T.Var3), 'struct');
+%!test  # the 'char' type preallocates a cell array of empty character vectors
+%! T = table ('Size', [3, 1], 'VariableTypes', {'char'});
+%! assert_equal (class (T.Var1), 'cell');
+%! assert_equal (iscellstr (T.Var1), true);
+%! assert_equal (T.Var1, {''; ''; ''});
+%!test  # a 'table' typed variable preallocates an empty nested table
+%! T = table ('Size', [4, 3], 'VariableTypes', {'double', 'datetime', 'table'}, ...
+%!            'VariableNames', {'A', 'B', 'C'});
 %! assert_equal (size (T), [4, 3]);
-%! assert_equal (T.Properties.VariableNames, {"A", "B", "C"});
-%!test
-%! sz = [4 3];
-%! varTypes = {"double", "datetime", "table"};
-%! T = table("Size", sz, "VariableTypes", varTypes, ...
-%!           "VariableNames", {"A", "B", "C"});
-%! assert_equal (size (T), [4, 3]);
+%! assert_equal (class (T.A), 'double');
+%! assert_equal (class (T.B), 'datetime');
+%! assert_equal (class (T.C), 'table');
 %! assert_equal (size (T.C), [0, 1]);
-%! assert_equal (class (T.A), "double");
-%! assert_equal (class (T.B), "datetime");
-%! assert_equal (class (T.C), "table");
+%!test  # 'RowNames' labels the preallocated rows
+%! T = table ('Size', [3, 1], 'VariableTypes', {'double'}, ...
+%!            'RowNames', {'a'; 'b'; 'c'});
+%! assert_equal (T.Properties.RowNames, {'a'; 'b'; 'c'});
 
 %!shared LastName, Age, Smoker, Height, Weight, BloodPressure, T, tblA
 %! LastName = {"Sanchez"; "Johnson"; "Li"; "Diaz"; "Brown"};
@@ -83,31 +169,157 @@
 %! BloodPressure = [124, 93; 109, 77; 125, 83; 117, 75; 122, 80];
 %! T = table (Age, Smoker, Height, Weight, BloodPressure);
 
-## Test 'table2array', 'table2cell', and 'table2struct' methods
-%!test
-%! T = table (Age, Smoker, Height, Weight, BloodPressure);
+## Test 'table2array' method
+%!test  # the canonical patient table concatenates into a numeric matrix
 %! assert_equal (table2array (T), [Age, Smoker, Height, Weight, BloodPressure]);
-%!test
+%!test  # single-column numeric variables concatenate into a matrix
+%! A = table ([1; 2; 3], [4; 5; 6], 'VariableNames', {'a', 'b'});
+%! assert_equal (table2array (A), [1, 4; 2, 5; 3, 6]);
+%!test  # multicolumn variables expand into multiple columns
+%! A = table ([1, 2; 3, 4], [5; 6], 'VariableNames', {'a', 'b'});
+%! M = table2array (A);
+%! assert_equal (size (M), [2, 3]);
+%! assert_equal (M, [1, 2, 5; 3, 4, 6]);
+%!test  # a single variable is returned as-is
+%! M = table2array (table ([1; 2; 3], 'VariableNames', {'x'}));
+%! assert_equal (M, [1; 2; 3]);
+%! assert_equal (class (M), 'double');
+%!test  # the result takes the dominant numeric type (double + single -> single)
+%! M = table2array (table ([1; 2], single ([3; 4]), 'VariableNames', {'a', 'b'}));
+%! assert_equal (class (M), 'single');
+%!test  # an integer variable dominates a double variable
+%! M = table2array (table (int8 ([1; 2]), [3; 4], 'VariableNames', {'a', 'b'}));
+%! assert_equal (class (M), 'int8');
+%!test  # a logical variable widens to double
+%! M = table2array (table (logical ([1; 0]), [3; 4], 'VariableNames', {'a', 'b'}));
+%! assert_equal (class (M), 'double');
+%!test  # homogeneous string variables yield a string array
+%! M = table2array (table (string ({'a'; 'b'}), string ({'c'; 'd'}), ...
+%!                         'VariableNames', {'x', 'y'}));
+%! assert_equal (class (M), 'string');
+%! assert_equal (size (M), [2, 2]);
+%!test  # homogeneous categorical variables yield a categorical array
+%! M = table2array (table (categorical ({'a'; 'b'}), categorical ({'c'; 'd'}), ...
+%!                         'VariableNames', {'x', 'y'}));
+%! assert_equal (class (M), 'categorical');
+%! assert_equal (size (M), [2, 2]);
+%!test  # homogeneous datetime variables yield a datetime array
+%! d = datetime (2020, 1, [1; 2]);
+%! M = table2array (table (d, d, 'VariableNames', {'x', 'y'}));
+%! assert_equal (class (M), 'datetime');
+%! assert_equal (size (M), [2, 2]);
+%!test  # an empty table returns an empty array
+%! assert_equal (table2array (table ()), []);
+
+## Test 'table2cell' method
+%!test  # the output cell array has the same size as the table
+%! A = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
+%! C = table2cell (A);
+%! assert_equal (size (C), [3, 2]);
+%! assert_equal (C{1, 1}, 1);
+%! assert_equal (C{1, 2}, 'a');
+%!test  # the patient table round-trips its numeric block
 %! C = table2cell (T);
-%! assert_equal (cell2mat (C(:,[1:4])), [Age, Smoker, Height, Weight]);
-%!test
+%! assert_equal (cell2mat (C(:, [1:4])), [Age, Smoker, Height, Weight]);
+%!test  # a multicolumn variable becomes a row vector in a single cell
+%! C = table2cell (table ([1, 2; 3, 4], 'VariableNames', {'bp'}));
+%! assert_equal (size (C), [2, 1]);
+%! assert_equal (C{1}, [1, 2]);
+%! assert_equal (C{2}, [3, 4]);
+%!test  # a cellstr variable keeps its char contents
+%! C = table2cell (table ({'a'; 'b'}, 'VariableNames', {'y'}));
+%! assert_equal (C{1}, 'a');
+%! assert_equal (C{2}, 'b');
+%!test  # a logical variable is placed scalar-wise
+%! C = table2cell (table (logical ([1; 0]), 'VariableNames', {'l'}));
+%! assert_equal (C{1}, true);
+%! assert_equal (C{2}, false);
+%!test  # a string variable is returned as character vectors
+%! C = table2cell (table (string ({'a'; 'b'}), 'VariableNames', {'s'}));
+%! assert_equal (C{1}, 'a');
+%! assert_equal (class (C{1}), 'char');
+%!test  # a categorical variable is returned as character vectors
+%! C = table2cell (table (categorical ({'lo'; 'hi'}), 'VariableNames', {'c'}));
+%! assert_equal (C{1}, 'lo');
+%! assert_equal (C{2}, 'hi');
+%!test  # a datetime variable is returned as character vectors
+%! C = table2cell (table (datetime (2020, 1, [1; 2]), 'VariableNames', {'d'}));
+%! assert_equal (C{1}, '01-Jan-2020');
+%! assert_equal (class (C{1}), 'char');
+%!test  # a duration variable is returned as character vectors
+%! C = table2cell (table (days ([1.5; 2.5]), 'VariableNames', {'d'}));
+%! assert_equal (C{1}, '1.5 days');
+%!test  # a struct variable yields one struct per cell
+%! A = table ([struct('x', 1); struct('x', 2)], 'VariableNames', {'s'});
+%! C = table2cell (A);
+%! assert_equal (size (C), [2, 1]);
+%! assert_equal (class (C{1}), 'struct');
+%! assert_equal (C{2}.x, 2);
+%!test  # row names are not included in the output
+%! A = table ([1; 2], 'VariableNames', {'x'}, 'RowNames', {'r1'; 'r2'});
+%! C = table2cell (A);
+%! assert_equal (size (C), [2, 1]);
+%! assert_equal (C{1}, 1);
+
+## Test 'table2struct' method
+%!test  # default output is an m-by-1 struct array, one element per row
+%! A = table ([1; 2; 3], [4; 5; 6], 'VariableNames', {'x', 'y'});
+%! S = table2struct (A);
+%! assert_equal (size (S), [3, 1]);
+%! assert_equal (numel (S), 3);
+%! assert_equal (fieldnames (S), {'x'; 'y'});
+%! assert_equal ([S.x], [1, 2, 3]);
+%! assert_equal (S(2).y, 5);
+%!test  # the patient table maps each row to a struct element
 %! S = table2struct (T);
 %! assert_equal ([S.Age], Age');
 %! assert_equal (reshape ([S.BloodPressure], 2, 5)', BloodPressure);
 %! assert_equal (numel (S), height (T));
-%!test
-%! S = table2struct (T, "ToScalar", true);
-%! assert_equal (S.Age, Age);
-%! assert_equal (S.BloodPressure, BloodPressure);
+%!test  # a multicolumn variable becomes a row vector field
+%! A = table ([1; 2], [3, 4; 5, 6], 'VariableNames', {'a', 'bp'});
+%! S = table2struct (A);
+%! assert_equal (S(1).bp, [3, 4]);
+%! assert_equal (S(2).bp, [5, 6]);
+%!test  # the struct array preserves object variable types
+%! d = datetime (2020, 1, [1; 2]);
+%! c = categorical ({'lo'; 'hi'});
+%! S = table2struct (table (d, c, 'VariableNames', {'D', 'C'}));
+%! assert_equal (class (S(1).D), 'datetime');
+%! assert_equal (class (S(1).C), 'categorical');
+%! assert_equal (cellstr (S(2).C), {'hi'});
+%!test  # 'ToScalar' true returns one struct with whole-column fields
+%! A = table ([1; 2; 3], [4; 5; 6], 'VariableNames', {'x', 'y'});
+%! S = table2struct (A, 'ToScalar', true);
 %! assert_equal (numel (S), 1);
+%! assert_equal (S.x, [1; 2; 3]);
+%! assert_equal (S.y, [4; 5; 6]);
+%!test  # 'ToScalar' preserves object variable types
+%! d = datetime (2020, 1, [1; 2]);
+%! S = table2struct (table (d, categorical ({'a'; 'b'}), ...
+%!                          'VariableNames', {'D', 'C'}), 'ToScalar', true);
+%! assert_equal (class (S.D), 'datetime');
+%! assert_equal (class (S.C), 'categorical');
+%!test  # 'ToScalar' also accepts a numeric 1 for true
+%! S = table2struct (table ([1; 2], 'VariableNames', {'x'}), 'ToScalar', 1);
+%! assert_equal (numel (S), 1);
+%! assert_equal (S.x, [1; 2]);
+%!test  # 'ToScalar' false gives the default struct array
+%! S = table2struct (table ([1; 2], 'VariableNames', {'x'}), 'ToScalar', false);
+%! assert_equal (numel (S), 2);
+%!test  # row names are not carried into the struct
+%! A = table ([1; 2], 'VariableNames', {'x'}, 'RowNames', {'r1'; 'r2'});
+%! S = table2struct (A);
+%! assert_equal (fieldnames (S), {'x'});
 
-## Test input validation for constructor
+## Test input validation for the constructor
 %!error <table: 'VariableNames' must be either a cell array of character vectors or a string array.> ...
 %! table (Age, Smoker, "VariableNames", {2, 3});
 %!error <table: 'VariableNames' must be either a cell array of character vectors or a string array.> ...
 %! table (Age, Smoker, "VariableNames", [2, 3]);
 %!error <table: 'VariableNames' must be either a cell array of character vectors or a string array.> ...
 %! table (Age, Smoker, "VariableNames", [true, true]);
+%!error <table: 'VariableNames' must contain nonempty names.> ...
+%! table (Age, Smoker, "VariableNames", {"", "A"});
 %!error <table: 'RowNames' must be either a cell array of character vectors or a string array.> ...
 %! table (Age, Smoker, "RowNames", {2, 3});
 %!error <table: 'RowNames' must be either a cell array of character vectors or a string array.> ...
@@ -122,33 +334,40 @@
 %! table (Age, Smoker, "DimensionNames", [true, false]);
 %!error <table: 'DimensionNames' must be either a two-element cell array of character vectors or a two-element string array.> ...
 %! table (Age, Smoker, "DimensionNames", {"A", "B", "C"});
+%!error <table: 'DimensionNames' cannot include the reserved name: 'Properties'.> ...
+%! table (1, "DimensionNames", {"Properties", "Variables"});
+%!error <table: 'DimensionNames' cannot include the reserved name: 'VariableNames'.> ...
+%! table (1, "DimensionNames", {"VariableNames", "Row"});
 %!error <table: duplicate dimension and variable name: 'Variables'> ...
 %! table (1, 'VariableNames', {'Variables'});
-%!error <table: 'VariableTypes' must be a cellstring array of the same number of elements as defined in SZ> ...
+%!error <table: 'VariableTypes' must be a cellstring array of the same number of elements as defined in SZ\(2\).> ...
 %! table ("Size", [4, 2], "VariableTypes", {"A", "B", "C"});
-%!error <table: 'VariableTypes' must be a cellstring array of the same number of elements as defined in SZ> ...
+%!error <table: 'VariableTypes' must be a cellstring array of the same number of elements as defined in SZ\(2\).> ...
 %! table ("Size", [4, 3], "VariableTypes", ["A", "B", "C"]);
-%!error <table: 'VariableTypes' must be a cellstring array of the same number of elements as defined in SZ> ...
+%!error <table: 'VariableTypes' must be a cellstring array of the same number of elements as defined in SZ\(2\).> ...
 %! table ("Size", [4, 3], "VariableTypes", {1, 2, 3});
 %!error <table: inconsistent number of 'VariableNames' and 'VariableTypes'.> ...
 %! table ("Size", [4, 3], "VariableTypes", {"double", "double", "logical"}, ...
 %!        "VariableNames", {"A", "B"});
-%!error <table: inconsistent number of 'RowNames' and rows defined in SZ.> ...
+%!error <table: inconsistent number of 'RowNames' and rows defined in SZ\(1\).> ...
 %! table ("Size", [4, 3], "VariableTypes", {"double", "double", "logical"}, ...
 %!        "RowNames", {"A", "B", "C"});
+%!error <table: unsupported variable type: 'uint128'.> ...
+%! table ("Size", [4, 1], "VariableTypes", {"uint128"});
+%!error <table: 'Size' must be a two-element numeric vector.> ...
+%! table ("Size", 3, "VariableTypes", {"double"});
+%!error <table: 'Size' must be a two-element numeric vector.> ...
+%! table ("Size", [3, 1, 2], "VariableTypes", {"double"});
 %!error <table: 'timetable' variable type not supported yet.> ...
 %! table ("Size", [4, 3], "VariableTypes", {"double", "double", "timetable"}, ...
 %!        "VariableNames", {"A", "B", "C"});
-%!error <table: 'timetable' variable type not supported yet.> ...
-%! table ("Size", [4, 3], "VariableTypes", {"double", "double", "timetable"}, ...
-%!        "RowNames", {"A", "B", "C", "D"});
 %!error <table: 'timetable' variable type not supported yet.> ...
 %! table ("Size", [4, 3], "VariableTypes", {"double", "double", "timetable"});
 %!error <table: duplicate variable names: Age> table (Age, Age);
 %!error <table: duplicate variable names: Age, Height> ...
 %! table (Age, Age, Height, Height);
-%!error <table: inconsistent number of variable names> ...
-%! table (Age, Height, "VariableNames", {"A"})
+%!error <table: inconsistent number of variable names \(1\) and variable values \(2\)> ...
+%! table (Age, Height, "VariableNames", {"A"});
 %!error <table: variable values must not have more than 2 dimensions: input 1 'A' has 3.> ...
 %! table (ones (5, 5, 5), Height, "VariableNames", {"A", "B"});
 %!error <table: variable values must not have more than 2 dimensions: input 2 'B' has 3.> ...
@@ -157,15 +376,21 @@
 %! table (struct ("age", Age), Height, "VariableNames", {"A", "B"});
 %!error <table: inconsistent sizes between variables: var 'A' has 5 rows; var 'B' has 1 rows.> ...
 %! table (Height, struct ("age", Age), "VariableNames", {"A", "B"});
+%!error <table: elements in 'RowNames' must be unique.> ...
+%! table ("Size", [4, 2], "VariableTypes", {"double", "double"}, ...
+%!        "RowNames", {"A", "B", "B", "D"});
+%!error <table: the number of 'RowNames' \(2\) must equal the number of rows \(3\).> ...
+%! table ([1; 2; 3], "RowNames", {"a", "b"});
+
+## Test input validation for 'table2array' method
 %!error <table.table2array: table cannot be concatenated into a matrix due to incompatible variable types.> ...
 %! table2array (table (Height, {1; 2; 3; 4; 5}, "VariableNames", {"A", "B"}));
+
+## Test input validation for 'table2struct' method
 %!error <table.table2struct: wrong number of input arguments.> ...
 %! table2struct (T, "ToScalar");
 %!error <table.table2struct: wrong optional input argument.> ...
 %! table2struct (T, "Scalar", 1);
-%!error <table: elements in 'RowNames' must be unique.> ...
-%! table ("Size", [4, 2], "VariableTypes", {"double", "double"}, ...
-%!        "RowNames", {"A", "B", "B", "D"});
 
 ################################################################################
 ##                            ** Save to Files **                             ##
