@@ -108,7 +108,6 @@
 %! T = table ([1; 2], table ([3; 4], [5; 6]), 'VariableNames', {'a', 'b'});
 %! assert_equal (width (T), 2);
 %! assert_equal (class (T.b), 'table');
-
 ## Test the constructor -- 'Size'/'VariableTypes' preallocation
 %!test  # preallocates a table of the requested size with default values
 %! T = table ('Size', [4, 3], 'VariableTypes', {'double', 'datetime', 'string'});
@@ -159,6 +158,80 @@
 %! T = table ('Size', [3, 1], 'VariableTypes', {'double'}, ...
 %!            'RowNames', {'a'; 'b'; 'c'});
 %! assert_equal (T.Properties.RowNames, {'a'; 'b'; 'c'});
+## Test input validation for the constructor
+%!error <table: 'VariableNames' must be either a cell array of character vectors or a string array.> ...
+%! table ([1; 2], [3; 4], "VariableNames", {2, 3});
+%!error <table: 'VariableNames' must be either a cell array of character vectors or a string array.> ...
+%! table ([1; 2], [3; 4], "VariableNames", [2, 3]);
+%!error <table: 'VariableNames' must be either a cell array of character vectors or a string array.> ...
+%! table ([1; 2], [3; 4], "VariableNames", [true, true]);
+%!error <table: 'VariableNames' must contain nonempty names.> ...
+%! table ([1; 2], [3; 4], "VariableNames", {"", "A"});
+%!error <table: 'RowNames' must be either a cell array of character vectors or a string array.> ...
+%! table ([1; 2], [3; 4], "RowNames", {2, 3});
+%!error <table: 'RowNames' must be either a cell array of character vectors or a string array.> ...
+%! table ([1; 2], [3; 4], "RowNames", [2, 3]);
+%!error <table: 'RowNames' must be either a cell array of character vectors or a string array.> ...
+%! table ([1; 2], [3; 4], "RowNames", [true, false]);
+%!error <table: 'DimensionNames' must be either a two-element cell array of character vectors or a two-element string array.> ...
+%! table ([1; 2], [3; 4], "DimensionNames", {2, 3});
+%!error <table: 'DimensionNames' must be either a two-element cell array of character vectors or a two-element string array.> ...
+%! table ([1; 2], [3; 4], "DimensionNames", [2, 3]);
+%!error <table: 'DimensionNames' must be either a two-element cell array of character vectors or a two-element string array.> ...
+%! table ([1; 2], [3; 4], "DimensionNames", [true, false]);
+%!error <table: 'DimensionNames' must be either a two-element cell array of character vectors or a two-element string array.> ...
+%! table ([1; 2], [3; 4], "DimensionNames", {"A", "B", "C"});
+%!error <table: 'DimensionNames' cannot include the reserved name: 'Properties'.> ...
+%! table (1, "DimensionNames", {"Properties", "Variables"});
+%!error <table: 'DimensionNames' cannot include the reserved name: 'VariableNames'.> ...
+%! table (1, "DimensionNames", {"VariableNames", "Row"});
+%!error <table: duplicate dimension and variable name: 'Variables'> ...
+%! table (1, 'VariableNames', {'Variables'});
+%!error <table: 'VariableTypes' must be a cellstring array of the same number of elements as defined in SZ\(2\).> ...
+%! table ("Size", [4, 2], "VariableTypes", {"A", "B", "C"});
+%!error <table: 'VariableTypes' must be a cellstring array of the same number of elements as defined in SZ\(2\).> ...
+%! table ("Size", [4, 3], "VariableTypes", ["A", "B", "C"]);
+%!error <table: 'VariableTypes' must be a cellstring array of the same number of elements as defined in SZ\(2\).> ...
+%! table ("Size", [4, 3], "VariableTypes", {1, 2, 3});
+%!error <table: inconsistent number of 'VariableNames' and 'VariableTypes'.> ...
+%! table ("Size", [4, 3], "VariableTypes", {"double", "double", "logical"}, ...
+%!        "VariableNames", {"A", "B"});
+%!error <table: inconsistent number of 'RowNames' and rows defined in SZ\(1\).> ...
+%! table ("Size", [4, 3], "VariableTypes", {"double", "double", "logical"}, ...
+%!        "RowNames", {"A", "B", "C"});
+%!error <table: unsupported variable type: 'uint128'.> ...
+%! table ("Size", [4, 1], "VariableTypes", {"uint128"});
+%!error <table: 'Size' must be a two-element numeric vector.> ...
+%! table ("Size", 3, "VariableTypes", {"double"});
+%!error <table: 'Size' must be a two-element numeric vector.> ...
+%! table ("Size", [3, 1, 2], "VariableTypes", {"double"});
+%!error <table: 'timetable' variable type not supported yet.> ...
+%! table ("Size", [4, 3], "VariableTypes", {"double", "double", "timetable"}, ...
+%!        "VariableNames", {"A", "B", "C"});
+%!error <table: 'timetable' variable type not supported yet.> ...
+%! table ("Size", [4, 3], "VariableTypes", {"double", "double", "timetable"});
+%!error <table: duplicate variable names: Age> ...
+%! Age = [1; 2];
+%! table (Age, Age);
+%!error <table: duplicate variable names: Age, Height> ...
+%! Age = [1; 2];
+%! Height = [3; 4];
+%! table (Age, Age, Height, Height);
+%!error <table: inconsistent number of variable names \(1\) and variable values \(2\)> ...
+%! table ([1; 2], [3; 4], "VariableNames", {"A"});
+%!error <table: variable values must not have more than 2 dimensions: input 1 'A' has 3.> ...
+%! table (ones (2, 2, 2), [1; 2], "VariableNames", {"A", "B"});
+%!error <table: variable values must not have more than 2 dimensions: input 2 'B' has 3.> ...
+%! table ([1; 2], ones (2, 2, 2), "VariableNames", {"A", "B"});
+%!error <table: inconsistent sizes between variables: var 'A' has 1 rows; var 'B' has 5 rows.> ...
+%! table (struct ("age", 1), [1; 2; 3; 4; 5], "VariableNames", {"A", "B"});
+%!error <table: inconsistent sizes between variables: var 'A' has 5 rows; var 'B' has 1 rows.> ...
+%! table ([1; 2; 3; 4; 5], struct ("age", 1), "VariableNames", {"A", "B"});
+%!error <table: elements in 'RowNames' must be unique.> ...
+%! table ("Size", [4, 2], "VariableTypes", {"double", "double"}, ...
+%!        "RowNames", {"A", "B", "B", "D"});
+%!error <table: the number of 'RowNames' \(2\) must equal the number of rows \(3\).> ...
+%! table ([1; 2; 3], "RowNames", {"a", "b"});
 
 %!shared LastName, Age, Smoker, Height, Weight, BloodPressure, T, tblA
 %! LastName = {"Sanchez"; "Johnson"; "Li"; "Diaz"; "Brown"};
@@ -210,6 +283,9 @@
 %! assert_equal (size (M), [2, 2]);
 %!test  # an empty table returns an empty array
 %! assert_equal (table2array (table ()), []);
+## Test input validation for 'table2array' method
+%!error <table.table2array: table cannot be concatenated into a matrix due to incompatible variable types.> ...
+%! table2array (table ([1; 2; 3; 4; 5], {1; 2; 3; 4; 5}, "VariableNames", {"A", "B"}));
 
 ## Test 'table2cell' method
 %!test  # the output cell array has the same size as the table
@@ -310,87 +386,11 @@
 %! A = table ([1; 2], 'VariableNames', {'x'}, 'RowNames', {'r1'; 'r2'});
 %! S = table2struct (A);
 %! assert_equal (fieldnames (S), {'x'});
-
-## Test input validation for the constructor
-%!error <table: 'VariableNames' must be either a cell array of character vectors or a string array.> ...
-%! table (Age, Smoker, "VariableNames", {2, 3});
-%!error <table: 'VariableNames' must be either a cell array of character vectors or a string array.> ...
-%! table (Age, Smoker, "VariableNames", [2, 3]);
-%!error <table: 'VariableNames' must be either a cell array of character vectors or a string array.> ...
-%! table (Age, Smoker, "VariableNames", [true, true]);
-%!error <table: 'VariableNames' must contain nonempty names.> ...
-%! table (Age, Smoker, "VariableNames", {"", "A"});
-%!error <table: 'RowNames' must be either a cell array of character vectors or a string array.> ...
-%! table (Age, Smoker, "RowNames", {2, 3});
-%!error <table: 'RowNames' must be either a cell array of character vectors or a string array.> ...
-%! table (Age, Smoker, "RowNames", [2, 3]);
-%!error <table: 'RowNames' must be either a cell array of character vectors or a string array.> ...
-%! table (Age, Smoker, "RowNames", [true, false]);
-%!error <table: 'DimensionNames' must be either a two-element cell array of character vectors or a two-element string array.> ...
-%! table (Age, Smoker, "DimensionNames", {2, 3});
-%!error <table: 'DimensionNames' must be either a two-element cell array of character vectors or a two-element string array.> ...
-%! table (Age, Smoker, "DimensionNames", [2, 3]);
-%!error <table: 'DimensionNames' must be either a two-element cell array of character vectors or a two-element string array.> ...
-%! table (Age, Smoker, "DimensionNames", [true, false]);
-%!error <table: 'DimensionNames' must be either a two-element cell array of character vectors or a two-element string array.> ...
-%! table (Age, Smoker, "DimensionNames", {"A", "B", "C"});
-%!error <table: 'DimensionNames' cannot include the reserved name: 'Properties'.> ...
-%! table (1, "DimensionNames", {"Properties", "Variables"});
-%!error <table: 'DimensionNames' cannot include the reserved name: 'VariableNames'.> ...
-%! table (1, "DimensionNames", {"VariableNames", "Row"});
-%!error <table: duplicate dimension and variable name: 'Variables'> ...
-%! table (1, 'VariableNames', {'Variables'});
-%!error <table: 'VariableTypes' must be a cellstring array of the same number of elements as defined in SZ\(2\).> ...
-%! table ("Size", [4, 2], "VariableTypes", {"A", "B", "C"});
-%!error <table: 'VariableTypes' must be a cellstring array of the same number of elements as defined in SZ\(2\).> ...
-%! table ("Size", [4, 3], "VariableTypes", ["A", "B", "C"]);
-%!error <table: 'VariableTypes' must be a cellstring array of the same number of elements as defined in SZ\(2\).> ...
-%! table ("Size", [4, 3], "VariableTypes", {1, 2, 3});
-%!error <table: inconsistent number of 'VariableNames' and 'VariableTypes'.> ...
-%! table ("Size", [4, 3], "VariableTypes", {"double", "double", "logical"}, ...
-%!        "VariableNames", {"A", "B"});
-%!error <table: inconsistent number of 'RowNames' and rows defined in SZ\(1\).> ...
-%! table ("Size", [4, 3], "VariableTypes", {"double", "double", "logical"}, ...
-%!        "RowNames", {"A", "B", "C"});
-%!error <table: unsupported variable type: 'uint128'.> ...
-%! table ("Size", [4, 1], "VariableTypes", {"uint128"});
-%!error <table: 'Size' must be a two-element numeric vector.> ...
-%! table ("Size", 3, "VariableTypes", {"double"});
-%!error <table: 'Size' must be a two-element numeric vector.> ...
-%! table ("Size", [3, 1, 2], "VariableTypes", {"double"});
-%!error <table: 'timetable' variable type not supported yet.> ...
-%! table ("Size", [4, 3], "VariableTypes", {"double", "double", "timetable"}, ...
-%!        "VariableNames", {"A", "B", "C"});
-%!error <table: 'timetable' variable type not supported yet.> ...
-%! table ("Size", [4, 3], "VariableTypes", {"double", "double", "timetable"});
-%!error <table: duplicate variable names: Age> table (Age, Age);
-%!error <table: duplicate variable names: Age, Height> ...
-%! table (Age, Age, Height, Height);
-%!error <table: inconsistent number of variable names \(1\) and variable values \(2\)> ...
-%! table (Age, Height, "VariableNames", {"A"});
-%!error <table: variable values must not have more than 2 dimensions: input 1 'A' has 3.> ...
-%! table (ones (5, 5, 5), Height, "VariableNames", {"A", "B"});
-%!error <table: variable values must not have more than 2 dimensions: input 2 'B' has 3.> ...
-%! table (Height, ones (5, 5, 5), "VariableNames", {"A", "B"});
-%!error <table: inconsistent sizes between variables: var 'A' has 1 rows; var 'B' has 5 rows.> ...
-%! table (struct ("age", Age), Height, "VariableNames", {"A", "B"});
-%!error <table: inconsistent sizes between variables: var 'A' has 5 rows; var 'B' has 1 rows.> ...
-%! table (Height, struct ("age", Age), "VariableNames", {"A", "B"});
-%!error <table: elements in 'RowNames' must be unique.> ...
-%! table ("Size", [4, 2], "VariableTypes", {"double", "double"}, ...
-%!        "RowNames", {"A", "B", "B", "D"});
-%!error <table: the number of 'RowNames' \(2\) must equal the number of rows \(3\).> ...
-%! table ([1; 2; 3], "RowNames", {"a", "b"});
-
-## Test input validation for 'table2array' method
-%!error <table.table2array: table cannot be concatenated into a matrix due to incompatible variable types.> ...
-%! table2array (table (Height, {1; 2; 3; 4; 5}, "VariableNames", {"A", "B"}));
-
 ## Test input validation for 'table2struct' method
 %!error <table.table2struct: wrong number of input arguments.> ...
-%! table2struct (T, "ToScalar");
+%! table2struct (table (1), "ToScalar");
 %!error <table.table2struct: wrong optional input argument.> ...
-%! table2struct (T, "Scalar", 1);
+%! table2struct (table (1), "Scalar", 1);
 
 ################################################################################
 ##                            ** Save to Files **                             ##
@@ -453,7 +453,6 @@
 %!assert_equal (height (tail (T, 3)), 3);
 %!assert_equal (height (tail (T, 8)), 5);
 %!assert_equal (height (tail (T)), 5);
-
 ## Test input validation for 'summary information' methods
 %!error <table.head: K must be a positive integer scalar value.> ...
 %! head (T, 1.5);
@@ -625,6 +624,41 @@
 %! [tblB, index] = sortrows (tblN, vartype ("cellstr"));
 %! assert_equal (index, [5; 2; 4; 1; 3]);
 %! assert_equal (issortedrows (tblB, vartype ("cellstr")), true);
+## Test input validation for 'sortrows' method
+%!error <table.sortrows: 'MissingPlacement' parameter can be either 'auto', 'first', or 'last'.> ...
+%! sortrows (tblA, "MissingPlacement", "param");
+%!error <table.sortrows: 'ComparisonMethod' parameter can be either 'auto', 'real', or 'abs'.> ...
+%! sortrows (tblA, "ComparisonMethod", "param");
+%!error <table.sortrows: invalid number of input arguments.> ...
+%! sortrows (tblA, [], "ascend", "param");
+%!error <table.sortrows: invalid value for DIRECTION argument.> ...
+%! sortrows (tblA, [], "aaascend");
+%!error <table.sortrows: DIRECTION must be a scalar input when 'RowNames' or 'rowDimNames' are selected.> ...
+%! sortrows (tblA, "RowNames", {"ascend", "ascend"});
+%!error <table.sortrows: DIRECTION must be a scalar input when 'RowNames' or 'rowDimNames' are selected.> ...
+%! sortrows (tblA, "Row", {"ascend", "ascend"});
+%!error <table.sortrows: logical indexing vector does not match table width.> ...
+%! sortrows (tblA, [true, true, false]);
+%!error <table.sortrows: invalid size for DIRECTION argument.> ...
+%! sortrows (tblA, "Age", {"ascend", "ascend"});
+%!error <table.sortrows: numerical indexing must be a vector of nonzero integers.> ...
+%! sortrows (tblA, [1, 0, 3]);
+%!error <table.sortrows: numerical index exceeds table dimensions.> ...
+%! sortrows (tblA, [1, 6, 3]);
+%!error <table.sortrows: invalid size for DIRECTION argument.> ...
+%! sortrows (tblA, [1, 3, 2], {"ascend", "ascend"});
+%!error <table.sortrows: VARS indexes non-existing variable names.> ...
+%! sortrows (tblA, {"Age", "whatever"});
+%!error <table.sortrows: invalid size for DIRECTION argument.> ...
+%! sortrows (tblA, {"Age", "Height", "Weight"}, {"ascend", "ascend"});
+%!error <table.sortrows: DIRECTION must be a scalar input when variables are indexed with a 'vartype' object.> ...
+%! sortrows (tblA, vartype ("numeric"), {"ascend", "ascend"});
+%!error <table.sortrows: cannot sort variables of 'cell' type.> ...
+%! sortrows (table ({5; 4; 3}));
+%!error <table.sortrows: cannot sort variables of 'struct' type.> ...
+%! sortrows (table ([struct("s", 4); struct("s", 5); struct("s", 6)]));
+%!error <table.sortrows: cannot sort nested tables with mixed data types.> ...
+%! sortrows (table (Age, table (Age, LastName), "RowNames", LastName))
 
 ## Test 'unique' method
 %!test
@@ -697,6 +731,15 @@
 %! assert_equal (C.Height, [64; 71; 67; 69]);
 %! assert_equal (C.Weight, [131; 176; 185; 163]);
 %! assert_equal (C.Properties.RowNames, {'Jane'; 'Fred'; 'George'; 'Betty'});
+## Test input validation for 'unique' method
+%!error <table.unique: too many input arguments.> unique (tblA, 1, 2);
+%!error <table.unique: invalid option 'some'.> unique (tblA, "some");
+%!error <table.sortrows: cannot sort variables of 'cell' type.> ...
+%! unique (table ({2; 2; 3}), "sorted");
+%!error <table.sortrows: cannot sort variables of 'struct' type.> ...
+%! unique (table (struct ("a", {2; 2; 3})), "sorted");
+%!error <table.sortrows: cannot sort nested tables with mixed data types.> ...
+%! unique (table (table (Age, LastName)), "sorted");
 
 ## Test 'topkrows' method
 %!test
@@ -826,6 +869,11 @@
 %! [tblB, index] = topkrows (tblN, 3, vartype ("cellstr"));
 %! assert_equal (index, [5; 2; 4]);
 %! assert_equal (issortedrows (tblB, vartype ("cellstr")), true);
+## Test input validation for 'topkrows' method
+%!error <table.topkrows: K must be a nonnegative integer scalar.> ...
+%! topkrows (tblA, -1)
+%!error <table.topkrows: K must be a nonnegative integer scalar.> ...
+%! topkrows (tblA, 2.5)
 
 ## Test 'addvars' method
 %!test
@@ -889,6 +937,21 @@
 %! assert_equal (size (head (T2, 3)), [3, 6]);
 %! assert_equal (T2.Properties.VariableNames, ...
 %!         {'LastName', 'Age', 'Gender', 'Inches', 'Pounds', 'Smoker'});
+## Test input validation for 'addvars' method
+%!error <table.addvars: cannot use both 'After' and 'Before' options.> ...
+%! addvars (tblA, Smoker, 'After', 1, 'Before', 2);
+%!error <table.addvars: LOCATION must index a single variable.> ...
+%! addvars (tblA, Smoker, 'After', [true, false, false, true]);
+%!error <table.addvars: LOCATION must be either a scalar integer, a character vector, or a logical vector indexing a single table variable.> ...
+%! addvars (tblA, Smoker, 'After', [1, 2]);
+%!error <table.addvars: NEWNAMES does not match the number of new variables.> ...
+%! addvars (tblA, Smoker, 'NewVariableNames', {'A', 'B'});
+%!error <table.addvars: NEWNAMES contains duplicate names.> ...
+%! addvars (tblA, Smoker, Smoker, 'NewVariableNames', {'A', 'A'});
+%!error <table.addvars: new variable name 'Height' already exists.> ...
+%! addvars (tblA, Smoker, 'NewVariableNames', {'Height'});
+%!error <table.addvars: new variable names 'Height', 'Weight' already exist.> ...
+%! addvars (tblA, Smoker, Smoker, 'NewVariableNames', {'Height', 'Weight'});
 
 ## Test 'rename' method
 %!test
@@ -905,6 +968,23 @@
 %!                     "UniformOutput", false);
 %! T2 = renamevars (T1, allVars, newNames);
 %! assert_equal (T2.Properties.VariableNames, {'Rand1', 'Rand2', 'Rand3'});
+## Test input validation for 'renamevars' method
+%!error <table.renamevars: too few input arguments.> ...
+%! renamevars (tblA, {"Age", "Smoker"});
+%!error <table.renamevars: too few input arguments.> ...
+%! renamevars (tblA, {"Age"}, {});
+%!error <table.renamevars: too few input arguments.> ...
+%! renamevars (tblA, {}, {"NewName"});
+%!error <table.renamevars: NEWNAMES must be either a character vector, a cell array of character vectors, or a string array.> ...
+%! renamevars (tblA, {"Age", "Smoker"}, {"Age", 4});
+%!error <table.renamevars: NEWNAMES contains duplicate names.> ...
+%! renamevars (tblA, {"Age", "Smoker"}, {"Age", "Age"});
+%!error <table.renamevars: cannot index non-existing variable: 'Smoker'.> ...
+%! renamevars (tblA, {"Age", "Smoker"}, {"Age", "User"});
+%!error <table.renamevars: number of names in NEWNAMES do not match the selected variables specified by VARS.> ...
+%! renamevars (tblA, {"Age", "Height"}, {"Age", "Smoker", "Height"});
+%!error <table.renamevars: newly assigned variable name already exists.> ...
+%! renamevars (tblA, {"Age", "Height"}, {"Age", "Weight"});
 
 ## Test 'movevars' method
 %!test
@@ -948,6 +1028,25 @@
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! T2 = movevars (T1, [3, 4], 'Before', [false, true, false, false]);
 %! assert_equal (T2.Properties.VariableNames, {'LastName', 'Gender', 'Smoker', 'Age'});
+## Test input validation for 'movevars' method
+%!error <table.movevars: too few input arguments.> movevars (tblA);
+%!error <table.movevars: too few input arguments.> movevars (tblA, {});
+%!error <table.movevars: cannot use both 'After' and 'Before' options.> ...
+%! movevars (tblA, 1, "After", "Height", "Before", "Weight");
+%!error <table.movevars: LOCATION must index a single variable.> ...
+%! movevars (tblA, 1, "After", [true, true, false, false]);
+%!error <table.movevars: LOCATION must be either a scalar integer, a character vector, or a logical vector indexing a single table variable.> ...
+%! movevars (tblA, 1, "After", [1, 2]);
+%!error <table.movevars: LOCATION must be either a scalar integer, a character vector, or a logical vector indexing a single table variable.> ...
+%! movevars (tblA, 1, "After", {"Height"});
+%!error <table.movevars: LOCATION does not index an existing variable.> ...
+%! movevars (tblA, 1, "After", "Smoker");
+%!error <table.movevars: cannot index non-existing variable: 'Smoker'.> ...
+%! movevars (tblA, "Smoker", "After", 2);
+%!error <table.movevars: LOCATION variable cannot be moved.> ...
+%! movevars (tblA, {"Age", "Height"}, "After", 2);
+%!error <table.movevars: LOCATION variable cannot be moved.> ...
+%! movevars (tblA, {"Height", "Weight"}, "Before", "Height");
 
 ## Test 'removevars' method
 %!test
@@ -970,6 +1069,23 @@
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! T2 = removevars (T1, vartype ("numeric"));
 %! assert_equal (T2.Properties.VariableNames, {'LastName', 'Gender', 'Smoker'});
+## Test input validation for 'removevars' method
+%!error <table.removevars: too few input arguments.> removevars (tblA);
+%!error <table: variable index must be a vector.> removevars (tblA, ones (2));
+%!error <table: variable logical index does not match table width.> ...
+%! removevars (tblA, [true, true, false]);
+%!error <table: variable index out of bounds: requested index 5; table has 4 variables.> ...
+%! removevars (tblA, [1, 5]);
+%!error <table: variable index out of bounds: requested index 7; table has 4 variables.> ...
+%! removevars (tblA, [1, 2, 7]);
+%!error <table: no such variable in table: 'Smoker'.> ...
+%! removevars (tblA, "Smoker");
+%!error <table: no such variables in table: 'Smoker', 'Health'.> ...
+%! removevars (tblA, {"Smoker", "Health"});
+%!error <table: unsupported variable indexing operand type: 'cell'.> ...
+%! removevars (tblA, {1});
+%!error <table: unsupported variable indexing operand type: 'struct'.> ...
+%! removevars (tblA, struct ("A", 1));
 
 ## Test 'splitvars' method
 %!test
@@ -1092,6 +1208,20 @@
 %!                 'NewVariableNames', {new_PD, {'Systolic', 'Diastolic'}});
 %! assert_equal (T2.Properties.VariableNames, {'LastName', 'Gender', ...
 %!         'Age', 'Height', 'Weight', 'Systolic', 'Diastolic'});
+## Test input validation for 'splitvars' method
+%!error <table.splitvars: too many input arguments.> splitvars (tblA, 1, 2, 3, 4);
+%!error <table.splitvars: invalid input for 'NewVariableNames'.> ...
+%! splitvars (table ([5, 6; 5, 6; 5, 6]), 1, 'NewVariableNames', {1})
+%!error <table.splitvars: invalid input for 'NewVariableNames'.> ...
+%! splitvars (table ([5, 6; 5, 6; 5, 6]), 1, 'NewVariableNames', 1)
+%!error <table.splitvars: invalid input for 'NewVariableNames'.> ...
+%! splitvars (table ([5, 6; 5, 6; 5, 6]), 1, 'NewVariableNames', "new_name")
+%!error <table.splitvars: invalid input for 'NewVariableNames'.> ...
+%! splitvars (table ([5, 6; 5, 6; 5, 6], ones (3, 2)), ":", ...
+%!            'NewVariableNames', {{"A", "B"}, {"new_name", 1}})
+%!error <table.splitvars: wrong number of 'NewVariableNames'.> ...
+%! splitvars (table ([5, 6; 5, 6; 5, 6], ones (3, 2)), ":", ...
+%!            'NewVariableNames', {{"A", "B"}, {"C", "D", "E"}})
 
 ## Test 'mergevars' method
 %!test
@@ -1167,6 +1297,21 @@
 %!                                 'MergeAsTable', true);
 %! assert_equal (T2.Properties.VariableNames, {'Merged', 'C', 'D'});
 %! assert_equal (isequal (T2.Merged, table (A, B)), true);
+## Test input validation for 'mergevars' method
+%!error <table.mergevars: too few input arguments.> mergevars (tblA);
+%!error <table.mergevars: invalid input for 'MergeAsTable'.> ...
+%! mergevars (tblA, {'Height', 'Weight'}, 'MergeAsTable', 'on');
+%!error <table.mergevars: invalid input for 'MergeAsTable'.> ...
+%! mergevars (tblA, {'Height', 'Weight'}, 'MergeAsTable', 2);
+%!error <table.mergevars: invalid input for 'MergeAsTable'.> ...
+%! mergevars (tblA, {'Height', 'Weight'}, 'MergeAsTable', [true, true]);
+%!error <table.mergevars: invalid input for 'NewVariableName'.> ...
+%! mergevars (tblA, {'Height', 'Weight'}, 'NewVariableName', 2)
+%!error <table.mergevars: assigned 'NewVariableName' already exists.> ...
+%! mergevars (tblA, {'Height', 'Weight'}, 'NewVariableName', 'Age');
+%!error <table.mergevars: selected variables cannot be merged into a multicolumn variable due to incompatible variable types.> ...
+%! LastName = {"Sanchez"; "Johnson"; "Li"; "Diaz"; "Brown"};
+%! mergevars (addvars (tblA, LastName), {'Height', 'LastName'});
 
 ## Test 'convertvars' method
 %!test
@@ -1219,6 +1364,20 @@
 %! T1 = table (A, B, C, D);
 %! T2 = convertvars (T1, "D", @(x) cellstr (upper (char (x))));
 %! assert_equal (T2.D, {"A"; "B"; "C"});
+## Test input validation for 'convertvars' method
+%!error <table.mergevars: too few input arguments.> convertvars (tblA);
+%!error <table.mergevars: too few input arguments.> ...
+%! convertvars (tblA, "Height");
+%!error <table.convertvars: DATATYPE must be a character vector.> ...
+%! convertvars (tblA, "Height", ["c","h";"a","r"]);
+%!error <table.convertvars: DATATYPE must be either a character vector or a function handle; got a 'cell'.> ...
+%! convertvars (tblA, "Height", {"char"});
+%!error <table.convertvars: DATATYPE must be either a character vector or a function handle; got a 'double'.> ...
+%! convertvars (tblA, "Height", 25);
+%!error <table.convertvars: specified DATATYPE conversion cannot be applied on selected variable 'Height'.> ...
+%! convertvars (tblA, "Height", "struct");
+%!error <table.convertvars: specified DATATYPE conversion on 'Height' does not return the appropriate amount of rows.> ...
+%! convertvars (tblA, "Height", @(x) sum (x));
 
 ## Test 'rows2vars' method
 %!test
@@ -1290,6 +1449,26 @@
 %! assert_equal (T2.Properties.VariableNames(1), {"OriginalVariableNames"});
 %! assert_equal (T2.Properties.VariableNames(2:4), {"1", "2", "3"});
 %! assert_equal (T2.('1'), [5; 3.14]);
+## Test input validation for  'rows2vars' method
+%!error <table.rows2vars: 'DataVariables' index a non-existing variable: 'Some'.> ...
+%! rows2vars (tblA, "DataVariables", "Some");
+%!error <table.rows2vars: 'VariableNamesSource' must index a single variable.> ...
+%! rows2vars (tblA, "VariableNamesSource", {"LastName", "Age"});
+%!error <table.rows2vars: 'VariableNamesSource' indexes a non-existing variable: 'Some'.> ...
+%! rows2vars (tblA, "VariableNamesSource", {"Some"});
+%!error <table.rows2vars: the number of names taken from the variable specified in 'VariableNamesSource' does not match the number of rows in input table.> ...
+%! rows2vars (tblA, "VariableNamesSource", {"Age"});
+%!error <table.rows2vars: 'VariableNamesSource' cannot specify a variable that is also specified by 'DataVariables'.> ...
+%! LastName = {"Sanchez"; "Johnson"; "Li"; "Diaz"; "Brown"};
+%! Age = [38; 43; 38; 40; 49];
+%! rows2vars (table (LastName, Age), "DataVariables", "LastName", "VariableNamesSource", "LastName");
+%!error <table.rows2vars: invalid input for 'VariableNamingRule'.> ...
+%! rows2vars (tblA, "VariableNamingRule", "somerule");
+%!error <table.rows2vars: input table must not contain nested tables.> ...
+%! LastName = {"Sanchez"; "Johnson"; "Li"; "Diaz"; "Brown"};
+%! rows2vars (table (tblA, LastName));
+%!error <table.rows2vars: input table must not contain multicolumn variables.> ...
+%! rows2vars (tblA);
 
 ## Test 'stack' method
 %!test
@@ -1352,216 +1531,6 @@
 %!            'NewDataVariableName', 'NewData', 'IndexVariableName', 'Index');
 %! assert_equal (S.Properties.VariableNames, ...
 %!         {"Test2", "Index", "NewData"});
-
-## Test 'unstack' method
-%! Storm = [3; 3; 1; 3; 1; 1; 4; 2; 4; 2; 4; 2];
-%! Town = categorical ({'Natick'; 'Worcester'; 'Natick'; 'Boston'; ...
-%!                      'Boston'; 'Worcester'; 'Boston'; 'Natick'; ...
-%!                      'Worcester'; 'Worcester'; 'Natick'; 'Boston'});
-%! Snowfall = [0; 3; 5; 5; 9; 10; 12; 13; 15; 16; 17; 21];
-%! S = table (Storm, Town, Snowfall);
-%! U = unstack (S, 'Snowfall', 'Town');
-%! assert_equal (U.Storm, [3; 1; 4; 2]);
-%! assert_equal (U.Properties.VariableNames, {'Storm', 'Boston', 'Natick', 'Worcester'});
-
-## Reinitialize shared variables before testing input validation
-%!shared LastName, Age, Smoker, Height, Weight, BloodPressure, tblA, tblB
-%! LastName = {"Sanchez"; "Johnson"; "Li"; "Diaz"; "Brown"};
-%! Age = [38; 43; 38; 40; 49];
-%! Smoker = logical ([1; 0; 1; 0; 1]);
-%! Height = [71; 69; 64; 67; 64];
-%! Weight = [176; 163; 131; 133; 119];
-%! BloodPressure = [124, 93; 109, 77; 125, 83; 117, 75; 122, 80];
-%! tblA = table (Age, Height, Weight, BloodPressure, 'RowNames', LastName);
-%! tblB = table (LastName, Age, Height, Weight, BloodPressure);
-
-## Test input validation for 'sortrows' method
-%!error <table.sortrows: 'MissingPlacement' parameter can be either 'auto', 'first', or 'last'.> ...
-%! sortrows (tblA, "MissingPlacement", "param");
-%!error <table.sortrows: 'ComparisonMethod' parameter can be either 'auto', 'real', or 'abs'.> ...
-%! sortrows (tblA, "ComparisonMethod", "param");
-%!error <table.sortrows: invalid number of input arguments.> ...
-%! sortrows (tblA, [], "ascend", "param");
-%!error <table.sortrows: invalid value for DIRECTION argument.> ...
-%! sortrows (tblA, [], "aaascend");
-%!error <table.sortrows: DIRECTION must be a scalar input when 'RowNames' or 'rowDimNames' are selected.> ...
-%! sortrows (tblA, "RowNames", {"ascend", "ascend"});
-%!error <table.sortrows: DIRECTION must be a scalar input when 'RowNames' or 'rowDimNames' are selected.> ...
-%! sortrows (tblA, "Row", {"ascend", "ascend"});
-%!error <table.sortrows: logical indexing vector does not match table width.> ...
-%! sortrows (tblA, [true, true, false]);
-%!error <table.sortrows: invalid size for DIRECTION argument.> ...
-%! sortrows (tblA, "Age", {"ascend", "ascend"});
-%!error <table.sortrows: numerical indexing must be a vector of nonzero integers.> ...
-%! sortrows (tblA, [1, 0, 3]);
-%!error <table.sortrows: numerical index exceeds table dimensions.> ...
-%! sortrows (tblA, [1, 6, 3]);
-%!error <table.sortrows: invalid size for DIRECTION argument.> ...
-%! sortrows (tblA, [1, 3, 2], {"ascend", "ascend"});
-%!error <table.sortrows: VARS indexes non-existing variable names.> ...
-%! sortrows (tblA, {"Age", "whatever"});
-%!error <table.sortrows: invalid size for DIRECTION argument.> ...
-%! sortrows (tblA, {"Age", "Height", "Weight"}, {"ascend", "ascend"});
-%!error <table.sortrows: DIRECTION must be a scalar input when variables are indexed with a 'vartype' object.> ...
-%! sortrows (tblA, vartype ("numeric"), {"ascend", "ascend"});
-%!error <table.sortrows: cannot sort variables of 'cell' type.> ...
-%! sortrows (table ({5; 4; 3}));
-%!error <table.sortrows: cannot sort variables of 'struct' type.> ...
-%! sortrows (table ([struct("s", 4); struct("s", 5); struct("s", 6)]));
-%!error <table.sortrows: cannot sort nested tables with mixed data types.> ...
-%! sortrows (table (Age, table (Age, LastName), "RowNames", LastName))
-
-## Test input validation for 'unique' method
-%!error <table.unique: too many input arguments.> unique (tblA, 1, 2);
-%!error <table.unique: invalid option 'some'.> unique (tblA, "some");
-%!error <table.sortrows: cannot sort variables of 'cell' type.> ...
-%! unique (table ({2; 2; 3}), "sorted");
-%!error <table.sortrows: cannot sort variables of 'struct' type.> ...
-%! unique (table (struct ("a", {2; 2; 3})), "sorted");
-%!error <table.sortrows: cannot sort nested tables with mixed data types.> ...
-%! unique (table (table (Age, LastName)), "sorted");
-
-## Test input validation for 'topkrows' method
-%!error <table.topkrows: K must be a nonnegative integer scalar.> ...
-%! topkrows (tblA, -1)
-%!error <table.topkrows: K must be a nonnegative integer scalar.> ...
-%! topkrows (tblA, 2.5)
-
-## Test input validation for 'addvars' method
-%!error <table.addvars: cannot use both 'After' and 'Before' options.> ...
-%! addvars (tblA, Smoker, 'After', 1, 'Before', 2);
-%!error <table.addvars: LOCATION must index a single variable.> ...
-%! addvars (tblA, Smoker, 'After', [true, false, false, true]);
-%!error <table.addvars: LOCATION must be either a scalar integer, a character vector, or a logical vector indexing a single table variable.> ...
-%! addvars (tblA, Smoker, 'After', [1, 2]);
-%!error <table.addvars: NEWNAMES does not match the number of new variables.> ...
-%! addvars (tblA, Smoker, 'NewVariableNames', {'A', 'B'});
-%!error <table.addvars: NEWNAMES contains duplicate names.> ...
-%! addvars (tblA, Smoker, Smoker, 'NewVariableNames', {'A', 'A'});
-%!error <table.addvars: new variable name 'Height' already exists.> ...
-%! addvars (tblA, Smoker, 'NewVariableNames', {'Height'});
-%!error <table.addvars: new variable names 'Height', 'Weight' already exist.> ...
-%! addvars (tblA, Smoker, Smoker, 'NewVariableNames', {'Height', 'Weight'});
-
-## Test input validation for 'renamevars' method
-%!error <table.renamevars: too few input arguments.> ...
-%! renamevars (tblA, {"Age", "Smoker"});
-%!error <table.renamevars: too few input arguments.> ...
-%! renamevars (tblA, {"Age"}, {});
-%!error <table.renamevars: too few input arguments.> ...
-%! renamevars (tblA, {}, {"NewName"});
-%!error <table.renamevars: NEWNAMES must be either a character vector, a cell array of character vectors, or a string array.> ...
-%! renamevars (tblA, {"Age", "Smoker"}, {"Age", 4});
-%!error <table.renamevars: NEWNAMES contains duplicate names.> ...
-%! renamevars (tblA, {"Age", "Smoker"}, {"Age", "Age"});
-%!error <table.renamevars: cannot index non-existing variable: 'Smoker'.> ...
-%! renamevars (tblA, {"Age", "Smoker"}, {"Age", "User"});
-%!error <table.renamevars: number of names in NEWNAMES do not match the selected variables specified by VARS.> ...
-%! renamevars (tblA, {"Age", "Height"}, {"Age", "Smoker", "Height"});
-%!error <table.renamevars: newly assigned variable name already exists.> ...
-%! renamevars (tblA, {"Age", "Height"}, {"Age", "Weight"});
-
-## Test input validation for 'movevars' method
-%!error <table.movevars: too few input arguments.> movevars (tblA);
-%!error <table.movevars: too few input arguments.> movevars (tblA, {});
-%!error <table.movevars: cannot use both 'After' and 'Before' options.> ...
-%! movevars (tblA, 1, "After", "Height", "Before", "Weight");
-%!error <table.movevars: LOCATION must index a single variable.> ...
-%! movevars (tblA, 1, "After", [true, true, false, false]);
-%!error <table.movevars: LOCATION must be either a scalar integer, a character vector, or a logical vector indexing a single table variable.> ...
-%! movevars (tblA, 1, "After", [1, 2]);
-%!error <table.movevars: LOCATION must be either a scalar integer, a character vector, or a logical vector indexing a single table variable.> ...
-%! movevars (tblA, 1, "After", {"Height"});
-%!error <table.movevars: LOCATION does not index an existing variable.> ...
-%! movevars (tblA, 1, "After", "Smoker");
-%!error <table.movevars: cannot index non-existing variable: 'Smoker'.> ...
-%! movevars (tblA, "Smoker", "After", 2);
-%!error <table.movevars: LOCATION variable cannot be moved.> ...
-%! movevars (tblA, {"Age", "Height"}, "After", 2);
-%!error <table.movevars: LOCATION variable cannot be moved.> ...
-%! movevars (tblA, {"Height", "Weight"}, "Before", "Height");
-
-## Test input validation for 'removevars' method
-%!error <table.removevars: too few input arguments.> removevars (tblA);
-%!error <table: variable index must be a vector.> removevars (tblA, ones (2));
-%!error <table: variable logical index does not match table width.> ...
-%! removevars (tblA, [true, true, false]);
-%!error <table: variable index out of bounds: requested index 5; table has 4 variables.> ...
-%! removevars (tblA, [1, 5]);
-%!error <table: variable index out of bounds: requested index 7; table has 4 variables.> ...
-%! removevars (tblA, [1, 2, 7]);
-%!error <table: no such variable in table: 'Smoker'.> ...
-%! removevars (tblA, "Smoker");
-%!error <table: no such variables in table: 'Smoker', 'Health'.> ...
-%! removevars (tblA, {"Smoker", "Health"});
-%!error <table: unsupported variable indexing operand type: 'cell'.> ...
-%! removevars (tblA, {1});
-%!error <table: unsupported variable indexing operand type: 'struct'.> ...
-%! removevars (tblA, struct ("A", 1));
-
-## Test input validation for 'splitvars' method
-%!error <table.splitvars: too many input arguments.> splitvars (tblA, 1, 2, 3, 4);
-%!error <table.splitvars: invalid input for 'NewVariableNames'.> ...
-%! splitvars (table ([5, 6; 5, 6; 5, 6]), 1, 'NewVariableNames', {1})
-%!error <table.splitvars: invalid input for 'NewVariableNames'.> ...
-%! splitvars (table ([5, 6; 5, 6; 5, 6]), 1, 'NewVariableNames', 1)
-%!error <table.splitvars: invalid input for 'NewVariableNames'.> ...
-%! splitvars (table ([5, 6; 5, 6; 5, 6]), 1, 'NewVariableNames', "new_name")
-%!error <table.splitvars: invalid input for 'NewVariableNames'.> ...
-%! splitvars (table ([5, 6; 5, 6; 5, 6], ones (3, 2)), ":", ...
-%!            'NewVariableNames', {{"A", "B"}, {"new_name", 1}})
-%!error <table.splitvars: wrong number of 'NewVariableNames'.> ...
-%! splitvars (table ([5, 6; 5, 6; 5, 6], ones (3, 2)), ":", ...
-%!            'NewVariableNames', {{"A", "B"}, {"C", "D", "E"}})
-
-## Test input validation for 'mergevars' method
-%!error <table.mergevars: too few input arguments.> mergevars (tblA);
-%!error <table.mergevars: invalid input for 'MergeAsTable'.> ...
-%! mergevars (tblA, {'Height', 'Weight'}, 'MergeAsTable', 'on');
-%!error <table.mergevars: invalid input for 'MergeAsTable'.> ...
-%! mergevars (tblA, {'Height', 'Weight'}, 'MergeAsTable', 2);
-%!error <table.mergevars: invalid input for 'MergeAsTable'.> ...
-%! mergevars (tblA, {'Height', 'Weight'}, 'MergeAsTable', [true, true]);
-%!error <table.mergevars: invalid input for 'NewVariableName'.> ...
-%! mergevars (tblA, {'Height', 'Weight'}, 'NewVariableName', 2)
-%!error <table.mergevars: assigned 'NewVariableName' already exists.> ...
-%! mergevars (tblA, {'Height', 'Weight'}, 'NewVariableName', 'Age');
-%!error <table.mergevars: selected variables cannot be merged into a multicolumn variable due to incompatible variable types.> ...
-%! mergevars (addvars (tblA, LastName), {'Height', 'LastName'});
-
-## Test input validation for 'convertvars' method
-%!error <table.mergevars: too few input arguments.> convertvars (tblA);
-%!error <table.mergevars: too few input arguments.> ...
-%! convertvars (tblA, "Height");
-%!error <table.convertvars: DATATYPE must be a character vector.> ...
-%! convertvars (tblA, "Height", ["c","h";"a","r"]);
-%!error <table.convertvars: DATATYPE must be either a character vector or a function handle; got a 'cell'.> ...
-%! convertvars (tblA, "Height", {"char"});
-%!error <table.convertvars: DATATYPE must be either a character vector or a function handle; got a 'double'.> ...
-%! convertvars (tblA, "Height", 25);
-%!error <table.convertvars: specified DATATYPE conversion cannot be applied on selected variable 'Height'.> ...
-%! convertvars (tblA, "Height", "struct");
-%!error <table.convertvars: specified DATATYPE conversion on 'Height' does not return the appropriate amount of rows.> ...
-%! convertvars (tblA, "Height", @(x) sum (x));
-
-## Test input validation for  'rows2vars' method
-%!error <table.rows2vars: 'DataVariables' index a non-existing variable: 'Some'.> ...
-%! rows2vars (tblA, "DataVariables", "Some");
-%!error <table.rows2vars: 'VariableNamesSource' must index a single variable.> ...
-%! rows2vars (tblA, "VariableNamesSource", {"LastName", "Age"});
-%!error <table.rows2vars: 'VariableNamesSource' indexes a non-existing variable: 'Some'.> ...
-%! rows2vars (tblA, "VariableNamesSource", {"Some"});
-%!error <table.rows2vars: the number of names taken from the variable specified in 'VariableNamesSource' does not match the number of rows in input table.> ...
-%! rows2vars (tblA, "VariableNamesSource", {"Age"});
-%!error <table.rows2vars: 'VariableNamesSource' cannot specify a variable that is also specified by 'DataVariables'.> ...
-%! rows2vars (table (LastName, Age), "DataVariables", "LastName", "VariableNamesSource", "LastName");
-%!error <table.rows2vars: invalid input for 'VariableNamingRule'.> ...
-%! rows2vars (tblA, "VariableNamingRule", "somerule");
-%!error <table.rows2vars: input table must not contain nested tables.> ...
-%! rows2vars (table (tblA, LastName));
-%!error <table.rows2vars: input table must not contain multicolumn variables.> ...
-%! rows2vars (tblA);
-
 ## Test input validation for  'stack' method
 %!error <table.stack: too few input arguments.> stack (tblA);
 %!error <table.stack: VARS index a non-existing variable: 'Some'.> ...
@@ -1575,6 +1544,16 @@
 %!error <table.stack: 'IndexVariableName' must be either a character vector, or a cellstring or string scalar.> ...
 %! stack (tblA, 1:3, "IndexVariableName", 3);
 
+## Test 'unstack' method
+%! Storm = [3; 3; 1; 3; 1; 1; 4; 2; 4; 2; 4; 2];
+%! Town = categorical ({'Natick'; 'Worcester'; 'Natick'; 'Boston'; ...
+%!                      'Boston'; 'Worcester'; 'Boston'; 'Natick'; ...
+%!                      'Worcester'; 'Worcester'; 'Natick'; 'Boston'});
+%! Snowfall = [0; 3; 5; 5; 9; 10; 12; 13; 15; 16; 17; 21];
+%! S = table (Storm, Town, Snowfall);
+%! U = unstack (S, 'Snowfall', 'Town');
+%! assert_equal (U.Storm, [3; 1; 4; 2]);
+%! assert_equal (U.Properties.VariableNames, {'Storm', 'Boston', 'Natick', 'Worcester'});
 ## Test input validation for  'unstack' method
 %!error <table.unstack: too few input arguments.> unstack (tblA);
 %!error <table.unstack: too few input arguments.> unstack (tblA, 'Height');
@@ -1582,6 +1561,9 @@
 %!error <table.unstack: VARS index a non-existing variable: 'some'.> ...
 %! unstack (tblA, 'some', 'Height');
 %!error <table.unstack: VARS must not index nested tables.> ...
+%! Age = [38; 43; 38; 40; 49];
+%! Smoker = logical ([1; 0; 1; 0; 1]);
+%! Height = [71; 69; 64; 67; 64];
 %! unstack (table (table (Age), Smoker, Height), 'Var1', 'Height');
 %!error <table.unstack: IVAR must index a single variable.> ...
 %! unstack (tblA, 'Height', {'Smoker', 'Age'});
@@ -1592,6 +1574,8 @@
 %!error <table.unstack: IVAR cannot be any of the variables to be unstacked as specified by VARS.> ...
 %! unstack (tblA, 'Height', 'Height');
 %!error <table.unstack: IVAR indexes a variable of invalid type: 'cell'.> ...
+%! Smoker = logical ([1; 0; 1; 0; 1]);
+%! Height = [71; 69; 64; 67; 64];
 %! unstack (table ({4;5;6;7;8}, Smoker, Height), 'Height', 'Var1');
 %!error <table.unstack: 'ConstantVariables' index a non-existing variable: 'some'.> ...
 %! unstack (tblA, 'Height', 'Age', 'ConstantVariables', 'some');
@@ -1606,6 +1590,9 @@
 %!error <table.unstack: 'GroupingVariables' cannot contain the indicator variable as specified by IVAR.> ...
 %! unstack (tblA, 'Height', 'Age', 'GroupingVariables', 'Age');
 %!warning <table.unstack: 'GroupingVariables' index a variable of invalid type: 'Var1', which is ignored.> ...
+%! Smoker = logical ([1; 0; 1; 0; 1]);
+%! Height = [71; 69; 64; 67; 64];
+%! Age = [38; 43; 38; 40; 49];
 %! unstack (table ({4;5;6;7;8}, Smoker, Height, Age), 'Height', 'Age', 'GroupingVariables', 'Var1');
 %!error <table.unstack: 'ConstantVariables' cannot contain any grouping variables as specified by 'GroupingVariables'.> ...
 %! unstack (tblA, 'BloodPressure', 'Height', 'ConstantVariables', 'Age', 'GroupingVariables', 'Age');
@@ -1630,14 +1617,6 @@
 %! T = addprop (T, 'Note', 'table');
 %! T.Properties.CustomProperties.Note = 'hello';
 %! assert_equal (T.Properties.CustomProperties.Note, 'hello');
-
-## Test 'rmprop' method
-%!test  # a custom property is removed, others are kept
-%! T = table ([1; 2], 'VariableNames', {'x'});
-%! T = addprop (T, {'Note', 'Flags'}, {'table', 'variable'});
-%! T = rmprop (T, 'Note');
-%! assert_equal (fieldnames (T.Properties.CustomProperties), {'Flags'});
-
 ## Test input validation for 'addprop' method
 %!error <table.addprop: too few input arguments.> ...
 %! addprop (table (1), {'a'});
@@ -1654,6 +1633,12 @@
 %!error <table.addprop: invalid value for 'propertyTypes'.> ...
 %! addprop (table (1), 'a', 'foo');
 
+## Test 'rmprop' method
+%!test  # a custom property is removed, others are kept
+%! T = table ([1; 2], 'VariableNames', {'x'});
+%! T = addprop (T, {'Note', 'Flags'}, {'table', 'variable'});
+%! T = rmprop (T, 'Note');
+%! assert_equal (fieldnames (T.Properties.CustomProperties), {'Flags'});
 ## Test input validation for 'rmprop' method
 %!error <table.rmprop: too few input arguments.> ...
 %! rmprop (table (1));
@@ -1685,7 +1670,6 @@
 %! assert_equal (T.R, {'z';'x';'y';'x'});
 %! assert_equal (ixR, [3;1;2;1]);
 %! assert_equal (T.Properties.RowNames, {'r1';'r2';'r3';'r4'});
-
 ## 'join' with 'LeftKeys'/'RightKeys'
 %!test
 %! L = table ([1;2], (10:11)', 'VariableNames', {'KL', 'A'});
@@ -1694,7 +1678,6 @@
 %! assert_equal (T.Properties.VariableNames, {'KL', 'A', 'B'});
 %! assert_equal (T.A, [10;11]);
 %! assert_equal (T.B, {'y';'x'});
-
 ## 'join' with 'Keys' and 'RightVariables'
 %!test
 %! L = table ([1;2;3], (1:3)', 'VariableNames', {'K', 'A'});
@@ -1702,14 +1685,12 @@
 %! T = join (L, R, 'Keys', 'K', 'RightVariables', 'B');
 %! assert_equal (T.Properties.VariableNames, {'K', 'A', 'B'});
 %! assert_equal (T.B, {'z';'y';'x'});
-
 ## 'join' suffixes shared non-key names with the input argument names
 %!test
 %! L = table ([1;2], {'a';'b'}, 'VariableNames', {'KeyL', 'V'});
 %! R = table ([1;2], {'p';'q'}, 'VariableNames', {'KeyR', 'V'});
 %! T = join (L, R, 'LeftKeys', 'KeyL', 'RightKeys', 'KeyR');
 %! assert_equal (T.Properties.VariableNames, {'KeyL', 'V_L', 'V_R'});
-
 ## 'join' with 'KeepOneCopy' drops the right copy of the named variable
 %!test
 %! L = table ([1;2], {'a';'b'}, 'VariableNames', {'KeyL', 'V'});
@@ -1717,7 +1698,6 @@
 %! T = join (L, R, 'LeftKeys', 'KeyL', 'RightKeys', 'KeyR', 'KeepOneCopy', 'V');
 %! assert_equal (T.Properties.VariableNames, {'KeyL', 'V'});
 %! assert_equal (T.V, {'a';'b'});
-
 ## 'join' on a duration key variable
 %!test
 %! L = table (hours ([3;1;2]), {'a';'b';'c'}, 'VariableNames', {'K', 'L'});
@@ -1726,7 +1706,6 @@
 %! assert_equal (hours (T.K), [3;1;2]);
 %! assert_equal (T.R, {'z';'x';'y'});
 %! assert_equal (ixR, [3;1;2]);
-
 ## 'join' carries a categorical key and a calendarDuration variable
 %!test
 %! L = table (categorical ({'a';'b'}), calmonths ([5;6]), ...
@@ -1736,7 +1715,6 @@
 %! assert_equal (cellstr (T.K), {'a';'b'});
 %! assert_equal (calmonths (T.M), [5;6]);
 %! assert_equal (T.R, {'y';'x'});
-
 %!error <table.join: too few input arguments.> ...
 %! join (table ([1;2]));
 %!error <table.join: both inputs must be tables.> ...
@@ -1774,7 +1752,6 @@
 %! assert_equal (T.R, {'x';'x';'y'});
 %! assert_equal (ixL, [2;4;3]);
 %! assert_equal (ixR, [1;1;2]);
-
 ## Inner join drops row names
 %!test
 %! L = table ([1;2], {'a';'b'}, 'VariableNames', {'Key', 'L'}, ...
@@ -1782,7 +1759,6 @@
 %! R = table ([2;1], {'x';'y'}, 'VariableNames', {'Key', 'R'});
 %! T = innerjoin (L, R);
 %! assert_equal (isempty (T.Properties.RowNames), true);
-
 ## Cartesian product on repeated keys (m*n rows)
 %!test
 %! L = table ([1;1], {'a';'b'}, 'VariableNames', {'K', 'L'});
@@ -1793,7 +1769,6 @@
 %! assert_equal (T.R, {'x';'y';'x';'y'});
 %! assert_equal (ixL, [1;1;2;2]);
 %! assert_equal (ixR, [1;2;1;2]);
-
 ## No matching keys yields an empty result with the correct variables
 %!test
 %! L = table ([1;2], {'a';'b'}, 'VariableNames', {'K', 'L'});
@@ -1801,7 +1776,6 @@
 %! T = innerjoin (L, R);
 %! assert_equal (height (T), 0);
 %! assert_equal (T.Properties.VariableNames, {'K', 'L', 'R'});
-
 ## Cellstr key variable
 %!test
 %! L = table ({'a';'b';'c'}, (1:3)', 'VariableNames', {'K', 'N'});
@@ -1810,7 +1784,6 @@
 %! assert_equal (T.K, {'a';'b'});
 %! assert_equal (T.N, [1;2]);
 %! assert_equal (T.M, {'X';'Y'});
-
 ## String key variable
 %!test
 %! L = table (string ({'a';'b'}), (1:2)', 'VariableNames', {'K', 'N'});
@@ -1819,7 +1792,6 @@
 %! assert_equal (cellstr (T.K), {'b'});
 %! assert_equal (T.N, 2);
 %! assert_equal (T.M, {'Z'});
-
 ## Categorical key variable, sorted by category code
 %!test
 %! L = table (categorical ({'a';'b';'c'}), (1:3)', 'VariableNames', {'K', 'N'});
@@ -1858,7 +1830,6 @@
 %! assert_equal (T.Properties.VariableNames, {'A', 'B'});
 %! assert_equal (T.A, [11;12]);
 %! assert_equal (T.B, {'x';'y'});
-
 ## Shared non-key variable names get '_Tleft'/'_Tright' suffixes
 %!test
 %! L = table ([1;2], {'a';'b'}, 'VariableNames', {'KeyL', 'V'});
@@ -1867,7 +1838,6 @@
 %! assert_equal (T.Properties.VariableNames, {'KeyL', 'V_L', 'V_R'});
 %! assert_equal (T.V_L, {'a';'b'});
 %! assert_equal (T.V_R, {'q';'p'});
-
 ## Multiple key variables
 %!test
 %! L = table ([1;1;2], {'a';'b';'a'}, (1:3)', ...
@@ -1890,7 +1860,6 @@
 %! assert_equal (T.R, {'x';'y';'z'});
 %! assert_equal (ixL, [2;3;1]);
 %! assert_equal (ixR, [1;2;3]);
-
 ## 'innerjoin' on a calendarDuration key variable
 %!test
 %! L = table (calmonths ([3;1;2]), {'a';'b';'c'}, 'VariableNames', {'K', 'L'});
@@ -1901,7 +1870,6 @@
 %! assert_equal (T.R, {'y';'x'});
 %! assert_equal (ixL, [2;3]);
 %! assert_equal (ixR, [2;1]);
-
 %!error <table.innerjoin: too few input arguments.> ...
 %! innerjoin (table ([1;2]));
 %!error <table.innerjoin: both inputs must be tables.> ...
@@ -1938,7 +1906,6 @@
 %! assert_equal (T.R, {'';'x';'y';'z'});
 %! assert_equal (ixL, [1;2;3;0]);
 %! assert_equal (ixR, [0;1;2;3]);
-
 ## Outer join drops row names
 %!test
 %! L = table ([1;2], {'a';'b'}, 'VariableNames', {'Key', 'L'}, ...
@@ -1956,7 +1923,6 @@
 %! assert_equal (T.Key_L, [1;2;3]);
 %! assert_equal (ixL, [1;2;3]);
 %! assert_equal (ixR, [0;1;2]);
-
 ## 'Type' 'right' keeps all right rows and only matching left rows
 %!test
 %! L = table ([1;2;3], {'a';'b';'c'}, 'VariableNames', {'Key', 'L'});
@@ -1976,7 +1942,6 @@
 %! assert_equal (T.Key, [1;2;3;5]);
 %! assert_equal (T.L, {'a';'b';'c';''});
 %! assert_equal (T.R, {'';'x';'y';'z'});
-
 ## 'MergeKeys' with differently-named keys uses the left key name
 %!test
 %! L = table ([1;2], (10:11)', 'VariableNames', {'KL', 'A'});
@@ -1987,7 +1952,6 @@
 %! assert_equal (T.KL_KR, [1;2;3]);
 %! assert_equal (T.A, [10;11;NaN]);
 %! assert_equal (T.B, {'';'x';'y'});
-
 ## String variables in unmatched rows are filled with <missing>
 %!test
 %! L = table ([1;2], string ({'a';'b'}), 'VariableNames', {'K', 'S'});
@@ -1995,14 +1959,12 @@
 %! T = outerjoin (L, R);
 %! assert_equal (ismissing (T.S), [false;false;true]);
 %! assert_equal (T.R, {'';'p';'q'});
-
 ## Categorical variables in unmatched rows are filled with <undefined>
 %!test
 %! L = table ([1;2], {'a';'b'}, 'VariableNames', {'K', 'L'});
 %! R = table ([2;3], categorical ({'p';'q'}), 'VariableNames', {'K', 'C'});
 %! T = outerjoin (L, R);
 %! assert_equal (ismissing (T.C), [true;false;false]);
-
 ## Cartesian product on repeated keys in a full outer join
 %!test
 %! L = table ([1;1;9], {'a';'b';'z'}, 'VariableNames', {'K', 'L'});
@@ -2011,7 +1973,6 @@
 %! assert_equal (height (T), 5);
 %! assert_equal (T.L, {'a';'a';'b';'b';'z'});
 %! assert_equal (T.R, {'x';'y';'x';'y';''});
-
 ## An empty input table yields all-missing fill on that side
 %!test
 %! E = table (zeros (0, 1), cell (0, 1), 'VariableNames', {'K', 'L'});
@@ -2043,7 +2004,6 @@
 %! assert_equal (T.R, {'';'p';'';'q'});
 %! assert_equal (ixL, [2;3;1;0]);
 %! assert_equal (ixR, [0;1;0;2]);
-
 ## 'outerjoin' fills an unmatched duration variable with missing
 %!test
 %! L = table ([1;2], hours ([10;20]), 'VariableNames', {'K', 'D'});
@@ -2051,21 +2011,18 @@
 %! T = outerjoin (L, R);
 %! assert_equal (ismissing (T.D), [false;false;true]);
 %! assert_equal (hours (T.D), [10;20;NaN]);
-
 ## 'outerjoin' fills an unmatched calendarDuration variable with missing
 %!test
 %! L = table ([1;2], calmonths ([5;6]), 'VariableNames', {'K', 'CD'});
 %! R = table ([2;3], {'x';'y'}, 'VariableNames', {'K', 'R'});
 %! T = outerjoin (L, R);
 %! assert_equal (ismissing (T.CD), [false;false;true]);
-
 ## 'outerjoin' fills an unmatched string variable with <missing>
 %!test
 %! L = table ([1;2], string ({'a';'b'}), 'VariableNames', {'K', 'S'});
 %! R = table ([2;3], {'x';'y'}, 'VariableNames', {'K', 'R'});
 %! T = outerjoin (L, R);
 %! assert_equal (ismissing (T.S), [false;false;true]);
-
 %!error <table.outerjoin: too few input arguments.> ...
 %! outerjoin (table ([1;2]));
 %!error <table.outerjoin: both inputs must be tables.> ...
@@ -2105,7 +2062,6 @@
 %! assert_equal (U.S, {'a';'b';'c';'e'});
 %! assert_equal (ia, [2;3;1]);
 %! assert_equal (ib, 2);
-
 ## 'union' with 'stable' set order
 %!test
 %! A = table ([3;1;2;1], {'c';'a';'b';'a'}, 'VariableNames', {'N', 'S'});
@@ -2113,7 +2069,6 @@
 %! U = union (A, B, 'stable');
 %! assert_equal (U.N, [3;1;2;5]);
 %! assert_equal (U.S, {'c';'a';'b';'e'});
-
 ## 'union' ignores variable order (output keeps the first table's order)
 %!test
 %! A = table ([3;1], {'c';'a'}, 'VariableNames', {'N', 'S'});
@@ -2132,7 +2087,6 @@
 %! assert_equal (I.S, {'a';'b'});
 %! assert_equal (ia, [2;3]);
 %! assert_equal (ib, [3;1]);
-
 ## 'intersect' with no common rows yields an empty table
 %!test
 %! A = table ([1;2], {'a';'b'}, 'VariableNames', {'N', 'S'});
@@ -2149,7 +2103,6 @@
 %! assert_equal (D.N, 3);
 %! assert_equal (D.S, {'c'});
 %! assert_equal (ia, 1);
-
 ## 'setdiff' with 'stable' set order
 %!test
 %! A = table ([5;3;5], {'e';'c';'e'}, 'VariableNames', {'N', 'S'});
@@ -2174,7 +2127,6 @@
 %! [TF, ixB] = ismember (A, B);
 %! assert_equal (TF, [false;true;true;true]);
 %! assert_equal (ixB, [0;3;1;3]);
-
 ## Set operations work on text and numeric keys via the row proxy
 %!test
 %! A = table (categorical ({'a';'b';'c'}), [1;2;3], 'VariableNames', {'C', 'N'});
@@ -2241,7 +2193,6 @@
 %! [TF, ixB] = ismember (A, B);
 %! assert_equal (TF, [false;true;false]);
 %! assert_equal (ixB, [0;1;0]);
-
 %!error <table.union: too few input arguments.> ...
 %! union (table ([1;2]));
 %!error <table.union: both inputs must be tables.> ...
@@ -2386,7 +2337,6 @@
 %! [R, TF] = rmmissing (T, 'MinNumMissing', 2);
 %! assert_equal (TF, [false; false; true]);
 %! assert_equal (height (R), 2);
-
 ## Test input validation for 'rmmissing' method
 %!error <table.rmmissing: 'MinNumMissing' must be a positive integer.> ...
 %! rmmissing (table ([1; NaN]), 'MinNumMissing', 1.5);
@@ -2424,7 +2374,6 @@
 %! assert_equal (R.a, [1; 0]);
 %! assert_equal (R.b, [NaN; 4]);
 %! assert_equal (TF, [false, false; true, false]);
-
 ## Test 'fillmissing' method -- 'previous'/'next'/'nearest' methods
 %!test  # 'previous' carries the last non-missing value forward
 %! T = table ([1; NaN; NaN; 4], 'VariableNames', {'x'});
@@ -2463,7 +2412,6 @@
 %! T = table ([1; NaN; 3], 'VariableNames', {'x'});
 %! R = fillmissing (T, 'Previous');
 %! assert_equal (R.x, [1; 1; 3]);
-
 ## Test 'fillmissing' method -- 'linear' method
 %!test  # interior gaps are linearly interpolated
 %! T = table ([1; NaN; NaN; 4], 'VariableNames', {'x'});
@@ -2496,7 +2444,6 @@
 %! [R, TF] = fillmissing (T, 'previous');
 %! assert_equal (isequal (R, T), true);
 %! assert_equal (TF, [false; false; false]);
-
 ## Test input validation for 'fillmissing' method
 %!error <table.fillmissing: too few input arguments.> ...
 %! fillmissing (table (1));
@@ -2562,7 +2509,6 @@
 %! T = table (int32 ([1; 99; 3]), 'VariableNames', {'x'});
 %! R = standardizeMissing (T, 99);
 %! assert_equal (R.x, int32 ([1; 99; 3]));
-
 ## Test input validation for 'standardizeMissing' method
 %!error <table.standardizeMissing: too few input arguments.> ...
 %! standardizeMissing (table (1));
@@ -2654,6 +2600,15 @@
 %! H = horzcat (T1, T2);
 %! assert_equal (H.Properties.VariableNames, {'x', 'y'});
 %! assert_equal (H.Properties.RowNames, {'r1'; 'r2'});
+## Test input validation for 'horzcat' method
+%!error <table.horzcat: all inputs must be tables.> ...
+%! horzcat (table (1), 5);
+%!error <table.horzcat: all input tables must have unique variable names.> ...
+%! horzcat (table (1, 'VariableNames', {'x'}), ...
+%!          table (2, 'VariableNames', {'x'}));
+%!error <table.horzcat: all input tables must have the same height.> ...
+%! horzcat (table ([1; 2], 'VariableNames', {'x'}), ...
+%!          table (3, 'VariableNames', {'y'}));
 
 ## 'vertcat' stacks rows of tables sharing variable names
 %!test
@@ -2669,6 +2624,15 @@
 %! V = vertcat (T1, T2);
 %! assert_equal (V.x, [1; 2; 3; 6]);
 %! assert_equal (V.y, {'a'; 'b'; 'c'; 'f'});
+## Test input validation for 'vertcat' method
+%!error <table.vertcat: all inputs must be tables.> ...
+%! vertcat (table (1), 5);
+%!error <table.vertcat: input tables must have identical variable names.> ...
+%! vertcat (table (1, 'VariableNames', {'x'}), ...
+%!          table (2, 'VariableNames', {'y'}));
+%!error <table.vertcat: all input tables must have unique row names.> ...
+%! vertcat (table (1, 'VariableNames', {'x'}, 'RowNames', {'r1'}), ...
+%!          table (2, 'VariableNames', {'x'}, 'RowNames', {'r1'}));
 
 ## 'repelem' replicates rows and variables in place
 %!test  # rows replicated consecutively (1 1 2 2 3 3)
@@ -2693,6 +2657,21 @@
 %!test  # repelem (T, 1, 1) leaves the table unchanged
 %! T = table ([1; 2; 3], 'VariableNames', {'x'});
 %! assert_equal (isequal (repelem (T, 1, 1), T), true);
+## Test input validation for 'repelem' method
+%!error <table.repelem: too few input arguments for table input.> ...
+%! repelem (table (1));
+%!error <table.repelem: only 2 dimensions are supported for tables.> ...
+%! repelem (table (1), 1, 2, 3);
+%!error <table.repelem: SZ must be a positive integer.> ...
+%! repelem (table (1), 1.5);
+%!error <table.repelem: SZ must be a positive integer.> ...
+%! repelem (table (1), 0);
+%!error <table.repelem: ROWS must be a positive integer.> ...
+%! repelem (table (1), 1.5, 1);
+%!error <table.repelem: COLUMNS must be a positive integer.> ...
+%! repelem (table (1), 1, 0);
+%!error <table.repelem: COLUMNS must be a positive integer.> ...
+%! repelem (table (1), 2, 1.5);
 
 ## 'repmat' tiles whole rows and variables of a table
 %!test  # rows tiled as a block (1 2 3 1 2 3)
@@ -2714,49 +2693,6 @@
 %!test  # repmat (T, 1, 1) leaves the table unchanged
 %! T = table ([1; 2; 3], 'VariableNames', {'x'});
 %! assert_equal (isequal (repmat (T, 1, 1), T), true);
-
-## 'squeeze' is a no-op for tables (always two-dimensional)
-%!test
-%! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
-%! assert_equal (isequal (squeeze (T), T), true);
-%!assert_equal (isequal (squeeze (table ()), table ()), true)
-
-## Test input validation for 'horzcat' method
-%!error <table.horzcat: all inputs must be tables.> ...
-%! horzcat (table (1), 5);
-%!error <table.horzcat: all input tables must have unique variable names.> ...
-%! horzcat (table (1, 'VariableNames', {'x'}), ...
-%!          table (2, 'VariableNames', {'x'}));
-%!error <table.horzcat: all input tables must have the same height.> ...
-%! horzcat (table ([1; 2], 'VariableNames', {'x'}), ...
-%!          table (3, 'VariableNames', {'y'}));
-
-## Test input validation for 'vertcat' method
-%!error <table.vertcat: all inputs must be tables.> ...
-%! vertcat (table (1), 5);
-%!error <table.vertcat: input tables must have identical variable names.> ...
-%! vertcat (table (1, 'VariableNames', {'x'}), ...
-%!          table (2, 'VariableNames', {'y'}));
-%!error <table.vertcat: all input tables must have unique row names.> ...
-%! vertcat (table (1, 'VariableNames', {'x'}, 'RowNames', {'r1'}), ...
-%!          table (2, 'VariableNames', {'x'}, 'RowNames', {'r1'}));
-
-## Test input validation for 'repelem' method
-%!error <table.repelem: too few input arguments for table input.> ...
-%! repelem (table (1));
-%!error <table.repelem: only 2 dimensions are supported for tables.> ...
-%! repelem (table (1), 1, 2, 3);
-%!error <table.repelem: SZ must be a positive integer.> ...
-%! repelem (table (1), 1.5);
-%!error <table.repelem: SZ must be a positive integer.> ...
-%! repelem (table (1), 0);
-%!error <table.repelem: ROWS must be a positive integer.> ...
-%! repelem (table (1), 1.5, 1);
-%!error <table.repelem: COLUMNS must be a positive integer.> ...
-%! repelem (table (1), 1, 0);
-%!error <table.repelem: COLUMNS must be a positive integer.> ...
-%! repelem (table (1), 2, 1.5);
-
 ## Test input validation for 'repmat' method
 %!error <table.repmat: too few input arguments for table input.> ...
 %! repmat (table (1));
@@ -2770,6 +2706,12 @@
 %! repmat (table (1), 1, 0);
 %!error <table.repmat: COLUMNS must be a positive integer.> ...
 %! repmat (table (1), 2, 1.5);
+
+## 'squeeze' is a no-op for tables (always two-dimensional)
+%!test
+%! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
+%! assert_equal (isequal (squeeze (T), T), true);
+%!assert_equal (isequal (squeeze (table ()), table ()), true)
 
 ################################################################################
 ##                       **    Forbidden Methods    **                        ##
