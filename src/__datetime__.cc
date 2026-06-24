@@ -934,51 +934,36 @@ Base function for datetime class. \n\
         }
       }
     }
-    // Make sure they are of the same size or scalars
-    dim_vector sz = args(0).dims ();
-    for (int i = 1; i < nargin; i++)
+    // Determine the common size: scalar arguments broadcast to the size of
+    // the non-scalar arguments, which must all share a common size.
+    dim_vector sz (1, 1);
+    bool sized = false;
+    for (int i = 0; i < nargin; i++)
     {
-      dim_vector sz1 = args(i).dims ();
-      if (args(i - 1).is_scalar_type ())
+      if (args(i).is_scalar_type ())
       {
-        sz = sz1;
+        continue;
       }
-      else if (! args(i).is_scalar_type ())
+      dim_vector sz1 = args(i).dims ();
+      if (! sized)
       {
-        if (sz.ndims () != sz1.ndims ())
-        {
-          string errmsg = "numeric data input arguments";
-          errmsg += " must be of common size or scalars.";
-          if (nargout == 7)
-          {
-            retval(6) = errmsg;
-            return retval;
-          }
-          else
-          {
-            errmsg = "__datetime__: " + errmsg;
-            error ("%s", errmsg.c_str ());
-          }
-        }
-        for (int j = 0; j < sz.ndims (); j++)
-        {
-          if (sz(j) != sz1(j))
-          {
-            string errmsg = "numeric data input arguments";
-            errmsg += " must be of common size or scalars.";
-            if (nargout == 7)
-            {
-              retval(6) = errmsg;
-              return retval;
-            }
-            else
-            {
-              errmsg = "__datetime__: " + errmsg;
-              error ("%s", errmsg.c_str ());
-            }
-          }
-        }
         sz = sz1;
+        sized = true;
+      }
+      else if (sz1 != sz)
+      {
+        string errmsg = "numeric data input arguments";
+        errmsg += " must be of common size or scalars.";
+        if (nargout == 7)
+        {
+          retval(6) = errmsg;
+          return retval;
+        }
+        else
+        {
+          errmsg = "__datetime__: " + errmsg;
+          error ("%s", errmsg.c_str ());
+        }
       }
     }
     // Initialize output vectors with input data
