@@ -643,23 +643,54 @@ classdef table
     ## -*- texinfo -*-
     ## @deftypefn {table} {} table2csv (@var{tbl}, @var{file})
     ##
-    ## Save a table to a CSV file.
+    ## Write a table to a comma-separated-value (CSV) file.
     ##
-    ## Each variable in @var{tbl} becomes a column of cells in the output
-    ## @var{C}.  Multicolumnar variables are split into separate columns with
-    ## each column sharing the same variable name.  Nested tables are also split
-    ## into separate columns with each column sharing the same variable name but
-    ## also the corresponding nested table's variable name.  Structures are
-    ## converted to cell arrays with each field becoming a separate column and
-    ## the fieldnames becoming nested column names in the same way as in nested
-    ## tables.
+    ## @code{table2csv (@var{tbl}, @var{file})} writes the table @var{tbl} to
+    ## @var{file}, which may be a character vector, a cellstr, or a string
+    ## scalar.  The resulting file can be read back with @code{csv2table}.
     ##
-    ## The first cell of the CSV file contains a comment mentioning the number
-    ## of consecutive rows that contain info about the variable types. The
-    ## number of vartype rows may differ according to the nested tables and
-    ## structures contained in the table. The following rows contain the header
-    ## with the column names.
+    ## The file begins with a comment line reporting how many consecutive rows
+    ## hold the variable types, names, descriptions, and units, in that order.
+    ## Those header rows are followed by one row of data per table row.
     ##
+    ## Variables are serialized as follows:
+    ##
+    ## @itemize
+    ## @item
+    ## Numeric and logical variables are written as numbers (logicals as
+    ## @code{0}/@code{1}).  Missing and infinite values are written as the
+    ## tokens @qcode{NaN}, @qcode{NA}, @qcode{inf}, and @qcode{-inf}.
+    ##
+    ## @item
+    ## Character, cellstr, and @code{string} variables are written as quoted
+    ## text.
+    ##
+    ## @item
+    ## @code{datetime}, @code{duration}, @code{calendarDuration}, and
+    ## @code{categorical} variables are written as their display strings.
+    ##
+    ## @item
+    ## A multicolumn variable is split into consecutive columns that share the
+    ## same variable name.
+    ##
+    ## @item
+    ## A nested table is split into columns tagged with both the outer and the
+    ## nested variable name.  A structure is split into one column per field,
+    ## tagged with the variable name and the field name.
+    ## @end itemize
+    ##
+    ## When @var{tbl} has row names they are written under a leading
+    ## @qcode{RowNames} column.  Variable descriptions and units are written
+    ## only when @emph{every} variable has a non-empty description or unit,
+    ## respectively.
+    ##
+    ## Note the following round-trip limitations when reading the file back with
+    ## @code{csv2table}: @code{calendarDuration} and @code{categorical}
+    ## variables are returned as cell arrays of character vectors (their values
+    ## are not reconstructed), and the descriptions and units of nested tables
+    ## and structures are not restored.
+    ##
+    ## @seealso{csv2table, table}
     ## @end deftypefn
     function table2csv (this, file)
       file = char (cellstr (file));
@@ -673,9 +704,9 @@ classdef table
       Nmaxr = max (Nrows);
       isvar = cellfun (@(x) ! isempty (x), N(1,:));
       Drows = cellfun (@(x) ! isempty (x), D);
-      Dmaxr = sum (all (Drows, 2));
+      Dmaxr = sum (all (Drows(:,isvar), 2));
       Urows = cellfun (@(x) ! isempty (x), U);
-      Umaxr = sum (all (Urows, 2));
+      Umaxr = sum (all (Urows(:,isvar), 2));
       ## Initialize header
       Header = repmat ({''}, Nmaxr + Tmaxr + Dmaxr + Umaxr, Ccols);
       ## Populate header
@@ -7287,7 +7318,7 @@ classdef table
           endfor
         elseif (isa (var_V, 'calendarDuration'))
           for col = 1:ncols
-            V = [V, dispstrs(var_V(:,col))];
+            V = [V, cellstr(var_V(:,col))];
             N = [N, this.VariableNames{ix}];
             T = [T, 'calendarDuration'];
             D = [D, this.VariableDescriptions(ix)];
@@ -7295,7 +7326,7 @@ classdef table
           endfor
         elseif (isa (var_V, 'categorical'))
           for col = 1:ncols
-            V = [V, dispstrs(var_V(:,col))];
+            V = [V, cellstr(var_V(:,col))];
             N = [N, this.VariableNames{ix}];
             T = [T, 'categorical'];
             D = [D, this.VariableDescriptions(ix)];
@@ -7303,7 +7334,7 @@ classdef table
           endfor
         elseif (isa (var_V, 'datetime'))
           for col = 1:ncols
-            V = [V, dispstrs(var_V(:,col))];
+            V = [V, cellstr(var_V(:,col))];
             N = [N, this.VariableNames{ix}];
             T = [T, 'datetime'];
             D = [D, this.VariableDescriptions(ix)];
@@ -7311,7 +7342,7 @@ classdef table
           endfor
         elseif (isa (var_V, 'duration'))
           for col = 1:ncols
-            V = [V, dispstrs(var_V(:,col))];
+            V = [V, cellstr(var_V(:,col))];
             N = [N, this.VariableNames{ix}];
             T = [T, 'duration'];
             D = [D, this.VariableDescriptions(ix)];
@@ -7360,7 +7391,7 @@ classdef table
           nestedD = {};
           nestedU = {};
           for col = 1:size (tmpV, 2)
-            nestedN = [nestedN, {{this.VariableNames{ix}; tnpH{col}}}];
+            nestedN = [nestedN, {{this.VariableNames{ix}; tmpN{col}}}];
             nestedT = [nestedT, {{'struct'; tmpT{col}}}];
             nestedD = [nestedD, {{this.VariableDescriptions(ix); {''}}}];
             nestedU = [nestedU, {{this.VariableUnits(ix); {''}}}];
