@@ -401,10 +401,12 @@
 ##                                                                            ##
 ################################################################################
 
-## Test 'table2csv' method (round-trip through 'csv2table')
-%!test
+## Test 'table2csv' method (round-trips through 'csv2table')
+%!test  # numeric, cellstr, and double variables round-trip by value and name
 %! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, [1.5; 2.5; 3.5], ...
 %!            'VariableNames', {'id', 'name', 'val'});
+%! T.Properties.VariableDescriptions = {'the id', 'the name', 'the value'};
+%! T.Properties.VariableUnits = {'#', 'str', 'kg'};
 %! fn = [tempname() '.csv'];
 %! unwind_protect
 %!   table2csv (T, fn);
@@ -413,11 +415,343 @@
 %!   assert_equal (R.id, [1; 2; 3]);
 %!   assert_equal (R.val, [1.5; 2.5; 3.5]);
 %!   assert_equal (R.name, {'a'; 'b'; 'c'});
+%!   assert_equal (R.Properties.VariableDescriptions, {'the id', 'the name', 'the value'});
+%!   assert_equal (R.Properties.VariableUnits, {'#', 'str', 'kg'});
 %! unwind_protect_cleanup
 %!   if (exist (fn, 'file'))
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
+%!test  # integer and single variables preserve their class through the vartype row
+%! T = table (int8 ([1; 2]), single ([1.5; 2.5]), uint16 ([10; 20]), ...
+%!            'VariableNames', {'a', 'b', 'c'});
+%! T.Properties.VariableDescriptions = {'sbyte', 'real', 'ushort'};
+%! T.Properties.VariableUnits = {'au', 'au', 'au'};
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   assert_equal (class (R.a), 'int8');
+%!   assert_equal (class (R.b), 'single');
+%!   assert_equal (class (R.c), 'uint16');
+%!   assert_equal (R.a, int8 ([1; 2]));
+%!   assert_equal (R.b, single ([1.5; 2.5]));
+%!   assert_equal (R.Properties.VariableDescriptions, {'sbyte', 'real', 'ushort'});
+%!   assert_equal (R.Properties.VariableUnits, {'au', 'au', 'au'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # a logical variable round-trips as a logical column
+%! T = table ([true; false; true], 'VariableNames', {'flag'});
+%! T.Properties.VariableDescriptions = {'a flag'};
+%! T.Properties.VariableUnits = {'bool'};
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   assert_equal (class (R.flag), 'logical');
+%!   assert_equal (R.flag, [true; false; true]);
+%!   assert_equal (R.Properties.VariableDescriptions, {'a flag'});
+%!   assert_equal (R.Properties.VariableUnits, {'bool'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # a multicolumn variable splits into same-named columns and is rejoined
+%! T = table ([1, 2; 3, 4], 'VariableNames', {'M'});
+%! T.Properties.VariableDescriptions = {'a pair'};
+%! T.Properties.VariableUnits = {'cm'};
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   assert_equal (width (R), 1);
+%!   assert_equal (R.M, [1, 2; 3, 4]);
+%!   assert_equal (R.Properties.VariableDescriptions, {'a pair'});
+%!   assert_equal (R.Properties.VariableUnits, {'cm'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # NA and NaN are written as distinct tokens and round-trip through csv2table
+%! T = table ([1; NA; NaN], 'VariableNames', {'v'});
+%! T.Properties.VariableDescriptions = {'measurement'};
+%! T.Properties.VariableUnits = {'mm'};
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   txt = fileread (fn);
+%!   assert_equal (! isempty (regexp (txt, '^NA$', 'lineanchors', 'once')), true);
+%!   assert_equal (! isempty (regexp (txt, '^NaN$', 'lineanchors', 'once')), true);
+%!   R = csv2table (fn);
+%!   assert_equal (class (R.v), 'double');
+%!   assert_equal (R.v(1), 1);
+%!   assert_equal (isna (R.v'), [false, true, false]);
+%!   assert_equal (isnan (R.v'), [false, true, true]);
+%!   assert_equal (R.Properties.VariableDescriptions, {'measurement'});
+%!   assert_equal (R.Properties.VariableUnits, {'mm'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # a string variable round-trips as a string column
+%! T = table (string ({'a'; 'b'}), 'VariableNames', {'s'});
+%! T.Properties.VariableDescriptions = {'a label'};
+%! T.Properties.VariableUnits = {'txt'};
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   assert_equal (class (R.s), 'string');
+%!   assert_equal (cellstr (R.s), {'a'; 'b'});
+%!   assert_equal (R.Properties.VariableDescriptions, {'a label'});
+%!   assert_equal (R.Properties.VariableUnits, {'txt'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # a datetime variable round-trips through its display strings
+%! T = table (datetime (2020, 1, [1; 2; 3]), 'VariableNames', {'d'});
+%! T.Properties.VariableDescriptions = {'a date'};
+%! T.Properties.VariableUnits = {'cal'};
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   assert_equal (class (R.d), 'datetime');
+%!   assert_equal (cellstr (R.d), {'01-Jan-2020'; '02-Jan-2020'; '03-Jan-2020'});
+%!   assert_equal (R.Properties.VariableDescriptions, {'a date'});
+%!   assert_equal (R.Properties.VariableUnits, {'cal'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # a duration variable round-trips through its display strings
+%! T = table (duration ([1; 2], [30; 45], [0; 0]), 'VariableNames', {'du'});
+%! T.Properties.VariableDescriptions = {'elapsed'};
+%! T.Properties.VariableUnits = {'hms'};
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   assert_equal (class (R.du), 'duration');
+%!   assert_equal (cellstr (R.du), {'01:30:00'; '02:45:00'});
+%!   assert_equal (R.Properties.VariableDescriptions, {'elapsed'});
+%!   assert_equal (R.Properties.VariableUnits, {'hms'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # a calendarDuration is written as text; csv2table reads it back as cellstr (lossy)
+%! T = table (calendarDuration ([1; 2], [0; 1], [0; 0]), 'VariableNames', {'cd'});
+%! T.Properties.VariableDescriptions = {'span'};
+%! T.Properties.VariableUnits = {'ymd'};
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   txt = fileread (fn);
+%!   assert_equal (! isempty (regexp (txt, '^"calendarDuration"$', 'lineanchors', 'once')), true);
+%!   assert_equal (! isempty (regexp (txt, '^"1y"$', 'lineanchors', 'once')), true);
+%!   assert_equal (! isempty (regexp (txt, '^"2y 1mo"$', 'lineanchors', 'once')), true);
+%!   warning ('off', 'all', 'local');
+%!   lastwarn ('');
+%!   R = csv2table (fn);
+%!   assert_equal (lastwarn (), "csv2table: 'calendarDuration' strings are not converted.");
+%!   assert_equal (R.cd, {'1y'; '2y 1mo'});
+%!   assert_equal (R.Properties.VariableDescriptions, {'span'});
+%!   assert_equal (R.Properties.VariableUnits, {'ymd'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # a categorical is written as labels; csv2table reads it back as cellstr (lossy)
+%! T = table (categorical ({'lo'; 'hi'; 'lo'}), 'VariableNames', {'c'});
+%! T.Properties.VariableDescriptions = {'level'};
+%! T.Properties.VariableUnits = {'cat'};
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   txt = fileread (fn);
+%!   assert_equal (! isempty (regexp (txt, '^"categorical"$', 'lineanchors', 'once')), true);
+%!   assert_equal (! isempty (regexp (txt, '^"lo"$', 'lineanchors', 'once')), true);
+%!   assert_equal (! isempty (regexp (txt, '^"hi"$', 'lineanchors', 'once')), true);
+%!   warning ('off', 'all', 'local');
+%!   lastwarn ('');
+%!   R = csv2table (fn);
+%!   assert_equal (lastwarn (), "csv2table: 'categorical' strings are not converted.");
+%!   assert_equal (R.c, {'lo'; 'hi'; 'lo'});
+%!   assert_equal (R.Properties.VariableDescriptions, {'level'});
+%!   assert_equal (R.Properties.VariableUnits, {'cat'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # row names are written under a 'RowNames' column and restored
+%! T = table ([1; 2], 'VariableNames', {'v'}, 'RowNames', {'r1'; 'r2'});
+%! T.Properties.VariableDescriptions = {'a value'};
+%! T.Properties.VariableUnits = {'kg'};
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   assert_equal (R.Properties.RowNames, {'r1'; 'r2'});
+%!   assert_equal (R.v, [1; 2]);
+%!   assert_equal (R.Properties.VariableDescriptions, {'a value'});
+%!   assert_equal (R.Properties.VariableUnits, {'kg'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # a nested table is split with two vartype rows and rebuilt on round-trip
+%! nt = table ([10; 20], [30; 40], 'VariableNames', {'p', 'q'});
+%! T = table ([1; 2], nt, 'VariableNames', {'id', 'nest'});
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   assert_equal (! isempty (strfind (fileread (fn), 'varTypes 2 rows')), true);
+%!   R = csv2table (fn);
+%!   assert_equal (class (R.nest), 'table');
+%!   assert_equal (R.nest.p, [10; 20]);
+%!   assert_equal (R.nest.q, [30; 40]);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # a struct variable is split per field and rebuilt on round-trip
+%! sv = struct ('x', {1; 2}, 'y', {3; 4});
+%! T = table ([1; 2], sv, 'VariableNames', {'id', 's'});
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   s = R.s;
+%!   assert_equal (class (s), 'struct');
+%!   assert_equal ([s.x], [1, 2]);
+%!   assert_equal ([s.y], [3, 4]);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # variable descriptions and units are written to the header and restored
+%! T = table ([1; 2], 'VariableNames', {'v'});
+%! T.Properties.VariableDescriptions = {'mass'};
+%! T.Properties.VariableUnits = {'kg'};
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   txt = fileread (fn);
+%!   assert_equal (! isempty (strfind (txt, 'varDescriptions 1 rows; varUnits 1 rows')), true);
+%!   assert_equal (! isempty (regexp (txt, '^"mass"$', 'lineanchors', 'once')), true);
+%!   assert_equal (! isempty (regexp (txt, '^"kg"$', 'lineanchors', 'once')), true);
+%!   R = csv2table (fn);
+%!   assert_equal (R.v, [1; 2]);
+%!   assert_equal (R.Properties.VariableDescriptions, {'mass'});
+%!   assert_equal (R.Properties.VariableUnits, {'kg'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # FILE accepts a char vector, a cellstr, and a string scalar
+%! T = table ([1; 2], 'VariableNames', {'v'});
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   assert_equal (exist (fn, 'file') > 0, true);
+%!   delete (fn);
+%!   table2csv (T, {fn});
+%!   assert_equal (exist (fn, 'file') > 0, true);
+%!   delete (fn);
+%!   table2csv (T, string (fn));
+%!   assert_equal (exist (fn, 'file') > 0, true);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # a complex table of many variable types round-trips with descriptions and units
+%! T = table ([1; 2; 3], single ([1.5; 2.5; 3.5]), int16 ([10; 20; 30]), ...
+%!            [true; false; true], string ({'x'; 'y'; 'z'}), ...
+%!            datetime (2021, 3, [4; 5; 6]), ...
+%!            duration ([1; 2; 3], [0; 30; 0], [0; 0; 0]), ...
+%!            categorical ({'lo'; 'hi'; 'lo'}), [1, 2; 3, 4; 5, 6], ...
+%!            'VariableNames', ...
+%!            {'id', 'score', 'cnt', 'ok', 'name', 'when', 'dur', 'grade', 'bp'});
+%! T.Properties.VariableDescriptions = ...
+%!   {'identifier', 'a score', 'a count', 'flag', 'a name', 'a date', ...
+%!    'elapsed', 'level', 'pair'};
+%! T.Properties.VariableUnits = ...
+%!   {'#', 'pts', 'n', 'bool', 'txt', 'cal', 'hms', 'cat', 'cm'};
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   warning ('off', 'all', 'local');
+%!   R = csv2table (fn);
+%!   assert_equal (width (R), 9);
+%!   assert_equal (R.id, [1; 2; 3]);
+%!   assert_equal (class (R.score), 'single');
+%!   assert_equal (R.score, single ([1.5; 2.5; 3.5]));
+%!   assert_equal (class (R.cnt), 'int16');
+%!   assert_equal (R.cnt, int16 ([10; 20; 30]));
+%!   assert_equal (R.ok, [true; false; true]);
+%!   assert_equal (class (R.name), 'string');
+%!   assert_equal (cellstr (R.name), {'x'; 'y'; 'z'});
+%!   assert_equal (class (R.when), 'datetime');
+%!   assert_equal (cellstr (R.when), {'04-Mar-2021'; '05-Mar-2021'; '06-Mar-2021'});
+%!   assert_equal (class (R.dur), 'duration');
+%!   assert_equal (cellstr (R.dur), {'01:00:00'; '02:30:00'; '03:00:00'});
+%!   assert_equal (R.grade, {'lo'; 'hi'; 'lo'});
+%!   assert_equal (R.bp, [1, 2; 3, 4; 5, 6]);
+%!   assert_equal (R.Properties.VariableNames, ...
+%!                 {'id', 'score', 'cnt', 'ok', 'name', 'when', 'dur', 'grade', 'bp'});
+%!   assert_equal (R.Properties.VariableDescriptions, ...
+%!                 {'identifier', 'a score', 'a count', 'flag', 'a name', ...
+%!                  'a date', 'elapsed', 'level', 'pair'});
+%!   assert_equal (R.Properties.VariableUnits, ...
+%!                 {'#', 'pts', 'n', 'bool', 'txt', 'cal', 'hms', 'cat', 'cm'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # a complex table with row names round-trips data, row names, descriptions, and units
+%! T = table ([10; 20], string ({'aa'; 'bb'}), datetime (2022, 6, [1; 2]), ...
+%!            'VariableNames', {'n', 'tag', 'day'}, ...
+%!            'RowNames', {'first'; 'second'});
+%! T.Properties.VariableDescriptions = {'a number', 'a tag', 'a day'};
+%! T.Properties.VariableUnits = {'u1', 'u2', 'u3'};
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   assert_equal (R.Properties.RowNames, {'first'; 'second'});
+%!   assert_equal (R.n, [10; 20]);
+%!   assert_equal (cellstr (R.tag), {'aa'; 'bb'});
+%!   assert_equal (class (R.day), 'datetime');
+%!   assert_equal (cellstr (R.day), {'01-Jun-2022'; '02-Jun-2022'});
+%!   assert_equal (R.Properties.VariableDescriptions, {'a number', 'a tag', 'a day'});
+%!   assert_equal (R.Properties.VariableUnits, {'u1', 'u2', 'u3'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+## Test input validation for 'table2csv' method
+%!error <table.table2csv: cannot open file '.*' for writing.> ...
+%! table2csv (table (1), fullfile (tempname (), 'x.csv'));
 
 ################################################################################
 ##                         ** Summary Information **                          ##
