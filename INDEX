@@ -41,6 +41,8 @@ supplementary classes
  @cell/disp
  @cell/display
 supplementary functions
+ findgroups
+ splitapply
  keyHash
  keyMatch
  parsePairedArguments
