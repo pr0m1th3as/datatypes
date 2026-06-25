@@ -1713,6 +1713,24 @@
 %!                     "UniformOutput", false);
 %! T2 = renamevars (T1, allVars, newNames);
 %! assert_equal (T2.Properties.VariableNames, {'Rand1', 'Rand2', 'Rand3'});
+%!test  # VARS forms: char, string array, logical vector, vartype
+%! T = table ([1;2], [3;4], [5;6], 'VariableNames', {'A', 'B', 'C'});
+%! R = renamevars (T, 'B', 'X');
+%! assert_equal (R.Properties.VariableNames, {'A', 'X', 'C'});
+%! R = renamevars (T, string ({'A', 'C'}), string ({'X', 'Z'}));
+%! assert_equal (R.Properties.VariableNames, {'X', 'B', 'Z'});
+%! R = renamevars (T, [true, false, true], {'X', 'Z'});
+%! assert_equal (R.Properties.VariableNames, {'X', 'B', 'Z'});
+%! R = renamevars (T, vartype ('numeric'), {'X', 'Y', 'Z'});
+%! assert_equal (R.Properties.VariableNames, {'X', 'Y', 'Z'});
+%!test  # renaming preserves data and per-variable metadata
+%! T = table ([1;2], [3;4], 'VariableNames', {'A', 'B'});
+%! T.Properties.VariableDescriptions = {'da', 'db'};
+%! T.Properties.VariableUnits = {'ua', 'ub'};
+%! R = renamevars (T, 'A', 'X');
+%! assert_equal (R.X, [1; 2]);
+%! assert_equal (R.Properties.VariableDescriptions, {'da', 'db'});
+%! assert_equal (R.Properties.VariableUnits, {'ua', 'ub'});
 ## Test input validation for 'renamevars' method
 %!error <table.renamevars: too few input arguments.> ...
 %! renamevars (tblA, {"Age", "Smoker"});

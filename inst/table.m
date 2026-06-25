@@ -6561,7 +6561,7 @@ classdef table
                          " index %d; table has %d variables."), ...
                  ixVar(ix_bad(1)), nvars);
         endif
-      elseif (isequal (varRef, ':'))
+      elseif (ischar (varRef) && isequal (varRef, ':'))
         ixVar = 1:nvars;
       elseif (ischar (varRef) || iscellstr (varRef) || isa (varRef, 'string'))
         varRef = cellstr (varRef);
