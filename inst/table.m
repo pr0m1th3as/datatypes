@@ -1528,7 +1528,7 @@ classdef table
           varProxy = [varProxy, varVal];
 
         elseif (isa (varVal, 'datetime'))
-          varVal = datenum (varVal);
+          varVal = datetime_to_datenum (varVal);
           varProxy = [varProxy, varVal];
 
         elseif (isa (varVal, 'duration'))
@@ -1537,31 +1537,33 @@ classdef table
 
         elseif (isa (varVal, 'string'))
           varVal = cellstr (varVal);
-          [~, ~, idx] = __unique__ (varVal, 'stable', 'rows');
+          [~, ~, idx] = __unique__ (varVal, 'rows');
           varProxy = [varProxy, idx];
 
         elseif (iscellstr (varVal))
-          [~, ~, idx] = __unique__ (varVal, 'stable', 'rows');
+          [~, ~, idx] = __unique__ (varVal, 'rows');
           varProxy = [varProxy, idx];
 
         elseif (iscell (varVal))
-          ## Sorting mixed cell data is not supported
-          error ("table.sortrows: cannot sort variables of 'cell' type.");
+          ## Mixed cell data is not supported
+          error (strcat ("table.unique: cannot find unique rows for", ...
+                         " variables of 'cell' type."));
 
         elseif (isnumeric (varVal) || islogical (varVal))
           varProxy = [varProxy, varVal];
 
         elseif (isstruct (varVal))
-          ## Sorting structure data is not supported
-          error ("table.sortrows: cannot sort variables of 'struct' type.");
+          ## Structure data is not supported
+          error (strcat ("table.unique: cannot find unique rows for", ...
+                         " variables of 'struct' type."));
 
         elseif (isa (varVal, 'table'))
           try
-            varVal = table2array (varVal{ix});
+            varVal = table2array (varVal);
             varProxy = [varProxy, varVal];
           catch
-            error (strcat ("table.sortrows: cannot sort nested tables", ...
-                           " with mixed data types."));
+            error (strcat ("table.unique: cannot find unique rows for", ...
+                           " nested tables with mixed data types."));
           end_try_catch
         endif
       endfor

@@ -1381,14 +1381,44 @@
 %! assert_equal (C.Height, [64; 71; 67; 69]);
 %! assert_equal (C.Weight, [131; 176; 185; 163]);
 %! assert_equal (C.Properties.RowNames, {'Jane'; 'Fred'; 'George'; 'Betty'});
+%!test  # special-type variables (datetime / categorical / calendarDuration)
+%! dt = datetime (2020, [2; 1; 2; 3], 1);
+%! [C, ia, ic] = unique (table (dt, 'VariableNames', {'D'}));
+%! assert_equal (ia, [2; 1; 4]);
+%! assert_equal (ic, [2; 1; 2; 3]);
+%! c = categorical ({'mid'; 'low'; 'mid'; 'high'}, {'low', 'mid', 'high'}, ...
+%!                  'Ordinal', true);
+%! [C, ia, ic] = unique (table (c, 'VariableNames', {'C'}));
+%! assert_equal (ia, [2; 1; 4]);
+%! assert_equal (ic, [2; 1; 2; 3]);
+%! cd = calendarDuration ([0; 1; 0; 2], [3; 0; 3; 0], [0; 0; 0; 0]);
+%! [C, ia, ic] = unique (table (cd, 'VariableNames', {'CD'}));
+%! assert_equal (ia, [1; 2; 4]);
+%! assert_equal (ic, [1; 2; 1; 3]);
+%!test  # text variables sort lexicographically, 'stable' keeps encounter order
+%! S = {'banana'; 'apple'; 'banana'; 'cherry'};
+%! [C, ia, ic] = unique (table (S, 'VariableNames', {'S'}));
+%! assert_equal (C.S, {'apple'; 'banana'; 'cherry'});
+%! assert_equal (ia, [2; 1; 4]);
+%! assert_equal (ic, [2; 1; 2; 3]);
+%! C = unique (table (S, 'VariableNames', {'S'}), 'stable');
+%! assert_equal (C.S, {'banana'; 'apple'; 'cherry'});
+%! St = string ({'banana'; 'apple'; 'banana'; 'cherry'});
+%! C = unique (table (St, 'VariableNames', {'St'}));
+%! assert_equal (cellstr (C.St), {'apple'; 'banana'; 'cherry'});
+%!test  # nested numeric table variable (regression: brace-indexed extraction)
+%! Ag = [38; 43; 38]; Hi = [71; 69; 71];
+%! [C, ia, ic] = unique (table (table (Ag, Hi), 'VariableNames', {'N'}));
+%! assert_equal (ia, [1; 2]);
+%! assert_equal (ic, [1; 2; 1]);
 ## Test input validation for 'unique' method
 %!error <table.unique: too many input arguments.> unique (tblA, 1, 2);
 %!error <table.unique: invalid option 'some'.> unique (tblA, "some");
-%!error <table.sortrows: cannot sort variables of 'cell' type.> ...
+%!error <table.unique: cannot find unique rows for variables of 'cell' type.> ...
 %! unique (table ({2; 2; 3}), "sorted");
-%!error <table.sortrows: cannot sort variables of 'struct' type.> ...
+%!error <table.unique: cannot find unique rows for variables of 'struct' type.> ...
 %! unique (table (struct ("a", {2; 2; 3})), "sorted");
-%!error <table.sortrows: cannot sort nested tables with mixed data types.> ...
+%!error <table.unique: cannot find unique rows for nested tables with mixed data types.> ...
 %! unique (table (table (Age, LastName)), "sorted");
 
 ## Test 'topkrows' method
