@@ -5569,8 +5569,10 @@ classdef table
         tbl_withRowNames = find (has_RowNames);
         index = [1:numRows]'; # first table is reindexed to itself
         for i = 2:numel (rowNames)
-          fcn = @(x) find (ismember (rowNames{1}, x));
-          index(:,i) = cellfun (fcn, rowNames{i});
+          ## For each row of the first table, find the matching row in the
+          ## i-th table (the inverse map), so subsetrows aligns it to the first.
+          fcn = @(x) find (ismember (rowNames{i}, x));
+          index(:,i) = cellfun (fcn, rowNames{1});
         endfor
         ## Start merging tables and re-index every other table with RowNames
         ## before merging
@@ -5928,6 +5930,8 @@ classdef table
 
     ## -*- texinfo -*-
     ## @deftypefn  {table} {@var{sz} =} size (@var{tbl})
+    ## @deftypefnx {table} {@var{dim_sz} =} size (@var{tbl}, @var{dim})
+    ## @deftypefnx {table} {@var{dim_sz} =} size (@var{tbl}, @var{vecdim})
     ## @deftypefnx {table} {[@var{rows}, @var{columns}] =} size (@var{tbl})
     ## @deftypefnx {table} {[@var{rows}, @var{columns}, @dots{}] =} size (@var{tbl})
     ##
@@ -5936,25 +5940,30 @@ classdef table
     ## For tables, the size is [number-of-rows x number-of-variables].
     ## This is the same as @code{[height(obj), width(obj)]}.
     ##
+    ## @code{size (@var{tbl}, @var{dim})} returns the size along dimension
+    ## @var{dim}; dimensions greater than 2 have size 1.  @var{dim} may be a
+    ## vector @var{vecdim}, in which case a row vector of the corresponding
+    ## sizes is returned.
+    ##
     ## @end deftypefn
     function varargout = size (this, dim)
-      h = height (this);
-      w = width (this);
-      varargout = cell (1, nargout);
+      sz = [height(this), width(this)];
       if (nargin == 2)
-        if dim == 1
-          varargout{1} = height (this);
-        elseif dim == 2
-          varargout{1} = width (this);
+        ## Sizes along the requested dimension(s); dimensions above 2 are 1.
+        dim_sz = ones (1, numel (dim));
+        valid = dim <= 2;
+        dim_sz(valid) = sz(dim(valid));
+        if (nargout > 1)
+          varargout = num2cell (dim_sz);
         else
-          varargout{1} = 1;
+          varargout{1} = dim_sz;
         endif
-      elseif nargout == 0 || nargout == 1
-        varargout{1} = [height(this), width(this)];
+      elseif (nargout <= 1)
+        varargout{1} = sz;
       else
-        varargout{1} = height (this);
-        varargout{2} = width (this);
-        [varargout{3:end}] = deal (1);
+        varargout{1} = sz(1);
+        varargout{2} = sz(2);
+        [varargout{3:nargout}] = deal (1);
       endif
     endfunction
 
@@ -5982,11 +5991,11 @@ classdef table
     ## position of the variable names are matched to those of the first input
     ## table.
     ##
-    ## When input tables have row names, they must be unique across tables.  In
-    ## such case, concatenated rows from input tables without row names are
-    ## automatically assigned default input names using the input table's name
-    ## as a prefix. Output table's @qcode{Description} and @qcode{UserData}
-    ## properties are assigned using the first non-empty value.
+    ## When any input table has row names, they must be unique across all input
+    ## tables.  In such case, rows coming from input tables without row names are
+    ## assigned default @qcode{Row@var{N}} names, where @var{N} is the row's
+    ## position in the output table.  Output table's @qcode{Description} and
+    ## @qcode{UserData} properties are assigned using the first non-empty value.
     ##
     ## @end deftypefn
     function tbl = vertcat (varargin)
@@ -6053,15 +6062,16 @@ classdef table
           endif
           ## FIX ME: Deal with custom properties here
         endfor
-      elseif (sum (has_RowNames) == 1) # some input tables have RowNames (oh!)
+      else # at least one input table has RowNames
+        ## Input tables without row names get default 'Row<N>' names, where N
+        ## is the row's position in the output table (MATLAB-compatible).
         tbl = varargin{1};
+        fcn = @(x) {sprintf("Row%d", x)};
         ## If first input table does not have row names, add them here
         if (isempty (tbl.RowNames))
-          prefx = inputname (1);
-          nRows = height (tbl);
-          fcn = @(x) {sprintf("%s_%d", prefx, nRows)};
-          tbl.RowNames = arrayfun (fcn, 1:nRows)';
+          tbl.RowNames = arrayfun (fcn, 1:height (tbl))';
         endif
+        pos = height (tbl);
         for i = 2:numel (varargin)
           in = varargin{i};
           ixVars = index(i,:);
@@ -6072,12 +6082,10 @@ classdef table
           endfor
           ## Handle row names here
           if (isempty (in.RowNames))
-            prefx = inputname (i);
-            nRows = height (in);
-            fcn = @(x) {sprintf("%s_%d", prefx, nRows)};
-            in.RowNames = arrayfun (fcn, 1:nRows)';
+            in.RowNames = arrayfun (fcn, pos + (1:height (in)))';
           endif
           tbl.RowNames = [tbl.RowNames; in.RowNames];
+          pos += height (in);
           ## Handle remaining stuff
           if (isempty (tbl.VariableDescriptions))
             tbl.VariableDescriptions = in.VariableDescriptions;
