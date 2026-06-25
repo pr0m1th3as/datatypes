@@ -2123,6 +2123,36 @@
 %!                                 'MergeAsTable', true);
 %! assert_equal (T2.Properties.VariableNames, {'Merged', 'C', 'D'});
 %! assert_equal (isequal (T2.Merged, table (A, B)), true);
+%!test  # string-array VARS and string-scalar NewVariableName
+%! T = table ([1;2], [3;4], [5;6], [7;8], 'VariableNames', {'A', 'B', 'C', 'D'});
+%! R = mergevars (T, string ({'B', 'C'}), 'NewVariableName', string ('M'));
+%! assert_equal (R.Properties.VariableNames, {'A', 'M', 'D'});
+%! assert_equal (R.M, [3, 5; 4, 6]);
+%!test  # logical and vartype VARS, and a single-variable merge is a no-op
+%! T = table ([1;2], [3;4], [5;6], [7;8], 'VariableNames', {'A', 'B', 'C', 'D'});
+%! R = mergevars (T, [false, true, true, false]);
+%! assert_equal (R.Properties.VariableNames, {'A', 'Var2', 'D'});
+%! R = mergevars (T, vartype ('numeric'));
+%! assert_equal (R.Properties.VariableNames, {'Var1'});
+%! R = mergevars (T, 2);
+%! assert_equal (R.Properties.VariableNames, {'A', 'B', 'C', 'D'});
+%!test  # non-contiguous VARS merge keeps the first-merged position
+%! T = table ([1;2], [3;4], [5;6], [7;8], 'VariableNames', {'A', 'B', 'C', 'D'});
+%! R = mergevars (T, [2, 4]);
+%! assert_equal (R.Properties.VariableNames, {'A', 'Var2', 'C'});
+%! assert_equal (R.Var2, [3, 7; 4, 8]);
+%!test  # merging special-type variables preserves their class
+%! T = table (hours ([1;2]), hours ([3;4]), 'VariableNames', {'P', 'Q'});
+%! R = mergevars (T, [1, 2]);
+%! assert_equal (class (R.Var1), 'duration');
+%! assert_equal (hours (R.Var1), [1, 3; 2, 4]);
+%!test  # custom properties of the first merged variable are preserved
+%! T = table ([1;2], [3;4], [5;6], [7;8], 'VariableNames', {'A', 'B', 'C', 'D'});
+%! T = addprop (T, 'Note', 'variable');
+%! T.Properties.CustomProperties.Note = {'nA', 'nB', 'nC', 'nD'};
+%! R = mergevars (T, [2, 3]);
+%! assert_equal (R.Properties.VariableNames, {'A', 'Var2', 'D'});
+%! assert_equal (R.Properties.CustomProperties.Note, {'nA', 'nB', 'nD'});
 ## Test input validation for 'mergevars' method
 %!error <table.mergevars: too few input arguments.> mergevars (tblA);
 %!error <table.mergevars: invalid input for 'MergeAsTable'.> ...
