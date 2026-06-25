@@ -1431,8 +1431,8 @@
 %! BloodPressure = [124, 93; 109, 77; 125, 83; 117, 75; 122, 80];
 %! tblA = table (Age, Height, Weight, BloodPressure, 'RowNames', LastName);
 %! [sorted_tblA, index] = topkrows (tblA, 3, "RowNames");
-%! assert_equal (index, [5; 4; 2]);
-%! assert_equal (issortedrows (sorted_tblA, "RowNames"), true);
+%! assert_equal (index, [1; 3; 2]);
+%! assert_equal (issortedrows (sorted_tblA, "RowNames", "descend"), true);
 %! [sorted_tblA, index] = topkrows (tblA, 4, "RowNames", "descend");
 %! assert_equal (index, [1; 3; 2; 4]);
 %! assert_equal (issortedrows (sorted_tblA, "RowNames", "descend"), true);
@@ -1440,15 +1440,15 @@
 %! tblA.Properties.DimensionNames(1) = "Patients";
 %! assert_equal (issortedrows (tblA, "Patients"), false);
 %! [sorted_tblA, index] = topkrows (tblA, 2, "Patients");
-%! assert_equal (index, [5; 4]);
-%! assert_equal (issortedrows (sorted_tblA, "Patients"), true);
+%! assert_equal (index, [1; 3]);
+%! assert_equal (issortedrows (sorted_tblA, "Patients", "descend"), true);
 %! [sorted_tblA, index] = topkrows (tblA, 5, "Patients", "descend");
 %! assert_equal (index, [1; 3; 2; 4; 5]);
 %! assert_equal (issortedrows (sorted_tblA, "Patients", "descend"), true);
 %!test
 %! [sorted_tblA, index] = topkrows (tblA, 3);
-%! assert_equal (index, [3; 1; 4]);
-%! assert_equal (issortedrows (sorted_tblA), true);
+%! assert_equal (index, [5; 2; 4]);
+%! assert_equal (issortedrows (sorted_tblA, [], "descend"), true);
 %! [sorted_tblA, index] = topkrows (tblA, 3, ":", "ascend");
 %! assert_equal (index, [3; 1; 4]);
 %! assert_equal (issortedrows (sorted_tblA, [], "ascend"), true);
@@ -1457,9 +1457,9 @@
 %! assert_equal (issortedrows (sorted_tblA, [], "descend"), true);
 %!test
 %! [tblB, index] = topkrows (tblA, 3, "Height");
-%! assert_equal (index, [3; 5; 4]);
-%! assert_equal (tblB.Properties.RowNames, {"Li"; "Brown"; "Diaz"});
-%! assert_equal (issortedrows (tblB, "Height"), true);
+%! assert_equal (index, [1; 2; 4]);
+%! assert_equal (tblB.Properties.RowNames, {"Sanchez"; "Johnson"; "Diaz"});
+%! assert_equal (issortedrows (tblB, "Height", "descend"), true);
 %!test
 %! LastName = {"Sweet"; "Jacobson"; "Wang"; "Joiner"; "Berger"};
 %! tblA = table (Age, Height, Weight, BloodPressure, 'RowNames', LastName);
@@ -1489,8 +1489,9 @@
 %!                             {"ascend", "descend"}), true);
 %!test
 %! [tblB, index] = topkrows (tblA, 3, [true, true, false, false]);
-%! assert_equal (index, [3; 1; 4]);
-%! assert_equal (issortedrows (tblB, [true, true, false, false]), true);
+%! assert_equal (index, [5; 2; 4]);
+%! assert_equal (issortedrows (tblB, [true, true, false, false], "descend"), ...
+%!               true);
 %! [tblB, index] = topkrows (tblA, 2, [true, true, false, false], "ascend");
 %! assert_equal (index, [3; 1]);
 %! assert_equal (issortedrows (tblB, [true, true, false, false], "ascend"), true);
@@ -1503,67 +1504,72 @@
 %! assert_equal (issortedrows (tblB, [true, true, false, false], ...
 %!                             {"ascend", "descend"}), true);
 %!test
+%! ## A positive numeric index sorts descending (opposite of sortrows), so a
+%! ## positive index matches the descending default of a named variable.
 %! [sorted_tblA, indexN] = topkrows (tblA, 2, 1);
-%! assert_equal (issortedrows (sorted_tblA, 1), true);
+%! assert_equal (issortedrows (sorted_tblA, "Age", "descend"), true);
 %! [sorted_tblA, indexV] = topkrows (tblA, 2, "Age");
-%! assert_equal (issortedrows (sorted_tblA, "Age"), true);
-%! assert_equal (indexN, indexV);
-%! [sorted_tblA, indexN] = topkrows (tblA, 3, -1);
-%! assert_equal (issortedrows (sorted_tblA, -1), true);
-%! [sorted_tblA, indexV] = topkrows (tblA, 3, "Age", "descend");
 %! assert_equal (issortedrows (sorted_tblA, "Age", "descend"), true);
 %! assert_equal (indexN, indexV);
+%! assert_equal (indexN, [5; 2]);
+%! ## A negative numeric index sorts ascending.
+%! [sorted_tblA, indexN] = topkrows (tblA, 3, -1);
+%! assert_equal (issortedrows (sorted_tblA, "Age", "ascend"), true);
+%! [sorted_tblA, indexV] = topkrows (tblA, 3, "Age", "ascend");
+%! assert_equal (indexN, indexV);
+%! assert_equal (indexN, [1; 3; 4]);
+%! ## An explicit DIRECTION ignores the sign of a numeric index.
 %! [sorted_tblA, indexN] = topkrows (tblA, 5, -1, "ascend");
-%! assert_equal (issortedrows (sorted_tblA, -1, "ascend"), true);
-%! [~, indexV] = topkrows (tblA, 5, "Age");
+%! [~, indexV] = topkrows (tblA, 5, "Age", "ascend");
 %! assert_equal (indexN, indexV);
 %! [sorted_tblA, indexN] = topkrows (tblA, 3, [-1, 2]);
-%! assert_equal (issortedrows (sorted_tblA, [-1, 2]), true);
-%! [~, indexV] = topkrows (tblA, 3, {"Age", "Height"}, {"descend", "ascend"});
+%! [~, indexV] = topkrows (tblA, 3, {"Age", "Height"}, {"ascend", "descend"});
 %! assert_equal (indexN, indexV);
+%! assert_equal (indexN, [1; 3; 4]);
 %!test
 %! TT = table (Age, table (Age, Height), BloodPressure, 'RowNames', LastName);
 %! [sorted_TT, index] = topkrows (TT, 4);
-%! assert_equal (index, [3; 1; 4; 2]);
-%! assert_equal (issortedrows (sorted_TT), true);
+%! assert_equal (index, [5; 2; 4; 1]);
+%! assert_equal (issortedrows (sorted_TT, [], "descend"), true);
 %! [sorted_TT, index] = topkrows (TT, 3, [1, 2]);
-%! assert_equal (index, [3; 1; 4]);
-%! assert_equal (issortedrows (sorted_TT, [1, 2]), true);
+%! assert_equal (index, [5; 2; 4]);
+%! assert_equal (issortedrows (sorted_TT, [-1, -2]), true);
 %! [sorted_TT, index] = topkrows (TT, 2, [1, -2]);
-%! assert_equal (index, [1; 3]);
-%! assert_equal (issortedrows (sorted_TT, [1, -2]), true);
+%! assert_equal (index, [5; 2]);
+%! assert_equal (issortedrows (sorted_TT, [-1, 2]), true);
 %!test
 %! Weights = [176;NaN;131;133;NaN];
 %! tblN = table (Age, Height, Weights, BloodPressure, 'RowNames', LastName);
 %! [tblB, index] = topkrows (tblN, 4, "Weights", "MissingPlacement", "first");
-%! assert_equal (index, [2; 5; 3; 4]);
-%! assert_equal (issortedrows (tblB, "Weights", "MissingPlacement", "first"), true);
+%! assert_equal (index, [2; 5; 1; 4]);
+%! assert_equal (issortedrows (tblB, "Weights", "descend", ...
+%!                             "MissingPlacement", "first"), true);
 %! [tblB, index] = topkrows (tblN, 3, "Weights");
-%! assert_equal (index, [3; 4; 1]);
-%! assert_equal (issortedrows (tblB, "Weights"), true);
+%! assert_equal (index, [2; 5; 1]);
+%! assert_equal (issortedrows (tblB, "Weights", "descend"), true);
 %!test
 %! tblN = table (Age, Height, Weight, BloodPressure, LastName);
 %! [tblB, index] = topkrows (tblN, 3, vartype ("numeric"));
-%! assert_equal (index, [3; 1; 4]);
-%! assert_equal (issortedrows (tblB, vartype ("numeric")), true);
-%! [tblB, index] = topkrows (tblN, 3, vartype ("cellstr"));
 %! assert_equal (index, [5; 2; 4]);
-%! assert_equal (issortedrows (tblB, vartype ("cellstr")), true);
+%! assert_equal (issortedrows (tblB, vartype ("numeric"), "descend"), true);
+%! [tblB, index] = topkrows (tblN, 3, vartype ("cellstr"));
+%! assert_equal (index, [3; 1; 4]);
+%! assert_equal (issortedrows (tblB, vartype ("cellstr"), "descend"), true);
 %!test  # special-type sort keys (datetime / categorical / string / calendarDuration)
 %! dt = datetime (2020, [3; 1; 2; 1], 1);
 %! [tblB, index] = topkrows (table (dt, 'VariableNames', {'D'}), 2);
-%! assert_equal (index, [2; 4]);
-%! assert_equal (issortedrows (tblB, 'D'), true);
+%! assert_equal (index, [1; 3]);
+%! assert_equal (issortedrows (tblB, 'D', 'descend'), true);
 %! c = categorical ({'mid'; 'low'; 'high'}, {'low', 'mid', 'high'}, ...
 %!                  'Ordinal', true);
 %! [tblB, index] = topkrows (table (c, 'VariableNames', {'C'}), 2);
-%! assert_equal (index, [2; 1]);
+%! assert_equal (index, [3; 1]);
 %! st = string ({'b'; 'a'; 'c'});
 %! [tblB, index] = topkrows (table (st, 'VariableNames', {'S'}), 2);
-%! assert_equal (index, [2; 1]);
+%! assert_equal (index, [3; 1]);
 %! cd = calendarDuration ([0; 2; 1], [3; 1; 2], [0; 0; 0]);
 %! [tblB, index] = topkrows (table (cd, 'VariableNames', {'CD'}), 2);
-%! assert_equal (index, [1; 3]);
+%! assert_equal (index, [2; 3]);
 %!test  # K edge cases: zero, equal to height, larger than height
 %! Ag = [38; 43; 38];
 %! A = table (Ag, 'VariableNames', {'A'});
@@ -1571,15 +1577,15 @@
 %! assert_equal (height (tblB), 0);
 %! assert_equal (width (tblB), 1);
 %! [tblB, index] = topkrows (A, 3);
-%! assert_equal (index, [1; 3; 2]);
+%! assert_equal (index, [2; 1; 3]);
 %! [tblB, index] = topkrows (A, 10);
-%! assert_equal (index, [1; 3; 2]);
+%! assert_equal (index, [2; 1; 3]);
 %! assert_equal (height (tblB), 3);
 %!test  # 'ComparisonMethod' passes through to sortrows
 %! z = [3+4i; -1+0i; 0+2i; -5+0i];
 %! [tblB, index] = topkrows (table (z, 'VariableNames', {'Z'}), 2, 'Z', ...
 %!                           'ComparisonMethod', 'abs');
-%! assert_equal (index, [2; 3]);
+%! assert_equal (index, [4; 1]);
 ## Test input validation for 'topkrows' method
 %!error <table.topkrows: K must be a nonnegative integer scalar.> ...
 %! topkrows (tblA, -1)

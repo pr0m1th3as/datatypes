@@ -1683,10 +1683,10 @@ classdef table
     ## Sort the rows of a table.
     ##
     ## @code{@var{tblB} = topkrows (@var{tblA}, @var{k})} returns the top
-    ## @var{k} rows from table @var{tblA} sorted in ascending order based on the
-    ## values in the first variable.   If elements in the first variable are
-    ## repeated, then @code{topkrows} sorts by the elements in the second
-    ## variable, and so on.
+    ## @var{k} rows from table @var{tblA} sorted in descending order based on
+    ## all of its variables.  If elements in the first variable are repeated,
+    ## then @code{topkrows} sorts by the elements in the second variable, and so
+    ## on.
     ##
     ## @code{@var{tblB} = topkrows (@var{tblA}, @var{k}, 'RowNames')} returns
     ## the top @var{k} rows from table @var{tblA} sorted according to its row
@@ -1710,14 +1710,15 @@ classdef table
     ## (specifying a single or multiple variables).  If @var{tblA} has row
     ## names, then @var{vars} can include the row names.  Alternatively,
     ## @var{vars} can be a logical vector or a numeric vector of real integers
-    ## indexing the desired variables.  Positive integers specify an ascending
-    ## order, whereas negative integers specify a descending order for the
-    ## referenced variables.  You can also index all available variables in
-    ## @var{tblA} by passing a semicolon character argument.  This Octave
-    ## specific syntax, facilitates the use of @var{direction} input argument,
-    ## when no particular variable needs to be selected for sorting upon.
-    ## Additionally, @var{vars} can be a @qcode{vartype} object used to create a
-    ## subscript that selects variables of a specified type.
+    ## indexing the desired variables.  Unlike @code{sortrows}, positive
+    ## integers specify a descending order, whereas negative integers specify an
+    ## ascending order for the referenced variables, consistent with the
+    ## descending default of @code{topkrows}.  You can also index all available
+    ## variables in @var{tblA} by passing a semicolon character argument.  This
+    ## Octave specific syntax, facilitates the use of @var{direction} input
+    ## argument, when no particular variable needs to be selected for sorting
+    ## upon.  Additionally, @var{vars} can be a @qcode{vartype} object used to
+    ## create a subscript that selects variables of a specified type.
     ##
     ## @code{@var{tblB} = topkrows (@var{tblA}, @var{k}, @dots{},
     ## @var{direction})} returns the top @var{k} rows from table @var{tblA}
@@ -1764,11 +1765,46 @@ classdef table
     ## @end deftypefn
     function [tbl, ix] = topkrows (this, k, varargin)
       ## Check for valid k
-      if (k < 0 || fix (k) != k || ! isscalar (k))
+      if (! isscalar (k) || k < 0 || fix (k) != k)
         error ("table.topkrows: K must be a nonnegative integer scalar.");
       endif
+
+      ## Unlike 'sortrows', 'topkrows' sorts in descending order by default
+      ## (MATLAB compatibility).  Split off any trailing Name-Value pairs, then
+      ## adjust the positional (VARS, DIRECTION) arguments so that the delegated
+      ## 'sortrows' call yields descending order whenever the caller did not
+      ## specify an explicit DIRECTION.
+      optNames = {'MissingPlacement', 'ComparisonMethod'};
+      nvStart = numel (varargin) + 1;
+      for ii = 1:numel (varargin)
+        if (ischar (varargin{ii}) && isrow (varargin{ii}) && ...
+            any (strcmp (varargin{ii}, optNames)))
+          nvStart = ii;
+          break;
+        endif
+      endfor
+      pos = varargin(1:nvStart-1);
+      nv = varargin(nvStart:end);
+
+      ## With no explicit DIRECTION (i.e. fewer than two positional arguments)
+      ## enforce the descending default.
+      if (numel (pos) < 2)
+        if (numel (pos) == 0)
+          ## No VARS: sort by all variables in descending order.
+          pos = {':', 'descend'};
+        elseif (isnumeric (pos{1}) && ! isempty (pos{1}))
+          ## Signed numeric index: flip the sign convention relative to
+          ## 'sortrows' so that a positive index sorts descending and a
+          ## negative index ascending.
+          pos = {-pos{1}};
+        else
+          ## Named / logical / vartype / ':' / [] selection: descending default.
+          pos = [pos, {'descend'}];
+        endif
+      endif
+
       ## Sort the table and retain the indices
-      [tbl, ix] = sortrows (this, varargin{:});
+      [tbl, ix] = sortrows (this, pos{:}, nv{:});
       if (k < height (tbl))
         tbl = subsetrows (tbl, 1:k);
         ix = ix(1:k);
