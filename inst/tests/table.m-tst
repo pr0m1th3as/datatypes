@@ -1791,6 +1791,18 @@
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! T2 = movevars (T1, [3, 4], 'Before', [false, true, false, false]);
 %! assert_equal (T2.Properties.VariableNames, {'LastName', 'Gender', 'Smoker', 'Age'});
+%!test  # VARS forms (string array, char single) and LOCATION edges
+%! T = table ([1;2], [3;4], [5;6], [7;8], 'VariableNames', {'A', 'B', 'C', 'D'});
+%! R = movevars (T, string ({'A', 'C'}));
+%! assert_equal (R.Properties.VariableNames, {'B', 'D', 'A', 'C'});
+%! R = movevars (T, 'A');
+%! assert_equal (R.Properties.VariableNames, {'B', 'C', 'D', 'A'});
+%! R = movevars (T, {'C', 'D'}, 'Before', 1);
+%! assert_equal (R.Properties.VariableNames, {'C', 'D', 'A', 'B'});
+%! R = movevars (T, 'C', 'Before', 'A');
+%! assert_equal (R.Properties.VariableNames, {'C', 'A', 'B', 'D'});
+%! R = movevars (T, 'A', 'After', 4);
+%! assert_equal (R.Properties.VariableNames, {'B', 'C', 'D', 'A'});
 ## Test input validation for 'movevars' method
 %!error <table.movevars: too few input arguments.> movevars (tblA);
 %!error <table.movevars: too few input arguments.> movevars (tblA, {});
