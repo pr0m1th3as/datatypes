@@ -8246,8 +8246,8 @@ function [lp, rp, errmsg] = key_col_proxy (lcol, rcol)
     case 'text'
       [lp, rp] = text_codes (cellstr (lcol), cellstr (rcol));
     case 'datetime'
-      lp = datenum (lcol);
-      rp = datenum (rcol);
+      lp = datetime_to_datenum (lcol);
+      rp = datetime_to_datenum (rcol);
     case 'duration'
       lp = days (lcol);
       rp = days (rcol);

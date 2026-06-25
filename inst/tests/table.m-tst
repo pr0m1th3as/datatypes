@@ -2909,6 +2909,16 @@
 %! assert_equal (cellstr (T.K), {'a';'b'});
 %! assert_equal (calmonths (T.M), [5;6]);
 %! assert_equal (T.R, {'y';'x'});
+## 'join' on a datetime key variable
+%!test
+%! L = table (datetime (2020, 1, [3;1;2]), {'a';'b';'c'}, ...
+%!            'VariableNames', {'K', 'L'});
+%! R = table (datetime (2020, 1, [1;2;3]), {'x';'y';'z'}, ...
+%!            'VariableNames', {'K', 'R'});
+%! [T, ixR] = join (L, R);
+%! assert_equal (datevec (T.K)(:,3), [3;1;2]);
+%! assert_equal (T.R, {'z';'x';'y'});
+%! assert_equal (ixR, [3;1;2]);
 %!error <table.join: too few input arguments.> ...
 %! join (table ([1;2]));
 %!error <table.join: both inputs must be tables.> ...
@@ -3064,6 +3074,17 @@
 %! assert_equal (T.R, {'y';'x'});
 %! assert_equal (ixL, [2;3]);
 %! assert_equal (ixR, [2;1]);
+## 'innerjoin' on a datetime key variable, sorted by key
+%!test
+%! L = table (datetime (2020, 1, [3;1;2]), {'a';'b';'c'}, ...
+%!            'VariableNames', {'K', 'L'});
+%! R = table (datetime (2020, 1, [1;2;3]), {'x';'y';'z'}, ...
+%!            'VariableNames', {'K', 'R'});
+%! [T, ixL, ixR] = innerjoin (L, R);
+%! assert_equal (datevec (T.K)(:,3), [1;2;3]);
+%! assert_equal (T.R, {'x';'y';'z'});
+%! assert_equal (ixL, [2;3;1]);
+%! assert_equal (ixR, [1;2;3]);
 %!error <table.innerjoin: too few input arguments.> ...
 %! innerjoin (table ([1;2]));
 %!error <table.innerjoin: both inputs must be tables.> ...
@@ -3217,6 +3238,23 @@
 %! R = table ([2;3], {'x';'y'}, 'VariableNames', {'K', 'R'});
 %! T = outerjoin (L, R);
 %! assert_equal (ismissing (T.S), [false;false;true]);
+## 'outerjoin' on a datetime key fills unmatched keys with NaT
+%!test
+%! L = table (datetime (2020, 1, [3;1;2]), {'a';'b';'c'}, ...
+%!            'VariableNames', {'K', 'L'});
+%! R = table (datetime (2020, 1, [2;5]), {'p';'q'}, 'VariableNames', {'K', 'R'});
+%! [T, ixL, ixR] = outerjoin (L, R);
+%! assert_equal (datevec (T.K_L)(:,3), [1;2;3;NaN]);
+%! assert_equal (ismissing (T.K_L), [false;false;false;true]);
+%! assert_equal (T.R, {'';'p';'';'q'});
+%! assert_equal (ixL, [2;3;1;0]);
+%! assert_equal (ixR, [0;1;0;2]);
+## 'outerjoin' fills an unmatched datetime variable with NaT
+%!test
+%! L = table ([1;2], datetime (2021, 1, [10;20]), 'VariableNames', {'K', 'D'});
+%! R = table ([2;3], {'x';'y'}, 'VariableNames', {'K', 'R'});
+%! T = outerjoin (L, R);
+%! assert_equal (ismissing (T.D), [false;false;true]);
 %!error <table.outerjoin: too few input arguments.> ...
 %! outerjoin (table ([1;2]));
 %!error <table.outerjoin: both inputs must be tables.> ...
@@ -3387,6 +3425,22 @@
 %! [TF, ixB] = ismember (A, B);
 %! assert_equal (TF, [false;true;false]);
 %! assert_equal (ixB, [0;1;0]);
+## Set operations over a datetime key variable (rowProxies datetime path)
+%!test
+%! A = table (datetime (2020, 1, [3;1;2]), {'c';'a';'b'}, ...
+%!            'VariableNames', {'D', 'S'});
+%! B = table (datetime (2020, 1, [2;5]), {'b';'e'}, 'VariableNames', {'D', 'S'});
+%! U = union (A, B);
+%! assert_equal (datevec (U.D)(:,3), [1;2;3;5]);
+%! I = intersect (A, B);
+%! assert_equal (I.S, {'b'});
+%! D = setdiff (A, B);
+%! assert_equal (D.S, {'a';'c'});
+%! X = setxor (A, B);
+%! assert_equal (X.S, {'a';'c';'e'});
+%! [TF, ixB] = ismember (A, B);
+%! assert_equal (TF, [false;false;true]);
+%! assert_equal (ixB, [0;0;1]);
 %!error <table.union: too few input arguments.> ...
 %! union (table ([1;2]));
 %!error <table.union: both inputs must be tables.> ...
