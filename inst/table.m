@@ -5423,6 +5423,137 @@ classdef table
 ##                                                                            ##
 ################################################################################
 
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {table} {@var{G} =} findgroups (@var{T})
+    ## @deftypefnx {table} {[@var{G}, @var{TID}] =} findgroups (@var{T})
+    ##
+    ## Find groups defined by the variables of a table.
+    ##
+    ## @code{@var{G} = findgroups (@var{T})} returns @var{G}, a column vector of
+    ## positive integer group numbers, with one element for each row of the table
+    ## @var{T}.  Each variable of @var{T} acts as a grouping variable, and the
+    ## groups are the unique combinations of values across those variables, sorted
+    ## in ascending order.  If @var{N} groups are found, every integer between 1
+    ## and @var{N} labels a group.  Rows holding a missing value (@code{NaN},
+    ## @code{NaT}, @code{<missing>}, @code{''}, or @code{<undefined>}) in any
+    ## grouping variable are labelled @code{NaN} in @var{G}.
+    ##
+    ## @code{[@var{G}, @var{TID}] = findgroups (@var{T})} also returns @var{TID},
+    ## a table whose rows are the sorted unique combinations identifying each
+    ## group, with the same variables as @var{T}.
+    ##
+    ## @end deftypefn
+    function [G, TID] = findgroups (this)
+      if (nargin != 1)
+        print_usage ();
+      endif
+      nvar = width (this);
+      n = height (this);
+      if (nvar == 0)
+        error ("table.findgroups: T must have at least one variable.");
+      endif
+      ## Build the combined proxy matrix and the overall missing-row mask.
+      P = [];
+      miss = false (n, 1);
+      for j = 1:nvar
+        [p, m, errmsg] = group_col_proxy (this.VariableValues{j});
+        if (! isempty (errmsg))
+          error ("table.findgroups: %s", errmsg);
+        endif
+        P = [P, p];
+        miss = miss | m;
+      endfor
+      ## Label the non-missing rows by sorted unique combination.
+      G = NaN (n, 1);
+      keep = find (! miss);
+      if (! isempty (keep))
+        [~, ia, ic] = unique (P(keep,:), "rows");
+        G(keep) = ic;
+      endif
+      if (nargout > 1)
+        if (isempty (keep))
+          TID = this([], :);
+        else
+          repRows = keep(ia);
+          idcols = cell (1, nvar);
+          for j = 1:nvar
+            col = this.VariableValues{j};
+            idcols{j} = col(repRows,:);
+          endfor
+          TID = table (idcols{:}, "VariableNames", this.VariableNames);
+        endif
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {table} {@var{Y} =} splitapply (@var{func}, @var{T}, @var{G})
+    ## @deftypefnx {table} {[@var{Y1}, @dots{}, @var{YM}] =} splitapply (@var{func}, @var{T}, @var{G})
+    ##
+    ## Split table data into groups and apply a function to each group.
+    ##
+    ## @code{@var{Y} = splitapply (@var{func}, @var{T}, @var{G})} splits the rows
+    ## of the table @var{T} into groups according to the group numbers @var{G}
+    ## (typically produced by @code{findgroups}), applies the function handle
+    ## @var{func} to each group, and concatenates the per-group results into the
+    ## output @var{Y}.  @var{G} must be a column vector of positive integers with
+    ## one element per row of @var{T}; if it identifies @var{N} groups, every
+    ## integer between 1 and @var{N} must occur at least once.  Rows for which
+    ## @var{G} is @code{NaN} are omitted.  Each variable of @var{T} is passed to
+    ## @var{func} as a separate input argument, so @var{func} must accept as many
+    ## arguments as @var{T} has variables.
+    ##
+    ## @code{[@var{Y1}, @dots{}, @var{YM}] = splitapply (@dots{})} returns the
+    ## multiple outputs of @var{func}, each concatenated across groups.
+    ##
+    ## @end deftypefn
+    function varargout = splitapply (func, this, G)
+      if (nargin != 3)
+        print_usage ();
+      endif
+      if (! is_function_handle (func))
+        error ("table.splitapply: FUNC must be a function handle.");
+      endif
+      n = height (this);
+      if (! (isnumeric (G) && isvector (G) && numel (G) == n))
+        error (strcat ("table.splitapply: G must be a numeric vector with", ...
+                       " one element per row of T."));
+      endif
+      G = G(:);
+      gv = G(! isnan (G));
+      if (any (gv != fix (gv)) || any (gv < 1))
+        error ("table.splitapply: G must contain positive integers.");
+      endif
+      if (isempty (gv))
+        N = 0;
+      else
+        N = max (gv);
+        if (! isequal (unique (gv), (1:N)'))
+          error (strcat ("table.splitapply: G must contain every integer", ...
+                         " between 1 and the number of groups."));
+        endif
+      endif
+      nvar = width (this);
+      nout = max (nargout, 1);
+      results = cell (N, nout);
+      for g = 1:N
+        rows = (G == g);
+        args = cell (1, nvar);
+        for j = 1:nvar
+          col = this.VariableValues{j};
+          args{j} = col(rows,:);
+        endfor
+        [results{g,:}] = func (args{:});
+      endfor
+      varargout = cell (1, nout);
+      for k = 1:nout
+        varargout{k} = vertcat (results{:,k});
+      endfor
+    endfunction
+
+  endmethods
+
   methods (Hidden)
 
     function out = pivot (this)
@@ -5443,14 +5574,6 @@ classdef table
 
     function out = grouptransform (this)
       error ("table.grouptransform: not implemented yet.");
-    endfunction
-
-    function out = findgroups (this)
-      error ("table.findgroups: not implemented yet.");
-    endfunction
-
-    function out = splitapply (this)
-      error ("table.splitapply: not implemented yet.");
     endfunction
 
     function out = rowfun (this)
@@ -8337,6 +8460,43 @@ function [lp, rp, errmsg] = key_col_proxy (lcol, rcol)
     rp = [];
     errmsg = "key variables have incompatible sizes.";
   endif
+endfunction
+
+## Build a single-column grouping proxy for one grouping variable COL: a numeric
+## matrix P (one row per element) whose sort order matches COL's value order, so
+## that 'unique (P, "rows")' recovers the sorted unique groups, together with a
+## logical MISS mask flagging the elements that findgroups treats as missing
+## (NaN/NaT/<missing>/''/<undefined>).  Returns an errmsg body (empty on success)
+## emitted by the caller under its own name.
+function [p, miss, errmsg] = group_col_proxy (col)
+  p = [];
+  miss = [];
+  errmsg = '';
+  k = key_kind (col);
+  if (isempty (k))
+    errmsg = sprintf ("unsupported grouping variable type '%s'.", class (col));
+    return;
+  endif
+  switch (k)
+    case 'text'
+      c = cellstr (col);
+      c = c(:);
+      miss = cellfun (@isempty, c);
+      [~, ~, ic] = unique (c);
+      p = ic(:);
+    case 'datetime'
+      p = datetime_to_datenum (col)(:);
+      miss = isnan (p);
+    case 'duration'
+      p = days (col)(:);
+      miss = isnan (p);
+    case 'calendarDuration'
+      p = col.proxyArray;
+      miss = any (isnan (p), 2);
+    case 'numeric'
+      p = double (col)(:);
+      miss = isnan (p);
+  endswitch
 endfunction
 
 ## Set the rows of a variable V selected by the logical MASK to the standard
