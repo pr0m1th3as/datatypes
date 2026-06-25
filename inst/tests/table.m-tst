@@ -2220,9 +2220,26 @@
 %! T1 = table (A, B, C, D);
 %! T2 = convertvars (T1, "D", @(x) cellstr (upper (char (x))));
 %! assert_equal (T2.D, {"A"; "B"; "C"});
+%!test  # VARS forms: string array, logical vector, vartype
+%! T = table ([1;2;3], [4;5;6], {'x'; 'y'; 'z'}, 'VariableNames', {'A', 'B', 'C'});
+%! R = convertvars (T, string ({'A', 'B'}), 'string');
+%! assert_equal (isa (R.A, 'string'), true);
+%! assert_equal (isa (R.B, 'string'), true);
+%! R = convertvars (T, [true, false, false], 'single');
+%! assert_equal (class (R.A), 'single');
+%! R = convertvars (T, vartype ('numeric'), 'int32');
+%! assert_equal (class (R.A), 'int32');
+%! assert_equal (class (R.B), 'int32');
+%!test  # conversion to special data types (categorical, duration)
+%! T = table ([1;2;3], {'x'; 'y'; 'z'}, 'VariableNames', {'A', 'C'});
+%! R = convertvars (T, 'C', 'categorical');
+%! assert_equal (class (R.C), 'categorical');
+%! R = convertvars (T, 'A', @hours);
+%! assert_equal (class (R.A), 'duration');
+%! assert_equal (hours (R.A), [1; 2; 3]);
 ## Test input validation for 'convertvars' method
-%!error <table.mergevars: too few input arguments.> convertvars (tblA);
-%!error <table.mergevars: too few input arguments.> ...
+%!error <table.convertvars: too few input arguments.> convertvars (tblA);
+%!error <table.convertvars: too few input arguments.> ...
 %! convertvars (tblA, "Height");
 %!error <table.convertvars: DATATYPE must be a character vector.> ...
 %! convertvars (tblA, "Height", ["c","h";"a","r"]);

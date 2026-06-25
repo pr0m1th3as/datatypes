@@ -2597,9 +2597,9 @@ classdef table
     ##
     ## Convert table variables to specified data type.
     ##
-    ## @code{@var{tblB} = mergevars (@var{tblA}, @var{vars})} converts the
-    ## variables in @var{tblA} specified by @var{vars} to the specified data
-    ## type.
+    ## @code{@var{tblB} = convertvars (@var{tblA}, @var{vars}, @var{dataType})}
+    ## converts the variables in @var{tblA} specified by @var{vars} to the
+    ## specified data type.
     ##
     ## @var{vars} can be any of the following types.
     ## @itemize
@@ -2608,9 +2608,9 @@ classdef table
     ## variables.
     ## @item a string array specifying a single or multiple variables.
     ## @item a numeric array of integer values indexing the variables to be
-    ## renamed.
+    ## converted.
     ## @item a logical vector of the same length as the width of the table
-    ## @var{tblA} indexing as @qcode{true} the variables to be renamed.
+    ## @var{tblA} indexing as @qcode{true} the variables to be converted.
     ## @item a @qcode{vartype} object used to create a subscript that selects
     ## variables of a specified type.
     ## @end itemize
@@ -2618,8 +2618,7 @@ classdef table
     ## @var{dataType} specifies the data type to convert those variables to.  It
     ## can either be a character vector defining the name of the data type to
     ## convert to or a function handle, which will perform the conversion.
-    ## a char holding the name of the data type, or a function handle which will
-    ## perform the conversion.  When specifying a name for data type conversion,
+    ## When specifying a name for data type conversion,
     ## it can either be a one-argument constructor for the specified data type,
     ## which must accept the selected variables' current data types as input, or
     ## an available method, which can be applied on selected variables' current
@@ -2640,7 +2639,7 @@ classdef table
 
       ## Check input arguments
       if (nargin < 3 || isempty (vars) || isempty (dataType))
-        error ("table.mergevars: too few input arguments.");
+        error ("table.convertvars: too few input arguments.");
       endif
 
       if (ischar (dataType))
