@@ -2322,6 +2322,27 @@
 %! assert_equal (T2.Properties.VariableNames(1), {"OriginalVariableNames"});
 %! assert_equal (T2.Properties.VariableNames(2:4), {"1", "2", "3"});
 %! assert_equal (T2.('1'), [5; 3.14]);
+%!test  # DataVariables forms: numeric, logical, string array, vartype
+%! T = table ([1;2;3], [4;5;6], [7;8;9], 'VariableNames', {'A', 'B', 'C'});
+%! R = rows2vars (T, 'DataVariables', [1, 2]);
+%! assert_equal (R.OriginalVariableNames, {'A'; 'B'});
+%! R = rows2vars (T, 'DataVariables', [true, false, true]);
+%! assert_equal (R.OriginalVariableNames, {'A'; 'C'});
+%! R = rows2vars (T, 'DataVariables', string ({'A', 'C'}));
+%! assert_equal (R.OriginalVariableNames, {'A'; 'C'});
+%! R = rows2vars (T, 'DataVariables', vartype ('numeric'));
+%! assert_equal (R.OriginalVariableNames, {'A'; 'B'; 'C'});
+%!test  # VariableNamesSource by numeric index and from a string variable
+%! T = table ([1;2;3], [4;5;6], 'VariableNames', {'A', 'B'});
+%! R = rows2vars (T, 'VariableNamesSource', 1);
+%! assert_equal (R.Properties.VariableNames, ...
+%!               {'OriginalVariableNames', 'x1', 'x2', 'x3'});
+%! assert_equal (R.OriginalVariableNames, {'B'});
+%! T2 = table (string ({'p'; 'q'; 'r'}), [4;5;6], 'VariableNames', {'S', 'B'});
+%! R = rows2vars (T2, 'VariableNamesSource', 'S');
+%! assert_equal (R.Properties.VariableNames, ...
+%!               {'OriginalVariableNames', 'p', 'q', 'r'});
+%! assert_equal (R.OriginalVariableNames, {'B'});
 ## Test input validation for  'rows2vars' method
 %!error <table.rows2vars: 'DataVariables' index a non-existing variable: 'Some'.> ...
 %! rows2vars (tblA, "DataVariables", "Some");
