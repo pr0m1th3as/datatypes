@@ -1654,13 +1654,41 @@
 %! assert_equal (size (head (T2, 3)), [3, 6]);
 %! assert_equal (T2.Properties.VariableNames, ...
 %!         {'LastName', 'Age', 'Gender', 'Inches', 'Pounds', 'Smoker'});
+%!test  # 'Before'/'After' with logical-vector and numeric LOCATION
+%! T = table ([1;2], [3;4], [5;6], 'VariableNames', {'A', 'B', 'C'});
+%! nv = [7; 8];
+%! R = addvars (T, nv, 'Before', [false, true, false], ...
+%!              'NewVariableNames', 'X');
+%! assert_equal (R.Properties.VariableNames, {'A', 'X', 'B', 'C'});
+%! R = addvars (T, nv, 'After', [false, true, false], ...
+%!              'NewVariableNames', 'X');
+%! assert_equal (R.Properties.VariableNames, {'A', 'B', 'X', 'C'});
+%! R = addvars (T, nv, 'Before', 2, 'NewVariableNames', 'X');
+%! assert_equal (R.Properties.VariableNames, {'A', 'X', 'B', 'C'});
+%! R = addvars (T, nv, 'Before', 1, 'NewVariableNames', 'X');
+%! assert_equal (R.Properties.VariableNames, {'X', 'A', 'B', 'C'});
+%! R = addvars (T, nv, 'After', 3, 'NewVariableNames', 'X');
+%! assert_equal (R.Properties.VariableNames, {'A', 'B', 'C', 'X'});
+%!test  # nested-table variable and string-array NewVariableNames
+%! T = table ([1;2], [3;4], 'VariableNames', {'A', 'B'});
+%! inner = table ([7;8], [9;10], 'VariableNames', {'P', 'Q'});
+%! R = addvars (T, inner, 'NewVariableNames', 'N');
+%! assert_equal (R.Properties.VariableNames, {'A', 'B', 'N'});
+%! assert_equal (istable (R.N), true);
+%! assert_equal (R.N.P, [7; 8]);
+%! R = addvars (T, [11;12], [13;14], 'NewVariableNames', string ({'X', 'Y'}));
+%! assert_equal (R.Properties.VariableNames, {'A', 'B', 'X', 'Y'});
 ## Test input validation for 'addvars' method
 %!error <table.addvars: cannot use both 'After' and 'Before' options.> ...
 %! addvars (tblA, Smoker, 'After', 1, 'Before', 2);
 %!error <table.addvars: LOCATION must index a single variable.> ...
 %! addvars (tblA, Smoker, 'After', [true, false, false, true]);
+%!error <table.addvars: LOCATION must index a single variable.> ...
+%! addvars (tblA, Smoker, 'Before', [true, false, false, true]);
 %!error <table.addvars: LOCATION must be either a scalar integer, a character vector, or a logical vector indexing a single table variable.> ...
 %! addvars (tblA, Smoker, 'After', [1, 2]);
+%!error <table.addvars: LOCATION must be either a scalar integer, a character vector, or a logical vector indexing a single table variable.> ...
+%! addvars (tblA, Smoker, 'Before', [1, 2]);
 %!error <table.addvars: NEWNAMES does not match the number of new variables.> ...
 %! addvars (tblA, Smoker, 'NewVariableNames', {'A', 'B'});
 %!error <table.addvars: NEWNAMES contains duplicate names.> ...

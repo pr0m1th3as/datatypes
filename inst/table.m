@@ -1887,8 +1887,9 @@ classdef table
         if ((isnumeric (Before) && isscalar (Before)) || ischar (Before))
           ix_insert = resolveVarRef (this, Before);
           AB_insert = false;
-        elseif (isvector (After) && islogical (After))
-          ix_insert = resolveVarRef (this, After);
+        elseif (isvector (Before) && islogical (Before))
+          ix_insert = resolveVarRef (this, Before);
+          AB_insert = false;
           if (numel (ix_insert) > 1)
             error (msg_error1);
           endif
