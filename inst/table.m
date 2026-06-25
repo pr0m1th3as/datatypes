@@ -2884,6 +2884,7 @@ classdef table
 
     ## -*- texinfo -*-
     ## @deftypefn  {table} {@var{tblB} =} stack (@var{tblA}, @var{vars})
+    ## @deftypefnx {table} {@var{tblB} =} stack (@var{tblA}, @{@var{vars1}, @dots{}, @var{varsN}@})
     ## @deftypefnx {table} {@var{tblB} =} stack (@dots{}, @var{Name}, @var{Value})
     ## @deftypefnx {table} {[@var{tblB}, @var{idxA}] =} stack (@dots{})
     ##
@@ -2893,13 +2894,23 @@ classdef table
     ## the variables @var{vars} in input @var{tblA} into a single variable in
     ## output table @var{tblB}.  By default, the stacked variable in @var{tblB}
     ## is named by joining the names of the variables in @var{tblA} as defined
-    ## by @var{vars}.  Additionally, a new categorical variable is included in
-    ## @var{tblB} that indicates which variable in @var{tblA} the stacked data
-    ## in each row of @var{tblB} comes from.  By default, this categorical
-    ## variable is named by appending @qcode{'_Indicator'} to the name of the
-    ## stacked variable.  Variables in @var{tblA} that are not defined in
-    ## @var{vars} for stacking are replicated in @var{tblB}.  If @var{tblA}
-    ## contains @qcode{RowNames}, these are not stacked.
+    ## by @var{vars}, and it inherits the units and description of the first
+    ## variable in @var{vars}.  Additionally, a new categorical variable is
+    ## included in @var{tblB} that indicates which variable in @var{tblA} the
+    ## stacked data in each row of @var{tblB} comes from.  By default, this
+    ## categorical variable is named by appending @qcode{'_Indicator'} to the
+    ## name of the stacked variable.  Variables in @var{tblA} that are not
+    ## defined in @var{vars} for stacking are replicated in @var{tblB}.  If
+    ## @var{tblA} contains @qcode{RowNames}, these are not stacked.
+    ##
+    ## @code{@var{tblB} = stack (@var{tblA}, @{@var{vars1}, @dots{},
+    ## @var{varsN}@})} stacks multiple groups of variables, given as a cell
+    ## array of variable references, producing one stacked data variable in
+    ## @var{tblB} per group (each named and metadata-inherited from its own
+    ## group).  All groups must contain the same number of variables.  In this
+    ## case a single indicator variable, named @qcode{'Indicator'} by default,
+    ## holds the numeric position within each group of the source variable for
+    ## each stacked value.
     ##
     ## @var{vars} can be any of the following types.
     ## @itemize
@@ -2954,54 +2965,95 @@ classdef table
       [constVars, newVarName, idxVarName] = ...
                   parsePairedArguments (optNames, dfValues, varargin(:));
 
-      ## Get variables to stack
-      [ixVars, varNames] = resolveVarRef (this, vars, 'lenient');
-      if (any (ixVars == 0))
-        vars = cellstr (vars);
-        error ("table.stack: VARS index a non-existing variable: '%s'.", ...
-               vars{find (ixVars == 0)});
+      ## Determine single- vs multi-group stacking.  Multiple groups of
+      ## variables to stack are passed as a cell array of variable references
+      ## (each a cellstr, string, numeric, or logical index), producing one
+      ## stacked data variable per group; a single group is any other valid
+      ## variable reference.
+      isMulti = iscell (vars) && ! iscellstr (vars);
+      if (isMulti)
+        groups = vars;
+      else
+        groups = {vars};
       endif
+      nGroup = numel (groups);
+
+      ## Resolve each group of variables to stack
+      grpIx = cell (1, nGroup);
+      grpNames = cell (1, nGroup);
+      for g = 1:nGroup
+        [ix, nm] = resolveVarRef (this, groups{g}, 'lenient');
+        if (any (ix == 0))
+          gv = cellstr (groups{g});
+          error ("table.stack: VARS index a non-existing variable: '%s'.", ...
+                 gv{find (ix == 0)(1)});
+        endif
+        grpIx{g} = ix(:)';
+        grpNames{g} = nm;
+      endfor
+
+      ## All groups must contain the same number of variables
+      grpSize = numel (grpIx{1});
+      if (any (cellfun (@numel, grpIx) != grpSize))
+        error (strcat ("table.stack: all groups of variables to stack", ...
+                       " must be the same size."));
+      endif
+      allStackIx = [grpIx{:}];
 
       ## Get constant variables to include
       if (isempty (constVars))
-        cIxVars = setdiff (1:width (this), ixVars);
+        cIxVars = setdiff (1:width (this), allStackIx);
       else
         cIxVars = resolveVarRef (this, constVars, 'lenient');
         if (any (cIxVars == 0))
           constVars = cellstr (constVars);
           error (strcat ("table.stack: 'ConstantVariables' index a", ...
                          " non-existing  variable: '%s'."), ...
-                 constVars{find (cIxVars == 0)});
+                 constVars{find (cIxVars == 0)(1)});
         endif
-        if (any (ismember (cIxVars, ixVars)))
+        if (any (ismember (cIxVars, allStackIx)))
           error (strcat ("table.stack: 'ConstantVariables' cannot", ...
                          " contain any variables to be stacked as", ...
                          " specified by VARS."));
         endif
       endif
 
-      ## Get new data and index variable names
+      ## Get new data variable name(s), one per group
       if (isempty (newVarName))
-        newVarName = strjoin (varNames, '_');
+        newVarName = cellfun (@(nm) strjoin (nm, '_'), grpNames, ...
+                              'UniformOutput', false);
       else
-        if (! (iscellstr (newVarName) && isscalar (newVarName)) &&
-            ! (isa (newVarName, 'string') && isscalar (newVarName)) &&
-            ! (ischar (newVarName) && isvector (newVarName)))
-          error (strcat ("table.stack: 'NewDataVariableName' must be", ...
-                         " either a character vector, or a cellstring or", ...
-                         " string scalar."));
+        if (! ((ischar (newVarName) && isvector (newVarName)) ||
+               ((iscellstr (newVarName) || isa (newVarName, 'string')) &&
+                ! isempty (newVarName))))
+          error (strcat ("table.stack: 'NewDataVariableName' must be a", ...
+                         " character vector, or a cellstring or string", ...
+                         " array."));
+        endif
+        newVarName = cellstr (newVarName);
+        if (numel (newVarName) != nGroup)
+          error (strcat ("table.stack: the number of 'NewDataVariableName'", ...
+                         " names must equal the number of variable groups", ...
+                         " to stack."));
         endif
       endif
+
+      ## Get index (indicator) variable name
       if (isempty (idxVarName))
-        idxVarName = strcat (newVarName, '_Indicator');
+        if (isMulti)
+          idxVarName = 'Indicator';
+        else
+          idxVarName = strcat (newVarName{1}, '_Indicator');
+        endif
       else
-        if (! (iscellstr (idxVarName) && isscalar (idxVarName)) &&
-            ! (isa (idxVarName, 'string') && isscalar (idxVarName)) &&
-            ! (ischar (idxVarName) && isvector (idxVarName)))
+        if (! ((ischar (idxVarName) && isvector (idxVarName)) ||
+               ((iscellstr (idxVarName) || isa (idxVarName, 'string')) &&
+                isscalar (idxVarName))))
           error (strcat ("table.stack: 'IndexVariableName' must be", ...
                          " either a character vector, or a cellstring or", ...
                          " string scalar."));
         endif
+        idxVarName = char (idxVarName);
       endif
 
       ## Handle constant variables first (and RowNames if present)
@@ -3009,15 +3061,42 @@ classdef table
       if (! isempty (this.RowNames))
         constTable.RowNames = this.RowNames;
       endif
-      constTable = repelem (constTable, numel (ixVars), 1);
+      constTable = repelem (constTable, grpSize, 1);
 
-      ## Handle stacked variables
-      idVarValues = categorical (varNames)';
-      idVarValues = repmat (idVarValues, height (this), 1);
-      ndVarValues = this.VariableValues(ixVars);
-      ndVarValues = vec (cat (2, ndVarValues{:})');
-      stackedTable = table (idVarValues, ndVarValues, 'VariableNames', ...
-                                                      {idxVarName, newVarName});
+      ## Build the indicator variable values.  For a single group these are the
+      ## categorical names of the stacked variables; for multiple groups they
+      ## are the numeric position within each group, since the variable names
+      ## differ between groups.
+      nRow = height (this);
+      if (isMulti)
+        idVarValues = repmat ((1:grpSize)', nRow, 1);
+      else
+        idVarValues = repmat (categorical (grpNames{1})', nRow, 1);
+      endif
+
+      ## Build one stacked data column per group
+      ndCols = cell (1, nGroup);
+      for g = 1:nGroup
+        gvals = this.VariableValues(grpIx{g});
+        ndCols{g} = vec (cat (2, gvals{:})');
+      endfor
+
+      ## Assemble the stacked table (indicator followed by the data columns)
+      stackVals = [{idVarValues}, ndCols];
+      stackNames = [{idxVarName}, newVarName];
+      stackedTable = table (stackVals{:}, 'VariableNames', stackNames);
+
+      ## Inherit units and descriptions for the new data variables from the
+      ## first variable of each group; the indicator carries a fixed
+      ## description and no units.
+      ndUnits = cell (1, nGroup);
+      ndDescr = cell (1, nGroup);
+      for g = 1:nGroup
+        ndUnits{g} = this.VariableUnits{grpIx{g}(1)};
+        ndDescr{g} = this.VariableDescriptions{grpIx{g}(1)};
+      endfor
+      stackedTable.VariableUnits = [{''}, ndUnits];
+      stackedTable.VariableDescriptions = [{'Data indicator'}, ndDescr];
 
       ## Merge tables
       tbl = [constTable, stackedTable];
@@ -3028,9 +3107,7 @@ classdef table
 
       ## Return index vector (if requested)
       if (nargout > 1)
-        nRow = height (this);
-        nVar = numel (ixVars);
-        idxA = repelem ([1:nRow]', nVar, 1);
+        idxA = repelem ((1:nRow)', grpSize, 1);
       endif
 
     endfunction

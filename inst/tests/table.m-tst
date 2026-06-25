@@ -2437,16 +2437,63 @@
 %!            'NewDataVariableName', 'NewData', 'IndexVariableName', 'Index');
 %! assert_equal (S.Properties.VariableNames, ...
 %!         {"Test2", "Index", "NewData"});
+%!test  # units and descriptions are inherited from the first stacked variable
+%! Test1 = [93; 57];
+%! Test2 = [89; 77];
+%! U = table (Test1, Test2);
+%! U.Properties.VariableUnits = {'cm', 'kg'};
+%! U.Properties.VariableDescriptions = {'height', 'weight'};
+%! S = stack (U, 1:2);
+%! assert_equal (S.Properties.VariableUnits, {'', 'cm'});
+%! assert_equal (S.Properties.VariableDescriptions, {'Data indicator', 'height'});
+%!test  # multiple variable groups stack into one data variable each
+%! T1 = [1; 2; 3];
+%! T2 = [4; 5; 6];
+%! T3 = [7; 8; 9];
+%! T4 = [10; 11; 12];
+%! U = table (T1, T2, T3, T4);
+%! [S, idx] = stack (U, {{'T1', 'T2'}, {'T3', 'T4'}});
+%! assert_equal (S.Properties.VariableNames, {'Indicator', 'T1_T2', 'T3_T4'});
+%! assert_equal (class (S.Indicator), 'double');
+%! assert_equal (S.Indicator, [1; 2; 1; 2; 1; 2]);
+%! assert_equal (S.T1_T2, [1; 4; 2; 5; 3; 6]);
+%! assert_equal (S.T3_T4, [7; 10; 8; 11; 9; 12]);
+%! assert_equal (idx, [1; 1; 2; 2; 3; 3]);
+%!test  # multi-group inherits per-group metadata; indicator stays generic
+%! T1 = [1; 2];
+%! T2 = [3; 4];
+%! T3 = [5; 6];
+%! T4 = [7; 8];
+%! U = table (T1, T2, T3, T4);
+%! U.Properties.VariableUnits = {'u1', 'u2', 'u3', 'u4'};
+%! U.Properties.VariableDescriptions = {'d1', 'd2', 'd3', 'd4'};
+%! S = stack (U, {{'T1', 'T2'}, {'T3', 'T4'}});
+%! assert_equal (S.Properties.VariableUnits, {'', 'u1', 'u3'});
+%! assert_equal (S.Properties.VariableDescriptions, ...
+%!         {'Data indicator', 'd1', 'd3'});
+%!test  # multi-group accepts one new data name per group and an index name
+%! T1 = [1; 2];
+%! T2 = [3; 4];
+%! T3 = [5; 6];
+%! T4 = [7; 8];
+%! U = table (T1, T2, T3, T4);
+%! S = stack (U, {{'T1', 'T2'}, {'T3', 'T4'}}, ...
+%!            'NewDataVariableName', {'A', 'B'}, 'IndexVariableName', 'Idx');
+%! assert_equal (S.Properties.VariableNames, {'Idx', 'A', 'B'});
 ## Test input validation for  'stack' method
 %!error <table.stack: too few input arguments.> stack (tblA);
 %!error <table.stack: VARS index a non-existing variable: 'Some'.> ...
 %! stack (tblA, "Some");
+%!error <table.stack: all groups of variables to stack must be the same size.> ...
+%! stack (tblA, {{'Height', 'Weight'}, {'Age'}});
 %!error <table.stack: 'ConstantVariables' index a non-existing  variable: 'Some'.> ...
 %! stack (tblA, 1:3, "ConstantVariables", "Some");
 %!error <table.stack: 'ConstantVariables' cannot contain any variables to be stacked as specified by VARS.> ...
 %! stack (tblA, 1:3, "ConstantVariables", "Weight");
-%!error <table.stack: 'NewDataVariableName' must be either a character vector, or a cellstring or string scalar.> ...
+%!error <table.stack: 'NewDataVariableName' must be a character vector, or a cellstring or string array.> ...
 %! stack (tblA, 1:3, "NewDataVariableName", 3);
+%!error <table.stack: the number of 'NewDataVariableName' names must equal the number of variable groups to stack.> ...
+%! stack (tblA, 1:2, "NewDataVariableName", {'A', 'B'});
 %!error <table.stack: 'IndexVariableName' must be either a character vector, or a cellstring or string scalar.> ...
 %! stack (tblA, 1:3, "IndexVariableName", 3);
 
