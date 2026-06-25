@@ -3184,9 +3184,10 @@ classdef table
     ## @item @qcode{'AggregationFunction'} specifies a function handle used to
     ## aggregate each group's data into a single value.  By default,
     ## @code{@@sum} is applied on numeric, duration, and calendarDuration data,
-    ## @code{@@mode} is used for boolean and categorical data, while the first
-    ## element returned by @code{unique} is used for all other supported data
-    ## types.
+    ## whereas @code{@@unique} is applied on all other supported data types.  In
+    ## the latter case, if a group contains more than one distinct value for the
+    ## same indicator value, the default aggregation errors, and an explicit
+    ## @qcode{'AggregationFunction'} that returns a scalar must be specified.
     ## @item @qcode{'VariableNamingRule'}, specified as either @qcode{'modify'}
     ## or @qcode{'preserve'}, defines the rule for naming the new unstacked
     ## variables in the output table @var{tblB}.  @qcode{'modify'} (default)
@@ -3196,7 +3197,7 @@ classdef table
     ## characters.
     ## @end itemize
     ##
-    ## @code{[@var{tblB}, @var{idxA}] = stack (@dots{})} also returns an index
+    ## @code{[@var{tblB}, @var{idxA}] = unstack (@dots{})} also returns an index
     ## vector, @var{idxA}, indicating the correspondence between the rows in
     ## @var{tblB} and the rows in @var{tblA}.
     ##
@@ -3371,15 +3372,26 @@ classdef table
       endif
 
       ## Create table containing unique instances of grouping variables,
-      ## otherwise use unique instances of the indicator variable
+      ## otherwise use unique instances of the indicator variable.  Rows whose
+      ## grouping variables contain missing values are excluded from unstacking,
+      ## together with the corresponding indicator, data, and constant values,
+      ## while the original row indices are retained for the returned index.
       if (! isempty (GvarTable))
-        ## Remove missing values
-        GvarTable = rmmissing (GvarTable);
+        [GvarTable, rmRows] = rmmissing (GvarTable);
+        validRows = ! rmRows;
+        origIdx = find (validRows);
+        IvarValues = IvarValues(validRows);
+        VarsTable = subsetrows (VarsTable, origIdx);
+        if (! isempty (CvarTable))
+          CvarTable = subsetrows (CvarTable, origIdx);
+        endif
         [GvarTable, I, J] = unique (GvarTable, 'stable');
         nrows = numel (I);
+        rowIdx = origIdx(I);
       else
         [~, I, J] = __unique__ (IvarValues, 'stable', 'rows');
         nrows = 1;
+        rowIdx = 1;
       endif
 
       ## Start unstacking here
@@ -3508,11 +3520,13 @@ classdef table
           ## Get values of selected variable
           vvals = VarsTable.VariableValues{v};
 
-          ## Add type-specific NaN values and handle multicolumn variables
-          ## Check that aggregation function returns suitable output
-          [mcvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, aggrFcn);
-          if (ischar (aggrFcn))
-            error (aggrFcn);
+          ## Add type-specific NaN values and handle multicolumn variables.
+          ## Resolve the aggregation per variable into THISAGGR so that the
+          ## original AGGRFCN (or its default placeholder) is not overwritten
+          ## between variables of different types.
+          [mcvec, thisAggr] = get_default_aggrFcn (vvals, nrows, aggrFcn);
+          if (ischar (thisAggr))
+            error (thisAggr);
           endif
 
           ## Process each unstacked variable
@@ -3520,7 +3534,7 @@ classdef table
             UvarTable.VariableValues{vi} = mcvec;
             ix = strcmp (IvarNames{i}, IvarValues);
             if (nrows == 1)
-              aggrVal = aggrFcn (vvals(ix, :));
+              aggrVal = thisAggr (vvals(ix, :));
               UvarTable.VariableValues{vi} = aggrVal;
               CixRows = 1;
             else
@@ -3530,7 +3544,7 @@ classdef table
                 ix = strcmp (IvarNames{i}, tmpIvarNames);
                 if (any (ix))
                   aggrVec = ismember (tmpIvarNames, IvarNames{i});
-                  aggrVal = aggrFcn (vvals(J == j, :)(aggrVec,:));
+                  aggrVal = thisAggr (vvals(J == j, :)(aggrVec,:));
                   UvarTable.VariableValues{vi}(j,:) = aggrVal;
                 endif
                 if (v == 1)
@@ -3550,7 +3564,7 @@ classdef table
 
       ## Merge output table and return index
       tbl = [GvarTable, CvarTable, UvarTable];
-      idxA = I;
+      idxA = rowIdx;
 
     endfunction
 
@@ -8085,10 +8099,10 @@ function [mcvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, aggrFcn)
                           " must return a scalar value.");
       endif
     endif
-  elseif (islogical (vvals))  # mode is used for boolean values
+  elseif (islogical (vvals))
     mcvec =  false (nrows, vcols);
     if (isempty (aggrFcn))  # add default aggrevation function
-      aggrFcn = @mode;
+      aggrFcn = @unique;
     else  # check that it produces correct output
       tmpval = [false, false, true, true, false];
       try
@@ -8105,7 +8119,7 @@ function [mcvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, aggrFcn)
   elseif (isa (vvals, 'categorical'))
     mcvec =  repmat (categorical (NaN), nrows, vcols);
     if (isempty (aggrFcn))  # add default aggrevation function
-      aggrFcn = @mode;
+      aggrFcn = @unique;
     else  # check that it produces correct output
       tmpval = categorical (1:5);
       try
@@ -8119,11 +8133,32 @@ function [mcvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, aggrFcn)
                           " must return a scalar value.");
       endif
     endif
-  else  # all other data types
-    mcvec = repmat (UvarTable.VariableValues{1}, nrows, vcols);
-    if (isempty (aggrFcn))  # add default aggrevation function
-      aggrFcn = @(x) __unique__ (x)(1);
+  else  # all other data types (string, cellstr, datetime, ...)
+    if (iscellstr (vvals))
+      vt = 'cellstr';
+    else
+      vt = class (vvals);
     endif
+    tmpl = table ('Size', [nrows, 1], 'VariableTypes', {vt});
+    mcvec = repmat (tmpl.Var1, 1, vcols);
+    if (isempty (aggrFcn))  # add default aggrevation function
+      aggrFcn = @unique;
+    endif
+  endif
+
+  ## Enforce a scalar aggregation result, erroring on e.g. conflicting
+  ## non-numeric values under the default @unique, matching MATLAB.
+  if (! ischar (aggrFcn))
+    baseFcn = aggrFcn;
+    aggrFcn = @(x) enforce_scalar_aggr (baseFcn (x));
+  endif
+endfunction
+
+## Error out when an unstack aggregation function returns a non-scalar value.
+function val = enforce_scalar_aggr (val)
+  if (size (val, 1) > 1)
+    error (strcat ("table.unstack: 'AggregationFunction' must return", ...
+                   " a scalar value."));
   endif
 endfunction
 

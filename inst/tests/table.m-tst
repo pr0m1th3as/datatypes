@@ -2498,15 +2498,142 @@
 %! stack (tblA, 1:3, "IndexVariableName", 3);
 
 ## Test 'unstack' method
+%!test  # a single variable is unstacked by a categorical indicator
 %! Storm = [3; 3; 1; 3; 1; 1; 4; 2; 4; 2; 4; 2];
 %! Town = categorical ({'Natick'; 'Worcester'; 'Natick'; 'Boston'; ...
 %!                      'Boston'; 'Worcester'; 'Boston'; 'Natick'; ...
 %!                      'Worcester'; 'Worcester'; 'Natick'; 'Boston'});
 %! Snowfall = [0; 3; 5; 5; 9; 10; 12; 13; 15; 16; 17; 21];
 %! S = table (Storm, Town, Snowfall);
-%! U = unstack (S, 'Snowfall', 'Town');
+%! [U, idx] = unstack (S, 'Snowfall', 'Town');
+%! assert_equal (U.Properties.VariableNames, ...
+%!         {'Storm', 'Boston', 'Natick', 'Worcester'});
 %! assert_equal (U.Storm, [3; 1; 4; 2]);
-%! assert_equal (U.Properties.VariableNames, {'Storm', 'Boston', 'Natick', 'Worcester'});
+%! assert_equal (U.Boston, [5; 9; 12; 21]);
+%! assert_equal (U.Natick, [0; 5; 17; 13]);
+%! assert_equal (U.Worcester, [3; 10; 15; 16]);
+%! assert_equal (idx, [1; 3; 7; 8]);
+%!test  # duplicate group/indicator pairs are aggregated by @sum (numeric default)
+%! Storm = [3; 3];
+%! Town = categorical ({'Boston'; 'Boston'});
+%! Snowfall = [5; 100];
+%! U = unstack (table (Storm, Town, Snowfall), 'Snowfall', 'Town');
+%! assert_equal (U.Boston, 105);
+%!test  # a custom AggregationFunction overrides the default
+%! G = [1; 1; 1; 2];
+%! T = categorical ({'a'; 'a'; 'b'; 'a'});
+%! V = [3; 9; 5; 7];
+%! U = unstack (table (G, T, V), 'V', 'T', 'AggregationFunction', @max);
+%! assert_equal (U.a, [9; 7]);
+%! assert_equal (U.b, [5; NaN]);
+%!test  # a numeric indicator derives valid variable names
+%! G = [1; 1; 2; 2];
+%! T = [10; 20; 10; 20];
+%! V = [1; 2; 3; 4];
+%! U = unstack (table (G, T, V), 'V', 'T');
+%! assert_equal (U.Properties.VariableNames, {'G', 'x10', 'x20'});
+%! assert_equal (U.x10, [1; 3]);
+%! assert_equal (U.x20, [2; 4]);
+%!test  # ConstantVariables take their value from the first row of each group
+%! G = [1; 1; 2; 2];
+%! T = categorical ({'a'; 'b'; 'a'; 'b'});
+%! V = [1; 2; 3; 4];
+%! C = [100; 101; 200; 201];
+%! U = unstack (table (G, T, V, C), 'V', 'T', 'ConstantVariables', 'C');
+%! assert_equal (U.Properties.VariableNames, {'G', 'C', 'a', 'b'});
+%! assert_equal (U.C, [100; 200]);
+%!test  # explicit GroupingVariables restrict the grouping set
+%! G = [1; 1; 2; 2];
+%! T = categorical ({'a'; 'b'; 'a'; 'b'});
+%! V = [1; 2; 3; 4];
+%! C = [100; 101; 200; 201];
+%! U = unstack (table (G, T, V, C), 'V', 'T', 'GroupingVariables', 'G');
+%! assert_equal (U.Properties.VariableNames, {'G', 'a', 'b'});
+%!test  # NewDataVariableNames rename the unstacked variables
+%! G = [1; 1; 2; 2];
+%! T = categorical ({'a'; 'b'; 'a'; 'b'});
+%! V = [1; 2; 3; 4];
+%! U = unstack (table (G, T, V), 'V', 'T', 'NewDataVariableNames', {'AA', 'BB'});
+%! assert_equal (U.Properties.VariableNames, {'G', 'AA', 'BB'});
+%!test  # VariableNamingRule 'preserve' keeps invalid identifiers verbatim
+%! G = [1; 1; 2; 2];
+%! T = categorical ({'New York'; 'New York'; 'Los Angeles'; 'Los Angeles'});
+%! V = [1; 2; 3; 4];
+%! U = unstack (table (G, T, V), 'V', 'T', 'VariableNamingRule', 'preserve');
+%! assert_equal (U.Properties.VariableNames, {'G', 'Los Angeles', 'New York'});
+%!test  # the default 'modify' rule produces valid identifiers
+%! G = [1; 1; 2; 2];
+%! T = categorical ({'New York'; 'New York'; 'Los Angeles'; 'Los Angeles'});
+%! V = [1; 2; 3; 4];
+%! U = unstack (table (G, T, V), 'V', 'T');
+%! assert_equal (U.Properties.VariableNames, {'G', 'LosAngeles', 'NewYork'});
+%!test  # rows with missing grouping values are excluded from unstacking
+%! Storm = [3; 3; 1; 3; 1; 1; 4; 2; 4; 2; 4; 2];
+%! Town = categorical ({'Natick'; 'Worcester'; 'Natick'; 'Boston'; ...
+%!                      'Boston'; 'Worcester'; 'Boston'; 'Natick'; ...
+%!                      'Worcester'; 'Worcester'; 'Natick'; 'Boston'});
+%! Snowfall = [0; 3; 5; 5; 9; 10; 12; 13; 15; 16; 17; 21];
+%! Storm(1) = NaN;
+%! S = table (Storm, Town, Snowfall);
+%! [U, idx] = unstack (S, 'Snowfall', 'Town');
+%! assert_equal (U.Storm, [3; 1; 4; 2]);
+%! assert_equal (U.Natick, [NaN; 5; 17; 13]);
+%! assert_equal (U.Boston, [5; 9; 12; 21]);
+%! assert_equal (idx, [2; 3; 7; 8]);
+%!test  # with no grouping variables every row collapses to a single output row
+%! Town = categorical ({'Boston'; 'Natick'; 'Worcester'; 'Boston'});
+%! Snowfall = [5; 10; 15; 20];
+%! [U, idx] = unstack (table (Town, Snowfall), 'Snowfall', 'Town');
+%! assert_equal (size (U), [1, 3]);
+%! assert_equal (U.Boston, 25);
+%! assert_equal (idx, 1);
+%!test  # categorical data are unstacked (default @unique, no conflict)
+%! G = [1; 1; 2; 2];
+%! T = categorical ({'a'; 'b'; 'a'; 'b'});
+%! V = categorical ({'p'; 'q'; 'r'; 's'});
+%! U = unstack (table (G, T, V), 'V', 'T');
+%! assert_equal (cellstr (U.a), {'p'; 'r'});
+%! assert_equal (cellstr (U.b), {'q'; 's'});
+%!test  # logical data are unstacked (regression: default no longer crashes)
+%! G = [1; 1; 2; 2];
+%! T = categorical ({'a'; 'b'; 'a'; 'b'});
+%! B = logical ([1; 0; 1; 0]);
+%! U = unstack (table (G, T, B), 'B', 'T');
+%! assert_equal (U.a, [true; true]);
+%! assert_equal (U.b, [false; false]);
+%!test  # string data are unstacked (regression: default no longer crashes)
+%! G = [1; 1; 2; 2];
+%! T = categorical ({'a'; 'b'; 'a'; 'b'});
+%! V = string ({'p'; 'q'; 'r'; 's'});
+%! U = unstack (table (G, T, V), 'V', 'T');
+%! assert_equal (cellstr (U.a), {'p'; 'r'});
+%! assert_equal (cellstr (U.b), {'q'; 's'});
+%!test  # cellstr data are unstacked (regression: default no longer crashes)
+%! G = [1; 1; 2; 2];
+%! T = categorical ({'a'; 'b'; 'a'; 'b'});
+%! V = {'p'; 'q'; 'r'; 's'};
+%! U = unstack (table (G, T, V), 'V', 'T');
+%! assert_equal (U.a, {'p'; 'r'});
+%! assert_equal (U.b, {'q'; 's'});
+%!test  # multiple variables are unstacked with composite names
+%! G = [1; 1; 2; 2];
+%! T = categorical ({'a'; 'b'; 'a'; 'b'});
+%! N = [10; 20; 30; 40];
+%! M = [1; 2; 3; 4];
+%! U = unstack (table (G, T, N, M), {'N', 'M'}, 'T');
+%! assert_equal (U.Properties.VariableNames, {'G', 'N_a', 'N_b', 'M_a', 'M_b'});
+%! assert_equal (U.N_a, [10; 30]);
+%! assert_equal (U.N_b, [20; 40]);
+%! assert_equal (U.M_a, [1; 3]);
+%! assert_equal (U.M_b, [2; 4]);
+%!test  # multiple variables of different types are unstacked together
+%! G = [1; 1; 2; 2];
+%! T = categorical ({'a'; 'b'; 'a'; 'b'});
+%! N = [10; 20; 30; 40];
+%! C = categorical ({'p'; 'q'; 'r'; 's'});
+%! U = unstack (table (G, T, N, C), {'N', 'C'}, 'T');
+%! assert_equal (U.N_a, [10; 30]);
+%! assert_equal (cellstr (U.C_a), {'p'; 'r'});
 ## Test input validation for  'unstack' method
 %!error <table.unstack: too few input arguments.> unstack (tblA);
 %!error <table.unstack: too few input arguments.> unstack (tblA, 'Height');
@@ -2557,6 +2684,9 @@
 %! unstack (tblA, 'Height', 'Age', 'AggregationFunction', 1);
 %!error <table.unstack: 'AggregationFunction' must be a function handle.> ...
 %! unstack (tblA, 'Height', 'Age', 'AggregationFunction', 'isnumeric');
+%!error <table.unstack: 'AggregationFunction' must return a scalar value.> ...
+%! unstack (table ([1; 1; 2], categorical ({'a'; 'a'; 'b'}), ...
+%!                 categorical ({'x'; 'y'; 'z'})), 'Var3', 'Var2');
 %!error <table.unstack: invalid input for 'VariableNamingRule'.> ...
 %! unstack (tblA, {'Weight', 'Height'}, 'Age', 'VariableNamingRule', 'somerule');
 
