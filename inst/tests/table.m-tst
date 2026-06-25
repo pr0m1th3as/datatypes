@@ -562,9 +562,7 @@
 %!   assert_equal (! isempty (regexp (txt, '^"1y"$', 'lineanchors', 'once')), true);
 %!   assert_equal (! isempty (regexp (txt, '^"2y 1mo"$', 'lineanchors', 'once')), true);
 %!   warning ('off', 'all', 'local');
-%!   lastwarn ('');
 %!   R = csv2table (fn);
-%!   assert_equal (lastwarn (), "csv2table: 'calendarDuration' strings are not converted.");
 %!   assert_equal (R.cd, {'1y'; '2y 1mo'});
 %!   assert_equal (R.Properties.VariableDescriptions, {'span'});
 %!   assert_equal (R.Properties.VariableUnits, {'ymd'});
@@ -573,6 +571,14 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
+## Test warning here
+%!warning <csv2table: 'calendarDuration' strings are not converted.> ...
+%! T = table (calendarDuration ([1; 2], [0; 1], [0; 0]), 'VariableNames', {'cd'});
+%! T.Properties.VariableDescriptions = {'span'};
+%! T.Properties.VariableUnits = {'ymd'};
+%! fn = [tempname() '.csv'];
+%! table2csv (T, fn);
+%! R = csv2table (fn);
 %!test  # a categorical is written as labels; csv2table reads it back as cellstr (lossy)
 %! T = table (categorical ({'lo'; 'hi'; 'lo'}), 'VariableNames', {'c'});
 %! T.Properties.VariableDescriptions = {'level'};
@@ -585,9 +591,7 @@
 %!   assert_equal (! isempty (regexp (txt, '^"lo"$', 'lineanchors', 'once')), true);
 %!   assert_equal (! isempty (regexp (txt, '^"hi"$', 'lineanchors', 'once')), true);
 %!   warning ('off', 'all', 'local');
-%!   lastwarn ('');
 %!   R = csv2table (fn);
-%!   assert_equal (lastwarn (), "csv2table: 'categorical' strings are not converted.");
 %!   assert_equal (R.c, {'lo'; 'hi'; 'lo'});
 %!   assert_equal (R.Properties.VariableDescriptions, {'level'});
 %!   assert_equal (R.Properties.VariableUnits, {'cat'});
@@ -596,6 +600,14 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
+## Test warning here
+%!warning <csv2table: 'categorical' strings are not converted.> ...
+%! T = table (categorical ({'lo'; 'hi'; 'lo'}), 'VariableNames', {'c'});
+%! T.Properties.VariableDescriptions = {'level'};
+%! T.Properties.VariableUnits = {'cat'};
+%! fn = [tempname() '.csv'];
+%! table2csv (T, fn);
+%! R = csv2table (fn);
 %!test  # row names are written under a 'RowNames' column and restored
 %! T = table ([1; 2], 'VariableNames', {'v'}, 'RowNames', {'r1'; 'r2'});
 %! T.Properties.VariableDescriptions = {'a value'};
