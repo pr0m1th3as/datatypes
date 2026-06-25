@@ -4921,7 +4921,7 @@ classdef table
             datetime_indicator = indicator;
           elseif (isa (indicator, 'duration'))
             idx_duration = true;
-            datetime_indicator = indicator;
+            duration_indicator = indicator;
           elseif (isa (indicator, 'string'))
             idx_string = true;
             string_indicator = indicator;
@@ -5027,7 +5027,37 @@ classdef table
     ##
     ## Remove missing table elements by rows.
     ##
+    ## @code{@var{tbl} = rmmissing (@var{tblA})} returns a table with the rows of
+    ## @var{tblA} that contain at least one missing value removed.  Missing values
+    ## are determined per variable according to its data type (@code{NaN} for
+    ## numeric, @code{NaT} for @code{datetime}, @code{<missing>} for @code{string},
+    ## @code{<undefined>} for @code{categorical}, @code{@{''@}} for cellstr, etc.),
+    ## as reported by @code{ismissing}.
     ##
+    ## @code{@var{tbl} = rmmissing (@dots{}, @var{Name}, @var{Value})} customizes
+    ## the operation with the following options:
+    ##
+    ## @table @asis
+    ## @item @qcode{'MinNumMissing'}
+    ## A positive integer @var{n} (default @code{1}).  A row is removed only when
+    ## it has at least @var{n} variables with a missing value.
+    ##
+    ## @item @qcode{'DataVariables'}
+    ## Restrict the search for missing values to the indicated subset of table
+    ## variables, using the same variable referencing as the other @code{table}
+    ## methods.  Variables outside the subset are not inspected, but all variables
+    ## are kept in the output.
+    ##
+    ## @item @qcode{'MissingLocations'}
+    ## Supply the missing-value locations explicitly instead of deriving them with
+    ## @code{ismissing}.  The value is either a logical matrix with one row per
+    ## row of the input and one column per inspected variable, or a @code{table}
+    ## of logical variables whose names and sizes match the inspected variables.
+    ## @end table
+    ##
+    ## @code{[@var{tbl}, @var{TF}] = rmmissing (@dots{})} also returns a logical
+    ## column vector @var{TF}, with one element per row of @var{tblA}, that is
+    ## @qcode{true} for each removed row.
     ##
     ## @end deftypefn
     function [tbl, TF] = rmmissing (this, varargin)
@@ -5051,10 +5081,20 @@ classdef table
       if (! isempty (dVars))
         dIxVars = resolveVarRef (this, dVars, 'lenient');
         if (any (dIxVars == 0))
-          tableVars = this.VariableNames;
-          error (strcat ("table.unstack: 'DataVariables' index a", ...
-                         " non-existing variable: '%s'."), ...
-                 tableVars{find (dIxVars == 0)});
+          badpos = find (dIxVars == 0)(1);
+          dv = dVars;
+          if (isa (dv, 'string'))
+            dv = cellstr (dv);
+          endif
+          if (ischar (dv))
+            badname = dv;
+          elseif (iscellstr (dv))
+            badname = dv{badpos};
+          else
+            badname = "<unknown>";
+          endif
+          error (strcat ("table.rmmissing: 'DataVariables' index a", ...
+                         " non-existing variable: '%s'."), badname);
         endif
         tmpT = subsetvars (this, dIxVars);
       else
@@ -5071,28 +5111,27 @@ classdef table
           TF = sum (mLocs, 2) >= minNum;
           tbl = subsetrows (this, ! TF);
         elseif (isa (mLocs, 'table'))
-          ix = ismember (mLocs.VariableNames, tmpT.VariableNames);
-          if (! all (ix))
+          if (! all (ismember (tmpT.VariableNames, mLocs.VariableNames)))
             error (strcat ("table.rmmissing: 'MissingLocations' must be", ...
                            " a table with the same variable names as the", ...
                            " input table or the part of it referenced by", ...
                            " 'DataVariables'."));
           endif
-          TF = [];
-          for ix = find (ismember (tmpT.VariableNames, mLocs.VariableNames))
-            varTF = mLocs.VariableValues{ix};
-            if (! isequal (size (tmpT.VariableValues{ix}), varTF))
+          TF = false (rows (this), 0);
+          for jx = 1:width (tmpT)
+            kx = find (strcmp (tmpT.VariableNames{jx}, mLocs.VariableNames), 1);
+            varTF = mLocs.VariableValues{kx};
+            if (! islogical (varTF))
+              error (strcat ("table.rmmissing: 'MissingLocations' must", ...
+                             " be a table with logical variables."));
+            endif
+            if (! isequal (size (varTF), size (tmpT.VariableValues{jx})))
               error (strcat ("table.rmmissing: 'MissingLocations' must", ...
                              " be a table with the same variable sizes", ...
                              " as the input table or the part of it", ...
                              " referenced by 'DataVariables'."));
             endif
-            if (isa (varTF, 'logical'))
-              TF = [TF, varTF];
-            else
-              error (strcat ("table.rmmissing: 'MissingLocations' must", ...
-                             " be a table with logical variables."));
-            endif
+            TF = [TF, any(varTF, 2)];
           endfor
           TF = sum (TF, 2) >= minNum;
           tbl = subsetrows (this, ! TF);

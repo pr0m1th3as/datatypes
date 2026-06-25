@@ -3675,6 +3675,12 @@
 %!test
 %! TF = ismissing (table (days ([1; 2; NaN; 4]), calweeks ([1; 2; NaN; 4])));
 %! assert_equal (TF, [false, false; false, false; true, true; false, false]);
+%!test  # a scalar duration indicator matches a duration variable
+%! TF = ismissing (table (hours ([1; 2; 3]), 'VariableNames', {'d'}), hours (2));
+%! assert_equal (TF, [false; true; false]);
+%!test  # a NaN indicator also flags genuinely missing duration entries
+%! TF = ismissing (table (hours ([1; NaN; 3]), 'VariableNames', {'d'}), NaN);
+%! assert_equal (TF, [false; true; false]);
 
 ## Test 'rmmissing' method
 %!test  # removes every row that contains a missing value
@@ -3702,9 +3708,38 @@
 %! [R, TF] = rmmissing (T, 'MinNumMissing', 2);
 %! assert_equal (TF, [false; false; true]);
 %! assert_equal (height (R), 2);
+%!test  # 'MissingLocations' as a logical matrix overrides the derived mask
+%! T = table ([1; 2; 3], [4; 5; 6], 'VariableNames', {'a', 'b'});
+%! [R, TF] = rmmissing (T, 'MissingLocations', logical ([0, 0; 1, 0; 0, 1]));
+%! assert_equal (TF, [false; true; true]);
+%! assert_equal (R.a, 1);
+%!test  # 'MissingLocations' as a table of logicals overrides the derived mask
+%! T = table ([1; 2; 3], [4; 5; 6], 'VariableNames', {'a', 'b'});
+%! ML = table (logical ([0; 1; 0]), logical ([0; 0; 1]), ...
+%!             'VariableNames', {'a', 'b'});
+%! [R, TF] = rmmissing (T, 'MissingLocations', ML);
+%! assert_equal (TF, [false; true; true]);
+%! assert_equal (R.a, 1);
+%!test  # 'DataVariables' with 'MissingLocations' inspects only the named vars
+%! T = table ([1; 2; 3], [4; 5; 6], 'VariableNames', {'a', 'b'});
+%! ML = table (logical ([0; 1; 0]), 'VariableNames', {'a'});
+%! [R, TF] = rmmissing (T, 'DataVariables', 'a', 'MissingLocations', ML);
+%! assert_equal (TF, [false; true; false]);
+%! assert_equal (R.b, [4; 6]);
 ## Test input validation for 'rmmissing' method
 %!error <table.rmmissing: 'MinNumMissing' must be a positive integer.> ...
 %! rmmissing (table ([1; NaN]), 'MinNumMissing', 1.5);
+%!error <table.rmmissing: 'DataVariables' index a non-existing variable: 'zzz'.> ...
+%! rmmissing (table ([1; NaN], 'VariableNames', {'x'}), 'DataVariables', 'zzz');
+%!error <table.rmmissing: 'MissingLocations' must be a table with logical variables.> ...
+%! rmmissing (table ([1; 2; 3], 'VariableNames', {'a'}), ...
+%!            'MissingLocations', table ([1; 2; 3], 'VariableNames', {'a'}));
+%!error <table.rmmissing: 'MissingLocations' must be a table with the same variable sizes as the input table or the part of it referenced by 'DataVariables'.> ...
+%! rmmissing (table ([1; 2; 3], 'VariableNames', {'a'}), ...
+%!            'MissingLocations', table (logical ([0; 1]), 'VariableNames', {'a'}));
+%!error <table.rmmissing: 'MissingLocations' must be a table with the same variable names as the input table or the part of it referenced by 'DataVariables'.> ...
+%! rmmissing (table ([1; 2; 3], 'VariableNames', {'a'}), ...
+%!            'MissingLocations', table (logical ([0; 1; 0]), 'VariableNames', {'b'}));
 
 ## Test 'fillmissing' method -- 'constant' method
 %!test  # a scalar fill value is broadcast to the targeted numeric variable
@@ -3733,6 +3768,16 @@
 %! R = fillmissing (table (c, 'VariableNames', {'c'}), 'constant', ...
 %!                  categorical ({'q'}));
 %! assert_equal (cellstr (R.c), {'p'; 'q'; 'r'});
+%!test  # 'constant' fills a duration variable
+%! d = hours ([1; NaN; 3]);
+%! R = fillmissing (table (d, 'VariableNames', {'d'}), 'constant', hours (9));
+%! assert_equal (hours (R.d), [1; 9; 3]);
+%!test  # 'constant' fills a datetime variable
+%! t = datetime (2020, 1, [1; 1; 3]);
+%! t(2) = NaT;
+%! R = fillmissing (table (t, 'VariableNames', {'t'}), 'constant', ...
+%!                  datetime (2020, 1, 2));
+%! assert_equal (datevec (R.t)(:,3), [1; 2; 3]);
 %!test  # 'DataVariables' restricts the fill to a subset of variables
 %! T = table ([1; NaN], [NaN; 4], 'VariableNames', {'a', 'b'});
 %! [R, TF] = fillmissing (T, 'constant', 0, 'DataVariables', 'a');
@@ -3768,6 +3813,11 @@
 %! c = categorical ({'p'; ''; ''; 's'});
 %! R = fillmissing (table (c, 'VariableNames', {'c'}), 'next');
 %! assert_equal (cellstr (R.c), {'p'; 's'; 's'; 's'});
+%!test  # the neighbor methods work on a datetime variable
+%! t = datetime (2020, 1, [1; 1; 4]);
+%! t(2) = NaT;
+%! R = fillmissing (table (t, 'VariableNames', {'t'}), 'next');
+%! assert_equal (datevec (R.t)(:,3), [1; 4; 4]);
 %!test  # a multicolumn variable is filled column by column
 %! T = table ([1, 10; NaN, NaN; 3, 30]);
 %! [R, TF] = fillmissing (T, 'previous');
