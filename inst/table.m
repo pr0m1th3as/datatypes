@@ -3682,13 +3682,19 @@ classdef table
                        " must equal the number of 'propertyNames'."));
       endif
 
-      ## Check for duplicate property names
+      ## Check for duplicate property names within the input
+      if (numel (unique (Names)) != numel (Names))
+        error (strcat ("table.addprop: 'propertyNames' cannot contain", ...
+                       " duplicate names."));
+      endif
+
+      ## Check for property names that already exist
       if (! isempty (this.CustomProperties))
         existingNames = fieldnames (this.CustomProperties);
         idx = ismember (Names, existingNames);
         if (any (idx))
           error ("table.addprop: custom property '%s' already exists.", ...
-                  Names{idx(find (idx)(1))});
+                  Names{find (idx)(1)});
         endif
         offset = numel (this.CustomPropTypes);
       else
@@ -3738,14 +3744,19 @@ classdef table
       ## Force to cellstr
       Names = cellstr (Names);
 
+      ## Check for duplicate property names within the input
+      if (numel (unique (Names)) != numel (Names))
+        error (strcat ("table.rmprop: 'propertyNames' cannot contain", ...
+                       " duplicate names."));
+      endif
+
       ## Check that referenced property names exist
       if (! isempty (this.CustomProperties))
         existingNames = fieldnames (this.CustomProperties);
-        idx = ismember (Names, existingNames);
-        idx = ! idx;
+        idx = ! ismember (Names, existingNames);
         if (any (idx))
           error ("table.rmprop: custom property '%s' does not exist.", ...
-                  Names{idx(find (idx)(1))});
+                  Names{find (idx)(1)});
         endif
       else
         error ("table.rmprop: table does not contain any custom properties.");
