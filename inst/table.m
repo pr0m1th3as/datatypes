@@ -690,7 +690,6 @@ classdef table
     ## are not reconstructed), and the descriptions and units of nested tables
     ## and structures are not restored.
     ##
-    ## @seealso{csv2table, table}
     ## @end deftypefn
     function table2csv (this, file)
       file = char (cellstr (file));
@@ -980,7 +979,11 @@ classdef table
     ## Number of rows in table.
     ##
     ## @code{@var{H} = height (@var{tbl})} returns the number of rows in the
-    ## table, @var{tbl}.  It is the equivalent of @qcode{size (@var{tbl}, 1)}.
+    ## table @var{tbl} as a scalar.  It is the equivalent of
+    ## @qcode{size (@var{tbl}, 1)}.
+    ##
+    ## For an empty table, or a table created with zero rows, @code{height}
+    ## returns 0.  The presence of row names does not affect the result.
     ##
     ## @end deftypefn
     function out = height (this)
@@ -997,10 +1000,15 @@ classdef table
     ## Number of variables in table.
     ##
     ## @code{@var{W} = width (@var{tbl})} returns the number of variables in the
-    ## table, @var{tbl}.  It is the equivalent of @qcode{size (@var{tbl}, 2)}.
+    ## table @var{tbl} as a scalar.  It is the equivalent of
+    ## @qcode{size (@var{tbl}, 2)}.
     ##
-    ## Note that this is not the sum of the number of columns in each variable.
-    ## It is just the number of variables.
+    ## Note that this is the number of table variables, not the total number of
+    ## columns.  A single variable may itself contain several columns (for
+    ## example, a matrix-valued variable), but it still counts as one towards
+    ## the table width.
+    ##
+    ## For a table with no variables, @code{width} returns 0.
     ##
     ## @end deftypefn
     function out = width (this)
@@ -1012,20 +1020,23 @@ classdef table
     ## @deftypefnx {table} {} head (@var{tbl}, @var{k})
     ## @deftypefnx {table} {@var{out} =} head (@var{tbl}, @var{k})
     ##
-    ## Display or return the first K rows of table.
+    ## Display or return the first @var{k} rows of a table.
     ##
     ## @code{head (@var{tbl})} displays the first eight rows of the table
-    ## @var{tbl}.  If there are less rows in @var{tbl}, @code{head} displays all
-    ## rows available. @var{k} must be a positive integer scalar value.
+    ## @var{tbl}.  If @var{tbl} has fewer than eight rows, then all rows are
+    ## displayed.
     ##
     ## @code{head (@var{tbl}, @var{k})} displays the first @var{k} rows of the
-    ## table @var{tbl}.  If there are less than @var{k} rows in @var{tbl},
-    ## @code{head} displays all rows available.
+    ## table @var{tbl}.  @var{k} must be a positive integer scalar value.  If
+    ## @var{tbl} has fewer than @var{k} rows, then all rows are displayed.
     ##
     ## @code{@var{out} = head (@var{tbl}, @var{k})} returns the first @var{k}
-    ## rows in a new table @var{out}. If @var{k} is omitted or empty, then it
-    ## defaults to eight.  If there are less than @var{k} rows in @var{tbl},
-    ## all rows available are returned.
+    ## rows in a new table @var{out} instead of displaying them.  If @var{k} is
+    ## omitted or empty, then it defaults to eight.  If @var{tbl} has fewer than
+    ## @var{k} rows, then all available rows are returned.
+    ##
+    ## The returned table preserves the variable names, row names, and all other
+    ## properties of @var{tbl}.
     ##
     ## @end deftypefn
     function [varargout] = head (this, k)
@@ -1055,20 +1066,23 @@ classdef table
     ## @deftypefnx {table} {} tail (@var{tbl}, @var{k})
     ## @deftypefnx {table} {@var{out} =} tail (@var{tbl}, @var{k})
     ##
-    ## Display or return the last K rows of table.
+    ## Display or return the last @var{k} rows of a table.
     ##
     ## @code{tail (@var{tbl})} displays the last eight rows of the table
-    ## @var{tbl}.  If there are less rows in @var{tbl}, @code{tail} displays all
-    ## rows available. @var{k} must be a positive integer scalar value.
+    ## @var{tbl}.  If @var{tbl} has fewer than eight rows, then all rows are
+    ## displayed.
     ##
     ## @code{tail (@var{tbl}, @var{k})} displays the last @var{k} rows of the
-    ## table @var{tbl}.  If there are less than @var{k} rows in @var{tbl},
-    ## @code{tail} displays all rows available.
+    ## table @var{tbl}.  @var{k} must be a positive integer scalar value.  If
+    ## @var{tbl} has fewer than @var{k} rows, then all rows are displayed.
     ##
     ## @code{@var{out} = tail (@var{tbl}, @var{k})} returns the last @var{k}
-    ## rows in a new table @var{out}. If @var{k} is omitted or empty, then it
-    ## defaults to eight.  If there are less than @var{k} rows in @var{tbl},
-    ## all rows available are returned.
+    ## rows in a new table @var{out} instead of displaying them.  If @var{k} is
+    ## omitted or empty, then it defaults to eight.  If @var{tbl} has fewer than
+    ## @var{k} rows, then all available rows are returned.
+    ##
+    ## The returned table preserves the variable names, row names, and all other
+    ## properties of @var{tbl}.
     ##
     ## @end deftypefn
     function [varargout] = tail (this, k)

@@ -905,26 +905,177 @@
 %! assert_equal (! isempty (strfind (sc, 'NumMissing 1')), true);
 %! assert_equal (isempty (strfind (sc, 'Min')), true);
 
-## Test 'height', 'width', 'head', and 'tail' methods
+## Test 'height': number of rows, equivalent to size (TBL, 1)
 %!assert_equal (height (T), 5);
+%!assert_equal (height (T), size (T, 1));
+%!assert_equal (class (height (T)), 'double');
+## Test 'height' of a single-row table
+%!assert_equal (height (table (1, 2, 3)), 1);
+## Test 'height' of an empty table with no variables
+%!assert_equal (height (table ()), 0);
+## Test 'height' of a table with variables but zero rows
+%!assert_equal (height (table ('Size', [0, 3], ...
+%!               'VariableTypes', {'double', 'double', 'double'})), 0);
+## Test 'height' of a preallocated table reports the requested row count
+%!assert_equal (height (table ('Size', [7, 2], ...
+%!               'VariableTypes', {'double', 'double'})), 7);
+## Test 'height' is unaffected by multicolumn variables
+%!assert_equal (height (table (Age, BloodPressure)), 5);
+## Test 'height' counts rows regardless of row names
+%!assert_equal (height (table (Age, Smoker, 'RowNames', LastName)), 5);
+
+## Test 'width': number of variables, equivalent to size (TBL, 2)
 %!assert_equal (width (T), 5);
-%!assert_equal (height (head (T, 3)), 3);
-%!assert_equal (height (head (T, 8)), 5);
+%!assert_equal (width (T), size (T, 2));
+%!assert_equal (class (width (T)), 'double');
+## Test 'width' counts variables, not the total number of columns
+%!assert_equal (width (T), 5);
+%!assert_equal (size (T.BloodPressure, 2), 2);
+## Test 'width' of a single-variable table
+%!assert_equal (width (table (Age)), 1);
+## Test 'width' of an empty table with no variables
+%!assert_equal (width (table ()), 0);
+## Test 'width' of a table with zero rows still counts its variables
+%!assert_equal (width (table ('Size', [0, 3], ...
+%!               'VariableTypes', {'double', 'double', 'double'})), 3);
+
+## Test 'head' returns the first K rows in a new table
+%!test
+%! h = head (T, 3);
+%! assert_equal (height (h), 3);
+%! assert_equal (h.Age, Age(1:3));
+%! assert_equal (class (h), 'table');
+## Test 'head' default count is eight rows
 %!assert_equal (height (head (T)), 5);
-%!assert_equal (height (tail (T, 3)), 3);
-%!assert_equal (height (tail (T, 8)), 5);
-%!assert_equal (height (tail (T)), 5);
-## Test input validation for 'summary information' methods
+%!test
+%! big = table ((1:20)');
+%! assert_equal (height (head (big)), 8);
+%! h = head (big);
+%! assert_equal (h.Var1, (1:8)');
+## Test 'head' with K equal to the number of rows returns the whole table
+%!assert_equal (height (head (T, 5)), 5);
+## Test 'head' with K greater than the number of rows returns all rows
+%!assert_equal (height (head (T, 99)), 5);
+## Test 'head' with K of one returns just the first row
+%!test
+%! h1 = head (T, 1);
+%! assert_equal (height (h1), 1);
+%! assert_equal (h1.Age, Age(1));
+## Test 'head' of an empty (zero-row) table returns an empty table
+%!test
+%! e = table ('Size', [0, 2], 'VariableTypes', {'double', 'double'});
+%! assert_equal (size (head (e, 3)), [0, 2]);
+## Test 'head' preserves variable names, row names, and properties
+%!test
+%! R = table (Age, Smoker, 'RowNames', LastName);
+%! R.Properties.VariableUnits = {'Yrs', ''};
+%! R.Properties.Description = 'demo';
+%! h = head (R, 2);
+%! assert_equal (h.Properties.VariableNames, {'Age', 'Smoker'});
+%! assert_equal (h.Properties.RowNames, LastName(1:2));
+%! assert_equal (h.Properties.VariableUnits, {'Yrs', ''});
+%! assert_equal (h.Properties.Description, 'demo');
+## Test 'head' preserves multicolumn variables
+%!test
+%! h = head (table (Age, BloodPressure), 2);
+%! assert_equal (h.BloodPressure, BloodPressure(1:2, :));
+## Test 'head' preserves special data type variables
+%!test
+%! du = duration ((1:5)', 0, 0);
+%! ca = categorical ({'a'; 'b'; 'c'; 'd'; 'e'});
+%! h = head (table (du, ca), 2);
+%! assert_equal (class (h.du), 'duration');
+%! assert_equal (class (h.ca), 'categorical');
+%! assert_equal (seconds (h.du), [3600; 7200]);
+%! assert_equal (cellstr (h.ca), {'a'; 'b'});
+## Test 'head' with no output argument displays the first K rows
+%!test
+%! R = table (Age, Smoker, 'RowNames', LastName);
+%! str = evalc ('head (R, 2);');
+%! assert_equal (! isempty (strfind (str, 'Sanchez')), true);
+%! assert_equal (! isempty (strfind (str, 'Johnson')), true);
+%! assert_equal (isempty (strfind (str, 'Li')), true);
+## Test input validation for 'head'
 %!error <table.head: K must be a positive integer scalar value.> ...
 %! head (T, 1.5);
 %!error <table.head: K must be a positive integer scalar value.> ...
+%! head (T, 0);
+%!error <table.head: K must be a positive integer scalar value.> ...
 %! head (T, -2);
+%!error <table.head: K must be a positive integer scalar value.> ...
+%! head (T, [1, 2]);
 %!error <table.head: invalid number of output arguments.> ...
 %! [out1, out2] = head (T, 2);
+
+## Test 'tail' returns the last K rows in a new table
+%!test
+%! t = tail (T, 3);
+%! assert_equal (height (t), 3);
+%! assert_equal (t.Age, Age(3:5));
+%! assert_equal (class (t), 'table');
+## Test 'tail' default count is eight rows
+%!assert_equal (height (tail (T)), 5);
+%!test
+%! big = table ((1:20)');
+%! assert_equal (height (tail (big)), 8);
+%! t = tail (big);
+%! assert_equal (t.Var1, (13:20)');
+## Test 'tail' with K equal to the number of rows returns the whole table
+%!assert_equal (height (tail (T, 5)), 5);
+## Test 'tail' preserves the original row order
+%!test
+%! t = tail (T, 5);
+%! assert_equal (t.Age, Age);
+## Test 'tail' with K greater than the number of rows returns all rows
+%!assert_equal (height (tail (T, 99)), 5);
+## Test 'tail' with K of one returns just the last row
+%!test
+%! t1 = tail (T, 1);
+%! assert_equal (height (t1), 1);
+%! assert_equal (t1.Age, Age(5));
+## Test 'tail' of an empty (zero-row) table returns an empty table
+%!test
+%! e = table ('Size', [0, 2], 'VariableTypes', {'double', 'double'});
+%! assert_equal (size (tail (e, 3)), [0, 2]);
+## Test 'tail' preserves variable names, row names, and properties
+%!test
+%! R = table (Age, Smoker, 'RowNames', LastName);
+%! R.Properties.VariableUnits = {'Yrs', ''};
+%! R.Properties.Description = 'demo';
+%! t = tail (R, 2);
+%! assert_equal (t.Properties.VariableNames, {'Age', 'Smoker'});
+%! assert_equal (t.Properties.RowNames, LastName(4:5));
+%! assert_equal (t.Properties.VariableUnits, {'Yrs', ''});
+%! assert_equal (t.Properties.Description, 'demo');
+## Test 'tail' preserves multicolumn variables
+%!test
+%! t = tail (table (Age, BloodPressure), 2);
+%! assert_equal (t.BloodPressure, BloodPressure(4:5, :));
+## Test 'tail' preserves special data type variables
+%!test
+%! du = duration ((1:5)', 0, 0);
+%! ca = categorical ({'a'; 'b'; 'c'; 'd'; 'e'});
+%! t = tail (table (du, ca), 2);
+%! assert_equal (class (t.du), 'duration');
+%! assert_equal (class (t.ca), 'categorical');
+%! assert_equal (seconds (t.du), [14400; 18000]);
+%! assert_equal (cellstr (t.ca), {'d'; 'e'});
+## Test 'tail' with no output argument displays the last K rows
+%!test
+%! R = table (Age, Smoker, 'RowNames', LastName);
+%! str = evalc ('tail (R, 2);');
+%! assert_equal (! isempty (strfind (str, 'Diaz')), true);
+%! assert_equal (! isempty (strfind (str, 'Brown')), true);
+%! assert_equal (isempty (strfind (str, 'Sanchez')), true);
+## Test input validation for 'tail'
 %!error <table.tail: K must be a positive integer scalar value.> ...
 %! tail (T, 1.5);
 %!error <table.tail: K must be a positive integer scalar value.> ...
+%! tail (T, 0);
+%!error <table.tail: K must be a positive integer scalar value.> ...
 %! tail (T, -2);
+%!error <table.tail: K must be a positive integer scalar value.> ...
+%! tail (T, [1, 2]);
 %!error <table.tail: invalid number of output arguments.> ...
 %! [out1, out2] = tail (T, 2);
 
