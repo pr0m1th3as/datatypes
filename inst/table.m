@@ -6260,8 +6260,13 @@ classdef table
           if (isa (rhs, 'cell'))      # MATLAB compatible
             for i = 1:numel (ixVar)
               varData = this.VariableValues{ixVar(i)};
+              col = rhs(:,i);
               try
-                varData(ixRow) = rhs{:,i};
+                if (iscell (varData))
+                  varData(ixRow) = col;
+                else
+                  varData(ixRow) = vertcat (col{:});
+                endif
               catch
                 error (strcat ("table.subsasgn: input data type mismatch", ...
                                " indexed variable type."));
@@ -6437,11 +6442,13 @@ classdef table
                                  " a string array matching the number of", ...
                                  " indexed variables."));
                 endif
-                ## Convert selected variable(s) to new data type(s)
-                tbl = convertvars (this, idx, val);
-                ## Save new datatypes to VariableTypes property
-                this.VariableTypes(idx) = val;
+                ## Convert each selected variable to its new data type;
+                ## convertvars updates both the data and the VariableTypes
+                ## entry for the corresponding variable.
                 tbl = this;
+                for k = 1:numel (idx)
+                  tbl = convertvars (tbl, idx(k), val{k});
+                endfor
                 return
               endif
               ## Check for valid input: cellstring or string array matching
@@ -6455,11 +6462,13 @@ classdef table
                                " string array matching the number of", ...
                                " variables."));
               endif
-              ## Covnert variables to new data types
-              tbl = convertvars (this, ':', val)
-              ## Save new datatypes to VariableTypes property
-              this.VariableDescriptions = val;
+              ## Convert each variable to its new data type; convertvars
+              ## updates both the data and the VariableTypes entry for the
+              ## corresponding variable.
               tbl = this;
+              for k = 1:width (this)
+                tbl = convertvars (tbl, k, val{k});
+              endfor
 
             elseif (isequal (s.subs, 'VariableDescriptions'))
               ## Check for further indexing of specific variable(s)
@@ -6589,20 +6598,18 @@ classdef table
                 endif
               endif
               ## Check for valid input: cellstring, char, or string array
-              ## matching the number of rows in the table
+              ## with as many distinct elements as the table has rows.
               if (ischar (val) || isa (val, 'string'))
                 val = cellstr (val);
               endif
-              if (! (iscellstr (val) && numel (val) == height (this)))
-                if (numel (__unique__ (val)) != height (this))
-                error (strcat ("table.subsasgn: RowNames must be a cell", ...
-                               " array of character vectors or a string", ...
-                               " array with nonempty and distinct", ...
-                               " elements that are equal to the number", ...
-                               " of variables."));
-                endif
+              if (! iscellstr (val) || numel (val) != height (this))
+                error (strcat ("table.subsasgn: the number of 'RowNames'", ...
+                               " must equal the number of rows."));
+              elseif (numel (__unique__ (val)) != numel (val))
+                error (strcat ("table.subsasgn: elements in 'RowNames'", ...
+                               " must be unique."));
               endif
-              this.RowNames = val;
+              this.RowNames = val(:);
               tbl = this;
 
             elseif (isequal (s.subs, 'CustomProperties'))
