@@ -1388,7 +1388,7 @@ classdef table
           varValIdx = [varValIdx, tmpVal];
 
         elseif (isa (tmpVal, 'datetime'))
-          tmpVal = datenum (tmpVal);
+          tmpVal = datetime_to_datenum (tmpVal);
           varValIdx = [varValIdx, tmpVal];
 
         elseif (isa (tmpVal, 'duration'))
