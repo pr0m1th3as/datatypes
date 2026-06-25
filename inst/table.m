@@ -1830,16 +1830,16 @@ classdef table
     ##
     ## @code{@var{tblB} = addvars (@dots{}, @code{'After'}, @var{location})}
     ## adds the new variables after, i.e. to the right, the table variable
-    ## specified in @var{location}, which can be a character vector, a scalar
-    ## integer value or even a logical vector of the same size as
-    ## @qcode{width (@var{tblA})}, as long as it indexes a single variable in
+    ## specified in @var{location}, which can be a character vector, a string
+    ## scalar, a scalar integer value or even a logical vector of the same size
+    ## as @qcode{width (@var{tblA})}, as long as it indexes a single variable in
     ## @var{tblA}.
     ##
     ## @code{@var{tblB} = addvars (@dots{}, @code{'Before'}, @var{location})}
     ## adds the new variables before, i.e. to the left, the table variable
-    ## specified in @var{location}, which can be a character vector, a scalar
-    ## integer value or even a logical vector of the same size as
-    ## @qcode{width (@var{tblA})}, as long as it indexes a single variable in
+    ## specified in @var{location}, which can be a character vector, a string
+    ## scalar, a scalar integer value or even a logical vector of the same size
+    ## as @qcode{width (@var{tblA})}, as long as it indexes a single variable in
     ## @var{tblA}.
     ##
     ## @code{@var{tblB} = addvars (@dots{}, @code{'NewVariableNames'},
@@ -1873,7 +1873,8 @@ classdef table
                            " scalar integer, a character vector, or a", ...
                            " logical vector indexing a single table variable.");
       if (! isempty (After))
-        if ((isnumeric (After) && isscalar (After)) || ischar (After))
+        if ((isnumeric (After) && isscalar (After)) || ischar (After) || ...
+            (isa (After, 'string') && isscalar (After)))
           ix_insert = resolveVarRef (this, After);
         elseif (isvector (After) && islogical (After))
           ix_insert = resolveVarRef (this, After);
@@ -1884,7 +1885,8 @@ classdef table
           error (msg_error2);
         endif
       elseif (! isempty (Before))
-        if ((isnumeric (Before) && isscalar (Before)) || ischar (Before))
+        if ((isnumeric (Before) && isscalar (Before)) || ischar (Before) || ...
+            (isa (Before, 'string') && isscalar (Before)))
           ix_insert = resolveVarRef (this, Before);
           AB_insert = false;
         elseif (isvector (Before) && islogical (Before))
@@ -2061,16 +2063,16 @@ classdef table
     ##
     ## @code{@var{tblB} = movevars (@dots{}, @code{'After'}, @var{location})}
     ## moves the selected variables after, i.e. to the right, the table variable
-    ## specified in @var{location}, which can be a character vector, a scalar
-    ## integer value or even a logical vector of the same size as
-    ## @qcode{width (@var{tblA})}, as long as it indexes a single variable in
+    ## specified in @var{location}, which can be a character vector, a string
+    ## scalar, a scalar integer value or even a logical vector of the same size
+    ## as @qcode{width (@var{tblA})}, as long as it indexes a single variable in
     ## @var{tblA} which is not selected by @var{vars}.
     ##
     ## @code{@var{tblB} = movevars (@dots{}, @code{'Before'}, @var{location})}
     ## moves the selected variables before, i.e. to the left, the table variable
-    ## specified in @var{location}, which can be a character vector, a scalar
-    ## integer value or even a logical vector of the same size as
-    ## @qcode{width (@var{tblA})}, as long as it indexes a single variable in
+    ## specified in @var{location}, which can be a character vector, a string
+    ## scalar, a scalar integer value or even a logical vector of the same size
+    ## as @qcode{width (@var{tblA})}, as long as it indexes a single variable in
     ## @var{tblA} which is not selected by @var{vars}.
     ##
     ## @end deftypefn
@@ -2109,7 +2111,8 @@ classdef table
           AB_insert = false;
           After = Before;
         endif
-        if ((isnumeric (After) && isscalar (After)) || ischar (After))
+        if ((isnumeric (After) && isscalar (After)) || ischar (After) || ...
+            (isa (After, 'string') && isscalar (After)))
           ix_insert = resolveVarRef (this, After, 'lenient');
         elseif (isvector (After) && islogical (After))
           ix_insert = resolveVarRef (this, After, 'lenient');

@@ -1669,6 +1669,10 @@
 %! assert_equal (R.Properties.VariableNames, {'X', 'A', 'B', 'C'});
 %! R = addvars (T, nv, 'After', 3, 'NewVariableNames', 'X');
 %! assert_equal (R.Properties.VariableNames, {'A', 'B', 'C', 'X'});
+%! R = addvars (T, nv, 'After', string ('B'), 'NewVariableNames', 'X');
+%! assert_equal (R.Properties.VariableNames, {'A', 'B', 'X', 'C'});
+%! R = addvars (T, nv, 'Before', string ('B'), 'NewVariableNames', 'X');
+%! assert_equal (R.Properties.VariableNames, {'A', 'X', 'B', 'C'});
 %!test  # nested-table variable and string-array NewVariableNames
 %! T = table ([1;2], [3;4], 'VariableNames', {'A', 'B'});
 %! inner = table ([7;8], [9;10], 'VariableNames', {'P', 'Q'});
@@ -1803,6 +1807,10 @@
 %! assert_equal (R.Properties.VariableNames, {'C', 'A', 'B', 'D'});
 %! R = movevars (T, 'A', 'After', 4);
 %! assert_equal (R.Properties.VariableNames, {'B', 'C', 'D', 'A'});
+%! R = movevars (T, 'A', 'After', string ('C'));
+%! assert_equal (R.Properties.VariableNames, {'B', 'C', 'A', 'D'});
+%! R = movevars (T, 'D', 'Before', string ('B'));
+%! assert_equal (R.Properties.VariableNames, {'A', 'D', 'B', 'C'});
 ## Test input validation for 'movevars' method
 %!error <table.movevars: too few input arguments.> movevars (tblA);
 %!error <table.movevars: too few input arguments.> movevars (tblA, {});
