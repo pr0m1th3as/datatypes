@@ -3439,34 +3439,125 @@ classdef table
     ## -*- texinfo -*-
     ## @deftypefn  {table} {@var{tblB} =} inner2outer (@var{tblA})
     ##
-    ## Invert nested table-in-table hierarchy in tables. (unimplemented)
+    ## Invert the nested hierarchy of nested tables in a table.
     ##
     ## @code{@var{tblB} = inner2outer (@var{tblA})} finds the variables in
-    ## @var{tblA} that contain nested tables and returns a table @var{tblB} in
-    ## which the variables of the nested tables in @var{tblA} are regrouped as
-    ## variables in @var{tblB} and the variables of @var{tblA} that contain
-    ## nested tables become the variables of the nested tables in @var{tblB}.
-    ## Any other variable in @var{tblA} are copied unaltered into @var{tblB}.
+    ## @var{tblA} that are themselves tables (nested tables) and returns a table
+    ## @var{tblB} in which the inner and outer levels of nesting are transposed.
+    ## The variables of the nested tables in @var{tblA} become the variables of
+    ## @var{tblB}, and the variables of @var{tblA} that contain the nested
+    ## tables become the variables of the nested tables in @var{tblB}.  Any
+    ## variable in @var{tblA} that is not a nested table is copied unaltered
+    ## into @var{tblB}.
     ##
-    ## For example, if @var{tblA} has three variables named @var{A}, @var{B},
-    ## and @var{C}, all they all contain nested tables with two variables named
-    ## @var{Var1} and @var{Var2}, then @var{tblB} has two variables named
-    ## @var{Var1} and @var{Var2} each containing a nested table with variables
-    ## @var{A}, @var{B}, and @var{C}.  As a result of this operation, the table
-    ## variables @code{@var{tblA}.@var{A}.@var{Var1}},
-    ## @code{@var{tblA}.@var{B}.@var{Var1}}, and
-    ## @code{@var{tblA}.@var{C}.@var{Var1}} are regrouped into
-    ## @code{@var{tblA}.@var{Var1}.@var{A}, @code{@var{tblA}.@var{Var1}.@var{B},
-    ## and @code{@var{tblA}.@var{Var1}.@var{C}, and the table variables
-    ## @code{@var{tblA}.@var{A}.@var{Var2}},
-    ## @code{@var{tblA}.@var{B}.@var{Var2}}, and
-    ## @code{@var{tblA}.@var{B}.@var{Var3}} are regrouped into
-    ## @code{@var{tblA}.@var{Var2}.@var{A}, @code{@var{tblA}.@var{Var2}.@var{B},
-    ## and @code{@var{tblA}.@var{Var2}.@var{C}.
+    ## For example, if @var{tblA} has two variables @var{A} and @var{B} that
+    ## both contain nested tables with the variables @var{X} and @var{Y}, then
+    ## @var{tblB} has two variables @var{X} and @var{Y}, each containing a
+    ## nested table with the variables @var{A} and @var{B}.  As a result, the
+    ## table variables @code{tblA.A.X} and @code{tblA.B.X} are regrouped into
+    ## @code{tblB.X.A} and @code{tblB.X.B}, while @code{tblA.A.Y} and
+    ## @code{tblA.B.Y} are regrouped into @code{tblB.Y.A} and @code{tblB.Y.B}.
+    ##
+    ## The new variables of @var{tblB} are placed at the position of the first
+    ## nested table in @var{tblA}.  All nested tables in @var{tblA} must share
+    ## the same set of variable names.
     ##
     ## @end deftypefn
     function tbl = inner2outer (this)
-      error ("table.inner2outer: not implemented yet.");
+
+      ## Identify the variables that are themselves tables (nested tables)
+      isNested = cellfun (@istable, this.VariableValues);
+      ixNest = find (isNested);
+      if (isempty (ixNest))
+        error (strcat ("table.inner2outer: TBLA must have at least one", ...
+                       " variable that contains a table."));
+      endif
+
+      ## The names of the nested-table variables become the variable names of
+      ## the nested tables in the output.
+      nestNames = this.VariableNames(ixNest);
+
+      ## The inner variable names (taken from the first nested table) become the
+      ## outer variable names of the output.  All nested tables must share the
+      ## same set of inner variable names.
+      innerNames = this.VariableValues{ixNest(1)}.VariableNames;
+      for j = 2:numel (ixNest)
+        nj = this.VariableValues{ixNest(j)}.VariableNames;
+        if (! isequal (sort (innerNames), sort (nj)))
+          error (strcat ("table.inner2outer: all nested tables must have", ...
+                         " the same variable names."));
+        endif
+      endfor
+
+      ## Build one outer nested-table variable per inner variable name, each
+      ## collecting the matching inner variable from every nested table.
+      newVals = cell (1, numel (innerNames));
+      for k = 1:numel (innerNames)
+        cols = cell (1, numel (ixNest));
+        for j = 1:numel (ixNest)
+          nt = this.VariableValues{ixNest(j)};
+          p = find (strcmp (nt.VariableNames, innerNames{k}), 1);
+          cols{j} = nt.VariableValues{p};
+        endfor
+        newVals{k} = table (cols{:}, 'VariableNames', nestNames);
+      endfor
+
+      ## Assemble the output variable order: the new outer block sits at the
+      ## position of the first nested variable, the other nested variables drop
+      ## out, and the non-nested variables keep their relative position.
+      outNames = {};
+      outVals = {};
+      outTypes = {};
+      outDesc = {};
+      outUnits = {};
+      emitted = false;
+      for ix = 1:width (this)
+        if (ismember (ix, ixNest))
+          if (! emitted)
+            for k = 1:numel (innerNames)
+              outNames{end+1} = innerNames{k};
+              outVals{end+1} = newVals{k};
+              outTypes{end+1} = 'table';
+              outDesc{end+1} = '';
+              outUnits{end+1} = '';
+            endfor
+            emitted = true;
+          endif
+        else
+          outNames{end+1} = this.VariableNames{ix};
+          outVals{end+1} = this.VariableValues{ix};
+          outTypes{end+1} = this.VariableTypes{ix};
+          outDesc{end+1} = this.VariableDescriptions{ix};
+          outUnits{end+1} = this.VariableUnits{ix};
+        endif
+      endfor
+
+      ## A new outer variable name must not clash with a kept non-nested one.
+      if (numel (__unique__ (outNames)) != numel (outNames))
+        error (strcat ("table.inner2outer: an inner variable name clashes", ...
+                       " with an existing variable name in TBLA."));
+      endif
+
+      ## Build the output: preserve table-level metadata and row names; drop
+      ## variable-scoped custom properties since the variable identities change.
+      tbl = this;
+      tbl.VariableNames = outNames;
+      tbl.VariableValues = outVals;
+      tbl.VariableTypes = outTypes;
+      tbl.VariableDescriptions = outDesc;
+      tbl.VariableUnits = outUnits;
+      if (! isempty (this.CustomProperties))
+        cpIdx = strcmp (this.CustomPropTypes, "variable");
+        if (any (cpIdx))
+          cpNames = fieldnames (this.CustomProperties);
+          cpNames = cpNames(cpIdx);
+          for i = 1:numel (cpNames)
+            tbl.CustomProperties = rmfield (tbl.CustomProperties, cpNames{i});
+          endfor
+          tbl.CustomPropTypes(cpIdx) = [];
+        endif
+      endif
+
     endfunction
 
     ## -*- texinfo -*-
