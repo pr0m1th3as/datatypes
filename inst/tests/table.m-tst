@@ -2433,6 +2433,75 @@
 %!error <table.unstack: invalid input for 'VariableNamingRule'.> ...
 %! unstack (tblA, {'Weight', 'Height'}, 'Age', 'VariableNamingRule', 'somerule');
 
+## Test 'inner2outer' method
+%!test  # basic transpose: two nested tables sharing inner names
+%! A = table ([1;2;3], [4;5;6], 'VariableNames', {'X', 'Y'});
+%! B = table ([7;8;9], [10;11;12], 'VariableNames', {'X', 'Y'});
+%! T = inner2outer (table (A, B, 'VariableNames', {'A', 'B'}));
+%! assert_equal (T.Properties.VariableNames, {'X', 'Y'});
+%! assert_equal (T.X.Properties.VariableNames, {'A', 'B'});
+%! assert_equal (T.X.A, [1; 2; 3]);
+%! assert_equal (T.X.B, [7; 8; 9]);
+%! assert_equal (T.Y.A, [4; 5; 6]);
+%! assert_equal (T.Y.B, [10; 11; 12]);
+%!test  # non-nested variables keep their relative position
+%! A = table ([1;2;3], [4;5;6], 'VariableNames', {'X', 'Y'});
+%! B = table ([7;8;9], [10;11;12], 'VariableNames', {'X', 'Y'});
+%! C = [100; 200; 300];
+%! T = inner2outer (table (C, A, B, 'VariableNames', {'C', 'A', 'B'}));
+%! assert_equal (T.Properties.VariableNames, {'C', 'X', 'Y'});
+%! assert_equal (T.C, [100; 200; 300]);
+%! T = inner2outer (table (A, C, B, 'VariableNames', {'A', 'C', 'B'}));
+%! assert_equal (T.Properties.VariableNames, {'X', 'Y', 'C'});
+%!test  # inner names are regrouped by name regardless of their order
+%! A = table ([1;2;3], [4;5;6], 'VariableNames', {'X', 'Y'});
+%! Br = table ([10;11;12], [7;8;9], 'VariableNames', {'Y', 'X'});
+%! T = inner2outer (table (A, Br, 'VariableNames', {'A', 'B'}));
+%! assert_equal (T.Properties.VariableNames, {'X', 'Y'});
+%! assert_equal (T.X.A, [1; 2; 3]);
+%! assert_equal (T.X.B, [7; 8; 9]);
+%! assert_equal (T.Y.A, [4; 5; 6]);
+%! assert_equal (T.Y.B, [10; 11; 12]);
+%!test  # mismatched inner names: union, single-source names become plain vars
+%! A = table ([1;2;3], [4;5;6], 'VariableNames', {'X', 'Y'});
+%! Bz = table ([7;8;9], [10;11;12], 'VariableNames', {'X', 'Z'});
+%! T = inner2outer (table (A, Bz, 'VariableNames', {'A', 'B'}));
+%! assert_equal (T.Properties.VariableNames, {'X', 'Y', 'Z'});
+%! assert_equal (istable (T.X), true);
+%! assert_equal (T.X.Properties.VariableNames, {'A', 'B'});
+%! assert_equal (istable (T.Y), false);
+%! assert_equal (T.Y, [4; 5; 6]);
+%! assert_equal (istable (T.Z), false);
+%! assert_equal (T.Z, [10; 11; 12]);
+%!test  # three nested tables
+%! A = table ([1;2;3], [4;5;6], 'VariableNames', {'X', 'Y'});
+%! B = table ([7;8;9], [10;11;12], 'VariableNames', {'X', 'Y'});
+%! D = table ([13;14;15], [16;17;18], 'VariableNames', {'X', 'Y'});
+%! T = inner2outer (table (A, B, D, 'VariableNames', {'A', 'B', 'D'}));
+%! assert_equal (T.X.Properties.VariableNames, {'A', 'B', 'D'});
+%! assert_equal (T.X.D, [13; 14; 15]);
+%!test  # inner variable metadata is inherited; parent row names are preserved
+%! A = table ([1;2;3], [4;5;6], 'VariableNames', {'X', 'Y'});
+%! A.Properties.VariableUnits = {'kg', 'm'};
+%! A.Properties.VariableDescriptions = {'mass', 'length'};
+%! B = table ([7;8;9], [10;11;12], 'VariableNames', {'X', 'Y'});
+%! B.Properties.VariableUnits = {'kg', 'm'};
+%! B.Properties.VariableDescriptions = {'mass', 'length'};
+%! T = inner2outer (table (A, B, 'VariableNames', {'A', 'B'}, ...
+%!                         'RowNames', {'r1', 'r2', 'r3'}));
+%! assert_equal (T.Properties.RowNames, {'r1'; 'r2'; 'r3'});
+%! assert_equal (T.X.Properties.VariableDescriptions, {'mass', 'mass'});
+%! assert_equal (T.X.Properties.VariableUnits, {'kg', 'kg'});
+%! assert_equal (T.Y.Properties.VariableDescriptions, {'length', 'length'});
+%! assert_equal (T.Y.Properties.VariableUnits, {'m', 'm'});
+%! assert_equal (isempty (T.X.Properties.RowNames), true);
+## Test input validation for 'inner2outer' method
+%!error <table.inner2outer: TBLA must have at least one variable that contains a table.> ...
+%! inner2outer (table ([1; 2]));
+%!error <table.inner2outer: an inner variable name clashes with an existing variable name in TBLA.> ...
+%! inner2outer (table (table ([1;2], 'VariableNames', {'A'}), [3;4], ...
+%!                     'VariableNames', {'N', 'A'}));
+
 ## Test 'addprop' method
 %!test  # custom properties of both kinds are added
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'x', 'y'});

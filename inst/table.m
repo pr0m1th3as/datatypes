@@ -3500,9 +3500,12 @@ classdef table
     ## @code{tblB.X.A} and @code{tblB.X.B}, while @code{tblA.A.Y} and
     ## @code{tblA.B.Y} are regrouped into @code{tblB.Y.A} and @code{tblB.Y.B}.
     ##
-    ## The new variables of @var{tblB} are placed at the position of the first
-    ## nested table in @var{tblA}.  All nested tables in @var{tblA} must share
-    ## the same set of variable names.
+    ## The new variables of @var{tblB} are the union of the variable names of
+    ## the nested tables in @var{tblA}, placed at the position of the first
+    ## nested table.  An inner variable name shared by more than one nested
+    ## table becomes a nested table in @var{tblB} grouping the corresponding
+    ## variables; an inner variable name held by a single nested table becomes
+    ## a plain variable carrying that column.
     ##
     ## @end deftypefn
     function tbl = inner2outer (this)
@@ -3519,29 +3522,60 @@ classdef table
       ## the nested tables in the output.
       nestNames = this.VariableNames(ixNest);
 
-      ## The inner variable names (taken from the first nested table) become the
-      ## outer variable names of the output.  All nested tables must share the
-      ## same set of inner variable names.
-      innerNames = this.VariableValues{ixNest(1)}.VariableNames;
-      for j = 2:numel (ixNest)
-        nj = this.VariableValues{ixNest(j)}.VariableNames;
-        if (! isequal (sort (innerNames), sort (nj)))
-          error (strcat ("table.inner2outer: all nested tables must have", ...
-                         " the same variable names."));
-        endif
+      ## The union of the inner variable names (ordered by first appearance
+      ## across the nested tables) becomes the outer variable names of the
+      ## output.  Nested tables need not share the same set of names.
+      allNames = {};
+      for j = 1:numel (ixNest)
+        allNames = [allNames, this.VariableValues{ixNest(j)}.VariableNames];
       endfor
+      innerNames = __unique__ (allNames, 'stable');
 
-      ## Build one outer nested-table variable per inner variable name, each
-      ## collecting the matching inner variable from every nested table.
+      ## Build one outer variable per inner variable name.  An inner name held
+      ## by more than one nested table becomes a nested table grouping those
+      ## source variables (named by the source nested-table variable names),
+      ## inheriting each source variable's description and units.  An inner name
+      ## held by a single nested table becomes a plain variable carrying that
+      ## column and its metadata.
       newVals = cell (1, numel (innerNames));
+      newTypes = cell (1, numel (innerNames));
+      newDesc = cell (1, numel (innerNames));
+      newUnits = cell (1, numel (innerNames));
       for k = 1:numel (innerNames)
-        cols = cell (1, numel (ixNest));
+        srcJ = [];
+        srcP = [];
         for j = 1:numel (ixNest)
           nt = this.VariableValues{ixNest(j)};
           p = find (strcmp (nt.VariableNames, innerNames{k}), 1);
-          cols{j} = nt.VariableValues{p};
+          if (! isempty (p))
+            srcJ(end+1) = j;
+            srcP(end+1) = p;
+          endif
         endfor
-        newVals{k} = table (cols{:}, 'VariableNames', nestNames);
+        if (numel (srcJ) == 1)
+          nt = this.VariableValues{ixNest(srcJ)};
+          newVals{k} = nt.VariableValues{srcP};
+          newTypes{k} = nt.VariableTypes{srcP};
+          newDesc{k} = nt.VariableDescriptions{srcP};
+          newUnits{k} = nt.VariableUnits{srcP};
+        else
+          cols = cell (1, numel (srcJ));
+          descs = cell (1, numel (srcJ));
+          units = cell (1, numel (srcJ));
+          for m = 1:numel (srcJ)
+            nt = this.VariableValues{ixNest(srcJ(m))};
+            cols{m} = nt.VariableValues{srcP(m)};
+            descs{m} = nt.VariableDescriptions{srcP(m)};
+            units{m} = nt.VariableUnits{srcP(m)};
+          endfor
+          nt2 = table (cols{:}, 'VariableNames', nestNames(srcJ));
+          nt2.VariableDescriptions = descs;
+          nt2.VariableUnits = units;
+          newVals{k} = nt2;
+          newTypes{k} = 'table';
+          newDesc{k} = '';
+          newUnits{k} = '';
+        endif
       endfor
 
       ## Assemble the output variable order: the new outer block sits at the
@@ -3559,9 +3593,9 @@ classdef table
             for k = 1:numel (innerNames)
               outNames{end+1} = innerNames{k};
               outVals{end+1} = newVals{k};
-              outTypes{end+1} = 'table';
-              outDesc{end+1} = '';
-              outUnits{end+1} = '';
+              outTypes{end+1} = newTypes{k};
+              outDesc{end+1} = newDesc{k};
+              outUnits{end+1} = newUnits{k};
             endfor
             emitted = true;
           endif
