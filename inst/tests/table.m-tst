@@ -3309,6 +3309,29 @@
 %! assert_equal (U.Properties.VariableNames, {'N', 'S'});
 %! assert_equal (U.N, [1;3;5]);
 %! assert_equal (U.S, {'a';'c';'e'});
+## 'union' drops row names (rows come from both tables)
+%!test
+%! A = table ([3;1], {'c';'a'}, 'VariableNames', {'N', 'S'}, ...
+%!            'RowNames', {'r1', 'r2'});
+%! B = table ([2;5], {'b';'e'}, 'VariableNames', {'N', 'S'}, ...
+%!            'RowNames', {'q1', 'q2'});
+%! U = union (A, B);
+%! assert_equal (U.N, [1;2;3;5]);
+%! assert_equal (isempty (U.Properties.RowNames), true);
+## 'union' keeps the result's own sorted order when A and B rows interleave
+%!test
+%! A = table ([3;1], {'c';'a'}, 'VariableNames', {'N', 'S'});
+%! B = table ([4;2], {'d';'b'}, 'VariableNames', {'N', 'S'});
+%! U = union (A, B);
+%! assert_equal (U.N, [1;2;3;4]);
+%! assert_equal (U.S, {'a';'b';'c';'d'});
+## 'union' 'stable' keeps appearance order when A and B rows interleave
+%!test
+%! A = table ([3;1], {'c';'a'}, 'VariableNames', {'N', 'S'});
+%! B = table ([4;2], {'d';'b'}, 'VariableNames', {'N', 'S'});
+%! U = union (A, B, 'stable');
+%! assert_equal (U.N, [3;1;4;2]);
+%! assert_equal (U.S, {'c';'a';'d';'b'});
 
 ## Test 'intersect' method
 %!test
@@ -3326,6 +3349,14 @@
 %! I = intersect (A, B);
 %! assert_equal (height (I), 0);
 %! assert_equal (I.Properties.VariableNames, {'N', 'S'});
+## 'intersect' keeps the row names of the matched rows from the first table
+%!test
+%! A = table ([3;1;2;1], {'c';'a';'b';'a'}, 'VariableNames', {'N', 'S'}, ...
+%!            'RowNames', {'r1', 'r2', 'r3', 'r4'});
+%! B = table ([2;5;1], {'b';'e';'a'}, 'VariableNames', {'N', 'S'});
+%! I = intersect (A, B);
+%! assert_equal (I.N, [1;2]);
+%! assert_equal (I.Properties.RowNames, {'r2';'r3'});
 
 ## Test 'setdiff' method
 %!test
@@ -3341,6 +3372,14 @@
 %! B = table ([1], {'a'}, 'VariableNames', {'N', 'S'});
 %! D = setdiff (A, B, 'stable');
 %! assert_equal (D.N, [5;3]);
+## 'setdiff' keeps the row names of the retained rows from the first table
+%!test
+%! A = table ([3;1;2;1], {'c';'a';'b';'a'}, 'VariableNames', {'N', 'S'}, ...
+%!            'RowNames', {'r1', 'r2', 'r3', 'r4'});
+%! B = table ([2;5;1], {'b';'e';'a'}, 'VariableNames', {'N', 'S'});
+%! D = setdiff (A, B);
+%! assert_equal (D.N, 3);
+%! assert_equal (D.Properties.RowNames, {'r1'});
 
 ## Test 'setxor' method
 %!test
@@ -3351,6 +3390,22 @@
 %! assert_equal (X.S, {'c';'e'});
 %! assert_equal (ia, 1);
 %! assert_equal (ib, 2);
+## 'setxor' drops row names (rows come from both tables)
+%!test
+%! A = table ([3;1;2;1], {'c';'a';'b';'a'}, 'VariableNames', {'N', 'S'}, ...
+%!            'RowNames', {'r1', 'r2', 'r3', 'r4'});
+%! B = table ([2;5;1], {'b';'e';'a'}, 'VariableNames', {'N', 'S'}, ...
+%!            'RowNames', {'q1', 'q2', 'q3'});
+%! X = setxor (A, B);
+%! assert_equal (X.N, [3;5]);
+%! assert_equal (isempty (X.Properties.RowNames), true);
+## 'setxor' keeps the result's own sorted order when A and B rows interleave
+%!test
+%! A = table ([3;1], {'c';'a'}, 'VariableNames', {'N', 'S'});
+%! B = table ([4;2], {'d';'b'}, 'VariableNames', {'N', 'S'});
+%! X = setxor (A, B);
+%! assert_equal (X.N, [1;2;3;4]);
+%! assert_equal (X.S, {'a';'b';'c';'d'});
 
 ## Test 'ismember' method
 %!test

@@ -4490,8 +4490,18 @@ classdef table
       if (! isempty (emsg))
         error ("table.union: %s", emsg);
       endif
-      [~, ixA, ixB] = union (proxyA, proxyB, 'rows', order);
-      tbl = vertcat (subsetrows (tblA, ixA), subsetrows (tblB, ixB));
+      [keyU, ixA, ixB] = union (proxyA, proxyB, 'rows', order);
+      ## ixA, ixB list A's then B's contributions, but the result row order
+      ## interleaves them per SETORDER, so reorder the assembled rows to the
+      ## result's own order.  Row names are dropped: rows are drawn from both
+      ## tables and cannot be attributed to a single input (like MATLAB).
+      sA = subsetrows (tblA, ixA);
+      sB = subsetrows (tblB, ixB);
+      sA.RowNames = {};
+      sB.RowNames = {};
+      sel = vertcat (sA, sB);
+      [~, perm] = ismember (keyU, [proxyA(ixA,:); proxyB(ixB,:)], 'rows');
+      tbl = subsetrows (sel, perm);
     endfunction
 
     ## -*- texinfo -*-
@@ -4649,8 +4659,18 @@ classdef table
       if (! isempty (emsg))
         error ("table.setxor: %s", emsg);
       endif
-      [~, ixA, ixB] = setxor (proxyA, proxyB, 'rows', order);
-      tbl = vertcat (subsetrows (tblA, ixA), subsetrows (tblB, ixB));
+      [keyX, ixA, ixB] = setxor (proxyA, proxyB, 'rows', order);
+      ## ixA, ixB list A's then B's contributions, but the result row order
+      ## interleaves them per SETORDER, so reorder the assembled rows to the
+      ## result's own order.  Row names are dropped: rows are drawn from both
+      ## tables and cannot be attributed to a single input (like MATLAB).
+      sA = subsetrows (tblA, ixA);
+      sB = subsetrows (tblB, ixB);
+      sA.RowNames = {};
+      sB.RowNames = {};
+      sel = vertcat (sA, sB);
+      [~, perm] = ismember (keyX, [proxyA(ixA,:); proxyB(ixB,:)], 'rows');
+      tbl = subsetrows (sel, perm);
     endfunction
 
   endmethods
