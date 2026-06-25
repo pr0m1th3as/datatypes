@@ -1852,6 +1852,23 @@
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! T2 = removevars (T1, vartype ("numeric"));
 %! assert_equal (T2.Properties.VariableNames, {'LastName', 'Gender', 'Smoker'});
+%!test  # VARS forms (string array, single char) and removing all variables
+%! T = table ([1;2], [3;4], [5;6], 'VariableNames', {'A', 'B', 'C'});
+%! R = removevars (T, string ({'A', 'C'}));
+%! assert_equal (R.Properties.VariableNames, {'B'});
+%! R = removevars (T, 'B');
+%! assert_equal (R.Properties.VariableNames, {'A', 'C'});
+%! R = removevars (T, {'A', 'B', 'C'});
+%! assert_equal (width (R), 0);
+%!test  # custom variable properties shrink with the removed variables
+%! T = table ([1;2], [3;4], [5;6], 'VariableNames', {'A', 'B', 'C'});
+%! T = addprop (T, 'Note', 'variable');
+%! T.Properties.CustomProperties.Note = {'na', 'nb', 'nc'};
+%! R = removevars (T, 'B');
+%! assert_equal (R.Properties.VariableNames, {'A', 'C'});
+%! assert_equal (R.Properties.CustomProperties.Note, {'na', 'nc'});
+%! R = removevars (T, [1, 3]);
+%! assert_equal (R.Properties.CustomProperties.Note, {'nb'});
 ## Test input validation for 'removevars' method
 %!error <table.removevars: too few input arguments.> removevars (tblA);
 %!error <table: variable index must be a vector.> removevars (tblA, ones (2));
