@@ -2646,19 +2646,25 @@
 %! T = addprop (T, {'Note', 'Flags'}, {'table', 'variable'});
 %! T = rmprop (T, string ({'Note', 'Flags'}));
 %! assert_equal (fieldnames (T.Properties.CustomProperties), cell (0, 1));
+%!test  # duplicate names are tolerated (the property is removed once)
+%! T = table ([1; 2], 'VariableNames', {'x'});
+%! T = addprop (T, {'Note', 'Flags'}, {'table', 'variable'});
+%! T = rmprop (T, {'Note', 'Note'});
+%! assert_equal (fieldnames (T.Properties.CustomProperties), {'Flags'});
+%!test  # names that do not match an existing property are silently ignored
+%! T = table ([1; 2], 'VariableNames', {'x'});
+%! T = addprop (T, {'Note', 'Flags'}, {'table', 'variable'});
+%! T = rmprop (T, {'Note', 'Missing'});
+%! assert_equal (fieldnames (T.Properties.CustomProperties), {'Flags'});
+%!test  # removing from a table without custom properties is a no-op
+%! T = table ([1; 2], 'VariableNames', {'x'});
+%! T = rmprop (T, 'Missing');
+%! assert_equal (T.Properties.CustomProperties, []);
 ## Test input validation for 'rmprop' method
 %!error <table.rmprop: too few input arguments.> ...
 %! rmprop (table (1));
 %!error <table.rmprop: invalid input type for 'propertyNames'.> ...
 %! rmprop (table (1), 5);
-%!error <table.rmprop: 'propertyNames' cannot contain duplicate names.> ...
-%! rmprop (addprop (table (1), 'Note', 'table'), {'Note', 'Note'});
-%!error <table.rmprop: custom property 'Missing' does not exist.> ...
-%! rmprop (addprop (table (1), 'Note', 'table'), 'Missing');
-%!error <table.rmprop: custom property 'Missing' does not exist.> ...
-%! rmprop (addprop (table (1), 'Note', 'table'), {'Note', 'Missing'});
-%!error <table.rmprop: table does not contain any custom properties.> ...
-%! rmprop (table (1), 'x');
 
 ################################################################################
 ##                       ** Join and Set Operations **                        ##

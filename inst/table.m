@@ -3729,7 +3729,8 @@ classdef table
     ## that contain custom metadata from the table @var{T}.  The input argument
     ## @var{propertyNames} specifies the names of the custom properties to be
     ## removed and it can either be a character vector, a cell array of
-    ## character vectors, or a sting array.
+    ## character vectors, or a string array.  Names that do not match any
+    ## existing custom property are silently ignored.
     ##
     ## @end deftypefn
     function tbl = rmprop (this, Names)
@@ -3744,33 +3745,18 @@ classdef table
       ## Force to cellstr
       Names = cellstr (Names);
 
-      ## Check for duplicate property names within the input
-      if (numel (unique (Names)) != numel (Names))
-        error (strcat ("table.rmprop: 'propertyNames' cannot contain", ...
-                       " duplicate names."));
-      endif
-
-      ## Check that referenced property names exist
+      ## Remove the referenced custom properties that exist; names that do not
+      ## match any existing custom property (including repeated names) are
+      ## silently ignored, matching MATLAB.
       if (! isempty (this.CustomProperties))
         existingNames = fieldnames (this.CustomProperties);
-        idx = ! ismember (Names, existingNames);
-        if (any (idx))
-          error ("table.rmprop: custom property '%s' does not exist.", ...
-                  Names{find (idx)(1)});
+        tf = ismember (existingNames, Names);
+        if (any (tf))
+          this.CustomProperties = rmfield (this.CustomProperties, ...
+                                           existingNames(tf));
+          this.CustomPropTypes(tf) = [];
         endif
-      else
-        error ("table.rmprop: table does not contain any custom properties.");
       endif
-
-      ## Remove each custom property
-      idx = [];
-      for i = 1:numel (Names)
-        ## Get index number of field to be removed
-        idx = [idx; find(strcmp (Names{i}, existingNames))];
-        ## Remove field and its corresponding type reference
-        this.CustomProperties = rmfield (this.CustomProperties, Names{i});
-      endfor
-      this.CustomPropTypes(idx) = [];
       tbl = this;
 
     endfunction
