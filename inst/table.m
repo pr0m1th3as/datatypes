@@ -5871,8 +5871,9 @@ classdef table
 
     ## -*- texinfo -*-
     ## @deftypefn  {table} {@var{G} =} groupsummary (@var{T}, @var{groupvars})
-    ## @deftypefnx {table} {@var{G} =} groupsummary (@var{T}, @var{groupvars}, @var{method})
-    ## @deftypefnx {table} {@var{G} =} groupsummary (@var{T}, @var{groupvars}, @var{method}, @var{datavars})
+    ## @deftypefnx {table} {@var{G} =} groupsummary (@var{T}, @var{groupvars}, @var{groupbins})
+    ## @deftypefnx {table} {@var{G} =} groupsummary (@var{T}, @var{groupvars}, @var{groupbins}, @var{method})
+    ## @deftypefnx {table} {@var{G} =} groupsummary (@var{T}, @var{groupvars}, @var{groupbins}, @var{method}, @var{datavars})
     ## @deftypefnx {table} {@var{G} =} groupsummary (@dots{}, @var{Name}, @var{Value})
     ##
     ## Compute summary statistics by group for the variables of a table.
@@ -5922,6 +5923,14 @@ classdef table
     ## the requested methods.  When several methods are requested the computed
     ## variables are ordered method first, then data variable.
     ##
+    ## The optional @var{groupbins} argument bins the grouping variables before
+    ## grouping: a vector of bin edges or a positive integer number of
+    ## equal-width bins spanning the data range, applied to a numeric, datetime,
+    ## or duration grouping variable.  Each binned variable becomes a categorical
+    ## whose categories are the bin interval labels, e.g.@: @qcode{'[0, 10)'}.
+    ## Pass a cell array with one scheme per grouping variable to bin them
+    ## differently, or @qcode{'none'} to leave a variable unbinned.
+    ##
     ## The following @var{Name}/@var{Value} pairs are accepted:
     ##
     ## @table @asis
@@ -5931,8 +5940,14 @@ classdef table
     ## non-missing groups.  When @code{false}, such rows are excluded.
     ##
     ## @item @qcode{'IncludeEmptyGroups'}
-    ## A logical scalar, @code{false} by default.  Empty groups are not yet
-    ## supported, so @code{true} raises an error.
+    ## A logical scalar, @code{false} by default.  When @code{true}, the unused
+    ## categories of a categorical or binned grouping variable contribute empty
+    ## groups (@qcode{GroupCount} @code{0}, @code{0} for @qcode{'sum'} and
+    ## @qcode{'nnz'}, @code{NaN} otherwise).
+    ##
+    ## @item @qcode{'IncludedEdge'}
+    ## Either @qcode{'left'} (the default) or @qcode{'right'}, selecting which
+    ## edge of each bin is inclusive when @var{groupbins} is given.
     ## @end table
     ##
     ## @end deftypefn
@@ -5944,7 +5959,7 @@ classdef table
       ## Split the trailing arguments into the optional positional METHOD and
       ## DATAVARS arguments and any Name-Value pairs.  A Name-Value region starts
       ## at the first char-vector/string that names a known option.
-      optNames = {'IncludeMissingGroups', 'IncludeEmptyGroups'};
+      optNames = {'IncludeMissingGroups', 'IncludeEmptyGroups', 'IncludedEdge'};
       nvStart = numel (varargin) + 1;
       for k = 1:numel (varargin)
         a = varargin{k};
@@ -5957,6 +5972,14 @@ classdef table
       endfor
       posArgs = varargin(1:nvStart-1);
       nvArgs = varargin(nvStart:end);
+      ## An optional GROUPBINS positional argument precedes METHOD.
+      hasGroupbins = false;
+      groupbins = [];
+      if (! isempty (posArgs) && is_groupbins_spec (posArgs{1}))
+        hasGroupbins = true;
+        groupbins = posArgs{1};
+        posArgs = posArgs(2:end);
+      endif
       if (numel (posArgs) > 2)
         error ("table.groupsummary: too many positional arguments.");
       endif
@@ -5974,8 +5997,8 @@ classdef table
       endif
 
       ## Parse Name-Value options.
-      dfValues = {true, false};
-      [incMiss, incEmpty] = ...
+      dfValues = {true, false, 'left'};
+      [incMiss, incEmpty, incEdge] = ...
                   parsePairedArguments (optNames, dfValues, nvArgs(:));
       if (! (isscalar (incMiss) && (islogical (incMiss) || isnumeric (incMiss))))
         error (strcat ("table.groupsummary: 'IncludeMissingGroups' must be", ...
@@ -5987,10 +6010,8 @@ classdef table
         error (strcat ("table.groupsummary: 'IncludeEmptyGroups' must be", ...
                        " a logical scalar."));
       endif
-      if (logical (incEmpty))
-        error (strcat ("table.groupsummary: 'IncludeEmptyGroups' = true is", ...
-                       " not yet supported."));
-      endif
+      incEmpty = logical (incEmpty);
+      incEdge = check_included_edge ('groupsummary', incEdge);
 
       ## Normalise METHOD into parallel cell arrays of method specs and the
       ## display names used to build output variable names.
@@ -6012,18 +6033,24 @@ classdef table
         dIx(ismember (dIx, gIx)) = [];
       endif
 
+      ## Bin the grouping variables when a GROUPBINS argument was given.
+      grpCols = T.VariableValues(gIx);
+      if (hasGroupbins)
+        [grpCols, errmsg] = bin_groupvars (grpCols, T.VariableNames(gIx), ...
+                                           groupbins, incEdge, 'groupsummary');
+        if (! isempty (errmsg))
+          error ("table.groupsummary: %s", errmsg);
+        endif
+      endif
+
       ## Group the rows, treating missing grouping values as their own groups
-      ## (sorted last) when IncludeMissingGroups is true.
-      [Grp, ng, repRows, errmsg] = gs_group_rows (T.VariableValues(gIx), incMiss);
+      ## (sorted last) when IncludeMissingGroups is true; IncludeEmptyGroups adds
+      ## the unused categories of a categorical or binned grouping variable as
+      ## empty groups.
+      [Grp, ng, gcols, errmsg] = gs_grouping (grpCols, incMiss, incEmpty);
       if (! isempty (errmsg))
         error ("table.groupsummary: %s", errmsg);
       endif
-
-      ## Build the grouping-variable output columns and the GroupCount.
-      gcols = cell (1, numel (gIx));
-      for p = 1:numel (gIx)
-        gcols{p} = T.VariableValues{gIx(p)}(repRows,:);
-      endfor
       gcount = accumarray (Grp(! isnan (Grp)), 1, [ng, 1]);
 
       ## Compute each method over each data variable.  Output columns are ordered
@@ -6062,6 +6089,7 @@ classdef table
 
     ## -*- texinfo -*-
     ## @deftypefn  {table} {@var{G} =} groupcounts (@var{T}, @var{groupvars})
+    ## @deftypefnx {table} {@var{G} =} groupcounts (@var{T}, @var{groupvars}, @var{groupbins})
     ## @deftypefnx {table} {@var{G} =} groupcounts (@dots{}, @var{Name}, @var{Value})
     ##
     ## Count the number of rows in each group of a table.
@@ -6074,6 +6102,12 @@ classdef table
     ## total.  @var{groupvars} selects the grouping variables by name, index,
     ## logical vector, function handle, or @code{vartype} subscript.
     ##
+    ## The optional @var{groupbins} argument bins the grouping variables before
+    ## grouping (a vector of bin edges or a positive integer number of bins,
+    ## applied to a numeric, datetime, or duration grouping variable, or a cell
+    ## array with one scheme per grouping variable); each binned variable becomes
+    ## a categorical of bin interval labels.  See @code{groupsummary} for details.
+    ##
     ## Groups are the sorted unique combinations of grouping values.  The following
     ## @var{Name}/@var{Value} pairs are accepted:
     ##
@@ -6084,12 +6118,14 @@ classdef table
     ## non-missing groups.  When @code{false}, such rows are excluded.
     ##
     ## @item @qcode{'IncludeEmptyGroups'}
-    ## A logical scalar, @code{false} by default.  Empty groups are not yet
-    ## supported, so @code{true} raises an error.
-    ## @end table
+    ## A logical scalar, @code{false} by default.  When @code{true}, the unused
+    ## categories of a categorical or binned grouping variable contribute empty
+    ## groups with a @qcode{GroupCount} of @code{0}.
     ##
-    ## Binning the grouping variables (the @var{groupbins} argument) is not yet
-    ## supported.
+    ## @item @qcode{'IncludedEdge'}
+    ## Either @qcode{'left'} (the default) or @qcode{'right'}, selecting which
+    ## edge of each bin is inclusive when @var{groupbins} is given.
+    ## @end table
     ##
     ## @end deftypefn
     function G = groupcounts (T, groupvars, varargin)
@@ -6097,23 +6133,31 @@ classdef table
         print_usage ();
       endif
 
-      ## Binning (the optional GROUPBINS argument) is not yet supported, so
-      ## everything after GROUPVARS must be a recognised Name-Value option.
-      optNames = {'IncludeMissingGroups', 'IncludeEmptyGroups'};
+      ## An optional GROUPBINS positional argument may precede the Name-Value
+      ## options; anything else after GROUPVARS must be a recognised option.
+      optNames = {'IncludeMissingGroups', 'IncludeEmptyGroups', 'IncludedEdge'};
+      hasGroupbins = false;
+      groupbins = [];
       if (! isempty (varargin))
         a = varargin{1};
         isOpt = ((ischar (a) && isrow (a)) ...
                  || (isa (a, 'string') && isscalar (a))) ...
                 && any (strcmpi (char (a), optNames));
         if (! isOpt)
-          error (strcat ("table.groupcounts: binning (the GROUPBINS", ...
-                         " argument) is not yet supported."));
+          if (is_groupbins_spec (a))
+            hasGroupbins = true;
+            groupbins = a;
+            varargin = varargin(2:end);
+          else
+            error (strcat ("table.groupcounts: invalid argument; expected a", ...
+                           " GROUPBINS binning scheme or a Name-Value option."));
+          endif
         endif
       endif
 
       ## Parse Name-Value options.
-      dfValues = {true, false};
-      [incMiss, incEmpty] = ...
+      dfValues = {true, false, 'left'};
+      [incMiss, incEmpty, incEdge] = ...
                   parsePairedArguments (optNames, dfValues, varargin(:));
       if (! (isscalar (incMiss) && (islogical (incMiss) || isnumeric (incMiss))))
         error (strcat ("table.groupcounts: 'IncludeMissingGroups' must be", ...
@@ -6125,10 +6169,8 @@ classdef table
         error (strcat ("table.groupcounts: 'IncludeEmptyGroups' must be", ...
                        " a logical scalar."));
       endif
-      if (logical (incEmpty))
-        error (strcat ("table.groupcounts: 'IncludeEmptyGroups' = true is", ...
-                       " not yet supported."));
-      endif
+      incEmpty = logical (incEmpty);
+      incEdge = check_included_edge ('groupcounts', incEdge);
 
       ## Resolve grouping variables.
       gIx = resolveVarRef (T, groupvars)(:)';
@@ -6137,18 +6179,24 @@ classdef table
                        " is required."));
       endif
 
+      ## Bin the grouping variables when a GROUPBINS argument was given.
+      grpCols = T.VariableValues(gIx);
+      if (hasGroupbins)
+        [grpCols, errmsg] = bin_groupvars (grpCols, T.VariableNames(gIx), ...
+                                           groupbins, incEdge, 'groupcounts');
+        if (! isempty (errmsg))
+          error ("table.groupcounts: %s", errmsg);
+        endif
+      endif
+
       ## Group the rows, treating missing grouping values as their own groups
-      ## (sorted last) when IncludeMissingGroups is true.
-      [Grp, ng, repRows, errmsg] = gs_group_rows (T.VariableValues(gIx), incMiss);
+      ## (sorted last) when IncludeMissingGroups is true; IncludeEmptyGroups adds
+      ## the unused categories of a categorical or binned grouping variable as
+      ## empty groups.
+      [Grp, ng, gcols, errmsg] = gs_grouping (grpCols, incMiss, incEmpty);
       if (! isempty (errmsg))
         error ("table.groupcounts: %s", errmsg);
       endif
-
-      ## Build the grouping-variable columns, the GroupCount, and the Percent.
-      gcols = cell (1, numel (gIx));
-      for p = 1:numel (gIx)
-        gcols{p} = T.VariableValues{gIx(p)}(repRows,:);
-      endfor
       gcount = accumarray (Grp(! isnan (Grp)), 1, [ng, 1]);
       pcent = 100 * gcount / sum (gcount);
 
@@ -6159,7 +6207,8 @@ classdef table
 
     ## -*- texinfo -*-
     ## @deftypefn  {table} {@var{G} =} groupfilter (@var{T}, @var{groupvars}, @var{method})
-    ## @deftypefnx {table} {@var{G} =} groupfilter (@var{T}, @var{groupvars}, @var{method}, @var{datavars})
+    ## @deftypefnx {table} {@var{G} =} groupfilter (@var{T}, @var{groupvars}, @var{groupbins}, @var{method})
+    ## @deftypefnx {table} {@var{G} =} groupfilter (@dots{}, @var{method}, @var{datavars})
     ##
     ## Filter the rows of a table by a per-group condition.
     ##
@@ -6184,8 +6233,13 @@ classdef table
     ## data variable.
     ##
     ## Rows holding a missing value in a grouping variable form their own groups,
-    ## to which @var{method} is applied like any other group.  Binning the grouping
-    ## variables (the @var{groupbins} argument) is not yet supported.
+    ## to which @var{method} is applied like any other group.
+    ##
+    ## The optional @var{groupbins} argument bins the grouping variables before
+    ## grouping (a vector of bin edges or a positive integer number of bins, or a
+    ## cell array with one scheme per grouping variable); see @code{groupsummary}
+    ## for details.  The @qcode{'IncludedEdge'} Name-Value pair (@qcode{'left'} by
+    ## default, or @qcode{'right'}) selects which bin edge is inclusive.
     ##
     ## @end deftypefn
     function G = groupfilter (T, groupvars, varargin)
@@ -6193,17 +6247,43 @@ classdef table
         print_usage ();
       endif
 
-      ## The filter function is the first argument after GROUPVARS.  Binning (a
-      ## GROUPBINS argument in its place) is not yet supported.
-      method = varargin{1};
+      ## Split off a trailing 'IncludedEdge' Name-Value option, then an optional
+      ## GROUPBINS positional argument that precedes the filter function METHOD.
+      optNames = {'IncludedEdge'};
+      args = varargin;
+      nvStart = numel (args) + 1;
+      for k = 1:numel (args)
+        a = args{k};
+        if (((ischar (a) && isrow (a)) || (isa (a, 'string') && isscalar (a)))
+            && any (strcmpi (char (a), optNames)))
+          nvStart = k;
+          break;
+        endif
+      endfor
+      nvArgs = args(nvStart:end);
+      args = args(1:nvStart-1);
+      incEdge = parsePairedArguments (optNames, {'left'}, nvArgs(:));
+      incEdge = check_included_edge ('groupfilter', incEdge);
+
+      hasGroupbins = false;
+      groupbins = [];
+      if (! isempty (args) && is_groupbins_spec (args{1}))
+        hasGroupbins = true;
+        groupbins = args{1};
+        args = args(2:end);
+      endif
+
+      ## The filter function METHOD is the first remaining argument.
+      if (isempty (args))
+        print_usage ();
+      endif
+      method = args{1};
       if (! is_function_handle (method))
-        error (strcat ("table.groupfilter: METHOD must be a function handle;", ...
-                       " binning (the GROUPBINS argument) is not yet", ...
-                       " supported."));
+        error ("table.groupfilter: METHOD must be a function handle.");
       endif
 
       ## An optional DATAVARS argument may follow the filter function.
-      rest = varargin(2:end);
+      rest = args(2:end);
       if (numel (rest) > 1)
         error ("table.groupfilter: too many positional arguments.");
       endif
@@ -6229,9 +6309,18 @@ classdef table
         dIx(ismember (dIx, gIx)) = [];
       endif
 
-      ## Group the rows, treating missing grouping values as their own groups so
+      ## Bin the grouping variables when a GROUPBINS argument was given, then
+      ## group the rows, treating missing grouping values as their own groups so
       ## that every row belongs to exactly one group.
-      [Grp, ng, ~, errmsg] = gs_group_rows (T.VariableValues(gIx), true);
+      grpCols = T.VariableValues(gIx);
+      if (hasGroupbins)
+        [grpCols, errmsg] = bin_groupvars (grpCols, T.VariableNames(gIx), ...
+                                           groupbins, incEdge, 'groupfilter');
+        if (! isempty (errmsg))
+          error ("table.groupfilter: %s", errmsg);
+        endif
+      endif
+      [Grp, ng, ~, errmsg] = gs_group_rows (grpCols, true);
       if (! isempty (errmsg))
         error ("table.groupfilter: %s", errmsg);
       endif
@@ -6247,7 +6336,8 @@ classdef table
 
     ## -*- texinfo -*-
     ## @deftypefn  {table} {@var{G} =} grouptransform (@var{T}, @var{groupvars}, @var{method})
-    ## @deftypefnx {table} {@var{G} =} grouptransform (@var{T}, @var{groupvars}, @var{method}, @var{datavars})
+    ## @deftypefnx {table} {@var{G} =} grouptransform (@var{T}, @var{groupvars}, @var{groupbins}, @var{method})
+    ## @deftypefnx {table} {@var{G} =} grouptransform (@dots{}, @var{method}, @var{datavars})
     ## @deftypefnx {table} {@var{G} =} grouptransform (@dots{}, @var{Name}, @var{Value})
     ##
     ## Transform the data variables of a table group by group.
@@ -6303,11 +6393,17 @@ classdef table
     ## values are appended as new variables named @code{<method>_<datavar>}
     ## (@code{fun1_<datavar>} for a function handle), leaving the originals in
     ## place.
+    ##
+    ## @item @qcode{'IncludedEdge'}
+    ## Either @qcode{'left'} (the default) or @qcode{'right'}, selecting which
+    ## edge of each bin is inclusive when @var{groupbins} is given.
     ## @end table
     ##
     ## Rows holding a missing value in a grouping variable form their own groups,
-    ## which are transformed like any other group.  Binning the grouping variables
-    ## (the @var{groupbins} argument) is not yet supported.
+    ## which are transformed like any other group.  The optional @var{groupbins}
+    ## argument bins the grouping variables before grouping (a vector of bin edges
+    ## or a positive integer number of bins, or a cell array with one scheme per
+    ## grouping variable); see @code{groupsummary} for details.
     ##
     ## @end deftypefn
     function G = grouptransform (T, groupvars, varargin)
@@ -6315,10 +6411,20 @@ classdef table
         print_usage ();
       endif
 
-      ## The transform method is the first argument after GROUPVARS: a known
-      ## method name or a function handle.  Binning (a GROUPBINS argument in its
-      ## place) is not yet supported.
-      method = varargin{1};
+      ## An optional GROUPBINS positional argument precedes the transform METHOD
+      ## (a known method name or a function handle).
+      args = varargin;
+      hasGroupbins = false;
+      groupbins = [];
+      if (! isempty (args) && is_groupbins_spec (args{1}))
+        hasGroupbins = true;
+        groupbins = args{1};
+        args = args(2:end);
+      endif
+      if (isempty (args))
+        print_usage ();
+      endif
+      method = args{1};
       knownMethods = {'zscore', 'norm', 'meancenter', 'rescale', ...
                       'meanfill', 'linearfill'};
       if (is_function_handle (method))
@@ -6331,14 +6437,13 @@ classdef table
       else
         error (strcat ("table.grouptransform: METHOD must be one of 'zscore',", ...
                        " 'norm', 'meancenter', 'rescale', 'meanfill',", ...
-                       " 'linearfill', or a function handle; binning (the", ...
-                       " GROUPBINS argument) is not yet supported."));
+                       " 'linearfill', or a function handle."));
       endif
 
       ## Split the remaining arguments into the optional positional DATAVARS and
-      ## any Name-Value pairs (a Name-Value region starts at 'ReplaceValues').
-      rest = varargin(2:end);
-      optNames = {'ReplaceValues'};
+      ## any Name-Value pairs (a Name-Value region starts at the first option).
+      rest = args(2:end);
+      optNames = {'ReplaceValues', 'IncludedEdge'};
       nvStart = numel (rest) + 1;
       for k = 1:numel (rest)
         a = rest{k};
@@ -6361,14 +6466,16 @@ classdef table
         hasDataVars = false;
       endif
 
-      dfValues = {true};
-      replaceVals = parsePairedArguments (optNames, dfValues, nvArgs(:));
+      dfValues = {true, 'left'};
+      [replaceVals, incEdge] = ...
+                  parsePairedArguments (optNames, dfValues, nvArgs(:));
       if (! (isscalar (replaceVals)
              && (islogical (replaceVals) || isnumeric (replaceVals))))
         error (strcat ("table.grouptransform: 'ReplaceValues' must be a", ...
                        " logical scalar."));
       endif
       replaceVals = logical (replaceVals);
+      incEdge = check_included_edge ('grouptransform', incEdge);
 
       ## Resolve grouping and data variables.  The default data variables are all
       ## variables that are not grouping variables.
@@ -6384,9 +6491,18 @@ classdef table
         dIx(ismember (dIx, gIx)) = [];
       endif
 
-      ## Group the rows, treating missing grouping values as their own groups so
+      ## Bin the grouping variables when a GROUPBINS argument was given, then
+      ## group the rows, treating missing grouping values as their own groups so
       ## that every row belongs to exactly one group.
-      [Grp, ng, ~, errmsg] = gs_group_rows (T.VariableValues(gIx), true);
+      grpCols = T.VariableValues(gIx);
+      if (hasGroupbins)
+        [grpCols, errmsg] = bin_groupvars (grpCols, T.VariableNames(gIx), ...
+                                           groupbins, incEdge, 'grouptransform');
+        if (! isempty (errmsg))
+          error ("table.grouptransform: %s", errmsg);
+        endif
+      endif
+      [Grp, ng, ~, errmsg] = gs_group_rows (grpCols, true);
       if (! isempty (errmsg))
         error ("table.grouptransform: %s", errmsg);
       endif
@@ -6482,13 +6598,22 @@ classdef table
     ## variables as the leftmost variables of @var{P}, or @qcode{'rownames'},
     ## which places the row group labels in the @code{RowNames} property.
     ##
+    ## @item @qcode{'ColumnsBinMethod'}, @qcode{'RowsBinMethod'}
+    ## A binning scheme applied to the @qcode{'Columns'} or @qcode{'Rows'}
+    ## grouping variables before pivoting: a vector of bin edges or a positive
+    ## integer number of equal-width bins, applied to a numeric, datetime, or
+    ## duration grouping variable, or a cell array with one scheme per variable.
+    ## Each binned variable becomes a categorical of bin interval labels.  The
+    ## default @qcode{'none'} applies no binning.
+    ##
+    ## @item @qcode{'IncludedEdge'}
+    ## Either @qcode{'left'} (the default) or @qcode{'right'}, selecting which
+    ## edge of each bin is inclusive when a binning scheme is given.
+    ##
     ## @item @qcode{'OutputFormat'}
     ## Only @qcode{'flat'} (the default) is supported; @qcode{'nested'}
     ## raises an error.
     ## @end table
-    ##
-    ## Binning the grouping variables (@qcode{'ColumnsBinMethod'},
-    ## @qcode{'RowsBinMethod'}, @qcode{'IncludedEdge'}) is not yet supported.
     ##
     ## @end deftypefn
     function P = pivot (T, varargin)
@@ -6518,13 +6643,9 @@ classdef table
         endif
       endif
 
-      ## Binning and the 'nested' output format are not yet supported.
-      if (! (ischar (colBin) && strcmpi (colBin, 'none')) ...
-          || ! (ischar (rowBin) && strcmpi (rowBin, 'none')))
-        error (strcat ("table.pivot: binning the grouping variables (the", ...
-                       " 'ColumnsBinMethod'/'RowsBinMethod' options) is not", ...
-                       " yet supported."));
-      endif
+      ## Validate the IncludedEdge binning option; the 'nested' output format is
+      ## not yet supported.
+      incEdge = check_included_edge ('pivot', incEdge);
       if (isa (outFmt, 'string'))
         outFmt = char (outFmt);
       endif
@@ -6623,15 +6744,40 @@ classdef table
       endif
       totalLabel = ['Overall_', methodName];
 
+      ## Bin the row/column grouping variables when a 'RowsBinMethod' or
+      ## 'ColumnsBinMethod' was given (a per-variable cell or a single scheme).
+      rowGcols = T.VariableValues(rowIx);
+      colGcols = T.VariableValues(colIx);
+      rowNone = ((ischar (rowBin) && isrow (rowBin)) ...
+                 || (isa (rowBin, 'string') && isscalar (rowBin))) ...
+                && strcmpi (char (rowBin), 'none');
+      colNone = ((ischar (colBin) && isrow (colBin)) ...
+                 || (isa (colBin, 'string') && isscalar (colBin))) ...
+                && strcmpi (char (colBin), 'none');
+      if (! rowNone && ! isempty (rowIx))
+        [rowGcols, emsg] = bin_groupvars (rowGcols, T.VariableNames(rowIx), ...
+                                          rowBin, incEdge, 'pivot');
+        if (! isempty (emsg))
+          error ("table.pivot: %s", emsg);
+        endif
+      endif
+      if (! colNone && ! isempty (colIx))
+        [colGcols, emsg] = bin_groupvars (colGcols, T.VariableNames(colIx), ...
+                                          colBin, incEdge, 'pivot');
+        if (! isempty (emsg))
+          error ("table.pivot: %s", emsg);
+        endif
+      endif
+
       ## Group the rows along each dimension.
       n = height (T);
       [rGid, nR, rLvlOf, rLevVals, ~, emsg] = ...
-              pivot_dimension (T.VariableValues(rowIx), n, incMiss, incEmpty);
+              pivot_dimension (rowGcols, n, incMiss, incEmpty);
       if (! isempty (emsg))
         error ("table.pivot: %s.", emsg);
       endif
       [cGid, nC, cLvlOf, cLevVals, cMissLvls, emsg] = ...
-              pivot_dimension (T.VariableValues(colIx), n, incMiss, incEmpty);
+              pivot_dimension (colGcols, n, incMiss, incEmpty);
       if (! isempty (emsg))
         error ("table.pivot: %s.", emsg);
       endif
@@ -9663,6 +9809,255 @@ function [lp, rp, errmsg] = key_col_proxy (lcol, rcol)
   endif
 endfunction
 
+## Recognised 'groupbins' time-unit keyword names (plus 'none').  Only 'none' is
+## currently honoured; the rest are detected so a time-unit binning argument is
+## not mistaken for a method, then reported as not yet supported.
+function kw = gb_keywords ()
+  kw = {'none', 'second', 'minute', 'hour', 'day', 'week', 'month', ...
+        'quarter', 'year', 'decade', 'century', 'dayname', 'monthname', ...
+        'dayofweek', 'dayofmonth', 'dayofyear', 'hourofday', 'weekofmonth', ...
+        'weekofyear', 'monthofyear', 'quarterofyear', 'secondofminute', ...
+        'minuteofhour'};
+endfunction
+
+## True if X is a single 'groupbins' binning-scheme element: a non-empty numeric,
+## datetime, duration, or calendarDuration array (bin edges or a bin count/width)
+## or a binning keyword char vector/string (see 'gb_keywords').
+function tf = gb_is_scheme_elem (x)
+  tf = false;
+  if ((isnumeric (x) || islogical (x)) && ! isempty (x))
+    tf = true;
+  elseif (isa (x, 'datetime') || isa (x, 'duration') ...
+          || isa (x, 'calendarDuration'))
+    tf = true;
+  elseif ((ischar (x) && isrow (x)) || (isa (x, 'string') && isscalar (x)))
+    tf = any (strcmpi (char (x), gb_keywords ()));
+  endif
+endfunction
+
+## True if X is a 'groupbins' binning specification: a single scheme element (see
+## 'gb_is_scheme_elem') or a cell array whose every element is one.  Used to tell
+## a 'groupbins' positional argument apart from a METHOD argument, since method
+## names and function handles are never binning specs.
+function tf = is_groupbins_spec (x)
+  tf = gb_is_scheme_elem (x);
+  if (! tf && iscell (x) && ! isempty (x))
+    tf = all (cellfun (@gb_is_scheme_elem, x(:)'));
+  endif
+endfunction
+
+## Normalise a 'groupbins' SCHEME into a 1-by-K cell of per-variable schemes for
+## the K grouping variables: a cell scheme must already hold one entry per
+## variable, any other scheme is applied to every grouping variable.  CALLER
+## names the method for the error message.  Returns an errmsg body emitted by the
+## caller (empty on success).
+function [schemes, errmsg] = gb_normalise_schemes (scheme, K, caller)
+  errmsg = '';
+  schemes = {};
+  if (iscell (scheme))
+    if (numel (scheme) != K)
+      errmsg = sprintf (strcat ("GROUPBINS as a cell array must hold one", ...
+                                " binning scheme per grouping variable (%d)."), ...
+                        K);
+      return;
+    endif
+    schemes = scheme(:)';
+  else
+    schemes = repmat ({scheme}, 1, K);
+  endif
+endfunction
+
+## Bin the grouping-variable columns COLS (a cell array of values) using the
+## 'groupbins' SCHEME and the IncludedEdge INCEDGE ('left'/'right').  NAMES holds
+## the variable names for error messages.  Each binnable column is replaced by a
+## categorical whose categories are the bin interval labels; a per-variable
+## scheme of 'none' leaves its column unchanged.  Returns the updated COLS and an
+## errmsg body emitted by the caller (empty on success).
+function [cols, errmsg] = bin_groupvars (cols, names, scheme, incEdge, caller)
+  errmsg = '';
+  K = numel (cols);
+  [schemes, errmsg] = gb_normalise_schemes (scheme, K, caller);
+  if (! isempty (errmsg))
+    return;
+  endif
+  for j = 1:K
+    sj = schemes{j};
+    if (((ischar (sj) && isrow (sj)) || (isa (sj, 'string') && isscalar (sj))) ...
+        && strcmpi (char (sj), 'none'))
+      continue;                     # no binning for this variable
+    endif
+    [b, errmsg] = bin_group_col (cols{j}, sj, incEdge, names{j});
+    if (! isempty (errmsg))
+      return;
+    endif
+    cols{j} = b;
+  endfor
+endfunction
+
+## Bin one grouping-variable column COL into a categorical whose categories are
+## the bin interval labels, using the binning SCHEME and the IncludedEdge INCEDGE.
+## SCHEME is a numeric scalar (number of equal-width bins) or a vector of bin
+## edges of the same type as COL (numeric, datetime, or duration); a value
+## outside the outer edges becomes <undefined>.  With INCEDGE 'left' (default)
+## bins are [e1,e2),...,[en-1,en]; with 'right' they are [e1,e2],(e2,e3],...,
+## (en-1,en].  VARNAME names the variable for error messages.  Time-unit and
+## bin-width schemes are not yet supported.  Returns an errmsg body emitted by
+## the caller (empty on success).
+function [binned, errmsg] = bin_group_col (col, scheme, incEdge, varname)
+  binned = [];
+  errmsg = '';
+
+  ## Reject the not-yet-supported time-unit and bin-width schemes up front.
+  if (((ischar (scheme) && isrow (scheme)) ...
+       || (isa (scheme, 'string') && isscalar (scheme))) ...
+      && ! strcmpi (char (scheme), 'none'))
+    errmsg = sprintf (strcat ("binning grouping variable '%s' by time unit", ...
+                              " '%s' is not yet supported; use bin edges or a", ...
+                              " number of bins."), varname, char (scheme));
+    return;
+  endif
+  if (isa (scheme, 'duration') || isa (scheme, 'calendarDuration'))
+    errmsg = sprintf (strcat ("binning grouping variable '%s' by a bin width", ...
+                              " is not yet supported; use bin edges or a", ...
+                              " number of bins."), varname);
+    return;
+  endif
+
+  ## Map COL to a numeric proxy and record its type for typed edge labels.
+  if (isa (col, 'datetime'))
+    proxy = datetime_to_datenum (col)(:);
+    ctype = 'datetime';
+  elseif (isa (col, 'duration'))
+    proxy = days (col)(:);
+    ctype = 'duration';
+  elseif (isnumeric (col) || islogical (col))
+    proxy = double (col)(:);
+    ctype = 'numeric';
+  else
+    errmsg = sprintf (strcat ("binning is not supported for grouping variable", ...
+                              " '%s' of type '%s'."), varname, class (col));
+    return;
+  endif
+
+  ## Resolve the bin edges in proxy units.
+  if (isscalar (scheme) && (isnumeric (scheme) || islogical (scheme)))
+    nb = double (scheme);
+    if (! (nb >= 1 && nb == fix (nb)))
+      errmsg = sprintf (strcat ("the number of bins for grouping variable", ...
+                                " '%s' must be a positive integer."), varname);
+      return;
+    endif
+    good = proxy(! isnan (proxy));
+    if (isempty (good))
+      edgesP = [0, 1];
+    elseif (min (good) == max (good))
+      edgesP = [min(good), min(good) + 1];
+    else
+      edgesP = min (good) + (0:nb) * (max (good) - min (good)) / nb;
+    endif
+  elseif (isnumeric (scheme))
+    if (! strcmp (ctype, 'numeric'))
+      errmsg = sprintf (strcat ("bin edges for grouping variable '%s' must be", ...
+                                " of type '%s'."), varname, ctype);
+      return;
+    endif
+    edgesP = sort (double (scheme(:)'));
+  elseif (isa (scheme, 'datetime'))
+    if (! strcmp (ctype, 'datetime'))
+      errmsg = sprintf (strcat ("bin edges for grouping variable '%s' must be", ...
+                                " of type '%s'."), varname, ctype);
+      return;
+    endif
+    edgesP = sort (datetime_to_datenum (scheme)(:)');
+  else
+    errmsg = sprintf ("invalid binning scheme for grouping variable '%s'.", ...
+                      varname);
+    return;
+  endif
+  if (numel (edgesP) < 2 || any (isnan (edgesP)) || any (diff (edgesP) <= 0))
+    errmsg = sprintf (strcat ("bin edges for grouping variable '%s' must be at", ...
+                              " least two finite, strictly increasing values."), ...
+                      varname);
+    return;
+  endif
+  nb = numel (edgesP) - 1;
+
+  ## Assign each row to a bin (out-of-range -> <undefined>).
+  left = ! strcmpi (incEdge, 'right');
+  idx = NaN (numel (proxy), 1);
+  for k = 1:nb
+    if (left)
+      if (k < nb)
+        in = proxy >= edgesP(k) & proxy < edgesP(k+1);
+      else
+        in = proxy >= edgesP(k) & proxy <= edgesP(k+1);
+      endif
+    else
+      if (k == 1)
+        in = proxy >= edgesP(k) & proxy <= edgesP(k+1);
+      else
+        in = proxy > edgesP(k) & proxy <= edgesP(k+1);
+      endif
+    endif
+    idx(in) = k;
+  endfor
+
+  ## Build the interval labels and the categorical.
+  estr = bin_edge_labels (edgesP, ctype);
+  labs = cell (1, nb);
+  for k = 1:nb
+    if (left)
+      br = '[';  bl = ')';
+      if (k == nb)
+        bl = ']';
+      endif
+    else
+      br = '(';  bl = ']';
+      if (k == 1)
+        br = '[';
+      endif
+    endif
+    labs{k} = sprintf ("%s%s, %s%s", br, estr{k}, estr{k+1}, bl);
+  endfor
+  rowLab = repmat ({''}, numel (idx), 1);
+  ok = ! isnan (idx);
+  rowLab(ok) = labs(idx(ok));
+  binned = categorical (rowLab, labs);
+endfunction
+
+## Format the bin edges EDGESP (numeric proxy values) as a cell array of label
+## strings of the type CTYPE: numeric edges through 'bin_num_str', datetime and
+## duration edges through their displayed text.
+function s = bin_edge_labels (edgesP, ctype)
+  n = numel (edgesP);
+  s = cell (1, n);
+  switch (ctype)
+    case 'datetime'
+      dt = datetime (edgesP(:), 'ConvertFrom', 'datenum');
+      for i = 1:n
+        s{i} = char (dt(i));
+      endfor
+    case 'duration'
+      for i = 1:n
+        s{i} = char (days (edgesP(i)));
+      endfor
+    otherwise
+      for i = 1:n
+        s{i} = bin_num_str (edgesP(i));
+      endfor
+  endswitch
+endfunction
+
+## Format a numeric bin-edge value V for an interval label: an integer prints
+## without a decimal point, anything else through 'num2str'.
+function s = bin_num_str (v)
+  if (isfinite (v) && v == fix (v) && abs (v) < 1e15)
+    s = sprintf ("%d", v);
+  else
+    s = num2str (v);
+  endif
+endfunction
+
 ## Build a single-column grouping proxy for one grouping variable COL: a numeric
 ## matrix P (one row per element) whose sort order matches COL's value order, so
 ## that 'unique (P, "rows")' recovers the sorted unique groups, together with a
@@ -9981,6 +10376,43 @@ function [G, ngroups, repRows, errmsg] = gs_group_rows (grpCols, incMiss)
   repRows = reps;
 endfunction
 
+## Group the rows of 'groupsummary'/'groupcounts' by the grouping-variable values
+## GRPCOLS (already binned when a GROUPBINS argument was given).  Returns G, the
+## n-by-1 group numbers (NaN for an excluded row), NG the number of groups, GCOLS
+## a 1-by-K cell of the typed grouping-variable output columns (one value per
+## group), and an errmsg body emitted by the caller.  When INCEMPTY is true the
+## unused categories of a categorical (or binned) grouping variable contribute
+## empty groups, built from the full level machinery; otherwise only the observed
+## groups are returned, in ascending grouping-value order with missing groups
+## last.
+function [G, ng, gcols, errmsg] = gs_grouping (grpCols, incMiss, incEmpty)
+  errmsg = '';
+  gcols = {};
+  K = numel (grpCols);
+  n = size (grpCols{1}, 1);
+  if (incEmpty)
+    [G, ng, lvlOf, levVals, ~, errmsg] = ...
+            pivot_dimension (grpCols, n, incMiss, true);
+    if (! isempty (errmsg))
+      G = []; ng = 0;
+      return;
+    endif
+    gcols = cell (1, K);
+    for j = 1:K
+      gcols{j} = levVals{j}(lvlOf(:,j), :);
+    endfor
+  else
+    [G, ng, repRows, errmsg] = gs_group_rows (grpCols, incMiss);
+    if (! isempty (errmsg))
+      return;
+    endif
+    gcols = cell (1, K);
+    for j = 1:K
+      gcols{j} = grpCols{j}(repRows, :);
+    endfor
+  endif
+endfunction
+
 ## Apply a single 'groupsummary' method M (a method-name char vector or a
 ## function handle) to the column slice X of one group, returning a row result V.
 ## Named methods omit missing values (except 'nummissing'); a function handle
@@ -10024,6 +10456,16 @@ function [v, errmsg] = gs_apply_method (m, x)
     return;
   endif
   x = double (x);
+  ## An empty group (e.g. an unused IncludeEmptyGroups category) takes the
+  ## method's empty value: 0 for the additive 'sum'/'nnz', NaN otherwise.
+  if (rows (x) == 0)
+    if (any (strcmp (m, {'sum', 'nnz'})))
+      v = zeros (1, columns (x));
+    else
+      v = NaN (1, columns (x));
+    endif
+    return;
+  endif
   nan = isnan (x);
   cnt = sum (! nan, 1);
   z = x;
@@ -10349,6 +10791,19 @@ function [col, ok] = pivot_append_label (col, label)
   else
     ok = false;
   endif
+endfunction
+
+## Validate an 'IncludedEdge' binning option VAL for method CALLER, returning it
+## lowercased as 'left' or 'right'.
+function e = check_included_edge (caller, val)
+  if (isa (val, 'string') && isscalar (val))
+    val = char (val);
+  endif
+  if (! (ischar (val) && isrow (val) ...
+         && any (strcmpi (val, {'left', 'right'}))))
+    error ("table.%s: 'IncludedEdge' must be 'left' or 'right'.", caller);
+  endif
+  e = lower (val);
 endfunction
 
 ## Validate a logical-scalar 'pivot' option VAL named NAME, returning it as a

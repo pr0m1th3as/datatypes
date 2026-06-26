@@ -17,7 +17,8 @@
 
 ## -*- texinfo -*-
 ## @deftypefn  {datatypes} {@var{B} =} grouptransform (@var{A}, @var{groupvars}, @var{method})
-## @deftypefnx {datatypes} {[@var{B}, @var{BG}] =} grouptransform (@var{A}, @var{groupvars}, @var{method})
+## @deftypefnx {datatypes} {@var{B} =} grouptransform (@var{A}, @var{groupvars}, @var{groupbins}, @var{method})
+## @deftypefnx {datatypes} {[@var{B}, @var{BG}] =} grouptransform (@dots{})
 ## @deftypefnx {datatypes} {[@dots{}] =} grouptransform (@dots{}, @var{Name}, @var{Value})
 ##
 ## Transform the columns of an array group by group.
@@ -51,8 +52,11 @@
 ##
 ## The @qcode{'ReplaceValues'} @var{Name}/@var{Value} pair (default @code{true})
 ## controls whether the transformed values replace the columns of @var{A} or, when
-## @code{false}, are appended to them.  Binning the grouping variables (the
-## @var{groupbins} argument) is not yet supported.
+## @code{false}, are appended to them.  The optional @var{groupbins} argument bins
+## the grouping variables before grouping (a vector of bin edges or a positive
+## integer number of bins, or a cell array with one scheme per grouping variable);
+## see @code{groupsummary} for details.  The @qcode{'IncludedEdge'} pair
+## (@qcode{'left'} by default, or @qcode{'right'}) selects the inclusive bin edge.
 ##
 ## To transform the variables of a @code{table}, call @code{grouptransform
 ## (@var{T}, @var{groupvars}, @dots{})}, which dispatches to the @code{table}
@@ -66,10 +70,20 @@ function [B, varargout] = grouptransform (A, groupvars, varargin)
     print_usage ();
   endif
 
-  ## The transform method is the first trailing argument: a known method name or
-  ## a function handle.  Binning (a GROUPBINS argument in its place) is not yet
-  ## supported.
-  method = varargin{1};
+  ## An optional GROUPBINS positional argument precedes the transform METHOD (a
+  ## known method name or a function handle).
+  args = varargin;
+  hasGB = false;
+  groupbins = [];
+  if (! isempty (args) && is_groupbins_spec (args{1}))
+    hasGB = true;
+    groupbins = args{1};
+    args = args(2:end);
+  endif
+  if (isempty (args))
+    print_usage ();
+  endif
+  method = args{1};
   knownMethods = {'zscore', 'norm', 'meancenter', 'rescale', ...
                   'meanfill', 'linearfill'};
   if (is_function_handle (method))
@@ -81,14 +95,14 @@ function [B, varargout] = grouptransform (A, groupvars, varargin)
   else
     error (strcat ("grouptransform: METHOD must be one of 'zscore', 'norm',", ...
                    " 'meancenter', 'rescale', 'meanfill', 'linearfill', or a", ...
-                   " function handle; binning (the GROUPBINS argument) is not", ...
-                   " yet supported."));
+                   " function handle."));
   endif
 
-  ## Anything after METHOD must be the 'ReplaceValues' Name-Value pair (the array
-  ## form has no DATAVARS argument; A's columns are the data).
-  rest = varargin(2:end);
-  optNames = {'ReplaceValues'};
+  ## Anything after METHOD must be the 'ReplaceValues' or 'IncludedEdge'
+  ## Name-Value pair (the array form has no DATAVARS argument; A's columns are
+  ## the data).
+  rest = args(2:end);
+  optNames = {'ReplaceValues', 'IncludedEdge'};
   nvStart = numel (rest) + 1;
   for k = 1:numel (rest)
     a = rest{k};
@@ -101,13 +115,14 @@ function [B, varargout] = grouptransform (A, groupvars, varargin)
   if (nvStart > 1)
     error ("grouptransform: too many positional arguments.");
   endif
-  dfValues = {true};
-  replaceVals = parsePairedArguments (optNames, dfValues, rest(:));
+  dfValues = {true, 'left'};
+  [replaceVals, incEdge] = parsePairedArguments (optNames, dfValues, rest(:));
   if (! (isscalar (replaceVals)
          && (islogical (replaceVals) || isnumeric (replaceVals))))
     error ("grouptransform: 'ReplaceValues' must be a logical scalar.");
   endif
   replaceVals = logical (replaceVals);
+  incEdge = check_included_edge ('grouptransform', incEdge);
 
   ## Force the grouping variables to a cell array of column vectors.
   if (iscell (groupvars)
@@ -133,6 +148,19 @@ function [B, varargout] = grouptransform (A, groupvars, varargin)
                      " element per row of A."));
     endif
   endfor
+
+  ## Bin the grouping variables when a GROUPBINS argument was given.
+  if (hasGB)
+    names = cell (1, numel (gvs));
+    for j = 1:numel (gvs)
+      names{j} = sprintf ("%d", j);
+    endfor
+    [gvs, errmsg] = bin_groupvars (gvs, names, groupbins, incEdge, ...
+                                   'grouptransform');
+    if (! isempty (errmsg))
+      error ("grouptransform: %s", errmsg);
+    endif
+  endif
 
   ## Group the rows, treating missing grouping values as their own groups so
   ## that every row belongs to exactly one group.
@@ -316,6 +344,251 @@ function [p, miss, errmsg] = gt_col_proxy (col)
   endif
 endfunction
 
+## Validate an 'IncludedEdge' binning option VAL for CALLER, returning it
+## lowercased as 'left' or 'right'.  Self-contained: no table dependency.
+function e = check_included_edge (caller, val)
+  if (isa (val, 'string') && isscalar (val))
+    val = char (val);
+  endif
+  if (! (ischar (val) && isrow (val) ...
+         && any (strcmpi (val, {'left', 'right'}))))
+    error ("%s: 'IncludedEdge' must be 'left' or 'right'.", caller);
+  endif
+  e = lower (val);
+endfunction
+
+## Recognised 'groupbins' time-unit keyword names (plus 'none').  Only 'none' is
+## currently honoured; the rest are detected so a time-unit binning argument is
+## not mistaken for an option, then reported as not yet supported.
+function kw = gb_keywords ()
+  kw = {'none', 'second', 'minute', 'hour', 'day', 'week', 'month', ...
+        'quarter', 'year', 'decade', 'century', 'dayname', 'monthname', ...
+        'dayofweek', 'dayofmonth', 'dayofyear', 'hourofday', 'weekofmonth', ...
+        'weekofyear', 'monthofyear', 'quarterofyear', 'secondofminute', ...
+        'minuteofhour'};
+endfunction
+
+## True if X is a single 'groupbins' binning-scheme element.
+function tf = gb_is_scheme_elem (x)
+  tf = false;
+  if ((isnumeric (x) || islogical (x)) && ! isempty (x))
+    tf = true;
+  elseif (isa (x, 'datetime') || isa (x, 'duration') ...
+          || isa (x, 'calendarDuration'))
+    tf = true;
+  elseif ((ischar (x) && isrow (x)) || (isa (x, 'string') && isscalar (x)))
+    tf = any (strcmpi (char (x), gb_keywords ()));
+  endif
+endfunction
+
+## True if X is a 'groupbins' binning specification: a single scheme element or a
+## cell array whose every element is one.
+function tf = is_groupbins_spec (x)
+  tf = gb_is_scheme_elem (x);
+  if (! tf && iscell (x) && ! isempty (x))
+    tf = all (cellfun (@gb_is_scheme_elem, x(:)'));
+  endif
+endfunction
+
+## Normalise a 'groupbins' SCHEME into a 1-by-K cell of per-variable schemes.
+## Returns an errmsg body emitted by the caller.
+function [schemes, errmsg] = gb_normalise_schemes (scheme, K)
+  errmsg = '';
+  schemes = {};
+  if (iscell (scheme))
+    if (numel (scheme) != K)
+      errmsg = sprintf (strcat ("GROUPBINS as a cell array must hold one", ...
+                                " binning scheme per grouping variable (%d)."), ...
+                        K);
+      return;
+    endif
+    schemes = scheme(:)';
+  else
+    schemes = repmat ({scheme}, 1, K);
+  endif
+endfunction
+
+## Bin the grouping-variable columns COLS using the 'groupbins' SCHEME and the
+## IncludedEdge INCEDGE.  NAMES holds the variable names for error messages.
+## Returns the updated COLS and an errmsg body emitted by the caller.
+function [cols, errmsg] = bin_groupvars (cols, names, scheme, incEdge, caller)
+  errmsg = '';
+  K = numel (cols);
+  [schemes, errmsg] = gb_normalise_schemes (scheme, K);
+  if (! isempty (errmsg))
+    return;
+  endif
+  for j = 1:K
+    sj = schemes{j};
+    if (((ischar (sj) && isrow (sj)) || (isa (sj, 'string') && isscalar (sj))) ...
+        && strcmpi (char (sj), 'none'))
+      continue;
+    endif
+    [b, errmsg] = bin_group_col (cols{j}, sj, incEdge, names{j});
+    if (! isempty (errmsg))
+      return;
+    endif
+    cols{j} = b;
+  endfor
+endfunction
+
+## Map a datetime COL to a column vector of datenum proxy values (NaT -> NaN).
+function dn = gb_datetime_to_datenum (v)
+  DV = datevec (v);
+  nat = any (isnan (DV), 2);
+  DV(nat,:) = 0;
+  DV(nat,2:3) = 1;
+  dn = datenum (DV);
+  dn(nat) = NaN;
+  dn = dn(:);
+endfunction
+
+## Bin one grouping-variable column COL into a categorical of bin interval
+## labels, using the binning SCHEME and the IncludedEdge INCEDGE.  VARNAME names
+## the variable for error messages.  Time-unit and bin-width schemes are not yet
+## supported.  Returns an errmsg body emitted by the caller.
+function [binned, errmsg] = bin_group_col (col, scheme, incEdge, varname)
+  binned = [];
+  errmsg = '';
+  if (((ischar (scheme) && isrow (scheme)) ...
+       || (isa (scheme, 'string') && isscalar (scheme))) ...
+      && ! strcmpi (char (scheme), 'none'))
+    errmsg = sprintf (strcat ("binning grouping variable '%s' by time unit", ...
+                              " '%s' is not yet supported; use bin edges or a", ...
+                              " number of bins."), varname, char (scheme));
+    return;
+  endif
+  if (isa (scheme, 'duration') || isa (scheme, 'calendarDuration'))
+    errmsg = sprintf (strcat ("binning grouping variable '%s' by a bin width", ...
+                              " is not yet supported; use bin edges or a", ...
+                              " number of bins."), varname);
+    return;
+  endif
+  if (isa (col, 'datetime'))
+    proxy = gb_datetime_to_datenum (col);
+    ctype = 'datetime';
+  elseif (isa (col, 'duration'))
+    proxy = days (col)(:);
+    ctype = 'duration';
+  elseif (isnumeric (col) || islogical (col))
+    proxy = double (col)(:);
+    ctype = 'numeric';
+  else
+    errmsg = sprintf (strcat ("binning is not supported for grouping variable", ...
+                              " '%s' of type '%s'."), varname, class (col));
+    return;
+  endif
+  if (isscalar (scheme) && (isnumeric (scheme) || islogical (scheme)))
+    nb = double (scheme);
+    if (! (nb >= 1 && nb == fix (nb)))
+      errmsg = sprintf (strcat ("the number of bins for grouping variable", ...
+                                " '%s' must be a positive integer."), varname);
+      return;
+    endif
+    good = proxy(! isnan (proxy));
+    if (isempty (good))
+      edgesP = [0, 1];
+    elseif (min (good) == max (good))
+      edgesP = [min(good), min(good) + 1];
+    else
+      edgesP = min (good) + (0:nb) * (max (good) - min (good)) / nb;
+    endif
+  elseif (isnumeric (scheme))
+    if (! strcmp (ctype, 'numeric'))
+      errmsg = sprintf (strcat ("bin edges for grouping variable '%s' must be", ...
+                                " of type '%s'."), varname, ctype);
+      return;
+    endif
+    edgesP = sort (double (scheme(:)'));
+  elseif (isa (scheme, 'datetime'))
+    if (! strcmp (ctype, 'datetime'))
+      errmsg = sprintf (strcat ("bin edges for grouping variable '%s' must be", ...
+                                " of type '%s'."), varname, ctype);
+      return;
+    endif
+    edgesP = sort (gb_datetime_to_datenum (scheme)');
+  else
+    errmsg = sprintf ("invalid binning scheme for grouping variable '%s'.", ...
+                      varname);
+    return;
+  endif
+  if (numel (edgesP) < 2 || any (isnan (edgesP)) || any (diff (edgesP) <= 0))
+    errmsg = sprintf (strcat ("bin edges for grouping variable '%s' must be at", ...
+                              " least two finite, strictly increasing values."), ...
+                      varname);
+    return;
+  endif
+  nb = numel (edgesP) - 1;
+  left = ! strcmpi (incEdge, 'right');
+  idx = NaN (numel (proxy), 1);
+  for k = 1:nb
+    if (left)
+      if (k < nb)
+        in = proxy >= edgesP(k) & proxy < edgesP(k+1);
+      else
+        in = proxy >= edgesP(k) & proxy <= edgesP(k+1);
+      endif
+    else
+      if (k == 1)
+        in = proxy >= edgesP(k) & proxy <= edgesP(k+1);
+      else
+        in = proxy > edgesP(k) & proxy <= edgesP(k+1);
+      endif
+    endif
+    idx(in) = k;
+  endfor
+  estr = bin_edge_labels (edgesP, ctype);
+  labs = cell (1, nb);
+  for k = 1:nb
+    if (left)
+      br = '[';  bl = ')';
+      if (k == nb)
+        bl = ']';
+      endif
+    else
+      br = '(';  bl = ']';
+      if (k == 1)
+        br = '[';
+      endif
+    endif
+    labs{k} = sprintf ("%s%s, %s%s", br, estr{k}, estr{k+1}, bl);
+  endfor
+  rowLab = repmat ({''}, numel (idx), 1);
+  ok = ! isnan (idx);
+  rowLab(ok) = labs(idx(ok));
+  binned = categorical (rowLab, labs);
+endfunction
+
+## Format the bin edges EDGESP (numeric proxy values) as label strings of CTYPE.
+function s = bin_edge_labels (edgesP, ctype)
+  n = numel (edgesP);
+  s = cell (1, n);
+  switch (ctype)
+    case 'datetime'
+      dt = datetime (edgesP(:), 'ConvertFrom', 'datenum');
+      for i = 1:n
+        s{i} = char (dt(i));
+      endfor
+    case 'duration'
+      for i = 1:n
+        s{i} = char (days (edgesP(i)));
+      endfor
+    otherwise
+      for i = 1:n
+        s{i} = bin_num_str (edgesP(i));
+      endfor
+  endswitch
+endfunction
+
+## Format a numeric bin-edge value V for an interval label.
+function s = bin_num_str (v)
+  if (isfinite (v) && v == fix (v) && abs (v) < 1e15)
+    s = sprintf ("%d", v);
+  else
+    s = num2str (v);
+  endif
+endfunction
+
 %!test
 %! ## 'meancenter' subtracts the group mean
 %! g = [1; 1; 1; 2; 2];
@@ -382,9 +655,28 @@ endfunction
 %! assert_equal (B, [-20; -10; -5; 5; 30]);
 %! assert_equal (BG, {[1; 1; 2; 2; 1], {'a'; 'a'; 'b'; 'b'; 'a'}});
 
+%!test
+%! ## A GROUPBINS edge vector bins the grouping variable before transforming
+%! x = [10; 20; 30; 40];
+%! v = [1; 2; 3; 4];
+%! [B, BG] = grouptransform (x, v, [0 2.5 5], 'meancenter');
+%! assert_equal (B, [-5; 5; -5; 5]);
+%! assert_equal (iscategorical (BG), true);
+%! assert_equal (cellstr (BG), {'[0, 2.5)'; '[0, 2.5)'; '[2.5, 5]'; '[2.5, 5]'});
+%!test
+%! ## A GROUPBINS number of bins makes equal-width bins over the data range
+%! x = [10; 20; 30; 40];
+%! v = [1; 2; 3; 4];
+%! B = grouptransform (x, v, 2, 'meancenter');
+%! assert_equal (B, [-5; 5; -5; 5]);
+
 %!error <Invalid call> grouptransform ([1; 2], [1; 2])
-%!error <grouptransform: METHOD must be one of 'zscore', 'norm', 'meancenter', 'rescale', 'meanfill', 'linearfill', or a function handle; binning \(the GROUPBINS argument\) is not yet supported.> ...
+%!error <grouptransform: METHOD must be one of 'zscore', 'norm', 'meancenter', 'rescale', 'meanfill', 'linearfill', or a function handle.> ...
 %! grouptransform ([1; 2], [1; 2], 'bogus')
+%!error <grouptransform: 'IncludedEdge' must be 'left' or 'right'.> ...
+%! grouptransform ([1; 2], [1; 2], 2, 'zscore', 'IncludedEdge', 'mid')
+%!error <grouptransform: binning grouping variable '1' by time unit 'month' is not yet supported; use bin edges or a number of bins.> ...
+%! grouptransform ([1; 2], [1; 2], 'month', 'meancenter')
 %!error <grouptransform: 'ReplaceValues' must be a logical scalar.> ...
 %! grouptransform ([1; 2], [1; 2], 'zscore', 'ReplaceValues', 'yes')
 %!error <grouptransform: too many positional arguments.> ...
