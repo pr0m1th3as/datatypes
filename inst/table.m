@@ -6157,16 +6157,100 @@ classdef table
       G = table (vars{:}, 'VariableNames', names);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {table} {@var{G} =} groupfilter (@var{T}, @var{groupvars}, @var{method})
+    ## @deftypefnx {table} {@var{G} =} groupfilter (@var{T}, @var{groupvars}, @var{method}, @var{datavars})
+    ##
+    ## Filter the rows of a table by a per-group condition.
+    ##
+    ## @code{@var{G} = groupfilter (@var{T}, @var{groupvars}, @var{method})} groups
+    ## the rows of the table @var{T} by the grouping variables @var{groupvars},
+    ## applies the filter function @var{method} to each group, and returns the
+    ## table @var{G} holding the rows that satisfy the condition, in their original
+    ## order and with all the variables of @var{T}.  @var{groupvars} selects the
+    ## grouping variables by name, index, logical vector, function handle, or
+    ## @code{vartype} subscript.
+    ##
+    ## @var{method} is a function handle applied to each group's slice of every
+    ## data variable.  It must return either a logical scalar, which keeps or drops
+    ## the whole group, or a logical vector with one element per row of the group,
+    ## which keeps or drops the individual rows.  A row is kept only when the
+    ## condition holds for it across all data variables.
+    ##
+    ## @code{@var{G} = groupfilter (@var{T}, @var{groupvars}, @var{method},
+    ## @var{datavars})} applies @var{method} only to the data variables selected by
+    ## @var{datavars} (named, indexed, logical, function handle, or @code{vartype}
+    ## subscript).  By default every variable that is not a grouping variable is a
+    ## data variable.
+    ##
+    ## Rows holding a missing value in a grouping variable form their own groups,
+    ## to which @var{method} is applied like any other group.  Binning the grouping
+    ## variables (the @var{groupbins} argument) is not yet supported.
+    ##
+    ## @end deftypefn
+    function G = groupfilter (T, groupvars, varargin)
+      if (nargin < 3)
+        print_usage ();
+      endif
+
+      ## The filter function is the first argument after GROUPVARS.  Binning (a
+      ## GROUPBINS argument in its place) is not yet supported.
+      method = varargin{1};
+      if (! is_function_handle (method))
+        error (strcat ("table.groupfilter: METHOD must be a function handle;", ...
+                       " binning (the GROUPBINS argument) is not yet", ...
+                       " supported."));
+      endif
+
+      ## An optional DATAVARS argument may follow the filter function.
+      rest = varargin(2:end);
+      if (numel (rest) > 1)
+        error ("table.groupfilter: too many positional arguments.");
+      endif
+      if (numel (rest) == 1)
+        datavars = rest{1};
+        hasDataVars = true;
+      else
+        datavars = [];
+        hasDataVars = false;
+      endif
+
+      ## Resolve grouping and data variables.  The default data variables are all
+      ## variables that are not grouping variables.
+      gIx = resolveVarRef (T, groupvars)(:)';
+      if (isempty (gIx))
+        error (strcat ("table.groupfilter: at least one grouping variable", ...
+                       " is required."));
+      endif
+      if (hasDataVars)
+        dIx = resolveVarRef (T, datavars)(:)';
+      else
+        dIx = 1:width (T);
+        dIx(ismember (dIx, gIx)) = [];
+      endif
+
+      ## Group the rows, treating missing grouping values as their own groups so
+      ## that every row belongs to exactly one group.
+      [Grp, ng, ~, errmsg] = gs_group_rows (T.VariableValues(gIx), true);
+      if (! isempty (errmsg))
+        error ("table.groupfilter: %s", errmsg);
+      endif
+
+      ## Build the row keep-mask by applying METHOD to each data variable.
+      [keep, errmsg] = gf_keep_mask (method, T.VariableValues(dIx), Grp, ng);
+      if (! isempty (errmsg))
+        error ("table.groupfilter: %s", errmsg);
+      endif
+
+      G = subsetrows (T, find (keep));
+    endfunction
+
   endmethods
 
   methods (Hidden)
 
     function out = pivot (this)
       error ("table.pivot: not implemented yet.");
-    endfunction
-
-    function out = groupfilter (this)
-      error ("table.groupfilter: not implemented yet.");
     endfunction
 
     function out = grouptransform (this)
@@ -9147,6 +9231,46 @@ function [gcols, gcount] = group_output_cols (grpCols, G, repRows)
     gcols{p} = grpCols{p}(repRows,:);
   endfor
   gcount = accumarray (G(! isnan (G)), 1, [ngroups, 1]);
+endfunction
+
+## Build the row keep-mask for 'groupfilter' by applying the filter function
+## METHOD to each data variable's per-group slice.  DATACOLS is a cell array of
+## data-variable values; G the n-by-1 group numbers (1..NG), every row assigned
+## to a group.  For each group METHOD receives the variable's slice and must
+## return a logical scalar (keep/drop the whole group) or a logical vector with
+## one element per group row.  The per-variable masks are combined with logical
+## AND, so a row is kept only when the condition holds across all data variables.
+## Returns KEEP (n-by-1 logical) and an errmsg body emitted by the caller.
+function [keep, errmsg] = gf_keep_mask (method, dataCols, G, ng)
+  errmsg = '';
+  n = numel (G);
+  keep = true (n, 1);
+  for d = 1:numel (dataCols)
+    col = dataCols{d};
+    for g = 1:ng
+      rows = find (G == g);
+      if (isempty (rows))
+        continue;
+      endif
+      r = method (col(rows,:));
+      if (! (islogical (r) || isnumeric (r)))
+        errmsg = "the filter function must return a logical result.";
+        return;
+      endif
+      r = logical (r(:));
+      if (isscalar (r))
+        m = repmat (r, numel (rows), 1);
+      elseif (numel (r) == numel (rows))
+        m = r;
+      else
+        errmsg = strcat ("the filter function must return a logical scalar", ...
+                         " or a logical vector with one element per group", ...
+                         " row.");
+        return;
+      endif
+      keep(rows) = keep(rows) & m;
+    endfor
+  endfor
 endfunction
 
 ## Normalise the 'groupsummary' METHOD argument into a cell array of method specs

@@ -4696,6 +4696,69 @@
 %!error <table.groupcounts: binning \(the GROUPBINS argument\) is not yet supported.> ...
 %! groupcounts (table ([1; 2], 'VariableNames', {'g'}), 'g', 3)
 
+## 'groupfilter' with a scalar-returning method keeps or drops whole groups
+%!test
+%! T = table ([1; 1; 1; 2; 2; 3], [3; 1; 2; 9; 8; 5], ...
+%!            'VariableNames', {'g', 'x'});
+%! G = groupfilter (T, 'g', @(x) numel (x) > 2);
+%! assert_equal (G.Properties.VariableNames, {'g', 'x'});
+%! assert_equal (G.g, [1; 1; 1]);
+%! assert_equal (G.x, [3; 1; 2]);
+
+## A vector-returning method keeps individual rows within each group
+%!test
+%! T = table ([1; 1; 1; 1; 2; 2; 2; 2], [67; 65; 71; 55; 61; 79; 58; 78], ...
+%!            'VariableNames', {'d', 't'});
+%! G = groupfilter (T, 'd', @(x) x == max (x));
+%! assert_equal (G.d, [1; 2]);
+%! assert_equal (G.t, [71; 79]);
+
+## Output rows keep their original order, not group order
+%!test
+%! T = table ([2; 1; 2; 1], [1; 2; 3; 4], 'VariableNames', {'g', 'x'});
+%! G = groupfilter (T, 'g', @(x) numel (x) >= 1);
+%! assert_equal (G.x, [1; 2; 3; 4]);
+
+## A row is kept only when the condition holds across all data variables
+%!test
+%! T = table ([1; 1; 2; 2], [5; 1; 9; 2], [1; 9; 1; 9], ...
+%!            'VariableNames', {'g', 'x', 'y'});
+%! G = groupfilter (T, 'g', @(v) v > 3);
+%! assert_equal (G.x, zeros (0, 1));
+
+## 'DataVars' restricts the variables the filter operates on
+%!test
+%! T = table ([1; 1; 2; 2], [5; 1; 9; 2], [1; 9; 1; 9], ...
+%!            'VariableNames', {'g', 'x', 'y'});
+%! G = groupfilter (T, 'g', @(v) v > 3, 'x');
+%! assert_equal (G.x, [5; 9]);
+%! assert_equal (G.y, [1; 1]);
+
+## Rows with a missing grouping value form their own group and are filtered too
+%!test
+%! T = table ([1; 1; NaN; 2; 2], [10; 20; 30; 40; 50], ...
+%!            'VariableNames', {'g', 'x'});
+%! G = groupfilter (T, 'g', @(v) mean (v) > 25);
+%! assert_equal (G.g, [NaN; 2; 2]);
+%! assert_equal (G.x, [30; 40; 50]);
+
+## A categorical grouping variable groups by category
+%!test
+%! T = table (categorical ({'a'; 'b'; 'a'; 'b'; 'a'}), [1; 5; 2; 6; 9], ...
+%!            'VariableNames', {'g', 'x'});
+%! G = groupfilter (T, 'g', @(x) x == max (x));
+%! assert_equal (cellstr (G.g), {'b'; 'a'});
+%! assert_equal (G.x, [6; 9]);
+
+%!error <table.groupfilter: METHOD must be a function handle; binning \(the GROUPBINS argument\) is not yet supported.> ...
+%! groupfilter (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', 'month')
+%!error <table.groupfilter: too many positional arguments.> ...
+%! groupfilter (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', @(x) x > 0, 'x', 5)
+%!error <table.groupfilter: at least one grouping variable is required.> ...
+%! groupfilter (table ([1; 2], 'VariableNames', {'g'}), false, @(x) x > 0)
+%!error <table.groupfilter: the filter function must return a logical scalar or a logical vector with one element per group row.> ...
+%! groupfilter (table ([1; 1], [3; 4], 'VariableNames', {'g', 'x'}), 'g', @(x) [true; true; true])
+
 ################################################################################
 ##                       **    Auxiliary Methods    **                        ##
 ################################################################################
