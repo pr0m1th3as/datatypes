@@ -5861,7 +5861,7 @@ classdef table
     ## @table @asis
     ## @item @qcode{'sum'}, @qcode{'mean'}, @qcode{'median'}, @qcode{'mode'}
     ## @itemx @qcode{'var'}, @qcode{'std'}, @qcode{'min'}, @qcode{'max'}
-    ## @itemx @qcode{'range'}, @qcode{'nnz'}, @qcode{'all'}, @qcode{'any'}
+    ## @itemx @qcode{'range'}, @qcode{'nnz'}
     ## Standard statistics, computed over numeric or logical data variables.
     ## @code{NaN} values are omitted (as in MATLAB) for every named method except
     ## @qcode{'nummissing'}.
@@ -9034,7 +9034,7 @@ function [methods, methNames, errmsg] = gs_normalise_methods (method)
     return;
   endif
   known = {'sum', 'mean', 'median', 'mode', 'var', 'std', 'min', 'max', ...
-           'range', 'nnz', 'all', 'any', 'nummissing', 'numunique'};
+           'range', 'nnz', 'nummissing', 'numunique'};
   nfun = 0;
   for k = 1:numel (items)
     it = items{k};
@@ -9171,16 +9171,6 @@ function [v, errmsg] = gs_apply_method (m, x)
       v = max (x, [], 1) - min (x, [], 1);
     case 'nnz'
       v = sum (x != 0 & ! nan, 1);
-    case 'all'
-      v = true (1, size (x, 2));
-      for c = 1:size (x, 2)
-        v(c) = all (x(! nan(:,c), c));
-      endfor
-    case 'any'
-      v = false (1, size (x, 2));
-      for c = 1:size (x, 2)
-        v(c) = any (x(! nan(:,c), c));
-      endfor
     case {'median', 'mode', 'var', 'std'}
       v = NaN (1, size (x, 2));
       for c = 1:size (x, 2)

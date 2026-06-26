@@ -4167,13 +4167,11 @@
 %! assert_equal (G.median_x, [20; 35]);
 %! assert_equal (G.mode_x, [10; 30]);
 
-## 'nnz', 'all', and 'any' omit NaN and treat zeros as false
+## 'nnz' counts the nonzero values in the group, omitting NaN
 %!test
 %! T = table ([1; 1; 2; 2], [0; 2; 0; 0], 'VariableNames', {'g', 'x'});
-%! G = groupsummary (T, 'g', {'nnz', 'all', 'any'});
+%! G = groupsummary (T, 'g', 'nnz');
 %! assert_equal (G.nnz_x, [1; 0]);
-%! assert_equal (G.all_x, [false; false]);
-%! assert_equal (G.any_x, [true; false]);
 
 ## Named methods omit NaN in the data; 'nummissing' counts them
 %!test
