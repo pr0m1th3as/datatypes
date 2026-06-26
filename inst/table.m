@@ -6060,16 +6060,109 @@ classdef table
       G = table (vars{:}, 'VariableNames', names);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {table} {@var{G} =} groupcounts (@var{T}, @var{groupvars})
+    ## @deftypefnx {table} {@var{G} =} groupcounts (@dots{}, @var{Name}, @var{Value})
+    ##
+    ## Count the number of rows in each group of a table.
+    ##
+    ## @code{@var{G} = groupcounts (@var{T}, @var{groupvars})} groups the rows of
+    ## the table @var{T} by the grouping variables @var{groupvars} and returns the
+    ## table @var{G} with one row per group, holding the grouping variables, a
+    ## @qcode{GroupCount} variable counting the rows in each group, and a
+    ## @qcode{Percent} variable giving each group's count as a percentage of the
+    ## total.  @var{groupvars} selects the grouping variables by name, index,
+    ## logical vector, function handle, or @code{vartype} subscript.
+    ##
+    ## Groups are the sorted unique combinations of grouping values.  The following
+    ## @var{Name}/@var{Value} pairs are accepted:
+    ##
+    ## @table @asis
+    ## @item @qcode{'IncludeMissingGroups'}
+    ## A logical scalar.  When @code{true} (the default), rows holding a missing
+    ## value in a grouping variable form their own groups, sorted after the
+    ## non-missing groups.  When @code{false}, such rows are excluded.
+    ##
+    ## @item @qcode{'IncludeEmptyGroups'}
+    ## A logical scalar, @code{false} by default.  Empty groups are not yet
+    ## supported, so @code{true} raises an error.
+    ## @end table
+    ##
+    ## Binning the grouping variables (the @var{groupbins} argument) is not yet
+    ## supported.
+    ##
+    ## @end deftypefn
+    function G = groupcounts (T, groupvars, varargin)
+      if (nargin < 2)
+        print_usage ();
+      endif
+
+      ## Binning (the optional GROUPBINS argument) is not yet supported, so
+      ## everything after GROUPVARS must be a recognised Name-Value option.
+      optNames = {'IncludeMissingGroups', 'IncludeEmptyGroups'};
+      if (! isempty (varargin))
+        a = varargin{1};
+        isOpt = ((ischar (a) && isrow (a)) ...
+                 || (isa (a, 'string') && isscalar (a))) ...
+                && any (strcmpi (char (a), optNames));
+        if (! isOpt)
+          error (strcat ("table.groupcounts: binning (the GROUPBINS", ...
+                         " argument) is not yet supported."));
+        endif
+      endif
+
+      ## Parse Name-Value options.
+      dfValues = {true, false};
+      [incMiss, incEmpty] = ...
+                  parsePairedArguments (optNames, dfValues, varargin(:));
+      if (! (isscalar (incMiss) && (islogical (incMiss) || isnumeric (incMiss))))
+        error (strcat ("table.groupcounts: 'IncludeMissingGroups' must be", ...
+                       " a logical scalar."));
+      endif
+      incMiss = logical (incMiss);
+      if (! (isscalar (incEmpty)
+             && (islogical (incEmpty) || isnumeric (incEmpty))))
+        error (strcat ("table.groupcounts: 'IncludeEmptyGroups' must be", ...
+                       " a logical scalar."));
+      endif
+      if (logical (incEmpty))
+        error (strcat ("table.groupcounts: 'IncludeEmptyGroups' = true is", ...
+                       " not yet supported."));
+      endif
+
+      ## Resolve grouping variables.
+      gIx = resolveVarRef (T, groupvars)(:)';
+      if (isempty (gIx))
+        error (strcat ("table.groupcounts: at least one grouping variable", ...
+                       " is required."));
+      endif
+
+      ## Group the rows, treating missing grouping values as their own groups
+      ## (sorted last) when IncludeMissingGroups is true.
+      [Grp, ng, repRows, errmsg] = gs_group_rows (T.VariableValues(gIx), incMiss);
+      if (! isempty (errmsg))
+        error ("table.groupcounts: %s", errmsg);
+      endif
+
+      ## Build the grouping-variable columns, the GroupCount, and the Percent.
+      gcols = cell (1, numel (gIx));
+      for p = 1:numel (gIx)
+        gcols{p} = T.VariableValues{gIx(p)}(repRows,:);
+      endfor
+      gcount = accumarray (Grp(! isnan (Grp)), 1, [ng, 1]);
+      pcent = 100 * gcount / sum (gcount);
+
+      vars = [gcols, {gcount, pcent}];
+      names = [T.VariableNames(gIx), {'GroupCount', 'Percent'}];
+      G = table (vars{:}, 'VariableNames', names);
+    endfunction
+
   endmethods
 
   methods (Hidden)
 
     function out = pivot (this)
       error ("table.pivot: not implemented yet.");
-    endfunction
-
-    function out = groupcounts (this)
-      error ("table.groupcounts: not implemented yet.");
     endfunction
 
     function out = groupfilter (this)

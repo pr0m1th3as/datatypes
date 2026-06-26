@@ -4637,6 +4637,65 @@
 %!error <table.groupsummary: named method 'mean' is not supported for variables of type 'cell'; use a function handle \(variable 'x'\).> ...
 %! groupsummary (table ([1; 2], {'a'; 'b'}, 'VariableNames', {'g', 'x'}), 'g', 'mean')
 
+## 'groupcounts' returns the grouping variables, GroupCount, and Percent
+%!test
+%! T = table ([1; 1; 2; 2; 1], [10; 20; 30; 40; 50], 'VariableNames', {'g', 'x'});
+%! G = groupcounts (T, 'g');
+%! assert_equal (G.Properties.VariableNames, {'g', 'GroupCount', 'Percent'});
+%! assert_equal (G.g, [1; 2]);
+%! assert_equal (G.GroupCount, [3; 2]);
+%! assert_equal (G.Percent, [60; 40]);
+
+## Percent is each group's count as a percentage of the total row count
+%!test
+%! T = table ([1; 1; 1; 2], 'VariableNames', {'g'});
+%! G = groupcounts (T, 'g');
+%! assert_equal (G.GroupCount, [3; 1]);
+%! assert_equal (G.Percent, [75; 25]);
+
+## Several grouping variables group by their unique combinations, missing last
+%!test
+%! T = table ([1; 1; 2; NaN; 2], {'b'; 'a'; 'a'; 'a'; 'b'}, ...
+%!            'VariableNames', {'g1', 'g2'});
+%! G = groupcounts (T, {'g1', 'g2'});
+%! assert_equal (G.g1, [1; 1; 2; 2; NaN]);
+%! assert_equal (G.g2, {'a'; 'b'; 'a'; 'b'; 'a'});
+%! assert_equal (G.GroupCount, [1; 1; 1; 1; 1]);
+%! assert_equal (G.Percent, [20; 20; 20; 20; 20]);
+
+## Missing values in a grouping variable form their own group, sorted last
+%!test
+%! T = table ([1; 1; 2; NaN; 2], 'VariableNames', {'g'});
+%! G = groupcounts (T, 'g');
+%! assert_equal (G.g, [1; 2; NaN]);
+%! assert_equal (G.GroupCount, [2; 2; 1]);
+%! assert_equal (G.Percent, [40; 40; 20]);
+
+## 'IncludeMissingGroups' false drops the rows with a missing grouping value
+%!test
+%! T = table ([1; 1; 2; NaN; 2], 'VariableNames', {'g'});
+%! G = groupcounts (T, 'g', 'IncludeMissingGroups', false);
+%! assert_equal (G.g, [1; 2]);
+%! assert_equal (G.GroupCount, [2; 2]);
+%! assert_equal (G.Percent, [50; 50]);
+
+## A categorical grouping variable keeps its type and groups by category order
+%!test
+%! c = categorical ({'medium'; 'low'; 'high'; 'low'}, ...
+%!                  {'low', 'medium', 'high'}, 'Ordinal', true);
+%! T = table (c, 'VariableNames', {'g'});
+%! G = groupcounts (T, 'g');
+%! assert_equal (iscategorical (G.g), true);
+%! assert_equal (cellstr (G.g), {'low'; 'medium'; 'high'});
+%! assert_equal (G.GroupCount, [2; 1; 1]);
+
+%!error <table.groupcounts: at least one grouping variable is required.> ...
+%! groupcounts (table ([1; 2], 'VariableNames', {'g'}), false)
+%!error <table.groupcounts: 'IncludeEmptyGroups' = true is not yet supported.> ...
+%! groupcounts (table ([1; 2], 'VariableNames', {'g'}), 'g', 'IncludeEmptyGroups', true)
+%!error <table.groupcounts: binning \(the GROUPBINS argument\) is not yet supported.> ...
+%! groupcounts (table ([1; 2], 'VariableNames', {'g'}), 'g', 3)
+
 ################################################################################
 ##                       **    Auxiliary Methods    **                        ##
 ################################################################################
