@@ -4096,6 +4096,145 @@
 %!error <table.rowfun: the number of 'OutputVariableNames' must equal 'NumOutputs'.> ...
 %! rowfun (@(x) x, table ([1; 2]), 'OutputVariableNames', {'p', 'q'}, 'NumOutputs', 1)
 
+## 'groupsummary' with no method returns the grouping variables and GroupCount
+%!test
+%! T = table ([1; 1; 2; 2; 1], [10; 20; 30; 40; 50], 'VariableNames', {'g', 'x'});
+%! G = groupsummary (T, 'g');
+%! assert_equal (G.Properties.VariableNames, {'g', 'GroupCount'});
+%! assert_equal (G.g, [1; 2]);
+%! assert_equal (G.GroupCount, [3; 2]);
+
+## A named method appends a '<method>_<datavar>' column for each data variable
+%!test
+%! T = table ([1; 1; 2; 2; 1], [10; 20; 30; 40; 50], [1; 2; 3; 4; 5], ...
+%!            'VariableNames', {'g', 'x', 'y'});
+%! G = groupsummary (T, 'g', 'sum');
+%! assert_equal (G.Properties.VariableNames, {'g', 'GroupCount', 'sum_x', 'sum_y'});
+%! assert_equal (G.GroupCount, [3; 2]);
+%! assert_equal (G.sum_x, [80; 70]);
+%! assert_equal (G.sum_y, [8; 7]);
+
+## 'DataVars' restricts the variables the method is applied to
+%!test
+%! T = table ([1; 1; 2; 2; 1], [10; 20; 30; 40; 50], [1; 2; 3; 4; 5], ...
+%!            'VariableNames', {'g', 'x', 'y'});
+%! G = groupsummary (T, 'g', 'mean', 'x');
+%! assert_equal (G.Properties.VariableNames, {'g', 'GroupCount', 'mean_x'});
+%! assert_equal (G.mean_x, [80/3; 35]);
+
+## Several methods and data variables are ordered data variable first, then method
+%!test
+%! T = table ([1; 1; 2; 2; 1], [10; 20; 30; 40; 50], [1; 2; 3; 4; 5], ...
+%!            'VariableNames', {'g', 'x', 'y'});
+%! G = groupsummary (T, 'g', {'mean', 'sum'}, {'x', 'y'});
+%! assert_equal (G.Properties.VariableNames, ...
+%!               {'g', 'GroupCount', 'mean_x', 'sum_x', 'mean_y', 'sum_y'});
+%! assert_equal (G.mean_x, [80/3; 35]);
+%! assert_equal (G.sum_x, [80; 70]);
+%! assert_equal (G.mean_y, [8/3; 3.5]);
+%! assert_equal (G.sum_y, [8; 7]);
+
+## Function handles are named 'fun<n>' by their position among the methods
+%!test
+%! T = table ([1; 1; 2; 2; 1], [10; 20; 30; 40; 50], 'VariableNames', {'g', 'x'});
+%! G = groupsummary (T, 'g', @std);
+%! assert_equal (G.Properties.VariableNames, {'g', 'GroupCount', 'fun1_x'});
+%! assert_equal (G.fun1_x, [std([10; 20; 50]); std([30; 40])]);
+
+## Multiple function handles keep their 'fun<n>' index across data variables
+%!test
+%! T = table ([1; 1; 2; 2; 1], [10; 20; 30; 40; 50], [1; 2; 3; 4; 5], ...
+%!            'VariableNames', {'g', 'x', 'y'});
+%! G = groupsummary (T, 'g', {@std, @(v) median(v)}, {'x', 'y'});
+%! assert_equal (G.Properties.VariableNames, ...
+%!               {'g', 'GroupCount', 'fun1_x', 'fun2_x', 'fun1_y', 'fun2_y'});
+%! assert_equal (G.fun2_x, [median([10; 20; 50]); median([30; 40])]);
+
+## A function handle may return a row, producing a multi-column result variable
+%!test
+%! T = table ([1; 1; 2; 2; 1], [10; 20; 30; 40; 50], 'VariableNames', {'g', 'x'});
+%! G = groupsummary (T, 'g', @(v) [min(v), max(v)]);
+%! assert_equal (G.fun1_x, [10, 50; 30, 40]);
+
+## 'min', 'max', 'range', 'std', 'var', 'median', 'mode' spot checks
+%!test
+%! T = table ([1; 1; 2; 2; 1], [10; 20; 30; 40; 50], 'VariableNames', {'g', 'x'});
+%! G = groupsummary (T, 'g', {'min', 'max', 'range', 'var', 'median', 'mode'});
+%! assert_equal (G.min_x, [10; 30]);
+%! assert_equal (G.max_x, [50; 40]);
+%! assert_equal (G.range_x, [40; 10]);
+%! assert_equal (G.var_x, [var([10; 20; 50]); var([30; 40])]);
+%! assert_equal (G.median_x, [20; 35]);
+%! assert_equal (G.mode_x, [10; 30]);
+
+## 'nnz', 'all', and 'any' omit NaN and treat zeros as false
+%!test
+%! T = table ([1; 1; 2; 2], [0; 2; 0; 0], 'VariableNames', {'g', 'x'});
+%! G = groupsummary (T, 'g', {'nnz', 'all', 'any'});
+%! assert_equal (G.nnz_x, [1; 0]);
+%! assert_equal (G.all_x, [false; false]);
+%! assert_equal (G.any_x, [true; false]);
+
+## Named methods omit NaN in the data; 'nummissing' counts them
+%!test
+%! T = table ([1; 1; 2; 2], [NaN; 20; NaN; NaN], 'VariableNames', {'g', 'x'});
+%! G = groupsummary (T, 'g', {'mean', 'nummissing'});
+%! assert_equal (G.mean_x, [20; NaN]);
+%! assert_equal (G.nummissing_x, [1; 2]);
+
+## 'numunique' counts the unique non-missing values, for any data type
+%!test
+%! T = table ([1; 1; 2; 2], {'a'; 'a'; 'b'; ''}, 'VariableNames', {'g', 's'});
+%! G = groupsummary (T, 'g', {'numunique', 'nummissing'});
+%! assert_equal (G.numunique_s, [1; 1]);
+%! assert_equal (G.nummissing_s, [0; 1]);
+
+## Missing values in a grouping variable form their own group, sorted last
+%!test
+%! T = table ([1; 1; 2; NaN; 2], [10; 20; 30; 40; 50], 'VariableNames', {'g', 'x'});
+%! G = groupsummary (T, 'g', 'mean');
+%! assert_equal (G.g, [1; 2; NaN]);
+%! assert_equal (G.GroupCount, [2; 2; 1]);
+%! assert_equal (G.mean_x, [15; 40; 40]);
+
+## 'IncludeMissingGroups' false drops the rows with a missing grouping value
+%!test
+%! T = table ([1; 1; 2; NaN; 2], [10; 20; 30; 40; 50], 'VariableNames', {'g', 'x'});
+%! G = groupsummary (T, 'g', 'mean', 'IncludeMissingGroups', false);
+%! assert_equal (G.g, [1; 2]);
+%! assert_equal (G.GroupCount, [2; 2]);
+%! assert_equal (G.mean_x, [15; 40]);
+
+## Several grouping variables group by their unique combinations, missing last
+%!test
+%! T = table ([1; 1; 2; NaN; 2], {'b'; 'a'; 'a'; 'a'; 'b'}, [10; 20; 30; 40; 50], ...
+%!            'VariableNames', {'g1', 'g2', 'x'});
+%! G = groupsummary (T, {'g1', 'g2'}, 'sum');
+%! assert_equal (G.g1, [1; 1; 2; 2; NaN]);
+%! assert_equal (G.g2, {'a'; 'b'; 'a'; 'b'; 'a'});
+%! assert_equal (G.GroupCount, [1; 1; 1; 1; 1]);
+%! assert_equal (G.sum_x, [20; 10; 30; 50; 40]);
+
+## A categorical grouping variable keeps its type in the output
+%!test
+%! T = table (categorical ({'a'; 'b'; 'a'; 'c'}), [1; 2; 3; 4], ...
+%!            'VariableNames', {'g', 'x'});
+%! G = groupsummary (T, 'g', 'sum');
+%! assert_equal (iscategorical (G.g), true);
+%! assert_equal (cellstr (G.g), {'a'; 'b'; 'c'});
+%! assert_equal (G.sum_x, [4; 2; 4]);
+
+%!error <table.groupsummary: 'bogus' is not a supported method name.> ...
+%! groupsummary (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', 'bogus')
+%!error <table.groupsummary: too many positional arguments.> ...
+%! groupsummary (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', 'sum', 'x', 5)
+%!error <table.groupsummary: at least one grouping variable is required.> ...
+%! groupsummary (table ([1; 2], 'VariableNames', {'g'}), false)
+%!error <table.groupsummary: 'IncludeEmptyGroups' = true is not yet supported.> ...
+%! groupsummary (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', 'sum', 'IncludeEmptyGroups', true)
+%!error <table.groupsummary: named method 'mean' is not supported for variables of type 'cell'; use a function handle \(variable 'x'\).> ...
+%! groupsummary (table ([1; 2], {'a'; 'b'}, 'VariableNames', {'g', 'x'}), 'g', 'mean')
+
 ################################################################################
 ##                       **    Auxiliary Methods    **                        ##
 ################################################################################
