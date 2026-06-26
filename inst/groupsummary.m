@@ -261,8 +261,12 @@ function [p, miss, errmsg] = group_col_proxy (col)
   p = [];
   miss = [];
   errmsg = '';
-  if (isa (col, 'categorical') || isa (col, 'string') || iscellstr (col)
-      || ischar (col))
+  if (isa (col, 'categorical'))
+    ## Categorical groups follow category order (ordinal or reordered), which the
+    ## underlying category codes encode; <undefined> maps to NaN.
+    p = double (col)(:);
+    miss = isnan (p);
+  elseif (isa (col, 'string') || iscellstr (col) || ischar (col))
     c = cellstr (col);
     c = c(:);
     miss = cellfun (@isempty, c);
@@ -434,6 +438,14 @@ endfunction
 %! assert_equal (B, [20; 60; 30; 40]);
 %! assert_equal (BG, {[1; 1; 2; 2], {'a'; 'b'; 'a'; 'b'}});
 %! assert_equal (BC, [1; 2; 1; 1]);
+%!test
+%! ## A categorical grouping vector groups by category order, not alphabetically
+%! c = categorical ({'medium'; 'low'; 'high'; 'low'}, ...
+%!                  {'low', 'medium', 'high'}, 'Ordinal', true);
+%! [B, BG, BC] = groupsummary ((1:4)', c, 'sum');
+%! assert_equal (B, [6; 1; 3]);
+%! assert_equal (cellstr (BG), {'low'; 'medium'; 'high'});
+%! assert_equal (BC, [2; 1; 1]);
 
 %!error <Invalid call> groupsummary ([1; 2], [1; 2])
 %!error <groupsummary: 'bogus' is not a supported method name.> ...

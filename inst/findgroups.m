@@ -120,8 +120,12 @@ function [p, miss, errmsg] = group_col_proxy (col)
   p = [];
   miss = [];
   errmsg = '';
-  if (isa (col, 'categorical') || isa (col, 'string') || iscellstr (col)
-      || ischar (col))
+  if (isa (col, 'categorical'))
+    ## Categorical groups follow category order (ordinal or reordered), which the
+    ## underlying category codes encode; <undefined> maps to NaN.
+    p = double (col)(:);
+    miss = isnan (p);
+  elseif (isa (col, 'string') || iscellstr (col) || ischar (col))
     c = cellstr (col);
     c = c(:);
     miss = cellfun (@isempty, c);
@@ -158,6 +162,17 @@ endfunction
 %! ## Missing values map to NaN in G
 %! assert_equal (findgroups ([1; NaN; 2; 1]), [1; NaN; 2; 1]);
 %! assert_equal (findgroups ({'b'; ''; 'a'}), [2; NaN; 1]);
+%!test
+%! ## Categorical groups follow category order, not alphabetical order
+%! c = categorical ({'medium'; 'low'; 'high'; 'low'}, ...
+%!                  {'low', 'medium', 'high'}, 'Ordinal', true);
+%! assert_equal (findgroups (c), [2; 1; 3; 1]);
+%! [g, id] = findgroups (c);
+%! assert_equal (cellstr (id), {'low'; 'medium'; 'high'});
+%!test
+%! ## Reordered nominal categoricals also group by category order
+%! c = reordercats (categorical ({'b'; 'a'; 'c'; 'a'}), {'c', 'a', 'b'});
+%! assert_equal (findgroups (c), [3; 2; 1; 2]);
 %!test
 %! ## Multiple grouping variables group by sorted unique combinations
 %! assert_equal (findgroups ([1; 1; 2; 1], {'b'; 'a'; 'a'; 'b'}), [2; 1; 3; 2]);

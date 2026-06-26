@@ -8937,6 +8937,13 @@ function [p, miss, errmsg] = group_col_proxy (col)
   p = [];
   miss = [];
   errmsg = '';
+  if (isa (col, 'categorical'))
+    ## Categorical groups follow category order (ordinal or reordered), which the
+    ## underlying category codes encode; <undefined> maps to NaN.
+    p = double (col)(:);
+    miss = isnan (p);
+    return;
+  endif
   k = key_kind (col);
   if (isempty (k))
     errmsg = sprintf ("unsupported grouping variable type '%s'.", class (col));
