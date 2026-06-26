@@ -339,7 +339,7 @@ function tbl = csv2table (name, varargin)
       error ("csv2table: 'VariableTypes' do not match columns in CSV.");
     endif
     for ix = 1:cols
-      varValues{ix} = cell2var (C(:,ix), varTypes{ii});
+      varValues{ix} = cell2var (C(:,ix), varTypes{ix});
     endfor
   ## Parse columns into variables by identifying the variable type
   else
@@ -529,3 +529,31 @@ function varValue = cell2auto (C, textType, datetimeType, durationTypes, ...
     endif
   endif
 endfunction
+
+## Test user-defined 'VariableTypes' are applied per column
+%!test
+%! fn = tempname ();
+%! fid = fopen (fn, "w");
+%! fputs (fid, "A,B,C\n1,2.5,10\n3,4.5,20\n");
+%! fclose (fid);
+%! unwind_protect
+%!   t = csv2table (fn, 'ReadRowNames', false, ...
+%!                  'VariableTypes', {'double', 'single', 'int32'});
+%!   assert_equal (class (t{:, 1}), 'double');
+%!   assert_equal (class (t{:, 2}), 'single');
+%!   assert_equal (class (t{:, 3}), 'int32');
+%!   assert_equal (t{:, 3}, int32 ([10; 20]));
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+%!error <csv2table: 'VariableTypes' do not match columns in CSV.> ...
+%! fn = tempname ();
+%! fid = fopen (fn, "w");
+%! fputs (fid, "A,B,C\n1,2,3\n");
+%! fclose (fid);
+%! unwind_protect
+%!   csv2table (fn, 'ReadRowNames', false, 'VariableTypes', {'double', 'double'});
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
