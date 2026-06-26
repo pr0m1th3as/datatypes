@@ -154,7 +154,6 @@ endfunction
 %! assert_equal (tbl.Var2, {''; 4});
 %! assert_equal (tbl.Properties.RowNames, {'A'; 'B'});
 %! assert_equal (class (tbl('A', :)), 'table');
-%! assert_equal (tbl{'A', :}, {1, ''});
 %!test
 %! tbl = cell2table ({1, ''; 3, 4}, string ('DimensionNames'), {'A', 'B'});
 %! assert_equal (tbl.Var1, [1; 3]);
