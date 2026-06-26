@@ -283,8 +283,13 @@
 %! assert_equal (size (M), [2, 2]);
 %!test  # an empty table returns an empty array
 %! assert_equal (table2array (table ()), []);
-## Test input validation for 'table2array' method
-%!error <table.table2array: table cannot be concatenated into a matrix due to incompatible variable types.> ...
+%!test  # homogeneous cell variables yield a cell array
+%! M = table2array (table ({'a'; 'b'}, {'c'; 'd'}, 'VariableNames', {'x', 'y'}));
+%! assert_equal (class (M), 'cell');
+%! assert_equal (size (M), [2, 2]);
+## Test input validation for 'table2array' method: a mix of cell and non-cell
+## variables cannot form a homogeneous array (matches MATLAB, names the pair).
+%!error <table.table2array: cannot concatenate the table variables 'A' and 'B', because their types are double and cell.> ...
 %! table2array (table ([1; 2; 3; 4; 5], {1; 2; 3; 4; 5}, "VariableNames", {"A", "B"}));
 
 ## Test 'table2cell' method
@@ -4560,6 +4565,13 @@
 %!assert_equal (T{:,"Height"}, [71; 69; 64; 67; 64]);
 %!assert_equal (size(T{:,"Smoker"}), [5, 1]);
 %!assert_equal (size(T{:,"Height"}), [5, 1]);
+%!test  # brace-indexing all-cell variables yields a cell array
+%! Tc = table ({'a'; 'b'}, {'c'; 'd'}, 'VariableNames', {'x', 'y'});
+%! assert_equal (Tc{:,:}, {'a', 'c'; 'b', 'd'});
+%!error <table.subsref: cannot concatenate the table variables 'x' and 'y', because their types are double and cell.> ...
+%! Tm = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'}); Tm{1,:};
+%!error <table.subsref: cannot concatenate the table variables 'x' and 'y', because their types are double and cell.> ...
+%! Tm = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'}); Tm{:,:};
 %!assert_equal (T.Variables, [Age, Smoker, Height, Weight, BloodPressure]);
 %!assert_equal (isempty (T.Properties.RowNames), true);
 %!assert_equal (numel (T.Properties.VariableNames), 5);

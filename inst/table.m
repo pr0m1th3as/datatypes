@@ -502,6 +502,18 @@ classdef table
         A = [];
         return
       endif
+      ## A mix of cell and non-cell variables cannot form a homogeneous array.
+      ## Octave would silently promote single-row pieces to a cell (MATLAB
+      ## errors), so guard explicitly and report the first incompatible pair.
+      pair = mixed_cell_pair (this.VariableValues);
+      if (! isempty (pair))
+        error (strcat ("table.table2array: cannot concatenate the table", ...
+                       " variables '%s' and '%s', because their types are", ...
+                       " %s and %s."), this.VariableNames{pair(1)}, ...
+               this.VariableNames{pair(2)}, ...
+               class (this.VariableValues{pair(1)}), ...
+               class (this.VariableValues{pair(2)}));
+      endif
       ## Add a try...catch block instead of heuristics
       try
         A = cat (2, this.VariableValues{:});
@@ -6783,6 +6795,15 @@ classdef table
           tbl = this;
           tbl = subsetrows (tbl, ixRow);
           tbl = subsetvars (tbl, ixVar);
+          pair = mixed_cell_pair (tbl.VariableValues);
+          if (! isempty (pair))
+            error (strcat ("table.subsref: cannot concatenate the table", ...
+                           " variables '%s' and '%s', because their types", ...
+                           " are %s and %s."), tbl.VariableNames{pair(1)}, ...
+                   tbl.VariableNames{pair(2)}, ...
+                   class (tbl.VariableValues{pair(1)}), ...
+                   class (tbl.VariableValues{pair(2)}));
+          endif
           try
             tbl = table2array (tbl);
           catch
@@ -9398,6 +9419,19 @@ function out = build_grouped_apply_result (caller, fmt, res, outNames, gcols, ..
     case 'cell'
       out = res;
   endswitch
+endfunction
+
+## Detect the cell/non-cell mix of variable values VALS that cannot form a
+## homogeneous array.  Returns the column indices [LO, HI] (in column order) of
+## the first cell and first non-cell variable, or [] when VALS are not such a
+## mix.  Callers emit the incompatibility error under their own method name.
+function pair = mixed_cell_pair (vals)
+  isCellVar = cellfun (@iscell, vals);
+  if (any (isCellVar) && ! all (isCellVar))
+    pair = sort ([find(isCellVar, 1), find(! isCellVar, 1)]);
+  else
+    pair = [];
+  endif
 endfunction
 
 ## Set the rows of a variable V selected by the logical MASK to the standard
