@@ -2620,6 +2620,34 @@
 %! U = unstack (table (G, T, V), 'V', 'T');
 %! assert_equal (U.a, {'p'; 'r'});
 %! assert_equal (U.b, {'q'; 's'});
+%!test  # duration data are unstacked (default @unique, no conflict)
+%! G = [1; 1; 2; 2];
+%! T = categorical ({'a'; 'b'; 'a'; 'b'});
+%! V = hours ([1; 2; 3; 4]);
+%! U = unstack (table (G, T, V), 'V', 'T');
+%! assert_equal (hours (U.a), [1; 3]);
+%! assert_equal (hours (U.b), [2; 4]);
+%!test  # missing duration cells fill with zero, identical conflicts collapse
+%! G = [1; 1; 1; 2];
+%! T = categorical ({'a'; 'a'; 'b'; 'b'});
+%! V = hours ([2; 2; 3; 4]);
+%! U = unstack (table (G, T, V), 'V', 'T');
+%! assert_equal (hours (U.a), [2; 0]);
+%! assert_equal (hours (U.b), [3; 4]);
+%!test  # calendarDuration data are unstacked (default @unique, no conflict)
+%! G = [1; 1; 2; 2];
+%! T = categorical ({'a'; 'b'; 'a'; 'b'});
+%! V = calmonths ([1; 2; 3; 4]);
+%! U = unstack (table (G, T, V), 'V', 'T');
+%! assert_equal (calmonths (U.a), [1; 3]);
+%! assert_equal (calmonths (U.b), [2; 4]);
+%!test  # missing calendarDuration cells fill with zero, identical conflicts collapse
+%! G = [1; 1; 1; 2];
+%! T = categorical ({'a'; 'a'; 'b'; 'b'});
+%! V = calmonths ([1; 1; 2; 3]);
+%! U = unstack (table (G, T, V), 'V', 'T');
+%! assert_equal (calmonths (U.a), [1; 0]);
+%! assert_equal (calmonths (U.b), [2; 3]);
 %!test  # multiple variables are unstacked with composite names
 %! G = [1; 1; 2; 2];
 %! T = categorical ({'a'; 'b'; 'a'; 'b'});
@@ -2692,6 +2720,9 @@
 %!error <table.unstack: 'AggregationFunction' must return a scalar value.> ...
 %! unstack (table ([1; 1; 2], categorical ({'a'; 'a'; 'b'}), ...
 %!                 categorical ({'x'; 'y'; 'z'})), 'Var3', 'Var2');
+%!error <table.unstack: 'AggregationFunction' must return a scalar value.> ...
+%! unstack (table ([1; 1; 2], categorical ({'a'; 'a'; 'b'}), ...
+%!                 hours ([1; 2; 3])), 'Var3', 'Var2');
 %!error <table.unstack: invalid input for 'VariableNamingRule'.> ...
 %! unstack (tblA, {'Weight', 'Height'}, 'Age', 'VariableNamingRule', 'somerule');
 

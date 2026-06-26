@@ -3190,11 +3190,12 @@ classdef table
     ## unique values in the indicator variable.
     ## @item @qcode{'AggregationFunction'} specifies a function handle used to
     ## aggregate each group's data into a single value.  By default,
-    ## @code{@@sum} is applied on numeric, duration, and calendarDuration data,
-    ## whereas @code{@@unique} is applied on all other supported data types.  In
-    ## the latter case, if a group contains more than one distinct value for the
-    ## same indicator value, the default aggregation errors, and an explicit
-    ## @qcode{'AggregationFunction'} that returns a scalar must be specified.
+    ## @code{@@sum} is applied on numeric data, whereas @code{@@unique} is
+    ## applied on all other supported data types, including @code{duration} and
+    ## @code{calendarDuration}.  In the latter case, if a group contains more
+    ## than one distinct value for the same indicator value, the default
+    ## aggregation errors, and an explicit @qcode{'AggregationFunction'} that
+    ## returns a scalar must be specified.
     ## @item @qcode{'VariableNamingRule'}, specified as either @qcode{'modify'}
     ## or @qcode{'preserve'}, defines the rule for naming the new unstacked
     ## variables in the output table @var{tblB}.  @qcode{'modify'} (default)
@@ -8757,9 +8758,9 @@ function [mcvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, aggrFcn)
       endif
     endif
   elseif (isa (vvals, 'calendarDuration'))
-    mcvec =  repmat (calendarDuration ([NaN, NaN, NaN]), nrows, vcols);
+    mcvec =  repmat (calendarDuration ([0, 0, 0]), nrows, vcols);
     if (isempty (aggrFcn))  # add default aggrevation function
-      aggrFcn = @sum;
+      aggrFcn = @unique;
     else  # check that it produces correct output
       tmpval = calendarDuration (1:5, 0, 0);
       try
@@ -8774,9 +8775,9 @@ function [mcvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, aggrFcn)
       endif
     endif
   elseif (isa (vvals, 'duration'))
-    mcvec =  repmat (duration ([NaN, NaN, NaN]), nrows, vcols);
+    mcvec =  repmat (duration ([0, 0, 0]), nrows, vcols);
     if (isempty (aggrFcn))  # add default aggrevation function
-      aggrFcn = @sum;
+      aggrFcn = @unique;
     else  # check that it produces correct output
       tmpval = duration (1:5, 0, 0);
       try
