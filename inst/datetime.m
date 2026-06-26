@@ -764,12 +764,13 @@ classdef datetime
     ##
     ## Total number of elements in a datetime array.
     ##
-    ## For compatibility reasons with Octave's OOP interface and @code{subsasgn}
-    ## behavior, datetime's @code{numel} is defined to always return 1.
+    ## @code{@var{out} = numel (@var{T})} returns the number of elements in the
+    ## datetime array @var{T}, which is the product of the sizes of its
+    ## dimensions.
     ##
     ## @end deftypefn
     function out = numel (this, varargin)
-      out = 1;
+      out = prod (size (this));
     endfunction
 
     ## -*- texinfo -*-
