@@ -6417,12 +6417,364 @@ classdef table
       endif
     endfunction
 
-  endmethods
+    ## -*- texinfo -*-
+    ## @deftypefn  {table} {@var{P} =} pivot (@var{T}, @qcode{'Columns'}, @var{colvars})
+    ## @deftypefnx {table} {@var{P} =} pivot (@var{T}, @qcode{'Rows'}, @var{rowvars})
+    ## @deftypefnx {table} {@var{P} =} pivot (@dots{}, @var{Name}, @var{Value})
+    ##
+    ## Summarize tabular data in a pivoted table.
+    ##
+    ## @code{@var{P} = pivot (@var{T}, 'Columns', @var{colvars}, 'Rows',
+    ## @var{rowvars})} reshapes the table @var{T} into the pivoted table @var{P}.
+    ## The unique combinations of the grouping variables @var{colvars} become the
+    ## variables (columns) of @var{P}, the unique combinations of the grouping
+    ## variables @var{rowvars} become its rows, and each cell holds one statistic
+    ## computed over the rows of @var{T} that fall into that row-and-column group.
+    ## At least one of @qcode{'Columns'} or @qcode{'Rows'} is required; an omitted
+    ## dimension collapses to a single group.  Each of @var{colvars} and
+    ## @var{rowvars} selects variables by name, index, or logical vector, and may
+    ## name several variables.
+    ##
+    ## Groups are the sorted unique combinations of the grouping values, with the
+    ## first variable varying slowest; a categorical variable groups by its
+    ## category order.  Column variable names are taken from the grouping values
+    ## (e.g.@: @qcode{'true'}/@qcode{'false'} for a logical variable), joined
+    ## with @qcode{'_'} when several variables define the columns.
+    ##
+    ## The following @var{Name}/@var{Value} pairs are accepted:
+    ##
+    ## @table @asis
+    ## @item @qcode{'DataVariable'}
+    ## The single variable whose values are aggregated.  When omitted, the cells
+    ## hold group counts.
+    ##
+    ## @item @qcode{'Method'}
+    ## The aggregation applied to @qcode{'DataVariable'}: one of
+    ## @qcode{'count'}, @qcode{'sum'}, @qcode{'mean'}, @qcode{'median'},
+    ## @qcode{'mode'}, @qcode{'std'}, @qcode{'var'}, @qcode{'min'},
+    ## @qcode{'max'}, @qcode{'range'}, @qcode{'nummissing'},
+    ## @qcode{'numunique'}, @qcode{'nnz'}, @qcode{'percentage'},
+    ## @qcode{'none'}, or a function handle.  Named methods omit missing
+    ## values.  The default is @qcode{'count'} when no data variable is given
+    ## or the data variable is non-numeric, and @qcode{'sum'} when it is
+    ## numeric.  @qcode{'none'} rearranges the data without aggregating and
+    ## requires at most one value per cell.
+    ##
+    ## @item @qcode{'IncludeMissingGroups'}
+    ## A logical scalar, @code{true} by default.  When @code{true}, rows
+    ## holding a missing value in a grouping variable form their own group,
+    ## sorted last; when @code{false}, such rows are excluded.
+    ##
+    ## @item @qcode{'IncludeEmptyGroups'}
+    ## A logical scalar, @code{false} by default.  When @code{true}, every
+    ## category of a categorical grouping variable contributes a group even
+    ## if it is unused in the data, so unused combinations appear as empty
+    ## cells.
+    ##
+    ## @item @qcode{'IncludeTotals'}
+    ## A logical scalar, @code{false} by default.  When @code{true}, a
+    ## @qcode{'Total'} marginal row and/or column holding the same statistic
+    ## computed over each margin is appended.  Row labels are then placed in the
+    ## row names.
+    ##
+    ## @item @qcode{'RowLabelPlacement'}
+    ## Either @qcode{'variable'} (the default), which keeps the row grouping
+    ## variables as the leftmost variables of @var{P}, or @qcode{'rownames'},
+    ## which places the row group labels in the @code{RowNames} property.
+    ##
+    ## @item @qcode{'OutputFormat'}
+    ## Only @qcode{'flat'} (the default) is supported; @qcode{'nested'}
+    ## raises an error.
+    ## @end table
+    ##
+    ## Binning the grouping variables (@qcode{'ColumnsBinMethod'},
+    ## @qcode{'RowsBinMethod'}, @qcode{'IncludedEdge'}) is not yet supported.
+    ##
+    ## @end deftypefn
+    function P = pivot (T, varargin)
+      if (nargin < 1)
+        print_usage ();
+      endif
 
-  methods (Hidden)
+      ## Parse Name-Value options; unrecognised names land in REST.
+      optNames = {'Columns', 'Rows', 'DataVariable', 'Method', ...
+                  'IncludeMissingGroups', 'IncludeEmptyGroups', ...
+                  'IncludeTotals', 'RowLabelPlacement', 'OutputFormat', ...
+                  'ColumnsBinMethod', 'RowsBinMethod', 'IncludedEdge'};
+      dfValues = {[], [], [], [], true, false, false, 'variable', 'flat', ...
+                  'none', 'none', 'left'};
+      [colvars, rowvars, datavar, method, incMiss, incEmpty, incTot, ...
+       rowPlace, outFmt, colBin, rowBin, incEdge, rest] = ...
+                  parsePairedArguments (optNames, dfValues, varargin(:));
+      if (! isempty (rest))
+        bad = rest{1};
+        if (isa (bad, 'string'))
+          bad = char (bad);
+        endif
+        if (ischar (bad) && isrow (bad))
+          error ("table.pivot: unrecognised option '%s'.", bad);
+        else
+          error ("table.pivot: invalid optional arguments.");
+        endif
+      endif
 
-    function out = pivot (this)
-      error ("table.pivot: not implemented yet.");
+      ## Binning and the 'nested' output format are not yet supported.
+      if (! (ischar (colBin) && strcmpi (colBin, 'none')) ...
+          || ! (ischar (rowBin) && strcmpi (rowBin, 'none')))
+        error (strcat ("table.pivot: binning the grouping variables (the", ...
+                       " 'ColumnsBinMethod'/'RowsBinMethod' options) is not", ...
+                       " yet supported."));
+      endif
+      if (isa (outFmt, 'string'))
+        outFmt = char (outFmt);
+      endif
+      if (! (ischar (outFmt) && isrow (outFmt)))
+        error ("table.pivot: 'OutputFormat' must be 'flat' or 'nested'.");
+      endif
+      if (strcmpi (outFmt, 'nested'))
+        error (strcat ("table.pivot: OutputFormat 'nested' is not yet", ...
+                       " supported; use 'flat'."));
+      elseif (! strcmpi (outFmt, 'flat'))
+        error ("table.pivot: 'OutputFormat' must be 'flat' or 'nested'.");
+      endif
+
+      ## Validate the logical-scalar and RowLabelPlacement options.
+      incMiss = pivot_logical_opt ('IncludeMissingGroups', incMiss);
+      incEmpty = pivot_logical_opt ('IncludeEmptyGroups', incEmpty);
+      incTot = pivot_logical_opt ('IncludeTotals', incTot);
+      if (isa (rowPlace, 'string'))
+        rowPlace = char (rowPlace);
+      endif
+      if (! (ischar (rowPlace) && isrow (rowPlace) ...
+             && any (strcmpi (rowPlace, {'variable', 'rownames'}))))
+        error (strcat ("table.pivot: 'RowLabelPlacement' must be 'variable'", ...
+                       " or 'rownames'."));
+      endif
+      rowPlace = lower (rowPlace);
+
+      ## At least one grouping dimension is required.
+      if (isempty (colvars) && isempty (rowvars))
+        error (strcat ("table.pivot: specify at least one of 'Columns' or", ...
+                       " 'Rows'."));
+      endif
+
+      ## Resolve grouping and data variables.
+      if (isempty (colvars))
+        colIx = [];
+      else
+        colIx = resolveVarRef (T, colvars)(:)';
+      endif
+      if (isempty (rowvars))
+        rowIx = [];
+      else
+        rowIx = resolveVarRef (T, rowvars)(:)';
+      endif
+      hasDV = ! isempty (datavar);
+      if (hasDV)
+        dvIx = resolveVarRef (T, datavar)(:)';
+        if (! isscalar (dvIx))
+          error (strcat ("table.pivot: 'DataVariable' must specify a single", ...
+                         " variable."));
+        endif
+        dataVals = T.VariableValues{dvIx};
+      else
+        dvIx = [];
+        dataVals = [];
+      endif
+
+      ## Resolve the aggregation method and its default.
+      reqDataMethods = {'sum', 'mean', 'median', 'mode', 'std', 'var', ...
+                        'min', 'max', 'range', 'nnz'};
+      knownMethods = [{'count', 'percentage', 'nummissing', 'numunique', ...
+                       'none'}, reqDataMethods];
+      if (isempty (method))
+        if (! hasDV || ! (isnumeric (dataVals) || islogical (dataVals)))
+          method = 'count';
+        else
+          method = 'sum';
+        endif
+      elseif (isa (method, 'string') && isscalar (method))
+        method = char (method);
+      endif
+      if (ischar (method))
+        method = lower (method);
+        if (! (isrow (method) && any (strcmp (method, knownMethods))))
+          error ("table.pivot: unknown Method '%s'.", method);
+        endif
+        if (! hasDV && (any (strcmp (method, reqDataMethods)) ...
+                        || strcmp (method, 'none')))
+          error ("table.pivot: Method '%s' requires a 'DataVariable'.", method);
+        endif
+      elseif (! is_function_handle (method))
+        error (strcat ("table.pivot: 'Method' must be a method name or a", ...
+                       " function handle."));
+      endif
+      isNone = ischar (method) && strcmp (method, 'none');
+      if (isNone && incTot)
+        error (strcat ("table.pivot: 'IncludeTotals' is not supported with", ...
+                       " Method 'none'."));
+      endif
+      ## The display name of the method labels the single output variable when
+      ## 'Columns' is omitted and the 'Overall_<method>' totals row and column.
+      if (ischar (method))
+        methodName = method;
+      else
+        methodName = apply_func_name (method);
+      endif
+      totalLabel = ['Overall_', methodName];
+
+      ## Group the rows along each dimension.
+      n = height (T);
+      [rGid, nR, rLvlOf, rLevVals, ~, emsg] = ...
+              pivot_dimension (T.VariableValues(rowIx), n, incMiss, incEmpty);
+      if (! isempty (emsg))
+        error ("table.pivot: %s.", emsg);
+      endif
+      [cGid, nC, cLvlOf, cLevVals, cMissLvls, emsg] = ...
+              pivot_dimension (T.VariableValues(colIx), n, incMiss, incEmpty);
+      if (! isempty (emsg))
+        error ("table.pivot: %s.", emsg);
+      endif
+      assigned = ! isnan (rGid) & ! isnan (cGid);
+      totalAssigned = sum (assigned);
+
+      ## Build one output data column per column group.
+      dataCols = cell (1, nC);
+      for c = 1:nC
+        if (isNone)
+          [col, emsg] = pivot_none_column (dataVals, rGid, cGid, c, nR);
+          if (! isempty (emsg))
+            error ("table.pivot: %s.", emsg);
+          endif
+        else
+          col = NaN (nR, 1);
+          for r = 1:nR
+            rows = find (rGid == r & cGid == c);
+            [v, emsg] = ...
+                pivot_cell_value (method, hasDV, dataVals, rows, totalAssigned);
+            if (! isempty (emsg))
+              error ("table.pivot: %s.", emsg);
+            endif
+            col(r) = v;
+          endfor
+        endif
+        dataCols{c} = col;
+      endfor
+
+      ## Column variable names.  With no 'Columns', a single variable named for
+      ## the method ('<method>_<datavar>', or just 'count' with no data variable);
+      ## otherwise one per column group, from the grouping values (a missing group
+      ## becomes '<missing_<varname>>').
+      if (isempty (colIx))
+        if (hasDV)
+          colNames = {[methodName, '_', T.VariableNames{dvIx}]};
+        else
+          colNames = {methodName};
+        endif
+      else
+        colNames = cell (1, nC);
+        for c = 1:nC
+          parts = cell (1, numel (colIx));
+          for j = 1:numel (colIx)
+            lvl = cLvlOf(c,j);
+            if (cMissLvls{j}(lvl))
+              parts{j} = sprintf ("<missing_%s>", T.VariableNames{colIx(j)});
+            else
+              parts{j} = pivot_value_name (cLevVals{j}(lvl, :));
+            endif
+          endfor
+          colNames{c} = strjoin (parts, '_');
+        endfor
+      endif
+
+      ## Row label columns (one per row grouping variable).
+      if (isempty (rowIx))
+        rowLabelCols = {};
+        rowLabelNames = {};
+      else
+        rowLabelCols = cell (1, numel (rowIx));
+        for j = 1:numel (rowIx)
+          rowLabelCols{j} = rLevVals{j}(rLvlOf(:,j), :);
+        endfor
+        rowLabelNames = T.VariableNames(rowIx);
+      endif
+
+      ## Marginal totals, recomputed over each margin from the raw data.
+      addTotalCol = incTot && ! isempty (colIx);
+      addTotalRow = incTot && ! isempty (rowIx);
+      if (incTot)
+        colMargin = NaN (nR, 1);
+        for r = 1:nR
+          rows = find (rGid == r & assigned);
+          [colMargin(r), emsg] = ...
+              pivot_cell_value (method, hasDV, dataVals, rows, totalAssigned);
+          if (! isempty (emsg))
+            error ("table.pivot: %s.", emsg);
+          endif
+        endfor
+        rowMargin = NaN (1, nC);
+        for c = 1:nC
+          rows = find (cGid == c & assigned);
+          [rowMargin(c), emsg] = ...
+              pivot_cell_value (method, hasDV, dataVals, rows, totalAssigned);
+          if (! isempty (emsg))
+            error ("table.pivot: %s.", emsg);
+          endif
+        endfor
+        rows = find (assigned);
+        [grand, emsg] = ...
+            pivot_cell_value (method, hasDV, dataVals, rows, totalAssigned);
+        if (! isempty (emsg))
+          error ("table.pivot: %s.", emsg);
+        endif
+        if (addTotalRow)
+          for c = 1:nC
+            dataCols{c} = [dataCols{c}; rowMargin(c)];
+          endfor
+        endif
+        if (addTotalCol)
+          tcol = colMargin;
+          if (addTotalRow)
+            tcol = [tcol; grand];
+          endif
+          dataCols{end+1} = tcol;
+          colNames{end+1} = totalLabel;
+        endif
+      endif
+
+      ## Assemble the output table.  Totals keep the row grouping variables and
+      ## label the marginal row with 'Overall_<method>', appended to the single
+      ## row-label variable; a multi-variable or non-text row label falls back to
+      ## row-name labelling instead.
+      useRowNames = strcmp (rowPlace, 'rownames');
+      if (incTot && ! useRowNames && addTotalRow)
+        if (numel (rowIx) == 1)
+          [lc, ok] = pivot_append_label (rowLabelCols{1}, totalLabel);
+          if (ok)
+            rowLabelCols{1} = lc;
+          else
+            useRowNames = true;
+          endif
+        else
+          useRowNames = true;
+        endif
+      endif
+
+      if (useRowNames)
+        if (isempty (rowIx))
+          P = table (dataCols{:}, 'VariableNames', colNames);
+        else
+          rn = pivot_row_names (rowLabelCols);
+          if (addTotalRow)
+            rn = [rn; {totalLabel}];
+          endif
+          P = table (dataCols{:}, 'VariableNames', colNames, 'RowNames', rn);
+        endif
+      else
+        allVars = [rowLabelCols, dataCols];
+        allNames = [rowLabelNames, colNames];
+        P = table (allVars{:}, 'VariableNames', allNames);
+      endif
     endfunction
 
   endmethods
@@ -9729,6 +10081,313 @@ function mask = gs_missing_mask (x)
     mask = isnan (x);
   else
     mask = false (size (x));
+  endif
+endfunction
+
+## Build the level structure of one 'pivot' grouping variable COL.  Returns IDX,
+## an n-by-1 vector of level indices (1..L) for the rows of COL (NaN for a row
+## holding a missing value when INCMISS is false, so that row is excluded from
+## every group), LEVVALS, a typed column vector with one representative value per
+## level used to build row labels and column names, MISSLVL, a 1-by-L logical
+## flagging the missing level, and an errmsg body (empty on success).  Levels are
+## the sorted unique values of COL; a categorical variable uses its category
+## order, and when INCEMPTY is true every category is a level even if unused in
+## the data.  A missing value forms one extra level, sorted last, when INCMISS.
+function [idx, levVals, missLvl, errmsg] = pivot_levels (col, incMiss, incEmpty)
+  idx = [];
+  levVals = [];
+  missLvl = [];
+  errmsg = '';
+  n = size (col, 1);
+  [p, miss, errmsg] = group_col_proxy (col);
+  if (! isempty (errmsg))
+    return;
+  endif
+  if (isa (col, 'categorical') && incEmpty)
+    ## Every category is a level, in category order; codes are the proxy.
+    cats = categories (col);
+    L = numel (cats);
+    idx = double (col)(:);
+    levVals = categorical (cats(:), cats, 'Ordinal', isordinal (col));
+    missLvl = false (1, L);
+  else
+    ## Observed levels only, sorted by proxy value ascending.
+    idx = NaN (n, 1);
+    keep = find (! miss);
+    if (isempty (keep))
+      levVals = col([], :);
+      L = 0;
+      missLvl = [];
+    else
+      [~, ia, ic] = unique (p(keep,:), "rows");
+      idx(keep) = ic;
+      levVals = col(keep(ia), :);
+      L = numel (ia);
+      missLvl = false (1, L);
+    endif
+  endif
+  ## A missing value forms one extra level, sorted last, when included.
+  if (any (miss))
+    if (incMiss)
+      L = L + 1;
+      idx(miss) = L;
+      mrow = find (miss, 1);
+      levVals = [levVals; col(mrow, :)];
+      missLvl = [missLvl, true];
+    else
+      idx(miss) = NaN;
+    endif
+  endif
+endfunction
+
+## Group the rows of one 'pivot' dimension (rows or columns) defined by the
+## grouping-variable columns GRPCOLS (a cell array, empty for an omitted
+## dimension).  N is the table height.  Returns GID, an n-by-1 group index per
+## row (NaN when the row is excluded), NG, the number of groups, LVLOF, an
+## ng-by-K matrix of per-variable level indices for each group, LEVVALS, a
+## 1-by-K cell of the per-variable typed level values from 'pivot_levels',
+## MISSLVLS, a 1-by-K cell of the per-variable missing-level logical flags, and
+## an errmsg body (empty on success).  When INCEMPTY is true the groups span the
+## full Cartesian product of the variables' levels (so unused combinations appear
+## as empty groups); otherwise only the observed combinations are kept, sorted in
+## ascending level order with the first variable varying slowest.
+function [gid, ng, lvlOf, levVals, missLvls, errmsg] = ...
+                              pivot_dimension (grpCols, n, incMiss, incEmpty)
+  errmsg = '';
+  K = numel (grpCols);
+  if (K == 0)
+    ## An omitted dimension is a single group holding every row.
+    gid = ones (n, 1);
+    ng = 1;
+    lvlOf = zeros (1, 0);
+    levVals = {};
+    missLvls = {};
+    return;
+  endif
+  idxAll = NaN (n, K);
+  levVals = cell (1, K);
+  missLvls = cell (1, K);
+  sizes = zeros (1, K);
+  for j = 1:K
+    [idx, lv, ml, errmsg] = pivot_levels (grpCols{j}, incMiss, incEmpty);
+    if (! isempty (errmsg))
+      gid = []; ng = 0; lvlOf = [];
+      return;
+    endif
+    idxAll(:,j) = idx;
+    levVals{j} = lv;
+    missLvls{j} = ml;
+    sizes(j) = size (lv, 1);
+  endfor
+  gid = NaN (n, 1);
+  if (incEmpty)
+    ## Full Cartesian product, first variable slowest (most significant).
+    ng = prod (sizes);
+    lvlOf = ones (ng, K);
+    period = 1;
+    for j = K:-1:1
+      lvlOf(:,j) = mod (floor ((0:ng-1)' / period), sizes(j)) + 1;
+      period = period * sizes(j);
+    endfor
+    valid = all (! isnan (idxAll), 2);
+    lin = zeros (n, 1);
+    period = 1;
+    for j = K:-1:1
+      col = idxAll(:,j);
+      col(isnan (col)) = 1;
+      lin = lin + (col - 1) * period;
+      period = period * sizes(j);
+    endfor
+    gid(valid) = lin(valid) + 1;
+  else
+    ## Observed combinations only, in ascending level order.
+    valid = all (! isnan (idxAll), 2);
+    if (! any (valid))
+      ng = 0;
+      lvlOf = zeros (0, K);
+      return;
+    endif
+    [u, ~, ic] = unique (idxAll(valid,:), "rows");
+    ng = size (u, 1);
+    lvlOf = u;
+    gid(valid) = ic;
+  endif
+endfunction
+
+## Map a scalar grouping value VAL to the character vector used as a 'pivot'
+## column variable name (or part of one).  Logical values render as 'true' or
+## 'false', numeric values through 'num2str', and text, categorical, datetime,
+## duration, and calendarDuration values through their displayed text.  A missing
+## value renders as '<undefined>' so the resulting name is never empty.
+function s = pivot_value_name (val)
+  if (isa (val, 'categorical'))
+    if (ismissing (val))
+      s = '<undefined>';
+    else
+      c = cellstr (val);
+      s = c{1};
+    endif
+  elseif (isa (val, 'string'))
+    if (ismissing (val))
+      s = '<missing>';
+    else
+      s = char (val);
+    endif
+  elseif (iscellstr (val))
+    s = val{1};
+  elseif (ischar (val))
+    s = val;
+  elseif (islogical (val))
+    if (val)
+      s = 'true';
+    else
+      s = 'false';
+    endif
+  elseif (isa (val, 'datetime') || isa (val, 'duration') ...
+          || isa (val, 'calendarDuration'))
+    s = char (val);
+  elseif (isnumeric (val))
+    s = num2str (val);
+  else
+    s = char (val);
+  endif
+  if (isempty (s))
+    s = '<undefined>';
+  endif
+endfunction
+
+## Return the value 'pivot' places in an empty cell for the named method M.
+function val = pivot_empty_value (m)
+  if (any (strcmp (m, {'sum', 'nnz', 'nummissing', 'numunique'})))
+    val = 0;
+  else
+    val = NaN;
+  endif
+endfunction
+
+## Return a one-row missing value MV of the same type as X for 'pivot' Method
+## 'none' empty cells; OK is false when the type has no missing value.
+function [mv, ok] = pivot_missing_scalar (x)
+  ok = true;
+  mv = [];
+  mm = any (gs_missing_mask (x), 2);
+  if (any (mm))
+    mv = x(find (mm, 1), :);
+  elseif (isnumeric (x))
+    mv = nan (1, size (x, 2));
+  else
+    ok = false;
+  endif
+endfunction
+
+## Build one 'pivot' output column for Method 'none' (rearrange without
+## aggregating): column C of the pivot, length NR, of the same type as DATAVALS.
+## Each cell must hold at most one value; an empty cell is filled with a missing
+## value.  RGID and CGID are the per-row group indices.  Returns an errmsg body
+## (empty on success) emitted by the caller.
+function [col, errmsg] = pivot_none_column (dataVals, rGid, cGid, c, nR)
+  errmsg = '';
+  col = [];
+  srcRow = ones (nR, 1);
+  hasVal = false (nR, 1);
+  for r = 1:nR
+    rows = find (rGid == r & cGid == c);
+    if (numel (rows) > 1)
+      errmsg = strcat ("Method 'none' allows at most one value per cell, but", ...
+                       " a group holds several; specify an aggregating method");
+      return;
+    elseif (numel (rows) == 1)
+      srcRow(r) = rows;
+      hasVal(r) = true;
+    endif
+  endfor
+  col = dataVals(srcRow, :);
+  if (! all (hasVal))
+    [mv, ok] = pivot_missing_scalar (dataVals);
+    if (! ok)
+      errmsg = sprintf (strcat ("Method 'none' with empty cells is not", ...
+                                " supported for data of type '%s'"), ...
+                        class (dataVals));
+      col = [];
+      return;
+    endif
+    col(! hasVal, :) = mv;
+  endif
+endfunction
+
+## Build the cellstr RowNames for a 'pivot' with RowLabelPlacement 'rownames'
+## from the row-label columns ROWLABELCOLS (a 1-by-K cell of typed columns),
+## joining the per-variable displayed values of each row with '_'.
+function rn = pivot_row_names (rowLabelCols)
+  K = numel (rowLabelCols);
+  nR = size (rowLabelCols{1}, 1);
+  rn = cell (nR, 1);
+  for r = 1:nR
+    parts = cell (1, K);
+    for j = 1:K
+      parts{j} = pivot_value_name (rowLabelCols{j}(r, :));
+    endfor
+    rn{r} = strjoin (parts, '_');
+  endfor
+endfunction
+
+## Append the 'Overall_<method>' totals label LABEL as one extra element of the
+## row-label column COL for 'pivot' IncludeTotals, keeping its type.  OK is false
+## when COL cannot hold the text label (a numeric, datetime, or duration row
+## label), so the caller falls back to row-name labelling.
+function [col, ok] = pivot_append_label (col, label)
+  ok = true;
+  if (isa (col, 'categorical'))
+    if (! iscategory (col, label))
+      col = addcats (col, label);
+    endif
+    col(end+1, 1) = label;
+  elseif (isa (col, 'string'))
+    col(end+1, 1) = label;
+  elseif (iscellstr (col))
+    col(end+1, 1) = {label};
+  else
+    ok = false;
+  endif
+endfunction
+
+## Validate a logical-scalar 'pivot' option VAL named NAME, returning it as a
+## logical scalar.
+function tf = pivot_logical_opt (name, val)
+  if (! (isscalar (val) && (islogical (val) || isnumeric (val))))
+    error ("table.pivot: '%s' must be a logical scalar.", name);
+  endif
+  tf = logical (val);
+endfunction
+
+## Compute one 'pivot' cell value: apply METHOD to the data of the rows ROWS of
+## one row-and-column group.  HASDV flags whether a data variable is given;
+## DATAVALS holds its values.  'count' counts rows (or, with a data variable, the
+## non-missing data values), 'percentage' is the row count as a percentage of
+## TOTALASSIGNED, an empty cell takes the named method's empty value, and every
+## other named method or function handle is applied through 'gs_apply_method'.
+## Returns an errmsg body (empty on success) emitted by the caller.
+function [v, errmsg] = pivot_cell_value (method, hasDV, dataVals, rows, ...
+                                         totalAssigned)
+  errmsg = '';
+  if (ischar (method) && strcmp (method, 'count'))
+    if (! hasDV)
+      v = numel (rows);
+    else
+      v = sum (! any (gs_missing_mask (dataVals(rows,:)), 2));
+    endif
+  elseif (ischar (method) && strcmp (method, 'percentage'))
+    v = 100 * numel (rows) / totalAssigned;
+  elseif (isempty (rows))
+    ## An empty cell takes the method's empty value; a function handle is not
+    ## invoked on an empty slice, the cell is left missing.
+    if (ischar (method))
+      v = pivot_empty_value (method);
+    else
+      v = NaN;
+    endif
+  else
+    [v, errmsg] = gs_apply_method (method, dataVals(rows,:));
   endif
 endfunction
 
