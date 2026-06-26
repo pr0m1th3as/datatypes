@@ -18,6 +18,7 @@ this program; if not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <fstream>
+#include <sstream>
 #include <stdint.h>
 #include <iostream>
 #include <octave/oct.h>
@@ -78,8 +79,25 @@ This is a helper IO function for the @qcode{table2csv} method of the \
         word += sep;
       }
 
+      // Integer scalar values are written exactly: a double cannot hold the
+      // full 64-bit integer range, so bypass the double conversion below.
+      if (C(row, col).isinteger () && C(row, col).numel () == 1)
+      {
+        ostringstream oss;
+        if (C(row, col).is_uint8_type ()  || C(row, col).is_uint16_type () ||
+            C(row, col).is_uint32_type () || C(row, col).is_uint64_type ())
+        {
+          oss << C(row, col).uint64_scalar_value ().value ();
+        }
+        else
+        {
+          oss << C(row, col).int64_scalar_value ().value ();
+        }
+        word += oss.str ();
+      }
+
       // Real numeric values
-      if (C(row, col).is_real_scalar ())
+      else if (C(row, col).is_real_scalar ())
       {
         double value = C(row, col).double_value ();
         // Handle NaN first
@@ -103,6 +121,14 @@ This is a helper IO function for the @qcode{table2csv} method of the \
       else if (C(row, col).is_string ())
       {
         string str = C(row, col).string_value ();
+        // Escape embedded quotes by doubling them (RFC 4180) so that
+        // __csv2table__ can restore them when reading the field back.
+        size_t pos = 0;
+        while ((pos = str.find (prot, pos)) != string::npos)
+        {
+          str.insert (pos, prot);
+          pos += 2;
+        }
         str = prot + str + prot;
         word += str;
       }

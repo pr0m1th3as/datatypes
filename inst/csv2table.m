@@ -172,8 +172,13 @@ function tbl = csv2table (name, varargin)
     error ("csv2table: %s.", C);
   endif
 
-  ## Get first comment line (as saved by 'table2csv' method)
-  H_key = strsplit (C{1,1});
+  ## Get first comment line (as saved by 'table2csv' method).  A generic CSV
+  ## may carry a number in its first cell, so only attempt to split a string.
+  if (ischar (C{1,1}))
+    H_key = strsplit (C{1,1});
+  else
+    H_key = {};
+  endif
   if (numel (H_key) == 13)
     H_txt = strjoin (H_key([1,2,4,5,7,8,10,11,13]));
   else
@@ -275,17 +280,15 @@ function tbl = csv2table (name, varargin)
     C(:,rowNamesColumn) = [];
   endif
 
-  ## Read variable names
+  ## Read variable names, descriptions, and units from their respective lines.
+  ## All line numbers refer to the same frame, so the values are read first and
+  ## the consumed header rows are removed together below -- removing them one at
+  ## a time would shift the indices of the lines still to be read.
   cols = size (C, 2);
-  if (readVarNames & varNamesLine)
+  if (readVarNames && varNamesLine)
     N = C(varNamesLine,:);
     isnum = cellfun ('isnumeric', N);
     N(isnum) = cellfun ('num2str', N(isnum), "UniformOutput", false);
-    ## Remove variable names line from data and RowNames
-    C(varNamesLine,:) = [];
-    if (has_RowNames)
-      RowNames(varNamesLine,:) = [];
-    endif
     ## Force to valid variable names
     if (strcmpi (varNamingRule, 'modify'))
       N = matlab.lang.makeValidName (N);
@@ -306,11 +309,6 @@ function tbl = csv2table (name, varargin)
     if (! iscellstr (D))
       D = cellstr (string (D));
     endif
-    ## Remove variable descriptions line from data and RowNames
-    C(varDescrLine,:) = [];
-    if (has_RowNames)
-      RowNames(varDescrLine,:) = [];
-    endif
   endif
   if (varUnitsLine)
     U = C(varUnitsLine,:);
@@ -318,10 +316,24 @@ function tbl = csv2table (name, varargin)
     if (! iscellstr (U))
       U = cellstr (string (U));
     endif
-    ## Remove variable units line from data and RowNames
-    C(varUnitsLine,:) = [];
+  endif
+
+  ## Remove all consumed header rows from data and RowNames at once
+  droprows = [];
+  if (readVarNames && varNamesLine)
+    droprows = [droprows, varNamesLine];
+  endif
+  if (varDescrLine)
+    droprows = [droprows, varDescrLine];
+  endif
+  if (varUnitsLine)
+    droprows = [droprows, varUnitsLine];
+  endif
+  droprows = unique (droprows);
+  if (! isempty (droprows))
+    C(droprows,:) = [];
     if (has_RowNames)
-      RowNames(varUnitsLine,:) = [];
+      RowNames(droprows,:) = [];
     endif
   endif
 
@@ -375,7 +387,15 @@ function varValue = cell2var (C, T)
   elseif (strcmp (T, "logical"))
     varValue = logical (cell2mat (C));
   elseif (ismember (T, numvartype))
-    varValue = cast (cell2mat (C), T);
+    ## Cast each element to the declared type directly.  Large integers may
+    ## have been read as int64/uint64 (to avoid double precision loss); casting
+    ## the whole cell2mat result would let a mixed signed/unsigned column be
+    ## promoted to a type that drops some values, so cast element-wise instead.
+    if (all (cellfun (@(x) isa (x, 'double'), C(:))))
+      varValue = cast (cell2mat (C), T);
+    else
+      varValue = cellfun (@(x) cast (x, T), C);
+    endif
   elseif (strcmp (T, "calendarDuration"))
     warning ("csv2table: 'calendarDuration' strings are not converted.");
     varValue = C;
@@ -383,7 +403,18 @@ function varValue = cell2var (C, T)
     warning ("csv2table: 'categorical' strings are not converted.");
     varValue = C;
   elseif (strcmp (T, "datetime"))
-    varValue = datetime (C);
+    ## A 'NaT' token cannot be parsed alongside date strings (the format
+    ## cannot be inferred), so reconstruct missing entries explicitly.  This
+    ## mirrors how a 'NaN' token round-trips for a duration variable.
+    isNaT = strcmp (strtrim (C), 'NaT');
+    if (any (isNaT(:)))
+      varValue = NaT (size (C, 1), size (C, 2));
+      if (! all (isNaT(:)))
+        varValue(! isNaT) = datetime (C(! isNaT));
+      endif
+    else
+      varValue = datetime (C);
+    endif
   elseif (strcmp (T, "duration"))
     varValue = duration (C);
   elseif (strcmp (T, "string"))
@@ -419,8 +450,20 @@ function tbl = cell2tbl (C, T, N, D, U, RowNames);
         varValues{ix} = cell2struct (varC, varN(2,:), 2);
       ## Check for table
       elseif (all (strcmp (varT(1,:), 'table')))
+        ## Pass the nested descriptions/units (rows below the top-level one)
+        ## down so the recursive call restores them on the inner table.
+        if (isempty (D))
+          varD = [];
+        else
+          varD = D(2:end,colIdx);
+        endif
+        if (isempty (U))
+          varU = [];
+        else
+          varU = U(2:end,colIdx);
+        endif
         varValues{ix} = cell2tbl (varC, varT(2:end,:), varN(2:end,:), ...
-                                  [], [], []);
+                                  varD, varU, []);
       endif
     endfor
   endif
@@ -430,18 +473,16 @@ function tbl = cell2tbl (C, T, N, D, U, RowNames);
   else
     tbl = table (varValues{:}, 'VariableNames', varNames, 'RowNames', RowNames);
   endif
-  ## Restore variable descriptions and units, when present.  They hold one
-  ## entry per output column; multicolumn variables repeat them across the
-  ## split columns, so take the first column belonging to each variable.
-  ## Restricted to flat tables: nested tables/structures are not serialized
-  ## with usable descriptions or units.
-  if (size (T, 1) == 1)
-    if (! isempty (D))
-      tbl.Properties.VariableDescriptions = D(1,ii);
-    endif
-    if (! isempty (U))
-      tbl.Properties.VariableUnits = U(1,ii);
-    endif
+  ## Restore variable descriptions and units, when present.  The first header
+  ## row holds each top-level variable's metadata (deeper rows belong to nested
+  ## tables and are restored by the recursive calls above).  Multicolumn
+  ## variables repeat the entry across split columns, so take the first column
+  ## belonging to each variable.
+  if (! isempty (D))
+    tbl.Properties.VariableDescriptions = D(1,ii);
+  endif
+  if (! isempty (U))
+    tbl.Properties.VariableUnits = U(1,ii);
   endif
 endfunction
 
@@ -449,9 +490,16 @@ function varValue = cell2auto (C, textType, datetimeType, durationTypes, ...
                                hexType)
   ## Index empty cells
   idx = cellfun ('isempty', C);
-  ## Numeric columns are always returned as doubles
+  ## Numeric columns are returned as doubles, unless they hold large integers
+  ## that were read as int64/uint64 to avoid double precision loss.
   if (all (cellfun ('isnumeric', C)))
-    varValue = cell2mat (C);
+    if (all (cellfun (@(x) isa (x, 'double'), C)))
+      varValue = cell2mat (C);
+    elseif (any (cellfun (@(x) isa (x, 'int64'), C)))
+      varValue = cellfun (@(x) int64 (x), C);   # a negative large integer present
+    else
+      varValue = cellfun (@(x) uint64 (x), C);
+    endif
   elseif (all (cellfun ('isnumeric', C(! idx))))
     C(idx) = NaN;
     varValue = cell2mat (C);
@@ -557,3 +605,182 @@ endfunction
 %! unwind_protect_cleanup
 %!   delete (fn);
 %! end_unwind_protect
+
+## Test a generic CSV (no vartype header) reads names and auto-detects types
+%!test
+%! fn = tempname ();
+%! fid = fopen (fn, "w");
+%! fputs (fid, "A,B,C\n1,2.5,foo\n3,4.5,bar\n");
+%! fclose (fid);
+%! unwind_protect
+%!   t = csv2table (fn, 'ReadRowNames', false);
+%!   assert_equal (t.Properties.VariableNames, {'A', 'B', 'C'});
+%!   assert_equal (t.A, [1; 3]);
+%!   assert_equal (t.B, [2.5; 4.5]);
+%!   assert_equal (t.C, {'foo'; 'bar'});
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Test 'ReadVariableNames' false generates default Var1, Var2, ... names
+%!test
+%! fn = tempname ();
+%! fid = fopen (fn, "w");
+%! fputs (fid, "1,2\n3,4\n");
+%! fclose (fid);
+%! unwind_protect
+%!   t = csv2table (fn, 'ReadVariableNames', false, 'ReadRowNames', false);
+%!   assert_equal (t.Properties.VariableNames, {'Var1', 'Var2'});
+%!   assert_equal (height (t), 2);
+%!   assert_equal (t.Var1, [1; 3]);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Test 'VariableNames' overrides the names read from the header line
+%!test
+%! fn = tempname ();
+%! fid = fopen (fn, "w");
+%! fputs (fid, "A,B\n1,2\n3,4\n");
+%! fclose (fid);
+%! unwind_protect
+%!   t = csv2table (fn, 'VariableNames', {'x', 'y'}, 'ReadRowNames', false);
+%!   assert_equal (t.Properties.VariableNames, {'x', 'y'});
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Test 'NumHeaderLines' skips leading lines before the header row
+%!test
+%! fn = tempname ();
+%! fid = fopen (fn, "w");
+%! fputs (fid, "junk,more\nA,B\n1,2\n3,4\n");
+%! fclose (fid);
+%! unwind_protect
+%!   t = csv2table (fn, 'NumHeaderLines', 1, 'ReadRowNames', false);
+%!   assert_equal (t.Properties.VariableNames, {'A', 'B'});
+%!   assert_equal (t.A, [1; 3]);
+%!   assert_equal (t.B, [2; 4]);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Test 'RowNamesColumn' reads a column as the table row names
+%!test
+%! fn = tempname ();
+%! fid = fopen (fn, "w");
+%! fputs (fid, "id,v\nr1,10\nr2,20\n");
+%! fclose (fid);
+%! unwind_protect
+%!   t = csv2table (fn, 'ReadRowNames', true, 'RowNamesColumn', 1);
+%!   assert_equal (t.Properties.RowNames, {'r1'; 'r2'});
+%!   assert_equal (t.v, [10; 20]);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Test 'TextType' string returns text columns as a string array
+%!test
+%! fn = tempname ();
+%! fid = fopen (fn, "w");
+%! fputs (fid, "A,B\nfoo,bar\n");
+%! fclose (fid);
+%! unwind_protect
+%!   t = csv2table (fn, 'TextType', 'string', 'ReadRowNames', false);
+%!   assert_equal (class (t.A), 'string');
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Test 'VariableUnitsLine' and 'VariableDescriptionsLine' read the right lines
+%!test
+%! fn = tempname ();
+%! fid = fopen (fn, "w");
+%! fputs (fid, "A,B\nkg,m\nd1,d2\n1,2\n3,4\n");
+%! fclose (fid);
+%! unwind_protect
+%!   t = csv2table (fn, 'VariableUnitsLine', 2, 'VariableDescriptionsLine', 3, ...
+%!                  'ReadRowNames', false);
+%!   assert_equal (t.Properties.VariableUnits, {'kg', 'm'});
+%!   assert_equal (t.Properties.VariableDescriptions, {'d1', 'd2'});
+%!   assert_equal (t.A, [1; 3]);
+%!   assert_equal (t.B, [2; 4]);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Test hexadecimal columns auto-detect to the smallest integer type
+%!test
+%! fn = tempname ();
+%! fid = fopen (fn, "w");
+%! fputs (fid, "h\nFF\n0A\n");
+%! fclose (fid);
+%! unwind_protect
+%!   t = csv2table (fn, 'ReadRowNames', false);
+%!   assert_equal (class (t.h), 'uint8');
+%!   assert_equal (t.h, uint8 ([255; 10]));
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Test header names with spaces are made into valid variable names
+%!test
+%! fn = tempname ();
+%! fid = fopen (fn, "w");
+%! fputs (fid, "my col,other one\n1,2\n");
+%! fclose (fid);
+%! unwind_protect
+%!   t = csv2table (fn, 'ReadRowNames', false);
+%!   assert_equal (t.Properties.VariableNames, {'myCol', 'otherOne'});
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Test a generic CSV whose first cell is numeric does not error on read
+%!test
+%! fn = tempname ();
+%! fid = fopen (fn, "w");
+%! fputs (fid, "10,20\n30,40\n");
+%! fclose (fid);
+%! unwind_protect
+%!   t = csv2table (fn, 'ReadVariableNames', false, 'ReadRowNames', false);
+%!   assert_equal (height (t), 2);
+%!   assert_equal (t.Var1, [10; 30]);
+%!   assert_equal (t.Var2, [20; 40]);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Test duplicate row names are rejected
+%!error <csv2table: 'RowNames' must be unique.> ...
+%! fn = tempname ();
+%! fid = fopen (fn, "w");
+%! fputs (fid, "id,v\nr1,10\nr1,20\n");
+%! fclose (fid);
+%! unwind_protect
+%!   csv2table (fn, 'ReadRowNames', true, 'RowNamesColumn', 1);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Test a large integer column is read exactly as a 64-bit integer (no double loss)
+%!test
+%! fn = tempname ();
+%! fid = fopen (fn, "w");
+%! fputs (fid, "v\n18446744073709551615\n18446744073709551614\n");
+%! fclose (fid);
+%! unwind_protect
+%!   t = csv2table (fn, 'ReadRowNames', false);
+%!   assert_equal (class (t.v), 'uint64');
+%!   assert_equal (t.v, [intmax('uint64'); intmax('uint64') - uint64(1)]);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Test NAME input validation
+%!error <csv2table: NAME must be a character vector or a string scalar.> ...
+%! csv2table (42);
+
+## Test reading a non-existent file reports a clear error
+%!error <csv2table: cannot open file '.*' for reading.> ...
+%! csv2table (fullfile (tempname (), 'no_such_file.csv'));

@@ -696,11 +696,11 @@ classdef table
     ## only when @emph{every} variable has a non-empty description or unit,
     ## respectively.
     ##
-    ## Note the following round-trip limitations when reading the file back with
-    ## @code{csv2table}: @code{calendarDuration} and @code{categorical}
+    ## Note the following round-trip limitations when reading the file back
+    ## with @code{csv2table}: @code{calendarDuration} and @code{categorical}
     ## variables are returned as cell arrays of character vectors (their values
-    ## are not reconstructed), and the descriptions and units of nested tables
-    ## and structures are not restored.
+    ## are not reconstructed), and missing @code{string} values are read back
+    ## as empty strings.
     ##
     ## @end deftypefn
     function table2csv (this, file)
@@ -714,10 +714,20 @@ classdef table
       Nrows = cellfun (@(x) size (x, 1), N);
       Nmaxr = max (Nrows);
       isvar = cellfun (@(x) ! isempty (x), N(1,:));
-      Drows = cellfun (@(x) ! isempty (x), D);
-      Dmaxr = sum (all (Drows(:,isvar), 2));
-      Urows = cellfun (@(x) ! isempty (x), U);
-      Umaxr = sum (all (Urows(:,isvar), 2));
+      ## Descriptions and units are written only when every variable carries
+      ## one; nested variables expand them to as many rows as varNames/varTypes.
+      Drows = cellfun (@(x) size (x, 1), D);
+      if (all (cellfun (@(x) ! isempty (x), D(isvar))))
+        Dmaxr = max (Drows(isvar));
+      else
+        Dmaxr = 0;
+      endif
+      Urows = cellfun (@(x) size (x, 1), U);
+      if (all (cellfun (@(x) ! isempty (x), U(isvar))))
+        Umaxr = max (Urows(isvar));
+      else
+        Umaxr = 0;
+      endif
       ## Initialize header
       Header = repmat ({''}, Nmaxr + Tmaxr + Dmaxr + Umaxr, Ccols);
       ## Populate header
@@ -738,19 +748,19 @@ classdef table
             endfor
           endif
           if (Dmaxr)
-            if (Dmaxr == 1)
+            if (Drows(c) == 1)
               Header{1 + Tmaxr + Nmaxr,c} = D{c};
             else
-              for dr = 1:Dmaxr
+              for dr = 1:Drows(c)
                 Header{dr + Tmaxr + Nmaxr,c} = D{c}{dr};
               endfor
             endif
           endif
           if (Umaxr)
-            if (Umaxr == 1)
+            if (Urows(c) == 1)
               Header{1 + Tmaxr + Nmaxr + Dmaxr,c} = U{c};
             else
-              for ur = 1:Umaxr
+              for ur = 1:Urows(c)
                 Header{ur + Tmaxr + Nmaxr + Dmaxr,c} = U{c}{ur};
               endfor
             endif
@@ -8315,16 +8325,8 @@ classdef table
           for col = 1:size (tmpV, 2)
             nestedN = [nestedN, {{this.VariableNames{ix}; tmpN{col}}}];
             nestedT = [nestedT, {{'table'; tmpT{col}}}];
-            if (isempty (tmpD{col}))
-              nestedD = [nestedD, {{this.VariableDescriptions(ix); {''}}}];
-            else
-              nestedD = [nestedD, {{this.VariableDescriptions(ix); tmpD(col)}}];
-            endif
-            if (isempty (tmpU{col}))
-              nestedU = [nestedU, {{this.VariableUnits(ix); {''}}}];
-            else
-              nestedU = [nestedU, {{this.VariableUnits(ix); tmpU(col)}}];
-            endif
+            nestedD = [nestedD, {{this.VariableDescriptions{ix}; tmpD{col}}}];
+            nestedU = [nestedU, {{this.VariableUnits{ix}; tmpU{col}}}];
           endfor
           N = [N, nestedN];
           T = [T, nestedT];
@@ -8342,8 +8344,8 @@ classdef table
           for col = 1:size (tmpV, 2)
             nestedN = [nestedN, {{this.VariableNames{ix}; tmpN{col}}}];
             nestedT = [nestedT, {{'struct'; tmpT{col}}}];
-            nestedD = [nestedD, {{this.VariableDescriptions(ix); {''}}}];
-            nestedU = [nestedU, {{this.VariableUnits(ix); {''}}}];
+            nestedD = [nestedD, {{this.VariableDescriptions{ix}; ''}}];
+            nestedU = [nestedU, {{this.VariableUnits{ix}; ''}}];
           endfor
           N = [N, nestedN];
           T = [T, nestedT];

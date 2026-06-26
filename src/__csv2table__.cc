@@ -21,6 +21,8 @@ this program; if not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 #include <iostream>
 #include <stdint.h>
+#include <cerrno>
+#include <cstdlib>
 
 #include <octave/ov.h>
 #include <octave/oct.h>
@@ -144,6 +146,9 @@ call it directly. \n\
         // The "NA" token (Octave's missing value, as written by 'table2csv')
         // is not recognized by strtod; map it to NA explicitly.
         bool is_na = (! oinside) && (word == "NA");
+        // A fully consumed, unquoted token is numeric.
+        bool is_num = (word != "") && (! oinside) &&
+                      (err == word_str + word.length ());
         // Store into the cell; check if it is in address argument range
         if (col < cols)
         {
@@ -151,11 +156,44 @@ call it directly. \n\
           {
             C(row, col) = octave_value (octave::numeric_limits<double>::NA ());
           }
+          else if (! is_num)
+          {
+            C(row, col) = octave_value (word);
+          }
           else
           {
-            C(row, col) = ((word == "") || oinside ||
-                           (err != word_str + word.length())) ?
-                          octave_value (word) : octave_value (val);
+            // A plain integer of 16 or more digits cannot be held exactly by
+            // a double, so parse it without loss into a 64-bit integer.
+            size_t start = (word[0] == '+' || word[0] == '-') ? 1 : 0;
+            bool is_int = (word.length () > start);
+            size_t ndig = 0;
+            for (size_t i = start; i < word.length (); i++)
+            {
+              if (word[i] < '0' || word[i] > '9') { is_int = false; break; }
+              ndig++;
+            }
+            if (is_int && ndig >= 16)
+            {
+              errno = 0;
+              if (word[0] == '-')
+              {
+                long long llv = strtoll (word_str, &err, 10);
+                C(row, col) = (errno == 0)
+                              ? octave_value (octave_int64 (llv))
+                              : octave_value (val);
+              }
+              else
+              {
+                unsigned long long ullv = strtoull (word_str, &err, 10);
+                C(row, col) = (errno == 0)
+                              ? octave_value (octave_uint64 (ullv))
+                              : octave_value (val);
+              }
+            }
+            else
+            {
+              C(row, col) = octave_value (val);
+            }
           }
         }
         col++;
