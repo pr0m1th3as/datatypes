@@ -5665,8 +5665,8 @@ classdef table
           endfor
         endfor
         [gcols, gcount] = group_output_cols (A.VariableValues(gIx), G, repRows);
-        B = build_apply_result ('varfun', outFmt, res, outNames, gcols, ...
-                                A.VariableNames(gIx), gcount);
+        B = build_grouped_apply_result ('varfun', outFmt, res, outNames, ...
+                                        gcols, A.VariableNames(gIx), gcount);
       endif
     endfunction
 
@@ -5799,9 +5799,16 @@ classdef table
         nout = 1;
       endif
 
-      ## Build the output variable names.
+      ## Build the output variable names.  Default names are 'Var<k>'; for
+      ## grouped output the numbering continues past the grouping variables and
+      ## the GroupCount column (so the first result is 'Var<ngroup+2>').
       if (isempty (outNames))
-        resNames = arrayfun (@(k) sprintf ("Var%d", k), 1:nout, ...
+        if (isempty (gIx))
+          base = 0;
+        else
+          base = numel (gIx) + 1;
+        endif
+        resNames = arrayfun (@(k) sprintf ("Var%d", base + k), 1:nout, ...
                              "UniformOutput", false);
       else
         resNames = cellstr (outNames)(:)';
@@ -5833,8 +5840,9 @@ classdef table
           res(g,:) = apply_func (func, errHandler, g, nout, args);
         endfor
         [gcols, gcount] = group_output_cols (A.VariableValues(gIx), G, repRows);
-        B = build_apply_result ('rowfun', outFmt, res(:,1:nout), resNames, ...
-                                gcols, A.VariableNames(gIx), gcount);
+        B = build_grouped_apply_result ('rowfun', outFmt, res(:,1:nout), ...
+                                        resNames, gcols, ...
+                                        A.VariableNames(gIx), gcount);
       endif
     endfunction
 
@@ -9334,6 +9342,49 @@ function out = build_apply_result (caller, fmt, res, outNames, gcols, ...
       else
         out = table (vars{:}, 'VariableNames', names, 'RowNames', rowNames);
       endif
+    case 'uniform'
+      out = [];
+      for c = 1:C
+        colvals = res(:,c);
+        if (! all (cellfun (@isscalar, colvals)))
+          error (strcat ("table.%s: OutputFormat 'uniform' requires FUNC", ...
+                         " to return a scalar for each call."), caller);
+        endif
+        out = [out, vertcat(colvals{:})];
+      endfor
+    case 'cell'
+      out = res;
+  endswitch
+endfunction
+
+## Assemble the output of a grouped 'rowfun' or 'varfun' from the NG-by-C cell
+## array of per-group results RES.  Unlike an aggregating apply, FUNC may return
+## several rows for a group; each group g therefore contributes
+## 'size (RES{g,1}, 1)' rows and the grouping columns GCOLS (named GNAMES) and the
+## GCOUNT counts are replicated to match before the per-group results are
+## stacked.  FMT selects the 'table', 'uniform', or 'cell' return format; CALLER
+## names the method for error messages.
+function out = build_grouped_apply_result (caller, fmt, res, outNames, gcols, ...
+                                           gnames, gcount)
+  ng = size (res, 1);
+  C = size (res, 2);
+  switch (fmt)
+    case 'table'
+      repIdx = [];
+      for g = 1:ng
+        repIdx = [repIdx; repmat(g, size (res{g,1}, 1), 1)];
+      endfor
+      rescols = cell (1, C);
+      for c = 1:C
+        rescols{c} = vertcat (res{:,c});
+      endfor
+      gcolsR = cell (1, numel (gcols));
+      for p = 1:numel (gcols)
+        gcolsR{p} = gcols{p}(repIdx,:);
+      endfor
+      vars = [gcolsR, {gcount(repIdx)}, rescols];
+      names = [gnames, {'GroupCount'}, outNames];
+      out = table (vars{:}, 'VariableNames', names);
     case 'uniform'
       out = [];
       for c = 1:C

@@ -4031,6 +4031,22 @@
 %! T = table ([1; 1; 2; 2], [10; 20; 30; 40], 'VariableNames', {'g', 'x'});
 %! v = varfun (@sum, T, 'GroupingVariables', 'g', 'OutputFormat', 'uniform');
 %! assert_equal (v, [30; 70]);
+%!test
+%! ## A grouped FUNC may return several rows per group; the grouping and
+%! ## GroupCount columns are replicated to match the stacked results
+%! T = table ([1; 1; 2; 2], [10; 20; 30; 40], 'VariableNames', {'g', 'x'});
+%! B = varfun (@(x) x * 2, T, 'GroupingVariables', 'g');
+%! assert_equal (B.Properties.VariableNames, {'g', 'GroupCount', 'Fun_x'});
+%! assert_equal (B.g, [1; 1; 2; 2]);
+%! assert_equal (B.GroupCount, [2; 2; 2; 2]);
+%! assert_equal (B.Fun_x, [20; 40; 60; 80]);
+%!test
+%! ## Grouped 'cell' output holds one cell per group with the full result
+%! T = table ([1; 1; 2; 2], [10; 20; 30; 40], 'VariableNames', {'g', 'x'});
+%! C = varfun (@(x) x * 2, T, 'GroupingVariables', 'g', 'OutputFormat', 'cell');
+%! assert_equal (size (C), [2, 1]);
+%! assert_equal (C{1}, [20; 40]);
+%! assert_equal (C{2}, [60; 80]);
 %!error <table.varfun: FUNC must be a function handle.> varfun (1, table ([1; 2]))
 %!error <table.varfun: invalid 'OutputFormat' value 'bogus'.> ...
 %! varfun (@sum, table ([1; 2]), 'OutputFormat', 'bogus')
@@ -4083,13 +4099,24 @@
 %! B = rowfun (@(x, y) x + y, T);
 %! assert_equal (B.Properties.RowNames, T.Properties.RowNames);
 %!test
-%! ## 'GroupingVariables' apply FUNC per group with a GroupCount column
+%! ## 'GroupingVariables' apply FUNC per group with a GroupCount column; the
+%! ## default output name continues past the grouping and GroupCount columns
 %! T = table ([1; 1; 2; 2], [10; 20; 30; 40], 'VariableNames', {'g', 'x'});
 %! B = rowfun (@(x) sum (x), T, 'GroupingVariables', 'g');
-%! assert_equal (B.Properties.VariableNames, {'g', 'GroupCount', 'Var1'});
+%! assert_equal (B.Properties.VariableNames, {'g', 'GroupCount', 'Var3'});
 %! assert_equal (B.g, [1; 2]);
 %! assert_equal (B.GroupCount, [2; 2]);
-%! assert_equal (B.Var1, [30; 70]);
+%! assert_equal (B.Var3, [30; 70]);
+%!test
+%! ## A grouped FUNC may return several rows per group; the grouping and
+%! ## GroupCount columns are replicated to match the stacked results
+%! T = table ([1; 1; 2; 2], [10; 20; 30; 40], [5; 6; 7; 8], ...
+%!            'VariableNames', {'g', 'x', 'y'});
+%! B = rowfun (@(x, y) x + y, T, 'GroupingVariables', 'g');
+%! assert_equal (B.Properties.VariableNames, {'g', 'GroupCount', 'Var3'});
+%! assert_equal (B.g, [1; 1; 2; 2]);
+%! assert_equal (B.GroupCount, [2; 2; 2; 2]);
+%! assert_equal (B.Var3, [15; 26; 37; 48]);
 %!error <table.rowfun: FUNC must be a function handle.> rowfun (1, table ([1; 2]))
 %!error <table.rowfun: 'SeparateInputs' must be a logical scalar.> ...
 %! rowfun (@(x) x, table ([1; 2]), 'SeparateInputs', 'yes')
