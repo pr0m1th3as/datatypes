@@ -6245,16 +6245,184 @@ classdef table
       G = subsetrows (T, find (keep));
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {table} {@var{G} =} grouptransform (@var{T}, @var{groupvars}, @var{method})
+    ## @deftypefnx {table} {@var{G} =} grouptransform (@var{T}, @var{groupvars}, @var{method}, @var{datavars})
+    ## @deftypefnx {table} {@var{G} =} grouptransform (@dots{}, @var{Name}, @var{Value})
+    ##
+    ## Transform the data variables of a table group by group.
+    ##
+    ## @code{@var{G} = grouptransform (@var{T}, @var{groupvars}, @var{method})}
+    ## groups the rows of the table @var{T} by the grouping variables
+    ## @var{groupvars}, applies @var{method} to each data variable within each
+    ## group, and returns the table @var{G} with the transformed values, one row
+    ## per row of @var{T} and in the original order.  @var{groupvars} selects the
+    ## grouping variables by name, index, logical vector, function handle, or
+    ## @code{vartype} subscript.
+    ##
+    ## @var{method} is one of the transform names below or a function handle:
+    ##
+    ## @table @asis
+    ## @item @qcode{'zscore'}
+    ## Center and scale each group to zero mean and unit standard deviation.
+    ##
+    ## @item @qcode{'norm'}
+    ## Divide each group by its 2-norm.
+    ##
+    ## @item @qcode{'meancenter'}
+    ## Subtract the group mean.
+    ##
+    ## @item @qcode{'rescale'}
+    ## Rescale each group to the range @code{[0, 1]}.
+    ##
+    ## @item @qcode{'meanfill'}
+    ## Replace missing values with the group mean.
+    ##
+    ## @item @qcode{'linearfill'}
+    ## Fill missing values by linear interpolation within the group; leading and
+    ## trailing missing values are left unchanged.
+    ## @end table
+    ##
+    ## For the named methods @code{NaN} values are omitted when computing the
+    ## group statistics.  A function handle is applied to each group's slice of
+    ## each data variable and must return either a single row (broadcast to all
+    ## the group's rows) or a result with one row per row of the group.
+    ##
+    ## @code{@var{G} = grouptransform (@var{T}, @var{groupvars}, @var{method},
+    ## @var{datavars})} transforms only the data variables selected by
+    ## @var{datavars} (named, indexed, logical, function handle, or @code{vartype}
+    ## subscript).  By default every variable that is not a grouping variable is a
+    ## data variable.
+    ##
+    ## The following @var{Name}/@var{Value} pair is accepted:
+    ##
+    ## @table @asis
+    ## @item @qcode{'ReplaceValues'}
+    ## A logical scalar.  When @code{true} (the default), each data variable is
+    ## replaced by its transformed values.  When @code{false}, the transformed
+    ## values are appended as new variables named @code{<method>_<datavar>}
+    ## (@code{fun1_<datavar>} for a function handle), leaving the originals in
+    ## place.
+    ## @end table
+    ##
+    ## Rows holding a missing value in a grouping variable form their own groups,
+    ## which are transformed like any other group.  Binning the grouping variables
+    ## (the @var{groupbins} argument) is not yet supported.
+    ##
+    ## @end deftypefn
+    function G = grouptransform (T, groupvars, varargin)
+      if (nargin < 3)
+        print_usage ();
+      endif
+
+      ## The transform method is the first argument after GROUPVARS: a known
+      ## method name or a function handle.  Binning (a GROUPBINS argument in its
+      ## place) is not yet supported.
+      method = varargin{1};
+      knownMethods = {'zscore', 'norm', 'meancenter', 'rescale', ...
+                      'meanfill', 'linearfill'};
+      if (is_function_handle (method))
+        methDisp = 'fun1';
+      elseif (((ischar (method) && isrow (method))
+               || (isa (method, 'string') && isscalar (method)))
+              && any (strcmpi (char (method), knownMethods)))
+        method = lower (char (method));
+        methDisp = method;
+      else
+        error (strcat ("table.grouptransform: METHOD must be one of 'zscore',", ...
+                       " 'norm', 'meancenter', 'rescale', 'meanfill',", ...
+                       " 'linearfill', or a function handle; binning (the", ...
+                       " GROUPBINS argument) is not yet supported."));
+      endif
+
+      ## Split the remaining arguments into the optional positional DATAVARS and
+      ## any Name-Value pairs (a Name-Value region starts at 'ReplaceValues').
+      rest = varargin(2:end);
+      optNames = {'ReplaceValues'};
+      nvStart = numel (rest) + 1;
+      for k = 1:numel (rest)
+        a = rest{k};
+        if (((ischar (a) && isrow (a)) || (isa (a, 'string') && isscalar (a)))
+            && any (strcmpi (char (a), optNames)))
+          nvStart = k;
+          break;
+        endif
+      endfor
+      posArgs = rest(1:nvStart-1);
+      nvArgs = rest(nvStart:end);
+      if (numel (posArgs) > 1)
+        error ("table.grouptransform: too many positional arguments.");
+      endif
+      if (numel (posArgs) == 1)
+        datavars = posArgs{1};
+        hasDataVars = true;
+      else
+        datavars = [];
+        hasDataVars = false;
+      endif
+
+      dfValues = {true};
+      replaceVals = parsePairedArguments (optNames, dfValues, nvArgs(:));
+      if (! (isscalar (replaceVals)
+             && (islogical (replaceVals) || isnumeric (replaceVals))))
+        error (strcat ("table.grouptransform: 'ReplaceValues' must be a", ...
+                       " logical scalar."));
+      endif
+      replaceVals = logical (replaceVals);
+
+      ## Resolve grouping and data variables.  The default data variables are all
+      ## variables that are not grouping variables.
+      gIx = resolveVarRef (T, groupvars)(:)';
+      if (isempty (gIx))
+        error (strcat ("table.grouptransform: at least one grouping variable", ...
+                       " is required."));
+      endif
+      if (hasDataVars)
+        dIx = resolveVarRef (T, datavars)(:)';
+      else
+        dIx = 1:width (T);
+        dIx(ismember (dIx, gIx)) = [];
+      endif
+
+      ## Group the rows, treating missing grouping values as their own groups so
+      ## that every row belongs to exactly one group.
+      [Grp, ng, ~, errmsg] = gs_group_rows (T.VariableValues(gIx), true);
+      if (! isempty (errmsg))
+        error ("table.grouptransform: %s", errmsg);
+      endif
+
+      ## Transform each data variable, group by group.
+      transCols = cell (1, numel (dIx));
+      for i = 1:numel (dIx)
+        [tc, errmsg] = gt_transform_col (method, T.VariableValues{dIx(i)}, ...
+                                         Grp, ng);
+        if (! isempty (errmsg))
+          error ("table.grouptransform: %s (variable '%s').", errmsg, ...
+                 T.VariableNames{dIx(i)});
+        endif
+        transCols{i} = tc;
+      endfor
+
+      if (replaceVals)
+        G = T;
+        for i = 1:numel (dIx)
+          G.VariableValues{dIx(i)} = transCols{i};
+        endfor
+      else
+        newNames = cell (1, numel (dIx));
+        for i = 1:numel (dIx)
+          newNames{i} = sprintf ("%s_%s", methDisp, T.VariableNames{dIx(i)});
+        endfor
+        G = addvars (T, transCols{:}, 'NewVariableNames', newNames);
+      endif
+    endfunction
+
   endmethods
 
   methods (Hidden)
 
     function out = pivot (this)
       error ("table.pivot: not implemented yet.");
-    endfunction
-
-    function out = grouptransform (this)
-      error ("table.grouptransform: not implemented yet.");
     endfunction
 
   endmethods
@@ -9271,6 +9439,93 @@ function [keep, errmsg] = gf_keep_mask (method, dataCols, G, ng)
       keep(rows) = keep(rows) & m;
     endfor
   endfor
+endfunction
+
+## Transform one data variable COL group by group for 'grouptransform', applying
+## METHOD (a transform-name char vector or a function handle) to each group's
+## slice and returning OUT, the transformed values the same size as COL.  G is
+## the n-by-1 group-number vector (1..NG), every row assigned to a group.  A
+## function handle must return a single row (broadcast) or one row per group row.
+## Returns an errmsg body (empty on success) emitted by the caller.
+function [out, errmsg] = gt_transform_col (method, col, G, ng)
+  out = [];
+  errmsg = '';
+  if (! (isnumeric (col) || islogical (col)))
+    errmsg = sprintf (strcat ("grouptransform requires numeric or logical", ...
+                              " data; got '%s'"), class (col));
+    return;
+  endif
+  x = double (col);
+  out = x;
+  for g = 1:ng
+    rows = find (G == g);
+    if (isempty (rows))
+      continue;
+    endif
+    slice = x(rows,:);
+    if (is_function_handle (method))
+      r = method (slice);
+      if (! (isnumeric (r) || islogical (r)))
+        errmsg = "the transform function must return a numeric result.";
+        out = [];
+        return;
+      endif
+      if (size (r, 1) == 1)
+        r = repmat (r, numel (rows), 1);
+      endif
+      if (! isequal (size (r), size (slice)))
+        errmsg = strcat ("the transform function must return a result the", ...
+                         " same size as the group, or a single row.");
+        out = [];
+        return;
+      endif
+      out(rows,:) = r;
+    else
+      for c = 1:columns (slice)
+        out(rows,c) = gt_apply_named (method, slice(:,c));
+      endfor
+    endif
+  endfor
+endfunction
+
+## Apply a single named transform METHOD to the column vector X (a group's slice
+## of one data variable), returning the transformed values V the same size as X.
+## NaN values are omitted when computing the group statistics; the centring and
+## scaling methods leave NaN in place, while 'meanfill'/'linearfill' fill them.
+function v = gt_apply_named (method, x)
+  nan = isnan (x);
+  xo = x(! nan);
+  switch (method)
+    case 'meancenter'
+      v = x - mean (xo);
+    case 'zscore'
+      v = (x - mean (xo)) / std (xo);
+    case 'norm'
+      v = x / norm (xo);
+    case 'rescale'
+      mn = min (xo);
+      mx = max (xo);
+      v = (x - mn) / (mx - mn);
+    case 'meanfill'
+      v = x;
+      v(nan) = mean (xo);
+    case 'linearfill'
+      v = gt_linearfill (x);
+  endswitch
+endfunction
+
+## Fill the missing values of the column vector X by linear interpolation over
+## the non-missing positions, leaving leading and trailing missing values (and
+## any group with fewer than two non-missing values) unchanged.
+function v = gt_linearfill (x)
+  v = x;
+  idx = find (! isnan (x));
+  if (numel (idx) >= 2)
+    pos = (1:numel (x))';
+    vi = interp1 (idx, x(idx), pos, "linear");
+    fill = isnan (x) & pos > idx(1) & pos < idx(end);
+    v(fill) = vi(fill);
+  endif
 endfunction
 
 ## Normalise the 'groupsummary' METHOD argument into a cell array of method specs
