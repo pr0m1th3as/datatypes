@@ -4902,6 +4902,14 @@
 %!error <table.subsasgn: elements in 'RowNames' must be unique.> ...
 %! T = table ([1;2;3], 'VariableNames', {'x'}); ...
 %! T.Properties.RowNames = {'r1', 'r1', 'r2'};
+%!test  # RowNames set from a variable with unique values moves and drops it
+%! T = table ({'x'; 'y'; 'z'}, [1; 2; 3], 'VariableNames', {'G', 'V'});
+%! T.Properties.RowNames = 'G';
+%! assert_equal (T.Properties.RowNames, {'x'; 'y'; 'z'});
+%! assert_equal (T.Properties.VariableNames, {'V'});
+%!error <table.subsasgn: elements in 'RowNames' must be unique.> ...
+%! T = table ({'x'; 'y'; 'x'}, [1; 2; 3], 'VariableNames', {'G', 'V'}); ...
+%! T.Properties.RowNames = 'G';
 
 ## 'subsasgn' sets custom properties through Properties.CustomProperties
 %!test  # table-scoped and variable-scoped custom properties

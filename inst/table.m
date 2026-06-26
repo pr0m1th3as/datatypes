@@ -7206,6 +7206,13 @@ classdef table
                     if (ischar (selvar) || isa (selvar, 'string'))
                       selvar = cellstr (selvar);
                     endif
+                    ## RowNames must be unique, just as for the array-form
+                    ## assignment and the constructor.  The referenced
+                    ## variable may contain duplicates, so guard here.
+                    if (numel (__unique__ (selvar)) != numel (selvar))
+                      error (strcat ("table.subsasgn: elements in", ...
+                                     " 'RowNames' must be unique."));
+                    endif
                     ## When RowNames as set this way, the referenced Variable
                     ## is removed. Octave specific behavior. MATLAB does not
                     ## support this feature.
