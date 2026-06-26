@@ -3991,6 +3991,111 @@
 %!error <G must contain every integer> splitapply (@mean, table ([1; 2]), [1; 3])
 %!error <FUNC must be a function handle> splitapply (1, table ([1; 2]), [1; 2])
 
+## 'varfun' applies FUNC to each variable; output names are FUNC_VARNAME
+%!test
+%! T = table ([1; 2; 3], [10; 20; 30], 'VariableNames', {'a', 'b'});
+%! B = varfun (@sum, T);
+%! assert_equal (B.Properties.VariableNames, {'sum_a', 'sum_b'});
+%! assert_equal (B.sum_a, 6);
+%! assert_equal (B.sum_b, 60);
+%!test
+%! ## Anonymous functions are named with the 'Fun' prefix
+%! T = table ([1; 2; 3], [10; 20; 30], 'VariableNames', {'a', 'b'});
+%! B = varfun (@(x) max (x), T);
+%! assert_equal (B.Properties.VariableNames, {'Fun_a', 'Fun_b'});
+%! assert_equal (B.Fun_b, 30);
+%!test
+%! ## 'OutputFormat' 'uniform' concatenates scalar results into an array
+%! T = table ([1; 2; 3], [10; 20; 30], 'VariableNames', {'a', 'b'});
+%! assert_equal (varfun (@mean, T, 'OutputFormat', 'uniform'), [2, 20]);
+%!test
+%! ## 'OutputFormat' 'cell' returns the results in a cell array
+%! T = table ([1; 2; 3], [10; 20; 30], 'VariableNames', {'a', 'b'});
+%! assert_equal (varfun (@sum, T, 'OutputFormat', 'cell'), {6, 60});
+%!test
+%! ## 'InputVariables' restricts the variables passed to FUNC
+%! T = table ([1; 2; 3], [10; 20; 30], 'VariableNames', {'a', 'b'});
+%! B = varfun (@sum, T, 'InputVariables', 'a');
+%! assert_equal (B.Properties.VariableNames, {'sum_a'});
+%! assert_equal (B.sum_a, 6);
+%!test
+%! ## 'GroupingVariables' add grouping columns and a GroupCount column
+%! T = table ([1; 1; 2; 2], [10; 20; 30; 40], 'VariableNames', {'g', 'x'});
+%! B = varfun (@sum, T, 'GroupingVariables', 'g');
+%! assert_equal (B.Properties.VariableNames, {'g', 'GroupCount', 'sum_x'});
+%! assert_equal (B.g, [1; 2]);
+%! assert_equal (B.GroupCount, [2; 2]);
+%! assert_equal (B.sum_x, [30; 70]);
+%!test
+%! ## Grouped 'uniform' output holds only the per-group results
+%! T = table ([1; 1; 2; 2], [10; 20; 30; 40], 'VariableNames', {'g', 'x'});
+%! v = varfun (@sum, T, 'GroupingVariables', 'g', 'OutputFormat', 'uniform');
+%! assert_equal (v, [30; 70]);
+%!error <table.varfun: FUNC must be a function handle.> varfun (1, table ([1; 2]))
+%!error <table.varfun: invalid 'OutputFormat' value 'bogus'.> ...
+%! varfun (@sum, table ([1; 2]), 'OutputFormat', 'bogus')
+%!error <table.varfun: there are no variables to which to apply FUNC.> ...
+%! varfun (@sum, table ([1; 2], 'VariableNames', {'g'}), 'GroupingVariables', 'g')
+%!error <table.varfun: OutputFormat 'uniform' requires FUNC to return a scalar for each call.> ...
+%! varfun (@(x) x, table ([1; 2; 3]), 'OutputFormat', 'uniform')
+
+## 'rowfun' applies FUNC to each row; default output names are Var1, Var2, ...
+%!test
+%! T = table ([1; 2; 3], [10; 20; 30], 'VariableNames', {'a', 'b'});
+%! B = rowfun (@(x, y) x + y, T);
+%! assert_equal (B.Properties.VariableNames, {'Var1'});
+%! assert_equal (B.Var1, [11; 22; 33]);
+%!test
+%! ## Multiple outputs with 'OutputVariableNames'
+%! T = table ([1; 2; 3], [10; 20; 30], 'VariableNames', {'a', 'b'});
+%! B = rowfun (@(x, y) deal (x + y, x * y), T, ...
+%!             'OutputVariableNames', {'add', 'mul'});
+%! assert_equal (B.Properties.VariableNames, {'add', 'mul'});
+%! assert_equal (B.add, [11; 22; 33]);
+%! assert_equal (B.mul, [10; 40; 90]);
+%!test
+%! ## 'SeparateInputs' false passes the row as a single concatenated argument
+%! T = table ([1; 2; 3], [10; 20; 30], 'VariableNames', {'a', 'b'});
+%! B = rowfun (@(row) sum (row), T, 'SeparateInputs', false);
+%! assert_equal (B.Var1, [11; 22; 33]);
+%!test
+%! ## 'InputVariables' restricts and orders the variables passed to FUNC
+%! T = table ([1; 2; 3], [10; 20; 30], [100; 200; 300], ...
+%!            'VariableNames', {'a', 'b', 'c'});
+%! B = rowfun (@(x, y) x + y, T, 'InputVariables', {'a', 'c'});
+%! assert_equal (B.Var1, [101; 202; 303]);
+%!test
+%! ## 'ExtractCellContents' unwraps cell-valued variables before the call
+%! T = table ({1; 2; 3}, 'VariableNames', {'a'});
+%! B = rowfun (@(x) x * 2, T, 'ExtractCellContents', true);
+%! assert_equal (B.Var1, [2; 4; 6]);
+%!test
+%! ## 'OutputFormat' 'uniform' and 'cell'
+%! T = table ([1; 2; 3], [10; 20; 30], 'VariableNames', {'a', 'b'});
+%! assert_equal (rowfun (@(x, y) x + y, T, 'OutputFormat', 'uniform'), ...
+%!               [11; 22; 33]);
+%! assert_equal (rowfun (@(x, y) x + y, T, 'OutputFormat', 'cell'), ...
+%!               {11; 22; 33});
+%!test
+%! ## Ungrouped output preserves the row names of the input table
+%! T = table ([1; 2], [10; 20], 'VariableNames', {'a', 'b'}, ...
+%!            'RowNames', {'r1', 'r2'});
+%! B = rowfun (@(x, y) x + y, T);
+%! assert_equal (B.Properties.RowNames, T.Properties.RowNames);
+%!test
+%! ## 'GroupingVariables' apply FUNC per group with a GroupCount column
+%! T = table ([1; 1; 2; 2], [10; 20; 30; 40], 'VariableNames', {'g', 'x'});
+%! B = rowfun (@(x) sum (x), T, 'GroupingVariables', 'g');
+%! assert_equal (B.Properties.VariableNames, {'g', 'GroupCount', 'Var1'});
+%! assert_equal (B.g, [1; 2]);
+%! assert_equal (B.GroupCount, [2; 2]);
+%! assert_equal (B.Var1, [30; 70]);
+%!error <table.rowfun: FUNC must be a function handle.> rowfun (1, table ([1; 2]))
+%!error <table.rowfun: 'SeparateInputs' must be a logical scalar.> ...
+%! rowfun (@(x) x, table ([1; 2]), 'SeparateInputs', 'yes')
+%!error <table.rowfun: the number of 'OutputVariableNames' must equal 'NumOutputs'.> ...
+%! rowfun (@(x) x, table ([1; 2]), 'OutputVariableNames', {'p', 'q'}, 'NumOutputs', 1)
+
 ################################################################################
 ##                       **    Auxiliary Methods    **                        ##
 ################################################################################

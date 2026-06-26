@@ -772,11 +772,6 @@ classdef table
 ## 'tail'                                                                     ##
 ##                                                                            ##
 ################################################################################
-##                           Unimplemented Methods                            ##
-##                                                                            ##
-## 'stackedplot'                                                              ##
-##                                                                            ##
-################################################################################
 
   methods (Access = public)
 
@@ -5552,6 +5547,297 @@ classdef table
       endfor
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {table} {@var{B} =} varfun (@var{func}, @var{A})
+    ## @deftypefnx {table} {@var{B} =} varfun (@var{func}, @var{A}, @var{Name}, @var{Value}, @dots{})
+    ##
+    ## Apply a function to each variable of a table.
+    ##
+    ## @code{@var{B} = varfun (@var{func}, @var{A})} applies the function
+    ## handle @var{func} separately to each variable of the table @var{A} and
+    ## returns the results in the table @var{B}.  @var{func} is called once per
+    ## variable with that variable as its single input argument.  By default
+    ## each output variable of @var{B} is named @qcode{@var{f}_@var{v}}, where
+    ## @var{f} is the name of @var{func} (or @qcode{Fun} when @var{func} is
+    ## anonymous) and @var{v} is the name of the corresponding variable of
+    ## @var{A}.
+    ##
+    ## @code{@var{B} = varfun (@var{func}, @var{A}, @var{Name}, @var{Value},
+    ## @dots{})} modifies the operation through the following
+    ## @var{Name}/@var{Value} pairs:
+    ##
+    ## @table @asis
+    ## @item @qcode{'InputVariables'}
+    ## The variables of @var{A} to which @var{func} is applied, given as
+    ## variable names, indices, a logical vector, or a function handle that
+    ## returns @code{true} for the variables to include.  By default @var{func}
+    ## is applied to every variable of @var{A} that is not a grouping variable.
+    ##
+    ## @item @qcode{'GroupingVariables'}
+    ## One or more variables of @var{A} that define groups of rows.  When
+    ## grouping variables are given, @var{func} is applied to the values of each
+    ## input variable within each group, @var{B} has one row per group, and
+    ## @var{B} also includes the grouping variables and a @qcode{GroupCount}
+    ## variable holding the number of rows in each group.  Rows with a missing
+    ## value in any grouping variable are omitted.
+    ##
+    ## @item @qcode{'OutputFormat'}
+    ## The format of @var{B}, one of @qcode{'auto'} (the default, equivalent to
+    ## @qcode{'table'}), @qcode{'table'}, @qcode{'uniform'}, or @qcode{'cell'}.
+    ## For @qcode{'uniform'}, @var{func} must return a scalar on each call and
+    ## the results are concatenated into an array.  For @qcode{'cell'} the
+    ## results are returned in a cell array.  The @qcode{'uniform'} and
+    ## @qcode{'cell'} formats return only the results of @var{func}, without the
+    ## grouping variables or @qcode{GroupCount}.
+    ##
+    ## @item @qcode{'ErrorHandler'}
+    ## A function handle that is called when @var{func} throws an error.  It
+    ## receives a structure with fields @qcode{identifier}, @qcode{message}, and
+    ## @qcode{index}, followed by the same inputs that were passed to
+    ## @var{func}, and its outputs are used in place of the outputs of
+    ## @var{func}.
+    ## @end table
+    ##
+    ## @end deftypefn
+    function B = varfun (func, A, varargin)
+      if (nargin < 2)
+        print_usage ();
+      endif
+      if (! is_function_handle (func))
+        error ("table.varfun: FUNC must be a function handle.");
+      endif
+
+      ## Parse optional Name-Value paired arguments
+      optNames = {'InputVariables', 'GroupingVariables', 'OutputFormat', ...
+                  'ErrorHandler'};
+      dfValues = {[], [], 'auto', []};
+      [inVars, grpVars, outFmt, errHandler] = ...
+                  parsePairedArguments (optNames, dfValues, varargin(:));
+      outFmt = check_output_format ('varfun', outFmt);
+      if (! isempty (errHandler) && ! is_function_handle (errHandler))
+        error ("table.varfun: 'ErrorHandler' must be a function handle.");
+      endif
+
+      ## Resolve grouping variables and input variables (default input is every
+      ## variable that is not a grouping variable).
+      if (isempty (grpVars))
+        gIx = [];
+      else
+        gIx = resolveVarRef (A, grpVars)(:)';
+      endif
+      if (isempty (inVars))
+        iIx = 1:width (A);
+        iIx(ismember (iIx, gIx)) = [];
+      else
+        iIx = resolveVarRef (A, inVars)(:)';
+      endif
+      if (isempty (iIx))
+        error ("table.varfun: there are no variables to which to apply FUNC.");
+      endif
+
+      ## Build the output variable names from the function and variable names.
+      inNames = A.VariableNames(iIx);
+      fname = apply_func_name (func);
+      outNames = strcat (fname, '_', inNames);
+
+      if (isempty (gIx))
+        ## Ungrouped: apply FUNC to each whole variable.
+        res = cell (1, numel (iIx));
+        for k = 1:numel (iIx)
+          out = apply_func (func, errHandler, k, 1, {A.VariableValues{iIx(k)}});
+          res{1,k} = out{1};
+        endfor
+        B = build_apply_result ('varfun', outFmt, res, outNames, {}, {}, []);
+      else
+        ## Grouped: apply FUNC to each group's slice of each variable.
+        inCols = A.VariableValues(iIx);
+        [G, ng, repRows, errmsg] = group_table_rows (A.VariableValues(gIx));
+        if (! isempty (errmsg))
+          error ("table.varfun: %s", errmsg);
+        endif
+        res = cell (ng, numel (iIx));
+        for g = 1:ng
+          rows = (G == g);
+          for k = 1:numel (iIx)
+            col = inCols{k};
+            out = apply_func (func, errHandler, g, 1, {col(rows,:)});
+            res{g,k} = out{1};
+          endfor
+        endfor
+        [gcols, gcount] = group_output_cols (A.VariableValues(gIx), G, repRows);
+        B = build_apply_result ('varfun', outFmt, res, outNames, gcols, ...
+                                A.VariableNames(gIx), gcount);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {table} {@var{B} =} rowfun (@var{func}, @var{A})
+    ## @deftypefnx {table} {@var{B} =} rowfun (@var{func}, @var{A}, @var{Name}, @var{Value}, @dots{})
+    ##
+    ## Apply a function to each row of a table.
+    ##
+    ## @code{@var{B} = rowfun (@var{func}, @var{A})} applies the function
+    ## handle @var{func} to each row of the table @var{A} and returns the
+    ## results in the table @var{B}, which has one row for each row of @var{A}.
+    ## By default the value of each variable in the row is passed to @var{func}
+    ## as a separate input argument, and the output variables of @var{B} are
+    ## named @qcode{Var1}, @qcode{Var2}, and so on.
+    ##
+    ## @code{@var{B} = rowfun (@var{func}, @var{A}, @var{Name}, @var{Value},
+    ## @dots{})} modifies the operation through the following
+    ## @var{Name}/@var{Value} pairs:
+    ##
+    ## @table @asis
+    ## @item @qcode{'InputVariables'}
+    ## The variables of @var{A} that are passed to @var{func}, given as variable
+    ## names, indices, a logical vector, or a function handle.  By default every
+    ## variable of @var{A} that is not a grouping variable is used.
+    ##
+    ## @item @qcode{'GroupingVariables'}
+    ## One or more variables of @var{A} that define groups of rows.  When
+    ## grouping variables are given, @var{func} is applied once to each group,
+    ## receiving the values of each input variable across the rows of the group;
+    ## @var{B} has one row per group and also includes the grouping variables
+    ## and a @qcode{GroupCount} variable.  Rows with a missing value in any
+    ## grouping variable are omitted.
+    ##
+    ## @item @qcode{'OutputVariableNames'}
+    ## The names of the output variables of @var{B}, one per output of
+    ## @var{func}.
+    ##
+    ## @item @qcode{'NumOutputs'}
+    ## The number of output arguments to request from @var{func}.  It defaults
+    ## to the number of @qcode{'OutputVariableNames'} if those are given,
+    ## otherwise to @code{1}.
+    ##
+    ## @item @qcode{'SeparateInputs'}
+    ## A logical scalar.  When @code{true} (the default), the value of each
+    ## input variable is passed to @var{func} as a separate argument.  When
+    ## @code{false}, the values of the row are horizontally concatenated and
+    ## passed as a single argument.
+    ##
+    ## @item @qcode{'ExtractCellContents'}
+    ## A logical scalar.  When @code{true}, the contents of cell-valued
+    ## variables are extracted before being passed to @var{func}.  It defaults
+    ## to @code{false}.
+    ##
+    ## @item @qcode{'OutputFormat'}
+    ## The format of @var{B}, one of @qcode{'auto'} (the default, equivalent to
+    ## @qcode{'table'}), @qcode{'table'}, @qcode{'uniform'}, or @qcode{'cell'}.
+    ## For @qcode{'uniform'}, every call to @var{func} must return scalars of
+    ## the same type, which are concatenated into an array.  For @qcode{'cell'}
+    ## the results are returned in a cell array.  The @qcode{'uniform'} and
+    ## @qcode{'cell'} formats return only the results of @var{func}.
+    ##
+    ## @item @qcode{'ErrorHandler'}
+    ## A function handle that is called when @var{func} throws an error,
+    ## receiving a structure with fields @qcode{identifier}, @qcode{message},
+    ## and @qcode{index} followed by the inputs passed to @var{func}.
+    ## @end table
+    ##
+    ## @end deftypefn
+    function B = rowfun (func, A, varargin)
+      if (nargin < 2)
+        print_usage ();
+      endif
+      if (! is_function_handle (func))
+        error ("table.rowfun: FUNC must be a function handle.");
+      endif
+
+      ## Parse optional Name-Value paired arguments
+      optNames = {'InputVariables', 'GroupingVariables', ...
+                  'OutputVariableNames', 'NumOutputs', 'SeparateInputs', ...
+                  'ExtractCellContents', 'OutputFormat', 'ErrorHandler'};
+      dfValues = {[], [], [], [], true, false, 'auto', []};
+      [inVars, grpVars, outNames, numOut, sepIn, extractCell, outFmt, ...
+       errHandler] = parsePairedArguments (optNames, dfValues, varargin(:));
+      outFmt = check_output_format ('rowfun', outFmt);
+      if (! (isscalar (sepIn) && (islogical (sepIn) || isnumeric (sepIn))))
+        error ("table.rowfun: 'SeparateInputs' must be a logical scalar.");
+      endif
+      sepIn = logical (sepIn);
+      if (! (isscalar (extractCell)
+             && (islogical (extractCell) || isnumeric (extractCell))))
+        error ("table.rowfun: 'ExtractCellContents' must be a logical scalar.");
+      endif
+      extractCell = logical (extractCell);
+      if (! isempty (errHandler) && ! is_function_handle (errHandler))
+        error ("table.rowfun: 'ErrorHandler' must be a function handle.");
+      endif
+
+      ## Resolve grouping variables and input variables (default input is every
+      ## variable that is not a grouping variable).
+      if (isempty (grpVars))
+        gIx = [];
+      else
+        gIx = resolveVarRef (A, grpVars)(:)';
+      endif
+      if (isempty (inVars))
+        iIx = 1:width (A);
+        iIx(ismember (iIx, gIx)) = [];
+      else
+        iIx = resolveVarRef (A, inVars)(:)';
+      endif
+      if (isempty (iIx))
+        error ("table.rowfun: there are no variables to which to apply FUNC.");
+      endif
+
+      ## Determine the number of outputs requested from FUNC.
+      if (! isempty (numOut))
+        if (! (isnumeric (numOut) && isscalar (numOut) && numOut >= 0
+               && numOut == fix (numOut)))
+          error ("table.rowfun: 'NumOutputs' must be a nonnegative integer.");
+        endif
+        nout = numOut;
+        if (! isempty (outNames) && numel (cellstr (outNames)) != nout)
+          error (strcat ("table.rowfun: the number of", ...
+                         " 'OutputVariableNames' must equal 'NumOutputs'."));
+        endif
+      elseif (! isempty (outNames))
+        nout = numel (cellstr (outNames));
+      else
+        nout = 1;
+      endif
+
+      ## Build the output variable names.
+      if (isempty (outNames))
+        resNames = arrayfun (@(k) sprintf ("Var%d", k), 1:nout, ...
+                             "UniformOutput", false);
+      else
+        resNames = cellstr (outNames)(:)';
+      endif
+
+      inCols = A.VariableValues(iIx);
+      if (isempty (gIx))
+        ## Ungrouped: apply FUNC to each row.
+        n = height (A);
+        res = cell (n, max (nout, 1));
+        for r = 1:n
+          rows = false (n, 1);
+          rows(r) = true;
+          args = build_row_args (inCols, rows, sepIn, extractCell);
+          res(r,:) = apply_func (func, errHandler, r, nout, args);
+        endfor
+        B = build_apply_result ('rowfun', outFmt, res(:,1:nout), resNames, ...
+                                {}, {}, [], A.RowNames);
+      else
+        ## Grouped: apply FUNC to the rows of each group.
+        [G, ng, repRows, errmsg] = group_table_rows (A.VariableValues(gIx));
+        if (! isempty (errmsg))
+          error ("table.rowfun: %s", errmsg);
+        endif
+        res = cell (ng, max (nout, 1));
+        for g = 1:ng
+          rows = (G == g);
+          args = build_row_args (inCols, rows, sepIn, extractCell);
+          res(g,:) = apply_func (func, errHandler, g, nout, args);
+        endfor
+        [gcols, gcount] = group_output_cols (A.VariableValues(gIx), G, repRows);
+        B = build_apply_result ('rowfun', outFmt, res(:,1:nout), resNames, ...
+                                gcols, A.VariableNames(gIx), gcount);
+      endif
+    endfunction
+
   endmethods
 
   methods (Hidden)
@@ -5574,14 +5860,6 @@ classdef table
 
     function out = grouptransform (this)
       error ("table.grouptransform: not implemented yet.");
-    endfunction
-
-    function out = rowfun (this)
-      error ("table.rowfun: not implemented yet.");
-    endfunction
-
-    function out = varfun (this)
-      error ("table.varfun: not implemented yet.");
     endfunction
 
   endmethods
@@ -8496,6 +8774,180 @@ function [p, miss, errmsg] = group_col_proxy (col)
     case 'numeric'
       p = double (col)(:);
       miss = isnan (p);
+  endswitch
+endfunction
+
+## Group table rows by the grouping-variable columns GRPCOLS (a cell array of
+## variable values, one per grouping variable), using 'group_col_proxy' on each.
+## Returns G, an n-by-1 vector of group numbers (NaN for rows holding a missing
+## value in any grouping variable), NGROUPS, the number of groups, REPROWS, a
+## representative row index per group in sorted group order, and an errmsg body
+## (empty on success) emitted by the caller.
+function [G, ngroups, repRows, errmsg] = group_table_rows (grpCols)
+  errmsg = '';
+  ngroups = 0;
+  repRows = [];
+  n = size (grpCols{1}, 1);
+  P = [];
+  miss = false (n, 1);
+  for j = 1:numel (grpCols)
+    [p, m, e] = group_col_proxy (grpCols{j});
+    if (! isempty (e))
+      G = [];
+      errmsg = e;
+      return;
+    endif
+    P = [P, p];
+    miss = miss | m;
+  endfor
+  G = NaN (n, 1);
+  keep = find (! miss);
+  if (! isempty (keep))
+    [~, ia, ic] = unique (P(keep,:), "rows");
+    G(keep) = ic;
+    repRows = keep(ia);
+    ngroups = numel (ia);
+  endif
+endfunction
+
+## Build the grouping-variable columns of a grouped apply output from the
+## grouping-variable values GRPCOLS: GCOLS holds the value of each grouping
+## variable at the representative rows REPROWS, and GCOUNT the number of rows in
+## each group, derived from the group-number vector G.
+function [gcols, gcount] = group_output_cols (grpCols, G, repRows)
+  ngroups = numel (repRows);
+  gcols = cell (1, numel (grpCols));
+  for p = 1:numel (grpCols)
+    gcols{p} = grpCols{p}(repRows,:);
+  endfor
+  gcount = accumarray (G(! isnan (G)), 1, [ngroups, 1]);
+endfunction
+
+## Return the name used to prefix 'varfun' output variables: the name of FUNC,
+## or 'Fun' when FUNC is an anonymous function handle.
+function fname = apply_func_name (func)
+  fstr = func2str (func);
+  if (isempty (fstr) || fstr(1) == '@')
+    fname = 'Fun';
+  else
+    fname = fstr;
+  endif
+endfunction
+
+## Validate and normalise an OutputFormat value for the apply methods: map
+## 'auto' to 'table' and accept 'table', 'uniform', and 'cell'.  CALLER names
+## the method for error messages.
+function fmt = check_output_format (caller, fmt)
+  if (isa (fmt, 'string'))
+    fmt = char (fmt);
+  endif
+  if (! (ischar (fmt) && isrow (fmt)))
+    error ("table.%s: 'OutputFormat' must be a character vector.", caller);
+  endif
+  switch (lower (fmt))
+    case {'auto', 'table'}
+      fmt = 'table';
+    case 'uniform'
+      fmt = 'uniform';
+    case 'cell'
+      fmt = 'cell';
+    case 'timetable'
+      error ("table.%s: 'timetable' OutputFormat is not supported.", caller);
+    otherwise
+      error ("table.%s: invalid 'OutputFormat' value '%s'.", caller, fmt);
+  endswitch
+endfunction
+
+## Build the cell array of input arguments passed to FUNC for the rows selected
+## by the logical mask ROWS, taken from the input-variable values INCOLS (a cell
+## array of variable values).  When SEPIN is true each variable's selected rows
+## form a separate argument; otherwise they are horizontally concatenated into a
+## single argument.  When EXTRACTCELL is true the contents of cell-valued
+## variables are extracted.
+function args = build_row_args (inCols, rows, sepIn, extractCell)
+  vals = cell (1, numel (inCols));
+  for k = 1:numel (inCols)
+    col = inCols{k};
+    if (extractCell && iscell (col))
+      sub = col(rows);
+      if (numel (sub) == 1)
+        vals{k} = sub{1};
+      else
+        vals{k} = vertcat (sub{:});
+      endif
+    else
+      vals{k} = col(rows,:);
+    endif
+  endfor
+  if (sepIn)
+    args = vals;
+  else
+    args = {horzcat(vals{:})};
+  endif
+endfunction
+
+## Call FUNC with the arguments ARGS, requesting NOUT outputs, and return them
+## in a 1-by-max(NOUT,1) cell row.  When ERRHANDLER is non-empty it is called
+## with a struct describing any error thrown by FUNC (fields 'identifier',
+## 'message', and 'index' set to IDX) followed by ARGS, and its outputs are
+## used instead.
+function out = apply_func (func, errHandler, idx, nout, args)
+  out = cell (1, max (nout, 1));
+  if (isempty (errHandler))
+    [out{1:nout}] = func (args{:});
+  else
+    try
+      [out{1:nout}] = func (args{:});
+    catch err
+      S = struct ('identifier', err.identifier, 'message', err.message, ...
+                  'index', idx);
+      [out{1:nout}] = errHandler (S, args{:});
+    end_try_catch
+  endif
+endfunction
+
+## Assemble the output of an apply method from the R-by-C cell array of per-row
+## (or per-group) results RES with output names OUTNAMES.  For grouped output
+## the grouping columns GCOLS (named GNAMES) and the GCOUNT counts are
+## prepended; for ungrouped output these are empty.  FMT selects the 'table',
+## 'uniform', or 'cell' return format; CALLER names the method for error
+## messages.
+function out = build_apply_result (caller, fmt, res, outNames, gcols, ...
+                                   gnames, gcount, rowNames)
+  if (nargin < 8)
+    rowNames = {};
+  endif
+  C = size (res, 2);
+  switch (fmt)
+    case 'table'
+      rescols = cell (1, C);
+      for c = 1:C
+        rescols{c} = vertcat (res{:,c});
+      endfor
+      if (isempty (gcols) && isempty (gcount))
+        vars = rescols;
+        names = outNames;
+      else
+        vars = [gcols, {gcount}, rescols];
+        names = [gnames, {'GroupCount'}, outNames];
+      endif
+      if (isempty (rowNames))
+        out = table (vars{:}, 'VariableNames', names);
+      else
+        out = table (vars{:}, 'VariableNames', names, 'RowNames', rowNames);
+      endif
+    case 'uniform'
+      out = [];
+      for c = 1:C
+        colvals = res(:,c);
+        if (! all (cellfun (@isscalar, colvals)))
+          error (strcat ("table.%s: OutputFormat 'uniform' requires FUNC", ...
+                         " to return a scalar for each call."), caller);
+        endif
+        out = [out, vertcat(colvals{:})];
+      endfor
+    case 'cell'
+      out = res;
   endswitch
 endfunction
 
