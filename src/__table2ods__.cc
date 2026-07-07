@@ -195,15 +195,18 @@ display_len (const octave_value &ov, const string &vt)
 // The metrics are approximate (we lack the viewer's font), erring wide so that
 // dates and numbers are not clipped to '###'.
 static vector<double>
-compute_col_widths (const Cell &C, const Cell &vtype)
+compute_col_widths (const Cell &C, const Cell &vtype, const Cell &header)
 {
   octave_idx_type rows = C.rows ();
   octave_idx_type cols = C.columns ();
   bool have_vt = (vtype.numel () == cols);
+  bool have_hd = (header.numel () == cols);
   vector<double> widths (cols, 0.0);
   for (octave_idx_type c = 0; c < cols; c++)
   {
     size_t maxlen = 0;
+    if (have_hd && header(c).is_string ())
+      maxlen = header(c).string_value ().size ();
     for (octave_idx_type r = 0; r < rows; r++)
     {
       string vt = have_vt ? vtype(c).string_value () : string ("string");
@@ -229,7 +232,7 @@ compute_col_widths (const Cell &C, const Cell &vtype)
 static void
 write_sheet (pugi::xml_node &spreadsheet, const string &name,
              const Cell &C, const Cell &vtype, const char *style = 0,
-             bool emit_cols = false)
+             bool emit_cols = false, const Cell &header = Cell ())
 {
   pugi::xml_node table = spreadsheet.append_child ("table:table");
   table.append_attribute ("table:name") = name.c_str ();
@@ -248,6 +251,19 @@ write_sheet (pugi::xml_node &spreadsheet, const string &name,
       snprintf (nm, 16, "co%d", (int) (c + 1));
       table.append_child ("table:table-column")
            .append_attribute ("table:style-name") = nm;
+    }
+  }
+
+  // Optional visible header row of variable names (text cells)
+  if (header.numel () == cols && cols > 0)
+  {
+    pugi::xml_node row = table.append_child ("table:table-row");
+    for (octave_idx_type c = 0; c < cols; c++)
+    {
+      pugi::xml_node cell = row.append_child ("table:table-cell");
+      string h = header(c).string_value ();
+      cell.append_attribute ("office:value-type") = "string";
+      cell.append_child ("text:p").text ().set (h.c_str ());
     }
   }
 
@@ -382,12 +398,15 @@ add_column_styles (pugi::xml_node &root, const vector<double> &widths)
 // with the hidden table style.
 static void
 build_spreadsheet (pugi::xml_node &root, const Cell &data, const Cell &vtype,
-                   const Cell &meta)
+                   const Cell &meta, const Cell &header)
 {
   pugi::xml_node body = root.append_child ("office:body");
   pugi::xml_node spreadsheet = body.append_child ("office:spreadsheet");
-  write_sheet (spreadsheet, "Sheet1", data, vtype, 0, true);
-  write_sheet (spreadsheet, "__datatypes_meta__", meta, Cell (), "hidden_tbl");
+  write_sheet (spreadsheet, "Sheet1", data, vtype, 0, true, header);
+  // The hidden metadata sheet is written only for the house format (non-empty
+  // 'meta'); the MATLAB-compatible 'writetable' path passes an empty 'meta'.
+  if (meta.numel () > 0)
+    write_sheet (spreadsheet, "__datatypes_meta__", meta, Cell (), "hidden_tbl");
 }
 
 // Append a little-endian integer to a byte buffer.
@@ -520,14 +539,17 @@ This is a helper IO function for the @qcode{table2ods} method of the \
 {
   octave_value_list retval (nargout);
 
-  if (args.length () != 5)
-    error ("__table2ods__: five input arguments are required.");
+  if (args.length () != 5 && args.length () != 6)
+    error ("__table2ods__: five or six input arguments are required.");
 
   string file  = args(0).string_value ();
   Cell   data  = args(1).cell_value ();
   Cell   vtype = args(2).cell_value ();
   Cell   meta  = args(3).cell_value ();
   bool   flat  = args(4).bool_value ();
+  // Optional visible header row (variable names) for the data sheet; when
+  // present, an empty 'meta' suppresses the hidden metadata sheet.
+  Cell   header = (args.length () == 6) ? args(5).cell_value () : Cell ();
 
   pugi::xml_document doc;
   pugi::xml_node decl = doc.append_child (pugi::node_declaration);
@@ -541,8 +563,8 @@ This is a helper IO function for the @qcode{table2ods} method of the \
     add_office_namespaces (root);
     root.append_attribute ("office:mimetype") = ODS_MIMETYPE;
     add_automatic_styles (root);
-    add_column_styles (root, compute_col_widths (data, vtype));
-    build_spreadsheet (root, data, vtype, meta);
+    add_column_styles (root, compute_col_widths (data, vtype, header));
+    build_spreadsheet (root, data, vtype, meta, header);
     if (! doc.save_file (file.c_str (), "  "))
     {
       retval(0) = "cannot open file '" + file + "' for writing.";
@@ -555,8 +577,8 @@ This is a helper IO function for the @qcode{table2ods} method of the \
     pugi::xml_node root = doc.append_child ("office:document-content");
     add_office_namespaces (root);
     add_automatic_styles (root);
-    add_column_styles (root, compute_col_widths (data, vtype));
-    build_spreadsheet (root, data, vtype, meta);
+    add_column_styles (root, compute_col_widths (data, vtype, header));
+    build_spreadsheet (root, data, vtype, meta, header);
     ostringstream oss;
     doc.save (oss, "  ");
     string msg = write_ods_zip (file, oss.str ());
