@@ -41,14 +41,33 @@ This is a helper IO function for the @qcode{table2csv} method of the \
 {
   octave_value_list retval(nargout);
   // Check input arguments
-  if (args.length() != 2)
+  if (args.length() < 2 || args.length() > 4)
   {
-    error ("__table2csv__: two input arguments are required.");
+    error ("__table2csv__: two to four input arguments are required.");
   }
 
   // Get input arguments
   string file = args(0).string_value ();
   Cell C = args(1).cell_value ();
+
+  // Optional field delimiter (a single character); defaults to a comma.
+  string sep = ",";
+  if (args.length() >= 3)
+  {
+    string d = args(2).string_value ();
+    if (d.length () != 1)
+    {
+      error ("__table2csv__: DELIMITER must be a single character.");
+    }
+    sep = d;
+  }
+
+  // Optional string-quoting mode: "all" (default), "minimal", or "none".
+  string quote_mode = "all";
+  if (args.length() >= 4)
+  {
+    quote_mode = args(3).string_value ();
+  }
 
   // Open CSV file
   ofstream fd(file.c_str ());
@@ -60,7 +79,6 @@ This is a helper IO function for the @qcode{table2csv} method of the \
 
   // Initialize necessary variable;
   string word;
-  string sep = ",";
   string prot = "\"";
   int rows = C.rows ();
   int cols = C.columns ();
@@ -121,15 +139,37 @@ This is a helper IO function for the @qcode{table2csv} method of the \
       else if (C(row, col).is_string ())
       {
         string str = C(row, col).string_value ();
-        // Escape embedded quotes by doubling them (RFC 4180) so that
-        // __csv2table__ can restore them when reading the field back.
-        size_t pos = 0;
-        while ((pos = str.find (prot, pos)) != string::npos)
+        // Decide whether to quote: always ("all"), never ("none"), or only
+        // when the field contains the delimiter, a quote, or a line break
+        // ("minimal").
+        bool quote;
+        if (quote_mode == "none")
         {
-          str.insert (pos, prot);
-          pos += 2;
+          quote = false;
         }
-        str = prot + str + prot;
+        else if (quote_mode == "minimal")
+        {
+          quote = (str.find (sep) != string::npos ||
+                   str.find (prot) != string::npos ||
+                   str.find ('\n') != string::npos ||
+                   str.find ('\r') != string::npos);
+        }
+        else
+        {
+          quote = true;
+        }
+        if (quote)
+        {
+          // Escape embedded quotes by doubling them (RFC 4180) so that
+          // __csv2table__ can restore them when reading the field back.
+          size_t pos = 0;
+          while ((pos = str.find (prot, pos)) != string::npos)
+          {
+            str.insert (pos, prot);
+            pos += 2;
+          }
+          str = prot + str + prot;
+        }
         word += str;
       }
 
