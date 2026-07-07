@@ -914,6 +914,131 @@ classdef table
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {table} {} writetable (@var{tbl}, @var{filename})
+    ## @deftypefnx {table} {} writetable (@var{tbl}, @var{filename}, @var{Name}, @var{Value})
+    ##
+    ## Write a table to a file in a MATLAB-compatible format.
+    ##
+    ## @code{writetable (@var{tbl}, @var{filename})} writes the table @var{tbl}
+    ## to @var{filename}.  The file type is inferred from the extension:
+    ## @qcode{.txt}, @qcode{.csv}, and @qcode{.dat} are written as delimited
+    ## text; @qcode{.ods} is written as an OpenDocument spreadsheet.  Use the
+    ## @qcode{'FileType'} option to override the inferred type.
+    ##
+    ## Unlike @code{table2csv}/@code{table2ods}, no type metadata is written: the
+    ## file holds only an optional variable-name header row followed by the data,
+    ## so it can be read by other applications.  Type information is recovered by
+    ## @code{readtable} through automatic detection (text) or the native cell
+    ## types (spreadsheet).  The following options are supported:
+    ##
+    ## @multitable @columnfractions 0.28 0.72
+    ## @item @qcode{'FileType'} @tab @qcode{'text'} or @qcode{'spreadsheet'}.
+    ## @item @qcode{'WriteVariableNames'} @tab Logical; write the variable names
+    ## as the first row (default @qcode{true}).
+    ## @item @qcode{'WriteRowNames'} @tab Logical; write the row names as the
+    ## first column (default @qcode{false}).
+    ## @item @qcode{'Delimiter'} @tab Field delimiter for text files: a single
+    ## character or one of @qcode{'comma'}, @qcode{'space'}, @qcode{'tab'},
+    ## @qcode{'semi'}, @qcode{'bar'} (default @qcode{','}).
+    ## @item @qcode{'QuoteStrings'} @tab @qcode{'minimal'}, @qcode{'all'}, or
+    ## @qcode{'none'} for text files (default @qcode{'minimal'}).
+    ## @end multitable
+    ##
+    ## Nested tables and structures are not supported.  Microsoft Excel formats
+    ## (@qcode{.xls}, @qcode{.xlsx}, @qcode{.xlsb}) are not supported either; use
+    ## @qcode{.ods} or a text format.  Writing to a specific sheet or range, and
+    ## appending to an existing file, are not yet supported.
+    ##
+    ## @end deftypefn
+    function writetable (this, filename, varargin)
+      if (! ((ischar (filename) && isvector (filename)) ...
+             || (isa (filename, 'string') && isscalar (filename))))
+        error (strcat ("table.writetable: FILENAME must be a character", ...
+                       " vector or string scalar."));
+      endif
+      file = char (filename);
+
+      optNames = {'FileType', 'WriteVariableNames', 'WriteRowNames', ...
+                  'Delimiter', 'QuoteStrings', 'Sheet', 'Range', 'WriteMode'};
+      dfValues = {'', true, false, ',', 'minimal', '', '', ''};
+      [fileType, writeVarNames, writeRowNames, delim, quoteStrings, sheet, ...
+       range, writeMode, args] = ...
+              parsePairedArguments (optNames, dfValues, varargin(:));
+      if (! isempty (args))
+        error ("table.writetable: unknown option '%s'.", args{1});
+      endif
+      if (! isempty (sheet) || ! isempty (range) || ! isempty (writeMode))
+        error (strcat ("table.writetable: 'Sheet', 'Range', and 'WriteMode'", ...
+                       " are not yet supported."));
+      endif
+
+      ## Resolve the file type from the option or the extension
+      [~, ~, ext] = fileparts (file);
+      if (isempty (fileType))
+        switch (lower (ext))
+          case {'.txt', '.csv', '.dat'}
+            fileType = 'text';
+          case {'.ods', '.fods'}
+            fileType = 'spreadsheet';
+          case {'.xls', '.xlsx', '.xlsb', '.xlsm'}
+            error (strcat ("table.writetable: Microsoft Excel formats are", ...
+                           " not supported; use '.ods' or a text format."));
+          otherwise
+            error (strcat ("table.writetable: cannot infer the file type", ...
+                           " from '%s'; specify 'FileType'."), ext);
+        endswitch
+      endif
+
+      switch (lower (fileType))
+        case 'text'
+          fmt = 'display';
+        case 'spreadsheet'
+          fmt = 'iso';
+        otherwise
+          error ("table.writetable: 'FileType' must be 'text' or 'spreadsheet'.");
+      endswitch
+
+      ## Flatten the table; nested tables and structs (multi-row type entries)
+      ## are refused, as MATLAB does.
+      [V, N, T] = table2cellarrays (this, fmt);
+      if (any (cellfun (@iscell, T)))
+        error (strcat ("table.writetable: writetable does not support", ...
+                       " writing nested tables.  Use splitvars to split", ...
+                       " multicolumn variables into single-column variables", ...
+                       " before writing."));
+      endif
+      [names, V, T] = writetable_prep (V, N, T, writeRowNames);
+
+      if (strcmp (fmt, 'display'))
+        if (writeVarNames)
+          grid = [names; V];
+        else
+          grid = V;
+        endif
+        d = wt_resolve_delimiter (delim);
+        msg = __table2csv__ (file, grid, d, lower (quoteStrings));
+        if (msg)
+          error ("table.writetable: %s", msg);
+        endif
+      else
+        vtype = cell (1, numel (T));
+        for c = 1:numel (T)
+          vtype{c} = ods_value_type (T{c});
+        endfor
+        if (writeVarNames)
+          header = names;
+        else
+          header = {};
+        endif
+        is_flat = strcmpi (ext, '.fods');
+        msg = __table2ods__ (file, V, vtype, {}, is_flat, header);
+        if (! isequal (msg, 0))
+          error ("table.writetable: %s", msg);
+        endif
+      endif
+    endfunction
+
   endmethods
 
 ################################################################################
@@ -11248,6 +11373,72 @@ function vt = ods_value_type (typestr)
       vt = 'float';
     otherwise
       vt = 'string';
+  endswitch
+endfunction
+
+## Prepare the flat value/name/type cell arrays produced by 'table2cellarrays'
+## for the MATLAB-compatible 'writetable' output: strip or keep the leading row
+## names column (which carries an empty variable name) per WRITEROWNAMES, and
+## de-duplicate the shared names of a multicolumn variable with _1, _2, ...
+## suffixes, matching MATLAB.
+function [names, V, T] = writetable_prep (V, N, T, writeRowNames)
+  hasRN = (! isempty (N) && isempty (N{1}));
+  rnCol = {};
+  if (hasRN)
+    rnCol = V(:,1);
+    V(:,1) = [];  N(:,1) = [];  T(:,1) = [];
+  endif
+  names = {};
+  c = 1;
+  n = numel (N);
+  while (c <= n)
+    c2 = c;
+    while (c2 < n && strcmp (N{c2+1}, N{c}))
+      c2 += 1;
+    endwhile
+    k = c2 - c + 1;
+    if (k == 1)
+      names{end+1} = N{c};
+    else
+      for j = 1:k
+        names{end+1} = sprintf ("%s_%d", N{c}, j);
+      endfor
+    endif
+    c = c2 + 1;
+  endwhile
+  if (writeRowNames && hasRN)
+    V = [rnCol, V];
+    names = [{'Row'}, names];
+    T = [{'cellstr'}, T];
+  endif
+endfunction
+
+## Translate a MATLAB delimiter (named or literal) into a single character for
+## 'writetable'.
+function d = wt_resolve_delimiter (delim)
+  if (isa (delim, 'string'))
+    delim = char (delim);
+  endif
+  if (! ischar (delim))
+    error ("table.writetable: 'Delimiter' must be a character vector or string.");
+  endif
+  switch (lower (delim))
+    case {'comma', ','}
+      d = ',';
+    case {'space', ' '}
+      d = ' ';
+    case {'tab', "\t"}
+      d = "\t";
+    case {'semi', ';'}
+      d = ';';
+    case {'bar', '|'}
+      d = '|';
+    otherwise
+      if (isscalar (delim))
+        d = delim;
+      else
+        error ("table.writetable: unsupported 'Delimiter' value '%s'.", delim);
+      endif
   endswitch
 endfunction
 
