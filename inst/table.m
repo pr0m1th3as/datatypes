@@ -783,6 +783,137 @@ classdef table
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {table} {} table2ods (@var{tbl}, @var{file})
+    ##
+    ## Write a table to an OpenDocument spreadsheet file.
+    ##
+    ## @code{table2ods (@var{tbl}, @var{file})} writes the table @var{tbl} to
+    ## @var{file}, which may be a character vector, a cellstr, or a string
+    ## scalar.  When @var{file} ends in @qcode{.ods} a compressed (ZIP-packaged)
+    ## OpenDocument spreadsheet is written; when it ends in @qcode{.fods} a flat
+    ## (single-XML) OpenDocument spreadsheet is written instead.  The resulting
+    ## file can be read back with @code{ods2table}.
+    ##
+    ## The workbook holds two sheets.  @qcode{Sheet1} carries the data, one
+    ## natively typed cell per value, and a hidden @qcode{__datatypes_meta__}
+    ## sheet carries the variable types, names, descriptions, and units needed to
+    ## restore the exact Octave types on read-back.  Variables map to ODS cell
+    ## types as follows:
+    ##
+    ## @itemize
+    ## @item
+    ## Numeric variables become @code{float} cells and logical variables become
+    ## @code{boolean} cells.  Integers are written with their exact digits.
+    ##
+    ## @item
+    ## @code{datetime} variables become native @code{date} cells and
+    ## @code{duration} variables become native @code{time} cells, both encoded
+    ## as ISO 8601 strings.
+    ##
+    ## @item
+    ## Character, cellstr, @code{string}, @code{categorical}, and
+    ## @code{calendarDuration} variables become @code{string} cells.
+    ##
+    ## @item
+    ## A multicolumn variable is split into consecutive columns that share the
+    ## same variable name.
+    ## @end itemize
+    ##
+    ## Missing values (@code{NaN}, @code{NaT}, and missing strings) are written
+    ## as empty cells.  When @var{tbl} has row names they are written under a
+    ## leading @qcode{RowNames} column.  Variable descriptions and units are
+    ## written only when @emph{every} variable has a non-empty description or
+    ## unit, respectively.
+    ##
+    ## Nested tables and structures are not supported and raise an error.  Note
+    ## the following round-trip limitations when reading the file back with
+    ## @code{ods2table}: @code{calendarDuration} and @code{categorical}
+    ## variables are returned as cell arrays of character vectors (their values
+    ## are not reconstructed).
+    ##
+    ## @end deftypefn
+    function table2ods (this, file)
+      file = char (cellstr (file));
+      ## A '.fods' file is written as flat XML, a '.ods' file as a ZIP package.
+      [~, ~, ext] = fileparts (file);
+      if (strcmpi (ext, '.fods'))
+        is_flat = true;
+      elseif (strcmpi (ext, '.ods'))
+        is_flat = false;
+      else
+        error (strcat ("table.table2ods: FILE must have a '.ods' or", ...
+                       " '.fods' extension."));
+      endif
+      ## Build cell arrays with ISO-formatted datetime/duration values
+      [V, N, T, D, U] = table2cellarrays (this, 'iso');
+      ## Nested tables and structs carry a multi-row (cell) type entry
+      if (any (cellfun (@iscell, T)))
+        error (strcat ("table.table2ods: nested tables and structs are not", ...
+                       " supported; flatten them before writing."));
+      endif
+      Ccols = size (V, 2);
+      ## Per-column ODS value type derived from the variable type
+      vtype = cell (1, Ccols);
+      for c = 1:Ccols
+        vtype{c} = ods_value_type (T{c});
+      endfor
+      txt = strcat ("# varTypes %d rows; varNames %d rows;", ...
+                    " varDescriptions %d rows; varUnits %d rows.");
+      ## A table with no variables carries only the descriptive comment
+      if (Ccols == 0)
+        msg = __table2ods__ (file, V, vtype, ...
+                             {sprintf(txt, 0, 0, 0, 0)}, is_flat);
+        if (! isequal (msg, 0))
+          error ("table.table2ods: %s", msg);
+        endif
+        return;
+      endif
+      ## Assemble the metadata sheet: a descriptive comment row followed by the
+      ## variable types, names, descriptions, and units, mirroring the header
+      ## block that 'table2csv' writes so 'ods2table' can reuse its parser.
+      Trows = cellfun (@(x) size (x, 1), T);
+      Tmaxr = max (Trows);
+      Nrows = cellfun (@(x) size (x, 1), N);
+      Nmaxr = max (Nrows);
+      isvar = cellfun (@(x) ! isempty (x), N(1,:));
+      Drows = cellfun (@(x) size (x, 1), D);
+      if (all (cellfun (@(x) ! isempty (x), D(isvar))))
+        Dmaxr = max (Drows(isvar));
+      else
+        Dmaxr = 0;
+      endif
+      Urows = cellfun (@(x) size (x, 1), U);
+      if (all (cellfun (@(x) ! isempty (x), U(isvar))))
+        Umaxr = max (Urows(isvar));
+      else
+        Umaxr = 0;
+      endif
+      Header = repmat ({''}, Nmaxr + Tmaxr + Dmaxr + Umaxr, Ccols);
+      for c = 1:Ccols
+        if (isvar(c))
+          Header{1,c} = T{c};
+          Header{1 + Tmaxr,c} = N{c};
+          if (Dmaxr)
+            Header{1 + Tmaxr + Nmaxr,c} = D{c};
+          endif
+          if (Umaxr)
+            Header{1 + Tmaxr + Nmaxr + Dmaxr,c} = U{c};
+          endif
+        else
+          Header{1,c} = 'RowNames';
+        endif
+      endfor
+      cmt = repmat ({''}, 1, Ccols);
+      cmt{1} = sprintf (txt, Tmaxr, Nmaxr, Dmaxr, Umaxr);
+      meta = [cmt; Header];
+      ## Write to file
+      msg = __table2ods__ (file, V, vtype, meta, is_flat);
+      if (! isequal (msg, 0))
+        error ("table.table2ods: %s", msg);
+      endif
+    endfunction
+
   endmethods
 
 ################################################################################
@@ -9075,7 +9206,7 @@ classdef table
   methods (Access = private)
 
     ## Export table to cell arrays
-    function [V, N, T, D, U] = table2cellarrays (this)
+    function [V, N, T, D, U] = table2cellarrays (this, fmt = 'display')
       V = {};  # variable values
       N = {};  # variable names
       T = {};  # variable types
@@ -9136,7 +9267,11 @@ classdef table
           endfor
         elseif (isa (var_V, 'datetime'))
           for col = 1:ncols
-            V = [V, cellstr(var_V(:,col))];
+            if (strcmp (fmt, 'iso'))
+              V = [V, datetime2iso(var_V(:,col))];
+            else
+              V = [V, cellstr(var_V(:,col))];
+            endif
             N = [N, this.VariableNames{ix}];
             T = [T, 'datetime'];
             D = [D, this.VariableDescriptions(ix)];
@@ -9144,7 +9279,11 @@ classdef table
           endfor
         elseif (isa (var_V, 'duration'))
           for col = 1:ncols
-            V = [V, cellstr(var_V(:,col))];
+            if (strcmp (fmt, 'iso'))
+              V = [V, duration2iso(var_V(:,col))];
+            else
+              V = [V, cellstr(var_V(:,col))];
+            endif
             N = [N, this.VariableNames{ix}];
             T = [T, 'duration'];
             D = [D, this.VariableDescriptions(ix)];
@@ -9159,7 +9298,7 @@ classdef table
             U = [U, this.VariableUnits(ix)];
           endfor
         elseif (isa (var_V, 'table'))
-          [tmpV, tmpN, tmpT tmpD, tmpU] = table2cellarrays (var_V);
+          [tmpV, tmpN, tmpT tmpD, tmpU] = table2cellarrays (var_V, fmt);
           V = [V, tmpV];
           nestedN = {};
           nestedT = {};
@@ -11089,5 +11228,86 @@ function [col, errmsg] = missing_rows (proto, n)
   else
     errmsg = sprintf (strcat ("cannot create missing values for a variable", ...
                               " of type '%s'."), class (proto));
+  endif
+endfunction
+
+## Map a variable type name to the ODS cell value type used by 'table2ods'.
+## Numeric types become 'float', logical becomes 'boolean', datetime and
+## duration map to the native 'date' and 'time' types, and everything else
+## (text, categorical, calendarDuration, cell) is written as a 'string'.
+function vt = ods_value_type (typestr)
+  switch (typestr)
+    case 'logical'
+      vt = 'boolean';
+    case 'datetime'
+      vt = 'date';
+    case 'duration'
+      vt = 'time';
+    case {'double', 'single', 'int8', 'int16', 'int32', 'int64', ...
+          'uint8', 'uint16', 'uint32', 'uint64'}
+      vt = 'float';
+    otherwise
+      vt = 'string';
+  endswitch
+endfunction
+
+## Format a datetime column as a column cell of ISO 8601 strings for 'table2ods'.
+## NaT values yield an empty string, which the writer records as a missing (empty)
+## cell.  The wall-clock components are used; any TimeZone is not encoded in the
+## value (mirroring the datetime display round-trip of the CSV path).
+function C = datetime2iso (dt)
+  [Y, M, D] = ymd (dt(:));
+  [h, m, s] = hms (dt(:));
+  n = numel (Y);
+  C = cell (n, 1);
+  for i = 1:n
+    if (isnan (Y(i)))
+      C{i} = '';
+    else
+      C{i} = sprintf ("%04d-%02d-%02dT%02d:%02d:%s", ...
+                      Y(i), M(i), D(i), h(i), m(i), iso_seconds (s(i)));
+    endif
+  endfor
+endfunction
+
+## Format a duration column as a column cell of ISO 8601 duration strings
+## (@code{PTnHnMnS}) for 'table2ods'.  NaN values yield an empty string (written
+## as a missing cell).  Hours are not wrapped at 24, so durations of any
+## magnitude are preserved; negative durations carry a leading minus sign.
+function C = duration2iso (du)
+  tot = seconds (du(:));
+  n = numel (tot);
+  C = cell (n, 1);
+  for i = 1:n
+    if (isnan (tot(i)))
+      C{i} = '';
+    else
+      a = abs (tot(i));
+      H = floor (a / 3600);
+      MI = floor (mod (a, 3600) / 60);
+      S = mod (a, 60);
+      sgn = '';
+      if (tot(i) < 0)
+        sgn = '-';
+      endif
+      C{i} = sprintf ("%sPT%dH%dM%sS", sgn, H, MI, iso_seconds (S));
+    endif
+  endfor
+endfunction
+
+## Format a seconds value for an ISO 8601 string: a two-digit integer when whole,
+## otherwise a fractional part (up to microseconds) with trailing zeros trimmed.
+function str = iso_seconds (s)
+  si = floor (s);
+  frac = round ((s - si) * 1e6);
+  if (frac >= 1e6)                       # rounded up to a whole second
+    si += 1;
+    frac = 0;
+  endif
+  if (frac == 0)
+    str = sprintf ("%02d", si);
+  else
+    fs = regexprep (sprintf ("%06d", frac), '0+$', '');
+    str = sprintf ("%02d.%s", si, fs);
   endif
 endfunction
