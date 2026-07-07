@@ -46,13 +46,25 @@ call it directly. \n\
 {
   octave_value_list retval(nargout);
   // Check input arguments
-  if (args.length() != 1)
+  if (args.length() != 1 && args.length() != 2)
   {
-    error ("__csv2table__: one input argument is required.");
+    error ("__csv2table__: one or two input arguments are required.");
   }
 
   // Get input arguments
   string file = args(0).string_value();
+
+  // Optional field delimiter (a single character); defaults to a comma.
+  string _sep = ",";
+  if (args.length() == 2)
+  {
+    string d = args(1).string_value();
+    if (d.length() != 1)
+    {
+      error ("__csv2table__: DELIMITER must be a single character.");
+    }
+    _sep = d;
+  }
 
   // Open CSV file
   ifstream fd(file.c_str());
@@ -63,7 +75,6 @@ call it directly. \n\
   }
 
   // Initialize necessary variable;
-  string _sep = ",";
   char sep = _sep[0];
   string _prot = "\"";
   char prot = _prot[0];
