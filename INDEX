@@ -33,6 +33,7 @@ table arrays
  array2table
  cell2table
  csv2table
+ ods2table
  struct2table
  istable
 supplementary classes
@@ -52,3 +53,5 @@ compiled functions
  __datetime__
  __csv2table__
  __table2csv__
+ __ods2table__
+ __table2ods__
