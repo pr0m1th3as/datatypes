@@ -1103,6 +1103,102 @@
 %! table2csv (table (1), fullfile (tempname (), 'x.csv'));
 
 ################################################################################
+##                            ** Save to Files **                             ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'table2ods'                                                                ##
+##                                                                            ##
+################################################################################
+
+## Test 'table2ods' method (round-trips through 'ods2table')
+%!test  # datetime and duration are written as native ODS date/time cells
+%! T = table (datetime (2024, 1, 15, 10, 30, 15), duration (25, 30, 0), ...
+%!            'VariableNames', {'d', 'e'});
+%! fn = [tempname() '.fods'];
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   txt = fileread (fn);
+%!   assert_equal (! isempty (strfind (txt, 'office:value-type="date"')), true);
+%!   assert_equal (! isempty (strfind (txt, 'office:date-value="2024-01-15T10:30:15"')), true);
+%!   assert_equal (! isempty (strfind (txt, 'office:value-type="time"')), true);
+%!   assert_equal (! isempty (strfind (txt, 'office:time-value="PT25H30M00S"')), true);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # a full-range int64 is written with its exact digits
+%! T = table (int64 (9223372036854775807), 'VariableNames', {'i'});
+%! fn = [tempname() '.fods'];
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   txt = fileread (fn);
+%!   assert_equal (! isempty (strfind (txt, '9223372036854775807')), true);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # the hidden metadata sheet records the variable types and names
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'v', 'g'});
+%! fn = [tempname() '.fods'];
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   txt = fileread (fn);
+%!   assert_equal (! isempty (strfind (txt, '__datatypes_meta__')), true);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # a compressed '.ods' is a ZIP whose contents round-trip through ods2table
+%! T = table ([1; 2; 3], datetime (2024, 1, [1; 2; 3]), {'a'; 'b'; 'c'}, ...
+%!            'VariableNames', {'n', 'd', 'g'});
+%! fn = [tempname() '.ods'];
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   R = ods2table (fn);
+%!   assert_equal (R.Properties.VariableNames, {'n', 'd', 'g'});
+%!   assert_equal (R.n, [1; 2; 3]);
+%!   assert_equal (R.g, {'a'; 'b'; 'c'});
+%!   assert_equal (class (R.d), 'datetime');
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # the ODS package leads with a compliant stored 'mimetype' entry
+%! T = table ([1; 2; 3], 'VariableNames', {'n'});
+%! fn = [tempname() '.ods'];
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   fid = fopen (fn, 'r');  hdr = fread (fid, 38, 'uint8')';  fclose (fid);
+%!   flag = hdr(7) + hdr(8) * 256;         # general-purpose bit flag
+%!   method = hdr(9) + hdr(10) * 256;      # compression method
+%!   namelen = hdr(27) + hdr(28) * 256;
+%!   assert_equal (hdr(1:4), [80, 75, 3, 4]);       # ZIP magic "PK\x03\x04"
+%!   assert_equal (method, 0);                      # stored, not deflated
+%!   assert_equal (flag, 0);                        # no data descriptor / extras
+%!   assert_equal (char (hdr(31:30+namelen)), 'mimetype');
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+## Test input validation for 'table2ods' method
+%!error <table.table2ods: nested tables and structs are not supported; flatten them before writing.> ...
+%! inner = table ([1; 2], 'VariableNames', {'a'}); ...
+%! T = table (inner, [3; 4], 'VariableNames', {'nested', 'x'}); ...
+%! table2ods (T, [tempname() '.fods']);
+%!error <table.table2ods: nested tables and structs are not supported; flatten them before writing.> ...
+%! s = struct ('f', {1; 2}); ...
+%! T = table (s, [3; 4], 'VariableNames', {'st', 'x'}); ...
+%! table2ods (T, [tempname() '.fods']);
+%!error <table.table2ods: FILE must have a '.ods' or '.fods' extension.> ...
+%! table2ods (table (1), [tempname() '.txt']);
+
+################################################################################
 ##                         ** Summary Information **                          ##
 ################################################################################
 ##                             Available Methods                              ##
