@@ -160,11 +160,26 @@
 ## @end deftypefn
 function tbl = csv2table (name, varargin)
 
+  ## The field delimiter must be known before the file is read, so pre-scan the
+  ## optional arguments for it (it is also parsed as a normal option below).
+  delim = ',';
+  for i = 1:2:numel (varargin) - 1
+    if (ischar (varargin{i}) && strcmpi (varargin{i}, 'Delimiter'))
+      delim = varargin{i+1};
+      if (isa (delim, 'string'))
+        delim = char (delim);
+      endif
+    endif
+  endfor
+  if (! (ischar (delim) && isscalar (delim)))
+    error ("csv2table: 'Delimiter' must be a single character.");
+  endif
+
   ## Check first input is a character vector or a string scalar
   if (ischar (name) && isvector (name))
-    C = __csv2table__ (name);
+    C = __csv2table__ (name, delim);
   elseif (isa (name, 'string') && isscalar (name))
-    C = __csv2table__ (char (name));
+    C = __csv2table__ (char (name), delim);
   else
     error ("csv2table: NAME must be a character vector or a string scalar.");
   endif
@@ -238,12 +253,12 @@ function tbl = csv2table (name, varargin)
               'VariableNamingRule', 'VariableNamesLine', 'VariableTypes', ...
               'VariableUnitsLine', 'VariableDescriptionsLine', ...
               'ReadRowNames', 'RowNamesColumn', 'TextType', ...
-              'DatetimeType', 'DurationType', 'HexType'};
+              'DatetimeType', 'DurationType', 'HexType', 'Delimiter'};
   dfValues = {0, {}, true, 'modify', 1, {}, 0, 0, true, 1, 'char', ...
-              'datetime', 'duration', 'auto'};
+              'datetime', 'duration', 'auto', ','};
   [numHeaderLines, varNames, readVarNames, varNamingRule, varNamesLine, ...
    varTypes, varUnitsLine, varDescrLine, readRowNames, rowNamesColumn, ...
-   textType, datetimeType, durationTypes, hexType, args] = ...
+   textType, datetimeType, durationTypes, hexType, delim, args] = ...
              parsePairedArguments (optNames, dfValues, varargin(:));
 
   ## Apply optional arguments to CSV files with vartype header
@@ -511,33 +526,37 @@ function varValue = cell2auto (C, textType, datetimeType, durationTypes, ...
       varValue = string (C);
     endif
   else  # cellstr
+    ## Each detection is attempted in turn and stops at the first success, so a
+    ## later attempt never clobbers an already-recognised datetime or duration.
+    is_datetime = false;
+    is_duration = false;
+    is_hex = false;
     ## Check for datetime strings
     if (strcmpi (datetimeType, 'datetime'))
       try
         varValue = datetime (C);
         is_datetime = true;
       catch
-        varValue = C;
         is_datetime = false;
       end_try_catch
     endif
     ## Check for duration strings
-    if (strcmpi (durationTypes, 'duration'))
+    if (! is_datetime && strcmpi (durationTypes, 'duration'))
       try
         varValue = duration (C);
         is_duration = true;
       catch
-        varValue = C;
         is_duration = false;
       end_try_catch
     endif
     ## Check for hexadecimal strings (convert to integers)
-    if (! strcmpi (hexType, 'text'))
-      varValue = hex2dec (C);
-      if (any (isnan (varValue)))
+    if (! is_datetime && ! is_duration && ! strcmpi (hexType, 'text'))
+      hexval = hex2dec (C);
+      if (any (isnan (hexval)))
         is_hex = false;
       else
         is_hex = true;
+        varValue = hexval;
         ## Detect smallest integer type or cast user defined
         if (strcmpi (hexType, 'auto'))
           minval = min (varValue);
@@ -784,3 +803,44 @@ endfunction
 ## Test reading a non-existent file reports a clear error
 %!error <csv2table: cannot open file '.*' for reading.> ...
 %! csv2table (fullfile (tempname (), 'no_such_file.csv'));
+
+## Test the 'Delimiter' option selects the field separator
+%!test
+%! fn = tempname ();
+%! fid = fopen (fn, "w");
+%! fputs (fid, "A;B;C\n1;2.5;foo\n3;4.5;bar\n");
+%! fclose (fid);
+%! unwind_protect
+%!   t = csv2table (fn, 'Delimiter', ';', 'ReadRowNames', false);
+%!   assert_equal (t.Properties.VariableNames, {'A', 'B', 'C'});
+%!   assert_equal (t.A, [1; 3]);
+%!   assert_equal (t.C, {'foo'; 'bar'});
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## A datetime column is not clobbered by the later duration/hex detection
+%!test
+%! fn = tempname ();
+%! fid = fopen (fn, "w");
+%! fputs (fid, "id,d\n1,2024-01-15\n2,2024-02-20\n");
+%! fclose (fid);
+%! unwind_protect
+%!   t = csv2table (fn, 'ReadRowNames', false);
+%!   assert_equal (class (t.d), 'datetime');
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Hexadecimal auto-detection still works after the detection-order fix
+%!test
+%! fn = tempname ();
+%! fid = fopen (fn, "w");
+%! fputs (fid, "h\nFF\n0A\n");
+%! fclose (fid);
+%! unwind_protect
+%!   t = csv2table (fn, 'ReadRowNames', false);
+%!   assert_equal (t.h, uint8 ([255; 10]));
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
