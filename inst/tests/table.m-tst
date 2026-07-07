@@ -1199,6 +1199,135 @@
 %! table2ods (table (1), [tempname() '.txt']);
 
 ################################################################################
+##                            ** Save to Files **                             ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'writetable'                                                               ##
+##                                                                            ##
+################################################################################
+
+## Test 'writetable' method (round-trips through 'readtable')
+%!test  # text round-trip: names header, numeric/text detection
+%! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, [1.5; 2.5; 3.5], ...
+%!            'VariableNames', {'id', 'name', 'val'});
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   writetable (T, fn);
+%!   R = readtable (fn);
+%!   assert_equal (R.Properties.VariableNames, {'id', 'name', 'val'});
+%!   assert_equal (R.id, [1; 2; 3]);
+%!   assert_equal (R.name, {'a'; 'b'; 'c'});
+%!   assert_equal (R.val, [1.5; 2.5; 3.5]);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # text: no type metadata is written, only a names row then data
+%! T = table ([1; 2], {'x'; 'y'}, 'VariableNames', {'a', 'b'});
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   writetable (T, fn);
+%!   txt = fileread (fn);
+%!   assert_equal (! isempty (regexp (txt, '^a,b$', 'lineanchors', 'once')), true);
+%!   assert_equal (isempty (strfind (txt, 'varTypes')), true);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # 'WriteVariableNames' false omits the header row
+%! T = table ([1; 2], 'VariableNames', {'a'});
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   writetable (T, fn, 'WriteVariableNames', false);
+%!   txt = fileread (fn);
+%!   assert_equal (isempty (strfind (txt, 'a')), true);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # 'Delimiter' and 'QuoteStrings' control the text output
+%! T = table ({'x,y'; 'z'}, 'VariableNames', {'s'});
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   writetable (T, fn, 'Delimiter', 'semi', 'QuoteStrings', 'none');
+%!   txt = fileread (fn);
+%!   assert_equal (! isempty (strfind (txt, 'x,y')), true);
+%!   assert_equal (isempty (strfind (txt, '"')), true);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # 'WriteRowNames' writes the row names as a leading column
+%! T = table ([10; 20], 'VariableNames', {'v'}, 'RowNames', {'r1', 'r2'});
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   writetable (T, fn, 'WriteRowNames', true);
+%!   R = readtable (fn, 'ReadRowNames', true);
+%!   assert_equal (R.Properties.RowNames, {'r1'; 'r2'});
+%!   assert_equal (R.v, [10; 20]);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # a multicolumn variable is split into name_1, name_2, ...
+%! T = table ([1 2; 3 4], {'p'; 'q'}, 'VariableNames', {'mat', 'tag'});
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   writetable (T, fn);
+%!   R = readtable (fn);
+%!   assert_equal (R.Properties.VariableNames, {'mat_1', 'mat_2', 'tag'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # spreadsheet round-trip preserves native datetime/duration types
+%! T = table ([1; 2], datetime (2024, 1, [1; 2]), seconds ([30; 90]), ...
+%!            'VariableNames', {'a', 'd', 'e'});
+%! fn = [tempname() '.ods'];
+%! unwind_protect
+%!   writetable (T, fn);
+%!   R = readtable (fn);
+%!   assert_equal (R.a, [1; 2]);
+%!   assert_equal (class (R.d), 'datetime');
+%!   assert_equal (class (R.e), 'duration');
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # a writetable '.ods' exposes a visible names row (read back as names)
+%! T = table ([1; 2], {'x'; 'y'}, 'VariableNames', {'aa', 'bb'});
+%! fn = [tempname() '.ods'];
+%! unwind_protect
+%!   writetable (T, fn);
+%!   R = readtable (fn);
+%!   assert_equal (R.Properties.VariableNames, {'aa', 'bb'});
+%!   assert_equal (R.aa, [1; 2]);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+## Test input validation for 'writetable' method
+%!error <table.writetable: writetable does not support writing nested tables.*splitvars.*> ...
+%! inner = table ([1; 2], 'VariableNames', {'a'}); ...
+%! T = table (inner, [3; 4], 'VariableNames', {'nested', 'x'}); ...
+%! writetable (T, [tempname() '.csv']);
+%!error <table.writetable: Microsoft Excel formats are not supported; use '.ods' or a text format.> ...
+%! writetable (table (1), [tempname() '.xlsx']);
+%!error <table.writetable: 'Sheet', 'Range', and 'WriteMode' are not yet supported.> ...
+%! writetable (table (1), [tempname() '.csv'], 'Sheet', 'S1');
+%!error <table.writetable: unknown option 'Bogus'.> ...
+%! writetable (table (1), [tempname() '.csv'], 'Bogus', 1);
+
+################################################################################
 ##                         ** Summary Information **                          ##
 ################################################################################
 ##                             Available Methods                              ##
