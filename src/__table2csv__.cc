@@ -41,9 +41,9 @@ This is a helper IO function for the @qcode{table2csv} method of the \
 {
   octave_value_list retval(nargout);
   // Check input arguments
-  if (args.length() < 2 || args.length() > 4)
+  if (args.length() < 2 || args.length() > 5)
   {
-    error ("__table2csv__: two to four input arguments are required.");
+    error ("__table2csv__: two to five input arguments are required.");
   }
 
   // Get input arguments
@@ -69,8 +69,16 @@ This is a helper IO function for the @qcode{table2csv} method of the \
     quote_mode = args(3).string_value ();
   }
 
+  // Optional append flag: when true, rows are appended to an existing file
+  // instead of truncating it (used by writetable's 'WriteMode', 'append').
+  bool append = false;
+  if (args.length() >= 5)
+  {
+    append = args(4).bool_value ();
+  }
+
   // Open CSV file
-  ofstream fd(file.c_str ());
+  ofstream fd(file.c_str (), append ? (ios::out | ios::app) : ios::out);
   if (! fd.is_open ())
   {
     retval(0) = "cannot open file '" + file + "' for writing.";

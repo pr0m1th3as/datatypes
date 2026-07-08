@@ -224,15 +224,29 @@ compute_col_widths (const Cell &C, const Cell &vtype, const Cell &header)
   return widths;
 }
 
+// Emit a leading empty cell spanning 'coff' columns (a 'Range' column offset).
+static void
+pad_cols (pugi::xml_node &row, octave_idx_type coff)
+{
+  if (coff <= 0)
+    return;
+  pugi::xml_node pad = row.append_child ("table:table-cell");
+  if (coff > 1)
+    pad.append_attribute ("table:number-columns-repeated") = (int) coff;
+}
+
 // Write a full <table:table> element named 'name' from the cell grid 'C',
 // using per-column value-types from 'vtype' (a 1-by-cols cellstr).  When
 // 'vtype' is empty every cell is treated as a "string" (used for the metadata
 // sheet, which is text-only).  When 'emit_cols' is set, one <table:table-column>
 // per column is written (referencing the "coN" width styles) ahead of the rows.
+// 'roff'/'coff' shift the data block down/right by that many empty rows/columns
+// to honour a 'Range' anchor.
 static void
 write_sheet (pugi::xml_node &spreadsheet, const string &name,
              const Cell &C, const Cell &vtype, const char *style = 0,
-             bool emit_cols = false, const Cell &header = Cell ())
+             bool emit_cols = false, const Cell &header = Cell (),
+             octave_idx_type roff = 0, octave_idx_type coff = 0)
 {
   pugi::xml_node table = spreadsheet.append_child ("table:table");
   table.append_attribute ("table:name") = name.c_str ();
@@ -245,6 +259,13 @@ write_sheet (pugi::xml_node &spreadsheet, const string &name,
 
   if (emit_cols)
   {
+    // Leading empty column definition(s) for a 'Range' column offset.
+    if (coff > 0)
+    {
+      pugi::xml_node col = table.append_child ("table:table-column");
+      if (coff > 1)
+        col.append_attribute ("table:number-columns-repeated") = (int) coff;
+    }
     for (octave_idx_type c = 0; c < cols; c++)
     {
       char nm[16];
@@ -254,10 +275,19 @@ write_sheet (pugi::xml_node &spreadsheet, const string &name,
     }
   }
 
+  // Leading empty rows for a 'Range' row offset.
+  if (roff > 0)
+  {
+    pugi::xml_node row = table.append_child ("table:table-row");
+    if (roff > 1)
+      row.append_attribute ("table:number-rows-repeated") = (int) roff;
+  }
+
   // Optional visible header row of variable names (text cells)
   if (header.numel () == cols && cols > 0)
   {
     pugi::xml_node row = table.append_child ("table:table-row");
+    pad_cols (row, coff);
     for (octave_idx_type c = 0; c < cols; c++)
     {
       pugi::xml_node cell = row.append_child ("table:table-cell");
@@ -270,6 +300,7 @@ write_sheet (pugi::xml_node &spreadsheet, const string &name,
   for (octave_idx_type r = 0; r < rows; r++)
   {
     pugi::xml_node row = table.append_child ("table:table-row");
+    pad_cols (row, coff);
     for (octave_idx_type c = 0; c < cols; c++)
     {
       string vt = have_vt ? vtype(c).string_value () : string ("string");
@@ -398,11 +429,12 @@ add_column_styles (pugi::xml_node &root, const vector<double> &widths)
 // with the hidden table style.
 static void
 build_spreadsheet (pugi::xml_node &root, const Cell &data, const Cell &vtype,
-                   const Cell &meta, const Cell &header)
+                   const Cell &meta, const Cell &header, const string &sheetname,
+                   octave_idx_type roff, octave_idx_type coff)
 {
   pugi::xml_node body = root.append_child ("office:body");
   pugi::xml_node spreadsheet = body.append_child ("office:spreadsheet");
-  write_sheet (spreadsheet, "Sheet1", data, vtype, 0, true, header);
+  write_sheet (spreadsheet, sheetname, data, vtype, 0, true, header, roff, coff);
   // The hidden metadata sheet is written only for the house format (non-empty
   // 'meta'); the MATLAB-compatible 'writetable' path passes an empty 'meta'.
   if (meta.numel () > 0)
@@ -527,6 +559,8 @@ DEFUN_DLD (__table2ods__, args, nargout,
            "-*- texinfo -*-\n \
  @deftypefn {datatypes} {} __table2ods__ (@var{file}, @var{data}, \
 @var{vtype}, @var{meta}, @var{flat})\n\
+ @deftypefnx {datatypes} {} __table2ods__ (@var{file}, @var{data}, \
+@var{vtype}, @var{meta}, @var{flat}, @var{opts})\n\
 \n\
 \n\
 Barebone function for saving a table to a flat (@qcode{.fods}) or compressed \
@@ -547,9 +581,27 @@ This is a helper IO function for the @qcode{table2ods} method of the \
   Cell   vtype = args(2).cell_value ();
   Cell   meta  = args(3).cell_value ();
   bool   flat  = args(4).bool_value ();
-  // Optional visible header row (variable names) for the data sheet; when
-  // present, an empty 'meta' suppresses the hidden metadata sheet.
-  Cell   header = (args.length () == 6) ? args(5).cell_value () : Cell ();
+
+  // Optional options struct (6th arg) with any of the fields:
+  //   'header'    -- visible header row of variable names (cellstr); when
+  //                  present, an empty 'meta' suppresses the metadata sheet.
+  //   'sheetname' -- name of the data sheet (default "Sheet1").
+  //   'roff'/'coff' -- leading empty row/column offsets for a 'Range' anchor.
+  Cell   header;
+  string sheetname = "Sheet1";
+  octave_idx_type roff = 0, coff = 0;
+  if (args.length () == 6)
+  {
+    octave_scalar_map opts = args(5).scalar_map_value ();
+    if (opts.isfield ("header"))
+      header = opts.contents ("header").cell_value ();
+    if (opts.isfield ("sheetname"))
+      sheetname = opts.contents ("sheetname").string_value ();
+    if (opts.isfield ("roff"))
+      roff = (octave_idx_type) opts.contents ("roff").double_value ();
+    if (opts.isfield ("coff"))
+      coff = (octave_idx_type) opts.contents ("coff").double_value ();
+  }
 
   pugi::xml_document doc;
   pugi::xml_node decl = doc.append_child (pugi::node_declaration);
@@ -564,7 +616,7 @@ This is a helper IO function for the @qcode{table2ods} method of the \
     root.append_attribute ("office:mimetype") = ODS_MIMETYPE;
     add_automatic_styles (root);
     add_column_styles (root, compute_col_widths (data, vtype, header));
-    build_spreadsheet (root, data, vtype, meta, header);
+    build_spreadsheet (root, data, vtype, meta, header, sheetname, roff, coff);
     if (! doc.save_file (file.c_str (), "  "))
     {
       retval(0) = "cannot open file '" + file + "' for writing.";
@@ -578,7 +630,7 @@ This is a helper IO function for the @qcode{table2ods} method of the \
     add_office_namespaces (root);
     add_automatic_styles (root);
     add_column_styles (root, compute_col_widths (data, vtype, header));
-    build_spreadsheet (root, data, vtype, meta, header);
+    build_spreadsheet (root, data, vtype, meta, header, sheetname, roff, coff);
     ostringstream oss;
     doc.save (oss, "  ");
     string msg = write_ods_zip (file, oss.str ());

@@ -17,6 +17,7 @@
 
 ## -*- texinfo -*-
 ## @deftypefn  {datatypes} {@var{tbl} =} ods2table (@var{filename})
+## @deftypefnx {datatypes} {@var{tbl} =} ods2table (@var{filename}, @qcode{'Sheet'}, @var{sheet})
 ##
 ## Read an OpenDocument spreadsheet file into a table.
 ##
@@ -25,6 +26,11 @@
 ## cellstr, or a string scalar, and returns it as a @code{table}.  Both the
 ## compressed @qcode{.ods} and the flat @qcode{.fods} formats are read; the
 ## format is detected from the file contents, not its extension.
+##
+## @code{@var{tbl} = ods2table (@dots{}, @qcode{'Sheet'}, @var{sheet})} reads a
+## specific sheet, selected either by its name (a character vector or string
+## scalar) or by a 1-based index over the data sheets.  Without this option the
+## first data sheet is read.
 ##
 ## When the file carries the hidden @qcode{__datatypes_meta__} sheet written by
 ## the @code{table2ods} method, the variable types, names, descriptions, and
@@ -44,9 +50,9 @@
 ##
 ## @end deftypefn
 
-function tbl = ods2table (filename)
+function tbl = ods2table (filename, varargin)
 
-  if (nargin != 1)
+  if (nargin < 1)
     print_usage ();
   endif
   if (! (ischar (filename) || iscellstr (filename) || isa (filename, 'string')))
@@ -54,8 +60,24 @@ function tbl = ods2table (filename)
   endif
   file = char (cellstr (filename));
 
+  optNames = {'Sheet'};
+  dfValues = {[]};
+  [sheet, args] = parsePairedArguments (optNames, dfValues, varargin(:));
+  if (! isempty (args))
+    error ("ods2table: unknown option '%s'.", args{1});
+  endif
+  if (! (isempty (sheet) || (ischar (sheet) && isrow (sheet)) ...
+         || (isa (sheet, 'string') && isscalar (sheet)) ...
+         || (isnumeric (sheet) && isscalar (sheet))))
+    error (strcat ("ods2table: 'Sheet' must be a sheet name or a scalar", ...
+                   " index."));
+  endif
+  if (isa (sheet, 'string'))
+    sheet = char (sheet);
+  endif
+
   ## Read the workbook into raw grids
-  [data, vtype, meta] = __ods2table__ (file);
+  [data, vtype, meta] = __ods2table__ (file, sheet);
   if (ischar (data))
     error ("ods2table: %s", data);
   endif
@@ -470,6 +492,50 @@ endfunction
 %! unwind_protect_cleanup
 %!   delete (fn);
 %! end_unwind_protect
+
+## Select a specific sheet by name and by 1-based index from a multi-sheet file
+%!test
+%! fn = [tempname() '.fods'];
+%! doc = ['<?xml version="1.0" encoding="UTF-8"?><office:document' ...
+%!        ' xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"' ...
+%!        ' xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"' ...
+%!        ' xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"' ...
+%!        ' office:mimetype="application/vnd.oasis.opendocument.spreadsheet">' ...
+%!        '<office:body><office:spreadsheet>' ...
+%!        '<table:table table:name="One"><table:table-row>' ...
+%!        '<table:table-cell office:value-type="float" office:value="11">' ...
+%!        '<text:p>11</text:p></table:table-cell></table:table-row></table:table>' ...
+%!        '<table:table table:name="Two"><table:table-row>' ...
+%!        '<table:table-cell office:value-type="float" office:value="22">' ...
+%!        '<text:p>22</text:p></table:table-cell></table:table-row></table:table>' ...
+%!        '</office:spreadsheet></office:body></office:document>'];
+%! fid = fopen (fn, 'w');  fputs (fid, doc);  fclose (fid);
+%! unwind_protect
+%!   Rdef = ods2table (fn);                    # default reads the first sheet
+%!   assert_equal (Rdef.Var1, 11);
+%!   Rname = ods2table (fn, 'Sheet', 'Two');
+%!   assert_equal (Rname.Var1, 22);
+%!   Ridx = ods2table (fn, 'Sheet', 2);
+%!   assert_equal (Ridx.Var1, 22);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Error: a requested sheet that does not exist
+%!error <ods2table: sheet 'X' not found in '.*'.> ...
+%! fn = [tempname() '.fods']; ...
+%! doc = ['<?xml version="1.0" encoding="UTF-8"?><office:document' ...
+%!        ' xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"' ...
+%!        ' xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"' ...
+%!        ' office:mimetype="application/vnd.oasis.opendocument.spreadsheet">' ...
+%!        '<office:body><office:spreadsheet><table:table table:name="One"/>' ...
+%!        '</office:spreadsheet></office:body></office:document>']; ...
+%! fid = fopen (fn, 'w'); fputs (fid, doc); fclose (fid); ...
+%! ods2table (fn, 'Sheet', 'X');
+
+## Error: 'Sheet' of an invalid type
+%!error <ods2table: 'Sheet' must be a sheet name or a scalar index.> ...
+%! ods2table ([tempname() '.fods'], 'Sheet', {1, 2});
 
 ## Error: FILENAME of the wrong type
 %!error <ods2table: FILENAME must be a character vector, cellstr, or string.> ...

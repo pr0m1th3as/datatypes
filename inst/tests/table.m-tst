@@ -1315,6 +1315,65 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
+## 'writetable' to a named sheet, read back by that name
+%!test
+%! T = table ([1; 2; 3], [10; 20; 30], 'VariableNames', {'x', 'y'});
+%! fn = [tempname() '.ods'];
+%! unwind_protect
+%!   writetable (T, fn, 'Sheet', 'MySheet');
+%!   R = readtable (fn, 'Sheet', 'MySheet');
+%!   assert_equal (R.Properties.VariableNames, {'x', 'y'});
+%!   assert_equal (R.x, [1; 2; 3]);
+%!   assert_equal (R.y, [10; 20; 30]);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file')); delete (fn); endif
+%! end_unwind_protect
+
+## 'writetable' 'Range' anchors the block; readtable auto-trims to it, and an
+## explicit read range recovers the same data.
+%!test
+%! T = table ([1; 2; 3], [10; 20; 30], 'VariableNames', {'x', 'y'});
+%! fn = [tempname() '.ods'];
+%! unwind_protect
+%!   writetable (T, fn, 'Range', 'C5');
+%!   R = readtable (fn);
+%!   assert_equal (R.Properties.VariableNames, {'x', 'y'});
+%!   assert_equal (R.x, [1; 2; 3]);
+%!   R2 = readtable (fn, 'Range', 'C5:D8');
+%!   assert_equal (R2.x, [1; 2; 3]);
+%!   assert_equal (R2.y, [10; 20; 30]);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file')); delete (fn); endif
+%! end_unwind_protect
+
+## 'writetable' flat '.fods' with a 'Range' offset round-trips
+%!test
+%! T = table ([5; 6], [50; 60], 'VariableNames', {'a', 'b'});
+%! fn = [tempname() '.fods'];
+%! unwind_protect
+%!   writetable (T, fn, 'Range', 'B3');
+%!   R = readtable (fn);
+%!   assert_equal (R.a, [5; 6]);
+%!   assert_equal (R.b, [50; 60]);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file')); delete (fn); endif
+%! end_unwind_protect
+
+## text 'WriteMode' 'append' adds rows below without repeating the header
+%!test
+%! T = table ([1; 2], [10; 20], 'VariableNames', {'x', 'y'});
+%! T2 = table ([3; 4], [30; 40], 'VariableNames', {'x', 'y'});
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   writetable (T, fn);
+%!   writetable (T2, fn, 'WriteMode', 'append');
+%!   R = readtable (fn);
+%!   assert_equal (R.x, [1; 2; 3; 4]);
+%!   assert_equal (R.y, [10; 20; 30; 40]);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file')); delete (fn); endif
+%! end_unwind_protect
+
 ## Test input validation for 'writetable' method
 %!error <table.writetable: writetable does not support writing nested tables.*splitvars.*> ...
 %! inner = table ([1; 2], 'VariableNames', {'a'}); ...
@@ -1322,8 +1381,14 @@
 %! writetable (T, [tempname() '.csv']);
 %!error <table.writetable: Microsoft Excel formats are not supported; use '.ods' or a text format.> ...
 %! writetable (table (1), [tempname() '.xlsx']);
-%!error <table.writetable: 'Sheet', 'Range', and 'WriteMode' are not yet supported.> ...
+%!error <table.writetable: 'Sheet' and 'Range' are not supported for text files.> ...
 %! writetable (table (1), [tempname() '.csv'], 'Sheet', 'S1');
+%!error <table.writetable: 'Sheet' and 'Range' are not supported for text files.> ...
+%! writetable (table (1), [tempname() '.csv'], 'Range', 'A1');
+%!error <table.writetable: 'WriteMode' 'inplace' is not valid for text files; use 'overwrite' or 'append'.> ...
+%! writetable (table (1), [tempname() '.csv'], 'WriteMode', 'inplace');
+%!error <table.writetable: 'WriteMode' is not yet supported for spreadsheet files.> ...
+%! writetable (table (1), [tempname() '.ods'], 'WriteMode', 'append');
 %!error <table.writetable: unknown option 'Bogus'.> ...
 %! writetable (table (1), [tempname() '.csv'], 'Bogus', 1);
 

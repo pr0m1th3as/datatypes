@@ -943,12 +943,20 @@ classdef table
     ## @qcode{'semi'}, @qcode{'bar'} (default @qcode{','}).
     ## @item @qcode{'QuoteStrings'} @tab @qcode{'minimal'}, @qcode{'all'}, or
     ## @qcode{'none'} for text files (default @qcode{'minimal'}).
+    ## @item @qcode{'Sheet'} @tab Spreadsheet only: the name of the sheet to
+    ## write (default @qcode{'Sheet1'}).
+    ## @item @qcode{'Range'} @tab Spreadsheet only: an A1-style anchor such as
+    ## @qcode{'C5'} at which to place the top-left corner of the data.
+    ## @item @qcode{'WriteMode'} @tab Text only: @qcode{'overwrite'} (default) or
+    ## @qcode{'append'} to add rows to an existing file without a header row.
     ## @end multitable
     ##
     ## Nested tables and structures are not supported.  Microsoft Excel formats
     ## (@qcode{.xls}, @qcode{.xlsx}, @qcode{.xlsb}) are not supported either; use
-    ## @qcode{.ods} or a text format.  Writing to a specific sheet or range, and
-    ## appending to an existing file, are not yet supported.
+    ## @qcode{.ods} or a text format.  For spreadsheets, @qcode{'Sheet'} and
+    ## @qcode{'Range'} write a fresh single-sheet file; writing into an existing
+    ## workbook (@qcode{'WriteMode'} @qcode{'append'}, @qcode{'inplace'}, or
+    ## @qcode{'overwritesheet'}) is not yet supported.
     ##
     ## @end deftypefn
     function writetable (this, filename, varargin)
@@ -968,10 +976,13 @@ classdef table
       if (! isempty (args))
         error ("table.writetable: unknown option '%s'.", args{1});
       endif
-      if (! isempty (sheet) || ! isempty (range) || ! isempty (writeMode))
-        error (strcat ("table.writetable: 'Sheet', 'Range', and 'WriteMode'", ...
-                       " are not yet supported."));
+      if (isa (sheet, 'string'))
+        sheet = char (sheet);
       endif
+      if (isa (range, 'string'))
+        range = char (range);
+      endif
+      writeMode = lower (char (writeMode));
 
       ## Resolve the file type from the option or the extension
       [~, ~, ext] = fileparts (file);
@@ -999,6 +1010,36 @@ classdef table
           error ("table.writetable: 'FileType' must be 'text' or 'spreadsheet'.");
       endswitch
 
+      ## Validate 'Sheet', 'Range', and 'WriteMode' against the resolved type.
+      appendMode = false;
+      if (strcmp (fmt, 'display'))          # text
+        if (! isempty (sheet) || ! isempty (range))
+          error (strcat ("table.writetable: 'Sheet' and 'Range' are not", ...
+                         " supported for text files."));
+        endif
+        switch (writeMode)
+          case {'', 'overwrite'}
+            appendMode = false;
+          case 'append'
+            appendMode = true;
+          otherwise
+            error (strcat ("table.writetable: 'WriteMode' '%s' is not valid", ...
+                           " for text files; use 'overwrite' or 'append'."), ...
+                   writeMode);
+        endswitch
+      else                                  # spreadsheet
+        ## Writing into an existing workbook ('append'/'inplace'/
+        ## 'overwritesheet') needs the round-trip repacker; only fresh
+        ## single-sheet writes are supported for now.
+        if (! isempty (writeMode))
+          error (strcat ("table.writetable: 'WriteMode' is not yet supported", ...
+                         " for spreadsheet files."));
+        endif
+        if (! isempty (sheet) && ! (ischar (sheet) && isrow (sheet)))
+          error ("table.writetable: 'Sheet' must be a sheet name.");
+        endif
+      endif
+
       ## Flatten the table; nested tables and structs (multi-row type entries)
       ## are refused, as MATLAB does.
       [V, N, T] = table2cellarrays (this, fmt);
@@ -1011,13 +1052,14 @@ classdef table
       [names, V, T] = writetable_prep (V, N, T, writeRowNames);
 
       if (strcmp (fmt, 'display'))
-        if (writeVarNames)
+        ## In append mode MATLAB writes the data rows only, never a header.
+        if (writeVarNames && ! appendMode)
           grid = [names; V];
         else
           grid = V;
         endif
         d = wt_resolve_delimiter (delim);
-        msg = __table2csv__ (file, grid, d, lower (quoteStrings));
+        msg = __table2csv__ (file, grid, d, lower (quoteStrings), appendMode);
         if (msg)
           error ("table.writetable: %s", msg);
         endif
@@ -1026,13 +1068,22 @@ classdef table
         for c = 1:numel (T)
           vtype{c} = ods_value_type (T{c});
         endfor
+        opts = struct ();
         if (writeVarNames)
-          header = names;
+          opts.header = names;
         else
-          header = {};
+          opts.header = {};
+        endif
+        if (! isempty (sheet))
+          opts.sheetname = sheet;
+        endif
+        if (! isempty (range))
+          [r1, c1] = __a1ref__ (range);
+          opts.roff = r1 - 1;
+          opts.coff = c1 - 1;
         endif
         is_flat = strcmpi (ext, '.fods');
-        msg = __table2ods__ (file, V, vtype, {}, is_flat, header);
+        msg = __table2ods__ (file, V, vtype, {}, is_flat, opts);
         if (! isequal (msg, 0))
           error ("table.writetable: %s", msg);
         endif

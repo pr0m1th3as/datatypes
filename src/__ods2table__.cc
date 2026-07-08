@@ -99,18 +99,29 @@ cell_text (const pugi::xml_node &cell)
 // (used for the metadata sheet).  Row/column repeat counts are honoured so the
 // grid stays rectangular.
 static void
-read_sheet (const pugi::xml_node &table, Cell &data, Cell &vtype, bool typed)
+read_sheet (const pugi::xml_node &table, Cell &data, Cell &vtype, bool typed,
+            bool trim)
 {
   // First pass: collect rows as vectors of (value-type, raw-string) and find
   // the maximum column count.
   vector<vector<pair<string, string>>> grid;
   size_t maxcols = 0;
+  // When 'trim' is set (foreign spreadsheets with no metadata sheet), trailing
+  // empty cells -- blank cells padded out with large 'number-columns-repeated'
+  // counts -- and trailing empty rows are dropped so the grid spans only the
+  // sheet's used bounding box; leading and interior empties are preserved as
+  // blank cells, keeping absolute A1 coordinates intact for the caller's
+  // 'Range' handling.  When 'trim' is clear (our house files, whose metadata
+  // sheet makes the grid authoritative), every cell is materialised verbatim --
+  // a trailing row of all-missing values is real data and must be kept.
+  long pending_rows = 0;              // empty rows not yet flushed (may be trailing)
   for (pugi::xml_node row = table.child ("table:table-row"); row;
        row = row.next_sibling ("table:table-row"))
   {
     long rrep = row.attribute ("table:number-rows-repeated").as_int (1);
     if (rrep < 1) rrep = 1;
     vector<pair<string, string>> cols;
+    long pending_cols = 0;            // empty cells not yet flushed (may be trailing)
     for (pugi::xml_node cell = row.child ("table:table-cell"); cell;
          cell = cell.next_sibling ("table:table-cell"))
     {
@@ -128,13 +139,34 @@ read_sheet (const pugi::xml_node &table, Cell &data, Cell &vtype, bool typed)
         raw = cell.attribute ("office:time-value").as_string ();
       else                              // string / empty
         raw = cell_text (cell);
-      for (long k = 0; k < crep; k++)
-        cols.push_back (make_pair (vt, raw));
+      if (trim && vt.empty () && raw.empty ())  // blank: defer (may be trailing)
+      {
+        pending_cols += crep;
+      }
+      else                              // content cell: flush deferred blanks first
+      {
+        for (long k = 0; k < pending_cols; k++)
+          cols.push_back (make_pair (string (), string ()));
+        pending_cols = 0;
+        for (long k = 0; k < crep; k++)
+          cols.push_back (make_pair (vt, raw));
+      }
     }
-    if (cols.size () > maxcols)
-      maxcols = cols.size ();
-    for (long k = 0; k < rrep; k++)
-      grid.push_back (cols);
+    // A row with no content cells is empty; defer it in case it is trailing.
+    if (trim && cols.empty ())
+    {
+      pending_rows += rrep;
+    }
+    else
+    {
+      for (long k = 0; k < pending_rows; k++)
+        grid.push_back (vector<pair<string, string>> ());
+      pending_rows = 0;
+      if (cols.size () > maxcols)
+        maxcols = cols.size ();
+      for (long k = 0; k < rrep; k++)
+        grid.push_back (cols);
+    }
   }
 
   size_t nrows = grid.size ();
@@ -175,6 +207,8 @@ DEFUN_DLD (__ods2table__, args, nargout,
            "-*- texinfo -*-\n \
  @deftypefn {datatypes} {[@var{data}, @var{vtype}, @var{meta}] =} \
 __ods2table__ (@var{file})\n\
+ @deftypefnx {datatypes} {[@var{data}, @var{vtype}, @var{meta}] =} \
+__ods2table__ (@var{file}, @var{sheet})\n\
 \n\
 \n\
 Barebone function for reading a flat ODS (@qcode{.fods}) file.\n\
@@ -190,10 +224,29 @@ it directly. \n\
   retval(1) = Cell ();
   retval(2) = Cell ();
 
-  if (args.length () != 1)
-    error ("__ods2table__: one input argument is required.");
+  if (args.length () < 1 || args.length () > 2)
+    error ("__ods2table__: one or two input arguments are required.");
 
   string file = args(0).string_value ();
+
+  // Optional sheet selector: a name (character vector) or a 1-based index over
+  // the data sheets (the hidden '__datatypes_meta__' sheet is never counted).
+  string want_name;
+  long   want_index = 0;
+  bool   by_name = false, by_index = false;
+  if (args.length () == 2 && ! args(1).isempty ())
+  {
+    if (args(1).is_string ())
+    {
+      want_name = args(1).string_value ();
+      by_name = true;
+    }
+    else
+    {
+      want_index = static_cast<long> (args(1).scalar_value ());
+      by_index = true;
+    }
+  }
 
   // A compressed '.ods' is a ZIP whose content.xml holds the spreadsheet; a
   // flat '.fods' is the XML document itself.
@@ -245,21 +298,50 @@ it directly. \n\
   }
 
   pugi::xml_node data_tbl, meta_tbl;
+  long data_seen = 0;
   for (pugi::xml_node t = spreadsheet.child ("table:table"); t;
        t = t.next_sibling ("table:table"))
   {
     string name = t.attribute ("table:name").as_string ();
     if (name == "__datatypes_meta__")
+    {
       meta_tbl = t;
+      continue;
+    }
+    data_seen++;
+    if (by_name)
+    {
+      if (name == want_name && ! data_tbl)
+        data_tbl = t;
+    }
+    else if (by_index)
+    {
+      if (data_seen == want_index && ! data_tbl)
+        data_tbl = t;
+    }
     else if (! data_tbl)
       data_tbl = t;
   }
 
+  // A requested sheet that does not exist is an error the caller reports.
+  if ((by_name || by_index) && ! data_tbl)
+  {
+    if (by_name)
+      retval(0) = string ("sheet '") + want_name + "' not found in '" + file
+                  + "'.";
+    else
+      retval(0) = string ("sheet index ") + std::to_string (want_index)
+                  + " out of range in '" + file + "'.";
+    return retval;
+  }
+
   Cell data, vtype, meta, meta_vt;
+  // Trim the data grid to the used block only for foreign spreadsheets (no
+  // metadata sheet); our own house files are authoritative and kept verbatim.
   if (data_tbl)
-    read_sheet (data_tbl, data, vtype, true);
+    read_sheet (data_tbl, data, vtype, true, ! meta_tbl);
   if (meta_tbl)
-    read_sheet (meta_tbl, meta, meta_vt, false);
+    read_sheet (meta_tbl, meta, meta_vt, false, false);
 
   retval(0) = data;
   retval(1) = vtype;

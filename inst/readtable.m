@@ -25,8 +25,8 @@
 ## @var{filename} (a character vector or string scalar) and returns it as a
 ## @code{table}.  The file type is inferred from the extension:
 ## @qcode{.txt}, @qcode{.csv}, and @qcode{.dat} are read as delimited text;
-## @qcode{.ods} is read as an OpenDocument spreadsheet.  Use the
-## @qcode{'FileType'} option to override the inferred type.
+## @qcode{.ods} and @qcode{.fods} are read as OpenDocument spreadsheets.  Use
+## the @qcode{'FileType'} option to override the inferred type.
 ##
 ## By default the first row supplies the variable names and each column's data
 ## type is detected automatically (numeric, @code{datetime}, @code{duration}, or
@@ -47,6 +47,10 @@
 ## columns (default @qcode{'char'}).
 ## @item @qcode{'VariableNamingRule'} @tab @qcode{'modify'} or @qcode{'preserve'}
 ## (default @qcode{'modify'}).
+## @item @qcode{'Sheet'} @tab Spreadsheet only: the sheet to read, selected by
+## name or by a 1-based index over the data sheets (default: the first sheet).
+## @item @qcode{'Range'} @tab Spreadsheet only: an A1-style range such as
+## @qcode{'C5'} or @qcode{'C5:D8'} limiting the region read.
 ## @end multitable
 ##
 ## Microsoft Excel formats (@qcode{.xls}, @qcode{.xlsx}, @qcode{.xlsb}) are not
@@ -67,12 +71,20 @@ function tbl = readtable (filename, varargin)
   file = char (filename);
 
   optNames = {'FileType', 'ReadVariableNames', 'ReadRowNames', 'Delimiter', ...
-              'NumHeaderLines', 'TextType', 'VariableNamingRule'};
-  dfValues = {'', true, false, ',', 0, 'char', 'modify'};
+              'NumHeaderLines', 'TextType', 'VariableNamingRule', 'Sheet', ...
+              'Range'};
+  dfValues = {'', true, false, ',', 0, 'char', 'modify', [], ''};
   [fileType, readVarNames, readRowNames, delim, numHeaderLines, textType, ...
-   namingRule, args] = parsePairedArguments (optNames, dfValues, varargin(:));
+   namingRule, sheet, range, args] = ...
+                          parsePairedArguments (optNames, dfValues, varargin(:));
   if (! isempty (args))
     error ("readtable: unknown option '%s'.", args{1});
+  endif
+  if (isa (sheet, 'string'))
+    sheet = char (sheet);
+  endif
+  if (isa (range, 'string'))
+    range = char (range);
   endif
 
   ## Resolve the file type from the option or the extension
@@ -81,7 +93,7 @@ function tbl = readtable (filename, varargin)
     switch (lower (ext))
       case {'.txt', '.csv', '.dat'}
         fileType = 'text';
-      case '.ods'
+      case {'.ods', '.fods'}
         fileType = 'spreadsheet';
       case {'.xls', '.xlsx', '.xlsb', '.xlsm'}
         error (strcat ("readtable: Microsoft Excel formats are not", ...
@@ -90,6 +102,13 @@ function tbl = readtable (filename, varargin)
         error (strcat ("readtable: cannot infer the file type from '%s';", ...
                        " specify 'FileType'."), ext);
     endswitch
+  endif
+
+  ## 'Sheet' and 'Range' apply only to spreadsheets; MATLAB rejects them on text
+  ## files rather than silently ignoring them.
+  if (strcmpi (fileType, 'text') && (! isempty (sheet) || ! isempty (range)))
+    error (strcat ("readtable: 'Sheet' and 'Range' are not supported for", ...
+                   " text files."));
   endif
 
   switch (lower (fileType))
@@ -104,7 +123,7 @@ function tbl = readtable (filename, varargin)
                        'HexType', 'text');
     case 'spreadsheet'
       tbl = read_spreadsheet (file, readVarNames, readRowNames, textType, ...
-                              namingRule);
+                              namingRule, sheet, range);
     otherwise
       error ("readtable: 'FileType' must be 'text' or 'spreadsheet'.");
   endswitch
@@ -143,10 +162,17 @@ endfunction
 ## first row (when requested), then one column per sheet column with its type
 ## taken from the native ODS cell value types.
 function tbl = read_spreadsheet (file, readVarNames, readRowNames, textType, ...
-                                 namingRule)
-  [data, vtype, meta] = __ods2table__ (file);
+                                 namingRule, sheet, range)
+  [data, vtype, meta] = __ods2table__ (file, sheet);
   if (ischar (data))
     error ("readtable: %s", data);
+  endif
+  ## Apply an explicit 'Range' (absolute A1 coordinates), otherwise auto-trim
+  ## the sheet to its used block so leading blank rows/columns are ignored.
+  if (! isempty (range))
+    [data, vtype] = clip_range (data, vtype, range);
+  else
+    [data, vtype] = trim_used_block (data, vtype);
   endif
   ncols = size (data, 2);
   if (ncols == 0)
@@ -194,6 +220,45 @@ function tbl = read_spreadsheet (file, readVarNames, readRowNames, textType, ...
   else
     tbl = table (varValues{:}, 'VariableNames', names, 'RowNames', rowNames);
   endif
+endfunction
+
+## Clip the raw grid to an absolute A1 range; open-ended (Inf) bounds and
+## bounds past the used area are capped to the grid, matching MATLAB, which
+## reads whatever of the requested rectangle actually holds data.
+function [data, vtype] = clip_range (data, vtype, range)
+  [r1, c1, r2, c2] = __a1ref__ (range);
+  nr = size (data, 1);
+  nc = size (data, 2);
+  r2 = min (r2, nr);
+  c2 = min (c2, nc);
+  if (r1 > r2 || c1 > c2)
+    data = cell (0, 0);
+    vtype = cell (0, 0);
+    return;
+  endif
+  data = data(r1:r2, c1:c2);
+  vtype = vtype(r1:r2, c1:c2);
+endfunction
+
+## Trim leading and trailing empty rows and columns to the used bounding box
+## (interior blanks are preserved).  This mirrors readtable's automatic used-
+## range detection for foreign spreadsheets whose data does not start at A1.
+function [data, vtype] = trim_used_block (data, vtype)
+  if (isempty (data))
+    return;
+  endif
+  blank = cellfun (@isempty, data);
+  keptRows = find (! all (blank, 2));
+  keptCols = find (! all (blank, 1));
+  if (isempty (keptRows) || isempty (keptCols))
+    data = cell (0, 0);
+    vtype = cell (0, 0);
+    return;
+  endif
+  rr = keptRows(1):keptRows(end);
+  cc = keptCols(1):keptCols(end);
+  data = data(rr, cc);
+  vtype = vtype(rr, cc);
 endfunction
 
 ## Reconstruct one column from its data cells and their ODS value types.
@@ -394,6 +459,112 @@ endfunction
 %! unwind_protect_cleanup
 %!   delete (fn);
 %! end_unwind_protect
+
+## Build a flat '.fods' fixture with three sheets: Alpha (x,y), Beta (p,q), and
+## Offset, whose data starts at C2 and is padded with the large repeat counts a
+## real spreadsheet emits -- exercising sheet selection, used-block trimming,
+## and the trailing-repeat cap.
+%!function fn = wr_multisheet ()
+%!  fn = [tempname() '.fods'];
+%!  sc = @(s) ['<table:table-cell office:value-type="string"><text:p>' s ...
+%!             '</text:p></table:table-cell>'];
+%!  fc = @(x) sprintf (['<table:table-cell office:value-type="float"' ...
+%!             ' office:value="%g"><text:p>%g</text:p></table:table-cell>'], x, x);
+%!  rw = @(c) ['<table:table-row>' c '</table:table-row>'];
+%!  alpha = ['<table:table table:name="Alpha">' rw([sc('x') sc('y')]) ...
+%!           rw([fc(1) fc(10)]) rw([fc(2) fc(20)]) rw([fc(3) fc(30)]) ...
+%!           '</table:table>'];
+%!  beta = ['<table:table table:name="Beta">' rw([sc('p') sc('q')]) ...
+%!          rw([fc(4) fc(40)]) rw([fc(5) fc(50)]) '</table:table>'];
+%!  pad = '<table:table-cell table:number-columns-repeated="2"/>';
+%!  big = '<table:table-cell table:number-columns-repeated="1000"/>';
+%!  offset = ['<table:table table:name="Offset">' ...
+%!            '<table:table-row><table:table-cell' ...
+%!            ' table:number-columns-repeated="1024"/></table:table-row>' ...
+%!            rw([pad sc('a') sc('b') big]) rw([pad fc(7) fc(8)]) ...
+%!            '<table:table-row table:number-rows-repeated="500">' ...
+%!            '<table:table-cell table:number-columns-repeated="1024"/>' ...
+%!            '</table:table-row></table:table>'];
+%!  doc = ['<?xml version="1.0" encoding="UTF-8"?>' ...
+%!         '<office:document' ...
+%!         ' xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"' ...
+%!         ' xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"' ...
+%!         ' xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"' ...
+%!         ' office:mimetype="application/vnd.oasis.opendocument.spreadsheet">' ...
+%!         '<office:body><office:spreadsheet>' alpha beta offset ...
+%!         '</office:spreadsheet></office:body></office:document>'];
+%!  fid = fopen (fn, 'w');
+%!  fputs (fid, doc);
+%!  fclose (fid);
+%!endfunction
+
+## Select a sheet by name
+%!test
+%! fn = wr_multisheet ();
+%! unwind_protect
+%!   R = readtable (fn, 'Sheet', 'Beta');
+%!   assert_equal (R.Properties.VariableNames, {'p', 'q'});
+%!   assert_equal (R.p, [4; 5]);
+%!   assert_equal (R.q, [40; 50]);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Select a sheet by 1-based index (2 -> Beta)
+%!test
+%! fn = wr_multisheet ();
+%! unwind_protect
+%!   R = readtable (fn, 'Sheet', 2);
+%!   assert_equal (R.Properties.VariableNames, {'p', 'q'});
+%!   assert_equal (R.p, [4; 5]);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## A sheet whose data is offset and padded is trimmed to its used block
+%!test
+%! fn = wr_multisheet ();
+%! unwind_protect
+%!   R = readtable (fn, 'Sheet', 'Offset');
+%!   assert_equal (size (R), [1, 2]);
+%!   assert_equal (R.Properties.VariableNames, {'a', 'b'});
+%!   assert_equal (R.a, 7);
+%!   assert_equal (R.b, 8);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## An explicit 'Range' clips absolutely: with the header row, and without it
+%!test
+%! fn = wr_multisheet ();
+%! unwind_protect
+%!   R = readtable (fn, 'Sheet', 'Alpha', 'Range', 'A2:B3', ...
+%!                  'ReadVariableNames', false);
+%!   assert_equal (R.Var1, [1; 2]);
+%!   assert_equal (R.Var2, [10; 20]);
+%!   R2 = readtable (fn, 'Sheet', 'Alpha', 'Range', 'A1:B2');
+%!   assert_equal (R2.Properties.VariableNames, {'x', 'y'});
+%!   assert_equal (R2.x, 1);
+%!   assert_equal (R2.y, 10);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Error: a requested sheet that does not exist
+%!error <readtable: sheet 'Nope' not found in '.*'.> ...
+%! fn = wr_multisheet (); ...
+%! readtable (fn, 'Sheet', 'Nope');
+
+## Error: a sheet index past the last data sheet
+%!error <readtable: sheet index 9 out of range in '.*'.> ...
+%! fn = wr_multisheet (); ...
+%! readtable (fn, 'Sheet', 9);
+
+## Error: 'Sheet' / 'Range' rejected on text files
+%!error <readtable: 'Sheet' and 'Range' are not supported for text files.> ...
+%! readtable ([tempname() '.csv'], 'Sheet', 'A');
+%!error <readtable: 'Sheet' and 'Range' are not supported for text files.> ...
+%! readtable ([tempname() '.csv'], 'Range', 'A1:B2');
 
 ## Error: Microsoft Excel formats are not supported
 %!error <readtable: Microsoft Excel formats are not supported; use '.ods' or a text format.> ...
