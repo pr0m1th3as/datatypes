@@ -645,7 +645,7 @@ classdef table
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'table2csv'                                                                ##
+## 'table2csv'        'table2ods'        'writetable'                         ##
 ##                                                                            ##
 ################################################################################
 
@@ -4260,7 +4260,7 @@ classdef table
 ##                                                                            ##
 ################################################################################
 
-  methods (Hidden)
+  methods (Access = public)
 
     ## -*- texinfo -*-
     ## @deftypefn  {table} {@var{tbl} =} join (@var{tblL}, @var{tblR})
