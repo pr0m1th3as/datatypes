@@ -693,8 +693,8 @@ classdef table
     ##
     ## When @var{tbl} has row names they are written under a leading
     ## @qcode{RowNames} column.  Variable descriptions and units are written
-    ## only when @emph{every} variable has a non-empty description or unit,
-    ## respectively.
+    ## whenever @emph{any} variable has a non-empty description or unit,
+    ## respectively (the others are left empty).
     ##
     ## Note the following round-trip limitations when reading the file back
     ## with @code{csv2table}: @code{calendarDuration} and @code{categorical}
@@ -714,16 +714,17 @@ classdef table
       Nrows = cellfun (@(x) size (x, 1), N);
       Nmaxr = max (Nrows);
       isvar = cellfun (@(x) ! isempty (x), N(1,:));
-      ## Descriptions and units are written only when every variable carries
-      ## one; nested variables expand them to as many rows as varNames/varTypes.
+      ## Descriptions and units are written when any variable carries one (the
+      ## rest are left empty); nested variables expand them to as many rows as
+      ## varNames/varTypes.
       Drows = cellfun (@(x) size (x, 1), D);
-      if (all (cellfun (@(x) ! isempty (x), D(isvar))))
+      if (any (cellfun (@(x) ! isempty (x), D(isvar))))
         Dmaxr = max (Drows(isvar));
       else
         Dmaxr = 0;
       endif
       Urows = cellfun (@(x) size (x, 1), U);
-      if (all (cellfun (@(x) ! isempty (x), U(isvar))))
+      if (any (cellfun (@(x) ! isempty (x), U(isvar))))
         Umaxr = max (Urows(isvar));
       else
         Umaxr = 0;
@@ -823,8 +824,9 @@ classdef table
     ## Missing values (@code{NaN}, @code{NaT}, and missing strings) are written
     ## as empty cells.  When @var{tbl} has row names they are written under a
     ## leading @qcode{RowNames} column.  Variable descriptions and units are
-    ## written only when @emph{every} variable has a non-empty description or
-    ## unit, respectively.
+    ## written whenever @emph{any} variable has a non-empty description or unit,
+    ## respectively (the others are left empty).  A zone-aware @code{datetime}
+    ## variable keeps its @code{TimeZone} on read-back.
     ##
     ## @code{table2ods (@dots{}, @qcode{'Sheet'}, @var{name})} writes to a sheet
     ## named @var{name} (default @qcode{'Sheet1'}).  When @var{file} already
@@ -9444,13 +9446,13 @@ classdef table
       Nmaxr = max (Nrows);
       isvar = cellfun (@(x) ! isempty (x), N(1,:));
       Drows = cellfun (@(x) size (x, 1), D);
-      if (all (cellfun (@(x) ! isempty (x), D(isvar))))
+      if (any (cellfun (@(x) ! isempty (x), D(isvar))))
         Dmaxr = max (Drows(isvar));
       else
         Dmaxr = 0;
       endif
       Urows = cellfun (@(x) size (x, 1), U);
-      if (all (cellfun (@(x) ! isempty (x), U(isvar))))
+      if (any (cellfun (@(x) ! isempty (x), U(isvar))))
         Umaxr = max (Urows(isvar));
       else
         Umaxr = 0;
@@ -9558,6 +9560,14 @@ classdef table
             U = [U, this.VariableUnits(ix)];
           endfor
         elseif (isa (var_V, 'datetime'))
+          ## Carry a non-empty TimeZone in the type string ('datetime <tz>') so
+          ## the house readers can restore a zone-aware datetime.
+          tz = var_V.TimeZone;
+          if (isempty (tz))
+            dttype = 'datetime';
+          else
+            dttype = ['datetime ', tz];
+          endif
           for col = 1:ncols
             if (strcmp (fmt, 'iso'))
               V = [V, datetime2iso(var_V(:,col))];
@@ -9565,7 +9575,7 @@ classdef table
               V = [V, cellstr(var_V(:,col))];
             endif
             N = [N, this.VariableNames{ix}];
-            T = [T, 'datetime'];
+            T = [T, dttype];
             D = [D, this.VariableDescriptions(ix)];
             U = [U, this.VariableUnits(ix)];
           endfor
@@ -11528,6 +11538,11 @@ endfunction
 ## duration map to the native 'date' and 'time' types, and everything else
 ## (text, categorical, calendarDuration, cell) is written as a 'string'.
 function vt = ods_value_type (typestr)
+  ## A zone-aware datetime carries its TimeZone in the type ('datetime <tz>').
+  if (strncmp (typestr, 'datetime', 8))
+    vt = 'date';
+    return;
+  endif
   switch (typestr)
     case 'logical'
       vt = 'boolean';

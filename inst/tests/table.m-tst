@@ -701,20 +701,43 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
-%!test  # descriptions are written only when every variable carries one
+%!test  # descriptions are written when any variable carries one (partial)
 %! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
 %! T.Properties.VariableDescriptions = {'has one', ''};
 %! fn = [tempname() '.csv'];
 %! unwind_protect
 %!   table2csv (T, fn);
-%!   assert_equal (! isempty (strfind (fileread (fn), 'varDescriptions 0 rows')), true);
+%!   assert_equal (! isempty (strfind (fileread (fn), 'varDescriptions 1 rows')), true);
 %!   R = csv2table (fn);
-%!   assert_equal (all (cellfun (@isempty, R.Properties.VariableDescriptions)), true);
+%!   assert_equal (R.Properties.VariableDescriptions, {'has one', ''});
 %!   assert_equal (R.a, [1; 2]);
 %! unwind_protect_cleanup
 %!   if (exist (fn, 'file'))
 %!     delete (fn);
 %!   endif
+%! end_unwind_protect
+%!test  # partial units round-trip through csv (any variable, not all)
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
+%! T.Properties.VariableUnits = {'', 'kg'};
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   assert_equal (R.Properties.VariableUnits, {'', 'kg'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file')); delete (fn); endif
+%! end_unwind_protect
+%!test  # a zone-aware datetime keeps its TimeZone through csv
+%! dt = datetime (2024, 6, [15; 16], 10, 30, 0, 'TimeZone', 'America/New_York');
+%! T = table (dt, 'VariableNames', {'t'});
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   assert_equal (R.t.TimeZone, 'America/New_York');
+%!   assert_equal (cellstr (char (R.t)), cellstr (char (dt)));
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file')); delete (fn); endif
 %! end_unwind_protect
 %!test  # variable descriptions and units are written to the header and restored
 %! T = table ([1; 2], 'VariableNames', {'v'});

@@ -188,8 +188,13 @@ function v = ods_cell2var (C, VT, T)
     else
       v = cast (M, T);
     endif
-  elseif (strcmp (T, 'datetime'))
-    v = ods_iso2datetime (C);
+  elseif (strncmp (T, 'datetime', 8))
+    ## A zone-aware datetime carries its TimeZone after 'datetime '.
+    tz = '';
+    if (numel (T) > 9)
+      tz = T(10:end);
+    endif
+    v = ods_iso2datetime (C, tz);
   elseif (strcmp (T, 'duration'))
     v = ods_iso2duration (C);
   elseif (strcmp (T, 'string'))
@@ -232,7 +237,9 @@ function S = ods_column_strings (C, VT)
 endfunction
 
 ## Parse an ISO 8601 data block into a datetime array; empty cells become NaT.
-function dt = ods_iso2datetime (C)
+## A non-empty TZ restores the datetime's TimeZone (the ISO strings are the
+## wall-clock time in that zone).
+function dt = ods_iso2datetime (C, tz = '')
   sz = size (C);
   Y = nan (sz);  Mo = nan (sz);  D = nan (sz);
   h = nan (sz);  mi = nan (sz);  s = nan (sz);
@@ -246,7 +253,11 @@ function dt = ods_iso2datetime (C)
       endif
     endif
   endfor
-  dt = datetime (Y, Mo, D, h, mi, s);   # NaN components yield NaT
+  if (isempty (tz))
+    dt = datetime (Y, Mo, D, h, mi, s);   # NaN components yield NaT
+  else
+    dt = datetime (Y, Mo, D, h, mi, s, 'TimeZone', tz);
+  endif
 endfunction
 
 ## Parse an ISO 8601 duration block (PTnHnMnS) into a duration array; empty
@@ -471,6 +482,35 @@ endfunction
 %!   R = ods2table (fn);
 %!   assert_equal (R.Properties.VariableDescriptions, {'count', 'group'});
 %!   assert_equal (R.Properties.VariableUnits, {'kg', '-'});
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Round-trip: descriptions/units written when only some variables carry one
+%!test
+%! fn = [tempname() '.fods'];
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
+%! T.Properties.VariableDescriptions = {'first', ''};
+%! T.Properties.VariableUnits = {'', 'kg'};
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   R = ods2table (fn);
+%!   assert_equal (R.Properties.VariableDescriptions, {'first', ''});
+%!   assert_equal (R.Properties.VariableUnits, {'', 'kg'});
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Round-trip: a zone-aware datetime keeps its TimeZone
+%!test
+%! fn = [tempname() '.ods'];
+%! dt = datetime (2024, 6, [15; 16], 10, 30, 0, 'TimeZone', 'America/New_York');
+%! T = table (dt, 'VariableNames', {'t'});
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   R = ods2table (fn);
+%!   assert_equal (R.t.TimeZone, 'America/New_York');
+%!   assert_equal (cellstr (char (R.t)), cellstr (char (dt)));
 %! unwind_protect_cleanup
 %!   delete (fn);
 %! end_unwind_protect

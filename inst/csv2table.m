@@ -417,18 +417,24 @@ function varValue = cell2var (C, T)
   elseif (strcmp (T, "categorical"))
     warning ("csv2table: 'categorical' strings are not converted.");
     varValue = C;
-  elseif (strcmp (T, "datetime"))
+  elseif (strncmp (T, "datetime", 8))
+    ## A zone-aware datetime carries its TimeZone after 'datetime '; the date
+    ## strings are the wall-clock time in that zone.
+    tzargs = {};
+    if (numel (T) > 9)
+      tzargs = {'TimeZone', T(10:end)};
+    endif
     ## A 'NaT' token cannot be parsed alongside date strings (the format
     ## cannot be inferred), so reconstruct missing entries explicitly.  This
     ## mirrors how a 'NaN' token round-trips for a duration variable.
     isNaT = strcmp (strtrim (C), 'NaT');
     if (any (isNaT(:)))
-      varValue = NaT (size (C, 1), size (C, 2));
+      varValue = NaT (size (C, 1), size (C, 2), tzargs{:});
       if (! all (isNaT(:)))
-        varValue(! isNaT) = datetime (C(! isNaT));
+        varValue(! isNaT) = datetime (C(! isNaT), tzargs{:});
       endif
     else
-      varValue = datetime (C);
+      varValue = datetime (C, tzargs{:});
     endif
   elseif (strcmp (T, "duration"))
     varValue = duration (C);
