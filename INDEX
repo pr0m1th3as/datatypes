@@ -37,7 +37,9 @@ table arrays
  ods2struct
  readtable
  struct2ods
+ struct2xlsx
  struct2table
+ xlsx2struct
  istable
 supplementary classes
  missing

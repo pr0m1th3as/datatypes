@@ -19,6 +19,7 @@ this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include <sstream>
 #include <string>
+#include <vector>
 #include <cstdio>
 #include <cstring>
 #include <stdint.h>
@@ -241,27 +242,29 @@ build_worksheet (const Cell &data, const Cell &vtype, const Cell &header,
   return oss.str ();
 }
 
-// The fixed package parts.  'macro' selects the macro-enabled ('.xlsm')
-// workbook content type.
+// [Content_Types].xml with one worksheet override per sheet.  'macro' selects
+// the macro-enabled ('.xlsm') workbook content type.
 static string
-content_types_xml (bool macro)
+content_types_xml (bool macro, size_t nsheets)
 {
   string wb = macro
     ? "application/vnd.ms-excel.sheet.macroEnabled.main+xml"
     : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml";
-  return string ("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>")
-    + "<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/"
-      "content-types\">"
-      "<Default Extension=\"rels\" ContentType=\"application/vnd."
-      "openxmlformats-package.relationships+xml\"/>"
-      "<Default Extension=\"xml\" ContentType=\"application/xml\"/>"
-      "<Override PartName=\"/xl/workbook.xml\" ContentType=\"" + wb + "\"/>"
-      "<Override PartName=\"/xl/worksheets/sheet1.xml\" ContentType=\""
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet"
-      "+xml\"/>"
-      "<Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd."
-      "openxmlformats-officedocument.spreadsheetml.styles+xml\"/>"
-      "</Types>";
+  ostringstream o;
+  o << "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+       "<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/"
+       "content-types\">"
+       "<Default Extension=\"rels\" ContentType=\"application/vnd."
+       "openxmlformats-package.relationships+xml\"/>"
+       "<Default Extension=\"xml\" ContentType=\"application/xml\"/>"
+       "<Override PartName=\"/xl/workbook.xml\" ContentType=\"" << wb << "\"/>";
+  for (size_t k = 1; k <= nsheets; k++)
+    o << "<Override PartName=\"/xl/worksheets/sheet" << k << ".xml\" "
+         "ContentType=\"application/vnd.openxmlformats-officedocument."
+         "spreadsheetml.worksheet+xml\"/>";
+  o << "<Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd."
+       "openxmlformats-officedocument.spreadsheetml.styles+xml\"/></Types>";
+  return o.str ();
 }
 
 static const char *ROOT_RELS =
@@ -271,16 +274,23 @@ static const char *ROOT_RELS =
   "openxmlformats.org/officeDocument/2006/relationships/officeDocument\" "
   "Target=\"xl/workbook.xml\"/></Relationships>";
 
-static const char *WORKBOOK_RELS =
-  "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-  "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/"
-  "relationships\">"
-  "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/"
-  "officeDocument/2006/relationships/worksheet\" "
-  "Target=\"worksheets/sheet1.xml\"/>"
-  "<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/"
-  "officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/>"
-  "</Relationships>";
+// workbook.xml.rels: one worksheet relationship per sheet plus the styles part.
+static string
+workbook_rels_xml (size_t nsheets)
+{
+  ostringstream o;
+  o << "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+       "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/"
+       "relationships\">";
+  for (size_t k = 1; k <= nsheets; k++)
+    o << "<Relationship Id=\"rId" << k << "\" Type=\"http://schemas."
+         "openxmlformats.org/officeDocument/2006/relationships/worksheet\" "
+         "Target=\"worksheets/sheet" << k << ".xml\"/>";
+  o << "<Relationship Id=\"rId" << (nsheets + 1) << "\" Type=\"http://schemas."
+       "openxmlformats.org/officeDocument/2006/relationships/styles\" "
+       "Target=\"styles.xml\"/></Relationships>";
+  return o.str ();
+}
 
 // Styles: three custom number formats (date, date-and-time, duration) bound to
 // cell formats s=1..3; s=0 is the default General format.
@@ -303,14 +313,20 @@ static const char *STYLES_XML =
   "<xf numFmtId=\"166\" applyNumberFormat=\"1\"/>"
   "</cellXfs></styleSheet>";
 
+// workbook.xml listing each sheet (sheetId 1..N, relationship rId1..rIdN).
 static string
-workbook_xml (const string &sheetname)
+workbook_xml (const vector<string> &names)
 {
-  return string ("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>")
-    + "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/"
-      "main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/"
-      "relationships\"><sheets><sheet name=\"" + xml_escape (sheetname)
-    + "\" sheetId=\"1\" r:id=\"rId1\"/></sheets></workbook>";
+  ostringstream o;
+  o << "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+       "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/"
+       "main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/"
+       "relationships\"><sheets>";
+  for (size_t k = 0; k < names.size (); k++)
+    o << "<sheet name=\"" << xml_escape (names[k]) << "\" sheetId=\"" << (k + 1)
+      << "\" r:id=\"rId" << (k + 1) << "\"/>";
+  o << "</sheets></workbook>";
+  return o.str ();
 }
 
 DEFUN_DLD (__table2xlsx__, args, nargout,
@@ -319,11 +335,14 @@ DEFUN_DLD (__table2xlsx__, args, nargout,
 @var{vtype}, @var{opts})\n\
 \n\
 \n\
-Barebone function for writing a single-sheet Office Open XML (@qcode{.xlsx} / \
-@qcode{.xlsm}) spreadsheet.\n\
+Barebone function for writing an Office Open XML (@qcode{.xlsx} / \
+@qcode{.xlsm}) spreadsheet.  A single sheet is written from @var{data} / \
+@var{vtype}; when @var{opts} carries a @qcode{sheets} struct array (fields \
+@qcode{name}, @qcode{data}, @qcode{vtype}, @qcode{header}) a multi-sheet \
+workbook is written instead.\n\
 \n\
-This is a helper IO function for the @qcode{writetable} method of the \
-@qcode{table} class.  Do NOT call it directly. \n\
+This is a helper IO function for @qcode{writetable} and @qcode{struct2xlsx}.  \
+Do NOT call it directly. \n\
 \n\
 @end deftypefn")
 {
@@ -339,6 +358,8 @@ This is a helper IO function for the @qcode{writetable} method of the \
   string sheetname = "Sheet1";
   long   roff = 0, coff = 0;
   bool   macro = false;
+  bool   multi = false;
+  octave_map sheets;
   if (args.length () == 4)
   {
     octave_scalar_map opts = args(3).scalar_map_value ();
@@ -352,11 +373,42 @@ This is a helper IO function for the @qcode{writetable} method of the \
       coff = (long) opts.contents ("coff").double_value ();
     if (opts.isfield ("macro"))
       macro = opts.contents ("macro").bool_value ();
+    if (opts.isfield ("sheets"))
+    {
+      multi = true;
+      sheets = opts.contents ("sheets").map_value ();
+    }
   }
 
-  string sheet = build_worksheet (data, vtype, header, roff, coff);
-  string ctypes = content_types_xml (macro);
-  string wb = workbook_xml (sheetname);
+  // Build the worksheet XML for each sheet.
+  vector<string> names, sheetxml;
+  if (multi)
+  {
+    Cell nm = sheets.contents ("name");
+    Cell da = sheets.contents ("data");
+    Cell vt = sheets.contents ("vtype");
+    bool have_hd = sheets.isfield ("header");
+    Cell hd;
+    if (have_hd)
+      hd = sheets.contents ("header");
+    for (octave_idx_type k = 0; k < nm.numel (); k++)
+    {
+      names.push_back (nm(k).string_value ());
+      sheetxml.push_back (build_worksheet (da(k).cell_value (),
+                          vt(k).cell_value (),
+                          have_hd ? hd(k).cell_value () : Cell (), 0, 0));
+    }
+  }
+  else
+  {
+    names.push_back (sheetname);
+    sheetxml.push_back (build_worksheet (data, vtype, header, roff, coff));
+  }
+
+  string ctypes = content_types_xml (macro, names.size ());
+  string wb = workbook_xml (names);
+  string wbrels = workbook_rels_xml (names.size ());
+  string root_rels = ROOT_RELS, styles = STYLES_XML;
 
   // Package the parts.  XLSX has no stored-first-entry rule, so miniz's own ZIP
   // writer is fine here.
@@ -368,25 +420,23 @@ This is a helper IO function for the @qcode{writetable} method of the \
     retval(0) = "cannot open file '" + file + "' for writing.";
     return retval;
   }
-  struct part { const char *name; const string *data; };
-  part parts[] = {
-    {"[Content_Types].xml",         &ctypes},
-    {"_rels/.rels",                 0},
-    {"xl/workbook.xml",             &wb},
-    {"xl/_rels/workbook.xml.rels",  0},
-    {"xl/styles.xml",               0},
-    {"xl/worksheets/sheet1.xml",    &sheet}
-  };
-  string root_rels = ROOT_RELS, wb_rels = WORKBOOK_RELS, styles = STYLES_XML;
-  parts[1].data = &root_rels;
-  parts[3].data = &wb_rels;
-  parts[4].data = &styles;
   bool ok = true;
-  for (size_t i = 0; i < sizeof (parts) / sizeof (parts[0]); i++)
-    ok = ok && mz_zip_writer_add_mem (&zip, parts[i].name,
-                                      parts[i].data->data (),
-                                      parts[i].data->size (),
-                                      MZ_DEFAULT_COMPRESSION);
+  ok = ok && mz_zip_writer_add_mem (&zip, "[Content_Types].xml",
+                ctypes.data (), ctypes.size (), MZ_DEFAULT_COMPRESSION);
+  ok = ok && mz_zip_writer_add_mem (&zip, "_rels/.rels",
+                root_rels.data (), root_rels.size (), MZ_DEFAULT_COMPRESSION);
+  ok = ok && mz_zip_writer_add_mem (&zip, "xl/workbook.xml",
+                wb.data (), wb.size (), MZ_DEFAULT_COMPRESSION);
+  ok = ok && mz_zip_writer_add_mem (&zip, "xl/_rels/workbook.xml.rels",
+                wbrels.data (), wbrels.size (), MZ_DEFAULT_COMPRESSION);
+  ok = ok && mz_zip_writer_add_mem (&zip, "xl/styles.xml",
+                styles.data (), styles.size (), MZ_DEFAULT_COMPRESSION);
+  for (size_t k = 0; k < sheetxml.size () && ok; k++)
+  {
+    string pn = "xl/worksheets/sheet" + std::to_string (k + 1) + ".xml";
+    ok = ok && mz_zip_writer_add_mem (&zip, pn.c_str (), sheetxml[k].data (),
+                                      sheetxml[k].size (), MZ_DEFAULT_COMPRESSION);
+  }
   if (! ok || ! mz_zip_writer_finalize_archive (&zip))
   {
     mz_zip_writer_end (&zip);

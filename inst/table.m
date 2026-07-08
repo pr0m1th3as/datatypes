@@ -935,17 +935,17 @@ classdef table
     ## rows to it), or @qcode{'replacefile'} (overwrite the whole file).
     ## @end multitable
     ##
-    ## When an @strong{ODS} target already exists, the sheet named by
+    ## When the target spreadsheet already exists, the sheet named by
     ## @qcode{'Sheet'} (default @qcode{'Sheet1'}) is added or replaced while every
     ## other sheet is preserved, unless @qcode{'WriteMode'} is
-    ## @qcode{'replacefile'}.  Existing foreign spreadsheets (for example those
-    ## written by LibreOffice) are updated in place, keeping their other parts.
+    ## @qcode{'replacefile'}.  For ODS, existing foreign spreadsheets (for example
+    ## those written by LibreOffice) are updated in place, keeping their other
+    ## parts; for Excel (@qcode{.xlsx}, @qcode{.xlsm}) the workbook is read back
+    ## and rewritten, so only its cell values are preserved.
     ##
-    ## Office Open XML (@qcode{.xlsx}, @qcode{.xlsm}) is also written, but only as
-    ## a fresh single-sheet file: writing into an existing Excel workbook is not
-    ## yet supported.  Nested tables and structures are not supported, and the
-    ## legacy binary formats @qcode{.xls} and @qcode{.xlsb} are not supported
-    ## either; use @qcode{.xlsx}, @qcode{.ods}, or a text format.
+    ## Nested tables and structures are not supported, and the legacy binary
+    ## formats @qcode{.xls} and @qcode{.xlsb} are not supported either; use
+    ## @qcode{.xlsx}, @qcode{.ods}, or a text format.
     ##
     ## @end deftypefn
     function writetable (this, filename, varargin)
@@ -1030,13 +1030,6 @@ classdef table
             error (strcat ("table.writetable: 'WriteMode' '%s' is not valid", ...
                            " for spreadsheet files."), writeMode);
         endswitch
-        ## Merging into an existing Excel workbook is not yet supported (the ODS
-        ## repacker has no Office Open XML counterpart); only fresh writes.
-        if (isXlsx && exist (file, 'file') && ! strcmp (writeMode, 'replacefile'))
-          error (strcat ("table.writetable: writing into an existing Excel", ...
-                         " file is not yet supported; use 'WriteMode',", ...
-                         " 'replacefile' or write a new file."));
-        endif
         ## A 'Range' anchors a fresh write; it has no meaning when merging into
         ## an existing workbook.
         if (! isempty (range))
@@ -1090,14 +1083,24 @@ classdef table
           opts.sheetname = sheet;
         endif
         if (isXlsx)
-          ## Excel: a fresh single-sheet write (merging was refused above).
-          if (! isempty (range))
-            [r1, c1] = __a1ref__ (range);
-            opts.roff = r1 - 1;
-            opts.coff = c1 - 1;
+          if (exist (file, 'file') && ! strcmp (writeMode, 'replacefile'))
+            ## Merge into an existing workbook by reading it back, modifying the
+            ## struct of tables, and rewriting (interop re-encode, like the
+            ## incremental table2ods path).
+            s = xlsx2struct (file);
+            s = merge_table_into_struct (s, this, sheet, writeMode);
+            struct2xlsx (file, s);
+            msg = 0;
+          else
+            ## A fresh single-sheet write.
+            if (! isempty (range))
+              [r1, c1] = __a1ref__ (range);
+              opts.roff = r1 - 1;
+              opts.coff = c1 - 1;
+            endif
+            opts.macro = strcmpi (ext, '.xlsm');
+            msg = __table2xlsx__ (file, V, vtype, opts);
           endif
-          opts.macro = strcmpi (ext, '.xlsm');
-          msg = __table2xlsx__ (file, V, vtype, opts);
         else
           is_flat = strcmpi (ext, '.fods');
           ## Merge into an existing workbook (preserving other sheets) unless the
@@ -9470,6 +9473,23 @@ classdef table
       cmt = repmat ({''}, 1, Ccols);
       cmt{1} = sprintf (txt, Tmaxr, Nmaxr, Dmaxr, Umaxr);
       meta = [cmt; Header];
+    endfunction
+
+    ## Build the MATLAB-interop spreadsheet parts for THIS table: the variable
+    ## names (a header row), the flat data grid V with ISO-formatted
+    ## datetime/duration values, and the per-column ODS value types.  No hidden
+    ## metadata (interop format).  Shared by 'writetable' and 'struct2xlsx'.
+    ## CALLER names the function for error reporting.
+    function [names, V, vtype] = __interop_parts__ (this, caller)
+      [V, N, T] = table2cellarrays (this, 'iso');
+      if (any (cellfun (@iscell, T)))
+        error ("%s: nested tables and structs are not supported; flatten multicolumn variables with splitvars before writing.", caller);
+      endif
+      [names, V, T] = writetable_prep (V, N, T, false);
+      vtype = cell (1, numel (T));
+      for c = 1:numel (T)
+        vtype{c} = ods_value_type (T{c});
+      endfor
     endfunction
 
   endmethods

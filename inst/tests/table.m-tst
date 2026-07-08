@@ -1530,14 +1530,36 @@
 %!error <table.writetable: unknown option 'Bogus'.> ...
 %! writetable (table (1), [tempname() '.csv'], 'Bogus', 1);
 
-## '.xlsx' write into an existing file is refused (no repacker yet)
-%!error <table.writetable: writing into an existing Excel file is not yet supported.*> ...
-%! fn = [tempname() '.xlsx']; ...
-%! writetable (table (1), fn); ...
-%! unwind_protect ...
-%!   writetable (table (2), fn, 'Sheet', 'More'); ...
-%! unwind_protect_cleanup ...
-%!   delete (fn); ...
+## '.xlsx' write into an existing workbook adds/preserves sheets and appends
+%!test
+%! A = table ([1; 2], 'VariableNames', {'a'});
+%! B = table ([3; 4; 5], 'VariableNames', {'b'});
+%! more = table ([6; 7], 'VariableNames', {'a'});
+%! fn = [tempname() '.xlsx'];
+%! unwind_protect
+%!   writetable (A, fn, 'Sheet', 'first');
+%!   writetable (B, fn, 'Sheet', 'second');
+%!   writetable (more, fn, 'Sheet', 'first', 'WriteMode', 'append');
+%!   r = xlsx2struct (fn);
+%!   assert_equal (fieldnames (r), {'first'; 'second'});
+%!   assert_equal (r.first.a, [1; 2; 6; 7]);
+%!   assert_equal (r.second.b, [3; 4; 5]);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file')); delete (fn); endif
+%! end_unwind_protect
+
+## 'replacefile' overwrites the whole Excel workbook
+%!test
+%! A = table ([1; 2], 'VariableNames', {'a'});
+%! B = table ([3; 4], 'VariableNames', {'b'});
+%! fn = [tempname() '.xlsx'];
+%! unwind_protect
+%!   writetable (A, fn, 'Sheet', 'first');
+%!   writetable (B, fn, 'Sheet', 'second', 'WriteMode', 'replacefile');
+%!   [~, ~, ~, nm] = __xlsx2table__ (fn);
+%!   assert_equal (nm(:), {'second'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file')); delete (fn); endif
 %! end_unwind_protect
 
 ################################################################################
