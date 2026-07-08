@@ -72,7 +72,7 @@ function [B, varargout] = groupcounts (A, varargin)
     isOpt = ((ischar (a) && isrow (a)) || (isa (a, 'string') && isscalar (a))) ...
             && any (strcmpi (char (a), optNames));
     if (! isOpt)
-      if (is_groupbins_spec (a))
+      if (__groupbins__ ('is_spec', a))
         hasGB = true;
         groupbins = a;
         varargin = varargin(2:end);
@@ -137,7 +137,7 @@ function [B, varargout] = groupcounts (A, varargin)
     for j = 1:numel (gvs)
       names{j} = sprintf ("%d", j);
     endfor
-    [gvs, errmsg] = bin_groupvars (gvs, names, groupbins, incEdge, ...
+    [gvs, ~, errmsg] = __groupbins__ ('bin', gvs, names, groupbins, incEdge, ...
                                    'groupcounts');
     if (! isempty (errmsg))
       error ("groupcounts: %s", errmsg);
@@ -274,238 +274,6 @@ function e = check_included_edge (caller, val)
     error ("%s: 'IncludedEdge' must be 'left' or 'right'.", caller);
   endif
   e = lower (val);
-endfunction
-
-## Recognised 'groupbins' time-unit keyword names (plus 'none').  Only 'none' is
-## currently honoured; the rest are detected so a time-unit binning argument is
-## not mistaken for an option, then reported as not yet supported.
-function kw = gb_keywords ()
-  kw = {'none', 'second', 'minute', 'hour', 'day', 'week', 'month', ...
-        'quarter', 'year', 'decade', 'century', 'dayname', 'monthname', ...
-        'dayofweek', 'dayofmonth', 'dayofyear', 'hourofday', 'weekofmonth', ...
-        'weekofyear', 'monthofyear', 'quarterofyear', 'secondofminute', ...
-        'minuteofhour'};
-endfunction
-
-## True if X is a single 'groupbins' binning-scheme element.
-function tf = gb_is_scheme_elem (x)
-  tf = false;
-  if ((isnumeric (x) || islogical (x)) && ! isempty (x))
-    tf = true;
-  elseif (isa (x, 'datetime') || isa (x, 'duration') ...
-          || isa (x, 'calendarDuration'))
-    tf = true;
-  elseif ((ischar (x) && isrow (x)) || (isa (x, 'string') && isscalar (x)))
-    tf = any (strcmpi (char (x), gb_keywords ()));
-  endif
-endfunction
-
-## True if X is a 'groupbins' binning specification: a single scheme element or a
-## cell array whose every element is one.
-function tf = is_groupbins_spec (x)
-  tf = gb_is_scheme_elem (x);
-  if (! tf && iscell (x) && ! isempty (x))
-    tf = all (cellfun (@gb_is_scheme_elem, x(:)'));
-  endif
-endfunction
-
-## Normalise a 'groupbins' SCHEME into a 1-by-K cell of per-variable schemes.
-## Returns an errmsg body emitted by the caller.
-function [schemes, errmsg] = gb_normalise_schemes (scheme, K)
-  errmsg = '';
-  schemes = {};
-  if (iscell (scheme))
-    if (numel (scheme) != K)
-      errmsg = sprintf (strcat ("GROUPBINS as a cell array must hold one", ...
-                                " binning scheme per grouping variable (%d)."), ...
-                        K);
-      return;
-    endif
-    schemes = scheme(:)';
-  else
-    schemes = repmat ({scheme}, 1, K);
-  endif
-endfunction
-
-## Bin the grouping-variable columns COLS using the 'groupbins' SCHEME and the
-## IncludedEdge INCEDGE.  NAMES holds the variable names for error messages.
-## Returns the updated COLS and an errmsg body emitted by the caller.
-function [cols, errmsg] = bin_groupvars (cols, names, scheme, incEdge, caller)
-  errmsg = '';
-  K = numel (cols);
-  [schemes, errmsg] = gb_normalise_schemes (scheme, K);
-  if (! isempty (errmsg))
-    return;
-  endif
-  for j = 1:K
-    sj = schemes{j};
-    if (((ischar (sj) && isrow (sj)) || (isa (sj, 'string') && isscalar (sj))) ...
-        && strcmpi (char (sj), 'none'))
-      continue;
-    endif
-    [b, errmsg] = bin_group_col (cols{j}, sj, incEdge, names{j});
-    if (! isempty (errmsg))
-      return;
-    endif
-    cols{j} = b;
-  endfor
-endfunction
-
-## Map a datetime COL to a column vector of datenum proxy values (NaT -> NaN).
-function dn = gb_datetime_to_datenum (v)
-  DV = datevec (v);
-  nat = any (isnan (DV), 2);
-  DV(nat,:) = 0;
-  DV(nat,2:3) = 1;
-  dn = datenum (DV);
-  dn(nat) = NaN;
-  dn = dn(:);
-endfunction
-
-## Bin one grouping-variable column COL into a categorical of bin interval
-## labels, using the binning SCHEME and the IncludedEdge INCEDGE.  VARNAME names
-## the variable for error messages.  Time-unit and bin-width schemes are not yet
-## supported.  Returns an errmsg body emitted by the caller.
-function [binned, errmsg] = bin_group_col (col, scheme, incEdge, varname)
-  binned = [];
-  errmsg = '';
-  if (((ischar (scheme) && isrow (scheme)) ...
-       || (isa (scheme, 'string') && isscalar (scheme))) ...
-      && ! strcmpi (char (scheme), 'none'))
-    errmsg = sprintf (strcat ("binning grouping variable '%s' by time unit", ...
-                              " '%s' is not yet supported; use bin edges or a", ...
-                              " number of bins."), varname, char (scheme));
-    return;
-  endif
-  if (isa (scheme, 'duration') || isa (scheme, 'calendarDuration'))
-    errmsg = sprintf (strcat ("binning grouping variable '%s' by a bin width", ...
-                              " is not yet supported; use bin edges or a", ...
-                              " number of bins."), varname);
-    return;
-  endif
-  if (isa (col, 'datetime'))
-    proxy = gb_datetime_to_datenum (col);
-    ctype = 'datetime';
-  elseif (isa (col, 'duration'))
-    proxy = days (col)(:);
-    ctype = 'duration';
-  elseif (isnumeric (col) || islogical (col))
-    proxy = double (col)(:);
-    ctype = 'numeric';
-  else
-    errmsg = sprintf (strcat ("binning is not supported for grouping variable", ...
-                              " '%s' of type '%s'."), varname, class (col));
-    return;
-  endif
-  if (isscalar (scheme) && (isnumeric (scheme) || islogical (scheme)))
-    nb = double (scheme);
-    if (! (nb >= 1 && nb == fix (nb)))
-      errmsg = sprintf (strcat ("the number of bins for grouping variable", ...
-                                " '%s' must be a positive integer."), varname);
-      return;
-    endif
-    good = proxy(! isnan (proxy));
-    if (isempty (good))
-      edgesP = [0, 1];
-    elseif (min (good) == max (good))
-      edgesP = [min(good), min(good) + 1];
-    else
-      edgesP = min (good) + (0:nb) * (max (good) - min (good)) / nb;
-    endif
-  elseif (isnumeric (scheme))
-    if (! strcmp (ctype, 'numeric'))
-      errmsg = sprintf (strcat ("bin edges for grouping variable '%s' must be", ...
-                                " of type '%s'."), varname, ctype);
-      return;
-    endif
-    edgesP = sort (double (scheme(:)'));
-  elseif (isa (scheme, 'datetime'))
-    if (! strcmp (ctype, 'datetime'))
-      errmsg = sprintf (strcat ("bin edges for grouping variable '%s' must be", ...
-                                " of type '%s'."), varname, ctype);
-      return;
-    endif
-    edgesP = sort (gb_datetime_to_datenum (scheme)');
-  else
-    errmsg = sprintf ("invalid binning scheme for grouping variable '%s'.", ...
-                      varname);
-    return;
-  endif
-  if (numel (edgesP) < 2 || any (isnan (edgesP)) || any (diff (edgesP) <= 0))
-    errmsg = sprintf (strcat ("bin edges for grouping variable '%s' must be at", ...
-                              " least two finite, strictly increasing values."), ...
-                      varname);
-    return;
-  endif
-  nb = numel (edgesP) - 1;
-  left = ! strcmpi (incEdge, 'right');
-  idx = NaN (numel (proxy), 1);
-  for k = 1:nb
-    if (left)
-      if (k < nb)
-        in = proxy >= edgesP(k) & proxy < edgesP(k+1);
-      else
-        in = proxy >= edgesP(k) & proxy <= edgesP(k+1);
-      endif
-    else
-      if (k == 1)
-        in = proxy >= edgesP(k) & proxy <= edgesP(k+1);
-      else
-        in = proxy > edgesP(k) & proxy <= edgesP(k+1);
-      endif
-    endif
-    idx(in) = k;
-  endfor
-  estr = bin_edge_labels (edgesP, ctype);
-  labs = cell (1, nb);
-  for k = 1:nb
-    if (left)
-      br = '[';  bl = ')';
-      if (k == nb)
-        bl = ']';
-      endif
-    else
-      br = '(';  bl = ']';
-      if (k == 1)
-        br = '[';
-      endif
-    endif
-    labs{k} = sprintf ("%s%s, %s%s", br, estr{k}, estr{k+1}, bl);
-  endfor
-  rowLab = repmat ({''}, numel (idx), 1);
-  ok = ! isnan (idx);
-  rowLab(ok) = labs(idx(ok));
-  binned = categorical (rowLab, labs);
-endfunction
-
-## Format the bin edges EDGESP (numeric proxy values) as label strings of CTYPE.
-function s = bin_edge_labels (edgesP, ctype)
-  n = numel (edgesP);
-  s = cell (1, n);
-  switch (ctype)
-    case 'datetime'
-      dt = datetime (edgesP(:), 'ConvertFrom', 'datenum');
-      for i = 1:n
-        s{i} = char (dt(i));
-      endfor
-    case 'duration'
-      for i = 1:n
-        s{i} = char (days (edgesP(i)));
-      endfor
-    otherwise
-      for i = 1:n
-        s{i} = bin_num_str (edgesP(i));
-      endfor
-  endswitch
-endfunction
-
-## Format a numeric bin-edge value V for an interval label.
-function s = bin_num_str (v)
-  if (isfinite (v) && v == fix (v) && abs (v) < 1e15)
-    s = sprintf ("%d", v);
-  else
-    s = num2str (v);
-  endif
 endfunction
 
 ## Group rows by the grouping-variable values GVS (already binned when a
@@ -675,7 +443,7 @@ endfunction
 %! groupcounts ([1; 2], 'bogus')
 %!error <groupcounts: 'IncludedEdge' must be 'left' or 'right'.> ...
 %! groupcounts ([1; 2], 2, 'IncludedEdge', 'mid')
-%!error <groupcounts: binning grouping variable '1' by time unit 'month' is not yet supported; use bin edges or a number of bins.> ...
+%!error <groupcounts: binning grouping variable '1' by time unit 'month' is only supported for datetime variables.> ...
 %! groupcounts ([1; 2], 'month')
 %!error <groupcounts: each grouping variable must have the same number of elements.> ...
 %! groupcounts ({[1; 2; 3], [1; 2]})

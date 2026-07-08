@@ -6317,7 +6317,7 @@ classdef table
       ## An optional GROUPBINS positional argument precedes METHOD.
       hasGroupbins = false;
       groupbins = [];
-      if (! isempty (posArgs) && is_groupbins_spec (posArgs{1}))
+      if (! isempty (posArgs) && __groupbins__ ('is_spec', posArgs{1}))
         hasGroupbins = true;
         groupbins = posArgs{1};
         posArgs = posArgs(2:end);
@@ -6377,9 +6377,10 @@ classdef table
 
       ## Bin the grouping variables when a GROUPBINS argument was given.
       grpCols = T.VariableValues(gIx);
+      grpNames = T.VariableNames(gIx);
       if (hasGroupbins)
-        [grpCols, errmsg] = bin_groupvars (grpCols, T.VariableNames(gIx), ...
-                                           groupbins, incEdge, 'groupsummary');
+        [grpCols, grpNames, errmsg] = __groupbins__ ('bin', grpCols, ...
+                                    grpNames, groupbins, incEdge, 'groupsummary');
         if (! isempty (errmsg))
           error ("table.groupsummary: %s", errmsg);
         endif
@@ -6425,7 +6426,7 @@ classdef table
       endfor
 
       vars = [gcols, {gcount}, rescols];
-      names = [T.VariableNames(gIx), {'GroupCount'}, resNames];
+      names = [grpNames, {'GroupCount'}, resNames];
       G = table (vars{:}, 'VariableNames', names);
     endfunction
 
@@ -6486,7 +6487,7 @@ classdef table
                  || (isa (a, 'string') && isscalar (a))) ...
                 && any (strcmpi (char (a), optNames));
         if (! isOpt)
-          if (is_groupbins_spec (a))
+          if (__groupbins__ ('is_spec', a))
             hasGroupbins = true;
             groupbins = a;
             varargin = varargin(2:end);
@@ -6523,9 +6524,10 @@ classdef table
 
       ## Bin the grouping variables when a GROUPBINS argument was given.
       grpCols = T.VariableValues(gIx);
+      grpNames = T.VariableNames(gIx);
       if (hasGroupbins)
-        [grpCols, errmsg] = bin_groupvars (grpCols, T.VariableNames(gIx), ...
-                                           groupbins, incEdge, 'groupcounts');
+        [grpCols, grpNames, errmsg] = __groupbins__ ('bin', grpCols, ...
+                                     grpNames, groupbins, incEdge, 'groupcounts');
         if (! isempty (errmsg))
           error ("table.groupcounts: %s", errmsg);
         endif
@@ -6543,7 +6545,7 @@ classdef table
       pcent = 100 * gcount / sum (gcount);
 
       vars = [gcols, {gcount, pcent}];
-      names = [T.VariableNames(gIx), {'GroupCount', 'Percent'}];
+      names = [grpNames, {'GroupCount', 'Percent'}];
       G = table (vars{:}, 'VariableNames', names);
     endfunction
 
@@ -6609,7 +6611,7 @@ classdef table
 
       hasGroupbins = false;
       groupbins = [];
-      if (! isempty (args) && is_groupbins_spec (args{1}))
+      if (! isempty (args) && __groupbins__ ('is_spec', args{1}))
         hasGroupbins = true;
         groupbins = args{1};
         args = args(2:end);
@@ -6656,7 +6658,7 @@ classdef table
       ## that every row belongs to exactly one group.
       grpCols = T.VariableValues(gIx);
       if (hasGroupbins)
-        [grpCols, errmsg] = bin_groupvars (grpCols, T.VariableNames(gIx), ...
+        [grpCols, ~, errmsg] = __groupbins__ ('bin', grpCols, T.VariableNames(gIx), ...
                                            groupbins, incEdge, 'groupfilter');
         if (! isempty (errmsg))
           error ("table.groupfilter: %s", errmsg);
@@ -6758,7 +6760,7 @@ classdef table
       args = varargin;
       hasGroupbins = false;
       groupbins = [];
-      if (! isempty (args) && is_groupbins_spec (args{1}))
+      if (! isempty (args) && __groupbins__ ('is_spec', args{1}))
         hasGroupbins = true;
         groupbins = args{1};
         args = args(2:end);
@@ -6838,7 +6840,7 @@ classdef table
       ## that every row belongs to exactly one group.
       grpCols = T.VariableValues(gIx);
       if (hasGroupbins)
-        [grpCols, errmsg] = bin_groupvars (grpCols, T.VariableNames(gIx), ...
+        [grpCols, ~, errmsg] = __groupbins__ ('bin', grpCols, T.VariableNames(gIx), ...
                                            groupbins, incEdge, 'grouptransform');
         if (! isempty (errmsg))
           error ("table.grouptransform: %s", errmsg);
@@ -7090,6 +7092,8 @@ classdef table
       ## 'ColumnsBinMethod' was given (a per-variable cell or a single scheme).
       rowGcols = T.VariableValues(rowIx);
       colGcols = T.VariableValues(colIx);
+      rowGnames = T.VariableNames(rowIx);
+      colGnames = T.VariableNames(colIx);
       rowNone = ((ischar (rowBin) && isrow (rowBin)) ...
                  || (isa (rowBin, 'string') && isscalar (rowBin))) ...
                 && strcmpi (char (rowBin), 'none');
@@ -7097,15 +7101,15 @@ classdef table
                  || (isa (colBin, 'string') && isscalar (colBin))) ...
                 && strcmpi (char (colBin), 'none');
       if (! rowNone && ! isempty (rowIx))
-        [rowGcols, emsg] = bin_groupvars (rowGcols, T.VariableNames(rowIx), ...
-                                          rowBin, incEdge, 'pivot');
+        [rowGcols, rowGnames, emsg] = __groupbins__ ('bin', rowGcols, ...
+                                       rowGnames, rowBin, incEdge, 'pivot');
         if (! isempty (emsg))
           error ("table.pivot: %s", emsg);
         endif
       endif
       if (! colNone && ! isempty (colIx))
-        [colGcols, emsg] = bin_groupvars (colGcols, T.VariableNames(colIx), ...
-                                          colBin, incEdge, 'pivot');
+        [colGcols, colGnames, emsg] = __groupbins__ ('bin', colGcols, ...
+                                       colGnames, colBin, incEdge, 'pivot');
         if (! isempty (emsg))
           error ("table.pivot: %s", emsg);
         endif
@@ -7166,7 +7170,7 @@ classdef table
           for j = 1:numel (colIx)
             lvl = cLvlOf(c,j);
             if (cMissLvls{j}(lvl))
-              parts{j} = sprintf ("<missing_%s>", T.VariableNames{colIx(j)});
+              parts{j} = sprintf ("<missing_%s>", colGnames{j});
             else
               parts{j} = pivot_value_name (cLevVals{j}(lvl, :));
             endif
@@ -7184,7 +7188,7 @@ classdef table
         for j = 1:numel (rowIx)
           rowLabelCols{j} = rLevVals{j}(rLvlOf(:,j), :);
         endfor
-        rowLabelNames = T.VariableNames(rowIx);
+        rowLabelNames = rowGnames;
       endif
 
       ## Marginal totals, recomputed over each margin from the raw data.
@@ -10249,255 +10253,6 @@ function [lp, rp, errmsg] = key_col_proxy (lcol, rcol)
     lp = [];
     rp = [];
     errmsg = "key variables have incompatible sizes.";
-  endif
-endfunction
-
-## Recognised 'groupbins' time-unit keyword names (plus 'none').  Only 'none' is
-## currently honoured; the rest are detected so a time-unit binning argument is
-## not mistaken for a method, then reported as not yet supported.
-function kw = gb_keywords ()
-  kw = {'none', 'second', 'minute', 'hour', 'day', 'week', 'month', ...
-        'quarter', 'year', 'decade', 'century', 'dayname', 'monthname', ...
-        'dayofweek', 'dayofmonth', 'dayofyear', 'hourofday', 'weekofmonth', ...
-        'weekofyear', 'monthofyear', 'quarterofyear', 'secondofminute', ...
-        'minuteofhour'};
-endfunction
-
-## True if X is a single 'groupbins' binning-scheme element: a non-empty numeric,
-## datetime, duration, or calendarDuration array (bin edges or a bin count/width)
-## or a binning keyword char vector/string (see 'gb_keywords').
-function tf = gb_is_scheme_elem (x)
-  tf = false;
-  if ((isnumeric (x) || islogical (x)) && ! isempty (x))
-    tf = true;
-  elseif (isa (x, 'datetime') || isa (x, 'duration') ...
-          || isa (x, 'calendarDuration'))
-    tf = true;
-  elseif ((ischar (x) && isrow (x)) || (isa (x, 'string') && isscalar (x)))
-    tf = any (strcmpi (char (x), gb_keywords ()));
-  endif
-endfunction
-
-## True if X is a 'groupbins' binning specification: a single scheme element (see
-## 'gb_is_scheme_elem') or a cell array whose every element is one.  Used to tell
-## a 'groupbins' positional argument apart from a METHOD argument, since method
-## names and function handles are never binning specs.
-function tf = is_groupbins_spec (x)
-  tf = gb_is_scheme_elem (x);
-  if (! tf && iscell (x) && ! isempty (x))
-    tf = all (cellfun (@gb_is_scheme_elem, x(:)'));
-  endif
-endfunction
-
-## Normalise a 'groupbins' SCHEME into a 1-by-K cell of per-variable schemes for
-## the K grouping variables: a cell scheme must already hold one entry per
-## variable, any other scheme is applied to every grouping variable.  CALLER
-## names the method for the error message.  Returns an errmsg body emitted by the
-## caller (empty on success).
-function [schemes, errmsg] = gb_normalise_schemes (scheme, K, caller)
-  errmsg = '';
-  schemes = {};
-  if (iscell (scheme))
-    if (numel (scheme) != K)
-      errmsg = sprintf (strcat ("GROUPBINS as a cell array must hold one", ...
-                                " binning scheme per grouping variable (%d)."), ...
-                        K);
-      return;
-    endif
-    schemes = scheme(:)';
-  else
-    schemes = repmat ({scheme}, 1, K);
-  endif
-endfunction
-
-## Bin the grouping-variable columns COLS (a cell array of values) using the
-## 'groupbins' SCHEME and the IncludedEdge INCEDGE ('left'/'right').  NAMES holds
-## the variable names for error messages.  Each binnable column is replaced by a
-## categorical whose categories are the bin interval labels; a per-variable
-## scheme of 'none' leaves its column unchanged.  Returns the updated COLS and an
-## errmsg body emitted by the caller (empty on success).
-function [cols, errmsg] = bin_groupvars (cols, names, scheme, incEdge, caller)
-  errmsg = '';
-  K = numel (cols);
-  [schemes, errmsg] = gb_normalise_schemes (scheme, K, caller);
-  if (! isempty (errmsg))
-    return;
-  endif
-  for j = 1:K
-    sj = schemes{j};
-    if (((ischar (sj) && isrow (sj)) || (isa (sj, 'string') && isscalar (sj))) ...
-        && strcmpi (char (sj), 'none'))
-      continue;                     # no binning for this variable
-    endif
-    [b, errmsg] = bin_group_col (cols{j}, sj, incEdge, names{j});
-    if (! isempty (errmsg))
-      return;
-    endif
-    cols{j} = b;
-  endfor
-endfunction
-
-## Bin one grouping-variable column COL into a categorical whose categories are
-## the bin interval labels, using the binning SCHEME and the IncludedEdge INCEDGE.
-## SCHEME is a numeric scalar (number of equal-width bins) or a vector of bin
-## edges of the same type as COL (numeric, datetime, or duration); a value
-## outside the outer edges becomes <undefined>.  With INCEDGE 'left' (default)
-## bins are [e1,e2),...,[en-1,en]; with 'right' they are [e1,e2],(e2,e3],...,
-## (en-1,en].  VARNAME names the variable for error messages.  Time-unit and
-## bin-width schemes are not yet supported.  Returns an errmsg body emitted by
-## the caller (empty on success).
-function [binned, errmsg] = bin_group_col (col, scheme, incEdge, varname)
-  binned = [];
-  errmsg = '';
-
-  ## Reject the not-yet-supported time-unit and bin-width schemes up front.
-  if (((ischar (scheme) && isrow (scheme)) ...
-       || (isa (scheme, 'string') && isscalar (scheme))) ...
-      && ! strcmpi (char (scheme), 'none'))
-    errmsg = sprintf (strcat ("binning grouping variable '%s' by time unit", ...
-                              " '%s' is not yet supported; use bin edges or a", ...
-                              " number of bins."), varname, char (scheme));
-    return;
-  endif
-  if (isa (scheme, 'duration') || isa (scheme, 'calendarDuration'))
-    errmsg = sprintf (strcat ("binning grouping variable '%s' by a bin width", ...
-                              " is not yet supported; use bin edges or a", ...
-                              " number of bins."), varname);
-    return;
-  endif
-
-  ## Map COL to a numeric proxy and record its type for typed edge labels.
-  if (isa (col, 'datetime'))
-    proxy = datetime_to_datenum (col)(:);
-    ctype = 'datetime';
-  elseif (isa (col, 'duration'))
-    proxy = days (col)(:);
-    ctype = 'duration';
-  elseif (isnumeric (col) || islogical (col))
-    proxy = double (col)(:);
-    ctype = 'numeric';
-  else
-    errmsg = sprintf (strcat ("binning is not supported for grouping variable", ...
-                              " '%s' of type '%s'."), varname, class (col));
-    return;
-  endif
-
-  ## Resolve the bin edges in proxy units.
-  if (isscalar (scheme) && (isnumeric (scheme) || islogical (scheme)))
-    nb = double (scheme);
-    if (! (nb >= 1 && nb == fix (nb)))
-      errmsg = sprintf (strcat ("the number of bins for grouping variable", ...
-                                " '%s' must be a positive integer."), varname);
-      return;
-    endif
-    good = proxy(! isnan (proxy));
-    if (isempty (good))
-      edgesP = [0, 1];
-    elseif (min (good) == max (good))
-      edgesP = [min(good), min(good) + 1];
-    else
-      edgesP = min (good) + (0:nb) * (max (good) - min (good)) / nb;
-    endif
-  elseif (isnumeric (scheme))
-    if (! strcmp (ctype, 'numeric'))
-      errmsg = sprintf (strcat ("bin edges for grouping variable '%s' must be", ...
-                                " of type '%s'."), varname, ctype);
-      return;
-    endif
-    edgesP = sort (double (scheme(:)'));
-  elseif (isa (scheme, 'datetime'))
-    if (! strcmp (ctype, 'datetime'))
-      errmsg = sprintf (strcat ("bin edges for grouping variable '%s' must be", ...
-                                " of type '%s'."), varname, ctype);
-      return;
-    endif
-    edgesP = sort (datetime_to_datenum (scheme)(:)');
-  else
-    errmsg = sprintf ("invalid binning scheme for grouping variable '%s'.", ...
-                      varname);
-    return;
-  endif
-  if (numel (edgesP) < 2 || any (isnan (edgesP)) || any (diff (edgesP) <= 0))
-    errmsg = sprintf (strcat ("bin edges for grouping variable '%s' must be at", ...
-                              " least two finite, strictly increasing values."), ...
-                      varname);
-    return;
-  endif
-  nb = numel (edgesP) - 1;
-
-  ## Assign each row to a bin (out-of-range -> <undefined>).
-  left = ! strcmpi (incEdge, 'right');
-  idx = NaN (numel (proxy), 1);
-  for k = 1:nb
-    if (left)
-      if (k < nb)
-        in = proxy >= edgesP(k) & proxy < edgesP(k+1);
-      else
-        in = proxy >= edgesP(k) & proxy <= edgesP(k+1);
-      endif
-    else
-      if (k == 1)
-        in = proxy >= edgesP(k) & proxy <= edgesP(k+1);
-      else
-        in = proxy > edgesP(k) & proxy <= edgesP(k+1);
-      endif
-    endif
-    idx(in) = k;
-  endfor
-
-  ## Build the interval labels and the categorical.
-  estr = bin_edge_labels (edgesP, ctype);
-  labs = cell (1, nb);
-  for k = 1:nb
-    if (left)
-      br = '[';  bl = ')';
-      if (k == nb)
-        bl = ']';
-      endif
-    else
-      br = '(';  bl = ']';
-      if (k == 1)
-        br = '[';
-      endif
-    endif
-    labs{k} = sprintf ("%s%s, %s%s", br, estr{k}, estr{k+1}, bl);
-  endfor
-  rowLab = repmat ({''}, numel (idx), 1);
-  ok = ! isnan (idx);
-  rowLab(ok) = labs(idx(ok));
-  binned = categorical (rowLab, labs);
-endfunction
-
-## Format the bin edges EDGESP (numeric proxy values) as a cell array of label
-## strings of the type CTYPE: numeric edges through 'bin_num_str', datetime and
-## duration edges through their displayed text.
-function s = bin_edge_labels (edgesP, ctype)
-  n = numel (edgesP);
-  s = cell (1, n);
-  switch (ctype)
-    case 'datetime'
-      dt = datetime (edgesP(:), 'ConvertFrom', 'datenum');
-      for i = 1:n
-        s{i} = char (dt(i));
-      endfor
-    case 'duration'
-      for i = 1:n
-        s{i} = char (days (edgesP(i)));
-      endfor
-    otherwise
-      for i = 1:n
-        s{i} = bin_num_str (edgesP(i));
-      endfor
-  endswitch
-endfunction
-
-## Format a numeric bin-edge value V for an interval label: an integer prints
-## without a decimal point, anything else through 'num2str'.
-function s = bin_num_str (v)
-  if (isfinite (v) && v == fix (v) && abs (v) < 1e15)
-    s = sprintf ("%d", v);
-  else
-    s = num2str (v);
   endif
 endfunction
 
