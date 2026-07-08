@@ -784,7 +784,8 @@ classdef table
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {table} {} table2ods (@var{tbl}, @var{file})
+    ## @deftypefn  {table} {} table2ods (@var{tbl}, @var{file})
+    ## @deftypefnx {table} {} table2ods (@var{tbl}, @var{file}, @var{Name}, @var{Value})
     ##
     ## Write a table to an OpenDocument spreadsheet file.
     ##
@@ -795,11 +796,10 @@ classdef table
     ## (single-XML) OpenDocument spreadsheet is written instead.  The resulting
     ## file can be read back with @code{ods2table}.
     ##
-    ## The workbook holds two sheets.  @qcode{Sheet1} carries the data, one
-    ## natively typed cell per value, and a hidden @qcode{__datatypes_meta__}
-    ## sheet carries the variable types, names, descriptions, and units needed to
-    ## restore the exact Octave types on read-back.  Variables map to ODS cell
-    ## types as follows:
+    ## The data sheet (named @qcode{Sheet1} by default) carries one natively typed
+    ## cell per value, and a hidden @qcode{__datatypes_meta__} sheet carries the
+    ## variable types, names, descriptions, and units needed to restore the exact
+    ## Octave types on read-back.  Variables map to ODS cell types as follows:
     ##
     ## @itemize
     ## @item
@@ -826,14 +826,24 @@ classdef table
     ## written only when @emph{every} variable has a non-empty description or
     ## unit, respectively.
     ##
+    ## @code{table2ods (@dots{}, @qcode{'Sheet'}, @var{name})} writes to a sheet
+    ## named @var{name} (default @qcode{'Sheet1'}).  When @var{file} already
+    ## exists the named sheet is added or replaced while every other sheet is
+    ## preserved, so a workbook can be built up one table at a time.
+    ## @code{table2ods (@dots{}, @qcode{'WriteMode'}, @var{mode})} selects the
+    ## behaviour: @qcode{'overwritesheet'} / @qcode{'inplace'} replace the sheet
+    ## (the default when the sheet exists), @qcode{'append'} appends the table's
+    ## rows to it, and @qcode{'replacefile'} discards any existing file.
+    ##
     ## Nested tables and structures are not supported and raise an error.  Note
     ## the following round-trip limitations when reading the file back with
     ## @code{ods2table}: @code{calendarDuration} and @code{categorical}
     ## variables are returned as cell arrays of character vectors (their values
     ## are not reconstructed).
     ##
+    ## @seealso{struct2ods, ods2table, ods2struct, writetable}
     ## @end deftypefn
-    function table2ods (this, file)
+    function table2ods (this, file, varargin)
       file = char (cellstr (file));
       ## A '.fods' file is written as flat XML, a '.ods' file as a ZIP package.
       [~, ~, ext] = fileparts (file);
@@ -845,9 +855,41 @@ classdef table
         error (strcat ("table.table2ods: FILE must have a '.ods' or", ...
                        " '.fods' extension."));
       endif
-      ## Build the house-format ODS parts (data grid, value types, metadata).
+
+      optNames = {'Sheet', 'WriteMode'};
+      dfValues = {'Sheet1', ''};
+      [sheet, writeMode, args] = ...
+              parsePairedArguments (optNames, dfValues, varargin(:));
+      if (! isempty (args))
+        error ("table.table2ods: unknown option '%s'.", args{1});
+      endif
+      if (isa (sheet, 'string'))
+        sheet = char (sheet);
+      endif
+      if (! (ischar (sheet) && isrow (sheet)))
+        error ("table.table2ods: 'Sheet' must be a sheet name.");
+      endif
+      writeMode = lower (char (writeMode));
+      switch (writeMode)
+        case {'', 'replacefile', 'overwritesheet', 'inplace', 'append'}
+          ## supported write modes
+        otherwise
+          error ("table.table2ods: 'WriteMode' '%s' is not valid.", writeMode);
+      endswitch
+
+      ## Merge into an existing workbook (preserving other sheets) by reading it
+      ## back, modifying the struct of tables, and rewriting the whole file.
+      if (exist (file, 'file') && ! strcmp (writeMode, 'replacefile'))
+        s = ods2struct (file);
+        s = merge_table_into_struct (s, this, sheet, writeMode);
+        struct2ods (file, s);
+        return;
+      endif
+
+      ## Fresh single-sheet write.
       [V, vtype, meta] = __ods_parts__ (this, 'table.table2ods');
-      msg = __table2ods__ (file, V, vtype, meta, is_flat);
+      msg = __table2ods__ (file, V, vtype, meta, is_flat, ...
+                           struct ('sheetname', sheet));
       if (! isequal (msg, 0))
         error ("table.table2ods: %s", msg);
       endif
@@ -11456,6 +11498,65 @@ function vt = ods_value_type (typestr)
     otherwise
       vt = 'string';
   endswitch
+endfunction
+
+## Add, replace, or append table T to the struct of tables S (read from an
+## existing house workbook) for the sheet named SHEET, per WRITEMODE.  The
+## struct is later written back with 'struct2ods'; sheet names that are not
+## valid field names ride along as the 'ActualSheetName' custom property.
+function s = merge_table_into_struct (s, T, sheet, writeMode)
+  ## Find the field whose sheet name (ActualSheetName, else field name) matches.
+  fields = fieldnames (s);
+  targetField = '';
+  for i = 1:numel (fields)
+    fsheet = fields{i};
+    cp = s.(fields{i}).Properties.CustomProperties;
+    if (isstruct (cp) && isfield (cp, 'ActualSheetName') ...
+        && ! isempty (cp.ActualSheetName))
+      fsheet = cp.ActualSheetName;
+    endif
+    if (strcmp (fsheet, sheet))
+      targetField = fields{i};
+      break;
+    endif
+  endfor
+
+  if (strcmp (writeMode, 'append') && ! isempty (targetField))
+    ## Append the rows; table vertcat errors if the variables are incompatible.
+    combined = [s.(targetField); T];
+    s.(targetField) = copy_actual_sheet_name (combined, s.(targetField));
+  elseif (! isempty (targetField))
+    ## Replace the sheet, keeping its resolved name.
+    s.(targetField) = copy_actual_sheet_name (T, s.(targetField));
+  else
+    ## A new sheet: canonicalise SHEET to a unique field name and stash the
+    ## original name when it had to change.
+    fn = matlab.lang.makeValidName (sheet);
+    base = fn;
+    j = 1;
+    while (isfield (s, fn))
+      fn = sprintf ("%s_%d", base, j);
+      j += 1;
+    endwhile
+    if (! strcmp (fn, sheet))
+      T = addprop (T, 'ActualSheetName', 'table');
+      T.Properties.CustomProperties.ActualSheetName = sheet;
+    endif
+    s.(fn) = T;
+  endif
+endfunction
+
+## Copy the 'ActualSheetName' custom property from SRC onto T, if SRC carries it.
+function T = copy_actual_sheet_name (T, src)
+  cp = src.Properties.CustomProperties;
+  if (isstruct (cp) && isfield (cp, 'ActualSheetName') ...
+      && ! isempty (cp.ActualSheetName))
+    tcp = T.Properties.CustomProperties;
+    if (! (isstruct (tcp) && isfield (tcp, 'ActualSheetName')))
+      T = addprop (T, 'ActualSheetName', 'table');
+    endif
+    T.Properties.CustomProperties.ActualSheetName = cp.ActualSheetName;
+  endif
 endfunction
 
 ## Prepare the flat value/name/type cell arrays produced by 'table2cellarrays'

@@ -1186,7 +1186,81 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
+## Incremental 'table2ods': build a multi-sheet workbook one table at a time,
+## read back through 'ods2struct'
+%!test
+%! A = table ([1; 2; 3], 'VariableNames', {'a'});
+%! B = table ({'x'; 'y'}, 'VariableNames', {'b'});
+%! C = table ([9; 8], 'VariableNames', {'c'});
+%! fn = [tempname() '.ods'];
+%! unwind_protect
+%!   table2ods (A, fn, 'Sheet', 'first');
+%!   table2ods (B, fn, 'Sheet', 'second');
+%!   table2ods (C, fn, 'Sheet', 'third');
+%!   r = ods2struct (fn);
+%!   assert_equal (fieldnames (r), {'first'; 'second'; 'third'});
+%!   assert_equal (r.first.a, [1; 2; 3]);
+%!   assert_equal (r.second.b, {'x'; 'y'});
+%!   assert_equal (r.third.c, [9; 8]);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file')); delete (fn); endif
+%! end_unwind_protect
+
+## Incremental 'table2ods' 'append' adds rows to a sheet, others preserved
+%!test
+%! A = table ([1; 2], 'VariableNames', {'a'});
+%! B = table ([3; 4; 5], 'VariableNames', {'b'});
+%! more = table ([6; 7], 'VariableNames', {'a'});
+%! fn = [tempname() '.fods'];
+%! unwind_protect
+%!   table2ods (A, fn, 'Sheet', 'first');
+%!   table2ods (B, fn, 'Sheet', 'second');
+%!   table2ods (more, fn, 'Sheet', 'first', 'WriteMode', 'append');
+%!   r = ods2struct (fn);
+%!   assert_equal (r.first.a, [1; 2; 6; 7]);
+%!   assert_equal (r.second.b, [3; 4; 5]);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file')); delete (fn); endif
+%! end_unwind_protect
+
+## Incremental 'table2ods' 'overwritesheet' replaces one sheet, keeps the rest;
+## native types survive the read-modify-rewrite
+%!test
+%! A = table (datetime (2024, 1, [1; 2]), 'VariableNames', {'d'});
+%! B = table ([3; 4; 5], 'VariableNames', {'b'});
+%! repl = table (seconds ([10; 20]), 'VariableNames', {'t'});
+%! fn = [tempname() '.ods'];
+%! unwind_protect
+%!   table2ods (A, fn, 'Sheet', 'first');
+%!   table2ods (B, fn, 'Sheet', 'second');
+%!   table2ods (repl, fn, 'Sheet', 'first', 'WriteMode', 'overwritesheet');
+%!   r = ods2struct (fn);
+%!   assert_equal (class (r.first.t), 'duration');
+%!   assert_equal (isequaln (seconds (r.first.t), [10; 20]), true);
+%!   assert_equal (r.second.b, [3; 4; 5]);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file')); delete (fn); endif
+%! end_unwind_protect
+
+## 'table2ods' 'replacefile' discards the existing workbook
+%!test
+%! A = table ([1; 2], 'VariableNames', {'a'});
+%! B = table ([3; 4], 'VariableNames', {'b'});
+%! fn = [tempname() '.ods'];
+%! unwind_protect
+%!   table2ods (A, fn, 'Sheet', 'first');
+%!   table2ods (B, fn, 'Sheet', 'second', 'WriteMode', 'replacefile');
+%!   [~, ~, ~, nm] = __ods2table__ (fn);
+%!   assert_equal (nm(:), {'second'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file')); delete (fn); endif
+%! end_unwind_protect
+
 ## Test input validation for 'table2ods' method
+%!error <table.table2ods: 'WriteMode' 'bogus' is not valid.> ...
+%! table2ods (table (1), [tempname() '.ods'], 'WriteMode', 'bogus');
+%!error <table.table2ods: unknown option 'Bogus'.> ...
+%! table2ods (table (1), [tempname() '.ods'], 'Bogus', 1);
 %!error <table.table2ods: nested tables and structs are not supported; flatten them before writing.> ...
 %! inner = table ([1; 2], 'VariableNames', {'a'}); ...
 %! T = table (inner, [3; 4], 'VariableNames', {'nested', 'x'}); ...
