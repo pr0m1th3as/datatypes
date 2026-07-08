@@ -203,7 +203,13 @@
 					<li><a href="array2table.html" class="text-decoration-none font-monospace"><small>array2table</small></a></li>
 					<li><a href="cell2table.html" class="text-decoration-none font-monospace"><small>cell2table</small></a></li>
 					<li><a href="csv2table.html" class="text-decoration-none font-monospace"><small>csv2table</small></a></li>
+					<li><a href="ods2table.html" class="text-decoration-none font-monospace"><small>ods2table</small></a></li>
+					<li><a href="ods2struct.html" class="text-decoration-none font-monospace"><small>ods2struct</small></a></li>
+					<li><a href="readtable.html" class="text-decoration-none font-monospace"><small>readtable</small></a></li>
+					<li><a href="struct2ods.html" class="text-decoration-none font-monospace"><small>struct2ods</small></a></li>
+					<li><a href="struct2xlsx.html" class="text-decoration-none font-monospace"><small>struct2xlsx</small></a></li>
 					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
+					<li><a href="xlsx2struct.html" class="text-decoration-none font-monospace"><small>xlsx2struct</small></a></li>
 					<li><a href="istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 				</ul>
 				</div>
@@ -231,6 +237,8 @@
 				</label>
 				<div class="list">
 				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="findgroups.html" class="text-decoration-none font-monospace"><small>findgroups</small></a></li>
+					<li><a href="splitapply.html" class="text-decoration-none font-monospace"><small>splitapply</small></a></li>
 					<li><a href="keyHash.html" class="text-decoration-none font-monospace"><small>keyHash</small></a></li>
 					<li><a href="keyMatch.html" class="text-decoration-none font-monospace"><small>keyMatch</small></a></li>
 					<li><a href="parsePairedArguments.html" class="text-decoration-none font-monospace"><small>parsePairedArguments</small></a></li>
@@ -250,6 +258,10 @@
 					<li><a href="__datetime__.html" class="text-decoration-none font-monospace"><small>__datetime__</small></a></li>
 					<li><a href="__csv2table__.html" class="text-decoration-none font-monospace"><small>__csv2table__</small></a></li>
 					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace"><small>__table2csv__</small></a></li>
+					<li><a href="__ods2table__.html" class="text-decoration-none font-monospace"><small>__ods2table__</small></a></li>
+					<li><a href="__table2ods__.html" class="text-decoration-none font-monospace"><small>__table2ods__</small></a></li>
+					<li><a href="__xlsx2table__.html" class="text-decoration-none font-monospace"><small>__xlsx2table__</small></a></li>
+					<li><a href="__table2xlsx__.html" class="text-decoration-none font-monospace"><small>__table2xlsx__</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -266,7 +278,6 @@
             </div>
             <div class="card-body">
 <dl><code><h5 class="description">datatypes: string</h5></code></dl>
-
 <p> Array representing sequences of characters.
 </p>
 <div class="ms-5">
@@ -320,7 +331,6 @@ Create a new string array.
 <dt><code><h5 class="fs">string: <var>str</var> = <b>string</b> (<var>duration</var>, <code>'Format'</code>, <var>FMT</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>str</var> = <b>string</b> ({<var>in1</var>, &hellip;, <var>inN</var>})</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>str</var> = string ()</code> creates a scalar string array, whose element
  contains an empty character vector.
@@ -329,24 +339,24 @@ Create a new string array.
  size as <var>in</var>, which is converted to string according to the following
  options:
 </p>
- <ul>
+<ul>
 <li> character arrays are converted so that each row becomes a string
  element, with any trailing whitespace preserved; cell arrays of character
  vectors are stored as-is.
- </li><li> numeric arrays are converted via the code <code>num2str</code> function.
- </li><li> logical arrays are converted to either <code>false</code> or
+</li><li> numeric arrays are converted via the code <code>num2str</code> function.
+</li><li> logical arrays are converted to either <code>false</code> or
  <code>true</code> character sequences.
- </li><li> categorical arrays are converted via their <code>cellstr</code> method.
- </li><li> datetime arrays are converted via their <code>dispstrings</code> method.
- </li><li> calendarDuration arrays and duration arrays are converted via their
+</li><li> categorical arrays are converted via their <code>cellstr</code> method.
+</li><li> datetime arrays are converted via their <code>dispstrings</code> method.
+</li><li> calendarDuration arrays and duration arrays are converted via their
  respective <code>cellstr</code> methods, in which case an extra pair argument
  is supported to allow parsing to the respective method the appropriate
  display format.  See <code>calendarDuration</code> and <code>duration</code> for
  valid formats parsed through <var>FMT</var> to each class method.  Extra input
  arguments to the <code>string</code> constructor except for this case are
  ignored.
- </li><li> missing arrays are converted to a string array of missing elements.
- </li></ul>
+</li><li> missing arrays are converted to a string array of missing elements.
+</li></ul>
 
 <p> <code><var>str</var> = string ({<var>in1</var>, &hellip;, <var>inN</var>})</code> creates a
  string array from a cell array, which may contain any combination of the
@@ -389,7 +399,6 @@ Get display formatted strings for each element of a string object.
 <dl>
 <dt><code><h5 class="fs">string: <var>cstr</var> = <b>dispstrings</b> (<var>str</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>cstr</var> = dispstrings (<var>str</var>)</code> returns a cellstr array of
  character vectors, <var>cstr</var>, which has the same size as the input
@@ -403,7 +412,6 @@ Get display formatted strings for each element of a string object.
  scalar, in which case text retains its original composition but newlines
  are prepadded with four white space characters for aligned display.
 </p>
-
 
 
             </div>
@@ -431,14 +439,12 @@ Convert string array to a cell array of character vectors.
 <dl>
 <dt><code><h5 class="fs">string: <var>cstr</var> = <b>cellstr</b> (<var>str</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>cstr</var> = cellstr (<var>str</var>)</code> returns a cell array of
  character vectors, <var>cstr</var>, which has the same size as the input
  string <var>str</var>.  Both empty strings and missing values are returned as
  empty character vectors.
 </p>
-
 
 
             </div>
@@ -466,7 +472,6 @@ Convert string array to a cell array.
 <dl>
 <dt><code><h5 class="fs">string: <var>c_arr</var> = <b>cell</b> (<var>str</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>c_arr</var> = cell (<var>str</var>)</code> returns a cell array, <var>c_arr</var>,
  which has the same size as the input string <var>str</var>.  All elements in
@@ -476,7 +481,6 @@ Convert string array to a cell array.
  <code>''</code> empty character vectors, while missing values are returned as
  <code>[]</code> empty numeric vectors.
 </p>
-
 
 
             </div>
@@ -504,14 +508,12 @@ Convert string array to a character matrix.
 <dl>
 <dt><code><h5 class="fs">string: <var>c_mat</var> = <b>char</b> (<var>str</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>c_mat</var> = char (<var>str</var>)</code> returns a character matrix,
  <var>c_mat</var>, which contains as many rows as the elements of the string.
  Both empty strings and missing values are returned as empty character
  vectors.
 </p>
-
 
 
             </div>
@@ -539,14 +541,12 @@ Convert string array to a double array.
 <dl>
 <dt><code><h5 class="fs">string: <var>X</var> = <b>double</b> (<var>str</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>X</var> = char (<var>str</var>)</code> returns a double array, <var>X</var>, which
  has the same size as the input string <var>str</var>.  All elements in
  <var>str</var> that represent real or complex numbers are converted to
  equivalent double values.  Otherwise, <code>NaN</code> is returned.
 </p>
-
 
 
             </div>
@@ -577,7 +577,6 @@ Return the size of a string array.
 <dt><code><h5 class="fs">string: <var>dim_sz</var> = <b>size</b> (<var>str</var>, <var>d1</var>, <var>d2</var>, &hellip;)</code></h5></dt>
 <dt><code><h5 class="fs">string: [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b> (&hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>sz</var> = size (<var>str</var>)</code> returns a row vector with the size
  (number of elements) of each dimension for the string array <var>str</var>.
@@ -592,7 +591,6 @@ Return the size of a string array.
  called with multiple output arguments, <code>size</code> returns the size of
  dimension N in the Nth argument.
 </p>
-
 
 
             </div>
@@ -620,12 +618,10 @@ Number of dimensions in a string array.
 <dl>
 <dt><code><h5 class="fs">string: <var>out</var> = <b>ndims</b> (<var>str</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = ndims (<var>str</var>)</code> returns the number of dimensions of
  the string array <var>D</var>.
 </p>
-
 
 
             </div>
@@ -653,9 +649,7 @@ Total number of elements in a string array.
 <dl>
 <dt><code><h5 class="fs">string: <var>out</var> = <b>numel</b> (<var>str</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
-
 
 
             </div>
@@ -683,13 +677,11 @@ Length of a string vector.
 <dl>
 <dt><code><h5 class="fs">string: <var>N</var> = <b>length</b> (<var>str</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>N</var> = length (<var>str</var>)</code> returns the size of the longest
  dimension of the string array <var>str</var>, unless any of its dimensions
  has zero length, in which case <code>length (<var>D</var>)</code> returns 0.
 </p>
-
 
 
             </div>
@@ -717,9 +709,7 @@ Length of text in string arrays.
 <dl>
 <dt><code><h5 class="fs">string: <var>out</var> = <b>strlength</b> (<var>str</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
-
 
 
             </div>
@@ -748,7 +738,6 @@ Count occurences of pattern in string array.
 <dt><code><h5 class="fs">string: <var>out</var> = <b>count</b> (<var>str</var>, <var>pattern</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>out</var> = <b>count</b> (<var>str</var>, <var>pattern</var>, <code>'IgnoreCase'</code>, <code>true</code>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = count (<var>str</var>, <var>pattern</var>)</code> returns a numerical
  array <var>out</var> of the same size as <var>str</var> containing the number of
@@ -757,7 +746,6 @@ Count occurences of pattern in string array.
 <p> <code><var>out</var> = count (<var>str</var>, <var>pattern</var>, <code>'IgnoreCase'</code>,
  <code>true</code>)</code> ignores case when identifying occurences of <var>pattern</var>.
 </p>
-
 
 
             </div>
@@ -785,7 +773,6 @@ Generate a hash code for string array.
 <dl>
 <dt><code><h5 class="fs">string: <var>hey</var> = <b>keyHash</b> (<var>str</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>h</var> = keyHash (<var>str</var>)</code> generates a <code>uint64</code> scalar
  that represents the input array <var>str</var>.  <code>keyHash</code> utilizes the
@@ -803,7 +790,6 @@ Generate a hash code for string array.
  hash key for any particular input across different workers and Octave
  sessions.
 </p>
-
 
 
             </div>
@@ -832,7 +818,6 @@ Test if strings contain pattern.
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>contains</b> (<var>str</var>, <var>pattern</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>contains</b> (<var>str</var>, <var>pattern</var>, <code>'IgnoreCase'</code>, <code>true</code>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = contains (<var>str</var>, <var>pattern</var>)</code> returns a logical
  array <var>TF</var> of the same size as <var>A</var> containing <code>true</code> for
@@ -845,7 +830,6 @@ Test if strings contain pattern.
  <code>'IgnoreCase'</code>, <code>true</code>)</code> ignores case when determining if
  <var>str</var> ends with <var>pattern</var>.
 </p>
-
 
 
             </div>
@@ -874,7 +858,6 @@ Test if strings end with pattern.
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>endsWith</b> (<var>str</var>, <var>pattern</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>endsWith</b> (<var>str</var>, <var>pattern</var>, <code>'IgnoreCase'</code>, <code>true</code>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = endsWith (<var>str</var>, <var>pattern</var>)</code> returns a logical
  array <var>TF</var> of the same size as <var>A</var> containing <code>true</code> for
@@ -887,7 +870,6 @@ Test if strings end with pattern.
  <code>'IgnoreCase'</code>, <code>true</code>)</code> ignores case when determining if
  <var>str</var> ends with <var>pattern</var>.
 </p>
-
 
 
             </div>
@@ -916,7 +898,6 @@ Test if strings start with pattern.
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>startsWith</b> (<var>str</var>, <var>pattern</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>startsWith</b> (<var>str</var>, <var>pattern</var>, <code>'IgnoreCase'</code>, <code>true</code>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = startsWith (<var>str</var>, <var>pattern</var>)</code> returns a logical
  array <var>TF</var> of the same size as <var>A</var> containing <code>true</code> for
@@ -929,7 +910,6 @@ Test if strings start with pattern.
  <code>'IgnoreCase'</code>, <code>true</code>)</code> ignores case when determining if
  <var>str</var> starts with <var>pattern</var>.
 </p>
-
 
 
             </div>
@@ -958,7 +938,6 @@ Test if strings match pattern.
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>matches</b> (<var>str</var>, <var>pattern</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>matches</b> (<var>str</var>, <var>pattern</var>, <code>'IgnoreCase'</code>, <code>true</code>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = matches (<var>str</var>, <var>pattern</var>)</code> returns a logical
  array <var>TF</var> of the same size as <var>A</var> containing <code>true</code> for
@@ -971,7 +950,6 @@ Test if strings match pattern.
  <code>true</code>)</code> ignores case when determining if <var>str</var> starts with
  <var>pattern</var>.
 </p>
-
 
 
             </div>
@@ -999,11 +977,9 @@ Test if string array is a column vector.
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>iscolumn</b> (<var>str</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <var>TF</var> is <code>true</code>, if string array <var>str</var> is a column vector.
 </p>
-
 
 
             </div>
@@ -1031,11 +1007,9 @@ Test if string array is empty.
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>isempty</b> (<var>str</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <var>TF</var> is <code>true</code>, if string array <var>str</var> is empty.
 </p>
-
 
 
             </div>
@@ -1063,11 +1037,9 @@ Test if string array is a matrix.
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>ismatrix</b> (<var>str</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <var>TF</var> is <code>true</code>, if string array <var>str</var> is a matrix.
 </p>
-
 
 
             </div>
@@ -1098,7 +1070,6 @@ Find string elements in a set.
 <dt><code><h5 class="fs">string: [<var>TF</var>, <var>index</var>] = <b>ismember</b> (&hellip;)</code></h5></dt>
 <dt><code><h5 class="fs">string: [<var>TF</var>, <var>index</var>] = <b>ismember</b> (&hellip;, <code>'legacy'</code>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = ismember (<var>A</var>, <var>B</var>)</code> returns a logical array
  <var>TF</var> of the same size as <var>A</var> containing <code>true</code> for each
@@ -1123,7 +1094,6 @@ Find string elements in a set.
  returned.  Unless multiple matches exist, the <code>'legacy'</code> option has
  no effect on the returned <var>index</var>.
 </p>
-
 
 
             </div>
@@ -1152,7 +1122,6 @@ Find missing elements in string array.
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>ismissing</b> (<var>str</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>ismissing</b> (<var>str</var>, <var>indicator</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = ismissing (<var>str</var>)</code> returns a logical array,
  <var>TF</var>, with any <code>true</code> values corresponding to missing elements
@@ -1168,7 +1137,6 @@ Find missing elements in string array.
 </p>
 <p> The output array <var>TF</var> has the same size as the input array <var>str</var>.
 </p>
-
 
 
             </div>
@@ -1196,11 +1164,9 @@ Test if string array is a row vector.
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>isrow</b> (<var>str</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <var>TF</var> is <code>true</code>, if string array <var>str</var> is a row vector.
 </p>
-
 
 
             </div>
@@ -1228,11 +1194,9 @@ Test if string array is a scalar.
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>isscalar</b> (<var>str</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <var>TF</var> is <code>true</code>, if string array <var>str</var> is a scalar.
 </p>
-
 
 
             </div>
@@ -1264,7 +1228,6 @@ Return true if string array is sorted.
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>issorted</b> (<var>str</var>, <var>dim</var>, <var>direction</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>issorted</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = issorted (<var>str</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code>, if the string array <var>str</var> is sorted in
@@ -1280,32 +1243,31 @@ Return true if string array is sorted.
  sorted in the direction specified by <var>direction</var>, and <code>false</code>
  otherwise.  <var>direction</var> can be any of the following options:
 </p>
- <ul>
+<ul>
 <li> <code>'ascend'</code>, which is the default, checks if elements are in
  ascending order.
- </li><li> <code>'descend'</code> checks if elements are in descending order.
- </li><li> <code>'monotonic'</code> checks if elements are either in ascending or
+</li><li> <code>'descend'</code> checks if elements are in descending order.
+</li><li> <code>'monotonic'</code> checks if elements are either in ascending or
  descending order.
- </li><li> <code>'strictascend'</code> checks if elements are in ascending order
+</li><li> <code>'strictascend'</code> checks if elements are in ascending order
  and there are no duplicate or missing elements.
- </li><li> <code>'strictdescend'</code> checks if elements are in descending order
+</li><li> <code>'strictdescend'</code> checks if elements are in descending order
  and there are no duplicate or missing elements.
- </li><li> <code>'strictmonotonic'</code> checks if elements are either in
+</li><li> <code>'strictmonotonic'</code> checks if elements are either in
  ascending or descending order and there are no duplicate or missing
  elements.
- </li></ul>
+</li></ul>
 
 <p> <code><var>TF</var> = issorted (&hellip;, <code>'MissingPlacement'</code>,
  <var>MP</var>)</code> specifies where missing elements (<code>&lt;missing&gt;</code>) are
  placed with one of the following options specified in <var>MP</var>:
 </p>
- <ul>
+<ul>
 <li> <code>'auto'</code>, which is the default, places missing elements last
  for ascending sort and first for descending sort.
- </li><li> <code>'first'</code> places missing elements first.
- </li><li> <code>'last'</code> places missing elements last.
- </li></ul>
-
+</li><li> <code>'first'</code> places missing elements first.
+</li><li> <code>'last'</code> places missing elements last.
+</li></ul>
 
 
 
@@ -1338,7 +1300,6 @@ Return true if string matrix rows are sorted.
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>issortedrows</b> (<var>str</var>, <var>col</var>, <var>direction</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>issortedrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = issortedrows (<var>str</var>)</code> returns a logical scalar
  <var>TF</var>, which is <code>true</code>, if the rows in the 2-D string array
@@ -1357,20 +1318,20 @@ Return true if string matrix rows are sorted.
  rows in <var>str</var> are sorted according to the specified direction, which
  can be one of the following options:
 </p>
- <ul>
+<ul>
 <li> <code>'ascend'</code>, which is the default, checks if elements are in
  ascending order.
- </li><li> <code>'descend'</code> checks if elements are in descending order.
- </li><li> <code>'monotonic'</code> checks if elements are either in ascending or
+</li><li> <code>'descend'</code> checks if elements are in descending order.
+</li><li> <code>'monotonic'</code> checks if elements are either in ascending or
  descending order.
- </li><li> <code>'strictascend'</code> checks if elements are in ascending order
+</li><li> <code>'strictascend'</code> checks if elements are in ascending order
  and there are no duplicate or missing elements.
- </li><li> <code>'strictdescend'</code> checks if elements are in descending order
+</li><li> <code>'strictdescend'</code> checks if elements are in descending order
  and there are no duplicate or missing elements.
- </li><li> <code>'strictmonotonic'</code> checks if elements are either in
+</li><li> <code>'strictmonotonic'</code> checks if elements are either in
  ascending or descending order and there are no duplicate or missing
  elements.
- </li></ul>
+</li></ul>
 
 <p> Alternatively, <var>direction</var> can be a cell array of character vectors
  specifying the sorting direction for each individual column of <var>str</var>,
@@ -1389,13 +1350,12 @@ Return true if string matrix rows are sorted.
  <var>MP</var>)</code> specifies where missing elements (<code>&lt;missing&gt;</code>) are
  placed with one of the following options specified in <var>MP</var>:
 </p>
- <ul>
+<ul>
 <li> <code>'auto'</code>, which is the default, places missing elements last
  for ascending sort and first for descending sort.
- </li><li> <code>'first'</code> places missing elements first.
- </li><li> <code>'last'</code> places missing elements last.
- </li></ul>
-
+</li><li> <code>'first'</code> places missing elements first.
+</li><li> <code>'last'</code> places missing elements last.
+</li></ul>
 
 
 
@@ -1424,11 +1384,9 @@ Test for string array.
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>isstring</b> (<var>str</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <var>TF</var> is <code>true</code> for <code>string</code> inputs.
 </p>
-
 
 
             </div>
@@ -1456,11 +1414,9 @@ Test if string array is a vector.
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>isvector</b> (<var>str</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <var>TF</var> is <code>true</code>, if string array <var>str</var> is a vector.
 </p>
-
 
 
             </div>
@@ -1488,14 +1444,12 @@ Test for equality.
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <var>TF</var> is <code>true</code>, if string <var>A</var> is lexicographically equal to
  <var>B</var>.  If one input is a string array, the other input can be a string
  array, a character vector, or a cell array of character vectors.  This is
  equivalent to the <code>strcmp</code> function.
 </p>
-
 
 
             </div>
@@ -1523,14 +1477,12 @@ Test for greater than or equal to.
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>ge</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <var>TF</var> is <code>true</code>, if string <var>A</var> is lexicographically greater
  than or equal to <var>B</var>.  If one input is a string array, the other
  input can be a string array, a character vector, or a cell array of
  character vectors.
 </p>
-
 
 
             </div>
@@ -1558,13 +1510,11 @@ Test for greater than.
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>gt</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <var>TF</var> is <code>true</code>, if string <var>A</var> is lexicographically greater
  than <var>B</var>.  If one input is a string array, the other input can be a
  string array, a character vector, or a cell array of character vectors.
 </p>
-
 
 
             </div>
@@ -1592,14 +1542,12 @@ Test for less than or equal to.
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>le</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <var>TF</var> is <code>true</code>, if string <var>A</var> is lexicographically less
  than or equal to <var>B</var>.  If one input is a string array, the other
  input can be a string array, a character vector, or a cell array of
  character vectors.
 </p>
-
 
 
             </div>
@@ -1627,13 +1575,11 @@ Test for less than.
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>lt</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <var>TF</var> is <code>true</code>, if string <var>A</var> is lexicographically less
  than <var>B</var>.  If one input is a string array, the other input can be a
  string array, a character vector, or a cell array of character vectors.
 </p>
-
 
 
             </div>
@@ -1661,7 +1607,6 @@ Test for inequality.
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>ne</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <var>TF</var> is <code>true</code>, if string <var>A</var> is lexicographically not
  equal to <var>B</var>.  If one input is a string array, the other input can be
@@ -1669,7 +1614,6 @@ Test for inequality.
  <code><var>TF</var> = ne (<var>A</var>, <var>B</var>)</code> is equivalent to
  <code><var>TF</var> = ! strcmp (<var>A</var>, <var>B</var>)</code>.
 </p>
-
 
 
             </div>
@@ -1697,7 +1641,6 @@ Compare strings.
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>strcmp</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <var>TF</var> is <code>true</code>, if string <var>A</var> is lexicographically equal to
  <var>B</var>.  If one input is a string array, the other input can be a string
@@ -1710,7 +1653,6 @@ Compare strings.
  cell array of character vectors (of the same size or scalar), or a
  character vector.
 </p>
-
 
 
             </div>
@@ -1738,7 +1680,6 @@ Compare strings (case insensitive).
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>strcmpi</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <var>TF</var> is <code>true</code>, if string <var>A</var> is lexicographically equal to
  <var>B</var>, disregarding case of alphabetic characters.  If one input is a
@@ -1752,7 +1693,6 @@ Compare strings (case insensitive).
  cell array of character vectors (of the same size or scalar), or a
  character vector.
 </p>
-
 
 
             </div>
@@ -1780,7 +1720,6 @@ Compare first <var>n</var> characters of strings.
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>strncmp</b> (<var>A</var>, <var>B</var>, <var>n</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <var>TF</var> is <code>true</code>, if the first <var>n</var> characters of strings
  <var>A</var> and <var>B</var> are lexicographically equal.  If one input is a
@@ -1794,7 +1733,6 @@ Compare first <var>n</var> characters of strings.
  cell array of character vectors (of the same size or scalar), or a
  character vector.
 </p>
-
 
 
             </div>
@@ -1822,7 +1760,6 @@ Compare first <var>n</var> characters of strings (case insensitive).
 <dl>
 <dt><code><h5 class="fs">string: <var>TF</var> = <b>strncmpi</b> (<var>A</var>, <var>B</var>, <var>n</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <var>TF</var> is <code>true</code>, if the first <var>n</var> characters of strings
  <var>A</var> and <var>B</var> are lexicographically equal, disregarding case of
@@ -1837,7 +1774,6 @@ Compare first <var>n</var> characters of strings (case insensitive).
  cell array of character vectors (of the same size or scalar), or a
  character vector.
 </p>
-
 
 
             </div>
@@ -1865,7 +1801,6 @@ Combine string arrays.
 <dl>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>append</b> (<var>str1</var>, &hellip;, <var>strN</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>newstr</var> = append (<var>str1</var>, &hellip;, <var>strN</var>)</code> combines
  the text from each input argument, <var>str1</var>, &hellip;, <var>strN</var>),
@@ -1875,7 +1810,6 @@ Combine string arrays.
  character matrices are treated as a column of elements.  <code>append</code>
  preserves any trailing white spaces, unlike the <code>strcat</code> function.
 </p>
-
 
 
             </div>
@@ -1905,7 +1839,6 @@ Format data into a string array or translate escape-character sequences.
 <dt><code><h5 class="fs">string: <var>str</var> = <b>compose</b> (<var>formatSpec</var>, <var>A1</var>, &hellip;, <var>AN</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>str</var> = <b>compose</b> (<var>txt</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>str</var> = compose (<var>formatSpec</var>, <var>A</var>)</code> formats the data
  in the array <var>A</var> according to the formatting operators in
@@ -1920,17 +1853,17 @@ Format data into a string array or translate escape-character sequences.
  <var>str</var> has the same number of rows as <var>A</var>.  The size of <var>str</var>
  is further determined as follows:
 </p>
- <ul>
+<ul>
 <li> If the number of columns in <var>A</var> exceeds the number of
  formatting operators in <var>formatSpec</var>, then <var>formatSpec</var> is
  applied repeatedly along each row of <var>A</var>, adding columns to
  <var>str</var>.
- </li><li> If the number of columns in <var>A</var> is less than the number of
+</li><li> If the number of columns in <var>A</var> is less than the number of
  formatting operators, then the operators left without a corresponding
  value appear unchanged in <var>str</var>.
- </li><li> If <var>A</var> has zero columns, then <var>str</var> has the same size as
+</li><li> If <var>A</var> has zero columns, then <var>str</var> has the same size as
  <var>A</var> and no formatting operators are applied.
- </li></ul>
+</li></ul>
 
 <p> <code><var>str</var> = compose (<var>formatSpec</var>, <var>A1</var>, &hellip;,
  <var>AN</var>)</code> formats the data from the arrays <var>A1</var>, &hellip;, <var>AN</var>.
@@ -1951,7 +1884,6 @@ Format data into a string array or translate escape-character sequences.
  operator left without a corresponding value is emitted unchanged rather
  than dropped.
 </p>
-
 
 
             </div>
@@ -1979,7 +1911,6 @@ Remove content from string array.
 <dl>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>erase</b> (<var>str</var>, <var>match</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>newstr</var> = erase (<var>str</var>, <var>match</var>)</code> removes the
  occurrences of <var>match</var> from each element of the string array
@@ -1990,7 +1921,6 @@ Remove content from string array.
  the size of <var>match</var> need not match the size of <var>str</var>.  Missing
  values in <var>str</var> are preserved.
 </p>
-
 
 
             </div>
@@ -2020,7 +1950,6 @@ Erase content between start and end boundaries.
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>eraseBetween</b> (<var>str</var>, <var>startPos</var>, <var>endPos</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>eraseBetween</b> (&hellip;, <code>&quot;Boundaries&quot;</code>, <var>bounds</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>newstr</var> = eraseBetween (<var>str</var>, <var>startPat</var>,
  <var>endPat</var>)</code> removes from each element of the string array <var>str</var>
@@ -2054,7 +1983,6 @@ Erase content between start and end boundaries.
 </p>
 
 
-
             </div>
           </div>
         </div>
@@ -2081,7 +2009,6 @@ Extract substrings from a string array.
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>extract</b> (<var>str</var>, <var>pat</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>extract</b> (<var>str</var>, <var>pos</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>newstr</var> = extract (<var>str</var>, <var>pat</var>)</code> returns the
  substrings of <var>str</var> that match <var>pat</var>.  <var>pat</var> can be a string
@@ -2106,7 +2033,6 @@ Extract substrings from a string array.
  this syntax <var>newstr</var> has the same size as <var>str</var> and missing
  values are preserved.
 </p>
-
 
 
             </div>
@@ -2135,7 +2061,6 @@ Extract the substring after a position or pattern.
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>extractAfter</b> (<var>str</var>, <var>pat</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>extractAfter</b> (<var>str</var>, <var>pos</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>newstr</var> = extractAfter (<var>str</var>, <var>pat</var>)</code> returns, for
  each element of <var>str</var>, the part of the text that follows the first
@@ -2155,7 +2080,6 @@ Extract the substring after a position or pattern.
 <p> <var>newstr</var> is a string array of the same size as <var>str</var>.  Missing
  values in <var>str</var> are preserved.
 </p>
-
 
 
             </div>
@@ -2184,7 +2108,6 @@ Extract the substring before a position or pattern.
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>extractBefore</b> (<var>str</var>, <var>pat</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>extractBefore</b> (<var>str</var>, <var>pos</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>newstr</var> = extractBefore (<var>str</var>, <var>pat</var>)</code> returns, for
  each element of <var>str</var>, the part of the text that precedes the first
@@ -2204,7 +2127,6 @@ Extract the substring before a position or pattern.
 <p> <var>newstr</var> is a string array of the same size as <var>str</var>.  Missing
  values in <var>str</var> are preserved.
 </p>
-
 
 
             </div>
@@ -2234,7 +2156,6 @@ Extract the substrings between start and end boundaries.
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>extractBetween</b> (<var>str</var>, <var>startPos</var>, <var>endPos</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>extractBetween</b> (&hellip;, <code>&quot;Boundaries&quot;</code>, <var>bounds</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>newstr</var> = extractBetween (<var>str</var>, <var>startPat</var>,
  <var>endPat</var>)</code> returns the text that occurs between the substrings
@@ -2269,7 +2190,6 @@ Extract the substrings between start and end boundaries.
 </p>
 
 
-
             </div>
           </div>
         </div>
@@ -2296,7 +2216,6 @@ Insert text after a pattern or position.
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>insertAfter</b> (<var>str</var>, <var>pat</var>, <var>newtext</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>insertAfter</b> (<var>str</var>, <var>pos</var>, <var>newtext</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>newstr</var> = insertAfter (<var>str</var>, <var>pat</var>, <var>newtext</var>)</code>
  inserts the text <var>newtext</var> into each element of <var>str</var> after
@@ -2321,7 +2240,6 @@ Insert text after a pattern or position.
  preserved, and a missing value in <var>newtext</var> makes the corresponding
  element of <var>newstr</var> missing.
 </p>
-
 
 
             </div>
@@ -2350,7 +2268,6 @@ Insert text before a pattern or position.
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>insertBefore</b> (<var>str</var>, <var>pat</var>, <var>newtext</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>insertBefore</b> (<var>str</var>, <var>pos</var>, <var>newtext</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>newstr</var> = insertBefore (<var>str</var>, <var>pat</var>, <var>newtext</var>)</code>
  inserts the text <var>newtext</var> into each element of <var>str</var> before
@@ -2375,7 +2292,6 @@ Insert text before a pattern or position.
  preserved, and a missing value in <var>newtext</var> makes the corresponding
  element of <var>newstr</var> missing.
 </p>
-
 
 
             </div>
@@ -2403,7 +2319,6 @@ Replace substrings in string array.
 <dl>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>replace</b> (<var>str</var>, <var>old</var>, <var>new</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>newstr</var> = replace (<var>str</var>, <var>old</var>, <var>new</var>)</code> replaces
  every occurrence of the substring <var>old</var> with <var>new</var> in each
@@ -2424,7 +2339,6 @@ Replace substrings in string array.
  substring of <var>old</var> that does not occur leaves the text unchanged, and
  missing values in <var>str</var> are preserved.
 </p>
-
 
 
             </div>
@@ -2454,7 +2368,6 @@ Replace content between start and end boundaries.
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>replaceBetween</b> (<var>str</var>, <var>startPos</var>, <var>endPos</var>, <var>newtext</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>replaceBetween</b> (&hellip;, <code>&quot;Boundaries&quot;</code>, <var>bounds</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>newstr</var> = replaceBetween (<var>str</var>, <var>startPat</var>,
  <var>endPat</var>, <var>newtext</var>)</code> replaces, in each element of the string
@@ -2492,7 +2405,6 @@ Replace content between start and end boundaries.
 </p>
 
 
-
             </div>
           </div>
         </div>
@@ -2518,13 +2430,11 @@ Reverse order of characters in string array.
 <dl>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>reverse</b> (<var>str</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>newstr</var> = reverse (<var>str</var>)</code> reverses the order of the
  characters in every each element of the string array <var>str</var>.
  <var>newstr</var> is a string array of the same size as <var>str</var>.
 </p>
-
 
 
             </div>
@@ -2557,7 +2467,6 @@ Sort elements in a string array.
 <dt><code><h5 class="fs">string: <var>B</var> = <b>sort</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: [<var>B</var>, <var>index</var>] = <b>sort</b> (<var>A</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = sort (<var>A</var>)</code> sorts the elements of the string array
  <var>A</var> in ascending order.  Elements are compared lexicographically by
@@ -2579,27 +2488,26 @@ Sort elements in a string array.
  returned in <var>B</var> with any of the following options specified in
  <var>MP</var>:
 </p>
- <ul>
+<ul>
 <li> <code>'auto'</code>, which is the default, places missing elements last
  for ascending sort and first for descending sort.
- </li><li> <code>'first'</code> places missing elements first.
- </li><li> <code>'last'</code> places missing elements last.
- </li></ul>
+</li><li> <code>'first'</code> places missing elements first.
+</li><li> <code>'last'</code> places missing elements last.
+</li></ul>
 
 <p> <code>[<var>B</var>, <var>index</var>] = sort (<var>A</var>, &hellip;)</code> also returns a
  sorting index containing the original indices of the elements in the
  sorted array.
 </p>
- <ul>
+<ul>
 <li> If <var>A</var> is a vector, then <var>index</var> contains the original
  linear indices of the elements in the sorted vector <var>B</var> such that
  <code><var>B</var> = <var>A</var>(<var>index</var>)</code>.
- </li><li> If <var>A</var> is an <math>M&times;N</math> matrix and <code><var>dim</var> = 1</code>, then
+</li><li> If <var>A</var> is an <math>M&times;N</math> matrix and <code><var>dim</var> = 1</code>, then
  <var>index</var> contains the original row indices of the elements in the
  sorted vector <var>B</var> such that for <code>j = 1:N</code>,
  <code><var>B</var>(:,j) = <var>A</var>(<var>index</var>(:,j),j)</code>.
- </li></ul>
-
+</li></ul>
 
 
 
@@ -2633,7 +2541,6 @@ Sort rows in a string array.
 <dt><code><h5 class="fs">string: <var>B</var> = <b>sortrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: [<var>B</var>, <var>index</var>] = <b>sortrows</b> (<var>A</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = sortrows (<var>A</var>)</code> sorts the rows of the 2-D string
  array <var>A</var> in ascending order.  The sorted array <var>B</var> has the same
@@ -2666,18 +2573,17 @@ Sort rows in a string array.
  returned in <var>B</var> with any of the following options specified in
  <var>MP</var>:
 </p>
- <ul>
+<ul>
 <li> <code>'auto'</code>, which is the default, places missing elements last
  for ascending sort and first for descending sort.
- </li><li> <code>'first'</code> places missing elements first.
- </li><li> <code>'last'</code> places missing elements last.
- </li></ul>
+</li><li> <code>'first'</code> places missing elements first.
+</li><li> <code>'last'</code> places missing elements last.
+</li></ul>
 
 <p> <code>[<var>B</var>, <var>index</var>] = sortrows (<var>A</var>, &hellip;)</code> also returns
  an index vector containing the original row indices of <var>A</var> in the
  sorted matrix <var>B</var> such that <code><var>B</var> = <var>A</var>(<var>index</var>,:)</code>.
 </p>
-
 
 
             </div>
@@ -2708,7 +2614,6 @@ Split string array at delimiters.
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>split</b> (<var>str</var>, <var>delimiter</var>, <var>dim</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: [<var>newstr</var>, <var>match</var>] = <b>split</b> (&hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>newstr</var> = split (<var>str</var>)</code> divides each element of <var>str</var>
  at whitespace characters and returns the pieces as a string array.  The
@@ -2741,7 +2646,6 @@ Split string array at delimiters.
 </p>
 
 
-
             </div>
           </div>
         </div>
@@ -2767,7 +2671,6 @@ Split string array at newline characters.
 <dl>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>splitlines</b> (<var>str</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>newstr</var> = splitlines (<var>str</var>)</code> divides each element of
  <var>str</var> at its newline characters and returns the lines as a string
@@ -2783,7 +2686,6 @@ Split string array at newline characters.
  <var>str</var> must contain the same number of newlines.  Missing values in
  <var>str</var> are preserved and count as a single line.
 </p>
-
 
 
             </div>
@@ -2811,7 +2713,6 @@ Horizontal concatenation of texts in string array.
 <dl>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>strcat</b> (<var>str1</var>, <var>str2</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>newstr</var> = strcat (<var>str1</var>, <var>str2</var>, &hellip;)</code> merges
  horizontally all the input arguments into a string array, as long as any
@@ -2819,7 +2720,6 @@ Horizontal concatenation of texts in string array.
  size or scalars.  All inputs must be character vectors, cell arrays of
  character vectors, or string arrays.
 </p>
-
 
 
             </div>
@@ -2850,7 +2750,6 @@ Remove leading and trailing characters from string array.
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>strip</b> (<var>str</var>, <var>stripchar</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>strip</b> (<var>str</var>, <var>side</var>, <var>stripchar</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>newstr</var> = strip (<var>str</var>)</code> removes all consecutive
  whitespace characters from the beginning and end of each element of
@@ -2872,7 +2771,6 @@ Remove leading and trailing characters from string array.
 <p> <var>newstr</var> is a string array of the same size as <var>str</var>.  Missing
  values in <var>str</var> are preserved.
 </p>
-
 
 
             </div>
@@ -2904,7 +2802,6 @@ Add leading or trailing characters to string array.
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>pad</b> (<var>str</var>, <var>nchars</var>, <var>side</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>pad</b> (&hellip;, <var>padchar</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>newstr</var> = pad (<var>str</var>)</code> pads each element of <var>str</var> with
  trailing spaces so that every element is as long as the longest one.
@@ -2929,7 +2826,6 @@ Add leading or trailing characters to string array.
  array of the same size as <var>str</var>, and missing values in <var>str</var> are
  preserved.
 </p>
-
 
 
             </div>
@@ -2960,7 +2856,6 @@ Combine string array elements.
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>join</b> (<var>str</var>, <var>dim</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>join</b> (<var>str</var>, <var>delimiter</var>, <var>dim</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>newstr</var> = join (<var>str</var>)</code> combines the elements of <var>str</var>
  along the last dimension whose size is not 1, placing a single space
@@ -2983,7 +2878,6 @@ Combine string array elements.
  them, is a missing value, the corresponding element of <var>newstr</var> is a
  missing value.
 </p>
-
 
 
             </div>
@@ -3011,14 +2905,12 @@ Append strings.
 <dl>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>plus</b> (<var>str1</var>, <var>str2</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>newstr</var> = lower (<var>str</var>)</code> is the equivalent of the syntax
  <code><var>newstr</var> = <var>str1</var> + <var>str2</var></code> and appends <var>str2</var> to
  <var>str1</var>.  Both input arguments must be string arrays of compatible
  size.
 </p>
-
 
 
             </div>
@@ -3046,13 +2938,11 @@ Convert contents of string array to lower case.
 <dl>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>lower</b> (<var>str</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>newstr</var> = lower (<var>str</var>)</code> converts all upper case
  characters in every element of the string array <var>str</var> to lower case.
  <var>newstr</var> is a string array of the same size as <var>str</var>.
 </p>
-
 
 
             </div>
@@ -3080,13 +2970,11 @@ Convert contents of string array to upper case.
 <dl>
 <dt><code><h5 class="fs">string: <var>newstr</var> = <b>upper</b> (<var>str</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>newstr</var> = upper (<var>str</var>)</code> converts all lower case
  characters in every element of the string array <var>str</var> to upper case.
  <var>newstr</var> is a string array of the same size as <var>str</var>.
 </p>
-
 
 
             </div>
@@ -3118,7 +3006,6 @@ Unique values in a string array.
 <dt><code><h5 class="fs">string: &hellip; = <b>unique</b> (&hellip;, <var>order</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: &hellip; = <b>unique</b> (&hellip;, <var>occurrence</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = unique (<var>A</var>)</code> returns the unique values of the string
  array <var>A</var> in the string vector <var>B</var> sorted lexicographically.  If
@@ -3150,7 +3037,6 @@ Unique values in a string array.
 </p>
 
 
-
             </div>
           </div>
         </div>
@@ -3176,7 +3062,6 @@ Concatenate string arrays.
 <dl>
 <dt><code><h5 class="fs">string: <var>C</var> = <b>cat</b> (<var>dim</var>, <var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = cat (<var>dim</var>, <var>A</var>, <var>B</var>, &hellip;)</code> concatenates
  string arrays <var>A</var>, <var>B</var>, &hellip; along dimension <var>dim</var>.  All
@@ -3185,7 +3070,6 @@ Concatenate string arrays.
  arrays of character vectors, numeric arrays, or logical arrays of
  compatible size.
 </p>
-
 
 
             </div>
@@ -3213,7 +3097,6 @@ Horizontal concatenation of string arrays.
 <dl>
 <dt><code><h5 class="fs">string: <var>C</var> = <b>horzcat</b> (<var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = horzcat (<var>A</var>, <var>B</var>, &hellip;)</code> is the equivalent of
  the syntax <code><var>C</var> = [<var>A</var>, <var>B</var>, &hellip;]</code> and horizontally
@@ -3222,7 +3105,6 @@ Horizontal concatenation of string arrays.
  the input arrays may also be character matrixes, cell arrays of character
  vectors, numeric arrays, or logical arrays of compatible size.
 </p>
-
 
 
             </div>
@@ -3250,7 +3132,6 @@ Vertical concatenation of string arrays.
 <dl>
 <dt><code><h5 class="fs">string: <var>C</var> = <b>vertcat</b> (<var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = vertcat (<var>A</var>, <var>B</var>, &hellip;)</code> is the equivalent of
  the syntax <code><var>C</var> = [<var>A</var>; <var>B</var>; &hellip;]</code> and vertically
@@ -3259,7 +3140,6 @@ Vertical concatenation of string arrays.
  the input arrays may also be character matrixes, cell arrays of character
  vectors, numeric arrays, or logical arrays of compatible size.
 </p>
-
 
 
             </div>
@@ -3289,7 +3169,6 @@ Repeat copies of a string array.
 <dt><code><h5 class="fs">string: <var>B</var> = <b>repmat</b> (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>B</var> = <b>repmat</b> (<var>A</var>, <var>dimvec</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = repmat (<var>A</var>, <var>n</var>)</code> returns a string array <var>B</var>
  containing <var>n</var> copies of the input string array <var>A</var> along every
@@ -3303,7 +3182,6 @@ Repeat copies of a string array.
 <p> <code><var>B</var> = repmat (<var>A</var>, <var>dimvec</var>)</code> is equivalent to the
  previous syntax with <code><var>dimvec</var> = [<var>d1</var>, &hellip;, <var>dN</var>]</code>.
 </p>
-
 
 
             </div>
@@ -3332,7 +3210,6 @@ Repeat copies of string array elements.
 <dt><code><h5 class="fs">string: <var>B</var> = <b>repelem</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>B</var> = <b>repelem</b> (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = repelem (<var>A</var>, <var>n</var>)</code> returns a string vector
  <var>B</var> containing repeated elements of the input <var>A</var>, which must be
@@ -3351,7 +3228,6 @@ Repeat copies of string array elements.
  <var>A</var> containing non-negative integer values specifying the number of
  repetitions of each element along the corresponding dimension.
 </p>
-
 
 
             </div>
@@ -3379,7 +3255,6 @@ Construct a vector of repeated elements from a string array.
 <dl>
 <dt><code><h5 class="fs">string: <var>B</var> = <b>repelems</b> (<var>A</var>, <var>R</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = repelems (<var>A</var>, <var>R</var>)</code> returns a string vector
  <var>B</var> containing repeated elements of the input <var>A</var>, which must be
@@ -3388,7 +3263,6 @@ Construct a vector of repeated elements from a string array.
  the elements in <var>A</var> to be repeated.  The corresponding entries in the
  second row of <var>R</var> specify the repeat count of each element.
 </p>
-
 
 
             </div>
@@ -3418,7 +3292,6 @@ Reshape string array.
 <dt><code><h5 class="fs">string: <var>B</var> = <b>reshape</b> (<var>A</var>, &hellip;, <code>[]</code>, &hellip;)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>B</var> = <b>reshape</b> (<var>A</var>, <var>dimvec</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = reshape (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code> returns
  a string array <var>B</var> with specified dimensions <var>d1</var>, &hellip;,
@@ -3433,7 +3306,6 @@ Reshape string array.
  specified dimensions.  An empty matrix <code>([])</code> is used to flag the
  unspecified dimension.
 </p>
-
 
 
             </div>
@@ -3462,7 +3334,6 @@ Circularly shift the elements in a string array.
 <dt><code><h5 class="fs">string: <var>B</var> = <b>circshift</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
 <dt><code><h5 class="fs">string: <var>B</var> = <b>circshift</b> (<var>A</var>, <var>n</var>, <var>dim</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = circshift (<var>A</var>, <var>n</var>)</code> circularly shifts the
  elements of the string array <var>A</var> according to <var>n</var>.  If <var>n</var>
@@ -3478,7 +3349,6 @@ Circularly shift the elements in a string array.
  specified by <var>dim</var>.  In this case, <var>n</var> must be a scalar integer
  value.
 </p>
-
 
 
             </div>
@@ -3506,7 +3376,6 @@ Generalized transpose for a string N-D array.
 <dl>
 <dt><code><h5 class="fs">string: <var>B</var> = <b>permute</b> (<var>A</var>, <var>dims</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = permute (<var>A</var>, <var>dims</var>)</code> returns the generalized
  transpose of the string array <var>A</var> by rearranging its dimensions
@@ -3517,7 +3386,6 @@ Generalized transpose for a string N-D array.
  dimension of <var>A</var> gets remapped to the dimension in <var>B</var> specified
  by <code><var>dims</var>(<var>N</var>)</code>.
 </p>
-
 
 
             </div>
@@ -3545,7 +3413,6 @@ Inverse of the generalized transpose for a string N-D array.
 <dl>
 <dt><code><h5 class="fs">string: <var>A</var> = <b>ipermute</b> (<var>B</var>, <var>dims</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>A</var> = ipermute (<var>B</var>, <var>dims</var>)</code> returns the inverse of
  the generalized transpose performed by the <code>permute</code> function.  The
@@ -3557,7 +3424,6 @@ Inverse of the generalized transpose for a string N-D array.
  <var>B</var> specified in <code><var>dims</var>(<var>N</var>)</code> gets remapped to the
  <var>N</var>th dimension of <var>A</var>.
 </p>
-
 
 
             </div>
@@ -3585,13 +3451,11 @@ Transpose a string matrix.
 <dl>
 <dt><code><h5 class="fs">string: <var>B</var> = <b>transpose</b> (<var>A</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = transpose (<var>A</var>)</code> is the equivalent of the syntax
  <code><var>B</var> = <var>A</var>.'</code> and returns the transpose of the string
  matrix <var>A</var>.
 </p>
-
 
 
             </div>
@@ -3619,14 +3483,12 @@ Transpose a string matrix.
 <dl>
 <dt><code><h5 class="fs">string: <var>B</var> = <b>ctranspose</b> (<var>A</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = ctranspose (<var>A</var>)</code> is the equivalent of the syntax
  <code><var>B</var> = <var>A</var>'</code> and returns the transpose of the string matrix
  <var>A</var>.  For string arrays, <code>ctranspose</code> is identical to
  <code>transpose</code>.
 </p>
-
 
 
             </div>

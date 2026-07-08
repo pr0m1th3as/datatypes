@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Data Types for GNU Octave: @cell/display</title>
+    <title>Data Types for GNU Octave: readtable</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
@@ -82,9 +82,9 @@
             <div class="collapse navbar-collapse" id="navbarNav">
               <ul class="navbar-nav">
                 <li class="nav-item">
-                  <a class="nav-link" href="index.html#supplementary classes">
+                  <a class="nav-link" href="index.html#table arrays">
                     <i class="fas fa-list-alt"></i>
-                    supplementary classes
+                    table arrays
                   </a>
                 </li>
                 <li class="nav-item">
@@ -192,7 +192,7 @@
 				</div>
 			</div>
 			<div class="row">
-				<input id="togList6" type="checkbox">
+				<input id="togList6" type="checkbox" checked>
 				<label for="togList6">
 					<span><h6>table arrays</h6></span>
 					<span><h6>table arrays</h6></span>
@@ -205,7 +205,7 @@
 					<li><a href="csv2table.html" class="text-decoration-none font-monospace"><small>csv2table</small></a></li>
 					<li><a href="ods2table.html" class="text-decoration-none font-monospace"><small>ods2table</small></a></li>
 					<li><a href="ods2struct.html" class="text-decoration-none font-monospace"><small>ods2struct</small></a></li>
-					<li><a href="readtable.html" class="text-decoration-none font-monospace"><small>readtable</small></a></li>
+					<li><a href="readtable.html" class="text-decoration-none font-monospace fw-bolder"><small>readtable</small></a></li>
 					<li><a href="struct2ods.html" class="text-decoration-none font-monospace"><small>struct2ods</small></a></li>
 					<li><a href="struct2xlsx.html" class="text-decoration-none font-monospace"><small>struct2xlsx</small></a></li>
 					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
@@ -215,7 +215,7 @@
 				</div>
 			</div>
 			<div class="row">
-				<input id="togList7" type="checkbox" checked>
+				<input id="togList7" type="checkbox">
 				<label for="togList7">
 					<span><h6>supplementary classes</h6></span>
 					<span><h6>supplementary classes</h6></span>
@@ -225,7 +225,7 @@
 					<li><a href="missing.html" class="text-decoration-none font-monospace"><small>missing</small></a></li>
 					<li><a href="vartype.html" class="text-decoration-none font-monospace"><small>vartype</small></a></li>
 					<li><a href="@cell_disp.html" class="text-decoration-none font-monospace"><small>@cell/disp</small></a></li>
-					<li><a href="@cell_display.html" class="text-decoration-none font-monospace fw-bolder"><small>@cell/display</small></a></li>
+					<li><a href="@cell_display.html" class="text-decoration-none font-monospace"><small>@cell/display</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -272,22 +272,62 @@
             <div class="card-header card-header-mod">
               <div class="row d-flex flex-wrap align-items-center">
                 <h3 class="d-inline-block mr-2">
-                Function&nbsp;Reference: <b><code>@cell/display</code></b>
+                Function&nbsp;Reference: <b><code>readtable</code></b>
                 </h3>
               </div>
             </div>
             <div class="card-body">
 <dl>
-<dt><code><h5 class="fs">datatypes: <b>display</b> (<var>C</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datatypes: <var>tbl</var> = <b>readtable</b> (<var>filename</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datatypes: <var>tbl</var> = <b>readtable</b> (<var>filename</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
 </dl>
-<p> Customized display of cell arrays.
+<p> Read a file into a table, detecting variable types automatically.
 </p>
 <div class="ms-5">
-<p> This function overloads Octave core <code>display</code> with respect to cell
- arrays and displays their contents in MATLAB like manner.
+<p> <code><var>tbl</var> = readtable (<var>filename</var>)</code> reads the file named by
+ <var>filename</var> (a character vector or string scalar) and returns it as a
+ <code>table</code>.  The file type is inferred from the extension:
+ <code>.txt</code>, <code>.csv</code>, and <code>.dat</code> are read as delimited text;
+ <code>.ods</code> and <code>.fods</code> are read as OpenDocument spreadsheets.  Use
+ the <code>'FileType'</code> option to override the inferred type.
+</p>
+<p> By default the first row supplies the variable names and each column&rsquo;s data
+ type is detected automatically (numeric, <code>datetime</code>, <code>duration</code>, or
+ text).  The following <var>Name</var>-<var>Value</var> options are supported:
+</p>
+<table>
+<tr><td width="28%"><code>'FileType'</code></td><td width="72%"><code>'text'</code> or <code>'spreadsheet'</code>.</td></tr>
+<tr><td width="28%"><code>'ReadVariableNames'</code></td><td width="72%">Logical; read the first row as variable
+ names (default <code>true</code>).</td></tr>
+<tr><td width="28%"><code>'ReadRowNames'</code></td><td width="72%">Logical; read the first column as row names
+ (default <code>false</code>).</td></tr>
+<tr><td width="28%"><code>'Delimiter'</code></td><td width="72%">Field delimiter for text files: a single
+ character or one of <code>'comma'</code>, <code>'space'</code>, <code>'tab'</code>,
+ <code>'semi'</code>, <code>'bar'</code> (default <code>','</code>).</td></tr>
+<tr><td width="28%"><code>'NumHeaderLines'</code></td><td width="72%">Number of lines to skip before the header
+ (default <code>0</code>).</td></tr>
+<tr><td width="28%"><code>'TextType'</code></td><td width="72%"><code>'char'</code> or <code>'string'</code> for text
+ columns (default <code>'char'</code>).</td></tr>
+<tr><td width="28%"><code>'VariableNamingRule'</code></td><td width="72%"><code>'modify'</code> or <code>'preserve'</code>
+ (default <code>'modify'</code>).</td></tr>
+<tr><td width="28%"><code>'Sheet'</code></td><td width="72%">Spreadsheet only: the sheet to read, selected by
+ name or by a 1-based index over the data sheets (default: the first sheet).</td></tr>
+<tr><td width="28%"><code>'Range'</code></td><td width="72%">Spreadsheet only: an A1-style range such as
+ <code>'C5'</code> or <code>'C5:D8'</code> limiting the region read.</td></tr>
+</table>
+
+<p> Office Open XML spreadsheets (<code>.xlsx</code>, <code>.xlsm</code>) are read via the
+ same interface as ODS.  The legacy binary formats <code>.xls</code> and
+ <code>.xlsb</code> are not supported; use <code>.xlsx</code>, <code>.ods</code>, or a text
+ format.
+</p>
+<p> <strong>See also: </strong>
+writetable, 
+  <a href="csv2table.html">csv2table</a>, 
+  <a href="ods2table.html">ods2table</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/@cell/display.m">@cell/display</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/readtable.m">readtable</a>
 </div>
 
             </div>

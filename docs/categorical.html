@@ -203,7 +203,13 @@
 					<li><a href="array2table.html" class="text-decoration-none font-monospace"><small>array2table</small></a></li>
 					<li><a href="cell2table.html" class="text-decoration-none font-monospace"><small>cell2table</small></a></li>
 					<li><a href="csv2table.html" class="text-decoration-none font-monospace"><small>csv2table</small></a></li>
+					<li><a href="ods2table.html" class="text-decoration-none font-monospace"><small>ods2table</small></a></li>
+					<li><a href="ods2struct.html" class="text-decoration-none font-monospace"><small>ods2struct</small></a></li>
+					<li><a href="readtable.html" class="text-decoration-none font-monospace"><small>readtable</small></a></li>
+					<li><a href="struct2ods.html" class="text-decoration-none font-monospace"><small>struct2ods</small></a></li>
+					<li><a href="struct2xlsx.html" class="text-decoration-none font-monospace"><small>struct2xlsx</small></a></li>
 					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
+					<li><a href="xlsx2struct.html" class="text-decoration-none font-monospace"><small>xlsx2struct</small></a></li>
 					<li><a href="istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 				</ul>
 				</div>
@@ -231,6 +237,8 @@
 				</label>
 				<div class="list">
 				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="findgroups.html" class="text-decoration-none font-monospace"><small>findgroups</small></a></li>
+					<li><a href="splitapply.html" class="text-decoration-none font-monospace"><small>splitapply</small></a></li>
 					<li><a href="keyHash.html" class="text-decoration-none font-monospace"><small>keyHash</small></a></li>
 					<li><a href="keyMatch.html" class="text-decoration-none font-monospace"><small>keyMatch</small></a></li>
 					<li><a href="parsePairedArguments.html" class="text-decoration-none font-monospace"><small>parsePairedArguments</small></a></li>
@@ -250,6 +258,10 @@
 					<li><a href="__datetime__.html" class="text-decoration-none font-monospace"><small>__datetime__</small></a></li>
 					<li><a href="__csv2table__.html" class="text-decoration-none font-monospace"><small>__csv2table__</small></a></li>
 					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace"><small>__table2csv__</small></a></li>
+					<li><a href="__ods2table__.html" class="text-decoration-none font-monospace"><small>__ods2table__</small></a></li>
+					<li><a href="__table2ods__.html" class="text-decoration-none font-monospace"><small>__table2ods__</small></a></li>
+					<li><a href="__xlsx2table__.html" class="text-decoration-none font-monospace"><small>__xlsx2table__</small></a></li>
+					<li><a href="__table2xlsx__.html" class="text-decoration-none font-monospace"><small>__table2xlsx__</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -266,7 +278,6 @@
             </div>
             <div class="card-body">
 <dl><code><h5 class="description">datatypes: categorical</h5></code></dl>
-
 <p> Array representing categorical data.
 </p>
 <div class="ms-5">
@@ -287,12 +298,10 @@
  several methods which can be used to modify their categories once they are
  constructed.
 </p>
-
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/categorical.m">categorical</a>
 </p>
 </div>
-
         <h4 class="d-inline-block my-3">
           Methods
         </h4>
@@ -321,7 +330,6 @@ Create a new array of categorical values.
 <dt><code><h5 class="fs">categorical: <var>C</var> = <b>categorical</b> (<var>A</var>, <var>valueset</var>, <var>catnames</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: <var>C</var> = <b>categorical</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = categorical (<var>A</var>)</code> creates a categorical array
  <var>C</var> from the input array <var>A</var>, which can be numeric, logical,
@@ -356,7 +364,7 @@ Create a new array of categorical values.
 <p> <code><var>C</var> = categorical (&hellip;, <var>Name</var>, <var>Value</var>)</code> further
  specifies additional parameters for creating categorical array <var>C</var>.
 </p>
- <ul>
+<ul>
 <li> <code>&quot;Ordinal&quot;</code> must be a logical scalar specifying that the
  categories in <var>C</var> have a numeric ordering relationship.  By default,
  it is <code>false</code> and <code>categorical</code> creates a non-ordinal array.
@@ -366,12 +374,11 @@ Create a new array of categorical values.
  mathematically ordered categories.  The ordering goes from smallest to
  largest according to the order in <var>valueset</var> or the order of
  appearance in input array <var>A</var>, when <var>valueset</var> is not specified,
- in which case the unique values in {A are not sorted in order to set
+ in which case the unique values in {A} are not sorted in order to set
  the categories.  Ordinal categorical arrays allow for relational
  operators such as <code>&gt;=, &gt;, &lt;=, &lt;</code>, as well as statistical operations
  such as <code>min</code>, <code>max</code>, and <code>median</code>.
-
- </li><li> <code>&quot;Protected&quot;</code> must be a logical scalar specifying that the
+</li><li> <code>&quot;Protected&quot;</code> must be a logical scalar specifying that the
  categories in <var>C</var> are protected.  By default, it is <code>false</code> for
  unordered categorical arrays and it is always <code>true</code> for ordinal
  categorical arrays.  Setting <code>&quot;Protected&quot;</code> to <code>true</code> prevents
@@ -379,7 +386,7 @@ Create a new array of categorical values.
  When <code>false</code>, assigning new values to the array automatically
  updates the categories. Hence, categorical arrays with different sets of
  categories can be combined/merged into a new array with set operations.
- </li></ul>
+</li></ul>
 
 <p> <strong>See also: </strong>
 categories, 
@@ -413,13 +420,11 @@ Get display formatted strings for each element of a categorical array.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>cstr</var> = <b>dispstrings</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>cstr</var> = dispstrings (<var>C</var>)</code> returns a cellstr array of
  character vectors, <var>cstr</var>, which has the same size as the input
  categorical <var>C</var>.
 </p>
-
 
 
             </div>
@@ -447,13 +452,11 @@ Convert categorical array to a cell array of character vectors.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>cstr</var> = <b>cellstr</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>cstr</var> = cellstr (<var>C</var>)</code> returns a cellstr array of
  character vectors, <var>cstr</var>, which has the same size as the input
  categorical <var>C</var>.
 </p>
-
 
 
             </div>
@@ -481,13 +484,11 @@ Convert categorical array to a 2-D character matrix.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>CM</var> = <b>char</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>CM</var> = char (<var>C</var>)</code> returns a character matrix <var>CM</var>,
  which contains <code>numel (<var>C</var>)</code> rows and each row contains the
  category name for the corresponding element of <code><var>C</var>(:)</code>.
 </p>
-
 
 
             </div>
@@ -515,13 +516,11 @@ Convert categorical array to a double array.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>out</var> = <b>double</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = double (<var>C</var>)</code> returns a double array indexing the
  categories in <var>C</var>.  Categorical elements of undefined category are
  returned as <code>NaN</code>.
 </p>
-
 
 
             </div>
@@ -549,13 +548,11 @@ Convert categorical array to a single array.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>out</var> = <b>single</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = single (<var>C</var>)</code> returns a single array indexing the
  categories in <var>C</var>.  Categorical elements of undefined category are
  returned as <code>NaN</code>.
 </p>
-
 
 
             </div>
@@ -583,13 +580,11 @@ Convert categorical array to a int64 array.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>out</var> = <b>int64</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = int64 (<var>C</var>)</code> returns a <code>int64</code> array
  indexing the categories in <var>C</var>.  Categorical elements of undefined
  category are returned as <code>0</code>.
 </p>
-
 
 
             </div>
@@ -617,13 +612,11 @@ Convert categorical array to a int32 array.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>out</var> = <b>int32</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = int32 (<var>C</var>)</code> returns a <code>int32</code> array
  indexing the categories in <var>C</var>.  Categorical elements of undefined
  category are returned as <code>0</code>.
 </p>
-
 
 
             </div>
@@ -651,14 +644,12 @@ Convert categorical array to a int16 array.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>out</var> = <b>int16</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = int16 (<var>C</var>)</code> returns a <code>int16</code> array
  indexing the categories in <var>C</var>.  Categorical elements of undefined
  category are returned as <code>0</code>.  Note that the returned category
  indices saturate to <code>intmax ('int16')</code>, which is 32767.
 </p>
-
 
 
             </div>
@@ -686,14 +677,12 @@ Convert categorical array to a int8 array.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>out</var> = <b>int8</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = int8 (<var>C</var>)</code> returns a <code>int8</code> array
  indexing the categories in <var>C</var>.  Categorical elements of undefined
  category are returned as <code>0</code>.  Note that the returned category
  indices saturate to <code>intmax ('int8')</code>, which is 127.
 </p>
-
 
 
             </div>
@@ -721,13 +710,11 @@ Convert categorical array to a uint64 array.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>out</var> = <b>uint64</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = uint64 (<var>C</var>)</code> returns a <code>uint64</code> array
  indexing the categories in <var>C</var>.  Categorical elements of undefined
  category are returned as <code>0</code>.
 </p>
-
 
 
             </div>
@@ -755,13 +742,11 @@ Convert categorical array to a uint32 array.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>out</var> = <b>uint32</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = uint32 (<var>C</var>)</code> returns a <code>uint32</code> array
  indexing the categories in <var>C</var>.  Categorical elements of undefined
  category are returned as <code>0</code>.
 </p>
-
 
 
             </div>
@@ -789,13 +774,11 @@ Convert categorical array to a uint16 array.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>out</var> = <b>uint16</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = uint16 (<var>C</var>)</code> returns a <code>uint16</code> array
  indexing the categories in <var>C</var>.  Categorical elements of undefined
  category are returned as <code>0</code>.
 </p>
-
 
 
             </div>
@@ -823,14 +806,12 @@ Convert categorical array to a int8 array.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>out</var> = <b>uint8</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = uint8 (<var>C</var>)</code> returns a <code>uint8</code> array
  indexing the categories in <var>C</var>.  Categorical elements of undefined
  category are returned as <code>0</code>.  Note that the returned category
  indices saturate to <code>intmax ('uint8')</code>, which is 255.
 </p>
-
 
 
             </div>
@@ -861,14 +842,12 @@ Display summary of categorical array.
 <dt><code><h5 class="fs">categorical: <b>summary</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: <var>s</var> = <b>summary</b> (&hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code>summary (<var>C</var>)</code> displays the number of elements in the
  categorical array <var>C</var> that are equal to each category of <var>C</var>.
  Any undefined elements in <var>C</var> are summed together and displayed as
  <code>&lt;undefined&gt;</code>.
 </p>
-
 
 
             </div>
@@ -896,12 +875,10 @@ List of categories in categorical array.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>cstr</var> = <b>categories</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>cstr</var> = categories (<var>C</var>)</code> returns a cell array of
  character vectors with the names of the categories in <var>C</var>.
 </p>
-
 
 
             </div>
@@ -930,7 +907,6 @@ Count occurrences of categories in a categorical array.
 <dt><code><h5 class="fs">categorical: <var>N</var> = <b>countcats</b> (<var>C</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: <var>N</var> = <b>countcats</b> (<var>C</var>, <var>dim</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>N</var> = countcats (<var>C</var>)</code> returns the number of elements for
  each category in <var>C</var>.  If <var>C</var> is a vector, <var>N</var> is also a
@@ -942,7 +918,6 @@ Count occurrences of categories in a categorical array.
 <p> <code><var>N</var> = countcats (<var>C</var>, <var>dim</var>)</code> operates along the
  dimension <var>dim</var>.
 </p>
-
 
 
             </div>
@@ -970,13 +945,11 @@ Length of a categorical vector.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>N</var> = <b>length</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>N</var> = length (<var>C</var>)</code> returns the size of the longest
  dimension of the categorical array <var>C</var>, unless any of its dimensions
  has zero length, in which case <code>length (<var>C</var>)</code> returns 0.
 </p>
-
 
 
             </div>
@@ -1007,7 +980,6 @@ Size of a categorical array.
 <dt><code><h5 class="fs">categorical: <var>dim_sz</var> = <b>size</b> (<var>C</var>, <var>d1</var>, <var>d2</var>, &hellip;)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b> (&hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>sz</var> = size (<var>C</var>)</code> returns a row vector with the size
  (number of elements) of each dimension for the categorical array <var>C</var>.
@@ -1022,7 +994,6 @@ Size of a categorical array.
  called with multiple output arguments, <code>size</code> returns the size of
  dimension N in the Nth argument.
 </p>
-
 
 
             </div>
@@ -1050,12 +1021,10 @@ Number of dimensions in a categorical array.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>out</var> = <b>ndims</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = ndims (<var>C</var>)</code> returns the number of dimensions of
  the categorical array <var>C</var>.
 </p>
-
 
 
             </div>
@@ -1083,12 +1052,10 @@ Total number of elements in a categorical array.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>out</var> = <b>numel</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = numel (<var>C</var>)</code> returns the number of elements in the
  categorical array <var>C</var>.
 </p>
-
 
 
             </div>
@@ -1117,7 +1084,6 @@ Generate a hash code for a categorical array.
 <dt><code><h5 class="fs">categorical: <var>hey</var> = <b>keyHash</b> (<var>C</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: <var>hey</var> = <b>keyHash</b> (<var>C</var>, <var>base</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>h</var> = keyHash (<var>C</var>)</code> generates a <code>uint64</code> scalar that
  represents the input array <var>C</var>.  <code>keyHash</code> utilizes the 64-bit
@@ -1134,7 +1100,6 @@ Generate a hash code for a categorical array.
  hash key for any particular input across different workers and Octave
  sessions.
 </p>
-
 
 
             </div>
@@ -1162,14 +1127,12 @@ Test for categories in a categorical array.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>iscategory</b> (<var>C</var>, <var>catnames</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = iscategory (<var>C</var>, <var>catnames</var>)</code> returns a logical
  array <var>TF</var> of the same size as <var>catnames</var> containing <code>true</code>
  for each corresponding element of <var>catnames</var> that is a category in
  categorical array <var>C</var> and <code>false</code> otherwise.
 </p>
-
 
 
             </div>
@@ -1197,7 +1160,6 @@ Return true if categorical array is a column vector.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>iscolumn</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = iscolumn (<var>C</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code>, if the categorical array <var>C</var> is a column
@@ -1205,7 +1167,6 @@ Return true if categorical array is a column vector.
  which <code>size (<var>X</var>)</code> returns <code>[<var>N</var>, 1]</code> with non-negative
  <var>N</var>.
 </p>
-
 
 
             </div>
@@ -1233,13 +1194,11 @@ Return true if categorical array is empty.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isempty</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isempty (<var>C</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code>, if the categorical array <var>C</var> is empty, and
  <code>false</code> otherwise.
 </p>
-
 
 
             </div>
@@ -1268,7 +1227,6 @@ Return true if categorical arrays are equal.
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isequal</b> (<var>C1</var>, <var>C2</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isequal</b> (<var>C1</var>, <var>C2</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isequal (<var>C1</var>, <var>C2</var>)</code> returns a logical scalar
  <var>TF</var>, which is <code>true</code>, if the categorical arrays <var>C1</var> and
@@ -1286,7 +1244,6 @@ Return true if categorical arrays are equal.
  scalar <var>TF</var>, which is <code>true</code>, if all input arguments are equal,
  and <code>false</code> otherwise.
 </p>
-
 
 
             </div>
@@ -1316,7 +1273,6 @@ Return true if categorical arrays are equal under the assumption that
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isequaln</b> (<var>C1</var>, <var>C2</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isequaln</b> (<var>C1</var>, <var>C2</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isequaln (<var>C1</var>, <var>C2</var>)</code> returns a logical scalar
  <var>TF</var>, which is <code>true</code>, if the categorical arrays <var>C1</var> and
@@ -1335,7 +1291,6 @@ Return true if categorical arrays are equal under the assumption that
  logical scalar <var>TF</var>, which is <code>true</code>, if all input arguments
  are equal, and <code>false</code> otherwise.
 </p>
-
 
 
             </div>
@@ -1363,7 +1318,6 @@ Return true if categorical array is a 2-D array.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>ismatrix</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = ismatrix (<var>C</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code>, if the categorical array <var>C</var> is a matrix, and
@@ -1371,7 +1325,6 @@ Return true if categorical array is a 2-D array.
  <code>ndims (<var>X</var>) == 2</code> and for which <code>size (<var>X</var>)</code> returns
  <code>[<var>H</var>, <var>W</var>]</code> with non-negative <var>H</var> and <var>W</var>.
 </p>
-
 
 
             </div>
@@ -1402,7 +1355,6 @@ Find categorical elements in a set.
 <dt><code><h5 class="fs">categorical: [<var>TF</var>, <var>index</var>] = <b>ismember</b> (&hellip;)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: [<var>TF</var>, <var>index</var>] = <b>ismember</b> (&hellip;, <code>'legacy'</code>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = ismember (<var>A</var>, <var>B</var>)</code> returns a logical array
  <var>TF</var> of the same size as <var>A</var> containing <code>true</code> for each
@@ -1436,7 +1388,6 @@ Find categorical elements in a set.
 </p>
 
 
-
             </div>
           </div>
         </div>
@@ -1463,7 +1414,6 @@ Find missing elements in categorical array.
 <dt><code><h5 class="fs">categorical: <var>out</var> = <b>ismissing</b> (<var>C</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: <var>out</var> = <b>ismissing</b> (<var>C</var>, <var>indicator</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = ismissing (<var>C</var>)</code> returns a logical array <var>TF</var>
  of the same size as <var>C</var> containing <code>true</code> for each
@@ -1480,7 +1430,6 @@ Find missing elements in categorical array.
  <var>indicator</var> contains text representation, the comparison is based on
  lexicographical equality to the category names of <var>C</var>.
 </p>
-
 
 
             </div>
@@ -1508,13 +1457,11 @@ Test if categorical array is ordinal.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isordinal</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isordinal (<var>C</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code>, if the categorical array <var>C</var> is ordinal, and
  <code>false</code> otherwise.
 </p>
-
 
 
             </div>
@@ -1542,13 +1489,11 @@ Test if categorical array is protected.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isprotected</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isprotected (<var>C</var>)</code> returns a logical scalar
  <var>TF</var>, which is <code>true</code>, if the categorical array <var>C</var> is
  protected, and <code>false</code> otherwise.
 </p>
-
 
 
             </div>
@@ -1576,7 +1521,6 @@ Return true if categorical array is a row vector.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isrow</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isrow (<var>C</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code>, if the categorical array <var>C</var> is a row vector,
@@ -1584,7 +1528,6 @@ Return true if categorical array is a row vector.
  <code>size (<var>X</var>)</code> returns <code>[1, <var>N</var>]</code> with non-negative
  <var>N</var>.
 </p>
-
 
 
             </div>
@@ -1612,14 +1555,12 @@ Return true if categorical array is a scalar.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isscalar</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isscalar (<var>C</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code>, if the categorical array <var>C</var> is also a scalar,
  and <code>false</code> otherwise.  A scalar is a single element object for
  which <code>size (<var>X</var>)</code> returns <code>[1, 1]</code>.
 </p>
-
 
 
             </div>
@@ -1651,7 +1592,6 @@ Return true if categorical array is sorted.
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>issorted</b> (<var>C</var>, <var>dim</var>, <var>direction</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>issorted</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = issorted (<var>C</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code>, if the categorical array <var>C</var> is sorted in
@@ -1668,33 +1608,32 @@ Return true if categorical array is sorted.
  <code>false</code> otherwise.  <var>direction</var> can be one of the following
  options:
 </p>
- <ul>
+<ul>
 <li> <code>'ascend'</code>, which is the default, checks is elements are in
  ascending order.
- </li><li> <code>'descend'</code> checks if elements are in descending order.
- </li><li> <code>'monotonic'</code> checks if elements are either in ascending or
+</li><li> <code>'descend'</code> checks if elements are in descending order.
+</li><li> <code>'monotonic'</code> checks if elements are either in ascending or
  descending order.
- </li><li> <code>'strictascend'</code> checks if elements are in ascending order
+</li><li> <code>'strictascend'</code> checks if elements are in ascending order
  and there are no duplicate or undefined elements.
- </li><li> <code>'strictdescend'</code> checks if elements are in descending order
+</li><li> <code>'strictdescend'</code> checks if elements are in descending order
  and there are no duplicate or undefined elements.
- </li><li> <code>'strictmonotonic'</code> checks if elements are either in
+</li><li> <code>'strictmonotonic'</code> checks if elements are either in
  ascending or descending order and there are no duplicate or undefined
  elements.
- </li></ul>
+</li></ul>
 
 <p> <code><var>TF</var> = issorted (&hellip;, <code>'MissingPlacement'</code>,
  <var>MP</var>)</code> specifies where missing elements (<code>&lt;undefined&gt;</code>) are
  placed with
  one of the following options specified in <var>MP</var>:
 </p>
- <ul>
+<ul>
 <li> <code>'auto'</code>, which is the default, places missing elements last
  for ascending sort and first for descending sort.
- </li><li> <code>'first'</code> places missing elements first.
- </li><li> <code>'last'</code> places missing elements last.
- </li></ul>
-
+</li><li> <code>'first'</code> places missing elements first.
+</li><li> <code>'last'</code> places missing elements last.
+</li></ul>
 
 
 
@@ -1727,7 +1666,6 @@ Return true if categorical matrix rows are sorted.
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>issortedrows</b> (<var>C</var>, <var>col</var>, <var>direction</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>issortedrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = issortedrows (<var>C</var>)</code> returns a logical scalar
  <var>TF</var>, which is <code>true</code>, if the rows in the 2-D categorical array
@@ -1746,20 +1684,20 @@ Return true if categorical matrix rows are sorted.
  rows in <var>C</var> are sorted according to the specified direction, which
  can be one of the following options:
 </p>
- <ul>
+<ul>
 <li> <code>'ascend'</code>, which is the default, checks is elements are in
  ascending order.
- </li><li> <code>'descend'</code> checks if elements are in descending order.
- </li><li> <code>'monotonic'</code> checks if elements are either in ascending or
+</li><li> <code>'descend'</code> checks if elements are in descending order.
+</li><li> <code>'monotonic'</code> checks if elements are either in ascending or
  descending order.
- </li><li> <code>'strictascend'</code> checks if elements are in ascending order
+</li><li> <code>'strictascend'</code> checks if elements are in ascending order
  and there are no duplicate or undefined elements.
- </li><li> <code>'strictdescend'</code> checks if elements are in descending order
+</li><li> <code>'strictdescend'</code> checks if elements are in descending order
  and there are no duplicate or undefined elements.
- </li><li> <code>'strictmonotonic'</code> checks if elements are either in
+</li><li> <code>'strictmonotonic'</code> checks if elements are either in
  ascending or descending order and there are no duplicate or undefined
  elements.
- </li></ul>
+</li></ul>
 
 <p> Alternatively, <var>direction</var> can be a cell array of character
  vectors specifying the sorting direction for each individual column of
@@ -1778,13 +1716,12 @@ Return true if categorical matrix rows are sorted.
  <var>MP</var>)</code> specifies where missing elements (<code>&lt;undefined&gt;</code>) are
  placed with one of the following options specified in <var>MP</var>:
 </p>
- <ul>
+<ul>
 <li> <code>'auto'</code>, which is the default, places missing elements last
  for ascending sort and first for descending sort.
- </li><li> <code>'first'</code> places missing elements first.
- </li><li> <code>'last'</code> places missing elements last.
- </li></ul>
-
+</li><li> <code>'first'</code> places missing elements first.
+</li><li> <code>'last'</code> places missing elements last.
+</li></ul>
 
 
 
@@ -1813,7 +1750,6 @@ Test for undefined elements in categorical array.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>out</var> = <b>isundefined</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isundefined (<var>C</var>)</code> returns a logical array <var>TF</var>
  of the same size as <var>C</var> containing <code>true</code> for each
@@ -1821,7 +1757,6 @@ Test for undefined elements in categorical array.
  the categories in <var>C</var> and <code>false</code> otherwise.
  <code>&lt;undefined&gt;</code> is the equivalent of <code>NaN</code> in numeric arrays.
 </p>
-
 
 
             </div>
@@ -1849,7 +1784,6 @@ Return true if categorical array is a vector.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>isvector</b> (<var>C</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isvector (<var>C</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the categorical array <var>C</var> is a vector and
@@ -1857,7 +1791,6 @@ Return true if categorical array is a vector.
  dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
  definition, a scalar is also a vector.
 </p>
-
 
 
             </div>
@@ -1887,7 +1820,6 @@ Add categories to categorical array.
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>addcats</b> (&hellip;, <code>'After'</code>, <var>catname</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>addcats</b> (&hellip;, <code>'Before'</code>, <var>catname</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = addcats (<var>A</var>, <var>newcats</var>)</code> appends new categories
  specified in <var>newcats</var> to the categorical array <var>A</var> at the end of
@@ -1910,7 +1842,6 @@ Add categories to categorical array.
 <p> When adding a single category, <var>newcats</var> can also be specified as a
  character vector.
 </p>
-
 
 
             </div>
@@ -1939,7 +1870,6 @@ Merge categories in categorical array.
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>mergecats</b> (<var>A</var>, <var>oldcats</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>mergecats</b> (<var>A</var>, <var>oldcats</var>, <var>newcat</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = mergecats (<var>A</var>, <var>oldcats</var>)</code> merges two or more
  categories specified by <var>oldcats</var> into a single category with the
@@ -1959,7 +1889,6 @@ Merge categories in categorical array.
  array of character vectors with the <code>cellstr</code> function.  Any names
  in <var>oldcats</var> that do not reference an existing category are ignored.
 </p>
-
 
 
             </div>
@@ -1988,7 +1917,6 @@ Remove categories from categorical array.
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>removecats</b> (<var>A</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>removecats</b> (<var>A</var>, <var>oldcats</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = removecats (<var>A</var>)</code> removes all unused categories from
  categorical array <var>A</var>.  The output categorical array <var>B</var> has the
@@ -2006,7 +1934,6 @@ Remove categories from categorical array.
 <p> When removing a single category, <var>oldcats</var> can also be specified as a
  character vector.
 </p>
-
 
 
             </div>
@@ -2035,7 +1962,6 @@ Rename categories in categorical array.
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>renamecats</b> (<var>A</var>, <var>newnames</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>renamecats</b> (<var>A</var>, <var>oldnames</var>, <var>newnames</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = renamecats (<var>A</var>, <var>newnames</var>)</code> renames all the
  categories in <var>A</var>, without changing any of its values, with the names
@@ -2057,7 +1983,6 @@ Rename categories in categorical array.
 <p> When renaming a single category, both <var>oldnames</var> and <var>newnames</var>
  can also be specified as character vectors.
 </p>
-
 
 
             </div>
@@ -2086,7 +2011,6 @@ Reorder categories in categorical array.
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>reordercats</b> (<var>A</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>reordercats</b> (<var>A</var>, <var>neworder</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = reordercats (<var>A</var>)</code> reorders the categories of <var>A</var>
  in alphanumeric order.
@@ -2100,7 +2024,6 @@ Reorder categories in categorical array.
  array of character vectors with the <code>cellstr</code> function as long as it
  indexes all existing categories in <var>A</var>.
 </p>
-
 
 
             </div>
@@ -2128,30 +2051,28 @@ Set categories in categorical array.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>setcats</b> (<var>A</var>, <var>newcats</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = setcats (<var>A</var>, <var>newcats</var>)</code> sets categories in the
  categorical array <var>B</var> according to the elements of the input array
  <var>A</var> and the categories specified by <var>newcats</var> according to the
  following rules:
 </p>
- <ul>
+<ul>
 <li> Any element of <var>A</var> that corresponds to a category listed in
  <var>newcats</var> is copied to <var>B</var> with the same categorical value.
- </li><li> Any categories of <var>A</var> not listed in <var>newcats</var> are not
+</li><li> Any categories of <var>A</var> not listed in <var>newcats</var> are not
  copied to <var>B</var> and the corresponding elements of <var>B</var> are
  undefined.
- </li><li> New categories listed in <var>newcats</var> that are not present in
+</li><li> New categories listed in <var>newcats</var> that are not present in
  <var>A</var> are added in <var>B</var>, but without any elements equal to these
  new categories.
- </li></ul>
+</li></ul>
 
 <p> <var>newcats</var> can be a string array, a cell array of character vectors
  or any type of array that can be converted to a cell array of character
  vectors with the <code>cellstr</code> function.  When setting a single new
  category, <var>newcats</var> can also be specified as a character vector.
 </p>
-
 
 
             </div>
@@ -2179,7 +2100,6 @@ Combine categorical arrays.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>C</var> = <b>times</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = times (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>C</var> = <var>A</var> .* <var>B</var></code> and returns a categorical array whose
@@ -2190,7 +2110,6 @@ Combine categorical arrays.
 </p>
 <p> <var>A</var> and <var>B</var> must be of common size or scalar categorical arrays.
 </p>
-
 
 
             </div>
@@ -2218,7 +2137,6 @@ Equality for categorical arrays.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = eq (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>TF</var> = <var>A</var> == <var>B</var></code> and returns a logical array of the
@@ -2246,7 +2164,6 @@ Equality for categorical arrays.
 </p>
 
 
-
             </div>
           </div>
         </div>
@@ -2272,7 +2189,6 @@ Greater than or equal to for ordinal categorical arrays.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>ge</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = ge (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>TF</var> = <var>A</var> &gt;= <var>B</var></code> and returns a logical array of the
@@ -2300,7 +2216,6 @@ Greater than or equal to for ordinal categorical arrays.
 </p>
 
 
-
             </div>
           </div>
         </div>
@@ -2326,7 +2241,6 @@ Greater than for ordinal categorical arrays.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>gt</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = gt (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>TF</var> = <var>A</var> &gt; <var>B</var></code> and returns a logical array of the
@@ -2351,7 +2265,6 @@ Greater than for ordinal categorical arrays.
  comparable to any other categorical values including other undefined
  elements.
 </p>
-
 
 
             </div>
@@ -2379,7 +2292,6 @@ Less than or equal to for ordinal categorical arrays.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>le</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = le (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>TF</var> = <var>A</var> &lt;= <var>B</var></code> and returns a logical array of the
@@ -2407,7 +2319,6 @@ Less than or equal to for ordinal categorical arrays.
 </p>
 
 
-
             </div>
           </div>
         </div>
@@ -2433,7 +2344,6 @@ Less than for ordinal categorical arrays.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>lt</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = lt (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>TF</var> = <var>A</var> &lt; <var>B</var></code> and returns a logical array of the
@@ -2458,7 +2368,6 @@ Less than for ordinal categorical arrays.
  comparable to any other categorical values including other undefined
  elements.
 </p>
-
 
 
             </div>
@@ -2486,7 +2395,6 @@ Not equal for categorical arrays.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>TF</var> = <b>ne</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = ne (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>TF</var> = <var>A</var> != <var>B</var></code> and returns a logical array of the
@@ -2512,7 +2420,6 @@ Not equal for categorical arrays.
  comparable to any other categorical values including other undefined
  elements.
 </p>
-
 
 
             </div>
@@ -2548,7 +2455,6 @@ Smallest elements in ordinal categorical arrays.
 <dt><code><h5 class="fs">categorical: <var>C</var> = <b>min</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: [&hellip;] = <b>min</b> (&hellip;, <var>missingflag</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = min (<var>A</var>)</code> returns the smallest element in ordinal
  categorical vector <var>A</var>.  If <var>A</var> is a matrix, <code>min (<var>A</var>)</code>
@@ -2591,18 +2497,17 @@ Smallest elements in ordinal categorical arrays.
  <var>missingflag</var> must be a character vector or a string scalar with one
  of the following values:
 </p>
- <ul>
+<ul>
 <li> <code>'omitundefined'</code>, which is the default, ignores all
  undefined elements and returns the minimum of the remaining elements.
  If all elements along the operating dimension are undefined, then it
  returns an undefined element.  <code>'omitnan'</code> can also be used as
  equivalent to <code>'omitundefined'</code>.
- </li><li> <code>'includeundefined'</code> returns an undefined element if there
+</li><li> <code>'includeundefined'</code> returns an undefined element if there
  are any undefined elements along the operating dimension.
  <code>'includenan'</code> can also be used as equivalent to
  <code>'includeundefined'</code>.
- </li></ul>
-
+</li></ul>
 
 
 
@@ -2639,7 +2544,6 @@ Largest elements in ordinal categorical arrays.
 <dt><code><h5 class="fs">categorical: <var>C</var> = <b>max</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: [&hellip;] = <b>max</b> (&hellip;, <var>missingflag</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = max (<var>A</var>)</code> returns the largest element in ordinal
  categorical vector <var>A</var>.  If <var>A</var> is a matrix, <code>max (<var>A</var>)</code>
@@ -2682,18 +2586,17 @@ Largest elements in ordinal categorical arrays.
  <var>missingflag</var> must be a character vector or a string scalar with one
  of the following values:
 </p>
- <ul>
+<ul>
 <li> <code>'omitundefined'</code>, which is the default, ignores all
  undefined elements and returns the maximum of the remaining elements.  If
  all elements along the operating dimension are undefined, then it returns
  an undefined element.  <code>'omitnan'</code> may also be used as equivalent
  to <code>'omitundefined'</code>.
- </li><li> <code>'includeundefined'</code> returns an undefined element if there
+</li><li> <code>'includeundefined'</code> returns an undefined element if there
  any undefined elements along the operating dimension.
  <code>'includenan'</code> may also be used as equivalent to
  <code>'includeundefined'</code>.
- </li></ul>
-
+</li></ul>
 
 
 
@@ -2726,7 +2629,6 @@ Median value of an ordinal categorical array.
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>median</b> (<var>A</var>, <code>'all'</code>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>median</b> (&hellip;, <var>missingflag</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = median (<var>A</var>)</code> returns the median of the elements in
  ordinal categorical vector <var>A</var>.  If <var>A</var> is a matrix,
@@ -2755,18 +2657,17 @@ Median value of an ordinal categorical array.
  <var>missingflag</var> must be a character vector or a string scalar with one
  of the following values:
 </p>
- <ul>
+<ul>
 <li> <code>'omitundefined'</code> ignores all undefined elements and returns
  the median of the remaining elements.  If all elements along the
  operating dimension are undefined, then it returns an undefined element.
  <code>'omitnan'</code> may also be used as equivalent to
  <code>'omitundefined'</code>.
- </li><li> <code>'includeundefined'</code>, which is the default, returns an
+</li><li> <code>'includeundefined'</code>, which is the default, returns an
  undefined element if there any undefined elements along the operating
  dimension. <code>'includenan'</code> may also be used as equivalent to
  <code>'includeundefined'</code>.
- </li></ul>
-
+</li></ul>
 
 
 
@@ -2800,7 +2701,6 @@ Most frequent element in a categorical array.
 <dt><code><h5 class="fs">categorical: [&hellip;] = <b>mode</b> (<var>A</var>, <var>vecdim</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: [&hellip;] = <b>mode</b> (<var>A</var>, <code>'all'</code>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>M</var> = mode (<var>A</var>)</code> returns the most frequent element in the
  categorical vector <var>A</var>.  If <var>A</var> is a matrix,
@@ -2834,7 +2734,6 @@ Most frequent element in a categorical array.
 </p>
 
 
-
             </div>
           </div>
         </div>
@@ -2863,7 +2762,6 @@ Histogram bin counts of a categorical array.
 <dt><code><h5 class="fs">categorical: <var>N</var> = <b>histcounts</b> (&hellip;, <code>'Normalization'</code>, <var>normtype</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: [<var>N</var>, <var>cats</var>] = <b>histcounts</b> (&hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>N</var> = histcounts (<var>A</var>)</code> returns a numeric vector <var>N</var>
  with the number of elements of each category in <var>A</var>.  <var>A</var> can be
@@ -2880,28 +2778,27 @@ Histogram bin counts of a categorical array.
  <var>normtype</var>)</code> specifies how to normalize the histogram values returned
  in <var>N</var> with any of the following options specified in <var>normtype</var>:
 </p>
- <ul>
+<ul>
 <li> <code>'count'</code>, which is the default, returns the number of
  elements in each category.
- </li><li> <code>'countdensity'</code> is the same as <code>'count'</code>, since the
+</li><li> <code>'countdensity'</code> is the same as <code>'count'</code>, since the
  bin width in categorical arrays is always equal to 1.
- </li><li> <code>'probability'</code> returns the number of elements in each
+</li><li> <code>'probability'</code> returns the number of elements in each
  category relative to the total number of elements in <var>A</var>.
- </li><li> <code>'pdf'</code> is the same as <code>'probability'</code>, since the bin
+</li><li> <code>'pdf'</code> is the same as <code>'probability'</code>, since the bin
  width in categorical arrays is always equal to 1.
- </li><li> <code>'cumcount'</code> returns the cumulative number of elements in
+</li><li> <code>'cumcount'</code> returns the cumulative number of elements in
  each category and all previous categories.
- </li><li> <code>'cdf'</code> returns the cumulative number of elements in
+</li><li> <code>'cdf'</code> returns the cumulative number of elements in
  each category and all previous categories relative to the total number of
  elements in <var>A</var>.
- </li></ul>
+</li></ul>
 
 <p> <code>[<var>N</var>, <var>cats</var>] = histcounts (&hellip;)</code> also returns the
  corresponding categories of <var>A</var> for each count in <var>N</var>.
  <var>cats</var> is a cell array of character vectors with the same size as
  <var>N</var>.
 </p>
-
 
 
             </div>
@@ -2934,7 +2831,6 @@ Sort elements in a categorical array.
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>sort</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: [<var>B</var>, <var>index</var>] = <b>sort</b> (<var>A</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = sort (<var>A</var>)</code> sorts the categorical array <var>A</var> in
  ascending order.  The sorted array <var>B</var> has the same categories as
@@ -2954,27 +2850,26 @@ Sort elements in a categorical array.
  returned in <var>B</var> with any of the following options specified in
  <var>MP</var>:
 </p>
- <ul>
+<ul>
 <li> <code>'auto'</code>, which is the default, places missing elements last
  for ascending sort and first for descending sort.
- </li><li> <code>'first'</code> places missing elements first.
- </li><li> <code>'last'</code> places missing elements last.
- </li></ul>
+</li><li> <code>'first'</code> places missing elements first.
+</li><li> <code>'last'</code> places missing elements last.
+</li></ul>
 
 <p> <code>[<var>B</var>, <var>index</var>] = sort (<var>A</var>, &hellip;)</code> also returns a
  sorting index containing the original indices of the elements in the
  sorted array.
 </p>
- <ul>
+<ul>
 <li> If <var>A</var> is a vector, then <var>index</var> contains the original
  linear indices of the elements in the sorted vector <var>B</var> such that
  <code><var>B</var> = <var>A</var>(<var>index</var>)</code>.
- </li><li> If <var>A</var> is an <math>M&times;N</math> matrix and <code><var>dim</var> = 1</code>, then
+</li><li> If <var>A</var> is an <math>M&times;N</math> matrix and <code><var>dim</var> = 1</code>, then
  <var>index</var> contains the original row indices of the elements in the
  sorted vector <var>B</var> such that for <code>j = 1:N</code>,
  <code><var>B</var>(:,j) = <var>A</var>(<var>index</var>(:,j),j)</code>.
- </li></ul>
-
+</li></ul>
 
 
 
@@ -3008,7 +2903,6 @@ Sort rows in a categorical array.
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>sortrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: [<var>B</var>, <var>index</var>] = <b>sortrows</b> (<var>A</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = sortrows (<var>A</var>)</code> sorts the rows of the 2-D categorical
  array <var>A</var> in ascending order.  The sorted array <var>B</var> has the same
@@ -3041,18 +2935,17 @@ Sort rows in a categorical array.
  returned in <var>B</var> with any of the following options specified in
  <var>MP</var>:
 </p>
- <ul>
+<ul>
 <li> <code>'auto'</code>, which is the default, places missing elements last
  for ascending sort and first for descending sort.
- </li><li> <code>'first'</code> places missing elements first.
- </li><li> <code>'last'</code> places missing elements last.
- </li></ul>
+</li><li> <code>'first'</code> places missing elements first.
+</li><li> <code>'last'</code> places missing elements last.
+</li></ul>
 
 <p> <code>[<var>B</var>, <var>index</var>] = sortrows (<var>A</var>, &hellip;)</code> also returns
  an index vector containing the original row indices of <var>A</var> in the
  sorted matrix <var>B</var> such that <code><var>B</var> = <var>A</var>(<var>index</var>,:)</code>.
 </p>
-
 
 
             </div>
@@ -3083,7 +2976,6 @@ Top K sorted rows of categorical array.
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>topkrows</b> (<var>A</var>, <var>K</var>, <var>direction</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>topkrows</b> (<var>A</var>, <var>K</var>, <var>col</var>, <var>direction</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = topkrows (<var>A</var>, <var>K</var>)</code> returns the top <var>K</var> rows
  of the 2-D categorical array <var>A</var> sorted in descending order as a
@@ -3114,7 +3006,6 @@ Top K sorted rows of categorical array.
  must have the same length, but not necessarily the same number of
  elements as the columns in <var>A</var>.
 </p>
-
 
 
             </div>
@@ -3148,7 +3039,6 @@ Unique values in a categorical array.
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>unique</b> (<var>A</var>, &hellip;, <code>'rows'</code>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: [<var>B</var>, <var>ixA</var>, <var>ixB</var>] = <b>unique</b> (&hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = unique (<var>A</var>)</code> returns the unique values of the
  categorical array <var>A</var> in the categorical vector <var>B</var> sorted
@@ -3160,23 +3050,23 @@ Unique values in a categorical array.
  values of the categorical array <var>A</var> in an order as specified by
  <var>setOrder</var>, which can be either of the following values:
 </p>
- <ul>
+<ul>
 <li> <code>'sorted'</code> (default) returns the unique values sorted in
  ascending order.
- </li><li> <code>'stable'</code> returns the unique values according to their order
+</li><li> <code>'stable'</code> returns the unique values according to their order
  of occurrence.
- </li></ul>
+</li></ul>
 
 <p> <code><var>B</var> = unique (<var>A</var>, <var>occurrence</var>)</code> returns the unique
  values of the categorical array <var>A</var> according to their order of
  occurrence.  <var>occurrence</var> can be either of the following values:
 </p>
- <ul>
+<ul>
 <li> <code>'first'</code> (default) returns the first occurrence of each
  unique value, i.e. the lowest possible indices are returned.
- </li><li> <code>'last'</code> returns the last occurrence of each unique value,
+</li><li> <code>'last'</code> returns the last occurrence of each unique value,
  i.e. the highest possible indices are returned.
- </li></ul>
+</li></ul>
 
 <p> You can specify <var>setOrder</var> and <var>occurrence</var> arguments together.
 </p>
@@ -3196,7 +3086,6 @@ Unique values in a categorical array.
  argument is specified, then <code><var>B</var> = <var>A</var>(<var>ixA</var>,:)</code> and
  <code><var>A</var> = <var>B</var>(<var>ixB</var>,:)</code>.
 </p>
-
 
 
             </div>
@@ -3227,7 +3116,6 @@ Set intersection of two categorical arrays.
 <dt><code><h5 class="fs">categorical: [<var>C</var>, <var>ixA</var>, <var>ixB</var>] = <b>intersect</b> (&hellip;)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: &hellip; = <b>intersect</b> (&hellip;, <var>order</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = intersect (<var>A</var>, <var>B</var>)</code> returns the unique common
  values of the categorical arrays <var>A</var> and <var>B</var>.  Either <var>A</var> or
@@ -3263,7 +3151,6 @@ Set intersection of two categorical arrays.
 </p>
 
 
-
             </div>
           </div>
         </div>
@@ -3292,7 +3179,6 @@ Set difference of two categorical arrays.
 <dt><code><h5 class="fs">categorical: [<var>C</var>, <var>ixA</var>] = <b>setdiff</b> (&hellip;)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: &hellip; = <b>setdiff</b> (&hellip;, <var>order</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = setdiff (<var>A</var>, <var>B</var>)</code> returns the unique common
  values of the categorical arrays <var>A</var> and <var>B</var>.  Either <var>A</var> or
@@ -3326,7 +3212,6 @@ Set difference of two categorical arrays.
 </p>
 
 
-
             </div>
           </div>
         </div>
@@ -3355,7 +3240,6 @@ Set exclusive-or of two categorical arrays.
 <dt><code><h5 class="fs">categorical: [<var>C</var>, <var>ixA</var>, <var>ixB</var>] = <b>setxor</b> (&hellip;)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: &hellip; = <b>setxor</b> (&hellip;, <var>order</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = setxor (<var>A</var>, <var>B</var>)</code> returns the unique common
  values of the categorical arrays <var>A</var> and <var>B</var>.  Either <var>A</var> or
@@ -3391,7 +3275,6 @@ Set exclusive-or of two categorical arrays.
 </p>
 
 
-
             </div>
           </div>
         </div>
@@ -3420,7 +3303,6 @@ Set union of two categorical arrays.
 <dt><code><h5 class="fs">categorical: [<var>C</var>, <var>ixA</var>, <var>ixB</var>] = <b>union</b> (&hellip;)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: &hellip; = <b>union</b> (&hellip;, <var>order</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = union (<var>A</var>, <var>B</var>)</code> returns the unique common
  values of the categorical arrays <var>A</var> and <var>B</var>.  Either <var>A</var> or
@@ -3456,7 +3338,6 @@ Set union of two categorical arrays.
 </p>
 
 
-
             </div>
           </div>
         </div>
@@ -3482,7 +3363,6 @@ Concatenate categorical arrays.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>C</var> = <b>cat</b> (<var>dim</var>, <var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = cat (<var>dim</var>, <var>A</var>, <var>B</var>, &hellip;)</code> concatenates
  categorical arrays <var>A</var>, <var>B</var>, &hellip; along dimension <var>dim</var>.
@@ -3500,7 +3380,6 @@ Concatenate categorical arrays.
  can only be concatenated with other arrays that have the same set of
  categories but not necessarily in the same order.
 </p>
-
 
 
             </div>
@@ -3528,7 +3407,6 @@ Horizontal concatenation of categorical arrays.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>C</var> = <b>horzcat</b> (<var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = horzcat (<var>A</var>, <var>B</var>, &hellip;</code> is the equivalent of
  the syntax <code><var>B</var> = [<var>A</var>, <var>B</var>, &hellip;]</code> and horizontally
@@ -3547,7 +3425,6 @@ Horizontal concatenation of categorical arrays.
  can only be concatenated with other arrays that have the same set of
  categories but not necessarily in the same order.
 </p>
-
 
 
             </div>
@@ -3575,7 +3452,6 @@ Vertical concatenation of categorical arrays.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>C</var> = <b>vertcat</b> (<var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = vertcat (<var>A</var>, <var>B</var>, &hellip;</code> is the equivalent of
  the syntax <code><var>B</var> = [<var>A</var>; <var>B</var>; &hellip;]</code> and vertically
@@ -3594,7 +3470,6 @@ Vertical concatenation of categorical arrays.
  can only be concatenated with other arrays that have the same set of
  categories but not necessarily in the same order.
 </p>
-
 
 
             </div>
@@ -3624,7 +3499,6 @@ Repeat copies of a categorical array.
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>repmat</b> (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>repmat</b> (<var>A</var>, <var>dimvec</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = repmat (<var>A</var>, <var>n</var>)</code> returns a categorical array
  <var>B</var> containing <var>n</var> copies of the input categorical array <var>A</var>
@@ -3638,7 +3512,6 @@ Repeat copies of a categorical array.
 <p> <code><var>B</var> = repmat (<var>A</var>, <var>dimvec</var>)</code> is equivalent to the
  previous syntax with <code><var>dimvec</var> = [<var>d1</var>, &hellip;, <var>dN</var>]</code>.
 </p>
-
 
 
             </div>
@@ -3667,7 +3540,6 @@ Repeat copies of categorical array elements.
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>repelem</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>repelem</b> (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = repelem (<var>A</var>, <var>n</var>)</code> returns a categorical vector
  <var>B</var> containing repeated elements of the input <var>A</var>, which must be
@@ -3686,7 +3558,6 @@ Repeat copies of categorical array elements.
  <var>A</var> containing non-negative integer values specifying the number of
  repetitions of each element along the corresponding dimension.
 </p>
-
 
 
             </div>
@@ -3714,7 +3585,6 @@ Construct a vector of repeated elements from a categorical array.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>repelems</b> (<var>A</var>, <var>R</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = repelems (<var>A</var>, <var>R</var>)</code> returns a categorical vector
  <var>B</var> containing repeated elements of the input <var>A</var>, which must be
@@ -3723,7 +3593,6 @@ Construct a vector of repeated elements from a categorical array.
  the elements in <var>A</var> to be repeated.  The corresponding entries in the
  second row of <var>R</var> specify the repeat count of each element.
 </p>
-
 
 
             </div>
@@ -3753,7 +3622,6 @@ Repeat copies of categorical array elements.
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>reshape</b> (<var>A</var>, &hellip;, <code>[]</code>, &hellip;)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>reshape</b> (<var>A</var>, <var>dimvec</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = reshape (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code> returns a
  categorical array <var>B</var> with specified dimensions <var>d1</var>, &hellip;,
@@ -3768,7 +3636,6 @@ Repeat copies of categorical array elements.
  product of specified dimensions.  An empty matrix <code>([])</code> is used to
  flag the unspecified dimension.
 </p>
-
 
 
             </div>
@@ -3797,7 +3664,6 @@ Circularly shift the elements in a categorical array.
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>circshift</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>circshift</b> (<var>A</var>, <var>n</var>, <var>dim</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = circshift (<var>A</var>, <var>n</var>)</code> circularly shifts the
  elements of the categorical array <var>A</var> according to <var>n</var>.  If
@@ -3813,7 +3679,6 @@ Circularly shift the elements in a categorical array.
  specified by <var>dim</var>.  In this case, <var>n</var> must be a scalar integer
  value.
 </p>
-
 
 
             </div>
@@ -3841,7 +3706,6 @@ Generalized transpose for a categorical N-D array.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>permute</b> (<var>A</var>, <var>dims</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = permute (<var>A</var>, <var>dims</var>)</code> returns the generalized
  transpose of the categorical array <var>A</var> by rearranging its dimensions
@@ -3852,7 +3716,6 @@ Generalized transpose for a categorical N-D array.
  dimension of <var>A</var> gets remapped to the dimension in <var>B</var> specified
  by <code><var>dims</var>(<var>N</var>)</code>.
 </p>
-
 
 
             </div>
@@ -3880,7 +3743,6 @@ Inverse of the generalized transpose for a categorical N-D array.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>A</var> = <b>ipermute</b> (<var>B</var>, <var>dims</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>A</var> = ipermute (<var>B</var>, <var>dims</var>)</code> returns the inverse of
  the generalized transpose performed by the <code>permute</code> function.  The
@@ -3892,7 +3754,6 @@ Inverse of the generalized transpose for a categorical N-D array.
  <var>B</var> specified in <code><var>dims</var>(<var>N</var>)</code> gets remapped to the
  <var>N</var>th dimension of <var>A</var>.
 </p>
-
 
 
             </div>
@@ -3920,13 +3781,11 @@ Transpose a categorical matrix.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>transpose</b> (<var>A</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = transpose (<var>A</var>)</code> is the equivalent of the syntax
  <code><var>B</var> = <var>A</var>.'</code> and returns the transpose of the categorical
  matrix <var>A</var>.
 </p>
-
 
 
             </div>
@@ -3954,14 +3813,12 @@ Transpose a categorical matrix.
 <dl>
 <dt><code><h5 class="fs">categorical: <var>B</var> = <b>ctranspose</b> (<var>A</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = ctranspose (<var>A</var>)</code> is the equivalent of the syntax
  <code><var>B</var> = <var>A</var>'</code> and returns the transpose of the categorical
  matrix <var>A</var>.  For categorical arrays, <code>ctranspose</code> is identical
  to <code>transpose</code>.
 </p>
-
 
 
             </div>

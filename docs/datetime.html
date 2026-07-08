@@ -203,7 +203,13 @@
 					<li><a href="array2table.html" class="text-decoration-none font-monospace"><small>array2table</small></a></li>
 					<li><a href="cell2table.html" class="text-decoration-none font-monospace"><small>cell2table</small></a></li>
 					<li><a href="csv2table.html" class="text-decoration-none font-monospace"><small>csv2table</small></a></li>
+					<li><a href="ods2table.html" class="text-decoration-none font-monospace"><small>ods2table</small></a></li>
+					<li><a href="ods2struct.html" class="text-decoration-none font-monospace"><small>ods2struct</small></a></li>
+					<li><a href="readtable.html" class="text-decoration-none font-monospace"><small>readtable</small></a></li>
+					<li><a href="struct2ods.html" class="text-decoration-none font-monospace"><small>struct2ods</small></a></li>
+					<li><a href="struct2xlsx.html" class="text-decoration-none font-monospace"><small>struct2xlsx</small></a></li>
 					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
+					<li><a href="xlsx2struct.html" class="text-decoration-none font-monospace"><small>xlsx2struct</small></a></li>
 					<li><a href="istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 				</ul>
 				</div>
@@ -231,6 +237,8 @@
 				</label>
 				<div class="list">
 				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="findgroups.html" class="text-decoration-none font-monospace"><small>findgroups</small></a></li>
+					<li><a href="splitapply.html" class="text-decoration-none font-monospace"><small>splitapply</small></a></li>
 					<li><a href="keyHash.html" class="text-decoration-none font-monospace"><small>keyHash</small></a></li>
 					<li><a href="keyMatch.html" class="text-decoration-none font-monospace"><small>keyMatch</small></a></li>
 					<li><a href="parsePairedArguments.html" class="text-decoration-none font-monospace"><small>parsePairedArguments</small></a></li>
@@ -250,6 +258,10 @@
 					<li><a href="__datetime__.html" class="text-decoration-none font-monospace"><small>__datetime__</small></a></li>
 					<li><a href="__csv2table__.html" class="text-decoration-none font-monospace"><small>__csv2table__</small></a></li>
 					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace"><small>__table2csv__</small></a></li>
+					<li><a href="__ods2table__.html" class="text-decoration-none font-monospace"><small>__ods2table__</small></a></li>
+					<li><a href="__table2ods__.html" class="text-decoration-none font-monospace"><small>__table2ods__</small></a></li>
+					<li><a href="__xlsx2table__.html" class="text-decoration-none font-monospace"><small>__xlsx2table__</small></a></li>
+					<li><a href="__table2xlsx__.html" class="text-decoration-none font-monospace"><small>__table2xlsx__</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -266,7 +278,6 @@
             </div>
             <div class="card-body">
 <dl><code><h5 class="description">datatypes: datetime</h5></code></dl>
-
 <p> Array representing points in time using the Gregorian calendar.
 </p>
 <div class="ms-5">
@@ -313,12 +324,10 @@ System time zone setting
           <div class="collapse multi-collapse" id="collapseProperty1">
             <div class="border-bottom py-2">
 
-
 <p> </p>
 <p> A read-only property specifying the local time zone of the system, where
  Octave is running.
 </p>
-
 
 
             </div>
@@ -344,13 +353,11 @@ Display format
           <div class="collapse multi-collapse" id="collapseProperty2">
             <div class="border-bottom py-2">
 
-
 <p> </p>
 <p> Display format, specified as a character vector or string scalar.  If
  specified as a string scalar, it is converted and stored internally as
  a character vector.
 </p>
-
 
 
             </div>
@@ -376,13 +383,11 @@ Time zone
           <div class="collapse multi-collapse" id="collapseProperty3">
             <div class="border-bottom py-2">
 
-
 <p> </p>
 <p> Time zone, specified as a character vector or string scalar.  If
  specified as a string scalar, it is converted and stored internally as
  a character vector.
 </p>
-
 
 
             </div>
@@ -418,7 +423,7 @@ Create a new array of datetime values.
 <dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<code>'yesterday'</code>)</code></h5></dt>
 <dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>DateStrings</var>)</code></h5></dt>
 <dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>DateStrings</var>, <code>'InputFormat'</code>, <var>INFMT</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>DateStrings</var>, <code>'InputFormat'</code>, <var>INFMT</var>, <code>'PivotYear'</code>, <var>PIVOT</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>DateStrings</var>,<code>'InputFormat'</code>, <var>INFMT</var>, <code>'PivotYear'</code>, <var>PIVOT</var>)</code></h5></dt>
 <dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>DateVectors</var>)</code></h5></dt>
 <dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>Y</var>, <var>MO</var>, <var>D</var>)</code></h5></dt>
 <dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>, <var>S</var>)</code></h5></dt>
@@ -427,7 +432,6 @@ Create a new array of datetime values.
 <dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (&hellip;, <code>'Format'</code>, <var>FMT</var>)</code></h5></dt>
 <dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (&hellip;, <code>'TimeZone'</code>, <var>TZ</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>T</var> = datetime (<code>'now'</code>)</code> returns a scalar datetime array
  corresponding to the current date and time. <code><var>T</var> = datetime
@@ -479,12 +483,12 @@ Create a new array of datetime values.
  the data type specified by <var>TYPE</var>.  The following types are
  supported:
 </p>
- <ul>
+<ul>
 <li> <code>'datenum'</code>
- </li><li> <code>'excel'</code>
- </li><li> <code>'posixtime'</code>
- </li><li> <code>'epochtime'</code>
- </li></ul>
+</li><li> <code>'excel'</code>
+</li><li> <code>'posixtime'</code>
+</li><li> <code>'epochtime'</code>
+</li></ul>
 
 <p> <code><var>T</var> = datetime (&hellip;, <code>'Format'</code>, <var>FMT</var>)</code>
  specifies the display format of the values in the output datetime array.
@@ -532,13 +536,11 @@ Get display formatted strings for each element of a datetime object.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>cstr</var> = <b>dispstrings</b> (<var>T</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>cstr</var> = dispstrings (<var>T</var>)</code> returns a cellstr array of
  character vectors, <var>cstr</var>, which has the same size as the input
  datetime <var>T</var>.
 </p>
-
 
 
             </div>
@@ -567,13 +569,11 @@ Convert datetime array to a cell array of character vectors.
 <dt><code><h5 class="fs">datetime: <var>cstr</var> = <b>cellstr</b> (<var>T</var>)</code></h5></dt>
 <dt><code><h5 class="fs">datetime: <var>cstr</var> = <b>cellstr</b> (<var>T</var>, <var>Format</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>cstr</var> = cellstr (<var>T</var>)</code> returns a cellstr array of
  character vectors, <var>cstr</var>, which has the same size as the input
  datetime <var>T</var>.
 </p>
-
 
 
             </div>
@@ -602,12 +602,10 @@ Convert datetime array to a character matrix.
 <dt><code><h5 class="fs">datetime: <var>cmat</var> = <b>char</b> (<var>T</var>)</code></h5></dt>
 <dt><code><h5 class="fs">datetime: <var>cmat</var> = <b>char</b> (<var>T</var>, <var>Format</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>cmat</var> = char (<var>T</var>)</code> returns a character matrix with one
  row per element in <var>T</var>.
 </p>
-
 
 
             </div>
@@ -635,7 +633,6 @@ Year, Month, and Day components of datetime array.
 <dl>
 <dt><code><h5 class="fs">datetime: [<var>Y</var>, <var>M</var>, <var>D</var>] = <b>ymd</b> (<var>T</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code>[<var>Y</var>, <var>M</var>, <var>D</var>] = ymd (<var>T</var>)</code> returns the year,
  month, and day components of the corresponding datetime values in <var>T</var>
@@ -643,7 +640,6 @@ Year, Month, and Day components of datetime array.
  values and have the same size as <var>T</var>.  Not-A-Time (<code>NaT</code>)
  values in <var>T</var> are returned as <code>NaN</code> in the output arrays.
 </p>
-
 
 
             </div>
@@ -671,7 +667,6 @@ Hour, Minute, and Second components of a datetime array.
 <dl>
 <dt><code><h5 class="fs">datetime: [<var>h</var>, <var>m</var>, <var>s</var>] = <b>hms</b> (<var>T</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code>[<var>h</var>, <var>m</var>, <var>s</var>] = hms (<var>T</var>)</code> returns the hour,
  minute, and second components of the corresponding datetime values in
@@ -680,7 +675,6 @@ Hour, Minute, and Second components of a datetime array.
  the same size as <var>T</var>.  Not-A-Time (<code>NaT</code>) values in <var>T</var> are
  returned as <code>NaN</code> in the output arrays.
 </p>
-
 
 
             </div>
@@ -708,7 +702,6 @@ Year component of a datetime array.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>Y</var> = <b>year</b> (<var>T</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>Y</var> = year (<var>T</var>)</code> returns the year number for each element
  of the input datetime array <var>T</var>.  The output <var>Y</var> is a
@@ -716,7 +709,6 @@ Year component of a datetime array.
  (<code>NaT</code>) values in <var>T</var> are returned as <code>NaN</code> in the output
  array.
 </p>
-
 
 
             </div>
@@ -744,7 +736,6 @@ Quarter component of a datetime array.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>Q</var> = <b>quarter</b> (<var>T</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>Q</var> = quarter (<var>T</var>)</code> returns the quarter number for each
  element of the input datetime array <var>T</var>.  The output <var>Q</var> is a
@@ -752,7 +743,6 @@ Quarter component of a datetime array.
  and it has the same size as <var>T</var>.  Not-A-Time (<code>NaT</code>) values in
  <var>T</var> are returned as <code>NaN</code> in the output array.
 </p>
-
 
 
             </div>
@@ -781,7 +771,6 @@ Month component of a datetime array.
 <dt><code><h5 class="fs">datetime: <var>M</var> = <b>month</b> (<var>T</var>)</code></h5></dt>
 <dt><code><h5 class="fs">datetime: <var>M</var> = <b>month</b> (<var>T</var>, <var>monthType</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>M</var> = month (<var>T</var>)</code> returns the month number for each
  element of the input datetime array <var>T</var>.  The output <var>M</var> is a
@@ -795,15 +784,14 @@ Month component of a datetime array.
  specified by <var>monthType</var>, which may have any of the following
  options:
 </p>
- <ul>
+<ul>
 <li> <code>'monthofyear'</code> (default) returns the month number in a
  numeric array.
- </li><li> <code>'name'</code> returns the corresponding full name of the month in
+</li><li> <code>'name'</code> returns the corresponding full name of the month in
  a cell array of character vectors.
- </li><li> <code>'shortname'</code> returns the corresponding 3-letter abbreviation
+</li><li> <code>'shortname'</code> returns the corresponding 3-letter abbreviation
  of the month in a cell array of character vectors.
- </li></ul>
-
+</li></ul>
 
 
 
@@ -833,7 +821,6 @@ Day component of a datetime array.
 <dt><code><h5 class="fs">datetime: <var>D</var> = <b>day</b> (<var>T</var>)</code></h5></dt>
 <dt><code><h5 class="fs">datetime: <var>D</var> = <b>day</b> (<var>T</var>, <var>dayType</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>D</var> = day (<var>T</var>)</code> returns the day number for each element of
  the input datetime array <var>T</var>.  The output <var>D</var> is a <code>double</code>
@@ -846,25 +833,24 @@ Day component of a datetime array.
  name for each element of the input datetime array <var>T</var> as specified by
  <var>dayType</var>, which may have any of the following options:
 </p>
- <ul>
+<ul>
 <li> <code>'dayofmonth'</code> (default) returns the day-of-month number in a
  numeric array.  Depending on the month and year, it can range from 1 to
  28, 29, 30, or 31.
- </li><li> <code>'dayofweek'</code> returns the day-of-week number in a numeric
+</li><li> <code>'dayofweek'</code> returns the day-of-week number in a numeric
  array of <code>double</code> integer values ranging from 1 to 7, where 1
  corresponds to Sunday.
- </li><li> <code>'iso-dayofweek'</code> returns the day-of-week number in a numeric
+</li><li> <code>'iso-dayofweek'</code> returns the day-of-week number in a numeric
  array of <code>double</code> integer values ranging from 1 to 7, where 1
  corresponds to Monday according to the ISO 8601 standard.
- </li><li> <code>'dayofyear'</code> returns the day-of-year number in a numeric
+</li><li> <code>'dayofyear'</code> returns the day-of-year number in a numeric
  array of <code>double</code> integer values ranging from 1 to 365 or 366,
  depending on the year.
- </li><li> <code>'name'</code> returns the corresponding full name of the day in
+</li><li> <code>'name'</code> returns the corresponding full name of the day in
  a cell array of character vectors.
- </li><li> <code>'shortname'</code> returns the corresponding 3-letter abbreviation
+</li><li> <code>'shortname'</code> returns the corresponding 3-letter abbreviation
  of the day in a cell array of character vectors.
- </li></ul>
-
+</li></ul>
 
 
 
@@ -893,7 +879,6 @@ Hour component of a datetime array.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>h</var> = <b>hour</b> (<var>T</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>h</var> = hour (<var>T</var>)</code> returns the hour number for each element
  of the input datetime array <var>T</var>.  The output <var>h</var> is a
@@ -902,7 +887,6 @@ Hour component of a datetime array.
  (<code>NaT</code>) values in <var>T</var> are returned as <code>NaN</code> in the output
  array.
 </p>
-
 
 
             </div>
@@ -930,7 +914,6 @@ Minute component of a datetime array.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>m</var> = <b>minute</b> (<var>T</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>m</var> = minute (<var>T</var>)</code> returns the minute number for each
  element of the input datetime array <var>T</var>.  The output <var>m</var> is a
@@ -939,7 +922,6 @@ Minute component of a datetime array.
  (<code>NaT</code>) values in <var>T</var> are returned as <code>NaN</code> in the output
  array.
 </p>
-
 
 
             </div>
@@ -968,7 +950,6 @@ Seconds component of a datetime array.
 <dt><code><h5 class="fs">datetime: <var>s</var> = <b>second</b> (<var>T</var>)</code></h5></dt>
 <dt><code><h5 class="fs">datetime: <var>s</var> = <b>second</b> (<var>T</var>, <var>secondType</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>s</var> = second (<var>T</var>)</code> returns the number of seconds for each
  element of the input datetime array <var>T</var>.  The output <var>s</var> is a
@@ -981,13 +962,12 @@ Seconds component of a datetime array.
  for each element of the input datetime array <var>T</var> as specified by
  <var>secondType</var>, which may have any of the following options:
 </p>
- <ul>
+<ul>
 <li> <code>'secondofminute'</code> (default) returns the second of the minute
  in a numeric array, in the range <math>[1, 60)</math>.
- </li><li> <code>'secondofday'</code> returns the second of the day in a numeric
+</li><li> <code>'secondofday'</code> returns the second of the day in a numeric
  array, in the range <math>[1, 86400)</math>.
- </li></ul>
-
+</li></ul>
 
 
 
@@ -1019,7 +999,6 @@ Size of a datetime array.
 <dt><code><h5 class="fs">datetime: <var>dim_sz</var> = <b>size</b> (<var>T</var>, <var>d1</var>, <var>d2</var>, &hellip;)</code></h5></dt>
 <dt><code><h5 class="fs">datetime: [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b> (&hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>sz</var> = size (<var>T</var>)</code> returns a row vector with the size
  (number of elements) of each dimension for the datetime array <var>T</var>.
@@ -1034,7 +1013,6 @@ Size of a datetime array.
  called with multiple output arguments, <code>size</code> returns the size of
  dimension N in the Nth argument.
 </p>
-
 
 
             </div>
@@ -1062,12 +1040,10 @@ Number of dimensions in a datetime array.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>out</var> = <b>ndims</b> (<var>T</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = ndims (<var>T</var>)</code> returns the number of dimensions of
  the datetime array <var>T</var>.
 </p>
-
 
 
             </div>
@@ -1095,12 +1071,11 @@ Total number of elements in a datetime array.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>out</var> = <b>numel</b> (<var>T</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
-<p> For compatibility reasons with Octave&rsquo;s OOP interface and <code>subsasgn</code>
- behavior, datetime&rsquo;s <code>numel</code> is defined to always return 1.
+<p> <code><var>out</var> = numel (<var>T</var>)</code> returns the number of elements in the
+ datetime array <var>T</var>, which is the product of the sizes of its
+ dimensions.
 </p>
-
 
 
             </div>
@@ -1128,13 +1103,11 @@ Length of a datetime vector.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>N</var> = <b>length</b> (<var>T</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>N</var> = length (<var>T</var>)</code> returns the size of the longest
  dimension of the datetime array <var>T</var>, unless any of its dimensions
  has zero length, in which case <code>length (<var>T</var>)</code> returns 0.
 </p>
-
 
 
             </div>
@@ -1162,7 +1135,6 @@ Generate a hash code for datetime array.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>hey</var> = <b>keyHash</b> (<var>T</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>h</var> = keyHash (<var>T</var>)</code> generates a <code>uint64</code> scalar that
  represents the input array <var>T</var>.  <code>keyHash</code> utilizes the 64-bit
@@ -1179,7 +1151,6 @@ Generate a hash code for datetime array.
  hash key for any particular input across different workers and Octave
  sessions.
 </p>
-
 
 
             </div>
@@ -1207,12 +1178,10 @@ Convert datetime array to date vectors.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>DV</var> = <b>datevec</b> (<var>T</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>DV</var> = datevec (<var>T</var>)</code> returns a numeric matrix with one row
  per element in <var>T</var>.
 </p>
-
 
 
             </div>
@@ -1240,7 +1209,6 @@ Return true if datetime array is a column vector.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>TF</var> = <b>iscolumn</b> (<var>T</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = iscolumn (<var>T</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code>, if the datetime array <var>T</var> is a column
@@ -1248,7 +1216,6 @@ Return true if datetime array is a column vector.
  which <code>size (<var>X</var>)</code> returns <code>[<var>N</var>, 1]</code> with non-negative
  <var>N</var>.
 </p>
-
 
 
             </div>
@@ -1276,13 +1243,11 @@ Return true if datetime array is empty.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>TF</var> = <b>isempty</b> (<var>T</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isempty (<var>T</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code>, if the datetime array <var>T</var> is empty, and
  <code>false</code> otherwise.
 </p>
-
 
 
             </div>
@@ -1310,7 +1275,6 @@ Test for finite elements in datetime array.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>out</var> = <b>isfinite</b> (<var>T</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isfinite (<var>T</var>)</code> returns a logical array <var>TF</var> of
  the same size as <var>T</var> containing <code>true</code> for each corresponding
@@ -1318,7 +1282,6 @@ Test for finite elements in datetime array.
  elements in datetime arrays are those which are neither <code>Inf</code> nor
  <code>NaT</code>.
 </p>
-
 
 
             </div>
@@ -1346,13 +1309,11 @@ Test for infinite elements in datetime array.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>out</var> = <b>isinf</b> (<var>T</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isinf (<var>T</var>)</code> returns a logical array <var>TF</var> of the
  same size as <var>T</var> containing <code>true</code> for each corresponding
  element of <var>T</var> that is infinite and <code>false</code> otherwise.
 </p>
-
 
 
             </div>
@@ -1380,7 +1341,6 @@ Return true if datetime array is a 2-D array.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>TF</var> = <b>ismatrix</b> (<var>T</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = ismatrix (<var>T</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code>, if the datetime array <var>T</var> is a matrix, and
@@ -1388,7 +1348,6 @@ Return true if datetime array is a 2-D array.
  <code>ndims (<var>X</var>) == 2</code> and for which <code>size (<var>X</var>)</code> returns
  <code>[<var>H</var>, <var>W</var>]</code> with non-negative <var>H</var> and <var>W</var>.
 </p>
-
 
 
             </div>
@@ -1417,11 +1376,9 @@ Test for missing elements in datetime array.
 <dt><code><h5 class="fs">datetime: <var>TF</var> = <b>ismissing</b> (<var>T</var>)</code></h5></dt>
 <dt><code><h5 class="fs">datetime: <var>TF</var> = <b>ismissing</b> (<var>T</var>, <var>indicator</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <var>TF</var> is a logical array of the same size as <var>T</var>.
 </p>
-
 
 
             </div>
@@ -1449,7 +1406,6 @@ Test for Not-A-Time elements in datetime array.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>TF</var> = <b>isnat</b> (<var>T</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isnat (<var>T</var>)</code> returns a logical array <var>TF</var> of the
  same size as <var>T</var> containing <code>true</code> for each corresponding
@@ -1459,7 +1415,6 @@ Test for Not-A-Time elements in datetime array.
 </p>
 <p> If <var>T</var> is not a datetime array, <code>isnat</code> returns an error.
 </p>
-
 
 
             </div>
@@ -1487,7 +1442,6 @@ Return true if datetime array is a row vector.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>TF</var> = <b>isrow</b> (<var>T</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isrow (<var>T</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code>, if the datetime array <var>T</var> is a row vector,
@@ -1495,7 +1449,6 @@ Return true if datetime array is a row vector.
  <code>size (<var>X</var>)</code> returns <code>[1, <var>N</var>]</code> with non-negative
  <var>N</var>.
 </p>
-
 
 
             </div>
@@ -1523,14 +1476,12 @@ Return true if datetime array is a scalar.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>TF</var> = <b>isscalar</b> (<var>T</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isscalar (<var>T</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code>, if the datetime array <var>T</var> is also a scalar,
  and <code>false</code> otherwise.  A scalar is a single element object for
  which <code>size (<var>X</var>)</code> returns <code>[1, 1]</code>.
 </p>
-
 
 
             </div>
@@ -1558,7 +1509,6 @@ Return true if datetime array is a vector.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>TF</var> = <b>isvector</b> (<var>T</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isvector (<var>T</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the datetime array <var>T</var> is a vector and
@@ -1566,7 +1516,6 @@ Return true if datetime array is a vector.
  dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
  definition, a scalar is also a vector.
 </p>
-
 
 
             </div>
@@ -1594,14 +1543,12 @@ Concatenate datetime arrays.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>C</var> = <b>cat</b> (<var>dim</var>, <var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = cat (<var>dim</var>, <var>A</var>, <var>B</var>, &hellip;)</code> concatenates
  datetime arrays <var>A</var>, <var>B</var>, &hellip; along dimension <var>dim</var>.  All
  input arrays must be datetime arrays and have the same size except along
  the operating dimension <var>dim</var>.
 </p>
-
 
 
             </div>
@@ -1629,7 +1576,6 @@ Horizontal concatenation of datetime arrays.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>C</var> = <b>horzcat</b> (<var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = horzcat (<var>A</var>, <var>B</var>, &hellip;</code> is the equivalent of
  the syntax <code><var>B</var> = [<var>A</var>, <var>B</var>, &hellip;]</code> and horizontally
@@ -1637,7 +1583,6 @@ Horizontal concatenation of datetime arrays.
  arrays must be datetime arrays and have the same size except along the
  second dimension.
 </p>
-
 
 
             </div>
@@ -1665,7 +1610,6 @@ Vertical concatenation of datetime arrays.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>C</var> = <b>vertcat</b> (<var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = vertcat (<var>A</var>, <var>B</var>, &hellip;</code> is the equivalent of
  the syntax <code><var>B</var> = [<var>A</var>; <var>B</var>; &hellip;]</code> and vertically
@@ -1673,7 +1617,6 @@ Vertical concatenation of datetime arrays.
  arrays must be datetime arrays and have the same size except along the
  second dimension.
 </p>
-
 
 
             </div>
@@ -1703,7 +1646,6 @@ Repeat copies of a datetime array.
 <dt><code><h5 class="fs">datetime: <var>B</var> = <b>repmat</b> (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code></h5></dt>
 <dt><code><h5 class="fs">datetime: <var>B</var> = <b>repmat</b> (<var>A</var>, <var>dimvec</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = repmat (<var>A</var>, <var>n</var>)</code> returns a datetime array
  <var>B</var> containing <var>n</var> copies of the input datetime array <var>A</var>
@@ -1717,7 +1659,6 @@ Repeat copies of a datetime array.
 <p> <code><var>B</var> = repmat (<var>A</var>, <var>dimvec</var>)</code> is equivalent to the
  previous syntax with <code><var>dimvec</var> = [<var>d1</var>, &hellip;, <var>dN</var>]</code>.
 </p>
-
 
 
             </div>
@@ -1746,7 +1687,6 @@ Repeat copies of datetime array elements.
 <dt><code><h5 class="fs">datetime: <var>B</var> = <b>repelem</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
 <dt><code><h5 class="fs">datetime: <var>B</var> = <b>repelem</b> (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = repelem (<var>A</var>, <var>n</var>)</code> returns a datetime vector
  <var>B</var> containing repeated elements of the input <var>A</var>, which must be
@@ -1765,7 +1705,6 @@ Repeat copies of datetime array elements.
  <var>A</var> containing non-negative integer values specifying the number of
  repetitions of each element along the corresponding dimension.
 </p>
-
 
 
             </div>
@@ -1793,7 +1732,6 @@ Construct a vector of repeated elements from a datetime array.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>B</var> = <b>repelems</b> (<var>A</var>, <var>R</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = repelems (<var>A</var>, <var>R</var>)</code> returns a datetime vector
  <var>B</var> containing repeated elements of the input <var>A</var>, which must be
@@ -1802,7 +1740,6 @@ Construct a vector of repeated elements from a datetime array.
  the elements in <var>A</var> to be repeated.  The corresponding entries in the
  second row of <var>R</var> specify the repeat count of each element.
 </p>
-
 
 
             </div>
@@ -1832,7 +1769,6 @@ Reshape datetime array.
 <dt><code><h5 class="fs">datetime: <var>B</var> = <b>reshape</b> (<var>A</var>, &hellip;, <code>[]</code>, &hellip;)</code></h5></dt>
 <dt><code><h5 class="fs">datetime: <var>B</var> = <b>reshape</b> (<var>A</var>, <var>dimvec</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = reshape (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code> returns
  a datetime array <var>B</var> with specified dimensions <var>d1</var>, &hellip;,
@@ -1847,7 +1783,6 @@ Reshape datetime array.
  product of specified dimensions.  An empty matrix <code>([])</code> is used to
  flag the unspecified dimension.
 </p>
-
 
 
             </div>
@@ -1876,7 +1811,6 @@ Circularly shift the elements in a datetime array.
 <dt><code><h5 class="fs">datetime: <var>B</var> = <b>circshift</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
 <dt><code><h5 class="fs">datetime: <var>B</var> = <b>circshift</b> (<var>A</var>, <var>n</var>, <var>dim</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = circshift (<var>A</var>, <var>n</var>)</code> circularly shifts the
  elements of the datetime array <var>A</var> according to <var>n</var>.  If <var>n</var>
@@ -1892,7 +1826,6 @@ Circularly shift the elements in a datetime array.
  specified by <var>dim</var>.  In this case, <var>n</var> must be a scalar integer
  value.
 </p>
-
 
 
             </div>
@@ -1920,7 +1853,6 @@ Generalized transpose for a datetime N-D array.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>B</var> = <b>permute</b> (<var>A</var>, <var>dims</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = permute (<var>A</var>, <var>dims</var>)</code> returns the generalized
  transpose of the datetime array <var>A</var> by rearranging its dimensions
@@ -1931,7 +1863,6 @@ Generalized transpose for a datetime N-D array.
  dimension of <var>A</var> gets remapped to the dimension in <var>B</var> specified
  by <code><var>dims</var>(<var>N</var>)</code>.
 </p>
-
 
 
             </div>
@@ -1959,7 +1890,6 @@ Inverse of the generalized transpose for a datetime N-D array.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>A</var> = <b>ipermute</b> (<var>B</var>, <var>dims</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>A</var> = ipermute (<var>B</var>, <var>dims</var>)</code> returns the inverse of
  the generalized transpose performed by the <code>permute</code> function.  The
@@ -1971,7 +1901,6 @@ Inverse of the generalized transpose for a datetime N-D array.
  <var>B</var> specified in <code><var>dims</var>(<var>N</var>)</code> gets remapped to the
  <var>N</var>th dimension of <var>A</var>.
 </p>
-
 
 
             </div>
@@ -1999,13 +1928,11 @@ Transpose a datetime matrix.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>B</var> = <b>transpose</b> (<var>A</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = transpose (<var>A</var>)</code> is the equivalent of the syntax
  <code><var>B</var> = <var>A</var>.'</code> and returns the transpose of the datetime
  matrix <var>A</var>.
 </p>
-
 
 
             </div>
@@ -2033,14 +1960,12 @@ Transpose a datetime matrix.
 <dl>
 <dt><code><h5 class="fs">datetime: <var>B</var> = <b>ctranspose</b> (<var>A</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = ctranspose (<var>A</var>)</code> is the equivalent of the syntax
  <code><var>B</var> = <var>A</var>'</code> and returns the transpose of the datetime
  matrix <var>A</var>.  For datetime arrays, <code>ctranspose</code> is identical to
  <code>transpose</code>.
 </p>
-
 
 
             </div>

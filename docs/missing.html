@@ -203,7 +203,13 @@
 					<li><a href="array2table.html" class="text-decoration-none font-monospace"><small>array2table</small></a></li>
 					<li><a href="cell2table.html" class="text-decoration-none font-monospace"><small>cell2table</small></a></li>
 					<li><a href="csv2table.html" class="text-decoration-none font-monospace"><small>csv2table</small></a></li>
+					<li><a href="ods2table.html" class="text-decoration-none font-monospace"><small>ods2table</small></a></li>
+					<li><a href="ods2struct.html" class="text-decoration-none font-monospace"><small>ods2struct</small></a></li>
+					<li><a href="readtable.html" class="text-decoration-none font-monospace"><small>readtable</small></a></li>
+					<li><a href="struct2ods.html" class="text-decoration-none font-monospace"><small>struct2ods</small></a></li>
+					<li><a href="struct2xlsx.html" class="text-decoration-none font-monospace"><small>struct2xlsx</small></a></li>
 					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
+					<li><a href="xlsx2struct.html" class="text-decoration-none font-monospace"><small>xlsx2struct</small></a></li>
 					<li><a href="istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 				</ul>
 				</div>
@@ -231,6 +237,8 @@
 				</label>
 				<div class="list">
 				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="findgroups.html" class="text-decoration-none font-monospace"><small>findgroups</small></a></li>
+					<li><a href="splitapply.html" class="text-decoration-none font-monospace"><small>splitapply</small></a></li>
 					<li><a href="keyHash.html" class="text-decoration-none font-monospace"><small>keyHash</small></a></li>
 					<li><a href="keyMatch.html" class="text-decoration-none font-monospace"><small>keyMatch</small></a></li>
 					<li><a href="parsePairedArguments.html" class="text-decoration-none font-monospace"><small>parsePairedArguments</small></a></li>
@@ -250,6 +258,10 @@
 					<li><a href="__datetime__.html" class="text-decoration-none font-monospace"><small>__datetime__</small></a></li>
 					<li><a href="__csv2table__.html" class="text-decoration-none font-monospace"><small>__csv2table__</small></a></li>
 					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace"><small>__table2csv__</small></a></li>
+					<li><a href="__ods2table__.html" class="text-decoration-none font-monospace"><small>__ods2table__</small></a></li>
+					<li><a href="__table2ods__.html" class="text-decoration-none font-monospace"><small>__table2ods__</small></a></li>
+					<li><a href="__xlsx2table__.html" class="text-decoration-none font-monospace"><small>__xlsx2table__</small></a></li>
+					<li><a href="__table2xlsx__.html" class="text-decoration-none font-monospace"><small>__table2xlsx__</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -266,18 +278,15 @@
             </div>
             <div class="card-body">
 <dl><code><h5 class="description">datatypes: missing</h5></code></dl>
-
 <p> Array of missing values.
 </p>
 <div class="ms-5">
 <p> A special class to represent missing data to other data types.
 </p>
-
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/missing.m">missing</a>
 </p>
 </div>
-
         <h4 class="d-inline-block my-3">
           Methods
         </h4>
@@ -303,13 +312,11 @@ Create missing values.
 <dl>
 <dt><code><h5 class="fs">missing: <var>M</var> = <b>missing</b> ()</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code>missing</code> always returns a scalar missing value.  Use <code>repmat</code>
  to expand a scalar missing value to a missing array of desired
  dimensions.
 </p>
-
 
 
             </div>
@@ -340,7 +347,6 @@ Return the size of a missing array.
 <dt><code><h5 class="fs">missing: <var>dim_sz</var> = <b>size</b> (<var>M</var>, <var>d1</var>, <var>d2</var>, &hellip;)</code></h5></dt>
 <dt><code><h5 class="fs">missing: [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b> (&hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>sz</var> = size (<var>M</var>)</code> returns a row vector with the size
  (number of elements) of each dimension for the missing array <var>M</var>.
@@ -355,7 +361,6 @@ Return the size of a missing array.
  called with multiple output arguments, <code>size</code> returns the size of
  dimension N in the Nth argument.
 </p>
-
 
 
             </div>
@@ -383,12 +388,10 @@ Number of dimensions in a missing array.
 <dl>
 <dt><code><h5 class="fs">missing: <var>out</var> = <b>ndims</b> (<var>M</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = ndims (<var>M</var>)</code> returns the number of dimensions of
  the missing array <var>M</var>.
 </p>
-
 
 
             </div>
@@ -416,12 +419,10 @@ Total number of elements in a missing array.
 <dl>
 <dt><code><h5 class="fs">missing: <var>out</var> = <b>numel</b> (<var>M</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = numel (<var>M</var>)</code> returns the number of elements in the
  missing array <var>M</var>.
 </p>
-
 
 
             </div>
@@ -449,7 +450,6 @@ Return true if missing array is a column vector.
 <dl>
 <dt><code><h5 class="fs">missing: <var>TF</var> = <b>iscolumn</b> (<var>M</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = iscolumn (<var>M</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the missing array <var>M</var> is a column vector
@@ -457,7 +457,6 @@ Return true if missing array is a column vector.
  <code>size (<var>X</var>)</code> returns <code>[<var>N</var>, 1]</code> with non-negative
  <var>N</var>.
 </p>
-
 
 
             </div>
@@ -485,13 +484,11 @@ Return true if missing array is empty.
 <dl>
 <dt><code><h5 class="fs">missing: <var>TF</var> = <b>isempty</b> (<var>M</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isempty (<var>M</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the missing array <var>M</var> is empty and
  <code>false</code> otherwise.
 </p>
-
 
 
             </div>
@@ -519,7 +516,6 @@ Return true if missing array is a 2-D array.
 <dl>
 <dt><code><h5 class="fs">missing: <var>TF</var> = <b>ismatrix</b> (<var>M</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = ismatrix (<var>M</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the missing array <var>M</var> is a matrix and
@@ -527,7 +523,6 @@ Return true if missing array is a 2-D array.
  <code>ndims (<var>X</var>) == 2</code> and for which <code>size (<var>X</var>)</code> returns
  <code>[<var>H</var>, <var>W</var>]</code> with non-negative <var>H</var> and <var>W</var>.
 </p>
-
 
 
             </div>
@@ -555,12 +550,10 @@ Return true for each element in missing array.
 <dl>
 <dt><code><h5 class="fs">missing: <var>out</var> = <b>ismissing</b> (<var>M</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = ismissing (<var>M</var>)</code> returns a logical array <var>TF</var>
  of the same size as <var>M</var> containing <code>true</code> in every element.
 </p>
-
 
 
             </div>
@@ -588,7 +581,6 @@ Return true if missing array is a row vector.
 <dl>
 <dt><code><h5 class="fs">missing: <var>TF</var> = <b>isrow</b> (<var>M</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isrow (<var>M</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the missing array <var>M</var> is a row vector
@@ -596,7 +588,6 @@ Return true if missing array is a row vector.
  <code>size (<var>X</var>)</code> returns <code>[1, <var>N</var>]</code> with non-negative
  <var>N</var>.
 </p>
-
 
 
             </div>
@@ -624,14 +615,12 @@ Return true if missing array is a scalar.
 <dl>
 <dt><code><h5 class="fs">missing: <var>TF</var> = <b>isscalar</b> (<var>M</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isscalar (<var>M</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the missing array <var>M</var> is also a scalar
  and <code>false</code> otherwise.  A scalar is a single element object for
  which <code>size (<var>X</var>)</code> returns <code>[1, 1]</code>.
 </p>
-
 
 
             </div>
@@ -659,7 +648,6 @@ Return true if missing array is a vector.
 <dl>
 <dt><code><h5 class="fs">missing: <var>TF</var> = <b>isvector</b> (<var>M</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isvector (<var>M</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the missing array <var>M</var> is a vector and
@@ -667,7 +655,6 @@ Return true if missing array is a vector.
  dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
  definition, a scalar is also a vector.
 </p>
-
 
 
             </div>
@@ -695,7 +682,6 @@ Equality for missing arrays.
 <dl>
 <dt><code><h5 class="fs">missing: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = eq (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>TF</var> = <var>A</var> == <var>B</var></code> and returns a logical array of the
@@ -707,7 +693,6 @@ Equality for missing arrays.
 <p> One of the input arguments may also be any type of array.  Any comparison
  with missing arrays always returns <code>false</code>.
 </p>
-
 
 
             </div>
@@ -735,7 +720,6 @@ Greater than or equal to for missing arrays.
 <dl>
 <dt><code><h5 class="fs">missing: <var>TF</var> = <b>ge</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = ge (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>TF</var> = <var>A</var> &gt;= <var>B</var></code> and returns a logical array of the
@@ -747,7 +731,6 @@ Greater than or equal to for missing arrays.
 <p> One of the input arguments may also be any type of array.  Any comparison
  with missing arrays always returns <code>false</code>.
 </p>
-
 
 
             </div>
@@ -775,7 +758,6 @@ Greater than for missing arrays.
 <dl>
 <dt><code><h5 class="fs">missing: <var>TF</var> = <b>gt</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = gt (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>TF</var> = <var>A</var> &gt; <var>B</var></code> and returns a logical array of the
@@ -787,7 +769,6 @@ Greater than for missing arrays.
 <p> One of the input arguments may also be any type of array.  Any comparison
  with missing arrays always returns <code>false</code>.
 </p>
-
 
 
             </div>
@@ -815,7 +796,6 @@ Less than or equal to for missing arrays.
 <dl>
 <dt><code><h5 class="fs">missing: <var>TF</var> = <b>le</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = le (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>TF</var> = <var>A</var> &lt;= <var>B</var></code> and returns a logical array of the
@@ -827,7 +807,6 @@ Less than or equal to for missing arrays.
 <p> One of the input arguments may also be any type of array.  Any comparison
  with missing arrays always returns <code>false</code>.
 </p>
-
 
 
             </div>
@@ -855,7 +834,6 @@ Less than for missing arrays.
 <dl>
 <dt><code><h5 class="fs">missing: <var>TF</var> = <b>lt</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = lt (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>TF</var> = <var>A</var> &lt; <var>B</var></code> and returns a logical array of the
@@ -867,7 +845,6 @@ Less than for missing arrays.
 <p> One of the input arguments may also be any type of array.  Any comparison
  with missing arrays always returns <code>false</code>.
 </p>
-
 
 
             </div>
@@ -895,7 +872,6 @@ Not equal for missing arrays.
 <dl>
 <dt><code><h5 class="fs">missing: <var>TF</var> = <b>ne</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = ne (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>TF</var> = <var>A</var> != <var>B</var></code> and returns a logical array of the
@@ -907,7 +883,6 @@ Not equal for missing arrays.
 <p> One of the input arguments may also be any type of array.  Any comparison
  with missing arrays always returns <code>false</code>.
 </p>
-
 
 
             </div>

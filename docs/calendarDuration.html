@@ -203,7 +203,13 @@
 					<li><a href="array2table.html" class="text-decoration-none font-monospace"><small>array2table</small></a></li>
 					<li><a href="cell2table.html" class="text-decoration-none font-monospace"><small>cell2table</small></a></li>
 					<li><a href="csv2table.html" class="text-decoration-none font-monospace"><small>csv2table</small></a></li>
+					<li><a href="ods2table.html" class="text-decoration-none font-monospace"><small>ods2table</small></a></li>
+					<li><a href="ods2struct.html" class="text-decoration-none font-monospace"><small>ods2struct</small></a></li>
+					<li><a href="readtable.html" class="text-decoration-none font-monospace"><small>readtable</small></a></li>
+					<li><a href="struct2ods.html" class="text-decoration-none font-monospace"><small>struct2ods</small></a></li>
+					<li><a href="struct2xlsx.html" class="text-decoration-none font-monospace"><small>struct2xlsx</small></a></li>
 					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
+					<li><a href="xlsx2struct.html" class="text-decoration-none font-monospace"><small>xlsx2struct</small></a></li>
 					<li><a href="istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 				</ul>
 				</div>
@@ -231,6 +237,8 @@
 				</label>
 				<div class="list">
 				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="findgroups.html" class="text-decoration-none font-monospace"><small>findgroups</small></a></li>
+					<li><a href="splitapply.html" class="text-decoration-none font-monospace"><small>splitapply</small></a></li>
 					<li><a href="keyHash.html" class="text-decoration-none font-monospace"><small>keyHash</small></a></li>
 					<li><a href="keyMatch.html" class="text-decoration-none font-monospace"><small>keyMatch</small></a></li>
 					<li><a href="parsePairedArguments.html" class="text-decoration-none font-monospace"><small>parsePairedArguments</small></a></li>
@@ -250,6 +258,10 @@
 					<li><a href="__datetime__.html" class="text-decoration-none font-monospace"><small>__datetime__</small></a></li>
 					<li><a href="__csv2table__.html" class="text-decoration-none font-monospace"><small>__csv2table__</small></a></li>
 					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace"><small>__table2csv__</small></a></li>
+					<li><a href="__ods2table__.html" class="text-decoration-none font-monospace"><small>__ods2table__</small></a></li>
+					<li><a href="__table2ods__.html" class="text-decoration-none font-monospace"><small>__table2ods__</small></a></li>
+					<li><a href="__xlsx2table__.html" class="text-decoration-none font-monospace"><small>__xlsx2table__</small></a></li>
+					<li><a href="__table2xlsx__.html" class="text-decoration-none font-monospace"><small>__table2xlsx__</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -266,7 +278,6 @@
             </div>
             <div class="card-body">
 <dl><code><h5 class="description">datatypes: calendarDuration</h5></code></dl>
-
 <p> Array representing durations of time using flexible-length calendar
  date/time units.
 </p>
@@ -315,13 +326,11 @@ Display format
           <div class="collapse multi-collapse" id="collapseProperty1">
             <div class="border-bottom py-2">
 
-
 <p> </p>
 <p> Display format, specified as a character vector or string scalar.  If
  specified as a string scalar, it is converted and stored internally as
  a character vector.
 </p>
-
 
 
             </div>
@@ -357,7 +366,6 @@ Create a new array of calendar durations.
 <dt><code><h5 class="fs">calendarDuration: <var>calD</var> = <b>calendarDuration</b> (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>T</var>)</code></h5></dt>
 <dt><code><h5 class="fs">calendarDuration: <var>calD</var> = <b>calendarDuration</b> (&hellip;, <code>'Format'</code>, <var>FMT</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>calD</var> = calendarDuration (<var>X</var>)</code> returns an array of
  calendar durations from numeric matrix <var>X</var>, which must have either
@@ -396,14 +404,14 @@ Create a new array of calendar durations.
  <var>FMT</var>)</code> specifies the format in which <var>calD</var> is displayed.
  <var>FMT</var> must be a character vector containing the following letters.
 </p>
- <ul>
+<ul>
 <li> <code>'y'</code> years
- </li><li> <code>'q'</code> quarters of a year
- </li><li> <code>'m'</code> months
- </li><li> <code>'w'</code> weeks
- </li><li> <code>'d'</code> days
- </li><li> <code>'t'</code> time duration
- </li></ul>
+</li><li> <code>'q'</code> quarters of a year
+</li><li> <code>'m'</code> months
+</li><li> <code>'w'</code> weeks
+</li><li> <code>'d'</code> days
+</li><li> <code>'t'</code> time duration
+</li></ul>
 
 <p> Each character must be specified only once in the same order as they
  appear in the above list.  <code>'m'</code>, <code>'d'</code>, and <code>'t'</code>
@@ -453,7 +461,6 @@ Get display formatted strings for each element of a calendarDuration
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>cstr</var> = <b>dispstrings</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>cstr</var> = dispstrings (<var>calD</var>)</code> returns a cellstr array of
  character vectors, <var>cstr</var>, which has the same size as the input
@@ -461,7 +468,6 @@ Get display formatted strings for each element of a calendarDuration
  in <var>cstr</var> are formatted according to the <code>'Format'</code> property
  of the input array <var>calD</var>.
 </p>
-
 
 
             </div>
@@ -490,7 +496,6 @@ Convert calendarDuration array to a cell array of character vectors.
 <dt><code><h5 class="fs">calendarDuration: <var>cstr</var> = <b>cellstr</b> (<var>calD</var>)</code></h5></dt>
 <dt><code><h5 class="fs">calendarDuration: <var>cstr</var> = <b>cellstr</b> (<var>calD</var>, <var>FMT</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>cstr</var> = cellstr (<var>calD</var>)</code> returns a cellstr array of
  character vectors, <var>cstr</var>, which has the same size as the input
@@ -504,7 +509,6 @@ Convert calendarDuration array to a cell array of character vectors.
  <code>cellstr</code> only accepts <var>FMT</var> as a single argument and not as a
  property paired argument.
 </p>
-
 
 
             </div>
@@ -533,14 +537,12 @@ Convert calendarDuration array to a character matrix.
 <dt><code><h5 class="fs">calendarDuration: <var>cmat</var> = <b>char</b> (<var>calD</var>)</code></h5></dt>
 <dt><code><h5 class="fs">calendarDuration: <var>cmat</var> = <b>char</b> (<var>calD</var>, <var>FMT</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>cmat</var> = char (<var>calD</var>)</code> returns a character matrix with
  one row per element in <var>calD</var>.  The second optional argument,
  <var>FMT</var>, can be used to specify the format of the returned string
  representations of the calendarDuration input array <var>calD</var>.
 </p>
-
 
 
             </div>
@@ -573,7 +575,6 @@ Convert calendarDuration array to date vectors.
 <dt><code><h5 class="fs">calendarDuration: [<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>] = <b>datevec</b> (<var>calD</var>)</code></h5></dt>
 <dt><code><h5 class="fs">calendarDuration: [<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>, <var>S</var>] = <b>datevec</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>DV</var> = datevec (<var>calD</var>)</code> returns an <math>N&times;6</math> numeric
  matrix, where <math>N</math> is the number of elements in <var>calD</var> and the
@@ -587,7 +588,6 @@ Convert calendarDuration array to date vectors.
  this case, the individual variables have the same size as the input array
  <var>calD</var>.
 </p>
-
 
 
             </div>
@@ -615,12 +615,10 @@ Return time portion of calendarDuration array.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>T</var> = <b>time</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>T</var> = time (<var>calD</var>)</code> returns a duration array <var>T</var> with
  the time portions of the calendarDuration array <var>calD</var>.
 </p>
-
 
 
             </div>
@@ -648,7 +646,6 @@ Split calendarDuration array into numeric and duration units.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: [&hellip;] = <b>split</b> (<var>calD</var>, <var>units</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code>[&hellip;] = split (<var>calD</var>, <var>units</var>)</code> splits the calendar
  duration units in <var>calD</var> into separate numeric arrays according to
@@ -656,14 +653,14 @@ Split calendarDuration array into numeric and duration units.
  array of character vectors or a string array containing any of the
  following date/time units in descending order.
 </p>
- <ol>
+<ol>
 <li> <code>'years'</code>
- </li><li> <code>'quarters'</code>
- </li><li> <code>'months'</code>
- </li><li> <code>'weeks'</code>
- </li><li> <code>'days'</code>
- </li><li> <code>'time'</code>
- </li></ol>
+</li><li> <code>'quarters'</code>
+</li><li> <code>'months'</code>
+</li><li> <code>'weeks'</code>
+</li><li> <code>'days'</code>
+</li><li> <code>'time'</code>
+</li></ol>
 
 <p> When a single date/time unit is specified, <var>units</var> may also be a
  character vector.  When <code>'time'</code> is specified in <var>units</var>, the
@@ -672,7 +669,6 @@ Split calendarDuration array into numeric and duration units.
  of weeks and days in <var>calD</var>, with larger units taking precedence when
  specified  The same applies for duration arrays, when requested.
 </p>
-
 
 
             </div>
@@ -700,7 +696,6 @@ Calendar duration in days.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>X</var> = <b>caldays</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>X</var> = caldays (<var>calD</var>)</code> returns a numeric array with the
  number of days as represented in <var>calD</var>.
@@ -742,7 +737,6 @@ Calendar duration in weeks.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>X</var> = <b>calweeks</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>X</var> = calweeks (<var>calD</var>)</code> returns a numeric array with the
  number of weeks as represented in <var>calD</var>.
@@ -784,7 +778,6 @@ Calendar duration in months.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>X</var> = <b>calmonths</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>X</var> = calmonths (<var>calD</var>)</code> returns a numeric array with the
  number of months as represented in <var>calD</var>.
@@ -826,7 +819,6 @@ Calendar duration in quarters.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>X</var> = <b>calquarters</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>X</var> = calquarters (<var>calD</var>)</code> returns a numeric array with
  the number of quarters as represented in <var>calD</var>.
@@ -868,7 +860,6 @@ Calendar duration in years.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>X</var> = <b>calyears</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>X</var> = calyears (<var>calD</var>)</code> returns a numeric array with the
  number of years as represented in <var>calD</var>.
@@ -913,7 +904,6 @@ Size of a calendarDuration array.
 <dt><code><h5 class="fs">calendarDuration: <var>dim_sz</var> = <b>size</b> (<var>calD</var>, <var>d1</var>, <var>d2</var>, &hellip;)</code></h5></dt>
 <dt><code><h5 class="fs">calendarDuration: [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b> (&hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>sz</var> = size (<var>calD</var>)</code> returns a row vector with the size
  (number of elements) of each dimension for the calendar duration array
@@ -929,7 +919,6 @@ Size of a calendarDuration array.
  called with multiple output arguments, <code>size</code> returns the size of
  dimension N in the Nth argument.
 </p>
-
 
 
             </div>
@@ -957,12 +946,10 @@ Number of dimensions in a calendarDuration array.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>out</var> = <b>ndims</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = ndims (<var>calD</var>)</code> returns the number of dimensions
  of the calendar duration array <var>calD</var>.
 </p>
-
 
 
             </div>
@@ -990,12 +977,10 @@ Total number of elements in a calendarDuration array.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>out</var> = <b>numel</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = numel (<var>calD</var>)</code> returns the number of elements in
  the calendarDuration array <var>calD</var>.
 </p>
-
 
 
             </div>
@@ -1023,12 +1008,10 @@ Number of nonzero elements in calendarDuration array.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>out</var> = <b>nnz</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = nnz (<var>calD</var>)</code> returns the number of nonzero
  elements in the calendar duration array <var>calD</var>.
 </p>
-
 
 
             </div>
@@ -1056,14 +1039,12 @@ Length of a calendarDuration vector.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>N</var> = <b>length</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>N</var> = length (<var>calD</var>)</code> returns the size of the longest
  dimension of the calendarDuration array <var>calD</var>, unless any of its
  dimensions has zero length, in which case <code>length (<var>calD</var>)</code>
  returns 0.
 </p>
-
 
 
             </div>
@@ -1092,7 +1073,6 @@ Generate a hash code for a calendarDuration array.
 <dt><code><h5 class="fs">calendarDuration: <var>hey</var> = <b>keyHash</b> (<var>calD</var>)</code></h5></dt>
 <dt><code><h5 class="fs">calendarDuration: <var>hey</var> = <b>keyHash</b> (<var>calD</var>, <var>base</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>h</var> = keyHash (<var>calD</var>)</code> generates a <code>uint64</code> scalar
  that represents the input array <var>calD</var>.  <code>keyHash</code> utilizes the
@@ -1110,7 +1090,6 @@ Generate a hash code for a calendarDuration array.
  hash key for any particular input across different workers and Octave
  sessions.
 </p>
-
 
 
             </div>
@@ -1138,7 +1117,6 @@ Return true if calendarDuration array is a column vector.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>iscolumn</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = iscolumn (<var>calD</var>)</code> returns a logical scalar
  <var>TF</var>, which is <code>true</code> if the calendar duration array <var>calD</var>
@@ -1146,7 +1124,6 @@ Return true if calendarDuration array is a column vector.
  array for which <code>size (<var>X</var>)</code> returns <code>[<var>N</var>, 1]</code> with
  non-negative <var>N</var>.
 </p>
-
 
 
             </div>
@@ -1174,13 +1151,11 @@ Return true if calendarDuration array is empty.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isempty</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isempty (<var>calD</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the calendar duration array <var>calD</var> is empty
  and <code>false</code> otherwise.
 </p>
-
 
 
             </div>
@@ -1209,7 +1184,6 @@ Return true if calendarDuration arrays are equal.
 <dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isequal</b> (<var>calD1</var>, <var>calD2</var>)</code></h5></dt>
 <dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isequal</b> (<var>calD1</var>, <var>calD2</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isequal (<var>calD1</var>, <var>calD2</var>)</code> returns a logical
  scalar <var>TF</var>, which is <code>true</code> if the calendar duration arrays
@@ -1221,7 +1195,6 @@ Return true if calendarDuration arrays are equal.
  calendar duration arrays with equal values in each corresponding elements
  and <code>false</code> otherwise.
 </p>
-
 
 
             </div>
@@ -1251,7 +1224,6 @@ Return true if calendarDuration arrays are equal under the assumption
 <dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isequaln</b> (<var>calD1</var>, <var>calD2</var>)</code></h5></dt>
 <dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isequaln</b> (<var>calD1</var>, <var>calD2</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isequaln (<var>calD1</var>, <var>calD2</var>)</code> returns a logical
  scalar <var>TF</var>, which is <code>true</code> if the calendar duration arrays
@@ -1263,7 +1235,6 @@ Return true if calendarDuration arrays are equal under the assumption
  are calendar duration arrays with equal values or corresponding missing
  elements and <code>false</code> otherwise.
 </p>
-
 
 
             </div>
@@ -1291,7 +1262,6 @@ Return true for calendar durations that are finite.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isfinite</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isfinite (<var>calD</var>)</code> returns a logical array <var>TF</var>
  of the same size as <var>calD</var> containing <code>true</code> for each
@@ -1299,7 +1269,6 @@ Return true for calendar durations that are finite.
  otherwise.  Finite elements are those which are neither infinite nor
  Not-A-Number.
 </p>
-
 
 
             </div>
@@ -1327,14 +1296,12 @@ Return true for calendar durations that are infinite.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isinf</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isinf (<var>calD</var>)</code> returns a logical array <var>TF</var>
  of the same size as <var>calD</var> containing <code>true</code> for each
  corresponding element of <var>calD</var> that is either <code>Inf</code> or
  <code>-Inf</code> and <code>false</code> otherwise.
 </p>
-
 
 
             </div>
@@ -1362,7 +1329,6 @@ Return true if calendarDuration array is a 2-D array.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>ismatrix</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = ismatrix (<var>calD</var>)</code> returns a logical scalar
  <var>TF</var>, which is <code>true</code> if the calendarDuration array <var>calD</var>
@@ -1371,7 +1337,6 @@ Return true if calendarDuration array is a 2-D array.
  <code>size (<var>X</var>)</code> returns <code>[<var>H</var>, <var>W</var>]</code> with non-negative
  <var>H</var> and <var>W</var>.
 </p>
-
 
 
             </div>
@@ -1399,7 +1364,6 @@ Find missing data in a calendarDuration array.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>ismissing</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> Missing values in calendarDuration arrays are represented by <code>NaN</code>,
  thus <code><var>TF</var> = ismissing (<var>calD</var>)</code> is equivalent to
@@ -1408,7 +1372,6 @@ Find missing data in a calendarDuration array.
 <p> Note: <code>ismissing</code> for calendarDuration arrays does not support a
  second <var>Indicator</var> argument.
 </p>
-
 
 
             </div>
@@ -1436,14 +1399,12 @@ Return true for calendar durations that are Not-A-Number.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isnan</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isnan (<var>calD</var>)</code> returns a logical array <var>TF</var>
  of the same size as <var>calD</var> containing <code>true</code> for each
  corresponding element of <var>calD</var> that is <code>NaN</code> and <code>false</code>
  otherwise.
 </p>
-
 
 
             </div>
@@ -1471,12 +1432,10 @@ Always return true for calendarDuration arrays.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isreal</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isreal (<var>calD</var>)</code> always returns a logical scalar
  <code>true</code> value, if the input argument is a calendarDuration array.
 </p>
-
 
 
             </div>
@@ -1504,7 +1463,6 @@ Return true if calendarDuration array is a row vector.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isrow</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isrow (<var>calD</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the calendarDuration array <var>calD</var> is a row
@@ -1512,7 +1470,6 @@ Return true if calendarDuration array is a row vector.
  which <code>size (<var>X</var>)</code> returns <code>[1, <var>N</var>]</code> with non-negative
  <var>N</var>.
 </p>
-
 
 
             </div>
@@ -1540,14 +1497,12 @@ Return true if calendarDuration array is a scalar.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isscalar</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isscalar (<var>calD</var>)</code> returns a logical scalar
  <var>TF</var>, which is <code>true</code> if the calendarDuration array <var>calD</var>
  is also a scalar and <code>false</code> otherwise.  A scalar is a single
  element object for which <code>size (<var>X</var>)</code> returns <code>[1, 1]</code>.
 </p>
-
 
 
             </div>
@@ -1575,7 +1530,6 @@ Return true if calendarDuration array is a vector.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>isvector</b> (<var>calD</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isvector (<var>calD</var>)</code> returns a logical scalar
  <var>TF</var>, which is <code>true</code> if the calendarDuration array <var>calD</var>
@@ -1583,7 +1537,6 @@ Return true if calendarDuration array is a vector.
  which one of the dimensions is equal to 1 (either <math>1&times;N</math> or
  <math>N&times;1</math>).  By definition, a scalar is also a vector.
 </p>
-
 
 
             </div>
@@ -1611,7 +1564,6 @@ Subtraction for calendarDuration arrays.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>C</var> = <b>minus</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = minus (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>C</var> = <var>A</var> - <var>B</var></code> and returns the result of subtracting
@@ -1626,7 +1578,6 @@ Subtraction for calendarDuration arrays.
  the latter representing duration days and being internally converted to a
  duration array with the <code>days ()</code> function.
 </p>
-
 
 
             </div>
@@ -1654,14 +1605,12 @@ Unary minus for calendarDuration arrays.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>C</var> = <b>minus</b> (<var>A</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = uminus (<var>A</var>)</code> is the equivalent of the syntax
  <code><var>C</var> = -<var>A</var></code> and returns <var>A</var> after negating its
  elements.  <var>C</var> is a calendarDuration array of the same size as
  <var>A</var>.
 </p>
-
 
 
             </div>
@@ -1689,7 +1638,6 @@ Addition for calendarDuration arrays.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>C</var> = <b>plus</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = plus (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>C</var> = <var>A</var> + <var>B</var></code> and returns the result of adding the
@@ -1704,7 +1652,6 @@ Addition for calendarDuration arrays.
  the latter representing duration days and being internally converted to a
  duration array with the <code>days ()</code> function.
 </p>
-
 
 
             </div>
@@ -1732,13 +1679,11 @@ Unary plus for calendarDuration arrays.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>C</var> = <b>uplus</b> (<var>A</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = uplus (<var>A</var>)</code> is the equivalent of the syntax
  <code><var>C</var> = +<var>A</var></code> and returns a copy of <var>A</var>.  <var>C</var> is a
  calendarDuration array of the same size as <var>A</var>.
 </p>
-
 
 
             </div>
@@ -1766,7 +1711,6 @@ Element-by-element multiplication for calendarDuration arrays.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>C</var> = <b>times</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = times (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>C</var> = <var>A</var> .* <var>B</var></code> and returns the element-by-element
@@ -1780,7 +1724,6 @@ Element-by-element multiplication for calendarDuration arrays.
  size, one can be scalar, or for every dimension, their dimension sizes
  must be equal or one of them must be 1.
 </p>
-
 
 
             </div>
@@ -1808,7 +1751,6 @@ Matrix multiplication for calendarDuration arrays.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>C</var> = <b>mtimes</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = mtimes (<var>A</var>, <var>B</var>)</code> is the equivalent of the
  syntax <code><var>C</var> = <var>A</var> * <var>B</var></code> and returns the matrix
@@ -1822,7 +1764,6 @@ Matrix multiplication for calendarDuration arrays.
  size, one can be scalar, or for every dimension, their dimension sizes
  must be equal or one of them must be 1.
 </p>
-
 
 
             </div>
@@ -1850,7 +1791,6 @@ Test for equality between calendarDuration arrays.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = eq (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>TF</var> = <var>A</var> == <var>B</var></code> and returns a logical array with
@@ -1865,7 +1805,6 @@ Test for equality between calendarDuration arrays.
  output <var>TF</var> is the same as the size of input arrays after their
  expansion according to the broadcasting rules.
 </p>
-
 
 
             </div>
@@ -1893,7 +1832,6 @@ Test for inequality between calendarDuration arrays.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>TF</var> = <b>ne</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = ne (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>TF</var> = <var>A</var> != <var>B</var></code> and returns a logical array with
@@ -1908,7 +1846,6 @@ Test for inequality between calendarDuration arrays.
  output <var>TF</var> is the same as the size of input arrays after their
  expansion according to the broadcasting rules.
 </p>
-
 
 
             </div>
@@ -1942,7 +1879,6 @@ Unique values in a calendarDuration array.
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>unique</b> (<var>A</var>, &hellip;, <code>'rows'</code>)</code></h5></dt>
 <dt><code><h5 class="fs">calendarDuration: [<var>B</var>, <var>ixA</var>, <var>ixB</var>] = <b>unique</b> (&hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = unique (<var>A</var>)</code> returns the unique values of the
  calendarDuration array <var>A</var> in sorted order.
@@ -1951,23 +1887,23 @@ Unique values in a calendarDuration array.
  values of the calendarDuration array <var>A</var> in an order as specified by
  <var>setOrder</var>, which can be either of the following values:
 </p>
- <ul>
+<ul>
 <li> <code>'sorted'</code> (default) returns the unique values sorted in
  ascending order.
- </li><li> <code>'stable'</code> returns the unique values according to their order
+</li><li> <code>'stable'</code> returns the unique values according to their order
  of occurrence.
- </li></ul>
+</li></ul>
 
 <p> <code><var>B</var> = unique (<var>A</var>, <var>occurrence</var>)</code> returns the unique
  values of the calendarDuration array <var>tblA</var> according to their order
  of occurrence.  <var>occurrence</var> can be either of the following values:
 </p>
- <ul>
+<ul>
 <li> <code>'first'</code> (default) returns the first occurrence of each
  unique value, i.e. the lowest possible indices are returned.
- </li><li> <code>'last'</code> returns the last occurrence of each unique value,
+</li><li> <code>'last'</code> returns the last occurrence of each unique value,
  i.e. the highest possible indices are returned.
- </li></ul>
+</li></ul>
 
 <p> You can specify <var>setOrder</var> and <var>occurrence</var> arguments together.
 </p>
@@ -1987,7 +1923,6 @@ Unique values in a calendarDuration array.
  argument is specified, then <code><var>B</var> = <var>A</var>(<var>ixA</var>,:)</code> and
  <code><var>tblA</var> = <var>tblB</var>(<var>ixB</var>,:)</code>.
 </p>
-
 
 
             </div>
@@ -2015,7 +1950,6 @@ Concatenate calendarDuration arrays.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>C</var> = <b>cat</b> (<var>dim</var>, <var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = cat (<var>dim</var>, <var>A</var>, <var>B</var>, &hellip;)</code> concatenates
  calendarDuration arrays <var>A</var>, <var>B</var>, &hellip; along dimension
@@ -2025,7 +1959,6 @@ Concatenate calendarDuration arrays.
  Additionally, an input can be a numeric matrix, which when parsed to the
  constructor will return a calendarDuration array of compatible size.
 </p>
-
 
 
             </div>
@@ -2053,7 +1986,6 @@ Horizontal concatenation of calendarDuration arrays.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>C</var> = <b>horzcat</b> (<var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = horzcat (<var>A</var>, <var>B</var>, &hellip;</code> is the equivalent of
  the syntax <code><var>B</var> = [<var>A</var>, <var>B</var>, &hellip;]</code> and horizontally
@@ -2064,7 +1996,6 @@ Horizontal concatenation of calendarDuration arrays.
  numeric matrix, which when parsed to the constructor will return a
  calendarDuration array of compatible size.
 </p>
-
 
 
             </div>
@@ -2092,7 +2023,6 @@ Vertical concatenation of calendarDuration arrays.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>C</var> = <b>vertcat</b> (<var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = vertcat (<var>A</var>, <var>B</var>, &hellip;</code> is the equivalent of
  the syntax <code><var>B</var> = [<var>A</var>; <var>B</var>; &hellip;]</code> and vertically
@@ -2103,7 +2033,6 @@ Vertical concatenation of calendarDuration arrays.
  numeric matrix, which when parsed to the constructor will return a
  calendarDuration array of compatible size.
 </p>
-
 
 
             </div>
@@ -2133,7 +2062,6 @@ Repeat copies of a calendarDuration array.
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>repmat</b> (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code></h5></dt>
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>repmat</b> (<var>A</var>, <var>dimvec</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = repmat (<var>A</var>, <var>n</var>)</code> returns a calendarDuration
  array <var>B</var> containing <var>n</var> copies of the input calendarDuration
@@ -2147,7 +2075,6 @@ Repeat copies of a calendarDuration array.
 <p> <code><var>B</var> = repmat (<var>A</var>, <var>dimvec</var>)</code> is equivalent to the
  previous syntax with <code><var>dimvec</var> = [<var>d1</var>, &hellip;, <var>dN</var>]</code>.
 </p>
-
 
 
             </div>
@@ -2176,7 +2103,6 @@ Repeat copies of calendarDuration array elements.
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>repelem</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>repelem</b> (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = repelem (<var>A</var>, <var>n</var>)</code> returns a calendarDuration
  vector <var>B</var> containing repeated elements of the input <var>A</var>, which
@@ -2195,7 +2121,6 @@ Repeat copies of calendarDuration array elements.
  <var>A</var> containing non-negative integer values specifying the number of
  repetitions of each element along the corresponding dimension.
 </p>
-
 
 
             </div>
@@ -2223,7 +2148,6 @@ Construct a vector of repeated elements from a calendarDuration array.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>repelems</b> (<var>A</var>, <var>R</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = repelems (<var>A</var>, <var>R</var>)</code> returns a calendarDuration
  vector <var>B</var> containing repeated elements of the input <var>A</var>, which
@@ -2233,7 +2157,6 @@ Construct a vector of repeated elements from a calendarDuration array.
  corresponding entries in the second row of <var>R</var> specify the repeat
  count of each element.
 </p>
-
 
 
             </div>
@@ -2263,7 +2186,6 @@ Reshape calendarDuration array.
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>reshape</b> (<var>A</var>, &hellip;, <code>[]</code>, &hellip;)</code></h5></dt>
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>reshape</b> (<var>A</var>, <var>dimvec</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = reshape (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code> returns a
  calendarDuration array <var>B</var> with specified dimensions <var>d1</var>,
@@ -2278,7 +2200,6 @@ Reshape calendarDuration array.
  product of specified dimensions.  An empty matrix <code>([])</code> is used to
  flag the unspecified dimension.
 </p>
-
 
 
             </div>
@@ -2307,7 +2228,6 @@ Circularly shift the elements in a calendarDuration array.
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>circshift</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>circshift</b> (<var>A</var>, <var>n</var>, <var>dim</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = circshift (<var>A</var>, <var>n</var>)</code> circularly shifts the
  elements of the calendarDuration array <var>A</var> according to <var>n</var>.  If
@@ -2323,7 +2243,6 @@ Circularly shift the elements in a calendarDuration array.
  dimension specified by <var>dim</var>.  In this case, <var>n</var> must be a scalar
  integer value.
 </p>
-
 
 
             </div>
@@ -2351,7 +2270,6 @@ Generalized transpose for a calendarDuration N-D array.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>permute</b> (<var>A</var>, <var>dims</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = permute (<var>A</var>, <var>dims</var>)</code> returns the generalized
  transpose of the calendarDuration array <var>A</var> by rearranging its
@@ -2362,7 +2280,6 @@ Generalized transpose for a calendarDuration N-D array.
  dimension of <var>A</var> gets remapped to the dimension in <var>B</var> specified
  by <code><var>dims</var>(<var>N</var>)</code>.
 </p>
-
 
 
             </div>
@@ -2390,7 +2307,6 @@ Inverse of the generalized transpose for a calendarDuration N-D array.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>A</var> = <b>ipermute</b> (<var>B</var>, <var>dims</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>A</var> = ipermute (<var>B</var>, <var>dims</var>)</code> returns the inverse of
  the generalized transpose performed by the <code>permute</code> function.  The
@@ -2402,7 +2318,6 @@ Inverse of the generalized transpose for a calendarDuration N-D array.
  <var>B</var> specified in <code><var>dims</var>(<var>N</var>)</code> gets remapped to the
  <var>N</var>th dimension of <var>A</var>.
 </p>
-
 
 
             </div>
@@ -2430,13 +2345,11 @@ Transpose a calendarDuration matrix.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>transpose</b> (<var>A</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = transpose (<var>A</var>)</code> is the equivalent of the syntax
  <code><var>B</var> = <var>A</var>.'</code> and returns the transpose of the
  calendarDuration matrix <var>A</var>.
 </p>
-
 
 
             </div>
@@ -2464,14 +2377,12 @@ Transpose a calendarDuration matrix.
 <dl>
 <dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>ctranspose</b> (<var>A</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = ctranspose (<var>A</var>)</code> is the equivalent of the syntax
  <code><var>B</var> = <var>A</var>'</code> and returns the transpose of the
  calendarDuration matrix <var>A</var>.  For calendarDuration arrays,
  <code>ctranspose</code> is identical to <code>transpose</code>.
 </p>
-
 
 
             </div>

@@ -108,7 +108,7 @@
             </div>
             <div class="col-sm-9 col-md-10">
               <h3 class="d-inline-block mr-2">datatypes</h3>
-              <b>1.2.5&nbsp;2026-06-21</b>
+              <b>1.2.6&nbsp;2026-07-08</b>
               <p class="indent">
                 A package for providing extra data types  and related functionality for GNU Octave.
               </p>
@@ -149,7 +149,9 @@
                    <a href="iscategorical.html">iscategorical</a>
                    </code></b>
                  </td>
-                 <td>True if input is a 'categorical' array, false otherwise.</td>
+                 <td>True if input is a ‘categorical’ array, false otherwise.
+
+  </td>
                </tr>
              </tbody>
            </table>
@@ -213,7 +215,9 @@ units.</td>
                    <a href="iscalendarduration.html">iscalendarduration</a>
                    </code></b>
                  </td>
-                 <td>True if input is a 'calendarDuration' array, false otherwise.</td>
+                 <td>True if input is a ‘calendarDuration’ array, false otherwise.
+
+  </td>
                </tr>
              </tbody>
            </table>
@@ -236,7 +240,9 @@ units.</td>
                    <a href="isdatetime.html">isdatetime</a>
                    </code></b>
                  </td>
-                 <td>True if input is a 'datetime' array, false otherwise.</td>
+                 <td>True if input is a ‘datetime’ array, false otherwise.
+
+  </td>
                </tr>
                <tr>
                  <td>
@@ -323,7 +329,9 @@ units.</td>
                    <a href="isduration.html">isduration</a>
                    </code></b>
                  </td>
-                 <td>True if input is a 'duration' array, false otherwise.</td>
+                 <td>True if input is a ‘duration’ array, false otherwise.
+
+  </td>
                </tr>
              </tbody>
            </table>
@@ -398,6 +406,46 @@ units.</td>
                <tr>
                  <td>
                    <b><code>
+                   <a href="ods2table.html">ods2table</a>
+                   </code></b>
+                 </td>
+                 <td>Read an OpenDocument spreadsheet file into a table.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="ods2struct.html">ods2struct</a>
+                   </code></b>
+                 </td>
+                 <td>Read every sheet of an OpenDocument spreadsheet into a scalar structure.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="readtable.html">readtable</a>
+                   </code></b>
+                 </td>
+                 <td>Read a file into a table, detecting variable types automatically.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="struct2ods.html">struct2ods</a>
+                   </code></b>
+                 </td>
+                 <td>Write a scalar structure of tables to a multi-sheet OpenDocument spreadsheet.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="struct2xlsx.html">struct2xlsx</a>
+                   </code></b>
+                 </td>
+                 <td>Write a scalar structure of tables to a multi-sheet Excel workbook.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
                    <a href="struct2table.html">struct2table</a>
                    </code></b>
                  </td>
@@ -406,10 +454,20 @@ units.</td>
                <tr>
                  <td>
                    <b><code>
+                   <a href="xlsx2struct.html">xlsx2struct</a>
+                   </code></b>
+                 </td>
+                 <td>Read every sheet of an Excel workbook into a scalar structure.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
                    <a href="istable.html">istable</a>
                    </code></b>
                  </td>
-                 <td>True if input is a 'table', false otherwise.</td>
+                 <td>True if input is a ‘table’, false otherwise.
+
+  </td>
                </tr>
              </tbody>
            </table>
@@ -457,6 +515,22 @@ units.</td>
            </h3>
            <table class="table table-striped">
              <tbody>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="findgroups.html">findgroups</a>
+                   </code></b>
+                 </td>
+                 <td>Find groups defined by one or more grouping variables.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="splitapply.html">splitapply</a>
+                   </code></b>
+                 </td>
+                 <td>Split data into groups and apply a function to each group.</td>
+               </tr>
                <tr>
                  <td>
                    <b><code>
@@ -531,6 +605,40 @@ units.</td>
                    </code></b>
                  </td>
                  <td>Barebone function for saving a cell array to a CSV file.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="__ods2table__.html">__ods2table__</a>
+                   </code></b>
+                 </td>
+                 <td>Barebone function for reading a flat ODS (.fods) file.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="__table2ods__.html">__table2ods__</a>
+                   </code></b>
+                 </td>
+                 <td>Barebone function for saving a table to a flat (.fods) or compressed (.ods)
+OpenDocument spreadsheet file.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="__xlsx2table__.html">__xlsx2table__</a>
+                   </code></b>
+                 </td>
+                 <td>Barebone function for reading a sheet of an Office Open XML (.xlsx / .xlsm)
+spreadsheet.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="__table2xlsx__.html">__table2xlsx__</a>
+                   </code></b>
+                 </td>
+                 <td>Barebone function for writing an Office Open XML (.xlsx / .xlsm) spreadsheet.</td>
                </tr>
              </tbody>
            </table>

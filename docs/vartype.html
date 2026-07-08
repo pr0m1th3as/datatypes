@@ -203,7 +203,13 @@
 					<li><a href="array2table.html" class="text-decoration-none font-monospace"><small>array2table</small></a></li>
 					<li><a href="cell2table.html" class="text-decoration-none font-monospace"><small>cell2table</small></a></li>
 					<li><a href="csv2table.html" class="text-decoration-none font-monospace"><small>csv2table</small></a></li>
+					<li><a href="ods2table.html" class="text-decoration-none font-monospace"><small>ods2table</small></a></li>
+					<li><a href="ods2struct.html" class="text-decoration-none font-monospace"><small>ods2struct</small></a></li>
+					<li><a href="readtable.html" class="text-decoration-none font-monospace"><small>readtable</small></a></li>
+					<li><a href="struct2ods.html" class="text-decoration-none font-monospace"><small>struct2ods</small></a></li>
+					<li><a href="struct2xlsx.html" class="text-decoration-none font-monospace"><small>struct2xlsx</small></a></li>
 					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
+					<li><a href="xlsx2struct.html" class="text-decoration-none font-monospace"><small>xlsx2struct</small></a></li>
 					<li><a href="istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 				</ul>
 				</div>
@@ -231,6 +237,8 @@
 				</label>
 				<div class="list">
 				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="findgroups.html" class="text-decoration-none font-monospace"><small>findgroups</small></a></li>
+					<li><a href="splitapply.html" class="text-decoration-none font-monospace"><small>splitapply</small></a></li>
 					<li><a href="keyHash.html" class="text-decoration-none font-monospace"><small>keyHash</small></a></li>
 					<li><a href="keyMatch.html" class="text-decoration-none font-monospace"><small>keyMatch</small></a></li>
 					<li><a href="parsePairedArguments.html" class="text-decoration-none font-monospace"><small>parsePairedArguments</small></a></li>
@@ -250,6 +258,10 @@
 					<li><a href="__datetime__.html" class="text-decoration-none font-monospace"><small>__datetime__</small></a></li>
 					<li><a href="__csv2table__.html" class="text-decoration-none font-monospace"><small>__csv2table__</small></a></li>
 					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace"><small>__table2csv__</small></a></li>
+					<li><a href="__ods2table__.html" class="text-decoration-none font-monospace"><small>__ods2table__</small></a></li>
+					<li><a href="__table2ods__.html" class="text-decoration-none font-monospace"><small>__table2ods__</small></a></li>
+					<li><a href="__xlsx2table__.html" class="text-decoration-none font-monospace"><small>__xlsx2table__</small></a></li>
+					<li><a href="__table2xlsx__.html" class="text-decoration-none font-monospace"><small>__table2xlsx__</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -266,7 +278,6 @@
             </div>
             <div class="card-body">
 <dl><code><h5 class="description">datatypes: vartype</h5></code></dl>
-
 <p> Subscript into a table by variable type.
 </p>
 <div class="ms-5">
@@ -305,7 +316,6 @@ Create a subscript into table by variable type.
 <dl>
 <dt><code><h5 class="fs">vartype: <var>S</var> = <b>vartype</b> (<var>type</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>S</var> = vartype (<var>type</var>)</code> creates a subscript to select table
  variables of a specified type.  The input argument, <var>type</var>, must be a
@@ -316,7 +326,6 @@ Create a subscript into table by variable type.
  arrays of character vectors or <code>numeric</code> to select variables with
  numeric values.
 </p>
-
 
 
             </div>
@@ -344,14 +353,12 @@ Match a <code>vartype</code> object to a variable value.
 <dl>
 <dt><code><h5 class="fs">vartype: <var>TF</var> = <b>varMatch</b> (<var>obj</var>, <var>value</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = varMatch (<var>obj</var>, <var>value</var>)</code> compares the class
  type of the variable in <var>value</var> with the predefined class type in the
  <code>vartype</code> object.  If they are equal, <var>TF</var> is <code>true</code>,
  otherwise <var>TF</var> is <code>false</code>.
 </p>
-
 
 
             </div>

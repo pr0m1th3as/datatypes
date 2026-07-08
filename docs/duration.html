@@ -203,7 +203,13 @@
 					<li><a href="array2table.html" class="text-decoration-none font-monospace"><small>array2table</small></a></li>
 					<li><a href="cell2table.html" class="text-decoration-none font-monospace"><small>cell2table</small></a></li>
 					<li><a href="csv2table.html" class="text-decoration-none font-monospace"><small>csv2table</small></a></li>
+					<li><a href="ods2table.html" class="text-decoration-none font-monospace"><small>ods2table</small></a></li>
+					<li><a href="ods2struct.html" class="text-decoration-none font-monospace"><small>ods2struct</small></a></li>
+					<li><a href="readtable.html" class="text-decoration-none font-monospace"><small>readtable</small></a></li>
+					<li><a href="struct2ods.html" class="text-decoration-none font-monospace"><small>struct2ods</small></a></li>
+					<li><a href="struct2xlsx.html" class="text-decoration-none font-monospace"><small>struct2xlsx</small></a></li>
 					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
+					<li><a href="xlsx2struct.html" class="text-decoration-none font-monospace"><small>xlsx2struct</small></a></li>
 					<li><a href="istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 				</ul>
 				</div>
@@ -231,6 +237,8 @@
 				</label>
 				<div class="list">
 				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="findgroups.html" class="text-decoration-none font-monospace"><small>findgroups</small></a></li>
+					<li><a href="splitapply.html" class="text-decoration-none font-monospace"><small>splitapply</small></a></li>
 					<li><a href="keyHash.html" class="text-decoration-none font-monospace"><small>keyHash</small></a></li>
 					<li><a href="keyMatch.html" class="text-decoration-none font-monospace"><small>keyMatch</small></a></li>
 					<li><a href="parsePairedArguments.html" class="text-decoration-none font-monospace"><small>parsePairedArguments</small></a></li>
@@ -250,6 +258,10 @@
 					<li><a href="__datetime__.html" class="text-decoration-none font-monospace"><small>__datetime__</small></a></li>
 					<li><a href="__csv2table__.html" class="text-decoration-none font-monospace"><small>__csv2table__</small></a></li>
 					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace"><small>__table2csv__</small></a></li>
+					<li><a href="__ods2table__.html" class="text-decoration-none font-monospace"><small>__ods2table__</small></a></li>
+					<li><a href="__table2ods__.html" class="text-decoration-none font-monospace"><small>__table2ods__</small></a></li>
+					<li><a href="__xlsx2table__.html" class="text-decoration-none font-monospace"><small>__xlsx2table__</small></a></li>
+					<li><a href="__table2xlsx__.html" class="text-decoration-none font-monospace"><small>__table2xlsx__</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -266,7 +278,6 @@
             </div>
             <div class="card-body">
 <dl><code><h5 class="description">datatypes: duration</h5></code></dl>
-
 <p> Array representing durations of time using fixed-length time units.
 </p>
 <div class="ms-5">
@@ -314,13 +325,11 @@ Display format
           <div class="collapse multi-collapse" id="collapseProperty1">
             <div class="border-bottom py-2">
 
-
 <p> </p>
 <p> Display format, specified as a character vector or string scalar.  If
  specified as a string scalar, it is converted and stored internally as
  a character vector.
 </p>
-
 
 
             </div>
@@ -357,7 +366,6 @@ Create a new array of fixed-length time durations.
 <dt><code><h5 class="fs">duration: <var>D</var> = <b>duration</b> (<var>TimeStrings</var>, <code>'InputFormat'</code>, <var>INFMT</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>D</var> = <b>duration</b> (&hellip;, <code>'Format'</code>, <var>FMT</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>D</var> = duration (<var>X</var>)</code> creates a column vector of durations
  from a numeric matrix.
@@ -382,15 +390,15 @@ Create a new array of fixed-length time durations.
  times according to the format specified by <var>INFMT</var>, which can be any
  of the following:
 </p>
- <ul>
+<ul>
 <li> <code>'dd:hh:mm:ss'</code>
- </li><li> <code>'hh:mm:ss'</code>
- </li><li> <code>'mm:ss'</code>
- </li><li> <code>'hh:mm'</code>
- </li><li> Any of the first three formats can also be appended with up to nine
+</li><li> <code>'hh:mm:ss'</code>
+</li><li> <code>'mm:ss'</code>
+</li><li> <code>'hh:mm'</code>
+</li><li> Any of the first three formats can also be appended with up to nine
  <code>S</code> characters to indicate fractional second digits, such as
  <code>'dd:hh:mm:ss.SS'</code> or <code>'mm:ss.SS'</code>.
- </li></ul>
+</li></ul>
 
 <p> <code><var>D</var> = duration (&hellip;, <code>'Format'</code>, <var>FMT</var>)</code>
  specifies the format in which <var>D</var> is displayed.  <var>FMT</var> can
@@ -398,13 +406,13 @@ Create a new array of fixed-length time durations.
  for <code>'InputFormat'</code> as shown above or a single number with time
  units by specifying one of the following:
 </p>
- <ul>
+<ul>
 <li> <code>'y'</code> fixed-length years (1 year equals 365.2425 days)
- </li><li> <code>'d'</code> fixed-length days (1 day equals 24 hours)
- </li><li> <code>'h'</code> hours
- </li><li> <code>'m'</code> minutes
- </li><li> <code>'s'</code> seconds
- </li></ul>
+</li><li> <code>'d'</code> fixed-length days (1 day equals 24 hours)
+</li><li> <code>'h'</code> hours
+</li><li> <code>'m'</code> minutes
+</li><li> <code>'s'</code> seconds
+</li></ul>
 
 <p> <code><var>D</var> = duration ()</code> returns a scalar array of durations with an
  elapsed time value of zero.  To create an empty duration array, use
@@ -449,13 +457,11 @@ Get display formatted strings for each element of a duration array.
 <dl>
 <dt><code><h5 class="fs">duration: <var>cstr</var> = <b>dispstrings</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>cstr</var> = dispstrings (<var>D</var>)</code> returns a cellstr array of
  character vectors, <var>cstr</var>, which has the same size as the input
  duration <var>D</var>.
 </p>
-
 
 
             </div>
@@ -484,13 +490,11 @@ Convert duration array to a cell array of character vectors.
 <dt><code><h5 class="fs">duration: <var>cstr</var> = <b>cellstr</b> (<var>D</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>cstr</var> = <b>cellstr</b> (<var>D</var>, <var>Format</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>cstr</var> = cellstr (<var>D</var>)</code> returns a cellstr array of
  character vectors, <var>cstr</var>, which has the same size as the input
  duration <var>D</var>.
 </p>
-
 
 
             </div>
@@ -518,12 +522,10 @@ Convert duration array to a character matrix.
 <dl>
 <dt><code><h5 class="fs">duration: <var>cmat</var> = <b>char</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>cmat</var> = char (<var>D</var>)</code> returns a character matrix with one
  row per element in <var>D</var>.
 </p>
-
 
 
             </div>
@@ -552,7 +554,6 @@ Convert duration array to date vectors.
 <dt><code><h5 class="fs">duration: <var>DV</var> = <b>datevec</b> (<var>DT</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: [<var>Y</var>, <var>MO</var>, <var>D</var>, <var>h</var>, <var>mi</var>, <var>s</var>] = <b>datevec</b> (<var>DT</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>DV</var> = datevec (<var>DT</var>)</code> returns an <math>N&times;6</math> numeric matrix
  whose rows represent each element in <var>DT</var> and each column corresponds
@@ -570,7 +571,6 @@ Convert duration array to date vectors.
 <p> Values containing a fractional portion less than 1 picosecond are rounded
  to the nearest picosecond.
 </p>
-
 
 
             </div>
@@ -600,7 +600,6 @@ Split duration array into separate time unit values.
 <dt><code><h5 class="fs">duration: [<var>H</var>, <var>M</var>] = <b>hms</b> (<var>D</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: [<var>H</var>, <var>M</var>, <var>S</var>] = <b>hms</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code>[<var>H</var>, <var>M</var>, <var>S</var>] = hms (<var>D</var>)</code> splits the duration
  array <var>D</var> into separate numeric arrays <var>H</var>, <var>M</var>, and <var>S</var>,
@@ -611,7 +610,6 @@ Split duration array into separate time unit values.
 <p> Values containing a fractional portion less than 1 picosecond are rounded
  to the nearest picosecond.
 </p>
-
 
 
             </div>
@@ -639,13 +637,11 @@ Duration equivalent numeric values in fixed-length years.
 <dl>
 <dt><code><h5 class="fs">duration: <var>X</var> = <b>years</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>X</var> = years (<var>D</var>)</code> converts durations in <var>D</var> to the
  equivalent number of fixed-length years (1 year equals 365.2425 days).
  <var>X</var> is a double array of the same size as <var>D</var>.
 </p>
-
 
 
             </div>
@@ -673,13 +669,11 @@ Duration equivalent numeric values in fixed-length days.
 <dl>
 <dt><code><h5 class="fs">duration: <var>X</var> = <b>days</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>X</var> = days (<var>D</var>)</code> converts durations in <var>D</var> to the
  equivalent number of fixed-length days (1 day equals 24 hours).  <var>X</var>
  is a double array of the same size as <var>D</var>.
 </p>
-
 
 
             </div>
@@ -707,13 +701,11 @@ Duration equivalent numeric values in hours.
 <dl>
 <dt><code><h5 class="fs">duration: <var>X</var> = <b>hours</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>X</var> = hours (<var>D</var>)</code> converts durations in <var>D</var> to the
  equivalent number of hours.  <var>X</var> is a double array of the same size
  as <var>D</var>.
 </p>
-
 
 
             </div>
@@ -741,7 +733,6 @@ Duration equivalent numeric values in minutes.
 <dl>
 <dt><code><h5 class="fs">duration: <var>X</var> = <b>minutes</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>X</var> = minutes (<var>D</var>)</code> converts durations in <var>D</var> to the
  equivalent number of minutes.  <var>X</var> is a double array of the same size
@@ -750,7 +741,6 @@ Duration equivalent numeric values in minutes.
 <p> Values containing a fractional portion less than 1 picosecond are rounded
  to the nearest picosecond.
 </p>
-
 
 
             </div>
@@ -778,7 +768,6 @@ Duration equivalent numeric values in seconds.
 <dl>
 <dt><code><h5 class="fs">duration: <var>X</var> = <b>seconds</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>X</var> = seconds (<var>D</var>)</code> converts durations in <var>D</var> to the
  equivalent number of seconds.  <var>X</var> is a double array of the same size
@@ -787,7 +776,6 @@ Duration equivalent numeric values in seconds.
 <p> Values containing a fractional portion less than 1 picosecond are rounded
  to the nearest picosecond.
 </p>
-
 
 
             </div>
@@ -815,7 +803,6 @@ Duration equivalent numeric values in milliseconds.
 <dl>
 <dt><code><h5 class="fs">duration: <var>X</var> = <b>milliseconds</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>X</var> = milliseconds (<var>D</var>)</code> converts durations in <var>D</var> to
  the equivalent number of milliseconds.  <var>X</var> is a double array of the
@@ -824,7 +811,6 @@ Duration equivalent numeric values in milliseconds.
 <p> Values containing a fractional portion less than 1 picosecond are rounded
  to the nearest picosecond.
 </p>
-
 
 
             </div>
@@ -855,7 +841,6 @@ Return the size of a duration array.
 <dt><code><h5 class="fs">duration: <var>dim_sz</var> = <b>size</b> (<var>D</var>, <var>d1</var>, <var>d2</var>, &hellip;)</code></h5></dt>
 <dt><code><h5 class="fs">duration: [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b> (&hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>sz</var> = size (<var>D</var>)</code> returns a row vector with the size
  (number of elements) of each dimension for the duration array <var>D</var>.
@@ -870,7 +855,6 @@ Return the size of a duration array.
  called with multiple output arguments, <code>size</code> returns the size of
  dimension N in the Nth argument.
 </p>
-
 
 
             </div>
@@ -898,12 +882,10 @@ Number of dimensions in a duration array.
 <dl>
 <dt><code><h5 class="fs">duration: <var>out</var> = <b>ndims</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = ndims (<var>D</var>)</code> returns the number of dimensions of
  the duration array <var>D</var>.
 </p>
-
 
 
             </div>
@@ -931,12 +913,10 @@ Total number of elements in a duration array.
 <dl>
 <dt><code><h5 class="fs">duration: <var>out</var> = <b>numel</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = numel (<var>D</var>)</code> returns the number of elements in the
  duration array <var>D</var>.
 </p>
-
 
 
             </div>
@@ -964,12 +944,10 @@ Number of nonzero elements in duration array.
 <dl>
 <dt><code><h5 class="fs">duration: <var>out</var> = <b>nnz</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = nnz (<var>D</var>)</code> returns the number of nonzero
  elements in the duration array <var>D</var>.
 </p>
-
 
 
             </div>
@@ -997,13 +975,11 @@ Length of a duration vector.
 <dl>
 <dt><code><h5 class="fs">duration: <var>N</var> = <b>length</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>N</var> = length (<var>D</var>)</code> returns the size of the longest
  dimension of the duration array <var>D</var>, unless any of its dimensions has
  zero length, in which case <code>length (<var>D</var>)</code> returns 0.
 </p>
-
 
 
             </div>
@@ -1031,7 +1007,6 @@ Generate a hash code for duration array.
 <dl>
 <dt><code><h5 class="fs">duration: <var>hey</var> = <b>keyHash</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>h</var> = keyHash (<var>D</var>)</code> generates a <code>uint64</code> scalar that
  represents the input array <var>D</var>.  <code>keyHash</code> utilizes the 64-bit
@@ -1048,7 +1023,6 @@ Generate a hash code for duration array.
  hash key for any particular input across different workers and Octave
  sessions.
 </p>
-
 
 
             </div>
@@ -1077,7 +1051,6 @@ Find duration elements within specified range.
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>isbetween</b> (<var>D</var>, <var>lower</var>, <var>upper</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>isbetween</b> (<var>D</var>, <var>lower</var>, <var>upper</var>, <var>intervalType</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isbetween (<var>D</var>, <var>lower</var>, <var>upper</var>)</code> returns a
  logical array, <var>TF</var>, which is the same size as the input duration
@@ -1092,22 +1065,18 @@ Find duration elements within specified range.
  <var>intervalType</var>)</code> specifies the type of interval for the <var>lower</var>
  and <var>upper</var> bounds and it can be one of the following values.
 </p>
- <ul>
+<ul>
 <li> <code>'closed'</code> (default) includes lower and upper bounds.
-
- </li><li> <code>'open'</code> excludes lower and upper bounds.
-
- </li><li> <code>'openleft'</code> or <code>'closedright'</code> exclude the lower and
+</li><li> <code>'open'</code> excludes lower and upper bounds.
+</li><li> <code>'openleft'</code> or <code>'closedright'</code> exclude the lower and
  include the upper bound.  They have identical behavior.
-
- </li><li> <code>'closedleft'</code> or <code>'openright'</code> include the lower and
+</li><li> <code>'closedleft'</code> or <code>'openright'</code> include the lower and
  exclude the upper bound.  They have identical behavior.
- </li></ul>
+</li></ul>
 
 <p> <var>intervalType</var> can be specified either as a character vector or a
  string scalar.
 </p>
-
 
 
             </div>
@@ -1135,7 +1104,6 @@ Return true if duration array is a column vector.
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>iscolumn</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = iscolumn (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the duration array <var>D</var> is a column vector
@@ -1143,7 +1111,6 @@ Return true if duration array is a column vector.
  <code>size (<var>D</var>)</code> returns <code>[<var>N</var>, 1]</code> with non-negative
  <var>N</var>.  By definition, a scalar is also a column vector.
 </p>
-
 
 
             </div>
@@ -1171,13 +1138,11 @@ Return true if duration array is empty.
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>isempty</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isempty (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the duration array <var>D</var> is empty and
  <code>false</code> otherwise.
 </p>
-
 
 
             </div>
@@ -1206,7 +1171,6 @@ Return true if duration arrays are equal.
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>isequal</b> (<var>D1</var>, <var>D2</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>isequal</b> (<var>D1</var>, <var>D2</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isequal (<var>D1</var>, <var>D2</var>)</code> returns a logical scalar
  <var>TF</var>, which is <code>true</code>, if the duration arrays <var>D1</var> and
@@ -1219,7 +1183,6 @@ Return true if duration arrays are equal.
  scalar <var>TF</var>, which is <code>true</code>, if all input arguments are equal,
  and <code>false</code> otherwise.
 </p>
-
 
 
             </div>
@@ -1249,7 +1212,6 @@ Return true if duration arrays are equal under the assumption that
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>isequaln</b> (<var>D1</var>, <var>D2</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>isequaln</b> (<var>D1</var>, <var>D2</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isequaln (<var>D1</var>, <var>D2</var>)</code> returns a logical scalar
  <var>TF</var>, which is <code>true</code>, if the duration arrays <var>D1</var> and
@@ -1263,7 +1225,6 @@ Return true if duration arrays are equal under the assumption that
  are equal under the assumption that missing elements are equal, and
  <code>false</code> otherwise.
 </p>
-
 
 
             </div>
@@ -1291,7 +1252,6 @@ Return true for duration elements that are finite.
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>isfinite</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isfinite (<var>D</var>)</code> returns a logical array <var>TF</var>
  of the same size as <var>calD</var> containing <code>true</code> for each
@@ -1299,7 +1259,6 @@ Return true for duration elements that are finite.
  otherwise.  Finite elements are those which are neither infinite nor
  Not-A-Number.
 </p>
-
 
 
             </div>
@@ -1327,14 +1286,12 @@ Return true for duration elements that are infinite.
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>isinf</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isinf (<var>D</var>)</code> returns a logical array <var>TF</var>
  of the same size as <var>D</var> containing <code>true</code> for each
  corresponding element of <var>calD</var> that is either <code>Inf</code> or
  <code>-Inf</code> and <code>false</code> otherwise.
 </p>
-
 
 
             </div>
@@ -1362,14 +1319,12 @@ Return true if duration array is a 2-D array.
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>ismatrix</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = ismatrix (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the duration array <var>D</var> is a matrix and
  <code>false</code> otherwise.  A matrix is an array of any type where
  <code>ndims (<var>D</var>) == 2</code>.  By definition, a scalar is also a matrix.
 </p>
-
 
 
             </div>
@@ -1400,7 +1355,6 @@ Find duration elements in a set.
 <dt><code><h5 class="fs">duration: [<var>TF</var>, <var>index</var>] = <b>ismember</b> (&hellip;)</code></h5></dt>
 <dt><code><h5 class="fs">duration: [<var>TF</var>, <var>index</var>] = <b>ismember</b> (&hellip;, <code>'legacy'</code>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = ismember (<var>A</var>, <var>B</var>)</code> returns a logical array
  <var>TF</var> of the same size as <var>A</var> containing <code>true</code> for each
@@ -1425,7 +1379,6 @@ Find duration elements in a set.
  returned.  Unless multiple matches exist, the <code>'legacy'</code> option has
  no effect on the returned <var>index</var>.
 </p>
-
 
 
             </div>
@@ -1454,7 +1407,6 @@ Find missing elements in duration array.
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>ismissing</b> (<var>D</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>ismissing</b> (<var>D</var>, <var>indicator</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = ismissing (<var>D</var>)</code> returns a logical array, <var>TF</var>,
  with the same dimensions as <var>D</var>, where <code>true</code> values match the
@@ -1465,7 +1417,6 @@ Find missing elements in duration array.
  specifying <var>indicator</var> values, the standard missing values are
  ignored, unless explicitly stated in the <var>indicator</var>.
 </p>
-
 
 
             </div>
@@ -1493,13 +1444,11 @@ Return true for duration elements that are Not-A-Number.
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>isnan</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isnan (<var>D</var>)</code> returns a logical array <var>TF</var> of
  the same size as <var>D</var> containing <code>true</code> for each corresponding
  element of <var>calD</var> that is <code>NaN</code> and <code>false</code> otherwise.
 </p>
-
 
 
             </div>
@@ -1527,7 +1476,6 @@ Return true if duration array is a row vector.
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>isrow</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isrow (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the duration array <var>D</var> is a row vector
@@ -1535,7 +1483,6 @@ Return true if duration array is a row vector.
  <code>size (<var>D</var>)</code> returns <code>[1, <var>N</var>]</code> with non-negative
  <var>N</var>.  By definition, a scalar is also a row vector.
 </p>
-
 
 
             </div>
@@ -1563,14 +1510,12 @@ Return true if duration array is a scalar.
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>isscalar</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isscalar (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the duration array <var>D</var> is also a scalar
  and <code>false</code> otherwise.  A scalar is a single element object for
  which <code>size (<var>D</var>)</code> returns <code>[1, 1]</code>.
 </p>
-
 
 
             </div>
@@ -1603,7 +1548,6 @@ Return true if duration array is sorted.
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>issorted</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>issorted</b> (&hellip;, <code>'ComparisonMethod'</code>, <var>CM</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = issorted (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code>, if the duration array <var>D</var> is sorted in
@@ -1620,44 +1564,43 @@ Return true if duration array is sorted.
  <code>false</code> otherwise.  <var>direction</var> can be any of the following
  options:
 </p>
- <ul>
+<ul>
 <li> <code>'ascend'</code>, which is the default, checks is elements are in
  ascending order.
- </li><li> <code>'descend'</code> checks if elements are in descending order.
- </li><li> <code>'monotonic'</code> checks if elements are either in ascending or
+</li><li> <code>'descend'</code> checks if elements are in descending order.
+</li><li> <code>'monotonic'</code> checks if elements are either in ascending or
  descending order.
- </li><li> <code>'strictascend'</code> checks if elements are in ascending order
+</li><li> <code>'strictascend'</code> checks if elements are in ascending order
  and there are no duplicate or undefined elements.
- </li><li> <code>'strictdescend'</code> checks if elements are in descending order
+</li><li> <code>'strictdescend'</code> checks if elements are in descending order
  and there are no duplicate or undefined elements.
- </li><li> <code>'strictmonotonic'</code> checks if elements are either in
+</li><li> <code>'strictmonotonic'</code> checks if elements are either in
  ascending or descending order and there are no duplicate or undefined
  elements.
- </li></ul>
+</li></ul>
 
 <p> <code><var>TF</var> = issorted (&hellip;, <code>'MissingPlacement'</code>,
  <var>MP</var>)</code>
  specifies where missing elements (<code>NaN</code>) are placed with one of the
  following options specified in <var>MP</var>:
 </p>
- <ul>
+<ul>
 <li> <code>'auto'</code>, which is the default, places missing elements last
  for ascending sort and first for descending sort.
- </li><li> <code>'first'</code> places missing elements first.
- </li><li> <code>'last'</code> places missing elements last.
- </li></ul>
+</li><li> <code>'first'</code> places missing elements first.
+</li><li> <code>'last'</code> places missing elements last.
+</li></ul>
 
 <p> <code><var>TF</var> = issorted (&hellip;, <code>'ComparisonMethod'</code>,
  <var>CM</var>)</code>
  specifies the comparison method for determining the order of elements
  with one of following options specified in <var>CM</var>:
 </p>
- <ul>
+<ul>
 <li> <code>'auto'</code>, which is the default, sorts by <code>real (A)</code>.
- </li><li> <code>'real'</code> sorts by <code>real (A)</code>.
- </li><li> <code>'abs'</code> sorts by <code>abs (A)</code>.
- </li></ul>
-
+</li><li> <code>'real'</code> sorts by <code>real (A)</code>.
+</li><li> <code>'abs'</code> sorts by <code>abs (A)</code>.
+</li></ul>
 
 
 
@@ -1691,7 +1634,6 @@ Return true if duration matrix rows are sorted.
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>issortedrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>issortedrows</b> (&hellip;, <code>'ComparisonMethod'</code>, <var>CM</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = issortedrows (<var>D</var>)</code> returns a logical scalar
  <var>TF</var>, which is <code>true</code>, if the rows in the 2-D duration array
@@ -1710,20 +1652,20 @@ Return true if duration matrix rows are sorted.
  rows in <var>D</var> are sorted according to the specified direction, which
  can be one of the following options:
 </p>
- <ul>
+<ul>
 <li> <code>'ascend'</code>, which is the default, checks is elements are in
  ascending order.
- </li><li> <code>'descend'</code> checks if elements are in descending order.
- </li><li> <code>'monotonic'</code> checks if elements are either in ascending or
+</li><li> <code>'descend'</code> checks if elements are in descending order.
+</li><li> <code>'monotonic'</code> checks if elements are either in ascending or
  descending order.
- </li><li> <code>'strictascend'</code> checks if elements are in ascending order
+</li><li> <code>'strictascend'</code> checks if elements are in ascending order
  and there are no duplicate or undefined elements.
- </li><li> <code>'strictdescend'</code> checks if elements are in descending order
+</li><li> <code>'strictdescend'</code> checks if elements are in descending order
  and there are no duplicate or undefined elements.
- </li><li> <code>'strictmonotonic'</code> checks if elements are either in
+</li><li> <code>'strictmonotonic'</code> checks if elements are either in
  ascending or descending order and there are no duplicate or undefined
  elements.
- </li></ul>
+</li></ul>
 
 <p> Alternatively, <var>direction</var> can be a cell array of character
  vectors specifying the sorting direction for each individual column of
@@ -1742,23 +1684,22 @@ Return true if duration matrix rows are sorted.
  <var>MP</var>)</code> specifies where missing elements (<code>&lt;undefined&gt;</code>) are
  placed with one of the following options specified in <var>MP</var>:
 </p>
- <ul>
+<ul>
 <li> <code>'auto'</code>, which is the default, places missing elements last
  for ascending sort and first for descending sort.
- </li><li> <code>'first'</code> places missing elements first.
- </li><li> <code>'last'</code> places missing elements last.
- </li></ul>
+</li><li> <code>'first'</code> places missing elements first.
+</li><li> <code>'last'</code> places missing elements last.
+</li></ul>
 
 <p> <code><var>TF</var> = issortedrows (&hellip;, <code>'ComparisonMethod'</code>,
  <var>CM</var>)</code> specifies the comparison method for determining the order of
  elements with one of following options specified in <var>CM</var>:
 </p>
- <ul>
+<ul>
 <li> <code>'auto'</code>, which is the default, sorts by <code>real (A)</code>.
- </li><li> <code>'real'</code> sorts by <code>real (A)</code>.
- </li><li> <code>'abs'</code> sorts by <code>abs (A)</code>.
- </li></ul>
-
+</li><li> <code>'real'</code> sorts by <code>real (A)</code>.
+</li><li> <code>'abs'</code> sorts by <code>abs (A)</code>.
+</li></ul>
 
 
 
@@ -1787,7 +1728,6 @@ Return true if duration array is a vector.
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>isvector</b> (<var>D</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = isvector (<var>D</var>)</code> returns a logical scalar <var>TF</var>,
  which is <code>true</code> if the duration array <var>D</var> is a vector and
@@ -1795,7 +1735,6 @@ Return true if duration array is a vector.
  dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
  definition, a scalar is also a vector.
 </p>
-
 
 
             </div>
@@ -1823,7 +1762,6 @@ Equality for duration arrays.
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = eq (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>TF</var> = <var>A</var> == <var>B</var></code> and returns a logical array whose
@@ -1839,7 +1777,6 @@ Equality for duration arrays.
  of character vectors, or a string array representing duration strings or
  a numeric array representing days.
 </p>
-
 
 
             </div>
@@ -1867,7 +1804,6 @@ Equality for duration arrays.
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>ge</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = ge (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>TF</var> = <var>A</var> &gt;= <var>B</var></code> and returns a logical array whose
@@ -1883,7 +1819,6 @@ Equality for duration arrays.
  of character vectors, or a string array representing duration strings or
  a numeric array representing days.
 </p>
-
 
 
             </div>
@@ -1911,7 +1846,6 @@ Equality for duration arrays.
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>gt</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = gt (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>TF</var> = <var>A</var> &gt; <var>B</var></code> and returns a logical array whose
@@ -1927,7 +1861,6 @@ Equality for duration arrays.
  of character vectors, or a string array representing duration strings or
  a numeric array representing days.
 </p>
-
 
 
             </div>
@@ -1955,7 +1888,6 @@ Equality for duration arrays.
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>le</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = le (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>TF</var> = <var>A</var> &lt;= <var>B</var></code> and returns a logical array whose
@@ -1971,7 +1903,6 @@ Equality for duration arrays.
  of character vectors, or a string array representing duration strings or
  a numeric array representing days.
 </p>
-
 
 
             </div>
@@ -1999,7 +1930,6 @@ Equality for duration arrays.
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>lt</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = lt (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>TF</var> = <var>A</var> &lt; <var>B</var></code> and returns a logical array whose
@@ -2015,7 +1945,6 @@ Equality for duration arrays.
  of character vectors, or a string array representing duration strings or
  a numeric array representing days.
 </p>
-
 
 
             </div>
@@ -2043,7 +1972,6 @@ Equality for duration arrays.
 <dl>
 <dt><code><h5 class="fs">duration: <var>TF</var> = <b>ne</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>TF</var> = ne (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>TF</var> = <var>A</var> != <var>B</var></code> and returns a logical array whose
@@ -2059,7 +1987,6 @@ Equality for duration arrays.
  of character vectors, or a string array representing duration strings or
  a numeric array representing days.
 </p>
-
 
 
             </div>
@@ -2087,13 +2014,11 @@ Absolute value of the elements of a duration array.
 <dl>
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>abs</b> (<var>A</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = abs (<var>A</var>)</code> returns the absolute value of each element
  in the duration array <var>A</var>.  The returned duration array <var>B</var> has
  the same size as the input array <var>A</var>.
 </p>
-
 
 
             </div>
@@ -2121,7 +2046,6 @@ Addition for duration arrays.
 <dl>
 <dt><code><h5 class="fs">duration: <var>C</var> = <b>plus</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = plus (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>C</var> = <var>A</var> + <var>B</var></code> and returns the sum of <var>A</var> and
@@ -2136,7 +2060,6 @@ Addition for duration arrays.
  <var>B</var> is a calendarDuration arrays, then the returned array <var>C</var> is
  also a calendarDuration array.
 </p>
-
 
 
             </div>
@@ -2164,12 +2087,10 @@ Unary plus for duration arrays.
 <dl>
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>uplus</b> (<var>A</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = uplus (<var>A</var>)</code> is the equivalent of the syntax
  <code><var>B</var> = + <var>A</var></code> and returns the input array unaltered.
 </p>
-
 
 
             </div>
@@ -2197,7 +2118,6 @@ Subtraction for duration arrays.
 <dl>
 <dt><code><h5 class="fs">duration: <var>C</var> = <b>minus</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = minus (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>C</var> = <var>A</var> - <var>B</var></code> and returns the subtraction of <var>B</var>
@@ -2212,7 +2132,6 @@ Subtraction for duration arrays.
  <var>B</var> is a calendarDuration arrays, then the returned array <var>C</var> is
  also a calendarDuration array.
 </p>
-
 
 
             </div>
@@ -2240,13 +2159,11 @@ Unary minus for duration arrays.
 <dl>
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>uminus</b> (<var>A</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = uminus (<var>A</var>)</code> is the equivalent of the syntax
  <code><var>B</var> = - <var>A</var></code> and returns the input array with its elements
  negated.
 </p>
-
 
 
             </div>
@@ -2274,7 +2191,6 @@ Element-wise multiplication for duration arrays.
 <dl>
 <dt><code><h5 class="fs">duration: <var>C</var> = <b>times</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = times (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
  <code><var>C</var> = <var>A</var> .* <var>B</var></code> and returns the element-by-element
@@ -2287,7 +2203,6 @@ Element-wise multiplication for duration arrays.
  dimension sizes must be equal or one of them must be 1.  The size of
  <var>C</var> is determined by the size compatibility of <var>A</var> and <var>B</var>.
 </p>
-
 
 
             </div>
@@ -2315,7 +2230,6 @@ Matrix multiplication for duration arrays.
 <dl>
 <dt><code><h5 class="fs">duration: <var>C</var> = <b>times</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = mtimes (<var>A</var>, <var>B</var>)</code> is the equivalent of the
  syntax <code><var>C</var> = <var>A</var> * <var>B</var></code> and returns the matrix
@@ -2325,7 +2239,6 @@ Matrix multiplication for duration arrays.
 <p> The columns of <var>A</var> must equal the rows of <var>B</var> and the size of
  <var>C</var> is determined by the rows of <var>A</var> and the columns of <var>B</var>.
 </p>
-
 
 
             </div>
@@ -2353,7 +2266,6 @@ Element-wise left division for duration arrays.
 <dl>
 <dt><code><h5 class="fs">duration: <var>C</var> = <b>ldivide</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = ldivide (<var>A</var>, <var>B</var>)</code> is the equivalent of the
  syntax <code><var>C</var> = <var>A</var> .\ <var>B</var></code> and returns the element-wise
@@ -2367,7 +2279,6 @@ Element-wise left division for duration arrays.
  dimension sizes must be equal or one of them must be 1.  The size of
  <var>C</var> is determined by the size compatibility of <var>A</var> and <var>B</var>.
 </p>
-
 
 
             </div>
@@ -2395,7 +2306,6 @@ Element-wise right division for duration arrays.
 <dl>
 <dt><code><h5 class="fs">duration: <var>C</var> = <b>rdivide</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = rdivide (<var>A</var>, <var>B</var>)</code> is the equivalent of the
  syntax <code><var>C</var> = <var>A</var> ./ <var>B</var></code> and returns the element-wise
@@ -2409,7 +2319,6 @@ Element-wise right division for duration arrays.
  dimension sizes must be equal or one of them must be 1.  The size of
  <var>C</var> is determined by the size compatibility of <var>A</var> and <var>B</var>.
 </p>
-
 
 
             </div>
@@ -2438,7 +2347,6 @@ Create a range of durations in a vector.
 <dt><code><h5 class="fs">duration: <var>R</var> = <b>colon</b> (<var>Base</var>, <var>Limit</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>R</var> = <b>colon</b> (<var>Base</var>, <var>Increment</var>, <var>Limit</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>R</var> = colon (<var>Base</var>, <var>Limit</var>)</code> is the equivalent of the
  syntax <code><var>C</var> = <var>Base</var>:<var>Limit</var></code> and returns a duration
@@ -2453,13 +2361,12 @@ Create a range of durations in a vector.
 <p> As long as one of the inputs is a duration scalar, the following types
  are additionally supported for the remaining input arguments:
 </p>
- <ul>
+<ul>
 <li> numeric scalar (24-hour day)
- </li><li> character vector (duration string)
- </li><li> cellstr scalar (duration string)
- </li><li> string scalar (duration string)
- </li></ul>
-
+</li><li> character vector (duration string)
+</li><li> cellstr scalar (duration string)
+</li><li> string scalar (duration string)
+</li></ul>
 
 
 
@@ -2489,7 +2396,6 @@ Create linearly spaced duration elements.
 <dt><code><h5 class="fs">duration: <var>R</var> = <b>linspace</b> (<var>Start</var>, <var>End</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>R</var> = <b>linspace</b> (<var>Start</var>, <var>End</var>, <var>N</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>R</var> = linspace (<var>Start</var>, <var>End</var>)</code> returns 100 linearly
  spaced elements between <var>Start</var> and <var>End</var>.  If <var>Start</var> and
@@ -2508,13 +2414,12 @@ Create linearly spaced duration elements.
 <p> Either <var>Start</var> or <var>End</var> input arguments can also be one of the
  following types:
 </p>
- <ul>
+<ul>
 <li> numeric scalar or vector (24-hour days)
- </li><li> character vector (duration string)
- </li><li> cellstr scalar or vector (duration strings)
- </li><li> string scalar or vector (duration strings)
- </li></ul>
-
+</li><li> character vector (duration string)
+</li><li> cellstr scalar or vector (duration strings)
+</li><li> string scalar or vector (duration strings)
+</li></ul>
 
 
 
@@ -2545,13 +2450,11 @@ Compute differences between adjacent elements in a duration array.
 <dt><code><h5 class="fs">duration: <var>DT</var> = <b>diff</b> (<var>D</var>, <var>K</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>DT</var> = <b>diff</b> (<var>D</var>, <var>K</var>, <var>DIM</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method overloads the core <code>diff</code> function for duration arrays.
  The functionality is identical to core <code>diff</code> function.  Type
  <code>help diff</code> for more information.
 </p>
-
 
 
             </div>
@@ -2583,13 +2486,11 @@ Compute the sum of the elements of a duration array.
 <dt><code><h5 class="fs">duration: <var>S</var> = <b>sum</b> (<var>D</var>, <code>'all'</code>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>S</var> = <b>sum</b> (&hellip;, <var>nanflag</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method overloads the core <code>sum</code> function for duration arrays.
  The functionality is identical to core <code>sum</code> function.  Type
  <code>help sum</code> for more information.
 </p>
-
 
 
             </div>
@@ -2622,13 +2523,11 @@ Compute the cumulative sum of the elements of a duration array.
 <dt><code><h5 class="fs">duration: <var>CS</var> = <b>cumsum</b> (&hellip;, <var>direction</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>CS</var> = <b>cumsum</b> (&hellip;, <var>nanflag</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method overloads the core <code>cumsum</code> function for duration
  arrays. The functionality is identical to core <code>cumsum</code> function.
  Type <code>help cumsum</code> for more information.
 </p>
-
 
 
             </div>
@@ -2666,13 +2565,11 @@ Find minimum values in duration arrays.
 <dt><code><h5 class="fs">duration: <var>M</var> = <b>min</b> (<var>D1</var>, <var>D2</var>, <var>nanflag</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: &hellip; = <b>min</b> (&hellip;, <code>'ComparisonMethod'</code>, <var>method</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method overloads the core <code>min</code> function for duration
  arrays. The functionality is identical to core <code>min</code> function.
  Type <code>help min</code> for more information.
 </p>
-
 
 
             </div>
@@ -2708,13 +2605,11 @@ Return the cumulative minimum values in duration arrays.
 <dt><code><h5 class="fs">duration: [<var>M</var>, <var>index</var>] = <b>cummin</b> (&hellip;, <code>'linear'</code>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: &hellip; = <b>cummin</b> (&hellip;, <code>'ComparisonMethod'</code>, <var>method</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method overloads the core <code>cummin</code> function for duration
  arrays. The functionality is identical to core <code>cummin</code> function.
  Type <code>help cummin</code> for more information.
 </p>
-
 
 
             </div>
@@ -2752,13 +2647,11 @@ Find maximum values in duration arrays.
 <dt><code><h5 class="fs">duration: <var>M</var> = <b>max</b> (<var>D1</var>, <var>D2</var>, <var>nanflag</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: &hellip; = <b>max</b> (&hellip;, <code>'ComparisonMethod'</code>, <var>method</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method overloads the core <code>max</code> function for duration
  arrays. The functionality is identical to core <code>max</code> function.
  Type <code>help max</code> for more information.
 </p>
-
 
 
             </div>
@@ -2794,13 +2687,11 @@ Return the cumulative maximum values in duration arrays.
 <dt><code><h5 class="fs">duration: [<var>M</var>, <var>index</var>] = <b>cummax</b> (&hellip;, <code>'linear'</code>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: &hellip; = <b>cummax</b> (&hellip;, <code>'ComparisonMethod'</code>, <var>method</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method overloads the core <code>cummax</code> function for duration
  arrays. The functionality is identical to core <code>cummax</code> function.
  Type <code>help cummax</code> for more information.
 </p>
-
 
 
             </div>
@@ -2829,7 +2720,6 @@ Round toward negative infinity for duration arrays.
 <dt><code><h5 class="fs">duration: <var>Y</var> = <b>floor</b> (<var>D</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>Y</var> = <b>floor</b> (<var>D</var>, <var>unit</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>Y</var> = floor (<var>D</var>)</code> rounds each element of the duration
  array <var>D</var> to the largest integer number of seconds not greater than
@@ -2840,14 +2730,13 @@ Round toward negative infinity for duration arrays.
  unit of time not greater than that element.  <var>unit</var> must be one of
  the following values:
 </p>
- <ul>
+<ul>
 <li> <code>'seconds'</code> (default)
- </li><li> <code>'minutes'</code>
- </li><li> <code>'hours'</code>
- </li><li> <code>'days'</code>
- </li><li> <code>'years'</code>
- </li></ul>
-
+</li><li> <code>'minutes'</code>
+</li><li> <code>'hours'</code>
+</li><li> <code>'days'</code>
+</li><li> <code>'years'</code>
+</li></ul>
 
 
 
@@ -2877,7 +2766,6 @@ Round toward negative infinity for duration arrays.
 <dt><code><h5 class="fs">duration: <var>Y</var> = <b>ceil</b> (<var>D</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>Y</var> = <b>ceil</b> (<var>D</var>, <var>unit</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>Y</var> = ceil (<var>D</var>)</code> rounds each element of the duration
  array <var>D</var> to the smallest integer number of seconds not less than
@@ -2888,14 +2776,13 @@ Round toward negative infinity for duration arrays.
  unit of time not less than that element.  <var>unit</var> must be one of the
  following values:
 </p>
- <ul>
+<ul>
 <li> <code>'seconds'</code> (default)
- </li><li> <code>'minutes'</code>
- </li><li> <code>'hours'</code>
- </li><li> <code>'days'</code>
- </li><li> <code>'years'</code>
- </li></ul>
-
+</li><li> <code>'minutes'</code>
+</li><li> <code>'hours'</code>
+</li><li> <code>'days'</code>
+</li><li> <code>'years'</code>
+</li></ul>
 
 
 
@@ -2925,7 +2812,6 @@ Round to the nearest integer time unit for duration arrays.
 <dt><code><h5 class="fs">duration: <var>Y</var> = <b>round</b> (<var>D</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>Y</var> = <b>round</b> (<var>D</var>, <var>unit</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>Y</var> = round (<var>D</var>)</code> rounds each element of the duration
  array <var>D</var> to the nearest integer number of seconds to that element.
@@ -2936,14 +2822,13 @@ Round to the nearest integer time unit for duration arrays.
  unit of time to that element.  <var>unit</var> must be one of the following
  values:
 </p>
- <ul>
+<ul>
 <li> <code>'seconds'</code> (default)
- </li><li> <code>'minutes'</code>
- </li><li> <code>'hours'</code>
- </li><li> <code>'days'</code>
- </li><li> <code>'years'</code>
- </li></ul>
-
+</li><li> <code>'minutes'</code>
+</li><li> <code>'hours'</code>
+</li><li> <code>'days'</code>
+</li><li> <code>'years'</code>
+</li></ul>
 
 
 
@@ -2973,19 +2858,17 @@ Compute the signum function for duration arrays.
 <dt><code><h5 class="fs">duration: <var>out</var> = <b>sign</b> (<var>D</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>out</var> = <b>sign</b> (<var>D</var>, <var>unit</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>out</var> = sign (<var>D</var>)</code> returns an array of doubles, <var>out</var>,
  the same size as the duration array <var>D</var>, where each element has one
  following values:
 </p>
- <ul>
+<ul>
 <li> <code>1</code> if the corresponding element of D is greater than 0.
- </li><li> <code>0</code> if the corresponding element of D is equal to 0.
- </li><li> <code>-1</code> if the corresponding element of D is less than 0.
- </li><li> <code>NaN</code> if the corresponding element of D is a missing value.
- </li></ul>
-
+</li><li> <code>0</code> if the corresponding element of D is equal to 0.
+</li><li> <code>-1</code> if the corresponding element of D is less than 0.
+</li><li> <code>NaN</code> if the corresponding element of D is a missing value.
+</li></ul>
 
 
 
@@ -3018,13 +2901,11 @@ Return the smallest and largest values of a duration array.
 <dt><code><h5 class="fs">duration: [<var>s</var>, <var>l</var>] = <b>bounds</b> (<var>D</var>, <code>'all'</code>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: [<var>s</var>, <var>l</var>] = <b>bounds</b> (&hellip;, <var>nanflag</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method is a specialization of the core <code>bounds</code> function for
  duration arrays.  The functionality is identical to core <code>bounds</code>
  function.  Type <code>help bounds</code> for more information.
 </p>
-
 
 
             </div>
@@ -3056,13 +2937,11 @@ Center values in a duration array.
 <dt><code><h5 class="fs">duration: <var>C</var> = <b>center</b> (<var>D</var>, <code>'all'</code>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>C</var> = <b>center</b> (&hellip;, <var>nanflag</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method overloads the core <code>center</code> function for duration
  arrays.  The functionality is identical to core <code>center</code> function.
  Type <code>help center</code> for more information.
 </p>
-
 
 
             </div>
@@ -3092,13 +2971,11 @@ Compute histogram counts in a duration array.
 <dt><code><h5 class="fs">duration: <var>n</var> = <b>histc</b> (<var>D</var>, <var>edges</var>, <var>dim</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: [<var>n</var>, <var>idx</var>] = <b>histc</b> (&hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method overloads the core <code>histc</code> function for duration
  arrays.  The functionality is identical to core <code>histc</code> function.
  Type <code>help histc</code> for more information.
 </p>
-
 
 
             </div>
@@ -3130,13 +3007,11 @@ Compute the interquartile range of a duration array.
 <dt><code><h5 class="fs">duration: <var>r</var> = <b>iqr</b> (<var>D</var>, <code>'all'</code>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: [<var>r</var>, <var>q</var>] = <b>iqr</b> (&hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method overloads the core <code>iqr</code> function for duration arrays.
  The functionality is identical to core <code>iqr</code> function.
  Type <code>help iqr</code> for more information.
 </p>
-
 
 
             </div>
@@ -3168,7 +3043,6 @@ Compute the sample kurtosis of a duration array.
 <dt><code><h5 class="fs">duration: <var>k</var> = <b>kurtosis</b> (<var>D</var>, <var>flag</var>, <var>vecdim</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>k</var> = <b>kurtosis</b> (<var>D</var>, <var>flag</var>, <code>'all'</code>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method overloads the core <code>kurtosis</code> function for duration
  arrays.  The functionality is identical to core <code>kurtosis</code> function.
@@ -3177,7 +3051,6 @@ Compute the sample kurtosis of a duration array.
 <p> Note that kurtosis is a dimensionless quantity  Thus, the returned
  argument is a numeric array of double type and not a duration array.
 </p>
-
 
 
             </div>
@@ -3209,13 +3082,11 @@ Compute the mean or median absolute deviation of a duration array.
 <dt><code><h5 class="fs">duration: <var>M</var> = <b>mad</b> (<var>D</var>, <var>opt</var>, <var>vecdim</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>M</var> = <b>mad</b> (<var>D</var>, <var>opt</var>, <code>'all'</code>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method overloads the core <code>mad</code> function for duration arrays.
  The functionality is identical to core <code>mad</code> function.
  Type <code>help mad</code> for more information.
 </p>
-
 
 
             </div>
@@ -3249,7 +3120,6 @@ Compute the mean absolute percentage error between duration arrays.
 <dt><code><h5 class="fs">duration: <var>E</var> = <b>mape</b> (&hellip;, <var>zeroflag</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>E</var> = <b>mape</b> (&hellip;, <code>'Weights'</code>, <var>W</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method overloads the core <code>mape</code> function for duration arrays.
  The functionality is identical to core <code>mape</code> function.
@@ -3259,7 +3129,6 @@ Compute the mean absolute percentage error between duration arrays.
  is a numeric array of double type and not a duration array.  However,
  both <var>F</var> and <var>A</var> must be duration arrays.
 </p>
-
 
 
             </div>
@@ -3293,13 +3162,11 @@ Compute the mean of the elements of a duration array.
 <dt><code><h5 class="fs">duration: <var>M</var> = <b>mean</b> (&hellip;, <var>outtype</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>M</var> = <b>mean</b> (&hellip;, <code>'Weights'</code>, <var>W</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method overloads the core <code>mean</code> function for duration arrays.
  The functionality is identical to core <code>mean</code> function.
  Type <code>help mean</code> for more information.
 </p>
-
 
 
             </div>
@@ -3332,13 +3199,11 @@ Compute the median value of the elements of a duration array.
 <dt><code><h5 class="fs">duration: <var>M</var> = <b>median</b> (&hellip;, <var>nanflag</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>M</var> = <b>median</b> (&hellip;, <var>outtype</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method overloads the core <code>median</code> function for duration
  arrays.  The functionality is identical to core <code>median</code> function.
  Type <code>help median</code> for more information.
 </p>
-
 
 
             </div>
@@ -3370,13 +3235,11 @@ Compute the most frequently occurring value in a duration array.
 <dt><code><h5 class="fs">duration: <var>M</var> = <b>mode</b> (<var>D</var>, <code>'all'</code>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: [<var>M</var>, <var>F</var>, <var>C</var>] = <b>mode</b> (&hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method overloads the core <code>mode</code> function for duration arrays.
  The functionality is identical to core <code>mode</code> function.
  Type <code>help mode</code> for more information.
 </p>
-
 
 
             </div>
@@ -3409,13 +3272,11 @@ Compute the percentiles of a duration array.
 <dt><code><h5 class="fs">duration: <var>Q</var> = <b>prctile</b> (<var>D</var>, <var>p</var>, <code>'all'</code>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>Q</var> = <b>prctile</b> (<var>D</var>, <var>p</var>, &hellip;, <var>method</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method overloads the core <code>prctile</code> function for duration
  arrays.  The functionality is identical to core <code>prctile</code> function.
  Type <code>help prctile</code> for more information.
 </p>
-
 
 
             </div>
@@ -3450,13 +3311,11 @@ Compute the quantiles of a duration array.
 <dt><code><h5 class="fs">duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, <var>p</var>, &hellip;, <var>method</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, <var>n</var>, &hellip;, <var>method</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method overloads the core <code>quantile</code> function for duration
  arrays.  The functionality is identical to core <code>quantile</code> function.
  Type <code>help quantile</code> for more information.
 </p>
-
 
 
             </div>
@@ -3488,13 +3347,11 @@ Compute the range of a duration array.
 <dt><code><h5 class="fs">duration: <var>R</var> = <b>range</b> (<var>D</var>, <code>'all'</code>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>R</var> = <b>range</b> (&hellip;, <var>nanflag</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method overloads the core <code>range</code> function for duration arrays.
  The functionality is identical to core <code>range</code> function.
  Type <code>help range</code> for more information.
 </p>
-
 
 
             </div>
@@ -3527,13 +3384,11 @@ Compute the root mean squared error between duration arrays.
 <dt><code><h5 class="fs">duration: <var>E</var> = <b>rmse</b> (&hellip;, <var>nanflag</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>E</var> = <b>rmse</b> (&hellip;, <code>'Weights'</code>, <var>W</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method overloads the core <code>rmse</code> function for duration arrays.
  The functionality is identical to core <code>rmse</code> function.
  Type <code>help rmse</code> for more information.
 </p>
-
 
 
             </div>
@@ -3565,7 +3420,6 @@ Compute the sample skewness of a duration array.
 <dt><code><h5 class="fs">duration: <var>y</var> = <b>skewness</b> (<var>D</var>, <var>flag</var>, <var>vecdim</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>y</var> = <b>skewness</b> (<var>D</var>, <var>flag</var>, <code>'all'</code>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method overloads the core <code>skewness</code> function for duration
  arrays.  The functionality is identical to core <code>skewness</code> function.
@@ -3574,7 +3428,6 @@ Compute the sample skewness of a duration array.
 <p> Note that skewness is a dimensionless quantity  Thus, the returned
  argument is a numeric array of double type and not a duration array.
 </p>
-
 
 
             </div>
@@ -3608,13 +3461,11 @@ Compute the standard deviation of a duration array.
 <dt><code><h5 class="fs">duration: <var>S</var> = <b>std</b> (&hellip;, <var>nanflag</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: [<var>S</var>, <var>M</var>] = <b>std</b> (&hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> This method overloads the core <code>std</code> function for duration arrays.
  The functionality is identical to core <code>std</code> function.
  Type <code>help std</code> for more information.
 </p>
-
 
 
             </div>
@@ -3648,7 +3499,6 @@ Sort elements in a duration array.
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>sort</b> (&hellip;, <code>'ComparisonMethod'</code>, <var>CM</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: [<var>B</var>, <var>index</var>] = <b>sort</b> (<var>A</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = sort (<var>A</var>)</code> sorts the duration array <var>A</var> in
  ascending order.  If <var>A</var> is a matrix, <code>sort (<var>A</var>)</code> sorts
@@ -3667,38 +3517,37 @@ Sort elements in a duration array.
  returned in <var>B</var> with one of the following options specified in
  <var>MP</var>:
 </p>
- <ul>
+<ul>
 <li> <code>'auto'</code>, which is the default, places missing elements last
  for ascending sort and first for descending sort.
- </li><li> <code>'first'</code> places missing elements first.
- </li><li> <code>'last'</code> places missing elements last.
- </li></ul>
+</li><li> <code>'first'</code> places missing elements first.
+</li><li> <code>'last'</code> places missing elements last.
+</li></ul>
 
 <p> <code><var>B</var> = sort (&hellip;, <code>'ComparisonMethod'</code>, <var>CM</var>)</code>
  specifies the comparison method for determining the order of elements
  returned in <var>B</var> with one of following options:
 </p>
- <ul>
+<ul>
 <li> <code>'auto'</code>, which is the default, sorts by <code>real (A)</code>.
- </li><li> <code>'real'</code> sorts by <code>real (A)</code>.
- </li><li> <code>'abs'</code> sorts by <code>abs (A)</code>.
- </li></ul>
+</li><li> <code>'real'</code> sorts by <code>real (A)</code>.
+</li><li> <code>'abs'</code> sorts by <code>abs (A)</code>.
+</li></ul>
 
 <p> <code>[<var>B</var>, <var>index</var>] = sort (<var>A</var>, &hellip;)</code> also returns a
  sorting index containing the original indices of the elements in the
  sorted array.  <var>index</var> is the same size as <var>A</var> and it comprises
  indexing vectors oriented along the operating dimensions.
 </p>
- <ul>
+<ul>
 <li> If <var>A</var> is a vector, then <var>index</var> contains the original
  linear indices of the elements in the sorted vector <var>B</var> such that
  <code><var>B</var> = <var>A</var>(<var>index</var>)</code>.
- </li><li> If <var>A</var> is an <math>M&times;N</math> matrix and <code><var>dim</var> = 1</code>, then
+</li><li> If <var>A</var> is an <math>M&times;N</math> matrix and <code><var>dim</var> = 1</code>, then
  <var>index</var> contains the original row indices of the elements in the
  sorted vector <var>B</var> such that for <code>j = 1:N</code>,
  <code><var>B</var>(:,j) = <var>A</var>(<var>index</var>(:,j),j)</code>.
- </li></ul>
-
+</li></ul>
 
 
 
@@ -3732,7 +3581,6 @@ Sort rows in a duration array.
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: [<var>B</var>, <var>index</var>] = <b>sortrows</b> (<var>A</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = sortrows (<var>A</var>)</code> sorts the rows of the 2-D duration
  array <var>A</var> in ascending order.  The sorted array <var>B</var> has the same
@@ -3764,18 +3612,17 @@ Sort rows in a duration array.
  specifies where to place the missing elements (<code>NaN</code>) returned in
  <var>B</var> with any of the following options specified in <var>MP</var>:
 </p>
- <ul>
+<ul>
 <li> <code>'auto'</code>, which is the default, places missing elements last
  for ascending sort and first for descending sort.
- </li><li> <code>'first'</code> places missing elements first.
- </li><li> <code>'last'</code> places missing elements last.
- </li></ul>
+</li><li> <code>'first'</code> places missing elements first.
+</li><li> <code>'last'</code> places missing elements last.
+</li></ul>
 
 <p> <code>[<var>B</var>, <var>index</var>] = sortrows (<var>A</var>, &hellip;)</code> also returns
  an index vector containing the original row indices of <var>A</var> in the
  sorted matrix <var>B</var> such that <code><var>B</var> = <var>A</var>(<var>index</var>,:)</code>.
 </p>
-
 
 
             </div>
@@ -3809,7 +3656,6 @@ Unique values in a duration array.
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>unique</b> (<var>A</var>, &hellip;, <code>'rows'</code>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: [<var>B</var>, <var>ixA</var>, <var>ixB</var>] = <b>unique</b> (&hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = unique (<var>A</var>)</code> returns the unique values of the
  duration array <var>A</var> in sorted order.
@@ -3818,23 +3664,23 @@ Unique values in a duration array.
  values of the duration array <var>A</var> in an order as specified by
  <var>setOrder</var>, which can be either of the following values:
 </p>
- <ul>
+<ul>
 <li> <code>'sorted'</code> (default) returns the unique values sorted in
  ascending order.
- </li><li> <code>'stable'</code> returns the unique values according to their order
+</li><li> <code>'stable'</code> returns the unique values according to their order
  of occurrence.
- </li></ul>
+</li></ul>
 
 <p> <code><var>B</var> = unique (<var>A</var>, <var>occurrence</var>)</code> returns the unique
  values of the duration array <var>A</var> according to their order of
  occurrence.  <var>occurrence</var> can be either of the following values:
 </p>
- <ul>
+<ul>
 <li> <code>'first'</code> (default) returns the first occurrence of each
  unique value, i.e. the lowest possible indices are returned.
- </li><li> <code>'last'</code> returns the last occurrence of each unique value,
+</li><li> <code>'last'</code> returns the last occurrence of each unique value,
  i.e. the highest possible indices are returned.
- </li></ul>
+</li></ul>
 
 <p> You can specify <var>setOrder</var> and <var>occurrence</var> arguments together.
 </p>
@@ -3854,7 +3700,6 @@ Unique values in a duration array.
  argument is specified, then <code><var>B</var> = <var>A</var>(<var>ixA</var>,:)</code> and
  <code><var>A</var> = <var>B</var>(<var>ixB</var>,:)</code>.
 </p>
-
 
 
             </div>
@@ -3887,7 +3732,6 @@ One-dimensional interpolation for duration arrays.
 <dt><code><h5 class="fs">duration: <var>pp</var> = <b>interp1</b> (<var>X</var>, <var>Y</var>, <code>'pp'</code>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>pp</var> = <b>interp1</b> (<var>X</var>, <var>Y</var>, <var>method</var>, <code>'pp'</code>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>YI</var> = interp1 (<var>X</var>, <var>Y</var>, <var>XI</var>)</code> computes the
  linearly interpolated values of a one-dimensional function, which is
@@ -3905,36 +3749,29 @@ One-dimensional interpolation for duration arrays.
  interpolated values of a one-dimensional function assuming a default set
  of sampling points determined by the shape of <var>Y</var>:
 </p>
- <ul>
+<ul>
 <li> If <var>Y</var> is a vector, then the default sampling points are
  <code>[1:length(<var>Y</var>)</code>.
-
- </li><li> If <var>Y</var> is an array, then the default sampling points are
+</li><li> If <var>Y</var> is an array, then the default sampling points are
  <code>[1:size(<var>Y</var>)</code>.
- </li></ul>
+</li></ul>
 
 <p> <code><var>YI</var> = interp1 (&hellip;, <var>method</var>)</code> specifies one of the
  following interpolation methods to be used:
 </p>
- <ul>
+<ul>
 <li> <code>'linear'</code> (default) computes the linear interpolation from
  nearest neighbors.
-
- </li><li> <code>'nearest'</code> returns the nearest neighbor.
-
- </li><li> <code>'next'</code> returns the next neighbor.
-
- </li><li> <code>'previous'</code> returns the previous neighbor.
-
- </li><li> <code>'pchip'</code> computes the piecewise cubic Hermite interpolating
+</li><li> <code>'nearest'</code> returns the nearest neighbor.
+</li><li> <code>'next'</code> returns the next neighbor.
+</li><li> <code>'previous'</code> returns the previous neighbor.
+</li><li> <code>'pchip'</code> computes the piecewise cubic Hermite interpolating
  polynomial, which corresponds to shape-preserving interpolation with
  smooth first derivative.
-
- </li><li> <code>'cubic'</code> computes the cubic interpolation.
-
- </li><li> <code>'spline'</code> computes the cubic spline interpolation, which
+</li><li> <code>'cubic'</code> computes the cubic interpolation.
+</li><li> <code>'spline'</code> computes the cubic spline interpolation, which
  corresponds to smooth first and second derivatives throughout the curve.
- </li></ul>
+</li></ul>
 
 <p> <code><var>YI</var> = interp1 (&hellip;, <var>method</var>, <var>extrapolation</var>)</code>
  further specifies a strategy for evaluating points that lie outside the
@@ -3954,7 +3791,6 @@ One-dimensional interpolation for duration arrays.
  specified by <var>method</var>, which can be later used with <code>ppval</code> to
  evaluate the interpolation at new query points.
 </p>
-
 
 
             </div>
@@ -3985,7 +3821,6 @@ Set intersection of two duration arrays.
 <dt><code><h5 class="fs">duration: <var>C</var> = <b>intersect</b> (<var>A</var>, <var>B</var>, &hellip;, <var>order</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: [<var>C</var>, <var>ixA</var>, <var>ixB</var>] = <b>intersect</b> (&hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = intersect (<var>A</var>, <var>B</var>)</code> returns the unique common
  values of the duration arrays <var>A</var> and <var>B</var>.  Either <var>A</var> or
@@ -4013,7 +3848,6 @@ Set intersection of two duration arrays.
  argument is given, in which case <code><var>C</var> = <var>A</var>(<var>ixA</var>,:)</code>
  and <code><var>C</var> = <var>B</var>(<var>ixB</var>,:)</code>.
 </p>
-
 
 
             </div>
@@ -4044,7 +3878,6 @@ Set difference of two duration arrays.
 <dt><code><h5 class="fs">duration: <var>C</var> = <b>setdiff</b> (<var>A</var>, <var>B</var>, &hellip;, <var>order</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: [<var>C</var>, <var>ixA</var>] = <b>setdiff</b> (&hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = setdiff (<var>A</var>, <var>B</var>)</code> returns the unique common
  values of the duration arrays <var>A</var> and <var>B</var>.  Either <var>A</var> or
@@ -4070,7 +3903,6 @@ Set difference of two duration arrays.
  the <code>'rows'</code> optional argument is given, in which case
  <code><var>C</var> = <var>A</var>(<var>ixA</var>,:)</code>.
 </p>
-
 
 
             </div>
@@ -4101,7 +3933,6 @@ Set exclusive-or of two duration arrays.
 <dt><code><h5 class="fs">duration: <var>C</var> = <b>setxor</b> (<var>A</var>, <var>B</var>, &hellip;, <var>order</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: [<var>C</var>, <var>ixA</var>, <var>ixB</var>] = <b>setxor</b> (&hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = setxor (<var>A</var>, <var>B</var>)</code> returns the unique common
  values of the duration arrays <var>A</var> and <var>B</var>.  Either <var>A</var> or
@@ -4129,7 +3960,6 @@ Set exclusive-or of two duration arrays.
  argument is given, in which case <code><var>C</var> = <var>A</var>(<var>ixA</var>,:)</code>
  and <code><var>C</var> = <var>B</var>(<var>ixB</var>,:)</code>.
 </p>
-
 
 
             </div>
@@ -4160,7 +3990,6 @@ Set union of two duration arrays.
 <dt><code><h5 class="fs">duration: <var>C</var> = <b>union</b> (<var>A</var>, <var>B</var>, &hellip;, <var>order</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: [<var>C</var>, <var>ixA</var>, <var>ixB</var>] = <b>union</b> (&hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = union (<var>A</var>, <var>B</var>)</code> returns the unique common
  values of the duration arrays <var>A</var> and <var>B</var>.  Either <var>A</var> or
@@ -4190,7 +4019,6 @@ Set union of two duration arrays.
 </p>
 
 
-
             </div>
           </div>
         </div>
@@ -4216,7 +4044,6 @@ Concatenate duration arrays.
 <dl>
 <dt><code><h5 class="fs">duration: <var>C</var> = <b>cat</b> (<var>dim</var>, <var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = cat (<var>dim</var>, <var>A</var>, <var>B</var>, &hellip;)</code> concatenates
  duration arrays <var>A</var>, <var>B</var>, &hellip; along dimension <var>dim</var>.  All
@@ -4226,7 +4053,6 @@ Concatenate duration arrays.
  can be a numeric matrix, which when parsed to the constructor will return
  a duration array of compatible size.
 </p>
-
 
 
             </div>
@@ -4254,7 +4080,6 @@ Horizontal concatenation of duration arrays.
 <dl>
 <dt><code><h5 class="fs">duration: <var>C</var> = <b>horzcat</b> (<var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = horzcat (<var>A</var>, <var>B</var>, &hellip;</code> is the equivalent of
  the syntax <code><var>B</var> = [<var>A</var>, <var>B</var>, &hellip;]</code> and horizontally
@@ -4265,7 +4090,6 @@ Horizontal concatenation of duration arrays.
  matrix, which when parsed to the constructor will return a duration array
  of compatible size.
 </p>
-
 
 
             </div>
@@ -4293,7 +4117,6 @@ Vertical concatenation of duration arrays.
 <dl>
 <dt><code><h5 class="fs">duration: <var>C</var> = <b>vertcat</b> (<var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>C</var> = vertcat (<var>A</var>, <var>B</var>, &hellip;</code> is the equivalent of
  the syntax <code><var>B</var> = [<var>A</var>; <var>B</var>; &hellip;]</code> and vertically
@@ -4304,7 +4127,6 @@ Vertical concatenation of duration arrays.
  matrix, which when parsed to the constructor will return a duration array
  of compatible size.
 </p>
-
 
 
             </div>
@@ -4334,7 +4156,6 @@ Repeat copies of a duration array.
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>repmat</b> (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>repmat</b> (<var>A</var>, <var>dimvec</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = repmat (<var>A</var>, <var>n</var>)</code> returns a duration array
  <var>B</var> containing <var>n</var> copies of the input duration array <var>A</var>
@@ -4348,7 +4169,6 @@ Repeat copies of a duration array.
 <p> <code><var>B</var> = repmat (<var>A</var>, <var>dimvec</var>)</code> is equivalent to the
  previous syntax with <code><var>dimvec</var> = [<var>d1</var>, &hellip;, <var>dN</var>]</code>.
 </p>
-
 
 
             </div>
@@ -4377,7 +4197,6 @@ Repeat copies of duration array elements.
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>repelem</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>repelem</b> (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = repelem (<var>A</var>, <var>n</var>)</code> returns a duration vector
  <var>B</var> containing repeated elements of the input <var>A</var>, which must be
@@ -4396,7 +4215,6 @@ Repeat copies of duration array elements.
  <var>A</var> containing non-negative integer values specifying the number of
  repetitions of each element along the corresponding dimension.
 </p>
-
 
 
             </div>
@@ -4424,7 +4242,6 @@ Construct a vector of repeated duration array.
 <dl>
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>repelems</b> (<var>A</var>, <var>R</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = repelems (<var>A</var>, <var>R</var>)</code> returns a duration vector
  <var>B</var> containing repeated elements of the input <var>A</var>, which must be
@@ -4433,7 +4250,6 @@ Construct a vector of repeated duration array.
  the elements in <var>A</var> to be repeated.  The corresponding entries in the
  second row of <var>R</var> specify the repeat count of each element.
 </p>
-
 
 
             </div>
@@ -4463,7 +4279,6 @@ Reshape duration array.
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>reshape</b> (<var>A</var>, &hellip;, <code>[]</code>, &hellip;)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>reshape</b> (<var>A</var>, <var>dimvec</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = reshape (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code> returns a
  duration array <var>B</var> with specified dimensions <var>d1</var>, &hellip;,
@@ -4478,7 +4293,6 @@ Reshape duration array.
  product of specified dimensions.  An empty matrix <code>([])</code> is used to
  flag the unspecified dimension.
 </p>
-
 
 
             </div>
@@ -4507,7 +4321,6 @@ Circularly shift the elements in a duration array.
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>circshift</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>circshift</b> (<var>A</var>, <var>n</var>, <var>dim</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = circshift (<var>A</var>, <var>n</var>)</code> circularly shifts the
  elements of the duration array <var>A</var> according to <var>n</var>.  If <var>n</var>
@@ -4523,7 +4336,6 @@ Circularly shift the elements in a duration array.
  specified by <var>dim</var>.  In this case, <var>n</var> must be a scalar integer
  value.
 </p>
-
 
 
             </div>
@@ -4551,7 +4363,6 @@ Generalized transpose for a duration N-D array.
 <dl>
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>permute</b> (<var>A</var>, <var>dims</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = permute (<var>A</var>, <var>dims</var>)</code> returns the generalized
  transpose of the duration array <var>A</var> by rearranging its dimensions
@@ -4562,7 +4373,6 @@ Generalized transpose for a duration N-D array.
  dimension of <var>A</var> gets remapped to the dimension in <var>B</var> specified
  by <code><var>dims</var>(<var>N</var>)</code>.
 </p>
-
 
 
             </div>
@@ -4590,7 +4400,6 @@ Inverse of the generalized transpose for a duration N-D array.
 <dl>
 <dt><code><h5 class="fs">duration: <var>A</var> = <b>ipermute</b> (<var>B</var>, <var>dims</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>A</var> = ipermute (<var>B</var>, <var>dims</var>)</code> returns the inverse of
  the generalized transpose performed by the <code>permute</code> function.  The
@@ -4602,7 +4411,6 @@ Inverse of the generalized transpose for a duration N-D array.
  <var>B</var> specified in <code><var>dims</var>(<var>N</var>)</code> gets remapped to the
  <var>N</var>th dimension of <var>A</var>.
 </p>
-
 
 
             </div>
@@ -4630,13 +4438,11 @@ Transpose a duration matrix.
 <dl>
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>transpose</b> (<var>A</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = transpose (<var>A</var>)</code> is the equivalent of the syntax
  <code><var>B</var> = <var>A</var>.'</code> and returns the transpose of the duration
  matrix <var>A</var>.
 </p>
-
 
 
             </div>
@@ -4664,14 +4470,12 @@ Transpose a duration matrix.
 <dl>
 <dt><code><h5 class="fs">duration: <var>B</var> = <b>ctranspose</b> (<var>A</var>)</code></h5></dt>
 </dl>
-
 <p> </p>
 <p> <code><var>B</var> = ctranspose (<var>A</var>)</code> is the equivalent of the syntax
  <code><var>B</var> = <var>A</var>'</code> and returns the transpose of the duration
  matrix <var>A</var>.  For duration arrays, <code>ctranspose</code> is identical to
  <code>transpose</code>.
 </p>
-
 
 
             </div>

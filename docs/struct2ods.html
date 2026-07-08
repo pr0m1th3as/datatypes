@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Data Types for GNU Octave: @cell/display</title>
+    <title>Data Types for GNU Octave: struct2ods</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
@@ -82,9 +82,9 @@
             <div class="collapse navbar-collapse" id="navbarNav">
               <ul class="navbar-nav">
                 <li class="nav-item">
-                  <a class="nav-link" href="index.html#supplementary classes">
+                  <a class="nav-link" href="index.html#table arrays">
                     <i class="fas fa-list-alt"></i>
-                    supplementary classes
+                    table arrays
                   </a>
                 </li>
                 <li class="nav-item">
@@ -192,7 +192,7 @@
 				</div>
 			</div>
 			<div class="row">
-				<input id="togList6" type="checkbox">
+				<input id="togList6" type="checkbox" checked>
 				<label for="togList6">
 					<span><h6>table arrays</h6></span>
 					<span><h6>table arrays</h6></span>
@@ -206,7 +206,7 @@
 					<li><a href="ods2table.html" class="text-decoration-none font-monospace"><small>ods2table</small></a></li>
 					<li><a href="ods2struct.html" class="text-decoration-none font-monospace"><small>ods2struct</small></a></li>
 					<li><a href="readtable.html" class="text-decoration-none font-monospace"><small>readtable</small></a></li>
-					<li><a href="struct2ods.html" class="text-decoration-none font-monospace"><small>struct2ods</small></a></li>
+					<li><a href="struct2ods.html" class="text-decoration-none font-monospace fw-bolder"><small>struct2ods</small></a></li>
 					<li><a href="struct2xlsx.html" class="text-decoration-none font-monospace"><small>struct2xlsx</small></a></li>
 					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
 					<li><a href="xlsx2struct.html" class="text-decoration-none font-monospace"><small>xlsx2struct</small></a></li>
@@ -215,7 +215,7 @@
 				</div>
 			</div>
 			<div class="row">
-				<input id="togList7" type="checkbox" checked>
+				<input id="togList7" type="checkbox">
 				<label for="togList7">
 					<span><h6>supplementary classes</h6></span>
 					<span><h6>supplementary classes</h6></span>
@@ -225,7 +225,7 @@
 					<li><a href="missing.html" class="text-decoration-none font-monospace"><small>missing</small></a></li>
 					<li><a href="vartype.html" class="text-decoration-none font-monospace"><small>vartype</small></a></li>
 					<li><a href="@cell_disp.html" class="text-decoration-none font-monospace"><small>@cell/disp</small></a></li>
-					<li><a href="@cell_display.html" class="text-decoration-none font-monospace fw-bolder"><small>@cell/display</small></a></li>
+					<li><a href="@cell_display.html" class="text-decoration-none font-monospace"><small>@cell/display</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -272,22 +272,42 @@
             <div class="card-header card-header-mod">
               <div class="row d-flex flex-wrap align-items-center">
                 <h3 class="d-inline-block mr-2">
-                Function&nbsp;Reference: <b><code>@cell/display</code></b>
+                Function&nbsp;Reference: <b><code>struct2ods</code></b>
                 </h3>
               </div>
             </div>
             <div class="card-body">
 <dl>
-<dt><code><h5 class="fs">datatypes: <b>display</b> (<var>C</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datatypes: <b>struct2ods</b> (<var>filename</var>, <var>s</var>)</code></h5></dt>
 </dl>
-<p> Customized display of cell arrays.
+<p> Write a scalar structure of tables to a multi-sheet OpenDocument spreadsheet.
 </p>
 <div class="ms-5">
-<p> This function overloads Octave core <code>display</code> with respect to cell
- arrays and displays their contents in MATLAB like manner.
+<p> <code>struct2ods (<var>filename</var>, <var>s</var>)</code> writes each field of the scalar
+ structure <var>s</var> to its own sheet in the OpenDocument spreadsheet named by
+ <var>filename</var>.  Every field of <var>s</var> must hold a <code>table</code>; the field
+ name becomes the sheet name.  Both the compressed <code>.ods</code> and the flat
+ <code>.fods</code> formats are supported, selected by the file extension.
+</p>
+<p> Full type fidelity is preserved through a hidden, sectioned
+ <code>__datatypes_meta__</code> sheet, exactly as for the single-table
+ <code>table2ods</code> method; the workbook round-trips through <code>ods2struct</code>.
+</p>
+<p> A field whose table carries an <code>'ActualSheetName'</code> custom property
+ (see <code>addprop</code>) uses that value as the sheet name instead of the field
+ name, which lets a sheet name that is not a valid identifier (for example
+ <code>'Sales 2024'</code>) round-trip.  Sheet names must be non-empty and must not
+ contain any of the characters <code>[ ] * ? : / </code>, and the
+ resolved names must be unique.
+</p>
+<p> <strong>See also: </strong>
+  <a href="ods2struct.html">ods2struct</a>, 
+table2ods, 
+  <a href="ods2table.html">ods2table</a>, 
+writetable
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/@cell/display.m">@cell/display</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/struct2ods.m">struct2ods</a>
 </div>
 
             </div>
