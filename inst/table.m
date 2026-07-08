@@ -2808,7 +2808,9 @@ classdef table
               if (! isempty (tmp.VariableUnits{i}))
                 tbl.VariableUnits{idx} = tmp.VariableUnits{i};
               endif
-              ## FIX ME! Handle custom properties here (more tricky)
+              ## Variable-scoped custom properties are already replicated to the
+              ## split columns by subsetvars via the repeated indices in
+              ## 'ix_remap', so no further handling is needed here.
               idx += 1;
             endfor
           else
@@ -3799,7 +3801,20 @@ classdef table
         vu = this.VariableUnits{ixVars};
         UvarTable.VariableUnits = repmat ({vu}, 1, ncols);
 
-        ## FIX ME: copy custom variable properties to unstacked variables
+        ## Replicate the unstacked variable's variable-scoped custom properties
+        ## onto each new column (MATLAB copies them); table-scoped properties are
+        ## carried by the constant and grouping variables through the final
+        ## horzcat that assembles the output.
+        if (! isempty (this.CustomProperties))
+          cpNames = fieldnames (this.CustomProperties);
+          for ci = 1:numel (cpNames)
+            if (strcmp (this.CustomPropTypes{ci}, 'variable'))
+              srcval = this.CustomProperties.(cpNames{ci})(ixVars);
+              UvarTable.CustomProperties.(cpNames{ci}) = repmat (srcval, 1, ncols);
+              UvarTable.CustomPropTypes{end+1} = 'variable';
+            endif
+          endfor
+        endif
 
         ## Add type-specific NaN values and handle multicolumn variables
         ## Check that aggregation function returns suitable output
@@ -3887,7 +3902,24 @@ classdef table
         UvarTable.VariableDescriptions = VD;
         UvarTable.VariableUnits = VU;
 
-        ## FIX ME: copy custom variable properties to unstacked variables
+        ## Replicate each unstacked variable's variable-scoped custom properties
+        ## onto its new columns (MATLAB copies them); table-scoped properties are
+        ## carried by the constant and grouping variables through the final
+        ## horzcat that assembles the output.
+        if (! isempty (this.CustomProperties))
+          cpNames = fieldnames (this.CustomProperties);
+          for ci = 1:numel (cpNames)
+            if (strcmp (this.CustomPropTypes{ci}, 'variable'))
+              blk = [];
+              for i = 1:nvars
+                srcval = this.CustomProperties.(cpNames{ci})(ixVars(i));
+                blk = [blk, repmat(srcval, 1, ncols)];
+              endfor
+              UvarTable.CustomProperties.(cpNames{ci}) = blk;
+              UvarTable.CustomPropTypes{end+1} = 'variable';
+            endif
+          endfor
+        endif
 
         ## Process each separate variable to be unstacked
         vi = 1;
@@ -7371,7 +7403,6 @@ classdef table
           if (isempty (tbl.UserData))
             tbl.UserData = in.UserData;
           endif
-          ## FIX ME: Deal with custom properties here
         endfor
       elseif (sum (has_RowNames) == 1) # only one input table has RowNames (ok)
         tbl = varargin{1};
@@ -7391,7 +7422,6 @@ classdef table
           if (isempty (tbl.UserData))
             tbl.UserData = in.UserData;
           endif
-          ## FIX ME: Deal with custom properties here
         endfor
       else  # multiple tables has rowNames (we are screwed)
         ## First we need to ensure that all tables with RowNames share the
@@ -7448,13 +7478,20 @@ classdef table
           if (isempty (tbl.UserData))
             tbl.UserData = in.UserData;
           endif
-          ## FIX ME: Deal with custom properties here
         endfor
       endif
 
       ## Assign variable types in the new table
       new_types = cellfun ('class', tbl.VariableValues, 'UniformOutput', false);
       tbl.VariableTypes = new_types;
+
+      ## Merge custom properties across all inputs: table-scoped properties are
+      ## unioned (the first input wins on a name clash) and variable-scoped
+      ## properties are concatenated across the inputs' variable blocks, NaN-
+      ## filling the block of any input that lacks the property.
+      [cp, cpTypes] = merge_hcat_props (tbl, varargin);
+      tbl.CustomProperties = cp;
+      tbl.CustomPropTypes = cpTypes;
     endfunction
 
     ## -*- texinfo -*-
@@ -7899,7 +7936,13 @@ classdef table
           if (isempty (tbl.UserData))
             tbl.UserData = in.UserData;
           endif
-          ## FIX ME: Deal with custom properties here
+          ## Rows stack over identical variables, so the first table's custom
+          ## properties already describe the result; adopt a later table's only
+          ## when the first table has none.
+          if (isempty (tbl.CustomProperties) && ! isempty (in.CustomProperties))
+            tbl.CustomProperties = in.CustomProperties;
+            tbl.CustomPropTypes = in.CustomPropTypes;
+          endif
         endfor
       else # at least one input table has RowNames
         ## Input tables without row names get default 'Row<N>' names, where N
@@ -7938,7 +7981,12 @@ classdef table
           if (isempty (tbl.UserData))
             tbl.UserData = in.UserData;
           endif
-          ## FIX ME: Deal with custom properties here
+          ## As above: adopt a later table's custom properties only when the
+          ## first table has none (rows stack over identical variables).
+          if (isempty (tbl.CustomProperties) && ! isempty (in.CustomProperties))
+            tbl.CustomProperties = in.CustomProperties;
+            tbl.CustomPropTypes = in.CustomPropTypes;
+          endif
         endfor
       endif
     endfunction
@@ -8743,6 +8791,70 @@ classdef table
       out.RowNames = {};
     endfunction
 
+    ## Merge the custom properties of a set of horizontally-combined tables
+    ## (a cell array TABLES whose variables are concatenated in order).  Table-
+    ## scoped properties are unioned with the first table winning on a name
+    ## clash; variable-scoped properties are concatenated across the tables'
+    ## variable blocks, filling the block of any table lacking the property with
+    ## NaN (numeric) or an empty cell.  Table-scoped properties are listed before
+    ## variable-scoped ones, matching MATLAB.
+    function [cp, cpTypes] = merge_hcat_props (this, tables)
+      widths = cellfun (@width, tables);
+      cp = struct ();
+      cpTypes = {};
+      ## Pass 1: table-scoped properties (union, first table wins).
+      for t = 1:numel (tables)
+        T = tables{t};
+        if (isempty (T.CustomProperties))
+          continue;
+        endif
+        nm = fieldnames (T.CustomProperties);
+        for i = 1:numel (nm)
+          if (strcmp (T.CustomPropTypes{i}, 'table') && ! isfield (cp, nm{i}))
+            cp.(nm{i}) = T.CustomProperties.(nm{i});
+            cpTypes{end+1} = 'table';
+          endif
+        endfor
+      endfor
+      ## Pass 2: variable-scoped properties (union of names; per-table blocks
+      ## concatenated, missing blocks filled to match the property's variables).
+      seen = {};
+      for t = 1:numel (tables)
+        T = tables{t};
+        if (isempty (T.CustomProperties))
+          continue;
+        endif
+        nm = fieldnames (T.CustomProperties);
+        for i = 1:numel (nm)
+          if (! strcmp (T.CustomPropTypes{i}, 'variable') ...
+              || any (strcmp (nm{i}, seen)))
+            continue;
+          endif
+          seen{end+1} = nm{i};
+          proto = T.CustomProperties.(nm{i});
+          vec = [];
+          for tt = 1:numel (tables)
+            Tt = tables{tt};
+            if (! isempty (Tt.CustomProperties) ...
+                && isfield (Tt.CustomProperties, nm{i}))
+              blk = reshape (Tt.CustomProperties.(nm{i}), 1, []);
+            elseif (iscell (proto))
+              blk = cell (1, widths(tt));
+            else
+              blk = NaN (1, widths(tt));
+            endif
+            vec = [vec, blk];
+          endfor
+          cp.(nm{i}) = vec;
+          cpTypes{end+1} = 'variable';
+        endfor
+      endfor
+      if (isempty (fieldnames (cp)))
+        cp = [];
+        cpTypes = {};
+      endif
+    endfunction
+
     ## Return a subset of variables defined by the numerical vector ixVars
     function tbl = subsetvars (this, ixVars)
       tbl = this;
@@ -9441,8 +9553,6 @@ classdef table
         endif
         ## No need to summarize values in 'cell', 'cellstr', 'string',
         ## 'categorical', and 'struct' variable types.
-
-        ## Fix me: as soon as CustomProperties are introduced in table class
       endfor
     endfunction
 
