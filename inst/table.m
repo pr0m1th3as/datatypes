@@ -935,15 +935,17 @@ classdef table
     ## rows to it), or @qcode{'replacefile'} (overwrite the whole file).
     ## @end multitable
     ##
-    ## When the target spreadsheet already exists, the sheet named by
+    ## When an @strong{ODS} target already exists, the sheet named by
     ## @qcode{'Sheet'} (default @qcode{'Sheet1'}) is added or replaced while every
     ## other sheet is preserved, unless @qcode{'WriteMode'} is
     ## @qcode{'replacefile'}.  Existing foreign spreadsheets (for example those
     ## written by LibreOffice) are updated in place, keeping their other parts.
     ##
-    ## Nested tables and structures are not supported.  Microsoft Excel formats
-    ## (@qcode{.xls}, @qcode{.xlsx}, @qcode{.xlsb}) are not supported either; use
-    ## @qcode{.ods} or a text format.
+    ## Office Open XML (@qcode{.xlsx}, @qcode{.xlsm}) is also written, but only as
+    ## a fresh single-sheet file: writing into an existing Excel workbook is not
+    ## yet supported.  Nested tables and structures are not supported, and the
+    ## legacy binary formats @qcode{.xls} and @qcode{.xlsb} are not supported
+    ## either; use @qcode{.xlsx}, @qcode{.ods}, or a text format.
     ##
     ## @end deftypefn
     function writetable (this, filename, varargin)
@@ -977,11 +979,12 @@ classdef table
         switch (lower (ext))
           case {'.txt', '.csv', '.dat'}
             fileType = 'text';
-          case {'.ods', '.fods'}
+          case {'.ods', '.fods', '.xlsx', '.xlsm'}
             fileType = 'spreadsheet';
-          case {'.xls', '.xlsx', '.xlsb', '.xlsm'}
-            error (strcat ("table.writetable: Microsoft Excel formats are", ...
-                           " not supported; use '.ods' or a text format."));
+          case {'.xls', '.xlsb'}
+            error (strcat ("table.writetable: '%s' Excel files are not", ...
+                           " supported; use '.xlsx', '.ods', or a text", ...
+                           " format."), ext);
           otherwise
             error (strcat ("table.writetable: cannot infer the file type", ...
                            " from '%s'; specify 'FileType'."), ext);
@@ -996,6 +999,8 @@ classdef table
         otherwise
           error ("table.writetable: 'FileType' must be 'text' or 'spreadsheet'.");
       endswitch
+      ## Office Open XML (.xlsx/.xlsm) uses a separate courier from ODS.
+      isXlsx = any (strcmpi (ext, {'.xlsx', '.xlsm'}));
 
       ## Validate 'Sheet', 'Range', and 'WriteMode' against the resolved type.
       appendMode = false;
@@ -1025,6 +1030,13 @@ classdef table
             error (strcat ("table.writetable: 'WriteMode' '%s' is not valid", ...
                            " for spreadsheet files."), writeMode);
         endswitch
+        ## Merging into an existing Excel workbook is not yet supported (the ODS
+        ## repacker has no Office Open XML counterpart); only fresh writes.
+        if (isXlsx && exist (file, 'file') && ! strcmp (writeMode, 'replacefile'))
+          error (strcat ("table.writetable: writing into an existing Excel", ...
+                         " file is not yet supported; use 'WriteMode',", ...
+                         " 'replacefile' or write a new file."));
+        endif
         ## A 'Range' anchors a fresh write; it has no meaning when merging into
         ## an existing workbook.
         if (! isempty (range))
@@ -1077,18 +1089,29 @@ classdef table
         if (! isempty (sheet))
           opts.sheetname = sheet;
         endif
-        is_flat = strcmpi (ext, '.fods');
-        ## Merge into an existing workbook (preserving other sheets) unless the
-        ## file is new or 'replacefile' asks to overwrite it outright.
-        if (exist (file, 'file') && ! strcmp (writeMode, 'replacefile'))
-          opts.merge = true;
-          opts.writemode = writeMode;
-        elseif (! isempty (range))
-          [r1, c1] = __a1ref__ (range);
-          opts.roff = r1 - 1;
-          opts.coff = c1 - 1;
+        if (isXlsx)
+          ## Excel: a fresh single-sheet write (merging was refused above).
+          if (! isempty (range))
+            [r1, c1] = __a1ref__ (range);
+            opts.roff = r1 - 1;
+            opts.coff = c1 - 1;
+          endif
+          opts.macro = strcmpi (ext, '.xlsm');
+          msg = __table2xlsx__ (file, V, vtype, opts);
+        else
+          is_flat = strcmpi (ext, '.fods');
+          ## Merge into an existing workbook (preserving other sheets) unless the
+          ## file is new or 'replacefile' asks to overwrite it outright.
+          if (exist (file, 'file') && ! strcmp (writeMode, 'replacefile'))
+            opts.merge = true;
+            opts.writemode = writeMode;
+          elseif (! isempty (range))
+            [r1, c1] = __a1ref__ (range);
+            opts.roff = r1 - 1;
+            opts.coff = c1 - 1;
+          endif
+          msg = __table2ods__ (file, V, vtype, {}, is_flat, opts);
         endif
-        msg = __table2ods__ (file, V, vtype, {}, is_flat, opts);
         if (! isequal (msg, 0))
           error ("table.writetable: %s", msg);
         endif

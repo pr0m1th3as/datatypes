@@ -58,3 +58,5 @@ compiled functions
  __table2csv__
  __ods2table__
  __table2ods__
+ __xlsx2table__
+ __table2xlsx__

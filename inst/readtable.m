@@ -53,8 +53,10 @@
 ## @qcode{'C5'} or @qcode{'C5:D8'} limiting the region read.
 ## @end multitable
 ##
-## Microsoft Excel formats (@qcode{.xls}, @qcode{.xlsx}, @qcode{.xlsb}) are not
-## supported; use @qcode{.ods} or a text format.
+## Office Open XML spreadsheets (@qcode{.xlsx}, @qcode{.xlsm}) are read via the
+## same interface as ODS.  The legacy binary formats @qcode{.xls} and
+## @qcode{.xlsb} are not supported; use @qcode{.xlsx}, @qcode{.ods}, or a text
+## format.
 ##
 ## @seealso{writetable, csv2table, ods2table}
 ## @end deftypefn
@@ -93,16 +95,18 @@ function tbl = readtable (filename, varargin)
     switch (lower (ext))
       case {'.txt', '.csv', '.dat'}
         fileType = 'text';
-      case {'.ods', '.fods'}
+      case {'.ods', '.fods', '.xlsx', '.xlsm'}
         fileType = 'spreadsheet';
-      case {'.xls', '.xlsx', '.xlsb', '.xlsm'}
-        error (strcat ("readtable: Microsoft Excel formats are not", ...
-                       " supported; use '.ods' or a text format."));
+      case {'.xls', '.xlsb'}
+        error (strcat ("readtable: '%s' Excel files are not supported; use", ...
+                       " '.xlsx', '.ods', or a text format."), ext);
       otherwise
         error (strcat ("readtable: cannot infer the file type from '%s';", ...
                        " specify 'FileType'."), ext);
     endswitch
   endif
+  ## Office Open XML (.xlsx/.xlsm) uses a separate reader from ODS.
+  isXlsx = any (strcmpi (ext, {'.xlsx', '.xlsm'}));
 
   ## 'Sheet' and 'Range' apply only to spreadsheets; MATLAB rejects them on text
   ## files rather than silently ignoring them.
@@ -123,7 +127,7 @@ function tbl = readtable (filename, varargin)
                        'HexType', 'text');
     case 'spreadsheet'
       tbl = read_spreadsheet (file, readVarNames, readRowNames, textType, ...
-                              namingRule, sheet, range);
+                              namingRule, sheet, range, isXlsx);
     otherwise
       error ("readtable: 'FileType' must be 'text' or 'spreadsheet'.");
   endswitch
@@ -162,8 +166,12 @@ endfunction
 ## first row (when requested), then one column per sheet column with its type
 ## taken from the native ODS cell value types.
 function tbl = read_spreadsheet (file, readVarNames, readRowNames, textType, ...
-                                 namingRule, sheet, range)
-  [data, vtype, meta] = __ods2table__ (file, sheet);
+                                 namingRule, sheet, range, isXlsx)
+  if (isXlsx)
+    [data, vtype] = __xlsx2table__ (file, sheet);
+  else
+    [data, vtype] = __ods2table__ (file, sheet);
+  endif
   if (ischar (data))
     error ("readtable: %s", data);
   endif
@@ -566,9 +574,58 @@ endfunction
 %!error <readtable: 'Sheet' and 'Range' are not supported for text files.> ...
 %! readtable ([tempname() '.csv'], 'Range', 'A1:B2');
 
-## Error: Microsoft Excel formats are not supported
-%!error <readtable: Microsoft Excel formats are not supported; use '.ods' or a text format.> ...
-%! readtable ('data.xlsx');
+## Round-trip through an '.xlsx' workbook written by writetable, including
+## native datetime/duration/boolean columns and sheet/range selection
+%!test
+%! T = table ([1; 2; 3], {'a'; 'bb'; 'ccc'}, datetime (2024, 3, [1; 15; 31]), ...
+%!            seconds ([30; 90; 3661]), [true; false; true], ...
+%!            'VariableNames', {'n', 's', 'when', 'dur', 'flag'});
+%! fn = [tempname() '.xlsx'];
+%! unwind_protect
+%!   writetable (T, fn, 'Sheet', 'Data');
+%!   R = readtable (fn, 'Sheet', 'Data');
+%!   assert_equal (R.Properties.VariableNames, {'n', 's', 'when', 'dur', 'flag'});
+%!   assert_equal (R.n, [1; 2; 3]);
+%!   assert_equal (R.s, {'a'; 'bb'; 'ccc'});
+%!   assert_equal (class (R.when), 'datetime');
+%!   assert_equal (isequaln (datevec (R.when), datevec (T.when)), true);
+%!   assert_equal (class (R.dur), 'duration');
+%!   assert_equal (isequaln (seconds (R.dur), [30; 90; 3661]), true);
+%!   assert_equal (R.flag, [true; false; true]);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## '.xlsx' 'Range' anchor on write, clipped on read
+%!test
+%! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'n', 's'});
+%! fn = [tempname() '.xlsx'];
+%! unwind_protect
+%!   writetable (T, fn, 'Range', 'C3');
+%!   R = readtable (fn);
+%!   assert_equal (R.n, [1; 2; 3]);
+%!   R2 = readtable (fn, 'Range', 'C4:D6', 'ReadVariableNames', false);
+%!   assert_equal (R2.Var1, [1; 2; 3]);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## '.xlsm' round-trips too
+%!test
+%! T = table ([7; 8], 'VariableNames', {'v'});
+%! fn = [tempname() '.xlsm'];
+%! unwind_protect
+%!   writetable (T, fn);
+%!   assert_equal (readtable (fn).v, [7; 8]);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Error: legacy binary Excel formats are not supported
+%!error <readtable: '.xls' Excel files are not supported; use '.xlsx', '.ods', or a text format.> ...
+%! readtable ('data.xls');
+%!error <readtable: '.xlsb' Excel files are not supported; use '.xlsx', '.ods', or a text format.> ...
+%! readtable ('data.xlsb');
 
 ## Error: an unknown option
 %!error <readtable: unknown option 'Bogus'.> ...

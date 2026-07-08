@@ -18,6 +18,8 @@ OCTFILES = __datetime__.oct	\
            __csv2table__.oct	\
            __table2ods__.oct	\
            __ods2table__.oct	\
+           __table2xlsx__.oct	\
+           __xlsx2table__.oct	\
            __ckeyHash__.oct	\
            __nkeyHash__.oct
 
@@ -32,6 +34,12 @@ __table2ods__.oct: __table2ods__.cc ods/pugixml.cpp ods/miniz.c
 
 __ods2table__.oct: __ods2table__.cc ods/pugixml.cpp ods/miniz.c
 	$(MKOCTFILE) -I./ods __ods2table__.cc ods/pugixml.cpp ods/miniz.c $(LDFLAGS)
+
+__table2xlsx__.oct: __table2xlsx__.cc ods/miniz.c
+	$(MKOCTFILE) -I./ods __table2xlsx__.cc ods/miniz.c $(LDFLAGS)
+
+__xlsx2table__.oct: __xlsx2table__.cc ods/pugixml.cpp ods/miniz.c
+	$(MKOCTFILE) -I./ods __xlsx2table__.cc ods/pugixml.cpp ods/miniz.c $(LDFLAGS)
 
 %.oct: %.cc
 	$(MKOCTFILE) $< $(LDFLAGS)
