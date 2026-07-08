@@ -235,28 +235,38 @@ pad_cols (pugi::xml_node &row, octave_idx_type coff)
     pad.append_attribute ("table:number-columns-repeated") = (int) coff;
 }
 
-// Write a full <table:table> element named 'name' from the cell grid 'C',
-// using per-column value-types from 'vtype' (a 1-by-cols cellstr).  When
-// 'vtype' is empty every cell is treated as a "string" (used for the metadata
-// sheet, which is text-only).  When 'emit_cols' is set, one <table:table-column>
-// per column is written (referencing the "coN" width styles) ahead of the rows.
-// 'roff'/'coff' shift the data block down/right by that many empty rows/columns
-// to honour a 'Range' anchor.
+// Append the data rows of grid 'C' (per-column value-types 'vtype') to an
+// existing table node.  Used both for a fresh sheet and when appending rows to
+// an existing sheet ('WriteMode', 'append').  An empty 'vtype' treats every
+// cell as a "string" (the text-only metadata sheet).
 static void
-write_sheet (pugi::xml_node &spreadsheet, const string &name,
-             const Cell &C, const Cell &vtype, const char *style = 0,
-             bool emit_cols = false, const Cell &header = Cell (),
-             octave_idx_type roff = 0, octave_idx_type coff = 0)
+append_data_rows (pugi::xml_node &table, const Cell &C, const Cell &vtype,
+                  octave_idx_type coff = 0)
 {
-  pugi::xml_node table = spreadsheet.append_child ("table:table");
-  table.append_attribute ("table:name") = name.c_str ();
-  if (style)
-    table.append_attribute ("table:style-name") = style;
-
   octave_idx_type rows = C.rows ();
   octave_idx_type cols = C.columns ();
   bool have_vt = (vtype.numel () == cols);
+  for (octave_idx_type r = 0; r < rows; r++)
+  {
+    pugi::xml_node row = table.append_child ("table:table-row");
+    pad_cols (row, coff);
+    for (octave_idx_type c = 0; c < cols; c++)
+    {
+      string vt = have_vt ? vtype(c).string_value () : string ("string");
+      write_cell (row, C(r, c), vt);
+    }
+  }
+}
 
+// Populate an (already named) table node: optional "coN" column-width styles,
+// a 'Range' row/column offset, an optional visible header row of variable
+// names, then the data rows.
+static void
+write_sheet_body (pugi::xml_node &table, const Cell &C, const Cell &vtype,
+                  bool emit_cols, const Cell &header,
+                  octave_idx_type roff, octave_idx_type coff)
+{
+  octave_idx_type cols = C.columns ();
   if (emit_cols)
   {
     // Leading empty column definition(s) for a 'Range' column offset.
@@ -274,7 +284,6 @@ write_sheet (pugi::xml_node &spreadsheet, const string &name,
            .append_attribute ("table:style-name") = nm;
     }
   }
-
   // Leading empty rows for a 'Range' row offset.
   if (roff > 0)
   {
@@ -282,7 +291,6 @@ write_sheet (pugi::xml_node &spreadsheet, const string &name,
     if (roff > 1)
       row.append_attribute ("table:number-rows-repeated") = (int) roff;
   }
-
   // Optional visible header row of variable names (text cells)
   if (header.numel () == cols && cols > 0)
   {
@@ -296,17 +304,23 @@ write_sheet (pugi::xml_node &spreadsheet, const string &name,
       cell.append_child ("text:p").text ().set (h.c_str ());
     }
   }
+  append_data_rows (table, C, vtype, coff);
+}
 
-  for (octave_idx_type r = 0; r < rows; r++)
-  {
-    pugi::xml_node row = table.append_child ("table:table-row");
-    pad_cols (row, coff);
-    for (octave_idx_type c = 0; c < cols; c++)
-    {
-      string vt = have_vt ? vtype(c).string_value () : string ("string");
-      write_cell (row, C(r, c), vt);
-    }
-  }
+// Write a full <table:table> element named 'name' into 'spreadsheet' from the
+// cell grid 'C'.  See 'write_sheet_body' for the emit_cols/header/roff/coff
+// arguments.
+static void
+write_sheet (pugi::xml_node &spreadsheet, const string &name,
+             const Cell &C, const Cell &vtype, const char *style = 0,
+             bool emit_cols = false, const Cell &header = Cell (),
+             octave_idx_type roff = 0, octave_idx_type coff = 0)
+{
+  pugi::xml_node table = spreadsheet.append_child ("table:table");
+  table.append_attribute ("table:name") = name.c_str ();
+  if (style)
+    table.append_attribute ("table:style-name") = style;
+  write_sheet_body (table, C, vtype, emit_cols, header, roff, coff);
 }
 
 // Declare the OpenDocument namespaces and version common to the flat document
@@ -346,10 +360,8 @@ number_text (pugi::xml_node &st, const char *txt)
 // date and time cells display as formatted dates/times rather than as the
 // underlying serial numbers.
 static void
-add_automatic_styles (pugi::xml_node &root)
+fill_automatic_styles (pugi::xml_node &styles)
 {
-  pugi::xml_node styles = root.append_child ("office:automatic-styles");
-
   pugi::xml_node hid = styles.append_child ("style:style");
   hid.append_attribute ("style:name") = "hidden_tbl";
   hid.append_attribute ("style:family") = "table";
@@ -400,6 +412,14 @@ add_automatic_styles (pugi::xml_node &root)
     st.append_attribute ("style:family") = "table-cell";
     st.append_attribute ("style:data-style-name") = ce[i][1];
   }
+}
+
+// Create and populate the <office:automatic-styles> node under 'root'.
+static void
+add_automatic_styles (pugi::xml_node &root)
+{
+  pugi::xml_node styles = root.append_child ("office:automatic-styles");
+  fill_automatic_styles (styles);
 }
 
 // Append a "coN" table-column style carrying an explicit width for each data
@@ -497,33 +517,18 @@ static void put32 (string &b, mz_uint32 v)
 }
 
 // One entry of the archive: name, raw payload, and whether to deflate it.
-struct ods_entry { const char *name; string data; bool compress; };
+struct ods_entry { string name; string data; bool compress; };
 
-// Package the parts as a compliant '.ods' ZIP.  miniz's own zip writer sets the
-// data-descriptor flag on every entry, which makes the required stored
+// Write a list of entries as a compliant '.ods' ZIP.  miniz's own zip writer
+// sets the data-descriptor flag on every entry, which makes the required stored
 // 'mimetype' entry illegal (a stored entry has no discoverable end without its
 // sizes in the local header) and strict readers reject the package.  We instead
 // emit the archive by hand -- mimetype first, stored, no data descriptor and no
-// extra field -- using miniz only for CRC-32 and raw deflate.
+// extra field -- using miniz only for CRC-32 and raw deflate.  The caller is
+// responsible for putting a stored 'mimetype' entry first.
 static string
-write_ods_zip (const string &file, const string &content)
+write_zip_entries (const string &file, const vector<ods_entry> &entries)
 {
-  string manifest =
-    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-    "<manifest:manifest"
-    " xmlns:manifest=\"urn:oasis:names:tc:opendocument:xmlns:manifest:1.0\""
-    " manifest:version=\"1.3\">\n"
-    " <manifest:file-entry manifest:full-path=\"/\" manifest:version=\"1.3\""
-    " manifest:media-type=\"" + string (ODS_MIMETYPE) + "\"/>\n"
-    " <manifest:file-entry manifest:full-path=\"content.xml\""
-    " manifest:media-type=\"text/xml\"/>\n"
-    "</manifest:manifest>\n";
-
-  vector<ods_entry> entries;
-  entries.push_back ((ods_entry) {"mimetype", string (ODS_MIMETYPE), false});
-  entries.push_back ((ods_entry) {"META-INF/manifest.xml", manifest, true});
-  entries.push_back ((ods_entry) {"content.xml", content, true});
-
   int flags = tdefl_create_comp_flags_from_zip_params (MZ_DEFAULT_LEVEL, -15,
                                                        MZ_DEFAULT_STRATEGY);
   string local, central;
@@ -557,7 +562,7 @@ write_ods_zip (const string &file, const string &content)
 
     mz_uint32 csize = (mz_uint32) payload.size ();
     mz_uint32 offset = (mz_uint32) local.size ();
-    mz_uint16 namelen = (mz_uint16) strlen (e.name);
+    mz_uint16 namelen = (mz_uint16) e.name.size ();
 
     // Local file header (no general-purpose flags, no extra field)
     put32 (local, 0x04034b50);  put16 (local, 20);  put16 (local, 0);
@@ -598,6 +603,177 @@ write_ods_zip (const string &file, const string &content)
   return "";
 }
 
+// Package a freshly built content.xml as a minimal, compliant '.ods'.
+static string
+write_ods_zip (const string &file, const string &content)
+{
+  string manifest =
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+    "<manifest:manifest"
+    " xmlns:manifest=\"urn:oasis:names:tc:opendocument:xmlns:manifest:1.0\""
+    " manifest:version=\"1.3\">\n"
+    " <manifest:file-entry manifest:full-path=\"/\" manifest:version=\"1.3\""
+    " manifest:media-type=\"" + string (ODS_MIMETYPE) + "\"/>\n"
+    " <manifest:file-entry manifest:full-path=\"content.xml\""
+    " manifest:media-type=\"text/xml\"/>\n"
+    "</manifest:manifest>\n";
+
+  vector<ods_entry> entries;
+  entries.push_back (ods_entry {"mimetype", string (ODS_MIMETYPE), false});
+  entries.push_back (ods_entry {"META-INF/manifest.xml", manifest, true});
+  entries.push_back (ods_entry {"content.xml", content, true});
+  return write_zip_entries (file, entries);
+}
+
+// Read-modify-write an existing spreadsheet: add or replace the sheet named
+// 'sheetname' (or, for 'append', append the data rows to it) while preserving
+// every other sheet and every other package part.  'writemode' is "append",
+// "overwritesheet", "inplace", or "" (default); all but "append" replace the
+// sheet's contents.  Returns "" on success or an error message.
+static string
+merge_ods (const string &file, bool flat, const Cell &data, const Cell &vtype,
+           const Cell &header, const string &sheetname, const string &writemode)
+{
+  // --- Read the existing package ---
+  vector<ods_entry> entries;            // packaged '.ods': every archive member
+  size_t content_idx = 0;
+  bool have_content = false;
+  string content_xml;
+  if (flat)
+  {
+    ifstream f (file.c_str (), ios::binary);
+    if (! f.is_open ())
+      return "cannot read '" + file + "'.";
+    ostringstream ss;
+    ss << f.rdbuf ();
+    content_xml = ss.str ();
+  }
+  else
+  {
+    mz_zip_archive zip;
+    memset (&zip, 0, sizeof (zip));
+    if (! mz_zip_reader_init_file (&zip, file.c_str (), 0))
+      return "cannot read '" + file + "' as a ZIP archive.";
+    mz_uint n = mz_zip_reader_get_num_files (&zip);
+    for (mz_uint i = 0; i < n; i++)
+    {
+      mz_zip_archive_file_stat st;
+      if (! mz_zip_reader_file_stat (&zip, i, &st))
+        continue;
+      size_t sz = 0;
+      void *p = mz_zip_reader_extract_to_heap (&zip, i, &sz, 0);
+      string bytes = (p ? string ((const char *) p, sz) : string ());
+      if (p)
+        mz_free (p);
+      string nm = st.m_filename;
+      if (nm == "content.xml")
+      {
+        content_idx = entries.size ();
+        have_content = true;
+        content_xml = bytes;
+      }
+      entries.push_back (ods_entry {nm, bytes, nm != "mimetype"});
+    }
+    mz_zip_reader_end (&zip);
+    if (! have_content)
+      return "'" + file + "' has no 'content.xml' entry.";
+  }
+
+  // --- Parse content.xml and locate the spreadsheet ---
+  pugi::xml_document doc;
+  if (! doc.load_buffer (content_xml.data (), content_xml.size ()))
+    return "cannot parse the spreadsheet in '" + file + "'.";
+  pugi::xml_node root = doc.child ("office:document");
+  if (! root)
+    root = doc.child ("office:document-content");
+  if (! root)
+    return "'" + file + "' is not an OpenDocument spreadsheet.";
+  pugi::xml_node spreadsheet =
+    root.child ("office:body").child ("office:spreadsheet");
+  if (! spreadsheet)
+    return "'" + file + "' is not an OpenDocument spreadsheet.";
+
+  // --- Ensure our date/time cell styles are present (foreign files lack them;
+  //     without them date/time cells keep their value but lose formatting) ---
+  pugi::xml_node styles = root.child ("office:automatic-styles");
+  bool have_styles = false;
+  if (styles)
+    for (pugi::xml_node s = styles.child ("style:style"); s;
+         s = s.next_sibling ("style:style"))
+      if (string (s.attribute ("style:name").as_string ()) == "ce_date")
+      {
+        have_styles = true;
+        break;
+      }
+  if (! have_styles)
+  {
+    if (! styles)
+      styles = root.insert_child_before ("office:automatic-styles",
+                                         root.child ("office:body"));
+    fill_automatic_styles (styles);
+  }
+
+  // --- Add, replace, or append to the target sheet ---
+  pugi::xml_node sheet;
+  for (pugi::xml_node t = spreadsheet.child ("table:table"); t;
+       t = t.next_sibling ("table:table"))
+    if (string (t.attribute ("table:name").as_string ()) == sheetname)
+    {
+      sheet = t;
+      break;
+    }
+
+  if (writemode == "append" && sheet)
+  {
+    // Append the data rows below the sheet's existing content, no header.
+    append_data_rows (sheet, data, vtype, 0);
+  }
+  else if (sheet)
+  {
+    // Replace the sheet's contents in place (default / overwritesheet /
+    // inplace), keeping its position among the other sheets.
+    while (sheet.first_child ())
+      sheet.remove_child (sheet.first_child ());
+    write_sheet_body (sheet, data, vtype, false, header, 0, 0);
+  }
+  else
+  {
+    // The sheet does not exist yet: add it after the existing sheets.
+    write_sheet (spreadsheet, sheetname, data, vtype, 0, false, header, 0, 0);
+  }
+
+  // --- Serialize and write back ---
+  ostringstream oss;
+  doc.save (oss, "  ");
+  string newxml = oss.str ();
+  if (flat)
+  {
+    ofstream f (file.c_str (), ios::binary);
+    if (! f.is_open ())
+      return "cannot open file '" + file + "' for writing.";
+    f.write (newxml.data (), newxml.size ());
+    f.close ();
+    if (! f)
+      return "failed to write '" + file + "'.";
+    return "";
+  }
+  entries[content_idx].data = newxml;
+  // The stored 'mimetype' entry must come first.
+  for (size_t i = 0; i < entries.size (); i++)
+    if (entries[i].name == "mimetype")
+    {
+      entries[i].compress = false;
+      if (i != 0)
+      {
+        ods_entry tmp = entries[0];
+        entries[0] = entries[i];
+        entries[i] = tmp;
+      }
+      break;
+    }
+  return write_zip_entries (file, entries);
+}
+
 DEFUN_DLD (__table2ods__, args, nargout,
            "-*- texinfo -*-\n \
  @deftypefn {datatypes} {} __table2ods__ (@var{file}, @var{data}, \
@@ -635,6 +811,8 @@ This is a helper IO function for the @qcode{table2ods} method of the \
   octave_idx_type roff = 0, coff = 0;
   bool   multi = false;
   octave_map sheets;
+  bool   merge = false;
+  string writemode;
   if (args.length () == 6)
   {
     octave_scalar_map opts = args(5).scalar_map_value ();
@@ -655,6 +833,20 @@ This is a helper IO function for the @qcode{table2ods} method of the \
       meta = opts.isfield ("meta") ? opts.contents ("meta").cell_value ()
                                    : Cell ();
     }
+    // Merge mode: add/replace/append to a sheet of an existing file in place.
+    if (opts.isfield ("merge"))
+      merge = opts.contents ("merge").bool_value ();
+    if (opts.isfield ("writemode"))
+      writemode = opts.contents ("writemode").string_value ();
+  }
+
+  // Read-modify-write an existing package rather than writing a fresh one.
+  if (merge)
+  {
+    string msg = merge_ods (file, flat, data, vtype, header, sheetname,
+                            writemode);
+    retval(0) = msg.empty () ? octave_value (0.0) : octave_value (msg);
+    return retval;
   }
 
   pugi::xml_document doc;

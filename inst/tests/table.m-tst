@@ -1374,6 +1374,68 @@
 %!   if (exist (fn, 'file')); delete (fn); endif
 %! end_unwind_protect
 
+## 'writetable' to a new sheet of an existing workbook preserves other sheets
+%!test
+%! A = table ([1; 2], 'VariableNames', {'a'});
+%! B = table ([3; 4; 5], 'VariableNames', {'b'});
+%! fn = [tempname() '.ods'];
+%! unwind_protect
+%!   writetable (A, fn, 'Sheet', 'first');
+%!   writetable (B, fn, 'Sheet', 'second');
+%!   assert_equal (readtable (fn, 'Sheet', 'first').a, [1; 2]);
+%!   assert_equal (readtable (fn, 'Sheet', 'second').b, [3; 4; 5]);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file')); delete (fn); endif
+%! end_unwind_protect
+
+## 'WriteMode' 'append' adds rows to an existing sheet; other sheets untouched
+%!test
+%! A = table ([1; 2], 'VariableNames', {'a'});
+%! B = table ([3; 4; 5], 'VariableNames', {'b'});
+%! more = table ([6; 7], 'VariableNames', {'a'});
+%! fn = [tempname() '.ods'];
+%! unwind_protect
+%!   writetable (A, fn, 'Sheet', 'first');
+%!   writetable (B, fn, 'Sheet', 'second');
+%!   writetable (more, fn, 'Sheet', 'first', 'WriteMode', 'append');
+%!   assert_equal (readtable (fn, 'Sheet', 'first').a, [1; 2; 6; 7]);
+%!   assert_equal (readtable (fn, 'Sheet', 'second').b, [3; 4; 5]);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file')); delete (fn); endif
+%! end_unwind_protect
+
+## 'WriteMode' 'overwritesheet' replaces one sheet, preserving the others
+%!test
+%! A = table ([1; 2], 'VariableNames', {'a'});
+%! B = table ([3; 4; 5], 'VariableNames', {'b'});
+%! repl = table ([9], 'VariableNames', {'z'});
+%! fn = [tempname() '.fods'];
+%! unwind_protect
+%!   writetable (A, fn, 'Sheet', 'first');
+%!   writetable (B, fn, 'Sheet', 'second');
+%!   writetable (repl, fn, 'Sheet', 'first', 'WriteMode', 'overwritesheet');
+%!   R = readtable (fn, 'Sheet', 'first');
+%!   assert_equal (R.Properties.VariableNames, {'z'});
+%!   assert_equal (R.z, 9);
+%!   assert_equal (readtable (fn, 'Sheet', 'second').b, [3; 4; 5]);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file')); delete (fn); endif
+%! end_unwind_protect
+
+## 'WriteMode' 'replacefile' overwrites the whole workbook
+%!test
+%! A = table ([1; 2], 'VariableNames', {'a'});
+%! B = table ([3; 4; 5], 'VariableNames', {'b'});
+%! fn = [tempname() '.ods'];
+%! unwind_protect
+%!   writetable (A, fn, 'Sheet', 'first');
+%!   writetable (B, fn, 'Sheet', 'second', 'WriteMode', 'replacefile');
+%!   [~, ~, ~, nm] = __ods2table__ (fn);
+%!   assert_equal (nm(:), {'second'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file')); delete (fn); endif
+%! end_unwind_protect
+
 ## Test input validation for 'writetable' method
 %!error <table.writetable: writetable does not support writing nested tables.*splitvars.*> ...
 %! inner = table ([1; 2], 'VariableNames', {'a'}); ...
@@ -1387,8 +1449,10 @@
 %! writetable (table (1), [tempname() '.csv'], 'Range', 'A1');
 %!error <table.writetable: 'WriteMode' 'inplace' is not valid for text files; use 'overwrite' or 'append'.> ...
 %! writetable (table (1), [tempname() '.csv'], 'WriteMode', 'inplace');
-%!error <table.writetable: 'WriteMode' is not yet supported for spreadsheet files.> ...
-%! writetable (table (1), [tempname() '.ods'], 'WriteMode', 'append');
+%!error <table.writetable: 'WriteMode' 'bogus' is not valid for spreadsheet files.> ...
+%! writetable (table (1), [tempname() '.ods'], 'WriteMode', 'bogus');
+%!error <table.writetable: 'Range' is not supported with 'WriteMode' 'append'.> ...
+%! writetable (table (1), [tempname() '.ods'], 'WriteMode', 'append', 'Range', 'B2');
 %!error <table.writetable: unknown option 'Bogus'.> ...
 %! writetable (table (1), [tempname() '.csv'], 'Bogus', 1);
 

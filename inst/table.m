@@ -885,17 +885,23 @@ classdef table
     ## @item @qcode{'Sheet'} @tab Spreadsheet only: the name of the sheet to
     ## write (default @qcode{'Sheet1'}).
     ## @item @qcode{'Range'} @tab Spreadsheet only: an A1-style anchor such as
-    ## @qcode{'C5'} at which to place the top-left corner of the data.
-    ## @item @qcode{'WriteMode'} @tab Text only: @qcode{'overwrite'} (default) or
-    ## @qcode{'append'} to add rows to an existing file without a header row.
+    ## @qcode{'C5'} at which to place the top-left corner of the data (fresh
+    ## writes only).
+    ## @item @qcode{'WriteMode'} @tab For text: @qcode{'overwrite'} (default) or
+    ## @qcode{'append'}.  For spreadsheets: @qcode{'overwritesheet'} /
+    ## @qcode{'inplace'} (replace the target sheet), @qcode{'append'} (append
+    ## rows to it), or @qcode{'replacefile'} (overwrite the whole file).
     ## @end multitable
+    ##
+    ## When the target spreadsheet already exists, the sheet named by
+    ## @qcode{'Sheet'} (default @qcode{'Sheet1'}) is added or replaced while every
+    ## other sheet is preserved, unless @qcode{'WriteMode'} is
+    ## @qcode{'replacefile'}.  Existing foreign spreadsheets (for example those
+    ## written by LibreOffice) are updated in place, keeping their other parts.
     ##
     ## Nested tables and structures are not supported.  Microsoft Excel formats
     ## (@qcode{.xls}, @qcode{.xlsx}, @qcode{.xlsb}) are not supported either; use
-    ## @qcode{.ods} or a text format.  For spreadsheets, @qcode{'Sheet'} and
-    ## @qcode{'Range'} write a fresh single-sheet file; writing into an existing
-    ## workbook (@qcode{'WriteMode'} @qcode{'append'}, @qcode{'inplace'}, or
-    ## @qcode{'overwritesheet'}) is not yet supported.
+    ## @qcode{.ods} or a text format.
     ##
     ## @end deftypefn
     function writetable (this, filename, varargin)
@@ -967,15 +973,27 @@ classdef table
                    writeMode);
         endswitch
       else                                  # spreadsheet
-        ## Writing into an existing workbook ('append'/'inplace'/
-        ## 'overwritesheet') needs the round-trip repacker; only fresh
-        ## single-sheet writes are supported for now.
-        if (! isempty (writeMode))
-          error (strcat ("table.writetable: 'WriteMode' is not yet supported", ...
-                         " for spreadsheet files."));
-        endif
         if (! isempty (sheet) && ! (ischar (sheet) && isrow (sheet)))
           error ("table.writetable: 'Sheet' must be a sheet name.");
+        endif
+        switch (writeMode)
+          case {'', 'replacefile', 'overwritesheet', 'inplace', 'append'}
+            ## supported spreadsheet write modes
+          otherwise
+            error (strcat ("table.writetable: 'WriteMode' '%s' is not valid", ...
+                           " for spreadsheet files."), writeMode);
+        endswitch
+        ## A 'Range' anchors a fresh write; it has no meaning when merging into
+        ## an existing workbook.
+        if (! isempty (range))
+          if (strcmp (writeMode, 'append'))
+            error (strcat ("table.writetable: 'Range' is not supported with", ...
+                           " 'WriteMode' 'append'."));
+          endif
+          if (exist (file, 'file') && ! strcmp (writeMode, 'replacefile'))
+            error (strcat ("table.writetable: 'Range' is not supported when", ...
+                           " writing into an existing file."));
+          endif
         endif
       endif
 
@@ -1008,7 +1026,8 @@ classdef table
           vtype{c} = ods_value_type (T{c});
         endfor
         opts = struct ();
-        if (writeVarNames)
+        ## Append mode writes data rows only, never a header.
+        if (writeVarNames && ! strcmp (writeMode, 'append'))
           opts.header = names;
         else
           opts.header = {};
@@ -1016,12 +1035,17 @@ classdef table
         if (! isempty (sheet))
           opts.sheetname = sheet;
         endif
-        if (! isempty (range))
+        is_flat = strcmpi (ext, '.fods');
+        ## Merge into an existing workbook (preserving other sheets) unless the
+        ## file is new or 'replacefile' asks to overwrite it outright.
+        if (exist (file, 'file') && ! strcmp (writeMode, 'replacefile'))
+          opts.merge = true;
+          opts.writemode = writeMode;
+        elseif (! isempty (range))
           [r1, c1] = __a1ref__ (range);
           opts.roff = r1 - 1;
           opts.coff = c1 - 1;
         endif
-        is_flat = strcmpi (ext, '.fods');
         msg = __table2ods__ (file, V, vtype, {}, is_flat, opts);
         if (! isequal (msg, 0))
           error ("table.writetable: %s", msg);
