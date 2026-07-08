@@ -5538,8 +5538,45 @@
 %! pivot (table (categorical ({'a'; 'b'}), 'VariableNames', {'g'}), 'Rows', 'g', 'RowLabelPlacement', 'foo')
 %!error <table.pivot: 'IncludeMissingGroups' must be a logical scalar.> ...
 %! pivot (table (categorical ({'a'; 'b'}), 'VariableNames', {'g'}), 'Rows', 'g', 'IncludeMissingGroups', 'yes')
-%!error <table.pivot: OutputFormat 'nested' is not yet supported; use 'flat'.> ...
-%! pivot (table (categorical ({'a'; 'b'}), 'VariableNames', {'g'}), 'Rows', 'g', 'OutputFormat', 'nested')
+%!error <table.pivot: 'OutputFormat' must be 'flat' or 'nested'.> ...
+%! pivot (table (categorical ({'a'; 'b'}), 'VariableNames', {'g'}), 'Rows', 'g', 'OutputFormat', 'bogus')
+## 'OutputFormat','nested' nests multiple Columns variables into nested tables
+%!test
+%! r = [1; 1; 2; 2; 1; 2];
+%! c1 = categorical ({'A'; 'A'; 'B'; 'B'; 'A'; 'B'});
+%! c2 = categorical ({'X'; 'Y'; 'X'; 'Y'; 'X'; 'Y'});
+%! v = [10; 20; 30; 40; 50; 60];
+%! T = table (r, c1, c2, v, 'VariableNames', {'r', 'c1', 'c2', 'v'});
+%! P = pivot (T, 'Rows', 'r', 'Columns', {'c1', 'c2'}, 'DataVariable', 'v', ...
+%!            'Method', 'sum', 'OutputFormat', 'nested');
+%! assert_equal (P.Properties.VariableNames, {'r', 'A', 'B'});
+%! assert_equal (isa (P.A, 'table'), true);
+%! assert_equal (P.A.Properties.VariableNames, {'X', 'Y'});
+%! assert_equal (P.A.X, [60; 0]);
+%! assert_equal (P.A.Y, [20; 0]);
+%! assert_equal (P.B.X, [0; 30]);
+%! assert_equal (P.B.Y, [0; 100]);
+## Nested with a single Columns variable collapses to flat columns
+%!test
+%! r = [1; 1; 2];
+%! c = categorical ({'A'; 'B'; 'A'});
+%! v = [10; 20; 30];
+%! T = table (r, c, v, 'VariableNames', {'r', 'c', 'v'});
+%! P = pivot (T, 'Rows', 'r', 'Columns', 'c', 'DataVariable', 'v', ...
+%!            'Method', 'sum', 'OutputFormat', 'nested');
+%! assert_equal (P.Properties.VariableNames, {'r', 'A', 'B'});
+%! assert_equal (isa (P.A, 'double'), true);
+## Nested output with IncludeTotals keeps a flat Overall_<method> column
+%!test
+%! r = [1; 1; 2; 2; 1; 2];
+%! c1 = categorical ({'A'; 'A'; 'B'; 'B'; 'A'; 'B'});
+%! c2 = categorical ({'X'; 'Y'; 'X'; 'Y'; 'X'; 'Y'});
+%! v = [10; 20; 30; 40; 50; 60];
+%! T = table (r, c1, c2, v, 'VariableNames', {'r', 'c1', 'c2', 'v'});
+%! P = pivot (T, 'Rows', 'r', 'Columns', {'c1', 'c2'}, 'DataVariable', 'v', ...
+%!            'Method', 'sum', 'OutputFormat', 'nested', 'IncludeTotals', true);
+%! assert_equal (any (strcmp (P.Properties.VariableNames, 'Overall_sum')), true);
+%! assert_equal (P.Overall_sum, [80; 130; 210]);
 %!error <table.pivot: 'IncludedEdge' must be 'left' or 'right'.> ...
 %! pivot (table ([1; 2], 'VariableNames', {'g'}), 'Rows', 'g', 'RowsBinMethod', 2, 'IncludedEdge', 'mid')
 %!error <table.pivot: binning is not supported for grouping variable 'g' of type 'categorical'.> ...

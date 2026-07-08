@@ -6955,8 +6955,13 @@ classdef table
     ## edge of each bin is inclusive when a binning scheme is given.
     ##
     ## @item @qcode{'OutputFormat'}
-    ## Only @qcode{'flat'} (the default) is supported; @qcode{'nested'}
-    ## raises an error.
+    ## @qcode{'flat'} (default) names each output column after the joined column
+    ## grouping values (@qcode{@var{lvl}_@var{lvl}}).  @qcode{'nested'} instead
+    ## groups two or more @qcode{'Columns'} variables into nested tables: one
+    ## outer variable per level of the first column grouping variable, each a
+    ## nested @code{table} whose variables are the next grouping variable's
+    ## levels (recursively).  A marginal-total column, if any, stays a flat outer
+    ## variable.
     ## @end table
     ##
     ## @end deftypefn
@@ -6987,21 +6992,16 @@ classdef table
         endif
       endif
 
-      ## Validate the IncludedEdge binning option; the 'nested' output format is
-      ## not yet supported.
+      ## Validate the IncludedEdge binning and OutputFormat options.
       incEdge = check_included_edge ('pivot', incEdge);
       if (isa (outFmt, 'string'))
         outFmt = char (outFmt);
       endif
-      if (! (ischar (outFmt) && isrow (outFmt)))
+      if (! (ischar (outFmt) && isrow (outFmt) ...
+             && any (strcmpi (outFmt, {'flat', 'nested'}))))
         error ("table.pivot: 'OutputFormat' must be 'flat' or 'nested'.");
       endif
-      if (strcmpi (outFmt, 'nested'))
-        error (strcat ("table.pivot: OutputFormat 'nested' is not yet", ...
-                       " supported; use 'flat'."));
-      elseif (! strcmpi (outFmt, 'flat'))
-        error ("table.pivot: 'OutputFormat' must be 'flat' or 'nested'.");
-      endif
+      nested = strcmpi (outFmt, 'nested');
 
       ## Validate the logical-scalar and RowLabelPlacement options.
       incMiss = pivot_logical_opt ('IncludeMissingGroups', incMiss);
@@ -7234,6 +7234,22 @@ classdef table
         endif
       endif
 
+      ## Column variables for the output: flat (the '<lvl>_<lvl>' data columns) or,
+      ## for 'OutputFormat','nested' with two or more 'Columns' variables, nested
+      ## tables grouped by the column hierarchy (the marginal-total column, if
+      ## any, stays a flat outer variable).
+      if (nested && numel (colIx) >= 2)
+        [colVars, finalNames] = pivot_nest (dataCols(1:nC), cLvlOf, cLevVals, ...
+                                            cMissLvls, colGnames);
+        if (addTotalCol)
+          colVars{end+1} = dataCols{nC + 1};
+          finalNames{end+1} = totalLabel;
+        endif
+      else
+        colVars = dataCols;
+        finalNames = colNames;
+      endif
+
       ## Assemble the output table.  Totals keep the row grouping variables and
       ## label the marginal row with 'Overall_<method>', appended to the single
       ## row-label variable; a multi-variable or non-text row label falls back to
@@ -7254,17 +7270,17 @@ classdef table
 
       if (useRowNames)
         if (isempty (rowIx))
-          P = table (dataCols{:}, 'VariableNames', colNames);
+          P = table (colVars{:}, 'VariableNames', finalNames);
         else
           rn = pivot_row_names (rowLabelCols);
           if (addTotalRow)
             rn = [rn; {totalLabel}];
           endif
-          P = table (dataCols{:}, 'VariableNames', colNames, 'RowNames', rn);
+          P = table (colVars{:}, 'VariableNames', finalNames, 'RowNames', rn);
         endif
       else
-        allVars = [rowLabelCols, dataCols];
-        allNames = [rowLabelNames, colNames];
+        allVars = [rowLabelCols, colVars];
+        allNames = [rowLabelNames, finalNames];
         P = table (allVars{:}, 'VariableNames', allNames);
       endif
     endfunction
@@ -10894,6 +10910,39 @@ function s = pivot_value_name (val)
   if (isempty (s))
     s = '<undefined>';
   endif
+endfunction
+
+## Build nested-table column variables for pivot 'OutputFormat','nested': group
+## the flat data columns COLS (1-by-nC) by the column-grouping level hierarchy in
+## LVLOF (nC-by-K level indices), producing one outer variable per level of the
+## first column grouping variable -- each a nested table (recursively) whose
+## variables are the next grouping variable's levels; the innermost level holds
+## the data columns.  LEVVALS/MISSLVLS/GNAMES supply the level labels.
+function [vars, names] = pivot_nest (cols, lvlOf, levVals, missLvls, gnames)
+  [vars, names] = pivot_nest_level (cols, lvlOf, 1, levVals, missLvls, gnames);
+endfunction
+
+function [vars, names] = pivot_nest_level (cols, lvlOf, p, levVals, missLvls, gnames)
+  K = size (lvlOf, 2);
+  vars = {};
+  names = {};
+  for L = unique (lvlOf(:,p)(:)')
+    mask = lvlOf(:,p) == L;
+    if (missLvls{p}(L))
+      nm = sprintf ("<missing_%s>", gnames{p});
+    else
+      nm = pivot_value_name (levVals{p}(L,:));
+    endif
+    if (p == K)
+      sub = cols(mask);
+      vars{end+1} = sub{1};             # leaf: one data column per full tuple
+    else
+      [sv, sn] = pivot_nest_level (cols(mask), lvlOf(mask,:), p + 1, ...
+                                   levVals, missLvls, gnames);
+      vars{end+1} = table (sv{:}, 'VariableNames', sn);
+    endif
+    names{end+1} = nm;
+  endfor
 endfunction
 
 ## Return the value 'pivot' places in an empty cell for the named method M.
