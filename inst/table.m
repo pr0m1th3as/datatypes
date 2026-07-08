@@ -31,8 +31,8 @@ classdef table
   ## use the table's variable or row names much like indexing a structure field
   ## as well as using a @qcode{vartype} class object to make a selection of
   ## variable types.  While these methods will return a subset of the original
-  ## table, you can also used curly brackets much like cell arrays to retrieve
-  ## the contents of the table.  In this case, the original data type of the
+  ## table, you can also use curly brackets much like cell arrays to retrieve
+  ## the contents of the table.  In this case, the original data types of the
   ## selected variables are returned.
   ##
   ## Besides the @code{table} constructor, you can also use @code{array2table},
@@ -106,7 +106,7 @@ classdef table
     ## variables.  You can access the data type of a specific variable by using
     ## dot name assignment, as in @qcode{@var{tbl}.@var{varname}}, where
     ## @var{varname} is the name of the variable in table @var{tbl}.  If the
-    ## variable name does not a exist, a new one is created.
+    ## variable name does not exist, a new one is created.
     ##
     ## @end deftp
     VariableNames = {}
@@ -159,9 +159,9 @@ classdef table
     ## it must contain the same number of elements as the number of variables.
     ## If a specific variable does not have a unit, this can be specified with
     ## an individual empty character vector or an empty string.  You can access
-    ## the @qcode{VariableDescriptions} property of a table @var{tbl} with
-    ## @qcode{@var{tbl}.Properties.VariableDescriptions}.   You can further
-    ## index specific variables to access their description.
+    ## the @qcode{VariableUnits} property of a table @var{tbl} with
+    ## @qcode{@var{tbl}.Properties.VariableUnits}.  You can further index
+    ## specific variables to access their unit.
     ##
     ## @end deftp
     VariableUnits = {}
@@ -189,10 +189,11 @@ classdef table
     ## Customized metadata of table and its variables
     ##
     ## Custom properties that contain metadata of a table and its variables.
-    ## By default, this is an empty container.  Each custom property can contain
-    ## either table metadata or variable metadata.  Any custom property which is
-    ## an array with the same number of elements as the number of variables is
-    ## considered as variable metadata, otherwise is considered table metadata.
+    ## By default, this is an empty container.  Each custom property holds
+    ## either table metadata or per-variable metadata, according to the property
+    ## type (@qcode{'table'} or @qcode{'variable'}) specified when the property
+    ## is created with the @code{addprop} method.  A variable-scoped property
+    ## holds one element per variable.
     ##
     ## You can add custom properties only by using the @code{addprop} method and
     ## you can only remove a custom property with the @code{rmprop} method.  To
@@ -254,7 +255,7 @@ classdef table
     ## Create a new table.
     ##
     ## @code{@var{tbl} = table (@var{var1}, @var{var2}, @dots{}, @var{varN})}
-    ## created a new table with the given variables.  The variables passed as
+    ## creates a new table with the given variables.  The variables passed as
     ## input arguments become the variables of the table.  Their names are
     ## automatically detected from the input variable names that you used.
     ##
@@ -268,27 +269,25 @@ classdef table
     ##
     ## @code{@var{tbl} = table (@dots{}, @qcode{'VariableNames'},
     ## @var{varNames})} specifies the variable names to use in the constructed
-    ## table.
-    ## @var{varNames} must be either a cell array of character vectors of string
-    ## array with the same number of nonempty and unique elements as the number
-    ## of table variables.
+    ## table.  @var{varNames} must be either a cell array of character vectors
+    ## or a string array with the same number of nonempty and unique elements as
+    ## the number of table variables.
     ##
     ## @code{@var{tbl} = table (@dots{}, @qcode{'RowNames'}, @var{rowNames})}
-    ## specifies the row names to use in the constructed table. @var{dimNames}
-    ## must be either a cell array of character vectors of string array with the
-    ## same number of nonempty and unique elements as the number of rows in the
-    ## table.
+    ## specifies the row names to use in the constructed table.  @var{rowNames}
+    ## must be either a cell array of character vectors or a string array with
+    ## the same number of nonempty and unique elements as the number of rows in
+    ## the table.
     ##
     ## @code{@var{tbl} = table (@dots{}, @qcode{'DimensionNames'},
     ## @var{dimNames})} specifies the dimension names to use in the constructed
-    ## table.
-    ## @var{dimNames} must be either a two-element cell array of character
-    ## vectors or a two-element string array with nonempty and unique elements.
+    ## table.  @var{dimNames} must be either a two-element cell array of
+    ## character vectors or a two-element string array with nonempty and unique
+    ## elements.
     ##
     ## @code{@var{tbl} = table ()} returns an empty table with 0 rows and 0
     ## variables.
     ##
-    ## @seealso{array2table, cell2table, struct2table, table, istable}
     ## @end deftypefn
     function this = table (varargin)
 
@@ -798,10 +797,11 @@ classdef table
     ## (single-XML) OpenDocument spreadsheet is written instead.  The resulting
     ## file can be read back with @code{ods2table}.
     ##
-    ## The data sheet (named @qcode{Sheet1} by default) carries one natively typed
-    ## cell per value, and a hidden @qcode{__datatypes_meta__} sheet carries the
-    ## variable types, names, descriptions, and units needed to restore the exact
-    ## Octave types on read-back.  Variables map to ODS cell types as follows:
+    ## The data sheet (named @qcode{Sheet1} by default) carries one natively
+    ## typed cell per value, and a hidden @qcode{__datatypes_meta__} sheet
+    ## carries the variable types, names, descriptions, and units needed to
+    ## restore the exact Octave types on read-back.  Variables map to ODS cell
+    ## types as follows:
     ##
     ## @itemize
     ## @item
@@ -845,7 +845,6 @@ classdef table
     ## are not reconstructed), and datetime and duration display formats are not
     ## preserved, although the values themselves are exact.
     ##
-    ## @seealso{struct2ods, ods2table, ods2struct, writetable}
     ## @end deftypefn
     function table2ods (this, file, varargin)
       file = char (cellstr (file));
@@ -908,14 +907,15 @@ classdef table
     ## @code{writetable (@var{tbl}, @var{filename})} writes the table @var{tbl}
     ## to @var{filename}.  The file type is inferred from the extension:
     ## @qcode{.txt}, @qcode{.csv}, and @qcode{.dat} are written as delimited
-    ## text; @qcode{.ods} is written as an OpenDocument spreadsheet.  Use the
-    ## @qcode{'FileType'} option to override the inferred type.
+    ## text; @qcode{.ods} as an OpenDocument spreadsheet; and @qcode{.xlsx} and
+    ## @qcode{.xlsm} as Excel spreadsheets.  Use the @qcode{'FileType'} option
+    ## to override the inferred type.
     ##
-    ## Unlike @code{table2csv}/@code{table2ods}, no type metadata is written: the
-    ## file holds only an optional variable-name header row followed by the data,
-    ## so it can be read by other applications.  Type information is recovered by
-    ## @code{readtable} through automatic detection (text) or the native cell
-    ## types (spreadsheet).  The following options are supported:
+    ## Unlike @code{table2csv}/@code{table2ods}, no type metadata is written:
+    ## the file holds only an optional variable-name header row followed by the
+    ## data, so it can be read by other applications.  Type information is
+    ## recovered by @code{readtable} through automatic detection (text) or the
+    ## native cell types (spreadsheet).  The following options are supported:
     ##
     ## @multitable @columnfractions 0.28 0.72
     ## @item @qcode{'FileType'} @tab @qcode{'text'} or @qcode{'spreadsheet'}.
@@ -943,11 +943,10 @@ classdef table
     ## When the target spreadsheet already exists, the sheet named by
     ## @qcode{'Sheet'} (defaulting to the first existing sheet) is added or
     ## replaced while every other sheet is preserved, unless @qcode{'WriteMode'}
-    ## is
-    ## @qcode{'replacefile'}.  For ODS, existing foreign spreadsheets (for example
-    ## those written by LibreOffice) are updated in place, keeping their other
-    ## parts; for Excel (@qcode{.xlsx}, @qcode{.xlsm}) the workbook is read back
-    ## and rewritten, so only its cell values are preserved.
+    ## is @qcode{'replacefile'}.  For ODS, existing foreign spreadsheets (for
+    ## example those written by LibreOffice) are updated in place, keeping their
+    ## other parts; for Excel (@qcode{.xlsx}, @qcode{.xlsm}) the workbook is
+    ## read back and rewritten, so only its cell values are preserved.
     ##
     ## Nested tables and structures are not supported, and the legacy binary
     ## formats @qcode{.xls} and @qcode{.xlsb} are not supported either; use
@@ -1510,7 +1509,7 @@ classdef table
     ## Sort the rows of a table.
     ##
     ## @code{@var{tblB} = sortrows (@var{tblA})} sorts the rows in @var{tblA} in
-    ## ascending order based on the values in the first variable.   If elements
+    ## ascending order based on the values in the first variable.  If elements
     ## in the first variable are repeated, then @code{sortrows} sorts by the
     ## elements in the second variable, and so on.
     ##
@@ -1538,9 +1537,9 @@ classdef table
     ## Positive integers specify an ascending order, whereas negative integers
     ## specify a descending order for the referenced variables.  You can also
     ## index all available variables in @var{tblA} by passing a semicolon
-    ## character argument.  This Octave specific syntax, facilitates the use of
-    ## @var{direction} input argument, when no particular variable needs to be
-    ## selected for sorting upon.  Additionally, @var{vars} can be a
+    ## character argument.  This Octave-specific syntax facilitates the use of
+    ## the @var{direction} input argument when no particular variable needs to
+    ## be selected to sort on.  Additionally, @var{vars} can be a
     ## @qcode{vartype} object used to create a subscript that selects variables
     ## of a specified type.
     ##
@@ -1551,7 +1550,7 @@ classdef table
     ## variables or row names that @code{sortrows} operates on.  @var{direction}
     ## can also be a cell array of character vectors, whose elements are
     ## @qcode{'ascend'} and @qcode{'descend'}, where each element corresponds to
-    ## the specified variables and/or, row names used for sorting the table.
+    ## the specified variables and/or row names used for sorting the table.
     ## The order specified by @var{direction} always takes precedence over the
     ## order defined by a numerical vector of integers in @var{vars}.
     ## @var{direction} must always be the 3rd input argument.  If you want to
@@ -1975,7 +1974,7 @@ classdef table
     ## @code{@var{TF} = issortedrows (@var{tblA}, @var{rowDimName})} determines
     ## if the rows in table @var{tblA} are sorted along the first dimension,
     ## @var{rowDimName}, which is the equivalent to the previous syntax, i.e.
-    ## according to its row names. For this syntax to work, @var{rowDimName}
+    ## according to its row names.  For this syntax to work, @var{rowDimName}
     ## must match the first element in @qcode{tblA.Properties.DimensionNames},
     ## otherwise @var{rowDimName} is considered a variable name, as in the
     ## following syntax.  @var{TF} is @qcode{true} when @code{@var{tblA} ==
@@ -1993,9 +1992,9 @@ classdef table
     ## Positive integers specify an ascending order, whereas negative integers
     ## specify a descending order for the referenced variables.  You can also
     ## index all available variables in @var{tblA} by passing a semicolon
-    ## character argument.  This Octave specific syntax, facilitates the use of
-    ## @var{direction} input argument, when no particular variable needs to be
-    ## selected for sorting upon.  Additionally, @var{vars} can be a
+    ## character argument.  This Octave-specific syntax facilitates the use of
+    ## the @var{direction} input argument when no particular variable needs to
+    ## be selected to sort on.  Additionally, @var{vars} can be a
     ## @qcode{vartype} object used to create a subscript that selects variables
     ## of a specified type.
     ##
@@ -2006,7 +2005,7 @@ classdef table
     ## variables or row names that @code{sortrows} operates on.  @var{direction}
     ## can also be a cell array of character vectors, whose elements are
     ## @qcode{'ascend'} and @qcode{'descend'}, where each element corresponds to
-    ## the specified variables and/or, row names used for sorting the table.
+    ## the specified variables and/or row names used for sorting the table.
     ## The order specified by @var{direction} always takes precedence over the
     ## order defined by a numerical vector of integers in @var{vars}.
     ## @var{direction} must always be the 3rd input argument.  If you want to
@@ -2054,7 +2053,7 @@ classdef table
     ## @deftypefnx {table} {@var{tblB} =} topkrows (@dots{}, @var{Name}, @var{Value})
     ## @deftypefnx {table} {[@var{tblB}, @var{index}] =} topkrows (@dots{})
     ##
-    ## Sort the rows of a table.
+    ## Return the top rows of a table.
     ##
     ## @code{@var{tblB} = topkrows (@var{tblA}, @var{k})} returns the top
     ## @var{k} rows from table @var{tblA} sorted in descending order based on
@@ -2089,10 +2088,10 @@ classdef table
     ## ascending order for the referenced variables, consistent with the
     ## descending default of @code{topkrows}.  You can also index all available
     ## variables in @var{tblA} by passing a semicolon character argument.  This
-    ## Octave specific syntax, facilitates the use of @var{direction} input
-    ## argument, when no particular variable needs to be selected for sorting
-    ## upon.  Additionally, @var{vars} can be a @qcode{vartype} object used to
-    ## create a subscript that selects variables of a specified type.
+    ## Octave-specific syntax facilitates the use of the @var{direction} input
+    ## argument when no particular variable needs to be selected to sort on.
+    ## Additionally, @var{vars} can be a @qcode{vartype} object used to create a
+    ## subscript that selects variables of a specified type.
     ##
     ## @code{@var{tblB} = topkrows (@var{tblA}, @var{k}, @dots{},
     ## @var{direction})} returns the top @var{k} rows from table @var{tblA}
@@ -2102,7 +2101,7 @@ classdef table
     ## @code{sortrows} operates on.  @var{direction} can also be a cell array of
     ## character vectors, whose elements are @qcode{'ascend'} and
     ## @qcode{'descend'}, where each element corresponds to the specified
-    ## variables and/or, row names used for sorting the table.  The order
+    ## variables and/or row names used for sorting the table.  The order
     ## specified by @var{direction} always takes precedence over the order
     ## defined by a numerical vector of integers in @var{vars}.  @var{direction}
     ## must always be the 3rd input argument.  If you want to omit passing
@@ -2111,7 +2110,7 @@ classdef table
     ## input argument empty, as in
     ## @code{sortrows (@var{tblA}, @{[]@}, @var{direction})} or pass a
     ## colon argument for @var{vars} as in
-    ## @code{sortrows (@var{tblA}, @{':'@}, @var{direction})} or pass a
+    ## @code{sortrows (@var{tblA}, @{':'@}, @var{direction})}.
     ##
     ## @code{@var{tblB} = topkrows (@dots{}, @var{k}, @var{Name}, @var{Value})}
     ## returns the top @var{k} rows from table @var{tblA} sorted with any of the
@@ -2203,18 +2202,18 @@ classdef table
     ## @var{tblA}.
     ##
     ## @code{@var{tblB} = addvars (@dots{}, @code{'After'}, @var{location})}
-    ## adds the new variables after, i.e. to the right, the table variable
+    ## adds the new variables after (i.e. to the right of) the table variable
     ## specified in @var{location}, which can be a character vector, a string
-    ## scalar, a scalar integer value or even a logical vector of the same size
-    ## as @qcode{width (@var{tblA})}, as long as it indexes a single variable in
-    ## @var{tblA}.
+    ## scalar, a scalar integer value, or even a logical vector with
+    ## @qcode{width (@var{tblA})} elements, as long as it indexes a single
+    ## variable in @var{tblA}.
     ##
     ## @code{@var{tblB} = addvars (@dots{}, @code{'Before'}, @var{location})}
-    ## adds the new variables before, i.e. to the left, the table variable
+    ## adds the new variables before (i.e. to the left of) the table variable
     ## specified in @var{location}, which can be a character vector, a string
-    ## scalar, a scalar integer value or even a logical vector of the same size
-    ## as @qcode{width (@var{tblA})}, as long as it indexes a single variable in
-    ## @var{tblA}.
+    ## scalar, a scalar integer value, or even a logical vector with
+    ## @qcode{width (@var{tblA})} elements, as long as it indexes a single
+    ## variable in @var{tblA}.
     ##
     ## @code{@var{tblB} = addvars (@dots{}, @code{'NewVariableNames'},
     ## @var{newNames})} renames the new variables added from the previous
@@ -2355,7 +2354,7 @@ classdef table
     ## @item a character vector specifying a single variable.
     ## @item a cell array of character vectors specifying a single or multiple
     ## variables.
-    ## @item a string array specifying a single or multiple variables).
+    ## @item a string array specifying a single or multiple variables.
     ## @item a numeric array of integer values indexing the variables to be
     ## renamed.
     ## @item a logical vector of the same length as the width of the table
@@ -2428,26 +2427,26 @@ classdef table
     ## variables.
     ## @item a string array specifying a single or multiple variables.
     ## @item a numeric array of integer values indexing the variables to be
-    ## renamed.
+    ## moved.
     ## @item a logical vector of the same length as the width of the table
-    ## @var{tblA} indexing as @qcode{true} the variables to be renamed.
+    ## @var{tblA} indexing as @qcode{true} the variables to be moved.
     ## @item a @qcode{vartype} object used to create a subscript that selects
     ## variables of a specified type.
     ## @end itemize
     ##
     ## @code{@var{tblB} = movevars (@dots{}, @code{'After'}, @var{location})}
-    ## moves the selected variables after, i.e. to the right, the table variable
-    ## specified in @var{location}, which can be a character vector, a string
-    ## scalar, a scalar integer value or even a logical vector of the same size
-    ## as @qcode{width (@var{tblA})}, as long as it indexes a single variable in
-    ## @var{tblA} which is not selected by @var{vars}.
+    ## moves the selected variables after (i.e. to the right of) the table
+    ## variable specified in @var{location}, which can be a character vector, a
+    ## string scalar, a scalar integer value, or even a logical vector with
+    ## @qcode{width (@var{tblA})} elements, as long as it indexes a single
+    ## variable in @var{tblA} which is not selected by @var{vars}.
     ##
     ## @code{@var{tblB} = movevars (@dots{}, @code{'Before'}, @var{location})}
-    ## moves the selected variables before, i.e. to the left, the table variable
-    ## specified in @var{location}, which can be a character vector, a string
-    ## scalar, a scalar integer value or even a logical vector of the same size
-    ## as @qcode{width (@var{tblA})}, as long as it indexes a single variable in
-    ## @var{tblA} which is not selected by @var{vars}.
+    ## moves the selected variables before (i.e. to the left of) the table
+    ## variable specified in @var{location}, which can be a character vector, a
+    ## string scalar, a scalar integer value, or even a logical vector with
+    ## @qcode{width (@var{tblA})} elements, as long as it indexes a single
+    ## variable in @var{tblA} which is not selected by @var{vars}.
     ##
     ## @end deftypefn
     function tbl = movevars (this, vars, varargin)
@@ -2559,11 +2558,11 @@ classdef table
     ## @item a character vector specifying a single variable.
     ## @item a cell array of character vectors specifying a single or multiple
     ## variables.
-    ## @item a string array specifying a single or multiple variables).
+    ## @item a string array specifying a single or multiple variables.
     ## @item a numeric array of integer values indexing the variables to be
-    ## renamed.
+    ## removed.
     ## @item a logical vector of the same length as the width of the table
-    ## @var{tblA} indexing as @qcode{true} the variables to be renamed.
+    ## @var{tblA} indexing as @qcode{true} the variables to be removed.
     ## @item a @qcode{vartype} object used to create a subscript that selects
     ## variables of a specified type.
     ## @end itemize
@@ -2613,14 +2612,14 @@ classdef table
     ##
     ## Split multicolumn variables in a table.
     ##
-    ## @code{@var{tblB} = splitvars (@var{tblA})} splits mutlicolumn variables
+    ## @code{@var{tblB} = splitvars (@var{tblA})} splits multicolumn variables
     ## in @var{tblA} so that they are single-column variables in @var{tblB},
     ## while all single-column variables in @var{tblA} are copied to @var{tblB}
-    ## unaltered. Each newly created single-column variable in @var{tblB} is
+    ## unaltered.  Each newly created single-column variable in @var{tblB} is
     ## uniquely named by joining the name of its parent multicolumn variable in
     ## @var{tblA} and the corresponding column number.  If a variable in
     ## @var{tblA} contains a table, then each variable of this nested table is
-    ## returned as a newly created variable in @var{tblB}. By default, these
+    ## returned as a newly created variable in @var{tblB}.  By default, these
     ## variables retain their original name in the nested table, unless there
     ## are duplicate names, in which case the name of the nested table is also
     ## used.  If the nested table in @var{tblA} contains a multicolumn variable,
@@ -2638,9 +2637,9 @@ classdef table
     ## variables.
     ## @item a string array specifying a single or multiple variables.
     ## @item a numeric array of integer values indexing the variables to be
-    ## renamed.
+    ## split.
     ## @item a logical vector of the same length as the width of the table
-    ## @var{tblA} indexing as @qcode{true} the variables to be renamed.
+    ## @var{tblA} indexing as @qcode{true} the variables to be split.
     ## @item a @qcode{vartype} object used to create a subscript that selects
     ## variables of a specified type.
     ## @end itemize
@@ -2847,7 +2846,7 @@ classdef table
     ## which is also the location of the merged variable in @var{tblB}.
     ##
     ## Note that merging variables with a @qcode{'string'} data type variable
-    ## will result to a multicolumn variable of @qcode{'string'} data type, by
+    ## will result in a multicolumn variable of @qcode{'string'} data type, by
     ## initially converting all other to-be-merged variables into
     ## @qcode{'string'} data type.
     ##
@@ -2858,9 +2857,9 @@ classdef table
     ## variables.
     ## @item a string array specifying a single or multiple variables.
     ## @item a numeric array of integer values indexing the variables to be
-    ## renamed.
+    ## merged.
     ## @item a logical vector of the same length as the width of the table
-    ## @var{tblA} indexing as @qcode{true} the variables to be renamed.
+    ## @var{tblA} indexing as @qcode{true} the variables to be merged.
     ## @item a @qcode{vartype} object used to create a subscript that selects
     ## variables of a specified type.
     ## @end itemize
@@ -3068,21 +3067,14 @@ classdef table
     ## @var{tblB} and the variables are swapped into rows and their names
     ## are stored into a new variable at the beginning of the output table.  If
     ## the contents of @var{tblA} can be concatenated, then the corresponding
-    ## variables of @var{tblB} arrays, otherwise they are cell arrays.  If the
-    ## input table @var{tblA} contains @qcode{RowNames}, then those names become
-    ## the variable names of the output table @var{tblB}, otherwise the variable
-    ## names of @var{tblB} are generated automatically.  @code{rows2vars} cannot
-    ## handle multicolumn variables or nested tables.
-    ##
-    ## variables in @var{tblA} specified by @var{vars} to create a new
-    ## multicolumn variable in @var{tblB}.  All other variables in @var{tblA}
-    ## are copied to @var{tblB} unaltered.  By default, the name of the merged
-    ## variable in @var{tblB} takes the form @math{VarN}, where @math{N} is the
-    ## position of the first variable in @var{tblA} among those to be merged,
-    ## which is also the location of the merged variable in @var{tblB}.
+    ## variables of @var{tblB} are arrays, otherwise they are cell arrays.  If
+    ## the input table @var{tblA} contains @qcode{RowNames}, then those names
+    ## become the variable names of the output table @var{tblB}, otherwise the
+    ## variable names of @var{tblB} are generated automatically.
+    ## @code{rows2vars} cannot handle multicolumn variables or nested tables.
     ##
     ## @code{@var{tblB} = rows2vars (@dots{}, @var{Name}, @var{Value})} further
-    ## specifies additional parameters for merging table variables with the
+    ## specifies additional parameters for reorienting the table with the
     ## following Name-Value paired arguments.
     ##
     ## @itemize
@@ -3100,7 +3092,7 @@ classdef table
     ## number of rows of the input table.  @qcode{'VariableNamesSource'} accepts
     ## the same data types supported by @qcode{'DataVariables'} as long as they
     ## index a single variable, which, however, must not be specified by the
-    ## @qcode{'DataVariables'} ame-Value paired argument.
+    ## @qcode{'DataVariables'} Name-Value paired argument.
     ## @item @qcode{'VariableNamingRule'} must be a character vector specifying
     ## the rule for naming variables in the output table @var{tblB}.  When set
     ## to @qcode{'modify'} (default), the variable names are modified so that
@@ -3295,15 +3287,15 @@ classdef table
     ## variables.
     ## @item a string array specifying a single or multiple variables.
     ## @item a numeric array of integer values indexing the variables to be
-    ## renamed.
+    ## stacked.
     ## @item a logical vector of the same length as the width of the table
-    ## @var{tblA} indexing as @qcode{true} the variables to be renamed.
+    ## @var{tblA} indexing as @qcode{true} the variables to be stacked.
     ## @item a @qcode{vartype} object used to create a subscript that selects
     ## variables of a specified type.
     ## @end itemize
     ##
     ## @code{@var{tblB} = stack (@dots{}, @var{Name}, @var{Value})} further
-    ## specifies additional parameters for merging table variables with the
+    ## specifies additional parameters for stacking table variables with the
     ## following Name-Value paired arguments.
     ##
     ## @itemize
@@ -3516,9 +3508,9 @@ classdef table
     ## variables.
     ## @item a string array specifying a single or multiple variables.
     ## @item a numeric array of integer values indexing the variables to be
-    ## renamed.
+    ## unstacked.
     ## @item a logical vector of the same length as the width of the table
-    ## @var{tblA} indexing as @qcode{true} the variables to be renamed.
+    ## @var{tblA} indexing as @qcode{true} the variables to be unstacked.
     ## @item a @qcode{vartype} object used to create a subscript that selects
     ## variables of a specified type.
     ## @end itemize
@@ -3530,7 +3522,7 @@ classdef table
     ## of @var{tblB}.
     ##
     ## @code{@var{tblB} = unstack (@dots{}, @var{Name}, @var{Value})} further
-    ## specifies additional parameters for merging table variables with the
+    ## specifies additional parameters for unstacking table variables with the
     ## following Name-Value paired arguments.
     ##
     ## @itemize
@@ -3538,16 +3530,15 @@ classdef table
     ## used as grouping variables.  All valid schemes for indexing a table
     ## variable can be used.  If grouping variables have missing values, the
     ## data from corresponding rows are not aggregated in the output table.
-    ## variables not specified by @var{vars} are included in the output table.
     ## Table row names cannot be assigned as a grouping variable, since these
-    ## must be unique for each row and it kind of misses the point of unstacking
-    ## a table to itself.
+    ## must be unique for each row, which would defeat the purpose of unstacking
+    ## a table onto itself.
     ## @item @qcode{'ConstantVariables'} specifies the variables that are
     ## constant within each group.  All valid schemes for indexing a table
     ## variable can be used.  The values for these variables in the output are
     ## taken from the first row in each group in the input.  By default, no
     ## variable is treated as constant unless specified.  However, if the input
-    ## table has row names, these effectively are treated as constant variable.
+    ## table has row names, these effectively are treated as constant variables.
     ## @item @qcode{'NewDataVariableNames'} specifies the names for the new data
     ## variables in the output table @var{tblB}.  It can be a character vector,
     ## a string scalar, or a cellstring scalar.  By default, the names of the
@@ -3568,10 +3559,10 @@ classdef table
     ## @item @qcode{'VariableNamingRule'}, specified as either @qcode{'modify'}
     ## or @qcode{'preserve'}, defines the rule for naming the new unstacked
     ## variables in the output table @var{tblB}.  @qcode{'modify'} (default)
-    ## forces all variable names to be a valid Octave variable names.
-    ## @qcode{'preserve'} allows to preserve original names taken from the input
-    ## table and can have any Unicode characters, including spaces and non-ASCII
-    ## characters.
+    ## forces all variable names to be valid Octave variable names.
+    ## @qcode{'preserve'} preserves the original names taken from the input
+    ## table, which can have any Unicode characters, including spaces and
+    ## non-ASCII characters.
     ## @end itemize
     ##
     ## @code{[@var{tblB}, @var{idxA}] = unstack (@dots{})} also returns an index
@@ -4139,23 +4130,21 @@ classdef table
     ## Add custom properties to a table.
     ##
     ## @code{@var{T} = addprop (@var{T}, @var{propertyNames},
-    ## @var{propertyTypes})} adds properties that contain custom metadata to
-    ## the table @var{T}.  The
-    ## input argument @var{propertyNames} specifies the names of the custom
-    ## properties to be added and @var{propertyTypes} the type of each
-    ## corresponding custom property, that is whether the metadata values
-    ## contained in the property apply to table @var{T} as a whole, or to the
-    ## variables of @var{T}.  Both @var{propertyNames} and @var{propertyTypes}
-    ## can be character vectors, cell arrays of character vectors, or stings.
-    ## When defined as cell arrays of character vectors or stings, they must
-    ## have the same number of elements.
+    ## @var{propertyTypes})} adds properties that contain custom metadata to the
+    ## table @var{T}.  The input argument @var{propertyNames} specifies the
+    ## names of the custom properties to be added and @var{propertyTypes} the
+    ## type of each corresponding custom property, that is whether the metadata
+    ## values contained in the property apply to table @var{T} as a whole, or
+    ## to the variables of @var{T}.  Both @var{propertyNames} and
+    ## @var{propertyTypes} can be character vectors, cell arrays of character
+    ## vectors, or strings.  When defined as cell arrays of character vectors or
+    ## strings, they must have the same number of elements.
     ##
     ## Valid @var{propertyTypes} are either @qcode{'table'} or
     ## @qcode{'variable'}.  When defined as @qcode{'table'}, the custom property
     ## can contain a scalar value of arbitrary type, which applies as metadata
     ## to the table as a whole.  When defined as @qcode{'variable'}, the custom
-    ## property contains a vector, whose elements correspond to the number of
-    ## variables in the table.
+    ## property contains a vector with one element per variable in the table.
     ##
     ## After adding custom properties using @code{addprop}, metadata values can
     ## be assigned to the properties using dot syntax.
@@ -4285,17 +4274,17 @@ classdef table
     ## default are the variables that share the same name in both tables.
     ## @var{tbl} contains one row for each row of @var{tblL}, in the same order;
     ## each is completed with the single row of @var{tblR} whose key variables
-    ## match.  The key variables of @var{tblR} must contain unique combinations of
-    ## values, and every key combination in @var{tblL} must be present in
+    ## match.  The key variables of @var{tblR} must contain unique combinations
+    ## of values, and every key combination in @var{tblL} must be present in
     ## @var{tblR}.
     ##
     ## By default @var{tbl} contains all the variables of @var{tblL} followed by
     ## the non-key variables of @var{tblR}.  Whenever a non-key variable name
-    ## appears in both tables, a suffix derived from each input's argument name is
-    ## appended to the conflicting names (for inputs named @var{tblL} and
-    ## @var{tblR}, the suffixes @qcode{'_tblL'} and @qcode{'_tblR'}; when an input
-    ## has no name, @qcode{'_left'} and @qcode{'_right'} are used).  The row names
-    ## of @var{tblL}, if any, are preserved.
+    ## appears in both tables, a suffix derived from each input's argument name
+    ## is appended to the conflicting names (for inputs named @var{tblL} and
+    ## @var{tblR}, the suffixes @qcode{'_tblL'} and @qcode{'_tblR'}; when an
+    ## input has no name, @qcode{'_left'} and @qcode{'_right'} are used).  The
+    ## row names of @var{tblL}, if any, are preserved.
     ##
     ## @code{@var{tbl} = join (@var{tblL}, @var{tblR}, @var{Name}, @var{Value})}
     ## customizes the join with the following options:
@@ -4312,19 +4301,19 @@ classdef table
     ## and reference the same number of variables.
     ##
     ## @item @qcode{'LeftVariables'}, @qcode{'RightVariables'}
-    ## Variables of @var{tblL} and @var{tblR} to include in @var{tbl}.  By default
-    ## @qcode{'LeftVariables'} is all the variables of @var{tblL} and
+    ## Variables of @var{tblL} and @var{tblR} to include in @var{tbl}.  By
+    ## default @qcode{'LeftVariables'} is all the variables of @var{tblL} and
     ## @qcode{'RightVariables'} is the non-key variables of @var{tblR}.
     ##
     ## @item @qcode{'KeepOneCopy'}
     ## Names of non-key variables that occur in both tables for which only the
-    ## copy from @var{tblL} is kept (no suffix is added and the @var{tblR} copy is
-    ## dropped).
+    ## copy from @var{tblL} is kept (no suffix is added and the @var{tblR} copy
+    ## is dropped).
     ## @end table
     ##
-    ## @code{[@var{tbl}, @var{ixR}] = join (@dots{})} also returns the index vector
-    ## @var{ixR} that identifies, for each row of @var{tbl}, the matching row of
-    ## @var{tblR}.
+    ## @code{[@var{tbl}, @var{ixR}] = join (@dots{})} also returns the index
+    ## vector @var{ixR} that identifies, for each row of @var{tbl}, the matching
+    ## row of @var{tblR}.
     ##
     ## @end deftypefn
     function [tbl, ixR] = join (tblL, tblR, varargin)
@@ -4458,14 +4447,14 @@ classdef table
     ##
     ## @code{@var{tbl} = innerjoin (@var{tblL}, @var{tblR})} combines the tables
     ## @var{tblL} and @var{tblR} by matching the values of their @emph{key
-    ## variables}, which by default are the variables that share the same name in
-    ## both tables.  Each row of @var{tbl} is formed by horizontally
+    ## variables}, which by default are the variables that share the same name
+    ## in both tables.  Each row of @var{tbl} is formed by horizontally
     ## concatenating a row of @var{tblL} with a row of @var{tblR} whose key
     ## variables share the same combination of values.  If @math{m} rows in
-    ## @var{tblL} and @math{n} rows in @var{tblR} share the same key combination,
-    ## then @var{tbl} contains all @math{m*n} pairings for that combination.  The
-    ## rows of @var{tbl} are sorted by the values of the key variables, and any
-    ## row names are dropped.
+    ## @var{tblL} and @math{n} rows in @var{tblR} share the same key
+    ## combination, then @var{tbl} contains all @math{m*n} pairings for that
+    ## combination.  The rows of @var{tbl} are sorted by the values of the key
+    ## variables, and any row names are dropped.
     ##
     ## By default @var{tbl} contains all the variables of @var{tblL} followed by
     ## the non-key variables of @var{tblR}.  Whenever a non-key variable name
@@ -4496,10 +4485,10 @@ classdef table
     ## non-key variables of @var{tblR}.
     ## @end table
     ##
-    ## @code{[@var{tbl}, @var{ixL}, @var{ixR}] = innerjoin (@dots{})} also returns
-    ## the row-index vectors @var{ixL} and @var{ixR} such that @var{tbl} is the
-    ## horizontal concatenation of @code{@var{tblL}(@var{ixL}, leftVars)} and
-    ## @code{@var{tblR}(@var{ixR}, rightVars)}.
+    ## @code{[@var{tbl}, @var{ixL}, @var{ixR}] = innerjoin (@dots{})} also
+    ## returns the row-index vectors @var{ixL} and @var{ixR} such that @var{tbl}
+    ## is the horizontal concatenation of @code{@var{tblL}(@var{ixL}, leftVars)}
+    ## and @code{@var{tblR}(@var{ixR}, rightVars)}.
     ##
     ## @end deftypefn
     function [tbl, ixL, ixR] = innerjoin (tblL, tblR, varargin)
@@ -4628,40 +4617,41 @@ classdef table
     ##
     ## @code{@var{tbl} = outerjoin (@var{tblL}, @var{tblR})} combines the tables
     ## @var{tblL} and @var{tblR} by matching the values of their @emph{key
-    ## variables}, which by default are the variables that share the same name in
-    ## both tables.  Unlike @code{innerjoin}, an outer join also keeps the rows of
-    ## each table that have no match in the other table, filling the variables
-    ## taken from the non-matching table with missing values (@qcode{NaN},
-    ## @qcode{NaT}, @qcode{<undefined>}, empty string, etc., as appropriate).  If
-    ## @math{m} rows in @var{tblL} and @math{n} rows in @var{tblR} share the same
-    ## key combination, then @var{tbl} contains all @math{m*n} pairings for that
-    ## combination.  The rows of @var{tbl} are sorted by the values of the key
-    ## variables and any row names are dropped.
+    ## variables}, which by default are the variables that share the same name
+    ## in both tables.  Unlike @code{innerjoin}, an outer join also keeps the
+    ## rows of each table that have no match in the other table, filling the
+    ## variables taken from the non-matching table with missing values
+    ## (@qcode{NaN}, @qcode{NaT}, @qcode{<undefined>}, empty string, etc., as
+    ## appropriate).  If @math{m} rows in @var{tblL} and @math{n} rows in
+    ## @var{tblR} share the same key combination, then @var{tbl} contains all
+    ## @math{m*n} pairings for that combination.  The rows of @var{tbl} are
+    ## sorted by the values of the key variables and any row names are dropped.
     ##
-    ## By default @var{tbl} contains all the variables of @var{tblL} followed by
-    ## all the variables of @var{tblR}.  Because the key variables are kept from
-    ## both tables, conflicting names receive a suffix derived from each input's
-    ## argument name (for inputs named @var{tblL} and @var{tblR}, the suffixes
-    ## @qcode{'_tblL'} and @qcode{'_tblR'}; when an input has no name,
-    ## @qcode{'_left'} and @qcode{'_right'} are used).  See @qcode{'MergeKeys'} to
-    ## combine the keys into single columns instead.
+    ## By default @var{tbl} contains all the variables of @var{tblL} followed
+    ## by all the variables of @var{tblR}.  Because the key variables are kept
+    ## from both tables, conflicting names receive a suffix derived from each
+    ## input's argument name (for inputs named @var{tblL} and @var{tblR}, the
+    ## suffixes @qcode{'_tblL'} and @qcode{'_tblR'}; when an input has no name,
+    ## @qcode{'_left'} and @qcode{'_right'} are used).  See @qcode{'MergeKeys'}
+    ## to combine the keys into single columns instead.
     ##
     ## @code{@var{tbl} = outerjoin (@var{tblL}, @var{tblR}, @var{Name},
     ## @var{Value})} customizes the join with the following options:
     ##
     ## @table @asis
     ## @item @qcode{'Type'}
-    ## The type of outer join: @qcode{'full'} (default) keeps unmatched rows from
-    ## both tables, @qcode{'left'} keeps all rows of @var{tblL} and only matching
-    ## rows of @var{tblR}, and @qcode{'right'} keeps all rows of @var{tblR} and
-    ## only matching rows of @var{tblL}.
+    ## The type of outer join: @qcode{'full'} (default) keeps unmatched rows
+    ## from both tables, @qcode{'left'} keeps all rows of @var{tblL} and only
+    ## matching rows of @var{tblR}, and @qcode{'right'} keeps all rows of
+    ## @var{tblR} and only matching rows of @var{tblL}.
     ##
     ## @item @qcode{'MergeKeys'}
-    ## A logical scalar (default @qcode{false}).  When @qcode{true}, each pair of
-    ## key variables is merged into a single variable that takes the value from
-    ## @var{tblL} where a matching left row exists and from @var{tblR} otherwise.
-    ## The merged variable is named after the left key when both keys share the
-    ## same name, or @qcode{'leftName_rightName'} when their names differ.
+    ## A logical scalar (default @qcode{false}).  When @qcode{true}, each pair
+    ## of key variables is merged into a single variable that takes the value
+    ## from @var{tblL} where a matching left row exists and from @var{tblR}
+    ## otherwise.  The merged variable is named after the left key when both
+    ## keys share the same name, or @qcode{'leftName_rightName'} when their
+    ## names differ.
     ##
     ## @item @qcode{'Keys'}
     ## Variables to use as keys in both tables, given as variable names or
@@ -4669,20 +4659,20 @@ classdef table
     ## @qcode{'RightKeys'}.
     ##
     ## @item @qcode{'LeftKeys'}, @qcode{'RightKeys'}
-    ## Variables to use as keys in @var{tblL} and @var{tblR}, respectively, when
-    ## the key variables have different names.  They must be specified together
-    ## and reference the same number of variables.
+    ## Variables to use as keys in @var{tblL} and @var{tblR}, respectively,
+    ## when the key variables have different names.  They must be specified
+    ## together and reference the same number of variables.
     ##
     ## @item @qcode{'LeftVariables'}, @qcode{'RightVariables'}
-    ## Variables of @var{tblL} and @var{tblR} to include in @var{tbl}.  By default
-    ## all the variables of each table are included.
+    ## Variables of @var{tblL} and @var{tblR} to include in @var{tbl}.  By
+    ## default all the variables of each table are included.
     ## @end table
     ##
-    ## @code{[@var{tbl}, @var{ixL}, @var{ixR}] = outerjoin (@dots{})} also returns
-    ## the row-index vectors @var{ixL} and @var{ixR} that identify the row of
-    ## @var{tblL} and @var{tblR}, respectively, corresponding to each row of
-    ## @var{tbl}.  A zero indicates a row of @var{tbl} that has no corresponding
-    ## row in that table.
+    ## @code{[@var{tbl}, @var{ixL}, @var{ixR}] = outerjoin (@dots{})} also
+    ## returns the row-index vectors @var{ixL} and @var{ixR} that identify the
+    ## row of @var{tblL} and @var{tblR}, respectively, corresponding to each
+    ## row of @var{tbl}.  A zero indicates a row of @var{tbl} that has no
+    ## corresponding row in that table.
     ##
     ## @end deftypefn
     function [tbl, ixL, ixR] = outerjoin (tblL, tblR, varargin)
@@ -4864,21 +4854,21 @@ classdef table
     ##
     ## Union of two tables by rows.
     ##
-    ## @code{@var{tbl} = union (@var{tblA}, @var{tblB})} returns the combined set
-    ## of rows of @var{tblA} and @var{tblB}, with duplicate rows removed.  Both
-    ## tables must have the same variable names, although not necessarily in the
-    ## same order; @var{tbl} keeps the variable order of @var{tblA}.  Rows are
-    ## compared by their variable values only (row names are ignored), and by
-    ## default @var{tbl} is sorted by those values.
+    ## @code{@var{tbl} = union (@var{tblA}, @var{tblB})} returns the combined
+    ## set of rows of @var{tblA} and @var{tblB}, with duplicate rows removed.
+    ## Both tables must have the same variable names, although not necessarily
+    ## in the same order; @var{tbl} keeps the variable order of @var{tblA}.
+    ## Rows are compared by their variable values only (row names are ignored),
+    ## and by default @var{tbl} is sorted by those values.
     ##
-    ## @code{@var{tbl} = union (@var{tblA}, @var{tblB}, @var{setOrder})} controls
-    ## the ordering of @var{tbl}.  @var{setOrder} is either @qcode{'sorted'}
-    ## (default) for ascending order, or @qcode{'stable'} to keep the order in
-    ## which the rows appear in @var{tblA} and @var{tblB}.
+    ## @code{@var{tbl} = union (@var{tblA}, @var{tblB}, @var{setOrder})}
+    ## controls the ordering of @var{tbl}.  @var{setOrder} is either
+    ## @qcode{'sorted'} (default) for ascending order, or @qcode{'stable'} to
+    ## keep the order in which the rows appear in @var{tblA} and @var{tblB}.
     ##
-    ## @code{[@var{tbl}, @var{ixA}, @var{ixB}] = union (@dots{})} also returns the
-    ## index vectors @var{ixA} and @var{ixB} such that @var{tbl} is the vertical
-    ## concatenation of @code{@var{tblA}(@var{ixA},:)} and
+    ## @code{[@var{tbl}, @var{ixA}, @var{ixB}] = union (@dots{})} also returns
+    ## the index vectors @var{ixA} and @var{ixB} such that @var{tbl} is the
+    ## vertical concatenation of @code{@var{tblA}(@var{ixA},:)} and
     ## @code{@var{tblB}(@var{ixB},:)}.
     ##
     ## @end deftypefn
@@ -4919,18 +4909,18 @@ classdef table
     ## Intersection of two tables by rows.
     ##
     ## @code{@var{tbl} = intersect (@var{tblA}, @var{tblB})} returns the set of
-    ## rows common to both @var{tblA} and @var{tblB}, with duplicate rows removed.
-    ## Both tables must have the same variable names, although not necessarily in
-    ## the same order; @var{tbl} keeps the variable order of @var{tblA}.  Rows are
-    ## compared by their variable values only (row names are ignored), and by
-    ## default @var{tbl} is sorted by those values.
+    ## rows common to both @var{tblA} and @var{tblB}, with duplicate rows
+    ## removed.  Both tables must have the same variable names, although not
+    ## necessarily in the same order; @var{tbl} keeps the variable order of
+    ## @var{tblA}.  Rows are compared by their variable values only (row names
+    ## are ignored), and by default @var{tbl} is sorted by those values.
     ##
     ## @code{@var{tbl} = intersect (@var{tblA}, @var{tblB}, @var{setOrder})}
     ## controls the ordering of @var{tbl}, either @qcode{'sorted'} (default) or
     ## @qcode{'stable'}.
     ##
-    ## @code{[@var{tbl}, @var{ixA}, @var{ixB}] = intersect (@dots{})} also returns
-    ## index vectors @var{ixA} and @var{ixB} such that @var{tbl} equals
+    ## @code{[@var{tbl}, @var{ixA}, @var{ixB}] = intersect (@dots{})} also
+    ## returns index vectors @var{ixA} and @var{ixB} such that @var{tbl} equals
     ## @code{@var{tblA}(@var{ixA},:)} and @code{@var{tblB}(@var{ixB},:)}.
     ##
     ## @end deftypefn
@@ -4993,19 +4983,20 @@ classdef table
     ##
     ## Difference between two tables by rows.
     ##
-    ## @code{@var{tbl} = setdiff (@var{tblA}, @var{tblB})} returns the set of rows
-    ## that are present in @var{tblA} but not in @var{tblB}, with duplicate rows
-    ## removed.  Both tables must have the same variable names, although not
-    ## necessarily in the same order; @var{tbl} keeps the variable order of
-    ## @var{tblA}.  Rows are compared by their variable values only (row names are
-    ## ignored), and by default @var{tbl} is sorted by those values.
+    ## @code{@var{tbl} = setdiff (@var{tblA}, @var{tblB})} returns the set of
+    ## rows that are present in @var{tblA} but not in @var{tblB}, with duplicate
+    ## rows removed.  Both tables must have the same variable names, although
+    ## not necessarily in the same order; @var{tbl} keeps the variable order of
+    ## @var{tblA}.  Rows are compared by their variable values only (row names
+    ## are ignored), and by default @var{tbl} is sorted by those values.
     ##
     ## @code{@var{tbl} = setdiff (@var{tblA}, @var{tblB}, @var{setOrder})}
     ## controls the ordering of @var{tbl}, either @qcode{'sorted'} (default) or
     ## @qcode{'stable'}.
     ##
     ## @code{[@var{tbl}, @var{ixA}] = setdiff (@dots{})} also returns the index
-    ## vector @var{ixA} such that @var{tbl} equals @code{@var{tblA}(@var{ixA},:)}.
+    ## vector @var{ixA} such that @var{tbl} equals
+    ## @code{@var{tblA}(@var{ixA},:)}.
     ##
     ## @end deftypefn
     function [tbl, ixA] = setdiff (tblA, tblB, varargin)
@@ -5034,20 +5025,21 @@ classdef table
     ##
     ## Exclusive OR of two tables by rows.
     ##
-    ## @code{@var{tbl} = setxor (@var{tblA}, @var{tblB})} returns the set of rows
-    ## that are present in either @var{tblA} or @var{tblB} but not in both, with
-    ## duplicate rows removed.  Both tables must have the same variable names,
-    ## although not necessarily in the same order; @var{tbl} keeps the variable
-    ## order of @var{tblA}.  Rows are compared by their variable values only (row
-    ## names are ignored), and by default @var{tbl} is sorted by those values.
+    ## @code{@var{tbl} = setxor (@var{tblA}, @var{tblB})} returns the set of
+    ## rows that are present in either @var{tblA} or @var{tblB} but not in both,
+    ## with duplicate rows removed.  Both tables must have the same variable
+    ## names, although not necessarily in the same order; @var{tbl} keeps the
+    ## variable order of @var{tblA}.  Rows are compared by their variable values
+    ## only (row names are ignored), and by default @var{tbl} is sorted by those
+    ## values.
     ##
-    ## @code{@var{tbl} = setxor (@var{tblA}, @var{tblB}, @var{setOrder})} controls
-    ## the ordering of @var{tbl}, either @qcode{'sorted'} (default) or
+    ## @code{@var{tbl} = setxor (@var{tblA}, @var{tblB}, @var{setOrder})}
+    ## controls the ordering of @var{tbl}, either @qcode{'sorted'} (default) or
     ## @qcode{'stable'}.
     ##
     ## @code{[@var{tbl}, @var{ixA}, @var{ixB}] = setxor (@dots{})} also returns
-    ## index vectors @var{ixA} and @var{ixB} such that @var{tbl} is the vertical
-    ## concatenation of @code{@var{tblA}(@var{ixA},:)} and
+    ## index vectors @var{ixA} and @var{ixB} such that @var{tbl} is the
+    ## vertical concatenation of @code{@var{tblA}(@var{ixA},:)} and
     ## @code{@var{tblB}(@var{ixB},:)}.
     ##
     ## @end deftypefn
@@ -5121,9 +5113,9 @@ classdef table
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn  {Method} {@var{TF} =} ismissing (@var{tbl})
-    ## @deftypefnx {Method} {@var{TF} =} ismissing (@var{tbl}, @var{indicator})
-    ## @deftypefnx {Method} {@var{TF} =} ismissing (@dots{}, @qcode{'OutputFormat'}, @var{outFmt})
+    ## @deftypefn  {table} {@var{TF} =} ismissing (@var{tbl})
+    ## @deftypefnx {table} {@var{TF} =} ismissing (@var{tbl}, @var{indicator})
+    ## @deftypefnx {table} {@var{TF} =} ismissing (@dots{}, @qcode{'OutputFormat'}, @var{outFmt})
     ##
     ## Find missing values in table.
     ##
@@ -5132,7 +5124,7 @@ classdef table
     ## in the input table @var{tbl}.
     ##
     ## Missing values are defined according to the data type of each variable in
-    ## @var{tblA}:
+    ## @var{tbl}:
     ##
     ## @itemize
     ## @item @qcode{NaN} - double, single, duration and calendarDuration
@@ -5162,19 +5154,18 @@ classdef table
     ## @item @qcode{double} indicators match numeric and logical variables.
     ## @item @qcode{logical} indicators match numeric and logical variables.
     ## @item @qcode{char} and @qcode{cellstr} indicators match string variables.
-    ## @item @qcode{char} and @var{string} indicators match categorical
+    ## @item @qcode{char} and @qcode{string} indicators match categorical
     ## variables.
     ## @end itemize
     ##
-    ## The output array @var{FT} has the same size as the input table @var{tbl}.
+    ## The output array @var{TF} has the same size as the input table @var{tbl}.
     ##
     ## @code{@var{TF} = ismissing (@dots{}, @qcode{'OutputFormat'},
     ## @var{outFmt})} specifies whether @var{TF} is returned as a logical array
-    ## or as a table,
-    ## which maintains the variable names and all other information of the input
-    ## table @var{tbl}.  Specifying @var{outFmt} as @qcode{'logical'} (default)
-    ## returns a logical array.  Specifying @var{outFmt} as @qcode{'tabular'}
-    ## returns a table.
+    ## or as a table, which maintains the variable names and all other
+    ## information of the input table @var{tbl}.  Specifying @var{outFmt} as
+    ## @qcode{'logical'} (default) returns a logical array.  Specifying
+    ## @var{outFmt} as @qcode{'tabular'} returns a table.
     ##
     ## @end deftypefn
     function TF = ismissing (this, varargin)
@@ -5434,32 +5425,33 @@ classdef table
     ##
     ## Remove missing table elements by rows.
     ##
-    ## @code{@var{tbl} = rmmissing (@var{tblA})} returns a table with the rows of
-    ## @var{tblA} that contain at least one missing value removed.  Missing values
-    ## are determined per variable according to its data type (@code{NaN} for
-    ## numeric, @code{NaT} for @code{datetime}, @code{<missing>} for @code{string},
-    ## @code{<undefined>} for @code{categorical}, @code{@{''@}} for cellstr, etc.),
-    ## as reported by @code{ismissing}.
+    ## @code{@var{tbl} = rmmissing (@var{tblA})} returns a table with the rows
+    ## of @var{tblA} that contain at least one missing value removed.  Missing
+    ## values are determined per variable according to its data type
+    ## (@code{NaN} for numeric, @code{NaT} for @code{datetime}, @code{<missing>}
+    ## for @code{string}, @code{<undefined>} for @code{categorical},
+    ## @code{@{''@}} for cellstr, etc.), as reported by @code{ismissing}.
     ##
-    ## @code{@var{tbl} = rmmissing (@dots{}, @var{Name}, @var{Value})} customizes
-    ## the operation with the following options:
+    ## @code{@var{tbl} = rmmissing (@dots{}, @var{Name}, @var{Value})}
+    ## customizes the operation with the following options:
     ##
     ## @table @asis
     ## @item @qcode{'MinNumMissing'}
-    ## A positive integer @var{n} (default @code{1}).  A row is removed only when
-    ## it has at least @var{n} variables with a missing value.
+    ## A positive integer @var{n} (default @code{1}).  A row is removed only
+    ## when it has at least @var{n} variables with a missing value.
     ##
     ## @item @qcode{'DataVariables'}
     ## Restrict the search for missing values to the indicated subset of table
     ## variables, using the same variable referencing as the other @code{table}
-    ## methods.  Variables outside the subset are not inspected, but all variables
-    ## are kept in the output.
+    ## methods.  Variables outside the subset are not inspected, but all
+    ## variables are kept in the output.
     ##
     ## @item @qcode{'MissingLocations'}
-    ## Supply the missing-value locations explicitly instead of deriving them with
-    ## @code{ismissing}.  The value is either a logical matrix with one row per
-    ## row of the input and one column per inspected variable, or a @code{table}
-    ## of logical variables whose names and sizes match the inspected variables.
+    ## Supply the missing-value locations explicitly instead of deriving them
+    ## with @code{ismissing}.  The value is either a logical matrix with one row
+    ## per row of the input and one column per inspected variable, or a
+    ## @code{table} of logical variables whose names and sizes match the
+    ## inspected variables.
     ## @end table
     ##
     ## @code{[@var{tbl}, @var{TF}] = rmmissing (@dots{})} also returns a logical
@@ -5746,9 +5738,8 @@ classdef table
     ## @code{@var{tblB} = standardizeMissing (@var{tblA}, @var{indicator})}
     ## replaces every entry of @var{tblA} that matches a value in
     ## @var{indicator} with the standard missing value of that variable's data
-    ## type (@code{NaN}
-    ## for @code{double}/@code{single}, @code{@qcode{''}} for cell arrays of
-    ## character vectors, @code{<missing>} for @code{string}, and
+    ## type (@code{NaN} for @code{double}/@code{single}, @qcode{''} for cell
+    ## arrays of character vectors, @code{<missing>} for @code{string}, and
     ## @code{<undefined>} for @code{categorical}).
     ##
     ## @var{indicator} may be a numeric scalar or vector, a character vector, a
@@ -5839,17 +5830,18 @@ classdef table
     ## Find groups defined by the variables of a table.
     ##
     ## @code{@var{G} = findgroups (@var{T})} returns @var{G}, a column vector of
-    ## positive integer group numbers, with one element for each row of the table
-    ## @var{T}.  Each variable of @var{T} acts as a grouping variable, and the
-    ## groups are the unique combinations of values across those variables, sorted
-    ## in ascending order.  If @var{N} groups are found, every integer between 1
-    ## and @var{N} labels a group.  Rows holding a missing value (@code{NaN},
-    ## @code{NaT}, @code{<missing>}, @code{''}, or @code{<undefined>}) in any
-    ## grouping variable are labelled @code{NaN} in @var{G}.
+    ## positive integer group numbers, with one element for each row of the
+    ## table @var{T}.  Each variable of @var{T} acts as a grouping variable, and
+    ## the groups are the unique combinations of values across those variables,
+    ## sorted in ascending order.  If @var{N} groups are found, every integer
+    ## between 1 and @var{N} labels a group.  Rows holding a missing value
+    ## (@code{NaN}, @code{NaT}, @code{<missing>}, @code{''}, or
+    ## @code{<undefined>}) in any grouping variable are labelled @code{NaN} in
+    ## @var{G}.
     ##
-    ## @code{[@var{G}, @var{TID}] = findgroups (@var{T})} also returns @var{TID},
-    ## a table whose rows are the sorted unique combinations identifying each
-    ## group, with the same variables as @var{T}.
+    ## @code{[@var{G}, @var{TID}] = findgroups (@var{T})} also returns
+    ## @var{TID}, a table whose rows are the sorted unique combinations
+    ## identifying each group, with the same variables as @var{T}.
     ##
     ## @end deftypefn
     function [G, TID] = findgroups (this)
@@ -5900,16 +5892,16 @@ classdef table
     ##
     ## Split table data into groups and apply a function to each group.
     ##
-    ## @code{@var{Y} = splitapply (@var{func}, @var{T}, @var{G})} splits the rows
-    ## of the table @var{T} into groups according to the group numbers @var{G}
-    ## (typically produced by @code{findgroups}), applies the function handle
-    ## @var{func} to each group, and concatenates the per-group results into the
-    ## output @var{Y}.  @var{G} must be a column vector of positive integers with
-    ## one element per row of @var{T}; if it identifies @var{N} groups, every
-    ## integer between 1 and @var{N} must occur at least once.  Rows for which
-    ## @var{G} is @code{NaN} are omitted.  Each variable of @var{T} is passed to
-    ## @var{func} as a separate input argument, so @var{func} must accept as many
-    ## arguments as @var{T} has variables.
+    ## @code{@var{Y} = splitapply (@var{func}, @var{T}, @var{G})} splits the
+    ## rows of the table @var{T} into groups according to the group numbers
+    ## @var{G} (typically produced by @code{findgroups}), applies the function
+    ## handle @var{func} to each group, and concatenates the per-group results
+    ## into the output @var{Y}.  @var{G} must be a column vector of positive
+    ## integers with one element per row of @var{T}; if it identifies @var{N}
+    ## groups, every integer between 1 and @var{N} must occur at least once.
+    ## Rows for which @var{G} is @code{NaN} are omitted.  Each variable of
+    ## @var{T} is passed to @var{func} as a separate input argument, so
+    ## @var{func} must accept as many arguments as @var{T} has variables.
     ##
     ## @code{[@var{Y1}, @dots{}, @var{YM}] = splitapply (@dots{})} returns the
     ## multiple outputs of @var{func}, each concatenated across groups.
@@ -6267,58 +6259,65 @@ classdef table
     ##
     ## Compute summary statistics by group for the variables of a table.
     ##
-    ## @code{@var{G} = groupsummary (@var{T}, @var{groupvars})} groups the rows of
-    ## the table @var{T} by the grouping variables @var{groupvars} and returns the
-    ## table @var{G} with one row per group, holding the grouping variables and a
-    ## @qcode{GroupCount} variable counting the rows in each group.  @var{groupvars}
-    ## selects the grouping variables by name, index, logical vector, function
-    ## handle, or @code{vartype} subscript.
+    ## @code{@var{G} = groupsummary (@var{T}, @var{groupvars})} groups the rows
+    ## of the table @var{T} by the grouping variables @var{groupvars} and
+    ## returns the table @var{G} with one row per group, holding the grouping
+    ## variables and a @qcode{GroupCount} variable counting the rows in each
+    ## group.  @var{groupvars} selects the grouping variables by name, index,
+    ## logical vector, function handle, or @code{vartype} subscript.
     ##
-    ## @code{@var{G} = groupsummary (@var{T}, @var{groupvars}, @var{method})} also
-    ## applies @var{method} to each data variable within each group and appends the
-    ## results to @var{G}.  @var{method} is one of the method names below, a
-    ## function handle, or a cell array of method names and@/or function handles:
+    ## @code{@var{G} = groupsummary (@var{T}, @var{groupvars}, @var{method})}
+    ## also applies @var{method} to each data variable within each group and
+    ## appends the results to @var{G}.  @var{method} is one of the method names
+    ## below, a function handle, or a cell array of method names and@/or
+    ## function handles:
     ##
     ## @table @asis
     ## @item @qcode{'sum'}, @qcode{'mean'}, @qcode{'median'}, @qcode{'mode'}
     ## @itemx @qcode{'var'}, @qcode{'std'}, @qcode{'min'}, @qcode{'max'}
     ## @itemx @qcode{'range'}, @qcode{'nnz'}
     ## Standard statistics, computed over numeric or logical data variables.
-    ## @code{NaN} values are omitted (as in MATLAB) for every named method except
-    ## @qcode{'nummissing'}.
+    ## @code{NaN} values are omitted (as in MATLAB) for every named method
+    ## except @qcode{'nummissing'}.
     ##
     ## @item @qcode{'nummissing'}
-    ## The number of missing values in the group, supported for data variables of
-    ## any type.
+    ## The number of missing values in the group, supported for data variables
+    ## of any type.
     ##
     ## @item @qcode{'numunique'}
     ## The number of unique non-missing values in the group, supported for data
     ## variables of any type.
     ## @end table
     ##
-    ## A function handle is applied to each group's slice of each data variable and
-    ## must return a single row (its first dimension must be @code{1}); it receives
-    ## the values with @code{NaN} included.
+    ## A function handle is applied to each group's slice of each data variable
+    ## and must return a single row (its first dimension must be @code{1}); it
+    ## receives the values with @code{NaN} included.
     ##
     ## @code{@var{G} = groupsummary (@var{T}, @var{groupvars}, @var{method},
-    ## @var{datavars})} applies @var{method} only to the data variables selected by
-    ## @var{datavars} (named, indexed, logical, function handle, or @code{vartype}
-    ## subscript).  By default every variable that is not a grouping variable is a
-    ## data variable.
+    ## @var{datavars})} applies @var{method} only to the data variables selected
+    ## by @var{datavars} (named, indexed, logical, function handle, or
+    ## @code{vartype} subscript).  By default every variable that is not a
+    ## grouping variable is a data variable.
     ##
-    ## The computed variables of @var{G} are named @code{<method>_<datavar>}, e.g.
-    ## @qcode{mean_X}; results from a function handle are named
-    ## @code{fun<n>_<datavar>}, where @var{n} is the position of the handle among
-    ## the requested methods.  When several methods are requested the computed
-    ## variables are ordered method first, then data variable.
+    ## The computed variables of @var{G} are named @code{<method>_<datavar>},
+    ## e.g.@: @qcode{mean_X}; results from a function handle are named
+    ## @code{fun<n>_<datavar>}, where @var{n} is the position of the handle
+    ## among the requested methods.  When several methods are requested the
+    ## computed variables are ordered method first, then data variable.
     ##
     ## The optional @var{groupbins} argument bins the grouping variables before
-    ## grouping: a vector of bin edges or a positive integer number of
-    ## equal-width bins spanning the data range, applied to a numeric, datetime,
-    ## or duration grouping variable.  Each binned variable becomes a categorical
-    ## whose categories are the bin interval labels, e.g.@: @qcode{'[0, 10)'}.
-    ## Pass a cell array with one scheme per grouping variable to bin them
-    ## differently, or @qcode{'none'} to leave a variable unbinned.
+    ## grouping.  A binning scheme is one of: a vector of bin edges; a positive
+    ## integer number of equal-width bins spanning the data range; a
+    ## @code{duration} scalar giving a fixed bin width (for a datetime or
+    ## duration grouping variable); or, for a datetime grouping variable, a
+    ## calendar-unit keyword (@qcode{'second'}, @qcode{'minute'},
+    ## @qcode{'hour'}, @qcode{'day'}, @qcode{'week'}, @qcode{'month'},
+    ## @qcode{'quarter'}, @qcode{'year'}, @qcode{'decade'}, or
+    ## @qcode{'century'}) that bins by that calendar period.  A binned grouping
+    ## variable becomes a categorical and is renamed @code{disc_<var>} for edge,
+    ## bin-count, or width binning, or @code{<unit>_<var>} for calendar-unit
+    ## binning.  Pass a cell array with one scheme per grouping variable to bin
+    ## them differently, or @qcode{'none'} to leave a variable unbinned.
     ##
     ## The following @var{Name}/@var{Value} pairs are accepted:
     ##
@@ -6484,22 +6483,23 @@ classdef table
     ##
     ## Count the number of rows in each group of a table.
     ##
-    ## @code{@var{G} = groupcounts (@var{T}, @var{groupvars})} groups the rows of
-    ## the table @var{T} by the grouping variables @var{groupvars} and returns the
-    ## table @var{G} with one row per group, holding the grouping variables, a
-    ## @qcode{GroupCount} variable counting the rows in each group, and a
-    ## @qcode{Percent} variable giving each group's count as a percentage of the
-    ## total.  @var{groupvars} selects the grouping variables by name, index,
-    ## logical vector, function handle, or @code{vartype} subscript.
+    ## @code{@var{G} = groupcounts (@var{T}, @var{groupvars})} groups the rows
+    ## of the table @var{T} by the grouping variables @var{groupvars} and
+    ## returns the table @var{G} with one row per group, holding the grouping
+    ## variables, a @qcode{GroupCount} variable counting the rows in each group,
+    ## and a @qcode{Percent} variable giving each group's count as a percentage
+    ## of the total.  @var{groupvars} selects the grouping variables by name,
+    ## index, logical vector, function handle, or @code{vartype} subscript.
     ##
     ## The optional @var{groupbins} argument bins the grouping variables before
-    ## grouping (a vector of bin edges or a positive integer number of bins,
-    ## applied to a numeric, datetime, or duration grouping variable, or a cell
-    ## array with one scheme per grouping variable); each binned variable becomes
-    ## a categorical of bin interval labels.  See @code{groupsummary} for details.
+    ## grouping, using bin edges, a number of equal-width bins, a
+    ## @code{duration} bin width, or a datetime calendar-unit keyword, or a cell
+    ## array with one scheme per grouping variable.  A binned grouping variable
+    ## becomes a categorical and is renamed @code{disc_<var>} or
+    ## @code{<unit>_<var>}.  See @code{groupsummary} for details.
     ##
-    ## Groups are the sorted unique combinations of grouping values.  The following
-    ## @var{Name}/@var{Value} pairs are accepted:
+    ## Groups are the sorted unique combinations of grouping values.  The
+    ## following @var{Name}/@var{Value} pairs are accepted:
     ##
     ## @table @asis
     ## @item @qcode{'IncludeMissingGroups'}
@@ -6603,33 +6603,34 @@ classdef table
     ##
     ## Filter the rows of a table by a per-group condition.
     ##
-    ## @code{@var{G} = groupfilter (@var{T}, @var{groupvars}, @var{method})} groups
-    ## the rows of the table @var{T} by the grouping variables @var{groupvars},
-    ## applies the filter function @var{method} to each group, and returns the
-    ## table @var{G} holding the rows that satisfy the condition, in their original
-    ## order and with all the variables of @var{T}.  @var{groupvars} selects the
-    ## grouping variables by name, index, logical vector, function handle, or
-    ## @code{vartype} subscript.
+    ## @code{@var{G} = groupfilter (@var{T}, @var{groupvars}, @var{method})}
+    ## groups the rows of the table @var{T} by the grouping variables
+    ## @var{groupvars}, applies the filter function @var{method} to each group,
+    ## and returns the table @var{G} holding the rows that satisfy the
+    ## condition, in their original order and with all the variables of
+    ## @var{T}.  @var{groupvars} selects the grouping variables by name, index,
+    ## logical vector, function handle, or @code{vartype} subscript.
     ##
     ## @var{method} is a function handle applied to each group's slice of every
-    ## data variable.  It must return either a logical scalar, which keeps or drops
-    ## the whole group, or a logical vector with one element per row of the group,
-    ## which keeps or drops the individual rows.  A row is kept only when the
-    ## condition holds for it across all data variables.
+    ## data variable.  It must return either a logical scalar, which keeps or
+    ## drops the whole group, or a logical vector with one element per row of
+    ## the group, which keeps or drops the individual rows.  A row is kept only
+    ## when the condition holds for it across all data variables.
     ##
     ## @code{@var{G} = groupfilter (@var{T}, @var{groupvars}, @var{method},
-    ## @var{datavars})} applies @var{method} only to the data variables selected by
-    ## @var{datavars} (named, indexed, logical, function handle, or @code{vartype}
-    ## subscript).  By default every variable that is not a grouping variable is a
-    ## data variable.
+    ## @var{datavars})} applies @var{method} only to the data variables selected
+    ## by @var{datavars} (named, indexed, logical, function handle, or
+    ## @code{vartype} subscript).  By default every variable that is not a
+    ## grouping variable is a data variable.
     ##
-    ## Rows holding a missing value in a grouping variable form their own groups,
-    ## to which @var{method} is applied like any other group.
+    ## Rows holding a missing value in a grouping variable form their own
+    ## groups, to which @var{method} is applied like any other group.
     ##
     ## The optional @var{groupbins} argument bins the grouping variables before
-    ## grouping (a vector of bin edges or a positive integer number of bins, or a
-    ## cell array with one scheme per grouping variable); see @code{groupsummary}
-    ## for details.  The @qcode{'IncludedEdge'} Name-Value pair (@qcode{'left'} by
+    ## grouping, using bin edges, a number of equal-width bins, a
+    ## @code{duration} bin width, or a datetime calendar-unit keyword, or a cell
+    ## array with one scheme per grouping variable; see @code{groupsummary} for
+    ## details.  The @qcode{'IncludedEdge'} Name-Value pair (@qcode{'left'} by
     ## default, or @qcode{'right'}) selects which bin edge is inclusive.
     ##
     ## @end deftypefn
@@ -6736,10 +6737,10 @@ classdef table
     ## @code{@var{G} = grouptransform (@var{T}, @var{groupvars}, @var{method})}
     ## groups the rows of the table @var{T} by the grouping variables
     ## @var{groupvars}, applies @var{method} to each data variable within each
-    ## group, and returns the table @var{G} with the transformed values, one row
-    ## per row of @var{T} and in the original order.  @var{groupvars} selects the
-    ## grouping variables by name, index, logical vector, function handle, or
-    ## @code{vartype} subscript.
+    ## group, and returns the table @var{G} with the transformed values, one
+    ## row per row of @var{T} and in the original order.  @var{groupvars}
+    ## selects the grouping variables by name, index, logical vector, function
+    ## handle, or @code{vartype} subscript.
     ##
     ## @var{method} is one of the transform names below or a function handle:
     ##
@@ -6771,9 +6772,9 @@ classdef table
     ##
     ## @code{@var{G} = grouptransform (@var{T}, @var{groupvars}, @var{method},
     ## @var{datavars})} transforms only the data variables selected by
-    ## @var{datavars} (named, indexed, logical, function handle, or @code{vartype}
-    ## subscript).  By default every variable that is not a grouping variable is a
-    ## data variable.
+    ## @var{datavars} (named, indexed, logical, function handle, or
+    ## @code{vartype} subscript).  By default every variable that is not a
+    ## grouping variable is a data variable.
     ##
     ## The following @var{Name}/@var{Value} pair is accepted:
     ##
@@ -6790,11 +6791,12 @@ classdef table
     ## edge of each bin is inclusive when @var{groupbins} is given.
     ## @end table
     ##
-    ## Rows holding a missing value in a grouping variable form their own groups,
-    ## which are transformed like any other group.  The optional @var{groupbins}
-    ## argument bins the grouping variables before grouping (a vector of bin edges
-    ## or a positive integer number of bins, or a cell array with one scheme per
-    ## grouping variable); see @code{groupsummary} for details.
+    ## Rows holding a missing value in a grouping variable form their own
+    ## groups, which are transformed like any other group.  The optional
+    ## @var{groupbins} argument bins the grouping variables before grouping,
+    ## using bin edges, a number of equal-width bins, a @code{duration} bin
+    ## width, or a datetime calendar-unit keyword, or a cell array with one
+    ## scheme per grouping variable; see @code{groupsummary} for details.
     ##
     ## @end deftypefn
     function G = grouptransform (T, groupvars, varargin)
@@ -6932,18 +6934,18 @@ classdef table
     ## Summarize tabular data in a pivoted table.
     ##
     ## @code{@var{P} = pivot (@var{T}, 'Columns', @var{colvars}, 'Rows',
-    ## @var{rowvars})} reshapes the table @var{T} into the pivoted table @var{P}.
-    ## The unique combinations of the grouping variables @var{colvars} become the
-    ## variables (columns) of @var{P}, the unique combinations of the grouping
-    ## variables @var{rowvars} become its rows, and each cell holds one statistic
-    ## computed over the rows of @var{T} that fall into that row-and-column group.
-    ## At least one of @qcode{'Columns'} or @qcode{'Rows'} is required; an omitted
-    ## dimension collapses to a single group.  Each of @var{colvars} and
-    ## @var{rowvars} selects variables by name, index, or logical vector, and may
-    ## name several variables.
+    ## @var{rowvars})} reshapes the table @var{T} into the pivoted table
+    ## @var{P}.  The unique combinations of the grouping variables @var{colvars}
+    ## become the variables (columns) of @var{P}, the unique combinations of the
+    ## grouping variables @var{rowvars} become its rows, and each cell holds one
+    ## statistic computed over the rows of @var{T} that fall into that
+    ## row-and-column group.  At least one of @qcode{'Columns'} or
+    ## @qcode{'Rows'} is required; an omitted dimension collapses to a single
+    ## group.  Each of @var{colvars} and @var{rowvars} selects variables by
+    ## name, index, or logical vector, and may name several variables.
     ##
-    ## Groups are the sorted unique combinations of the grouping values, with the
-    ## first variable varying slowest; a categorical variable groups by its
+    ## Groups are the sorted unique combinations of the grouping values, with
+    ## the first variable varying slowest; a categorical variable groups by its
     ## category order.  Column variable names are taken from the grouping values
     ## (e.g.@: @qcode{'true'}/@qcode{'false'} for a logical variable), joined
     ## with @qcode{'_'} when several variables define the columns.
@@ -6991,10 +6993,10 @@ classdef table
     ##
     ## @item @qcode{'ColumnsBinMethod'}, @qcode{'RowsBinMethod'}
     ## A binning scheme applied to the @qcode{'Columns'} or @qcode{'Rows'}
-    ## grouping variables before pivoting: a vector of bin edges or a positive
-    ## integer number of equal-width bins, applied to a numeric, datetime, or
-    ## duration grouping variable, or a cell array with one scheme per variable.
-    ## Each binned variable becomes a categorical of bin interval labels.  The
+    ## grouping variables before pivoting: a vector of bin edges, a number of
+    ## equal-width bins, a @code{duration} bin width, or a datetime
+    ## calendar-unit keyword (see @code{groupsummary}), or a cell array with one
+    ## scheme per variable.  Each binned variable becomes a categorical.  The
     ## default @qcode{'none'} applies no binning.
     ##
     ## @item @qcode{'IncludedEdge'}
@@ -7007,8 +7009,8 @@ classdef table
     ## groups two or more @qcode{'Columns'} variables into nested tables: one
     ## outer variable per level of the first column grouping variable, each a
     ## nested @code{table} whose variables are the next grouping variable's
-    ## levels (recursively).  A marginal-total column, if any, stays a flat outer
-    ## variable.
+    ## levels (recursively).  A marginal-total column, if any, stays a flat
+    ## outer variable.
     ## @end table
     ##
     ## @end deftypefn
@@ -7547,7 +7549,7 @@ classdef table
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {Method} {@var{TF} =} isscalar (@var{tbl})
+    ## @deftypefn {table} {@var{TF} =} isscalar (@var{tbl})
     ##
     ## Test input table for being a scalar.
     ##
@@ -7562,7 +7564,7 @@ classdef table
     ## -*- texinfo -*-
     ## @deftypefn {table} {@var{tf} =} istable (@var{tbl})
     ##
-    ## Return @qcode{True} if input is a table.
+    ## Return @qcode{true} if input is a table.
     ##
     ## @end deftypefn
     function TF = istable (this)
@@ -7864,12 +7866,12 @@ classdef table
     ## @code{@var{tbl} = vertcat (@var{tbl1}, @var{tbl2}, @dots{})} merges
     ## tables by vertically concatenating them, provided that all input tables
     ## have the same variable names but not necessarily in the same order.  The
-    ## position of the variable names are matched to those of the first input
+    ## positions of the variable names are matched to those of the first input
     ## table.
     ##
     ## When any input table has row names, they must be unique across all input
-    ## tables.  In such case, rows coming from input tables without row names are
-    ## assigned default @qcode{Row@var{N}} names, where @var{N} is the row's
+    ## tables.  In such a case, rows coming from input tables without row names
+    ## are assigned default @qcode{Row@var{N}} names, where @var{N} is the row's
     ## position in the output table.  Output table's @qcode{Description} and
     ## @qcode{UserData} properties are assigned using the first non-empty value.
     ##
