@@ -699,8 +699,9 @@ classdef table
     ## Note the following round-trip limitations when reading the file back
     ## with @code{csv2table}: @code{calendarDuration} and @code{categorical}
     ## variables are returned as cell arrays of character vectors (their values
-    ## are not reconstructed), and missing @code{string} values are read back
-    ## as empty strings.
+    ## are not reconstructed), missing @code{string} values are read back as
+    ## empty strings, and datetime and duration display formats are not
+    ## preserved, although the values themselves are exact.
     ##
     ## @end deftypefn
     function table2csv (this, file)
@@ -841,7 +842,8 @@ classdef table
     ## the following round-trip limitations when reading the file back with
     ## @code{ods2table}: @code{calendarDuration} and @code{categorical}
     ## variables are returned as cell arrays of character vectors (their values
-    ## are not reconstructed).
+    ## are not reconstructed), and datetime and duration display formats are not
+    ## preserved, although the values themselves are exact.
     ##
     ## @seealso{struct2ods, ods2table, ods2struct, writetable}
     ## @end deftypefn

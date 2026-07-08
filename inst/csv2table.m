@@ -156,6 +156,13 @@
 ## @qcode{"uint16"}, @qcode{"uint32"}, and @qcode{"uint64"}.
 ## @end multitable
 ##
+## The following round-trip limitations apply when reading a file written by
+## @code{table2csv}: @code{calendarDuration} and @code{categorical} variables
+## are returned as cell arrays of character vectors (their values are not
+## reconstructed), missing @code{string} values are read back as empty strings,
+## and datetime and duration display formats are not preserved, although the
+## values themselves are exact.
+##
 ## @seealso{array2table, struct2table, table}
 ## @end deftypefn
 function tbl = csv2table (name, varargin)

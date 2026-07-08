@@ -45,8 +45,10 @@
 ##
 ## The following round-trip limitations apply, mirroring @code{csv2table}:
 ## @code{calendarDuration} and @code{categorical} variables are returned as cell
-## arrays of character vectors (their values are not reconstructed), and missing
-## @code{string} values are read back as empty strings.
+## arrays of character vectors (their values are not reconstructed), missing
+## @code{string} values are read back as empty strings, and datetime and
+## duration display formats are not preserved, although the values themselves
+## are exact.
 ##
 ## @end deftypefn
 
