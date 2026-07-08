@@ -3478,6 +3478,462 @@ Remove custom properties from a table.
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
+                    <b><code>join</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Combine two tables by rows using key variables.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod29">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>join</b> (<var>tblL</var>, <var>tblR</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>join</b> (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>ixR</var>] = <b>join</b> (&hellip;)</code></h5></dt>
+</dl>
+<p> </p>
+<p> <code><var>tbl</var> = join (<var>tblL</var>, <var>tblR</var>)</code> combines <var>tblL</var> and
+ <var>tblR</var> by matching the values of their <em>key variables</em>, which by
+ default are the variables that share the same name in both tables.
+ <var>tbl</var> contains one row for each row of <var>tblL</var>, in the same order;
+ each is completed with the single row of <var>tblR</var> whose key variables
+ match.  The key variables of <var>tblR</var> must contain unique combinations
+ of values, and every key combination in <var>tblL</var> must be present in
+ <var>tblR</var>.
+</p>
+<p> By default <var>tbl</var> contains all the variables of <var>tblL</var> followed by
+ the non-key variables of <var>tblR</var>.  Whenever a non-key variable name
+ appears in both tables, a suffix derived from each input&rsquo;s argument name
+ is appended to the conflicting names (for inputs named <var>tblL</var> and
+ <var>tblR</var>, the suffixes <code>'_tblL'</code> and <code>'_tblR'</code>; when an
+ input has no name, <code>'_left'</code> and <code>'_right'</code> are used).  The
+ row names of <var>tblL</var>, if any, are preserved.
+</p>
+<p> <code><var>tbl</var> = join (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</code>
+ customizes the join with the following options:
+</p>
+<dl compact="compact">
+<dt> <code>'Keys'</code></dt>
+<dd> Variables to use as keys in both tables, given as variable names or
+ indices.  It cannot be combined with <code>'LeftKeys'</code> or
+ <code>'RightKeys'</code>.</dd>
+<dt> <code>'LeftKeys'</code>, <code>'RightKeys'</code></dt>
+<dd> Variables to use as keys in <var>tblL</var> and <var>tblR</var>, respectively, when
+ the key variables have different names.  They must be specified together
+ and reference the same number of variables.</dd>
+<dt> <code>'LeftVariables'</code>, <code>'RightVariables'</code></dt>
+<dd> Variables of <var>tblL</var> and <var>tblR</var> to include in <var>tbl</var>.  By
+ default <code>'LeftVariables'</code> is all the variables of <var>tblL</var> and
+ <code>'RightVariables'</code> is the non-key variables of <var>tblR</var>.</dd>
+<dt> <code>'KeepOneCopy'</code></dt>
+<dd> Names of non-key variables that occur in both tables for which only the
+ copy from <var>tblL</var> is kept (no suffix is added and the <var>tblR</var> copy
+ is dropped).</dd>
+</dl>
+
+<p> <code>[<var>tbl</var>, <var>ixR</var>] = join (&hellip;)</code> also returns the index
+ vector <var>ixR</var> that identifies, for each row of <var>tbl</var>, the matching
+ row of <var>tblR</var>.
+</p>
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod30"
+              aria-expanded="false" aria-controls="collapseMethod30">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>innerjoin</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Inner join between two tables by rows using key variables.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod30">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>innerjoin</b> (<var>tblL</var>, <var>tblR</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>innerjoin</b> (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>ixL</var>, <var>ixR</var>] = <b>innerjoin</b> (&hellip;)</code></h5></dt>
+</dl>
+<p> </p>
+<p> <code><var>tbl</var> = innerjoin (<var>tblL</var>, <var>tblR</var>)</code> combines the tables
+ <var>tblL</var> and <var>tblR</var> by matching the values of their <em>key
+ variables</em>, which by default are the variables that share the same name
+ in both tables.  Each row of <var>tbl</var> is formed by horizontally
+ concatenating a row of <var>tblL</var> with a row of <var>tblR</var> whose key
+ variables share the same combination of values.  If <math>m</math> rows in
+ <var>tblL</var> and <math>n</math> rows in <var>tblR</var> share the same key
+ combination, then <var>tbl</var> contains all <math>m&times;n</math> pairings for that
+ combination.  The rows of <var>tbl</var> are sorted by the values of the key
+ variables, and any row names are dropped.
+</p>
+<p> By default <var>tbl</var> contains all the variables of <var>tblL</var> followed by
+ the non-key variables of <var>tblR</var>.  Whenever a non-key variable name
+ appears in both tables, a suffix derived from each input&rsquo;s argument name
+ is appended to the conflicting names in <var>tbl</var> (for inputs named
+ <var>tblL</var> and <var>tblR</var>, the suffixes <code>'_tblL'</code> and
+ <code>'_tblR'</code>; when an input has no name, <code>'_left'</code> and
+ <code>'_right'</code> are used).
+</p>
+<p> <code><var>tbl</var> = innerjoin (<var>tblL</var>, <var>tblR</var>, <var>Name</var>,
+ <var>Value</var>)</code> customizes the join with the following options:
+</p>
+<dl compact="compact">
+<dt> <code>'Keys'</code></dt>
+<dd> Variables to use as keys in both tables, given as variable names or
+ indices.  It cannot be combined with <code>'LeftKeys'</code> or
+ <code>'RightKeys'</code>.</dd>
+<dt> <code>'LeftKeys'</code>, <code>'RightKeys'</code></dt>
+<dd> Variables to use as keys in <var>tblL</var> and <var>tblR</var>, respectively, when
+ the key variables have different names.  They must be specified together
+ and reference the same number of variables.</dd>
+<dt> <code>'LeftVariables'</code>, <code>'RightVariables'</code></dt>
+<dd> Variables of <var>tblL</var> and <var>tblR</var> to include in <var>tbl</var>.  They may
+ include or exclude key variables.  By default <code>'LeftVariables'</code> is
+ all the variables of <var>tblL</var> and <code>'RightVariables'</code> is the
+ non-key variables of <var>tblR</var>.</dd>
+</dl>
+
+<p> <code>[<var>tbl</var>, <var>ixL</var>, <var>ixR</var>] = innerjoin (&hellip;)</code> also
+ returns the row-index vectors <var>ixL</var> and <var>ixR</var> such that <var>tbl</var>
+ is the horizontal concatenation of <code><var>tblL</var>(<var>ixL</var>, leftVars)</code>
+ and <code><var>tblR</var>(<var>ixR</var>, rightVars)</code>.
+</p>
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod31"
+              aria-expanded="false" aria-controls="collapseMethod31">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>outerjoin</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Outer join between two tables by rows using key variables.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod31">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>outerjoin</b> (<var>tblL</var>, <var>tblR</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>outerjoin</b> (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>ixL</var>, <var>ixR</var>] = <b>outerjoin</b> (&hellip;)</code></h5></dt>
+</dl>
+<p> </p>
+<p> <code><var>tbl</var> = outerjoin (<var>tblL</var>, <var>tblR</var>)</code> combines the tables
+ <var>tblL</var> and <var>tblR</var> by matching the values of their <em>key
+ variables</em>, which by default are the variables that share the same name
+ in both tables.  Unlike <code>innerjoin</code>, an outer join also keeps the
+ rows of each table that have no match in the other table, filling the
+ variables taken from the non-matching table with missing values
+ (<code>NaN</code>, <code>NaT</code>, <code>&lt;undefined&gt;</code>, empty string, etc., as
+ appropriate).  If <math>m</math> rows in <var>tblL</var> and <math>n</math> rows in
+ <var>tblR</var> share the same key combination, then <var>tbl</var> contains all
+ <math>m&times;n</math> pairings for that combination.  The rows of <var>tbl</var> are
+ sorted by the values of the key variables and any row names are dropped.
+</p>
+<p> By default <var>tbl</var> contains all the variables of <var>tblL</var> followed
+ by all the variables of <var>tblR</var>.  Because the key variables are kept
+ from both tables, conflicting names receive a suffix derived from each
+ input&rsquo;s argument name (for inputs named <var>tblL</var> and <var>tblR</var>, the
+ suffixes <code>'_tblL'</code> and <code>'_tblR'</code>; when an input has no name,
+ <code>'_left'</code> and <code>'_right'</code> are used).  See <code>'MergeKeys'</code>
+ to combine the keys into single columns instead.
+</p>
+<p> <code><var>tbl</var> = outerjoin (<var>tblL</var>, <var>tblR</var>, <var>Name</var>,
+ <var>Value</var>)</code> customizes the join with the following options:
+</p>
+<dl compact="compact">
+<dt> <code>'Type'</code></dt>
+<dd> The type of outer join: <code>'full'</code> (default) keeps unmatched rows
+ from both tables, <code>'left'</code> keeps all rows of <var>tblL</var> and only
+ matching rows of <var>tblR</var>, and <code>'right'</code> keeps all rows of
+ <var>tblR</var> and only matching rows of <var>tblL</var>.</dd>
+<dt> <code>'MergeKeys'</code></dt>
+<dd> A logical scalar (default <code>false</code>).  When <code>true</code>, each pair
+ of key variables is merged into a single variable that takes the value
+ from <var>tblL</var> where a matching left row exists and from <var>tblR</var>
+ otherwise.  The merged variable is named after the left key when both
+ keys share the same name, or <code>'leftName_rightName'</code> when their
+ names differ.</dd>
+<dt> <code>'Keys'</code></dt>
+<dd> Variables to use as keys in both tables, given as variable names or
+ indices.  It cannot be combined with <code>'LeftKeys'</code> or
+ <code>'RightKeys'</code>.</dd>
+<dt> <code>'LeftKeys'</code>, <code>'RightKeys'</code></dt>
+<dd> Variables to use as keys in <var>tblL</var> and <var>tblR</var>, respectively,
+ when the key variables have different names.  They must be specified
+ together and reference the same number of variables.</dd>
+<dt> <code>'LeftVariables'</code>, <code>'RightVariables'</code></dt>
+<dd> Variables of <var>tblL</var> and <var>tblR</var> to include in <var>tbl</var>.  By
+ default all the variables of each table are included.</dd>
+</dl>
+
+<p> <code>[<var>tbl</var>, <var>ixL</var>, <var>ixR</var>] = outerjoin (&hellip;)</code> also
+ returns the row-index vectors <var>ixL</var> and <var>ixR</var> that identify the
+ row of <var>tblL</var> and <var>tblR</var>, respectively, corresponding to each
+ row of <var>tbl</var>.  A zero indicates a row of <var>tbl</var> that has no
+ corresponding row in that table.
+</p>
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod32"
+              aria-expanded="false" aria-controls="collapseMethod32">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>union</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Union of two tables by rows.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod32">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>union</b> (<var>tblA</var>, <var>tblB</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>union</b> (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = <b>union</b> (&hellip;)</code></h5></dt>
+</dl>
+<p> </p>
+<p> <code><var>tbl</var> = union (<var>tblA</var>, <var>tblB</var>)</code> returns the combined
+ set of rows of <var>tblA</var> and <var>tblB</var>, with duplicate rows removed.
+ Both tables must have the same variable names, although not necessarily
+ in the same order; <var>tbl</var> keeps the variable order of <var>tblA</var>.
+ Rows are compared by their variable values only (row names are ignored),
+ and by default <var>tbl</var> is sorted by those values.
+</p>
+<p> <code><var>tbl</var> = union (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</code>
+ controls the ordering of <var>tbl</var>.  <var>setOrder</var> is either
+ <code>'sorted'</code> (default) for ascending order, or <code>'stable'</code> to
+ keep the order in which the rows appear in <var>tblA</var> and <var>tblB</var>.
+</p>
+<p> <code>[<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = union (&hellip;)</code> also returns
+ the index vectors <var>ixA</var> and <var>ixB</var> such that <var>tbl</var> is the
+ vertical concatenation of <code><var>tblA</var>(<var>ixA</var>,:)</code> and
+ <code><var>tblB</var>(<var>ixB</var>,:)</code>.
+</p>
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod33"
+              aria-expanded="false" aria-controls="collapseMethod33">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>intersect</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Intersection of two tables by rows.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod33">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>intersect</b> (<var>tblA</var>, <var>tblB</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>intersect</b> (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = <b>intersect</b> (&hellip;)</code></h5></dt>
+</dl>
+<p> </p>
+<p> <code><var>tbl</var> = intersect (<var>tblA</var>, <var>tblB</var>)</code> returns the set of
+ rows common to both <var>tblA</var> and <var>tblB</var>, with duplicate rows
+ removed.  Both tables must have the same variable names, although not
+ necessarily in the same order; <var>tbl</var> keeps the variable order of
+ <var>tblA</var>.  Rows are compared by their variable values only (row names
+ are ignored), and by default <var>tbl</var> is sorted by those values.
+</p>
+<p> <code><var>tbl</var> = intersect (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</code>
+ controls the ordering of <var>tbl</var>, either <code>'sorted'</code> (default) or
+ <code>'stable'</code>.
+</p>
+<p> <code>[<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = intersect (&hellip;)</code> also
+ returns index vectors <var>ixA</var> and <var>ixB</var> such that <var>tbl</var> equals
+ <code><var>tblA</var>(<var>ixA</var>,:)</code> and <code><var>tblB</var>(<var>ixB</var>,:)</code>.
+</p>
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod34"
+              aria-expanded="false" aria-controls="collapseMethod34">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>ismember</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Find set members between two tables by rows.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod34">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">table: <var>TF</var> = <b>ismember</b> (<var>tblA</var>, <var>tblB</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>TF</var>, <var>ixB</var>] = <b>ismember</b> (<var>tblA</var>, <var>tblB</var>)</code></h5></dt>
+</dl>
+<p> </p>
+<p> <code><var>TF</var> = ismember (<var>tblA</var>, <var>tblB</var>)</code> returns a logical
+ column vector <var>TF</var> with one element per row of <var>tblA</var>, where
+ <code><var>TF</var>(i)</code> is <code>true</code> when the <math>i</math>-th row of <var>tblA</var>
+ also appears as a row of <var>tblB</var>.  Both tables must have the same
+ variable names, although not necessarily in the same order, and rows are
+ compared by their variable values only (row names are ignored).
+</p>
+<p> <code>[<var>TF</var>, <var>ixB</var>] = ismember (<var>tblA</var>, <var>tblB</var>)</code> also
+ returns a column vector <var>ixB</var> containing, for each row of <var>tblA</var>,
+ the index of the lowest matching row in <var>tblB</var>, or <code>0</code> if there
+ is no match.
+</p>
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod35"
+              aria-expanded="false" aria-controls="collapseMethod35">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>setdiff</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Difference between two tables by rows.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod35">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>setdiff</b> (<var>tblA</var>, <var>tblB</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>setdiff</b> (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>ixA</var>] = <b>setdiff</b> (&hellip;)</code></h5></dt>
+</dl>
+<p> </p>
+<p> <code><var>tbl</var> = setdiff (<var>tblA</var>, <var>tblB</var>)</code> returns the set of
+ rows that are present in <var>tblA</var> but not in <var>tblB</var>, with duplicate
+ rows removed.  Both tables must have the same variable names, although
+ not necessarily in the same order; <var>tbl</var> keeps the variable order of
+ <var>tblA</var>.  Rows are compared by their variable values only (row names
+ are ignored), and by default <var>tbl</var> is sorted by those values.
+</p>
+<p> <code><var>tbl</var> = setdiff (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</code>
+ controls the ordering of <var>tbl</var>, either <code>'sorted'</code> (default) or
+ <code>'stable'</code>.
+</p>
+<p> <code>[<var>tbl</var>, <var>ixA</var>] = setdiff (&hellip;)</code> also returns the index
+ vector <var>ixA</var> such that <var>tbl</var> equals
+ <code><var>tblA</var>(<var>ixA</var>,:)</code>.
+</p>
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod36"
+              aria-expanded="false" aria-controls="collapseMethod36">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>setxor</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Exclusive OR of two tables by rows.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseMethod36">
+            <div class="border-bottom py-2">
+<dl>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>setxor</b> (<var>tblA</var>, <var>tblB</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tbl</var> = <b>setxor</b> (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = <b>setxor</b> (&hellip;)</code></h5></dt>
+</dl>
+<p> </p>
+<p> <code><var>tbl</var> = setxor (<var>tblA</var>, <var>tblB</var>)</code> returns the set of
+ rows that are present in either <var>tblA</var> or <var>tblB</var> but not in both,
+ with duplicate rows removed.  Both tables must have the same variable
+ names, although not necessarily in the same order; <var>tbl</var> keeps the
+ variable order of <var>tblA</var>.  Rows are compared by their variable values
+ only (row names are ignored), and by default <var>tbl</var> is sorted by those
+ values.
+</p>
+<p> <code><var>tbl</var> = setxor (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</code>
+ controls the ordering of <var>tbl</var>, either <code>'sorted'</code> (default) or
+ <code>'stable'</code>.
+</p>
+<p> <code>[<var>tbl</var>, <var>ixA</var>, <var>ixB</var>] = setxor (&hellip;)</code> also returns
+ index vectors <var>ixA</var> and <var>ixB</var> such that <var>tbl</var> is the
+ vertical concatenation of <code><var>tblA</var>(<var>ixA</var>,:)</code> and
+ <code><var>tblB</var>(<var>ixB</var>,:)</code>.
+</p>
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod37"
+              aria-expanded="false" aria-controls="collapseMethod37">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
                     <b><code>anymissing</code></b>
                   </h4>
                 </div>
@@ -3486,7 +3942,7 @@ Determine if any table element is missing.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod29">
+          <div class="collapse multi-collapse" id="collapseMethod37">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>TF</var> = <b>anymissing</b> (<var>tblA</var>)</code></h5></dt>
@@ -3517,8 +3973,8 @@ Determine if any table element is missing.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod30"
-              aria-expanded="false" aria-controls="collapseMethod30">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod38"
+              aria-expanded="false" aria-controls="collapseMethod38">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3530,7 +3986,7 @@ Find missing values in table.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod30">
+          <div class="collapse multi-collapse" id="collapseMethod38">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>TF</var> = <b>ismissing</b> (<var>tbl</var>)</code></h5></dt>
@@ -3596,8 +4052,8 @@ Find missing values in table.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod31"
-              aria-expanded="false" aria-controls="collapseMethod31">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod39"
+              aria-expanded="false" aria-controls="collapseMethod39">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3609,7 +4065,7 @@ Remove missing table elements by rows.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod31">
+          <div class="collapse multi-collapse" id="collapseMethod39">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>tbl</var> = <b>rmmissing</b> (<var>tblA</var>)</code></h5></dt>
@@ -3657,8 +4113,8 @@ Remove missing table elements by rows.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod32"
-              aria-expanded="false" aria-controls="collapseMethod32">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod40"
+              aria-expanded="false" aria-controls="collapseMethod40">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3670,7 +4126,7 @@ Fill missing entries of a table, variable by variable.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod32">
+          <div class="collapse multi-collapse" id="collapseMethod40">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>tblB</var> = <b>fillmissing</b> (<var>tblA</var>, <code>'constant'</code>, <var>val</var>)</code></h5></dt>
@@ -3742,8 +4198,8 @@ Fill missing entries of a table, variable by variable.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod33"
-              aria-expanded="false" aria-controls="collapseMethod33">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod41"
+              aria-expanded="false" aria-controls="collapseMethod41">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3755,7 +4211,7 @@ Insert standard missing values into a table.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod33">
+          <div class="collapse multi-collapse" id="collapseMethod41">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>tblB</var> = <b>standardizeMissing</b> (<var>tblA</var>, <var>indicator</var>)</code></h5></dt>
@@ -3795,8 +4251,8 @@ Insert standard missing values into a table.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod34"
-              aria-expanded="false" aria-controls="collapseMethod34">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod42"
+              aria-expanded="false" aria-controls="collapseMethod42">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3808,7 +4264,7 @@ Find groups defined by the variables of a table.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod34">
+          <div class="collapse multi-collapse" id="collapseMethod42">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>G</var> = <b>findgroups</b> (<var>T</var>)</code></h5></dt>
@@ -3838,8 +4294,8 @@ Find groups defined by the variables of a table.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod35"
-              aria-expanded="false" aria-controls="collapseMethod35">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod43"
+              aria-expanded="false" aria-controls="collapseMethod43">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3851,7 +4307,7 @@ Split table data into groups and apply a function to each group.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod35">
+          <div class="collapse multi-collapse" id="collapseMethod43">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>Y</var> = <b>splitapply</b> (<var>func</var>, <var>T</var>, <var>G</var>)</code></h5></dt>
@@ -3881,8 +4337,8 @@ Split table data into groups and apply a function to each group.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod36"
-              aria-expanded="false" aria-controls="collapseMethod36">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod44"
+              aria-expanded="false" aria-controls="collapseMethod44">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3894,7 +4350,7 @@ Apply a function to each variable of a table.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod36">
+          <div class="collapse multi-collapse" id="collapseMethod44">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>B</var> = <b>varfun</b> (<var>func</var>, <var>A</var>)</code></h5></dt>
@@ -3952,8 +4408,8 @@ Apply a function to each variable of a table.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod37"
-              aria-expanded="false" aria-controls="collapseMethod37">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod45"
+              aria-expanded="false" aria-controls="collapseMethod45">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -3965,7 +4421,7 @@ Apply a function to each row of a table.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod37">
+          <div class="collapse multi-collapse" id="collapseMethod45">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>B</var> = <b>rowfun</b> (<var>func</var>, <var>A</var>)</code></h5></dt>
@@ -4033,8 +4489,8 @@ Apply a function to each row of a table.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod38"
-              aria-expanded="false" aria-controls="collapseMethod38">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod46"
+              aria-expanded="false" aria-controls="collapseMethod46">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4046,7 +4502,7 @@ Compute summary statistics by group for the variables of a table.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod38">
+          <div class="collapse multi-collapse" id="collapseMethod46">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>G</var> = <b>groupsummary</b> (<var>T</var>, <var>groupvars</var>)</code></h5></dt>
@@ -4140,8 +4596,8 @@ Compute summary statistics by group for the variables of a table.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod39"
-              aria-expanded="false" aria-controls="collapseMethod39">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod47"
+              aria-expanded="false" aria-controls="collapseMethod47">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4153,7 +4609,7 @@ Count the number of rows in each group of a table.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod39">
+          <div class="collapse multi-collapse" id="collapseMethod47">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>G</var> = <b>groupcounts</b> (<var>T</var>, <var>groupvars</var>)</code></h5></dt>
@@ -4202,8 +4658,8 @@ Count the number of rows in each group of a table.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod40"
-              aria-expanded="false" aria-controls="collapseMethod40">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod48"
+              aria-expanded="false" aria-controls="collapseMethod48">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4215,7 +4671,7 @@ Filter the rows of a table by a per-group condition.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod40">
+          <div class="collapse multi-collapse" id="collapseMethod48">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>G</var> = <b>groupfilter</b> (<var>T</var>, <var>groupvars</var>, <var>method</var>)</code></h5></dt>
@@ -4262,8 +4718,8 @@ Filter the rows of a table by a per-group condition.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod41"
-              aria-expanded="false" aria-controls="collapseMethod41">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod49"
+              aria-expanded="false" aria-controls="collapseMethod49">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4275,7 +4731,7 @@ Transform the data variables of a table group by group.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod41">
+          <div class="collapse multi-collapse" id="collapseMethod49">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>G</var> = <b>grouptransform</b> (<var>T</var>, <var>groupvars</var>, <var>method</var>)</code></h5></dt>
@@ -4351,8 +4807,8 @@ Transform the data variables of a table group by group.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod42"
-              aria-expanded="false" aria-controls="collapseMethod42">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod50"
+              aria-expanded="false" aria-controls="collapseMethod50">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4364,7 +4820,7 @@ Summarize tabular data in a pivoted table.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod42">
+          <div class="collapse multi-collapse" id="collapseMethod50">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>P</var> = <b>pivot</b> (<var>T</var>, <code>'Columns'</code>, <var>colvars</var>)</code></h5></dt>
@@ -4453,8 +4909,8 @@ Summarize tabular data in a pivoted table.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod43"
-              aria-expanded="false" aria-controls="collapseMethod43">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod51"
+              aria-expanded="false" aria-controls="collapseMethod51">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4466,7 +4922,7 @@ Horizontal concatenation for tables.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod43">
+          <div class="collapse multi-collapse" id="collapseMethod51">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>tbl</var> = <b>horzcat</b> (<var>tbl1</var>, <var>tbl2</var>, &hellip;)</code></h5></dt>
@@ -4492,8 +4948,8 @@ Horizontal concatenation for tables.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod44"
-              aria-expanded="false" aria-controls="collapseMethod44">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod52"
+              aria-expanded="false" aria-controls="collapseMethod52">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4505,7 +4961,7 @@ Test input table for being a column vector.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod44">
+          <div class="collapse multi-collapse" id="collapseMethod52">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>TF</var> = <b>iscolumn</b> (<var>tbl</var>)</code></h5></dt>
@@ -4524,8 +4980,8 @@ Test input table for being a column vector.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod45"
-              aria-expanded="false" aria-controls="collapseMethod45">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod53"
+              aria-expanded="false" aria-controls="collapseMethod53">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4537,7 +4993,7 @@ Test input table for being empty.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod45">
+          <div class="collapse multi-collapse" id="collapseMethod53">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>TF</var> = <b>isempty</b> (<var>tbl</var>)</code></h5></dt>
@@ -4555,8 +5011,8 @@ Test input table for being empty.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod46"
-              aria-expanded="false" aria-controls="collapseMethod46">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod54"
+              aria-expanded="false" aria-controls="collapseMethod54">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4568,7 +5024,7 @@ Test input table for being a matrix.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod46">
+          <div class="collapse multi-collapse" id="collapseMethod54">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>TF</var> = <b>ismatrix</b> (<var>tbl</var>)</code></h5></dt>
@@ -4585,8 +5041,8 @@ Test input table for being a matrix.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod47"
-              aria-expanded="false" aria-controls="collapseMethod47">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod55"
+              aria-expanded="false" aria-controls="collapseMethod55">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4598,7 +5054,7 @@ Test input table for being a row vector.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod47">
+          <div class="collapse multi-collapse" id="collapseMethod55">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>TF</var> = <b>isrow</b> (<var>tbl</var>)</code></h5></dt>
@@ -4616,8 +5072,8 @@ Test input table for being a row vector.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod48"
-              aria-expanded="false" aria-controls="collapseMethod48">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod56"
+              aria-expanded="false" aria-controls="collapseMethod56">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4629,7 +5085,7 @@ Test input table for being a scalar.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod48">
+          <div class="collapse multi-collapse" id="collapseMethod56">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>TF</var> = <b>isscalar</b> (<var>tbl</var>)</code></h5></dt>
@@ -4647,8 +5103,8 @@ Test input table for being a scalar.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod49"
-              aria-expanded="false" aria-controls="collapseMethod49">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod57"
+              aria-expanded="false" aria-controls="collapseMethod57">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4660,7 +5116,7 @@ Return <code>true</code> if input is a table.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod49">
+          <div class="collapse multi-collapse" id="collapseMethod57">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>tf</var> = <b>istable</b> (<var>tbl</var>)</code></h5></dt>
@@ -4675,8 +5131,8 @@ Return <code>true</code> if input is a table.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod50"
-              aria-expanded="false" aria-controls="collapseMethod50">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod58"
+              aria-expanded="false" aria-controls="collapseMethod58">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4688,7 +5144,7 @@ Test input table for being a vector.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod50">
+          <div class="collapse multi-collapse" id="collapseMethod58">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>TF</var> = <b>isvector</b> (<var>tbl</var>)</code></h5></dt>
@@ -4706,8 +5162,8 @@ Test input table for being a vector.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod51"
-              aria-expanded="false" aria-controls="collapseMethod51">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod59"
+              aria-expanded="false" aria-controls="collapseMethod59">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4719,7 +5175,7 @@ Length along longest dimension.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod51">
+          <div class="collapse multi-collapse" id="collapseMethod59">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>out</var> = <b>length</b> (<var>tbl</var>)</code></h5></dt>
@@ -4734,8 +5190,8 @@ Length along longest dimension.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod52"
-              aria-expanded="false" aria-controls="collapseMethod52">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod60"
+              aria-expanded="false" aria-controls="collapseMethod60">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4747,7 +5203,7 @@ Number of table dimensions.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod52">
+          <div class="collapse multi-collapse" id="collapseMethod60">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>out</var> = <b>ndims</b> (<var>tbl</var>)</code></h5></dt>
@@ -4764,8 +5220,8 @@ Number of table dimensions.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod53"
-              aria-expanded="false" aria-controls="collapseMethod53">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod61"
+              aria-expanded="false" aria-controls="collapseMethod61">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4777,7 +5233,7 @@ Total number of elements in table.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod53">
+          <div class="collapse multi-collapse" id="collapseMethod61">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>out</var> = <b>numel</b> (<var>tbl</var>)</code></h5></dt>
@@ -4799,8 +5255,8 @@ Total number of elements in table.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod54"
-              aria-expanded="false" aria-controls="collapseMethod54">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod62"
+              aria-expanded="false" aria-controls="collapseMethod62">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4812,7 +5268,7 @@ Replicate elements of a table.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod54">
+          <div class="collapse multi-collapse" id="collapseMethod62">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>tblB</var> = <b>repelem</b> (<var>tblA</var>, <var>sz</var>)</code></h5></dt>
@@ -4832,8 +5288,8 @@ Replicate elements of a table.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod55"
-              aria-expanded="false" aria-controls="collapseMethod55">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod63"
+              aria-expanded="false" aria-controls="collapseMethod63">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4845,7 +5301,7 @@ Repeat copies of a table.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod55">
+          <div class="collapse multi-collapse" id="collapseMethod63">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>tblB</var> = <b>repmat</b> (<var>tblA</var>, <var>sz</var>)</code></h5></dt>
@@ -4865,8 +5321,8 @@ Repeat copies of a table.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod56"
-              aria-expanded="false" aria-controls="collapseMethod56">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod64"
+              aria-expanded="false" aria-controls="collapseMethod64">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4878,7 +5334,7 @@ Return the size of a table.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod56">
+          <div class="collapse multi-collapse" id="collapseMethod64">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>sz</var> = <b>size</b> (<var>tbl</var>)</code></h5></dt>
@@ -4905,8 +5361,8 @@ Return the size of a table.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod57"
-              aria-expanded="false" aria-controls="collapseMethod57">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod65"
+              aria-expanded="false" aria-controls="collapseMethod65">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4918,7 +5374,7 @@ Remove singleton dimensions.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod57">
+          <div class="collapse multi-collapse" id="collapseMethod65">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>tblB</var> = <b>squeeze</b> (<var>tblA</var>)</code></h5></dt>
@@ -4936,8 +5392,8 @@ Remove singleton dimensions.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod58"
-              aria-expanded="false" aria-controls="collapseMethod58">
+              data-bs-toggle="collapse" data-bs-target="#collapseMethod66"
+              aria-expanded="false" aria-controls="collapseMethod66">
               <div class="row align-items-center">
                 <div class="col-4">
                   <h4 class="d-inline-block mr-4">
@@ -4949,7 +5405,7 @@ Vertical concatenation for tables.
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod58">
+          <div class="collapse multi-collapse" id="collapseMethod66">
             <div class="border-bottom py-2">
 <dl>
 <dt><code><h5 class="fs">table: <var>tbl</var> = <b>vertcat</b> (<var>tbl1</var>, <var>tbl2</var>, &hellip;)</code></h5></dt>
