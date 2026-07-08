@@ -929,7 +929,8 @@ classdef table
     ## @item @qcode{'QuoteStrings'} @tab @qcode{'minimal'}, @qcode{'all'}, or
     ## @qcode{'none'} for text files (default @qcode{'minimal'}).
     ## @item @qcode{'Sheet'} @tab Spreadsheet only: the name of the sheet to
-    ## write (default @qcode{'Sheet1'}).
+    ## write.  The default is the first sheet of an existing workbook, or
+    ## @qcode{'Sheet1'} for a new file.
     ## @item @qcode{'Range'} @tab Spreadsheet only: an A1-style anchor such as
     ## @qcode{'C5'} at which to place the top-left corner of the data (fresh
     ## writes only).
@@ -940,8 +941,9 @@ classdef table
     ## @end multitable
     ##
     ## When the target spreadsheet already exists, the sheet named by
-    ## @qcode{'Sheet'} (default @qcode{'Sheet1'}) is added or replaced while every
-    ## other sheet is preserved, unless @qcode{'WriteMode'} is
+    ## @qcode{'Sheet'} (defaulting to the first existing sheet) is added or
+    ## replaced while every other sheet is preserved, unless @qcode{'WriteMode'}
+    ## is
     ## @qcode{'replacefile'}.  For ODS, existing foreign spreadsheets (for example
     ## those written by LibreOffice) are updated in place, keeping their other
     ## parts; for Excel (@qcode{.xlsx}, @qcode{.xlsm}) the workbook is read back
@@ -1082,6 +1084,19 @@ classdef table
           opts.header = names;
         else
           opts.header = {};
+        endif
+        ## Writing into an existing workbook with no explicit 'Sheet' targets the
+        ## first existing sheet (MATLAB behaviour), not a new 'Sheet1'.
+        if (isempty (sheet) && exist (file, 'file') ...
+            && ! strcmp (writeMode, 'replacefile'))
+          if (isXlsx)
+            [~, ~, ~, exNames] = __xlsx2table__ (file);
+          else
+            [~, ~, ~, exNames] = __ods2table__ (file);
+          endif
+          if (iscell (exNames) && ! isempty (exNames))
+            sheet = exNames{1};
+          endif
         endif
         if (! isempty (sheet))
           opts.sheetname = sheet;

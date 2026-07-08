@@ -1519,6 +1519,24 @@
 %!   if (exist (fn, 'file')); delete (fn); endif
 %! end_unwind_protect
 
+## Writing to an existing workbook with no 'Sheet' targets the first sheet
+%!test
+%! A = table ([1; 2], 'VariableNames', {'a'});
+%! B = table ([3; 4; 5], 'VariableNames', {'b'});
+%! Z = table ([9; 9], 'VariableNames', {'z'});
+%! fn = [tempname() '.ods'];
+%! unwind_protect
+%!   writetable (A, fn, 'Sheet', 'first');
+%!   writetable (B, fn, 'Sheet', 'second');
+%!   writetable (Z, fn);                         # no 'Sheet' -> first sheet
+%!   [~, ~, ~, nm] = __ods2table__ (fn);
+%!   assert_equal (nm(:), {'first'; 'second'});  # no stray 'Sheet1' added
+%!   assert_equal (readtable (fn, 'Sheet', 'first').Properties.VariableNames, {'z'});
+%!   assert_equal (readtable (fn, 'Sheet', 'second').b, [3; 4; 5]);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file')); delete (fn); endif
+%! end_unwind_protect
+
 ## 'WriteMode' 'replacefile' overwrites the whole workbook
 %!test
 %! A = table ([1; 2], 'VariableNames', {'a'});
