@@ -441,6 +441,49 @@ build_spreadsheet (pugi::xml_node &root, const Cell &data, const Cell &vtype,
     write_sheet (spreadsheet, "__datatypes_meta__", meta, Cell (), "hidden_tbl");
 }
 
+// Append office:body -> office:spreadsheet with several data sheets (from the
+// struct array 'sheets', fields 'name'/'data'/'vtype') followed by one hidden,
+// sectioned metadata sheet.  Used by 'struct2ods' for multi-sheet workbooks.
+// Data sheets carry no visible header row (house format: variable names live in
+// the metadata sheet) and no per-column width styles.
+static void
+build_multi_spreadsheet (pugi::xml_node &root, const octave_map &sheets,
+                         const Cell &meta)
+{
+  pugi::xml_node body = root.append_child ("office:body");
+  pugi::xml_node spreadsheet = body.append_child ("office:spreadsheet");
+  Cell names  = sheets.contents ("name");
+  Cell datas  = sheets.contents ("data");
+  Cell vtypes = sheets.contents ("vtype");
+  octave_idx_type K = names.numel ();
+  for (octave_idx_type k = 0; k < K; k++)
+    write_sheet (spreadsheet, names(k).string_value (), datas(k).cell_value (),
+                 vtypes(k).cell_value (), 0, false, Cell (), 0, 0);
+  if (meta.numel () > 0)
+    write_sheet (spreadsheet, "__datatypes_meta__", meta, Cell (), "hidden_tbl");
+}
+
+// Populate a document root with automatic styles and the spreadsheet body,
+// dispatching to the single-sheet or multi-sheet builder.  Shared by the flat
+// and packaged output paths.
+static void
+populate_root (pugi::xml_node &root, bool multi, const octave_map &sheets,
+               const Cell &data, const Cell &vtype, const Cell &meta,
+               const Cell &header, const string &sheetname,
+               octave_idx_type roff, octave_idx_type coff)
+{
+  add_automatic_styles (root);
+  if (multi)
+  {
+    build_multi_spreadsheet (root, sheets, meta);
+  }
+  else
+  {
+    add_column_styles (root, compute_col_widths (data, vtype, header));
+    build_spreadsheet (root, data, vtype, meta, header, sheetname, roff, coff);
+  }
+}
+
 // Append a little-endian integer to a byte buffer.
 static void put16 (string &b, mz_uint16 v)
 {
@@ -590,6 +633,8 @@ This is a helper IO function for the @qcode{table2ods} method of the \
   Cell   header;
   string sheetname = "Sheet1";
   octave_idx_type roff = 0, coff = 0;
+  bool   multi = false;
+  octave_map sheets;
   if (args.length () == 6)
   {
     octave_scalar_map opts = args(5).scalar_map_value ();
@@ -601,6 +646,15 @@ This is a helper IO function for the @qcode{table2ods} method of the \
       roff = (octave_idx_type) opts.contents ("roff").double_value ();
     if (opts.isfield ("coff"))
       coff = (octave_idx_type) opts.contents ("coff").double_value ();
+    // Multi-sheet mode: 'sheets' is a struct array (fields name/data/vtype) and
+    // 'meta' is the single sectioned metadata grid.  Overrides the scalar args.
+    if (opts.isfield ("sheets"))
+    {
+      multi = true;
+      sheets = opts.contents ("sheets").map_value ();
+      meta = opts.isfield ("meta") ? opts.contents ("meta").cell_value ()
+                                   : Cell ();
+    }
   }
 
   pugi::xml_document doc;
@@ -614,9 +668,8 @@ This is a helper IO function for the @qcode{table2ods} method of the \
     pugi::xml_node root = doc.append_child ("office:document");
     add_office_namespaces (root);
     root.append_attribute ("office:mimetype") = ODS_MIMETYPE;
-    add_automatic_styles (root);
-    add_column_styles (root, compute_col_widths (data, vtype, header));
-    build_spreadsheet (root, data, vtype, meta, header, sheetname, roff, coff);
+    populate_root (root, multi, sheets, data, vtype, meta, header, sheetname,
+                   roff, coff);
     if (! doc.save_file (file.c_str (), "  "))
     {
       retval(0) = "cannot open file '" + file + "' for writing.";
@@ -628,9 +681,8 @@ This is a helper IO function for the @qcode{table2ods} method of the \
     // A compressed '.ods' packages a content.xml (<office:document-content>)
     pugi::xml_node root = doc.append_child ("office:document-content");
     add_office_namespaces (root);
-    add_automatic_styles (root);
-    add_column_styles (root, compute_col_widths (data, vtype, header));
-    build_spreadsheet (root, data, vtype, meta, header, sheetname, roff, coff);
+    populate_root (root, multi, sheets, data, vtype, meta, header, sheetname,
+                   roff, coff);
     ostringstream oss;
     doc.save (oss, "  ");
     string msg = write_ods_zip (file, oss.str ());

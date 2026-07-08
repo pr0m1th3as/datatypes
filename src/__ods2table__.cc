@@ -203,6 +203,63 @@ read_sheet (const pugi::xml_node &table, Cell &data, Cell &vtype, bool typed,
   }
 }
 
+// If the metadata grid is sectioned (a multi-sheet workbook written by
+// 'struct2ods' precedes each table's metadata block with a "## Sheet: <name>"
+// marker row), return only the section whose marker matches 'sel'.  An
+// unsectioned grid (single-sheet house file, no markers) is returned
+// unchanged; a sectioned grid with no matching marker yields an empty grid.
+static Cell
+meta_section (const Cell &meta, const string &sel)
+{
+  octave_idx_type nr = meta.rows ();
+  octave_idx_type nc = meta.columns ();
+  const string pfx = "## Sheet: ";
+  vector<octave_idx_type> marks;
+  vector<string> mnames;
+  for (octave_idx_type r = 0; r < nr; r++)
+  {
+    if (meta(r, 0).is_string ())
+    {
+      string s = meta(r, 0).string_value ();
+      if (s.size () >= pfx.size () && s.compare (0, pfx.size (), pfx) == 0)
+      {
+        marks.push_back (r);
+        mnames.push_back (s.substr (pfx.size ()));
+      }
+    }
+  }
+  if (marks.empty ())
+    return meta;                        // unsectioned: legacy single-sheet file
+
+  for (size_t i = 0; i < marks.size (); i++)
+  {
+    if (mnames[i] == sel)
+    {
+      octave_idx_type r0 = marks[i] + 1;
+      octave_idx_type r1 = (i + 1 < marks.size ()) ? marks[i + 1] : nr;
+      // The shared metadata grid is padded to a common width; drop this
+      // section's trailing all-empty columns so its width matches the sheet's
+      // own variable count (otherwise the padding reads as extra variables).
+      octave_idx_type used = 0;
+      for (octave_idx_type c = 0; c < nc; c++)
+      {
+        bool any = false;
+        for (octave_idx_type r = r0; r < r1 && ! any; r++)
+          if (! meta(r, c).isempty ())
+            any = true;
+        if (any)
+          used = c + 1;
+      }
+      Cell out (r1 - r0, used);
+      for (octave_idx_type r = r0; r < r1; r++)
+        for (octave_idx_type c = 0; c < used; c++)
+          out(r - r0, c) = meta(r, c);
+      return out;
+    }
+  }
+  return Cell ();                       // sectioned but no section for this sheet
+}
+
 DEFUN_DLD (__ods2table__, args, nargout,
            "-*- texinfo -*-\n \
  @deftypefn {datatypes} {[@var{data}, @var{vtype}, @var{meta}] =} \
@@ -218,11 +275,13 @@ it directly. \n\
 \n\
 @end deftypefn")
 {
-  octave_value_list retval (3);
-  // Keep the value-type and metadata outputs defined even on the error paths,
-  // so the caller's three-output call never sees an undefined return element.
+  octave_value_list retval (4);
+  // Keep the value-type, metadata, and sheet-name outputs defined even on the
+  // error paths, so a caller's multi-output call never sees an undefined
+  // return element.
   retval(1) = Cell ();
   retval(2) = Cell ();
+  retval(3) = Cell ();
 
   if (args.length () < 1 || args.length () > 2)
     error ("__ods2table__: one or two input arguments are required.");
@@ -299,6 +358,7 @@ it directly. \n\
 
   pugi::xml_node data_tbl, meta_tbl;
   long data_seen = 0;
+  vector<string> sheet_names;           // all data sheet names, document order
   for (pugi::xml_node t = spreadsheet.child ("table:table"); t;
        t = t.next_sibling ("table:table"))
   {
@@ -308,6 +368,7 @@ it directly. \n\
       meta_tbl = t;
       continue;
     }
+    sheet_names.push_back (name);
     data_seen++;
     if (by_name)
     {
@@ -343,8 +404,21 @@ it directly. \n\
   if (meta_tbl)
     read_sheet (meta_tbl, meta, meta_vt, false, false);
 
+  // In a multi-sheet house workbook the metadata sheet is sectioned; keep only
+  // the section belonging to the selected data sheet.
+  if (meta.numel () > 0 && data_tbl)
+  {
+    string sel_name = data_tbl.attribute ("table:name").as_string ();
+    meta = meta_section (meta, sel_name);
+  }
+
+  Cell names_out (1, sheet_names.size ());
+  for (size_t i = 0; i < sheet_names.size (); i++)
+    names_out(i) = sheet_names[i];
+
   retval(0) = data;
   retval(1) = vtype;
   retval(2) = meta;
+  retval(3) = names_out;
   return retval;
 }

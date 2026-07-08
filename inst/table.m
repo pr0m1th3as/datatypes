@@ -845,69 +845,8 @@ classdef table
         error (strcat ("table.table2ods: FILE must have a '.ods' or", ...
                        " '.fods' extension."));
       endif
-      ## Build cell arrays with ISO-formatted datetime/duration values
-      [V, N, T, D, U] = table2cellarrays (this, 'iso');
-      ## Nested tables and structs carry a multi-row (cell) type entry
-      if (any (cellfun (@iscell, T)))
-        error (strcat ("table.table2ods: nested tables and structs are not", ...
-                       " supported; flatten them before writing."));
-      endif
-      Ccols = size (V, 2);
-      ## Per-column ODS value type derived from the variable type
-      vtype = cell (1, Ccols);
-      for c = 1:Ccols
-        vtype{c} = ods_value_type (T{c});
-      endfor
-      txt = strcat ("# varTypes %d rows; varNames %d rows;", ...
-                    " varDescriptions %d rows; varUnits %d rows.");
-      ## A table with no variables carries only the descriptive comment
-      if (Ccols == 0)
-        msg = __table2ods__ (file, V, vtype, ...
-                             {sprintf(txt, 0, 0, 0, 0)}, is_flat);
-        if (! isequal (msg, 0))
-          error ("table.table2ods: %s", msg);
-        endif
-        return;
-      endif
-      ## Assemble the metadata sheet: a descriptive comment row followed by the
-      ## variable types, names, descriptions, and units, mirroring the header
-      ## block that 'table2csv' writes so 'ods2table' can reuse its parser.
-      Trows = cellfun (@(x) size (x, 1), T);
-      Tmaxr = max (Trows);
-      Nrows = cellfun (@(x) size (x, 1), N);
-      Nmaxr = max (Nrows);
-      isvar = cellfun (@(x) ! isempty (x), N(1,:));
-      Drows = cellfun (@(x) size (x, 1), D);
-      if (all (cellfun (@(x) ! isempty (x), D(isvar))))
-        Dmaxr = max (Drows(isvar));
-      else
-        Dmaxr = 0;
-      endif
-      Urows = cellfun (@(x) size (x, 1), U);
-      if (all (cellfun (@(x) ! isempty (x), U(isvar))))
-        Umaxr = max (Urows(isvar));
-      else
-        Umaxr = 0;
-      endif
-      Header = repmat ({''}, Nmaxr + Tmaxr + Dmaxr + Umaxr, Ccols);
-      for c = 1:Ccols
-        if (isvar(c))
-          Header{1,c} = T{c};
-          Header{1 + Tmaxr,c} = N{c};
-          if (Dmaxr)
-            Header{1 + Tmaxr + Nmaxr,c} = D{c};
-          endif
-          if (Umaxr)
-            Header{1 + Tmaxr + Nmaxr + Dmaxr,c} = U{c};
-          endif
-        else
-          Header{1,c} = 'RowNames';
-        endif
-      endfor
-      cmt = repmat ({''}, 1, Ccols);
-      cmt{1} = sprintf (txt, Tmaxr, Nmaxr, Dmaxr, Umaxr);
-      meta = [cmt; Header];
-      ## Write to file
+      ## Build the house-format ODS parts (data grid, value types, metadata).
+      [V, vtype, meta] = __ods_parts__ (this, 'table.table2ods');
       msg = __table2ods__ (file, V, vtype, meta, is_flat);
       if (! isequal (msg, 0))
         error ("table.table2ods: %s", msg);
@@ -9374,6 +9313,74 @@ classdef table
 
         ## Fix me: as soon as CustomProperties are introduced in table class
       endfor
+    endfunction
+
+  endmethods
+
+  ## Shared helper for the house-format ODS exporters ('table2ods' and the
+  ## standalone 'struct2ods').  Hidden rather than private so 'struct2ods' can
+  ## reuse the exact flattening + metadata assembly.
+  methods (Hidden)
+
+    ## Build the house-format ODS parts for THIS table: the data grid V (with
+    ## ISO-formatted datetime/duration values), the per-column ODS value types,
+    ## and the metadata block (a descriptive comment row followed by the
+    ## variable types, names, descriptions, and units, mirroring the header
+    ## block that 'table2csv' writes so 'ods2table' can reuse its parser).
+    ## CALLER names the function for error reporting.
+    function [V, vtype, meta] = __ods_parts__ (this, caller)
+      [V, N, T, D, U] = table2cellarrays (this, 'iso');
+      ## Nested tables and structs carry a multi-row (cell) type entry
+      if (any (cellfun (@iscell, T)))
+        error ("%s: nested tables and structs are not supported; flatten them before writing.", caller);
+      endif
+      Ccols = size (V, 2);
+      vtype = cell (1, Ccols);
+      for c = 1:Ccols
+        vtype{c} = ods_value_type (T{c});
+      endfor
+      txt = strcat ("# varTypes %d rows; varNames %d rows;", ...
+                    " varDescriptions %d rows; varUnits %d rows.");
+      ## A table with no variables carries only the descriptive comment
+      if (Ccols == 0)
+        meta = {sprintf(txt, 0, 0, 0, 0)};
+        return;
+      endif
+      Trows = cellfun (@(x) size (x, 1), T);
+      Tmaxr = max (Trows);
+      Nrows = cellfun (@(x) size (x, 1), N);
+      Nmaxr = max (Nrows);
+      isvar = cellfun (@(x) ! isempty (x), N(1,:));
+      Drows = cellfun (@(x) size (x, 1), D);
+      if (all (cellfun (@(x) ! isempty (x), D(isvar))))
+        Dmaxr = max (Drows(isvar));
+      else
+        Dmaxr = 0;
+      endif
+      Urows = cellfun (@(x) size (x, 1), U);
+      if (all (cellfun (@(x) ! isempty (x), U(isvar))))
+        Umaxr = max (Urows(isvar));
+      else
+        Umaxr = 0;
+      endif
+      Header = repmat ({''}, Nmaxr + Tmaxr + Dmaxr + Umaxr, Ccols);
+      for c = 1:Ccols
+        if (isvar(c))
+          Header{1,c} = T{c};
+          Header{1 + Tmaxr,c} = N{c};
+          if (Dmaxr)
+            Header{1 + Tmaxr + Nmaxr,c} = D{c};
+          endif
+          if (Umaxr)
+            Header{1 + Tmaxr + Nmaxr + Dmaxr,c} = U{c};
+          endif
+        else
+          Header{1,c} = 'RowNames';
+        endif
+      endfor
+      cmt = repmat ({''}, 1, Ccols);
+      cmt{1} = sprintf (txt, Tmaxr, Nmaxr, Dmaxr, Umaxr);
+      meta = [cmt; Header];
     endfunction
 
   endmethods

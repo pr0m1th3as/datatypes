@@ -34,7 +34,9 @@ table arrays
  cell2table
  csv2table
  ods2table
+ ods2struct
  readtable
+ struct2ods
  struct2table
  istable
 supplementary classes
