@@ -1,0 +1,7 @@
+%!demo
+%! ## For a categorical array `ismissing` is the same test as `isundefined`: the
+%! ## missing value *is* the `<undefined>` element.  It exists so categoricals
+%! ## plug into the generic missing-data tools (`rmmissing`, `standardizeMissing`).
+%!
+%! C = categorical ({'M'; ''; 'L'})
+%! ismissing (C)

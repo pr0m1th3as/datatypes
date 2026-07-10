@@ -1,0 +1,12 @@
+%!demo
+%! ## `isprotected` reports whether the category list is locked.  A nominal array
+%! ## is *unprotected*: assigning a new label simply extends its categories ...
+%!
+%! N = categorical ({'M'; 'S'})
+%! isprotected (N)
+%!
+%! ## ... whereas ordinal arrays (and ones built with `'Protected', true`) are
+%! ## protected, so only their declared categories may be used.
+%!
+%! O = categorical ({'M'; 'S'}, {'S', 'M', 'L'}, 'Ordinal', true)
+%! isprotected (O)

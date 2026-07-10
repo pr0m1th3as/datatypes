@@ -1,0 +1,10 @@
+%!demo
+%! ## `isundefined` flags the elements that belong to no category — the
+%! ## `<undefined>` values that stand in for missing data.  Empty labels become
+%! ## undefined at construction time.
+%!
+%! C = categorical ({'M'; ''; 'L'; 'M'})
+%! isundefined (C)
+%!
+%! ## Dropping a category also undefines every element that used it.
+%! isundefined (removecats (C, 'M'))

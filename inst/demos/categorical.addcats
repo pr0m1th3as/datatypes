@@ -1,0 +1,10 @@
+%!demo
+%! ## `addcats` adds new, initially-empty categories without changing any values —
+%! ## handy to reserve labels that may appear later.  For an ordinal array place
+%! ## the new category with `'Before'`/`'After'` so the order stays sensible.
+%!
+%! C = categorical ({'S'; 'M'; 'S'}, {'S', 'M', 'L'}, 'Ordinal', true)
+%! categories (C)
+%!
+%! ## Reserve `XL` just after `L`.
+%! categories (addcats (C, 'XL', 'After', 'L'))

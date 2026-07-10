@@ -1,0 +1,6 @@
+%!demo
+%! ## `median` returns the middle category by rank — defined for ordinal arrays,
+%! ## where the categories have a genuine order.
+%!
+%! C = categorical ({'S'; 'M'; 'L'; 'M'; 'L'}, {'S', 'M', 'L'}, 'Ordinal', true)
+%! median (C)

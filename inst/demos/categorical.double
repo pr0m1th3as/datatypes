@@ -1,0 +1,7 @@
+%!demo
+%! ## `double` returns the integer *category codes* — each value's 1-based index
+%! ## into the category list.  `<undefined>` elements map to `NaN`.
+%!
+%! C = categorical ({'S'; 'M'; 'L'; ''; 'S'}, {'S', 'M', 'L'}, 'Ordinal', true)
+%! categories (C)
+%! double (C)

@@ -1,0 +1,10 @@
+%!demo
+%! ## `min` returns the lowest-ranked category present in an ordinal array —
+%! ## ranking follows the category order, not the alphabetical label.
+%!
+%! C = categorical ({'M'; 'L'; 'S'; 'M'}, {'S', 'M', 'L'}, 'Ordinal', true)
+%! min (C)
+%!
+%! ## A second output gives the index of that element (as for numeric `min`).
+%! [lo, idx] = min (C);
+%! idx

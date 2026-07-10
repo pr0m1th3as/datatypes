@@ -1,0 +1,7 @@
+%!demo
+%! ## `setxor` returns the symmetric difference — values in exactly one of the two
+%! ## arrays.
+%!
+%! A = categorical ({'S'; 'M'; 'L'})
+%! B = categorical ({'M'; 'L'; 'XL'})
+%! setxor (A, B)

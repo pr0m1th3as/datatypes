@@ -1,0 +1,13 @@
+%!demo
+%! ## `reordercats` changes the order of the categories.  For an *ordinal* array
+%! ## this redefines the ranking used by `<`, `>`, `sort`, `min` and `max`.
+%!
+%! C = categorical ({'M'; 'S'; 'L'}, {'S', 'M', 'L'}, 'Ordinal', true)
+%! categories (C)
+%!
+%! ## Reverse the order so that `S` now ranks highest.
+%! B = reordercats (C, {'L', 'M', 'S'});
+%! categories (B)
+%!
+%! ## The comparison follows the new ranking.
+%! B >= 'M'

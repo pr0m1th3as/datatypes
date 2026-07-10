@@ -1,0 +1,6 @@
+%!demo
+%! ## `union` returns the distinct values present in either array — the set union.
+%!
+%! A = categorical ({'S'; 'M'; 'L'})
+%! B = categorical ({'M'; 'L'; 'XL'})
+%! union (A, B)

@@ -1,0 +1,6 @@
+%!demo
+%! ## `char` converts the array to a character matrix of its labels, one row per
+%! ## element (shorter labels are padded with spaces, as for any `char` matrix).
+%!
+%! C = categorical ({'small'; 'large'; 'small'})
+%! char (C)

@@ -1,0 +1,6 @@
+%!demo
+%! ## `ismember` tests, element by element, whether each value appears in a second
+%! ## set given as category names or as another categorical array.
+%!
+%! C = categorical ({'M'; 'S'; 'XL'; 'L'})
+%! ismember (C, {'S', 'M'})

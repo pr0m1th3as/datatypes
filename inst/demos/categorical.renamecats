@@ -1,0 +1,10 @@
+%!demo
+%! ## `renamecats` changes category *names* while leaving the values in place.
+%!
+%! C = categorical ({'S'; 'M'; 'L'; 'S'}, {'S', 'M', 'L'})
+%!
+%! ## Give a full set of new names (in category order) to rename them all ...
+%! renamecats (C, {'Small', 'Medium', 'Large'})
+%!
+%! ## ... or rename only specific categories by old-name to new-name.
+%! renamecats (C, {'S'}, {'Small'})

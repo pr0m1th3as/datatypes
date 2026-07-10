@@ -1,0 +1,6 @@
+%!demo
+%! ## `setdiff` returns the values present in the first array but not the second.
+%!
+%! A = categorical ({'S'; 'M'; 'L'})
+%! B = categorical ({'M'; 'L'; 'XL'})
+%! setdiff (A, B)

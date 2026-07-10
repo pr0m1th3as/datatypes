@@ -1,0 +1,6 @@
+%!demo
+%! ## `cellstr` converts the array back into a cell array of character vectors —
+%! ## the labels themselves.  `<undefined>` elements become empty strings.
+%!
+%! C = categorical ({'M'; 'S'; ''; 'L'})
+%! cellstr (C)

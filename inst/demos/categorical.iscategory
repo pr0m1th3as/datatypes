@@ -1,0 +1,8 @@
+%!demo
+%! ## `iscategory` tests whether names are categories of the array — independently
+%! ## of whether any element currently takes those values.
+%!
+%! C = categorical ({'M'; 'S'}, {'S', 'M', 'L'})
+%! iscategory (C, {'M', 'L', 'XL'})
+%!
+%! ## `M` and `L` are declared categories; `XL` is not.

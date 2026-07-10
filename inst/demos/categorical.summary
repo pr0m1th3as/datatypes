@@ -1,0 +1,6 @@
+%!demo
+%! ## `summary` tabulates the count of each category — including the
+%! ## `<undefined>` element — giving a quick frequency overview of the array.
+%!
+%! C = categorical ({'M'; 'S'; 'L'; 'M'; ''; 'M'}, {'S', 'M', 'L'})
+%! summary (C)

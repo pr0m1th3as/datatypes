@@ -1,0 +1,9 @@
+%!demo
+%! ## `categories` lists an array's categories — the full declared label set, not
+%! ## merely the values that happen to be present.
+%!
+%! C = categorical ({'M'; 'S'; 'M'}, {'S', 'M', 'L'}, 'Ordinal', true)
+%! categories (C)
+%!
+%! ## `L` is a declared category (and, being ordinal, keeps its place in the
+%! ## order) even though no element currently takes that value.

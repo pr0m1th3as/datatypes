@@ -1,0 +1,9 @@
+%!demo
+%! ## `setcats` replaces the whole category list with the one you give: values
+%! ## that fall outside the new set become `<undefined>`, and the categories end
+%! ## up as exactly the names you specified (in that order).
+%!
+%! C = categorical ({'S'; 'M'; 'L'; 'M'}, {'S', 'M', 'L'})
+%!
+%! ## Keep only `S` and `M`; the `L` element is dropped to <undefined>.
+%! setcats (C, {'S', 'M'})

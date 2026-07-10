@@ -1,0 +1,8 @@
+%!demo
+%! ## `countcats` tallies how many elements fall in each category, in category
+%! ## order.  Categories with no elements are counted as zero, so the result lines
+%! ## up one-to-one with `categories`.
+%!
+%! C = categorical ({'M'; 'S'; 'L'; 'M'; 'S'; 'M'}, {'S', 'M', 'L', 'XL'})
+%! categories (C)
+%! countcats (C)

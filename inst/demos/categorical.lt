@@ -1,0 +1,12 @@
+%!demo
+%! ## `lt` (the `<` operator) ranks values by category order, so it needs an
+%! ## *ordinal* array.  It compares against a category name or another ordinal
+%! ## array.
+%!
+%! C = categorical ({'M'; 'S'; 'L'; 'M'}, {'S', 'M', 'L'}, 'Ordinal', true)
+%!
+%! ## Which sizes are strictly smaller than `L`?
+%! C < 'L'
+%!
+%! ## `>`, `<=` and `>=` behave the same way; the same test on a nominal array
+%! ## would raise an error, because unordered categories cannot be ranked.

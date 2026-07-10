@@ -1,0 +1,26 @@
+%!demo
+%! ## `categorical` stores discrete labels compactly: each value becomes an index
+%! ## into a shared list of *categories*.  Starting from repeated text labels ...
+%!
+%! sizes = {'M'; 'S'; 'L'; 'M'; 'S'; 'L'; 'M'}
+%!
+%! ## ... the categories are detected automatically — the sorted unique values.
+%! C = categorical (sizes)
+%! categories (C)
+
+%!demo
+%! ## Supply a *valueset* with `'Ordinal', true` to impose a meaningful order, so
+%! ## the values compare with `<` and `>`, not only `==`.
+%!
+%! raw = {'M'; 'S'; 'L'; 'M'}
+%! C = categorical (raw, {'S', 'M', 'L'}, 'Ordinal', true)
+%!
+%! ## Ordering questions now make sense.
+%! C >= 'M'
+
+%!demo
+%! ## A third argument renames the categories as you build; empty labels become
+%! ## the special `<undefined>` element.
+%!
+%! codes = {'1'; '2'; ''; '1'}
+%! C = categorical (codes, {'1', '2'}, {'low', 'high'})

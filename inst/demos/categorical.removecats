@@ -1,0 +1,11 @@
+%!demo
+%! ## `removecats` drops categories from an array.
+%!
+%! C = categorical ({'S'; 'M'; 'S'}, {'S', 'M', 'L'})
+%!
+%! ## Naming a category removes it and turns its elements into `<undefined>`.
+%! removecats (C, 'M')
+%!
+%! ## With no list only the *unused* categories go (values unchanged) — here the
+%! ## unused `L` disappears from the category list.
+%! categories (removecats (C))

@@ -1,0 +1,7 @@
+%!demo
+%! ## `mode` returns the most frequent category.  It is the one central-tendency
+%! ## statistic that also works for *nominal* arrays, since it counts occurrences
+%! ## rather than ranking them.
+%!
+%! C = categorical ({'M'; 'S'; 'M'; 'L'; 'M'; 'S'})
+%! mode (C)

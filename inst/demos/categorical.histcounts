@@ -1,0 +1,9 @@
+%!demo
+%! ## `histcounts` bins a categorical array by category and returns the count in
+%! ## each — the histogram companion of `countcats`, with a second output naming
+%! ## the bins.
+%!
+%! C = categorical ({'M'; 'S'; 'L'; 'M'; 'S'; 'M'}, {'S', 'M', 'L'})
+%! [N, cats] = histcounts (C);
+%! N
+%! cats

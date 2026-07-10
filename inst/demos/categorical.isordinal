@@ -1,0 +1,12 @@
+%!demo
+%! ## `isordinal` reports whether the categories carry an order.  A plain array is
+%! ## *nominal* — its categories are just labels with no ranking ...
+%!
+%! N = categorical ({'red'; 'green'; 'blue'})
+%! isordinal (N)
+%!
+%! ## ... while one built with `'Ordinal', true` is ordered, which is what lets it
+%! ## be compared with `<` and `>` and sorted meaningfully.
+%!
+%! O = categorical ({'lo'; 'hi'; 'mid'}, {'lo', 'mid', 'hi'}, 'Ordinal', true)
+%! isordinal (O)

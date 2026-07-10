@@ -1,0 +1,8 @@
+%!demo
+%! ## `sort` orders an ordinal array by its category *ranking*, not alphabetically
+%! ## by label.
+%!
+%! C = categorical ({'L'; 'S'; 'M'; 'S'; 'L'}, {'S', 'M', 'L'}, 'Ordinal', true)
+%! sort (C)
+%!
+%! ## Any `<undefined>` values sort to the end by default.

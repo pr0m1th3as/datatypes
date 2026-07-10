@@ -1,0 +1,6 @@
+%!demo
+%! ## `max` returns the highest-ranked category present in an ordinal array,
+%! ## by category order rather than by label.
+%!
+%! C = categorical ({'M'; 'L'; 'S'; 'M'}, {'S', 'M', 'L'}, 'Ordinal', true)
+%! max (C)

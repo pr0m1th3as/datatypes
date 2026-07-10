@@ -1,0 +1,8 @@
+%!demo
+%! ## `mergecats` collapses several categories into one, relabelling every element
+%! ## that used them — a quick way to coarsen a classification.
+%!
+%! C = categorical ({'S'; 'M'; 'L'; 'S'; 'M'}, {'S', 'M', 'L'})
+%!
+%! ## Fold `S` and `M` together into a single `small` category.
+%! mergecats (C, {'S', 'M'}, 'small')

@@ -1,0 +1,7 @@
+%!demo
+%! ## `unique` returns the distinct values *present* in the array, as a categorical
+%! ## array.  (Contrast `categories`, which lists the full declared label set even
+%! ## when some categories are unused.)
+%!
+%! C = categorical ({'M'; 'S'; 'M'; 'L'; 'S'})
+%! unique (C)
