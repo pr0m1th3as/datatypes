@@ -47,6 +47,15 @@ function out = calquarters (x)
   out = calendarDuration (0, double (x) * 3, 0, 'Format', 'qmwdt');
 endfunction
 
+%!demo
+%! ## `calquarters` builds a calendar duration of whole quarters (each quarter is
+%! ## three months).
+%!
+%! calquarters (3)
+%!
+%! ## Quarters combine with the other component builders.
+%! calquarters (2) + calmonths (1)
+
 %!test
 %! X = magic (3);
 %! D = calquarters (X);

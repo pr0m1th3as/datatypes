@@ -1,0 +1,6 @@
+%!demo
+%! ## As a `calendarDuration` method, `calquarters` returns the year-and-month part
+%! ## of the span as a whole number of quarters.
+%!
+%! d = calendarDuration (2, 3, 40)
+%! calquarters (d)

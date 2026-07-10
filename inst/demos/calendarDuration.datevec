@@ -1,0 +1,6 @@
+%!demo
+%! ## `datevec` returns the span as a numeric row `[Y MO D H MI S]` per element,
+%! ## handy for feeding the raw components into other calculations.
+%!
+%! d = calendarDuration (1, 2, 3, 4, 5, 6)
+%! datevec (d)

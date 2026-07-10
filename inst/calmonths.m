@@ -47,6 +47,13 @@ function out = calmonths (x)
   out = calendarDuration (0, double (x), 0);
 endfunction
 
+%!demo
+%! ## `calmonths` builds a calendar duration of whole months.  Twelve or more
+%! ## months normalise into years on display.
+%!
+%! calmonths (5)
+%! calmonths (14)
+
 %!test
 %! X = magic (3);
 %! D = calmonths (X);

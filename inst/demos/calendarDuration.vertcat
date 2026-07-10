@@ -1,0 +1,7 @@
+%!demo
+%! ## Calendar durations concatenate like ordinary arrays; `[a; b]` stacks them
+%! ## into a single column.
+%!
+%! a = calyears ([1; 2])
+%! b = calmonths ([3; 4])
+%! [a; b]

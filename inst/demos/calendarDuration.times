@@ -1,0 +1,8 @@
+%!demo
+%! ## `times` (`.*`) scales a calendar duration by an integer factor.
+%!
+%! q = calmonths (3)
+%! q * 4
+%!
+%! ## Scaling by an array yields an array of durations.
+%! caldays (7) .* [1, 2, 3]

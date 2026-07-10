@@ -47,6 +47,13 @@ function out = calyears (x)
   out = calendarDuration (double (x), 0, 0);
 endfunction
 
+%!demo
+%! ## `calyears` builds a calendar duration of whole years.  Add the component
+%! ## builders together to assemble a full span.
+%!
+%! calyears (2)
+%! calyears (1) + calmonths (6) + caldays (15)
+
 %!test
 %! X = magic (3);
 %! D = calyears (X);

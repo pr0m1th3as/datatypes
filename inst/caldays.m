@@ -47,6 +47,16 @@ function out = caldays (x)
   out = calendarDuration (0, 0, double (x));
 endfunction
 
+%!demo
+%! ## `caldays` builds a calendar duration of whole days.  It is one of the
+%! ## component builders (`calyears`, `calquarters`, `calmonths`, `calweeks`,
+%! ## `caldays`) that you combine by addition to assemble a full span.
+%!
+%! caldays (10)
+%!
+%! ## A numeric array builds one duration per element.
+%! caldays ([7, 14, 21])
+
 %!test
 %! X = magic (3);
 %! D = caldays (X);

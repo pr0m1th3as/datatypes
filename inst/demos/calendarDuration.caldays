@@ -1,0 +1,6 @@
+%!demo
+%! ## As a `calendarDuration` method, `caldays` returns the day part of the span
+%! ## as a whole number of days.
+%!
+%! d = calendarDuration (2, 3, 40)
+%! caldays (d)

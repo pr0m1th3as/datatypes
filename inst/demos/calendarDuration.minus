@@ -1,0 +1,5 @@
+%!demo
+%! ## `minus` (`-`) subtracts one calendar duration from another.
+%!
+%! a = calyears (2) + calmonths (2)
+%! a - calmonths (5)

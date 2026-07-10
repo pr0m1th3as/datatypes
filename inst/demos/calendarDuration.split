@@ -1,0 +1,9 @@
+%!demo
+%! ## `split` decomposes a calendar duration into the whole-unit components you
+%! ## request, distributing the span across them.  (Contrast the single-unit
+%! ## extractors such as `calmonths`, which each return the span as a *total* in
+%! ## one unit.)
+%!
+%! d = calendarDuration (2, 3, 40)
+%! [y, mo, days] = split (d, {'years', 'months', 'days'});
+%! [y, mo, days]

@@ -1,0 +1,5 @@
+%!demo
+%! ## `cellstr` converts the array into a cell array of its display strings.
+%!
+%! d = calmonths ([1, 13, 25])
+%! cellstr (d)

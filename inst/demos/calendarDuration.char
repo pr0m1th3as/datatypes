@@ -1,0 +1,6 @@
+%!demo
+%! ## `char` converts the array into a character matrix of its display strings,
+%! ## one row per element (shorter rows padded with spaces).
+%!
+%! d = calmonths ([1, 13])
+%! char (d)

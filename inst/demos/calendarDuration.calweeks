@@ -1,0 +1,6 @@
+%!demo
+%! ## As a `calendarDuration` method, `calweeks` returns the day part of the span
+%! ## as a whole number of weeks.
+%!
+%! d = calendarDuration (0, 0, 40)
+%! calweeks (d)

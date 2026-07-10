@@ -1,0 +1,7 @@
+%!demo
+%! ## As a `calendarDuration` *method*, `calmonths` inverts the builder: it returns
+%! ## the whole span expressed as a number of months (years and months rolled
+%! ## together).  Compare `split`, which instead decomposes the span into parts.
+%!
+%! d = calendarDuration (2, 3, 40)
+%! calmonths (d)

@@ -1,0 +1,6 @@
+%!demo
+%! ## As a `calendarDuration` method, `calyears` returns the number of whole years
+%! ## in the span (the inverse of the `calyears` builder).
+%!
+%! d = calendarDuration (2, 3, 40)
+%! calyears (d)

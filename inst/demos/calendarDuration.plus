@@ -1,0 +1,6 @@
+%!demo
+%! ## `plus` (`+`) adds calendar durations.  Because the units are calendar units,
+%! ## the sum normalises on display (here 6 + 9 months rolls into a year).
+%!
+%! a = calyears (1) + calmonths (6)
+%! a + calmonths (9)

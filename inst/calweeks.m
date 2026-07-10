@@ -47,6 +47,14 @@ function out = calweeks (x)
   out = calendarDuration (0, 0, double (x) * 7, 'Format', 'ymwdt');
 endfunction
 
+%!demo
+%! ## `calweeks` builds a calendar duration of whole weeks (each week is 7 days).
+%!
+%! calweeks (3)
+%!
+%! ## Combine the component builders by adding them.
+%! calweeks (2) + caldays (3)
+
 %!test
 %! X = magic (3);
 %! D = calweeks (X);

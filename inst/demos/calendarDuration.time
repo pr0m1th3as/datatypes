@@ -1,0 +1,6 @@
+%!demo
+%! ## `time` extracts the time-of-day part as a `duration`, discarding the
+%! ## calendar (year/month/day) part.
+%!
+%! d = calendarDuration (0, 1, 2, 6, 30, 0)
+%! time (d)

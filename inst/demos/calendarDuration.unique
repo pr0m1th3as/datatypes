@@ -1,0 +1,6 @@
+%!demo
+%! ## `unique` returns the distinct calendar durations in an array (equivalent
+%! ## spans count as one).
+%!
+%! d = calmonths ([1, 13, 1, 25, 13])
+%! unique (d)

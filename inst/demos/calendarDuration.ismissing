@@ -1,0 +1,7 @@
+%!demo
+%! ## For a calendar duration `ismissing` is the same test as `isnan`: a NaN span
+%! ## is the missing value, so calendar durations plug into the generic
+%! ## missing-data tools.
+%!
+%! d = calmonths ([1, NaN, 3])
+%! ismissing (d)
