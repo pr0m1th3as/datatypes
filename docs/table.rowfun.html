@@ -366,8 +366,17 @@
                 <p><code>rowfun</code> applies a function to each row, passing that row's variables as separate arguments — a row-wise map, complementing the column-wise <code>varfun</code>.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Weight = [176; 163; 133];
  Height = [71; 69; 64];
- T = table (Weight, Height);
- rowfun (@(w, h) 703 * w / h^2, T, 'OutputVariableNames', {'BMI'})</pre>
+ T = table (Weight, Height)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  3x2 table
+
+    Weight    Height    
+    ______    ______    
+
+       176        71    
+       163        69    
+       133        64</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> rowfun (@(w, h) 703 * w / h^2, T, 'OutputVariableNames', {'BMI'})</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   3x1 table
 

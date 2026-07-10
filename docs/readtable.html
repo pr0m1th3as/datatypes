@@ -295,7 +295,9 @@
  type is detected automatically (numeric, <code>datetime</code>, <code>duration</code>, or
  text).  The following <var>Name</var>-<var>Value</var> options are supported:
 </p>
-<table>
+<div class="table-responsive">
+<table class="table table-striped table-bordered table-sm">
+<thead class="table-primary"><tr><th width="28%"><var>Name</var></th><th width="72%"><var>Value</var></th></tr></thead>
 <tr><td width="28%"><code>'FileType'</code></td><td width="72%"><code>'text'</code> or <code>'spreadsheet'</code>.</td></tr>
 <tr><td width="28%"><code>'ReadVariableNames'</code></td><td width="72%">Logical; read the first row as variable
  names (default <code>true</code>).</td></tr>
@@ -315,6 +317,9 @@
 <tr><td width="28%"><code>'Range'</code></td><td width="72%">Spreadsheet only: an A1-style range such as
  <code>'C5'</code> or <code>'C5:D8'</code> limiting the region read.</td></tr>
 </table>
+<p><strong>Source Code: </strong>
+  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/readtable.m">readtable</a>
+</div>
 
 <p> Office Open XML spreadsheets (<code>.xlsx</code>, <code>.xlsm</code>) are read via the
  same interface as ODS.  The legacy binary formats <code>.xls</code> and

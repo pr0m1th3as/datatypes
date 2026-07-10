@@ -378,10 +378,27 @@
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Name = {'Li'; 'Diaz'};
  Jan = [1; 2];
  Feb = [3; 4];
- T = table (Name, Jan, Feb);
- stack (T, {'Jan', 'Feb'}, ...
+ T = table (Name, Jan, Feb)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  2x3 table
+
+      Name      Jan    Feb    
+    ________    ___    ___    
+
+    {'Li'  }      1      3    
+    {'Diaz'}      2      4</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> stack (T, {'Jan', 'Feb'}, ...
         'NewDataVariableName', 'Value', 'IndexVariableName', 'Month')</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">error: categorical.subsasgn: '.' invalid indexing for assigning field of non-structure array.</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  4x3 table
+
+      Name      Month    Value    
+    ________    _____    _____    
+
+    {'Li'  }      Jan        1    
+    {'Li'  }      Feb        3    
+    {'Diaz'}      Jan        2    
+    {'Diaz'}      Feb        4</pre>
                 <p>The unstacked variables (<code>Name</code>) are repeated down each group; the indicator <code>Month</code> is a categorical naming the source column.  <code>unstack</code> reverses this.</p>
 
           </div>

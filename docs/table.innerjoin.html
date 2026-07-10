@@ -357,14 +357,42 @@
           <div class="card-body">
                 <p><code>innerjoin</code> keeps only rows whose key exists in <em>both</em> tables — unmatched rows are dropped — and, unlike <code>join</code>, the right key need not be unique. Pass <code>'Keys'</code> to match on several variables at once; here a row must agree on both <code>Name</code> and <code>Year</code> to match.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> L = table ({'Li'; 'Li'; 'Diaz'}, [2023; 2024; 2023], [10; 11; 12], ...
-            'VariableNames', {'Name', 'Year', 'Visits'});
- R = table ({'Li'; 'Diaz'}, [2023; 2023], categorical ({'NY'; 'CA'}), ...
-            'VariableNames', {'Name', 'Year', 'State'});</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">error: categorical.subsasgn: '.' invalid indexing for assigning field of non-structure array.</pre>
+            'VariableNames', {'Name', 'Year', 'Visits'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">L =
+  3x3 table
+
+      Name      Year    Visits    
+    ________    ____    ______    
+
+    {'Li'  }    2023        10    
+    {'Li'  }    2024        11    
+    {'Diaz'}    2023        12</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> R = table ({'Li'; 'Diaz'}, [2023; 2023], categorical ({'NY'; 'CA'}), ...
+            'VariableNames', {'Name', 'Year', 'State'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">R =
+  2x3 table
+
+      Name      Year    State    
+    ________    ____    _____    
+
+    {'Li'  }    2023       NY    
+    {'Diaz'}    2023       CA</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> innerjoin (L, R, 'Keys', {'Name', 'Year'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  2x4 table
+
+      Name      Year    Visits    State    
+    ________    ____    ______    _____    
+
+    {'Diaz'}    2023        12       CA    
+    {'Li'  }    2023        10       NY</pre>
                 <p>Li's 2024 row has no match on the right, so it is excluded.  Extra outputs give the source row indices in the left and right tables.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> [T, iL, iR] = innerjoin (L, R, 'Keys', {'Name', 'Year'});
  [iL, iR]</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+
+   3   2
+   1   1</pre>
 
           </div>
         </div>

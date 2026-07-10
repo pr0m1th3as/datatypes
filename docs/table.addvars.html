@@ -347,8 +347,17 @@
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Name = string ({'Sanchez'; 'Johnson'; 'Li'});
  Age = [38; 43; 40];
  Gender = categorical ({'M'; 'M'; 'F'});
- T = table (Name, Age, Gender);
- Visit = datetime (2024, [1; 2; 3], [5; 6; 7]);
+ T = table (Name, Age, Gender)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  3x3 table
+
+      Name       Age    Gender    
+    _________    ___    ______    
+
+    "Sanchez"     38         M    
+    "Johnson"     43         M    
+    "Li"          40         F</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Visit = datetime (2024, [1; 2; 3], [5; 6; 7]);
  addvars (T, Visit)</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   3x4 table

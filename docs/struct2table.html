@@ -294,19 +294,23 @@
  optional parameters for creating the table <var>tbl</var> with the following
  Name-Value paired arguments.
 </p>
-<table>
-<thead><tr><th width="23%"><var>Name</var></th><th width="2%"></th><th width="75%"><var>Value</var></th></tr></thead>
-<tr><td width="23%"><code>'AsArray'</code></td><td width="2%"></td><td width="75%">A logical scalar specifying whether to
+<div class="table-responsive">
+<table class="table table-striped table-bordered table-sm">
+<thead class="table-primary"><tr><th width="23%"><var>Name</var></th><th width="75%"><var>Value</var></th></tr></thead>
+<tr><td width="23%"><code>'AsArray'</code></td><td width="75%">A logical scalar specifying whether to
  treat a scalar input as a structure array, which allows the fields containing
  data of different sizes.</td></tr>
-<tr><td width="23%"><code>'RowNames'</code></td><td width="2%"></td><td width="75%">A cell array of character vectors or
+<tr><td width="23%"><code>'RowNames'</code></td><td width="75%">A cell array of character vectors or
  a string array defining the row names of <var>tbl</var>.  The names must be unique
  but not necessarily valid variable names.</td></tr>
-<tr><td width="23%"><code>'DimensionNames'</code></td><td width="2%"></td><td width="75%">A cell array of character vectors or
+<tr><td width="23%"><code>'DimensionNames'</code></td><td width="75%">A cell array of character vectors or
  a string array defining the dimension names of <var>tbl</var>.  The names must be
  unique and not in conflict with variable names.  By default, dimension names
  are <code>'Row', 'Variables'</code>.</td></tr>
 </table>
+<p><strong>Source Code: </strong>
+  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/struct2table.m">struct2table</a>
+</div>
 
 <p> <strong>See also: </strong>
   <a href="array2table.html">array2table</a>, 

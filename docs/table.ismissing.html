@@ -364,13 +364,31 @@
                 <p>Where <code>anymissing</code> gives a single yes/no, <code>ismissing</code> locates <em>every</em> gap, returning a logical array the size of the table — one flag per element.  It recognises the missing value proper to each type at once.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Name = string ({'Li'; 'Diaz'; 'Brown'});
  Age = [38; NaN; 40];
- Grade = categorical ({'A'; 'B'; ''});</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">error: categorical.subsasgn: '.' invalid indexing for assigning field of non-structure array.</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Visit = datetime (2024, 1, [5; NaN; 7]);
- T = table (Name, Age, Grade, Visit);
- ismissing (T)</pre>
+ Grade = categorical ({'A'; 'B'; ''});
+ Visit = datetime (2024, 1, [5; NaN; 7]);
+ T = table (Name, Age, Grade, Visit)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  3x4 table
+
+     Name      Age       Grade          Visit       
+    _______    ___    ___________    ___________    
+
+    "Li"        38              A    05-Jan-2024    
+    "Diaz"     NaN              B            NaT    
+    "Brown"     40    &lt;undefined&gt;    07-Jan-2024</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> ismissing (T)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+
+  0  0  0  0
+  0  1  0  1
+  0  0  1  0</pre>
                 <p>Pass an indicator to also treat specific sentinel values as missing.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> ismissing (table ([1; -99; 3]), -99)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+
+  0
+  1
+  0</pre>
 
           </div>
         </div>

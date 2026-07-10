@@ -310,7 +310,9 @@
  recovered by <code>readtable</code> through automatic detection (text) or the
  native cell types (spreadsheet).  The following options are supported:
 </p>
-<table>
+<div class="table-responsive">
+<table class="table table-striped table-bordered table-sm">
+<thead class="table-primary"><tr><th width="28%"><var>Name</var></th><th width="72%"><var>Value</var></th></tr></thead>
 <tr><td width="28%"><code>'FileType'</code></td><td width="72%"><code>'text'</code> or <code>'spreadsheet'</code>.</td></tr>
 <tr><td width="28%"><code>'WriteVariableNames'</code></td><td width="72%">Logical; write the variable names
  as the first row (default <code>true</code>).</td></tr>
@@ -332,6 +334,9 @@
  <code>'inplace'</code> (replace the target sheet), <code>'append'</code> (append
  rows to it), or <code>'replacefile'</code> (overwrite the whole file).</td></tr>
 </table>
+<p><strong>Source Code: </strong>
+  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/table.m">table</a>
+</div>
 
 <p> When the target spreadsheet already exists, the sheet named by
  <code>'Sheet'</code> (defaulting to the first existing sheet) is added or
@@ -360,8 +365,17 @@
           </div>
           <div class="card-body">
                 <p><code>writetable</code> writes a table in a <strong>MATLAB-interoperable</strong> format — a plain header row of variable names followed by the data, with no package-specific metadata.  The file type follows the extension; <code>'Delimiter'</code> sets the separator for text files.</p>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = table ([38; 43; 40], [71; 69; 64], 'VariableNames', {'Age', 'Height'});
- filename = fullfile (tempdir (), 'patients.txt');
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = table ([38; 43; 40], [71; 69; 64], 'VariableNames', {'Age', 'Height'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  3x2 table
+
+    Age    Height    
+    ___    ______    
+
+     38        71    
+     43        69    
+     40        64</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> filename = fullfile (tempdir (), 'patients.txt');
  writetable (T, filename, 'Delimiter', 'tab');
  type (filename)</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">Age	Height
@@ -386,8 +400,16 @@
           <div class="card-body">
                 <p>For spreadsheets, choose the target <code>'Sheet'</code> and, with <code>'WriteRowNames'</code>, emit the row names as the leading column — <code>readtable</code> reads it straight back.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = table ([38; 43], [71; 69], 'VariableNames', {'Age', 'Height'}, ...
-            'RowNames', {'Li', 'Diaz'});
- filename = fullfile (tempdir (), 'patients.ods');
+            'RowNames', {'Li', 'Diaz'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  2x2 table
+
+            Age    Height    
+            ___    ______    
+
+    Li       38        71    
+    Diaz     43        69</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> filename = fullfile (tempdir (), 'patients.ods');
  writetable (T, filename, 'Sheet', 'Cohort', 'WriteRowNames', true);
  readtable (filename, 'Sheet', 'Cohort', 'ReadRowNames', true)</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =

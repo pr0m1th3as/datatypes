@@ -331,6 +331,45 @@
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/categorical.m">categorical</a>
 </div>
+        <div class="card rounded my-4">
+          <div class="card-header card-header-mod">
+            <div class="row d-flex flex-wrap align-items-center">
+              <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                <h3 class="d-inline-block mr-2">
+                Example: 1
+                </h3>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+                <p><code>addcats</code> adds new, initially-empty categories without changing any values — handy to reserve labels that may appear later.  For an ordinal array place the new category with <code>'Before'</code>/<code>'After'</code> so the order stays sensible.</p>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> C = categorical ({'S'; 'M'; 'S'}, {'S', 'M', 'L'}, 'Ordinal', true)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">C =
+  3x1 categorical array
+
+    S    
+    M    
+    S</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> categories (C)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  3x1 cell array
+
+    {'S'}    
+    {'M'}    
+    {'L'}</pre>
+                <p>Reserve <code>XL</code> just after <code>L</code>.</p>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> categories (addcats (C, 'XL', 'After', 'L'))</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  4x1 cell array
+
+    {'S' }    
+    {'M' }    
+    {'L' }    
+    {'XL'}</pre>
+
+          </div>
+        </div>
+
 
             </div>
           </div>

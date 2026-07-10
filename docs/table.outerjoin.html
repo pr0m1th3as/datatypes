@@ -369,12 +369,39 @@
           <div class="card-body">
                 <p><code>outerjoin</code> keeps <em>all</em> rows from both tables, filling in missing values where a key has no match — each variable is filled with the missing value proper to its type (<code>NaN</code>, <code>&lt;undefined&gt;</code>, empty string, ...).</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> L = table ({'Li'; 'Diaz'; 'Brown'}, [38; 40; 49], ...
-            'VariableNames', {'Name', 'Age'});
- R = table ({'Li'; 'Diaz'; 'Lee'}, categorical ({'NY'; 'CA'; 'TX'}), ...
+            'VariableNames', {'Name', 'Age'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">L =
+  3x2 table
+
+      Name       Age    
+    _________    ___    
+
+    {'Li'   }     38    
+    {'Diaz' }     40    
+    {'Brown'}     49</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> R = table ({'Li'; 'Diaz'; 'Lee'}, categorical ({'NY'; 'CA'; 'TX'}), ...
             [176; 163; 150], ...
-            'VariableNames', {'Name', 'State', 'Weight'});</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">error: categorical.subsasgn: '.' invalid indexing for assigning field of non-structure array.</pre>
+            'VariableNames', {'Name', 'State', 'Weight'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">R =
+  3x3 table
+
+      Name      State    Weight    
+    ________    _____    ______    
+
+    {'Li'  }       NY       176    
+    {'Diaz'}       CA       163    
+    {'Lee' }       TX       150</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> outerjoin (L, R, 'MergeKeys', true)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  4x4 table
+
+      Name       Age       State       Weight    
+    _________    ___    ___________    ______    
+
+    {'Brown'}     49    &lt;undefined&gt;       NaN    
+    {'Diaz' }     40             CA       163    
+    {'Lee'  }    NaN             TX       150    
+    {'Li'   }     38             NY       176</pre>
                 <p>Brown (left only) and Lee (right only) both survive, each with the other table's variables left missing.</p>
 
           </div>

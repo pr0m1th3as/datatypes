@@ -395,8 +395,18 @@
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Name = string ({'Li'; 'Diaz'; 'Brown'; 'Lee'});
  Visit = datetime (2024, [3; 1; 2; 1], [7; 5; 6; 2]);
  Grade = categorical ({'B'; 'A'; 'A'; 'B'}, {'A', 'B', 'C'}, 'Ordinal', true);
- T = table (Name, Visit, Grade);
- sortrows (T, {'Grade', 'Visit'})</pre>
+ T = table (Name, Visit, Grade)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  4x3 table
+
+     Name         Visit       Grade    
+    _______    ___________    _____    
+
+    "Li"       07-Mar-2024        B    
+    "Diaz"     05-Jan-2024        A    
+    "Brown"    06-Feb-2024        A    
+    "Lee"      02-Jan-2024        B</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> sortrows (T, {'Grade', 'Visit'})</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   4x3 table
 
@@ -437,8 +447,18 @@
                 <p>A second output returns the permutation index, and passing <code>'RowNames'</code> sorts by the row names themselves rather than by a data variable.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Age = [38; 43; 38; 40];
  Smoker = logical ([1; 0; 1; 0]);
- T = table (Age, Smoker, 'RowNames', {'Sanchez', 'Johnson', 'Li', 'Diaz'});
- [S, idx] = sortrows (T, 'RowNames');
+ T = table (Age, Smoker, 'RowNames', {'Sanchez', 'Johnson', 'Li', 'Diaz'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  4x2 table
+
+               Age    Smoker    
+               ___    ______    
+
+    Sanchez     38    true      
+    Johnson     43    false     
+    Li          38    true      
+    Diaz        40    false</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> [S, idx] = sortrows (T, 'RowNames');
  S</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">S =
   4x2 table

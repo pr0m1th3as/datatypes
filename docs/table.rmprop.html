@@ -319,16 +319,38 @@
           <div class="card-body">
                 <p><code>rmprop</code> removes custom properties previously added with <code>addprop</code>, whatever their scope.  Here a table starts with one property of each kind.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Age = [38; 43];
- Gender = categorical ({'M'; 'F'});</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">error: categorical.subsasgn: '.' invalid indexing for assigning field of non-structure array.</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = table (Age, Gender);
- T = addprop (T, {'DataSource', 'Instrument'}, {'table', 'variable'});
+ Gender = categorical ({'M'; 'F'});
+ T = table (Age, Gender)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  2x2 table
+
+    Age    Gender    
+    ___    ______    
+
+     38         M    
+     43         F</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = addprop (T, {'DataSource', 'Instrument'}, {'table', 'variable'});
  T.Properties.CustomProperties.DataSource = 'Clinic A';
  T.Properties.CustomProperties.Instrument = {'form', 'form'};
  T.Properties.CustomProperties</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+
+  scalar structure containing the fields:
+
+    DataSource = Clinic A
+    Instrument =
+    {
+      [1,1] = form
+      [1,2] = form
+    }</pre>
                 <p>Remove the variable-scoped <code>Instrument</code>; the table-scoped <code>DataSource</code> remains.  The built-in properties (names, units, ...) are never affected.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = rmprop (T, 'Instrument');
  T.Properties.CustomProperties</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+
+  scalar structure containing the fields:
+
+    DataSource = Clinic A</pre>
 
           </div>
         </div>

@@ -333,17 +333,40 @@
                 <p><code>addprop</code> attaches your own metadata to a table.  Each property is declared with a <em>scope</em>: a <code>'table'</code>-scoped property holds a single value for the whole table, while a <code>'variable'</code>-scoped property holds one value per variable, aligned with the table's columns.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Age = [38; 43; 40];
  Height = duration (0, 0, 0) + hours ([1.9; 1.8; 1.7]);
- Gender = categorical ({'M'; 'F'; 'M'});</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">error: categorical.subsasgn: '.' invalid indexing for assigning field of non-structure array.</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = table (Age, Height, Gender);
- T = addprop (T, {'DataSource', 'Instrument'}, {'table', 'variable'});</pre>
+ Gender = categorical ({'M'; 'F'; 'M'});
+ T = table (Age, Height, Gender)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  3x3 table
+
+    Age     Height     Gender    
+    ___    ________    ______    
+
+     38    01:54:00         M    
+     43    01:48:00         F    
+     40    01:42:00         M</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = addprop (T, {'DataSource', 'Instrument'}, {'table', 'variable'});</pre>
                 <p>The table-scoped <code>DataSource</code> takes one value; the variable-scoped <code>Instrument</code> takes a cell with one entry per variable (Age, Height, Gender).</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T.Properties.CustomProperties.DataSource = 'Clinic A';
  T.Properties.CustomProperties.Instrument = {'form', 'stadiometer', 'form'};
  T.Properties.CustomProperties</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+
+  scalar structure containing the fields:
+
+    DataSource = Clinic A
+    Instrument =
+    {
+      [1,1] = form
+      [1,2] = stadiometer
+      [1,3] = form
+    }</pre>
                 <p>Because it is variable-scoped, <code>Instrument</code> follows column operations — after removing <code>Height</code> its entry drops out too, staying aligned with the columns.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T2 = removevars (T, 'Height');
  T2.Properties.CustomProperties.Instrument</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  1x2 cell array
+
+    {'form'}    {'form'}</pre>
 
           </div>
         </div>

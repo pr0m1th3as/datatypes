@@ -357,12 +357,38 @@
           <div class="card-body">
                 <p><code>join</code> performs a key-based merge: every row of the left table is matched to the one row of the right table sharing its key.  The key is the variable the two tables have in common (<code>Name</code>), and it must be <em>unique</em> on the right. The remaining right-hand variables — here of several different types — are appended to each matched left row.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> L = table ({'Li'; 'Diaz'; 'Brown'}, [38; 40; 49], ...
-            'VariableNames', {'Name', 'Age'});
- R = table ({'Li'; 'Diaz'; 'Brown'}, categorical ({'NY'; 'CA'; 'MA'}), ...
+            'VariableNames', {'Name', 'Age'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">L =
+  3x2 table
+
+      Name       Age    
+    _________    ___    
+
+    {'Li'   }     38    
+    {'Diaz' }     40    
+    {'Brown'}     49</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> R = table ({'Li'; 'Diaz'; 'Brown'}, categorical ({'NY'; 'CA'; 'MA'}), ...
             logical ([1; 0; 1]), ...
-            'VariableNames', {'Name', 'State', 'Smoker'});</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">error: categorical.subsasgn: '.' invalid indexing for assigning field of non-structure array.</pre>
+            'VariableNames', {'Name', 'State', 'Smoker'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">R =
+  3x3 table
+
+      Name       State    Smoker    
+    _________    _____    ______    
+
+    {'Li'   }       NY    true      
+    {'Diaz' }       CA    false     
+    {'Brown'}       MA    true</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> join (L, R)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  3x4 table
+
+      Name       Age    State    Smoker    
+    _________    ___    _____    ______    
+
+    {'Li'   }     38       NY    true      
+    {'Diaz' }     40       CA    false     
+    {'Brown'}     49       MA    true</pre>
 
           </div>
         </div>

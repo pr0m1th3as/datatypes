@@ -394,8 +394,17 @@
           </div>
           <div class="card-body">
                 <p><code>issortedrows</code> tests whether the rows are already in sorted order, using the same key/direction syntax as <code>sortrows</code> — handy to skip a needless sort.</p>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = table ([1; 3; 2], [10; 20; 30], 'VariableNames', {'Age', 'Height'});
- issortedrows (T, 'Age')</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = table ([1; 3; 2], [10; 20; 30], 'VariableNames', {'Age', 'Height'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  3x2 table
+
+    Age    Height    
+    ___    ______    
+
+      1        10    
+      3        20    
+      2        30</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> issortedrows (T, 'Age')</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans = 0</pre>
                 <p>The <code>Height</code> column <em>is</em> ascending, so a check on that variable succeeds.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> issortedrows (T, 'Height')</pre>

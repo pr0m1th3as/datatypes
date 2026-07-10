@@ -326,8 +326,17 @@
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> LastName = {'Sanchez'; 'Johnson'; 'Li'};
  Age = [38; 43; 38];
  Height = [71; 69; 64];
- T = table (LastName, Age, Height);
- S = table2struct (T);
+ T = table (LastName, Age, Height)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  3x3 table
+
+     LastName      Age    Height    
+    ___________    ___    ______    
+
+    {'Sanchez'}     38        71    
+    {'Johnson'}     43        69    
+    {'Li'     }     38        64</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> S = table2struct (T);
  S(2).LastName</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans = Johnson</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> S(2).Age</pre>
@@ -351,8 +360,17 @@
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> LastName = {'Sanchez'; 'Johnson'; 'Li'};
  Age = [38; 43; 38];
  Height = [71; 69; 64];
- T = table (LastName, Age, Height);
- S = table2struct (T, 'ToScalar', true)</pre>
+ T = table (LastName, Age, Height)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  3x3 table
+
+     LastName      Age    Height    
+    ___________    ___    ______    
+
+    {'Sanchez'}     38        71    
+    {'Johnson'}     43        69    
+    {'Li'     }     38        64</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> S = table2struct (T, 'ToScalar', true)</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">S =
 
   scalar structure containing the fields:

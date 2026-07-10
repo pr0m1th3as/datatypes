@@ -332,12 +332,37 @@
                 <p><code>setxor</code> returns the symmetric difference: rows in exactly one of the two tables, but not in both.  Row identity spans every variable, of any type.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> A = table ({'Li'; 'Diaz'; 'Brown'}, [38; 40; 49], ...
             categorical ({'NY'; 'CA'; 'MA'}), ...
-            'VariableNames', {'Name', 'Age', 'State'});</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">error: categorical.subsasgn: '.' invalid indexing for assigning field of non-structure array.</pre>
+            'VariableNames', {'Name', 'Age', 'State'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">A =
+  3x3 table
+
+      Name       Age    State    
+    _________    ___    _____    
+
+    {'Li'   }     38       NY    
+    {'Diaz' }     40       CA    
+    {'Brown'}     49       MA</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> B = table ({'Diaz'; 'Brown'; 'Lee'}, [40; 49; 30], ...
             categorical ({'CA'; 'MA'; 'TX'}), ...
-            'VariableNames', {'Name', 'Age', 'State'});
- setxor (A, B)</pre>
+            'VariableNames', {'Name', 'Age', 'State'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">B =
+  3x3 table
+
+      Name       Age    State    
+    _________    ___    _____    
+
+    {'Diaz' }     40       CA    
+    {'Brown'}     49       MA    
+    {'Lee'  }     30       TX</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> setxor (A, B)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  2x3 table
+
+     Name      Age    State    
+    _______    ___    _____    
+
+    {'Lee'}     30       TX    
+    {'Li' }     38       NY</pre>
                 <p>Diaz and Brown, shared by both, drop out — leaving Li (from <code>A</code>) and Lee (from <code>B</code>).</p>
 
           </div>

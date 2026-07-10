@@ -352,8 +352,17 @@
           <div class="card-body">
                 <p><code>splitvars</code> expands a multi-column variable into several single-column variables — the inverse of <code>mergevars</code>.  Auto-generated names get a numeric suffix; pass <code>'NewVariableNames'</code> to choose your own.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> BloodPressure = [124, 93; 109, 77; 125, 83];
- T = table ([38; 43; 40], BloodPressure, 'VariableNames', {'Age', 'BP'});
- splitvars (T, 'BP')</pre>
+ T = table ([38; 43; 40], BloodPressure, 'VariableNames', {'Age', 'BP'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  3x2 table
+
+    Age       BP        
+    ___    _________    
+
+     38    124    93    
+     43    109    77    
+     40    125    83</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> splitvars (T, 'BP')</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   3x3 table
 

@@ -349,8 +349,17 @@
           </div>
           <div class="card-body">
                 <p><code>convertvars</code> changes the data type of selected variables, leaving the rest alone.  The target type is given as a name, or as a conversion function.</p>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = table ([1; 0; 1], [38; 43; 40], 'VariableNames', {'Smoker', 'Age'});
- convertvars (T, 'Smoker', 'logical')</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = table ([1; 0; 1], [38; 43; 40], 'VariableNames', {'Smoker', 'Age'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  3x2 table
+
+    Smoker    Age    
+    ______    ___    
+
+         1     38    
+         0     43    
+         1     40</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> convertvars (T, 'Smoker', 'logical')</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   3x2 table
 
@@ -362,8 +371,17 @@
     true       40</pre>
                 <p>Select several variables at once and hand them a conversion function.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T2 = table ({'M'; 'F'; 'M'}, {'NY'; 'CA'; 'MA'}, ...
-             'VariableNames', {'Gender', 'State'});
- convertvars (T2, {'Gender', 'State'}, @categorical)</pre>
+             'VariableNames', {'Gender', 'State'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T2 =
+  3x2 table
+
+    Gender    State     
+    ______    ______    
+
+    {'M' }    {'NY'}    
+    {'F' }    {'CA'}    
+    {'M' }    {'MA'}</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> convertvars (T2, {'Gender', 'State'}, 'categorical')</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   3x2 table
 

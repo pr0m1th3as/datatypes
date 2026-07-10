@@ -324,11 +324,36 @@
           <div class="card-body">
                 <p><code>vertcat</code> stacks tables on top of one another, appending rows.  The tables must share the same variables (same names, compatible types).  The <code>[A; B]</code> bracket syntax calls it for you.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> A = table (string ({'Li'; 'Diaz'}), [38; 40], categorical ({'M'; 'F'}), ...
-            'VariableNames', {'Name', 'Age', 'Gender'});</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">error: categorical.subsasgn: '.' invalid indexing for assigning field of non-structure array.</pre>
+            'VariableNames', {'Name', 'Age', 'Gender'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">A =
+  2x3 table
+
+     Name     Age    Gender    
+    ______    ___    ______    
+
+    "Li"       38         M    
+    "Diaz"     40         F</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> B = table (string ({'Brown'; 'Lee'}), [49; 30], categorical ({'M'; 'M'}), ...
-            'VariableNames', {'Name', 'Age', 'Gender'});
- [A; B]</pre>
+            'VariableNames', {'Name', 'Age', 'Gender'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">B =
+  2x3 table
+
+     Name      Age    Gender    
+    _______    ___    ______    
+
+    "Brown"     49         M    
+    "Lee"       30         M</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> [A; B]</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  4x3 table
+
+     Name      Age    Gender    
+    _______    ___    ______    
+
+    "Li"        38         M    
+    "Diaz"      40         F    
+    "Brown"     49         M    
+    "Lee"       30         M</pre>
 
           </div>
         </div>
@@ -345,18 +370,38 @@
           </div>
           <div class="card-body">
                 <p>Because vertical concatenation only adds rows, the column-aligned metadata is unchanged: a <em>variable</em>-scoped custom property carries straight through, and a <em>table</em>-scoped one is kept when the operands agree.</p>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> A = table ([38; 40], categorical ({'M'; 'F'}), 'VariableNames', {'Age', 'Gender'});</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">error: categorical.subsasgn: '.' invalid indexing for assigning field of non-structure array.</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> A = table ([38; 40], categorical ({'M'; 'F'}), 'VariableNames', {'Age', 'Gender'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">A =
+  2x2 table
+
+    Age    Gender    
+    ___    ______    
+
+     38         M    
+     40         F</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> A = addprop (A, {'Study', 'Source'}, {'table', 'variable'});
  A.Properties.CustomProperties.Study = 'Cohort-7';
  A.Properties.CustomProperties.Source = {'intake', 'intake'};
- B = table ([49; 30], categorical ({'M'; 'M'}), 'VariableNames', {'Age', 'Gender'});
- B = addprop (B, {'Study', 'Source'}, {'table', 'variable'});
+ B = table ([49; 30], categorical ({'M'; 'M'}), 'VariableNames', {'Age', 'Gender'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">B =
+  2x2 table
+
+    Age    Gender    
+    ___    ______    
+
+     49         M    
+     30         M</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> B = addprop (B, {'Study', 'Source'}, {'table', 'variable'});
  B.Properties.CustomProperties.Study = 'Cohort-7';
  B.Properties.CustomProperties.Source = {'intake', 'intake'};
  V = [A; B];
- V.Properties.CustomProperties.Source
- V.Properties.CustomProperties.Study</pre>
+ V.Properties.CustomProperties.Source</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  1x2 cell array
+
+    {'intake'}    {'intake'}</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> V.Properties.CustomProperties.Study</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans = Cohort-7</pre>
 
           </div>
         </div>

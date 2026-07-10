@@ -336,8 +336,17 @@
           </div>
           <div class="card-body">
                 <p><code>standardizeMissing</code> turns your own sentinel codes into the <em>standard</em> missing value for each type (<code>NaN</code> here), so later <code>ismissing</code>/<code>rmmissing</code>/ <code>fillmissing</code> calls recognise them.  This dataset uses <code>-99</code> for "no data".</p>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = table ([38; -99; 40], [71; 69; -99], 'VariableNames', {'Age', 'Height'});
- S = standardizeMissing (T, -99)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = table ([38; -99; 40], [71; 69; -99], 'VariableNames', {'Age', 'Height'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  3x2 table
+
+    Age    Height    
+    ___    ______    
+
+     38        71    
+    -99        69    
+     40       -99</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> S = standardizeMissing (T, -99)</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">S =
   3x2 table
 

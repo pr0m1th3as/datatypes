@@ -357,8 +357,17 @@
           <div class="card-body">
                 <p><code>mergevars</code> combines several variables into one multi-column variable — the inverse of <code>splitvars</code>.  Name the merged variable with <code>'NewVariableName'</code>.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = table ([38; 43; 40], [124; 109; 125], [93; 77; 83], ...
-            'VariableNames', {'Age', 'Systolic', 'Diastolic'});
- mergevars (T, {'Systolic', 'Diastolic'}, 'NewVariableName', 'BloodPressure')</pre>
+            'VariableNames', {'Age', 'Systolic', 'Diastolic'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  3x3 table
+
+    Age    Systolic    Diastolic    
+    ___    ________    _________    
+
+     38         124           93    
+     43         109           77    
+     40         125           83</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> mergevars (T, {'Systolic', 'Diastolic'}, 'NewVariableName', 'BloodPressure')</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   3x2 table
 

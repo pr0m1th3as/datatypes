@@ -335,9 +335,30 @@
           </div>
           <div class="card-body">
                 <p><code>inner2outer</code> swaps the nesting of a table whose variables are themselves tables: the inner (nested) variables are lifted to the top level.</p>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Inner = table ([1; 2; 3], [4; 5; 6], 'VariableNames', {'x', 'y'});
- NT = table ([10; 20; 30], Inner, 'VariableNames', {'id', 'inner'});
- NT</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Inner = table ([1; 2; 3], [4; 5; 6], 'VariableNames', {'x', 'y'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">Inner =
+  3x2 table
+
+    x    y    
+    _    _    
+
+    1    4    
+    2    5    
+    3    6</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> NT = table ([10; 20; 30], Inner, 'VariableNames', {'id', 'inner'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">NT =
+  3x2 table
+
+    id        inner         
+    __    ______________    
+
+            x        y      
+          _____    _____    
+
+    10        1        4    
+    20        2        5    
+    30        3        6</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> NT</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">NT =
   3x2 table
 

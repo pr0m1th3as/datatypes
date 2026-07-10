@@ -386,11 +386,30 @@
           <div class="card-body">
                 <p><code>pivot</code> builds a cross-tabulation.  With only <code>'Rows'</code> it counts the rows in each group — a one-way frequency table.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Region = {'N'; 'N'; 'S'; 'S'; 'N'; 'S'};
- Quarter = categorical ({'Q1'; 'Q2'; 'Q1'; 'Q2'; 'Q1'; 'Q2'});</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">error: categorical.subsasgn: '.' invalid indexing for assigning field of non-structure array.</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Sales = [10; 20; 30; 40; 15; 25];
- T = table (Region, Quarter, Sales);
- pivot (T, 'Rows', 'Region')</pre>
+ Quarter = categorical ({'Q1'; 'Q2'; 'Q1'; 'Q2'; 'Q1'; 'Q2'});
+ Sales = [10; 20; 30; 40; 15; 25];
+ T = table (Region, Quarter, Sales)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  6x3 table
+
+    Region    Quarter    Sales    
+    ______    _______    _____    
+
+    {'N' }         Q1       10    
+    {'N' }         Q2       20    
+    {'S' }         Q1       30    
+    {'S' }         Q2       40    
+    {'N' }         Q1       15    
+    {'S' }         Q2       25</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> pivot (T, 'Rows', 'Region')</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  2x2 table
+
+    Region    count    
+    ______    _____    
+
+    {'N' }        3    
+    {'S' }        3</pre>
 
           </div>
         </div>
@@ -408,12 +427,31 @@
           <div class="card-body">
                 <p>Add <code>'Columns'</code> to spread a second grouping variable across the columns, and aggregate a data variable in each cell — here total <code>Sales</code> by region and quarter.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Region = {'N'; 'N'; 'S'; 'S'; 'N'; 'S'};
- Quarter = categorical ({'Q1'; 'Q2'; 'Q1'; 'Q2'; 'Q1'; 'Q2'});</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">error: categorical.subsasgn: '.' invalid indexing for assigning field of non-structure array.</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Sales = [10; 20; 30; 40; 15; 25];
- T = table (Region, Quarter, Sales);
- pivot (T, 'Rows', 'Region', 'Columns', 'Quarter', ...
+ Quarter = categorical ({'Q1'; 'Q2'; 'Q1'; 'Q2'; 'Q1'; 'Q2'});
+ Sales = [10; 20; 30; 40; 15; 25];
+ T = table (Region, Quarter, Sales)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  6x3 table
+
+    Region    Quarter    Sales    
+    ______    _______    _____    
+
+    {'N' }         Q1       10    
+    {'N' }         Q2       20    
+    {'S' }         Q1       30    
+    {'S' }         Q2       40    
+    {'N' }         Q1       15    
+    {'S' }         Q2       25</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> pivot (T, 'Rows', 'Region', 'Columns', 'Quarter', ...
         'DataVariable', 'Sales', 'Method', 'sum')</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  2x3 table
+
+    Region    Q1    Q2    
+    ______    __    __    
+
+    {'N' }    25    20    
+    {'S' }    30    65</pre>
 
           </div>
         </div>

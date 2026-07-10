@@ -399,8 +399,19 @@
                 <p><code>topkrows</code> returns the top <code>k</code> rows by a sort key without sorting the whole table — like <code>sortrows</code> followed by <code>head</code>, but stated in one call.  The default direction is descending, so the largest values come first.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> LastName = {'Sanchez'; 'Johnson'; 'Li'; 'Diaz'; 'Brown'};
  Age = [38; 43; 38; 40; 49];
- T = table (Age, 'RowNames', LastName);
- topkrows (T, 3, 'Age')</pre>
+ T = table (Age, 'RowNames', LastName)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  5x1 table
+
+               Age    
+               ___    
+
+    Sanchez     38    
+    Johnson     43    
+    Li          38    
+    Diaz        40    
+    Brown       49</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> topkrows (T, 3, 'Age')</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   3x1 table
 

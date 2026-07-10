@@ -326,15 +326,42 @@
                 <p><code>ismember</code> tests, row by row, whether each row of the first table also occurs in the second — returning a logical column, not a new table.  A row counts as a member only when all of its variables match a row of <code>B</code>.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> A = table ({'Li'; 'Diaz'; 'Brown'}, [38; 40; 49], ...
             categorical ({'NY'; 'CA'; 'MA'}), ...
-            'VariableNames', {'Name', 'Age', 'State'});</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">error: categorical.subsasgn: '.' invalid indexing for assigning field of non-structure array.</pre>
+            'VariableNames', {'Name', 'Age', 'State'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">A =
+  3x3 table
+
+      Name       Age    State    
+    _________    ___    _____    
+
+    {'Li'   }     38       NY    
+    {'Diaz' }     40       CA    
+    {'Brown'}     49       MA</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> B = table ({'Diaz'; 'Brown'; 'Lee'}, [40; 49; 30], ...
             categorical ({'CA'; 'MA'; 'TX'}), ...
-            'VariableNames', {'Name', 'Age', 'State'});
- ismember (A, B)</pre>
+            'VariableNames', {'Name', 'Age', 'State'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">B =
+  3x3 table
+
+      Name       Age    State    
+    _________    ___    _____    
+
+    {'Diaz' }     40       CA    
+    {'Brown'}     49       MA    
+    {'Lee'  }     30       TX</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> ismember (A, B)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+
+  0
+  1
+  1</pre>
                 <p>A second output gives, for each matching row, its position in <code>B</code> (0 if none).</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> [TF, loc] = ismember (A, B);
  loc</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">loc =
+
+   0
+   1
+   2</pre>
 
           </div>
         </div>

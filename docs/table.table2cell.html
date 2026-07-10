@@ -336,8 +336,17 @@
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> LastName = {'Sanchez'; 'Johnson'; 'Li'};
  Age = [38; 43; 38];
  Smoker = logical ([1; 0; 1]);
- T = table (LastName, Age, Smoker);
- C = table2cell (T)</pre>
+ T = table (LastName, Age, Smoker)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  3x3 table
+
+     LastName      Age    Smoker    
+    ___________    ___    ______    
+
+    {'Sanchez'}     38    true      
+    {'Johnson'}     43    false     
+    {'Li'     }     38    true</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> C = table2cell (T)</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">C =
   3x3 cell array
 

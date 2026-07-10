@@ -318,58 +318,59 @@
  specifies optional parameters for creating the table <var>tbl</var> with the
  following Name-Value paired arguments.
 </p>
-<table>
-<thead><tr><th width="33%"><var>Name</var></th><th width="2%"></th><th width="65%"><var>Value</var></th></tr></thead>
-<tr><td width="33%"><code>'NumHeaderLines'</code></td><td width="2%"></td><td width="65%">A positive integer scalar value
+<div class="table-responsive">
+<table class="table table-striped table-bordered table-sm">
+<thead class="table-primary"><tr><th width="33%"><var>Name</var></th><th width="65%"><var>Value</var></th></tr></thead>
+<tr><td width="33%"><code>'NumHeaderLines'</code></td><td width="65%">A positive integer scalar value
  specifying the number of rows to omit reading from the CSV file.  If the CSV
  contains the custom comment line in its first element, then the
  <code>'NumHeaderLines'</code> applies to the top number of rows to remove from the
  created table.  If CSV is a generic case, then <code>'NumHeaderLines'</code>
  specifies the number of lines to omit parsing from the CSV file itself.</td></tr>
-<tr><td width="33%"><code>'VariableNames'</code></td><td width="2%"></td><td width="65%">A cell array of character vectors or
+<tr><td width="33%"><code>'VariableNames'</code></td><td width="65%">A cell array of character vectors or
  a string array specifying the names of the variables of the created table.
  The names must be unique but not necessarily valid variable names.  If not
  empty, it overrides any variable names extracted from the CSV file.  This
  applies both to custom and generic CSV files.</td></tr>
-<tr><td width="33%"><code>'ReadVariableNames'</code></td><td width="2%"></td><td width="65%">A logical scalar specifying
+<tr><td width="33%"><code>'ReadVariableNames'</code></td><td width="65%">A logical scalar specifying
  whether to parse or not the CSV files for variable names.  If your CSV file
  only contains data, set <code>'ReadVariableNames'</code> to <code>false</code> so that
  <code>csv2table</code> parses all lines as data rows in the returned table.
  Variable names will be automatically generated to the default style as done
  by <code>table</code>, unless otherwise specified by the <code>'VariableNames'</code>
  paired argument.  The default value is <code>true</code>.</td></tr>
-<tr><td width="33%"><code>'VariableNamingRule'</code></td><td width="2%"></td><td width="65%">A character vector or a string
+<tr><td width="33%"><code>'VariableNamingRule'</code></td><td width="65%">A character vector or a string
  scalar specifying whether the variable names should be modified to valid
  Octave variable names or the original names should be preserved.  Valid
  options are <code>&quot;modify&quot;</code> and <code>&quot;preserve&quot;</code>.  By default,
  <code>csv2table</code> modifies the parsed variable names.</td></tr>
-<tr><td width="33%"><code>'VariableNamesLine'</code></td><td width="2%"></td><td width="65%">A nonnegative integer scalar
+<tr><td width="33%"><code>'VariableNamesLine'</code></td><td width="65%">A nonnegative integer scalar
  value specifying the line number in the CSV file, which should be parsed for
  variable names.  This only applies if the <code>'ReadVariableNames'</code> option
  is <code>true</code>.  The specified line is subsequently removed from the
  remaining data contained in the CSV file.  If <code>'VariableNamesLine'</code> is
  set to zero, then it is equivalent to setting <code>'ReadVariableNames'</code> to
  <code>false</code>.</td></tr>
-<tr><td width="33%"><code>'VariableTypes'</code></td><td width="2%"></td><td width="65%">A cell array of character vectors or
+<tr><td width="33%"><code>'VariableTypes'</code></td><td width="65%">A cell array of character vectors or
  a string array specifying the data type of the variables of the created
  table.  The number of elements must much the number of variable in the table.
  This optional argument only has an effect on generic CSV files.  When
  specified, it overrides any other data type specification or automatic
  detection by the <code>csv2table</code> function.</td></tr>
-<tr><td width="33%"><code>'VariableUnitsLine'</code></td><td width="2%"></td><td width="65%">A nonnegative integer scalar
+<tr><td width="33%"><code>'VariableUnitsLine'</code></td><td width="65%">A nonnegative integer scalar
  value specifying the line number in the CSV file, which should be parsed for
  variable units.  The specified line is subsequently removed from the
  remaining data contained in the CSV file.</td></tr>
-<tr><td width="33%"><code>'VariableDescriptionsLine'</code></td><td width="2%"></td><td width="65%">A nonnegative integer
+<tr><td width="33%"><code>'VariableDescriptionsLine'</code></td><td width="65%">A nonnegative integer
  scalar value specifying the line number in the CSV file, which should be
  parsed for variable descriptions.  The specified line is subsequently removed
  from the remaining data contained in the CSV file.</td></tr>
-<tr><td width="33%"><code>'ReadRowNames'</code></td><td width="2%"></td><td width="65%">A logical scalar specifying whether to
+<tr><td width="33%"><code>'ReadRowNames'</code></td><td width="65%">A logical scalar specifying whether to
  parse or not the CSV files for row names.  If your CSV file only contains
  data, set <code>'ReadRowNames'</code> to <code>false</code> so that <code>csv2table</code>
  parses all columns as data columms in the returned table.  The default value
  is <code>true</code>.</td></tr>
-<tr><td width="33%"><code>'RowNamesColumn'</code></td><td width="2%"></td><td width="65%">A nonnegative integer scalar value
+<tr><td width="33%"><code>'RowNamesColumn'</code></td><td width="65%">A nonnegative integer scalar value
  specifying the column number in the CSV file, which should be parsed for
  row names.  This only applies if the <code>'ReadRowNames'</code> option is
  <code>true</code>.  The specified column is subsequently removed from the
@@ -378,24 +379,24 @@
  <code>false</code>.  Note that the values in the column specified by
  <code>'RowNamesColumn'</code> must be unique, otherwise <code>csv2table</code> will
  return an error.</td></tr>
-<tr><td width="33%"><code>'TextType'</code></td><td width="2%"></td><td width="65%">A character vector or a string scalar
+<tr><td width="33%"><code>'TextType'</code></td><td width="65%">A character vector or a string scalar
  specifying whether the text data in the CSV file should be stored in the
  table as character vectors or string arrays.  Valid options are
  <code>&quot;char&quot;</code> and <code>&quot;string&quot;</code>.  By default, <code>csv2table</code> stores
  text data as character vectors.</td></tr>
-<tr><td width="33%"><code>'DatetimeType'</code></td><td width="2%"></td><td width="65%">A character vector or a string scalar
+<tr><td width="33%"><code>'DatetimeType'</code></td><td width="65%">A character vector or a string scalar
  specifying whether the datetime strings found in the CSV file should be
  stored in the table as datetime arrays or as text data.  Valid options are
  <code>&quot;datetime&quot;</code> and <code>&quot;text&quot;</code>.  By default, <code>csv2table</code> stores
  datetime strings as datetime arrays.  If <code>&quot;text&quot;</code> is specified, then
  the data type depends on the <code>'TextType'</code> option.</td></tr>
-<tr><td width="33%"><code>'DurationType'</code></td><td width="2%"></td><td width="65%">A character vector or a string scalar
+<tr><td width="33%"><code>'DurationType'</code></td><td width="65%">A character vector or a string scalar
  specifying whether the duration strings found in the CSV file should be
  stored in the table as duration arrays or as text data.  Valid options are
  <code>&quot;duration&quot;</code> and <code>&quot;text&quot;</code>.  By default, <code>csv2table</code> stores
  duration strings as duration arrays.  If <code>&quot;text&quot;</code> is specified, then
  the data type depends on the <code>'TextType'</code> option.</td></tr>
-<tr><td width="33%"><code>'HexType'</code></td><td width="2%"></td><td width="65%">A character vector or a string scalar
+<tr><td width="33%"><code>'HexType'</code></td><td width="65%">A character vector or a string scalar
  specifying whether the hexadecimal text found in the CSV file should be
  stored as a suitable integer type, <code>&quot;auto&quot;</code> (default), as unaltered
  input text, <code>&quot;text&quot;</code>, (in which case the data type depends on the
@@ -404,6 +405,9 @@
  <code>&quot;int16&quot;</code>, <code>&quot;int32&quot;</code>, <code>&quot;int64&quot;</code>, <code>&quot;uint8&quot;</code>,
  <code>&quot;uint16&quot;</code>, <code>&quot;uint32&quot;</code>, and <code>&quot;uint64&quot;</code>.</td></tr>
 </table>
+<p><strong>Source Code: </strong>
+  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/csv2table.m">csv2table</a>
+</div>
 
 <p> The following round-trip limitations apply when reading a file written by
  <code>table2csv</code>: <code>calendarDuration</code> and <code>categorical</code> variables

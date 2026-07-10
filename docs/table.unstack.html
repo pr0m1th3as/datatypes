@@ -396,12 +396,29 @@
           </div>
           <div class="card-body">
                 <p><code>unstack</code> reshapes tall data to wide — the inverse of <code>stack</code>.  It spreads the values of one data variable across new columns, one per level of an indicator variable, grouping by the remaining variables.</p>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Name = categorical ({'Li'; 'Li'; 'Diaz'; 'Diaz'});</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">error: categorical.subsasgn: '.' invalid indexing for assigning field of non-structure array.</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Month = categorical ({'Jan'; 'Feb'; 'Jan'; 'Feb'});
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Name = categorical ({'Li'; 'Li'; 'Diaz'; 'Diaz'});
+ Month = categorical ({'Jan'; 'Feb'; 'Jan'; 'Feb'});
  Value = [1; 3; 2; 4];
- T = table (Name, Month, Value);
- unstack (T, 'Value', 'Month')</pre>
+ T = table (Name, Month, Value)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  4x3 table
+
+    Name    Month    Value    
+    ____    _____    _____    
+
+      Li      Jan        1    
+      Li      Feb        3    
+    Diaz      Jan        2    
+    Diaz      Feb        4</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> unstack (T, 'Value', 'Month')</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  2x3 table
+
+    Name    Feb    Jan    
+    ____    ___    ___    
+
+      Li      3      1    
+    Diaz      4      2</pre>
                 <p>Each distinct <code>Month</code> becomes its own column, with one row per <code>Name</code>.</p>
 
           </div>

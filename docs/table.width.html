@@ -325,8 +325,19 @@
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Age = [38; 43; 38; 40; 49];
  Smoker = logical ([1; 0; 1; 0; 1]);
  BloodPressure = [124, 93; 109, 77; 125, 83; 117, 75; 122, 80];
- T = table (Age, Smoker, BloodPressure);
- width (T)</pre>
+ T = table (Age, Smoker, BloodPressure)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  5x3 table
+
+    Age    Smoker    BloodPressure    
+    ___    ______    _____________    
+
+     38    true          124    93    
+     43    false         109    77    
+     38    true          125    83    
+     40    false         117    75    
+     49    true          122    80</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> width (T)</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans = 3</pre>
                 <p>Splitting the multi-column variable into scalar columns raises the width.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> width (splitvars (T))</pre>

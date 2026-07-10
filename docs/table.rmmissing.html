@@ -346,14 +346,34 @@
                 <p><code>rmmissing</code> drops every row that has a missing value in any variable — listwise deletion — counting gaps of every type (<code>NaN</code>, <code>NaT</code>, <code>&lt;undefined&gt;</code>, <code>&lt;missing&gt;</code>).  Here the rows with a missing age, grade, or visit all go.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Name = string ({'Li'; 'Diaz'; 'Brown'; 'Lee'});
  Age = [38; NaN; 40; 49];
- Grade = categorical ({'A'; 'B'; ''; 'C'});</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">error: categorical.subsasgn: '.' invalid indexing for assigning field of non-structure array.</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Visit = datetime (2024, 1, [5; 6; 7; 8]);
- T = table (Name, Age, Grade, Visit);
- rmmissing (T)</pre>
+ Grade = categorical ({'A'; 'B'; ''; 'C'});
+ Visit = datetime (2024, 1, [5; 6; 7; 8]);
+ T = table (Name, Age, Grade, Visit)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  4x4 table
+
+     Name      Age       Grade          Visit       
+    _______    ___    ___________    ___________    
+
+    "Li"        38              A    05-Jan-2024    
+    "Diaz"     NaN              B    06-Jan-2024    
+    "Brown"     40    &lt;undefined&gt;    07-Jan-2024    
+    "Lee"       49              C    08-Jan-2024</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> rmmissing (T)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  2x4 table
+
+    Name     Age    Grade       Visit       
+    _____    ___    _____    ___________    
+
+    "Li"      38        A    05-Jan-2024    
+    "Lee"     49        C    08-Jan-2024</pre>
                 <p>A second output is the logical mask of the rows that were removed.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> [C, removed] = rmmissing (T);
  removed'</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+
+  0  1  1  0</pre>
 
           </div>
         </div>

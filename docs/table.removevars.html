@@ -333,8 +333,17 @@
  Age = [38; 43; 40];
  Gender = categorical ({'M'; 'M'; 'F'});
  Visit = datetime (2024, [1; 2; 3], [5; 6; 7]);
- T = table (Name, Age, Gender, Visit);
- removevars (T, 'Gender')</pre>
+ T = table (Name, Age, Gender, Visit)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  3x4 table
+
+      Name       Age    Gender       Visit       
+    _________    ___    ______    ___________    
+
+    "Sanchez"     38         M    05-Jan-2024    
+    "Johnson"     43         M    06-Feb-2024    
+    "Li"          40         F    07-Mar-2024</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> removevars (T, 'Gender')</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   3x3 table
 

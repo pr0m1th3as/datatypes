@@ -355,8 +355,17 @@
                 <p><code>table2csv</code> writes a table to CSV in the package's round-trippable format: a metadata comment line, then header rows for the variable types, names, and units, followed by one row of data per table row.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Age = [38; 43; 40];
  Height = [71; 69; 64];
- T = table (Age, Height);
- T.Properties.VariableUnits = {'Yrs', 'in'};
+ T = table (Age, Height)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  3x2 table
+
+    Age    Height    
+    ___    ______    
+
+     38        71    
+     43        69    
+     40        64</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T.Properties.VariableUnits = {'Yrs', 'in'};
  filename = fullfile (tempdir (), 'patients.csv');
  table2csv (T, filename);
  type (filename)</pre>

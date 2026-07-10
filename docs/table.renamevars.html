@@ -338,8 +338,17 @@
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Nm = string ({'Sanchez'; 'Johnson'; 'Li'});
  Yrs = [38; 43; 40];
  Sex = categorical ({'M'; 'M'; 'F'});
- T = table (Nm, Yrs, Sex);
- renamevars (T, {'Nm', 'Yrs', 'Sex'}, {'Name', 'Age', 'Gender'})</pre>
+ T = table (Nm, Yrs, Sex)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  3x3 table
+
+       Nm        Yrs    Sex    
+    _________    ___    ___    
+
+    "Sanchez"     38      M    
+    "Johnson"     43      M    
+    "Li"          40      F</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> renamevars (T, {'Nm', 'Yrs', 'Sex'}, {'Name', 'Age', 'Gender'})</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   3x3 table
 

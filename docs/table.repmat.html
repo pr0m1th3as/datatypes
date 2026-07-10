@@ -318,8 +318,16 @@
                 <p><code>repmat</code> tiles a whole table, repeating the full block of rows.  Contrast with <code>repelem</code>, which repeats each row in place: <code>repmat</code> copies the sequence.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Name = string ({'Li'; 'Diaz'});
  Visit = datetime (2024, 1, [5; 6]);
- T = table (Name, Visit);
- repmat (T, 3, 1)</pre>
+ T = table (Name, Visit)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  2x2 table
+
+     Name        Visit       
+    ______    ___________    
+
+    "Li"      05-Jan-2024    
+    "Diaz"    06-Jan-2024</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> repmat (T, 3, 1)</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   6x2 table
 

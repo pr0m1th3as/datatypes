@@ -368,8 +368,17 @@
           </div>
           <div class="card-body">
                 <p><code>fillmissing</code> replaces gaps rather than dropping rows.  Fill with a constant, applied across the (numeric) variables.</p>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = table ([38; NaN; 40], [71; 69; NaN], 'VariableNames', {'Age', 'Height'});
- fillmissing (T, 'constant', 0)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = table ([38; NaN; 40], [71; 69; NaN], 'VariableNames', {'Age', 'Height'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  3x2 table
+
+    Age    Height    
+    ___    ______    
+
+     38        71    
+    NaN        69    
+     40       NaN</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> fillmissing (T, 'constant', 0)</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   3x2 table
 
@@ -397,8 +406,18 @@
                 <p>Interpolation rules fill from neighbouring rows and work across types — <code>'previous'</code> carries the last value forward (here through both a <code>datetime</code> and a numeric column), while <code>'linear'</code> interpolates numeric gaps.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Date = datetime (2024, 1, [1; NaN; 3; NaN]);
  Reading = [10; NaN; 30; 40];
- T = table (Date, Reading);
- fillmissing (T, 'previous')</pre>
+ T = table (Date, Reading)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  4x2 table
+
+       Date        Reading    
+    ___________    _______    
+
+    01-Jan-2024         10    
+            NaT        NaN    
+    03-Jan-2024         30    
+            NaT         40</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> fillmissing (T, 'previous')</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   4x2 table
 

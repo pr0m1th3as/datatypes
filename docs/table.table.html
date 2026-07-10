@@ -512,9 +512,27 @@
           </div>
           <div class="card-body">
                 <p>Create a nested table</p>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T1 = table ([1; 2; 3], [4; 5; 6], [7; 8; 9]);
- T2 = table ({'a'; 'b'; 'c'}, {'d'; 'e'; 'f'}, {'g'; 'h'; 'i'});
- NT = table ([1; 2; 3], T1, [4; 5; 6], T2, {5; 6; 7}, ...
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T1 = table ([1; 2; 3], [4; 5; 6], [7; 8; 9])</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T1 =
+  3x3 table
+
+    Var1    Var2    Var3    
+    ____    ____    ____    
+
+       1       4       7    
+       2       5       8    
+       3       6       9</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T2 = table ({'a'; 'b'; 'c'}, {'d'; 'e'; 'f'}, {'g'; 'h'; 'i'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T2 =
+  3x3 table
+
+    Var1     Var2     Var3     
+    _____    _____    _____    
+
+    {'a'}    {'d'}    {'g'}    
+    {'b'}    {'e'}    {'h'}    
+    {'c'}    {'f'}    {'i'}</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> NT = table ([1; 2; 3], T1, [4; 5; 6], T2, {5; 6; 7}, ...
              'VariableNames', {'A', 'B', 'C', 'D', 'E'})</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">NT =
   3x5 table
@@ -548,7 +566,17 @@
  Age = [38; 43; 38; 40];
  Visit = datetime (2024, [1; 2; 3; 4], [5; 6; 7; 8]);
  Gender = categorical ({'M'; 'M'; 'F'; 'F'});
- T = table (Name, Age, Visit, Gender);</pre>
+ T = table (Name, Age, Visit, Gender)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  4x4 table
+
+      Name       Age       Visit       Gender    
+    _________    ___    ___________    ______    
+
+    "Sanchez"     38    05-Jan-2024         M    
+    "Johnson"     43    06-Feb-2024         M    
+    "Li"          38    07-Mar-2024         F    
+    "Diaz"        40    08-Apr-2024         F</pre>
                 <p>Dot indexing extracts one variable as its own native type.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T.Visit</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
@@ -593,7 +621,16 @@
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Name = string ({'Sanchez'; 'Johnson'; 'Li'});
  Age = [38; 43; 38];
  Gender = categorical ({'M'; 'M'; 'F'});
- T = table (Name, Age, Gender);</pre>
+ T = table (Name, Age, Gender)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  3x3 table
+
+      Name       Age    Gender    
+    _________    ___    ______    
+
+    "Sanchez"     38         M    
+    "Johnson"     43         M    
+    "Li"          38         F</pre>
                 <p>Dot assignment adds or overwrites a whole variable (here computed from Age).</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T.Senior = T.Age &gt;= 40</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
@@ -641,7 +678,17 @@
                 <p>This implementation fully supports <strong>chained</strong> referencing and assignment — indexing that reaches through several levels in a single expression.  (Octave extension: MATLAB permits chained <em>reference</em> but not chained <em>assignment</em>.)</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Age = [38; 43; 38; 40];
  Height = [71; 69; 64; 67];
- T = table (Age, Height);</pre>
+ T = table (Age, Height)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  4x2 table
+
+    Age    Height    
+    ___    ______    
+
+     38        71    
+     43        69    
+     38        64    
+     40        67</pre>
                 <p>Chained reference: select a sub-table, then a variable, then an element.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T(2:3, :).Age(1)</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans = 43</pre>
@@ -667,8 +714,29 @@
           </div>
           <div class="card-body">
                 <p>Chaining is most useful with nested tables, reaching an inner variable directly — again both for reading and, unlike MATLAB, for writing.</p>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Inner = table ([1; 2; 3], [4; 5; 6], 'VariableNames', {'p', 'q'});
- NT = table ([10; 20; 30], Inner, 'VariableNames', {'id', 'inner'});</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Inner = table ([1; 2; 3], [4; 5; 6], 'VariableNames', {'p', 'q'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">Inner =
+  3x2 table
+
+    p    q    
+    _    _    
+
+    1    4    
+    2    5    
+    3    6</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> NT = table ([10; 20; 30], Inner, 'VariableNames', {'id', 'inner'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">NT =
+  3x2 table
+
+    id        inner         
+    __    ______________    
+
+            p        q      
+          _____    _____    
+
+    10        1        4    
+    20        2        5    
+    30        3        6</pre>
                 <p>Read the 2nd element of inner variable q.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> NT.inner.q(2)</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans = 5</pre>

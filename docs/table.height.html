@@ -320,8 +320,19 @@
                 <p><code>height</code> counts rows, independent of how many columns each variable spans. Here <code>BloodPressure</code> occupies two columns, yet the table still has 5 rows.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Age = [38; 43; 38; 40; 49];
  BloodPressure = [124, 93; 109, 77; 125, 83; 117, 75; 122, 80];
- T = table (Age, BloodPressure);
- height (T)</pre>
+ T = table (Age, BloodPressure)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =
+  5x2 table
+
+    Age    BloodPressure    
+    ___    _____________    
+
+     38        124    93    
+     43        109    77    
+     38        125    83    
+     40        117    75    
+     49        122    80</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> height (T)</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans = 5</pre>
                 <p>It is the row count you index against, so <code>height</code> is the natural bound for a loop or a final-row reference.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T(height (T), :)</pre>
