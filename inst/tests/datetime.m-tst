@@ -1,4 +1,4 @@
-## Copyright (C) 2026 Andreas Bertsatos <abertsatos@biol.uoa.gr>
+## Copyright (C) 2024-2026 Andreas Bertsatos <abertsatos@biol.uoa.gr>
 ##
 ## This file is part of the datatypes package for GNU Octave.
 ##
@@ -27,41 +27,442 @@
 ##                                                                            ##
 ################################################################################
 
-## Test 'datetime' constructor
-%!test  # scalar components broadcast against a non-scalar component
-%! d = datetime (2020, 1, [1; 2], 12, 30, 0);
-%! assert_equal (size (d), [2, 1]);
-%! assert_equal (cellstr (d), {'01-Jan-2020 12:30:00'; '02-Jan-2020 12:30:00'});
+## Test 'datetime' constructor -- no-argument and basic construction
+%!assert_equal (class (datetime), 'datetime')
+%!assert_equal (isa (datetime, 'datetime'), true)
+%!assert_equal (isscalar (datetime ()), true)
+%!assert_equal (isscalar (datetime (2020, 1, 1)), true)
+%!assert_equal (class (datetime (2020, 1, 1)), 'datetime')
+
+## Test 'datetime' constructor -- Y,M,D components and broadcasting
+%!assert_equal (year (datetime (2020, 1, 1)), 2020)
+%!assert_equal (month (datetime (2020, 6, 1)), 6)
+%!assert_equal (day (datetime (2020, 6, 15)), 15)
+%!assert_equal (size (datetime (2020, 1, [1; 2; 3])), [3, 1])
+%!assert_equal (size (datetime (2020, 1, [1, 2, 3])), [1, 3])
+%!assert_equal (size (datetime (2020, [1, 2; 3, 4], 1)), [2, 2])
+%!assert_equal (year (datetime (2020, 1, [1; 2])), [2020; 2020])
+%!assert_equal (day (datetime (2020, 1, [1; 2; 3])), [1; 2; 3])
+%!assert_equal (size (datetime ([2019, 2020], 1, 1)), [1, 2])
+
+## Test 'datetime' constructor -- month/day rollover normalisation
+%!assert_equal (year (datetime (2020, 13, 1)), 2021)
+%!assert_equal (month (datetime (2020, 13, 1)), 1)
+%!assert_equal (month (datetime (2020, 0, 1)), 12)
+%!assert_equal (year (datetime (2020, 0, 1)), 2019)
+%!assert_equal (month (datetime (2020, 1, 32)), 2)
+%!assert_equal (day (datetime (2020, 1, 32)), 1)
+%!assert_equal (day (datetime (2020, 3, 0)), 29)
+%!assert_equal (month (datetime (2020, 3, 0)), 2)
+
+## Test 'datetime' constructor -- H,MI,S components
+%!assert_equal (hour (datetime (2020, 1, 1, 13, 0, 0)), 13)
+%!assert_equal (minute (datetime (2020, 1, 1, 13, 45, 0)), 45)
+%!assert_equal (second (datetime (2020, 1, 1, 13, 45, 30)), 30)
+%!assert_equal (second (datetime (2020, 1, 1, 0, 0, 30.5)), 30.5)
+%!assert_equal (hour (datetime (2020, 1, 1, 25, 0, 0)), 1)
+%!assert_equal (day (datetime (2020, 1, 1, 25, 0, 0)), 2)
+%!assert_equal (minute (datetime (2020, 1, 1, 0, 75, 0)), 15)
+%!assert_equal (hour (datetime (2020, 1, 1, 0, 75, 0)), 1)
+
+## Test 'datetime' constructor -- milliseconds component
+%!assert_equal (second (datetime (2020, 1, 1, 0, 0, 0, 500)), 0.5)
+%!assert_equal (second (datetime (2020, 1, 1, 0, 0, 1, 250)), 1.25)
+
+## Test 'datetime' constructor -- from datevec matrix (3 or 6 columns)
+%!assert_equal (year (datetime ([2019, 6, 1; 2020, 7, 2])), [2019; 2020])
+%!assert_equal (month (datetime ([2019, 6, 1; 2020, 7, 2])), [6; 7])
+%!assert_equal (hour (datetime ([2020, 1, 1, 5, 0, 0])), 5)
+%!assert_equal (size (datetime ([2019, 6, 1; 2020, 7, 2])), [2, 1])
+
+## Test 'datetime' constructor -- from date strings
+%!assert_equal (year (datetime ('2020-06-15')), 2020)
+%!assert_equal (month (datetime ('2020-06-15')), 6)
+%!assert_equal (day (datetime ('2020-06-15')), 15)
+%!assert_equal (year (datetime ({'2019-01-01'; '2020-01-01'})), [2019; 2020])
+
+## Test 'datetime' constructor -- ConvertFrom posixtime/datenum/excel
+%!assert_equal (cellstr (datetime (0, 'ConvertFrom', 'posixtime')), {'01-Jan-1970'})
+%!assert_equal (cellstr (datetime (86400, 'ConvertFrom', 'posixtime')), {'02-Jan-1970'})
+%!assert_equal (cellstr (datetime (719529, 'ConvertFrom', 'datenum')), {'01-Jan-1970'})
+%!assert_equal (year (datetime (0, 'ConvertFrom', 'posixtime')), 1970)
+%!assert_equal (isnat (datetime (NaN, 'ConvertFrom', 'datenum')), true)
+
+## Test 'datetime' constructor -- NaT and Inf propagation
+%!assert_equal (isnat (datetime (NaN, NaN, NaN)), true)
+%!assert_equal (isnat (datetime (2020, 1, 1)), false)
+%!assert_equal (isinf (datetime (Inf, Inf, Inf)), true)
+%!assert_equal (year (datetime (Inf, Inf, Inf)), Inf)
+%!assert_equal (year (datetime (-Inf, -Inf, -Inf)), -Inf)
+
+## Test 'datetime' constructor -- TimeZone and Format properties
+%!assert_equal (datetime (2020, 1, 1, 'TimeZone', 'UTC').TimeZone, 'UTC')
+%!assert_equal (datetime (2020, 1, 1, 'Format', 'default').Format, 'default')
+%!assert_equal (datetime (2020, 1, 1).TimeZone, '')
+
+## Test 'datetime' constructor -- error branches
+%!error <datetime: 'Format' must be a character vector.> ...
+%! datetime (2020, 1, 1, 'Format', 5)
+%!error <datetime: 'InputFormat' must be a character vector.> ...
+%! datetime ('2020', 'InputFormat', 5)
+%!error <datetime: 'PivotYear' can only be used with 'InputFormat'.> ...
+%! datetime ('2020', 'PivotYear', 50)
+%!error <datetime: 'PivotYear' must be a numeric scalar.> ...
+%! datetime ('20', 'InputFormat', 'yy', 'PivotYear', 'x')
+%!error <datetime: 'PivotYear' must be an integer value.> ...
+%! datetime ('20', 'InputFormat', 'yy', 'PivotYear', 50.5)
+
+## Test 'dispstrings' and 'cellstr'
+%!assert_equal (dispstrings (datetime (2020, 1, 1)), {'01-Jan-2020'})
+%!assert_equal (dispstrings (datetime (2020, 1, 1, 12, 30, 0)), {'01-Jan-2020 12:30:00'})
+%!assert_equal (dispstrings (datetime (2020, 1, 1, 12, 30, 45.5)), {'01-Jan-2020 12:30:45.500'})
+%!assert_equal (cellstr (datetime (2020, 1, 1)), {'01-Jan-2020'})
+%!assert_equal (cellstr (datetime (2020, 12, 25)), {'25-Dec-2020'})
+%!assert_equal (cellstr (NaT), {'NaT'})
+%!assert_equal (class (cellstr (datetime (2020, 1, 1))), 'cell')
+%!assert_equal (size (cellstr (datetime (2020, 1, [1; 2; 3]))), [3, 1])
+
+## Test 'char'
+%!assert_equal (char (datetime (2020, 1, 1)), '01-Jan-2020')
+%!assert_equal (class (char (datetime (2020, 1, 1))), 'char')
+%!assert_equal (rows (char (datetime (2020, 1, [1; 2]))), 2)
+
+## Test 'ymd'
+%!test
+%! [y, m, d] = ymd (datetime (2020, 7, 4));
+%! assert_equal (y, 2020);
+%! assert_equal (m, 7);
+%! assert_equal (d, 4);
+%!test
+%! [y, m, d] = ymd (datetime (2020, 1, [1; 2]));
+%! assert_equal (y, [2020; 2020]);
+%! assert_equal (d, [1; 2]);
+
+## Test 'hms'
+%!test
+%! [h, m, s] = hms (datetime (2020, 1, 1, 13, 45, 30.5));
+%! assert_equal (h, 13);
+%! assert_equal (m, 45);
+%! assert_equal (s, 30.5);
+
+## Test 'year'
+%!assert_equal (year (datetime (2020, 1, 1)), 2020)
+%!assert_equal (year (datetime ([1999, 2, 1; 2021, 3, 1])), [1999; 2021])
+%!assert_equal (year (NaT), NaN)
+
+## Test 'quarter'
+%!assert_equal (quarter (datetime (2020, 1, 1)), 1)
+%!assert_equal (quarter (datetime (2020, 4, 1)), 2)
+%!assert_equal (quarter (datetime (2020, 7, 1)), 3)
+%!assert_equal (quarter (datetime (2020, 10, 1)), 4)
+%!assert_equal (quarter (datetime (2020, 12, 31)), 4)
+%!assert_equal (quarter (datetime (2020, [1, 4, 7, 10], 1)), [1, 2, 3, 4])
+
+## Test 'month' with type options
+%!assert_equal (month (datetime (2020, 6, 1)), 6)
+%!assert_equal (month (datetime (2020, 6, 1), 'monthofyear'), 6)
+%!assert_equal (month (datetime (2020, 7, 1), 'name'), {'July'})
+%!assert_equal (month (datetime (2020, 7, 1), 'shortname'), {'Jul'})
+%!assert_equal (month (datetime (2020, 1, 1), 'name'), {'January'})
+%!assert_equal (month (datetime (2020, 12, 1), 'shortname'), {'Dec'})
+%!error <datetime: unrecognized MONTHTYPE.> month (datetime (2020, 1, 1), 'bogus')
+
+## Test 'day' with dayofmonth (default)
+%!assert_equal (day (datetime (2020, 6, 15)), 15)
+%!assert_equal (day (datetime (2020, 6, 15), 'dayofmonth'), 15)
+%!assert_equal (day (datetime (2020, 1, [1; 15; 31])), [1; 15; 31])
+
+## Test 'day' with dayofweek (1=Sunday..7=Saturday)
+%!assert_equal (day (datetime (2020, 1, 1), 'dayofweek'), 4)
+%!assert_equal (day (datetime (2000, 1, 1), 'dayofweek'), 7)
+%!assert_equal (day (datetime (2020, 2, 29), 'dayofweek'), 7)
+%!assert_equal (day (datetime (2024, 2, 29), 'dayofweek'), 5)
+%!assert_equal (day (datetime (1900, 1, 1), 'dayofweek'), 2)
+%!assert_equal (day (datetime (2020, 3, 1), 'dayofweek'), 1)
+%!assert_equal (day (datetime (2020, 1, [1; 8; 15]), 'dayofweek'), [4; 4; 4])
+%!assert_equal (day (datetime (2020, [1, 2], [1, 29]), 'dayofweek'), [4, 7])
+
+## Test 'day' with iso-dayofweek (1=Monday..7=Sunday)
+%!assert_equal (day (datetime (2020, 1, 1), 'iso-dayofweek'), 3)
+%!assert_equal (day (datetime (2020, 1, 5), 'iso-dayofweek'), 7)
+%!assert_equal (day (datetime (2020, 1, 6), 'iso-dayofweek'), 1)
+
+## Test 'day' with name/shortname
+%!assert_equal (day (datetime (2020, 1, 1), 'name'), {'Wednesday'})
+%!assert_equal (day (datetime (2000, 1, 1), 'name'), {'Saturday'})
+%!assert_equal (day (datetime (2020, 1, 1), 'shortname'), {'Wed'})
+%!assert_equal (day (datetime (2020, 3, 1), 'shortname'), {'Sun'})
+
+## Test 'day' with dayofyear (regression: shape + leap-year borrow)
+%!assert_equal (day (datetime (2020, 1, 1), 'dayofyear'), 1)
+%!assert_equal (day (datetime (2020, 12, 31), 'dayofyear'), 366)
+%!assert_equal (day (datetime (2021, 12, 31), 'dayofyear'), 365)
+%!assert_equal (day (datetime (2020, 3, 1), 'dayofyear'), 61)
+%!assert_equal (day (datetime (2021, 3, 1), 'dayofyear'), 60)
+%!assert_equal (day (datetime (2020, 2, 29), 'dayofyear'), 60)
+%!assert_equal (day (datetime (2020, 3, [1; 2]), 'dayofyear'), [61; 62])
+%!assert_equal (day (datetime (2020, [1, 3; 6, 12], [1, 1; 1, 31]), 'dayofyear'), [1, 61; 153, 366])
+%!assert_equal (day (NaT, 'dayofyear'), NaN)
+%!error <datetime: unrecognized DAYTYPE.> day (datetime (2020, 1, 1), 'bogus')
+
+## Test 'hour'
+%!assert_equal (hour (datetime (2020, 1, 1, 23, 0, 0)), 23)
+%!assert_equal (hour (datetime (2020, 1, 1, 0, 0, 0)), 0)
+%!assert_equal (hour (NaT), NaN)
+
+## Test 'minute'
+%!assert_equal (minute (datetime (2020, 1, 1, 0, 59, 0)), 59)
+%!assert_equal (minute (NaT), NaN)
+
+## Test 'second' with type options
+%!assert_equal (second (datetime (2020, 1, 1, 0, 0, 45)), 45)
+%!assert_equal (second (datetime (2020, 1, 1, 0, 0, 45.75)), 45.75)
+%!assert_equal (second (datetime (2020, 1, 1, 0, 0, 0), 'secondofminute'), 0)
+%!assert_equal (second (datetime (2020, 1, 1, 2, 3, 4), 'secondofday'), 7384)
+%!assert_equal (second (datetime (2020, 1, 1, 1, 0, 0), 'secondofday'), 3600)
+%!error <datetime.second: unrecognized SECONDTYPE.> ...
+%! second (datetime (2020, 1, 1), 'bogus')
+
+################################################################################
+##                         ** Summary Information **                          ##
+################################################################################
+
+## Test 'size'
+%!assert_equal (size (datetime (2020, 1, 1)), [1, 1])
+%!assert_equal (size (datetime (2020, 1, [1; 2; 3])), [3, 1])
+%!assert_equal (size (datetime (2020, 1, [1, 2, 3])), [1, 3])
+%!assert_equal (size (datetime (2020, ones (2, 4, 3), 1)), [2, 4, 3])
+%!test
+%! [r, c] = size (datetime (2020, 1, [1, 2, 3]));
+%! assert_equal (r, 1);
+%! assert_equal (c, 3);
+%!assert_equal (size (datetime (2020, 1, [1; 2; 3]), 1), 3)
+%!assert_equal (size (datetime (2020, 1, [1; 2; 3]), 2), 1)
+
+## Test 'ndims'
+%!assert_equal (ndims (datetime (2020, 1, 1)), 2)
+%!assert_equal (ndims (datetime (2020, 1, [1; 2])), 2)
+%!assert_equal (ndims (datetime (2020, ones (2, 3, 4), 1)), 3)
+
+## Test 'numel'
+%!assert_equal (numel (datetime (2020, 1, 1)), 1)
+%!assert_equal (numel (datetime (2020, 1, [1; 2; 3])), 3)
+%!assert_equal (numel (datetime (2020, ones (2, 3), 1)), 6)
+
+## Test 'length'
+%!assert_equal (length (datetime (2020, 1, 1)), 1)
+%!assert_equal (length (datetime (2020, 1, [1; 2; 3])), 3)
+%!assert_equal (length (datetime (2020, ones (2, 5), 1)), 5)
+
+## Test 'keyHash' (regression: previously read a non-existent property)
+%!assert_equal (class (keyHash (datetime (2020, 1, 1))), 'uint64')
+%!assert_equal (isscalar (keyHash (datetime (2020, 1, [1; 2; 3]))), true)
+%!assert_equal (keyHash (datetime (2020, 1, 1)), keyHash (datetime (2020, 1, 1)))
+%!assert_equal (keyHash (datetime (2020, 1, 1)) != keyHash (datetime (2020, 1, 2)), true)
+%!assert_equal (class (keyHash (datetime (2020, 1, 1), uint64 (7))), 'uint64')
+%!error <datetime.keyHash: BASE must be a UINT64 scalar.> ...
+%! keyHash (datetime (2020, 1, 1), 7)
+
+################################################################################
+##              ** Convert to other Numeric Representations **                ##
+################################################################################
+
+## Test 'datevec'
+%!assert_equal (datevec (datetime (2020, 7, 4, 1, 2, 3)), [2020, 7, 4, 1, 2, 3])
+%!assert_equal (size (datevec (datetime (2020, 1, [1; 2]))), [2, 6])
+%!test
+%! [y, m, d, h, mi, s] = datevec (datetime (2020, 7, 4, 1, 2, 3));
+%! assert_equal ([y, m, d, h, mi, s], [2020, 7, 4, 1, 2, 3]);
 
 ################################################################################
 ##                          ** Query Operations **                            ##
 ################################################################################
-##                             Available Methods                              ##
-##                                                                            ##
-## 'isbetween'        'iscolumn'         'isdst'            'isempty'         ##
-## 'isequal'          'isequaln'         'isfinite'         'isinf'           ##
-## 'ismatrix'         'ismember'         'isnat'            'isregular'       ##
-## 'isrow'            'isscalar'         'issorted'         'issortedrows'    ##
-## 'isvector'         'isweekend'                                             ##
-##                                                                            ##
-################################################################################
+
+## Test 'iscolumn' / 'isrow' / 'isscalar' / 'isvector' / 'ismatrix'
+%!assert_equal (iscolumn (datetime (2020, 1, [1; 2; 3])), true)
+%!assert_equal (iscolumn (datetime (2020, 1, [1, 2, 3])), false)
+%!assert_equal (isrow (datetime (2020, 1, [1, 2, 3])), true)
+%!assert_equal (isrow (datetime (2020, 1, [1; 2; 3])), false)
+%!assert_equal (isscalar (datetime (2020, 1, 1)), true)
+%!assert_equal (isscalar (datetime (2020, 1, [1; 2])), false)
+%!assert_equal (isvector (datetime (2020, 1, [1; 2; 3])), true)
+%!assert_equal (isvector (datetime (2020, ones (2, 2), 1)), false)
+%!assert_equal (ismatrix (datetime (2020, ones (2, 2), 1)), true)
+
+## Test 'isempty'
+%!assert_equal (isempty (datetime (2020, 1, 1)), false)
+%!assert_equal (isempty (datetime (zeros (0, 3))), true)
+
+## Test 'isfinite' / 'isinf' / 'isnat'
+%!assert_equal (isfinite (datetime (2020, 1, 1)), true)
+%!assert_equal (isfinite (NaT), false)
+%!assert_equal (isfinite (datetime (Inf, Inf, Inf)), false)
+%!assert_equal (isinf (datetime (Inf, Inf, Inf)), true)
+%!assert_equal (isinf (datetime (2020, 1, 1)), false)
+%!assert_equal (isnat (NaT), true)
+%!assert_equal (isnat (datetime (2020, 1, 1)), false)
+%!assert_equal (isnat (datetime (2020, 1, [1; 2])), [false; false])
 
 ## Test 'ismissing'
-%!test  # without indicator, NaT elements are missing
+%!assert_equal (ismissing (datetime (2020, 1, 1)), false)
+%!assert_equal (ismissing (NaT), true)
+%!test
 %! d = datetime (2020, 1, [1; 2; 3]);
 %! d(2) = datetime (NaN, NaN, NaN);
 %! assert_equal (ismissing (d), [false; true; false]);
-%!test  # scalar datetime indicator
-%! d = datetime (2020, 1, [1; 2; 3]);
-%! assert_equal (ismissing (d, datetime (2020, 1, 3)), [false; false; true]);
-%!test  # multi-element datetime indicator matches any listed value
-%! d = datetime (2020, 1, [1; 2; 3]);
-%! ind = datetime (2020, 1, [1; 3]);
-%! assert_equal (ismissing (d, ind), [true; false; true]);
-
+%!assert_equal (ismissing (datetime (2020, 1, [1; 2; 3]), datetime (2020, 1, 3)), [false; false; true])
 %!error <datetime.ismissing: too many input arguments.> ...
 %! ismissing (datetime (2020, 1, 1), datetime (2020, 1, 1), 3)
 %!error <datetime.ismissing: INDICATOR must be a 'datetime' array.> ...
 %! ismissing (datetime (2020, 1, 1), 5)
-%!error <datetime.ismissing: INDICATOR must be a vector.> ...
-%! ismissing (datetime (2020, 1, 1), datetime (2020, 1, ones (2, 2)))
+
+## Test 'ismember'
+%!test
+%! a = datetime (2020, 1, [1; 2; 3]);
+%! b = datetime (2020, 1, [2; 3]);
+%! assert_equal (ismember (a, b), [false; true; true]);
+%!test
+%! a = datetime (2020, 1, [1; 2; 3]);
+%! b = datetime (2020, 1, [2; 3]);
+%! [tf, idx] = ismember (a, b);
+%! assert_equal (tf, [false; true; true]);
+%! assert_equal (idx, [0; 1; 2]);
+
+## Test 'unique'
+%!assert_equal (numel (unique (datetime (2020, 1, [1; 1; 2; 3; 3]))), 3)
+%!assert_equal (cellstr (unique (datetime (2020, 1, [2; 1; 2]))), {'01-Jan-2020'; '02-Jan-2020'})
+
+################################################################################
+##                           ** Array Operations **                           ##
+################################################################################
+
+## Test 'cat' / 'horzcat' / 'vertcat'
+%!assert_equal (size ([datetime(2020,1,1), datetime(2020,1,2)]), [1, 2])
+%!assert_equal (size ([datetime(2020,1,1); datetime(2020,1,2)]), [2, 1])
+%!assert_equal (day ([datetime(2020,1,1), datetime(2020,1,2)]), [1, 2])
+%!assert_equal (size (cat (1, datetime (2020, 1, [1; 2]), datetime (2020, 1, 3))), [3, 1])
+%!assert_equal (day (vertcat (datetime (2020, 1, 1), datetime (2020, 1, 2))), [1; 2])
+%!error <datetime: invalid input to constructor.> cat (2, datetime (2020, 1, 1), 5)
+
+## Test 'repmat' / 'repelem'
+%!assert_equal (size (repmat (datetime (2020, 1, 1), 2, 3)), [2, 3])
+%!assert_equal (day (repmat (datetime (2020, 1, 5), 1, 3)), [5, 5, 5])
+%!assert_equal (day (repelem (datetime (2020, 1, [1, 2]), 1, 2)), [1, 1, 2, 2])
+
+## Test 'reshape'
+%!assert_equal (size (reshape (datetime (2020, 1, 1:6), 2, 3)), [2, 3])
+%!assert_equal (size (reshape (datetime (2020, 1, 1:6), 3, [])), [3, 2])
+%!assert_equal (day (reshape (datetime (2020, 1, 1:4), 2, 2)), [1, 3; 2, 4])
+
+## Test 'circshift'
+%!assert_equal (day (circshift (datetime (2020, 1, [1; 2; 3]), 1)), [3; 1; 2])
+
+## Test 'permute' / 'ipermute'
+%!assert_equal (size (permute (datetime (2020, 1, [1, 2, 3]), [2, 1])), [3, 1])
+%!assert_equal (day (permute (datetime (2020, 1, [1, 2]), [2, 1])), [1; 2])
+%!test
+%! d = datetime (2020, ones (2, 3), 1);
+%! assert_equal (size (ipermute (permute (d, [2, 1]), [2, 1])), [2, 3]);
+
+## Test 'transpose' / 'ctranspose'
+%!assert_equal (size (transpose (datetime (2020, 1, [1; 2; 3]))), [1, 3])
+%!assert_equal (day (datetime (2020, 1, [1; 2; 3]).'), [1, 2, 3])
+%!assert_equal (day (datetime (2020, 1, [1; 2; 3])'), [1, 2, 3])
+
+################################################################################
+##                  ** Reference and Assignment Operations **                 ##
+################################################################################
+
+## Test 'end' and subscripted reference
+%!assert_equal (day (datetime (2020, 1, [1; 2; 3])(end)), 3)
+%!assert_equal (day (datetime (2020, 1, [1; 2; 3])(2)), 2)
+%!assert_equal (day (datetime (2020, 1, [1, 2, 3])(1:2)), [1, 2])
+%!assert_equal (class (datetime (2020, 1, [1; 2; 3])(2)), 'datetime')
+
+## Test property reference via subsref
+%!assert_equal (datetime (2020, 6, 15).Year, 2020)
+%!assert_equal (datetime (2020, 6, 15).Month, 6)
+%!assert_equal (datetime (2020, 6, 15).Day, 15)
+%!assert_equal (datetime (2020, 1, 1, 3, 4, 5).Hour, 3)
+%!assert_equal (datetime (2020, 1, 1).Format, 'default')
+%!error <datetime.subsref: unrecognized property: bogus> datetime (2020, 1, 1).bogus
+%!error <datetime.subsref: '{}' invalid indexing for referencing values. Use '\(\)' instead.> ...
+%! datetime (2020, 1, 1){1}
+
+## Test subscripted assignment -- element assignment
+%!test
+%! d = datetime (2020, 1, [1; 2; 3]);
+%! d(2) = datetime (2020, 1, 20);
+%! assert_equal (day (d), [1; 20; 3]);
+%!test
+%! d = datetime (2020, 1, [1; 2; 3]);
+%! d(2) = [];
+%! assert_equal (day (d), [1; 3]);
+%!error <datetime.subsasgn: cannot assign double values> ...
+%! d = datetime (2020, 1, 1); d(1) = 5;
+
+## Test subscripted assignment -- component setters re-canonicalise (rollover)
+%!test  # d.Month = 13 rolls into the following year (MATLAB parity)
+%! d = datetime (2020, 1, 15);
+%! d.Month = 13;
+%! assert_equal ([d.Year, d.Month, d.Day], [2021, 1, 15]);
+%!test  # d.Day = 32 rolls into the next month
+%! d = datetime (2020, 1, 15);
+%! d.Day = 32;
+%! assert_equal ([d.Year, d.Month, d.Day], [2020, 2, 1]);
+%!test  # d.Hour = 25 rolls into the next day
+%! d = datetime (2020, 1, 1);
+%! d.Hour = 25;
+%! assert_equal ([d.Day, d.Hour], [2, 1]);
+%!test  # setting a component preserves sub-second precision
+%! d = datetime (2020, 1, 1, 0, 0, 0.25);
+%! d.Minute = 30;
+%! assert_equal (second (d), 0.25);
+%!test  # direct component assignment on a single element of a vector
+%! d = datetime (2020, 1, [1; 2; 3]);
+%! d.Year(2) = 1999;
+%! assert_equal (year (d), [2020; 1999; 2020]);
+
+## Test 'proxyArray' (regression: was undefined, breaking table interop)
+%!assert_equal (datetime (2020, 6, 15).proxyArray, [2020, 6, 15, 0, 0, 0])
+%!assert_equal (size (datetime (2020, 1, [1; 2; 3]).proxyArray), [3, 6])
+%!test
+%! d = datetime (2020, 1, [1; 2]);
+%! assert_equal (d.proxyArray, [2020, 1, 1, 0, 0, 0; 2020, 1, 2, 0, 0, 0]);
+%!test  # NaT maps to NaN across its component columns
+%! d = datetime (2020, 1, [1; 2]);
+%! d(1) = NaT;
+%! p = d.proxyArray;
+%! assert_equal (p(1, :), [NaN, NaN, NaN, NaN, NaN, NaN]);
+
+################################################################################
+##                          ** TimeZone handling **                           ##
+################################################################################
+
+## Test attaching a zone to an unzoned array does NOT shift the wall clock
+%!test
+%! d = datetime (2020, 6, 1, 12, 0, 0);
+%! d.TimeZone = 'America/New_York';
+%! assert_equal ([d.Hour, d.Minute], [12, 0]);
+%! assert_equal (d.TimeZone, 'America/New_York');
+
+## Test converting between zones preserves the instant (wall clock shifts)
+%!test  # UTC noon in January is 07:00 EST (UTC-5)
+%! d = datetime (2020, 1, 1, 12, 0, 0, 'TimeZone', 'UTC');
+%! d.TimeZone = 'America/New_York';
+%! assert_equal ([d.Hour, d.Minute], [7, 0]);
+%!test  # UTC noon in July is 08:00 EDT (UTC-4, daylight saving)
+%! d = datetime (2020, 7, 1, 12, 0, 0, 'TimeZone', 'UTC');
+%! d.TimeZone = 'America/New_York';
+%! assert_equal ([d.Hour, d.Minute], [8, 0]);
+
+## Test dropping the zone keeps the current wall-clock values
+%!test
+%! d = datetime (2020, 1, 1, 12, 0, 0, 'TimeZone', 'UTC');
+%! d.TimeZone = '';
+%! assert_equal ([d.Hour, d.Minute], [12, 0]);
+%! assert_equal (d.TimeZone, '');
+
+## Test invalid TimeZone assignment errors
+%!error <datetime.subsasgn: 'TimeZone' must be a character vector.> ...
+%! d = datetime (2020, 1, 1); d.TimeZone = 5;

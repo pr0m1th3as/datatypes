@@ -574,8 +574,11 @@ classdef datetime
       elseif (any (strcmpi (type, vtypes)))
         m = this.Month - 2;
         y = this.Year;
-        m(m < 1) += 12;
-        y(m < 1) -= 1;
+        ## Compute the Jan/Feb borrow mask once, before mutating 'm'; adjusting
+        ## 'm' first would clear the mask before 'y' is decremented.
+        janfeb = m < 1;
+        m(janfeb) += 12;
+        y(janfeb) -= 1;
         K = mod (y, 100);
         J = floor (y ./ 100);
         code = floor ((26 .* m - 2) ./ 10);
@@ -592,16 +595,16 @@ classdef datetime
           dn = {'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'};
           out = dn(out);
         endif
-      elseif (any (strcmpi (type, 'dayofyear')))
+      elseif (strcmpi (type, 'dayofyear'))
         m = this.Month;
         y = this.Year;
-        days = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+        ## Column vector so that logical-indexed lookups keep column shape.
+        cumdays = [0; 31; 59; 90; 120; 151; 181; 212; 243; 273; 304; 334];
         isly = mod (y, 4) == 0 & (mod (y, 100) != 0 | mod (y, 400) == 0);
-        if (isly && m > 2)
-          out = days(m) + this.Day + 1;
-        else
-          out = days(m) + this.Day;
-        endif
+        out = nan (size (m));
+        valid = isfinite (m) & isfinite (this.Day);
+        out(valid) = cumdays(m(valid)) + this.Day(valid)(:) ...
+                     + double (isly(valid) & m(valid) > 2)(:);
       else
         error ("datetime: unrecognized DAYTYPE.");
       endif
@@ -649,7 +652,7 @@ classdef datetime
     ##
     ## @code{@var{s} = second (@var{T})} returns the number of seconds for each
     ## element of the input datetime array @var{T}.  The output @var{s} is a
-    ## @qcode{double} array containing values in the range @math{[1, 60)},
+    ## @qcode{double} array containing values in the range @math{[0, 60)},
     ## including any fractional part of the second, and it has the same size as
     ## @var{T}.  Not-A-Time (@qcode{NaT}) values in @var{T} are returned as
     ## @qcode{NaN} in the output array.
@@ -660,7 +663,7 @@ classdef datetime
     ##
     ## @itemize
     ## @item @qcode{'secondofminute'} (default) returns the second of the minute
-    ## in a numeric array, in the range @math{[1, 60)}.
+    ## in a numeric array, in the range @math{[0, 60)}.
     ## @item @qcode{'secondofday'} returns the second of the day in a numeric
     ## array, in the range @math{[1, 86400)}.
     ## @end itemize
@@ -814,7 +817,7 @@ classdef datetime
     ## @end deftypefn
     function key = keyHash (this, base = [])
       ## Initialize string with size and class name
-      size_str = sprintf ('%dx', size (this.strs))(1:end-1);
+      size_str = sprintf ('%dx', size (this.Year))(1:end-1);
       flag_str = sprintf ('-TZ%s:', this.TimeZone);
       init_str = [size_str 'datetime' flag_str];
       if (base)
@@ -1755,30 +1758,54 @@ classdef datetime
               this.Format = val;
             case 'TimeZone'
               toTimeZone = val;
-              if (isempty (this.TimeZone))
-                TimeZone = this.SystemTimeZone;
+              if (! (ischar (toTimeZone) && (isrow (toTimeZone) ...
+                                             || isempty (toTimeZone))))
+                error (["datetime.subsasgn: 'TimeZone' must be a", ...
+                        " character vector."]);
+              endif
+              ## Validate the target zone (empty means an unzoned array).
+              if (! isempty (toTimeZone))
+                [~,~,~,~,~,~,errmsg] = __datetime__ (0, 0, 0, ...
+                                                     'TimeZone', toTimeZone);
+                if (! isnumeric (errmsg))
+                  error ("datetime.subsasgn: %s", errmsg);
+                endif
+              endif
+              if (isempty (this.TimeZone) || isempty (toTimeZone))
+                ## Attaching a zone to an unzoned array, or dropping the zone,
+                ## reinterprets/keeps the wall-clock values without converting.
+                this.TimeZone = toTimeZone;
               else
-                TimeZone = this.TimeZone;
+                ## Switching between two zones preserves the absolute instant,
+                ## so the wall-clock values shift by the offset difference.
+                [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
+                 this.Second, errmsg] = __datetime__ (this.Year, this.Month, ...
+                 this.Day, this.Hour, this.Minute, this.Second, ...
+                 'TimeZone', this.TimeZone, 'toTimeZone', toTimeZone, ...
+                 'Precision', 'microseconds');
+                if (! isnumeric (errmsg))
+                  error ("datetime.subsasgn: %s", errmsg);
+                endif
+                this.TimeZone = toTimeZone;
               endif
-              [this.Y, this.M, this.D, this.h, this.m, this.s, errmsg] = ...
-              __datetime__ (this.Y, this.M, this.D, this.h, this.m, this.s, ...
-              'TimeZone', TimeZone, 'toTimeZone', toTimeZone);
-              if (! isnumeric (errmsg))
-                error ("datetime.subsasgn: %s", errmsg);
-              endif
-              this.TimeZone = toTimeZone;
             case {'Year'}
               this.Year(p.subs{:})   = val;
+              this = normalize (this);
             case {'Month'}
               this.Month(p.subs{:})  = val;
+              this = normalize (this);
             case {'Day'}
               this.Day(p.subs{:})    = val;
+              this = normalize (this);
             case {'Hour'}
               this.Hour(p.subs{:})   = val;
+              this = normalize (this);
             case {'Minute'}
               this.Minute(p.subs{:}) = val;
+              this = normalize (this);
             case {'Second'}
               this.Second(p.subs{:}) = val;
+              this = normalize (this);
             otherwise
               error ("datetime.subsasgn: unrecognized property: %s", s.subs);
           endswitch
@@ -1799,6 +1826,47 @@ classdef datetime
       this.Hour   = this.Hour(varargin{:});
       this.Minute = this.Minute(varargin{:});
       this.Second = this.Second(varargin{:});
+    endfunction
+
+    ## Numeric proxy used by 'table' and set operations for sorting, grouping,
+    ## and set membership.  Each datetime element maps to its six canonical
+    ## components [Year, Month, Day, Hour, Minute, Second]; for a datetime
+    ## matrix, each column contributes a six-column block.  Not-A-Time (NaT)
+    ## elements map to NaN across their components, just like the stored arrays.
+    function out = proxyArray (this)
+      [~, cols] = size (this.Year);
+      if (cols > 1)
+        out = [];
+        for i = 1:cols
+          SC = [this.Year(:,i), this.Month(:,i), this.Day(:,i), ...
+                this.Hour(:,i), this.Minute(:,i), this.Second(:,i)];
+          out = [out, SC];
+        endfor
+      else
+        out = [this.Year(:), this.Month(:), this.Day(:), ...
+               this.Hour(:), this.Minute(:), this.Second(:)];
+      endif
+    endfunction
+
+    ## Re-canonicalise the component arrays after a direct component assignment
+    ## (e.g. 'd.Month = 13' rolls the extra month into the year).  This routes
+    ## the raw values back through the same C++ normaliser used by the
+    ## constructor, at microsecond precision so no sub-second detail is lost.
+    ## Not-A-Time and infinite elements are passed through unchanged.
+    function this = normalize (this)
+      if (isempty (this.Year))
+        return;
+      endif
+      if (isempty (this.TimeZone))
+        [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
+         this.Second] = __datetime__ (this.Year, this.Month, this.Day, ...
+         this.Hour, this.Minute, this.Second, 'Precision', 'microseconds');
+      else
+        [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
+         this.Second] = __datetime__ (this.Year, this.Month, this.Day, ...
+         this.Hour, this.Minute, this.Second, 'TimeZone', this.TimeZone, ...
+         'toTimeZone', this.TimeZone, 'Precision', 'microseconds');
+      endif
     endfunction
 
   endmethods
