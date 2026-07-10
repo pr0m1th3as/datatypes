@@ -1,0 +1,14 @@
+%!demo
+%! ## `addvars` inserts one or more variables into a table.  Appended at the end by
+%! ## default, the new columns can be named with `'NewVariableNames'` and may be of
+%! ## any type — here a `datetime` is added to a table of mixed variables.
+%!
+%! Name = string ({'Sanchez'; 'Johnson'; 'Li'});
+%! Age = [38; 43; 40];
+%! Gender = categorical ({'M'; 'M'; 'F'});
+%! T = table (Name, Age, Gender);
+%! Visit = datetime (2024, [1; 2; 3], [5; 6; 7]);
+%! addvars (T, Visit)
+%!
+%! ## Use `'Before'` or `'After'` to place the new variable at a chosen position.
+%! addvars (T, logical ([1; 0; 1]), 'After', 'Age', 'NewVariableNames', {'Smoker'})

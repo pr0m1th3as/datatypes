@@ -1,0 +1,29 @@
+%!demo
+%! ## `vertcat` stacks tables on top of one another, appending rows.  The tables
+%! ## must share the same variables (same names, compatible types).  The `[A; B]`
+%! ## bracket syntax calls it for you.
+%!
+%! A = table (string ({'Li'; 'Diaz'}), [38; 40], categorical ({'M'; 'F'}), ...
+%!            'VariableNames', {'Name', 'Age', 'Gender'});
+%! B = table (string ({'Brown'; 'Lee'}), [49; 30], categorical ({'M'; 'M'}), ...
+%!            'VariableNames', {'Name', 'Age', 'Gender'});
+%! [A; B]
+
+%!demo
+%! ## Because vertical concatenation only adds rows, the column-aligned metadata is
+%! ## unchanged: a *variable*-scoped custom property carries straight through, and a
+%! ## *table*-scoped one is kept when the operands agree.
+%!
+%! A = table ([38; 40], categorical ({'M'; 'F'}), 'VariableNames', {'Age', 'Gender'});
+%! A = addprop (A, {'Study', 'Source'}, {'table', 'variable'});
+%! A.Properties.CustomProperties.Study = 'Cohort-7';
+%! A.Properties.CustomProperties.Source = {'intake', 'intake'};
+%!
+%! B = table ([49; 30], categorical ({'M'; 'M'}), 'VariableNames', {'Age', 'Gender'});
+%! B = addprop (B, {'Study', 'Source'}, {'table', 'variable'});
+%! B.Properties.CustomProperties.Study = 'Cohort-7';
+%! B.Properties.CustomProperties.Source = {'intake', 'intake'};
+%!
+%! V = [A; B];
+%! V.Properties.CustomProperties.Source
+%! V.Properties.CustomProperties.Study

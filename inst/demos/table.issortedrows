@@ -1,0 +1,12 @@
+%!demo
+%! ## `issortedrows` tests whether the rows are already in sorted order, using the
+%! ## same key/direction syntax as `sortrows` — handy to skip a needless sort.
+%!
+%! T = table ([1; 3; 2], [10; 20; 30], 'VariableNames', {'Age', 'Height'});
+%! issortedrows (T, 'Age')
+%!
+%! ## The `Height` column *is* ascending, so a check on that variable succeeds.
+%! issortedrows (T, 'Height')
+%!
+%! ## Directions are checked too: this asks whether `Age` is descending.
+%! issortedrows (T, 'Age', 'descend')

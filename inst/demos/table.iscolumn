@@ -1,0 +1,13 @@
+%!demo
+%! ## A table is a *column* when it has a single variable — regardless of how
+%! ## many columns that variable spans internally.
+%!
+%! T1 = table ([1; 2; 3], 'VariableNames', {'x'});
+%! iscolumn (T1)
+%!
+%! ## The lone variable may itself be multi-column; the table is still a column.
+%! T2 = table ([1 2; 3 4; 5 6], 'VariableNames', {'xy'});
+%! iscolumn (T2)
+%!
+%! ## Two or more variables make it no longer a column.
+%! iscolumn (table ([1; 2; 3], [4; 5; 6]))

@@ -1,0 +1,15 @@
+%!demo
+%! ## `unique` removes duplicate rows, comparing whole rows across all variables
+%! ## regardless of their types.  By default the surviving rows come back sorted.
+%!
+%! Gender = categorical ({'M'; 'F'; 'M'; 'F'; 'M'});
+%! State = string ({'NY'; 'CA'; 'NY'; 'CA'; 'NY'});
+%! Visits = [1; 2; 1; 3; 1];
+%! T = table (Gender, State, Visits);
+%! unique (T)
+%!
+%! ## Use `'stable'` to keep the rows in their order of first appearance instead,
+%! ## and capture the index vectors relating the inputs to the unique rows.
+%! [U, ia, ic] = unique (T, 'stable');
+%! U
+%! ic'

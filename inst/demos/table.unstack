@@ -1,0 +1,12 @@
+%!demo
+%! ## `unstack` reshapes tall data to wide — the inverse of `stack`.  It spreads
+%! ## the values of one data variable across new columns, one per level of an
+%! ## indicator variable, grouping by the remaining variables.
+%!
+%! Name = categorical ({'Li'; 'Li'; 'Diaz'; 'Diaz'});
+%! Month = categorical ({'Jan'; 'Feb'; 'Jan'; 'Feb'});
+%! Value = [1; 3; 2; 4];
+%! T = table (Name, Month, Value);
+%! unstack (T, 'Value', 'Month')
+%!
+%! ## Each distinct `Month` becomes its own column, with one row per `Name`.

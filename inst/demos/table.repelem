@@ -1,0 +1,12 @@
+%!demo
+%! ## `repelem` repeats each row in place.  With a scalar count every row is
+%! ## duplicated the same number of times, carrying all variable types along.
+%!
+%! Name = string ({'Li'; 'Diaz'; 'Brown'});
+%! Grade = categorical ({'A'; 'B'; 'A'});
+%! T = table (Name, Grade);
+%! repelem (T, 2, 1)
+%!
+%! ## A vector count sets the repeat count per row — here row 1 once, row 2 twice,
+%! ## row 3 three times.
+%! repelem (T, [1; 2; 3], 1)

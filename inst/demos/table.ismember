@@ -1,0 +1,16 @@
+%!demo
+%! ## `ismember` tests, row by row, whether each row of the first table also occurs
+%! ## in the second — returning a logical column, not a new table.  A row counts as
+%! ## a member only when all of its variables match a row of `B`.
+%!
+%! A = table ({'Li'; 'Diaz'; 'Brown'}, [38; 40; 49], ...
+%!            categorical ({'NY'; 'CA'; 'MA'}), ...
+%!            'VariableNames', {'Name', 'Age', 'State'});
+%! B = table ({'Diaz'; 'Brown'; 'Lee'}, [40; 49; 30], ...
+%!            categorical ({'CA'; 'MA'; 'TX'}), ...
+%!            'VariableNames', {'Name', 'Age', 'State'});
+%! ismember (A, B)
+%!
+%! ## A second output gives, for each matching row, its position in `B` (0 if none).
+%! [TF, loc] = ismember (A, B);
+%! loc

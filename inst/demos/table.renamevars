@@ -1,0 +1,10 @@
+%!demo
+%! ## `renamevars` changes variable names in place, matching old names to new ones
+%! ## position by position.  It touches only the names — the data, of whatever
+%! ## type, is untouched.
+%!
+%! Nm = string ({'Sanchez'; 'Johnson'; 'Li'});
+%! Yrs = [38; 43; 40];
+%! Sex = categorical ({'M'; 'M'; 'F'});
+%! T = table (Nm, Yrs, Sex);
+%! renamevars (T, {'Nm', 'Yrs', 'Sex'}, {'Name', 'Age', 'Gender'})

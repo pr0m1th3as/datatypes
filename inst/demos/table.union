@@ -1,0 +1,15 @@
+%!demo
+%! ## `union` returns the rows present in either table, with duplicates removed —
+%! ## set arithmetic over *whole rows*, comparing all variables together.  Both
+%! ## tables must share the same variables; here each row spans three types.
+%!
+%! A = table ({'Li'; 'Diaz'; 'Brown'}, [38; 40; 49], ...
+%!            categorical ({'NY'; 'CA'; 'MA'}), ...
+%!            'VariableNames', {'Name', 'Age', 'State'});
+%! B = table ({'Diaz'; 'Brown'; 'Lee'}, [40; 49; 30], ...
+%!            categorical ({'CA'; 'MA'; 'TX'}), ...
+%!            'VariableNames', {'Name', 'Age', 'State'});
+%! union (A, B)
+%!
+%! ## Diaz and Brown match on every variable, so they appear once; the result has
+%! ## four distinct rows out of the six inputs.

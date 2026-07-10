@@ -1,0 +1,13 @@
+%!demo
+%! ## `head` previews the top of a table without you having to know its size.
+%! ## With no count it returns the first 8 rows (or fewer if the table is short) —
+%! ## handy for glancing at a wide, mixed-type table.
+%!
+%! n = (1:20)';
+%! T = table (string (num2str (n, 'ID%02d')), datetime (2024, 1, n), ...
+%!            categorical (mod (n, 3), 0:2, {'low', 'mid', 'hi'}), n .^ 2, ...
+%!            'VariableNames', {'Tag', 'Date', 'Band', 'Score'});
+%! head (T)
+%!
+%! ## Pass a count to ask for a specific number of leading rows.
+%! head (T, 3)

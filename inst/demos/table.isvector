@@ -1,0 +1,12 @@
+%!demo
+%! ## A table is a *vector* when it is a single row **or** a single variable —
+%! ## the table analogue of a 1-by-N or N-by-1 array.
+%!
+%! ## One variable, several rows: a column, hence a vector.
+%! isvector (table ([1; 2; 3]))
+%!
+%! ## One row, several variables: a row, hence a vector.
+%! isvector (table (1, 2, 3))
+%!
+%! ## Multiple rows and multiple variables: not a vector.
+%! isvector (table ([1; 2], [3; 4]))

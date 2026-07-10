@@ -1,0 +1,14 @@
+%!demo
+%! ## Where `anymissing` gives a single yes/no, `ismissing` locates *every* gap,
+%! ## returning a logical array the size of the table — one flag per element.  It
+%! ## recognises the missing value proper to each type at once.
+%!
+%! Name = string ({'Li'; 'Diaz'; 'Brown'});
+%! Age = [38; NaN; 40];
+%! Grade = categorical ({'A'; 'B'; ''});
+%! Visit = datetime (2024, 1, [5; NaN; 7]);
+%! T = table (Name, Age, Grade, Visit);
+%! ismissing (T)
+%!
+%! ## Pass an indicator to also treat specific sentinel values as missing.
+%! ismissing (table ([1; -99; 3]), -99)

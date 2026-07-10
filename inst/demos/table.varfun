@@ -1,0 +1,9 @@
+%!demo
+%! ## `varfun` applies a function to each variable of a table — a column-wise map.
+%! ## The result is itself a table, its variable names prefixed by the function.
+%!
+%! T = table ([38; 43; 40], [71; 69; 64], 'VariableNames', {'Age', 'Height'});
+%! varfun (@mean, T)
+%!
+%! ## Ask for a plain array instead of a table with `'OutputFormat'`.
+%! varfun (@mean, T, 'OutputFormat', 'uniform')

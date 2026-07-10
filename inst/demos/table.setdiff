@@ -1,0 +1,15 @@
+%!demo
+%! ## `setdiff` returns the rows that are in the first table but not the second,
+%! ## comparing whole multi-variable rows across all their types.
+%!
+%! A = table ({'Li'; 'Diaz'; 'Brown'}, [38; 40; 49], ...
+%!            categorical ({'NY'; 'CA'; 'MA'}), ...
+%!            'VariableNames', {'Name', 'Age', 'State'});
+%! B = table ({'Diaz'; 'Brown'; 'Lee'}, [40; 49; 30], ...
+%!            categorical ({'CA'; 'MA'; 'TX'}), ...
+%!            'VariableNames', {'Name', 'Age', 'State'});
+%! setdiff (A, B)
+%!
+%! ## Only Li is unique to `A`; a second output gives its row index in `A`.
+%! [C, iA] = setdiff (A, B);
+%! iA

@@ -1,0 +1,14 @@
+%!demo
+%! ## `outerjoin` keeps *all* rows from both tables, filling in missing values
+%! ## where a key has no match — each variable is filled with the missing value
+%! ## proper to its type (`NaN`, `<undefined>`, empty string, ...).
+%!
+%! L = table ({'Li'; 'Diaz'; 'Brown'}, [38; 40; 49], ...
+%!            'VariableNames', {'Name', 'Age'});
+%! R = table ({'Li'; 'Diaz'; 'Lee'}, categorical ({'NY'; 'CA'; 'TX'}), ...
+%!            [176; 163; 150], ...
+%!            'VariableNames', {'Name', 'State', 'Weight'});
+%! outerjoin (L, R, 'MergeKeys', true)
+%!
+%! ## Brown (left only) and Lee (right only) both survive, each with the other
+%! ## table's variables left missing.

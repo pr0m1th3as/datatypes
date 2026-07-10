@@ -1,0 +1,13 @@
+%!demo
+%! ## `size` reports `[height, width]` — rows by *variables*.  A variable that
+%! ## spans several columns still counts as one, so the second element matches
+%! ## `width`, not the total number of underlying columns.
+%!
+%! Age = [38; 43; 38; 40; 49];
+%! BloodPressure = [124, 93; 109, 77; 125, 83; 117, 75; 122, 80];
+%! T = table (Age, BloodPressure);
+%! size (T)
+%!
+%! ## Query a single dimension, or capture both at once.
+%! nRows = size (T, 1)
+%! [nRows, nVars] = size (T)

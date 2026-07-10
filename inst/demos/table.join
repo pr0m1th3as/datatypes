@@ -1,0 +1,13 @@
+%!demo
+%! ## `join` performs a key-based merge: every row of the left table is matched to
+%! ## the one row of the right table sharing its key.  The key is the variable the
+%! ## two tables have in common (`Name`), and it must be *unique* on the right.
+%! ## The remaining right-hand variables — here of several different types — are
+%! ## appended to each matched left row.
+%!
+%! L = table ({'Li'; 'Diaz'; 'Brown'}, [38; 40; 49], ...
+%!            'VariableNames', {'Name', 'Age'});
+%! R = table ({'Li'; 'Diaz'; 'Brown'}, categorical ({'NY'; 'CA'; 'MA'}), ...
+%!            logical ([1; 0; 1]), ...
+%!            'VariableNames', {'Name', 'State', 'Smoker'});
+%! join (L, R)

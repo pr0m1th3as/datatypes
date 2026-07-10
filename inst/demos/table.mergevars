@@ -1,0 +1,7 @@
+%!demo
+%! ## `mergevars` combines several variables into one multi-column variable — the
+%! ## inverse of `splitvars`.  Name the merged variable with `'NewVariableName'`.
+%!
+%! T = table ([38; 43; 40], [124; 109; 125], [93; 77; 83], ...
+%!            'VariableNames', {'Age', 'Systolic', 'Diastolic'});
+%! mergevars (T, {'Systolic', 'Diastolic'}, 'NewVariableName', 'BloodPressure')

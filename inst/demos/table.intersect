@@ -1,0 +1,16 @@
+%!demo
+%! ## `intersect` returns the rows common to both tables — the set intersection.
+%! ## A row matches only when *every* variable agrees, so mixed-type rows are
+%! ## compared field by field.
+%!
+%! A = table ({'Li'; 'Diaz'; 'Brown'}, [38; 40; 49], ...
+%!            categorical ({'NY'; 'CA'; 'MA'}), ...
+%!            'VariableNames', {'Name', 'Age', 'State'});
+%! B = table ({'Diaz'; 'Brown'; 'Lee'}, [40; 49; 30], ...
+%!            categorical ({'CA'; 'MA'; 'TX'}), ...
+%!            'VariableNames', {'Name', 'Age', 'State'});
+%! intersect (A, B)
+%!
+%! ## The extra outputs locate the shared rows within each input.
+%! [C, iA, iB] = intersect (A, B);
+%! [iA, iB]

@@ -1,0 +1,13 @@
+%!demo
+%! ## `table2cell` unpacks a table into a cell array with one cell per element,
+%! ## preserving heterogeneous variable types that `table2array` could not merge.
+%!
+%! LastName = {'Sanchez'; 'Johnson'; 'Li'};
+%! Age = [38; 43; 38];
+%! Smoker = logical ([1; 0; 1]);
+%! T = table (LastName, Age, Smoker);
+%! C = table2cell (T)
+%!
+%! ## Each column of the cell array corresponds to one table variable, so the
+%! ## result is independent of the original variable types.
+%! class (C)

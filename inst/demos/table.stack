@@ -1,0 +1,14 @@
+%!demo
+%! ## `stack` reshapes wide data to tall: it stacks several data variables into a
+%! ## single variable and adds an indicator recording which one each value came
+%! ## from.  Here the monthly columns collapse into one `Value` column.
+%!
+%! Name = {'Li'; 'Diaz'};
+%! Jan = [1; 2];
+%! Feb = [3; 4];
+%! T = table (Name, Jan, Feb);
+%! stack (T, {'Jan', 'Feb'}, ...
+%!        'NewDataVariableName', 'Value', 'IndexVariableName', 'Month')
+%!
+%! ## The unstacked variables (`Name`) are repeated down each group; the indicator
+%! ## `Month` is a categorical naming the source column.  `unstack` reverses this.

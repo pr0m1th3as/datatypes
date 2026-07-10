@@ -2,39 +2,39 @@
 %! ## Preallocate a table by specifying its size and the variable data types
 %!
 %! sz = [4, 3];
-%! varTypes = {"double", "datetime", "string"};
-%! T = table ("Size", sz, "VariableTypes", varTypes)
+%! varTypes = {'double', 'datetime', 'string'};
+%! T = table ('Size', sz, 'VariableTypes', varTypes)
 
 %!demo
-%! ## Specify variable names with the "VariableNames" name-value pair argument
+%! ## Specify variable names with the `VariableNames` name-value pair argument
 %! sz = [4, 3];
-%! varTypes = {"double", "datetime", "string"};
-%! varNames = {"Temperature", "Time", "Station"};
-%! T2 = table ("Size", sz, "VariableTypes", varTypes, "VariableNames", varNames)
+%! varTypes = {'double', 'datetime', 'string'};
+%! varNames = {'Temperature', 'Time', 'Station'};
+%! T2 = table ('Size', sz, 'VariableTypes', varTypes, 'VariableNames', varNames)
 %!
 %! ## Add rows of data to the first two rows of table T2
-%! T2(1,:) = {75, datetime(2024, 2, 5), string("S1")};
-%! T2(2,:) = {75, datetime(2024, 2, 6), string("S2")}
+%! T2(1,:) = {75, datetime(2024, 2, 5), string('S1')};
+%! T2(2,:) = {75, datetime(2024, 2, 6), string('S2')}
 
 %!demo
 %! ## Create a table from various types of arrays
 %!
-%! T = table (string ({"M";"F";"M"}), [45;32;34], ...
-%!            {"NY";"CA";"MA"}, logical ([1;0;0]),...
-%!            "VariableNames", {"Gender", "Age", "State", "Vote"})
+%! T = table (string ({'M';'F';'M'}), [45;32;34], ...
+%!            {'NY';'CA';'MA'}, logical ([1;0;0]), ...
+%!            'VariableNames', {'Gender', 'Age', 'State', 'Vote'})
 
 %!demo
 %! ## Create the same table using the state names as row names
 %!
-%! T = table (string ({"M";"F";"M"}), [45;32;34], logical ([1;0;0]), ...
-%!            "VariableNames", {"Gender", "Age", "Vote"}, ...
-%!            "RowNames", {"NY";"CA";"MA"})
+%! T = table (string ({'M';'F';'M'}), [45;32;34], logical ([1;0;0]), ...
+%!            'VariableNames', {'Gender', 'Age', 'Vote'}, ...
+%!            'RowNames', {'NY';'CA';'MA'})
 
 %!demo
 %! ## Display a table with mixed cell arrays as unicolumnar variables
 %! ## and other types as multicolumnar variables
 %!
-%! Data_A = {[34, 32]; ['text';'picture']; "text"; struct("c","data"); ...
+%! Data_A = {[34, 32]; ['text';'picture']; 'text'; struct('c', 'data'); ...
 %!           [true, false]; ['some','text']; {'some','text'}; 25.34};
 %! Data_B = {32, 25; 0.2, 135; 0.123, 456; 42, 5; 154, 12; 32, 10; 4, 4; 9, 94};
 %! Data_C = datetime (2000, [1:8;9:16]', 1);
@@ -44,6 +44,74 @@
 %!demo
 %! ## Create a nested table
 %! T1 = table ([1; 2; 3], [4; 5; 6], [7; 8; 9]);
-%! T2 = table ({"a"; "b"; "c"}, {"d"; "e"; "f"}, {"g"; "h"; "i"});
+%! T2 = table ({'a'; 'b'; 'c'}, {'d'; 'e'; 'f'}, {'g'; 'h'; 'i'});
 %! NT = table ([1; 2; 3], T1, [4; 5; 6], T2, {5; 6; 7}, ...
-%!             "VariableNames", {"A", "B", "C", "D", "E"})
+%!             'VariableNames', {'A', 'B', 'C', 'D', 'E'})
+
+%!demo
+%! ## A table is *read* with three complementary indexing styles.  Build a table
+%! ## whose variables span several types to see how each one behaves.
+%!
+%! Name = string ({'Sanchez'; 'Johnson'; 'Li'; 'Diaz'});
+%! Age = [38; 43; 38; 40];
+%! Visit = datetime (2024, [1; 2; 3; 4], [5; 6; 7; 8]);
+%! Gender = categorical ({'M'; 'M'; 'F'; 'F'});
+%! T = table (Name, Age, Visit, Gender);
+%!
+%! ## Dot indexing extracts one variable as its own native type.
+%! T.Visit
+%!
+%! ## Parenthesis indexing selects a sub-table — the result is still a table.
+%! T(1:2, {'Name', 'Age'})
+%!
+%! ## Brace indexing pulls the raw contents out of the selected variables.
+%! T{1:2, 'Age'}
+
+%!demo
+%! ## Assignment mirrors the three styles.  Starting from a mixed-type table:
+%!
+%! Name = string ({'Sanchez'; 'Johnson'; 'Li'});
+%! Age = [38; 43; 38];
+%! Gender = categorical ({'M'; 'M'; 'F'});
+%! T = table (Name, Age, Gender);
+%!
+%! ## Dot assignment adds or overwrites a whole variable (here computed from Age).
+%! T.Senior = T.Age >= 40
+%!
+%! ## Parenthesis assignment with a cell sets a sub-table; a new row index grows
+%! ## the table, taking one cell per variable in variable order.
+%! T(4, :) = {string('Diaz'), 40, categorical({'F'}), true}
+%!
+%! ## Dot-then-index writes into part of an existing variable.
+%! T.Age(1) = 39;
+%! T.Age'
+
+%!demo
+%! ## This implementation fully supports **chained** referencing and assignment —
+%! ## indexing that reaches through several levels in a single expression.  (Octave
+%! ## extension: MATLAB permits chained *reference* but not chained *assignment*.)
+%!
+%! Age = [38; 43; 38; 40];
+%! Height = [71; 69; 64; 67];
+%! T = table (Age, Height);
+%!
+%! ## Chained reference: select a sub-table, then a variable, then an element.
+%! T(2:3, :).Age(1)
+%!
+%! ## Chained assignment writes straight through that same path.
+%! T(2:3, :).Age(1) = 99;
+%! T.Age'
+
+%!demo
+%! ## Chaining is most useful with nested tables, reaching an inner variable
+%! ## directly — again both for reading and, unlike MATLAB, for writing.
+%!
+%! Inner = table ([1; 2; 3], [4; 5; 6], 'VariableNames', {'p', 'q'});
+%! NT = table ([10; 20; 30], Inner, 'VariableNames', {'id', 'inner'});
+%!
+%! ## Read the 2nd element of inner variable q.
+%! NT.inner.q(2)
+%!
+%! ## Assign straight into it in one chained expression.
+%! NT.inner.q(2) = 55;
+%! NT.inner

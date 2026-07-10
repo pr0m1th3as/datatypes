@@ -1,0 +1,31 @@
+%!demo
+%! ## `horzcat` joins tables side by side, keeping all their variables.  The tables
+%! ## must have the same number of rows and distinct variable names.  The `[A, B]`
+%! ## bracket syntax calls it for you, and variables of any type combine freely.
+%!
+%! A = table ([38; 43; 40], 'VariableNames', {'Age'});
+%! B = table (categorical ({'M'; 'F'; 'M'}), logical ([1; 0; 1]), ...
+%!            'VariableNames', {'Gender', 'Smoker'});
+%! [A, B]
+
+%!demo
+%! ## Custom properties are carried through the concatenation.  A *variable*-scoped
+%! ## property is concatenated alongside its columns, so the merged table keeps one
+%! ## entry per variable; a *table*-scoped property is preserved when the operands
+%! ## agree on it.
+%!
+%! A = table ([38; 43], categorical ({'M'; 'F'}), 'VariableNames', {'Age', 'Gender'});
+%! A = addprop (A, {'Study', 'Source'}, {'table', 'variable'});
+%! A.Properties.CustomProperties.Study = 'Cohort-7';
+%! A.Properties.CustomProperties.Source = {'intake', 'intake'};
+%!
+%! B = table (duration (0, [15; 30], 0), 'VariableNames', {'Wait'});
+%! B = addprop (B, {'Study', 'Source'}, {'table', 'variable'});
+%! B.Properties.CustomProperties.Study = 'Cohort-7';
+%! B.Properties.CustomProperties.Source = {'clock'};
+%!
+%! H = [A, B];
+%! ## The variable-scoped Source now spans all three variables ...
+%! H.Properties.CustomProperties.Source
+%! ## ... and the shared table-scoped Study is retained.
+%! H.Properties.CustomProperties.Study

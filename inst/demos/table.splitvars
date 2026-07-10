@@ -1,0 +1,11 @@
+%!demo
+%! ## `splitvars` expands a multi-column variable into several single-column
+%! ## variables — the inverse of `mergevars`.  Auto-generated names get a numeric
+%! ## suffix; pass `'NewVariableNames'` to choose your own.
+%!
+%! BloodPressure = [124, 93; 109, 77; 125, 83];
+%! T = table ([38; 43; 40], BloodPressure, 'VariableNames', {'Age', 'BP'});
+%! splitvars (T, 'BP')
+%!
+%! ## Name the resulting columns explicitly.
+%! splitvars (T, 'BP', 'NewVariableNames', {'Systolic', 'Diastolic'})

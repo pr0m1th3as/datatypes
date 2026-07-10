@@ -1,0 +1,25 @@
+%!demo
+%! ## `sortrows` orders the rows by one or more variables of any comparable type.
+%! ## Name the variables to sort by; a trailing direction (or one per key) flips
+%! ## ascending to descending.  Here an *ordinal* categorical `Grade` sets the
+%! ## primary order, with a `datetime` breaking ties.
+%!
+%! Name = string ({'Li'; 'Diaz'; 'Brown'; 'Lee'});
+%! Visit = datetime (2024, [3; 1; 2; 1], [7; 5; 6; 2]);
+%! Grade = categorical ({'B'; 'A'; 'A'; 'B'}, {'A', 'B', 'C'}, 'Ordinal', true);
+%! T = table (Name, Visit, Grade);
+%! sortrows (T, {'Grade', 'Visit'})
+%!
+%! ## Sort the same table by `Grade` descending instead.
+%! sortrows (T, 'Grade', 'descend')
+
+%!demo
+%! ## A second output returns the permutation index, and passing `'RowNames'`
+%! ## sorts by the row names themselves rather than by a data variable.
+%!
+%! Age = [38; 43; 38; 40];
+%! Smoker = logical ([1; 0; 1; 0]);
+%! T = table (Age, Smoker, 'RowNames', {'Sanchez', 'Johnson', 'Li', 'Diaz'});
+%! [S, idx] = sortrows (T, 'RowNames');
+%! S
+%! idx

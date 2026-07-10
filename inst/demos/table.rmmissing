@@ -1,0 +1,15 @@
+%!demo
+%! ## `rmmissing` drops every row that has a missing value in any variable —
+%! ## listwise deletion — counting gaps of every type (`NaN`, `NaT`, `<undefined>`,
+%! ## `<missing>`).  Here the rows with a missing age, grade, or visit all go.
+%!
+%! Name = string ({'Li'; 'Diaz'; 'Brown'; 'Lee'});
+%! Age = [38; NaN; 40; 49];
+%! Grade = categorical ({'A'; 'B'; ''; 'C'});
+%! Visit = datetime (2024, 1, [5; 6; 7; 8]);
+%! T = table (Name, Age, Grade, Visit);
+%! rmmissing (T)
+%!
+%! ## A second output is the logical mask of the rows that were removed.
+%! [C, removed] = rmmissing (T);
+%! removed'

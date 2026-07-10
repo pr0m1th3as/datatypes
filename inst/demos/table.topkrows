@@ -1,0 +1,15 @@
+%!demo
+%! ## `topkrows` returns the top `k` rows by a sort key without sorting the whole
+%! ## table — like `sortrows` followed by `head`, but stated in one call.  The
+%! ## default direction is descending, so the largest values come first.
+%!
+%! LastName = {'Sanchez'; 'Johnson'; 'Li'; 'Diaz'; 'Brown'};
+%! Age = [38; 43; 38; 40; 49];
+%! T = table (Age, 'RowNames', LastName);
+%! topkrows (T, 3, 'Age')
+%!
+%! ## Add a direction to take the *smallest* instead, and capture the index of
+%! ## the selected rows in the original table.
+%! [B, idx] = topkrows (T, 2, 'Age', 'ascend');
+%! B
+%! idx

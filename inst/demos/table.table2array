@@ -1,0 +1,13 @@
+%!demo
+%! ## `table2array` horizontally concatenates the variables into a single array,
+%! ## so it is meant for tables whose variables share a common type.  Multi-column
+%! ## variables keep all their columns, so the result can be wider than the table.
+%!
+%! Age = [38; 43; 40];
+%! BloodPressure = [124, 93; 109, 77; 117, 75];
+%! T = table (Age, BloodPressure);
+%! A = table2array (T)
+%!
+%! ## The 3-by-2 table becomes a 3-by-3 numeric matrix, because `BloodPressure`
+%! ## contributes two columns.
+%! size (A)

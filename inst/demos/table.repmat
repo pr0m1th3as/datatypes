@@ -1,0 +1,8 @@
+%!demo
+%! ## `repmat` tiles a whole table, repeating the full block of rows.  Contrast with
+%! ## `repelem`, which repeats each row in place: `repmat` copies the sequence.
+%!
+%! Name = string ({'Li'; 'Diaz'});
+%! Visit = datetime (2024, 1, [5; 6]);
+%! T = table (Name, Visit);
+%! repmat (T, 3, 1)

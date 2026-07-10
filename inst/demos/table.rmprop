@@ -1,0 +1,16 @@
+%!demo
+%! ## `rmprop` removes custom properties previously added with `addprop`, whatever
+%! ## their scope.  Here a table starts with one property of each kind.
+%!
+%! Age = [38; 43];
+%! Gender = categorical ({'M'; 'F'});
+%! T = table (Age, Gender);
+%! T = addprop (T, {'DataSource', 'Instrument'}, {'table', 'variable'});
+%! T.Properties.CustomProperties.DataSource = 'Clinic A';
+%! T.Properties.CustomProperties.Instrument = {'form', 'form'};
+%! T.Properties.CustomProperties
+%!
+%! ## Remove the variable-scoped `Instrument`; the table-scoped `DataSource`
+%! ## remains.  The built-in properties (names, units, ...) are never affected.
+%! T = rmprop (T, 'Instrument');
+%! T.Properties.CustomProperties

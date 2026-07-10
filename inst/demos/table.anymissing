@@ -1,0 +1,13 @@
+%!demo
+%! ## `anymissing` is a fast scalar check: `true` as soon as *any* element of the
+%! ## table is missing, across every variable and type — `NaN` for numeric,
+%! ## `NaT` for datetime, `<missing>` for string, `<undefined>` for categorical.
+%!
+%! Name = string ({'Li'; 'Diaz'; 'Brown'});
+%! Age = [38; 43; 40];
+%! Grade = categorical ({'A'; ''; 'B'});
+%! T = table (Name, Age, Grade);
+%! anymissing (T)
+%!
+%! ## A table with no gaps of any kind returns `false`.
+%! anymissing (table (string ({'Li'; 'Diaz'}), [38; 40]))

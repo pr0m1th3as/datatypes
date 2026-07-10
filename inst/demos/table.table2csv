@@ -1,0 +1,19 @@
+%!demo
+%! ## `table2csv` writes a table to CSV in the package's round-trippable format:
+%! ## a metadata comment line, then header rows for the variable types, names,
+%! ## and units, followed by one row of data per table row.
+%!
+%! Age = [38; 43; 40];
+%! Height = [71; 69; 64];
+%! T = table (Age, Height);
+%! T.Properties.VariableUnits = {'Yrs', 'in'};
+%!
+%! filename = fullfile (tempdir (), 'patients.csv');
+%! table2csv (T, filename);
+%! type (filename)
+%!
+%! ## Because the type and unit metadata is preserved in the header, `csv2table`
+%! ## reconstructs the table faithfully.
+%! csv2table (filename)
+%!
+%! delete (filename);
