@@ -918,6 +918,7 @@ classdef table
     ## native cell types (spreadsheet).  The following options are supported:
     ##
     ## @multitable @columnfractions 0.28 0.72
+    ## @headitem @var{Name} @tab @var{Value}
     ## @item @qcode{'FileType'} @tab @qcode{'text'} or @qcode{'spreadsheet'}.
     ## @item @qcode{'WriteVariableNames'} @tab Logical; write the variable names
     ## as the first row (default @qcode{true}).

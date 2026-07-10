@@ -32,18 +32,18 @@
 ## optional parameters for creating the table @var{tbl} with the following
 ## Name-Value paired arguments.
 ##
-## @multitable @columnfractions 0.23 0.02 0.75
-## @headitem @var{Name} @tab @tab @var{Value}
+## @multitable @columnfractions 0.23 0.75
+## @headitem @var{Name} @tab @var{Value}
 ##
-## @item @qcode{'VariableNames'} @tab @tab A cell array of character vectors or
+## @item @qcode{'VariableNames'} @tab A cell array of character vectors or
 ## a string array defining the variable names of @var{tbl}.  The names must be
 ## valid variable names and unique.
 ##
-## @item @qcode{'RowNames'} @tab @tab A cell array of character vectors or
+## @item @qcode{'RowNames'} @tab A cell array of character vectors or
 ## a string array defining the row names of @var{tbl}.  The names must be unique
 ## but not necessarily valid variable names.
 ##
-## @item @qcode{'DimensionNames'} @tab @tab A cell array of character vectors or
+## @item @qcode{'DimensionNames'} @tab A cell array of character vectors or
 ## a string array defining the dimension names of @var{tbl}.  The names must be
 ## unique and not in conflict with variable names.  By default, dimension names
 ## are @qcode{'Row', 'Variables'}.

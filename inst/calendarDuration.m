@@ -498,7 +498,7 @@ classdef calendarDuration
     ##
     ## Convert calendarDuration array to date vectors.
     ##
-    ## @code{@var{DV} = datevec (@var{calD})} returns an @math{Nx6} numeric
+    ## @code{@var{DV} = datevec (@var{calD})} returns an @math{N*6} numeric
     ## matrix, where @math{N} is the number of elements in @var{calD} and the
     ## columns corresponds to years, months, days, hours, minutes, and seconds,
     ## respectively.
@@ -1158,8 +1158,8 @@ classdef calendarDuration
     ## @code{@var{TF} = isvector (@var{calD})} returns a logical scalar
     ## @var{TF}, which is @qcode{true} if the calendarDuration array @var{calD}
     ## is a vector and @qcode{false} otherwise.  A vector is a 2-D array for
-    ## which one of the dimensions is equal to 1 (either @math{1xN} or
-    ## @math{Nx1}).  By definition, a scalar is also a vector.
+    ## which one of the dimensions is equal to 1 (either @math{1*N} or
+    ## @math{N*1}).  By definition, a scalar is also a vector.
     ##
     ## @end deftypefn
     function TF = isvector (this)
@@ -1677,7 +1677,7 @@ classdef calendarDuration
     ##
     ## @code{@var{B} = repelems (@var{A}, @var{R})} returns a calendarDuration
     ## vector @var{B} containing repeated elements of the input @var{A}, which
-    ## must be a calendarDuration vector.  @var{R} must be a @math{2xN} matrix
+    ## must be a calendarDuration vector.  @var{R} must be a @math{2*N} matrix
     ## of integers.  Entries in the first row of @var{R} correspond to the
     ## linear indexing of the elements in @var{A} to be repeated.  The
     ## corresponding entries in the second row of @var{R} specify the repeat

@@ -24,25 +24,25 @@
 ## @code{@var{tbl} = struct2table (@var{S})} converts a structure array @var{S}
 ## to the table @var{tbl}, where each field of the input structure becomes a
 ## variable in the output table.  For a scalar structure with @math{N} fields,
-## all of which have @math{M} rows, or an @math{Mx1} or @math{1xM} structure
-## array with @math{N} fields, the output is an @math{MxN} table.
+## all of which have @math{M} rows, or an @math{M*1} or @math{1*M} structure
+## array with @math{N} fields, the output is an @math{M*N} table.
 ##
 ## @code{@var{tbl} = struct2table (@var{S}, @var{Name}, @var{Value})} specifies
 ## optional parameters for creating the table @var{tbl} with the following
 ## Name-Value paired arguments.
 ##
-## @multitable @columnfractions 0.23 0.02 0.75
-## @headitem @var{Name} @tab @tab @var{Value}
+## @multitable @columnfractions 0.23 0.75
+## @headitem @var{Name} @tab @var{Value}
 ##
-## @item @qcode{'AsArray'} @tab @tab A logical scalar specifying whether to
+## @item @qcode{'AsArray'} @tab A logical scalar specifying whether to
 ## treat a scalar input as a structure array, which allows the fields containing
 ## data of different sizes.
 ##
-## @item @qcode{'RowNames'} @tab @tab A cell array of character vectors or
+## @item @qcode{'RowNames'} @tab A cell array of character vectors or
 ## a string array defining the row names of @var{tbl}.  The names must be unique
 ## but not necessarily valid variable names.
 ##
-## @item @qcode{'DimensionNames'} @tab @tab A cell array of character vectors or
+## @item @qcode{'DimensionNames'} @tab A cell array of character vectors or
 ## a string array defining the dimension names of @var{tbl}.  The names must be
 ## unique and not in conflict with variable names.  By default, dimension names
 ## are @qcode{'Row', 'Variables'}.

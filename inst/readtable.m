@@ -33,6 +33,7 @@
 ## text).  The following @var{Name}-@var{Value} options are supported:
 ##
 ## @multitable @columnfractions 0.28 0.72
+## @headitem @var{Name} @tab @var{Value}
 ## @item @qcode{'FileType'} @tab @qcode{'text'} or @qcode{'spreadsheet'}.
 ## @item @qcode{'ReadVariableNames'} @tab Logical; read the first row as variable
 ## names (default @qcode{true}).

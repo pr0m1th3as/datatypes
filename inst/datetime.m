@@ -1178,7 +1178,7 @@ classdef datetime
     ## @code{@var{TF} = isvector (@var{T})} returns a logical scalar @var{TF},
     ## which is @qcode{true} if the datetime array @var{T} is a vector and
     ## @qcode{false} otherwise.  A vector is a 2-D array for which one of the
-    ## dimensions is equal to 1 (either @math{1xN} or @math{Nx1}).  By
+    ## dimensions is equal to 1 (either @math{1*N} or @math{N*1}).  By
     ## definition, a scalar is also a vector.
     ##
     ## @end deftypefn
@@ -1460,7 +1460,7 @@ classdef datetime
     ##
     ## @code{@var{B} = repelems (@var{A}, @var{R})} returns a datetime vector
     ## @var{B} containing repeated elements of the input @var{A}, which must be
-    ## a datetime vector.  @var{R} must be a @math{2xN} matrix of integers.
+    ## a datetime vector.  @var{R} must be a @math{2*N} matrix of integers.
     ## Entries in the first row of @var{R} correspond to the linear indexing of
     ## the elements in @var{A} to be repeated.  The corresponding entries in the
     ## second row of @var{R} specify the repeat count of each element.

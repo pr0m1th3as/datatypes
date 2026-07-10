@@ -55,23 +55,23 @@
 ## specifies optional parameters for creating the table @var{tbl} with the
 ## following Name-Value paired arguments.
 ##
-## @multitable @columnfractions 0.33 0.02 0.65
-## @headitem @var{Name} @tab @tab @var{Value}
+## @multitable @columnfractions 0.33 0.65
+## @headitem @var{Name} @tab @var{Value}
 ##
-## @item @qcode{'NumHeaderLines'} @tab @tab A positive integer scalar value
+## @item @qcode{'NumHeaderLines'} @tab A positive integer scalar value
 ## specifying the number of rows to omit reading from the CSV file.  If the CSV
 ## contains the custom comment line in its first element, then the
 ## @qcode{'NumHeaderLines'} applies to the top number of rows to remove from the
 ## created table.  If CSV is a generic case, then @qcode{'NumHeaderLines'}
 ## specifies the number of lines to omit parsing from the CSV file itself.
 ##
-## @item @qcode{'VariableNames'} @tab @tab A cell array of character vectors or
+## @item @qcode{'VariableNames'} @tab A cell array of character vectors or
 ## a string array specifying the names of the variables of the created table.
 ## The names must be unique but not necessarily valid variable names.  If not
 ## empty, it overrides any variable names extracted from the CSV file.  This
 ## applies both to custom and generic CSV files.
 ##
-## @item @qcode{'ReadVariableNames'} @tab @tab A logical scalar specifying
+## @item @qcode{'ReadVariableNames'} @tab A logical scalar specifying
 ## whether to parse or not the CSV files for variable names.  If your CSV file
 ## only contains data, set @qcode{'ReadVariableNames'} to @qcode{false} so that
 ## @code{csv2table} parses all lines as data rows in the returned table.
@@ -79,13 +79,13 @@
 ## by @code{table}, unless otherwise specified by the @qcode{'VariableNames'}
 ## paired argument.  The default value is @qcode{true}.
 ##
-## @item @qcode{'VariableNamingRule'} @tab @tab A character vector or a string
+## @item @qcode{'VariableNamingRule'} @tab A character vector or a string
 ## scalar specifying whether the variable names should be modified to valid
 ## Octave variable names or the original names should be preserved.  Valid
 ## options are @qcode{"modify"} and @qcode{"preserve"}.  By default,
 ## @code{csv2table} modifies the parsed variable names.
 ##
-## @item @qcode{'VariableNamesLine'} @tab @tab A nonnegative integer scalar
+## @item @qcode{'VariableNamesLine'} @tab A nonnegative integer scalar
 ## value specifying the line number in the CSV file, which should be parsed for
 ## variable names.  This only applies if the @qcode{'ReadVariableNames'} option
 ## is @qcode{true}.  The specified line is subsequently removed from the
@@ -93,30 +93,30 @@
 ## set to zero, then it is equivalent to setting @qcode{'ReadVariableNames'} to
 ## @qcode{false}.
 ##
-## @item @qcode{'VariableTypes'} @tab @tab A cell array of character vectors or
+## @item @qcode{'VariableTypes'} @tab A cell array of character vectors or
 ## a string array specifying the data type of the variables of the created
 ## table.  The number of elements must much the number of variable in the table.
 ## This optional argument only has an effect on generic CSV files.  When
 ## specified, it overrides any other data type specification or automatic
 ## detection by the @code{csv2table} function.
 ##
-## @item @qcode{'VariableUnitsLine'} @tab @tab A nonnegative integer scalar
+## @item @qcode{'VariableUnitsLine'} @tab A nonnegative integer scalar
 ## value specifying the line number in the CSV file, which should be parsed for
 ## variable units.  The specified line is subsequently removed from the
 ## remaining data contained in the CSV file.
 ##
-## @item @qcode{'VariableDescriptionsLine'} @tab @tab A nonnegative integer
+## @item @qcode{'VariableDescriptionsLine'} @tab A nonnegative integer
 ## scalar value specifying the line number in the CSV file, which should be
 ## parsed for variable descriptions.  The specified line is subsequently removed
 ## from the remaining data contained in the CSV file.
 ##
-## @item @qcode{'ReadRowNames'} @tab @tab A logical scalar specifying whether to
+## @item @qcode{'ReadRowNames'} @tab A logical scalar specifying whether to
 ## parse or not the CSV files for row names.  If your CSV file only contains
 ## data, set @qcode{'ReadRowNames'} to @qcode{false} so that @code{csv2table}
 ## parses all columns as data columms in the returned table.  The default value
 ## is @qcode{true}.
 ##
-## @item @qcode{'RowNamesColumn'} @tab @tab A nonnegative integer scalar value
+## @item @qcode{'RowNamesColumn'} @tab A nonnegative integer scalar value
 ## specifying the column number in the CSV file, which should be parsed for
 ## row names.  This only applies if the @qcode{'ReadRowNames'} option is
 ## @qcode{true}.  The specified column is subsequently removed from the
@@ -126,27 +126,27 @@
 ## @qcode{'RowNamesColumn'} must be unique, otherwise @code{csv2table} will
 ## return an error.
 ##
-## @item @qcode{'TextType'} @tab @tab A character vector or a string scalar
+## @item @qcode{'TextType'} @tab A character vector or a string scalar
 ## specifying whether the text data in the CSV file should be stored in the
 ## table as character vectors or string arrays.  Valid options are
 ## @qcode{"char"} and @qcode{"string"}.  By default, @code{csv2table} stores
 ## text data as character vectors.
 ##
-## @item @qcode{'DatetimeType'} @tab @tab A character vector or a string scalar
+## @item @qcode{'DatetimeType'} @tab A character vector or a string scalar
 ## specifying whether the datetime strings found in the CSV file should be
 ## stored in the table as datetime arrays or as text data.  Valid options are
 ## @qcode{"datetime"} and @qcode{"text"}.  By default, @code{csv2table} stores
 ## datetime strings as datetime arrays.  If @qcode{"text"} is specified, then
 ## the data type depends on the @qcode{'TextType'} option.
 ##
-## @item @qcode{'DurationType'} @tab @tab A character vector or a string scalar
+## @item @qcode{'DurationType'} @tab A character vector or a string scalar
 ## specifying whether the duration strings found in the CSV file should be
 ## stored in the table as duration arrays or as text data.  Valid options are
 ## @qcode{"duration"} and @qcode{"text"}.  By default, @code{csv2table} stores
 ## duration strings as duration arrays.  If @qcode{"text"} is specified, then
 ## the data type depends on the @qcode{'TextType'} option.
 ##
-## @item @qcode{'HexType'} @tab @tab A character vector or a string scalar
+## @item @qcode{'HexType'} @tab A character vector or a string scalar
 ## specifying whether the hexadecimal text found in the CSV file should be
 ## stored as a suitable integer type, @qcode{"auto"} (default), as unaltered
 ## input text, @qcode{"text"}, (in which case the data type depends on the

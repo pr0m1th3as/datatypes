@@ -339,7 +339,7 @@ classdef missing
     ## @code{@var{TF} = isvector (@var{M})} returns a logical scalar @var{TF},
     ## which is @qcode{true} if the missing array @var{M} is a vector and
     ## @qcode{false} otherwise.  A vector is a 2-D array for which one of the
-    ## dimensions is equal to 1 (either @math{1xN} or @math{Nx1}).  By
+    ## dimensions is equal to 1 (either @math{1*N} or @math{N*1}).  By
     ## definition, a scalar is also a vector.
     ##
     ## @end deftypefn

@@ -24,7 +24,7 @@
 ##
 ## “Not-a-Time”. Creates missing-valued datetime arrays.
 ##
-## @code{@var{T} = NaT (@var{n})} creates an @math{NxN} datetime matrix with all
+## @code{@var{T} = NaT (@var{n})} creates an @math{N*N} datetime matrix with all
 ## values being Not-a-Time (@qcode{NaT}).  When called with no size input
 ## values, it returns a @qcode{NaT} datetime scalar.
 ##

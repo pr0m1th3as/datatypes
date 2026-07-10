@@ -1788,7 +1788,7 @@ classdef categorical
     ## @code{@var{TF} = isvector (@var{C})} returns a logical scalar @var{TF},
     ## which is @qcode{true} if the categorical array @var{C} is a vector and
     ## @qcode{false} otherwise.  A vector is a 2-D array for which one of the
-    ## dimensions is equal to 1 (either @math{1xN} or @math{Nx1}).  By
+    ## dimensions is equal to 1 (either @math{1*N} or @math{N*1}).  By
     ## definition, a scalar is also a vector.
     ##
     ## @end deftypefn
@@ -3437,7 +3437,7 @@ classdef categorical
     ## @item If @var{A} is a vector, then @var{index} contains the original
     ## linear indices of the elements in the sorted vector @var{B} such that
     ## @code{@var{B} = @var{A}(@var{index})}.
-    ## @item If @var{A} is an @math{MxN} matrix and @qcode{@var{dim} = 1}, then
+    ## @item If @var{A} is an @math{M*N} matrix and @qcode{@var{dim} = 1}, then
     ## @var{index} contains the original row indices of the elements in the
     ## sorted vector @var{B} such that for @qcode{j = 1:N},
     ## @code{@var{B}(:,j) = @var{A}(@var{index}(:,j),j)}.
@@ -4282,7 +4282,7 @@ classdef categorical
     ##
     ## @code{@var{B} = repelems (@var{A}, @var{R})} returns a categorical vector
     ## @var{B} containing repeated elements of the input @var{A}, which must be
-    ## a categorical vector.  @var{R} must be a @math{2xN} matrix of integers.
+    ## a categorical vector.  @var{R} must be a @math{2*N} matrix of integers.
     ## Entries in the first row of @var{R} correspond to the linear indexing of
     ## the elements in @var{A} to be repeated.  The corresponding entries in the
     ## second row of @var{R} specify the repeat count of each element.
