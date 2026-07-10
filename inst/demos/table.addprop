@@ -7,7 +7,7 @@
 %! Age = [38; 43; 40];
 %! Height = duration (0, 0, 0) + hours ([1.9; 1.8; 1.7]);
 %! Gender = categorical ({'M'; 'F'; 'M'});
-%! T = table (Age, Height, Gender);
+%! T = table (Age, Height, Gender)
 %! T = addprop (T, {'DataSource', 'Instrument'}, {'table', 'variable'});
 %!
 %! ## The table-scoped `DataSource` takes one value; the variable-scoped
