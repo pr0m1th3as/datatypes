@@ -1,0 +1,5 @@
+%!demo
+%! ## `strip` removes leading and trailing whitespace from each string.
+%!
+%! s = string ({'  spaced  '; 'tidy'})
+%! strip (s)

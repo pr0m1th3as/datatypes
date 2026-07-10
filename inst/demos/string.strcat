@@ -1,0 +1,5 @@
+%!demo
+%! ## `strcat` concatenates strings horizontally, element-wise across its inputs.
+%!
+%! name = string ({'Ann'; 'Bob'})
+%! strcat (name, ' Smith')

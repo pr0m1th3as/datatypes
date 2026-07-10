@@ -1,0 +1,5 @@
+%!demo
+%! ## `upper` converts each string to upper case.
+%!
+%! s = string ({'Hello'; 'World'})
+%! upper (s)

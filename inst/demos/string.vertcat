@@ -1,0 +1,7 @@
+%!demo
+%! ## String arrays concatenate like ordinary arrays; `[a; b]` stacks them into a
+%! ## single column.
+%!
+%! a = string ({'apple'; 'banana'})
+%! b = string ({'cherry'; 'date'})
+%! [a; b]

@@ -1,0 +1,5 @@
+%!demo
+%! ## `reverse` reverses the characters within each string.
+%!
+%! s = string ({'Hello'; 'World'})
+%! reverse (s)

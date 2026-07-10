@@ -1,0 +1,6 @@
+%!demo
+%! ## `pad` pads each string with spaces to a common width — handy for aligning
+%! ## text into columns.
+%!
+%! s = string ({'a'; 'bb'; 'ccc'})
+%! pad (s, 5)

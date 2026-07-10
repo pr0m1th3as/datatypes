@@ -1,0 +1,6 @@
+%!demo
+%! ## `strlength` returns the number of characters in each string (contrast
+%! ## `length`/`numel`, which count the array's elements).
+%!
+%! s = string ({'a'; 'four'; 'twelve chars'})
+%! strlength (s)

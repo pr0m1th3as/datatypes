@@ -1,0 +1,7 @@
+%!demo
+%! ## `plus` (`+`) concatenates two strings — a compact alternative to `append`.
+%! ## Both operands must be strings (a bare `'-'` is a char, so wrap it).
+%!
+%! a = string ({'Ann'; 'Bob'})
+%! b = string ({'Lee'; 'Ng'})
+%! a + string (' ') + b

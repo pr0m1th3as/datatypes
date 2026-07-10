@@ -1,0 +1,6 @@
+%!demo
+%! ## `splitlines` breaks a string at its newline characters into one element per
+%! ## line.
+%!
+%! s = string (sprintf ('first\nsecond\nthird'))
+%! splitlines (s)

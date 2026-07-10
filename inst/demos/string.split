@@ -1,0 +1,6 @@
+%!demo
+%! ## `split` breaks a string at each occurrence of a delimiter — the inverse of
+%! ## `join`.
+%!
+%! s = string ('2024-01-15')
+%! split (s, '-')

@@ -1,0 +1,5 @@
+%!demo
+%! ## `compose` applies a `printf`-style format to data, returning a string array —
+%! ## one element per row of the data.  (The format itself is given as a string.)
+%!
+%! compose (string ('%s scored %d'), string ({'Ann'; 'Bob'}), [7; 9])

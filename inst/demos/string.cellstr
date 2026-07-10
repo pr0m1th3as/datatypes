@@ -1,0 +1,6 @@
+%!demo
+%! ## `cellstr` converts a string array into a cell array of character vectors —
+%! ## the inverse of building a string from a cellstr.
+%!
+%! s = string ({'apple'; 'banana'})
+%! cellstr (s)

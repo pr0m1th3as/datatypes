@@ -1,0 +1,8 @@
+%!demo
+%! ## `ismissing` flags the `<missing>` elements — the string form of missing data,
+%! ## distinct from an empty string `""`.
+%!
+%! s = string ({'a'; 'b'; 'c'});
+%! s(2) = string (missing);
+%! s
+%! ismissing (s)

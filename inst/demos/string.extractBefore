@@ -1,0 +1,6 @@
+%!demo
+%! ## `extractBefore` returns the part of each string before the first occurrence
+%! ## of a substring — for example a file's base name before its extension.
+%!
+%! files = string ({'cat.txt'; 'dog.csv'})
+%! extractBefore (files, '.')

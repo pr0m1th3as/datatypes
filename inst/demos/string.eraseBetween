@@ -1,0 +1,6 @@
+%!demo
+%! ## `eraseBetween` deletes the text between two delimiters, keeping the
+%! ## delimiters themselves.
+%!
+%! s = string ({'a<secret>b'; 'x<hidden>y'})
+%! eraseBetween (s, '<', '>')

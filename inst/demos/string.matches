@@ -1,0 +1,6 @@
+%!demo
+%! ## `matches` tests, element-wise, whether each string equals a pattern *exactly*
+%! ## (contrast `contains`, which tests for a substring).
+%!
+%! s = string ({'cat'; 'category'; 'cat'})
+%! matches (s, 'cat')

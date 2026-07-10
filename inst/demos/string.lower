@@ -1,0 +1,5 @@
+%!demo
+%! ## `lower` converts each string to lower case.
+%!
+%! s = string ({'Hello'; 'WORLD'})
+%! lower (s)

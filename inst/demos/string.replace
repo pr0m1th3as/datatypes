@@ -1,0 +1,5 @@
+%!demo
+%! ## `replace` substitutes every occurrence of a substring with another.
+%!
+%! files = string ({'cat.txt'; 'dog.txt'})
+%! replace (files, '.txt', '.md')

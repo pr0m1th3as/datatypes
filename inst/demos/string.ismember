@@ -1,0 +1,6 @@
+%!demo
+%! ## `ismember` tests, element by element, whether each string appears in a second
+%! ## set.
+%!
+%! s = string ({'apple'; 'kiwi'; 'pear'})
+%! ismember (s, string ({'apple'; 'pear'}))

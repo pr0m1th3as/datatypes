@@ -1,0 +1,5 @@
+%!demo
+%! ## `erase` deletes every occurrence of a substring from each string.
+%!
+%! files = string ({'cat.txt'; 'dog.txt'})
+%! erase (files, '.txt')

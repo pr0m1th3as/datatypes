@@ -1,0 +1,7 @@
+%!demo
+%! ## `isstring` returns true only for string arrays — the reliable way to tell a
+%! ## string from a character vector, which (see `string`) look alike in source.
+%!
+%! isstring (string ('text'))
+%! isstring ('text')
+%! isstring ("text")

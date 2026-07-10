@@ -1,0 +1,5 @@
+%!demo
+%! ## `extractBetween` returns the text lying between two delimiters.
+%!
+%! s = string ({'[abc]'; '[hello]'})
+%! extractBetween (s, '[', ']')

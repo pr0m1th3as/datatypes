@@ -1,0 +1,5 @@
+%!demo
+%! ## `sort` orders the strings alphabetically.
+%!
+%! s = string ({'pear'; 'apple'; 'fig'; 'banana'})
+%! sort (s)

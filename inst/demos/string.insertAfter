@@ -1,0 +1,5 @@
+%!demo
+%! ## `insertAfter` inserts text right after each occurrence of a substring.
+%!
+%! s = string ({'hello world'; 'good day'})
+%! insertAfter (s, ' ', 'big ')

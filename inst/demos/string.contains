@@ -1,0 +1,5 @@
+%!demo
+%! ## `contains` tests, element-wise, whether each string contains a substring.
+%!
+%! files = string ({'cat.txt'; 'dog.csv'; 'fish.txt'})
+%! contains (files, '.txt')

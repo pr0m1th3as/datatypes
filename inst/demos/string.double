@@ -1,0 +1,6 @@
+%!demo
+%! ## `double` parses numeric text back into numbers; entries that are not numbers
+%! ## become `NaN`.
+%!
+%! s = string ({'3.14'; '42'; 'x'})
+%! double (s)

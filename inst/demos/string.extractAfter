@@ -1,0 +1,6 @@
+%!demo
+%! ## `extractAfter` returns the part of each string after the first occurrence of
+%! ## a substring — for example the extension after the dot.
+%!
+%! files = string ({'cat.txt'; 'dog.csv'})
+%! extractAfter (files, '.')

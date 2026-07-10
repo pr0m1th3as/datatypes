@@ -1,0 +1,6 @@
+%!demo
+%! ## `insertBefore` inserts text right before each occurrence of a substring —
+%! ## for example a suffix just before a file extension.
+%!
+%! files = string ({'cat.txt'; 'dog.txt'})
+%! insertBefore (files, '.txt', '_bak')

@@ -1,0 +1,5 @@
+%!demo
+%! ## `count` returns how many times a substring occurs in each string.
+%!
+%! s = string ({'banana'; 'apple'})
+%! count (s, 'a')

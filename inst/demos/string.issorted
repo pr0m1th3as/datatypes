@@ -1,0 +1,5 @@
+%!demo
+%! ## `issorted` checks whether the strings are already in alphabetical order.
+%!
+%! issorted (string ({'a'; 'b'; 'c'}))
+%! issorted (string ({'b'; 'a'; 'c'}))

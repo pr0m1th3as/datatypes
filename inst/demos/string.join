@@ -1,0 +1,6 @@
+%!demo
+%! ## `join` combines the elements of a string array into a single string, placing
+%! ## a delimiter between them.
+%!
+%! parts = string ({'2024', '01', '15'})
+%! join (parts, '-')

@@ -1,0 +1,5 @@
+%!demo
+%! ## `cell` also returns a cell array of character vectors (like `cellstr`).
+%!
+%! s = string ({'a'; 'b'; 'c'})
+%! cell (s)

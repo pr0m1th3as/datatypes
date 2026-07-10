@@ -1,0 +1,5 @@
+%!demo
+%! ## `unique` returns the distinct strings in an array, sorted.
+%!
+%! s = string ({'b'; 'a'; 'b'; 'c'; 'a'})
+%! unique (s)
