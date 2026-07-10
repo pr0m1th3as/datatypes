@@ -5,9 +5,9 @@
 %! ## both `Name` and `Year` to match.
 %!
 %! L = table ({'Li'; 'Li'; 'Diaz'}, [2023; 2024; 2023], [10; 11; 12], ...
-%!            'VariableNames', {'Name', 'Year', 'Visits'});
+%!            'VariableNames', {'Name', 'Year', 'Visits'})
 %! R = table ({'Li'; 'Diaz'}, [2023; 2023], categorical ({'NY'; 'CA'}), ...
-%!            'VariableNames', {'Name', 'Year', 'State'});
+%!            'VariableNames', {'Name', 'Year', 'State'})
 %! innerjoin (L, R, 'Keys', {'Name', 'Year'})
 %!
 %! ## Li's 2024 row has no match on the right, so it is excluded.  Extra outputs

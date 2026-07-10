@@ -6,5 +6,5 @@
 %! Nm = string ({'Sanchez'; 'Johnson'; 'Li'});
 %! Yrs = [38; 43; 40];
 %! Sex = categorical ({'M'; 'M'; 'F'});
-%! T = table (Nm, Yrs, Sex);
+%! T = table (Nm, Yrs, Sex)
 %! renamevars (T, {'Nm', 'Yrs', 'Sex'}, {'Name', 'Age', 'Gender'})

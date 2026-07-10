@@ -4,7 +4,7 @@
 %!
 %! Age = [38; 43];
 %! Gender = categorical ({'M'; 'F'});
-%! T = table (Age, Gender);
+%! T = table (Age, Gender)
 %! T = addprop (T, {'DataSource', 'Instrument'}, {'table', 'variable'});
 %! T.Properties.CustomProperties.DataSource = 'Clinic A';
 %! T.Properties.CustomProperties.Instrument = {'form', 'form'};

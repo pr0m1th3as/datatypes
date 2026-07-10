@@ -3,7 +3,7 @@
 %! ## missing value for each type (`NaN` here), so later `ismissing`/`rmmissing`/
 %! ## `fillmissing` calls recognise them.  This dataset uses `-99` for "no data".
 %!
-%! T = table ([38; -99; 40], [71; 69; -99], 'VariableNames', {'Age', 'Height'});
+%! T = table ([38; -99; 40], [71; 69; -99], 'VariableNames', {'Age', 'Height'})
 %! S = standardizeMissing (T, -99)
 %!
 %! ## The sentinels are now genuine missing values, ready to be filled or dropped.

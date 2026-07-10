@@ -2,7 +2,7 @@
 %! ## A table is empty when it has no rows **or** no variables.  Note that a
 %! ## table with named variables but zero rows still counts as empty.
 %!
-%! T = table ('Size', [0, 3], 'VariableTypes', {'double', 'string', 'double'});
+%! T = table ('Size', [0, 3], 'VariableTypes', {'double', 'string', 'double'})
 %! isempty (T)
 %!
 %! ## Adding a row makes it non-empty.

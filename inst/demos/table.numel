@@ -6,7 +6,7 @@
 %! Age = [38; 43; 40];
 %! Smoker = logical ([1; 0; 1]);
 %! BloodPressure = [124, 93; 109, 77; 117, 75];
-%! T = table (Age, Smoker, BloodPressure);
+%! T = table (Age, Smoker, BloodPressure)
 %! numel (T)
 %!
 %! ## It is simply the product of `height` and `width`.

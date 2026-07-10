@@ -4,7 +4,7 @@
 %!
 %! Age = [38; 43; 38; 40; 49];
 %! BloodPressure = [124, 93; 109, 77; 125, 83; 117, 75; 122, 80];
-%! T = table (Age, BloodPressure);
+%! T = table (Age, BloodPressure)
 %! height (T)
 %!
 %! ## It is the row count you index against, so `height` is the natural bound

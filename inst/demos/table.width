@@ -5,7 +5,7 @@
 %! Age = [38; 43; 38; 40; 49];
 %! Smoker = logical ([1; 0; 1; 0; 1]);
 %! BloodPressure = [124, 93; 109, 77; 125, 83; 117, 75; 122, 80];
-%! T = table (Age, Smoker, BloodPressure);
+%! T = table (Age, Smoker, BloodPressure)
 %! width (T)
 %!
 %! ## Splitting the multi-column variable into scalar columns raises the width.

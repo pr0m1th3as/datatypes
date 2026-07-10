@@ -4,7 +4,7 @@
 %!
 %! Name = string ({'Li'; 'Diaz'; 'Brown'});
 %! Grade = categorical ({'A'; 'B'; 'A'});
-%! T = table (Name, Grade);
+%! T = table (Name, Grade)
 %! repelem (T, 2, 1)
 %!
 %! ## A vector count sets the repeat count per row — here row 1 once, row 2 twice,

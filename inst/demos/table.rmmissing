@@ -7,7 +7,7 @@
 %! Age = [38; NaN; 40; 49];
 %! Grade = categorical ({'A'; 'B'; ''; 'C'});
 %! Visit = datetime (2024, 1, [5; 6; 7; 8]);
-%! T = table (Name, Age, Grade, Visit);
+%! T = table (Name, Age, Grade, Visit)
 %! rmmissing (T)
 %!
 %! ## A second output is the logical mask of the rows that were removed.

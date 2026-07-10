@@ -5,7 +5,7 @@
 %! LastName = {'Sanchez'; 'Johnson'; 'Li'};
 %! Age = [38; 43; 38];
 %! Height = [71; 69; 64];
-%! T = table (LastName, Age, Height);
+%! T = table (LastName, Age, Height)
 %! S = table2struct (T);
 %! S(2).LastName
 %! S(2).Age
@@ -17,7 +17,7 @@
 %! LastName = {'Sanchez'; 'Johnson'; 'Li'};
 %! Age = [38; 43; 38];
 %! Height = [71; 69; 64];
-%! T = table (LastName, Age, Height);
+%! T = table (LastName, Age, Height)
 %! S = table2struct (T, 'ToScalar', true)
 %!
 %! ## Now each field holds every value of that variable at once.

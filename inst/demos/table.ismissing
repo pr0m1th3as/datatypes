@@ -7,7 +7,7 @@
 %! Age = [38; NaN; 40];
 %! Grade = categorical ({'A'; 'B'; ''});
 %! Visit = datetime (2024, 1, [5; NaN; 7]);
-%! T = table (Name, Age, Grade, Visit);
+%! T = table (Name, Age, Grade, Visit)
 %! ismissing (T)
 %!
 %! ## Pass an indicator to also treat specific sentinel values as missing.

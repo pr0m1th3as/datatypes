@@ -3,5 +3,5 @@
 %! ## It also reports each group's share as a percentage of the total.
 %!
 %! Species = {'setosa'; 'virginica'; 'setosa'; 'virginica'; 'setosa'};
-%! T = table (Species);
+%! T = table (Species)
 %! groupcounts (T, 'Species')

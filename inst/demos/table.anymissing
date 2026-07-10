@@ -6,7 +6,7 @@
 %! Name = string ({'Li'; 'Diaz'; 'Brown'});
 %! Age = [38; 43; 40];
 %! Grade = categorical ({'A'; ''; 'B'});
-%! T = table (Name, Age, Grade);
+%! T = table (Name, Age, Grade)
 %! anymissing (T)
 %!
 %! ## A table with no gaps of any kind returns `false`.

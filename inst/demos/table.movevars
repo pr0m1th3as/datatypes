@@ -6,7 +6,7 @@
 %! Age = [38; 43; 40];
 %! Gender = categorical ({'M'; 'M'; 'F'});
 %! Visit = datetime (2024, [1; 2; 3], [5; 6; 7]);
-%! T = table (Name, Age, Gender, Visit);
+%! T = table (Name, Age, Gender, Visit)
 %! movevars (T, 'Visit', 'After', 'Name')
 %!
 %! ## Move a variable to the front by placing it before the first one.

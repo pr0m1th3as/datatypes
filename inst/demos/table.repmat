@@ -4,5 +4,5 @@
 %!
 %! Name = string ({'Li'; 'Diaz'});
 %! Visit = datetime (2024, 1, [5; 6]);
-%! T = table (Name, Visit);
+%! T = table (Name, Visit)
 %! repmat (T, 3, 1)

@@ -5,7 +5,7 @@
 %! Region = {'N'; 'N'; 'S'; 'S'; 'N'; 'S'};
 %! Quarter = categorical ({'Q1'; 'Q2'; 'Q1'; 'Q2'; 'Q1'; 'Q2'});
 %! Sales = [10; 20; 30; 40; 15; 25];
-%! T = table (Region, Quarter, Sales);
+%! T = table (Region, Quarter, Sales)
 %! pivot (T, 'Rows', 'Region')
 
 %!demo
@@ -16,6 +16,6 @@
 %! Region = {'N'; 'N'; 'S'; 'S'; 'N'; 'S'};
 %! Quarter = categorical ({'Q1'; 'Q2'; 'Q1'; 'Q2'; 'Q1'; 'Q2'});
 %! Sales = [10; 20; 30; 40; 15; 25];
-%! T = table (Region, Quarter, Sales);
+%! T = table (Region, Quarter, Sales)
 %! pivot (T, 'Rows', 'Region', 'Columns', 'Quarter', ...
 %!        'DataVariable', 'Sales', 'Method', 'sum')

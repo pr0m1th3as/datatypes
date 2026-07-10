@@ -2,7 +2,7 @@
 %! ## `fillmissing` replaces gaps rather than dropping rows.  Fill with a constant,
 %! ## applied across the (numeric) variables.
 %!
-%! T = table ([38; NaN; 40], [71; 69; NaN], 'VariableNames', {'Age', 'Height'});
+%! T = table ([38; NaN; 40], [71; 69; NaN], 'VariableNames', {'Age', 'Height'})
 %! fillmissing (T, 'constant', 0)
 
 %!demo
@@ -12,7 +12,7 @@
 %!
 %! Date = datetime (2024, 1, [1; NaN; 3; NaN]);
 %! Reading = [10; NaN; 30; 40];
-%! T = table (Date, Reading);
+%! T = table (Date, Reading)
 %! fillmissing (T, 'previous')
 %!
 %! fillmissing (table ([1; NaN; NaN; 4], 'VariableNames', {'v'}), 'linear')

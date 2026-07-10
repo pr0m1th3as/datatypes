@@ -43,8 +43,8 @@
 
 %!demo
 %! ## Create a nested table
-%! T1 = table ([1; 2; 3], [4; 5; 6], [7; 8; 9]);
-%! T2 = table ({'a'; 'b'; 'c'}, {'d'; 'e'; 'f'}, {'g'; 'h'; 'i'});
+%! T1 = table ([1; 2; 3], [4; 5; 6], [7; 8; 9])
+%! T2 = table ({'a'; 'b'; 'c'}, {'d'; 'e'; 'f'}, {'g'; 'h'; 'i'})
 %! NT = table ([1; 2; 3], T1, [4; 5; 6], T2, {5; 6; 7}, ...
 %!             'VariableNames', {'A', 'B', 'C', 'D', 'E'})
 
@@ -56,7 +56,7 @@
 %! Age = [38; 43; 38; 40];
 %! Visit = datetime (2024, [1; 2; 3; 4], [5; 6; 7; 8]);
 %! Gender = categorical ({'M'; 'M'; 'F'; 'F'});
-%! T = table (Name, Age, Visit, Gender);
+%! T = table (Name, Age, Visit, Gender)
 %!
 %! ## Dot indexing extracts one variable as its own native type.
 %! T.Visit
@@ -73,7 +73,7 @@
 %! Name = string ({'Sanchez'; 'Johnson'; 'Li'});
 %! Age = [38; 43; 38];
 %! Gender = categorical ({'M'; 'M'; 'F'});
-%! T = table (Name, Age, Gender);
+%! T = table (Name, Age, Gender)
 %!
 %! ## Dot assignment adds or overwrites a whole variable (here computed from Age).
 %! T.Senior = T.Age >= 40
@@ -93,7 +93,7 @@
 %!
 %! Age = [38; 43; 38; 40];
 %! Height = [71; 69; 64; 67];
-%! T = table (Age, Height);
+%! T = table (Age, Height)
 %!
 %! ## Chained reference: select a sub-table, then a variable, then an element.
 %! T(2:3, :).Age(1)
@@ -106,8 +106,8 @@
 %! ## Chaining is most useful with nested tables, reaching an inner variable
 %! ## directly — again both for reading and, unlike MATLAB, for writing.
 %!
-%! Inner = table ([1; 2; 3], [4; 5; 6], 'VariableNames', {'p', 'q'});
-%! NT = table ([10; 20; 30], Inner, 'VariableNames', {'id', 'inner'});
+%! Inner = table ([1; 2; 3], [4; 5; 6], 'VariableNames', {'p', 'q'})
+%! NT = table ([10; 20; 30], Inner, 'VariableNames', {'id', 'inner'})
 %!
 %! ## Read the 2nd element of inner variable q.
 %! NT.inner.q(2)

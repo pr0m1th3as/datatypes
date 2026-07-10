@@ -6,7 +6,7 @@
 %! Name = categorical ({'Li'; 'Li'; 'Diaz'; 'Diaz'});
 %! Month = categorical ({'Jan'; 'Feb'; 'Jan'; 'Feb'});
 %! Value = [1; 3; 2; 4];
-%! T = table (Name, Month, Value);
+%! T = table (Name, Month, Value)
 %! unstack (T, 'Value', 'Month')
 %!
 %! ## Each distinct `Month` becomes its own column, with one row per `Name`.

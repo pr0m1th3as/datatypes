@@ -5,5 +5,5 @@
 %!
 %! Age = [38; 43; 40];
 %! Height = [71; 69; 64];
-%! T = table (Age, Height, 'RowNames', {'Li', 'Diaz', 'Brown'});
+%! T = table (Age, Height, 'RowNames', {'Li', 'Diaz', 'Brown'})
 %! rows2vars (T)

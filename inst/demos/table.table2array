@@ -5,7 +5,7 @@
 %!
 %! Age = [38; 43; 40];
 %! BloodPressure = [124, 93; 109, 77; 117, 75];
-%! T = table (Age, BloodPressure);
+%! T = table (Age, BloodPressure)
 %! A = table2array (T)
 %!
 %! ## The 3-by-2 table becomes a 3-by-3 numeric matrix, because `BloodPressure`

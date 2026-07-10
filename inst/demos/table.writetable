@@ -4,7 +4,7 @@
 %! ## metadata.  The file type follows the extension; `'Delimiter'` sets the
 %! ## separator for text files.
 %!
-%! T = table ([38; 43; 40], [71; 69; 64], 'VariableNames', {'Age', 'Height'});
+%! T = table ([38; 43; 40], [71; 69; 64], 'VariableNames', {'Age', 'Height'})
 %! filename = fullfile (tempdir (), 'patients.txt');
 %! writetable (T, filename, 'Delimiter', 'tab');
 %! type (filename)
@@ -16,7 +16,7 @@
 %! ## emit the row names as the leading column — `readtable` reads it straight back.
 %!
 %! T = table ([38; 43], [71; 69], 'VariableNames', {'Age', 'Height'}, ...
-%!            'RowNames', {'Li', 'Diaz'});
+%!            'RowNames', {'Li', 'Diaz'})
 %! filename = fullfile (tempdir (), 'patients.ods');
 %! writetable (T, filename, 'Sheet', 'Cohort', 'WriteRowNames', true);
 %! readtable (filename, 'Sheet', 'Cohort', 'ReadRowNames', true)

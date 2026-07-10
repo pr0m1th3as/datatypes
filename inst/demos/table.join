@@ -6,8 +6,8 @@
 %! ## appended to each matched left row.
 %!
 %! L = table ({'Li'; 'Diaz'; 'Brown'}, [38; 40; 49], ...
-%!            'VariableNames', {'Name', 'Age'});
+%!            'VariableNames', {'Name', 'Age'})
 %! R = table ({'Li'; 'Diaz'; 'Brown'}, categorical ({'NY'; 'CA'; 'MA'}), ...
 %!            logical ([1; 0; 1]), ...
-%!            'VariableNames', {'Name', 'State', 'Smoker'});
+%!            'VariableNames', {'Name', 'State', 'Smoker'})
 %! join (L, R)

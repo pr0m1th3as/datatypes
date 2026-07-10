@@ -6,7 +6,7 @@
 %! Name = {'Li'; 'Diaz'};
 %! Jan = [1; 2];
 %! Feb = [3; 4];
-%! T = table (Name, Jan, Feb);
+%! T = table (Name, Jan, Feb)
 %! stack (T, {'Jan', 'Feb'}, ...
 %!        'NewDataVariableName', 'Value', 'IndexVariableName', 'Month')
 %!

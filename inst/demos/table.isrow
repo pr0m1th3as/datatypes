@@ -2,9 +2,9 @@
 %! ## A table is a *row* when it has exactly one row of data, whatever the
 %! ## number of variables.
 %!
-%! T1 = table (38, true, 71, 'VariableNames', {'Age', 'Smoker', 'Height'});
+%! T1 = table (38, true, 71, 'VariableNames', {'Age', 'Smoker', 'Height'})
 %! isrow (T1)
 %!
 %! ## Add a second row and it is no longer a row vector.
-%! T2 = table ([38; 43], [true; false], [71; 69]);
+%! T2 = table ([38; 43], [true; false], [71; 69])
 %! isrow (T2)

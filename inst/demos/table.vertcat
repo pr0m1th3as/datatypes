@@ -4,9 +4,9 @@
 %! ## bracket syntax calls it for you.
 %!
 %! A = table (string ({'Li'; 'Diaz'}), [38; 40], categorical ({'M'; 'F'}), ...
-%!            'VariableNames', {'Name', 'Age', 'Gender'});
+%!            'VariableNames', {'Name', 'Age', 'Gender'})
 %! B = table (string ({'Brown'; 'Lee'}), [49; 30], categorical ({'M'; 'M'}), ...
-%!            'VariableNames', {'Name', 'Age', 'Gender'});
+%!            'VariableNames', {'Name', 'Age', 'Gender'})
 %! [A; B]
 
 %!demo
@@ -14,12 +14,12 @@
 %! ## unchanged: a *variable*-scoped custom property carries straight through, and a
 %! ## *table*-scoped one is kept when the operands agree.
 %!
-%! A = table ([38; 40], categorical ({'M'; 'F'}), 'VariableNames', {'Age', 'Gender'});
+%! A = table ([38; 40], categorical ({'M'; 'F'}), 'VariableNames', {'Age', 'Gender'})
 %! A = addprop (A, {'Study', 'Source'}, {'table', 'variable'});
 %! A.Properties.CustomProperties.Study = 'Cohort-7';
 %! A.Properties.CustomProperties.Source = {'intake', 'intake'};
 %!
-%! B = table ([49; 30], categorical ({'M'; 'M'}), 'VariableNames', {'Age', 'Gender'});
+%! B = table ([49; 30], categorical ({'M'; 'M'}), 'VariableNames', {'Age', 'Gender'})
 %! B = addprop (B, {'Study', 'Source'}, {'table', 'variable'});
 %! B.Properties.CustomProperties.Study = 'Cohort-7';
 %! B.Properties.CustomProperties.Source = {'intake', 'intake'};

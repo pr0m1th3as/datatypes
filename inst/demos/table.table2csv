@@ -5,7 +5,7 @@
 %!
 %! Age = [38; 43; 40];
 %! Height = [71; 69; 64];
-%! T = table (Age, Height);
+%! T = table (Age, Height)
 %! T.Properties.VariableUnits = {'Yrs', 'in'};
 %!
 %! filename = fullfile (tempdir (), 'patients.csv');

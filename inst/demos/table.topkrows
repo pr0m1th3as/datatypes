@@ -5,7 +5,7 @@
 %!
 %! LastName = {'Sanchez'; 'Johnson'; 'Li'; 'Diaz'; 'Brown'};
 %! Age = [38; 43; 38; 40; 49];
-%! T = table (Age, 'RowNames', LastName);
+%! T = table (Age, 'RowNames', LastName)
 %! topkrows (T, 3, 'Age')
 %!
 %! ## Add a direction to take the *smallest* instead, and capture the index of
