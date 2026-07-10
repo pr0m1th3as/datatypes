@@ -301,9 +301,7 @@
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/datetime.m">datetime</a>
 </p>
 </div>
-        <h4 class="d-inline-block my-3">
-          Properties
-        </h4>
+        <p class="lead my-3">The <code>datetime</code> class contains the following properties:</p>
 
         <div class="container-xl my-1">
           <div class="row">
@@ -394,122 +392,77 @@ Time zone
           </div>
         </div>
 
-        <h4 class="d-inline-block my-3">
-          Methods
-        </h4>
+        <p class="lead my-3">The <code>datetime</code> class offers the following public methods:</p>
 
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#colapsibleConstructor"
-              aria-expanded="false" aria-controls="colapsibleConstructor">
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup1"
+              aria-expanded="false" aria-controls="collapseGroup1">
               <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>datetime</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Create a new array of datetime values.
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Create and convert 'datetime' type</h4>
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="colapsibleConstructor">
+          <div class="collapse multi-collapse" id="collapseGroup1">
             <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<code>'now'</code>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<code>'today'</code>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<code>'tomorrow'</code>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<code>'yesterday'</code>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>DateStrings</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>DateStrings</var>, <code>'InputFormat'</code>, <var>INFMT</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>DateStrings</var>,<code>'InputFormat'</code>, <var>INFMT</var>, <code>'PivotYear'</code>, <var>PIVOT</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>DateVectors</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>Y</var>, <var>MO</var>, <var>D</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>, <var>S</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>, <var>S</var>, <var>MS</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>X</var>, <code>'ConvertFrom'</code>, <var>TYPE</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (&hellip;, <code>'Format'</code>, <var>FMT</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (&hellip;, <code>'TimeZone'</code>, <var>TZ</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>T</var> = datetime (<code>'now'</code>)</code> returns a scalar datetime array
- corresponding to the current date and time. <code><var>T</var> = datetime
- (<code>'now'</code>)</code> is the same as <code><var>T</var> = datetime ()</code>.  Except for
- <code>'now'</code>, the same syntax can be used with <code>'today'</code>,
- <code>'tomorrow'</code> and <code>'yesterday'</code>.  These options return the
- respective date but with time set at midnight.
-</p>
-<p> <code><var>T</var> = datetime (<var>DateStrings</var>)</code> creates a datetime array
- from the text in <var>DateStrings</var> representing points in time.  In
- current implementation, <var>DateStrings</var> are parsed by Octave&rsquo;s core
- <code>datevec</code> function, hence supported text formats are currently those
- supported by <code>datevec</code>.
-</p>
-<p> <code><var>T</var> = datetime (<var>DateStrings</var>, <code>'InputFormat'</code>,
- <var>INFMT</var>)</code> also allows to specify a particular input text format to
- parse <var>DateStrings</var>.  It is always preferable to specify the format
- <var>INFMT</var> if it is known.  Formats which do not specify a particular
- time component will have the value set to zero.  Formats which do not
- a date will default to January 1st of the current year.
-</p>
-<p> <code><var>T</var> = datetime (<var>DateStrings</var>, <code>'InputFormat'</code>,
- <var>INFMT</var>, <code>'PivotYear'</code>, <var>PIVOT</var>)</code> also allows to specify a
- pivot year, which refers to the year at the start of the century to which
- two-digit years will be referenced.  When not specified, it defaults to
- the current years minus 50.
-</p>
-<p> <code><var>T</var> = datetime (<var>DateVectors</var>)</code> creates a column vector of
- datetime values from the date vectors in <var>DateVectors</var>.
-</p>
-<p> <code><var>T</var> = datetime (<var>Y</var>, <var>MO</var>, <var>D</var></code> creates an array of
- datetime values for corresponding elements of the <var>Y</var>, <var>MO</var>, and
- <var>D</var> arrays, which must be of the same size or scalars, must contain
- integer values, and they correspond to years, months, and days,
- respectively.
-</p>
-<p> <code><var>T</var> = datetime (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>,
- <var>S</var>)</code> also adds time components to the constructed datetime arrays.
- <var>H</var>, <var>MI</var>, and <var>S</var> must be of the same size or scalars.
- <var>H</var> and <var>MI</var> must contain integer values, whereas <var>S</var> may
- also contain a fractional part.
-</p>
-<p> <code><var>T</var> = datetime (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>,
- <var>S</var>, <var>MS</var>)</code> also adds a milliseconds component, <var>MS</var>, which
- may also have a fractional part.
-</p>
-<p> <code><var>T</var> = datetime (<var>X</var>, <code>'ConvertFrom'</code>, <var>TYPE</var>)</code>
- converts the numeric values in <var>X</var> to a datetime array according to
- the data type specified by <var>TYPE</var>.  The following types are
- supported:
-</p>
-<ul>
-<li> <code>'datenum'</code>
-</li><li> <code>'excel'</code>
-</li><li> <code>'posixtime'</code>
-</li><li> <code>'epochtime'</code>
-</li></ul>
-
-<p> <code><var>T</var> = datetime (&hellip;, <code>'Format'</code>, <var>FMT</var>)</code>
- specifies the display format of the values in the output datetime array.
- Currently, only the default display format is implemented.
-</p>
-<p> <code><var>T</var> = datetime (&hellip;, <code>'TimeZone'</code>, <var>TZ</var>)</code> sets
- the time zone to the values in the output datetime array.  If not
- specified, the computer&rsquo;s local timezone is used.  Supported time zones
- are specified in the IANA&rsquo;s Time Zone Database.  You may specify a new
- time zone by setting the <code>'TimeZone'</code> property of the datetime
- array, in which case the new datetime values may include Daylight Saving
- Time (DST) in their computation.
-</p>
-<p> <strong>See also: </strong>
-  <a href="NaT.html">NaT</a>, 
-  <a href="datetime.html">datetime</a>, 
-  <a href="isdatetime.html">isdatetime</a>, 
-  <a href="calendarDuration.html">calendarDuration</a>, 
-  <a href="duration.html">duration</a>
-</p>
-
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="datetime.datetime.html">datetime</a></code></b></td>
+                        <td>Create a new array of datetime values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.dispstrings.html">dispstrings</a></code></b></td>
+                        <td>Get display formatted strings for each element of a datetime object.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.cellstr.html">cellstr</a></code></b></td>
+                        <td>Convert datetime array to a cell array of character vectors.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.char.html">char</a></code></b></td>
+                        <td>Convert datetime array to a character matrix.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.ymd.html">ymd</a></code></b></td>
+                        <td>Year, Month, and Day components of datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.hms.html">hms</a></code></b></td>
+                        <td>Hour, Minute, and Second components of a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.year.html">year</a></code></b></td>
+                        <td>Year component of a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.quarter.html">quarter</a></code></b></td>
+                        <td>Quarter component of a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.month.html">month</a></code></b></td>
+                        <td>Month component of a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.day.html">day</a></code></b></td>
+                        <td>Day component of a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.hour.html">hour</a></code></b></td>
+                        <td>Hour component of a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.minute.html">minute</a></code></b></td>
+                        <td>Minute component of a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.second.html">second</a></code></b></td>
+                        <td>Seconds component of a datetime array.</td>
+                      </tr>
+                    </tbody>
+                  </table>
 
             </div>
           </div>
@@ -518,30 +471,40 @@ Create a new array of datetime values.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod1"
-              aria-expanded="false" aria-controls="collapseMethod1">
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup2"
+              aria-expanded="false" aria-controls="collapseGroup2">
               <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>dispstrings</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Get display formatted strings for each element of a datetime object.
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Summary Information</h4>
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod1">
+          <div class="collapse multi-collapse" id="collapseGroup2">
             <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>cstr</var> = <b>dispstrings</b> (<var>T</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>cstr</var> = dispstrings (<var>T</var>)</code> returns a cellstr array of
- character vectors, <var>cstr</var>, which has the same size as the input
- datetime <var>T</var>.
-</p>
-
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="datetime.size.html">size</a></code></b></td>
+                        <td>Size of a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.ndims.html">ndims</a></code></b></td>
+                        <td>Number of dimensions in a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.numel.html">numel</a></code></b></td>
+                        <td>Total number of elements in a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.length.html">length</a></code></b></td>
+                        <td>Length of a datetime vector.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.keyHash.html">keyHash</a></code></b></td>
+                        <td>Generate a hash code for datetime array.</td>
+                      </tr>
+                    </tbody>
+                  </table>
 
             </div>
           </div>
@@ -550,31 +513,24 @@ Get display formatted strings for each element of a datetime object.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod2"
-              aria-expanded="false" aria-controls="collapseMethod2">
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup3"
+              aria-expanded="false" aria-controls="collapseGroup3">
               <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>cellstr</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Convert datetime array to a cell array of character vectors.
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Convert to other Numeric Representations</h4>
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod2">
+          <div class="collapse multi-collapse" id="collapseGroup3">
             <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>cstr</var> = <b>cellstr</b> (<var>T</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>cstr</var> = <b>cellstr</b> (<var>T</var>, <var>Format</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>cstr</var> = cellstr (<var>T</var>)</code> returns a cellstr array of
- character vectors, <var>cstr</var>, which has the same size as the input
- datetime <var>T</var>.
-</p>
-
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="datetime.datevec.html">datevec</a></code></b></td>
+                        <td>Convert datetime array to date vectors.</td>
+                      </tr>
+                    </tbody>
+                  </table>
 
             </div>
           </div>
@@ -583,30 +539,60 @@ Convert datetime array to a cell array of character vectors.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod3"
-              aria-expanded="false" aria-controls="collapseMethod3">
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup4"
+              aria-expanded="false" aria-controls="collapseGroup4">
               <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>char</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Convert datetime array to a character matrix.
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Query Operations</h4>
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod3">
+          <div class="collapse multi-collapse" id="collapseGroup4">
             <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>cmat</var> = <b>char</b> (<var>T</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>cmat</var> = <b>char</b> (<var>T</var>, <var>Format</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>cmat</var> = char (<var>T</var>)</code> returns a character matrix with one
- row per element in <var>T</var>.
-</p>
-
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="datetime.iscolumn.html">iscolumn</a></code></b></td>
+                        <td>Return true if datetime array is a column vector.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.isempty.html">isempty</a></code></b></td>
+                        <td>Return true if datetime array is empty.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.isfinite.html">isfinite</a></code></b></td>
+                        <td>Test for finite elements in datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.isinf.html">isinf</a></code></b></td>
+                        <td>Test for infinite elements in datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.ismatrix.html">ismatrix</a></code></b></td>
+                        <td>Return true if datetime array is a 2-D array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.ismissing.html">ismissing</a></code></b></td>
+                        <td>Test for missing elements in datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.isnat.html">isnat</a></code></b></td>
+                        <td>Test for Not-A-Time elements in datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.isrow.html">isrow</a></code></b></td>
+                        <td>Return true if datetime array is a row vector.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.isscalar.html">isscalar</a></code></b></td>
+                        <td>Return true if datetime array is a scalar.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.isvector.html">isvector</a></code></b></td>
+                        <td>Return true if datetime array is a vector.</td>
+                      </tr>
+                    </tbody>
+                  </table>
 
             </div>
           </div>
@@ -615,1358 +601,68 @@ Convert datetime array to a character matrix.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod4"
-              aria-expanded="false" aria-controls="collapseMethod4">
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup5"
+              aria-expanded="false" aria-controls="collapseGroup5">
               <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>ymd</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Year, Month, and Day components of datetime array.
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Array Operations</h4>
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod4">
+          <div class="collapse multi-collapse" id="collapseGroup5">
             <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: [<var>Y</var>, <var>M</var>, <var>D</var>] = <b>ymd</b> (<var>T</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code>[<var>Y</var>, <var>M</var>, <var>D</var>] = ymd (<var>T</var>)</code> returns the year,
- month, and day components of the corresponding datetime values in <var>T</var>
- as separate numeric arrays.  <var>Y</var>, <var>M</var>, <var>D</var> contain integer
- values and have the same size as <var>T</var>.  Not-A-Time (<code>NaT</code>)
- values in <var>T</var> are returned as <code>NaN</code> in the output arrays.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod5"
-              aria-expanded="false" aria-controls="collapseMethod5">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>hms</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Hour, Minute, and Second components of a datetime array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod5">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: [<var>h</var>, <var>m</var>, <var>s</var>] = <b>hms</b> (<var>T</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code>[<var>h</var>, <var>m</var>, <var>s</var>] = hms (<var>T</var>)</code> returns the hour,
- minute, and second components of the corresponding datetime values in
- <var>T</var> as separate numeric arrays.  <var>h</var> and <var>m</var> contain integer
- values and <var>s</var> may also contain a fractional part.  All outputs have
- the same size as <var>T</var>.  Not-A-Time (<code>NaT</code>) values in <var>T</var> are
- returned as <code>NaN</code> in the output arrays.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod6"
-              aria-expanded="false" aria-controls="collapseMethod6">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>year</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Year component of a datetime array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod6">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>Y</var> = <b>year</b> (<var>T</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>Y</var> = year (<var>T</var>)</code> returns the year number for each element
- of the input datetime array <var>T</var>.  The output <var>Y</var> is a
- <code>double</code> array and it has the same size as <var>T</var>.  Not-A-Time
- (<code>NaT</code>) values in <var>T</var> are returned as <code>NaN</code> in the output
- array.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod7"
-              aria-expanded="false" aria-controls="collapseMethod7">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>quarter</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Quarter component of a datetime array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod7">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>Q</var> = <b>quarter</b> (<var>T</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>Q</var> = quarter (<var>T</var>)</code> returns the quarter number for each
- element of the input datetime array <var>T</var>.  The output <var>Q</var> is a
- <code>double</code> array containing integer values in the range <math>[1, 4]</math>
- and it has the same size as <var>T</var>.  Not-A-Time (<code>NaT</code>) values in
- <var>T</var> are returned as <code>NaN</code> in the output array.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod8"
-              aria-expanded="false" aria-controls="collapseMethod8">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>month</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Month component of a datetime array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod8">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>M</var> = <b>month</b> (<var>T</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>M</var> = <b>month</b> (<var>T</var>, <var>monthType</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>M</var> = month (<var>T</var>)</code> returns the month number for each
- element of the input datetime array <var>T</var>.  The output <var>M</var> is a
- <code>double</code> array containing integer values in the range
- <math>[1, 12]</math> and it has the same size as <var>T</var>.  Not-A-Time
- (<code>NaT</code>) values in <var>T</var> are returned as <code>NaN</code> in the output
- array.
-</p>
-<p> <code><var>M</var> = month (<var>T</var>, <var>monthType</var>)</code> returns the month
- number or name for each element of the input datetime array <var>T</var> as
- specified by <var>monthType</var>, which may have any of the following
- options:
-</p>
-<ul>
-<li> <code>'monthofyear'</code> (default) returns the month number in a
- numeric array.
-</li><li> <code>'name'</code> returns the corresponding full name of the month in
- a cell array of character vectors.
-</li><li> <code>'shortname'</code> returns the corresponding 3-letter abbreviation
- of the month in a cell array of character vectors.
-</li></ul>
-
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod9"
-              aria-expanded="false" aria-controls="collapseMethod9">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>day</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Day component of a datetime array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod9">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>D</var> = <b>day</b> (<var>T</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>D</var> = <b>day</b> (<var>T</var>, <var>dayType</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>D</var> = day (<var>T</var>)</code> returns the day number for each element of
- the input datetime array <var>T</var>.  The output <var>D</var> is a <code>double</code>
- array containing integer values in the range <math>[1, 31]</math>, depending on
- the month and year, and it has the same size as <var>T</var>.  Not-A-Time
- (<code>NaT</code>) values in <var>T</var> are returned as <code>NaN</code> in the output
- array.
-</p>
-<p> <code><var>D</var> = day (<var>T</var>, <var>dayType</var>)</code> returns the day number or
- name for each element of the input datetime array <var>T</var> as specified by
- <var>dayType</var>, which may have any of the following options:
-</p>
-<ul>
-<li> <code>'dayofmonth'</code> (default) returns the day-of-month number in a
- numeric array.  Depending on the month and year, it can range from 1 to
- 28, 29, 30, or 31.
-</li><li> <code>'dayofweek'</code> returns the day-of-week number in a numeric
- array of <code>double</code> integer values ranging from 1 to 7, where 1
- corresponds to Sunday.
-</li><li> <code>'iso-dayofweek'</code> returns the day-of-week number in a numeric
- array of <code>double</code> integer values ranging from 1 to 7, where 1
- corresponds to Monday according to the ISO 8601 standard.
-</li><li> <code>'dayofyear'</code> returns the day-of-year number in a numeric
- array of <code>double</code> integer values ranging from 1 to 365 or 366,
- depending on the year.
-</li><li> <code>'name'</code> returns the corresponding full name of the day in
- a cell array of character vectors.
-</li><li> <code>'shortname'</code> returns the corresponding 3-letter abbreviation
- of the day in a cell array of character vectors.
-</li></ul>
-
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod10"
-              aria-expanded="false" aria-controls="collapseMethod10">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>hour</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Hour component of a datetime array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod10">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>h</var> = <b>hour</b> (<var>T</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>h</var> = hour (<var>T</var>)</code> returns the hour number for each element
- of the input datetime array <var>T</var>.  The output <var>h</var> is a
- <code>double</code> array containing integer values in the range
- <math>[0, 23]</math> and it has the same size as <var>T</var>.  Not-A-Time
- (<code>NaT</code>) values in <var>T</var> are returned as <code>NaN</code> in the output
- array.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod11"
-              aria-expanded="false" aria-controls="collapseMethod11">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>minute</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Minute component of a datetime array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod11">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>m</var> = <b>minute</b> (<var>T</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>m</var> = minute (<var>T</var>)</code> returns the minute number for each
- element of the input datetime array <var>T</var>.  The output <var>m</var> is a
- <code>double</code> array containing integer values in the range
- <math>[0, 59]</math> and it has the same size as <var>T</var>.  Not-A-Time
- (<code>NaT</code>) values in <var>T</var> are returned as <code>NaN</code> in the output
- array.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod12"
-              aria-expanded="false" aria-controls="collapseMethod12">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>second</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Seconds component of a datetime array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod12">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>s</var> = <b>second</b> (<var>T</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>s</var> = <b>second</b> (<var>T</var>, <var>secondType</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>s</var> = second (<var>T</var>)</code> returns the number of seconds for each
- element of the input datetime array <var>T</var>.  The output <var>s</var> is a
- <code>double</code> array containing values in the range <math>[1, 60)</math>,
- including any fractional part of the second, and it has the same size as
- <var>T</var>.  Not-A-Time (<code>NaT</code>) values in <var>T</var> are returned as
- <code>NaN</code> in the output array.
-</p>
-<p> <code><var>s</var> = second (<var>T</var>, <var>secondType</var>)</code> returns the seconds
- for each element of the input datetime array <var>T</var> as specified by
- <var>secondType</var>, which may have any of the following options:
-</p>
-<ul>
-<li> <code>'secondofminute'</code> (default) returns the second of the minute
- in a numeric array, in the range <math>[1, 60)</math>.
-</li><li> <code>'secondofday'</code> returns the second of the day in a numeric
- array, in the range <math>[1, 86400)</math>.
-</li></ul>
-
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod13"
-              aria-expanded="false" aria-controls="collapseMethod13">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>size</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Size of a datetime array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod13">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>sz</var> = <b>size</b> (<var>T</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>dim_sz</var> = <b>size</b> (<var>T</var>, <var>dim</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>dim_sz</var> = <b>size</b> (<var>T</var>, <var>d1</var>, <var>d2</var>, &hellip;)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b> (&hellip;)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>sz</var> = size (<var>T</var>)</code> returns a row vector with the size
- (number of elements) of each dimension for the datetime array <var>T</var>.
-</p>
-<p> <code><var>dim_sz</var> = size (<var>T</var>, <var>dim</var>)</code> returns the size of
- the corresponding dimension specified in <var>dim</var>.  If <var>dim</var> is a
- vector, then <var>dim_sz</var> is a vector of the same length and with each
- element corresponding to a specified dimension.  Multiple dimensions may
- also be specified as separate arguments.
-</p>
-<p> With a single output argument, <code>size</code> returns a row vector.  When
- called with multiple output arguments, <code>size</code> returns the size of
- dimension N in the Nth argument.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod14"
-              aria-expanded="false" aria-controls="collapseMethod14">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>ndims</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Number of dimensions in a datetime array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod14">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>out</var> = <b>ndims</b> (<var>T</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>out</var> = ndims (<var>T</var>)</code> returns the number of dimensions of
- the datetime array <var>T</var>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod15"
-              aria-expanded="false" aria-controls="collapseMethod15">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>numel</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Total number of elements in a datetime array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod15">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>out</var> = <b>numel</b> (<var>T</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>out</var> = numel (<var>T</var>)</code> returns the number of elements in the
- datetime array <var>T</var>, which is the product of the sizes of its
- dimensions.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod16"
-              aria-expanded="false" aria-controls="collapseMethod16">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>length</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Length of a datetime vector.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod16">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>N</var> = <b>length</b> (<var>T</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>N</var> = length (<var>T</var>)</code> returns the size of the longest
- dimension of the datetime array <var>T</var>, unless any of its dimensions
- has zero length, in which case <code>length (<var>T</var>)</code> returns 0.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod17"
-              aria-expanded="false" aria-controls="collapseMethod17">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>keyHash</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Generate a hash code for datetime array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod17">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>hey</var> = <b>keyHash</b> (<var>T</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>h</var> = keyHash (<var>T</var>)</code> generates a <code>uint64</code> scalar that
- represents the input array <var>T</var>.  <code>keyHash</code> utilizes the 64-bit
- FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
-</p>
-<p> <code><var>h</var> = keyHash (<var>T</var>), <var>base</var></code> also generates a 64-bit
- hash code using <var>base</var> as the offset basis for the FNV-1a hash
- algorithm.  <var>base</var> must be a <code>uint64</code> integer type scalar.  Use
- this syntax to cascade <code>keyHash</code> on multiple objects for which a
- single hash code is required.
-</p>
-<p> Note that unlike MATLAB, this implementation does not use any random
- seed.  As a result, <code>keyHash</code> will always generate the exact same
- hash key for any particular input across different workers and Octave
- sessions.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod18"
-              aria-expanded="false" aria-controls="collapseMethod18">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>datevec</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Convert datetime array to date vectors.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod18">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>DV</var> = <b>datevec</b> (<var>T</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>DV</var> = datevec (<var>T</var>)</code> returns a numeric matrix with one row
- per element in <var>T</var>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod19"
-              aria-expanded="false" aria-controls="collapseMethod19">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>iscolumn</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Return true if datetime array is a column vector.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod19">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>TF</var> = <b>iscolumn</b> (<var>T</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>TF</var> = iscolumn (<var>T</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code>, if the datetime array <var>T</var> is a column
- vector, and <code>false</code> otherwise.  A column vector is a 2-D array for
- which <code>size (<var>X</var>)</code> returns <code>[<var>N</var>, 1]</code> with non-negative
- <var>N</var>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod20"
-              aria-expanded="false" aria-controls="collapseMethod20">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>isempty</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Return true if datetime array is empty.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod20">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>TF</var> = <b>isempty</b> (<var>T</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>TF</var> = isempty (<var>T</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code>, if the datetime array <var>T</var> is empty, and
- <code>false</code> otherwise.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod21"
-              aria-expanded="false" aria-controls="collapseMethod21">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>isfinite</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Test for finite elements in datetime array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod21">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>out</var> = <b>isfinite</b> (<var>T</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>TF</var> = isfinite (<var>T</var>)</code> returns a logical array <var>TF</var> of
- the same size as <var>T</var> containing <code>true</code> for each corresponding
- element of <var>T</var> that is finite and <code>false</code> otherwise.  Finite
- elements in datetime arrays are those which are neither <code>Inf</code> nor
- <code>NaT</code>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod22"
-              aria-expanded="false" aria-controls="collapseMethod22">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>isinf</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Test for infinite elements in datetime array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod22">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>out</var> = <b>isinf</b> (<var>T</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>TF</var> = isinf (<var>T</var>)</code> returns a logical array <var>TF</var> of the
- same size as <var>T</var> containing <code>true</code> for each corresponding
- element of <var>T</var> that is infinite and <code>false</code> otherwise.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod23"
-              aria-expanded="false" aria-controls="collapseMethod23">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>ismatrix</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Return true if datetime array is a 2-D array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod23">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>TF</var> = <b>ismatrix</b> (<var>T</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>TF</var> = ismatrix (<var>T</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code>, if the datetime array <var>T</var> is a matrix, and
- <code>false</code> otherwise.  A matrix is an array of any type where
- <code>ndims (<var>X</var>) == 2</code> and for which <code>size (<var>X</var>)</code> returns
- <code>[<var>H</var>, <var>W</var>]</code> with non-negative <var>H</var> and <var>W</var>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod24"
-              aria-expanded="false" aria-controls="collapseMethod24">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>ismissing</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Test for missing elements in datetime array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod24">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>TF</var> = <b>ismissing</b> (<var>T</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>TF</var> = <b>ismissing</b> (<var>T</var>, <var>indicator</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <var>TF</var> is a logical array of the same size as <var>T</var>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod25"
-              aria-expanded="false" aria-controls="collapseMethod25">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>isnat</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Test for Not-A-Time elements in datetime array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod25">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>TF</var> = <b>isnat</b> (<var>T</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>TF</var> = isnat (<var>T</var>)</code> returns a logical array <var>TF</var> of the
- same size as <var>T</var> containing <code>true</code> for each corresponding
- element of <var>T</var> that is Not-A-Time (<code>NaT</code>) and <code>false</code>
- otherwise.  <code>NaT</code> is the equivalent of <code>NaN</code> in numeric
- arrays.
-</p>
-<p> If <var>T</var> is not a datetime array, <code>isnat</code> returns an error.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod26"
-              aria-expanded="false" aria-controls="collapseMethod26">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>isrow</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Return true if datetime array is a row vector.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod26">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>TF</var> = <b>isrow</b> (<var>T</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>TF</var> = isrow (<var>T</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code>, if the datetime array <var>T</var> is a row vector,
- and <code>false</code> otherwise.  A row vector is a 2-D array for which
- <code>size (<var>X</var>)</code> returns <code>[1, <var>N</var>]</code> with non-negative
- <var>N</var>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod27"
-              aria-expanded="false" aria-controls="collapseMethod27">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>isscalar</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Return true if datetime array is a scalar.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod27">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>TF</var> = <b>isscalar</b> (<var>T</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>TF</var> = isscalar (<var>T</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code>, if the datetime array <var>T</var> is also a scalar,
- and <code>false</code> otherwise.  A scalar is a single element object for
- which <code>size (<var>X</var>)</code> returns <code>[1, 1]</code>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod28"
-              aria-expanded="false" aria-controls="collapseMethod28">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>isvector</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Return true if datetime array is a vector.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod28">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>TF</var> = <b>isvector</b> (<var>T</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>TF</var> = isvector (<var>T</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the datetime array <var>T</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod29"
-              aria-expanded="false" aria-controls="collapseMethod29">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>cat</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Concatenate datetime arrays.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod29">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>C</var> = <b>cat</b> (<var>dim</var>, <var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>C</var> = cat (<var>dim</var>, <var>A</var>, <var>B</var>, &hellip;)</code> concatenates
- datetime arrays <var>A</var>, <var>B</var>, &hellip; along dimension <var>dim</var>.  All
- input arrays must be datetime arrays and have the same size except along
- the operating dimension <var>dim</var>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod30"
-              aria-expanded="false" aria-controls="collapseMethod30">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>horzcat</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Horizontal concatenation of datetime arrays.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod30">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>C</var> = <b>horzcat</b> (<var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>C</var> = horzcat (<var>A</var>, <var>B</var>, &hellip;</code> is the equivalent of
- the syntax <code><var>B</var> = [<var>A</var>, <var>B</var>, &hellip;]</code> and horizontally
- concatenates the datetime arrays <var>A</var>, <var>B</var>, &hellip;.  All input
- arrays must be datetime arrays and have the same size except along the
- second dimension.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod31"
-              aria-expanded="false" aria-controls="collapseMethod31">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>vertcat</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Vertical concatenation of datetime arrays.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod31">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>C</var> = <b>vertcat</b> (<var>A</var>, <var>B</var>, &hellip;)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>C</var> = vertcat (<var>A</var>, <var>B</var>, &hellip;</code> is the equivalent of
- the syntax <code><var>B</var> = [<var>A</var>; <var>B</var>; &hellip;]</code> and vertically
- concatenates the datetime arrays <var>A</var>, <var>B</var>, &hellip;.  All input
- arrays must be datetime arrays and have the same size except along the
- second dimension.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod32"
-              aria-expanded="false" aria-controls="collapseMethod32">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>repmat</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Repeat copies of a datetime array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod32">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>B</var> = <b>repmat</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>B</var> = <b>repmat</b> (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>B</var> = <b>repmat</b> (<var>A</var>, <var>dimvec</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>B</var> = repmat (<var>A</var>, <var>n</var>)</code> returns a datetime array
- <var>B</var> containing <var>n</var> copies of the input datetime array <var>A</var>
- along every dimension of <var>A</var>.
-</p>
-<p> <code><var>B</var> = repmat (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code> returns an
- array <var>B</var> containing copies of <var>A</var> along the dimensions specified
- by the list of scalar integer values <var>d1</var>, &hellip;, <var>dN</var>, which
- specify how many copies of <var>A</var> are made in each dimension.
-</p>
-<p> <code><var>B</var> = repmat (<var>A</var>, <var>dimvec</var>)</code> is equivalent to the
- previous syntax with <code><var>dimvec</var> = [<var>d1</var>, &hellip;, <var>dN</var>]</code>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod33"
-              aria-expanded="false" aria-controls="collapseMethod33">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>repelem</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Repeat copies of datetime array elements.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod33">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>B</var> = <b>repelem</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>B</var> = <b>repelem</b> (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>B</var> = repelem (<var>A</var>, <var>n</var>)</code> returns a datetime vector
- <var>B</var> containing repeated elements of the input <var>A</var>, which must be
- a datetime vector.  If <var>n</var> is a scalar, each element of <var>A</var> is
- repeated <var>n</var> times along the non-singleton dimension of <var>A</var>.  If
- <var>n</var> is a vector, it must have the same elements as <var>A</var>, in which
- case it specifies the number of times to repeat each corresponding
- element of <var>A</var>.
-</p>
-<p> <code><var>B</var> = repelem (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code> returns
- an array <var>B</var> with each element of <var>A</var> repeated according to the
- the list of input arguments <code><var>d1</var>, &hellip;, <var>dN</var></code> each
- corresponding to a different dimension <code>1:ndims (<var>A</var>)</code> of the
- input array <var>A</var>.  <var>d1</var>, &hellip;, <var>dN</var> must be either scalars
- or vectors with the same length as the corresponding dimension of
- <var>A</var> containing non-negative integer values specifying the number of
- repetitions of each element along the corresponding dimension.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod34"
-              aria-expanded="false" aria-controls="collapseMethod34">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>repelems</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Construct a vector of repeated elements from a datetime array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod34">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>B</var> = <b>repelems</b> (<var>A</var>, <var>R</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>B</var> = repelems (<var>A</var>, <var>R</var>)</code> returns a datetime vector
- <var>B</var> containing repeated elements of the input <var>A</var>, which must be
- a datetime vector.  <var>R</var> must be a <math>2&times;N</math> matrix of integers.
- Entries in the first row of <var>R</var> correspond to the linear indexing of
- the elements in <var>A</var> to be repeated.  The corresponding entries in the
- second row of <var>R</var> specify the repeat count of each element.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod35"
-              aria-expanded="false" aria-controls="collapseMethod35">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>reshape</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Reshape datetime array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod35">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>B</var> = <b>reshape</b> (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>B</var> = <b>reshape</b> (<var>A</var>, &hellip;, <code>[]</code>, &hellip;)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>B</var> = <b>reshape</b> (<var>A</var>, <var>dimvec</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>B</var> = reshape (<var>A</var>, <var>d1</var>, &hellip;, <var>dN</var>)</code> returns
- a datetime array <var>B</var> with specified dimensions <var>d1</var>, &hellip;,
- <var>dN</var>, whose elements are taken columnwise from the datetime array
- <var>A</var>.  The product of <var>d1</var>, &hellip;, <var>dN</var> must equal the total
- number of elements in <var>A</var>.
-</p>
-<p> <code><var>B</var> = reshape (<var>A</var>, &hellip;, <code>[]</code>, &hellip;)</code> returns
- a datetime array <var>B</var> with one dimension unspecified which is
- calculated automatically so that the product of dimensions in <var>B</var>
- matches the total elements in <var>A</var>, which must be divisible the
- product of specified dimensions.  An empty matrix <code>([])</code> is used to
- flag the unspecified dimension.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod36"
-              aria-expanded="false" aria-controls="collapseMethod36">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>circshift</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Circularly shift the elements in a datetime array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod36">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>B</var> = <b>circshift</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>B</var> = <b>circshift</b> (<var>A</var>, <var>n</var>, <var>dim</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>B</var> = circshift (<var>A</var>, <var>n</var>)</code> circularly shifts the
- elements of the datetime array <var>A</var> according to <var>n</var>.  If <var>n</var>
- is a nonzero integer scalar, then the elements of <var>A</var> are shifted by
- <var>n</var> elements along the first non-singleton dimension of <var>A</var>.  If
- <var>n</var> is a vector, it must not be longer that the number of dimensions
- of <var>A</var> with each value of <var>n</var> corresponding to a dimension in
- <var>A</var>.   The sign of the value(s) in <var>n</var> specify the direction in
- the elements of <var>A</var> are shifted.
-</p>
-<p> <code><var>B</var> = circshift (<var>A</var>, <var>n</var>, <var>dim</var>)</code> circularly
- shifts the elements of the datetime array <var>A</var> along the dimension
- specified by <var>dim</var>.  In this case, <var>n</var> must be a scalar integer
- value.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod37"
-              aria-expanded="false" aria-controls="collapseMethod37">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>permute</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Generalized transpose for a datetime N-D array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod37">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>B</var> = <b>permute</b> (<var>A</var>, <var>dims</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>B</var> = permute (<var>A</var>, <var>dims</var>)</code> returns the generalized
- transpose of the datetime array <var>A</var> by rearranging its dimensions
- according to the permutation vector specified in <var>dims</var>.
-</p>
-<p> <var>dims</var> must index all the dimensions <code>1:ndims (<var>A</var>)</code> of the
- input array <var>A</var>, in any order, but only once.  The <var>N</var>th
- dimension of <var>A</var> gets remapped to the dimension in <var>B</var> specified
- by <code><var>dims</var>(<var>N</var>)</code>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod38"
-              aria-expanded="false" aria-controls="collapseMethod38">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>ipermute</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Inverse of the generalized transpose for a datetime N-D array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod38">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>A</var> = <b>ipermute</b> (<var>B</var>, <var>dims</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>A</var> = ipermute (<var>B</var>, <var>dims</var>)</code> returns the inverse of
- the generalized transpose performed by the <code>permute</code> function.  The
- expression <code>ipermute (permute (<var>A</var>, <var>dims</var>), <var>dims</var>)</code>
- returns the original array <var>A</var>.
-</p>
-<p> <var>dims</var> must index all the dimensions <code>1:ndims (<var>B</var>)</code> of the
- input array <var>B</var>, in any order, but only once.  The dimension of
- <var>B</var> specified in <code><var>dims</var>(<var>N</var>)</code> gets remapped to the
- <var>N</var>th dimension of <var>A</var>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod39"
-              aria-expanded="false" aria-controls="collapseMethod39">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>transpose</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Transpose a datetime matrix.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod39">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>B</var> = <b>transpose</b> (<var>A</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>B</var> = transpose (<var>A</var>)</code> is the equivalent of the syntax
- <code><var>B</var> = <var>A</var>.'</code> and returns the transpose of the datetime
- matrix <var>A</var>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod40"
-              aria-expanded="false" aria-controls="collapseMethod40">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>ctranspose</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Transpose a datetime matrix.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod40">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">datetime: <var>B</var> = <b>ctranspose</b> (<var>A</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>B</var> = ctranspose (<var>A</var>)</code> is the equivalent of the syntax
- <code><var>B</var> = <var>A</var>'</code> and returns the transpose of the datetime
- matrix <var>A</var>.  For datetime arrays, <code>ctranspose</code> is identical to
- <code>transpose</code>.
-</p>
-
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="datetime.cat.html">cat</a></code></b></td>
+                        <td>Concatenate datetime arrays.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.horzcat.html">horzcat</a></code></b></td>
+                        <td>Horizontal concatenation of datetime arrays.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.vertcat.html">vertcat</a></code></b></td>
+                        <td>Vertical concatenation of datetime arrays.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.repmat.html">repmat</a></code></b></td>
+                        <td>Repeat copies of a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.repelem.html">repelem</a></code></b></td>
+                        <td>Repeat copies of datetime array elements.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.repelems.html">repelems</a></code></b></td>
+                        <td>Construct a vector of repeated elements from a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.reshape.html">reshape</a></code></b></td>
+                        <td>Reshape datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.circshift.html">circshift</a></code></b></td>
+                        <td>Circularly shift the elements in a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.permute.html">permute</a></code></b></td>
+                        <td>Generalized transpose for a datetime N-D array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.ipermute.html">ipermute</a></code></b></td>
+                        <td>Inverse of the generalized transpose for a datetime N-D array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.transpose.html">transpose</a></code></b></td>
+                        <td>Transpose a datetime matrix.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.ctranspose.html">ctranspose</a></code></b></td>
+                        <td>Transpose a datetime matrix.</td>
+                      </tr>
+                    </tbody>
+                  </table>
 
             </div>
           </div>

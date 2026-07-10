@@ -316,6 +316,59 @@
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/struct2table.m">struct2table</a>
 </div>
+        <div class="card rounded my-4">
+          <div class="card-header card-header-mod">
+            <div class="row d-flex flex-wrap align-items-center">
+              <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                <h3 class="d-inline-block mr-2">
+                Example: 1
+                </h3>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+                <p><code>struct2table</code> maps a struct to a table.  A struct <em>array</em> becomes one row per element; a <em>scalar</em> struct whose fields are equal-length columns becomes one row per element of those columns.  Both give the same table here.</p>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> S = struct ('Name', {'Li'; 'Diaz'; 'Brown'}, 'Age', {38; 40; 49});
+ struct2table (S)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  3x2 table
+
+      Name       Age    
+    _________    ___    
+
+    {'Li'   }     38    
+    {'Diaz' }     40    
+    {'Brown'}     49</pre>
+
+          </div>
+        </div>
+
+        <div class="card rounded my-4">
+          <div class="card-header card-header-mod">
+            <div class="row d-flex flex-wrap align-items-center">
+              <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                <h3 class="d-inline-block mr-2">
+                Example: 2
+                </h3>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+                <p>When a scalar struct holds fields of <em>unequal</em> length, use <code>'AsArray', true</code> to wrap the whole struct as a single table row, each field one variable.</p>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> S.Values = [1, 2, 3];
+ S.Label = 'demo';
+ struct2table (S, 'AsArray', true)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  1x2 table
+
+      Values       Label     
+    ___________    ______    
+
+    1    2    3    'demo'</pre>
+
+          </div>
+        </div>
+
 
             </div>
           </div>

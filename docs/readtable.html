@@ -329,6 +329,63 @@ writetable,
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/readtable.m">readtable</a>
 </div>
+        <div class="card rounded my-4">
+          <div class="card-header card-header-mod">
+            <div class="row d-flex flex-wrap align-items-center">
+              <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                <h3 class="d-inline-block mr-2">
+                Example: 1
+                </h3>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+                <p><code>readtable</code> is the unified, MATLAB-compatible reader: it picks text vs spreadsheet from the file extension.  Here it reads a comma-delimited file, taking the first row as variable names and detecting each column's type.</p>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = table ([38; 43], [71.5; 69.0], 'VariableNames', {'Age', 'Height'});
+ filename = fullfile (tempdir (), 'patients.csv');
+ writetable (T, filename);
+ readtable (filename)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  2x2 table
+
+    Age    Height    
+    ___    ______    
+
+     38      71.5    
+     43        69</pre>
+
+          </div>
+        </div>
+
+        <div class="card rounded my-4">
+          <div class="card-header card-header-mod">
+            <div class="row d-flex flex-wrap align-items-center">
+              <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                <h3 class="d-inline-block mr-2">
+                Example: 2
+                </h3>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+                <p>Options let you override the defaults — for example read a specific spreadsheet <code>'Sheet'</code>, or turn the first column into row names.</p>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> filename = fullfile (tempdir (), 'patients.ods');
+ T = table ([38; 43], 'VariableNames', {'Age'}, 'RowNames', {'Li', 'Diaz'});
+ writetable (T, filename, 'WriteRowNames', true);
+ readtable (filename, 'ReadRowNames', true)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  2x1 table
+
+            Age    
+            ___    
+
+    Li       38    
+    Diaz     43</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> delete (filename);</pre>
+
+          </div>
+        </div>
+
 
             </div>
           </div>

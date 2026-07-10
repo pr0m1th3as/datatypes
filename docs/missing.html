@@ -287,37 +287,29 @@
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/missing.m">missing</a>
 </p>
 </div>
-        <h4 class="d-inline-block my-3">
-          Methods
-        </h4>
+        <p class="lead my-3">The <code>missing</code> class offers the following public methods:</p>
 
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#colapsibleConstructor"
-              aria-expanded="false" aria-controls="colapsibleConstructor">
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup1"
+              aria-expanded="false" aria-controls="collapseGroup1">
               <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>missing</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Create missing values.
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Create and convert 'missing' type</h4>
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="colapsibleConstructor">
+          <div class="collapse multi-collapse" id="collapseGroup1">
             <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">missing: <var>M</var> = <b>missing</b> ()</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code>missing</code> always returns a scalar missing value.  Use <code>repmat</code>
- to expand a scalar missing value to a missing array of desired
- dimensions.
-</p>
-
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="missing.missing.html">missing</a></code></b></td>
+                        <td>Create missing values.</td>
+                      </tr>
+                    </tbody>
+                  </table>
 
             </div>
           </div>
@@ -326,42 +318,32 @@ Create missing values.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod1"
-              aria-expanded="false" aria-controls="collapseMethod1">
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup2"
+              aria-expanded="false" aria-controls="collapseGroup2">
               <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>size</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Return the size of a missing array.
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Summary Information</h4>
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod1">
+          <div class="collapse multi-collapse" id="collapseGroup2">
             <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">missing: <var>sz</var> = <b>size</b> (<var>M</var>)</code></h5></dt>
-<dt><code><h5 class="fs">missing: <var>dim_sz</var> = <b>size</b> (<var>M</var>, <var>dim</var>)</code></h5></dt>
-<dt><code><h5 class="fs">missing: <var>dim_sz</var> = <b>size</b> (<var>M</var>, <var>d1</var>, <var>d2</var>, &hellip;)</code></h5></dt>
-<dt><code><h5 class="fs">missing: [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b> (&hellip;)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>sz</var> = size (<var>M</var>)</code> returns a row vector with the size
- (number of elements) of each dimension for the missing array <var>M</var>.
-</p>
-<p> <code><var>dim_sz</var> = size (<var>M</var>, <var>dim</var>)</code> returns the size of
- the corresponding dimension specified in <var>dim</var>.  If <var>dim</var> is a
- vector, then <var>dim_sz</var> is a vector of the same length and with each
- element corresponding to a specified dimension.  Multiple dimensions may
- also be specified as separate arguments.
-</p>
-<p> With a single output argument, <code>size</code> returns a row vector.  When
- called with multiple output arguments, <code>size</code> returns the size of
- dimension N in the Nth argument.
-</p>
-
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="missing.size.html">size</a></code></b></td>
+                        <td>Return the size of a missing array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="missing.ndims.html">ndims</a></code></b></td>
+                        <td>Number of dimensions in a missing array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="missing.numel.html">numel</a></code></b></td>
+                        <td>Total number of elements in a missing array.</td>
+                      </tr>
+                    </tbody>
+                  </table>
 
             </div>
           </div>
@@ -370,29 +352,48 @@ Return the size of a missing array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod2"
-              aria-expanded="false" aria-controls="collapseMethod2">
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup3"
+              aria-expanded="false" aria-controls="collapseGroup3">
               <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>ndims</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Number of dimensions in a missing array.
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Query Operations</h4>
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod2">
+          <div class="collapse multi-collapse" id="collapseGroup3">
             <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">missing: <var>out</var> = <b>ndims</b> (<var>M</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>out</var> = ndims (<var>M</var>)</code> returns the number of dimensions of
- the missing array <var>M</var>.
-</p>
-
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="missing.iscolumn.html">iscolumn</a></code></b></td>
+                        <td>Return true if missing array is a column vector.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="missing.isempty.html">isempty</a></code></b></td>
+                        <td>Return true if missing array is empty.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="missing.ismatrix.html">ismatrix</a></code></b></td>
+                        <td>Return true if missing array is a 2-D array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="missing.ismissing.html">ismissing</a></code></b></td>
+                        <td>Return true for each element in missing array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="missing.isrow.html">isrow</a></code></b></td>
+                        <td>Return true if missing array is a row vector.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="missing.isscalar.html">isscalar</a></code></b></td>
+                        <td>Return true if missing array is a scalar.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="missing.isvector.html">isvector</a></code></b></td>
+                        <td>Return true if missing array is a vector.</td>
+                      </tr>
+                    </tbody>
+                  </table>
 
             </div>
           </div>
@@ -401,489 +402,44 @@ Number of dimensions in a missing array.
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod3"
-              aria-expanded="false" aria-controls="collapseMethod3">
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup4"
+              aria-expanded="false" aria-controls="collapseGroup4">
               <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>numel</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Total number of elements in a missing array.
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Relational Operations</h4>
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseMethod3">
+          <div class="collapse multi-collapse" id="collapseGroup4">
             <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">missing: <var>out</var> = <b>numel</b> (<var>M</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>out</var> = numel (<var>M</var>)</code> returns the number of elements in the
- missing array <var>M</var>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod4"
-              aria-expanded="false" aria-controls="collapseMethod4">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>iscolumn</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Return true if missing array is a column vector.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod4">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">missing: <var>TF</var> = <b>iscolumn</b> (<var>M</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>TF</var> = iscolumn (<var>M</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the missing array <var>M</var> is a column vector
- and <code>false</code> otherwise.  A column vector is a 2-D array for which
- <code>size (<var>X</var>)</code> returns <code>[<var>N</var>, 1]</code> with non-negative
- <var>N</var>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod5"
-              aria-expanded="false" aria-controls="collapseMethod5">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>isempty</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Return true if missing array is empty.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod5">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">missing: <var>TF</var> = <b>isempty</b> (<var>M</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>TF</var> = isempty (<var>M</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the missing array <var>M</var> is empty and
- <code>false</code> otherwise.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod6"
-              aria-expanded="false" aria-controls="collapseMethod6">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>ismatrix</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Return true if missing array is a 2-D array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod6">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">missing: <var>TF</var> = <b>ismatrix</b> (<var>M</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>TF</var> = ismatrix (<var>M</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the missing array <var>M</var> is a matrix and
- <code>false</code> otherwise.  A matrix is an array of any type where
- <code>ndims (<var>X</var>) == 2</code> and for which <code>size (<var>X</var>)</code> returns
- <code>[<var>H</var>, <var>W</var>]</code> with non-negative <var>H</var> and <var>W</var>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod7"
-              aria-expanded="false" aria-controls="collapseMethod7">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>ismissing</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Return true for each element in missing array.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod7">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">missing: <var>out</var> = <b>ismissing</b> (<var>M</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>TF</var> = ismissing (<var>M</var>)</code> returns a logical array <var>TF</var>
- of the same size as <var>M</var> containing <code>true</code> in every element.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod8"
-              aria-expanded="false" aria-controls="collapseMethod8">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>isrow</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Return true if missing array is a row vector.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod8">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">missing: <var>TF</var> = <b>isrow</b> (<var>M</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>TF</var> = isrow (<var>M</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the missing array <var>M</var> is a row vector
- and <code>false</code> otherwise.  A row vector is a 2-D array for which
- <code>size (<var>X</var>)</code> returns <code>[1, <var>N</var>]</code> with non-negative
- <var>N</var>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod9"
-              aria-expanded="false" aria-controls="collapseMethod9">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>isscalar</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Return true if missing array is a scalar.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod9">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">missing: <var>TF</var> = <b>isscalar</b> (<var>M</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>TF</var> = isscalar (<var>M</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the missing array <var>M</var> is also a scalar
- and <code>false</code> otherwise.  A scalar is a single element object for
- which <code>size (<var>X</var>)</code> returns <code>[1, 1]</code>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod10"
-              aria-expanded="false" aria-controls="collapseMethod10">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>isvector</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Return true if missing array is a vector.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod10">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">missing: <var>TF</var> = <b>isvector</b> (<var>M</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>TF</var> = isvector (<var>M</var>)</code> returns a logical scalar <var>TF</var>,
- which is <code>true</code> if the missing array <var>M</var> is a vector and
- <code>false</code> otherwise.  A vector is a 2-D array for which one of the
- dimensions is equal to 1 (either <math>1&times;N</math> or <math>N&times;1</math>).  By
- definition, a scalar is also a vector.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod11"
-              aria-expanded="false" aria-controls="collapseMethod11">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>eq</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Equality for missing arrays.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod11">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">missing: <var>TF</var> = <b>eq</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>TF</var> = eq (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
- <code><var>TF</var> = <var>A</var> == <var>B</var></code> and returns a logical array of the
- same size as the largest input with its elements set to <code>false</code>.
- <var>A</var> and <var>B</var> must be size compatible, which translates to they can
- be the same size, one can be scalar, or for every dimension, their
- dimension sizes must be equal or one of them must be 1.
-</p>
-<p> One of the input arguments may also be any type of array.  Any comparison
- with missing arrays always returns <code>false</code>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod12"
-              aria-expanded="false" aria-controls="collapseMethod12">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>ge</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Greater than or equal to for missing arrays.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod12">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">missing: <var>TF</var> = <b>ge</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>TF</var> = ge (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
- <code><var>TF</var> = <var>A</var> &gt;= <var>B</var></code> and returns a logical array of the
- same size as the largest input with its elements set to <code>false</code>.
- <var>A</var> and <var>B</var> must be size compatible, which translates to they can
- be the same size, one can be scalar, or for every dimension, their
- dimension sizes must be equal or one of them must be 1.
-</p>
-<p> One of the input arguments may also be any type of array.  Any comparison
- with missing arrays always returns <code>false</code>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod13"
-              aria-expanded="false" aria-controls="collapseMethod13">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>gt</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Greater than for missing arrays.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod13">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">missing: <var>TF</var> = <b>gt</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>TF</var> = gt (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
- <code><var>TF</var> = <var>A</var> &gt; <var>B</var></code> and returns a logical array of the
- same size as the largest input with its elements set to <code>false</code>.
- <var>A</var> and <var>B</var> must be size compatible, which translates to they can
- be the same size, one can be scalar, or for every dimension, their
- dimension sizes must be equal or one of them must be 1.
-</p>
-<p> One of the input arguments may also be any type of array.  Any comparison
- with missing arrays always returns <code>false</code>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod14"
-              aria-expanded="false" aria-controls="collapseMethod14">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>le</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Less than or equal to for missing arrays.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod14">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">missing: <var>TF</var> = <b>le</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>TF</var> = le (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
- <code><var>TF</var> = <var>A</var> &lt;= <var>B</var></code> and returns a logical array of the
- same size as the largest input with its elements set to <code>false</code>.
- <var>A</var> and <var>B</var> must be size compatible, which translates to they can
- be the same size, one can be scalar, or for every dimension, their
- dimension sizes must be equal or one of them must be 1.
-</p>
-<p> One of the input arguments may also be any type of array.  Any comparison
- with missing arrays always returns <code>false</code>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod15"
-              aria-expanded="false" aria-controls="collapseMethod15">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>lt</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Less than for missing arrays.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod15">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">missing: <var>TF</var> = <b>lt</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>TF</var> = lt (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
- <code><var>TF</var> = <var>A</var> &lt; <var>B</var></code> and returns a logical array of the
- same size as the largest input with its elements set to <code>false</code>.
- <var>A</var> and <var>B</var> must be size compatible, which translates to they can
- be the same size, one can be scalar, or for every dimension, their
- dimension sizes must be equal or one of them must be 1.
-</p>
-<p> One of the input arguments may also be any type of array.  Any comparison
- with missing arrays always returns <code>false</code>.
-</p>
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseMethod16"
-              aria-expanded="false" aria-controls="collapseMethod16">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>ne</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-Not equal for missing arrays.
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="collapseMethod16">
-            <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">missing: <var>TF</var> = <b>ne</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
-</dl>
-<p> </p>
-<p> <code><var>TF</var> = ne (<var>A</var>, <var>B</var>)</code> is the equivalent of the syntax
- <code><var>TF</var> = <var>A</var> != <var>B</var></code> and returns a logical array of the
- same size as the largest input with its elements set to <code>false</code>.
- <var>A</var> and <var>B</var> must be size compatible, which translates to they can
- be the same size, one can be scalar, or for every dimension, their
- dimension sizes must be equal or one of them must be 1.
-</p>
-<p> One of the input arguments may also be any type of array.  Any comparison
- with missing arrays always returns <code>false</code>.
-</p>
-
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="missing.eq.html">eq</a></code></b></td>
+                        <td>Equality for missing arrays.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="missing.ge.html">ge</a></code></b></td>
+                        <td>Greater than or equal to for missing arrays.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="missing.gt.html">gt</a></code></b></td>
+                        <td>Greater than for missing arrays.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="missing.le.html">le</a></code></b></td>
+                        <td>Less than or equal to for missing arrays.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="missing.lt.html">lt</a></code></b></td>
+                        <td>Less than for missing arrays.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="missing.ne.html">ne</a></code></b></td>
+                        <td>Not equal for missing arrays.</td>
+                      </tr>
+                    </tbody>
+                  </table>
 
             </div>
           </div>

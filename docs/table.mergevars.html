@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Data Types for GNU Octave: table.mergevars</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+    <script type="text/javascript" async
+      src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
+    </script>
+    <script type="text/javascript">
+      window.addEventListener("load", () => {
+        for (let i of document.querySelectorAll(".collapse ul")) {
+          let tog = document.createElement("div");
+          tog.innerHTML = i.previousSibling.textContent;
+          tog.className = "toggle";
+          tog.onclick = () => tog.classList.toggle("show");
+          i.parentElement.removeChild(i.previousSibling);
+          i.parentElement.insertBefore(tog, i);
+        }
+      });
+    </script>
+    <style>
+    h5.fs {
+    margin-top: -0.15em;
+    margin-bottom: -0.15em;
+    }
+    h6:hover {
+      color: gray;
+    }
+    code {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    white-space: nowrap;
+    color: gray;
+    }
+    code.description {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    white-space: normal;
+    font-size:1.2em;
+    color: gray;
+    }
+    var {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    font-style: normal;
+    font-weight: bold;
+    color: gray;
+    }
+    td {
+      vertical-align: top;
+    }
+    [id^="togList"],                        /* HIDE CHECKBOX */
+    [id^="togList"] ~ .list,                /* HIDE LIST */
+    [id^="togList"] + label  span + span,   /* HIDE "Collapse" */
+    [id^="togList"]:checked + label span{   /* HIDE "Expand" (IF CHECKED) */
+      display:none;
+    }
+    [id^="togList"]:checked + label span + span{
+      display:inline-block;                 /* SHOW "Collapse" (IF CHECKED) */
+    }
+    [id^="togList"]:checked ~ .list{
+      display:block;                        /* SHOW LIST (IF CHECKED) */
+    }
+    </style>
+  </head>
+  <body>
+    <div class="bg-dark">
+      <div class="container-xl">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+          <div class="container-fluid">
+            <a class="navbar-brand" href=index.html>
+              <img src="assets/datatypes.png" alt="datatypes" class="d-inline-block align-top" width="25" height="25">
+              Data Types for GNU Octave
+            </a>
+            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav">
+                <li class="nav-item">
+                  <a class="nav-link" href="index.html#table arrays">
+                    <i class="fas fa-list-alt"></i>
+                    table arrays
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="https://gnu-octave.github.io/packages/">
+                  <img src="assets/octave-logo.svg" alt="GNU Octave logo" class="d-inline-block align-top" width="25" height="25">
+                    Octave Packages
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="https://www.octave.org">
+                    <i class="fas fa-home"></i>
+                    GNU Octave website
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+    <div class="container-xl my-4">
+      <div class="row flex-nowrap" style="min-height:0">
+        <div class="col-md-2 bg-light" style="overflow-y: scroll; width: 250px;">
+          <div class="p-2" style="text-align: center;">
+            <h3><a href="table.html" class="text-decoration-none">table</a></h3>
+            <h4 style="color: blue">Methods</h4>
+          </div>
+			<div class="row">
+				<a href="table.html" class="text-decoration-none"><h6>&#8962;&nbsp;table</h6></a>
+			</div>
+			<div class="row">
+				<input id="togList1" type="checkbox">
+				<label for="togList1">
+					<span><h6>Create Table and Convert Type</h6></span>
+					<span><h6>Create Table and Convert Type</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="table.table.html" class="text-decoration-none font-monospace"><small>table</small></a></li>
+					<li><a href="table.table2array.html" class="text-decoration-none font-monospace"><small>table2array</small></a></li>
+					<li><a href="table.table2cell.html" class="text-decoration-none font-monospace"><small>table2cell</small></a></li>
+					<li><a href="table.table2struct.html" class="text-decoration-none font-monospace"><small>table2struct</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList2" type="checkbox">
+				<label for="togList2">
+					<span><h6>Save to Files</h6></span>
+					<span><h6>Save to Files</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="table.table2csv.html" class="text-decoration-none font-monospace"><small>table2csv</small></a></li>
+					<li><a href="table.table2ods.html" class="text-decoration-none font-monospace"><small>table2ods</small></a></li>
+					<li><a href="table.writetable.html" class="text-decoration-none font-monospace"><small>writetable</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList3" type="checkbox">
+				<label for="togList3">
+					<span><h6>Summary Information</h6></span>
+					<span><h6>Summary Information</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="table.summary.html" class="text-decoration-none font-monospace"><small>summary</small></a></li>
+					<li><a href="table.height.html" class="text-decoration-none font-monospace"><small>height</small></a></li>
+					<li><a href="table.width.html" class="text-decoration-none font-monospace"><small>width</small></a></li>
+					<li><a href="table.head.html" class="text-decoration-none font-monospace"><small>head</small></a></li>
+					<li><a href="table.tail.html" class="text-decoration-none font-monospace"><small>tail</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList4" type="checkbox" checked>
+				<label for="togList4">
+					<span><h6>Sort, Filter, and Rearrange</h6></span>
+					<span><h6>Sort, Filter, and Rearrange</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="table.sortrows.html" class="text-decoration-none font-monospace"><small>sortrows</small></a></li>
+					<li><a href="table.unique.html" class="text-decoration-none font-monospace"><small>unique</small></a></li>
+					<li><a href="table.issortedrows.html" class="text-decoration-none font-monospace"><small>issortedrows</small></a></li>
+					<li><a href="table.topkrows.html" class="text-decoration-none font-monospace"><small>topkrows</small></a></li>
+					<li><a href="table.addvars.html" class="text-decoration-none font-monospace"><small>addvars</small></a></li>
+					<li><a href="table.renamevars.html" class="text-decoration-none font-monospace"><small>renamevars</small></a></li>
+					<li><a href="table.movevars.html" class="text-decoration-none font-monospace"><small>movevars</small></a></li>
+					<li><a href="table.removevars.html" class="text-decoration-none font-monospace"><small>removevars</small></a></li>
+					<li><a href="table.splitvars.html" class="text-decoration-none font-monospace"><small>splitvars</small></a></li>
+					<li><a href="table.mergevars.html" class="text-decoration-none font-monospace fw-bolder"><small>mergevars</small></a></li>
+					<li><a href="table.convertvars.html" class="text-decoration-none font-monospace"><small>convertvars</small></a></li>
+					<li><a href="table.rows2vars.html" class="text-decoration-none font-monospace"><small>rows2vars</small></a></li>
+					<li><a href="table.stack.html" class="text-decoration-none font-monospace"><small>stack</small></a></li>
+					<li><a href="table.unstack.html" class="text-decoration-none font-monospace"><small>unstack</small></a></li>
+					<li><a href="table.inner2outer.html" class="text-decoration-none font-monospace"><small>inner2outer</small></a></li>
+					<li><a href="table.addprop.html" class="text-decoration-none font-monospace"><small>addprop</small></a></li>
+					<li><a href="table.rmprop.html" class="text-decoration-none font-monospace"><small>rmprop</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList5" type="checkbox">
+				<label for="togList5">
+					<span><h6>Join and Set Operations</h6></span>
+					<span><h6>Join and Set Operations</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="table.join.html" class="text-decoration-none font-monospace"><small>join</small></a></li>
+					<li><a href="table.innerjoin.html" class="text-decoration-none font-monospace"><small>innerjoin</small></a></li>
+					<li><a href="table.outerjoin.html" class="text-decoration-none font-monospace"><small>outerjoin</small></a></li>
+					<li><a href="table.union.html" class="text-decoration-none font-monospace"><small>union</small></a></li>
+					<li><a href="table.intersect.html" class="text-decoration-none font-monospace"><small>intersect</small></a></li>
+					<li><a href="table.ismember.html" class="text-decoration-none font-monospace"><small>ismember</small></a></li>
+					<li><a href="table.setdiff.html" class="text-decoration-none font-monospace"><small>setdiff</small></a></li>
+					<li><a href="table.setxor.html" class="text-decoration-none font-monospace"><small>setxor</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList6" type="checkbox">
+				<label for="togList6">
+					<span><h6>Missing Values</h6></span>
+					<span><h6>Missing Values</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="table.anymissing.html" class="text-decoration-none font-monospace"><small>anymissing</small></a></li>
+					<li><a href="table.ismissing.html" class="text-decoration-none font-monospace"><small>ismissing</small></a></li>
+					<li><a href="table.rmmissing.html" class="text-decoration-none font-monospace"><small>rmmissing</small></a></li>
+					<li><a href="table.fillmissing.html" class="text-decoration-none font-monospace"><small>fillmissing</small></a></li>
+					<li><a href="table.standardizeMissing.html" class="text-decoration-none font-monospace"><small>standardizeMissing</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList7" type="checkbox">
+				<label for="togList7">
+					<span><h6>Apply Functions to Table Contents</h6></span>
+					<span><h6>Apply Functions to Table Contents</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="table.findgroups.html" class="text-decoration-none font-monospace"><small>findgroups</small></a></li>
+					<li><a href="table.splitapply.html" class="text-decoration-none font-monospace"><small>splitapply</small></a></li>
+					<li><a href="table.varfun.html" class="text-decoration-none font-monospace"><small>varfun</small></a></li>
+					<li><a href="table.rowfun.html" class="text-decoration-none font-monospace"><small>rowfun</small></a></li>
+					<li><a href="table.groupsummary.html" class="text-decoration-none font-monospace"><small>groupsummary</small></a></li>
+					<li><a href="table.groupcounts.html" class="text-decoration-none font-monospace"><small>groupcounts</small></a></li>
+					<li><a href="table.groupfilter.html" class="text-decoration-none font-monospace"><small>groupfilter</small></a></li>
+					<li><a href="table.grouptransform.html" class="text-decoration-none font-monospace"><small>grouptransform</small></a></li>
+					<li><a href="table.pivot.html" class="text-decoration-none font-monospace"><small>pivot</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList8" type="checkbox">
+				<label for="togList8">
+					<span><h6>Auxiliary Methods</h6></span>
+					<span><h6>Auxiliary Methods</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="table.horzcat.html" class="text-decoration-none font-monospace"><small>horzcat</small></a></li>
+					<li><a href="table.iscolumn.html" class="text-decoration-none font-monospace"><small>iscolumn</small></a></li>
+					<li><a href="table.isempty.html" class="text-decoration-none font-monospace"><small>isempty</small></a></li>
+					<li><a href="table.ismatrix.html" class="text-decoration-none font-monospace"><small>ismatrix</small></a></li>
+					<li><a href="table.isrow.html" class="text-decoration-none font-monospace"><small>isrow</small></a></li>
+					<li><a href="table.isscalar.html" class="text-decoration-none font-monospace"><small>isscalar</small></a></li>
+					<li><a href="table.istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
+					<li><a href="table.isvector.html" class="text-decoration-none font-monospace"><small>isvector</small></a></li>
+					<li><a href="table.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
+					<li><a href="table.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
+					<li><a href="table.numel.html" class="text-decoration-none font-monospace"><small>numel</small></a></li>
+					<li><a href="table.repelem.html" class="text-decoration-none font-monospace"><small>repelem</small></a></li>
+					<li><a href="table.repmat.html" class="text-decoration-none font-monospace"><small>repmat</small></a></li>
+					<li><a href="table.size.html" class="text-decoration-none font-monospace"><small>size</small></a></li>
+					<li><a href="table.squeeze.html" class="text-decoration-none font-monospace"><small>squeeze</small></a></li>
+					<li><a href="table.vertcat.html" class="text-decoration-none font-monospace"><small>vertcat</small></a></li>
+				</ul>
+				</div>
+			</div>
+
+			  </div>
+			  <div class="col-md-10">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <h3 class="d-inline-block mr-2">
+                Method&nbsp;Reference: <b><code>table.mergevars</code></b>
+                </h3>
+              </div>
+            </div>
+            <div class="card-body">
+              <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                  <li class="breadcrumb-item"><a href="index.html">datatypes</a></li>
+                  <li class="breadcrumb-item"><a href="table.html">table</a></li>
+                  <li class="breadcrumb-item active" aria-current="page">mergevars</li>
+                </ol>
+              </nav>
+
+<dl>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>mergevars</b> (<var>tblA</var>, <var>vars</var>)</code></h5></dt>
+<dt><code><h5 class="fs">table: <var>tblB</var> = <b>mergevars</b> (<var>tblA</var>, <var>vars</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
+</dl>
+<p> Merge table variables into a single multicolumn variable.
+</p>
+<div class="ms-5">
+<p> <code><var>tblB</var> = mergevars (<var>tblA</var>, <var>vars</var>)</code> combines the table
+ variables in <var>tblA</var> specified by <var>vars</var> to create a new
+ multicolumn variable in <var>tblB</var>.  All other variables in <var>tblA</var>
+ are copied to <var>tblB</var> unaltered.  By default, the name of the merged
+ variable in <var>tblB</var> takes the form <math>VarN</math>, where <math>N</math> is the
+ position of the first variable in <var>tblA</var> among those to be merged,
+ which is also the location of the merged variable in <var>tblB</var>.
+</p>
+<p> Note that merging variables with a <code>'string'</code> data type variable
+ will result in a multicolumn variable of <code>'string'</code> data type, by
+ initially converting all other to-be-merged variables into
+ <code>'string'</code> data type.
+</p>
+<p> <var>vars</var> can be any of the following types.
+</p>
+<ul>
+<li> a character vector specifying a single variable.
+</li><li> a cell array of character vectors specifying a single or multiple
+ variables.
+</li><li> a string array specifying a single or multiple variables.
+</li><li> a numeric array of integer values indexing the variables to be
+ merged.
+</li><li> a logical vector of the same length as the width of the table
+ <var>tblA</var> indexing as <code>true</code> the variables to be merged.
+</li><li> a <code>vartype</code> object used to create a subscript that selects
+ variables of a specified type.
+</li></ul>
+
+<p> <code><var>tblB</var> = mergevars (&hellip;, <var>Name</var>, <var>Value</var>)</code> further
+ specifies additional parameters for merging table variables with the
+ following Name-Value paired arguments.
+</p>
+<ul>
+<li> <code>'NewVariableName'</code> specifies the name of the merged variable
+ in <var>tblB</var>, which must be unique.  <code>'NewVariableName'</code> must be
+ either a cellstr or string scalar or a character vector.
+</li><li> <code>'MergeAsTable'</code> specifies whether the selected variables
+ should be merged into a multicolumn variable (default) or into a table
+ nested into a variable, which is useful for variables that cannot be
+ concatenated due to incompatible variable types.  <code>'MergeAsTable'</code>
+ must be either a boolean scalar or a numeric scalar value of <code>1</code>
+ (<code>true</code>) or <code>0</code> (<code>false</code>).
+</li></ul>
+
+<p><strong>Source Code: </strong>
+  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/table.m">table</a>
+</div>
+        <div class="card rounded my-4">
+          <div class="card-header card-header-mod">
+            <div class="row d-flex flex-wrap align-items-center">
+              <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                <h3 class="d-inline-block mr-2">
+                Example: 1
+                </h3>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+                <p><code>mergevars</code> combines several variables into one multi-column variable — the inverse of <code>splitvars</code>.  Name the merged variable with <code>'NewVariableName'</code>.</p>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = table ([38; 43; 40], [124; 109; 125], [93; 77; 83], ...
+            'VariableNames', {'Age', 'Systolic', 'Diastolic'});
+ mergevars (T, {'Systolic', 'Diastolic'}, 'NewVariableName', 'BloodPressure')</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  3x2 table
+
+    Age    BloodPressure    
+    ___    _____________    
+
+     38        124    93    
+     43        109    77    
+     40        125    83</pre>
+
+          </div>
+        </div>
+
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>

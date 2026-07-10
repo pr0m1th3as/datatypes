@@ -321,6 +321,61 @@
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/array2table.m">array2table</a>
 </div>
+        <div class="card rounded my-4">
+          <div class="card-header card-header-mod">
+            <div class="row d-flex flex-wrap align-items-center">
+              <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                <h3 class="d-inline-block mr-2">
+                Example: 1
+                </h3>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+                <p><code>array2table</code> wraps the columns of a matrix as table variables.  Without names the variables are auto-labelled <code>Var1</code>, <code>Var2</code>, ...</p>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> A = [38, 71, 176; 43, 69, 163; 40, 67, 133];
+ array2table (A)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  3x3 table
+
+    A1    A2    A3     
+    __    __    ___    
+
+    38    71    176    
+    43    69    163    
+    40    67    133</pre>
+
+          </div>
+        </div>
+
+        <div class="card rounded my-4">
+          <div class="card-header card-header-mod">
+            <div class="row d-flex flex-wrap align-items-center">
+              <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                <h3 class="d-inline-block mr-2">
+                Example: 2
+                </h3>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+                <p>Supply <code>'VariableNames'</code> (and optionally <code>'RowNames'</code>) to label the result as you convert — the columns of the matrix keep their order.</p>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> A = [38, 71; 43, 69; 40, 67];
+ array2table (A, 'VariableNames', {'Age', 'Height'}, ...
+                 'RowNames', {'Li', 'Diaz', 'Brown'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  3x2 table
+
+             Age    Height    
+             ___    ______    
+
+    Li        38        71    
+    Diaz      43        69    
+    Brown     40        67</pre>
+
+          </div>
+        </div>
+
 
             </div>
           </div>

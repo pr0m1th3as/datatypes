@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Data Types for GNU Octave: categorical.union</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+    <script type="text/javascript" async
+      src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
+    </script>
+    <script type="text/javascript">
+      window.addEventListener("load", () => {
+        for (let i of document.querySelectorAll(".collapse ul")) {
+          let tog = document.createElement("div");
+          tog.innerHTML = i.previousSibling.textContent;
+          tog.className = "toggle";
+          tog.onclick = () => tog.classList.toggle("show");
+          i.parentElement.removeChild(i.previousSibling);
+          i.parentElement.insertBefore(tog, i);
+        }
+      });
+    </script>
+    <style>
+    h5.fs {
+    margin-top: -0.15em;
+    margin-bottom: -0.15em;
+    }
+    h6:hover {
+      color: gray;
+    }
+    code {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    white-space: nowrap;
+    color: gray;
+    }
+    code.description {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    white-space: normal;
+    font-size:1.2em;
+    color: gray;
+    }
+    var {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    font-style: normal;
+    font-weight: bold;
+    color: gray;
+    }
+    td {
+      vertical-align: top;
+    }
+    [id^="togList"],                        /* HIDE CHECKBOX */
+    [id^="togList"] ~ .list,                /* HIDE LIST */
+    [id^="togList"] + label  span + span,   /* HIDE "Collapse" */
+    [id^="togList"]:checked + label span{   /* HIDE "Expand" (IF CHECKED) */
+      display:none;
+    }
+    [id^="togList"]:checked + label span + span{
+      display:inline-block;                 /* SHOW "Collapse" (IF CHECKED) */
+    }
+    [id^="togList"]:checked ~ .list{
+      display:block;                        /* SHOW LIST (IF CHECKED) */
+    }
+    </style>
+  </head>
+  <body>
+    <div class="bg-dark">
+      <div class="container-xl">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+          <div class="container-fluid">
+            <a class="navbar-brand" href=index.html>
+              <img src="assets/datatypes.png" alt="datatypes" class="d-inline-block align-top" width="25" height="25">
+              Data Types for GNU Octave
+            </a>
+            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav">
+                <li class="nav-item">
+                  <a class="nav-link" href="index.html#categorical arrays">
+                    <i class="fas fa-list-alt"></i>
+                    categorical arrays
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="https://gnu-octave.github.io/packages/">
+                  <img src="assets/octave-logo.svg" alt="GNU Octave logo" class="d-inline-block align-top" width="25" height="25">
+                    Octave Packages
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="https://www.octave.org">
+                    <i class="fas fa-home"></i>
+                    GNU Octave website
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+    <div class="container-xl my-4">
+      <div class="row flex-nowrap" style="min-height:0">
+        <div class="col-md-2 bg-light" style="overflow-y: scroll; width: 250px;">
+          <div class="p-2" style="text-align: center;">
+            <h3><a href="categorical.html" class="text-decoration-none">categorical</a></h3>
+            <h4 style="color: blue">Methods</h4>
+          </div>
+			<div class="row">
+				<a href="categorical.html" class="text-decoration-none"><h6>&#8962;&nbsp;categorical</h6></a>
+			</div>
+			<div class="row">
+				<input id="togList1" type="checkbox">
+				<label for="togList1">
+					<span><h6>Create and convert 'categorical' type</h6></span>
+					<span><h6>Create and convert 'categorical' type</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="categorical.categorical.html" class="text-decoration-none font-monospace"><small>categorical</small></a></li>
+					<li><a href="categorical.dispstrings.html" class="text-decoration-none font-monospace"><small>dispstrings</small></a></li>
+					<li><a href="categorical.cellstr.html" class="text-decoration-none font-monospace"><small>cellstr</small></a></li>
+					<li><a href="categorical.char.html" class="text-decoration-none font-monospace"><small>char</small></a></li>
+					<li><a href="categorical.double.html" class="text-decoration-none font-monospace"><small>double</small></a></li>
+					<li><a href="categorical.single.html" class="text-decoration-none font-monospace"><small>single</small></a></li>
+					<li><a href="categorical.int64.html" class="text-decoration-none font-monospace"><small>int64</small></a></li>
+					<li><a href="categorical.int32.html" class="text-decoration-none font-monospace"><small>int32</small></a></li>
+					<li><a href="categorical.int16.html" class="text-decoration-none font-monospace"><small>int16</small></a></li>
+					<li><a href="categorical.int8.html" class="text-decoration-none font-monospace"><small>int8</small></a></li>
+					<li><a href="categorical.uint64.html" class="text-decoration-none font-monospace"><small>uint64</small></a></li>
+					<li><a href="categorical.uint32.html" class="text-decoration-none font-monospace"><small>uint32</small></a></li>
+					<li><a href="categorical.uint16.html" class="text-decoration-none font-monospace"><small>uint16</small></a></li>
+					<li><a href="categorical.uint8.html" class="text-decoration-none font-monospace"><small>uint8</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList2" type="checkbox">
+				<label for="togList2">
+					<span><h6>Summary Information</h6></span>
+					<span><h6>Summary Information</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="categorical.summary.html" class="text-decoration-none font-monospace"><small>summary</small></a></li>
+					<li><a href="categorical.categories.html" class="text-decoration-none font-monospace"><small>categories</small></a></li>
+					<li><a href="categorical.countcats.html" class="text-decoration-none font-monospace"><small>countcats</small></a></li>
+					<li><a href="categorical.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
+					<li><a href="categorical.size.html" class="text-decoration-none font-monospace"><small>size</small></a></li>
+					<li><a href="categorical.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
+					<li><a href="categorical.numel.html" class="text-decoration-none font-monospace"><small>numel</small></a></li>
+					<li><a href="categorical.keyHash.html" class="text-decoration-none font-monospace"><small>keyHash</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList3" type="checkbox">
+				<label for="togList3">
+					<span><h6>Query Operations</h6></span>
+					<span><h6>Query Operations</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="categorical.iscategory.html" class="text-decoration-none font-monospace"><small>iscategory</small></a></li>
+					<li><a href="categorical.iscolumn.html" class="text-decoration-none font-monospace"><small>iscolumn</small></a></li>
+					<li><a href="categorical.isempty.html" class="text-decoration-none font-monospace"><small>isempty</small></a></li>
+					<li><a href="categorical.isequal.html" class="text-decoration-none font-monospace"><small>isequal</small></a></li>
+					<li><a href="categorical.isequaln.html" class="text-decoration-none font-monospace"><small>isequaln</small></a></li>
+					<li><a href="categorical.ismatrix.html" class="text-decoration-none font-monospace"><small>ismatrix</small></a></li>
+					<li><a href="categorical.ismember.html" class="text-decoration-none font-monospace"><small>ismember</small></a></li>
+					<li><a href="categorical.ismissing.html" class="text-decoration-none font-monospace"><small>ismissing</small></a></li>
+					<li><a href="categorical.isordinal.html" class="text-decoration-none font-monospace"><small>isordinal</small></a></li>
+					<li><a href="categorical.isprotected.html" class="text-decoration-none font-monospace"><small>isprotected</small></a></li>
+					<li><a href="categorical.isrow.html" class="text-decoration-none font-monospace"><small>isrow</small></a></li>
+					<li><a href="categorical.isscalar.html" class="text-decoration-none font-monospace"><small>isscalar</small></a></li>
+					<li><a href="categorical.issorted.html" class="text-decoration-none font-monospace"><small>issorted</small></a></li>
+					<li><a href="categorical.issortedrows.html" class="text-decoration-none font-monospace"><small>issortedrows</small></a></li>
+					<li><a href="categorical.isundefined.html" class="text-decoration-none font-monospace"><small>isundefined</small></a></li>
+					<li><a href="categorical.isvector.html" class="text-decoration-none font-monospace"><small>isvector</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList4" type="checkbox">
+				<label for="togList4">
+					<span><h6>Category Operations</h6></span>
+					<span><h6>Category Operations</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="categorical.addcats.html" class="text-decoration-none font-monospace"><small>addcats</small></a></li>
+					<li><a href="categorical.mergecats.html" class="text-decoration-none font-monospace"><small>mergecats</small></a></li>
+					<li><a href="categorical.removecats.html" class="text-decoration-none font-monospace"><small>removecats</small></a></li>
+					<li><a href="categorical.renamecats.html" class="text-decoration-none font-monospace"><small>renamecats</small></a></li>
+					<li><a href="categorical.reordercats.html" class="text-decoration-none font-monospace"><small>reordercats</small></a></li>
+					<li><a href="categorical.setcats.html" class="text-decoration-none font-monospace"><small>setcats</small></a></li>
+					<li><a href="categorical.times.html" class="text-decoration-none font-monospace"><small>times</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList5" type="checkbox">
+				<label for="togList5">
+					<span><h6>Relational Operations</h6></span>
+					<span><h6>Relational Operations</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="categorical.eq.html" class="text-decoration-none font-monospace"><small>eq</small></a></li>
+					<li><a href="categorical.ge.html" class="text-decoration-none font-monospace"><small>ge</small></a></li>
+					<li><a href="categorical.gt.html" class="text-decoration-none font-monospace"><small>gt</small></a></li>
+					<li><a href="categorical.le.html" class="text-decoration-none font-monospace"><small>le</small></a></li>
+					<li><a href="categorical.lt.html" class="text-decoration-none font-monospace"><small>lt</small></a></li>
+					<li><a href="categorical.ne.html" class="text-decoration-none font-monospace"><small>ne</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList6" type="checkbox">
+				<label for="togList6">
+					<span><h6>Arithmetic Operations</h6></span>
+					<span><h6>Arithmetic Operations</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="categorical.min.html" class="text-decoration-none font-monospace"><small>min</small></a></li>
+					<li><a href="categorical.max.html" class="text-decoration-none font-monospace"><small>max</small></a></li>
+					<li><a href="categorical.median.html" class="text-decoration-none font-monospace"><small>median</small></a></li>
+					<li><a href="categorical.mode.html" class="text-decoration-none font-monospace"><small>mode</small></a></li>
+					<li><a href="categorical.histcounts.html" class="text-decoration-none font-monospace"><small>histcounts</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList7" type="checkbox" checked>
+				<label for="togList7">
+					<span><h6>Sort, Filter, and Set Operations</h6></span>
+					<span><h6>Sort, Filter, and Set Operations</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="categorical.sort.html" class="text-decoration-none font-monospace"><small>sort</small></a></li>
+					<li><a href="categorical.sortrows.html" class="text-decoration-none font-monospace"><small>sortrows</small></a></li>
+					<li><a href="categorical.topkrows.html" class="text-decoration-none font-monospace"><small>topkrows</small></a></li>
+					<li><a href="categorical.unique.html" class="text-decoration-none font-monospace"><small>unique</small></a></li>
+					<li><a href="categorical.intersect.html" class="text-decoration-none font-monospace"><small>intersect</small></a></li>
+					<li><a href="categorical.setdiff.html" class="text-decoration-none font-monospace"><small>setdiff</small></a></li>
+					<li><a href="categorical.setxor.html" class="text-decoration-none font-monospace"><small>setxor</small></a></li>
+					<li><a href="categorical.union.html" class="text-decoration-none font-monospace fw-bolder"><small>union</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList8" type="checkbox">
+				<label for="togList8">
+					<span><h6>Array Operations</h6></span>
+					<span><h6>Array Operations</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="categorical.cat.html" class="text-decoration-none font-monospace"><small>cat</small></a></li>
+					<li><a href="categorical.horzcat.html" class="text-decoration-none font-monospace"><small>horzcat</small></a></li>
+					<li><a href="categorical.vertcat.html" class="text-decoration-none font-monospace"><small>vertcat</small></a></li>
+					<li><a href="categorical.repmat.html" class="text-decoration-none font-monospace"><small>repmat</small></a></li>
+					<li><a href="categorical.repelem.html" class="text-decoration-none font-monospace"><small>repelem</small></a></li>
+					<li><a href="categorical.repelems.html" class="text-decoration-none font-monospace"><small>repelems</small></a></li>
+					<li><a href="categorical.reshape.html" class="text-decoration-none font-monospace"><small>reshape</small></a></li>
+					<li><a href="categorical.circshift.html" class="text-decoration-none font-monospace"><small>circshift</small></a></li>
+					<li><a href="categorical.permute.html" class="text-decoration-none font-monospace"><small>permute</small></a></li>
+					<li><a href="categorical.ipermute.html" class="text-decoration-none font-monospace"><small>ipermute</small></a></li>
+					<li><a href="categorical.transpose.html" class="text-decoration-none font-monospace"><small>transpose</small></a></li>
+					<li><a href="categorical.ctranspose.html" class="text-decoration-none font-monospace"><small>ctranspose</small></a></li>
+				</ul>
+				</div>
+			</div>
+
+			  </div>
+			  <div class="col-md-10">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <h3 class="d-inline-block mr-2">
+                Method&nbsp;Reference: <b><code>categorical.union</code></b>
+                </h3>
+              </div>
+            </div>
+            <div class="card-body">
+              <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                  <li class="breadcrumb-item"><a href="index.html">datatypes</a></li>
+                  <li class="breadcrumb-item"><a href="categorical.html">categorical</a></li>
+                  <li class="breadcrumb-item active" aria-current="page">union</li>
+                </ol>
+              </nav>
+
+<dl>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>union</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: <var>C</var> = <b>union</b> (<var>A</var>, <var>B</var>, <code>'rows'</code>)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: [<var>C</var>, <var>ixA</var>, <var>ixB</var>] = <b>union</b> (&hellip;)</code></h5></dt>
+<dt><code><h5 class="fs">categorical: &hellip; = <b>union</b> (&hellip;, <var>order</var>)</code></h5></dt>
+</dl>
+<p> Set union of two categorical arrays.
+</p>
+<div class="ms-5">
+<p> <code><var>C</var> = union (<var>A</var>, <var>B</var>)</code> returns the unique common
+ values of the categorical arrays <var>A</var> and <var>B</var>.  Either <var>A</var> or
+ <var>B</var> input arguments may be a character vector, a string array, or a
+ cell array of character vectors, which is promoted to a categorical array
+ prior to set exclusive-or.  If both <var>A</var> and <var>B</var> are row vectors,
+ then <var>C</var> is also a row vector, otherwise <code>union</code> returns a
+ column vector.
+</p>
+<p> If categorical arrays <var>A</var> and <var>B</var> are ordinal, they must have
+ the same set and ordering of categories, which is transfered to <var>C</var>.
+ If neither are ordinal, the category names of each pair of elements are
+ compared (they do not need to have the same set of categories) in which
+ case the categories in <var>C</var> are the sorted union of the categories in
+ <var>A</var> and <var>B</var>.
+</p>
+<p> <code><var>C</var> = union (<var>A</var>, <var>B</var>, <code>'rows'</code></code> returns the
+ unique common rows of the categorical matrices <var>A</var> and <var>B</var>, which
+ must have the same number of columns.  By default, the rows in
+ categorical matrix <var>C</var> are in sorted order.
+</p>
+<p> <code>[<var>C</var>, <var>ixA</var>, <var>ixB</var>] = union (&hellip;)</code> also returns
+ index vectors <var>ixA</var> and <var>ixB</var> such that
+ <code><var>C</var> = <var>A</var>(<var>ixA</var>)</code> and
+ <code><var>C</var> = <var>B</var>(<var>ixB</var>)</code>, unless the <code>'rows'</code> optional
+ argument is given, in which case <code><var>C</var> = <var>A</var>(<var>ixA</var>,:)</code>
+ and <code><var>C</var> = <var>B</var>(<var>ixB</var>,:)</code>.
+</p>
+<p> <code>&hellip; = union (&hellip;, <var>order</var>)</code> also specifies the
+ order of the returned unique values.  <var>order</var> may be either
+ <code>'sorted'</code>, which is the default behavior, or <code>'stable'</code>,
+ in which case the unique values are returned in order of appearance.
+</p>
+<p><strong>Source Code: </strong>
+  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/categorical.m">categorical</a>
+</div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>
