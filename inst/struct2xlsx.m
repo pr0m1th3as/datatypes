@@ -107,6 +107,20 @@ function struct2xlsx (filename, s)
 
 endfunction
 
+%!demo
+%! ## `struct2xlsx` is the Excel counterpart of `struct2ods`: each field of a
+%! ## scalar struct of tables is written as its own worksheet in an `.xlsx` file.
+%!
+%! wb.Patients = table ({'Li'; 'Diaz'}, [38; 40], 'VariableNames', {'Name', 'Age'});
+%! wb.Visits = table ([1; 2; 3], 'VariableNames', {'Visit'});
+%! filename = fullfile (tempdir (), 'clinic.xlsx');
+%! struct2xlsx (filename, wb);
+%!
+%! ## Read it back with `xlsx2struct` to recover the same field names.
+%! fieldnames (xlsx2struct (filename))
+%!
+%! delete (filename);
+
 %!test  # round-trip a two-table workbook through xlsx2struct
 %! s.alpha = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
 %! s.beta = table ([10.5; 20.5], 'VariableNames', {'v'});

@@ -364,6 +364,26 @@ function du = ods_iso2duration (C)
   du = seconds (tot);
 endfunction
 
+%!demo
+%! ## `readtable` is the unified, MATLAB-compatible reader: it picks text vs
+%! ## spreadsheet from the file extension.  Here it reads a comma-delimited file,
+%! ## taking the first row as variable names and detecting each column's type.
+%!
+%! T = table ([38; 43], [71.5; 69.0], 'VariableNames', {'Age', 'Height'});
+%! filename = fullfile (tempdir (), 'patients.csv');
+%! writetable (T, filename);
+%! readtable (filename)
+
+%!demo
+%! ## Options let you override the defaults — for example read a specific
+%! ## spreadsheet `'Sheet'`, or turn the first column into row names.
+%!
+%! filename = fullfile (tempdir (), 'patients.ods');
+%! T = table ([38; 43], 'VariableNames', {'Age'}, 'RowNames', {'Li', 'Diaz'});
+%! writetable (T, filename, 'WriteRowNames', true);
+%! readtable (filename, 'ReadRowNames', true)
+%!
+%! delete (filename);
 
 ## Read a comma-delimited file with a header row and automatic type detection
 %!test

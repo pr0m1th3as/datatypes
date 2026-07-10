@@ -75,6 +75,20 @@ function s = xlsx2struct (filename)
 
 endfunction
 
+%!demo
+%! ## `xlsx2struct` is the inverse of `struct2xlsx`: it reads every worksheet of
+%! ## an Excel workbook into a scalar struct, one field per sheet, in sheet order.
+%!
+%! wb.Patients = table ({'Li'; 'Diaz'}, [38; 40], 'VariableNames', {'Name', 'Age'});
+%! wb.Visits = table ([1; 2; 3], 'VariableNames', {'Visit'});
+%! filename = fullfile (tempdir (), 'clinic.xlsx');
+%! struct2xlsx (filename, wb);
+%!
+%! s = xlsx2struct (filename);
+%! s.Patients
+%!
+%! delete (filename);
+
 %!test  # round-trip a multi-sheet workbook written by struct2xlsx
 %! s.alpha = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
 %! s.beta = table ([10.5; 20.5], 'VariableNames', {'v'});

@@ -77,6 +77,20 @@ function s = ods2struct (filename)
 
 endfunction
 
+%!demo
+%! ## `ods2struct` is the inverse of `struct2ods`: it reads *every* data sheet of
+%! ## a workbook into one scalar struct, one field per sheet, in sheet order.
+%!
+%! wb.Patients = table ({'Li'; 'Diaz'}, [38; 40], 'VariableNames', {'Name', 'Age'});
+%! wb.Visits = table ([1; 2; 3], 'VariableNames', {'Visit'});
+%! filename = fullfile (tempdir (), 'clinic.ods');
+%! struct2ods (filename, wb);
+%!
+%! s = ods2struct (filename);
+%! s.Patients
+%!
+%! delete (filename);
+
 %!test  # round-trip a multi-sheet workbook written by struct2ods
 %! s.alpha = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
 %! s.beta = table ([10.5; 20.5], 'VariableNames', {'v'});

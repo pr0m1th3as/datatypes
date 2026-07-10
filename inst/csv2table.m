@@ -610,6 +610,28 @@ function varValue = cell2auto (C, textType, datetimeType, durationTypes, ...
   endif
 endfunction
 
+%!demo
+%! ## `csv2table` reads a CSV back into a table.  When the file was written by
+%! ## `table2csv`, the typed header lets it restore each variable's type exactly.
+%!
+%! T = table ([38; 43], [71.5; 69.0], 'VariableNames', {'Age', 'Height'});
+%! filename = fullfile (tempdir (), 'patients.csv');
+%! table2csv (T, filename);
+%! csv2table (filename)
+
+%!demo
+%! ## For a plain CSV that has no type header, the first line is taken as the
+%! ## variable names and each column's type is detected automatically.  Use
+%! ## `'ReadRowNames'` to turn the first column into row names instead of data.
+%!
+%! filename = fullfile (tempdir (), 'plain.csv');
+%! fid = fopen (filename, 'w');
+%! fputs (fid, "Patient,Age,Height\nLi,38,64\nDiaz,40,67\n");
+%! fclose (fid);
+%! csv2table (filename, 'ReadRowNames', true)
+%!
+%! delete (filename);
+
 ## Test user-defined 'VariableTypes' are applied per column
 %!test
 %! fn = tempname ();

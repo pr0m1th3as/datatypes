@@ -320,6 +320,26 @@ function tbl = ods_autodetect (data, vtype)
   tbl = table (varValues{:}, 'VariableNames', varNames);
 endfunction
 
+%!demo
+%! ## `ods2table` reads an OpenDocument spreadsheet into a table.  With no options
+%! ## it reads the first data sheet.
+%!
+%! T = table ([38; 43], [71; 69], 'VariableNames', {'Age', 'Height'});
+%! filename = fullfile (tempdir (), 'patients.ods');
+%! table2ods (T, filename);
+%! ods2table (filename)
+
+%!demo
+%! ## Point `'Sheet'` at a specific sheet, by name or by 1-based index, to read
+%! ## one page of a multi-sheet workbook.
+%!
+%! filename = fullfile (tempdir (), 'workbook.ods');
+%! table2ods (table ([38; 43], 'VariableNames', {'Age'}), filename, 'Sheet', 'Patients');
+%! table2ods (table ([1; 2; 3], 'VariableNames', {'Visit'}), filename, 'Sheet', 'Visits');
+%! ods2table (filename, 'Sheet', 'Visits')
+%!
+%! delete (filename);
+
 ## Round-trip: numeric double and cellstr text
 %!test
 %! fn = [tempname() '.fods'];

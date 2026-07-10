@@ -126,6 +126,22 @@ function tbl = struct2table (S, varargin)
 
 endfunction
 
+%!demo
+%! ## `struct2table` maps a struct to a table.  A struct *array* becomes one row
+%! ## per element; a *scalar* struct whose fields are equal-length columns becomes
+%! ## one row per element of those columns.  Both give the same table here.
+%!
+%! S = struct ('Name', {'Li'; 'Diaz'; 'Brown'}, 'Age', {38; 40; 49});
+%! struct2table (S)
+
+%!demo
+%! ## When a scalar struct holds fields of *unequal* length, use `'AsArray', true`
+%! ## to wrap the whole struct as a single table row, each field one variable.
+%!
+%! S.Values = [1, 2, 3];
+%! S.Label = 'demo';
+%! struct2table (S, 'AsArray', true)
+
 %!test
 %! S(1).A = [1, 2];
 %! S(2).A = [3, 4];

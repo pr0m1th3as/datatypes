@@ -112,6 +112,21 @@ function tbl = array2table (A, varargin)
 
 endfunction
 
+%!demo
+%! ## `array2table` wraps the columns of a matrix as table variables.  Without
+%! ## names the variables are auto-labelled `Var1`, `Var2`, ...
+%!
+%! A = [38, 71, 176; 43, 69, 163; 40, 67, 133];
+%! array2table (A)
+
+%!demo
+%! ## Supply `'VariableNames'` (and optionally `'RowNames'`) to label the result
+%! ## as you convert — the columns of the matrix keep their order.
+%!
+%! A = [38, 71; 43, 69; 40, 67];
+%! array2table (A, 'VariableNames', {'Age', 'Height'}, ...
+%!                 'RowNames', {'Li', 'Diaz', 'Brown'})
+
 %!test
 %! A = [1, 2; 3, 4];
 %! tbl = array2table (A);

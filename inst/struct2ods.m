@@ -131,6 +131,20 @@ function struct2ods (filename, s)
 
 endfunction
 
+%!demo
+%! ## `struct2ods` writes a whole workbook at once: each field of a scalar struct
+%! ## of tables becomes its own sheet, and the field name becomes the sheet name.
+%!
+%! wb.Patients = table ({'Li'; 'Diaz'}, [38; 40], 'VariableNames', {'Name', 'Age'});
+%! wb.Visits = table ([1; 2; 3], 'VariableNames', {'Visit'});
+%! filename = fullfile (tempdir (), 'clinic.ods');
+%! struct2ods (filename, wb);
+%!
+%! ## The two fields are now two sheets, recoverable with `ods2struct`.
+%! fieldnames (ods2struct (filename))
+%!
+%! delete (filename);
+
 %!test  # round-trip a two-table workbook through ods2struct
 %! s.alpha = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
 %! s.beta = table ([10.5; 20.5], 'VariableNames', {'v'});

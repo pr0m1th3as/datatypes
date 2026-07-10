@@ -129,6 +129,13 @@ function tbl = cell2table (C, varargin)
 
 endfunction
 
+%!demo
+%! ## `cell2table` turns a 2-D cell array into a table, one column per variable.
+%! ## Unlike a matrix, the cell columns may hold different types.
+%!
+%! C = {'Sanchez', 38, true; 'Johnson', 43, false; 'Li', 38, true};
+%! cell2table (C, 'VariableNames', {'LastName', 'Age', 'Smoker'})
+
 %!test
 %! C = {1, 2; 3, 4};
 %! tbl = cell2table (C);
