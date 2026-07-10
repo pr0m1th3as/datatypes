@@ -1,0 +1,6 @@
+%!demo
+%! ## `kurtosis` measures the "tailedness" of the duration distribution — a
+%! ## dimensionless shape statistic, returned as a plain number.
+%!
+%! d = hours ([1, 2, 2, 2, 3, 9])
+%! kurtosis (d)

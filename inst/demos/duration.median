@@ -1,0 +1,5 @@
+%!demo
+%! ## `median` returns the middle duration of an array by value.
+%!
+%! d = minutes ([10, 20, 30, 90])
+%! median (d)

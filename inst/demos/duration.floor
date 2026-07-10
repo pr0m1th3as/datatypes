@@ -1,0 +1,5 @@
+%!demo
+%! ## `floor` rounds a duration down to a whole unit (default: seconds).
+%!
+%! d = hours (2.9)
+%! floor (d, 'hours')

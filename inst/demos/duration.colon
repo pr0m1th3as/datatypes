@@ -1,0 +1,5 @@
+%!demo
+%! ## The colon operator builds an evenly-spaced range of durations, using a
+%! ## duration step — here every half hour from 0 to 2 hours.
+%!
+%! hours (0):minutes (30):hours (2)

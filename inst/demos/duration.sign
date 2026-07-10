@@ -1,0 +1,5 @@
+%!demo
+%! ## `sign` returns -1, 0 or 1 for negative, zero and positive durations.
+%!
+%! d = hours ([-2, 0, 3])
+%! sign (d)

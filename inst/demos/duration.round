@@ -1,0 +1,9 @@
+%!demo
+%! ## `round` rounds a duration.  With no unit it rounds to the nearest second;
+%! ## pass a unit to round to whole hours, minutes, and so on.
+%!
+%! d = hours (2.4)
+%! round (d, 'hours')
+%!
+%! ## Default (nearest second):
+%! round (seconds (90.7))

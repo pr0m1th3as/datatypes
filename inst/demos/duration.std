@@ -1,0 +1,5 @@
+%!demo
+%! ## `std` returns the standard deviation of the durations, itself a duration.
+%!
+%! d = hours ([1, 2, 3, 4, 5])
+%! std (d)

@@ -1,0 +1,6 @@
+%!demo
+%! ## `char` converts the array into a character matrix of its display strings,
+%! ## one row per element.
+%!
+%! d = hours ([1.5; 2.25])
+%! char (d)

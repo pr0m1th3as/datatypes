@@ -1,0 +1,5 @@
+%!demo
+%! ## `sum` adds up the durations in an array.
+%!
+%! d = hours ([1, 2, 3, 4])
+%! sum (d)

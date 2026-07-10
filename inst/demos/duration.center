@@ -1,0 +1,6 @@
+%!demo
+%! ## `center` subtracts the mean from each element, so the result is centred on
+%! ## zero — the deviations from the average duration.
+%!
+%! d = hours ([1, 2, 3, 4, 5])
+%! center (d)

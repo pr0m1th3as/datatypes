@@ -1,0 +1,9 @@
+%!demo
+%! ## `max` returns the longest duration in an array.
+%!
+%! d = minutes ([90, 30, 150, 45])
+%! max (d)
+%!
+%! ## A second output gives its index (as for numeric `max`).
+%! [longest, idx] = max (d);
+%! idx

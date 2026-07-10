@@ -1,0 +1,5 @@
+%!demo
+%! ## `min` returns the shortest duration in an array.
+%!
+%! d = minutes ([90, 30, 150, 45])
+%! min (d)

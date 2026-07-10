@@ -1,0 +1,5 @@
+%!demo
+%! ## `prctile` returns the requested percentiles of a duration array.
+%!
+%! d = hours ([1, 2, 3, 4, 5, 6, 7, 8])
+%! prctile (d, [25, 50, 75])

@@ -41,6 +41,14 @@ function out = minutes (x)
   out = duration (0, double (x), 0, 'Format', 'm');
 endfunction
 
+%!demo
+%! ## `minutes` builds a duration from a number of minutes.
+%!
+%! minutes (90)
+%!
+%! ## Combine builders by adding them.
+%! hours (1) + minutes (30)
+
 %!test
 %! X = magic (3);
 %! D = minutes (X);

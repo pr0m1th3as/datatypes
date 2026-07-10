@@ -1,0 +1,6 @@
+%!demo
+%! ## `union` returns the distinct durations present in either array.
+%!
+%! A = hours ([1, 2, 3])
+%! B = hours ([2, 3, 4])
+%! union (A, B)

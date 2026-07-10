@@ -1,0 +1,6 @@
+%!demo
+%! ## `isbetween` tests, element by element, whether each duration lies within the
+%! ## closed interval `[lower, upper]`.
+%!
+%! d = hours ([1, 5, 10])
+%! isbetween (d, hours (2), hours (8))

@@ -1,0 +1,6 @@
+%!demo
+%! ## As a `duration` method, `years` returns the duration expressed in
+%! ## fixed-length years (365.2425 days).
+%!
+%! d = days (365.2425)
+%! years (d)

@@ -1,0 +1,6 @@
+%!demo
+%! ## `diff` returns the differences between successive durations — for example the
+%! ## gaps between a series of elapsed times.
+%!
+%! d = hours ([1, 3, 6, 10])
+%! diff (d)

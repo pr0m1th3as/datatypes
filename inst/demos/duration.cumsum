@@ -1,0 +1,5 @@
+%!demo
+%! ## `cumsum` returns the running total of the durations — a cumulative sum.
+%!
+%! d = hours ([1, 2, 3, 4])
+%! cumsum (d)

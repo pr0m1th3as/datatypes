@@ -1,0 +1,6 @@
+%!demo
+%! ## `datevec` returns the components as a numeric row `[Y MO D H MI S]` per
+%! ## element (a duration has no year/month/day, so those columns are zero).
+%!
+%! d = duration (26, 30, 15)
+%! datevec (d)

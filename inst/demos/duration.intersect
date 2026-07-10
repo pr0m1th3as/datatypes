@@ -1,0 +1,6 @@
+%!demo
+%! ## `intersect` returns the durations common to two arrays.
+%!
+%! A = hours ([1, 2, 3])
+%! B = hours ([2, 3, 4])
+%! intersect (A, B)

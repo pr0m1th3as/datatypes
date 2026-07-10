@@ -1,0 +1,5 @@
+%!demo
+%! ## `isinf` flags infinite durations (from an infinite input value).
+%!
+%! d = hours ([1, Inf, 3])
+%! isinf (d)

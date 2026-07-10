@@ -1,0 +1,5 @@
+%!demo
+%! ## `isfinite` flags the elements that are neither infinite nor NaN.
+%!
+%! d = hours ([1, Inf, NaN, 4])
+%! isfinite (d)

@@ -1,0 +1,5 @@
+%!demo
+%! ## `mean` averages the durations in an array, returning a duration.
+%!
+%! d = hours ([1, 2, 3, 4, 5])
+%! mean (d)

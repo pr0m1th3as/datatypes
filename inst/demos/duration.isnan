@@ -1,0 +1,5 @@
+%!demo
+%! ## `isnan` flags the elements whose value is Not-a-Number.
+%!
+%! d = hours ([1, NaN, 3])
+%! isnan (d)

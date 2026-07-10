@@ -1,0 +1,6 @@
+%!demo
+%! ## `setdiff` returns the durations in the first array but not the second.
+%!
+%! A = hours ([1, 2, 3])
+%! B = hours ([2, 3, 4])
+%! setdiff (A, B)

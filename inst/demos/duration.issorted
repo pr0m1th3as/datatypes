@@ -1,0 +1,5 @@
+%!demo
+%! ## `issorted` checks whether the durations are already in non-decreasing order.
+%!
+%! issorted (hours ([1, 2, 3]))
+%! issorted (hours ([2, 1, 3]))

@@ -1,0 +1,5 @@
+%!demo
+%! ## `sort` orders the durations from shortest to longest.
+%!
+%! d = minutes ([180, 30, 90, 45])
+%! sort (d)

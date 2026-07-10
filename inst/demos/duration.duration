@@ -1,0 +1,37 @@
+%!demo
+%! ## `duration` represents a *fixed-length* elapsed time — unlike
+%! ## `calendarDuration`, here a day is always 24 hours and a year a fixed number
+%! ## of days.  Give hours, minutes and seconds:
+%!
+%! duration (1, 30, 15)
+
+%!demo
+%! ## Values need not lie in the usual ranges — 25 hours is fine and stays 25
+%! ## hours in the default `hh:mm:ss` display.  A fourth argument adds milliseconds.
+%!
+%! duration (25, 30, 0)
+%! duration (0, 0, 1, 500)
+
+%!demo
+%! ## Build from time strings, optionally naming the `'InputFormat'`.
+%!
+%! duration ('36:15:00')
+%! duration ('06:15', 'InputFormat', 'mm:ss')
+
+%!demo
+%! ## The `'Format'` option controls display: a digital timer (`hh:mm:ss`,
+%! ## `dd:hh:mm:ss`, `mm:ss`, ...) or a single number in one unit (`y`, `d`, `h`,
+%! ## `m`, `s`).  Here the SAME duration shown six ways:
+%!
+%! duration (30, 15, 0, 'Format', 'hh:mm:ss')
+%! duration (30, 15, 0, 'Format', 'dd:hh:mm:ss')
+%! duration (30, 15, 0, 'Format', 'h')
+%! duration (30, 15, 0, 'Format', 'm')
+%! duration (30, 15, 0, 'Format', 's')
+%! duration (30, 15, 0, 'Format', 'd')
+
+%!demo
+%! ## A numeric matrix builds a column of durations, one per row — columns are
+%! ## hours, minutes and seconds.
+%!
+%! duration ([1, 30, 0; 0, 45, 30])

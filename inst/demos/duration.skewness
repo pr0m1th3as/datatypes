@@ -1,0 +1,6 @@
+%!demo
+%! ## `skewness` measures the asymmetry of the duration distribution.  Being a
+%! ## shape statistic it is dimensionless, so it comes back as a plain number.
+%!
+%! d = hours ([1, 1, 1, 2, 3, 8])
+%! skewness (d)

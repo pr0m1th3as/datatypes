@@ -1,0 +1,7 @@
+%!demo
+%! ## `mape` returns the mean absolute percentage error between two duration
+%! ## arrays.  Being a ratio it is dimensionless — a plain percentage number.
+%!
+%! predicted = hours ([1, 2, 4])
+%! actual = hours ([1, 2, 3])
+%! mape (predicted, actual)

@@ -1,0 +1,6 @@
+%!demo
+%! ## `bounds` returns the smallest and largest durations in one call.
+%!
+%! d = hours ([2, 5, 3, 9])
+%! [lo, hi] = bounds (d);
+%! [lo, hi]

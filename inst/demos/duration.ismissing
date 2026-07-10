@@ -1,0 +1,6 @@
+%!demo
+%! ## For a duration `ismissing` is the same test as `isnan`: a NaN duration is the
+%! ## missing value, so durations plug into the generic missing-data tools.
+%!
+%! d = hours ([1, NaN, 3])
+%! ismissing (d)

@@ -42,6 +42,13 @@ function out = years (x)
   out = duration (double (x) * 24 * 365.2425, 0, 0, 'Format', 'y');
 endfunction
 
+%!demo
+%! ## `years` builds a *fixed-length* year of 365.2425 days — a constant span, not
+%! ## a calendar year.
+%!
+%! years (1)
+%! years (0.5)
+
 %!test
 %! X = magic (3);
 %! D = years (X);

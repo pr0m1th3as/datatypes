@@ -1,0 +1,5 @@
+%!demo
+%! ## `minus` (`-`) subtracts one duration from another.
+%!
+%! a = hours (3)
+%! a - minutes (45)

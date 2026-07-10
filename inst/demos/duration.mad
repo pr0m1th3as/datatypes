@@ -1,0 +1,6 @@
+%!demo
+%! ## `mad` returns the mean absolute deviation of the durations — another robust
+%! ## spread statistic.
+%!
+%! d = hours ([2, 4, 4, 4, 5, 7, 9])
+%! mad (d)

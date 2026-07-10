@@ -1,0 +1,6 @@
+%!demo
+%! ## As a `duration` method, `minutes` returns the whole duration expressed in
+%! ## minutes.
+%!
+%! d = hours (1) + minutes (30)
+%! minutes (d)

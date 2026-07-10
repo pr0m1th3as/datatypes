@@ -41,6 +41,11 @@ function out = milliseconds (x)
   out = duration (0, 0, double (x) / 1000, 'Format', 's');
 endfunction
 
+%!demo
+%! ## `milliseconds` builds a duration from a number of milliseconds.
+%!
+%! milliseconds (1500)
+
 %!test
 %! X = magic (3);
 %! D = milliseconds (X);

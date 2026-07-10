@@ -1,0 +1,5 @@
+%!demo
+%! ## As a `duration` method, `seconds` returns the duration expressed in seconds.
+%!
+%! d = minutes (2) + seconds (30)
+%! seconds (d)

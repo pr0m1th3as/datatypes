@@ -1,0 +1,5 @@
+%!demo
+%! ## `cellstr` converts the array into a cell array of its display strings.
+%!
+%! d = minutes ([90, 150])
+%! cellstr (d)

@@ -1,0 +1,7 @@
+%!demo
+%! ## `hms` splits each duration into its hours, minutes and seconds as three
+%! ## separate numeric outputs.
+%!
+%! d = duration (1, 30, 45)
+%! [h, m, s] = hms (d);
+%! [h, m, s]

@@ -1,0 +1,6 @@
+%!demo
+%! ## As a `duration` method, `milliseconds` returns the duration expressed in
+%! ## milliseconds.
+%!
+%! d = seconds (2.5)
+%! milliseconds (d)

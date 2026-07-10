@@ -1,0 +1,6 @@
+%!demo
+%! ## `cummax` returns the running maximum — each element is the largest duration
+%! ## seen so far.
+%!
+%! d = hours ([2, 4, 3, 7, 5])
+%! cummax (d)

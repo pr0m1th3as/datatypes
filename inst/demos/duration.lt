@@ -1,0 +1,6 @@
+%!demo
+%! ## `lt` (`<`) compares durations by length.  `<`, `<=`, `>` and `>=` all work,
+%! ## since durations have a natural order.
+%!
+%! d = minutes ([30, 60, 90])
+%! d < hours (1)

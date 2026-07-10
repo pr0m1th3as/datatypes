@@ -1,0 +1,6 @@
+%!demo
+%! ## `setxor` returns the symmetric difference — durations in exactly one array.
+%!
+%! A = hours ([1, 2, 3])
+%! B = hours ([2, 3, 4])
+%! setxor (A, B)

@@ -41,6 +41,12 @@ function out = days (x)
   out = duration (double (x) * 24, 0, 0, 'Format', 'd');
 endfunction
 
+%!demo
+%! ## `days` builds a *fixed-length* day of 24 hours (contrast a calendar day,
+%! ## whose length varies across DST changes).
+%!
+%! days (2.5)
+
 %!test
 %! X = magic (3);
 %! D = days (X);

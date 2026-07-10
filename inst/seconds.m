@@ -41,6 +41,16 @@ function out = seconds (x)
   out = duration (0, 0, double (x), 'Format', 's');
 endfunction
 
+%!demo
+%! ## `seconds` builds a fixed-length duration from a number of seconds — one of
+%! ## the builders (`seconds`, `minutes`, `hours`, `days`, `years`,
+%! ## `milliseconds`) you add together to make longer spans.
+%!
+%! seconds (90)
+%!
+%! ## A numeric array builds one duration per element.
+%! seconds ([30, 60, 90])
+
 %!test
 %! X = magic (3);
 %! D = seconds (X);

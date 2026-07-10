@@ -1,0 +1,5 @@
+%!demo
+%! ## `plus` (`+`) adds durations together, giving a duration.
+%!
+%! a = hours (2) + minutes (30)
+%! a + seconds (45)

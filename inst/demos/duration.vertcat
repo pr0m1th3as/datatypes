@@ -1,0 +1,7 @@
+%!demo
+%! ## Durations concatenate like ordinary arrays; `[a; b]` stacks them into one
+%! ## column, converting units as needed.
+%!
+%! a = hours ([1; 2])
+%! b = minutes ([90; 30])
+%! [a; b]

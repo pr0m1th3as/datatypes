@@ -1,0 +1,7 @@
+%!demo
+%! ## `rdivide` (`./`) divides a duration by a number to scale it down.
+%!
+%! hours (3) ./ 2
+%!
+%! ## Dividing one duration by another gives their dimensionless ratio.
+%! hours (3) ./ minutes (30)

@@ -1,0 +1,5 @@
+%!demo
+%! ## `range` returns the span from shortest to longest — `max - min`.
+%!
+%! d = hours ([2, 5, 3, 9])
+%! range (d)

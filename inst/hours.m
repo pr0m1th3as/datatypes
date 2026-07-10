@@ -41,6 +41,12 @@ function out = hours (x)
   out = duration (double (x), 0, 0, 'Format', 'h');
 endfunction
 
+%!demo
+%! ## `hours` builds a duration from a number of hours; fractional values are fine.
+%!
+%! hours (1.5)
+%! hours ([1, 2.5, 8])
+
 %!test
 %! X = magic (3);
 %! D = hours (X);

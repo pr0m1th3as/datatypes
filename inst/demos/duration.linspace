@@ -1,0 +1,5 @@
+%!demo
+%! ## `linspace` builds a fixed number of durations evenly spaced between two
+%! ## endpoints.
+%!
+%! linspace (hours (0), hours (2), 5)

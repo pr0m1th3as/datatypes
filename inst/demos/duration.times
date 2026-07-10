@@ -1,0 +1,7 @@
+%!demo
+%! ## `times` (`.*`) scales a duration by a numeric factor.
+%!
+%! hours (1.5) * 4
+%!
+%! ## Element-wise scaling by an array yields an array of durations.
+%! minutes (30) .* [1, 2, 3]

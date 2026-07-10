@@ -1,0 +1,5 @@
+%!demo
+%! ## `abs` returns the magnitude of a (possibly negative) duration.
+%!
+%! d = minutes (30) - hours (2)
+%! abs (d)

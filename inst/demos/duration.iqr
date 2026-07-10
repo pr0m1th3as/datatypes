@@ -1,0 +1,6 @@
+%!demo
+%! ## `iqr` returns the interquartile range (the 75th minus the 25th percentile) —
+%! ## a robust measure of spread.
+%!
+%! d = hours ([2, 4, 4, 4, 5, 7, 9])
+%! iqr (d)

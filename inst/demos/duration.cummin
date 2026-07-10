@@ -1,0 +1,6 @@
+%!demo
+%! ## `cummin` returns the running minimum — each element is the smallest duration
+%! ## seen so far.
+%!
+%! d = hours ([7, 4, 5, 2, 3])
+%! cummin (d)

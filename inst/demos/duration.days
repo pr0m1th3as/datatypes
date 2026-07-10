@@ -1,0 +1,6 @@
+%!demo
+%! ## As a `duration` method, `days` returns the duration expressed in
+%! ## fixed-length (24-hour) days.
+%!
+%! d = hours (36)
+%! days (d)

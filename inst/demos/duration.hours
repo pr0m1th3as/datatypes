@@ -1,0 +1,7 @@
+%!demo
+%! ## As a `duration` *method*, `hours` returns the duration expressed as a number
+%! ## of hours — the inverse of the `hours` builder.  A single duration can be read
+%! ## out in any unit this way.
+%!
+%! d = hours (30) + minutes (15)
+%! hours (d)

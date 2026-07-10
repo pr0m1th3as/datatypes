@@ -1,0 +1,5 @@
+%!demo
+%! ## `ceil` rounds a duration up to a whole unit.
+%!
+%! d = minutes (90)
+%! ceil (d, 'hours')

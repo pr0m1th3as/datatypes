@@ -1,0 +1,6 @@
+%!demo
+%! ## `ismember` tests, element by element, whether each duration appears in a
+%! ## second set.
+%!
+%! d = hours ([1, 2, 5])
+%! ismember (d, hours ([2, 3, 5]))
