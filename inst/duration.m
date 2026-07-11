@@ -1889,6 +1889,10 @@ classdef duration
     ## @end deftypefn
     function C = plus (A, B)
       ## Overload methods for certain data types
+      if (isa (B, 'datetime'))
+        C = B + A;
+        return;
+      endif
       if (isa (B, 'calendarDuration'))
         C = B + A;
         return;

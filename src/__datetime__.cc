@@ -124,6 +124,69 @@ template <typename ZonedType> RowVector tz2vector (const ZonedType& to, string p
   return OUT;
 }
 
+// Convert a single set of (possibly non-canonical) date/time components to a
+// UTC sys_time, interpreting the wall-clock values in 'timezone'.  This mirrors
+// the aggregation/rollover math used by the component-normalisation path below
+// and is shared by the 'ConvertTo','posixtime' serial mode, so both stay in
+// lockstep.  Callers must screen NaN/Inf beforehand.
+sys_time<chrono::microseconds>
+components2sys (double Yv, double Mv, double Dv, double hv, double mv,
+               double sv, double xv, string timezone, string precision)
+{
+  // Aggregate hours, minutes, seconds, and milliseconds into seconds,
+  // calculate extra days to add later and map remaining hours, minutes, and
+  // seconds to a local_time variable.
+  double time_sec = hv * 3600 + mv * 60 + sv + xv / 1000;
+  int extra_days = (int)time_sec / 86400;
+  // Subtract one day for negative time, because it goes missing from the
+  // conversion in 'seconds2vector' below.
+  if (time_sec < 0)
+  {
+    extra_days -= 1;
+  }
+  time_sec = remainder (time_sec, 86400);
+  RowVector HMS = seconds2vector (time_sec, precision);
+  int tmp_h = (int)HMS(3);
+  int tmp_m = (int)HMS(4);
+  int tmp_s = (int)HMS(5);
+  double pr = 1000000;
+  if (precision == "milliseconds")
+  {
+    pr = 1000;
+  }
+  double tmp_frac_sec = HMS(5) - tmp_s;
+  int tmp_micro = (int)(round (tmp_frac_sec * pr));
+  // Fix years / months
+  int tmp_Y = (int)Yv + ((int)Mv / 12);
+  int tmp_M = (int)Mv % 12;
+  int tmp_D = (int)Dv + (int)extra_days;
+  // Add/subtract months and days accordingly
+  year_month_day ymd = year(tmp_Y)/(int)0/(int)0;
+  if (tmp_M < 0)
+  {
+    ymd -= months{-tmp_M};
+  }
+  else
+  {
+    ymd += months{tmp_M};
+  }
+  if (tmp_D < 0)
+  {
+    ymd = sys_days{ymd} - days{-tmp_D};
+  }
+  else
+  {
+    ymd = sys_days{ymd} + days{tmp_D};
+  }
+  // Add time to date and interpret the wall-clock value in 'timezone'
+  auto datetime = local_days{ymd} + chrono::hours{tmp_h}
+                                  + chrono::minutes{tmp_m}
+                                  + chrono::seconds{tmp_s}
+                                  + chrono::microseconds{tmp_micro};
+  auto in = make_zoned (timezone, datetime);
+  return chrono::time_point_cast<chrono::microseconds> (in.get_sys_time ());
+}
+
 auto timezone_precision (double time_sec, string timezone, string precision)
 {
   auto tz = make_zoned (current_zone (), chrono::system_clock::now ());
@@ -249,12 +312,24 @@ Base function for datetime class. \n\
 \n\n\
 @end deftypefn")
 {
+  // The 'ConvertTo' serial mode returns a single output; every other mode
+  // requires either 6 or 7 output arguments.  Detect the mode up front so the
+  // output-count guard below can exempt it.
+  bool toSerial = false;
+  for (int i = 0; i + 1 < args.length (); i++)
+  {
+    if (args(i).is_string () && args(i).string_value () == "ConvertTo")
+    {
+      toSerial = true;
+    }
+  }
+
   // Either 6 or 7 output arguments are required
   if (nargout > 7)
   {
     error ("__datetime__: too many output arguments.");
   }
-  if (nargout < 6)
+  if (nargout < 6 && ! toSerial)
   {
     error ("__datetime__: too few output arguments.");
   }
@@ -284,6 +359,7 @@ Base function for datetime class. \n\
   bool doLeapSec = false;
   bool doConvert = false;
   string convertFrom = "";
+  string convertTo = "";
 
   // Parse paired arguments here
   while (nargin > 2 && args(nargin - 2).is_string ())
@@ -305,6 +381,25 @@ Base function for datetime class. \n\
         else
         {
           error ("__datetime__: invalid type for 'ConvertFrom'.");
+        }
+      }
+    }
+    else if (args(nargin - 2).string_value () == "ConvertTo")
+    {
+      if (args(nargin - 1).is_string ())
+      {
+        convertTo = args(nargin - 1).string_value ();
+      }
+      else
+      {
+        if (nargout == 7)
+        {
+          retval(6) = "invalid type for 'ConvertTo'.";
+          return retval;
+        }
+        else
+        {
+          error ("__datetime__: invalid type for 'ConvertTo'.");
         }
       }
     }
@@ -986,6 +1081,40 @@ Base function for datetime class. \n\
       x = expand_input (sz, args(6));
     }
     // Beyond this point, all input data have common size
+
+    // 'ConvertTo','posixtime' returns POSIX seconds (double) instead of the six
+    // canonical components.  The wall-clock components are interpreted in
+    // 'timezone' (pass 'TimeZone','UTC' for unzoned datetimes so the serial is
+    // free of any system-zone DST offset), Not-A-Time maps to NaN, and infinite
+    // datetimes preserve their sign.
+    if (convertTo == "posixtime")
+    {
+      NDArray S(sz, 0);
+      for (int i = 0; i < sz.numel (); i++)
+      {
+        RowVector tmp(7);
+        tmp(0) = Y(i); tmp(1) = M(i); tmp(2) = D(i);
+        tmp(3) = h(i); tmp(4) = m(i); tmp(5) = s(i); tmp(6) = x(i);
+        double chk = check_nan_inf (tmp);
+        if (isnan (chk))
+        {
+          S(i) = NAN;
+        }
+        else if (isinf (chk))
+        {
+          S(i) = chk;
+        }
+        else
+        {
+          auto sys = components2sys (Y(i), M(i), D(i), h(i), m(i), s(i),
+                                     x(i), timezone, precision);
+          S(i) = (double) sys.time_since_epoch ().count () / 1000000.0;
+        }
+      }
+      retval(0) = S;
+      return retval;
+    }
+
     for (int i = 0; i < sz.numel (); i++)
     {
       RowVector tmp(7);

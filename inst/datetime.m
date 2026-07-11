@@ -1318,6 +1318,152 @@ classdef datetime
   endmethods
 
 ################################################################################
+##                         ** Arithmetic Operations **                        ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'plus'             'minus'                                                 ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{C} =} plus (@var{A}, @var{B})
+    ##
+    ## Addition for datetime arrays.
+    ##
+    ## @code{@var{C} = plus (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{C} = @var{A} + @var{B}} and supports the following operand
+    ## combinations, in either order.
+    ##
+    ## @itemize
+    ## @item @code{datetime + duration} returns a @code{datetime} array shifted
+    ## later by a fixed number of 24-hour days.  For a zoned array the shift is
+    ## applied to the absolute instant, so it is aware of daylight saving time
+    ## transitions.
+    ##
+    ## @item @code{datetime + calendarDuration} returns a @code{datetime} array
+    ## shifted later in calendar units.  Whole months (and years) are applied
+    ## first, clamping the day of month to the last day of the target month when
+    ## necessary (e.g.@: 31 January plus one month is 28 February), then whole
+    ## calendar days, and finally the time-of-day component as an instant.
+    ##
+    ## @item @code{datetime + X}, where @var{X} is a numeric or logical array,
+    ## treats the elements of @var{X} as a number of fixed 24-hour days.
+    ## @end itemize
+    ##
+    ## Adding two datetime arrays is not defined and raises an error.  @var{A}
+    ## and @var{B} must be size compatible: they can be the same size, one can be
+    ## scalar, or for every dimension their sizes must be equal or one of them
+    ## must be 1.  Not-A-Time and infinite elements propagate to the result.
+    ##
+    ## @end deftypefn
+    function C = plus (A, B)
+
+      ## Addition is symmetric for every supported operand type, so commute the
+      ## operands to keep the datetime array on the left.
+      if (! isa (A, 'datetime'))
+        [A, B] = deal (B, A);
+      endif
+
+      if (isa (B, 'datetime'))
+        ## datetime + datetime is not defined (MATLAB parity)
+        error (strcat ("datetime.plus: addition is not defined between two", ...
+                       " datetime arrays."));
+      elseif (isa (B, 'duration'))
+        ## datetime + duration -> datetime (fixed-length instant shift)
+        C = addSeconds (A, days (B) * 86400);
+      elseif (isa (B, 'calendarDuration'))
+        ## datetime + calendarDuration -> datetime (calendar-aware shift)
+        C = addCalendar (A, B, 1);
+      elseif (islogical (B) || (isnumeric (B) && isfloat (B)))
+        ## numeric/logical operand: a number of fixed 24-hour days
+        C = addSeconds (A, double (B) * 86400);
+      elseif (isinteger (B))
+        error (strcat ("datetime.plus: cannot add a '%s' array to a datetime", ...
+                       " array; convert it to double or a duration first."), ...
+               class (B));
+      else
+        error (strcat ("datetime.plus: cannot add a '%s' array to a datetime", ...
+                       " array."), class (B));
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{C} =} minus (@var{A}, @var{B})
+    ##
+    ## Subtraction for datetime arrays.
+    ##
+    ## @code{@var{C} = minus (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{C} = @var{A} - @var{B}} and supports the following operand
+    ## combinations.
+    ##
+    ## @itemize
+    ## @item @code{datetime - datetime} returns a @code{duration} array holding
+    ## the elapsed time between the corresponding elements.  Both operands must
+    ## either both have a time zone or both be unzoned; a zoned difference is
+    ## computed from the absolute instants, so the two time zones may differ.
+    ##
+    ## @item @code{datetime - duration} returns a @code{datetime} array shifted
+    ## earlier by a fixed number of 24-hour days.  For a zoned array the shift
+    ## is applied to the absolute instant, so it is aware of daylight saving
+    ## time transitions.
+    ##
+    ## @item @code{datetime - calendarDuration} returns a @code{datetime} array
+    ## shifted earlier in calendar units.  Whole months (and years) are applied
+    ## first, clamping the day of month to the last day of the target month when
+    ## necessary (e.g.@: 31 March minus one month is 28 February), then whole
+    ## calendar days, and finally the time-of-day component as an instant.
+    ##
+    ## @item @code{datetime - X}, where @var{X} is a numeric or logical array,
+    ## treats the elements of @var{X} as a number of fixed 24-hour days.
+    ## @end itemize
+    ##
+    ## @var{A} and @var{B} must be size compatible: they can be the same size,
+    ## one can be scalar, or for every dimension their sizes must be equal or one
+    ## of them must be 1.  Not-A-Time and infinite elements propagate to the
+    ## result.
+    ##
+    ## @end deftypefn
+    function C = minus (A, B)
+
+      ## Only 'datetime - <operand>' is defined; a datetime array cannot be
+      ## subtracted from a non-datetime left operand (MATLAB parity).
+      if (! isa (A, 'datetime'))
+        error (strcat ("datetime.minus: cannot subtract a datetime array", ...
+                       " from a '%s' array."), class (A));
+      endif
+
+      if (isa (B, 'datetime'))
+        ## datetime - datetime -> duration (elapsed time)
+        if (xor (isempty (A.TimeZone), isempty (B.TimeZone)))
+          error (strcat ("datetime.minus: cannot subtract a datetime array", ...
+                         " with a time zone from one without a time zone."));
+        endif
+        C = duration (0, 0, serial (A) - serial (B));
+      elseif (isa (B, 'duration'))
+        ## datetime - duration -> datetime (fixed-length instant shift)
+        C = addSeconds (A, - days (B) * 86400);
+      elseif (isa (B, 'calendarDuration'))
+        ## datetime - calendarDuration -> datetime (calendar-aware shift)
+        C = addCalendar (A, B, -1);
+      elseif (islogical (B) || (isnumeric (B) && isfloat (B)))
+        ## numeric/logical operand: a number of fixed 24-hour days
+        C = addSeconds (A, - double (B) * 86400);
+      elseif (isinteger (B))
+        error (strcat ("datetime.minus: cannot subtract a '%s' array from a", ...
+                       " datetime array; convert it to double or a duration", ...
+                       " first."), class (B));
+      else
+        error (strcat ("datetime.minus: cannot subtract a '%s' array from a", ...
+                       " datetime array."), class (B));
+      endif
+    endfunction
+
+  endmethods
+
+################################################################################
 ##                           ** Array Operations **                           ##
 ################################################################################
 ##                             Available Methods                              ##
@@ -1866,6 +2012,94 @@ classdef datetime
          this.Second] = __datetime__ (this.Year, this.Month, this.Day, ...
          this.Hour, this.Minute, this.Second, 'TimeZone', this.TimeZone, ...
          'toTimeZone', this.TimeZone, 'Precision', 'microseconds');
+      endif
+    endfunction
+
+    ## Absolute instant of each element as POSIX seconds (double, microsecond
+    ## precision).  Unzoned arrays are treated as UTC so the serial carries no
+    ## system-zone daylight-saving offset; zoned arrays honour their zone (and
+    ## DST).  Not-A-Time maps to NaN and infinite elements keep their sign.
+    ## Used by the arithmetic and relational instant-based comparisons.
+    function s = serial (this)
+      if (isempty (this.TimeZone))
+        tz = 'UTC';
+      else
+        tz = this.TimeZone;
+      endif
+      s = __datetime__ (this.Year, this.Month, this.Day, this.Hour, ...
+                        this.Minute, this.Second, 'ConvertTo', 'posixtime', ...
+                        'TimeZone', tz, 'Precision', 'microseconds');
+    endfunction
+
+    ## Inverse of 'serial': map POSIX seconds back to the wall-clock components
+    ## of this array's time zone.  For a zoned array the serial is first read as
+    ## a UTC wall clock and then converted into the target zone (honouring DST).
+    function [Y, M, D, h, m, s] = serial2components (this, ser)
+      if (isempty (this.TimeZone))
+        [Y, M, D, h, m, s] = __datetime__ (ser, 'ConvertFrom', 'posixtime', ...
+                                           'Precision', 'microseconds');
+      else
+        [Y, M, D, h, m, s] = __datetime__ (ser, 'ConvertFrom', 'posixtime', ...
+                                           'Precision', 'microseconds');
+        [Y, M, D, h, m, s] = __datetime__ (Y, M, D, h, m, s, ...
+                             'TimeZone', 'UTC', 'toTimeZone', this.TimeZone, ...
+                             'Precision', 'microseconds');
+      endif
+    endfunction
+
+    ## Shift each element by a fixed number of seconds applied to its absolute
+    ## instant (daylight-saving aware for zoned arrays), then rebuild the
+    ## wall-clock components.  DSEC may broadcast against the array size.  The
+    ## Format and TimeZone properties are preserved.
+    function this = addSeconds (this, dsec)
+      ser = serial (this) + dsec;
+      [Y, M, D, h, m, s] = serial2components (this, ser);
+      this.Year = Y; this.Month = M; this.Day = D;
+      this.Hour = h; this.Minute = m; this.Second = s;
+    endfunction
+
+    ## Shift each element by a calendarDuration (SGN is +1 for addition, -1 for
+    ## subtraction).  Whole months are applied first with end-of-month day
+    ## clamping, then whole calendar days (wall-clock preserving), then the
+    ## time-of-day component as an instant.  Not-A-Time and infinite elements are
+    ## carried through unchanged.
+    function this = addCalendar (this, calD, sgn)
+      dMonths = sgn * calmonths (calD);
+      dDays   = sgn * caldays (calD);
+      dTime   = sgn * days (time (calD)) * 86400;   # seconds
+
+      ## Broadcast the instant components and the calendar deltas to a common
+      ## size so the month math and the Not-A-Time / infinite masks all align.
+      base = zeros (size (this.Year)) + zeros (size (this.Month)) ...
+           + zeros (size (this.Day))  + zeros (size (this.Hour)) ...
+           + zeros (size (this.Minute)) + zeros (size (this.Second)) ...
+           + zeros (size (dMonths)) + zeros (size (dDays));
+      Y  = this.Year + base;   M  = this.Month + base;  D  = this.Day + base;
+      h  = this.Hour + base;   m  = this.Minute + base; s  = this.Second + base;
+      dM = dMonths + base;     dD = dDays + base;
+
+      ## An element is "live" only when both the instant and the calendar delta
+      ## are finite; Not-A-Time and infinite inputs (from either operand)
+      ## propagate straight through as the corresponding non-finite marker.
+      ok = isfinite (Y) & isfinite (dM) & isfinite (dD);
+      mk = Y + dM + dD;
+
+      ## Add whole months, clamping the day to the last day of the target month
+      ## (e.g. 31 Jan + 1 month -> 28 Feb), then add whole calendar days.
+      total = Y * 12 + (M - 1) + dM;
+      Y(ok) = floor (total(ok) / 12);
+      M(ok) = mod (total(ok), 12) + 1;
+      D(ok) = min (D(ok), eomday (Y(ok), M(ok))) + dD(ok);
+      Y(! ok) = mk(! ok);  M(! ok) = mk(! ok);  D(! ok) = mk(! ok);
+      h(! ok) = mk(! ok);  m(! ok) = mk(! ok);  s(! ok) = mk(! ok);
+
+      this.Year = Y; this.Month = M; this.Day = D;
+      this.Hour = h; this.Minute = m; this.Second = s;
+      this = normalize (this);
+
+      ## Add the time-of-day component as an instant (daylight-saving aware).
+      if (any (dTime(:) != 0))
+        this = addSeconds (this, dTime + zeros (size (this.Year)));
       endif
     endfunction
 

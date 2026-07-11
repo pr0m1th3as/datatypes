@@ -1268,6 +1268,10 @@ classdef calendarDuration
     ##
     ## @end deftypefn
     function out = plus (A, B)
+      if (isa (B, 'datetime'))
+        out = B + A;
+        return;
+      endif
       if (isa (A, 'calendarDuration') && isa (B, 'calendarDuration'))
         out = A;
         out.Months = A.Months + B.Months;

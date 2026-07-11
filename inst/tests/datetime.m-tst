@@ -466,3 +466,181 @@
 ## Test invalid TimeZone assignment errors
 %!error <datetime.subsasgn: 'TimeZone' must be a character vector.> ...
 %! d = datetime (2020, 1, 1); d.TimeZone = 5;
+
+################################################################################
+##                         ** Arithmetic Operations **                        ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'minus'                                                                    ##
+##                                                                            ##
+################################################################################
+
+## Test 'minus' -- datetime minus datetime returns a duration
+%!assert_equal (class (datetime (2021, 1, 2) - datetime (2021, 1, 1)), 'duration')
+%!assert_equal (seconds (datetime (2021, 1, 2) - datetime (2021, 1, 1)), 86400)
+%!assert_equal (seconds (datetime (2021, 1, 2, 6, 30, 15) ...
+%!                       - datetime (2021, 1, 1, 0, 0, 0)), 109815)
+%!assert_equal (days (datetime (2021, 1, 2) - datetime (2021, 1, 1)), 1)
+%!assert_equal (seconds (datetime (2021, 1, 1) - datetime (2021, 1, 2)), -86400)
+
+## Test 'minus' -- datetime difference is element-wise and size compatible
+%!assert_equal (seconds (datetime (2021, 1, [2, 3, 4]) - datetime (2021, 1, 1)), ...
+%!              [86400, 172800, 259200])
+%!assert_equal (size (datetime (2021, 1, [1, 2; 3, 4]) - datetime (2021, 1, 1)), ...
+%!              [2, 2])
+
+## Test 'minus' -- zoned difference uses absolute instants across zones
+%!assert_equal (hours (datetime (2021, 1, 1, 'TimeZone', 'Europe/London') ...
+%!                     - datetime (2021, 1, 1, 'TimeZone', 'America/New_York')), -5)
+%!assert_equal (seconds (datetime (2021, 7, 1, 12, 0, 0, 'TimeZone', 'UTC') ...
+%!                       - datetime (2021, 7, 1, 12, 0, 0, 'TimeZone', 'UTC')), 0)
+
+## Test 'minus' -- mixing a zoned and an unzoned datetime errors
+%!error <datetime.minus: cannot subtract a datetime array with a time zone from one without a time zone.> ...
+%! datetime (2021, 1, 1, 'TimeZone', 'UTC') - datetime (2021, 1, 1);
+%!error <datetime.minus: cannot subtract a datetime array with a time zone from one without a time zone.> ...
+%! datetime (2021, 1, 1) - datetime (2021, 1, 1, 'TimeZone', 'UTC');
+
+## Test 'minus' -- datetime minus duration returns a shifted datetime
+%!assert_equal (class (datetime (2021, 1, 1) - hours (30)), 'datetime')
+%!assert_equal (datevec (datetime (2021, 1, 1, 0, 0, 0) - hours (30)), ...
+%!              [2020, 12, 30, 18, 0, 0])
+%!assert_equal (datevec (datetime (2021, 1, 1) - days (1)), [2020, 12, 31, 0, 0, 0])
+%!assert_equal (datevec (datetime (2021, 1, 1, 0, 0, 0) - minutes (90)), ...
+%!              [2020, 12, 31, 22, 30, 0])
+
+## Test 'minus' -- duration subtraction on a zoned array is instant-based (DST)
+%!assert_equal (datevec (datetime (2021, 3, 14, 3, 0, 0, ...
+%!                       'TimeZone', 'America/New_York') - hours (2)), ...
+%!              [2021, 3, 14, 0, 0, 0])
+
+## Test 'minus' -- numeric and logical operands are a number of 24-hour days
+%!assert_equal (class (datetime (2021, 1, 1) - 5), 'datetime')
+%!assert_equal (datevec (datetime (2021, 1, 1) - 5), [2020, 12, 27, 0, 0, 0])
+%!assert_equal (datevec (datetime (2021, 1, 1, 0, 0, 0) - 1.5), ...
+%!              [2020, 12, 30, 12, 0, 0])
+%!assert_equal (datevec (datetime (2021, 1, 1) - true), [2020, 12, 31, 0, 0, 0])
+%!assert_equal (datevec (datetime (2021, 1, 1) - [1, 2, 3]), ...
+%!              [2020, 12, 31, 0, 0, 0; 2020, 12, 30, 0, 0, 0; 2020, 12, 29, 0, 0, 0])
+
+## Test 'minus' -- calendarDuration subtracts whole months with day clamping
+%!assert_equal (class (datetime (2021, 1, 1) - calmonths (1)), 'datetime')
+%!assert_equal (datevec (datetime (2021, 1, 1) - calmonths (1)), [2020, 12, 1, 0, 0, 0])
+%!assert_equal (datevec (datetime (2021, 3, 31) - calmonths (1)), [2021, 2, 28, 0, 0, 0])
+%!assert_equal (datevec (datetime (2021, 3, 30) - calmonths (1)), [2021, 2, 28, 0, 0, 0])
+%!assert_equal (datevec (datetime (2020, 3, 31) - calmonths (13)), [2019, 2, 28, 0, 0, 0])
+%!assert_equal (datevec (datetime (2020, 2, 29) - calyears (1)), [2019, 2, 28, 0, 0, 0])
+
+## Test 'minus' -- calendarDuration applies months, then days, then time
+%!assert_equal (datevec (datetime (2021, 1, 1) ...
+%!                       - calendarDuration (0, 1, 15, 0, 0, 0)), [2020, 11, 16, 0, 0, 0])
+%!assert_equal (datevec (datetime (2021, 1, 31) - calmonths (1) - caldays (1)), ...
+%!              [2020, 12, 30, 0, 0, 0])
+%!assert_equal (datevec (datetime (2021, 1, 1, 0, 0, 0) ...
+%!                       - calendarDuration (0, 0, 0, 6, 0, 0)), [2020, 12, 31, 18, 0, 0])
+
+## Test 'minus' -- Not-A-Time and infinite elements propagate
+%!assert_equal (isnan (seconds (NaT - datetime (2021, 1, 1))), true)
+%!assert_equal (isnat (NaT - hours (1)), true)
+%!assert_equal (isnat (datetime (2021, 1, 1) - days (NaN)), true)
+%!assert_equal (isinf (year (datetime (2021, 1, 1) - days (Inf))), true)
+%!assert_equal (sign (year (datetime (2021, 1, 1) - days (Inf))), -1)
+%!assert_equal (sign (year (datetime (2021, 1, 1) - days (-Inf))), 1)
+
+## Test 'minus' -- empty arrays return empty
+%!assert_equal (isempty (datetime (2021, 1, []) - datetime (2021, 1, [])), true)
+%!assert_equal (isempty (datetime (2021, 1, []) - 1), true)
+
+## Test 'minus' -- integer, char, string, and cell operands error
+%!error <datetime.minus: cannot subtract a 'int8' array from a datetime array; convert it to double or a duration first.> ...
+%! datetime (2021, 1, 1) - int8 (5);
+%!error <datetime.minus: cannot subtract a 'char' array from a datetime array.> ...
+%! datetime (2021, 1, 1) - 'A';
+%!error <datetime.minus: cannot subtract a 'string' array from a datetime array.> ...
+%! datetime (2021, 1, 1) - string ("A");
+%!error <datetime.minus: cannot subtract a 'cell' array from a datetime array.> ...
+%! datetime (2021, 1, 1) - {1};
+
+## Test 'minus' -- subtracting a datetime from a non-datetime left operand errors
+%!error <datetime.minus: cannot subtract a datetime array from a 'double' array.> ...
+%! 5 - datetime (2021, 1, 1);
+%!error <datetime.minus: cannot subtract a datetime array from a 'int8' array.> ...
+%! int8 (5) - datetime (2021, 1, 1);
+%!error <datetime.minus: cannot subtract a datetime array from a 'logical' array.> ...
+%! true - datetime (2021, 1, 1);
+%!error <datetime.minus: cannot subtract a datetime array from a 'char' array.> ...
+%! 'A' - datetime (2021, 1, 1);
+
+## Test 'plus' -- datetime plus duration returns a shifted datetime
+%!assert_equal (class (datetime (2021, 1, 1) + hours (30)), 'datetime')
+%!assert_equal (datevec (datetime (2021, 1, 1, 0, 0, 0) + hours (30)), ...
+%!              [2021, 1, 2, 6, 0, 0])
+%!assert_equal (datevec (datetime (2021, 1, 1) + days (1)), [2021, 1, 2, 0, 0, 0])
+%!assert_equal (datevec (datetime (2021, 1, 1, 0, 0, 0) + minutes (90)), ...
+%!              [2021, 1, 1, 1, 30, 0])
+
+## Test 'plus' -- addition commutes with the datetime on either side
+%!assert_equal (datevec (hours (5) + datetime (2021, 1, 1, 0, 0, 0)), ...
+%!              [2021, 1, 1, 5, 0, 0])
+%!assert_equal (datevec (calmonths (1) + datetime (2021, 1, 1)), [2021, 2, 1, 0, 0, 0])
+%!assert_equal (datevec (caldays (3) + datetime (2021, 1, 1)), [2021, 1, 4, 0, 0, 0])
+%!assert_equal (datevec (5 + datetime (2021, 1, 1)), [2021, 1, 6, 0, 0, 0])
+%!assert_equal (datevec (5 + datetime (2021, 1, 1)), datevec (datetime (2021, 1, 1) + 5))
+
+## Test 'plus' -- numeric and logical operands are a number of 24-hour days
+%!assert_equal (datevec (datetime (2021, 1, 1) + 5), [2021, 1, 6, 0, 0, 0])
+%!assert_equal (datevec (datetime (2021, 1, 1, 0, 0, 0) + 1.5), [2021, 1, 2, 12, 0, 0])
+%!assert_equal (datevec (datetime (2021, 1, 1) + true), [2021, 1, 2, 0, 0, 0])
+%!assert_equal (datevec (datetime (2021, 1, 1) + [1, 2, 3]), ...
+%!              [2021, 1, 2, 0, 0, 0; 2021, 1, 3, 0, 0, 0; 2021, 1, 4, 0, 0, 0])
+
+## Test 'plus' -- calendarDuration adds whole months with day clamping
+%!assert_equal (datevec (datetime (2021, 1, 1) + calmonths (1)), [2021, 2, 1, 0, 0, 0])
+%!assert_equal (datevec (datetime (2021, 1, 1) + calmonths (13)), [2022, 2, 1, 0, 0, 0])
+%!assert_equal (datevec (datetime (2021, 1, 31) + calmonths (1)), [2021, 2, 28, 0, 0, 0])
+%!assert_equal (datevec (datetime (2021, 3, 31) + calmonths (1)), [2021, 4, 30, 0, 0, 0])
+%!assert_equal (datevec (datetime (2020, 2, 29) + calyears (1)), [2021, 2, 28, 0, 0, 0])
+%!assert_equal (datevec (datetime (2021, 1, 1) + caldays (40)), [2021, 2, 10, 0, 0, 0])
+
+## Test 'plus' -- calendarDuration applies months, then days, then time
+%!assert_equal (datevec (datetime (2021, 1, 1, 0, 0, 0) ...
+%!                       + calendarDuration (0, 1, 15, 6, 0, 0)), [2021, 2, 16, 6, 0, 0])
+%!assert_equal (datevec (datetime (2021, 1, 31) + calmonths (1) + caldays (1)), ...
+%!              [2021, 3, 1, 0, 0, 0])
+
+## Test 'plus' -- duration addition on a zoned array is instant-based (DST)
+%!assert_equal (datevec (datetime (2021, 3, 14, 0, 0, 0, ...
+%!                       'TimeZone', 'America/New_York') + hours (2)), ...
+%!              [2021, 3, 14, 3, 0, 0])
+%!assert_equal (datevec (datetime (2021, 3, 14, 0, 0, 0, ...
+%!                       'TimeZone', 'America/New_York') + caldays (1)), ...
+%!              [2021, 3, 15, 0, 0, 0])
+
+## Test 'plus' -- adding two datetime arrays is not defined
+%!error <datetime.plus: addition is not defined between two datetime arrays.> ...
+%! datetime (2021, 1, 1) + datetime (2021, 1, 2);
+
+## Test 'plus' -- Not-A-Time and infinite elements propagate
+%!assert_equal (isnat (NaT + hours (1)), true)
+%!assert_equal (isnat (datetime (2021, 1, 1) + days (NaN)), true)
+%!assert_equal (isnat (datetime (2021, 1, 1) + calmonths (NaN)), true)
+%!assert_equal (isinf (year (datetime (2021, 1, 1) + days (Inf))), true)
+%!assert_equal (sign (year (datetime (2021, 1, 1) + days (Inf))), 1)
+%!assert_equal (sign (year (datetime (2021, 1, 1) + days (-Inf))), -1)
+
+## Test 'plus' -- empty arrays return empty
+%!assert_equal (isempty (datetime (2021, 1, []) + 1), true)
+%!assert_equal (isempty (1 + datetime (2021, 1, [])), true)
+
+## Test 'plus' -- integer, char, string, and cell operands error
+%!error <datetime.plus: cannot add a 'int8' array to a datetime array; convert it to double or a duration first.> ...
+%! datetime (2021, 1, 1) + int8 (5);
+%!error <datetime.plus: cannot add a 'char' array to a datetime array.> ...
+%! datetime (2021, 1, 1) + 'A';
+%!error <datetime.plus: cannot add a 'string' array to a datetime array.> ...
+%! datetime (2021, 1, 1) + string ("A");
+%!error <datetime.plus: cannot add a 'cell' array to a datetime array.> ...
+%! datetime (2021, 1, 1) + {1};
+%!error <datetime.plus: cannot add a 'int8' array to a datetime array; convert it to double or a duration first.> ...
+%! int8 (5) + datetime (2021, 1, 1);
