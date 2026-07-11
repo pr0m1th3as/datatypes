@@ -644,3 +644,109 @@
 %! datetime (2021, 1, 1) + {1};
 %!error <datetime.plus: cannot add a 'int8' array to a datetime array; convert it to double or a duration first.> ...
 %! int8 (5) + datetime (2021, 1, 1);
+
+################################################################################
+##                        ** Relational Operations **                         ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'lt'               'le'               'gt'               'ge'              ##
+## 'eq'               'ne'                                                    ##
+##                                                                            ##
+################################################################################
+
+## Test 'lt' -- earlier is less than later
+%!assert_equal (datetime (2021, 1, 1) < datetime (2021, 6, 1), true)
+%!assert_equal (datetime (2021, 6, 1) < datetime (2021, 1, 1), false)
+%!assert_equal (datetime (2021, 1, 1) < datetime (2021, 1, 1), false)
+%!assert_equal (datetime (2021, 1, 1, 0, 0, 0) < datetime (2021, 1, 1, 0, 0, 1), true)
+%!assert_equal (class (datetime (2021, 1, 1) < datetime (2021, 6, 1)), 'logical')
+
+## Test 'le' -- earlier or equal
+%!assert_equal (datetime (2021, 1, 1) <= datetime (2021, 1, 1), true)
+%!assert_equal (datetime (2021, 1, 1) <= datetime (2021, 6, 1), true)
+%!assert_equal (datetime (2021, 6, 1) <= datetime (2021, 1, 1), false)
+
+## Test 'gt' -- later is greater
+%!assert_equal (datetime (2021, 6, 1) > datetime (2021, 1, 1), true)
+%!assert_equal (datetime (2021, 1, 1) > datetime (2021, 6, 1), false)
+%!assert_equal (datetime (2021, 1, 1) > datetime (2021, 1, 1), false)
+
+## Test 'ge' -- later or equal
+%!assert_equal (datetime (2021, 1, 1) >= datetime (2021, 1, 1), true)
+%!assert_equal (datetime (2021, 6, 1) >= datetime (2021, 1, 1), true)
+%!assert_equal (datetime (2021, 1, 1) >= datetime (2021, 6, 1), false)
+
+## Test 'eq' and 'ne' -- equality of the same instant
+%!assert_equal (datetime (2021, 1, 1) == datetime (2021, 1, 1), true)
+%!assert_equal (datetime (2021, 1, 1) == datetime (2021, 6, 1), false)
+%!assert_equal (datetime (2021, 1, 1) != datetime (2021, 6, 1), true)
+%!assert_equal (datetime (2021, 1, 1) != datetime (2021, 1, 1), false)
+%!assert_equal (datetime (2021, 1, 1, 12, 0, 0) == datetime (2021, 1, 1, 12, 0, 0), true)
+
+## Test relational -- element-wise over arrays with broadcasting
+%!assert_equal (datetime (2021, 1, [1, 2, 3]) < datetime (2021, 1, 2), ...
+%!              [true, false, false])
+%!assert_equal (datetime (2021, 1, [1, 2, 3]) == datetime (2021, 1, 2), ...
+%!              [false, true, false])
+%!assert_equal (datetime (2021, 1, [1, 2, 3]) >= datetime (2021, 1, 2), ...
+%!              [false, true, true])
+%!assert_equal (size (datetime (2021, 1, [1, 2; 3, 4]) < datetime (2021, 1, 3)), ...
+%!              [2, 2])
+
+## Test relational -- Not-A-Time never compares less/greater/equal
+%!assert_equal (NaT < datetime (2021, 1, 1), false)
+%!assert_equal (NaT > datetime (2021, 1, 1), false)
+%!assert_equal (NaT <= datetime (2021, 1, 1), false)
+%!assert_equal (NaT >= datetime (2021, 1, 1), false)
+%!assert_equal (NaT == datetime (2021, 1, 1), false)
+%!assert_equal (NaT == NaT, false)
+%!assert_equal (NaT != NaT, true)
+%!assert_equal (NaT != datetime (2021, 1, 1), true)
+%!assert_equal ([datetime(2021,1,1), NaT] != NaT, [true, true])
+
+## Test relational -- zoned arrays compare by absolute instant across zones
+%!assert_equal (datetime (2021, 1, 1, 'TimeZone', 'America/New_York') ...
+%!              == datetime (2021, 1, 1, 'TimeZone', 'Europe/London'), false)
+%!assert_equal (datetime (2021, 1, 1, 'TimeZone', 'America/New_York') ...
+%!              > datetime (2021, 1, 1, 'TimeZone', 'Europe/London'), true)
+%!assert_equal (datetime (2021, 1, 1, 12, 0, 0, 'TimeZone', 'UTC') ...
+%!              == datetime (2021, 1, 1, 7, 0, 0, 'TimeZone', 'America/New_York'), true)
+
+## Test relational -- infinite datetimes order correctly
+%!assert_equal (datetime (2021, 1, 1) - days (-Inf) > datetime (2021, 6, 1), true)
+%!assert_equal (datetime (2021, 1, 1) - days (Inf) < datetime (2021, 1, 1), true)
+%!assert_equal (datetime (2021, 1, 1) - days (Inf) == datetime (2021, 1, 1) - days (Inf), true)
+
+## Test relational -- empty arrays return empty
+%!assert_equal (isempty (datetime (2021, 1, []) < datetime (2021, 1, [])), true)
+
+## Test relational -- comparing a zoned and an unzoned datetime errors
+%!error <datetime.eq: cannot compare a datetime array with a time zone to one without a time zone.> ...
+%! datetime (2021, 1, 1, 'TimeZone', 'UTC') == datetime (2021, 1, 1);
+%!error <datetime.lt: cannot compare a datetime array with a time zone to one without a time zone.> ...
+%! datetime (2021, 1, 1, 'TimeZone', 'UTC') < datetime (2021, 1, 1);
+
+## Test relational -- a non-datetime operand errors
+%!error <datetime.lt: both operands must be datetime arrays.> ...
+%! datetime (2021, 1, 1) < 5;
+%!error <datetime.gt: both operands must be datetime arrays.> ...
+%! 5 > datetime (2021, 1, 1);
+%!error <datetime.eq: both operands must be datetime arrays.> ...
+%! datetime (2021, 1, 1) == 'x';
+
+## Test relational -- broadcasting holds for all six operators
+%!assert_equal (size (datetime (2021, 1, [1, 2, 3]) < datetime (2021, 1, [1; 2; 4])), [3, 3])
+%!assert_equal (size (datetime (2021, 1, [1, 2, 3]) <= datetime (2021, 1, [1; 2; 4])), [3, 3])
+%!assert_equal (size (datetime (2021, 1, [1, 2, 3]) > datetime (2021, 1, [1; 2; 4])), [3, 3])
+%!assert_equal (size (datetime (2021, 1, [1, 2, 3]) >= datetime (2021, 1, [1; 2; 4])), [3, 3])
+%!assert_equal (size (datetime (2021, 1, [1, 2, 3]) == datetime (2021, 1, [1; 2; 4])), [3, 3])
+%!assert_equal (size (datetime (2021, 1, [1, 2, 3]) != datetime (2021, 1, [1; 2; 4])), [3, 3])
+%!assert_equal (datetime (2021, 1, [1, 2, 3]) == datetime (2021, 1, [1; 2; 4]), ...
+%!              logical ([1, 0, 0; 0, 1, 0; 0, 0, 0]))
+%!assert_equal (datetime (2021, 1, [1, 2, 3]) < datetime (2021, 1, [1; 2; 4]), ...
+%!              logical ([0, 0, 0; 1, 0, 0; 1, 1, 1]))
+%!assert_equal (datetime (2021, 1, 2) <= datetime (2021, 1, [1, 2, 3]), ...
+%!              [false, true, true])
+%!assert_equal (datetime (2021, 1, [1, 2; 3, 4]) > datetime (2021, 1, 2), ...
+%!              logical ([0, 0; 1, 1]))

@@ -1464,6 +1464,147 @@ classdef datetime
   endmethods
 
 ################################################################################
+##                        ** Relational Operations **                         ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'lt'               'le'               'gt'               'ge'              ##
+## 'eq'               'ne'                                                    ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{TF} =} lt (@var{A}, @var{B})
+    ##
+    ## Less-than comparison for datetime arrays.
+    ##
+    ## @code{@var{TF} = lt (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} < @var{B}} and returns a logical array set to
+    ## @qcode{true} where the corresponding element of @var{A} is an earlier
+    ## point in time than that of @var{B}, and @qcode{false} otherwise.
+    ##
+    ## Both operands must be datetime arrays and either both have a time zone or
+    ## both be unzoned; zoned arrays are compared by their absolute instants, so
+    ## the two time zones may differ.  @var{A} and @var{B} must be size
+    ## compatible.  Not-A-Time compares as @qcode{false} against anything, just
+    ## like @code{NaN}.
+    ##
+    ## @end deftypefn
+    function TF = lt (A, B)
+      TF = relcompare (A, B, 'lt');
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{TF} =} le (@var{A}, @var{B})
+    ##
+    ## Less-than-or-equal comparison for datetime arrays.
+    ##
+    ## @code{@var{TF} = le (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} <= @var{B}} and returns a logical array set to
+    ## @qcode{true} where the corresponding element of @var{A} is an earlier or
+    ## equal point in time to that of @var{B}, and @qcode{false} otherwise.
+    ##
+    ## Both operands must be datetime arrays and either both have a time zone or
+    ## both be unzoned; zoned arrays are compared by their absolute instants, so
+    ## the two time zones may differ.  @var{A} and @var{B} must be size
+    ## compatible.  Not-A-Time compares as @qcode{false} against anything, just
+    ## like @code{NaN}.
+    ##
+    ## @end deftypefn
+    function TF = le (A, B)
+      TF = relcompare (A, B, 'le');
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{TF} =} gt (@var{A}, @var{B})
+    ##
+    ## Greater-than comparison for datetime arrays.
+    ##
+    ## @code{@var{TF} = gt (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} > @var{B}} and returns a logical array set to
+    ## @qcode{true} where the corresponding element of @var{A} is a later point
+    ## in time than that of @var{B}, and @qcode{false} otherwise.
+    ##
+    ## Both operands must be datetime arrays and either both have a time zone or
+    ## both be unzoned; zoned arrays are compared by their absolute instants, so
+    ## the two time zones may differ.  @var{A} and @var{B} must be size
+    ## compatible.  Not-A-Time compares as @qcode{false} against anything, just
+    ## like @code{NaN}.
+    ##
+    ## @end deftypefn
+    function TF = gt (A, B)
+      TF = relcompare (A, B, 'gt');
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{TF} =} ge (@var{A}, @var{B})
+    ##
+    ## Greater-than-or-equal comparison for datetime arrays.
+    ##
+    ## @code{@var{TF} = ge (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} >= @var{B}} and returns a logical array set to
+    ## @qcode{true} where the corresponding element of @var{A} is a later or
+    ## equal point in time to that of @var{B}, and @qcode{false} otherwise.
+    ##
+    ## Both operands must be datetime arrays and either both have a time zone or
+    ## both be unzoned; zoned arrays are compared by their absolute instants, so
+    ## the two time zones may differ.  @var{A} and @var{B} must be size
+    ## compatible.  Not-A-Time compares as @qcode{false} against anything, just
+    ## like @code{NaN}.
+    ##
+    ## @end deftypefn
+    function TF = ge (A, B)
+      TF = relcompare (A, B, 'ge');
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{TF} =} eq (@var{A}, @var{B})
+    ##
+    ## Equality comparison for datetime arrays.
+    ##
+    ## @code{@var{TF} = eq (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} == @var{B}} and returns a logical array set to
+    ## @qcode{true} where the corresponding elements of @var{A} and @var{B} are
+    ## the same point in time, and @qcode{false} otherwise.
+    ##
+    ## Both operands must be datetime arrays and either both have a time zone or
+    ## both be unzoned; zoned arrays are compared by their absolute instants, so
+    ## the two time zones may differ.  @var{A} and @var{B} must be size
+    ## compatible.  Not-A-Time is never equal to anything, including another
+    ## Not-A-Time, just like @code{NaN}.
+    ##
+    ## @end deftypefn
+    function TF = eq (A, B)
+      TF = relcompare (A, B, 'eq');
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{TF} =} ne (@var{A}, @var{B})
+    ##
+    ## Inequality comparison for datetime arrays.
+    ##
+    ## @code{@var{TF} = ne (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{TF} = @var{A} != @var{B}} and returns a logical array set to
+    ## @qcode{true} where the corresponding elements of @var{A} and @var{B} are
+    ## not the same point in time, and @qcode{false} otherwise.
+    ##
+    ## Both operands must be datetime arrays and either both have a time zone or
+    ## both be unzoned; zoned arrays are compared by their absolute instants, so
+    ## the two time zones may differ.  @var{A} and @var{B} must be size
+    ## compatible.  Not-A-Time is never equal to anything, so it compares as
+    ## @qcode{true} against everything, including another Not-A-Time, just like
+    ## @code{NaN}.
+    ##
+    ## @end deftypefn
+    function TF = ne (A, B)
+      TF = relcompare (A, B, 'ne');
+    endfunction
+
+  endmethods
+
+################################################################################
 ##                           ** Array Operations **                           ##
 ################################################################################
 ##                             Available Methods                              ##
@@ -2103,6 +2244,69 @@ classdef datetime
       endif
     endfunction
 
+    ## Shared implementation of the six relational operators.  Both operands
+    ## must be datetime and either both zoned or both unzoned; a zoned pair with
+    ## differing zones is aligned onto A's zone (preserving the instant) so the
+    ## wall-clock components can be compared directly.  Comparison is
+    ## lexicographic on [Year Month Day Hour Minute Second] and therefore exact
+    ## at every magnitude.  Not-A-Time (NaN components) never compares
+    ## less/greater/equal, so only 'ne' returns true when a NaT is involved.
+    function TF = relcompare (A, B, op)
+      if (! (isa (A, 'datetime') && isa (B, 'datetime')))
+        error ("datetime.%s: both operands must be datetime arrays.", op);
+      endif
+      if (xor (isempty (A.TimeZone), isempty (B.TimeZone)))
+        error (strcat ("datetime.%s: cannot compare a datetime array with a", ...
+                       " time zone to one without a time zone."), op);
+      endif
+      aY = A.Year; aM = A.Month; aD = A.Day;
+      ah = A.Hour; am = A.Minute; asec = A.Second;
+      if (! isempty (A.TimeZone) && ! strcmp (A.TimeZone, B.TimeZone))
+        [bY, bM, bD, bh, bm, bsec] = __datetime__ (B.Year, B.Month, B.Day, ...
+            B.Hour, B.Minute, B.Second, 'TimeZone', B.TimeZone, ...
+            'toTimeZone', A.TimeZone, 'Precision', 'microseconds');
+      else
+        bY = B.Year; bM = B.Month; bD = B.Day;
+        bh = B.Hour; bm = B.Minute; bsec = B.Second;
+      endif
+      switch (op)
+        case 'eq'
+          TF = (aY == bY) & (aM == bM) & (aD == bD) ...
+             & (ah == bh) & (am == bm) & (asec == bsec);
+        case 'ne'
+          TF = ! ((aY == bY) & (aM == bM) & (aD == bD) ...
+                & (ah == bh) & (am == bm) & (asec == bsec));
+        case 'lt'
+          TF = lexlt (aY, aM, aD, ah, am, asec, bY, bM, bD, bh, bm, bsec);
+        case 'gt'
+          TF = lexlt (bY, bM, bD, bh, bm, bsec, aY, aM, aD, ah, am, asec);
+        case 'le'
+          TF = lexlt (aY, aM, aD, ah, am, asec, bY, bM, bD, bh, bm, bsec) ...
+             | ((aY == bY) & (aM == bM) & (aD == bD) ...
+                & (ah == bh) & (am == bm) & (asec == bsec));
+        case 'ge'
+          TF = lexlt (bY, bM, bD, bh, bm, bsec, aY, aM, aD, ah, am, asec) ...
+             | ((aY == bY) & (aM == bM) & (aD == bD) ...
+                & (ah == bh) & (am == bm) & (asec == bsec));
+      endswitch
+    endfunction
+
   endmethods
 
 endclassdef
+
+## Lexicographic strictly-less-than on datetime component arrays.  Returns true
+## where the [Year Month Day Hour Minute Second] tuple of the first operand is
+## strictly earlier than that of the second.  Any NaN component (Not-A-Time)
+## makes the element false, matching NaN comparison semantics.  All arguments
+## broadcast against each other element-wise.
+function TF = lexlt (aY, aM, aD, ah, am, asec, bY, bM, bD, bh, bm, bsec)
+  eqY = aY == bY;  eqM = aM == bM;  eqD = aD == bD;
+  eqh = ah == bh;  eqm = am == bm;
+  TF = (aY < bY) ...
+     | (eqY & aM < bM) ...
+     | (eqY & eqM & aD < bD) ...
+     | (eqY & eqM & eqD & ah < bh) ...
+     | (eqY & eqM & eqD & eqh & am < bm) ...
+     | (eqY & eqM & eqD & eqh & eqm & asec < bsec);
+endfunction
