@@ -1376,11 +1376,88 @@ classdef datetime
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'plus'             'minus'                                                 ##
+## 'plus'             'minus'            'colon'                              ##
 ##                                                                            ##
 ################################################################################
 
   methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{R} =} colon (@var{A}, @var{B})
+    ## @deftypefnx {datetime} {@var{R} =} colon (@var{A}, @var{step}, @var{B})
+    ##
+    ## Create a range of datetime values.
+    ##
+    ## @code{@var{R} = colon (@var{A}, @var{B})} is the equivalent of the syntax
+    ## @code{@var{R} = @var{A}:@var{B}} and returns a row vector of datetime
+    ## values starting at @var{A} and increasing in steps of one calendar day up
+    ## to, and possibly including, @var{B}.
+    ##
+    ## @code{@var{R} = colon (@var{A}, @var{step}, @var{B})} is the equivalent of
+    ## the syntax @code{@var{R} = @var{A}:@var{step}:@var{B}} and uses the
+    ## specified @var{step} between consecutive elements.  @var{step} may be:
+    ##
+    ## @itemize
+    ## @item a @code{duration} or a numeric scalar (a number of fixed 24-hour
+    ## days), in which case successive elements advance by a fixed amount of
+    ## elapsed time; for a zoned range this is aware of daylight saving time.
+    ##
+    ## @item a @code{calendarDuration}, in which case successive elements advance
+    ## in calendar units.  Each element is computed as @code{@var{A} + k*@var{step}}
+    ## for @code{k = 0, 1, 2, @dots{}}, so month and year steps clamp the day of
+    ## month independently for every element (e.g.@: a one-month step from
+    ## 31 January yields 31 January, 28 February, 31 March, @dots{}).
+    ## @end itemize
+    ##
+    ## The default step of @code{@var{A}:@var{B}} is one calendar day
+    ## (@code{caldays (1)}), which preserves the time of day across daylight
+    ## saving time changes.  A range whose @var{step} points away from @var{B}
+    ## (for example an increasing step with @code{@var{A} > @var{B}}) is empty.
+    ## @var{A} and @var{B} must be datetime scalars that are either both zoned or
+    ## both unzoned, and must be finite.
+    ##
+    ## @end deftypefn
+    function R = colon (varargin)
+      if (nargin == 2)
+        A = varargin{1};
+        step = caldays (1);
+        B = varargin{2};
+      elseif (nargin == 3)
+        A = varargin{1};
+        step = varargin{2};
+        B = varargin{3};
+      else
+        print_usage ();
+      endif
+      if (! (isa (A, 'datetime') && isa (B, 'datetime')))
+        error ("datetime.colon: range endpoints must be datetime arrays.");
+      endif
+      if (! (isscalar (A) && isscalar (B)))
+        error ("datetime.colon: range endpoints must be datetime scalars.");
+      endif
+      if (xor (isempty (A.TimeZone), isempty (B.TimeZone)))
+        error (strcat ("datetime.colon: cannot create a range between a", ...
+                       " datetime with a time zone and one without a time", ...
+                       " zone."));
+      endif
+      if (! (isfinite (A) && isfinite (B)))
+        error (strcat ("datetime.colon: range endpoints must be finite", ...
+                       " (neither NaT nor Inf)."));
+      endif
+      if (! isscalar (step))
+        error ("datetime.colon: STEP must be a scalar.");
+      endif
+      if (isa (step, 'calendarDuration'))
+        R = colonCalendar (A, step, B);
+      elseif (isa (step, 'duration'))
+        R = colonLinear (A, days (step) * 86400, B);
+      elseif (isnumeric (step) && isreal (step))
+        R = colonLinear (A, double (step) * 86400, B);
+      else
+        error (strcat ("datetime.colon: STEP must be a duration,", ...
+                       " calendarDuration, or numeric scalar."));
+      endif
+    endfunction
 
     ## -*- texinfo -*-
     ## @deftypefn {datetime} {@var{C} =} plus (@var{A}, @var{B})
@@ -2298,6 +2375,50 @@ classdef datetime
       endif
     endfunction
 
+    ## Range with a fixed-length (duration/numeric) step of STEPSEC seconds.
+    ## The endpoints' absolute instants are stepped by the ordinary numeric
+    ## colon (so the inclusive-endpoint tolerance matches numeric ranges), then
+    ## rebuilt into this array's time zone.  Empty and reversed ranges fall out
+    ## naturally from the numeric colon.
+    function R = colonLinear (A, stepSec, B)
+      ser = serial (A) : stepSec : serial (B);
+      [Y, M, D, h, m, s] = serial2components (A, ser);
+      R = A;
+      R.Year = Y; R.Month = M; R.Day = D;
+      R.Hour = h; R.Minute = m; R.Second = s;
+    endfunction
+
+    ## Range with a calendarDuration STEP.  Each element is A + k*STEP for
+    ## k = 0, 1, 2, ... (non-iterative, so month/year steps clamp the day of
+    ## month per element).  The number of steps is found by bracketing then
+    ## binary-searching the largest k whose element has not passed B, which
+    ## keeps calendar arithmetic exact without assuming a fixed element spacing.
+    function R = colonCalendar (A, step, B)
+      first = A + step;
+      if (first == A)
+        error ("datetime.colon: STEP must be nonzero.");
+      endif
+      incr = first > A;
+      if ((incr && A > B) || (! incr && A < B))
+        R = A + (0:-1) .* step;   # empty range, keeps A's Format and TimeZone
+        return;
+      endif
+      hi = 1;
+      while (colon_within (A + hi .* step, B, incr) && hi < 2^40)
+        hi *= 2;
+      endwhile
+      lo = 0;
+      while (hi - lo > 1)
+        mid = floor ((lo + hi) / 2);
+        if (colon_within (A + mid .* step, B, incr))
+          lo = mid;
+        else
+          hi = mid;
+        endif
+      endwhile
+      R = A + (0:lo) .* step;
+    endfunction
+
     ## Shared implementation of the six relational operators.  Both operands
     ## must be datetime and either both zoned or both unzoned; a zoned pair with
     ## differing zones is aligned onto A's zone (preserving the instant) so the
@@ -2405,6 +2526,17 @@ endfunction
 ## Component equality that also treats NaN as equal to NaN (used by isequaln).
 function TF = ceq (x, y)
   TF = (x == y) | (isnan (x) & isnan (y));
+endfunction
+
+## True while a candidate datetime X has not yet passed the range endpoint B,
+## for an increasing (INCR true) or decreasing calendar range.  Used to bracket
+## and binary-search the element count in 'colonCalendar'.
+function TF = colon_within (X, B, incr)
+  if (incr)
+    TF = X <= B;
+  else
+    TF = X >= B;
+  endif
 endfunction
 
 ## Lexicographic strictly-less-than on datetime component arrays.  Returns true
