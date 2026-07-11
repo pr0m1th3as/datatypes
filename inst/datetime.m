@@ -924,14 +924,6 @@ classdef datetime
       error ("datetime.isdst: not implemented yet.");
     endfunction
 
-    function TF = isequal (varargin)
-      error ("datetime.isequal: not implemented yet.");
-    endfunction
-
-    function TF = isequaln (varargin)
-      error ("datetime.isequaln: not implemented yet.");
-    endfunction
-
     ## -*- texinfo -*-
     ## @deftypefn  {datetime} {@var{TF} =} ismember (@var{A}, @var{B})
     ## @deftypefnx {datetime} {@var{TF} =} ismember (@var{A}, @var{B}, @qcode{'rows'})
@@ -1038,6 +1030,68 @@ classdef datetime
     ## @end deftypefn
     function TF = isempty (this)
       TF = isempty (this.Year);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{TF} =} isequal (@var{A}, @var{B})
+    ## @deftypefnx {datetime} {@var{TF} =} isequal (@var{A}, @var{B}, @dots{})
+    ##
+    ## Test datetime arrays for equality.
+    ##
+    ## @code{@var{TF} = isequal (@var{A}, @var{B})} returns a logical scalar
+    ## @var{TF}, which is @qcode{true} if the datetime arrays @var{A} and
+    ## @var{B} are the same size and each pair of corresponding elements is the
+    ## same point in time, and @qcode{false} otherwise.  As with @qcode{NaN},
+    ## Not-A-Time (@qcode{NaT}) elements are never equal, so any @qcode{NaT} in
+    ## either array makes the result @qcode{false}; use @code{isequaln} to treat
+    ## @qcode{NaT} elements as equal.
+    ##
+    ## Additional arrays may be supplied, as in @code{isequal (@var{A}, @var{B},
+    ## @var{C}, @dots{})}, in which case @var{TF} is @qcode{true} only when all
+    ## of the arrays are equal to one another.  Any input argument that is not a
+    ## datetime array, or a datetime array whose time zone is not compatible
+    ## with the others (one zoned and one unzoned), makes the result
+    ## @qcode{false} rather than raising an error.  Zoned arrays are compared by
+    ## their absolute instants, so equal instants in different time zones are
+    ## equal.
+    ##
+    ## @end deftypefn
+    function TF = isequal (varargin)
+      if (nargin < 2)
+        print_usage ();
+      endif
+      TF = do_isequal (varargin, false);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{TF} =} isequaln (@var{A}, @var{B})
+    ## @deftypefnx {datetime} {@var{TF} =} isequaln (@var{A}, @var{B}, @dots{})
+    ##
+    ## Test datetime arrays for equality, treating Not-A-Time as equal.
+    ##
+    ## @code{@var{TF} = isequaln (@var{A}, @var{B})} is identical to
+    ## @code{isequal (@var{A}, @var{B})} except that Not-A-Time (@qcode{NaT})
+    ## elements are treated as equal to one another, in the same way that
+    ## @code{isequaln} treats @qcode{NaN}.  It returns a logical scalar @var{TF},
+    ## which is @qcode{true} if the datetime arrays @var{A} and @var{B} are the
+    ## same size and each pair of corresponding elements is either the same
+    ## point in time or both @qcode{NaT}, and @qcode{false} otherwise.
+    ##
+    ## Additional arrays may be supplied, as in @code{isequaln (@var{A},
+    ## @var{B}, @var{C}, @dots{})}, in which case @var{TF} is @qcode{true} only
+    ## when all of the arrays are equal to one another.  Any input argument that
+    ## is not a datetime array, or a datetime array whose time zone is not
+    ## compatible with the others (one zoned and one unzoned), makes the result
+    ## @qcode{false} rather than raising an error.  Zoned arrays are compared by
+    ## their absolute instants, so equal instants in different time zones are
+    ## equal.
+    ##
+    ## @end deftypefn
+    function TF = isequaln (varargin)
+      if (nargin < 2)
+        print_usage ();
+      endif
+      TF = do_isequal (varargin, true);
     endfunction
 
     ## -*- texinfo -*-
@@ -2294,6 +2348,64 @@ classdef datetime
   endmethods
 
 endclassdef
+
+## Shared back-end for 'isequal' (NANEQUAL false) and 'isequaln' (NANEQUAL
+## true).  ARGS is the cell array of operands.  Returns true only when every
+## operand is a datetime of the same size as the first and each pair of
+## corresponding elements is the same point in time.  A non-datetime operand or
+## a time-zone mismatch (one zoned, one unzoned) yields false rather than an
+## error.  Zoned arrays are compared by absolute instant.  When NANEQUAL is
+## true, Not-A-Time elements compare equal to one another (component-wise NaN
+## matches NaN); otherwise any NaT makes the result false, as with NaN.
+function TF = do_isequal (args, nanEqual)
+  A = args{1};
+  TF = true;
+  for i = 2:numel (args)
+    B = args{i};
+    if (! (isa (A, 'datetime') && isa (B, 'datetime')))
+      TF = false;
+      return;
+    endif
+    if (! isequal (size (A), size (B)))
+      TF = false;
+      return;
+    endif
+    if (xor (isempty (A.TimeZone), isempty (B.TimeZone)))
+      TF = false;
+      return;
+    endif
+    if (isempty (A))
+      continue;  # two empties of equal size compare equal
+    endif
+    ## Align B onto A's zone so the wall-clock components compare by instant.
+    aY = A.Year; aM = A.Month; aD = A.Day;
+    ah = A.Hour; am = A.Minute; asec = A.Second;
+    if (! isempty (A.TimeZone) && ! strcmp (A.TimeZone, B.TimeZone))
+      [bY, bM, bD, bh, bm, bsec] = __datetime__ (B.Year, B.Month, B.Day, ...
+          B.Hour, B.Minute, B.Second, 'TimeZone', B.TimeZone, ...
+          'toTimeZone', A.TimeZone, 'Precision', 'microseconds');
+    else
+      bY = B.Year; bM = B.Month; bD = B.Day;
+      bh = B.Hour; bm = B.Minute; bsec = B.Second;
+    endif
+    if (nanEqual)
+      E = ceq (aY, bY) & ceq (aM, bM) & ceq (aD, bD) ...
+        & ceq (ah, bh) & ceq (am, bm) & ceq (asec, bsec);
+    else
+      E = (aY == bY) & (aM == bM) & (aD == bD) ...
+        & (ah == bh) & (am == bm) & (asec == bsec);
+    endif
+    if (! all (E(:)))
+      TF = false;
+      return;
+    endif
+  endfor
+endfunction
+
+## Component equality that also treats NaN as equal to NaN (used by isequaln).
+function TF = ceq (x, y)
+  TF = (x == y) | (isnan (x) & isnan (y));
+endfunction
 
 ## Lexicographic strictly-less-than on datetime component arrays.  Returns true
 ## where the [Year Month Day Hour Minute Second] tuple of the first operand is

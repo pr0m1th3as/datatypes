@@ -750,3 +750,74 @@
 %!              [false, true, true])
 %!assert_equal (datetime (2021, 1, [1, 2; 3, 4]) > datetime (2021, 1, 2), ...
 %!              logical ([0, 0; 1, 1]))
+
+## Test 'isequal' -- equal and unequal datetime arrays
+%!assert_equal (isequal (datetime (2021, 1, 1), datetime (2021, 1, 1)), true)
+%!assert_equal (isequal (datetime (2021, 1, 1), datetime (2021, 6, 1)), false)
+%!assert_equal (isequal (datetime (2021, 1, 1, 12, 0, 0), ...
+%!                       datetime (2021, 1, 1, 12, 0, 0)), true)
+%!assert_equal (isequal (datetime (2021, 1, [1, 2, 3]), datetime (2021, 1, [1, 2, 3])), true)
+%!assert_equal (class (isequal (datetime (2021, 1, 1), datetime (2021, 1, 1))), 'logical')
+%!assert_equal (isscalar (isequal (datetime (2021, 1, [1, 2]), datetime (2021, 1, [1, 2]))), true)
+
+## Test 'isequal' -- Not-A-Time is never equal (unlike isequaln)
+%!assert_equal (isequal (NaT, NaT), false)
+%!assert_equal (isequal (NaT, datetime (2021, 1, 1)), false)
+%!assert_equal (isequal ([datetime(2021,1,1), NaT], [datetime(2021,1,1), NaT]), false)
+
+## Test 'isequal' -- multiple arguments are all compared to the first
+%!assert_equal (isequal (datetime (2021, 1, 1), datetime (2021, 1, 1), ...
+%!                       datetime (2021, 1, 1)), true)
+%!assert_equal (isequal (datetime (2021, 1, 1), datetime (2021, 1, 1), ...
+%!                       datetime (2021, 6, 1)), false)
+
+## Test 'isequal' -- size and orientation mismatches return false
+%!assert_equal (isequal (datetime (2021, 1, [1, 2, 3]), datetime (2021, 1, [1, 2])), false)
+%!assert_equal (isequal (datetime (2021, 1, [1, 2, 3]), datetime (2021, 1, [1; 2; 3])), false)
+
+## Test 'isequal' -- empties of equal size are equal
+%!assert_equal (isequal (datetime (2021, 1, []), datetime (2021, 1, [])), true)
+
+## Test 'isequal' -- a non-datetime operand returns false, never errors
+%!assert_equal (isequal (datetime (2021, 1, 1), 738522), false)
+%!assert_equal (isequal (datetime (2021, 1, 1), 'x'), false)
+%!assert_equal (isequal (datetime (2021, 1, 1), {1}), false)
+
+## Test 'isequal' -- time zones compare by instant; a zone mismatch is false
+%!assert_equal (isequal (datetime (2021, 1, 1, 'TimeZone', 'UTC'), ...
+%!                       datetime (2021, 1, 1)), false)
+%!assert_equal (isequal (datetime (2021, 1, 1, 12, 0, 0, 'TimeZone', 'UTC'), ...
+%!              datetime (2021, 1, 1, 7, 0, 0, 'TimeZone', 'America/New_York')), true)
+%!assert_equal (isequal (datetime (2021, 1, 1, 'TimeZone', 'UTC'), ...
+%!                       datetime (2021, 1, 1, 'TimeZone', 'America/New_York')), false)
+
+## Test 'isequal' -- infinite elements compare equal by sign
+%!assert_equal (isequal (datetime (2021, 1, 1) - days (Inf), ...
+%!                       datetime (2021, 1, 1) - days (Inf)), true)
+%!assert_equal (isequal (datetime (2021, 1, 1) - days (Inf), ...
+%!                       datetime (2021, 1, 1) - days (-Inf)), false)
+
+## Test 'isequaln' -- like isequal but Not-A-Time compares equal
+%!assert_equal (isequaln (NaT, NaT), true)
+%!assert_equal (isequaln (NaT, datetime (2021, 1, 1)), false)
+%!assert_equal (isequaln ([datetime(2021,1,1), NaT], [datetime(2021,1,1), NaT]), true)
+%!assert_equal (isequaln ([datetime(2021,1,1), NaT], [datetime(2021,1,1), datetime(2021,6,1)]), false)
+%!assert_equal (isequaln (datetime (2021, 1, 1), datetime (2021, 1, 1)), true)
+%!assert_equal (isequaln (datetime (2021, 1, 1), datetime (2021, 6, 1)), false)
+%!assert_equal (class (isequaln (NaT, NaT)), 'logical')
+
+## Test 'isequaln' -- multiple arguments are all compared to the first
+%!assert_equal (isequaln (NaT, NaT, NaT), true)
+%!assert_equal (isequaln (datetime (2021, 1, 1), NaT, datetime (2021, 1, 1)), false)
+
+## Test 'isequaln' -- size, type, and time-zone mismatches return false
+%!assert_equal (isequaln (datetime (2021, 1, [1, 2, 3]), datetime (2021, 1, [1, 2])), false)
+%!assert_equal (isequaln (datetime (2021, 1, 1), 738522), false)
+%!assert_equal (isequaln (datetime (2021, 1, 1, 'TimeZone', 'UTC'), datetime (2021, 1, 1)), false)
+%!assert_equal (isequaln (datetime (2021, 1, 1, 12, 0, 0, 'TimeZone', 'UTC'), ...
+%!              datetime (2021, 1, 1, 7, 0, 0, 'TimeZone', 'America/New_York')), true)
+
+## Test 'isequaln' -- infinite elements are equal but distinct from Not-A-Time
+%!assert_equal (isequaln (datetime (2021, 1, 1) - days (Inf), ...
+%!                        datetime (2021, 1, 1) - days (Inf)), true)
+%!assert_equal (isequaln (NaT, datetime (2021, 1, 1) - days (Inf)), false)
