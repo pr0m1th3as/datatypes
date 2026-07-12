@@ -1111,3 +1111,77 @@
 %! issortedrows (datetime (2021, 1, [1 2]), {'ascend'});
 %!error <datetime.issortedrows: COLUMN must precede DIRECTION.> ...
 %! issortedrows (datetime (2021, 1, [1 2]), 'ascend', 'descend');
+
+## Test 'min'/'max' -- reduce along the first non-singleton dimension
+%!test
+%! [m, i] = min (datetime (2021, 1, [3 1 2]));
+%! assert_equal (m.Day, 1);
+%! assert_equal (i, 2);
+%!test
+%! [m, i] = max (datetime (2021, 1, [3 1 2]));
+%! assert_equal (m.Day, 3);
+%! assert_equal (i, 1);
+
+## Test 'min' -- NaT is omitted by default; ties return the first index
+%!test
+%! [m, i] = min (datetime (2021, 1, [3 NaN 1 2]));
+%! assert_equal (m.Day, 1);
+%! assert_equal (i, 3);
+%!test
+%! [m, i] = min (datetime (2021, 1, [2 1 1 3]));
+%! assert_equal (i, 2);
+
+## Test 'min' -- 'includenan' propagates NaT
+%!assert_equal (isnat (min (datetime (2021, 1, [3 NaN 1]), [], 'includenan')), true)
+%!assert_equal (max (datetime (2021, 1, [3 NaN 1]), [], 'omitnan').Day, 3)
+
+## Test 'min' -- a reduction over only NaT yields NaT at index 1
+%!test
+%! [m, i] = min (datetime ([NaN NaN], 1, 1));
+%! assert_equal (isnat (m), true);
+%! assert_equal (i, 1);
+
+## Test 'min' -- matrix reduction along each dimension and over all elements
+%!assert_equal (min (datetime (2021, 1, [3 1; 2 4])).Day, [2 1])
+%!assert_equal (min (datetime (2021, 1, [3 1; 2 4]), [], 2).Day, [1; 2])
+%!assert_equal (min (datetime (2021, 1, [3 1; 2 4]), [], 'all').Day, 1)
+%!test
+%! [m, i] = min (datetime (2021, 1, [3 1; 2 4]));
+%! assert_equal (i, [2 1]);
+
+## Test 'min'/'max' -- element-wise comparison of two arrays with broadcasting
+%!assert_equal (min (datetime (2021, 1, [1 5 3]), datetime (2021, 1, [4 2 3])).Day, [1 2 3])
+%!assert_equal (max (datetime (2021, 1, [1 5 3]), datetime (2021, 1, [4 2 3])).Day, [4 5 3])
+%!assert_equal (min (datetime (2021, 1, [1 5 3]), datetime (2021, 1, 3)).Day, [1 3 3])
+
+## Test 'min' -- element-wise NaT handling (omit versus include)
+%!assert_equal (min (datetime (2021, 1, [1 5 3]), ...
+%!                   datetime (2021, 1, [NaN 2 NaN])).Day, [1 2 3])
+%!test
+%! m = min (datetime (2021, 1, [1 5 3]), ...
+%!          datetime (2021, 1, [NaN 2 NaN]), 'includenan');
+%! assert_equal (isnat (m), logical ([1 0 1]));
+%! assert_equal (m.Day(2), 2);
+
+## Test 'min' -- reductions are by absolute instant and keep the time zone
+%!test
+%! z = datetime (2021, 1, [3 1 2], 'TimeZone', 'America/New_York');
+%! [m, i] = min (z);
+%! assert_equal (m.Day, 1);
+%! assert_equal (i, 2);
+%! assert_equal (m.TimeZone, 'America/New_York');
+
+## Test 'min' -- an empty array reduces to an empty array
+%!assert_equal (size (min (datetime (2021, 1, []))), [0 0])
+
+## Test 'min' -- error branches
+%!error <datetime.min: comparison of two arrays requires both to be datetime.> ...
+%! min (datetime (2021, 1, 1), 5);
+%!error <datetime.min: a second output is not supported when comparing two arrays.> ...
+%! [m, i] = min (datetime (2021, 1, 1), datetime (2021, 1, 2));
+%!error <datetime.min: DIM must be a positive integer.> ...
+%! min (datetime (2021, 1, 1), [], 0);
+%!error <datetime.min: invalid option 'foo'.> ...
+%! min (datetime (2021, 1, 1), [], 'foo');
+%!error <datetime.max: cannot compare a datetime with a time zone to one without a time zone.> ...
+%! max (datetime (2021, 1, 1, 'TimeZone', 'UTC'), datetime (2021, 1, 2));

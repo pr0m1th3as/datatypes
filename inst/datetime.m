@@ -1469,6 +1469,7 @@ classdef datetime
 ##                                                                            ##
 ## 'sort'             'sortrows'         'unique'           'interp1'         ##
 ## 'intersect'        'setdiff'          'setxor'           'union'           ##
+## 'min'              'max'                                                   ##
 ##                                                                            ##
 ################################################################################
 
@@ -1761,6 +1762,86 @@ classdef datetime
       [~, index] = sortrows ([K, (1:N)'], [spec, nkey + 1]);
       index = index(:);
       B = subset (A, index, ':');
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{M} =} min (@var{A})
+    ## @deftypefnx {datetime} {@var{M} =} min (@var{A}, @var{B})
+    ## @deftypefnx {datetime} {@var{M} =} min (@var{A}, [], @var{dim})
+    ## @deftypefnx {datetime} {@var{M} =} min (@dots{}, @var{nanflag})
+    ## @deftypefnx {datetime} {@var{M} =} min (@var{A}, [], @qcode{'all'})
+    ## @deftypefnx {datetime} {[@var{M}, @var{I}] =} min (@dots{})
+    ##
+    ## Minimum of a datetime array.
+    ##
+    ## @code{@var{M} = min (@var{A})} returns the smallest element of the
+    ## datetime array @var{A} along its first non-singleton dimension.  For a
+    ## matrix, @var{M} is a row vector with the minimum of each column.
+    ## Not-A-Time (@qcode{NaT}) elements are omitted; a reduction over
+    ## @qcode{NaT} elements only yields @qcode{NaT}.
+    ##
+    ## @code{@var{M} = min (@var{A}, @var{B})} returns an array the same size as
+    ## @var{A} and @var{B} (after broadcasting) holding the element-wise minimum
+    ## of the two datetime arrays.
+    ##
+    ## @code{@var{M} = min (@var{A}, [], @var{dim})} operates along dimension
+    ## @var{dim}.  The empty second argument distinguishes this from the
+    ## element-wise form.
+    ##
+    ## @code{@var{M} = min (@dots{}, @var{nanflag})} sets the treatment of
+    ## @qcode{NaT}: @qcode{'omitnan'} (default) ignores @qcode{NaT}, while
+    ## @qcode{'includenan'} returns @qcode{NaT} whenever a @qcode{NaT} takes
+    ## part in the comparison.
+    ##
+    ## @code{@var{M} = min (@var{A}, [], @qcode{'all'})} returns the smallest
+    ## element of the whole array.
+    ##
+    ## @code{[@var{M}, @var{I}] = min (@dots{})} also returns the indices of the
+    ## minima.  A second output is not available for the element-wise form.
+    ##
+    ## @end deftypefn
+    function [M, I] = min (A, varargin)
+      [M, I] = minmaxImpl (A, varargin, false, nargout);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{M} =} max (@var{A})
+    ## @deftypefnx {datetime} {@var{M} =} max (@var{A}, @var{B})
+    ## @deftypefnx {datetime} {@var{M} =} max (@var{A}, [], @var{dim})
+    ## @deftypefnx {datetime} {@var{M} =} max (@dots{}, @var{nanflag})
+    ## @deftypefnx {datetime} {@var{M} =} max (@var{A}, [], @qcode{'all'})
+    ## @deftypefnx {datetime} {[@var{M}, @var{I}] =} max (@dots{})
+    ##
+    ## Maximum of a datetime array.
+    ##
+    ## @code{@var{M} = max (@var{A})} returns the largest element of the datetime
+    ## array @var{A} along its first non-singleton dimension.  For a matrix,
+    ## @var{M} is a row vector with the maximum of each column.  Not-A-Time
+    ## (@qcode{NaT}) elements are omitted; a reduction over @qcode{NaT} elements
+    ## only yields @qcode{NaT}.
+    ##
+    ## @code{@var{M} = max (@var{A}, @var{B})} returns an array the same size as
+    ## @var{A} and @var{B} (after broadcasting) holding the element-wise maximum
+    ## of the two datetime arrays.
+    ##
+    ## @code{@var{M} = max (@var{A}, [], @var{dim})} operates along dimension
+    ## @var{dim}.  The empty second argument distinguishes this from the
+    ## element-wise form.
+    ##
+    ## @code{@var{M} = max (@dots{}, @var{nanflag})} sets the treatment of
+    ## @qcode{NaT}: @qcode{'omitnan'} (default) ignores @qcode{NaT}, while
+    ## @qcode{'includenan'} returns @qcode{NaT} whenever a @qcode{NaT} takes
+    ## part in the comparison.
+    ##
+    ## @code{@var{M} = max (@var{A}, [], @qcode{'all'})} returns the largest
+    ## element of the whole array.
+    ##
+    ## @code{[@var{M}, @var{I}] = max (@dots{})} also returns the indices of the
+    ## maxima.  A second output is not available for the element-wise form.
+    ##
+    ## @end deftypefn
+    function [M, I] = max (A, varargin)
+      [M, I] = minmaxImpl (A, varargin, true, nargout);
     endfunction
 
   endmethods
@@ -2758,6 +2839,166 @@ classdef datetime
         undecided = undecided & ! (lt | gt);
       endfor
       tf = ! any (bad);
+    endfunction
+
+    ## Shared engine for 'min' and 'max'.  ARGS is the method's varargin, ISMAX
+    ## selects max over min, and NOUT is the caller's nargout.  Handles both the
+    ## reduction form (min (A), min (A, [], DIM), '-all', nan flags) and the
+    ## two-array elementwise form (min (A, B)).
+    function [M, I] = minmaxImpl (A, args, ismax, nout)
+      if (ismax)
+        fname = 'max';
+      else
+        fname = 'min';
+      endif
+      I = [];
+      ## Two-array elementwise form is signalled by a non-'[]' second argument.
+      elementwise = ! isempty (args) ...
+                    && ! (isnumeric (args{1}) && isempty (args{1}));
+      if (elementwise)
+        if (nout > 1)
+          error (strcat ("datetime.", fname, ": a second output is not", ...
+                         " supported when comparing two arrays."));
+        endif
+        B = args{1};
+        if (! isa (B, 'datetime'))
+          error (strcat ("datetime.", fname, ": comparison of two arrays", ...
+                         " requires both to be datetime."));
+        endif
+        if (xor (isempty (A.TimeZone), isempty (B.TimeZone)))
+          error (strcat ("datetime.", fname, ": cannot compare a datetime", ...
+                         " with a time zone to one without a time zone."));
+        endif
+        nanflag = 'omitnan';
+        for k = 2:numel (args)
+          x = args{k};
+          if (ischar (x) && isrow (x) && strcmpi (x, 'omitnan'))
+            nanflag = 'omitnan';
+          elseif (ischar (x) && isrow (x) && strcmpi (x, 'includenan'))
+            nanflag = 'includenan';
+          else
+            error (strcat ("datetime.", fname, ": invalid option in a", ...
+                           " two-array comparison."));
+          endif
+        endfor
+        ## Compare by absolute instant (zone-independent), but pick exact
+        ## component values from whichever operand wins to avoid a lossy
+        ## instant round-trip.
+        SA = serial (A);
+        SB = serial (B);
+        common = size (SA + SB);
+        SA = SA + zeros (common);
+        SB = SB + zeros (common);
+        if (ismax)
+          takeA = (SA >= SB) | isnan (SB);
+        else
+          takeA = (SA <= SB) | isnan (SB);
+        endif
+        ## Express B's components in A's time zone so selected values are exact.
+        if (isempty (A.TimeZone) || strcmp (A.TimeZone, B.TimeZone))
+          YB = B.Year; MB = B.Month; DB = B.Day;
+          hB = B.Hour; mB = B.Minute; sB = B.Second;
+        else
+          [YB, MB, DB, hB, mB, sB] = __datetime__ (B.Year, B.Month, B.Day, ...
+              B.Hour, B.Minute, B.Second, 'TimeZone', B.TimeZone, ...
+              'toTimeZone', A.TimeZone, 'Precision', 'microseconds');
+        endif
+        z = zeros (common);
+        Y = A.Year + z; Mo = A.Month + z; D = A.Day + z;
+        h = A.Hour + z; mi = A.Minute + z; s = A.Second + z;
+        YB = YB + z; MB = MB + z; DB = DB + z;
+        hB = hB + z; mB = mB + z; sB = sB + z;
+        takeB = ! takeA;
+        Y(takeB) = YB(takeB); Mo(takeB) = MB(takeB); D(takeB) = DB(takeB);
+        h(takeB) = hB(takeB); mi(takeB) = mB(takeB); s(takeB) = sB(takeB);
+        if (strcmp (nanflag, 'includenan'))
+          nanpos = isnan (SA) | isnan (SB);
+          Y(nanpos) = NaN; Mo(nanpos) = NaN; D(nanpos) = NaN;
+          h(nanpos) = NaN; mi(nanpos) = NaN; s(nanpos) = NaN;
+        endif
+        M = A;
+        M.Year = Y; M.Month = Mo; M.Day = D;
+        M.Hour = h; M.Minute = mi; M.Second = s;
+        return;
+      endif
+      ## Reduction form.  Skip the '[]' placeholder, then read DIM / 'all' /
+      ## the NaN flag from the remaining arguments.
+      rest = args;
+      if (! isempty (rest))
+        rest = rest(2:end);
+      endif
+      dim = [];
+      allflag = false;
+      nanflag = 'omitnan';
+      for k = 1:numel (rest)
+        x = rest{k};
+        if (isnumeric (x))
+          if (! isscalar (x) || x < 1 || x != fix (x))
+            error (strcat ("datetime.", fname, ...
+                           ": DIM must be a positive integer."));
+          endif
+          dim = x;
+        elseif (ischar (x) && isrow (x))
+          if (strcmpi (x, 'all'))
+            allflag = true;
+          elseif (strcmpi (x, 'omitnan'))
+            nanflag = 'omitnan';
+          elseif (strcmpi (x, 'includenan'))
+            nanflag = 'includenan';
+          else
+            error (strcat ("datetime.", fname, ": invalid option '", x, "'."));
+          endif
+        else
+          error (strcat ("datetime.", fname, ": invalid input argument."));
+        endif
+      endfor
+      if (isempty (A))
+        M = A;
+        return;
+      endif
+      S = serial (A);
+      if (allflag)
+        Sv = S(:);
+        if (ismax)
+          [~, iv] = max (Sv, [], 1);
+        else
+          [~, iv] = min (Sv, [], 1);
+        endif
+        if (strcmp (nanflag, 'includenan') && any (isnan (Sv)))
+          iv = find (isnan (Sv), 1);
+        endif
+        M = subset (A, iv);
+        I = iv;
+        return;
+      endif
+      if (isempty (dim))
+        dim = find (size (A) != 1, 1);
+        if (isempty (dim))
+          dim = 1;
+        endif
+      endif
+      if (dim > 2 || size (A, dim) < 2)
+        M = A;
+        I = ones (size (A));
+        return;
+      endif
+      if (ismax)
+        [~, I] = max (S, [], dim);
+      else
+        [~, I] = min (S, [], dim);
+      endif
+      if (strcmp (nanflag, 'includenan'))
+        nanmask = any (isnan (S), dim);
+        [~, firstnan] = max (isnan (S), [], dim);
+        I(nanmask) = firstnan(nanmask);
+      endif
+      [nr, nc] = size (S);
+      if (dim == 1)
+        lin = I + (0:nc-1) * nr;
+      else
+        lin = (1:nr)' + (I - 1) * nr;
+      endif
+      M = subset (A, lin);
     endfunction
 
     ## Return a subset of the array
