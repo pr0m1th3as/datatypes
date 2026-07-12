@@ -1844,10 +1844,6 @@ classdef datetime
       [M, I] = minmaxImpl (A, varargin, true, nargout);
     endfunction
 
-  endmethods
-
-  methods (Hidden)
-
     ## -*- texinfo -*-
     ## @deftypefn  {datetime} {@var{B} =} unique (@var{A})
     ## @deftypefnx {datetime} {@var{B} =} unique (@var{A}, @var{setOrder})
@@ -1929,8 +1925,17 @@ classdef datetime
           [~, ixA, ~] = __unique__ (ixB, 'last');
         endif
         B = subset (A, ixA);
+        ## Match MATLAB: a non-row input yields a column (so an empty 0-by-0
+        ## input returns a 0-by-1 result rather than 0-by-0).
+        if (isempty (B) && ! isrow (A))
+          B = reshape (B, numel (B), 1);
+        endif
       endif
     endfunction
+
+  endmethods
+
+  methods (Hidden)
 
     function BI = interp1 (A, B, AI, varargin)
       error ("datetime.interp1: not implemented yet.");
