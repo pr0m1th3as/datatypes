@@ -890,3 +890,114 @@
 %! datetime (2021, 1, 1) : {1} : datetime (2021, 1, 5);
 %!error <datetime.colon: STEP must be a scalar.> ...
 %! datetime (2021, 1, 1) : caldays ([1, 2]) : datetime (2021, 1, 5);
+
+## Test 'sort' -- ascending order is the default and ties are stable
+%!test
+%! [b, i] = sort (datetime (2021, 1, [3, 1, 2, 1]));
+%! assert_equal (b.Day, [1, 1, 2, 3]);
+%! assert_equal (i, [2, 4, 3, 1]);
+
+## Test 'sort' -- descending order keeps the original order of equal elements
+%!test
+%! [b, i] = sort (datetime (2021, 1, [3, 1, 2, 1]), 'descend');
+%! assert_equal (b.Day, [3, 2, 1, 1]);
+%! assert_equal (i, [1, 3, 2, 4]);
+
+## Test 'sort' -- Not-A-Time goes last for ascending, first for descending
+%!test
+%! n = datetime ([2021, 2020, NaN, 2022], 1, 1);
+%! [b, i] = sort (n);
+%! assert_equal (isnat (b), logical ([0, 0, 0, 1]));
+%! assert_equal (b.Year(1:3), [2020, 2021, 2022]);
+%! assert_equal (i, [2, 1, 4, 3]);
+%! [b, i] = sort (n, 'descend');
+%! assert_equal (isnat (b), logical ([1, 0, 0, 0]));
+%! assert_equal (i, [3, 4, 1, 2]);
+
+## Test 'sort' -- MissingPlacement overrides the direction default
+%!test
+%! n = datetime ([2021, 2020, NaN, 2022], 1, 1);
+%! b = sort (n, 'MissingPlacement', 'first');
+%! assert_equal (isnat (b), logical ([1, 0, 0, 0]));
+%! assert_equal (b.Year(2:4), [2020, 2021, 2022]);
+%! b = sort (n, 'MissingPlacement', 'last');
+%! assert_equal (isnat (b), logical ([0, 0, 0, 1]));
+%! b = sort (n, 'descend', 'MissingPlacement', 'first');
+%! assert_equal (isnat (b), logical ([1, 0, 0, 0]));
+%! assert_equal (b.Year(2:4), [2022, 2021, 2020]);
+
+## Test 'sort' -- a matrix sorts down each column by default
+%!test
+%! [b, i] = sort (datetime (2021, 1, [3, 1; 2, 4]));
+%! assert_equal (b.Day, [2, 1; 3, 4]);
+%! assert_equal (i, [2, 1; 1, 2]);
+
+## Test 'sort' -- dimension two sorts along each row
+%!assert_equal (sort (datetime (2021, 1, [3, 1; 2, 4]), 2).Day, [1, 3; 2, 4])
+
+## Test 'sort' -- descending sort along the first dimension of a matrix
+%!test
+%! [b, i] = sort (datetime (2021, 1, [3, 1; 2, 4]), 1, 'descend');
+%! assert_equal (b.Day, [3, 4; 2, 1]);
+%! assert_equal (i, [1, 2; 2, 1]);
+
+## Test 'sort' -- an empty array is returned unchanged
+%!assert_equal (size (sort (datetime (2021, 1, []))), [0, 0])
+
+## Test 'sort' -- a zoned array sorts by absolute instant
+%!test
+%! [b, i] = sort (datetime (2021, 1, [3, 1, 2], ...
+%!                          'TimeZone', 'America/New_York'), 'descend');
+%! assert_equal (b.Day, [3, 2, 1]);
+%! assert_equal (i, [1, 3, 2]);
+
+## Test 'sort' -- error branches
+%!error <datetime.sort: DIM must be a positive integer.> ...
+%! sort (datetime (2021, 1, 1), 0);
+%!error <datetime.sort: invalid DIRECTION 'up'.> ...
+%! sort (datetime (2021, 1, 1), 'up');
+%!error <datetime.sort: invalid 'MissingPlacement' value.> ...
+%! sort (datetime (2021, 1, 1), 'MissingPlacement', 'middle');
+%!error <datetime.sort: 'MissingPlacement' requires a value.> ...
+%! sort (datetime (2021, 1, 1), 'MissingPlacement');
+%!error <datetime.sort: invalid input argument.> ...
+%! sort (datetime (2021, 1, 1), {1});
+
+## Test 'issorted' -- ascending (non-decreasing) is the default
+%!assert_equal (issorted (datetime (2021, 1, [1, 2, 3])), true)
+%!assert_equal (issorted (datetime (2021, 1, [3, 2, 1])), false)
+%!assert_equal (issorted (datetime (2021, 1, [1, 2, 2, 3])), true)
+
+## Test 'issorted' -- descending order
+%!assert_equal (issorted (datetime (2021, 1, [3, 2, 1]), 'descend'), true)
+
+## Test 'issorted' -- strict variants reject equal neighbours
+%!assert_equal (issorted (datetime (2021, 1, [1, 2, 2, 3]), 'strictascend'), false)
+%!assert_equal (issorted (datetime (2021, 1, [1, 2, 3]), 'strictascend'), true)
+%!assert_equal (issorted (datetime (2021, 1, [1, 2, 3]), 'strictmonotonic'), true)
+
+## Test 'issorted' -- monotonic accepts either direction
+%!assert_equal (issorted (datetime (2021, 1, [1, 2, 3]), 'monotonic'), true)
+%!assert_equal (issorted (datetime (2021, 1, [3, 2, 1]), 'monotonic'), true)
+
+## Test 'issorted' -- Not-A-Time counts as greater than any value
+%!assert_equal (issorted (datetime ([2021, 2022, NaN], 1, 1)), true)
+%!assert_equal (issorted (datetime ([NaN, 2021, 2022], 1, 1)), false)
+%!assert_equal (issorted (datetime ([2021, 2022, NaN], 1, 1), 'descend'), false)
+
+## Test 'issorted' -- every column (or row) of a matrix must be sorted
+%!assert_equal (issorted (datetime (2021, 1, [3, 1; 2, 4])), false)
+%!assert_equal (issorted (datetime (2021, 1, [3, 1; 2, 4]), 2), false)
+%!assert_equal (issorted (datetime (2021, 1, [1, 3; 2, 4])), true)
+
+## Test 'issorted' -- scalars and empties are trivially sorted
+%!assert_equal (issorted (datetime (2021, 1, 1)), true)
+%!assert_equal (issorted (datetime (2021, 1, [])), true)
+
+## Test 'issorted' -- error branches
+%!error <datetime.issorted: DIM must be a positive integer.> ...
+%! issorted (datetime (2021, 1, 1), 1.5);
+%!error <datetime.issorted: invalid DIRECTION 'up'.> ...
+%! issorted (datetime (2021, 1, 1), 'up');
+%!error <datetime.issorted: invalid input argument.> ...
+%! issorted (datetime (2021, 1, 1), {1});

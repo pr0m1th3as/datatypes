@@ -986,10 +986,6 @@ classdef datetime
       error ("datetime.isregular: not implemented yet.");
     endfunction
 
-    function TF = issorted (this, varargin)
-      error ("datetime.issorted: not implemented yet.");
-    endfunction
-
     function TF = issortedrows (this, varargin)
      error ("datetime.issortedrows: not implemented yet.");
     endfunction
@@ -1001,6 +997,96 @@ classdef datetime
   endmethods
 
   methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{TF} =} issorted (@var{A})
+    ## @deftypefnx {datetime} {@var{TF} =} issorted (@var{A}, @var{dim})
+    ## @deftypefnx {datetime} {@var{TF} =} issorted (@var{A}, @var{direction})
+    ## @deftypefnx {datetime} {@var{TF} =} issorted (@var{A}, @var{dim}, @var{direction})
+    ##
+    ## Determine whether a datetime array is sorted.
+    ##
+    ## @code{@var{TF} = issorted (@var{A})} returns @qcode{true} if the elements
+    ## of the datetime array @var{A} are sorted in ascending (non-decreasing)
+    ## order along its first non-singleton dimension, and @qcode{false}
+    ## otherwise.  For a matrix, every column (or row, depending on the operating
+    ## dimension) must be sorted for @var{TF} to be @qcode{true}.  Not-A-Time
+    ## (@qcode{NaT}) elements are treated as greater than any other value, so an
+    ## array is sorted in ascending order only when its @qcode{NaT} elements
+    ## come last.
+    ##
+    ## @code{@var{TF} = issorted (@var{A}, @var{dim})} operates along dimension
+    ## @var{dim}.
+    ##
+    ## @code{@var{TF} = issorted (@var{A}, @var{direction})} tests whether the
+    ## elements are sorted according to @var{direction}, which may be one of:
+    ##
+    ## @itemize
+    ## @item @qcode{'ascend'} (default) tests non-decreasing order.
+    ## @item @qcode{'descend'} tests non-increasing order.
+    ## @item @qcode{'monotonic'} tests non-decreasing or non-increasing order.
+    ## @item @qcode{'strictascend'} tests strictly increasing order.
+    ## @item @qcode{'strictdescend'} tests strictly decreasing order.
+    ## @item @qcode{'strictmonotonic'} tests strictly monotonic order.
+    ## @end itemize
+    ##
+    ## @end deftypefn
+    function TF = issorted (A, varargin)
+      dim = [];
+      direction = 'ascend';
+      valid = {'ascend', 'descend', 'monotonic', 'strictascend', ...
+               'strictdescend', 'strictmonotonic'};
+      for i = 1:numel (varargin)
+        arg = varargin{i};
+        if (isnumeric (arg))
+          if (! isscalar (arg) || arg < 1 || arg != fix (arg))
+            error ("datetime.issorted: DIM must be a positive integer.");
+          endif
+          dim = arg;
+        elseif (ischar (arg) && isrow (arg))
+          didx = find (strcmpi (arg, valid));
+          if (isempty (didx))
+            error ("datetime.issorted: invalid DIRECTION '%s'.", arg);
+          endif
+          direction = valid{didx};
+        else
+          error ("datetime.issorted: invalid input argument.");
+        endif
+      endfor
+      if (isempty (dim))
+        dim = find (size (A) != 1, 1);
+        if (isempty (dim))
+          dim = 1;
+        endif
+      endif
+      ## NaT sorts as greater than any value; map it to +Inf on the serial.
+      M = serial (A);
+      M(isnan (M)) = Inf;
+      if (dim > 2 || size (M, dim) < 2)
+        TF = true;
+        return;
+      endif
+      if (dim == 2)
+        M = M.';
+      endif
+      lo = M(1:end-1, :);
+      hi = M(2:end, :);
+      switch (direction)
+        case 'ascend'
+          ok = all (lo <= hi, 1);
+        case 'descend'
+          ok = all (lo >= hi, 1);
+        case 'strictascend'
+          ok = all (lo < hi, 1);
+        case 'strictdescend'
+          ok = all (lo > hi, 1);
+        case 'monotonic'
+          ok = all (lo <= hi, 1) | all (lo >= hi, 1);
+        case 'strictmonotonic'
+          ok = all (lo < hi, 1) | all (lo > hi, 1);
+      endswitch
+      TF = all (ok(:));
+    endfunction
 
     ## -*- texinfo -*-
     ## @deftypefn {datetime} {@var{TF} =} iscolumn (@var{T})
@@ -1255,11 +1341,142 @@ classdef datetime
 ##                                                                            ##
 ################################################################################
 
-  methods (Hidden)
+  methods (Access = public)
 
-    function [B, index] = sort (A, varargin)
-      error ("datetime.sort: not implemented yet.");
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{B} =} sort (@var{A})
+    ## @deftypefnx {datetime} {@var{B} =} sort (@var{A}, @var{dim})
+    ## @deftypefnx {datetime} {@var{B} =} sort (@var{A}, @var{direction})
+    ## @deftypefnx {datetime} {@var{B} =} sort (@var{A}, @var{dim}, @var{direction})
+    ## @deftypefnx {datetime} {@var{B} =} sort (@dots{}, @qcode{'MissingPlacement'}, @var{mp})
+    ## @deftypefnx {datetime} {[@var{B}, @var{I}] =} sort (@dots{})
+    ##
+    ## Sort a datetime array.
+    ##
+    ## @code{@var{B} = sort (@var{A})} returns the elements of the datetime array
+    ## @var{A} sorted in ascending order along its first non-singleton
+    ## dimension.  For a matrix, each column is sorted independently.  Sorting is
+    ## stable: elements that compare as equal keep their original relative order.
+    ##
+    ## @code{@var{B} = sort (@var{A}, @var{dim})} sorts along dimension
+    ## @var{dim}.
+    ##
+    ## @code{@var{B} = sort (@var{A}, @var{direction})} sorts in the order given
+    ## by @var{direction}, which is either @qcode{'ascend'} (default) or
+    ## @qcode{'descend'}.
+    ##
+    ## @code{@var{B} = sort (@dots{}, @qcode{'MissingPlacement'}, @var{mp})}
+    ## controls where Not-A-Time (@qcode{NaT}) elements are placed.  @var{mp} may
+    ## be @qcode{'auto'} (default; @qcode{NaT} last for ascending order and first
+    ## for descending order), @qcode{'first'}, or @qcode{'last'}.
+    ##
+    ## @code{[@var{B}, @var{I}] = sort (@dots{})} also returns an index array
+    ## @var{I} of the same size as @var{A} such that @var{B} is @var{A} indexed
+    ## by @var{I} along the operating dimension.
+    ##
+    ## @end deftypefn
+    function [B, I] = sort (A, varargin)
+      dim = [];
+      direction = 'ascend';
+      placement = 'auto';
+      i = 1;
+      while (i <= numel (varargin))
+        arg = varargin{i};
+        if (ischar (arg) && isrow (arg) && strcmpi (arg, 'MissingPlacement'))
+          if (i == numel (varargin))
+            error ("datetime.sort: 'MissingPlacement' requires a value.");
+          endif
+          placement = lower (varargin{i+1});
+          if (! any (strcmp (placement, {'auto', 'first', 'last'})))
+            error ("datetime.sort: invalid 'MissingPlacement' value.");
+          endif
+          i += 2;
+        elseif (isnumeric (arg))
+          if (! isscalar (arg) || arg < 1 || arg != fix (arg))
+            error ("datetime.sort: DIM must be a positive integer.");
+          endif
+          dim = arg;
+          i += 1;
+        elseif (ischar (arg) && isrow (arg))
+          if (strcmpi (arg, 'ascend'))
+            direction = 'ascend';
+          elseif (strcmpi (arg, 'descend'))
+            direction = 'descend';
+          else
+            error ("datetime.sort: invalid DIRECTION '%s'.", arg);
+          endif
+          i += 1;
+        else
+          error ("datetime.sort: invalid input argument.");
+        endif
+      endwhile
+      if (isempty (dim))
+        dim = find (size (A) != 1, 1);
+        if (isempty (dim))
+          dim = 1;
+        endif
+      endif
+      ## Sorting along a singleton or higher dimension is a no-op.
+      if (dim > 2 || size (A, dim) < 2)
+        B = A;
+        I = ones (size (A));
+        return;
+      endif
+      descend = strcmp (direction, 'descend');
+      ## Resolve 'auto': NaT goes last for ascending, first for descending.
+      if (strcmp (placement, 'auto'))
+        if (descend)
+          placement = 'first';
+        else
+          placement = 'last';
+        endif
+      endif
+      ## Work on the numeric serial (NaT -> NaN); sort along columns, so
+      ## transpose for a row-wise sort and transpose the result back.
+      S = serial (A);
+      Y = A.Year; MO = A.Month; D = A.Day;
+      H = A.Hour; MI = A.Minute; SE = A.Second;
+      if (dim == 2)
+        S = S.';
+        Y = Y.'; MO = MO.'; D = D.'; H = H.'; MI = MI.'; SE = SE.';
+      endif
+      [nr, nc] = size (S);
+      idx = zeros (nr, nc);
+      for j = 1:nc
+        col = S(:, j);
+        nat = isnan (col);
+        finidx = find (! nat);
+        natidx = find (nat);
+        ## Stable order: sort by value, breaking ties by original position.
+        if (descend)
+          [~, ord] = sortrows ([-col(finidx), finidx]);
+        else
+          [~, ord] = sortrows ([col(finidx), finidx]);
+        endif
+        finsorted = finidx(ord);
+        if (strcmp (placement, 'first'))
+          idx(:, j) = [natidx; finsorted];
+        else
+          idx(:, j) = [finsorted; natidx];
+        endif
+      endfor
+      ## Reorder the component arrays column-wise using linear indexing.
+      lin = idx + repmat ((0:nc-1) .* nr, nr, 1);
+      Y = Y(lin); MO = MO(lin); D = D(lin);
+      H = H(lin); MI = MI(lin); SE = SE(lin);
+      I = idx;
+      if (dim == 2)
+        Y = Y.'; MO = MO.'; D = D.'; H = H.'; MI = MI.'; SE = SE.';
+        I = idx.';
+      endif
+      B = A;
+      B.Year = Y; B.Month = MO; B.Day = D;
+      B.Hour = H; B.Minute = MI; B.Second = SE;
     endfunction
+
+  endmethods
+
+  methods (Hidden)
 
     function [B, index] = sortrows (A, varargin)
       error ("datetime.sortrows: not implemented yet.");
