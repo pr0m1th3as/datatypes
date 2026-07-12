@@ -986,10 +986,6 @@ classdef datetime
       error ("datetime.isregular: not implemented yet.");
     endfunction
 
-    function TF = issortedrows (this, varargin)
-     error ("datetime.issortedrows: not implemented yet.");
-    endfunction
-
     function TF = isweekend (this)
       error ("datetime.isweekend: not implemented yet.");
     endfunction
@@ -1086,6 +1082,141 @@ classdef datetime
           ok = all (lo < hi, 1) | all (lo > hi, 1);
       endswitch
       TF = all (ok(:));
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{TF} =} issortedrows (@var{A})
+    ## @deftypefnx {datetime} {@var{TF} =} issortedrows (@var{A}, @var{column})
+    ## @deftypefnx {datetime} {@var{TF} =} issortedrows (@var{A}, @var{direction})
+    ## @deftypefnx {datetime} {@var{TF} =} issortedrows (@var{A}, @var{column}, @var{direction})
+    ##
+    ## Determine whether the rows of a datetime array are sorted.
+    ##
+    ## @code{@var{TF} = issortedrows (@var{A})} returns @qcode{true} if the rows
+    ## of the 2-D datetime array @var{A} are sorted in ascending order, i.e.@:
+    ## lexicographically by the first column, ties broken by the second column,
+    ## and so on, and @qcode{false} otherwise.  Not-A-Time (@qcode{NaT}) elements
+    ## are treated as greater than any other value.
+    ##
+    ## @code{@var{TF} = issortedrows (@var{A}, @var{column})} checks the order
+    ## using only the columns listed in @var{column}, in the given priority.  A
+    ## negative entry checks the corresponding column for descending order.
+    ##
+    ## @code{@var{TF} = issortedrows (@var{A}, @var{direction})} checks for the
+    ## order given by @var{direction}, which may be one of @qcode{'ascend'}
+    ## (default), @qcode{'descend'}, @qcode{'monotonic'}, @qcode{'strictascend'},
+    ## @qcode{'strictdescend'}, or @qcode{'strictmonotonic'}.  It may also be a
+    ## cell array of @qcode{'ascend'}/@qcode{'descend'} strings, one per sort
+    ## column.  For the strict options a matrix qualifies only when its first
+    ## sort column is strictly monotonic and free of @qcode{NaT}.
+    ##
+    ## @code{@var{TF} = issortedrows (@var{A}, @var{column}, @var{direction})}
+    ## combines an explicit column list with a @var{direction}.
+    ##
+    ## @end deftypefn
+    function TF = issortedrows (A, varargin)
+      if (ndims (A) != 2)
+        error ("datetime.issortedrows: A must be a 2-D datetime array.");
+      endif
+      ncol = size (A, 2);
+      keywords = {'ascend', 'descend', 'monotonic', 'strictascend', ...
+                  'strictdescend', 'strictmonotonic'};
+      column = [];
+      direction = [];
+      if (numel (varargin) >= 1)
+        if (isnumeric (varargin{1}))
+          column = varargin{1};
+          if (numel (varargin) > 2)
+            error ("datetime.issortedrows: too many input arguments.");
+          elseif (numel (varargin) == 2)
+            direction = varargin{2};
+          endif
+        else
+          direction = varargin{1};
+          if (numel (varargin) > 1)
+            error ("datetime.issortedrows: COLUMN must precede DIRECTION.");
+          endif
+        endif
+      endif
+      if (isempty (column))
+        column = 1:ncol;
+      endif
+      column = column(:).';
+      if (any (column == 0) || any (column != fix (column)) ...
+          || any (abs (column) > ncol))
+        error ("datetime.issortedrows: COLUMN out of range.");
+      endif
+      colmag = abs (column);
+      desc = column < 0;
+      check = 'ascend';
+      if (! isempty (direction))
+        if (ischar (direction) && isrow (direction))
+          check = lower (direction);
+          if (! any (strcmp (check, keywords)))
+            error ("datetime.issortedrows: invalid DIRECTION '%s'.", direction);
+          endif
+          if (any (strcmp (check, {'ascend', 'strictascend'})))
+            desc = false (size (colmag));
+          elseif (any (strcmp (check, {'descend', 'strictdescend'})))
+            desc = true (size (colmag));
+          endif
+        elseif (iscellstr (direction))
+          if (numel (direction) != numel (colmag))
+            error (strcat ("datetime.issortedrows: DIRECTION must have one", ...
+                           " entry per sort column."));
+          endif
+          desc = false (size (colmag));
+          for j = 1:numel (direction)
+            if (strcmpi (direction{j}, 'descend'))
+              desc(j) = true;
+            elseif (! strcmpi (direction{j}, 'ascend'))
+              error ("datetime.issortedrows: invalid DIRECTION '%s'.", ...
+                     direction{j});
+            endif
+          endfor
+        else
+          error ("datetime.issortedrows: invalid DIRECTION argument.");
+        endif
+      endif
+      if (isempty (colmag))
+        TF = true;
+        return;
+      endif
+      S = serial (A);
+      if (any (strcmp (check, {'strictascend', 'strictdescend', ...
+                               'strictmonotonic'})))
+        ## Strict: only the first sort column matters; it must be strictly
+        ## monotonic and contain no NaT.
+        p = S(:, colmag(1));
+        if (any (isnan (p)))
+          TF = false;
+        else
+          d = diff (p);
+          if (strcmp (check, 'strictascend'))
+            TF = all (d > 0);
+          elseif (strcmp (check, 'strictdescend'))
+            TF = all (d < 0);
+          else
+            TF = all (d > 0) || all (d < 0);
+          endif
+        endif
+        return;
+      endif
+      ## Non-strict: lexicographic check on the selected columns.  NaT maps to
+      ## +Inf (largest); each column is negated to fold in a descending key.
+      K = S(:, colmag);
+      K(isnan (K)) = Inf;
+      Kd = K;
+      for j = 1:numel (colmag)
+        if (desc(j))
+          Kd(:, j) = -Kd(:, j);
+        endif
+      endfor
+      if (strcmp (check, 'monotonic'))
+        TF = rowsNonDecreasing (A, Kd) || rowsNonDecreasing (A, -Kd);
+      else
+        TF = rowsNonDecreasing (A, Kd);
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -1474,13 +1605,167 @@ classdef datetime
       B.Hour = H; B.Minute = MI; B.Second = SE;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{B} =} sortrows (@var{A})
+    ## @deftypefnx {datetime} {@var{B} =} sortrows (@var{A}, @var{column})
+    ## @deftypefnx {datetime} {@var{B} =} sortrows (@var{A}, @var{direction})
+    ## @deftypefnx {datetime} {@var{B} =} sortrows (@var{A}, @var{column}, @var{direction})
+    ## @deftypefnx {datetime} {@var{B} =} sortrows (@dots{}, @qcode{'MissingPlacement'}, @var{mp})
+    ## @deftypefnx {datetime} {[@var{B}, @var{index}] =} sortrows (@dots{})
+    ##
+    ## Sort the rows of a datetime array.
+    ##
+    ## @code{@var{B} = sortrows (@var{A})} sorts the rows of the 2-D datetime
+    ## array @var{A} in ascending order.  Rows are ordered lexicographically: by
+    ## the first column, ties broken by the second column, and so on.  The sort
+    ## is stable, so rows that compare as equal keep their original order.
+    ##
+    ## @code{@var{B} = sortrows (@var{A}, @var{column})} sorts using only the
+    ## columns listed in @var{column}, in the given priority.  A negative entry
+    ## sorts the corresponding column in descending order.  Columns not listed
+    ## are not used as sort keys.
+    ##
+    ## @code{@var{B} = sortrows (@var{A}, @var{direction})} sorts every column in
+    ## the given @var{direction}, either @qcode{'ascend'} (default) or
+    ## @qcode{'descend'}.  @var{direction} may also be a cell array of strings
+    ## with one such value per sort column.
+    ##
+    ## @code{@var{B} = sortrows (@var{A}, @var{column}, @var{direction})} combines
+    ## an explicit column list with a per-column @var{direction}.
+    ##
+    ## @code{@var{B} = sortrows (@dots{}, @qcode{'MissingPlacement'}, @var{mp})}
+    ## controls where Not-A-Time (@qcode{NaT}) elements are placed.  @var{mp} may
+    ## be @qcode{'auto'} (default; @qcode{NaT} sorts as the largest value, i.e.@:
+    ## last for ascending and first for descending columns), @qcode{'first'}, or
+    ## @qcode{'last'}.
+    ##
+    ## @code{[@var{B}, @var{index}] = sortrows (@dots{})} also returns a column
+    ## index vector @var{index} that maps the rows of @var{A} to @var{B}, such
+    ## that @code{@var{B} = @var{A}(@var{index}, :)}.
+    ##
+    ## @end deftypefn
+    function [B, index] = sortrows (A, varargin)
+      if (ndims (A) != 2)
+        error ("datetime.sortrows: A must be a 2-D datetime array.");
+      endif
+      ncol = size (A, 2);
+      ## Split the 'MissingPlacement' (and ignored 'ComparisonMethod') name-value
+      ## pairs off from the positional COLUMN/DIRECTION arguments.
+      placement = 'auto';
+      pos = {};
+      k = 1;
+      while (k <= numel (varargin))
+        a = varargin{k};
+        if (ischar (a) && isrow (a) && strcmpi (a, 'MissingPlacement'))
+          if (k == numel (varargin))
+            error ("datetime.sortrows: 'MissingPlacement' requires a value.");
+          endif
+          placement = lower (varargin{k+1});
+          if (! any (strcmp (placement, {'auto', 'first', 'last'})))
+            error ("datetime.sortrows: invalid 'MissingPlacement' value.");
+          endif
+          k += 2;
+        elseif (ischar (a) && isrow (a) && strcmpi (a, 'ComparisonMethod'))
+          k += 2;
+        else
+          pos{end+1} = a;
+          k += 1;
+        endif
+      endwhile
+      if (numel (pos) > 2)
+        error ("datetime.sortrows: too many input arguments.");
+      endif
+      ## Resolve the column selection and the per-column sort direction.
+      column = [];
+      direction = [];
+      if (numel (pos) >= 1)
+        if (isnumeric (pos{1}))
+          column = pos{1};
+          if (numel (pos) == 2)
+            direction = pos{2};
+          endif
+        else
+          direction = pos{1};
+          if (numel (pos) == 2)
+            error ("datetime.sortrows: COLUMN must precede DIRECTION.");
+          endif
+        endif
+      endif
+      if (isempty (column))
+        column = 1:ncol;
+      endif
+      column = column(:).';
+      if (any (column == 0) || any (column != fix (column)) ...
+          || any (abs (column) > ncol))
+        error ("datetime.sortrows: COLUMN out of range.");
+      endif
+      colmag = abs (column);
+      desc = column < 0;
+      if (! isempty (direction))
+        if (ischar (direction) && isrow (direction))
+          if (strcmpi (direction, 'descend'))
+            desc = true (size (colmag));
+          elseif (strcmpi (direction, 'ascend'))
+            desc = false (size (colmag));
+          else
+            error ("datetime.sortrows: invalid DIRECTION '%s'.", direction);
+          endif
+        elseif (iscellstr (direction))
+          if (numel (direction) != numel (colmag))
+            error (strcat ("datetime.sortrows: DIRECTION must have one", ...
+                           " entry per sort column."));
+          endif
+          desc = false (size (colmag));
+          for j = 1:numel (direction)
+            if (strcmpi (direction{j}, 'descend'))
+              desc(j) = true;
+            elseif (! strcmpi (direction{j}, 'ascend'))
+              error ("datetime.sortrows: invalid DIRECTION '%s'.", ...
+                     direction{j});
+            endif
+          endfor
+        else
+          error ("datetime.sortrows: invalid DIRECTION argument.");
+        endif
+      endif
+      ## Build the numeric key matrix from each selected column's instant.  NaT
+      ## maps to a signed-Inf sentinel that places it per MissingPlacement in the
+      ## column's own direction ('auto' treats NaT as the largest value).
+      S = serial (A);
+      N = size (S, 1);
+      K = S(:, colmag);
+      for j = 1:numel (colmag)
+        if (strcmp (placement, 'auto'))
+          sentinel = Inf;
+        elseif (strcmp (placement, 'last'))
+          if (desc(j))
+            sentinel = -Inf;
+          else
+            sentinel = Inf;
+          endif
+        else
+          if (desc(j))
+            sentinel = Inf;
+          else
+            sentinel = -Inf;
+          endif
+        endif
+        col = K(:, j);
+        col(isnan (col)) = sentinel;
+        K(:, j) = col;
+      endfor
+      ## Append the original row index as a final ascending tie-break so equal
+      ## rows keep their order, then defer to the built-in lexicographic sort.
+      nkey = numel (colmag);
+      spec = (1:nkey) .* (1 - 2 * desc);
+      [~, index] = sortrows ([K, (1:N)'], [spec, nkey + 1]);
+      index = index(:);
+      B = subset (A, index, ':');
+    endfunction
+
   endmethods
 
   methods (Hidden)
-
-    function [B, index] = sortrows (A, varargin)
-      error ("datetime.sortrows: not implemented yet.");
-    endfunction
 
     ## -*- texinfo -*-
     ## @deftypefn  {datetime} {@var{B} =} unique (@var{A})
@@ -2451,6 +2736,29 @@ classdef datetime
   endmethods
 
   methods (Access = private)
+
+    ## Return true if the rows of the numeric matrix KD are in lexicographic
+    ## non-decreasing order (used by 'issortedrows').  Equal entries (including
+    ## the +Inf sentinel used for NaT, and genuine infinities) count as ties and
+    ## are resolved by the next column.
+    function tf = rowsNonDecreasing (this, KD)
+      m = rows (KD);
+      if (m < 2)
+        tf = true;
+        return;
+      endif
+      a = KD(1:end-1, :);
+      b = KD(2:end, :);
+      undecided = true (m - 1, 1);
+      bad = false (m - 1, 1);
+      for j = 1:columns (KD)
+        lt = a(:, j) < b(:, j);
+        gt = a(:, j) > b(:, j);
+        bad = bad | (undecided & gt);
+        undecided = undecided & ! (lt | gt);
+      endfor
+      tf = ! any (bad);
+    endfunction
 
     ## Return a subset of the array
     function this = subset (this, varargin)
