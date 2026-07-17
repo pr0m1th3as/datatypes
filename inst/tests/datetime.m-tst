@@ -1027,6 +1027,90 @@
 %!error <datetime.between: COMPONENTS must be 'Years', 'Quarters', 'Months', 'Weeks', 'Days', or 'Time', or a string array or cell array containing those components.> ...
 %! between (datetime (2026, 1, 31), datetime (2026, 3, 30), 'bogus');
 
+## Test 'mean' -- average of the instants as a datetime
+%!test
+%! m = mean (datetime (2026, 1, [1 2 4 8]));
+%! assert_equal (class (m), 'datetime');
+%! assert_equal (dispstrings (m), {'03-Jan-2026 18:00:00'});
+%!assert_equal (dispstrings (mean (datetime (2026, 1, [1 2]))), {'01-Jan-2026 12:00:00'})
+%!assert_equal (dispstrings (mean (datetime (2026, 1, 5))), {'05-Jan-2026'})
+
+## Test 'mean' -- Not-A-Time is kept by default and dropped with 'omitnat'
+%!test
+%! rn = [datetime(2026,1,1) NaT datetime(2026,1,5)];
+%! assert_equal (isnat (mean (rn)), true);
+%! assert_equal (dispstrings (mean (rn, 'omitnat')), {'03-Jan-2026'});
+%! assert_equal (dispstrings (mean (rn, 'omitmissing')), {'03-Jan-2026'});
+%! assert_equal (isnat (mean (rn, 'includenat')), true);
+
+## Test 'mean' -- dimension arguments and an empty array
+%!test
+%! rm = datetime (2026, 1, [1 2; 4 8]);
+%! assert_equal (dispstrings (mean (rm)), {'02-Jan-2026 12:00:00', '05-Jan-2026'});
+%! assert_equal (dispstrings (mean (rm, 2)), ...
+%!               {'01-Jan-2026 12:00:00'; '06-Jan-2026'});
+%! assert_equal (dispstrings (mean (rm, 'all')), {'03-Jan-2026 18:00:00'});
+%!assert_equal (isnat (mean (datetime (2026, 1, []))), true)
+
+## Test 'mean' -- the Format and TimeZone are inherited; zoned mean is DST-aware
+%!test
+%! rf = datetime (2026, 1, [1 2 4 8]);
+%! rf.Format = 'dd/MM/uuuu HH:mm';
+%! assert_equal (mean (rf).Format, 'dd/MM/uuuu HH:mm');
+%!test
+%! z = mean (datetime (2026, 1, [1 2 4], 'TimeZone', 'Europe/Athens'));
+%! assert_equal (z.TimeZone, 'Europe/Athens');
+%! assert_equal (dispstrings (z), {'02-Jan-2026 08:00:00'});
+
+## Test 'mean' -- infinite instants propagate
+%!assert_equal (isinf (mean ([datetime(2026,1,1), datetime(2026,1,1) + days(Inf)])), true)
+%!assert_equal (isnat (mean ([datetime(2026,1,1) + days(Inf), ...
+%!                            datetime(2026,1,1) - days(Inf)])), true)
+
+## Test 'median' -- middle instant, averaging the two middle for an even count
+%!assert_equal (dispstrings (median (datetime (2026, 1, [1 2 4 8]))), {'03-Jan-2026'})
+%!assert_equal (dispstrings (median (datetime (2026, 1, [1 2 3 4]))), ...
+%!              {'02-Jan-2026 12:00:00'})
+%!assert_equal (dispstrings (median (datetime (2026, 1, [1 2 3]))), {'02-Jan-2026'})
+%!assert_equal (class (median (datetime (2026, 1, [1 2 3]))), 'datetime')
+%!test
+%! rn = [datetime(2026,1,1) NaT datetime(2026,1,5)];
+%! assert_equal (isnat (median (rn)), true);
+%! assert_equal (dispstrings (median (rn, 'omitnat')), {'03-Jan-2026'});
+
+## Test 'mode' -- smallest most-frequent value, ignoring Not-A-Time
+%!assert_equal (dispstrings (mode (datetime (2026, 1, [1 2 4 8]))), {'01-Jan-2026'})
+%!assert_equal (dispstrings (mode ([datetime(2026,1,1) NaT datetime(2026,1,5)])), ...
+%!              {'01-Jan-2026'})
+%!assert_equal (class (mode (datetime (2026, 1, [1 2 2]))), 'datetime')
+
+## Test 'mode' -- the frequency and the list of all modal values
+%!test
+%! [m, f, c] = mode (datetime (2026, 1, [1 1 2 2 3]));
+%! assert_equal (dispstrings (m), {'01-Jan-2026'});
+%! assert_equal (f, 2);
+%! assert_equal (dispstrings (c{1}), {'01-Jan-2026'; '02-Jan-2026'});
+
+## Test 'std' -- standard deviation of the instants as a duration
+%!test
+%! s = std (datetime (2026, 1, [1 2 4 8]));
+%! assert_equal (class (s), 'duration');
+%! assert_equal (dispstrings (s), {'74:17:48'});
+
+## Test 'std' -- the weight selects N-1 (default) or N normalisation
+%!assert_equal (dispstrings (std (datetime (2026, 1, [1 2 4 8]), 1)), {'64:20:34'})
+%!assert_equal (dispstrings (std (datetime (2026, 1, [1 2; 4 8]), 0, 2)), ...
+%!              {'16:58:14'; '67:52:56'})
+
+## Test 'std' -- 'omitnat' skips missing values and the mean is a second output
+%!assert_equal (dispstrings (std ([datetime(2026,1,1) NaT datetime(2026,1,5)], ...
+%!              'omitnat')), {'67:52:56'})
+%!test
+%! [s, m] = std (datetime (2026, 1, [1 2 4 8]));
+%! assert_equal (class (s), 'duration');
+%! assert_equal (class (m), 'datetime');
+%! assert_equal (dispstrings (m), {'03-Jan-2026 18:00:00'});
+
 ## Test 'plus' -- datetime plus duration returns a shifted datetime
 %!assert_equal (class (datetime (2021, 1, 1) + hours (30)), 'datetime')
 %!assert_equal (datevec (datetime (2021, 1, 1, 0, 0, 0) + hours (30)), ...

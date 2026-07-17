@@ -2215,6 +2215,127 @@ classdef datetime
   endmethods
 
 ################################################################################
+##                        ** Descriptive Statistics **                        ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'mean'             'median'           'mode'             'std'             ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{M} =} mean (@var{A})
+    ## @deftypefnx {datetime} {@var{M} =} mean (@var{A}, @var{dim})
+    ## @deftypefnx {datetime} {@var{M} =} mean (@var{A}, @qcode{'all'})
+    ## @deftypefnx {datetime} {@var{M} =} mean (@dots{}, @var{nanflag})
+    ##
+    ## Mean of a datetime array.
+    ##
+    ## @code{@var{M} = mean (@var{A})} returns the mean of the datetime array
+    ## @var{A} as a scalar datetime, computed as the average of the absolute
+    ## instants along the first non-singleton dimension.  A @var{dim} or
+    ## @qcode{'all'} argument selects the dimension(s) to operate on.  The result
+    ## carries the @code{Format} and @code{TimeZone} of @var{A}.
+    ##
+    ## By default a Not-A-Time element makes the corresponding result
+    ## @qcode{NaT}; pass @qcode{'omitnat'} (equivalently @qcode{'omitmissing'})
+    ## to ignore missing values, or @qcode{'includenat'} to keep the default.
+    ##
+    ## @end deftypefn
+    function R = mean (A, varargin)
+      args = dtStatFlags (varargin);
+      R = fromReducedSerial (A, mean (serial (A), args{:}));
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{M} =} median (@var{A})
+    ## @deftypefnx {datetime} {@var{M} =} median (@var{A}, @var{dim})
+    ## @deftypefnx {datetime} {@var{M} =} median (@var{A}, @qcode{'all'})
+    ## @deftypefnx {datetime} {@var{M} =} median (@dots{}, @var{nanflag})
+    ##
+    ## Median of a datetime array.
+    ##
+    ## @code{@var{M} = median (@var{A})} returns the median of the datetime array
+    ## @var{A} as a datetime, computed on the absolute instants along the first
+    ## non-singleton dimension (for an even number of elements the average of the
+    ## two middle instants).  A @var{dim} or @qcode{'all'} argument selects the
+    ## dimension(s).  The result carries the @code{Format} and @code{TimeZone} of
+    ## @var{A}.  Missing-value handling matches @code{mean}.
+    ##
+    ## @end deftypefn
+    function R = median (A, varargin)
+      args = dtStatFlags (varargin);
+      R = fromReducedSerial (A, median (serial (A), args{:}));
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{M} =} mode (@var{A})
+    ## @deftypefnx {datetime} {@var{M} =} mode (@var{A}, @var{dim})
+    ## @deftypefnx {datetime} {@var{M} =} mode (@var{A}, @qcode{'all'})
+    ## @deftypefnx {datetime} {[@var{M}, @var{F}, @var{C}] =} mode (@dots{})
+    ##
+    ## Most frequent value of a datetime array.
+    ##
+    ## @code{@var{M} = mode (@var{A})} returns the most frequently occurring
+    ## datetime in @var{A} along the first non-singleton dimension; when several
+    ## values are equally frequent the smallest is returned.  A @var{dim} or
+    ## @qcode{'all'} argument selects the dimension(s).  Not-A-Time elements are
+    ## ignored.  The result carries the @code{Format} and @code{TimeZone} of
+    ## @var{A}.
+    ##
+    ## @code{[@var{M}, @var{F}, @var{C}] = mode (@dots{})} also returns the
+    ## frequency @var{F} of the modal value and a cell array @var{C} whose
+    ## elements list all values that achieve that frequency.
+    ##
+    ## @end deftypefn
+    function [R, F, C] = mode (A, varargin)
+      if (nargout > 2)
+        [ser, F, C] = mode (serial (A), varargin{:});
+        C = cellfun (@(x) fromReducedSerial (A, x), C, 'UniformOutput', false);
+      elseif (nargout == 2)
+        [ser, F] = mode (serial (A), varargin{:});
+      else
+        ser = mode (serial (A), varargin{:});
+      endif
+      R = fromReducedSerial (A, ser);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{S} =} std (@var{A})
+    ## @deftypefnx {datetime} {@var{S} =} std (@var{A}, @var{w})
+    ## @deftypefnx {datetime} {@var{S} =} std (@var{A}, @var{w}, @var{dim})
+    ## @deftypefnx {datetime} {@var{S} =} std (@var{A}, @var{w}, @qcode{'all'})
+    ## @deftypefnx {datetime} {@var{S} =} std (@dots{}, @var{nanflag})
+    ## @deftypefnx {datetime} {[@var{S}, @var{M}] =} std (@dots{})
+    ##
+    ## Standard deviation of a datetime array.
+    ##
+    ## @code{@var{S} = std (@var{A})} returns the standard deviation of the
+    ## absolute instants of @var{A} as a @code{duration}.  The weight @var{w}
+    ## selects the normalisation (@code{0}, the default, divides by @math{N-1};
+    ## @code{1} divides by @math{N}), and a @var{dim} or @qcode{'all'} argument
+    ## selects the dimension(s).  Missing-value handling matches @code{mean}.
+    ##
+    ## @code{[@var{S}, @var{M}] = std (@dots{})} also returns the mean @var{M} as
+    ## a datetime.
+    ##
+    ## @end deftypefn
+    function [S, M] = std (A, varargin)
+      args = dtStatFlags (varargin);
+      if (nargout > 1)
+        [sSec, mSec] = std (serial (A), args{:});
+        M = fromReducedSerial (A, mSec);
+      else
+        sSec = std (serial (A), args{:});
+      endif
+      S = duration (0, 0, sSec);
+    endfunction
+
+  endmethods
+
+################################################################################
 ##                         ** Arithmetic Operations **                        ##
 ################################################################################
 ##                             Available Methods                              ##
@@ -3618,6 +3739,15 @@ classdef datetime
       C = calendarDuration (zeros (sz), monthsOut, daysOut, Tdur, 'Format', fmt);
     endfunction
 
+    ## Build a datetime from reduced POSIX seconds (the result of mean/median/
+    ## mode/std on this array's serial), preserving the Format and TimeZone.
+    function R = fromReducedSerial (this, ser)
+      R = this;
+      [Y, M, D, h, m, s] = serial2components (this, ser);
+      R.Year = Y; R.Month = M; R.Day = D;
+      R.Hour = h; R.Minute = m; R.Second = s;
+    endfunction
+
     ## Inverse of 'serial': map POSIX seconds back to the wall-clock components
     ## of this array's time zone.  For a zoned array the serial is first read as
     ## a UTC wall clock and then converted into the target zone (honouring DST).
@@ -3922,6 +4052,22 @@ function d = dtIsbetweenArg (x, ref)
     error (strcat ("datetime.isbetween: LOWER and UPPER must be datetime", ...
                    " arrays or date/time text."));
   endif
+endfunction
+
+## Translate datetime missing-value flags into the 'omitnan'/'includenan' flags
+## understood by the core reduction functions, leaving dims, 'all', and the core
+## flags untouched.
+function args = dtStatFlags (args)
+  for i = 1:numel (args)
+    if (ischar (args{i}) && isrow (args{i}))
+      switch (lower (args{i}))
+        case {'omitnat', 'omitmissing'}
+          args{i} = 'omitnan';
+        case {'includenat', 'includemissing'}
+          args{i} = 'includenan';
+      endswitch
+    endif
+  endfor
 endfunction
 
 ## Number of days in month M of year Y (element-wise, proleptic Gregorian).
