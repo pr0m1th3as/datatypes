@@ -1111,6 +1111,102 @@
 %! assert_equal (class (m), 'datetime');
 %! assert_equal (dispstrings (m), {'03-Jan-2026 18:00:00'});
 
+## Test 'dateshift' -- start of each calendar unit (a week starts on Sunday)
+%!test
+%! sh = datetime (2026, 7, 17, 13, 45, 30);
+%! assert_equal (class (dateshift (sh, 'start', 'year')), 'datetime');
+%! assert_equal (dispstrings (dateshift (sh, 'start', 'year')), {'01-Jan-2026'});
+%! assert_equal (dispstrings (dateshift (sh, 'start', 'quarter')), {'01-Jul-2026'});
+%! assert_equal (dispstrings (dateshift (sh, 'start', 'month')), {'01-Jul-2026'});
+%! assert_equal (dispstrings (dateshift (sh, 'start', 'week')), {'12-Jul-2026'});
+%! assert_equal (dispstrings (dateshift (sh, 'start', 'day')), {'17-Jul-2026'});
+%! assert_equal (dispstrings (dateshift (sh, 'start', 'hour')), {'17-Jul-2026 13:00:00'});
+%! assert_equal (dispstrings (dateshift (sh, 'start', 'minute')), {'17-Jul-2026 13:45:00'});
+%! assert_equal (dispstrings (dateshift (sh, 'start', 'second')), {'17-Jul-2026 13:45:30'});
+
+## Test 'dateshift' -- end of each unit (next boundary below a day, last day above)
+%!test
+%! sh = datetime (2026, 7, 17, 13, 45, 30);
+%! assert_equal (dispstrings (dateshift (sh, 'end', 'year')), {'31-Dec-2026'});
+%! assert_equal (dispstrings (dateshift (sh, 'end', 'quarter')), {'30-Sep-2026'});
+%! assert_equal (dispstrings (dateshift (sh, 'end', 'month')), {'31-Jul-2026'});
+%! assert_equal (dispstrings (dateshift (sh, 'end', 'week')), {'18-Jul-2026'});
+%! assert_equal (dispstrings (dateshift (sh, 'end', 'day')), {'18-Jul-2026'});
+%! assert_equal (dispstrings (dateshift (sh, 'end', 'hour')), {'17-Jul-2026 14:00:00'});
+%! assert_equal (dispstrings (dateshift (sh, 'end', 'minute')), {'17-Jul-2026 13:46:00'});
+%! assert_equal (dispstrings (dateshift (sh, 'end', 'second')), {'17-Jul-2026 13:45:31'});
+
+## Test 'dateshift' -- end of a day is the following midnight
+%!assert_equal (dispstrings (dateshift (datetime (2026, 1, 1), 'end', 'day')), {'02-Jan-2026'})
+%!assert_equal (dispstrings (dateshift (datetime (2026, 1, 1), 'end', 'year')), {'31-Dec-2026'})
+
+## Test 'dateshift' -- a rule shifts by whole units before truncating
+%!test
+%! sh = datetime (2026, 7, 17, 13, 45, 30);
+%! assert_equal (dispstrings (dateshift (sh, 'start', 'week', 'next')), {'19-Jul-2026'});
+%! assert_equal (dispstrings (dateshift (sh, 'start', 'week', 'previous')), {'05-Jul-2026'});
+%! assert_equal (dispstrings (dateshift (sh, 'start', 'month', 'next')), {'01-Aug-2026'});
+%! assert_equal (dispstrings (dateshift (sh, 'end', 'month', 'next')), {'31-Aug-2026'});
+%! assert_equal (dispstrings (dateshift (sh, 'start', 'day', 2)), {'19-Jul-2026'});
+%! assert_equal (dispstrings (dateshift (sh, 'start', 'day', -3)), {'14-Jul-2026'});
+%! assert_equal (dispstrings (dateshift (sh, 'start', 'month', 0)), {'01-Jul-2026'});
+
+## Test 'dateshift' -- 'dayofweek' moves to a weekday, keeping the time of day
+%!test
+%! sh = datetime (2026, 7, 17, 13, 45, 30);
+%! assert_equal (dispstrings (dateshift (sh, 'dayofweek', 1)), {'19-Jul-2026 13:45:30'});
+%! assert_equal (dispstrings (dateshift (sh, 'dayofweek', 2)), {'20-Jul-2026 13:45:30'});
+%! assert_equal (dispstrings (dateshift (sh, 'dayofweek', 'Monday')), {'20-Jul-2026 13:45:30'});
+%! assert_equal (dispstrings (dateshift (sh, 'dayofweek', 2, 'previous')), {'13-Jul-2026 13:45:30'});
+%! assert_equal (dispstrings (dateshift (sh, 'dayofweek', 2, 'nearest')), {'20-Jul-2026 13:45:30'});
+%! assert_equal (dispstrings (dateshift (sh, 'dayofweek', 6, 'current')), {'17-Jul-2026 13:45:30'});
+%! assert_equal (dispstrings (dateshift (sh, 'dayofweek', 6, 2)), {'24-Jul-2026 13:45:30'});
+%! assert_equal (dispstrings (dateshift (sh, 'dayofweek', 6, -1)), {'17-Jul-2026 13:45:30'});
+
+## Test 'dateshift' -- across a week vector, and matrix / empty shapes
+%!test
+%! ww = datetime (2026, 7, [13 14 15 16 17 18 19]);
+%! assert_equal (day (dateshift (ww, 'start', 'week')), [12 12 12 12 12 12 19]);
+%! assert_equal (day (dateshift (ww, 'end', 'week')), [18 18 18 18 18 18 25]);
+%!assert_equal (day (dateshift (datetime (2026, 1, [15 20; 25 30]), 'start', 'month')), ...
+%!              [1 1; 1 1])
+%!assert_equal (size (dateshift (datetime (2026, 1, []), 'start', 'month')), [0 0])
+
+## Test 'dateshift' -- Not-A-Time and infinite elements pass through
+%!assert_equal (isnat (dateshift (NaT, 'start', 'month')), true)
+%!assert_equal (isinf (dateshift (datetime (2026, 1, 1) + days (Inf), 'start', 'month')), true)
+%!test
+%! v = dateshift ([datetime(2026,1,15) NaT], 'start', 'month');
+%! assert_equal (day (v(1)), 1);
+%! assert_equal (isnat (v(2)), true);
+
+## Test 'dateshift' -- month-end respects leap years, and zoned start keeps the zone
+%!assert_equal (dispstrings (dateshift (datetime (2024, 2, 10), 'end', 'month')), {'29-Feb-2024'})
+%!assert_equal (dispstrings (dateshift (datetime (2026, 2, 10), 'end', 'month')), {'28-Feb-2026'})
+%!test
+%! z = dateshift (datetime (2026, 3, 29, 12, 0, 0, 'TimeZone', 'Europe/Athens'), ...
+%!                'start', 'day');
+%! assert_equal (z.TimeZone, 'Europe/Athens');
+%! assert_equal (dispstrings (z), {'29-Mar-2026'});
+
+## Test 'dateshift' -- invalid arguments are rejected
+%!error <datetime.dateshift: second input must be 'start', 'end', or 'dayofweek'.> ...
+%! dateshift (datetime (2026, 1, 1), 'bogus', 'month');
+%!error <datetime.dateshift: unit must be 'second', 'minute', 'hour', 'day', 'week', 'month', 'quarter', or 'year'.> ...
+%! dateshift (datetime (2026, 1, 1), 'start', 'bogus');
+%!error <datetime.dateshift: not enough input arguments.> ...
+%! dateshift (datetime (2026, 1, 1), 'start');
+%!error <datetime.dateshift: day of week must be a number from 1 to 7 or a day name.> ...
+%! dateshift (datetime (2026, 1, 1), 'dayofweek', 8);
+%!error <datetime.dateshift: day of week must be a number from 1 to 7 or a day name.> ...
+%! dateshift (datetime (2026, 1, 1), 'dayofweek', 'Funday');
+%!error <datetime.dateshift: rule must be an integer, 'next', 'previous', 'current', or 'nearest'.> ...
+%! dateshift (datetime (2026, 1, 1), 'start', 'month', 'bogus');
+%!error <datetime.dateshift: rule must be an integer, 'next', 'previous', 'current', or 'nearest'.> ...
+%! dateshift (datetime (2026, 1, 1), 'start', 'week', 1.5);
+%!error <datetime.dateshift: unit must be 'second', 'minute', 'hour', 'day', 'week', 'month', 'quarter', or 'year'.> ...
+%! dateshift (datetime (2026, 1, 1), 'end', 'dayofweek', 2);
+
 ## Test 'plus' -- datetime plus duration returns a shifted datetime
 %!assert_equal (class (datetime (2021, 1, 1) + hours (30)), 'datetime')
 %!assert_equal (datevec (datetime (2021, 1, 1, 0, 0, 0) + hours (30)), ...

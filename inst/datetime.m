@@ -2701,6 +2701,154 @@ classdef datetime
       D = calDiff (A, B, comps, 'between');
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{R} =} dateshift (@var{A}, @qcode{'start'}, @var{unit})
+    ## @deftypefnx {datetime} {@var{R} =} dateshift (@var{A}, @qcode{'end'}, @var{unit})
+    ## @deftypefnx {datetime} {@var{R} =} dateshift (@dots{}, @var{rule})
+    ## @deftypefnx {datetime} {@var{R} =} dateshift (@var{A}, @qcode{'dayofweek'}, @var{dow})
+    ## @deftypefnx {datetime} {@var{R} =} dateshift (@var{A}, @qcode{'dayofweek'}, @var{dow}, @var{rule})
+    ##
+    ## Shift datetime values to calendar boundaries.
+    ##
+    ## @code{@var{R} = dateshift (@var{A}, @qcode{'start'}, @var{unit})} returns a
+    ## datetime array in which each element of @var{A} is moved back to the start
+    ## of the calendar @var{unit} that contains it, with the finer components set
+    ## to zero.  @var{unit} is @qcode{'second'}, @qcode{'minute'},
+    ## @qcode{'hour'}, @qcode{'day'}, @qcode{'week'}, @qcode{'month'},
+    ## @qcode{'quarter'}, or @qcode{'year'}.  A week starts on Sunday.
+    ##
+    ## @code{@var{R} = dateshift (@var{A}, @qcode{'end'}, @var{unit})} moves each
+    ## element to the end of its unit: the start of the next second, minute,
+    ## hour, or day, and the last day (at midnight) of the week, month, quarter,
+    ## or year.
+    ##
+    ## @code{@var{R} = dateshift (@dots{}, @var{rule})} first shifts each element
+    ## by @var{rule} whole units.  @var{rule} is @qcode{'current'} (the default),
+    ## @qcode{'next'}, @qcode{'previous'}, @qcode{'nearest'}, or an integer
+    ## number of units.
+    ##
+    ## @code{@var{R} = dateshift (@var{A}, @qcode{'dayofweek'}, @var{dow})} moves
+    ## each element to the next date, on or after it, whose day of the week is
+    ## @var{dow} (a number from 1 for Sunday to 7 for Saturday, or a day name),
+    ## keeping the time of day.  A trailing @var{rule} of @qcode{'previous'},
+    ## @qcode{'nearest'}, @qcode{'current'} (the day within the current week), or
+    ## an integer occurrence selects a different date.
+    ##
+    ## Not-A-Time and infinite elements are returned unchanged.
+    ##
+    ## @end deftypefn
+    function R = dateshift (this, op, varargin)
+      ops = {'start', 'end', 'dayofweek'};
+      if (! (ischar (op) && isrow (op) && any (strcmpi (op, ops))))
+        error (strcat ("datetime.dateshift: second input must be 'start',", ...
+                       " 'end', or 'dayofweek'."));
+      endif
+      op = lower (op);
+      if (numel (varargin) < 1)
+        error ("datetime.dateshift: not enough input arguments.");
+      endif
+      if (numel (varargin) > 2)
+        error ("datetime.dateshift: too many input arguments.");
+      endif
+      Y = this.Year; M = this.Month; D = this.Day;
+      h = this.Hour; mi = this.Minute; s = this.Second;
+      keep = isnan (Y) | isinf (Y);
+      if (any (keep(:)))
+        Y(keep) = 2000; M(keep) = 1; D(keep) = 1;
+        h(keep) = 0; mi(keep) = 0; s(keep) = 0;
+      endif
+
+      if (strcmp (op, 'dayofweek'))
+        dow = varargin{1};
+        if (ischar (dow) && isrow (dow))
+          dow = dsDayName (dow);
+        elseif (! (isnumeric (dow) && isscalar (dow)))
+          dow = NaN;
+        endif
+        if (! (isscalar (dow) && dow >= 1 && dow <= 7 && dow == fix (dow)))
+          error (strcat ("datetime.dateshift: day of week must be a number", ...
+                         " from 1 to 7 or a day name."));
+        endif
+        kind = 'next';  n = 0;
+        if (numel (varargin) == 2)
+          [kind, n] = dsRule (varargin{2});
+        endif
+        dowT = weekday (datenum (Y, M, D));
+        dNext = mod (dow - dowT, 7);
+        dPrev = mod (dowT - dow, 7);
+        switch (kind)
+          case 'next'
+            delta = dNext;
+          case 'previous'
+            delta = -dPrev;
+          case 'current'
+            delta = dow - dowT;
+          case 'nearest'
+            delta = dNext;
+            useprev = dPrev < dNext;
+            delta(useprev) = -dPrev(useprev);
+          case 'int'
+            if (n >= 1)
+              delta = dNext + (n - 1) * 7;
+            elseif (n <= -1)
+              delta = -(dPrev + (- n - 1) * 7);
+            else
+              delta = dow - dowT;
+            endif
+        endswitch
+        [Y, M, D] = dtAddDays (Y, M, D, delta);
+      else
+        unit = varargin{1};
+        units = {'second', 'minute', 'hour', 'day', 'week', 'month', ...
+                 'quarter', 'year'};
+        if (! (ischar (unit) && isrow (unit) && any (strcmpi (unit, units))))
+          error (strcat ("datetime.dateshift: unit must be 'second',", ...
+                         " 'minute', 'hour', 'day', 'week', 'month',", ...
+                         " 'quarter', or 'year'."));
+        endif
+        unit = lower (unit);
+        n = 0;
+        if (numel (varargin) == 2)
+          [kind, nint] = dsRule (varargin{2});
+          switch (kind)
+            case 'current'
+              n = 0;
+            case 'next'
+              n = 1;
+            case 'previous'
+              n = -1;
+            case 'int'
+              n = nint;
+            case 'nearest'
+              [cY, cM, cD, ch, cm, cs] = dsStartComp (Y, M, D, h, mi, s, unit);
+              sc = dsSerialOf (this, cY, cM, cD, ch, cm, cs);
+              [nY, nM, nD, nh, nm, ns] = ...
+                  dsShiftUnits (cY, cM, cD, ch, cm, cs, unit, 1);
+              sn = dsSerialOf (this, nY, nM, nD, nh, nm, ns);
+              st = serial (this);
+              st(keep) = sc(keep);
+              n = double ((st - sc) >= (sn - st));
+          endswitch
+        endif
+        [Y, M, D, h, mi, s] = dsShiftUnits (Y, M, D, h, mi, s, unit, n);
+        if (strcmp (op, 'start'))
+          [Y, M, D, h, mi, s] = dsStartComp (Y, M, D, h, mi, s, unit);
+        else
+          [Y, M, D, h, mi, s] = dsEndComp (Y, M, D, h, mi, s, unit);
+        endif
+      endif
+
+      R = this;
+      R.Year = Y; R.Month = M; R.Day = D;
+      R.Hour = h; R.Minute = mi; R.Second = s;
+      R = normalize (R);
+      if (any (keep(:)))
+        R.Year(keep) = this.Year(keep); R.Month(keep) = this.Month(keep);
+        R.Day(keep) = this.Day(keep); R.Hour(keep) = this.Hour(keep);
+        R.Minute(keep) = this.Minute(keep); R.Second(keep) = this.Second(keep);
+      endif
+    endfunction
+
   endmethods
 
 ################################################################################
@@ -3739,6 +3887,16 @@ classdef datetime
       C = calendarDuration (zeros (sz), monthsOut, daysOut, Tdur, 'Format', fmt);
     endfunction
 
+    ## Absolute instant of the given wall-clock components, interpreted in this
+    ## array's time zone.  Used by dateshift's 'nearest' rule to measure how far
+    ## an element sits into its current unit.
+    function ser = dsSerialOf (this, Y, M, D, h, m, s)
+      tmp = this;
+      tmp.Year = Y; tmp.Month = M; tmp.Day = D;
+      tmp.Hour = h; tmp.Minute = m; tmp.Second = s;
+      ser = serial (normalize (tmp));
+    endfunction
+
     ## Build a datetime from reduced POSIX seconds (the result of mean/median/
     ## mode/std on this array's serial), preserving the Format and TimeZone.
     function R = fromReducedSerial (this, ser)
@@ -4096,6 +4254,118 @@ function [Yo, Mo, Do] = dtAddDays (Y, M, D, K)
   Yo = reshape (dv(:,1), size (Y));
   Mo = reshape (dv(:,2), size (Y));
   Do = reshape (dv(:,3), size (Y));
+endfunction
+
+## Map a day-of-week name to its number (Sunday = 1 .. Saturday = 7); NaN for an
+## unrecognised name.
+function n = dsDayName (name)
+  names = {'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', ...
+           'friday', 'saturday'};
+  n = find (strcmpi (name, names), 1);
+  if (isempty (n))
+    n = NaN;
+  endif
+endfunction
+
+## Parse a dateshift RULE into a kind ('current'/'next'/'previous'/'nearest'/
+## 'int') and, for the integer kind, its value.
+function [kind, n] = dsRule (r)
+  n = 0;
+  msg = strcat ("datetime.dateshift: rule must be an integer, 'next',", ...
+                " 'previous', 'current', or 'nearest'.");
+  if (ischar (r) && isrow (r))
+    if (any (strcmpi (r, {'current', 'next', 'previous', 'nearest'})))
+      kind = lower (r);
+    else
+      error (msg);
+    endif
+  elseif (isnumeric (r) && isscalar (r) && isreal (r) && r == fix (r))
+    kind = 'int';
+    n = r;
+  else
+    error (msg);
+  endif
+endfunction
+
+## Shift a date/time by N whole units (used by dateshift's rule).  Calendar units
+## produce a canonical date; sub-day units may overflow and are canonicalised by
+## the caller's final normalisation.
+function [Y, M, D, h, mi, s] = dsShiftUnits (Y, M, D, h, mi, s, unit, n)
+  switch (unit)
+    case 'year'
+      [Y, M, D] = dtAddMonths (Y, M, D, 12 .* n);
+    case 'quarter'
+      [Y, M, D] = dtAddMonths (Y, M, D, 3 .* n);
+    case 'month'
+      [Y, M, D] = dtAddMonths (Y, M, D, n);
+    case 'week'
+      [Y, M, D] = dtAddDays (Y, M, D, 7 .* n);
+    case 'day'
+      [Y, M, D] = dtAddDays (Y, M, D, n);
+    case 'hour'
+      h = h + n;
+    case 'minute'
+      mi = mi + n;
+    case 'second'
+      s = s + n;
+  endswitch
+endfunction
+
+## Truncate a date/time down to the start of the given calendar unit.
+function [Y, M, D, h, mi, s] = dsStartComp (Y, M, D, h, mi, s, unit)
+  z = zeros (size (Y));
+  switch (unit)
+    case 'year'
+      M = ones (size (M)); D = ones (size (D)); h = z; mi = z; s = z;
+    case 'quarter'
+      M = 3 .* floor ((M - 1) / 3) + 1; D = ones (size (D));
+      h = z; mi = z; s = z;
+    case 'month'
+      D = ones (size (D)); h = z; mi = z; s = z;
+    case 'week'
+      dow = weekday (datenum (Y, M, D));
+      [Y, M, D] = dtAddDays (Y, M, D, -(dow - 1));
+      h = z; mi = z; s = z;
+    case 'day'
+      h = z; mi = z; s = z;
+    case 'hour'
+      mi = z; s = z;
+    case 'minute'
+      s = z;
+    case 'second'
+      s = floor (s);
+  endswitch
+endfunction
+
+## Compute the end of the given calendar unit.  For the sub-day units and 'day'
+## this is the start of the next unit; for a week it is the last day (Saturday);
+## for month/quarter/year it is the last day of the unit at midnight.  The
+## results may overflow and are canonicalised by the caller's normalisation.
+function [Y, M, D, h, mi, s] = dsEndComp (Y, M, D, h, mi, s, unit)
+  z = zeros (size (Y));
+  switch (unit)
+    case 'year'
+      M = 12 .* ones (size (M)); D = 31 .* ones (size (D));
+      h = z; mi = z; s = z;
+    case 'quarter'
+      qm = 3 .* ceil (M / 3);
+      D = dtDaysInMonth (Y, qm); M = qm; h = z; mi = z; s = z;
+    case 'month'
+      D = dtDaysInMonth (Y, M); h = z; mi = z; s = z;
+    case 'week'
+      dow = weekday (datenum (Y, M, D));
+      [Y, M, D] = dtAddDays (Y, M, D, 7 - dow);
+      h = z; mi = z; s = z;
+    case 'day'
+      [Y, M, D] = dtAddDays (Y, M, D, 1);
+      h = z; mi = z; s = z;
+    case 'hour'
+      h = h + 1; mi = z; s = z;
+    case 'minute'
+      mi = mi + 1; s = z;
+    case 'second'
+      s = floor (s) + 1;
+  endswitch
 endfunction
 
 ## Error message shared by caldiff and between for an invalid COMPONENTS input.
