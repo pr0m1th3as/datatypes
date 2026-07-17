@@ -842,6 +842,51 @@
 %!error <datetime.minus: cannot subtract a datetime array from a 'char' array.> ...
 %! 'A' - datetime (2021, 1, 1);
 
+## Test 'diff' -- successive differences return a duration in 'hh:mm:ss'
+%!test
+%! d = diff (datetime (2026, 1, [1 2 4 8]));
+%! assert_equal (class (d), 'duration');
+%! assert_equal (hours (d), [24 48 96]);
+%! assert_equal (d.Format, 'hh:mm:ss');
+
+## Test 'diff' -- N-th order difference is still a duration
+%!assert_equal (hours (diff (datetime (2026, 1, [1 2 4 8]), 2)), [24 48])
+%!assert_equal (hours (diff (datetime (2026, 1, [1 2 4 8]), 3)), 24)
+%!assert_equal (class (diff (datetime (2026, 1, [1 2 4 8]), 2)), 'duration')
+
+## Test 'diff' -- default operates along dim 1, DIM selects another
+%!assert_equal (hours (diff (datetime (2026, 1, [1 2; 4 8]))), [72 144])
+%!assert_equal (hours (diff (datetime (2026, 1, [1 2; 4 8]), 1, 2)), [24; 96])
+
+## Test 'diff' -- a scalar yields a 0-by-0 empty duration
+%!assert_equal (size (diff (datetime (2026, 1, 1))), [0 0])
+%!assert_equal (class (diff (datetime (2026, 1, 1))), 'duration')
+
+## Test 'diff' -- Not-A-Time propagates as a NaN duration
+%!assert_equal (isnan (hours (diff ([datetime(2026,1,1), NaT, datetime(2026,1,5)]))), ...
+%!              [true true])
+
+## Test 'diff' -- differencing along a trailing singleton dimension is empty
+%!assert_equal (size (diff (datetime (2026, 1, [1 2 4 8]), 1, 3)), [1 4 0])
+
+## Test 'diff' -- zoned differences are daylight-saving aware (spring forward)
+%!test
+%! zs = datetime (2026, 3, 28, 12, 0, 0, 'TimeZone', 'Europe/Athens');
+%! ze = datetime (2026, 3, 30, 12, 0, 0, 'TimeZone', 'Europe/Athens');
+%! assert_equal (hours (diff ([zs ze])), 47);
+
+## Test 'diff' -- N must be a positive integer scalar
+%!error <datetime.diff: order N must be a positive integer scalar.> ...
+%! diff (datetime (2026, 1, [1 2 3]), -1);
+%!error <datetime.diff: order N must be a positive integer scalar.> ...
+%! diff (datetime (2026, 1, [1 2 3]), 0);
+%!error <datetime.diff: order N must be a positive integer scalar.> ...
+%! diff (datetime (2026, 1, [1 2 3]), 1.5);
+%!error <datetime.diff: DIM must be a positive integer scalar.> ...
+%! diff (datetime (2026, 1, [1 2 3]), 1, 0);
+%!error <datetime.diff: too many input arguments.> ...
+%! diff (datetime (2026, 1, [1 2 3]), 1, 2, 3);
+
 ## Test 'plus' -- datetime plus duration returns a shifted datetime
 %!assert_equal (class (datetime (2021, 1, 1) + hours (30)), 'datetime')
 %!assert_equal (datevec (datetime (2021, 1, 1, 0, 0, 0) + hours (30)), ...

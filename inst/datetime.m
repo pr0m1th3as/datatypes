@@ -2369,6 +2369,65 @@ classdef datetime
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{D} =} diff (@var{A})
+    ## @deftypefnx {datetime} {@var{D} =} diff (@var{A}, @var{N})
+    ## @deftypefnx {datetime} {@var{D} =} diff (@var{A}, @var{N}, @var{dim})
+    ##
+    ## Differences between successive datetime elements.
+    ##
+    ## @code{@var{D} = diff (@var{A})} returns a @code{duration} array holding the
+    ## elapsed time between successive elements of @var{A} along its first
+    ## non-singleton dimension.  The differences are computed from the absolute
+    ## instants, so for a zoned array they are aware of daylight saving time
+    ## transitions (a calendar day spanning a transition is 23 or 25 hours, not
+    ## 24).  Not-A-Time elements propagate as @qcode{NaN} durations.
+    ##
+    ## @code{@var{D} = diff (@var{A}, @var{N})} applies @code{diff}
+    ## recursively @var{N} times, returning the @var{N}-th order difference.
+    ## @var{N} must be a positive integer scalar.
+    ##
+    ## @code{@var{D} = diff (@var{A}, @var{N}, @var{dim})} operates along
+    ## dimension @var{dim}.
+    ##
+    ## @end deftypefn
+    function D = diff (A, varargin)
+      n = 1;
+      dim = [];
+      if (numel (varargin) > 2)
+        error ("datetime.diff: too many input arguments.");
+      endif
+      if (numel (varargin) >= 1)
+        n = varargin{1};
+        if (! (isnumeric (n) && isscalar (n) && n > 0 && n == fix (n)))
+          error (strcat ("datetime.diff: order N must be a positive integer", ...
+                         " scalar."));
+        endif
+      endif
+      if (numel (varargin) >= 2)
+        dim = varargin{2};
+        if (! (isnumeric (dim) && isscalar (dim) && dim > 0 ...
+               && dim == fix (dim)))
+          error (strcat ("datetime.diff: DIM must be a positive integer", ...
+                         " scalar."));
+        endif
+      endif
+      S = serial (A);
+      if (! isempty (dim) && dim > ndims (S))
+        ## Differencing along a trailing singleton dimension leaves at most one
+        ## element there, so the result is empty along DIM (MATLAB parity).
+        sz = size (S);
+        sz(end+1:dim) = 1;
+        sz(dim) = 0;
+        DS = zeros (sz);
+      elseif (isempty (dim))
+        DS = diff (S, n);
+      else
+        DS = diff (S, n, dim);
+      endif
+      D = duration (0, 0, DS);
+    endfunction
+
   endmethods
 
 ################################################################################
