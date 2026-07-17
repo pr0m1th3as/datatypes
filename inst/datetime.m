@@ -916,10 +916,6 @@ classdef datetime
 
   methods (Hidden)
 
-    function TF = isbetween (this, varargin)
-      error ("datetime.isbetween: not implemented yet.");
-    endfunction
-
     function TF = isdst (this)
       error ("datetime.isdst: not implemented yet.");
     endfunction
@@ -935,6 +931,76 @@ classdef datetime
   endmethods
 
   methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{TF} =} isbetween (@var{X}, @var{lower}, @var{upper})
+    ## @deftypefnx {datetime} {@var{TF} =} isbetween (@var{X}, @var{lower}, @var{upper}, @var{intervalType})
+    ##
+    ## Determine which datetime values lie within an interval.
+    ##
+    ## @code{@var{TF} = isbetween (@var{X}, @var{lower}, @var{upper})} returns a
+    ## logical array @var{TF}, the same size as the broadcast of its inputs,
+    ## containing @qcode{true} where the element of @var{X} lies between the
+    ## corresponding @var{lower} and @var{upper} bounds.  @var{lower} and
+    ## @var{upper} may each be a datetime array or a date/time character vector,
+    ## string array, or cell array of character vectors, and either may be scalar
+    ## to broadcast against @var{X}.  The comparison is made on the absolute
+    ## instant, so zoned inputs may be in different time zones.  A Not-A-Time
+    ## element in any input makes the corresponding result @qcode{false}.
+    ##
+    ## @code{@var{TF} = isbetween (@var{X}, @var{lower}, @var{upper},
+    ## @var{intervalType})} selects which endpoints are included.
+    ## @var{intervalType} is @qcode{'closed'} (the default,
+    ## @w{@var{lower} @leq{} @var{X} @leq{} @var{upper}}), @qcode{'open'}
+    ## (both endpoints excluded), @qcode{'openleft'} (exclude @var{lower}), or
+    ## @qcode{'openright'} (exclude @var{upper}).
+    ##
+    ## @end deftypefn
+    function TF = isbetween (X, varargin)
+      if (numel (varargin) < 2)
+        error ("datetime.isbetween: not enough input arguments.");
+      endif
+      if (numel (varargin) > 3)
+        error ("datetime.isbetween: too many input arguments.");
+      endif
+      lo = varargin{1};
+      hi = varargin{2};
+      itype = 'closed';
+      if (numel (varargin) == 3)
+        itype = varargin{3};
+        if (! (ischar (itype) && isrow (itype) && any (strcmpi (itype, ...
+               {'closed', 'open', 'openleft', 'openright'}))))
+          error (strcat ("datetime.isbetween: interval type must be", ...
+                         " 'closed', 'open', 'openleft', or 'openright'."));
+        endif
+      endif
+      if (isa (X, 'datetime'))
+        ref = X;
+      elseif (isa (lo, 'datetime'))
+        ref = lo;
+      else
+        ref = hi;
+      endif
+      X  = dtIsbetweenArg (X,  ref);
+      lo = dtIsbetweenArg (lo, ref);
+      hi = dtIsbetweenArg (hi, ref);
+      zoned = [! isempty(X.TimeZone), ! isempty(lo.TimeZone), ! isempty(hi.TimeZone)];
+      if (any (zoned) && ! all (zoned))
+        error (strcat ("datetime.isbetween: cannot combine a datetime array", ...
+                       " with a time zone with one without a time zone."));
+      endif
+      sX = serial (X);  sL = serial (lo);  sU = serial (hi);
+      switch (lower (itype))
+        case 'closed'
+          TF = sL <= sX & sX <= sU;
+        case 'open'
+          TF = sL < sX & sX < sU;
+        case 'openleft'
+          TF = sL < sX & sX <= sU;
+        case 'openright'
+          TF = sL <= sX & sX < sU;
+      endswitch
+    endfunction
 
     ## -*- texinfo -*-
     ## @deftypefn  {datetime} {@var{TF} =} issorted (@var{A})
@@ -3836,6 +3902,25 @@ function C = reshapeSetResult (C, bothRows)
     C = reshape (C, 1, numel (C));
   else
     C = reshape (C, numel (C), 1);
+  endif
+endfunction
+
+## Promote a bound of 'isbetween' to a datetime array.  A datetime is returned
+## unchanged; text is parsed by the constructor, inheriting REF's time zone;
+## anything else (numeric, duration, ...) is rejected.  Defined at file scope so
+## it dispatches correctly when the argument is text rather than a datetime.
+function d = dtIsbetweenArg (x, ref)
+  if (isa (x, 'datetime'))
+    d = x;
+  elseif (ischar (x) || iscellstr (x) || isa (x, 'string'))
+    if (isempty (ref.TimeZone))
+      d = datetime (x);
+    else
+      d = datetime (x, 'TimeZone', ref.TimeZone);
+    endif
+  else
+    error (strcat ("datetime.isbetween: LOWER and UPPER must be datetime", ...
+                   " arrays or date/time text."));
   endif
 endfunction
 

@@ -316,6 +316,56 @@
 %!error <datetime.ismissing: INDICATOR must be a 'datetime' array.> ...
 %! ismissing (datetime (2020, 1, 1), 5)
 
+## Test 'isbetween' -- the default interval is closed and returns a logical
+%!test
+%! x = datetime (2026, 1, [1 2 3 4 5]);
+%! tf = isbetween (x, datetime (2026, 1, 2), datetime (2026, 1, 4));
+%! assert_equal (class (tf), 'logical');
+%! assert_equal (tf, logical ([0 1 1 1 0]));
+
+## Test 'isbetween' -- the four interval types include the right endpoints
+%!test
+%! x = datetime (2026, 1, [1 2 3 4 5]);
+%! lo = datetime (2026, 1, 2);
+%! hi = datetime (2026, 1, 4);
+%! assert_equal (isbetween (x, lo, hi, 'closed'), logical ([0 1 1 1 0]));
+%! assert_equal (isbetween (x, lo, hi, 'open'), logical ([0 0 1 0 0]));
+%! assert_equal (isbetween (x, lo, hi, 'openleft'), logical ([0 0 1 1 0]));
+%! assert_equal (isbetween (x, lo, hi, 'openright'), logical ([0 1 1 0 0]));
+
+## Test 'isbetween' -- Not-A-Time in any input is false; inverted bounds are false
+%!assert_equal (isbetween ([NaT datetime(2026,1,3)], datetime (2026, 1, 2), ...
+%!              datetime (2026, 1, 4)), logical ([0 1]))
+%!assert_equal (isbetween (datetime (2026, 1, [1 2 3 4 5]), NaT, ...
+%!              datetime (2026, 1, 4)), logical ([0 0 0 0 0]))
+%!assert_equal (isbetween (datetime (2026, 1, [1 2 3 4 5]), datetime (2026, 1, 4), ...
+%!              datetime (2026, 1, 2)), logical ([0 0 0 0 0]))
+
+## Test 'isbetween' -- bounds broadcast and may be date/time text
+%!assert_equal (isbetween (datetime (2026, 1, [1 2 3 4 5]), ...
+%!              datetime (2026, 1, [1 2 3 4 5]), datetime (2026, 1, 4)), ...
+%!              logical ([1 1 1 1 0]))
+%!assert_equal (isbetween (datetime (2026, 1, [1 2 3 4 5]), '02-Jan-2026', ...
+%!              '04-Jan-2026'), logical ([0 1 1 1 0]))
+
+## Test 'isbetween' -- comparison is by absolute instant across time zones
+%!assert_equal (isbetween (datetime (2026, 1, 1, 5, 0, 0, 'TimeZone', 'UTC'), ...
+%!              datetime (2026, 1, 1, 0, 0, 0, 'TimeZone', 'America/New_York'), ...
+%!              datetime (2026, 1, 1, 1, 0, 0, 'TimeZone', 'America/New_York')), true)
+
+## Test 'isbetween' -- invalid arguments are rejected
+%!error <datetime.isbetween: not enough input arguments.> ...
+%! isbetween (datetime (2026, 1, 1), datetime (2026, 1, 2));
+%!error <datetime.isbetween: too many input arguments.> ...
+%! isbetween (datetime (2026, 1, 1), datetime (2026, 1, 1), datetime (2026, 1, 2), 'closed', 1);
+%!error <datetime.isbetween: interval type must be 'closed', 'open', 'openleft', or 'openright'.> ...
+%! isbetween (datetime (2026, 1, 1), datetime (2026, 1, 1), datetime (2026, 1, 2), 'bogus');
+%!error <datetime.isbetween: cannot combine a datetime array with a time zone with one without a time zone.> ...
+%! isbetween (datetime (2026, 1, 2), datetime (2026, 1, 1, 'TimeZone', 'UTC'), ...
+%!            datetime (2026, 1, 3, 'TimeZone', 'UTC'));
+%!error <datetime.isbetween: LOWER and UPPER must be datetime arrays or date/time text.> ...
+%! isbetween (datetime (2026, 1, 1), days (1), days (2));
+
 ## Test 'unique' -- sorted order with the mapping indices
 %!test
 %! [b, ia, ib] = unique (datetime (2021, 1, [1 1 2]));
