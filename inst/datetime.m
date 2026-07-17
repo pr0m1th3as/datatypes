@@ -924,64 +924,6 @@ classdef datetime
       error ("datetime.isdst: not implemented yet.");
     endfunction
 
-    ## -*- texinfo -*-
-    ## @deftypefn  {datetime} {@var{TF} =} ismember (@var{A}, @var{B})
-    ## @deftypefnx {datetime} {@var{TF} =} ismember (@var{A}, @var{B}, @qcode{'rows'})
-    ## @deftypefnx {datetime} {[@var{TF}, @var{index}] =} ismember (@dots{})
-    ##
-    ## Test for datetime elements in a set.
-    ##
-    ## @code{@var{TF} = ismember (@var{A}, @var{B})} returns a logical array
-    ## @var{TF} of the same size as @var{A} containing @qcode{true} for each
-    ## corresponding element of @var{A} that is in @var{B} and @qcode{false}
-    ## otherwise.  Similarly to @qcode{NaN} values, Not-A-Time (@qcode{NaT})
-    ## elements are not equal with each other and always return @qcode{false}.
-    ##
-    ## @code{@var{TF} = ismember (@var{A}, @var{B}, @qcode{'rows'})} only
-    ## applies to datetime matrices with the same number of columns, in which
-    ## case the logical vector @var{TF} contains @qcode{true} for each row of
-    ## @var{A} that is also a row in @var{B}.  @var{TF} has the same number of
-    ## rows as @var{A}.
-    ##
-    ## @code{[@var{TF}, @var{index}] = ismember (@var{A}, @var{B})} also returns
-    ## an index array of the same size as @var{A} containing the lowest index in
-    ## @var{B} for each element of @var{A} that is a member of @var{B} and 0
-    ## otherwise.  If the @qcode{'rows'} optional argument is used, then the
-    ## returning index is a column vector with the same rows as @var{A} and it
-    ## contains the lowest index in @var{B} for each row of @var{A} that is a
-    ## member of @var{B} and 0 otherwise.
-    ##
-    ## @end deftypefn
-    function [TF, index] = ismember (A, B, varargin)
-      ## Check input arguments
-      do_rows = false;
-      if (! isempty (varargin))
-        if (strcmpi (varargin{1}, 'rows'))
-          do_rows = true;
-          if (ndims (A) != 2 || ndims (A) != ndims (B))
-            error ("datetime.ismember: 'rows' applies only to 2-D matrices.");
-          endif
-          if (size (A, 2) != size (B, 2))
-            error (strcat ("datetime.ismember: 'rows' requires same", ...
-                           " number of columns."));
-          endif
-        else
-          error ("datetime.ismember: invalid optional argument.");
-        endif
-      endif
-      if (! isa (B, 'datetime'))
-        error ("datetime.ismember: B must be a 'datetime' array.");
-      endif
-      ## FIX ME: this is a workaround until 'posixtime' is implemented
-      A = dispstrings (A);
-      B = dispstrings (B);
-      if (do_rows)
-        [TF, index] = ismember (A, B, 'rows');
-      else
-        [TF, index] = ismember (A, B);
-      endif
-    endfunction
-
     function TF = isregular (this)
       error ("datetime.isregular: not implemented yet.");
     endfunction
@@ -1933,28 +1875,275 @@ classdef datetime
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{C} =} intersect (@var{A}, @var{B})
+    ## @deftypefnx {datetime} {@var{C} =} intersect (@var{A}, @var{B}, @qcode{'rows'})
+    ## @deftypefnx {datetime} {@var{C} =} intersect (@dots{}, @var{order})
+    ## @deftypefnx {datetime} {[@var{C}, @var{ixA}, @var{ixB}] =} intersect (@dots{})
+    ##
+    ## Set intersection of two datetime arrays.
+    ##
+    ## @code{@var{C} = intersect (@var{A}, @var{B})} returns the unique datetime
+    ## values common to both @var{A} and @var{B}.  Either input may instead be a
+    ## date/time character vector, string array, or cell array of character
+    ## vectors, which is promoted to a datetime array before the operation.
+    ## Membership is decided on the absolute instant, so two zoned inputs may be
+    ## in different time zones; the result carries the time zone and display
+    ## format of @var{A}.  Not-A-Time (@qcode{NaT}) elements are treated like
+    ## @qcode{NaN} and never match.  @var{C} is a row vector when both @var{A}
+    ## and @var{B} are row vectors and a column vector otherwise.
+    ##
+    ## @code{@var{C} = intersect (@var{A}, @var{B}, @qcode{'rows'})} treats each
+    ## row of the datetime matrices @var{A} and @var{B}, which must have the same
+    ## number of columns, as a single element and returns their common rows.
+    ##
+    ## @code{@dots{} = intersect (@dots{}, @var{order})} returns the values in
+    ## @qcode{'sorted'} order (the default) or in @qcode{'stable'} order, i.e.@:
+    ## the order in which they appear in @var{A}.
+    ##
+    ## @code{[@var{C}, @var{ixA}, @var{ixB}] = intersect (@dots{})} also returns
+    ## index vectors @var{ixA} and @var{ixB} such that @code{@var{C} =
+    ## @var{A}(@var{ixA})} and @code{@var{C} = @var{B}(@var{ixB})}, or the
+    ## corresponding row selections when @qcode{'rows'} is used.
+    ##
+    ## @end deftypefn
+    function [C, ixA, ixB] = intersect (A, B, varargin)
+      if (any (strcmpi ('legacy', varargin)))
+        error ("datetime.intersect: 'legacy' option is not supported.");
+      endif
+      A = dtSetPromote (A, B, 'intersect');
+      B = dtSetPromote (B, A, 'intersect');
+      [A, B] = prepSetOp (A, B, 'intersect');
+      SA = serial (A);
+      SB = serial (B);
+      if (any (strcmpi ('rows', varargin)))
+        [~, ixA, ixB] = intersect (SA, SB, varargin{:});
+        C = subset (A, ixA, ':');
+      else
+        [~, ixA, ixB] = intersect (SA(:), SB(:), varargin{:});
+        C = subset (A, ixA);
+        C = reshapeSetResult (C, isrow (A) && isrow (B));
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{C} =} union (@var{A}, @var{B})
+    ## @deftypefnx {datetime} {@var{C} =} union (@var{A}, @var{B}, @qcode{'rows'})
+    ## @deftypefnx {datetime} {@var{C} =} union (@dots{}, @var{order})
+    ## @deftypefnx {datetime} {[@var{C}, @var{ixA}, @var{ixB}] =} union (@dots{})
+    ##
+    ## Set union of two datetime arrays.
+    ##
+    ## @code{@var{C} = union (@var{A}, @var{B})} returns the unique datetime
+    ## values present in either @var{A} or @var{B}.  Either input may instead be
+    ## a date/time character vector, string array, or cell array of character
+    ## vectors, which is promoted to a datetime array before the operation.
+    ## Membership is decided on the absolute instant, so two zoned inputs may be
+    ## in different time zones; the result carries the time zone and display
+    ## format of @var{A}.  Distinct @qcode{NaT} elements are all retained.
+    ## @var{C} is a row vector when both @var{A} and @var{B} are row vectors and
+    ## a column vector otherwise.
+    ##
+    ## @code{@var{C} = union (@var{A}, @var{B}, @qcode{'rows'})} treats each row
+    ## of the datetime matrices @var{A} and @var{B}, which must have the same
+    ## number of columns, as a single element and returns their combined unique
+    ## rows.
+    ##
+    ## @code{@dots{} = union (@dots{}, @var{order})} returns the values in
+    ## @qcode{'sorted'} order (the default) or in @qcode{'stable'} order.
+    ##
+    ## @code{[@var{C}, @var{ixA}, @var{ixB}] = union (@dots{})} also returns
+    ## index vectors @var{ixA} and @var{ixB} such that @var{C} is the combination
+    ## of @code{@var{A}(@var{ixA})} and @code{@var{B}(@var{ixB})}, or the
+    ## corresponding row selections when @qcode{'rows'} is used.
+    ##
+    ## @end deftypefn
+    function [C, ixA, ixB] = union (A, B, varargin)
+      if (any (strcmpi ('legacy', varargin)))
+        error ("datetime.union: 'legacy' option is not supported.");
+      endif
+      A = dtSetPromote (A, B, 'union');
+      B = dtSetPromote (B, A, 'union');
+      [A, B] = prepSetOp (A, B, 'union');
+      SA = serial (A);
+      SB = serial (B);
+      stable = any (strcmpi ('stable', varargin));
+      if (any (strcmpi ('rows', varargin)))
+        [~, ixA, ixB] = union (SA, SB, varargin{:});
+        C = combineSets (A, B, ixA, ixB, SA, SB, true, stable);
+      else
+        [~, ixA, ixB] = union (SA(:), SB(:), varargin{:});
+        C = combineSets (A, B, ixA, ixB, SA, SB, false, stable);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{C} =} setdiff (@var{A}, @var{B})
+    ## @deftypefnx {datetime} {@var{C} =} setdiff (@var{A}, @var{B}, @qcode{'rows'})
+    ## @deftypefnx {datetime} {@var{C} =} setdiff (@dots{}, @var{order})
+    ## @deftypefnx {datetime} {[@var{C}, @var{ixA}] =} setdiff (@dots{})
+    ##
+    ## Set difference of two datetime arrays.
+    ##
+    ## @code{@var{C} = setdiff (@var{A}, @var{B})} returns the unique datetime
+    ## values in @var{A} that are not in @var{B}.  Either input may instead be a
+    ## date/time character vector, string array, or cell array of character
+    ## vectors, which is promoted to a datetime array before the operation.
+    ## Membership is decided on the absolute instant, so two zoned inputs may be
+    ## in different time zones; the result carries the time zone and display
+    ## format of @var{A}.  @qcode{NaT} elements in @var{A} are all retained, as
+    ## they never match an element of @var{B}.  @var{C} is a row vector when both
+    ## @var{A} and @var{B} are row vectors and a column vector otherwise.
+    ##
+    ## @code{@var{C} = setdiff (@var{A}, @var{B}, @qcode{'rows'})} treats each
+    ## row of the datetime matrices @var{A} and @var{B}, which must have the same
+    ## number of columns, as a single element and returns the rows of @var{A}
+    ## that are not rows of @var{B}.
+    ##
+    ## @code{@dots{} = setdiff (@dots{}, @var{order})} returns the values in
+    ## @qcode{'sorted'} order (the default) or in @qcode{'stable'} order.
+    ##
+    ## @code{[@var{C}, @var{ixA}] = setdiff (@dots{})} also returns an index
+    ## vector @var{ixA} such that @code{@var{C} = @var{A}(@var{ixA})}, or
+    ## @code{@var{C} = @var{A}(@var{ixA},:)} when @qcode{'rows'} is used.
+    ##
+    ## @end deftypefn
+    function [C, ixA] = setdiff (A, B, varargin)
+      if (any (strcmpi ('legacy', varargin)))
+        error ("datetime.setdiff: 'legacy' option is not supported.");
+      endif
+      A = dtSetPromote (A, B, 'setdiff');
+      B = dtSetPromote (B, A, 'setdiff');
+      [A, B] = prepSetOp (A, B, 'setdiff');
+      SA = serial (A);
+      SB = serial (B);
+      if (any (strcmpi ('rows', varargin)))
+        [~, ixA] = setdiff (SA, SB, varargin{:});
+        C = subset (A, ixA, ':');
+      else
+        [~, ixA] = setdiff (SA(:), SB(:), varargin{:});
+        C = subset (A, ixA);
+        C = reshapeSetResult (C, isrow (A) && isrow (B));
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{C} =} setxor (@var{A}, @var{B})
+    ## @deftypefnx {datetime} {@var{C} =} setxor (@var{A}, @var{B}, @qcode{'rows'})
+    ## @deftypefnx {datetime} {@var{C} =} setxor (@dots{}, @var{order})
+    ## @deftypefnx {datetime} {[@var{C}, @var{ixA}, @var{ixB}] =} setxor (@dots{})
+    ##
+    ## Set exclusive-or of two datetime arrays.
+    ##
+    ## @code{@var{C} = setxor (@var{A}, @var{B})} returns the unique datetime
+    ## values that are in @var{A} or in @var{B} but not in both.  Either input
+    ## may instead be a date/time character vector, string array, or cell array
+    ## of character vectors, which is promoted to a datetime array before the
+    ## operation.  Membership is decided on the absolute instant, so two zoned
+    ## inputs may be in different time zones; the result carries the time zone
+    ## and display format of @var{A}.  Distinct @qcode{NaT} elements are all
+    ## retained.  @var{C} is a row vector when both @var{A} and @var{B} are row
+    ## vectors and a column vector otherwise.
+    ##
+    ## @code{@var{C} = setxor (@var{A}, @var{B}, @qcode{'rows'})} treats each row
+    ## of the datetime matrices @var{A} and @var{B}, which must have the same
+    ## number of columns, as a single element and returns the rows that are in
+    ## one input but not both.
+    ##
+    ## @code{@dots{} = setxor (@dots{}, @var{order})} returns the values in
+    ## @qcode{'sorted'} order (the default) or in @qcode{'stable'} order.
+    ##
+    ## @code{[@var{C}, @var{ixA}, @var{ixB}] = setxor (@dots{})} also returns
+    ## index vectors @var{ixA} and @var{ixB} such that @var{C} is the combination
+    ## of @code{@var{A}(@var{ixA})} and @code{@var{B}(@var{ixB})}, or the
+    ## corresponding row selections when @qcode{'rows'} is used.
+    ##
+    ## @end deftypefn
+    function [C, ixA, ixB] = setxor (A, B, varargin)
+      if (any (strcmpi ('legacy', varargin)))
+        error ("datetime.setxor: 'legacy' option is not supported.");
+      endif
+      A = dtSetPromote (A, B, 'setxor');
+      B = dtSetPromote (B, A, 'setxor');
+      [A, B] = prepSetOp (A, B, 'setxor');
+      SA = serial (A);
+      SB = serial (B);
+      stable = any (strcmpi ('stable', varargin));
+      if (any (strcmpi ('rows', varargin)))
+        [~, ixA, ixB] = setxor (SA, SB, varargin{:});
+        C = combineSets (A, B, ixA, ixB, SA, SB, true, stable);
+      else
+        [~, ixA, ixB] = setxor (SA(:), SB(:), varargin{:});
+        C = combineSets (A, B, ixA, ixB, SA, SB, false, stable);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{TF} =} ismember (@var{A}, @var{B})
+    ## @deftypefnx {datetime} {@var{TF} =} ismember (@var{A}, @var{B}, @qcode{'rows'})
+    ## @deftypefnx {datetime} {[@var{TF}, @var{index}] =} ismember (@dots{})
+    ##
+    ## Test for datetime elements in a set.
+    ##
+    ## @code{@var{TF} = ismember (@var{A}, @var{B})} returns a logical array
+    ## @var{TF} of the same size as @var{A} containing @qcode{true} for each
+    ## corresponding element of @var{A} that is in @var{B} and @qcode{false}
+    ## otherwise.  Either input may instead be a date/time character vector,
+    ## string array, or cell array of character vectors, which is promoted to a
+    ## datetime array before the test.  Membership is decided on the absolute
+    ## instant, so two zoned inputs may be in different time zones.  Similarly to
+    ## @qcode{NaN} values, Not-A-Time (@qcode{NaT}) elements are not equal with
+    ## each other and always return @qcode{false}.
+    ##
+    ## @code{@var{TF} = ismember (@var{A}, @var{B}, @qcode{'rows'})} only
+    ## applies to datetime matrices with the same number of columns, in which
+    ## case the logical vector @var{TF} contains @qcode{true} for each row of
+    ## @var{A} that is also a row in @var{B}.  @var{TF} has the same number of
+    ## rows as @var{A}.
+    ##
+    ## @code{[@var{TF}, @var{index}] = ismember (@var{A}, @var{B})} also returns
+    ## an index array of the same size as @var{A} containing the lowest index in
+    ## @var{B} for each element of @var{A} that is a member of @var{B} and 0
+    ## otherwise.  If the @qcode{'rows'} optional argument is used, then the
+    ## returning index is a column vector with the same rows as @var{A} and it
+    ## contains the lowest index in @var{B} for each row of @var{A} that is a
+    ## member of @var{B} and 0 otherwise.
+    ##
+    ## @end deftypefn
+    function [TF, index] = ismember (A, B, varargin)
+      do_rows = false;
+      if (! isempty (varargin))
+        if (strcmpi (varargin{1}, 'rows'))
+          do_rows = true;
+          if (ndims (A) != 2 || ndims (A) != ndims (B))
+            error ("datetime.ismember: 'rows' applies only to 2-D matrices.");
+          endif
+          if (size (A, 2) != size (B, 2))
+            error (strcat ("datetime.ismember: 'rows' requires same", ...
+                           " number of columns."));
+          endif
+        else
+          error ("datetime.ismember: invalid optional argument.");
+        endif
+      endif
+      A = dtSetPromote (A, B, 'ismember');
+      B = dtSetPromote (B, A, 'ismember');
+      [A, B] = prepSetOp (A, B, 'ismember');
+      SA = serial (A);
+      SB = serial (B);
+      if (do_rows)
+        [TF, index] = __ismember__ (SA, SB, 'rows');
+      else
+        [TF, index] = __ismember__ (SA, SB);
+      endif
+    endfunction
+
   endmethods
 
   methods (Hidden)
 
     function BI = interp1 (A, B, AI, varargin)
       error ("datetime.interp1: not implemented yet.");
-    endfunction
-
-    function [C, ixA, ixB] = intersect (A, B, varargin)
-      error ("datetime.intersect: not implemented yet.");
-    endfunction
-
-    function [C, index] = setdiff (A, B, varargin)
-      error ("datetime.setdiff: not implemented yet.");
-    endfunction
-
-    function [C, ixA, ixB] = setxor (A, B, varargin)
-      error ("datetime.setxor: not implemented yet.");
-    endfunction
-
-    function [C, ixA, ixB] = union (A, B, varargin)
-      error ("datetime.union: not implemented yet.");
     endfunction
 
   endmethods
@@ -3074,6 +3263,49 @@ classdef datetime
                         'TimeZone', tz, 'Precision', 'microseconds');
     endfunction
 
+    ## Enforce the zone-compatibility rule for a set operation and express B in
+    ## A's time zone so membership is decided on a shared wall clock (the
+    ## absolute instants are preserved by the conversion).  Both operands are
+    ## already datetime arrays here; text/numeric promotion and rejection is
+    ## done by the 'dtSetPromote' local function before this is called.
+    function [A, B] = prepSetOp (A, B, op)
+      if (xor (isempty (A.TimeZone), isempty (B.TimeZone)))
+        error (strcat ("datetime.%s: cannot combine a datetime array with a", ...
+                       " time zone with one without a time zone."), op);
+      endif
+      if (! isempty (A.TimeZone) && ! strcmp (A.TimeZone, B.TimeZone))
+        [B.Year, B.Month, B.Day, B.Hour, B.Minute, B.Second] = __datetime__ ...
+            (B.Year, B.Month, B.Day, B.Hour, B.Minute, B.Second, 'TimeZone', ...
+             B.TimeZone, 'toTimeZone', A.TimeZone, 'Precision', 'microseconds');
+        B.TimeZone = A.TimeZone;
+      endif
+    endfunction
+
+    ## Assemble the result of a two-source set operation ('union'/'setxor'),
+    ## whose values are drawn from both A (at IXA) and B (at IXB).  The built-in
+    ## returns those indices grouped A-then-B, which is exactly the 'stable'
+    ## order; for the default 'sorted' order the gathered elements are reordered
+    ## by their absolute instant (SA/SB), NaT sorting last.  DOROWS selects the
+    ## row-wise variant.
+    function C = combineSets (A, B, ixA, ixB, SA, SB, doRows, stable)
+      if (doRows)
+        C = vertcat (subset (A, ixA, ':'), subset (B, ixB, ':'));
+        if (! stable)
+          [~, perm] = sortrows ([SA(ixA,:); SB(ixB,:)]);
+          C = subset (C, perm, ':');
+        endif
+      else
+        Ca = subset (A, ixA);  Cb = subset (B, ixB);
+        C = vertcat (reshape (Ca, numel (Ca), 1), reshape (Cb, numel (Cb), 1));
+        if (! stable)
+          sa = SA(ixA);  sb = SB(ixB);
+          [~, perm] = sort ([sa(:); sb(:)]);
+          C = subset (C, perm);
+        endif
+        C = reshapeSetResult (C, isrow (A) && isrow (B));
+      endif
+    endfunction
+
     ## Inverse of 'serial': map POSIX seconds back to the wall-clock components
     ## of this array's time zone.  For a zoned array the serial is first read as
     ## a UTC wall clock and then converted into the target zone (honouring DST).
@@ -3324,4 +3556,39 @@ function TF = lexlt (aY, aM, aD, ah, am, asec, bY, bM, bD, bh, bm, bsec)
      | (eqY & eqM & eqD & ah < bh) ...
      | (eqY & eqM & eqD & eqh & am < bm) ...
      | (eqY & eqM & eqD & eqh & eqm & asec < bsec);
+endfunction
+
+## Promote a set-operation operand to a datetime array.  A datetime is returned
+## unchanged; text (character vector, string, or cellstr) is parsed by the
+## constructor, inheriting REF's time zone so the two operands share a frame;
+## numeric, logical, and duration operands are rejected the way MATLAB rejects
+## them.  Defined at file scope (not as a method) so it dispatches correctly
+## when the first set-operation argument is text rather than a datetime.
+function d = dtSetPromote (x, ref, op)
+  if (isa (x, 'datetime'))
+    d = x;
+  elseif (ischar (x) || iscellstr (x) || isa (x, 'string'))
+    if (isempty (ref.TimeZone))
+      d = datetime (x);
+    else
+      d = datetime (x, 'TimeZone', ref.TimeZone);
+    endif
+  elseif (isa (x, 'duration') || isa (x, 'calendarDuration'))
+    error (strcat ("datetime.%s: comparison is not defined between datetime", ...
+                   " and duration arrays."), op);
+  else
+    error (strcat ("datetime.%s: comparison is not defined between datetime", ...
+                   " and numeric arrays."), op);
+  endif
+endfunction
+
+## Orient a (non-'rows') set-operation result: a row vector when both operands
+## were row vectors, and a column vector otherwise (matching MATLAB, so an empty
+## result is 0-by-1 rather than 0-by-0).  C is a datetime array.
+function C = reshapeSetResult (C, bothRows)
+  if (bothRows)
+    C = reshape (C, 1, numel (C));
+  else
+    C = reshape (C, numel (C), 1);
+  endif
 endfunction

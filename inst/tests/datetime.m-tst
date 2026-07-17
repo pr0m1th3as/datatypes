@@ -316,18 +316,6 @@
 %!error <datetime.ismissing: INDICATOR must be a 'datetime' array.> ...
 %! ismissing (datetime (2020, 1, 1), 5)
 
-## Test 'ismember'
-%!test
-%! a = datetime (2020, 1, [1; 2; 3]);
-%! b = datetime (2020, 1, [2; 3]);
-%! assert_equal (ismember (a, b), [false; true; true]);
-%!test
-%! a = datetime (2020, 1, [1; 2; 3]);
-%! b = datetime (2020, 1, [2; 3]);
-%! [tf, idx] = ismember (a, b);
-%! assert_equal (tf, [false; true; true]);
-%! assert_equal (idx, [0; 1; 2]);
-
 ## Test 'unique' -- sorted order with the mapping indices
 %!test
 %! [b, ia, ib] = unique (datetime (2021, 1, [1 1 2]));
@@ -393,6 +381,226 @@
 ## Test 'unique' -- the 'legacy' option is rejected
 %!error <datetime.unique: 'legacy' option is not supported.> ...
 %! unique (datetime (2021, 1, [1 2 1]), 'legacy');
+
+## Test 'intersect' -- common values, sorted, carrying A's format
+%!test
+%! a = datetime (2026, 1, [1 2 3 4]);  a.Format = 'dd/MM/uuuu';
+%! b = datetime (2026, 1, [3 4 5 6]);  b.Format = 'uuuu-MM-dd';
+%! c = intersect (a, b);
+%! assert_equal (day (c), [3 4]);
+%! assert_equal (c.Format, 'dd/MM/uuuu');
+%! assert_equal (intersect (b, a).Format, 'uuuu-MM-dd');
+
+## Test 'intersect' -- index outputs satisfy C = A(ixA) = B(ixB)
+%!test
+%! a = datetime (2026, 1, [1 2 3 4]);
+%! b = datetime (2026, 1, [3 4 5 6]);
+%! [c, ixA, ixB] = intersect (a, b);
+%! assert_equal (isequaln (c, a(ixA)), true);
+%! assert_equal (isequaln (c, b(ixB)), true);
+
+## Test 'intersect' -- membership is by absolute instant, result keeps A's zone
+%!test
+%! a = datetime (2026, 1, 1, 12, 0, 0, 'TimeZone', 'UTC');
+%! b = datetime (2026, 1, 1, 7, 0, 0, 'TimeZone', 'America/New_York');
+%! c = intersect (a, b);
+%! assert_equal (numel (c), 1);
+%! assert_equal (c.TimeZone, 'UTC');
+%! assert_equal (hour (c), 12);
+
+## Test 'intersect' -- two zones whose wall clocks never share an instant
+%!test
+%! z1 = datetime (2026, 1, [1 2 3], 'TimeZone', 'America/New_York');
+%! z2 = datetime (2026, 1, [2 3 4], 'TimeZone', 'Europe/Athens');
+%! c = intersect (z1, z2);
+%! assert_equal (numel (c), 0);
+%! assert_equal (c.TimeZone, 'America/New_York');
+
+## Test 'intersect' -- each NaT is distinct and never matches
+%!test
+%! n1 = [datetime(2026,1,1), NaT, datetime(2026,1,2), NaT];
+%! n2 = [NaT, datetime(2026,1,2)];
+%! c = intersect (n1, n2);
+%! assert_equal (day (c), 2);
+%! assert_equal (numel (c), 1);
+
+## Test 'intersect' -- orientation: column unless both inputs are rows
+%!assert_equal (size (intersect (datetime(2026,1,(1:4)'), datetime(2026,1,[3 4 5 6]))), [2 1])
+%!assert_equal (size (intersect (datetime(2026,1,[1 2 3 4]), datetime(2026,1,(3:6)'))), [2 1])
+%!assert_equal (size (intersect (datetime(2026,1,[1 2 3 4]), datetime(2026,1,[3 4 5 6]))), [1 2])
+
+## Test 'intersect' -- 'stable' returns values in order of appearance in A
+%!test
+%! a = datetime (2026, 1, [4 3 2 1]);
+%! b = datetime (2026, 1, [3 4 5 6]);
+%! assert_equal (day (intersect (a, b, 'stable')), [4 3]);
+
+## Test 'intersect' -- 'rows' matches whole rows
+%!test
+%! m1 = datetime (2026, 1, [1 2; 3 4]);
+%! m2 = datetime (2026, 1, [3 4; 5 6]);
+%! assert_equal (day (intersect (m1, m2, 'rows')), [3 4]);
+
+## Test 'intersect' -- empty operand gives a 0-by-1 result
+%!assert_equal (size (intersect (datetime (2026, 1, []), datetime (2026, 1, [3 4]))), [0 1])
+
+## Test 'intersect' -- infinite elements compare as ordinary sortable values
+%!test
+%! p = datetime (2026, 1, 1) + days (Inf);
+%! a = [datetime(2026,1,1), p, datetime(2026,1,1) - days(Inf)];
+%! b = [p, datetime(2026,1,9)];
+%! c = intersect (a, b);
+%! assert_equal (numel (c), 1);
+%! assert_equal (isinf (c) & ! isnat (c), true);
+
+## Test 'intersect' -- text operands are promoted to datetime
+%!assert_equal (day (intersect (datetime (2026, 1, [1 2 3 4]), '02-Jan-2026')), 2)
+%!assert_equal (day (intersect (datetime (2026, 1, [1 2 3 4]), ...
+%!                              {'02-Jan-2026', '03-Jan-2026'})), [2 3])
+
+## Test 'intersect' -- invalid operands and options are rejected
+%!error <datetime.intersect: comparison is not defined between datetime and numeric arrays.> ...
+%! intersect (datetime (2026, 1, [1 2]), [736000 736001]);
+%!error <datetime.intersect: comparison is not defined between datetime and duration arrays.> ...
+%! intersect (datetime (2026, 1, [1 2]), days (1));
+%!error <datetime.intersect: cannot combine a datetime array with a time zone with one without a time zone.> ...
+%! intersect (datetime (2026, 1, 1), datetime (2026, 1, 1, 'TimeZone', 'UTC'));
+%!error <datetime.intersect: 'legacy' option is not supported.> ...
+%! intersect (datetime (2026, 1, [1 2]), datetime (2026, 1, [2 3]), 'legacy');
+
+## Test 'union' -- all unique values, sorted, carrying A's format
+%!test
+%! a = datetime (2026, 1, [1 2 3 4]);  a.Format = 'dd/MM/uuuu';
+%! b = datetime (2026, 1, [3 4 5 6]);
+%! c = union (a, b);
+%! assert_equal (day (c), [1 2 3 4 5 6]);
+%! assert_equal (c.Format, 'dd/MM/uuuu');
+
+## Test 'union' -- cross-zone values are interleaved by absolute instant
+%!test
+%! z1 = datetime (2026, 1, [1 2 3], 'TimeZone', 'America/New_York');
+%! z2 = datetime (2026, 1, [2 3 4], 'TimeZone', 'Europe/Athens');
+%! c = union (z1, z2);
+%! assert_equal (day (c), [1 1 2 2 3 3]);
+%! assert_equal (hour (c), [0 17 0 17 0 17]);
+%! assert_equal (c.TimeZone, 'America/New_York');
+
+## Test 'union' -- every distinct NaT is retained, sorted last
+%!test
+%! n1 = [datetime(2026,1,1), NaT, datetime(2026,1,2), NaT];
+%! n2 = [NaT, datetime(2026,1,2)];
+%! c = union (n1, n2);
+%! assert_equal (numel (c), 5);
+%! assert_equal (day (c)(1:2), [1 2]);
+%! assert_equal (isnat (c), logical ([0 0 1 1 1]));
+
+## Test 'union' -- 'stable' keeps A's values then B's new values in order
+%!assert_equal (day (union (datetime (2026, 1, [4 1]), ...
+%!                          datetime (2026, 1, [1 7]), 'stable')), [4 1 7])
+
+## Test 'union' -- 'rows' combines unique rows
+%!test
+%! m1 = datetime (2026, 1, [1 2; 3 4]);
+%! m2 = datetime (2026, 1, [3 4; 5 6]);
+%! assert_equal (day (union (m1, m2, 'rows')), [1 2; 3 4; 5 6]);
+
+## Test 'union' -- orientation and an empty operand
+%!assert_equal (size (union (datetime(2026,1,(1:2)'), datetime(2026,1,[2 3]))), [3 1])
+%!assert_equal (size (union (datetime (2026, 1, []), datetime (2026, 1, [3 4]))), [2 1])
+
+## Test 'union' -- index outputs and text promotion
+%!assert_equal (day (union (datetime (2026, 1, [1 2]), '03-Jan-2026')), [1 2 3])
+%!error <datetime.union: cannot combine a datetime array with a time zone with one without a time zone.> ...
+%! union (datetime (2026, 1, 1), datetime (2026, 1, 1, 'TimeZone', 'UTC'));
+
+## Test 'setdiff' -- values in A not in B, with the index output
+%!test
+%! a = datetime (2026, 1, [1 2 3 4]);
+%! b = datetime (2026, 1, [3 4 5 6]);
+%! [c, ixA] = setdiff (a, b);
+%! assert_equal (day (c), [1 2]);
+%! assert_equal (isequaln (c, a(ixA)), true);
+
+## Test 'setdiff' -- A's NaT elements are all retained
+%!test
+%! n1 = [datetime(2026,1,1), NaT, datetime(2026,1,2), NaT];
+%! n2 = [NaT, datetime(2026,1,2)];
+%! c = setdiff (n1, n2);
+%! assert_equal (numel (c), 3);
+%! assert_equal (day (c)(1), 1);
+%! assert_equal (isnat (c), logical ([0 1 1]));
+
+## Test 'setdiff' -- 'stable', 'rows', orientation
+%!assert_equal (day (setdiff (datetime (2026, 1, [4 1 2]), ...
+%!                            datetime (2026, 1, 2), 'stable')), [4 1])
+%!test
+%! m1 = datetime (2026, 1, [1 2; 3 4]);
+%! m2 = datetime (2026, 1, [3 4; 5 6]);
+%! assert_equal (day (setdiff (m1, m2, 'rows')), [1 2]);
+%!assert_equal (size (setdiff (datetime (2026, 1, []), datetime (2026, 1, [3 4]))), [0 1])
+
+## Test 'setxor' -- values in exactly one input, sorted
+%!test
+%! a = datetime (2026, 1, [1 2 3 4]);
+%! b = datetime (2026, 1, [3 4 5 6]);
+%! assert_equal (day (setxor (a, b)), [1 2 5 6]);
+
+## Test 'setxor' -- distinct NaT elements from both inputs are retained
+%!test
+%! n1 = [datetime(2026,1,1), NaT, datetime(2026,1,2), NaT];
+%! n2 = [NaT, datetime(2026,1,2)];
+%! c = setxor (n1, n2);
+%! assert_equal (numel (c), 4);
+%! assert_equal (day (c)(1), 1);
+%! assert_equal (isnat (c), logical ([0 1 1 1]));
+
+## Test 'setxor' -- 'stable' and 'rows'
+%!assert_equal (day (setxor (datetime (2026, 1, [4 1]), ...
+%!                           datetime (2026, 1, [1 7]), 'stable')), [4 7])
+%!test
+%! m1 = datetime (2026, 1, [1 2; 3 4]);
+%! m2 = datetime (2026, 1, [3 4; 5 6]);
+%! assert_equal (day (setxor (m1, m2, 'rows')), [1 2; 5 6]);
+
+## Test 'ismember' -- membership, index, and same-instant across zones
+%!assert_equal (ismember (datetime (2020, 1, [1; 2; 3]), datetime (2020, 1, [2; 3])), ...
+%!              [false; true; true])
+%!test
+%! [tf, idx] = ismember (datetime (2020, 1, [1; 2; 3]), datetime (2020, 1, [2; 3]));
+%! assert_equal (tf, [false; true; true]);
+%! assert_equal (idx, [0; 1; 2]);
+%!assert_equal (ismember (datetime (2026, 1, 1, 12, 0, 0, 'TimeZone', 'UTC'), ...
+%!                        datetime (2026, 1, 1, 7, 0, 0, 'TimeZone', 'America/New_York')), true)
+
+## Test 'ismember' -- NaT never matches; text first operand is promoted
+%!test
+%! n1 = [datetime(2026,1,1), NaT, datetime(2026,1,2), NaT];
+%! n2 = [NaT, datetime(2026,1,2)];
+%! [tf, idx] = ismember (n1, n2);
+%! assert_equal (tf, logical ([0 0 1 0]));
+%! assert_equal (idx, [0 0 2 0]);
+%!assert_equal (ismember ('02-Jan-2026', datetime (2026, 1, [1 2 3 4])), true)
+
+## Test 'ismember' -- 'rows' and an empty first operand (TF follows A's size)
+%!test
+%! m1 = datetime (2026, 1, [1 2; 3 4]);
+%! m2 = datetime (2026, 1, [3 4; 5 6]);
+%! [tf, idx] = ismember (m1, m2, 'rows');
+%! assert_equal (tf, [false; true]);
+%! assert_equal (idx, [0; 1]);
+%!assert_equal (size (ismember (datetime (2026, 1, []), datetime (2026, 1, [3 4]))), [0 0])
+
+## Test 'ismember' -- invalid options and zone mismatch are rejected
+%!error <datetime.ismember: 'rows' applies only to 2-D matrices.> ...
+%! ismember (datetime (2026, 1, reshape (1:8, [2 2 2])), ...
+%!           datetime (2026, 1, [1 2; 3 4]), 'rows');
+%!error <datetime.ismember: 'rows' requires same number of columns.> ...
+%! ismember (datetime (2026, 1, [1 2; 3 4]), ...
+%!           datetime (2026, 1, [1 2 3; 4 5 6]), 'rows');
+%!error <datetime.ismember: invalid optional argument.> ...
+%! ismember (datetime (2026, 1, [1 2]), datetime (2026, 1, [2 3]), 'bogus');
+%!error <datetime.ismember: cannot combine a datetime array with a time zone with one without a time zone.> ...
+%! ismember (datetime (2026, 1, 1), datetime (2026, 1, 1, 'TimeZone', 'UTC'));
 
 ################################################################################
 ##                           ** Array Operations **                           ##
