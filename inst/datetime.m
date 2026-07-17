@@ -2428,6 +2428,92 @@ classdef datetime
       D = duration (0, 0, DS);
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{D} =} caldiff (@var{A})
+    ## @deftypefnx {datetime} {@var{D} =} caldiff (@var{A}, @var{components})
+    ## @deftypefnx {datetime} {@var{D} =} caldiff (@var{A}, @var{components}, @var{dim})
+    ##
+    ## Calendar differences between successive datetime elements.
+    ##
+    ## @code{@var{D} = caldiff (@var{A})} returns a @code{calendarDuration} array
+    ## holding the calendar difference between successive elements of @var{A}
+    ## along its first non-singleton dimension.  Unlike @code{diff}, the result
+    ## is expressed in whole calendar units (years, months, days) plus a leftover
+    ## time, so it is aware of month lengths and, for a zoned array, of daylight
+    ## saving time.  Not-A-Time elements yield @qcode{NaN}.
+    ##
+    ## @code{@var{D} = caldiff (@var{A}, @var{components})} expresses each
+    ## difference using only the requested calendar components.
+    ## @var{components} is one of @qcode{'Years'}, @qcode{'Quarters'},
+    ## @qcode{'Months'}, @qcode{'Weeks'}, @qcode{'Days'}, or @qcode{'Time'}, or a
+    ## cell array or string array containing several of them.  The default is
+    ## @qcode{@{'Years', 'Months', 'Days', 'Time'@}}.
+    ##
+    ## @code{@var{D} = caldiff (@var{A}, @var{components}, @var{dim})} operates
+    ## along dimension @var{dim}.
+    ##
+    ## @end deftypefn
+    function D = caldiff (A, varargin)
+      comps = [];
+      dim = [];
+      for k = 1:numel (varargin)
+        x = varargin{k};
+        if (ischar (x) || iscellstr (x) || isa (x, 'string'))
+          comps = x;
+        elseif (isnumeric (x) && isscalar (x))
+          dim = x;
+        else
+          error ("datetime.caldiff: invalid input argument.");
+        endif
+      endfor
+      if (isempty (dim))
+        dim = find (size (A) != 1, 1);
+        if (isempty (dim))
+          dim = 1;
+        endif
+      endif
+      n = size (A, dim);
+      idx = repmat ({':'}, 1, max (ndims (A), dim));
+      i1 = idx;  i1{dim} = 1:n-1;
+      i2 = idx;  i2{dim} = 2:n;
+      D = calDiff (subset (A, i1{:}), subset (A, i2{:}), comps, 'caldiff');
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{D} =} between (@var{A}, @var{B})
+    ## @deftypefnx {datetime} {@var{D} =} between (@var{A}, @var{B}, @var{components})
+    ##
+    ## Calendar difference between two datetime arrays.
+    ##
+    ## @code{@var{D} = between (@var{A}, @var{B})} returns a
+    ## @code{calendarDuration} array holding the calendar difference from each
+    ## element of @var{A} to the corresponding element of @var{B}.  The result is
+    ## signed (it is negative where @var{B} precedes @var{A}) and is expressed in
+    ## whole calendar units plus a leftover time, taking month lengths and
+    ## daylight saving time into account.  @var{A} and @var{B} must be the same
+    ## size or one of them must be scalar.  Not-A-Time elements yield @qcode{NaN}.
+    ##
+    ## @code{@var{D} = between (@var{A}, @var{B}, @var{components})} expresses
+    ## each difference using only the requested calendar components (see
+    ## @code{caldiff}).  The default is @qcode{@{'Years', 'Months', 'Days',
+    ## 'Time'@}}.
+    ##
+    ## @end deftypefn
+    function D = between (A, B, varargin)
+      if (numel (varargin) > 1)
+        error ("datetime.between: too many input arguments.");
+      endif
+      comps = [];
+      if (numel (varargin) == 1)
+        comps = varargin{1};
+      endif
+      A = dtSetPromote (A, B, 'between');
+      B = dtSetPromote (B, A, 'between');
+      [A, B] = prepSetOp (A, B, 'between');
+      [A, B] = broadcastPair (A, B, 'between');
+      D = calDiff (A, B, comps, 'between');
+    endfunction
+
   endmethods
 
 ################################################################################
@@ -3340,6 +3426,21 @@ classdef datetime
       endif
     endfunction
 
+    ## Broadcast two datetime arrays to a common size for an element-wise
+    ## operation, erroring if their sizes are incompatible.
+    function [A, B] = broadcastPair (A, B, op)
+      try
+        z = zeros (size (A.Year + B.Year));
+      catch
+        error (strcat ("datetime.%s: A and B must be of common size or", ...
+                       " scalars."), op);
+      end_try_catch
+      A.Year = A.Year + z; A.Month = A.Month + z; A.Day = A.Day + z;
+      A.Hour = A.Hour + z; A.Minute = A.Minute + z; A.Second = A.Second + z;
+      B.Year = B.Year + z; B.Month = B.Month + z; B.Day = B.Day + z;
+      B.Hour = B.Hour + z; B.Minute = B.Minute + z; B.Second = B.Second + z;
+    endfunction
+
     ## Assemble the result of a two-source set operation ('union'/'setxor'),
     ## whose values are drawn from both A (at IXA) and B (at IXB).  The built-in
     ## returns those indices grouped A-then-B, which is exactly the 'stable'
@@ -3363,6 +3464,92 @@ classdef datetime
         endif
         C = reshapeSetResult (C, isrow (A) && isrow (B));
       endif
+    endfunction
+
+    ## Calendar-aware difference from A to B, element-wise on equal-sized inputs,
+    ## expressed in the requested COMPS.  Whole units are taken greedily from the
+    ## largest requested down to the smallest (years, quarters, months, then
+    ## weeks, days), each taking the most that does not step past B; the day of
+    ## month is clamped on month steps and a whole unit is only borrowed if the
+    ## time of day allows it (31 Jan 10:00 to 28 Feb 08:00 is 27 days 22 hours,
+    ## not one month).  When 'Time' is requested the leftover is its absolute
+    ## instant difference, so it is daylight-saving aware.  Returns a
+    ## calendarDuration; NaT operands yield NaN.
+    function C = calDiff (A, B, comps, op)
+      [f, fmt] = parseCalComponents (comps, op);
+      Y1 = A.Year; M1 = A.Month; D1 = A.Day;
+      h1 = A.Hour; mi1 = A.Minute; s1 = A.Second;
+      Y2 = B.Year; M2 = B.Month; D2 = B.Day;
+      h2 = B.Hour; mi2 = B.Minute; s2 = B.Second;
+      sz = size (Y1);
+      ## A Not-A-Time operand yields a NaN result.  Replace NaN components with a
+      ## harmless placeholder for the calendar arithmetic, then restore NaN in
+      ## the outputs, so month/day indexing never hits a NaN subscript.
+      bad = isnan (Y1) | isnan (Y2);
+      if (any (bad(:)))
+        Y1(bad) = 2000; M1(bad) = 1; D1(bad) = 1;
+        h1(bad) = 0; mi1(bad) = 0; s1(bad) = 0;
+        Y2(bad) = 2000; M2(bad) = 1; D2(bad) = 1;
+        h2(bad) = 0; mi2(bad) = 0; s2(bad) = 0;
+      endif
+      ## Direction: +1 where A < B (forward), -1 where A > B, 0 where equal.
+      fwd = lexlt (Y1, M1, D1, h1, mi1, s1, Y2, M2, D2, h2, mi2, s2);
+      bwd = lexlt (Y2, M2, D2, h2, mi2, s2, Y1, M1, D1, h1, mi1, s1);
+      sgn = double (fwd) - double (bwd);
+      Yc = Y1; Mc = M1; Dc = D1;    # current date; time stays A's throughout
+      monthsOut = zeros (sz);
+      daysOut = zeros (sz);
+      munits = [];
+      if (f.y)
+        munits(end+1) = 12;
+      endif
+      if (f.q)
+        munits(end+1) = 3;
+      endif
+      if (f.m)
+        munits(end+1) = 1;
+      endif
+      for u = munits
+        totalM = (Y2 - Yc) .* 12 + (M2 - Mc);
+        kApprox = fix (totalM ./ u);
+        [Yk, Mk, Dk] = dtAddMonths (Yc, Mc, Dc, kApprox .* u);
+        candGT = lexlt (Y2, M2, D2, h2, mi2, s2, Yk, Mk, Dk, h1, mi1, s1);
+        candLT = lexlt (Yk, Mk, Dk, h1, mi1, s1, Y2, M2, D2, h2, mi2, s2);
+        over = (sgn > 0 & candGT) | (sgn < 0 & candLT);
+        k = kApprox - sgn .* double (over);
+        monthsOut = monthsOut + k .* u;
+        [Yc, Mc, Dc] = dtAddMonths (Yc, Mc, Dc, k .* u);
+      endfor
+      dunits = [];
+      if (f.w)
+        dunits(end+1) = 7;
+      endif
+      if (f.d)
+        dunits(end+1) = 1;
+      endif
+      if (! isempty (dunits))
+        tLT = lexlt (0, 0, 0, h2, mi2, s2, 0, 0, 0, h1, mi1, s1);
+        tGT = lexlt (0, 0, 0, h1, mi1, s1, 0, 0, 0, h2, mi2, s2);
+        for u = dunits
+          totalD = datenum (Y2, M2, D2) - datenum (Yc, Mc, Dc);
+          wholeD = totalD - (sgn > 0 & tLT) + (sgn < 0 & tGT);
+          k = fix (wholeD ./ u);
+          daysOut = daysOut + k .* u;
+          [Yc, Mc, Dc] = dtAddDays (Yc, Mc, Dc, k .* u);
+        endfor
+      endif
+      if (f.t)
+        cur = A;
+        cur.Year = Yc; cur.Month = Mc; cur.Day = Dc;
+        remSec = serial (B) - serial (cur);
+      else
+        remSec = zeros (sz);
+      endif
+      monthsOut(bad) = NaN;
+      daysOut(bad) = NaN;
+      remSec(bad) = NaN;
+      Tdur = duration (0, 0, remSec);
+      C = calendarDuration (zeros (sz), monthsOut, daysOut, Tdur, 'Format', fmt);
     endfunction
 
     ## Inverse of 'serial': map POSIX seconds back to the wall-clock components
@@ -3650,4 +3837,102 @@ function C = reshapeSetResult (C, bothRows)
   else
     C = reshape (C, numel (C), 1);
   endif
+endfunction
+
+## Number of days in month M of year Y (element-wise, proleptic Gregorian).
+function d = dtDaysInMonth (Y, M)
+  dpm = [31 28 31 30 31 30 31 31 30 31 30 31];
+  d = dpm(M);
+  d = reshape (d, size (M));
+  leap = (mod (Y, 4) == 0 & mod (Y, 100) != 0) | (mod (Y, 400) == 0);
+  d(M == 2 & leap) = 29;
+endfunction
+
+## Add K whole calendar months to the date (Y, M, D), clamping the day of month
+## to the last valid day of the target month (e.g. 31 Jan + 1 month -> 28 Feb).
+## Time of day is not represented here; it is carried unchanged by the caller.
+function [Yo, Mo, Do] = dtAddMonths (Y, M, D, K)
+  idx = Y .* 12 + (M - 1) + K;
+  Yo = floor (idx ./ 12);
+  Mo = idx - Yo .* 12 + 1;
+  Do = min (D, dtDaysInMonth (Yo, Mo));
+endfunction
+
+## Add K whole calendar days to the date (Y, M, D), element-wise.
+function [Yo, Mo, Do] = dtAddDays (Y, M, D, K)
+  dn = datenum (Y(:), M(:), D(:)) + K(:);
+  dv = datevec (dn);
+  Yo = reshape (dv(:,1), size (Y));
+  Mo = reshape (dv(:,2), size (Y));
+  Do = reshape (dv(:,3), size (Y));
+endfunction
+
+## Error message shared by caldiff and between for an invalid COMPONENTS input.
+function msg = calCompError (op)
+  msg = strcat ("datetime.", op, ": COMPONENTS must be 'Years', 'Quarters',", ...
+                " 'Months', 'Weeks', 'Days', or 'Time', or a string array or", ...
+                " cell array containing those components.");
+endfunction
+
+## Parse the COMPONENTS argument of caldiff/between into presence flags for each
+## calendar unit and the display Format string of the resulting calendarDuration
+## (which always contains 'm', 'd', and 't', with 'y'/'q'/'w' added only when
+## those units are requested).  An empty COMPONENTS selects the default set
+## {Years, Months, Days, Time}.
+function [f, fmt] = parseCalComponents (comps, op)
+  if (isempty (comps))
+    f = struct ('y', true, 'q', false, 'm', true, ...
+                'w', false, 'd', true, 't', true);
+  else
+    if (ischar (comps) && isrow (comps))
+      toks = {comps};
+    elseif (iscellstr (comps))
+      toks = comps(:)';
+    elseif (isa (comps, 'string'))
+      toks = cellstr (comps)(:)';
+    else
+      error (calCompError (op));
+    endif
+    f = struct ('y', false, 'q', false, 'm', false, ...
+                'w', false, 'd', false, 't', false);
+    for i = 1:numel (toks)
+      switch (lower (toks{i}))
+        case {'years', 'year', 'y'}
+          f.y = true;
+        case {'quarters', 'quarter', 'q'}
+          f.q = true;
+        case {'months', 'month', 'mo', 'm'}
+          f.m = true;
+        case {'weeks', 'week', 'w'}
+          f.w = true;
+        case {'days', 'day', 'd'}
+          f.d = true;
+        case {'time', 't'}
+          f.t = true;
+        otherwise
+          error (calCompError (op));
+      endswitch
+    endfor
+    if (! (f.y || f.q || f.m || f.w || f.d || f.t))
+      error (calCompError (op));
+    endif
+  endif
+  ## The calendarDuration Format must contain 'm', 'd', and 't', so a
+  ## single-component result such as caldiff (..., 'Years') keeps them even
+  ## though only years are populated.  This is invisible for a non-zero result
+  ## (the other fields are zero and are not shown) but means an all-zero result
+  ## displays as '0d' rather than MATLAB's '0y'/'0q'/'0w'; the stored value is
+  ## the same.
+  fmt = '';
+  if (f.y)
+    fmt = [fmt, 'y'];
+  endif
+  if (f.q)
+    fmt = [fmt, 'q'];
+  endif
+  fmt = [fmt, 'm'];
+  if (f.w)
+    fmt = [fmt, 'w'];
+  endif
+  fmt = [fmt, 'dt'];
 endfunction

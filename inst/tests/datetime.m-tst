@@ -887,6 +887,96 @@
 %!error <datetime.diff: too many input arguments.> ...
 %! diff (datetime (2026, 1, [1 2 3]), 1, 2, 3);
 
+## Test 'caldiff' -- consecutive calendar differences as a calendarDuration
+%!test
+%! d = caldiff ([datetime(2026,1,31) datetime(2026,3,31) datetime(2027,5,1)]);
+%! assert_equal (class (d), 'calendarDuration');
+%! assert_equal (dispstrings (d), {'2mo', '1y 1mo 1d'});
+
+## Test 'caldiff' -- a single requested component expresses the whole difference
+%!test
+%! tt = [datetime(2026,1,31) datetime(2026,3,31) datetime(2027,5,1)];
+%! assert_equal (dispstrings (caldiff (tt, 'Time')), {'1416h 0m 0s', '9504h 0m 0s'});
+%! assert_equal (dispstrings (caldiff (tt, 'Day')), {'59d', '396d'});
+%! assert_equal (dispstrings (caldiff (tt, 'Month')), {'2mo', '13mo'});
+%! assert_equal (dispstrings (caldiff (tt, 'q')), {'0d', '4q'});
+%! assert_equal (calmonths (caldiff (tt, 'Year')), [0 12]);
+
+## Test 'caldiff' -- an empty COMPONENTS string selects the default set
+%!assert_equal (dispstrings (caldiff ([datetime(2026,1,31) datetime(2027,5,1)], '')), ...
+%!              {'1y 3mo 1d'})
+
+## Test 'caldiff' -- whole months honour month-end day clamping
+%!assert_equal (dispstrings (caldiff ([datetime(2026,1,31) datetime(2026,2,28)])), {'1mo'})
+%!assert_equal (dispstrings (caldiff ([datetime(2026,1,31), datetime(2026,2,28), ...
+%!                                     datetime(2026,3,31)])), {'1mo', '1mo 3d'})
+
+## Test 'caldiff' -- a time-of-day remainder appears as the Time component
+%!assert_equal (dispstrings (caldiff ([datetime(2026,1,1,6,0,0), ...
+%!                                     datetime(2026,3,15,18,30,0)])), {'2mo 14d 12h 30m 0s'})
+%!assert_equal (dispstrings (caldiff ([datetime(2026,1,1,0,0,0.25), ...
+%!                                     datetime(2026,1,1,0,0,1.75)])), {'0h 0m 1.5s'})
+
+## Test 'caldiff' -- a scalar yields a 0-by-1 empty, Not-A-Time yields NaN
+%!assert_equal (size (caldiff (datetime (2026, 1, 1))), [0 1])
+%!assert_equal (class (caldiff (datetime (2026, 1, 1))), 'calendarDuration')
+%!assert_equal (dispstrings (caldiff ([datetime(2026,1,1), NaT, datetime(2026,5,5)])), ...
+%!              {'NaN', 'NaN'})
+
+## Test 'caldiff' -- a matrix differences along dimension 1 by default
+%!assert_equal (dispstrings (caldiff ([datetime(2026,1,31) datetime(2026,3,31); ...
+%!              datetime(2026,5,1) datetime(2027,1,1)])), {'3mo 1d', '9mo 1d'})
+
+## Test 'caldiff' -- an invalid COMPONENTS is rejected
+%!error <datetime.caldiff: COMPONENTS must be 'Years', 'Quarters', 'Months', 'Weeks', 'Days', or 'Time', or a string array or cell array containing those components.> ...
+%! caldiff ([datetime(2026,1,1) datetime(2026,2,1)], 'ym');
+
+## Test 'between' -- signed calendar difference from A to B
+%!test
+%! d = between (datetime (2026, 1, 31), datetime (2026, 3, 30));
+%! assert_equal (class (d), 'calendarDuration');
+%! assert_equal (dispstrings (d), {'1mo 30d'});
+%!assert_equal (dispstrings (between (datetime (2026, 3, 30), datetime (2026, 1, 31))), ...
+%!              {'-1mo -28d'})
+%!assert_equal (dispstrings (between (datetime (2026, 1, 31), datetime (2026, 1, 31))), {'0d'})
+
+## Test 'between' -- month-end clamping and leap-day cases
+%!assert_equal (dispstrings (between (datetime (2026, 1, 31), datetime (2026, 2, 28))), {'1mo'})
+%!assert_equal (dispstrings (between (datetime (2026, 3, 31), datetime (2026, 2, 28))), {'-1mo'})
+%!assert_equal (dispstrings (between (datetime (2026, 1, 31), datetime (2026, 3, 1))), {'1mo 1d'})
+%!assert_equal (dispstrings (between (datetime (2024, 2, 29), datetime (2025, 2, 28))), {'1y'})
+
+## Test 'between' -- the whole-unit borrow is gated by the time of day
+%!assert_equal (dispstrings (between (datetime (2026, 1, 31, 10, 0, 0), ...
+%!                                    datetime (2026, 2, 28, 8, 0, 0))), {'27d 22h 0m 0s'})
+%!assert_equal (dispstrings (between (datetime (2024, 2, 29, 6, 0, 0), ...
+%!                          datetime (2027, 5, 10, 20, 30, 15))), {'3y 2mo 12d 14h 30m 15s'})
+
+## Test 'between' -- broadcasting a scalar against a vector
+%!assert_equal (dispstrings (between ([datetime(2026,1,1) datetime(2026,6,1)], ...
+%!                                    datetime (2026, 3, 15))), {'2mo 14d', '-2mo -17d'})
+
+## Test 'between' -- Not-A-Time yields NaN
+%!assert_equal (dispstrings (between (datetime (2026, 1, 1), ...
+%!                                    [datetime(2026,3,15) NaT])), {'2mo 14d', 'NaN'})
+
+## Test 'between' -- calendar differences ignore daylight saving; Time does not
+%!test
+%! zs = datetime (2026, 3, 28, 12, 0, 0, 'TimeZone', 'Europe/Athens');
+%! ze = datetime (2026, 3, 30, 12, 0, 0, 'TimeZone', 'Europe/Athens');
+%! assert_equal (dispstrings (between (zs, ze)), {'2d'});
+%! assert_equal (dispstrings (between (zs, ze, 'Time')), {'47h 0m 0s'});
+
+## Test 'between' -- invalid operands and options are rejected
+%!error <datetime.between: A and B must be of common size or scalars.> ...
+%! between (datetime (2026, 1, [1 2 3]), datetime (2026, 1, [1 2]));
+%!error <datetime.between: cannot combine a datetime array with a time zone with one without a time zone.> ...
+%! between (datetime (2026, 1, 1), datetime (2026, 1, 1, 'TimeZone', 'UTC'));
+%!error <datetime.between: comparison is not defined between datetime and duration arrays.> ...
+%! between (datetime (2026, 1, 31), days (1));
+%!error <datetime.between: COMPONENTS must be 'Years', 'Quarters', 'Months', 'Weeks', 'Days', or 'Time', or a string array or cell array containing those components.> ...
+%! between (datetime (2026, 1, 31), datetime (2026, 3, 30), 'bogus');
+
 ## Test 'plus' -- datetime plus duration returns a shifted datetime
 %!assert_equal (class (datetime (2021, 1, 1) + hours (30)), 'datetime')
 %!assert_equal (datevec (datetime (2021, 1, 1, 0, 0, 0) + hours (30)), ...
