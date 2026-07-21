@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
     <script type="text/javascript" async
-      src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
+      src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML">
     </script>
     <script type="text/javascript">
       window.addEventListener("load", () => {
@@ -19,6 +19,32 @@
           tog.onclick = () => tog.classList.toggle("show");
           i.parentElement.removeChild(i.previousSibling);
           i.parentElement.insertBefore(tog, i);
+        }
+      });
+      // Open the collapsible demo an "#example" link points to, then scroll to
+      // it.  getElementById (not querySelector) matches ids that contain a dot,
+      // e.g. "Class.method-example1".
+      function openHashTarget () {
+        if (! window.location.hash) { return; }
+        let el = document.getElementById (
+          decodeURIComponent (window.location.hash.slice (1)));
+        if (! el) { return; }
+        if (el.classList.contains ("collapse") &&
+            ! el.classList.contains ("show")) {
+          bootstrap.Collapse.getOrCreateInstance (el).show ();
+        }
+        el.scrollIntoView ();
+      }
+      window.addEventListener ("DOMContentLoaded", openHashTarget);
+      window.addEventListener ("hashchange", openHashTarget);
+      // When the collapsible named by the current URL fragment is collapsed,
+      // drop the fragment (replaceState: no scroll, no history entry).  Otherwise
+      // the fragment would still equal this id, so clicking the same #example
+      // link again fires no "hashchange" and the example would not re-expand.
+      document.addEventListener ("hide.bs.collapse", (e) => {
+        if (e.target.id && window.location.hash === "#" + e.target.id) {
+          history.replaceState (null, "",
+            window.location.pathname + window.location.search);
         }
       });
     </script>
@@ -175,8 +201,13 @@
 				</label>
 				<div class="list">
 				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="datetime.isbetween.html" class="text-decoration-none font-monospace"><small>isbetween</small></a></li>
+					<li><a href="datetime.issorted.html" class="text-decoration-none font-monospace"><small>issorted</small></a></li>
+					<li><a href="datetime.issortedrows.html" class="text-decoration-none font-monospace"><small>issortedrows</small></a></li>
 					<li><a href="datetime.iscolumn.html" class="text-decoration-none font-monospace"><small>iscolumn</small></a></li>
 					<li><a href="datetime.isempty.html" class="text-decoration-none font-monospace"><small>isempty</small></a></li>
+					<li><a href="datetime.isequal.html" class="text-decoration-none font-monospace"><small>isequal</small></a></li>
+					<li><a href="datetime.isequaln.html" class="text-decoration-none font-monospace"><small>isequaln</small></a></li>
 					<li><a href="datetime.isfinite.html" class="text-decoration-none font-monospace"><small>isfinite</small></a></li>
 					<li><a href="datetime.isinf.html" class="text-decoration-none font-monospace"><small>isinf</small></a></li>
 					<li><a href="datetime.ismatrix.html" class="text-decoration-none font-monospace fw-bolder"><small>ismatrix</small></a></li>
@@ -191,6 +222,77 @@
 			<div class="row">
 				<input id="togList5" type="checkbox">
 				<label for="togList5">
+					<span><h6>Sort, Filter, and Set Operations</h6></span>
+					<span><h6>Sort, Filter, and Set Operations</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="datetime.sort.html" class="text-decoration-none font-monospace"><small>sort</small></a></li>
+					<li><a href="datetime.sortrows.html" class="text-decoration-none font-monospace"><small>sortrows</small></a></li>
+					<li><a href="datetime.min.html" class="text-decoration-none font-monospace"><small>min</small></a></li>
+					<li><a href="datetime.max.html" class="text-decoration-none font-monospace"><small>max</small></a></li>
+					<li><a href="datetime.unique.html" class="text-decoration-none font-monospace"><small>unique</small></a></li>
+					<li><a href="datetime.intersect.html" class="text-decoration-none font-monospace"><small>intersect</small></a></li>
+					<li><a href="datetime.union.html" class="text-decoration-none font-monospace"><small>union</small></a></li>
+					<li><a href="datetime.setdiff.html" class="text-decoration-none font-monospace"><small>setdiff</small></a></li>
+					<li><a href="datetime.setxor.html" class="text-decoration-none font-monospace"><small>setxor</small></a></li>
+					<li><a href="datetime.ismember.html" class="text-decoration-none font-monospace"><small>ismember</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList6" type="checkbox">
+				<label for="togList6">
+					<span><h6>Descriptive Statistics</h6></span>
+					<span><h6>Descriptive Statistics</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="datetime.mean.html" class="text-decoration-none font-monospace"><small>mean</small></a></li>
+					<li><a href="datetime.median.html" class="text-decoration-none font-monospace"><small>median</small></a></li>
+					<li><a href="datetime.mode.html" class="text-decoration-none font-monospace"><small>mode</small></a></li>
+					<li><a href="datetime.std.html" class="text-decoration-none font-monospace"><small>std</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList7" type="checkbox">
+				<label for="togList7">
+					<span><h6>Arithmetic Operations</h6></span>
+					<span><h6>Arithmetic Operations</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="datetime.colon.html" class="text-decoration-none font-monospace"><small>colon</small></a></li>
+					<li><a href="datetime.plus.html" class="text-decoration-none font-monospace"><small>plus</small></a></li>
+					<li><a href="datetime.minus.html" class="text-decoration-none font-monospace"><small>minus</small></a></li>
+					<li><a href="datetime.diff.html" class="text-decoration-none font-monospace"><small>diff</small></a></li>
+					<li><a href="datetime.caldiff.html" class="text-decoration-none font-monospace"><small>caldiff</small></a></li>
+					<li><a href="datetime.between.html" class="text-decoration-none font-monospace"><small>between</small></a></li>
+					<li><a href="datetime.dateshift.html" class="text-decoration-none font-monospace"><small>dateshift</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList8" type="checkbox">
+				<label for="togList8">
+					<span><h6>Relational Operations</h6></span>
+					<span><h6>Relational Operations</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="datetime.lt.html" class="text-decoration-none font-monospace"><small>lt</small></a></li>
+					<li><a href="datetime.le.html" class="text-decoration-none font-monospace"><small>le</small></a></li>
+					<li><a href="datetime.gt.html" class="text-decoration-none font-monospace"><small>gt</small></a></li>
+					<li><a href="datetime.ge.html" class="text-decoration-none font-monospace"><small>ge</small></a></li>
+					<li><a href="datetime.eq.html" class="text-decoration-none font-monospace"><small>eq</small></a></li>
+					<li><a href="datetime.ne.html" class="text-decoration-none font-monospace"><small>ne</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList9" type="checkbox">
+				<label for="togList9">
 					<span><h6>Array Operations</h6></span>
 					<span><h6>Array Operations</h6></span>
 				</label>

@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
     <script type="text/javascript" async
-      src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
+      src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML">
     </script>
     <script type="text/javascript">
       window.addEventListener("load", () => {
@@ -19,6 +19,32 @@
           tog.onclick = () => tog.classList.toggle("show");
           i.parentElement.removeChild(i.previousSibling);
           i.parentElement.insertBefore(tog, i);
+        }
+      });
+      // Open the collapsible demo an "#example" link points to, then scroll to
+      // it.  getElementById (not querySelector) matches ids that contain a dot,
+      // e.g. "Class.method-example1".
+      function openHashTarget () {
+        if (! window.location.hash) { return; }
+        let el = document.getElementById (
+          decodeURIComponent (window.location.hash.slice (1)));
+        if (! el) { return; }
+        if (el.classList.contains ("collapse") &&
+            ! el.classList.contains ("show")) {
+          bootstrap.Collapse.getOrCreateInstance (el).show ();
+        }
+        el.scrollIntoView ();
+      }
+      window.addEventListener ("DOMContentLoaded", openHashTarget);
+      window.addEventListener ("hashchange", openHashTarget);
+      // When the collapsible named by the current URL fragment is collapsed,
+      // drop the fragment (replaceState: no scroll, no history entry).  Otherwise
+      // the fragment would still equal this id, so clicking the same #example
+      // link again fires no "hashchange" and the example would not re-expand.
+      document.addEventListener ("hide.bs.collapse", (e) => {
+        if (e.target.id && window.location.hash === "#" + e.target.id) {
+          history.replaceState (null, "",
+            window.location.pathname + window.location.search);
         }
       });
     </script>
@@ -341,13 +367,17 @@
           <div class="card-header card-header-mod">
             <div class="row d-flex flex-wrap align-items-center">
               <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                <h3 class="d-inline-block mr-2">
+                <button class="btn btn-link fs-4 fw-normal d-inline-block mr-2 p-0 text-reset text-decoration-none"
+                  type="button" data-bs-toggle="collapse"
+                  data-bs-target="#table_table-example1" aria-expanded="true"
+                  aria-controls="table_table-example1">
                 Example: 1
-                </h3>
+                </button>
               </div>
             </div>
           </div>
-          <div class="card-body">
+          <div class="collapse show" id="table_table-example1">
+            <div class="card-body">
                 <p>Preallocate a table by specifying its size and the variable data types</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> sz = [4, 3];
  varTypes = {'double', 'datetime', 'string'};
@@ -363,6 +393,7 @@
        0     NaT    &lt;missing&gt;    
        0     NaT    &lt;missing&gt;</pre>
 
+            </div>
           </div>
         </div>
 
@@ -370,13 +401,17 @@
           <div class="card-header card-header-mod">
             <div class="row d-flex flex-wrap align-items-center">
               <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                <h3 class="d-inline-block mr-2">
+                <button class="btn btn-link fs-4 fw-normal d-inline-block mr-2 p-0 text-reset text-decoration-none"
+                  type="button" data-bs-toggle="collapse"
+                  data-bs-target="#table_table-example2" aria-expanded="true"
+                  aria-controls="table_table-example2">
                 Example: 2
-                </h3>
+                </button>
               </div>
             </div>
           </div>
-          <div class="card-body">
+          <div class="collapse show" id="table_table-example2">
+            <div class="card-body">
                 <p>Specify variable names with the <code>VariableNames</code> name-value pair argument</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> sz = [4, 3];
  varTypes = {'double', 'datetime', 'string'};
@@ -406,6 +441,7 @@
               0            NaT    &lt;missing&gt;    
               0            NaT    &lt;missing&gt;</pre>
 
+            </div>
           </div>
         </div>
 
@@ -413,13 +449,17 @@
           <div class="card-header card-header-mod">
             <div class="row d-flex flex-wrap align-items-center">
               <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                <h3 class="d-inline-block mr-2">
+                <button class="btn btn-link fs-4 fw-normal d-inline-block mr-2 p-0 text-reset text-decoration-none"
+                  type="button" data-bs-toggle="collapse"
+                  data-bs-target="#table_table-example3" aria-expanded="true"
+                  aria-controls="table_table-example3">
                 Example: 3
-                </h3>
+                </button>
               </div>
             </div>
           </div>
-          <div class="card-body">
+          <div class="collapse show" id="table_table-example3">
+            <div class="card-body">
                 <p>Create a table from various types of arrays</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = table (string ({'M';'F';'M'}), [45;32;34], ...
             {'NY';'CA';'MA'}, logical ([1;0;0]), ...
@@ -434,6 +474,7 @@
     "F"        32    {'CA'}    false    
     "M"        34    {'MA'}    false</pre>
 
+            </div>
           </div>
         </div>
 
@@ -441,13 +482,17 @@
           <div class="card-header card-header-mod">
             <div class="row d-flex flex-wrap align-items-center">
               <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                <h3 class="d-inline-block mr-2">
+                <button class="btn btn-link fs-4 fw-normal d-inline-block mr-2 p-0 text-reset text-decoration-none"
+                  type="button" data-bs-toggle="collapse"
+                  data-bs-target="#table_table-example4" aria-expanded="true"
+                  aria-controls="table_table-example4">
                 Example: 4
-                </h3>
+                </button>
               </div>
             </div>
           </div>
-          <div class="card-body">
+          <div class="collapse show" id="table_table-example4">
+            <div class="card-body">
                 <p>Create the same table using the state names as row names</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = table (string ({'M';'F';'M'}), [45;32;34], logical ([1;0;0]), ...
             'VariableNames', {'Gender', 'Age', 'Vote'}, ...
@@ -462,6 +507,7 @@
     CA    "F"        32    false    
     MA    "M"        34    false</pre>
 
+            </div>
           </div>
         </div>
 
@@ -469,13 +515,17 @@
           <div class="card-header card-header-mod">
             <div class="row d-flex flex-wrap align-items-center">
               <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                <h3 class="d-inline-block mr-2">
+                <button class="btn btn-link fs-4 fw-normal d-inline-block mr-2 p-0 text-reset text-decoration-none"
+                  type="button" data-bs-toggle="collapse"
+                  data-bs-target="#table_table-example5" aria-expanded="true"
+                  aria-controls="table_table-example5">
                 Example: 5
-                </h3>
+                </button>
               </div>
             </div>
           </div>
-          <div class="card-body">
+          <div class="collapse show" id="table_table-example5">
+            <div class="card-body">
                 <p>Display a table with mixed cell arrays as unicolumnar variables and other types as multicolumnar variables</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Data_A = {[34, 32]; ['text';'picture']; 'text'; struct('c', 'data'); ...
            [true, false]; ['some','text']; {'some','text'}; 25.34};
@@ -497,6 +547,7 @@
     {1x2 cell  }    {    [4]}    {  [4]}    01-Jul-2000    01-Mar-2001    
     {   [25.34]}    {    [9]}    { [94]}    01-Aug-2000    01-Apr-2001</pre>
 
+            </div>
           </div>
         </div>
 
@@ -504,13 +555,17 @@
           <div class="card-header card-header-mod">
             <div class="row d-flex flex-wrap align-items-center">
               <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                <h3 class="d-inline-block mr-2">
+                <button class="btn btn-link fs-4 fw-normal d-inline-block mr-2 p-0 text-reset text-decoration-none"
+                  type="button" data-bs-toggle="collapse"
+                  data-bs-target="#table_table-example6" aria-expanded="true"
+                  aria-controls="table_table-example6">
                 Example: 6
-                </h3>
+                </button>
               </div>
             </div>
           </div>
-          <div class="card-body">
+          <div class="collapse show" id="table_table-example6">
+            <div class="card-body">
                 <p>Create a nested table</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T1 = table ([1; 2; 3], [4; 5; 6], [7; 8; 9])</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T1 =
@@ -547,6 +602,7 @@
     2       2       5       8    5    {'b'}    {'e'}    {'h'}    {[6]}    
     3       3       6       9    6    {'c'}    {'f'}    {'i'}    {[7]}</pre>
 
+            </div>
           </div>
         </div>
 
@@ -554,13 +610,17 @@
           <div class="card-header card-header-mod">
             <div class="row d-flex flex-wrap align-items-center">
               <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                <h3 class="d-inline-block mr-2">
+                <button class="btn btn-link fs-4 fw-normal d-inline-block mr-2 p-0 text-reset text-decoration-none"
+                  type="button" data-bs-toggle="collapse"
+                  data-bs-target="#table_table-example7" aria-expanded="true"
+                  aria-controls="table_table-example7">
                 Example: 7
-                </h3>
+                </button>
               </div>
             </div>
           </div>
-          <div class="card-body">
+          <div class="collapse show" id="table_table-example7">
+            <div class="card-body">
                 <p>A table is <em>read</em> with three complementary indexing styles.  Build a table whose variables span several types to see how each one behaves.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Name = string ({'Sanchez'; 'Johnson'; 'Li'; 'Diaz'});
  Age = [38; 43; 38; 40];
@@ -603,6 +663,7 @@
    38
    43</pre>
 
+            </div>
           </div>
         </div>
 
@@ -610,13 +671,17 @@
           <div class="card-header card-header-mod">
             <div class="row d-flex flex-wrap align-items-center">
               <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                <h3 class="d-inline-block mr-2">
+                <button class="btn btn-link fs-4 fw-normal d-inline-block mr-2 p-0 text-reset text-decoration-none"
+                  type="button" data-bs-toggle="collapse"
+                  data-bs-target="#table_table-example8" aria-expanded="true"
+                  aria-controls="table_table-example8">
                 Example: 8
-                </h3>
+                </button>
               </div>
             </div>
           </div>
-          <div class="card-body">
+          <div class="collapse show" id="table_table-example8">
+            <div class="card-body">
                 <p>Assignment mirrors the three styles.  Starting from a mixed-type table:</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Name = string ({'Sanchez'; 'Johnson'; 'Li'});
  Age = [38; 43; 38];
@@ -661,6 +726,7 @@
 
    39   43   38   40</pre>
 
+            </div>
           </div>
         </div>
 
@@ -668,13 +734,17 @@
           <div class="card-header card-header-mod">
             <div class="row d-flex flex-wrap align-items-center">
               <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                <h3 class="d-inline-block mr-2">
+                <button class="btn btn-link fs-4 fw-normal d-inline-block mr-2 p-0 text-reset text-decoration-none"
+                  type="button" data-bs-toggle="collapse"
+                  data-bs-target="#table_table-example9" aria-expanded="true"
+                  aria-controls="table_table-example9">
                 Example: 9
-                </h3>
+                </button>
               </div>
             </div>
           </div>
-          <div class="card-body">
+          <div class="collapse show" id="table_table-example9">
+            <div class="card-body">
                 <p>This implementation fully supports <strong>chained</strong> referencing and assignment — indexing that reaches through several levels in a single expression.  (Octave extension: MATLAB permits chained <em>reference</em> but not chained <em>assignment</em>.)</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Age = [38; 43; 38; 40];
  Height = [71; 69; 64; 67];
@@ -699,6 +769,7 @@
 
    38   99   38   40</pre>
 
+            </div>
           </div>
         </div>
 
@@ -706,13 +777,17 @@
           <div class="card-header card-header-mod">
             <div class="row d-flex flex-wrap align-items-center">
               <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                <h3 class="d-inline-block mr-2">
+                <button class="btn btn-link fs-4 fw-normal d-inline-block mr-2 p-0 text-reset text-decoration-none"
+                  type="button" data-bs-toggle="collapse"
+                  data-bs-target="#table_table-example10" aria-expanded="true"
+                  aria-controls="table_table-example10">
                 Example: 10
-                </h3>
+                </button>
               </div>
             </div>
           </div>
-          <div class="card-body">
+          <div class="collapse show" id="table_table-example10">
+            <div class="card-body">
                 <p>Chaining is most useful with nested tables, reaching an inner variable directly — again both for reading and, unlike MATLAB, for writing.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Inner = table ([1; 2; 3], [4; 5; 6], 'VariableNames', {'p', 'q'})</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">Inner =
@@ -753,6 +828,7 @@
     2    55    
     3     6</pre>
 
+            </div>
           </div>
         </div>
 

@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
     <script type="text/javascript" async
-      src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
+      src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML">
     </script>
     <script type="text/javascript">
       window.addEventListener("load", () => {
@@ -19,6 +19,32 @@
           tog.onclick = () => tog.classList.toggle("show");
           i.parentElement.removeChild(i.previousSibling);
           i.parentElement.insertBefore(tog, i);
+        }
+      });
+      // Open the collapsible demo an "#example" link points to, then scroll to
+      // it.  getElementById (not querySelector) matches ids that contain a dot,
+      // e.g. "Class.method-example1".
+      function openHashTarget () {
+        if (! window.location.hash) { return; }
+        let el = document.getElementById (
+          decodeURIComponent (window.location.hash.slice (1)));
+        if (! el) { return; }
+        if (el.classList.contains ("collapse") &&
+            ! el.classList.contains ("show")) {
+          bootstrap.Collapse.getOrCreateInstance (el).show ();
+        }
+        el.scrollIntoView ();
+      }
+      window.addEventListener ("DOMContentLoaded", openHashTarget);
+      window.addEventListener ("hashchange", openHashTarget);
+      // When the collapsible named by the current URL fragment is collapsed,
+      // drop the fragment (replaceState: no scroll, no history entry).  Otherwise
+      // the fragment would still equal this id, so clicking the same #example
+      // link again fires no "hashchange" and the example would not re-expand.
+      document.addEventListener ("hide.bs.collapse", (e) => {
+        if (e.target.id && window.location.hash === "#" + e.target.id) {
+          history.replaceState (null, "",
+            window.location.pathname + window.location.search);
         }
       });
     </script>
@@ -552,12 +578,32 @@ Time zone
                   <table class="table table-striped">
                     <tbody>
                       <tr>
+                        <td><b><code><a href="datetime.isbetween.html">isbetween</a></code></b></td>
+                        <td>Determine which datetime values lie within an interval.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.issorted.html">issorted</a></code></b></td>
+                        <td>Determine whether a datetime array is sorted.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.issortedrows.html">issortedrows</a></code></b></td>
+                        <td>Determine whether the rows of a datetime array are sorted.</td>
+                      </tr>
+                      <tr>
                         <td><b><code><a href="datetime.iscolumn.html">iscolumn</a></code></b></td>
                         <td>Return true if datetime array is a column vector.</td>
                       </tr>
                       <tr>
                         <td><b><code><a href="datetime.isempty.html">isempty</a></code></b></td>
                         <td>Return true if datetime array is empty.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.isequal.html">isequal</a></code></b></td>
+                        <td>Test datetime arrays for equality.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.isequaln.html">isequaln</a></code></b></td>
+                        <td>Test datetime arrays for equality, treating Not-A-Time as equal.</td>
                       </tr>
                       <tr>
                         <td><b><code><a href="datetime.isfinite.html">isfinite</a></code></b></td>
@@ -605,11 +651,207 @@ Time zone
               aria-expanded="false" aria-controls="collapseGroup5">
               <div class="row align-items-center">
                 <div class="col-12">
-                  <h4 class="d-inline-block mr-4">Array Operations</h4>
+                  <h4 class="d-inline-block mr-4">Sort, Filter, and Set Operations</h4>
                 </div>
               </div>
           </div>
           <div class="collapse multi-collapse" id="collapseGroup5">
+            <div class="border-bottom py-2">
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="datetime.sort.html">sort</a></code></b></td>
+                        <td>Sort a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.sortrows.html">sortrows</a></code></b></td>
+                        <td>Sort the rows of a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.min.html">min</a></code></b></td>
+                        <td>Minimum of a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.max.html">max</a></code></b></td>
+                        <td>Maximum of a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.unique.html">unique</a></code></b></td>
+                        <td>Unique values in a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.intersect.html">intersect</a></code></b></td>
+                        <td>Set intersection of two datetime arrays.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.union.html">union</a></code></b></td>
+                        <td>Set union of two datetime arrays.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.setdiff.html">setdiff</a></code></b></td>
+                        <td>Set difference of two datetime arrays.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.setxor.html">setxor</a></code></b></td>
+                        <td>Set exclusive-or of two datetime arrays.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.ismember.html">ismember</a></code></b></td>
+                        <td>Test for datetime elements in a set.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup6"
+              aria-expanded="false" aria-controls="collapseGroup6">
+              <div class="row align-items-center">
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Descriptive Statistics</h4>
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseGroup6">
+            <div class="border-bottom py-2">
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="datetime.mean.html">mean</a></code></b></td>
+                        <td>Mean of a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.median.html">median</a></code></b></td>
+                        <td>Median of a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.mode.html">mode</a></code></b></td>
+                        <td>Most frequent value of a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.std.html">std</a></code></b></td>
+                        <td>Standard deviation of a datetime array.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup7"
+              aria-expanded="false" aria-controls="collapseGroup7">
+              <div class="row align-items-center">
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Arithmetic Operations</h4>
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseGroup7">
+            <div class="border-bottom py-2">
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="datetime.colon.html">colon</a></code></b></td>
+                        <td>Create a range of datetime values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.plus.html">plus</a></code></b></td>
+                        <td>Addition for datetime arrays.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.minus.html">minus</a></code></b></td>
+                        <td>Subtraction for datetime arrays.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.diff.html">diff</a></code></b></td>
+                        <td>Differences between successive datetime elements.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.caldiff.html">caldiff</a></code></b></td>
+                        <td>Calendar differences between successive datetime elements.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.between.html">between</a></code></b></td>
+                        <td>Calendar difference between two datetime arrays.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.dateshift.html">dateshift</a></code></b></td>
+                        <td>Shift datetime values to calendar boundaries.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup8"
+              aria-expanded="false" aria-controls="collapseGroup8">
+              <div class="row align-items-center">
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Relational Operations</h4>
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseGroup8">
+            <div class="border-bottom py-2">
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="datetime.lt.html">lt</a></code></b></td>
+                        <td>Less-than comparison for datetime arrays.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.le.html">le</a></code></b></td>
+                        <td>Less-than-or-equal comparison for datetime arrays.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.gt.html">gt</a></code></b></td>
+                        <td>Greater-than comparison for datetime arrays.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.ge.html">ge</a></code></b></td>
+                        <td>Greater-than-or-equal comparison for datetime arrays.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.eq.html">eq</a></code></b></td>
+                        <td>Equality comparison for datetime arrays.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.ne.html">ne</a></code></b></td>
+                        <td>Inequality comparison for datetime arrays.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup9"
+              aria-expanded="false" aria-controls="collapseGroup9">
+              <div class="row align-items-center">
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Array Operations</h4>
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseGroup9">
             <div class="border-bottom py-2">
                   <table class="table table-striped">
                     <tbody>
