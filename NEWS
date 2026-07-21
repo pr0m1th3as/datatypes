@@ -1,0 +1,25 @@
+Summary of important user-visible changes for datatypes 1.2.7:
+--------------------------------------------------------------
+
+ ** The `datetime` class gains a large set of operations, as its
+    implementation continues incrementally.  Newly available: arithmetic
+    `plus`/`minus` and the `:` range operator; the relational operators
+    `lt`/`le`/`gt`/`ge`/`eq`/`ne` together with `isequal`/`isequaln`;
+    ordering with `sort`/`issorted`, `sortrows`/`issortedrows`, `min`/`max`,
+    and `unique`; the set operations `intersect`/`union`/`setdiff`/`setxor`/
+    `ismember`; `diff` (returning a `duration`) and `caldiff`/`between`
+    (returning a `calendarDuration`); the interval test `isbetween`; the
+    reductions `mean`/`median`/`mode` (returning `datetime`) and `std`
+    (returning a `duration`); and `dateshift`.  All are timezone- and
+    DST-aware.
+
+ ** Updated the bundled IANA timezone database to version 2026c (issue #36).
+
+ ** Added `%!demo` example blocks for the `table`, `categorical`,
+    `duration`, `calendarDuration`, and `string` classes, and for the
+    `table` file-I/O helper functions.  Table demos now also show the input
+    table, not just the result.
+
+ ** Modernized docstrings across the package: removed empty `@multitable`
+    spacer columns, added missing Name/Value headers, and use `*` for
+    multiplication inside `@math` expressions.
