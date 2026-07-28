@@ -129,9 +129,13 @@ template <typename ZonedType> RowVector tz2vector (const ZonedType& to, string p
 // the aggregation/rollover math used by the component-normalisation path below
 // and is shared by the 'ConvertTo','posixtime' serial mode, so both stay in
 // lockstep.  Callers must screen NaN/Inf beforehand.
-sys_time<chrono::microseconds>
-components2sys (double Yv, double Mv, double Dv, double hv, double mv,
-               double sv, double xv, string timezone, string precision)
+// Build a zoned_time from the wall-clock components, interpreting them in
+// 'timezone'.  This is the shared core behind the 'posixtime' serial mode and
+// the 'zoneabbrev' mode, so both stay in lockstep.  Callers must screen
+// NaN/Inf beforehand.
+auto
+components2zoned (double Yv, double Mv, double Dv, double hv, double mv,
+                  double sv, double xv, string timezone, string precision)
 {
   // Aggregate hours, minutes, seconds, and milliseconds into seconds,
   // calculate extra days to add later and map remaining hours, minutes, and
@@ -183,7 +187,24 @@ components2sys (double Yv, double Mv, double Dv, double hv, double mv,
                                   + chrono::minutes{tmp_m}
                                   + chrono::seconds{tmp_s}
                                   + chrono::microseconds{tmp_micro};
-  auto in = make_zoned (timezone, datetime);
+  return make_zoned (timezone, datetime);
+}
+
+// Zone abbreviation (e.g. "EDT", "EST", "UTC") active at the wall-clock
+// components when interpreted in 'timezone'.  Callers must screen NaN/Inf.
+string
+components2abbrev (double Yv, double Mv, double Dv, double hv, double mv,
+                   double sv, double xv, string timezone, string precision)
+{
+  auto in = components2zoned (Yv, Mv, Dv, hv, mv, sv, xv, timezone, precision);
+  return in.get_info ().abbrev;
+}
+
+sys_time<chrono::microseconds>
+components2sys (double Yv, double Mv, double Dv, double hv, double mv,
+               double sv, double xv, string timezone, string precision)
+{
+  auto in = components2zoned (Yv, Mv, Dv, hv, mv, sv, xv, timezone, precision);
   return chrono::time_point_cast<chrono::microseconds> (in.get_sys_time ());
 }
 
@@ -1112,6 +1133,33 @@ Base function for datetime class. \n\
         }
       }
       retval(0) = S;
+      return retval;
+    }
+
+    // 'ConvertTo','zoneabbrev' returns the zone abbreviation (e.g. "EDT",
+    // "EST", "UTC") active at each element, as a cell array of character
+    // vectors.  The wall-clock components are interpreted in 'timezone';
+    // Not-A-Time and infinite datetimes map to an empty string.
+    if (convertTo == "zoneabbrev")
+    {
+      Cell A(sz);
+      for (int i = 0; i < sz.numel (); i++)
+      {
+        RowVector tmp(7);
+        tmp(0) = Y(i); tmp(1) = M(i); tmp(2) = D(i);
+        tmp(3) = h(i); tmp(4) = m(i); tmp(5) = s(i); tmp(6) = x(i);
+        double chk = check_nan_inf (tmp);
+        if (isnan (chk) || isinf (chk))
+        {
+          A(i) = "";
+        }
+        else
+        {
+          A(i) = components2abbrev (Y(i), M(i), D(i), h(i), m(i), s(i),
+                                    x(i), timezone, precision);
+        }
+      }
+      retval(0) = A;
       return retval;
     }
 
