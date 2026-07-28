@@ -74,6 +74,36 @@ classdef datetime
     ## specified as a string scalar, it is converted and stored internally as
     ## a character vector.
     ##
+    ## The value @qcode{'default'} is a data-dependent sentinel: a date-only
+    ## format (@qcode{'dd-MMM-uuuu'}) is used when every element sits at
+    ## midnight, and a date and time format (@qcode{'dd-MMM-uuuu HH:mm:ss'})
+    ## otherwise.  The value @qcode{'defaultdate'} always selects the
+    ## date-only format.  Reading the property returns the resolved pattern,
+    ## never the sentinel itself.
+    ##
+    ## A custom pattern is built from the following Unicode (LDML) fields;
+    ## repeating a letter widens or names the field.  Any other text is
+    ## copied verbatim, and text in single quotes is always literal.
+    ##
+    ## @multitable @columnfractions 0.18 0.82
+    ## @item @code{y}, @code{u} @tab Year; @code{yy} uses the last two digits.
+    ## @item @code{M} @tab Month: number (@code{M}, @code{MM}), abbreviated
+    ## (@code{MMM}), full (@code{MMMM}), or initial (@code{MMMMM}).
+    ## @item @code{d} @tab Day of the month.
+    ## @item @code{D} @tab Day of the year.
+    ## @item @code{e} @tab Day of the week: number (Sunday is 1), abbreviated
+    ## (@code{eee}), full (@code{eeee}), or initial (@code{eeeee}).
+    ## @item @code{H}, @code{h} @tab Hour, 24-hour and 12-hour clock.
+    ## @item @code{m} @tab Minute.
+    ## @item @code{s} @tab Whole second (fractional seconds are truncated).
+    ## @item @code{S} @tab Fractional second, one digit per @code{S}.
+    ## @item @code{a} @tab AM or PM.
+    ## @item @code{Q} @tab Quarter of the year.
+    ## @item @code{G} @tab Era.
+    ## @item @code{W} @tab Week of the month.
+    ## @item @code{Z}, @code{X}, @code{x} @tab Numeric time-zone offset.
+    ## @end multitable
+    ##
     ## @end deftp
     Format = 'default'
 
@@ -244,6 +274,7 @@ classdef datetime
         if (! (ischar (Format) && isvector (Format)))
           error ("datetime: 'Format' must be a character vector.");
         endif
+        dtValidateFormat (Format);
         this.Format = Format;
       endif
       if (! isempty (inputFormat))
@@ -349,37 +380,12 @@ classdef datetime
     ##
     ## @end deftypefn
     function cstr = dispstrings (this)
-      ## Default display format
-      mnames = {'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', ...
-                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'};
-      ## Process all elements
-      sz = size (this);
-      cstr = cell (sz);
-      for i = 1:prod (sz)
-        if (isnan (this.Year(i)))
-          cstr{i} = 'NaT';
-        elseif (isinf (this.Year(i)))
-          cstr{i} = num2str (this.Year(i));
-        else
-          if (this.Hour(i) != 0 || this.Minute(i) != 0 || this.Second(i) != 0)
-            if (fix (this.Second(i)) == this.Second(i))
-              str = sprintf ("%02d-%s-%04d %02d:%02d:%02d", this.Day(i), ...
-                             mnames{this.Month(i)}, this.Year(i), ...
-                             this.Hour(i), this.Minute(i), this.Second(i));
-            else
-              fmt = "%02d-%s-%04d %02d:%02d:%02d.%03d";
-              sec = this.Second(i);
-              str = sprintf (fmt, this.Day(i), mnames{this.Month(i)}, ...
-                             this.Year(i), this.Hour(i), this.Minute(i), ...
-                             fix (sec), rem (sec, 1) * 1000);
-            endif
-          else
-            str = sprintf ("%02d-%s-%04d", this.Day(i), ...
-                           mnames{this.Month(i)}, this.Year(i));
-          endif
-          cstr{i} = str;
-        endif
-      endfor
+      ## Resolve the (possibly sentinel) Format to a concrete LDML pattern,
+      ## then render every element under that single array-wide pattern.
+      fmt = dtResolveFormat (this.Format, this.Hour, this.Minute, ...
+                             this.Second);
+      cstr = dtFormatStrings (this.Year, this.Month, this.Day, this.Hour, ...
+                              this.Minute, this.Second, this.TimeZone, fmt);
     endfunction
 
     ## -*- texinfo -*-
@@ -3354,7 +3360,8 @@ classdef datetime
             case 'proxyArray'  # used by 'table' class
               out = proxyArray (this);
             case 'Format'
-              out = this.Format;
+              out = dtResolveFormat (this.Format, this.Hour, this.Minute, ...
+                                     this.Second);
             case 'SystemTimeZone'
               out = this.SystemTimeZone;
             case 'TimeZone'
@@ -3430,6 +3437,11 @@ classdef datetime
           endif
           switch (s.subs)
             case 'Format'
+              if (! (ischar (val) && (isrow (val) || isempty (val))))
+                error (["datetime.subsasgn: 'Format' must be a", ...
+                        " character vector."]);
+              endif
+              dtValidateFormat (val);
               this.Format = val;
             case 'TimeZone'
               toTimeZone = val;
@@ -4436,4 +4448,316 @@ function [f, fmt] = parseCalComponents (comps, op)
     fmt = [fmt, 'w'];
   endif
   fmt = [fmt, 'dt'];
+endfunction
+
+## Resolve the Format property to a concrete LDML pattern.  The sentinels
+## 'default' and 'defaultdate' are data-dependent, matching MATLAB: 'default'
+## renders a date-only pattern when every element sits at midnight (all-zero
+## time-of-day) and a date+time pattern otherwise; 'defaultdate' is always
+## date-only.  A concrete user pattern is returned verbatim (case-sensitive,
+## as 'M' and 'm' differ).
+function fmt = dtResolveFormat (fmtProp, H, Mi, S)
+  if (strcmpi (fmtProp, 'default'))
+    if (! isempty (H) && all ((H(:) == 0) & (Mi(:) == 0) & (S(:) == 0)))
+      fmt = 'dd-MMM-uuuu';
+    else
+      fmt = 'dd-MMM-uuuu HH:mm:ss';
+    endif
+  elseif (strcmpi (fmtProp, 'defaultdate'))
+    fmt = 'dd-MMM-uuuu';
+  elseif (strcmpi (fmtProp, 'preserveinput'))
+    fmt = 'dd-MMM-uuuu HH:mm:ss';
+  else
+    fmt = fmtProp;
+  endif
+endfunction
+
+## Validate a user-supplied Format string, mirroring MATLAB's rejection of
+## unsupported field letters.  The sentinels are accepted as-is.
+function dtValidateFormat (fmt)
+  if (any (strcmpi (fmt, {'default', 'defaultdate', 'preserveinput'})))
+    return;
+  endif
+  supported = 'yuMdDeaHhmsSQGWzZXx';
+  toks = dtFormatTokens (fmt);
+  for t = 1:numel (toks)
+    if (! isempty (toks(t).sym) && ! any (toks(t).sym == supported))
+      error (strcat ("datetime: the format '%s' contains an unsupported", ...
+                     " symbol: '%s'."), fmt, toks(t).sym);
+    endif
+  endfor
+endfunction
+
+## Split an LDML format pattern into a struct array of tokens.  Each token is
+## either a field run (sym = the field letter, n = run length, lit = '') or a
+## literal (sym = '', n = 0, lit = the literal text).  Single quotes delimit
+## literal text and a doubled '' is a literal apostrophe.
+function toks = dtFormatTokens (fmt)
+  toks = struct ('sym', {}, 'n', {}, 'lit', {});
+  i = 1;
+  L = numel (fmt);
+  while (i <= L)
+    c = fmt(i);
+    if (c == '''')
+      if (i < L && fmt(i+1) == '''')
+        toks(end+1) = struct ('sym', '', 'n', 0, 'lit', '''');
+        i += 2;
+      else
+        j = i + 1;
+        buf = '';
+        while (j <= L && fmt(j) != '''')
+          buf = [buf, fmt(j)];
+          j += 1;
+        endwhile
+        toks(end+1) = struct ('sym', '', 'n', 0, 'lit', buf);
+        i = j + 1;
+      endif
+    elseif (isletter (c))
+      j = i;
+      while (j <= L && fmt(j) == c)
+        j += 1;
+      endwhile
+      toks(end+1) = struct ('sym', c, 'n', j - i, 'lit', '');
+      i = j;
+    else
+      toks(end+1) = struct ('sym', '', 'n', 0, 'lit', c);
+      i += 1;
+    endif
+  endwhile
+endfunction
+
+## Render each element of a datetime array to a display string under a
+## concrete LDML pattern.  Y..S are the wall-clock component arrays; TZ is the
+## time zone ('' for unzoned); FMT is a concrete pattern already resolved by
+## dtResolveFormat.  NaT elements render as 'NaT' and infinite years as
+## '-Inf'/'Inf', matching the component-store sentinels.
+function cstr = dtFormatStrings (Y, M, D, H, Mi, S, TZ, fmt)
+  toks = dtFormatTokens (fmt);
+  syms = [toks.sym];
+  sz = size (Y);
+  cstr = cell (sz);
+
+  ## Precompute derived quantities only when their field appears.
+  needWday = any (syms == 'e');
+  needDoy  = any (syms == 'D');
+  needOff  = any (ismember (syms, 'zZXx')) && ! isempty (TZ);
+  if (needWday || needDoy)
+    dn = datenum (Y, M, D);
+  endif
+  if (needWday)
+    wday = weekday (dn);
+  endif
+  if (needDoy)
+    doy = floor (dn) - datenum (Y, ones (size (Y)), ones (size (Y))) + 1;
+  endif
+  if (needOff)
+    off = dtZoneOffset (Y, M, D, H, Mi, S, TZ);
+  endif
+
+  mAbbr = {'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', ...
+           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'};
+  mFull = {'January', 'February', 'March', 'April', 'May', 'June', ...
+           'July', 'August', 'September', 'October', 'November', 'December'};
+  wAbbr = {'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'};
+  wFull = {'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', ...
+           'Friday', 'Saturday'};
+  qOrd  = {'1st quarter', '2nd quarter', '3rd quarter', '4th quarter'};
+
+  for k = 1:numel (Y)
+    if (isnan (Y(k)))
+      cstr{k} = 'NaT';
+      continue;
+    elseif (isinf (Y(k)))
+      cstr{k} = num2str (Y(k));
+      continue;
+    endif
+    str = '';
+    for t = 1:numel (toks)
+      tk = toks(t);
+      if (isempty (tk.sym))
+        str = [str, tk.lit];
+        continue;
+      endif
+      c = tk.sym;
+      nn = tk.n;
+      switch (c)
+        case {'y', 'u'}
+          if (nn == 2)
+            piece = sprintf ('%02d', mod (Y(k), 100));
+          else
+            piece = sprintf ('%0*d', nn, Y(k));
+          endif
+        case 'M'
+          switch (nn)
+            case 1
+              piece = sprintf ('%d', M(k));
+            case 2
+              piece = sprintf ('%02d', M(k));
+            case 3
+              piece = mAbbr{M(k)};
+            case 4
+              piece = mFull{M(k)};
+            otherwise
+              piece = mFull{M(k)}(1);
+          endswitch
+        case 'd'
+          if (nn == 1)
+            piece = sprintf ('%d', D(k));
+          else
+            piece = sprintf ('%0*d', nn, D(k));
+          endif
+        case 'D'
+          piece = sprintf ('%0*d', nn, doy(k));
+        case 'e'
+          switch (nn)
+            case 1
+              piece = sprintf ('%d', wday(k));
+            case 2
+              piece = sprintf ('%02d', wday(k));
+            case 3
+              piece = wAbbr{wday(k)};
+            case 4
+              piece = wFull{wday(k)};
+            otherwise
+              piece = wFull{wday(k)}(1);
+          endswitch
+        case 'H'
+          if (nn == 1)
+            piece = sprintf ('%d', H(k));
+          else
+            piece = sprintf ('%02d', H(k));
+          endif
+        case 'h'
+          h12 = mod (H(k) - 1, 12) + 1;
+          if (nn == 1)
+            piece = sprintf ('%d', h12);
+          else
+            piece = sprintf ('%02d', h12);
+          endif
+        case 'm'
+          if (nn == 1)
+            piece = sprintf ('%d', Mi(k));
+          else
+            piece = sprintf ('%02d', Mi(k));
+          endif
+        case 's'
+          if (nn == 1)
+            piece = sprintf ('%d', floor (S(k)));
+          else
+            piece = sprintf ('%02d', floor (S(k)));
+          endif
+        case 'S'
+          frac = S(k) - floor (S(k));
+          piece = sprintf ('%0*d', nn, floor (frac * 10 ^ nn));
+        case 'a'
+          if (H(k) >= 12)
+            piece = 'PM';
+          else
+            piece = 'AM';
+          endif
+        case 'Q'
+          q = floor ((M(k) - 1) / 3) + 1;
+          switch (nn)
+            case 1
+              piece = sprintf ('%d', q);
+            case 2
+              piece = sprintf ('%02d', q);
+            case 3
+              piece = sprintf ('Q%d', q);
+            case 4
+              piece = qOrd{q};
+            otherwise
+              piece = sprintf ('%d', q);
+          endswitch
+        case 'G'
+          piece = 'CE';
+        case 'W'
+          piece = sprintf ('%d', dtWeekOfMonth (Y(k), M(k), D(k)));
+        case {'z', 'Z', 'X', 'x'}
+          if (isempty (TZ))
+            piece = repmat ('*', 1, nn);
+          else
+            piece = dtZoneField (c, nn, off(k));
+          endif
+        otherwise
+          error ("datetime: unsupported format symbol '%s'.", c);
+      endswitch
+      str = [str, piece];
+    endfor
+    cstr{k} = str;
+  endfor
+endfunction
+
+## Week of the month (Sunday-based, first week = week 1), matching MATLAB's
+## default 'W' rendering.
+function w = dtWeekOfMonth (Y, M, D)
+  firstDow = weekday (datenum (Y, M, 1));
+  w = floor ((D - 1 + (firstDow - 1)) / 7) + 1;
+endfunction
+
+## UTC offset (seconds east of UTC, negative west of Greenwich) for each
+## element of a zoned datetime, derived without any new compiled support:
+## reading the wall-clock components as if they were UTC and subtracting the
+## true instant yields the local offset.
+function off = dtZoneOffset (Y, M, D, H, Mi, S, TZ)
+  utcAsIf = __datetime__ (Y, M, D, H, Mi, S, 'ConvertTo', 'posixtime', ...
+                          'TimeZone', 'UTC', 'Precision', 'microseconds');
+  instant = __datetime__ (Y, M, D, H, Mi, S, 'ConvertTo', 'posixtime', ...
+                          'TimeZone', TZ, 'Precision', 'microseconds');
+  off = utcAsIf - instant;
+endfunction
+
+## Render a single time-zone field for a zoned datetime given the offset in
+## seconds (negative west of UTC).  Implements the numeric ISO-8601 families
+## Z/X/x exactly; the abbreviated-name family 'z' needs the zone database and
+## is not yet available, so it falls back to the GMT-style numeric offset.
+function piece = dtZoneField (c, nn, offSec)
+  a = abs (offSec);
+  hh = floor (a / 3600);
+  mm = floor (rem (a, 3600) / 60);
+  if (offSec < 0)
+    sgn = '-';
+  else
+    sgn = '+';
+  endif
+  switch (c)
+    case 'Z'
+      switch (nn)
+        case {1, 2, 3}
+          piece = sprintf ('%c%02d%02d', sgn, hh, mm);
+        case 4
+          piece = sprintf ('UTC%c%02d:%02d', sgn, hh, mm);
+        otherwise
+          piece = sprintf ('%c%02d:%02d', sgn, hh, mm);
+      endswitch
+    case 'X'
+      if (offSec == 0)
+        piece = 'Z';
+      elseif (nn == 1)
+        if (mm == 0)
+          piece = sprintf ('%c%02d', sgn, hh);
+        else
+          piece = sprintf ('%c%02d%02d', sgn, hh, mm);
+        endif
+      elseif (any (nn == [2, 4]))
+        piece = sprintf ('%c%02d%02d', sgn, hh, mm);
+      else
+        piece = sprintf ('%c%02d:%02d', sgn, hh, mm);
+      endif
+    case 'x'
+      if (nn == 1)
+        if (mm == 0)
+          piece = sprintf ('%c%02d', sgn, hh);
+        else
+          piece = sprintf ('%c%02d%02d', sgn, hh, mm);
+        endif
+      elseif (any (nn == [2, 4]))
+        piece = sprintf ('%c%02d%02d', sgn, hh, mm);
+      else
+        piece = sprintf ('%c%02d:%02d', sgn, hh, mm);
+      endif
+    otherwise
+      ## 'z' abbreviated name: fall back to the GMT-style numeric offset.
+      piece = sprintf ('%c%02d%02d', sgn, hh, mm);
+  endswitch
 endfunction
