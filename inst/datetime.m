@@ -33,6 +33,16 @@ classdef datetime
   ## @qcode{TimeZone} and @qcode{Format} properties associated with it, which
   ## apply to all elements in the array.
   ##
+  ## When a display @code{Format} contains a time-zone name field
+  ## (@qcode{z}/@qcode{zz}/@qcode{zzz}), the name is rendered according to a
+  ## session-wide style set by @code{datetime.zoneNameStyle}.  The default,
+  ## @qcode{'iana'}, is an Octave-specific extension that shows the IANA
+  ## abbreviation for every zone (e.g. @qcode{EEST}); @qcode{'matlab'} restores
+  ## MATLAB's behaviour of naming only North American zones and showing a
+  ## numeric @qcode{UTC+3}-style offset elsewhere.  A single @code{Format} may
+  ## override the session style with @qcode{zzzz} (force @qcode{'iana'}) or
+  ## @qcode{zzzzz} (force @qcode{'matlab'}).  See @code{datetime.zoneNameStyle}.
+  ##
   ## @seealso{calendarDuration, duration}
   ## @end deftp
 
@@ -101,6 +111,8 @@ classdef datetime
     ## @item @code{Q} @tab Quarter of the year.
     ## @item @code{G} @tab Era.
     ## @item @code{W} @tab Week of the month.
+    ## @item @code{z} @tab Time-zone name (style set by
+    ## @code{datetime.zoneNameStyle}; @code{zzzz}/@code{zzzzz} force it).
     ## @item @code{Z}, @code{X}, @code{x} @tab Numeric time-zone offset.
     ## @end multitable
     ##
@@ -134,6 +146,62 @@ classdef datetime
     ## Custom display
     function disp (this)
       __disp__ (this, 'datetime');
+    endfunction
+
+  endmethods
+
+  methods (Static, Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{style} =} datetime.zoneNameStyle ()
+    ## @deftypefnx {datetime} {} datetime.zoneNameStyle (@var{style})
+    ##
+    ## Query or set the session-wide style used to render time-zone names.
+    ##
+    ## The @qcode{z}, @qcode{zz}, and @qcode{zzz} fields of a display
+    ## @code{Format} render a time-zone name.  Two styles are available,
+    ## selected by this session-wide preference:
+    ##
+    ## @table @asis
+    ## @item @qcode{'iana'} (default)
+    ## The IANA time-zone database abbreviation active at each instant, such as
+    ## @qcode{EDT}, @qcode{EEST}, @qcode{JST}, or @qcode{UTC}.  This is an
+    ## Octave-specific extension: a named abbreviation is shown for every zone.
+    ##
+    ## @item @qcode{'matlab'}
+    ## MATLAB-compatible rendering: a named abbreviation is shown only for the
+    ## North American zones plus @qcode{GMT} and @qcode{UTC}; every other zone
+    ## renders as a numeric UTC offset such as @qcode{UTC+3} or
+    ## @qcode{UTC+5:30}.
+    ## @end table
+    ##
+    ## @code{@var{style} = datetime.zoneNameStyle ()} returns the current
+    ## style.  @code{datetime.zoneNameStyle (@var{style})} sets it to
+    ## @var{style}, either @qcode{'iana'} or @qcode{'matlab'}.  The setting
+    ## persists for the current Octave session.
+    ##
+    ## An individual @code{Format} string can override the session style with
+    ## the Octave-specific fields @qcode{zzzz} (force @qcode{'iana'}) and
+    ## @qcode{zzzzz} (force @qcode{'matlab'}).
+    ##
+    ## @end deftypefn
+    function out = zoneNameStyle (style)
+      persistent current;
+      if (isempty (current))
+        current = 'iana';
+      endif
+      if (nargin < 1)
+        out = current;
+      else
+        if (! (ischar (style) && isrow (style)) ...
+            || ! any (strcmpi (style, {'iana', 'matlab'})))
+          error ("datetime.zoneNameStyle: STYLE must be 'iana' or 'matlab'.");
+        endif
+        current = lower (style);
+        if (nargout > 0)
+          out = current;
+        endif
+      endif
     endfunction
 
   endmethods
@@ -385,7 +453,8 @@ classdef datetime
       fmt = dtResolveFormat (this.Format, this.Hour, this.Minute, ...
                              this.Second);
       cstr = dtFormatStrings (this.Year, this.Month, this.Day, this.Hour, ...
-                              this.Minute, this.Second, this.TimeZone, fmt);
+                              this.Minute, this.Second, this.TimeZone, fmt, ...
+                              datetime.zoneNameStyle ());
     endfunction
 
     ## -*- texinfo -*-
@@ -4531,16 +4600,20 @@ endfunction
 ## time zone ('' for unzoned); FMT is a concrete pattern already resolved by
 ## dtResolveFormat.  NaT elements render as 'NaT' and infinite years as
 ## '-Inf'/'Inf', matching the component-store sentinels.
-function cstr = dtFormatStrings (Y, M, D, H, Mi, S, TZ, fmt)
+function cstr = dtFormatStrings (Y, M, D, H, Mi, S, TZ, fmt, zoneStyle)
   toks = dtFormatTokens (fmt);
   syms = [toks.sym];
   sz = size (Y);
   cstr = cell (sz);
 
-  ## Precompute derived quantities only when their field appears.
+  ## Precompute derived quantities only when their field appears.  The zone
+  ## name field 'z' needs both the abbreviation (mode 'iana', and the
+  ## whitelist test of mode 'matlab') and the offset (mode 'matlab' fallback).
+  hasZ     = any (syms == 'z');
   needWday = any (syms == 'e');
   needDoy  = any (syms == 'D');
-  needOff  = any (ismember (syms, 'zZXx')) && ! isempty (TZ);
+  needOff  = (any (ismember (syms, 'ZXx')) || hasZ) && ! isempty (TZ);
+  needAbbr = hasZ && ! isempty (TZ);
   if (needWday || needDoy)
     dn = datenum (Y, M, D);
   endif
@@ -4552,6 +4625,9 @@ function cstr = dtFormatStrings (Y, M, D, H, Mi, S, TZ, fmt)
   endif
   if (needOff)
     off = dtZoneOffset (Y, M, D, H, Mi, S, TZ);
+  endif
+  if (needAbbr)
+    abbr = dtZoneAbbrev (Y, M, D, H, Mi, S, TZ);
   endif
 
   mAbbr = {'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', ...
@@ -4676,6 +4752,21 @@ function cstr = dtFormatStrings (Y, M, D, H, Mi, S, TZ, fmt)
         case {'z', 'Z', 'X', 'x'}
           if (isempty (TZ))
             piece = repmat ('*', 1, nn);
+          elseif (c == 'z')
+            ## 'z'/'zz'/'zzz' follow the session style; 'zzzz' and 'zzzzz'
+            ## are Octave-specific per-format overrides.
+            if (nn == 4)
+              zst = 'iana';
+            elseif (nn >= 5)
+              zst = 'matlab';
+            else
+              zst = zoneStyle;
+            endif
+            if (strcmp (zst, 'iana'))
+              piece = abbr{k};
+            else
+              piece = dtZoneMatlab (abbr{k}, off(k));
+            endif
           else
             piece = dtZoneField (c, nn, off(k));
           endif
@@ -4707,10 +4798,55 @@ function off = dtZoneOffset (Y, M, D, H, Mi, S, TZ)
   off = utcAsIf - instant;
 endfunction
 
-## Render a single time-zone field for a zoned datetime given the offset in
-## seconds (negative west of UTC).  Implements the numeric ISO-8601 families
-## Z/X/x exactly; the abbreviated-name family 'z' needs the zone database and
-## is not yet available, so it falls back to the GMT-style numeric offset.
+## Zone abbreviation (e.g. 'EDT', 'EST', 'UTC') for each element of a zoned
+## datetime, from the compiled tz database via the __datetime__ builtin.
+function ab = dtZoneAbbrev (Y, M, D, H, Mi, S, TZ)
+  ab = __datetime__ (Y, M, D, H, Mi, S, 'ConvertTo', 'zoneabbrev', ...
+                     'TimeZone', TZ, 'Precision', 'microseconds');
+endfunction
+
+## MATLAB-compatible 'z' rendering: show the IANA letter abbreviation only for
+## the North American zones (plus GMT/UTC) that MATLAB names, keyed on the
+## (abbreviation, offset) pair so collisions resolve correctly (e.g. Shanghai
+## 'CST' at +8 is not US Central 'CST' at -6, and Havana 'CDT' at -4 is not US
+## 'CDT' at -5); every other zone renders as a numeric UTC offset.
+function piece = dtZoneMatlab (ab, offSec)
+  names = {'EST', 'EDT', 'CST', 'CDT', 'MST', 'MDT', 'PST', 'PDT', 'AKST', ...
+           'AKDT', 'HST', 'HAST', 'HADT', 'AST', 'ADT', 'GMT', 'UTC'};
+  hours = [-5, -4, -6, -5, -7, -6, -8, -7, -9, -8, -10, -10, -9, -4, -3, 0, 0];
+  idx = find (strcmp (ab, names));
+  if (! isempty (idx) && any (abs (offSec - hours(idx) * 3600) < 1))
+    piece = ab;
+  else
+    piece = dtZoneUTC (offSec);
+  endif
+endfunction
+
+## Numeric short UTC-offset form ('UTC', 'UTC+3', 'UTC+5:30', 'UTC-3:30') used
+## by the MATLAB-compatible 'z' style for zones without a named abbreviation.
+function piece = dtZoneUTC (offSec)
+  if (abs (offSec) < 1)
+    piece = 'UTC';
+    return;
+  endif
+  a = abs (offSec);
+  hh = floor (a / 3600);
+  mm = round (rem (a, 3600) / 60);
+  if (offSec < 0)
+    sgn = '-';
+  else
+    sgn = '+';
+  endif
+  if (mm == 0)
+    piece = sprintf ('UTC%c%d', sgn, hh);
+  else
+    piece = sprintf ('UTC%c%d:%02d', sgn, hh, mm);
+  endif
+endfunction
+
+## Render a single numeric time-zone offset field (the ISO-8601 families Z/X/x)
+## for a zoned datetime, given the offset in seconds (negative west of UTC).
+## The zone name family 'z' is handled separately (see dtZoneMatlab).
 function piece = dtZoneField (c, nn, offSec)
   a = abs (offSec);
   hh = floor (a / 3600);
@@ -4756,8 +4892,5 @@ function piece = dtZoneField (c, nn, offSec)
       else
         piece = sprintf ('%c%02d:%02d', sgn, hh, mm);
       endif
-    otherwise
-      ## 'z' abbreviated name: fall back to the GMT-style numeric offset.
-      piece = sprintf ('%c%02d%02d', sgn, hh, mm);
   endswitch
 endfunction

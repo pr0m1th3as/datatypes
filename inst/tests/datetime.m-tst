@@ -259,6 +259,78 @@
 %!              'zoneabbrev', 'TimeZone', 'UTC', ...
 %!              'Precision', 'microseconds'), {''})
 
+## Test Format seam -- time-zone name style: default is the Octave-specific
+## 'iana', unzoned renders asterisks, invalid style is rejected.
+%!assert_equal (datetime.zoneNameStyle (), 'iana')
+%!assert_equal (char (datetime (2026, 3, 9), 'z'), '*')
+%!error <datetime.zoneNameStyle: STYLE must be 'iana' or 'matlab'.> ...
+%! datetime.zoneNameStyle ('bogus')
+
+## Test Format seam -- 'iana' style shows the IANA abbreviation for every zone.
+%!test
+%! old = datetime.zoneNameStyle ();
+%! unwind_protect
+%!   datetime.zoneNameStyle ('iana');
+%!   assert_equal (datetime.zoneNameStyle (), 'iana');
+%!   assert_equal (char (datetime (2026, 3, 9, 14, 0, 0, 'TimeZone', ...
+%!                 'America/New_York'), 'z'), 'EDT');
+%!   assert_equal (char (datetime (2026, 7, 9, 12, 0, 0, 'TimeZone', ...
+%!                 'Europe/Athens'), 'z'), 'EEST');
+%!   assert_equal (char (datetime (2026, 7, 9, 12, 0, 0, 'TimeZone', ...
+%!                 'Asia/Tokyo'), 'z'), 'JST');
+%!   assert_equal (char (datetime (2026, 7, 9, 12, 0, 0, 'TimeZone', ...
+%!                 'Asia/Shanghai'), 'z'), 'CST');
+%! unwind_protect_cleanup
+%!   datetime.zoneNameStyle (old);
+%! end_unwind_protect
+
+## Test Format seam -- 'matlab' style: named abbreviation only for North
+## American zones (plus GMT/UTC), numeric UTC offset elsewhere, with the
+## (abbrev, offset) key resolving collisions (Shanghai/Havana).
+%!test
+%! old = datetime.zoneNameStyle ();
+%! unwind_protect
+%!   datetime.zoneNameStyle ('matlab');
+%!   assert_equal (char (datetime (2026, 3, 9, 14, 0, 0, 'TimeZone', ...
+%!                 'America/New_York'), 'z'), 'EDT');
+%!   assert_equal (char (datetime (2026, 1, 9, 14, 0, 0, 'TimeZone', ...
+%!                 'America/New_York'), 'z'), 'EST');
+%!   assert_equal (char (datetime (2026, 7, 9, 12, 0, 0, 'TimeZone', ...
+%!                 'America/Mexico_City'), 'z'), 'CST');
+%!   assert_equal (char (datetime (2026, 7, 9, 12, 0, 0, 'TimeZone', ...
+%!                 'Pacific/Honolulu'), 'z'), 'HST');
+%!   assert_equal (char (datetime (2026, 7, 9, 12, 0, 0, 'TimeZone', ...
+%!                 'Europe/Athens'), 'z'), 'UTC+3');
+%!   assert_equal (char (datetime (2026, 7, 9, 12, 0, 0, 'TimeZone', ...
+%!                 'Asia/Tokyo'), 'z'), 'UTC+9');
+%!   assert_equal (char (datetime (2026, 7, 9, 12, 0, 0, 'TimeZone', ...
+%!                 'Asia/Kolkata'), 'z'), 'UTC+5:30');
+%!   assert_equal (char (datetime (2026, 1, 15, 12, 0, 0, 'TimeZone', ...
+%!                 'America/St_Johns'), 'z'), 'UTC-3:30');
+%!   assert_equal (char (datetime (2026, 7, 9, 12, 0, 0, 'TimeZone', ...
+%!                 'Asia/Shanghai'), 'z'), 'UTC+8');
+%!   assert_equal (char (datetime (2026, 7, 9, 12, 0, 0, 'TimeZone', ...
+%!                 'America/Havana'), 'z'), 'UTC-4');
+%!   assert_equal (char (datetime (2026, 3, 9, 14, 0, 0, 'TimeZone', ...
+%!                 'UTC'), 'z'), 'UTC');
+%! unwind_protect_cleanup
+%!   datetime.zoneNameStyle (old);
+%! end_unwind_protect
+
+## Test Format seam -- per-format overrides ignore the session style: 'zzzz'
+## forces 'iana', 'zzzzz' forces 'matlab'.
+%!test
+%! old = datetime.zoneNameStyle ();
+%! unwind_protect
+%!   ath = datetime (2026, 7, 9, 12, 0, 0, 'TimeZone', 'Europe/Athens');
+%!   datetime.zoneNameStyle ('matlab');
+%!   assert_equal (char (ath, 'zzzz'), 'EEST');
+%!   datetime.zoneNameStyle ('iana');
+%!   assert_equal (char (ath, 'zzzzz'), 'UTC+3');
+%! unwind_protect_cleanup
+%!   datetime.zoneNameStyle (old);
+%! end_unwind_protect
+
 ## Test 'ymd'
 %!test
 %! [y, m, d] = ymd (datetime (2020, 7, 4));
