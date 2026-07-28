@@ -673,6 +673,21 @@
 %!assert_equal (yyyymmdd (datetime (2024, 1, [1; 2])), [20240101; 20240102])
 %!assert_equal (isnan (yyyymmdd (NaT)), true)
 
+## Test 'datenum' -- serial date number, wall-clock, NaT -> NaN, Inf preserved
+%!assert_equal (datenum (datetime (2024, 3, 9)), 739320)
+%!assert_equal (datenum (datetime (2024, 1, 1)), 739252)
+%!assert_equal (datenum (datetime (2024, 3, 9, 6, 0, 0)), 739320.25)
+%!assert_equal (datenum (datetime (2024, 3, 9, 6, 30, 15.5)), ...
+%!              datenum (2024, 3, 9, 6, 30, 15.5))
+%!assert_equal (class (datenum (datetime (2024, 1, 1))), 'double')
+%!assert_equal (datenum (datetime (2024, 3, 9, 23, 0, 0, ...
+%!              'TimeZone', 'America/New_York')), datenum (2024, 3, 9, 23, 0, 0))
+%!assert_equal (datenum (datetime (2024, 1, [1; 2])), [739252; 739253])
+%!assert_equal (isnan (datenum (NaT)), true)
+%!assert_equal (datenum ([datetime(2024, 1, 1), NaT]), [739252, NaN])
+%!assert_equal (datenum (datetime (Inf, 'ConvertFrom', 'datenum')), Inf)
+%!assert_equal (datenum (datetime (-Inf, 'ConvertFrom', 'datenum')), -Inf)
+
 ## Test 'posixtime' -- seconds since the Unix epoch, unzoned treated as UTC
 %!assert_equal (posixtime (datetime (1970, 1, 1, 0, 0, 0)), 0)
 %!assert_equal (posixtime (datetime (2024, 1, 1, 0, 0, 0)), 1704067200)

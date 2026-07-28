@@ -1101,6 +1101,31 @@ classdef datetime
       out = this.Year * 10000 + this.Month * 100 + this.Day;
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{N} =} datenum (@var{T})
+    ##
+    ## Convert datetime array to serial date numbers.
+    ##
+    ## @code{@var{N} = datenum (@var{T})} returns a @qcode{double} array @var{N}
+    ## of the same size as @var{T} holding the serial date number of each
+    ## element, where @code{1} corresponds to January 1 of the year 0000 and the
+    ## fractional part represents the time of day.  The time zone of a zoned
+    ## @var{T} is ignored; its wall-clock components are used.  Not-A-Time
+    ## (@qcode{NaT}) values are returned as @qcode{NaN}, and infinite datetimes
+    ## preserve their sign.
+    ##
+    ## @end deftypefn
+    function out = datenum (this)
+      Y = this.Year;  M = this.Month;  D = this.Day;
+      h = this.Hour;  mi = this.Minute;  s = this.Second;
+      out = nan (size (Y));
+      ## Core datenum errors on NaN components, so screen NaT out first and let
+      ## infinite datetimes carry their sign through unchanged.
+      fin = isfinite (Y);
+      out(fin) = datenum (Y(fin), M(fin), D(fin), h(fin), mi(fin), s(fin));
+      out(isinf (Y)) = Y(isinf (Y));
+    endfunction
+
   endmethods
 
 ################################################################################
