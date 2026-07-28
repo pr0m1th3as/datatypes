@@ -1091,8 +1091,25 @@ classdef datetime
       error ("datetime.isregular: not implemented yet.");
     endfunction
 
+  endmethods
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{TF} =} isweekend (@var{T})
+    ##
+    ## Determine which datetime values fall on a weekend.
+    ##
+    ## @code{@var{TF} = isweekend (@var{T})} returns a logical array @var{TF} of
+    ## the same size as the input datetime array @var{T}, where each element is
+    ## @qcode{true} if the corresponding datetime falls on a Saturday or Sunday,
+    ## and @qcode{false} otherwise.  Not-A-Time (@qcode{NaT}) values return
+    ## @qcode{false}.
+    ##
+    ## @end deftypefn
     function TF = isweekend (this)
-      error ("datetime.isweekend: not implemented yet.");
+      dow = day (this, 'dayofweek');
+      TF = dow == 1 | dow == 7;
     endfunction
 
   endmethods

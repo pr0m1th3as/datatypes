@@ -512,6 +512,19 @@
 %!assert_equal (isdst (datetime (2024, 7, 15)), false)
 %!assert_equal (isdst (NaT), false)
 
+## Test 'isweekend' -- logical, true on Saturday or Sunday, false for NaT
+%!assert_equal (class (isweekend (datetime (2024, 1, 6))), 'logical')
+%!assert_equal (isweekend (datetime (2024, 1, 6)), true)
+%!assert_equal (isweekend (datetime (2024, 1, 7)), true)
+%!assert_equal (isweekend (datetime (2024, 1, 8)), false)
+%!assert_equal (isweekend (datetime (2024, 1, 1:7)), ...
+%!              logical ([0, 0, 0, 0, 0, 1, 1]))
+%!assert_equal (isweekend (datetime (2024, 1, [6, 7; 8, 13])), ...
+%!              logical ([1, 1; 0, 1]))
+%!assert_equal (isweekend (datetime (2024, 1, 6, 'TimeZone', 'UTC')), true)
+%!assert_equal (isweekend (NaT), false)
+%!assert_equal (isweekend ([datetime(2024, 1, 6); NaT]), logical ([1; 0]))
+
 ################################################################################
 ##                         ** Summary Information **                          ##
 ################################################################################
