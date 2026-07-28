@@ -1022,10 +1022,6 @@ classdef datetime
       error ("datetime.convertTo: not implemented yet.");
     endfunction
 
-    function out = exceltime (this, varargin)
-      error ("datetime.exceltime: not implemented yet.");
-    endfunction
-
     function out = juliandate (this, varargin)
       error ("datetime.juliandate: not implemented yet.");
     endfunction
@@ -1124,6 +1120,44 @@ classdef datetime
       fin = isfinite (Y);
       out(fin) = datenum (Y(fin), M(fin), D(fin), h(fin), mi(fin), s(fin));
       out(isinf (Y)) = Y(isinf (Y));
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{E} =} exceltime (@var{T})
+    ## @deftypefnx {datetime} {@var{E} =} exceltime (@var{T}, @var{dateType})
+    ##
+    ## Convert datetime array to Excel serial date numbers.
+    ##
+    ## @code{@var{E} = exceltime (@var{T})} returns a @qcode{double} array
+    ## @var{E} of the same size as @var{T} holding the Excel serial date number
+    ## of each element, using the Excel 1900 date system, in which the fractional
+    ## part represents the time of day.  As in Excel, the year 1900 is treated as
+    ## a leap year, so serial numbers on or after 1900-03-01 account for the
+    ## nonexistent date 1900-02-29.
+    ##
+    ## @code{@var{E} = exceltime (@var{T}, @var{dateType})} selects the date
+    ## system: @qcode{'1900'} (default) or @qcode{'1904'}.  The 1904 system
+    ## counts days from 1904-01-01 and has no leap-year anomaly.
+    ##
+    ## The time zone of a zoned @var{T} is ignored; its wall-clock components are
+    ## used.  Not-A-Time (@qcode{NaT}) values are returned as @qcode{NaN}.
+    ##
+    ## @end deftypefn
+    function out = exceltime (this, dateType = '1900')
+      if (! (ischar (dateType) && isrow (dateType) ...
+             && any (strcmpi (dateType, {'1900', '1904'}))))
+        error ("datetime.exceltime: DATETYPE must be '1900' or '1904'.");
+      endif
+      dn = datenum (this);
+      if (strcmpi (dateType, '1904'))
+        out = dn - datenum (1904, 1, 1);
+      else
+        ## Excel's 1900 system counts days from the serial-0 epoch 1899-12-30,
+        ## but wrongly treats 1900 as a leap year, so serials on or after
+        ## 1900-03-01 are one greater, spanning the nonexistent 1900-02-29.
+        out = dn - datenum (1899, 12, 30);
+        out(dn < datenum (1900, 3, 1)) -= 1;
+      endif
     endfunction
 
   endmethods
