@@ -706,6 +706,27 @@
 %!error <datetime.exceltime: DATETYPE must be '1900' or '1904'.> ...
 %! exceltime (datetime (2024, 1, 1), 'bogus')
 
+## Test 'juliandate' -- Julian date and modified variant, instant-based
+%!assert_equal (juliandate (datetime (2000, 1, 1, 12, 0, 0)), 2451545)
+%!assert_equal (juliandate (datetime (2000, 1, 1, 12, 0, 0, ...
+%!              'TimeZone', 'UTC')), 2451545)
+%!assert_equal (juliandate (datetime (2024, 3, 9)), 2460378.5)
+%!assert_equal (juliandate (datetime (2024, 3, 9), 'juliandate'), 2460378.5)
+%!assert_equal (juliandate (datetime (2024, 3, 9), 'modifiedjuliandate'), 60378)
+%!assert_equal (class (juliandate (datetime (2024, 1, 1))), 'double')
+%!assert_equal (juliandate (datetime (2024, 1, [1, 2])), [2460310.5, 2460311.5])
+%!assert_equal (isnan (juliandate (NaT)), true)
+%!assert_equal (juliandate (datetime (Inf, 'ConvertFrom', 'datenum')), Inf)
+
+## Test 'juliandate' -- zoned result uses the absolute UTC instant
+%!assert_equal (juliandate (datetime (2000, 1, 1, 12, 0, 0, ...
+%!              'TimeZone', 'America/New_York')), ...
+%!              juliandate (datetime (2000, 1, 1, 17, 0, 0, 'TimeZone', 'UTC')))
+
+## Test 'juliandate' -- error branch
+%!error <datetime.juliandate: DATETYPE must be 'juliandate' or 'modifiedjuliandate'.> ...
+%! juliandate (datetime (2024, 1, 1), 'bogus')
+
 ## Test 'posixtime' -- seconds since the Unix epoch, unzoned treated as UTC
 %!assert_equal (posixtime (datetime (1970, 1, 1, 0, 0, 0)), 0)
 %!assert_equal (posixtime (datetime (2024, 1, 1, 0, 0, 0)), 1704067200)

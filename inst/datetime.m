@@ -1022,10 +1022,6 @@ classdef datetime
       error ("datetime.convertTo: not implemented yet.");
     endfunction
 
-    function out = juliandate (this, varargin)
-      error ("datetime.juliandate: not implemented yet.");
-    endfunction
-
   endmethods
 
   methods (Access = public)
@@ -1157,6 +1153,40 @@ classdef datetime
         ## 1900-03-01 are one greater, spanning the nonexistent 1900-02-29.
         out = dn - datenum (1899, 12, 30);
         out(dn < datenum (1900, 3, 1)) -= 1;
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{J} =} juliandate (@var{T})
+    ## @deftypefnx {datetime} {@var{J} =} juliandate (@var{T}, @var{dateType})
+    ##
+    ## Convert datetime array to Julian dates.
+    ##
+    ## @code{@var{J} = juliandate (@var{T})} returns a @qcode{double} array
+    ## @var{J} of the same size as @var{T} holding the Julian date of each
+    ## element, that is, the number of days (including a fractional part) since
+    ## noon UTC on January 1, 4713 BCE.  Unlike @code{datenum}, the result is
+    ## based on the absolute UTC instant, so the time zone of a zoned @var{T} is
+    ## taken into account; datetime arrays without a time zone are treated as
+    ## UTC.  Not-A-Time (@qcode{NaT}) values are returned as @qcode{NaN}.
+    ##
+    ## @code{@var{J} = juliandate (@var{T}, @var{dateType})} selects the kind of
+    ## Julian date: @qcode{'juliandate'} (default) or
+    ## @qcode{'modifiedjuliandate'}, the latter being the Julian date minus
+    ## @code{2400000.5}.
+    ##
+    ## @end deftypefn
+    function out = juliandate (this, dateType = 'juliandate')
+      if (! (ischar (dateType) && isrow (dateType) && any (strcmpi (dateType, ...
+             {'juliandate', 'modifiedjuliandate'}))))
+        error (strcat ("datetime.juliandate: DATETYPE must be 'juliandate'", ...
+                       " or 'modifiedjuliandate'."));
+      endif
+      ## Julian date of the Unix epoch (1970-01-01 00:00 UTC) is 2440587.5; the
+      ## POSIX instant places the array on the absolute UTC timeline.
+      out = posixtime (this) / 86400 + 2440587.5;
+      if (strcmpi (dateType, 'modifiedjuliandate'))
+        out -= 2400000.5;
       endif
     endfunction
 
