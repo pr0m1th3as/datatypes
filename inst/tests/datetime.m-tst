@@ -525,6 +525,79 @@
 %!assert_equal (isweekend (NaT), false)
 %!assert_equal (isweekend ([datetime(2024, 1, 6); NaT]), logical ([1; 0]))
 
+## Test 'isregular' -- time-based (default) regularity
+%!assert_equal (isregular (datetime (2024, 1, 1) + days (0:3)), true)
+%!assert_equal (isregular (datetime (2024, 1, 1) + hours (0:3)), true)
+%!assert_equal (isregular (datetime (2024, 1, [1 2 4])), false)
+%!assert_equal (isregular (datetime (2024, 1, [1 5])), true)
+%!assert_equal (isregular (fliplr (datetime (2024, 1, 1) + days (0:3))), true)
+%!assert_equal (isregular ((datetime (2024, 1, 1) + days (0:3))'), true)
+%!assert_equal (isregular (datetime (2024, 1, 1)), false)
+%!assert_equal (isregular ([datetime(2024, 1, 1), NaT, datetime(2024, 1, 3)]), false)
+%!test
+%! e = datetime (2024, 1, 1);
+%! e(1) = [];
+%! assert_equal (isregular (e), false);
+
+## Test 'isregular' -- monthly data is irregular in time but regular in months
+%!assert_equal (isregular (datetime (2024, 1, 1):calmonths (1):datetime (2024, 6, 1)), false)
+%!assert_equal (isregular (datetime (2024, 1, 1):calmonths (1):datetime (2024, 6, 1), 'months'), true)
+
+## Test 'isregular' -- calendar units
+%!assert_equal (isregular (datetime (2024, 1, 1) + days (0:3), 'days'), true)
+%!assert_equal (isregular (datetime (2024, 1, 1) + days (0:3), 'weeks'), false)
+%!assert_equal (isregular (datetime (2024, 1, 1:7:22), 'weeks'), true)
+%!assert_equal (isregular (datetime (2024, 1:4, 15), 'months'), true)
+%!assert_equal (isregular (datetime (2024, [1 3 5], 31), 'months'), true)
+%!assert_equal (isregular (datetime (2024, 1, [1 2 3]), 'months'), false)
+%!assert_equal (isregular (datetime (2024, 1, 1) + calquarters (0:3), 'quarters'), true)
+%!assert_equal (isregular (datetime (2020, 2, 29) + calyears (0:3), 'years'), true)
+
+## Test 'isregular' -- clamp series with varying day-of-month is irregular
+%!assert_equal (isregular (datetime (2024, 1, 31) + calmonths (0:3), 'months'), false)
+
+## Test 'isregular' -- calendar-day spacing across DST is regular in days, not time
+%!assert_equal (isregular (datetime (2024, 3, 9, ...
+%!              'TimeZone', 'America/New_York') + caldays (0:3), 'days'), true)
+%!assert_equal (isregular (datetime (2024, 3, 9, ...
+%!              'TimeZone', 'America/New_York') + caldays (0:3), 'time'), false)
+
+## Test 'isregular' -- second output DT (common step)
+%!test
+%! [tf, dt] = isregular (datetime (2024, 1, 1) + days (0:3));
+%! assert_equal (tf, true);
+%! assert_equal (class (dt), 'duration');
+%! assert_equal (seconds (dt), 86400);
+%!test
+%! [tf, dt] = isregular (datetime (2024, [1 3 5], 31), 'months');
+%! assert_equal (class (dt), 'calendarDuration');
+%! assert_equal (calmonths (dt), 2);
+%!test
+%! [tf, dt] = isregular (datetime (2024, 1, 1:7:22), 'weeks');
+%! assert_equal (caldays (dt), 7);
+%!test
+%! [tf, dt] = isregular (datetime (2020, 2, 29) + calyears (0:3), 'years');
+%! assert_equal (calmonths (dt), 12);
+%!test
+%! [tf, dt] = isregular (datetime (2024, 1, [1 2 4]));
+%! assert_equal (tf, false);
+%! assert_equal (class (dt), 'duration');
+%! assert_equal (isnan (seconds (dt)), true);
+%!test
+%! [tf, dt] = isregular (datetime (2024, 1, [1 2 5]), 'months');
+%! assert_equal (class (dt), 'calendarDuration');
+%! assert_equal (isnan (calmonths (dt)), true);
+%!test
+%! [tf, dt] = isregular (datetime (2024, 1, 1), 'months');
+%! assert_equal (tf, false);
+%! assert_equal (isnan (calmonths (dt)), true);
+
+## Test 'isregular' -- errors
+%!error <datetime.isregular: UNIT must be 'time', 'years', 'quarters', 'months', 'weeks', or 'days'.> ...
+%! isregular (datetime (2024, 1, 1) + days (0:3), 'bogus')
+%!error <datetime.isregular: input must be a datetime vector.> ...
+%! isregular (reshape (datetime (2024, 1, 1) + days (0:5), 2, 3))
+
 ################################################################################
 ##                         ** Summary Information **                          ##
 ################################################################################

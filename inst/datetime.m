@@ -1085,10 +1085,97 @@ classdef datetime
 
   endmethods
 
-  methods (Hidden)
+  methods (Access = public)
 
-    function TF = isregular (this)
-      error ("datetime.isregular: not implemented yet.");
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{tf} =} isregular (@var{T})
+    ## @deftypefnx {datetime} {@var{tf} =} isregular (@var{T}, @var{unit})
+    ## @deftypefnx {datetime} {[@var{tf}, @var{dt}] =} isregular (@dots{})
+    ##
+    ## Determine whether a datetime vector is regularly spaced.
+    ##
+    ## @code{@var{tf} = isregular (@var{T})} returns @qcode{true} if the elements
+    ## of the datetime vector @var{T} are equally spaced in time, and
+    ## @qcode{false} otherwise.  A scalar or empty @var{T}, or one containing a
+    ## Not-A-Time (@qcode{NaT}) value, is not regular.
+    ##
+    ## @code{@var{tf} = isregular (@var{T}, @var{unit})} tests for regular
+    ## spacing with respect to @var{unit}, which may be @qcode{'time'} (the
+    ## default), @qcode{'years'}, @qcode{'quarters'}, @qcode{'months'},
+    ## @qcode{'weeks'}, or @qcode{'days'}.  With a calendar unit, @var{T} is
+    ## regular when successive elements differ by the same whole number of that
+    ## unit, which -- unlike @qcode{'time'} -- accounts for varying month lengths
+    ## and daylight saving time.
+    ##
+    ## @code{[@var{tf}, @var{dt}] = isregular (@dots{})} also returns the common
+    ## time step @var{dt}.  For @qcode{'time'} it is a @code{duration}; for a
+    ## calendar unit it is a @code{calendarDuration}.  When @var{T} is not
+    ## regular, @var{dt} is @qcode{NaN}.
+    ##
+    ## @end deftypefn
+    function [TF, dt] = isregular (this, unit = 'time')
+      units = {'time', 'years', 'quarters', 'months', 'weeks', 'days'};
+      if (! (ischar (unit) && isrow (unit) && any (strcmpi (unit, units))))
+        error (strcat ("datetime.isregular: UNIT must be 'time', 'years',", ...
+                       " 'quarters', 'months', 'weeks', or 'days'."));
+      endif
+      unit = tolower (unit);
+      istime = strcmp (unit, 'time');
+
+      ## A scalar or empty array is never regular; anything else must be a
+      ## vector (MATLAB rejects matrices).
+      if (numel (this) < 2)
+        TF = false;
+        if (istime)
+          dt = duration (0, 0, NaN);
+        else
+          dt = calmonths (NaN);
+        endif
+        return;
+      elseif (! isvector (this))
+        error ("datetime.isregular: input must be a datetime vector.");
+      endif
+
+      if (istime)
+        ## Fixed-length regularity: every successive instant difference equal.
+        d = diff (this);
+        ds = seconds (d);
+        TF = isfinite (ds(1)) && all (ds(:) == ds(1));
+        if (TF)
+          dt = d(1);
+        else
+          dt = duration (0, 0, NaN);
+        endif
+      else
+        ## Calendar regularity: the full calendar difference must be constant
+        ## and consist purely of whole units of the requested kind.
+        d = caldiff (this);
+        moA = calmonths (d);
+        dyA = caldays (d);
+        tA = seconds (split (d, 'time'));
+        allEqual = ! any (isnan ([moA(:); dyA(:); tA(:)])) ...
+                   && all (moA(:) == moA(1)) && all (dyA(:) == dyA(1)) ...
+                   && all (tA(:) == tA(1));
+        mo = moA(1);  dy = dyA(1);  ti = tA(1);
+        switch (unit)
+          case 'years'
+            pure = mod (mo, 12) == 0 && dy == 0 && ti == 0;
+          case 'quarters'
+            pure = mod (mo, 3) == 0 && dy == 0 && ti == 0;
+          case 'months'
+            pure = dy == 0 && ti == 0;
+          case 'weeks'
+            pure = mo == 0 && ti == 0 && mod (dy, 7) == 0;
+          case 'days'
+            pure = mo == 0 && ti == 0;
+        endswitch
+        TF = allEqual && pure;
+        if (TF)
+          dt = d(1);
+        else
+          dt = calmonths (NaN);
+        endif
+      endif
     endfunction
 
   endmethods
