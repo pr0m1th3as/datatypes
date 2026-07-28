@@ -816,12 +816,28 @@ classdef datetime
       out = this - dateshift (this, 'start', 'day');
     endfunction
 
-  endmethods
-
-  methods (Hidden)
-
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{DT} =} tzoffset (@var{T})
+    ##
+    ## Time zone offset of a datetime array.
+    ##
+    ## @code{@var{DT} = tzoffset (@var{T})} returns the offset from UTC of each
+    ## element of the input datetime array @var{T} as a @code{duration} array
+    ## @var{DT} of the same size as @var{T}.  The offset is positive for time
+    ## zones east of UTC and includes the additional hour when daylight saving
+    ## time is in effect.  If @var{T} has no time zone, or for Not-A-Time
+    ## (@qcode{NaT}) values, the corresponding offset is @qcode{NaN}.
+    ##
+    ## @end deftypefn
     function out = tzoffset (this)
-      error ("datetime.tzoffset: not implemented yet.");
+      if (isempty (this.TimeZone))
+        secs = nan (size (this));
+      else
+        secs = dtZoneOffset (this.Year, this.Month, this.Day, ...
+                             this.Hour, this.Minute, this.Second, this.TimeZone);
+      endif
+      out = duration (0, 0, secs);
+      out.Format = 'hh:mm';
     endfunction
 
   endmethods

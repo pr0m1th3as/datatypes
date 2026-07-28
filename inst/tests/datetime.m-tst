@@ -474,6 +474,24 @@
 %!assert_equal (seconds (timeofday (datetime (2024, 6, 15, 14, 45, 30.5, ...
 %!                                  'TimeZone', 'America/New_York'))), 53130.5)
 
+## Test 'tzoffset' -- offset from UTC as a duration (positive east, DST-aware)
+%!assert_equal (minutes (tzoffset (datetime (2024, 1, 15, ...
+%!                                 'TimeZone', 'America/New_York'))), -300)
+%!assert_equal (minutes (tzoffset (datetime (2024, 7, 15, ...
+%!                                 'TimeZone', 'America/New_York'))), -240)
+%!assert_equal (minutes (tzoffset (datetime (2024, 7, 15, ...
+%!                                 'TimeZone', 'Asia/Kolkata'))), 330)
+%!assert_equal (minutes (tzoffset (datetime (2024, 7, 15, 'TimeZone', 'UTC'))), 0)
+%!assert_equal (minutes (tzoffset (datetime (2024, 7, 15, ...
+%!                                 'TimeZone', 'Pacific/Marquesas'))), -570)
+%!assert_equal (minutes (tzoffset (datetime (2024, 1, [15, NaN], ...
+%!                                 'TimeZone', 'America/New_York'))), [-300, NaN])
+%!assert_equal (isnan (minutes (tzoffset (datetime (2024, 7, 15)))), true)
+%!test
+%! d = tzoffset (datetime (2024, 1, 15, 'TimeZone', 'America/New_York'));
+%! assert_equal (class (d), 'duration');
+%! assert_equal (d.Format, 'hh:mm');
+
 ################################################################################
 ##                         ** Summary Information **                          ##
 ################################################################################
