@@ -1016,14 +1016,6 @@ classdef datetime
 
   endmethods
 
-  methods (Hidden)
-
-    function out = convertTo (this, varargin)
-      error ("datetime.convertTo: not implemented yet.");
-    endfunction
-
-  endmethods
-
   methods (Access = public)
 
     ## -*- texinfo -*-
@@ -1188,6 +1180,133 @@ classdef datetime
       if (strcmpi (dateType, 'modifiedjuliandate'))
         out -= 2400000.5;
       endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{X} =} convertTo (@var{T}, @var{dateType})
+    ## @deftypefnx {datetime} {@var{X} =} convertTo (@var{T}, @qcode{'epochtime'}, @var{Name}, @var{Value})
+    ##
+    ## Convert datetime array to a numeric representation.
+    ##
+    ## @code{@var{X} = convertTo (@var{T}, @var{dateType})} converts the datetime
+    ## array @var{T} to the numeric date/time representation named by
+    ## @var{dateType}, returning an array @var{X} of the same size as @var{T}.
+    ## It is a convenience wrapper around the individual conversion methods.
+    ## @var{dateType} may be one of:
+    ##
+    ## @itemize
+    ## @item @qcode{'datenum'} -- serial date number, @code{double} (see
+    ## @code{datenum}).
+    ## @item @qcode{'excel'} or @qcode{'excel1900'} -- Excel serial date, 1900
+    ## system, @code{double} (see @code{exceltime}).
+    ## @item @qcode{'excel1904'} -- Excel serial date, 1904 system, @code{double}.
+    ## @item @qcode{'juliandate'} -- Julian date, @code{double} (see
+    ## @code{juliandate}).
+    ## @item @qcode{'modifiedjuliandate'} -- modified Julian date, @code{double}.
+    ## @item @qcode{'posixtime'} -- seconds since the Unix epoch, @code{double}
+    ## (see @code{posixtime}).
+    ## @item @qcode{'yyyymmdd'} -- @code{YYYYMMDD} numeric date, @code{double}
+    ## (see @code{yyyymmdd}).
+    ## @item @qcode{'epochtime'} -- ticks since an epoch, @code{int64} (see
+    ## below).
+    ## @item @qcode{'ntp'} -- NTP timestamp, @code{uint64}, valid from
+    ## 1900-01-01 up to 2036-02-07.
+    ## @item @qcode{'ntfs'} -- NTFS/@w{FILETIME} 100-ns ticks since 1601-01-01,
+    ## @code{uint64}.
+    ## @item @qcode{'.net'} -- @w{.NET} 100-ns ticks since 0001-01-01,
+    ## @code{uint64}.
+    ## @end itemize
+    ##
+    ## For the @code{double} conversions, Not-A-Time (@qcode{NaT}) values are
+    ## returned as @qcode{NaN}.  The integer conversions cannot represent
+    ## @qcode{NaN}, so a @qcode{NaT} value, an infinite datetime, or a datetime
+    ## outside the target format's representable range raises an error.
+    ##
+    ## @code{@var{X} = convertTo (@var{T}, @qcode{'epochtime'}, @var{Name},
+    ## @var{Value})} accepts the options @qcode{'Epoch'} (a scalar datetime
+    ## marking tick zero; default @code{1970-01-01}) and @qcode{'TicksPerSecond'}
+    ## (a positive scalar; default @code{1}).  The epoch and @var{T} must both be
+    ## zoned or both be unzoned.
+    ##
+    ## The @qcode{'tt2000'} conversion that MATLAB supports is not implemented, as
+    ## it requires leap-second (@qcode{'UTCLeapSeconds'}) support.
+    ##
+    ## @end deftypefn
+    function out = convertTo (this, dateType, varargin)
+      if (nargin < 2)
+        error ("datetime.convertTo: not enough input arguments.");
+      endif
+      if (! (ischar (dateType) && isrow (dateType)))
+        error ("datetime.convertTo: DATETYPE must be a character vector.");
+      endif
+      dt = tolower (dateType);
+
+      ## 'epochtime' is the only type taking Name/Value options.
+      if (strcmp (dt, 'epochtime'))
+        [epochVal, ticks] = parsePairedArguments ({'Epoch', 'TicksPerSecond'}, ...
+                                                  {[], 1}, varargin(:));
+        if (! (isnumeric (ticks) && isscalar (ticks) && isreal (ticks) ...
+               && ticks > 0))
+          error (strcat ("datetime.convertTo: 'TicksPerSecond' must be a", ...
+                         " positive scalar."));
+        endif
+        if (isempty (epochVal))
+          epochMs = 0;
+        else
+          if (! (isa (epochVal, 'datetime') && isscalar (epochVal)))
+            error ("datetime.convertTo: 'Epoch' must be a scalar datetime.");
+          endif
+          if (xor (isempty (this.TimeZone), isempty (epochVal.TimeZone)))
+            error (strcat ("datetime.convertTo: the epoch and the input", ...
+                           " datetime array must both have a time zone, or", ...
+                           " must both be unzoned."));
+          endif
+          epochMs = round (serial (epochVal) * 1000);
+        endif
+        ms = round (serial (this) * 1000);
+        res = round ((ms - epochMs) ./ 1000 .* ticks);
+        if (! all (isfinite (ms(:))) ...
+            || any (abs (res(:)) > double (intmax ('int64'))))
+          error (strcat ("datetime.convertTo: 'epochtime' conversion is not", ...
+                         " supported for missing values, infinite datetimes,", ...
+                         " or datetimes outside the int64 range for the given", ...
+                         " epoch and TicksPerSecond."));
+        endif
+        out = reshape (int64 (res), size (this));
+        return;
+      endif
+
+      if (! isempty (varargin))
+        error ("datetime.convertTo: too many input arguments.");
+      endif
+      switch (dt)
+        case 'datenum'
+          out = datenum (this);
+        case {'excel', 'excel1900'}
+          out = exceltime (this, '1900');
+        case 'excel1904'
+          out = exceltime (this, '1904');
+        case 'juliandate'
+          out = juliandate (this, 'juliandate');
+        case 'modifiedjuliandate'
+          out = juliandate (this, 'modifiedjuliandate');
+        case 'posixtime'
+          out = posixtime (this);
+        case 'yyyymmdd'
+          out = yyyymmdd (this);
+        case 'ntp'
+          out = reshape (dtFixedEpoch (serial (this), 'ntp'), size (this));
+        case 'ntfs'
+          out = reshape (dtFixedEpoch (serial (this), 'ntfs'), size (this));
+        case '.net'
+          out = reshape (dtFixedEpoch (serial (this), 'dotnet'), size (this));
+        case 'tt2000'
+          error (strcat ("datetime.convertTo: 'tt2000' conversion requires", ...
+                         " leap-second support, which is not implemented."));
+        otherwise
+          error ("datetime.convertTo: unrecognized conversion type '%s'.", ...
+                 dateType);
+      endswitch
     endfunction
 
   endmethods
@@ -5152,6 +5271,37 @@ endfunction
 function tf = dtIsDst (Y, M, D, H, Mi, S, TZ)
   tf = logical (__datetime__ (Y, M, D, H, Mi, S, 'ConvertTo', 'isdst', ...
                               'TimeZone', TZ, 'Precision', 'microseconds'));
+endfunction
+
+## Integer fixed-epoch conversions (NTP, NTFS/FILETIME, .NET) for convertTo.
+## POSIX is the absolute UTC instant in seconds (from the 'serial' proxy).  The
+## result is built from integer milliseconds through a whole-second/fraction
+## split, keeping every intermediate below 2^53 so the final uint64 product is
+## exact.  Missing, infinite, or out-of-range instants raise an error because
+## the integer formats cannot represent NaN.
+function out = dtFixedEpoch (posix, kind)
+  switch (kind)
+    case 'ntp'
+      offset = 2208988800;   scale = 4294967296;  hiLimit = 4294967296;
+      tname = 'NTP';
+    case 'ntfs'
+      offset = 11644473600;  scale = 10000000;    hiLimit = 1844674407370;
+      tname = 'NTFS';
+    case 'dotnet'
+      offset = 62135596800;  scale = 10000000;    hiLimit = 1844674407370;
+      tname = '.NET';
+  endswitch
+  ms = round (posix * 1000);
+  secWhole = floor (ms / 1000) + offset;
+  fracMs = ms - floor (ms / 1000) * 1000;
+  ok = isfinite (ms) & secWhole >= 0 & secWhole < hiLimit;
+  if (! all (ok(:)))
+    error (strcat ("datetime.convertTo: '%s' conversion is not supported for", ...
+                   " missing values, infinite datetimes, or datetimes outside", ...
+                   " the representable range."), tname);
+  endif
+  frac = round (fracMs .* scale ./ 1000);
+  out = uint64 (secWhole) .* uint64 (scale) + uint64 (frac);
 endfunction
 
 ## MATLAB-compatible 'z' rendering: show the IANA letter abbreviation only for
