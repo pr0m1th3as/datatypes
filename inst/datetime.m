@@ -1059,11 +1059,33 @@ classdef datetime
 ##                                                                            ##
 ################################################################################
 
-  methods (Hidden)
+  methods (Access = public)
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{TF} =} isdst (@var{T})
+    ##
+    ## Determine which datetime values fall in daylight saving time.
+    ##
+    ## @code{@var{TF} = isdst (@var{T})} returns a logical array @var{TF} of the
+    ## same size as the input datetime array @var{T}, where each element is
+    ## @qcode{true} if the corresponding datetime falls within daylight saving
+    ## time in its time zone, and @qcode{false} otherwise.  If @var{T} has no
+    ## time zone, or for Not-A-Time (@qcode{NaT}) values, the corresponding
+    ## element of @var{TF} is @qcode{false}.
+    ##
+    ## @end deftypefn
     function TF = isdst (this)
-      error ("datetime.isdst: not implemented yet.");
+      if (isempty (this.TimeZone))
+        TF = false (size (this));
+      else
+        TF = dtIsDst (this.Year, this.Month, this.Day, ...
+                      this.Hour, this.Minute, this.Second, this.TimeZone);
+      endif
     endfunction
+
+  endmethods
+
+  methods (Hidden)
 
     function TF = isregular (this)
       error ("datetime.isregular: not implemented yet.");
@@ -4873,6 +4895,13 @@ endfunction
 function ab = dtZoneAbbrev (Y, M, D, H, Mi, S, TZ)
   ab = __datetime__ (Y, M, D, H, Mi, S, 'ConvertTo', 'zoneabbrev', ...
                      'TimeZone', TZ, 'Precision', 'microseconds');
+endfunction
+
+## Logical daylight-saving-time flag for each element of a zoned datetime,
+## from the compiled tz database via the __datetime__ builtin.
+function tf = dtIsDst (Y, M, D, H, Mi, S, TZ)
+  tf = logical (__datetime__ (Y, M, D, H, Mi, S, 'ConvertTo', 'isdst', ...
+                              'TimeZone', TZ, 'Precision', 'microseconds'));
 endfunction
 
 ## MATLAB-compatible 'z' rendering: show the IANA letter abbreviation only for

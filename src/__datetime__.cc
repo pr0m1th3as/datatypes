@@ -200,6 +200,16 @@ components2abbrev (double Yv, double Mv, double Dv, double hv, double mv,
   return in.get_info ().abbrev;
 }
 
+// True when daylight saving time is in effect at the wall-clock components
+// when interpreted in 'timezone'.  Callers must screen NaN/Inf.
+bool
+components2isdst (double Yv, double Mv, double Dv, double hv, double mv,
+                  double sv, double xv, string timezone, string precision)
+{
+  auto in = components2zoned (Yv, Mv, Dv, hv, mv, sv, xv, timezone, precision);
+  return in.get_info ().save != chrono::minutes {0};
+}
+
 sys_time<chrono::microseconds>
 components2sys (double Yv, double Mv, double Dv, double hv, double mv,
                double sv, double xv, string timezone, string precision)
@@ -1157,6 +1167,33 @@ Base function for datetime class. \n\
         {
           A(i) = components2abbrev (Y(i), M(i), D(i), h(i), m(i), s(i),
                                     x(i), timezone, precision);
+        }
+      }
+      retval(0) = A;
+      return retval;
+    }
+
+    // 'ConvertTo','isdst' returns a 1/0 array (converted to logical by the
+    // caller), true where daylight saving time is in effect at each element.
+    // The wall-clock components are interpreted in 'timezone'; Not-A-Time and
+    // infinite datetimes map to false.
+    if (convertTo == "isdst")
+    {
+      NDArray A(sz, 0);
+      for (int i = 0; i < sz.numel (); i++)
+      {
+        RowVector tmp(7);
+        tmp(0) = Y(i); tmp(1) = M(i); tmp(2) = D(i);
+        tmp(3) = h(i); tmp(4) = m(i); tmp(5) = s(i); tmp(6) = x(i);
+        double chk = check_nan_inf (tmp);
+        if (isnan (chk) || isinf (chk))
+        {
+          A(i) = 0;
+        }
+        else
+        {
+          A(i) = components2isdst (Y(i), M(i), D(i), h(i), m(i), s(i),
+                                   x(i), timezone, precision) ? 1 : 0;
         }
       }
       retval(0) = A;

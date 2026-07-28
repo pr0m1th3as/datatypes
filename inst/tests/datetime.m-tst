@@ -492,6 +492,26 @@
 %! assert_equal (class (d), 'duration');
 %! assert_equal (d.Format, 'hh:mm');
 
+## Test 'isdst' -- logical DST flag, false when unzoned or NaT
+%!assert_equal (class (isdst (datetime (2024, 7, 15, ...
+%!                            'TimeZone', 'America/New_York'))), 'logical')
+%!assert_equal (isdst (datetime (2024, 1, 15, ...
+%!                     'TimeZone', 'America/New_York')), false)
+%!assert_equal (isdst (datetime (2024, 7, 15, ...
+%!                     'TimeZone', 'America/New_York')), true)
+%!assert_equal (isdst (datetime (2024, 7, 15, 'TimeZone', 'UTC')), false)
+%!assert_equal (isdst (datetime (2024, 1, 15, ...
+%!                     'TimeZone', 'Australia/Sydney')), true)
+%!assert_equal (isdst (datetime (2024, 7, 15, ...
+%!                     'TimeZone', 'Australia/Sydney')), false)
+%!assert_equal (isdst (datetime (2024, 7, 15, 'TimeZone', 'Asia/Kolkata')), false)
+%!assert_equal (isdst (datetime (2024, [1, 7], 15, ...
+%!                     'TimeZone', 'America/New_York')), [false, true])
+%!assert_equal (isdst (datetime (2024, [1, NaN], 15, ...
+%!                     'TimeZone', 'America/New_York')), [false, false])
+%!assert_equal (isdst (datetime (2024, 7, 15)), false)
+%!assert_equal (isdst (NaT), false)
+
 ################################################################################
 ##                         ** Summary Information **                          ##
 ################################################################################
