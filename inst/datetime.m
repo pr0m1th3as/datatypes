@@ -995,6 +995,27 @@ classdef datetime
 ##                                                                            ##
 ################################################################################
 
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{P} =} posixtime (@var{T})
+    ##
+    ## Convert datetime array to POSIX time.
+    ##
+    ## @code{@var{P} = posixtime (@var{T})} returns the number of seconds
+    ## elapsed since the epoch @code{1970-01-01 00:00:00 UTC} for each element
+    ## of the input datetime array @var{T}.  The output @var{P} is a
+    ## @qcode{double} array of the same size as @var{T} and includes any
+    ## fractional seconds.  Datetime arrays without a time zone are treated as
+    ## UTC.  Not-A-Time (@qcode{NaT}) values are returned as @qcode{NaN}.
+    ##
+    ## @end deftypefn
+    function out = posixtime (this)
+      out = serial (this);
+    endfunction
+
+  endmethods
+
   methods (Hidden)
 
     function out = convertTo (this, varargin)
@@ -1003,10 +1024,6 @@ classdef datetime
 
     function out = exceltime (this, varargin)
       error ("datetime.exceltime: not implemented yet.");
-    endfunction
-
-    function out = posixtime (this, varargin)
-      error ("datetime.posixtime: not implemented yet.");
     endfunction
 
     function out = juliandate (this, varargin)

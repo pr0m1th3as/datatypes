@@ -649,6 +649,18 @@
 %! [y, m, d, h, mi, s] = datevec (datetime (2020, 7, 4, 1, 2, 3));
 %! assert_equal ([y, m, d, h, mi, s], [2020, 7, 4, 1, 2, 3]);
 
+## Test 'posixtime' -- seconds since the Unix epoch, unzoned treated as UTC
+%!assert_equal (posixtime (datetime (1970, 1, 1, 0, 0, 0)), 0)
+%!assert_equal (posixtime (datetime (2024, 1, 1, 0, 0, 0)), 1704067200)
+%!assert_equal (posixtime (datetime (2024, 1, 1, 0, 0, 0, 'TimeZone', 'UTC')), ...
+%!              1704067200)
+%!assert_equal (posixtime (datetime (2024, 1, 1, 0, 0, 0, ...
+%!                         'TimeZone', 'America/New_York')), 1704085200)
+%!assert_equal (posixtime (datetime (2024, 1, 1, 0, 0, 0.5)), 1704067200.5)
+%!assert_equal (class (posixtime (datetime (2024, 1, 1))), 'double')
+%!assert_equal (posixtime (datetime (2024, 1, [1; 2])), [1704067200; 1704153600])
+%!assert_equal (isnan (posixtime (NaT)), true)
+
 ################################################################################
 ##                          ** Query Operations **                            ##
 ################################################################################
