@@ -1061,6 +1061,34 @@ classdef datetime
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{S} =} datestr (@var{T})
+    ## @deftypefnx {datetime} {@var{S} =} datestr (@var{T}, @var{f})
+    ## @deftypefnx {datetime} {@var{S} =} datestr (@dots{}, @var{opt})
+    ##
+    ## Convert datetime array to a character array of date strings.
+    ##
+    ## @code{@var{S} = datestr (@var{T})} converts the datetime array @var{T} to
+    ## a character array @var{S} with one date string per row, using the default
+    ## format of the core @code{datestr} function.
+    ##
+    ## @code{@var{S} = datestr (@var{T}, @var{f})} uses the format specified by
+    ## @var{f}, a format number or a format string that follows the @emph{legacy}
+    ## @code{datestr} field codes, in which @qcode{'mm'} denotes months and
+    ## @qcode{'MM'} denotes minutes.  Any further arguments @var{opt} are passed
+    ## on to the core @code{datestr} function.
+    ##
+    ## @code{datestr} is provided for compatibility with legacy code.  It renders
+    ## the wall-clock components of @var{T} and, for a zoned array, does not
+    ## include the time zone.  For time-zone-aware formatting with the modern
+    ## Unicode (LDML) field codes, use @code{char}, @code{cellstr}, or set the
+    ## @qcode{Format} property of @var{T} instead.
+    ##
+    ## @end deftypefn
+    function S = datestr (this, varargin)
+      S = datestr (datevec (this), varargin{:});
+    endfunction
+
   endmethods
 
 ################################################################################

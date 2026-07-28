@@ -649,6 +649,19 @@
 %! [y, m, d, h, mi, s] = datevec (datetime (2020, 7, 4, 1, 2, 3));
 %! assert_equal ([y, m, d, h, mi, s], [2020, 7, 4, 1, 2, 3]);
 
+## Test 'datestr' -- legacy string conversion delegating to core datestr
+%!assert_equal (datestr (datetime (2024, 3, 9, 14, 5, 7)), '09-Mar-2024 14:05:07')
+%!assert_equal (datestr (datetime (2024, 3, 9, 14, 5, 7), ...
+%!              'yyyy-mm-dd HH:MM:SS'), '2024-03-09 14:05:07')
+%!assert_equal (datestr (datetime (2024, 3, 9), 'dd-mmm-yyyy'), '09-Mar-2024')
+%!assert_equal (datestr (datetime (2024, 3, 9, 14, 5, 7, ...
+%!              'TimeZone', 'America/New_York')), '09-Mar-2024 14:05:07')
+%!test
+%! s = datestr ([datetime(2024, 3, 9, 14, 5, 7); datetime(2024, 3, 10, 14, 5, 7)]);
+%! assert_equal (size (s), [2, 20]);
+%! assert_equal (s(1,:), '09-Mar-2024 14:05:07');
+%! assert_equal (s(2,:), '10-Mar-2024 14:05:07');
+
 ## Test 'posixtime' -- seconds since the Unix epoch, unzoned treated as UTC
 %!assert_equal (posixtime (datetime (1970, 1, 1, 0, 0, 0)), 0)
 %!assert_equal (posixtime (datetime (2024, 1, 1, 0, 0, 0)), 1704067200)
