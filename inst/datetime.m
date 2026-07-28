@@ -754,13 +754,53 @@ classdef datetime
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{W} =} week (@var{T})
+    ## @deftypefnx {datetime} {@var{W} =} week (@var{T}, @var{weekType})
+    ##
+    ## Week component of a datetime array.
+    ##
+    ## @code{@var{W} = week (@var{T})} returns the week-of-year number for each
+    ## element of the input datetime array @var{T}.  The output @var{W} is a
+    ## @qcode{double} array containing integer values in the range
+    ## @math{[1, 54]} and it has the same size as @var{T}.  Weeks are counted
+    ## from Sunday to Saturday, and the week containing January 1 is week 1.
+    ## Not-A-Time (@qcode{NaT}) values in @var{T} are returned as @qcode{NaN}
+    ## in the output array.
+    ##
+    ## @code{@var{W} = week (@var{T}, @var{weekType})} returns the week number
+    ## for each element of the input datetime array @var{T} as specified by
+    ## @var{weekType}, which may have any of the following options:
+    ##
+    ## @itemize
+    ## @item @qcode{'weekofyear'} (default) returns the week of the year in a
+    ## numeric array, in the range @math{[1, 54]}.
+    ## @item @qcode{'weekofmonth'} returns the week of the month in a numeric
+    ## array, in the range @math{[1, 6]}.
+    ## @end itemize
+    ##
+    ## @end deftypefn
+    function out = week (this, weekType = 'weekofyear')
+      ## Weekday (Sun = 1 @dots{} Sat = 7) of each element, NaN for NaT.
+      dow = day (this, 'dayofweek');
+      if (strcmpi (weekType, 'weekofyear'))
+        D = day (this, 'dayofyear');
+        ## 0-based weekday of January 1 derived from this element's own
+        ## weekday and day-of-year (0 = Sunday @dots{} 6 = Saturday).
+        w0 = mod ((dow - 1) - (D - 1), 7);
+        out = floor ((D - 1 + w0) ./ 7) + 1;
+      elseif (strcmpi (weekType, 'weekofmonth'))
+        dm = this.Day;
+        w0 = mod ((dow - 1) - (dm - 1), 7);
+        out = floor ((dm - 1 + w0) ./ 7) + 1;
+      else
+        error ("datetime.week: unrecognized WEEKTYPE.");
+      endif
+    endfunction
+
   endmethods
 
   methods (Hidden)
-
-    function out = week (this)
-      error ("datetime.week: not implemented yet.");
-    endfunction
 
     function out = timeofday (this)
       error ("datetime.timeofday: not implemented yet.");

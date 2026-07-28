@@ -427,6 +427,34 @@
 %!error <datetime.second: unrecognized SECONDTYPE.> ...
 %! second (datetime (2020, 1, 1), 'bogus')
 
+## Test 'week' (weekofyear default; Sunday-Saturday weeks, week 1 holds Jan 1)
+%!assert_equal (week (datetime (2023, 1, 1)), 1)
+%!assert_equal (week (datetime (2023, 1, 8)), 2)
+%!assert_equal (week (datetime (2023, 1, 31)), 5)
+%!assert_equal (week (datetime (2024, 1, 1)), 1)
+%!assert_equal (week (datetime (2024, 1, 7)), 2)
+%!assert_equal (week (datetime (2024, 12, 29)), 53)
+%!assert_equal (week (datetime (2024, 12, 31)), 53)
+%!assert_equal (week (datetime (2025, 1, 1)), 1)
+%!assert_equal (week (datetime (2020, 2, 29)), 9)
+%!assert_equal (week (datetime (2020, 3, 1)), 10)
+%!assert_equal (week (datetime (2023, 1, [1, 8, 31])), [1, 2, 5])
+%!assert_equal (week (datetime (2020, 1, 1), 'weekofyear'), 1)
+
+## Test 'week' with weekofmonth
+%!assert_equal (week (datetime (2023, 1, 1), 'weekofmonth'), 1)
+%!assert_equal (week (datetime (2023, 1, 31), 'weekofmonth'), 5)
+%!assert_equal (week (datetime (2024, 12, 29), 'weekofmonth'), 5)
+%!assert_equal (week (datetime (2020, 2, 29), 'weekofmonth'), 5)
+%!assert_equal (week (datetime (2020, 3, 1), 'weekofmonth'), 1)
+%!assert_equal (week (datetime (2023, 1, [1, 8, 15, 22, 29]), 'weekofmonth'), [1, 2, 3, 4, 5])
+
+## Test 'week' NaT and error branch
+%!assert_equal (week (NaT), NaN)
+%!assert_equal (week ([datetime(2020, 1, 1); NaT]), [1; NaN])
+%!error <datetime.week: unrecognized WEEKTYPE.> ...
+%! week (datetime (2020, 1, 1), 'bogus')
+
 ################################################################################
 ##                         ** Summary Information **                          ##
 ################################################################################
