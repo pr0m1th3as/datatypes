@@ -1030,10 +1030,6 @@ classdef datetime
       error ("datetime.juliandate: not implemented yet.");
     endfunction
 
-    function out = yyyymmdd (this, varargin)
-      error ("datetime.yyyymmdd: not implemented yet.");
-    endfunction
-
   endmethods
 
   methods (Access = public)
@@ -1087,6 +1083,22 @@ classdef datetime
     ## @end deftypefn
     function S = datestr (this, varargin)
       S = datestr (datevec (this), varargin{:});
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{D} =} yyyymmdd (@var{T})
+    ##
+    ## Convert datetime array to @code{YYYYMMDD} numeric form.
+    ##
+    ## @code{@var{D} = yyyymmdd (@var{T})} returns a @qcode{double} array @var{D}
+    ## of the same size as @var{T} in which each element encodes the date of the
+    ## corresponding datetime as @code{@var{year} * 10000 + @var{month} * 100 +
+    ## @var{day}}.  The time of day is ignored.  Not-A-Time (@qcode{NaT}) values
+    ## are returned as @qcode{NaN}.
+    ##
+    ## @end deftypefn
+    function out = yyyymmdd (this)
+      out = this.Year * 10000 + this.Month * 100 + this.Day;
     endfunction
 
   endmethods
