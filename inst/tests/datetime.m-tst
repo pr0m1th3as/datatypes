@@ -455,6 +455,25 @@
 %!error <datetime.week: unrecognized WEEKTYPE.> ...
 %! week (datetime (2020, 1, 1), 'bogus')
 
+## Test 'timeofday' -- elapsed time since midnight, returned as a duration
+%!assert_equal (seconds (timeofday (datetime (2024, 6, 15, 14, 45, 30))), 53130)
+%!assert_equal (seconds (timeofday (datetime (2024, 6, 15, 14, 45, 30.5))), 53130.5)
+%!assert_equal (seconds (timeofday (datetime (2024, 3, 10, 0, 0, 0))), 0)
+%!assert_equal (hours (timeofday (datetime (2024, 3, 10, 3, 30, 0))), 3.5)
+%!assert_equal (seconds (timeofday ([datetime(2024, 6, 15, 1, 0, 0), ...
+%!                                   datetime(2024, 6, 15, 2, 0, 0)])), [3600, 7200])
+%!assert_equal (isnan (seconds (timeofday (NaT))), true)
+%!test
+%! d = timeofday (datetime (2024, 6, 15, 5, 0, 0));
+%! assert_equal (class (d), 'duration');
+%! assert_equal (d.Format, 'hh:mm:ss');
+
+## Test 'timeofday' -- zoned result is DST-aware (physical time since midnight)
+%!assert_equal (hours (timeofday (datetime (2024, 3, 10, 3, 30, 0, ...
+%!                                'TimeZone', 'America/New_York'))), 2.5)
+%!assert_equal (seconds (timeofday (datetime (2024, 6, 15, 14, 45, 30.5, ...
+%!                                  'TimeZone', 'America/New_York'))), 53130.5)
+
 ################################################################################
 ##                         ** Summary Information **                          ##
 ################################################################################

@@ -798,13 +798,27 @@ classdef datetime
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{D} =} timeofday (@var{T})
+    ##
+    ## Elapsed time since midnight of a datetime array.
+    ##
+    ## @code{@var{D} = timeofday (@var{T})} returns the elapsed time since
+    ## midnight for each element of the input datetime array @var{T} as a
+    ## @code{duration} array @var{D} of the same size as @var{T}.  For datetime
+    ## arrays with a time zone, the result accounts for any daylight saving time
+    ## shift occurring since midnight, so it may differ from the displayed clock
+    ## time on the day of a transition.  Not-A-Time (@qcode{NaT}) values in
+    ## @var{T} are returned as @qcode{NaN} durations.
+    ##
+    ## @end deftypefn
+    function out = timeofday (this)
+      out = this - dateshift (this, 'start', 'day');
+    endfunction
+
   endmethods
 
   methods (Hidden)
-
-    function out = timeofday (this)
-      error ("datetime.timeofday: not implemented yet.");
-    endfunction
 
     function out = tzoffset (this)
       error ("datetime.tzoffset: not implemented yet.");
