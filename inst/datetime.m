@@ -5554,13 +5554,6 @@ function cstr = dtFormatStrings (Y, M, D, H, Mi, S, TZ, fmt, zoneStyle)
                    off, abbr);
 endfunction
 
-## Week of the month (Sunday-based, first week = week 1), matching MATLAB's
-## default 'W' rendering.
-function w = dtWeekOfMonth (Y, M, D)
-  firstDow = weekday (datenum (Y, M, 1));
-  w = floor ((D - 1 + (firstDow - 1)) / 7) + 1;
-endfunction
-
 ## UTC offset (seconds east of UTC, negative west of Greenwich) for each
 ## element of a zoned datetime, derived without any new compiled support:
 ## reading the wall-clock components as if they were UTC and subtracting the
@@ -5616,104 +5609,4 @@ function out = dtFixedEpoch (posix, kind)
   endif
   frac = round (fracMs .* scale ./ 1000);
   out = uint64 (secWhole) .* uint64 (scale) + uint64 (frac);
-endfunction
-
-## MATLAB-compatible 'z' rendering: show the IANA letter abbreviation only for
-## the North American zones (plus GMT/UTC) that MATLAB names, keyed on the
-## (abbreviation, offset) pair so collisions resolve correctly (e.g. Shanghai
-## 'CST' at +8 is not US Central 'CST' at -6, and Havana 'CDT' at -4 is not US
-## 'CDT' at -5); every other zone renders as a numeric UTC offset.
-function piece = dtZoneMatlab (ab, offSec)
-  names = {'EST', 'EDT', 'CST', 'CDT', 'MST', 'MDT', 'PST', 'PDT', 'AKST', ...
-           'AKDT', 'HST', 'HAST', 'HADT', 'AST', 'ADT', 'GMT', 'UTC'};
-  hours = [-5, -4, -6, -5, -7, -6, -8, -7, -9, -8, -10, -10, -9, -4, -3, 0, 0];
-  idx = find (strcmp (ab, names));
-  if (! isempty (idx) && any (abs (offSec - hours(idx) * 3600) < 1))
-    piece = ab;
-  else
-    piece = dtZoneUTC (offSec);
-  endif
-endfunction
-
-## Numeric short UTC-offset form ('UTC', 'UTC+3', 'UTC+5:30', 'UTC-3:30') used
-## by the MATLAB-compatible 'z' style for zones without a named abbreviation.
-function piece = dtZoneUTC (offSec)
-  if (abs (offSec) < 1)
-    piece = 'UTC';
-    return;
-  endif
-  a = abs (offSec);
-  hh = floor (a / 3600);
-  mm = round (rem (a, 3600) / 60);
-  if (offSec < 0)
-    sgn = '-';
-  else
-    sgn = '+';
-  endif
-  if (mm == 0)
-    piece = sprintf ('UTC%c%d', sgn, hh);
-  else
-    piece = sprintf ('UTC%c%d:%02d', sgn, hh, mm);
-  endif
-endfunction
-
-## Render a single numeric time-zone offset field (the ISO-8601 families Z/X/x)
-## for a zoned datetime, given the offset in seconds (negative west of UTC).
-## The zone name family 'z' is handled separately (see dtZoneMatlab).
-function piece = dtZoneField (c, nn, offSec)
-  a = abs (offSec);
-  hh = floor (a / 3600);
-  mm = floor (rem (a, 3600) / 60);
-  if (offSec < 0)
-    sgn = '-';
-  else
-    sgn = '+';
-  endif
-  switch (c)
-    case 'Z'
-      switch (nn)
-        case {1, 2, 3}
-          piece = sprintf ('%c%02d%02d', sgn, hh, mm);
-        case 4
-          ## Localized GMT format; a zero offset is just 'UTC'.
-          if (offSec == 0)
-            piece = 'UTC';
-          else
-            piece = sprintf ('UTC%c%02d:%02d', sgn, hh, mm);
-          endif
-        otherwise
-          ## ISO-8601 extended (ZZZZZ); a zero offset renders as 'Z'.
-          if (offSec == 0)
-            piece = 'Z';
-          else
-            piece = sprintf ('%c%02d:%02d', sgn, hh, mm);
-          endif
-      endswitch
-    case 'X'
-      if (offSec == 0)
-        piece = 'Z';
-      elseif (nn == 1)
-        if (mm == 0)
-          piece = sprintf ('%c%02d', sgn, hh);
-        else
-          piece = sprintf ('%c%02d%02d', sgn, hh, mm);
-        endif
-      elseif (any (nn == [2, 4]))
-        piece = sprintf ('%c%02d%02d', sgn, hh, mm);
-      else
-        piece = sprintf ('%c%02d:%02d', sgn, hh, mm);
-      endif
-    case 'x'
-      if (nn == 1)
-        if (mm == 0)
-          piece = sprintf ('%c%02d', sgn, hh);
-        else
-          piece = sprintf ('%c%02d%02d', sgn, hh, mm);
-        endif
-      elseif (any (nn == [2, 4]))
-        piece = sprintf ('%c%02d%02d', sgn, hh, mm);
-      else
-        piece = sprintf ('%c%02d:%02d', sgn, hh, mm);
-      endif
-  endswitch
 endfunction

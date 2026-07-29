@@ -202,8 +202,8 @@ utf8_decode (const string& s, vector<uint32_t>& cp)
   }
 }
 
-// Case- and accent-fold a UTF-8 string to a code point vector, mirroring
-// dtCaseFold in datetime.m.  ASCII capitals and the contiguous Greek capitals
+// Case- and accent-fold a UTF-8 string to a code point vector.  ASCII
+// capitals and the contiguous Greek capitals
 // both lower case by +32; the accented Greek capitals, the accented lower case
 // vowels, the dialytika forms and the final sigma map to their plain lower
 // case base letters.  Latin accents outside ASCII are deliberately left alone,
@@ -313,7 +313,7 @@ folded_locale (int idx)
 }
 
 // Return the 1-based index of the first entry of TBL whose folded form matches
-// WORD, or 0 if none does (dtFoldFind).
+// WORD, or 0 if none does.
 static int
 fold_find (const string& word, const vector<uint32_t> *tbl, int n)
 {
@@ -811,8 +811,7 @@ zeropad (int width, long value)
 }
 
 // Numeric short UTC-offset form ('UTC', 'UTC+3', 'UTC+5:30') used by the
-// MATLAB-compatible 'z' style for zones without a named abbreviation
-// (dtZoneUTC).
+// MATLAB-compatible 'z' style for zones without a named abbreviation.
 static string
 zone_utc (double offSec)
 {
@@ -838,7 +837,7 @@ zone_utc (double offSec)
 
 // MATLAB-compatible 'z' rendering: the IANA letter abbreviation only for the
 // North American zones (plus GMT/UTC) that MATLAB names, keyed on the
-// (abbreviation, offset) pair so collisions resolve correctly (dtZoneMatlab).
+// (abbreviation, offset) pair so collisions resolve correctly.
 static string
 zone_matlab (const string& ab, double offSec)
 {
@@ -858,8 +857,7 @@ zone_matlab (const string& ab, double offSec)
   return zone_utc (offSec);
 }
 
-// Render one numeric time-zone offset field, the ISO-8601 families Z/X/x
-// (dtZoneField).
+// Render one numeric time-zone offset field, the ISO-8601 families Z/X/x.
 static string
 zone_field (char c, int nn, double offSec)
 {
