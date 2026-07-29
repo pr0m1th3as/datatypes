@@ -315,10 +315,11 @@ classdef datetime
     ## default), @qcode{'fr'}, @qcode{'de'}, @qcode{'es'}, @qcode{'it'},
     ## @qcode{'pt'}, and @qcode{'el'}; @qcode{'system'} is treated as
     ## @qcode{'en'}.  Both full (@qcode{'MMMM'}/@qcode{'eeee'}) and abbreviated
-    ## (@qcode{'MMM'}/@qcode{'eee'}) month and weekday names are recognized,
-    ## case-insensitively for the Latin-script locales (Greek uses its
-    ## genitive month forms in canonical case).  A weekday name is validated
-    ## but does not otherwise affect the result.
+    ## (@qcode{'MMM'}/@qcode{'eee'}) month and weekday names are recognized
+    ## case-insensitively; for Greek, matching is also accent-insensitive, so
+    ## the accentless all-caps spelling is accepted, and the genitive month
+    ## forms (@qcode{'Μαρτίου'}) are used.  A weekday name is validated but does
+    ## not otherwise affect the result.
     ##
     ## @code{@var{T} = datetime (@var{DateVectors})} creates a column vector of
     ## datetime values from the date vectors in @var{DateVectors}.
@@ -5316,6 +5317,43 @@ function [mFull, mAbbr, wFull, wAbbr, dpMark] = dtLocaleNames (locale)
   endswitch
 endfunction
 
+## Case- and accent-fold a string to a canonical code-point sequence for
+## case-insensitive name matching.  ASCII and Greek letters are lowercased;
+## Greek accents (tonos/dialytika) and the medial/final sigma distinction are
+## removed as well, so a Greek month or weekday name matches regardless of case
+## or accents -- including the accentless all-caps spelling that is idiomatic in
+## Greek (MATLAB rejects that spelling; accepting it is a deliberate extension).
+## Latin-script locales are unaffected beyond ordinary ASCII case folding.
+function cp = dtCaseFold (s)
+  cp = double (typecast (uint8 (unicode2native (s, 'UTF-32LE')), 'uint32'));
+  ## ASCII A-Z and the contiguous Greek capitals both lowercase by +32.
+  cp(cp >= 65 & cp <= 90) += 32;
+  cp(cp >= 913 & cp <= 937) += 32;
+  ## Map accented Greek capitals, accented lowercase vowels, the dialytika
+  ## forms, and the final sigma to their plain lowercase base letters.
+  from = [902, 904, 905, 906, 908, 910, 911, 938, 939, ...
+          940, 941, 942, 943, 972, 973, 974, 970, 971, 912, 944, ...
+          962];
+  to   = [945, 949, 951, 953, 959, 965, 969, 953, 965, ...
+          945, 949, 951, 953, 959, 965, 969, 953, 965, 953, 965, ...
+          963];
+  [tf, loc] = ismember (cp, from);
+  cp(tf) = to(loc(tf));
+endfunction
+
+## Return the 1-based index of the first entry of TBL (a cell array of folded
+## code-point vectors, as produced by dtCaseFold) whose folded form matches
+## WORD, or 0 if none does.
+function idx = dtFoldFind (word, tbl)
+  fw = dtCaseFold (word);
+  for idx = 1:numel (tbl)
+    if (isequal (fw, tbl{idx}))
+      return;
+    endif
+  endfor
+  idx = 0;
+endfunction
+
 ## Parse a cell array of date/time strings under an LDML InputFormat, returning
 ## an N-by-6 date-vector matrix.  The format is tokenized like a display format
 ## (dtFormatTokens); literals must match, and each field consumes characters
@@ -5328,6 +5366,12 @@ function DV = dtParseInput (strs, fmt, pivot, locale)
   toks = dtFormatTokens (fmt);
   nt = numel (toks);
   [mFull, mAbbr, wFull, wAbbr, dpMark] = dtLocaleNames (locale);
+  ## Pre-fold the name tables once (case- and accent-insensitive matching).
+  mFullF = cellfun (@dtCaseFold, mFull, "UniformOutput", false);
+  mAbbrF = cellfun (@dtCaseFold, mAbbr, "UniformOutput", false);
+  wFullF = cellfun (@dtCaseFold, wFull, "UniformOutput", false);
+  wAbbrF = cellfun (@dtCaseFold, wAbbr, "UniformOutput", false);
+  dpMarkF = cellfun (@dtCaseFold, dpMark, "UniformOutput", false);
   now6 = clock ();
   ## Whether the format names any date field.  MATLAB defaults a wholly absent
   ## date to today, but when some date field is present the missing parts fall
@@ -5390,8 +5434,8 @@ function DV = dtParseInput (strs, fmt, pivot, locale)
         if (! isempty (word) && word(end) == '.')
           word(end) = [];               # drop an abbreviation period
         endif
-        if (isempty (word) || (isempty (find (strcmpi (word, wFull))) ...
-                               && isempty (find (strcmpi (word, wAbbr)))))
+        if (isempty (word) || (dtFoldFind (word, wFullF) == 0 ...
+                               && dtFoldFind (word, wAbbrF) == 0))
           ok = false;  break;
         endif
       elseif (tk.sym == 'a')
@@ -5416,9 +5460,10 @@ function DV = dtParseInput (strs, fmt, pivot, locale)
           word = s(pos:j-1);
           pos = j;
         endif
-        if (strcmpi (word, dpMark{1}))
+        idxA = dtFoldFind (word, dpMarkF);
+        if (idxA == 1)
           ampm = 1;
-        elseif (strcmpi (word, dpMark{2}))
+        elseif (idxA == 2)
           ampm = 2;
         else
           ok = false;  break;
@@ -5436,10 +5481,10 @@ function DV = dtParseInput (strs, fmt, pivot, locale)
         if (isempty (word))
           ok = false;  break;
         endif
-        idx = find (strcmpi (word, mFull));
-        if (isempty (idx))
-          idx = find (strcmpi (word, mAbbr));
-          if (isempty (idx))
+        idx = dtFoldFind (word, mFullF);
+        if (idx == 0)
+          idx = dtFoldFind (word, mAbbrF);
+          if (idx == 0)
             ok = false;  break;
           endif
           ## Consume the trailing period of an abbreviation (fr/de/pt).
