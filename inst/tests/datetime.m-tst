@@ -919,18 +919,41 @@
 %! d = [datetime(2026, 3, 8, 2, 30, 0); NaT];
 %! d.TimeZone = 'America/New_York';
 %! assert_equal (cellstr (d), {'08-Mar-2026 03:30:00'; 'NaT'})
+## Test DST transitions -- text naming a wall clock its zone never shows is
+## rejected, whereas the same wall clock given as numeric components is moved
+## ahead by the gap.  MATLAB draws exactly this distinction (R2024a).  Under an
+## 'InputFormat' a lone string errors and an array loses only that element to
+## NaT; without one the whole input is rejected, as when no format is detected.
+%!error <datetime: could not parse the date/time string '2026-03-08 02:30:00' with 'InputFormat' 'yyyy-MM-dd HH:mm:ss'.> ...
+%! datetime ('2026-03-08 02:30:00', 'InputFormat', 'yyyy-MM-dd HH:mm:ss', 'TimeZone', 'America/New_York')
+%!error <datetime: could not parse the date/time string '2026-10-04 02:15:00' with 'InputFormat' 'yyyy-MM-dd HH:mm:ss'.> ...
+%! datetime ('2026-10-04 02:15:00', 'InputFormat', 'yyyy-MM-dd HH:mm:ss', 'TimeZone', 'Australia/Lord_Howe')
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ('2026-03-08 02:30:00', 'TimeZone', 'America/New_York')
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ({'2026-03-08 02:30:00', '2026-06-01 12:00:00'}, 'TimeZone', 'America/New_York')
 %!test
-%! ## Strings follow the same rules as numeric components.  (MATLAB instead
-%! ## rejects a string naming a wall clock that its zone never shows.)
-%! d = datetime ('2026-03-08 02:30:00', 'TimeZone', 'America/New_York');
-%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss z'), '2026-03-08 03:30:00 EDT')
-%! assert_equal (seconds (tzoffset (d)), -4 * 3600)
+%! d = datetime ({'2026-03-08 02:30:00', '2026-06-01 12:00:00'}, ...
+%!               'InputFormat', 'yyyy-MM-dd HH:mm:ss', ...
+%!               'TimeZone', 'America/New_York');
+%! assert_equal (isnat (d), [true, false])
+%! assert_equal (cellstr (d), {'NaT', '01-Jun-2026 12:00:00'})
+%!test
+%! ## A repeated hour is not skipped, so it stays acceptable, and the boundaries
+%! ## of the gap itself are real wall clocks.
 %! a = datetime ('2026-11-01 01:30:00', 'InputFormat', 'yyyy-MM-dd HH:mm:ss', ...
 %!               'TimeZone', 'America/New_York');
 %! assert_equal (char (a, 'yyyy-MM-dd HH:mm:ss z'), '2026-11-01 01:30:00 EST')
-%! b = datetime ({'2026-03-08 02:30:00'; '2026-06-01 12:00:00'}, ...
+%! b = datetime ('2026-03-08 01:59:59', 'InputFormat', 'yyyy-MM-dd HH:mm:ss', ...
 %!               'TimeZone', 'America/New_York');
-%! assert_equal (cellstr (b), {'08-Mar-2026 03:30:00'; '01-Jun-2026 12:00:00'})
+%! assert_equal (char (b), '08-Mar-2026 01:59:59')
+%! c = datetime ('2026-03-08 03:00:00', 'InputFormat', 'yyyy-MM-dd HH:mm:ss', ...
+%!               'TimeZone', 'America/New_York');
+%! assert_equal (char (c), '08-Mar-2026 03:00:00')
+%!test
+%! ## Unzoned text names no instant, so nothing is rejected.
+%! d = datetime ('2026-03-08 02:30:00', 'InputFormat', 'yyyy-MM-dd HH:mm:ss');
+%! assert_equal (char (d), '08-Mar-2026 02:30:00')
 
 ## Test 'month'/'day' -- full names
 %!assert_equal (month (datetime (2024, 7, 1), 'name'), {'July'})

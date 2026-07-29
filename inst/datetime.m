@@ -385,9 +385,14 @@ classdef datetime
     ## wall-clock readings that name no unique instant.  Where the clock goes
     ## back an hour repeats, and such a reading is taken at the later of the two
     ## offsets, that is, standard time.  Where the clock goes forward an
-    ## interval is skipped, and a reading inside it, which no clock in that zone
-    ## ever shows, is moved ahead by the length of the skipped interval: with
-    ## the usual one-hour skip @qcode{'02:30'} becomes @qcode{'03:30'}.
+    ## interval is skipped, and a reading inside it is one no clock in that zone
+    ## ever shows.  Given as numeric components, such a reading is moved ahead
+    ## by the length of the skipped interval, so that with the usual one-hour
+    ## skip @qcode{'02:30'} becomes @qcode{'03:30'}; given as text it is instead
+    ## rejected, since text is a claim about a reading that never occurred.  A
+    ## lone such string is an error, whereas within an array only that element
+    ## is lost and becomes @code{NaT}; without an @qcode{'InputFormat'} the
+    ## whole input is rejected, as when no format can be detected at all.
     ##
     ## @seealso{NaT, datetime, isdatetime, calendarDuration, duration}
     ## @end deftypefn
@@ -509,15 +514,39 @@ classdef datetime
           this.Minute = reshape (DATEVEC(:,5), size (DateStrings));
           this.Second = reshape (DATEVEC(:,6), size (DateStrings));
           if (! isempty (TimeZone))
-            ## Normalize the wall clock in its own zone, as the component
-            ## constructor does, so a time the local clock never shows moves
-            ## ahead by the gap instead of leaving the components at odds with
-            ## the instant they denote.
-            [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
-             this.Second] = __datetime__ (this.Year, this.Month, this.Day, ...
-                            this.Hour, this.Minute, this.Second, ...
-                            'TimeZone', TimeZone, 'toTimeZone', TimeZone, ...
-                            'Precision', 'microseconds');
+            ## Text naming a wall clock its zone never shows -- one inside the
+            ## interval the clock skips going forward -- is rejected, matching
+            ## MATLAB.  (Numeric components are instead moved ahead by the gap;
+            ## MATLAB draws that distinction too.)  Normalizing in the zone
+            ## moves exactly those elements, because every other parsed wall
+            ## clock is already canonical, so an element that moves marks text
+            ## to reject.
+            [Yz, Mz, Dz, Hz, MIz, Sz] = __datetime__ (this.Year, this.Month, ...
+                                        this.Day, this.Hour, this.Minute, ...
+                                        this.Second, 'TimeZone', TimeZone, ...
+                                        'toTimeZone', TimeZone, 'Precision', ...
+                                        'microseconds');
+            skipped = (Yz != this.Year | Mz != this.Month | Dz != this.Day ...
+                       | Hz != this.Hour | MIz != this.Minute ...
+                       | abs (Sz - this.Second) > 1e-3) & ! isnan (this.Year);
+            if (any (skipped(:)))
+              if (isempty (inputFormat))
+                ## Without a format, an unreadable element condemns the whole
+                ## input, as it does when 'datevec' fails to detect a format.
+                error (strcat ("datetime: could not recognize date/time", ...
+                               " format from input."));
+              elseif (numel (skipped) == 1)
+                error (strcat ("datetime: could not parse the date/time", ...
+                               " string '%s' with 'InputFormat' '%s'."), ...
+                       DateStrings{1}, inputFormat);
+              endif
+              this.Year(skipped) = NaN;
+              this.Month(skipped) = NaN;
+              this.Day(skipped) = NaN;
+              this.Hour(skipped) = NaN;
+              this.Minute(skipped) = NaN;
+              this.Second(skipped) = NaN;
+            endif
           endif
           return;
         endif
