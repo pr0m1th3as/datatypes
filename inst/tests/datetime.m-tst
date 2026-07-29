@@ -382,6 +382,25 @@
 %!   datetime.zoneNameStyle (old);
 %! end_unwind_protect
 
+## Test Format seam -- every LDML date/time field renders MATLAB-exactly
+%!assert_equal (char (datetime (2024, 3, 9, 14, 30, 45), 'yyyy'), '2024')
+%!assert_equal (char (datetime (2024, 3, 9, 14, 30, 45), 'yy'), '24')
+%!assert_equal (char (datetime (2024, 3, 9, 14, 30, 45), 'MMMM'), 'March')
+%!assert_equal (char (datetime (2024, 3, 9, 14, 30, 45), 'MMM'), 'Mar')
+%!assert_equal (char (datetime (2024, 3, 9, 14, 30, 45), 'MMMMM'), 'M')
+%!assert_equal (char (datetime (2024, 3, 9, 14, 30, 45), 'dd'), '09')
+%!assert_equal (char (datetime (2024, 3, 9, 14, 30, 45), 'D'), '69')
+%!assert_equal (char (datetime (2024, 3, 9, 14, 30, 45), 'eeee'), 'Saturday')
+%!assert_equal (char (datetime (2024, 3, 9, 14, 30, 45), 'eee'), 'Sat')
+%!assert_equal (char (datetime (2024, 3, 9, 14, 30, 45), 'a'), 'PM')
+%!assert_equal (char (datetime (2024, 3, 9, 14, 30, 45), 'hh:mm a'), '02:30 PM')
+%!assert_equal (char (datetime (2024, 3, 9, 14, 30, 45), 'HH'), '14')
+%!assert_equal (char (datetime (2024, 3, 9, 14, 30, 45), 'QQQ'), 'Q1')
+%!assert_equal (char (datetime (2024, 3, 9, 14, 30, 45), 'G'), 'CE')
+%!assert_equal (char (datetime (2024, 3, 9, 14, 30, 45), 'ss'), '45')
+%!assert_equal (char (datetime (2024, 3, 9, 14, 30, 45), ...
+%!              'eee, dd MMM yyyy HH:mm:ss'), 'Sat, 09 Mar 2024 14:30:45')
+
 ## Test 'ymd'
 %!test
 %! [y, m, d] = ymd (datetime (2020, 7, 4));
@@ -459,6 +478,15 @@
 %!assert_equal (day (datetime (2020, [1, 3; 6, 12], [1, 1; 1, 31]), 'dayofyear'), [1, 61; 153, 366])
 %!assert_equal (day (NaT, 'dayofyear'), NaN)
 %!error <datetime: unrecognized DAYTYPE.> day (datetime (2020, 1, 1), 'bogus')
+
+## Test component accessors -- year-boundary, leap, and quarter/dow edges
+%!assert_equal (day (datetime (2024, 12, 31), 'dayofyear'), 366)
+%!assert_equal (day (datetime (2023, 12, 31), 'dayofyear'), 365)
+%!assert_equal (week (datetime (2024, 12, 31)), 53)
+%!assert_equal (week (datetime (2025, 1, 1)), 1)
+%!assert_equal (quarter (datetime (2024, [3 4 6 7 9 10 12], 1)), [1 2 2 3 3 4 4])
+%!assert_equal (second (datetime (2024, 1, 1, 23, 59, 59), 'secondofday'), 86399)
+%!assert_equal (day (datetime ([2024 2000 1900], 1, 1), 'dayofweek'), [2 7 2])
 
 ## Test 'hour'
 %!assert_equal (hour (datetime (2020, 1, 1, 23, 0, 0)), 23)
@@ -1190,6 +1218,18 @@
 %! intersect (datetime (2026, 1, 1), datetime (2026, 1, 1, 'TimeZone', 'UTC'));
 %!error <datetime.intersect: 'legacy' option is not supported.> ...
 %! intersect (datetime (2026, 1, [1 2]), datetime (2026, 1, [2 3]), 'legacy');
+
+## Test set-ops -- cross-zone results are instant-based and NaT never collapses
+%!assert_equal (cellstr (intersect (datetime (2024, 1, 1, 12, 0, 0, ...
+%!              'TimeZone', 'America/New_York'), datetime (2024, 1, 1, 17, 0, 0, ...
+%!              'TimeZone', 'UTC'))), {'01-Jan-2024 12:00:00'})
+%!assert_equal (numel (union (datetime (2024, 1, 1, [12 13], 0, 0, 'TimeZone', ...
+%!              'America/New_York'), datetime (2024, 1, 1, [17 20], 0, 0, ...
+%!              'TimeZone', 'UTC'))), 3)
+%!assert_equal (numel (setdiff (datetime (2024, 1, 1, [12 13], 0, 0, 'TimeZone', ...
+%!              'America/New_York'), datetime (2024, 1, 1, [17 20], 0, 0, ...
+%!              'TimeZone', 'UTC'))), 1)
+%!assert_equal (numel (unique ([datetime(2024, 1, 1), NaT, NaT])), 3)
 
 ## Test 'union' -- all unique values, sorted, carrying A's format
 %!test
