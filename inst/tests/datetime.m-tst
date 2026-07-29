@@ -69,6 +69,18 @@
 %!assert_equal (second (datetime (2020, 1, 1, 0, 0, 0, 500)), 0.5)
 %!assert_equal (second (datetime (2020, 1, 1, 0, 0, 1, 250)), 1.25)
 
+## Test 'datetime' constructor -- microsecond precision (stored precision is
+## microseconds; construction must not truncate to milliseconds).
+%!assert_equal (second (datetime (2020, 1, 1, 0, 0, 45.123456)), 45.123456, 1e-9)
+%!assert_equal (second (datetime (2020, 1, 1, 0, 0, 45.000001)), 45.000001, 1e-9)
+%!assert_equal (second (datetime (2020, 1, 1, 0, 0, 45.123456789)), 45.123457, 1e-9)
+%!assert_equal (second (datetime (2020, 1, 1, 0, 0, 45.123456) + seconds (0)), ...
+%!              45.123456, 1e-9)
+%!assert_equal (second (datetime (2020, 1, 1, 0, 0, 45.123456, ...
+%!              'TimeZone', 'America/New_York')), 45.123456, 1e-9)
+%!assert_equal (second (datetime (1704067200.123456, ...
+%!              'ConvertFrom', 'posixtime')), 0.123456, 1e-9)
+
 ## Test 'datetime' constructor -- from datevec matrix (3 or 6 columns)
 %!assert_equal (year (datetime ([2019, 6, 1; 2020, 7, 2])), [2019; 2020])
 %!assert_equal (month (datetime ([2019, 6, 1; 2020, 7, 2])), [6; 7])
