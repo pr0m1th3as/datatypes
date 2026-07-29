@@ -264,6 +264,8 @@ classdef datetime
     ## @deftypefnx {datetime} {@var{T} =} datetime (@var{DateStrings}, @qcode{'InputFormat'}, @var{INFMT})
     ## @deftypefnx {datetime} {@var{T} =} datetime (@var{DateStrings},@
     ## @qcode{'InputFormat'}, @var{INFMT}, @qcode{'PivotYear'}, @var{PIVOT})
+    ## @deftypefnx {datetime} {@var{T} =} datetime (@var{DateStrings},@
+    ## @qcode{'InputFormat'}, @var{INFMT}, @qcode{'Locale'}, @var{LOCALE})
     ## @deftypefnx {datetime} {@var{T} =} datetime (@var{DateVectors})
     ## @deftypefnx {datetime} {@var{T} =} datetime (@var{Y}, @var{MO}, @var{D})
     ## @deftypefnx {datetime} {@var{T} =} datetime (@var{Y}, @var{MO}, @var{D}, @var{H}, @var{MI}, @var{S})
@@ -290,15 +292,30 @@ classdef datetime
     ## @code{@var{T} = datetime (@var{DateStrings}, @qcode{'InputFormat'},
     ## @var{INFMT})} also allows to specify a particular input text format to
     ## parse @var{DateStrings}.  It is always preferable to specify the format
-    ## @var{INFMT} if it is known.  Formats which do not specify a particular
-    ## time component will have the value set to zero.  Formats which do not
-    ## a date will default to January 1st of the current year.
+    ## @var{INFMT} if it is known.  @var{INFMT} uses the Unicode LDML date field
+    ## symbols (@qcode{'y'}, @qcode{'M'}, @qcode{'d'}, @qcode{'H'}, @qcode{'h'},
+    ## @qcode{'m'}, @qcode{'s'}, @qcode{'S'}, @qcode{'a'}, @dots{}), the same
+    ## set used for display formats; text between single quotes is treated as a
+    ## literal.  Formats which do not specify a particular time component will
+    ## have the value set to zero.  Formats which do not specify any date
+    ## component default to the current date, whereas a partially specified date
+    ## defaults its missing month and day to 1.
     ##
     ## @code{@var{T} = datetime (@var{DateStrings}, @qcode{'InputFormat'},
     ## @var{INFMT}, @qcode{'PivotYear'}, @var{PIVOT})} also allows to specify a
     ## pivot year, which refers to the year at the start of the century to which
     ## two-digit years will be referenced.  When not specified, it defaults to
-    ## the current years minus 50.
+    ## the current year minus 50.
+    ##
+    ## @code{@var{T} = datetime (@var{DateStrings}, @qcode{'InputFormat'},
+    ## @var{INFMT}, @qcode{'Locale'}, @var{LOCALE})} interprets the month names
+    ## in @var{DateStrings} according to @var{LOCALE}, given as an
+    ## @qcode{'xx_YY'} identifier whose language part selects the names.  The
+    ## supported languages are @qcode{'en'} (the default), @qcode{'fr'},
+    ## @qcode{'de'}, @qcode{'es'}, @qcode{'it'}, and @qcode{'pt'};
+    ## @qcode{'system'} is treated as @qcode{'en'}.  Both full (@qcode{'MMMM'})
+    ## and abbreviated
+    ## (@qcode{'MMM'}) month names are recognized, case-insensitively.
     ##
     ## @code{@var{T} = datetime (@var{DateVectors})} creates a column vector of
     ## datetime values from the date vectors in @var{DateVectors}.
@@ -393,9 +410,9 @@ classdef datetime
       if (! isempty (Locale))
         if (! (ischar (Locale) && isvector (Locale)))
           error ("datetime: 'Locale' must be a character vector.");
-        else
-          warning ("datetime: 'Locale' is currently unimplemented.");
         endif
+        ## Validate against the supported locale set (errors if unsupported).
+        dtLocaleNames (Locale);
       endif
       if (! isempty (PivotYear))
         if (isempty (inputFormat))
@@ -437,7 +454,7 @@ classdef datetime
               now6 = clock ();
               pivot = now6(1) - 50;
             endif
-            DATEVEC = dtParseInput (DateStrings(:), inputFormat, pivot);
+            DATEVEC = dtParseInput (DateStrings(:), inputFormat, pivot, Locale);
           else
             ## No format supplied: let core 'datevec' auto-detect ISO and
             ## dd-MMM-yyyy style strings.
@@ -5205,6 +5222,77 @@ function dtCheckIntegerComponents (args)
   endif
 endfunction
 
+## Return the full and abbreviated month- and weekday-name tables for an LDML
+## locale, used to parse 'MMMM'/'MMM' and 'eeee'/'eee' fields under
+## 'InputFormat'.  Names are matched case-insensitively; abbreviations are
+## stored without any trailing period (locales that write one -- fr, de, pt --
+## have it consumed during parsing).  Only a curated set of locales is
+## supported; English is the default and the fallback for 'system'.  The country
+## part of an 'xx_YY' locale is ignored, as names vary by language, not region.
+function [mFull, mAbbr, wFull, wAbbr] = dtLocaleNames (locale)
+  if (isempty (locale))
+    lang = 'en';
+  else
+    lang = strtok (tolower (locale), '_');
+  endif
+  if (strcmp (lang, 'system'))
+    lang = 'en';
+  endif
+  switch (lang)
+    case 'en'
+      mFull = {'january','february','march','april','may','june','july', ...
+               'august','september','october','november','december'};
+      mAbbr = {'jan','feb','mar','apr','may','jun','jul','aug','sep', ...
+               'oct','nov','dec'};
+      wFull = {'sunday','monday','tuesday','wednesday','thursday','friday', ...
+               'saturday'};
+      wAbbr = {'sun','mon','tue','wed','thu','fri','sat'};
+    case 'fr'
+      mFull = {'janvier','février','mars','avril','mai','juin','juillet', ...
+               'août','septembre','octobre','novembre','décembre'};
+      mAbbr = {'janv','févr','mars','avr','mai','juin','juil','août', ...
+               'sept','oct','nov','déc'};
+      wFull = {'dimanche','lundi','mardi','mercredi','jeudi','vendredi', ...
+               'samedi'};
+      wAbbr = {'dim','lun','mar','mer','jeu','ven','sam'};
+    case 'de'
+      mFull = {'januar','februar','märz','april','mai','juni','juli', ...
+               'august','september','oktober','november','dezember'};
+      mAbbr = {'jan','feb','märz','apr','mai','juni','juli','aug', ...
+               'sept','okt','nov','dez'};
+      wFull = {'sonntag','montag','dienstag','mittwoch','donnerstag', ...
+               'freitag','samstag'};
+      wAbbr = {'so','mo','di','mi','do','fr','sa'};
+    case 'es'
+      mFull = {'enero','febrero','marzo','abril','mayo','junio','julio', ...
+               'agosto','septiembre','octubre','noviembre','diciembre'};
+      mAbbr = {'ene','feb','mar','abr','may','jun','jul','ago','sept', ...
+               'oct','nov','dic'};
+      wFull = {'domingo','lunes','martes','miércoles','jueves','viernes', ...
+               'sábado'};
+      wAbbr = {'dom','lun','mar','mié','jue','vie','sáb'};
+    case 'it'
+      mFull = {'gennaio','febbraio','marzo','aprile','maggio','giugno', ...
+               'luglio','agosto','settembre','ottobre','novembre','dicembre'};
+      mAbbr = {'gen','feb','mar','apr','mag','giu','lug','ago','set', ...
+               'ott','nov','dic'};
+      wFull = {'domenica','lunedì','martedì','mercoledì','giovedì', ...
+               'venerdì','sabato'};
+      wAbbr = {'dom','lun','mar','mer','gio','ven','sab'};
+    case 'pt'
+      mFull = {'janeiro','fevereiro','março','abril','maio','junho','julho', ...
+               'agosto','setembro','outubro','novembro','dezembro'};
+      mAbbr = {'jan','fev','mar','abr','mai','jun','jul','ago','set', ...
+               'out','nov','dez'};
+      wFull = {'domingo','segunda-feira','terça-feira','quarta-feira', ...
+               'quinta-feira','sexta-feira','sábado'};
+      wAbbr = {'dom','seg','ter','qua','qui','sex','sáb'};
+    otherwise
+      error (strcat ("datetime: unsupported 'Locale' '%s'; supported", ...
+                     " languages are en, fr, de, es, it, and pt."), locale);
+  endswitch
+endfunction
+
 ## Parse a cell array of date/time strings under an LDML InputFormat, returning
 ## an N-by-6 date-vector matrix.  The format is tokenized like a display format
 ## (dtFormatTokens); literals must match, and each field consumes characters
@@ -5213,12 +5301,10 @@ endfunction
 ## fields (MMM/MMMM and the day period 'a') take letters.  Two-digit years are
 ## resolved against PIVOT.  Fields absent from the format default to the current
 ## date (year/month/day) or to zero (time), matching MATLAB.
-function DV = dtParseInput (strs, fmt, pivot)
+function DV = dtParseInput (strs, fmt, pivot, locale)
   toks = dtFormatTokens (fmt);
   nt = numel (toks);
-  mAbbr = {'jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'};
-  mFull = {'january','february','march','april','may','june','july','august', ...
-           'september','october','november','december'};
+  [mFull, mAbbr, wFull, wAbbr] = dtLocaleNames (locale);
   now6 = clock ();
   ## Whether the format names any date field.  MATLAB defaults a wholly absent
   ## date to today, but when some date field is present the missing parts fall
@@ -5254,10 +5340,40 @@ function DV = dtParseInput (strs, fmt, pivot)
         else
           ok = false;  break;
         endif
-      elseif ((any (tk.sym == 'ML') && tk.n >= 3) || any (tk.sym == 'ace'))
-        ## Alphabetic field: month name, day period (AM/PM), or weekday name.
+      elseif (tk.sym == 'e' && tk.n >= 3)
+        ## Weekday name.  It carries no value (the year/month/day already fix
+        ## the date), but MATLAB rejects a token that is not a real weekday
+        ## name, so validate it.  Grab up to the next literal so compound names
+        ## such as the Portuguese "segunda-feira" are captured whole; fall back
+        ## to a run of letters (bytes above 127 are accented-letter bytes).
+        if (t < nt && isempty (toks(t+1).sym))
+          p = strfind (s(pos:end), toks(t+1).lit);
+          if (isempty (p))
+            ok = false;  break;
+          endif
+          word = s(pos:pos+p(1)-2);
+          pos += p(1) - 1;
+        else
+          j = pos;
+          while (j <= L && (isletter (s(j)) || double (s(j)) > 127))
+            j += 1;
+          endwhile
+          word = s(pos:j-1);
+          pos = j;
+        endif
+        if (! isempty (word) && word(end) == '.')
+          word(end) = [];               # drop an abbreviation period
+        endif
+        if (isempty (word) || (isempty (find (strcmpi (word, wFull))) ...
+                               && isempty (find (strcmpi (word, wAbbr)))))
+          ok = false;  break;
+        endif
+      elseif ((tk.sym == 'M' && tk.n >= 3) || tk.sym == 'a')
+        ## Month name or day period (AM/PM): grab a run of letters.  Bytes above
+        ## 127 are the lead/continuation bytes of accented UTF-8 letters (e.g.
+        ## the 'e' of "février"); treat them as name characters.
         j = pos;
-        while (j <= L && isletter (s(j)))
+        while (j <= L && (isletter (s(j)) || double (s(j)) > 127))
           j += 1;
         endwhile
         word = s(pos:j-1);
@@ -5265,16 +5381,20 @@ function DV = dtParseInput (strs, fmt, pivot)
         if (isempty (word))
           ok = false;  break;
         endif
-        if (any (tk.sym == 'ML'))
+        if (tk.sym == 'M')
           idx = find (strcmpi (word, mFull));
           if (isempty (idx))
             idx = find (strcmpi (word, mAbbr));
-          endif
-          if (isempty (idx))
-            ok = false;  break;
+            if (isempty (idx))
+              ok = false;  break;
+            endif
+            ## Consume the trailing period of an abbreviation (fr/de/pt).
+            if (pos <= L && s(pos) == '.')
+              pos += 1;
+            endif
           endif
           Mv = idx;
-        elseif (tk.sym == 'a')
+        else
           if (strcmpi (word, 'PM'))
             ampm = 2;
           elseif (strcmpi (word, 'AM'))
@@ -5283,13 +5403,12 @@ function DV = dtParseInput (strs, fmt, pivot)
             ok = false;  break;
           endif
         endif
-        ## Weekday names ('e'/'c') are consumed but do not set the value.
       else
         ## Numeric field.  Butted against another numeric field, take exactly
         ## the run length; otherwise take up to the field's natural width.
         nextNum = t < nt && ! isempty (toks(t+1).sym) ...
-                  && ! ((any (toks(t+1).sym == 'ML') && toks(t+1).n >= 3) ...
-                        || any (toks(t+1).sym == 'ac'));
+                  && ! ((any (toks(t+1).sym == 'Me') && toks(t+1).n >= 3) ...
+                        || toks(t+1).sym == 'a');
         if (nextNum)
           w = tk.n;
         else
