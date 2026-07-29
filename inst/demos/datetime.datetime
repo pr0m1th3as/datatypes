@@ -1,0 +1,53 @@
+%!demo
+%! ## A `datetime` is a specific point in time.  The simplest form gives the
+%! ## year, month and day; add hour, minute and second for a time of day.
+%!
+%! datetime (2024, 3, 9)
+%! datetime (2024, 3, 9, 14, 30, 15)
+
+%!demo
+%! ## Text is parsed automatically for the common ISO and `dd-MMM-yyyy` layouts.
+%!
+%! datetime ('2024-03-09')
+%! datetime ('09-Mar-2024 14:30:15')
+
+%!demo
+%! ## A single numeric row is read as a date vector `[Y M D h m s]`, and a range
+%! ## of datetimes is built with the colon operator and a step — here one
+%! ## calendar day with `caldays`.
+%!
+%! datetime ([2024, 3, 9, 14, 30, 15])
+%! datetime (2024, 1, 1) : caldays (1) : datetime (2024, 1, 4)
+
+%!demo
+%! ## The defining feature of `datetime` is **time-zone awareness**.  Attach a
+%! ## zone with `'TimeZone'` and the value becomes a true instant: `tzoffset`
+%! ## reports its offset from UTC, and arithmetic across a daylight-saving
+%! ## change is handled for you.
+%!
+%! t = datetime (2024, 3, 9, 14, 30, 0, 'TimeZone', 'America/New_York')
+%! tzoffset (t)
+
+%!demo
+%! ## The `'Format'` property controls display only, never the stored value.
+%! ## Here the SAME instant is shown several ways by setting different Unicode
+%! ## (LDML) field patterns — `y` year, `M` month, `d` day, `H` hour, `e`
+%! ## weekday.
+%!
+%! datetime (2024, 3, 9, 14, 30, 15, 'Format', 'yyyy-MM-dd HH:mm:ss')
+%! datetime (2024, 3, 9, 14, 30, 15, 'Format', 'MMMM d, yyyy')
+%! datetime (2024, 3, 9, 14, 30, 15, 'Format', 'eeee')
+
+%!demo
+%! ## By default the display omits sub-seconds even though they are stored — ask
+%! ## for them explicitly with fractional-second (`S`) codes.
+%!
+%! datetime (2024, 3, 9, 14, 30, 15.5)
+%! datetime (2024, 3, 9, 14, 30, 15.5, 'Format', 'HH:mm:ss.SSS')
+
+%!demo
+%! ## A missing datetime is `NaT` (Not-a-Time), the datetime analogue of `NaN`;
+%! ## a `NaN` component produces one.
+%!
+%! NaT
+%! datetime (2024, 1, [1, NaN, 3])

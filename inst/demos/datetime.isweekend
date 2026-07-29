@@ -1,0 +1,6 @@
+%!demo
+%! ## `isweekend` is true on Saturdays and Sundays.  Here a run from Friday to
+%! ## Monday flags only the two middle days.
+%!
+%! t = datetime (2024, 3, 8) : caldays (1) : datetime (2024, 3, 11)
+%! isweekend (t)

@@ -1,0 +1,6 @@
+%!demo
+%! ## `isdst` is true where an element falls in daylight saving time.  For a New
+%! ## York datetime that is `false` in January and `true` in July.
+%!
+%! t = datetime (2024, [1, 7], 15, 'TimeZone', 'America/New_York')
+%! isdst (t)

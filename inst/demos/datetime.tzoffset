@@ -1,0 +1,9 @@
+%!demo
+%! ## `tzoffset` gives each element's offset from UTC as a `duration`.  Because
+%! ## the offset depends on daylight saving time, the same zone reports a
+%! ## different value in winter and in summer.
+%!
+%! winter = datetime (2024, 1, 15, 'TimeZone', 'America/New_York')
+%! tzoffset (winter)
+%! summer = datetime (2024, 7, 15, 'TimeZone', 'America/New_York')
+%! tzoffset (summer)

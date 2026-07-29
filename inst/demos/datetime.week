@@ -1,0 +1,11 @@
+%!demo
+%! ## `week` returns the week of the year, counted Sunday to Saturday with the
+%! ## week that contains January 1 as week 1.  (This is *not* the ISO 8601 rule.)
+%!
+%! d = datetime (2024, 1, 1) : caldays (7) : datetime (2024, 2, 12)
+%! week (d)
+
+%!demo
+%! ## Pass `'weekofmonth'` for the week within the month instead of the year.
+%!
+%! week (datetime (2024, 3, 15), 'weekofmonth')
