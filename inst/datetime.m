@@ -312,12 +312,13 @@ classdef datetime
     ## weekday names, and day-period markers in @var{DateStrings} according to
     ## @var{LOCALE}, given as an @qcode{'xx_YY'} identifier whose language part
     ## selects the names.  The supported languages are @qcode{'en'} (the
-    ## default), @qcode{'fr'}, @qcode{'de'}, @qcode{'es'}, @qcode{'it'}, and
-    ## @qcode{'pt'}; @qcode{'system'} is treated as @qcode{'en'}.  Both full
-    ## (@qcode{'MMMM'}/@qcode{'eeee'}) and abbreviated
+    ## default), @qcode{'fr'}, @qcode{'de'}, @qcode{'es'}, @qcode{'it'},
+    ## @qcode{'pt'}, and @qcode{'el'}; @qcode{'system'} is treated as
+    ## @qcode{'en'}.  Both full (@qcode{'MMMM'}/@qcode{'eeee'}) and abbreviated
     ## (@qcode{'MMM'}/@qcode{'eee'}) month and weekday names are recognized,
-    ## case-insensitively.  A weekday name is validated but does not otherwise
-    ## affect the result.
+    ## case-insensitively for the Latin-script locales (Greek uses its
+    ## genitive month forms in canonical case).  A weekday name is validated
+    ## but does not otherwise affect the result.
     ##
     ## @code{@var{T} = datetime (@var{DateVectors})} creates a column vector of
     ## datetime values from the date vectors in @var{DateVectors}.
@@ -5295,9 +5296,23 @@ function [mFull, mAbbr, wFull, wAbbr, dpMark] = dtLocaleNames (locale)
       wFull = {'domingo','segunda-feira','terça-feira','quarta-feira', ...
                'quinta-feira','sexta-feira','sábado'};
       wAbbr = {'dom','seg','ter','qua','qui','sex','sáb'};
+    case 'el'
+      ## Greek month names are the genitive (format-context) forms -- a date
+      ## reads "9 Μαρτίου 2024", not the nominative "Μάρτιος".  Greek has no
+      ## ASCII letters, so matching against these canonical-case forms is in
+      ## effect case-sensitive (strcmpi folds only ASCII).
+      mFull = {'Ιανουαρίου','Φεβρουαρίου','Μαρτίου','Απριλίου','Μαΐου', ...
+               'Ιουνίου','Ιουλίου','Αυγούστου','Σεπτεμβρίου','Οκτωβρίου', ...
+               'Νοεμβρίου','Δεκεμβρίου'};
+      mAbbr = {'Ιαν','Φεβ','Μαρ','Απρ','Μαΐ','Ιουν','Ιουλ','Αυγ','Σεπ', ...
+               'Οκτ','Νοε','Δεκ'};
+      wFull = {'Κυριακή','Δευτέρα','Τρίτη','Τετάρτη','Πέμπτη','Παρασκευή', ...
+               'Σάββατο'};
+      wAbbr = {'Κυρ','Δευ','Τρί','Τετ','Πέμ','Παρ','Σάβ'};
+      dpMark = {'π.μ.', 'μ.μ.'};
     otherwise
       error (strcat ("datetime: unsupported 'Locale' '%s'; supported", ...
-                     " languages are en, fr, de, es, it, and pt."), locale);
+                     " languages are en, fr, de, es, it, pt, and el."), locale);
   endswitch
 endfunction
 
