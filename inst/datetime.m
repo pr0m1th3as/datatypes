@@ -2771,10 +2771,63 @@ classdef datetime
 
   endmethods
 
-  methods (Hidden)
+  methods (Access = public)
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{VI} =} interp1 (@var{X}, @var{V}, @var{XI})
+    ## @deftypefnx {datetime} {@var{VI} =} interp1 (@dots{}, @var{method})
+    ## @deftypefnx {datetime} {@var{VI} =} interp1 (@dots{}, @var{method}, @var{extrap})
+    ##
+    ## One-dimensional interpolation involving datetime arrays.
+    ##
+    ## @code{@var{VI} = interp1 (@var{X}, @var{V}, @var{XI})} interpolates to find
+    ## @var{VI}, the values of the underlying function @code{@var{V} = f
+    ## (@var{X})} at the query points @var{XI}.  Datetime arrays are handled by
+    ## interpolating on their absolute (POSIX) instants:
+    ##
+    ## @itemize
+    ## @item When the sample points @var{X} are a datetime array, the query
+    ## points @var{XI} must also be a datetime array, and vice versa.
+    ## @item When the sampled values @var{V} are a datetime array, @var{VI} is a
+    ## datetime array carrying the time zone and display format of @var{V};
+    ## otherwise @var{VI} is numeric.
+    ## @end itemize
+    ##
+    ## The optional @var{method} (@qcode{'linear'} by default) and @var{extrap}
+    ## arguments are passed to the built-in @code{interp1} (see its documentation
+    ## for the supported interpolation methods and extrapolation options).  Query
+    ## points outside the range of @var{X}, and Not-A-Time query points, yield
+    ## @qcode{NaN} or @qcode{NaT} unless extrapolation is requested.
+    ##
+    ## @end deftypefn
     function BI = interp1 (A, B, AI, varargin)
-      error ("datetime.interp1: not implemented yet.");
+      vIsDT = isa (B, 'datetime');
+      if (isa (A, 'datetime'))
+        if (! isa (AI, 'datetime'))
+          error (strcat ("datetime.interp1: query points must be a datetime", ...
+                         " array when the sample points are datetime."));
+        endif
+        x = serial (A);
+        xq = serial (AI);
+      else
+        if (isa (AI, 'datetime'))
+          error (strcat ("datetime.interp1: query points must be numeric when", ...
+                         " the sample points are numeric."));
+        endif
+        x = A;
+        xq = AI;
+      endif
+      if (vIsDT)
+        v = serial (B);
+      else
+        v = B;
+      endif
+      vi = interp1 (x, v, xq, varargin{:});
+      if (vIsDT)
+        BI = fromReducedSerial (B, vi);
+      else
+        BI = vi;
+      endif
     endfunction
 
   endmethods

@@ -854,6 +854,48 @@
 %!assert_equal (posixtime (datetime (2024, 1, [1; 2])), [1704067200; 1704153600])
 %!assert_equal (isnan (posixtime (NaT)), true)
 
+## Test 'interp1' -- datetime sample points, numeric values
+%!test
+%! t = datetime (2024, 1, 1) + days (0:4);
+%! v = [10 20 30 40 50];
+%! tq = datetime (2024, 1, 1) + days ([1.5 3.25]);
+%! assert_equal (interp1 (t, v, tq), [25 42.5]);
+%! assert_equal (class (interp1 (t, v, tq)), 'double');
+%! assert_equal (interp1 (t, v, tq, 'nearest'), [30 40]);
+%! assert_equal (interp1 (t, v, tq, 'previous'), [20 40]);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:4);
+%! v = [10 20 30 40 50];
+%! assert_equal (isnan (interp1 (t, v, datetime (2024, 1, 10))), true);
+%! assert_equal (interp1 (t, v, datetime (2024, 1, 10), 'linear', 'extrap'), 100);
+%! assert_equal (interp1 (t, v, datetime (2024, 1, 10), 'linear', -1), -1);
+%! assert_equal (isnan (interp1 (t, v, NaT)), true);
+
+## Test 'interp1' -- datetime values yield a datetime result (zone preserved)
+%!test
+%! V = datetime (2024, 1, 1) + days (0:4);
+%! r = interp1 (0:4, V, [1.5 3.25]);
+%! assert_equal (class (r), 'datetime');
+%! assert_equal (cellstr (r), {'02-Jan-2024 12:00:00', '04-Jan-2024 06:00:00'});
+%! assert_equal (isnat (interp1 (0:4, V, 9)), true);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:4);
+%! V = datetime (2024, 1, 1) + days (0:4);
+%! tq = datetime (2024, 1, 1) + days ([1.5 3.25]);
+%! assert_equal (cellstr (interp1 (t, V, tq)), ...
+%!               {'02-Jan-2024 12:00:00', '04-Jan-2024 06:00:00'});
+%!test
+%! Vz = datetime (2024, 1, 1, 'TimeZone', 'America/New_York') + days (0:4);
+%! r = interp1 (0:4, Vz, 1.5);
+%! assert_equal (r.TimeZone, 'America/New_York');
+%! assert_equal (char (r, 'yyyy-MM-dd HH:mm:ss'), '2024-01-02 12:00:00');
+
+## Test 'interp1' -- sample and query points must be the same kind
+%!error <datetime.interp1: query points must be a datetime array when the sample points are datetime.> ...
+%! interp1 (datetime (2024, 1, 1) + days (0:4), [1 2 3 4 5], 2)
+%!error <datetime.interp1: query points must be numeric when the sample points are numeric.> ...
+%! interp1 (0:4, [1 2 3 4 5], datetime (2024, 1, 2))
+
 ################################################################################
 ##                          ** Query Operations **                            ##
 ################################################################################
