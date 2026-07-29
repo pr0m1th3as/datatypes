@@ -223,6 +223,47 @@
 %!error <datetime: could not parse the date/time string> ...
 %! datetime ('09.03.2024 extra', 'InputFormat', 'dd.MM.yyyy')
 
+## Test 'datetime' constructor -- 'InputFormat' rejects a date that does not
+## exist.  A lone string errors; within an array only that element is lost,
+## becoming NaT (MATLAB-verified against R2024a).
+%!error <datetime: could not parse the date/time string '2024-04-31' with 'InputFormat' 'yyyy-MM-dd'.> ...
+%! datetime ('2024-04-31', 'InputFormat', 'yyyy-MM-dd')
+%!error <datetime: could not parse the date/time string '2023-02-29' with 'InputFormat' 'yyyy-MM-dd'.> ...
+%! datetime ('2023-02-29', 'InputFormat', 'yyyy-MM-dd')
+%!error <datetime: could not parse the date/time string '2024-13-01' with 'InputFormat' 'yyyy-MM-dd'.> ...
+%! datetime ('2024-13-01', 'InputFormat', 'yyyy-MM-dd')
+%!error <datetime: could not parse the date/time string '2024-01-00' with 'InputFormat' 'yyyy-MM-dd'.> ...
+%! datetime ('2024-01-00', 'InputFormat', 'yyyy-MM-dd')
+%!error <datetime: could not parse the date/time string '2024-04-31' with 'InputFormat' 'yyyy-MM-dd'.> ...
+%! datetime ({'2024-04-31'}, 'InputFormat', 'yyyy-MM-dd')
+%!error <datetime: could not parse the date/time string '2024-01-01 25:00:00' with 'InputFormat' 'yyyy-MM-dd HH:mm:ss'.> ...
+%! datetime ('2024-01-01 25:00:00', 'InputFormat', 'yyyy-MM-dd HH:mm:ss')
+%!error <datetime: could not parse the date/time string '2024-01-01 12:60:00' with 'InputFormat' 'yyyy-MM-dd HH:mm:ss'.> ...
+%! datetime ('2024-01-01 12:60:00', 'InputFormat', 'yyyy-MM-dd HH:mm:ss')
+%!error <datetime: could not parse the date/time string '2024-01-01 12:00:60' with 'InputFormat' 'yyyy-MM-dd HH:mm:ss'.> ...
+%! datetime ('2024-01-01 12:00:60', 'InputFormat', 'yyyy-MM-dd HH:mm:ss')
+%!assert_equal (char (datetime ('2024-02-29', 'InputFormat', 'yyyy-MM-dd')), ...
+%!              '29-Feb-2024')
+%!test
+%! d = datetime ({'2024-01-15', '2024-04-31'}, 'InputFormat', 'yyyy-MM-dd');
+%! assert_equal (isnat (d), [false, true])
+%! assert_equal (cellstr (d), {'15-Jan-2024', 'NaT'})
+%!test
+%! d = datetime ({'xx', '2024-01-15'}, 'InputFormat', 'yyyy-MM-dd');
+%! assert_equal (isnat (d), [true, false])
+%!test
+%! ## A zone does not change the verdict.
+%! d = datetime ({'2024-01-15', '2024-04-31'}, 'InputFormat', 'yyyy-MM-dd', ...
+%!               'TimeZone', 'America/New_York');
+%! assert_equal (isnat (d), [false, true])
+%!test
+%! ## A NaT carries no time of day, so a date-only array keeps its date-only
+%! ## rendering when one sits beside it.
+%! assert_equal (cellstr ([datetime(2024, 1, 15); NaT]), ...
+%!               {'15-Jan-2024'; 'NaT'})
+%! assert_equal (cellstr ([datetime(2024, 1, 15, 13, 30, 0); NaT]), ...
+%!               {'15-Jan-2024 13:30:00'; 'NaT'})
+
 ## Test 'datetime' constructor -- format auto-detection (no 'InputFormat')
 %!assert_equal (datevec (datetime ('2024-03-09')), [2024, 3, 9, 0, 0, 0])
 %!assert_equal (datevec (datetime ('2024-03-09 14:30:45')), ...

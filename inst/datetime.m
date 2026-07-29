@@ -5213,10 +5213,16 @@ endfunction
 ## renders a date-only pattern when every element sits at midnight (all-zero
 ## time-of-day) and a date+time pattern otherwise; 'defaultdate' is always
 ## date-only.  A concrete user pattern is returned verbatim (case-sensitive,
-## as 'M' and 'm' differ).
+## as 'M' and 'm' differ).  NaT elements carry no time of day and are left out
+## of the decision, so a date-only array keeps its date-only rendering when a
+## NaT sits beside it; an array holding nothing but NaT says nothing either
+## way and keeps the date+time pattern.
 function fmt = dtResolveFormat (fmtProp, H, Mi, S)
   if (strcmpi (fmtProp, 'default'))
-    if (! isempty (H) && all ((H(:) == 0) & (Mi(:) == 0) & (S(:) == 0)))
+    dated = ! isnan (H(:));
+    if (! isempty (H) && any (dated) && all ((H(dated) == 0) ...
+                                             & (Mi(dated) == 0) ...
+                                             & (S(dated) == 0)))
       fmt = 'dd-MMM-uuuu';
     else
       fmt = 'dd-MMM-uuuu HH:mm:ss';
@@ -5423,8 +5429,12 @@ function [DV, ok] = dtSniffParse (strs)
 
   ## Decline anything 'datevec' would have rolled over or rejected, so the two
   ## paths cannot disagree: 'datevec' turns 2024-04-31 into 2024-05-01 and
-  ## errors on month 13, day 0 or hour 25, whereas the LDML parser keeps the
-  ## raw components.
+  ## errors on month 13, day 0 or hour 25, whereas the LDML parser rejects
+  ## them, returning NaT for the element (or erroring on a lone string).
+  if (any (isnan (DV(:))))
+    DV = [];
+    return;
+  endif
   if (any (DV(:,2) < 1 | DV(:,2) > 12) || any (DV(:,4) > 23) ...
       || any (DV(:,5) > 59) || any (DV(:,6) >= 60) || any (DV(:,3) < 1) ...
       || any (DV(:,3) > dtDaysInMonth (DV(:,1), DV(:,2))))

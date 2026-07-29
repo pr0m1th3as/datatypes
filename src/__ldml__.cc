@@ -19,6 +19,7 @@ this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include <cmath>
 #include <cstdint>
+#include <limits>
 #include <ctime>
 #include <string>
 #include <vector>
@@ -438,6 +439,26 @@ civil_from_days (long z, long& y, unsigned& m, unsigned& d)
   y += (m <= 2);
 }
 
+// Length of a month, for validating a parsed date.  Returns 0 for a month
+// outside 1..12, which fails the day test for any day.
+static int
+days_in_month (double Y, double M)
+{
+  static const int dpm[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+  int m = static_cast<int> (M);
+  if (m < 1 || m > 12)
+  {
+    return 0;
+  }
+  if (m == 2)
+  {
+    long y = static_cast<long> (Y);
+    bool leap = (y % 4 == 0 && y % 100 != 0) || (y % 400 == 0);
+    return (leap ? 29 : 28);
+  }
+  return dpm[m-1];
+}
+
 // Parse a cell array of date/time strings under an LDML 'InputFormat',
 // returning an N-by-6 date-vector matrix.  This is a direct port of
 // dtParseInput in datetime.m and must stay behaviourally identical to it.
@@ -722,18 +743,38 @@ ldml_parse (const Cell& strs, const string& fmt, double pivot, int lidx)
     {
       ok = false;                  // trailing text not covered by the format
     }
+    if (ok)
+    {
+      if (ampm == 2 && Hv < 12)
+      {
+        Hv += 12;
+      }
+      else if (ampm == 1 && Hv == 12)
+      {
+        Hv = 0;
+      }
+      // The components must name a date that exists.  MATLAB rejects
+      // 2024-04-31 and 2023-02-29 just as it rejects unparseable text, and
+      // likewise an hour past 23, a minute past 59, or a second reaching 60.
+      ok = (Mv >= 1 && Mv <= 12 && Dv >= 1 && Dv <= days_in_month (Yv, Mv)
+            && Hv >= 0 && Hv <= 23 && MIv >= 0 && MIv <= 59
+            && Sv >= 0 && Sv < 60);
+    }
     if (! ok)
     {
-      error ("datetime: could not parse the date/time string '%s' with "
-             "'InputFormat' '%s'.", s.c_str (), fmt.c_str ());
-    }
-    if (ampm == 2 && Hv < 12)
-    {
-      Hv += 12;
-    }
-    else if (ampm == 1 && Hv == 12)
-    {
-      Hv = 0;
+      // A lone string that cannot be converted is an error, but within an
+      // array only the offending element is lost, becoming NaT, as MATLAB
+      // does -- one bad row must not cost the whole column.
+      if (n == 1)
+      {
+        error ("datetime: could not parse the date/time string '%s' with "
+               "'InputFormat' '%s'.", s.c_str (), fmt.c_str ());
+      }
+      for (int c = 0; c < 6; c++)
+      {
+        DV(r,c) = numeric_limits<double>::quiet_NaN ();
+      }
+      continue;
     }
     DV(r,0) = Yv;
     DV(r,1) = Mv;
