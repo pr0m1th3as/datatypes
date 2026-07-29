@@ -1,0 +1,6 @@
+%!demo
+%! ## `hms` splits each datetime into its hour, minute and second components.
+%!
+%! t = datetime (2024, 3, 9, 14, 30, 45)
+%! [h, m, s] = hms (t);
+%! [h, m, s]

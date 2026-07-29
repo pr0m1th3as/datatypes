@@ -1,0 +1,9 @@
+%!demo
+%! ## `day` returns the day of the month by default.  Pass a type to get instead
+%! ## the day of the week (Sunday is 1), the day of the year, or the weekday name.
+%!
+%! t = datetime (2024, 3, 9)
+%! day (t)
+%! day (t, 'dayofweek')
+%! day (t, 'dayofyear')
+%! day (t, 'name')

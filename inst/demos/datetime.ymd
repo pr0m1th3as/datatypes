@@ -1,0 +1,7 @@
+%!demo
+%! ## `ymd` splits each datetime into its year, month and day as three separate
+%! ## numeric outputs.
+%!
+%! t = datetime (2024, 3, 9, 14, 30, 45)
+%! [y, m, d] = ymd (t);
+%! [y, m, d]

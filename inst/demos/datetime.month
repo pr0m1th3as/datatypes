@@ -1,0 +1,7 @@
+%!demo
+%! ## `month` returns the month number, or its full or abbreviated name.
+%!
+%! t = datetime (2024, 3, 9)
+%! month (t)
+%! month (t, 'name')
+%! month (t, 'shortname')

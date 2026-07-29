@@ -1,0 +1,7 @@
+%!demo
+%! ## `second` returns the seconds of the minute by default, or the seconds
+%! ## elapsed since midnight with `'secondofday'`.
+%!
+%! t = datetime (2024, 3, 9, 14, 30, 45)
+%! second (t)
+%! second (t, 'secondofday')

@@ -1,0 +1,5 @@
+%!demo
+%! ## `quarter` returns the quarter of the year (1 to 4) for each element.
+%!
+%! t = datetime (2024, [2, 5, 8, 11], 1)
+%! quarter (t)
