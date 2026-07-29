@@ -1,0 +1,5 @@
+%!demo
+%! ## `max` returns the latest datetime.
+%!
+%! t = datetime (2024, 3, [9, 2, 20, 5])
+%! max (t)

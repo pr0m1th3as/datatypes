@@ -1,0 +1,6 @@
+%!demo
+%! ## `char` renders datetimes as a character array, using the display format or
+%! ## a format you pass.
+%!
+%! char (datetime (2024, 3, 9, 14, 30, 0))
+%! char (datetime (2024, 3, 9), 'yyyy-MM-dd')

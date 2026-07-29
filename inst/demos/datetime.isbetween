@@ -1,0 +1,5 @@
+%!demo
+%! ## `isbetween` tests whether each element falls within a closed interval.
+%!
+%! t = datetime (2024, 3, [1, 9, 20])
+%! isbetween (t, datetime (2024, 3, 5), datetime (2024, 3, 15))

@@ -1,0 +1,5 @@
+%!demo
+%! ## `min` returns the earliest datetime; a second output gives its index.
+%!
+%! t = datetime (2024, 3, [9, 2, 20, 5])
+%! [earliest, idx] = min (t)

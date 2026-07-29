@@ -1,0 +1,4 @@
+%!demo
+%! ## `isnat` is true where an element is `NaT`, a missing datetime.
+%!
+%! isnat ([datetime(2024, 1, 1), NaT, datetime(2024, 1, 3)])

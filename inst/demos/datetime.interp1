@@ -1,0 +1,13 @@
+%!demo
+%! ## `interp1` interpolates values sampled at datetimes.  Here numeric readings
+%! ## taken on 1 and 5 January are interpolated at 3 January.
+%!
+%! t = datetime (2024, 1, [1, 5])
+%! v = [10, 50];
+%! interp1 (t, v, datetime (2024, 1, 3))
+
+%!demo
+%! ## When the sampled *values* are datetimes, the interpolated result is a
+%! ## datetime.
+%!
+%! interp1 ([0, 10], datetime (2024, 1, [1, 11]), 2.5)

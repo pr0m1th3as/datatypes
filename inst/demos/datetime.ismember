@@ -1,0 +1,4 @@
+%!demo
+%! ## `ismember` tests which datetimes also appear in a second set.
+%!
+%! ismember (datetime (2024, 1, [1, 5, 9]), datetime (2024, 1, [1, 2, 3, 4, 5]))
