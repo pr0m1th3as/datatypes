@@ -905,8 +905,8 @@ classdef datetime
       if (nargout == 0 || nargout == 1)
         varargout{1} = sz;
       elseif (numel (sz) != nargout)
-        error (["datetime.size: nargout > 1 but does not", ...
-                " match number of requested dimensions."]);
+        error (strcat ("datetime.size: nargout > 1 but does not", ...
+                       " match number of requested dimensions."));
       else
         for i = 1:nargout
           varargout{i} = sz(i);
@@ -3980,13 +3980,13 @@ classdef datetime
           out.Second = this.Second(s.subs{:});
 
         case '{}'
-          error (["datetime.subsref: '{}' invalid indexing", ...
-                  " for referencing values. Use '()' instead."]);
+          error (strcat ("datetime.subsref: '{}' invalid indexing", ...
+                         " for referencing values. Use '()' instead."));
 
         case '.'
           if (! ischar (s.subs))
-            error (["datetime.subsref: '.' index argument", ...
-                    " must be a character vector."]);
+            error (strcat ("datetime.subsref: '.' index argument", ...
+                           " must be a character vector."));
           endif
           switch (s.subs)
             case 'proxyArray'  # used by 'table' class
@@ -4031,8 +4031,8 @@ classdef datetime
         p = s(2);
         s = s(1);
         if (! strcmp (p.type, '()'))
-          error (["datetime.subsasgn: '%s' invalid indexing", ...
-                  " for assigning values. Use '()' instead."], p.type);
+          error (strcat ("datetime.subsasgn: '%s' invalid indexing", ...
+                         " for assigning values. Use '()' instead."), p.type);
         endif
       else
         p.subs = {':'};
@@ -4048,30 +4048,42 @@ classdef datetime
             this.Second(s.subs{:}) = [];
             return;
           elseif (! isa (val, "datetime"))
-            error (["datetime.subsasgn: cannot assign %s values", ...
-                            "to a datetime array."], class (val));
+            error (strcat ("datetime.subsasgn: cannot assign %s values", ...
+                           " to a datetime array."), class (val));
           endif
+          ## Track which positions are real so that any elements created by
+          ## growing the array (out-of-range assignment) can be filled with
+          ## Not-A-Time; Octave would otherwise pad them with 0, i.e. the
+          ## invalid 0000-00-00 datetime (MATLAB pads such gaps with NaT).
+          filled = true (size (this.Year));
+          filled(s.subs{:}) = true;
           this.Year(s.subs{:})   = val.Year;
           this.Month(s.subs{:})  = val.Month;
           this.Day(s.subs{:})    = val.Day;
           this.Hour(s.subs{:})   = val.Hour;
           this.Minute(s.subs{:}) = val.Minute;
           this.Second(s.subs{:}) = val.Second;
+          gap = ! filled;
+          if (any (gap(:)))
+            this.Year(gap) = NaN;    this.Month(gap) = NaN;
+            this.Day(gap) = NaN;     this.Hour(gap) = NaN;
+            this.Minute(gap) = NaN;  this.Second(gap) = NaN;
+          endif
 
         case '{}'
-          error (["datetime.subsasgn: '{}' invalid indexing", ...
-                  " for assigning values. Use '()' instead."]);
+          error (strcat ("datetime.subsasgn: '{}' invalid indexing", ...
+                         " for assigning values. Use '()' instead."));
 
         case '.'
           if (! ischar (s.subs))
-            error (["datetime.subsasgn: '.' index argument", ...
-                    " must be a character vector."]);
+            error (strcat ("datetime.subsasgn: '.' index argument", ...
+                           " must be a character vector."));
           endif
           switch (s.subs)
             case 'Format'
               if (! (ischar (val) && (isrow (val) || isempty (val))))
-                error (["datetime.subsasgn: 'Format' must be a", ...
-                        " character vector."]);
+                error (strcat ("datetime.subsasgn: 'Format' must be a", ...
+                               " character vector."));
               endif
               dtValidateFormat (val);
               this.Format = val;
@@ -4079,8 +4091,8 @@ classdef datetime
               toTimeZone = val;
               if (! (ischar (toTimeZone) && (isrow (toTimeZone) ...
                                              || isempty (toTimeZone))))
-                error (["datetime.subsasgn: 'TimeZone' must be a", ...
-                        " character vector."]);
+                error (strcat ("datetime.subsasgn: 'TimeZone' must be a", ...
+                               " character vector."));
               endif
               ## Validate the target zone (empty means an unzoned array).
               if (! isempty (toTimeZone))
