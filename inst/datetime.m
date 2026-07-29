@@ -326,8 +326,9 @@ classdef datetime
       [ConvertFrom, Format, inputFormat, Locale, PivotYear, TimeZone, args] =...
                     parsePairedArguments (optNames, dfValues, varargin(:));
 
-      ## Check optional 'Format' and 'InputFormat' arguments
-      if (! isempty (ConvertFrom))
+      ## Check optional 'Format' and 'InputFormat' arguments.  'yyyymmdd' is
+      ## handled in M-code below, so it bypasses the builtin ConvertFrom check.
+      if (! isempty (ConvertFrom) && ! strcmpi (ConvertFrom, 'yyyymmdd'))
         ## Call __datetime__ to check for valid ConvertFrom string and
         ## data input
         [~,~,~,~,~,~,errmsg] = __datetime__ (args{:}, 'ConvertFrom', ...
@@ -423,7 +424,25 @@ classdef datetime
       endif
 
       ## Handle inputs (no errors here)
-      if (! isempty (ConvertFrom) && ! isempty (TimeZone))
+      if (! isempty (ConvertFrom) && strcmpi (ConvertFrom, 'yyyymmdd'))
+        ## Decompose a YYYYMMDD integer into year, month, and day components
+        ## and construct through the normal component path.
+        x = args{1};
+        if (! isnumeric (x))
+          error ("datetime: 'yyyymmdd' input must be numeric.");
+        endif
+        Y = floor (x ./ 10000);
+        M = floor (mod (x, 10000) ./ 100);
+        D = mod (x, 100);
+        dtCheckIntegerComponents ({Y, M, D});
+        if (! isempty (TimeZone))
+          [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
+           this.Second] = __datetime__ (Y, M, D, 'TimeZone', TimeZone);
+        else
+          [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
+           this.Second] = __datetime__ (Y, M, D);
+        endif
+      elseif (! isempty (ConvertFrom) && ! isempty (TimeZone))
         [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
          this.Second] = __datetime__ (args{1}, 'ConvertFrom', ConvertFrom, ...
                                       'TimeZone', TimeZone);
@@ -431,6 +450,7 @@ classdef datetime
         [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
          this.Second] = __datetime__ (args{1}, 'ConvertFrom', ConvertFrom);
       else
+        dtCheckIntegerComponents (args);
         [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
          this.Second] = __datetime__ (args{:});
       endif
@@ -5098,6 +5118,30 @@ function dtValidateFormat (fmt)
                      " symbol: '%s'."), fmt, toks(t).sym);
     endif
   endfor
+endfunction
+
+## Enforce MATLAB's rule that the year, month, day, hour, and minute components
+## must be integer-valued; only seconds (and milliseconds) may be fractional.
+## Not-A-Number and infinite values are permitted (they yield NaT / Inf).  ARGS
+## is the positional argument list: a single numeric date-vector matrix (columns
+## 1-5 are Y,M,D,H,MI) or separate component arrays (the first five are
+## Y,M,D,H,MI).
+function dtCheckIntegerComponents (args)
+  if (numel (args) == 1 && isnumeric (args{1}))
+    M = args{1};
+    vals = M(:, 1:min (5, columns (M)));
+  else
+    vals = [];
+    for k = 1:min (5, numel (args))
+      if (isnumeric (args{k}))
+        vals = [vals(:); args{k}(:)];
+      endif
+    endfor
+  endif
+  if (any (isfinite (vals(:)) & (fix (vals(:)) != vals(:))))
+    error (strcat ("datetime: Year, Month, Day, Hour, and Minute components", ...
+                   " must be integer values."));
+  endif
 endfunction
 
 ## Split an LDML format pattern into a struct array of tokens.  Each token is
