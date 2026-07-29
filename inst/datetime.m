@@ -427,26 +427,29 @@ classdef datetime
           DateStrings = cellstr (args{1});
         endif
         if (! isempty (DateStrings))
-          if (! isempty (inputFormat) && ! isempty (PivotYear))
-            fcn = @(x) datevec (x, inputFormat, PivotYear);
-          elseif (! isempty (inputFormat) && isempty (PivotYear))
-            fcn = @(x) datevec (x, inputFormat);
-          elseif (isempty (inputFormat) && ! isempty (PivotYear))
-            fcn = @(x) datevec (x, PivotYear);
-          else
-            fcn = @(x) datevec (x);
-          endif
-          try
-            DATEVEC = cellfun (fcn, DateStrings, "UniformOutput", false);
-            DATEVEC = cell2mat (DATEVEC(:));
-          catch
-            if (! isempty (inputFormat))
-              error ("datetime: invalid 'inputFormat'.");
+          if (! isempty (inputFormat))
+            ## LDML-aware parse under the supplied 'InputFormat'.  MATLAB's
+            ## default pivot for two-digit years is the current year minus 50.
+            dtValidateFormat (inputFormat);
+            if (! isempty (PivotYear))
+              pivot = PivotYear;
             else
+              now6 = clock ();
+              pivot = now6(1) - 50;
+            endif
+            DATEVEC = dtParseInput (DateStrings(:), inputFormat, pivot);
+          else
+            ## No format supplied: let core 'datevec' auto-detect ISO and
+            ## dd-MMM-yyyy style strings.
+            fcn = @(x) datevec (x);
+            try
+              DATEVEC = cellfun (fcn, DateStrings, "UniformOutput", false);
+              DATEVEC = cell2mat (DATEVEC(:));
+            catch
               error (strcat ("datetime: could not recognize date/time", ...
                              " format from input."));
-            endif
-          end_try_catch
+            end_try_catch
+          endif
           ## Split DATEVEC into individual date/time units and reshape
           this.Year = reshape (DATEVEC(:,1), size (DateStrings));
           this.Month = reshape (DATEVEC(:,2), size (DateStrings));
@@ -5200,6 +5203,161 @@ function dtCheckIntegerComponents (args)
     error (strcat ("datetime: Year, Month, Day, Hour, and Minute components", ...
                    " must be integer values."));
   endif
+endfunction
+
+## Parse a cell array of date/time strings under an LDML InputFormat, returning
+## an N-by-6 date-vector matrix.  The format is tokenized like a display format
+## (dtFormatTokens); literals must match, and each field consumes characters
+## from the string: numeric fields take digits (up to the field's natural width,
+## or exactly the run length when butted against another numeric field), name
+## fields (MMM/MMMM and the day period 'a') take letters.  Two-digit years are
+## resolved against PIVOT.  Fields absent from the format default to the current
+## date (year/month/day) or to zero (time), matching MATLAB.
+function DV = dtParseInput (strs, fmt, pivot)
+  toks = dtFormatTokens (fmt);
+  nt = numel (toks);
+  mAbbr = {'jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'};
+  mFull = {'january','february','march','april','may','june','july','august', ...
+           'september','october','november','december'};
+  now6 = clock ();
+  ## Whether the format names any date field.  MATLAB defaults a wholly absent
+  ## date to today, but when some date field is present the missing parts fall
+  ## back to month 1 / day 1 (and the current year).
+  hasDate = false;
+  for t = 1:nt
+    if (! isempty (toks(t).sym) && any (toks(t).sym == 'yuMLdD'))
+      hasDate = true;
+      break;
+    endif
+  endfor
+  n = numel (strs);
+  DV = zeros (n, 6);
+  for r = 1:n
+    s = strs{r};
+    L = numel (s);
+    pos = 1;
+    Yv = now6(1);
+    if (hasDate)
+      Mv = 1;  Dv = 1;
+    else
+      Mv = now6(2);  Dv = now6(3);
+    endif
+    Hv = 0; MIv = 0; Sv = 0; ampm = 0;
+    ok = true;
+    for t = 1:nt
+      tk = toks(t);
+      if (isempty (tk.sym))
+        ## Literal text must appear verbatim.
+        m = numel (tk.lit);
+        if (pos + m - 1 <= L && strcmp (s(pos:pos+m-1), tk.lit))
+          pos += m;
+        else
+          ok = false;  break;
+        endif
+      elseif ((any (tk.sym == 'ML') && tk.n >= 3) || any (tk.sym == 'ace'))
+        ## Alphabetic field: month name, day period (AM/PM), or weekday name.
+        j = pos;
+        while (j <= L && isletter (s(j)))
+          j += 1;
+        endwhile
+        word = s(pos:j-1);
+        pos = j;
+        if (isempty (word))
+          ok = false;  break;
+        endif
+        if (any (tk.sym == 'ML'))
+          idx = find (strcmpi (word, mFull));
+          if (isempty (idx))
+            idx = find (strcmpi (word, mAbbr));
+          endif
+          if (isempty (idx))
+            ok = false;  break;
+          endif
+          Mv = idx;
+        elseif (tk.sym == 'a')
+          if (strcmpi (word, 'PM'))
+            ampm = 2;
+          elseif (strcmpi (word, 'AM'))
+            ampm = 1;
+          else
+            ok = false;  break;
+          endif
+        endif
+        ## Weekday names ('e'/'c') are consumed but do not set the value.
+      else
+        ## Numeric field.  Butted against another numeric field, take exactly
+        ## the run length; otherwise take up to the field's natural width.
+        nextNum = t < nt && ! isempty (toks(t+1).sym) ...
+                  && ! ((any (toks(t+1).sym == 'ML') && toks(t+1).n >= 3) ...
+                        || any (toks(t+1).sym == 'ac'));
+        if (nextNum)
+          w = tk.n;
+        else
+          switch (tk.sym)
+            case {'y','u'}
+              w = 2 * (tk.n == 2) + 6 * (tk.n != 2);
+            case 'D'
+              w = 3;
+            case 'S'
+              w = 9;
+            otherwise
+              w = 2;
+          endswitch
+        endif
+        j = pos;
+        while (j <= L && j - pos < w && s(j) >= '0' && s(j) <= '9')
+          j += 1;
+        endwhile
+        digits = s(pos:j-1);
+        pos = j;
+        if (isempty (digits))
+          ok = false;  break;
+        endif
+        val = str2double (digits);
+        switch (tk.sym)
+          case {'y','u'}
+            if (tk.n == 2)
+              base = pivot - mod (pivot, 100);
+              Yv = base + val;
+              if (Yv < pivot)
+                Yv += 100;
+              endif
+            else
+              Yv = val;
+            endif
+          case 'M'
+            Mv = val;
+          case 'd'
+            Dv = val;
+          case 'D'
+            dv = datevec (datenum (Yv, 1, 1) + val - 1);
+            Mv = dv(2);  Dv = dv(3);
+          case {'H','h','k','K'}
+            Hv = val;
+          case 'm'
+            MIv = val;
+          case 's'
+            Sv = Sv + val;
+          case 'S'
+            Sv = Sv + val / 10 ^ numel (digits);
+          ## 'Q'/'G'/'W'/'e' numeric forms carry no independent component here.
+        endswitch
+      endif
+    endfor
+    if (ok && pos <= L)
+      ok = false;                   # trailing text not covered by the format
+    endif
+    if (! ok)
+      error (strcat ("datetime: could not parse the date/time string '%s'", ...
+                     " with 'InputFormat' '%s'."), s, fmt);
+    endif
+    if (ampm == 2 && Hv < 12)
+      Hv += 12;
+    elseif (ampm == 1 && Hv == 12)
+      Hv = 0;
+    endif
+    DV(r,:) = [Yv, Mv, Dv, Hv, MIv, Sv];
+  endfor
 endfunction
 
 ## Split an LDML format pattern into a struct array of tokens.  Each token is
