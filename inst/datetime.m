@@ -1070,6 +1070,35 @@ classdef datetime
     endfunction
 
     ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{S} =} string (@var{T})
+    ## @deftypefnx {datetime} {@var{S} =} string (@var{T}, @var{fmt})
+    ##
+    ## Convert datetime array to a string array.
+    ##
+    ## @code{@var{S} = string (@var{T})} converts the datetime array @var{T} to a
+    ## @code{string} array @var{S} of the same size, formatting each element with
+    ## the display format of @var{T} (its @qcode{Format} property).  Not-A-Time
+    ## (@qcode{NaT}) values become missing string elements.
+    ##
+    ## @code{@var{S} = string (@var{T}, @var{fmt})} formats each element with the
+    ## Unicode (LDML) format @var{fmt} instead of the @qcode{Format} property of
+    ## @var{T} (see @code{char}).
+    ##
+    ## @end deftypefn
+    function s = string (this, fmt)
+      if (nargin < 2)
+        cstr = cellstr (this);
+      else
+        cstr = cellstr (this, fmt);
+      endif
+      nat = isnat (this);
+      if (any (nat, 'all'))
+        cstr(nat) = {missing};
+      endif
+      s = string (cstr);
+    endfunction
+
+    ## -*- texinfo -*-
     ## @deftypefn {datetime} {@var{D} =} yyyymmdd (@var{T})
     ##
     ## Convert datetime array to @code{YYYYMMDD} numeric form.

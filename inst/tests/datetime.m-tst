@@ -662,6 +662,30 @@
 %! assert_equal (s(1,:), '09-Mar-2024 14:05:07');
 %! assert_equal (s(2,:), '10-Mar-2024 14:05:07');
 
+## Test 'string' -- datetime to string array via the Format seam
+%!assert_equal (class (string (datetime (2024, 3, 9))), 'string')
+%!assert_equal (cellstr (string (datetime (2024, 3, 9, 14, 5, 7))), ...
+%!              {'09-Mar-2024 14:05:07'})
+%!assert_equal (cellstr (string (datetime (2024, 3, 9), 'yyyy-MM-dd')), ...
+%!              {'2024-03-09'})
+%!assert_equal (cellstr (string (datetime (2024, 3, 9, 'TimeZone', ...
+%!              'America/New_York'), 'yyyy-MM-dd')), {'2024-03-09'})
+%!assert_equal (ismissing (string (NaT)), true)
+
+## Test 'string' -- Format property, shape, and NaT -> missing
+%!test
+%! t = datetime (2024, 3, 9);
+%! t.Format = 'yyyy-MM-dd';
+%! assert_equal (cellstr (string (t)), {'2024-03-09'});
+%!test
+%! t = [datetime(2024, 3, 9, 14, 5, 7), NaT];
+%! s = string (t);
+%! assert_equal (size (s), [1, 2]);
+%! assert_equal (ismissing (s), logical ([0, 1]));
+%!test
+%! t = [datetime(2024, 1, 1, 5, 0, 0); datetime(2024, 2, 2, 6, 0, 0)];
+%! assert_equal (cellstr (string (t)), cellstr (t));
+
 ## Test 'yyyymmdd' -- YYYYMMDD numeric date, time ignored, NaT -> NaN
 %!assert_equal (yyyymmdd (datetime (2024, 3, 9)), 20240309)
 %!assert_equal (yyyymmdd (datetime (2024, 3, 9, 14, 5, 7)), 20240309)
