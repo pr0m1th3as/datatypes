@@ -1,0 +1,9 @@
+%!demo
+%! ## `datestr` produces text using the *legacy* `datestr` format codes.  Note
+%! ## that here `mm` means months and `MM` means minutes — the reverse of the
+%! ## modern Unicode (LDML) codes used by `char` and the `'Format'` property,
+%! ## which are the preferred way to format a datetime.
+%!
+%! t = datetime (2024, 3, 9, 6, 0, 0)
+%! datestr (t)
+%! datestr (t, 'yyyy-mm-dd HH:MM:SS')

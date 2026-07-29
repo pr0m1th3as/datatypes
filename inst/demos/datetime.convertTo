@@ -1,0 +1,18 @@
+%!demo
+%! ## `convertTo` turns a datetime into a numeric date/time representation; one
+%! ## call selects the target system — the MATLAB serial date number, Unix
+%! ## `posixtime`, the Excel serial date, or a `yyyymmdd` integer.
+%!
+%! t = datetime (2024, 3, 9, 6, 0, 0)
+%! convertTo (t, 'datenum')
+%! convertTo (t, 'posixtime')
+%! convertTo (t, 'excel')
+%! convertTo (t, 'yyyymmdd')
+
+%!demo
+%! ## The integer epoch systems return *exact* `int64`/`uint64` values — for
+%! ## example `'epochtime'` (seconds since 1970) and `'ntp'`.
+%!
+%! t = datetime (2024, 3, 9, 6, 0, 0)
+%! convertTo (t, 'epochtime')
+%! convertTo (t, 'ntp')

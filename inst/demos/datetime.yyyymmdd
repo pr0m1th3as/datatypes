@@ -1,0 +1,6 @@
+%!demo
+%! ## `yyyymmdd` packs the date into one number as `year*10000 + month*100 +
+%! ## day`; the time of day is ignored.
+%!
+%! t = datetime (2024, 3, 9, 6, 0, 0)
+%! yyyymmdd (t)

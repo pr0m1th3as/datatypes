@@ -1,0 +1,8 @@
+%!demo
+%! ## `juliandate` returns the Julian date — days since noon UTC on 1 January
+%! ## 4713 BCE.  Unlike `datenum`, it is based on the absolute UTC instant.  Pass
+%! ## `'modifiedjuliandate'` for the modified form.
+%!
+%! t = datetime (2024, 3, 9, 6, 0, 0)
+%! juliandate (t)
+%! juliandate (t, 'modifiedjuliandate')

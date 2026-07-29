@@ -1,0 +1,7 @@
+%!demo
+%! ## `exceltime` returns an Excel serial date number.  The `'1900'` system is
+%! ## the default; pass `'1904'` for the Excel 1904 system.
+%!
+%! t = datetime (2024, 3, 9, 6, 0, 0)
+%! exceltime (t)
+%! exceltime (t, '1904')

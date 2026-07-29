@@ -1,0 +1,6 @@
+%!demo
+%! ## `posixtime` returns seconds since the Unix epoch (1970-01-01 UTC).  A
+%! ## datetime without a time zone is treated as UTC.
+%!
+%! t = datetime (2024, 3, 9, 6, 0, 0)
+%! posixtime (t)

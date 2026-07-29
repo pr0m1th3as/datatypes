@@ -1,0 +1,8 @@
+%!demo
+%! ## `string` renders a datetime as a `string` array — using its display format,
+%! ## or a format you pass — and turns a `NaT` into a missing string.
+%!
+%! t = datetime (2024, 3, 9, 6, 0, 0)
+%! string (t)
+%! string (t, 'yyyy-MM-dd')
+%! string (NaT)

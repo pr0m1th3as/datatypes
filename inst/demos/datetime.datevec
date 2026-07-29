@@ -1,0 +1,6 @@
+%!demo
+%! ## `datevec` returns the six date-vector components `[Y M D h m s]`, one row
+%! ## per element of the array.
+%!
+%! t = datetime (2024, 3, 9, 6, 0, 0)
+%! datevec (t)

@@ -1,0 +1,6 @@
+%!demo
+%! ## `datenum` returns the serial date number — days since the start of the
+%! ## year 0 — with the time of day in the fractional part.
+%!
+%! t = datetime (2024, 3, 9, 6, 0, 0)
+%! datenum (t)
