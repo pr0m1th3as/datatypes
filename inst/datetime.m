@@ -308,14 +308,16 @@ classdef datetime
     ## the current year minus 50.
     ##
     ## @code{@var{T} = datetime (@var{DateStrings}, @qcode{'InputFormat'},
-    ## @var{INFMT}, @qcode{'Locale'}, @var{LOCALE})} interprets the month names
-    ## in @var{DateStrings} according to @var{LOCALE}, given as an
-    ## @qcode{'xx_YY'} identifier whose language part selects the names.  The
-    ## supported languages are @qcode{'en'} (the default), @qcode{'fr'},
-    ## @qcode{'de'}, @qcode{'es'}, @qcode{'it'}, and @qcode{'pt'};
-    ## @qcode{'system'} is treated as @qcode{'en'}.  Both full (@qcode{'MMMM'})
-    ## and abbreviated
-    ## (@qcode{'MMM'}) month names are recognized, case-insensitively.
+    ## @var{INFMT}, @qcode{'Locale'}, @var{LOCALE})} interprets the month names,
+    ## weekday names, and day-period markers in @var{DateStrings} according to
+    ## @var{LOCALE}, given as an @qcode{'xx_YY'} identifier whose language part
+    ## selects the names.  The supported languages are @qcode{'en'} (the
+    ## default), @qcode{'fr'}, @qcode{'de'}, @qcode{'es'}, @qcode{'it'}, and
+    ## @qcode{'pt'}; @qcode{'system'} is treated as @qcode{'en'}.  Both full
+    ## (@qcode{'MMMM'}/@qcode{'eeee'}) and abbreviated
+    ## (@qcode{'MMM'}/@qcode{'eee'}) month and weekday names are recognized,
+    ## case-insensitively.  A weekday name is validated but does not otherwise
+    ## affect the result.
     ##
     ## @code{@var{T} = datetime (@var{DateVectors})} creates a column vector of
     ## datetime values from the date vectors in @var{DateVectors}.
@@ -5229,7 +5231,7 @@ endfunction
 ## have it consumed during parsing).  Only a curated set of locales is
 ## supported; English is the default and the fallback for 'system'.  The country
 ## part of an 'xx_YY' locale is ignored, as names vary by language, not region.
-function [mFull, mAbbr, wFull, wAbbr] = dtLocaleNames (locale)
+function [mFull, mAbbr, wFull, wAbbr, dpMark] = dtLocaleNames (locale)
   if (isempty (locale))
     lang = 'en';
   else
@@ -5238,6 +5240,9 @@ function [mFull, mAbbr, wFull, wAbbr] = dtLocaleNames (locale)
   if (strcmp (lang, 'system'))
     lang = 'en';
   endif
+  ## Day-period markers {am, pm}; English 'am'/'pm' is the default and is used
+  ## by every supported locale except Spanish (overridden below).
+  dpMark = {'am', 'pm'};
   switch (lang)
     case 'en'
       mFull = {'january','february','march','april','may','june','july', ...
@@ -5271,6 +5276,9 @@ function [mFull, mAbbr, wFull, wAbbr] = dtLocaleNames (locale)
       wFull = {'domingo','lunes','martes','miércoles','jueves','viernes', ...
                'sábado'};
       wAbbr = {'dom','lun','mar','mié','jue','vie','sáb'};
+      ## Spanish markers use a UTF-8 no-break space (U+00A0 = bytes 194 160).
+      nbsp = char ([194, 160]);
+      dpMark = {['a.', nbsp, 'm.'], ['p.', nbsp, 'm.']};
     case 'it'
       mFull = {'gennaio','febbraio','marzo','aprile','maggio','giugno', ...
                'luglio','agosto','settembre','ottobre','novembre','dicembre'};
@@ -5304,7 +5312,7 @@ endfunction
 function DV = dtParseInput (strs, fmt, pivot, locale)
   toks = dtFormatTokens (fmt);
   nt = numel (toks);
-  [mFull, mAbbr, wFull, wAbbr] = dtLocaleNames (locale);
+  [mFull, mAbbr, wFull, wAbbr, dpMark] = dtLocaleNames (locale);
   now6 = clock ();
   ## Whether the format names any date field.  MATLAB defaults a wholly absent
   ## date to today, but when some date field is present the missing parts fall
@@ -5353,6 +5361,9 @@ function DV = dtParseInput (strs, fmt, pivot, locale)
           endif
           word = s(pos:pos+p(1)-2);
           pos += p(1) - 1;
+        elseif (t == nt)
+          word = s(pos:end);           # last token: the name runs to the end
+          pos = L + 1;
         else
           j = pos;
           while (j <= L && (isletter (s(j)) || double (s(j)) > 127))
@@ -5368,10 +5379,39 @@ function DV = dtParseInput (strs, fmt, pivot, locale)
                                && isempty (find (strcmpi (word, wAbbr)))))
           ok = false;  break;
         endif
-      elseif ((tk.sym == 'M' && tk.n >= 3) || tk.sym == 'a')
-        ## Month name or day period (AM/PM): grab a run of letters.  Bytes above
-        ## 127 are the lead/continuation bytes of accented UTF-8 letters (e.g.
-        ## the 'e' of "février"); treat them as name characters.
+      elseif (tk.sym == 'a')
+        ## Day period (AM/PM).  Grab up to the next literal so a multi-token
+        ## marker (e.g. the Spanish "a. m." with a no-break space) is captured
+        ## whole, then match it against the locale markers case-insensitively.
+        if (t < nt && isempty (toks(t+1).sym))
+          p = strfind (s(pos:end), toks(t+1).lit);
+          if (isempty (p))
+            ok = false;  break;
+          endif
+          word = s(pos:pos+p(1)-2);
+          pos += p(1) - 1;
+        elseif (t == nt)
+          word = s(pos:end);           # last token: the marker runs to the end
+          pos = L + 1;
+        else
+          j = pos;
+          while (j <= L && (isletter (s(j)) || double (s(j)) > 127))
+            j += 1;
+          endwhile
+          word = s(pos:j-1);
+          pos = j;
+        endif
+        if (strcmpi (word, dpMark{1}))
+          ampm = 1;
+        elseif (strcmpi (word, dpMark{2}))
+          ampm = 2;
+        else
+          ok = false;  break;
+        endif
+      elseif (tk.sym == 'M' && tk.n >= 3)
+        ## Month name: grab a run of letters.  Bytes above 127 are the lead or
+        ## continuation bytes of accented UTF-8 letters (e.g. the 'e' of
+        ## "février"); treat them as name characters.
         j = pos;
         while (j <= L && (isletter (s(j)) || double (s(j)) > 127))
           j += 1;
@@ -5381,28 +5421,18 @@ function DV = dtParseInput (strs, fmt, pivot, locale)
         if (isempty (word))
           ok = false;  break;
         endif
-        if (tk.sym == 'M')
-          idx = find (strcmpi (word, mFull));
+        idx = find (strcmpi (word, mFull));
+        if (isempty (idx))
+          idx = find (strcmpi (word, mAbbr));
           if (isempty (idx))
-            idx = find (strcmpi (word, mAbbr));
-            if (isempty (idx))
-              ok = false;  break;
-            endif
-            ## Consume the trailing period of an abbreviation (fr/de/pt).
-            if (pos <= L && s(pos) == '.')
-              pos += 1;
-            endif
-          endif
-          Mv = idx;
-        else
-          if (strcmpi (word, 'PM'))
-            ampm = 2;
-          elseif (strcmpi (word, 'AM'))
-            ampm = 1;
-          else
             ok = false;  break;
           endif
+          ## Consume the trailing period of an abbreviation (fr/de/pt).
+          if (pos <= L && s(pos) == '.')
+            pos += 1;
+          endif
         endif
+        Mv = idx;
       else
         ## Numeric field.  Butted against another numeric field, take exactly
         ## the run length; otherwise take up to the field's natural width.
