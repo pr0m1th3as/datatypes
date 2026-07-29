@@ -824,6 +824,73 @@
 %!assert_equal (isdst (datetime (2024, 7, 15, 'TimeZone', 'Europe/London')), true)
 %!assert_equal (isdst (datetime (2024, 1, 15, 'TimeZone', 'Europe/London')), false)
 
+## Test DST transitions -- a wall clock that is ambiguous (the hour the clock
+## repeats) resolves to the later, standard-time offset; one that does not
+## exist (the gap the clock skips) moves ahead by the length of that gap.
+## Both used to abort Octave with an uncaught date.h exception.
+## All values verified against MATLAB R2024a.
+%!assert_equal (char (datetime (2026, 11, 1, 1, 30, 0, 'TimeZone', ...
+%!              'America/New_York'), 'yyyy-MM-dd HH:mm:ss z'), ...
+%!              '2026-11-01 01:30:00 EST')
+%!assert_equal (posixtime (datetime (2026, 11, 1, 1, 30, 0, 'TimeZone', ...
+%!              'America/New_York')), 1793514600)
+%!assert_equal (isdst (datetime (2026, 11, 1, 1, 30, 0, 'TimeZone', ...
+%!              'America/New_York')), false)
+%!assert_equal (seconds (tzoffset (datetime (2026, 11, 1, 1, 30, 0, ...
+%!              'TimeZone', 'America/New_York'))), -5 * 3600)
+%!assert_equal (char (datetime (2026, 3, 8, 2, 30, 0, 'TimeZone', ...
+%!              'America/New_York'), 'yyyy-MM-dd HH:mm:ss z'), ...
+%!              '2026-03-08 03:30:00 EDT')
+%!assert_equal (posixtime (datetime (2026, 3, 8, 2, 30, 0, 'TimeZone', ...
+%!              'America/New_York')), 1772955000)
+%!assert_equal (isdst (datetime (2026, 3, 8, 2, 30, 0, 'TimeZone', ...
+%!              'America/New_York')), true)
+%!assert_equal (seconds (tzoffset (datetime (2026, 3, 8, 2, 30, 0, ...
+%!              'TimeZone', 'America/New_York'))), -4 * 3600)
+%!assert_equal (char (datetime (2026, 3, 8, 2, 0, 0, 'TimeZone', ...
+%!              'America/New_York')), '08-Mar-2026 03:00:00')
+%!assert_equal (char (datetime (2026, 3, 8, 2, 59, 59, 'TimeZone', ...
+%!              'America/New_York')), '08-Mar-2026 03:59:59')
+%!assert_equal (char (datetime (2026, 3, 29, 3, 30, 0, 'TimeZone', ...
+%!              'Europe/Athens')), '29-Mar-2026 04:30:00')
+%!assert_equal (seconds (tzoffset (datetime (2026, 10, 25, 3, 30, 0, ...
+%!              'TimeZone', 'Europe/Athens'))), 2 * 3600)
+%!assert_equal (char (datetime (2026, 10, 4, 2, 30, 0, 'TimeZone', ...
+%!              'Australia/Sydney')), '04-Oct-2026 03:30:00')
+%!assert_equal (seconds (tzoffset (datetime (2026, 4, 5, 2, 30, 0, ...
+%!              'TimeZone', 'Australia/Sydney'))), 10 * 3600)
+%!test
+%! ## Lord Howe shifts the clock by half an hour, so the gap is half an hour
+%! ## and 02:15 moves to 02:45 rather than to the transition itself.
+%! d = datetime (2026, 10, 4, 2, 15, 0, 'TimeZone', 'Australia/Lord_Howe');
+%! assert_equal (char (d), '04-Oct-2026 02:45:00')
+%! assert_equal (seconds (tzoffset (d)), 11 * 3600)
+%!test
+%! ## Attaching a zone to an unzoned array applies the same rules.
+%! d = datetime (2026, 3, 8, 2, 30, 0);
+%! d.TimeZone = 'America/New_York';
+%! assert_equal (char (d), '08-Mar-2026 03:30:00')
+%! a = datetime (2026, 11, 1, 1, 30, 0);
+%! a.TimeZone = 'America/New_York';
+%! assert_equal (char (a, 'yyyy-MM-dd HH:mm:ss z'), '2026-11-01 01:30:00 EST')
+%!test
+%! ## A NaT alongside a skipped wall clock stays NaT.
+%! d = [datetime(2026, 3, 8, 2, 30, 0); NaT];
+%! d.TimeZone = 'America/New_York';
+%! assert_equal (cellstr (d), {'08-Mar-2026 03:30:00'; 'NaT'})
+%!test
+%! ## Strings follow the same rules as numeric components.  (MATLAB instead
+%! ## rejects a string naming a wall clock that its zone never shows.)
+%! d = datetime ('2026-03-08 02:30:00', 'TimeZone', 'America/New_York');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss z'), '2026-03-08 03:30:00 EDT')
+%! assert_equal (seconds (tzoffset (d)), -4 * 3600)
+%! a = datetime ('2026-11-01 01:30:00', 'InputFormat', 'yyyy-MM-dd HH:mm:ss', ...
+%!               'TimeZone', 'America/New_York');
+%! assert_equal (char (a, 'yyyy-MM-dd HH:mm:ss z'), '2026-11-01 01:30:00 EST')
+%! b = datetime ({'2026-03-08 02:30:00'; '2026-06-01 12:00:00'}, ...
+%!               'TimeZone', 'America/New_York');
+%! assert_equal (cellstr (b), {'08-Mar-2026 03:30:00'; '01-Jun-2026 12:00:00'})
+
 ## Test 'month'/'day' -- full names
 %!assert_equal (month (datetime (2024, 7, 1), 'name'), {'July'})
 %!assert_equal (day (datetime (2024, 3, 10), 'name'), {'Sunday'})

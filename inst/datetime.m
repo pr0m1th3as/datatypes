@@ -483,6 +483,17 @@ classdef datetime
           this.Hour = reshape (DATEVEC(:,4), size (DateStrings));
           this.Minute = reshape (DATEVEC(:,5), size (DateStrings));
           this.Second = reshape (DATEVEC(:,6), size (DateStrings));
+          if (! isempty (TimeZone))
+            ## Normalize the wall clock in its own zone, as the component
+            ## constructor does, so a time the local clock never shows moves
+            ## ahead by the gap instead of leaving the components at odds with
+            ## the instant they denote.
+            [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
+             this.Second] = __datetime__ (this.Year, this.Month, this.Day, ...
+                            this.Hour, this.Minute, this.Second, ...
+                            'TimeZone', TimeZone, 'toTimeZone', TimeZone, ...
+                            'Precision', 'microseconds');
+          endif
           return;
         endif
       endif
@@ -530,8 +541,19 @@ classdef datetime
                                       'Precision', 'microseconds');
       else
         dtCheckIntegerComponents (args);
-        [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
-         this.Second] = __datetime__ (args{:}, 'Precision', 'microseconds');
+        if (! isempty (TimeZone))
+          ## Normalize the wall clock in its own zone, so that a time the
+          ## local clock never shows -- the gap when the clock goes forward --
+          ## moves ahead by the length of that gap, as MATLAB does.  Round
+          ## tripping through the zone leaves every other wall clock alone.
+          [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
+           this.Second] = __datetime__ (args{:}, 'TimeZone', TimeZone, ...
+                                        'toTimeZone', TimeZone, ...
+                                        'Precision', 'microseconds');
+        else
+          [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
+           this.Second] = __datetime__ (args{:}, 'Precision', 'microseconds');
+        endif
       endif
 
     endfunction
@@ -4181,9 +4203,22 @@ classdef datetime
                   error ("datetime.subsasgn: %s", errmsg);
                 endif
               endif
-              if (isempty (this.TimeZone) || isempty (toTimeZone))
-                ## Attaching a zone to an unzoned array, or dropping the zone,
-                ## reinterprets/keeps the wall-clock values without converting.
+              if (isempty (toTimeZone))
+                ## Dropping the zone keeps the wall-clock values as they are.
+                this.TimeZone = toTimeZone;
+              elseif (isempty (this.TimeZone))
+                ## Attaching a zone to an unzoned array reinterprets the
+                ## wall-clock values in that zone without converting, but a
+                ## wall clock the local clock never shows moves ahead by the
+                ## gap, exactly as in the constructor.
+                [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
+                 this.Second, errmsg] = __datetime__ (this.Year, this.Month, ...
+                 this.Day, this.Hour, this.Minute, this.Second, ...
+                 'TimeZone', toTimeZone, 'toTimeZone', toTimeZone, ...
+                 'Precision', 'microseconds');
+                if (! isnumeric (errmsg))
+                  error ("datetime.subsasgn: %s", errmsg);
+                endif
                 this.TimeZone = toTimeZone;
               else
                 ## Switching between two zones preserves the absolute instant,

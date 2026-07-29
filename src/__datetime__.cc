@@ -54,10 +54,37 @@ auto double2nano (double time_sec)
   return tp;
 }
 
+// Resolve a wall-clock (local) time in 'timezone' to a zoned_time, applying
+// MATLAB's rules for the two local times that do not name a unique instant.
+// Where the clock goes back, the repeated hour is ambiguous and MATLAB takes
+// the LATER offset, i.e. standard time.  Where the clock goes forward, the
+// skipped interval does not exist and MATLAB shifts the wall clock forward by
+// the length of the gap: 02:30 inside a one-hour gap becomes 03:30, and a
+// half-hour gap (Australia/Lord_Howe) shifts by half an hour.  Shifting by the
+// gap is the same as reading the wall clock at the pre-transition offset, and
+// leaves a local time that is unique, so the make_zoned below cannot throw.
+// Without this, date.h throws ambiguous_local_time or nonexistent_local_time,
+// and the uncaught exception aborts the whole Octave session.
+template <class Duration>
+auto resolve_local (const string& timezone, local_time<Duration> lt)
+{
+  const time_zone *tz = locate_zone (timezone);
+  auto info = tz->get_info (lt);
+  if (info.result == local_info::nonexistent)
+  {
+    return make_zoned (tz, lt + (info.second.offset - info.first.offset));
+  }
+  else if (info.result == local_info::ambiguous)
+  {
+    return make_zoned (tz, lt, choose::latest);
+  }
+  return make_zoned (tz, lt);
+}
+
 auto from_to_tz_milli (double time_sec, string from_tzone, string to_tzone)
 {
   auto tp = double2milli (time_sec);
-  auto from = make_zoned (from_tzone, tp);
+  auto from = resolve_local (from_tzone, tp);
   auto to = make_zoned (to_tzone, from.get_sys_time ());
   return to;
 }
@@ -65,7 +92,7 @@ auto from_to_tz_milli (double time_sec, string from_tzone, string to_tzone)
 auto from_to_tz_micro (double time_sec, string from_tzone, string to_tzone)
 {
   auto tp = double2micro (time_sec);
-  auto from = make_zoned (from_tzone, tp);
+  auto from = resolve_local (from_tzone, tp);
   auto to = make_zoned (to_tzone, from.get_sys_time ());
   return to;
 }
@@ -73,7 +100,7 @@ auto from_to_tz_micro (double time_sec, string from_tzone, string to_tzone)
 auto from_to_tz_nano (double time_sec, string from_tzone, string to_tzone)
 {
   auto tp = double2nano (time_sec);
-  auto from = make_zoned (from_tzone, tp);
+  auto from = resolve_local (from_tzone, tp);
   auto to = make_zoned (to_tzone, from.get_sys_time ());
   return to;
 }
@@ -187,7 +214,7 @@ components2zoned (double Yv, double Mv, double Dv, double hv, double mv,
                                   + chrono::minutes{tmp_m}
                                   + chrono::seconds{tmp_s}
                                   + chrono::microseconds{tmp_micro};
-  return make_zoned (timezone, datetime);
+  return resolve_local (timezone, datetime);
 }
 
 // Zone abbreviation (e.g. "EDT", "EST", "UTC") active at the wall-clock
@@ -224,18 +251,18 @@ auto timezone_precision (double time_sec, string timezone, string precision)
   if (precision == "milliseconds")
   {
     auto tp = double2milli (time_sec);
-    tz = make_zoned (timezone, tp);
+    tz = resolve_local (timezone, tp);
   }
   else if (precision == "microseconds")
   {
     auto tp = double2micro (time_sec);
-    tz = make_zoned (timezone, tp);
+    tz = resolve_local (timezone, tp);
   }
   else
   {
     auto tp = double2nano (time_sec);
     using duration_type = std::chrono::duration<std::int64_t, std::ratio<1, 1000000>>; // microseconds
-    tz = make_zoned (timezone, std::chrono::time_point_cast<duration_type>(tp));
+    tz = resolve_local (timezone, std::chrono::time_point_cast<duration_type>(tp));
   }
   return tz;
 }
@@ -1269,7 +1296,7 @@ Base function for datetime class. \n\
                                         + chrono::seconds{tmp_s}
                                         + chrono::microseconds{tmp_micro};
         // Make timezone conversion
-        auto in = make_zoned (timezone, datetime);
+        auto in = resolve_local (timezone, datetime);
         auto out = make_zoned (to_tzone, in.get_sys_time ());
         RowVector OUT = tz2vector (out, precision);
         Y(i) = OUT(0); M(i) = OUT(1); D(i) = OUT(2);
