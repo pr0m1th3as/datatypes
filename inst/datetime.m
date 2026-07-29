@@ -461,15 +461,20 @@ classdef datetime
             DATEVEC = dtParseInput (DateStrings(:), inputFormat, pivot, Locale);
           else
             ## No format supplied: let core 'datevec' auto-detect ISO and
-            ## dd-MMM-yyyy style strings.
-            fcn = @(x) datevec (x);
-            try
-              DATEVEC = cellfun (fcn, DateStrings, "UniformOutput", false);
-              DATEVEC = cell2mat (DATEVEC(:));
-            catch
-              error (strcat ("datetime: could not recognize date/time", ...
-                             " format from input."));
-            end_try_catch
+            ## dd-MMM-yyyy style strings.  'datevec' costs around 30 ms per
+            ## call and this path calls it once per element, so try the LDML
+            ## parser first on the shapes where the two are known to agree.
+            [DATEVEC, claimed] = dtSniffParse (DateStrings(:));
+            if (! claimed)
+              fcn = @(x) datevec (x);
+              try
+                DATEVEC = cellfun (fcn, DateStrings, "UniformOutput", false);
+                DATEVEC = cell2mat (DATEVEC(:));
+              catch
+                error (strcat ("datetime: could not recognize date/time", ...
+                               " format from input."));
+              end_try_catch
+            endif
           endif
           ## Split DATEVEC into individual date/time units and reshape
           this.Year = reshape (DATEVEC(:,1), size (DateStrings));
@@ -5321,256 +5326,95 @@ function [mFull, mAbbr, wFull, wAbbr, dpMark] = dtLocaleNames (locale)
   endswitch
 endfunction
 
-## Case- and accent-fold a string to a canonical code-point sequence for
-## case-insensitive name matching.  ASCII and Greek letters are lowercased;
-## Greek accents (tonos/dialytika) and the medial/final sigma distinction are
-## removed as well, so a Greek month or weekday name matches regardless of case
-## or accents -- including the accentless all-caps spelling that is idiomatic in
-## Greek (MATLAB rejects that spelling; accepting it is a deliberate extension).
-## Latin-script locales are unaffected beyond ordinary ASCII case folding.
-function cp = dtCaseFold (s)
-  cp = double (typecast (uint8 (unicode2native (s, 'UTF-32LE')), 'uint32'));
-  ## ASCII A-Z and the contiguous Greek capitals both lowercase by +32.
-  cp(cp >= 65 & cp <= 90) += 32;
-  cp(cp >= 913 & cp <= 937) += 32;
-  ## Map accented Greek capitals, accented lowercase vowels, the dialytika
-  ## forms, and the final sigma to their plain lowercase base letters.
-  from = [902, 904, 905, 906, 908, 910, 911, 938, 939, ...
-          940, 941, 942, 943, 972, 973, 974, 970, 971, 912, 944, ...
-          962];
-  to   = [945, 949, 951, 953, 959, 965, 969, 953, 965, ...
-          945, 949, 951, 953, 959, 965, 969, 953, 965, 953, 965, ...
-          963];
-  [tf, loc] = ismember (cp, from);
-  cp(tf) = to(loc(tf));
-endfunction
+## Fast path for the constructor's format auto-detection.  STRS is a cellstr
+## column; the outputs are the N-by-6 date-vector matrix and a flag saying
+## whether the fast path claimed the input.  Core 'datevec' auto-detects a long
+## list of formats and must stay the authority on what is accepted, so this
+## claims an array only when every string carries one of the shapes below AND
+## every parsed component is in range -- the conditions under which the LDML
+## parser was verified to reproduce 'datevec' element for element.  Anything
+## else is declined and falls back to 'datevec' untouched.
+function [DV, ok] = dtSniffParse (strs)
+  ## Whole-string shape, and the LDML pattern that parses it.  Shapes carrying
+  ## fractional seconds, a 'T' separator, or 'yyyy/MM/dd HH:mm:ss' are absent
+  ## on purpose: 'datevec' rejects those, so claiming them here would widen
+  ## what the constructor accepts.
+  persistent shapes;
+  if (isempty (shapes))
+    shapes = {'^\d{4}-\d{2}-\d{2}$', ...
+              'yyyy-MM-dd'; ...
+              '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$', ...
+              'yyyy-MM-dd HH:mm:ss'; ...
+              '^\d{4}/\d{2}/\d{2}$', ...
+              'yyyy/MM/dd'; ...
+              '^\d{2}/\d{2}/\d{4}$', ...
+              'MM/dd/yyyy'; ...
+              '^\d{2}-[A-Za-z]{3,}-\d{4}$', ...
+              'dd-MMM-yyyy'; ...
+              '^\d{2}-[A-Za-z]{3,}-\d{4} \d{2}:\d{2}:\d{2}$', ...
+              'dd-MMM-yyyy HH:mm:ss'};
+  endif
 
-## Return the 1-based index of the first entry of TBL (a cell array of folded
-## code-point vectors, as produced by dtCaseFold) whose folded form matches
-## WORD, or 0 if none does.
-function idx = dtFoldFind (word, tbl)
-  fw = dtCaseFold (word);
-  for idx = 1:numel (tbl)
-    if (isequal (fw, tbl{idx}))
-      return;
-    endif
-  endfor
+  DV = [];
+  ok = false;
+  if (isempty (strs) || ! iscellstr (strs))
+    return;
+  endif
+
+  ## Identify the shape from the first string, then require all of them to
+  ## carry it; a mixed array is left to 'datevec', which detects per element.
   idx = 0;
-endfunction
-
-## Parse a cell array of date/time strings under an LDML InputFormat, returning
-## an N-by-6 date-vector matrix.  The format is tokenized like a display format
-## (dtFormatTokens); literals must match, and each field consumes characters
-## from the string: numeric fields take digits (up to the field's natural width,
-## or exactly the run length when butted against another numeric field), name
-## fields (MMM/MMMM and the day period 'a') take letters.  Two-digit years are
-## resolved against PIVOT.  Fields absent from the format default to the current
-## date (year/month/day) or to zero (time), matching MATLAB.
-function DV = dtParseInput (strs, fmt, pivot, locale)
-  toks = dtFormatTokens (fmt);
-  nt = numel (toks);
-  [mFull, mAbbr, wFull, wAbbr, dpMark] = dtLocaleNames (locale);
-  ## Pre-fold the name tables once (case- and accent-insensitive matching).
-  mFullF = cellfun (@dtCaseFold, mFull, "UniformOutput", false);
-  mAbbrF = cellfun (@dtCaseFold, mAbbr, "UniformOutput", false);
-  wFullF = cellfun (@dtCaseFold, wFull, "UniformOutput", false);
-  wAbbrF = cellfun (@dtCaseFold, wAbbr, "UniformOutput", false);
-  dpMarkF = cellfun (@dtCaseFold, dpMark, "UniformOutput", false);
-  now6 = clock ();
-  ## Whether the format names any date field.  MATLAB defaults a wholly absent
-  ## date to today, but when some date field is present the missing parts fall
-  ## back to month 1 / day 1 (and the current year).
-  hasDate = false;
-  for t = 1:nt
-    if (! isempty (toks(t).sym) && any (toks(t).sym == 'yuMLdD'))
-      hasDate = true;
+  for k = 1:rows (shapes)
+    if (! isempty (regexp (strs{1}, shapes{k,1}, 'once')))
+      idx = k;
       break;
     endif
   endfor
-  n = numel (strs);
-  DV = zeros (n, 6);
-  for r = 1:n
-    s = strs{r};
-    L = numel (s);
-    pos = 1;
-    Yv = now6(1);
-    if (hasDate)
-      Mv = 1;  Dv = 1;
-    else
-      Mv = now6(2);  Dv = now6(3);
-    endif
-    Hv = 0; MIv = 0; Sv = 0; ampm = 0;
-    ok = true;
-    for t = 1:nt
-      tk = toks(t);
-      if (isempty (tk.sym))
-        ## Literal text must appear verbatim.
-        m = numel (tk.lit);
-        if (pos + m - 1 <= L && strcmp (s(pos:pos+m-1), tk.lit))
-          pos += m;
-        else
-          ok = false;  break;
-        endif
-      elseif (tk.sym == 'e' && tk.n >= 3)
-        ## Weekday name.  It carries no value (the year/month/day already fix
-        ## the date), but MATLAB rejects a token that is not a real weekday
-        ## name, so validate it.  Grab up to the next literal so compound names
-        ## such as the Portuguese "segunda-feira" are captured whole; fall back
-        ## to a run of letters (bytes above 127 are accented-letter bytes).
-        if (t < nt && isempty (toks(t+1).sym))
-          p = strfind (s(pos:end), toks(t+1).lit);
-          if (isempty (p))
-            ok = false;  break;
-          endif
-          word = s(pos:pos+p(1)-2);
-          pos += p(1) - 1;
-        elseif (t == nt)
-          word = s(pos:end);           # last token: the name runs to the end
-          pos = L + 1;
-        else
-          j = pos;
-          while (j <= L && (isletter (s(j)) || double (s(j)) > 127))
-            j += 1;
-          endwhile
-          word = s(pos:j-1);
-          pos = j;
-        endif
-        if (! isempty (word) && word(end) == '.')
-          word(end) = [];               # drop an abbreviation period
-        endif
-        if (isempty (word) || (dtFoldFind (word, wFullF) == 0 ...
-                               && dtFoldFind (word, wAbbrF) == 0))
-          ok = false;  break;
-        endif
-      elseif (tk.sym == 'a')
-        ## Day period (AM/PM).  Grab up to the next literal so a multi-token
-        ## marker (e.g. the Spanish "a. m." with a no-break space) is captured
-        ## whole, then match it against the locale markers case-insensitively.
-        if (t < nt && isempty (toks(t+1).sym))
-          p = strfind (s(pos:end), toks(t+1).lit);
-          if (isempty (p))
-            ok = false;  break;
-          endif
-          word = s(pos:pos+p(1)-2);
-          pos += p(1) - 1;
-        elseif (t == nt)
-          word = s(pos:end);           # last token: the marker runs to the end
-          pos = L + 1;
-        else
-          j = pos;
-          while (j <= L && (isletter (s(j)) || double (s(j)) > 127))
-            j += 1;
-          endwhile
-          word = s(pos:j-1);
-          pos = j;
-        endif
-        idxA = dtFoldFind (word, dpMarkF);
-        if (idxA == 1)
-          ampm = 1;
-        elseif (idxA == 2)
-          ampm = 2;
-        else
-          ok = false;  break;
-        endif
-      elseif (tk.sym == 'M' && tk.n >= 3)
-        ## Month name: grab a run of letters.  Bytes above 127 are the lead or
-        ## continuation bytes of accented UTF-8 letters (e.g. the 'e' of
-        ## "février"); treat them as name characters.
-        j = pos;
-        while (j <= L && (isletter (s(j)) || double (s(j)) > 127))
-          j += 1;
-        endwhile
-        word = s(pos:j-1);
-        pos = j;
-        if (isempty (word))
-          ok = false;  break;
-        endif
-        idx = dtFoldFind (word, mFullF);
-        if (idx == 0)
-          idx = dtFoldFind (word, mAbbrF);
-          if (idx == 0)
-            ok = false;  break;
-          endif
-          ## Consume the trailing period of an abbreviation (fr/de/pt).
-          if (pos <= L && s(pos) == '.')
-            pos += 1;
-          endif
-        endif
-        Mv = idx;
-      else
-        ## Numeric field.  Butted against another numeric field, take exactly
-        ## the run length; otherwise take up to the field's natural width.
-        nextNum = t < nt && ! isempty (toks(t+1).sym) ...
-                  && ! ((any (toks(t+1).sym == 'Me') && toks(t+1).n >= 3) ...
-                        || toks(t+1).sym == 'a');
-        if (nextNum)
-          w = tk.n;
-        else
-          switch (tk.sym)
-            case {'y','u'}
-              w = 2 * (tk.n == 2) + 6 * (tk.n != 2);
-            case 'D'
-              w = 3;
-            case 'S'
-              w = 9;
-            otherwise
-              w = 2;
-          endswitch
-        endif
-        j = pos;
-        while (j <= L && j - pos < w && s(j) >= '0' && s(j) <= '9')
-          j += 1;
-        endwhile
-        digits = s(pos:j-1);
-        pos = j;
-        if (isempty (digits))
-          ok = false;  break;
-        endif
-        val = str2double (digits);
-        switch (tk.sym)
-          case {'y','u'}
-            if (tk.n == 2)
-              base = pivot - mod (pivot, 100);
-              Yv = base + val;
-              if (Yv < pivot)
-                Yv += 100;
-              endif
-            else
-              Yv = val;
-            endif
-          case 'M'
-            Mv = val;
-          case 'd'
-            Dv = val;
-          case 'D'
-            dv = datevec (datenum (Yv, 1, 1) + val - 1);
-            Mv = dv(2);  Dv = dv(3);
-          case {'H','h','k','K'}
-            Hv = val;
-          case 'm'
-            MIv = val;
-          case 's'
-            Sv = Sv + val;
-          case 'S'
-            Sv = Sv + val / 10 ^ numel (digits);
-          ## 'Q'/'G'/'W'/'e' numeric forms carry no independent component here.
-        endswitch
-      endif
-    endfor
-    if (ok && pos <= L)
-      ok = false;                   # trailing text not covered by the format
-    endif
-    if (! ok)
-      error (strcat ("datetime: could not parse the date/time string '%s'", ...
-                     " with 'InputFormat' '%s'."), s, fmt);
-    endif
-    if (ampm == 2 && Hv < 12)
-      Hv += 12;
-    elseif (ampm == 1 && Hv == 12)
-      Hv = 0;
-    endif
-    DV(r,:) = [Yv, Mv, Dv, Hv, MIv, Sv];
-  endfor
+  if (idx == 0)
+    return;
+  endif
+  if (any (cellfun (@isempty, regexp (strs, shapes{idx,1}, 'once'))))
+    return;
+  endif
+
+  ## No shape carries a two-digit year, so the pivot is never consulted; the
+  ## auto-detected formats are English-only, matching an empty locale.
+  try
+    DV = dtParseInput (strs, shapes{idx,2}, 0, '');
+  catch
+    DV = [];
+    return;
+  end_try_catch
+
+  ## Decline anything 'datevec' would have rolled over or rejected, so the two
+  ## paths cannot disagree: 'datevec' turns 2024-04-31 into 2024-05-01 and
+  ## errors on month 13, day 0 or hour 25, whereas the LDML parser keeps the
+  ## raw components.
+  if (any (DV(:,2) < 1 | DV(:,2) > 12) || any (DV(:,4) > 23) ...
+      || any (DV(:,5) > 59) || any (DV(:,6) >= 60) || any (DV(:,3) < 1) ...
+      || any (DV(:,3) > dtDaysInMonth (DV(:,1), DV(:,2))))
+    DV = [];
+    return;
+  endif
+  ok = true;
+endfunction
+
+## Parse a cell array of date/time strings under an LDML 'InputFormat',
+## returning an N-by-6 date-vector matrix.  The work is done by the compiled
+## __ldml__ helper: the format is tokenized like a display format, literals
+## must match, and each field consumes characters from the string -- numeric
+## fields take digits (up to the field's natural width, or exactly the run
+## length when butted against another numeric field), name fields (MMM/MMMM,
+## the weekday names and the day period 'a') take letters, matched case- and
+## accent-insensitively against the locale tables.  Two-digit years are
+## resolved against PIVOT.  Fields absent from the format default to the
+## current date (year/month/day) or to zero (time), matching MATLAB.
+function DV = dtParseInput (strs, fmt, pivot, locale)
+  ## An unset 'Locale' arrives as [], which the helper reads as English.
+  if (isempty (locale))
+    locale = '';
+  endif
+  DV = __ldml__ ('parse', strs, fmt, pivot, locale);
 endfunction
 
 ## Split an LDML format pattern into a struct array of tokens.  Each token is
@@ -5617,190 +5461,27 @@ endfunction
 ## dtResolveFormat.  NaT elements render as 'NaT' and infinite years as
 ## '-Inf'/'Inf', matching the component-store sentinels.
 function cstr = dtFormatStrings (Y, M, D, H, Mi, S, TZ, fmt, zoneStyle)
+  ## The zone-dependent quantities still come from the compiled tz database;
+  ## the rendering itself is done by __ldml__.  Read them only when the format
+  ## actually names a zone field: the 'z' name field needs both the
+  ## abbreviation (mode 'iana', and the whitelist test of mode 'matlab') and
+  ## the offset (the mode 'matlab' fallback).
   toks = dtFormatTokens (fmt);
   syms = [toks.sym];
-  sz = size (Y);
-  cstr = cell (sz);
-
-  ## Precompute derived quantities only when their field appears.  The zone
-  ## name field 'z' needs both the abbreviation (mode 'iana', and the
-  ## whitelist test of mode 'matlab') and the offset (mode 'matlab' fallback).
-  hasZ     = any (syms == 'z');
-  needWday = any (syms == 'e');
-  needDoy  = any (syms == 'D');
-  needOff  = (any (ismember (syms, 'ZXx')) || hasZ) && ! isempty (TZ);
-  needAbbr = hasZ && ! isempty (TZ);
-  if (needWday || needDoy)
-    dn = datenum (Y, M, D);
-  endif
-  if (needWday)
-    wday = weekday (dn);
-  endif
-  if (needDoy)
-    doy = floor (dn) - datenum (Y, ones (size (Y)), ones (size (Y))) + 1;
-  endif
+  hasZ = any (syms == 'z');
+  hasTZ = ! isempty (TZ);
+  needOff = (any (ismember (syms, 'ZXx')) || hasZ) && hasTZ;
+  needAbbr = hasZ && hasTZ;
+  off = [];
+  abbr = {};
   if (needOff)
     off = dtZoneOffset (Y, M, D, H, Mi, S, TZ);
   endif
   if (needAbbr)
     abbr = dtZoneAbbrev (Y, M, D, H, Mi, S, TZ);
   endif
-
-  mAbbr = {'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', ...
-           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'};
-  mFull = {'January', 'February', 'March', 'April', 'May', 'June', ...
-           'July', 'August', 'September', 'October', 'November', 'December'};
-  wAbbr = {'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'};
-  wFull = {'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', ...
-           'Friday', 'Saturday'};
-  qOrd  = {'1st quarter', '2nd quarter', '3rd quarter', '4th quarter'};
-
-  for k = 1:numel (Y)
-    if (isnan (Y(k)))
-      cstr{k} = 'NaT';
-      continue;
-    elseif (isinf (Y(k)))
-      cstr{k} = num2str (Y(k));
-      continue;
-    endif
-    str = '';
-    for t = 1:numel (toks)
-      tk = toks(t);
-      if (isempty (tk.sym))
-        str = [str, tk.lit];
-        continue;
-      endif
-      c = tk.sym;
-      nn = tk.n;
-      switch (c)
-        case {'y', 'u'}
-          if (nn == 2)
-            piece = sprintf ('%02d', mod (Y(k), 100));
-          else
-            piece = sprintf ('%0*d', nn, Y(k));
-          endif
-        case 'M'
-          switch (nn)
-            case 1
-              piece = sprintf ('%d', M(k));
-            case 2
-              piece = sprintf ('%02d', M(k));
-            case 3
-              piece = mAbbr{M(k)};
-            case 4
-              piece = mFull{M(k)};
-            otherwise
-              piece = mFull{M(k)}(1);
-          endswitch
-        case 'd'
-          if (nn == 1)
-            piece = sprintf ('%d', D(k));
-          else
-            piece = sprintf ('%0*d', nn, D(k));
-          endif
-        case 'D'
-          piece = sprintf ('%0*d', nn, doy(k));
-        case 'e'
-          switch (nn)
-            case 1
-              piece = sprintf ('%d', wday(k));
-            case 2
-              piece = sprintf ('%02d', wday(k));
-            case 3
-              piece = wAbbr{wday(k)};
-            case 4
-              piece = wFull{wday(k)};
-            otherwise
-              piece = wFull{wday(k)}(1);
-          endswitch
-        case 'H'
-          if (nn == 1)
-            piece = sprintf ('%d', H(k));
-          else
-            piece = sprintf ('%02d', H(k));
-          endif
-        case 'h'
-          h12 = mod (H(k) - 1, 12) + 1;
-          if (nn == 1)
-            piece = sprintf ('%d', h12);
-          else
-            piece = sprintf ('%02d', h12);
-          endif
-        case 'm'
-          if (nn == 1)
-            piece = sprintf ('%d', Mi(k));
-          else
-            piece = sprintf ('%02d', Mi(k));
-          endif
-        case 's'
-          if (nn == 1)
-            piece = sprintf ('%d', floor (S(k)));
-          else
-            piece = sprintf ('%02d', floor (S(k)));
-          endif
-        case 'S'
-          ## Fractional seconds, truncated to nn digits (MATLAB parity).  Round
-          ## to whole microseconds first (the stored precision) so an exact
-          ## value such as .678 -- held as 0.67799999... in double -- yields the
-          ## intended digits instead of one less.
-          micros = round ((S(k) - floor (S(k))) * 1e6);
-          if (nn <= 6)
-            piece = sprintf ('%0*d', nn, floor (micros / 10 ^ (6 - nn)));
-          else
-            piece = sprintf ('%0*d', nn, micros * 10 ^ (nn - 6));
-          endif
-        case 'a'
-          if (H(k) >= 12)
-            piece = 'PM';
-          else
-            piece = 'AM';
-          endif
-        case 'Q'
-          q = floor ((M(k) - 1) / 3) + 1;
-          switch (nn)
-            case 1
-              piece = sprintf ('%d', q);
-            case 2
-              piece = sprintf ('%02d', q);
-            case 3
-              piece = sprintf ('Q%d', q);
-            case 4
-              piece = qOrd{q};
-            otherwise
-              piece = sprintf ('%d', q);
-          endswitch
-        case 'G'
-          piece = 'CE';
-        case 'W'
-          piece = sprintf ('%d', dtWeekOfMonth (Y(k), M(k), D(k)));
-        case {'z', 'Z', 'X', 'x'}
-          if (isempty (TZ))
-            piece = repmat ('*', 1, nn);
-          elseif (c == 'z')
-            ## 'z'/'zz'/'zzz' follow the session style; 'zzzz' and 'zzzzz'
-            ## are Octave-specific per-format overrides.
-            if (nn == 4)
-              zst = 'iana';
-            elseif (nn >= 5)
-              zst = 'matlab';
-            else
-              zst = zoneStyle;
-            endif
-            if (strcmp (zst, 'iana'))
-              piece = abbr{k};
-            else
-              piece = dtZoneMatlab (abbr{k}, off(k));
-            endif
-          else
-            piece = dtZoneField (c, nn, off(k));
-          endif
-        otherwise
-          error ("datetime: unsupported format symbol '%s'.", c);
-      endswitch
-      str = [str, piece];
-    endfor
-    cstr{k} = str;
-  endfor
+  cstr = __ldml__ ('format', Y, M, D, H, Mi, S, fmt, zoneStyle, hasTZ, ...
+                   off, abbr);
 endfunction
 
 ## Week of the month (Sunday-based, first week = week 1), matching MATLAB's

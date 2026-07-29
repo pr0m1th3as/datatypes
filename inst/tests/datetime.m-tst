@@ -223,6 +223,38 @@
 %!error <datetime: could not parse the date/time string> ...
 %! datetime ('09.03.2024 extra', 'InputFormat', 'dd.MM.yyyy')
 
+## Test 'datetime' constructor -- format auto-detection (no 'InputFormat')
+%!assert_equal (datevec (datetime ('2024-03-09')), [2024, 3, 9, 0, 0, 0])
+%!assert_equal (datevec (datetime ('2024-03-09 14:30:45')), ...
+%!              [2024, 3, 9, 14, 30, 45])
+%!assert_equal (datevec (datetime ('2024/03/09')), [2024, 3, 9, 0, 0, 0])
+%!assert_equal (datevec (datetime ('03/09/2024')), [2024, 3, 9, 0, 0, 0])
+%!assert_equal (datevec (datetime ('09-Mar-2024')), [2024, 3, 9, 0, 0, 0])
+%!assert_equal (datevec (datetime ('09-March-2024')), [2024, 3, 9, 0, 0, 0])
+%!assert_equal (datevec (datetime ('09-Mar-2024 14:30:45')), ...
+%!              [2024, 3, 9, 14, 30, 45])
+%!assert_equal (datevec (datetime ('2024-2-9')), [2024, 2, 9, 0, 0, 0])
+%!assert_equal (datevec (datetime ({'2024-03-09'; '2024-12-31'})), ...
+%!              [2024, 3, 9, 0, 0, 0; 2024, 12, 31, 0, 0, 0])
+%!assert_equal (datevec (datetime ({'2024-03-09'; '09-Mar-2024'})), ...
+%!              [2024, 3, 9, 0, 0, 0; 2024, 3, 9, 0, 0, 0])
+%!assert_equal (datevec (datetime ('2024-04-31')), [2024, 5, 1, 0, 0, 0])
+%!assert_equal (datevec (datetime ('2024-02-30')), [2024, 3, 1, 0, 0, 0])
+%!assert_equal (datevec (datetime ('2024-03-09 13:45:60')), ...
+%!              [2024, 3, 9, 13, 46, 0])
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ('2024-13-09')
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ('2024-03-32')
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ('2024-03-09 25:00:00')
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ('13/09/2024')
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ('2024-03-09T14:30:45')
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ('2024-03-09 13:45:00.123')
+
 ## Test 'datetime' constructor -- 'Locale' localized month names (MATLAB-verified)
 %!assert_equal (month (datetime ('9 février 2024', ...
 %!              'InputFormat', 'd MMMM yyyy', 'Locale', 'fr_FR')), 2)
@@ -254,6 +286,17 @@
 %! datetime ('9 marzo 2024', 'InputFormat', 'd MMMM yyyy', 'Locale', 'ja_JP')
 %!error <datetime: 'Locale' must be a character vector.> ...
 %! datetime ('2024', 'InputFormat', 'yyyy', 'Locale', 5)
+%!test
+%! ## Locale name tables are memoized, so alternating locales within a session
+%! ## must keep resolving against their own tables.
+%! a = month (datetime ('9 mars 2024', 'InputFormat', 'd MMMM yyyy', ...
+%!                      'Locale', 'fr'));
+%! b = month (datetime ('9 März 2024', 'InputFormat', 'd MMMM yyyy', ...
+%!                      'Locale', 'de'));
+%! c = month (datetime ('9 mars 2024', 'InputFormat', 'd MMMM yyyy', ...
+%!                      'Locale', 'fr'));
+%! d = month (datetime ('9 March 2024', 'InputFormat', 'd MMMM yyyy'));
+%! assert_equal ([a, b, c, d], [3, 3, 3, 3])
 
 ## Test 'datetime' constructor -- weekday name fields (consumed, but validated)
 %!assert_equal (day (datetime ('7 09-Mar-2024', 'InputFormat', 'e dd-MMM-yyyy')), 9)
@@ -548,6 +591,20 @@
 %! unwind_protect_cleanup
 %!   datetime.zoneNameStyle (old);
 %! end_unwind_protect
+
+## Test Format seam -- a NaT in the array renders under every field, including
+## the weekday fields, which used to abort the whole array
+%!test
+%! dt = [datetime(2024, 3, 9); NaT];
+%! assert_equal (cellstr (dt, 'eeee'), {'Saturday'; 'NaT'})
+%! assert_equal (cellstr (dt, 'eee, dd MMM yyyy'), ...
+%!               {'Sat, 09 Mar 2024'; 'NaT'})
+%! assert_equal (cellstr (dt, 'e'), {'7'; 'NaT'})
+%! assert_equal (cellstr (dt, 'D'), {'69'; 'NaT'})
+%! assert_equal (cellstr (dt, 'W'), {'2'; 'NaT'})
+%!test
+%! dt = [datetime(2024, 3, 9); NaT; datetime(2024, 12, 25)];
+%! assert_equal (cellstr (dt, 'eeee'), {'Saturday'; 'NaT'; 'Wednesday'})
 
 ## Test Format seam -- every LDML date/time field renders MATLAB-exactly
 %!assert_equal (char (datetime (2024, 3, 9, 14, 30, 45), 'yyyy'), '2024')

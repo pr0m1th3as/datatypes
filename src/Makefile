@@ -19,6 +19,7 @@ TZFLAGS = -DHAS_REMOTE_API=0
 MINIZFLAGS = -D_LARGEFILE64_SOURCE
 
 OCTFILES = __datetime__.oct	\
+           __ldml__.oct	\
            __table2csv__.oct	\
            __csv2table__.oct	\
            __table2ods__.oct	\
