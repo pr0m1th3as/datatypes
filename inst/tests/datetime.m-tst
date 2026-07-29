@@ -632,6 +632,18 @@
 %!assert_equal (char (datetime (2024, 1, 1, 'TimeZone', 'Asia/Kolkata'), ...
 %!              'xxx'), '+05:30')
 
+## Test Format seam -- ISO-8601 zone doublings and the UTC 'UTC'/'Z' forms
+%!assert_equal (char (datetime (2024, 1, 15, 'TimeZone', 'UTC'), 'ZZZZ'), 'UTC')
+%!assert_equal (char (datetime (2024, 1, 15, 'TimeZone', 'UTC'), 'ZZZZZ'), 'Z')
+%!assert_equal (char (datetime (2024, 1, 15, 'TimeZone', 'America/New_York'), ...
+%!              'ZZZZZ'), '-05:00')
+%!assert_equal (char (datetime (2024, 1, 15, 'TimeZone', 'Asia/Kolkata'), ...
+%!              'ZZZZ'), 'UTC+05:30')
+%!assert_equal (char (datetime (2024, 1, 15, 'TimeZone', 'UTC'), 'XXXXX'), 'Z')
+%!assert_equal (char (datetime (2024, 1, 15, 'TimeZone', 'UTC'), 'xxxxx'), '+00:00')
+%!assert_equal (char (datetime (2024, 1, 15, 'TimeZone', 'America/New_York'), ...
+%!              'xxxx'), '-0500')
+
 ## Test 'string'/'cellstr'/'char' -- array shapes
 %!assert_equal (cellstr (string (datetime (2024, 1, [1 2]), 'yyyy-MM-dd')), ...
 %!              {'2024-01-01', '2024-01-02'})

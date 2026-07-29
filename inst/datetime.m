@@ -5553,9 +5553,19 @@ function piece = dtZoneField (c, nn, offSec)
         case {1, 2, 3}
           piece = sprintf ('%c%02d%02d', sgn, hh, mm);
         case 4
-          piece = sprintf ('UTC%c%02d:%02d', sgn, hh, mm);
+          ## Localized GMT format; a zero offset is just 'UTC'.
+          if (offSec == 0)
+            piece = 'UTC';
+          else
+            piece = sprintf ('UTC%c%02d:%02d', sgn, hh, mm);
+          endif
         otherwise
-          piece = sprintf ('%c%02d:%02d', sgn, hh, mm);
+          ## ISO-8601 extended (ZZZZZ); a zero offset renders as 'Z'.
+          if (offSec == 0)
+            piece = 'Z';
+          else
+            piece = sprintf ('%c%02d:%02d', sgn, hh, mm);
+          endif
       endswitch
     case 'X'
       if (offSec == 0)
