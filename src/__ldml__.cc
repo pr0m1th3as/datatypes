@@ -338,8 +338,8 @@ struct Token
   string lit;
 };
 
-// Split an LDML pattern into tokens (dtFormatTokens).  Single quotes delimit
-// literal text and a doubled '' is a literal apostrophe.
+// Split an LDML pattern into tokens.  Single quotes delimit literal text and
+// a doubled '' is a literal apostrophe.
 static void
 tokenize (const string& fmt, vector<Token>& toks)
 {
@@ -1283,6 +1283,10 @@ Parse date/time strings under an LDML @qcode{'InputFormat'} pattern. \n\
 @qcode{'fr_FR'} (empty or @qcode{'system'} for English).  The return value is \
 an N-by-6 date-vector matrix. \n\
 \n\
+@code{@var{syms} = __ldml__ (\"symbols\", @var{fmt})} returns the field \
+symbols of @var{fmt}, in order and one character per field run, with literal \
+text omitted. \n\
+\n\
 This is a helper function for the @qcode{datetime} class of the `datatypes` \
 package.  Do NOT use this function directly. \n\
 \n\
@@ -1319,6 +1323,29 @@ package.  Do NOT use this function directly. \n\
       error ("__ldml__: unsupported locale '%s'.", locale.c_str ());
     }
     return ovl (ldml_parse (strs, fmt, pivot, lidx));
+  }
+
+  if (action == "symbols")
+  {
+    if (args.length () != 2)
+    {
+      error ("__ldml__: 'symbols' takes FMT.");
+    }
+    if (! args(1).is_string ())
+    {
+      error ("__ldml__: FMT must be a character vector.");
+    }
+    vector<Token> toks;
+    tokenize (args(1).string_value (), toks);
+    string syms;
+    for (size_t k = 0; k < toks.size (); k++)
+    {
+      if (toks[k].sym != '\0')
+      {
+        syms += toks[k].sym;
+      }
+    }
+    return ovl (syms);
   }
 
   if (action == "format")

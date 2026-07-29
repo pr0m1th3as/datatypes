@@ -5297,11 +5297,11 @@ function dtValidateFormat (fmt)
     return;
   endif
   supported = 'yuMdDeaHhmsSQGWzZXx';
-  toks = dtFormatTokens (fmt);
-  for t = 1:numel (toks)
-    if (! isempty (toks(t).sym) && ! any (toks(t).sym == supported))
+  syms = __ldml__ ('symbols', fmt);
+  for t = 1:numel (syms)
+    if (! any (syms(t) == supported))
       error (strcat ("datetime: the format '%s' contains an unsupported", ...
-                     " symbol: '%s'."), fmt, toks(t).sym);
+                     " symbol: '%s'."), fmt, syms(t));
     endif
   endfor
 endfunction
@@ -5516,44 +5516,6 @@ function DV = dtParseInput (strs, fmt, pivot, locale)
   DV = __ldml__ ('parse', strs, fmt, pivot, locale);
 endfunction
 
-## Split an LDML format pattern into a struct array of tokens.  Each token is
-## either a field run (sym = the field letter, n = run length, lit = '') or a
-## literal (sym = '', n = 0, lit = the literal text).  Single quotes delimit
-## literal text and a doubled '' is a literal apostrophe.
-function toks = dtFormatTokens (fmt)
-  toks = struct ('sym', {}, 'n', {}, 'lit', {});
-  i = 1;
-  L = numel (fmt);
-  while (i <= L)
-    c = fmt(i);
-    if (c == '''')
-      if (i < L && fmt(i+1) == '''')
-        toks(end+1) = struct ('sym', '', 'n', 0, 'lit', '''');
-        i += 2;
-      else
-        j = i + 1;
-        buf = '';
-        while (j <= L && fmt(j) != '''')
-          buf = [buf, fmt(j)];
-          j += 1;
-        endwhile
-        toks(end+1) = struct ('sym', '', 'n', 0, 'lit', buf);
-        i = j + 1;
-      endif
-    elseif (isletter (c))
-      j = i;
-      while (j <= L && fmt(j) == c)
-        j += 1;
-      endwhile
-      toks(end+1) = struct ('sym', c, 'n', j - i, 'lit', '');
-      i = j;
-    else
-      toks(end+1) = struct ('sym', '', 'n', 0, 'lit', c);
-      i += 1;
-    endif
-  endwhile
-endfunction
-
 ## Render each element of a datetime array to a display string under a
 ## concrete LDML pattern.  Y..S are the wall-clock component arrays; TZ is the
 ## time zone ('' for unzoned); FMT is a concrete pattern already resolved by
@@ -5565,8 +5527,7 @@ function cstr = dtFormatStrings (Y, M, D, H, Mi, S, TZ, fmt, zoneStyle)
   ## actually names a zone field: the 'z' name field needs both the
   ## abbreviation (mode 'iana', and the whitelist test of mode 'matlab') and
   ## the offset (the mode 'matlab' fallback).
-  toks = dtFormatTokens (fmt);
-  syms = [toks.sym];
+  syms = __ldml__ ('symbols', fmt);
   hasZ = any (syms == 'z');
   hasTZ = ! isempty (TZ);
   needOff = (any (ismember (syms, 'ZXx')) || hasZ) && hasTZ;
