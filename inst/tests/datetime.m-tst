@@ -95,6 +95,39 @@
 %!assert_equal (year (datetime (Inf, Inf, Inf)), Inf)
 %!assert_equal (year (datetime (-Inf, -Inf, -Inf)), -Inf)
 
+## Test 'datetime' constructor -- second underflow/overflow normalisation
+%!assert_equal (char (datetime (2024, 3, 1, 0, 0, -1), 'yyyy-MM-dd HH:mm:ss'), ...
+%!              '2024-02-29 23:59:59')
+%!assert_equal (char (datetime (2024, 1, 1, 0, 0, 90), 'yyyy-MM-dd HH:mm:ss'), ...
+%!              '2024-01-01 00:01:30')
+%!assert_equal (char (datetime (2024, 14, 32, 25, 61, 61), 'yyyy-MM-dd HH:mm:ss'), ...
+%!              '2025-03-05 02:02:01')
+
+## Test 'datetime' constructor -- leap-day validity and non-leap rollover
+%!assert_equal (char (datetime (2024, 2, 29), 'yyyy-MM-dd'), '2024-02-29')
+%!assert_equal (char (datetime (2023, 2, 29), 'yyyy-MM-dd'), '2023-03-01')
+
+## Test 'datetime' constructor -- year 0, negative, and far-future years
+%!assert_equal (datevec (datetime (0, 1, 1)), [0, 1, 1, 0, 0, 0])
+%!assert_equal (datevec (datetime (-1, 6, 15)), [-1, 6, 15, 0, 0, 0])
+%!assert_equal (datevec (datetime (10000, 1, 1)), [10000, 1, 1, 0, 0, 0])
+
+## Test 'datetime' constructor -- date strings with and without a time
+%!assert_equal (char (datetime ('2024-03-09 14:30:15'), 'yyyy-MM-dd HH:mm:ss'), ...
+%!              '2024-03-09 14:30:15')
+%!assert_equal (char (datetime ('15-Jun-2024'), 'yyyy-MM-dd'), '2024-06-15')
+
+## Test 'datetime' constructor -- datevec matrix with a time-of-day row
+%!assert_equal (char (datetime ([2024, 3, 9, 14, 30, 15]), 'yyyy-MM-dd HH:mm:ss'), ...
+%!              '2024-03-09 14:30:15')
+
+## Test 'datetime' constructor -- ConvertFrom excel and datenum values
+%!assert_equal (char (datetime (45360, 'ConvertFrom', 'excel'), 'yyyy-MM-dd'), ...
+%!              '2024-03-09')
+%!assert_equal (char (datetime (739320, 'ConvertFrom', 'datenum'), 'yyyy-MM-dd'), ...
+%!              '2024-03-09')
+%!assert_equal (class (datetime (Inf, 'ConvertFrom', 'datenum')), 'datetime')
+
 ## Test 'datetime' constructor -- TimeZone and Format properties
 %!assert_equal (datetime (2020, 1, 1, 'TimeZone', 'UTC').TimeZone, 'UTC')
 %!assert_equal (datetime (2020, 1, 1, 'Format', 'default').Format, 'dd-MMM-uuuu')
@@ -1513,6 +1546,31 @@
 %! true - datetime (2021, 1, 1);
 %!error <datetime.minus: cannot subtract a datetime array from a 'char' array.> ...
 %! 'A' - datetime (2021, 1, 1);
+
+## Test arithmetic -- fixed vs calendar shifts across a DST spring-forward
+%!assert_equal (char (datetime (2024, 3, 10, 1, 30, 0, 'TimeZone', ...
+%!              'America/New_York') + hours (1), 'yyyy-MM-dd HH:mm:ss'), ...
+%!              '2024-03-10 03:30:00')
+%!assert_equal (char (datetime (2024, 3, 9, 12, 0, 0, 'TimeZone', ...
+%!              'America/New_York') + days (1), 'yyyy-MM-dd HH:mm:ss'), ...
+%!              '2024-03-10 13:00:00')
+%!assert_equal (char (datetime (2024, 3, 9, 12, 0, 0, 'TimeZone', ...
+%!              'America/New_York') + caldays (1), 'yyyy-MM-dd HH:mm:ss'), ...
+%!              '2024-03-10 12:00:00')
+
+## Test arithmetic -- elapsed time spans 23 h / 25 h on DST transition days
+%!assert_equal (hours (datetime (2024, 3, 11, 'TimeZone', 'America/New_York') ...
+%!              - datetime (2024, 3, 10, 'TimeZone', 'America/New_York')), 23)
+%!assert_equal (hours (datetime (2024, 11, 4, 'TimeZone', 'America/New_York') ...
+%!              - datetime (2024, 11, 3, 'TimeZone', 'America/New_York')), 25)
+
+## Test arithmetic -- calendar month/year addition clamps to month end
+%!assert_equal (char (datetime (2024, 1, 31) + calmonths (1), 'yyyy-MM-dd'), ...
+%!              '2024-02-29')
+%!assert_equal (char (datetime (2023, 1, 31) + calmonths (1), 'yyyy-MM-dd'), ...
+%!              '2023-02-28')
+%!assert_equal (char (datetime (2024, 2, 29) + calyears (1), 'yyyy-MM-dd'), ...
+%!              '2025-02-28')
 
 ## Test 'diff' -- successive differences return a duration in 'hh:mm:ss'
 %!test
