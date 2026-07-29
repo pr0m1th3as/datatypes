@@ -67,20 +67,23 @@ function T = NaT (varargin)
             " a string scalar."]);
   endif
 
-  ## Parse and check SIZE arguments
-  if (nargin == 0)
+  ## Parse and check SIZE arguments.  Use the count of positional arguments
+  ## (after the Name-Value pairs are stripped) so that, e.g.,
+  ## NaT ('TimeZone', tz) is a scalar rather than falling through to the
+  ## multi-dimension branch with an empty size.
+  if (numel (args) == 0)
     sz = 1;
-  elseif (nargin == 1)
+  elseif (numel (args) == 1)
     if (isscalar (args{1}) && args{1} >= 0 && args{1} == fix (args{1}))
       sz = [args{1}, args{1}];
     elseif (isrow (args{1}) && all (args{1} >= 0) ...
                             && all (args{1} == fix (args{1})))
       sz = args{1};
     else
-      error (strcat (["NaT: N must be a scalar or a row vector"], ...
-                     [" of non-negative integers."]));
+      error (strcat ("NaT: N must be a scalar or a row vector", ...
+                     " of non-negative integers."));
     endif
-  elseif (nargin > 1)
+  else
     posint = cellfun (@(x) (! isscalar (x) || x < 0 || x != fix (x)), args);
     if (any (posint))
       error ("NaT: dimensions must be non-negative integers.");
@@ -98,6 +101,15 @@ endfunction
 %!assert_equal (isnat (NaT), true);
 %!assert_equal (size (NaT (3)), [3, 3]);
 %!assert_equal (size (NaT (2, 3, 4)), [2, 3, 4]);
+
+## A Name-Value pair with no size argument yields a scalar (not an empty array).
+%!test
+%! z = NaT ('TimeZone', 'America/New_York');
+%! assert_equal (size (z), [1, 1]);
+%! assert_equal (z.TimeZone, 'America/New_York');
+%! assert_equal (isnat (z), true);
+%!assert_equal (size (NaT ('Format', 'yyyy-MM-dd')), [1, 1]);
+%!assert_equal (size (NaT (2, 3, 'TimeZone', 'UTC')), [2, 3]);
 
 %!error<NaT: 'Format' must be either a character vector or a string scalar.> ...
 %! NaT (1, 'Format', 2);
