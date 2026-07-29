@@ -284,10 +284,13 @@ classdef datetime
     ## respective date but with time set at midnight.
     ##
     ## @code{@var{T} = datetime (@var{DateStrings})} creates a datetime array
-    ## from the text in @var{DateStrings} representing points in time.  In
-    ## current implementation, @var{DateStrings} are parsed by Octave's core
-    ## @code{datevec} function, hence supported text formats are currently those
-    ## supported by @code{datevec}.
+    ## from the text in @var{DateStrings} representing points in time.  Without
+    ## an @qcode{'InputFormat'}, the format is auto-detected and the supported
+    ## text formats are those of Octave's core @code{datevec} function, which
+    ## also decides what is accepted.  Note that @code{datevec} rolls an
+    ## out-of-range date over, so @qcode{'2024-04-31'} is read as the 1st of
+    ## May, whereas the same text under an explicit @qcode{'InputFormat'} is
+    ## rejected.
     ##
     ## @code{@var{T} = datetime (@var{DateStrings}, @qcode{'InputFormat'},
     ## @var{INFMT})} also allows to specify a particular input text format to
@@ -300,6 +303,12 @@ classdef datetime
     ## have the value set to zero.  Formats which do not specify any date
     ## component default to the current date, whereas a partially specified date
     ## defaults its missing month and day to 1.
+    ##
+    ## A string that does not match @var{INFMT}, or that names a date which does
+    ## not exist, such as @qcode{'2024-04-31'} or a 29th of February outside a
+    ## leap year, cannot be converted.  A lone such string is an error; within
+    ## an array only that element is lost and becomes @code{NaT}, so that one
+    ## unreadable entry does not cost the rest of the array.
     ##
     ## @code{@var{T} = datetime (@var{DateStrings}, @qcode{'InputFormat'},
     ## @var{INFMT}, @qcode{'PivotYear'}, @var{PIVOT})} also allows to specify a
@@ -354,15 +363,31 @@ classdef datetime
     ##
     ## @code{@var{T} = datetime (@dots{}, @qcode{'Format'}, @var{FMT})}
     ## specifies the display format of the values in the output datetime array.
-    ## Currently, only the default display format is implemented.
+    ## @var{FMT} uses the same Unicode LDML date field symbols as
+    ## @qcode{'InputFormat'}, with @qcode{'z'}, @qcode{'Z'}, @qcode{'X'}, and
+    ## @qcode{'x'} additionally naming the time zone, and text between single
+    ## quotes taken literally.  The default format renders a date alone when
+    ## every element sits at midnight and a date with a time otherwise; a
+    ## @code{NaT} carries no time of day and does not affect that choice.
     ##
     ## @code{@var{T} = datetime (@dots{}, @qcode{'TimeZone'}, @var{TZ})} sets
-    ## the time zone to the values in the output datetime array.  If not
-    ## specified, the computer's local timezone is used.  Supported time zones
-    ## are specified in the IANA's Time Zone Database.  You may specify a new
-    ## time zone by setting the @qcode{'TimeZone'} property of the datetime
-    ## array, in which case the new datetime values may include Daylight Saving
-    ## Time (DST) in their computation.
+    ## the time zone of the values in the output datetime array.  If not
+    ## specified, the array is unzoned: its values are wall-clock readings that
+    ## name no absolute instant, and no daylight saving rule applies to them.
+    ## Supported time zones are those of the IANA Time Zone Database.  A zone
+    ## may also be attached, changed, or dropped afterwards through the
+    ## @qcode{'TimeZone'} property; attaching one reinterprets the wall-clock
+    ## values in that zone, whereas changing between two zones preserves the
+    ## absolute instant and shifts the wall-clock values by the difference in
+    ## offset.
+    ##
+    ## Twice a year a zone that observes Daylight Saving Time (DST) has
+    ## wall-clock readings that name no unique instant.  Where the clock goes
+    ## back an hour repeats, and such a reading is taken at the later of the two
+    ## offsets, that is, standard time.  Where the clock goes forward an
+    ## interval is skipped, and a reading inside it, which no clock in that zone
+    ## ever shows, is moved ahead by the length of the skipped interval: with
+    ## the usual one-hour skip @qcode{'02:30'} becomes @qcode{'03:30'}.
     ##
     ## @seealso{NaT, datetime, isdatetime, calendarDuration, duration}
     ## @end deftypefn
