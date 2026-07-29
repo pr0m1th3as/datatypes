@@ -153,6 +153,41 @@ classdef datetime
   methods (Static, Access = public)
 
     ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{E} =} datetime.empty ()
+    ## @deftypefnx {datetime} {@var{E} =} datetime.empty (@var{sz})
+    ## @deftypefnx {datetime} {@var{E} =} datetime.empty (@var{m}, @var{n}, @dots{})
+    ##
+    ## Create an empty datetime array.
+    ##
+    ## @code{@var{E} = datetime.empty ()} returns a @math{0*0} empty datetime
+    ## array.  @code{datetime.empty (@var{m}, @var{n}, @dots{})} or
+    ## @code{datetime.empty (@var{sz})} returns an empty datetime array of the
+    ## requested size, which must have at least one dimension equal to zero.
+    ##
+    ## @end deftypefn
+    function E = empty (varargin)
+      if (nargin == 0)
+        sz = [0, 0];
+      elseif (nargin == 1 && ! isscalar (varargin{1}))
+        sz = double (varargin{1}(:)).';
+      else
+        sz = [varargin{:}];
+      endif
+      if (isscalar (sz))
+        sz = [sz, sz];
+      endif
+      if (! (isnumeric (sz) && isrow (sz) && all (sz >= 0) ...
+             && all (sz == fix (sz))))
+        error ("datetime.empty: dimensions must be non-negative integers.");
+      endif
+      if (all (sz != 0))
+        error (strcat ("datetime.empty: at least one dimension must be", ...
+                       " zero for an empty array."));
+      endif
+      E = datetime (nan (sz), 'ConvertFrom', 'datenum');
+    endfunction
+
+    ## -*- texinfo -*-
     ## @deftypefn  {datetime} {@var{style} =} datetime.zoneNameStyle ()
     ## @deftypefnx {datetime} {} datetime.zoneNameStyle (@var{style})
     ##
@@ -443,9 +478,20 @@ classdef datetime
            this.Second] = __datetime__ (Y, M, D);
         endif
       elseif (! isempty (ConvertFrom) && ! isempty (TimeZone))
-        [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
-         this.Second] = __datetime__ (args{1}, 'ConvertFrom', ConvertFrom, ...
-                                      'TimeZone', TimeZone);
+        if (strcmpi (ConvertFrom, 'posixtime'))
+          ## POSIX time is an absolute UTC instant, so read it as a UTC wall
+          ## clock and then convert into the requested zone (honouring DST).
+          [Yp, Mp, Dp, hp, mp, sp] = __datetime__ (args{1}, ...
+                                                   'ConvertFrom', 'posixtime');
+          [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
+           this.Second] = __datetime__ (Yp, Mp, Dp, hp, mp, sp, 'TimeZone', ...
+                          'UTC', 'toTimeZone', TimeZone, 'Precision', ...
+                          'microseconds');
+        else
+          [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
+           this.Second] = __datetime__ (args{1}, 'ConvertFrom', ConvertFrom, ...
+                                        'TimeZone', TimeZone);
+        endif
       elseif (! isempty (ConvertFrom) && isempty (TimeZone))
         [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
          this.Second] = __datetime__ (args{1}, 'ConvertFrom', ConvertFrom);
@@ -5322,8 +5368,16 @@ function cstr = dtFormatStrings (Y, M, D, H, Mi, S, TZ, fmt, zoneStyle)
             piece = sprintf ('%02d', floor (S(k)));
           endif
         case 'S'
-          frac = S(k) - floor (S(k));
-          piece = sprintf ('%0*d', nn, floor (frac * 10 ^ nn));
+          ## Fractional seconds, truncated to nn digits (MATLAB parity).  Round
+          ## to whole microseconds first (the stored precision) so an exact
+          ## value such as .678 -- held as 0.67799999... in double -- yields the
+          ## intended digits instead of one less.
+          micros = round ((S(k) - floor (S(k))) * 1e6);
+          if (nn <= 6)
+            piece = sprintf ('%0*d', nn, floor (micros / 10 ^ (6 - nn)));
+          else
+            piece = sprintf ('%0*d', nn, micros * 10 ^ (nn - 6));
+          endif
         case 'a'
           if (H(k) >= 12)
             piece = 'PM';

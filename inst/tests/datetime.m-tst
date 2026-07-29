@@ -128,6 +128,23 @@
 %!              '2024-03-09')
 %!assert_equal (class (datetime (Inf, 'ConvertFrom', 'datenum')), 'datetime')
 
+## Test 'datetime' constructor -- ConvertFrom posixtime honours the time zone
+%!assert_equal (char (datetime (0, 'ConvertFrom', 'posixtime', 'TimeZone', ...
+%!              'America/New_York'), 'yyyy-MM-dd HH:mm:ss'), '1969-12-31 19:00:00')
+%!assert_equal (char (datetime (0, 'ConvertFrom', 'posixtime', 'TimeZone', ...
+%!              'Asia/Tokyo'), 'yyyy-MM-dd HH:mm:ss'), '1970-01-01 09:00:00')
+%!assert_equal (isnat (datetime (NaN, 'ConvertFrom', 'posixtime', ...
+%!              'TimeZone', 'UTC')), true)
+
+## Test 'datetime.empty' -- empty datetime arrays
+%!assert_equal (size (datetime.empty), [0, 0])
+%!assert_equal (class (datetime.empty), 'datetime')
+%!assert_equal (isempty (datetime.empty), true)
+%!assert_equal (size (datetime.empty (2, 0)), [2, 0])
+%!assert_equal (size (datetime.empty (0, 3)), [0, 3])
+%!error <datetime.empty: at least one dimension must be zero for an empty array.> ...
+%! datetime.empty (3)
+
 ## Test 'datetime' constructor -- year/month/day/hour/minute must be integer
 %!error <datetime: Year, Month, Day, Hour, and Minute components must be integer values.> ...
 %! datetime (2024, 1, 1, 0, 30.5, 0)
@@ -402,6 +419,10 @@
 %!              'eee, dd MMM yyyy HH:mm:ss'), 'Sat, 09 Mar 2024 14:30:45')
 %!assert_equal (char (datetime (2024, 3, 9, 14, 30, 45.678), 'ss.S'), '45.6')
 %!assert_equal (char (datetime (2024, 3, 9, 14, 30, 45.678), 'ss.SS'), '45.67')
+%!assert_equal (char (datetime (2024, 1, 1, 0, 0, 45.678), 'ss.SSS'), '45.678')
+%!assert_equal (char (datetime (2024, 1, 1, 0, 0, 45.001), 'ss.SSS'), '45.001')
+%!assert_equal (char (datetime (2024, 1, 1, 0, 0, 45.999), 'ss.SSS'), '45.999')
+%!assert_equal (char (datetime (2024, 1, 1, 0, 0, 12.5), 'ss.SSS'), '12.500')
 %!assert_equal (char (datetime (2024, 3, 9, 14, 30, 45), 'h:mm a'), '2:30 PM')
 %!assert_equal (char (datetime (2024, 1, 1, 0, 0, 0), 'h a'), '12 AM')
 %!assert_equal (char (datetime (2024, 1, 1, 12, 0, 0), 'h a'), '12 PM')
