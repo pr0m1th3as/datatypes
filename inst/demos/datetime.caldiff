@@ -1,0 +1,6 @@
+%!demo
+%! ## `caldiff` returns the successive differences as *calendar* amounts — here
+%! ## one month between each element, even though the months differ in length.
+%!
+%! t = datetime (2024, [1, 2, 3], 15)
+%! caldiff (t)

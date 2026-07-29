@@ -1,0 +1,5 @@
+%!demo
+%! ## `between` gives the calendar difference between two datetimes, broken into
+%! ## years, months and days.
+%!
+%! between (datetime (2024, 1, 15), datetime (2025, 3, 20))

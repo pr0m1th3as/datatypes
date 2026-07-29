@@ -1,0 +1,14 @@
+%!demo
+%! ## Subtracting two datetimes gives the elapsed time between them as a
+%! ## `duration`.
+%!
+%! datetime (2024, 3, 15) - datetime (2024, 3, 9)
+%! datetime (2024, 3, 9, 12, 0, 0) - datetime (2024, 3, 9, 6, 0, 0)
+
+%!demo
+%! ## Subtracting a `duration` shifts by a fixed amount, while subtracting a
+%! ## `calendarDuration` is calendar-aware — one month before 31 March clamps to
+%! ## the last day of February.
+%!
+%! datetime (2024, 3, 9) - days (3)
+%! datetime (2024, 3, 31) - calmonths (1)

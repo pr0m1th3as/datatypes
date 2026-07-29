@@ -1,0 +1,10 @@
+%!demo
+%! ## The colon operator builds a range of datetimes; the step is a `duration`
+%! ## or `calendarDuration`.  A `caldays` step gives one row per calendar day.
+%!
+%! datetime (2024, 1, 1) : caldays (1) : datetime (2024, 1, 4)
+
+%!demo
+%! ## Use a time-based step for a finer range — here every six hours.
+%!
+%! datetime (2024, 1, 1) : hours (6) : datetime (2024, 1, 1, 18, 0, 0)
