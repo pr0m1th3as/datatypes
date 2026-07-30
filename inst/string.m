@@ -77,7 +77,8 @@ classdef string
     ## must have at least one dimension equal to zero.  A lone dimension gives a
     ## square size, so @code{string.empty (3)} is an error while
     ## @code{string.empty (0)} is @math{0*0}.  As for @code{zeros}, a negative
-    ## dimension counts as zero.
+    ## dimension counts as zero, and a size vector with nothing in it names no
+    ## size and gives @math{0*0}.
     ##
     ## @end deftypefn
     function E = empty (varargin)
@@ -91,10 +92,13 @@ classdef string
       if (! (isnumeric (sz) && isrow (sz) && all (sz == fix (sz))))
         error ("string.empty: dimensions must be integer values.");
       endif
-      ## A negative dimension is no smaller than none at all, which is how
-      ## 'zeros' and every other array constructor read it.
+      ## A negative dimension is no smaller than none at all, and a size vector
+      ## holding no dimensions names no size: 'zeros' and every other array
+      ## constructor read both the same way.
       sz = max (sz, 0);
-      if (isscalar (sz))
+      if (isempty (sz))
+        sz = [0, 0];
+      elseif (isscalar (sz))
         sz = [sz, sz];
       endif
       if (all (sz != 0))

@@ -175,7 +175,11 @@ classdef datetime
     ## @code{@var{E} = datetime.empty ()} returns a @math{0*0} empty datetime
     ## array.  @code{datetime.empty (@var{m}, @var{n}, @dots{})} or
     ## @code{datetime.empty (@var{sz})} returns an empty datetime array of the
-    ## requested size, which must have at least one dimension equal to zero.
+    ## requested size, which must have at least one dimension equal to zero.  A
+    ## lone dimension gives a square size, so @code{datetime.empty (3)} is an
+    ## error while @code{datetime.empty (0)} is @math{0*0}.  As for
+    ## @code{zeros}, a negative dimension counts as zero, and a size vector with
+    ## nothing in it names no size and gives @math{0*0}.
     ##
     ## @end deftypefn
     function E = empty (varargin)
@@ -186,12 +190,17 @@ classdef datetime
       else
         sz = [varargin{:}];
       endif
-      if (isscalar (sz))
-        sz = [sz, sz];
+      if (! (isnumeric (sz) && isrow (sz) && all (sz == fix (sz))))
+        error ("datetime.empty: dimensions must be integer values.");
       endif
-      if (! (isnumeric (sz) && isrow (sz) && all (sz >= 0) ...
-             && all (sz == fix (sz))))
-        error ("datetime.empty: dimensions must be non-negative integers.");
+      ## A negative dimension is no smaller than none at all, and a size vector
+      ## holding no dimensions names no size: 'zeros' and every other array
+      ## constructor read both the same way.
+      sz = max (sz, 0);
+      if (isempty (sz))
+        sz = [0, 0];
+      elseif (isscalar (sz))
+        sz = [sz, sz];
       endif
       if (all (sz != 0))
         error (strcat ("datetime.empty: at least one dimension must be", ...

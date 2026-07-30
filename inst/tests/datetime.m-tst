@@ -156,6 +156,16 @@
 %!assert_equal (size (datetime.empty (0, 3)), [0, 3])
 %!error <datetime.empty: at least one dimension must be zero for an empty array.> ...
 %! datetime.empty (3)
+## Test 'datetime.empty' -- size arguments follow the rules 'zeros' follows: a
+## negative dimension counts as zero, a size vector holding none names no size
+%!assert_equal (size (datetime.empty (0)), [0, 0])
+%!assert_equal (size (datetime.empty (-1)), [0, 0])
+%!assert_equal (size (datetime.empty (0, -1)), [0, 0])
+%!assert_equal (size (datetime.empty (-2, -3)), [0, 0])
+%!assert_equal (size (datetime.empty ([])), [0, 0])
+%!assert_equal (size (datetime.empty (2, 0, 3)), [2, 0, 3])
+%!error <datetime.empty: dimensions must be integer values.> ...
+%! datetime.empty (1.5)
 
 ## Test 'datetime' constructor -- year/month/day/hour/minute must be integer
 %!error <datetime: Year, Month, Day, Hour, and Minute components must be integer values.> ...

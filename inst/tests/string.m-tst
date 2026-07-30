@@ -2172,8 +2172,12 @@
 %!error <string.empty: at least one dimension must be zero for an empty array.> ...
 %! string.empty (3)
 
-## empty: a negative dimension counts as zero, as it does for 'zeros'
+## empty: a negative dimension counts as zero, as it does for 'zeros', and a
+## size vector holding no dimensions names no size
 %!assert_equal (size (string.empty (-1)), [0, 0])
+%!assert_equal (size (string.empty (0, -1)), [0, 0])
+%!assert_equal (size (string.empty (-2, -3)), [0, 0])
+%!assert_equal (size (string.empty ([])), [0, 0])
 %!error <string.empty: dimensions must be integer values.> ...
 %! string.empty (1.5)
 
