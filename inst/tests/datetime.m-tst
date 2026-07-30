@@ -3600,6 +3600,46 @@
 %! linspace (datetime (2017, 1, 1, 'TimeZone', 'UTCLeapSeconds'), ...
 %!           datetime (2017, 1, 2, 'TimeZone', 'UTC'), 3)
 
+## Test 'sort'/'min'/'max' -- an array of more than two dimensions is reduced
+## along the dimension asked for, checked against the numeric answer
+%!test
+%! x = cat (3, [5 1 9; 2 8 4], [7 3 6; 10 12 11]);
+%! a = datetime (2024, 1, x);
+%! for d = 1:3
+%!   [b, i] = sort (a, d);
+%!   [w, wi] = sort (x, d);
+%!   assert_equal (size (b), size (w));
+%!   assert_equal (b.Day, w);
+%!   assert_equal (i, wi);
+%! endfor
+%!test
+%! x = cat (3, [5 1 9; 2 8 4], [7 3 6; 10 12 11]);
+%! a = datetime (2024, 1, x);
+%! for d = 1:3
+%!   [m, i] = min (a, [], d);
+%!   [wm, wi] = min (x, [], d);
+%!   assert_equal (size (m), size (wm));
+%!   assert_equal (m.Day, wm);
+%!   assert_equal (i, wi);
+%!   [M, j] = max (a, [], d);
+%!   [wM, wj] = max (x, [], d);
+%!   assert_equal (M.Day, wM);
+%!   assert_equal (j, wj);
+%! endfor
+%!test
+%! x = cat (3, [5 1 9; 2 8 4], [7 3 6; 10 12 11]);
+%! a = datetime (2024, 1, x);
+%! [b, i] = sort (a, 2, 'descend');
+%! [w, wi] = sort (x, 2, 'descend');
+%! assert_equal (b.Day, w);
+%! assert_equal (i, wi);
+%!test
+%! x = cat (3, [5 1 9; 2 8 4], [7 3 6; 10 12 11]);
+%! z = datetime (2024, 1, x, 'TimeZone', 'America/New_York');
+%! assert_equal (sort (z, 3).Day, sort (x, 3));
+%! assert_equal (min (z, [], 3).Day, min (x, [], 3));
+%! assert_equal (sort (z, 3).TimeZone, 'America/New_York');
+
 ## Test 'sort' -- ascending order is the default and ties are stable
 %!test
 %! [b, i] = sort (datetime (2021, 1, [3, 1, 2, 1]));

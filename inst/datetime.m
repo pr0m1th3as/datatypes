@@ -2636,8 +2636,8 @@ classdef datetime
           dim = 1;
         endif
       endif
-      ## Sorting along a singleton or higher dimension is a no-op.
-      if (dim > 2 || size (A, dim) < 2)
+      ## Sorting along a singleton dimension is a no-op.
+      if (size (A, dim) < 2)
         B = A;
         I = ones (size (A));
         return;
@@ -2651,15 +2651,23 @@ classdef datetime
           placement = 'last';
         endif
       endif
-      ## Work on the numeric serial (NaT -> NaN); sort along columns, so
-      ## transpose for a row-wise sort and transpose the result back.
+      ## Work on the numeric serial (NaT -> NaN).  Bring the sorted dimension to
+      ## the front and flatten everything after it, so the column loop below
+      ## holds for an array of any number of dimensions; the result is put back
+      ## the way it came at the end.  Transposing instead would only ever have
+      ## worked for a matrix.
       S = serial (A);
       Y = A.Year; MO = A.Month; D = A.Day;
       H = A.Hour; MI = A.Minute; SE = A.Second;
-      if (dim == 2)
-        S = S.';
-        Y = Y.'; MO = MO.'; D = D.'; H = H.'; MI = MI.'; SE = SE.';
-      endif
+      nd = max (ndims (S), dim);
+      sz = size (S);
+      sz(end+1:nd) = 1;
+      perm = [dim, 1:dim-1, dim+1:nd];
+      psz = sz(perm);
+      flat = @(V) reshape (permute (V, perm), psz(1), []);
+      S = flat (S);
+      Y = flat (Y); MO = flat (MO); D = flat (D);
+      H = flat (H); MI = flat (MI); SE = flat (SE);
       [nr, nc] = size (S);
       idx = zeros (nr, nc);
       for j = 1:nc
@@ -2680,15 +2688,13 @@ classdef datetime
           idx(:, j) = [finsorted; natidx];
         endif
       endfor
-      ## Reorder the component arrays column-wise using linear indexing.
+      ## Reorder the component arrays column-wise using linear indexing, then
+      ## restore the original shape and dimension order.
       lin = idx + repmat ((0:nc-1) .* nr, nr, 1);
-      Y = Y(lin); MO = MO(lin); D = D(lin);
-      H = H(lin); MI = MI(lin); SE = SE(lin);
-      I = idx;
-      if (dim == 2)
-        Y = Y.'; MO = MO.'; D = D.'; H = H.'; MI = MI.'; SE = SE.';
-        I = idx.';
-      endif
+      back = @(V) ipermute (reshape (V(lin), psz), perm);
+      Y = back (Y); MO = back (MO); D = back (D);
+      H = back (H); MI = back (MI); SE = back (SE);
+      I = ipermute (reshape (idx, psz), perm);
       B = A;
       B.Year = Y; B.Month = MO; B.Day = D;
       B.Hour = H; B.Minute = MI; B.Second = SE;
@@ -4973,26 +4979,30 @@ classdef datetime
           dim = 1;
         endif
       endif
-      if (dim > 2 || size (A, dim) < 2)
+      if (size (A, dim) < 2)
         M = A;
         I = ones (size (A));
         return;
       endif
+      ## Ask for the winner's position both ways: as a subscript along DIM,
+      ## which is what the second output promises, and as a linear index, which
+      ## is what picking the winning elements out of the component arrays needs.
+      ## The linear form comes from the built-in rather than being worked out
+      ## here, since doing that arithmetic by hand only holds for a matrix and
+      ## quietly addresses the wrong page of anything larger.
       if (ismax)
         [~, I] = max (S, [], dim);
+        [~, lin] = max (S, [], dim, 'linear');
       else
         [~, I] = min (S, [], dim);
+        [~, lin] = min (S, [], dim, 'linear');
       endif
       if (strcmp (nanflag, 'includenan'))
         nanmask = any (isnan (S), dim);
         [~, firstnan] = max (isnan (S), [], dim);
+        [~, firstnanlin] = max (isnan (S), [], dim, 'linear');
         I(nanmask) = firstnan(nanmask);
-      endif
-      [nr, nc] = size (S);
-      if (dim == 1)
-        lin = I + (0:nc-1) * nr;
-      else
-        lin = (1:nr)' + (I - 1) * nr;
+        lin(nanmask) = firstnanlin(nanmask);
       endif
       M = subset (A, lin);
     endfunction
