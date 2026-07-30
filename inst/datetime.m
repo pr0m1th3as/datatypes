@@ -508,49 +508,71 @@ classdef datetime
       ## Datestrings are currently handled by 'datevec'
       if (iscellstr (args{1}) || isstring (args{1}) || ischar (args{1}))
         DateStrings = "";
-        if (ischar (args{1}) && ! isvector (args{1}))
+        ## The relative-day keywords are text too, but name no date to parse and
+        ## are answered by the builtin further down.
+        isRelDay = ischar (args{1}) && any (strcmpi (args, {'now', 'today', ...
+                                            'yesterday', 'tomorrow'}));
+        if (ischar (args{1}) && ! (isvector (args{1}) || isempty (args{1})))
           error ("datetime: invalid type for 'DateStrings'.");
-        elseif (ischar (args{1}) && !
-                any (strcmpi (args, {'now', 'today', 'yesterday', 'tomorrow'})))
-          DateStrings = cellstr (args{1});
-        elseif (! ischar (args{1}))
+        elseif (! isRelDay)
           DateStrings = cellstr (args{1});
         endif
-        if (! isempty (DateStrings))
-          if (! isempty (inputFormat))
-            ## LDML-aware parse under the supplied 'InputFormat'.  MATLAB's
-            ## default pivot for two-digit years is the current year minus 50.
-            dtValidateFormat (inputFormat);
-            if (! isempty (PivotYear))
-              pivot = PivotYear;
+        if (! isRelDay)
+          if (isempty (DateStrings))
+            ## A container holding no text at all gives an empty datetime rather
+            ## than a missing one: there is no element for a NaT to occupy.
+            ## Note this is not the same as an empty character vector, which
+            ## 'cellstr' reports as one piece of text and which becomes a NaT.
+            [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
+             this.Second] = deal (nan (size (DateStrings)));
+            return;
+          endif
+          ## Empty text names no date at all.  It is missing rather than
+          ## unreadable, so it becomes NaT and leaves the text beside it alone,
+          ## as MATLAB does: a blank field among imported dates must not cost
+          ## the whole column.  Only the rest is handed to a parser.
+          strs = DateStrings(:);
+          blank = cellfun (@isempty, strs);
+          DATEVEC = nan (numel (strs), 6);
+          if (! all (blank))
+            live = strs(! blank);
+            if (! isempty (inputFormat))
+              ## LDML-aware parse under the supplied 'InputFormat'.  MATLAB's
+              ## default pivot for two-digit years is the current year minus 50.
+              dtValidateFormat (inputFormat);
+              if (! isempty (PivotYear))
+                pivot = PivotYear;
+              else
+                now6 = clock ();
+                pivot = now6(1) - 50;
+              endif
+              DV = dtParseInput (live, inputFormat, pivot, Locale, ...
+                                 dtIsLeapZone (TimeZone));
+            elseif (dtIsLeapZone (TimeZone))
+              ## A leap-second array reads text in the one shape it can also
+              ## write, so nothing is auto-detected here: the string must be
+              ## the ISO 8601 UTC form, with or without fractional seconds.
+              ## Anything else is rejected even where a general datetime array
+              ## would accept it.
+              DV = dtParseLeapText (live);
             else
-              now6 = clock ();
-              pivot = now6(1) - 50;
+              ## No format supplied: let core 'datevec' auto-detect ISO and
+              ## dd-MMM-yyyy style strings.  'datevec' costs around 30 ms per
+              ## call and this path calls it once per element, so try the LDML
+              ## parser first on the shapes where the two are known to agree.
+              [DV, claimed] = dtSniffParse (live);
+              if (! claimed)
+                fcn = @(x) datevec (x);
+                try
+                  DV = cellfun (fcn, live, "UniformOutput", false);
+                  DV = cell2mat (DV(:));
+                catch
+                  error (strcat ("datetime: could not recognize date/time", ...
+                                 " format from input."));
+                end_try_catch
+              endif
             endif
-            DATEVEC = dtParseInput (DateStrings(:), inputFormat, pivot, ...
-                                    Locale, dtIsLeapZone (TimeZone));
-          elseif (dtIsLeapZone (TimeZone))
-            ## A leap-second array reads text in the one shape it can also
-            ## write, so nothing is auto-detected here: the string must be the
-            ## ISO 8601 UTC form, with or without fractional seconds.  Anything
-            ## else is rejected even when a general datetime would accept it.
-            DATEVEC = dtParseLeapText (DateStrings(:));
-          else
-            ## No format supplied: let core 'datevec' auto-detect ISO and
-            ## dd-MMM-yyyy style strings.  'datevec' costs around 30 ms per
-            ## call and this path calls it once per element, so try the LDML
-            ## parser first on the shapes where the two are known to agree.
-            [DATEVEC, claimed] = dtSniffParse (DateStrings(:));
-            if (! claimed)
-              fcn = @(x) datevec (x);
-              try
-                DATEVEC = cellfun (fcn, DateStrings, "UniformOutput", false);
-                DATEVEC = cell2mat (DATEVEC(:));
-              catch
-                error (strcat ("datetime: could not recognize date/time", ...
-                               " format from input."));
-              end_try_catch
-            endif
+            DATEVEC(! blank, :) = DV;
           endif
           ## Split DATEVEC into individual date/time units and reshape
           this.Year = reshape (DATEVEC(:,1), size (DateStrings));
@@ -4067,11 +4089,9 @@ classdef datetime
     ## @code{datetime.empty} are unzoned and so take part in that rule, whereas
     ## @code{NaT (@qcode{'TimeZone'}, @var{tz})} does not.
     ##
-    ## @strong{Deviation from MATLAB.}  An empty character vector is dropped
-    ## here, like @code{@{@}}; MATLAB instead appends one @code{NaT} for it, so
-    ## concatenating one adds an element there and none here.  MATLAB's own
-    ## @code{datetime} of an empty character vector yields an element, which this
-    ## implementation rejects as text naming no date at all.
+    ## Date/time text that is empty names no date and becomes @code{NaT}, so an
+    ## empty character vector adds one missing element, whereas an empty
+    ## @code{@{@}} holds no text at all and adds none.
     ##
     ## @end deftypefn
     function out = cat (dim, varargin)
@@ -4080,13 +4100,10 @@ classdef datetime
       ## An operand that is 0-by-0 and not a datetime -- the [] or {} an array
       ## is often accumulated from -- contributes nothing and is dropped.  An
       ## empty datetime is kept, since whether it carries a time zone still
-      ## counts towards the test below.
-      ##
-      ## This also drops an empty char '', where MATLAB appends a NaT for it;
-      ## MATLAB's datetime ('') yields an element, ours rejects text naming no
-      ## date, and dropping it is both consistent with {} and the less
-      ## surprising of the two.  Documented in the cat docstring.
-      drop = ! isdt & cellfun (@(x) isequal (size (x), [0, 0]), args);
+      ## counts towards the test below, and so is an empty character vector,
+      ## which is one piece of text naming no date and becomes a NaT.
+      drop = ! isdt & cellfun (@(x) isequal (size (x), [0, 0]) ...
+                               && ! ischar (x), args);
       args(drop) = [];
       isdt(drop) = [];
       ## Defensive only: Octave dispatches here just when some operand is a
