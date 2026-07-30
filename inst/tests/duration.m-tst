@@ -1291,8 +1291,8 @@
 ##                                                                            ##
 ## 'abs'              'plus'             'uplus'            'minus'           ##
 ## 'uminus'           'times'            'mtimes'           'ldivide'         ##
-## 'rdivide'          'mod'              'colon'            'linspace'        ##
-## 'sign'                                                                     ##
+## 'rdivide'          'mod'              'rem'              'colon'           ##
+## 'linspace'         'sign'                                                  ##
 ## 'sum'              'cumsum'           'diff'             'min'             ##
 ## 'max'              'cummin'           'cummax'           'floor'           ##
 ## 'ceil'             'round'                                                 ##
@@ -1352,6 +1352,45 @@
 %! mod (hours (7), '2')
 %!error<duration: 'mod' is not defined between 'cell' and 'duration' arrays.> ...
 %! mod ({2}, hours (7))
+
+## rem: remainder takes the sign of the dividend, where mod takes the divisor's
+%!assert_equal (days (rem (days ([7, -7, 7, -7]), days ([2, 2, -2, -2]))), ...
+%!              [1, -1, 1, -1])
+%!assert_equal (days (rem (days ([1, 2, 3]), days (2))), [1, 0, 1])
+%!assert_equal (hours (rem (hours ([7, -7, 7, -7]), hours ([2, 2, -2, -2]))), ...
+%!              [1, -1, 1, -1], 1e-9)
+## rem: the two agree only where the operands share a sign, and part ways on a
+## zero divisor, where rem is NaN and mod is the dividend
+%!test
+%! a = days ([7, -7, 7, -7]);
+%! b = days ([2, 2, -2, -2]);
+%! assert_equal (days (mod (a, b)) == days (rem (a, b)), logical ([1, 0, 0, 1]));
+%!assert_equal (days (rem (days (7), days (0))), NaN)
+%!assert_equal (days (mod (days (7), days (0))), 7)
+## rem: a numeric operand counts days, on either side
+%!assert_equal (hours (rem (hours (7), 2)), 7, 1e-9)
+%!assert_equal (hours (rem (7, hours (2))), 0, 1e-9)
+%!assert_equal (hours (rem (hours (7), days (1))), 7, 1e-9)
+## rem: NaN carries through from either side
+%!assert_equal (days (rem (days (NaN), days (2))), NaN)
+%!assert_equal (days (rem (days (7), days (NaN))), NaN)
+## rem: the display format comes from the duration operand
+%!assert_equal (rem (hours (7), hours (2)).Format, 'h')
+%!assert_equal (rem (7, hours (2)).Format, 'h')
+%!test
+%! x = days (3);
+%! x.Format = 'h';
+%! assert_equal (rem (x, days (2)).Format, 'h');
+## rem: shape is kept for an array of any number of dimensions
+%!assert_equal (days (rem (days (reshape (1:8, 2, 2, 2)), days (3))), ...
+%!              rem (reshape (1:8, 2, 2, 2), 3))
+## rem: anything that is not a duration or numeric is refused
+%!error<duration: 'rem' is not defined between 'duration' and 'calendarDuration' arrays.> ...
+%! rem (hours (7), calmonths (1))
+%!error<duration: 'rem' is not defined between 'duration' and 'char' arrays.> ...
+%! rem (hours (7), '2')
+%!error<duration: 'rem' is not defined between 'cell' and 'duration' arrays.> ...
+%! rem ({2}, hours (7))
 
 %!assert_equal (days (+ days (-3)), -3)
 %!assert_equal (days (+ days (magic (3))), magic (3))
