@@ -80,8 +80,9 @@ classdef duration
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'duration'         'dispstrings'      'cellstr'          'char'            ##
-## 'datevec'          'hms'              'years'            'days'            ##
-## 'hours'            'minutes'          'seconds'          'milliseconds'    ##
+## 'datevec'          'datenum'          'hms'              'years'           ##
+## 'days'             'hours'            'minutes'          'seconds'         ##
+## 'milliseconds'                                                             ##
 ##                                                                            ##
 ################################################################################
 
@@ -616,6 +617,25 @@ classdef duration
       else
         error ("duration.datevec: too many output arguments.");
       endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{N} =} datenum (@var{D})
+    ##
+    ## Convert a duration array to numbers of days.
+    ##
+    ## @code{@var{N} = datenum (@var{D})} returns a @code{double} array of the
+    ## same size as @var{D} holding the length of each duration in days,
+    ## including any fractional part.  @code{NaN} durations give @code{NaN}.
+    ##
+    ## A duration measures elapsed time rather than naming a point in it, so the
+    ## result is a count of days and not a serial date number: adding it to a
+    ## serial date number shifts that date by the duration.  This is the same
+    ## value @code{days} returns, under the name the older date functions use.
+    ##
+    ## @end deftypefn
+    function N = datenum (D)
+      N = D.Days;
     endfunction
 
     ## -*- texinfo -*-

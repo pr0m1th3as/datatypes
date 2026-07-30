@@ -21,7 +21,8 @@
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'duration'         'dispstrings'      'cellstr'          'char'            ##
-## 'datevec'          'hms'              'years'            'days'            ##
+## 'datevec'          'datenum'          'hms'              'years'           ##
+## 'days'                                                                     ##
 ## 'hours'            'minutes'          'seconds'          'milliseconds'    ##
 ##                                                                            ##
 ################################################################################
@@ -1473,6 +1474,19 @@
 %!assert_equal (size (eps (days (reshape (1:8, 2, 2, 2)))), [2, 2, 2])
 %!assert_equal (days (eps (days (reshape (1:8, 2, 2, 2)))), ...
 %!              eps (reshape (1:8, 2, 2, 2)))
+
+## datenum: the length in days, the same value days() gives under the name the
+## older date functions use
+%!assert_equal (datenum (hours (24)), 1)
+%!assert_equal (class (datenum (hours (24))), 'double')
+%!assert_equal (datenum (days ([1, 2.5])), [1, 2.5])
+%!assert_equal (datenum (days (NaN)), NaN)
+%!assert_equal (datenum (hours ([1, 2, 3])), days (hours ([1, 2, 3])))
+%!assert_equal (size (datenum (days (reshape (1:8, 2, 2, 2)))), [2, 2, 2])
+## datenum: it counts elapsed days, so adding it to a serial date shifts that
+## date by the duration
+%!assert_equal (datenum (2024, 1, 1) + datenum (hours (36)), ...
+%!              datenum (2024, 1, 2) + 0.5)
 
 %!assert_equal (days (+ days (-3)), -3)
 %!assert_equal (days (+ days (magic (3))), magic (3))
