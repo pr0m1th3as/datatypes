@@ -4031,10 +4031,28 @@ classdef datetime
     ## @end deftypefn
     function out = cat (dim, varargin)
       args = varargin;
-      f = @(x) isa (x, 'datetime');
-      if (! all (cellfun (f, args)))
-        error ("datetime: invalid input to constructor.");
+      isdt = cellfun (@(x) isa (x, 'datetime'), args);
+      ## An operand that is 0-by-0 and not a datetime -- the [] or {} an array
+      ## is often accumulated from -- contributes nothing and is dropped.  An
+      ## empty datetime is kept, since whether it carries a time zone still
+      ## counts towards the test below.
+      drop = ! isdt & cellfun (@(x) isequal (size (x), [0, 0]), args);
+      args(drop) = [];
+      isdt(drop) = [];
+      ## Defensive only: Octave dispatches here just when some operand is a
+      ## datetime, so this cannot be reached through a concatenation.
+      if (! any (isdt))
+        error (strcat ("datetime.cat: at least one input must be a", ...
+                       " datetime array."));
       endif
+      ## The first datetime operand gives the result its Format and TimeZone,
+      ## and is what any date/time text is read against: such text names a wall
+      ## clock in that zone rather than an instant to be converted into it, the
+      ## rule the set operations and 'isbetween' already follow.
+      out = args{find (isdt, 1)};
+      for k = find (! isdt)
+        args{k} = dtCatPromote (args{k}, out);
+      endfor
       ## Every operand must agree on whether it is zoned at all, as in MATLAB:
       ## a wall clock that names no instant and one that does cannot sit in the
       ## same array.
@@ -4044,13 +4062,12 @@ classdef datetime
                        " that has a time zone with one that does not have a", ...
                        " time zone."));
       endif
-      out = args{1};
       ## Zoned operands need not share a zone.  Concatenating changes which
       ## array an element belongs to, not the instant it names, so an operand
       ## from another zone is converted into the zone of the first rather than
       ## having its wall clock read as if it had always been there.  This also
       ## makes the leap-second check, which cannot be met by a conversion.
-      for k = 2:numel (args)
+      for k = 1:numel (args)
         [~, args{k}] = prepSetOp (out, args{k}, 'cat');
       endfor
       fieldArgs  = cellfun (@(obj) obj.Year, args, 'UniformOutput', false);
@@ -5297,6 +5314,23 @@ endfunction
 ## numeric, logical, and duration operands are rejected the way MATLAB rejects
 ## them.  Defined at file scope (not as a method) so it dispatches correctly
 ## when the first set-operation argument is text rather than a datetime.
+## Promote a non-datetime operand of a concatenation to datetime.  Date/time
+## text is read as a wall clock in REF's time zone, the same rule the set
+## operations and 'isbetween' follow; nothing else can be concatenated with a
+## datetime array.
+function d = dtCatPromote (x, ref)
+  if (ischar (x) || iscellstr (x) || isa (x, 'string'))
+    if (isempty (ref.TimeZone))
+      d = datetime (x);
+    else
+      d = datetime (x, 'TimeZone', ref.TimeZone);
+    endif
+  else
+    error (strcat ("datetime.cat: all inputs must be datetime arrays or", ...
+                   " date/time text."));
+  endif
+endfunction
+
 function d = dtSetPromote (x, ref, op)
   if (isa (x, 'datetime'))
     d = x;
