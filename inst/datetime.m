@@ -4035,10 +4035,24 @@ classdef datetime
       if (! all (cellfun (f, args)))
         error ("datetime: invalid input to constructor.");
       endif
-      for k = 2:numel (args)
-        dtCheckLeapPair (args{1}, args{k}, 'cat');
-      endfor
+      ## Every operand must agree on whether it is zoned at all, as in MATLAB:
+      ## a wall clock that names no instant and one that does cannot sit in the
+      ## same array.
+      zoned = cellfun (@(x) ! isempty (x.TimeZone), args);
+      if (any (zoned) && ! all (zoned))
+        error (strcat ("datetime.cat: cannot concatenate a datetime array", ...
+                       " that has a time zone with one that does not have a", ...
+                       " time zone."));
+      endif
       out = args{1};
+      ## Zoned operands need not share a zone.  Concatenating changes which
+      ## array an element belongs to, not the instant it names, so an operand
+      ## from another zone is converted into the zone of the first rather than
+      ## having its wall clock read as if it had always been there.  This also
+      ## makes the leap-second check, which cannot be met by a conversion.
+      for k = 2:numel (args)
+        [~, args{k}] = prepSetOp (out, args{k}, 'cat');
+      endfor
       fieldArgs  = cellfun (@(obj) obj.Year, args, 'UniformOutput', false);
       out.Year   = cat (dim, fieldArgs{:});
       fieldArgs  = cellfun (@(obj) obj.Month, args, 'UniformOutput', false);
