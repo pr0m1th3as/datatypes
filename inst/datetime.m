@@ -283,6 +283,7 @@ classdef datetime
     ## @deftypefnx {datetime} {@var{T} =} datetime (@qcode{'tomorrow'})
     ## @deftypefnx {datetime} {@var{T} =} datetime (@qcode{'yesterday'})
     ## @deftypefnx {datetime} {@var{T} =} datetime (@var{DateStrings})
+    ## @deftypefnx {datetime} {@var{T} =} datetime (@var{DateStrings}, @qcode{'MixedFormats'}, @var{TF})
     ## @deftypefnx {datetime} {@var{T} =} datetime (@var{DateStrings}, @qcode{'InputFormat'}, @var{INFMT})
     ## @deftypefnx {datetime} {@var{T} =} datetime (@var{DateStrings},@
     ## @qcode{'InputFormat'}, @var{INFMT}, @qcode{'PivotYear'}, @var{PIVOT})
@@ -308,12 +309,50 @@ classdef datetime
     ##
     ## @code{@var{T} = datetime (@var{DateStrings})} creates a datetime array
     ## from the text in @var{DateStrings} representing points in time.  Without
-    ## an @qcode{'InputFormat'}, the format is auto-detected and the supported
-    ## text formats are those of Octave's core @code{datevec} function, which
-    ## also decides what is accepted.  Note that @code{datevec} rolls an
-    ## out-of-range date over, so @qcode{'2024-04-31'} is read as the 1st of
-    ## May, whereas the same text under an explicit @qcode{'InputFormat'} is
-    ## rejected.
+    ## an @qcode{'InputFormat'}, one format is detected from the first piece of
+    ## text that is not blank, and every other piece is then read with that same
+    ## format: text written in a different one is not given a format of its own
+    ## but becomes @code{NaT}, so that a column of dates is read as the single
+    ## thing it is meant to be.  Text no format can be detected from at all is
+    ## refused outright.  A date that the detected format cannot make sense of,
+    ## such as @qcode{'2024-04-31'}, is refused in the same way an explicit
+    ## @qcode{'InputFormat'} refuses it.
+    ##
+    ## The formats detected are:
+    ##
+    ## @multitable @columnfractions 0.34 0.66
+    ## @item @qcode{'uuuu-MM-dd'} @tab optionally followed by @qcode{'HH:mm'},
+    ## @qcode{'HH:mm:ss'}, or either with fractional seconds, the date and the
+    ## time separated by a space or by @qcode{'T'}.
+    ## @item @qcode{'dd-MMM-uuuu'} @tab month named in full or abbreviated,
+    ## optionally followed by a time as above.
+    ## @item @qcode{'MMMM d, uuuu'} @tab as in @qcode{'March 15, 2024'}.
+    ## @item @qcode{'MM/dd/uuuu'} @tab or @qcode{'dd/MM/uuuu'}; see below.
+    ## @item @qcode{'HH:mm:ss'} @tab a time alone, taking today's date.
+    ## @end multitable
+    ##
+    ## Three further shapes are read that MATLAB does not detect, and are
+    ## Octave extensions: @qcode{'uuuu/MM/dd'} with an optional time,
+    ## @qcode{'dd MMMM uuuu'} as in @qcode{'15 March 2024'}, and a year alone.
+    ## Numeric fields need not be padded, so @qcode{'2024-2-9'} reads as
+    ## @qcode{'2024-02-09'} does.
+    ##
+    ## A date written with slashes is ambiguous: @qcode{'03/09/2024'} is the 3rd
+    ## of September to some readers and the 9th of March to others.  The whole
+    ## array decides, since one entry naming a day past the twelfth settles the
+    ## order for all of them; where nothing settles it the American reading is
+    ## taken and a warning
+    ## (@qcode{'Octave:datetime:ambiguous-format'}) is raised.
+    ##
+    ## @code{@var{T} = datetime (@var{DateStrings}, @qcode{'MixedFormats'},
+    ## @code{true})} detects a format for each piece of text separately instead,
+    ## so text gathered from several sources into one column is read whatever
+    ## each entry happens to be written in.  This is an Octave extension, off by
+    ## default; MATLAB has no equivalent.  It reads the wider set of formats
+    ## Octave's core @code{datevec} accepts, and rolls an impossible date over
+    ## rather than refusing it, so @qcode{'2024-04-31'} is read as the 1st of
+    ## May.  It cannot tell a mistake from a format it has not seen before,
+    ## which is why it is not the default.
     ##
     ## @code{@var{T} = datetime (@var{DateStrings}, @qcode{'InputFormat'},
     ## @var{INFMT})} also allows to specify a particular input text format to
@@ -465,11 +504,16 @@ classdef datetime
       endif
 
       ## Parse optional Name-Value paired arguments
-      optNames = {'ConvertFrom', 'Format', 'InputFormat', ...
-                  'Locale', 'PivotYear', 'TimeZone'};
-      dfValues = {[], [], [], [], [], []};
-      [ConvertFrom, Format, inputFormat, Locale, PivotYear, TimeZone, args] =...
-                    parsePairedArguments (optNames, dfValues, varargin(:));
+      optNames = {'ConvertFrom', 'Format', 'InputFormat', 'Locale', ...
+                  'MixedFormats', 'PivotYear', 'TimeZone'};
+      dfValues = {[], [], [], [], false, [], []};
+      [ConvertFrom, Format, inputFormat, Locale, MixedFormats, PivotYear, ...
+       TimeZone, args] = parsePairedArguments (optNames, dfValues, varargin(:));
+      if (! ((islogical (MixedFormats) || isnumeric (MixedFormats))
+             && isscalar (MixedFormats)))
+        error ("datetime: 'MixedFormats' must be a logical scalar.");
+      endif
+      MixedFormats = logical (MixedFormats);
 
       ## A datetime input is copied: its components, time zone and display
       ## format all carry over.  'Format' and 'TimeZone' may still be given to
@@ -644,22 +688,42 @@ classdef datetime
               ## Anything else is rejected even where a general datetime array
               ## would accept it.
               DV = dtParseLeapText (live);
+            elseif (MixedFormats)
+              ## The Octave extension: read every string on its own terms, so a
+              ## column gathered from several sources parses whatever each entry
+              ## happens to be written in.  Core 'datevec' detects per element
+              ## and is what makes that possible; it also rolls an impossible
+              ## date over rather than refusing it.
+              fcn = @(x) datevec (x);
+              try
+                DV = cellfun (fcn, live, "UniformOutput", false);
+                DV = cell2mat (DV(:));
+              catch
+                error (strcat ("datetime: could not recognize date/time", ...
+                               " format from input."));
+              end_try_catch
             else
-              ## No format supplied: let core 'datevec' auto-detect ISO and
-              ## dd-MMM-yyyy style strings.  'datevec' costs around 30 ms per
-              ## call and this path calls it once per element, so try the LDML
-              ## parser first on the shapes where the two are known to agree.
-              [DV, claimed] = dtSniffParse (live);
-              if (! claimed)
-                fcn = @(x) datevec (x);
-                try
-                  DV = cellfun (fcn, live, "UniformOutput", false);
-                  DV = cell2mat (DV(:));
-                catch
-                  error (strcat ("datetime: could not recognize date/time", ...
-                                 " format from input."));
-                end_try_catch
+              ## No format supplied: detect one from the text and read every
+              ## string with it, as MATLAB does.  A string the detected format
+              ## cannot read becomes NaT rather than costing the rest, which is
+              ## the rule an explicit 'InputFormat' already follows; text no
+              ## format can be detected from at all is refused outright.
+              detected = dtDetectFormat (live);
+              if (isempty (detected))
+                error (strcat ("datetime: could not recognize the", ...
+                               " date/time format of '%s'."), live{1});
               endif
+              try
+                DV = dtParseInput (live, detected, dtDefaultPivot (), '', ...
+                                   dtIsLeapZone (TimeZone));
+              catch
+                ## Only a lone string raises here, the array case losing just
+                ## the offending element.  Its message names an 'InputFormat'
+                ## the caller never gave, so say instead what is true: the text
+                ## could not be read.
+                error (strcat ("datetime: could not recognize date/time", ...
+                               " format from input."));
+              end_try_catch
             endif
             DATEVEC(! blank, :) = DV;
           endif
@@ -5936,6 +6000,97 @@ endfunction
 ## every parsed component is in range -- the conditions under which the LDML
 ## parser was verified to reproduce 'datevec' element for element.  Anything
 ## else is declined and falls back to 'datevec' untouched.
+## MATLAB's default pivot for a two-digit year: the current year less fifty.
+## None of the auto-detected shapes carries a two-digit year, so this is never
+## actually consulted there, but the parser wants a value.
+function pivot = dtDefaultPivot ()
+  now6 = clock ();
+  pivot = now6(1) - 50;
+endfunction
+
+## Detect the one date/time format a set of strings is written in, returning it
+## as an LDML pattern, or '' when none is recognized.  The format is taken from
+## the first string, as MATLAB takes it, and every other string is then read
+## with it; a string in a different format does not get one of its own.  Where a
+## shape carries fractional seconds, the pattern is widened to the digits
+## actually present.
+##
+## The slash shape is ambiguous: 03/09/2024 could be the 3rd of September or the
+## 9th of March.  The whole set decides, since one string past the twelfth of a
+## month settles it for all of them, and only when nothing does is the American
+## reading assumed and a warning raised -- both as MATLAB does.
+function fmt = dtDetectFormat (strs)
+  persistent shapes;
+  if (isempty (shapes))
+    shapes = {
+      '^\d{4}-\d{1,2}-\d{1,2}$',                   'yyyy-MM-dd';
+      '^\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{2}$',     'yyyy-MM-dd HH:mm';
+      '^\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{2}:\d{2}$', 'yyyy-MM-dd HH:mm:ss';
+      '^\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{2}:\d{2}\.\d+$', ...
+                                                    'yyyy-MM-dd HH:mm:ss.';
+      '^\d{4}-\d{1,2}-\d{1,2}T\d{1,2}:\d{2}$',     "yyyy-MM-dd'T'HH:mm";
+      '^\d{4}-\d{1,2}-\d{1,2}T\d{1,2}:\d{2}:\d{2}$', ...
+                                                    "yyyy-MM-dd'T'HH:mm:ss";
+      '^\d{4}-\d{1,2}-\d{1,2}T\d{1,2}:\d{2}:\d{2}\.\d+$', ...
+                                                    "yyyy-MM-dd'T'HH:mm:ss.";
+      '^\d{4}/\d{1,2}/\d{1,2}$',                   'yyyy/MM/dd';
+      '^\d{4}/\d{1,2}/\d{1,2} \d{1,2}:\d{2}$',     'yyyy/MM/dd HH:mm';
+      '^\d{4}/\d{1,2}/\d{1,2} \d{1,2}:\d{2}:\d{2}$', 'yyyy/MM/dd HH:mm:ss';
+      '^\d{1,2}/\d{1,2}/\d{4}$',                   '';
+      '^\d{1,2}-[A-Za-z]{3,}-\d{4}$',               'dd-MMM-yyyy';
+      '^\d{1,2}-[A-Za-z]{3,}-\d{4} \d{1,2}:\d{2}$', 'dd-MMM-yyyy HH:mm';
+      '^\d{1,2}-[A-Za-z]{3,}-\d{4} \d{1,2}:\d{2}:\d{2}$', ...
+                                                    'dd-MMM-yyyy HH:mm:ss';
+      '^[A-Za-z]{3,} \d{1,2}, \d{4}$',              'MMMM d, yyyy';
+      '^\d{1,2} [A-Za-z]{3,} \d{4}$',               'dd MMMM yyyy';
+      '^\d{1,2}:\d{2}:\d{2}$',                     'HH:mm:ss';
+      '^\d{1,2}:\d{2}$',                            'HH:mm';
+      '^\d{4}$',                                    'yyyy'};
+  endif
+  fmt = '';
+  first = strs{1};
+  idx = 0;
+  for k = 1:rows (shapes)
+    if (! isempty (regexp (first, shapes{k,1}, 'once')))
+      idx = k;
+      break;
+    endif
+  endfor
+  if (idx == 0)
+    return;
+  endif
+  fmt = shapes{idx,2};
+  if (isempty (fmt))
+    fmt = dtSlashOrder (strs);
+  elseif (fmt(end) == '.')
+    ## Widen the fractional field to the digits the text actually carries.
+    frac = regexp (first, '\.(\d+)$', 'tokens', 'once');
+    fmt = [fmt, repmat('S', 1, numel (frac{1}))];
+  endif
+endfunction
+
+## Decide whether a set of day/month/year strings separated by slashes is
+## written the American way round or the European one.  A first field past 12
+## can only be a day and a second field past 12 can only be a month, so one such
+## string settles the whole set; with nothing to go on, MATLAB reads them the
+## American way and says so.
+function fmt = dtSlashOrder (strs)
+  first = regexp (strs, '^(\d{1,2})/(\d{1,2})/', 'tokens', 'once');
+  f1 = cellfun (@(t) str2double (t{1}), first);
+  f2 = cellfun (@(t) str2double (t{2}), first);
+  if (any (f1 > 12))
+    fmt = 'dd/MM/yyyy';
+  elseif (any (f2 > 12))
+    fmt = 'MM/dd/yyyy';
+  else
+    fmt = 'MM/dd/yyyy';
+    warning ('Octave:datetime:ambiguous-format', ...
+             ["datetime: the text was read with the format 'MM/dd/yyyy'," ...
+              " but 'dd/MM/yyyy' would read it just as well; give" ...
+              " 'InputFormat' to say which is meant."]);
+  endif
+endfunction
+
 function [DV, ok] = dtSniffParse (strs)
   ## Whole-string shape, and the LDML pattern that parses it.  Shapes carrying
   ## fractional seconds, a 'T' separator, or 'yyyy/MM/dd HH:mm:ss' are absent

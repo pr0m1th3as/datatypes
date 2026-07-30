@@ -464,24 +464,83 @@
 %!assert_equal (datevec (datetime ('2024-2-9')), [2024, 2, 9, 0, 0, 0])
 %!assert_equal (datevec (datetime ({'2024-03-09'; '2024-12-31'})), ...
 %!              [2024, 3, 9, 0, 0, 0; 2024, 12, 31, 0, 0, 0])
-%!assert_equal (datevec (datetime ({'2024-03-09'; '09-Mar-2024'})), ...
-%!              [2024, 3, 9, 0, 0, 0; 2024, 3, 9, 0, 0, 0])
-%!assert_equal (datevec (datetime ('2024-04-31')), [2024, 5, 1, 0, 0, 0])
-%!assert_equal (datevec (datetime ('2024-02-30')), [2024, 3, 1, 0, 0, 0])
-%!assert_equal (datevec (datetime ('2024-03-09 13:45:60')), ...
-%!              [2024, 3, 9, 13, 46, 0])
 %!error <datetime: could not recognize date/time format from input.> ...
 %! datetime ('2024-13-09')
 %!error <datetime: could not recognize date/time format from input.> ...
 %! datetime ('2024-03-32')
 %!error <datetime: could not recognize date/time format from input.> ...
 %! datetime ('2024-03-09 25:00:00')
+
+## Test 'datetime' constructor -- the auto-detected repertoire, widened toward
+## MATLAB's: a 'T' separator, fractional seconds, a time without seconds, and
+## the 'Month d, yyyy' form are read
+%!assert_equal (datevec (datetime ('2024-03-09T14:30:45')), ...
+%!              [2024, 3, 9, 14, 30, 45])
+%!assert_equal (datevec (datetime ('2024-03-09T14:30:45.678')), ...
+%!              [2024, 3, 9, 14, 30, 45.678])
+%!assert_equal (datevec (datetime ('2024-03-09 13:45:00.123')), ...
+%!              [2024, 3, 9, 13, 45, 0.123])
+%!assert_equal (datevec (datetime ('2024-03-09 14:30')), ...
+%!              [2024, 3, 9, 14, 30, 0])
+%!assert_equal (datevec (datetime ('March 15, 2024')), [2024, 3, 15, 0, 0, 0])
+
+## Test 'datetime' constructor -- one format is detected and read for the whole
+## array, so text in another format is lost rather than read on its own terms
+%!test
+%! d = datetime ({'2024-03-09'; '09-Mar-2024'});
+%! assert_equal (isnat (d), logical ([0; 1]));
+%! assert_equal (d.Day(1), 9);
+%!test
+%! d = datetime ({'2024-03-09 14:30:45'; '2024-03-10'});
+%! assert_equal (isnat (d), logical ([0; 1]));
+%!assert_equal (datevec (datetime ({'2024-03-09'; '2024-12-31'})), ...
+%!              [2024, 3, 9, 0, 0, 0; 2024, 12, 31, 0, 0, 0])
+
+## Test 'datetime' constructor -- the format is detected from the first string
+## that is not blank, and text none can be detected from is refused
+%!test
+%! d = datetime ({''; '2024-03-09'});
+%! assert_equal (isnat (d), logical ([1; 0]));
+%! assert_equal (d.Day(2), 9);
+%!error <datetime: could not recognize the date/time format of 'not-a-date'.> ...
+%! datetime ({'not-a-date'; '2024-03-09'})
+
+## Test 'datetime' constructor -- a date that does not exist is refused under
+## the detected format, as it is under an explicit one
 %!error <datetime: could not recognize date/time format from input.> ...
-%! datetime ('13/09/2024')
+%! datetime ('2024-04-31')
 %!error <datetime: could not recognize date/time format from input.> ...
-%! datetime ('2024-03-09T14:30:45')
+%! datetime ('2024-02-30')
 %!error <datetime: could not recognize date/time format from input.> ...
-%! datetime ('2024-03-09 13:45:00.123')
+%! datetime ('2024-03-09 13:45:60')
+
+## Test 'datetime' constructor -- 'MixedFormats' restores per-string detection,
+## an Octave extension for text gathered from several sources
+%!test
+%! d = datetime ({'2024-03-09'; '09-Mar-2024'}, 'MixedFormats', true);
+%! assert_equal (isnat (d), logical ([0; 0]));
+%! assert_equal (datevec (d), [2024, 3, 9, 0, 0, 0; 2024, 3, 9, 0, 0, 0]);
+%!assert_equal (datevec (datetime ('2024-04-31', 'MixedFormats', true)), ...
+%!              [2024, 5, 1, 0, 0, 0])
+%!assert_equal (datevec (datetime ('2024-02-30', 'MixedFormats', true)), ...
+%!              [2024, 3, 1, 0, 0, 0])
+%!assert_equal (datevec (datetime ('2024-03-09 13:45:60', ...
+%!              'MixedFormats', true)), [2024, 3, 9, 13, 46, 0])
+%!error <datetime: 'MixedFormats' must be a logical scalar.> ...
+%! datetime ('2024-03-09', 'MixedFormats', 'yes')
+
+## Test 'datetime' constructor -- a slash date is ambiguous unless the text
+## settles it, and the whole array is consulted
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! assert_equal (datevec (datetime ('03/09/2024')), [2024, 3, 9, 0, 0, 0]);
+%! assert_equal (datevec (datetime ({'01/02/2024'; '15/03/2024'})), ...
+%!               [2024, 2, 1, 0, 0, 0; 2024, 3, 15, 0, 0, 0]);
+%! assert_equal (datevec (datetime ({'15/03/2024'; '01/02/2024'})), ...
+%!               [2024, 3, 15, 0, 0, 0; 2024, 2, 1, 0, 0, 0]);
+%!assert_equal (datevec (datetime ('13/09/2024')), [2024, 9, 13, 0, 0, 0])
+%!warning <datetime: the text was read with the format 'MM/dd/yyyy', but 'dd/MM/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('03/09/2024');
 
 ## Test 'datetime' constructor -- 'Locale' localized month names (MATLAB-verified)
 %!assert_equal (month (datetime ('9 février 2024', ...
