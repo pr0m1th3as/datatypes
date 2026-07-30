@@ -1846,7 +1846,8 @@ classdef duration
 ## 'abs'              'plus'             'uplus'            'minus'           ##
 ## 'uminus'           'times'            'mtimes'           'ldivide'         ##
 ## 'rdivide'          'mldivide'         'mrdivide'         'mod'             ##
-## 'rem'              'colon'            'linspace'         'diff'            ##
+## 'rem'              'eps'              'colon'            'linspace'        ##
+## 'diff'                                                                     ##
 ## 'sum'              'cumsum'           'min'              'cummin'          ##
 ## 'max'              'cummax'           'floor'            'ceil'            ##
 ## 'round'            'sign'                                                  ##
@@ -2260,6 +2261,32 @@ classdef duration
         error (strcat ("duration: right division is not defined between", ...
                        " '%s' and '%s' arrays."), class (A), class (B));
       endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{E} =} eps (@var{D})
+    ##
+    ## Spacing of duration values.
+    ##
+    ## @code{@var{E} = eps (@var{D})} returns the distance from each element of
+    ## @var{D} to the next duration that can be told apart from it, as a
+    ## @code{duration} array of the same size.  It is the resolution available
+    ## at that magnitude: two durations closer together than this are the same
+    ## value.  @code{eps} of a negative duration is that of its magnitude, and
+    ## @code{eps} of @code{NaN} is @code{NaN}.
+    ##
+    ## @strong{Deviation from MATLAB.}  This reports the spacing of the storage
+    ## actually used, and the two implementations do not store the same thing:
+    ## a @code{duration} counts days here and milliseconds in MATLAB, so the
+    ## answer differs by whatever the two magnitudes differ by, around a factor
+    ## of 1.3 for an hour.  Neither is wrong; each states the resolution of its
+    ## own representation, which is what @code{eps} is for.  Anything relying on
+    ## the exact figure relies on a storage detail rather than on a duration.
+    ##
+    ## @end deftypefn
+    function E = eps (D)
+      E = D;
+      E.Days = eps (D.Days);
     endfunction
 
     function C = rdivide (A, B)
