@@ -3279,7 +3279,7 @@ classdef datetime
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'plus'             'minus'            'colon'                              ##
+## 'plus'             'minus'            'colon'            'linspace'        ##
 ##                                                                            ##
 ################################################################################
 
@@ -3361,6 +3361,78 @@ classdef datetime
         error (strcat ("datetime.colon: STEP must be a duration,", ...
                        " calendarDuration, or numeric scalar."));
       endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{R} =} linspace (@var{A}, @var{B})
+    ## @deftypefnx {datetime} {@var{R} =} linspace (@var{A}, @var{B}, @var{N})
+    ##
+    ## Create linearly spaced datetime values.
+    ##
+    ## @code{@var{R} = linspace (@var{A}, @var{B})} returns a row vector of 100
+    ## datetime values spaced equally between the scalar datetimes @var{A} and
+    ## @var{B}, both of which are included.
+    ##
+    ## @code{@var{R} = linspace (@var{A}, @var{B}, @var{N})} returns @var{N}
+    ## values instead of 100.  A non-integer @var{N} is floored; if @var{N} is
+    ## one, @var{B} alone is returned, and if @var{N} is zero or negative the
+    ## result is empty.
+    ##
+    ## The spacing is by absolute instant, so for zoned inputs it is daylight
+    ## saving aware: a span that loses an hour to a transition is divided into
+    ## equal instants, whose wall-clock readings are therefore not equally
+    ## spaced.  The two endpoints may be in different time zones, in which case
+    ## the result is expressed in the zone of @var{A}, but they must either both
+    ## be zoned or both be unzoned.  @var{R} carries the @code{Format} and
+    ## @code{TimeZone} of @var{A}.
+    ##
+    ## A Not-A-Time endpoint makes every value that depends on it @code{NaT},
+    ## leaving only the opposite endpoint; an infinite endpoint likewise carries
+    ## its infinity through the values that depend on it.
+    ##
+    ## @end deftypefn
+    function R = linspace (A, B, n = 100)
+      if (nargin < 2)
+        error ("datetime.linspace: too few input arguments.");
+      endif
+      if (! (isa (A, 'datetime') && isa (B, 'datetime')))
+        error ("datetime.linspace: both endpoints must be datetime arrays.");
+      endif
+      if (! (isscalar (A) && isscalar (B)))
+        error ("datetime.linspace: endpoints must be datetime scalars.");
+      endif
+      if (xor (isempty (A.TimeZone), isempty (B.TimeZone)))
+        error (strcat ("datetime.linspace: cannot combine a datetime array", ...
+                       " with a time zone with one without a time zone."));
+      endif
+      dtCheckLeapPair (A, B, 'linspace');
+      if (! (isnumeric (n) && isscalar (n) && isreal (n)))
+        error ("datetime.linspace: N must be a real numeric scalar.");
+      endif
+      R = A;
+      sA = serial (A);
+      sB = serial (B);
+      ## Step from the first instant rather than calling the numeric linspace,
+      ## which spaces a range differently once an endpoint is not finite: MATLAB
+      ## takes each interior point as the first instant plus so many steps, and
+      ## keeps both endpoints exactly.  With the step itself infinite or
+      ## Not-A-Number, plain IEEE arithmetic then gives every case MATLAB
+      ## does -- an interior point infinitely far from a finite start is that
+      ## infinity, and one between two infinities, or reached by stepping
+      ## backwards from an infinite start, is Not-A-Time.
+      n = floor (double (n));
+      if (n < 1)
+        ser = zeros (1, 0);
+      elseif (n == 1)
+        ser = sB;
+      else
+        ser = sA + (0:n-1) * ((sB - sA) / (n - 1));
+        ser(1) = sA;
+        ser(end) = sB;
+      endif
+      [Y, M, D, h, mi, s] = serial2components (A, ser);
+      R.Year = Y; R.Month = M; R.Day = D;
+      R.Hour = h; R.Minute = mi; R.Second = s;
     endfunction
 
     ## -*- texinfo -*-

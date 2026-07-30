@@ -3041,6 +3041,138 @@
 %!error <datetime.colon: STEP must be a scalar.> ...
 %! datetime (2021, 1, 1) : caldays ([1, 2]) : datetime (2021, 1, 5);
 
+## Test 'linspace' -- both endpoints are included and 100 values by default
+%!test
+%! r = linspace (datetime (2024, 1, 1), datetime (2024, 1, 11), 3);
+%! assert_equal (size (r), [1, 3]);
+%! assert_equal (r.Day, [1, 6, 11]);
+%!test
+%! a = datetime (2024, 1, 1);
+%! b = datetime (2024, 1, 11);
+%! assert_equal (size (linspace (a, b)), [1, 100]);
+%! assert_equal (linspace (a, b, 2).Day, [1, 11]);
+
+## Test 'linspace' -- N of one returns the end point, N below one is empty, and
+## a non-integer N is floored
+%!test
+%! a = datetime (2024, 1, 1);
+%! b = datetime (2024, 1, 11);
+%! assert_equal (linspace (a, b, 1).Day, 11);
+%! assert_equal (size (linspace (a, b, 0)), [1, 0]);
+%! assert_equal (class (linspace (a, b, 0)), 'datetime');
+%! assert_equal (size (linspace (a, b, -3)), [1, 0]);
+%! assert_equal (linspace (a, b, 3.7).Day, [1, 6, 11]);
+%! assert_equal (linspace (a, b, int32 (3)).Day, [1, 6, 11]);
+
+## Test 'linspace' -- a reversed range descends, and equal endpoints repeat
+%!test
+%! a = datetime (2024, 1, 1);
+%! assert_equal (linspace (datetime (2024, 1, 11), a, 3).Day, [11, 6, 1]);
+%! assert_equal (linspace (a, a, 3).Day, [1, 1, 1]);
+
+## Test 'linspace' -- the result carries the Format and TimeZone of the first
+## endpoint
+%!test
+%! a = datetime (2024, 1, 1, 'Format', 'uuuu-MM-dd HH:mm:ss');
+%! b = datetime (2024, 1, 11, 'Format', 'dd-MMM-uuuu');
+%! assert_equal (linspace (a, b, 3).Format, 'uuuu-MM-dd HH:mm:ss');
+%! assert_equal (linspace (b, a, 3).Format, 'dd-MMM-uuuu');
+%!test
+%! tz = 'America/New_York';
+%! r = linspace (datetime (2024, 1, 1, 'TimeZone', tz), ...
+%!               datetime (2024, 1, 11, 'TimeZone', tz), 3);
+%! assert_equal (r.TimeZone, tz);
+
+## Test 'linspace' -- spacing is by absolute instant, so it is daylight saving
+## aware and the wall-clock readings are not equally spaced
+%!test
+%! a = datetime (2024, 3, 9, 0, 0, 0, 'TimeZone', 'America/New_York');
+%! b = datetime (2024, 3, 11, 0, 0, 0, 'TimeZone', 'America/New_York');
+%! r = linspace (a, b, 5);
+%! assert_equal (r.Day, [9, 9, 9, 10, 11]);
+%! assert_equal (r.Hour, [0, 11, 23, 12, 0]);
+%! assert_equal (r.Minute, [0, 45, 30, 15, 0]);
+
+## Test 'linspace' -- the two endpoints may sit in different time zones, the
+## result being expressed in the zone of the first
+%!test
+%! a = datetime (2024, 1, 1, 0, 0, 0, 'TimeZone', 'America/New_York');
+%! b = datetime (2024, 1, 11, 0, 0, 0, 'TimeZone', 'UTC');
+%! r = linspace (a, b, 3);
+%! assert_equal (r.TimeZone, 'America/New_York');
+%! assert_equal (r.Day, [1, 5, 10]);
+%! assert_equal (r.Hour, [0, 21, 19]);
+%! assert_equal (r.Minute, [0, 30, 0]);
+
+## Test 'linspace' -- sub-second spacing
+%!test
+%! r = linspace (datetime (2024, 1, 1, 0, 0, 0), ...
+%!               datetime (2024, 1, 1, 0, 0, 1), 3);
+%! assert_equal (r.Second, [0, 0.5, 1]);
+
+## Test 'linspace' -- an inserted leap second is stepped through, the span from
+## 23:59:59 to the next midnight being two SI seconds
+%!test
+%! tz = 'UTCLeapSeconds';
+%! a = datetime (2016, 12, 31, 23, 59, 59, 'TimeZone', tz);
+%! b = datetime (2017, 1, 1, 0, 0, 0, 'TimeZone', tz);
+%! r = linspace (a, b, 3);
+%! assert_equal (r.Second, [59, 60, 0]);
+%! assert_equal (r.Format, "uuuu-MM-dd'T'HH:mm:ss.SSS'Z'");
+
+## Test 'linspace' -- a Not-A-Time endpoint carries through every value that
+## depends on it, leaving only the opposite endpoint
+%!test
+%! r = linspace (datetime (2024, 1, 1), NaT, 3);
+%! assert_equal (isnat (r), logical ([0, 1, 1]));
+%! assert_equal (r.Day(1), 1);
+%!test
+%! r = linspace (NaT, datetime (2024, 1, 11), 3);
+%! assert_equal (isnat (r), logical ([1, 1, 0]));
+%! assert_equal (r.Day(3), 11);
+%!assert_equal (isnat (linspace (NaT, NaT, 3)), logical ([1, 1, 1]))
+%!assert_equal (isnat (linspace (datetime (2024, 1, 1), NaT, 1)), true)
+
+## Test 'linspace' -- an infinite endpoint carries its infinity forward, while
+## stepping back from an infinite start reaches nothing definite
+%!test
+%! a = datetime (2024, 1, 1);
+%! pinf = datetime (Inf, 'ConvertFrom', 'datenum');
+%! ninf = datetime (-Inf, 'ConvertFrom', 'datenum');
+%! assert_equal (linspace (a, pinf, 3).Year, [2024, Inf, Inf]);
+%! assert_equal (linspace (a, ninf, 3).Year, [2024, -Inf, -Inf]);
+%! assert_equal (linspace (pinf, a, 3).Year, [Inf, NaN, 2024]);
+%! assert_equal (linspace (ninf, a, 3).Year, [-Inf, NaN, 2024]);
+%!test
+%! pinf = datetime (Inf, 'ConvertFrom', 'datenum');
+%! ninf = datetime (-Inf, 'ConvertFrom', 'datenum');
+%! assert_equal (linspace (pinf, pinf, 3).Year, [Inf, NaN, Inf]);
+%! assert_equal (linspace (ninf, pinf, 4).Year, [-Inf, NaN, NaN, Inf]);
+%! assert_equal (linspace (pinf, ninf, 4).Year, [Inf, NaN, NaN, -Inf]);
+%! assert_equal (isnat (linspace (pinf, ninf, 4)), logical ([0, 1, 1, 0]));
+
+## Test 'linspace' -- error branches
+%!error <datetime.linspace: too few input arguments.> ...
+%! linspace (datetime (2024, 1, 1))
+%!error <datetime.linspace: both endpoints must be datetime arrays.> ...
+%! linspace (datetime (2024, 1, 1), 5, 3)
+%!error <datetime.linspace: both endpoints must be datetime arrays.> ...
+%! linspace (5, datetime (2024, 1, 11), 3)
+%!error <datetime.linspace: both endpoints must be datetime arrays.> ...
+%! linspace (datetime (2024, 1, 1), days (3), 3)
+%!error <datetime.linspace: endpoints must be datetime scalars.> ...
+%! linspace (datetime (2024, 1, [1, 2]), datetime (2024, 1, 11), 3)
+%!error <datetime.linspace: endpoints must be datetime scalars.> ...
+%! linspace (datetime (2024, 1, 1), datetime (2024, 1, [11, 12]), 3)
+%!error <datetime.linspace: N must be a real numeric scalar.> ...
+%! linspace (datetime (2024, 1, 1), datetime (2024, 1, 11), 'x')
+%!error <datetime.linspace: cannot combine a datetime array with a time zone with one without a time zone.> ...
+%! linspace (datetime (2024, 1, 1, 'TimeZone', 'UTC'), ...
+%!           datetime (2024, 1, 11), 3)
+%!error <datetime.linspace: cannot combine or compare a datetime array with leap seconds with one without leap seconds.> ...
+%! linspace (datetime (2017, 1, 1, 'TimeZone', 'UTCLeapSeconds'), ...
+%!           datetime (2017, 1, 2, 'TimeZone', 'UTC'), 3)
+
 ## Test 'sort' -- ascending order is the default and ties are stable
 %!test
 %! [b, i] = sort (datetime (2021, 1, [3, 1, 2, 1]));
