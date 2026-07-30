@@ -2153,3 +2153,31 @@
 ## isequaln: a non-string, non-categorical operand is an error
 %!error <string.isequaln: unsupported input types.> ...
 %! isequaln (string ({'a'}), 5)
+
+## empty: a 0-by-0 empty string array by default
+%!test
+%! e = string.empty;
+%! assert_equal (class (e), 'string');
+%! assert_equal (size (e), [0, 0]);
+%! assert_equal (isempty (e), true);
+
+## empty: a requested size, which may have any one dimension zero
+%!assert_equal (size (string.empty (0, 3)), [0, 3])
+%!assert_equal (size (string.empty (3, 0)), [3, 0])
+%!assert_equal (size (string.empty ([0, 3])), [0, 3])
+%!assert_equal (size (string.empty (2, 0, 3)), [2, 0, 3])
+
+## empty: a lone dimension gives a square size, so only zero is an empty one
+%!assert_equal (size (string.empty (0)), [0, 0])
+%!error <string.empty: at least one dimension must be zero for an empty array.> ...
+%! string.empty (3)
+
+## empty: a negative dimension counts as zero, as it does for 'zeros'
+%!assert_equal (size (string.empty (-1)), [0, 0])
+%!error <string.empty: dimensions must be integer values.> ...
+%! string.empty (1.5)
+
+## empty: the result behaves as an empty string array elsewhere
+%!assert_equal (size ([string('a'), string.empty]), [1, 1])
+%!assert_equal (size (ismissing (string.empty)), [0, 0])
+%!assert_equal (size (cellstr (string.empty)), [0, 0])

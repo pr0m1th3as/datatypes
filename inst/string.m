@@ -62,6 +62,50 @@ classdef string
 
   endmethods
 
+  methods (Static, Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {string} {@var{E} =} string.empty ()
+    ## @deftypefnx {string} {@var{E} =} string.empty (@var{sz})
+    ## @deftypefnx {string} {@var{E} =} string.empty (@var{m}, @var{n}, @dots{})
+    ##
+    ## Create an empty string array.
+    ##
+    ## @code{@var{E} = string.empty ()} returns a @math{0*0} empty string array.
+    ## @code{string.empty (@var{m}, @var{n}, @dots{})} or @code{string.empty
+    ## (@var{sz})} returns an empty string array of the requested size, which
+    ## must have at least one dimension equal to zero.  A lone dimension gives a
+    ## square size, so @code{string.empty (3)} is an error while
+    ## @code{string.empty (0)} is @math{0*0}.  As for @code{zeros}, a negative
+    ## dimension counts as zero.
+    ##
+    ## @end deftypefn
+    function E = empty (varargin)
+      if (nargin == 0)
+        sz = [0, 0];
+      elseif (nargin == 1 && ! isscalar (varargin{1}))
+        sz = double (varargin{1}(:)).';
+      else
+        sz = [varargin{:}];
+      endif
+      if (! (isnumeric (sz) && isrow (sz) && all (sz == fix (sz))))
+        error ("string.empty: dimensions must be integer values.");
+      endif
+      ## A negative dimension is no smaller than none at all, which is how
+      ## 'zeros' and every other array constructor read it.
+      sz = max (sz, 0);
+      if (isscalar (sz))
+        sz = [sz, sz];
+      endif
+      if (all (sz != 0))
+        error (strcat ("string.empty: at least one dimension must be zero", ...
+                       " for an empty array."));
+      endif
+      E = string (cell (sz));
+    endfunction
+
+  endmethods
+
 ################################################################################
 ##                    ** Create String and Convert Type **                    ##
 ################################################################################
