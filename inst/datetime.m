@@ -1904,7 +1904,9 @@ classdef datetime
     ## @code{@var{tf} = isregular (@var{T})} returns @qcode{true} if the elements
     ## of the datetime vector @var{T} are equally spaced in time, and
     ## @qcode{false} otherwise.  A scalar or empty @var{T}, or one containing a
-    ## Not-A-Time (@qcode{NaT}) value, is not regular.
+    ## Not-A-Time (@qcode{NaT}) value, is not regular.  Neither is a @var{T}
+    ## that does not move: a step of zero describes no spacing, so a vector of
+    ## repeated instants is not regularly spaced.
     ##
     ## @code{@var{tf} = isregular (@var{T}, @var{unit})} tests for regular
     ## spacing with respect to @var{unit}, which may be @qcode{'time'} (the
@@ -1918,6 +1920,12 @@ classdef datetime
     ## time step @var{dt}.  For @qcode{'time'} it is a @code{duration}; for a
     ## calendar unit it is a @code{calendarDuration}.  When @var{T} is not
     ## regular, @var{dt} is @qcode{NaN}.
+    ##
+    ## Steps are compared as stored, to the microsecond this class keeps.  A
+    ## spacing that differs by less than that cannot be seen and reads as
+    ## regular, while one that rounds differently at the microsecond -- thirds
+    ## of a second, say -- reads as irregular.  MATLAB stores instants more
+    ## finely and so draws that line elsewhere.
     ##
     ## @end deftypefn
     function [TF, dt] = isregular (this, unit = 'time')
@@ -1947,7 +1955,9 @@ classdef datetime
         ## Fixed-length regularity: every successive instant difference equal.
         d = diff (this);
         ds = seconds (d);
-        TF = isfinite (ds(1)) && all (ds(:) == ds(1));
+        ## A sequence that does not move has no spacing to be regular about, so
+        ## a step of zero is not regular, as MATLAB reads it too.
+        TF = isfinite (ds(1)) && ds(1) != 0 && all (ds(:) == ds(1));
         if (TF)
           dt = d(1);
         else
@@ -1976,7 +1986,8 @@ classdef datetime
           case 'days'
             pure = mo == 0 && ti == 0;
         endswitch
-        TF = allEqual && pure;
+        ## As for time, a step of no calendar at all is not a spacing.
+        TF = allEqual && pure && ! (mo == 0 && dy == 0 && ti == 0);
         if (TF)
           dt = d(1);
         else

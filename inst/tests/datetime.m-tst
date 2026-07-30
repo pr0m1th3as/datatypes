@@ -1489,6 +1489,24 @@
 %!assert_equal (isweekend (NaT), false)
 %!assert_equal (isweekend ([datetime(2024, 1, 6); NaT]), logical ([1; 0]))
 
+## Test 'isregular' -- a vector that does not move has no spacing, so repeated
+## instants are not regularly spaced, for time or for any calendar unit
+%!test
+%! d = datetime (2024, 1, [1, 1, 1]);
+%! [tf, dt] = isregular (d);
+%! assert_equal (tf, false);
+%! assert_equal (isnan (dt), true);
+%! assert_equal (isregular (d, 'days'), false);
+%! assert_equal (isregular (d, 'months'), false);
+%! assert_equal (isregular (d, 'years'), false);
+%!assert_equal (isregular (datetime (2024, [1, 1, 1], 1), 'months'), false)
+%!assert_equal (isregular (datetime (2024, 1, [5, 5]), 'time'), false)
+## Test 'isregular' -- a moving vector is still regular, in either direction
+%!assert_equal (isregular (datetime (2024, 1, [1, 2, 3]), 'days'), true)
+%!assert_equal (isregular (datetime (2024, 1, [3, 2, 1]), 'days'), true)
+%!assert_equal (isregular (datetime (2024, [1, 2, 3], 1), 'months'), true)
+%!assert_equal (isregular (datetime (2024, [3, 2, 1], 1), 'months'), true)
+
 ## Test 'isregular' -- time-based (default) regularity
 %!assert_equal (isregular (datetime (2024, 1, 1) + days (0:3)), true)
 %!assert_equal (isregular (datetime (2024, 1, 1) + hours (0:3)), true)
