@@ -284,6 +284,7 @@ classdef datetime
     ## @deftypefnx {datetime} {@var{T} =} datetime (@var{Y}, @var{MO}, @var{D}, @var{H}, @var{MI}, @var{S})
     ## @deftypefnx {datetime} {@var{T} =} datetime (@var{Y}, @var{MO}, @var{D}, @var{H}, @var{MI}, @var{S}, @var{MS})
     ## @deftypefnx {datetime} {@var{T} =} datetime (@var{X}, @qcode{'ConvertFrom'}, @var{TYPE})
+    ## @deftypefnx {datetime} {@var{T} =} datetime (@var{D})
     ## @deftypefnx {datetime} {@var{T} =} datetime (@dots{}, @qcode{'Format'}, @var{FMT})
     ## @deftypefnx {datetime} {@var{T} =} datetime (@dots{}, @qcode{'TimeZone'}, @var{TZ})
     ##
@@ -377,6 +378,16 @@ classdef datetime
     ## @qcode{'UTCLeapSeconds'} time zone (see @code{convertTo}).
     ## @end itemize
     ##
+    ## @code{@var{T} = datetime (@var{D})}, where @var{D} is already a datetime
+    ## array, copies it: the components, the @code{TimeZone} and the
+    ## @code{Format} all carry over.  A @qcode{'Format'} or @qcode{'TimeZone'}
+    ## may still be given to change either, and take effect exactly as assigning
+    ## those properties does, so attaching a zone to an unzoned array keeps its
+    ## wall-clock values whereas changing between two zones keeps the instant.
+    ## The options describing how text is read, @qcode{'InputFormat'},
+    ## @qcode{'Locale'} and @qcode{'PivotYear'}, have nothing to act on and are
+    ## ignored, while @qcode{'ConvertFrom'} is an error.
+    ##
     ## @code{@var{T} = datetime (@dots{}, @qcode{'Format'}, @var{FMT})}
     ## specifies the display format of the values in the output datetime array.
     ## @var{FMT} uses the same Unicode LDML date field symbols as
@@ -421,6 +432,18 @@ classdef datetime
     ## skips is.  Without an @qcode{'InputFormat'} such an array reads only the
     ## ISO 8601 UTC shape it also writes.
     ##
+    ## @strong{Deviations from MATLAB} when copying a datetime array and giving
+    ## a @qcode{'TimeZone'}.  MATLAB's constructor keeps the display format of
+    ## the array it copies, while its @code{TimeZone} property assignment
+    ## replaces it for the same change of zone; the two disagree, so here both
+    ## follow the one rule, that of the property.  Leaving
+    ## @qcode{'UTCLeapSeconds'} therefore restores the ordinary default format
+    ## rather than keeping the ISO 8601 pattern, whose @qcode{'Z'} would
+    ## misdescribe any zone but UTC.  For the same reason, entering
+    ## @qcode{'UTCLeapSeconds'} works here, the locked format being applied,
+    ## where MATLAB carries the copied format across and then rejects it as one
+    ## that zone does not allow.
+    ##
     ## @seealso{NaT, datetime, isdatetime, calendarDuration, duration}
     ## @end deftypefn
     function this = datetime (varargin)
@@ -438,6 +461,52 @@ classdef datetime
       dfValues = {[], [], [], [], [], []};
       [ConvertFrom, Format, inputFormat, Locale, PivotYear, TimeZone, args] =...
                     parsePairedArguments (optNames, dfValues, varargin(:));
+
+      ## A datetime input is copied: its components, time zone and display
+      ## format all carry over.  'Format' and 'TimeZone' may still be given to
+      ## change either, and are applied by the same rules as assigning the
+      ## properties -- attaching a zone to an unzoned array keeps its wall clock
+      ## while changing between two zones keeps the instant.  'InputFormat',
+      ## 'Locale' and 'PivotYear' describe how text is read and so have nothing
+      ## to act on here; MATLAB ignores them and so do we.
+      if (isa (args{1}, 'datetime'))
+        if (numel (args) > 1)
+          error (strcat ("datetime: a datetime array must be the only", ...
+                         " positional input."));
+        elseif (! isempty (ConvertFrom))
+          error (strcat ("datetime: 'ConvertFrom' cannot be used with a", ...
+                         " datetime array input."));
+        endif
+        this = args{1};
+        ## Routing through subsasgn keeps one rule in the class for what a
+        ## change of zone means.  MATLAB has two: its constructor carries the
+        ## copied display format across the change while its property assignment
+        ## replaces it.  So leaving 'UTCLeapSeconds' here restores the default
+        ## format rather than keeping a pattern whose 'Z' would misdescribe any
+        ## zone but UTC, and entering it works rather than failing on a format
+        ## carried over from an array that never had leap seconds.  Documented
+        ## in the constructor's docstring.
+        ## An unset option arrives as [], so an empty character vector is told
+        ## apart by its class: given as '' it means drop the zone, which is not
+        ## the same as saying nothing about it.
+        if (ischar (TimeZone) || ! isempty (TimeZone))
+          this = subsasgn (this, substruct ('.', 'TimeZone'), TimeZone);
+        endif
+        if (! isempty (Format))
+          this = subsasgn (this, substruct ('.', 'Format'), Format);
+        endif
+        return;
+      endif
+
+      ## Nothing else non-numeric can name a date.  A duration and a
+      ## calendarDuration measure elapsed time rather than name an instant, so
+      ## neither can be converted to one.
+      if (! (isnumeric (args{1}) || islogical (args{1}) || ischar (args{1})
+             || iscellstr (args{1}) || isa (args{1}, 'string')))
+        error (strcat ("datetime: input data must be a numeric array, a", ...
+                       " string array, a cell array of character vectors,", ...
+                       " or a character vector."));
+      endif
 
       ## Check optional 'Format' and 'InputFormat' arguments.  'yyyymmdd' and
       ## 'tt2000' are handled in M-code below, so they bypass the builtin

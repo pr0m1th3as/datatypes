@@ -283,6 +283,84 @@
 %! assert_equal ([pinf; pinf].Format, 'dd-MMM-uuuu HH:mm:ss')
 %! assert_equal ([NaT; pinf].Format, 'dd-MMM-uuuu HH:mm:ss')
 
+## Test 'datetime' constructor -- a datetime input is copied, components, time
+## zone and display format all carrying over
+%!test
+%! d = datetime (2024, 1, 1, 12, 0, 0);
+%! r = datetime (d);
+%! assert_equal (datevec (r), datevec (d));
+%! assert_equal (isempty (r.TimeZone), true);
+%! assert_equal (r.Format, d.Format);
+%!test
+%! z = datetime (2024, 1, 1, 12, 0, 0, 'TimeZone', 'America/New_York');
+%! r = datetime (z);
+%! assert_equal (r.TimeZone, 'America/New_York');
+%! assert_equal (posixtime (r), posixtime (z));
+%!test
+%! ls = datetime (2016, 12, 31, 23, 59, 60, 'TimeZone', 'UTCLeapSeconds');
+%! r = datetime (ls);
+%! assert_equal (r.Second, 60);
+%! assert_equal (r.TimeZone, 'UTCLeapSeconds');
+%! assert_equal (r.Format, "uuuu-MM-dd'T'HH:mm:ss.SSS'Z'");
+%!assert_equal (isnat (datetime (NaT)), true)
+%!assert_equal (size (datetime (datetime (2024, 1, [1, 2, 3]))), [1, 3])
+
+## Test 'datetime' constructor -- copying accepts 'Format' and 'TimeZone', the
+## zone attaching to an unzoned array and converting a zoned one
+%!test
+%! d = datetime (2024, 1, 1, 12, 0, 0);
+%! r = datetime (d, 'Format', 'uuuu-MM-dd');
+%! assert_equal (r.Format, 'uuuu-MM-dd');
+%! assert_equal (char (r), '2024-01-01');
+%!test
+%! d = datetime (2024, 1, 1, 12, 0, 0);
+%! r = datetime (d, 'TimeZone', 'UTC');
+%! assert_equal (r.TimeZone, 'UTC');
+%! assert_equal (r.Hour, 12);
+%! assert_equal (posixtime (r), 1704110400);
+%!test
+%! z = datetime (2024, 1, 1, 12, 0, 0, 'TimeZone', 'America/New_York');
+%! r = datetime (z, 'TimeZone', 'UTC');
+%! assert_equal (r.Hour, 17);
+%! assert_equal (posixtime (r), 1704128400);
+%!test
+%! z = datetime (2024, 1, 1, 12, 0, 0, 'TimeZone', 'America/New_York');
+%! r = datetime (z, 'TimeZone', '');
+%! assert_equal (isempty (r.TimeZone), true);
+%! assert_equal (r.Hour, 12);
+
+## Test 'datetime' constructor -- a change of zone while copying follows the
+## same rule as assigning the property, so the leap-second zone may be both
+## entered and left (MATLAB's constructor and property disagree here)
+%!test
+%! ls = datetime (2016, 12, 31, 23, 59, 60, 'TimeZone', 'UTCLeapSeconds');
+%! r = datetime (ls, 'TimeZone', 'UTC');
+%! assert_equal (datevec (r), [2016, 12, 31, 23, 59, 59]);
+%! assert_equal (r.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime (2024, 1, 1, 12, 0, 0);
+%! r = datetime (d, 'TimeZone', 'UTCLeapSeconds');
+%! assert_equal (r.TimeZone, 'UTCLeapSeconds');
+%! assert_equal (r.Format, "uuuu-MM-dd'T'HH:mm:ss.SSS'Z'");
+
+## Test 'datetime' constructor -- the text-reading options have nothing to act
+## on when copying and are ignored, while 'ConvertFrom' is an error
+%!test
+%! d = datetime (2024, 1, 1, 12, 0, 0);
+%! assert_equal (datevec (datetime (d, 'InputFormat', 'uuuu-MM-dd')), datevec (d));
+%! assert_equal (datevec (datetime (d, 'Locale', 'fr_FR')), datevec (d));
+%! assert_equal (datevec (datetime (d, 'PivotYear', 1900)), datevec (d));
+%!error <datetime: 'ConvertFrom' cannot be used with a datetime array input.> ...
+%! datetime (datetime (2024, 1, 1), 'ConvertFrom', 'datenum')
+%!error <datetime: a datetime array must be the only positional input.> ...
+%! datetime (datetime (2024, 1, 1), datetime (2024, 1, 2))
+
+## Test 'datetime' constructor -- elapsed time names no instant
+%!error <datetime: input data must be a numeric array, a string array, a cell array of character vectors, or a character vector.> ...
+%! datetime (days (3))
+%!error <datetime: input data must be a numeric array, a string array, a cell array of character vectors, or a character vector.> ...
+%! datetime (calmonths (3))
+
 ## Test 'datetime' constructor -- empty text names no date and becomes NaT,
 ## whereas a container holding no text at all gives an empty datetime
 %!test
