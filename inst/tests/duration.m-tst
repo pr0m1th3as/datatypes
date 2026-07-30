@@ -1291,8 +1291,8 @@
 ##                                                                            ##
 ## 'abs'              'plus'             'uplus'            'minus'           ##
 ## 'uminus'           'times'            'mtimes'           'ldivide'         ##
-## 'rdivide'          'mldivide'         'mod'              'rem'             ##
-## 'colon'            'linspace'         'sign'                              ##
+## 'rdivide'          'mldivide'         'mrdivide'         'mod'             ##
+## 'rem'              'colon'            'linspace'         'sign'            ##
 ## 'sum'              'cumsum'           'diff'             'min'             ##
 ## 'max'              'cummin'           'cummax'           'floor'           ##
 ## 'ceil'             'round'                                                 ##
@@ -1423,6 +1423,39 @@
 %! mldivide (days (6), calmonths (1))
 %!error<duration: left division is not defined between 'cell' and 'duration' arrays.> ...
 %! mldivide ({2}, days (6))
+
+## mrdivide: the mirror of mldivide, the denominator deciding the result
+%!assert_equal (days (mrdivide (days (6), 2)), 3)
+%!assert_equal (class (mrdivide (days (6), 2)), 'duration')
+%!assert_equal (mrdivide (days (6), days (2)), 3)
+%!assert_equal (class (mrdivide (days (6), days (2))), 'double')
+%!assert_equal (mrdivide (days ([6, 8]), days (2)), [3, 4])
+%!assert_equal (days (days (6) / 2), 3)
+## mrdivide: A / B is B \ A, which is what makes it the mirror
+%!test
+%! a = days ([6, -8, 0, NaN]);
+%! assert_equal (mrdivide (a, days (2)), mldivide (days (2), a));
+%! assert_equal (days (mrdivide (a, 4)), days (mldivide (4, a)));
+## mrdivide: a zero denominator gives Inf, and NaN carries through
+%!assert_equal (days (mrdivide (days (6), 0)), Inf)
+%!assert_equal (days (mrdivide (days (NaN), 2)), NaN)
+%!assert_equal (mrdivide (days (6), days (0)), Inf)
+## mrdivide: format kept, and a logical or integer denominator is converted
+%!assert_equal (mrdivide (hours (6), 2).Format, 'h')
+%!assert_equal (days (mrdivide (days (6), true)), 6)
+%!assert_equal (days (mrdivide (days (6), int32 (2))), 3)
+## mrdivide: the denominator must be scalar and real; use rdivide to divide by
+## an array of divisors
+%!error<duration: right division of a 'double' array by a duration is not defined.> ...
+%! mrdivide (6, days (2))
+%!error<duration: the denominator in right division must be a scalar.> ...
+%! mrdivide (days ([6, 8]), [1, 2])
+%!error<duration: the denominator in right division must be a scalar.> ...
+%! mrdivide (days (6), days ([1, 2]))
+%!error<duration: the denominator in right division must be real.> ...
+%! mrdivide (days (6), 2 + 1i)
+%!error<duration: right division is not defined between 'duration' and 'cell' arrays.> ...
+%! mrdivide (days (6), {2})
 
 %!assert_equal (days (+ days (-3)), -3)
 %!assert_equal (days (+ days (magic (3))), magic (3))

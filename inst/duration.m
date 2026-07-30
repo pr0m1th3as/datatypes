@@ -1845,8 +1845,8 @@ classdef duration
 ##                                                                            ##
 ## 'abs'              'plus'             'uplus'            'minus'           ##
 ## 'uminus'           'times'            'mtimes'           'ldivide'         ##
-## 'rdivide'          'mldivide'         'mod'              'rem'             ##
-## 'colon'            'linspace'         'diff'                              ##
+## 'rdivide'          'mldivide'         'mrdivide'         'mod'             ##
+## 'rem'              'colon'            'linspace'         'diff'            ##
 ## 'sum'              'cumsum'           'min'              'cummin'          ##
 ## 'max'              'cummax'           'floor'            'ceil'            ##
 ## 'round'            'sign'                                                  ##
@@ -2210,6 +2210,54 @@ classdef duration
         C = fix_zero_precision (C);
       else
         error (strcat ("duration: left division is not defined between", ...
+                       " '%s' and '%s' arrays."), class (A), class (B));
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{C} =} mrdivide (@var{A}, @var{B})
+    ##
+    ## Right division of duration arrays, @code{@var{A} / @var{B}}.
+    ##
+    ## @code{@var{C} = mrdivide (@var{A}, @var{B})} divides @var{A} by @var{B}
+    ## and is the mirror of @code{mldivide}: @code{@var{A} / @var{B}} is
+    ## @code{@var{B} \ @var{A}}.  The denominator @var{B} decides what the
+    ## result means and must be a scalar.  Dividing a @code{duration} by a
+    ## number scales it, giving a @code{duration}; dividing one @code{duration}
+    ## by another gives how many times one goes into the other, a plain number
+    ## carrying no unit.
+    ##
+    ## Dividing a number by a @code{duration} is not defined, and neither is a
+    ## non-scalar denominator.  For element-wise division by an array of
+    ## divisors, see @code{rdivide}.
+    ##
+    ## @end deftypefn
+    function C = mrdivide (A, B)
+      if (isa (B, 'duration'))
+        if (! isa (A, 'duration'))
+          error (strcat ("duration: right division of a '%s' array by a", ...
+                         " duration is not defined."), class (A));
+        elseif (! isscalar (B))
+          error (strcat ("duration: the denominator in right division must", ...
+                         " be a scalar."));
+        endif
+        C = A.Days ./ B.Days;
+      elseif (isnumeric (B) || islogical (B))
+        if (! isa (A, 'duration'))
+          error (strcat ("duration: right division is not defined between", ...
+                         " '%s' and '%s' arrays."), class (A), class (B));
+        elseif (! isscalar (B))
+          error (strcat ("duration: the denominator in right division must", ...
+                         " be a scalar."));
+        elseif (! isreal (B))
+          error (strcat ("duration: the denominator in right division must", ...
+                         " be real."));
+        endif
+        C = A;
+        C.Days = A.Days ./ double (B);
+        C = fix_zero_precision (C);
+      else
+        error (strcat ("duration: right division is not defined between", ...
                        " '%s' and '%s' arrays."), class (A), class (B));
       endif
     endfunction
