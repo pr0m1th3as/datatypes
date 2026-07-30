@@ -462,8 +462,12 @@ days_in_month (double Y, double M)
 // Parse a cell array of date/time strings under an LDML 'InputFormat',
 // returning an N-by-6 date-vector matrix.  This is a direct port of
 // dtParseInput in datetime.m and must stay behaviourally identical to it.
+// LEAPOK admits a 60th second, which only exists in the 'UTCLeapSeconds' zone;
+// whether the second named was actually inserted is settled in m-code, which
+// owns the leap-second table.
 static Matrix
-ldml_parse (const Cell& strs, const string& fmt, double pivot, int lidx)
+ldml_parse (const Cell& strs, const string& fmt, double pivot, int lidx,
+            bool leapok)
 {
   vector<Token> toks;
   tokenize (fmt, toks);
@@ -758,7 +762,7 @@ ldml_parse (const Cell& strs, const string& fmt, double pivot, int lidx)
       // likewise an hour past 23, a minute past 59, or a second reaching 60.
       ok = (Mv >= 1 && Mv <= 12 && Dv >= 1 && Dv <= days_in_month (Yv, Mv)
             && Hv >= 0 && Hv <= 23 && MIv >= 0 && MIv <= 59
-            && Sv >= 0 && Sv < 60);
+            && Sv >= 0 && Sv < (leapok ? 61 : 60));
     }
     if (! ok)
     {
@@ -1300,9 +1304,10 @@ package.  Do NOT use this function directly. \n\
 
   if (action == "parse")
   {
-    if (args.length () != 5)
+    if (args.length () != 5 && args.length () != 6)
     {
-      error ("__ldml__: 'parse' takes STRS, FMT, PIVOT, and LOCALE.");
+      error ("__ldml__: 'parse' takes STRS, FMT, PIVOT, LOCALE, and an "
+             "optional LEAPOK flag.");
     }
     if (! args(1).iscellstr ())
     {
@@ -1322,7 +1327,8 @@ package.  Do NOT use this function directly. \n\
     {
       error ("__ldml__: unsupported locale '%s'.", locale.c_str ());
     }
-    return ovl (ldml_parse (strs, fmt, pivot, lidx));
+    bool leapok = (args.length () == 6 && args(5).bool_value ());
+    return ovl (ldml_parse (strs, fmt, pivot, lidx, leapok));
   }
 
   if (action == "symbols")

@@ -1602,7 +1602,7 @@
 %! convertTo (datetime (2024, 1, 1, 'TimeZone', 'UTC'), 'epochtime', 'Epoch', datetime (2000, 1, 1))
 %!error <datetime.convertTo: 'TicksPerSecond' must be a positive scalar.> ...
 %! convertTo (datetime (2024, 1, 1), 'epochtime', 'TicksPerSecond', -5)
-%!error <datetime.convertTo: 'tt2000' conversion requires leap-second support, which is not implemented.> ...
+%!error <datetime.convertTo: to convert datetimes to tt2000 times, the 'TimeZone' property of the input must be 'UTCLeapSeconds'.> ...
 %! convertTo (datetime (2024, 1, 1), 'tt2000')
 
 ## Test 'posixtime' -- seconds since the Unix epoch, unzoned treated as UTC
@@ -3335,3 +3335,435 @@
 %! min (datetime (2021, 1, 1), [], 'foo');
 %!error <datetime.max: cannot compare a datetime with a time zone to one without a time zone.> ...
 %! max (datetime (2021, 1, 1, 'TimeZone', 'UTC'), datetime (2021, 1, 2));
+
+################################################################################
+##                    ** Leap seconds ('UTCLeapSeconds') **                   ##
+################################################################################
+
+## Test 'UTCLeapSeconds' -- the 60th second of a minute is representable
+%!test
+%! a = datetime (2016, 12, 31, 23, 59, 60, 'TimeZone', 'UTCLeapSeconds');
+%! assert_equal (datevec (a), [2016, 12, 31, 23, 59, 60]);
+%! assert_equal (a.Second, 60);
+%! assert_equal (a.Minute, 59);
+%! assert_equal (a.Hour, 23);
+%! assert_equal (a.TimeZone, 'UTCLeapSeconds');
+%!assert_equal (datetime (2016, 12, 31, 23, 59, 60.25, ...
+%!                        'TimeZone', 'UTCLeapSeconds').Second, 60.25)
+%!assert_equal (datetime (1972, 6, 30, 23, 59, 60, ...
+%!                        'TimeZone', 'UTCLeapSeconds').Second, 60)
+
+## Test 'UTCLeapSeconds' -- every second of the shipped table is recognized
+%!test
+%! L = [1972 6 30; 1972 12 31; 1973 12 31; 1974 12 31; 1975 12 31; 1976 12 31;
+%!      1977 12 31; 1978 12 31; 1979 12 31; 1981 6 30; 1982 6 30; 1983 6 30;
+%!      1985 6 30; 1987 12 31; 1989 12 31; 1990 12 31; 1992 6 30; 1993 6 30;
+%!      1994 6 30; 1995 12 31; 1997 6 30; 1998 12 31; 2005 12 31; 2008 12 31;
+%!      2012 6 30; 2015 6 30; 2016 12 31];
+%! V = [L, repmat([23 59 60], rows (L), 1)];
+%! d = datetime (V, 'TimeZone', 'UTCLeapSeconds');
+%! assert_equal (d.Second, repmat (60, rows (L), 1));
+
+## Test 'UTCLeapSeconds' -- a 60th second that was never inserted rolls over
+%!test
+%! d = datetime ([2000 6 30 23 59 60; 2019 6 30 23 59 60; 2020 12 31 23 59 60], ...
+%!               'TimeZone', 'UTCLeapSeconds');
+%! assert_equal (d.Second, [0; 0; 0]);
+%! assert_equal (d.Day, [1; 1; 1]);
+%!assert_equal (datevec (datetime (2016, 12, 30, 23, 59, 60, ...
+%!              'TimeZone', 'UTCLeapSeconds')), [2016 12 31 0 0 0])
+%!assert_equal (datevec (datetime (2016, 12, 31, 23, 58, 60, ...
+%!              'TimeZone', 'UTCLeapSeconds')), [2016 12 31 23 59 0])
+%!assert_equal (datevec (datetime (1971, 12, 31, 23, 59, 60, ...
+%!              'TimeZone', 'UTCLeapSeconds')), [1972 1 1 0 0 0])
+
+## Test 'UTCLeapSeconds' -- the seconds field is counted on the leap-second
+## timeline, while a minute or hour that overflows steps over the insertion
+%!assert_equal (datevec (datetime (2016, 12, 31, 23, 59, 61, ...
+%!              'TimeZone', 'UTCLeapSeconds')), [2017 1 1 0 0 0])
+%!assert_equal (datevec (datetime (2016, 12, 31, 23, 59, 61.5, ...
+%!              'TimeZone', 'UTCLeapSeconds')), [2017 1 1 0 0 0.5])
+%!assert_equal (datevec (datetime (2016, 12, 31, 23, 59, 120, ...
+%!              'TimeZone', 'UTCLeapSeconds')), [2017 1 1 0 0 59])
+%!assert_equal (datevec (datetime (2016, 12, 31, 23, 60, 0, ...
+%!              'TimeZone', 'UTCLeapSeconds')), [2017 1 1 0 0 0])
+%!assert_equal (datevec (datetime (2017, 1, 1, 0, 0, -1, ...
+%!              'TimeZone', 'UTCLeapSeconds')), [2016 12 31 23 59 60])
+%!assert_equal (datevec (datetime (2017, 1, 1, 0, 0, -0.5, ...
+%!              'TimeZone', 'UTCLeapSeconds')), [2016 12 31 23 59 60.5])
+
+## Test 'UTCLeapSeconds' -- arithmetic counts the inserted second
+%!test
+%! a1 = datetime (2016, 12, 31, 23, 59, 59, 'TimeZone', 'UTCLeapSeconds');
+%! a2 = datetime (2016, 12, 31, 23, 59, 60, 'TimeZone', 'UTCLeapSeconds');
+%! a3 = datetime (2017, 1, 1, 0, 0, 0, 'TimeZone', 'UTCLeapSeconds');
+%! assert_equal (seconds (a2 - a1), 1);
+%! assert_equal (seconds (a3 - a2), 1);
+%! assert_equal (seconds (a3 - a1), 2);
+%! assert_equal (seconds (a3 - datetime (1970, 1, 1, 0, 0, 0, ...
+%!                                       'TimeZone', 'UTCLeapSeconds')), ...
+%!               1483228827);
+%!assert_equal (seconds (datetime (1972, 1, 1, 0, 0, 0, ...
+%!                                 'TimeZone', 'UTCLeapSeconds') ...
+%!                     - datetime (1971, 12, 31, 23, 59, 59, ...
+%!                                 'TimeZone', 'UTCLeapSeconds')), 1)
+
+## Test 'UTCLeapSeconds' -- a fixed-length day lands on the inserted second,
+## a calendar day steps past it
+%!test
+%! d = datetime (2016, 12, 31, 0, 0, 0, 'TimeZone', 'UTCLeapSeconds');
+%! assert_equal (datevec (d + days (1)), [2016 12 31 23 59 60]);
+%! assert_equal (datevec (d + caldays (1)), [2017 1 1 0 0 0]);
+
+## Test 'UTCLeapSeconds' -- calendar arithmetic clamps a 60th second onto a
+## minute that never had one, keeping any fractional part
+%!test
+%! q = datetime (2016, 12, 31, 23, 59, 60.25, 'TimeZone', 'UTCLeapSeconds');
+%! assert_equal (datevec (q + caldays (1)), [2017 1 1 23 59 59.25]);
+%! assert_equal (datevec (q + calmonths (1)), [2017 1 31 23 59 59.25]);
+%! assert_equal (datevec (q + calyears (1)), [2017 12 31 23 59 59.25]);
+%!assert_equal (datevec (datetime (2016, 12, 31, 23, 59, 60, ...
+%!              'TimeZone', 'UTCLeapSeconds') - caldays (1)), ...
+%!              [2016 12 30 23 59 59])
+%!assert_equal (datevec (datetime (2015, 6, 30, 23, 59, 60, ...
+%!              'TimeZone', 'UTCLeapSeconds') + calmonths (18)), ...
+%!              [2016 12 30 23 59 59])
+
+## Test 'UTCLeapSeconds' -- 'posixtime' folds forward onto the next second
+%!test
+%! a1 = datetime (2016, 12, 31, 23, 59, 59, 'TimeZone', 'UTCLeapSeconds');
+%! a2 = datetime (2016, 12, 31, 23, 59, 60, 'TimeZone', 'UTCLeapSeconds');
+%! a3 = datetime (2017, 1, 1, 0, 0, 0, 'TimeZone', 'UTCLeapSeconds');
+%! assert_equal (posixtime (a1), 1483228799);
+%! assert_equal (posixtime (a2), 1483228800);
+%! assert_equal (posixtime (a3), 1483228800);
+%!assert_equal (posixtime (datetime (2016, 12, 31, 23, 59, 60.25, ...
+%!                                   'TimeZone', 'UTCLeapSeconds')), ...
+%!              1483228800.25)
+%!assert_equal (posixtime (datetime (1972, 6, 30, 23, 59, 60, ...
+%!                                   'TimeZone', 'UTCLeapSeconds')), 78796800)
+
+## Test 'UTCLeapSeconds' -- 'datenum', 'exceltime' and 'datestr' fold backward
+%!test
+%! a1 = datetime (2016, 12, 31, 23, 59, 59, 'TimeZone', 'UTCLeapSeconds');
+%! a2 = datetime (2016, 12, 31, 23, 59, 60, 'TimeZone', 'UTCLeapSeconds');
+%! assert_equal (datenum (a2), datenum (a1));
+%! assert_equal (exceltime (a2), exceltime (a1));
+%! assert_equal (exceltime (a2, '1904'), exceltime (a1, '1904'));
+%! assert_equal (datestr (a2), '31-Dec-2016 23:59:59');
+%!test
+%! q = datetime (2016, 12, 31, 23, 59, 60.25, 'TimeZone', 'UTCLeapSeconds');
+%! a1 = datetime (2016, 12, 31, 23, 59, 59, 'TimeZone', 'UTCLeapSeconds');
+%! assert_equal ((datenum (q) - datenum (a1)) * 86400, 0.25, 1e-4);
+
+## Test 'UTCLeapSeconds' -- both Julian scales stretch the day that holds an
+## inserted second over its true length of 86401 seconds
+%!test
+%! a2 = datetime (2016, 12, 31, 23, 59, 60, 'TimeZone', 'UTCLeapSeconds');
+%! assert_equal (juliandate (a2), 2457754 + 43200 / 86401, 1e-9);
+%! assert_equal (juliandate (a2, 'modifiedjuliandate'), 57753 + 86400 / 86401, ...
+%!               1e-9);
+%!test
+%! d = datetime (2016, 12, 31, 6, 0, 0, 'TimeZone', 'UTCLeapSeconds');
+%! gap = (juliandate (d, 'modifiedjuliandate') ...
+%!        - (juliandate (d) - 2400000.5)) * 86400;
+%! assert_equal (gap, -0.25, 1e-4);
+%!test
+%! d = datetime (2016, 12, 31, 0, 0, 0, 'TimeZone', 'UTCLeapSeconds');
+%! assert_equal (juliandate (d, 'modifiedjuliandate'), ...
+%!               juliandate (d) - 2400000.5, 1e-9);
+%!assert_equal (juliandate (datetime (1960, 1, 1, 0, 0, 0, ...
+%!                                    'TimeZone', 'UTCLeapSeconds')), 2436934.5)
+
+## Test 'UTCLeapSeconds' -- the integer fixed-epoch conversions fold backward
+%!test
+%! q = datetime (2016, 12, 31, 23, 59, 60.25, 'TimeZone', 'UTCLeapSeconds');
+%! assert_equal (convertTo (q, 'epochtime'), int64 (1483228799));
+%! assert_equal (convertTo (q, '.net'), uint64 (636188255992500000));
+%! assert_equal (convertTo (q, 'ntp'), uint64 (15857953838494384128));
+%!assert_equal (convertTo (datetime (2016, 12, 31, 23, 59, 60, ...
+%!              'TimeZone', 'UTCLeapSeconds'), 'epochtime', ...
+%!              'TicksPerSecond', 1000), int64 (1483228799000))
+%!assert_equal (convertTo (datetime (2017, 1, 1, ...
+%!              'TimeZone', 'UTCLeapSeconds'), 'epochtime'), ...
+%!              int64 (1483228800))
+
+## Test 'UTCLeapSeconds' -- 'yyyymmdd' and the component readers are unaffected
+%!test
+%! a2 = datetime (2016, 12, 31, 23, 59, 60, 'TimeZone', 'UTCLeapSeconds');
+%! assert_equal (yyyymmdd (a2), 20161231);
+%! assert_equal ([hour(a2), minute(a2), second(a2)], [23, 59, 60]);
+%! assert_equal (second (a2, 'secondofday'), 86400);
+%! assert_equal (week (a2), 53);
+%! assert_equal (week (a2, 'weekofmonth'), 5);
+%! assert_equal (day (a2, 'dayofyear'), 366);
+%! assert_equal (day (a2, 'name'), {'Saturday'});
+%! assert_equal (char (timeofday (a2)), '24:00:00');
+%! assert_equal (isdst (a2), false);
+%!assert_equal (second (datetime (2016, 12, 31, 23, 59, 60.25, ...
+%!              'TimeZone', 'UTCLeapSeconds'), 'secondofday'), 86400.25)
+
+## Test 'convertTo' -- 'tt2000' is nanoseconds since the J2000 TT epoch
+%!test
+%! tz = 'UTCLeapSeconds';
+%! assert_equal (convertTo (datetime (1972, 1, 1, 0, 0, 0, 'TimeZone', tz), ...
+%!               'tt2000'), int64 (-883655957816000000));
+%! assert_equal (convertTo (datetime (1980, 1, 6, 0, 0, 0, 'TimeZone', tz), ...
+%!               'tt2000'), int64 (-630763148816000000));
+%! assert_equal (convertTo (datetime (1999, 1, 1, 0, 0, 0, 'TimeZone', tz), ...
+%!               'tt2000'), int64 (-31579135816000000));
+%! assert_equal (convertTo (datetime (2017, 1, 1, 0, 0, 0, 'TimeZone', tz), ...
+%!               'tt2000'), int64 (536500869184000000));
+%! assert_equal (convertTo (datetime (2030, 1, 1, 0, 0, 0, 'TimeZone', tz), ...
+%!               'tt2000'), int64 (946728069184000000));
+%!test
+%! tz = 'UTCLeapSeconds';
+%! assert_equal (convertTo (datetime (2016, 12, 31, 23, 59, 60, ...
+%!               'TimeZone', tz), 'tt2000'), int64 (536500868184000000));
+%! assert_equal (convertTo (datetime (2016, 12, 31, 23, 59, 60.123456, ...
+%!               'TimeZone', tz), 'tt2000'), int64 (536500868307456000));
+%! assert_equal (convertTo (datetime (1972, 6, 30, 23, 59, 60, ...
+%!               'TimeZone', tz), 'tt2000'), int64 (-867931157816000000));
+%!test
+%! tz = 'UTCLeapSeconds';
+%! assert_equal (convertTo (datetime (1900, 1, 1, 0, 0, 0, 'TimeZone', tz), ...
+%!               'tt2000'), int64 (-3155716767816000000));
+%! assert_equal (convertTo (datetime (1707, 9, 22, 12, 13, 15, ...
+%!               'TimeZone', tz), 'tt2000'), int64 (-9223371972816000000));
+%! assert_equal (convertTo (datetime (2292, 4, 11, 11, 46, 7, ...
+%!               'TimeZone', tz), 'tt2000'), int64 (9223372036184000000));
+
+## Test 'convertTo' -- the tt2000 epoch itself, and round trips through it
+%!test
+%! tz = 'UTCLeapSeconds';
+%! assert_equal (datevec (datetime (int64 (0), 'ConvertFrom', 'tt2000', ...
+%!               'TimeZone', tz)), [2000 1 1 11 58 55.816]);
+%! assert_equal (datevec (datetime (int64 (536500868307456000), ...
+%!               'ConvertFrom', 'tt2000', 'TimeZone', tz)), ...
+%!               [2016 12 31 23 59 60.123456]);
+%! assert_equal (datevec (datetime (int64 ([0; 1000000000]), ...
+%!               'ConvertFrom', 'tt2000', 'TimeZone', tz)), ...
+%!               [2000 1 1 11 58 55.816; 2000 1 1 11 58 56.816]);
+%!test
+%! tz = 'UTCLeapSeconds';
+%! d = datetime (2016, 12, 31, 23, 59, 60.25, 'TimeZone', tz);
+%! assert_equal (datevec (datetime (convertTo (d, 'tt2000'), ...
+%!               'ConvertFrom', 'tt2000', 'TimeZone', tz)), datevec (d));
+%!assert_equal (datetime (int64 (0), 'ConvertFrom', 'tt2000', ...
+%!              'TimeZone', 'UTCLeapSeconds').TimeZone, 'UTCLeapSeconds')
+
+## Test 'convertTo' -- 'tt2000' error branches
+%!error <datetime.convertTo: to convert datetimes to tt2000 times, the 'TimeZone' property of the input must be 'UTCLeapSeconds'.> ...
+%! convertTo (datetime (2016, 12, 31, 'TimeZone', 'UTC'), 'tt2000')
+%!error <datetime.convertTo: 'tt2000' conversion is not supported for missing values, infinite datetimes, or datetimes outside the interval \[1707-09-22T12:12:10Z, 2292-04-11T11:46:08Z\).> ...
+%! convertTo (NaT ('TimeZone', 'UTCLeapSeconds'), 'tt2000')
+%!error <datetime.convertTo: 'tt2000' conversion is not supported for missing values, infinite datetimes, or datetimes outside the interval \[1707-09-22T12:12:10Z, 2292-04-11T11:46:08Z\).> ...
+%! convertTo (datetime (1707, 9, 22, 12, 12, 10, 'TimeZone', 'UTCLeapSeconds'), 'tt2000')
+%!error <datetime.convertTo: 'tt2000' conversion is not supported for missing values, infinite datetimes, or datetimes outside the interval \[1707-09-22T12:12:10Z, 2292-04-11T11:46:08Z\).> ...
+%! convertTo (datetime (2292, 4, 11, 11, 46, 8, 'TimeZone', 'UTCLeapSeconds'), 'tt2000')
+%!error <datetime: input for converting from tt2000 times must be int64.> ...
+%! datetime (0, 'ConvertFrom', 'tt2000', 'TimeZone', 'UTCLeapSeconds')
+%!error <datetime: to create datetimes from tt2000 times, the 'TimeZone' parameter must be 'UTCLeapSeconds'.> ...
+%! datetime (int64 (0), 'ConvertFrom', 'tt2000', 'TimeZone', 'UTC')
+%!error <datetime: to create datetimes from tt2000 times, the 'TimeZone' parameter must be 'UTCLeapSeconds'.> ...
+%! datetime (int64 (0), 'ConvertFrom', 'tt2000')
+%!error <datetime: int64 input values for tt2000 times must be larger than -9223372036854775805.> ...
+%! datetime (int64 (-9223372036854775806), 'ConvertFrom', 'tt2000', 'TimeZone', 'UTCLeapSeconds')
+
+## Test 'UTCLeapSeconds' -- the display format is locked to the ISO 8601 UTC
+## pattern, with the fractional-second digits optional
+%!test
+%! a2 = datetime (2016, 12, 31, 23, 59, 60, 'TimeZone', 'UTCLeapSeconds');
+%! assert_equal (a2.Format, "uuuu-MM-dd'T'HH:mm:ss.SSS'Z'");
+%! assert_equal (char (a2), '2016-12-31T23:59:60.000Z');
+%! assert_equal (char (string (a2)), '2016-12-31T23:59:60.000Z');
+%!test
+%! a2 = datetime (2016, 12, 31, 23, 59, 60, 'TimeZone', 'UTCLeapSeconds');
+%! a2.Format = "uuuu-MM-dd'T'HH:mm:ss'Z'";
+%! assert_equal (char (a2), '2016-12-31T23:59:60Z');
+%!test
+%! q = datetime (2016, 12, 31, 23, 59, 60.25, 'TimeZone', 'UTCLeapSeconds');
+%! q.Format = "uuuu-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'";
+%! assert_equal (char (q), '2016-12-31T23:59:60.250000000Z');
+%!assert_equal (char (datetime (2016, 12, 31, 23, 59, 60, ...
+%!              'TimeZone', 'UTCLeapSeconds', ...
+%!              'Format', "uuuu-MM-dd'T'HH:mm:ss'Z'")), '2016-12-31T23:59:60Z')
+%!assert_equal (NaT ('TimeZone', 'UTCLeapSeconds').Format, ...
+%!              "uuuu-MM-dd'T'HH:mm:ss.SSS'Z'")
+%!assert_equal (size (NaT ('TimeZone', 'UTCLeapSeconds')), [1 1])
+
+## Test 'UTCLeapSeconds' -- any other display format is rejected
+%!error <datetime.subsasgn: the display format of a 'UTCLeapSeconds' datetime array must be "uuuu-MM-dd'T'HH:mm:ss'Z'", optionally with one to nine fractional second digits, as in "uuuu-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'".> ...
+%! d = datetime (2016, 12, 31, 'TimeZone', 'UTCLeapSeconds'); d.Format = 'uuuu-MM-dd HH:mm:ss';
+%!error <datetime.subsasgn: the display format of a 'UTCLeapSeconds' datetime array must be "uuuu-MM-dd'T'HH:mm:ss'Z'", optionally with one to nine fractional second digits, as in "uuuu-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'".> ...
+%! d = datetime (2016, 12, 31, 'TimeZone', 'UTCLeapSeconds'); d.Format = "uuuu-MM-dd'T'HH:mm:ss.SSSSSSSSSS'Z'";
+%!error <datetime.subsasgn: the display format of a 'UTCLeapSeconds' datetime array must be "uuuu-MM-dd'T'HH:mm:ss'Z'", optionally with one to nine fractional second digits, as in "uuuu-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'".> ...
+%! d = datetime (2016, 12, 31, 'TimeZone', 'UTCLeapSeconds'); d.Format = 'default';
+%!error <datetime: the display format of a 'UTCLeapSeconds' datetime array must be "uuuu-MM-dd'T'HH:mm:ss'Z'", optionally with one to nine fractional second digits, as in "uuuu-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'".> ...
+%! datetime (2016, 12, 31, 'TimeZone', 'UTCLeapSeconds', 'Format', 'dd-MMM-uuuu')
+
+## Test 'UTCLeapSeconds' -- leaving the zone folds the inserted second back and
+## restores the data-dependent display format
+%!test
+%! a2 = datetime (2016, 12, 31, 23, 59, 60, 'TimeZone', 'UTCLeapSeconds');
+%! a2.TimeZone = 'UTC';
+%! assert_equal (datevec (a2), [2016 12 31 23 59 59]);
+%! assert_equal (a2.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! a2 = datetime (2016, 12, 31, 23, 59, 60, 'TimeZone', 'UTCLeapSeconds');
+%! a2.TimeZone = '';
+%! assert_equal (datevec (a2), [2016 12 31 23 59 59]);
+%!test
+%! a2 = datetime (2016, 12, 31, 23, 59, 60, 'TimeZone', 'UTCLeapSeconds');
+%! a2.TimeZone = 'America/New_York';
+%! assert_equal (datevec (a2), [2016 12 31 18 59 59]);
+
+## Test 'UTCLeapSeconds' -- entering the zone keeps the instant and takes the
+## locked display format, and re-assigning the same zone changes nothing
+%!test
+%! d = datetime (2016, 12, 31, 23, 59, 59, 'TimeZone', 'UTC');
+%! d.TimeZone = 'UTCLeapSeconds';
+%! assert_equal (datevec (d), [2016 12 31 23 59 59]);
+%! assert_equal (d.Format, "uuuu-MM-dd'T'HH:mm:ss.SSS'Z'");
+%!test
+%! d = datetime (2016, 12, 31, 23, 59, 59, 'Format', 'dd-MMM-uuuu HH:mm:ss');
+%! d.TimeZone = 'UTCLeapSeconds';
+%! assert_equal (datevec (d), [2016 12 31 23 59 59]);
+%! assert_equal (d.Format, "uuuu-MM-dd'T'HH:mm:ss.SSS'Z'");
+%!test
+%! a2 = datetime (2016, 12, 31, 23, 59, 60, 'TimeZone', 'UTCLeapSeconds');
+%! a2.TimeZone = 'UTCLeapSeconds';
+%! assert_equal (datevec (a2), [2016 12 31 23 59 60]);
+
+## Test 'UTCLeapSeconds' -- assigning a component re-canonicalizes on the
+## leap-second timeline
+%!test
+%! d = datetime (2016, 12, 31, 23, 59, 59, 'TimeZone', 'UTCLeapSeconds');
+%! d.Second = 60;
+%! assert_equal (datevec (d), [2016 12 31 23 59 60]);
+%! d.Second = 60.5;
+%! assert_equal (datevec (d), [2016 12 31 23 59 60.5]);
+%!test
+%! d = datetime (2016, 12, 30, 23, 59, 59, 'TimeZone', 'UTCLeapSeconds');
+%! d.Second = 60;
+%! assert_equal (datevec (d), [2016 12 31 0 0 0]);
+%!test
+%! d = datetime (2016, 12, 31, 23, 59, 60, 'TimeZone', 'UTCLeapSeconds');
+%! d.Minute = 58;
+%! assert_equal (datevec (d), [2016 12 31 23 59 0]);
+
+## Test 'UTCLeapSeconds' -- an array with leap seconds cannot be combined with
+## one without them, a UTC array included
+%!error <datetime.eq: cannot combine or compare a datetime array with leap seconds with one without leap seconds.> ...
+%! datetime (2017, 1, 1, 'TimeZone', 'UTCLeapSeconds') == datetime (2017, 1, 1, 'TimeZone', 'UTC')
+%!error <datetime.lt: cannot combine or compare a datetime array with leap seconds with one without leap seconds.> ...
+%! datetime (2017, 1, 1, 'TimeZone', 'UTCLeapSeconds') < datetime (2017, 1, 1, 'TimeZone', 'UTC')
+%!error <datetime.minus: cannot combine or compare a datetime array with leap seconds with one without leap seconds.> ...
+%! datetime (2017, 1, 1, 'TimeZone', 'UTCLeapSeconds') - datetime (2017, 1, 1, 'TimeZone', 'UTC')
+%!error <datetime.ismember: cannot combine or compare a datetime array with leap seconds with one without leap seconds.> ...
+%! ismember (datetime (2017, 1, 1, 'TimeZone', 'UTCLeapSeconds'), datetime (2017, 1, 1, 'TimeZone', 'UTC'))
+%!error <datetime.isbetween: cannot combine or compare a datetime array with leap seconds with one without leap seconds.> ...
+%! isbetween (datetime (2017, 1, 1, 'TimeZone', 'UTCLeapSeconds'), datetime (2016, 12, 31, 'TimeZone', 'UTC'), datetime (2017, 1, 2, 'TimeZone', 'UTC'))
+%!error <datetime.colon: cannot combine or compare a datetime array with leap seconds with one without leap seconds.> ...
+%! datetime (2017, 1, 1, 'TimeZone', 'UTCLeapSeconds'):seconds (1):datetime (2017, 1, 2, 'TimeZone', 'UTC')
+%!error <datetime.cat: cannot combine or compare a datetime array with leap seconds with one without leap seconds.> ...
+%! horzcat (datetime (2017, 1, 1, 'TimeZone', 'UTCLeapSeconds'), datetime (2017, 1, 1, 'TimeZone', 'UTC'))
+%!error <datetime.convertTo: cannot combine or compare a datetime array with leap seconds with one without leap seconds.> ...
+%! convertTo (datetime (2017, 1, 1, 'TimeZone', 'UTCLeapSeconds'), 'epochtime', 'Epoch', datetime (2017, 1, 1, 'TimeZone', 'UTC'))
+%!assert_equal (isequal (datetime (2017, 1, 1, 'TimeZone', 'UTCLeapSeconds'), ...
+%!                       datetime (2017, 1, 1, 'TimeZone', 'UTC')), false)
+%!assert_equal (isequal (datetime (2016, 12, 31, 23, 59, 60, ...
+%!                                 'TimeZone', 'UTCLeapSeconds'), ...
+%!                       datetime (2016, 12, 31, 23, 59, 60, ...
+%!                                 'TimeZone', 'UTCLeapSeconds')), true)
+
+## Test 'UTCLeapSeconds' -- ordering, reductions and interpolation step through
+## the inserted second
+%!test
+%! tz = 'UTCLeapSeconds';
+%! a1 = datetime (2016, 12, 31, 23, 59, 59, 'TimeZone', tz);
+%! a2 = datetime (2016, 12, 31, 23, 59, 60, 'TimeZone', tz);
+%! a3 = datetime (2017, 1, 1, 0, 0, 0, 'TimeZone', tz);
+%! assert_equal (datevec (sort ([a3; a2; a1])), datevec ([a1; a2; a3]));
+%! assert_equal (datevec (max ([a1 a2 a3])), datevec (a3));
+%! assert_equal (datevec (unique ([a2 a2 a1])), datevec ([a1; a2]));
+%! assert_equal (isbetween (a2, a1, a3), true);
+%! assert_equal (seconds (diff ([a1; a2; a3])), [1; 1]);
+%! assert_equal (isregular ([a1; a2; a3]), true);
+%! assert_equal (datevec (mean ([a1 a3])), datevec (a2));
+%! assert_equal (datevec (a1:seconds (1):a3), datevec ([a1 a2 a3]));
+%! assert_equal (interp1 ([a1 a3], [0 2], a2), 1);
+%! assert_equal (char (std ([a1 a2 a3])), '00:00:01');
+
+## Test 'UTCLeapSeconds' -- 'dateshift' treats the inserted second as the last
+## second of its day
+%!test
+%! tz = 'UTCLeapSeconds';
+%! a2 = datetime (2016, 12, 31, 23, 59, 60, 'TimeZone', tz);
+%! assert_equal (datevec (dateshift (a2, 'start', 'minute')), ...
+%!               [2016 12 31 23 59 0]);
+%! assert_equal (datevec (dateshift (a2, 'start', 'day')), [2016 12 31 0 0 0]);
+%! assert_equal (datevec (dateshift (a2, 'start', 'year')), [2016 1 1 0 0 0]);
+%! assert_equal (datevec (dateshift (a2, 'end', 'day')), [2017 1 1 0 0 0]);
+%! assert_equal (datevec (dateshift (a2, 'end', 'minute')), [2017 1 1 0 0 0]);
+%! assert_equal (datevec (dateshift (a2, 'start', 'minute', 'nearest')), ...
+%!               [2017 1 1 0 0 0]);
+%! assert_equal (datevec (dateshift (a2, 'dayofweek', 'Monday')), ...
+%!               [2017 1 3 0 0 0]);
+
+## Test 'UTCLeapSeconds' -- 'caldiff' and 'between' across the inserted second
+%!test
+%! tz = 'UTCLeapSeconds';
+%! a1 = datetime (2016, 12, 31, 23, 59, 59, 'TimeZone', tz);
+%! a3 = datetime (2017, 1, 1, 0, 0, 0, 'TimeZone', tz);
+%! assert_equal (char (caldiff ([a1 a3])), '0h 0m 2s');
+%! assert_equal (char (between (a1, a3)), '0h 0m 2s');
+
+## Test 'UTCLeapSeconds' -- text is read in the one shape the array also writes
+%!test
+%! tz = 'UTCLeapSeconds';
+%! assert_equal (datevec (datetime ('2016-12-31T23:59:60Z', 'TimeZone', tz)), ...
+%!               [2016 12 31 23 59 60]);
+%! assert_equal (datevec (datetime ('2016-12-31T23:59:60.250Z', ...
+%!               'TimeZone', tz)), [2016 12 31 23 59 60.25]);
+%! assert_equal (datevec (datetime ('2016-12-31T23:59:59Z', 'TimeZone', tz)), ...
+%!               [2016 12 31 23 59 59]);
+%!error <datetime: text for a 'UTCLeapSeconds' datetime array must be an ISO 8601 UTC instant, as in '2016-12-31T23:59:60Z', optionally with fractional seconds.> ...
+%! datetime ('31-Dec-2016 23:59:59', 'TimeZone', 'UTCLeapSeconds')
+%!error <datetime: text for a 'UTCLeapSeconds' datetime array must be an ISO 8601 UTC instant, as in '2016-12-31T23:59:60Z', optionally with fractional seconds.> ...
+%! datetime ('2016-12-31', 'TimeZone', 'UTCLeapSeconds')
+
+## Test 'UTCLeapSeconds' -- an 'InputFormat' admits a 60th second only where one
+## was really inserted
+%!test
+%! tz = 'UTCLeapSeconds';
+%! F = "uuuu-MM-dd'T'HH:mm:ss'Z'";
+%! assert_equal (datevec (datetime ('2016-12-31T23:59:60Z', 'InputFormat', F, ...
+%!               'TimeZone', tz)), [2016 12 31 23 59 60]);
+%! F3 = "uuuu-MM-dd'T'HH:mm:ss.SSS'Z'";
+%! assert_equal (datevec (datetime ('2016-12-31T23:59:60.250Z', ...
+%!               'InputFormat', F3, 'TimeZone', tz)), ...
+%!               [2016 12 31 23 59 60.25]);
+%!test
+%! F = "uuuu-MM-dd'T'HH:mm:ss'Z'";
+%! d = datetime ({'2016-12-31T23:59:60Z'; '2016-12-30T23:59:60Z'}, ...
+%!               'InputFormat', F, 'TimeZone', 'UTCLeapSeconds');
+%! assert_equal (isnat (d), logical ([0; 1]));
+%! assert_equal (d.Second(1), 60);
+%!error <datetime: could not parse the date/time string '2016-12-30T23:59:60Z' with 'InputFormat' 'uuuu-MM-dd'T'HH:mm:ss'Z''.> ...
+%! datetime ('2016-12-30T23:59:60Z', 'InputFormat', "uuuu-MM-dd'T'HH:mm:ss'Z'", 'TimeZone', 'UTCLeapSeconds')
+%!error <datetime: could not parse the date/time string '2016-12-31T23:59:60Z' with 'InputFormat' 'uuuu-MM-dd'T'HH:mm:ss'Z''.> ...
+%! datetime ('2016-12-31T23:59:60Z', 'InputFormat', "uuuu-MM-dd'T'HH:mm:ss'Z'")
+%!error <datetime: could not parse the date/time string '2016-12-31T23:59:61Z' with 'InputFormat' 'uuuu-MM-dd'T'HH:mm:ss'Z''.> ...
+%! datetime ('2016-12-31T23:59:61Z', 'InputFormat', "uuuu-MM-dd'T'HH:mm:ss'Z'", 'TimeZone', 'UTCLeapSeconds')
+
+## Test 'UTCLeapSeconds' -- before 1972 no second had been inserted, so the zone
+## reads exactly as UTC
+%!test
+%! tz = 'UTCLeapSeconds';
+%! assert_equal (posixtime (datetime (1960, 1, 1, 0, 0, 0, 'TimeZone', tz)), ...
+%!               posixtime (datetime (1960, 1, 1, 0, 0, 0, 'TimeZone', 'UTC')));
+%! assert_equal (posixtime (datetime (1971, 12, 31, 23, 59, 59, ...
+%!               'TimeZone', tz)), 63071999);
+%! assert_equal (posixtime (datetime (1972, 1, 1, 0, 0, 0, 'TimeZone', tz)), ...
+%!               63072000);

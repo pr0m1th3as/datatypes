@@ -128,6 +128,19 @@ classdef datetime
     ## specified as a string scalar, it is converted and stored internally as
     ## a character vector.
     ##
+    ## Besides the zones of the IANA Time Zone Database, the value
+    ## @qcode{'UTCLeapSeconds'} selects UTC with its inserted leap seconds made
+    ## representable, so that the 60th second of a minute exists on the 27 dates
+    ## that have one.  It is not an IANA zone and @code{timezones} does not list
+    ## it.  An array in that zone counts elapsed SI seconds, which is what makes
+    ## its arithmetic differ from a UTC array's across an inserted second, and
+    ## for that reason it cannot be combined or compared with an array that does
+    ## not have leap seconds.  Its @code{Format} is fixed to
+    ## @qcode{"uuuu-MM-dd'T'HH:mm:ss'Z'"}, optionally with one to nine
+    ## fractional-second digits, since no other pattern can write a 60th second;
+    ## moving such an array to any other zone folds an inserted second back onto
+    ## the 59th and restores the ordinary default format.
+    ##
     ## @end deftp
     TimeZone = ''
   endproperties
@@ -359,6 +372,9 @@ classdef datetime
     ## @item @qcode{'excel'}
     ## @item @qcode{'posixtime'}
     ## @item @qcode{'epochtime'}
+    ## @item @qcode{'yyyymmdd'}
+    ## @item @qcode{'tt2000'} -- requires @code{int64} input and the
+    ## @qcode{'UTCLeapSeconds'} time zone (see @code{convertTo}).
     ## @end itemize
     ##
     ## @code{@var{T} = datetime (@dots{}, @qcode{'Format'}, @var{FMT})}
@@ -394,6 +410,17 @@ classdef datetime
     ## is lost and becomes @code{NaT}; without an @qcode{'InputFormat'} the
     ## whole input is rejected, as when no format can be detected at all.
     ##
+    ## In the @qcode{'UTCLeapSeconds'} zone the seconds component may reach 60,
+    ## naming an inserted leap second, but only on one of the 27 dates that has
+    ## one and only in the last minute of the day; anywhere else it rolls over
+    ## as usual.  The seconds component is counted along the leap-second
+    ## timeline, so @qcode{'23:59:61'} on such a date is the next midnight
+    ## rather than one second past it, whereas an hour or minute that overflows
+    ## over the inserted second entirely.  Text naming a leap second that was
+    ## never inserted is rejected, exactly as text naming a wall clock a zone
+    ## skips is.  Without an @qcode{'InputFormat'} such an array reads only the
+    ## ISO 8601 UTC shape it also writes.
+    ##
     ## @seealso{NaT, datetime, isdatetime, calendarDuration, duration}
     ## @end deftypefn
     function this = datetime (varargin)
@@ -412,9 +439,11 @@ classdef datetime
       [ConvertFrom, Format, inputFormat, Locale, PivotYear, TimeZone, args] =...
                     parsePairedArguments (optNames, dfValues, varargin(:));
 
-      ## Check optional 'Format' and 'InputFormat' arguments.  'yyyymmdd' is
-      ## handled in M-code below, so it bypasses the builtin ConvertFrom check.
-      if (! isempty (ConvertFrom) && ! strcmpi (ConvertFrom, 'yyyymmdd'))
+      ## Check optional 'Format' and 'InputFormat' arguments.  'yyyymmdd' and
+      ## 'tt2000' are handled in M-code below, so they bypass the builtin
+      ## ConvertFrom check.
+      if (! isempty (ConvertFrom) && ! any (strcmpi (ConvertFrom, ...
+                                                    {'yyyymmdd', 'tt2000'})))
         ## Call __datetime__ to check for valid ConvertFrom string and
         ## data input
         [~,~,~,~,~,~,errmsg] = __datetime__ (args{:}, 'ConvertFrom', ...
@@ -465,6 +494,16 @@ classdef datetime
         endif
         this.TimeZone = TimeZone;
       endif
+      if (dtIsLeapZone (TimeZone))
+        ## Only one display pattern can render a 60th second, so a leap-second
+        ## array carries it instead of the data-dependent default, and any other
+        ## pattern the caller asked for is rejected.
+        if (isempty (Format))
+          this.Format = dtLeapFormat ();
+        else
+          dtValidateLeapFormat (Format, 'datetime');
+        endif
+      endif
 
       ## Datestrings are currently handled by 'datevec'
       if (iscellstr (args{1}) || isstring (args{1}) || ischar (args{1}))
@@ -488,7 +527,14 @@ classdef datetime
               now6 = clock ();
               pivot = now6(1) - 50;
             endif
-            DATEVEC = dtParseInput (DateStrings(:), inputFormat, pivot, Locale);
+            DATEVEC = dtParseInput (DateStrings(:), inputFormat, pivot, ...
+                                    Locale, dtIsLeapZone (TimeZone));
+          elseif (dtIsLeapZone (TimeZone))
+            ## A leap-second array reads text in the one shape it can also
+            ## write, so nothing is auto-detected here: the string must be the
+            ## ISO 8601 UTC form, with or without fractional seconds.  Anything
+            ## else is rejected even when a general datetime would accept it.
+            DATEVEC = dtParseLeapText (DateStrings(:));
           else
             ## No format supplied: let core 'datevec' auto-detect ISO and
             ## dd-MMM-yyyy style strings.  'datevec' costs around 30 ms per
@@ -520,12 +566,20 @@ classdef datetime
             ## MATLAB draws that distinction too.)  Normalizing in the zone
             ## moves exactly those elements, because every other parsed wall
             ## clock is already canonical, so an element that moves marks text
-            ## to reject.
-            [Yz, Mz, Dz, Hz, MIz, Sz] = __datetime__ (this.Year, this.Month, ...
-                                        this.Day, this.Hour, this.Minute, ...
-                                        this.Second, 'TimeZone', TimeZone, ...
-                                        'toTimeZone', TimeZone, 'Precision', ...
-                                        'microseconds');
+            ## to reject.  The same test catches text naming a leap second that
+            ## was never inserted: a genuine one survives normalization on the
+            ## leap-second timeline untouched, a spurious one rolls over.
+            if (dtIsLeapZone (TimeZone))
+              [Yz, Mz, Dz, Hz, MIz, Sz] = dtLeapNormalize (this.Year, ...
+                                          this.Month, this.Day, this.Hour, ...
+                                          this.Minute, this.Second);
+            else
+              [Yz, Mz, Dz, Hz, MIz, Sz] = __datetime__ (this.Year, ...
+                                  this.Month, this.Day, this.Hour, ...
+                                  this.Minute, this.Second, 'TimeZone', ...
+                                  TimeZone, 'toTimeZone', TimeZone, ...
+                                  'Precision', 'microseconds');
+            endif
             skipped = (Yz != this.Year | Mz != this.Month | Dz != this.Day ...
                        | Hz != this.Hour | MIz != this.Minute ...
                        | abs (Sz - this.Second) > 1e-3) & ! isnan (this.Year);
@@ -572,6 +626,22 @@ classdef datetime
           [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
            this.Second] = __datetime__ (Y, M, D, 'Precision', 'microseconds');
         endif
+      elseif (! isempty (ConvertFrom) && strcmpi (ConvertFrom, 'tt2000'))
+        ## A tt2000 time is a count of SI seconds, so it can name an inserted
+        ## second and only means anything in the leap-second zone.  MATLAB
+        ## insists on int64 input rather than rounding a double, since a double
+        ## cannot hold a nanosecond count of this magnitude exactly.
+        x = args{1};
+        if (! isa (x, 'int64'))
+          error (strcat ("datetime: input for converting from tt2000 times", ...
+                         " must be int64."));
+        elseif (! dtIsLeapZone (TimeZone))
+          error (strcat ("datetime: to create datetimes from tt2000 times,", ...
+                         " the 'TimeZone' parameter must be", ...
+                         " 'UTCLeapSeconds'."));
+        endif
+        [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
+         this.Second] = dtLeapComponents (dtTT20002Serial (x));
       elseif (! isempty (ConvertFrom) && ! isempty (TimeZone))
         if (strcmpi (ConvertFrom, 'posixtime'))
           ## POSIX time is an absolute UTC instant, so read it as a UTC wall
@@ -595,7 +665,19 @@ classdef datetime
                                       'Precision', 'microseconds');
       else
         dtCheckIntegerComponents (args);
-        if (! isempty (TimeZone))
+        if (dtIsLeapZone (TimeZone))
+          ## Let the builtin validate the shape of the positional arguments,
+          ## then normalize on the leap-second timeline instead, where a 60th
+          ## second of a minute exists and so must survive the round trip.
+          [~,~,~,~,~,~, errmsg] = __datetime__ (args{:}, 'Precision', ...
+                                                'microseconds');
+          if (! isnumeric (errmsg))
+            error ("datetime: %s ", errmsg);
+          endif
+          [Yr, Mr, Dr, hr, mir, sr] = dtSplitComponents (args);
+          [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
+           this.Second] = dtLeapNormalize (Yr, Mr, Dr, hr, mir, sr);
+        elseif (! isempty (TimeZone))
           ## Normalize the wall clock in its own zone, so that a time the
           ## local clock never shows -- the gap when the clock goes forward --
           ## moves ahead by the length of that gap, as MATLAB does.  Round
@@ -1184,9 +1266,21 @@ classdef datetime
     ## fractional seconds.  Datetime arrays without a time zone are treated as
     ## UTC.  Not-A-Time (@qcode{NaT}) values are returned as @qcode{NaN}.
     ##
+    ## POSIX time has no stamp of its own for an inserted leap second, so for a
+    ## @qcode{'UTCLeapSeconds'} array the 60th second of a minute shares the
+    ## stamp of the second that follows it: @code{posixtime} of
+    ## @code{2016-12-31T23:59:60Z} and of @code{2017-01-01T00:00:00Z} are both
+    ## @code{1483228800}.  Every other conversion folds the other way (see
+    ## @code{convertTo}).
+    ##
     ## @end deftypefn
     function out = posixtime (this)
-      out = serial (this);
+      if (dtIsLeapZone (this.TimeZone))
+        out = dtLeapPosix (this.Year, this.Month, this.Day, this.Hour, ...
+                           this.Minute, this.Second);
+      else
+        out = serial (this);
+      endif
     endfunction
 
   endmethods
@@ -1239,9 +1333,17 @@ classdef datetime
     ## Unicode (LDML) field codes, use @code{char}, @code{cellstr}, or set the
     ## @qcode{Format} property of @var{T} instead.
     ##
+    ## The legacy field codes have no way to write a 60th second, so for a
+    ## @qcode{'UTCLeapSeconds'} array an inserted second folds backward onto the
+    ## 59th, as it does in @code{datenum}.
+    ##
     ## @end deftypefn
     function S = datestr (this, varargin)
-      S = datestr (datevec (this), varargin{:});
+      DV = datevec (this);
+      if (dtIsLeapZone (this.TimeZone))
+        DV(:,6) = dtLeapBackFold (DV(:,6));
+      endif
+      S = datestr (DV, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -1302,10 +1404,18 @@ classdef datetime
     ## (@qcode{NaT}) values are returned as @qcode{NaN}, and infinite datetimes
     ## preserve their sign.
     ##
+    ## A serial date number has no room for an inserted leap second, so for a
+    ## @qcode{'UTCLeapSeconds'} array the 60th second of a minute folds backward
+    ## onto the 59th: @code{datenum} of @code{2016-12-31T23:59:60Z} equals that
+    ## of @code{2016-12-31T23:59:59Z}.
+    ##
     ## @end deftypefn
     function out = datenum (this)
       Y = this.Year;  M = this.Month;  D = this.Day;
       h = this.Hour;  mi = this.Minute;  s = this.Second;
+      if (dtIsLeapZone (this.TimeZone))
+        s = dtLeapBackFold (s);
+      endif
       out = nan (size (Y));
       ## Core datenum errors on NaN components, so screen NaT out first and let
       ## infinite datetimes carry their sign through unchanged.
@@ -1371,12 +1481,25 @@ classdef datetime
     ## @qcode{'modifiedjuliandate'}, the latter being the Julian date minus
     ## @code{2400000.5}.
     ##
+    ## For a @qcode{'UTCLeapSeconds'} array a Julian day that holds an inserted
+    ## second is 86401 seconds long, and the fractional part is that fraction of
+    ## the day's true length.  Julian days run from noon to noon and modified
+    ## Julian days from midnight to midnight, so on such a day the two are
+    ## stretched over different spans and are not related by exactly
+    ## @code{2400000.5}; both are @qcode{'juliandate'} for the day at hand.
+    ##
     ## @end deftypefn
     function out = juliandate (this, dateType = 'juliandate')
       if (! (ischar (dateType) && isrow (dateType) && any (strcmpi (dateType, ...
              {'juliandate', 'modifiedjuliandate'}))))
         error (strcat ("datetime.juliandate: DATETYPE must be 'juliandate'", ...
                        " or 'modifiedjuliandate'."));
+      endif
+      if (dtIsLeapZone (this.TimeZone))
+        out = dtLeapJulian (this.Year, this.Month, this.Day, this.Hour, ...
+                            this.Minute, this.Second, ...
+                            strcmpi (dateType, 'modifiedjuliandate'));
+        return;
       endif
       ## Julian date of the Unix epoch (1970-01-01 00:00 UTC) is 2440587.5; the
       ## POSIX instant places the array on the absolute UTC timeline.
@@ -1419,6 +1542,8 @@ classdef datetime
     ## @code{uint64}.
     ## @item @qcode{'.net'} -- @w{.NET} 100-ns ticks since 0001-01-01,
     ## @code{uint64}.
+    ## @item @qcode{'tt2000'} -- CDF @w{TT2000} nanoseconds since the J2000
+    ## Terrestrial Time epoch, @code{int64} (see below).
     ## @end itemize
     ##
     ## For the @code{double} conversions, Not-A-Time (@qcode{NaT}) values are
@@ -1432,8 +1557,21 @@ classdef datetime
     ## (a positive scalar; default @code{1}).  The epoch and @var{T} must both be
     ## zoned or both be unzoned.
     ##
-    ## The @qcode{'tt2000'} conversion that MATLAB supports is not implemented, as
-    ## it requires leap-second (@qcode{'UTCLeapSeconds'}) support.
+    ## @code{@var{X} = convertTo (@var{T}, @qcode{'tt2000'})} returns the number
+    ## of nanoseconds since the J2000 Terrestrial Time epoch,
+    ## @code{2000-01-01T11:58:55.816Z}, as an @code{int64} array.  Because that
+    ## count includes leap seconds, @var{T} must be in the
+    ## @qcode{'UTCLeapSeconds'} time zone.  The inverse is
+    ## @code{datetime (@var{X}, @qcode{'ConvertFrom'}, @qcode{'tt2000'},
+    ## @qcode{'TimeZone'}, @qcode{'UTCLeapSeconds'})}, which likewise requires
+    ## both the @code{int64} type and that zone.
+    ##
+    ## Each conversion treats an inserted leap second the way its own format
+    ## does.  @code{posixtime} folds it forward onto the following second, while
+    ## @code{datenum}, @code{exceltime}, @qcode{'epochtime'}, @qcode{'ntp'},
+    ## @qcode{'ntfs'} and @qcode{'.net'} fold it backward onto the preceding
+    ## one; @code{juliandate} stretches the day that holds it (see
+    ## @code{juliandate}), and @qcode{'tt2000'} counts it.
     ##
     ## @end deftypefn
     function out = convertTo (this, dateType, varargin)
@@ -1465,9 +1603,10 @@ classdef datetime
                            " datetime array must both have a time zone, or", ...
                            " must both be unzoned."));
           endif
-          epochMs = round (serial (epochVal) * 1000);
+          dtCheckLeapPair (this, epochVal, 'convertTo');
+          epochMs = round (epochBase (epochVal) * 1000);
         endif
-        ms = round (serial (this) * 1000);
+        ms = round (epochBase (this) * 1000);
         res = round ((ms - epochMs) ./ 1000 .* ticks);
         if (! all (isfinite (ms(:))) ...
             || any (abs (res(:)) > double (intmax ('int64'))))
@@ -1499,14 +1638,19 @@ classdef datetime
         case 'yyyymmdd'
           out = yyyymmdd (this);
         case 'ntp'
-          out = reshape (dtFixedEpoch (serial (this), 'ntp'), size (this));
+          out = reshape (dtFixedEpoch (epochBase (this), 'ntp'), size (this));
         case 'ntfs'
-          out = reshape (dtFixedEpoch (serial (this), 'ntfs'), size (this));
+          out = reshape (dtFixedEpoch (epochBase (this), 'ntfs'), size (this));
         case '.net'
-          out = reshape (dtFixedEpoch (serial (this), 'dotnet'), size (this));
+          out = reshape (dtFixedEpoch (epochBase (this), 'dotnet'), ...
+                         size (this));
         case 'tt2000'
-          error (strcat ("datetime.convertTo: 'tt2000' conversion requires", ...
-                         " leap-second support, which is not implemented."));
+          if (! dtIsLeapZone (this.TimeZone))
+            error (strcat ("datetime.convertTo: to convert datetimes to", ...
+                           " tt2000 times, the 'TimeZone' property of the", ...
+                           " input must be 'UTCLeapSeconds'."));
+          endif
+          out = reshape (dtSerial2TT2000 (serial (this)), size (this));
         otherwise
           error ("datetime.convertTo: unrecognized conversion type '%s'.", ...
                  dateType);
@@ -1729,6 +1873,8 @@ classdef datetime
         error (strcat ("datetime.isbetween: cannot combine a datetime array", ...
                        " with a time zone with one without a time zone."));
       endif
+      dtCheckLeapPair (X, lo, 'isbetween');
+      dtCheckLeapPair (X, hi, 'isbetween');
       sX = serial (X);  sL = serial (lo);  sU = serial (hi);
       switch (lower (itype))
         case 'closed'
@@ -3197,6 +3343,7 @@ classdef datetime
                        " datetime with a time zone and one without a time", ...
                        " zone."));
       endif
+      dtCheckLeapPair (A, B, 'colon');
       if (! (isfinite (A) && isfinite (B)))
         error (strcat ("datetime.colon: range endpoints must be finite", ...
                        " (neither NaT nor Inf)."));
@@ -3329,6 +3476,7 @@ classdef datetime
           error (strcat ("datetime.minus: cannot subtract a datetime array", ...
                          " with a time zone from one without a time zone."));
         endif
+        dtCheckLeapPair (A, B, 'minus');
         C = duration (0, 0, serial (A) - serial (B));
       elseif (isa (B, 'duration'))
         ## datetime - duration -> datetime (fixed-length instant shift)
@@ -3815,6 +3963,9 @@ classdef datetime
       if (! all (cellfun (f, args)))
         error ("datetime: invalid input to constructor.");
       endif
+      for k = 2:numel (args)
+        dtCheckLeapPair (args{1}, args{k}, 'cat');
+      endfor
       out = args{1};
       fieldArgs  = cellfun (@(obj) obj.Year, args, 'UniformOutput', false);
       out.Year   = cat (dim, fieldArgs{:});
@@ -4240,7 +4391,11 @@ classdef datetime
                 error (strcat ("datetime.subsasgn: 'Format' must be a", ...
                                " character vector."));
               endif
-              dtValidateFormat (val);
+              if (dtIsLeapZone (this.TimeZone))
+                dtValidateLeapFormat (val, 'datetime.subsasgn');
+              else
+                dtValidateFormat (val);
+              endif
               this.Format = val;
             case 'TimeZone'
               toTimeZone = val;
@@ -4256,6 +4411,22 @@ classdef datetime
                 if (! isnumeric (errmsg))
                   error ("datetime.subsasgn: %s", errmsg);
                 endif
+              endif
+              ## Assigning the zone an array already has changes nothing.  Worth
+              ## short-circuiting rather than round-tripping, because for the
+              ## leap-second zone the round trip is not the identity: it would
+              ## roll a 60th second over.
+              if (strcmp (this.TimeZone, toTimeZone))
+                return;
+              endif
+              wasLeap = dtIsLeapZone (this.TimeZone);
+              nowLeap = dtIsLeapZone (toTimeZone);
+              if (wasLeap)
+                ## No other zone has a 60th second for an inserted one to move
+                ## into, so it folds back onto the 59th, and the display format
+                ## reverts to the data-dependent default.
+                this.Second = dtLeapBackFold (this.Second);
+                this.Format = 'default';
               endif
               if (isempty (toTimeZone))
                 ## Dropping the zone keeps the wall-clock values as they are.
@@ -4286,6 +4457,9 @@ classdef datetime
                   error ("datetime.subsasgn: %s", errmsg);
                 endif
                 this.TimeZone = toTimeZone;
+              endif
+              if (nowLeap)
+                this.Format = dtLeapFormat ();
               endif
             case {'Year'}
               this.Year(p.subs{:})   = val;
@@ -4367,6 +4541,7 @@ classdef datetime
           error (strcat ("datetime.", fname, ": cannot compare a datetime", ...
                          " with a time zone to one without a time zone."));
         endif
+        dtCheckLeapPair (A, B, fname);
         nanflag = 'omitnan';
         for k = 2:numel (args)
           x = args{k};
@@ -4539,7 +4714,11 @@ classdef datetime
       if (isempty (this.Year))
         return;
       endif
-      if (isempty (this.TimeZone))
+      if (dtIsLeapZone (this.TimeZone))
+        [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
+         this.Second] = dtLeapNormalize (this.Year, this.Month, this.Day, ...
+                        this.Hour, this.Minute, this.Second);
+      elseif (isempty (this.TimeZone))
         [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
          this.Second] = __datetime__ (this.Year, this.Month, this.Day, ...
          this.Hour, this.Minute, this.Second, 'Precision', 'microseconds');
@@ -4556,7 +4735,19 @@ classdef datetime
     ## system-zone daylight-saving offset; zoned arrays honour their zone (and
     ## DST).  Not-A-Time maps to NaN and infinite elements keep their sign.
     ## Used by the arithmetic and relational instant-based comparisons.
+    ##
+    ## For a leap-second array the count is instead the continuous SI-second
+    ## count of 'dtLeapSerial', which differs from POSIX time by the number of
+    ## seconds inserted so far.  That is what makes the arithmetic, the
+    ## relational operators, the orderings and the set operations count inserted
+    ## seconds without any of them knowing about leap seconds; 'posixtime' asks
+    ## for POSIX time proper and so does not go through here.
     function s = serial (this)
+      if (dtIsLeapZone (this.TimeZone))
+        s = dtLeapSerial (this.Year, this.Month, this.Day, this.Hour, ...
+                          this.Minute, this.Second);
+        return;
+      endif
       if (isempty (this.TimeZone))
         tz = 'UTC';
       else
@@ -4565,6 +4756,19 @@ classdef datetime
       s = __datetime__ (this.Year, this.Month, this.Day, this.Hour, ...
                         this.Minute, this.Second, 'ConvertTo', 'posixtime', ...
                         'TimeZone', tz, 'Precision', 'microseconds');
+    endfunction
+
+    ## POSIX instant used by the integer fixed-epoch conversions ('epochtime',
+    ## 'ntp', 'ntfs', '.net').  Ordinary arrays use their absolute instant; a
+    ## leap-second array folds an inserted second backward, which is the rule
+    ## every one of those formats follows.
+    function p = epochBase (this)
+      if (dtIsLeapZone (this.TimeZone))
+        p = dtLeapPosix (this.Year, this.Month, this.Day, this.Hour, ...
+                         this.Minute, dtLeapBackFold (this.Second));
+      else
+        p = serial (this);
+      endif
     endfunction
 
     ## Enforce the zone-compatibility rule for a set operation and express B in
@@ -4577,6 +4781,7 @@ classdef datetime
         error (strcat ("datetime.%s: cannot combine a datetime array with a", ...
                        " time zone with one without a time zone."), op);
       endif
+      dtCheckLeapPair (A, B, op);
       if (! isempty (A.TimeZone) && ! strcmp (A.TimeZone, B.TimeZone))
         [B.Year, B.Month, B.Day, B.Hour, B.Minute, B.Second] = __datetime__ ...
             (B.Year, B.Month, B.Day, B.Hour, B.Minute, B.Second, 'TimeZone', ...
@@ -4733,8 +4938,12 @@ classdef datetime
     ## Inverse of 'serial': map POSIX seconds back to the wall-clock components
     ## of this array's time zone.  For a zoned array the serial is first read as
     ## a UTC wall clock and then converted into the target zone (honouring DST).
+    ## A leap-second array inverts the continuous SI-second count instead, so a
+    ## count that lands inside an inserted second yields a 60th second.
     function [Y, M, D, h, m, s] = serial2components (this, ser)
-      if (isempty (this.TimeZone))
+      if (dtIsLeapZone (this.TimeZone))
+        [Y, M, D, h, m, s] = dtLeapComponents (ser);
+      elseif (isempty (this.TimeZone))
         [Y, M, D, h, m, s] = __datetime__ (ser, 'ConvertFrom', 'posixtime', ...
                                            'Precision', 'microseconds');
       else
@@ -4792,6 +5001,13 @@ classdef datetime
       Y(! ok) = mk(! ok);  M(! ok) = mk(! ok);  D(! ok) = mk(! ok);
       h(! ok) = mk(! ok);  m(! ok) = mk(! ok);  s(! ok) = mk(! ok);
 
+      if (dtIsLeapZone (this.TimeZone))
+        ## Calendar arithmetic keeps the wall clock, so an inserted second can
+        ## be carried onto a minute that never had one; clamp it to the 59th
+        ## second there, as the day of the month is clamped above.
+        s = dtLeapClampSecond (s, dtLeapMinutePosix (Y, M, D, h, m, ...
+                                                    zeros (size (Y))));
+      endif
       this.Year = Y; this.Month = M; this.Day = D;
       this.Hour = h; this.Minute = m; this.Second = s;
       this = normalize (this);
@@ -4861,6 +5077,7 @@ classdef datetime
         error (strcat ("datetime.%s: cannot compare a datetime array with a", ...
                        " time zone to one without a time zone."), op);
       endif
+      dtCheckLeapPair (A, B, op);
       aY = A.Year; aM = A.Month; aD = A.Day;
       ah = A.Hour; am = A.Minute; asec = A.Second;
       if (! isempty (A.TimeZone) && ! strcmp (A.TimeZone, B.TimeZone))
@@ -4919,6 +5136,12 @@ function TF = do_isequal (args, nanEqual)
       return;
     endif
     if (xor (isempty (A.TimeZone), isempty (B.TimeZone)))
+      TF = false;
+      return;
+    endif
+    ## Leap seconds are part of what an array counts, so an array that has them
+    ## is never equal to one that does not.
+    if (dtIsLeapZone (A.TimeZone) != dtIsLeapZone (B.TimeZone))
       TF = false;
       return;
     endif
@@ -5508,12 +5731,12 @@ endfunction
 ## accent-insensitively against the locale tables.  Two-digit years are
 ## resolved against PIVOT.  Fields absent from the format default to the
 ## current date (year/month/day) or to zero (time), matching MATLAB.
-function DV = dtParseInput (strs, fmt, pivot, locale)
+function DV = dtParseInput (strs, fmt, pivot, locale, leapok = false)
   ## An unset 'Locale' arrives as [], which the helper reads as English.
   if (isempty (locale))
     locale = '';
   endif
-  DV = __ldml__ ('parse', strs, fmt, pivot, locale);
+  DV = __ldml__ ('parse', strs, fmt, pivot, locale, leapok);
 endfunction
 
 ## Render each element of a datetime array to a display string under a
@@ -5568,6 +5791,360 @@ endfunction
 function tf = dtIsDst (Y, M, D, H, Mi, S, TZ)
   tf = logical (__datetime__ (Y, M, D, H, Mi, S, 'ConvertTo', 'isdst', ...
                               'TimeZone', TZ, 'Precision', 'microseconds'));
+endfunction
+
+## Parse text into an N-by-6 date-vector matrix for a leap-second array with no
+## 'InputFormat'.  The only shape accepted is the one such an array displays: an
+## ISO 8601 UTC instant, with the fractional seconds optional and of any width.
+## A string that does not match cannot be read, and since there is no format to
+## name in the message, the whole input is rejected -- as it is when no format
+## can be detected at all.  The seconds field is left as parsed, 60 included;
+## the caller decides whether that second was really inserted.
+function DV = dtParseLeapText (strs)
+  pat = '^(-?\d+)-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)Z$';
+  tok = regexp (strs, pat, 'tokens', 'once');
+  if (any (cellfun (@isempty, tok)))
+    error (strcat ("datetime: text for a 'UTCLeapSeconds' datetime array", ...
+                   " must be an ISO 8601 UTC instant, as in", ...
+                   " '2016-12-31T23:59:60Z', optionally with fractional", ...
+                   " seconds."));
+  endif
+  DV = cellfun (@(t) str2double (t(:).'), tok, 'UniformOutput', false);
+  DV = cell2mat (DV(:));
+endfunction
+
+## The display format a leap-second array carries.  It is a concrete pattern,
+## not one of the data-dependent sentinels: the array must be able to render a
+## 60th second, and only this ISO 8601 UTC pattern does.
+function fmt = dtLeapFormat ()
+  fmt = "uuuu-MM-dd'T'HH:mm:ss.SSS'Z'";
+endfunction
+
+## Validate a Format for a leap-second array.  Only the ISO 8601 UTC pattern is
+## allowed, optionally with one to nine fractional-second digits; MATLAB rejects
+## everything else, the sentinels included.  OP names the caller.
+function dtValidateLeapFormat (fmt, op)
+  ok = ischar (fmt) && isrow (fmt) ...
+       && ! isempty (regexp (fmt, "^uuuu-MM-dd'T'HH:mm:ss(\\.S{1,9})?'Z'$", ...
+                             'once'));
+  if (! ok)
+    error (strcat ("%s: the display format of a 'UTCLeapSeconds' datetime", ...
+                   " array must be \"uuuu-MM-dd'T'HH:mm:ss'Z'\",", ...
+                   " optionally with one to nine fractional second digits,", ...
+                   " as in \"uuuu-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'\"."), op);
+  endif
+endfunction
+
+## Enforce MATLAB's rule that an array with leap seconds cannot be combined
+## with, or compared against, one without them -- not even a UTC array.  The two
+## do not count the same seconds, so there is no shared timeline on which the
+## operation would mean anything.  Callers make the zoned/unzoned check first,
+## as MATLAB does.
+function dtCheckLeapPair (A, B, op)
+  if (dtIsLeapZone (A.TimeZone) != dtIsLeapZone (B.TimeZone))
+    error (strcat ("datetime.%s: cannot combine or compare a datetime", ...
+                   " array with leap seconds with one without leap", ...
+                   " seconds."), op);
+  endif
+endfunction
+
+## Split the constructor's positional numeric arguments into six component
+## arrays, which is how the leap-second normaliser needs them: a single date
+## vector matrix carries one element per row, separate arrays broadcast against
+## each other, and a seventh argument holds milliseconds.  The shapes have
+## already been validated by the builtin when this is called.
+function [Y, M, D, h, mi, sec] = dtSplitComponents (args)
+  if (numel (args) == 1)
+    V = args{1};
+    Y = V(:,1);  M = V(:,2);  D = V(:,3);
+    if (columns (V) >= 6)
+      h = V(:,4);  mi = V(:,5);  sec = V(:,6);
+    else
+      h = zeros (size (Y));  mi = h;  sec = h;
+    endif
+  else
+    Y = args{1};  M = args{2};  D = args{3};
+    if (numel (args) >= 6)
+      h = args{4};  mi = args{5};  sec = args{6};
+    else
+      h = 0;  mi = 0;  sec = 0;
+    endif
+    if (numel (args) >= 7)
+      sec = sec + args{7} / 1000;
+    endif
+  endif
+endfunction
+
+## True when TZ names the leap-second time zone.  'UTCLeapSeconds' is UTC with
+## the inserted seconds made representable, and is the only time zone in which
+## the 60th second of a minute exists.  It is not an IANA zone and, as in
+## MATLAB, 'timezones' does not list it, but it is accepted wherever a zone is.
+function tf = dtIsLeapZone (TZ)
+  tf = ! isempty (TZ) && strcmp (TZ, 'UTCLeapSeconds');
+endfunction
+
+## POSIX time of each leap-second insertion in the shipped tz database, that is,
+## of the first instant after each inserted second (78796800 for the second
+## inserted at the end of 1972-06-30).  Returned as a row vector so the tests
+## below broadcast against a column of instants.  Read once and cached: the
+## table only changes when the package's tzdata does.
+function ins = dtLeapInsertions ()
+  persistent tbl = [];
+  if (isempty (tbl))
+    tbl = __datetime__ ('leapseconds')(:).';
+  endif
+  ins = tbl;
+endfunction
+
+## Position of each inserted second on the continuous SI-second timeline of
+## 'dtLeapSerial'.  The n-th insertion is preceded by n-1 earlier ones, each of
+## which pushed the timeline one second ahead of POSIX time, so it begins that
+## many seconds after its own POSIX time.
+function S = dtLeapStarts ()
+  ins = dtLeapInsertions ();
+  S = ins + (0:numel (ins) - 1);
+endfunction
+
+## POSIX time of the start of the minute named by the components, resolving any
+## overflow above the seconds field by ordinary leap-free calendar arithmetic.
+## The seconds are deliberately left out of the call: they may hold 60, which
+## the C++ normaliser would roll into the next minute.  This is the seam that
+## makes MATLAB's split behaviour fall out -- an hour or minute that overflows
+## steps over an inserted second (23:60:00 on a leap day is the next midnight),
+## while the seconds field is counted on the leap-second timeline by the callers
+## below.
+function p = dtLeapMinutePosix (Y, M, D, h, mi, z)
+  p = __datetime__ (Y + z, M + z, D + z, h + z, mi + z, z, 'ConvertTo', ...
+                    'posixtime', 'TimeZone', 'UTC', 'Precision', ...
+                    'microseconds');
+endfunction
+
+## Continuous count of SI seconds since 1970-01-01T00:00:00 UTC for a POSIX
+## instant: POSIX time plus every second inserted up to it.  An insertion is
+## stamped with the POSIX time of the instant after it, so an instant equal to
+## that stamp already has the inserted second behind it.
+function s = dtPosix2Leap (p)
+  ins = dtLeapInsertions ();
+  s = p + reshape (sum (p(:) >= ins, 2), size (p));
+endfunction
+
+## Continuous count of SI seconds since 1970-01-01T00:00:00 UTC for leap-second
+## wall-clock components.  Every UTC day contributes its true length, 86401
+## seconds on a day that ends with an inserted second, so the count is injective
+## across an inserted second and strictly increasing through it.  That is what
+## lets every instant-based operation of the class -- arithmetic, comparison,
+## sorting, set membership, interpolation -- count inserted seconds without
+## knowing they exist.  Not-A-Time maps to NaN and infinite elements keep their
+## sign.
+function s = dtLeapSerial (Y, M, D, h, mi, sec)
+  z = zeros (size (Y + M + D + h + mi + sec));
+  s = dtPosix2Leap (dtLeapMinutePosix (Y, M, D, h, mi, z)) + (sec + z);
+endfunction
+
+## POSIX time of leap-second wall-clock components.  POSIX time cannot name an
+## inserted second, and MATLAB resolves that by folding forward here: the 60th
+## second of a minute shares its stamp with the following second, so 23:59:60
+## reads as the next midnight.  Every other conversion folds backward instead
+## (see dtLeapBackFold), which is not an inconsistency: the tz project's own
+## reference conversion, time2posix(3), folds POSIX forward the same way, while
+## C++20's utc_clock, Rust's chrono and java.time all fold backward.
+function p = dtLeapPosix (Y, M, D, h, mi, sec)
+  z = zeros (size (Y + M + D + h + mi + sec));
+  p = dtLeapMinutePosix (Y, M, D, h, mi, z) + (sec + z);
+endfunction
+
+## Seconds field folded backward, that is, mapped to the last second that is not
+## an inserted one.  The whole second drops by one and any fractional part is
+## kept, so 23:59:60.25 is read as 23:59:59.25.  This is the rule every
+## conversion other than 'posixtime' follows.
+function sec = dtLeapBackFold (sec)
+  sec = sec - (sec >= 60);
+endfunction
+
+## Inverse of 'dtLeapSerial': map a continuous SI-second count back to
+## leap-second wall-clock components.  A count inside an inserted second yields
+## the 60th second of its minute; any other count is an ordinary POSIX time once
+## the whole seconds inserted before it have been taken back out.
+function [Y, M, D, h, mi, sec] = dtLeapComponents (ser)
+  S = dtLeapStarts ();
+  sz = size (ser);
+  v = ser(:);
+  inLeap = any (v >= S & v < S + 1, 2);
+  ## Reading an inserted second as the 59th second of its minute and adding one
+  ## afterwards keeps any fractional part, and needs no leap-day lookup.
+  posix = v - sum (v >= S + 1, 2) - inLeap;
+  [Y, M, D, h, mi, sec] = __datetime__ (reshape (posix, sz), 'ConvertFrom', ...
+                                        'posixtime', 'Precision', ...
+                                        'microseconds');
+  inLeap = reshape (inLeap, sz);
+  sec(inLeap) += 1;
+endfunction
+
+## Re-canonicalise leap-second wall-clock components: read them as a count of
+## SI seconds and read that count back.  Because the seconds field is counted on
+## the leap-second timeline while the fields above it are not, this reproduces
+## MATLAB's whole rule at once.  A 60th second stays put on a day that ends with
+## an inserted second (2016-12-31 23:59:60) and rolls over on any other day or
+## minute (2016-12-30 23:59:60 and 2016-12-31 23:58:60 both become the next
+## minute); one second past it rolls to the next midnight (23:59:61 is
+## 2017-01-01 00:00:00, not 00:00:01, because the minute really did hold 61
+## seconds); one second before a midnight that follows an insertion lands on the
+## inserted second; and a minute or hour that overflows steps over the insertion
+## entirely (23:60:00 is the next midnight).
+function [Yo, Mo, Do, ho, mio, so] = dtLeapNormalize (Y, M, D, h, mi, sec)
+  [Yo, Mo, Do, ho, mio, so] = dtLeapComponents (dtLeapSerial (Y, M, D, h, ...
+                                                              mi, sec));
+endfunction
+
+## Julian or modified Julian date of leap-second wall-clock components, under
+## the stretched-day rule: the day number of the scale at hand, plus the SI
+## seconds elapsed since that day began divided by the day's true length, 86401
+## seconds on a day that holds an inserted second.  Julian days begin at noon
+## and modified Julian days at midnight, so the two scales stretch different
+## spans and on such a day differ by more than the usual 2400000.5.
+function out = dtLeapJulian (Y, M, D, h, mi, sec, doModified)
+  z = zeros (size (Y + M + D + h + mi + sec));
+  Yv = Y + z;  Mv = M + z;  Dv = D + z;
+  ser = dtLeapSerial (Y, M, D, h, mi, sec);
+  if (doModified)
+    ## Modified Julian day 40587 begins at midnight on 1970-01-01.
+    dayNum = datenum (Yv, Mv, Dv) - datenum (1970, 1, 1) + 40587;
+    hourOfDay = 0;
+  else
+    ## Julian day 2440588 begins at noon on 1970-01-01, so an element before
+    ## noon still belongs to the Julian day that opened at the previous noon.
+    dayNum = datenum (Yv, Mv, Dv) - datenum (1970, 1, 1) + 2440588;
+    hourOfDay = 12;
+    early = ser < dtLeapSerial (Yv, Mv, Dv, 12, 0, 0);
+    dayNum(early) -= 1;
+    Dv(early) -= 1;
+  endif
+  ## Taking the day's length as the distance to the next day of the same scale
+  ## picks up an inserted second wherever one falls inside it.
+  dayStart = dtLeapSerial (Yv, Mv, Dv, hourOfDay, 0, 0);
+  dayLen = dtLeapSerial (Yv, Mv, Dv + 1, hourOfDay, 0, 0) - dayStart;
+  out = dayNum + (ser - dayStart) ./ dayLen;
+endfunction
+
+## TAI-UTC offset, in seconds, of an instant before 1972-01-01, given as a POSIX
+## time (which is also the SI-second count there, no second having been inserted
+## yet).  Until 1972 UTC was kept near UT1 by running its seconds at a slightly
+## different rate rather than by inserting whole ones, so the offset of that era
+## is tabulated by the IERS as a base value plus a rate per day, referred to a
+## Modified Julian Date.  Before 1960 there is no table and the offset is zero.
+function dAT = dtDeltaATPre (p)
+  ## POSIX time from which the row applies, base offset in seconds, the MJD the
+  ## base is referred to, and the rate in seconds per day.
+  persistent T = [ -315619200, 1.4178180, 37300, 0.0012960;
+                   -283996800, 1.4228180, 37300, 0.0012960;
+                   -265680000, 1.3728180, 37300, 0.0012960;
+                   -252460800, 1.8458580, 37665, 0.0011232;
+                   -194659200, 1.9458580, 37665, 0.0011232;
+                   -189388800, 3.2401300, 38761, 0.0012960;
+                   -181526400, 3.3401300, 38761, 0.0012960;
+                   -168307200, 3.4401300, 38761, 0.0012960;
+                   -157766400, 3.5401300, 38761, 0.0012960;
+                   -152668800, 3.6401300, 38761, 0.0012960;
+                   -142128000, 3.7401300, 38761, 0.0012960;
+                   -136771200, 3.8401300, 38761, 0.0012960;
+                   -126230400, 4.3131700, 39126, 0.0025920;
+                    -60480000, 4.2131700, 39126, 0.0025920];
+  mjd = p / 86400 + 40587;
+  dAT = zeros (size (p));
+  for k = 1:rows (T)
+    in = p >= T(k,1);
+    dAT(in) = T(k,2) + (mjd(in) - T(k,3)) * T(k,4);
+  endfor
+endfunction
+
+## Correction that carries the SI-second count of an instant before 1972 onto
+## the scale tt2000 is measured on.  From 1972-01-01 the offset from TAI is the
+## ten seconds UTC started out behind plus every second inserted since, and the
+## count already carries both, so the epoch constant alone does the work and the
+## correction is zero.  Earlier there were no inserted seconds and no ten-second
+## head start either, so the tabulated offset of the era replaces them.
+function corr = dtTT2000PreCorr (ser)
+  corr = zeros (size (ser));
+  early = ser < 63072000;                  # 1972-01-01T00:00:00Z
+  if (any (early(:)))
+    corr(early) = dtDeltaATPre (ser(early)) - 10;
+  endif
+endfunction
+
+## Nanoseconds since the tt2000 epoch for a continuous SI-second count.  The
+## epoch is the J2000 Terrestrial Time epoch, 2000-01-01T11:58:55.816Z, which is
+## SI second 946727957.816 of the leap-second timeline (22 seconds had been
+## inserted by then).  The arithmetic is carried on a whole-second part and a
+## nanosecond part because the product overflows a double, whose 53-bit mantissa
+## runs out at 2^53 nanoseconds -- about 104 days -- long before an int64 does.
+function out = dtSerial2TT2000 (ser)
+  ser = ser + dtTT2000PreCorr (ser);
+  sw = floor (ser);
+  dw = sw - 946727957;
+  dn = round ((ser - sw) * 1e6) * 1000 - 816000000;
+  ## Carry so that the nanosecond part stays in [0, 1e9).
+  borrow = dn < 0;
+  dw(borrow) -= 1;
+  dn(borrow) += 1e9;
+  ## An int64 spans -9223372037 s + 145224192 ns to 9223372036 s + 854775807 ns.
+  ok = isfinite (ser) ...
+       & (dw > -9223372037 | (dw == -9223372037 & dn >= 145224192)) ...
+       & (dw <  9223372036 | (dw ==  9223372036 & dn <= 854775807));
+  if (! all (ok(:)))
+    error (strcat ("datetime.convertTo: 'tt2000' conversion is not", ...
+                   " supported for missing values, infinite datetimes,", ...
+                   " or datetimes outside the interval", ...
+                   " [1707-09-22T12:12:10Z, 2292-04-11T11:46:08Z)."));
+  endif
+  ## Assemble the int64 without letting an intermediate overflow: below the
+  ## epoch the whole-second part alone already saturates, so borrow a second
+  ## from it first and take the remainder off afterwards.
+  out = zeros (size (ser), 'int64');
+  lo = dw < 0;
+  out(lo) = (int64 (dw(lo)) + 1) * 1000000000 - (1000000000 - int64 (dn(lo)));
+  out(! lo) = int64 (dw(! lo)) * 1000000000 + int64 (dn(! lo));
+endfunction
+
+## Continuous SI-second count of a tt2000 nanosecond value; the inverse of
+## 'dtSerial2TT2000'.  The int64 is split before it is widened, since converting
+## it whole to a double would lose the nanoseconds.
+function ser = dtTT20002Serial (ns)
+  if (any (ns(:) <= int64 (-9223372036854775805)))
+    error (strcat ("datetime: int64 input values for tt2000 times must be", ...
+                   " larger than -9223372036854775805."));
+  endif
+  dw = double (idivide (ns, int64 (1000000000), 'floor'));
+  dn = double (mod (ns, int64 (1000000000)));
+  w = 946727957 + dw;
+  us = 816000 + round (dn / 1000);
+  carry = us >= 1e6;
+  w(carry) += 1;
+  us(carry) -= 1e6;
+  ser = w + us / 1e6;
+  ## Undo the pre-1972 correction.  It depends on the instant it is applied to,
+  ## but only through a rate of a few milliseconds per year, so a couple of
+  ## passes settle it far below the microsecond the class stores.
+  early = ser < 63072000;
+  if (any (early(:)))
+    target = ser(early);
+    s = target;
+    for k = 1:3
+      s = target - (dtDeltaATPre (s) - 10);
+    endfor
+    ser(early) = s;
+  endif
+endfunction
+
+## Clamp a seconds field that names an inserted second onto a minute that has
+## none.  Calendar arithmetic preserves the wall clock, so adding a month or a
+## calendar day to 2016-12-31 23:59:60 asks for a 60th second of a minute that
+## never had one; MATLAB clamps it to the 59th, just as it clamps the day of the
+## month when a month is added to the 31st.  P is the POSIX time of the start of
+## each target minute.
+function sec = dtLeapClampSecond (sec, p)
+  ins = dtLeapInsertions ();
+  keep = reshape (any (p(:) + 60 == ins, 2), size (p));
+  sec(sec >= 60 & ! keep) -= 1;
 endfunction
 
 ## Integer fixed-epoch conversions (NTP, NTFS/FILETIME, .NET) for convertTo.

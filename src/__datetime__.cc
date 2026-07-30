@@ -370,6 +370,31 @@ Base function for datetime class. \n\
 \n\n\
 @end deftypefn")
 {
+  // The 'leapseconds' mode reports the leap-second table of the shipped tz
+  // database as the POSIX time of each insertion, that is, of the first instant
+  // after the inserted second.  It takes no data and returns a single output,
+  // so it is answered ahead of the output-count guard below.
+  if (args.length () == 1 && args(0).is_string ()
+      && args(0).string_value () == "leapseconds")
+  {
+    octave_value_list ls_out (1);
+    try
+    {
+      const auto& leaps = get_tzdb ().leap_seconds;
+      ColumnVector OUT (leaps.size ());
+      for (size_t i = 0; i < leaps.size (); i++)
+      {
+        OUT(i) = (double) leaps[i].date ().time_since_epoch ().count ();
+      }
+      ls_out(0) = OUT;
+    }
+    catch (const exception& e)
+    {
+      error ("__datetime__: TZDB error: %s", e.what ());
+    }
+    return ls_out;
+  }
+
   // The 'ConvertTo' serial mode returns a single output; every other mode
   // requires either 6 or 7 output arguments.  Detect the mode up front so the
   // output-count guard below can exempt it.

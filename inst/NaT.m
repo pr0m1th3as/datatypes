@@ -91,9 +91,17 @@ function T = NaT (varargin)
     sz = [args{:}];
   endif
 
-  ## Construct datetime object with static method
-  T = datetime (nan (sz), 'ConvertFrom', 'datenum', 'Format', Format, ...
-                'TimeZone', TimeZone);
+  ## Construct datetime object with static method.  The default 'Format' here is
+  ## the same sentinel the datetime constructor falls back to on its own, so
+  ## pass it on only when the caller actually named a format; that leaves a
+  ## time zone which locks its own display format, 'UTCLeapSeconds', free to
+  ## apply it.
+  if (strcmp (Format, 'default'))
+    T = datetime (nan (sz), 'ConvertFrom', 'datenum', 'TimeZone', TimeZone);
+  else
+    T = datetime (nan (sz), 'ConvertFrom', 'datenum', 'Format', Format, ...
+                  'TimeZone', TimeZone);
+  endif
 
 endfunction
 
