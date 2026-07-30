@@ -1573,6 +1573,25 @@ classdef datetime
     ## one; @code{juliandate} stretches the day that holds it (see
     ## @code{juliandate}), and @qcode{'tt2000'} counts it.
     ##
+    ## @strong{Deviations from MATLAB.}  Two results differ deliberately for a
+    ## @qcode{'UTCLeapSeconds'} array, because MATLAB's own are inconsistent.
+    ##
+    ## @itemize
+    ## @item @qcode{'epochtime'} with an @qcode{'Epoch'}: MATLAB folds the array
+    ## onto the POSIX timeline but measures the epoch on the leap-second one, so
+    ## its tick count is short by the number of seconds inserted before that
+    ## epoch.  Counting from @code{2016-12-31} it returns @code{86373} for
+    ## @code{2016-12-31T23:59:59Z}, 26 short.  Both operands are folded the same
+    ## way here, giving @code{86399}.  Only the offset differs: a difference
+    ## between two such counts is the same in either.
+    ## @item @qcode{'tt2000'} between 1960 and 1972: before 1972 UTC did not
+    ## tick with atomic time, and its offset from it is tabulated by the IERS
+    ## as a base value plus a rate per day.  That table is followed here; MATLAB
+    ## evaluates the rate half a day from where the table places it, leaving its
+    ## results up to @code{1.3} milliseconds off.  Outside those twelve years
+    ## the two agree exactly.
+    ## @end itemize
+    ##
     ## @end deftypefn
     function out = convertTo (this, dateType, varargin)
       if (nargin < 2)
@@ -4024,9 +4043,35 @@ classdef datetime
     ## Concatenate datetime arrays.
     ##
     ## @code{@var{C} = cat (@var{dim}, @var{A}, @var{B}, @dots{})} concatenates
-    ## datetime arrays @var{A}, @var{B}, @dots{} along dimension @var{dim}.  All
-    ## input arrays must be datetime arrays and have the same size except along
-    ## the operating dimension @var{dim}.
+    ## the inputs @var{A}, @var{B}, @dots{} along dimension @var{dim}.  They
+    ## must have the same size except along the operating dimension @var{dim}.
+    ##
+    ## At least one input must be a datetime array.  Date/time text, whether a
+    ## character vector, a cellstr, or a @code{string} array, is converted; a
+    ## @math{0*0} empty @code{[]} or @code{@{@}} contributes nothing and is
+    ## dropped, so an array may be accumulated from an empty start.  Any other
+    ## input, an empty numeric array of non-zero size included, is an error.
+    ##
+    ## The first datetime input gives the result its @code{Format} and
+    ## @code{TimeZone}, and is what date/time text is read against: such text
+    ## names a wall clock in that time zone rather than an instant to be
+    ## converted into it.  Text may therefore appear first, as in
+    ## @code{[@qcode{'2024-01-01'}, @var{T}]}, and still be read in @var{T}'s
+    ## zone.
+    ##
+    ## Zoned inputs need not share a time zone; each is converted into the zone
+    ## of the first, which preserves the instant every element names and changes
+    ## only its wall-clock reading.  A zoned input cannot be concatenated with
+    ## an unzoned one, in either order: a wall clock that names no instant and
+    ## one that does do not belong in the same array.  A bare @code{NaT} and
+    ## @code{datetime.empty} are unzoned and so take part in that rule, whereas
+    ## @code{NaT (@qcode{'TimeZone'}, @var{tz})} does not.
+    ##
+    ## @strong{Deviation from MATLAB.}  An empty character vector is dropped
+    ## here, like @code{@{@}}; MATLAB instead appends one @code{NaT} for it, so
+    ## concatenating one adds an element there and none here.  MATLAB's own
+    ## @code{datetime} of an empty character vector yields an element, which this
+    ## implementation rejects as text naming no date at all.
     ##
     ## @end deftypefn
     function out = cat (dim, varargin)
@@ -4036,6 +4081,11 @@ classdef datetime
       ## is often accumulated from -- contributes nothing and is dropped.  An
       ## empty datetime is kept, since whether it carries a time zone still
       ## counts towards the test below.
+      ##
+      ## This also drops an empty char '', where MATLAB appends a NaT for it;
+      ## MATLAB's datetime ('') yields an element, ours rejects text naming no
+      ## date, and dropping it is both consistent with {} and the less
+      ## surprising of the two.  Documented in the cat docstring.
       drop = ! isdt & cellfun (@(x) isequal (size (x), [0, 0]), args);
       args(drop) = [];
       isdt(drop) = [];
@@ -4091,9 +4141,9 @@ classdef datetime
     ##
     ## @code{@var{C} = horzcat (@var{A}, @var{B}, @dots{}} is the equivalent of
     ## the syntax @code{@var{B} = [@var{A}, @var{B}, @dots{}]} and horizontally
-    ## concatenates the datetime arrays @var{A}, @var{B}, @dots{}.  All input
-    ## arrays must be datetime arrays and have the same size except along the
-    ## second dimension.
+    ## concatenates the inputs @var{A}, @var{B}, @dots{}, which must have the
+    ## same size except along the second dimension.  See @code{cat} for which
+    ## inputs are accepted and how their time zones are resolved.
     ##
     ## @end deftypefn
     function out = horzcat (varargin)
@@ -4107,9 +4157,9 @@ classdef datetime
     ##
     ## @code{@var{C} = vertcat (@var{A}, @var{B}, @dots{}} is the equivalent of
     ## the syntax @code{@var{B} = [@var{A}; @var{B}; @dots{}]} and vertically
-    ## concatenates the datetime arrays @var{A}, @var{B}, @dots{}.  All input
-    ## arrays must be datetime arrays and have the same size except along the
-    ## second dimension.
+    ## concatenates the inputs @var{A}, @var{B}, @dots{}, which must have the
+    ## same size except along the first dimension.  See @code{cat} for which
+    ## inputs are accepted and how their time zones are resolved.
     ##
     ## @end deftypefn
     function out = vertcat (varargin)
@@ -4865,6 +4915,13 @@ classdef datetime
     ## 'ntp', 'ntfs', '.net').  Ordinary arrays use their absolute instant; a
     ## leap-second array folds an inserted second backward, which is the rule
     ## every one of those formats follows.
+    ##
+    ## Deliberately unlike MATLAB, which applies this fold to the array but
+    ## measures a user-supplied 'epochtime' Epoch on the leap-second timeline
+    ## instead, so its count is short by the seconds inserted before that epoch
+    ## -- 86373 rather than 86399 for 2016-12-31T23:59:59Z counted from
+    ## 2016-12-31.  Mixing the two timelines cannot be right whichever is
+    ## chosen, so both operands are folded alike here.  Documented in convertTo.
     function p = epochBase (this)
       if (dtIsLeapZone (this.TimeZone))
         p = dtLeapPosix (this.Year, this.Month, this.Day, this.Hour, ...
@@ -6153,6 +6210,14 @@ endfunction
 ## different rate rather than by inserting whole ones, so the offset of that era
 ## is tabulated by the IERS as a base value plus a rate per day, referred to a
 ## Modified Julian Date.  Before 1960 there is no table and the offset is zero.
+##
+## The table is followed as published.  MATLAB's tt2000 disagrees across these
+## twelve years by up to 1.3 ms, its rate evidently evaluated half a day from
+## where the table refers it -- the discrepancy is exactly half a day's worth of
+## each row's rate.  Being bug-compatible here would mean writing an arithmetic
+## error into a published table, so it is not done; documented in convertTo.
+## Outside 1960-1972 the two agree exactly, every probed anchor from 1707 to
+## 2292 included.
 function dAT = dtDeltaATPre (p)
   ## POSIX time from which the row applies, base offset in seconds, the MJD the
   ## base is referred to, and the rate in seconds per day.
