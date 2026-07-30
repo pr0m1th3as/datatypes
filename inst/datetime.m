@@ -5565,10 +5565,11 @@ endfunction
 ## as 'M' and 'm' differ).  NaT elements carry no time of day and are left out
 ## of the decision, so a date-only array keeps its date-only rendering when a
 ## NaT sits beside it; an array holding nothing but NaT says nothing either
-## way and keeps the date+time pattern.
+## way and keeps the date+time pattern.  An infinite datetime carries no time of
+## day either, and is left out on the same grounds.
 function fmt = dtResolveFormat (fmtProp, H, Mi, S)
   if (strcmpi (fmtProp, 'default'))
-    dated = ! isnan (H(:));
+    dated = isfinite (H(:));
     if (! isempty (H) && any (dated) && all ((H(dated) == 0) ...
                                              & (Mi(dated) == 0) ...
                                              & (S(dated) == 0)))
