@@ -1845,7 +1845,8 @@ classdef duration
 ##                                                                            ##
 ## 'abs'              'plus'             'uplus'            'minus'           ##
 ## 'uminus'           'times'            'mtimes'           'ldivide'         ##
-## 'rdivide'          'colon'            'linspace'         'diff'            ##
+## 'rdivide'          'mod'              'colon'            'linspace'        ##
+## 'diff'                                                                     ##
 ## 'sum'              'cumsum'           'min'              'cummin'          ##
 ## 'max'              'cummax'           'floor'            'ceil'            ##
 ## 'round'            'sign'                                                  ##
@@ -2091,6 +2092,41 @@ classdef duration
     ## @var{C} is determined by the size compatibility of @var{A} and @var{B}.
     ##
     ## @end deftypefn
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{C} =} mod (@var{A}, @var{B})
+    ##
+    ## Remainder after division of duration arrays, with the sign of the divisor.
+    ##
+    ## @code{@var{C} = mod (@var{A}, @var{B})} returns the remainder left after
+    ## dividing @var{A} by @var{B}, as a @code{duration} array of the size the
+    ## two broadcast to.  At least one of @var{A} and @var{B} must be a
+    ## @code{duration}; the other may be a @code{duration} or a numeric array,
+    ## which is read as a number of days, the unit a @code{duration} counts in.
+    ##
+    ## The result takes its sign from @var{B} and is zero when @var{B} is, which
+    ## is what distinguishes @code{mod} from @code{rem}: @code{mod} of an hour
+    ## by @math{-1} day differs from @code{rem} of the same.  A remainder by a
+    ## zero duration is @var{A} itself.  The display format is taken from
+    ## whichever operand is a @code{duration}, or from @var{A} when both are.
+    ##
+    ## @end deftypefn
+    function C = mod (A, B)
+      if (isa (A, 'duration') && isa (B, 'duration'))
+        C = A;
+        C.Days = mod (A.Days, B.Days);
+      elseif (isa (A, 'duration') && isnumeric (B))
+        C = A;
+        C.Days = mod (A.Days, double (B));
+      elseif (isnumeric (A) && isa (B, 'duration'))
+        C = B;
+        C.Days = mod (double (A), B.Days);
+      else
+        error (strcat ("duration: 'mod' is not defined between", ...
+                       " '%s' and '%s' arrays."), class (A), class (B));
+      endif
+      C = fix_zero_precision (C);
+    endfunction
+
     function C = rdivide (A, B)
       if (! isa (A, 'duration'))
         error (strcat ("duration: left-hand side must be a duration", ...

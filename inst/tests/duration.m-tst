@@ -1291,7 +1291,8 @@
 ##                                                                            ##
 ## 'abs'              'plus'             'uplus'            'minus'           ##
 ## 'uminus'           'times'            'mtimes'           'ldivide'         ##
-## 'rdivide'          'colon'            'linspace'         'sign'            ##
+## 'rdivide'          'mod'              'colon'            'linspace'        ##
+## 'sign'                                                                     ##
 ## 'sum'              'cumsum'           'diff'             'min'             ##
 ## 'max'              'cummin'           'cummax'           'floor'           ##
 ## 'ceil'             'round'                                                 ##
@@ -1316,6 +1317,41 @@
 %! days (1) + {'24:00:00'}
 %!error<duration: addition is not defined between 'duration' and 'string' arrays.> ...
 %! days (1) + string('24:00:00')
+
+## mod: remainder takes the sign of the divisor.  Asserted in days, the unit a
+## duration stores, so the arithmetic is exact; the same in hours carries the
+## rounding of 7/24 and needs a tolerance.
+%!assert_equal (days (mod (days ([7, -7, 7, -7]), days ([2, 2, -2, -2]))), ...
+%!              [1, 1, -1, -1])
+%!assert_equal (days (mod (days ([1, 2, 3]), days (2))), [1, 0, 1])
+%!assert_equal (hours (mod (hours ([7, -7, 7, -7]), hours ([2, 2, -2, -2]))), ...
+%!              [1, 1, -1, -1], 1e-9)
+## mod: a numeric operand counts days, on either side
+%!assert_equal (hours (mod (hours (7), 2)), 7, 1e-9)
+%!assert_equal (hours (mod (7, hours (2))), 0, 1e-9)
+%!assert_equal (hours (mod (hours (7), days (1))), 7, 1e-9)
+## mod: a zero divisor leaves the dividend, and NaN carries through either side
+%!assert_equal (days (mod (days (7), days (0))), 7)
+%!assert_equal (days (mod (days (NaN), days (2))), NaN)
+%!assert_equal (days (mod (days (7), days (NaN))), NaN)
+## mod: the display format comes from the duration operand
+%!assert_equal (mod (hours (7), hours (2)).Format, 'h')
+%!assert_equal (mod (7, hours (2)).Format, 'h')
+%!test
+%! x = days (3);
+%! x.Format = 'h';
+%! assert_equal (mod (x, days (2)).Format, 'h');
+## mod: shape is kept for an array of any number of dimensions
+%!assert_equal (size (mod (hours (reshape (1:8, 2, 2, 2)), hours (3))), [2, 2, 2])
+%!assert_equal (days (mod (days (reshape (1:8, 2, 2, 2)), days (3))), ...
+%!              mod (reshape (1:8, 2, 2, 2), 3))
+## mod: anything that is not a duration or numeric is refused
+%!error<duration: 'mod' is not defined between 'duration' and 'calendarDuration' arrays.> ...
+%! mod (hours (7), calmonths (1))
+%!error<duration: 'mod' is not defined between 'duration' and 'char' arrays.> ...
+%! mod (hours (7), '2')
+%!error<duration: 'mod' is not defined between 'cell' and 'duration' arrays.> ...
+%! mod ({2}, hours (7))
 
 %!assert_equal (days (+ days (-3)), -3)
 %!assert_equal (days (+ days (magic (3))), magic (3))
