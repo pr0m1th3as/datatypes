@@ -1845,8 +1845,8 @@ classdef duration
 ##                                                                            ##
 ## 'abs'              'plus'             'uplus'            'minus'           ##
 ## 'uminus'           'times'            'mtimes'           'ldivide'         ##
-## 'rdivide'          'mod'              'rem'              'colon'           ##
-## 'linspace'         'diff'                                                  ##
+## 'rdivide'          'mldivide'         'mod'              'rem'             ##
+## 'colon'            'linspace'         'diff'                              ##
 ## 'sum'              'cumsum'           'min'              'cummin'          ##
 ## 'max'              'cummax'           'floor'            'ceil'            ##
 ## 'round'            'sign'                                                  ##
@@ -2161,6 +2161,57 @@ classdef duration
                        " '%s' and '%s' arrays."), class (A), class (B));
       endif
       C = fix_zero_precision (C);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {duration} {@var{C} =} mldivide (@var{A}, @var{B})
+    ##
+    ## Left division of duration arrays, @code{@var{A} \ @var{B}}.
+    ##
+    ## @code{@var{C} = mldivide (@var{A}, @var{B})} divides @var{B} by @var{A}.
+    ## The denominator @var{A} decides what the result means and must be a
+    ## scalar.  Dividing a @code{duration} by a number scales it, giving a
+    ## @code{duration}; dividing one @code{duration} by another gives how many
+    ## times one goes into the other, a plain number carrying no unit.  A zero
+    ## denominator gives @code{Inf}, as it does for numbers.
+    ##
+    ## Dividing a number by a @code{duration} is not defined, having no meaning,
+    ## and neither is a non-scalar denominator.  The display format of a
+    ## @code{duration} result is that of @var{B}.
+    ##
+    ## Unlike MATLAB, an integer denominator is accepted and converted, as it is
+    ## by @code{rdivide} and @code{times} here; MATLAB requires a @code{double}
+    ## while accepting a @code{logical}, which the same rule cannot explain.
+    ##
+    ## @end deftypefn
+    function C = mldivide (A, B)
+      if (isa (A, 'duration'))
+        if (! isa (B, 'duration'))
+          error (strcat ("duration: left division of a '%s' array by a", ...
+                         " duration is not defined."), class (B));
+        elseif (! isscalar (A))
+          error (strcat ("duration: the denominator in left division must", ...
+                         " be a scalar."));
+        endif
+        C = B.Days ./ A.Days;
+      elseif (isnumeric (A) || islogical (A))
+        if (! isa (B, 'duration'))
+          error (strcat ("duration: left division is not defined between", ...
+                         " '%s' and '%s' arrays."), class (A), class (B));
+        elseif (! isscalar (A))
+          error (strcat ("duration: the denominator in left division must", ...
+                         " be a scalar."));
+        elseif (! isreal (A))
+          error (strcat ("duration: the denominator in left division must", ...
+                         " be real."));
+        endif
+        C = B;
+        C.Days = B.Days ./ double (A);
+        C = fix_zero_precision (C);
+      else
+        error (strcat ("duration: left division is not defined between", ...
+                       " '%s' and '%s' arrays."), class (A), class (B));
+      endif
     endfunction
 
     function C = rdivide (A, B)
