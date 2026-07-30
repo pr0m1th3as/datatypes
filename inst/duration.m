@@ -1279,6 +1279,89 @@ classdef duration
     endfunction
 
     ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{TF} =} isregular (@var{D})
+    ## @deftypefnx {duration} {@var{TF} =} isregular (@var{D}, @var{COMPONENT})
+    ## @deftypefnx {duration} {[@var{TF}, @var{DT}] =} isregular (@dots{})
+    ##
+    ## Return true if a duration vector is regularly spaced.
+    ##
+    ## @code{@var{TF} = isregular (@var{D})} returns true when the elements of
+    ## the duration vector @var{D} are evenly spaced, that is, when every step
+    ## from one element to the next is the same and is not zero.  A second
+    ## output @var{DT} gives that step, and is @code{NaN} when there is none.
+    ##
+    ## A sequence that does not move is not regularly spaced: a step of zero
+    ## describes no spacing, so @code{isregular} of a constant vector is false.
+    ## A descending vector is regular, with a negative step.  A @code{NaN} or an
+    ## infinite element anywhere makes the vector irregular, as does having
+    ## fewer than two elements, so a scalar and an empty array are both false.
+    ## @var{D} must be a vector; a matrix is an error.
+    ##
+    ## @code{@var{TF} = isregular (@var{D}, @var{COMPONENT})} asks about a
+    ## particular component, one of @qcode{'Years'}, @qcode{'Quarters'},
+    ## @qcode{'Months'}, @qcode{'Weeks'}, @qcode{'Days'} or @qcode{'Time'}.  A
+    ## duration measures elapsed time and knows nothing of a calendar, so only
+    ## @qcode{'Time'}, the default, can be true; every calendar component is
+    ## false however the vector is spaced.  The argument exists so that a
+    ## duration can be asked the same question as a @code{datetime}.
+    ##
+    ## Steps are compared within a few @code{eps} of the largest value present
+    ## rather than exactly, because subtracting neighbouring durations rounds:
+    ## even one, two and three hours have steps differing in the last bit, and
+    ## an exact test would call that irregular.  MATLAB tolerates a difference
+    ## of about the same size, for the same reason.
+    ##
+    ## @strong{Deviation from MATLAB.}  A negative step is returned there
+    ## formatted in seconds whatever the vector's own format; here the step
+    ## keeps @var{D}'s format whichever way the vector runs.
+    ##
+    ## @end deftypefn
+    function [TF, DT] = isregular (this, component = 'time')
+      comps = {'time', 'years', 'quarters', 'months', 'weeks', 'days'};
+      if (! (ischar (component) && isrow (component)
+             && any (strcmpi (component, comps))))
+        error (strcat ("duration.isregular: COMPONENT must be 'Years',", ...
+                       " 'Quarters', 'Months', 'Weeks', 'Days', or 'Time'."));
+      endif
+      DT = duration (0, 0, NaN);
+      ## Only elapsed time can be regular: a duration has no calendar for a
+      ## calendar component to be counted against.
+      if (! strcmpi (component, 'time'))
+        TF = false;
+        return;
+      endif
+      ## Fewer than two elements have no step to be regular about.
+      if (numel (this) < 2)
+        TF = false;
+        return;
+      elseif (! isvector (this))
+        error ("duration.isregular: input must be a duration vector.");
+      endif
+      d = diff (this);
+      ds = days (d);
+      ## Steps are compared within a few eps of the largest value present, not
+      ## exactly.  Subtracting neighbouring durations rounds, so even a vector
+      ## as plainly regular as one, two and three hours has steps differing in
+      ## the last bit; an exact test would call it irregular.  The tolerance is
+      ## taken from the values rather than the steps, since that is where the
+      ## rounding comes from.
+      scale = max (abs (days (this)(:)));
+      if (! isfinite (scale))
+        scale = 0;
+      endif
+      tol = 4 * eps (scale);
+      TF = isfinite (ds(1)) && ds(1) != 0 ...
+           && all (abs (ds(:) - ds(1)) <= tol);
+      if (TF)
+        ## Build the scalar step by setting the value rather than by indexing:
+        ## inside the class's own methods, d(1) does not go through subsref and
+        ## hands back the whole array.
+        DT = d;
+        DT.Days = ds(1);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
     ## @deftypefn {duration} {@var{TF} =} isrow (@var{D})
     ##
     ## Return true if duration array is a row vector.
