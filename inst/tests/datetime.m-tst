@@ -406,9 +406,41 @@
 %! assert_equal (isnat (d), logical ([0, 1]));
 %! assert_equal (d.Second(1), 60);
 
-## Test 'datetime' constructor -- a non-vector character array is still refused
+## Test 'datetime' constructor -- a character matrix holds one date per row,
+## giving a column, with trailing blanks trimmed
+%!test
+%! d = datetime (['2024-01-01'; '2024-01-02']);
+%! assert_equal (size (d), [2, 1]);
+%! assert_equal (d.Day, [1; 2]);
+%!test
+%! d = datetime (['01-Jan-2024'; '02-Jan-2024'; '03-Jan-2024']);
+%! assert_equal (size (d), [3, 1]);
+%! assert_equal (d.Day, [1; 2; 3]);
+%!assert_equal (size (datetime (['2024-01-01'])), [1, 1])
+%!test
+%! d = datetime (['2024-01-01  '; '2024-01-02  ']);
+%! assert_equal (d.Day, [1; 2]);
+%!test
+%! d = datetime (['2024-01-01'; '2024-01-02'], 'InputFormat', 'uuuu-MM-dd');
+%! assert_equal (d.Day, [1; 2]);
+%!test
+%! d = datetime (['2024-01-01'; '2024-01-02'], 'TimeZone', 'UTC');
+%! assert_equal (size (d), [2, 1]);
+%! assert_equal (d.TimeZone, 'UTC');
+
+## Test 'datetime' constructor -- a blank row of a character matrix names no
+## date, while a matrix with no rows holds no text at all
+%!test
+%! d = datetime (['2024-01-01'; '          ']);
+%! assert_equal (size (d), [2, 1]);
+%! assert_equal (isnat (d), logical ([0; 1]));
+%!assert_equal (size (datetime (char (zeros (0, 10)))), [0, 1])
+%!assert_equal (size (datetime ('')), [1, 1])
+
+## Test 'datetime' constructor -- a character array of more than two dimensions
+## is refused
 %!error <datetime: invalid type for 'DateStrings'.> ...
-%! datetime (['2024-01-01'; '2024-01-02'])
+%! datetime (reshape (repmat ('a', 1, 8), 2, 2, 2))
 
 ## Test 'cat' -- empty text adds one missing element, an empty container none
 %!test

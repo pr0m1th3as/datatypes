@@ -588,12 +588,23 @@ classdef datetime
         DateStrings = "";
         ## The relative-day keywords are text too, but name no date to parse and
         ## are answered by the builtin further down.
-        isRelDay = ischar (args{1}) && any (strcmpi (args, {'now', 'today', ...
-                                            'yesterday', 'tomorrow'}));
-        if (ischar (args{1}) && ! (isvector (args{1}) || isempty (args{1})))
+        isRelDay = ischar (args{1}) && isrow (args{1}) ...
+                   && any (strcmpi (args{1}, {'now', 'today', 'yesterday', ...
+                                              'tomorrow'}));
+        if (ischar (args{1}) && ndims (args{1}) > 2)
           error ("datetime: invalid type for 'DateStrings'.");
         elseif (! isRelDay)
-          DateStrings = cellstr (args{1});
+          if (ischar (args{1}) && rows (args{1}) == 0
+                               && columns (args{1}) > 0)
+            ## A character matrix with no rows holds no text at all, unlike ''
+            ## which is one empty piece of it.  Octave's 'cellstr' does not draw
+            ## that line, reporting one empty string for either.
+            DateStrings = cell (0, 1);
+          else
+            ## A character matrix holds one date per row, which is what
+            ## 'cellstr' reads it as, trailing blanks trimmed.
+            DateStrings = cellstr (args{1});
+          endif
         endif
         if (! isRelDay)
           if (isempty (DateStrings))
