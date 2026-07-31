@@ -2566,13 +2566,105 @@ classdef datetime
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'sort'             'sortrows'         'unique'           'interp1'         ##
-## 'intersect'        'setdiff'          'setxor'           'union'           ##
-## 'min'              'max'                                                   ##
+## 'maxk'             'mink'             'sort'             'sortrows'        ##
+## 'unique'           'interp1'          'intersect'        'setdiff'         ##
+## 'setxor'           'union'            'min'              'max'             ##
 ##                                                                            ##
 ################################################################################
 
   methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{B} =} maxk (@var{A}, @var{K})
+    ## @deftypefnx {datetime} {@var{B} =} maxk (@var{A}, @var{K}, @var{dim})
+    ## @deftypefnx {datetime} {[@var{B}, @var{index}] =} maxk (@var{A}, @dots{})
+    ##
+    ## Find the latest elements in a datetime array.
+    ##
+    ## @code{@var{B} = maxk (@var{A}, @var{K})} returns the @var{K} latest
+    ## elements of the datetime array @var{A} in descending order.  If @var{A}
+    ## is a vector, then @var{B} is a vector with @var{K} elements.  If @var{A}
+    ## is a matrix, then @code{maxk} operates along each column of @var{A} and
+    ## @var{B} has @var{K} rows.  For multidimensional arrays, @code{maxk}
+    ## operates along the first non-singleton dimension.  Elements are ranked
+    ## by the instant they name, so an array with a time zone is ranked by
+    ## absolute time rather than by its wall clock.
+    ##
+    ## @code{@var{B} = maxk (@var{A}, @var{K}, @var{dim})} operates along the
+    ## dimension specified by @var{dim}.
+    ##
+    ## @var{K} must be a nonnegative integer scalar.  If @var{K} is larger than
+    ## the number of elements along the operating dimension, then all of them
+    ## are returned.  Infinite datetimes are ranked as ordinary values.
+    ##
+    ## Missing elements (@qcode{NaT}) are not ranked.  They are appended after
+    ## the ranked elements in their original order, and hence they only appear
+    ## in @var{B} when @var{K} exceeds the number of non-missing elements along
+    ## the operating dimension.  Unlike @code{sort}, @code{maxk} has no
+    ## @qcode{'MissingPlacement'} option, since @qcode{NaT} elements are always
+    ## placed last.  Elements comparing as equal keep their original order.
+    ##
+    ## @code{[@var{B}, @var{index}] = maxk (@var{A}, @dots{})} also returns an
+    ## index array containing the indices of the returned elements of @var{A}
+    ## along the operating dimension.
+    ##
+    ## @end deftypefn
+    function [B, index] = maxk (A, K, varargin)
+      if (nargin < 2)
+        error ("datetime.maxk: too few input arguments.");
+      endif
+      [index, lidx, errmsg] = __minmaxk__ (serial (A), K, true, varargin);
+      if (! isempty (errmsg))
+        error ("datetime.maxk: %s", errmsg);
+      endif
+      B = subset (A, lidx);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{B} =} mink (@var{A}, @var{K})
+    ## @deftypefnx {datetime} {@var{B} =} mink (@var{A}, @var{K}, @var{dim})
+    ## @deftypefnx {datetime} {[@var{B}, @var{index}] =} mink (@var{A}, @dots{})
+    ##
+    ## Find the earliest elements in a datetime array.
+    ##
+    ## @code{@var{B} = mink (@var{A}, @var{K})} returns the @var{K} earliest
+    ## elements of the datetime array @var{A} in ascending order.  If @var{A}
+    ## is a vector, then @var{B} is a vector with @var{K} elements.  If @var{A}
+    ## is a matrix, then @code{mink} operates along each column of @var{A} and
+    ## @var{B} has @var{K} rows.  For multidimensional arrays, @code{mink}
+    ## operates along the first non-singleton dimension.  Elements are ranked
+    ## by the instant they name, so an array with a time zone is ranked by
+    ## absolute time rather than by its wall clock.
+    ##
+    ## @code{@var{B} = mink (@var{A}, @var{K}, @var{dim})} operates along the
+    ## dimension specified by @var{dim}.
+    ##
+    ## @var{K} must be a nonnegative integer scalar.  If @var{K} is larger than
+    ## the number of elements along the operating dimension, then all of them
+    ## are returned.  Infinite datetimes are ranked as ordinary values.
+    ##
+    ## Missing elements (@qcode{NaT}) are not ranked.  They are appended after
+    ## the ranked elements in their original order, and hence they only appear
+    ## in @var{B} when @var{K} exceeds the number of non-missing elements along
+    ## the operating dimension.  Unlike @code{sort}, @code{mink} has no
+    ## @qcode{'MissingPlacement'} option, since @qcode{NaT} elements are always
+    ## placed last.  Elements comparing as equal keep their original order.
+    ##
+    ## @code{[@var{B}, @var{index}] = mink (@var{A}, @dots{})} also returns an
+    ## index array containing the indices of the returned elements of @var{A}
+    ## along the operating dimension.
+    ##
+    ## @end deftypefn
+    function [B, index] = mink (A, K, varargin)
+      if (nargin < 2)
+        error ("datetime.mink: too few input arguments.");
+      endif
+      [index, lidx, errmsg] = __minmaxk__ (serial (A), K, false, varargin);
+      if (! isempty (errmsg))
+        error ("datetime.mink: %s", errmsg);
+      endif
+      B = subset (A, lidx);
+    endfunction
 
     ## -*- texinfo -*-
     ## @deftypefn  {datetime} {@var{B} =} sort (@var{A})

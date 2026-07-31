@@ -3730,6 +3730,162 @@
 %!error <datetime.sort: invalid input argument.> ...
 %! sort (datetime (2021, 1, 1), {1});
 
+## Test 'maxk' -- the K latest elements come back in descending order
+%!test
+%! [b, i] = maxk (datetime (2024, 1, [3, 1, 2, 5]), 3);
+%! assert_equal (b.Day, [5, 3, 2]);
+%! assert_equal (i, [4, 1, 3]);
+
+## Test 'maxk' -- ties keep their original order
+%!test
+%! [b, i] = maxk (datetime (2024, 1, [2, 1, 2, 1, 2]), 3);
+%! assert_equal (b.Day, [2, 2, 2]);
+%! assert_equal (i, [1, 3, 5]);
+
+## Test 'mink' -- the K earliest elements come back in ascending order
+%!test
+%! [b, i] = mink (datetime (2024, 1, [3, 1, 2, 5]), 3);
+%! assert_equal (b.Day, [1, 2, 3]);
+%! assert_equal (i, [2, 3, 1]);
+
+## Test 'mink' -- ties keep their original order
+%!test
+%! [b, i] = mink (datetime (2024, 1, [2, 1, 2, 1, 2]), 3);
+%! assert_equal (b.Day, [1, 1, 2]);
+%! assert_equal (i, [2, 4, 1]);
+
+## Test 'maxk'/'mink' -- Not-A-Time is never ranked
+%!test
+%! t = datetime (2024, 1, [3, NaN, 1, NaN, 5]);
+%! [b, i] = maxk (t, 3);
+%! assert_equal (b.Day, [5, 3, 1]);
+%! assert_equal (i, [5, 1, 3]);
+%! [b, i] = mink (t, 3);
+%! assert_equal (b.Day, [1, 3, 5]);
+%! assert_equal (i, [3, 1, 5]);
+
+## Test 'maxk'/'mink' -- Not-A-Time is appended last in either direction, and
+## only once K passes the number of non-missing elements
+%!test
+%! t = datetime (2024, 1, [3, NaN, 1, NaN, 5]);
+%! [b, i] = maxk (t, 10);
+%! assert_equal (isnat (b), logical ([0, 0, 0, 1, 1]));
+%! assert_equal (b.Day(1:3), [5, 3, 1]);
+%! assert_equal (i, [5, 1, 3, 2, 4]);
+%! [b, i] = mink (t, 10);
+%! assert_equal (isnat (b), logical ([0, 0, 0, 1, 1]));
+%! assert_equal (b.Day(1:3), [1, 3, 5]);
+%! assert_equal (i, [3, 1, 5, 2, 4]);
+
+## Test 'maxk'/'mink' -- an all-missing array returns missing elements
+%!test
+%! t = datetime ([NaN, NaN, NaN], 1, 1);
+%! [b, i] = maxk (t, 2);
+%! assert_equal (isnat (b), logical ([1, 1]));
+%! assert_equal (i, [1, 2]);
+%! [b, i] = mink (t, 2);
+%! assert_equal (isnat (b), logical ([1, 1]));
+%! assert_equal (i, [1, 2]);
+
+## Test 'maxk'/'mink' -- a matrix ranks down each column by default
+%!test
+%! a = datetime (2024, 1, [1, 5; 4, 2; 3, 6]);
+%! [b, i] = maxk (a, 2);
+%! assert_equal (b.Day, [4, 6; 3, 5]);
+%! assert_equal (i, [2, 3; 3, 1]);
+%! [b, i] = mink (a, 2);
+%! assert_equal (b.Day, [1, 2; 3, 5]);
+%! assert_equal (i, [1, 2; 3, 1]);
+
+## Test 'maxk' -- dimension two ranks along each row
+%!test
+%! a = datetime (2024, 1, [1, 5; 4, 2; 3, 6]);
+%! [b, i] = maxk (a, 2, 2);
+%! assert_equal (b.Day, [5, 1; 4, 2; 6, 3]);
+%! assert_equal (i, [2, 1; 1, 2; 2, 1]);
+
+## Test 'maxk' -- a dimension beyond the array leaves it unchanged
+%!test
+%! a = datetime (2024, 1, [1, 5; 4, 2; 3, 6]);
+%! [b, i] = maxk (a, 2, 3);
+%! assert_equal (b.Day, [1, 5; 4, 2; 3, 6]);
+%! assert_equal (i, ones (3, 2));
+
+## Test 'maxk' -- an array of more than two dimensions is ranked along the
+## dimension asked for, checked against the numeric answer
+%!test
+%! x = cat (3, [5 1 9; 2 8 4], [7 3 6; 10 12 11]);
+%! a = datetime (2024, 1, x);
+%! w = sort (x, 1, 'descend');
+%! assert_equal (maxk (a, 2, 1).Day, w(1:2,:,:));
+%! w = sort (x, 2, 'descend');
+%! assert_equal (maxk (a, 2, 2).Day, w(:,1:2,:));
+%! w = sort (x, 3, 'descend');
+%! assert_equal (maxk (a, 2, 3).Day, w(:,:,1:2));
+
+## Test 'maxk'/'mink' -- K may be zero, and empties keep their orientation
+%!assert_equal (size (maxk (datetime (2024, 1, [1, 2, 3]), 0)), [1, 0])
+%!assert_equal (size (mink (datetime (2024, 1, [1, 2, 3]), 0)), [1, 0])
+%!assert_equal (size (maxk (datetime (2024, 1, [1, 5; 4, 2; 3, 6]), 0)), [0, 2])
+%!assert_equal (size (maxk (datetime.empty (0, 0), 2)), [0, 0])
+%!assert_equal (class (maxk (datetime (2024, 1, 1), 1)), 'datetime')
+
+## Test 'maxk' -- a zoned array ranks by absolute instant and keeps its zone
+%!test
+%! z = datetime (2024, 1, [3, 1, 5], 'TimeZone', 'America/New_York');
+%! [b, i] = maxk (z, 2);
+%! assert_equal (b.Day, [5, 3]);
+%! assert_equal (i, [3, 1]);
+%! assert_equal (b.TimeZone, 'America/New_York');
+
+## Test 'maxk' -- the display format is carried through
+%!test
+%! t = datetime (2024, 1, [3, 1, 5]);
+%! t.Format = 'yyyy-MM-dd';
+%! assert_equal (maxk (t, 2).Format, 'yyyy-MM-dd');
+
+## Test 'maxk' -- an inserted leap second ranks as the latest instant
+%!test
+%! L = datetime (2016, 12, 31, 23, 59, [58, 59, 60], ...
+%!               'TimeZone', 'UTCLeapSeconds');
+%! [b, i] = maxk (L, 2);
+%! assert_equal (b.Second, [60, 59]);
+%! assert_equal (i, [3, 2]);
+
+## Test 'maxk'/'mink' -- infinite datetimes rank as ordinary values
+%!test
+%! pinf = datetime (Inf, 'ConvertFrom', 'datenum');
+%! ninf = datetime (-Inf, 'ConvertFrom', 'datenum');
+%! t = [pinf, ninf, datetime(2024, 1, 1), NaT];
+%! [b, i] = maxk (t, 4);
+%! assert_equal (i, [1, 3, 2, 4]);
+%! assert_equal (isnat (b), logical ([0, 0, 0, 1]));
+%! [b, i] = mink (t, 4);
+%! assert_equal (i, [2, 3, 1, 4]);
+%! assert_equal (isnat (b), logical ([0, 0, 0, 1]));
+
+## Test 'maxk'/'mink' -- error branches
+%!error <datetime.maxk: too few input arguments.> maxk (datetime (2024, 1, 1))
+%!error <datetime.mink: too few input arguments.> mink (datetime (2024, 1, 1))
+%!error <datetime.maxk: K must be a nonnegative integer scalar.> ...
+%! maxk (datetime (2024, 1, [1, 2, 3]), 2.5)
+%!error <datetime.maxk: K must be a nonnegative integer scalar.> ...
+%! maxk (datetime (2024, 1, [1, 2, 3]), -1)
+%!error <datetime.maxk: K must be a nonnegative integer scalar.> ...
+%! maxk (datetime (2024, 1, [1, 2, 3]), [2, 3])
+%!error <datetime.mink: K must be a nonnegative integer scalar.> ...
+%! mink (datetime (2024, 1, [1, 2, 3]), Inf)
+%!error <datetime.maxk: DIM must be a positive integer scalar.> ...
+%! maxk (datetime (2024, 1, [1, 2, 3]), 2, 0)
+%!error <datetime.mink: DIM must be a positive integer scalar.> ...
+%! mink (datetime (2024, 1, [1, 2, 3]), 2, 1.5)
+%!error <datetime.maxk: 'ComparisonMethod' is not a supported option.> ...
+%! maxk (datetime (2024, 1, [1, 2, 3]), 2, 'ComparisonMethod', 'abs')
+%!error <datetime.mink: 'MissingPlacement' is not a supported option.> ...
+%! mink (datetime (2024, 1, [1, 2, 3]), 2, 'MissingPlacement', 'first')
+%!error <datetime.maxk: too many input arguments.> ...
+%! maxk (datetime (2024, 1, [1, 2, 3]), 2, 1, 2)
+
 ## Test 'issorted' -- ascending (non-decreasing) is the default
 %!assert_equal (issorted (datetime (2021, 1, [1, 2, 3])), true)
 %!assert_equal (issorted (datetime (2021, 1, [3, 2, 1])), false)
