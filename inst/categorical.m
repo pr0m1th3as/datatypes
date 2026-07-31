@@ -3804,20 +3804,27 @@ classdef categorical
     ##
     ## @code{@var{B} = topkrows (@var{A}, @var{K})} returns the top @var{K} rows
     ## of the 2-D categorical array @var{A} sorted in descending order as a
-    ## group.
+    ## group.  @var{K} must be a nonnegative integer scalar.  If @var{K} is
+    ## larger than the number of rows in @var{A}, then all of them are returned.
+    ## @var{B} keeps the categories of @var{A}, including their order.
+    ##
+    ## Missing elements (@qcode{<undefined>}) are not ranked.  Within each sort
+    ## column they are placed after the elements that are defined, whichever
+    ## direction is asked for, so a row is demoted only by a missing element in
+    ## a column that actually decides its position.  Rows comparing as equal
+    ## keep their original order.
     ##
     ## @code{@var{B} = topkrows (@var{A}, @var{K}, @var{col})} returns the top
     ## @var{K} rows of the 2-D categorical array @var{A} sorted according to the
-    ## columns specified by the numeric vector @var{col}, which must explicitly
-    ## contain non-zero integers whose absolute values index existing columns in
-    ## @var{A}.  Positive elements sort the corresponding columns in ascending
-    ## order, while negative elements sort the corresponding columns in
-    ## descending order.
+    ## columns specified by the numeric vector @var{col}, which must contain
+    ## positive integers indexing existing columns in @var{A}.  Columns are used
+    ## as sort keys in the order given, and those not listed are not used at
+    ## all.  The direction is descending unless @var{direction} says otherwise.
     ##
     ## @code{@var{B} = topkrows (@var{A}, @var{K}, @var{direction})} returns the
     ## top @var{K} rows of the 2-D categorical array @var{A} sorted according to
-    ## @var{direction}, which can be either @qcode{'ascend'} (default) or
-    ## @qcode{'descend'} applying to all columns in @var{A}.  Alternatively,
+    ## @var{direction}, which can be either @qcode{'descend'} (default) or
+    ## @qcode{'ascend'} applying to all columns in @var{A}.  Alternatively,
     ## @var{direction} can be a cell array of character vectors specifying
     ## the sorting direction for each individual column of @var{A}, in which
     ## case the number of elements in @var{direction} must equal the number of
@@ -3826,25 +3833,109 @@ classdef categorical
     ## @code{@var{B} = topkrows (@var{A}, @var{K}, @var{col}, @var{direction})}
     ## returns the top @var{K} rows of the 2-D categorical array @var{A} sorted
     ## according to the columns specified in @var{col} using the corresponding
-    ## sorting direction specified in @var{direction}.  In this case, the sign
-    ## of the values in @var{col} is ignored.  @var{col} and @var{direction}
-    ## must have the same length, but not necessarily the same number of
-    ## elements as the columns in @var{A}.
+    ## sorting direction specified in @var{direction}.  @var{col} and
+    ## @var{direction} must have the same length, but not necessarily the same
+    ## number of elements as the columns in @var{A}.
+    ##
+    ## @code{@var{B} = topkrows (@dots{}, @qcode{'MissingPlacement'}, @var{MP})}
+    ## specifies where the missing elements (@qcode{<undefined>}) are placed
+    ## within each sort column, with any of the following options specified in
+    ## @var{MP}:
+    ##
+    ## @itemize
+    ## @item @qcode{'last'}, which is the default, places missing elements last
+    ## whichever direction is asked for.
+    ## @item @qcode{'first'} places missing elements first.
+    ## @item @qcode{'auto'} places missing elements last for an ascending sort
+    ## and first for a descending one, as @code{sortrows} does.
+    ## @end itemize
+    ##
+    ## This is an Octave extension: MATLAB has no such option here and always
+    ## ranks as @qcode{'last'} does.
+    ##
+    ## @code{[@var{B}, @var{index}] = topkrows (@var{A}, @dots{})} also returns
+    ## an index vector containing the original row indices of @var{A} in
+    ## @var{B}, such that @code{@var{B} = @var{A}(@var{index},:)}.
     ##
     ## @end deftypefn
     function [B, index] = topkrows (A, K, varargin)
-      ## Check input argument
+      ## Check input arguments
       if (nargin < 2)
         error ("categorical.topkrows: too few input arguments.");
       endif
-      if (! (isscalar (K) && fix (K) == K && K > 0))
-        error ("categorical.topkrows: K must be a positive integer scalar.");
+      if (ndims (A) != 2)
+        error ("categorical.topkrows: A must be a 2-D matrix.");
       endif
-      ## Sort rows
-      if (numel (varargin) == 0)
-        [B, index] = sortrows (A, 'descend');
+      if (! (isnumeric (K) && isscalar (K) && isreal (K) && isfinite (K) &&
+             fix (K) == K && K >= 0))
+        error ("categorical.topkrows: K must be a nonnegative integer scalar.");
+      endif
+      args = varargin;
+      if (numel (args) > 0)
+        [args{:}] = convertStringsToChars (args{:});
+      endif
+      ## 'MissingPlacement' is an Octave extension: MATLAB has no such option
+      ## here and always places undefined elements last, which is the default.
+      ## Taken out of the argument list before the positional ones are read.
+      MP = 'last';
+      mid = find (cellfun (@(x) ischar (x) && ...
+                           strcmpi (x, 'MissingPlacement'), args));
+      if (! isempty (mid))
+        if (mid(1) == numel (args))
+          error (strcat ("categorical.topkrows: 'MissingPlacement' requires", ...
+                         " a value."));
+        endif
+        MP = args{mid(1)+1};
+        if (! (ischar (MP) && isrow (MP)) ||
+            ! any (strcmpi (MP, {'auto', 'first', 'last'})))
+          error (strcat ("categorical.topkrows: invalid value for", ...
+                         " 'MissingPlacement'."));
+        endif
+        args([mid(1), mid(1)+1]) = [];
+      endif
+      if (numel (args) > 2)
+        error ("categorical.topkrows: too many input arguments.");
+      endif
+      ## Split the optional arguments into COL and DIRECTION.  Unlike
+      ## 'sortrows', the default direction is descending: these are the top
+      ## rows, not the first ones.
+      col = [];
+      direction = 'descend';
+      for i = 1:numel (args)
+        if (isnumeric (args{i}))
+          col = args{i};
+        elseif (ischar (args{i}) || iscellstr (args{i}))
+          direction = args{i};
+        else
+          error (strcat ("categorical.topkrows: optional arguments must be", ...
+                         " a column list or a sorting direction."));
+        endif
+      endfor
+      ## Unlike 'sortrows', COL must be positive: a negative column does not
+      ## select a direction here, as MATLAB also refuses it.
+      if (! isempty (col))
+        if (! (isvector (col) && isreal (col) && all (isfinite (col)) &&
+               all (fix (col) == col) && all (col > 0) &&
+               all (col <= columns (A))))
+          error (strcat ("categorical.topkrows: COL must contain positive", ...
+                         " integers indexing existing columns in A."));
+        endif
+      endif
+      if (ischar (direction))
+        dirlist = {direction};
       else
-        [B, index] = sortrows (A, varargin{:});
+        dirlist = direction;
+      endif
+      if (! all (cellfun (@(d) ischar (d) && ...
+                          any (strcmpi (d, {'ascend', 'descend'})), dirlist)))
+        error (strcat ("categorical.topkrows: DIRECTION must be 'ascend'", ...
+                       " or 'descend'."));
+      endif
+      ## Sort rows, keeping undefined elements out of the ranking
+      if (isempty (col))
+        [B, index] = sortrows (A, direction, 'MissingPlacement', MP);
+      else
+        [B, index] = sortrows (A, col, direction, 'MissingPlacement', MP);
       endif
       ## Return top K rows
       if (K < numel (index))
