@@ -2439,10 +2439,133 @@
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'sort'             'sortrows'         'topkrows'         'unique'          ##
-## 'intersect'        'setdiff'          'setxor'           'union'           ##
+## 'maxk'             'mink'             'sort'             'sortrows'        ##
+## 'topkrows'         'unique'           'intersect'        'setdiff'         ##
+## 'setxor'           'union'                                                 ##
 ##                                                                            ##
 ################################################################################
+
+%!test
+%! C = categorical ({'b', 'a', 'c', 'a'}, {'a', 'b', 'c'}, 'Ordinal', true);
+%! [B, I] = maxk (C, 2);
+%! assert_equal (cellstr (B), {'c', 'b'});
+%! assert_equal (I, [3, 1]);
+%! assert_equal (categories (B), {'a'; 'b'; 'c'});
+%! assert_equal (isordinal (B), true);
+%!test
+%! C = categorical ({'b', '', 'c', 'a'}, {'a', 'b', 'c'}, 'Ordinal', true);
+%! [B, I] = maxk (C, 3);
+%! assert_equal (cellstr (B), {'c', 'b', 'a'});
+%! assert_equal (I, [3, 1, 4]);
+%!test
+%! C = categorical ({'b', '', 'c', 'a'}, {'a', 'b', 'c'}, 'Ordinal', true);
+%! [B, I] = maxk (C, 10);
+%! assert_equal (isundefined (B), logical ([0, 0, 0, 1]));
+%! assert_equal (I, [3, 1, 4, 2]);
+%!test
+%! C = categorical ({'b', 'a', 'b', 'a', 'b'}, {'a', 'b'}, 'Ordinal', true);
+%! [B, I] = maxk (C, 3);
+%! assert_equal (cellstr (B), {'b', 'b', 'b'});
+%! assert_equal (I, [1, 3, 5]);
+%!test
+%! C = categorical ({'b', 'a'; 'c', 'a'; 'a', 'b'}, {'a', 'b', 'c'}, ...
+%!                  'Ordinal', true);
+%! [B, I] = maxk (C, 2);
+%! assert_equal (cellstr (B), {'c', 'b'; 'b', 'a'});
+%! assert_equal (I, [2, 3; 1, 1]);
+%!test
+%! C = categorical ({'b', 'a'; 'c', 'a'; 'a', 'b'}, {'a', 'b', 'c'}, ...
+%!                  'Ordinal', true);
+%! [B, I] = maxk (C, 2, 2);
+%! assert_equal (cellstr (B), {'b', 'a'; 'c', 'a'; 'b', 'a'});
+%! assert_equal (I, [1, 2; 1, 2; 2, 1]);
+%!test
+%! C = categorical ({'b', 'a'; 'c', 'a'; 'a', 'b'}, {'a', 'b', 'c'}, ...
+%!                  'Ordinal', true);
+%! [B, I] = maxk (C, 2, 3);
+%! assert_equal (cellstr (B), {'b', 'a'; 'c', 'a'; 'a', 'b'});
+%! assert_equal (I, ones (3, 2));
+%!test
+%! C = categorical ({'', '', ''}, {'a', 'b', 'c'}, 'Ordinal', true);
+%! [B, I] = maxk (C, 2);
+%! assert_equal (isundefined (B), logical ([1, 1]));
+%! assert_equal (I, [1, 2]);
+%!test
+%! C = categorical ({'b', 'a', 'c'}, {'a', 'b', 'c'}, 'Ordinal', true);
+%! assert_equal (size (maxk (C, 0)), [1, 0]);
+%! assert_equal (class (maxk (C, 2)), 'categorical');
+%! assert_equal (cellstr (maxk (C, 10)), {'c', 'b', 'a'});
+%!error<categorical.maxk: too few input arguments.> ...
+%! maxk (categorical ({'a'}, {'a'}, 'Ordinal', true))
+%!error<categorical.maxk: categorical array A is not ordinal.> ...
+%! maxk (categorical ({'b', 'a'}), 1)
+%!error<categorical.maxk: K must be a nonnegative integer scalar.> ...
+%! maxk (categorical ({'b', 'a'}, {'a', 'b'}, 'Ordinal', true), 2.5)
+%!error<categorical.maxk: K must be a nonnegative integer scalar.> ...
+%! maxk (categorical ({'b', 'a'}, {'a', 'b'}, 'Ordinal', true), -1)
+%!error<categorical.maxk: K must be a nonnegative integer scalar.> ...
+%! maxk (categorical ({'b', 'a'}, {'a', 'b'}, 'Ordinal', true), [2, 3])
+%!error<categorical.maxk: DIM must be a positive integer scalar.> ...
+%! maxk (categorical ({'b', 'a'}, {'a', 'b'}, 'Ordinal', true), 2, 0)
+%!error<categorical.maxk: 'ComparisonMethod' is not a supported option.> ...
+%! maxk (categorical ({'b', 'a'}, {'a', 'b'}, 'Ordinal', true), 2, ...
+%!       'ComparisonMethod', 'abs')
+%!error<categorical.maxk: too many input arguments.> ...
+%! maxk (categorical ({'b', 'a'}, {'a', 'b'}, 'Ordinal', true), 2, 1, 2)
+
+%!test
+%! C = categorical ({'b', 'a', 'c', 'a'}, {'a', 'b', 'c'}, 'Ordinal', true);
+%! [B, I] = mink (C, 2);
+%! assert_equal (cellstr (B), {'a', 'a'});
+%! assert_equal (I, [2, 4]);
+%! assert_equal (categories (B), {'a'; 'b'; 'c'});
+%! assert_equal (isordinal (B), true);
+%!test
+%! C = categorical ({'b', '', 'c', 'a'}, {'a', 'b', 'c'}, 'Ordinal', true);
+%! [B, I] = mink (C, 3);
+%! assert_equal (cellstr (B), {'a', 'b', 'c'});
+%! assert_equal (I, [4, 1, 3]);
+%!test
+%! C = categorical ({'b', '', 'c', 'a'}, {'a', 'b', 'c'}, 'Ordinal', true);
+%! [B, I] = mink (C, 10);
+%! assert_equal (isundefined (B), logical ([0, 0, 0, 1]));
+%! assert_equal (I, [4, 1, 3, 2]);
+%!test
+%! C = categorical ({'b', 'a', 'b', 'a', 'b'}, {'a', 'b'}, 'Ordinal', true);
+%! [B, I] = mink (C, 3);
+%! assert_equal (cellstr (B), {'a', 'a', 'b'});
+%! assert_equal (I, [2, 4, 1]);
+%!test
+%! C = categorical ({'b', 'a'; 'c', 'a'; 'a', 'b'}, {'a', 'b', 'c'}, ...
+%!                  'Ordinal', true);
+%! [B, I] = mink (C, 2);
+%! assert_equal (cellstr (B), {'a', 'a'; 'b', 'a'});
+%! assert_equal (I, [3, 1; 1, 2]);
+%!test
+%! C = categorical ({'', '', ''}, {'a', 'b', 'c'}, 'Ordinal', true);
+%! [B, I] = mink (C, 2);
+%! assert_equal (isundefined (B), logical ([1, 1]));
+%! assert_equal (I, [1, 2]);
+%!test
+%! C = categorical ({'b', 'a', 'c'}, {'a', 'b', 'c'}, 'Ordinal', true);
+%! assert_equal (size (mink (C, 0)), [1, 0]);
+%! assert_equal (class (mink (C, 2)), 'categorical');
+%! assert_equal (cellstr (mink (C, 10)), {'a', 'b', 'c'});
+%!error<categorical.mink: too few input arguments.> ...
+%! mink (categorical ({'a'}, {'a'}, 'Ordinal', true))
+%!error<categorical.mink: categorical array A is not ordinal.> ...
+%! mink (categorical ({'b', 'a'}), 1)
+%!error<categorical.mink: K must be a nonnegative integer scalar.> ...
+%! mink (categorical ({'b', 'a'}, {'a', 'b'}, 'Ordinal', true), 2.5)
+%!error<categorical.mink: K must be a nonnegative integer scalar.> ...
+%! mink (categorical ({'b', 'a'}, {'a', 'b'}, 'Ordinal', true), Inf)
+%!error<categorical.mink: DIM must be a positive integer scalar.> ...
+%! mink (categorical ({'b', 'a'}, {'a', 'b'}, 'Ordinal', true), 2, 1.5)
+%!error<categorical.mink: 'MissingPlacement' is not a supported option.> ...
+%! mink (categorical ({'b', 'a'}, {'a', 'b'}, 'Ordinal', true), 2, ...
+%!       'MissingPlacement', 'first')
+%!error<categorical.mink: too many input arguments.> ...
+%! mink (categorical ({'b', 'a'}, {'a', 'b'}, 'Ordinal', true), 2, 1, 2)
 
 %!test
 %! C = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);

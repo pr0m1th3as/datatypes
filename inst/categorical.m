@@ -3387,12 +3387,115 @@ classdef categorical
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'sort'             'sortrows'         'topkrows'         'unique'          ##
-## 'intersect'        'setdiff'          'setxor'           'union'           ##
+## 'maxk'             'mink'             'sort'             'sortrows'        ##
+## 'topkrows'         'unique'           'intersect'        'setdiff'         ##
+## 'setxor'           'union'                                                 ##
 ##                                                                            ##
 ################################################################################
 
   methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {categorical} {@var{B} =} maxk (@var{A}, @var{K})
+    ## @deftypefnx {categorical} {@var{B} =} maxk (@var{A}, @var{K}, @var{dim})
+    ## @deftypefnx {categorical} {[@var{B}, @var{index}] =} maxk (@var{A}, @dots{})
+    ##
+    ## Find the largest elements in an ordinal categorical array.
+    ##
+    ## @code{@var{B} = maxk (@var{A}, @var{K})} returns the @var{K} largest
+    ## elements of the categorical array @var{A} in descending order.  @var{A}
+    ## must be ordinal, since the elements are ranked by the order of their
+    ## categories.  If @var{A} is a vector, then @var{B} is a vector with
+    ## @var{K} elements.  If @var{A} is a matrix, then @code{maxk} operates
+    ## along each column of @var{A} and @var{B} has @var{K} rows.  For
+    ## multidimensional arrays, @code{maxk} operates along the first
+    ## non-singleton dimension.  @var{B} keeps the categories of @var{A},
+    ## including their order.
+    ##
+    ## @code{@var{B} = maxk (@var{A}, @var{K}, @var{dim})} operates along the
+    ## dimension specified by @var{dim}.
+    ##
+    ## @var{K} must be a nonnegative integer scalar.  If @var{K} is larger than
+    ## the number of elements along the operating dimension, then all of them
+    ## are returned.
+    ##
+    ## Missing elements (@qcode{<undefined>}) are not ranked.  They are appended
+    ## after the ranked elements in their original order, and hence they only
+    ## appear in @var{B} when @var{K} exceeds the number of defined elements
+    ## along the operating dimension.  Unlike @code{sort}, @code{maxk} has no
+    ## @qcode{'MissingPlacement'} option, since undefined elements are always
+    ## placed last.  Elements comparing as equal keep their original order.
+    ##
+    ## @code{[@var{B}, @var{index}] = maxk (@var{A}, @dots{})} also returns an
+    ## index array containing the indices of the returned elements of @var{A}
+    ## along the operating dimension.
+    ##
+    ## @end deftypefn
+    function [B, index] = maxk (A, K, varargin)
+      if (nargin < 2)
+        error ("categorical.maxk: too few input arguments.");
+      endif
+      ## Check for ordinal categorical array
+      if (! A.isOrdinal)
+        error ("categorical.maxk: categorical array A is not ordinal.");
+      endif
+      [index, lidx, errmsg] = __minmaxk__ (double (A), K, true, varargin);
+      if (! isempty (errmsg))
+        error ("categorical.maxk: %s", errmsg);
+      endif
+      B = subset (A, lidx);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {categorical} {@var{B} =} mink (@var{A}, @var{K})
+    ## @deftypefnx {categorical} {@var{B} =} mink (@var{A}, @var{K}, @var{dim})
+    ## @deftypefnx {categorical} {[@var{B}, @var{index}] =} mink (@var{A}, @dots{})
+    ##
+    ## Find the smallest elements in an ordinal categorical array.
+    ##
+    ## @code{@var{B} = mink (@var{A}, @var{K})} returns the @var{K} smallest
+    ## elements of the categorical array @var{A} in ascending order.  @var{A}
+    ## must be ordinal, since the elements are ranked by the order of their
+    ## categories.  If @var{A} is a vector, then @var{B} is a vector with
+    ## @var{K} elements.  If @var{A} is a matrix, then @code{mink} operates
+    ## along each column of @var{A} and @var{B} has @var{K} rows.  For
+    ## multidimensional arrays, @code{mink} operates along the first
+    ## non-singleton dimension.  @var{B} keeps the categories of @var{A},
+    ## including their order.
+    ##
+    ## @code{@var{B} = mink (@var{A}, @var{K}, @var{dim})} operates along the
+    ## dimension specified by @var{dim}.
+    ##
+    ## @var{K} must be a nonnegative integer scalar.  If @var{K} is larger than
+    ## the number of elements along the operating dimension, then all of them
+    ## are returned.
+    ##
+    ## Missing elements (@qcode{<undefined>}) are not ranked.  They are appended
+    ## after the ranked elements in their original order, and hence they only
+    ## appear in @var{B} when @var{K} exceeds the number of defined elements
+    ## along the operating dimension.  Unlike @code{sort}, @code{mink} has no
+    ## @qcode{'MissingPlacement'} option, since undefined elements are always
+    ## placed last.  Elements comparing as equal keep their original order.
+    ##
+    ## @code{[@var{B}, @var{index}] = mink (@var{A}, @dots{})} also returns an
+    ## index array containing the indices of the returned elements of @var{A}
+    ## along the operating dimension.
+    ##
+    ## @end deftypefn
+    function [B, index] = mink (A, K, varargin)
+      if (nargin < 2)
+        error ("categorical.mink: too few input arguments.");
+      endif
+      ## Check for ordinal categorical array
+      if (! A.isOrdinal)
+        error ("categorical.mink: categorical array A is not ordinal.");
+      endif
+      [index, lidx, errmsg] = __minmaxk__ (double (A), K, false, varargin);
+      if (! isempty (errmsg))
+        error ("categorical.mink: %s", errmsg);
+      endif
+      B = subset (A, lidx);
+    endfunction
 
     ## -*- texinfo -*-
     ## @deftypefn  {categorical} {@var{B} =} sort (@var{A})
