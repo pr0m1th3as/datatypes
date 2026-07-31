@@ -27,6 +27,23 @@
 ##                                                                            ##
 ################################################################################
 
+## The default display formats set by 'datetime.setDefaultFormats' persist
+## across sessions, so a user who has set one would otherwise break every
+## assertion below that renders a datetime.  Save whatever is stored, run the
+## file at the factory defaults, and put it back in the closing block.  A format
+## that was never set is restored as absent, not as its factory value, so that
+## running the tests leaves no preference behind.
+%!shared savedDefaultFormat, savedDefaultDateFormat
+%! savedDefaultFormat = '';
+%! savedDefaultDateFormat = '';
+%! if (ispref ('datatypes', 'datetime_DefaultFormat'))
+%!   savedDefaultFormat = getpref ('datatypes', 'datetime_DefaultFormat');
+%! endif
+%! if (ispref ('datatypes', 'datetime_DefaultDateFormat'))
+%!   savedDefaultDateFormat = getpref ('datatypes', 'datetime_DefaultDateFormat');
+%! endif
+%! datetime.setDefaultFormats ('reset');
+
 ## Test 'datetime' constructor -- no-argument and basic construction
 %!assert_equal (class (datetime), 'datetime')
 %!assert_equal (isa (datetime, 'datetime'), true)
@@ -4540,3 +4557,108 @@
 %!               'TimeZone', tz)), 63071999);
 %! assert_equal (posixtime (datetime (1972, 1, 1, 0, 0, 0, 'TimeZone', tz)), ...
 %!               63072000);
+
+## Test 'setDefaultFormats' -- each default governs the arrays it applies to
+%!test
+%! datetime.setDefaultFormats ('default', 'yyyy-MM-dd HH:mm:ss');
+%! datetime.setDefaultFormats ('defaultdate', 'yyyy/MM/dd');
+%! assert_equal (char (datetime (2024, 1, 1)), '2024/01/01');
+%! assert_equal (char (datetime (2024, 1, 1, 12, 30, 0)), '2024-01-01 12:30:00');
+%! datetime.setDefaultFormats ('reset');
+
+## Test 'setDefaultFormats' -- the values choose the default, not the
+## constructor call, so components given as an explicit midnight still take the
+## date-only default, while a mixed array takes the date-and-time one
+%!test
+%! datetime.setDefaultFormats ('default', 'yyyy-MM-dd HH:mm:ss');
+%! datetime.setDefaultFormats ('defaultdate', 'yyyy/MM/dd');
+%! assert_equal (char (datetime (2024, 1, 1, 0, 0, 0)), '2024/01/01');
+%! assert_equal (datetime (2024, 1, 1, 0, 0, 0).Format, 'yyyy/MM/dd');
+%! m = datetime (2024, 1, [1, 2], [0, 12], 0, 0);
+%! assert_equal (m.Format, 'yyyy-MM-dd HH:mm:ss');
+%! datetime.setDefaultFormats ('reset');
+
+## Test 'setDefaultFormats' -- the choice is remade on every display, so an
+## array moves between the two defaults when its components change
+%!test
+%! datetime.setDefaultFormats ('default', 'yyyy-MM-dd HH:mm:ss');
+%! datetime.setDefaultFormats ('defaultdate', 'yyyy/MM/dd');
+%! d = datetime (2024, 1, 1);
+%! assert_equal (d.Format, 'yyyy/MM/dd');
+%! d.Hour = 12;
+%! assert_equal (d.Format, 'yyyy-MM-dd HH:mm:ss');
+%! d.Hour = 0;
+%! assert_equal (d.Format, 'yyyy/MM/dd');
+%! datetime.setDefaultFormats ('reset');
+
+## Test 'setDefaultFormats' -- an explicitly set Format is never touched
+%!test
+%! k = datetime (2024, 1, 1, 'Format', 'dd.MM.yyyy');
+%! datetime.setDefaultFormats ('default', 'yyyy-MM-dd HH:mm:ss');
+%! datetime.setDefaultFormats ('defaultdate', 'yyyy/MM/dd');
+%! assert_equal (k.Format, 'dd.MM.yyyy');
+%! assert_equal (char (k), '01.01.2024');
+%! datetime.setDefaultFormats ('reset');
+
+## Test 'setDefaultFormats' -- 'reset' restores both factory formats
+%!test
+%! datetime.setDefaultFormats ('default', 'yyyy-MM-dd HH:mm:ss');
+%! datetime.setDefaultFormats ('defaultdate', 'yyyy/MM/dd');
+%! datetime.setDefaultFormats ('reset');
+%! assert_equal (char (datetime (2024, 1, 1)), '01-Jan-2024');
+%! assert_equal (char (datetime (2024, 1, 1, 12, 30, 0)), '01-Jan-2024 12:30:00');
+
+## Test 'setDefaultFormats' -- a set format is stored as a preference so that it
+## survives the session, and a factory format is stored as no preference at all
+%!test
+%! datetime.setDefaultFormats ('reset');
+%! assert_equal (ispref ('datatypes', 'datetime_DefaultFormat'), false);
+%! assert_equal (ispref ('datatypes', 'datetime_DefaultDateFormat'), false);
+%! datetime.setDefaultFormats ('default', 'yyyy-MM-dd HH:mm:ss');
+%! assert_equal (ispref ('datatypes', 'datetime_DefaultFormat'), true);
+%! assert_equal (getpref ('datatypes', 'datetime_DefaultFormat'), ...
+%!               'yyyy-MM-dd HH:mm:ss');
+%! assert_equal (ispref ('datatypes', 'datetime_DefaultDateFormat'), false);
+%! datetime.setDefaultFormats ('reset');
+%! assert_equal (ispref ('datatypes', 'datetime_DefaultFormat'), false);
+
+## Test 'setDefaultFormats' -- a string scalar is accepted for both arguments
+%!test
+%! datetime.setDefaultFormats (string ('defaultdate'), string ('yyyy/MM/dd'));
+%! assert_equal (char (datetime (2024, 1, 1)), '2024/01/01');
+%! datetime.setDefaultFormats ('reset');
+
+## Test 'setDefaultFormats' -- error branches
+%!error <datetime.setDefaultFormats: too few input arguments.> ...
+%! datetime.setDefaultFormats ()
+%!error <datetime.setDefaultFormats: too few input arguments.> ...
+%! datetime.setDefaultFormats ('default')
+%!error <datetime.setDefaultFormats: the first input must be 'default', 'defaultdate', or 'reset'.> ...
+%! datetime.setDefaultFormats ('bogus', 'yyyy')
+%!error <datetime.setDefaultFormats: the first input must be 'default', 'defaultdate', or 'reset'.> ...
+%! datetime.setDefaultFormats ('preserveinput', 'yyyy')
+%!error <datetime.setDefaultFormats: the first input must be 'default', 'defaultdate', or 'reset'.> ...
+%! datetime.setDefaultFormats (42, 'yyyy')
+%!error <datetime.setDefaultFormats: FMT must be a character vector or a string scalar.> ...
+%! datetime.setDefaultFormats ('default', 42)
+%!error <datetime.setDefaultFormats: FMT must be a display format, not the name of a default.> ...
+%! datetime.setDefaultFormats ('default', 'default')
+%!error <datetime: the format 'yyyy-VV' contains an unsupported symbol: 'V'.> ...
+%! datetime.setDefaultFormats ('default', 'yyyy-VV')
+
+## Test 'setDefaultFormats' -- unlike MATLAB, which accepts anything in the
+## second slot after 'reset' and silently resets both defaults regardless
+%!error <datetime.setDefaultFormats: 'reset' takes no further arguments; it resets both defaults.> ...
+%! datetime.setDefaultFormats ('reset', 'default')
+%!error <datetime.setDefaultFormats: 'reset' takes no further arguments; it resets both defaults.> ...
+%! datetime.setDefaultFormats ('reset', 42)
+
+## Restore whatever default formats the user had before this file ran.
+%!test
+%! datetime.setDefaultFormats ('reset');
+%! if (! isempty (savedDefaultFormat))
+%!   datetime.setDefaultFormats ('default', savedDefaultFormat);
+%! endif
+%! if (! isempty (savedDefaultDateFormat))
+%!   datetime.setDefaultFormats ('defaultdate', savedDefaultDateFormat);
+%! endif

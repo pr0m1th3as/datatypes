@@ -261,6 +261,76 @@ classdef datetime
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {} datetime.setDefaultFormats (@qcode{'default'}, @var{fmt})
+    ## @deftypefnx {datetime} {} datetime.setDefaultFormats (@qcode{'defaultdate'}, @var{fmt})
+    ## @deftypefnx {datetime} {} datetime.setDefaultFormats (@qcode{'reset'})
+    ##
+    ## Set the default display formats of datetime arrays.
+    ##
+    ## A datetime array whose @qcode{Format} property was never set explicitly
+    ## displays with one of two default formats, and this method chooses them.
+    ## The choice between the two is made from the values: an array whose
+    ## elements all sit at midnight uses the date-only default, and any other
+    ## array uses the date-and-time default.  The choice is made afresh on every
+    ## display, so an array moves between the two when its components change.
+    ##
+    ## @code{datetime.setDefaultFormats (@qcode{'default'}, @var{fmt})} sets the
+    ## date-and-time default to @var{fmt}, and
+    ## @code{datetime.setDefaultFormats (@qcode{'defaultdate'}, @var{fmt})} sets
+    ## the date-only default.  @var{fmt} is a display format, given as a
+    ## character vector or string scalar, and is validated as the @qcode{Format}
+    ## property is.  Arrays that already exist take the new format on their next
+    ## display; those with an explicitly set @qcode{Format} are unaffected.
+    ##
+    ## @code{datetime.setDefaultFormats (@qcode{'reset'})} restores both factory
+    ## formats, @qcode{'dd-MMM-uuuu HH:mm:ss'} and @qcode{'dd-MMM-uuuu'}.
+    ##
+    ## Both formats persist across Octave sessions.
+    ##
+    ## @strong{Deviation from MATLAB.}  MATLAB accepts a second argument after
+    ## @qcode{'reset'} and silently ignores it, resetting both defaults whatever
+    ## it says, so @code{datetime.setDefaultFormats ('reset', 'default')} reads
+    ## as a request to reset one and quietly resets two.  Anything at all is
+    ## accepted there, a number included.  Here that is an error, since no
+    ## correct program can depend on the argument being ignored.
+    ##
+    ## @end deftypefn
+    function setDefaultFormats (what, fmt)
+      if (nargin < 1)
+        error ("datetime.setDefaultFormats: too few input arguments.");
+      endif
+      what = convertStringsToChars (what);
+      if (! (ischar (what) && isrow (what)) ...
+          || ! any (strcmpi (what, {'default', 'defaultdate', 'reset'})))
+        error (strcat ("datetime.setDefaultFormats: the first input must be", ...
+                       " 'default', 'defaultdate', or 'reset'."));
+      endif
+      ## Unlike MATLAB, which takes a second argument here and discards it.
+      if (strcmpi (what, 'reset'))
+        if (nargin > 1)
+          error (strcat ("datetime.setDefaultFormats: 'reset' takes no", ...
+                         " further arguments; it resets both defaults."));
+        endif
+        dtDefaultFormats ('reset');
+        return;
+      endif
+      if (nargin < 2)
+        error ("datetime.setDefaultFormats: too few input arguments.");
+      endif
+      fmt = convertStringsToChars (fmt);
+      if (! (ischar (fmt) && isrow (fmt)))
+        error (strcat ("datetime.setDefaultFormats: FMT must be a character", ...
+                       " vector or a string scalar."));
+      endif
+      if (any (strcmpi (fmt, {'default', 'defaultdate', 'preserveinput'})))
+        error (strcat ("datetime.setDefaultFormats: FMT must be a display", ...
+                       " format, not the name of a default."));
+      endif
+      dtValidateFormat (fmt);
+      dtDefaultFormats ('set', lower (what), fmt);
+    endfunction
+
   endmethods
 
 ################################################################################
@@ -5957,21 +6027,81 @@ endfunction
 ## day either, and is left out on the same grounds.
 function fmt = dtResolveFormat (fmtProp, H, Mi, S)
   if (strcmpi (fmtProp, 'default'))
+    [dflt, dfltdate] = dtDefaultFormats ();
     dated = isfinite (H(:));
     if (! isempty (H) && any (dated) && all ((H(dated) == 0) ...
                                              & (Mi(dated) == 0) ...
                                              & (S(dated) == 0)))
-      fmt = 'dd-MMM-uuuu';
+      fmt = dfltdate;
     else
-      fmt = 'dd-MMM-uuuu HH:mm:ss';
+      fmt = dflt;
     endif
   elseif (strcmpi (fmtProp, 'defaultdate'))
-    fmt = 'dd-MMM-uuuu';
+    [~, fmt] = dtDefaultFormats ();
   elseif (strcmpi (fmtProp, 'preserveinput'))
-    fmt = 'dd-MMM-uuuu HH:mm:ss';
+    fmt = dtDefaultFormats ();
   else
     fmt = fmtProp;
   endif
+endfunction
+
+## Owner of the two default display formats set by 'datetime.setDefaultFormats'.
+##
+## Called with no arguments it returns the date-and-time default and the
+## date-only default, in that order.  @code{dtDefaultFormats ('set', which,
+## fmt)} stores one of them, @var{which} being 'default' or 'defaultdate', and
+## @code{dtDefaultFormats ('reset')} restores both factory patterns.
+##
+## The patterns persist across sessions in Octave's preferences, as MATLAB's do
+## through its settings tree.  The session cache in front of the preferences is
+## not an optimization detail: 'dtResolveFormat' runs on every display, and
+## without it every rendering of a datetime array would read a file.  Clearing
+## the cache is always safe, since it is re-seeded from the preference on the
+## next call, which is what makes this survive the 'clear classes' that
+## pkg-octave-doc runs between demos.
+##
+## A factory pattern is stored as the absence of a preference rather than as its
+## value, so that 'reset' leaves nothing behind, matching what MATLAB's own
+## 'reset' leaves in its settings tree.
+function [dflt, dfltdate] = dtDefaultFormats (mode = 'get', which = '', fmt = '')
+  persistent cache_dflt cache_date
+  FACTORY_DFLT = 'dd-MMM-uuuu HH:mm:ss';
+  FACTORY_DATE = 'dd-MMM-uuuu';
+  if (isempty (cache_dflt))
+    if (ispref ('datatypes', 'datetime_DefaultFormat'))
+      cache_dflt = getpref ('datatypes', 'datetime_DefaultFormat');
+    else
+      cache_dflt = FACTORY_DFLT;
+    endif
+  endif
+  if (isempty (cache_date))
+    if (ispref ('datatypes', 'datetime_DefaultDateFormat'))
+      cache_date = getpref ('datatypes', 'datetime_DefaultDateFormat');
+    else
+      cache_date = FACTORY_DATE;
+    endif
+  endif
+  switch (mode)
+    case 'set'
+      if (strcmpi (which, 'default'))
+        cache_dflt = fmt;
+        setpref ('datatypes', 'datetime_DefaultFormat', fmt);
+      else
+        cache_date = fmt;
+        setpref ('datatypes', 'datetime_DefaultDateFormat', fmt);
+      endif
+    case 'reset'
+      cache_dflt = FACTORY_DFLT;
+      cache_date = FACTORY_DATE;
+      if (ispref ('datatypes', 'datetime_DefaultFormat'))
+        rmpref ('datatypes', 'datetime_DefaultFormat');
+      endif
+      if (ispref ('datatypes', 'datetime_DefaultDateFormat'))
+        rmpref ('datatypes', 'datetime_DefaultDateFormat');
+      endif
+  endswitch
+  dflt = cache_dflt;
+  dfltdate = cache_date;
 endfunction
 
 ## Validate a user-supplied Format string, mirroring MATLAB's rejection of

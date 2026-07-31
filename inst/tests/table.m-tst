@@ -15,6 +15,42 @@
 ## You should have received a copy of the GNU General Public License along with
 ## this program; if not, see <http://www.gnu.org/licenses/>.
 
+## A table may hold a datetime variable, and several assertions below render one
+## through 'table2cell', 'csv2table', 'summary' and 'groupsummary'.  Those
+## renderings use the default display formats, which persist across sessions, so
+## a user who has set one with 'datetime.setDefaultFormats' would otherwise see
+## this file fail.  Save whatever is stored, run at the factory defaults, and put
+## it back in the closing block; a format that was never set is restored as
+## absent rather than as its factory value.
+##
+## The saved formats live in a persistent inside this helper rather than in a
+## '%!shared' variable, because the '%!shared' blocks further down clear any
+## shared variable declared before them, and the assertions that need the guard
+## sit on both sides of them.
+%!function datetimeFormatGuard (mode)
+%!  persistent saved
+%!  if (strcmp (mode, 'save'))
+%!    saved = {'', ''};
+%!    if (ispref ('datatypes', 'datetime_DefaultFormat'))
+%!      saved{1} = getpref ('datatypes', 'datetime_DefaultFormat');
+%!    endif
+%!    if (ispref ('datatypes', 'datetime_DefaultDateFormat'))
+%!      saved{2} = getpref ('datatypes', 'datetime_DefaultDateFormat');
+%!    endif
+%!  endif
+%!  datetime.setDefaultFormats ('reset');
+%!  if (strcmp (mode, 'restore'))
+%!    if (! isempty (saved{1}))
+%!      datetime.setDefaultFormats ('default', saved{1});
+%!    endif
+%!    if (! isempty (saved{2}))
+%!      datetime.setDefaultFormats ('defaultdate', saved{2});
+%!    endif
+%!  endif
+%!endfunction
+%!test
+%! datetimeFormatGuard ('save');
+
 ################################################################################
 ##                    ** Create Table and Convert Type **                     ##
 ################################################################################
@@ -6303,3 +6339,7 @@
 %! T = table ([1;2;3]); T.Properties.CustomProperties.nope = 5;
 %!error <table.subsasgn: use 'addprop' to add a new custom property.> ...
 %! T = table ([1;2;3]); T.Properties.CustomProperties = 5;
+
+## Restore whatever default display formats the user had before this file ran.
+%!test
+%! datetimeFormatGuard ('restore');
