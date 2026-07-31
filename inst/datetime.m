@@ -303,8 +303,8 @@ classdef datetime
       what = convertStringsToChars (what);
       if (! (ischar (what) && isrow (what)) ...
           || ! any (strcmpi (what, {'default', 'defaultdate', 'reset'})))
-        error (strcat ("datetime.setDefaultFormats: the first input must be", ...
-                       " 'default', 'defaultdate', or 'reset'."));
+        error (strcat ("datetime.setDefaultFormats: the first input must", ...
+                       " be 'default', 'defaultdate', or 'reset'."));
       endif
       ## Unlike MATLAB, which takes a second argument here and discards it.
       if (strcmpi (what, 'reset'))
@@ -320,8 +320,8 @@ classdef datetime
       endif
       fmt = convertStringsToChars (fmt);
       if (! (ischar (fmt) && isrow (fmt)))
-        error (strcat ("datetime.setDefaultFormats: FMT must be a character", ...
-                       " vector or a string scalar."));
+        error (strcat ("datetime.setDefaultFormats: FMT must be a", ...
+                       " character vector or a string scalar."));
       endif
       if (any (strcmpi (fmt, {'default', 'defaultdate', 'preserveinput'})))
         error (strcat ("datetime.setDefaultFormats: FMT must be a display", ...
@@ -2637,8 +2637,9 @@ classdef datetime
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'maxk'             'mink'             'sort'             'sortrows'        ##
-## 'unique'           'interp1'          'intersect'        'setdiff'         ##
-## 'setxor'           'union'            'min'              'max'             ##
+## 'topkrows'         'unique'           'interp1'          'intersect'       ##
+## 'setdiff'          'setxor'           'union'            'min'             ##
+## 'max'                                                                      ##
 ##                                                                            ##
 ################################################################################
 
@@ -3109,6 +3110,88 @@ classdef datetime
     ## @end deftypefn
     function [M, I] = max (A, varargin)
       [M, I] = minmaxImpl (A, varargin, true, nargout);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{B} =} topkrows (@var{A}, @var{K})
+    ## @deftypefnx {datetime} {@var{B} =} topkrows (@var{A}, @var{K}, @var{col})
+    ## @deftypefnx {datetime} {@var{B} =} topkrows (@var{A}, @var{K}, @var{direction})
+    ## @deftypefnx {datetime} {@var{B} =} topkrows (@var{A}, @var{K}, @var{col}, @var{direction})
+    ## @deftypefnx {datetime} {@var{B} =} topkrows (@dots{}, @qcode{'MissingPlacement'}, @var{MP})
+    ## @deftypefnx {datetime} {[@var{B}, @var{index}] =} topkrows (@var{A}, @dots{})
+    ##
+    ## Top K sorted rows of a datetime array.
+    ##
+    ## @code{@var{B} = topkrows (@var{A}, @var{K})} returns the top @var{K} rows
+    ## of the 2-D datetime array @var{A} sorted in descending order as a group.
+    ## @var{K} must be a nonnegative integer scalar.  If @var{K} is larger than
+    ## the number of rows in @var{A}, then all of them are returned.
+    ##
+    ## Missing elements (@qcode{NaT}) are not ranked.  Within each sort
+    ## column they are placed after the elements that are defined, whichever
+    ## direction is asked for, so a row is demoted only by a missing element in
+    ## a column that actually decides its position.  Rows comparing as equal
+    ## keep their original order.
+    ##
+    ## @code{@var{B} = topkrows (@var{A}, @var{K}, @var{col})} sorts using only
+    ## the columns listed in the numeric vector @var{col}, which must contain
+    ## positive integers indexing existing columns in @var{A}.  Columns are used
+    ## as sort keys in the order given, and those not listed are not used at
+    ## all.  The direction is descending unless @var{direction} says otherwise.
+    ##
+    ## @code{@var{B} = topkrows (@var{A}, @var{K}, @var{direction})} sorts in
+    ## the given @var{direction}, either @qcode{'descend'} (default) or
+    ## @qcode{'ascend'} applying to all columns in @var{A}.  Alternatively,
+    ## @var{direction} can be a cell array of character vectors specifying the
+    ## sorting direction for each individual column of @var{A}.
+    ##
+    ## @code{@var{B} = topkrows (@var{A}, @var{K}, @var{col}, @var{direction})}
+    ## combines an explicit column list with a per-column @var{direction}.
+    ##
+    ## @code{@var{B} = topkrows (@dots{}, @qcode{'MissingPlacement'}, @var{MP})}
+    ## specifies where the missing elements are placed within each sort column,
+    ## with any of the following options specified in @var{MP}:
+    ##
+    ## @itemize
+    ## @item @qcode{'last'}, which is the default, places missing elements last
+    ## whichever direction is asked for.
+    ## @item @qcode{'first'} places missing elements first.
+    ## @item @qcode{'auto'} places missing elements last for an ascending sort
+    ## and first for a descending one, as @code{sortrows} does.
+    ## @end itemize
+    ##
+    ## This is an Octave extension: MATLAB has no such option here and always
+    ## ranks as @qcode{'last'} does.
+    ##
+    ## @code{[@var{B}, @var{index}] = topkrows (@var{A}, @dots{})} also returns
+    ## an index vector containing the original row indices of @var{A} in
+    ## @var{B}, such that @code{@var{B} = @var{A}(@var{index},:)}.
+    ##
+    ## @end deftypefn
+    function [B, index] = topkrows (A, K, varargin)
+      ## Check input arguments
+      if (nargin < 2)
+        error ("datetime.topkrows: too few input arguments.");
+      endif
+      if (ndims (A) != 2)
+        error ("datetime.topkrows: A must be a 2-D array.");
+      endif
+      [col, direction, MP, errmsg] = ...
+                      __topkrowsargs__ (K, columns (A), varargin);
+      if (! isempty (errmsg))
+        error ("datetime.topkrows: %s", errmsg);
+      endif
+      ## Sort rows, keeping missing elements out of the ranking
+      if (isempty (col))
+        [B, index] = sortrows (A, direction, 'MissingPlacement', MP);
+      else
+        [B, index] = sortrows (A, col, direction, 'MissingPlacement', MP);
+      endif
+      ## Return top K rows
+      if (K < numel (index))
+        B = subset (B, 1:K, ':');
+        index = index(1:K);
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -6063,7 +6146,8 @@ endfunction
 ## A factory pattern is stored as the absence of a preference rather than as its
 ## value, so that 'reset' leaves nothing behind, matching what MATLAB's own
 ## 'reset' leaves in its settings tree.
-function [dflt, dfltdate] = dtDefaultFormats (mode = 'get', which = '', fmt = '')
+function [dflt, dfltdate] = dtDefaultFormats (mode = 'get', which = '', ...
+                                              fmt = '')
   persistent cache_dflt cache_date
   FACTORY_DFLT = 'dd-MMM-uuuu HH:mm:ss';
   FACTORY_DATE = 'dd-MMM-uuuu';

@@ -3130,6 +3130,13 @@
 %! C = categorical ([1, 2; 1, 3; 2, -4; 2, 1]);
 %! assert_equal (size (topkrows (C, 0)), [0, 2]);
 %! assert_equal (categories (topkrows (C, 2)), categories (C));
+%! assert_equal (size (topkrows (categorical ([]), 2)), [0, 0]);
+%! assert_equal (size (topkrows (categorical ([3, 1, 2]), 1)), [1, 3]);
+%!test
+%! C = categorical ([3; 1; 2]);
+%! [B, I] = topkrows (C, 2);
+%! assert_equal (B, categorical ([3; 2]));
+%! assert_equal (I, [1; 3]);
 %!error<categorical.topkrows: too few input arguments.> ...
 %! topkrows (categorical (1))
 %!error<categorical.topkrows: K must be a nonnegative integer scalar.> ...

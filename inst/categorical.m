@@ -3866,70 +3866,10 @@ classdef categorical
       if (ndims (A) != 2)
         error ("categorical.topkrows: A must be a 2-D matrix.");
       endif
-      if (! (isnumeric (K) && isscalar (K) && isreal (K) && isfinite (K) &&
-             fix (K) == K && K >= 0))
-        error ("categorical.topkrows: K must be a nonnegative integer scalar.");
-      endif
-      args = varargin;
-      if (numel (args) > 0)
-        [args{:}] = convertStringsToChars (args{:});
-      endif
-      ## 'MissingPlacement' is an Octave extension: MATLAB has no such option
-      ## here and always places undefined elements last, which is the default.
-      ## Taken out of the argument list before the positional ones are read.
-      MP = 'last';
-      mid = find (cellfun (@(x) ischar (x) && ...
-                           strcmpi (x, 'MissingPlacement'), args));
-      if (! isempty (mid))
-        if (mid(1) == numel (args))
-          error (strcat ("categorical.topkrows: 'MissingPlacement' requires", ...
-                         " a value."));
-        endif
-        MP = args{mid(1)+1};
-        if (! (ischar (MP) && isrow (MP)) ||
-            ! any (strcmpi (MP, {'auto', 'first', 'last'})))
-          error (strcat ("categorical.topkrows: invalid value for", ...
-                         " 'MissingPlacement'."));
-        endif
-        args([mid(1), mid(1)+1]) = [];
-      endif
-      if (numel (args) > 2)
-        error ("categorical.topkrows: too many input arguments.");
-      endif
-      ## Split the optional arguments into COL and DIRECTION.  Unlike
-      ## 'sortrows', the default direction is descending: these are the top
-      ## rows, not the first ones.
-      col = [];
-      direction = 'descend';
-      for i = 1:numel (args)
-        if (isnumeric (args{i}))
-          col = args{i};
-        elseif (ischar (args{i}) || iscellstr (args{i}))
-          direction = args{i};
-        else
-          error (strcat ("categorical.topkrows: optional arguments must be", ...
-                         " a column list or a sorting direction."));
-        endif
-      endfor
-      ## Unlike 'sortrows', COL must be positive: a negative column does not
-      ## select a direction here, as MATLAB also refuses it.
-      if (! isempty (col))
-        if (! (isvector (col) && isreal (col) && all (isfinite (col)) &&
-               all (fix (col) == col) && all (col > 0) &&
-               all (col <= columns (A))))
-          error (strcat ("categorical.topkrows: COL must contain positive", ...
-                         " integers indexing existing columns in A."));
-        endif
-      endif
-      if (ischar (direction))
-        dirlist = {direction};
-      else
-        dirlist = direction;
-      endif
-      if (! all (cellfun (@(d) ischar (d) && ...
-                          any (strcmpi (d, {'ascend', 'descend'})), dirlist)))
-        error (strcat ("categorical.topkrows: DIRECTION must be 'ascend'", ...
-                       " or 'descend'."));
+      [col, direction, MP, errmsg] = ...
+                      __topkrowsargs__ (K, columns (A), varargin);
+      if (! isempty (errmsg))
+        error ("categorical.topkrows: %s", errmsg);
       endif
       ## Sort rows, keeping undefined elements out of the ranking
       if (isempty (col))
