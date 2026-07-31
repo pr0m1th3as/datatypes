@@ -2971,10 +2971,180 @@
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'sort'             'sortrows'         'unique'           'interp1'         ##
-## 'intersect'        'setdiff'          'setxor'           'union'           ##
+## 'maxk'             'mink'             'sort'             'sortrows'        ##
+## 'unique'           'interp1'          'intersect'        'setdiff'         ##
+## 'setxor'           'union'                                                 ##
 ##                                                                            ##
 ################################################################################
+
+%!test
+%! D = days ([3, 1, NaN, 2, 1, NaN]);
+%! [B, I] = maxk (D, 3);
+%! assert_equal (days (B), [3, 2, 1]);
+%! assert_equal (I, [1, 4, 2]);
+%!test
+%! D = days ([3, 1, NaN, 2, 1, NaN]);
+%! [B, I] = maxk (D, 10);
+%! assert_equal (days (B), [3, 2, 1, 1, NaN, NaN]);
+%! assert_equal (I, [1, 4, 2, 5, 3, 6]);
+%!test
+%! D = days ([3; 1; NaN; 2]);
+%! [B, I] = maxk (D, 2);
+%! assert_equal (days (B), [3; 2]);
+%! assert_equal (I, [1; 4]);
+%!test
+%! D = days ([2, 1, 2, 1, 2]);
+%! [B, I] = maxk (D, 3);
+%! assert_equal (days (B), [2, 2, 2]);
+%! assert_equal (I, [1, 3, 5]);
+%!test
+%! D = days ([1, 5; 4, 2; 3, 6]);
+%! [B, I] = maxk (D, 2);
+%! assert_equal (days (B), [4, 6; 3, 5]);
+%! assert_equal (I, [2, 3; 3, 1]);
+%!test
+%! D = days ([1, 5; 4, 2; 3, 6]);
+%! [B, I] = maxk (D, 2, 2);
+%! assert_equal (days (B), [5, 1; 4, 2; 6, 3]);
+%! assert_equal (I, [2, 1; 1, 2; 2, 1]);
+%!test
+%! D = days ([1, 5; 4, 2; 3, 6]);
+%! [B, I] = maxk (D, 2, 3);
+%! assert_equal (days (B), [1, 5; 4, 2; 3, 6]);
+%! assert_equal (I, ones (3, 2));
+%!test
+%! D = days ([3, 1, NaN, 2, 1, NaN]);
+%! [B, I] = maxk (D, 3, 1);
+%! assert_equal (days (B), [3, 1, NaN, 2, 1, NaN]);
+%! assert_equal (I, ones (1, 6));
+%!test
+%! D = days ([1, NaN; NaN, 2; 3, 4]);
+%! [B, I] = maxk (D, 3);
+%! assert_equal (days (B), [3, 4; 1, 2; NaN, NaN]);
+%! assert_equal (I, [3, 3; 1, 2; 2, 1]);
+%!test
+%! D = days ([Inf, -Inf, 1, NaN]);
+%! [B, I] = maxk (D, 4);
+%! assert_equal (days (B), [Inf, 1, -Inf, NaN]);
+%! assert_equal (I, [1, 3, 2, 4]);
+%!test
+%! D = days (reshape (1:24, 2, 3, 4));
+%! [B, I] = maxk (D, 2, 3);
+%! assert_equal (size (B), [2, 3, 2]);
+%! assert_equal (days (B), days (D(:,:,[4, 3])));
+%! assert_equal (I, cat (3, 4 * ones (2, 3), 3 * ones (2, 3)));
+%!test
+%! D = days ([NaN, NaN, NaN]);
+%! [B, I] = maxk (D, 2);
+%! assert_equal (days (B), [NaN, NaN]);
+%! assert_equal (I, [1, 2]);
+%!test
+%! D = days ([3, 1, 2]);
+%! D.Format = 'hh:mm';
+%! B = maxk (D, 2);
+%! assert_equal (B.Format, 'hh:mm');
+%!assert_equal (class (maxk (days ([3, 1, 2]), 2)), 'duration')
+%!assert_equal (size (maxk (days ([3, 1, 2]), 0)), [1, 0])
+%!assert_equal (size (maxk (days ([1, 5; 4, 2; 3, 6]), 0)), [0, 2])
+%!assert_equal (size (maxk (days ([]), 2)), [0, 0])
+%!error<duration.maxk: too few input arguments.> maxk (days (1))
+%!error<duration.maxk: K must be a nonnegative integer scalar.> ...
+%! maxk (days ([1, 2, 3]), 2.5)
+%!error<duration.maxk: K must be a nonnegative integer scalar.> ...
+%! maxk (days ([1, 2, 3]), -1)
+%!error<duration.maxk: K must be a nonnegative integer scalar.> ...
+%! maxk (days ([1, 2, 3]), [2, 3])
+%!error<duration.maxk: K must be a nonnegative integer scalar.> ...
+%! maxk (days ([1, 2, 3]), Inf)
+%!error<duration.maxk: DIM must be a positive integer scalar.> ...
+%! maxk (days ([1, 2, 3]), 2, 0)
+%!error<duration.maxk: DIM must be a positive integer scalar.> ...
+%! maxk (days ([1, 2, 3]), 2, 1.5)
+%!error<duration.maxk: 'ComparisonMethod' is not a supported option.> ...
+%! maxk (days ([1, 2, 3]), 2, 'ComparisonMethod', 'abs')
+%!error<duration.maxk: 'MissingPlacement' is not a supported option.> ...
+%! maxk (days ([1, 2, 3]), 2, 'MissingPlacement', 'first')
+%!error<duration.maxk: too many input arguments.> ...
+%! maxk (days ([1, 2, 3]), 2, 1, 2)
+
+%!test
+%! D = days ([3, 1, NaN, 2, 1, NaN]);
+%! [B, I] = mink (D, 3);
+%! assert_equal (days (B), [1, 1, 2]);
+%! assert_equal (I, [2, 5, 4]);
+%!test
+%! D = days ([3, 1, NaN, 2, 1, NaN]);
+%! [B, I] = mink (D, 10);
+%! assert_equal (days (B), [1, 1, 2, 3, NaN, NaN]);
+%! assert_equal (I, [2, 5, 4, 1, 3, 6]);
+%!test
+%! D = days ([3, NaN, 1]);
+%! [B, I] = mink (D, 3);
+%! assert_equal (days (B), [1, 3, NaN]);
+%! assert_equal (I, [3, 1, 2]);
+%!test
+%! D = days ([2, 1, 2, 1, 2]);
+%! [B, I] = mink (D, 3);
+%! assert_equal (days (B), [1, 1, 2]);
+%! assert_equal (I, [2, 4, 1]);
+%!test
+%! D = days ([1, 5; 4, 2; 3, 6]);
+%! [B, I] = mink (D, 2);
+%! assert_equal (days (B), [1, 2; 3, 5]);
+%! assert_equal (I, [1, 2; 3, 1]);
+%!test
+%! D = days ([1, 5; 4, 2; 3, 6]);
+%! [B, I] = mink (D, 2, 2);
+%! assert_equal (days (B), [1, 5; 2, 4; 3, 6]);
+%! assert_equal (I, [1, 2; 2, 1; 1, 2]);
+%!test
+%! D = days ([1, NaN; NaN, 2; 3, 4]);
+%! [B, I] = mink (D, 3);
+%! assert_equal (days (B), [1, 2; 3, 4; NaN, NaN]);
+%! assert_equal (I, [1, 2; 3, 3; 2, 1]);
+%!test
+%! D = days ([Inf, -Inf, 1, NaN]);
+%! [B, I] = mink (D, 4);
+%! assert_equal (days (B), [-Inf, 1, Inf, NaN]);
+%! assert_equal (I, [2, 3, 1, 4]);
+%!test
+%! D = days ([3, 1, NaN, 2, 1, NaN]);
+%! [B, I] = mink (D, 3, 1);
+%! assert_equal (days (B), [3, 1, NaN, 2, 1, NaN]);
+%! assert_equal (I, ones (1, 6));
+%!test
+%! D = days ([NaN, NaN, NaN]);
+%! [B, I] = mink (D, 2);
+%! assert_equal (days (B), [NaN, NaN]);
+%! assert_equal (I, [1, 2]);
+%!test
+%! D = days ([3, 1, 2]);
+%! D.Format = 'hh:mm';
+%! B = mink (D, 2);
+%! assert_equal (B.Format, 'hh:mm');
+%!assert_equal (class (mink (days ([3, 1, 2]), 2)), 'duration')
+%!assert_equal (size (mink (days ([3, 1, 2]), 0)), [1, 0])
+%!assert_equal (size (mink (days ([1, 5; 4, 2; 3, 6]), 0)), [0, 2])
+%!assert_equal (size (mink (days ([]), 2)), [0, 0])
+%!error<duration.mink: too few input arguments.> mink (days (1))
+%!error<duration.mink: K must be a nonnegative integer scalar.> ...
+%! mink (days ([1, 2, 3]), 2.5)
+%!error<duration.mink: K must be a nonnegative integer scalar.> ...
+%! mink (days ([1, 2, 3]), -1)
+%!error<duration.mink: K must be a nonnegative integer scalar.> ...
+%! mink (days ([1, 2, 3]), [2, 3])
+%!error<duration.mink: K must be a nonnegative integer scalar.> ...
+%! mink (days ([1, 2, 3]), Inf)
+%!error<duration.mink: DIM must be a positive integer scalar.> ...
+%! mink (days ([1, 2, 3]), 2, 0)
+%!error<duration.mink: DIM must be a positive integer scalar.> ...
+%! mink (days ([1, 2, 3]), 2, 1.5)
+%!error<duration.mink: 'ComparisonMethod' is not a supported option.> ...
+%! mink (days ([1, 2, 3]), 2, 'ComparisonMethod', 'abs')
+%!error<duration.mink: 'MissingPlacement' is not a supported option.> ...
+%! mink (days ([1, 2, 3]), 2, 'MissingPlacement', 'first')
+%!error<duration.mink: too many input arguments.> ...
+%! mink (days ([1, 2, 3]), 2, 1, 2)
 
 %!test
 %! D = days ([1, 2; 1, 3; 2, -4; 2, 1]);
