@@ -1641,6 +1641,11 @@ classdef calendarDuration
       out.Days = cat (dim, fieldArgs{:});
       fieldArgs = cellfun (@(obj) obj.Time, args, 'UniformOutput', false);
       out.Time = cat (dim, fieldArgs{:});
+      ## The result displays in the union of the inputs' formats, so
+      ## concatenating weeks with quarters keeps both rather than widening
+      ## either back to days and months.
+      fmts = cellfun (@(obj) obj.Format, args, 'UniformOutput', false);
+      out.Format = unionFormat (fmts);
       out = broadcastProperties (out);
     endfunction
 
@@ -2134,4 +2139,13 @@ function u = zeroRenderUnit (els)
   else
     u = ['0', ladder{found}];
   endif
+endfunction
+
+## Union of a set of display formats, in the canonical component order.  Every
+## calendarDuration format contains 'm', 'd' and 't', so the union always does
+## too and stays a valid format.
+function fmt = unionFormat (fmts)
+  ladder = 'yqmwdt';
+  all = [fmts{:}];
+  fmt = ladder(ismember (ladder, all));
 endfunction
