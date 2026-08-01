@@ -5366,16 +5366,18 @@ function ev = gridbinedges (lo, hi, nbins, tick = 0.5)
       continue;
     endif
     width = ceil (spanU / nbins);
-    ## Keep this unit when no bin is wasted, that is when the excess is under
-    ## one width -- and also when it is exactly one width, provided the bins
-    ## are at least three units across.  In that second case the data fill
-    ## N-1 widths exactly and only the half-width shift below reaches the last
-    ## bin; MATLAB takes the whole unit there when the bins are wide and
-    ## prefers the finer decimal grid when they are one or two units across.
-    ## 'width >= 3' is exactly 'spanU / nbins > 2', so there is no constant to
-    ## justify beyond the ladder itself.
+    ## Keep this unit while the bins overshoot the data by less than twice one
+    ## width less a unit; past that the finer decimal rule wins.  The bound
+    ## rises with the width, which is why a three-unit width tolerates an
+    ## excess of three and a five-unit width tolerates seven.
+    ##
+    ## Measured, not derived: this separates all 712 captured cases that reach
+    ## a unit -- 583 gridded by R2024a and 129 sent to the decimal rule -- with
+    ## no exceptions either way.  It sits one unit tighter than "the first bin
+    ## still holds data" (which would be 'excess <= 2*width - 2' and wrongly
+    ## grids 38 of the 129), and why that last unit is withheld is not known.
     excess = nbins * width - spanU;
-    if (! (excess < width || (excess == width && width >= 3)))
+    if (excess >= 2 * (width - 1))
       continue;
     endif
     ## Centre the excess, rounding a half unit outwards.

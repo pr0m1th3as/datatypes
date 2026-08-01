@@ -4610,3 +4610,36 @@
 %! [~, e] = discretize (seconds ([0 8]), 5);
 %! assert_equal (seconds (e), [0 1.6000000000000001 3.2000000000000002 ...
 %!                             4.7999999999999998 6.4000000000000004 8]);
+
+## Test 'discretize' -- a whole unit is kept while the bins overshoot the data
+## by less than twice one width less a unit, so the tolerance rises with the
+## width: a 3-unit width takes an excess of 3 and a 5-unit width takes 7.  The
+## rows below are the accept side, all of which the earlier, tighter rule sent
+## to the decimal grid.  Values captured from R2024a.
+%!test
+%! [~, e] = discretize (seconds ([0 48]), 11);
+%! assert_equal (seconds (e), [-4 1 6 11 16 21 26 31 36 41 46 51]);
+%!test
+%! [~, e] = discretize (seconds ([0.125 28.125]), 7);
+%! assert_equal (seconds (e), [-3 2 7 12 17 22 27 32]);
+%!test
+%! [~, e] = discretize (seconds ([0.125 32.125]), 8);
+%! assert_equal (seconds (e), [-4 1 6 11 16 21 26 31 36]);
+%!test
+%! [~, e] = discretize (seconds ([0.125 40.125]), 8);
+%! assert_equal (seconds (e), [-4 2 8 14 20 26 32 38 44]);
+
+## Test 'discretize' -- the reject side of the same bound, which must keep
+## using the decimal rule.  A 2-unit width refuses an excess of 2 and a 3-unit
+## width refuses 4, one step past what each tolerates above.
+%!test
+%! [~, e] = discretize (seconds ([0 8]), 5);
+%! assert_equal (seconds (e), [0 1.6000000000000001 3.2000000000000002 ...
+%!                             4.7999999999999998 6.4000000000000004 8]);
+%!test
+%! [~, e] = discretize (seconds ([0 14]), 6);
+%! assert_equal (seconds (e), [0 2.3999999999999999 4.7999999999999998 ...
+%!                             7.2000000000000002 9.5999999999999996 12 14.4]);
+%!test
+%! [~, e] = discretize (seconds ([0 12]), 3);
+%! assert_equal (seconds (e), [0 4 8 12]);
