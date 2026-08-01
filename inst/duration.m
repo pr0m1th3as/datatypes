@@ -5067,11 +5067,17 @@ function [ev, isCount] = durbinedges (xv, arg2, scope)
       error ("%s: N must be a real positive integer.", scope);
     endif
     isCount = true;
+    ## With no finite value to bin, MATLAB places the bins as though the data
+    ## were a single zero, so the constant-data rule applies at zero rather
+    ## than the edges running 0, 1, ... N.
     if (isempty (xf))
-      ev = 0:double (arg2);
+      lo = 0;
+      hi = 0;
     else
-      ev = gridbinedges (min (xf), max (xf), double (arg2), 0.0005);
+      lo = min (xf);
+      hi = max (xf);
     endif
+    ev = gridbinedges (lo, hi, double (arg2), 0.0005);
   elseif (isnumeric (arg2))
     error (strcat (scope, ": numeric bin edges are not accepted for a", ...
                    " duration; give a duration vector."));
@@ -5198,6 +5204,15 @@ function args = durhistargs (args, xv, scope)
           args{k+1} = dv(:).';
         elseif (isnumeric (args{k+1}))
           error ("%s: '%s' must be a duration.", scope, char (args{k}));
+        endif
+        ## A width with no finite data to place it against: the numeric
+        ## function answers [0 1] and ignores the width entirely, where MATLAB
+        ## gives a single bin one width across.  Resolving it to explicit edges
+        ## here is the same thing 'BinMethod' with a unit name already does.
+        if (strcmpi (char (args{k}), 'BinWidth') && isempty (xf)
+            && isempty (lim) && isnumeric (args{k+1}))
+          args{k} = 'BinEdges';
+          args{k+1} = unitbinedges (xf, args{k+1}, scope);
         endif
       case 'binlimits'
         if (isa (args{k+1}, 'duration'))
@@ -5377,11 +5392,12 @@ function ev = countbinedges (lo, hi, nbins, scope)
     error (strcat (scope, ": 'NumBins' must be a real, finite, positive,", ...
                    " integer value."));
   endif
+  ## No finite value to bin: the bins go where they would for a single zero.
   if (isempty (lo))
-    ev = 0:double (nbins);
-  else
-    ev = gridbinedges (lo, hi, double (nbins), 0.0005);
+    lo = 0;
+    hi = 0;
   endif
+  ev = gridbinedges (lo, hi, double (nbins), 0.0005);
 
 endfunction
 
