@@ -3299,10 +3299,12 @@ classdef categorical
     ## a single column vector.
     ##
     ## @code{@var{N} = histcounts (@var{A}, @var{cats})} returns the number of
-    ## elements only for the categories of @var{A} specified in @var{cats},
-    ## which may be a categorical array, a string array, or a cell array of
-    ## character vectors, as long as it specifies unique existing categories in
-    ## @var{A}.
+    ## elements only for the categories named in @var{cats}, in the order they
+    ## are named there.  @var{cats} may be a categorical array, a string array,
+    ## or a cell array of character vectors, and the names must be unique.  A
+    ## name that is not a category of @var{A} is not an error: it counts zero.
+    ## Note that @qcode{<undefined>} elements are counted under no name at all,
+    ## so they never appear in @var{N}.
     ##
     ## @code{@var{N} = histcounts (@dots{}, @qcode{'Normalization'},
     ## @var{normtype})} specifies how to normalize the histogram values returned
@@ -3361,9 +3363,12 @@ classdef categorical
           error (strcat ("categorical.histcounts: invalid", ...
                          " type for CATS input argument."));
         endif
-        if (! all (ismember (cats, A.cats)))
-          error (strcat ("categorical.histcounts: input argument", ...
-                         " CATS references non-existing categories in A."));
+        ## A name that is not a category of A is not an error; it simply counts
+        ## zero, as MATLAB has it.  Repeated names are refused, also as MATLAB
+        ## has it -- they would silently return the same count twice.
+        if (numel (unique (cats(:))) != numel (cats))
+          error (strcat ("categorical.histcounts: input argument CATS must", ...
+                         " not contain repeated category names."));
         endif
       else
         cats = A.cats;
@@ -3375,11 +3380,17 @@ classdef categorical
       ## categories were requested in, which is the order CATS is returned in,
       ## and not the order they happen to have in A.
       codes = A.code(:);
-      [~, ccats] = ismember (cats, A.cats);
+      [known, ccats] = ismember (cats, A.cats);
       ncats = numel (ccats);
       N = zeros (1, ncats);
       for i = 1:ncats
-        N(i) = sum (codes == ccats(i));
+        ## 'ismember' answers 0 for a name A does not have, and 0 is also the
+        ## code of an <undefined> element, so a name that is not a category
+        ## must be skipped rather than compared -- otherwise it would be
+        ## credited with every undefined element in the array.
+        if (known(i))
+          N(i) = sum (codes == ccats(i));
+        endif
       endfor
 
       ## Apply normalization scheme

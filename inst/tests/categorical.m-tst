@@ -2494,12 +2494,38 @@
 %! histcounts (categorical, '1')
 %!error<categorical.histcounts: invalid type for CATS input argument.> ...
 %! histcounts (categorical, {1})
-%!error<categorical.histcounts: input argument CATS references non-existing categories in A.> ...
-%! histcounts (categorical, {'1'})
-%!error<categorical.histcounts: input argument CATS references non-existing categories in A.> ...
-%! histcounts (categorical, categorical (1))
-%!error<categorical.histcounts: input argument CATS references non-existing categories in A.> ...
-%! histcounts (categorical, string ('a'))
+%!error<categorical.histcounts: input argument CATS must not contain repeated category names.> ...
+%! histcounts (categorical ({'a', 'b'}), {'a', 'a'})
+
+## Test 'histcounts' -- a name that is not a category of A counts zero rather
+## than erroring, and <undefined> elements are never credited to it
+%!test
+%! C = categorical ({'b', 'a', 'c', 'a', 'b', 'a'});
+%! [n, c] = histcounts (C, {'a', 'zzz'});
+%! assert_equal (n, [3 0]);
+%! assert_equal (c, {'a', 'zzz'});
+%!test
+%! C = categorical ({'b', 'a', 'c', 'a', 'b', 'a'});
+%! [n, c] = histcounts (C, {'zzz', 'yyy'});
+%! assert_equal (n, [0 0]);
+%! assert_equal (c, {'zzz', 'yyy'});
+%!test
+%! E = categorical ({'b', 'a', '', 'c'});
+%! assert_equal (histcounts (E, {'a', 'zzz'}), [1 0]);
+%! assert_equal (histcounts (E, {'zzz'}), 0);
+%!test
+%! C = categorical ({'b', 'a', 'c', 'a', 'b', 'a'});
+%! assert_equal (histcounts (C, {'zzz', 'a', 'yyy'}), [0 3 0]);
+%! assert_equal (histcounts (C, {'a', 'zzz'}, 'Normalization', 'probability'), ...
+%!               [0.5 0]);
+%! assert_equal (histcounts (C, {'a', 'zzz'}, 'Normalization', 'cumcount'), ...
+%!               [3 3]);
+%! assert_equal (histcounts (C, {''}), 0);
+%!test
+%! C = categorical ({'b', 'a', 'c', 'a', 'b', 'a'});
+%! [n, c] = histcounts (C, string ({'a', 'zzz'}));
+%! assert_equal (n, [3 0]);
+%! assert_equal (class (c), 'cell')
 
 ################################################################################
 ##                   ** Sort, Filter, and Set Operations **                   ##
