@@ -3364,9 +3364,9 @@ classdef duration
       if (nargin < 2)
         error ("duration.discretize: not enough input arguments.");
       endif
-      xv = this.Millis(:) / 1000;
+      xv = this.Millis(:);
       [ev, isCount] = durbinedges (xv, arg2, 'duration.discretize');
-      EDGES = seconds (ev);
+      EDGES = milliseconds (ev);
       EDGES.Format = this.Format;
       if (isCount)
         EDGES = reshape (EDGES, 1, numel (ev));
@@ -3412,7 +3412,7 @@ classdef duration
     ## @end deftypefn
     function [N, EDGES, BIN] = histcounts (this, varargin)
 
-      xv = this.Millis(:) / 1000;
+      xv = this.Millis(:);
       args = durhistargs (varargin, xv, 'duration.histcounts');
       if (nargout > 2)
         [N, ev, BIN] = histcounts (xv, args{:});
@@ -3420,7 +3420,7 @@ classdef duration
       else
         [N, ev] = histcounts (xv, args{:});
       endif
-      EDGES = seconds (ev);
+      EDGES = milliseconds (ev);
       EDGES.Format = this.Format;
 
     endfunction
@@ -5057,7 +5057,7 @@ function [ev, isCount] = durbinedges (xv, arg2, scope)
   isCount = false;
   xf = xv(isfinite (xv));
   if (isa (arg2, 'duration'))
-    dv = seconds (arg2);
+    dv = milliseconds (arg2);
     if (isscalar (dv))
       ev = unitbinedges (xf, dv, scope);
     else
@@ -5080,7 +5080,7 @@ function [ev, isCount] = durbinedges (xv, arg2, scope)
       lo = min (xf);
       hi = max (xf);
     endif
-    ev = gridbinedges (lo, hi, double (arg2), 0.0005);
+    ev = gridbinedges (lo, hi, double (arg2), 0.5);
   elseif (isnumeric (arg2))
     error (strcat (scope, ": numeric bin edges are not accepted for a", ...
                    " duration; give a duration vector."));
@@ -5107,21 +5107,23 @@ function ev = unitbinedges (xf, unit, scope)
 
 endfunction
 
-## Length in seconds of a named time unit
+## Length in milliseconds of a named time unit.  The binning path works in the
+## stored unit throughout, as MATLAB's does; computing it in seconds instead
+## puts a rounding into every width that is not a whole number of seconds.
 function s = unitseconds (name, scope)
 
-  yr = 31556952;
+  yr = 31556952000;
   switch (lower (name))
     case 'second'
-      s = 1;
+      s = 1000;
     case 'minute'
-      s = 60;
+      s = 60000;
     case 'hour'
-      s = 3600;
+      s = 3600000;
     case 'day'
-      s = 86400;
+      s = 86400000;
     case 'week'
-      s = 604800;
+      s = 604800000;
     case 'month'
       s = yr / 12;
     case 'quarter'
@@ -5152,7 +5154,7 @@ function args = durhistargs (args, xv, scope)
     if (istextscalar (args{k}) && strcmpi (char (args{k}), 'BinLimits'))
       v = args{k+1};
       if (isa (v, 'duration'))
-        v = seconds (v);
+        v = milliseconds (v);
       endif
       if (isnumeric (v) && numel (v) == 2)
         lim = double (v(:)).';
@@ -5177,7 +5179,7 @@ function args = durhistargs (args, xv, scope)
   k = 1;
   if (! isempty (args) && ! istextscalar (args{1}))
     if (isa (args{1}, 'duration'))
-      dv = seconds (args{1});
+      dv = milliseconds (args{1});
       args{1} = dv(:).';
       hasSpec = true;
       k = 2;
@@ -5203,7 +5205,7 @@ function args = durhistargs (args, xv, scope)
       case {'binwidth', 'binedges'}
         hasSpec = true;
         if (isa (args{k+1}, 'duration'))
-          dv = seconds (args{k+1});
+          dv = milliseconds (args{k+1});
           args{k+1} = dv(:).';
         elseif (isnumeric (args{k+1}))
           error ("%s: '%s' must be a duration.", scope, char (args{k}));
@@ -5219,7 +5221,7 @@ function args = durhistargs (args, xv, scope)
         endif
       case 'binlimits'
         if (isa (args{k+1}, 'duration'))
-          dv = seconds (args{k+1});
+          dv = milliseconds (args{k+1});
           args{k+1} = dv(:).';
         elseif (isnumeric (args{k+1}))
           error ("%s: '%s' must be a duration.", scope, char (args{k}));
@@ -5350,7 +5352,7 @@ function ev = gridbinedges (lo, hi, nbins, tick = 0.5)
   ## starting on a second gives SPANU 6 and a 2-second width, and the same 6
   ## seconds starting an eighth of a second later gives SPANU 7 and a 3-second
   ## width.
-  for u = [86400, 3600, 60, 1]
+  for u = [86400000, 3600000, 60000, 1000]
     nLo = floor (lo / u);
     spanU = ceil (hi / u) - nLo;
     if (spanU < 1)
@@ -5400,7 +5402,7 @@ function ev = countbinedges (lo, hi, nbins, scope)
     lo = 0;
     hi = 0;
   endif
-  ev = gridbinedges (lo, hi, double (nbins), 0.0005);
+  ev = gridbinedges (lo, hi, double (nbins), 0.5);
 
 endfunction
 

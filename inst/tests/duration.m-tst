@@ -4553,3 +4553,60 @@
 %!assert_equal (milliseconds (seconds (1)), 1000)
 %!assert_equal (seconds (milliseconds (1)), 0.001)
 %!assert_equal (days (seconds (1)), 1.1574074074074073e-05)
+
+## Test 'discretize' -- bin edges are computed in the stored milliseconds, not
+## in seconds.  A width that is not a whole number of seconds cannot be held
+## exactly in seconds but is a round integer in milliseconds, so binning in
+## seconds left a last-bit error in every such edge.  Values captured from
+## R2024a; these are bit-exact and must stay so.
+%!test
+%! [~, e] = discretize (seconds ([0 3.6]), 3);
+%! assert_equal (seconds (e), [0 1.2 2.3999999999999999 3.6000000000000001]);
+%!test
+%! [~, e] = discretize (seconds ([0 3.72]), 3);
+%! assert_equal (seconds (e), [0 1.3 2.6000000000000001 3.8999999999999999]);
+%!test
+%! [~, e] = discretize (seconds ([0 1e-4]), 3);
+%! assert_equal (seconds (e), [0 4.0000000000000003e-05 ...
+%!                             8.0000000000000007e-05 0.00011999999999999999]);
+%!test
+%! [~, e] = discretize (seconds ([0 10^-2.5]), 3);
+%! assert_equal (seconds (e), [0 0.0011000000000000001 ...
+%!                             0.0022000000000000001 0.0033000000000000004]);
+
+## Test 'discretize' -- the left edge is the unit holding the smallest value
+## moved down a whole number of units, so it is constant across a unit and
+## steps once.  Sliding the start by an eighth of a second changes the width,
+## because the span is counted with a ceiling at the top against a floor at the
+## bottom.  Values captured from R2024a.
+%!test
+%! [~, e] = discretize (seconds ([0 6]), 3);
+%! assert_equal (seconds (e), [0 2 4 6]);
+%!test
+%! [~, e] = discretize (seconds ([0.125 6.125]), 3);
+%! assert_equal (seconds (e), [-1 2 5 8]);
+%!test
+%! [~, e] = discretize (seconds ([0.5 10.5]), 3);
+%! assert_equal (seconds (e), [-1 3 7 11]);
+%!test
+%! [~, e] = discretize (seconds ([0.75 10.75]), 3);
+%! assert_equal (seconds (e), [-1 3 7 11]);
+
+## Test 'discretize' -- a whole unit is taken when the excess is under one
+## width, and also when it is exactly one width provided the bins are at least
+## three units across; below that the finer decimal grid wins.  R=12 at N=5 and
+## N=7 are the pair that pins it: same excess-to-width ratio, different answer.
+%!test
+%! [~, e] = discretize (seconds ([0 12]), 5);
+%! assert_equal (seconds (e), [-2 1 4 7 10 13]);
+%!test
+%! [~, e] = discretize (seconds ([0 12]), 7);
+%! assert_equal (seconds (e), [0 1.8 3.6000000000000001 5.4000000000000004 ...
+%!                             7.2000000000000002 9 10.800000000000001 12.6]);
+%!test
+%! [~, e] = discretize (seconds ([0 16]), 5);
+%! assert_equal (seconds (e), [-2 2 6 10 14 18]);
+%!test
+%! [~, e] = discretize (seconds ([0 8]), 5);
+%! assert_equal (seconds (e), [0 1.6000000000000001 3.2000000000000002 ...
+%!                             4.7999999999999998 6.4000000000000004 8]);
