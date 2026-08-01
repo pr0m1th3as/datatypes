@@ -3315,6 +3315,8 @@ classdef categorical
     ## bin width in categorical arrays is always equal to 1.
     ## @item @qcode{'probability'} returns the number of elements in each
     ## category relative to the total number of elements in @var{A}.
+    ## @item @qcode{'percentage'} returns the percentage of the elements of
+    ## @var{A} that fall in each category.
     ## @item @qcode{'pdf'} is the same as @qcode{'probability'}, since the bin
     ## width in categorical arrays is always equal to 1.
     ## @item @qcode{'cumcount'} returns the cumulative number of elements in
@@ -3335,7 +3337,8 @@ classdef categorical
       optNames = {'Normalization'};
       dfValues = {'count'};
       [normtype, args] = parsePairedArguments (optNames, dfValues, varargin(:));
-      vnt = {'count', 'countdensity', 'probability', 'pdf', 'cumcount', 'cdf'};
+      vnt = {'count', 'countdensity', 'probability', 'percentage', 'pdf', ...
+             'cumcount', 'cdf'};
       if (! ismember (normtype, vnt))
         error ("categorical.histcounts: invalid 'Normalization' type.");
       endif
@@ -3377,6 +3380,8 @@ classdef categorical
       ## Apply normalization scheme
       if (any (strcmp (normtype, {'probability', 'pdf'})))
         N = N ./ numel (codes);
+      elseif (strcmp (normtype, 'percentage'))
+        N = 100 * N ./ numel (codes);
       elseif (strcmp (normtype, 'cumcount'))
         N = cumsum (N);
       elseif (strcmp (normtype, 'cdf'))

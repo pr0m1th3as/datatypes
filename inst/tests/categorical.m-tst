@@ -2432,6 +2432,28 @@
 %! assert_equal (Cats, {'yes', 'undecided'});
 %!test
 %! A = [0 0 1 1 1 0 0 0 0 NaN NaN 1 0 0 0 1 0 1 0 1 0 0 0 1 1 1 1];
+%! C = categorical (A, [1, 0, NaN], {'yes', 'no', 'undecided'});
+%! N = histcounts (C, 'Normalization', 'percentage');
+%! assert_equal (N, [40.7407, 51.8519, 7.4074], 1e-4);
+%! N = histcounts (C, {'no', 'yes'}, 'Normalization', 'percentage');
+%! assert_equal (N, [51.8519, 40.7407], 1e-4);
+%! N = histcounts (C, {'undecided'}, 'Normalization', 'percentage');
+%! assert_equal (N, 7.4074, 1e-4);
+%! assert_equal (sum (histcounts (C, 'Normalization', 'percentage')), 100, 1e-10);
+%!test
+%! E = categorical ({'b', 'a', '', 'c'});
+%! assert_equal (histcounts (E), [1, 1, 1]);
+%! assert_equal (histcounts (E, 'Normalization', 'percentage'), [25, 25, 25]);
+%! assert_equal (histcounts (E, 'Normalization', 'probability'), ...
+%!               [0.25, 0.25, 0.25]);
+%! assert_equal (histcounts (E, 'Normalization', 'cdf'), [0.25, 0.5, 0.75]);
+%!test
+%! assert_equal (histcounts (categorical ({'a'}), 'Normalization', ...
+%!                          'percentage'), 100);
+%! assert_equal (class (histcounts (categorical ({'a', 'b'}), ...
+%!                                  'Normalization', 'percentage')), 'double');
+%!test
+%! A = [0 0 1 1 1 0 0 0 0 NaN NaN 1 0 0 0 1 0 1 0 1 0 0 0 1 1 1 1];
 %! C = categorical (A);
 %! [N, Cats] = histcounts (C);
 %! assert_equal (N, [14, 11]);
