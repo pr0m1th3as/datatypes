@@ -4419,13 +4419,14 @@
 %!test
 %! [~, e] = histcounts (hours (0:100));
 %! assert_equal (seconds (e), [0 72000 144000 216000 288000 360000]);
-## This is the documented deviation, not a mismatch: R2024a answers this with a
-## 4-hour width that covers the data in 6 of the 7 bins requested, leaving one
-## unused.  A whole unit is taken here only when it still needs every bin, so
-## the minute grid is used instead.
+## This was once documented as a deliberate deviation, on the reading that
+## R2024a left one of the seven bins unused.  It does not: with the left edge
+## placed correctly all seven are occupied, and we now agree with it exactly.
 %!test
 %! [~, e] = discretize (hours (0:24), 7);
-%! assert_equal (max (abs (seconds (e) - (-60 + (0:7) * 12360))) < 1e-6, true);
+%! assert_equal (seconds (e), ...
+%!               [-7200 7200 21600 36000 50400 64800 79200 93600]);
+%! assert_equal (unique (discretize (hours (0:24), 7)), 1:7);
 %!test
 %! [~, e] = discretize (hours (0:5), 3);
 %! assert_equal (seconds (e), [-3600 3600 10800 18000]);
