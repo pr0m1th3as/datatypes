@@ -3344,7 +3344,9 @@ classdef categorical
       if (! isempty (args))
         cats = args{1};
         if (isa (cats, 'categorical'))
-          cats = categories (cats);
+          ## The elements select the categories, in the order they appear;
+          ## `categories` would sort them and silently reorder the counts.
+          cats = cellstr (cats);
         elseif (isa (cats, 'string'))
           cats = cellstr (cats);
         elseif (! iscellstr (cats))
@@ -3361,9 +3363,11 @@ classdef categorical
       ## Force cats to row vector
       cats = cats(:)';
 
-      ## Count elements in selected categories
+      ## Count elements in selected categories.  The counts follow the order the
+      ## categories were requested in, which is the order CATS is returned in,
+      ## and not the order they happen to have in A.
       codes = A.code(:);
-      ccats = find (ismember (A.cats, cats));
+      [~, ccats] = ismember (cats, A.cats);
       ncats = numel (ccats);
       N = zeros (1, ncats);
       for i = 1:ncats

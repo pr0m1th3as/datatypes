@@ -2401,6 +2401,37 @@
 %! assert_equal (N, [0.4074, 0.9259], 1e-4);
 %!test
 %! A = [0 0 1 1 1 0 0 0 0 NaN NaN 1 0 0 0 1 0 1 0 1 0 0 0 1 1 1 1];
+%! C = categorical (A, [1, 0, NaN], {'yes', 'no', 'undecided'});
+%! [N, Cats] = histcounts (C, {'no', 'yes'});
+%! assert_equal (N, [14, 11]);
+%! assert_equal (Cats, {'no', 'yes'});
+%! [N, Cats] = histcounts (C, {'undecided', 'yes', 'no'});
+%! assert_equal (N, [2, 11, 14]);
+%! assert_equal (Cats, {'undecided', 'yes', 'no'});
+%! [N, Cats] = histcounts (C, {'undecided'});
+%! assert_equal (N, 2);
+%! assert_equal (Cats, {'undecided'});
+%! N = histcounts (C, {'no', 'yes'}, 'Normalization', 'cumcount');
+%! assert_equal (N, [14, 25]);
+%! N = histcounts (C, {'undecided', 'yes', 'no'}, 'Normalization', 'cumcount');
+%! assert_equal (N, [2, 13, 27]);
+%!test
+%! A = [0 0 1 1 1 0 0 0 0 NaN NaN 1 0 0 0 1 0 1 0 1 0 0 0 1 1 1 1];
+%! C = categorical (A, [1, 0, NaN], {'yes', 'no', 'undecided'});
+%! [N, Cats] = histcounts (C, categorical ({'yes', 'no'}));
+%! assert_equal (N, [11, 14]);
+%! assert_equal (Cats, {'yes', 'no'});
+%! [N, Cats] = histcounts (C, categorical ({'yes', 'undecided'}));
+%! assert_equal (N, [11, 2]);
+%! assert_equal (Cats, {'yes', 'undecided'});
+%! [N, Cats] = histcounts (C, string ({'no', 'yes'}));
+%! assert_equal (N, [14, 11]);
+%! assert_equal (Cats, {'no', 'yes'});
+%! [N, Cats] = histcounts (C, string ({'yes', 'undecided'}));
+%! assert_equal (N, [11, 2]);
+%! assert_equal (Cats, {'yes', 'undecided'});
+%!test
+%! A = [0 0 1 1 1 0 0 0 0 NaN NaN 1 0 0 0 1 0 1 0 1 0 0 0 1 1 1 1];
 %! C = categorical (A);
 %! [N, Cats] = histcounts (C);
 %! assert_equal (N, [14, 11]);
