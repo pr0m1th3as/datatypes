@@ -79,6 +79,55 @@ classdef calendarDuration
 
   endmethods
 
+  methods (Static, Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {calendarDuration} {@var{E} =} calendarDuration.empty ()
+    ## @deftypefnx {calendarDuration} {@var{E} =} calendarDuration.empty (@var{sz})
+    ## @deftypefnx {calendarDuration} {@var{E} =} calendarDuration.empty (@var{m}, @var{n}, @dots{})
+    ##
+    ## Create an empty calendarDuration array.
+    ##
+    ## @code{@var{E} = calendarDuration.empty ()} returns a @math{0*0} empty
+    ## calendarDuration array.  @code{calendarDuration.empty (@var{m}, @var{n},
+    ## @dots{})} or @code{calendarDuration.empty (@var{sz})} returns an empty
+    ## calendarDuration array of the requested size, which must have at least
+    ## one dimension equal to zero.  A lone dimension gives a square size, so
+    ## @code{calendarDuration.empty (3)} is an error while
+    ## @code{calendarDuration.empty (0)} is @math{0*0}.  As for @code{zeros}, a
+    ## negative dimension counts as zero, and a size vector with nothing in it
+    ## names no size and gives @math{0*0}.
+    ##
+    ## @end deftypefn
+    function E = empty (varargin)
+      if (nargin == 0)
+        sz = [0, 0];
+      elseif (nargin == 1 && ! isscalar (varargin{1}))
+        sz = double (varargin{1}(:)).';
+      else
+        sz = [varargin{:}];
+      endif
+      if (! (isnumeric (sz) && isrow (sz) && all (sz == fix (sz))))
+        error ("calendarDuration.empty: dimensions must be integer values.");
+      endif
+      ## A negative dimension is no smaller than none at all, and a size vector
+      ## holding no dimensions names no size: 'zeros' and every other array
+      ## constructor read both the same way.
+      sz = max (sz, 0);
+      if (isempty (sz))
+        sz = [0, 0];
+      elseif (isscalar (sz))
+        sz = [sz, sz];
+      endif
+      if (all (sz != 0))
+        error (strcat ("calendarDuration.empty: at least one dimension", ...
+                       " must be zero for an empty array."));
+      endif
+      E = calendarDuration (zeros (sz), zeros (sz), zeros (sz));
+    endfunction
+
+  endmethods
+
 ################################################################################
 ##             ** Create and convert 'calendarDuration' type **               ##
 ################################################################################

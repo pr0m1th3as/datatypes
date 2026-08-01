@@ -4433,3 +4433,24 @@
 %!test
 %! [~, e] = discretize (days (0:40), 3);
 %! assert_equal (seconds (e) / 86400, [-1 13 27 41]);
+
+## Test 'duration.empty' -- empty duration arrays
+%!assert_equal (size (duration.empty), [0, 0])
+%!assert_equal (class (duration.empty), 'duration')
+%!assert_equal (isempty (duration.empty), true)
+%!assert_equal (duration.empty.Format, 'hh:mm:ss')
+%!assert_equal (size (duration.empty (2, 0)), [2, 0])
+%!assert_equal (size (duration.empty (0, 3)), [0, 3])
+%!error <duration.empty: at least one dimension must be zero for an empty array.> ...
+%! duration.empty (3)
+
+## Test 'duration.empty' -- size arguments follow 'zeros' rules: a
+## negative dimension counts as zero, a size vector holding none names no size
+%!assert_equal (size (duration.empty (0)), [0, 0])
+%!assert_equal (size (duration.empty (-1)), [0, 0])
+%!assert_equal (size (duration.empty (-2, -3)), [0, 0])
+%!assert_equal (size (duration.empty ([])), [0, 0])
+%!assert_equal (size (duration.empty (2, 0, 3)), [2, 0, 3])
+%!assert_equal (size (duration.empty ([0 2 3])), [0, 2, 3])
+%!error <duration.empty: dimensions must be integer values.> ...
+%! duration.empty (1.5)

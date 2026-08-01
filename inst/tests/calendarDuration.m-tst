@@ -1502,3 +1502,24 @@
 %! cD = caldays([1:5]); cD.Format = 'mydt'
 %!error<calendarDuration.subsasgn: unrecognized property: 'fdasd'> ...
 %! cD = caldays([1:5]); cD.fdasd = 1
+
+## Test 'calendarDuration.empty' -- empty calendarDuration arrays
+%!assert_equal (size (calendarDuration.empty), [0, 0])
+%!assert_equal (class (calendarDuration.empty), 'calendarDuration')
+%!assert_equal (isempty (calendarDuration.empty), true)
+%!assert_equal (calendarDuration.empty.Format, 'ymdt')
+%!assert_equal (size (calendarDuration.empty (2, 0)), [2, 0])
+%!assert_equal (size (calendarDuration.empty (0, 3)), [0, 3])
+%!error <calendarDuration.empty: at least one dimension must be zero for an empty array.> ...
+%! calendarDuration.empty (3)
+
+## Test 'calendarDuration.empty' -- size arguments follow 'zeros' rules: a
+## negative dimension counts as zero, a size vector holding none names no size
+%!assert_equal (size (calendarDuration.empty (0)), [0, 0])
+%!assert_equal (size (calendarDuration.empty (-1)), [0, 0])
+%!assert_equal (size (calendarDuration.empty (-2, -3)), [0, 0])
+%!assert_equal (size (calendarDuration.empty ([])), [0, 0])
+%!assert_equal (size (calendarDuration.empty (2, 0, 3)), [2, 0, 3])
+%!assert_equal (size (calendarDuration.empty ([0 2 3])), [0, 2, 3])
+%!error <calendarDuration.empty: dimensions must be integer values.> ...
+%! calendarDuration.empty (1.5)

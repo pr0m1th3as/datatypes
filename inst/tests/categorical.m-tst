@@ -3930,3 +3930,24 @@
 %! C = categorical ([1:5]); C{2} = '1'
 %!error<categorical.subsasgn: '.' invalid indexing for assigning field of non-structure array.> ...
 %! C = categorical ([1:5]); C.prop = 1
+
+## Test 'categorical.empty' -- empty categorical arrays
+%!assert_equal (size (categorical.empty), [0, 0])
+%!assert_equal (class (categorical.empty), 'categorical')
+%!assert_equal (isempty (categorical.empty), true)
+%!assert_equal (numel (categories (categorical.empty)), 0)
+%!assert_equal (size (categorical.empty (2, 0)), [2, 0])
+%!assert_equal (size (categorical.empty (0, 3)), [0, 3])
+%!error <categorical.empty: at least one dimension must be zero for an empty array.> ...
+%! categorical.empty (3)
+
+## Test 'categorical.empty' -- size arguments follow 'zeros' rules: a
+## negative dimension counts as zero, a size vector holding none names no size
+%!assert_equal (size (categorical.empty (0)), [0, 0])
+%!assert_equal (size (categorical.empty (-1)), [0, 0])
+%!assert_equal (size (categorical.empty (-2, -3)), [0, 0])
+%!assert_equal (size (categorical.empty ([])), [0, 0])
+%!assert_equal (size (categorical.empty (2, 0, 3)), [2, 0, 3])
+%!assert_equal (size (categorical.empty ([0 2 3])), [0, 2, 3])
+%!error <categorical.empty: dimensions must be integer values.> ...
+%! categorical.empty (1.5)
