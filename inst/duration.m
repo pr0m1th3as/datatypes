@@ -5227,24 +5227,36 @@ endfunction
 ## the result all count seconds; NBINS is the number of bins asked for and TICK
 ## the half-width used when the data are constant.
 ##
-## Taking G as a whole time unit and 'raw' as the unrounded width:
+## Taking G as a whole time unit, everything runs on INTEGER counts of G:
 ##
-##   raw = (HI - LO) / NBINS
-##   G   = the largest of 1 day, 1 hour, 1 minute, 1 second with raw / G >= 4/3
-##   w   = G * ceil ((HI - LO) / (NBINS * G))
-##   L   = G * ceil ((LO - (NBINS * w - (HI - LO)) / 2) / G - 0.5)
+##   nLo   = floor (LO / G)
+##   spanU = ceil (HI / G) - nLo            % note ceil against floor
+##   w     = ceil (spanU / NBINS)
+##   c     = ceil ((NBINS * w - spanU) / 2)
+##   L     = G * (nLo - c)
 ##
-## The width is the raw width rounded up to a whole unit, and the bins are then
-## centred on the data with the left edge snapped to the same unit, half-way
-## cases rounding **down**.  That is neither round (), which rounds half away
-## from zero, nor floor (x + 0.5), which rounds half up: 'hours (0:5)' in 3 bins
-## lands exactly on -0.5 units and MATLAB takes -1.
+## with G the largest unit for which 'spanU / NBINS > 4/3' and the width still
+## needs every bin, that is 'ceil (spanU / w) == NBINS'.
 ##
-## **The threshold is exactly 4/3**, pinned at two scales by 'binthr_probe.m':
-## a raw width of 1.333 s takes the fine path and 1.334 s the coarse one,
-## identically in seconds and in hours.  4/3 is precisely where rounding the
-## width up to the whole unit can inflate it by at most 50%, so a unit is
-## adopted only when it costs little.
+## **The left edge is not a rounding of the centred value.**  It is the unit
+## holding LO, moved down by a whole number of units.  Every attempt to write it
+## as a rounding of 'LO - (NBINS*w - range)/2' fails, because two cases can
+## share that value and be placed a unit apart -- 'xmin = 0.25, range = 5' and
+## 'xmin = 0.75, range = 10' both give -0.25, and MATLAB answers 0 and -1.
+## Sweeping XMIN through a unit settles it: the answer is constant across the
+## whole interval and steps once, which is a floor and not a rounding.
+##
+## **The ceiling in SPANU against the floor in nLo is the load-bearing part.**
+## Data ending part way through a unit claims the whole of it, so the same
+## elapsed range gives a different width depending on where it starts:
+## 'seconds ([0 6])' is SPANU 6 and a 2-second width, 'seconds ([0.125 6.125])'
+## is SPANU 7 and a 3-second width.
+##
+## **The threshold is on SPANU, not on the elapsed range**, and at exactly 4/3
+## the numeric rule wins.  That is what separates 'seconds ([0 4])' (SPANU 4,
+## ratio 4/3, numeric) from 'seconds ([0.125 4.125])' (SPANU 5, gridded), which
+## no threshold on the elapsed range can do since both have the same range.
+## 'binthr_probe.m' pins it at two scales.
 ##
 ## **The ladder stops at one day.**  There is no week and no month -- a week
 ## grid reproduces some spans and gets others wrong, and every span that looked
@@ -5265,39 +5277,39 @@ function ev = gridbinedges (lo, hi, nbins, tick = 0.5)
     return;
   endif
 
-  span = hi - lo;
-  raw = span / nbins;
-
-  ## Both conditions, not either.  A unit is taken only when its width still
-  ## needs every bin requested AND the raw width is at least 4/3 of it; keeping
-  ## the first alone is what let a bin one year wide answer an hour of data,
-  ## and keeping the second alone loses cases the first catches.
-  unit = [];
+  ## Everything is integer arithmetic on unit indices.  SPANU is the count of
+  ## whole units the data touches -- note the ceiling at the top against the
+  ## floor at the bottom, so data ending part way through a unit still claims
+  ## the whole of it.  That asymmetry is the whole rule: 6 seconds of data
+  ## starting on a second gives SPANU 6 and a 2-second width, and the same 6
+  ## seconds starting an eighth of a second later gives SPANU 7 and a 3-second
+  ## width.
   for u = [86400, 3600, 60, 1]
-    w = u * ceil (span / (nbins * u));
-    if (ceil (span / w) == nbins && raw / u >= 4/3)
-      unit = u;
-      break;
+    nLo = floor (lo / u);
+    spanU = ceil (hi / u) - nLo;
+    if (spanU < 1)
+      continue;
     endif
+    ## The threshold is on SPANU, not on the elapsed range.  At exactly 4/3 the
+    ## numeric rule wins, which is what separates a 4-second range starting on
+    ## a second (SPANU 4, ratio 4/3, numeric) from the same range starting an
+    ## eighth later (SPANU 5, ratio 5/3, gridded).
+    if (spanU / nbins <= 4/3)
+      continue;
+    endif
+    width = ceil (spanU / nbins);
+    ## Keep this unit only if its width still needs every bin requested.
+    if (ceil (spanU / width) != nbins)
+      continue;
+    endif
+    ## Centre the excess, rounding a half unit outwards.
+    c = ceil ((nbins * width - spanU) / 2);
+    ev = u * ((nLo - c) + (0:nbins) * width);
+    return;
   endfor
 
   ## Finer than the threshold allows: the plain numeric rule takes over
-  if (isempty (unit))
-    ev = __binedges__ (lo, hi, nbins);
-    return;
-  endif
-
-  width = unit * ceil (span / (nbins * unit));
-  left = unit * ceil ((lo - (nbins * width - span) / 2) / unit - 0.5);
-  ev = left + (0:nbins) * width;
-
-  ## Guard against a rounding shortfall at either end
-  if (ev(1) > lo)
-    ev = ev - (ev(1) - lo);
-  endif
-  if (ev(end) < hi)
-    ev(end) = hi;
-  endif
+  ev = __binedges__ (lo, hi, nbins);
 
 endfunction
 
