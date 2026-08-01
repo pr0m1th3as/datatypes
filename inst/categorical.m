@@ -3339,9 +3339,14 @@ classdef categorical
       [normtype, args] = parsePairedArguments (optNames, dfValues, varargin(:));
       vnt = {'count', 'countdensity', 'probability', 'percentage', 'pdf', ...
              'cumcount', 'cdf'};
-      if (! ismember (normtype, vnt))
+      if (isa (normtype, 'string'))
+        normtype = char (normtype);
+      endif
+      ## The type is matched without regard to case, as MATLAB does
+      if (! any (strcmpi (normtype, vnt)))
         error ("categorical.histcounts: invalid 'Normalization' type.");
       endif
+      normtype = lower (normtype);
 
       ## Check for selected categories
       if (! isempty (args))
