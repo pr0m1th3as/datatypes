@@ -389,6 +389,13 @@ classdef calendarDuration
       ## Process all elements
       sz = size (this);
       cstr = cell (sz);
+      allels = cell (sz);
+      ## An element with nothing in it renders as a single zero, and the unit
+      ## that zero carries is taken from the rest of the array: the smallest
+      ## unit any element actually uses, or days when none uses any.  So a zero
+      ## beside '2mo' reads '0mo', beside '3d' reads '0d', and beside a time
+      ## reads '0s'.  MATLAB does the same; it is what stops a lone zero
+      ## claiming a unit the array never mentions.
       for i = 1:prod (sz)
         calDur = subset (this, i);
         if (isnan (calDur.Months))
@@ -476,12 +483,20 @@ classdef calendarDuration
               els{end+1} = sprintf ('%dh %dm %ds', hours, minutes, seconds);
             endif
           endif
-          if (isempty (els))
-            els = {'0d'};
-          endif
+          ## Left empty for now; the unit is chosen once the whole array
+          ## has been rendered (see zeroRenderUnit below).
           cstr{i} = strjoin (els, ' ');
+          allels{i} = els;
         endif
       endfor
+      ## Give every wholly zero element the smallest unit the array actually
+      ## rendered anywhere, so a zero never claims a unit nothing else uses.
+      ## NaN elements also render no components, but they already carry their
+      ## own string, so key on the rendered text rather than the component list.
+      empty = cellfun (@isempty, cstr);
+      if (any (empty(:)))
+        cstr(empty) = {zeroRenderUnit(allels(! empty))};
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -2099,3 +2114,24 @@ function errmsg = checkFormatString (Format)
   endif
 endfunction
 
+## Unit a wholly zero element renders in: the smallest one any element of the
+## array actually uses, or days when none does.  The ladder runs from the
+## largest unit to the smallest, and time is rendered as seconds.
+## Unit a wholly zero element renders in: the smallest one the array actually
+## used anywhere, or days when nothing did.  The ladder runs largest to
+## smallest, matching the order calendarDuration prints its components in.
+function u = zeroRenderUnit (els)
+  ladder = {'y', 'q', 'mo', 'w', 'd', 's'};
+  used = regexp (strjoin ([els{:}, {''}], ' '), '[a-z]+', 'match');
+  ## Any time component at all renders the zero in seconds.
+  if (any (ismember (used, {'h', 'm', 's'})))
+    u = '0s';
+    return;
+  endif
+  found = find (ismember (ladder, used), 1, 'last');
+  if (isempty (found))
+    u = '0d';
+  else
+    u = ['0', ladder{found}];
+  endif
+endfunction

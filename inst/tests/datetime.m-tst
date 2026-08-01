@@ -2858,7 +2858,7 @@
 %! assert_equal (dispstrings (caldiff (tt, 'Time')), {'1416h 0m 0s', '9504h 0m 0s'});
 %! assert_equal (dispstrings (caldiff (tt, 'Day')), {'59d', '396d'});
 %! assert_equal (dispstrings (caldiff (tt, 'Month')), {'2mo', '13mo'});
-%! assert_equal (dispstrings (caldiff (tt, 'q')), {'0d', '4q'});
+%! assert_equal (dispstrings (caldiff (tt, 'q')), {'0q', '4q'});
 %! assert_equal (calmonths (caldiff (tt, 'Year')), [0 12]);
 
 ## Test 'caldiff' -- an empty COMPONENTS string selects the default set
