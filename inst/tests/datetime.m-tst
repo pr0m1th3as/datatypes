@@ -4712,6 +4712,275 @@
 %!error <datetime.setDefaultFormats: 'reset' takes no further arguments; it resets both defaults.> ...
 %! datetime.setDefaultFormats ('reset', 42)
 
+## Test 'discretize' -- explicit datetime edges, half open with the last bin
+## closed at both ends
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! assert_equal (discretize (t, t([1 4 8 10])), [1 1 1 2 2 2 2 3 3 3]);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! [b, e] = discretize (t, t([1 5 10]));
+%! assert_equal (class (b), 'double');
+%! assert_equal (class (e), 'datetime');
+%! assert_equal (posixtime (e), [1704067200 1704412800 1704844800]);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! assert_equal (discretize (t, t([1 5 10]), 'IncludedEdge', 'right'), ...
+%!               [1 1 1 1 1 2 2 2 2 2]);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! assert_equal (discretize (t, t([1 5 10]), [10 20]), ...
+%!               [10 10 10 10 20 20 20 20 20 20]);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! c = discretize (t, t([1 5 10]), 'categorical');
+%! assert_equal (categories (c), ...
+%!               {'[01-Jan-2024, 05-Jan-2024)'; '[05-Jan-2024, 10-Jan-2024)'});
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! c = discretize (t, t([1 5 10]), 'categorical', {'early', 'late'});
+%! assert_equal (categories (c), {'early'; 'late'});
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! [b, e] = discretize (t, 3);
+%! assert_equal (b, [1 1 1 2 2 2 2 3 3 3]);
+%! assert_equal (posixtime (e), ...
+%!               [1703980800 1704326400 1704672000 1705017600]);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! [~, e] = discretize (t, 1);
+%! assert_equal (posixtime (e), [1704067200 1704931200]);
+%!test
+%! u = datetime (2024, 1, 1) + hours (0:47);
+%! [~, e] = discretize (u, 7);
+%! assert_equal (posixtime (e), 1704067200 + (-1 + (0:7) * 7) * 3600);
+%!test
+%! t = reshape (datetime (2024, 1, 1) + days (0:11), 2, 3, 2);
+%! b = discretize (t, 3);
+%! assert_equal (size (b), [2 3 2]);
+%!test
+%! t = datetime (2024, 1, 1) + days ([0 0]);
+%! [~, e] = discretize (t, 3);
+%! ref = 1704067200 + [-0.5 -1/6 1/6 0.5];
+%! assert_equal (max (abs (posixtime (e) - ref)) < 1e-6, true);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! t(6) = NaT;
+%! b = discretize (t, 3);
+%! assert_equal (isnan (b(6)), true);
+%! assert_equal (isnan (b([1 10])), [false false]);
+
+## Test 'discretize' -- a duration or calendarDuration bin width
+%!test
+%! u = datetime (2024, 1, 1) + hours (0:47);
+%! [~, e] = discretize (u, days (1));
+%! assert_equal (posixtime (e), [1704067200 1704153600 1704240000]);
+%!test
+%! u = datetime (2024, 1, 1) + hours (0:47);
+%! [~, e1] = discretize (u, days (1));
+%! [~, e2] = discretize (u, 'day');
+%! assert_equal (posixtime (e1), posixtime (e2));
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! assert_equal (discretize (t, calmonths (1)), ones (1, 10));
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! [~, e] = discretize (t, caldays (7));
+%! assert_equal (posixtime (e), [1704067200 1704672000 1705276800]);
+
+## Test 'discretize' -- named units on real calendar boundaries
+%!test
+%! u = datetime (2024, 1, 1) + hours (0:47);
+%! [~, e] = discretize (u, 'hour');
+%! assert_equal (numel (e), 49);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! [~, e] = discretize (t, 'week');
+%! assert_equal (posixtime (e), [1703980800 1704585600 1705190400]);
+%! assert_equal (weekday (datenum (2023, 12, 31)), 1);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! [~, e] = discretize (t, 'month');
+%! assert_equal (posixtime (e), [1704067200 1706745600]);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! [~, e] = discretize (t, 'quarter');
+%! assert_equal (posixtime (e), [1704067200 1711929600]);
+%!test
+%! t = datetime (2024, 5, 17) + days (0:9);
+%! [~, e] = discretize (t, 'quarter');
+%! [Y, M, D] = ymd (e);
+%! assert_equal ([Y(:), M(:), D(:)], [2024 4 1; 2024 7 1]);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! [~, e] = discretize (t, 'year');
+%! assert_equal (posixtime (e), [1704067200 1735689600]);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! [~, e] = discretize (t, 'decade');
+%! assert_equal (posixtime (e), [1577836800 1893456000]);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! [~, e] = discretize (t, 'century');
+%! [Y, M, D] = ymd (e);
+%! assert_equal ([Y(:), M(:), D(:)], [2000 1 1; 2100 1 1]);
+%!test
+%! t = datetime (2024, 1, 1) + minutes (0:59);
+%! [~, e] = discretize (t, 'minute');
+%! assert_equal (numel (e), 61);
+
+## Test 'discretize' -- zoned data bins on local midnight, so a bin holding a
+## daylight-saving transition really is 23 or 25 hours long
+%!test
+%! t0 = datetime (2024, 3, 5, 'TimeZone', 'America/New_York');
+%! [~, e] = discretize (t0 + days ([0 5]), 3);
+%! [H, MI, S] = hms (e);
+%! assert_equal ([H(:).', MI(:).', S(:).'], zeros (1, 12));
+%! assert_equal (hours (diff (e)), [48 48 47]);
+%!test
+%! t0 = datetime (2024, 10, 30, 'TimeZone', 'America/New_York');
+%! [~, e] = discretize (t0 + days ([0 9]), 3);
+%! assert_equal (hours (diff (e)), [72 73 72]);
+%!test
+%! t0 = datetime (2024, 3, 5);
+%! [~, e] = discretize (t0 + days ([0 5]), 3);
+%! assert_equal (hours (diff (e)), [48 48 48]);
+%!test
+%! t0 = datetime (2024, 3, 9, 12, 0, 0, 'TimeZone', 'America/New_York');
+%! [~, e] = discretize (t0 + days ([0 1]), 3);
+%! assert_equal (hours (diff (e)), [9 9 9]);
+%! H = hms (e);
+%! assert_equal (H(:).', [11 20 6 15]);
+
+## Test 'histcounts' -- automatic binning, counts, and the third output
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! [n, e] = histcounts (t);
+%! assert_equal (n, [5 5]);
+%! assert_equal (posixtime (e), [1704067200 1704499200 1704931200]);
+%!test
+%! u = datetime (2024, 1, 1) + hours (0:47);
+%! [n, e] = histcounts (u);
+%! assert_equal (n, [12 12 12 12]);
+%! assert_equal (posixtime (e), 1704067200 + (0:4) * 43200);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! [~, e] = histcounts (t, 3);
+%! assert_equal (posixtime (e), ...
+%!               [1703980800 1704326400 1704672000 1705017600]);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! [n, e, b] = histcounts (t, t([1 5 10]));
+%! assert_equal (n, [4 6]);
+%! assert_equal (posixtime (e), [1704067200 1704412800 1704844800]);
+%! assert_equal (b, [1 1 1 1 2 2 2 2 2 2]);
+%!test
+%! t = reshape (datetime (2024, 1, 1) + days (0:11), 2, 3, 2);
+%! [n, ~, b] = histcounts (t, 3);
+%! assert_equal (size (b), [2 3 2]);
+%! assert_equal (isrow (n), true);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! assert_equal (class (histcounts (t, 3)), 'double');
+
+## Test 'histcounts' -- the Name/Value options
+%!test
+%! u = datetime (2024, 1, 1) + hours (0:47);
+%! [~, e] = histcounts (u, 'BinWidth', days (1));
+%! assert_equal (posixtime (e), [1704067200 1704153600 1704240000]);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! [~, e] = histcounts (t, 'BinEdges', t([1 5 10]));
+%! assert_equal (posixtime (e), [1704067200 1704412800 1704844800]);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! [~, e] = histcounts (t, 'NumBins', 3);
+%! assert_equal (posixtime (e), ...
+%!               [1703980800 1704326400 1704672000 1705017600]);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! [~, e] = histcounts (t, 'BinMethod', 'day');
+%! assert_equal (numel (e), 11);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! [~, e] = histcounts (t, 'BinMethod', 'month');
+%! assert_equal (posixtime (e), [1704067200 1706745600]);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! assert_equal (histcounts (t, 'BinMethod', 'decade'), 10);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! assert_equal (histcounts (t, 'BinMethod', 'scott'), [5 5]);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! [~, e] = histcounts (t, 'BinMethod', 'sturges');
+%! assert_equal (posixtime (e), 1704067200 + (0:5) * 172800);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! [~, e] = histcounts (t, 'BinMethod', 'sqrt');
+%! assert_equal (posixtime (e), ...
+%!               [1703980800 1704240000 1704499200 1704758400 1705017600]);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! [~, e] = histcounts (t, 'BinMethod', 'fd');
+%! assert_equal (posixtime (e), [1704067200 1704499200 1704931200]);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! [~, e] = histcounts (t, 'BinLimits', t([3 7]));
+%! assert_equal (posixtime (e), [1704240000 1704412800 1704585600]);
+
+## Test 'histcounts' -- the accepted normalizations
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! assert_equal (histcounts (t, 3, 'Normalization', 'count'), [3 4 3]);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! assert_equal (histcounts (t, 3, 'Normalization', 'probability'), ...
+%!               [0.3 0.4 0.3]);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! assert_equal (histcounts (t, 3, 'Normalization', 'percentage'), [30 40 30]);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! assert_equal (histcounts (t, 3, 'Normalization', 'cdf'), [0.3 0.7 1]);
+%!test
+%! t = datetime (2024, 1, 1) + days (0:9);
+%! assert_equal (histcounts (t, 'Normalization', 'cumcount'), [5 10]);
+
+## Test 'discretize' and 'histcounts' -- error branches
+%!error <datetime.discretize: not enough input arguments.> ...
+%! discretize (datetime (2024, 1, 1))
+%!error <datetime.discretize: N must be a real positive integer.> ...
+%! discretize (datetime (2024, 1, 1) + days (0:9), 0)
+%!error <datetime.discretize: N must be a real positive integer.> ...
+%! discretize (datetime (2024, 1, 1) + days (0:9), 2.5)
+%!error <datetime.discretize: N must be a real positive integer.> ...
+%! discretize (datetime (2024, 1, 1) + days (0:9), Inf)
+%!error <datetime.discretize: numeric bin edges are not accepted for a datetime; give a datetime vector.> ...
+%! discretize (datetime (2024, 1, 1) + days (0:9), [1 2 3])
+%!error <datetime.discretize: the second argument must be a datetime, a bin count, a duration, a calendarDuration, or a unit name.> ...
+%! discretize (datetime (2024, 1, 1) + days (0:9), {1})
+%!error <datetime.discretize: UNIT must be one of 'second', 'minute', 'hour', 'day', 'week', 'month', 'quarter', 'year', 'decade', or 'century'.> ...
+%! discretize (datetime (2024, 1, 1) + days (0:9), 'fortnight')
+%!error <datetime.discretize: a bin width must be positive and finite.> ...
+%! discretize (datetime (2024, 1, 1) + days (0:9), days (0))
+%!error <datetime.discretize: a calendarDuration bin width must be a positive scalar number of whole calendar months or of whole calendar days, not a mixture.> ...
+%! discretize (datetime (2024, 1, 1) + days (0:9), calmonths (1) + caldays (1))
+%!error <datetime.histcounts: a bin width must be a scalar duration or calendarDuration, or a unit name, and must be positive and finite.> ...
+%! histcounts (datetime (2024, 1, 1) + days (0:9), 'BinWidth', 3)
+%!error <datetime.histcounts: 'integers' is not a valid 'BinMethod' for a datetime.> ...
+%! histcounts (datetime (2024, 1, 1) + days (0:9), 'BinMethod', 'integers')
+%!error <datetime.histcounts: 'countdensity' is not a valid 'Normalization' for a datetime; a density per unit time has no meaning.> ...
+%! histcounts (datetime (2024, 1, 1) + days (0:9), 3, 'Normalization', 'countdensity')
+%!error <datetime.histcounts: 'pdf' is not a valid 'Normalization' for a datetime; a density per unit time has no meaning.> ...
+%! histcounts (datetime (2024, 1, 1) + days (0:9), 3, 'Normalization', 'pdf')
+%!error <datetime.histcounts: 'BinEdges' must be a datetime.> ...
+%! histcounts (datetime (2024, 1, 1) + days (0:9), 'BinEdges', [1 2 3])
+%!error <datetime.histcounts: 'BinLimits' must be a datetime.> ...
+%! histcounts (datetime (2024, 1, 1) + days (0:9), 'BinLimits', [1 2])
+%!error <datetime.histcounts: 'NumBins' must be a real, finite, positive, integer value.> ...
+%! histcounts (datetime (2024, 1, 1) + days (0:9), 'NumBins', 0)
+
 ## Restore whatever default formats the user had before this file ran.
 %!test
 %! datetime.setDefaultFormats ('reset');

@@ -3731,6 +3731,176 @@ classdef datetime
   endmethods
 
 ################################################################################
+##                              ** Binning **                                 ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'discretize'       'histcounts'                                            ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{bin} =} discretize (@var{T}, @var{edges})
+    ## @deftypefnx {datetime} {@var{bin} =} discretize (@var{T}, @var{N})
+    ## @deftypefnx {datetime} {@var{bin} =} discretize (@var{T}, @var{dur})
+    ## @deftypefnx {datetime} {@var{bin} =} discretize (@var{T}, @var{unit})
+    ## @deftypefnx {datetime} {@var{Y} =} discretize (@dots{}, @var{values})
+    ## @deftypefnx {datetime} {@var{C} =} discretize (@dots{}, 'categorical')
+    ## @deftypefnx {datetime} {@var{C} =} discretize (@dots{}, 'categorical', @var{names})
+    ## @deftypefnx {datetime} {[@var{bin}, @var{E}] =} discretize (@dots{})
+    ##
+    ## Group datetimes into bins.
+    ##
+    ## @code{@var{bin} = discretize (@var{T}, @var{edges})} returns, for each
+    ## element of @var{T}, the index of the bin of the @qcode{datetime} vector
+    ## @var{edges} that contains it.  Bins are half open,
+    ## @code{[@var{E}(j), @var{E}(j+1))}, except the last which is closed at
+    ## both ends.  Elements outside the edges, and @qcode{NaT} elements, give
+    ## @qcode{NaN}.
+    ##
+    ## @code{@var{bin} = discretize (@var{T}, @var{N})} uses @var{N} bins
+    ## spanning the data, placed on whole calendar or clock units wherever that
+    ## can be done without leaving a bin unused.
+    ##
+    ## @code{@var{bin} = discretize (@var{T}, @var{dur})} uses bins one
+    ## @var{dur} wide, where @var{dur} is a scalar @qcode{duration} or
+    ## @qcode{calendarDuration}, aligned to whole multiples of that width.
+    ##
+    ## @code{@var{bin} = discretize (@var{T}, @var{unit})} uses bins one named
+    ## unit wide, @var{unit} being one of @qcode{'second'}, @qcode{'minute'},
+    ## @qcode{'hour'}, @qcode{'day'}, @qcode{'week'}, @qcode{'month'},
+    ## @qcode{'quarter'}, @qcode{'year'}, @qcode{'decade'} or
+    ## @qcode{'century'}.  These land on real calendar boundaries: a
+    ## @qcode{'week'} bin starts on a Sunday, a @qcode{'quarter'} on 1 January,
+    ## 1 April, 1 July or 1 October, and a @qcode{'decade'} on a year that is a
+    ## multiple of ten.
+    ##
+    ## @code{@var{Y} = discretize (@dots{}, @var{values})} returns
+    ## @code{@var{values}(@var{bin})} instead of the bin index, and
+    ## @code{@var{C} = discretize (@dots{}, 'categorical')} returns a
+    ## @qcode{categorical} array whose categories are named after the bins.
+    ##
+    ## @code{[@var{bin}, @var{E}] = discretize (@dots{})} also returns the bin
+    ## edges as a @qcode{datetime} array carrying this array's @qcode{Format}
+    ## and @qcode{TimeZone}.
+    ##
+    ## Note that a @qcode{'day'} bin, and any bin a whole number of days or
+    ## longer, begins at @strong{local midnight}.  In a time zone that observes
+    ## daylight saving, the bin holding a transition is therefore 23 or 25 hours
+    ## long while its neighbours are 24.  Bins of an hour or less are fixed
+    ## spans of time and do not vary.
+    ##
+    ## When @var{T} is empty the edges are anchored on the epoch,
+    ## @qcode{1970-01-01}.  This is @strong{deliberately unlike MATLAB}, which
+    ## answers an empty @qcode{datetime} with edges taken from the current
+    ## clock, so that the same call returns a different result every time it is
+    ## run.
+    ##
+    ## @end deftypefn
+    function [BIN, EDGES] = discretize (this, arg2, varargin)
+
+      if (nargin < 2)
+        error ("datetime.discretize: not enough input arguments.");
+      endif
+      xv = serial (this)(:);
+      [s2c, c2s, d2s] = dtCalHandles (this);
+      isCount = false;
+      if (isa (arg2, 'datetime'))
+        ev = d2s (arg2)(:).';
+      else
+        [ev, isCount] = dtBinEdges (xv, arg2, s2c, c2s, ...
+                                    'datetime.discretize');
+      endif
+      EDGES = fromReducedSerial (this, ev);
+      if (isCount)
+        EDGES = reshape (EDGES, 1, numel (ev));
+      endif
+
+      ## Bins asked for as a 'categorical' are named after the edges as they
+      ## DISPLAY, not after their serial values, so the names are built here
+      ## and handed to the numeric function rather than left to it.  The last
+      ## bin is closed at both ends but is labelled half open, as MATLAB
+      ## labels it.
+      ic = find (cellfun (@(a) dtIsTextScalar (a) ...
+                          && strcmpi (char (a), 'categorical'), varargin), 1);
+      if (! isempty (ic))
+        named = numel (varargin) > ic ...
+                && ! (dtIsTextScalar (varargin{ic+1}) ...
+                      && strcmpi (char (varargin{ic+1}), 'IncludedEdge'));
+        if (! named)
+          strs = dispstrings (EDGES);
+          nm = cell (1, numel (ev) - 1);
+          for j = 1:numel (nm)
+            nm{j} = sprintf ("[%s, %s)", strs{j}, strs{j+1});
+          endfor
+          varargin = [varargin(1:ic), {nm}, varargin(ic+1:end)];
+        endif
+      endif
+
+      ## Delegate the assignment and the value mapping to the numeric function
+      [BIN, ~] = discretize (reshape (xv, size (this.Year)), ev, varargin{:});
+
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {datetime} {@var{N} =} histcounts (@var{T})
+    ## @deftypefnx {datetime} {@var{N} =} histcounts (@var{T}, @var{nbins})
+    ## @deftypefnx {datetime} {@var{N} =} histcounts (@var{T}, @var{edges})
+    ## @deftypefnx {datetime} {@var{N} =} histcounts (@dots{}, @var{Name}, @var{Value})
+    ## @deftypefnx {datetime} {[@var{N}, @var{edges}] =} histcounts (@dots{})
+    ## @deftypefnx {datetime} {[@var{N}, @var{edges}, @var{bin}] =} histcounts (@dots{})
+    ##
+    ## Histogram bin counts for datetimes.
+    ##
+    ## @code{@var{N} = histcounts (@var{T})} bins the datetimes in @var{T},
+    ## chosen automatically, and returns the number of elements in each bin.
+    ## @var{T} is treated as @code{@var{T}(:)} and @qcode{NaT} elements are
+    ## excluded.
+    ##
+    ## @code{@var{N} = histcounts (@var{T}, @var{nbins})} and
+    ## @code{@var{N} = histcounts (@var{T}, @var{edges})} bin by count and by
+    ## explicit @qcode{datetime} edges respectively.
+    ##
+    ## @qcode{'BinWidth'} takes a scalar @qcode{duration} or
+    ## @qcode{calendarDuration}, @qcode{'BinLimits'} a two-element
+    ## @qcode{datetime}, and @qcode{'BinEdges'} a @qcode{datetime} vector.
+    ## @qcode{'BinMethod'} accepts @qcode{'auto'}, @qcode{'scott'},
+    ## @qcode{'fd'}, @qcode{'sturges'} and @qcode{'sqrt'}, and any of the named
+    ## calendar units listed for @code{discretize}, but not
+    ## @qcode{'integers'}, which has no meaning for a datetime.
+    ##
+    ## @qcode{'Normalization'} accepts @qcode{'count'}, @qcode{'cumcount'},
+    ## @qcode{'probability'}, @qcode{'percentage'} and @qcode{'cdf'}.
+    ## @qcode{'countdensity'} and @qcode{'pdf'} are not accepted, since a
+    ## density per unit time has no meaning here.
+    ##
+    ## As for @code{discretize}, bins of a day or longer begin at local
+    ## midnight and so vary in length across a daylight-saving transition, and
+    ## an empty @var{T} anchors the edges on the epoch rather than on the
+    ## current clock as MATLAB does.
+    ##
+    ## @seealso{discretize, histcounts}
+    ## @end deftypefn
+    function [N, EDGES, BIN] = histcounts (this, varargin)
+
+      xv = serial (this)(:);
+      [s2c, c2s, d2s] = dtCalHandles (this);
+      args = dtHistArgs (varargin, xv, s2c, c2s, d2s, 'datetime.histcounts');
+      if (nargout > 2)
+        [N, ev, BIN] = histcounts (xv, args{:});
+        BIN = reshape (BIN, size (this.Year));
+      else
+        [N, ev] = histcounts (xv, args{:});
+      endif
+      EDGES = fromReducedSerial (this, ev);
+
+    endfunction
+
+  endmethods
+
+################################################################################
 ##                         ** Arithmetic Operations **                        ##
 ################################################################################
 ##                             Available Methods                              ##
@@ -5522,6 +5692,19 @@ classdef datetime
       ser = serial (normalize (tmp));
     endfunction
 
+    ## Handles that carry this array's calendar into the binning helpers.  Those
+    ## are local functions, so they have no 'this' and cannot reach the class's
+    ## own conversions; only the class knows its zone, its leap seconds and its
+    ## epoch, so the knowledge is passed in rather than duplicated there.  S2C
+    ## maps a serial to its local year/month/day, C2S a local date to the serial
+    ## of its midnight, and D2S any datetime to its serial.
+    function [s2c, c2s, d2s] = dtCalHandles (this)
+      s2c = @(s) serial2components (this, s);
+      c2s = @(Y, M, D) dsSerialOf (this, Y, M, D, zeros (size (Y)), ...
+                                   zeros (size (Y)), zeros (size (Y)));
+      d2s = @(D) serial (D);
+    endfunction
+
     ## Build a datetime from reduced POSIX seconds (the result of mean/median/
     ## mode/std on this array's serial), preserving the Format and TimeZone.
     function R = fromReducedSerial (this, ser)
@@ -6881,4 +7064,507 @@ function out = dtFixedEpoch (posix, kind)
   endif
   frac = round (fracMs .* scale ./ 1000);
   out = uint64 (secWhole) .* uint64 (scale) + uint64 (frac);
+endfunction
+
+
+## Bin edges for a requested bin count, snapped to whole calendar or clock
+## units.  XMIN, XMAX and the result all count seconds on the 'serial'
+## timeline and NBINS is the number of bins asked for.  SER2CAL and CAL2SER
+## carry the calendar: 'SER2CAL (s)' returns the year, month and day holding the
+## instant S, and 'CAL2SER (Y, M, D)' the instant at which that date begins,
+## both in the array's own time zone.  They are handed in rather than worked out
+## here because only the class knows its zone, its leap seconds and its epoch.
+## TICK is the half-width used when the data are constant and defaults to half a
+## second, where a 'duration' uses half a millisecond.
+##
+## This is NOT the placement 'duration' uses and '__binedgesgrid__' must not be
+## borrowed for it.  Three differences separate them, each verified against
+## R2024a and each of which on its own yields edges that look plausible and are
+## wrong:
+##
+##   * the left edge is fixed BEFORE the width; 'duration' fixes the width first
+##   * the provisional width rounds up STRICTLY (floor + 1, never ceil), so a
+##     span that divides exactly still widens
+##   * the acceptance test applies to the FINAL left edge and width, not to the
+##     provisional one, which is what decides the hour/day boundary
+##
+## The ladder runs year, month, day, hour, minute, second, largest first, and
+## the first unit that fits wins.  There is no week rung and no separate
+## quarter, decade or century: a quarter is a three-month width and a decade a
+## ten-year one, both of which fall out of the multiples.  Below one second no
+## unit is left and the plain numeric rule takes over.
+##
+## The ladder is split, and the split is not where it looks.  Year, month AND
+## DAY are true calendar units: their edges land on 1 January, on the 1st, and
+## on local midnight, so a bin holding a daylight-saving transition is 23 or 25
+## hours long while its neighbours are 24.  Only hour, minute and second are
+## fixed spans of seconds, and they stay fixed across a transition -- an hour
+## bin spanning a spring-forward covers two wall-clock hours.  Both halves are
+## measured: in America/New_York a 5-day span gives bins of 48, 48 and 47 hours
+## with every edge at local midnight, and a 1-day span at 3 bins gives 9-hour
+## bins whose wall clock jumps from 20:00 to 06:00 across the gap.
+##
+## Every rung runs the same arithmetic, in 'dtBinGridIndex', on the INTEGER
+## count of units between the one holding XMIN and the one holding XMAX.  It is
+## that integer count, and never the elapsed time, that drives the width and
+## the acceptance test: 2024-01-01 to 2024-12-31 is eleven months here and
+## 11.97 by elapsed time, and eleven is what reproduces R2024a.  The same point
+## in a different guise is that XMIN's position inside its unit reaches the
+## result only through the unit it lands in, so sliding the data through a day
+## moves where the bins sit but never how wide they are or which unit they use.
+function edges = dtBinEdgesGrid (xmin, xmax, nbins, ser2cal, cal2ser, ...
+                                 tick = 0.5)
+
+  ## Constant data: an interval of one tick centred on the value.  The offsets
+  ## are formed first and added once, rather than subtracting the tick and then
+  ## stepping, so that only one rounding lands on a serial of order 1e9.
+  if (xmin == xmax)
+    edges = xmin + (-tick + (0:nbins) * (2 * tick / nbins));
+    return;
+  endif
+
+  [yLo, mLo, dLo] = ser2cal (xmin);
+  [yHi, mHi, dHi] = ser2cal (xmax);
+
+  ## Calendar years.
+  idx = dtBinGridIndex (yHi - yLo, nbins);
+  if (! isempty (idx))
+    one = ones (size (idx));
+    edges = cal2ser (yLo + idx, one, one);
+    return;
+  endif
+
+  ## Calendar months.
+  idx = dtBinGridIndex ((12 * yHi + mHi) - (12 * yLo + mLo), nbins);
+  if (! isempty (idx))
+    one = ones (size (idx));
+    [Y, M, D] = dtAddMonths (yLo * one, mLo * one, one, idx);
+    edges = cal2ser (Y, M, D);
+    return;
+  endif
+
+  ## Calendar days.  The count of days between the two dates is recovered by
+  ## rounding the gap between their midnights: a daylight-saving shift moves
+  ## those by an hour or two and an inserted leap second by one, never by
+  ## anything approaching half a day.
+  spanU = round ((cal2ser (yHi, mHi, dHi) - cal2ser (yLo, mLo, dLo)) / 86400);
+  idx = dtBinGridIndex (spanU, nbins);
+  if (! isempty (idx))
+    one = ones (size (idx));
+    [Y, M, D] = dtAddDays (yLo * one, mLo * one, dLo * one, idx);
+    edges = cal2ser (Y, M, D);
+    return;
+  endif
+
+  ## Fixed units: one hour, one minute, one second.
+  for g = [3600, 60, 1]
+    nLo = floor (xmin / g);
+    idx = dtBinGridIndex (floor (xmax / g) - nLo, nbins);
+    if (! isempty (idx))
+      edges = g * (nLo + idx);
+      return;
+    endif
+  endfor
+
+  ## Finer than a second: no coarser unit is left to snap to, so the plain
+  ## numeric rule takes over.  This is the terminating case of the ladder and
+  ## not a separate regime.
+  ##
+  ## The origin is moved to the whole second below the data first.  That rule
+  ## anchors the left edge on a decimal grid, and a serial runs to 1e9 seconds,
+  ## where a double resolves only to about 2e-7 of a second -- far too coarse
+  ## for a grid of, say, 0.4 s to land where it should.  The shift is exact
+  ## (the span here is under a second) and MATLAB, which holds its instants in
+  ## a different unit entirely, never meets the problem.
+  origin = floor (xmin);
+  edges = origin + __binedges__ (xmin - origin, xmax - origin, nbins);
+
+endfunction
+
+## Resolve the second argument of 'discretize' into explicit edges in serial
+## seconds.  A datetime argument is handled by the caller, which is the only
+## place that can convert one.  ISCOUNT reports a bin count, the one form whose
+## edges MATLAB returns as a row whatever the shape of the input.
+function [ev, isCount] = dtBinEdges (xv, arg2, s2c, c2s, scope)
+
+  isCount = false;
+  xf = xv(isfinite (xv));
+  if (isa (arg2, 'duration') || isa (arg2, 'calendarDuration'))
+    ev = dtUnitBinEdges (xf, arg2, s2c, c2s, scope);
+  elseif (dtIsTextScalar (arg2))
+    ev = dtUnitBinEdges (xf, char (arg2), s2c, c2s, scope);
+  elseif (isnumeric (arg2) && isscalar (arg2) && ! islogical (arg2))
+    if (! isreal (arg2) || ! isfinite (arg2) || arg2 < 1 || fix (arg2) != arg2)
+      error ("%s: N must be a real positive integer.", scope);
+    endif
+    isCount = true;
+    ev = dtCountBinEdges (xf, double (arg2), s2c, c2s, scope);
+  elseif (isnumeric (arg2))
+    error (strcat (scope, ": numeric bin edges are not accepted for a", ...
+                   " datetime; give a datetime vector."));
+  else
+    error (strcat (scope, ": the second argument must be a datetime, a bin", ...
+                   " count, a duration, a calendarDuration, or a unit name."));
+  endif
+
+endfunction
+
+## True for a character vector or a scalar string
+function tf = dtIsTextScalar (x)
+  tf = (ischar (x) && isrow (x)) || (isa (x, 'string') && isscalar (x));
+endfunction
+
+## Day of the week as an offset from Sunday, 0 .. 6.
+function k = dtWeekdayIndex (Y, M, D)
+  k = weekday (datenum (Y, M, D)) - 1;
+endfunction
+
+## Classify a bin width into the kind of unit it steps in and how many of that
+## unit one bin spans.  'fixed' counts seconds, 'day' whole days and 'month'
+## whole months; a quarter is three months, a year twelve, a decade a hundred
+## and twenty and a century twelve hundred, so one snapping rule serves them
+## all.  SPEC is a scalar duration, a scalar calendarDuration, or a unit name.
+function [kind, step] = dtUnitStep (spec, scope)
+
+  if (! isa (spec, 'duration') && ! isa (spec, 'calendarDuration')
+      && ! dtIsTextScalar (spec))
+    error (strcat (scope, ": a bin width must be a scalar duration or", ...
+                   " calendarDuration, or a unit name, and must be", ...
+                   " positive and finite."));
+  endif
+
+  if (isa (spec, 'calendarDuration'))
+    mo = calmonths (spec);
+    dy = caldays (spec);
+    if (! isscalar (spec) || ! isequal (spec, calmonths (mo) + caldays (dy))
+        || (mo != 0 && dy != 0) || (mo == 0 && dy == 0))
+      error (strcat (scope, ": a calendarDuration bin width must be a", ...
+                     " positive scalar number of whole calendar months or", ...
+                     " of whole calendar days, not a mixture."));
+    endif
+    if (mo != 0)
+      kind = 'month';
+      step = mo;
+    else
+      kind = 'day';
+      step = dy;
+    endif
+    if (step <= 0)
+      error (strcat (scope, ": a bin width must be positive and finite."));
+    endif
+    return;
+  endif
+
+  if (isa (spec, 'duration'))
+    kind = 'fixed';
+    step = seconds (spec);
+    if (! isscalar (step) || ! (step > 0) || ! isfinite (step))
+      error (strcat (scope, ": a bin width must be positive and finite."));
+    endif
+    return;
+  endif
+
+  switch (lower (char (spec)))
+    case 'second'
+      kind = 'fixed'; step = 1;
+    case 'minute'
+      kind = 'fixed'; step = 60;
+    case 'hour'
+      kind = 'fixed'; step = 3600;
+    case 'day'
+      kind = 'day';   step = 1;
+    case 'week'
+      kind = 'week';  step = 7;
+    case 'month'
+      kind = 'month'; step = 1;
+    case 'quarter'
+      kind = 'month'; step = 3;
+    case 'year'
+      kind = 'month'; step = 12;
+    case 'decade'
+      kind = 'month'; step = 120;
+    case 'century'
+      kind = 'month'; step = 1200;
+    otherwise
+      error (strcat (scope, ": UNIT must be one of 'second', 'minute',", ...
+                     " 'hour', 'day', 'week', 'month', 'quarter', 'year',", ...
+                     " 'decade', or 'century'."));
+  endswitch
+
+endfunction
+
+## Edges one unit wide covering the data, aligned to whole multiples of that
+## unit.  Calendar units land on real boundaries: a day and a week on local
+## midnight, a week on a Sunday, and a month, quarter, year, decade or century
+## on the 1st of the month that starts the containing multiple.
+##
+## The bin count is 'floor (gap / step) + 1', so the largest value always opens
+## a bin of its own rather than sitting on the closing edge -- 'day' bins over
+## ten whole days give ten bins, not nine.  That is MATLAB's rule here and it
+## differs from 'duration', which rounds the same quantity up instead.
+function ev = dtUnitBinEdges (xf, spec, s2c, c2s, scope)
+
+  [kind, step] = dtUnitStep (spec, scope);
+
+  ## Empty data anchors on the epoch, for the reason given in dtCountBinEdges.
+  if (isempty (xf))
+    lo = 0;
+    hi = 0;
+  else
+    lo = min (xf);
+    hi = max (xf);
+  endif
+
+  switch (kind)
+    case 'fixed'
+      left = step * floor (lo / step);
+      n = floor ((hi - left) / step) + 1;
+      ev = left + (0:n) * step;
+
+    case {'day', 'week'}
+      [Y, M, D] = s2c (lo);
+      ## Only the named 'week' unit starts on a Sunday.  A calendarDuration of
+      ## seven days is a seven-day step from the first date, not a week grid,
+      ## which is why the snap keys off the unit and not off the step.
+      if (strcmp (kind, 'week'))
+        [Y, M, D] = dtAddDays (Y, M, D, -dtWeekdayIndex (Y, M, D));
+      endif
+      [Yh, Mh, Dh] = s2c (hi);
+      gap = round ((c2s (Yh, Mh, Dh) - c2s (Y, M, D)) / 86400);
+      n = floor (gap / step) + 1;
+      k = (0:n) * step;
+      one = ones (size (k));
+      [Ye, Me, De] = dtAddDays (Y * one, M * one, D * one, k);
+      ev = c2s (Ye, Me, De);
+
+    case 'month'
+      [Y, M, D] = s2c (lo);
+      ## 12*Y is divisible by 3, 12, 120 and 1200 alike, so flooring the month
+      ## index onto a multiple of STEP lands a quarter on January/April/July/
+      ## October and a decade on a year divisible by ten, with no special case.
+      idx = step * floor ((12 * Y + (M - 1)) / step);
+      [Yh, Mh, Dh] = s2c (hi);
+      n = floor (((12 * Yh + (Mh - 1)) - idx) / step) + 1;
+      k = idx + (0:n) * step;
+      Ye = floor (k / 12);
+      Me = k - Ye * 12 + 1;
+      ev = c2s (Ye, Me, ones (size (k)));
+  endswitch
+
+endfunction
+
+## Edges for a requested bin count over the data range.
+function ev = dtCountBinEdges (xf, nbins, s2c, c2s, scope)
+
+  if (! isnumeric (nbins) || ! isscalar (nbins) || ! isreal (nbins)
+      || ! isfinite (nbins) || nbins < 1 || fix (nbins) != nbins)
+    error (strcat (scope, ": 'NumBins' must be a real, finite, positive,", ...
+                   " integer value."));
+  endif
+  nbins = double (nbins);
+  if (isempty (xf))
+    ## Deliberately unlike MATLAB, which answers an empty datetime with edges
+    ## taken from the CURRENT CLOCK, so that the same call returns a different
+    ## result every time it is run and no test of it can be written.  We anchor
+    ## on the epoch, which is reproducible.  See section 14 of the coding style.
+    ev = 0:nbins;
+  else
+    ev = dtBinEdgesGrid (min (xf), max (xf), nbins, s2c, c2s);
+  endif
+
+endfunction
+
+## Bin count for one of the automatic bin-selection rules
+function nbins = dtMethodBins (xf, lo, hi, method)
+
+  n = numel (xf);
+  if (n < 2 || isempty (lo) || hi == lo)
+    nbins = 1;
+    return;
+  endif
+  switch (method)
+    case 'sturges'
+      nbins = ceil (1 + log2 (n));
+      return;
+    case 'sqrt'
+      nbins = ceil (sqrt (n));
+      return;
+    case 'fd'
+      q = quantile (xf(:), [0.25, 0.75], 1, 5);
+      rawWidth = 2 * (q(2) - q(1)) * n ^ (-1/3);
+    otherwise
+      rawWidth = 3.5 * std (xf(:)) * n ^ (-1/3);
+  endswitch
+  if (! (rawWidth > 0))
+    nbins = 1;
+  else
+    nbins = max (1, ceil ((hi - lo) / rawWidth));
+  endif
+
+endfunction
+
+## Clamp the outer edges into the requested limits.  MATLAB keeps the interior
+## grid and cuts the two end bins short, so a 'BinLimits' of two data points
+## returns edges that start and end exactly on them.
+function ev = dtClampEdges (ev, lim)
+  if (! isempty (lim))
+    ev(1) = max (ev(1), lim(1));
+    ev(end) = min (ev(end), lim(2));
+  endif
+endfunction
+
+## Translate datetime-valued histcounts options into serial seconds, resolving
+## any bin count, bin width or unit BinMethod into explicit edges so that every
+## path goes through the same placement as 'discretize'.
+function args = dtHistArgs (args, xv, s2c, c2s, d2s, scope)
+
+  xf = xv(isfinite (xv));
+
+  ## BinLimits decides the range everything else is derived from
+  lim = [];
+  for k = 1:numel (args) - 1
+    if (dtIsTextScalar (args{k}) && strcmpi (char (args{k}), 'BinLimits'))
+      v = args{k+1};
+      if (isa (v, 'datetime'))
+        v = d2s (v);
+      endif
+      if (isnumeric (v) && numel (v) == 2)
+        lim = double (v(:)).';
+      endif
+    endif
+  endfor
+  if (! isempty (lim))
+    xf = xf(xf >= lim(1) & xf <= lim(2));
+    lo = lim(1);
+    hi = lim(2);
+  elseif (! isempty (xf))
+    lo = min (xf);
+    hi = max (xf);
+  else
+    lo = [];
+    hi = [];
+  endif
+
+  ## A leading positional argument is a bin count or a set of edges.  Either
+  ## way it is resolved here, and the option loop below starts past it.
+  hasSpec = false;
+  k = 1;
+  if (! isempty (args) && ! dtIsTextScalar (args{1}))
+    if (isa (args{1}, 'datetime'))
+      dv = d2s (args{1});
+      args{1} = dv(:).';
+      hasSpec = true;
+      k = 2;
+    elseif (isnumeric (args{1}) && isscalar (args{1}) && ! islogical (args{1}))
+      ev = dtClampEdges (dtCountBinEdges (xf, args{1}, s2c, c2s, scope), lim);
+      args = [{'BinEdges', ev}, args(2:end)];
+      hasSpec = true;
+      k = 3;
+    else
+      k = 2;
+    endif
+  endif
+
+  while (k < numel (args))
+    if (! dtIsTextScalar (args{k}))
+      k += 2;
+      continue;
+    endif
+    switch (lower (char (args{k})))
+      case 'numbins'
+        args{k} = 'BinEdges';
+        args{k+1} = dtClampEdges (dtCountBinEdges (xf, args{k+1}, s2c, c2s, ...
+                                                   scope), lim);
+        hasSpec = true;
+      case 'binwidth'
+        hasSpec = true;
+        args{k} = 'BinEdges';
+        args{k+1} = dtClampEdges (dtUnitBinEdges (xf, args{k+1}, s2c, c2s, ...
+                                                   scope), lim);
+      case 'binedges'
+        hasSpec = true;
+        if (isa (args{k+1}, 'datetime'))
+          dv = d2s (args{k+1});
+          args{k+1} = dv(:).';
+        elseif (isnumeric (args{k+1}))
+          error ("%s: '%s' must be a datetime.", scope, char (args{k}));
+        endif
+      case 'binlimits'
+        if (isa (args{k+1}, 'datetime'))
+          dv = d2s (args{k+1});
+          args{k+1} = dv(:).';
+        elseif (isnumeric (args{k+1}))
+          error ("%s: '%s' must be a datetime.", scope, char (args{k}));
+        endif
+      case 'binmethod'
+        if (dtIsTextScalar (args{k+1}))
+          name = lower (char (args{k+1}));
+          if (strcmp (name, 'integers'))
+            error (strcat (scope, ": 'integers' is not a valid 'BinMethod'", ...
+                           " for a datetime."));
+          elseif (any (strcmp (name, {'auto', 'scott', 'fd', 'sturges', 'sqrt'})))
+            args{k} = 'BinEdges';
+            args{k+1} = dtClampEdges (dtCountBinEdges (xf, ...
+                          dtMethodBins (xf, lo, hi, name), s2c, c2s, scope), lim);
+          else
+            args{k} = 'BinEdges';
+            args{k+1} = dtClampEdges (dtUnitBinEdges (xf, name, s2c, c2s, ...
+                                                       scope), lim);
+          endif
+        endif
+        hasSpec = true;
+      case 'normalization'
+        if (dtIsTextScalar (args{k+1})
+            && any (strcmpi (char (args{k+1}), {'countdensity', 'pdf'})))
+          error (strcat (scope, ": '%s' is not a valid 'Normalization' for", ...
+                         " a datetime; a density per unit time has no", ...
+                         " meaning."), lower (char (args{k+1})));
+        endif
+    endswitch
+    k += 2;
+  endwhile
+
+  ## Nothing said how to bin: use the automatic rule, which is a bin count from
+  ## Scott's rule fed through the same grid edges as every other path
+  if (! hasSpec)
+    ev = dtClampEdges (dtCountBinEdges (xf, dtMethodBins (xf, lo, hi, 'auto'), ...
+                                        s2c, c2s, scope), lim);
+    args = [args, {'BinEdges', ev}];
+  endif
+
+endfunction
+
+## Edge offsets for one rung of the ladder, in whole units.  SPANU is the count
+## of units between the one holding the smallest value and the one holding the
+## largest; the result is each edge's offset, in units, from the one holding the
+## smallest value.  It is empty when this rung cannot be used, which is the
+## signal to try the next one down.
+##
+## A rung is kept only when its width still needs every bin requested to span
+## the data.  Rounding a width up to a unit that then leaves bins unused would
+## both waste a bin and make the width jump about as the data change.
+function idx = dtBinGridIndex (spanU, nbins)
+
+  idx = [];
+
+  ## The width is a strict round up of the span, so a span that divides
+  ## exactly still widens.  Plain ceil () fails every case that divides
+  ## exactly, and recomputing the width from the reach -- which looks like the
+  ## natural thing to do -- is provably the same number for every NBINS >= 2
+  ## and one unit too small at NBINS == 1, where it is the whole answer.
+  width = floor (spanU / nbins) + 1;
+  ## Centre the excess.  The reach the bins must cover is the span plus that
+  ## shift; a rung too coarse to hold a whole unit of reach cannot be used.
+  c = floor ((nbins * width - spanU) / 2);
+  reach = spanU + c;
+  if (reach < 1)
+    return;
+  endif
+
+  if (ceil (reach / width) != nbins)
+    return;
+  endif
+
+  idx = -c + (0:nbins) * width;
+
 endfunction
