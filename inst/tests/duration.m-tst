@@ -4652,3 +4652,11 @@
 %!                           'MissingPlacement', 'First')), [NaN 1 2 3])
 %!assert_equal (hours (sort (hours ([3 1 NaN 2]), ...
 %!                           'missingplacement', 'last')), [1 2 3 NaN])
+
+## Adding or subtracting a zero duration is an identity, at any magnitude.
+## A precision guard tuned for the old day-based storage used to snap results
+## below 1e-15 ms to zero, destroying legitimately tiny durations.
+%!assert_equal (milliseconds (milliseconds (5e-16) + milliseconds (0)), 5e-16)
+%!assert_equal (seconds (seconds (1e-19) - seconds (0)), 1e-19)
+%!assert_equal (milliseconds (milliseconds (5e-16) * 1), 5e-16)
+%!assert_equal (seconds (abs (seconds (-1e-19))), 1e-19)

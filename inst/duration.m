@@ -2053,7 +2053,6 @@ classdef duration
         error (strcat ("duration: addition is not defined between", ...
                        " '%s' and '%s' arrays."), class (A), class (B));
       endif
-      C = fix_zero_precision (C);
     endfunction
 
     ## -*- texinfo -*-
@@ -2107,7 +2106,6 @@ classdef duration
         error (strcat ("duration: subtraction is not defined between", ...
                        " '%s' and '%s' arrays."), class (A), class (B));
       endif
-      C = fix_zero_precision (C);
     endfunction
 
     ## -*- texinfo -*-
@@ -2209,7 +2207,6 @@ classdef duration
       elseif (isnumeric (A))
         C = B;
         C.Millis = double (A) .\ B.Millis;
-        C = fix_zero_precision (C);
       else
         error (strcat ("duration: left division is not defined", ...
                        " between '%s' and 'duration' arrays."), class (A));
@@ -2266,7 +2263,6 @@ classdef duration
         error (strcat ("duration: 'mod' is not defined between", ...
                        " '%s' and '%s' arrays."), class (A), class (B));
       endif
-      C = fix_zero_precision (C);
     endfunction
 
     ## -*- texinfo -*-
@@ -2302,7 +2298,6 @@ classdef duration
         error (strcat ("duration: 'rem' is not defined between", ...
                        " '%s' and '%s' arrays."), class (A), class (B));
       endif
-      C = fix_zero_precision (C);
     endfunction
 
     ## -*- texinfo -*-
@@ -2349,7 +2344,6 @@ classdef duration
         endif
         C = B;
         C.Millis = B.Millis ./ double (A);
-        C = fix_zero_precision (C);
       else
         error (strcat ("duration: left division is not defined between", ...
                        " '%s' and '%s' arrays."), class (A), class (B));
@@ -2397,7 +2391,6 @@ classdef duration
         endif
         C = A;
         C.Millis = A.Millis ./ double (B);
-        C = fix_zero_precision (C);
       else
         error (strcat ("duration: right division is not defined between", ...
                        " '%s' and '%s' arrays."), class (A), class (B));
@@ -2435,7 +2428,6 @@ classdef duration
       elseif (isnumeric (B))
         C = A;
         C.Millis = A.Millis ./ double (B);
-        C = fix_zero_precision (C);
       else
         error (strcat ("duration: right division is not defined", ...
                        " between 'duration' and '%s' arrays."), class (B));
@@ -2488,7 +2480,6 @@ classdef duration
         endif
       endif
       R.Millis = from.Millis:increment.Millis:to.Millis;
-      R = fix_zero_precision (R);
     endfunction
 
     ## -*- texinfo -*-
@@ -2533,7 +2524,6 @@ classdef duration
       endif
       [A, B] = promote (A, B);
       R.Millis = linspace (A.Millis, B.Millis, n);
-      R = fix_zero_precision (R);
     endfunction
 
     ## -*- texinfo -*-
@@ -2550,7 +2540,6 @@ classdef duration
     ## @end deftypefn
     function this = diff (this, varargin)
       this.Millis = diff (this.Millis, varargin{:});
-      this = fix_zero_precision (this);
     endfunction
 
     ## -*- texinfo -*-
@@ -2573,7 +2562,6 @@ classdef duration
         [varargin{:}] = convertStringsToChars (varargin{:});
       endif
       this.Millis = sum (this.Millis, varargin{:});
-      this = fix_zero_precision (this);
     endfunction
 
     ## -*- texinfo -*-
@@ -2597,7 +2585,6 @@ classdef duration
         [varargin{:}] = convertStringsToChars (varargin{:});
       endif
       this.Millis = cumsum (this.Millis, varargin{:});
-      this = fix_zero_precision (this);
     endfunction
 
     ## -*- texinfo -*-
@@ -4178,7 +4165,6 @@ CM = lower (CM);
             else
               YI.Millis = interp1 (X, Y.Millis, XI, varargin{:});
             endif
-            YI = fix_zero_precision (YI);
           elseif (isnumeric (Y))
             YI = interp1 (X.Millis, Y, XI.Millis, varargin{:});
           else
@@ -4814,10 +4800,6 @@ CM = lower (CM);
       out.Millis = this.Millis(varargin{:});
     endfunction
 
-    ## Fix floating point precision near zero
-    function this = fix_zero_precision (this)
-      this.Millis(this.Millis > -1e-15 & this.Millis < 1e-15) = 0;
-    endfunction
 
   endmethods
 
