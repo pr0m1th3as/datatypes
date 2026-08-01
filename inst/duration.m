@@ -2916,6 +2916,7 @@ classdef duration
 ## 'kurtosis'         'mad'              'mape'             'mean'            ##
 ## 'median'           'mode'             'prctile'          'quantile'        ##
 ## 'range'            'rmse'             'skewness'         'std'             ##
+## 'discretize'       'histcounts'                                            ##
 ##                                                                            ##
 ################################################################################
 
@@ -3262,6 +3263,119 @@ classdef duration
         this.Days = std (this.Days, varargin{:});
         varargout{1} = this;
       endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{bin} =} discretize (@var{D}, @var{edges})
+    ## @deftypefnx {duration} {@var{bin} =} discretize (@var{D}, @var{N})
+    ## @deftypefnx {duration} {@var{bin} =} discretize (@var{D}, @var{dur})
+    ## @deftypefnx {duration} {@var{bin} =} discretize (@var{D}, @var{unit})
+    ## @deftypefnx {duration} {@var{Y} =} discretize (@dots{}, @var{values})
+    ## @deftypefnx {duration} {@var{C} =} discretize (@dots{}, 'categorical')
+    ## @deftypefnx {duration} {@var{C} =} discretize (@dots{}, 'categorical', @var{names})
+    ## @deftypefnx {duration} {@var{Y} =} discretize (@dots{}, 'IncludedEdge', @var{side})
+    ## @deftypefnx {duration} {[@var{bin}, @var{edges}] =} discretize (@dots{})
+    ##
+    ## Group durations into bins.
+    ##
+    ## @code{@var{bin} = discretize (@var{D}, @var{edges})} returns the index of
+    ## the bin each element of @var{D} falls into, given a @qcode{duration}
+    ## vector of bin edges.  Bin @math{j} covers @code{[@var{edges}(j),
+    ## @var{edges}(j+1))}, except the last, which is closed at both ends.
+    ## Elements outside the edges, and @qcode{NaN} durations, return @qcode{NaN}.
+    ##
+    ## @code{@var{bin} = discretize (@var{D}, @var{N})} uses @var{N} bins of
+    ## uniform width, placed on whole time units where that is possible.
+    ##
+    ## @code{@var{bin} = discretize (@var{D}, @var{dur})} uses bins of the fixed
+    ## width @var{dur}, a scalar @qcode{duration},
+    ## and @code{@var{bin} = discretize (@var{D}, @var{unit})} uses bins one
+    ## @var{unit} wide, where @var{unit} is one of @qcode{'second'},
+    ## @qcode{'minute'}, @qcode{'hour'}, @qcode{'day'}, @qcode{'week'},
+    ## @qcode{'month'}, @qcode{'quarter'}, @qcode{'year'}, @qcode{'decade'} or
+    ## @qcode{'century'}.  A month is a twelfth of the 365.2425-day year that
+    ## @code{years} counts, since a @qcode{duration} has no calendar.
+    ##
+    ## The remaining options are as for the top-level @code{discretize}.
+    ##
+    ## @strong{Deviation from MATLAB, for an explicitly requested bin count
+    ## only.}  Every other way of binning -- automatic, by width, by unit, or by
+    ## explicit edges -- agrees with MATLAB exactly.  Asked for a bin count,
+    ## MATLAB chooses between whole-unit and decimal widths in a way that is not
+    ## monotonic in the data: over @code{seconds ([0 16.8])} it gives 7 bins of
+    ## 2.5 s, over the wider @code{seconds ([0 17.15])} 7 bins of 3 s, and
+    ## decimal widths again above that.  It also discards bins, giving
+    ## @code{hours (0:24)} in 7 bins a 4-hour width that covers the data in 6.
+    ## A whole time unit is used here whenever it still needs every bin
+    ## requested, which is monotonic and never wastes a bin.
+    ##
+    ## @seealso{histcounts, discretize}
+    ## @end deftypefn
+    function [BIN, EDGES] = discretize (this, arg2, varargin)
+
+      ## Input validation
+      if (nargin < 2)
+        error ("duration.discretize: not enough input arguments.");
+      endif
+      xv = this.Days(:) * 86400;
+      [ev, isCount] = durbinedges (xv, arg2, 'duration.discretize');
+      EDGES = seconds (ev);
+      EDGES.Format = this.Format;
+      if (isCount)
+        EDGES = reshape (EDGES, 1, numel (ev));
+      endif
+
+      ## Delegate the assignment and the value mapping to the numeric function
+      [BIN, ~] = discretize (reshape (xv, size (this.Days)), ev, varargin{:});
+
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {duration} {@var{N} =} histcounts (@var{D})
+    ## @deftypefnx {duration} {@var{N} =} histcounts (@var{D}, @var{nbins})
+    ## @deftypefnx {duration} {@var{N} =} histcounts (@var{D}, @var{edges})
+    ## @deftypefnx {duration} {@var{N} =} histcounts (@dots{}, @var{Name}, @var{Value})
+    ## @deftypefnx {duration} {[@var{N}, @var{edges}] =} histcounts (@dots{})
+    ## @deftypefnx {duration} {[@var{N}, @var{edges}, @var{bin}] =} histcounts (@dots{})
+    ##
+    ## Histogram bin counts for durations.
+    ##
+    ## @code{@var{N} = histcounts (@var{D})} bins the durations in @var{D},
+    ## chosen automatically, and returns the number of elements in each bin.
+    ## @var{D} is treated as @code{@var{D}(:)} and @qcode{NaN} durations are
+    ## excluded.
+    ##
+    ## @code{@var{N} = histcounts (@var{D}, @var{nbins})} and
+    ## @code{@var{N} = histcounts (@var{D}, @var{edges})} bin by count and by
+    ## explicit @qcode{duration} edges respectively.
+    ##
+    ## @qcode{'BinWidth'} takes a scalar @qcode{duration},
+    ## @qcode{'BinLimits'} a two-element
+    ## @qcode{duration}, and @qcode{'BinEdges'} a @qcode{duration} vector.
+    ## @qcode{'BinMethod'} accepts @qcode{'auto'}, @qcode{'scott'},
+    ## @qcode{'fd'}, @qcode{'sturges'} and @qcode{'sqrt'}, but not
+    ## @qcode{'integers'}, which has no meaning for a duration.
+    ##
+    ## @qcode{'Normalization'} accepts @qcode{'count'}, @qcode{'cumcount'},
+    ## @qcode{'probability'}, @qcode{'percentage'} and @qcode{'cdf'}.
+    ## @qcode{'countdensity'} and @qcode{'pdf'} are not accepted, since a density
+    ## per unit time has no meaning here.
+    ##
+    ## @seealso{discretize, histcounts}
+    ## @end deftypefn
+    function [N, EDGES, BIN] = histcounts (this, varargin)
+
+      xv = this.Days(:) * 86400;
+      args = durhistargs (varargin, xv, 'duration.histcounts');
+      if (nargout > 2)
+        [N, ev, BIN] = histcounts (xv, args{:});
+        BIN = reshape (BIN, size (this.Days));
+      else
+        [N, ev] = histcounts (xv, args{:});
+      endif
+      EDGES = seconds (ev);
+      EDGES.Format = this.Format;
+
     endfunction
 
   endmethods
@@ -4885,3 +4999,247 @@ function errmsg = checkInputFormatString (inputFormat)
   endif
 endfunction
 
+
+## Bin edges in seconds for a duration, from a count, a width or a unit name
+function [ev, isCount] = durbinedges (xv, arg2, scope)
+
+  isCount = false;
+  xf = xv(isfinite (xv));
+  if (isa (arg2, 'duration'))
+    dv = seconds (arg2);
+    if (isscalar (dv))
+      ev = unitbinedges (xf, dv, scope);
+    else
+      ev = dv(:).';
+    endif
+  elseif (ischar (arg2) || isa (arg2, 'string'))
+    ev = unitbinedges (xf, unitseconds (char (arg2), scope), scope);
+  elseif (isnumeric (arg2) && isscalar (arg2) && ! islogical (arg2))
+    if (! isreal (arg2) || ! isfinite (arg2) || arg2 < 1 || fix (arg2) != arg2)
+      error ("%s: N must be a real positive integer.", scope);
+    endif
+    isCount = true;
+    if (isempty (xf))
+      ev = 0:double (arg2);
+    else
+      ev = __binedgesgrid__ (min (xf), max (xf), double (arg2), 0.0005);
+    endif
+  elseif (isnumeric (arg2))
+    error (strcat (scope, ": numeric bin edges are not accepted for a", ...
+                   " duration; give a duration vector."));
+  else
+    error (strcat (scope, ": the second argument must be a duration, a", ...
+                   " bin count, or a unit name."));
+  endif
+
+endfunction
+
+## Edges one UNIT wide, aligned to multiples of the unit, covering the data
+function ev = unitbinedges (xf, unit, scope)
+
+  if (! (unit > 0) || ! isfinite (unit))
+    error (strcat (scope, ": a bin width must be positive and finite."));
+  endif
+  if (isempty (xf))
+    ev = [0, unit];
+    return;
+  endif
+  left = unit * floor (min (xf) / unit);
+  nbins = max (1, ceil ((max (xf) - left) / unit));
+  ev = left + (0:nbins) * unit;
+
+endfunction
+
+## Length in seconds of a named time unit
+function s = unitseconds (name, scope)
+
+  yr = 31556952;
+  switch (lower (name))
+    case 'second'
+      s = 1;
+    case 'minute'
+      s = 60;
+    case 'hour'
+      s = 3600;
+    case 'day'
+      s = 86400;
+    case 'week'
+      s = 604800;
+    case 'month'
+      s = yr / 12;
+    case 'quarter'
+      s = yr / 4;
+    case 'year'
+      s = yr;
+    case 'decade'
+      s = 10 * yr;
+    case 'century'
+      s = 100 * yr;
+    otherwise
+      error (strcat (scope, ": UNIT must be one of 'second', 'minute',", ...
+                     " 'hour', 'day', 'week', 'month', 'quarter', 'year',", ...
+                     " 'decade', or 'century'."));
+  endswitch
+
+endfunction
+
+## Translate duration-valued histcounts options into seconds, resolving any
+## bin count or unit BinMethod into explicit edges so the grid rule is used
+function args = durhistargs (args, xv, scope)
+
+  xf = xv(isfinite (xv));
+
+  ## BinLimits decides the range everything else is derived from
+  lim = [];
+  for k = 1:numel (args) - 1
+    if (istextscalar (args{k}) && strcmpi (char (args{k}), 'BinLimits'))
+      v = args{k+1};
+      if (isa (v, 'duration'))
+        v = seconds (v);
+      endif
+      if (isnumeric (v) && numel (v) == 2)
+        lim = double (v(:)).';
+      endif
+    endif
+  endfor
+  if (! isempty (lim))
+    xf = xf(xf >= lim(1) & xf <= lim(2));
+    lo = lim(1);
+    hi = lim(2);
+  elseif (! isempty (xf))
+    lo = min (xf);
+    hi = max (xf);
+  else
+    lo = [];
+    hi = [];
+  endif
+
+  ## A leading positional argument is a bin count or a set of edges.  Either
+  ## way it is resolved here, and the option loop below starts past it.
+  hasSpec = false;
+  k = 1;
+  if (! isempty (args) && ! istextscalar (args{1}))
+    if (isa (args{1}, 'duration'))
+      dv = seconds (args{1});
+      args{1} = dv(:).';
+      hasSpec = true;
+      k = 2;
+    elseif (isnumeric (args{1}) && isscalar (args{1}) && ! islogical (args{1}))
+      args = [{'BinEdges', countbinedges(lo, hi, args{1}, scope)}, args(2:end)];
+      hasSpec = true;
+      k = 3;
+    else
+      k = 2;
+    endif
+  endif
+
+  while (k < numel (args))
+    if (! istextscalar (args{k}))
+      k += 2;
+      continue;
+    endif
+    switch (lower (char (args{k})))
+      case 'numbins'
+        args{k} = 'BinEdges';
+        args{k+1} = countbinedges (lo, hi, args{k+1}, scope);
+        hasSpec = true;
+      case {'binwidth', 'binedges'}
+        hasSpec = true;
+        if (isa (args{k+1}, 'duration'))
+          dv = seconds (args{k+1});
+          args{k+1} = dv(:).';
+        elseif (isnumeric (args{k+1}))
+          error ("%s: '%s' must be a duration.", scope, char (args{k}));
+        endif
+      case 'binlimits'
+        if (isa (args{k+1}, 'duration'))
+          dv = seconds (args{k+1});
+          args{k+1} = dv(:).';
+        elseif (isnumeric (args{k+1}))
+          error ("%s: '%s' must be a duration.", scope, char (args{k}));
+        endif
+      case 'binmethod'
+        if (istextscalar (args{k+1}))
+          name = lower (char (args{k+1}));
+          if (strcmp (name, 'integers'))
+            error (strcat (scope, ": 'integers' is not a valid 'BinMethod'", ...
+                           " for a duration."));
+          elseif (any (strcmp (name, {'auto', 'scott', 'fd', 'sturges', 'sqrt'})))
+            args{k} = 'BinEdges';
+            args{k+1} = countbinedges (lo, hi, methodbins (xf, lo, hi, name), ...
+                                       scope);
+          else
+            args{k} = 'BinEdges';
+            args{k+1} = unitbinedges (xf, unitseconds (name, scope), scope);
+          endif
+        endif
+        hasSpec = true;
+      case 'normalization'
+        if (istextscalar (args{k+1})
+            && any (strcmpi (char (args{k+1}), {'countdensity', 'pdf'})))
+          error (strcat (scope, ": '%s' is not a valid 'Normalization' for", ...
+                         " a duration; a density per unit time has no", ...
+                         " meaning."), lower (char (args{k+1})));
+        endif
+    endswitch
+    k += 2;
+  endwhile
+
+  ## Nothing said how to bin: use the automatic rule, which is a bin count from
+  ## Scott's rule fed through the same grid edges as every other path
+  if (! hasSpec)
+    args = [args, {'BinEdges', countbinedges(lo, hi, ...
+                                methodbins (xf, lo, hi, 'auto'), scope)}];
+  endif
+
+endfunction
+
+## Bin count for one of the automatic bin-selection rules
+function nbins = methodbins (xf, lo, hi, method)
+
+  n = numel (xf);
+  if (n < 2 || isempty (lo) || hi == lo)
+    nbins = 1;
+    return;
+  endif
+  switch (method)
+    case 'sturges'
+      nbins = ceil (1 + log2 (n));
+      return;
+    case 'sqrt'
+      nbins = ceil (sqrt (n));
+      return;
+    case 'fd'
+      q = quantile (xf(:), [0.25, 0.75], 1, 5);
+      rawWidth = 2 * (q(2) - q(1)) * n ^ (-1/3);
+    otherwise
+      rawWidth = 3.5 * std (xf(:)) * n ^ (-1/3);
+  endswitch
+  if (! (rawWidth > 0))
+    nbins = 1;
+  else
+    nbins = max (1, ceil ((hi - lo) / rawWidth));
+  endif
+
+endfunction
+
+## Edges for a requested bin count, over a range given in seconds
+function ev = countbinedges (lo, hi, nbins, scope)
+
+  if (! isnumeric (nbins) || ! isscalar (nbins) || ! isreal (nbins)
+      || ! isfinite (nbins) || nbins < 1 || fix (nbins) != nbins)
+    error (strcat (scope, ": 'NumBins' must be a real, finite, positive,", ...
+                   " integer value."));
+  endif
+  if (isempty (lo))
+    ev = 0:double (nbins);
+  else
+    ev = __binedgesgrid__ (lo, hi, double (nbins), 0.0005);
+  endif
+
+endfunction
+
+## True for a character vector or a scalar string
+function tf = istextscalar (x)
+  tf = (ischar (x) && isrow (x)) || (isa (x, 'string') && isscalar (x));
+endfunction
