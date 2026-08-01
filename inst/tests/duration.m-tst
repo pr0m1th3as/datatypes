@@ -4643,3 +4643,12 @@
 %!test
 %! [~, e] = discretize (seconds ([0 12]), 3);
 %! assert_equal (seconds (e), [0 4 8 12]);
+
+## Test 'sort' -- option VALUES are matched without regard to case, as MATLAB
+## matches them; the option names already were.
+%!assert_equal (hours (sort (hours ([3 1 NaN 2]), 'Ascend')), [1 2 3 NaN])
+%!assert_equal (hours (sort (hours ([3 1 NaN 2]), 'DESCEND')), [NaN 3 2 1])
+%!assert_equal (hours (sort (hours ([3 1 NaN 2]), ...
+%!                           'MissingPlacement', 'First')), [NaN 1 2 3])
+%!assert_equal (hours (sort (hours ([3 1 NaN 2]), ...
+%!                           'missingplacement', 'last')), [1 2 3 NaN])

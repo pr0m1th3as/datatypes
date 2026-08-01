@@ -1544,6 +1544,8 @@ classdef categorical
       optNames = {'MissingPlacement'};
       dfValues = {'auto'};
       [MP, args] = parsePairedArguments (optNames, dfValues, varargin(:));
+## The values are matched without regard to case, as MATLAB does.
+MP = lower (MP);
       if (! ismember (MP, {'auto', 'first', 'last'}))
         error ("categorical.issorted: invalid value for 'MissingPlacement'.");
       endif
@@ -1554,7 +1556,7 @@ classdef categorical
       ## Get direction
       cid = cellfun (@(x) ischar (x), args);
       if (any (cid))
-        direction = args{cid};
+        direction = lower (args{cid});
         ## Check for type of direction
         valid_direction = {'ascend', 'descend', 'monotonic', 'strictascend', ...
                            'strictdescend', 'strictmonotonic'};
@@ -1705,7 +1707,7 @@ classdef categorical
       fcn = @(x) (ischar (x) && ismember (x, valid)) || iscellstr (x);
       cid = cellfun (fcn, varargin);
       if (any (cid))
-        direction = cellstr (varargin{cid});
+        direction = lower (cellstr (varargin{cid}));
 
         ## Check for valid type of directions in cellstring
         if (! all (cellfun (@(x) ismember (x, valid), direction)))
@@ -3626,6 +3628,8 @@ classdef categorical
       optNames = {'MissingPlacement'};
       dfValues = {'auto'};
       [MP, args] = parsePairedArguments (optNames, dfValues, varargin(:));
+## The values are matched without regard to case, as MATLAB does.
+MP = lower (MP);
       if (! ismember (MP, {'auto', 'first', 'last'}))
         error ("categorical.sort: invalid value for 'MissingPlacement'.");
       endif
@@ -3636,7 +3640,9 @@ classdef categorical
       ## Get direction
       cid = cellfun (@ischar, args);
       if (any (cid))
-        dir = args{cid};
+        dir = lower (args{cid});
+        ## Put it back, since args is forwarded to the core sort further down.
+        args(cid) = {dir};
       else
         dir = 'ascend';
       endif
@@ -3737,6 +3743,8 @@ classdef categorical
       optNames = {'MissingPlacement'};
       dfValues = {'auto'};
       [MP, args] = parsePairedArguments (optNames, dfValues, varargin(:));
+## The values are matched without regard to case, as MATLAB does.
+MP = lower (MP);
       if (! any (strcmp (MP, {'auto', 'first', 'last'})))
         error ("categorical.sort: invalid value for 'MissingPlacement'.");
       endif
@@ -3760,7 +3768,7 @@ classdef categorical
           endif
         elseif (isvector (col) && (ischar (col) || iscellstr (col) ||
                                    isa (col, 'string')))
-          direction = cellstr (col);
+          direction = lower (cellstr (col));
           if (! all (ismember (direction, {'ascend', 'descend'})))
             error (strcat ("categorical.sortrows: DIRECTION input must", ...
                            " contain either 'ascend' or 'descend' values."));
@@ -3787,7 +3795,7 @@ classdef categorical
           error ("categorical.sortrows: invalid third input argument.");
         endif
         if ((isvector (args{2}) && ischar (args{2})) || isa (args{2}, 'string'))
-          direction = cellstr (args{2});
+          direction = lower (cellstr (args{2}));
         elseif (isvector (args{2}) && iscellstr (args{2}))
           direction = args{2};
         else

@@ -6343,3 +6343,7 @@
 ## Restore whatever default display formats the user had before this file ran.
 %!test
 %! datetimeFormatGuard ('restore');
+
+## Test 'sortrows' -- the DIRECTION value is matched without regard to case
+%!assert_equal (sortrows (table ([3; 1; 2]), 1, 'Descend').Var1', [3 2 1])
+%!assert_equal (sortrows (table ([3; 1; 2]), 1, 'ASCEND').Var1', [1 2 3])

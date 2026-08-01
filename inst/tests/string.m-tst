@@ -2185,3 +2185,9 @@
 %!assert_equal (size ([string('a'), string.empty]), [1, 1])
 %!assert_equal (size (ismissing (string.empty)), [0, 0])
 %!assert_equal (size (cellstr (string.empty)), [0, 0])
+
+## Test 'sort' -- option VALUES are matched without regard to case
+%!assert_equal (cellstr (sort (string ({'b', 'a', 'c'}), 'Descend')), ...
+%!              {'c', 'b', 'a'})
+%!assert_equal (cellstr (sort (string ({'b', 'a', 'c'}), 'ASCEND')), ...
+%!              {'a', 'b', 'c'})

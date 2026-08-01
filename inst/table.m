@@ -1615,7 +1615,8 @@ classdef table
         error ("table.sortrows: invalid number of input arguments.");
       endif
       if (nargs > 1)
-        direction = cellstr (args{2});
+        ## Matched without regard to case, as MATLAB does.
+        direction = lower (cellstr (args{2}));
         dir_given = true;
         if (! all (ismember (direction, {'ascend', 'descend'})))
           error ("table.sortrows: invalid value for DIRECTION argument.");

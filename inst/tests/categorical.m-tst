@@ -3951,3 +3951,9 @@
 %!assert_equal (size (categorical.empty ([0 2 3])), [0, 2, 3])
 %!error <categorical.empty: dimensions must be integer values.> ...
 %! categorical.empty (1.5)
+
+## Test 'sort' -- option VALUES are matched without regard to case
+%!assert_equal (cellstr (sort (categorical ({'b', 'a', 'c'}), 'Ascend')), ...
+%!              {'a', 'b', 'c'})
+%!assert_equal (cellstr (sort (categorical ({'b', 'a', 'c'}), 'DESCEND')), ...
+%!              {'c', 'b', 'a'})
