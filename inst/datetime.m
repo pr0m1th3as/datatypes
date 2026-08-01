@@ -7233,7 +7233,13 @@ endfunction
 ## whole months; a quarter is three months, a year twelve, a decade a hundred
 ## and twenty and a century twelve hundred, so one snapping rule serves them
 ## all.  SPEC is a scalar duration, a scalar calendarDuration, or a unit name.
-function [kind, step] = dtUnitStep (spec, scope)
+function [kind, step, named] = dtUnitStep (spec, scope)
+
+  ## NAMED distinguishes a unit given by name from one given as a width.
+  ## They differ only when the data span an exact multiple of the unit:
+  ## a named unit then opens one more bin, a width does not.  MATLAB
+  ## makes that distinction for a datetime and not for a duration.
+  named = ! (isa (spec, 'duration') || isa (spec, 'calendarDuration'));
 
   if (! isa (spec, 'duration') && ! isa (spec, 'calendarDuration')
       && ! dtIsTextScalar (spec))
@@ -7313,7 +7319,14 @@ endfunction
 ## differs from 'duration', which rounds the same quantity up instead.
 function ev = dtUnitBinEdges (xf, spec, s2c, c2s, scope)
 
-  [kind, step] = dtUnitStep (spec, scope);
+  [kind, step, named] = dtUnitStep (spec, scope);
+  ## A named unit always opens a bin past the data; a width opens one
+  ## only when the data do not end exactly on an edge.
+  if (named)
+    bins = @(gap) floor (gap / step) + 1;
+  else
+    bins = @(gap) max (1, ceil (gap / step));
+  endif
 
   ## Empty data anchors on the epoch, for the reason given in dtCountBinEdges.
   if (isempty (xf))
@@ -7331,7 +7344,7 @@ function ev = dtUnitBinEdges (xf, spec, s2c, c2s, scope)
       [yA, mA, dA] = s2c (lo);
       origin = c2s (yA, mA, dA);
       left = origin + step * floor ((lo - origin) / step);
-      n = floor ((hi - left) / step) + 1;
+      n = bins (hi - left);
       ev = left + (0:n) * step;
 
     case {'day', 'week'}
@@ -7344,7 +7357,7 @@ function ev = dtUnitBinEdges (xf, spec, s2c, c2s, scope)
       endif
       [Yh, Mh, Dh] = s2c (hi);
       gap = round ((c2s (Yh, Mh, Dh) - c2s (Y, M, D)) / 86400);
-      n = floor (gap / step) + 1;
+      n = bins (gap);
       k = (0:n) * step;
       one = ones (size (k));
       [Ye, Me, De] = dtAddDays (Y * one, M * one, D * one, k);
@@ -7357,7 +7370,7 @@ function ev = dtUnitBinEdges (xf, spec, s2c, c2s, scope)
       ## October and a decade on a year divisible by ten, with no special case.
       idx = step * floor ((12 * Y + (M - 1)) / step);
       [Yh, Mh, Dh] = s2c (hi);
-      n = floor (((12 * Yh + (Mh - 1)) - idx) / step) + 1;
+      n = bins ((12 * Yh + (Mh - 1)) - idx);
       k = idx + (0:n) * step;
       Ye = floor (k / 12);
       Me = k - Ye * 12 + 1;

@@ -5019,6 +5019,42 @@
 %! assert_equal (H(1:3)(:).', [0 0 0]);
 %! assert_equal (H(4:6)(:).', [1 1 1]);
 
+## Test 'discretize' -- a unit given by NAME opens one more bin than the same
+## unit given as a WIDTH, but only when the data end exactly on an edge.  The
+## two agree otherwise, which is why the difference went unseen.  A duration
+## array makes no such distinction; this is a datetime behaviour.  Values
+## captured from R2024a.
+%!test
+%! t = datetime (2024, 1, 1) + hours ([0 5]);
+%! [~, ew] = discretize (t, hours (1));
+%! [~, en] = discretize (t, 'hour');
+%! assert_equal (numel (ew), 6);
+%! assert_equal (numel (en), 7);
+%!test
+%! t = datetime (2024, 1, 1) + days ([0 3]);
+%! [~, ew] = discretize (t, days (1));
+%! [~, en] = discretize (t, 'day');
+%! assert_equal (numel (ew), 4);
+%! assert_equal (numel (en), 5);
+%!test
+%! t = datetime (2024, 1, 1) + days ([0 2.5]);
+%! [~, ew] = discretize (t, days (1));
+%! [~, en] = discretize (t, 'day');
+%! assert_equal (numel (ew), 4);
+%! assert_equal (numel (en), 4);
+%!test
+%! t = datetime (2024, 3, 8, 'TimeZone', 'America/New_York') + days ([0 5]);
+%! [~, ew] = discretize (t, days (1));
+%! [~, en] = discretize (t, 'day');
+%! assert_equal (numel (ew), 6);
+%! assert_equal (numel (en), 7);
+%!test
+%! d = [seconds(0), seconds(5 * 3600)];
+%! [~, ew] = discretize (d, hours (1));
+%! [~, en] = discretize (d, 'hour');
+%! assert_equal (numel (ew), 6);
+%! assert_equal (numel (en), 6);
+
 ## Restore whatever default formats the user had before this file ran.
 %!test
 %! datetime.setDefaultFormats ('reset');
