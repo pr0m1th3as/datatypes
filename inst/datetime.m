@@ -7077,8 +7077,9 @@ endfunction
 ## TICK is the half-width used when the data are constant and defaults to half a
 ## second, where a 'duration' uses half a millisecond.
 ##
-## This is NOT the placement 'duration' uses and '__binedgesgrid__' must not be
-## borrowed for it.  Three differences separate them, each verified against
+## This is NOT the placement 'duration' uses and 'gridbinedges', its own local
+## function, must not be borrowed for it.  Three differences separate them,
+## each verified against
 ## R2024a and each of which on its own yields edges that look plausible and are
 ## wrong:
 ##

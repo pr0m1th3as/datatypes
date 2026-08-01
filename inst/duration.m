@@ -5022,7 +5022,7 @@ function [ev, isCount] = durbinedges (xv, arg2, scope)
     if (isempty (xf))
       ev = 0:double (arg2);
     else
-      ev = __binedgesgrid__ (min (xf), max (xf), double (arg2), 0.0005);
+      ev = gridbinedges (min (xf), max (xf), double (arg2), 0.0005);
     endif
   elseif (isnumeric (arg2))
     error (strcat (scope, ": numeric bin edges are not accepted for a", ...
@@ -5223,6 +5223,84 @@ function nbins = methodbins (xf, lo, hi, method)
 
 endfunction
 
+## Bin edges for a requested bin count, snapped to whole time units.  LO, HI and
+## the result all count seconds; NBINS is the number of bins asked for and TICK
+## the half-width used when the data are constant.
+##
+## Taking G as a whole time unit and 'raw' as the unrounded width:
+##
+##   raw = (HI - LO) / NBINS
+##   G   = the largest of 1 day, 1 hour, 1 minute, 1 second with raw / G >= 4/3
+##   w   = G * ceil ((HI - LO) / (NBINS * G))
+##   L   = G * ceil ((LO - (NBINS * w - (HI - LO)) / 2) / G - 0.5)
+##
+## The width is the raw width rounded up to a whole unit, and the bins are then
+## centred on the data with the left edge snapped to the same unit, half-way
+## cases rounding **down**.  That is neither round (), which rounds half away
+## from zero, nor floor (x + 0.5), which rounds half up: 'hours (0:5)' in 3 bins
+## lands exactly on -0.5 units and MATLAB takes -1.
+##
+## **The threshold is exactly 4/3**, pinned at two scales by 'binthr_probe.m':
+## a raw width of 1.333 s takes the fine path and 1.334 s the coarse one,
+## identically in seconds and in hours.  4/3 is precisely where rounding the
+## width up to the whole unit can inflate it by at most 50%, so a unit is
+## adopted only when it costs little.
+##
+## **The ladder stops at one day.**  There is no week and no month -- a week
+## grid reproduces some spans and gets others wrong, and every span that looked
+## like months is reproduced by days.  There is no year either: a year rung
+## makes the acceptance test vacuous at NBINS == 1, where it returned a bin one
+## year wide for an hour of data.
+##
+## When no unit clears the threshold the plain numeric rule in '__binedges__'
+## takes over.  That is the terminating case at the bottom of the ladder rather
+## than a separate regime: below 4/3 seconds there is no coarser unit to snap
+## to.
+function ev = gridbinedges (lo, hi, nbins, tick = 0.5)
+
+  ## Constant data: an interval of one tick centred on the value.  The offsets
+  ## are formed first and added once, so only one rounding lands on LO.
+  if (lo == hi)
+    ev = lo + (-tick + (0:nbins) * (2 * tick / nbins));
+    return;
+  endif
+
+  span = hi - lo;
+  raw = span / nbins;
+
+  ## Both conditions, not either.  A unit is taken only when its width still
+  ## needs every bin requested AND the raw width is at least 4/3 of it; keeping
+  ## the first alone is what let a bin one year wide answer an hour of data,
+  ## and keeping the second alone loses cases the first catches.
+  unit = [];
+  for u = [86400, 3600, 60, 1]
+    w = u * ceil (span / (nbins * u));
+    if (ceil (span / w) == nbins && raw / u >= 4/3)
+      unit = u;
+      break;
+    endif
+  endfor
+
+  ## Finer than the threshold allows: the plain numeric rule takes over
+  if (isempty (unit))
+    ev = __binedges__ (lo, hi, nbins);
+    return;
+  endif
+
+  width = unit * ceil (span / (nbins * unit));
+  left = unit * ceil ((lo - (nbins * width - span) / 2) / unit - 0.5);
+  ev = left + (0:nbins) * width;
+
+  ## Guard against a rounding shortfall at either end
+  if (ev(1) > lo)
+    ev = ev - (ev(1) - lo);
+  endif
+  if (ev(end) < hi)
+    ev(end) = hi;
+  endif
+
+endfunction
+
 ## Edges for a requested bin count, over a range given in seconds
 function ev = countbinedges (lo, hi, nbins, scope)
 
@@ -5234,7 +5312,7 @@ function ev = countbinedges (lo, hi, nbins, scope)
   if (isempty (lo))
     ev = 0:double (nbins);
   else
-    ev = __binedgesgrid__ (lo, hi, double (nbins), 0.0005);
+    ev = gridbinedges (lo, hi, double (nbins), 0.0005);
   endif
 
 endfunction

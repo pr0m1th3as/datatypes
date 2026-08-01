@@ -4399,3 +4399,36 @@
 %! histcounts (hours (0:9), 'Normalization', 'pdf');
 %!error<duration.histcounts: 'BinWidth' must be a duration.> ...
 %! histcounts (hours (0:9), 'BinWidth', 3);
+
+## Test 'histcounts' -- a single bin takes the width of the data, not of some
+## far coarser unit.  A unit is kept only when it both needs every bin and is
+## no more than 3/4 of the raw width; keeping the first test alone returned a
+## bin one YEAR wide for an hour of data.
+%!test
+%! [~, e] = histcounts (hours (0:1));
+%! assert_equal (seconds (e), [0 3600]);
+%!test
+%! [~, e] = histcounts (hours (0:2));
+%! assert_equal (seconds (e), [0 7200]);
+%!test
+%! [~, e] = histcounts (seconds (0:1));
+%! assert_equal (seconds (e), [0 1]);
+%!test
+%! [~, e] = histcounts (seconds (0:2));
+%! assert_equal (seconds (e), [0 2]);
+%!test
+%! [~, e] = histcounts (hours (0:100));
+%! assert_equal (seconds (e), [0 72000 144000 216000 288000 360000]);
+## This is the documented deviation, not a mismatch: R2024a answers this with a
+## 4-hour width that covers the data in 6 of the 7 bins requested, leaving one
+## unused.  A whole unit is taken here only when it still needs every bin, so
+## the minute grid is used instead.
+%!test
+%! [~, e] = discretize (hours (0:24), 7);
+%! assert_equal (max (abs (seconds (e) - (-60 + (0:7) * 12360))) < 1e-6, true);
+%!test
+%! [~, e] = discretize (hours (0:5), 3);
+%! assert_equal (seconds (e), [-3600 3600 10800 18000]);
+%!test
+%! [~, e] = discretize (days (0:40), 3);
+%! assert_equal (seconds (e) / 86400, [-1 13 27 41]);
