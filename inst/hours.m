@@ -38,7 +38,7 @@ function out = hours (x)
   elseif (! isreal (x))
     error ("hours: input array must be real.");
   endif
-  out = duration (double (x), 0, 0, 'Format', 'h');
+  out = duration (0, 0, 0, double (x) * 3600000, 'Format', 'h');
 endfunction
 
 %!demo

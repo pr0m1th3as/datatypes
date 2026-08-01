@@ -38,7 +38,7 @@ function out = milliseconds (x)
   elseif (! isreal (x))
     error ("milliseconds: input array must be real.");
   endif
-  out = duration (0, 0, double (x) / 1000, 'Format', 's');
+  out = duration (0, 0, 0, double (x), 'Format', 's');
 endfunction
 
 %!demo

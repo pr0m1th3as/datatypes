@@ -39,7 +39,7 @@ function out = years (x)
   elseif (! isreal (x))
     error ("years: input array must be real.");
   endif
-  out = duration (double (x) * 24 * 365.2425, 0, 0, 'Format', 'y');
+  out = duration (0, 0, 0, double (x) * 31556952000, 'Format', 'y');
 endfunction
 
 %!demo

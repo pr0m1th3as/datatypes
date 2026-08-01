@@ -544,17 +544,17 @@
 %!assert_equal (keyHash (duration), uint64 (8095976253982599603))
 %!assert_equal (keyHash (duration (0, 0, 0)), uint64 (8095976253982599603))
 %!assert_equal (keyHash (duration ([], [], [])), uint64 (14859204025010592219))
-%!assert_equal (keyHash (duration (1, 1, 1)), uint64 (13776124020415645612))
+%!assert_equal (keyHash (duration (1, 1, 1)), uint64 (9684925284775797661))
 %!test
 %! key = keyHash (duration ([1, 2; 3, 4], 1, 1));
-%! assert_equal (key, uint64 (9389203521563080232));
+%! assert_equal (key, uint64 (6302809889869477948));
 %!test
 %! key = keyHash (duration (0, 0, 0, [1, 2, 3]));
-%! assert_equal (key, uint64 (7422929858764574817));
+%! assert_equal (key, uint64 (11458397730511227888));
 %!test
 %! base_key = uint64 (2342124352342344234);
 %! key = keyHash (duration (0, 0, 0, [1, 2, 3]), base_key);
-%! assert_equal (key, uint64 (13938388645620099040));
+%! assert_equal (key, uint64 (14450751741045872781));
 %!error<duration.keyHash: BASE must be a UINT64 scalar.> ...
 %! keyHash (duration (0, 0, 0), uint64 ([1, 2]))
 %!error<duration.keyHash: BASE must be a UINT64 scalar.> ...
@@ -1459,21 +1459,24 @@
 %!error<duration: right division is not defined between 'duration' and 'cell' arrays.> ...
 %! mrdivide (days (6), {2})
 
-## eps: the spacing of the storage, which counts days here.  Asserted against
-## eps of the day value rather than a literal, since the figure is a property of
-## the representation and MATLAB's differs, storing milliseconds.
+## eps: the spacing of the milliseconds a duration is stored in, which is what
+## MATLAB stores too.  Every figure below is bit-exact against R2024a.
 %!assert_equal (class (eps (hours (1))), 'duration')
-%!assert_equal (days (eps (days (1))), eps (1))
-%!assert_equal (days (eps (hours (1))), eps (1 / 24))
-%!assert_equal (days (eps (days ([1, 2, 4]))), eps ([1, 2, 4]))
+%!assert_equal (milliseconds (eps (days (1))), eps (86400000))
+%!assert_equal (milliseconds (eps (hours (1))), eps (3600000))
+%!assert_equal (milliseconds (eps (days ([1, 2, 4]))), ...
+%!               eps ([1, 2, 4] * 86400000))
+%!assert_equal (seconds (eps (seconds (1))), 1.1368683772161603e-16)
+%!assert_equal (seconds (eps (seconds (3600))), 4.6566128730773927e-13)
+%!assert_equal (seconds (eps (seconds (1e9))), 1.220703125e-07)
 ## eps: a negative duration has the spacing of its magnitude, and NaN gives NaN
-%!assert_equal (days (eps (days (-5))), eps (5))
+%!assert_equal (milliseconds (eps (days (-5))), eps (5 * 86400000))
 %!assert_equal (days (eps (days (NaN))), NaN)
 ## eps: format and shape are kept
 %!assert_equal (eps (hours (1)).Format, 'h')
 %!assert_equal (size (eps (days (reshape (1:8, 2, 2, 2)))), [2, 2, 2])
-%!assert_equal (days (eps (days (reshape (1:8, 2, 2, 2)))), ...
-%!              eps (reshape (1:8, 2, 2, 2)))
+%!assert_equal (milliseconds (eps (days (reshape (1:8, 2, 2, 2)))), ...
+%!              eps (reshape (1:8, 2, 2, 2) * 86400000))
 
 ## datenum: the length in days, the same value days() gives under the name the
 ## older date functions use
@@ -1646,23 +1649,44 @@
 %!error<duration.colon: input arguments must be scalars.> days(1):days([1, 2])
 %!error<duration.colon: input arguments must be scalars.> days(1):days(2):days([1, 2])
 
-%!assert_equal (days (linspace (days (1), days (2))), linspace (1, 2))
-%!assert_equal (days (linspace (days (1), days (2), 15)), linspace (1, 2, 15))
-%!assert_equal (days (linspace (days (1), 2)), linspace (1, 2))
-%!assert_equal (days (linspace (1, days (2))), linspace (1, 2))
-%!assert_equal (days (linspace (1, days (2), 15)), linspace (1, 2, 15))
-%!assert_equal (days (linspace (days (1), '48:00:00')), linspace (1, 2))
-%!assert_equal (days (linspace (days (1), {'48:00:00'})), linspace (1, 2))
-%!assert_equal (days (linspace (days (1), string ({'48:00:00'}))), linspace (1, 2))
-%!assert_equal (days (linspace (days (1), '48:00:00', 15)), linspace (1, 2, 15))
-%!assert_equal (days (linspace (days (1), {'48:00:00'}, 15)), linspace (1, 2, 15))
-%!assert_equal (days (linspace (days (1), string ({'48:00:00'}), 15)), linspace (1, 2, 15))
-%!assert_equal (days (linspace ('48:00:00', days (1))), linspace (2, 1))
-%!assert_equal (days (linspace ({'48:00:00'}, days (1))), linspace (2, 1))
-%!assert_equal (days (linspace (string ({'48:00:00'}), days (1))), linspace (2, 1))
-%!assert_equal (days (linspace ('48:00:00', days (1), 15)), linspace (2, 1, 15))
-%!assert_equal (days (linspace ({'48:00:00'}, days (1), 15)), linspace (2, 1, 15))
-%!assert_equal (days (linspace (string ({'48:00:00'}), days (1), 15)), linspace (2, 1, 15))
+%!assert_equal (milliseconds (linspace (days (1), days (2))), ...
+%!               linspace (86400000, 172800000))
+%!assert_equal (milliseconds (linspace (days (1), days (2), 15)), ...
+%!               linspace (86400000, 172800000, 15))
+%!assert_equal (milliseconds (linspace (days (1), 2)), ...
+%!               linspace (86400000, 172800000))
+%!assert_equal (milliseconds (linspace (1, days (2))), ...
+%!               linspace (86400000, 172800000))
+%!assert_equal (milliseconds (linspace (1, days (2), 15)), ...
+%!               linspace (86400000, 172800000, 15))
+%!assert_equal (milliseconds (linspace (days (1), '48:00:00')), ...
+%!               linspace (86400000, 172800000))
+%!assert_equal (milliseconds (linspace (days (1), {'48:00:00'})), ...
+%!               linspace (86400000, 172800000))
+%!assert_equal (milliseconds (linspace (days (1), string ({'48:00:00'}))), ...
+%!               linspace (86400000, 172800000))
+%!assert_equal (milliseconds (linspace (days (1), '48:00:00', 15)), ...
+%!               linspace (86400000, 172800000, 15))
+%!assert_equal (milliseconds (linspace (days (1), {'48:00:00'}, 15)), ...
+%!               linspace (86400000, 172800000, 15))
+%!assert_equal (milliseconds ( ...
+%!               linspace (days (1), string ({'48:00:00'}), 15)), ...
+%!               
+%!               linspace (86400000, 172800000, 15))
+%!assert_equal (milliseconds (linspace ('48:00:00', days (1))), ...
+%!               linspace (172800000, 86400000))
+%!assert_equal (milliseconds (linspace ({'48:00:00'}, days (1))), ...
+%!               linspace (172800000, 86400000))
+%!assert_equal (milliseconds (linspace (string ({'48:00:00'}), days (1))), ...
+%!               linspace (172800000, 86400000))
+%!assert_equal (milliseconds (linspace ('48:00:00', days (1), 15)), ...
+%!               linspace (172800000, 86400000, 15))
+%!assert_equal (milliseconds (linspace ({'48:00:00'}, days (1), 15)), ...
+%!               linspace (172800000, 86400000, 15))
+%!assert_equal (milliseconds ( ...
+%!               linspace (string ({'48:00:00'}), days (1), 15)), ...
+%!               
+%!               linspace (172800000, 86400000, 15))
 %!error<duration.linspace: too few input arguments.> ...
 %! linspace (days (1))
 
@@ -2509,7 +2533,10 @@
 %! assert_equal (median (x, "omitnan"), y);
 %! assert_equal (median (x, 1, "omitnan"), y);
 %! y = repmat (days ([2.05; 2.5; 1.4]), [1, 1, 4]);
-%! assert_equal (median (x, 2, "omitnan"), y);
+%! ## Averaging two stored values and building one from a day figure differ in
+%! ## the last bit, as they do in MATLAB, which stores milliseconds too.
+%! assert_equal (milliseconds (median (x, 2, "omitnan")), ...
+%!               milliseconds (y), 1e-6);
 %! y = repmat (days ([NaN; NaN; 1.4]), [1, 1, 4]);
 %! assert_equal (isequaln (median (x, 2), y), true);
 %! assert_equal (isequaln (median (x, "all"), NaN), true);
@@ -2852,8 +2879,8 @@
 %! E1 = days (rmse (F1, A1, 2));
 %! assert_equal (E1(:,:,1), 1.6583, 1e-4);
 %! assert_equal (E1(:,:,2), 5.2678, 1e-4);
-%! assert_equal (rmse (F, A, [1, 2], 'Weights', W), days (E1w));
-%! assert_equal (rmse (F, A, [1, 2]), days (E1));
+%! assert_equal (days (rmse (F, A, [1, 2], 'Weights', W)), E1w, 1e-12);
+%! assert_equal (days (rmse (F, A, [1, 2])), E1, 1e-12);
 %!test
 %! F = days ([3, 5; -1, 2]);
 %! F(:,:,2) = days ([4, 2; 7, -4]);
@@ -2876,7 +2903,9 @@
 %!assert_equal (skewness (days ([-1, 0, 1])), 0)
 %!assert_equal (skewness (days ([-2, 0, 1])) < 0, true)
 %!assert_equal (skewness (days ([-1, 0, 2])) > 0, true)
-%!assert_equal (skewness (days ([-3, 0, 1])) == -1 * skewness ([-1, 0, 3]), true)
+## Skewness is scale free, so the sign flips with the data; the two are
+## equal to within a rounding of the stored milliseconds.
+%!assert_equal (skewness (days ([-3, 0, 1])), -1 * skewness ([-1, 0, 3]), 1e-12)
 %!assert_equal (skewness (days (ones (3, 5))), NaN (1, 5))
 %!assert_equal (skewness (days (1), [], 3), NaN)
 %!test
@@ -4500,3 +4529,27 @@
 %!test
 %! [~, e] = histcounts (duration.empty, 'BinLimits', hours ([1 3]));
 %! assert_equal (seconds (e), [3600 10800]);
+
+## Test the stored unit -- a duration counts milliseconds, as MATLAB's does, so
+## a conversion out and back is exact rather than rounded to a picosecond grid.
+## Every figure below is bit-exact against R2024a.
+%!assert_equal (seconds (seconds (4.9998333333333331)), 4.9998333333333331)
+%!assert_equal (seconds (seconds (1 / 3)), 1 / 3)
+%!assert_equal (seconds (seconds (1e5 / 3)), 1e5 / 3)
+%!assert_equal (seconds (seconds (1814.9999999999998)), 1814.9999999999998)
+%!assert_equal (milliseconds (milliseconds (1234.5678)), 1234.5678)
+%!assert_equal (minutes (minutes (1 / 7)), 1 / 7)
+%!assert_equal (hours (hours (1 / 7)), 1 / 7)
+%!assert_equal (days (days (1 / 7)), 1 / 7)
+
+## Test the stored unit -- whole values stay whole through the conversions that
+## used to need the picosecond snap to come out right
+%!assert_equal (seconds (duration ('30:15', 'InputFormat', 'mm:ss')), 1815)
+%!assert_equal (seconds (duration (0, 30, 15)), 1815)
+%!assert_equal (minutes (duration (0, 30, 15)), 30.25)
+%!assert_equal (seconds (minutes (1)), 60)
+%!assert_equal (seconds (hours (1)), 3600)
+%!assert_equal (seconds (days (1)), 86400)
+%!assert_equal (milliseconds (seconds (1)), 1000)
+%!assert_equal (seconds (milliseconds (1)), 0.001)
+%!assert_equal (days (seconds (1)), 1.1574074074074073e-05)

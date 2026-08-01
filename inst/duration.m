@@ -52,8 +52,12 @@ classdef duration
   endproperties
 
   properties (SetAccess = private, Hidden)
-    ## Duration length in days
-    Days = 0
+    ## Duration length in milliseconds.  MATLAB stores a duration this way too,
+    ## and its representable set follows from it: 'eps' of a duration is the
+    ## spacing of a double at that many milliseconds, which is what this class
+    ## reproduces.  Storing days instead put the grid somewhere else and cost
+    ## about three significant digits on every conversion back to seconds.
+    Millis = 0
   endproperties
 
   methods (Hidden)
@@ -274,7 +278,7 @@ classdef duration
             else
               error ("duration: X must have 3 columns.");
             endif
-            [~, this.Days] = hms2days (H, MI, S);
+            [~, this.Millis] = hms2millis (H, MI, S);
             ## Return a warning if InputFormat is defined
             if (! isempty (inputFormat))
               warning (strcat ("duration: 'InputFormat' has no effect", ...
@@ -285,7 +289,7 @@ classdef duration
             if (! iscellstr (X))
               X = cellstr (X);
             endif
-            this.Days = timestrings2days (X, inputFormat);
+            this.Millis = timestrings2millis (X, inputFormat);
           else
             error ("duration: invalid type of single input data argument.");
           endif
@@ -300,11 +304,11 @@ classdef duration
             error ("duration: H, MI, and S must be real.");
           endif
           ## Expansion is handled by the helper function
-          [err, days] = hms2days (H, MI, S);
+          [err, millis] = hms2millis (H, MI, S);
           if (err > 0)
             error ("duration: H, MI, and S must be of common size or scalars.");
           endif
-          this.Days = days;
+          this.Millis = millis;
           ## Return a warning if InputFormat is defined
           if (! isempty (inputFormat))
             warning ("duration: 'InputFormat' has no effect on numeric data.");
@@ -321,12 +325,12 @@ classdef duration
             error ("duration: H, MI, S, and MS must be real.");
           endif
           ## Expansion is handled by the helper function
-          [err, days] = hms2days (H, MI, S, MS);
+          [err, millis] = hms2millis (H, MI, S, MS);
           if (err > 0)
             error (strcat ("duration: H, MI, S, and MS must be of", ...
                            " common size or scalars."));
           endif
-          this.Days = days;
+          this.Millis = millis;
           ## Return a warning if InputFormat is defined
           if (! isempty (inputFormat))
             warning ("duration: 'InputFormat' has no effect on numeric data.");
@@ -365,7 +369,9 @@ classdef duration
       sz = size (this);
       cstr = cell (sz);
       for i = 1:prod (sz)
-        d = this.Days(i);
+        ## The format branches below work in days, as they always have;
+        ## only the stored unit changed underneath them.
+        d = this.Millis(i) / 86400000;
         ## Handle NaNs and Infs early
         if (! isfinite (d))
           switch (fmt)
@@ -627,7 +633,7 @@ classdef duration
     ##
     ## @end deftypefn
     function varargout = datevec (this)
-      d = this.Days;
+      d = this.Millis / 86400000;
       tmp = d / 365.2425;
       y = fix (tmp);
       ## Fix round-off errors with threshold scaled by years
@@ -683,7 +689,7 @@ classdef duration
     ##
     ## @end deftypefn
     function N = datenum (D)
-      N = D.Days;
+      N = D.Millis / 86400000;
     endfunction
 
     ## -*- texinfo -*-
@@ -704,7 +710,7 @@ classdef duration
     ##
     ## @end deftypefn
     function varargout = hms (this)
-      x = this.Days * 86400;
+      x = this.Millis / 1000;
       h = fix (x / 3600);
       tmp = x - h * 3600;
       idx = 3600 - tmp < 1e-12; # find round-off errors to whole hours
@@ -757,7 +763,7 @@ classdef duration
     ##
     ## @end deftypefn
     function out = years (this)
-      out = this.Days / 365.2425;
+      out = this.Millis / 31556952000;
     endfunction
 
     ## -*- texinfo -*-
@@ -771,7 +777,7 @@ classdef duration
     ##
     ## @end deftypefn
     function out = days (this)
-      out = this.Days;
+      out = this.Millis / 86400000;
     endfunction
 
     ## -*- texinfo -*-
@@ -785,7 +791,7 @@ classdef duration
     ##
     ## @end deftypefn
     function out = hours (this)
-      out = this.Days * 24;
+      out = this.Millis / 3600000;
     endfunction
 
     ## -*- texinfo -*-
@@ -797,14 +803,9 @@ classdef duration
     ## equivalent number of minutes.  @var{X} is a double array of the same size
     ## as @var{D}.
     ##
-    ## Values containing a fractional portion less than 1 picosecond are rounded
-    ## to the nearest picosecond.
-    ##
     ## @end deftypefn
     function out = minutes (this)
-      out = this.Days * 1440;
-      ## Fix floating point precision to nearest picosecond
-      out = round (out * 1e13) / 1e13;
+      out = this.Millis / 60000;
     endfunction
 
     ## -*- texinfo -*-
@@ -816,14 +817,9 @@ classdef duration
     ## equivalent number of seconds.  @var{X} is a double array of the same size
     ## as @var{D}.
     ##
-    ## Values containing a fractional portion less than 1 picosecond are rounded
-    ## to the nearest picosecond.
-    ##
     ## @end deftypefn
     function out = seconds (this)
-      out = this.Days * 86400;
-      ## Fix floating point precision to nearest picosecond
-      out = round (out * 1e12) / 1e12;
+      out = this.Millis / 1000;
     endfunction
 
     ## -*- texinfo -*-
@@ -835,14 +831,9 @@ classdef duration
     ## the equivalent number of milliseconds.  @var{X} is a double array of the
     ## same size as @var{D}.
     ##
-    ## Values containing a fractional portion less than 1 picosecond are rounded
-    ## to the nearest picosecond.
-    ##
     ## @end deftypefn
     function out = milliseconds (this)
-      out = this.Days * 86400000;
-      ## Fix floating point precision to nearest picosecond
-      out = round (out * 1e9) / 1e9;
+      out = this.Millis;
     endfunction
 
   endmethods
@@ -883,9 +874,9 @@ classdef duration
     ## @end deftypefn
     function varargout = size (this, varargin)
       if (! isempty (varargin))
-        sz = size (this.Days, varargin{:});
+        sz = size (this.Millis, varargin{:});
       else
-        sz = size (this.Days);
+        sz = size (this.Millis);
       endif
       if (nargout == 0 || nargout == 1)
         varargout{1} = sz;
@@ -909,7 +900,7 @@ classdef duration
     ##
     ## @end deftypefn
     function out = ndims (this)
-      out = ndims (this.Days);
+      out = ndims (this.Millis);
     endfunction
 
     ## -*- texinfo -*-
@@ -922,7 +913,7 @@ classdef duration
     ##
     ## @end deftypefn
     function out = numel (this, varargin)
-      out = numel (this.Days);
+      out = numel (this.Millis);
     endfunction
 
     ## -*- texinfo -*-
@@ -935,7 +926,7 @@ classdef duration
     ##
     ## @end deftypefn
     function out = nnz (this)
-      d = this.Days(:);
+      d = this.Millis(:);
       out = numel (d) - sum (d == 0);
     endfunction
 
@@ -950,10 +941,10 @@ classdef duration
     ##
     ## @end deftypefn
     function N = length (this)
-      if (isempty (this.Days))
+      if (isempty (this.Millis))
         N = 0;
       else
-        N = max (size (this.Days));
+        N = max (size (this.Millis));
       endif
     endfunction
 
@@ -980,7 +971,7 @@ classdef duration
     ## @end deftypefn
     function key = keyHash (this, base = [])
       ## Initialize string with size and class name
-      size_str = sprintf ('%dx', size (this.Days))(1:end-1);
+      size_str = sprintf ('%dx', size (this.Millis))(1:end-1);
       init_str = [size_str 'duration'];
       if (base)
         if (! (isscalar (base) && isa (base, 'uint64')))
@@ -990,8 +981,8 @@ classdef duration
       else
         key = __ckeyHash__(init_str);
       endif
-      if (! isempty (this.Days))
-        key = __nkeyHash__(this.Days(:), key);
+      if (! isempty (this.Millis))
+        key = __nkeyHash__(this.Millis(:), key);
       endif
     endfunction
 
@@ -1087,7 +1078,7 @@ classdef duration
     ##
     ## @end deftypefn
     function TF = iscolumn (this)
-      TF = iscolumn (this.Days);
+      TF = iscolumn (this.Millis);
     endfunction
 
     ## -*- texinfo -*-
@@ -1101,7 +1092,7 @@ classdef duration
     ##
     ## @end deftypefn
     function TF = isempty (this)
-      TF = isempty (this.Days);
+      TF = isempty (this.Millis);
     endfunction
 
     ## -*- texinfo -*-
@@ -1125,8 +1116,8 @@ classdef duration
     function TF = isequal (varargin)
       args = varargin;
       [args{:}] = promote (varargin{:});
-      days = cellfun (@(obj) obj.Days, args, 'UniformOutput', false);
-      TF = isequal (days{:});
+      mils = cellfun (@(obj) obj.Millis, args, 'UniformOutput', false);
+      TF = isequal (mils{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -1152,8 +1143,8 @@ classdef duration
     function TF = isequaln (varargin)
       args = varargin;
       [args{:}] = promote (varargin{:});
-      days = cellfun (@(obj) obj.Days, args, 'UniformOutput', false);
-      TF = isequaln (days{:});
+      mils = cellfun (@(obj) obj.Millis, args, 'UniformOutput', false);
+      TF = isequaln (mils{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -1169,7 +1160,7 @@ classdef duration
     ##
     ## @end deftypefn
     function TF = isfinite (this)
-      TF = isfinite (this.Days);
+      TF = isfinite (this.Millis);
     endfunction
 
     ## -*- texinfo -*-
@@ -1184,7 +1175,7 @@ classdef duration
     ##
     ## @end deftypefn
     function TF = isinf (this)
-      TF = isinf (this.Days);
+      TF = isinf (this.Millis);
     endfunction
 
     ## -*- texinfo -*-
@@ -1199,7 +1190,7 @@ classdef duration
     ##
     ## @end deftypefn
     function TF = ismatrix (this)
-      TF = ismatrix (this.Days);
+      TF = ismatrix (this.Millis);
     endfunction
 
     ## -*- texinfo -*-
@@ -1259,16 +1250,16 @@ classdef duration
           endif
         endif
         if (nargout > 1)
-          [varargout{1}, varargout{2}] = __ismember__ (A.Days, B.Days, ...
+          [varargout{1}, varargout{2}] = __ismember__ (A.Millis, B.Millis, ...
                                                        varargin{:});
         else
-          varargout{1} = __ismember__ (A.Days, B.Days, varargin{:});
+          varargout{1} = __ismember__ (A.Millis, B.Millis, varargin{:});
         endif
       else
         if (nargout > 1)
-          [varargout{1}, varargout{2}] = __ismember__ (A.Days, B.Days);
+          [varargout{1}, varargout{2}] = __ismember__ (A.Millis, B.Millis);
         else
-          varargout{1} = __ismember__ (A.Days, B.Days);
+          varargout{1} = __ismember__ (A.Millis, B.Millis);
         endif
       endif
     endfunction
@@ -1299,7 +1290,7 @@ classdef duration
         if (isvector (indicator))
           if (isa (indicator, 'duration'))
             for i = 1:length (indicator)
-              TF(this.Days == indicator.Days(i)) = true;
+              TF(this.Millis == indicator.Millis(i)) = true;
             endfor
           else
             error ("duration.ismissing: INDICATOR must be a 'duration' array.");
@@ -1308,7 +1299,7 @@ classdef duration
           error ("duration.ismissing: INDICATOR must be a vector.");
         endif
       else
-        TF = isnan (this.Days);
+        TF = isnan (this.Millis);
       endif
     endfunction
 
@@ -1323,7 +1314,7 @@ classdef duration
     ##
     ## @end deftypefn
     function TF = isnan (this)
-      TF = isnan (this.Days);
+      TF = isnan (this.Millis);
     endfunction
 
     ## -*- texinfo -*-
@@ -1386,14 +1377,13 @@ classdef duration
         error ("duration.isregular: input must be a duration vector.");
       endif
       d = diff (this);
-      ds = days (d);
+      ds = milliseconds (d);
       ## Steps are compared within a few eps of the largest value present, not
-      ## exactly.  Subtracting neighbouring durations rounds, so even a vector
-      ## as plainly regular as one, two and three hours has steps differing in
-      ## the last bit; an exact test would call it irregular.  The tolerance is
-      ## taken from the values rather than the steps, since that is where the
-      ## rounding comes from.
-      scale = max (abs (days (this)(:)));
+      ## exactly.  Subtracting neighbouring durations can round in the last bit,
+      ## and an exact test would then call a plainly regular vector irregular.
+      ## The tolerance is taken from the values rather than the steps, since
+      ## that is where the rounding comes from, and matches MATLAB's own.
+      scale = max (abs (milliseconds (this)(:)));
       if (! isfinite (scale))
         scale = 0;
       endif
@@ -1405,7 +1395,7 @@ classdef duration
         ## inside the class's own methods, d(1) does not go through subsref and
         ## hands back the whole array.
         DT = d;
-        DT.Days = ds(1);
+        DT.Millis = ds(1);
       endif
     endfunction
 
@@ -1422,7 +1412,7 @@ classdef duration
     ##
     ## @end deftypefn
     function TF = isrow (this)
-      TF = isrow (this.Days);
+      TF = isrow (this.Millis);
     endfunction
 
     ## -*- texinfo -*-
@@ -1437,7 +1427,7 @@ classdef duration
     ##
     ## @end deftypefn
     function TF = isscalar (this)
-      TF = isscalar (this.Days);
+      TF = isscalar (this.Millis);
     endfunction
 
     ## -*- texinfo -*-
@@ -1758,7 +1748,7 @@ classdef duration
         bindcol = ocols(K);
 
         ## A missing value in the binding strict column rules out strictness.
-        if (any (isnan (this.Days(:,bindcol)), 'all'))
+        if (any (isnan (this.Millis(:,bindcol)), 'all'))
           TF = false;
           return;
         endif
@@ -1770,7 +1760,7 @@ classdef duration
         if (all (cellfun (@(x) ismember (x, {'ascend', 'descend'}), direction)))
           sorted = sortrows (this, varargin{:});
           ## No two consecutive rows may tie across the prefix columns.
-          tmpcol = sorted.Days(:, prefix);
+          tmpcol = sorted.Millis(:, prefix);
           if (any (all (diff (tmpcol, 1, 1) == 0, 2)))
             TF = false;
             return;
@@ -1782,7 +1772,7 @@ classdef duration
           direction(idx) = {'ascend'};
           varargin{cid} = direction;
           sorted = sortrows (this, varargin{:});
-          tmpcol = sorted.Days(:, prefix);
+          tmpcol = sorted.Millis(:, prefix);
           if (any (all (diff (tmpcol, 1, 1) == 0, 2)))
             TF = false;
             return;
@@ -1794,7 +1784,7 @@ classdef duration
           direction(idx) = {'descend'};
           varargin{cid} = direction;
           sorted = sortrows (this, varargin{:});
-          tmpcol = sorted.Days(:, prefix);
+          tmpcol = sorted.Millis(:, prefix);
           if (any (all (diff (tmpcol, 1, 1) == 0, 2)))
             TF = false;
             return;
@@ -1820,7 +1810,7 @@ classdef duration
     ##
     ## @end deftypefn
     function TF = isvector (this)
-      TF = isvector (this.Days);
+      TF = isvector (this.Millis);
     endfunction
 
   endmethods
@@ -1859,7 +1849,7 @@ classdef duration
     ## @end deftypefn
     function TF = eq (A, B)
       [A, B] = promote (A, B);
-      TF = A.Days == B.Days;
+      TF = A.Millis == B.Millis;
     endfunction
 
     ## -*- texinfo -*-
@@ -1884,7 +1874,7 @@ classdef duration
     ## @end deftypefn
     function TF = ge (A, B)
       [A, B] = promote (A, B);
-      TF = A.Days >= B.Days;
+      TF = A.Millis >= B.Millis;
     endfunction
 
     ## -*- texinfo -*-
@@ -1909,7 +1899,7 @@ classdef duration
     ## @end deftypefn
     function TF = gt (A, B)
       [A, B] = promote (A, B);
-      TF = A.Days > B.Days;
+      TF = A.Millis > B.Millis;
     endfunction
 
     ## -*- texinfo -*-
@@ -1934,7 +1924,7 @@ classdef duration
     ## @end deftypefn
     function TF = le (A, B)
       [A, B] = promote (A, B);
-      TF = A.Days <= B.Days;
+      TF = A.Millis <= B.Millis;
     endfunction
 
     ## -*- texinfo -*-
@@ -1959,7 +1949,7 @@ classdef duration
     ## @end deftypefn
     function TF = lt (A, B)
       [A, B] = promote (A, B);
-      TF = A.Days < B.Days;
+      TF = A.Millis < B.Millis;
     endfunction
 
     ## -*- texinfo -*-
@@ -1984,7 +1974,7 @@ classdef duration
     ## @end deftypefn
     function TF = ne (A, B)
       [A, B] = promote (A, B);
-      TF = A.Days != B.Days;
+      TF = A.Millis != B.Millis;
     endfunction
 
   endmethods
@@ -2018,7 +2008,7 @@ classdef duration
     ##
     ## @end deftypefn
     function this = abs (this)
-      this.Days = abs (this.Days);
+      this.Millis = abs (this.Millis);
     endfunction
 
     ## -*- texinfo -*-
@@ -2052,13 +2042,13 @@ classdef duration
       endif
       if (isa (A, 'duration') && isa (B, 'duration'))
         C = A;
-        C.Days = A.Days + B.Days;
+        C.Millis = A.Millis + B.Millis;
       elseif (isnumeric (A))
         C = B;
-        C.Days = double (A) + B.Days;
+        C.Millis = double (A) * 86400000 + B.Millis;
       elseif (isnumeric (B))
         C = A;
-        C.Days = A.Days + double (B);
+        C.Millis = A.Millis + double (B) * 86400000;
       else
         error (strcat ("duration: addition is not defined between", ...
                        " '%s' and '%s' arrays."), class (A), class (B));
@@ -2106,13 +2096,13 @@ classdef duration
       endif
       if (isa (A, 'duration') && isa (B, 'duration'))
         C = A;
-        C.Days = A.Days - B.Days;
+        C.Millis = A.Millis - B.Millis;
       elseif (isnumeric (A))
         C = B;
-        C.Days = double (A) - B.Days;
+        C.Millis = double (A) * 86400000 - B.Millis;
       elseif (isnumeric (B))
         C = A;
-        C.Days = A.Days - double (B);
+        C.Millis = A.Millis - double (B) * 86400000;
       else
         error (strcat ("duration: subtraction is not defined between", ...
                        " '%s' and '%s' arrays."), class (A), class (B));
@@ -2131,7 +2121,7 @@ classdef duration
     ##
     ## @end deftypefn
     function this = uminus (this)
-      this.Days = - this.Days;
+      this.Millis = - this.Millis;
     endfunction
 
     ## -*- texinfo -*-
@@ -2154,10 +2144,10 @@ classdef duration
     function C = times (A, B)
       if (isa (A, 'duration') && isnumeric (B))
         C = A;
-        C.Days = A.Days .* double (B);
+        C.Millis = A.Millis .* double (B);
       elseif (isnumeric (A) && isa (B, 'duration'))
         C = B;
-        C.Days = double (A) .* B.Days;
+        C.Millis = double (A) .* B.Millis;
       else
         error (strcat ("duration: multiplication is not defined between", ...
                        " '%s' and '%s' arrays."), class (A), class (B));
@@ -2181,10 +2171,10 @@ classdef duration
     function C = mtimes (A, B)
       if (isa (A, 'duration') && isnumeric (B))
         C = A;
-        C.Days = A.Days * double (B);
+        C.Millis = A.Millis * double (B);
       elseif (isnumeric (A) && isa (B, 'duration'))
         C = B;
-        C.Days = double (A) * B.Days;
+        C.Millis = double (A) * B.Millis;
       else
         error (strcat ("duration: matrix multiplication is not defined", ...
                        " between '%s' and '%s' arrays."), class (A), class (B));
@@ -2215,10 +2205,10 @@ classdef duration
                        " array for left division: got '%s'"), class (B));
       endif
       if (isa (A, 'duration'))
-        C = A.Days .\ B.Days;
+        C = A.Millis .\ B.Millis;
       elseif (isnumeric (A))
         C = B;
-        C.Days = double (A) .\ B.Days;
+        C.Millis = double (A) .\ B.Millis;
         C = fix_zero_precision (C);
       else
         error (strcat ("duration: left division is not defined", ...
@@ -2265,13 +2255,13 @@ classdef duration
     function C = mod (A, B)
       if (isa (A, 'duration') && isa (B, 'duration'))
         C = A;
-        C.Days = mod (A.Days, B.Days);
+        C.Millis = mod (A.Millis, B.Millis);
       elseif (isa (A, 'duration') && isnumeric (B))
         C = A;
-        C.Days = mod (A.Days, double (B));
+        C.Millis = mod (A.Millis, double (B) * 86400000);
       elseif (isnumeric (A) && isa (B, 'duration'))
         C = B;
-        C.Days = mod (double (A), B.Days);
+        C.Millis = mod (double (A) * 86400000, B.Millis);
       else
         error (strcat ("duration: 'mod' is not defined between", ...
                        " '%s' and '%s' arrays."), class (A), class (B));
@@ -2301,13 +2291,13 @@ classdef duration
     function C = rem (A, B)
       if (isa (A, 'duration') && isa (B, 'duration'))
         C = A;
-        C.Days = rem (A.Days, B.Days);
+        C.Millis = rem (A.Millis, B.Millis);
       elseif (isa (A, 'duration') && isnumeric (B))
         C = A;
-        C.Days = rem (A.Days, double (B));
+        C.Millis = rem (A.Millis, double (B) * 86400000);
       elseif (isnumeric (A) && isa (B, 'duration'))
         C = B;
-        C.Days = rem (double (A), B.Days);
+        C.Millis = rem (double (A) * 86400000, B.Millis);
       else
         error (strcat ("duration: 'rem' is not defined between", ...
                        " '%s' and '%s' arrays."), class (A), class (B));
@@ -2345,7 +2335,7 @@ classdef duration
           error (strcat ("duration: the denominator in left division must", ...
                          " be a scalar."));
         endif
-        C = B.Days ./ A.Days;
+        C = B.Millis ./ A.Millis;
       elseif (isnumeric (A) || islogical (A))
         if (! isa (B, 'duration'))
           error (strcat ("duration: left division is not defined between", ...
@@ -2358,7 +2348,7 @@ classdef duration
                          " be real."));
         endif
         C = B;
-        C.Days = B.Days ./ double (A);
+        C.Millis = B.Millis ./ double (A);
         C = fix_zero_precision (C);
       else
         error (strcat ("duration: left division is not defined between", ...
@@ -2393,7 +2383,7 @@ classdef duration
           error (strcat ("duration: the denominator in right division must", ...
                          " be a scalar."));
         endif
-        C = A.Days ./ B.Days;
+        C = A.Millis ./ B.Millis;
       elseif (isnumeric (B) || islogical (B))
         if (! isa (A, 'duration'))
           error (strcat ("duration: right division is not defined between", ...
@@ -2406,7 +2396,7 @@ classdef duration
                          " be real."));
         endif
         C = A;
-        C.Days = A.Days ./ double (B);
+        C.Millis = A.Millis ./ double (B);
         C = fix_zero_precision (C);
       else
         error (strcat ("duration: right division is not defined between", ...
@@ -2426,18 +2416,13 @@ classdef duration
     ## value.  @code{eps} of a negative duration is that of its magnitude, and
     ## @code{eps} of @code{NaN} is @code{NaN}.
     ##
-    ## @strong{Deviation from MATLAB.}  This reports the spacing of the storage
-    ## actually used, and the two implementations do not store the same thing:
-    ## a @code{duration} counts days here and milliseconds in MATLAB, so the
-    ## answer differs by whatever the two magnitudes differ by, around a factor
-    ## of 1.3 for an hour.  Neither is wrong; each states the resolution of its
-    ## own representation, which is what @code{eps} is for.  Anything relying on
-    ## the exact figure relies on a storage detail rather than on a duration.
+    ## The spacing is that of the milliseconds a @code{duration} is stored in,
+    ## which is what MATLAB stores too, so the two agree exactly.
     ##
     ## @end deftypefn
     function E = eps (D)
       E = D;
-      E.Days = eps (D.Days);
+      E.Millis = eps (D.Millis);
     endfunction
 
     function C = rdivide (A, B)
@@ -2446,10 +2431,10 @@ classdef duration
                        " array for right division: got '%s'"), class (A));
       endif
       if (isa (B, 'duration'))
-        C = A.Days ./ B.Days;
+        C = A.Millis ./ B.Millis;
       elseif (isnumeric (B))
         C = A;
-        C.Days = A.Days ./ double (B);
+        C.Millis = A.Millis ./ double (B);
         C = fix_zero_precision (C);
       else
         error (strcat ("duration: right division is not defined", ...
@@ -2502,7 +2487,7 @@ classdef duration
           error ("duration.colon: input arguments must be scalars.");
         endif
       endif
-      R.Days = from.Days:increment.Days:to.Days;
+      R.Millis = from.Millis:increment.Millis:to.Millis;
       R = fix_zero_precision (R);
     endfunction
 
@@ -2547,7 +2532,7 @@ classdef duration
         R = B;
       endif
       [A, B] = promote (A, B);
-      R.Days = linspace (A.Days, B.Days, n);
+      R.Millis = linspace (A.Millis, B.Millis, n);
       R = fix_zero_precision (R);
     endfunction
 
@@ -2564,7 +2549,7 @@ classdef duration
     ##
     ## @end deftypefn
     function this = diff (this, varargin)
-      this.Days = diff (this.Days, varargin{:});
+      this.Millis = diff (this.Millis, varargin{:});
       this = fix_zero_precision (this);
     endfunction
 
@@ -2587,7 +2572,7 @@ classdef duration
       if (any (cellfun ('isstring', varargin)))
         [varargin{:}] = convertStringsToChars (varargin{:});
       endif
-      this.Days = sum (this.Days, varargin{:});
+      this.Millis = sum (this.Millis, varargin{:});
       this = fix_zero_precision (this);
     endfunction
 
@@ -2611,7 +2596,7 @@ classdef duration
       if (any (cellfun ('isstring', varargin)))
         [varargin{:}] = convertStringsToChars (varargin{:});
       endif
-      this.Days = cumsum (this.Days, varargin{:});
+      this.Millis = cumsum (this.Millis, varargin{:});
       this = fix_zero_precision (this);
     endfunction
 
@@ -2639,9 +2624,9 @@ classdef duration
       M = D;
       if (isempty (varargin))
         if (nargout > 1)
-          [M.Days, varargout{2}] = min (D.Days);
+          [M.Millis, varargout{2}] = min (D.Millis);
         else
-          M.Days = min (D.Days);
+          M.Millis = min (D.Millis);
         endif
         varargout{1} = M;
       else
@@ -2650,22 +2635,28 @@ classdef duration
         if (any (cellfun ('isstring', varargin)))
           [varargin{:}] = convertStringsToChars (varargin{:});
         endif
-        ## Second argument is a duration
-        if (isduration (varargin{1}))
+        ## Second argument is a duration, or a bare number, which counts
+        ## days as it does everywhere else a duration meets a number.
+        ## An empty second argument is the reduction form, not an operand.
+        if (isduration (varargin{1})
+            || (isnumeric (varargin{1}) && ! isempty (varargin{1})))
           D2 = varargin{1};
+          if (! isduration (D2))
+            D2 = promote (D2);
+          endif
           varargin(1) = [];
           ## Make sure first argument is also a duration
           if (! isduration (D))
             D = promote (D);
             M = D2;
           endif
-          M.Days = min (D.Days, D2.Days, varargin{:});
+          M.Millis = min (D.Millis, D2.Millis, varargin{:});
           varargout{1} = M;
         else
           if (nargout > 1)
-            [M.Days, varargout{2}] = min (D.Days, varargin{:});
+            [M.Millis, varargout{2}] = min (D.Millis, varargin{:});
           else
-            M.Days = min (D.Days, varargin{:});
+            M.Millis = min (D.Millis, varargin{:});
           endif
           varargout{1} = M;
         endif
@@ -2693,9 +2684,9 @@ classdef duration
     function varargout = cummin (this, varargin)
       if (isempty (varargin))
         if (nargout > 1)
-          [this.Days, varargout{2}] = cummin (this.Days);
+          [this.Millis, varargout{2}] = cummin (this.Millis);
         else
-          this.Days = cummin (this.Days);
+          this.Millis = cummin (this.Millis);
         endif
         varargout{1} = this;
       else
@@ -2705,9 +2696,9 @@ classdef duration
           [varargin{:}] = convertStringsToChars (varargin{:});
         endif
         if (nargout > 1)
-          [this.Days, varargout{2}] = cummin (this.Days, varargin{:});
+          [this.Millis, varargout{2}] = cummin (this.Millis, varargin{:});
         else
-          this.Days = cummin (this.Days, varargin{:});
+          this.Millis = cummin (this.Millis, varargin{:});
         endif
         varargout{1} = this;
       endif
@@ -2737,9 +2728,9 @@ classdef duration
       M = D;
       if (isempty (varargin))
         if (nargout > 1)
-          [M.Days, varargout{2}] = max (D.Days);
+          [M.Millis, varargout{2}] = max (D.Millis);
         else
-          M.Days = max (D.Days);
+          M.Millis = max (D.Millis);
         endif
         varargout{1} = M;
       else
@@ -2748,22 +2739,28 @@ classdef duration
         if (any (cellfun ('isstring', varargin)))
           [varargin{:}] = convertStringsToChars (varargin{:});
         endif
-        ## Second argument is a duration
-        if (isduration (varargin{1}))
+        ## Second argument is a duration, or a bare number, which counts
+        ## days as it does everywhere else a duration meets a number.
+        ## An empty second argument is the reduction form, not an operand.
+        if (isduration (varargin{1})
+            || (isnumeric (varargin{1}) && ! isempty (varargin{1})))
           D2 = varargin{1};
+          if (! isduration (D2))
+            D2 = promote (D2);
+          endif
           varargin(1) = [];
           ## Make sure first argument is also a duration
           if (! isduration (D))
             D = promote (D);
             M = D2;
           endif
-          M.Days = max (D.Days, D2.Days, varargin{:});
+          M.Millis = max (D.Millis, D2.Millis, varargin{:});
           varargout{1} = M;
         else
           if (nargout > 1)
-            [M.Days, varargout{2}] = max (D.Days, varargin{:});
+            [M.Millis, varargout{2}] = max (D.Millis, varargin{:});
           else
-            M.Days = max (D.Days, varargin{:});
+            M.Millis = max (D.Millis, varargin{:});
           endif
           varargout{1} = M;
         endif
@@ -2791,9 +2788,9 @@ classdef duration
     function varargout = cummax (this, varargin)
       if (isempty (varargin))
         if (nargout > 1)
-          [this.Days, varargout{2}] = cummax (this.Days);
+          [this.Millis, varargout{2}] = cummax (this.Millis);
         else
-          this.Days = cummax (this.Days);
+          this.Millis = cummax (this.Millis);
         endif
         varargout{1} = this;
       else
@@ -2803,9 +2800,9 @@ classdef duration
           [varargin{:}] = convertStringsToChars (varargin{:});
         endif
         if (nargout > 1)
-          [this.Days, varargout{2}] = cummax (this.Days, varargin{:});
+          [this.Millis, varargout{2}] = cummax (this.Millis, varargin{:});
         else
-          this.Days = cummax (this.Days, varargin{:});
+          this.Millis = cummax (this.Millis, varargin{:});
         endif
         varargout{1} = this;
       endif
@@ -2837,15 +2834,15 @@ classdef duration
     ## @end deftypefn
     function this = floor (this, unit = 'seconds')
       if (strcmpi (unit, 'seconds'))
-        this.Days = floor (seconds (this)) / 86400;
+        this.Millis = floor (seconds (this)) * 1000;
       elseif (strcmpi (unit, 'minutes'))
-        this.Days = floor (minutes (this)) / 1440;
+        this.Millis = floor (minutes (this)) * 60000;
       elseif (strcmpi (unit, 'hours'))
-        this.Days = floor (hours (this)) / 24;
+        this.Millis = floor (hours (this)) * 3600000;
       elseif (strcmpi (unit, 'days'))
-        this.Days = floor (this.Days);
+        this.Millis = floor (days (this)) * 86400000;
       elseif (strcmpi (unit, 'years'))
-        this.Days = floor (years (this)) * 365.2425;
+        this.Millis = floor (years (this)) * 31556952000;
       else
         error ("duration.floor: invalid UNIT.");
       endif
@@ -2877,15 +2874,15 @@ classdef duration
     ## @end deftypefn
     function this = ceil (this, unit = 'seconds')
       if (strcmpi (unit, 'seconds'))
-        this.Days = ceil (seconds (this)) / 86400;
+        this.Millis = ceil (seconds (this)) * 1000;
       elseif (strcmpi (unit, 'minutes'))
-        this.Days = ceil (minutes (this)) / 1440;
+        this.Millis = ceil (minutes (this)) * 60000;
       elseif (strcmpi (unit, 'hours'))
-        this.Days = ceil (hours (this)) / 24;
+        this.Millis = ceil (hours (this)) * 3600000;
       elseif (strcmpi (unit, 'days'))
-        this.Days = ceil (this.Days);
+        this.Millis = ceil (days (this)) * 86400000;
       elseif (strcmpi (unit, 'years'))
-        this.Days = ceil (years (this)) * 365.2425;
+        this.Millis = ceil (years (this)) * 31556952000;
       else
         error ("duration.ceil: invalid UNIT.");
       endif
@@ -2917,15 +2914,15 @@ classdef duration
     ## @end deftypefn
     function this = round (this, unit = 'seconds')
       if (strcmpi (unit, 'seconds'))
-        this.Days = round (seconds (this)) / 86400;
+        this.Millis = round (seconds (this)) * 1000;
       elseif (strcmpi (unit, 'minutes'))
-        this.Days = round (minutes (this)) / 1440;
+        this.Millis = round (minutes (this)) * 60000;
       elseif (strcmpi (unit, 'hours'))
-        this.Days = round (hours (this)) / 24;
+        this.Millis = round (hours (this)) * 3600000;
       elseif (strcmpi (unit, 'days'))
-        this.Days = round (this.Days);
+        this.Millis = round (days (this)) * 86400000;
       elseif (strcmpi (unit, 'years'))
-        this.Days = round (years (this)) * 365.2425;
+        this.Millis = round (years (this)) * 31556952000;
       else
         error ("duration.round: invalid UNIT.");
       endif
@@ -2950,7 +2947,7 @@ classdef duration
     ##
     ## @end deftypefn
     function out = sign (this)
-      out = sign (this.Days);
+      out = sign (this.Millis);
     endfunction
 
   endmethods
@@ -3012,7 +3009,7 @@ classdef duration
     ##
     ## @end deftypefn
     function this = center (this, varargin)
-      this.Days = center (this.Days, varargin{:});
+      this.Millis = center (this.Millis, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -3028,10 +3025,11 @@ classdef duration
     ##
     ## @end deftypefn
     function varargout = histc (D, varargin)
+      ## The edges are given as bare numbers, which count days.
       if (nargout > 1)
-        [varargout{1}, varargout{2}] = histc (D.Days, varargin{:});
+        [varargout{1}, varargout{2}] = histc (days (D), varargin{:});
       else
-        varargout{1} = histc (D.Days, varargin{:});
+        varargout{1} = histc (days (D), varargin{:});
       endif
     endfunction
 
@@ -3051,9 +3049,9 @@ classdef duration
     ## @end deftypefn
     function varargout = iqr (this, varargin)
       if (nargout > 1)
-        [this.Days, varargout{2}] = iqr (this.Days, varargin{:});
+        [this.Millis, varargout{2}] = iqr (this.Millis, varargin{:});
       else
-        this.Days = iqr (this.Days, varargin{:});
+        this.Millis = iqr (this.Millis, varargin{:});
       endif
       varargout{1} = this;
     endfunction
@@ -3076,7 +3074,7 @@ classdef duration
     ##
     ## @end deftypefn
     function k = kurtosis (D, varargin)
-      k = kurtosis (D.Days, varargin{:});
+      k = kurtosis (D.Millis, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -3094,7 +3092,7 @@ classdef duration
     ##
     ## @end deftypefn
     function this = mad (this, varargin)
-      this.Days = mad (this.Days, varargin{:});
+      this.Millis = mad (this.Millis, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -3121,7 +3119,7 @@ classdef duration
       if (! isduration (F) || ! isduration (A))
         error ("duration.mape: both F and A must be duration arrays.");
       endif
-      E = mape (F.Days, A.Days, varargin{:});
+      E = mape (F.Millis, A.Millis, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -3141,7 +3139,7 @@ classdef duration
     ##
     ## @end deftypefn
     function this = mean (this, varargin)
-      this.Days = mean (this.Days, varargin{:});
+      this.Millis = mean (this.Millis, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -3160,7 +3158,7 @@ classdef duration
     ##
     ## @end deftypefn
     function this = median (this, varargin)
-      this.Days = median (this.Days, varargin{:});
+      this.Millis = median (this.Millis, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -3178,9 +3176,10 @@ classdef duration
     ##
     ## @end deftypefn
     function [this, F, C] = mode (this, varargin)
-      [this.Days, F, C] = mode (this.Days, varargin{:});
+      [this.Millis, F, C] = mode (this.Millis, varargin{:});
       if (nargout == 3)
-        C = cellfun ('days', C, 'UniformOutput', false);
+        ## C holds stored values, which are milliseconds.
+        C = cellfun ('milliseconds', C, 'UniformOutput', false);
       endif
     endfunction
 
@@ -3200,7 +3199,7 @@ classdef duration
     ##
     ## @end deftypefn
     function this = prctile (this, varargin)
-      this.Days = prctile (this.Days, varargin{:});
+      this.Millis = prctile (this.Millis, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -3221,7 +3220,7 @@ classdef duration
     ##
     ## @end deftypefn
     function this = quantile (this, varargin)
-      this.Days = quantile (this.Days, varargin{:});
+      this.Millis = quantile (this.Millis, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -3239,7 +3238,7 @@ classdef duration
     ##
     ## @end deftypefn
     function this = range (this, varargin)
-      this.Days = range (this.Days, varargin{:});
+      this.Millis = range (this.Millis, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -3261,7 +3260,7 @@ classdef duration
       if (! isduration (this) || ! isduration (A))
         error ("duration.rmse: both F and A must be duration arrays.");
       endif
-      this.Days = rmse (this.Days, A.Days, varargin{:});
+      this.Millis = rmse (this.Millis, A.Millis, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -3282,7 +3281,7 @@ classdef duration
     ##
     ## @end deftypefn
     function y = skewness (D, varargin)
-      y = skewness (D.Days, varargin{:});
+      y = skewness (D.Millis, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -3304,11 +3303,11 @@ classdef duration
     function varargout = std (this, varargin)
       if (nargout > 1)
         M = this;
-        [this.Days, M.Days] = std (this.Days, varargin{:});
+        [this.Millis, M.Millis] = std (this.Millis, varargin{:});
         varargout{1} = this;
         varargout{2} = M;
       else
-        this.Days = std (this.Days, varargin{:});
+        this.Millis = std (this.Millis, varargin{:});
         varargout{1} = this;
       endif
     endfunction
@@ -3365,7 +3364,7 @@ classdef duration
       if (nargin < 2)
         error ("duration.discretize: not enough input arguments.");
       endif
-      xv = this.Days(:) * 86400;
+      xv = this.Millis(:) / 1000;
       [ev, isCount] = durbinedges (xv, arg2, 'duration.discretize');
       EDGES = seconds (ev);
       EDGES.Format = this.Format;
@@ -3374,7 +3373,7 @@ classdef duration
       endif
 
       ## Delegate the assignment and the value mapping to the numeric function
-      [BIN, ~] = discretize (reshape (xv, size (this.Days)), ev, varargin{:});
+      [BIN, ~] = discretize (reshape (xv, size (this.Millis)), ev, varargin{:});
 
     endfunction
 
@@ -3413,11 +3412,11 @@ classdef duration
     ## @end deftypefn
     function [N, EDGES, BIN] = histcounts (this, varargin)
 
-      xv = this.Days(:) * 86400;
+      xv = this.Millis(:) / 1000;
       args = durhistargs (varargin, xv, 'duration.histcounts');
       if (nargout > 2)
         [N, ev, BIN] = histcounts (xv, args{:});
-        BIN = reshape (BIN, size (this.Days));
+        BIN = reshape (BIN, size (this.Millis));
       else
         [N, ev] = histcounts (xv, args{:});
       endif
@@ -3479,7 +3478,7 @@ classdef duration
       if (nargin < 2)
         error ("duration.maxk: too few input arguments.");
       endif
-      [index, lidx, errmsg] = __minmaxk__ (A.Days, K, true, varargin);
+      [index, lidx, errmsg] = __minmaxk__ (A.Millis, K, true, varargin);
       if (! isempty (errmsg))
         error ("duration.maxk: %s", errmsg);
       endif
@@ -3524,7 +3523,7 @@ classdef duration
       if (nargin < 2)
         error ("duration.mink: too few input arguments.");
       endif
-      [index, lidx, errmsg] = __minmaxk__ (A.Days, K, false, varargin);
+      [index, lidx, errmsg] = __minmaxk__ (A.Millis, K, false, varargin);
       if (! isempty (errmsg))
         error ("duration.mink: %s", errmsg);
       endif
@@ -3627,7 +3626,7 @@ classdef duration
       endif
 
       ## Apply comparison method (Octave specific)
-      data = A.Days;
+      data = A.Millis;
       if (strcmp (CM, 'abs'))
         data = abs (data);
       endif
@@ -3820,7 +3819,7 @@ classdef duration
       endif
 
       ## Apply comparison method (Octave specific)
-      data = A.Days;
+      data = A.Millis;
       if (strcmp (CM, 'abs'))
         data = abs (data);
       endif
@@ -4012,7 +4011,7 @@ classdef duration
       if (any (strcmp ('legacy', varargin)))
         error ("duration.unique: 'legacy' option is not supported.");
       endif
-      [this.Days, ixA, ixB] = __unique__ (this.Days, varargin{:});
+      [this.Millis, ixA, ixB] = __unique__ (this.Millis, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -4099,7 +4098,7 @@ classdef duration
         endif
         if (isduration (X))
           YI = duration ('Format', X.Format);
-          YI.Days = interp1 (X.Days, Y);
+          YI.Millis = interp1 (X.Millis, Y);
         else
           YI = interp1 (X, Y);
         endif
@@ -4159,19 +4158,21 @@ classdef duration
               error (strcat ("duration.interp1: EXTRAPOLATION scalar", ...
                              " value must match Y."));
             elseif (ExtDur)
-              varargin{extrap} = days (tmp);
+              ## This branch interpolates the stored milliseconds, so the
+              ## extrapolation scalar has to be given in them too.
+              varargin{extrap} = milliseconds (tmp);
             endif
           endif
           if (Y_isDur)
             YI = duration ('Format', Y.Format);
             if (X_isDur)
-              YI.Days = interp1 (X.Days, Y.Days, XI.Days, varargin{:});
+              YI.Millis = interp1 (X.Millis, Y.Millis, XI.Millis, varargin{:});
             else
-              YI.Days = interp1 (X, Y.Days, XI, varargin{:});
+              YI.Millis = interp1 (X, Y.Millis, XI, varargin{:});
             endif
             YI = fix_zero_precision (YI);
           elseif (isnumeric (Y))
-            YI = interp1 (X.Days, Y, XI.Days, varargin{:});
+            YI = interp1 (X.Millis, Y, XI.Millis, varargin{:});
           else
             error ("duration.interp1: Y must be a duration or numeric array.");
           endif
@@ -4231,7 +4232,7 @@ classdef duration
         error (strcat ("duration.intersect: set operation not defined", ...
                        " between '%s' and '%s' arrays."), class (A), class (B));
       endif
-      [C.Days, ixA, ixB] = intersect (A.Days, B.Days, varargin{:});
+      [C.Millis, ixA, ixB] = intersect (A.Millis, B.Millis, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -4284,7 +4285,7 @@ classdef duration
         error (strcat ("duration.setdiff: set operation not defined", ...
                        " between '%s' and '%s' arrays."), class (A), class (B));
       endif
-      [C.Days, index] = setdiff (A.Days, B.Days, varargin{:});
+      [C.Millis, index] = setdiff (A.Millis, B.Millis, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -4339,7 +4340,7 @@ classdef duration
         error (strcat ("duration.setxor: set operation not defined", ...
                        " between '%s' and '%s' arrays."), class (A), class (B));
       endif
-      [C.Days, ixA, ixB] = setxor (A.Days, B.Days, varargin{:});
+      [C.Millis, ixA, ixB] = setxor (A.Millis, B.Millis, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -4394,7 +4395,7 @@ classdef duration
         error (strcat ("duration.union: set operation not defined", ...
                        " between '%s' and '%s' arrays."), class (A), class (B));
       endif
-      [C.Days, ixA, ixB] = union (A.Days, B.Days, varargin{:});
+      [C.Millis, ixA, ixB] = union (A.Millis, B.Millis, varargin{:});
     endfunction
 
   endmethods
@@ -4450,8 +4451,8 @@ classdef duration
         idx = find (cellfun ('isduration', varargin), 1);
         fmt = varargin{idx}.Format;
         out = duration ('Format', fmt);
-        days = cellfun (@(obj) obj.Days, args, 'UniformOutput', false);
-        out.Days = cat (dim, days{:});
+        mils = cellfun (@(obj) obj.Millis, args, 'UniformOutput', false);
+        out.Millis = cat (dim, mils{:});
       endif
     endfunction
 
@@ -4514,7 +4515,7 @@ classdef duration
     ##
     ## @end deftypefn
     function this = repmat (this, varargin)
-      this.Days = repmat (this.Days, varargin{:});
+      this.Millis = repmat (this.Millis, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -4542,7 +4543,7 @@ classdef duration
     ##
     ## @end deftypefn
     function this = repelem (this, varargin)
-      this.Days = repelem (this.Days, varargin{:});
+      this.Millis = repelem (this.Millis, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -4559,7 +4560,7 @@ classdef duration
     ##
     ## @end deftypefn
     function this = repelems (this, R)
-      this.Days = repelems (this.Days, R);
+      this.Millis = repelems (this.Millis, R);
     endfunction
 
     ## -*- texinfo -*-
@@ -4584,7 +4585,7 @@ classdef duration
     ##
     ## @end deftypefn
     function this = reshape (this, varargin)
-      this.Days = reshape (this.Days, varargin{:});
+      this.Millis = reshape (this.Millis, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -4609,7 +4610,7 @@ classdef duration
     ##
     ## @end deftypefn
     function this = circshift (this, varargin)
-      this.Days = circshift (this.Days, varargin{:});
+      this.Millis = circshift (this.Millis, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -4628,7 +4629,7 @@ classdef duration
     ##
     ## @end deftypefn
     function this = permute (this, order)
-      this.Days = permute (this.Days, order);
+      this.Millis = permute (this.Millis, order);
     endfunction
 
     ## -*- texinfo -*-
@@ -4648,7 +4649,7 @@ classdef duration
     ##
     ## @end deftypefn
     function this = ipermute (this, order)
-      this.Days = ipermute (this.Days, order);
+      this.Millis = ipermute (this.Millis, order);
     endfunction
 
     ## -*- texinfo -*-
@@ -4662,7 +4663,7 @@ classdef duration
     ##
     ## @end deftypefn
     function this = transpose (this)
-      this.Days = transpose (this.Days);
+      this.Millis = transpose (this.Millis);
     endfunction
 
     ## -*- texinfo -*-
@@ -4677,7 +4678,7 @@ classdef duration
     ##
     ## @end deftypefn
     function this = ctranspose (this)
-      this.Days = ctranspose (this.Days);
+      this.Millis = ctranspose (this.Millis);
     endfunction
 
   endmethods
@@ -4713,7 +4714,7 @@ classdef duration
       switch (s.type)
         case '()'
           out = this;
-          out.Days = this.Days(s.subs{:});
+          out.Millis = this.Millis(s.subs{:});
 
         case '{}'
           error (strcat ("duration.subsref: '{}' invalid indexing", ...
@@ -4745,18 +4746,20 @@ classdef duration
       switch (s.type)
         case '()'
           if (isempty (val))
-            this.Days(s.subs{:}) = [];
+            this.Millis(s.subs{:}) = [];
           elseif (isa (val, 'missing'))
-            this.Days(s.subs{:}) = NaN;
+            this.Millis(s.subs{:}) = NaN;
           elseif (iscellstr (val) || ischar (val) || isstring (val))
             if (! iscellstr (val))
               val = cellstr (val);
             endif
-            this.Days(s.subs{:}) = timestrings2days (val, []);
+            this.Millis(s.subs{:}) = timestrings2millis (val, []);
           elseif (isnumeric (val))
-            this.Days(s.subs{:}) = double (val);
+            ## A bare number counts days, as it does everywhere else a
+            ## duration meets one.
+            this.Millis(s.subs{:}) = double (val) * 86400000;
           elseif (isa (val, "duration"))
-            this.Days(s.subs{:}) = val.Days;
+            this.Millis(s.subs{:}) = val.Millis;
           else
             error (strcat ("duration.subsasgn: assignment value must", ...
                            " be a duration array, a numeric array of", ...
@@ -4800,12 +4803,12 @@ classdef duration
     ## Return a subset of a duration array
     function out = subset (this, varargin)
       out = this;
-      out.Days = this.Days(varargin{:});
+      out.Millis = this.Millis(varargin{:});
     endfunction
 
     ## Fix floating point precision near zero
     function this = fix_zero_precision (this)
-      this.Days(this.Days > -1e-15 & this.Days < 1e-15) = 0;
+      this.Millis(this.Millis > -1e-15 & this.Millis < 1e-15) = 0;
     endfunction
 
   endmethods
@@ -4829,12 +4832,12 @@ function varargout = promote (varargin)
 endfunction
 
 ## Parse H, M, S, and MS numeric inputs into days
-function [err, days] = hms2days (H, MI, S, MS = 0)
+function [err, millis] = hms2millis (H, MI, S, MS = 0)
   err = 0;
   if (! isscalar (H) || ! isscalar (MI) || ! isscalar (S) || ! isscalar (MS))
     [err, H, MI, S, MS] = common_size (H, MI, S, MS);
     if (err > 0)
-      days = NaN;
+      millis = NaN;
       return
     endif
   endif
@@ -4842,12 +4845,12 @@ function [err, days] = hms2days (H, MI, S, MS = 0)
   MI = double (MI);
   S = double (S);
   MS = double (MS);
-  days = (H / 24) + (MI / 1440) + (S / 86400) + (MS / 86400000);
+  millis = H * 3600000 + MI * 60000 + S * 1000 + MS;
 endfunction
 
 ## Parse TimeString inputs into days
-function days = timestrings2days (TS, inputFormat)
-  days = NaN (size (TS));
+function millis = timestrings2millis (TS, inputFormat)
+  millis = NaN (size (TS));
   ## Find default format (either 'dd:hh:mm:ss' or 'hh:mm:ss') from 1st element
   if (isempty (inputFormat))
     str1 = TS{1};
@@ -4994,8 +4997,8 @@ function days = timestrings2days (TS, inputFormat)
         MS = 0;
       endif
     endif
-    days(i) = D + (H / 24) + (MI / 1440) + (S / 86400) + (MS / 86400000);
-    days(i) *= pnd_sign;
+    millis(i) = D * 86400000 + H * 3600000 + MI * 60000 + S * 1000 + MS;
+    millis(i) *= pnd_sign;
   endfor
 endfunction
 

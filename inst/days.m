@@ -38,7 +38,7 @@ function out = days (x)
   elseif (! isreal (x))
     error ("days: input array must be real.");
   endif
-  out = duration (double (x) * 24, 0, 0, 'Format', 'd');
+  out = duration (0, 0, 0, double (x) * 86400000, 'Format', 'd');
 endfunction
 
 %!demo

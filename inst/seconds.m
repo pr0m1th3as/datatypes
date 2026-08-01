@@ -38,7 +38,7 @@ function out = seconds (x)
   elseif (! isreal (x))
     error ("seconds: input array must be real.");
   endif
-  out = duration (0, 0, double (x), 'Format', 's');
+  out = duration (0, 0, 0, double (x) * 1000, 'Format', 's');
 endfunction
 
 %!demo

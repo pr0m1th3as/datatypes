@@ -677,11 +677,11 @@
 %! assert_equal (key, uint64 (3011565863366139772));
 %!test
 %! key = keyHash (calendarDuration (0, 0, 0, days ([1, 2, 3])));
-%! assert_equal (key, uint64 (10002591001239839942));
+%! assert_equal (key, uint64 (6673583750979954156));
 %!test
 %! base_key = uint64 (2342124352342344234);
 %! key = keyHash (calendarDuration (0, 0, 0, days ([1, 2, 3])), base_key);
-%! assert_equal (key, uint64 (2231107818551636405));
+%! assert_equal (key, uint64 (17128873702567354935));
 %!error<calendarDuration.keyHash: BASE must be a UINT64 scalar.> ...
 %! keyHash (calendarDuration (0, 0, 0), uint64 ([1, 2]))
 %!error<calendarDuration.keyHash: BASE must be a UINT64 scalar.> ...
