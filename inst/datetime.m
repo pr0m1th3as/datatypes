@@ -7157,12 +7157,20 @@ function edges = dtBinEdgesGrid (xmin, xmax, nbins, ser2cal, cal2ser, ...
     return;
   endif
 
-  ## Fixed units: one hour, one minute, one second.
+  ## Fixed units: one hour, one minute, one second.  These are anchored on the
+  ## LOCAL clock -- the midnight of the day holding XMIN -- and then stepped by
+  ## a fixed span of seconds.  Flooring XMIN itself would anchor on absolute
+  ## time, which lands the edges on the half hour in a zone offset by one
+  ## (Asia/Kolkata, +05:30) and moves them off local midnight everywhere else.
+  ## The two agree for a whole-hour zone with no transition in range, which is
+  ## why every earlier probe missed it.
+  [yA, mA, dA] = ser2cal (xmin);
+  origin = cal2ser (yA, mA, dA);
   for g = [3600, 60, 1]
-    nLo = floor (xmin / g);
-    idx = dtBinGridIndex (floor (xmax / g) - nLo, nbins);
+    nLo = floor ((xmin - origin) / g);
+    idx = dtBinGridIndex (floor ((xmax - origin) / g) - nLo, nbins);
     if (! isempty (idx))
-      edges = g * (nLo + idx);
+      edges = origin + g * (nLo + idx);
       return;
     endif
   endfor
@@ -7318,7 +7326,11 @@ function ev = dtUnitBinEdges (xf, spec, s2c, c2s, scope)
 
   switch (kind)
     case 'fixed'
-      left = step * floor (lo / step);
+      ## Anchored on local midnight, then stepped by a fixed span of seconds;
+      ## see the note in dtBinEdgesGrid.
+      [yA, mA, dA] = s2c (lo);
+      origin = c2s (yA, mA, dA);
+      left = origin + step * floor ((lo - origin) / step);
       n = floor ((hi - left) / step) + 1;
       ev = left + (0:n) * step;
 
