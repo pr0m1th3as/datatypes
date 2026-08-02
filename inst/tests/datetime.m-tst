@@ -5663,6 +5663,74 @@
 %! assert_equal (MI(:).', [0, 0, 30]);
 %! assert_equal (hours (diff (e)), [6, 6]);
 
+## Test 'ConvertFrom' -- the six conversions that 'convertTo' performs and the
+## constructor could not invert.  Tick zero of each scale, captured from R2024a.
+%!test
+%! [Y, M, D] = ymd (datetime (0, 'ConvertFrom', 'excel1904'));
+%! assert_equal ([Y, M, D], [1904, 1, 1]);
+%!test
+%! [Y, M, D] = ymd (datetime (0, 'ConvertFrom', 'juliandate'));
+%! [h, m, s] = hms (datetime (0, 'ConvertFrom', 'juliandate'));
+%! assert_equal ([Y, M, D, h, m, s], [-4713, 11, 24, 12, 0, 0]);
+%!test
+%! [Y, M, D] = ymd (datetime (0, 'ConvertFrom', 'modifiedjuliandate'));
+%! assert_equal ([Y, M, D], [1858, 11, 17]);
+
+## Test 'ConvertFrom' -- each new conversion inverts 'convertTo' of the same
+## name.  Reference values captured from R2024a for 2024-03-15T12:34:56.789Z.
+%!test
+%! t = datetime (2024, 3, 15, 12, 34, 56, 'TimeZone', 'UTC') + milliseconds (789);
+%! assert_equal (convertTo (t, 'excel1904'), 43904.52426839120017, 1e-9);
+%! assert_equal (convertTo (t, 'juliandate'), 2460385.024268391076, 1e-9);
+%! assert_equal (convertTo (t, 'ntfs'), uint64 (133549796967890000));
+%! for f = {'excel1904', 'juliandate', 'modifiedjuliandate', 'ntp', 'ntfs', '.net'}
+%!   r = datetime (convertTo (t, f{1}), 'ConvertFrom', f{1}, 'TimeZone', 'UTC');
+%!   assert_equal (posixtime (r), posixtime (t), 1e-4);
+%! endfor
+
+## Test 'ConvertFrom' -- the fixed-epoch counts require uint64, as MATLAB
+## requires, rather than rounding a double: an NTP stamp runs past the 2^53 a
+## double holds exactly.
+%!error <datetime: input for converting from NTP times must be uint64.> ...
+%! datetime (0, 'ConvertFrom', 'ntp')
+%!error <datetime: input for converting from NTFS times must be uint64.> ...
+%! datetime (0, 'ConvertFrom', 'ntfs')
+%!error <datetime: input for converting from .NET times must be uint64.> ...
+%! datetime (0, 'ConvertFrom', '.net')
+
+## Test 'ConvertFrom' -- a conversion that folded an inserted leap second away
+## cannot recover it and returns the preceding second, while the Julian scales
+## measure against the day's own length and do return 23:59:60.  Values
+## captured from R2024a, except the Julian scales on the leap day, where
+## MATLAB does not invert its own convertTo -- see the deviation note in the
+## datetime docstring.
+%!test
+%! t = datetime (2016, 12, 31, 23, 59, 59, 'TimeZone', 'UTCLeapSeconds') ...
+%!     + seconds ([0 1 2]);
+%! for f = {'ntp', 'ntfs', '.net', 'excel1904'}
+%!   r = datetime (convertTo (t, f{1}), 'ConvertFrom', f{1}, ...
+%!                 'TimeZone', 'UTCLeapSeconds');
+%!   [~, ~, ~, ~, ~, sec] = datevec (r);
+%!   assert_equal (round (sec(:).'), [59, 59, 0]);
+%! endfor
+%!test
+%! t = datetime (2016, 12, 31, 23, 59, 59, 'TimeZone', 'UTCLeapSeconds') ...
+%!     + seconds ([0 1 2]);
+%! r = datetime (convertTo (t, 'modifiedjuliandate'), 'ConvertFrom', ...
+%!               'modifiedjuliandate', 'TimeZone', 'UTCLeapSeconds');
+%! [~, ~, ~, ~, ~, sec] = datevec (r);
+%! assert_equal (sec(1:2).', [59, 60], 1e-4);
+
+## Test 'ConvertFrom' -- the Modified Julian scale is counted from its own
+## epoch, not by subtracting 2400000.5 from the Julian one, which would lose
+## about 14 microseconds to cancellation.  The round-trip is exact.
+%!test
+%! t = datetime (2024, 11, 3, 5, 30, 0, 'TimeZone', 'UTC');
+%! assert_equal (convertTo (t, 'modifiedjuliandate'), 40587 + 1730611800 / 86400, 0);
+%! r = datetime (convertTo (t, 'modifiedjuliandate'), 'ConvertFrom', ...
+%!               'modifiedjuliandate', 'TimeZone', 'UTC');
+%! assert_equal (posixtime (r), posixtime (t), 0);
+
 ## Restore whatever default formats the user had before this file ran.
 %!test
 %! datetime.setDefaultFormats ('reset');

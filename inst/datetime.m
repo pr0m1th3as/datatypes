@@ -508,12 +508,43 @@ classdef datetime
     ## @itemize
     ## @item @qcode{'datenum'}
     ## @item @qcode{'excel'}
+    ## @item @qcode{'excel1904'}
     ## @item @qcode{'posixtime'}
     ## @item @qcode{'epochtime'}
+    ## @item @qcode{'juliandate'}
+    ## @item @qcode{'modifiedjuliandate'}
     ## @item @qcode{'yyyymmdd'}
+    ## @item @qcode{'ntp'} -- requires @code{uint64} input.
+    ## @item @qcode{'ntfs'} -- requires @code{uint64} input.
+    ## @item @qcode{'.net'} -- requires @code{uint64} input.
     ## @item @qcode{'tt2000'} -- requires @code{int64} input and the
     ## @qcode{'UTCLeapSeconds'} time zone (see @code{convertTo}).
     ## @end itemize
+    ##
+    ## Each is the inverse of the @code{convertTo} conversion of the same name
+    ## and treats an inserted leap second the way that conversion does, so the
+    ## two round-trip.  Where the conversion folded the inserted second away --
+    ## @qcode{'datenum'}, @qcode{'excel'}, @qcode{'excel1904'},
+    ## @qcode{'epochtime'}, @qcode{'ntp'}, @qcode{'ntfs'} and @qcode{'.net'}
+    ## all do -- it cannot be recovered and the preceding second is returned,
+    ## just as those conversions give the two instants of a repeated wall clock
+    ## the same value.  The Julian scales measure the fraction of a day against
+    ## that day's own length and so keep an inserted second, returning
+    ## @code{23:59:60} where one was given.  A Julian day number is a large one
+    ## and a double holds it to about 40 microseconds at present-day dates,
+    ## which bounds the accuracy of @qcode{'juliandate'} in both directions;
+    ## @qcode{'modifiedjuliandate'} counts from a nearer epoch and is some
+    ## forty times finer.
+    ##
+    ## @strong{Deviation from MATLAB.}  For a @qcode{'UTCLeapSeconds'} array,
+    ## MATLAB's @qcode{'juliandate'} does not invert its own
+    ## @code{convertTo (@var{T}, 'juliandate')}: it returns an instant half a
+    ## second later than the one it was given, on the day of an inserted second
+    ## and for every element of it.  Its @qcode{'modifiedjuliandate'} inverts
+    ## correctly over the same day, so the two disagree with each other as well.
+    ## The conversion here inverts exactly, in both scales.  This is the same
+    ## half-day slip already documented for @qcode{'tt2000'} between 1960 and
+    ## 1972 in @code{convertTo}.
     ##
     ## @code{@var{T} = datetime (@var{D})}, where @var{D} is already a datetime
     ## array, copies it: the components, the @code{TimeZone} and the
@@ -651,11 +682,32 @@ classdef datetime
                        " or a character vector."));
       endif
 
+      ## Six conversions that 'convertTo' performs are inverted in M-code.
+      ## Five of them reduce exactly to a conversion the builtin already does,
+      ## so they are rewritten into it here, ahead of the check below, and take
+      ## that path unchanged: the fixed-epoch counts become POSIX seconds and
+      ## the 1904 Excel date a serial date number.  Only the two Julian scales
+      ## in the leap-second zone cannot be rewritten -- a stretched Julian day
+      ## can name an inserted second and neither POSIX time nor a date number
+      ## can -- so those keep a branch of their own further down.
+      leapJulian = false;
+      if (! isempty (ConvertFrom) && dtIsTextScalar (ConvertFrom))
+        cf = lower (char (ConvertFrom));
+        if (any (strcmp (cf, {'juliandate', 'modifiedjuliandate'}))
+            && dtIsLeapZone (TimeZone))
+          leapJulian = true;
+        elseif (any (strcmp (cf, {'excel1904', 'juliandate', ...
+                                  'modifiedjuliandate', 'ntp', 'ntfs', ...
+                                  '.net'})))
+          [args{1}, ConvertFrom] = dtEpochAlias (args{1}, cf);
+        endif
+      endif
+
       ## Check optional 'Format' and 'InputFormat' arguments.  'yyyymmdd' and
       ## 'tt2000' are handled in M-code below, so they bypass the builtin
-      ## ConvertFrom check.
-      if (! isempty (ConvertFrom) && ! any (strcmpi (ConvertFrom, ...
-                                                    {'yyyymmdd', 'tt2000'})))
+      ## ConvertFrom check, as does a Julian scale in the leap-second zone.
+      if (! isempty (ConvertFrom) && ! leapJulian
+          && ! any (strcmpi (ConvertFrom, {'yyyymmdd', 'tt2000'})))
         ## Call __datetime__ to check for valid ConvertFrom string and
         ## data input
         [~,~,~,~,~,~,errmsg] = __datetime__ (args{:}, 'ConvertFrom', ...
@@ -914,6 +966,22 @@ classdef datetime
         endif
         [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
          this.Second] = dtLeapComponents (dtTT20002Serial (x));
+      elseif (leapJulian)
+        ## A Julian day of the leap-second zone measures the fraction of the
+        ## day that has run against that day's OWN length, 86401 seconds where
+        ## a second was inserted, so the scale can name 23:59:60 and inverting
+        ## it recovers that second.  The two scales do not share a day: a
+        ## Julian day runs noon to noon and a Modified Julian day midnight to
+        ## midnight, so on a day holding a leap second they divide different
+        ## spans by different lengths and are NOT 2400000.5 apart.  Going
+        ## through one to reach the other would introduce half a second.
+        x = args{1};
+        if (! isnumeric (x))
+          error ("datetime: '%s' input must be numeric.", lower (ConvertFrom));
+        endif
+        [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
+         this.Second] = dtLeapComponents (dtJulian2Serial (double (x), ...
+                          strcmpi (ConvertFrom, 'modifiedjuliandate')));
       elseif (! isempty (ConvertFrom) && ! isempty (TimeZone))
         if (strcmpi (ConvertFrom, 'posixtime'))
           ## POSIX time is an absolute UTC instant, so read it as a UTC wall
@@ -1803,9 +1871,17 @@ classdef datetime
       endif
       ## Julian date of the Unix epoch (1970-01-01 00:00 UTC) is 2440587.5; the
       ## POSIX instant places the array on the absolute UTC timeline.
-      out = posixtime (this) / 86400 + 2440587.5;
+      ## Each scale counts from its own epoch.  Reaching the Modified scale by
+      ## subtracting 2400000.5 from the other loses about 14 microseconds to
+      ## cancellation, the Julian day number being large enough to eat the
+      ## fraction's last digits, so the two are counted separately here.  Away
+      ## from the leap-second zone the scales do share a day and the constant
+      ## relates them exactly; on a day holding an inserted second they do not,
+      ## which is the same reason the inverse keeps them apart.
       if (strcmpi (dateType, 'modifiedjuliandate'))
-        out -= 2400000.5;
+        out = posixtime (this) / 86400 + 40587;
+      else
+        out = posixtime (this) / 86400 + 2440587.5;
       endif
     endfunction
 
@@ -7344,6 +7420,98 @@ function out = dtFixedEpoch (posix, kind)
   out = uint64 (secWhole) .* uint64 (scale) + uint64 (frac);
 endfunction
 
+
+## Rewrite one of the five invertible 'convertTo' counts into the conversion
+## the builtin already performs, returning the value and the name of that
+## conversion.  Each is the exact inverse of the forward direction, so the pair
+## round-trips: the Julian scales are instant-based away from the leap-second
+## zone (where 'juliandate' is posixtime / 86400 + 2440587.5, and the Modified
+## scale exactly 2400000.5 less, the two sharing a day there), and the 1904
+## Excel date is a serial date number counted from 1904-01-01.
+function [v, alias] = dtEpochAlias (x, kind)
+
+  if (! isnumeric (x) && ! islogical (x))
+    if (any (strcmp (kind, {'ntp', 'ntfs', '.net'})))
+      v = dtFixedEpochInv (x, kind);   # raises the type error for us
+    endif
+    error ("datetime: '%s' input must be numeric.", kind);
+  endif
+
+  switch (kind)
+    case 'excel1904'
+      v = double (x) + datenum (1904, 1, 1);
+      alias = 'datenum';
+    case 'juliandate'
+      v = (double (x) - 2440587.5) * 86400;
+      alias = 'posixtime';
+    case 'modifiedjuliandate'
+      ## Counted from its own epoch rather than through the Julian one, for
+      ## the reason given in 'juliandate'.
+      v = (double (x) - 40587) * 86400;
+      alias = 'posixtime';
+    otherwise
+      v = dtFixedEpochInv (x, kind);
+      alias = 'posixtime';
+  endswitch
+
+endfunction
+
+## Inverse of 'dtFixedEpoch': read an NTP, NTFS or .NET count back into POSIX
+## seconds.  MATLAB requires the unsigned 64-bit type rather than rounding a
+## double, and so do we: an NTP stamp runs to 1.7e19, far past the 2^53 a
+## double holds exactly, so the whole and fractional parts are separated in
+## integer arithmetic before either becomes a double.  The whole seconds are
+## under 2^36 once the epoch is removed, well inside a double.
+function p = dtFixedEpochInv (x, kind)
+
+  switch (kind)
+    case 'ntp'
+      offset = 2208988800;   scale = 4294967296;  tname = 'NTP';
+    case 'ntfs'
+      offset = 11644473600;  scale = 10000000;    tname = 'NTFS';
+    case '.net'
+      offset = 62135596800;  scale = 10000000;    tname = '.NET';
+  endswitch
+
+  if (! isa (x, 'uint64'))
+    error (strcat ("datetime: input for converting from %s times must be", ...
+                   " uint64."), tname);
+  endif
+
+  whole = idivide (x, uint64 (scale), 'floor');
+  frac = double (x - whole * uint64 (scale));
+  p = (double (whole) - offset) + frac / scale;
+
+endfunction
+
+## Inverse of 'dtLeapJulian': read a Julian or Modified Julian day of the
+## leap-second zone back into a serial.  DOMODIFIED selects the scale, which
+## fixes both the epoch and the hour the day opens at -- midnight for the
+## Modified scale, noon for the other.  The fraction is taken against the
+## day's own length, so an inserted second inside that day is recovered rather
+## than folded away, which is what lets this scale name 23:59:60.
+function ser = dtJulian2Serial (val, doModified)
+
+  dayNum = floor (val);
+  frac = val - dayNum;
+  if (doModified)
+    dn = dayNum - 40587 + datenum (1970, 1, 1);
+    hourOfDay = 0;
+  else
+    dn = dayNum - 2440588 + datenum (1970, 1, 1);
+    hourOfDay = 12;
+  endif
+
+  [Y, M, D] = datevec (dn);
+  Y = reshape (Y, size (val));
+  M = reshape (M, size (val));
+  D = reshape (D, size (val));
+  z = zeros (size (val));
+  dayStart = dtLeapSerial (Y, M, D, hourOfDay + z, z, z);
+  dayLen = dtLeapSerial (Y, M, D + 1, hourOfDay + z, z, z) - dayStart;
+  ser = dayStart + frac .* dayLen;
+
+endfunction
 
 ## Bin edges for a requested bin count, snapped to whole calendar or clock
 ## units.  XMIN, XMAX and the result all count seconds on the 'serial'
