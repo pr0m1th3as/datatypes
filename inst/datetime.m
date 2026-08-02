@@ -4047,6 +4047,14 @@ classdef datetime
     ## @qcode{'sqrt'}, which resolve to one.  An explicit @qcode{'BinWidth'} or
     ## a named unit is placed identically to MATLAB in every zone.
     ##
+    ## A bin width below a second carries a little noise in its edges.  An
+    ## instant is counted in seconds from 1970 and so runs to about 1.7e9, where
+    ## a double resolves to some 2e-7 of a second; a width of, say, 0.4 s
+    ## therefore lands its edges within a few hundred nanoseconds of the exact
+    ## grid rather than on it.  The opening edge is exact, the drift is in the
+    ## step, and it is a limit of the representation rather than of the
+    ## placement.
+    ##
     ## When @var{T} is empty the edges are anchored on the epoch,
     ## @qcode{1970-01-01}.  This is @strong{deliberately unlike MATLAB}, which
     ## answers an empty @qcode{datetime} with edges taken from the current
@@ -4148,6 +4156,14 @@ classdef datetime
     ## gets a bin of its own, so @var{N} always sums to the number of finite
     ## elements.  MATLAB can leave such an element out of every bin, and its
     ## counts then sum to less.
+    ##
+    ## A bin width below a second carries a little noise in its edges.  An
+    ## instant is counted in seconds from 1970 and so runs to about 1.7e9, where
+    ## a double resolves to some 2e-7 of a second; a width of, say, 0.4 s
+    ## therefore lands its edges within a few hundred nanoseconds of the exact
+    ## grid rather than on it.  The opening edge is exact, the drift is in the
+    ## step, and it is a limit of the representation rather than of the
+    ## placement.
     ##
     ## @seealso{discretize, histcounts}
     ## @end deftypefn
