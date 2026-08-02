@@ -521,6 +521,25 @@ classdef datetime
     ## @qcode{'UTCLeapSeconds'} time zone (see @code{convertTo}).
     ## @end itemize
     ##
+    ## @qcode{'Epoch'} (a scalar datetime marking tick zero, default
+    ## @code{1970-01-01}) and @qcode{'TicksPerSecond'} (a positive scalar,
+    ## default @code{1}) bear on @qcode{'epochtime'} alone; they are accepted
+    ## alongside any other conversion and ignored, each of the others counting
+    ## from an epoch of its own.
+    ##
+    ## Whether the count measures @strong{elapsed} or @strong{wall-clock} time
+    ## follows from the epoch.  When the epoch and @qcode{'TimeZone'} are
+    ## @emph{both} zoned the count is elapsed time from a known instant, so
+    ## @code{datetime (@var{X}, 'ConvertFrom', 'epochtime', 'Epoch',
+    ## datetime (1970, 1, 1, 'TimeZone', 'UTC'), 'TimeZone', @var{Z})} agrees
+    ## with @qcode{'posixtime'}.  Otherwise the epoch is a wall clock, its zone
+    ## dropped if it had one, and so is the count -- which is why the
+    ## @strong{default} does not agree with @qcode{'posixtime'}: its epoch is
+    ## unzoned, so @code{1730611800} names 05:30 on the local clock of whatever
+    ## zone is asked for rather than the instant 05:30 UTC.  That is not an
+    ## inconsistency but the meaning of an epoch-relative count, and MATLAB
+    ## reads it the same way.
+    ##
     ## Each is the inverse of the @code{convertTo} conversion of the same name
     ## and treats an inserted leap second the way that conversion does, so the
     ## two round-trip.  Where the conversion folded the inserted second away --
@@ -535,6 +554,17 @@ classdef datetime
     ## which bounds the accuracy of @qcode{'juliandate'} in both directions;
     ## @qcode{'modifiedjuliandate'} counts from a nearer epoch and is some
     ## forty times finer.
+    ##
+    ## @strong{Deviation from MATLAB.}  For a @qcode{'UTCLeapSeconds'} array,
+    ## @qcode{'epochtime'} given an @qcode{'Epoch'} counts both operands on the
+    ## same timeline here, while MATLAB folds the array onto the POSIX one and
+    ## measures the epoch on the leap-second one, so its answer runs long by the
+    ## seconds inserted before that epoch: counting @code{86399} from
+    ## @code{2016-12-31} it returns @code{2017-01-01T00:00:25}, 26 seconds past
+    ## the @code{23:59:59} that both consistent readings give.  This is the same
+    ## inconsistency already documented for @code{convertTo} in the other
+    ## direction, and inverting it the same way is what makes the pair
+    ## round-trip.
     ##
     ## @strong{Deviation from MATLAB.}  For a @qcode{'UTCLeapSeconds'} array,
     ## MATLAB's @qcode{'juliandate'} does not invert its own
@@ -625,10 +655,11 @@ classdef datetime
       endif
 
       ## Parse optional Name-Value paired arguments
-      optNames = {'ConvertFrom', 'Format', 'InputFormat', 'Locale', ...
-                  'MixedFormats', 'PivotYear', 'TimeZone'};
-      dfValues = {[], [], [], [], false, [], []};
-      [ConvertFrom, Format, inputFormat, Locale, MixedFormats, PivotYear, ...
+      optNames = {'ConvertFrom', 'Epoch', 'Format', 'InputFormat', 'Locale', ...
+                  'MixedFormats', 'PivotYear', 'TicksPerSecond', 'TimeZone'};
+      dfValues = {[], [], [], [], [], false, [], [], []};
+      [ConvertFrom, Epoch, Format, inputFormat, Locale, MixedFormats, ...
+       PivotYear, TicksPerSecond, ...
        TimeZone, args] = parsePairedArguments (optNames, dfValues, varargin(:));
       if (! ((islogical (MixedFormats) || isnumeric (MixedFormats))
              && isscalar (MixedFormats)))
@@ -690,6 +721,58 @@ classdef datetime
       ## in the leap-second zone cannot be rewritten -- a stretched Julian day
       ## can name an inserted second and neither POSIX time nor a date number
       ## can -- so those keep a branch of their own further down.
+      ## 'Epoch' and 'TicksPerSecond' bear on 'epochtime' alone.  MATLAB accepts
+      ## them alongside any other conversion and quietly ignores them, and so do
+      ## we: each of the others counts from an epoch of its own that the option
+      ## has no business moving.  An epoch of 1970-01-01 with one tick per
+      ## second is what 'epochtime' already assumes, so the default path is left
+      ## exactly as it was and only an explicit option is intercepted here.
+      if (! isempty (Epoch))
+        if (! (isa (Epoch, 'datetime') && isscalar (Epoch)))
+          error ("datetime: 'Epoch' must be a scalar datetime.");
+        endif
+      endif
+      if (! isempty (TicksPerSecond))
+        if (! (isnumeric (TicksPerSecond) && isscalar (TicksPerSecond)
+               && isreal (TicksPerSecond) && isfinite (TicksPerSecond)
+               && TicksPerSecond > 0))
+          error (strcat ("datetime: 'TicksPerSecond' must be a positive", ...
+                         " finite scalar."));
+        endif
+      endif
+      if (! isempty (ConvertFrom) && dtIsTextScalar (ConvertFrom)
+          && strcmpi (char (ConvertFrom), 'epochtime')
+          && (! isempty (Epoch) || ! isempty (TicksPerSecond)))
+        x = args{1};
+        if (! isnumeric (x))
+          error ("datetime: 'epochtime' input must be numeric.");
+        endif
+        secs = double (x);
+        if (! isempty (TicksPerSecond))
+          secs /= double (TicksPerSecond);
+        endif
+        if (isempty (Epoch))
+          Epoch = datetime (1970, 1, 1);
+        endif
+        if (! isempty (Epoch.TimeZone) && ! isempty (TimeZone))
+          ## Both carry a zone, so the count measures ELAPSED time from a known
+          ## instant and the answer is that instant advanced by it.  This is the
+          ## reading that makes an epoch of 1970-01-01 UTC agree with
+          ## 'posixtime'; the wall-clock reading below is why the default,
+          ## whose epoch is unzoned, does not.
+          args{1} = posixtime (Epoch) + secs;
+          ConvertFrom = 'posixtime';
+        else
+          ## Either side unzoned: the epoch is a WALL CLOCK, its zone dropped if
+          ## it had one, and the count is wall-clock time from it.  Shifting the
+          ## count by the epoch's own wall clock leaves the ordinary 'epochtime'
+          ## path, which counts from 1970-01-01, to do the rest.
+          [eY, eM, eD] = ymd (Epoch);
+          [eh, em, es] = hms (Epoch);
+          args{1} = secs + posixtime (datetime (eY, eM, eD, eh, em, es));
+        endif
+      endif
+
       leapJulian = false;
       if (! isempty (ConvertFrom) && dtIsTextScalar (ConvertFrom))
         cf = lower (char (ConvertFrom));

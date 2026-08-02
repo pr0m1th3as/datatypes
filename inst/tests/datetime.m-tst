@@ -5825,6 +5825,71 @@
 %! assert_equal (MI(:).', [0, 0, 20, 20]);
 %! assert_equal (minutes (diff (e)), [180, 180, 180]);
 
+## Test 'ConvertFrom' 'epochtime' -- 'Epoch' and 'TicksPerSecond'.  Whether the
+## count measures elapsed or wall-clock time follows from the epoch: both sides
+## zoned makes it elapsed from a known instant, so a UTC epoch agrees with
+## 'posixtime'; otherwise the epoch is a wall clock, its zone dropped, which is
+## why the default (an unzoned 1970-01-01) does not agree.  Values captured
+## from R2024a.
+%!test
+%! p = 1730611800;
+%! r = datetime (p, 'ConvertFrom', 'epochtime', 'Epoch', ...
+%!               datetime (1970, 1, 1, 'TimeZone', 'UTC'), ...
+%!               'TimeZone', 'America/New_York');
+%! assert_equal (posixtime (r), p);
+%! [H, MI] = hms (r);
+%! assert_equal ([H, MI], [1, 30]);
+%!test
+%! p = 1730611800;
+%! r = datetime (p, 'ConvertFrom', 'epochtime', 'Epoch', ...
+%!               datetime (1970, 1, 1), 'TimeZone', 'America/New_York');
+%! assert_equal (posixtime (r), p + 18000);
+%! [H, MI] = hms (r);
+%! assert_equal ([H, MI], [5, 30]);
+%!test
+%! r = datetime (1730611800, 'ConvertFrom', 'epochtime', 'Epoch', ...
+%!               datetime (2000, 1, 1));
+%! [Y, M, D] = ymd (r);
+%! assert_equal ([Y, M, D], [2054, 11, 3]);
+%!test
+%! r = datetime (1730611800123, 'ConvertFrom', 'epochtime', ...
+%!               'TicksPerSecond', 1000);
+%! assert_equal (posixtime (r), 1730611800.123, 1e-6);
+%!test
+%! r = datetime (1730611800, 'ConvertFrom', 'epochtime', 'Epoch', ...
+%!               datetime (1970, 1, 1, 'TimeZone', 'America/New_York'));
+%! assert_equal (posixtime (r), 1730611800);
+%! assert_equal (isempty (r.TimeZone), true);
+
+## Test 'ConvertFrom' -- 'Epoch' and 'TicksPerSecond' bear on 'epochtime' alone
+## and are ignored by every other conversion, as MATLAB ignores them.
+%!test
+%! r = datetime (739559, 'ConvertFrom', 'datenum', 'Epoch', datetime (1970, 1, 1));
+%! [Y, M, D] = ymd (r);
+%! assert_equal ([Y, M, D], [2024, 11, 3]);
+%!test
+%! r = datetime (1730611800, 'ConvertFrom', 'posixtime', 'TicksPerSecond', 1000);
+%! assert_equal (posixtime (r), 1730611800);
+
+## Test 'ConvertFrom' 'epochtime' -- DELIBERATE DEVIATION on a leap-second
+## array.  Both operands are counted on the same timeline here; MATLAB folds the
+## array onto the POSIX one and the epoch onto the leap-second one, so its
+## answer runs long by the seconds inserted before that epoch -- it returns
+## 2017-01-01T00:00:25 where both consistent readings give 23:59:59.  The
+## mirror of the deviation already documented for convertTo.
+%!test
+%! E = datetime (2016, 12, 31, 'TimeZone', 'UTCLeapSeconds');
+%! r = datetime (int64 (86399), 'ConvertFrom', 'epochtime', 'Epoch', E, ...
+%!               'TimeZone', 'UTCLeapSeconds');
+%! [Y, M, D] = ymd (r);
+%! [H, MI, S] = hms (r);
+%! assert_equal ([Y, M, D, H, MI, S], [2016, 12, 31, 23, 59, 59]);
+
+%!error <datetime: 'Epoch' must be a scalar datetime.> ...
+%! datetime (0, 'ConvertFrom', 'epochtime', 'Epoch', 5)
+%!error <datetime: 'TicksPerSecond' must be a positive finite scalar.> ...
+%! datetime (0, 'ConvertFrom', 'epochtime', 'TicksPerSecond', -1)
+
 ## Restore whatever default formats the user had before this file ran.
 %!test
 %! datetime.setDefaultFormats ('reset');
