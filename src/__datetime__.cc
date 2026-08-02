@@ -54,6 +54,77 @@ auto double2nano (double time_sec)
   return tp;
 }
 
+// A one-entry cache of the last regime found in a zone.  Looking a moment up
+// in the tz database is by far the most expensive thing here -- an order of
+// magnitude more than the component arithmetic around it, which is why a zoned
+// conversion costs so much more than an unzoned one -- and the elements of a
+// datetime array are nearly always close enough together to share a regime, so
+// answering from the cache is what makes a long array cheap.  Each is a local
+// variable of the loop that uses it, so nothing is shared between calls.
+struct sys_cache
+{
+  const time_zone *tz = nullptr;
+  sys_info si;
+  bool valid = false;
+};
+
+// A moment names one regime, so the cached range is exactly the one the
+// database reports and the cache is exact.
+const sys_info&
+cached_sys_info (const time_zone *tz, sys_seconds sys, sys_cache& zc)
+{
+  if (! zc.valid || zc.tz != tz || sys < zc.si.begin || sys >= zc.si.end)
+  {
+    zc.si = tz->get_info (sys);
+    zc.tz = tz;
+    zc.valid = true;
+  }
+  return zc.si;
+}
+
+struct local_cache
+{
+  const time_zone *tz = nullptr;
+  local_info li;
+  chrono::seconds lo{0}, hi{0};
+  bool valid = false;
+};
+
+// A wall clock may name one moment, two, or none, and which of those it is can
+// only be settled near a transition.  The cached answer is therefore kept only
+// for clocks that name one moment, and only over the regime's range pulled in
+// by a wide margin at each end, so anything within two days of a transition
+// goes back to the database.  No transition has ever moved a clock by remotely
+// that much, so the margin cannot hide an ambiguous or skipped clock.
+const local_info&
+cached_local_info (const time_zone *tz, local_time<chrono::microseconds> lt,
+                   local_cache& lc)
+{
+  auto l = chrono::duration_cast<chrono::seconds> (lt.time_since_epoch ());
+  if (lc.valid && lc.tz == tz && l >= lc.lo && l < lc.hi)
+  {
+    return lc.li;
+  }
+  lc.li = tz->get_info (lt);
+  lc.tz = tz;
+  lc.valid = false;
+  if (lc.li.result == local_info::unique)
+  {
+    auto margin = chrono::hours {48};
+    auto lo = lc.li.first.begin.time_since_epoch () + lc.li.first.offset
+              + margin;
+    auto hi = lc.li.first.end.time_since_epoch () + lc.li.first.offset
+              - margin;
+    if (lo < hi)
+    {
+      lc.lo = lo;
+      lc.hi = hi;
+      lc.valid = true;
+    }
+  }
+  return lc.li;
+}
+
 // Resolve a wall-clock (local) time in 'timezone' to a zoned_time, applying
 // MATLAB's rules for the two local times that do not name a unique instant.
 // Where the clock goes back, the repeated hour is ambiguous and MATLAB takes
@@ -126,10 +197,14 @@ RowVector seconds2vector (double time_sec, string precision)
   return OUT;
 }
 
-template <typename ZonedType> RowVector tz2vector (const ZonedType& to, string precision)
+// Components of a bare wall clock.  Split out of 'tz2vector' so that a caller
+// which already holds the local time -- having added a known offset to a moment
+// rather than built a zoned_time -- does not have to look the zone up again to
+// get it back.
+template <typename LocalType> RowVector
+localtime2vector (const LocalType& t_local, string precision)
 {
   RowVector OUT(6);
-  auto t_local = to.get_local_time();
   auto today_local = chrono::floor<days>(t_local);
   hh_mm_ss time_local{t_local - today_local};
   year_month_day date_local{today_local};
@@ -151,18 +226,20 @@ template <typename ZonedType> RowVector tz2vector (const ZonedType& to, string p
   return OUT;
 }
 
-// Convert a single set of (possibly non-canonical) date/time components to a
-// UTC sys_time, interpreting the wall-clock values in 'timezone'.  This mirrors
-// the aggregation/rollover math used by the component-normalisation path below
-// and is shared by the 'ConvertTo','posixtime' serial mode, so both stay in
-// lockstep.  Callers must screen NaN/Inf beforehand.
-// Build a zoned_time from the wall-clock components, interpreting them in
-// 'timezone'.  This is the shared core behind the 'posixtime' serial mode and
-// the 'zoneabbrev' mode, so both stay in lockstep.  Callers must screen
-// NaN/Inf beforehand.
+template <typename ZonedType> RowVector tz2vector (const ZonedType& to, string precision)
+{
+  return localtime2vector (to.get_local_time (), precision);
+}
+
+// Aggregate a single set of (possibly non-canonical) date/time components into
+// a local_time, mirroring the rollover math of the component-normalisation path
+// below so the two stay in lockstep.  No time zone is involved: the result is a
+// bare wall clock, which is what every mode here starts from -- some going
+// on to resolve it against a zone, others already knowing the offset and
+// needing only the arithmetic.  Callers must screen NaN/Inf beforehand.
 auto
-components2zoned (double Yv, double Mv, double Dv, double hv, double mv,
-                  double sv, double xv, string timezone, string precision)
+components2localtime (double Yv, double Mv, double Dv, double hv, double mv,
+                      double sv, double xv, string precision)
 {
   // Aggregate hours, minutes, seconds, and milliseconds into seconds,
   // calculate extra days to add later and map remaining hours, minutes, and
@@ -214,27 +291,119 @@ components2zoned (double Yv, double Mv, double Dv, double hv, double mv,
                                   + chrono::minutes{tmp_m}
                                   + chrono::seconds{tmp_s}
                                   + chrono::microseconds{tmp_micro};
-  return resolve_local (timezone, datetime);
+  return datetime;
 }
 
-// Zone abbreviation (e.g. "EDT", "EST", "UTC") active at the wall-clock
-// components when interpreted in 'timezone'.  Callers must screen NaN/Inf.
-string
-components2abbrev (double Yv, double Mv, double Dv, double hv, double mv,
-                   double sv, double xv, string timezone, string precision)
-{
-  auto in = components2zoned (Yv, Mv, Dv, hv, mv, sv, xv, timezone, precision);
-  return in.get_info ().abbrev;
-}
-
-// True when daylight saving time is in effect at the wall-clock components
-// when interpreted in 'timezone'.  Callers must screen NaN/Inf.
-bool
-components2isdst (double Yv, double Mv, double Dv, double hv, double mv,
+auto
+components2zoned (double Yv, double Mv, double Dv, double hv, double mv,
                   double sv, double xv, string timezone, string precision)
 {
-  auto in = components2zoned (Yv, Mv, Dv, hv, mv, sv, xv, timezone, precision);
-  return in.get_info ().save != chrono::minutes {0};
+  return resolve_local (timezone,
+                        components2localtime (Yv, Mv, Dv, hv, mv, sv, xv,
+                                              precision));
+}
+
+// Everything the daylight-saving questions need about one wall clock, from a
+// SINGLE tz-database lookup.  The database answers by local time, and a local
+// time names one moment, two, or none; 'get_info' reports which, along with the
+// regime on each side, and every question below is then a matter of choosing
+// between them rather than of asking again.
+//
+// CHOSEN is the offset 'resolve_local' would settle on, which is the answer for
+// an array built from a wall clock.  KEPT is SRCOFF where that still names this
+// clock and CHOSEN otherwise, which is how calendar arithmetic and 'dateshift'
+// keep an element on the pass it was already on; passing HAVESRC false asks for
+// CHOSEN alone.  ISDST and ABBREV belong to whichever of the two candidates
+// KEPT names, so they describe the element's own pass rather than the later
+// one -- 'EDT' for the hour that is still on daylight saving and 'EST' for the
+// hour that repeats it.  Reading the flag off the regime is also why this is
+// right where reasoning from "the earlier pass is the daylight one" is not:
+// Ireland's database entries count winter as the saving period.
+//
+// Callers must screen NaN/Inf.
+struct local_fold
+{
+  double chosen;
+  double kept;
+  bool   isdst;
+  string abbrev;
+};
+
+local_fold
+components2fold (double Yv, double Mv, double Dv, double hv, double mv,
+                 double sv, double xv, const time_zone *tz, string precision,
+                 double srcOff, bool haveSrc, local_cache& lc)
+{
+  auto lt = components2localtime (Yv, Mv, Dv, hv, mv, sv, xv, precision);
+  const local_info& info = cached_local_info (tz, lt, lc);
+  // 'resolve_local' shifts a clock inside a gap forward past it, which lands
+  // it in the regime after the transition, and takes the later of a repeated
+  // pair; a clock that names one moment has only 'first' filled in.
+  const sys_info *pick = (info.result == local_info::unique) ? &info.first
+                                                             : &info.second;
+  local_fold out;
+  out.chosen = (double) pick->offset.count ();
+  out.kept = out.chosen;
+  if (haveSrc && info.result != local_info::nonexistent)
+  {
+    double so = round (srcOff);
+    if (so == (double) info.first.offset.count ()
+        || (info.result == local_info::ambiguous
+            && so == (double) info.second.offset.count ()))
+    {
+      out.kept = so;
+    }
+  }
+  const sys_info *own = pick;
+  if (info.result == local_info::ambiguous
+      && out.kept == (double) info.first.offset.count ())
+  {
+    own = &info.first;
+  }
+  out.isdst = own->save != chrono::minutes {0};
+  out.abbrev = own->abbrev;
+  return out;
+}
+
+// The instant a wall clock names, under the same rules as 'resolve_local': the
+// later of a repeated pair, and a clock inside a gap shifted past it -- which
+// is the same instant as reading it at the offset in force before the
+// transition, whence the use of 'first' there.  Built from one cached lookup
+// and a subtraction rather than from a zoned_time, which would look the clock
+// up again to be asked for its instant.
+sys_time<chrono::microseconds>
+local2sys (const time_zone *tz, local_time<chrono::microseconds> lt,
+           local_cache& lc)
+{
+  const local_info& info = cached_local_info (tz, lt, lc);
+  auto off = (info.result == local_info::ambiguous) ? info.second.offset
+                                                    : info.first.offset;
+  return sys_time<chrono::microseconds> {lt.time_since_epoch ()} - off;
+}
+
+// Components and offset of an absolute instant, read in 'timezone'.  A moment
+// names one wall clock, so nothing here has to be resolved, and the offset that
+// the single lookup returns is added to reach the local time rather than a
+// zoned_time being built -- which would look the same moment up again on every
+// question asked of it.
+void
+sys2components (sys_time<chrono::microseconds> sys, const time_zone *tz,
+                RowVector& OUT, double& off, string precision, sys_cache& zc)
+{
+  const sys_info& si = cached_sys_info (tz, chrono::floor<chrono::seconds>
+                                            (sys), zc);
+  local_time<chrono::microseconds> lt {(sys + si.offset).time_since_epoch ()};
+  OUT = localtime2vector (lt, precision);
+  off = (double) si.offset.count ();
+}
+
+void
+sys2components (double posix_sec, const time_zone *tz, RowVector& OUT,
+                double& off, sys_cache& zc)
+{
+  using ds = chrono::duration<double>;
+  auto sys = round<chrono::microseconds> (sys_time<ds> {ds {posix_sec}});
+  sys2components (sys, tz, OUT, off, "microseconds", zc);
 }
 
 sys_time<chrono::microseconds>
@@ -364,9 +533,41 @@ DEFUN_DLD(__datetime__, args, nargout,
  @deftypefnx {datatypes} {[@dots{}] =} __datetime__ (@var{X}, @qcode{'ConvertFrom'}, @var{dateType})\n\
  @deftypefnx {datatypes} {[@dots{}] =} __datetime__ (@dots{}, @qcode{'Precision'}, @var{precision})\n\
  @deftypefnx {datatypes} {[@dots{}] =} __datetime__ (@dots{}, @qcode{'TimeZone'}, @var{tzone}, @qcode{'toTimeZone'}, @var{totzone})\n\
+ @deftypefnx {datatypes} {[@dots{}] =} __datetime__ (@dots{}, @qcode{'Offset'}, @var{off})\n\
 \n\
 \n\
 Base function for datetime class. \n\
+\n\n\
+The @qcode{'Offset'} parameter gives the stored UTC offset of each element \n\
+in seconds, which is what tells apart the two instants a repeated wall \n\
+clock names on the day a zone puts its clock back.  It is accepted by the \n\
+@qcode{'ConvertTo'} modes listed below; those that also read it answer for \n\
+the wall clock alone when it is not given. \n\
+\n\n\
+@table @asis \n\
+@item @qcode{'instant'} \n\
+POSIX seconds of each element, taken from its offset by subtraction, with no \n\
+time-zone lookup at all. \n\
+\n\
+@item @qcode{'fromposix'} \n\
+The six components of each POSIX instant read in @var{tzone}, plus the \n\
+offset in force there as a seventh output. \n\
+\n\
+@item @qcode{'rezone'} \n\
+The six components of each element expressed in @var{totzone} while keeping \n\
+its instant, plus the offset there as a seventh output. \n\
+\n\
+@item @qcode{'zoneoffset'} \n\
+The offset the wall clock resolves to. \n\
+\n\
+@item @qcode{'keepfold'} \n\
+The given offset where it still names this wall clock, and the resolved \n\
+offset otherwise. \n\
+\n\
+@item @qcode{'isdst'}, @qcode{'zoneabbrev'} \n\
+Daylight-saving flag and zone abbreviation, for the element's own pass over \n\
+a repeated clock when an offset is given. \n\
+@end table \n\
 \n\n\
 @end deftypefn")
 {
@@ -443,6 +644,11 @@ Base function for datetime class. \n\
   bool doConvert = false;
   string convertFrom = "";
   string convertTo = "";
+  // The stored UTC offset of each element, which is what distinguishes the two
+  // moments a repeated wall clock names.  Optional: without it the modes below
+  // answer for the clock alone, as they did before it existed.
+  octave_value offsetArg;
+  bool haveOffset = false;
 
   // Parse paired arguments here
   while (nargin > 2 && args(nargin - 2).is_string ())
@@ -483,6 +689,26 @@ Base function for datetime class. \n\
         else
         {
           error ("__datetime__: invalid type for 'ConvertTo'.");
+        }
+      }
+    }
+    else if (args(nargin - 2).string_value () == "Offset")
+    {
+      if (args(nargin - 1).isnumeric ())
+      {
+        offsetArg = args(nargin - 1);
+        haveOffset = true;
+      }
+      else
+      {
+        if (nargout == 7)
+        {
+          retval(6) = "invalid type for 'Offset'.";
+          return retval;
+        }
+        else
+        {
+          error ("__datetime__: invalid type for 'Offset'.");
         }
       }
     }
@@ -892,6 +1118,50 @@ Base function for datetime class. \n\
   }
 
   // Handle single numeric matrix with either 3 or 6 columns
+  // 'ConvertTo','fromposix' reads absolute instants, given as POSIX seconds,
+  // into the wall clock of 'timezone' and reports the UTC offset in force at
+  // each of them as a seventh output.  A moment names one clock, so no
+  // resolution is involved and the offset comes back from the same lookup that
+  // produced the components -- which is the whole reason this exists as one
+  // mode rather than as a conversion followed by a separate offset query.
+  if (convertTo == "fromposix")
+  {
+    dim_vector sz = args(0).dims ();
+    NDArray P = args(0).array_value ();
+    NDArray Y(sz, 0), M(sz, 0), D(sz, 0), h(sz, 0), m(sz, 0), s(sz, 0);
+    NDArray OFF(sz, 0);
+    const time_zone *tzp = locate_zone (timezone);
+    sys_cache zc;
+    for (int i = 0; i < sz.numel (); i++)
+    {
+      if (isnan (P(i)))
+      {
+        Y(i) = NAN; M(i) = NAN; D(i) = NAN;
+        h(i) = NAN; m(i) = NAN; s(i) = NAN; OFF(i) = NAN;
+      }
+      else if (isinf (P(i)))
+      {
+        Y(i) = P(i); M(i) = P(i); D(i) = P(i);
+        h(i) = P(i); m(i) = P(i); s(i) = P(i); OFF(i) = 0;
+      }
+      else
+      {
+        RowVector C(6);
+        double off;
+        sys2components (P(i), tzp, C, off, zc);
+        Y(i) = C(0); M(i) = C(1); D(i) = C(2);
+        h(i) = C(3); m(i) = C(4); s(i) = C(5); OFF(i) = off;
+      }
+    }
+    retval(0) = Y; retval(1) = M; retval(2) = D;
+    retval(3) = h; retval(4) = m; retval(5) = s;
+    if (nargout == 7)
+    {
+      retval(6) = OFF;
+    }
+    return retval;
+  }
+
   if (nargin == 1)
   {
     int n = args(0).rows ();
@@ -1163,14 +1433,20 @@ Base function for datetime class. \n\
     {
       x = expand_input (sz, args(6));
     }
+    NDArray OF(sz, 0);
+    if (haveOffset)
+    {
+      OF = expand_input (sz, offsetArg);
+    }
     // Beyond this point, all input data have common size
 
-    // 'ConvertTo','posixtime' returns POSIX seconds (double) instead of the six
-    // canonical components.  The wall-clock components are interpreted in
-    // 'timezone' (pass 'TimeZone','UTC' for unzoned datetimes so the serial is
-    // free of any system-zone DST offset), Not-A-Time maps to NaN, and infinite
-    // datetimes preserve their sign.
-    if (convertTo == "posixtime")
+    // 'ConvertTo','instant' returns the absolute instant of each element as
+    // POSIX seconds, taken from the stored offset rather than by resolving the
+    // wall clock.  The offset already says which moment is meant, so this asks
+    // the tz database nothing at all -- it is subtraction -- which is what
+    // makes it the cheapest path in the class and the one every comparison,
+    // ordering and set operation is built on.
+    if (convertTo == "instant")
     {
       NDArray S(sz, 0);
       for (int i = 0; i < sz.numel (); i++)
@@ -1189,8 +1465,130 @@ Base function for datetime class. \n\
         }
         else
         {
-          auto sys = components2sys (Y(i), M(i), D(i), h(i), m(i), s(i),
-                                     x(i), timezone, precision);
+          auto lt = components2localtime (Y(i), M(i), D(i), h(i), m(i), s(i),
+                                          x(i), precision);
+          S(i) = (double) lt.time_since_epoch ().count () / 1000000.0 - OF(i);
+        }
+      }
+      retval(0) = S;
+      return retval;
+    }
+
+    // 'ConvertTo','zoneoffset' returns the UTC offset in seconds that the wall
+    // clock resolves to, and 'keepfold' the offset an element should carry when
+    // it arrives on this clock from another: the one it came with, where that
+    // still names this clock, and the resolved one otherwise.  Both come from
+    // one lookup.  Not-A-Time and infinite elements take a zero offset, the
+    // same value an unzoned array carries.
+    if (convertTo == "zoneoffset" || convertTo == "keepfold")
+    {
+      bool useSrc = (convertTo == "keepfold") && haveOffset;
+      NDArray A(sz, 0);
+      const time_zone *tzp = locate_zone (timezone);
+      local_cache lc;
+      for (int i = 0; i < sz.numel (); i++)
+      {
+        RowVector tmp(7);
+        tmp(0) = Y(i); tmp(1) = M(i); tmp(2) = D(i);
+        tmp(3) = h(i); tmp(4) = m(i); tmp(5) = s(i); tmp(6) = x(i);
+        double chk = check_nan_inf (tmp);
+        if (isnan (chk) || isinf (chk))
+        {
+          A(i) = isnan (chk) ? NAN : 0;
+        }
+        else
+        {
+          local_fold lf = components2fold (Y(i), M(i), D(i), h(i), m(i), s(i),
+                                           x(i), tzp, precision, OF(i),
+                                           useSrc, lc);
+          A(i) = useSrc ? lf.kept : lf.chosen;
+        }
+      }
+      retval(0) = A;
+      return retval;
+    }
+
+    // 'ConvertTo','rezone' expresses each element in 'toTimeZone' while keeping
+    // its instant, returning the new components and, as a seventh output, the
+    // offset in force there.  It takes the instant from the stored offset, so
+    // the source zone is not needed and -- more to the point -- nothing is
+    // resolved on the way out: converting the clock instead would make the
+    // database resolve it in the source zone first, which is the question with
+    // two answers, and an element on the earlier pass would come out an hour
+    // wrong.
+    if (convertTo == "rezone")
+    {
+      NDArray rY(sz, 0), rM(sz, 0), rD(sz, 0);
+      NDArray rh(sz, 0), rm(sz, 0), rs(sz, 0), rOFF(sz, 0);
+      const time_zone *tzp = locate_zone (to_tzone);
+      sys_cache zc;
+      for (int i = 0; i < sz.numel (); i++)
+      {
+        RowVector tmp(7);
+        tmp(0) = Y(i); tmp(1) = M(i); tmp(2) = D(i);
+        tmp(3) = h(i); tmp(4) = m(i); tmp(5) = s(i); tmp(6) = x(i);
+        double chk = check_nan_inf (tmp);
+        if (isnan (chk))
+        {
+          rY(i) = NAN; rM(i) = NAN; rD(i) = NAN;
+          rh(i) = NAN; rm(i) = NAN; rs(i) = NAN; rOFF(i) = NAN;
+        }
+        else if (isinf (chk))
+        {
+          rY(i) = chk; rM(i) = chk; rD(i) = chk;
+          rh(i) = chk; rm(i) = chk; rs(i) = chk; rOFF(i) = 0;
+        }
+        else
+        {
+          auto lt = components2localtime (Y(i), M(i), D(i), h(i), m(i), s(i),
+                                          x(i), precision);
+          double p = (double) lt.time_since_epoch ().count () / 1000000.0
+                     - OF(i);
+          RowVector C(6);
+          double off;
+          sys2components (p, tzp, C, off, zc);
+          rY(i) = C(0); rM(i) = C(1); rD(i) = C(2);
+          rh(i) = C(3); rm(i) = C(4); rs(i) = C(5); rOFF(i) = off;
+        }
+      }
+      retval(0) = rY; retval(1) = rM; retval(2) = rD;
+      retval(3) = rh; retval(4) = rm; retval(5) = rs;
+      if (nargout == 7)
+      {
+        retval(6) = rOFF;
+      }
+      return retval;
+    }
+
+    // 'ConvertTo','posixtime' returns POSIX seconds (double) instead of the six
+    // canonical components.  The wall-clock components are interpreted in
+    // 'timezone' (pass 'TimeZone','UTC' for unzoned datetimes so the serial is
+    // free of any system-zone DST offset), Not-A-Time maps to NaN, and infinite
+    // datetimes preserve their sign.
+    if (convertTo == "posixtime")
+    {
+      const time_zone *tzp = locate_zone (timezone);
+      local_cache lc;
+      NDArray S(sz, 0);
+      for (int i = 0; i < sz.numel (); i++)
+      {
+        RowVector tmp(7);
+        tmp(0) = Y(i); tmp(1) = M(i); tmp(2) = D(i);
+        tmp(3) = h(i); tmp(4) = m(i); tmp(5) = s(i); tmp(6) = x(i);
+        double chk = check_nan_inf (tmp);
+        if (isnan (chk))
+        {
+          S(i) = NAN;
+        }
+        else if (isinf (chk))
+        {
+          S(i) = chk;
+        }
+        else
+        {
+          auto lt = components2localtime (Y(i), M(i), D(i), h(i), m(i),
+                                          s(i), x(i), precision);
+          auto sys = local2sys (tzp, lt, lc);
           S(i) = (double) sys.time_since_epoch ().count () / 1000000.0;
         }
       }
@@ -1205,6 +1603,8 @@ Base function for datetime class. \n\
     if (convertTo == "zoneabbrev")
     {
       Cell A(sz);
+      const time_zone *tzp = locate_zone (timezone);
+      local_cache lc;
       for (int i = 0; i < sz.numel (); i++)
       {
         RowVector tmp(7);
@@ -1217,8 +1617,9 @@ Base function for datetime class. \n\
         }
         else
         {
-          A(i) = components2abbrev (Y(i), M(i), D(i), h(i), m(i), s(i),
-                                    x(i), timezone, precision);
+          A(i) = components2fold (Y(i), M(i), D(i), h(i), m(i), s(i), x(i),
+                                  tzp, precision, OF(i), haveOffset,
+                                  lc).abbrev;
         }
       }
       retval(0) = A;
@@ -1232,6 +1633,8 @@ Base function for datetime class. \n\
     if (convertTo == "isdst")
     {
       NDArray A(sz, 0);
+      const time_zone *tzp = locate_zone (timezone);
+      local_cache lc;
       for (int i = 0; i < sz.numel (); i++)
       {
         RowVector tmp(7);
@@ -1244,14 +1647,19 @@ Base function for datetime class. \n\
         }
         else
         {
-          A(i) = components2isdst (Y(i), M(i), D(i), h(i), m(i), s(i),
-                                   x(i), timezone, precision) ? 1 : 0;
+          A(i) = components2fold (Y(i), M(i), D(i), h(i), m(i), s(i), x(i),
+                                  tzp, precision, OF(i), haveOffset,
+                                  lc).isdst ? 1 : 0;
         }
       }
       retval(0) = A;
       return retval;
     }
 
+    const time_zone *tzFrom = locate_zone (timezone);
+    const time_zone *tzTo = locate_zone (to_tzone);
+    local_cache lcn;
+    sys_cache zcn;
     for (int i = 0; i < sz.numel (); i++)
     {
       RowVector tmp(7);
@@ -1320,10 +1728,12 @@ Base function for datetime class. \n\
                                         + chrono::minutes{tmp_m}
                                         + chrono::seconds{tmp_s}
                                         + chrono::microseconds{tmp_micro};
-        // Make timezone conversion
-        auto in = resolve_local (timezone, datetime);
-        auto out = make_zoned (to_tzone, in.get_sys_time ());
-        RowVector OUT = tz2vector (out, precision);
+        // Make timezone conversion, resolving the wall clock and reading the
+        // instant back in the target zone through the cached lookups.
+        auto sysp = local2sys (tzFrom, datetime, lcn);
+        RowVector OUT(6);
+        double dropOff;
+        sys2components (sysp, tzTo, OUT, dropOff, precision, zcn);
         Y(i) = OUT(0); M(i) = OUT(1); D(i) = OUT(2);
         h(i) = OUT(3); m(i) = OUT(4); s(i) = OUT(5);
       }

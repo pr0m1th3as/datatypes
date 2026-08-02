@@ -2815,6 +2815,32 @@
 %! assert_equal (g1 == g2, false);
 %! assert_equal (numel (unique ([g1, g2])), 2);
 
+## Test the compiled regime cache never answers for a neighbouring regime.
+## The tz database is consulted once per regime rather than once per element,
+## so an array crossing a transition is where a stale answer would show: the
+## same clocks are therefore read in one call, in the reverse order, and one at
+## a time, and all three must agree.  Australia/Lord_Howe shifts by half an
+## hour and Europe/Dublin's entries count winter as the saving period, so both
+## the size of the step and the sense of the flag are covered.
+%!test
+%! for z = {'Australia/Lord_Howe', 'Europe/Dublin', 'America/New_York'}
+%!   mi = 0:239;
+%!   t = datetime (2024, 4, 7, 0, mi, 0, 'TimeZone', z{1});
+%!   r = datetime (2024, 4, 7, 0, fliplr (mi), 0, 'TimeZone', z{1});
+%!   assert_equal (posixtime (t), fliplr (posixtime (r)));
+%!   assert_equal (hours (tzoffset (t)), fliplr (hours (tzoffset (r))));
+%!   assert_equal (isdst (t), fliplr (isdst (r)));
+%!   p = posixtime (t);
+%!   o = hours (tzoffset (t));
+%!   d = isdst (t);
+%!   for i = 1:10:numel (mi)
+%!     e = datetime (2024, 4, 7, 0, mi(i), 0, 'TimeZone', z{1});
+%!     assert_equal (posixtime (e), p(i));
+%!     assert_equal (hours (tzoffset (e)), o(i));
+%!     assert_equal (isdst (e), d(i));
+%!   endfor
+%! endfor
+
 ## Test a wall clock the spring-forward gap skips still moves ahead by the gap
 %!test
 %! z = 'America/New_York';

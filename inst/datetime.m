@@ -2010,10 +2010,8 @@ classdef datetime
       if (isempty (this.TimeZone))
         TF = false (size (this));
       else
-        [Y, M, D, h, m, s] = dtOwnFoldClock (this.Year, this.Month, ...
-                             this.Day, this.Hour, this.Minute, ...
-                             this.Second, this.Offset, this.TimeZone);
-        TF = dtIsDst (Y, M, D, h, m, s, this.TimeZone);
+        TF = dtIsDst (this.Year, this.Month, this.Day, this.Hour, ...
+                      this.Minute, this.Second, this.TimeZone, this.Offset);
       endif
     endfunction
 
@@ -5679,12 +5677,12 @@ classdef datetime
       ## Read the instant off the stored offset rather than asking the tz
       ## database to resolve the wall clock, which is exactly the question
       ## that has two answers on a fall-back day.  Offset is zero for an
-      ## unzoned array, so the one expression serves both.
-      nai = __datetime__ (this.Year, this.Month, this.Day, this.Hour, ...
-                          this.Minute, this.Second, 'ConvertTo', ...
-                          'posixtime', 'TimeZone', 'UTC', 'Precision', ...
-                          'microseconds');
-      s = nai - this.Offset;
+      ## unzoned array, so the one expression serves both, and the 'instant'
+      ## mode consults no zone at all -- which is what makes this, the hottest
+      ## path in the class, cheaper than any conversion.
+      s = __datetime__ (this.Year, this.Month, this.Day, this.Hour, ...
+                        this.Minute, this.Second, 'ConvertTo', 'instant', ...
+                        'Offset', this.Offset, 'Precision', 'microseconds');
     endfunction
 
     ## POSIX instant used by the integer fixed-epoch conversions ('epochtime',
@@ -5912,27 +5910,18 @@ classdef datetime
         [Y, M, D, h, m, s] = dtLeapComponents (ser);
         off = zeros (size (Y));
         return;
-      elseif (isempty (this.TimeZone))
-        [Y, M, D, h, m, s] = __datetime__ (ser, 'ConvertFrom', 'posixtime', ...
-                                           'Precision', 'microseconds');
-      else
-        [Y, M, D, h, m, s] = __datetime__ (ser, 'ConvertFrom', 'posixtime', ...
-                                           'Precision', 'microseconds');
-        [Y, M, D, h, m, s] = __datetime__ (Y, M, D, h, m, s, ...
-                             'TimeZone', 'UTC', 'toTimeZone', this.TimeZone, ...
-                             'Precision', 'microseconds');
       endif
-      ## The offset that belongs to THIS instant, which is what distinguishes
-      ## the two passes over a repeated wall clock.  It is read back off the
-      ## instant rather than looked up from the wall clock, since the latter is
-      ## exactly the question that has no unique answer.  Offsets are whole
-      ## seconds, so rounding clears the conversion's floating-point dust.
-      off = zeros (size (Y));
-      if (! isempty (this.TimeZone))
-        off = round (__datetime__ (Y, M, D, h, m, s, 'ConvertTo', ...
-                     'posixtime', 'TimeZone', 'UTC', ...
-                     'Precision', 'microseconds') - ser);
+      ## An instant names one wall clock, so nothing is resolved on the way in
+      ## and the offset comes back from the same lookup that produced the
+      ## components -- which is what distinguishes the two passes over a
+      ## repeated clock, and could not be recovered from the components alone.
+      ## An unzoned array is read as UTC, where the offset is zero throughout.
+      tz = this.TimeZone;
+      if (isempty (tz))
+        tz = 'UTC';
       endif
+      [Y, M, D, h, m, s, off] = __datetime__ (ser, 'ConvertTo', 'fromposix', ...
+                                'TimeZone', tz, 'Precision', 'microseconds');
     endfunction
 
     ## Shift each element by a fixed number of seconds applied to its absolute
@@ -6018,15 +6007,11 @@ classdef datetime
       if (isempty (this.TimeZone) || dtIsLeapZone (this.TimeZone))
         return;
       endif
-      nai = __datetime__ (this.Year, this.Month, this.Day, this.Hour, ...
-                          this.Minute, this.Second, 'ConvertTo', ...
-                          'posixtime', 'TimeZone', 'UTC', 'Precision', ...
-                          'microseconds');
-      [rY, rM, rD, rh, rm, rs] = serial2components (this, nai - srcOff);
-      rnai = __datetime__ (rY, rM, rD, rh, rm, rs, 'ConvertTo', 'posixtime', ...
-                           'TimeZone', 'UTC', 'Precision', 'microseconds');
-      keep = isfinite (rnai) & isfinite (nai) & abs (rnai - nai) <= 1e-6;
-      this.Offset(keep) = srcOff(keep);
+      this.Offset = __datetime__ (this.Year, this.Month, this.Day, ...
+                                  this.Hour, this.Minute, this.Second, ...
+                                  'ConvertTo', 'keepfold', 'TimeZone', ...
+                                  this.TimeZone, 'Offset', srcOff, ...
+                                  'Precision', 'microseconds');
     endfunction
 
     ## Range with a fixed-length (duration/numeric) step of STEPSEC seconds.
@@ -6216,15 +6201,9 @@ function [Y, M, D, h, m, s, off] = dtRezone (Y, M, D, h, m, s, off, ...
   if (isempty (TZ) || strcmp (TZ, fromTZ))
     return;
   endif
-  ser = __datetime__ (Y, M, D, h, m, s, 'ConvertTo', 'posixtime', ...
-                      'TimeZone', 'UTC', 'Precision', 'microseconds') - off;
-  [Y, M, D, h, m, s] = __datetime__ (ser, 'ConvertFrom', 'posixtime', ...
-                                     'Precision', 'microseconds');
-  [Y, M, D, h, m, s] = __datetime__ (Y, M, D, h, m, s, 'TimeZone', 'UTC', ...
-                       'toTimeZone', TZ, 'Precision', 'microseconds');
-  ## Offsets are whole seconds, so rounding clears the conversion's dust.
-  off = round (__datetime__ (Y, M, D, h, m, s, 'ConvertTo', 'posixtime', ...
-               'TimeZone', 'UTC', 'Precision', 'microseconds') - ser);
+  [Y, M, D, h, m, s, off] = __datetime__ (Y, M, D, h, m, s, 'ConvertTo', ...
+                            'rezone', 'Offset', off, 'toTimeZone', TZ, ...
+                            'Precision', 'microseconds');
 endfunction
 
 ## True while a candidate datetime X has not yet passed the range endpoint B,
@@ -6925,77 +6904,30 @@ function cstr = dtFormatStrings (Y, M, D, H, Mi, S, TZ, OFF, fmt, zoneStyle)
     off = OFF + zeros (size (Y));
   endif
   if (needAbbr)
-    ## The name has to be looked up, and looking it up by wall clock names the
-    ## later of a repeated pair, so each element is first put in a moment that
-    ## is unambiguous and in its own regime -- 'EDT' for the pass that is still
-    ## on daylight saving, 'EST' for the one that is not.
-    [aY, aM, aD, aH, aMi, aS] = dtOwnFoldClock (Y, M, D, H, Mi, S, OFF, TZ);
-    abbr = dtZoneAbbrev (aY, aM, aD, aH, aMi, aS, TZ);
+    ## Looking the name up by wall clock alone would name the later of a
+    ## repeated pair, so the offset goes with it and the database answers for
+    ## the pass the element is actually on -- 'EDT' for the hour still on
+    ## daylight saving, 'EST' for the hour that repeats it.
+    abbr = dtZoneAbbrev (Y, M, D, H, Mi, S, TZ, OFF);
   endif
   cstr = __ldml__ ('format', Y, M, D, H, Mi, S, fmt, zoneStyle, hasTZ, ...
                    off, abbr);
 endfunction
 
-## Wall clock of each element moved, where it has to be, into a moment that
-## names it unambiguously and lies in the same daylight-saving regime it is
-## already in.  Elements whose clock names one moment are returned untouched.
-##
-## The tz database is asked questions -- is daylight saving in force, what is
-## this zone called right now -- by wall clock, and on the day a clock is put
-## back one wall clock names two moments.  Every such query therefore answers
-## for the later of the two, which is the wrong answer for exactly the elements
-## the stored offset was introduced to keep.  Those are the ones whose offset
-## differs from the resolved one, and the difference is the length of the
-## repeated window itself, so a clock stepped back by it leaves the window
-## through the near end and lands in the regime that was still in force.  It is
-## then unambiguous and the ordinary query answers for it correctly.
-##
-## Taking the length from the two offsets rather than assuming an hour is what
-## makes this hold on Lord Howe (half an hour) and Chatham (three quarters),
-## and asking the database after the step rather than reasoning that the
-## earlier pass "is" the daylight one is what makes it hold in Ireland, where
-## the database counts winter as the saving period and summer as standard.
-function [Y, M, D, H, Mi, S] = dtOwnFoldClock (Y, M, D, H, Mi, S, off, TZ)
-  if (isempty (TZ))
-    return;
-  endif
-  d = off - dtZoneOffset (Y, M, D, H, Mi, S, TZ);
-  amb = isfinite (d) & d != 0;
-  if (! any (amb(:)))
-    return;
-  endif
-  nai = __datetime__ (Y, M, D, H, Mi, S, 'ConvertTo', 'posixtime', ...
-                      'TimeZone', 'UTC', 'Precision', 'microseconds');
-  [bY, bM, bD, bH, bMi, bS] = __datetime__ (nai - d, 'ConvertFrom', ...
-                              'posixtime', 'Precision', 'microseconds');
-  Y(amb) = bY(amb); M(amb) = bM(amb); D(amb) = bD(amb);
-  H(amb) = bH(amb); Mi(amb) = bMi(amb); S(amb) = bS(amb);
-endfunction
-
-## UTC offset (seconds east of UTC, negative west of Greenwich) for each
-## element of a zoned datetime, derived without any new compiled support:
-## reading the wall-clock components as if they were UTC and subtracting the
-## true instant yields the local offset.
-function off = dtZoneOffset (Y, M, D, H, Mi, S, TZ)
-  utcAsIf = __datetime__ (Y, M, D, H, Mi, S, 'ConvertTo', 'posixtime', ...
-                          'TimeZone', 'UTC', 'Precision', 'microseconds');
-  instant = __datetime__ (Y, M, D, H, Mi, S, 'ConvertTo', 'posixtime', ...
-                          'TimeZone', TZ, 'Precision', 'microseconds');
-  off = utcAsIf - instant;
-endfunction
-
 ## Zone abbreviation (e.g. 'EDT', 'EST', 'UTC') for each element of a zoned
 ## datetime, from the compiled tz database via the __datetime__ builtin.
-function ab = dtZoneAbbrev (Y, M, D, H, Mi, S, TZ)
+function ab = dtZoneAbbrev (Y, M, D, H, Mi, S, TZ, off)
   ab = __datetime__ (Y, M, D, H, Mi, S, 'ConvertTo', 'zoneabbrev', ...
+                     'Offset', off, ...
                      'TimeZone', TZ, 'Precision', 'microseconds');
 endfunction
 
 ## Logical daylight-saving-time flag for each element of a zoned datetime,
 ## from the compiled tz database via the __datetime__ builtin.
-function tf = dtIsDst (Y, M, D, H, Mi, S, TZ)
+function tf = dtIsDst (Y, M, D, H, Mi, S, TZ, off)
   tf = logical (__datetime__ (Y, M, D, H, Mi, S, 'ConvertTo', 'isdst', ...
-                              'TimeZone', TZ, 'Precision', 'microseconds'));
+                              'TimeZone', TZ, 'Offset', off, 'Precision', ...
+                              'microseconds'));
 endfunction
 
 ## Parse text into an N-by-6 date-vector matrix for a leap-second array with no
@@ -7800,11 +7732,8 @@ function off = dtOffsetOf (Y, M, D, h, m, s, tz)
     off = zeros (size (Y));
     return;
   endif
-  loc = __datetime__ (Y, M, D, h, m, s, 'ConvertTo', 'posixtime', ...
+  off = __datetime__ (Y, M, D, h, m, s, 'ConvertTo', 'zoneoffset', ...
                       'TimeZone', tz, 'Precision', 'microseconds');
-  nai = __datetime__ (Y, M, D, h, m, s, 'ConvertTo', 'posixtime', ...
-                      'TimeZone', 'UTC', 'Precision', 'microseconds');
-  off = round (nai - loc);
 endfunction
 
 ## The K-th point of a mixed-calendarDuration bin grid, as a serial.  ANCHOR is
