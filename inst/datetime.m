@@ -7704,9 +7704,9 @@ function [ev, isCount] = dtBinEdges (xv, arg2, s2c, c2s, w2s, scope)
   isCount = false;
   xf = xv(isfinite (xv));
   if (isa (arg2, 'duration') || isa (arg2, 'calendarDuration'))
-    ev = dtUnitBinEdges (xf, arg2, s2c, c2s, scope);
+    ev = dtUnitBinEdges (xf, arg2, s2c, c2s, w2s, scope);
   elseif (dtIsTextScalar (arg2))
-    ev = dtUnitBinEdges (xf, char (arg2), s2c, c2s, scope);
+    ev = dtUnitBinEdges (xf, char (arg2), s2c, c2s, w2s, scope);
   elseif (isnumeric (arg2) && isscalar (arg2) && ! islogical (arg2))
     if (! isreal (arg2) || ! isfinite (arg2) || arg2 < 1 || fix (arg2) != arg2)
       error ("%s: N must be a real positive integer.", scope);
@@ -7834,7 +7834,7 @@ endfunction
 ## a bin of its own rather than sitting on the closing edge -- 'day' bins over
 ## ten whole days give ten bins, not nine.  That is MATLAB's rule here and it
 ## differs from 'duration', which rounds the same quantity up instead.
-function ev = dtUnitBinEdges (xf, spec, s2c, c2s, scope)
+function ev = dtUnitBinEdges (xf, spec, s2c, c2s, w2s, scope)
 
   [kind, step, named] = dtUnitStep (spec, scope);
   ## A named unit always opens a bin past the data; a width opens one
@@ -7856,9 +7856,23 @@ function ev = dtUnitBinEdges (xf, spec, s2c, c2s, scope)
 
   switch (kind)
     case 'fixed'
-      ## Anchored on local midnight, then stepped by a fixed span of seconds;
-      ## see the note in dtBinEdgesGrid.
-      [yA, mA, dA] = s2c (lo);
+      ## A fixed width is anchored on the start of the largest clock unit that
+      ## does not exceed it, and stepped from there by a fixed span of ELAPSED
+      ## seconds:
+      ##
+      ##   a whole number of days -> the 1st of the month
+      ##   an hour or more        -> local midnight
+      ##   a minute or more       -> the start of the hour
+      ##   anything shorter       -> the start of the minute
+      ##
+      ## Anchoring everything below a day on midnight leaves a width that does
+      ## not divide its unit out of phase: minutes (50) over data opening at
+      ## 07:00 opened the bins at 06:40, the midnight grid having run 8.4 steps
+      ## by then, where MATLAB opens at 07:00.  A width that divides its unit
+      ## is unaffected, which is why the named units -- 'second', 'minute' and
+      ## 'hour' -- land on the same edges under either reading and none of
+      ## their measured behaviour moves.
+      [yA, mA, dA, hA, nA] = s2c (lo);
       if (mod (step, 86400) == 0)
         ## A duration width of whole days is anchored at local midnight on the
         ## 1st of the month holding the smallest element and stepped from
@@ -7870,8 +7884,17 @@ function ev = dtUnitBinEdges (xf, spec, s2c, c2s, scope)
         ## Stepping in elapsed time is what puts days (2) and caldays (2) on
         ## the same opening edge away from a transition.
         origin = c2s (yA, mA, 1);
-      else
+      elseif (step >= 3600)
         origin = c2s (yA, mA, dA);
+      elseif (step >= 60)
+        ## The hour and minute the data open in are WALL-clock times, so they
+        ## are built from the components rather than reached by subtracting
+        ## elapsed seconds from the element: a transition inside that hour
+        ## would put the subtraction out by the shift, the same trap as in
+        ## dtBinEdgesGrid.
+        origin = w2s (yA, mA, dA, hA * 3600);
+      else
+        origin = w2s (yA, mA, dA, hA * 3600 + nA * 60);
       endif
       left = origin + step * floor ((lo - origin) / step);
       ## A named unit opens its extra bin only when the largest element sits on
@@ -8146,7 +8169,7 @@ function args = dtHistArgs (args, xv, s2c, c2s, d2s, w2s, scope)
         hasSpec = true;
         args{k} = 'BinEdges';
         args{k+1} = dtClampEdges (dtUnitBinEdges (xf, args{k+1}, s2c, c2s, ...
-                                                   scope), lim);
+                                                   w2s, scope), lim);
       case 'binedges'
         hasSpec = true;
         if (isa (args{k+1}, 'datetime'))
@@ -8176,7 +8199,7 @@ function args = dtHistArgs (args, xv, s2c, c2s, d2s, w2s, scope)
           else
             args{k} = 'BinEdges';
             args{k+1} = dtClampEdges (dtUnitBinEdges (xf, name, s2c, c2s, ...
-                                                       scope), lim);
+                                                       w2s, scope), lim);
           endif
         endif
         hasSpec = true;

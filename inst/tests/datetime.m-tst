@@ -5731,6 +5731,48 @@
 %!               'modifiedjuliandate', 'TimeZone', 'UTC');
 %! assert_equal (posixtime (r), posixtime (t), 0);
 
+## Test 'discretize' / 'histcounts' -- a fixed bin width is anchored on the
+## start of the largest clock unit that does not exceed it: a whole number of
+## days on the 1st of the month, an hour or more on local midnight, a minute or
+## more on the hour, and anything shorter on the minute.  A width that divides
+## its unit lands on the same edges either way, so only one that does not --
+## minutes (50) or minutes (25) against an hour -- shows the rung.  Values
+## captured from R2024a.
+%!test
+%! t = datetime (2024, 6, 15, 7, 0, 0) + hours (0:5);
+%! [~, e] = histcounts (t, 'BinWidth', minutes (50));
+%! [H, MI] = hms (e);
+%! assert_equal (numel (e), 7);
+%! assert_equal ([H(1), MI(1)], [7, 0]);
+%!test
+%! t = datetime (2024, 6, 15, 7, 37, 0) + minutes (0:10);
+%! [~, e] = histcounts (t, 'BinWidth', minutes (25));
+%! [H, MI] = hms (e);
+%! assert_equal ([H(1), MI(1)], [7, 25]);
+%!test
+%! t = datetime (2024, 6, 15, 23, 40, 0) + minutes (0:10);
+%! [~, e] = histcounts (t, 'BinWidth', minutes (40));
+%! [H, MI] = hms (e);
+%! assert_equal ([H(1), MI(1)], [23, 40]);
+%!test
+%! t = datetime (2024, 6, 15, 7, 23, 17) + minutes (0:10);
+%! [~, e] = histcounts (t, 'BinWidth', seconds (7));
+%! [H, MI, S] = hms (e);
+%! assert_equal ([H(1), MI(1), S(1)], [7, 23, 14]);
+%!test
+%! t = datetime (2024, 6, 15, 7, 0, 0) + hours (0:5);
+%! [~, e] = histcounts (t, 'BinWidth', minutes (90));
+%! [H, MI] = hms (e);
+%! assert_equal ([H(1), MI(1)], [6, 0]);
+%!test
+%! t = datetime (2024, 6, 15, 7, 0, 0) + hours (0:5);
+%! [~, eh] = histcounts (t, 'BinWidth', hours (5));
+%! [~, ed] = histcounts (datetime (2024, 6, 2, 7, 0, 0) + hours (0:5), ...
+%!                       'BinWidth', hours (5));
+%! H1 = hms (eh);
+%! H2 = hms (ed);
+%! assert_equal ([H1(1), H2(1)], [5, 5]);
+
 ## Restore whatever default formats the user had before this file ran.
 %!test
 %! datetime.setDefaultFormats ('reset');
