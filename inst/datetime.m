@@ -7362,22 +7362,52 @@ function ev = dtUnitBinEdges (xf, spec, s2c, c2s, scope)
       ## Anchored on local midnight, then stepped by a fixed span of seconds;
       ## see the note in dtBinEdgesGrid.
       [yA, mA, dA] = s2c (lo);
-      origin = c2s (yA, mA, dA);
-      left = origin + step * floor ((lo - origin) / step);
+      if (mod (step, 86400) == 0)
+        ## A duration width of whole days shares the calendar branch's
+        ## day-of-month grid -- days (2) and caldays (2) open on the same
+        ## edge -- and only then steps by a fixed span of seconds, so the
+        ## later edges still outrun the wall clock across a transition.
+        sd = step / 86400;
+        left = c2s (yA, mA, 1 + sd * floor ((dA - 1) / sd));
+      else
+        origin = c2s (yA, mA, dA);
+        left = origin + step * floor ((lo - origin) / step);
+      endif
       n = bins (hi - left);
       ev = left + (0:n) * step;
 
     case {'day', 'week'}
       [Y, M, D] = s2c (lo);
       ## Only the named 'week' unit starts on a Sunday.  A calendarDuration of
-      ## seven days is a seven-day step from the first date, not a week grid,
-      ## which is why the snap keys off the unit and not off the step.
+      ## seven days is a seven-day step on the day-of-month grid below, not a
+      ## week grid, which is why the snap keys off the unit and not off the
+      ## step: calweeks (1) over 10 June 2024 opens on Saturday the 8th.
       if (strcmp (kind, 'week'))
         [Y, M, D] = dtAddDays (Y, M, D, -dtWeekdayIndex (Y, M, D));
+      elseif (step > 1)
+        ## A width of several days lands on a grid anchored at the 1st of the
+        ## month holding the smallest element, not on that element's own date:
+        ## caldays (2) opens on an odd day of the month and caldays (3) on the
+        ## 1st, 4th, 7th and so on.  The grid does not restart at a month
+        ## boundary the bins happen to cross -- only the anchor is taken from
+        ## the month.
+        D = 1 + step * floor ((D - 1) / step);
       endif
       [Yh, Mh, Dh] = s2c (hi);
       gap = round ((c2s (Yh, Mh, Dh) - c2s (Y, M, D)) / 86400);
       n = bins (gap);
+      ## GAP is measured midnight to midnight, so it discards HI's time of
+      ## day.  A width that divides GAP exactly then closes on a last edge
+      ## that the largest element has already passed, and that element falls
+      ## outside every bin.  A named unit is immune, having opened its extra
+      ## bin regardless.  One further step is always enough, the discarded
+      ## remainder being under a day.
+      if (! named)
+        [Yn, Mn, Dn] = dtAddDays (Y, M, D, n * step);
+        if (c2s (Yn, Mn, Dn) < hi)
+          n += 1;
+        endif
+      endif
       k = (0:n) * step;
       one = ones (size (k));
       [Ye, Me, De] = dtAddDays (Y * one, M * one, D * one, k);
@@ -7391,6 +7421,15 @@ function ev = dtUnitBinEdges (xf, spec, s2c, c2s, scope)
       idx = step * floor ((12 * Y + (M - 1)) / step);
       [Yh, Mh, Dh] = s2c (hi);
       n = bins ((12 * Yh + (Mh - 1)) - idx);
+      ## The month index discards the day of the month, so a width needs the
+      ## same guard as the day path above.
+      if (! named)
+        kn = idx + n * step;
+        Yn = floor (kn / 12);
+        if (c2s (Yn, kn - Yn * 12 + 1, 1) < hi)
+          n += 1;
+        endif
+      endif
       k = idx + (0:n) * step;
       Ye = floor (k / 12);
       Me = k - Ye * 12 + 1;

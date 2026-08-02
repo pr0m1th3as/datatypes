@@ -5077,6 +5077,106 @@
 %! assert_equal (n1, n2);
 %! assert_equal (posixtime (e1), posixtime (e2));
 
+## Test 'discretize' / 'histcounts' -- a bin width of several days lands on a
+## grid anchored at the 1st of the month holding the smallest element, not on
+## that element's own date.  caldays (2) opens on an odd day of the month,
+## caldays (3) on the 1st, 4th, 7th ..., and calweeks (1) seven days from the
+## 1st, which is NOT the Sunday the named 'week' unit uses.  A duration width
+## of whole days shares the same grid.  The time of day of the data does not
+## move the anchor.  Values captured from R2024a.
+%!test
+%! t = datetime (2024, 6, 10) + caldays (0:5);
+%! [n, e] = histcounts (t, 'BinWidth', caldays (2));
+%! [Y, M, D] = ymd (e);
+%! assert_equal (n, [1, 2, 3]);
+%! assert_equal (D(:).', [9, 11, 13, 15]);
+%! assert_equal (M(:).', 6 * ones (1, 4));
+%!test
+%! t = datetime (2024, 6, 10, 17, 0, 0) + caldays (0:5);
+%! [~, e] = histcounts (t, 'BinWidth', caldays (2));
+%! [Y, M, D] = ymd (e);
+%! assert_equal (D(1), 9);
+%!test
+%! t = datetime (2024, 6, 10) + caldays (0:5);
+%! [n, e] = histcounts (t, 'BinWidth', caldays (3));
+%! [Y, M, D] = ymd (e);
+%! assert_equal (n, [3, 3]);
+%! assert_equal (D(:).', [10, 13, 16]);
+%!test
+%! t = datetime (2024, 6, 10) + caldays (0:5);
+%! [n, e] = histcounts (t, 'BinWidth', days (2));
+%! [Y, M, D] = ymd (e);
+%! assert_equal (n, [1, 2, 3]);
+%! assert_equal (D(:).', [9, 11, 13, 15]);
+%!test
+%! t = datetime (2024, 6, 10) + caldays ([0 7]);
+%! [n, e] = histcounts (t, 'BinWidth', calweeks (1));
+%! [Y, M, D] = ymd (e);
+%! assert_equal (n, [1, 1]);
+%! assert_equal (D(:).', [8, 15, 22]);
+%!test
+%! t = datetime (2024, 1, 20) + calmonths ([0 1]);
+%! [n, e] = histcounts (t, 'BinWidth', calmonths (2));
+%! [Y, M, D] = ymd (e);
+%! assert_equal (n, 2);
+%! assert_equal (M(:).', [1, 3]);
+%! assert_equal (D(:).', [1, 1]);
+%!test
+%! t = datetime (2024, 3, 8, 'TimeZone', 'America/New_York') + caldays (0:5);
+%! [n, e] = histcounts (t, 'BinWidth', caldays (2));
+%! [Y, M, D] = ymd (e);
+%! assert_equal (n, [1, 2, 3]);
+%! assert_equal (D(:).', [7, 9, 11, 13]);
+%! assert_equal (hours (diff (e)), [48, 47, 48]);
+
+## Test 'discretize' / 'histcounts' -- a calendarDuration width covers the
+## largest element even when it does not sit on an edge.  The bin count was
+## taken from the gap between the enclosing boundaries (midnight to midnight,
+## or month index to month index), which discards the largest element's time of
+## day, so a width dividing that gap exactly closed on an edge the data had
+## already passed and the last element fell outside every bin.  Zone-independent.
+## The first test's values are captured from R2024a.
+%!test
+%! t = datetime (2024, 3, 8, 7, 0, 0, 'TimeZone', 'America/New_York') ...
+%!     + caldays (0:5);
+%! [n, e, b] = histcounts (t, 'BinWidth', caldays (1));
+%! [Y, M, D] = ymd (e);
+%! [H, MI, S] = hms (e);
+%! assert_equal (n, ones (1, 6));
+%! assert_equal (D(:).', 8:14);
+%! assert_equal (H(:).', zeros (1, 7));
+%! assert_equal (hours (diff (e)), [24, 24, 23, 24, 24, 24]);
+%! assert_equal (b, 1:6);
+%!test
+%! t = datetime (2024, 3, 8, 7, 0, 0) + caldays (0:5);
+%! [n, ~, b] = histcounts (t, 'BinWidth', caldays (1));
+%! assert_equal (sum (n), 6);
+%! assert_equal (any (b == 0), false);
+%! assert_equal (discretize (t, caldays (1)), 1:6);
+%!test
+%! t = datetime (2024, 3, 8, 7, 0, 0) + caldays (0:13);
+%! [n, ~, b] = histcounts (t, 'BinWidth', calweeks (1));
+%! assert_equal (sum (n), 14);
+%! assert_equal (any (b == 0), false);
+%!test
+%! t = datetime (2024, 3, 8) + caldays ([0 36]);
+%! [n, e, b] = histcounts (t, 'BinWidth', calmonths (1));
+%! [Y, M, D] = ymd (e);
+%! assert_equal (M(:).', [3, 4, 5]);
+%! assert_equal (sum (n), 2);
+%! assert_equal (b, [1, 2]);
+%!test
+%! t = datetime (2024, 1, 15) + caldays ([0 200]);
+%! [n, ~, b] = histcounts (t, 'BinWidth', calquarters (1));
+%! assert_equal (sum (n), 2);
+%! assert_equal (any (b == 0), false);
+%!test
+%! t = datetime (2024, 3, 8) + caldays (0:5);
+%! [~, ew] = histcounts (t, 'BinWidth', caldays (1));
+%! [~, en] = histcounts (t, 'BinMethod', 'day');
+%! assert_equal (numel (ew), 6);
+%! assert_equal (numel (en), 7);
+
 ## Test 'discretize' -- a unit given by NAME opens one more bin than the same
 ## unit given as a WIDTH, but only when the data end exactly on an edge.  The
 ## two agree otherwise, which is why the difference went unseen.  A duration
