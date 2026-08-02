@@ -2628,16 +2628,27 @@
 %! assert_equal (year (d), [2020; 1999; 2020]);
 
 ## Test 'proxyArray' (regression: was undefined, breaking table interop)
-%!assert_equal (datetime (2020, 6, 15).proxyArray, [2020, 6, 15, 0, 0, 0])
-%!assert_equal (size (datetime (2020, 1, [1; 2; 3]).proxyArray), [3, 6])
+%!assert_equal (datetime (2020, 6, 15).proxyArray, [2020, 6, 15, 0, 0, 0, 0])
+%!assert_equal (size (datetime (2020, 1, [1; 2; 3]).proxyArray), [3, 7])
 %!test
 %! d = datetime (2020, 1, [1; 2]);
-%! assert_equal (d.proxyArray, [2020, 1, 1, 0, 0, 0; 2020, 1, 2, 0, 0, 0]);
+%! assert_equal (d.proxyArray, [2020, 1, 1, 0, 0, 0, 0; 2020, 1, 2, 0, 0, 0, 0]);
 %!test  # NaT maps to NaN across its component columns
 %! d = datetime (2020, 1, [1; 2]);
 %! d(1) = NaT;
 %! p = d.proxyArray;
-%! assert_equal (p(1, :), [NaN, NaN, NaN, NaN, NaN, NaN]);
+%! assert_equal (p(1, :), [NaN, NaN, NaN, NaN, NaN, NaN, NaN]);
+
+## The seventh column is the negated UTC offset, which keeps the two moments
+## sharing a wall clock across a fall-back apart and in chronological order.
+%!test
+%! t = datetime (2024, 11, 3, 5, 30, 0, 'TimeZone', 'UTC');
+%! t.TimeZone = 'America/New_York';
+%! u = datetime (2024, 11, 3, 6, 30, 0, 'TimeZone', 'UTC');
+%! u.TimeZone = 'America/New_York';
+%! p = [t; u].proxyArray;
+%! assert_equal (p(:, 1:6), [2024, 11, 3, 1, 30, 0; 2024, 11, 3, 1, 30, 0]);
+%! assert_equal (p(:, 7), [14400; 18000]);
 
 ################################################################################
 ##                          ** TimeZone handling **                           ##
@@ -2670,6 +2681,147 @@
 ## Test invalid TimeZone assignment errors
 %!error <datetime.subsasgn: 'TimeZone' must be a character vector.> ...
 %! d = datetime (2020, 1, 1); d.TimeZone = 5;
+
+## Test the two instants sharing a wall clock across a fall-back stay apart.
+## On 3 November 2024 America/New_York puts its clock back at 02:00, so
+## 01:30 comes round twice: once at UTC-4 and once at UTC-5.  Every value
+## below was measured against MATLAB R2024a.
+%!test  # the pair is built from UTC, which names each of them unambiguously
+%! b1 = datetime (2024, 11, 3, 5, 30, 0, 'TimeZone', 'UTC');
+%! b1.TimeZone = 'America/New_York';
+%! b2 = datetime (2024, 11, 3, 6, 30, 0, 'TimeZone', 'UTC');
+%! b2.TimeZone = 'America/New_York';
+%! assert_equal (posixtime ([b1, b2]), [1730611800, 1730615400]);
+%! assert_equal (hours (tzoffset ([b1, b2])), [-4, -5]);
+%! assert_equal (cellstr ([b1, b2]), ...
+%!               {'03-Nov-2024 01:30:00', '03-Nov-2024 01:30:00'});
+%! assert_equal (isdst ([b1, b2]), [true, false]);
+%!test  # concatenation carries each element's own offset, in either order
+%! b1 = datetime (2024, 11, 3, 5, 30, 0, 'TimeZone', 'UTC');
+%! b1.TimeZone = 'America/New_York';
+%! b2 = datetime (2024, 11, 3, 6, 30, 0, 'TimeZone', 'UTC');
+%! b2.TimeZone = 'America/New_York';
+%! assert_equal (hours (tzoffset ([b2, b1])), [-5, -4]);
+%! assert_equal (posixtime ([b2, b1]), [1730615400, 1730611800]);
+%!test  # a round trip through another zone comes back to the same instant
+%! b1 = datetime (2024, 11, 3, 5, 30, 0, 'TimeZone', 'UTC');
+%! b1.TimeZone = 'America/New_York';
+%! d = b1; d.TimeZone = 'UTC'; d.TimeZone = 'America/New_York';
+%! assert_equal (posixtime (d), 1730611800);
+%! assert_equal (hours (tzoffset (d)), -4);
+%! e = b1; e.TimeZone = 'Europe/Athens'; e.TimeZone = 'America/New_York';
+%! assert_equal (posixtime (e), 1730611800);
+%! assert_equal (hours (tzoffset (e)), -4);
+%!test  # they are two values, not one, to every comparison and set operation
+%! b1 = datetime (2024, 11, 3, 5, 30, 0, 'TimeZone', 'UTC');
+%! b1.TimeZone = 'America/New_York';
+%! b2 = datetime (2024, 11, 3, 6, 30, 0, 'TimeZone', 'UTC');
+%! b2.TimeZone = 'America/New_York';
+%! assert_equal (b1 == b2, false);
+%! assert_equal (b1 < b2, true);
+%! assert_equal (isequal (b1, b2), false);
+%! assert_equal (numel (unique ([b1, b2])), 2);
+%! assert_equal (ismember (b1, b2), false);
+%! assert_equal (numel (intersect (b1, b2)), 0);
+%! assert_equal (numel (union (b1, b2)), 2);
+%! assert_equal (keyHash (b1) == keyHash (b2), false);
+%!test  # sorting is by instant, so the pair comes back in the other order
+%! b1 = datetime (2024, 11, 3, 5, 30, 0, 'TimeZone', 'UTC');
+%! b1.TimeZone = 'America/New_York';
+%! b2 = datetime (2024, 11, 3, 6, 30, 0, 'TimeZone', 'UTC');
+%! b2.TimeZone = 'America/New_York';
+%! [sv, si] = sort ([b2, b1]);
+%! assert_equal (si, [2, 1]);
+%! assert_equal (posixtime (sv), [1730611800, 1730615400]);
+%! assert_equal (hours (diff ([b1, b2])), 1);
+%!test  # the zone fields of a display format read the element's own offset
+%! b1 = datetime (2024, 11, 3, 5, 30, 0, 'TimeZone', 'UTC');
+%! b1.TimeZone = 'America/New_York';
+%! b2 = datetime (2024, 11, 3, 6, 30, 0, 'TimeZone', 'UTC');
+%! b2.TimeZone = 'America/New_York';
+%! p = [b1, b2];
+%! p.Format = 'yyyy-MM-dd HH:mm:ss z';
+%! assert_equal (cellstr (p), {'2024-11-03 01:30:00 EDT', ...
+%!                             '2024-11-03 01:30:00 EST'});
+%! p.Format = 'yyyy-MM-dd HH:mm:ss Z';
+%! assert_equal (cellstr (p), {'2024-11-03 01:30:00 -0400', ...
+%!                             '2024-11-03 01:30:00 -0500'});
+%!test  # the wall-clock numeric views stay deliberately non-injective
+%! b1 = datetime (2024, 11, 3, 5, 30, 0, 'TimeZone', 'UTC');
+%! b1.TimeZone = 'America/New_York';
+%! b2 = datetime (2024, 11, 3, 6, 30, 0, 'TimeZone', 'UTC');
+%! b2.TimeZone = 'America/New_York';
+%! assert_equal (datenum (b1), datenum (b2));
+%! assert_equal (exceltime (b1), exceltime (b2));
+%! assert_equal (datevec (b1), datevec (b2));
+%! assert (juliandate (b1) != juliandate (b2));
+%!test  # a calendar difference of none still leaves the hour between them
+%! b1 = datetime (2024, 11, 3, 5, 30, 0, 'TimeZone', 'UTC');
+%! b1.TimeZone = 'America/New_York';
+%! b2 = datetime (2024, 11, 3, 6, 30, 0, 'TimeZone', 'UTC');
+%! b2.TimeZone = 'America/New_York';
+%! assert_equal (char (between (b1, b2)), '1h 0m 0s');
+%! assert_equal (char (between (b2, b1)), '-1h 0m 0s');
+%! assert_equal (char (caldiff ([b1, b2])), '1h 0m 0s');
+%!test  # a shift within the day stays in the element's own fold
+%! b1 = datetime (2024, 11, 3, 5, 30, 0, 'TimeZone', 'UTC');
+%! b1.TimeZone = 'America/New_York';
+%! b2 = datetime (2024, 11, 3, 6, 30, 0, 'TimeZone', 'UTC');
+%! b2.TimeZone = 'America/New_York';
+%! p = [b1, b2];
+%! assert_equal (posixtime (dateshift (p, 'start', 'hour')), ...
+%!               [1730610000, 1730613600]);
+%! assert_equal (hours (tzoffset (dateshift (p, 'start', 'hour'))), [-4, -5]);
+%! assert_equal (posixtime (dateshift (p, 'end', 'hour')), ...
+%!               [1730613600, 1730617200]);
+%! assert_equal (posixtime (dateshift (p, 'start', 'day')), ...
+%!               [1730606400, 1730606400]);
+%! assert_equal (posixtime (dateshift (p, 'end', 'day')), ...
+%!               [1730696400, 1730696400]);
+%!test  # a calendar step onto a repeated clock lands on the source's fold
+%! z = 'America/New_York';
+%! a = datetime (2024, 11, 2, 1, 30, 0, 'TimeZone', z);
+%! r = a : caldays (1) : a + caldays (2);
+%! assert_equal (posixtime (r), [1730525400, 1730611800, 1730701800]);
+%! assert_equal (hours (tzoffset (r)), [-4, -4, -5]);
+%!test  # stepping the instant crosses the fold rather than resolving to it
+%! z = 'America/New_York';
+%! a = datetime (2024, 11, 3, 0, 30, 0, 'TimeZone', z);
+%! L = linspace (a, a + hours (3), 4);
+%! assert_equal (posixtime (L), ...
+%!               [1730608200, 1730611800, 1730615400, 1730619000]);
+%! assert_equal (hours (tzoffset (L)), [-4, -4, -5, -5]);
+%!test  # a POSIX instant names one of the pair, and says which
+%! z = 'America/New_York';
+%! p = datetime (1730611800, 'ConvertFrom', 'posixtime', 'TimeZone', z);
+%! q = datetime (1730615400, 'ConvertFrom', 'posixtime', 'TimeZone', z);
+%! assert_equal (posixtime ([p, q]), [1730611800, 1730615400]);
+%! assert_equal (hours (tzoffset ([p, q])), [-4, -5]);
+%! assert_equal (isdst ([p, q]), [true, false]);
+
+## Test the same on a zone whose transition is half an hour, which is why the
+## offset is stored in seconds rather than as a one-hour fold flag.  Australia
+## /Lord_Howe puts its clock back 30 minutes on 7 April 2024; measured against
+## MATLAB R2024a.
+%!test
+%! g1 = datetime (2024, 4, 6, 14, 45, 0, 'TimeZone', 'UTC');
+%! g1.TimeZone = 'Australia/Lord_Howe';
+%! g2 = datetime (2024, 4, 6, 15, 15, 0, 'TimeZone', 'UTC');
+%! g2.TimeZone = 'Australia/Lord_Howe';
+%! assert_equal (posixtime ([g1, g2]), [1712414700, 1712416500]);
+%! assert_equal (hours (tzoffset ([g1, g2])), [11, 10.5]);
+%! assert_equal (cellstr ([g1, g2]), ...
+%!               {'07-Apr-2024 01:45:00', '07-Apr-2024 01:45:00'});
+%! assert_equal (g1 == g2, false);
+%! assert_equal (numel (unique ([g1, g2])), 2);
+
+## Test a wall clock the spring-forward gap skips still moves ahead by the gap
+%!test
+%! z = 'America/New_York';
+%! assert_equal (posixtime (datetime (2024, 3, 10, 2, 30, 0, 'TimeZone', z)), ...
+%!               1710055800);
+%! assert_equal (hours (tzoffset (datetime (2024, 3, 10, 2, 30, 0, ...
+%!                                          'TimeZone', z))), -4);
 
 ################################################################################
 ##                         ** Arithmetic Operations **                        ##

@@ -72,6 +72,25 @@ classdef datetime
     Minute = 0
     ## Seconds (including fractional seconds)
     Second = 0
+    ## UTC offset in seconds for each element, and the only thing that tells
+    ## apart the two instants sharing a wall clock across a fall-back
+    ## transition: 01:30 on 3 November 2024 in America/New_York is -4*3600 on
+    ## its first pass and -5*3600 on its second.  Zero for an unzoned array and
+    ## for the leap-second zone, both of which are UTC-based, so
+    ##
+    ##     serial = naive_seconds (components) - Offset
+    ##
+    ## holds without a branch.  Seconds rather than a boolean fold because
+    ## Australia/Lord_Howe shifts by half an hour and Pacific/Chatham sits at
+    ## a quarter hour.  NaN for Not-A-Time.
+    ##
+    ## INVARIANT: Offset always agrees with (components, TimeZone).  A
+    ## wall-clock operation goes through 'normalize', which recomputes it as
+    ## the later of an ambiguous pair; an instant-based operation goes through
+    ## 'serial2components', which carries the true one through.  An
+    ## instant-derived result must therefore NOT be passed to 'normalize'
+    ## afterwards, or the fold is silently lost.
+    Offset = 0
   endproperties
 
   properties
@@ -570,6 +589,7 @@ classdef datetime
       if (nargin == 0)
         [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
          this.Second] = __datetime__ ('now');
+        this.Offset = zeros (size (this.Year));
         return;
       endif
 
@@ -728,6 +748,7 @@ classdef datetime
             ## 'cellstr' reports as one piece of text and which becomes a NaT.
             [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
              this.Second] = deal (nan (size (DateStrings)));
+            this.Offset = nan (size (this.Year));
             return;
           endif
           ## Empty text names no date at all.  It is missing rather than
@@ -847,11 +868,17 @@ classdef datetime
               this.Second(skipped) = NaN;
             endif
           endif
+          this.Offset = dtOffsetOf (this.Year, this.Month, this.Day, ...
+                                    this.Hour, this.Minute, this.Second, ...
+                                    this.TimeZone);
           return;
         endif
       endif
 
-      ## Handle inputs (no errors here)
+      ## Handle inputs (no errors here).  INSTOFF stays empty unless a branch
+      ## builds from an instant and measures its own offset; see the choke
+      ## point at the end of the constructor.
+      instOff = [];
       if (! isempty (ConvertFrom) && strcmpi (ConvertFrom, 'yyyymmdd'))
         ## Decompose a YYYYMMDD integer into year, month, and day components
         ## and construct through the normal component path.
@@ -898,6 +925,15 @@ classdef datetime
            this.Second] = __datetime__ (Yp, Mp, Dp, hp, mp, sp, 'TimeZone', ...
                           'UTC', 'toTimeZone', TimeZone, 'Precision', ...
                           'microseconds');
+          ## This branch alone names an INSTANT rather than a wall clock, and
+          ## which of the two moments sharing a clock on a fall-back day was
+          ## meant is settled by the number given, not by resolve_local.  So
+          ## the offset is measured against that number here, and the
+          ## wall-clock derivation at the end of the constructor skipped.
+          instOff = round (__datetime__ (this.Year, this.Month, this.Day, ...
+                           this.Hour, this.Minute, this.Second, 'ConvertTo', ...
+                           'posixtime', 'TimeZone', 'UTC', 'Precision', ...
+                           'microseconds') - double (args{1}));
         else
           [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
            this.Second] = __datetime__ (args{1}, 'ConvertFrom', ConvertFrom, ...
@@ -937,6 +973,19 @@ classdef datetime
         endif
       endif
 
+      ## Every branch above builds the array from a WALL CLOCK, so the offset
+      ## follows from resolve_local's choices.  Setting it here rather than in
+      ## each branch keeps the size invariant (Offset always matches Year) at
+      ## one choke point.  The exception is a branch that was handed an instant
+      ## and has already measured its own offset against it, which no reading
+      ## of the resulting wall clock could recover.
+      if (isempty (instOff))
+        this.Offset = dtOffsetOf (this.Year, this.Month, this.Day, ...
+                                  this.Hour, this.Minute, this.Second, ...
+                                  this.TimeZone);
+      else
+        this.Offset = instOff + zeros (size (this.Year));
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -955,8 +1004,8 @@ classdef datetime
       fmt = dtResolveFormat (this.Format, this.Hour, this.Minute, ...
                              this.Second);
       cstr = dtFormatStrings (this.Year, this.Month, this.Day, this.Hour, ...
-                              this.Minute, this.Second, this.TimeZone, fmt, ...
-                              datetime.zoneNameStyle ());
+                              this.Minute, this.Second, this.TimeZone, ...
+                              this.Offset, fmt, datetime.zoneNameStyle ());
     endfunction
 
     ## -*- texinfo -*-
@@ -1335,8 +1384,10 @@ classdef datetime
       if (isempty (this.TimeZone))
         secs = nan (size (this));
       else
-        secs = dtZoneOffset (this.Year, this.Month, this.Day, ...
-                             this.Hour, this.Minute, this.Second, this.TimeZone);
+        ## The stored offset is the answer already, and reading it rather than
+        ## resolving the wall clock again is what tells the two passes over a
+        ## repeated clock apart: the tz database would give both the later one.
+        secs = this.Offset + zeros (size (this.Year));
       endif
       out = duration (0, 0, secs);
       out.Format = 'hh:mm';
@@ -1482,6 +1533,10 @@ classdef datetime
         key = __nkeyHash__(this.Hour(:), key);
         key = __nkeyHash__(this.Minute(:), key);
         key = __nkeyHash__(this.Second(:), key);
+        ## Hashed alongside the components because it is part of what makes an
+        ## element itself: two elements sharing a wall clock across a fall-back
+        ## are not equal and so must not be given the same key.
+        key = __nkeyHash__((this.Offset + zeros (size (this.Year)))(:), key);
       endif
     endfunction
 
@@ -1955,8 +2010,10 @@ classdef datetime
       if (isempty (this.TimeZone))
         TF = false (size (this));
       else
-        TF = dtIsDst (this.Year, this.Month, this.Day, ...
-                      this.Hour, this.Minute, this.Second, this.TimeZone);
+        [Y, M, D, h, m, s] = dtOwnFoldClock (this.Year, this.Month, ...
+                             this.Day, this.Hour, this.Minute, ...
+                             this.Second, this.Offset, this.TimeZone);
+        TF = dtIsDst (Y, M, D, h, m, s, this.TimeZone);
       endif
     endfunction
 
@@ -2842,6 +2899,7 @@ classdef datetime
       S = flat (S);
       Y = flat (Y); MO = flat (MO); D = flat (D);
       H = flat (H); MI = flat (MI); SE = flat (SE);
+      OF = flat (A.Offset);
       [nr, nc] = size (S);
       idx = zeros (nr, nc);
       for j = 1:nc
@@ -2868,10 +2926,12 @@ classdef datetime
       back = @(V) ipermute (reshape (V(lin), psz), perm);
       Y = back (Y); MO = back (MO); D = back (D);
       H = back (H); MI = back (MI); SE = back (SE);
+      OF = back (OF);
       I = ipermute (reshape (idx, psz), perm);
       B = A;
       B.Year = Y; B.Month = MO; B.Day = D;
       B.Hour = H; B.Minute = MI; B.Second = SE;
+      B.Offset = OF;
     endfunction
 
     ## -*- texinfo -*-
@@ -3261,7 +3321,13 @@ classdef datetime
       [~, ~, Hidx] =  __unique__ (A.Hour, varargin{:});
       [~, ~, MIidx] = __unique__ (A.Minute, varargin{:});
       [~, ~, Sidx] =  __unique__ (A.Second, varargin{:});
-      DT = [Yidx, MOidx, Didx, Hidx, MIidx, Sidx];
+      ## The offset joins the components as a seventh key, negated so that the
+      ## larger offset -- the earlier of the two moments a repeated wall clock
+      ## names -- codes lower and the row order stays chronological.  It is a
+      ## constant column for an unzoned array and for any array that does not
+      ## straddle a fall-back, so it changes nothing outside that case.
+      [~, ~, OFidx] = __unique__ (-A.Offset, varargin{:});
+      DT = [Yidx, MOidx, Didx, Hidx, MIidx, Sidx, OFidx];
       ## Use indices to find unique datetime values
       if (any (strcmp ('rows', varargin)))
         [~, ixA, ixB] = __unique__ (DT, varargin{:});
@@ -4069,9 +4135,10 @@ classdef datetime
         ser(1) = sA;
         ser(end) = sB;
       endif
-      [Y, M, D, h, mi, s] = serial2components (A, ser);
+      [Y, M, D, h, mi, s, off] = serial2components (A, ser);
       R.Year = Y; R.Month = M; R.Day = D;
       R.Hour = h; R.Minute = mi; R.Second = s;
+      R.Offset = off;
     endfunction
 
     ## -*- texinfo -*-
@@ -4404,6 +4471,7 @@ classdef datetime
       endif
       Y = this.Year; M = this.Month; D = this.Day;
       h = this.Hour; mi = this.Minute; s = this.Second;
+      elapsed = 0;
       keep = isnan (Y) | isinf (Y);
       if (any (keep(:)))
         Y(keep) = 2000; M(keep) = 1; D(keep) = 1;
@@ -4483,8 +4551,31 @@ classdef datetime
           endswitch
         endif
         [Y, M, D, h, mi, s] = dsShiftUnits (Y, M, D, h, mi, s, unit, n);
+        ## The end of a sub-day unit is its start advanced by one unit of
+        ## ELAPSED time, which is not the wall clock one unit later: on the day
+        ## a clock goes back, the hour beginning at 01:00 daylight time ends at
+        ## 01:00 standard time -- a moment the component arithmetic cannot
+        ## name, since it reads 02:00 on a clock that never shows it.  Taking
+        ## the start and stepping the instant names it and leaves every other
+        ## case alone, the two agreeing wherever no clock is put back.  The
+        ## calendar units keep the component form: their 'end' is a date at
+        ## midnight rather than the following boundary, so it is not a step.
+        ## The leap-second zone keeps it too, for the opposite reason: it has
+        ## no daylight saving to straddle, and a minute there may hold
+        ## sixty-one seconds, so a step of sixty would stop inside it.
         if (strcmp (op, 'start'))
           [Y, M, D, h, mi, s] = dsStartComp (Y, M, D, h, mi, s, unit);
+        elseif (any (strcmp (unit, {'second', 'minute', 'hour'})) ...
+                && ! dtIsLeapZone (this.TimeZone))
+          [Y, M, D, h, mi, s] = dsStartComp (Y, M, D, h, mi, s, unit);
+          switch (unit)
+            case 'second'
+              elapsed = 1;
+            case 'minute'
+              elapsed = 60;
+            case 'hour'
+              elapsed = 3600;
+          endswitch
         else
           [Y, M, D, h, mi, s] = dsEndComp (Y, M, D, h, mi, s, unit);
         endif
@@ -4493,11 +4584,22 @@ classdef datetime
       R = this;
       R.Year = Y; R.Month = M; R.Day = D;
       R.Hour = h; R.Minute = mi; R.Second = s;
+      R.Offset = dtOffsetOf (R.Year, R.Month, R.Day, R.Hour, R.Minute, ...
+                             R.Second, R.TimeZone);
       R = normalize (R);
+      ## Shifting within the day does not move an element out of the fold it is
+      ## in: the start of the hour containing 01:30 daylight time is 01:00
+      ## daylight time, not the 01:00 that the clock shows again an hour later.
+      srcOff = this.Offset + zeros (size (R.Year));
+      R = keepFold (R, srcOff);
+      if (elapsed != 0)
+        R = addSeconds (R, elapsed);
+      endif
       if (any (keep(:)))
         R.Year(keep) = this.Year(keep); R.Month(keep) = this.Month(keep);
         R.Day(keep) = this.Day(keep); R.Hour(keep) = this.Hour(keep);
         R.Minute(keep) = this.Minute(keep); R.Second(keep) = this.Second(keep);
+        R.Offset(keep) = srcOff(keep);
       endif
     endfunction
 
@@ -4747,6 +4849,8 @@ classdef datetime
       out.Minute = cat (dim, fieldArgs{:});
       fieldArgs  = cellfun (@(obj) obj.Second, args, 'UniformOutput', false);
       out.Second = cat (dim, fieldArgs{:});
+      fieldArgs  = cellfun (@(obj) obj.Offset, args, 'UniformOutput', false);
+      out.Offset = cat (dim, fieldArgs{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -4808,6 +4912,7 @@ classdef datetime
       this.Hour   = repmat (this.Hour, varargin{:});
       this.Minute = repmat (this.Minute, varargin{:});
       this.Second = repmat (this.Second, varargin{:});
+      this.Offset = repmat (this.Offset, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -4841,6 +4946,7 @@ classdef datetime
       this.Hour   = repelem (this.Hour, varargin{:});
       this.Minute = repelem (this.Minute, varargin{:});
       this.Second = repelem (this.Second, varargin{:});
+      this.Offset = repelem (this.Offset, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -4863,6 +4969,7 @@ classdef datetime
       this.Hour   = repelems (this.Hour, R);
       this.Minute = repelems (this.Minute, R);
       this.Second = repelems (this.Second, R);
+      this.Offset = repelems (this.Offset, R);
     endfunction
 
     ## -*- texinfo -*-
@@ -4893,6 +5000,7 @@ classdef datetime
       this.Hour   = reshape (this.Hour, varargin{:});
       this.Minute = reshape (this.Minute, varargin{:});
       this.Second = reshape (this.Second, varargin{:});
+      this.Offset = reshape (this.Offset, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -4923,6 +5031,7 @@ classdef datetime
       this.Hour   = circshift (this.Hour, varargin{:});
       this.Minute = circshift (this.Minute, varargin{:});
       this.Second = circshift (this.Second, varargin{:});
+      this.Offset = circshift (this.Offset, varargin{:});
     endfunction
 
     ## -*- texinfo -*-
@@ -4947,6 +5056,7 @@ classdef datetime
       this.Hour   = permute (this.Hour, order);
       this.Minute = permute (this.Minute, order);
       this.Second = permute (this.Second, order);
+      this.Offset = permute (this.Offset, order);
     endfunction
 
     ## -*- texinfo -*-
@@ -4972,6 +5082,7 @@ classdef datetime
       this.Hour   = ipermute (this.Hour, order);
       this.Minute = ipermute (this.Minute, order);
       this.Second = ipermute (this.Second, order);
+      this.Offset = ipermute (this.Offset, order);
     endfunction
 
     ## -*- texinfo -*-
@@ -4991,6 +5102,7 @@ classdef datetime
       this.Hour   = transpose (this.Hour);
       this.Minute = transpose (this.Minute);
       this.Second = transpose (this.Second);
+      this.Offset = transpose (this.Offset);
     endfunction
 
     ## -*- texinfo -*-
@@ -5011,6 +5123,7 @@ classdef datetime
       this.Hour   = ctranspose (this.Hour);
       this.Minute = ctranspose (this.Minute);
       this.Second = ctranspose (this.Second);
+      this.Offset = ctranspose (this.Offset);
     endfunction
 
   endmethods
@@ -5052,6 +5165,7 @@ classdef datetime
           out.Hour   = this.Hour(s.subs{:});
           out.Minute = this.Minute(s.subs{:});
           out.Second = this.Second(s.subs{:});
+          out.Offset = this.Offset(s.subs{:});
 
         case '{}'
           error (strcat ("datetime.subsref: '{}' invalid indexing", ...
@@ -5120,6 +5234,7 @@ classdef datetime
             this.Hour(s.subs{:})   = [];
             this.Minute(s.subs{:}) = [];
             this.Second(s.subs{:}) = [];
+            this.Offset(s.subs{:}) = [];
             return;
           elseif (! isa (val, "datetime"))
             error (strcat ("datetime.subsasgn: cannot assign %s values", ...
@@ -5137,11 +5252,13 @@ classdef datetime
           this.Hour(s.subs{:})   = val.Hour;
           this.Minute(s.subs{:}) = val.Minute;
           this.Second(s.subs{:}) = val.Second;
+          this.Offset(s.subs{:}) = val.Offset;
           gap = ! filled;
           if (any (gap(:)))
             this.Year(gap) = NaN;    this.Month(gap) = NaN;
             this.Day(gap) = NaN;     this.Hour(gap) = NaN;
             this.Minute(gap) = NaN;  this.Second(gap) = NaN;
+            this.Offset(gap) = NaN;
           endif
 
         case '{}'
@@ -5199,6 +5316,7 @@ classdef datetime
               if (isempty (toTimeZone))
                 ## Dropping the zone keeps the wall-clock values as they are.
                 this.TimeZone = toTimeZone;
+                this.Offset = zeros (size (this.Year));
               elseif (isempty (this.TimeZone))
                 ## Attaching a zone to an unzoned array reinterprets the
                 ## wall-clock values in that zone without converting, but a
@@ -5213,7 +5331,9 @@ classdef datetime
                   error ("datetime.subsasgn: %s", errmsg);
                 endif
                 this.TimeZone = toTimeZone;
-              else
+                this.Offset = dtOffsetOf (this.Year, this.Month, this.Day, ...
+                              this.Hour, this.Minute, this.Second, toTimeZone);
+              elseif (wasLeap || nowLeap)
                 ## Switching between two zones preserves the absolute instant,
                 ## so the wall-clock values shift by the offset difference.
                 [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
@@ -5225,6 +5345,17 @@ classdef datetime
                   error ("datetime.subsasgn: %s", errmsg);
                 endif
                 this.TimeZone = toTimeZone;
+                this.Offset = dtOffsetOf (this.Year, this.Month, this.Day, ...
+                              this.Hour, this.Minute, this.Second, toTimeZone);
+              else
+                ## Switching zones preserves the absolute INSTANT, so it is
+                ## taken from the stored offset rather than re-resolved from
+                ## the wall clock: an element on the earlier pass of a repeated
+                ## hour keeps its identity instead of collapsing to the later.
+                ser = serial (this);
+                this.TimeZone = toTimeZone;
+                [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
+                 this.Second, this.Offset] = serial2components (this, ser);
               endif
               if (nowLeap)
                 this.Format = dtLeapFormat ();
@@ -5335,31 +5466,34 @@ classdef datetime
         else
           takeA = (SA <= SB) | isnan (SB);
         endif
-        ## Express B's components in A's time zone so selected values are exact.
-        if (isempty (A.TimeZone) || strcmp (A.TimeZone, B.TimeZone))
-          YB = B.Year; MB = B.Month; DB = B.Day;
-          hB = B.Hour; mB = B.Minute; sB = B.Second;
-        else
-          [YB, MB, DB, hB, mB, sB] = __datetime__ (B.Year, B.Month, B.Day, ...
-              B.Hour, B.Minute, B.Second, 'TimeZone', B.TimeZone, ...
-              'toTimeZone', A.TimeZone, 'Precision', 'microseconds');
-        endif
+        ## Express B's components in A's time zone so selected values are
+        ## exact.  This is the same instant-preserving conversion the set
+        ## operations need, so it goes through 'prepSetOp' rather than being
+        ## repeated here -- which is also what keeps B's offset in step with
+        ## its new wall clock, since the two are picked together below.
+        [~, B] = prepSetOp (A, B, fname);
+        YB = B.Year; MB = B.Month; DB = B.Day;
+        hB = B.Hour; mB = B.Minute; sB = B.Second;
         z = zeros (common);
         Y = A.Year + z; Mo = A.Month + z; D = A.Day + z;
         h = A.Hour + z; mi = A.Minute + z; s = A.Second + z;
+        of = A.Offset + z; ofB = B.Offset + z;
         YB = YB + z; MB = MB + z; DB = DB + z;
         hB = hB + z; mB = mB + z; sB = sB + z;
         takeB = ! takeA;
         Y(takeB) = YB(takeB); Mo(takeB) = MB(takeB); D(takeB) = DB(takeB);
         h(takeB) = hB(takeB); mi(takeB) = mB(takeB); s(takeB) = sB(takeB);
+        of(takeB) = ofB(takeB);
         if (strcmp (nanflag, 'includenan'))
           nanpos = isnan (SA) | isnan (SB);
           Y(nanpos) = NaN; Mo(nanpos) = NaN; D(nanpos) = NaN;
           h(nanpos) = NaN; mi(nanpos) = NaN; s(nanpos) = NaN;
+          of(nanpos) = NaN;
         endif
         M = A;
         M.Year = Y; M.Month = Mo; M.Day = D;
         M.Hour = h; M.Minute = mi; M.Second = s;
+        M.Offset = of;
         return;
       endif
       ## Reduction form.  Skip the '[]' placeholder, then read DIM / 'all' /
@@ -5455,25 +5589,38 @@ classdef datetime
       this.Hour   = this.Hour(varargin{:});
       this.Minute = this.Minute(varargin{:});
       this.Second = this.Second(varargin{:});
+      this.Offset = this.Offset(varargin{:});
     endfunction
 
     ## Numeric proxy used by 'table' and set operations for sorting, grouping,
     ## and set membership.  Each datetime element maps to its six canonical
-    ## components [Year, Month, Day, Hour, Minute, Second]; for a datetime
-    ## matrix, each column contributes a six-column block.  Not-A-Time (NaT)
-    ## elements map to NaN across their components, just like the stored arrays.
+    ## components [Year, Month, Day, Hour, Minute, Second] followed by the
+    ## negated UTC offset; for a datetime matrix, each column contributes a
+    ## seven-column block.  Not-A-Time (NaT) elements map to NaN across their
+    ## components, just like the stored arrays.
+    ##
+    ## The offset is carried because the components alone do not identify an
+    ## element: across a fall-back one tuple names two moments, which must
+    ## group and sort apart.  It is negated so that the larger offset -- the
+    ## earlier moment -- sorts first, leaving the block in chronological order.
     function out = proxyArray (this)
       [~, cols] = size (this.Year);
+      off = this.Offset + zeros (size (this.Year));
+      ## An unzoned array stores a zero offset for every element, Not-A-Time
+      ## included; the proxy answers NaN across all of a NaT's columns, so the
+      ## seventh is masked to match the six beside it.
+      off(isnan (this.Year)) = NaN;
       if (cols > 1)
         out = [];
         for i = 1:cols
           SC = [this.Year(:,i), this.Month(:,i), this.Day(:,i), ...
-                this.Hour(:,i), this.Minute(:,i), this.Second(:,i)];
+                this.Hour(:,i), this.Minute(:,i), this.Second(:,i), ...
+                -off(:,i)];
           out = [out, SC];
         endfor
       else
         out = [this.Year(:), this.Month(:), this.Day(:), ...
-               this.Hour(:), this.Minute(:), this.Second(:)];
+               this.Hour(:), this.Minute(:), this.Second(:), -off(:)];
       endif
     endfunction
 
@@ -5484,6 +5631,7 @@ classdef datetime
     ## Not-A-Time and infinite elements are passed through unchanged.
     function this = normalize (this)
       if (isempty (this.Year))
+        this.Offset = zeros (size (this.Year));
         return;
       endif
       if (dtIsLeapZone (this.TimeZone))
@@ -5500,6 +5648,14 @@ classdef datetime
          this.Hour, this.Minute, this.Second, 'TimeZone', this.TimeZone, ...
          'toTimeZone', this.TimeZone, 'Precision', 'microseconds');
       endif
+      ## A wall clock names at most one instant here: an ambiguous one resolves
+      ## to the LATER pass and one in a spring-forward gap is shifted past it,
+      ## both in resolve_local.  Recomputing the offset from the normalized
+      ## components therefore re-asserts that choice, which is right for every
+      ## wall-clock operation and wrong for an instant-based one -- see the
+      ## invariant on the Offset property.
+      this.Offset = dtOffsetOf (this.Year, this.Month, this.Day, this.Hour, ...
+                                this.Minute, this.Second, this.TimeZone);
     endfunction
 
     ## Absolute instant of each element as POSIX seconds (double, microsecond
@@ -5520,14 +5676,15 @@ classdef datetime
                           this.Minute, this.Second);
         return;
       endif
-      if (isempty (this.TimeZone))
-        tz = 'UTC';
-      else
-        tz = this.TimeZone;
-      endif
-      s = __datetime__ (this.Year, this.Month, this.Day, this.Hour, ...
-                        this.Minute, this.Second, 'ConvertTo', 'posixtime', ...
-                        'TimeZone', tz, 'Precision', 'microseconds');
+      ## Read the instant off the stored offset rather than asking the tz
+      ## database to resolve the wall clock, which is exactly the question
+      ## that has two answers on a fall-back day.  Offset is zero for an
+      ## unzoned array, so the one expression serves both.
+      nai = __datetime__ (this.Year, this.Month, this.Day, this.Hour, ...
+                          this.Minute, this.Second, 'ConvertTo', ...
+                          'posixtime', 'TimeZone', 'UTC', 'Precision', ...
+                          'microseconds');
+      s = nai - this.Offset;
     endfunction
 
     ## POSIX instant used by the integer fixed-epoch conversions ('epochtime',
@@ -5562,9 +5719,13 @@ classdef datetime
       endif
       dtCheckLeapPair (A, B, op);
       if (! isempty (A.TimeZone) && ! strcmp (A.TimeZone, B.TimeZone))
-        [B.Year, B.Month, B.Day, B.Hour, B.Minute, B.Second] = __datetime__ ...
-            (B.Year, B.Month, B.Day, B.Hour, B.Minute, B.Second, 'TimeZone', ...
-             B.TimeZone, 'toTimeZone', A.TimeZone, 'Precision', 'microseconds');
+        ## Go through the instant rather than converting the wall clock in
+        ## place -- see 'dtRezone'.  The pair is never a leap zone here, since
+        ## 'dtCheckLeapPair' has just required both operands to agree and the
+        ## only leap zone would then also have compared equal above.
+        [B.Year, B.Month, B.Day, B.Hour, B.Minute, B.Second, B.Offset] = ...
+            dtRezone (B.Year, B.Month, B.Day, B.Hour, B.Minute, B.Second, ...
+                      B.Offset, B.TimeZone, A.TimeZone);
         B.TimeZone = A.TimeZone;
       endif
     endfunction
@@ -5580,8 +5741,10 @@ classdef datetime
       end_try_catch
       A.Year = A.Year + z; A.Month = A.Month + z; A.Day = A.Day + z;
       A.Hour = A.Hour + z; A.Minute = A.Minute + z; A.Second = A.Second + z;
+      A.Offset = A.Offset + z;
       B.Year = B.Year + z; B.Month = B.Month + z; B.Day = B.Day + z;
       B.Hour = B.Hour + z; B.Minute = B.Minute + z; B.Second = B.Second + z;
+      B.Offset = B.Offset + z;
     endfunction
 
     ## Assemble the result of a two-source set operation ('union'/'setxor'),
@@ -5684,6 +5847,17 @@ classdef datetime
       if (f.t)
         cur = A;
         cur.Year = Yc; cur.Month = Mc; cur.Day = Dc;
+        ## CUR carries A's components no longer, so A's offset need not belong
+        ## to it either; re-derive it before the instant below is taken, then
+        ## give A's own back wherever it still describes CUR's clock.  Both
+        ## halves are load-bearing: dropping the first leaves an hour of error
+        ## whenever the calendar step crossed a transition, and dropping the
+        ## second loses the fold when the step did not move the clock at all,
+        ## so that the two passes over a repeated clock report no time between
+        ## them rather than the hour that separates them.
+        cur.Offset = dtOffsetOf (cur.Year, cur.Month, cur.Day, cur.Hour, ...
+                                 cur.Minute, cur.Second, cur.TimeZone);
+        cur = keepFold (cur, A.Offset + zeros (sz));
         remSec = serial (B) - serial (cur);
       else
         remSec = zeros (sz);
@@ -5722,8 +5896,9 @@ classdef datetime
     ## mode/std on this array's serial), preserving the Format and TimeZone.
     function R = fromReducedSerial (this, ser)
       R = this;
-      [Y, M, D, h, m, s] = serial2components (this, ser);
+      [Y, M, D, h, m, s, off] = serial2components (this, ser);
       R.Year = Y; R.Month = M; R.Day = D;
+      R.Offset = off;
       R.Hour = h; R.Minute = m; R.Second = s;
     endfunction
 
@@ -5732,9 +5907,11 @@ classdef datetime
     ## a UTC wall clock and then converted into the target zone (honouring DST).
     ## A leap-second array inverts the continuous SI-second count instead, so a
     ## count that lands inside an inserted second yields a 60th second.
-    function [Y, M, D, h, m, s] = serial2components (this, ser)
+    function [Y, M, D, h, m, s, off] = serial2components (this, ser)
       if (dtIsLeapZone (this.TimeZone))
         [Y, M, D, h, m, s] = dtLeapComponents (ser);
+        off = zeros (size (Y));
+        return;
       elseif (isempty (this.TimeZone))
         [Y, M, D, h, m, s] = __datetime__ (ser, 'ConvertFrom', 'posixtime', ...
                                            'Precision', 'microseconds');
@@ -5745,6 +5922,17 @@ classdef datetime
                              'TimeZone', 'UTC', 'toTimeZone', this.TimeZone, ...
                              'Precision', 'microseconds');
       endif
+      ## The offset that belongs to THIS instant, which is what distinguishes
+      ## the two passes over a repeated wall clock.  It is read back off the
+      ## instant rather than looked up from the wall clock, since the latter is
+      ## exactly the question that has no unique answer.  Offsets are whole
+      ## seconds, so rounding clears the conversion's floating-point dust.
+      off = zeros (size (Y));
+      if (! isempty (this.TimeZone))
+        off = round (__datetime__ (Y, M, D, h, m, s, 'ConvertTo', ...
+                     'posixtime', 'TimeZone', 'UTC', ...
+                     'Precision', 'microseconds') - ser);
+      endif
     endfunction
 
     ## Shift each element by a fixed number of seconds applied to its absolute
@@ -5753,9 +5941,10 @@ classdef datetime
     ## Format and TimeZone properties are preserved.
     function this = addSeconds (this, dsec)
       ser = serial (this) + dsec;
-      [Y, M, D, h, m, s] = serial2components (this, ser);
+      [Y, M, D, h, m, s, off] = serial2components (this, ser);
       this.Year = Y; this.Month = M; this.Day = D;
       this.Hour = h; this.Minute = m; this.Second = s;
+      this.Offset = off;
     endfunction
 
     ## Shift each element by a calendarDuration (SGN is +1 for addition, -1 for
@@ -5800,14 +5989,44 @@ classdef datetime
         s = dtLeapClampSecond (s, dtLeapMinutePosix (Y, M, D, h, m, ...
                                                     zeros (size (Y))));
       endif
+      srcOff = this.Offset + base;
       this.Year = Y; this.Month = M; this.Day = D;
       this.Hour = h; this.Minute = m; this.Second = s;
       this = normalize (this);
+      ## Calendar arithmetic keeps the wall clock, and where that clock is a
+      ## repeated one it keeps the fold as well: a day added to the pass that
+      ## is still on daylight saving arrives on the pass that is still on it.
+      ## 'normalize' has just resolved every element to the later pass, which
+      ## is right only for elements that did not come from the earlier one.
+      this = keepFold (this, srcOff);
 
       ## Add the time-of-day component as an instant (daylight-saving aware).
       if (any (dTime(:) != 0))
         this = addSeconds (this, dTime + zeros (size (this.Year)));
       endif
+    endfunction
+
+    ## Restore SRCOFF as this array's offset wherever it still describes the
+    ## array's own wall clock, leaving the resolved offset in place everywhere
+    ## else.  The test is the round trip: read the instant that SRCOFF names
+    ## and put it back on the clock, and keep SRCOFF exactly when the clock
+    ## comes back unchanged.  That admits the earlier pass of a repeated clock,
+    ## which is the case this exists for, and refuses a stale offset carried in
+    ## from a date whose zone was on the other side of a transition -- for
+    ## which no fold of the target clock corresponds to it and the trip fails.
+    function this = keepFold (this, srcOff)
+      if (isempty (this.TimeZone) || dtIsLeapZone (this.TimeZone))
+        return;
+      endif
+      nai = __datetime__ (this.Year, this.Month, this.Day, this.Hour, ...
+                          this.Minute, this.Second, 'ConvertTo', ...
+                          'posixtime', 'TimeZone', 'UTC', 'Precision', ...
+                          'microseconds');
+      [rY, rM, rD, rh, rm, rs] = serial2components (this, nai - srcOff);
+      rnai = __datetime__ (rY, rM, rD, rh, rm, rs, 'ConvertTo', 'posixtime', ...
+                           'TimeZone', 'UTC', 'Precision', 'microseconds');
+      keep = isfinite (rnai) & isfinite (nai) & abs (rnai - nai) <= 1e-6;
+      this.Offset(keep) = srcOff(keep);
     endfunction
 
     ## Range with a fixed-length (duration/numeric) step of STEPSEC seconds.
@@ -5817,10 +6036,11 @@ classdef datetime
     ## naturally from the numeric colon.
     function R = colonLinear (A, stepSec, B)
       ser = serial (A) : stepSec : serial (B);
-      [Y, M, D, h, m, s] = serial2components (A, ser);
+      [Y, M, D, h, m, s, off] = serial2components (A, ser);
       R = A;
       R.Year = Y; R.Month = M; R.Day = D;
       R.Hour = h; R.Minute = m; R.Second = s;
+      R.Offset = off;
     endfunction
 
     ## Range with a calendarDuration STEP.  Each element is A + k*STEP for
@@ -5870,35 +6090,36 @@ classdef datetime
                        " time zone to one without a time zone."), op);
       endif
       dtCheckLeapPair (A, B, op);
+      ## Express B on A's clock through 'prepSetOp', which goes by the instant.
+      ## Converting the components on their own would resolve an operand
+      ## sitting on the earlier pass of a repeated clock to the later one and
+      ## compare the wrong moment.
+      [~, B] = prepSetOp (A, B, op);
       aY = A.Year; aM = A.Month; aD = A.Day;
-      ah = A.Hour; am = A.Minute; asec = A.Second;
-      if (! isempty (A.TimeZone) && ! strcmp (A.TimeZone, B.TimeZone))
-        [bY, bM, bD, bh, bm, bsec] = __datetime__ (B.Year, B.Month, B.Day, ...
-            B.Hour, B.Minute, B.Second, 'TimeZone', B.TimeZone, ...
-            'toTimeZone', A.TimeZone, 'Precision', 'microseconds');
-      else
-        bY = B.Year; bM = B.Month; bD = B.Day;
-        bh = B.Hour; bm = B.Minute; bsec = B.Second;
-      endif
+      ah = A.Hour; am = A.Minute; asec = A.Second; aoff = A.Offset;
+      bY = B.Year; bM = B.Month; bD = B.Day;
+      bh = B.Hour; bm = B.Minute; bsec = B.Second; boff = B.Offset;
+      ## Two elements are the same moment only if they also agree on the
+      ## offset: identical components on a fall-back day name two of them.
+      EQ = (aY == bY) & (aM == bM) & (aD == bD) ...
+         & (ah == bh) & (am == bm) & (asec == bsec) & (aoff == boff);
       switch (op)
         case 'eq'
-          TF = (aY == bY) & (aM == bM) & (aD == bD) ...
-             & (ah == bh) & (am == bm) & (asec == bsec);
+          TF = EQ;
         case 'ne'
-          TF = ! ((aY == bY) & (aM == bM) & (aD == bD) ...
-                & (ah == bh) & (am == bm) & (asec == bsec));
+          TF = ! EQ;
         case 'lt'
-          TF = lexlt (aY, aM, aD, ah, am, asec, bY, bM, bD, bh, bm, bsec);
+          TF = lexlt (aY, aM, aD, ah, am, asec, bY, bM, bD, bh, bm, bsec, ...
+                      aoff, boff);
         case 'gt'
-          TF = lexlt (bY, bM, bD, bh, bm, bsec, aY, aM, aD, ah, am, asec);
+          TF = lexlt (bY, bM, bD, bh, bm, bsec, aY, aM, aD, ah, am, asec, ...
+                      boff, aoff);
         case 'le'
-          TF = lexlt (aY, aM, aD, ah, am, asec, bY, bM, bD, bh, bm, bsec) ...
-             | ((aY == bY) & (aM == bM) & (aD == bD) ...
-                & (ah == bh) & (am == bm) & (asec == bsec));
+          TF = lexlt (aY, aM, aD, ah, am, asec, bY, bM, bD, bh, bm, bsec, ...
+                      aoff, boff) | EQ;
         case 'ge'
-          TF = lexlt (bY, bM, bD, bh, bm, bsec, aY, aM, aD, ah, am, asec) ...
-             | ((aY == bY) & (aM == bM) & (aD == bD) ...
-                & (ah == bh) & (am == bm) & (asec == bsec));
+          TF = lexlt (bY, bM, bD, bh, bm, bsec, aY, aM, aD, ah, am, asec, ...
+                      boff, aoff) | EQ;
       endswitch
     endfunction
 
@@ -5931,8 +6152,8 @@ function TF = do_isequal (args, nanEqual)
       TF = false;
       return;
     endif
-    ## Leap seconds are part of what an array counts, so an array that has them
-    ## is never equal to one that does not.
+    ## Leap seconds are part of what an array counts, so an array that has
+    ## them is never equal to one that does not.
     if (dtIsLeapZone (A.TimeZone) != dtIsLeapZone (B.TimeZone))
       TF = false;
       return;
@@ -5940,17 +6161,22 @@ function TF = do_isequal (args, nanEqual)
     if (isempty (A))
       continue;  # two empties of equal size compare equal
     endif
-    ## Align B onto A's zone so the wall-clock components compare by instant.
+    ## Zoned operands are moved to UTC, where no wall clock names more than
+    ## one moment.  That does two things at once: it aligns operands in
+    ## different zones by their instant, and it separates the two moments that
+    ## share a local clock on the day a clock goes back, which no comparison
+    ## of local components could tell apart.  Assigning the zone preserves the
+    ## instant, so nothing else is needed here.  The leap-second zone is left
+    ## alone: both operands are already in it, it is its own frame, and moving
+    ## out of it would fold an inserted second onto its neighbour.
+    if (! isempty (A.TimeZone) && ! dtIsLeapZone (A.TimeZone))
+      A.TimeZone = 'UTC';
+      B.TimeZone = 'UTC';
+    endif
     aY = A.Year; aM = A.Month; aD = A.Day;
     ah = A.Hour; am = A.Minute; asec = A.Second;
-    if (! isempty (A.TimeZone) && ! strcmp (A.TimeZone, B.TimeZone))
-      [bY, bM, bD, bh, bm, bsec] = __datetime__ (B.Year, B.Month, B.Day, ...
-          B.Hour, B.Minute, B.Second, 'TimeZone', B.TimeZone, ...
-          'toTimeZone', A.TimeZone, 'Precision', 'microseconds');
-    else
-      bY = B.Year; bM = B.Month; bD = B.Day;
-      bh = B.Hour; bm = B.Minute; bsec = B.Second;
-    endif
+    bY = B.Year; bM = B.Month; bD = B.Day;
+    bh = B.Hour; bm = B.Minute; bsec = B.Second;
     if (nanEqual)
       E = ceq (aY, bY) & ceq (aM, bM) & ceq (aD, bD) ...
         & ceq (ah, bh) & ceq (am, bm) & ceq (asec, bsec);
@@ -5970,6 +6196,37 @@ function TF = ceq (x, y)
   TF = (x == y) | (isnan (x) & isnan (y));
 endfunction
 
+## B's wall-clock components and UTC offset expressed in the time zone TZ,
+## keeping each element's instant.  B is returned untouched when it is already
+## in TZ or when TZ is empty.
+##
+## The route is the instant and not the wall clock, and the difference is the
+## whole point: asking the tz database to convert B's components between zones
+## makes it resolve them in B's own zone first, and on a fall-back day that
+## resolution has two answers, of which it always takes the later.  An element
+## sitting on the earlier pass would come out an hour wrong.  Reading the
+## instant off B's stored offset, then putting it back on the clock in TZ,
+## asks nothing that has two answers.
+## Takes and returns the bare component arrays rather than the object, since
+## a file-scope function reaches a datetime's properties through 'subsref',
+## which exposes the six components but deliberately not the offset.
+function [Y, M, D, h, m, s, off] = dtRezone (Y, M, D, h, m, s, off, ...
+                                             fromTZ, TZ)
+  off = off + zeros (size (Y));
+  if (isempty (TZ) || strcmp (TZ, fromTZ))
+    return;
+  endif
+  ser = __datetime__ (Y, M, D, h, m, s, 'ConvertTo', 'posixtime', ...
+                      'TimeZone', 'UTC', 'Precision', 'microseconds') - off;
+  [Y, M, D, h, m, s] = __datetime__ (ser, 'ConvertFrom', 'posixtime', ...
+                                     'Precision', 'microseconds');
+  [Y, M, D, h, m, s] = __datetime__ (Y, M, D, h, m, s, 'TimeZone', 'UTC', ...
+                       'toTimeZone', TZ, 'Precision', 'microseconds');
+  ## Offsets are whole seconds, so rounding clears the conversion's dust.
+  off = round (__datetime__ (Y, M, D, h, m, s, 'ConvertTo', 'posixtime', ...
+               'TimeZone', 'UTC', 'Precision', 'microseconds') - ser);
+endfunction
+
 ## True while a candidate datetime X has not yet passed the range endpoint B,
 ## for an increasing (INCR true) or decreasing calendar range.  Used to bracket
 ## and binary-search the element count in 'colonCalendar'.
@@ -5986,15 +6243,27 @@ endfunction
 ## strictly earlier than that of the second.  Any NaN component (Not-A-Time)
 ## makes the element false, matching NaN comparison semantics.  All arguments
 ## broadcast against each other element-wise.
-function TF = lexlt (aY, aM, aD, ah, am, asec, bY, bM, bD, bh, bm, bsec)
+##
+## AOFF and BOFF are the operands' UTC offsets, and break the tie the six
+## components cannot: on the day a clock goes back the same tuple names two
+## moments an hour apart, and the one still on daylight saving -- the earlier
+## of the two -- is the one carrying the LARGER offset, whence the reversed
+## test at the bottom.  They default to zero, which is the right answer for a
+## caller comparing wall clocks rather than instants (calendar arithmetic does
+## exactly that) and for any unzoned array.  The comparison stays componentwise
+## and so stays exact at every magnitude, which a comparison of instants held
+## as seconds in a double would not be.
+function TF = lexlt (aY, aM, aD, ah, am, asec, bY, bM, bD, bh, bm, bsec, ...
+                     aoff = 0, boff = 0)
   eqY = aY == bY;  eqM = aM == bM;  eqD = aD == bD;
-  eqh = ah == bh;  eqm = am == bm;
+  eqh = ah == bh;  eqm = am == bm;  eqs = asec == bsec;
   TF = (aY < bY) ...
      | (eqY & aM < bM) ...
      | (eqY & eqM & aD < bD) ...
      | (eqY & eqM & eqD & ah < bh) ...
      | (eqY & eqM & eqD & eqh & am < bm) ...
-     | (eqY & eqM & eqD & eqh & eqm & asec < bsec);
+     | (eqY & eqM & eqD & eqh & eqm & asec < bsec) ...
+     | (eqY & eqM & eqD & eqh & eqm & eqs & aoff > boff);
 endfunction
 
 ## Promote a set-operation operand to a datetime array.  A datetime is returned
@@ -6637,7 +6906,7 @@ endfunction
 ## time zone ('' for unzoned); FMT is a concrete pattern already resolved by
 ## dtResolveFormat.  NaT elements render as 'NaT' and infinite years as
 ## '-Inf'/'Inf', matching the component-store sentinels.
-function cstr = dtFormatStrings (Y, M, D, H, Mi, S, TZ, fmt, zoneStyle)
+function cstr = dtFormatStrings (Y, M, D, H, Mi, S, TZ, OFF, fmt, zoneStyle)
   ## The zone-dependent quantities still come from the compiled tz database;
   ## the rendering itself is done by __ldml__.  Read them only when the format
   ## actually names a zone field: the 'z' name field needs both the
@@ -6651,13 +6920,56 @@ function cstr = dtFormatStrings (Y, M, D, H, Mi, S, TZ, fmt, zoneStyle)
   off = [];
   abbr = {};
   if (needOff)
-    off = dtZoneOffset (Y, M, D, H, Mi, S, TZ);
+    ## The array carries its own offsets, so the numeric zone fields are read
+    ## off them rather than resolved from the wall clock a second time.
+    off = OFF + zeros (size (Y));
   endif
   if (needAbbr)
-    abbr = dtZoneAbbrev (Y, M, D, H, Mi, S, TZ);
+    ## The name has to be looked up, and looking it up by wall clock names the
+    ## later of a repeated pair, so each element is first put in a moment that
+    ## is unambiguous and in its own regime -- 'EDT' for the pass that is still
+    ## on daylight saving, 'EST' for the one that is not.
+    [aY, aM, aD, aH, aMi, aS] = dtOwnFoldClock (Y, M, D, H, Mi, S, OFF, TZ);
+    abbr = dtZoneAbbrev (aY, aM, aD, aH, aMi, aS, TZ);
   endif
   cstr = __ldml__ ('format', Y, M, D, H, Mi, S, fmt, zoneStyle, hasTZ, ...
                    off, abbr);
+endfunction
+
+## Wall clock of each element moved, where it has to be, into a moment that
+## names it unambiguously and lies in the same daylight-saving regime it is
+## already in.  Elements whose clock names one moment are returned untouched.
+##
+## The tz database is asked questions -- is daylight saving in force, what is
+## this zone called right now -- by wall clock, and on the day a clock is put
+## back one wall clock names two moments.  Every such query therefore answers
+## for the later of the two, which is the wrong answer for exactly the elements
+## the stored offset was introduced to keep.  Those are the ones whose offset
+## differs from the resolved one, and the difference is the length of the
+## repeated window itself, so a clock stepped back by it leaves the window
+## through the near end and lands in the regime that was still in force.  It is
+## then unambiguous and the ordinary query answers for it correctly.
+##
+## Taking the length from the two offsets rather than assuming an hour is what
+## makes this hold on Lord Howe (half an hour) and Chatham (three quarters),
+## and asking the database after the step rather than reasoning that the
+## earlier pass "is" the daylight one is what makes it hold in Ireland, where
+## the database counts winter as the saving period and summer as standard.
+function [Y, M, D, H, Mi, S] = dtOwnFoldClock (Y, M, D, H, Mi, S, off, TZ)
+  if (isempty (TZ))
+    return;
+  endif
+  d = off - dtZoneOffset (Y, M, D, H, Mi, S, TZ);
+  amb = isfinite (d) & d != 0;
+  if (! any (amb(:)))
+    return;
+  endif
+  nai = __datetime__ (Y, M, D, H, Mi, S, 'ConvertTo', 'posixtime', ...
+                      'TimeZone', 'UTC', 'Precision', 'microseconds');
+  [bY, bM, bD, bH, bMi, bS] = __datetime__ (nai - d, 'ConvertFrom', ...
+                              'posixtime', 'Precision', 'microseconds');
+  Y(amb) = bY(amb); M(amb) = bM(amb); D(amb) = bD(amb);
+  H(amb) = bH(amb); Mi(amb) = bMi(amb); S(amb) = bS(amb);
 endfunction
 
 ## UTC offset (seconds east of UTC, negative west of Greenwich) for each
@@ -7476,6 +7788,23 @@ function ev = dtUnitBinEdges (xf, spec, s2c, c2s, scope)
       endif
   endswitch
 
+endfunction
+
+## UTC offset in seconds for each element, derived from the WALL CLOCK, so an
+## ambiguous time gets the later pass and one inside a gap the shifted one --
+## resolve_local's choices.  Zero for an unzoned or leap-second array.  Used by
+## every wall-clock operation; an instant-based one must take its offset from
+## 'serial2components' instead, which reads it off the instant.
+function off = dtOffsetOf (Y, M, D, h, m, s, tz)
+  if (isempty (tz) || dtIsLeapZone (tz))
+    off = zeros (size (Y));
+    return;
+  endif
+  loc = __datetime__ (Y, M, D, h, m, s, 'ConvertTo', 'posixtime', ...
+                      'TimeZone', tz, 'Precision', 'microseconds');
+  nai = __datetime__ (Y, M, D, h, m, s, 'ConvertTo', 'posixtime', ...
+                      'TimeZone', 'UTC', 'Precision', 'microseconds');
+  off = round (nai - loc);
 endfunction
 
 ## The K-th point of a mixed-calendarDuration bin grid, as a serial.  ANCHOR is
