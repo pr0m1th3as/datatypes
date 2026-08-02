@@ -4964,8 +4964,12 @@
 %! discretize (datetime (2024, 1, 1) + days (0:9), 'fortnight')
 %!error <datetime.discretize: a bin width must be positive and finite.> ...
 %! discretize (datetime (2024, 1, 1) + days (0:9), days (0))
-%!error <datetime.discretize: a calendarDuration bin width must be a positive scalar number of whole calendar months or of whole calendar days, not a mixture.> ...
-%! discretize (datetime (2024, 1, 1) + days (0:9), calmonths (1) + caldays (1))
+%!error <datetime.discretize: a bin width must be positive and finite.> ...
+%! discretize (datetime (2024, 1, 1) + days (0:9), caldays (0))
+%!error <datetime.discretize: a bin width must be positive and finite.> ...
+%! discretize (datetime (2024, 1, 1) + days (0:9), caldays (-1))
+%!error <datetime.discretize: a bin width must be positive and finite.> ...
+%! discretize (datetime (2024, 1, 1) + days (0:9), caldays ([1, 2]))
 %!error <datetime.histcounts: a bin width must be a scalar duration or calendarDuration, or a unit name, and must be positive and finite.> ...
 %! histcounts (datetime (2024, 1, 1) + days (0:9), 'BinWidth', 3)
 %!error <datetime.histcounts: 'integers' is not a valid 'BinMethod' for a datetime.> ...
@@ -5076,6 +5080,57 @@
 %! [n2, e2] = histcounts (t, 'BinMethod', 'day');
 %! assert_equal (n1, n2);
 %! assert_equal (posixtime (e1), posixtime (e2));
+
+## Test 'discretize' / 'histcounts' -- a MIXED calendarDuration bin width is
+## accepted, as MATLAB accepts it.  The grid is anchored on 1 January of the
+## smallest element's year when the width carries months and on the 1st of its
+## month when it does not, and steps by the whole width, time of day included.
+## Values captured from R2024a.
+%!test
+%! t = datetime (2024, 3, 1) + hours (0:6:120);
+%! [b, e] = discretize (t, caldays (1) + hours (2));
+%! [Y, M, D] = ymd (e);
+%! [H, MI, S] = hms (e);
+%! assert_equal (D(:).', [1, 2, 3, 4, 5, 6]);
+%! assert_equal (H(:).', [0, 2, 4, 6, 8, 10]);
+%! assert_equal (b([1, 6, 10, 21]), [1, 2, 3, 5]);
+%!test
+%! t = datetime (2024, 5, 10) + caldays (0:60);
+%! [~, e] = discretize (t, calmonths (1) + caldays (1));
+%! [Y, M, D] = ymd (e);
+%! assert_equal (M(:).', [5, 6, 7, 8]);
+%! assert_equal (D(:).', [5, 6, 7, 8]);
+%!test
+%! t = datetime (2024, 12, 10) + caldays (0:60);
+%! [~, e] = discretize (t, calmonths (1) + caldays (1));
+%! [Y, M, D] = ymd (e);
+%! assert_equal (Y(:).', [2024, 2024, 2025, 2025]);
+%! assert_equal (M(:).', [11, 12, 1, 2]);
+%! assert_equal (D(:).', [11, 12, 13, 14]);
+%!test
+%! t = datetime (2024, 5, 10) + caldays (0:90);
+%! [~, e] = discretize (t, calmonths (1) + caldays (3));
+%! [Y, M, D] = ymd (e);
+%! assert_equal (M(:).', [4, 5, 6, 7, 8]);
+%! assert_equal (D(:).', [10, 13, 16, 19, 22]);
+%!test
+%! t = datetime (2024, 5, 10, 0, 0, 0) + hours (0:6:96);
+%! [~, e] = discretize (t, caldays (1) + hours (2));
+%! [Y, M, D] = ymd (e);
+%! [H, MI, S] = hms (e);
+%! assert_equal (D(:).', [9, 10, 11, 12, 14]);
+%! assert_equal (H(:).', [16, 18, 20, 22, 0]);
+%!test
+%! t = datetime (2024, 3, 1) + hours (0:6:120);
+%! [~, e] = discretize (t, calyears (1) + calmonths (1));
+%! [Y, M, D] = ymd (e);
+%! assert_equal (Y(:).', [2024, 2025]);
+%! assert_equal (M(:).', [1, 2]);
+%!test
+%! t = datetime (2024, 3, 1) + hours (0:6:120);
+%! [~, e] = discretize (t, calendarDuration (0, 0, 0, 6, 0, 0));
+%! [H, MI, S] = hms (e);
+%! assert_equal (H(1:5), [0, 6, 12, 18, 0]);
 
 ## Test 'discretize' / 'histcounts' -- a duration bin width is anchored at
 ## local midnight on the 1st of the month holding the smallest element and

@@ -7271,21 +7271,26 @@ function [kind, step, named] = dtUnitStep (spec, scope)
   if (isa (spec, 'calendarDuration'))
     mo = calmonths (spec);
     dy = caldays (spec);
-    if (! isscalar (spec) || ! isequal (spec, calmonths (mo) + caldays (dy))
-        || (mo != 0 && dy != 0) || (mo == 0 && dy == 0))
-      error (strcat (scope, ": a calendarDuration bin width must be a", ...
-                     " positive scalar number of whole calendar months or", ...
-                     " of whole calendar days, not a mixture."));
-    endif
-    if (mo != 0)
-      kind = 'month';
-      step = mo;
-    else
-      kind = 'day';
-      step = dy;
-    endif
-    if (step <= 0)
+    sc = seconds (time (spec));
+    if (! isscalar (spec) || ! all (isfinite ([mo, dy, sc]))
+        || any ([mo, dy, sc] < 0) || ! any ([mo, dy, sc]))
       error (strcat (scope, ": a bin width must be positive and finite."));
+    endif
+    ## A MIXED width -- months and days together, or either with a time of
+    ## day -- is accepted, as MATLAB accepts it; refusing it was an invention
+    ## of ours.  Pure single-unit widths keep the branches they were verified
+    ## on; only a mixture, or a calendarDuration carrying nothing but a time,
+    ## needs the general grid.
+    ## A month-bearing WIDTH anchors on 1 January of the data's year, which is
+    ## not the 'month' branch's absolute grid: that one floors onto a multiple
+    ## of the step counted from year zero, which a named 'decade' or 'century'
+    ## needs (a decade must open on a year divisible by ten) but a width does
+    ## not.  The two agree whenever the step divides 12, which is why only
+    ## calyears (1) + calmonths (1), a step of 13, exposes the difference.
+    if (sc == 0 && mo == 0)
+      kind = 'day';   step = dy;
+    else
+      kind = 'cal';   step = [mo, dy, sc];
     endif
     return;
   endif
@@ -7438,8 +7443,51 @@ function ev = dtUnitBinEdges (xf, spec, s2c, c2s, scope)
       Ye = floor (k / 12);
       Me = k - Ye * 12 + 1;
       ev = c2s (Ye, Me, ones (size (k)));
+
+    case 'cal'
+      ## A mixed calendarDuration width.  The grid is anchored on 1 January of
+      ## the smallest element's year when the width carries months, and on the
+      ## 1st of its month when it does not, and steps by the WHOLE width --
+      ## calendar part and time of day together.  The opening edge is the last
+      ## grid point not past that element.  Because the anchor is always a 1st,
+      ## no day-of-month clamping can occur, so the k-th point is computed
+      ## directly rather than by stepping k times, and the two agree.
+      [Y, M, D] = s2c (lo);
+      if (step(1) != 0)
+        M = 1;
+      endif
+      ## Mean Gregorian month, for the initial guess only; the walk below is
+      ## what actually places the edge.
+      slen = step(1) * 30.436875 * 86400 + step(2) * 86400 + step(3);
+      k = max (0, floor ((lo - c2s (Y, M, 1)) / slen));
+      while (k > 0 && dtCalGridPoint (Y, M, step, k, c2s) > lo)
+        k -= 1;
+      endwhile
+      while (dtCalGridPoint (Y, M, step, k + 1, c2s) <= lo)
+        k += 1;
+      endwhile
+      ev = dtCalGridPoint (Y, M, step, k, c2s);
+      while (ev(end) < hi)
+        k += 1;
+        ev(end+1) = dtCalGridPoint (Y, M, step, k, c2s);
+      endwhile
+      if (numel (ev) < 2)
+        ev(2) = dtCalGridPoint (Y, M, step, k + 1, c2s);
+      endif
   endswitch
 
+endfunction
+
+## The K-th point of a mixed-calendarDuration bin grid, as a serial.  ANCHOR is
+## the 1st of month M in year Y; STEP is [months days seconds].  The month part
+## is applied first and the day part second, matching calendar addition, and the
+## time of day is added last as an instant.  No clamping is possible because the
+## anchor's day of month is 1.
+function s = dtCalGridPoint (Y, M, step, k, c2s)
+  tot = Y * 12 + (M - 1) + k * step(1);
+  Yk = floor (tot / 12);
+  [Yk, Mk, Dk] = dtAddDays (Yk, tot - Yk * 12 + 1, 1, k * step(2));
+  s = c2s (Yk, Mk, Dk) + k * step(3);
 endfunction
 
 ## Edges for a requested bin count over the data range.
