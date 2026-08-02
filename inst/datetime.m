@@ -3786,11 +3786,16 @@ classdef datetime
     ## edges as a @qcode{datetime} array carrying this array's @qcode{Format}
     ## and @qcode{TimeZone}.
     ##
-    ## Note that a @qcode{'day'} bin, and any bin a whole number of days or
-    ## longer, begins at @strong{local midnight}.  In a time zone that observes
-    ## daylight saving, the bin holding a transition is therefore 23 or 25 hours
-    ## long while its neighbours are 24.  Bins of an hour or less are fixed
-    ## spans of time and do not vary.
+    ## Note that whether a bin follows the calendar depends on how its width
+    ## is given, not on how long that width is.  A named unit (@qcode{'day'}
+    ## and coarser) or a @qcode{calendarDuration} width begins at
+    ## @strong{local midnight}, so in a time zone that observes daylight
+    ## saving the bin holding a transition is 23 or 25 hours long while its
+    ## neighbours are 24.  A @qcode{duration} width is a fixed span of elapsed
+    ## time whatever its length: @code{days (1)} bins are each exactly 24
+    ## hours, and their edges therefore read an hour later on the far side of
+    ## a transition.  The two agree for an unzoned array, and for a zoned one
+    ## that spans no transition.
     ##
     ## When @var{T} is empty the edges are anchored on the epoch,
     ## @qcode{1970-01-01}.  This is @strong{deliberately unlike MATLAB}, which
@@ -3864,8 +3869,15 @@ classdef datetime
     ## explicit @qcode{datetime} edges respectively.
     ##
     ## @qcode{'BinWidth'} takes a scalar @qcode{duration} or
-    ## @qcode{calendarDuration}, @qcode{'BinLimits'} a two-element
-    ## @qcode{datetime}, and @qcode{'BinEdges'} a @qcode{datetime} vector.
+    ## @qcode{calendarDuration} and, @strong{as an Octave extension}, any of
+    ## the unit names listed for @code{discretize}; MATLAB accepts only the
+    ## two classes here and requires @qcode{'BinMethod'} for a named unit.
+    ## The two spellings give identical results, so
+    ## @code{histcounts (@var{T}, 'BinWidth', 'day')} is simply another way of
+    ## writing @code{histcounts (@var{T}, 'BinMethod', 'day')} -- and note
+    ## that neither is the same as @code{'BinWidth', days (1)}, for the reason
+    ## given below.  @qcode{'BinLimits'} takes a two-element @qcode{datetime},
+    ## and @qcode{'BinEdges'} a @qcode{datetime} vector.
     ## @qcode{'BinMethod'} accepts @qcode{'auto'}, @qcode{'scott'},
     ## @qcode{'fd'}, @qcode{'sturges'} and @qcode{'sqrt'}, and any of the named
     ## calendar units listed for @code{discretize}, but not
@@ -3876,10 +3888,11 @@ classdef datetime
     ## @qcode{'countdensity'} and @qcode{'pdf'} are not accepted, since a
     ## density per unit time has no meaning here.
     ##
-    ## As for @code{discretize}, bins of a day or longer begin at local
-    ## midnight and so vary in length across a daylight-saving transition, and
-    ## an empty @var{T} anchors the edges on the epoch rather than on the
-    ## current clock as MATLAB does.
+    ## As for @code{discretize}, a named unit or a @qcode{calendarDuration}
+    ## width begins at local midnight and so varies in length across a
+    ## daylight-saving transition, while a @qcode{duration} width is a fixed
+    ## span of elapsed time whatever its length, and an empty @var{T} anchors
+    ## the edges on the epoch rather than on the current clock as MATLAB does.
     ##
     ## @seealso{discretize, histcounts}
     ## @end deftypefn
@@ -7241,6 +7254,13 @@ function [kind, step, named] = dtUnitStep (spec, scope)
   ## makes that distinction for a datetime and not for a duration.
   named = ! (isa (spec, 'duration') || isa (spec, 'calendarDuration'));
 
+  ## A unit NAME is accepted from every caller, including histcounts's
+  ## 'BinWidth'.  That last one is an OCTAVE EXTENSION, deliberate and kept:
+  ## MATLAB's 'BinWidth' takes only a duration or a calendarDuration and sends
+  ## named units to 'BinMethod', which we also accept.  The two spellings are
+  ## equivalent here, so refusing one buys the user nothing.  Documented in the
+  ## histcounts docstring and in PENDING_NEWS.md.  Positionally -- discretize
+  ## (T, 'day') -- a name is ordinary MATLAB behaviour, not an extension.
   if (! isa (spec, 'duration') && ! isa (spec, 'calendarDuration')
       && ! dtIsTextScalar (spec))
     error (strcat (scope, ": a bin width must be a scalar duration or", ...
