@@ -491,9 +491,19 @@ ldml_parse (const Cell& strs, const string& fmt, double pivot, int lidx,
 
   // Today's local date, for the fields the format leaves out (the m-code
   // reads these from clock, which is local time as well).
+  // Plain localtime, not localtime_r: the latter is POSIX and the MinGW
+  // headers Octave builds with on Windows do not declare it, exposing only
+  // the Microsoft localtime_s, whose argument order differs between the
+  // Microsoft and C11 Annex K spellings.  localtime is C89 and available on
+  // every toolchain; its static buffer is copied out at once and no other
+  // localtime-family call can intervene.
   time_t tt = time (nullptr);
-  struct tm lt;
-  localtime_r (&tt, &lt);
+  const struct tm *lp = localtime (&tt);
+  if (! lp)
+  {
+    error ("datetime: cannot read the system clock.");
+  }
+  const struct tm lt = *lp;
   const double nowY = lt.tm_year + 1900;
   const double nowM = lt.tm_mon + 1;
   const double nowD = lt.tm_mday;
