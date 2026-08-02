@@ -3861,6 +3861,15 @@ classdef datetime
     ## a transition.  The two agree for an unzoned array, and for a zoned one
     ## that spans no transition.
     ##
+    ## A named unit opens one bin past the data when the largest element sits
+    ## on a unit boundary of the wall clock.  Sub-day bins step in elapsed
+    ## time, so in a zone whose shift is not a whole number of those units --
+    ## @code{Australia/Lord_Howe} moves its clock half an hour, against an
+    ## @qcode{'hour'} bin -- the grid leaves the wall clock past a transition
+    ## and an element may then land mid-unit.  Such an element gets a bin of
+    ## its own here.  This is @strong{deliberately unlike MATLAB}, which closes
+    ## its last edge short of it and leaves it out of every bin.
+    ##
     ## When @var{T} is empty the edges are anchored on the epoch,
     ## @qcode{1970-01-01}.  This is @strong{deliberately unlike MATLAB}, which
     ## answers an empty @qcode{datetime} with edges taken from the current
@@ -3874,12 +3883,12 @@ classdef datetime
         error ("datetime.discretize: not enough input arguments.");
       endif
       xv = serial (this)(:);
-      [s2c, c2s, d2s] = dtCalHandles (this);
+      [s2c, c2s, d2s, w2s] = dtCalHandles (this);
       isCount = false;
       if (isa (arg2, 'datetime'))
         ev = d2s (arg2)(:).';
       else
-        [ev, isCount] = dtBinEdges (xv, arg2, s2c, c2s, ...
+        [ev, isCount] = dtBinEdges (xv, arg2, s2c, c2s, w2s, ...
                                     'datetime.discretize');
       endif
       EDGES = fromReducedSerial (this, ev);
@@ -3957,14 +3966,20 @@ classdef datetime
     ## daylight-saving transition, while a @qcode{duration} width is a fixed
     ## span of elapsed time whatever its length, and an empty @var{T} anchors
     ## the edges on the epoch rather than on the current clock as MATLAB does.
+    ## The same paragraph on named units also applies: where a zone shifts by
+    ## less than one bin unit, an element landing mid-unit past the transition
+    ## gets a bin of its own, so @var{N} always sums to the number of finite
+    ## elements.  MATLAB can leave such an element out of every bin, and its
+    ## counts then sum to less.
     ##
     ## @seealso{discretize, histcounts}
     ## @end deftypefn
     function [N, EDGES, BIN] = histcounts (this, varargin)
 
       xv = serial (this)(:);
-      [s2c, c2s, d2s] = dtCalHandles (this);
-      args = dtHistArgs (varargin, xv, s2c, c2s, d2s, 'datetime.histcounts');
+      [s2c, c2s, d2s, w2s] = dtCalHandles (this);
+      args = dtHistArgs (varargin, xv, s2c, c2s, d2s, w2s, ...
+                         'datetime.histcounts');
       if (nargout > 2)
         [N, ev, BIN] = histcounts (xv, args{:});
         BIN = reshape (BIN, size (this.Year));
@@ -5882,12 +5897,18 @@ classdef datetime
     ## own conversions; only the class knows its zone, its leap seconds and its
     ## epoch, so the knowledge is passed in rather than duplicated there.  S2C
     ## maps a serial to its local year/month/day, C2S a local date to the serial
-    ## of its midnight, and D2S any datetime to its serial.
-    function [s2c, c2s, d2s] = dtCalHandles (this)
+    ## of its midnight, and D2S any datetime to its serial.  W2S maps a local
+    ## date plus a count of WALL seconds into that day to a serial, which C2S
+    ## plus a numeric offset cannot do: adding seconds to a midnight serial adds
+    ## ELAPSED time, and the two part company across a daylight-saving
+    ## transition.  The seconds may run past a day; 'normalize' carries them.
+    function [s2c, c2s, d2s, w2s] = dtCalHandles (this)
       s2c = @(s) serial2components (this, s);
       c2s = @(Y, M, D) dsSerialOf (this, Y, M, D, zeros (size (Y)), ...
                                    zeros (size (Y)), zeros (size (Y)));
       d2s = @(D) serial (D);
+      w2s = @(Y, M, D, sec) dsSerialOf (this, Y, M, D, zeros (size (Y)), ...
+                                        zeros (size (Y)), sec);
     endfunction
 
     ## Build a datetime from reduced POSIX seconds (the result of mean/median/
@@ -7371,7 +7392,7 @@ endfunction
 ## result only through the unit it lands in, so sliding the data through a day
 ## moves where the bins sit but never how wide they are or which unit they use.
 function edges = dtBinEdgesGrid (xmin, xmax, nbins, ser2cal, cal2ser, ...
-                                 tick = 0.5)
+                                 wall2ser, tick = 0.5)
 
   ## Constant data: an interval of one tick centred on the value.  The offsets
   ## are formed first and added once, rather than subtracting the tick and then
@@ -7414,20 +7435,79 @@ function edges = dtBinEdgesGrid (xmin, xmax, nbins, ser2cal, cal2ser, ...
     return;
   endif
 
-  ## Fixed units: one hour, one minute, one second.  These are anchored on the
-  ## LOCAL clock -- the midnight of the day holding XMIN -- and then stepped by
-  ## a fixed span of seconds.  Flooring XMIN itself would anchor on absolute
-  ## time, which lands the edges on the half hour in a zone offset by one
-  ## (Asia/Kolkata, +05:30) and moves them off local midnight everywhere else.
-  ## The two agree for a whole-hour zone with no transition in range, which is
-  ## why every earlier probe missed it.
-  [yA, mA, dA] = ser2cal (xmin);
+  ## Fixed units: one hour, one minute, one second.  A moment's position on
+  ## this grid is its WALL CLOCK reading -- seconds of the local day, counted
+  ## from the midnight opening the day that holds XMIN -- and NOT the elapsed
+  ## seconds since that midnight.  The two part company as soon as a
+  ## daylight-saving transition falls between the midnight and the moment: noon
+  ## on the day Australia/Lord_Howe puts its clock forward half an hour is 11.5
+  ## elapsed hours after midnight, so flooring the elapsed count lands every
+  ## edge on the half hour instead of the hour.  Flooring XMIN itself would
+  ## anchor on absolute time, which goes wrong the same way in a zone merely
+  ## offset by half an hour (Asia/Kolkata, +05:30).
+  ##
+  ## The STEP, by contrast, is elapsed: once the left edge is placed, each
+  ## further edge is a fixed span of seconds later, so an edge beyond a
+  ## transition does read off the wall clock.  MATLAB does the same.
+  [yA, mA, dA, hA, nA, sA, offA] = ser2cal (xmin);
+  [yB, mB, dB, hB, nB, sB, offB] = ser2cal (xmax);
   origin = cal2ser (yA, mA, dA);
+  todA = hA * 3600 + nA * 60 + sA;
+  ## A transition inside the data moves the whole grid one unit earlier, but
+  ## only when the zone's shift is NOT a whole number of those units.  That is
+  ## the same law the named units obey: the edges step in elapsed time, so a
+  ## whole-unit shift (America/New_York, Pacific/Chatham -- both an hour) keeps
+  ## the grid on the wall clock and nothing moves, while Australia/Lord_Howe's
+  ## half hour against an HOUR bin does not, and the grid shifts.  Against a
+  ## MINUTE bin that same half hour is whole again and nothing moves, which is
+  ## why the test belongs inside the loop, keyed on the rung.  Established by
+  ## sweeping the data window across a spring-forward and a fall-back alike:
+  ## it holds in both directions, so what decides is the presence of the
+  ## discrepancy rather than its sign.  A net offset change is the test, so two
+  ## transitions cancelling inside the range would go unnoticed; no zone shifts
+  ## twice within a span short enough to reach this rung.
+  ## The SPAN is read off the ELAPSED axis, except where the zone's shift is
+  ## not a whole number of grid units, when it is read off the WALL clock
+  ## instead.  The same discrepancy the anchor turns on decides this: with a
+  ## whole-unit shift both readings serve and the elapsed one is MATLAB's, but
+  ## a half-hour shift against an hour bin leaves them differing by a unit,
+  ## and the wall reading is the one that counts.  Australia/Lord_Howe in 1983,
+  ## when the island still moved its clock a whole hour, takes the elapsed
+  ## reading; the same zone today, on the same dates and spans, takes the wall
+  ## one.
+  todB = 86400 * round ((cal2ser (yB, mB, dB) - origin) / 86400) ...
+         + hB * 3600 + nB * 60 + sB;
   for g = [3600, 60, 1]
-    nLo = floor ((xmin - origin) / g);
-    idx = dtBinGridIndex (floor ((xmax - origin) / g) - nLo, nbins);
+    nLo = floor (todA / g);
+    if (mod (offB - offA, g) != 0)
+      spanU = floor (todB / g) - nLo;
+    else
+      spanU = floor ((xmax - origin) / g) - floor ((xmin - origin) / g);
+    endif
+    idx = dtBinGridIndex (spanU, nbins);
     if (! isempty (idx))
-      edges = origin + g * (nLo + idx);
+      width = idx(2) - idx(1);
+      shift = 0;
+      if (nbins > 1 && mod (offB - offA, g) != 0
+          && (mod (spanU, 2) != 0 || mod (nbins * width, 2) != 0))
+        shift = 1;
+      endif
+      ## The anchor is the grid point at or below XMIN on the wall clock, and
+      ## every edge is counted from it in elapsed time.  Where that grid point
+      ## names a wall time that does not exist -- it fell in the gap a
+      ## spring-forward opens -- MATLAB steps BACK out of the gap, while the
+      ## conversion resolves forward, which is right for a clock a user wrote
+      ## and wrong for a grid point.  The overshoot is measured off the result
+      ## and removed; it is zero whenever the wall time exists, so this is not
+      ## a special case in the code even though it is one in the calendar.
+      ## Counting from the anchor rather than converting the left edge's own
+      ## index is what puts the remaining edges where MATLAB has them: 02:00 on
+      ## Australia/Lord_Howe's spring-forward day resolves back to 01:30, and
+      ## the edge one unit earlier is 00:30, not the 01:00 the index names.
+      anchor = wall2ser (yA, mA, dA, g * nLo);
+      [~, ~, ~, hR, nR, sR] = ser2cal (anchor);
+      anchor -= (hR * 3600 + nR * 60 + sR) - g * nLo;
+      edges = anchor + (idx - shift) * g;
       return;
     endif
   endfor
@@ -7451,7 +7531,7 @@ endfunction
 ## seconds.  A datetime argument is handled by the caller, which is the only
 ## place that can convert one.  ISCOUNT reports a bin count, the one form whose
 ## edges MATLAB returns as a row whatever the shape of the input.
-function [ev, isCount] = dtBinEdges (xv, arg2, s2c, c2s, scope)
+function [ev, isCount] = dtBinEdges (xv, arg2, s2c, c2s, w2s, scope)
 
   isCount = false;
   xf = xv(isfinite (xv));
@@ -7464,7 +7544,7 @@ function [ev, isCount] = dtBinEdges (xv, arg2, s2c, c2s, scope)
       error ("%s: N must be a real positive integer.", scope);
     endif
     isCount = true;
-    ev = dtCountBinEdges (xf, double (arg2), s2c, c2s, scope);
+    ev = dtCountBinEdges (xf, double (arg2), s2c, c2s, w2s, scope);
   elseif (isnumeric (arg2))
     error (strcat (scope, ": numeric bin edges are not accepted for a", ...
                    " datetime; give a datetime vector."));
@@ -7626,7 +7706,19 @@ function ev = dtUnitBinEdges (xf, spec, s2c, c2s, scope)
         origin = c2s (yA, mA, dA);
       endif
       left = origin + step * floor ((lo - origin) / step);
-      n = bins (hi - left);
+      ## A named unit opens its extra bin only when the largest element sits on
+      ## a unit boundary of the WALL CLOCK.  The bins step in elapsed time, so
+      ## a transition shifting the zone by less than one unit -- Lord Howe's
+      ## half hour against an hour bin -- carries the grid off the wall clock
+      ## from there on, and the element then lands mid-unit however exactly the
+      ## elapsed span divides.  Away from such a transition the two readings
+      ## agree, LEFT being a unit boundary itself, which is why only a zone
+      ## whose shift is not a whole number of units can tell them apart.
+      if (named && ! dtOnUnitBoundary (hi, step, s2c))
+        n = max (1, ceil ((hi - left) / step));
+      else
+        n = bins (hi - left);
+      endif
       ev = left + (0:n) * step;
 
     case {'day', 'week'}
@@ -7722,6 +7814,16 @@ function ev = dtUnitBinEdges (xf, spec, s2c, c2s, scope)
 
 endfunction
 
+## True when SER's wall clock lands on a boundary of a unit of STEP seconds.
+## Read off the components rather than off the time elapsed since midnight,
+## which a daylight-saving transition earlier in the day would have carried off
+## the grid.  Only 'second', 'minute' and 'hour' reach this, every coarser unit
+## having its own branch, so STEP always divides a day.
+function tf = dtOnUnitBoundary (ser, step, s2c)
+  [~, ~, ~, h, m, s] = s2c (ser);
+  tf = (mod (h * 3600 + m * 60 + s, step) == 0);
+endfunction
+
 ## UTC offset in seconds for each element, derived from the WALL CLOCK, so an
 ## ambiguous time gets the later pass and one inside a gap the shifted one --
 ## resolve_local's choices.  Zero for an unzoned or leap-second array.  Used by
@@ -7749,7 +7851,7 @@ function s = dtCalGridPoint (Y, M, step, k, c2s)
 endfunction
 
 ## Edges for a requested bin count over the data range.
-function ev = dtCountBinEdges (xf, nbins, s2c, c2s, scope)
+function ev = dtCountBinEdges (xf, nbins, s2c, c2s, w2s, scope)
 
   if (! isnumeric (nbins) || ! isscalar (nbins) || ! isreal (nbins)
       || ! isfinite (nbins) || nbins < 1 || fix (nbins) != nbins)
@@ -7764,7 +7866,7 @@ function ev = dtCountBinEdges (xf, nbins, s2c, c2s, scope)
     ## on the epoch, which is reproducible.  See section 14 of the coding style.
     ev = 0:nbins;
   else
-    ev = dtBinEdgesGrid (min (xf), max (xf), nbins, s2c, c2s);
+    ev = dtBinEdgesGrid (min (xf), max (xf), nbins, s2c, c2s, w2s);
   endif
 
 endfunction
@@ -7811,7 +7913,7 @@ endfunction
 ## Translate datetime-valued histcounts options into serial seconds, resolving
 ## any bin count, bin width or unit BinMethod into explicit edges so that every
 ## path goes through the same placement as 'discretize'.
-function args = dtHistArgs (args, xv, s2c, c2s, d2s, scope)
+function args = dtHistArgs (args, xv, s2c, c2s, d2s, w2s, scope)
 
   xf = xv(isfinite (xv));
 
@@ -7851,7 +7953,8 @@ function args = dtHistArgs (args, xv, s2c, c2s, d2s, scope)
       hasSpec = true;
       k = 2;
     elseif (isnumeric (args{1}) && isscalar (args{1}) && ! islogical (args{1}))
-      ev = dtClampEdges (dtCountBinEdges (xf, args{1}, s2c, c2s, scope), lim);
+      ev = dtClampEdges (dtCountBinEdges (xf, args{1}, s2c, c2s, w2s, ...
+                                          scope), lim);
       args = [{'BinEdges', ev}, args(2:end)];
       hasSpec = true;
       k = 3;
@@ -7869,7 +7972,7 @@ function args = dtHistArgs (args, xv, s2c, c2s, d2s, scope)
       case 'numbins'
         args{k} = 'BinEdges';
         args{k+1} = dtClampEdges (dtCountBinEdges (xf, args{k+1}, s2c, c2s, ...
-                                                   scope), lim);
+                                                   w2s, scope), lim);
         hasSpec = true;
       case 'binwidth'
         hasSpec = true;
@@ -7900,7 +8003,8 @@ function args = dtHistArgs (args, xv, s2c, c2s, d2s, scope)
           elseif (any (strcmp (name, {'auto', 'scott', 'fd', 'sturges', 'sqrt'})))
             args{k} = 'BinEdges';
             args{k+1} = dtClampEdges (dtCountBinEdges (xf, ...
-                          dtMethodBins (xf, lo, hi, name), s2c, c2s, scope), lim);
+                          dtMethodBins (xf, lo, hi, name), s2c, c2s, w2s, ...
+                          scope), lim);
           else
             args{k} = 'BinEdges';
             args{k+1} = dtClampEdges (dtUnitBinEdges (xf, name, s2c, c2s, ...
@@ -7923,7 +8027,7 @@ function args = dtHistArgs (args, xv, s2c, c2s, d2s, scope)
   ## Scott's rule fed through the same grid edges as every other path
   if (! hasSpec)
     ev = dtClampEdges (dtCountBinEdges (xf, dtMethodBins (xf, lo, hi, 'auto'), ...
-                                        s2c, c2s, scope), lim);
+                                        s2c, c2s, w2s, scope), lim);
     args = [args, {'BinEdges', ev}];
   endif
 
