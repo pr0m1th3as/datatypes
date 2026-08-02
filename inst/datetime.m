@@ -3946,6 +3946,24 @@ classdef datetime
     ## its own here.  This is @strong{deliberately unlike MATLAB}, which closes
     ## its last edge short of it and leaves it out of every bin.
     ##
+    ## @strong{Deviation from MATLAB: bin placement where a zone's clock shifts
+    ## by a fraction of the bin unit.}  A bin grid is anchored on the wall clock
+    ## and stepped in elapsed time, so a zone that moves its clock by less than
+    ## one bin unit -- @code{Australia/Lord_Howe} moves it half an hour -- puts
+    ## the grid out of step with the clock from the transition onward.  Where
+    ## the shift is exactly @strong{half} a unit the placement matches MATLAB,
+    ## having been measured against it.  For any other fraction, which today
+    ## arises only from the historical offset changes of the early twentieth
+    ## century (@code{Asia/Singapore} moved by twenty minutes in 1933), the
+    ## placement is @strong{our own}: the grid is centred on the data with no
+    ## correction for the transition, exactly as in a zone that has none.
+    ## MATLAB places those bins differently, by a rule we have not been able to
+    ## derive from its output; both cover the data, and neither is more correct
+    ## than the other.  Only a requested bin @strong{count} is affected -- and
+    ## @qcode{'auto'}, @qcode{'scott'}, @qcode{'fd'}, @qcode{'sturges'} and
+    ## @qcode{'sqrt'}, which resolve to one.  An explicit @qcode{'BinWidth'} or
+    ## a named unit is placed identically to MATLAB in every zone.
+    ##
     ## When @var{T} is empty the edges are anchored on the epoch,
     ## @qcode{1970-01-01}.  This is @strong{deliberately unlike MATLAB}, which
     ## answers an empty @qcode{datetime} with edges taken from the current
@@ -7421,6 +7439,17 @@ function out = dtFixedEpoch (posix, kind)
 endfunction
 
 
+## The instant at WALLSEC wall-clock seconds into the local day opening on
+## Y-M-D.  Where that wall time does not exist -- it fell in the gap a
+## spring-forward opens -- the conversion resolves forward and MATLAB steps
+## back, so the overshoot is measured off the result and removed.  It is zero
+## whenever the wall time exists, which is every call away from a transition.
+function s = dtWallGridPoint (Y, M, D, wallsec, wall2ser, ser2cal)
+  s = wall2ser (Y, M, D, wallsec);
+  [~, ~, ~, hR, nR, sR] = ser2cal (s);
+  s -= (hR * 3600 + nR * 60 + sR) - mod (wallsec, 86400);
+endfunction
+
 ## Rewrite one of the five invertible 'convertTo' counts into the conversion
 ## the builtin already performs, returning the value and the name of that
 ## conversion.  Each is the exact inverse of the forward direction, so the pair
@@ -7656,7 +7685,18 @@ function edges = dtBinEdgesGrid (xmin, xmax, nbins, ser2cal, cal2ser, ...
     if (! isempty (idx))
       width = idx(2) - idx(1);
       shift = 0;
+      ## The correction below is EMPIRICAL: measured against R2024a, never
+      ## derived.  It is therefore applied only over the domain it was measured
+      ## on -- a shift of exactly HALF the bin unit, which is what
+      ## Australia/Lord_Howe's half hour is against an hour bin, and the only
+      ## fractional shift any zone still observes.  Extrapolating it to other
+      ## ratios is not merely unjustified but wrong: at Asia/Singapore's
+      ## 20-minute shift of 1933 (a third of an hour) it fires and should not,
+      ## and switching it off there recovers 60 rows.  Where the ratio is
+      ## anything else the plain rule stands and the placement is OUR OWN, a
+      ## documented deviation -- see the note in 'discretize'.
       if (nbins > 1 && mod (offB - offA, g) != 0
+          && mod (2 * (offB - offA), g) == 0
           && (mod (spanU, 2) != 0 || mod (nbins * width, 2) != 0))
         shift = 1;
       endif
@@ -7672,10 +7712,21 @@ function edges = dtBinEdgesGrid (xmin, xmax, nbins, ser2cal, cal2ser, ...
       ## index is what puts the remaining edges where MATLAB has them: 02:00 on
       ## Australia/Lord_Howe's spring-forward day resolves back to 01:30, and
       ## the edge one unit earlier is 00:30, not the 01:00 the index names.
-      anchor = wall2ser (yA, mA, dA, g * nLo);
-      [~, ~, ~, hR, nR, sR] = ser2cal (anchor);
-      anchor -= (hR * 3600 + nR * 60 + sR) - g * nLo;
-      edges = anchor + (idx - shift) * g;
+      if (nbins == 1)
+        ## A single bin is placed differently: BOTH its edges are grid points
+        ## of the wall clock, so the one bin spans a whole number of units of
+        ## the local clock and its elapsed length absorbs whatever the zone
+        ## did in between -- two wall hours across Australia/Lord_Howe's
+        ## spring forward are 90 minutes.  With no interior edge there is no
+        ## grid to step, and MATLAB names the far edge rather than reaching it.
+        ## From two bins up the interior edges are stepped in elapsed time and
+        ## leave the wall clock, which is what the branch below does.
+        edges = arrayfun (@(k) dtWallGridPoint (yA, mA, dA, g * k, ...
+                          wall2ser, ser2cal), idx - shift + nLo);
+      else
+        anchor = dtWallGridPoint (yA, mA, dA, g * nLo, wall2ser, ser2cal);
+        edges = anchor + (idx - shift) * g;
+      endif
       return;
     endif
   endfor
