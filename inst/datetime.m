@@ -7363,16 +7363,20 @@ function ev = dtUnitBinEdges (xf, spec, s2c, c2s, scope)
       ## see the note in dtBinEdgesGrid.
       [yA, mA, dA] = s2c (lo);
       if (mod (step, 86400) == 0)
-        ## A duration width of whole days shares the calendar branch's
-        ## day-of-month grid -- days (2) and caldays (2) open on the same
-        ## edge -- and only then steps by a fixed span of seconds, so the
-        ## later edges still outrun the wall clock across a transition.
-        sd = step / 86400;
-        left = c2s (yA, mA, 1 + sd * floor ((dA - 1) / sd));
+        ## A duration width of whole days is anchored at local midnight on the
+        ## 1st of the month holding the smallest element and stepped from
+        ## there by a fixed span of seconds -- NOT from that element's own
+        ## midnight.  The two agree unless a daylight-saving transition falls
+        ## between the 1st and the data, which is why this is only visible in
+        ## a zone such as Pacific/Chatham: seven 24-hour steps from 1 April
+        ## 2024 land on the 7th at 23:00, the 7th being 25 hours long.
+        ## Stepping in elapsed time is what puts days (2) and caldays (2) on
+        ## the same opening edge away from a transition.
+        origin = c2s (yA, mA, 1);
       else
         origin = c2s (yA, mA, dA);
-        left = origin + step * floor ((lo - origin) / step);
       endif
+      left = origin + step * floor ((lo - origin) / step);
       n = bins (hi - left);
       ev = left + (0:n) * step;
 
