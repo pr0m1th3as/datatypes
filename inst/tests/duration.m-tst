@@ -32,6 +32,17 @@
 %!assert_equal (class (duration), 'duration')
 %!assert_equal (dispstrings (duration ()), {'00:00:00'})
 %!assert_equal (size (duration (zeros (4, 3))), [4, 1])
+## size with no dimension named folds the trailing dimensions into the last
+## output when fewer outputs are asked for than the array has dimensions, and
+## pads with ones when more are asked for, as core Octave and MATLAB both do.
+%!test
+%! A = duration (ones (2, 2, 2), 0, 0);
+%! [r, c] = size (A);
+%! assert_equal ([r, c], [2, 4]);
+%!test
+%! A = duration (ones (2, 2), 0, 0);
+%! [a, b, c, d] = size (A);
+%! assert_equal ([a, b, c, d], [2, 2, 1, 1]);
 %!assert_equal (isempty (duration (ones (0, 3))), true)
 %!assert_equal (seconds (duration ([0, 0, 15])), 15)
 %!assert_equal (minutes (duration ([0, 50, 30])), 50.5)

@@ -32,6 +32,17 @@
 %!assert_equal (class (categorical), 'categorical')
 %!assert_equal (dispstrings (categorical ()), {})
 %!assert_equal (size (categorical), [0, 0])
+## size with no dimension named folds the trailing dimensions into the last
+## output when fewer outputs are asked for than the array has dimensions, and
+## pads with ones when more are asked for, as core Octave and MATLAB both do.
+%!test
+%! A = categorical (repmat ({'a'}, 2, 2, 2));
+%! [r, c] = size (A);
+%! assert_equal ([r, c], [2, 4]);
+%!test
+%! A = categorical (repmat ({'a'}, 2, 2));
+%! [a, b, c, d] = size (A);
+%! assert_equal ([a, b, c, d], [2, 2, 1, 1]);
 %!assert_equal (size (categorical (NaN (2, 3, 4))), [2, 3, 4])
 %!assert_equal (categories (categorical), {})
 %!assert_equal (categories (categorical (NaN)), {})

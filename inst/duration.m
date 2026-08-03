@@ -869,22 +869,36 @@ classdef duration
     ## element corresponding to a specified dimension.  Multiple dimensions may
     ## also be specified as separate arguments.
     ##
-    ## With a single output argument, @code{size} returns a row vector.  When
-    ## called with multiple output arguments, @code{size} returns the size of
-    ## dimension N in the Nth argument.
+    ## With a single output argument, @code{size} returns a row vector.  With
+    ## several, the size of dimension N is returned in the Nth argument.
+    ## Asking for fewer output arguments than the array has dimensions folds
+    ## the trailing dimensions into the last one, so @code{[r, c] = size
+    ## (@var{D})} on a 2-by-2-by-2 array returns 2 and 4; asking for more pads
+    ## with ones.  When a dimension is named, however, the number of output
+    ## arguments must equal the number of dimensions requested.
     ##
     ## @end deftypefn
     function varargout = size (this, varargin)
       if (! isempty (varargin))
+        ## A named dimension fixes how many outputs there may be.
         sz = size (this.Millis, varargin{:});
+        if (nargout > 1 && numel (sz) != nargout)
+          error (strcat ("duration.size: nargout does not match the",
+                         " number of requested dimensions."));
+        endif
       else
         sz = size (this.Millis);
+        ## With no dimension named, asking for more outputs than the array has
+        ## dimensions pads with ones, and asking for fewer folds the trailing
+        ## dimensions into the last output, as core Octave and MATLAB both do.
+        if (nargout > numel (sz))
+          sz = [sz, ones(1, nargout - numel (sz))];
+        elseif (nargout > 1 && nargout < numel (sz))
+          sz = [sz(1:nargout-1), prod(sz(nargout:end))];
+        endif
       endif
       if (nargout == 0 || nargout == 1)
         varargout{1} = sz;
-      elseif (numel (sz) != nargout)
-        error (strcat ("duration.size: nargout > 1 but does not", ...
-                       " match number of requested dimensions."));
       else
         for i = 1:nargout
           varargout{i} = sz(i);

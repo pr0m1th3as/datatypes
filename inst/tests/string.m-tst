@@ -41,6 +41,17 @@
 %! str = string (['ab '; 'c  ']);
 %! assert_equal (cellstr (str), {'ab '; 'c  '});
 %! assert_equal (size (str), [2, 1]);
+## size with no dimension named folds the trailing dimensions into the last
+## output when fewer outputs are asked for than the array has dimensions, and
+## pads with ones when more are asked for, as core Octave and MATLAB both do.
+%!test
+%! A = string (repmat ({'a'}, 2, 2, 2));
+%! [r, c] = size (A);
+%! assert_equal ([r, c], [2, 4]);
+%!test
+%! A = string (repmat ({'a'}, 2, 2));
+%! [a, b, c, d] = size (A);
+%! assert_equal ([a, b, c, d], [2, 2, 1, 1]);
 %!test
 %! str = string ({"a";"b";"c"});
 %! assert_equal (cellstr (str), {"a";"b";"c"});
