@@ -1402,18 +1402,18 @@ classdef calendarDuration
         out.Months = A.Months - tmp;
         out.Days = A.Days - tmp;
         out.Time = A.Time - B;
-      elseif (isa (A, 'calendarDuration') && isnumeric (B))
+      elseif (isa (A, 'calendarDuration') && isScaleType (B))
         out = A;
         tmp = zeros (size (B));
         out.Months = out.Months - tmp;
         out.Days = out.Days - tmp;
-        out.Time = out.Time - days (B);
-      elseif (isnumeric (A) && isa (B, 'calendarDuration'))
+        out.Time = out.Time - days (double (B));
+      elseif (isScaleType (A) && isa (B, 'calendarDuration'))
         out = B;
         tmp = zeros (size (A));
         out.Months = -out.Months + tmp;
         out.Days = -out.Days + tmp;
-        out.Time = -out.Time + days (A);
+        out.Time = -out.Time + days (double (A));
       else
         error (strcat ("calendarDuration: subtraction is not defined", ...
                        " between '%s' and '%s' arrays."), class (A), class (B));
@@ -1469,29 +1469,29 @@ classdef calendarDuration
         out.Months = A.Months + B.Months;
         out.Days = A.Days + B.Days;
         out.Time = A.Time + B.Time;
-        out = broadcastProperties (out);
       elseif (isa (A, 'calendarDuration') && isa (B, 'duration'))
         out = A;
         tmp = zeros (size (B));
         out.Months = A.Months + tmp;
         out.Days = A.Days + tmp;
         out.Time = A.Time + B;
-      elseif (isa (A, 'calendarDuration') && isnumeric (B))
+      elseif (isa (A, 'calendarDuration') && isScaleType (B))
         out = A;
         tmp = zeros (size (B));
         out.Months = A.Months + tmp;
         out.Days = A.Days + tmp;
-        out.Time = A.Time + days (B);
-      elseif (isnumeric (A) && isa (B, 'calendarDuration'))
+        out.Time = A.Time + days (double (B));
+      elseif (isScaleType (A) && isa (B, 'calendarDuration'))
         out = B;
         tmp = zeros (size (A));
         out.Months = B.Months + tmp;
         out.Days = B.Days + tmp;
-        out.Time = B.Time + days (A);
+        out.Time = B.Time + days (double (A));
       else
         error (strcat ("calendarDuration: addition is not defined", ...
                        " between '%s' and '%s' arrays."), class (A), class (B));
       endif
+      out = broadcastProperties (out);
     endfunction
 
     ## -*- texinfo -*-
@@ -1530,19 +1530,26 @@ classdef calendarDuration
     ##
     ## @end deftypefn
     function out = times (A, B)
-      if (isa (A, 'calendarDuration') && isnumeric (B))
+      if (isa (A, 'calendarDuration') && isScaleType (B))
         out = A;
         tmp = double (B);
-      elseif (isnumeric (A) && isa (B, 'calendarDuration'))
+      elseif (isScaleType (A) && isa (B, 'calendarDuration'))
         out = B;
         tmp = double (A);
       else
         error (strcat ("calendarDuration: multiplication is not defined", ...
                        " between '%s' and '%s' arrays."), class (A), class (B));
       endif
+      if (isNonIntegral (tmp))
+        error (strcat ("calendarDuration: multiplication by non-integer", ...
+                       " values is not defined."));
+      endif
+      M = out.Months;  D = out.Days;  T = seconds (out.Time);
       out.Months = out.Months .* tmp;
       out.Days = out.Days .* tmp;
       out.Time = out.Time .* tmp;
+      out = scaleNonFinite (out, M, D, T, tmp);
+      out = broadcastProperties (out);
       out = dropNegZero (out);
     endfunction
 
@@ -1565,25 +1572,32 @@ classdef calendarDuration
     ##
     ## @end deftypefn
     function out = mtimes (A, B)
-      if (isa (A, 'calendarDuration') && isnumeric (B))
+      if (isa (A, 'calendarDuration') && isScaleType (B))
         out = A;
         tmp = double (B);
+        M = A.Months;  D = A.Days;  T = seconds (A.Time);
         out.Months = A.Months * tmp;
         out.Days = A.Days * tmp;
         out.Time = A.Time * tmp;
-        out = dropNegZero (out);
-      elseif (isnumeric (A) && isa (B, 'calendarDuration'))
+      elseif (isScaleType (A) && isa (B, 'calendarDuration'))
         out = B;
         tmp = double (A);
+        M = B.Months;  D = B.Days;  T = seconds (B.Time);
         out.Months = tmp * B.Months;
         out.Days = tmp * B.Days;
         out.Time = tmp * B.Time;
-        out = dropNegZero (out);
       else
         error (strcat ("calendarDuration: matrix multiplication is", ...
                        " not defined between '%s' and '%s' arrays."), ...
                class (A), class (B));
       endif
+      if (isNonIntegral (tmp))
+        error (strcat ("calendarDuration: matrix multiplication by", ...
+                       " non-integer values is not defined."));
+      endif
+      out = scaleNonFinite (out, M, D, T, tmp);
+      out = broadcastProperties (out);
+      out = dropNegZero (out);
     endfunction
 
   endmethods
@@ -2156,6 +2170,30 @@ classdef calendarDuration
     ## component into a negative zero, which MATLAB does not keep and which
     ## shows in any printed component.  Adding zero maps -0 to +0 and leaves
     ## every other value exactly as it was, NaN and the infinities included.
+    ## A non-finite factor scales the span as a whole rather than component by
+    ## component: 0 * Inf would leave NaN in every empty component, but MATLAB
+    ## takes the sign of the span, so 3d * Inf is Inf and -5h * Inf is -Inf.
+    ## A span whose components disagree in sign, or that is entirely zero, has
+    ## no sign and gives NaN.  M, D and T are the components before scaling.
+    function this = scaleNonFinite (this, M, D, T, fac)
+      if (! (isscalar (fac) || isscalar (M) || size_equal (M, fac)))
+        return;   # a true matrix product is outside the measured domain
+      endif
+      if (all (isfinite (fac(:))))
+        return;
+      endif
+      pos = M > 0 | D > 0 | T > 0;
+      neg = M < 0 | D < 0 | T < 0;
+      sgn = NaN (size (pos));
+      sgn(pos & ! neg) = 1;
+      sgn(neg & ! pos) = -1;
+      val = sgn .* fac;
+      nf = ! isfinite (zeros (size (sgn)) + fac);
+      this.Months(nf) = val(nf);
+      this.Days(nf) = val(nf);
+      this.Time(nf) = seconds (val(nf));
+    endfunction
+
     function this = dropNegZero (this)
       this.Months = this.Months + 0;
       this.Days   = this.Days + 0;
@@ -2254,6 +2292,18 @@ endclassdef
 ## the caldays (caldays (x)) == x round trip that MATLAB itself preserves.
 ## The message body is shared so that the two callers cannot drift apart; each
 ## emits it under its own name.
+## Only a double or a logical may be added to, subtracted from, or multiplied
+## with a span; MATLAB refuses every other numeric type, single included.
+function TF = isScaleType (x)
+  TF = isa (x, 'double') || islogical (x);
+endfunction
+
+## A span cannot be scaled by a fraction -- a fraction of a month has no
+## meaning.  Non-finite factors are exempt, being scale rather than count.
+function TF = isNonIntegral (x)
+  TF = any (isfinite (x(:)) & fix (x(:)) != x(:));
+endfunction
+
 function errmsg = monthlessErrMsg ()
   errmsg = strcat ("cannot convert a calendarDuration to days or weeks when", ...
                    " it contains a non-zero number of months. Use 'split'", ...
