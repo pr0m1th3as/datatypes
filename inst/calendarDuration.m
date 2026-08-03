@@ -573,9 +573,14 @@ classdef calendarDuration
     ## Convert calendarDuration array to a character matrix.
     ##
     ## @code{@var{cmat} = char (@var{calD})} returns a character matrix with
-    ## one row per element in @var{calD}.  The second optional argument,
-    ## @var{FMT}, can be used to specify the format of the returned string
-    ## representations of the calendarDuration input array @var{calD}.
+    ## one row per element in @var{calD}, taken in column-major order.  The
+    ## second optional argument, @var{FMT}, can be used to specify the format of
+    ## the returned string representations of the calendarDuration input array
+    ## @var{calD}.
+    ##
+    ## Rows shorter than the widest are padded on the @emph{left}, so the
+    ## character matrix is right-justified, as MATLAB returns it and as the
+    ## array itself is displayed.
     ##
     ## @end deftypefn
     function cmat = char (this, FMT = '')
@@ -586,7 +591,7 @@ classdef calendarDuration
         endif
         this.Format = FMT;
       endif
-      cmat = char (dispstrings (this));
+      cmat = strjust (char (dispstrings (this)), 'right');
     endfunction
 
     ## -*- texinfo -*-

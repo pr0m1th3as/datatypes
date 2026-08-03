@@ -1,6 +1,15 @@
 %!demo
 %! ## `char` converts the array into a character matrix of its display strings,
-%! ## one row per element (shorter rows padded with spaces).
+%! ## one row per element.  Rows shorter than the widest are padded on the LEFT,
+%! ## so the matrix comes out right-justified, the way the array itself is
+%! ## displayed.
 %!
 %! d = calmonths ([1, 13])
 %! char (d)
+
+%!demo
+%! ## A second argument renders the same array in another format, without
+%! ## altering it.  Here the months are shown whole rather than split into years.
+%!
+%! d = calmonths ([1, 13])
+%! char (d, 'mdt')
