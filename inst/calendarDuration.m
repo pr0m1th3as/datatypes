@@ -616,11 +616,24 @@ classdef calendarDuration
     ## this case, the individual variables have the same size as the input array
     ## @var{calD}.
     ##
+    ## Every component carries the sign of the span as a whole, so a negative
+    ## calendar duration returns negative components throughout.  An element
+    ## that is not finite has no components to divide between: all six take that
+    ## same infinity, or @code{NaN}, which is what @code{split} returns for it
+    ## as well.
+    ##
     ## @end deftypefn
     function varargout = datevec (this)
       [h, m, s] = hms (this.Time);
       years = fix (this.Months / 12);
       months = rem (this.Months, 12);
+      ## An infinite span divides into no whole years with a remainder: every
+      ## one of its components is that same infinity, which is what 'split'
+      ## returns for it too.  'rem' would leave NaN in the months alone.
+      nf = ! isfinite (this.Months);
+      if (any (nf, 'all'))
+        months(nf) = this.Months(nf);
+      endif
       DV = [years(:), months(:), this.Days(:), h(:), m(:), s(:)];
       if (nargout == 0 || nargout == 1)
         varargout{1} = DV;

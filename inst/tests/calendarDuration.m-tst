@@ -542,6 +542,35 @@
 %! assert_equal (DV(:,5), [1:24]');
 %!error<calendarDuration.datevec: too many output arguments.> ...
 %! [Y, MO, D, H, MI, S, MS] = datevec (calendarDuration)
+%!assert_equal (datevec (calendarDuration (Inf, 0, 0)), Inf (1, 6))
+%!assert_equal (datevec (calendarDuration (-Inf, 0, 0)), -Inf (1, 6))
+%!assert_equal (datevec (calendarDuration (0, 0, Inf)), Inf (1, 6))
+%!assert_equal (datevec (calendarDuration (0, 0, 0, 0, 0, Inf)), Inf (1, 6))
+%!assert_equal (datevec (calendarDuration (NaN, 0, 0)), NaN (1, 6))
+%!test
+%! [Y, MO, D, H, MI, S] = datevec (calendarDuration (Inf, 0, 0));
+%! assert_equal ([Y, MO, D, H, MI, S], Inf (1, 6));
+%!test
+%! DV = datevec (calendarDuration ([1, NaN, Inf], 2, 3));
+%! assert_equal (size (DV), [3, 6]);
+%! assert_equal (DV(1,:), [1, 2, 3, 0, 0, 0]);
+%! assert_equal (DV(2,:), NaN (1, 6));
+%! assert_equal (DV(3,:), Inf (1, 6));
+%!assert_equal (datevec (calendarDuration (-1, -2, -3, -4, -5, -6.5)), [-1, -2, -3, -4, -5, -6.5])
+%!assert_equal (datevec (calendarDuration (0, 0, 0, 0, 0, -0.5)), [0, 0, 0, 0, 0, -0.5])
+%!assert_equal (datevec (calendarDuration (0, 0, 0, 0, 0, 6.123456789)), [0, 0, 0, 0, 0, 6.123456789], 1e-9)
+%!assert_equal (datevec (calendarDuration (0, 25, 0)), [2, 1, 0, 0, 0, 0])
+%!assert_equal (datevec (calendarDuration (0, -25, 0)), [-2, -1, 0, 0, 0, 0])
+%!assert_equal (datevec (calendarDuration (0, 0, 0, 25, 0, 0)), [0, 0, 0, 25, 0, 0])
+%!assert_equal (datevec (calendarDuration (0, 0, 0, 0, 90, 0)), [0, 0, 0, 1, 30, 0])
+%!assert_equal (size (datevec (calendarDuration ([], [], []))), [0, 6])
+%!test
+%! DV = datevec (calendarDuration (ones (2, 2, 2), 2, 3));
+%! assert_equal (size (DV), [8, 6]);
+%!test
+%! [Y, MO, D, H, MI, S] = datevec (calendarDuration (ones (2, 2, 2), 2, 3));
+%! assert_equal (size (Y), [2, 2, 2]);
+%! assert_equal (size (S), [2, 2, 2]);
 
 %!assert_equal (size (time (calendarDuration (1, 1, 1))), [1, 1])
 %!assert_equal (size (time (calendarDuration (ones (2, 3, 4), 1, 1))), [2, 3, 4])
