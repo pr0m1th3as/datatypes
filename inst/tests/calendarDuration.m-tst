@@ -2251,3 +2251,151 @@
 %!assert_equal (char (calweeks (2)), '2w')
 %!assert_equal (char (calquarters (3)), '3q')
 %!assert_equal ([calweeks(1), calquarters(1)](1).Format, 'yqmwdt')
+
+## Indexing reads a subset without disturbing the Format.  A(:) returns a
+## column whatever the input's shape, an empty index an empty array, and a
+## trailing singleton index is allowed.
+%!shared A, A2
+%! A = [calmonths(1), calendarDuration(0, 0, 2), calendarDuration(0, 0, 0, 3, 0, 0)];
+%! A2 = [calmonths(1), calmonths(2), calmonths(3); ...
+%!       calmonths(4), calmonths(5), calmonths(6)];
+%!test
+%! [mo, d, t] = split (A(2), {'months', 'days', 'time'});
+%! assert_equal ([mo, d, seconds(t)], [0, 2, 0]);
+%!assert_equal (seconds (split (A(end), 'time')), 10800)
+%!assert_equal (split (A(end-1), 'days'), 2)
+%!test
+%! B = A(:);
+%! assert_equal (size (B), [3, 1]);
+%! [mo, d, t] = split (B, {'months', 'days', 'time'});
+%! assert_equal (mo, [1; 0; 0]);
+%! assert_equal (d, [0; 2; 0]);
+%! assert_equal (seconds (t), [0; 0; 10800]);
+%!test
+%! B = A([1, 3]);
+%! assert_equal (size (B), [1, 2]);
+%! assert_equal (calmonths (B), [1, 0]);
+%! assert_equal (seconds (split (B, 'time')), [0, 10800]);
+%!test
+%! B = A(logical ([1, 0, 1]));
+%! assert_equal (calmonths (B), [1, 0]);
+%! assert_equal (seconds (split (B, 'time')), [0, 10800]);
+%!assert_equal (calmonths (A2(2,3)), 6)
+%!assert_equal (calmonths (A2(end,end)), 6)
+%!test
+%! B = A2(:,2);
+%! assert_equal (size (B), [2, 1]);
+%! assert_equal (calmonths (B), [2; 5]);
+%!test
+%! B = A2(2,:);
+%! assert_equal (size (B), [1, 3]);
+%! assert_equal (calmonths (B), [4, 5, 6]);
+%!assert_equal (size (A([])), [0, 0])
+%!assert_equal (calmonths (A(1,1,1)), 1)
+%!assert_equal (A.Format, 'ymdt')
+%!assert_equal (A(2).Format, 'ymdt')
+
+## Deleting elements.  A(:) = [] empties an array to 0x0 while deleting the
+## only element of a scalar leaves 1x0, and a null assignment takes one
+## non-colon index at most.
+%!test
+%! B = A;  B(2) = [];
+%! assert_equal (size (B), [1, 2]);
+%! assert_equal (calmonths (B), [1, 0]);
+%! assert_equal (seconds (split (B, 'time')), [0, 10800]);
+%!test
+%! B = A;  B([1, 3]) = [];
+%! assert_equal (size (B), [1, 1]);
+%! assert_equal (split (B, 'days'), 2);
+%!test
+%! B = A;  B(end) = [];
+%! assert_equal (calmonths (B), [1, 0]);
+%! assert_equal (split (B, 'days'), [0, 2]);
+%!test
+%! B = A;  B(logical ([1, 0, 1])) = [];
+%! assert_equal (size (B), [1, 1]);
+%! assert_equal (split (B, 'days'), 2);
+%!test
+%! B = A;  B(:) = [];
+%! assert_equal (size (B), [0, 0]);
+%!test
+%! B = A2;  B(:,1) = [];
+%! assert_equal (size (B), [2, 2]);
+%! assert_equal (calmonths (B), [2, 3; 5, 6]);
+%!test
+%! B = A2;  B(1,:) = [];
+%! assert_equal (size (B), [1, 3]);
+%! assert_equal (calmonths (B), [4, 5, 6]);
+%!test
+%! B = calmonths (1);  B(1) = [];
+%! assert_equal (size (B), [1, 0]);
+
+## Assignment.  Growing past the end fills the gap with zero spans, not with
+## missing values.  A duration or a bare numeric may be assigned, the numeric
+## counting days, and both land in the time component.
+%!test
+%! B = A;  B(2) = calmonths (9);
+%! [mo, d, t] = split (B, {'months', 'days', 'time'});
+%! assert_equal (mo, [1, 9, 0]);
+%! assert_equal (d, [0, 0, 0]);
+%! assert_equal (seconds (t), [0, 0, 10800]);
+%!test
+%! B = A;  B(5) = calmonths (9);
+%! assert_equal (size (B), [1, 5]);
+%! [mo, d, t] = split (B, {'months', 'days', 'time'});
+%! assert_equal (mo, [1, 0, 0, 0, 9]);
+%! assert_equal (d, [0, 2, 0, 0, 0]);
+%! assert_equal (seconds (t), [0, 0, 10800, 0, 0]);
+%!test
+%! B = A2;  B(2,4) = calmonths (9);
+%! assert_equal (size (B), [2, 4]);
+%! assert_equal (calmonths (B), [1, 2, 3, 0; 4, 5, 6, 9]);
+%!test
+%! B = A;  B(:) = calmonths (9);
+%! assert_equal (calmonths (B), [9, 9, 9]);
+%!test
+%! B = A;  B(end+1) = calmonths (9);
+%! assert_equal (size (B), [1, 4]);
+%! assert_equal (calmonths (B), [1, 0, 0, 9]);
+%! assert_equal (seconds (split (B, 'time')), [0, 0, 10800, 0]);
+%!test
+%! B = A;  B(2) = hours (5);
+%! [mo, d, t] = split (B, {'months', 'days', 'time'});
+%! assert_equal (mo, [1, 0, 0]);
+%! assert_equal (d, [0, 0, 0]);
+%! assert_equal (seconds (t), [0, 18000, 10800]);
+%!test
+%! B = A;  B(2) = 5;
+%! assert_equal (seconds (split (B, 'time')), [0, 432000, 10800]);
+%!test
+%! B = A;  B(logical ([1, 0, 1])) = calmonths (9);
+%! [mo, d, t] = split (B, {'months', 'days', 'time'});
+%! assert_equal (mo, [9, 0, 9]);
+%! assert_equal (d, [0, 2, 0]);
+%! assert_equal (seconds (t), [0, 0, 0]);
+%!test
+%! B = A;  B(1:2) = [calmonths(8), calmonths(9)];
+%! assert_equal (calmonths (B), [8, 9, 0]);
+%! assert_equal (seconds (split (B, 'time')), [0, 0, 10800]);
+%!test
+%! B = calendarDuration ([], [], []);  B(2) = calmonths (9);
+%! assert_equal (size (B), [1, 2]);
+%! assert_equal (calmonths (B), [0, 9]);
+%!test
+%! B = A;  B(2) = calendarDuration (NaN, 0, 0);
+%! [mo, d, t] = split (B, {'months', 'days', 'time'});
+%! assert_equal (mo, [1, NaN, 0]);
+%! assert_equal (d, [0, NaN, 0]);
+%! assert_equal (seconds (t), [0, NaN, 10800]);
+%!error<calendarDuration.subsasgn: assignment value must be calendarDuration or duration array or a numeric array representing 24-hour days.> ...
+%! A(2) = 'a'
+
+## A Format must name 'm', 'd' and 't' and use only the 'yqmwdt' characters.
+## R2024a accepts a format missing them, warns, and falls back to 'ymdt', but
+## it then ignores the format it accepted, so the documented contract is kept
+## here instead.
+%!error<calendarDuration.subsasgn: 'Format' must contain 'm', 'd', and 't'.> ...
+%! A.Format = 'ymd'
+%!error<calendarDuration.subsasgn: 'Format' must only contain characters from the 'yqmwdt' sequence.> ...
+%! A.Format = 'zz'
+
