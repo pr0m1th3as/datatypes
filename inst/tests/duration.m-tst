@@ -264,12 +264,13 @@
 %! cellstr (duration (0, 0, 0), 'hh:mm:ss.SSSSSSSSSS')
 
 %!assert_equal (char (years (1)), '1 yr')
-%!assert_equal (char (years ([1, 2])), ['1 yr '; '2 yrs'])
+%!assert_equal (char (years ([1, 2])), [' 1 yr'; '2 yrs'])
+%!assert_equal (char (days ([1, 20])), ['  1 day'; '20 days'])
 %!assert_equal (char (years (1), 'd'), '365.243 days')
 %!assert_equal (char (years (2)), '2 yrs')
 %!assert_equal (char (years (2), 'd'), '730.485 days')
 %!assert_equal (char (days (1)), '1 day')
-%!assert_equal (char (days ([1; 2])), ['1 day '; '2 days'])
+%!assert_equal (char (days ([1; 2])), [' 1 day'; '2 days'])
 %!assert_equal (char (days (1), 'y'), '0.00273791 yrs')
 %!assert_equal (char (days (2), 'm'), '2880 min')
 %!assert_equal (char (duration (36, 0, 0)), '36:00:00')
@@ -328,6 +329,23 @@
 %! char (duration (0, 0, 0), 'hh:mm.SM')
 %!error<duration.char: more than nine fractional second digits in display format.> ...
 %! char (duration (0, 0, 0), 'hh:mm:ss.SSSSSSSSSS')
+%!test
+%! cmat = char (duration ([1; 100], 0, 0));
+%! assert_equal (size (cmat), [2, 9]);
+%! assert_equal (cmat(1,:), ' 01:00:00');
+%! assert_equal (cmat(2,:), '100:00:00');
+%!test
+%! cmat = char (duration ([1; NaN], 0, 0));
+%! assert_equal (size (cmat), [2, 8]);
+%! assert_equal (cmat(1,:), '01:00:00');
+%! assert_equal (cmat(2,:), '     NaN');
+%!test
+%! cmat = char (duration ([-1; 100], 0, 0));
+%! assert_equal (cmat(1,:), '-01:00:00');
+%! assert_equal (cmat(2,:), '100:00:00');
+%!test
+%! cmat = char (duration ([], [], []));
+%! assert_equal (size (cmat), [0, 0]);
 
 %!test
 %! [y, mo, d, h, mi, s] = datevec (years (1));

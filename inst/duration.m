@@ -584,7 +584,11 @@ classdef duration
     ## Convert duration array to a character matrix.
     ##
     ## @code{@var{cmat} = char (@var{D})} returns a character matrix with one
-    ## row per element in @var{D}.
+    ## row per element in @var{D}, taken in column-major order.
+    ##
+    ## Rows shorter than the widest are padded on the @emph{left}, so the
+    ## character matrix is right-justified, as MATLAB returns it and as the
+    ## array itself is displayed.
     ##
     ## @end deftypefn
     function cmat = char (this, Format = '')
@@ -606,7 +610,7 @@ classdef duration
         endif
         this.Format = Format;
       endif
-      cmat = char (dispstrings (this));
+      cmat = strjust (char (dispstrings (this)), 'right');
     endfunction
 
     ## -*- texinfo -*-
