@@ -1142,8 +1142,10 @@ classdef calendarDuration
       for i = 1:numel (varargin)
         tmp = varargin{i};
         if (! isa (tmp, 'calendarDuration'))
-          error (strcat ("calendarDuration.isequal: all input arguments", ...
-                         " must be calendarDuration arrays."));
+          ## isequal answers about any pair of values and never refuses one:
+          ## an argument of another class simply is not equal to a span.
+          TF = false;
+          return;
         endif
         if (! isequal (n_dim, size (tmp)))
           TF = false;
@@ -1191,8 +1193,10 @@ classdef calendarDuration
       for i = 1:numel (varargin)
         tmp = varargin{i};
         if (! isa (tmp, 'calendarDuration'))
-          error (strcat ("calendarDuration.isequaln: all input arguments", ...
-                         " must be calendarDuration arrays."));
+          ## isequal answers about any pair of values and never refuses one:
+          ## an argument of another class simply is not equal to a span.
+          TF = false;
+          return;
         endif
         if (! isequal (n_dim, size (tmp)))
           TF = false;
@@ -1631,6 +1635,14 @@ classdef calendarDuration
     ## output @var{TF} is the same as the size of input arrays after their
     ## expansion according to the broadcasting rules.
     ##
+    ## MATLAB defines no equality for calendarDuration arrays, so this is an
+    ## Octave extension.  Two spans are compared component by component, which
+    ## is what MATLAB's own @code{isequal} does, so the two agree element for
+    ## element: @code{calweeks (1) == caldays (7)} is @qcode{true}, both being
+    ## seven days, while @code{caldays (1) == calendarDuration (0, 0, 0, 24,
+    ## 0, 0)} is @qcode{false}, a day and twenty-four hours sitting in
+    ## different components.
+    ##
     ## @end deftypefn
     function TF = eq (A, B)
       if (! (iscalendarduration (A) && iscalendarduration (B)))
@@ -1657,6 +1669,14 @@ classdef calendarDuration
     ## dimension sizes must be equal or one of them must be 1.  The size of the
     ## output @var{TF} is the same as the size of input arrays after their
     ## expansion according to the broadcasting rules.
+    ##
+    ## MATLAB defines no equality for calendarDuration arrays, so this is an
+    ## Octave extension.  Two spans are compared component by component, which
+    ## is what MATLAB's own @code{isequal} does, so the two agree element for
+    ## element: @code{calweeks (1) == caldays (7)} is @qcode{true}, both being
+    ## seven days, while @code{caldays (1) == calendarDuration (0, 0, 0, 24,
+    ## 0, 0)} is @qcode{false}, a day and twenty-four hours sitting in
+    ## different components.
     ##
     ## @end deftypefn
     function TF = ne (A, B)

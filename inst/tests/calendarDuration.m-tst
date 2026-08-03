@@ -999,12 +999,9 @@
 %!assert_equal (isequal (calendarDuration (0, 0, 0, hours (ones (3, 3, 2))), ...
 %!                 calendarDuration (0, 0, 0, hours (ones (3, 3, 3)))), false)
 %!error<calendarDuration.isequal: too few input arguments.> isequal (caldays (3))
-%!error<calendarDuration.isequal: all input arguments must be calendarDuration arrays.> ...
-%! isequal (caldays (3), 1)
-%!error<calendarDuration.isequal: all input arguments must be calendarDuration arrays.> ...
-%! isequal (caldays (3), caldays (3), hours (1))
-%!error<calendarDuration.isequal: all input arguments must be calendarDuration arrays.> ...
-%! isequal (caldays (3), caldays (3), days (1))
+%!assert_equal (isequal (caldays (3), 1), false)
+%!assert_equal (isequal (caldays (3), caldays (3), hours (1)), false)
+%!assert_equal (isequal (caldays (3), caldays (3), days (1)), false)
 
 %!assert_equal (isequaln (caldays (5), caldays (5)), true)
 %!assert_equal (isequaln (caldays (NaN), caldays (NaN)), true)
@@ -1035,12 +1032,9 @@
 %!assert_equal (isequaln (calendarDuration (0, 0, NaN, hours (nan (3, 3, 3))), ...
 %!                 calendarDuration (0, 0, NaN, hours (nan (3, 3, 3)))), true)
 %!error<calendarDuration.isequaln: too few input arguments.> isequaln (caldays (3))
-%!error<calendarDuration.isequaln: all input arguments must be calendarDuration arrays.> ...
-%! isequaln (caldays (3), 1)
-%!error<calendarDuration.isequaln: all input arguments must be calendarDuration arrays.> ...
-%! isequaln (caldays (3), caldays (3), hours (1))
-%!error<calendarDuration.isequaln: all input arguments must be calendarDuration arrays.> ...
-%! isequaln (caldays (3), caldays (3), days (1))
+%!assert_equal (isequaln (caldays (3), 1), false)
+%!assert_equal (isequaln (caldays (3), caldays (3), hours (1)), false)
+%!assert_equal (isequaln (caldays (3), caldays (3), days (1)), false)
 
 %!assert_equal (isfinite (caldays (1)), true)
 %!assert_equal (isfinite (caldays (NaN)), false)
@@ -1680,6 +1674,168 @@
 %! assert_equal (ixB, [2; 1; 2]);
 %!error<calendarDuration.unique: 'legacy' option is not supported.> ...
 %! unique (caldays ([1, 2; 2, 3; 1, 2]), 'legacy')
+
+## MATLAB defines no equality for calendarDuration arrays -- '==' and '~='
+## raise "Undefined function 'eq'" there -- so eq and ne are Octave extensions.
+## They compare component by component, which is what MATLAB's own isequal
+## does, so the two agree element for element.
+%!assert_equal (calendarDuration (1, 2, 3) == calendarDuration (1, 2, 3), true)
+%!assert_equal (calendarDuration (1, 2, 3) == calendarDuration (1, 2, 4), false)
+%!assert_equal (calendarDuration (1, 0, 0) == calendarDuration (0, 12, 0), true)
+%!assert_equal (calweeks (1) == caldays (7), true)
+%!assert_equal (calmonths (1) == caldays (30), false)
+%!assert_equal (calmonths (1) == caldays (31), false)
+%!assert_equal (caldays (1) == calendarDuration (0, 0, 0, 24, 0, 0), false)
+%!assert_equal (calendarDuration (0, 0, 0, 24, 0, 0) == calendarDuration (0, 0, 0, 0, 1440, 0), true)
+%!assert_equal (calendarDuration (0, 0, 0) == calendarDuration (0, 0, 0, 0, 0, 0), true)
+%!assert_equal (calendarDuration (NaN, 0, 0) == calendarDuration (NaN, 0, 0), false)
+%!assert_equal (calendarDuration (Inf, 0, 0) == calendarDuration (Inf, 0, 0), true)
+%!assert_equal (calendarDuration (Inf, 0, 0) == calendarDuration (-Inf, 0, 0), false)
+%!assert_equal (calendarDuration (0, [1, 2, 3], 0) == calmonths (2), [false, true, false])
+%!assert_equal (calendarDuration ([], [], []) == calmonths (1), logical ([]))
+%!assert_equal (calendarDuration (1, 2, 3) != calendarDuration (1, 2, 3), false)
+%!assert_equal (calendarDuration (NaN, 0, 0) != calendarDuration (NaN, 0, 0), true)
+%!assert_equal (calendarDuration (0, [1, 2, 3], 0) != calmonths (2), [true, false, true])
+%!error<calendarDuration.eq: equality is not defined between 'calendarDuration' and 'duration' arrays.> ...
+%! caldays (1) == days (1)
+%!error<calendarDuration.eq: equality is not defined between 'calendarDuration' and 'double' arrays.> ...
+%! caldays (1) == 1
+%!error<calendarDuration.ne: inequality is not defined between 'calendarDuration' and 'char' arrays.> ...
+%! caldays (1) != 'a'
+
+## isequal compares component by component and answers about any pair of
+## values: an argument of another class is simply not equal, never an error.
+## isequal holds a NaN unequal to itself where isequaln holds it equal.
+%!assert_equal (isequal (calendarDuration (1, 0, 0), calendarDuration (0, 12, 0)), true)
+%!assert_equal (isequal (caldays (1), calendarDuration (0, 0, 0, 24, 0, 0)), false)
+%!assert_equal (isequal (calendarDuration (NaN, 0, 0), calendarDuration (NaN, 0, 0)), false)
+%!assert_equal (isequaln (calendarDuration (NaN, 0, 0), calendarDuration (NaN, 0, 0)), true)
+%!assert_equal (isequal (caldays (1), days (1)), false)
+%!assert_equal (isequal (caldays (1), 1), false)
+%!assert_equal (isequal (caldays (1), 'a'), false)
+%!assert_equal (isequal (caldays (1), {1}), false)
+%!assert_equal (isequaln (caldays (1), days (1)), false)
+%!assert_equal (isequal (caldays (1), caldays (1), days (1)), false)
+%!error<calendarDuration.isequal: too few input arguments.> isequal (caldays (1))
+%!error<calendarDuration.isequaln: too few input arguments.> isequaln (caldays (1))
+
+## unique sorts lexicographically by months, then days, then time, so a span
+## of 30 days precedes one of 1 month and 24 hours precedes 1 day.  Every NaN
+## is distinct from every other and sorts last.  B keeps the orientation of
+## the input while ixA and ixB are always columns.
+%!test
+%! A = calmonths ([3, 1, 2, 1]);
+%! [B, ixA, ixB] = unique (A);
+%! assert_equal (size (B), [1, 3]);
+%! assert_equal (calmonths (B), [1, 2, 3]);
+%! assert_equal (ixA, [2; 3; 1]);
+%! assert_equal (ixB, [3; 1; 2; 1]);
+%!test
+%! A = calmonths ([3, 1, 2, 1]);
+%! [B, ixA, ixB] = unique (A, 'stable');
+%! assert_equal (calmonths (B), [3, 1, 2]);
+%! assert_equal (ixA, [1; 2; 3]);
+%! assert_equal (ixB, [1; 2; 3; 2]);
+%!test
+%! A = calmonths ([3, 1, 2, 1]);
+%! [B, ixA, ixB] = unique (A, 'last');
+%! assert_equal (calmonths (B), [1, 2, 3]);
+%! assert_equal (ixA, [4; 3; 1]);
+%! assert_equal (ixB, [3; 1; 2; 1]);
+%!test
+%! A = [calmonths(1), caldays(30), calmonths(1)];
+%! [B, ixA, ixB] = unique (A);
+%! assert_equal (size (B), [1, 2]);
+%! [mo, d] = split (B, {'months', 'days'});
+%! assert_equal (mo, [0, 1]);
+%! assert_equal (d, [30, 0]);
+%! assert_equal (ixA, [2; 1]);
+%! assert_equal (ixB, [2; 1; 2]);
+%!test
+%! A = [calmonths(1), caldays(30), calmonths(1)];
+%! [B, ixA, ixB] = unique (A, 'stable');
+%! [mo, d] = split (B, {'months', 'days'});
+%! assert_equal (mo, [1, 0]);
+%! assert_equal (d, [0, 30]);
+%! assert_equal (ixA, [1; 2]);
+%! assert_equal (ixB, [1; 2; 1]);
+%!test
+%! A = [calmonths(1), caldays(30), calmonths(1)];
+%! [B, ixA, ixB] = unique (A, 'last');
+%! assert_equal (ixA, [2; 3]);
+%! assert_equal (ixB, [2; 1; 2]);
+%!test
+%! A = [calendarDuration(1, 0, 0), calendarDuration(0, 12, 0)];
+%! [B, ixA, ixB] = unique (A);
+%! assert_equal (size (B), [1, 1]);
+%! assert_equal (calmonths (B), 12);
+%! assert_equal (ixA, 1);
+%! assert_equal (ixB, [1; 1]);
+%!test
+%! A = [calendarDuration(1, 0, 0), calendarDuration(0, 12, 0)];
+%! [B, ixA] = unique (A, 'last');
+%! assert_equal (calmonths (B), 12);
+%! assert_equal (ixA, 2);
+%!test
+%! A = [calmonths(1), calendarDuration(NaN, 0, 0), calmonths(1), ...
+%!      calendarDuration(NaN, 0, 0)];
+%! [B, ixA, ixB] = unique (A);
+%! assert_equal (size (B), [1, 3]);
+%! assert_equal (calmonths (B), [1, NaN, NaN]);
+%! assert_equal (ixA, [1; 2; 4]);
+%! assert_equal (ixB, [1; 2; 1; 3]);
+%!test
+%! A = [calmonths(1), calendarDuration(NaN, 0, 0), calmonths(1), ...
+%!      calendarDuration(NaN, 0, 0)];
+%! [B, ixA, ixB] = unique (A, 'stable');
+%! assert_equal (calmonths (B), [1, NaN, NaN]);
+%! assert_equal (ixA, [1; 2; 4]);
+%! assert_equal (ixB, [1; 2; 1; 3]);
+%!test
+%! A = [calmonths(1), calendarDuration(NaN, 0, 0), calmonths(1), ...
+%!      calendarDuration(NaN, 0, 0)];
+%! [~, ixA] = unique (A, 'last');
+%! assert_equal (ixA, [3; 2; 4]);
+%!test
+%! A = [caldays(1), calendarDuration(0, 0, 0, 24, 0, 0), caldays(1)];
+%! [B, ixA, ixB] = unique (A);
+%! assert_equal (size (B), [1, 2]);
+%! [d, t] = split (B, {'days', 'time'});
+%! assert_equal (d, [0, 1]);
+%! assert_equal (seconds (t), [86400, 0]);
+%! assert_equal (ixA, [2; 1]);
+%! assert_equal (ixB, [2; 1; 2]);
+%!test
+%! A = [caldays(1), calendarDuration(0, 0, 0, 24, 0, 0), caldays(1)];
+%! [B, ixA] = unique (A, 'stable');
+%! [d, t] = split (B, {'days', 'time'});
+%! assert_equal (d, [1, 0]);
+%! assert_equal (seconds (t), [0, 86400]);
+%! assert_equal (ixA, [1; 2]);
+%!test
+%! A = calmonths ([3; 1; 2; 1]);
+%! [B, ixA, ixB] = unique (A);
+%! assert_equal (size (B), [3, 1]);
+%! assert_equal (calmonths (B), [1; 2; 3]);
+%! assert_equal (ixA, [2; 3; 1]);
+%! assert_equal (ixB, [3; 1; 2; 1]);
+%!test
+%! A = calmonths ([3; 1; 2; 1]);
+%! [B, ixA, ixB] = unique (A, 'stable');
+%! assert_equal (calmonths (B), [3; 1; 2]);
+%! assert_equal (ixA, [1; 2; 3]);
+%! assert_equal (ixB, [1; 2; 3; 2]);
+%!test
+%! A = [calendarDuration(0, 0, 0), calendarDuration(0, 0, 0)];
+%! [B, ixA, ixB] = unique (A);
+%! assert_equal (size (B), [1, 1]);
+%! assert_equal (calmonths (B), 0);
+%! assert_equal (ixA, 1);
+%! assert_equal (ixB, [1; 1]);
+%!test
+%! A = [calendarDuration(0, 0, 0), calendarDuration(0, 0, 0)];
+%! [~, ixA] = unique (A, 'last');
+%! assert_equal (ixA, 2);
 
 ################################################################################
 ##                           ** Array Operations **                           ##
