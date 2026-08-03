@@ -37,6 +37,10 @@
 ##
 ## Each property name specified by @var{optarg_names} is case insensitive.
 ##
+## A property specified more than once in @var{arg_list} takes the value of its
+## last occurrence, as in MATLAB.  Every occurrence is consumed, so none of them
+## is returned in @var{rem_args}.
+##
 ## The following example illustrates how to use @code{parsePairedArguments}
 ## inside a function to parse optional paired arguments for three properties,
 ## namely @qcode{'A'}, @qcode{'B'}, and @qcode{'C'}.
@@ -80,10 +84,17 @@ function [varargout] = parsePairedArguments (optNames, dfValues, args)
     error ("parsePairedArguments: ARG_LIST must be a cell array.");
   endif
 
-  ## Search through all input arguments for Name/Value pairs
+  ## Search through all input arguments for Name/Value pairs.  The scan runs
+  ## from the back, where the pairs are, so that leading positional arguments
+  ## are never matched against a property name.
   foundNames = [];
   nargs = numel (args);
   for ii = nargs-1:-1:1
+    ## A pair consumed further back has shortened ARGS, so this position may
+    ## no longer have a value to pair with.
+    if (ii + 1 > numel (args))
+      continue;
+    endif
     tmp_arg = args{ii};
     if (isstring (tmp_arg))
       tmp_arg = char (tmp_arg);
@@ -92,8 +103,13 @@ function [varargout] = parsePairedArguments (optNames, dfValues, args)
       idx = strcmpi (tmp_arg, optNames);
       if (any (idx))
         idx = find (idx);
-        varargout{idx} = args{ii+1};
-        foundNames = [foundNames, idx];
+        ## A property given more than once keeps the value it was last given.
+        ## Since the scan runs backwards, a name resolved already lies further
+        ## back, so an earlier occurrence is consumed without overwriting it.
+        if (! any (foundNames == idx))
+          varargout{idx} = args{ii+1};
+          foundNames = [foundNames, idx];
+        endif
         args(ii:ii+1) = [];
       endif
     endif
@@ -143,6 +159,30 @@ endfunction
 %! assert_equal (a, {3});
 %! assert_equal (b, [1, 2]);
 %! assert_equal (c, 'text');
+%!test
+%! [a, b, c, args] = parsePairedArguments (optNames, dfValues, {'A', 5, 'A', 9});
+%! assert_equal (a, 9);
+%! assert_equal (numel (args), 0);
+%!test
+%! [a, b, c] = parsePairedArguments (optNames, dfValues, {'A', 5, 'A', 9, 'A', 7});
+%! assert_equal (a, 7);
+%!test
+%! [a, b, c] = parsePairedArguments (optNames, dfValues, {'A', 5, 'a', 9});
+%! assert_equal (a, 9);
+%!test
+%! [a, b, c, args] = parsePairedArguments (optNames, dfValues, ...
+%!                                         {7, 'c', 4, 'B', 1, 'C', 9});
+%! assert_equal (a, {3});
+%! assert_equal (b, 1);
+%! assert_equal (c, 9);
+%! assert_equal (args, {7});
+%!test
+%! [a, b, c, args] = parsePairedArguments (optNames, dfValues, ...
+%!                                         {'A', 'B', 'C', 6});
+%! assert_equal (a, 'B');
+%! assert_equal (b, [1, 2]);
+%! assert_equal (c, 6);
+%! assert_equal (numel (args), 0);
 
 %!error <parsePairedArguments: invalid number of input arguments.> ...
 %! parsePairedArguments (optNames, dfValues)
