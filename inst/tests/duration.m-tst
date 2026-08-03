@@ -512,6 +512,34 @@
 %! assert_equal (m, zeros (1, 5));
 %! assert_equal (s, [1:5]);
 %!error<duration.hms: too many output arguments.> [h, m, s, ms] = hms (days (1))
+%!test
+%! [h, m, s] = hms (duration (-4, -5, -6.5));
+%! assert_equal ([h, m, s], [-4, -5, -6.5]);
+%!test
+%! [h, m, s] = hms (duration (0, 0, -0.5));
+%! assert_equal ([h, m, s], [0, 0, -0.5]);
+%!test
+%! [h, m, s] = hms (duration ([Inf, -Inf, NaN], 0, 0));
+%! assert_equal (h, [Inf, -Inf, NaN]);
+%! assert_equal (m, [Inf, -Inf, NaN]);
+%! assert_equal (s, [Inf, -Inf, NaN]);
+%!test
+%! [h, m, s] = hms (duration (0, 0, -3599.9999999999995));
+%! assert_equal ([h, m], [0, -59]);
+%! assert_equal (s, -59.999999999999545, 1e-12);
+%!test
+%! [h, m, s] = hms (duration (0, 0, 3599.9999999999995));
+%! assert_equal ([h, m], [0, 59]);
+%! assert_equal (s, 59.999999999999545, 1e-12);
+%!test
+%! [h, m, s] = hms (duration (0, 0, -1e-13));
+%! assert_equal ([h, m], [0, 0]);
+%! assert_equal (s, -1e-13);
+%!test
+%! [h, m, s] = hms (duration ([1, -1], 0, [0.5, -0.5]));
+%! assert_equal (h, [1, -1]);
+%! assert_equal (m, [0, 0]);
+%! assert_equal (s, [0.5, -0.5]);
 
 ################################################################################
 ##                         ** Summary Information **                          ##

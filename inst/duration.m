@@ -709,39 +709,37 @@ classdef duration
     ## minutes are returned as whole numbers, while seconds may also have a
     ## fractional part.
     ##
-    ## Values containing a fractional portion less than 1 picosecond are rounded
-    ## to the nearest picosecond.
+    ## Each component is what truncating division leaves, so every one of them
+    ## carries the sign of the duration as a whole and a span a hair under an
+    ## hour reports 59 minutes rather than a whole one.  Nothing is snapped to a
+    ## whole unit and nothing is rounded to a fixed precision.
+    ##
+    ## A duration that is not finite has no components to divide between: all
+    ## three take that same infinity, or @code{NaN}.
     ##
     ## @end deftypefn
     function varargout = hms (this)
+      ## Each component is what truncating division leaves, exactly as MATLAB
+      ## computes it.  Nothing is snapped to a whole unit and nothing is rounded
+      ## to a fixed precision: a span a hair under an hour must report 59
+      ## minutes, and a fraction of a second must survive whichever side of zero
+      ## it falls.  Truncation towards zero also gives every component the sign
+      ## of the whole, down to the negative zeros MATLAB returns.
       x = this.Millis / 1000;
       h = fix (x / 3600);
-      tmp = x - h * 3600;
-      idx = 3600 - tmp < 1e-12; # find round-off errors to whole hours
-      if (any (idx, 'all'))
-        h(idx) += 1;
-        x(idx) -= h(idx) * 3600;
-        x(! idx) = tmp(! idx);
-      else
-        x = tmp;
-      endif
+      x = x - h * 3600;
       m = fix (x / 60);
-      tmp = x - m * 60;
-      idx = 60 - tmp < 1e-12; # find round-off errors to whole minutes
-      if (any (idx, 'all'))
-        m(idx) += 1;
-        x(idx) -= m(idx) * 60;
-        x(! idx) = tmp(! idx);
-      else
-        x = tmp;
+      s = x - m * 60;
+      ## A non-finite duration has no components to divide between: each of
+      ## them is that same infinity, or NaN, as MATLAB returns.  Subtracting
+      ## the hours off an infinite count of seconds otherwise leaves NaN
+      ## behind in the minutes and seconds.
+      nf = ! isfinite (this.Millis);
+      if (any (nf, 'all'))
+        h(nf) = this.Millis(nf);
+        m(nf) = this.Millis(nf);
+        s(nf) = this.Millis(nf);
       endif
-      s = x;
-      idx = x < 1e-12; # find round-off errors to whole seconds
-      if (any (idx, 'all'))
-        s(idx) = 0;
-      endif
-      ## Fix floating point precision to nearest picosecond
-      s = round (s * 1e12) / 1e12;
       if (nargout == 0 || nargout == 1)
         varargout{1} = h;
       elseif (nargout == 2)

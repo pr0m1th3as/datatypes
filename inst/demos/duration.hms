@@ -5,3 +5,11 @@
 %! d = duration (1, 30, 45)
 %! [h, m, s] = hms (d);
 %! [h, m, s]
+
+%!demo
+%! ## Every component carries the sign of the duration as a whole, and the
+%! ## seconds keep their fraction on either side of zero.
+%!
+%! d = duration (-4, -5, -6.5)
+%! [h, m, s] = hms (d);
+%! [h, m, s]
