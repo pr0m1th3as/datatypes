@@ -34,3 +34,12 @@
 %! ## one calendar duration per row.
 %!
 %! calendarDuration ([1, 2, 15; 0, 6, 3])
+
+%!demo
+%! ## Passing an existing array back through the constructor copies it, size and
+%! ## display format included.  Adding `'Format'` re-formats the copy and leaves
+%! ## the original alone, which is the tidy way to show one span two ways.
+%!
+%! calD = calendarDuration (1, 14, 40, 'Format', 'qmwdt')
+%! calendarDuration (calD, 'Format', 'ymdt')
+%! calD

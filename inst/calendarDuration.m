@@ -146,6 +146,7 @@ classdef calendarDuration
     ## @deftypefnx {calendarDuration} {@var{calD} =} calendarDuration (@var{Y}, @var{MO}, @var{D})
     ## @deftypefnx {calendarDuration} {@var{calD} =} calendarDuration (@var{Y}, @var{MO}, @var{D}, @var{H}, @var{MI}, @var{S})
     ## @deftypefnx {calendarDuration} {@var{calD} =} calendarDuration (@var{Y}, @var{MO}, @var{D}, @var{T})
+    ## @deftypefnx {calendarDuration} {@var{calD} =} calendarDuration (@var{calD2})
     ## @deftypefnx {calendarDuration} {@var{calD} =} calendarDuration (@dots{}, @qcode{'Format'}, @var{FMT})
     ##
     ## Create a new array of calendar durations.
@@ -183,9 +184,14 @@ classdef calendarDuration
     ## must contain integer values corresponding to whole calendar units.
     ## @var{S} can also be contain fractions of seconds.
     ##
+    ## @code{@var{calD} = calendarDuration (@var{calD2})} returns a copy of the
+    ## calendarDuration array @var{calD2}, which keeps its size as well as its
+    ## @qcode{'Format'} property unless a new format is specified.
+    ##
     ## @code{@var{calD} = calendarDuration (@dots{}, @qcode{'Format'},
     ## @var{FMT})} specifies the format in which @var{calD} is displayed.
-    ## @var{FMT} must be a character vector containing the following letters.
+    ## @var{FMT} must be a character vector or a string scalar containing the
+    ## following letters.
     ##
     ## @itemize
     ## @item @qcode{'y'} years
@@ -198,12 +204,29 @@ classdef calendarDuration
     ##
     ## Each character must be specified only once in the same order as they
     ## appear in the above list.  @qcode{'m'}, @qcode{'d'}, and @qcode{'t'}
-    ## characters must always be included in the format specification.  Any
-    ## characters besides these listed above are ignored.
+    ## characters must always be included in the format specification.  No
+    ## other character is accepted.
+    ##
+    ## @strong{Note:} MATLAB does not reject a format that omits a required
+    ## character.  It warns and silently substitutes a repaired format, so that
+    ## @qcode{'ymd'} becomes @qcode{'ymdt'}.  An invalid format is an error
+    ## here, because rewriting what the user asked for hides the typo that
+    ## caused it.
+    ##
+    ## @strong{Note:} MATLAB also accepts a numeric array in place of @var{T},
+    ## which it reads as a count of @emph{milliseconds}, thereby exposing the
+    ## internal storage of its @code{duration} type.  This is undocumented and
+    ## contradicts MATLAB's own documentation, which requires @var{T} to be a
+    ## duration array, and it is not reproduced here.  Use @code{milliseconds
+    ## (@var{N})} to say so explicitly.
     ##
     ## @code{@var{calD} = calendarDuration ()} returns a scalar array of
     ## calendar durations with a value of zero days.  To create an empty
-    ## calendarDuration array, use @code{calendarDuration ([], [], [])}.
+    ## calendarDuration array, use @code{calendarDuration ([], [], [])}.  A
+    ## @qcode{'Format'} may be given on its own, as in @code{calendarDuration
+    ## (@qcode{'Format'}, @qcode{'mdt'})}, which returns the same zero scalar
+    ## in that format.  MATLAB requires data alongside the option and rejects
+    ## this.
     ##
     ## @seealso{calyears, calquarters, calmonths, calweeks, caldays,
     ## calendarDuration, iscalendarduration, datetime, duration}
@@ -220,9 +243,12 @@ classdef calendarDuration
       dfValues = {[]};
       [Format, args] = parsePairedArguments (optNames, dfValues, varargin(:));
 
-      ## Check optional 'Format' argument
-      if (! isempty (Format))
-        errmsg = checkFormatString (Format);
+      ## Check optional 'Format' argument.  It was supplied only if the parser
+      ## consumed its Name/Value pair: testing the returned value for emptiness
+      ## would read an explicit 'Format', [] as no format having been given.
+      fmtGiven = numel (args) != numel (varargin);
+      if (fmtGiven)
+        [errmsg, Format] = checkFormatString (Format);
         if (! isempty (errmsg))
           error ("calendarDuration: 'Format' %s", errmsg);
         endif
@@ -239,6 +265,20 @@ classdef calendarDuration
         ## this = calendarDuration (X)
         case 1
           X = args{1};
+          ## A calendarDuration passes through unchanged, keeping its own
+          ## display format unless another one was specified here.
+          if (isa (X, 'calendarDuration'))
+            if (fmtGiven)
+              X.Format = Format;
+            endif
+            this = X;
+            return
+          endif
+          if (isa (X, 'duration'))
+            error (strcat ("calendarDuration: X must be numeric. Convert a", ...
+                           " duration array with 'years', 'days', 'hours',", ...
+                           " 'minutes', or 'seconds' first."));
+          endif
           if (! (isnumeric (X) && ismatrix (X)))
             error ("calendarDuration: X must be a numeric matrix.");
           endif
@@ -520,7 +560,7 @@ classdef calendarDuration
     ## @end deftypefn
     function cstr = cellstr (this, FMT = '')
       if (! isempty (FMT))
-        errmsg = checkFormatString (FMT);
+        [errmsg, FMT] = checkFormatString (FMT);
         if (! isempty (errmsg))
           error ("calendarDuration.cellstr: FMT %s", errmsg);
         endif
@@ -543,7 +583,7 @@ classdef calendarDuration
     ## @end deftypefn
     function cmat = char (this, FMT = '')
       if (! isempty (FMT))
-        errmsg = checkFormatString (FMT);
+        [errmsg, FMT] = checkFormatString (FMT);
         if (! isempty (errmsg))
           error ("calendarDuration.char: FMT %s", errmsg);
         endif
@@ -2004,7 +2044,7 @@ classdef calendarDuration
           endif
           switch (s.subs)
             case 'Format'
-              errmsg = checkFormatString (val);
+              [errmsg, val] = checkFormatString (val);
               if (! isempty (errmsg))
                 error ("calendarDuration.subsasgn: 'Format' %s", errmsg);
               endif
@@ -2097,18 +2137,28 @@ classdef calendarDuration
 
 endclassdef
 
-## Check 'Format' string
-function errmsg = checkFormatString (Format)
-  ## Check for character vector
-  if (! (ischar (Format) && isvector (Format)))
-    errmsg = "must be a character vector.";
+## Check 'Format' string.  The validated format is returned as well, so that a
+## string scalar is converted to a character vector once, where it is checked,
+## rather than at each of the callers that store it.
+function [errmsg, Format] = checkFormatString (Format)
+  ## A string scalar is accepted and stored as a character vector
+  if (isa (Format, 'string') && isscalar (Format))
+    Format = char (Format);
+  endif
+  ## Check for character vector.  An empty character vector is let through to
+  ## report the characters it is missing rather than its type.
+  if (! (ischar (Format) && (isvector (Format) || isempty (Format))))
+    errmsg = "must be a character vector or a string scalar.";
     return;
   endif
   errmsg = '';
   sf = @(x) strfind (Format, x);
   sp = cellfun (sf, {'y','q','m','w','d','t'}, 'UniformOutput', false);
+  ## Check for characters outside the recognized set
+  if (! all (ismember (Format, 'yqmwdt')))
+    errmsg = "must only contain characters from the 'yqmwdt' sequence.";
   ## Check for duplicate characters
-  if (any (cellfun (@(x) numel (x) > 1, sp)))
+  elseif (any (cellfun (@(x) numel (x) > 1, sp)))
     errmsg = "contains duplicate characters.";
   ## Check for 'm', 'd', and 't' being present
   elseif (any (cellfun (@isempty, sp([3,5,6]))))

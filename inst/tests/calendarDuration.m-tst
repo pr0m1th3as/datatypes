@@ -132,9 +132,9 @@
 %! assert_equal (hours (time (X(2))), NaN);
 %! assert_equal (minutes (time (X(2))), NaN);
 %! assert_equal (seconds (time (X(2))), NaN);
-%!error<calendarDuration: 'Format' must be a character vector.> ...
+%!error<calendarDuration: 'Format' must be a character vector or a string scalar.> ...
 %! calendarDuration ([0, 0, 1], 'Format', 1)
-%!error<calendarDuration: 'Format' must be a character vector.> ...
+%!error<calendarDuration: 'Format' must be a character vector or a string scalar.> ...
 %! calendarDuration ([0, 0, 1], 'Format', {'YY-MM-DD'})
 %!error<calendarDuration: 'Format' contains duplicate characters.> ...
 %! calendarDuration ([0, 0, 1], 'Format', 'yymd')
@@ -244,6 +244,59 @@
 %! calendarDuration (1, [0.1, NaN])
 %!error<calendarDuration: invalid number of input arguments.> ...
 %! calendarDuration (1, [0.1, NaN], 1, 12, 30)
+%!test
+%! X = calendarDuration (1, 2, 3, 'Format', 'qmdt');
+%! Y = calendarDuration (X);
+%! assert_equal (class (Y), 'calendarDuration');
+%! assert_equal (Y.Format, 'qmdt');
+%! assert_equal (calmonths (Y), 14);
+%!test
+%! X = calendarDuration (ones (2, 3), 2, 3, 'Format', 'mdt');
+%! Y = calendarDuration (X);
+%! assert_equal (size (Y), [2, 3]);
+%! assert_equal (Y.Format, 'mdt');
+%!test
+%! X = calendarDuration (1, 2, 3, 'Format', 'qmdt');
+%! Y = calendarDuration (X, 'Format', 'mdt');
+%! assert_equal (Y.Format, 'mdt');
+%! assert_equal (X.Format, 'qmdt');
+%!test
+%! X = calendarDuration ([], [], []);
+%! Y = calendarDuration (X);
+%! assert_equal (size (Y), [0, 0]);
+%! assert_equal (isempty (Y), true);
+%!test
+%! X = calendarDuration (1, 2, 3, 'Format', string ('mdt'));
+%! assert_equal (class (X.Format), 'char');
+%! assert_equal (X.Format, 'mdt');
+%! assert_equal (dispstrings (X), {'14mo 3d'});
+%!test
+%! X = calendarDuration (1, 2, 3);
+%! X.Format = string ('mdt');
+%! assert_equal (class (X.Format), 'char');
+%! assert_equal (X.Format, 'mdt');
+%!test
+%! X = calendarDuration ('Format', 'mdt');
+%! assert_equal (X.Format, 'mdt');
+%! assert_equal (dispstrings (X), {'0d'});
+%!assert_equal (cellstr (calendarDuration (1, 2, 3), string ('mdt')), {'14mo 3d'})
+%!assert_equal (char (calendarDuration (1, 2, 3), string ('mdt')), '14mo 3d')
+%!error<calendarDuration: 'Format' must be a character vector or a string scalar.> ...
+%! calendarDuration (1, 2, 3, 'Format', [])
+%!error<calendarDuration: 'Format' must be a character vector or a string scalar.> ...
+%! calendarDuration (1, 2, 3, 'Format', string ({'ymdt', 'mdt'}))
+%!error<calendarDuration: 'Format' must be a character vector or a string scalar.> ...
+%! calendarDuration (1, 2, 3, 'Format', ['ymdt'; 'ymdt'])
+%!error<calendarDuration: 'Format' must only contain characters from the 'yqmwdt' sequence.> ...
+%! calendarDuration (1, 2, 3, 'Format', 'ymdtz')
+%!error<calendarDuration: 'Format' must only contain characters from the 'yqmwdt' sequence.> ...
+%! calendarDuration (1, 2, 3, 'Format', 'YMDT')
+%!error<calendarDuration: 'Format' must contain 'm', 'd', and 't'.> ...
+%! calendarDuration (1, 2, 3, 'Format', '')
+%!error<calendarDuration: X must be numeric. Convert a duration array with 'years', 'days', 'hours', 'minutes', or 'seconds' first.> ...
+%! calendarDuration (duration (1, 2, 3))
+%!error<calendarDuration: Y, MO, and D must be a numeric arrays.> ...
+%! calendarDuration (calendarDuration (1, 2, 3), 1, 2)
 
 %!assert_equal (dispstrings (calendarDuration ([0, 0, NaN])), {'NaN'})
 %!assert_equal (dispstrings (calendarDuration ([0, 0, Inf])), {'Inf'})
