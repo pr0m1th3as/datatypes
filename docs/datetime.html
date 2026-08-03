@@ -319,6 +319,16 @@
  <code>TimeZone</code> and <code>Format</code> properties associated with it, which
  apply to all elements in the array.
 </p>
+<p> When a display <code>Format</code> contains a time-zone name field
+ (<code>z</code>/<code>zz</code>/<code>zzz</code>), the name is rendered according to a
+ session-wide style set by <code>datetime.zoneNameStyle</code>.  The default,
+ <code>'iana'</code>, is an Octave-specific extension that shows the IANA
+ abbreviation for every zone (e.g. <code>EEST</code>); <code>'matlab'</code> restores
+ MATLAB&rsquo;s behaviour of naming only North American zones and showing a
+ numeric <code>UTC+3</code>-style offset elsewhere.  A single <code>Format</code> may
+ override the session style with <code>zzzz</code> (force <code>'iana'</code>) or
+ <code>zzzzz</code> (force <code>'matlab'</code>).  See <code>datetime.zoneNameStyle</code>.
+</p>
 <p> <strong>See also: </strong>
   <a href="calendarDuration.html">calendarDuration</a>, 
   <a href="duration.html">duration</a>
@@ -382,6 +392,40 @@ Display format
  specified as a string scalar, it is converted and stored internally as
  a character vector.
 </p>
+<p> The value <code>'default'</code> is a data-dependent sentinel: a date-only
+ format (<code>'dd-MMM-uuuu'</code>) is used when every element sits at
+ midnight, and a date and time format (<code>'dd-MMM-uuuu HH:mm:ss'</code>)
+ otherwise.  The value <code>'defaultdate'</code> always selects the
+ date-only format.  Reading the property returns the resolved pattern,
+ never the sentinel itself.
+</p>
+<p> A custom pattern is built from the following Unicode (LDML) fields;
+ repeating a letter widens or names the field.  Any other text is
+ copied verbatim, and text in single quotes is always literal.
+</p>
+<div class="table-responsive">
+<table class="table table-striped table-bordered table-sm">
+<tr><td width="18%"><code>y</code>, <code>u</code></td><td width="82%">Year; <code>yy</code> uses the last two digits.</td></tr>
+<tr><td width="18%"><code>M</code></td><td width="82%">Month: number (<code>M</code>, <code>MM</code>), abbreviated
+ (<code>MMM</code>), full (<code>MMMM</code>), or initial (<code>MMMMM</code>).</td></tr>
+<tr><td width="18%"><code>d</code></td><td width="82%">Day of the month.</td></tr>
+<tr><td width="18%"><code>D</code></td><td width="82%">Day of the year.</td></tr>
+<tr><td width="18%"><code>e</code></td><td width="82%">Day of the week: number (Sunday is 1), abbreviated
+ (<code>eee</code>), full (<code>eeee</code>), or initial (<code>eeeee</code>).</td></tr>
+<tr><td width="18%"><code>H</code>, <code>h</code></td><td width="82%">Hour, 24-hour and 12-hour clock.</td></tr>
+<tr><td width="18%"><code>m</code></td><td width="82%">Minute.</td></tr>
+<tr><td width="18%"><code>s</code></td><td width="82%">Whole second (fractional seconds are truncated).</td></tr>
+<tr><td width="18%"><code>S</code></td><td width="82%">Fractional second, one digit per <code>S</code>.</td></tr>
+<tr><td width="18%"><code>a</code></td><td width="82%">AM or PM.</td></tr>
+<tr><td width="18%"><code>Q</code></td><td width="82%">Quarter of the year.</td></tr>
+<tr><td width="18%"><code>G</code></td><td width="82%">Era.</td></tr>
+<tr><td width="18%"><code>W</code></td><td width="82%">Week of the month.</td></tr>
+<tr><td width="18%"><code>z</code></td><td width="82%">Time-zone name (style set by
+ <code>datetime.zoneNameStyle</code>; <code>zzzz</code>/<code>zzzzz</code> force it).</td></tr>
+<tr><td width="18%"><code>Z</code>, <code>X</code>, <code>x</code></td><td width="82%">Numeric time-zone offset.</td></tr>
+</table>
+</div>
+
 
 
             </div>
@@ -411,6 +455,19 @@ Time zone
 <p> Time zone, specified as a character vector or string scalar.  If
  specified as a string scalar, it is converted and stored internally as
  a character vector.
+</p>
+<p> Besides the zones of the IANA Time Zone Database, the value
+ <code>'UTCLeapSeconds'</code> selects UTC with its inserted leap seconds made
+ representable, so that the 60th second of a minute exists on the 27 dates
+ that have one.  It is not an IANA zone and <code>timezones</code> does not list
+ it.  An array in that zone counts elapsed SI seconds, which is what makes
+ its arithmetic differ from a UTC array&rsquo;s across an inserted second, and
+ for that reason it cannot be combined or compared with an array that does
+ not have leap seconds.  Its <code>Format</code> is fixed to
+ <code>&quot;uuuu-MM-dd'T'HH:mm:ss'Z'&quot;</code>, optionally with one to nine
+ fractional-second digits, since no other pattern can write a 60th second;
+ moving such an array to any other zone folds an inserted second back onto
+ the 59th and restores the ordinary default format.
 </p>
 
 
@@ -487,6 +544,18 @@ Time zone
                         <td><b><code><a href="datetime.second.html">second</a></code></b></td>
                         <td>Seconds component of a datetime array.</td>
                       </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.week.html">week</a></code></b></td>
+                        <td>Week component of a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.timeofday.html">timeofday</a></code></b></td>
+                        <td>Elapsed time since midnight of a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.tzoffset.html">tzoffset</a></code></b></td>
+                        <td>Time zone offset of a datetime array.</td>
+                      </tr>
                     </tbody>
                   </table>
 
@@ -552,8 +621,42 @@ Time zone
                   <table class="table table-striped">
                     <tbody>
                       <tr>
+                        <td><b><code><a href="datetime.posixtime.html">posixtime</a></code></b></td>
+                        <td>Convert datetime array to POSIX time.</td>
+                      </tr>
+                      <tr>
                         <td><b><code><a href="datetime.datevec.html">datevec</a></code></b></td>
                         <td>Convert datetime array to date vectors.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.datestr.html">datestr</a></code></b></td>
+                        <td>Convert datetime array to a character array of date strings.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.string.html">string</a></code></b></td>
+                        <td>Convert datetime array to a string array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.yyyymmdd.html">yyyymmdd</a></code></b></td>
+                        <td>Convert datetime array to ‘YYYYMMDD’ numeric form.
+
+  </td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.datenum.html">datenum</a></code></b></td>
+                        <td>Convert datetime array to serial date numbers.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.exceltime.html">exceltime</a></code></b></td>
+                        <td>Convert datetime array to Excel serial date numbers.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.juliandate.html">juliandate</a></code></b></td>
+                        <td>Convert datetime array to Julian dates.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.convertTo.html">convertTo</a></code></b></td>
+                        <td>Convert datetime array to a numeric representation.</td>
                       </tr>
                     </tbody>
                   </table>
@@ -577,6 +680,18 @@ Time zone
             <div class="border-bottom py-2">
                   <table class="table table-striped">
                     <tbody>
+                      <tr>
+                        <td><b><code><a href="datetime.isdst.html">isdst</a></code></b></td>
+                        <td>Determine which datetime values fall in daylight saving time.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.isregular.html">isregular</a></code></b></td>
+                        <td>Determine whether a datetime vector is regularly spaced.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.isweekend.html">isweekend</a></code></b></td>
+                        <td>Determine which datetime values fall on a weekend.</td>
+                      </tr>
                       <tr>
                         <td><b><code><a href="datetime.isbetween.html">isbetween</a></code></b></td>
                         <td>Determine which datetime values lie within an interval.</td>
@@ -660,6 +775,14 @@ Time zone
                   <table class="table table-striped">
                     <tbody>
                       <tr>
+                        <td><b><code><a href="datetime.maxk.html">maxk</a></code></b></td>
+                        <td>Find the latest elements in a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.mink.html">mink</a></code></b></td>
+                        <td>Find the earliest elements in a datetime array.</td>
+                      </tr>
+                      <tr>
                         <td><b><code><a href="datetime.sort.html">sort</a></code></b></td>
                         <td>Sort a datetime array.</td>
                       </tr>
@@ -674,6 +797,10 @@ Time zone
                       <tr>
                         <td><b><code><a href="datetime.max.html">max</a></code></b></td>
                         <td>Maximum of a datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.topkrows.html">topkrows</a></code></b></td>
+                        <td>Top K sorted rows of a datetime array.</td>
                       </tr>
                       <tr>
                         <td><b><code><a href="datetime.unique.html">unique</a></code></b></td>
@@ -698,6 +825,10 @@ Time zone
                       <tr>
                         <td><b><code><a href="datetime.ismember.html">ismember</a></code></b></td>
                         <td>Test for datetime elements in a set.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.interp1.html">interp1</a></code></b></td>
+                        <td>One-dimensional interpolation involving datetime arrays.</td>
                       </tr>
                     </tbody>
                   </table>
@@ -751,7 +882,7 @@ Time zone
               aria-expanded="false" aria-controls="collapseGroup7">
               <div class="row align-items-center">
                 <div class="col-12">
-                  <h4 class="d-inline-block mr-4">Arithmetic Operations</h4>
+                  <h4 class="d-inline-block mr-4">Binning</h4>
                 </div>
               </div>
           </div>
@@ -760,8 +891,42 @@ Time zone
                   <table class="table table-striped">
                     <tbody>
                       <tr>
+                        <td><b><code><a href="datetime.discretize.html">discretize</a></code></b></td>
+                        <td>Group datetimes into bins.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.histcounts.html">histcounts</a></code></b></td>
+                        <td>Histogram bin counts for datetimes.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup8"
+              aria-expanded="false" aria-controls="collapseGroup8">
+              <div class="row align-items-center">
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Arithmetic Operations</h4>
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseGroup8">
+            <div class="border-bottom py-2">
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
                         <td><b><code><a href="datetime.colon.html">colon</a></code></b></td>
                         <td>Create a range of datetime values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.linspace.html">linspace</a></code></b></td>
+                        <td>Create linearly spaced datetime values.</td>
                       </tr>
                       <tr>
                         <td><b><code><a href="datetime.plus.html">plus</a></code></b></td>
@@ -797,15 +962,15 @@ Time zone
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseGroup8"
-              aria-expanded="false" aria-controls="collapseGroup8">
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup9"
+              aria-expanded="false" aria-controls="collapseGroup9">
               <div class="row align-items-center">
                 <div class="col-12">
                   <h4 class="d-inline-block mr-4">Relational Operations</h4>
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseGroup8">
+          <div class="collapse multi-collapse" id="collapseGroup9">
             <div class="border-bottom py-2">
                   <table class="table table-striped">
                     <tbody>
@@ -843,15 +1008,15 @@ Time zone
         <div class="container-xl my-1">
           <div class="row">
             <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseGroup9"
-              aria-expanded="false" aria-controls="collapseGroup9">
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup10"
+              aria-expanded="false" aria-controls="collapseGroup10">
               <div class="row align-items-center">
                 <div class="col-12">
                   <h4 class="d-inline-block mr-4">Array Operations</h4>
                 </div>
               </div>
           </div>
-          <div class="collapse multi-collapse" id="collapseGroup9">
+          <div class="collapse multi-collapse" id="collapseGroup10">
             <div class="border-bottom py-2">
                   <table class="table table-striped">
                     <tbody>
@@ -902,6 +1067,40 @@ Time zone
                       <tr>
                         <td><b><code><a href="datetime.ctranspose.html">ctranspose</a></code></b></td>
                         <td>Transpose a datetime matrix.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup11"
+              aria-expanded="false" aria-controls="collapseGroup11">
+              <div class="row align-items-center">
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Other</h4>
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseGroup11">
+            <div class="border-bottom py-2">
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="datetime.empty.html">empty</a></code></b></td>
+                        <td>Create an empty datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.zoneNameStyle.html">zoneNameStyle</a></code></b></td>
+                        <td>Query or set the session-wide style used to render time-zone names.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.setDefaultFormats.html">setDefaultFormats</a></code></b></td>
+                        <td>Set the default display formats of datetime arrays.</td>
                       </tr>
                     </tbody>
                   </table>

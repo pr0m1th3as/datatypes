@@ -324,6 +324,10 @@
 </p>
 <p> Each property name specified by <var>optarg_names</var> is case insensitive.
 </p>
+<p> A property specified more than once in <var>arg_list</var> takes the value of its
+ last occurrence, as in MATLAB.  Every occurrence is consumed, so none of them
+ is returned in <var>rem_args</var>.
+</p>
 <p> The following example illustrates how to use <code>parsePairedArguments</code>
  inside a function to parse optional paired arguments for three properties,
  namely <code>'A'</code>, <code>'B'</code>, and <code>'C'</code>.

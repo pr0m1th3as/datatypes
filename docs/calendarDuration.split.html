@@ -259,6 +259,18 @@
 				</ul>
 				</div>
 			</div>
+			<div class="row">
+				<input id="togList7" type="checkbox">
+				<label for="togList7">
+					<span><h6>Other</h6></span>
+					<span><h6>Other</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="calendarDuration.empty.html" class="text-decoration-none font-monospace"><small>empty</small></a></li>
+				</ul>
+				</div>
+			</div>
 
 			  </div>
 			  <div class="col-md-10">
@@ -307,6 +319,18 @@
  of weeks and days in <var>calD</var>, with larger units taking precedence when
  specified  The same applies for duration arrays, when requested.
 </p>
+<p> Each unit may be abbreviated to any leading part of its name and is
+ matched without regard to case, so <code>'y'</code>, <code>'Year'</code> and
+ <code>'YEARS'</code> all name years.  No abbreviation is ambiguous, the six
+ names starting with six different letters.  A unit named more than once
+ still asks for a single component.
+</p>
+<p> Fewer output arguments than units may be requested, in which case only
+ the leading ones are returned; asking for more is an error.  An element
+ that is not finite keeps that same value in every component it is divided
+ into, so splitting an infinite calendar duration gives infinite years,
+ months and days alike.
+</p>
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/calendarDuration.m">calendarDuration</a>
 </div>
@@ -336,6 +360,39 @@
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
 
     2    3   40</pre>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="card rounded my-4">
+          <div class="card-header card-header-mod">
+            <div class="row d-flex flex-wrap align-items-center">
+              <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                <button class="btn btn-link fs-4 fw-normal d-inline-block mr-2 p-0 text-reset text-decoration-none"
+                  type="button" data-bs-toggle="collapse"
+                  data-bs-target="#calendarDuration_split-example2" aria-expanded="true"
+                  aria-controls="calendarDuration_split-example2">
+                Example: 2
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="collapse show" id="calendarDuration_split-example2">
+            <div class="card-body">
+                <p>Unit names may be abbreviated to any leading part and are matched without regard to case, and fewer outputs than units may be asked for — you get the leading ones.</p>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> d = calendarDuration (2, 3, 40)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">d =
+  calendarDuration
+
+   2y 3mo 40d</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> split (d, 'y')</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans = 2</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> [y, q] = split (d, {'Years', 'QUARTERS', 'months'});
+ [y, q]</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+
+   2   1</pre>
 
             </div>
           </div>

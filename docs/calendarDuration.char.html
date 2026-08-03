@@ -259,6 +259,18 @@
 				</ul>
 				</div>
 			</div>
+			<div class="row">
+				<input id="togList7" type="checkbox">
+				<label for="togList7">
+					<span><h6>Other</h6></span>
+					<span><h6>Other</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="calendarDuration.empty.html" class="text-decoration-none font-monospace"><small>empty</small></a></li>
+				</ul>
+				</div>
+			</div>
 
 			  </div>
 			  <div class="col-md-10">
@@ -287,9 +299,14 @@
 </p>
 <div class="ms-5">
 <p> <code><var>cmat</var> = char (<var>calD</var>)</code> returns a character matrix with
- one row per element in <var>calD</var>.  The second optional argument,
- <var>FMT</var>, can be used to specify the format of the returned string
- representations of the calendarDuration input array <var>calD</var>.
+ one row per element in <var>calD</var>, taken in column-major order.  The
+ second optional argument, <var>FMT</var>, can be used to specify the format of
+ the returned string representations of the calendarDuration input array
+ <var>calD</var>.
+</p>
+<p> Rows shorter than the widest are padded on the <em>left</em>, so the
+ character matrix is right-justified, as MATLAB returns it and as the
+ array itself is displayed.
 </p>
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/calendarDuration.m">calendarDuration</a>
@@ -309,7 +326,7 @@
           </div>
           <div class="collapse show" id="calendarDuration_char-example1">
             <div class="card-body">
-                <p><code>char</code> converts the array into a character matrix of its display strings, one row per element (shorter rows padded with spaces).</p>
+                <p><code>char</code> converts the array into a character matrix of its display strings, one row per element.  Rows shorter than the widest are padded on the LEFT, so the matrix comes out right-justified, the way the array itself is displayed.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> d = calmonths ([1, 13])</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">d =
   1x2 calendarDuration array
@@ -318,8 +335,39 @@
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> char (d)</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
 
-1mo   
+   1mo
 1y 1mo</pre>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="card rounded my-4">
+          <div class="card-header card-header-mod">
+            <div class="row d-flex flex-wrap align-items-center">
+              <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                <button class="btn btn-link fs-4 fw-normal d-inline-block mr-2 p-0 text-reset text-decoration-none"
+                  type="button" data-bs-toggle="collapse"
+                  data-bs-target="#calendarDuration_char-example2" aria-expanded="true"
+                  aria-controls="calendarDuration_char-example2">
+                Example: 2
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="collapse show" id="calendarDuration_char-example2">
+            <div class="card-body">
+                <p>A second argument renders the same array in another format, without altering it.  Here the months are shown whole rather than split into years.</p>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> d = calmonths ([1, 13])</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">d =
+  1x2 calendarDuration array
+
+    1mo    1y 1mo</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> char (d, 'mdt')</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+
+ 1mo
+13mo</pre>
 
             </div>
           </div>

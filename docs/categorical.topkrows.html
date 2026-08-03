@@ -271,6 +271,8 @@
 				</label>
 				<div class="list">
 				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="categorical.maxk.html" class="text-decoration-none font-monospace"><small>maxk</small></a></li>
+					<li><a href="categorical.mink.html" class="text-decoration-none font-monospace"><small>mink</small></a></li>
 					<li><a href="categorical.sort.html" class="text-decoration-none font-monospace"><small>sort</small></a></li>
 					<li><a href="categorical.sortrows.html" class="text-decoration-none font-monospace"><small>sortrows</small></a></li>
 					<li><a href="categorical.topkrows.html" class="text-decoration-none font-monospace fw-bolder"><small>topkrows</small></a></li>
@@ -305,6 +307,18 @@
 				</ul>
 				</div>
 			</div>
+			<div class="row">
+				<input id="togList9" type="checkbox">
+				<label for="togList9">
+					<span><h6>Other</h6></span>
+					<span><h6>Other</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="categorical.empty.html" class="text-decoration-none font-monospace"><small>empty</small></a></li>
+				</ul>
+				</div>
+			</div>
 
 			  </div>
 			  <div class="col-md-10">
@@ -336,20 +350,27 @@
 <div class="ms-5">
 <p> <code><var>B</var> = topkrows (<var>A</var>, <var>K</var>)</code> returns the top <var>K</var> rows
  of the 2-D categorical array <var>A</var> sorted in descending order as a
- group.
+ group.  <var>K</var> must be a nonnegative integer scalar.  If <var>K</var> is
+ larger than the number of rows in <var>A</var>, then all of them are returned.
+ <var>B</var> keeps the categories of <var>A</var>, including their order.
+</p>
+<p> Missing elements (<code>&lt;undefined&gt;</code>) are not ranked.  Within each sort
+ column they are placed after the elements that are defined, whichever
+ direction is asked for, so a row is demoted only by a missing element in
+ a column that actually decides its position.  Rows comparing as equal
+ keep their original order.
 </p>
 <p> <code><var>B</var> = topkrows (<var>A</var>, <var>K</var>, <var>col</var>)</code> returns the top
  <var>K</var> rows of the 2-D categorical array <var>A</var> sorted according to the
- columns specified by the numeric vector <var>col</var>, which must explicitly
- contain non-zero integers whose absolute values index existing columns in
- <var>A</var>.  Positive elements sort the corresponding columns in ascending
- order, while negative elements sort the corresponding columns in
- descending order.
+ columns specified by the numeric vector <var>col</var>, which must contain
+ positive integers indexing existing columns in <var>A</var>.  Columns are used
+ as sort keys in the order given, and those not listed are not used at
+ all.  The direction is descending unless <var>direction</var> says otherwise.
 </p>
 <p> <code><var>B</var> = topkrows (<var>A</var>, <var>K</var>, <var>direction</var>)</code> returns the
  top <var>K</var> rows of the 2-D categorical array <var>A</var> sorted according to
- <var>direction</var>, which can be either <code>'ascend'</code> (default) or
- <code>'descend'</code> applying to all columns in <var>A</var>.  Alternatively,
+ <var>direction</var>, which can be either <code>'descend'</code> (default) or
+ <code>'ascend'</code> applying to all columns in <var>A</var>.  Alternatively,
  <var>direction</var> can be a cell array of character vectors specifying
  the sorting direction for each individual column of <var>A</var>, in which
  case the number of elements in <var>direction</var> must equal the number of
@@ -358,10 +379,29 @@
 <p> <code><var>B</var> = topkrows (<var>A</var>, <var>K</var>, <var>col</var>, <var>direction</var>)</code>
  returns the top <var>K</var> rows of the 2-D categorical array <var>A</var> sorted
  according to the columns specified in <var>col</var> using the corresponding
- sorting direction specified in <var>direction</var>.  In this case, the sign
- of the values in <var>col</var> is ignored.  <var>col</var> and <var>direction</var>
- must have the same length, but not necessarily the same number of
- elements as the columns in <var>A</var>.
+ sorting direction specified in <var>direction</var>.  <var>col</var> and
+ <var>direction</var> must have the same length, but not necessarily the same
+ number of elements as the columns in <var>A</var>.
+</p>
+<p> <code><var>B</var> = topkrows (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code>
+ specifies where the missing elements (<code>&lt;undefined&gt;</code>) are placed
+ within each sort column, with any of the following options specified in
+ <var>MP</var>:
+</p>
+<ul>
+<li> <code>'last'</code>, which is the default, places missing elements last
+ whichever direction is asked for.
+</li><li> <code>'first'</code> places missing elements first.
+</li><li> <code>'auto'</code> places missing elements last for an ascending sort
+ and first for a descending one, as <code>sortrows</code> does.
+</li></ul>
+
+<p> This is an Octave extension: MATLAB has no such option here and always
+ ranks as <code>'last'</code> does.
+</p>
+<p> <code>[<var>B</var>, <var>index</var>] = topkrows (<var>A</var>, &hellip;)</code> also returns
+ an index vector containing the original row indices of <var>A</var> in
+ <var>B</var>, such that <code><var>B</var> = <var>A</var>(<var>index</var>,:)</code>.
 </p>
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/categorical.m">categorical</a>

@@ -316,10 +316,37 @@
 <dt><code><h5 class="fs">datatypes: [&hellip;] = <b>__datetime__</b> (<var>X</var>, <code>'ConvertFrom'</code>, <var>dateType</var>)</code></h5></dt>
 <dt><code><h5 class="fs">datatypes: [&hellip;] = <b>__datetime__</b> (&hellip;, <code>'Precision'</code>, <var>precision</var>)</code></h5></dt>
 <dt><code><h5 class="fs">datatypes: [&hellip;] = <b>__datetime__</b> (&hellip;, <code>'TimeZone'</code>, <var>tzone</var>, <code>'toTimeZone'</code>, <var>totzone</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datatypes: [&hellip;] = <b>__datetime__</b> (&hellip;, <code>'Offset'</code>, <var>off</var>)</code></h5></dt>
 </dl>
 <p>Base function for datetime class. 
 </p>
 <div class="ms-5">
+<p>The <code>'Offset'</code> parameter gives the stored UTC offset of each element 
+in seconds, which is what tells apart the two instants a repeated wall 
+clock names on the day a zone puts its clock back.  It is accepted by the 
+<code>'ConvertTo'</code> modes listed below; those that also read it answer for 
+the wall clock alone when it is not given. 
+</p>
+<dl compact="compact">
+<dt> <code>'instant'</code></dt>
+<dd>POSIX seconds of each element, taken from its offset by subtraction, with no 
+time-zone lookup at all. </dd>
+<dt> <code>'fromposix'</code></dt>
+<dd>The six components of each POSIX instant read in <var>tzone</var>, plus the 
+offset in force there as a seventh output. </dd>
+<dt> <code>'rezone'</code></dt>
+<dd>The six components of each element expressed in <var>totzone</var> while keeping 
+its instant, plus the offset there as a seventh output. </dd>
+<dt> <code>'zoneoffset'</code></dt>
+<dd>The offset the wall clock resolves to. </dd>
+<dt> <code>'keepfold'</code></dt>
+<dd>The given offset where it still names this wall clock, and the resolved 
+offset otherwise. </dd>
+<dt> <code>'isdst'</code>, <code>'zoneabbrev'</code></dt>
+<dd>Daylight-saving flag and zone abbreviation, for the element&rsquo;s own pass over 
+a repeated clock when an offset is given. </dd>
+</dl>
+
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/src/__datetime__.cc">__datetime__</a>
 </div>

@@ -398,6 +398,10 @@ Display format
                         <td>Convert duration array to date vectors.</td>
                       </tr>
                       <tr>
+                        <td><b><code><a href="duration.datenum.html">datenum</a></code></b></td>
+                        <td>Convert a duration array to numbers of days.</td>
+                      </tr>
+                      <tr>
                         <td><b><code><a href="duration.hms.html">hms</a></code></b></td>
                         <td>Split duration array into separate time unit values.</td>
                       </tr>
@@ -539,6 +543,10 @@ elements are equal.</td>
                         <td>Return true for duration elements that are Not-A-Number.</td>
                       </tr>
                       <tr>
+                        <td><b><code><a href="duration.isregular.html">isregular</a></code></b></td>
+                        <td>Return true if a duration vector is regularly spaced.</td>
+                      </tr>
+                      <tr>
                         <td><b><code><a href="duration.isrow.html">isrow</a></code></b></td>
                         <td>Return true if duration array is a row vector.</td>
                       </tr>
@@ -659,8 +667,32 @@ elements are equal.</td>
                         <td>Element-wise left division for duration arrays.</td>
                       </tr>
                       <tr>
-                        <td><b><code><a href="duration.rdivide.html">rdivide</a></code></b></td>
+                        <td><b><code><a href="duration.mod.html">mod</a></code></b></td>
                         <td>Element-wise right division for duration arrays.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="duration.rem.html">rem</a></code></b></td>
+                        <td>Remainder after division of duration arrays, with the sign of the dividend.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="duration.mldivide.html">mldivide</a></code></b></td>
+                        <td>Left division of duration arrays, ‘A \ B’.
+
+  </td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="duration.mrdivide.html">mrdivide</a></code></b></td>
+                        <td>Right division of duration arrays, ‘A / B’.
+
+  </td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="duration.eps.html">eps</a></code></b></td>
+                        <td>Spacing of duration values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="duration.rdivide.html">rdivide</a></code></b></td>
+                        <td>undocumented method: C = rdivide (A, B)</td>
                       </tr>
                       <tr>
                         <td><b><code><a href="duration.colon.html">colon</a></code></b></td>
@@ -800,6 +832,14 @@ elements are equal.</td>
                         <td><b><code><a href="duration.std.html">std</a></code></b></td>
                         <td>Compute the standard deviation of a duration array.</td>
                       </tr>
+                      <tr>
+                        <td><b><code><a href="duration.discretize.html">discretize</a></code></b></td>
+                        <td>Group durations into bins.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="duration.histcounts.html">histcounts</a></code></b></td>
+                        <td>Histogram bin counts for durations.</td>
+                      </tr>
                     </tbody>
                   </table>
 
@@ -823,12 +863,24 @@ elements are equal.</td>
                   <table class="table table-striped">
                     <tbody>
                       <tr>
+                        <td><b><code><a href="duration.maxk.html">maxk</a></code></b></td>
+                        <td>Find the largest elements in a duration array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="duration.mink.html">mink</a></code></b></td>
+                        <td>Find the smallest elements in a duration array.</td>
+                      </tr>
+                      <tr>
                         <td><b><code><a href="duration.sort.html">sort</a></code></b></td>
                         <td>Sort elements in a duration array.</td>
                       </tr>
                       <tr>
                         <td><b><code><a href="duration.sortrows.html">sortrows</a></code></b></td>
                         <td>Sort rows in a duration array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="duration.topkrows.html">topkrows</a></code></b></td>
+                        <td>Top K sorted rows of a duration array.</td>
                       </tr>
                       <tr>
                         <td><b><code><a href="duration.unique.html">unique</a></code></b></td>
@@ -923,6 +975,32 @@ elements are equal.</td>
                       <tr>
                         <td><b><code><a href="duration.ctranspose.html">ctranspose</a></code></b></td>
                         <td>Transpose a duration matrix.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup9"
+              aria-expanded="false" aria-controls="collapseGroup9">
+              <div class="row align-items-center">
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Other</h4>
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseGroup9">
+            <div class="border-bottom py-2">
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="duration.empty.html">empty</a></code></b></td>
+                        <td>Create an empty duration array.</td>
                       </tr>
                     </tbody>
                   </table>

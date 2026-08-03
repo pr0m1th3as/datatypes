@@ -271,6 +271,8 @@
 				</label>
 				<div class="list">
 				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="categorical.maxk.html" class="text-decoration-none font-monospace"><small>maxk</small></a></li>
+					<li><a href="categorical.mink.html" class="text-decoration-none font-monospace"><small>mink</small></a></li>
 					<li><a href="categorical.sort.html" class="text-decoration-none font-monospace"><small>sort</small></a></li>
 					<li><a href="categorical.sortrows.html" class="text-decoration-none font-monospace"><small>sortrows</small></a></li>
 					<li><a href="categorical.topkrows.html" class="text-decoration-none font-monospace"><small>topkrows</small></a></li>
@@ -302,6 +304,18 @@
 					<li><a href="categorical.ipermute.html" class="text-decoration-none font-monospace"><small>ipermute</small></a></li>
 					<li><a href="categorical.transpose.html" class="text-decoration-none font-monospace"><small>transpose</small></a></li>
 					<li><a href="categorical.ctranspose.html" class="text-decoration-none font-monospace"><small>ctranspose</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList9" type="checkbox">
+				<label for="togList9">
+					<span><h6>Other</h6></span>
+					<span><h6>Other</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="categorical.empty.html" class="text-decoration-none font-monospace"><small>empty</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -340,10 +354,12 @@
  a single column vector.
 </p>
 <p> <code><var>N</var> = histcounts (<var>A</var>, <var>cats</var>)</code> returns the number of
- elements only for the categories of <var>A</var> specified in <var>cats</var>,
- which may be a categorical array, a string array, or a cell array of
- character vectors, as long as it specifies unique existing categories in
- <var>A</var>.
+ elements only for the categories named in <var>cats</var>, in the order they
+ are named there.  <var>cats</var> may be a categorical array, a string array,
+ or a cell array of character vectors, and the names must be unique.  A
+ name that is not a category of <var>A</var> is not an error: it counts zero.
+ Note that <code>&lt;undefined&gt;</code> elements are counted under no name at all,
+ so they never appear in <var>N</var>.
 </p>
 <p> <code><var>N</var> = histcounts (&hellip;, <code>'Normalization'</code>,
  <var>normtype</var>)</code> specifies how to normalize the histogram values returned
@@ -356,6 +372,8 @@
  bin width in categorical arrays is always equal to 1.
 </li><li> <code>'probability'</code> returns the number of elements in each
  category relative to the total number of elements in <var>A</var>.
+</li><li> <code>'percentage'</code> returns the percentage of the elements of
+ <var>A</var> that fall in each category.
 </li><li> <code>'pdf'</code> is the same as <code>'probability'</code>, since the bin
  width in categorical arrays is always equal to 1.
 </li><li> <code>'cumcount'</code> returns the cumulative number of elements in

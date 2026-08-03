@@ -259,6 +259,18 @@
 				</ul>
 				</div>
 			</div>
+			<div class="row">
+				<input id="togList7" type="checkbox">
+				<label for="togList7">
+					<span><h6>Other</h6></span>
+					<span><h6>Other</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="calendarDuration.empty.html" class="text-decoration-none font-monospace"><small>empty</small></a></li>
+				</ul>
+				</div>
+			</div>
 
 			  </div>
 			  <div class="col-md-10">
@@ -291,6 +303,13 @@
  calendarDuration array, <var>calD</var>.  The returned text representations
  in <var>cstr</var> are formatted according to the <code>'Format'</code> property
  of the input array <var>calD</var>.
+</p>
+<p> Whole calendar units are rendered with up to six significant digits and
+ the seconds component with five, each switching to exponent notation
+ beyond that, so a million days reads <code>'1e+06d'</code>.  Rounding applies
+ to a component on its own and never carries into the one above it, which
+ is why <code>59.9999</code> seconds read <code>'60s'</code> rather than a further
+ minute.
 </p>
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/calendarDuration.m">calendarDuration</a>
