@@ -1400,6 +1400,7 @@ classdef calendarDuration
         out.Months = A.Months - B.Months;
         out.Days = A.Days - B.Days;
         out.Time = A.Time - B.Time;
+        out.Format = unionFormat ({A.Format, B.Format});
       elseif (isa (A, 'calendarDuration') && isa (B, 'duration'))
         out = A;
         tmp = zeros (size (B));
@@ -1473,6 +1474,9 @@ classdef calendarDuration
         out.Months = A.Months + B.Months;
         out.Days = A.Days + B.Days;
         out.Time = A.Time + B.Time;
+        ## Both operands name units, so the result displays either one's, the
+        ## same union concatenation takes.
+        out.Format = unionFormat ({A.Format, B.Format});
       elseif (isa (A, 'calendarDuration') && isa (B, 'duration'))
         out = A;
         tmp = zeros (size (B));

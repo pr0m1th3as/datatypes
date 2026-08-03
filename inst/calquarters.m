@@ -44,7 +44,7 @@ function out = calquarters (x)
   if (any (fix (xx(:)) != xx(:)))
     error ("calquarters: input array must contain only integer values.");
   endif
-  out = calendarDuration (0, double (x) * 3, 0, 'Format', 'qmwdt');
+  out = calendarDuration (0, double (x) * 3, 0, 'Format', 'qmdt');
 endfunction
 
 %!demo
