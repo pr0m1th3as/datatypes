@@ -4,3 +4,10 @@
 %!
 %! d = calendarDuration (0, 0, 40)
 %! calweeks (d)
+
+%!demo
+%! ## Weeks round towards negative infinity, so a negative span rounds away from
+%! ## zero: -15 days is -3 weeks, not -2.  As with `caldays`, a span carrying any
+%! ## month cannot be stated in weeks at all.
+%!
+%! calweeks (calendarDuration (0, 0, [-15, -8, -7, -1, 0, 6, 7, 15]))

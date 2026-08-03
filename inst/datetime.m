@@ -2252,7 +2252,7 @@ classdef datetime
         ## and consist purely of whole units of the requested kind.
         d = caldiff (this);
         moA = calmonths (d);
-        dyA = caldays (d);
+        dyA = split (d, 'days');
         tA = seconds (split (d, 'time'));
         allEqual = ! any (isnan ([moA(:); dyA(:); tA(:)])) ...
                    && all (moA(:) == moA(1)) && all (dyA(:) == dyA(1)) ...
@@ -6157,7 +6157,7 @@ classdef datetime
     ## carried through unchanged.
     function this = addCalendar (this, calD, sgn)
       dMonths = sgn * calmonths (calD);
-      dDays   = sgn * caldays (calD);
+      dDays   = sgn * split (calD, 'days');
       dTime   = sgn * days (time (calD)) * 86400;   # seconds
 
       ## Broadcast the instant components and the calendar deltas to a common
@@ -7912,7 +7912,7 @@ function [kind, step, named] = dtUnitStep (spec, scope)
 
   if (isa (spec, 'calendarDuration'))
     mo = calmonths (spec);
-    dy = caldays (spec);
+    dy = split (spec, 'days');
     sc = seconds (time (spec));
     if (! isscalar (spec) || ! all (isfinite ([mo, dy, sc]))
         || any ([mo, dy, sc] < 0) || ! any ([mo, dy, sc]))

@@ -801,6 +801,20 @@ classdef calendarDuration
     ## @code{@var{X} = caldays (@var{calD})} returns a numeric array with the
     ## number of days as represented in @var{calD}.
     ##
+    ## A month has no fixed number of days, so an array carrying any month at
+    ## all cannot be stated in days and is an error rather than a guess.  Use
+    ## @code{split} on such an array, which reports each unit separately.  The
+    ## sign plays no part: a negative number of months is refused exactly as a
+    ## positive one is.
+    ##
+    ## A @code{NaN} or infinite month count is not refused.  It is not known to
+    ## be non-zero, so it propagates as @code{NaN} or @code{Inf}, just as
+    ## @code{calmonths}, @code{calquarters} and @code{calyears} already report
+    ## it.  MATLAB instead refuses such a span when it was built by the
+    ## constructor, while accepting the very same span built by @code{caldays};
+    ## two spellings of one value cannot sensibly disagree, so both are
+    ## accepted here.
+    ##
     ## @code{caldays} is also available as a function, in which case it performs
     ## the opposite conversion.
     ##
@@ -808,6 +822,9 @@ classdef calendarDuration
     ## calendarDuration.calmonths, calendarDuration.calweeks, caldays}
     ## @end deftypefn
     function out = caldays (this)
+      if (any (this.Months != 0 & isfinite (this.Months), 'all'))
+        error ("calendarDuration.caldays: %s", monthlessErrMsg ());
+      endif
       out = this.Days;
     endfunction
 
@@ -817,7 +834,14 @@ classdef calendarDuration
     ## Calendar duration in weeks.
     ##
     ## @code{@var{X} = calweeks (@var{calD})} returns a numeric array with the
-    ## number of weeks as represented in @var{calD}.
+    ## number of weeks as represented in @var{calD}, rounded towards negative
+    ## infinity, so that @math{-15} days is @math{-3} weeks and not @math{-2}.
+    ##
+    ## As for @code{caldays}, an array carrying any month at all cannot be
+    ## stated in weeks and is an error rather than a guess, whatever the sign
+    ## of that month count.  Use @code{split} on such an array.  A @code{NaN}
+    ## or infinite month count propagates rather than being refused, on the
+    ## same reasoning as @code{caldays}.
     ##
     ## @code{calweeks} is also available as a function, in which case it
     ## performs the opposite conversion.
@@ -826,7 +850,10 @@ classdef calendarDuration
     ## calendarDuration.calmonths, calendarDuration.caldays, calweeks}
     ## @end deftypefn
     function out = calweeks (this)
-      out = fix (this.Days / 7);
+      if (any (this.Months != 0 & isfinite (this.Months), 'all'))
+        error ("calendarDuration.calweeks: %s", monthlessErrMsg ());
+      endif
+      out = floor (this.Days / 7);
     endfunction
 
     ## -*- texinfo -*-
@@ -853,7 +880,8 @@ classdef calendarDuration
     ## Calendar duration in quarters.
     ##
     ## @code{@var{X} = calquarters (@var{calD})} returns a numeric array with
-    ## the number of quarters as represented in @var{calD}.
+    ## the number of quarters as represented in @var{calD}, rounded towards
+    ## negative infinity, so that @math{-1} month is @math{-1} quarter.
     ##
     ## @code{calquarters} is also available as a function, in which case it
     ## performs the opposite conversion.
@@ -862,7 +890,7 @@ classdef calendarDuration
     ## calendarDuration.calweeks, calendarDuration.caldays, calquarters}
     ## @end deftypefn
     function out = calquarters (this)
-      out = fix (this.Months / 3);
+      out = floor (this.Months / 3);
     endfunction
 
     ## -*- texinfo -*-
@@ -871,7 +899,8 @@ classdef calendarDuration
     ## Calendar duration in years.
     ##
     ## @code{@var{X} = calyears (@var{calD})} returns a numeric array with the
-    ## number of years as represented in @var{calD}.
+    ## number of years as represented in @var{calD}, rounded towards negative
+    ## infinity, so that @math{-1} month is @math{-1} year.
     ##
     ## @code{calyears} is also available as a function, in which case it
     ## performs the opposite conversion.
@@ -880,7 +909,7 @@ classdef calendarDuration
     ## calendarDuration.calweeks, calendarDuration.caldays, calyears}
     ## @end deftypefn
     function out = calyears (this)
-      out = fix (this.Months / 12);
+      out = floor (this.Months / 12);
     endfunction
 
   endmethods
@@ -1408,6 +1437,7 @@ classdef calendarDuration
       out.Months = -A.Months;
       out.Days = -A.Days;
       out.Time = -A.Time;
+      out = dropNegZero (out);
     endfunction
 
     ## -*- texinfo -*-
@@ -1513,6 +1543,7 @@ classdef calendarDuration
       out.Months = out.Months .* tmp;
       out.Days = out.Days .* tmp;
       out.Time = out.Time .* tmp;
+      out = dropNegZero (out);
     endfunction
 
     ## -*- texinfo -*-
@@ -1540,12 +1571,14 @@ classdef calendarDuration
         out.Months = A.Months * tmp;
         out.Days = A.Days * tmp;
         out.Time = A.Time * tmp;
+        out = dropNegZero (out);
       elseif (isnumeric (A) && isa (B, 'calendarDuration'))
         out = B;
         tmp = double (A);
         out.Months = tmp * B.Months;
         out.Days = tmp * B.Days;
         out.Time = tmp * B.Time;
+        out = dropNegZero (out);
       else
         error (strcat ("calendarDuration: matrix multiplication is", ...
                        " not defined between '%s' and '%s' arrays."), ...
@@ -2119,6 +2152,16 @@ classdef calendarDuration
 
   methods (Access = private)
 
+    ## Negating a span, or scaling it by a negative number, turns a zero
+    ## component into a negative zero, which MATLAB does not keep and which
+    ## shows in any printed component.  Adding zero maps -0 to +0 and leaves
+    ## every other value exactly as it was, NaN and the infinities included.
+    function this = dropNegZero (this)
+      this.Months = this.Months + 0;
+      this.Days   = this.Days + 0;
+      this.Time   = this.Time + seconds (0);
+    endfunction
+
     ## Return a subset of the array
     function this = subset (this, varargin)
       this = this;
@@ -2194,6 +2237,28 @@ classdef calendarDuration
   endmethods
 
 endclassdef
+
+## Days and weeks are only meaningful on their own.  A month has no fixed
+## number of days, so an array carrying any month at all cannot be stated in
+## either unit, and MATLAB refuses to guess: it directs the caller to 'split',
+## which reports each unit separately.  The test is 'not zero', not 'positive':
+## a negative month count is refused just as a positive one is.  It is also
+## restricted to FINITE months, which is a deviation and a deliberate one.
+## MATLAB refuses caldays (calendarDuration (0, 0, NaN)) but accepts
+## caldays (caldays (NaN)), and likewise for Inf -- the constructor path throws
+## where the component-builder path returns the value.  Since broadcasting puts
+## the NaN in every component, the two are one value here and no predicate over
+## Months can tell them apart; propagating is chosen over throwing because a
+## NaN month is unknown rather than known to be non-zero, because it is what
+## calmonths/calquarters/calyears already do, and because throwing would break
+## the caldays (caldays (x)) == x round trip that MATLAB itself preserves.
+## The message body is shared so that the two callers cannot drift apart; each
+## emits it under its own name.
+function errmsg = monthlessErrMsg ()
+  errmsg = strcat ("cannot convert a calendarDuration to days or weeks when", ...
+                   " it contains a non-zero number of months. Use 'split'", ...
+                   " instead.");
+endfunction
 
 ## Check 'Format' string.  The validated format is returned as well, so that a
 ## string scalar is converted to a character vector once, where it is checked,

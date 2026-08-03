@@ -2,5 +2,14 @@
 %! ## As a `calendarDuration` method, `caldays` returns the day part of the span
 %! ## as a whole number of days.
 %!
-%! d = calendarDuration (2, 3, 40)
+%! d = calendarDuration (0, 0, 40)
 %! caldays (d)
+
+%!demo
+%! ## A month has no fixed number of days, so a span carrying any month at all
+%! ## cannot be stated in days and `caldays` refuses rather than guess.  Ask
+%! ## `split` instead, which reports each unit on its own.
+%!
+%! d = calendarDuration (2, 3, 40)
+%! [mo, days] = split (d, {'months', 'days'});
+%! [mo, days]
