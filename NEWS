@@ -1,25 +1,48 @@
-Summary of important user-visible changes for datatypes 1.2.7:
+Summary of important user-visible changes for datatypes 1.3.0:
 --------------------------------------------------------------
 
- ** The `datetime` class gains a large set of operations, as its
-    implementation continues incrementally.  Newly available: arithmetic
-    `plus`/`minus` and the `:` range operator; the relational operators
-    `lt`/`le`/`gt`/`ge`/`eq`/`ne` together with `isequal`/`isequaln`;
-    ordering with `sort`/`issorted`, `sortrows`/`issortedrows`, `min`/`max`,
-    and `unique`; the set operations `intersect`/`union`/`setdiff`/`setxor`/
-    `ismember`; `diff` (returning a `duration`) and `caldiff`/`between`
-    (returning a `calendarDuration`); the interval test `isbetween`; the
-    reductions `mean`/`median`/`mode` (returning `datetime`) and `std`
-    (returning a `duration`); and `dateshift`.  All are timezone- and
-    DST-aware.
+ ** The `datetime` class is complete.  Display and parsing run on a new
+    LDML-subset `Format` engine supporting the full field set, the last
+    query and conversion methods are implemented, and the two default
+    display formats can be set per session with
+    `datetime.setDefaultFormats`.  Parsing is 2500-3400x faster and
+    rendering 22-310x, both having moved to compiled code.
 
- ** Updated the bundled IANA timezone database to version 2026c (issue #36).
+ ** `datetime` supports leap seconds, through the `'UTCLeapSeconds'` time
+    zone: the 60th second of a minute is a real instant on the 27 dates
+    that have one, and elapsed time counts it.  Each conversion treats an
+    inserted second the way its own format defines, as MATLAB does.
 
- ** Added `%!demo` example blocks for the `table`, `categorical`,
-    `duration`, `calendarDuration`, and `string` classes, and for the
-    `table` file-I/O helper functions.  Table demos now also show the input
-    table, not just the result.
+ ** Daylight-saving handling is corrected throughout.  A wall clock that
+    its zone repeats or skips no longer aborts Octave; a repeated hour
+    resolves to the later offset and a skipped one moves ahead by the
+    length of the gap.  Each element carries its own UTC offset, so the
+    two instants that share a wall clock stay distinct everywhere.  Zoned
+    operations are also 4-40x faster.
 
- ** Modernized docstrings across the package: removed empty `@multitable`
-    spacer columns, added missing Name/Value headers, and use `*` for
-    multiplication inside `@math` expressions.
+ ** New binning: top-level `discretize` and `histcounts` functions, and
+    methods of the same names on `datetime`, `duration` and `categorical`.
+    Bin edges run down a ladder of calendar units, so a day bin starts at
+    local midnight and is 23 or 25 hours long where a zone changes.
+
+ ** `duration` counts milliseconds internally rather than days, removing
+    the rounding that lost sub-second values, and gains `mod`, `rem`,
+    `mldivide`, `mrdivide`, `eps`, `datenum` and `isregular`.
+
+ ** Further new methods: `linspace` for `datetime`; `maxk` and `mink` for
+    `datetime`, `duration` and `categorical`; `topkrows` for `datetime`
+    and `duration`; `empty` for `datetime`, `duration`,
+    `calendarDuration`, `categorical` and `string`; and
+    `datetime.zoneNameStyle`, selecting how a zone name is displayed.
+
+ ** `calendarDuration` is exact against MATLAB across its whole surface.
+    `caldays` and `calweeks` refuse a span carrying months, directing the
+    caller to `split`; `calweeks`, `calquarters` and `calyears` round
+    towards negative infinity; arithmetic keeps the display units of both
+    operands and refuses fractional scaling; and the display of times,
+    infinities and negative spans is corrected.
+
+ ** `size` with several output arguments follows core Octave and MATLAB
+    for every class in the package: fewer outputs than the array has
+    dimensions fold the trailing dimensions into the last, and more pad
+    with ones.
