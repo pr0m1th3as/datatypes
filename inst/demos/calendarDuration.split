@@ -7,3 +7,13 @@
 %! d = calendarDuration (2, 3, 40)
 %! [y, mo, days] = split (d, {'years', 'months', 'days'});
 %! [y, mo, days]
+
+%!demo
+%! ## Unit names may be abbreviated to any leading part and are matched without
+%! ## regard to case, and fewer outputs than units may be asked for — you get
+%! ## the leading ones.
+%!
+%! d = calendarDuration (2, 3, 40)
+%! split (d, 'y')
+%! [y, q] = split (d, {'Years', 'QUARTERS', 'months'});
+%! [y, q]

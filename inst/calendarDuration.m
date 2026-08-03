@@ -697,56 +697,99 @@ classdef calendarDuration
     ## of weeks and days in @var{calD}, with larger units taking precedence when
     ## specified  The same applies for duration arrays, when requested.
     ##
+    ## Each unit may be abbreviated to any leading part of its name and is
+    ## matched without regard to case, so @qcode{'y'}, @qcode{'Year'} and
+    ## @qcode{'YEARS'} all name years.  No abbreviation is ambiguous, the six
+    ## names starting with six different letters.  A unit named more than once
+    ## still asks for a single component.
+    ##
+    ## Fewer output arguments than units may be requested, in which case only
+    ## the leading ones are returned; asking for more is an error.  An element
+    ## that is not finite keeps that same value in every component it is divided
+    ## into, so splitting an infinite calendar duration gives infinite years,
+    ## months and days alike.
+    ##
     ## @end deftypefn
     function varargout = split (this, units)
       ## Check input
       if (nargin < 2)
         error ("calendarDuration.split: too few input arguments.");
       endif
-      if (isstring (units) || ischar (units))
+      if (ischar (units) && ndims (units) == 2 && size (units, 1) <= 1)
+        ## A character vector names one unit and is taken as it stands: routing
+        ## it through 'cellstr' would strip trailing blanks and quietly accept
+        ## a name that is not one.
+        units = {units};
+      elseif (isstring (units) || ischar (units))
         units = cellstr (units);
       elseif (! iscellstr (units))
         error ("calendarDuration.split: invalid input type for UNITS.");
       endif
-      valid_units = {'years', 'quarters', 'months', 'weeks', 'days', 'time'};
-      idx_units = ismember (tolower (units), valid_units);
-      if (! all (idx_units))
-        error ("calendarDuration.split: '%s' is not a valid time unit.", ...
-               units{find (! idx_units)});
+      if (isempty (units))
+        error ("calendarDuration.split: UNITS must name at least one unit.");
       endif
-      idx_order = cellfun (@(x) find (strcmpi (x, valid_units)), units);
+      valid_units = {'years', 'quarters', 'months', 'weeks', 'days', 'time'};
+      ## A unit may be abbreviated to any leading part of its name and is
+      ## matched without regard to case, so 'y', 'Year' and 'YEARS' all name
+      ## years.  No abbreviation is ambiguous, the six names starting with six
+      ## different letters.
+      idx_order = zeros (1, numel (units));
+      for i = 1:numel (units)
+        unit = units{i};
+        if (isempty (unit))
+          error ("calendarDuration.split: UNITS must not contain empty names.");
+        endif
+        found = strncmpi (unit, valid_units, numel (unit));
+        if (! any (found))
+          error ("calendarDuration.split: '%s' is not a valid time unit.", unit);
+        endif
+        idx_order(i) = find (found, 1);
+      endfor
       if (any (diff (idx_order) < 0))
         error (strcat ("calendarDuration.split: UNITS must", ...
                        " be specified in descending order."));
       endif
-      ## Check output
-      n_args = numel (units);
-      if (nargout != n_args)
-        error ("calendarDuration.split: wrong number of output arguments.");
+      ## A unit named more than once still asks for one component.
+      idx_order = unique (idx_order, 'stable');
+      ## Check output.  Fewer outputs than units may be requested, in which case
+      ## only the leading ones are returned; a lone output is always returned,
+      ## even where none was asked for.
+      n_args = numel (idx_order);
+      if (nargout > n_args)
+        error ("calendarDuration.split: too many output arguments.");
       endif
+      n_out = max (nargout, 1);
+      ## An element that is not finite keeps that same value in every component
+      ## it is divided into: subtracting whole units off an infinity otherwise
+      ## leaves NaN behind in the remainder.
       months = this.Months;
       days = this.Days;
-      for i = 1:n_args
-        unit = units{i};
-        if (strcmpi (unit, 'years'))
-          years = fix (months / 12);
-          months = months - years * 12;
-          varargout{i} = years;
-        elseif (strcmpi (unit, 'quarters'))
-          quarters = fix (months / 3);
-          months = months - quarters * 3;
-          varargout{i} = quarters;
-        elseif (strcmpi (unit, 'months'))
-          varargout{i} = months;
-        elseif (strcmpi (unit, 'weeks'))
-          weeks = fix (days / 7);
-          days = days - weeks * 7;
-          varargout{i} = weeks;
-        elseif (strcmpi (unit, 'days'))
-          varargout{i} = days;
-        elseif (strcmpi (unit, 'time'))
-          varargout{i} = this.Time;
-        endif
+      nf_months = ! isfinite (months);
+      nf_days = ! isfinite (days);
+      for i = 1:n_out
+        switch (idx_order(i))
+          case 1
+            years = fix (months / 12);
+            months = months - years * 12;
+            months(nf_months) = this.Months(nf_months);
+            varargout{i} = years;
+          case 2
+            quarters = fix (months / 3);
+            months = months - quarters * 3;
+            months(nf_months) = this.Months(nf_months);
+            varargout{i} = quarters;
+          case 3
+            varargout{i} = months;
+          case 4
+            weeks = fix (days / 7);
+            days = days - weeks * 7;
+            days(nf_days) = this.Days(nf_days);
+            varargout{i} = weeks;
+          case 5
+            varargout{i} = days;
+          case 6
+            varargout{i} = this.Time;
+        endswitch
       endfor
     endfunction
 
