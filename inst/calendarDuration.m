@@ -424,6 +424,13 @@ classdef calendarDuration
     ## in @var{cstr} are formatted according to the @qcode{'Format'} property
     ## of the input array @var{calD}.
     ##
+    ## Whole calendar units are rendered with up to six significant digits and
+    ## the seconds component with five, each switching to exponent notation
+    ## beyond that, so a million days reads @qcode{'1e+06d'}.  Rounding applies
+    ## to a component on its own and never carries into the one above it, which
+    ## is why @code{59.9999} seconds read @qcode{'60s'} rather than a further
+    ## minute.
+    ##
     ## @end deftypefn
     function cstr = dispstrings (this)
       ## Process all elements
@@ -449,7 +456,7 @@ classdef calendarDuration
             years = fix (calDur.Months / 12);
             months = rem (calDur.Months, 12);
             if (years != 0)
-              els{end+1} = sprintf ('%dy', years);
+              els{end+1} = sprintf ('%sy', fmtUnit (years));
             endif
             if (months != 0)
               ## Check Format contains 'q' to split between quarters and months
@@ -457,13 +464,13 @@ classdef calendarDuration
                 quarters = fix (months / 3);
                 months = rem (months, 3);
                 if (quarters != 0)
-                  els{end+1} = sprintf ('%dq', quarters);
+                  els{end+1} = sprintf ('%sq', fmtUnit (quarters));
                 endif
                 if (months != 0)
-                  els{end+1} = sprintf ('%dmo', months);
+                  els{end+1} = sprintf ('%smo', fmtUnit (months));
                 endif
               else
-                els{end+1} = sprintf ('%dmo', months);
+                els{end+1} = sprintf ('%smo', fmtUnit (months));
               endif
             endif
           else
@@ -473,13 +480,13 @@ classdef calendarDuration
                 quarters = fix (calDur.Months / 3);
                 months = rem (calDur.Months, 3);
                 if (quarters != 0)
-                  els{end+1} = sprintf ('%dq', quarters);
+                  els{end+1} = sprintf ('%sq', fmtUnit (quarters));
                 endif
                 if (months != 0)
-                  els{end+1} = sprintf ('%dmo', months);
+                  els{end+1} = sprintf ('%smo', fmtUnit (months));
                 endif
               else
-                els{end+1} = sprintf ('%dmo', calDur.Months);
+                els{end+1} = sprintf ('%smo', fmtUnit (calDur.Months));
               endif
             endif
           endif
@@ -489,39 +496,29 @@ classdef calendarDuration
             if (! isempty (strfind (calDur.Format, 'w')))
               weeks = fix (calDur.Days / 7);
               if (weeks != 0)
-                els{end+1} = sprintf ('%dw', weeks);
+                els{end+1} = sprintf ('%sw', fmtUnit (weeks));
                 calDur.Days -= weeks * 7;
               endif
             endif
             if (calDur.Days != 0)
-              els{end+1} = sprintf ('%dd', calDur.Days);
+              els{end+1} = sprintf ('%sd', fmtUnit (calDur.Days));
             endif
           endif
           millis = milliseconds (calDur.Time);
           if (abs (millis) > 4e-12)
+            ## Every component is truncated towards zero, so all three carry
+            ## the sign of the time as a whole.
             sec = millis / 1000;
-            fracSec = rem (sec,1);
-            x = fix (sec);
-            hours = fix (x / (60 * 60));
-            x = rem (x, (60 * 60));
-            minutes = fix (x / 60);
-            x = rem (x, 60);
-            seconds = x;
-            msec = round (fracSec * 1000);
-            if (abs (msec) == 1000)
-              seconds = seconds + (msec / 1000);
-              msec = 0;
-            endif
-            if (msec >= 1)
-              str = sprintf ('%ds', msec / 1000);
-              str(1) = [];
-              els{end+1} = sprintf ('%dh %dm %d%s', hours, minutes, ...
-                                    seconds, str);
-            elseif (fracSec > 0 && fracSec < 0.001 && seconds == 0)
-              els{end+1} = sprintf ('%dh %dm %0.0es', hours, minutes, fracSec);
-            else
-              els{end+1} = sprintf ('%dh %dm %ds', hours, minutes, seconds);
-            endif
+            hours = fix (sec / 3600);
+            rest = sec - hours * 3600;
+            minutes = fix (rest / 60);
+            ## The seconds component keeps whatever fraction it has, down to
+            ## the sub-millisecond, and is rounded only by the five significant
+            ## digits it is rendered with.  Rounding is per component and never
+            ## carries into the one above, so 59.9999 seconds render as '60s'.
+            seconds = rest - minutes * 60;
+            els{end+1} = sprintf ('%sh %sm %ss', fmtUnit (hours), ...
+                                  fmtUnit (minutes), fmtSecs (seconds));
           endif
           ## Left empty for now; the unit is chosen once the whole array
           ## has been rendered (see zeroRenderUnit below).
@@ -2167,6 +2164,21 @@ function [errmsg, Format] = checkFormatString (Format)
   elseif (any (diff (cell2mat (sp)) < 1))
     errmsg = "has invalid order of characters.";
   endif
+endfunction
+
+## Render a whole component the way MATLAB does: six significant digits, and an
+## exponent past them, so a million days reads '1e+06d'.  Adding zero turns the
+## negative zero that truncating a negative time leaves behind into a plain one,
+## which is what keeps '0h' from reading '-0h'.
+function s = fmtUnit (v)
+  s = sprintf ('%g', v + 0);
+endfunction
+
+## Render the seconds component, which unlike the units above may carry a
+## fraction.  MATLAB shows it to five significant digits, so nothing is lost to
+## a millisecond grid and 0.9995 seconds is not rounded up to a whole one.
+function s = fmtSecs (v)
+  s = sprintf ('%.5g', v + 0);
 endfunction
 
 ## Unit a wholly zero element renders in: the smallest one any element of the
