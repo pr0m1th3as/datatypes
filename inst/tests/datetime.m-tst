@@ -1686,6 +1686,18 @@
 %!error <datetime.keyHash: BASE must be a UINT64 scalar.> ...
 %! keyHash (datetime (2020, 1, 1), 7)
 
+## A zero offset basis is a basis, not the absence of one, and a falsy base
+## must still be validated rather than silently replaced by the default.
+%!test
+%! a = keyHash (datetime (2020, 1, 1));
+%! b = keyHash (datetime (2020, 1, 1), uint64 (0));
+%! assert_equal (isequal (a, b), false);
+%! assert_equal (keyHash (datetime (2020, 1, 1), []), a);
+%!error <datetime.keyHash: BASE must be a UINT64 scalar.> ...
+%! keyHash (datetime (2020, 1, 1), 0)
+%!error <datetime.keyHash: BASE must be a UINT64 scalar.> ...
+%! keyHash (datetime (2020, 1, 1), uint64 ([0, 1]))
+
 ## A datetime is keyed on the INSTANT, not on the wall clock and zone name,
 ## so the same moment named in two zones is one key.
 %!test

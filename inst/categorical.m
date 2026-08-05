@@ -1048,7 +1048,7 @@ classdef categorical
       size_str = sprintf ('%dx', size (this.code))(1:end-1);
       flag_str = sprintf ('-o%d:', this.isOrdinal);
       init_str = [size_str 'categorical' flag_str];
-      if (base)
+      if (! isempty (base))
         if (! (isscalar (base) && isa (base, 'uint64')))
           error ("categorical.keyHash: BASE must be a UINT64 scalar.");
         endif

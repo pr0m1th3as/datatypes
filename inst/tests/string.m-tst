@@ -246,6 +246,17 @@
 %!error<string.keyHash: BASE must be a UINT64 scalar.> ...
 %! keyHash (string (1:5), 2231107818551636405)
 
+## A zero offset basis is a basis, not the absence of one, and a falsy base
+## must still be validated rather than silently replaced by the default.
+%!test
+%! a = keyHash (string ('1'));
+%! assert_equal (isequal (a, keyHash (string ('1'), uint64 (0))), false);
+%! assert_equal (keyHash (string ('1'), []), a);
+%!error<string.keyHash: BASE must be a UINT64 scalar.> ...
+%! keyHash (string (1:5), 0)
+%!error<string.keyHash: BASE must be a UINT64 scalar.> ...
+%! keyHash (string (1:5), uint64 ([0, 1]))
+
 ################################################################################
 ##                          ** Query Operations **                            ##
 ################################################################################

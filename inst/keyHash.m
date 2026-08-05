@@ -58,7 +58,7 @@ function key = keyHash (x = [], base = [])
   ## Initialize string with size and class name
   size_str = sprintf ('%dx', size (x))(1:end-1);
   init_str = [size_str class(x)];
-  if (base)
+  if (! isempty (base))
     if (! (isscalar (base) && isa (base, 'uint64')))
       error ("keyHash: BASE must be a UINT64 scalar.");
     endif
@@ -208,8 +208,22 @@ endfunction
 %! assert_equal (isequal (keyHash (0), keyHash (NaN)), false);
 %! assert_equal (isequal (keyHash (Inf), keyHash (-Inf)), false);
 
+## A zero offset basis is a basis like any other and must not be read as no
+## basis at all.  The guard tested truthiness, so uint64 (0) was silently
+## replaced by the default basis, and every other falsy value -- 0, false, and
+## any uint64 array containing a zero -- skipped validation entirely.
+%!test
+%! assert_equal (class (keyHash (1, uint64 (0))), 'uint64');
+%! assert_equal (keyHash (1, uint64 (0)), keyHash (1, uint64 (0)));
+%! assert_equal (isequal (keyHash (1), keyHash (1, uint64 (0))), false);
+%! ## an empty base is the default, meaning no base at all
+%! assert_equal (keyHash (1, []), keyHash (1));
+
 %!error<Invalid call to keyHash.  Correct usage is:> keyHash ();
 %!error<keyHash: BASE must be a UINT64 scalar.> keyHash (1, 1);
+%!error<keyHash: BASE must be a UINT64 scalar.> keyHash (1, 0);
+%!error<keyHash: BASE must be a UINT64 scalar.> keyHash (1, false);
+%!error<keyHash: BASE must be a UINT64 scalar.> keyHash (1, uint64 ([0, 1]));
 %!error<keyHash: unsupported input type.> keyHash (@(x) x);
 %!error<keyHash: unsupported input type.> keyHash (struct ('a', 1));
 %!error<keyHash: unsupported input type.> keyHash ({1, 2});
