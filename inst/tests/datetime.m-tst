@@ -1686,6 +1686,53 @@
 %!error <datetime.keyHash: BASE must be a UINT64 scalar.> ...
 %! keyHash (datetime (2020, 1, 1), 7)
 
+## A datetime is keyed on the INSTANT, not on the wall clock and zone name,
+## so the same moment named in two zones is one key.
+%!test
+%! a = datetime (2024, 3, 5, 12, 0, 0, 'TimeZone', 'UTC');
+%! b = datetime (2024, 3, 5, 7, 0, 0, 'TimeZone', 'America/New_York');
+%! assert_equal (keyMatch (a, b), true);
+%! assert_equal (keyHash (a), keyHash (b));
+%! c = datetime (2024, 3, 5, 14, 0, 0, 'TimeZone', 'Europe/Athens');
+%! assert_equal (keyMatch (a, c), true);
+%! assert_equal (keyHash (a), keyHash (c));
+%! assert_equal (keyMatch (a, a + seconds (1)), false);
+
+## The frame has three states, and no two of them are ever one key however
+## the instants line up: an unzoned array names no instant, and a
+## leap-second array counts seconds no other zone counts.
+%!test
+%! u = datetime (2024, 3, 5, 12, 0, 0);
+%! z = datetime (2024, 3, 5, 12, 0, 0, 'TimeZone', 'UTC');
+%! l = datetime (2024, 3, 5, 12, 0, 0, 'TimeZone', 'UTCLeapSeconds');
+%! assert_equal (keyMatch (u, z), false);
+%! assert_equal (keyMatch (z, l), false);
+%! assert_equal (keyMatch (u, l), false);
+%! assert_equal (keyMatch (u, datetime (2024, 3, 5, 12, 0, 0)), true);
+%! assert_equal (keyHash (u), keyHash (datetime (2024, 3, 5, 12, 0, 0)));
+%! assert_equal (keyMatch (l, datetime (2024, 3, 5, 12, 0, 0, ...
+%!                                      'TimeZone', 'UTCLeapSeconds')), true);
+
+## The two instants that share a wall clock across a fall-back stay apart,
+## which is what the stored offset is for.
+%!test
+%! a = datetime (2024, 11, 3, 5, 30, 0, 'TimeZone', 'UTC');
+%! b = a + hours (1);
+%! an = a; an.TimeZone = 'America/New_York';
+%! bn = b; bn.TimeZone = 'America/New_York';
+%! assert_equal (datestr (an, 'HH:MM'), datestr (bn, 'HH:MM'));
+%! assert_equal (keyMatch (an, bn), false);
+%! assert_equal (keyMatch (an, a), true);
+%! assert_equal (keyHash (an), keyHash (a));
+
+## NaT matches itself, whatever produced it.
+%!test
+%! assert_equal (keyMatch (NaT, NaT), true);
+%! assert_equal (keyHash (NaT), keyHash (NaT));
+%! assert_equal (keyMatch (NaT, datetime (NaN, NaN, NaN)), true);
+%! assert_equal (keyHash (NaT), keyHash (datetime (NaN, NaN, NaN)));
+%! assert_equal (keyMatch (NaT, datetime (2020, 1, 1)), false);
+
 ################################################################################
 ##              ** Convert to other Numeric Representations **                ##
 ################################################################################
