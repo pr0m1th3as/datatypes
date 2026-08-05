@@ -657,27 +657,53 @@
 %!assert_equal (numel (categorical (1:5)), 5)
 %!assert_equal (numel (categorical (ones (2, 3, 4))), 24)
 
-%!assert_equal (keyHash (categorical), uint64 (600793793929482348))
-%!assert_equal (keyHash (categorical (1:5)), uint64 (6763637898068551630))
-%!assert_equal (keyHash (categorical (ones (3))), uint64 (1656458728321551574))
-%!assert_equal (keyHash (categorical (ones (2, 3, 4))), uint64 (16817716959342937566))
-%!assert_equal (keyHash (categorical (NaN (3))), uint64 (8652545556995177325))
+## Hash codes changed in 1.3.1: the element labels are framed, the Protected
+## flag is no longer part of the key, and the category list is hashed only
+## for an ordinal array.  These literals double as the cross-session
+## determinism guard, having been computed in an earlier session.
+%!assert_equal (keyHash (categorical), uint64 (9221239794199714935))
+%!assert_equal (keyHash (categorical (1:5)), uint64 (7961966267264693254))
+%!assert_equal (keyHash (categorical (ones (3))), uint64 (17608104484830113158))
+%!assert_equal (keyHash (categorical (ones (2, 3, 4))), uint64 (8739279001166458266))
+%!assert_equal (keyHash (categorical (NaN (3))), uint64 (12122200442661984653))
 %!test
 %! key = keyHash (categorical ([1, 2; 3, 4]));
-%! assert_equal (key, uint64 (3893744934052072694));
+%! assert_equal (key, uint64 (14079952376186860569));
 %!test
 %! key = keyHash (categorical ([1, 2; 3, 4], [1, 2, 3, 4]));
-%! assert_equal (key, uint64 (3893744934052072694));
+%! assert_equal (key, uint64 (14079952376186860569));
 %!test
 %! key = keyHash (categorical ([1, 2; 3, 4], [1, 2, 3, 4], {'a', 'b', 'c', 'd'}));
-%! assert_equal (key, uint64 (7189439461002363766));
+%! assert_equal (key, uint64 (1290798791422273017));
 %!test
 %! key = keyHash (categorical (1:3, [1, 2, 3]));
-%! assert_equal (key, uint64 (17803270835922091242));
+%! assert_equal (key, uint64 (10691546085044606033));
 %!test
 %! base_key = uint64 (2342124352342344234);
 %! key = keyHash (categorical (1:3, [1, 2, 3]), base_key);
-%! assert_equal (key, uint64 (14454225355392922673));
+%! assert_equal (key, uint64 (4813383759399324834));
+
+## Identity is the label, plus the ordering only when ordinal.  Neither the
+## Protected flag nor a non-ordinal array's category set is part of the key.
+%!test
+%! a = categorical ({'a'}, {'a', 'b'});
+%! assert_equal (keyMatch (a, categorical ({'a'}, {'a', 'c'})), true);
+%! assert_equal (keyHash (a), keyHash (categorical ({'a'}, {'a', 'c'})));
+%! assert_equal (keyMatch (a, categorical ({'a'}, {'b', 'a'})), true);
+%! assert_equal (keyHash (a), keyHash (categorical ({'a'}, {'b', 'a'})));
+%! assert_equal (keyMatch (a, categorical ({'a'}, {'a', 'b'}, 'Protected', true)), ...
+%!               true);
+%! assert_equal (keyHash (a), ...
+%!               keyHash (categorical ({'a'}, {'a', 'b'}, 'Protected', true)));
+%!test
+%! o = categorical ({'a'}, {'a', 'b'}, 'Ordinal', true);
+%! assert_equal (keyMatch (o, categorical ({'a'}, {'a', 'b'})), false);
+%! assert_equal (keyMatch (o, categorical ({'a'}, {'b', 'a'}, 'Ordinal', true)), ...
+%!               false);
+%! assert_equal (keyMatch (o, categorical ({'a'}, {'a', 'b'}, 'Ordinal', true)), ...
+%!               true);
+%! assert_equal (keyHash (o), ...
+%!               keyHash (categorical ({'a'}, {'a', 'b'}, 'Ordinal', true)));
 %!error<categorical.keyHash: BASE must be a UINT64 scalar.> ...
 %! keyHash (categorical (1:5), uint64 ([1, 2]))
 %!error<categorical.keyHash: BASE must be a UINT64 scalar.> ...
