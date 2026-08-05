@@ -1027,34 +1027,42 @@ classdef categorical
     ##
     ## @end deftypefn
     function key = keyHash (this, base = [])
-      ## Initialize string with size, class name, flags, and categories
+      ## Initialize string with size, class name, and ordinality.  What is
+      ## deliberately absent is as important as what is here.  The Protected
+      ## flag never affects equality, so it is not part of the key.  Neither
+      ## is the category list of a NON-ordinal array: two non-ordinal arrays
+      ## carrying the same labels are the same key however their categories
+      ## differ, or are ordered.  For an ORDINAL array the ordering is what
+      ## the comparisons mean and is therefore part of identity, so the
+      ## category list is hashed, in order, for those alone.
       size_str = sprintf ('%dx', size (this.code))(1:end-1);
-      flag_str = sprintf ('-o%d-p%d:', this.isOrdinal, this.isProtected);
-      cats_str = sprintf ('%s', this.cats{:});
-      init_str = [size_str 'categorical' flag_str cats_str];
-      if (isempty (this.code))
-        if (base)
-          if (! (isscalar (base) && isa (base, 'uint64')))
-            error ("categorical.keyHash: BASE must be a UINT64 scalar.");
-          endif
-          key = __ckeyHash__(init_str, base);
-        else
-          key = __ckeyHash__(init_str);
+      flag_str = sprintf ('-o%d:', this.isOrdinal);
+      init_str = [size_str 'categorical' flag_str];
+      if (base)
+        if (! (isscalar (base) && isa (base, 'uint64')))
+          error ("categorical.keyHash: BASE must be a UINT64 scalar.");
         endif
+        key = __ckeyHash__ (init_str, base);
       else
-        cats = [this.cats(:); '<undefined>'];
-        code = this.code(:);
-        code(code == 0) = max (code) + 1;
-        cstr = [cats{code}];
-        if (base)
-          if (! (isscalar (base) && isa (base, 'uint64')))
-            error ("categorical.keyHash: BASE must be a UINT64 scalar.");
-          endif
-          key = __ckeyHash__([init_str cstr], base);
-        else
-          key = __ckeyHash__([init_str cstr]);
-        endif
-        key = __nkeyHash__(this.isMissing(:), key);
+        key = __ckeyHash__ (init_str);
+      endif
+      if (this.isOrdinal)
+        key = __ckeyHash__ (this.cats, key);
+      endif
+      if (! isempty (this.code))
+        ## The element LABELS, framed, and not the code.  The code is only a
+        ## label's position in the category list, so two equal non-ordinal
+        ## arrays whose categories were declared in a different order carry
+        ## different codes -- hashing it would break the contract for exactly
+        ## the case being fixed.  Undefined elements are carried by the
+        ## isMissing mask instead of by a substituted label, so no real
+        ## category can be confused with one.
+        labels = cell (size (this.code));
+        labels(:) = {''};
+        defined = this.code != 0;
+        labels(defined) = this.cats(this.code(defined));
+        key = __ckeyHash__ (labels, key);
+        key = __nkeyHash__ (this.isMissing(:), key);
       endif
     endfunction
 
