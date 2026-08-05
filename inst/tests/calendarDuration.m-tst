@@ -939,6 +939,17 @@
 %!error<calendarDuration.keyHash: BASE must be a UINT64 scalar.> ...
 %! keyHash (calendarDuration (0, 0, 0), 2231107818551636405)
 
+## Calendar units are merged where they are interchangeable and kept apart
+## where they are not, which already matched MATLAB.  These hash codes are
+## unchanged from 1.3.0.
+%!test
+%! assert_equal (keyMatch (calmonths (12), calyears (1)), true);
+%! assert_equal (keyHash (calmonths (12)), keyHash (calyears (1)));
+%! assert_equal (keyMatch (calweeks (1), caldays (7)), true);
+%! assert_equal (keyHash (calweeks (1)), keyHash (caldays (7)));
+%! assert_equal (keyMatch (calmonths (1), caldays (30)), false);
+%! assert_equal (keyMatch (calmonths (1), calmonths (2)), false);
+
 ## size with no dimension named pads with ones when more outputs are asked for
 ## than the array has dimensions, and folds the trailing dimensions into the
 ## last output when fewer are asked for.  Naming a dimension instead fixes how
