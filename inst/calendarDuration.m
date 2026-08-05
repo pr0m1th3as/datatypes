@@ -1043,21 +1043,30 @@ classdef calendarDuration
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn  {calendarDuration} {@var{hey} =} keyHash (@var{calD})
-    ## @deftypefnx {calendarDuration} {@var{hey} =} keyHash (@var{calD}, @var{base})
+    ## @deftypefn  {calendarDuration} {@var{key} =} keyHash (@var{calD})
+    ## @deftypefnx {calendarDuration} {@var{key} =} keyHash (@var{calD}, @var{base})
     ##
     ## Generate a hash code for a calendarDuration array.
     ##
-    ## @code{@var{h} = keyHash (@var{calD})} generates a @qcode{uint64} scalar
+    ## @code{@var{key} = keyHash (@var{calD})} generates a @qcode{uint64} scalar
     ## that represents the input array @var{calD}.  @code{keyHash} utilizes the
     ## 64-bit FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash
     ## function.
     ##
-    ## @code{@var{h} = keyHash (@var{calD}), @var{base}} also generates a 64-bit
-    ## hash code using @var{base} as the offset basis for the FNV-1a hash
-    ## algorithm.  @var{base} must be a @qcode{uint64} integer type scalar.  Use
-    ## this syntax to cascade @code{keyHash} on multiple objects for which a
-    ## single hash code is required.
+    ## @code{@var{key} = keyHash (@var{calD}, @var{base})} also generates a
+    ## 64-bit hash code using @var{base} as the offset basis for the FNV-1a
+    ## hash algorithm.  @var{base} must be a @qcode{uint64} integer type
+    ## scalar.  Use this syntax to cascade @code{keyHash} on multiple objects
+    ## for which a single hash code is required.
+    ##
+    ## A calendarDuration array is keyed on its months, days and time
+    ## components, so calendar units that are interchangeable share a key:
+    ## @code{calmonths (12)} hashes as @code{calyears (1)}, and
+    ## @code{calweeks (1)} as @code{caldays (7)}.  Units that are not
+    ## interchangeable stay distinct, @code{calmonths (1)} and
+    ## @code{caldays (30)} among them.  The @qcode{Format} property is display
+    ## only and is not part of the key.  Two arrays that @code{keyMatch}
+    ## reports as the same key always hash alike.
     ##
     ## Note that unlike MATLAB, this implementation does not use any random
     ## seed.  As a result, @code{keyHash} will always generate the exact same

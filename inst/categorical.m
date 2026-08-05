@@ -1005,20 +1005,30 @@ classdef categorical
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn  {categorical} {@var{hey} =} keyHash (@var{C})
-    ## @deftypefnx {categorical} {@var{hey} =} keyHash (@var{C}, @var{base})
+    ## @deftypefn  {categorical} {@var{key} =} keyHash (@var{C})
+    ## @deftypefnx {categorical} {@var{key} =} keyHash (@var{C}, @var{base})
     ##
     ## Generate a hash code for a categorical array.
     ##
-    ## @code{@var{h} = keyHash (@var{C})} generates a @qcode{uint64} scalar that
-    ## represents the input array @var{C}.  @code{keyHash} utilizes the 64-bit
-    ## FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
+    ## @code{@var{key} = keyHash (@var{C})} generates a @qcode{uint64} scalar
+    ## that represents the input array @var{C}.  @code{keyHash} utilizes the
+    ## 64-bit FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash
+    ## function.
     ##
-    ## @code{@var{h} = keyHash (@var{C}), @var{base}} also generates a 64-bit
+    ## @code{@var{key} = keyHash (@var{C}, @var{base})} also generates a 64-bit
     ## hash code using @var{base} as the offset basis for the FNV-1a hash
     ## algorithm.  @var{base} must be a @qcode{uint64} integer type scalar.  Use
     ## this syntax to cascade @code{keyHash} on multiple objects for which a
     ## single hash code is required.
+    ##
+    ## A categorical array is keyed on its element labels, on its ordinality,
+    ## and -- for an ordinal array alone -- on the order of its categories,
+    ## which is what its comparisons mean.  Neither the @qcode{Protected}
+    ## property nor a non-ordinal array's category list is part of the key, so
+    ## two non-ordinal arrays carrying the same labels hash alike however
+    ## their categories differ or are ordered.  Undefined elements are equal
+    ## to one another and distinct from every category.  Two arrays that
+    ## @code{keyMatch} reports as the same key always hash alike.
     ##
     ## Note that unlike MATLAB, this implementation does not use any random
     ## seed.  As a result, @code{keyHash} will always generate the exact same

@@ -643,20 +643,27 @@ classdef string
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {string} {@var{hey} =} keyHash (@var{str})
+    ## @deftypefn  {string} {@var{key} =} keyHash (@var{str})
+    ## @deftypefnx {string} {@var{key} =} keyHash (@var{str}, @var{base})
     ##
     ## Generate a hash code for string array.
     ##
-    ## @code{@var{h} = keyHash (@var{str})} generates a @qcode{uint64} scalar
+    ## @code{@var{key} = keyHash (@var{str})} generates a @qcode{uint64} scalar
     ## that represents the input array @var{str}.  @code{keyHash} utilizes the
     ## 64-bit FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash
     ## function.
     ##
-    ## @code{@var{h} = keyHash (@var{str}), @var{base}} also generates a 64-bit
-    ## hash code using @var{base} as the offset basis for the FNV-1a hash
-    ## algorithm.  @var{base} must be a @qcode{uint64} integer type scalar.  Use
-    ## this syntax to cascade @code{keyHash} on multiple objects for which a
-    ## single hash code is required.
+    ## @code{@var{key} = keyHash (@var{str}, @var{base})} also generates a
+    ## 64-bit hash code using @var{base} as the offset basis for the FNV-1a
+    ## hash algorithm.  @var{base} must be a @qcode{uint64} integer type
+    ## scalar.  Use this syntax to cascade @code{keyHash} on multiple objects
+    ## for which a single hash code is required.
+    ##
+    ## Elements are hashed together with their lengths, so the boundaries
+    ## between them are part of the key and a string array does not hash as
+    ## any other splitting of the same characters.  Missing elements are equal
+    ## to one another and distinct from the empty string.  Two arrays that
+    ## @code{keyMatch} reports as the same key always hash alike.
     ##
     ## Note that unlike MATLAB, this implementation does not use any random
     ## seed.  As a result, @code{keyHash} will always generate the exact same

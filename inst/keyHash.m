@@ -16,17 +16,17 @@
 ## this program; if not, see <http://www.gnu.org/licenses/>.
 
 ## -*- texinfo -*-
-## @deftypefn  {datatypes} {@var{hey} =} keyHash (@var{X})
-## @deftypefnx {datatypes} {@var{hey} =} keyHash (@var{X}, @var{base})
+## @deftypefn  {datatypes} {@var{key} =} keyHash (@var{X})
+## @deftypefnx {datatypes} {@var{key} =} keyHash (@var{X}, @var{base})
 ##
 ## Generate a hash code for an array.
 ##
-## @code{@var{h} = keyHash (@var{X})} generates a @qcode{uint64} scalar that
+## @code{@var{key} = keyHash (@var{X})} generates a @qcode{uint64} scalar that
 ## represents the input @var{X}, which may be numeric, logical, or character
 ## array or cell array of character vectors.  @code{keyHash} utilizes the 64-bit
 ## FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
 ##
-## @code{@var{h} = keyHash (@var{X}, @var{base})} also generates a 64-bit
+## @code{@var{key} = keyHash (@var{X}, @var{base})} also generates a 64-bit
 ## hash code using @var{base} as the offset basis for the FNV-1a hash
 ## algorithm.  @var{base} must be a @qcode{uint64} integer type scalar.  Use
 ## this syntax to cascade @code{keyHash} on multiple objects for which a

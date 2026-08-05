@@ -1658,19 +1658,30 @@ classdef datetime
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {datetime} {@var{hey} =} keyHash (@var{T})
+    ## @deftypefn  {datetime} {@var{key} =} keyHash (@var{T})
+    ## @deftypefnx {datetime} {@var{key} =} keyHash (@var{T}, @var{base})
     ##
     ## Generate a hash code for datetime array.
     ##
-    ## @code{@var{h} = keyHash (@var{T})} generates a @qcode{uint64} scalar that
-    ## represents the input array @var{T}.  @code{keyHash} utilizes the 64-bit
-    ## FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
+    ## @code{@var{key} = keyHash (@var{T})} generates a @qcode{uint64} scalar
+    ## that represents the input array @var{T}.  @code{keyHash} utilizes the
+    ## 64-bit FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash
+    ## function.
     ##
-    ## @code{@var{h} = keyHash (@var{T}), @var{base}} also generates a 64-bit
+    ## @code{@var{key} = keyHash (@var{T}, @var{base})} also generates a 64-bit
     ## hash code using @var{base} as the offset basis for the FNV-1a hash
     ## algorithm.  @var{base} must be a @qcode{uint64} integer type scalar.  Use
     ## this syntax to cascade @code{keyHash} on multiple objects for which a
     ## single hash code is required.
+    ##
+    ## A datetime array is keyed on the @emph{instant} its elements name and
+    ## not on their wall clock and time zone, so the same moment expressed in
+    ## two zones has the same hash code.  An unzoned array, a zoned array and
+    ## a leap-second array are three separate frames that never share a key,
+    ## whatever instants they name, and the two instants sharing a wall clock
+    ## across a daylight-saving fall-back stay distinct.  The @qcode{Format}
+    ## property is display only and is not part of the key.  Two arrays that
+    ## @code{keyMatch} reports as the same key always hash alike.
     ##
     ## Note that unlike MATLAB, this implementation does not use any random
     ## seed.  As a result, @code{keyHash} will always generate the exact same

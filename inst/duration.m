@@ -965,19 +965,28 @@ classdef duration
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {duration} {@var{hey} =} keyHash (@var{D})
+    ## @deftypefn  {duration} {@var{key} =} keyHash (@var{D})
+    ## @deftypefnx {duration} {@var{key} =} keyHash (@var{D}, @var{base})
     ##
     ## Generate a hash code for duration array.
     ##
-    ## @code{@var{h} = keyHash (@var{D})} generates a @qcode{uint64} scalar that
-    ## represents the input array @var{D}.  @code{keyHash} utilizes the 64-bit
-    ## FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
+    ## @code{@var{key} = keyHash (@var{D})} generates a @qcode{uint64} scalar
+    ## that represents the input array @var{D}.  @code{keyHash} utilizes the
+    ## 64-bit FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash
+    ## function.
     ##
-    ## @code{@var{h} = keyHash (@var{D}, @var{base})} also generates a 64-bit
+    ## @code{@var{key} = keyHash (@var{D}, @var{base})} also generates a 64-bit
     ## hash code using @var{base} as the offset basis for the FNV-1a hash
     ## algorithm.  @var{base} must be a @qcode{uint64} integer type scalar.  Use
     ## this syntax to cascade @code{keyHash} on multiple objects for which a
     ## single hash code is required.
+    ##
+    ## A duration array is keyed on its length in milliseconds, so the unit it
+    ## was written in is not part of the key and @code{seconds (1)} hashes as
+    ## @code{milliseconds (1000)}.  A missing duration is keyed alike whatever
+    ## produced its @qcode{NaN}.  The @qcode{Format} property is display only
+    ## and is not part of the key.  Two arrays that @code{keyMatch} reports as
+    ## the same key always hash alike.
     ##
     ## Note that unlike MATLAB, this implementation does not use any random
     ## seed.  As a result, @code{keyHash} will always generate the exact same
