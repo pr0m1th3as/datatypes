@@ -32,9 +32,22 @@
 ## this syntax to cascade @code{keyHash} on multiple objects for which a
 ## single hash code is required.
 ##
+## @code{keyMatch} decides key identity and @code{keyHash} agrees with it: two
+## values that @code{keyMatch} reports as the same key always have the same
+## hash code.  The converse does not hold, since distinct keys are permitted
+## to share a hash code.  Values that differ only in a representation that
+## @code{keyMatch} ignores therefore hash alike, so @code{-0} hashes as
+## @code{0}, and every @qcode{NaN} hashes alike whatever produced it.
+##
+## Elements of a cell array of character vectors are hashed together with
+## their lengths, so that the boundaries between them are part of the key and
+## @code{@{'ab', 'c'@}} does not hash as @code{@{'a', 'bc'@}}.
+##
 ## Note that unlike MATLAB, this implementation does not use any random seed.
 ## As a result, @code{keyHash} will always generate the exact same hash key
 ## for any particular input across different workers and Octave sessions.
+## Hash codes are @emph{not} stable across package versions, however: those
+## produced before version 1.3.1 are invalid and must be recomputed.
 ##
 ## @end deftypefn
 function key = keyHash (x = [], base = [])
@@ -57,9 +70,13 @@ function key = keyHash (x = [], base = [])
   if (isnumeric (x) || islogical (x))
     key = __nkeyHash__ (x(:), key);
   elseif (ischar (x))
-    key = __ckeyHash__ (x(:), key);
+    ## Passed whole: __ckeyHash__ reads the array in column-major order, so
+    ## x(:) would only copy it to say what it already does.
+    key = __ckeyHash__ (x, key);
   elseif (iscellstr (x))
-    key = __ckeyHash__ ([x{:}], key);
+    ## Passed whole, not flattened: __ckeyHash__ frames each element with its
+    ## length so the boundaries between them are part of the key.
+    key = __ckeyHash__ (x, key);
   else
     error ("keyHash: unsupported input type.");
   endif
@@ -135,6 +152,64 @@ endfunction
 %!              uint64 (12840711468051582507))
 %!assert_equal (keyHash (uint32 (0xdeadbeef)), uint64 (3790509136731937468))
 
+## Composite keys are hashed with their element boundaries framed, so a cell
+## array is not confusable with any other splitting of the same characters.
+%!test
+%! assert_equal (isequal (keyHash ({'ab', 'c'}), keyHash ({'a', 'bc'})), false);
+%! assert_equal (isequal (keyHash ({'abc'}), keyHash ({'ab', 'c'})), false);
+%! assert_equal (isequal (keyHash ({'a', 'b', 'c'}), keyHash ({'ab', 'c'})), ...
+%!               false);
+%! assert_equal (keyHash ({'ab', 'c'}), keyHash ({'ab', 'c'}));
+
+## An empty cell hashes rather than erroring, and stays distinct from a cell
+## holding one empty character vector.
+%!test
+%! assert_equal (class (keyHash ({})), 'uint64');
+%! assert_equal (keyHash ({}), keyHash ({}));
+%! assert_equal (isequal (keyHash ({}), keyHash ({''})), false);
+%! assert_equal (isequal (keyHash ({''}), keyHash ({'', ''})), false);
+%! assert_equal (isequal (keyHash ({''}), keyHash ('')), false);
+
+## Shape is carried by the size in the init string, so a row and a column of
+## the same elements are different keys.
+%!test
+%! assert_equal (isequal (keyHash ({'a', 'b'}), keyHash ({'a'; 'b'})), false);
+%! assert_equal (isequal (keyHash ({}), keyHash (cell (1, 0))), false);
+
+## A character array is hashed whole.  Until 1.3.1 keyHash passed x(:), an
+## N-by-1 char matrix, which was read with string_value () -- taking only the
+## first row.  Every character vector was therefore hashed as its first
+## character alone, so 'hello' and 'hxxxx' were one key.
+%!test
+%! assert_equal (isequal (keyHash ('hello'), keyHash ('hxxxx')), false);
+%! assert_equal (isequal (keyHash ('abc'), keyHash ('axx')), false);
+%! assert_equal (isequal (keyHash ('abc'), keyHash ('abd')), false);
+%! assert_equal (keyHash ('abc'), keyHash ('abc'));
+%! assert_equal (isequal (keyHash (['ab'; 'cd']), keyHash (['ab'; 'ce'])), ...
+%!               false);
+%! assert_equal (keyHash (['ab'; 'cd']), keyHash (['ab'; 'cd']));
+
+## The class is part of the key, so a character vector and a cell holding it
+## never collide.
+%!test
+%! assert_equal (isequal (keyHash ('ab'), keyHash ({'ab'})), false);
+%! assert_equal (isequal (keyHash (''), keyHash ({})), false);
+
+## Signed zero and NaN are canonicalised, so bit patterns that isequaln calls
+## equal are one key.  Integer types have neither and are hashed untouched.
+%!test
+%! assert_equal (keyHash (0), keyHash (-0));
+%! assert_equal (keyHash (0), keyHash (0 * -1));
+%! assert_equal (keyHash (NaN), keyHash (0/0));
+%! assert_equal (keyHash (NaN), keyHash (Inf - Inf));
+%! assert_equal (keyHash ([0, NaN]), keyHash ([-0, 0/0]));
+%! assert_equal (keyHash (single (0)), keyHash (single (-0)));
+%! assert_equal (keyHash (single (NaN)), keyHash (single (0/0)));
+%! assert_equal (isequal (keyHash (0), keyHash (NaN)), false);
+%! assert_equal (isequal (keyHash (Inf), keyHash (-Inf)), false);
+
 %!error<Invalid call to keyHash.  Correct usage is:> keyHash ();
 %!error<keyHash: BASE must be a UINT64 scalar.> keyHash (1, 1);
 %!error<keyHash: unsupported input type.> keyHash (@(x) x);
+%!error<keyHash: unsupported input type.> keyHash (struct ('a', 1));
+%!error<keyHash: unsupported input type.> keyHash ({1, 2});
