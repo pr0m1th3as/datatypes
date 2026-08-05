@@ -34,17 +34,33 @@
 ## permitted to share a hash code, and so comparing hash codes is not a
 ## substitute for calling @code{keyMatch}.
 ##
+## Both inputs must be of a type that can be a key, that is, one that
+## @code{keyHash} can hash; anything else raises an error.  Answering for a
+## value that cannot be hashed would assert that two values are the same key,
+## or are different keys, when no key exists for either.
+##
 ## @end deftypefn
 function TF = keyMatch (A, B)
   if (nargin != 2)
     print_usage;
   endif
-  ## Identity is decided on the values, not on their hash codes: hash equality
-  ## is not key equality, and any collision would silently report two distinct
-  ## keys as one.  keyHash agrees with what is decided here, never the reverse.
-  if (! strcmp (class (A), class (B)))
-    TF = false;
-  elseif (! isequal (size (A), size (B)))
+  ## Both inputs are checked before anything is compared, so a value that
+  ## cannot be a key is rejected rather than quietly reported as unequal:
+  ## returning false would assert that both operands are keys that merely
+  ## differ.
+  try
+    A_key = keyHash (A);
+  catch
+    error ("keyMatch: unsupported input type '%s'.", class (A));
+  end_try_catch
+  try
+    B_key = keyHash (B);
+  catch
+    error ("keyMatch: unsupported input type '%s'.", class (B));
+  end_try_catch
+  ## Hash codes reject only, never accept: distinct keys may share one.  Class
+  ## and size need no separate check, both being part of every hash.
+  if (A_key != B_key)
     TF = false;
   else
     TF = isequaln (A, B);
@@ -225,4 +241,30 @@ endfunction
 %! assert_equal (keyHash (u), keyHash (categorical ({''}, {'a'})));
 %! assert_equal (keyMatch (u, categorical ({'a'}, {'a'})), false);
 
+## The hash code rejects, but the class comparison is what keeps a value of
+## one class from matching another should their codes ever collide.
+%!assert_equal (keyMatch (1, int8 (1)), false)
+%!assert_equal (keyMatch (1, uint8 (1)), false)
+%!assert_equal (keyMatch (1, true), false)
+%!assert_equal (keyMatch (string ('a'), 'a'), false)
+
+## keyHash answers for every key type, which is what keyMatch's check asks.
+%!assert_equal (class (keyHash (0)), 'uint64')
+%!assert_equal (class (keyHash ('ab')), 'uint64')
+%!assert_equal (class (keyHash ({'ab', 'c'})), 'uint64')
+%!assert_equal (class (keyHash (string ('a'))), 'uint64')
+%!assert_equal (class (keyHash (seconds (1))), 'uint64')
+%!assert_equal (class (keyHash (calmonths (1))), 'uint64')
+%!assert_equal (class (keyHash (datetime (2024, 3, 5))), 'uint64')
+%!assert_equal (class (keyHash (categorical ({'a'}))), 'uint64')
+
 %!error<Invalid call to keyMatch.  Correct usage is:> keyMatch (2);
+%!error<keyMatch: unsupported input type 'table'.> ...
+%! keyMatch (table ([1; 2]), table ([1; 2]))
+%!error<keyMatch: unsupported input type 'table'.> keyMatch (table ([1; 2]), 1)
+%!error<keyMatch: unsupported input type 'table'.> keyMatch (1, table ([1; 2]))
+%!error<keyMatch: unsupported input type 'struct'.> ...
+%! keyMatch (struct ('a', 1), struct ('a', 1))
+%!error<keyMatch: unsupported input type 'cell'.> keyMatch ({1, 2}, {1, 2})
+%!error<keyMatch: unsupported input type 'function_handle'.> ...
+%! keyMatch (@sin, @sin)
