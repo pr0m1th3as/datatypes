@@ -32,7 +32,7 @@ inline bool isLittleEndian()
   return bytes[0] == 0x04;
 }
 
-// Canonical little-endian bit patterns for a quiet NaN.  Floating point has
+// The canonical quiet NaN bit pattern.  Floating point has
 // two families of values whose in-memory representation is not unique but
 // which 'isequaln' -- and hence 'keyMatch' -- calls equal: the two signed
 // zeros, and every NaN.  Hashing raw bytes therefore gave two equal keys
@@ -47,29 +47,43 @@ inline bool isLittleEndian()
 // cross-session, cross-worker determinism keyHash documents.  They are also
 // the patterns the literal NaN already had, so canonicalising moves the stray
 // representations onto the existing hash codes rather than changing them.
-static const unsigned char CANON_NAN64_LE[8]
-  = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf8, 0x7f};
-static const unsigned char CANON_NAN32_LE[4] = {0x00, 0x00, 0xc0, 0x7f};
+#define CANON_NAN64 0x7ff8000000000000ULL
+#define CANON_NAN32 0x7fc00000U
+
+// Hash a bit pattern, least significant byte first, which is the order both
+// integer paths below produce.  Emitting by shifting rather than by walking
+// the value's bytes in memory makes the result depend on the value alone, so
+// a big-endian machine takes this same path and there is no second, untested
+// code path to get wrong -- which is exactly where GitHub issues 38, 40 and
+// 43 came from.  The static_asserts below check it against the byte walker.
+template <typename U>
+static inline constexpr uint64_t fnv1a64_bits (U bits, uint64_t out)
+{
+  for (size_t k = 0; k < sizeof (U); k++)
+  {
+    // signedness as in the byte paths below, for backwards compatibility
+    const signed char sb = static_cast<signed char> ((bits >> (8 * k)) & 0xff);
+    out = (out ^ sb) * FNV1A64_PRIME;
+  }
+  return out;
+}
 
 // Hash a floating point buffer, canonicalising -0.0 to +0.0 and every NaN to
-// CANON_NAN*_LE.  Bytes are consumed little-endian first, matching the two
-// integer paths below, so a value that is neither a signed zero nor a NaN
-// hashes exactly as it did before this canonicalisation existed.
-template <typename T>
+// CANON_NAN*.  A value that is neither a signed zero nor a NaN hashes exactly
+// as it did before this canonicalisation existed.
+template <typename T, typename U>
 static inline uint64_t fnv1a64_float (const char *buf, size_t nelem,
-                                      const unsigned char *canon_nan,
-                                      uint64_t out)
+                                      U canon_nan, uint64_t out)
 {
-  const bool little = isLittleEndian ();
-  unsigned char b[sizeof (T)];
   for (size_t i = 0; i < nelem; i++)
   {
     T v;
     std::memcpy (&v, buf + i * sizeof (T), sizeof (T));
+    U bits;
     if (v != v)
     {
       // NaN, whatever its sign and payload
-      std::memcpy (b, canon_nan, sizeof (T));
+      bits = canon_nan;
     }
     else
     {
@@ -78,23 +92,12 @@ static inline uint64_t fnv1a64_float (const char *buf, size_t nelem,
       {
         v = T (0);
       }
-      std::memcpy (b, &v, sizeof (T));
-      if (! little)
-      {
-        for (size_t k = 0; k < sizeof (T) / 2; k++)
-        {
-          const unsigned char t = b[k];
-          b[k] = b[sizeof (T) - 1 - k];
-          b[sizeof (T) - 1 - k] = t;
-        }
-      }
+      // Copying a float into an unsigned integer of the same width gives the
+      // IEEE bit pattern on either byte order, both types laying their bytes
+      // out the same way on any one machine.
+      std::memcpy (&bits, &v, sizeof (T));
     }
-    for (size_t k = 0; k < sizeof (T); k++)
-    {
-      // signedness as in the byte paths below, for backwards compatibility
-      const signed char sb = static_cast<signed char> (b[k]);
-      out = (out ^ sb) * FNV1A64_PRIME;
-    }
+    out = fnv1a64_bits (bits, out);
   }
   return out;
 }
@@ -132,6 +135,22 @@ static_assert(0x123 == fnv1a64(testData.data(), 0, 0x123));
 static_assert(0 == fnv1a64(testData.data(), 1, 0));
 static_assert(FNV1A64_PRIME == fnv1a64(testData.data(), 1, 1));
 static_assert(FNV1A64_PRIME == fnv1a64(testData.data(), 2, 0));
+
+// The shift emission must agree with walking the same pattern's bytes in
+// little-endian order, which is what the pre-canonicalisation code did on a
+// little-endian machine.  Checked at compile time, so it is verified on every
+// build including the big-endian ones this file can no longer branch on.
+constexpr std::array<char, 8> nan64LE{0, 0, 0, 0, 0, 0, char(0xf8), 0x7f};
+constexpr std::array<char, 4> nan32LE{0, 0, char(0xc0), 0x7f};
+constexpr std::array<char, 8> one64LE{0, 0, 0, 0, 0, 0, char(0xf0), 0x3f};
+static_assert(fnv1a64(nan64LE.data(), 8, 0xcbf29ce484222325)
+              == fnv1a64_bits<uint64_t>(CANON_NAN64, 0xcbf29ce484222325));
+static_assert(fnv1a64(nan32LE.data(), 4, 0xcbf29ce484222325)
+              == fnv1a64_bits<uint32_t>(CANON_NAN32, 0xcbf29ce484222325));
+// 1.0, whose high byte 0x3f is positive and whose 0xf0 is not, so both
+// signedness cases are covered
+static_assert(fnv1a64(one64LE.data(), 8, 0xcbf29ce484222325)
+              == fnv1a64_bits<uint64_t>(0x3ff0000000000000ULL, 0xcbf29ce484222325));
 }
 
 
@@ -186,13 +205,13 @@ Do NOT use this function directly. \n\
   if (args(0).is_double_type ())
   {
     octave_uint64 out = fnv1a64_float<double> (buf, len / sizeof (double),
-                                               CANON_NAN64_LE, base);
+                                               CANON_NAN64, base);
     retval(0) = out;
   }
   else if (args(0).is_single_type ())
   {
     octave_uint64 out = fnv1a64_float<float> (buf, len / sizeof (float),
-                                              CANON_NAN32_LE, base);
+                                              CANON_NAN32, base);
     retval(0) = out;
   }
   else if (isLittleEndian ())
