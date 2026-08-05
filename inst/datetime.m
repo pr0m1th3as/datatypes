@@ -1679,29 +1679,45 @@ classdef datetime
     ##
     ## @end deftypefn
     function key = keyHash (this, base = [])
-      ## Initialize string with size and class name
+      ## Initialize string with size, class name, and time frame.  The zone
+      ## NAME is deliberately absent, because two zoned arrays naming the same
+      ## instant are the same key however they spell their zone.  What stays
+      ## is the frame, and it has THREE states rather than a zoned/unzoned
+      ## boolean: 'isequaln' refuses to equate an unzoned array with a zoned
+      ## one, and a leap-second array with an ordinary one, whatever instant
+      ## either names, so all three have to be kept apart.  A plain boolean
+      ## would also let an unzoned array collide with a UTC one outright,
+      ## since 'serial' returns the same count for both.
       size_str = sprintf ('%dx', size (this.Year))(1:end-1);
-      flag_str = sprintf ('-TZ%s:', this.TimeZone);
+      if (isempty (this.TimeZone))
+        flag_str = '-unzoned:';
+      elseif (dtIsLeapZone (this.TimeZone))
+        flag_str = '-leapzone:';
+      else
+        flag_str = '-zoned:';
+      endif
       init_str = [size_str 'datetime' flag_str];
       if (base)
         if (! (isscalar (base) && isa (base, 'uint64')))
           error ("datetime.keyHash: BASE must be a UINT64 scalar.");
         endif
-        key = __ckeyHash__(init_str, base);
+        key = __ckeyHash__ (init_str, base);
       else
-        key = __ckeyHash__(init_str);
+        key = __ckeyHash__ (init_str);
       endif
       if (! isempty (this.Year))
-        key = __nkeyHash__(this.Year(:), key);
-        key = __nkeyHash__(this.Month(:), key);
-        key = __nkeyHash__(this.Day(:), key);
-        key = __nkeyHash__(this.Hour(:), key);
-        key = __nkeyHash__(this.Minute(:), key);
-        key = __nkeyHash__(this.Second(:), key);
-        ## Hashed alongside the components because it is part of what makes an
-        ## element itself: two elements sharing a wall clock across a fall-back
-        ## are not equal and so must not be given the same key.
-        key = __nkeyHash__((this.Offset + zeros (size (this.Year)))(:), key);
+        ## The instant, not the wall clock.  'serial' is the count the
+        ## instant-based comparisons are already built on, and within each of
+        ## the three frames it is in one-to-one correspondence with what
+        ## 'isequaln' compares -- so agreement between keyHash and keyMatch is
+        ## structural here rather than a numerical coincidence.  It also does
+        ## the aligning that 'do_isequal' does by assigning TimeZone = 'UTC',
+        ## which is not available inside a method: that syntax writes the
+        ## property directly and would skip the conversion the setter makes.
+        ## The stored Offset is what 'serial' consumes, so it must not be
+        ## hashed as well -- doing so would re-separate the zones this is
+        ## meant to bring together, which is the defect being fixed.
+        key = __nkeyHash__ (serial (this)(:), key);
       endif
     endfunction
 
