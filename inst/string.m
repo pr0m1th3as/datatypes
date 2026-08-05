@@ -676,10 +676,13 @@ classdef string
       else
         key = __ckeyHash__(init_str);
       endif
-      ## Compute hash with underlying string array values
-      strs = [this.strs{:}];
-      key = __ckeyHash__(strs, key);
-      key = __nkeyHash__(this.isMissing(:), key);
+      ## Compute hash with underlying string array values.  Passed whole
+      ## rather than flattened with [this.strs{:}]: __ckeyHash__ frames each
+      ## element with its length, so the boundaries between elements are part
+      ## of the key.  Flattening lost them, and ["ab", "c"] was the same key
+      ## as ["a", "bc"].
+      key = __ckeyHash__ (this.strs, key);
+      key = __nkeyHash__ (this.isMissing(:), key);
     endfunction
 
   endmethods
