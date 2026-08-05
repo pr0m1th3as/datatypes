@@ -1047,7 +1047,7 @@ classdef categorical
       ## category list is hashed, in order, for those alone.
       size_str = sprintf ('%dx', size (this.code))(1:end-1);
       flag_str = sprintf ('-o%d:', this.isOrdinal);
-      init_str = [size_str 'categorical' flag_str];
+      init_str = [size_str class(this) flag_str];
       if (! isempty (base))
         if (! (isscalar (base) && isa (base, 'uint64')))
           error ("categorical.keyHash: BASE must be a UINT64 scalar.");

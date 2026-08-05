@@ -997,7 +997,7 @@ classdef duration
     function key = keyHash (this, base = [])
       ## Initialize string with size and class name
       size_str = sprintf ('%dx', size (this.Millis))(1:end-1);
-      init_str = [size_str 'duration'];
+      init_str = [size_str class(this)];
       if (! isempty (base))
         if (! (isscalar (base) && isa (base, 'uint64')))
           error ("duration.keyHash: BASE must be a UINT64 scalar.");

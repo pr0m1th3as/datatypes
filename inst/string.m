@@ -674,7 +674,7 @@ classdef string
     function key = keyHash (this, base = [])
       ## Initialize string with size and class name
       size_str = sprintf ('%dx', size (this.strs))(1:end-1);
-      init_str = [size_str 'string'];
+      init_str = [size_str class(this)];
       if (! isempty (base))
         if (! (isscalar (base) && isa (base, 'uint64')))
           error ("string.keyHash: BASE must be a UINT64 scalar.");

@@ -1077,7 +1077,7 @@ classdef calendarDuration
     function key = keyHash (this, base = [])
       ## Initialize string with size and class name
       size_str = sprintf ('%dx', size (this.Months))(1:end-1);
-      init_str = [size_str 'calendarDuration'];
+      init_str = [size_str class(this)];
       if (! isempty (base))
         if (! (isscalar (base) && isa (base, 'uint64')))
           error ("calendarDuration.keyHash: BASE must be a UINT64 scalar.");

@@ -1707,7 +1707,7 @@ classdef datetime
       else
         flag_str = '-zoned:';
       endif
-      init_str = [size_str 'datetime' flag_str];
+      init_str = [size_str class(this) flag_str];
       if (! isempty (base))
         if (! (isscalar (base) && isa (base, 'uint64')))
           error ("datetime.keyHash: BASE must be a UINT64 scalar.");
