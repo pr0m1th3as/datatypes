@@ -4836,6 +4836,12 @@ function varargout = promote (varargin)
     x = varargin{i};
     if (isa (x, "duration"))
       varargout{i} = x;
+    elseif (isa (x, "missing"))
+      ## A missing value becomes an all-NaN duration of the same shape.  Only
+      ## its Millis are read back by 'cat', which takes the result's format
+      ## from the first real duration operand, so this filler's own format
+      ## never reaches the result.
+      varargout{i} = days (NaN (size (x)));
     elseif (isnumeric (x))
       varargout{i} = days (x);
     elseif (iscellstr (x) || ischar (x) || isa (x, "string"))

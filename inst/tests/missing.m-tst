@@ -110,6 +110,17 @@
 %!assert_equal (ismissing ([missing, datetime(2020, 1, 1)]), [true, false])
 %!assert_equal (ismissing ([missing, categorical(1)]), [true, false])
 
+## cat: a datetime result keeps the real operand's zone and format -- an
+## unzoned NaT cannot join a zoned array at all (vs MATLAB R2024a)
+%!test
+%! D = [missing, datetime(2020, 1, 1, 'TimeZone', 'UTC')];
+%! assert_equal (D.TimeZone, 'UTC');
+%! assert_equal (isnat (D), [true, false]);
+%!test
+%! D = [missing, datetime(2020, 1, 1, 'Format', 'yyyy')];
+%! assert_equal (D.Format, 'yyyy');
+%! assert_equal (cellstr (D), {'NaT', '2020'});
+
 ## cat: a duration result takes its format from the real operand, not from the
 ## all-NaN filler (vs MATLAB R2024a)
 %!test

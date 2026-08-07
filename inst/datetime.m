@@ -5483,6 +5483,14 @@ classdef datetime
             this.Second(s.subs{:}) = [];
             this.Offset(s.subs{:}) = [];
             return;
+          elseif (isa (val, "missing"))
+            ## A missing value assigns NaT, in the array's own zone so that
+            ## the assignment cannot change whether the array is zoned.
+            if (isempty (this.TimeZone))
+              val = NaT (size (val));
+            else
+              val = NaT (size (val), 'TimeZone', this.TimeZone);
+            endif
           elseif (! isa (val, "datetime"))
             error (strcat ("datetime.subsasgn: cannot assign %s values", ...
                            " to a datetime array."), class (val));
@@ -6511,7 +6519,16 @@ endfunction
 ## operations and 'isbetween' follow; nothing else can be concatenated with a
 ## datetime array.
 function d = dtCatPromote (x, ref)
-  if (ischar (x) || iscellstr (x) || isa (x, 'string'))
+  if (isa (x, 'missing'))
+    ## A missing value becomes NaT of the same shape.  It must take the
+    ## reference's zone: the caller requires every operand to agree on whether
+    ## it is zoned, so an unzoned filler could not join a zoned array.
+    if (isempty (ref.TimeZone))
+      d = NaT (size (x));
+    else
+      d = NaT (size (x), 'TimeZone', ref.TimeZone);
+    endif
+  elseif (ischar (x) || iscellstr (x) || isa (x, 'string'))
     if (isempty (ref.TimeZone))
       d = datetime (x);
     else

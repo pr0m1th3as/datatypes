@@ -2163,6 +2163,14 @@ classdef calendarDuration
             this.Days(s.subs{:})   = [];
             this.Time(s.subs{:})   = [];
             return;
+          elseif (isa (val, "missing"))
+            ## A missing value assigns NaN to every calendar field, so the
+            ## element reads back as missing whichever field is inspected.
+            tmp = NaN (size (val));
+            this.Months(s.subs{:}) = tmp;
+            this.Days(s.subs{:})   = tmp;
+            this.Time(s.subs{:})   = duration (24 * tmp, 0, 0);
+            this = broadcastProperties (this);
           elseif (isnumeric (val))
             tmp = zeros (size (val));
             this.Months(s.subs{:}) = tmp;
@@ -2288,6 +2296,10 @@ classdef calendarDuration
       for i = 1:numel (varargin)
         if (isa (varargin{i}, "calendarDuration"))
           varargout{i} = varargin{i};
+        elseif (isa (varargin{i}, "missing"))
+          ## A missing value becomes an all-NaN calendarDuration of the same
+          ## shape.
+          varargout{i} = calendarDuration (NaN (size (varargin{i})), NaN, NaN);
         elseif (isa (varargin{i}, "duration"))
           varargout{i} = calendarDuration (0, 0, 0, varargin{i});
         elseif (isnumeric (varargin{i}))

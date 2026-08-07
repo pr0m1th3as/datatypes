@@ -4166,6 +4166,29 @@
 ##                                                                            ##
 ################################################################################
 
+## Test 'cat' -- a missing value on either side becomes an all-NaN duration,
+## and the result keeps the real operand's format (vs MATLAB R2024a)
+%!test
+%! D = [duration(1, 0, 0), missing];
+%! assert_equal (size (D), [1, 2]);
+%! assert_equal (ismissing (D), [false, true]);
+%!test
+%! D = [hours(1), missing];
+%! assert_equal (D.Format, 'h');
+%! assert_equal (cellstr (D), {'1 hr', 'NaN hr'});
+%!test
+%! D = [duration(1, 0, 0), missing, duration(2, 0, 0)];
+%! assert_equal (cellstr (D), {'01:00:00', 'NaN', '02:00:00'});
+%!assert_equal (size ([duration(1, 0, 0); missing]), [2, 1])
+%!assert_equal (size (cat (3, duration(1, 0, 0), missing)), [1, 1, 2])
+
+## Test 'subsasgn' -- assigning a missing value gives NaN, while a gap opened
+## by growing past the end is zero, not missing (vs MATLAB R2024a)
+%!test
+%! D = duration (1, 0, 0);
+%! D(3) = missing;
+%! assert_equal (ismissing (D), [false, false, true]);
+
 %!test
 %! D = cat (2, days (2), hours (3));
 %! assert_equal (D, days ([2, 0.125]));

@@ -2514,6 +2514,33 @@
 %!error <datetime.cat: cannot concatenate a datetime array that has a time zone with one that does not have a time zone.> ...
 %! horzcat (datetime (2024, 1, 1, 'TimeZone', 'UTC'), [], datetime (2024, 1, 1))
 
+## Test 'cat' -- a missing value becomes NaT, taking the zone and format of
+## the first datetime operand (vs MATLAB R2024a)
+%!test
+%! D = [datetime(2020, 1, 1), missing];
+%! assert_equal (size (D), [1, 2]);
+%! assert_equal (isnat (D), [false, true]);
+%!test
+%! D = [datetime(2020, 1, 1, 'TimeZone', 'UTC'), missing];
+%! assert_equal (D.TimeZone, 'UTC');
+%! assert_equal (isnat (D), [false, true]);
+%!test
+%! D = [datetime(2020, 1, 1, 'Format', 'yyyy'), missing];
+%! assert_equal (cellstr (D), {'2020', 'NaT'});
+%!assert_equal (size ([datetime(2020, 1, 1); missing]), [2, 1])
+
+## Test 'subsasgn' -- a missing value assigns NaT, and a gap opened by growing
+## past the end is NaT as well (vs MATLAB R2024a)
+%!test
+%! D = datetime (2020, 1, 1);
+%! D(3) = missing;
+%! assert_equal (isnat (D), [false, true, true]);
+%!test
+%! D = datetime (2020, 1, 1, 'TimeZone', 'UTC');
+%! D(2) = missing;
+%! assert_equal (D.TimeZone, 'UTC');
+%! assert_equal (isnat (D), [false, true]);
+
 ## Test 'cat' -- anything that is neither a datetime nor date/time text is
 ## refused, an empty numeric of non-zero size included
 %!error <datetime.cat: all inputs must be datetime arrays or date/time text.> ...

@@ -560,7 +560,18 @@ classdef missing
               case 'categorical'
                 args{i} = categorical (NaN (size (varargin{i})));
               case 'datetime'
-                args{i} = NaT (size (varargin{i}));
+                ## The filler carries the real operand's zone and format: an
+                ## unzoned NaT cannot sit in a zoned array at all, and a
+                ## default-format one would render the result wrongly.
+                k = find (cellfun (@(x) isa (x, 'datetime'), varargin), 1);
+                if (isempty (varargin{k}.TimeZone))
+                  args{i} = NaT (size (varargin{i}), ...
+                                 'Format', varargin{k}.Format);
+                else
+                  args{i} = NaT (size (varargin{i}), ...
+                                 'TimeZone', varargin{k}.TimeZone, ...
+                                 'Format', varargin{k}.Format);
+                endif
               case 'double'
                 args{i} = NaN (size (varargin{i}));
               case 'duration'
