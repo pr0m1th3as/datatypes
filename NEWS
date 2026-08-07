@@ -1,177 +1,59 @@
-Summary of important user-visible changes for datatypes 1.3.1:
+Summary of important user-visible changes for datatypes 1.3.2:
 --------------------------------------------------------------
 
- This release fixes `keyHash` and `keyMatch`, and the `missing` class along
- with how it interoperates with `datetime`, `duration` and
- `calendarDuration`.
+ This release fixes a `categorical` defect that silently dropped array
+ elements, and widens `keyHash` and `keyMatch` to the last three types MATLAB
+ keys that this package did not.  Nothing that worked before behaves
+ differently, and **no hash code changes**: codes stored by 1.3.1 remain
+ valid.
 
- `keyHash` and `keyMatch` were wrong in ways that made distinct values
- collide, so **hash codes change** and stored codes from 1.3.0 and earlier
- are invalid and must be recomputed.  What changes and what does not is set
- out in full below.
+ ** Concatenating or comparing a `categorical` array with a non-scalar
+    `missing` no longer loses elements.  The missing operand was sized from a
+    fresh scalar `missing` rather than from itself, so it collapsed to 1-by-1:
+    `[categorical(NaN(1,3)), repmat(missing,1,3)]` returned a 1-by-4 array
+    instead of 1-by-6, dropping three elements with no error, and
+    `isequaln (categorical(NaN(1,3)), repmat(missing,1,3))` was false.  Both
+    disagreed with the same operation in the other operand order, which was
+    already correct.  `cat`, `isequal` and `isequaln` are all affected.
 
- The `missing` work is a set of parity corrections measured against MATLAB
- R2024a.  A missing value now converts, compares and concatenates as MATLAB
- defines, and may be concatenated with or assigned into a `datetime`,
- `duration` or `calendarDuration` array from either side.  None of it breaks
- anything that previously worked: every one of these replaces a wrong answer
- or an outright error.
+ ** `keyHash` accepts `struct`, `cell` and `function_handle`, and `keyMatch`
+    accepts them with it, closing the last parity gap in `keyMatch`.
+    `keyMatch` itself is unchanged: it asks `keyHash` whether a value can be
+    hashed rather than keeping a list of its own, so widening one widened the
+    other.
 
- ** `keyMatch` no longer decides identity by comparing hash codes.  Hash
-    equality is not key equality, and any collision reported two distinct
-    keys as one.  It now compares the values themselves, with missing
-    values comparing equal to one another, after the existing class and
-    size checks -- so `1` and `int8 (1)` remain different keys, as do a row
-    and a column holding the same elements.  `keyHash` agrees with it: two
-    values that `keyMatch` reports as the same key always have the same
-    hash code.  The converse does not hold, since distinct keys are
-    permitted to share a hash code.
+ ** A `cell` array is keyed on its elements, each hashed in turn, so it may
+    hold any type `keyHash` accepts, nested to any depth.  Shape and nesting
+    are part of the key, so `{1, 2}` and `{1; 2}` are different keys, as are
+    `{{1}}` and `{1}`.  An element whose class has its own `keyHash`
+    method reaches it, so a cell holding a `datetime` or a `categorical` is
+    keyed correctly.
 
- ** `keyHash` hashed only the FIRST CHARACTER of a character vector.  It
-    passed the array as an N-by-1 char matrix, which was read by taking the
-    first row and discarding the rest.  Every character vector was
-    therefore keyed on its first character alone, so `keyHash ('hello')`
-    and `keyHash ('hxxxx')` were equal and `keyMatch` called them the same
-    key.  Character arrays are now hashed whole, in column-major order.
+ ** A `struct` is keyed on its field names and their values.  The order in
+    which its fields were created is **not** part of the key, so two structs
+    differing only in field order are the same key -- matching R2024a, and
+    matching `isequaln`, which already ignored field order.  The class of a
+    value *inside* a struct or a cell **is** part of the key, so
+    `keyMatch ({1}, {int8 (1)})` is false, as it is for `1` and
+    `int8 (1)` at the top level.
 
- ** Elements of a cell array of character vectors and of a `string` array
-    were concatenated before hashing, which lost the boundaries between
-    them: `{'ab', 'c'}` and `{'a', 'bc'}` were one key, and `keyMatch`
-    agreed.  Elements are now hashed with their lengths, so no two
-    different splittings of the same characters can collide.  `keyHash ({})`
-    also no longer errors, and stays distinct from `keyHash ({''})`.
+ ** A function handle is keyed on its text alone.  Two named handles for the
+    same function are one key.  Two anonymous handles never match, even when
+    written identically, so an anonymous handle cannot be found again as a
+    key; what a handle captures is therefore not part of its hash, which is
+    also how R2024a hashes them.
 
- ** Values that compare equal but differ in memory are now one key.  A
-    negative zero keys as `+0`, and every `NaN` keys alike whatever
-    produced it.  The second half is not academic: on x86-64 the literal
-    `NaN` is positive while `0/0` and `Inf - Inf` are negative, so
-    `seconds (NaN)` and `seconds (0/0)` were different `duration` keys.
+ ** `keyHash` and `keyMatch` name the value that cannot be hashed rather than
+    the container holding it.  With `cell` and `struct` now keys in their own
+    right, reporting `'cell'` for `keyMatch ({table(1)}, {1})` pointed at
+    the wrong type; both now report `'table'`.  `keyHash` names the class it
+    rejected instead of saying only that some input was unsupported, and
+    `keyMatch` passes that message through instead of restating it from its
+    own operand.
 
- ** A zoned `datetime` is keyed on the instant rather than on its wall
-    clock and zone name, so the same moment named in two zones is one key.
-    An unzoned array, a zoned array and a leap-second array remain three
-    separate frames and are never equal to one another, and the two
-    instants that share a wall clock across a fall-back stay distinct.
-
- ** `categorical` is keyed on its element labels, plus the category
-    ordering for an ordinal array alone.  The `Protected` flag is no longer
-    part of the key, and neither is a non-ordinal array's category list --
-    so two non-ordinal arrays carrying the same labels are now the same
-    key however their categories differ or are ordered, matching MATLAB.
-    Ordinal arrays are unaffected: ordinality and the full category
-    ordering remain part of identity.
-
- ** `keyMatch` raises for a value that cannot be a key.  It asks `keyHash`
-    whether each input is hashable before comparing anything, so a `table`, a
-    `struct`, a cell array that is not a cell array of character vectors, and
-    a function handle are each rejected by name.  Answering would assert that
-    two values are the same key, or are different keys, when no key exists
-    for either.  MATLAB rejects `table` in the same way and for the same
-    reason; it does accept `struct`, `cell` and `function_handle` as keys,
-    which this package does not hash yet, and they will be accepted here as
-    soon as it does.
-
- ** `keyHash` no longer ignores a zero offset basis.  The optional `base`
-    argument was tested for truth rather than for presence, so
-    `keyHash (X, uint64 (0))` silently used the default basis instead of
-    zero, and an invalid base that happened to be falsy -- `0`, `false`, or a
-    `uint64` array containing a zero -- skipped validation altogether while
-    `1` was correctly rejected.  A zero basis is now honoured and every
-    invalid base raises.  An empty `base` still means no base, as before.
-
- ** A subclass of `datetime`, `duration`, `calendarDuration`, `categorical` or
-    `string` no longer shares its parent's key.  The `keyHash` methods wrote
-    the declared class name into the hash rather than the actual one, so an
-    instance of a derived class hashed identically to a base instance holding
-    the same data, and `keyMatch` called them the same key.  Hash codes for
-    the base classes themselves are unaffected.
-
- ** `keyMatch` is faster on the classdef types.  Having both hash codes in
-    hand from the check above, it uses them to reject: codes that differ
-    prove the keys differ, which skips a deep comparison costing an order of
-    magnitude more.  Comparing two 200,000-element `string` arrays that differ
-    in one element is about 13 times faster than before, and `categorical`
-    about 5 times.  The codes are never used to accept, since distinct keys
-    are permitted to share one.
-
- ** Which hash codes change, precisely.  Measured input by input against
-    1.3.0:
-
-      changed:   every character vector of two or more characters, and
-                 every character matrix; every cell array of character
-                 vectors; every `string`; every `categorical`; every
-                 `datetime`; and any numeric value whose data actually
-                 contains a negative zero or a sign-set `NaN`.
-
-      unchanged: all other numeric and logical values, of every class,
-                 including `0` and the literal `NaN` themselves; the empty
-                 character vector and single characters; every `duration`
-                 except one holding a `NaN` produced by arithmetic; and
-                 every `calendarDuration`.
-
-    `calendarDuration` needed no change: `calmonths (12)` and `calyears (1)`
-    were already one key, and `calmonths (1)` and `caldays (30)` already
-    were not.
-
- ** Hash codes remain identical across workers and Octave sessions, which
-    is what this package offers over MATLAB's randomly seeded `keyHash`.
-    They are not stable across this version boundary.
-
- ** `missing` no longer converts to text.  `cellstr (missing)` returned
-    `{'<missing>'}`, and concatenating a missing value with a cell array of
-    character vectors filled it with `''`.  Both now raise.  A missing value
-    has no text, so answering asserted a conversion that does not exist;
-    MATLAB refuses both in the same way.  `dispstrings` is unaffected and
-    still yields `<missing>`, which is a display placeholder rather than a
-    conversion.
-
- ** `isequal` and `isequaln` on a missing value answer instead of raising.
-    Both accepted only `missing` and `categorical` operands and raised
-    `unsupported input types` for anything else, so `isequal (missing, NaN)`
-    was an error rather than `false`.  `isequal` is now false whenever a
-    missing value takes part, exactly as it is for `NaN`, and `isequaln` is
-    true when every operand is entirely missing and all shapes agree.  Each
-    operand answers for itself through its own `ismissing`, so `datetime`,
-    `duration`, `calendarDuration`, `categorical` and `string` are all
-    handled, and the floating types count `NaN` as missing.
-
- ** Concatenating a missing value with a `duration` no longer exhausts the
-    recursion limit.  `cat` recognised `duration` as the result type but had
-    no branch to build one, so the missing value survived unconverted and the
-    call dispatched back into itself: `[missing, duration(1, 0, 0)]` failed
-    with `max_recursion_depth exceeded`.  The result takes its display format
-    from the real operand rather than from the all-NaN filler, so
-    `[missing, hours(1)]` renders as `NaN hr` and `1 hr` instead of imposing
-    the default `hh:mm:ss`.
-
- ** `duration (missing)` no longer raises.  It built its input as
-    `NaN (size (M))`, a single-column matrix, where `duration` reads a
-    numeric argument as an N-by-3 `[h m s]` matrix, so every call failed with
-    `X must have 3 columns`.  All six conversions -- `double`, `single`,
-    `categorical`, `datetime`, `duration` and `calendarDuration` -- now
-    return an array shaped like the missing array they were given.
-
- ** A missing value may now be concatenated with a `datetime`, `duration` or
-    `calendarDuration` array from either side.  It worked only on the left,
-    where `missing` converts it; on the right each class handled the call
-    itself and had no branch for the type, so `[duration(1, 0, 0), missing]`
-    raised `cat: duration/horzcat method failed` and the direct `cat` form
-    raised the rawer `duration: invalid input to constructor`.  Both operand
-    orders, both orientations and `cat` along any dimension now work, and the
-    missing element reads back as that class's own marker -- `NaT` for
-    `datetime`, `NaN` for the other two.
-
- ** A missing value may now be assigned into a `datetime` or
-    `calendarDuration` array.  Both refused it while `duration` accepted it,
-    so the three classes disagreed with one another.  `D(3) = missing` now
-    assigns `NaT` or `NaN`, in the array's own time zone where it has one.  A
-    gap opened by growing past the end is unchanged and still follows each
-    class: `NaT` for `datetime`, zero for `duration` and `calendarDuration`.
-
- ** Concatenating a missing value with a zoned or custom-format `datetime` no
-    longer loses that state.  The filler was built as a plain `NaT`, so a
-    zoned operand failed outright -- an unzoned value cannot sit in a zoned
-    array -- and a non-default format was silently replaced by the default:
-    `[missing, datetime(2020, 1, 1, 'Format', 'yyyy')]` displayed
-    `01-Jan-2020` rather than `2020`.  The filler now carries both the time
-    zone and the format of the real operand.
+ ** Hash codes for every previously supported type are now pinned by tests
+    carrying the literal values measured from 1.3.1.  Codes are a published
+    interface -- this package produces the same code across workers and
+    sessions, which MATLAB's randomly seeded `keyHash` does not -- so a code
+    changing is a breaking change, and these tests exist so that it cannot
+    happen by accident.
