@@ -311,9 +311,18 @@
 </p>
 <div class="ms-5">
 <p> <code><var>key</var> = keyHash (<var>X</var>)</code> generates a <code>uint64</code> scalar that
- represents the input <var>X</var>, which may be numeric, logical, or character
- array or cell array of character vectors.  <code>keyHash</code> utilizes the 64-bit
+ represents the input <var>X</var>, which may be a numeric, logical, character,
+ cell, struct or function handle array.  <code>keyHash</code> utilizes the 64-bit
  FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
+</p>
+<p> A <code>cell</code> array is keyed on its elements, each hashed in turn, so a
+ cell may hold any type that <code>keyHash</code> accepts, nested to any depth.  A
+ <code>struct</code> is keyed on its field names and their values; the order in
+ which its fields were created is <em>not</em> part of the key, so two structs
+ differing only in field order are the same key.  A function handle is keyed
+ on its text alone: two named handles for the same function are one key,
+ while distinct anonymous handles never match even when written identically,
+ so nothing a handle captures can be observed through <code>keyMatch</code>.
 </p>
 <p> <code><var>key</var> = keyHash (<var>X</var>, <var>base</var>)</code> also generates a 64-bit
  hash code using <var>base</var> as the offset basis for the FNV-1a hash
