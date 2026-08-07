@@ -306,12 +306,27 @@
 <dl>
 <dt><code><h5 class="fs">datatypes: <var>TF</var> = <b>keyMatch</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
 </dl>
-<p> Return true if both inputs have the same hash code.
+<p> Return true if both inputs are the same key.
 </p>
 <div class="ms-5">
 <p> <code><var>TF</var> = keyMatch (<var>A</var>, <var>B</var>)</code> returns a logical scalar,
- which is <code>true</code>, if both inputs, <var>A</var> and <var>B</var>, have the same
- FNV-1a 64-bit hash code, and <code>false</code> otherwise.
+ which is <code>true</code>, if the inputs <var>A</var> and <var>B</var> are the same key,
+ and <code>false</code> otherwise.  Two values are the same key when they have
+ the same class, the same size, and equal contents, with missing values
+ comparing equal to one another as in <code>isequaln</code>.  Neither class nor
+ size is promoted, so <code>1</code> and <code>int8 (1)</code> are different keys, and
+ so are a row and a column holding the same elements.
+</p>
+<p> <code>keyMatch</code> decides key identity and <code>keyHash</code> agrees with it:
+ two values that <code>keyMatch</code> reports as the same key always have the
+ same hash code.  The converse does not hold, since distinct keys are
+ permitted to share a hash code, and so comparing hash codes is not a
+ substitute for calling <code>keyMatch</code>.
+</p>
+<p> Both inputs must be of a type that can be a key, that is, one that
+ <code>keyHash</code> can hash; anything else raises an error.  Answering for a
+ value that cannot be hashed would assert that two values are the same key,
+ or are different keys, when no key exists for either.
 </p>
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/keyMatch.m">keyMatch</a>

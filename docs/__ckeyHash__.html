@@ -305,11 +305,14 @@
             <div class="card-body">
 <dl>
 <dt><code><h5 class="fs">: <var>uint64</var> = <b>__ckeyHash__</b> (<var>str</var>)</code></h5></dt>
-<dt><code><h5 class="fs">: <var>uint64</var> = <b>__ckeyHash__</b> (<var>str</var>, <var>FNV1A64_BASE</var>)</code></h5></dt>
+<dt><code><h5 class="fs">: <var>uint64</var> = <b>__ckeyHash__</b> (<var>cstr</var>)</code></h5></dt>
+<dt><code><h5 class="fs">: <var>uint64</var> = <b>__ckeyHash__</b> (&hellip;, <var>FNV1A64_BASE</var>)</code></h5></dt>
 </dl>
-<p>Fowler–Noll–Vo hash key for a character vector. 
+<p>Fowler–Noll–Vo hash key for a character vector or a cell array of them. 
 </p>
 <div class="ms-5">
+<p>Given a cell array, the elements are hashed with their lengths so that the boundaries between them are part of the key and no two different splittings of the same characters can collide. 
+</p>
 <p>This is a helper function for <code>keyHash</code> methods of &lsquo;datatypes&lsquo;&rsquo; classes. Do NOT use this function directly. 
 </p>
 <p><strong>Source Code: </strong>
