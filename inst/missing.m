@@ -52,9 +52,8 @@ classdef missing
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'missing'          'dispstrings'      'cellstr'          'double'          ##
-## 'single'           'calendarDuration' 'categorical'      'datetime'        ##
-## 'duration'                                                                 ##
+## 'missing'          'dispstrings'      'double'           'single'          ##
+## 'calendarDuration' 'categorical'      'datetime'         'duration'        ##
 ##                                                                            ##
 ################################################################################
 
@@ -84,8 +83,11 @@ classdef missing
       cstr = repmat ({'<missing>'}, size (this));
     endfunction
 
+    ## A missing value has no text, so it cannot become one.  'dispstrings'
+    ## still yields '<missing>' because that is a display placeholder, not a
+    ## conversion.
     function cstr = cellstr (this)
-      cstr = dispstrings (this);
+      error ("missing.cellstr: cannot convert 'missing' to 'cell' type.");
     endfunction
 
     function out = double (this)
@@ -108,44 +110,33 @@ classdef missing
       out = NaT (size (this));
     endfunction
 
+    ## 'duration' reads a numeric input as an Nx3 [h m s] matrix, so build one
+    ## row per element and restore the shape.  NaN (size (this)) has a single
+    ## column and is rejected.
     function out = duration (this)
-      out = duration (NaN (size (this)));
+      out = reshape (duration (NaN (numel (this), 3)), size (this));
     endfunction
 
-    ## Overload isequal for categorical support
+    ## A missing value equals nothing, itself included, exactly as NaN does
+    ## under isequal.  Any comparison reaching here involves one, so it is
+    ## false whatever the other operands are.
     function TF = isequal (varargin)
-      ## Check for categorical input
-      idx = find (cellfun ('iscategorical', varargin), 1);
-      if (isempty (idx))
-        if (any (cellfun (@(x) ! isa (x, 'missing'), varargin)))
-          error ("missing.isequal: unsupported input types.");
-        endif
-        data = cellfun (@(x) x.data, varargin, 'UniformOutput', false);
-        TF = isequal (data{:});
-      else
-        ## Convert first input (missing) to categorical
-        varargin{1} = categorical (varargin{1});
-        ## Call categorical overloaded method
-        TF = isequal (varargin{:});
-      endif
+      TF = false;
     endfunction
 
-    ## Overload isequaln for categorical support
+    ## Missing values are alike under isequaln, as NaN is.  Every operand must
+    ## be entirely missing and all shapes must agree.
     function TF = isequaln (varargin)
-      ## Check for categorical input
-      idx = find (cellfun ('iscategorical', varargin), 1);
-      if (isempty (idx))
-        if (any (cellfun (@(x) ! isa (x, 'missing'), varargin)))
-          error ("missing.isequaln: unsupported input types.");
+      TF = false;
+      sz = size (varargin{1});
+      for i = 1:numel (varargin)
+        if (! isequal (size (varargin{i}), sz))
+          return;
+        elseif (! allmissing (varargin{i}))
+          return;
         endif
-        data = cellfun (@(x) x.data, varargin, 'UniformOutput', false);
-        TF = isequaln (data{:});
-      else
-        ## Convert first input (missing) to categorical
-        varargin{1} = categorical (varargin{1});
-        ## Call categorical overloaded method
-        TF = isequaln (varargin{:});
-      endif
+      endfor
+      TF = true;
     endfunction
 
   endmethods
@@ -538,8 +529,6 @@ classdef missing
           continue
         elseif (isa (varargin{i}, 'calendarDuration'))
           datatype = 'calendarDuration';
-        elseif (iscellstr (varargin{i}))
-          datatype = 'cellstr';
         elseif (isa (varargin{i}, 'categorical'))
           datatype = 'categorical';
         elseif (isa (varargin{i}, 'datetime'))
@@ -568,14 +557,20 @@ classdef missing
             switch datatype
               case 'calendarDuration'
                 args{i} = calendarDuration (NaN (size (varargin{i})), NaN, NaN);
-              case 'cellstr'
-                args{i} = repmat ({''}, size (varargin{i}));
               case 'categorical'
                 args{i} = categorical (NaN (size (varargin{i})));
               case 'datetime'
                 args{i} = NaT (size (varargin{i}));
               case 'double'
                 args{i} = NaN (size (varargin{i}));
+              case 'duration'
+                ## The result takes its display format from the real operand,
+                ## not from the all-NaN filler built here.
+                k = find (cellfun (@(x) isa (x, 'duration'), varargin), 1);
+                fmt = varargin{k}.Format;
+                args{i} = reshape (duration (NaN (numel (varargin{i}), 3), ...
+                                             'Format', fmt), ...
+                                   size (varargin{i}));
               case 'single'
                 args{i} = single (NaN (size (varargin{i})));
               case 'string'
@@ -685,3 +680,18 @@ classdef missing
   endmethods
 
 endclassdef
+
+## True when every element of V is a missing value.  Each type answers for
+## itself through its own 'ismissing' method; the floating types have no such
+## method and use NaN, and a type carrying no missing marker never qualifies.
+function TF = allmissing (V)
+  if (isa (V, 'missing'))
+    TF = true;
+  elseif (isfloat (V))
+    TF = all (isnan (V)(:));
+  elseif (isobject (V) && ismember ('ismissing', methods (V)))
+    TF = all (ismissing (V)(:));
+  else
+    TF = false;
+  endif
+endfunction

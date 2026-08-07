@@ -1,0 +1,130 @@
+## Copyright (C) 2026 Andreas Bertsatos <abertsatos@biol.uoa.gr>
+##
+## This file is part of the datatypes package for GNU Octave.
+##
+## This program is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free Software
+## Foundation; either version 3 of the License, or (at your option) any later
+## version.
+##
+## This program is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+## details.
+##
+## You should have received a copy of the GNU General Public License along with
+## this program; if not, see <http://www.gnu.org/licenses/>.
+
+################################################################################
+##                  ** Create and convert 'missing' type **                   ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'cellstr'          'dispstrings'      'isequal'          'isequaln'        ##
+## 'double'           'single'           'categorical'      'datetime'        ##
+## 'duration'         'calendarDuration'                                      ##
+##                                                                            ##
+################################################################################
+
+## every conversion keeps the shape of the missing array it was given
+%!assert_equal (size (double (repmat (missing, 2, 3))), [2, 3])
+%!assert_equal (size (single (repmat (missing, 2, 3))), [2, 3])
+%!assert_equal (size (categorical (repmat (missing, 2, 3))), [2, 3])
+%!assert_equal (size (datetime (repmat (missing, 2, 3))), [2, 3])
+%!assert_equal (size (duration (repmat (missing, 2, 3))), [2, 3])
+%!assert_equal (size (calendarDuration (repmat (missing, 2, 3))), [2, 3])
+
+## duration: the numeric form is read as an Nx3 [h m s] matrix, so a scalar
+## missing must not be handed a single-column NaN
+%!assert_equal (class (duration (missing)), 'duration')
+%!assert_equal (size (duration (missing)), [1, 1])
+%!assert_equal (ismissing (duration (missing)), true)
+%!assert_equal (all (ismissing (duration (repmat (missing, 2, 3)))(:)), true)
+%!test  ## the conversion carries duration's default format (vs MATLAB R2024a)
+%! D = duration (missing);
+%! assert_equal (D.Format, 'hh:mm:ss');
+%! assert_equal (cellstr (D), {'NaN'});
+
+## cellstr: a missing value carries no text, so it cannot become one
+%!error<missing.cellstr: cannot convert 'missing' to 'cell' type.> cellstr (missing)
+%!error<missing.cellstr: cannot convert 'missing' to 'cell' type.> cellstr (repmat (missing, 2, 3))
+
+## dispstrings still yields the display placeholder, which is not a conversion
+%!assert_equal (dispstrings (missing), {'<missing>'})
+%!assert_equal (dispstrings (repmat (missing, 2, 2)), repmat ({'<missing>'}, 2, 2))
+
+## isequal: a missing value equals nothing, itself included
+%!assert_equal (isequal (missing, missing), false)
+%!assert_equal (isequal (missing, NaN), false)
+%!assert_equal (isequal (missing, 1), false)
+%!assert_equal (isequal (missing, categorical (NaN)), false)
+%!assert_equal (isequal (missing, string (missing)), false)
+%!assert_equal (isequal (repmat (missing, 2, 2), repmat (missing, 2, 2)), false)
+%!assert_equal (isequal (missing, missing, missing), false)
+
+## isequaln: missing values are alike, each type answering with its own marker
+%!assert_equal (isequaln (missing, missing), true)
+%!assert_equal (isequaln (missing, NaN), true)
+%!assert_equal (isequaln (missing, single (NaN)), true)
+%!assert_equal (isequaln (missing, categorical (NaN)), true)
+%!assert_equal (isequaln (missing, NaT), true)
+%!assert_equal (isequaln (missing, duration (NaN, 0, 0)), true)
+%!assert_equal (isequaln (missing, string (missing)), true)
+%!assert_equal (isequaln (missing, NaN, missing), true)
+%!assert_equal (isequaln (repmat (missing, 2, 2), NaN (2, 2)), true)
+
+## isequaln: a non-missing element or a shape mismatch defeats it
+%!assert_equal (isequaln (missing, 1), false)
+%!assert_equal (isequaln (missing, repmat (missing, 2, 2)), false)
+%!assert_equal (isequaln (missing, NaN (2, 2)), false)
+%!assert_equal (isequaln (repmat (missing, 1, 2), [NaN, 1]), false)
+%!assert_equal (isequaln (missing, NaN, 1), false)
+
+################################################################################
+##                           ** Array Operations **                           ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'cat'                                                                      ##
+##                                                                            ##
+################################################################################
+
+## cat: a cell array carries no missing marker, so concatenation is refused.
+## The bracket forms raise core's own 'cat: missing/horzcat method failed'
+## wrapper, which is not ours to test, so call cat directly.
+%!error<missing.cat: cannot convert 'missing' to 'cell' type.> cat (2, missing, {'a'})
+%!error<missing.cat: cannot convert 'missing' to 'cell' type.> cat (1, missing, {'a'})
+%!error<missing.cat: cannot convert 'missing' to 'cell' type.> cat (2, {'a'}, missing)
+
+## cat: the types that do carry one still concatenate, and the missing element
+## survives as that type's own marker
+%!assert_equal (class ([missing, missing]), 'missing')
+%!assert_equal ([missing, 1], [NaN, 1])
+%!assert_equal (class ([missing, single(1)]), 'single')
+%!assert_equal (class ([missing, categorical(1)]), 'categorical')
+%!assert_equal (class ([missing, NaT]), 'datetime')
+%!assert_equal (class ([missing, duration(1, 0, 0)]), 'duration')
+%!assert_equal (class ([missing, calendarDuration(1, 0, 0)]), 'calendarDuration')
+%!assert_equal (class ([missing, string('a')]), 'string')
+%!assert_equal (ismissing ([missing, duration(1, 0, 0)]), [true, false])
+%!assert_equal (ismissing ([missing, datetime(2020, 1, 1)]), [true, false])
+%!assert_equal (ismissing ([missing, categorical(1)]), [true, false])
+
+## cat: a duration result takes its format from the real operand, not from the
+## all-NaN filler (vs MATLAB R2024a)
+%!test
+%! D = [missing, hours(1)];
+%! assert_equal (D.Format, 'h');
+%! assert_equal (cellstr (D), {'NaN hr', '1 hr'});
+%!test
+%! D = [missing, days(1)];
+%! assert_equal (D.Format, 'd');
+%! assert_equal (cellstr (D), {'NaN days', '1 day'});
+%!test
+%! D = [missing, minutes(1)];
+%! assert_equal (D.Format, 'm');
+%! assert_equal (cellstr (D), {'NaN min', '1 min'});
+%!test
+%! D = [missing, duration(1, 0, 0)];
+%! assert_equal (D.Format, 'hh:mm:ss');
+%! assert_equal (cellstr (D), {'NaN', '01:00:00'});
