@@ -832,6 +832,15 @@
 %!assert_equal (isequaln (missing, categorical (NaN)), true)
 %!assert_equal (isequaln (categorical (NaN), string (missing)), true)
 %!assert_equal (isequaln (repmat (missing, 2), categorical (NaN (2))), true)
+
+## A non-scalar missing operand keeps its shape whichever side it sits on.
+## 'promote' took the size of a fresh 'missing', always 1x1, so it silently
+## collapsed and the two operand orders disagreed with each other.
+%!assert_equal (isequaln (categorical (NaN (1, 3)), repmat (missing, 1, 3)), true)
+%!assert_equal (isequaln (repmat (missing, 1, 3), categorical (NaN (1, 3))), true)
+%!assert_equal (isequaln (categorical (NaN (2, 3)), repmat (missing, 2, 3)), true)
+%!assert_equal (isequaln (categorical (NaN (1, 3)), repmat (missing, 1, 2)), false)
+%!assert_equal (isequal (categorical (NaN (1, 3)), repmat (missing, 1, 3)), false)
 %!test
 %! C1 = categorical ([1, 1, NaN], [1, 2], {'A', 'B'});
 %! C2 = categorical ([1, 1, NaN], [1, 2], {'A', 'B'});
@@ -3606,6 +3615,16 @@
 ## 'permute'          'ipermute'         'transpose'        'ctranspose'      ##
 ##                                                                            ##
 ################################################################################
+
+## Test 'cat' -- a non-scalar missing operand keeps its own shape.  'promote'
+## sized it from a fresh 'missing', always 1x1, so elements vanished with no
+## error and the two operand orders disagreed.
+%!assert_equal (size ([categorical(NaN(1, 3)), repmat(missing, 1, 3)]), [1, 6])
+%!assert_equal (size ([repmat(missing, 1, 3), categorical(NaN(1, 3))]), [1, 6])
+%!assert_equal (size ([categorical(NaN(1, 1)); repmat(missing, 3, 1)]), [4, 1])
+%!assert_equal (size ([categorical(NaN(2, 3)), repmat(missing, 2, 3)]), [2, 6])
+%!assert_equal (ismissing ([categorical({'a'}), repmat(missing, 1, 2)]), ...
+%!              [false, true, true])
 
 %!assert_equal (size (cat (1, categorical, categorical)), [0, 0])
 %!assert_equal (size (cat (2, categorical, categorical)), [0, 0])

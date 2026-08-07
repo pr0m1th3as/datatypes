@@ -4970,7 +4970,9 @@ function varargout = promote (varargin)
     elseif (isnumeric (val) || islogical (val))
       varargout{i} = categorical (val);
     elseif (isa (val, 'missing'))
-      varargout{i} = categorical (nan (size (missing)));
+      ## Shape from VAL, not from a fresh 'missing': the latter is always 1x1
+      ## and silently collapsed every non-scalar missing operand.
+      varargout{i} = categorical (nan (size (val)));
     else
       error ("categorical: invalid input to constructor.");
     endif
