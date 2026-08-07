@@ -22,9 +22,18 @@
 ## Generate a hash code for an array.
 ##
 ## @code{@var{key} = keyHash (@var{X})} generates a @qcode{uint64} scalar that
-## represents the input @var{X}, which may be numeric, logical, or character
-## array or cell array of character vectors.  @code{keyHash} utilizes the 64-bit
+## represents the input @var{X}, which may be a numeric, logical, character,
+## cell, struct or function handle array.  @code{keyHash} utilizes the 64-bit
 ## FNV-1a variant of the Fowler-Noll-Vo non-cryptographic hash function.
+##
+## A @qcode{cell} array is keyed on its elements, each hashed in turn, so a
+## cell may hold any type that @code{keyHash} accepts, nested to any depth.  A
+## @qcode{struct} is keyed on its field names and their values; the order in
+## which its fields were created is @emph{not} part of the key, so two structs
+## differing only in field order are the same key.  A function handle is keyed
+## on its text alone: two named handles for the same function are one key,
+## while distinct anonymous handles never match even when written identically,
+## so nothing a handle captures can be observed through @code{keyMatch}.
 ##
 ## @code{@var{key} = keyHash (@var{X}, @var{base})} also generates a 64-bit
 ## hash code using @var{base} as the offset basis for the FNV-1a hash
@@ -75,10 +84,47 @@ function key = keyHash (x = [], base = [])
     key = __ckeyHash__ (x, key);
   elseif (iscellstr (x))
     ## Passed whole, not flattened: __ckeyHash__ frames each element with its
-    ## length so the boundaries between them are part of the key.
+    ## length so the boundaries between them are part of the key.  This branch
+    ## stays ahead of the general cell one below so that a cellstr keeps the
+    ## hash codes it has had since 1.3.1.
     key = __ckeyHash__ (x, key);
+  elseif (iscell (x))
+    ## Every element is hashed by a recursive call, in column-major order.
+    ## Each one frames itself with its own size and class on the way in, so
+    ## the boundaries between elements are part of the key for free and no
+    ## two different arrangements of the same contents can collide.  An
+    ## element of a class that has its own keyHash method reaches it, which
+    ## is how a cell holding a datetime or categorical is keyed correctly
+    ## without this function knowing about either.
+    for i = 1:numel (x)
+      key = keyHash (x{i}, key);
+    endfor
+  elseif (isstruct (x))
+    ## Field names are hashed SORTED.  Two structs differing only in the
+    ## order their fields were created are one key -- R2024a reports them as
+    ## matching and hashes them alike, and isequaln agrees -- so storage
+    ## order must not reach the hash.  Values follow in that same sorted
+    ## order, element by element.
+    fnames = sort (fieldnames (x));
+    key = __ckeyHash__ (fnames, key);
+    for i = 1:numel (x)
+      for j = 1:numel (fnames)
+        key = keyHash (x(i).(fnames{j}), key);
+      endfor
+    endfor
+  elseif (is_function_handle (x))
+    ## The function text alone.  A named handle is the same key as itself,
+    ## while two anonymous handles never match however they were written, so
+    ## nothing beyond the text can be observed through keyMatch.  The captured
+    ## workspace is deliberately not hashed: R2024a hashes two handles that
+    ## differ only in a captured value alike, and hashing it here would also
+    ## make the key depend on values the handle merely closed over.
+    key = __ckeyHash__ (func2str (x), key);
   else
-    error ("keyHash: unsupported input type.");
+    ## Name the class.  A cell or struct hashes its contents by recursion, so
+    ## this is raised by the innermost frame and names the value that actually
+    ## has no key -- not the container, which does.
+    error ("keyHash: unsupported input type '%s'.", class (x));
   endif
 endfunction
 
@@ -224,6 +270,104 @@ endfunction
 %!error<keyHash: BASE must be a UINT64 scalar.> keyHash (1, 0);
 %!error<keyHash: BASE must be a UINT64 scalar.> keyHash (1, false);
 %!error<keyHash: BASE must be a UINT64 scalar.> keyHash (1, uint64 ([0, 1]));
-%!error<keyHash: unsupported input type.> keyHash (@(x) x);
-%!error<keyHash: unsupported input type.> keyHash (struct ('a', 1));
-%!error<keyHash: unsupported input type.> keyHash ({1, 2});
+## The error names the value that has no key, not the container holding it:
+## a cell and a struct are both hashable, so reporting either would send the
+## caller after the wrong type.
+%!error<keyHash: unsupported input type 'table'.> keyHash (table (1));
+%!error<keyHash: unsupported input type 'table'.> keyHash ({table (1)});
+%!error<keyHash: unsupported input type 'table'.> keyHash ({1, table (1), 3});
+%!error<keyHash: unsupported input type 'table'.> keyHash ({{table (1)}});
+%!error<keyHash: unsupported input type 'table'.> keyHash (struct ('a', table (1)));
+%!error<keyHash: unsupported input type 'table'.> ...
+%! keyHash (struct ('a', 1, 'b', table (1)));
+
+## A struct is keyed on its field names and their values.  The order the
+## fields were created in is NOT part of the key: R2024a reports two structs
+## differing only in field order as one key and hashes them alike.
+%!assert_equal (keyHash (struct ('a', 1)), keyHash (struct ('a', 1)))
+%!assert_equal (keyHash (struct ('a', 1, 'b', 2)), keyHash (struct ('b', 2, 'a', 1)))
+%!assert_equal (keyHash (struct ()), keyHash (struct ()))
+%!assert_equal (isequal (keyHash (struct ('a', 1)), keyHash (struct ('a', 2))), false)
+%!assert_equal (isequal (keyHash (struct ('a', 1)), keyHash (struct ('b', 1))), false)
+%!assert_equal (isequal (keyHash (struct ('a', 1)), keyHash (struct ('a', 1, 'b', 2))), false)
+%!assert_equal (isequal (keyHash (struct ('a', 1)), keyHash (struct ('a', int8 (1)))), false)
+%!test  ## nesting, and a struct array against a scalar of the same field
+%! assert_equal (keyHash (struct ('a', struct ('b', 1))), ...
+%!               keyHash (struct ('a', struct ('b', 1))));
+%! assert_equal (isequal (keyHash (struct ('a', struct ('b', 1))), ...
+%!                        keyHash (struct ('a', struct ('b', 2)))), false);
+%!test
+%! A(1).a = 1; A(2).a = 2;
+%! B(1).a = 1; B(2).a = 2;
+%! assert_equal (keyHash (A), keyHash (B));
+%! assert_equal (isequal (keyHash (A), keyHash (A')), false);
+
+## A cell is keyed on its elements, each framed by its own size and class on
+## the way in, so nesting and shape are part of the key and any type keyHash
+## accepts may appear inside.
+%!assert_equal (keyHash ({1, 2}), keyHash ({1, 2}))
+%!assert_equal (keyHash ({}), keyHash ({}))
+%!assert_equal (keyHash ({1, 'a'}), keyHash ({1, 'a'}))
+%!assert_equal (keyHash ({{1}}), keyHash ({{1}}))
+%!assert_equal (keyHash ({struct('a', 1)}), keyHash ({struct('a', 1)}))
+%!assert_equal (keyHash ({@sin}), keyHash ({@sin}))
+%!assert_equal (isequal (keyHash ({1, 2}), keyHash ({1, 3})), false)
+%!assert_equal (isequal (keyHash ({1, 2}), keyHash ({1; 2})), false)
+%!assert_equal (isequal (keyHash ({{1}}), keyHash ({1})), false)
+%!assert_equal (isequal (keyHash ({1}), keyHash ({int8(1)})), false)
+
+## A cell array of character vectors is hashed by the cellstr path, which sits
+## ahead of the general cell one, so it keeps the codes it has had since 1.3.1
+## and the element boundaries stay part of the key.
+%!assert_equal (isequal (keyHash ({'ab', 'c'}), keyHash ({'a', 'bc'})), false)
+
+## A function handle is keyed on its text alone.  Two named handles for the
+## same function are one key.  What an anonymous handle captures is NOT part
+## of the key -- R2024a hashes two handles differing only in a captured value
+## alike, and distinct anonymous handles never match in any case.
+%!assert_equal (keyHash (@sin), keyHash (@sin))
+%!assert_equal (keyHash (@(x) x + 1), keyHash (@(x) x + 1))
+%!assert_equal (isequal (keyHash (@sin), keyHash (@cos)), false)
+%!assert_equal (isequal (keyHash (@(x) x + 1), keyHash (@(x) x + 2)), false)
+%!assert_equal (isequal (keyHash (@sin), keyHash ('sin')), false)
+%!test
+%! n = 1; f = @(x) x + n;
+%! n = 2; g = @(x) x + n;
+%! assert_equal (keyHash (f), keyHash (g));
+
+## The class is part of every key, so none of the new types collides with
+## another or with a numeric holding the same contents.
+%!assert_equal (isequal (keyHash (struct ('a', 1)), keyHash ({1})), false)
+%!assert_equal (isequal (keyHash ({1}), keyHash (1)), false)
+%!assert_equal (isequal (keyHash (@sin), keyHash (1)), false)
+
+## Frozen hash codes, measured from the 1.3.1 release and baked in.  Hash codes
+## are a published interface here -- this package offers codes that are stable
+## across workers and sessions, which MATLAB's randomly seeded keyHash does not
+## -- so a code changing is a breaking change and must be a deliberate one.
+## 1.3.1 changed many of these on purpose and said so in NEWS; these literals
+## exist so the next change cannot happen by accident.  A failure here is not a
+## test to update: it means stored keys from 1.3.1 no longer match, and either
+## the change is reverted or the release notes carry it.
+%!assert_equal (keyHash (1), uint64 (10584184954000009987))
+%!assert_equal (keyHash (0), uint64 (7866423903081946394))
+%!assert_equal (keyHash (NaN), uint64 (10576514760883123851))
+%!assert_equal (keyHash (Inf), uint64 (10584114585255804483))
+%!assert_equal (keyHash (int8 (1)), uint64 (12242639213500019555))
+%!assert_equal (keyHash (uint64 (7)), uint64 (7587370060813975170))
+%!assert_equal (keyHash (single (1.5)), uint64 (5289544833140628974))
+%!assert_equal (keyHash (true), uint64 (5335886618314126645))
+%!assert_equal (keyHash ([1:5]), uint64 (1432333402695462731))
+%!assert_equal (keyHash ([1:5]'), uint64 (9563671367466119291))
+%!assert_equal (keyHash (zeros (2, 3)), uint64 (11685217659039319009))
+%!assert_equal (keyHash ([]), uint64 (15028164940097692402))
+%!assert_equal (keyHash ('a'), uint64 (9989574163509938906))
+%!assert_equal (keyHash ('hello'), uint64 (10275689077389484113))
+%!assert_equal (keyHash (''), uint64 (15921358368119480423))
+%!assert_equal (keyHash (['ab'; 'cd']), uint64 (17517398146429816181))
+%!assert_equal (keyHash ({}), uint64 (12134391156607149443))
+%!assert_equal (keyHash ({''}), uint64 (17643749256637597450))
+%!assert_equal (keyHash ({'a'}), uint64 (10819011992493875390))
+%!assert_equal (keyHash ({'ab', 'c'}), uint64 (5911896368001593873))
+%!assert_equal (keyHash ({'a', 'bc'}), uint64 (2035578884344404753))
+%!assert_equal (keyHash (1, uint64 (12345)), uint64 (1427258369762746415))

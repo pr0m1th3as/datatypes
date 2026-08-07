@@ -48,15 +48,18 @@ function TF = keyMatch (A, B)
   ## cannot be a key is rejected rather than quietly reported as unequal:
   ## returning false would assert that both operands are keys that merely
   ## differ.
+  ## keyHash's message is passed through rather than restated, so a container
+  ## whose contents cannot be hashed reports the value that has no key instead
+  ## of the container, which does.
   try
     A_key = keyHash (A);
-  catch
-    error ("keyMatch: unsupported input type '%s'.", class (A));
+  catch err
+    error ("keyMatch: %s", regexprep (err.message, '^keyHash: ', ''));
   end_try_catch
   try
     B_key = keyHash (B);
-  catch
-    error ("keyMatch: unsupported input type '%s'.", class (B));
+  catch err
+    error ("keyMatch: %s", regexprep (err.message, '^keyHash: ', ''));
   end_try_catch
   ## Hash codes reject only, never accept: distinct keys may share one.  Class
   ## and size need no separate check, both being part of every hash.
@@ -263,8 +266,61 @@ endfunction
 %! keyMatch (table ([1; 2]), table ([1; 2]))
 %!error<keyMatch: unsupported input type 'table'.> keyMatch (table ([1; 2]), 1)
 %!error<keyMatch: unsupported input type 'table'.> keyMatch (1, table ([1; 2]))
-%!error<keyMatch: unsupported input type 'struct'.> ...
-%! keyMatch (struct ('a', 1), struct ('a', 1))
-%!error<keyMatch: unsupported input type 'cell'.> keyMatch ({1, 2}, {1, 2})
-%!error<keyMatch: unsupported input type 'function_handle'.> ...
-%! keyMatch (@sin, @sin)
+
+## keyHash's message is passed through, so a container whose contents cannot
+## be hashed names the value that has no key rather than the container.  A
+## cell and a struct are both keys in their own right, so naming either would
+## be wrong.
+%!error<keyMatch: unsupported input type 'table'.> ...
+%! keyMatch ({table(1)}, {table(1)})
+%!error<keyMatch: unsupported input type 'table'.> keyMatch ({1}, {table(1)})
+%!error<keyMatch: unsupported input type 'table'.> keyMatch ({table(1)}, {1})
+%!error<keyMatch: unsupported input type 'table'.> ...
+%! keyMatch (struct ('a', table (1)), struct ('a', table (1)))
+## struct, cell and function handle became keys when keyHash learned to hash
+## them; keyMatch follows automatically, asking keyHash rather than keeping a
+## list of its own.  Measured against R2024a.
+
+## A struct is keyed on its field names and values.  Field order is not part
+## of the key, but the class of a value inside one is.
+%!test
+%! assert_equal (keyMatch (struct ('a', 1), struct ('a', 1)), true);
+%! assert_equal (keyHash (struct ('a', 1)), keyHash (struct ('a', 1)));
+%!test
+%! assert_equal (keyMatch (struct ('a', 1, 'b', 2), struct ('b', 2, 'a', 1)), true);
+%! assert_equal (keyHash (struct ('a', 1, 'b', 2)), keyHash (struct ('b', 2, 'a', 1)));
+%!test
+%! assert_equal (keyMatch (struct ('a', 1), struct ('a', 2)), false);
+%! assert_equal (keyMatch (struct ('a', 1), struct ('b', 1)), false);
+%! assert_equal (keyMatch (struct ('a', 1), struct ('a', 1, 'b', 2)), false);
+%! assert_equal (keyMatch (struct ('a', 1), struct ('a', int8 (1))), false);
+
+## A cell is keyed on its elements, so shape and nesting count.
+%!test
+%! assert_equal (keyMatch ({1, 2}, {1, 2}), true);
+%! assert_equal (keyHash ({1, 2}), keyHash ({1, 2}));
+%!test
+%! assert_equal (keyMatch ({1, 2}, {1; 2}), false);
+%! assert_equal (keyMatch ({{1}}, {1}), false);
+%! assert_equal (keyMatch ({1}, {int8(1)}), false);
+%!test
+%! assert_equal (keyMatch ({struct('a', 1)}, {struct('a', 1)}), true);
+%! assert_equal (keyMatch ({@sin}, {@sin}), true);
+
+## A function handle is keyed on its text.  Two named handles for the same
+## function are one key; distinct anonymous handles never match, whatever
+## they capture, so an anonymous handle can never be found again as a key.
+%!test
+%! assert_equal (keyMatch (@sin, @sin), true);
+%! assert_equal (keyHash (@sin), keyHash (@sin));
+%!test
+%! assert_equal (keyMatch (@sin, @cos), false);
+%! assert_equal (keyMatch (@(x) x + 1, @(x) x + 1), false);
+%! assert_equal (keyMatch (@sin, 'sin'), false);
+
+## The class is part of every key, so the new types do not collide with one
+## another or with a numeric holding the same contents.
+%!test
+%! assert_equal (keyMatch (struct ('a', 1), {1}), false);
+%! assert_equal (keyMatch ({1}, 1), false);
+%! assert_equal (keyMatch (@sin, 1), false);
