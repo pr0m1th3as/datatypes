@@ -1025,6 +1025,7 @@ classdef datetime
         M = floor (mod (x, 10000) ./ 100);
         D = mod (x, 100);
         dtCheckIntegerComponents ({Y, M, D});
+        dtCheckYearRange ({Y, M, D});
         if (! isempty (TimeZone))
           [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
            this.Second] = __datetime__ (Y, M, D, 'TimeZone', TimeZone, ...
@@ -1097,6 +1098,7 @@ classdef datetime
                                       'Precision', 'microseconds');
       else
         dtCheckIntegerComponents (args);
+        dtCheckYearRange (args);
         if (dtIsLeapZone (TimeZone))
           ## Let the builtin validate the shape of the positional arguments,
           ## then normalize on the leap-second timeline instead, where a 60th
@@ -6942,6 +6944,61 @@ function dtCheckIntegerComponents (args)
     error (strcat ("datetime: Year, Month, Day, Hour, and Minute components", ...
                    " must be integer values."));
   endif
+endfunction
+
+## Reject a date the underlying calendar cannot represent.  date.h stores a
+## year in a 'short', so one outside [-32767, 32767] wraps there silently and
+## the timezone lookup then throws a C++ exception that no Octave code can
+## catch -- the interpreter aborts and the workspace is lost.  Refusing here
+## keeps it an ordinary, catchable error.
+##
+## The prediction mirrors __datetime__: whole twelvemonths fold into the year,
+## the remainder is applied as months to day 0 of month 0 -- an anchor lying in
+## the PREVIOUS month -- and the days, plus whole days carried by the time
+## components, are added to that.  Both the anchor and the result must be
+## representable.  Intermediate years are deliberately NOT checked: they may
+## wrap and wrap back, which is how datetime (32767, 12, 31) works today.
+function dtCheckYearRange (args)
+  [Y, M, D, h, mi, sec] = dtSplitComponents (args);
+  D = D + fix ((h .* 3600 + mi .* 60 + sec) ./ 86400);
+  yy = Y + fix (M ./ 12);
+  dmi = M - 12 .* fix (M ./ 12) - 1;
+  dy = fix ((dmi - 11 .* (dmi < 0)) ./ 12);
+  base = dtDaysFromCivil (yy + dy, dmi - dy .* 12 + 1, 0);
+  bad = isfinite (Y + M + D) & (abs (dtYearFromDays (base)) > 32767 ...
+                                | abs (dtYearFromDays (base + D)) > 32767);
+  if (any (bad(:)))
+    error (strcat ("datetime: the requested date is outside the range of", ...
+                   " representable dates; the year must fall between", ...
+                   " -32767 and 32767."));
+  endif
+endfunction
+
+## Days between 1970-01-01 and a proleptic Gregorian civil date, and the year a
+## date given as such a day count falls in.  Vectorized, and exact in double
+## precision over any range that can pass dtCheckYearRange.  These predict what
+## __datetime__ will build; they are not a second calendar and nothing else
+## should use them.
+function z = dtDaysFromCivil (y, m, d)
+  y = y - (m <= 2);
+  era = floor (y ./ 400);
+  yoe = y - era .* 400;
+  mp = m + 9 .* (m <= 2) - 3 .* (m > 2);
+  doy = floor ((153 .* mp + 2) ./ 5) + d - 1;
+  doe = yoe .* 365 + floor (yoe ./ 4) - floor (yoe ./ 100) + doy;
+  z = era .* 146097 + doe - 719468;
+endfunction
+
+function y = dtYearFromDays (z)
+  z = z + 719468;
+  era = floor (z ./ 146097);
+  doe = z - era .* 146097;
+  yoe = floor ((doe - floor (doe ./ 1460) + floor (doe ./ 36524) ...
+                - floor (doe ./ 146096)) ./ 365);
+  doy = doe - (365 .* yoe + floor (yoe ./ 4) - floor (yoe ./ 100));
+  mp = floor ((5 .* doy + 2) ./ 153);
+  mo = mp + 3 - 12 .* (mp >= 10);
+  y = yoe + era .* 400 + (mo <= 2);
 endfunction
 
 ## Return the full and abbreviated month- and weekday-name tables for an LDML

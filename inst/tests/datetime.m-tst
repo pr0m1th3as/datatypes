@@ -204,6 +204,30 @@
 %! datetime ([2024, 1, 15.5])
 %!assert_equal (second (datetime ([2024, 1, 1, 0, 0, 30.5])), 30.5)
 
+## Test 'datetime' constructor -- year must be representable.  Before this was
+## validated the out-of-range cases threw a C++ exception out of the timezone
+## lookup that no 'try' could catch, aborting the interpreter.
+%!assert_equal (year (datetime (32767, 1, 1)), 32767)
+%!assert_equal (year (datetime (32767, 12, 31)), 32767)
+%!assert_equal (year (datetime (-32767, 12, 31)), -32767)
+%!assert_equal (year (datetime (32766, 13, 1)), 32767)
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! datetime (32768, 1, 1)
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! datetime (-32767, 1, 1)
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! datetime (32767, 13, 1)
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! datetime (32766, 12, 400)
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! datetime (-32766, -12, 1)
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! datetime ([32768, 1, 1])
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! datetime (32767, 12, 31, 24, 0, 0)
+%!assert_equal (isnat (datetime (NaN, 1, 1)), true)
+%!assert_equal (year (datetime (Inf, 1, 1)), Inf)
+
 ## Test 'datetime' constructor -- ConvertFrom yyyymmdd
 %!assert_equal (char (datetime (20240309, 'ConvertFrom', 'yyyymmdd'), ...
 %!              'yyyy-MM-dd'), '2024-03-09')
