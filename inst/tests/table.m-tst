@@ -1639,6 +1639,89 @@
 %!   if (exist (fn, 'file')); delete (fn); endif
 %! end_unwind_protect
 
+## The Excel serial scale counts a 1900-02-29 that never existed, so the tests
+## below assert the serial written into the sheet rather than a round trip:
+## reader and writer are exact inverses, and an epoch error is invisible from
+## inside the package.  'xlsxWithSerials' does the converse, planting chosen
+## serials in a date-formatted column so the reader can be measured on its own.
+%!function x = xlsxSheetXML (fn)
+%!  dn = tempname ();
+%!  unwind_protect
+%!    unzip (fn, dn);
+%!    x = fileread (fullfile (dn, 'xl', 'worksheets', 'sheet1.xml'));
+%!  unwind_protect_cleanup
+%!    if (exist (dn, 'dir')); rmdir (dn, 's'); endif
+%!  end_unwind_protect
+%!endfunction
+%!function fn = xlsxWithSerials (serials)
+%!  fn = [tempname() '.xlsx'];
+%!  dn = tempname ();
+%!  unwind_protect
+%!    d = datetime (2020, 1, 1) + days ((1:numel (serials))' - 1);
+%!    writetable (table (d, 'VariableNames', {'d'}), fn);
+%!    unzip (fn, dn);
+%!    wf = fullfile (dn, 'xl', 'worksheets', 'sheet1.xml');
+%!    x = fileread (wf);
+%!    for i = 1:numel (serials)
+%!      x = strrep (x, sprintf ('<v>%d</v>', 43830 + i), ...
+%!                     sprintf ('<v>%.17g</v>', serials(i)));
+%!    endfor
+%!    fid = fopen (wf, 'w');
+%!    fputs (fid, x);
+%!    fclose (fid);
+%!    delete (fn);
+%!    ent = dir (dn);
+%!    ent = ent(! ismember ({ent.name}, {'.', '..'}));
+%!    zip (fn, {ent.name}, dn);
+%!  unwind_protect_cleanup
+%!    if (exist (dn, 'dir')); rmdir (dn, 's'); endif
+%!  end_unwind_protect
+%!endfunction
+
+## '.xlsx' dates go out on Excel's 1900 serial scale: 1900-03-01 is 61, and
+## every earlier date is one less than its plain day count
+%!test
+%! d = [datetime(2020, 1, 1); datetime(1900, 3, 1); datetime(1900, 2, 28); ...
+%!      datetime(1900, 1, 1); datetime(1899, 12, 31)];
+%! fn = [tempname() '.xlsx'];
+%! unwind_protect
+%!   writetable (table (d, 'VariableNames', {'d'}), fn);
+%!   v = regexp (xlsxSheetXML (fn), '<v>([^<]*)</v>', 'tokens');
+%!   assert_equal (cellfun (@(c) c{1}, v, 'UniformOutput', false), ...
+%!                 {'43831', '61', '59', '1', '0'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file')); delete (fn); endif
+%! end_unwind_protect
+
+## A date below serial 0 has no Excel serial at all and is written as text
+%!test
+%! d = [datetime(1899, 12, 30); datetime(1850, 6, 15); ...
+%!      datetime(1899, 6, 15, 6, 30, 0)];
+%! fn = [tempname() '.xlsx'];
+%! unwind_protect
+%!   writetable (table (d, 'VariableNames', {'d'}), fn, ...
+%!               'WriteVariableNames', false);
+%!   t = regexp (xlsxSheetXML (fn), '<is><t[^>]*>([^<]*)</t></is>', 'tokens');
+%!   assert_equal (cellfun (@(c) c{1}, t, 'UniformOutput', false), ...
+%!                 {'1899-12-30', '1850-06-15', '1899-06-15 06:30:00'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file')); delete (fn); endif
+%! end_unwind_protect
+
+## Reading applies the same scale: serials 60 and 61 are both 1900-03-01, since
+## 60 is the phantom 1900-02-29, and 60.5 therefore lands a day before 60
+%!test
+%! fn = xlsxWithSerials ([61, 60.5, 60, 59, 1, 0, -1]);
+%! unwind_protect
+%!   R = readtable (fn);
+%!   e = [datetime(1900, 3, 1); datetime(1900, 2, 28, 12, 0, 0); ...
+%!        datetime(1900, 3, 1); datetime(1900, 2, 28); datetime(1900, 1, 1); ...
+%!        datetime(1899, 12, 31); datetime(1899, 12, 30)];
+%!   assert_equal (R.d, e);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file')); delete (fn); endif
+%! end_unwind_protect
+
 ################################################################################
 ##                         ** Summary Information **                          ##
 ################################################################################

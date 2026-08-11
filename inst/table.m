@@ -949,6 +949,13 @@ classdef table
     ## other parts; for Excel (@qcode{.xlsx}, @qcode{.xlsm}) the workbook is
     ## read back and rewritten, so only its cell values are preserved.
     ##
+    ## Dates written to Excel use its 1900 serial date system, which counts a
+    ## 29 February 1900 that never existed: 1900-03-01 is serial 61, and every
+    ## earlier date is one less than its plain day count.  That system has no
+    ## serial below 0 (1899-12-31), so any earlier date is written as text
+    ## rather than as a date, as MATLAB does.  MATLAB spells that text in the
+    ## datetime display format; here it is written in ISO 8601 form.
+    ##
     ## Nested tables and structures are not supported, and the legacy binary
     ## formats @qcode{.xls} and @qcode{.xlsb} are not supported either; use
     ## @qcode{.xlsx}, @qcode{.ods}, or a text format.

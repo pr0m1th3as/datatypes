@@ -50,11 +50,18 @@ civil_from_days (long z, long &y, unsigned &m, unsigned &d)
 }
 
 // Excel serial -> ISO datetime "Y-M-DThh:mm:ss" (whole-second resolution), the
-// form the .m layer's datetime parser expects.
+// form the .m layer's datetime parser expects.  25569 is the serial of
+// 1970-01-01 in Excel's 1900 date system, which wrongly treats 1900 as a leap
+// year: serials above 60 span the nonexistent 1900-02-29, so every serial up to
+// and including 60 -- serial 60 being that phantom date itself -- counts from
+// the day after the 1899-12-30 epoch.  Serials 60 and 61 therefore both give
+// 1900-03-01, and a fractional 60.5 lands a day earlier than 60; this matches
+// both Excel and MATLAB, and '__datetime__.cc' applies the same rule to
+// datetime (..., 'ConvertFrom', 'excel').
 static string
 serial_to_iso_datetime (double serial)
 {
-  double days = serial - 25569.0;
+  double days = serial - (serial <= 60.0 ? 25568.0 : 25569.0);
   long intdays = (long) floor (days);
   long secs = (long) llround ((days - intdays) * 86400.0);
   if (secs >= 86400) { secs -= 86400; intdays++; }

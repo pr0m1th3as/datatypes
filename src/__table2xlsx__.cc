@@ -42,8 +42,12 @@ days_from_civil (long y, unsigned m, unsigned d)
 }
 
 // Excel serial number (1900 date system) for an ISO datetime "Y-M-DThh:mm:ss".
-// 25569 is the serial of 1970-01-01.  'date_only' reports whether the time part
-// is exactly midnight, so the caller can pick a date vs date-and-time format.
+// 25569 is the serial of 1970-01-01.  The 1900 system wrongly treats 1900 as a
+// leap year, so serial 61 (1900-03-01) counts the nonexistent 1900-02-29 and
+// every earlier date is one less than the plain day count: 1900-02-28 is 59,
+// 1900-01-01 is 1 and 1899-12-31 is 0.  'date_only' reports whether the time
+// part is exactly midnight, so the caller can pick a date vs date-and-time
+// format.
 static bool
 iso_datetime_to_serial (const string &s, double &serial, bool &date_only)
 {
@@ -52,6 +56,8 @@ iso_datetime_to_serial (const string &s, double &serial, bool &date_only)
   if (sscanf (s.c_str (), "%d-%d-%dT%d:%d:%lf", &Y, &Mo, &D, &h, &mi, &sec) != 6)
     return false;
   double day = (double) days_from_civil (Y, (unsigned) Mo, (unsigned) D) + 25569.0;
+  if (day < 61.0)
+    day -= 1.0;
   serial = day + (h * 3600.0 + mi * 60.0 + sec) / 86400.0;
   date_only = (h == 0 && mi == 0 && sec == 0.0);
   return true;
@@ -163,6 +169,25 @@ emit_cell (ostringstream &oss, long row, long col, const octave_value &ov,
       string str = ov.string_value ();
       if (str.empty () || ! iso_datetime_to_serial (str, serial, date_only))
         return;
+      // Excel's 1900 date system has no serial below 0 (1899-12-31), so an
+      // earlier date cannot be stored as a date at all and goes out as text, as
+      // MATLAB does.  MATLAB writes it in the datetime's display format; the
+      // ISO form used here is what this layer receives and is unambiguous.
+      if (serial < 0.0)
+      {
+        string txt = str;
+        size_t tpos = txt.find ('T');
+        if (tpos != string::npos)
+        {
+          if (date_only)
+            txt.erase (tpos);
+          else
+            txt[tpos] = ' ';
+        }
+        oss << "<c r=\"" << ref << "\" t=\"inlineStr\"><is><t xml:space="
+            << "\"preserve\">" << xml_escape (txt) << "</t></is></c>";
+        return;
+      }
       char tmp[32];
       snprintf (tmp, 32, "%.11g", serial);
       oss << "<c r=\"" << ref << "\" s=\"" << (date_only ? 1 : 2) << "\"><v>"
