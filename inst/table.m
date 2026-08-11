@@ -2782,7 +2782,7 @@ classdef table
               idc += 1;
             elseif (iscellstr (newNames) && idc == 1)
               varNames = newNames;
-            elseif
+            else
               error ("table.splitvars: invalid input for 'NewVariableNames'.");
             endif
             if (numel (varNames) != col)
