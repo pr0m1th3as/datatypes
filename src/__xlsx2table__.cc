@@ -60,9 +60,11 @@ serial_to_iso_datetime (double serial)
   if (secs >= 86400) { secs -= 86400; intdays++; }
   long y;  unsigned mo, d;
   civil_from_days (intdays, y, mo, d);
-  long h = secs / 3600, mi = (secs % 3600) / 60, s = secs % 60;
+  unsigned h = (unsigned) (secs / 3600) % 24, mi = (unsigned) (secs / 60) % 60;
+  unsigned s = (unsigned) secs % 60;
   char buf[48];
-  snprintf (buf, 48, "%04ld-%02u-%02uT%02ld:%02ld:%02ld", y, mo, d, h, mi, s);
+  snprintf (buf, sizeof (buf), "%04ld-%02u-%02uT%02u:%02u:%02u",
+            y, mo, d, h, mi, s);
   return buf;
 }
 
