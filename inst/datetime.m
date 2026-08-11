@@ -1933,7 +1933,14 @@ classdef datetime
     ##
     ## @code{@var{E} = exceltime (@var{T}, @var{dateType})} selects the date
     ## system: @qcode{'1900'} (default) or @qcode{'1904'}.  The 1904 system
-    ## counts days from 1904-01-01 and has no leap-year anomaly.
+    ## counts days from 1904-01-01 and has no leap-year anomaly, so a date
+    ## before 1900-03-01 is a plain day count and its serial is one greater than
+    ## MATLAB returns; MATLAB derives the 1904 serial from the 1900 one and
+    ## carries the nonexistent 1900-02-29 into a system that never had it.
+    ## Excel stores no negative serial in either system, so this affects only
+    ## dates neither can represent, where the value returned here is the one
+    ## @code{datetime (@var{E}, 'ConvertFrom', 'excel1904')} converts back
+    ## exactly.
     ##
     ## The time zone of a zoned @var{T} is ignored; its wall-clock components are
     ## used.  Not-A-Time (@qcode{NaT}) values are returned as @qcode{NaN}.
@@ -1946,6 +1953,10 @@ classdef datetime
       endif
       dn = datenum (this);
       if (strcmpi (dateType, '1904'))
+        ## The 1904 system has no leap-year anomaly, so this is a plain day
+        ## count.  MATLAB routes it through the 1900 serial and so returns one
+        ## less for a date before 1900-03-01 -- a region outside both systems,
+        ## and one MATLAB's own 'ConvertFrom' refuses to convert back.
         out = dn - datenum (1904, 1, 1);
       else
         ## Excel's 1900 system counts days from the serial-0 epoch 1899-12-30,
