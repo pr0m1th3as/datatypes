@@ -237,6 +237,18 @@ template <typename ZonedType> RowVector tz2vector (const ZonedType& to, string p
 // bare wall clock, which is what every mode here starts from -- some going
 // on to resolve it against a zone, others already knowing the offset and
 // needing only the arithmetic.  Callers must screen NaN/Inf beforehand.
+// Whole days carried by the time components.  The division must FLOOR, and in
+// 64 bits: truncating toward zero and then taking one more day off whenever the
+// time is negative takes a day too many every time that division came out
+// exact, so an hour component of -24 landed two days back rather than one.  The
+// seconds left behind are read off by 'seconds2vector', which answers modulo a
+// day whatever the sign it is given, so only this count has to be right.
+long
+time_extra_days (double time_sec)
+{
+  return (long) floor (time_sec / 86400.0);
+}
+
 auto
 components2localtime (double Yv, double Mv, double Dv, double hv, double mv,
                       double sv, double xv, string precision)
@@ -245,13 +257,7 @@ components2localtime (double Yv, double Mv, double Dv, double hv, double mv,
   // calculate extra days to add later and map remaining hours, minutes, and
   // seconds to a local_time variable.
   double time_sec = hv * 3600 + mv * 60 + sv + xv / 1000;
-  int extra_days = (int)time_sec / 86400;
-  // Subtract one day for negative time, because it goes missing from the
-  // conversion in 'seconds2vector' below.
-  if (time_sec < 0)
-  {
-    extra_days -= 1;
-  }
+  long extra_days = time_extra_days (time_sec);
   time_sec = remainder (time_sec, 86400);
   RowVector HMS = seconds2vector (time_sec, precision);
   int tmp_h = (int)HMS(3);
@@ -639,6 +645,10 @@ a repeated clock when an offset is given. \n\
     timezone = "UTC";
   }
   string to_tzone = timezone;
+  // Whether a zone was NAMED, which is not the same question as which zone is
+  // in force: the defaults above are the machine's, and an unzoned datetime
+  // must not be resolved against them.
+  bool haveZone = false;
   string precision = "milliseconds";
   bool doLeapSec = false;
   bool doConvert = false;
@@ -735,6 +745,7 @@ a repeated clock when an offset is given. \n\
     {
       if (args(nargin - 1).is_string ())
       {
+        haveZone = true;
         if (args(nargin - 1).string_value () == "UTCLeapSeconds")
         {
           timezone = "UTC";
@@ -762,6 +773,7 @@ a repeated clock when an offset is given. \n\
     {
       if (args(nargin - 1).is_string ())
       {
+        haveZone = true;
         if (args(nargin - 1).string_value () == "UTCLeapSeconds")
         {
           to_tzone = "UTC";
@@ -1320,7 +1332,7 @@ a repeated clock when an offset is given. \n\
           // Aggregate hours, minutes, and seconds into seconds, calculate extra
           // days for later and retrieve remaining hours, minutes, and seconds
           double time_sec = YMDhms(i,3) * 3600 + YMDhms(i,4) * 60 + YMDhms(i,5);
-          int extra_days = (int)time_sec / 86400;
+          long extra_days = time_extra_days (time_sec);
           time_sec = remainder (time_sec, 86400);
           RowVector OUT = seconds2vector (time_sec, precision);
           h(i) = OUT(3); m(i) = OUT(4); s(i) = OUT(5);
@@ -1656,6 +1668,51 @@ a repeated clock when an offset is given. \n\
       return retval;
     }
 
+    // No zone was named, so there is no zone to resolve the wall clock
+    // against: normalize the components and hand them straight back.  The path
+    // below instead read the clock in the machine's own zone and wrote it back
+    // out in the same one, which is the identity everywhere EXCEPT where
+    // 'resolve_local' moves a clock -- so an unzoned wall clock falling in the
+    // machine's spring-forward gap was silently shifted past it, and the answer
+    // an unzoned datetime gave depended on where the code ran.  The matrix
+    // forms of this constructor never consulted a zone, so the two spellings
+    // also disagreed with each other.
+    if (! haveZone)
+    {
+      for (int i = 0; i < sz.numel (); i++)
+      {
+        RowVector tmp(7);
+        tmp(0) = Y(i); tmp(1) = M(i); tmp(2) = D(i);
+        tmp(3) = h(i); tmp(4) = m(i); tmp(5) = s(i); tmp(6) = x(i);
+        double out = check_nan_inf (tmp);
+        if (isnan (out))
+        {
+          Y(i) = NAN; M(i) = NAN; D(i) = NAN;
+          h(i) = NAN; m(i) = NAN; s(i) = NAN;
+        }
+        else if (isinf (out))
+        {
+          Y(i) = out; M(i) = out; D(i) = out;
+          h(i) = out; m(i) = out; s(i) = out;
+        }
+        else
+        {
+          auto lt = components2localtime (Y(i), M(i), D(i), h(i), m(i), s(i),
+                                          x(i), precision);
+          RowVector OUT = localtime2vector (lt, precision);
+          Y(i) = OUT(0); M(i) = OUT(1); D(i) = OUT(2);
+          h(i) = OUT(3); m(i) = OUT(4); s(i) = OUT(5);
+        }
+      }
+      retval(0) = Y;
+      retval(1) = M;
+      retval(2) = D;
+      retval(3) = h;
+      retval(4) = m;
+      retval(5) = s;
+      return retval;
+    }
+
     const time_zone *tzFrom = locate_zone (timezone);
     const time_zone *tzTo = locate_zone (to_tzone);
     local_cache lcn;
@@ -1682,13 +1739,7 @@ a repeated clock when an offset is given. \n\
         // calculate extra days to add later and map remaining hours, minutes,
         // and seconds to a local_time variable
         double time_sec = h(i) * 3600 + m(i) * 60 + s(i) + x(i) / 1000;
-        int extra_days = (int)time_sec / 86400;
-        // Subtract one day for negative time, because it goes missing
-        // from the conversion in 'seconds2vector' below.
-        if (time_sec < 0)
-        {
-          extra_days -= 1;
-        }
+        long extra_days = time_extra_days (time_sec);
         time_sec = remainder (time_sec, 86400);
         RowVector HMS = seconds2vector (time_sec, precision);
         int tmp_h = (int)HMS(3);
