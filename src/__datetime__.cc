@@ -416,11 +416,37 @@ struct local_fold
   string abbrev;
 };
 
+// Whole years to move a date by before a timezone may be asked about it.
+// 'date.h' holds a year in a 'short', and there is no zone DATA out beyond its
+// range in any case -- only the rule the database carries for all future time.
+// That rule is written as an nth weekday of a month, so it repeats exactly on
+// the Gregorian calendar's 400-year period, over which weekday and leap year
+// both return to where they started.  A future date is therefore moved into
+// [2038, 2438), where that rule governs, and a past one into [1400, 1800),
+// which is before any zone had a transition and so answers with local mean
+// time.  R2026a extrapolates the same way and agrees period for period: its
+// March transition falls on the same day at 40000 as at 40400, and at 2040 as
+// at 2440.
+double
+zone_year_shift (double Yv)
+{
+  if (Yv > 32767)
+  {
+    return 400.0 * floor ((Yv - 2038.0) / 400.0);
+  }
+  if (Yv < -32767)
+  {
+    return 400.0 * floor ((Yv - 1400.0) / 400.0);
+  }
+  return 0.0;
+}
+
 local_fold
 components2fold (double Yv, double Mv, double Dv, double hv, double mv,
                  double sv, double xv, const time_zone *tz, string precision,
                  double srcOff, bool haveSrc, local_cache& lc)
 {
+  Yv -= zone_year_shift (Yv);
   auto lt = components2localtime (Yv, Mv, Dv, hv, mv, sv, xv, precision);
   const local_info& info = cached_local_info (tz, lt, lc);
   // 'resolve_local' shifts a clock inside a gap forward past it, which lands
@@ -1249,10 +1275,18 @@ a repeated clock when an offset is given. \n\
       }
       else
       {
+        // Read the instant on the calendar first, in 64 bits, so that the year
+        // is known before the zone is asked about it; a year outside what
+        // 'date.h' holds is then moved by a whole multiple of 400 -- 146097
+        // days exactly, so the wall clock and its transitions are untouched --
+        // and put back on the answer.
+        RowVector U = seconds2vector (P(i), precision);
+        double sh = zone_year_shift (U(0));
         RowVector C(6);
         double off;
-        sys2components (P(i), tzp, C, off, zc);
-        Y(i) = C(0); M(i) = C(1); D(i) = C(2);
+        sys2components (P(i) - (sh / 400.0) * 146097.0 * 86400.0, tzp, C,
+                        off, zc);
+        Y(i) = C(0) + sh; M(i) = C(1); D(i) = C(2);
         h(i) = C(3); m(i) = C(4); s(i) = C(5); OFF(i) = off;
       }
     }
@@ -1601,14 +1635,22 @@ a repeated clock when an offset is given. \n\
         }
         else
         {
-          auto lt = components2localtime (Y(i), M(i), D(i), h(i), m(i), s(i),
-                                          x(i), precision);
-          double p = (double) lt.time_since_epoch ().count () / 1000000.0
-                     - OF(i);
+          // Counted on the calendar rather than as a chrono time point, and
+          // with a year outside 'date.h''s range moved by a whole multiple of
+          // 400 before the target zone is asked about it -- 146097 days
+          // exactly, so the instant keeps its place in the year.
+          long dnum;
+          RowVector hms;
+          components2civil (Y(i), M(i), D(i), h(i), m(i), s(i), x(i),
+                            precision, dnum, hms);
+          double p = (double) dnum * 86400.0 + hms(3) * 3600 + hms(4) * 60
+                     + hms(5) - OF(i);
+          double sh = zone_year_shift (Y(i));
           RowVector C(6);
           double off;
-          sys2components (p, tzp, C, off, zc);
-          rY(i) = C(0); rM(i) = C(1); rD(i) = C(2);
+          sys2components (p - (sh / 400.0) * 146097.0 * 86400.0, tzp, C, off,
+                          zc);
+          rY(i) = C(0) + sh; rM(i) = C(1); rD(i) = C(2);
           rh(i) = C(3); rm(i) = C(4); rs(i) = C(5); rOFF(i) = off;
         }
       }
@@ -1816,8 +1858,13 @@ a repeated clock when an offset is given. \n\
         }
         double tmp_frac_sec = HMS(5) - tmp_s;
         int tmp_micro = (int)(round (tmp_frac_sec * pr));
-        // Fix years / months
-        int tmp_Y = (int)Y(i) + ((int)M(i) / 12);
+        // Fix years / months.  A year outside what 'date.h' holds is moved by
+        // a whole multiple of 400 first, and put back on the answer below: the
+        // zone's transitions repeat exactly over that period, so the clock
+        // resolves as it would have done, and only a year the database could
+        // never have covered is moved.
+        double sh = zone_year_shift (Y(i));
+        int tmp_Y = (int)(Y(i) - sh) + ((int)M(i) / 12);
         int tmp_M = (int)M(i) % 12;
         int tmp_D = (int)D(i) + (int)extra_days;
         // Add/subtract months and days accordingly
@@ -1849,7 +1896,7 @@ a repeated clock when an offset is given. \n\
         RowVector OUT(6);
         double dropOff;
         sys2components (sysp, tzTo, OUT, dropOff, precision, zcn);
-        Y(i) = OUT(0); M(i) = OUT(1); D(i) = OUT(2);
+        Y(i) = OUT(0) + sh; M(i) = OUT(1); D(i) = OUT(2);
         h(i) = OUT(3); m(i) = OUT(4); s(i) = OUT(5);
       }
     }
