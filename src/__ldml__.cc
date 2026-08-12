@@ -651,10 +651,16 @@ ldml_parse (const Cell& strs, const string& fmt, double pivot, int lidx,
       else
       {
         // Numeric field.  Butted against another numeric field, take exactly
-        // the run length; otherwise take up to the field's natural width.
+        // the run length; otherwise take up to the field's natural width.  A
+        // year standing free is the exception: it takes every digit the text
+        // offers, and what bounds it is its VALUE, checked below.  A width
+        // would be the wrong instrument, since leading zeros carry no value and
+        // the text may hold any number of them -- '00002024' is the year 2024,
+        // and is what this renderer emits for it under 'uuuuuuuu'.
         bool nextNum = (t < nt - 1) && toks[t+1].sym != '\0'
           && ! (((toks[t+1].sym == 'M' || toks[t+1].sym == 'e')
                  && toks[t+1].n >= 3) || toks[t+1].sym == 'a');
+        bool isYear = (tk.sym == 'y' || tk.sym == 'u');
         int w;
         if (nextNum)
         {
@@ -666,7 +672,7 @@ ldml_parse (const Cell& strs, const string& fmt, double pivot, int lidx,
           {
             case 'y':
             case 'u':
-              w = (tk.n == 2 ? 2 : 6);
+              w = (tk.n == 2 ? 2 : -1);
               break;
             case 'D':
               w = 3;
@@ -680,9 +686,19 @@ ldml_parse (const Cell& strs, const string& fmt, double pivot, int lidx,
           }
         }
         size_t j = pos;
+        bool neg = false;
+        // 'u' is the proleptic year and carries a sign; 'y' is the year within
+        // an era and does not.  MATLAB draws the line in the same place, so
+        // 'uuuu-MM-dd' reads '-1000-03-15' and 'yyyy-MM-dd' refuses it.
+        if (tk.sym == 'u' && tk.n != 2 && j < L && s[j] == '-')
+        {
+          neg = true;
+          j++;
+        }
+        size_t start = j;
         double val = 0;
         int ndig = 0;
-        while (j < L && (j - pos) < static_cast<size_t> (w)
+        while (j < L && (w < 0 || (j - start) < static_cast<size_t> (w))
                && s[j] >= '0' && s[j] <= '9')
         {
           val = val * 10 + (s[j] - '0');
@@ -694,6 +710,22 @@ ldml_parse (const Cell& strs, const string& fmt, double pivot, int lidx,
         {
           ok = false;
           break;
+        }
+        if (isYear)
+        {
+          // At most six significant digits, whatever the pattern's width and
+          // however many zeros pad the text.  This is MATLAB's bound, and it
+          // does not move with the calendar: year 1000000 is refused there in
+          // text while the same year builds happily from components.
+          if (val > 999999)
+          {
+            ok = false;
+            break;
+          }
+          if (neg)
+          {
+            val = -val;
+          }
         }
         switch (tk.sym)
         {
@@ -820,7 +852,18 @@ static string
 zeropad (int width, long value)
 {
   char buf[64];
-  snprintf (buf, sizeof (buf), "%0*ld", width, value);
+  if (value < 0)
+  {
+    // The sign sits OUTSIDE the padded field, so 'uuuuuuuu' renders year
+    // -32767 as '-00032767' and not '-0032767'.  Counting the sign against the
+    // width would also cost the field a digit, which is what stopped the
+    // rendered text from being readable back.
+    snprintf (buf, sizeof (buf), "-%0*ld", width, -value);
+  }
+  else
+  {
+    snprintf (buf, sizeof (buf), "%0*ld", width, value);
+  }
   return string (buf);
 }
 

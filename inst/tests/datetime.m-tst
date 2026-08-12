@@ -304,6 +304,88 @@
 %!error <datetime: 'PivotYear' must be an integer value.> ...
 %! datetime ('20', 'InputFormat', 'yy', 'PivotYear', 50.5)
 
+## Test text detection of a year wider than four digits, and of a signed one.
+## R2026a-verified: the year is bounded by its VALUE at six significant digits,
+## so leading zeros cost nothing and 1000000 is refused in text even though the
+## same year builds from components.
+%!assert_equal (datevec (datetime ('32767-03-15')), [32767, 3, 15, 0, 0, 0])
+%!assert_equal (datevec (datetime ('0032767-03-15')), [32767, 3, 15, 0, 0, 0])
+%!assert_equal (datevec (datetime ('00032767-03-15')), [32767, 3, 15, 0, 0, 0])
+%!assert_equal (datevec (datetime ('10000-03-15')), [10000, 3, 15, 0, 0, 0])
+%!assert_equal (datevec (datetime ('-1000-03-15')), [-1000, 3, 15, 0, 0, 0])
+%!assert_equal (datevec (datetime ('-32767-03-15')), [-32767, 3, 15, 0, 0, 0])
+%!assert_equal (datevec (datetime ('32767-03-15 12:34:56')), ...
+%!              [32767, 3, 15, 12, 34, 56])
+%!assert_equal (datevec (datetime ('32767-03-15T12:34:56')), ...
+%!              [32767, 3, 15, 12, 34, 56])
+%!assert_equal (datevec (datetime ('15-Mar-32767')), [32767, 3, 15, 0, 0, 0])
+%!assert_equal (datevec (datetime ('March 15, 32767')), [32767, 3, 15, 0, 0, 0])
+%!assert_equal (datevec (datetime ('15 March 32767')), [32767, 3, 15, 0, 0, 0])
+%!assert_equal (datevec (datetime ('03/15/32767')), [32767, 3, 15, 0, 0, 0])
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ('1000000-03-15')
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ('10000000-03-15')
+
+## Test the two shapes whose year stays narrow, because MATLAB refuses them too:
+## a year-first slash date and a bare year.
+%!error <datetime: could not recognize the date/time format of '32767/03/15'.> ...
+%! datetime ('32767/03/15')
+%!error <datetime: could not recognize the date/time format of '32767'.> ...
+%! datetime ('32767')
+
+## Test the year field under an explicit 'InputFormat'.  Its width is set by the
+## text, not by the count of pattern letters, and the six-digit bound applies
+## whatever that count is.
+%!assert_equal (datevec (datetime ('32767-03-15', 'InputFormat', 'yyyy-MM-dd')), ...
+%!              [32767, 3, 15, 0, 0, 0])
+%!assert_equal (datevec (datetime ('00002024-03-15', ...
+%!              'InputFormat', 'uuuuuuuu-MM-dd')), [2024, 3, 15, 0, 0, 0])
+%!assert_equal (datevec (datetime ('00032767-03-15', ...
+%!              'InputFormat', 'uuuuuuuu-MM-dd')), [32767, 3, 15, 0, 0, 0])
+%!assert_equal (datevec (datetime ('2024-03-15', ...
+%!              'InputFormat', 'uuuuuuuu-MM-dd')), [2024, 3, 15, 0, 0, 0])
+%!assert_equal (datevec (datetime ('-1000-03-15', 'InputFormat', 'uuuu-MM-dd')), ...
+%!              [-1000, 3, 15, 0, 0, 0])
+%!assert_equal (datevec (datetime ('-32767-03-15', ...
+%!              'InputFormat', 'uuuuuuuu-MM-dd')), [-32767, 3, 15, 0, 0, 0])
+%!error <datetime: could not parse the date/time string '1000000-03-15' with 'InputFormat' 'yyyy-MM-dd'.> ...
+%! datetime ('1000000-03-15', 'InputFormat', 'yyyy-MM-dd')
+%!error <datetime: could not parse the date/time string '1000000-03-15' with 'InputFormat' 'yyyyyyy-MM-dd'.> ...
+%! datetime ('1000000-03-15', 'InputFormat', 'yyyyyyy-MM-dd')
+%!error <datetime: could not parse the date/time string '-1000-03-15' with 'InputFormat' 'yyyy-MM-dd'.> ...
+%! datetime ('-1000-03-15', 'InputFormat', 'yyyy-MM-dd')
+
+## Test that a year butted against another numeric field still takes exactly the
+## pattern's width, which is what keeps 'yyyyMMdd' from eating its neighbours.
+%!assert_equal (datevec (datetime ('000100000315', ...
+%!              'InputFormat', 'uuuuuuuuMMdd')), [10000, 3, 15, 0, 0, 0])
+%!assert_equal (datevec (datetime ('20240315', 'InputFormat', 'yyyyMMdd')), ...
+%!              [2024, 3, 15, 0, 0, 0])
+%!error <datetime: could not parse the date/time string '100000315' with 'InputFormat' 'yyyyMMdd'.> ...
+%! datetime ('100000315', 'InputFormat', 'yyyyMMdd')
+
+## Test that a rendered year can be read back, which a padding width counting
+## the sign, and a parser counting characters, each used to prevent.
+%!assert_equal (char (datetime (2024, 3, 15), 'uuuuuuuu-MM-dd'), '00002024-03-15')
+%!assert_equal (char (datetime (32767, 3, 15), 'uuuuuuuu-MM-dd'), '00032767-03-15')
+%!assert_equal (char (datetime (-32767, 3, 15), 'uuuuuuuu-MM-dd'), ...
+%!              '-00032767-03-15')
+%!assert_equal (year (datetime (char (datetime (2024, 3, 15), 'uuuuuuuu-MM-dd'), ...
+%!                              'InputFormat', 'uuuuuuuu-MM-dd')), 2024)
+%!assert_equal (year (datetime (char (datetime (32767, 3, 15), 'uuuuuuuu-MM-dd'), ...
+%!                              'InputFormat', 'uuuuuuuu-MM-dd')), 32767)
+%!assert_equal (year (datetime (char (datetime (-32766, 3, 15), 'uuuuuuuu-MM-dd'), ...
+%!                              'InputFormat', 'uuuuuuuu-MM-dd')), -32766)
+%!assert_equal (year (datetime (char (datetime (32767, 3, 15)))), 32767)
+
+## Test that an element the format cannot read becomes NaT without costing the
+## rest of the array, as it does for any other unreadable text.
+%!test
+%! t = datetime ({'32767-03-15', '1000000-03-15'}, 'InputFormat', 'uuuu-MM-dd');
+%! assert_equal (isnat (t), [false, true]);
+%! assert_equal (year (t(1)), 32767);
+
 ## Test 'datetime' constructor -- 'InputFormat' LDML parsing (MATLAB-verified)
 %!assert_equal (datevec (datetime ('09.03.2024', 'InputFormat', 'dd.MM.yyyy')), ...
 %!              [2024, 3, 9, 0, 0, 0])

@@ -7186,30 +7186,41 @@ endfunction
 ## 9th of March.  The whole set decides, since one string past the twelfth of a
 ## month settles it for all of them, and only when nothing does is the American
 ## reading assumed and a warning raised -- both as MATLAB does.
+##
+## A year is matched as four digits OR MORE and may carry a sign, which is why
+## the year token emitted is 'uuuu' rather than 'yyyy': the two parse a digit
+## run identically, but only 'u' accepts the sign.  How wide a year may be is
+## not settled here but in the parser, which bounds its VALUE at six
+## significant digits -- so 32767, 0032767 and 100000 are read and 1000000 is
+## refused, as MATLAB does.  Two shapes deliberately keep the narrow year,
+## because MATLAB refuses them too: a year-first SLASH date (32767/03/15) and a
+## bare year standing alone (32767).
 function fmt = dtDetectFormat (strs)
   persistent shapes;
   if (isempty (shapes))
     shapes = {
-      '^\d{4}-\d{1,2}-\d{1,2}$',                   'yyyy-MM-dd';
-      '^\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{2}$',     'yyyy-MM-dd HH:mm';
-      '^\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{2}:\d{2}$', 'yyyy-MM-dd HH:mm:ss';
-      '^\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{2}:\d{2}\.\d+$', ...
-                                                    'yyyy-MM-dd HH:mm:ss.';
-      '^\d{4}-\d{1,2}-\d{1,2}T\d{1,2}:\d{2}$',     "yyyy-MM-dd'T'HH:mm";
-      '^\d{4}-\d{1,2}-\d{1,2}T\d{1,2}:\d{2}:\d{2}$', ...
-                                                    "yyyy-MM-dd'T'HH:mm:ss";
-      '^\d{4}-\d{1,2}-\d{1,2}T\d{1,2}:\d{2}:\d{2}\.\d+$', ...
-                                                    "yyyy-MM-dd'T'HH:mm:ss.";
+      '^-?\d{4,}-\d{1,2}-\d{1,2}$',                'uuuu-MM-dd';
+      '^-?\d{4,}-\d{1,2}-\d{1,2} \d{1,2}:\d{2}$',  'uuuu-MM-dd HH:mm';
+      '^-?\d{4,}-\d{1,2}-\d{1,2} \d{1,2}:\d{2}:\d{2}$', ...
+                                                    'uuuu-MM-dd HH:mm:ss';
+      '^-?\d{4,}-\d{1,2}-\d{1,2} \d{1,2}:\d{2}:\d{2}\.\d+$', ...
+                                                    'uuuu-MM-dd HH:mm:ss.';
+      '^-?\d{4,}-\d{1,2}-\d{1,2}T\d{1,2}:\d{2}$',  "uuuu-MM-dd'T'HH:mm";
+      '^-?\d{4,}-\d{1,2}-\d{1,2}T\d{1,2}:\d{2}:\d{2}$', ...
+                                                    "uuuu-MM-dd'T'HH:mm:ss";
+      '^-?\d{4,}-\d{1,2}-\d{1,2}T\d{1,2}:\d{2}:\d{2}\.\d+$', ...
+                                                    "uuuu-MM-dd'T'HH:mm:ss.";
       '^\d{4}/\d{1,2}/\d{1,2}$',                   'yyyy/MM/dd';
       '^\d{4}/\d{1,2}/\d{1,2} \d{1,2}:\d{2}$',     'yyyy/MM/dd HH:mm';
       '^\d{4}/\d{1,2}/\d{1,2} \d{1,2}:\d{2}:\d{2}$', 'yyyy/MM/dd HH:mm:ss';
-      '^\d{1,2}/\d{1,2}/\d{4}$',                   '';
-      '^\d{1,2}-[A-Za-z]{3,}-\d{4}$',               'dd-MMM-yyyy';
-      '^\d{1,2}-[A-Za-z]{3,}-\d{4} \d{1,2}:\d{2}$', 'dd-MMM-yyyy HH:mm';
-      '^\d{1,2}-[A-Za-z]{3,}-\d{4} \d{1,2}:\d{2}:\d{2}$', ...
-                                                    'dd-MMM-yyyy HH:mm:ss';
-      '^[A-Za-z]{3,} \d{1,2}, \d{4}$',              'MMMM d, yyyy';
-      '^\d{1,2} [A-Za-z]{3,} \d{4}$',               'dd MMMM yyyy';
+      '^\d{1,2}/\d{1,2}/-?\d{4,}$',                '';
+      '^\d{1,2}-[A-Za-z]{3,}--?\d{4,}$',            'dd-MMM-uuuu';
+      '^\d{1,2}-[A-Za-z]{3,}--?\d{4,} \d{1,2}:\d{2}$', ...
+                                                    'dd-MMM-uuuu HH:mm';
+      '^\d{1,2}-[A-Za-z]{3,}--?\d{4,} \d{1,2}:\d{2}:\d{2}$', ...
+                                                    'dd-MMM-uuuu HH:mm:ss';
+      '^[A-Za-z]{3,} \d{1,2}, -?\d{4,}$',           'MMMM d, uuuu';
+      '^\d{1,2} [A-Za-z]{3,} -?\d{4,}$',            'dd MMMM uuuu';
       '^\d{1,2}:\d{2}:\d{2}$',                     'HH:mm:ss';
       '^\d{1,2}:\d{2}$',                            'HH:mm';
       '^\d{4}$',                                    'yyyy'};
@@ -7246,11 +7257,14 @@ function fmt = dtSlashOrder (strs)
   f1 = cellfun (@(t) str2double (t{1}), first);
   f2 = cellfun (@(t) str2double (t{2}), first);
   if (any (f1 > 12))
-    fmt = 'dd/MM/yyyy';
+    fmt = 'dd/MM/uuuu';
   elseif (any (f2 > 12))
-    fmt = 'MM/dd/yyyy';
+    fmt = 'MM/dd/uuuu';
   else
-    fmt = 'MM/dd/yyyy';
+    fmt = 'MM/dd/uuuu';
+    ## The message names 'MM/dd/yyyy' rather than the 'uuuu' actually used: it
+    ## exists to say which of day-first and month-first was assumed, and reads
+    ## the same either way for any year a slash date carries.
     warning ('Octave:datetime:ambiguous-format', ...
              ["datetime: the text was read with the format 'MM/dd/yyyy'," ...
               " but 'dd/MM/yyyy' would read it just as well; give" ...
