@@ -646,6 +646,21 @@ classdef datetime
     ## before any zone had a transition takes that zone's local mean time,
     ## again as MATLAB does within its range.
     ##
+    ## @strong{Deviation from MATLAB} in the components of an @strong{infinite}
+    ## datetime.  Building one is documented behaviour and is followed exactly:
+    ## a component of @code{Inf} or @code{-Inf} makes the datetime infinite, and
+    ## one of @code{NaN} makes it @code{NaT}.  What the components of such a
+    ## value read back as is documented nowhere, and the two implementations
+    ## differ.  Here every component is that infinity, whichever one carried it
+    ## and whatever its sign, so @code{ymd} and @code{datevec} answer with one
+    ## value rather than two, the sign is visible in each, and the components
+    ## rebuild the value they came from.  MATLAB reports the year alone as
+    ## infinite and @code{NaN} for the other five, a tuple its own constructor
+    ## then reads as @code{NaT} -- so its components do not reconstruct the
+    ## datetime they describe.  Everything else agrees: @code{isnat},
+    ## @code{isinf}, the display, the ordering, and that @code{NaN} beats an
+    ## infinity while two infinities of opposite sign name no moment at all.
+    ##
     ## @strong{Deviation from MATLAB} in how wide a year may be written in
     ## text.  MATLAB reads at most six significant digits there, whatever the
     ## format asks for, so it cannot read back a year past 999999 -- including

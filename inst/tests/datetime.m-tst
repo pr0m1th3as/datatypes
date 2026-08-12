@@ -133,6 +133,37 @@
 %!assert_equal (isnat (datetime (2020, 1, 1)), false)
 %!assert_equal (isinf (datetime (Inf, Inf, Inf)), true)
 %!assert_equal (year (datetime (Inf, Inf, Inf)), Inf)
+
+## Test that an infinite datetime is infinite in EVERY component, whichever one
+## carried the infinity and whichever sign it had.  R2026a instead reports the
+## year alone as infinite and NaN for the other five, which does not survive its
+## own round trip: the components it gives for an infinite datetime rebuild as
+## NaT there, while these rebuild the value they came from.  Deliberate
+## deviation.
+%!assert_equal (datevec (datetime (Inf, 1, 1)), [Inf, Inf, Inf, Inf, Inf, Inf])
+%!assert_equal (datevec (datetime (-Inf, 1, 1)), ...
+%!              [-Inf, -Inf, -Inf, -Inf, -Inf, -Inf])
+%!assert_equal (datevec (datetime (2024, Inf, 1)), ...
+%!              [Inf, Inf, Inf, Inf, Inf, Inf])
+%!assert_equal (datevec (datetime (2024, 1, -Inf)), ...
+%!              [-Inf, -Inf, -Inf, -Inf, -Inf, -Inf])
+%!assert_equal (datevec (datetime (2024, 1, 1, 0, 0, Inf)), ...
+%!              [Inf, Inf, Inf, Inf, Inf, Inf])
+%!assert_equal (month (datetime (Inf, 1, 1)), Inf)
+%!assert_equal (second (datetime (-Inf, 1, 1)), -Inf)
+%!test
+%! t = datetime (Inf, 1, 1);
+%! assert_equal (datetime (datevec (t)), t);
+%!test
+%! t = datetime (-Inf, 1, 1);
+%! assert_equal (datetime (datevec (t)), t);
+
+## Test that Not-a-Number beats an infinity, and that two infinities of opposite
+## sign name no moment at all.  R2026a agrees on both.
+%!assert_equal (isnat (datetime (Inf, NaN, 1)), true)
+%!assert_equal (isnat (datetime (NaN, Inf, 1)), true)
+%!assert_equal (isnat (datetime (Inf, -Inf, 1)), true)
+%!assert_equal (isnat (datetime (-Inf, Inf, 1)), true)
 %!assert_equal (year (datetime (-Inf, -Inf, -Inf)), -Inf)
 
 ## Test 'datetime' constructor -- second underflow/overflow normalisation
