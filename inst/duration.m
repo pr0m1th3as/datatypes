@@ -5200,6 +5200,15 @@ function args = durhistargs (args, xv, scope)
   k = 1;
   if (! isempty (args) && ! istextscalar (args{1}))
     if (isa (args{1}, 'duration'))
+      if (isscalar (args{1}))
+        ## A lone duration reads as a bin WIDTH, which this position does not
+        ## take, in MATLAB or here.  Passed on it would become a bin COUNT of
+        ## however many milliseconds it holds: 'days (2)' asked for 172800000
+        ## bins and the array to hold them.
+        error (strcat ("%s: a bin width must be given as 'BinWidth'; the", ...
+                       " second argument is a bin count or a vector of bin", ...
+                       " edges."), scope);
+      endif
       dv = milliseconds (args{1});
       args{1} = dv(:).';
       hasSpec = true;

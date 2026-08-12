@@ -6175,6 +6175,20 @@
 %! assert_equal (MI(:).', [0, 0]);
 %! assert_equal (minutes (diff (e)), 450);
 
+## Test that the second argument is a bin count or a set of edges, never a bin
+## width.  A duration left standing there dispatched the internal numeric call
+## to 'duration.histcounts' and answered with an error from inside it.
+%!error <datetime.histcounts: a bin width must be given as 'BinWidth'; the second argument is a bin count or a vector of bin edges.> ...
+%! histcounts (datetime (2024, 1, 1) + days ((0:9)'), days (2))
+%!error <datetime.histcounts: the second argument must be a bin count or a datetime vector of bin edges.> ...
+%! histcounts (datetime (2024, 1, 1) + days ((0:9)'), [1, 2, 3])
+%!assert_equal (histcounts (datetime (2024, 1, 1) + days ((0:9)'), ...
+%!                          'BinWidth', days (2)), [2, 2, 2, 2, 2])
+%!assert_equal (histcounts (datetime (2024, 1, 1) + days ((0:9)'), 5), ...
+%!              [2, 2, 2, 2, 2])
+%!assert_equal (discretize (datetime (2024, 1, 1) + days ((0:9)'), days (2)), ...
+%!              [1; 1; 2; 2; 3; 3; 4; 4; 5; 5])
+
 ## Test 'histcounts' with a BIN COUNT -- the empirical placement correction is
 ## applied only where a zone's shift is exactly HALF the bin unit, the domain it
 ## was measured on (Australia/Lord_Howe's half hour against an hour bin).  At

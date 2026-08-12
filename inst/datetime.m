@@ -8562,8 +8562,18 @@ function args = dtHistArgs (args, xv, s2c, c2s, d2s, w2s, scope)
       args = [{'BinEdges', ev}, args(2:end)];
       hasSpec = true;
       k = 3;
+    elseif (isa (args{1}, 'duration'))
+      ## A bin WIDTH is not accepted here, as it is not in MATLAB: this
+      ## position holds a bin count or a set of edges.  Refusing it outright
+      ## also keeps a duration from travelling on in the argument list, where
+      ## it would dispatch the numeric call below to 'duration.histcounts' and
+      ## answer with an error from inside that method.
+      error (strcat ("%s: a bin width must be given as 'BinWidth'; the", ...
+                     " second argument is a bin count or a vector of bin", ...
+                     " edges."), scope);
     else
-      k = 2;
+      error (strcat ("%s: the second argument must be a bin count or a", ...
+                     " datetime vector of bin edges."), scope);
     endif
   endif
 
