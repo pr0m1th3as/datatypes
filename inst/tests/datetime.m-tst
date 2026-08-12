@@ -228,6 +228,56 @@
 %!assert_equal (isnat (datetime (NaN, 1, 1)), true)
 %!assert_equal (year (datetime (Inf, 1, 1)), Inf)
 
+## Test the year range on every other route to the calendar.  Numeric
+## components were the only guarded one: text, the serial conversions and
+## calendar arithmetic all reached the same lookup unchecked, and a zoned one
+## still aborted the interpreter.
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! datetime ('100000-01-01', 'InputFormat', 'yyyy-MM-dd')
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! datetime ('32768-01-01', 'InputFormat', 'yyyy-MM-dd', 'TimeZone', 'America/New_York')
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! datetime (11274307, 'ConvertFrom', 'excel')
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! datetime (11274307, 'ConvertFrom', 'excel', 'TimeZone', 'America/New_York')
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! datetime (4e9, 'ConvertFrom', 'datenum')
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! datetime (1e15, 'ConvertFrom', 'posixtime')
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! datetime (1e15, 'ConvertFrom', 'epochtime')
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! datetime (1e10, 'ConvertFrom', 'juliandate')
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! datetime (32000, 1, 1) + calyears (1000)
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! datetime (32000, 1, 1, 'TimeZone', 'America/New_York') + calyears (768)
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! datetime (30000, 1, 1, 'TimeZone', 'UTC') + calyears (2768)
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! datetime (30000, 1, 1, 'TimeZone', 'UTCLeapSeconds') + calyears (2768)
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! datetime (32000, 1, 1) + years (1000)
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! dateshift (datetime (32767, 6, 1), 'end', 'year') + calyears (1)
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! t = datetime (2024, 3, 15);
+%! t.Year = 100000;
+
+## Test that the year-range check leaves every representable date alone,
+## including the serials and the boundary the constructor already accepted.
+%!assert_equal (year (datetime (738000, 'ConvertFrom', 'datenum')), 2020)
+%!assert_equal (year (datetime (45000, 'ConvertFrom', 'excel')), 2023)
+%!assert_equal (year (datetime (59, 'ConvertFrom', 'excel')), 1900)
+%!assert_equal (year (datetime (61, 'ConvertFrom', 'excel')), 1900)
+%!assert_equal (year (datetime (1.7e9, 'ConvertFrom', 'posixtime')), 2023)
+%!assert_equal (year (datetime (2460000.5, 'ConvertFrom', 'juliandate')), 2023)
+%!assert_equal (year (datetime (NaN, 'ConvertFrom', 'datenum')), NaN)
+%!assert_equal (year (datetime (Inf, 'ConvertFrom', 'posixtime')), Inf)
+%!assert_equal (year (datetime (32767, 6, 1) + calyears (0)), 32767)
+%!assert_equal (year (datetime (32766, 6, 1) + calyears (1)), 32767)
+%!assert_equal (year (datetime (-32766, 6, 1) - calyears (1)), -32767)
+
 ## Test 'datetime' constructor -- ConvertFrom yyyymmdd
 %!assert_equal (char (datetime (20240309, 'ConvertFrom', 'yyyymmdd'), ...
 %!              'yyyy-MM-dd'), '2024-03-09')

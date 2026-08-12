@@ -953,6 +953,10 @@ classdef datetime
             endif
             DATEVEC(! blank, :) = DV;
           endif
+          ## Text can name a year the calendar cannot represent as readily as
+          ## numbers can, and the zoned normalization below is a timezone
+          ## lookup like any other.
+          dtCheckYearRange ({DATEVEC});
           ## Split DATEVEC into individual date/time units and reshape
           this.Year = reshape (DATEVEC(:,1), size (DateStrings));
           this.Month = reshape (DATEVEC(:,2), size (DateStrings));
@@ -1067,6 +1071,7 @@ classdef datetime
          this.Second] = dtLeapComponents (dtJulian2Serial (double (x), ...
                           strcmpi (ConvertFrom, 'modifiedjuliandate')));
       elseif (! isempty (ConvertFrom) && ! isempty (TimeZone))
+        dtCheckSerialRange (args{1}, lower (char (ConvertFrom)));
         if (strcmpi (ConvertFrom, 'posixtime'))
           ## POSIX time is an absolute UTC instant, so read it as a UTC wall
           ## clock and then convert into the requested zone (honouring DST).
@@ -1093,6 +1098,7 @@ classdef datetime
                                         'microseconds');
         endif
       elseif (! isempty (ConvertFrom) && isempty (TimeZone))
+        dtCheckSerialRange (args{1}, lower (char (ConvertFrom)));
         [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
          this.Second] = __datetime__ (args{1}, 'ConvertFrom', ConvertFrom, ...
                                       'Precision', 'microseconds');
@@ -4844,6 +4850,9 @@ classdef datetime
       R = this;
       R.Year = Y; R.Month = M; R.Day = D;
       R.Hour = h; R.Minute = mi; R.Second = s;
+      ## Checked before the offset rather than in 'normalize' below, because
+      ## the offset is the timezone lookup and so comes first.
+      dtCheckComponentRange (Y, M, D, h, mi, s);
       R.Offset = dtOffsetOf (R.Year, R.Month, R.Day, R.Hour, R.Minute, ...
                              R.Second, R.TimeZone);
       R = normalize (R);
@@ -5902,6 +5911,8 @@ classdef datetime
         this.Offset = zeros (size (this.Year));
         return;
       endif
+      dtCheckComponentRange (this.Year, this.Month, this.Day, this.Hour, ...
+                             this.Minute, this.Second);
       if (dtIsLeapZone (this.TimeZone))
         [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
          this.Second] = dtLeapNormalize (this.Year, this.Month, this.Day, ...
@@ -6182,6 +6193,7 @@ classdef datetime
     ## A leap-second array inverts the continuous SI-second count instead, so a
     ## count that lands inside an inserted second yields a 60th second.
     function [Y, M, D, h, m, s, off] = serial2components (this, ser)
+      dtCheckSerialRange (ser, 'posixtime');
       if (dtIsLeapZone (this.TimeZone))
         [Y, M, D, h, m, s] = dtLeapComponents (ser);
         off = zeros (size (Y));
@@ -6247,6 +6259,10 @@ classdef datetime
       Y(! ok) = mk(! ok);  M(! ok) = mk(! ok);  D(! ok) = mk(! ok);
       h(! ok) = mk(! ok);  m(! ok) = mk(! ok);  s(! ok) = mk(! ok);
 
+      ## Checked here rather than left to 'normalize' below: the leap-second
+      ## clamp asks the builtin for a POSIX time first, which is a timezone
+      ## lookup like any other.
+      dtCheckComponentRange (Y, M, D, h, m, s);
       if (dtIsLeapZone (this.TimeZone))
         ## Calendar arithmetic keeps the wall clock, so an inserted second can
         ## be carried onto a minute that never had one; clamp it to the 59th
@@ -6971,6 +6987,15 @@ endfunction
 ## wrap and wrap back, which is how datetime (32767, 12, 31) works today.
 function dtCheckYearRange (args)
   [Y, M, D, h, mi, sec] = dtSplitComponents (args);
+  dtCheckComponentRange (Y, M, D, h, mi, sec);
+endfunction
+
+## The same check on components already held apart, for the callers that have
+## them that way -- every path that REBUILDS a wall clock rather than building
+## one from arguments.  Construction is not the only way a year leaves the
+## range: calendar arithmetic, 'dateshift' and an assignment to the Year
+## property all reach the same timezone lookup with a year of their own making.
+function dtCheckComponentRange (Y, M, D, h, mi, sec)
   D = D + fix ((h .* 3600 + mi .* 60 + sec) ./ 86400);
   yy = Y + fix (M ./ 12);
   dmi = M - 12 .* fix (M ./ 12) - 1;
@@ -6979,10 +7004,41 @@ function dtCheckYearRange (args)
   bad = isfinite (Y + M + D) & (abs (dtYearFromDays (base)) > 32767 ...
                                 | abs (dtYearFromDays (base + D)) > 32767);
   if (any (bad(:)))
-    error (strcat ("datetime: the requested date is outside the range of", ...
-                   " representable dates; the year must fall between", ...
-                   " -32767 and 32767."));
+    dtRangeError ();
   endif
+endfunction
+
+## The same check made on a SERIAL rather than on components, for the paths
+## that hand one to the builtin and read components back.  It has to be made on
+## the input: those components are built inside '__datetime__', so by the time
+## the m-code sees them the year has already wrapped and nothing distinguishes
+## it from an ordinary one.  KIND is the 'ConvertFrom' type the builtin will be
+## given, after 'dtEpochAlias' has folded the aliases onto the four it knows;
+## each of them is a linear map onto days from 1970-01-01.
+function dtCheckSerialRange (x, kind)
+  d = double (x);
+  switch (kind)
+    case 'datenum'
+      d = d - 719529;
+    case 'excel'
+      ## Excel's 1900 system counts a 29 February 1900 that never existed, so
+      ## every serial up to 60 is one day nearer the epoch than it reads.
+      d = d - 25569 + (d <= 60);
+    otherwise
+      ## 'posixtime' and 'epochtime' both arrive as seconds from 1970-01-01.
+      d = d ./ 86400;
+  endswitch
+  d = floor (d);
+  bad = isfinite (d) & abs (dtYearFromDays (d)) > 32767;
+  if (any (bad(:)))
+    dtRangeError ();
+  endif
+endfunction
+
+function dtRangeError ()
+  error (strcat ("datetime: the requested date is outside the range of", ...
+                 " representable dates; the year must fall between", ...
+                 " -32767 and 32767."));
 endfunction
 
 ## Days between 1970-01-01 and a proleptic Gregorian civil date, and the year a
@@ -7443,6 +7499,10 @@ endfunction
 ## the 60th second of its minute; any other count is an ordinary POSIX time once
 ## the whole seconds inserted before it have been taken back out.
 function [Y, M, D, h, mi, sec] = dtLeapComponents (ser)
+  ## Covers the 'tt2000' and Julian leap-second constructor branches, which
+  ## reach the builtin through here rather than through 'dtCheckSerialRange'.
+  ## The inserted seconds are far below the resolution of the check.
+  dtCheckSerialRange (ser, 'posixtime');
   S = dtLeapStarts ();
   sz = size (ser);
   v = ser(:);
