@@ -1,59 +1,76 @@
-Summary of important user-visible changes for datatypes 1.3.2:
+Summary of important user-visible changes for datatypes 1.3.3:
 --------------------------------------------------------------
 
- This release fixes a `categorical` defect that silently dropped array
- elements, and widens `keyHash` and `keyMatch` to the last three types MATLAB
- keys that this package did not.  Nothing that worked before behaves
- differently, and **no hash code changes**: codes stored by 1.3.1 remain
- valid.
+ This release widens the years `datetime` can represent, from [-32767, 32767]
+ to any year its components can hold, and fixes the defects found in testing
+ it.  Several of those are wrong at ordinary dates.
 
- ** Concatenating or comparing a `categorical` array with a non-scalar
-    `missing` no longer loses elements.  The missing operand was sized from a
-    fresh scalar `missing` rather than from itself, so it collapsed to 1-by-1:
-    `[categorical(NaN(1,3)), repmat(missing,1,3)]` returned a 1-by-4 array
-    instead of 1-by-6, dropping three elements with no error, and
-    `isequaln (categorical(NaN(1,3)), repmat(missing,1,3))` was false.  Both
-    disagreed with the same operation in the other operand order, which was
-    already correct.  `cat`, `isequal` and `isequaln` are all affected.
+ ** `datetime` carries any year.  Components, every `'ConvertFrom'`
+    conversion, the instant conversions, orderings, set operations and both
+    arithmetics work at year 1e6 and 1e9 and their negatives, matching
+    R2026a.  Such a year previously aborted the interpreter or gave a wrong
+    date.
 
- ** `keyHash` accepts `struct`, `cell` and `function_handle`, and `keyMatch`
-    accepts them with it, closing the last parity gap in `keyMatch`.
-    `keyMatch` itself is unchanged: it asks `keyHash` whether a value can be
-    hashed rather than keeping a list of its own, so widening one widened the
-    other.
+ ** Time zones resolve for any year, by extrapolating the database's own rule
+    across its exact 400-year period, as MATLAB does.
 
- ** A `cell` array is keyed on its elements, each hashed in turn, so it may
-    hold any type `keyHash` accepts, nested to any depth.  Shape and nesting
-    are part of the key, so `{1, 2}` and `{1; 2}` are different keys, as are
-    `{{1}}` and `{1}`.  An element whose class has its own `keyHash`
-    method reaches it, so a cell holding a `datetime` or a `categorical` is
-    keyed correctly.
+ ** `datetime` reads a year of more than four digits from text, and a
+    negative one, both with a detected format and with `'InputFormat'`.
 
- ** A `struct` is keyed on its field names and their values.  The order in
-    which its fields were created is **not** part of the key, so two structs
-    differing only in field order are the same key -- matching R2024a, and
-    matching `isequaln`, which already ignored field order.  The class of a
-    value *inside* a struct or a cell **is** part of the key, so
-    `keyMatch ({1}, {int8 (1)})` is false, as it is for `1` and
-    `int8 (1)` at the top level.
+ ** Fixed-length arithmetic keeps the microsecond at any year.  Adding
+    `milliseconds (0.001)` did not move the value from about year 3000, and
+    two clocks a microsecond apart subtracted to zero.
 
- ** A function handle is keyed on its text alone.  Two named handles for the
-    same function are one key.  Two anonymous handles never match, even when
-    written identically, so an anonymous handle cannot be found again as a
-    key; what a handle captures is therefore not part of its hash, which is
-    also how R2024a hashes them.
+ ** A `datenum` or Excel serial converts back to the time it was made from;
+    it gave 10:30:44.999997 for 10:30:45.  `exceltime` now counts from
+    Excel's own epoch rather than through `datenum`, which cost sixteen times
+    the precision.
 
- ** `keyHash` and `keyMatch` name the value that cannot be hashed rather than
-    the container holding it.  With `cell` and `struct` now keys in their own
-    right, reporting `'cell'` for `keyMatch ({table(1)}, {1})` pointed at
-    the wrong type; both now report `'table'`.  `keyHash` names the class it
-    rejected instead of saying only that some input was unsupported, and
-    `keyMatch` passes that message through instead of restating it from its
-    own operand.
+ ** An unzoned `datetime` is no longer resolved against the machine's
+    timezone.  A wall clock in that machine's spring-forward gap was moved,
+    so the same code gave different answers on different machines.
 
- ** Hash codes for every previously supported type are now pinned by tests
-    carrying the literal values measured from 1.3.1.  Codes are a published
-    interface -- this package produces the same code across workers and
-    sessions, which MATLAB's randomly seeded `keyHash` does not -- so a code
-    changing is a breaking change, and these tests exist so that it cannot
-    happen by accident.
+ ** Negative time components carry the right number of days:
+    `datetime (2024, 3, 15, -24, 0, 0)` landed on 13 March rather than 14, and
+    the matrix spelling took no day at all.
+
+ ** An element assigned from another time zone is converted into the array's
+    zone, as concatenation already did.  Assignment between a zoned array and
+    an unzoned one, or across the leap-second timeline, is now refused.
+
+ ** A `datetime` column survives `writetable` and `readtable` at any year; a
+    column holding year 1e6 came back as `NaT`.
+
+ ** Text rendered with a zero-padded year can be read back:
+    `char (T, 'uuuuuuuu-MM-dd')` emitted text the same format then refused.
+
+ ** `histcounts` refuses a bin width where a bin count belongs, in both
+    `datetime` and `duration`; on a duration array `days (2)` asked for
+    172800000 bins.  Give a width through `'BinWidth'`.
+
+ ** `writetable` and `readtable` use Excel's 1900 date system, which counts a
+    29 February 1900 that never existed; dates before 1900-03-01 were a day
+    out against files from Excel, MATLAB or LibreOffice.  Files written by
+    1.3.2 or earlier cannot be repaired, only rewritten.
+
+ ** `table` is installable again (issue #52).
+
+ Deliberate deviations from MATLAB, documented in each function's help text:
+
+ ** A year in text is read as far as the calendar goes; MATLAB stops at six
+    significant digits and so cannot read back its own `writetable` output.
+
+ ** A distant year is rendered in the format asked for, not as `1000000 CE`.
+
+ ** A zone resolves for any year, where MATLAB raises past about 144684.
+
+ ** An infinite `datetime` is infinite in every component; MATLAB reports the
+    year alone as infinite with `NaN` elsewhere, a tuple its own constructor
+    reads back as `NaT`.
+
+ ** `exceltime (T, '1904')` returns a plain day count, so a date before
+    1900-03-01 gets a serial one greater than MATLAB's, which carries the
+    phantom 29 February 1900 into the system that exists to avoid it.
+
+ ** A date below Excel's serial 0 is written to `.xlsx` as ISO 8601 text, as
+    MATLAB does, but spelled ISO rather than in the display format.
