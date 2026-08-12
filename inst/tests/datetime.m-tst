@@ -2089,6 +2089,37 @@
 %!assert_equal (datenum (datetime (Inf, 'ConvertFrom', 'datenum')), Inf)
 %!assert_equal (datenum (datetime (-Inf, 'ConvertFrom', 'datenum')), -Inf)
 
+## Test that a day-count serial converts back to the time it was made from.
+## Such a serial resolves only as finely as its magnitude allows -- about ten
+## microseconds for a datenum at 2024, sixteen times finer for an Excel serial,
+## whose epoch is nearer -- so the conversion is taken at that resolution and no
+## finer.  Reporting the raw product answered 10:30:44.999997 for a datetime
+## built from 10:30:45.  Every value below is R2026a's.
+%!assert_equal (second (datetime (datenum (datetime (2024, 6, 15, 10, 30, ...
+%!              45)), 'ConvertFrom', 'datenum')), 45)
+%!assert_equal (second (datetime (datenum (datetime (2024, 6, 15, 10, 30, ...
+%!              45.5)), 'ConvertFrom', 'datenum')), 45.5)
+%!assert_equal (second (datetime (datenum (datetime (2024, 6, 15, 10, 30, ...
+%!              45.001)), 'ConvertFrom', 'datenum')), 45.001)
+%!assert_equal (second (datetime (739418.4380208333, 'ConvertFrom', ...
+%!              'datenum')), 45)
+%!assert_equal (second (datetime (exceltime (datetime (2024, 6, 15, 10, 30, ...
+%!              45)), 'ConvertFrom', 'excel')), 45)
+%!assert_equal (second (datetime (exceltime (datetime (2024, 6, 15, 10, 30, ...
+%!              45.001)), 'ConvertFrom', 'excel')), 45.001)
+%!assert_equal (second (datetime (exceltime (datetime (2024, 6, 15, 10, 30, ...
+%!              45.000123)), 'ConvertFrom', 'excel')), 45.000123)
+%!assert_equal (second (datetime (datenum (datetime (1600, 6, 15, 10, 30, ...
+%!              45)), 'ConvertFrom', 'datenum')), 45)
+%!assert_equal (second (datetime (datenum (datetime (1e6, 6, 15, 10, 30, ...
+%!              45)), 'ConvertFrom', 'datenum')), 45)
+%!assert_equal (second (datetime (datenum (datetime (1e6, 6, 15, 10, 30, ...
+%!              45.001)), 'ConvertFrom', 'datenum')), 45)
+%!test
+%! t = datetime (2024, 6, 15, 10, 30, 45);
+%! assert_equal (datetime (datenum (t), 'ConvertFrom', 'datenum'), t);
+%! assert_equal (datetime (exceltime (t), 'ConvertFrom', 'excel'), t);
+
 ## Test 'exceltime' -- Excel serial date; 1900 (default) and 1904 systems
 %!assert_equal (exceltime (datetime (2024, 3, 9)), 45360)
 %!assert_equal (exceltime (datetime (2024, 3, 9, 6, 0, 0)), 45360.25)

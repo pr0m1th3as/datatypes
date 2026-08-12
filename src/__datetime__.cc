@@ -184,11 +184,36 @@ auto from_to_tz_nano (double time_sec, string from_tzone, string to_tzone)
 // however distant the day itself.  The two corrections guard the seam: past
 // 2^53 seconds a double's spacing exceeds a second, so the split can land a
 // hair either side of midnight.
-RowVector seconds2vector (double time_sec, string precision)
+// The decimal unit a day-count serial can deliver: the power of ten NEAREST its
+// own resolution, and never finer than the microsecond this class stores.  A
+// datenum at 2024 resolves about ten microseconds, so the value built from
+// 10:30:45 lies 2.68 us short of it; reporting 10:30:44.999997 would claim
+// precision the number never carried, and would break the round trip a serial
+// exists for.  The unit has to follow the epoch: an Excel serial counts from
+// 1899-12-30 and so resolves sixteen times finer than a datenum, which is why
+// it recovers a microsecond figure a datenum cannot.
+double
+serial_unit (double serial_days)
+{
+  double a = fabs (serial_days);
+  double q = (nextafter (a, INFINITY) - a) * 86400.0;
+  if (! (q > 0) || ! isfinite (q))
+  {
+    return 1e-6;
+  }
+  double u = pow (10.0, round (log10 (q)));
+  return (u < 1e-6 ? 1e-6 : u);
+}
+
+RowVector seconds2vector (double time_sec, string precision, double unit = 0)
 {
   RowVector OUT(6);
   double dayf = floor (time_sec / 86400.0);
   double sec_of_day = time_sec - dayf * 86400.0;
+  if (unit > 0)
+  {
+    sec_of_day = round (sec_of_day / unit) * unit;
+  }
   if (sec_of_day >= 86400.0)
   {
     sec_of_day -= 86400.0;
@@ -1019,7 +1044,8 @@ a repeated clock when an offset is given. \n\
         else
         {
           time_sec = (Dnum(i) - 719529) * 86400;    // to seconds
-          RowVector OUT = seconds2vector (time_sec, precision);
+          RowVector OUT = seconds2vector (time_sec, precision,
+                                          serial_unit (Dnum(i)));
           Y(i) = OUT(0); M(i) = OUT(1); D(i) = OUT(2);
           h(i) = OUT(3); m(i) = OUT(4); s(i) = OUT(5);
         }
@@ -1054,7 +1080,8 @@ a repeated clock when an offset is given. \n\
           {
             time_sec = (Dnum(i) - 25569) * 86400;   // to seconds
           }
-          RowVector OUT = seconds2vector (time_sec, precision);
+          RowVector OUT = seconds2vector (time_sec, precision,
+                                          serial_unit (Dnum(i)));
           Y(i) = OUT(0); M(i) = OUT(1); D(i) = OUT(2);
           h(i) = OUT(3); m(i) = OUT(4); s(i) = OUT(5);
         }

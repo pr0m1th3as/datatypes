@@ -1975,20 +1975,36 @@ classdef datetime
              && any (strcmpi (dateType, {'1900', '1904'}))))
         error ("datetime.exceltime: DATETYPE must be '1900' or '1904'.");
       endif
-      dn = datenum (this);
+      ## Counted from Excel's OWN epoch rather than through 'datenum', whose
+      ## epoch lies 1900 years further off: a double's resolution follows the
+      ## magnitude it holds, so going the long way round cost sixteen times the
+      ## precision and put the time of day several microseconds out.
+      Y = this.Year;  M = this.Month;  D = this.Day;
+      h = this.Hour;  mi = this.Minute;  sec = this.Second;
+      if (dtIsLeapZone (this.TimeZone))
+        sec = dtLeapBackFold (sec);
+      endif
+      fin = isfinite (Y);
+      dayNo = nan (size (Y));
+      dayNo(fin) = dtDaysFromCivil (Y(fin), M(fin), D(fin));
+      frac = zeros (size (Y));
+      frac(fin) = (h(fin) .* 3600 + mi(fin) .* 60 + sec(fin)) ./ 86400;
+      out = nan (size (Y));
       if (strcmpi (dateType, '1904'))
         ## The 1904 system has no leap-year anomaly, so this is a plain day
         ## count.  MATLAB routes it through the 1900 serial and so returns one
         ## less for a date before 1900-03-01 -- a region outside both systems,
         ## and one MATLAB's own 'ConvertFrom' refuses to convert back.
-        out = dn - datenum (1904, 1, 1);
+        out(fin) = dayNo(fin) - dtDaysFromCivil (1904, 1, 1) + frac(fin);
       else
         ## Excel's 1900 system counts days from the serial-0 epoch 1899-12-30,
         ## but wrongly treats 1900 as a leap year, so serials on or after
         ## 1900-03-01 are one greater, spanning the nonexistent 1900-02-29.
-        out = dn - datenum (1899, 12, 30);
-        out(dn < datenum (1900, 3, 1)) -= 1;
+        out(fin) = dayNo(fin) - dtDaysFromCivil (1899, 12, 30) + frac(fin);
+        early = fin & (dayNo < dtDaysFromCivil (1900, 3, 1));
+        out(early) -= 1;
       endif
+      out(isinf (Y)) = Y(isinf (Y));
     endfunction
 
     ## -*- texinfo -*-
