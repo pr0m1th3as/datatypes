@@ -2011,6 +2011,57 @@
 %! assert_equal (numel (t), 4);
 %! assert_equal (char (t(2), 'yyyy-MM-dd'), '2024-01-03');
 
+## Test that an element assigned from another zone is CONVERTED into the array's
+## own, as concatenation already did: assignment changes which array an element
+## belongs to, not the instant it names.  It used to be copied across whole, so
+## the array held an element carrying another zone's offset -- it displayed in a
+## zone it was not in and compared unequal to the value assigned from it.  All
+## R2026a-verified.
+%!test
+%! n = datetime (2024, 3, 15, 12, 0, 0, 'TimeZone', 'America/New_York');
+%! u = datetime (2024, 3, 15, 12, 0, 0, 'TimeZone', 'UTC');
+%! n(2) = u;
+%! assert_equal (char (n(2), 'HH:mm'), '08:00');
+%! assert_equal (posixtime (n(2)), posixtime (u));
+%! assert_equal (hours (tzoffset (n(2))), -4);
+%! assert_equal (n(2) == u, true);
+%!test
+%! n = datetime (2024, 3, 15, 12, 0, 0, 'TimeZone', 'America/New_York');
+%! u = datetime (2024, 3, 15, 12, 0, 0, 'TimeZone', 'UTC');
+%! u(2) = n;
+%! assert_equal (char (u(2), 'HH:mm'), '16:00');
+%! assert_equal (u.TimeZone, 'UTC');
+%!test
+%! n = datetime (2024, 3, 15, 12, 0, 0, 'TimeZone', 'America/New_York');
+%! n(2) = n(1);
+%! assert_equal (char (n(2), 'HH:mm'), '12:00');
+%!test
+%! n = datetime (2024, 3, 15, 12, 0, 0, 'TimeZone', 'America/New_York');
+%! u = datetime (2024, 3, 15, 12, 0, 0, 'TimeZone', 'UTC');
+%! n(4) = u;
+%! assert_equal (char (n(4), 'HH:mm'), '08:00');
+%! assert_equal (isnat (n), [false, true, true, false]);
+%!test
+%! n = datetime (2024, 3, 15, 12, 0, 0, 'TimeZone', 'America/New_York');
+%! u = datetime (2024, 3, 15, 12, 0, 0, 'TimeZone', 'UTC');
+%! n(2:3) = [u, u];
+%! assert_equal (char (n(3), 'HH:mm'), '08:00');
+
+## Test that the two mixtures with no answer are refused rather than silently
+## admitted, which is what concatenation already did and what MATLAB does here.
+%!error <datetime.subsasgn: cannot combine a datetime array with a time zone with one without a time zone.> ...
+%! n = datetime (2024, 3, 15, 'TimeZone', 'America/New_York');
+%! n(2) = datetime (2024, 3, 15);
+%!error <datetime.subsasgn: cannot combine a datetime array with a time zone with one without a time zone.> ...
+%! p = datetime (2024, 3, 15);
+%! p(2) = datetime (2024, 3, 15, 'TimeZone', 'America/New_York');
+%!error <datetime.subsasgn: cannot combine or compare a datetime array with leap seconds with one without leap seconds.> ...
+%! n = datetime (2024, 3, 15, 'TimeZone', 'America/New_York');
+%! n(2) = datetime (2024, 3, 15, 'TimeZone', 'UTCLeapSeconds');
+%!error <datetime.subsasgn: cannot combine or compare a datetime array with leap seconds with one without leap seconds.> ...
+%! l = datetime (2024, 3, 15, 'TimeZone', 'UTCLeapSeconds');
+%! l(2) = datetime (2024, 3, 15, 'TimeZone', 'UTC');
+
 ## Test 'subsasgn' -- an out-of-range assignment fills the gap with NaT
 %!test
 %! t = datetime (2024, 1, 1:3);

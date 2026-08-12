@@ -5574,9 +5574,17 @@ classdef datetime
             error (strcat ("datetime.subsasgn: cannot assign %s values", ...
                            " to a datetime array."), class (val));
           endif
-          ## An element joining a REAL-zoned array must be a year that zone can
-          ## be resolved for, whatever the calendar carries: the array would
-          ## otherwise hold a date no offset can be computed for.
+          ## An element arriving from another zone is CONVERTED into this
+          ## array's, as it is when concatenated: assignment changes which array
+          ## an element belongs to, not the instant it names.  Going through
+          ## 'prepSetOp' also refuses the two mixtures that have no answer --
+          ## zoned with unzoned, and the leap-second timeline with any other --
+          ## which is what MATLAB does here as well.  Without it the operand was
+          ## copied across whole, so the array held an element carrying another
+          ## zone's offset: it displayed in a zone it was not in, compared
+          ## unequal to the value it had been assigned from, and reported an
+          ## offset its own array could not account for.
+          [~, val] = prepSetOp (this, val, 'subsasgn');
           ## Track which positions are real so that any elements created by
           ## growing the array (out-of-range assignment) can be filled with
           ## Not-A-Time; Octave would otherwise pad them with 0, i.e. the
