@@ -4555,7 +4555,7 @@ classdef datetime
                          " with a time zone from one without a time zone."));
         endif
         dtCheckLeapPair (A, B, 'minus');
-        C = duration (0, 0, serial (A) - serial (B));
+        C = duration (0, 0, elapsedSeconds (A, B));
       elseif (isa (B, 'duration'))
         ## datetime - duration -> datetime (fixed-length instant shift)
         C = addSeconds (A, - days (B) * 86400);
@@ -5986,6 +5986,40 @@ classdef datetime
                                 this.Minute, this.Second, this.TimeZone);
     endfunction
 
+    ## Seconds from B to A, taken as a DIFFERENCE of components rather than of
+    ## two counts from 1970.  Those counts are each one double, so past about
+    ## year 3000 they no longer resolve a microsecond and two clocks a genuine
+    ## microsecond apart subtracted to zero -- while the difference itself is
+    ## small and keeps every figure.  The day counts are exact integers, the
+    ## seconds within a day are far below where a double loses microseconds,
+    ## and the stored offsets carry whatever the zones contribute.  The
+    ## leap-second timeline keeps its own serial, which alone counts the
+    ## inserted seconds.
+    function sec = elapsedSeconds (A, B)
+      if (dtIsLeapZone (A.TimeZone) || dtIsLeapZone (B.TimeZone))
+        sec = serial (A) - serial (B);
+        return;
+      endif
+      dA = dtDaysFromCivil (A.Year, A.Month, A.Day);
+      dB = dtDaysFromCivil (B.Year, B.Month, B.Day);
+      ## Differenced field by field rather than by building each seconds-of-day
+      ## first: a whole day of seconds is large enough that adding a microsecond
+      ## to it loses the microsecond's tail, whereas each difference here is
+      ## small and exact.
+      sec = (dA - dB) .* 86400 + (A.Hour - B.Hour) .* 3600 ...
+            + (A.Minute - B.Minute) .* 60 + (A.Second - B.Second) ...
+            - (A.Offset - B.Offset);
+      ## An infinite or Not-a-Time element has no civil date to difference, so
+      ## it keeps the answer the instants give: infinity less a finite moment
+      ## is still infinite, where the day count would make it NaN.
+      nf = ! (isfinite (A.Year) & isfinite (B.Year));
+      if (any (nf(:)))
+        sd = serial (A) - serial (B);
+        sec = sec + zeros (size (nf));
+        sec(nf) = sd(nf);
+      endif
+    endfunction
+
     ## Absolute instant of each element as POSIX seconds (double, microsecond
     ## precision).  Unzoned arrays are treated as UTC so the serial carries no
     ## system-zone daylight-saving offset; zoned arrays honour their zone (and
@@ -6266,6 +6300,27 @@ classdef datetime
     ## wall-clock components.  DSEC may broadcast against the array size.  The
     ## Format and TimeZone properties are preserved.
     function this = addSeconds (this, dsec)
+      if (isempty (this.TimeZone) || strcmp (this.TimeZone, 'UTC'))
+        ## With no transitions to cross, a shift lands on the wall clock just
+        ## as it does on the instant, so it can be added to the components --
+        ## which keeps every figure, where a count of seconds from 1970 cannot.
+        ## That count is one double: past about year 3000 it no longer resolves
+        ## a microsecond, and 't + milliseconds (0.001)' did not move the value
+        ## at all.  Whole days go on the day, the remainder on the seconds, and
+        ## 'normalize' folds both in 64-bit civil arithmetic.  The leap-second
+        ## zone is excluded deliberately: there a shift is counted on the
+        ## leap-second timeline, which is what its instant exists to carry.
+        dd = floor (dsec ./ 86400);
+        rs = dsec - dd .* 86400;
+        ## An infinite or Not-a-Number shift is carried by the day term alone:
+        ## the remainder would be Inf - Inf, and a NaN there would turn an
+        ## infinite datetime into NaT.
+        rs(! isfinite (dsec)) = 0;
+        this.Day = this.Day + dd;
+        this.Second = this.Second + rs;
+        this = normalize (this);
+        return;
+      endif
       ser = serial (this) + dsec;
       [Y, M, D, h, m, s, off] = serial2components (this, ser);
       this.Year = Y; this.Month = M; this.Day = D;
