@@ -418,10 +418,36 @@
 %!error <datetime: 'PivotYear' must be an integer value.> ...
 %! datetime ('20', 'InputFormat', 'yy', 'PivotYear', 50.5)
 
+## Test that a datetime column survives the trip out to a file and back, at any
+## year the calendar carries.  'writetable' emits the display format, whose year
+## ran past what the parser would read: a year of 1e6 came back as NaT, so the
+## file this class wrote was one it could not read.
+%!test
+%! f = [tempname(), '.csv'];
+%! unwind_protect
+%!   T = table ([datetime(1e6, 1, 1); datetime(1e6, 6, 15)]);
+%!   writetable (T, f);
+%!   R = readtable (f);
+%!   assert_equal (isa (R{:,1}, 'datetime'), true);
+%!   assert_equal (R{:,1}, T{:,1});
+%! unwind_protect_cleanup
+%!   unlink (f);
+%! end_unwind_protect
+%!test
+%! f = [tempname(), '.csv'];
+%! unwind_protect
+%!   T = table ([datetime(-1e6, 1, 1); datetime(1e9, 6, 15)]);
+%!   writetable (T, f);
+%!   R = readtable (f);
+%!   assert_equal (R{:,1}, T{:,1});
+%! unwind_protect_cleanup
+%!   unlink (f);
+%! end_unwind_protect
+
 ## Test text detection of a year wider than four digits, and of a signed one.
-## R2026a-verified: the year is bounded by its VALUE at six significant digits,
-## so leading zeros cost nothing and 1000000 is refused in text even though the
-## same year builds from components.
+## R2026a-verified apart from the width: leading zeros cost nothing, and where
+## MATLAB stops at six significant digits we read as far as the calendar goes,
+## so that a file this class writes is one it can read back.
 %!assert_equal (datevec (datetime ('32767-03-15')), [32767, 3, 15, 0, 0, 0])
 %!assert_equal (datevec (datetime ('0032767-03-15')), [32767, 3, 15, 0, 0, 0])
 %!assert_equal (datevec (datetime ('00032767-03-15')), [32767, 3, 15, 0, 0, 0])
@@ -436,10 +462,9 @@
 %!assert_equal (datevec (datetime ('March 15, 32767')), [32767, 3, 15, 0, 0, 0])
 %!assert_equal (datevec (datetime ('15 March 32767')), [32767, 3, 15, 0, 0, 0])
 %!assert_equal (datevec (datetime ('03/15/32767')), [32767, 3, 15, 0, 0, 0])
-%!error <datetime: could not recognize date/time format from input.> ...
-%! datetime ('1000000-03-15')
-%!error <datetime: could not recognize date/time format from input.> ...
-%! datetime ('10000000-03-15')
+%!assert_equal (year (datetime ('1000000-03-15')), 1e6)
+%!assert_equal (year (datetime ('1000000000-03-15')), 1e9)
+%!assert_equal (year (datetime ('01-Jan--1000000')), -1e6)
 
 ## Test the two shapes whose year stays narrow, because MATLAB refuses them too:
 ## a year-first slash date and a bare year.
@@ -463,10 +488,10 @@
 %!              [-1000, 3, 15, 0, 0, 0])
 %!assert_equal (datevec (datetime ('-32767-03-15', ...
 %!              'InputFormat', 'uuuuuuuu-MM-dd')), [-32767, 3, 15, 0, 0, 0])
-%!error <datetime: could not parse the date/time string '1000000-03-15' with 'InputFormat' 'yyyy-MM-dd'.> ...
-%! datetime ('1000000-03-15', 'InputFormat', 'yyyy-MM-dd')
-%!error <datetime: could not parse the date/time string '1000000-03-15' with 'InputFormat' 'yyyyyyy-MM-dd'.> ...
-%! datetime ('1000000-03-15', 'InputFormat', 'yyyyyyy-MM-dd')
+%!assert_equal (year (datetime ('1000000-03-15', 'InputFormat', 'yyyy-MM-dd')), ...
+%!              1e6)
+%!assert_equal (year (datetime ('1000000-03-15', ...
+%!              'InputFormat', 'yyyyyyy-MM-dd')), 1e6)
 %!error <datetime: could not parse the date/time string '-1000-03-15' with 'InputFormat' 'yyyy-MM-dd'.> ...
 %! datetime ('-1000-03-15', 'InputFormat', 'yyyy-MM-dd')
 
@@ -496,7 +521,7 @@
 ## Test that an element the format cannot read becomes NaT without costing the
 ## rest of the array, as it does for any other unreadable text.
 %!test
-%! t = datetime ({'32767-03-15', '1000000-03-15'}, 'InputFormat', 'uuuu-MM-dd');
+%! t = datetime ({'32767-03-15', 'not-a-date-here'}, 'InputFormat', 'uuuu-MM-dd');
 %! assert_equal (isnat (t), [false, true]);
 %! assert_equal (year (t(1)), 32767);
 

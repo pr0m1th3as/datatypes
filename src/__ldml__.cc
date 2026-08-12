@@ -713,11 +713,13 @@ ldml_parse (const Cell& strs, const string& fmt, double pivot, int lidx,
         }
         if (isYear)
         {
-          // At most six significant digits, whatever the pattern's width and
-          // however many zeros pad the text.  This is MATLAB's bound, and it
-          // does not move with the calendar: year 1000000 is refused there in
-          // text while the same year builds happily from components.
-          if (val > 999999)
+          // Bounded only by what a year can be held in exactly.  MATLAB stops
+          // at six significant digits here, which we followed until the
+          // calendar was widened past it -- at which point the cap made our own
+          // files unreadable to us, 'writetable' emitting a year that
+          // 'readtable' then refused.  Reading wider text than MATLAB is an
+          // additive divergence: every string it accepts is read the same way.
+          if (val > 9007199254740992.0)
           {
             ok = false;
             break;

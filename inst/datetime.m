@@ -641,6 +641,14 @@ classdef datetime
     ## for the same reason, but places the outer bound further out by
     ## extrapolating a zone's standard offset past the data.
     ##
+    ## @strong{Deviation from MATLAB} in how wide a year may be written in
+    ## text.  MATLAB reads at most six significant digits there, whatever the
+    ## format asks for, so it cannot read back a year past 999999 -- including
+    ## one its own @code{writetable} has just written.  Here the year is read as
+    ## far as the calendar carries it, so that a file this class writes is one
+    ## it can read.  The divergence is additive: every string MATLAB accepts is
+    ## read the same way, and only text it refuses outright is also accepted.
+    ##
     ## @strong{Deviation from MATLAB} in how a very distant year is displayed.
     ## MATLAB stops honouring the requested display format about year 144684 --
     ## where the instant it stores internally stops being exact to the
