@@ -646,6 +646,53 @@
  skips is.  Without an <code>'InputFormat'</code> such an array reads only the
  ISO 8601 UTC shape it also writes.
 </p>
+<p> <strong>The representable range of years.</strong>  The calendar is proleptic
+ Gregorian and its arithmetic is 64-bit, so an unzoned array holds any
+ year its components can, and so do the <code>'UTC'</code> and
+ <code>'UTCLeapSeconds'</code> zones, whose offset is zero at every instant.
+ Every <em>other</em> zone answers for any year as well, though beyond the
+ IANA database&rsquo;s own range there is no zone <em>data</em> to consult &ndash;
+ only the rule it carries for all future time.  That rule is written as an
+ nth weekday of a month, so it repeats exactly every 400 years, the period
+ over which weekday and leap year both return to where they started; the
+ offset for a distant year is therefore taken from the congruent year
+ inside the database&rsquo;s range.  MATLAB extrapolates in the same way and
+ agrees period for period, up to its own limit of about year 144684,
+ beyond which it raises where this class continues to answer.  A date
+ before any zone had a transition takes that zone&rsquo;s local mean time,
+ again as MATLAB does within its range.
+</p>
+<p> <strong>Deviation from MATLAB</strong> in the components of an <strong>infinite</strong>
+ datetime.  Building one is documented behaviour and is followed exactly:
+ a component of <code>Inf</code> or <code>-Inf</code> makes the datetime infinite, and
+ one of <code>NaN</code> makes it <code>NaT</code>.  What the components of such a
+ value read back as is documented nowhere, and the two implementations
+ differ.  Here every component is that infinity, whichever one carried it
+ and whatever its sign, so <code>ymd</code> and <code>datevec</code> answer with one
+ value rather than two, the sign is visible in each, and the components
+ rebuild the value they came from.  MATLAB reports the year alone as
+ infinite and <code>NaN</code> for the other five, a tuple its own constructor
+ then reads as <code>NaT</code> &ndash; so its components do not reconstruct the
+ datetime they describe.  Everything else agrees: <code>isnat</code>,
+ <code>isinf</code>, the display, the ordering, and that <code>NaN</code> beats an
+ infinity while two infinities of opposite sign name no moment at all.
+</p>
+<p> <strong>Deviation from MATLAB</strong> in how wide a year may be written in
+ text.  MATLAB reads at most six significant digits there, whatever the
+ format asks for, so it cannot read back a year past 999999 &ndash; including
+ one its own <code>writetable</code> has just written.  Here the year is read as
+ far as the calendar carries it, so that a file this class writes is one
+ it can read.  The divergence is additive: every string MATLAB accepts is
+ read the same way, and only text it refuses outright is also accepted.
+</p>
+<p> <strong>Deviation from MATLAB</strong> in how a very distant year is displayed.
+ MATLAB stops honouring the requested display format about year 144684 &ndash;
+ where the instant it stores internally stops being exact to the
+ millisecond &ndash; and prints <code>'1000000 CE'</code> or <code>'1000000 BCE'</code>
+ instead, text which cannot be read back even by giving an era field.
+ Here the components are separate double values and lose nothing there, so
+ the format asked for is always the format rendered.
+</p>
 <p> <strong>Deviations from MATLAB</strong> when copying a datetime array and giving
  a <code>'TimeZone'</code>.  MATLAB&rsquo;s constructor keeps the display format of
  the array it copies, while its <code>TimeZone</code> property assignment

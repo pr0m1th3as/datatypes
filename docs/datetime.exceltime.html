@@ -395,7 +395,14 @@
 </p>
 <p> <code><var>E</var> = exceltime (<var>T</var>, <var>dateType</var>)</code> selects the date
  system: <code>'1900'</code> (default) or <code>'1904'</code>.  The 1904 system
- counts days from 1904-01-01 and has no leap-year anomaly.
+ counts days from 1904-01-01 and has no leap-year anomaly, so a date
+ before 1900-03-01 is a plain day count and its serial is one greater than
+ MATLAB returns; MATLAB derives the 1904 serial from the 1900 one and
+ carries the nonexistent 1900-02-29 into a system that never had it.
+ Excel stores no negative serial in either system, so this affects only
+ dates neither can represent, where the value returned here is the one
+ <code>datetime (<var>E</var>, 'ConvertFrom', 'excel1904')</code> converts back
+ exactly.
 </p>
 <p> The time zone of a zoned <var>T</var> is ignored; its wall-clock components are
  used.  Not-A-Time (<code>NaT</code>) values are returned as <code>NaN</code>.

@@ -372,6 +372,13 @@
  other parts; for Excel (<code>.xlsx</code>, <code>.xlsm</code>) the workbook is
  read back and rewritten, so only its cell values are preserved.
 </p>
+<p> Dates written to Excel use its 1900 serial date system, which counts a
+ 29 February 1900 that never existed: 1900-03-01 is serial 61, and every
+ earlier date is one less than its plain day count.  That system has no
+ serial below 0 (1899-12-31), so any earlier date is written as text
+ rather than as a date, as MATLAB does.  MATLAB spells that text in the
+ datetime display format; here it is written in ISO 8601 form.
+</p>
 <p> Nested tables and structures are not supported, and the legacy binary
  formats <code>.xls</code> and <code>.xlsb</code> are not supported either; use
  <code>.xlsx</code>, <code>.ods</code>, or a text format.
