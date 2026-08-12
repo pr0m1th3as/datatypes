@@ -204,42 +204,103 @@
 %! datetime ([2024, 1, 15.5])
 %!assert_equal (second (datetime ([2024, 1, 1, 0, 0, 30.5])), 30.5)
 
-## Test 'datetime' constructor -- year must be representable.  Before this was
-## validated the out-of-range cases threw a C++ exception out of the timezone
-## lookup that no 'try' could catch, aborting the interpreter.
+## Test that the civil calendar carries any year.  It is 64-bit in 'civil.h',
+## so the 16 bits 'date::year' holds no longer bound an unzoned datetime; the
+## values are R2026a's, from 'dtnorm_probe'.
 %!assert_equal (year (datetime (32767, 1, 1)), 32767)
 %!assert_equal (year (datetime (32767, 12, 31)), 32767)
 %!assert_equal (year (datetime (-32767, 12, 31)), -32767)
 %!assert_equal (year (datetime (32766, 13, 1)), 32767)
-%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
-%! datetime (32768, 1, 1)
-%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
-%! datetime (-32767, 1, 1)
-%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
-%! datetime (32767, 13, 1)
-%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
-%! datetime (32766, 12, 400)
-%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
-%! datetime (-32766, -12, 1)
-%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
-%! datetime ([32768, 1, 1])
-%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
-%! datetime (32767, 12, 31, 24, 0, 0)
+%!assert_equal (datevec (datetime (32768, 1, 1)), [32768, 1, 1, 0, 0, 0])
+%!assert_equal (datevec (datetime (-32767, 1, 1)), [-32767, 1, 1, 0, 0, 0])
+%!assert_equal (datevec (datetime (32767, 13, 1)), [32768, 1, 1, 0, 0, 0])
+%!assert_equal (datevec (datetime (32766, 12, 400)), [32768, 1, 4, 0, 0, 0])
+%!assert_equal (datevec (datetime (-32766, -12, 1)), [-32768, 12, 1, 0, 0, 0])
+%!assert_equal (datevec (datetime ([32768, 1, 1])), [32768, 1, 1, 0, 0, 0])
+%!assert_equal (datevec (datetime (32767, 12, 31, 24, 0, 0)), ...
+%!              [32768, 1, 1, 0, 0, 0])
+%!assert_equal (datevec (datetime (1e6, 1, 1)), [1e6, 1, 1, 0, 0, 0])
+%!assert_equal (datevec (datetime (1e6, 3, 4, 5, 6, 7.25)), ...
+%!              [1e6, 3, 4, 5, 6, 7.25])
+%!assert_equal (year (datetime (1e9, 1, 1)), 1e9)
+%!assert_equal (year (datetime (-1e6, 1, 1)), -1e6)
+%!assert_equal (datevec (datetime (1e6, 13, 1)), [1000001, 1, 1, 0, 0, 0])
+%!assert_equal (datevec (datetime (1e6, 1, 400)), [1000001, 2, 3, 0, 0, 0])
+%!assert_equal (datevec (datetime ('100000-01-01', ...
+%!              'InputFormat', 'yyyy-MM-dd')), [100000, 1, 1, 0, 0, 0])
 %!assert_equal (isnat (datetime (NaN, 1, 1)), true)
 %!assert_equal (year (datetime (Inf, 1, 1)), Inf)
 
-## Test the year range on every other route to the calendar.  Numeric
-## components were the only guarded one: text, the serial conversions and
-## calendar arithmetic all reached the same lookup unchecked, and a zoned one
-## still aborted the interpreter.
+## Test that instants, arithmetic and ordering hold up out there too, the whole
+## instant path being counted in 64-bit days and seconds rather than built as a
+## chrono time point, whose microseconds run out near year 292277.  R2026a's
+## values again.
+%!assert_equal (posixtime (datetime (1e6, 1, 1)), 31494784780800)
+%!assert_equal (datenum (datetime (1e6, 1, 1)), 365242501)
+%!assert_equal (char (datetime (1e6, 1, 2) - datetime (1e6, 1, 1)), '24:00:00')
+%!assert_equal (datetime (1e6, 1, 1) < datetime (1e6, 1, 2), true)
+%!assert_equal (year (min ([datetime(1e6, 1, 2), datetime(1e6, 1, 1)])), 1e6)
+%!assert_equal (datevec (datetime (1e6, 1, 1) + days (1)), ...
+%!              [1e6, 1, 2, 0, 0, 0])
+%!assert_equal (datevec (datetime (1e6, 1, 1) + calyears (1)), ...
+%!              [1000001, 1, 1, 0, 0, 0])
+%!assert_equal (datevec (datetime (32000, 1, 1) + calyears (1000)), ...
+%!              [33000, 1, 1, 0, 0, 0])
+%!assert_equal (year (datetime (32000, 1, 1) + years (1000)), 32999)
+%!assert_equal (year (dateshift (datetime (32767, 6, 1), 'end', 'year') ...
+%!                    + calyears (1)), 32768)
+%!test
+%! t = datetime (2024, 3, 15);
+%! t.Year = 100000;
+%! assert_equal (year (t), 100000);
+
+## Test that UTC and the leap-second timeline carry a wide year as well: their
+## offset is zero at every instant, so neither needs the timezone database.
+## R2026a exempts UTC in the same way.
+%!assert_equal (year (datetime (1e6, 1, 1, 'TimeZone', 'UTC')), 1e6)
+%!assert_equal (datevec (datetime (30000, 1, 1, 'TimeZone', 'UTC') ...
+%!                       + calyears (2768)), [32768, 1, 1, 0, 0, 0])
+%!assert_equal (posixtime (datetime (1e6, 1, 1, 'TimeZone', 'UTC')), ...
+%!              31494784780800)
+
+## Test that a REAL zone is still bounded, and refuses rather than aborting.
+## There is no zone data out beyond the tz database's own range, and R2026a
+## raises there too ('Datetime value exceeds calendar limits').
 %!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
-%! datetime ('100000-01-01', 'InputFormat', 'yyyy-MM-dd')
+%! datetime (1e6, 1, 1, 'TimeZone', 'America/New_York')
 %!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
 %! datetime ('32768-01-01', 'InputFormat', 'yyyy-MM-dd', 'TimeZone', 'America/New_York')
 %!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
-%! datetime (11274307, 'ConvertFrom', 'excel')
-%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
 %! datetime (11274307, 'ConvertFrom', 'excel', 'TimeZone', 'America/New_York')
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! datetime (32000, 1, 1, 'TimeZone', 'America/New_York') + calyears (768)
+%!assert_equal (year (datetime (32767, 1, 1, 'TimeZone', 'America/New_York')), ...
+%!              32767)
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! t = datetime (1e6, 3, 15);
+%! t.TimeZone = 'America/New_York';
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! cat (2, datetime (2024, 3, 15, 'TimeZone', 'America/New_York'), ...
+%!      datetime (1e6, 3, 15, 'TimeZone', 'UTC'))
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! t = datetime (2024, 3, 15, 'TimeZone', 'America/New_York');
+%! t(2) = datetime (1e6, 3, 15, 'TimeZone', 'UTC');
+%!test
+%! t = datetime (1e6, 3, 15);
+%! t.TimeZone = 'UTC';
+%! assert_equal (year (t), 1e6);
+%! assert_equal (t.TimeZone, 'UTC');
+%!test
+%! c = [datetime(1e6, 3, 15, 'TimeZone', 'UTC'), ...
+%!      datetime(2024, 3, 15, 'TimeZone', 'America/New_York')];
+%! assert_equal (year (c), [1e6, 2024]);
+%! assert_equal (c.TimeZone, 'UTC');
+
+## Test that the serial conversions are still bounded: they read their instants
+## back through the builtin's 'ConvertFrom' path, which is still 'date.h' and is
+## widened separately.
+%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
+%! datetime (11274307, 'ConvertFrom', 'excel')
 %!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
 %! datetime (4e9, 'ConvertFrom', 'datenum')
 %!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
@@ -249,20 +310,7 @@
 %!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
 %! datetime (1e10, 'ConvertFrom', 'juliandate')
 %!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
-%! datetime (32000, 1, 1) + calyears (1000)
-%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
-%! datetime (32000, 1, 1, 'TimeZone', 'America/New_York') + calyears (768)
-%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
-%! datetime (30000, 1, 1, 'TimeZone', 'UTC') + calyears (2768)
-%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
 %! datetime (30000, 1, 1, 'TimeZone', 'UTCLeapSeconds') + calyears (2768)
-%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
-%! datetime (32000, 1, 1) + years (1000)
-%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
-%! dateshift (datetime (32767, 6, 1), 'end', 'year') + calyears (1)
-%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
-%! t = datetime (2024, 3, 15);
-%! t.Year = 100000;
 
 ## Test that the year-range check leaves every representable date alone,
 ## including the serials and the boundary the constructor already accepted.

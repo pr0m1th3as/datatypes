@@ -32,7 +32,7 @@ OCTFILES = __datetime__.oct	\
 .PHONY: all
 all: $(OCTFILES)
 
-__datetime__.oct: __datetime__.cc tz.cpp
+__datetime__.oct: __datetime__.cc tz.cpp civil.h
 	$(MKOCTFILE) '-I ./date'  __datetime__.cc tz.cpp $(TZFLAGS) $(LDFLAGS)
 
 __table2ods__.oct: __table2ods__.cc ods/pugixml.cpp ods/miniz.c

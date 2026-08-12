@@ -26,6 +26,7 @@ this program; if not, see <http://www.gnu.org/licenses/>.
 #include <octave/parse.h>
 
 #include "date/tz.h"
+#include "civil.h"
 
 using namespace std;
 using namespace date;
@@ -247,6 +248,59 @@ long
 time_extra_days (double time_sec)
 {
   return (long) floor (time_sec / 86400.0);
+}
+
+// Normalize a component set without consulting 'date.h' or the timezone
+// database: DAYS is the day count from 1970-01-01 and HMS(3..5) the time of
+// day.  This is the whole answer for an unzoned wall clock, and being 64-bit
+// throughout it is what lets a year outside [-32767, 32767] survive.  The time
+// of day still goes through 'seconds2vector', which is safe at any year because
+// what it is handed is one day's worth of seconds.
+void
+components2civil (double Yv, double Mv, double Dv, double hv, double mv,
+                  double sv, double xv, string precision, long& days,
+                  RowVector& hms)
+{
+  double time_sec = hv * 3600 + mv * 60 + sv + xv / 1000;
+  long extra_days = time_extra_days (time_sec);
+  hms = seconds2vector (remainder (time_sec, 86400), precision);
+  days = civil::components2days (Yv, Mv, Dv, extra_days);
+}
+
+// Components of a POSIX instant read as UTC, in 64 bits.  'sys2components'
+// answers the same question through 'date.h' and truncates the year on the way;
+// UTC has no transitions, so a zone lookup has nothing to add here.
+void
+posix2civil (double posix_sec, string precision, RowVector& C)
+{
+  double dayf = floor (posix_sec / 86400.0);
+  RowVector hms = seconds2vector (posix_sec - dayf * 86400.0, precision);
+  long y, mo, d;
+  civil::civil_from_days ((long) dayf, y, mo, d);
+  C(0) = (double) y;
+  C(1) = (double) mo;
+  C(2) = (double) d;
+  C(3) = hms(3);
+  C(4) = hms(4);
+  C(5) = hms(5);
+}
+
+// Write the date a day count names, and a time of day, into the six output
+// arrays at index I.  Templated because the matrix branches collect their
+// output in 'ColumnVector' and the rest in 'NDArray'.
+template <typename Vec>
+void
+set_civil (long days, const RowVector& hms, int i, Vec& Y, Vec& M,
+           Vec& D, Vec& h, Vec& m, Vec& s)
+{
+  long yo, mo, dd;
+  civil::civil_from_days (days, yo, mo, dd);
+  Y(i) = (double) yo;
+  M(i) = (double) mo;
+  D(i) = (double) dd;
+  h(i) = hms(3);
+  m(i) = hms(4);
+  s(i) = hms(5);
 }
 
 auto
@@ -1156,6 +1210,13 @@ a repeated clock when an offset is given. \n\
         Y(i) = P(i); M(i) = P(i); D(i) = P(i);
         h(i) = P(i); m(i) = P(i); s(i) = P(i); OFF(i) = 0;
       }
+      else if (timezone == "UTC")
+      {
+        RowVector C(6);
+        posix2civil (P(i), precision, C);
+        Y(i) = C(0); M(i) = C(1); D(i) = C(2);
+        h(i) = C(3); m(i) = C(4); s(i) = C(5); OFF(i) = 0;
+      }
       else
       {
         RowVector C(6);
@@ -1254,34 +1315,9 @@ a repeated clock when an offset is given. \n\
         }
         else
         {
-          // Fix years / months
-          int tmp_Y = (int)YMD(i,0) + ((int)YMD(i,1) / 12);
-          int tmp_M = (int)YMD(i,1) % 12;
-          int tmp_D = (int)YMD(i,2);
-          // Add/subtract months and days accordingly
-          year_month_day ymd = year(tmp_Y)/(int)0/(int)0;
-          if (tmp_M < 0)
-          {
-            ymd -= months{-tmp_M};
-          }
-          else
-          {
-            ymd += months{tmp_M};
-          }
-          if (tmp_D < 0)
-          {
-            ymd = sys_days{ymd} - days{-tmp_D};
-          }
-          else
-          {
-            ymd = sys_days{ymd} + days{tmp_D};
-          }
-          Y(i) = (int)ymd.year();
-          M(i) = (unsigned int)ymd.month();
-          D(i) = (unsigned int)ymd.day();
-          h(i) = 0;
-          m(i) = 0;
-          s(i) = 0;
+          RowVector hms(6, 0);
+          set_civil (civil::components2days (YMD(i,0), YMD(i,1), YMD(i,2), 0),
+                     hms, i, Y, M, D, h, m, s);
         }
       }
     }
@@ -1331,36 +1367,12 @@ a repeated clock when an offset is given. \n\
         {
           // Aggregate hours, minutes, and seconds into seconds, calculate extra
           // days for later and retrieve remaining hours, minutes, and seconds
-          double time_sec = YMDhms(i,3) * 3600 + YMDhms(i,4) * 60 + YMDhms(i,5);
-          long extra_days = time_extra_days (time_sec);
-          time_sec = remainder (time_sec, 86400);
-          RowVector OUT = seconds2vector (time_sec, precision);
-          h(i) = OUT(3); m(i) = OUT(4); s(i) = OUT(5);
-          // Fix years / months
-          int tmp_Y = (int)YMDhms(i,0) + ((int)YMDhms(i,1) / 12);
-          int tmp_M = (int)YMDhms(i,1) % 12;
-          int tmp_D = (int)YMDhms(i,2) + (int)extra_days;
-          // Add/subtract months and days accordingly
-          year_month_day ymd = year(tmp_Y)/(int)0/(int)0;
-          if (tmp_M < 0)
-          {
-            ymd -= months{-tmp_M};
-          }
-          else
-          {
-            ymd += months{tmp_M};
-          }
-          if (tmp_D < 0)
-          {
-            ymd = sys_days{ymd} - days{-tmp_D};
-          }
-          else
-          {
-            ymd = sys_days{ymd} + days{tmp_D};
-          }
-          Y(i) = (int)ymd.year();
-          M(i) = (unsigned int)ymd.month();
-          D(i) = (unsigned int)ymd.day();
+          long dnum;
+          RowVector hms;
+          components2civil (YMDhms(i,0), YMDhms(i,1), YMDhms(i,2),
+                            YMDhms(i,3), YMDhms(i,4), YMDhms(i,5), 0,
+                            precision, dnum, hms);
+          set_civil (dnum, hms, i, Y, M, D, h, m, s);
         }
       }
     }
@@ -1477,9 +1489,16 @@ a repeated clock when an offset is given. \n\
         }
         else
         {
-          auto lt = components2localtime (Y(i), M(i), D(i), h(i), m(i), s(i),
-                                          x(i), precision);
-          S(i) = (double) lt.time_since_epoch ().count () / 1000000.0 - OF(i);
+          // Counted in 64-bit days and seconds rather than built as a chrono
+          // time point: microseconds in an 'int64' run out at about 292277
+          // years from the epoch, well inside the range the calendar now
+          // carries, and they would wrap silently rather than refuse.
+          long dnum;
+          RowVector hms;
+          components2civil (Y(i), M(i), D(i), h(i), m(i), s(i), x(i),
+                            precision, dnum, hms);
+          S(i) = (double) dnum * 86400.0 + hms(3) * 3600 + hms(4) * 60
+                 + hms(5) - OF(i);
         }
       }
       retval(0) = S;
@@ -1596,6 +1615,17 @@ a repeated clock when an offset is given. \n\
         {
           S(i) = chk;
         }
+        else if (timezone == "UTC")
+        {
+          // No offset to resolve, so the calendar answers on its own and any
+          // year survives.
+          long dnum;
+          RowVector hms;
+          components2civil (Y(i), M(i), D(i), h(i), m(i), s(i), x(i),
+                            precision, dnum, hms);
+          S(i) = (double) dnum * 86400.0 + hms(3) * 3600 + hms(4) * 60
+                 + hms(5);
+        }
         else
         {
           auto lt = components2localtime (Y(i), M(i), D(i), h(i), m(i),
@@ -1677,7 +1707,11 @@ a repeated clock when an offset is given. \n\
     // an unzoned datetime gave depended on where the code ran.  The matrix
     // forms of this constructor never consulted a zone, so the two spellings
     // also disagreed with each other.
-    if (! haveZone)
+    // UTC joins the no-zone case: it has no transitions, so resolving a wall
+    // clock against it is the identity and the calendar answers alone.  That is
+    // what lets a UTC datetime hold a year the timezone database cannot, as
+    // R2026a's does.
+    if (! haveZone || (timezone == "UTC" && to_tzone == "UTC"))
     {
       for (int i = 0; i < sz.numel (); i++)
       {
@@ -1697,11 +1731,11 @@ a repeated clock when an offset is given. \n\
         }
         else
         {
-          auto lt = components2localtime (Y(i), M(i), D(i), h(i), m(i), s(i),
-                                          x(i), precision);
-          RowVector OUT = localtime2vector (lt, precision);
-          Y(i) = OUT(0); M(i) = OUT(1); D(i) = OUT(2);
-          h(i) = OUT(3); m(i) = OUT(4); s(i) = OUT(5);
+          long dnum;
+          RowVector hms;
+          components2civil (Y(i), M(i), D(i), h(i), m(i), s(i), x(i),
+                            precision, dnum, hms);
+          set_civil (dnum, hms, i, Y, M, D, h, m, s);
         }
       }
       retval(0) = Y;

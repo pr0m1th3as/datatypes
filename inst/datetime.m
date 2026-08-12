@@ -630,6 +630,25 @@ classdef datetime
     ## skips is.  Without an @qcode{'InputFormat'} such an array reads only the
     ## ISO 8601 UTC shape it also writes.
     ##
+    ## @strong{The representable range of years.}  The calendar is proleptic
+    ## Gregorian and its arithmetic is 64-bit, so an unzoned array holds any
+    ## year its components can, and so do the @qcode{'UTC'} and
+    ## @qcode{'UTCLeapSeconds'} zones, whose offset is zero at every instant.
+    ## Every @emph{other} zone is answered from the IANA database, which cannot
+    ## represent a year outside @code{[-32767, 32767]}, so a date beyond that
+    ## cannot be given one; asking raises an error rather than returning a
+    ## wrong answer.  MATLAB draws the same distinction, exempting @qcode{'UTC'}
+    ## for the same reason, but places the outer bound further out by
+    ## extrapolating a zone's standard offset past the data.
+    ##
+    ## @strong{Deviation from MATLAB} in how a very distant year is displayed.
+    ## MATLAB stops honouring the requested display format about year 144684 --
+    ## where the instant it stores internally stops being exact to the
+    ## millisecond -- and prints @qcode{'1000000 CE'} or @qcode{'1000000 BCE'}
+    ## instead, text which cannot be read back even by giving an era field.
+    ## Here the components are separate double values and lose nothing there, so
+    ## the format asked for is always the format rendered.
+    ##
     ## @strong{Deviations from MATLAB} when copying a datetime array and giving
     ## a @qcode{'TimeZone'}.  MATLAB's constructor keeps the display format of
     ## the array it copies, while its @code{TimeZone} property assignment
@@ -956,7 +975,7 @@ classdef datetime
           ## Text can name a year the calendar cannot represent as readily as
           ## numbers can, and the zoned normalization below is a timezone
           ## lookup like any other.
-          dtCheckYearRange ({DATEVEC});
+          dtCheckYearRange ({DATEVEC}, TimeZone);
           ## Split DATEVEC into individual date/time units and reshape
           this.Year = reshape (DATEVEC(:,1), size (DateStrings));
           this.Month = reshape (DATEVEC(:,2), size (DateStrings));
@@ -1029,7 +1048,7 @@ classdef datetime
         M = floor (mod (x, 10000) ./ 100);
         D = mod (x, 100);
         dtCheckIntegerComponents ({Y, M, D});
-        dtCheckYearRange ({Y, M, D});
+        dtCheckYearRange ({Y, M, D}, TimeZone);
         if (! isempty (TimeZone))
           [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
            this.Second] = __datetime__ (Y, M, D, 'TimeZone', TimeZone, ...
@@ -1104,7 +1123,7 @@ classdef datetime
                                       'Precision', 'microseconds');
       else
         dtCheckIntegerComponents (args);
-        dtCheckYearRange (args);
+        dtCheckYearRange (args, TimeZone);
         if (dtIsLeapZone (TimeZone))
           ## Let the builtin validate the shape of the positional arguments,
           ## then normalize on the leap-second timeline instead, where a 60th
@@ -4852,7 +4871,7 @@ classdef datetime
       R.Hour = h; R.Minute = mi; R.Second = s;
       ## Checked before the offset rather than in 'normalize' below, because
       ## the offset is the timezone lookup and so comes first.
-      dtCheckComponentRange (Y, M, D, h, mi, s);
+      dtCheckComponentRange (Y, M, D, h, mi, s, this.TimeZone);
       R.Offset = dtOffsetOf (R.Year, R.Month, R.Day, R.Hour, R.Minute, ...
                              R.Second, R.TimeZone);
       R = normalize (R);
@@ -5517,6 +5536,11 @@ classdef datetime
             error (strcat ("datetime.subsasgn: cannot assign %s values", ...
                            " to a datetime array."), class (val));
           endif
+          ## An element joining a REAL-zoned array must be a year that zone can
+          ## be resolved for, whatever the calendar carries: the array would
+          ## otherwise hold a date no offset can be computed for.
+          dtCheckComponentRange (val.Year, val.Month, val.Day, val.Hour, ...
+                                 val.Minute, val.Second, this.TimeZone);
           ## Track which positions are real so that any elements created by
           ## growing the array (out-of-range assignment) can be filled with
           ## Not-A-Time; Octave would otherwise pad them with 0, i.e. the
@@ -5581,6 +5605,16 @@ classdef datetime
               if (strcmp (this.TimeZone, toTimeZone))
                 return;
               endif
+              ## Either side being a real zone means the components have to be
+              ## inside what the timezone database can answer for, whatever the
+              ## calendar can carry.  Both are asked, since the wall clock is
+              ## read in one zone and written in the other.
+              dtCheckComponentRange (this.Year, this.Month, this.Day, ...
+                                     this.Hour, this.Minute, this.Second, ...
+                                     this.TimeZone);
+              dtCheckComponentRange (this.Year, this.Month, this.Day, ...
+                                     this.Hour, this.Minute, this.Second, ...
+                                     toTimeZone);
               wasLeap = dtIsLeapZone (this.TimeZone);
               nowLeap = dtIsLeapZone (toTimeZone);
               if (wasLeap)
@@ -5912,7 +5946,7 @@ classdef datetime
         return;
       endif
       dtCheckComponentRange (this.Year, this.Month, this.Day, this.Hour, ...
-                             this.Minute, this.Second);
+                             this.Minute, this.Second, this.TimeZone);
       if (dtIsLeapZone (this.TimeZone))
         [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
          this.Second] = dtLeapNormalize (this.Year, this.Month, this.Day, ...
@@ -6193,7 +6227,7 @@ classdef datetime
     ## A leap-second array inverts the continuous SI-second count instead, so a
     ## count that lands inside an inserted second yields a 60th second.
     function [Y, M, D, h, m, s, off] = serial2components (this, ser)
-      dtCheckSerialRange (ser, 'posixtime');
+      dtCheckSerialZone (ser, this.TimeZone);
       if (dtIsLeapZone (this.TimeZone))
         [Y, M, D, h, m, s] = dtLeapComponents (ser);
         off = zeros (size (Y));
@@ -6262,7 +6296,7 @@ classdef datetime
       ## Checked here rather than left to 'normalize' below: the leap-second
       ## clamp asks the builtin for a POSIX time first, which is a timezone
       ## lookup like any other.
-      dtCheckComponentRange (Y, M, D, h, m, s);
+      dtCheckComponentRange (Y, M, D, h, m, s, this.TimeZone);
       if (dtIsLeapZone (this.TimeZone))
         ## Calendar arithmetic keeps the wall clock, so an inserted second can
         ## be carried onto a minute that never had one; clamp it to the 59th
@@ -6296,7 +6330,9 @@ classdef datetime
     ## from a date whose zone was on the other side of a transition -- for
     ## which no fold of the target clock corresponds to it and the trip fails.
     function this = keepFold (this, srcOff)
-      if (isempty (this.TimeZone) || dtIsLeapZone (this.TimeZone))
+      ## A fixed-offset zone has no fold to keep, and asking the database would
+      ## only risk a year it cannot hold.
+      if (dtIsFixedZone (this.TimeZone))
         return;
       endif
       this.Offset = __datetime__ (this.Year, this.Month, this.Day, ...
@@ -6493,6 +6529,10 @@ function [Y, M, D, h, m, s, off] = dtRezone (Y, M, D, h, m, s, off, ...
   if (isempty (TZ) || strcmp (TZ, fromTZ))
     return;
   endif
+  ## Reading the clock in one zone and writing it in another asks the database
+  ## twice, so both years have to be inside what it can answer for.
+  dtCheckComponentRange (Y, M, D, h, m, s, fromTZ);
+  dtCheckComponentRange (Y, M, D, h, m, s, TZ);
   [Y, M, D, h, m, s, off] = __datetime__ (Y, M, D, h, m, s, 'ConvertTo', ...
                             'rezone', 'Offset', off, 'toTimeZone', TZ, ...
                             'Precision', 'microseconds');
@@ -6985,9 +7025,9 @@ endfunction
 ## components, are added to that.  Both the anchor and the result must be
 ## representable.  Intermediate years are deliberately NOT checked: they may
 ## wrap and wrap back, which is how datetime (32767, 12, 31) works today.
-function dtCheckYearRange (args)
+function dtCheckYearRange (args, TZ)
   [Y, M, D, h, mi, sec] = dtSplitComponents (args);
-  dtCheckComponentRange (Y, M, D, h, mi, sec);
+  dtCheckComponentRange (Y, M, D, h, mi, sec, TZ);
 endfunction
 
 ## The same check on components already held apart, for the callers that have
@@ -6995,7 +7035,16 @@ endfunction
 ## one from arguments.  Construction is not the only way a year leaves the
 ## range: calendar arithmetic, 'dateshift' and an assignment to the Year
 ## property all reach the same timezone lookup with a year of their own making.
-function dtCheckComponentRange (Y, M, D, h, mi, sec)
+##
+## The CALENDAR no longer has a range: it is 64-bit in 'civil.h' and carries any
+## year.  What still has one is the TIMEZONE database, whose 'date.h' year is a
+## 'short' and which throws a C++ exception no Octave code can catch outside
+## [-32767, 32767].  So this asks about the zone, and an array without one has
+## nothing here to answer for.
+function dtCheckComponentRange (Y, M, D, h, mi, sec, TZ)
+  if (dtIsFixedZone (TZ))
+    return;
+  endif
   D = D + fix ((h .* 3600 + mi .* 60 + sec) ./ 86400);
   yy = Y + fix (M ./ 12);
   dmi = M - 12 .* fix (M ./ 12) - 1;
@@ -7015,6 +7064,16 @@ endfunction
 ## it from an ordinary one.  KIND is the 'ConvertFrom' type the builtin will be
 ## given, after 'dtEpochAlias' has folded the aliases onto the four it knows;
 ## each of them is a linear map onto days from 1970-01-01.
+## The serial check made only where a REAL zone has to be resolved.  An unzoned
+## array, a UTC one and the leap-second timeline all read their instants through
+## 64-bit civil arithmetic, which has no range to leave.
+function dtCheckSerialZone (ser, TZ)
+  if (dtIsFixedZone (TZ))
+    return;
+  endif
+  dtCheckSerialRange (ser, 'posixtime');
+endfunction
+
 function dtCheckSerialRange (x, kind)
   d = double (x);
   switch (kind)
@@ -7327,6 +7386,10 @@ endfunction
 ## Zone abbreviation (e.g. 'EDT', 'EST', 'UTC') for each element of a zoned
 ## datetime, from the compiled tz database via the __datetime__ builtin.
 function ab = dtZoneAbbrev (Y, M, D, H, Mi, S, TZ, off)
+  if (dtIsFixedZone (TZ))
+    ab = repmat ({'UTC'}, size (Y));
+    return;
+  endif
   ab = __datetime__ (Y, M, D, H, Mi, S, 'ConvertTo', 'zoneabbrev', ...
                      'Offset', off, ...
                      'TimeZone', TZ, 'Precision', 'microseconds');
@@ -7335,6 +7398,10 @@ endfunction
 ## Logical daylight-saving-time flag for each element of a zoned datetime,
 ## from the compiled tz database via the __datetime__ builtin.
 function tf = dtIsDst (Y, M, D, H, Mi, S, TZ, off)
+  if (dtIsFixedZone (TZ))
+    tf = false (size (Y));
+    return;
+  endif
   tf = logical (__datetime__ (Y, M, D, H, Mi, S, 'ConvertTo', 'isdst', ...
                               'TimeZone', TZ, 'Offset', off, 'Precision', ...
                               'microseconds'));
@@ -7513,9 +7580,8 @@ endfunction
 ## the 60th second of its minute; any other count is an ordinary POSIX time once
 ## the whole seconds inserted before it have been taken back out.
 function [Y, M, D, h, mi, sec] = dtLeapComponents (ser)
-  ## Covers the 'tt2000' and Julian leap-second constructor branches, which
-  ## reach the builtin through here rather than through 'dtCheckSerialRange'.
-  ## The inserted seconds are far below the resolution of the check.
+  ## Reads its instants back through the builtin's 'ConvertFrom' path, which is
+  ## still bounded by 'date.h' -- so this stays until that path is widened too.
   dtCheckSerialRange (ser, 'posixtime');
   S = dtLeapStarts ();
   sz = size (ser);
@@ -8370,8 +8436,16 @@ endfunction
 ## resolve_local's choices.  Zero for an unzoned or leap-second array.  Used by
 ## every wall-clock operation; an instant-based one must take its offset from
 ## 'serial2components' instead, which reads it off the instant.
+## Whether a zone can be answered without the timezone database: no zone at
+## all, UTC, or the leap-second timeline, each of which has a zero offset at
+## every instant.  Every other zone needs 'date.h', whose year is a 'short', and
+## is therefore confined to [-32767, 32767] however wide the calendar has grown.
+function tf = dtIsFixedZone (TZ)
+  tf = isempty (TZ) || strcmp (TZ, 'UTC') || dtIsLeapZone (TZ);
+endfunction
+
 function off = dtOffsetOf (Y, M, D, h, m, s, tz)
-  if (isempty (tz) || dtIsLeapZone (tz))
+  if (dtIsFixedZone (tz))
     off = zeros (size (Y));
     return;
   endif
