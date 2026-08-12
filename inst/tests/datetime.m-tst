@@ -296,21 +296,27 @@
 %! assert_equal (year (c), [1e6, 2024]);
 %! assert_equal (c.TimeZone, 'UTC');
 
-## Test that the serial conversions are still bounded: they read their instants
-## back through the builtin's 'ConvertFrom' path, which is still 'date.h' and is
-## widened separately.
+## Test that the serial conversions carry a wide year too: they decompose
+## through the same 64-bit calendar.  The excel value is R2026a's, and is the
+## serial that reached this class from a spreadsheet through 'readtable'.
+%!assert_equal (datevec (datetime (11274307, 'ConvertFrom', 'excel')), ...
+%!              [32768, 1, 1, 0, 0, 0])
+%!assert_equal (exceltime (datetime (11274307, 'ConvertFrom', 'excel')), ...
+%!               11274307)
+%!assert_equal (datenum (datetime (4e9, 'ConvertFrom', 'datenum')), 4e9)
+%!assert_equal (posixtime (datetime (1e15, 'ConvertFrom', 'posixtime')), 1e15)
+%!assert_equal (year (datetime (1e15, 'ConvertFrom', 'epochtime')), ...
+%!              year (datetime (1e15, 'ConvertFrom', 'posixtime')))
+%!assert_equal (year (datetime (30000, 1, 1, 'TimeZone', 'UTCLeapSeconds') ...
+%!                    + calyears (2768)), 32768)
+%!assert_equal (year (datetime (1e6, 1, 1, 'TimeZone', 'UTCLeapSeconds')), 1e6)
+
+## Test that a serial conversion asking for a REAL zone is still bounded, that
+## zone having no data out there to resolve an offset from.
 %!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
-%! datetime (11274307, 'ConvertFrom', 'excel')
-%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
-%! datetime (4e9, 'ConvertFrom', 'datenum')
-%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
-%! datetime (1e15, 'ConvertFrom', 'posixtime')
-%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
-%! datetime (1e15, 'ConvertFrom', 'epochtime')
-%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
-%! datetime (1e10, 'ConvertFrom', 'juliandate')
-%!error <datetime: the requested date is outside the range of representable dates; the year must fall between -32767 and 32767.> ...
-%! datetime (30000, 1, 1, 'TimeZone', 'UTCLeapSeconds') + calyears (2768)
+%! datetime (11274307, 'ConvertFrom', 'excel', 'TimeZone', 'America/New_York')
+%!assert_equal (year (datetime (11274307, 'ConvertFrom', 'excel', ...
+%!                    'TimeZone', 'UTC')), 32768)
 
 ## Test that the year-range check leaves every representable date alone,
 ## including the serials and the boundary the constructor already accepted.

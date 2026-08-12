@@ -177,16 +177,36 @@ auto from_to_tz_nano (double time_sec, string from_tzone, string to_tzone)
   return to;
 }
 
+// Components of a count of seconds from 1970-01-01, which is what every
+// 'ConvertFrom' serial becomes before it is read.  The date is taken in 64 bits
+// and only the time WITHIN the day is handed to chrono, so no year is
+// truncated; a whole day of microseconds is a value chrono is always safe with,
+// however distant the day itself.  The two corrections guard the seam: past
+// 2^53 seconds a double's spacing exceeds a second, so the split can land a
+// hair either side of midnight.
 RowVector seconds2vector (double time_sec, string precision)
 {
   RowVector OUT(6);
-  auto tp = double2micro (time_sec);
+  double dayf = floor (time_sec / 86400.0);
+  double sec_of_day = time_sec - dayf * 86400.0;
+  if (sec_of_day >= 86400.0)
+  {
+    sec_of_day -= 86400.0;
+    dayf += 1;
+  }
+  else if (sec_of_day < 0)
+  {
+    sec_of_day += 86400.0;
+    dayf -= 1;
+  }
+  long y, mo, d;
+  civil::civil_from_days ((long) dayf, y, mo, d);
+  auto tp = double2micro (sec_of_day);
   auto day_tp = chrono::floor<days>(tp);
   hh_mm_ss time_tp{tp - day_tp};
-  year_month_day date_tp{day_tp};
-  OUT(0) = (int)date_tp.year();
-  OUT(1) = (unsigned int)date_tp.month();
-  OUT(2) = (unsigned int)date_tp.day();
+  OUT(0) = (double) y;
+  OUT(1) = (double) mo;
+  OUT(2) = (double) d;
   OUT(3) = time_tp.hours().count();
   OUT(4) = time_tp.minutes().count();
   OUT(5) = (double)time_tp.seconds().count() +
@@ -265,24 +285,6 @@ components2civil (double Yv, double Mv, double Dv, double hv, double mv,
   long extra_days = time_extra_days (time_sec);
   hms = seconds2vector (remainder (time_sec, 86400), precision);
   days = civil::components2days (Yv, Mv, Dv, extra_days);
-}
-
-// Components of a POSIX instant read as UTC, in 64 bits.  'sys2components'
-// answers the same question through 'date.h' and truncates the year on the way;
-// UTC has no transitions, so a zone lookup has nothing to add here.
-void
-posix2civil (double posix_sec, string precision, RowVector& C)
-{
-  double dayf = floor (posix_sec / 86400.0);
-  RowVector hms = seconds2vector (posix_sec - dayf * 86400.0, precision);
-  long y, mo, d;
-  civil::civil_from_days ((long) dayf, y, mo, d);
-  C(0) = (double) y;
-  C(1) = (double) mo;
-  C(2) = (double) d;
-  C(3) = hms(3);
-  C(4) = hms(4);
-  C(5) = hms(5);
 }
 
 // Write the date a day count names, and a time of day, into the six output
@@ -1212,8 +1214,9 @@ a repeated clock when an offset is given. \n\
       }
       else if (timezone == "UTC")
       {
-        RowVector C(6);
-        posix2civil (P(i), precision, C);
+        // UTC has no transitions, so the instant is read straight off the
+        // calendar and any year survives.
+        RowVector C = seconds2vector (P(i), precision);
         Y(i) = C(0); M(i) = C(1); D(i) = C(2);
         h(i) = C(3); m(i) = C(4); s(i) = C(5); OFF(i) = 0;
       }

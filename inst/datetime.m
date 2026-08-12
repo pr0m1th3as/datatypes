@@ -1090,7 +1090,7 @@ classdef datetime
          this.Second] = dtLeapComponents (dtJulian2Serial (double (x), ...
                           strcmpi (ConvertFrom, 'modifiedjuliandate')));
       elseif (! isempty (ConvertFrom) && ! isempty (TimeZone))
-        dtCheckSerialRange (args{1}, lower (char (ConvertFrom)));
+        dtCheckSerialRange (args{1}, lower (char (ConvertFrom)), TimeZone);
         if (strcmpi (ConvertFrom, 'posixtime'))
           ## POSIX time is an absolute UTC instant, so read it as a UTC wall
           ## clock and then convert into the requested zone (honouring DST).
@@ -1117,7 +1117,6 @@ classdef datetime
                                         'microseconds');
         endif
       elseif (! isempty (ConvertFrom) && isempty (TimeZone))
-        dtCheckSerialRange (args{1}, lower (char (ConvertFrom)));
         [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
          this.Second] = __datetime__ (args{1}, 'ConvertFrom', ConvertFrom, ...
                                       'Precision', 'microseconds');
@@ -6227,7 +6226,7 @@ classdef datetime
     ## A leap-second array inverts the continuous SI-second count instead, so a
     ## count that lands inside an inserted second yields a 60th second.
     function [Y, M, D, h, m, s, off] = serial2components (this, ser)
-      dtCheckSerialZone (ser, this.TimeZone);
+      dtCheckSerialRange (ser, 'posixtime', this.TimeZone);
       if (dtIsLeapZone (this.TimeZone))
         [Y, M, D, h, m, s] = dtLeapComponents (ser);
         off = zeros (size (Y));
@@ -7064,17 +7063,10 @@ endfunction
 ## it from an ordinary one.  KIND is the 'ConvertFrom' type the builtin will be
 ## given, after 'dtEpochAlias' has folded the aliases onto the four it knows;
 ## each of them is a linear map onto days from 1970-01-01.
-## The serial check made only where a REAL zone has to be resolved.  An unzoned
-## array, a UTC one and the leap-second timeline all read their instants through
-## 64-bit civil arithmetic, which has no range to leave.
-function dtCheckSerialZone (ser, TZ)
+function dtCheckSerialRange (x, kind, TZ)
   if (dtIsFixedZone (TZ))
     return;
   endif
-  dtCheckSerialRange (ser, 'posixtime');
-endfunction
-
-function dtCheckSerialRange (x, kind)
   d = double (x);
   switch (kind)
     case 'datenum'
@@ -7580,9 +7572,6 @@ endfunction
 ## the 60th second of its minute; any other count is an ordinary POSIX time once
 ## the whole seconds inserted before it have been taken back out.
 function [Y, M, D, h, mi, sec] = dtLeapComponents (ser)
-  ## Reads its instants back through the builtin's 'ConvertFrom' path, which is
-  ## still bounded by 'date.h' -- so this stays until that path is widened too.
-  dtCheckSerialRange (ser, 'posixtime');
   S = dtLeapStarts ();
   sz = size (ser);
   v = ser(:);
