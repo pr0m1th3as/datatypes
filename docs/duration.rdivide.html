@@ -371,9 +371,25 @@
                 </ol>
               </nav>
 
-            <div class="card-text">
-<p><b><code>duration.rdivide</code></b> is not documented.</p>
-            <p><strong>Source Code: </strong>
+<dl>
+<dt><code><h5 class="fs">duration: <var>C</var> = <b>rdivide</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
+</dl>
+<p> Element-wise right division for duration arrays.
+</p>
+<div class="ms-5">
+<p> <code><var>C</var> = rdivide (<var>A</var>, <var>B</var>)</code> is the equivalent of the
+ syntax <code><var>C</var> = <var>A</var> ./ <var>B</var></code> and returns the element-wise
+ division of the duration array <var>A</var> by the corresponding elements of
+ input array <var>B</var>, which can either be a duration or a numeric array.
+ If <var>B</var> is a duration array, then <var>C</var> is a double numeric array.
+ If <var>B</var> is a numeric array, then <var>C</var> is a duration array.
+</p>
+<p> <var>A</var> and <var>B</var> must be size compatible, which translates to they
+ can be the same size, one can be scalar, or for every dimension, their
+ dimension sizes must be equal or one of them must be 1.  The size of
+ <var>C</var> is determined by the size compatibility of <var>A</var> and <var>B</var>.
+</p>
+<p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/duration.m">duration</a>
 </div>
         <div class="card rounded my-4">
