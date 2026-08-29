@@ -222,6 +222,7 @@ classdef (Abstract) tabular
 ## 'subsetRowLabels'   the object with its labels subset by an index          ##
 ## 'clearRowLabels'    the object with its labels removed                     ##
 ## 'resolveRowRef'     a row reference resolved to row indices                ##
+## 'makeProperties'    the properties object this class's metadata lives in   ##
 ##                                                                            ##
 ################################################################################
 
@@ -253,6 +254,10 @@ classdef (Abstract) tabular
 
     function ixRows = resolveRowRef (this, rowRef)
       error ("%s: subclass must implement resolveRowRef.", class (this));
+    endfunction
+
+    function out = makeProperties (this)
+      error ("%s: subclass must implement makeProperties.", class (this));
     endfunction
 
   endmethods
@@ -362,7 +367,7 @@ classdef (Abstract) tabular
           endif
           ## Handle special cases: "Properties" and "DimensionNames"
           if (isequal (s.subs, 'Properties'))
-            tbl = getProperties (this);
+            tbl = makeProperties (this);
           elseif (isequal (s.subs, this.DimensionNames{1}))
             tbl = getRowLabels (this);
           elseif (isequal (s.subs, this.DimensionNames{2}))
@@ -697,7 +702,6 @@ classdef (Abstract) tabular
       out.VariableDescriptions = this.VariableDescriptions;
       out.VariableUnits = this.VariableUnits;
       out.VariableContinuity = this.VariableContinuity;
-      out.VariableValues = this.VariableValues;
       out.(rowLabelName (this)) = getRowLabels (this);
       out.CustomProperties = this.CustomProperties;
     endfunction

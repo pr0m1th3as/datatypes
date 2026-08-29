@@ -107,6 +107,10 @@ classdef table < tabular
       this.RowNames = {};
     endfunction
 
+    function out = makeProperties (this)
+      out = datatypes.tabular.TableProperties (getProperties (this));
+    endfunction
+
     function ixRows = resolveRowRef (this, rowRef)
       if (isempty (this.RowNames))
         error ("table: this table has no RowNames.");

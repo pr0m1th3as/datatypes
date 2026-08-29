@@ -3899,7 +3899,7 @@
 %!test  # removing from a table without custom properties is a no-op
 %! T = table ([1; 2], 'VariableNames', {'x'});
 %! T = rmprop (T, 'Missing');
-%! assert_equal (T.Properties.CustomProperties, []);
+%! assert_equal (isempty (T.Properties.CustomProperties), true);
 ## Test input validation for 'rmprop' method
 %!error <table.rmprop: too few input arguments.> ...
 %! rmprop (table (1));
@@ -6353,7 +6353,7 @@
 %! T = table ([1;2;3], {'a';'b';'c'}, 'VariableNames', {'x','y'});
 %! assert_equal (T.x, [1;2;3]);
 %! assert_equal (T.y, {'a';'b';'c'});
-%! assert_equal (class (T.Properties), 'struct');
+%! assert_equal (class (T.Properties), 'datatypes.tabular.TableProperties');
 %! assert_equal (T.Properties.VariableNames, {'x','y'});
 %! assert_equal (isempty (T.Row), true);
 %! assert_equal (T.Variables, {1, 'a'; 2, 'b'; 3, 'c'});
@@ -6490,17 +6490,17 @@
 
 ## Test 'Properties' of an empty table yields a value in argument position
 %!test
-%! assert_equal (class (table ().Properties), 'struct');
-%! assert_equal (isstruct (table ().Properties), true);
+%! assert_equal (class (table ().Properties), 'datatypes.tabular.TableProperties');
+%! assert_equal (isa (table ().Properties, 'datatypes.tabular.TabularProperties'), true);
 ## Test 'Properties' of a zero-row table yields a value in argument position
 %!test
 %! Z = table (zeros (0, 1), 'VariableNames', {'v'});
-%! assert_equal (class (Z.Properties), 'struct');
+%! assert_equal (class (Z.Properties), 'datatypes.tabular.TableProperties');
 %! assert_equal (Z.Properties.VariableNames, {'v'});
 ## Test 'Properties' of an empty table carries the same fields as a full one
 %!test
-%! assert_equal (fieldnames (table ().Properties), ...
-%!               fieldnames (table ([1; 2]).Properties));
+%! assert_equal (properties (table ().Properties), ...
+%!               properties (table ([1; 2]).Properties));
 
 ## Test 'VariableContinuity' defaults to empty
 %!test
@@ -6595,6 +6595,40 @@
 %! T = table ([1; 2], [3; 4]); T.Properties.VariableContinuity = 'continuous';
 %!error <table.subsasgn: out of bound index for VariableContinuity.> ...
 %! T = table ([1; 2], [3; 4]); T.Properties.VariableContinuity(5) = {'step'};
+
+## Test 'Properties' is a TableProperties object
+%!test
+%! T = table ([1; 2], 'VariableNames', {'x'});
+%! assert_equal (class (T.Properties), 'datatypes.tabular.TableProperties');
+%! assert_equal (isa (T.Properties, 'datatypes.tabular.TabularProperties'), true);
+## Test 'Properties' no longer exposes the internal variable storage
+%!test
+%! T = table ([1; 2], 'VariableNames', {'x'});
+%! assert_equal (any (strcmp (properties (T.Properties), 'VariableValues')), false);
+## Test 'CustomProperties' is a CustomProperties object
+%!test
+%! T = table ([1; 2], 'VariableNames', {'x'});
+%! assert_equal (class (T.Properties.CustomProperties), ...
+%!               'datatypes.tabular.CustomProperties');
+%! assert_equal (isempty (T.Properties.CustomProperties), true);
+%! assert_equal (isempty (fieldnames (T.Properties.CustomProperties)), true);
+## Test 'CustomProperties' is not empty once a property is added
+%!test
+%! T = addprop (table ([1; 2], 'VariableNames', {'x'}), 'Extra', 'table');
+%! assert_equal (isempty (T.Properties.CustomProperties), false);
+%! assert_equal (fieldnames (T.Properties.CustomProperties), {'Extra'});
+## Test a custom property round trips through the object
+%!test
+%! T = addprop (table ([1; 2], 'VariableNames', {'x'}), 'Extra', 'table');
+%! T.Properties.CustomProperties.Extra = 'xyz';
+%! assert_equal (T.Properties.CustomProperties.Extra, 'xyz');
+%! assert_equal (fieldnames (T.Properties.CustomProperties), {'Extra'});
+%! assert_equal (isempty (T.Properties.CustomProperties), false);
+## Test input validation for 'CustomProperties' indexing
+%!error <datatypes.tabular.CustomProperties: there is no custom property named 'Nope'.> ...
+%! T = addprop (table ([1; 2]), 'Extra', 'table'); T.Properties.CustomProperties.Nope;
+%!error <datatypes.tabular.CustomProperties: only '.' indexing is supported.> ...
+%! T = addprop (table ([1; 2]), 'Extra', 'table'); T.Properties.CustomProperties(1);
 
 ## Test input validation for 'subsasgn' Properties assignment
 %!error <table.subsasgn: cannot assign new properties.> ...

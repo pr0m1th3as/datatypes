@@ -1,0 +1,111 @@
+## Copyright (C) 2026 Andreas Bertsatos <abertsatos@biol.uoa.gr>
+##
+## This file is part of the datatypes package for GNU Octave.
+##
+## This program is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free Software
+## Foundation; either version 3 of the License, or (at your option) any later
+## version.
+##
+## This program is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+## details.
+##
+## You should have received a copy of the GNU General Public License along with
+## this program; if not, see <http://www.gnu.org/licenses/>.
+
+## -*- texinfo -*-
+## @deftp {datatypes.tabular} {} CustomProperties
+##
+## The custom metadata of a @code{table} or a @code{timetable}.
+##
+## It holds the properties added with @code{addprop} and removed with
+## @code{rmprop}, and is reached as
+## @qcode{@var{tbl}.Properties.CustomProperties.@var{name}}.  A single class
+## serves both tabular classes, as in MATLAB.  It is never constructed
+## directly.
+##
+## @end deftp
+classdef CustomProperties
+
+  properties (Access = private)
+    Values = struct ()
+  endproperties
+
+  methods
+
+    function this = CustomProperties (s)
+      if (nargin > 0 && isstruct (s))
+        this.Values = s;
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {datatypes.tabular.CustomProperties} {@var{names} =} fieldnames (@var{obj})
+    ##
+    ## Return the names of the custom properties that are set.
+    ##
+    ## @end deftypefn
+    function names = fieldnames (this)
+      names = fieldnames (this.Values);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {datatypes.tabular.CustomProperties} {@var{tf} =} isempty (@var{obj})
+    ##
+    ## Return true when no custom property is set.
+    ##
+    ## @end deftypefn
+    function tf = isempty (this)
+      tf = isempty (fieldnames (this.Values));
+    endfunction
+
+  endmethods
+
+  methods (Hidden)
+
+    function varargout = subsref (this, s)
+      if (! strcmp (s(1).type, '.'))
+        error (strcat ("datatypes.tabular.CustomProperties: only '.'", ...
+                       " indexing is supported."));
+      endif
+      name = s(1).subs;
+      if (! isfield (this.Values, name))
+        error (strcat ("datatypes.tabular.CustomProperties: there is no", ...
+                       " custom property named '%s'."), name);
+      endif
+      out = this.Values.(name);
+      if (numel (s) > 1)
+        out = subsref (out, s(2:end));
+      endif
+      varargout{1} = out;
+    endfunction
+
+    function display (this)
+      in_name = inputname (1);
+      if (! isempty (in_name))
+        fprintf ("%s =\n", in_name);
+      endif
+      disp (this);
+    endfunction
+
+    function disp (this)
+      names = fieldnames (this.Values);
+      if (isempty (names))
+        fprintf ("  No custom properties are set.\n");
+        fprintf (strcat ("  Use 'addprop' and 'rmprop' methods to modify", ...
+                         " CustomProperties.\n"));
+        return;
+      endif
+      fprintf ("\n  CustomProperties with properties:\n\n");
+      for i = 1:numel (names)
+        fprintf ("%+24s: %s\n", names{i}, ...
+                 datatypes.tabular.TabularProperties.formatValue ( ...
+                   this.Values.(names{i})));
+      endfor
+    endfunction
+
+  endmethods
+
+endclassdef
