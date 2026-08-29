@@ -7377,6 +7377,15 @@ classdef table
     ##
     ## @end deftypefn
     function tbl = horzcat (varargin)
+      ## Null operands take no part in concatenation
+      varargin = drop_null_operands (varargin);
+      if (isempty (varargin))
+        tbl = table ();
+        return;
+      elseif (numel (varargin) == 1 && istable (varargin{1}))
+        tbl = varargin{1};
+        return;
+      endif
       ## All inputs must be tables
       are_tables = cellfun (@istable, varargin);
       if (! all (are_tables))
@@ -7886,6 +7895,15 @@ classdef table
     ##
     ## @end deftypefn
     function tbl = vertcat (varargin)
+      ## Null operands take no part in concatenation
+      varargin = drop_null_operands (varargin);
+      if (isempty (varargin))
+        tbl = table ();
+        return;
+      elseif (numel (varargin) == 1 && istable (varargin{1}))
+        tbl = varargin{1};
+        return;
+      endif
       ## All inputs must be tables
       are_tables = cellfun (@istable, varargin);
       if (! all (are_tables))
@@ -7897,7 +7915,7 @@ classdef table
       is_empty = cellfun (@isempty, varNames);
       sortedVarNames = cellfun (@sort, varNames(! is_empty), ...
                                 'UniformOutput', false);
-      if (! isequal (sortedVarNames{:}))
+      if (numel (sortedVarNames) > 1 && ! isequal (sortedVarNames{:}))
         error (strcat ("table.vertcat: input tables must have identical", ...
                        " variable names."));
       endif
@@ -11708,4 +11726,19 @@ function str = iso_seconds (s)
     fs = regexprep (sprintf ("%06d", frac), '0+$', '');
     str = sprintf ("%02d.%s", si, fs);
   endif
+endfunction
+
+function args = drop_null_operands (args)
+  ## A 0x0 non-char operand takes no part in concatenation and is dropped,
+  ## as in MATLAB: [], zeros (0, 0), {} and an empty table all vanish.  A
+  ## 0x2 double and '' are not 0x0-and-non-char, so they survive here and
+  ## are rejected by the caller's "all inputs must be tables" check.
+  keep = true (1, numel (args));
+  for i = 1:numel (args)
+    arg = args{i};
+    if (! ischar (arg) && ndims (arg) == 2 && all (size (arg) == 0))
+      keep(i) = false;
+    endif
+  endfor
+  args = args(keep);
 endfunction

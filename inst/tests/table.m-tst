@@ -5892,6 +5892,28 @@
 %! assert_equal (H.x, [1; 2; 3]);
 %! assert_equal (H.y, [10; 20; 30]);
 %! assert_equal (H.z, [100; 200; 300]);
+## Test 'horzcat' with a single table returns it unchanged
+%!test
+%! A = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 't'});
+%! H = horzcat (A);
+%! assert_equal (size (H), [2, 2]);
+%! assert_equal (H.Properties.VariableNames, {'n', 't'});
+%! assert_equal (H.n, [1; 2]);
+%! assert_equal (H.t, {'a'; 'b'});
+## Test 'horzcat' drops null operands
+%!test
+%! A = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 't'});
+%! H = horzcat (A, []);
+%! assert_equal (size (H), [2, 2]);
+%! assert_equal (H.Properties.VariableNames, {'n', 't'});
+%! assert_equal (size (horzcat ([], A)), [2, 2]);
+%! assert_equal (size (horzcat (A, {})), [2, 2]);
+%! assert_equal (size (horzcat (A, table ())), [2, 2]);
+## Test 'horzcat' of null operands only returns an empty table
+%!test
+%! H = horzcat (table (), table ());
+%! assert_equal (istable (H), true);
+%! assert_equal (size (H), [0, 0]);
 ## Test input validation for 'horzcat' method
 %!error <table.horzcat: all inputs must be tables.> ...
 %! horzcat (table (1), 5);
@@ -5949,6 +5971,34 @@
 %! assert_equal (class (V.s), 'string');
 %! assert_equal (cellstr (V.c), {'a'; 'b'; 'b'; 'a'});
 %! assert_equal (cellstr (V.s), {'p'; 'q'; 'r'; 's'});
+## Test 'vertcat' with a single table returns it unchanged
+%!test
+%! A = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 't'});
+%! V = vertcat (A);
+%! assert_equal (size (V), [2, 2]);
+%! assert_equal (V.Properties.VariableNames, {'n', 't'});
+%! assert_equal (V.n, [1; 2]);
+%! assert_equal (V.t, {'a'; 'b'});
+## Test 'vertcat' drops null operands
+%!test
+%! A = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 't'});
+%! V = vertcat (A, []);
+%! assert_equal (size (V), [2, 2]);
+%! assert_equal (V.Properties.VariableNames, {'n', 't'});
+%! assert_equal (size (vertcat ([], A)), [2, 2]);
+%! assert_equal (size (vertcat (A, zeros (0, 0))), [2, 2]);
+%! assert_equal (size (vertcat (A, table ())), [2, 2]);
+## Test 'vertcat' of null operands only returns an empty table
+%!test
+%! V = vertcat (table (), table ());
+%! assert_equal (istable (V), true);
+%! assert_equal (size (V), [0, 0]);
+## Test 'vertcat' does not drop an empty operand that is not 0x0
+%!error <table.vertcat: all inputs must be tables.> ...
+%! vertcat (table (1, 'VariableNames', {'x'}), zeros (0, 2));
+## Test 'vertcat' does not drop an empty char operand
+%!error <table.vertcat: all inputs must be tables.> ...
+%! vertcat (table (1, 'VariableNames', {'x'}), '');
 ## Test input validation for 'vertcat' method
 %!error <table.vertcat: all inputs must be tables.> ...
 %! vertcat (table (1), 5);
