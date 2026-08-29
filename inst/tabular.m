@@ -207,13 +207,16 @@ classdef (Abstract) tabular
   endproperties
 
 ################################################################################
-##                    **    Row label hooks    **                             ##
+##                         **    Subclass hooks    **                         ##
 ################################################################################
 ##                                                                            ##
-## Every subclass must implement all seven.  Octave's classdef has no         ##
+## Every subclass must implement all eight.  Octave's classdef has no         ##
 ## 'methods (Abstract)' block, so the contract cannot be declared; these      ##
 ## raising defaults stand in for it, and name the subclass that is missing    ##
 ## one because 'class (this)' resolves downwards.                             ##
+##                                                                            ##
+## Seven of them concern row labels, which is the whole of what separates     ##
+## one tabular class from another; the eighth names the properties object.    ##
 ##                                                                            ##
 ## 'hasRowLabels'      whether the object carries row labels at all           ##
 ## 'getRowLabels'      the labels themselves, in their own type               ##
@@ -228,34 +231,59 @@ classdef (Abstract) tabular
 
   methods (Access = protected)
 
+    ## Whether this object carries row labels at all.  A 'table' answers false
+    ## whenever it has no 'RowNames', which is the common case; a class whose
+    ## labels are mandatory answers true always.
     function tf = hasRowLabels (this)
       error ("%s: subclass must implement hasRowLabels.", class (this));
     endfunction
 
+    ## The labels themselves, in their own type: a cellstr for a 'table', a
+    ## datetime or duration for a class that labels its rows by time.  Callers
+    ## that need text ask 'rowLabelStrings' instead.
     function out = getRowLabels (this)
       error ("%s: subclass must implement getRowLabels.", class (this));
     endfunction
 
+    ## The name the labels are known by, 'RowNames' for a 'table'.  Used
+    ## wherever they have to be named rather than shown: the properties
+    ## listing, the summary, and the header of an exported file.
     function out = rowLabelName (this)
       error ("%s: subclass must implement rowLabelName.", class (this));
     endfunction
 
+    ## The labels rendered for display, as a column cellstr.  Separate from
+    ## 'getRowLabels' because labels that are not already text must go through
+    ## their own format before anything can print or export them.
     function out = rowLabelStrings (this)
       error ("%s: subclass must implement rowLabelStrings.", class (this));
     endfunction
 
+    ## This object with its labels subset by IXROWS, the same index the caller
+    ## has just applied to the variables.  A class whose labels are optional
+    ## leaves them alone when there are none to subset.
     function this = subsetRowLabels (this, ixRows)
       error ("%s: subclass must implement subsetRowLabels.", class (this));
     endfunction
 
+    ## This object with its labels removed.  Used where a result cannot carry
+    ## them, as in the side of an outer join whose unmatched rows have no
+    ## label to inherit.
     function this = clearRowLabels (this)
       error ("%s: subclass must implement clearRowLabels.", class (this));
     endfunction
 
+    ## A row reference resolved to row indices.  ROWREF is a cellstr of label
+    ## names for a 'table'; a class that labels rows by time resolves a time.
+    ## Raises when the object carries no labels to match against.
     function ixRows = resolveRowRef (this, rowRef)
       error ("%s: subclass must implement resolveRowRef.", class (this));
     endfunction
 
+    ## The properties object this class's metadata lives in, which is what
+    ## 'tbl.Properties' returns.  Not a row label hook: it is here because it
+    ## is the other thing that differs per subclass, each class having its own
+    ## subclass of 'datatypes.tabular.TabularProperties'.
     function out = makeProperties (this)
       error ("%s: subclass must implement makeProperties.", class (this));
     endfunction
@@ -263,11 +291,11 @@ classdef (Abstract) tabular
   endmethods
 
 ################################################################################
-##              **    Shared hidden methods    **                             ##
+##                     **    Display and reference    **                      ##
 ################################################################################
 ##                                                                            ##
-## Display, reference and the shape shims.  'subsasgn' is not here: it is      ##
-## row-label aware throughout and stays with each subclass.                    ##
+## The display path and the two reference overloads.  'subsasgn' is not       ##
+## here: it is row-label aware throughout and stays with each subclass.       ##
 ##                                                                            ##
 ################################################################################
 
@@ -290,26 +318,6 @@ classdef (Abstract) tabular
         fprintf ("  %dx%d table\n\n", height (this), width (this));
         print_table (this);
       endif
-    endfunction
-
-    function out = repelems (this, varargin)
-      error ("Function 'repelems' is not supported for tables");
-    endfunction
-
-    function out = reshape (this, varargin)
-      error ("Function 'reshape' is not supported for tables");
-    endfunction
-
-    function out = resize (this, varargin)
-      error ("Function 'resize' is not supported for tables");
-    endfunction
-
-    function out = shiftdims (this, varargin)
-      error ("Function 'shiftdims' is not supported for tables");
-    endfunction
-
-    function out = vec (this, varargin)
-      error ("Function 'vec' is not supported for tables");
     endfunction
 
     ## Overload 'end' keyword
@@ -393,9 +401,42 @@ classdef (Abstract) tabular
       varargout{1} = tbl;
     endfunction
 
+  endmethods
+
+################################################################################
+##                **    Forbidden methods and flatteners    **                ##
+################################################################################
+##                                                                            ##
+## The shape shims, which no tabular class supports, and the two              ##
+## flatteners the spreadsheet exporters share.                                ##
+##                                                                            ##
+################################################################################
+
+  methods (Hidden)
+
+    function out = repelems (this, varargin)
+      error ("Function 'repelems' is not supported for tables");
+    endfunction
+
+    function out = reshape (this, varargin)
+      error ("Function 'reshape' is not supported for tables");
+    endfunction
+
+    function out = resize (this, varargin)
+      error ("Function 'resize' is not supported for tables");
+    endfunction
+
+    function out = shiftdims (this, varargin)
+      error ("Function 'shiftdims' is not supported for tables");
+    endfunction
+
+    function out = vec (this, varargin)
+      error ("Function 'vec' is not supported for tables");
+    endfunction
+
     ## Shared helper for the house-format ODS exporters ('table2ods' and the
-    ## standalone 'struct2ods').  Hidden rather than private so 'struct2ods' can
-    ## reuse the exact flattening + metadata assembly.
+    ## standalone 'struct2ods').  Hidden rather than private so 'struct2ods'
+    ## can reuse the exact flattening + metadata assembly.
     ##
     ## Build the house-format ODS parts for THIS table: the data grid V (with
     ## ISO-formatted datetime/duration values), the per-column ODS value types,
@@ -481,12 +522,12 @@ classdef (Abstract) tabular
   endmethods
 
 ################################################################################
-##            **    Shared internal methods    **                             ##
+##               **    Reference and assignment internals    **               ##
 ################################################################################
 ##                                                                            ##
-## Private in 'table' before the split.  They are protected here because       ##
-## private access does not reach a subclass, and every one of them reaches     ##
-## the row labels through the hooks rather than directly.                      ##
+## Private in 'table' before the split.  They are protected here because      ##
+## private access does not reach a subclass, and every one of them reaches    ##
+## the row labels through the hooks rather than directly.                     ##
 ##                                                                            ##
 ################################################################################
 
@@ -869,6 +910,19 @@ classdef (Abstract) tabular
           endif
       endswitch
     endfunction
+
+  endmethods
+
+################################################################################
+##                       **    Printing internals    **                       ##
+################################################################################
+##                                                                            ##
+## The rendering path: what turns a table's content into text, or into        ##
+## the flat cell arrays that both the display and the exporters consume.      ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = protected)
 
     ## Print Table Properties
     function print_properties (this)
@@ -1587,13 +1641,453 @@ classdef (Abstract) tabular
   endmethods
 
 ################################################################################
-##            **    Shared static helpers    **                               ##
+##                      **    Shared static helpers    **                     ##
 ################################################################################
 ##                                                                            ##
-## Local functions before the split, called from both this class and its       ##
-## subclasses.  They take no tabular object, so ordinary dispatch would never  ##
-## find them; they are called as 'tabular.<name> (...)'.                       ##
+## Local functions before the split, called from both this class and its      ##
+## subclasses.  They take no tabular object, so ordinary dispatch would never ##
+## find them; they are called as 'tabular.<name> (...)'.                      ##
 ##                                                                            ##
-## They are Hidden rather than protected because a local function carries no   ##
-## class context, so protected access is refused there, and several of the     ##
-## callers are local functions.  Hid
+## They are Hidden rather than protected because a local function carries no  ##
+## class context, so protected access is refused there, and several of the    ##
+## callers are local functions.  Hidden keeps them out of 'methods' just as   ##
+## protected would, so they stay off the class pages either way.              ##
+##                                                                            ##
+################################################################################
+
+  methods (Static, Hidden)
+
+    ## Convert a datetime array to datenum-valued doubles of the same size,
+    ## mapping NaT to NaN.  Used by 'summary'.  Core 'datenum' cannot process
+    ## the NaN date components of a NaT, so those rows are substituted with a
+    ## valid placeholder before conversion and set back to NaN afterwards.
+    function dn = datetime_to_datenum (v)
+      sz = size (v);
+      DV = datevec (v);                     # (numel)-by-6 in column-major order
+      nat = any (isnan (DV), 2);
+      DV(nat,:) = 0;
+      DV(nat,2:3) = 1;                      # valid month/day placeholder
+      dn = datenum (DV);
+      dn(nat) = NaN;
+      dn = reshape (dn, sz);
+    endfunction
+
+    ## Map a key variable kind to a comparison category.  Returns an empty
+    ## character vector for types that cannot be used as keys.
+    function k = key_kind (col)
+      if (isa (col, 'categorical') || isa (col, 'string') || iscellstr (col)
+          || ischar (col))
+        k = 'text';
+      elseif (isa (col, 'datetime'))
+        k = 'datetime';
+      elseif (isa (col, 'duration'))
+        k = 'duration';
+      elseif (isa (col, 'calendarDuration'))
+        k = 'calendarDuration';
+      elseif (isnumeric (col) || islogical (col))
+        k = 'numeric';
+      else
+        k = '';
+      endif
+    endfunction
+
+    ## Encode two cellstr key columns into consistent integer codes so that
+    ## equal strings (across both columns) map to the same code.
+    function [lp, rp] = text_codes (lc, rc)
+      nl = numel (lc);
+      [~, ~, ic] = unique ([lc(:); rc(:)]);
+      lp = ic(1:nl);
+      rp = ic(nl+1:end);
+    endfunction
+
+    ## Build consistent numeric key proxies for the same key variable taken from
+    ## two tables, so that equal key values map to equal proxy rows.  Returns an
+    ## errmsg body (empty on success) emitted by the caller under its own name.
+    function [lp, rp, errmsg] = key_col_proxy (lcol, rcol)
+      lp = [];
+      rp = [];
+      errmsg = '';
+      kl = tabular.key_kind (lcol);
+      kr = tabular.key_kind (rcol);
+      if (isempty (kl))
+        errmsg = sprintf ("unsupported key variable type '%s'.", class (lcol));
+        return;
+      elseif (isempty (kr))
+        errmsg = sprintf ("unsupported key variable type '%s'.", class (rcol));
+        return;
+      elseif (! strcmp (kl, kr))
+        errmsg = "key variables have incompatible types.";
+        return;
+      endif
+      switch (kl)
+        case 'text'
+          [lp, rp] = tabular.text_codes (cellstr (lcol), cellstr (rcol));
+        case 'datetime'
+          lp = tabular.datetime_to_datenum (lcol);
+          rp = tabular.datetime_to_datenum (rcol);
+        case 'duration'
+          lp = days (lcol);
+          rp = days (rcol);
+        case 'calendarDuration'
+          lp = lcol.proxyArray;
+          rp = rcol.proxyArray;
+        case 'numeric'
+          lp = double (lcol);
+          rp = double (rcol);
+      endswitch
+      if (size (lp, 2) != size (rp, 2))
+        lp = [];
+        rp = [];
+        errmsg = "key variables have incompatible sizes.";
+      endif
+    endfunction
+
+    ## Detect the cell/non-cell mix of variable values VALS that cannot form a
+    ## homogeneous array.  Returns the column indices [LO, HI] (in column order)
+    ## of the first cell and first non-cell variable, or [] when VALS are not
+    ## such a mix.  Callers emit the incompatibility error under their own
+    ## method name.
+    function pair = mixed_cell_pair (vals)
+      isCellVar = cellfun (@iscell, vals);
+      if (any (isCellVar) && ! all (isCellVar))
+        pair = sort ([find(isCellVar, 1), find(! isCellVar, 1)]);
+      else
+        pair = [];
+      endif
+    endfunction
+
+    ## Map a variable type name to the ODS cell value type used by 'table2ods'.
+    ## Numeric types become 'float', logical becomes 'boolean', datetime and
+    ## duration map to the native 'date' and 'time' types, and everything else
+    ## (text, categorical, calendarDuration, cell) is written as a 'string'.
+    function vt = ods_value_type (typestr)
+      ## A zone-aware datetime carries its TimeZone in the type
+      ## ('datetime <tz>').
+      if (strncmp (typestr, 'datetime', 8))
+        vt = 'date';
+        return;
+      endif
+      switch (typestr)
+        case 'logical'
+          vt = 'boolean';
+        case 'datetime'
+          vt = 'date';
+        case 'duration'
+          vt = 'time';
+        case {'double', 'single', 'int8', 'int16', 'int32', 'int64', ...
+              'uint8', 'uint16', 'uint32', 'uint64'}
+          vt = 'float';
+        otherwise
+          vt = 'string';
+      endswitch
+    endfunction
+
+    ## Prepare the flat value/name/type cell arrays produced by
+    ## 'table2cellarrays' for the MATLAB-compatible 'writetable' output: strip
+    ## or keep the leading row names column (which carries an empty variable
+    ## name) per WRITEROWNAMES, and de-duplicate the shared names of a
+    ## multicolumn variable with _1, _2, ... suffixes, matching MATLAB.
+    function [names, V, T] = writetable_prep (V, N, T, writeRowNames)
+      hasRN = (! isempty (N) && isempty (N{1}));
+      rnCol = {};
+      if (hasRN)
+        rnCol = V(:,1);
+        V(:,1) = [];  N(:,1) = [];  T(:,1) = [];
+      endif
+      names = {};
+      c = 1;
+      n = numel (N);
+      while (c <= n)
+        c2 = c;
+        while (c2 < n && strcmp (N{c2+1}, N{c}))
+          c2 += 1;
+        endwhile
+        k = c2 - c + 1;
+        if (k == 1)
+          names{end+1} = N{c};
+        else
+          for j = 1:k
+            names{end+1} = sprintf ("%s_%d", N{c}, j);
+          endfor
+        endif
+        c = c2 + 1;
+      endwhile
+      if (writeRowNames && hasRN)
+        V = [rnCol, V];
+        names = [{'Row'}, names];
+        T = [{'cellstr'}, T];
+      endif
+    endfunction
+
+  endmethods
+
+endclassdef
+
+## Special function to convert a mixed cell array to cellstr array
+## that keeps MATLAB like formatting for each type of element
+function [outData, optLen]  = mixedcell2str (data, varLen)
+  ## Preallocate indexes to avoid truncation when last elements are 0
+  idx_cell = logical (zeros (size (data)));
+  idx_charvec = idx_cell;
+  idx_logical = idx_cell;
+  idx_numeric = idx_cell;
+  idx_object = idx_cell;
+  idx_string = idx_cell;
+  idx_struct = idx_cell;
+
+  ## Find scalars or row vectors
+  se = cell2mat (cellfun (@(x) numel (x), data, 'UniformOutput', false)) == 1;
+  ve = cell2mat (cellfun (@(x) size (x,1), data, 'UniformOutput', false)) == 1;
+
+  ## Catch 'cell' scalars
+  tmp = cell2mat (cellfun (@iscell, data(se), 'UniformOutput', false)) == 1;
+  idx_cell(se) = tmp;
+  sf = @(x) sprintf ("1x1 cell");
+  out_str(idx_cell) = (cellfun (sf, data(idx_cell), ...
+                       'UniformOutput', false));
+  ## Catch 'char' scalars or row vectors
+  tmp = cell2mat (cellfun (@ischar, data(ve), 'UniformOutput', false));
+  idx_charvec(ve) = tmp;
+  sf = @(x) sprintf ("'%s'", x);
+  out_str(idx_charvec) = (cellfun (sf, data(idx_charvec), ...
+                          'UniformOutput', false));
+  ## Catch 'logical' scalars or row vectors
+  tmp = cell2mat (cellfun (@islogical, data(ve), 'UniformOutput', false)) == 1;
+  idx_logical(ve) = tmp;
+  sf = @(x) sprintf ("[%s]", strtrim (sprintf ("%d ", x)));
+  out_str(idx_logical) = (cellfun (sf, data(idx_logical), ...
+                          'UniformOutput', false));
+  ## Catch 'numeric' scalars or row vectors
+  tmp = cell2mat (cellfun (@isnumeric, data(ve), 'UniformOutput', false)) == 1;
+  idx_numeric(ve) = tmp;
+  sf = @(x) sprintf ("[%s]", strtrim (sprintf ("%g ", x)));
+  out_str(idx_numeric) = (cellfun (sf, data(idx_numeric), ...
+                          'UniformOutput', false));
+  ## Catch 'object' scalars
+  tmp = cell2mat (cellfun (@isobject, data(se), 'UniformOutput', false)) == 1;
+  idx_struct(se) = tmp;
+  sf = @(x) sprintf ("1x1 %s", class (x));
+  out_str(idx_struct) = (cellfun (sf, data(idx_struct), ...
+                         'UniformOutput', false));
+  ## Catch 'string' scalars or row vectors
+  tmp = cell2mat (cellfun (@isstring, data(ve), 'UniformOutput', false)) == 1;
+  idx_string(ve) = tmp;
+  sf = @(x) sprintf ("[%s]", strtrim (sprintf ("%s    ", dispstrings (x){:})));
+  out_str(idx_string) = (cellfun (sf, data(idx_string), ...
+                         'UniformOutput', false));
+  ## Catch scalar elements of struct type
+  tmp = cell2mat (cellfun (@isstruct, data(se), 'UniformOutput', false)) == 1;
+  idx_struct(se) = tmp;
+  sf = @(x) sprintf ("1x1 struct");
+  out_str(idx_struct) = (cellfun (sf, data(idx_struct), ...
+                         'UniformOutput', false));
+
+  ## Keep indexes for numerical and logical values to right alignment
+  pad_B = idx_numeric | idx_logical;  # pad before: sprintf("{%%-%ds}"
+  pad_A = ! pad_B;                    # pad after:  sprintf("{%%+%ds}"
+
+  ## Catch remaining elements
+  me = ! (idx_cell | idx_charvec | idx_logical | idx_numeric | ...
+          idx_object | idx_string | idx_struct);
+
+  ## Preallocate indexes to avoid truncation when last elements are 0
+  idx_cell = logical (zeros (size (data)));
+  idx_charvec = idx_cell;
+  idx_logical = idx_cell;
+  idx_numeric = idx_cell;
+  idx_object = idx_cell;
+  idx_string = idx_cell;
+  idx_struct = idx_cell;
+
+  if (any (me))
+    ## 'cell' arrays
+    tmp = cell2mat (cellfun (@iscell, data(me), 'UniformOutput', false)) == 1;
+    idx_cell(me) = tmp;
+    sf = @(x) sprintf (strcat ([strjoin(repmat ({'%d'}, 1, ndims (x)), 'x'), ...
+                                   ' cell']), size (x));
+    out_str(idx_cell) = (cellfun (sf, data(idx_cell), ...
+                         'UniformOutput', false));
+    ## 'char' arrays
+    tmp = cell2mat (cellfun (@ischar, data(me), 'UniformOutput', false));
+    idx_charvec(me) = tmp;
+    sf = @(x) sprintf (strcat (strjoin (repmat ({'%d'}, 1, ndims (x)), 'x'), ...
+                               ' char'), size (x));
+    out_str(idx_charvec) = (cellfun (sf, data(idx_charvec), ...
+                            'UniformOutput', false));
+    ## 'logical' arrays
+    tmp = cell2mat (cellfun (@islogical, data(me), ...
+                             'UniformOutput', false)) == 1;
+    idx_logical(me) = tmp;
+    sf = @(x) sprintf (strcat (strjoin (repmat ({'%d'}, 1, ndims (x)), 'x'), ...
+                               ' logical'), size (x));
+    out_str(idx_logical) = (cellfun (sf, data(idx_logical), ...
+                            'UniformOutput', false));
+    ## 'numeric' arrays
+    tmp = cell2mat (cellfun (@isnumeric, data(me), ...
+                             'UniformOutput', false)) == 1;
+    idx_numeric(me) = tmp;
+    sf = @(x) sprintf (strcat (strjoin (repmat ({'%d'}, 1, ndims (x)), 'x'), ...
+                               ' array'), size (x));
+    out_str(idx_numeric) = (cellfun (sf, data(idx_numeric), ...
+                            'UniformOutput', false));
+    ## 'object' arrays
+    tmp = cell2mat (cellfun (@isstring, data(me), 'UniformOutput', false)) == 1;
+    idx_string(me) = tmp;
+    sf = @(x) sprintf (strcat (strjoin (repmat ({'%d'}, 1, ndims (x)), 'x'), ...
+                               ' %s'), size (x), class (x));
+    out_str(idx_string) = (cellfun (sf, data(idx_string), ...
+                           'UniformOutput', false));
+    ## 'string' arrays
+    tmp = cell2mat (cellfun (@isstring, data(me), 'UniformOutput', false)) == 1;
+    idx_string(me) = tmp;
+    sf = @(x) sprintf (strcat (strjoin (repmat ({'%d'}, 1, ndims (x)), 'x'), ...
+                               ' string'), size (x));
+    out_str(idx_string) = (cellfun (sf, data(idx_string), ...
+                           'UniformOutput', false));
+    ## 'struct' arrays
+    tmp = cell2mat (cellfun (@isstruct, data(me), 'UniformOutput', false)) == 1;
+    idx_struct(me) = tmp;
+    sf = @(x) sprintf (strcat (strjoin (repmat ({'%d'}, 1, ndims (x)), 'x'), ...
+                               ' struct'), size (x));
+    out_str(idx_struct) = (cellfun (sf, data(idx_struct), ...
+                           'UniformOutput', false));
+  endif
+
+  ## Get optimal length
+  strLen = max (cellfun (@length, out_str)) + 2;
+  optLen = max ([varLen, strLen]);
+
+  ## Pad data according to optimal length
+  ## numeric and logical is right aligned, everything else is left aligned
+  Ra = sprintf ("{%%+%ds}", optLen - 2);
+  La = sprintf ("{%%-%ds}", optLen - 2);
+  fcn = @(x) sprintf (Ra, x);
+  outData(pad_B) = cellfun (fcn, out_str(pad_B), 'UniformOutput', false);
+  fcn = @(x) sprintf (La, x);
+  outData(pad_A) = cellfun (fcn, out_str(pad_A), 'UniformOutput', false);
+  outData = outData(:);
+endfunction
+
+## Set the rows of a variable V selected by the logical MASK to the standard
+## missing value for V's type.  Returns an errmsg body for unsupported types.
+function [v, errmsg] = set_var_missing (v, mask)
+  errmsg = '';
+  if (! any (mask))
+    return;
+  endif
+  if (isa (v, 'string'))
+    v(mask) = string (missing);
+  elseif (isa (v, 'categorical'))
+    v(mask) = categorical (missing);
+  elseif (isa (v, 'datetime'))
+    v(mask) = NaT;
+  elseif (isa (v, 'duration'))
+    v(mask) = missing;
+  elseif (isa (v, 'calendarDuration'))
+    v(mask,:) = NaN;
+  elseif (iscellstr (v))
+    v(mask) = {''};
+  elseif (islogical (v))
+    v(mask,:) = false;
+  elseif (isinteger (v))
+    v(mask,:) = 0;
+  elseif (isfloat (v))
+    v(mask,:) = NaN;
+  else
+    errmsg = sprintf (strcat ("cannot create missing values for a variable", ...
+                              " of type '%s'."), class (v));
+  endif
+endfunction
+
+## Create an N-row array of standard missing values matching the type and width
+## of PROTO.  Used when one input table has no rows to replicate from.  Returns
+## an errmsg body for unsupported types.
+function [col, errmsg] = missing_rows (proto, n)
+  errmsg = '';
+  col = [];
+  w = max (size (proto, 2), 1);
+  if (isa (proto, 'string'))
+    col = repmat (string (missing), n, w);
+  elseif (isa (proto, 'categorical'))
+    col = repmat (categorical (missing), n, w);
+  elseif (isa (proto, 'datetime'))
+    col = repmat (NaT, n, w);
+  elseif (isa (proto, 'duration'))
+    col = hours (NaN (n, w));
+  elseif (isa (proto, 'calendarDuration'))
+    col = calmonths (NaN (n, w));
+  elseif (iscellstr (proto))
+    col = repmat ({''}, n, w);
+  elseif (islogical (proto))
+    col = false (n, w);
+  elseif (isinteger (proto))
+    col = zeros (n, w, class (proto));
+  elseif (isfloat (proto))
+    col = NaN (n, w);
+  else
+    errmsg = sprintf (strcat ("cannot create missing values for a variable", ...
+                              " of type '%s'."), class (proto));
+  endif
+endfunction
+
+## Format a datetime column as a column cell of ISO 8601 strings for 'table2ods'.
+## NaT values yield an empty string, which the writer records as a missing (empty)
+## cell.  The wall-clock components are used; any TimeZone is not encoded in the
+## value (mirroring the datetime display round-trip of the CSV path).
+function C = datetime2iso (dt)
+  [Y, M, D] = ymd (dt(:));
+  [h, m, s] = hms (dt(:));
+  n = numel (Y);
+  C = cell (n, 1);
+  for i = 1:n
+    if (isnan (Y(i)))
+      C{i} = '';
+    else
+      C{i} = sprintf ("%04d-%02d-%02dT%02d:%02d:%s", ...
+                      Y(i), M(i), D(i), h(i), m(i), iso_seconds (s(i)));
+    endif
+  endfor
+endfunction
+
+## Format a duration column as a column cell of ISO 8601 duration strings
+## (@code{PTnHnMnS}) for 'table2ods'.  NaN values yield an empty string (written
+## as a missing cell).  Hours are not wrapped at 24, so durations of any
+## magnitude are preserved; negative durations carry a leading minus sign.
+function C = duration2iso (du)
+  tot = seconds (du(:));
+  n = numel (tot);
+  C = cell (n, 1);
+  for i = 1:n
+    if (isnan (tot(i)))
+      C{i} = '';
+    else
+      a = abs (tot(i));
+      H = floor (a / 3600);
+      MI = floor (mod (a, 3600) / 60);
+      S = mod (a, 60);
+      sgn = '';
+      if (tot(i) < 0)
+        sgn = '-';
+      endif
+      C{i} = sprintf ("%sPT%dH%dM%sS", sgn, H, MI, iso_seconds (S));
+    endif
+  endfor
+endfunction
+
+## Format a seconds value for an ISO 8601 string: a two-digit integer when whole,
+## otherwise a fractional part (up to microseconds) with trailing zeros trimmed.
+function str = iso_seconds (s)
+  si = floor (s);
+  frac = round ((s - si) * 1e6);
+  if (frac >= 1e6)                       # rounded up to a whole second
+    si += 1;
+    frac = 0;
+  endif
+  if (frac == 0)
+    str = sprintf ("%02d", si);
+  else
+    fs = regexprep (sprintf ("%06d", frac), '0+$', '');
+    str = sprintf ("%02d.%s", si, fs);
+  endif
+endfunction
+
