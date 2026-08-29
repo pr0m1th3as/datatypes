@@ -9403,6 +9403,30 @@ classdef table
             T.optLen = [T.optLen optLen];
             rowSpat = [rowSpat, sprintf("%%-%ds", optLen), colgap];
           endif
+        ## Missing
+        elseif (isa (data, 'missing'))
+          if (cols > 1)
+            colLen = zeros (1, cols);
+            rowSpat_c = "";
+            for c = 1:cols
+              tmpData = dispstrings (data(:,c));
+              colData = [colData, tmpData];
+              colLen(c) = max (cellfun (@length, tmpData));
+              rowSpat_c = [rowSpat_c, sprintf("%%-%ds", colLen(c)), colgap];
+            endfor
+            dataLen = sum (colLen + 4) - 4;
+            optLen = max ([varNLen, dataLen, minLen]);
+            T.optLen = [T.optLen, optLen];
+            prePad = repmat (" ", [1, optLen-dataLen]);
+            rowSpat = [rowSpat, prePad, rowSpat_c];
+          else
+            tmpData = dispstrings (data);
+            colData = [colData, tmpData];
+            dataLen = max (cellfun (@length, tmpData));
+            optLen = max ([varNLen, dataLen, minLen]);
+            T.optLen = [T.optLen, optLen];
+            rowSpat = [rowSpat, sprintf("%%-%ds", optLen), colgap];
+          endif
         ## Character vectors
         elseif (ischar (data))
           fcn = @(x) sprintf ("'%s'", x); ## add '' unlike MATLAB display
