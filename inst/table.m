@@ -7350,14 +7350,46 @@ classdef table
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'horzcat'          'iscolumn'         'isempty'          'ismatrix'        ##
-## 'isrow'            'isscalar'         'istable'          'isvector'        ##
-## 'length'           'ndims'            'numel'            'repelem'         ##
-## 'repmat'           'size'             'squeeze'          'vertcat'         ##
+## 'cat'              'horzcat'          'iscolumn'         'isempty'         ##
+## 'ismatrix'         'isrow'            'isscalar'         'istable'         ##
+## 'isvector'         'length'           'ndims'            'numel'           ##
+## 'repelem'          'repmat'           'size'             'squeeze'         ##
+## 'vertcat'                                                                  ##
 ##                                                                            ##
 ################################################################################
 
   methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn {table} {@var{tbl} =} cat (@var{dim}, @var{tbl1}, @var{tbl2}, @dots{})
+    ##
+    ## Concatenate tables along the given dimension.
+    ##
+    ## @code{@var{tbl} = cat (@var{dim}, @var{tbl1}, @var{tbl2}, @dots{})}
+    ## concatenates the input tables along dimension @var{dim}, which must be
+    ## either 1 or 2, since a table always has exactly two dimensions.
+    ##
+    ## @code{cat (1, @dots{})} concatenates vertically and is equivalent to
+    ## @code{vertcat}, whereas @code{cat (2, @dots{})} concatenates
+    ## horizontally and is equivalent to @code{horzcat}.  The same
+    ## requirements on variable names, row names and size apply, and a
+    ## @qcode{0x0} operand that is not a character array takes no part in the
+    ## concatenation.
+    ##
+    ## @end deftypefn
+    function tbl = cat (dim, varargin)
+      if (nargin < 1)
+        print_usage ();
+      endif
+      if (! (isnumeric (dim) && isscalar (dim) && any (dim == [1, 2])))
+        error ("table.cat: DIM must be 1 or 2 for a 2-D table.");
+      endif
+      if (dim == 1)
+        tbl = vertcat (varargin{:});
+      else
+        tbl = horzcat (varargin{:});
+      endif
+    endfunction
 
     ## -*- texinfo -*-
     ## @deftypefn {table} {@var{tbl} =} horzcat (@var{tbl1}, @var{tbl2}, @dots{})
