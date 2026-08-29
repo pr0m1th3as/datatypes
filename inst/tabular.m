@@ -369,7 +369,7 @@ classdef (Abstract) tabular
             tbl = table2array (tbl);
           catch
             error (strcat ("table.subsref: table cannot be concatenated", ...
-                           " into a matrix"));
+                           " into a matrix."));
           end_try_catch
 
         case '.'
@@ -415,23 +415,23 @@ classdef (Abstract) tabular
   methods (Hidden)
 
     function out = repelems (this, varargin)
-      error ("Function 'repelems' is not supported for tables");
+      error ("Function 'repelems' is not supported for tables.");
     endfunction
 
     function out = reshape (this, varargin)
-      error ("Function 'reshape' is not supported for tables");
+      error ("Function 'reshape' is not supported for tables.");
     endfunction
 
     function out = resize (this, varargin)
-      error ("Function 'resize' is not supported for tables");
+      error ("Function 'resize' is not supported for tables.");
     endfunction
 
     function out = shiftdims (this, varargin)
-      error ("Function 'shiftdims' is not supported for tables");
+      error ("Function 'shiftdims' is not supported for tables.");
     endfunction
 
     function out = vec (this, varargin)
-      error ("Function 'vec' is not supported for tables");
+      error ("Function 'vec' is not supported for tables.");
     endfunction
 
     ## Shared helper for the house-format ODS exporters ('table2ods' and the
@@ -572,7 +572,7 @@ classdef (Abstract) tabular
         if (isequal (strictness, 'strict'))
           if (! all (tf))
             if (sum (! tf) == 1)
-              error ("table: no such variable in table: '%s'.", varRef{! tf});
+              error ("table: no such variable in table: '%s'", varRef{! tf});
             else
               missing_vars = sprintf ("'%s', ", varRef{! tf});
               missing_vars(end-1:end) = [];
@@ -597,7 +597,7 @@ classdef (Abstract) tabular
           endif
         endfor
       else
-        error ("table: unsupported variable indexing operand type: '%s'.", ...
+        error ("table: unsupported variable indexing operand type: '%s'", ...
                class (varRef));
       endif
       if (nargout > 1)
@@ -616,7 +616,7 @@ classdef (Abstract) tabular
         rowRef = cellstr (rowRef);
         ixRow = resolveRowRef (this, rowRef);
       else
-        error ("table: unsupported row indexing operand type: '%s'.", ...
+        error ("table: unsupported row indexing operand type: '%s'", ...
                class (rowRef));
       endif
       ixVar = resolveVarRef (this, varRef);

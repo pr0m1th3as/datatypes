@@ -40,7 +40,7 @@ function [y, i, j] = __unique__ (x, varargin)
   if (nargin > 1)
     ## Parse options
     if (! iscellstr (varargin))
-      error ("unique: options must be strings");
+      error ("unique: options must be strings.");
     endif
 
     optrows   = any (strcmp ("rows", varargin));

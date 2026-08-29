@@ -7071,7 +7071,7 @@ function dtValidateFormat (fmt)
   for t = 1:numel (syms)
     if (! any (syms(t) == supported))
       error (strcat ("datetime: the format '%s' contains an unsupported", ...
-                     " symbol: '%s'."), fmt, syms(t));
+                     " symbol: '%s'"), fmt, syms(t));
     endif
   endfor
 endfunction

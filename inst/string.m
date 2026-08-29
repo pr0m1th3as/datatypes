@@ -2224,7 +2224,7 @@ MP = lower (MP);
         elseif (isnumeric (A) || islogical (A))
           Cn = num2cell (A);
         else
-          error ("string.compose: unsupported input type: '%s'.", class (A));
+          error ("string.compose: unsupported input type: '%s'", class (A));
         endif
         Cn = reshape (Cn, size (Cn, 1), []);
         C{n} = Cn;

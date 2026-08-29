@@ -2225,7 +2225,7 @@ classdef duration
     function C = ldivide (A, B)
       if (! isa (B, 'duration'))
         error (strcat ("duration: right-hand side must be a duration", ...
-                       " array for left division: got '%s'"), class (B));
+                       " array for left division: got '%s'."), class (B));
       endif
       if (isa (A, 'duration'))
         C = A.Millis .\ B.Millis;
@@ -2464,7 +2464,7 @@ classdef duration
     function C = rdivide (A, B)
       if (! isa (A, 'duration'))
         error (strcat ("duration: left-hand side must be a duration", ...
-                       " array for right division: got '%s'"), class (A));
+                       " array for right division: got '%s'."), class (A));
       endif
       if (isa (B, 'duration'))
         C = A.Millis ./ B.Millis;

@@ -140,7 +140,7 @@ classdef table < tabular
       endif
       [tf, ixRows] = ismember (rowRef, this.RowNames);
       if (! all (tf))
-        error ("table: no such named row in table: '%s'.", ...
+        error ("table: no such named row in table: '%s'", ...
                strjoin (rowRef(! tf), ", "));
       endif
     endfunction
@@ -244,7 +244,7 @@ classdef table < tabular
       idr = ismember (this.DimensionNames, reserved);
       if (any (idr))
         error (strcat ("table: 'DimensionNames' cannot include the", ...
-                       " reserved name: '%s'."), this.DimensionNames{idr});
+                       " reserved name: '%s'"), this.DimensionNames{idr});
       endif
       ## Check for conflict between VariableNames and DimensionNames
       idx = ismember (this.DimensionNames, VariableNames);
@@ -322,7 +322,7 @@ classdef table < tabular
             case 'timetable'
               error ("table: 'timetable' variable type not supported yet.");
             otherwise
-              error ("table: unsupported variable type: '%s'.", varTypes{i});
+              error ("table: unsupported variable type: '%s'", varTypes{i});
           endswitch
         endfor
 
@@ -349,7 +349,7 @@ classdef table < tabular
         ## Check number of variable names and input arguments
         if (numel (VariableNames) != numel (args))
           error (strcat ("table: inconsistent number of variable names", ...
-                         " (%d) and variable values (%d)"), ...
+                         " (%d) and variable values (%d)."), ...
                  numel (VariableNames), numel (args));
         endif
         ## Check size of input variables
@@ -2317,7 +2317,7 @@ classdef table < tabular
 
       ## Check selected variables
       if (any (ixVars == 0))
-        error ("table.renamevars: cannot index non-existing variable: '%s'.",...
+        error ("table.renamevars: cannot index non-existing variable: '%s'",...
                vars{find (ixVars == 0)});
       elseif (numel (ixVars) != numel (newNames))
         error (strcat ("table.renamevars: number of names in NEWNAMES do", ...
@@ -2431,7 +2431,7 @@ classdef table < tabular
       mvVar = resolveVarRef (this, vars, 'lenient');
       if (any (mvVar == 0))
         vars = cellstr (vars);
-        error ("table.movevars: cannot index non-existing variable: '%s'.", ...
+        error ("table.movevars: cannot index non-existing variable: '%s'", ...
                vars{find (mvVar == 0)});
       endif
 
@@ -3052,7 +3052,7 @@ classdef table < tabular
         if (any (ixVar == 0))
           varRef = cellstr (varRef);
           error (strcat ("table.rows2vars: 'DataVariables' index a", ...
-                         " non-existing variable: '%s'."), ...
+                         " non-existing variable: '%s'"), ...
                  varRef{find (ixVar == 0)});
         endif
         tbl = subsetvars (this, ixVar);
@@ -3069,7 +3069,7 @@ classdef table < tabular
         elseif (any (srcVar == 0))
           source = cellstr (source);
           error (strcat ("table.rows2vars: 'VariableNamesSource' indexes", ...
-                         " a non-existing variable: '%s'."), ...
+                         " a non-existing variable: '%s'"), ...
                  source{find (srcVar == 0)});
         endif
         ## The number of names taken from the specified table variable
@@ -3290,7 +3290,7 @@ classdef table < tabular
         [ix, nm] = resolveVarRef (this, groups{g}, 'lenient');
         if (any (ix == 0))
           gv = cellstr (groups{g});
-          error ("table.stack: VARS index a non-existing variable: '%s'.", ...
+          error ("table.stack: VARS index a non-existing variable: '%s'", ...
                  gv{find (ix == 0)(1)});
         endif
         grpIx{g} = ix(:)';
@@ -3313,7 +3313,7 @@ classdef table < tabular
         if (any (cIxVars == 0))
           constVars = cellstr (constVars);
           error (strcat ("table.stack: 'ConstantVariables' index a", ...
-                         " non-existing  variable: '%s'."), ...
+                         " non-existing  variable: '%s'"), ...
                  constVars{find (cIxVars == 0)(1)});
         endif
         if (any (ismember (cIxVars, allStackIx)))
@@ -3538,7 +3538,7 @@ classdef table < tabular
       [ixVars, ~] = resolveVarRef (this, vars, 'lenient');
       if (any (ixVars == 0))
         vars = cellstr (vars);
-        error ("table.unstack: VARS index a non-existing variable: '%s'.", ...
+        error ("table.unstack: VARS index a non-existing variable: '%s'", ...
                vars{find (ixVars == 0)});
       endif
       ## Check that variables to unstack do not contain nested tables
@@ -3556,7 +3556,7 @@ classdef table < tabular
         error ("table.unstack: IVAR must index a single variable.");
       elseif (ixIvar == 0)
         ivar = cellstr (ivar);
-        error ("table.unstack: IVAR indexes a non-existing variable: '%s'.", ...
+        error ("table.unstack: IVAR indexes a non-existing variable: '%s'", ...
                ivar{find (ixIvar == 0)});
       endif
       ## Check indicator variable is not a multicolumn variable
@@ -3573,7 +3573,7 @@ classdef table < tabular
       if (! (iscellstr (IvarValues) || isnumeric (IvarValues)))
         if (! ismember (class (IvarValues), allowed))
           error (strcat ("table.unstack: IVAR indexes a variable of", ...
-                         " invalid type: '%s'."), ...
+                         " invalid type: '%s'"), ...
                  class (IvarValues));
         endif
         IvarValues = cellstr (string (IvarValues));
@@ -3593,7 +3593,7 @@ classdef table < tabular
         if (any (cIxVars == 0))
           constVars = cellstr (constVars);
           error (strcat ("table.unstack: 'ConstantVariables' index a", ...
-                         " non-existing variable: '%s'."), ...
+                         " non-existing variable: '%s'"), ...
                  constVars{find (cIxVars == 0)});
         endif
         if (any (ismember (cIxVars, ixVars)))
@@ -3618,7 +3618,7 @@ classdef table < tabular
         if (any (gIxVars == 0))
           groupVars = cellstr (groupVars);
           error (strcat ("table.unstack: 'GroupingVariables' index a", ...
-                         " non-existing variable: '%s'."), ...
+                         " non-existing variable: '%s'"), ...
                  groupVars{find (gIxVars == 0)});
         endif
         if (any (ismember (gIxVars, ixVars)))
@@ -5439,7 +5439,7 @@ classdef table < tabular
             badname = "<unknown>";
           endif
           error (strcat ("table.rmmissing: 'DataVariables' index a", ...
-                         " non-existing variable: '%s'."), badname);
+                         " non-existing variable: '%s'"), badname);
         endif
         tmpT = subsetvars (this, dIxVars);
       else
@@ -5625,7 +5625,7 @@ classdef table < tabular
             badname = "<unknown>";
           endif
           error (strcat ("table.fillmissing: 'DataVariables' index a", ...
-                         " non-existing variable: '%s'."), badname);
+                         " non-existing variable: '%s'"), badname);
         endif
       endif
 
@@ -5737,7 +5737,7 @@ classdef table < tabular
             badname = "<unknown>";
           endif
           error (strcat ("table.standardizeMissing: 'DataVariables' index", ...
-                         " a non-existing variable: '%s'."), badname);
+                         " a non-existing variable: '%s'"), badname);
         endif
       endif
 
@@ -6401,8 +6401,8 @@ classdef table < tabular
             rows = (Grp == g);
             [v, errmsg] = gs_apply_method (methods{mi}, col(rows,:));
             if (! isempty (errmsg))
-              error ("table.groupsummary: %s (variable '%s').", errmsg, ...
-                     datNames{di});
+              error ("table.groupsummary: variable '%s': %s", ...
+                     datNames{di}, errmsg);
             endif
             vals{g} = v;
           endfor
@@ -6852,8 +6852,8 @@ classdef table < tabular
         [tc, errmsg] = gt_transform_col (method, T.VariableValues{dIx(i)}, ...
                                          Grp, ng);
         if (! isempty (errmsg))
-          error ("table.grouptransform: %s (variable '%s').", errmsg, ...
-                 T.VariableNames{dIx(i)});
+          error ("table.grouptransform: variable '%s': %s", ...
+                 T.VariableNames{dIx(i)}, errmsg);
         endif
         transCols{i} = tc;
       endfor
@@ -7115,12 +7115,12 @@ classdef table < tabular
       [rGid, nR, rLvlOf, rLevVals, ~, emsg] = ...
               pivot_dimension (rowGcols, n, incMiss, incEmpty);
       if (! isempty (emsg))
-        error ("table.pivot: %s.", emsg);
+        error ("table.pivot: %s", emsg);
       endif
       [cGid, nC, cLvlOf, cLevVals, cMissLvls, emsg] = ...
               pivot_dimension (colGcols, n, incMiss, incEmpty);
       if (! isempty (emsg))
-        error ("table.pivot: %s.", emsg);
+        error ("table.pivot: %s", emsg);
       endif
       assigned = ! isnan (rGid) & ! isnan (cGid);
       totalAssigned = sum (assigned);
@@ -7131,7 +7131,7 @@ classdef table < tabular
         if (isNone)
           [col, emsg] = pivot_none_column (dataVals, rGid, cGid, c, nR);
           if (! isempty (emsg))
-            error ("table.pivot: %s.", emsg);
+            error ("table.pivot: %s", emsg);
           endif
         else
           col = NaN (nR, 1);
@@ -7140,7 +7140,7 @@ classdef table < tabular
             [v, emsg] = ...
                 pivot_cell_value (method, hasDV, dataVals, rows, totalAssigned);
             if (! isempty (emsg))
-              error ("table.pivot: %s.", emsg);
+              error ("table.pivot: %s", emsg);
             endif
             col(r) = v;
           endfor
@@ -7196,7 +7196,7 @@ classdef table < tabular
           [colMargin(r), emsg] = ...
               pivot_cell_value (method, hasDV, dataVals, rows, totalAssigned);
           if (! isempty (emsg))
-            error ("table.pivot: %s.", emsg);
+            error ("table.pivot: %s", emsg);
           endif
         endfor
         rowMargin = NaN (1, nC);
@@ -7205,14 +7205,14 @@ classdef table < tabular
           [rowMargin(c), emsg] = ...
               pivot_cell_value (method, hasDV, dataVals, rows, totalAssigned);
           if (! isempty (emsg))
-            error ("table.pivot: %s.", emsg);
+            error ("table.pivot: %s", emsg);
           endif
         endfor
         rows = find (assigned);
         [grand, emsg] = ...
             pivot_cell_value (method, hasDV, dataVals, rows, totalAssigned);
         if (! isempty (emsg))
-          error ("table.pivot: %s.", emsg);
+          error ("table.pivot: %s", emsg);
         endif
         if (addTotalRow)
           for c = 1:nC
@@ -8229,7 +8229,7 @@ classdef table < tabular
                 endif
                 if (! all (ismember (idx, [1:width(this)])))
                   error (strcat ("table.subsasgn: out of bound index for", ...
-                                 " VariableTypes"));
+                                 " VariableTypes."));
                 endif
                 if (ischar (val) || isa (val, 'string'))
                   val = cellstr (val);
@@ -8285,7 +8285,7 @@ classdef table < tabular
                 endif
                 if (! all (ismember (idx, [1:width(this)])))
                   error (strcat ("table.subsasgn: out of bound index for", ...
-                                 " VariableDescriptions"));
+                                 " VariableDescriptions."));
                 endif
                 if (ischar (val) || isa (val, 'string'))
                   val = cellstr (val);
@@ -9086,7 +9086,7 @@ function [out, errmsg] = gt_transform_col (method, col, G, ng)
   errmsg = '';
   if (! (isnumeric (col) || islogical (col)))
     errmsg = sprintf (strcat ("grouptransform requires numeric or logical", ...
-                              " data; got '%s'"), class (col));
+                              " data; got '%s'."), class (col));
     return;
   endif
   x = double (col);
@@ -9311,7 +9311,7 @@ function [v, errmsg] = gs_apply_method (m, x)
   if (is_function_handle (m))
     v = m (x);
     if (size (v, 1) != 1)
-      errmsg = "a function handle method must return a single row";
+      errmsg = "a function handle method must return a single row.";
     endif
     return;
   endif
@@ -9339,7 +9339,7 @@ function [v, errmsg] = gs_apply_method (m, x)
   if (! (isnumeric (x) || islogical (x)))
     errmsg = sprintf (strcat ("named method '%s' is not supported for", ...
                               " variables of type '%s'; use a function", ...
-                              " handle"), m, class (x));
+                              " handle."), m, class (x));
     return;
   endif
   x = double (x);
@@ -9656,7 +9656,7 @@ function [col, errmsg] = pivot_none_column (dataVals, rGid, cGid, c, nR)
     rows = find (rGid == r & cGid == c);
     if (numel (rows) > 1)
       errmsg = strcat ("Method 'none' allows at most one value per cell, but", ...
-                       " a group holds several; specify an aggregating method");
+                       " a group holds several; specify an aggregating method.");
       return;
     elseif (numel (rows) == 1)
       srcRow(r) = rows;
@@ -9668,7 +9668,7 @@ function [col, errmsg] = pivot_none_column (dataVals, rGid, cGid, c, nR)
     [mv, ok] = pivot_missing_scalar (dataVals);
     if (! ok)
       errmsg = sprintf (strcat ("Method 'none' with empty cells is not", ...
-                                " supported for data of type '%s'"), ...
+                                " supported for data of type '%s'."), ...
                         class (dataVals));
       col = [];
       return;
@@ -9897,12 +9897,12 @@ endfunction
 ## Assemble the output of a grouped 'rowfun' or 'varfun' from the NG-by-C cell
 ## array of per-group results RES.  Unlike an aggregating apply, FUNC may return
 ## several rows for a group; each group g therefore contributes
-## 'size (RES{g,1}, 1)' rows and the grouping columns GCOLS (named GNAMES) and the
-## GCOUNT counts are replicated to match before the per-group results are
+## 'size (RES{g,1}, 1)' rows and the grouping columns GCOLS (named GNAMES) and
+## the GCOUNT counts are replicated to match before the per-group results are
 ## stacked.  FMT selects the 'table', 'uniform', or 'cell' return format; CALLER
 ## names the method for error messages.
-function out = build_grouped_apply_result (caller, fmt, res, outNames, gcols, ...
-                                           gnames, gcount)
+function out = build_grouped_apply_result (caller, fmt, res, outNames, ...
+                                           gcols, gnames, gcount)
   ng = size (res, 1);
   C = size (res, 2);
   switch (fmt)
@@ -9957,7 +9957,7 @@ function s = merge_table_into_struct (s, T, sheet, writeMode)
       break;
     endif
   endfor
-
+  ## Select mode
   if (strcmp (writeMode, 'append') && ! isempty (targetField))
     ## Append the rows; table vertcat errors if the variables are incompatible.
     combined = [s.(targetField); T];
@@ -10025,11 +10025,11 @@ function d = wt_resolve_delimiter (delim)
   endswitch
 endfunction
 
+## A 0x0 non-char operand takes no part in concatenation and is dropped,
+## as in MATLAB: [], zeros (0, 0), {} and an empty table all vanish.  A
+## 0x2 double and '' are not 0x0-and-non-char, so they survive here and
+## are rejected by the caller's "all inputs must be tables" check.
 function args = drop_null_operands (args)
-  ## A 0x0 non-char operand takes no part in concatenation and is dropped,
-  ## as in MATLAB: [], zeros (0, 0), {} and an empty table all vanish.  A
-  ## 0x2 double and '' are not 0x0-and-non-char, so they survive here and
-  ## are rejected by the caller's "all inputs must be tables" check.
   keep = true (1, numel (args));
   for i = 1:numel (args)
     arg = args{i};
@@ -10040,10 +10040,10 @@ function args = drop_null_operands (args)
   args = args(keep);
 endfunction
 
+## Validate a VariableContinuity assignment of N elements and return it as a
+## cell array of character vectors.  A bare character vector is only valid
+## when indexing individual variables, which is what ALLOWCHAR marks.
 function val = check_continuity (val, n, allowchar)
-  ## Validate a VariableContinuity assignment of N elements and return it as a
-  ## cell array of character vectors.  A bare character vector is only valid
-  ## when indexing individual variables, which is what ALLOWCHAR marks.
   if (ischar (val) && ! allowchar)
     error (strcat ("table.subsasgn: to assign to the VariableContinuity", ...
                    " property, use a string array or a cell array of", ...
@@ -10069,10 +10069,10 @@ function val = check_continuity (val, n, allowchar)
   val = val(:)';
 endfunction
 
+## Merge the VariableContinuity of two horizontally combined operands.  An
+## operand carrying none contributes 'unset' for each of its variables, and
+## the result is empty only when neither operand carries any.
 function vc = merge_continuity (a, na, b, nb)
-  ## Merge the VariableContinuity of two horizontally combined operands.  An
-  ## operand carrying none contributes 'unset' for each of its variables, and
-  ## the result is empty only when neither operand carries any.
   if (isempty (a) && isempty (b))
     vc = [];
     return;

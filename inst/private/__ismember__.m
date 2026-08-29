@@ -76,9 +76,9 @@ function [TF, index] = __ismember__ (a, s, varargin)
 
   if (! isempty (varargin))
     if (! cellfun ('ischar', varargin));
-      error ("ismember: all options must be strings");
+      error ("ismember: all options must be strings.");
     elseif (! all (strcmpi (varargin, 'rows') | strcmpi (varargin, 'legacy')))
-      error ('ismember: only "rows" and "legacy" are valid options');
+      error ('ismember: only "rows" and "legacy" are valid options.');
     endif
   endif
 

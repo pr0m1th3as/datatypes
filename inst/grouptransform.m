@@ -172,7 +172,7 @@ function [B, varargout] = grouptransform (A, groupvars, varargin)
   ## Transform the columns of A, group by group.
   [trans, errmsg] = gt_transform_col (method, A, Grp, ng);
   if (! isempty (errmsg))
-    error ("grouptransform: %s.", errmsg);
+    error ("grouptransform: %s", errmsg);
   endif
 
   if (replaceVals)
@@ -204,7 +204,7 @@ function [out, errmsg] = gt_transform_col (method, col, G, ng)
   errmsg = '';
   if (! (isnumeric (col) || islogical (col)))
     errmsg = sprintf (strcat ("grouptransform requires numeric or logical", ...
-                              " data; got '%s'"), class (col));
+                              " data; got '%s'."), class (col));
     return;
   endif
   x = double (col);
@@ -218,7 +218,7 @@ function [out, errmsg] = gt_transform_col (method, col, G, ng)
     if (is_function_handle (method))
       r = method (slice);
       if (! (isnumeric (r) || islogical (r)))
-        errmsg = "the transform function must return a numeric result";
+        errmsg = "the transform function must return a numeric result.";
         out = [];
         return;
       endif
@@ -227,7 +227,7 @@ function [out, errmsg] = gt_transform_col (method, col, G, ng)
       endif
       if (! isequal (size (r), size (slice)))
         errmsg = strcat ("the transform function must return a result the", ...
-                         " same size as the group, or a single row");
+                         " same size as the group, or a single row.");
         out = [];
         return;
       endif

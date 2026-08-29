@@ -166,7 +166,7 @@ function [B, varargout] = groupsummary (A, groupvars, varargin)
         rows = (Grp == g);
         [v, errmsg] = gs_apply_method (methods{mi}, A(rows,c));
         if (! isempty (errmsg))
-          error ("groupsummary: %s for column %d of A.", errmsg, c);
+          error ("groupsummary: column %d of A: %s", c, errmsg);
         endif
         vals{g} = v;
       endfor
@@ -339,7 +339,7 @@ function [v, errmsg] = gs_apply_method (m, x)
   if (is_function_handle (m))
     v = m (x);
     if (size (v, 1) != 1)
-      errmsg = "a function handle method must return a single row";
+      errmsg = "a function handle method must return a single row.";
     endif
     return;
   endif
@@ -364,7 +364,7 @@ function [v, errmsg] = gs_apply_method (m, x)
 
   if (! (isnumeric (x) || islogical (x)))
     errmsg = sprintf (strcat ("named method '%s' is not supported for data", ...
-                              " of type '%s'; use a function handle"), m, ...
+                              " of type '%s'; use a function handle."), m, ...
                       class (x));
     return;
   endif
