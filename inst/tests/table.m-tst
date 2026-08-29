@@ -6488,6 +6488,20 @@
 %! T.Properties.RowNames = {};
 %! assert_equal (isempty (T.Properties.RowNames), true);
 
+## Test 'Properties' of an empty table yields a value in argument position
+%!test
+%! assert_equal (class (table ().Properties), 'struct');
+%! assert_equal (isstruct (table ().Properties), true);
+## Test 'Properties' of a zero-row table yields a value in argument position
+%!test
+%! Z = table (zeros (0, 1), 'VariableNames', {'v'});
+%! assert_equal (class (Z.Properties), 'struct');
+%! assert_equal (Z.Properties.VariableNames, {'v'});
+## Test 'Properties' of an empty table carries the same fields as a full one
+%!test
+%! assert_equal (fieldnames (table ().Properties), ...
+%!               fieldnames (table ([1; 2]).Properties));
+
 ## Test input validation for 'subsasgn' Properties assignment
 %!error <table.subsasgn: cannot assign new properties.> ...
 %! T = table ([1;2;3]); subsasgn (T, substruct ('.', 'Properties'), 5);

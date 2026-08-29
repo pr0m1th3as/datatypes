@@ -8158,12 +8158,7 @@ classdef table
           endif
           ## Handle special cases: "Properties" and "DimensionNames"
           if (isequal (s.subs, 'Properties'))
-            if (nargout == 0 && isempty (chain_s))
-              print_properties (this);
-              return;
-            else
-              tbl = getProperties (this);
-            endif
+            tbl = getProperties (this);
           elseif (isequal (s.subs, this.DimensionNames{1}))
             tbl = this.RowNames;
           elseif (isequal (s.subs, this.DimensionNames{2}))
