@@ -167,6 +167,32 @@ classdef table
     VariableUnits = {}
 
     ## -*- texinfo -*-
+    ## @deftp {table} {property} VariableContinuity
+    ##
+    ## Variable continuity
+    ##
+    ## Continuity of each variable, specified as a cell array of character
+    ## vectors or a string array carrying one element per variable, each of
+    ## them @qcode{'unset'}, @qcode{'continuous'}, @qcode{'step'} or
+    ## @qcode{'event'}.  It is empty by default, and assigning @code{@{@}} or
+    ## @code{[]} clears it.  If specified as a string array, it is converted
+    ## and stored internally as a cell array of character vectors.  You can
+    ## access it with @qcode{@var{tbl}.Properties.VariableContinuity} and you
+    ## can index individual variables to read or assign their continuity.
+    ##
+    ## A @code{table} carries the property but does not act on it, which is
+    ## also how MATLAB behaves.  A @code{timetable} uses it to choose the
+    ## default fill method of each variable when resampling.
+    ##
+    ## MATLAB stores this property as a @qcode{matlab.tabular.Continuity}
+    ## enumeration.  Octave has no enumeration classes, so it is stored and
+    ## returned here as a cell array of character vectors, as
+    ## @qcode{VariableNames} and @qcode{VariableUnits} are.
+    ##
+    ## @end deftp
+    VariableContinuity = []
+
+    ## -*- texinfo -*-
     ## @deftp {table} {property} RowNames
     ##
     ## Row names
@@ -1221,8 +1247,12 @@ classdef table
           fprintf ("%s%s: %dx%d %s\n\n", tab, varNames{i}, var.Size(1), ...
                                          var.Size(2), var.Type);
           ## Print variable properties (if available)
-          if (! isempty (var.Units) || ! isempty (var.Description))
+          if (! isempty (var.Units) || ! isempty (var.Description) || ...
+              ! isempty (var.Continuity))
             fprintf ("%s    Properties:\n", tab);
+            if (! isempty (var.Continuity))
+              fprintf ("%s        Continuity: %s\n", tab, var.Continuity);
+            endif
             if (! isempty (var.Units))
               fprintf ("%s        Units: %s\n", tab, var.Units);
             endif
@@ -2594,6 +2624,12 @@ classdef table
       tbl.VariableValues(ixVar) = [];
       tbl.VariableDescriptions(ixVar) = [];
       tbl.VariableUnits(ixVar) = [];
+      if (! isempty (this.VariableContinuity))
+        tbl.VariableContinuity(ixVar) = [];
+        if (isempty (tbl.VariableContinuity))
+          tbl.VariableContinuity = [];
+        endif
+      endif
 
       ## Check for custom variable properties and remove accordingly
       if (! isempty (this.CustomProperties))
@@ -2972,6 +3008,11 @@ classdef table
         tbl.VariableTypes{location} = class (newVarValue);
         tbl.VariableValues{location} = newVarValue;
         tbl.VariableNames(location) = newVarName;
+        ## The merged variable is a new one, so its continuity is unset even
+        ## though the first merged variable's slot is being reused.
+        if (! isempty (tbl.VariableContinuity))
+          tbl.VariableContinuity{location} = 'unset';
+        endif
       endif
 
     endfunction
@@ -3474,6 +3515,15 @@ classdef table
       endfor
       stackedTable.VariableUnits = [{''}, ndUnits];
       stackedTable.VariableDescriptions = [{'Data indicator'}, ndDescr];
+      ## The indicator has no continuity of its own; each stacked variable
+      ## takes the continuity of the first variable of its group.
+      if (! isempty (this.VariableContinuity))
+        ndCont = cell (1, nGroup);
+        for g = 1:nGroup
+          ndCont{g} = this.VariableContinuity{grpIx{g}(1)};
+        endfor
+        stackedTable.VariableContinuity = [{'unset'}, ndCont];
+      endif
 
       ## Merge tables
       tbl = [constTable, stackedTable];
@@ -7445,6 +7495,9 @@ classdef table
         tbl.VariableNames = varNames;
         for i = 2:numel (varargin)
           in = varargin{i};
+          tbl.VariableContinuity = merge_continuity ( ...
+                       tbl.VariableContinuity, numel (tbl.VariableValues), ...
+                       in.VariableContinuity, numel (in.VariableValues));
           tbl.VariableValues = [tbl.VariableValues, in.VariableValues];
           tbl.VariableDescriptions = [tbl.VariableDescriptions, ...
                                       in.VariableDescriptions];
@@ -7461,6 +7514,9 @@ classdef table
         tbl.VariableNames = varNames;
         for i = 2:numel (varargin)
           in = varargin{i};
+          tbl.VariableContinuity = merge_continuity ( ...
+                       tbl.VariableContinuity, numel (tbl.VariableValues), ...
+                       in.VariableContinuity, numel (in.VariableValues));
           tbl.VariableValues = [tbl.VariableValues, in.VariableValues];
           tbl.VariableDescriptions = [tbl.VariableDescriptions, ...
                                       in.VariableDescriptions];
@@ -7514,11 +7570,17 @@ classdef table
               tbl.RowNames = in.RowNames(ixRows);
               add_row_names = false;
             endif
+            tbl.VariableContinuity = merge_continuity ( ...
+                       tbl.VariableContinuity, numel (tbl.VariableValues), ...
+                       in.VariableContinuity, numel (in.VariableValues));
             tbl.VariableValues = [tbl.VariableValues, in.VariableValues];
             tbl.VariableDescriptions = [tbl.VariableDescriptions, ...
                                         in.VariableDescriptions];
             tbl.VariableUnits = [tbl.VariableUnits, in.VariableUnits];
           else
+            tbl.VariableContinuity = merge_continuity ( ...
+                       tbl.VariableContinuity, numel (tbl.VariableValues), ...
+                       in.VariableContinuity, numel (in.VariableValues));
             tbl.VariableValues = [tbl.VariableValues, in.VariableValues];
             tbl.VariableDescriptions = [tbl.VariableDescriptions, ...
                                         in.VariableDescriptions];
@@ -7737,6 +7799,9 @@ classdef table
         tbl.VariableValues = repelem (tbl.VariableValues, 1, cols);
         tbl.VariableDescriptions = repelem (tbl.VariableDescriptions, 1, cols);
         tbl.VariableUnits = repelem (tbl.VariableUnits, 1, cols);
+        if (! isempty (tbl.VariableContinuity))
+          tbl.VariableContinuity = repelem (tbl.VariableContinuity, 1, cols);
+        endif
         ## Fix variable name repetitions
         idx = num2cell (1:cols - 1);
         newNames = {};
@@ -7830,6 +7895,9 @@ classdef table
         tbl.VariableValues = repmat (tbl.VariableValues, 1, cols);
         tbl.VariableDescriptions = repmat (tbl.VariableDescriptions, 1, cols);
         tbl.VariableUnits = repmat (tbl.VariableUnits, 1, cols);
+        if (! isempty (tbl.VariableContinuity))
+          tbl.VariableContinuity = repmat (tbl.VariableContinuity, 1, cols);
+        endif
         ## Fix variable name repetitions
         newNames = this.VariableNames;
         for i = 1:cols - 1
@@ -7991,6 +8059,9 @@ classdef table
           if (isempty (tbl.VariableUnits))
             tbl.VariableUnits = in.VariableUnits;
           endif
+          if (isempty (tbl.VariableContinuity))
+            tbl.VariableContinuity = in.VariableContinuity;
+          endif
           if (isempty (tbl.Description))
             tbl.Description = in.Description;
           endif
@@ -8035,6 +8106,9 @@ classdef table
           endif
           if (isempty (tbl.VariableUnits))
             tbl.VariableUnits = in.VariableUnits;
+          endif
+          if (isempty (tbl.VariableContinuity))
+            tbl.VariableContinuity = in.VariableContinuity;
           endif
           if (isempty (tbl.Description))
             tbl.Description = in.Description;
@@ -8513,6 +8587,42 @@ classdef table
               this.VariableUnits = val;
               tbl = this;
 
+            elseif (isequal (s.subs, 'VariableContinuity'))
+              ## Check for further indexing of specific variable(s)
+              if (numel (chain_s) > 1)
+                idx = chain_s(2).subs;
+                if (numel (idx) > 1)
+                  error (strcat ("table.subsasgn: cannot index", ...
+                                 " VariableContinuity with more than one", ...
+                                 " dimension. Use a vector to index", ...
+                                 " multiple variables at once."));
+                endif
+                idx = cell2mat (idx);
+                if (isequal (idx, ':'))
+                  idx = [1:width(this)];
+                endif
+                if (! all (ismember (idx, [1:width(this)])))
+                  error (strcat ("table.subsasgn: out of bound index for", ...
+                                 " VariableContinuity."));
+                endif
+                if (isempty (this.VariableContinuity))
+                  this.VariableContinuity = repmat ({'unset'}, [1, width(this)]);
+                endif
+                val = check_continuity (val, numel (idx), true);
+                this.VariableContinuity(idx) = val;
+                tbl = this;
+                return
+              endif
+              ## An empty value of any type clears the property
+              if (isempty (val))
+                this.VariableContinuity = [];
+                tbl = this;
+                return;
+              endif
+              this.VariableContinuity = check_continuity (val, width (this), ...
+                                                          false);
+              tbl = this;
+
             elseif (isequal (s.subs, 'RowNames'))
               ## Check for empty input to remove RowNames from table.
               if (isempty (val))
@@ -8920,6 +9030,9 @@ classdef table
       tbl.VariableValues = this.VariableValues(ixVars);
       tbl.VariableDescriptions = this.VariableDescriptions(ixVars);
       tbl.VariableUnits = this.VariableUnits(ixVars);
+      if (! isempty (this.VariableContinuity))
+        tbl.VariableContinuity = this.VariableContinuity(ixVars);
+      endif
       ## Check for custom variable properties
       if (! isempty (this.CustomProperties))
         cpIdx = strcmp (this.CustomPropTypes, "variable");
@@ -8950,6 +9063,7 @@ classdef table
       out.VariableNames = this.VariableNames;
       out.VariableDescriptions = this.VariableDescriptions;
       out.VariableUnits = this.VariableUnits;
+      out.VariableContinuity = this.VariableContinuity;
       out.VariableValues = this.VariableValues;
       out.RowNames = this.RowNames;
       out.CustomProperties = this.CustomProperties;
@@ -9004,6 +9118,9 @@ classdef table
         tbl.VariableValues{ix_new_var} = value;
         tbl.VariableDescriptions{ix_new_var} = "";
         tbl.VariableUnits{ix_new_var} = "";
+        if (! isempty (this.VariableContinuity))
+          tbl.VariableContinuity{ix_new_var} = 'unset';
+        endif
         ## Check for custom variable properties
         if (! isempty (this.CustomProperties))
           cpIdx = strcmp (this.CustomPropTypes, "variable");
@@ -9106,7 +9223,13 @@ classdef table
         VU = strtrim (sprintf ("'%s'  ", this.VariableUnits{:}));
         VU = ["{", VU, "}"];
       endif
-      VC = "[]";
+      if (isempty (this.VariableContinuity))
+        VC = "[]";
+      else
+        VC = strjoin (cellfun (@(x) ["'" x "'"], this.VariableContinuity, ...
+                               "UniformOutput", false), "  ");
+        VC = ["{" VC "}"];
+      endif
       if (isempty (this.RowNames))
         RN = "{}";
       else
@@ -9590,7 +9713,11 @@ classdef table
         else
           s.(varName).Units = "";
         endif
-        s.(varName).Continuity = [];
+        if (isempty (this.VariableContinuity))
+          s.(varName).Continuity = [];
+        else
+          s.(varName).Continuity = this.VariableContinuity{v};
+        endif
         if (islogical (val))
           s.(varName).True = sum (val, 1);
           s.(varName).False = sum (! val, 1);
@@ -11768,4 +11895,50 @@ function args = drop_null_operands (args)
     endif
   endfor
   args = args(keep);
+endfunction
+
+function val = check_continuity (val, n, allowchar)
+  ## Validate a VariableContinuity assignment of N elements and return it as a
+  ## cell array of character vectors.  A bare character vector is only valid
+  ## when indexing individual variables, which is what ALLOWCHAR marks.
+  if (ischar (val) && ! allowchar)
+    error (strcat ("table.subsasgn: to assign to the VariableContinuity", ...
+                   " property, use a string array or a cell array of", ...
+                   " character vectors. A character vector can be assigned", ...
+                   " only to an individual element of the property."));
+  endif
+  if (ischar (val) || isa (val, 'string'))
+    val = cellstr (val);
+  endif
+  if (! iscellstr (val))
+    error (strcat ("table.subsasgn: VariableContinuity must be a cell array", ...
+                   " of character vectors or a string array."));
+  endif
+  if (numel (val) != n)
+    error (strcat ("table.subsasgn: VariableContinuity property must have", ...
+                   " one element for each variable in the table."));
+  endif
+  if (! all (ismember (val, {'continuous', 'step', 'event', 'unset'})))
+    error (strcat ("table.subsasgn: VariableContinuity property must be", ...
+                   " specified with 'continuous', 'step', 'event', or", ...
+                   " 'unset'."));
+  endif
+  val = val(:)';
+endfunction
+
+function vc = merge_continuity (a, na, b, nb)
+  ## Merge the VariableContinuity of two horizontally combined operands.  An
+  ## operand carrying none contributes 'unset' for each of its variables, and
+  ## the result is empty only when neither operand carries any.
+  if (isempty (a) && isempty (b))
+    vc = [];
+    return;
+  endif
+  if (isempty (a))
+    a = repmat ({'unset'}, [1, na]);
+  endif
+  if (isempty (b))
+    b = repmat ({'unset'}, [1, nb]);
+  endif
+  vc = [a, b];
 endfunction

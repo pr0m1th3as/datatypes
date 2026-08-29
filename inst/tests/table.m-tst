@@ -6502,6 +6502,100 @@
 %! assert_equal (fieldnames (table ().Properties), ...
 %!               fieldnames (table ([1; 2]).Properties));
 
+## Test 'VariableContinuity' defaults to empty
+%!test
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
+%! assert_equal (T.Properties.VariableContinuity, []);
+%! assert_equal (class (T.Properties.VariableContinuity), 'double');
+## Test 'VariableContinuity' accepts a cellstr and a string array
+%!test
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
+%! T.Properties.VariableContinuity = {'continuous', 'step'};
+%! assert_equal (T.Properties.VariableContinuity, {'continuous', 'step'});
+%! T.Properties.VariableContinuity = string ({'event', 'unset'});
+%! assert_equal (T.Properties.VariableContinuity, {'event', 'unset'});
+## Test 'VariableContinuity' is cleared by an empty value
+%!test
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
+%! T.Properties.VariableContinuity = {'continuous', 'step'};
+%! T.Properties.VariableContinuity = {};
+%! assert_equal (T.Properties.VariableContinuity, []);
+%! T.Properties.VariableContinuity = {'continuous', 'step'};
+%! T.Properties.VariableContinuity = [];
+%! assert_equal (T.Properties.VariableContinuity, []);
+## Test 'VariableContinuity' follows its variables when they are subset
+%!test
+%! T = table ([1; 2], [3; 4], [5; 6], 'VariableNames', {'a', 'b', 'c'});
+%! T.Properties.VariableContinuity = {'continuous', 'step', 'event'};
+%! assert_equal (T(:,[1, 3]).Properties.VariableContinuity, ...
+%!               {'continuous', 'event'});
+%! assert_equal (removevars (T, 'a').Properties.VariableContinuity, ...
+%!               {'step', 'event'});
+%! assert_equal (movevars (T, 'a', 'After', 'b').Properties.VariableContinuity, ...
+%!               {'step', 'continuous', 'event'});
+## Test 'VariableContinuity' gains 'unset' for a variable added by addvars
+%!test
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
+%! T.Properties.VariableContinuity = {'continuous', 'step'};
+%! A = addvars (T, [5; 6], 'NewVariableNames', {'c'});
+%! assert_equal (A.Properties.VariableContinuity, {'continuous', 'step', 'unset'});
+%! B = addvars (T, [5; 6], 'Before', 'a', 'NewVariableNames', {'z'});
+%! assert_equal (B.Properties.VariableContinuity, {'unset', 'continuous', 'step'});
+## Test 'VariableContinuity' stays unset when the table has none
+%!test
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
+%! A = addvars (T, [5; 6], 'NewVariableNames', {'c'});
+%! assert_equal (A.Properties.VariableContinuity, []);
+## Test 'VariableContinuity' gains 'unset' for horizontally added variables
+%!test
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
+%! T.Properties.VariableContinuity = {'continuous', 'step'};
+%! H = [T, table([5; 6], 'VariableNames', {'z'})];
+%! assert_equal (H.Properties.VariableContinuity, {'continuous', 'step', 'unset'});
+## Test 'VariableContinuity' takes the first non-empty operand in vertcat
+%!test
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
+%! S = T;
+%! S.Properties.VariableContinuity = {'continuous', 'step'};
+%! assert_equal (vertcat (S, T).Properties.VariableContinuity, ...
+%!               {'continuous', 'step'});
+%! assert_equal (vertcat (T, S).Properties.VariableContinuity, ...
+%!               {'continuous', 'step'});
+## Test 'VariableContinuity' is replicated by repmat and repelem
+%!test
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
+%! T.Properties.VariableContinuity = {'continuous', 'step'};
+%! assert_equal (repmat (T, 1, 2).Properties.VariableContinuity, ...
+%!               {'continuous', 'step', 'continuous', 'step'});
+%! assert_equal (repelem (T, 1, 2).Properties.VariableContinuity, ...
+%!               {'continuous', 'continuous', 'step', 'step'});
+## Test 'VariableContinuity' of a merged variable is unset
+%!test
+%! T = table ([1; 2], [3; 4], [5; 6], 'VariableNames', {'a', 'b', 'c'});
+%! T.Properties.VariableContinuity = {'continuous', 'step', 'event'};
+%! M = mergevars (T, {'a', 'b'});
+%! assert_equal (M.Properties.VariableContinuity, {'unset', 'event'});
+## Test 'VariableContinuity' is reported by summary
+%!test
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
+%! T.Properties.VariableContinuity = {'continuous', 'step'};
+%! assert_equal (! isempty (strfind (evalc ('summary (T);'), 'Continuity')), true);
+## Test 'VariableContinuity' can be assigned per variable
+%!test
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
+%! T.Properties.VariableContinuity = {'continuous', 'step'};
+%! T.Properties.VariableContinuity(2) = {'event'};
+%! assert_equal (T.Properties.VariableContinuity, {'continuous', 'event'});
+## Test input validation for 'VariableContinuity' assignment
+%!error <table.subsasgn: VariableContinuity property must have one element for each variable in the table.> ...
+%! T = table ([1; 2], [3; 4]); T.Properties.VariableContinuity = {'step'};
+%!error <table.subsasgn: VariableContinuity property must be specified with 'continuous', 'step', 'event', or 'unset'.> ...
+%! T = table ([1; 2], [3; 4]); T.Properties.VariableContinuity = {'bogus', 'step'};
+%!error <table.subsasgn: to assign to the VariableContinuity property, use a string array or a cell array of character vectors.> ...
+%! T = table ([1; 2], [3; 4]); T.Properties.VariableContinuity = 'continuous';
+%!error <table.subsasgn: out of bound index for VariableContinuity.> ...
+%! T = table ([1; 2], [3; 4]); T.Properties.VariableContinuity(5) = {'step'};
+
 ## Test input validation for 'subsasgn' Properties assignment
 %!error <table.subsasgn: cannot assign new properties.> ...
 %! T = table ([1;2;3]); subsasgn (T, substruct ('.', 'Properties'), 5);
