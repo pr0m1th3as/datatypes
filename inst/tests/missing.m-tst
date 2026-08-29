@@ -81,6 +81,49 @@
 %!assert_equal (isequaln (missing, NaN, 1), false)
 
 ################################################################################
+##                         ** Summary Information **                          ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'size'                                                                     ##
+##                                                                            ##
+################################################################################
+
+## size: asking for more outputs than the array has dimensions is refused
+%!error<missing.size: nargout does not match the number of requested dimensions.> ...
+%! [r, c, p] = size (repmat (missing, 2, 3));
+
+################################################################################
+##                        ** Relational Operations **                         ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'eq'               'ge'               'gt'               'le'              ##
+## 'lt'               'ne'                                                    ##
+##                                                                            ##
+################################################################################
+
+## each comparison refuses operands that cannot be broadcast, the missing
+## array standing in as all-NaN of its own size
+%!error<missing.eq: arrays have incompatible sizes.> ...
+%! repmat (missing, 2, 2) == ones (1, 3);
+
+%!error<missing.ge: arrays have incompatible sizes.> ...
+%! repmat (missing, 2, 2) >= ones (1, 3);
+
+%!error<missing.gt: arrays have incompatible sizes.> ...
+%! repmat (missing, 2, 2) > ones (1, 3);
+
+%!error<missing.le: arrays have incompatible sizes.> ...
+%! repmat (missing, 2, 2) <= ones (1, 3);
+
+%!error<missing.lt: arrays have incompatible sizes.> ...
+%! repmat (missing, 2, 2) < ones (1, 3);
+
+%!error<missing.ne: arrays have incompatible sizes.> ...
+%! repmat (missing, 2, 2) != ones (1, 3);
+
+################################################################################
 ##                           ** Array Operations **                           ##
 ################################################################################
 ##                             Available Methods                              ##
@@ -139,3 +182,35 @@
 %! D = [missing, duration(1, 0, 0)];
 %! assert_equal (D.Format, 'hh:mm:ss');
 %! assert_equal (cellstr (D), {'NaN', '01:00:00'});
+
+################################################################################
+##                 ** Reference and Assignment Operations **                  ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'subsref'          'subsasgn'                                              ##
+##                                                                            ##
+################################################################################
+
+## subsref: only '()' reaches the values.  The '{}' branch needs an explicit
+## subsref call, the operator itself dying in core numel beforehand
+%!error<missing.subsref: '{}' invalid indexing for referencing values. Use '\(\)' instead.> ...
+%! subsref (missing, substruct ('{}', {1}));
+%!error<missing.subsref: '.' invalid indexing for referencing values. Use '\(\)' instead.> ...
+%! m = missing;
+%! m.x;
+
+## subsasgn: chained subscripts, a value carrying no missing marker, and the
+## two invalid indexing types are each refused
+%!error<missing.subsasgn: chained subscripts not allowed.> ...
+%! m = missing;
+%! m(1).x = missing;
+%!error<missing.subsasgn: unable to perform assignment.> ...
+%! m = missing;
+%! m(1) = 5;
+%!error<missing.subsasgn: '{}' invalid indexing for assigning values. Use '\(\)' instead.> ...
+%! m = missing;
+%! m{1} = missing;
+%!error<missing.subsasgn: '.' invalid indexing for assigning values. Use '\(\)' instead.> ...
+%! m = missing;
+%! m.x = missing;

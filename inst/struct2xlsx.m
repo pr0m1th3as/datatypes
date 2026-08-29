@@ -73,8 +73,7 @@ function struct2xlsx (filename, s)
     endif
     sheetName = fields{k};
     cp = T.Properties.CustomProperties;
-    if (isstruct (cp) && isfield (cp, 'ActualSheetName') ...
-        && ! isempty (cp.ActualSheetName))
+    if (isfield (cp, 'ActualSheetName') && ! isempty (cp.ActualSheetName))
       sheetName = char (cp.ActualSheetName);
     endif
     if (! (ischar (sheetName) && isrow (sheetName) && ! isempty (sheetName)))
@@ -87,7 +86,7 @@ function struct2xlsx (filename, s)
     endif
     if (any (ismember (sheetName, '[]*?:/\')))
       error (strcat ("struct2xlsx: sheet name '%s' contains an invalid", ...
-                     " character ([ ] * ? : / \\)."), sheetName);
+                     " character ([ ] * ? : / \\\\)."), sheetName);
     endif
     if (any (strcmp (sheetName, names(1:k-1))))
       error ("struct2xlsx: duplicate sheet name '%s'.", sheetName);
@@ -157,3 +156,23 @@ endfunction
 %! struct2xlsx ([tempname() '.xlsx'], struct ('a', {table(1), table(2)}))
 %!error <struct2xlsx: field 'b' is not a table.> ...
 %! struct2xlsx ([tempname() '.xlsx'], struct ('a', table (1), 'b', 5))
+%!error <struct2xlsx: FILENAME must be a character vector, cellstr, or string.> ...
+%! struct2xlsx (42, struct ('a', table (1)))
+%!error <struct2xlsx: S must have at least one field.> ...
+%! struct2xlsx ([tempname() '.xlsx'], struct ())
+%!error <struct2xlsx: sheet name for field 'a' must be a non-empty character vector.> ...
+%! T = addprop (table (1), 'ActualSheetName', 'table');
+%! T.Properties.CustomProperties.ActualSheetName = ['A'; 'B'];
+%! struct2xlsx ([tempname() '.xlsx'], struct ('a', T));
+%!error <struct2xlsx: sheet name 'x{32}' exceeds the 31-character Excel limit.> ...
+%! T = addprop (table (1), 'ActualSheetName', 'table');
+%! T.Properties.CustomProperties.ActualSheetName = repmat ('x', 1, 32);
+%! struct2xlsx ([tempname() '.xlsx'], struct ('a', T));
+%!error <struct2xlsx: sheet name 'a\*b' contains an invalid character \(\[ \] \* \? : / \\\).> ...
+%! T = addprop (table (1), 'ActualSheetName', 'table');
+%! T.Properties.CustomProperties.ActualSheetName = 'a*b';
+%! struct2xlsx ([tempname() '.xlsx'], struct ('a', T));
+%!error <struct2xlsx: duplicate sheet name 'S'.> ...
+%! T = addprop (table (1), 'ActualSheetName', 'table');
+%! T.Properties.CustomProperties.ActualSheetName = 'S';
+%! struct2xlsx ([tempname() '.xlsx'], struct ('a', T, 'b', T));

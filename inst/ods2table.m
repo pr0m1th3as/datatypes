@@ -694,3 +694,25 @@ endfunction
 %! unwind_protect_cleanup
 %!   delete (fn);
 %! end_unwind_protect
+%!error <ods2table: unknown option 'Nope'.> ...
+%! ods2table ('x.ods', 'Nope', 1)
+## a categorical or calendarDuration column is written as text and warns on
+## the way back, the strings not being converted to the original type
+%!warning <ods2table: 'categorical' strings are not converted.> ...
+%! T = table (categorical ({'a'; 'b'}), 'VariableNames', {'c'});
+%! fn = [tempname() '.ods'];
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   ods2table (fn);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+%!warning <ods2table: 'calendarDuration' strings are not converted.> ...
+%! T = table (calendarDuration ([1; 2], [0; 0], [0; 0]), 'VariableNames', {'c'});
+%! fn = [tempname() '.ods'];
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   ods2table (fn);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect

@@ -879,3 +879,7 @@ endfunction
 %! unwind_protect_cleanup
 %!   delete (fn);
 %! end_unwind_protect
+
+## Test a multi-character 'Delimiter' is refused before the file is opened
+%!error <csv2table: 'Delimiter' must be a single character.> ...
+%! csv2table (fullfile (tempname (), 'x.csv'), 'Delimiter', 'ab');

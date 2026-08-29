@@ -9949,8 +9949,7 @@ function s = merge_table_into_struct (s, T, sheet, writeMode)
   for i = 1:numel (fields)
     fsheet = fields{i};
     cp = s.(fields{i}).Properties.CustomProperties;
-    if (isstruct (cp) && isfield (cp, 'ActualSheetName') ...
-        && ! isempty (cp.ActualSheetName))
+    if (isfield (cp, 'ActualSheetName') && ! isempty (cp.ActualSheetName))
       fsheet = cp.ActualSheetName;
     endif
     if (strcmp (fsheet, sheet))
@@ -9987,10 +9986,9 @@ endfunction
 ## Copy the 'ActualSheetName' custom property from SRC onto T, if SRC carries it.
 function T = copy_actual_sheet_name (T, src)
   cp = src.Properties.CustomProperties;
-  if (isstruct (cp) && isfield (cp, 'ActualSheetName') ...
-      && ! isempty (cp.ActualSheetName))
+  if (isfield (cp, 'ActualSheetName') && ! isempty (cp.ActualSheetName))
     tcp = T.Properties.CustomProperties;
-    if (! (isstruct (tcp) && isfield (tcp, 'ActualSheetName')))
+    if (! isfield (tcp, 'ActualSheetName'))
       T = addprop (T, 'ActualSheetName', 'table');
     endif
     T.Properties.CustomProperties.ActualSheetName = cp.ActualSheetName;

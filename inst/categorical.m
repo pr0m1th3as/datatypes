@@ -1743,7 +1743,7 @@ MP = lower (MP);
 
         ## Check for valid type of directions in cellstring
         if (! all (cellfun (@(x) ismember (x, valid), direction)))
-          error ("duration.issortedrows: invalid DIRECTION value.");
+          error ("categorical.issortedrows: invalid DIRECTION value.");
         endif
 
         ## Handle non-strict modes first

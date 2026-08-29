@@ -52,6 +52,19 @@ classdef CustomProperties
     endfunction
 
     ## -*- texinfo -*-
+    ## @deftypefn {datatypes.tabular.CustomProperties} {@var{tf} =} isfield (@var{obj}, @var{name})
+    ##
+    ## Return true when a custom property of that name is set.
+    ##
+    ## @var{name} may be a character vector or a cellstr, in which case a
+    ## logical array of the same size is returned, as for a struct.
+    ##
+    ## @end deftypefn
+    function tf = isfield (this, name)
+      tf = isfield (this.Values, name);
+    endfunction
+
+    ## -*- texinfo -*-
     ## @deftypefn {datatypes.tabular.CustomProperties} {@var{tf} =} isempty (@var{obj})
     ##
     ## Return true when no custom property is set.

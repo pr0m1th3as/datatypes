@@ -4024,3 +4024,41 @@
 %!              {'a', 'b', 'c'})
 %!assert_equal (cellstr (sort (categorical ({'b', 'a', 'c'}), 'DESCEND')), ...
 %!              {'c', 'b', 'a'})
+
+## size: more outputs than the requested dimensions yield
+%!error<categorical.size: nargout does not match the number of requested dimensions.> ...
+%! [r, c] = size (categorical ({'a', 'b'}), 1);
+
+## ismember: the operands must be categorical, or nameable as categories
+%!error<categorical.ismember: A and B must be categorical arrays, or one of them \(A or B\) can be a string array, a character vector, or a cell array of character vectors specifying category names.> ...
+%! ismember (categorical ({'b', 'a'; 'd', 'c'}), 5);
+
+## issortedrows: an unknown direction, and a strict direction list that does
+## not match COL (the simple directions delegate to sortrows before this)
+%!error<categorical.issortedrows: invalid DIRECTION value.> ...
+%! issortedrows (categorical ({'b', 'a'; 'd', 'c'}), {'nope'});
+%!error<categorical.issortedrows: COL and DIRECTION mismatch.> ...
+%! issortedrows (categorical ({'b', 'a'; 'd', 'c'}), [1, 2], {'strictascend', 'strictdescend', 'strictascend'});
+
+## sortrows: DIRECTION must match the columns of A
+%!error<categorical.sortrows: DIRECTION does not match the columns in A.> ...
+%! sortrows (categorical ({'b', 'a'; 'd', 'c'}), {'ascend', 'descend', 'ascend'});
+
+## mergecats on an ordinal array only merges consecutive categories
+%!error<categorical.mergecats: only consecutive categories can be merged in ordinal categorical arrays.> ...
+%! mergecats (categorical ({'a'; 'b'; 'c'}, 'Ordinal', true), {'a', 'c'});
+
+## min and max compare against another categorical only
+%!error<categorical.min: input array B must be categorical.> ...
+%! min (categorical ({'a'; 'b'; 'c'}, 'Ordinal', true), 5);
+%!error<categorical.max: input array B must be categorical.> ...
+%! max (categorical ({'a'; 'b'; 'c'}, 'Ordinal', true), 5);
+
+## assigning into an ordinal array needs the identical ordered category set
+%!error<categorical.subsasgn: cannot assign value to ordinal categorical array unless they have the same ordered set of categories.> ...
+%! O = categorical ({'a'; 'b'; 'c'}, 'Ordinal', true);
+%! O(1) = categorical ({'z'}, 'Ordinal', true);
+
+## concatenation promotes only the types the constructor accepts
+%!error<categorical: invalid input to constructor.> ...
+%! vertcat (categorical ({'b', 'a'; 'd', 'c'}), {1});

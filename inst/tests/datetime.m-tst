@@ -6510,3 +6510,129 @@
 %! if (! isempty (savedDefaultDateFormat))
 %!   datetime.setDefaultFormats ('defaultdate', savedDefaultDateFormat);
 %! endif
+
+## the constructor: 'ConvertFrom' kinds that need a numeric input, and the
+## mutual exclusion with 'InputFormat'
+%!error<datetime: 'epochtime' input must be numeric.> ...
+%! datetime ('abc', 'ConvertFrom', 'epochtime', 'TicksPerSecond', 1);
+%!error<datetime: 'juliandate' input must be numeric.> ...
+%! datetime ('abc', 'ConvertFrom', 'juliandate');
+%!error<datetime: 'ConvertFrom' cannot be used with 'InputFormat'.> ...
+%! datetime (1, 'ConvertFrom', 'posixtime', 'InputFormat', 'yyyy');
+
+## cellstr, size and datevec validate their own arguments
+%!error<datetime.cellstr: FORMAT must be a character vector.> ...
+%! D = datetime (2020, 1, 1);
+%! cellstr (D, 5);
+%!error<datetime.size: nargout does not match the number of requested dimensions.> ...
+%! V = datetime (2020, 1, 1) + days ([0; 1]);
+%! [r, c] = size (V, 1);
+%!error<datetime.datevec: too many output arguments.> ...
+%! D = datetime (2020, 1, 1);
+%! [a, b, c, e, f, g, h] = datevec (D);
+
+## convertTo takes a character DATETYPE and a scalar datetime Epoch
+%!error<datetime.convertTo: DATETYPE must be a character vector.> ...
+%! D = datetime (2020, 1, 1);
+%! convertTo (D, 5);
+%!error<datetime.convertTo: 'Epoch' must be a scalar datetime.> ...
+%! D = datetime (2020, 1, 1);
+%! convertTo (D, 'epochtime', 'Epoch', 5);
+
+## issortedrows and sortrows share their shape and argument checks
+%!error<datetime.issortedrows: A must be a 2-D datetime array.> ...
+%! issortedrows (reshape (datetime (2020, 1, 1) + days (0:7), 2, 2, 2));
+%!error<datetime.issortedrows: too many input arguments.> ...
+%! M = datetime (2020, 1, 1) + days ([0, 1; 2, 3]);
+%! issortedrows (M, 1, {'ascend'}, 5);
+%!error<datetime.issortedrows: invalid DIRECTION argument.> ...
+%! M = datetime (2020, 1, 1) + days ([0, 1; 2, 3]);
+%! issortedrows (M, 1, 5);
+%!error<datetime.sortrows: A must be a 2-D datetime array.> ...
+%! sortrows (reshape (datetime (2020, 1, 1) + days (0:7), 2, 2, 2));
+%!error<datetime.sortrows: 'MissingPlacement' requires a value.> ...
+%! M = datetime (2020, 1, 1) + days ([0, 1; 2, 3]);
+%! sortrows (M, 'MissingPlacement');
+%!error<datetime.sortrows: too many input arguments.> ...
+%! M = datetime (2020, 1, 1) + days ([0, 1; 2, 3]);
+%! sortrows (M, 1, {'ascend'}, 5);
+%!error<datetime.sortrows: invalid DIRECTION argument.> ...
+%! M = datetime (2020, 1, 1) + days ([0, 1; 2, 3]);
+%! sortrows (M, 1, 5);
+
+## ismissing takes a vector indicator only
+%!error<datetime.ismissing: INDICATOR must be a vector.> ...
+%! V = datetime (2020, 1, 1) + days ([0; 1]);
+%! M = datetime (2020, 1, 1) + days ([0, 1; 2, 3]);
+%! ismissing (V, M);
+
+## the set operations do not implement the 'legacy' option
+%!error<datetime.union: 'legacy' option is not supported.> ...
+%! V = datetime (2020, 1, 1) + days ([0; 1]);
+%! union (V, V, 'legacy');
+%!error<datetime.setdiff: 'legacy' option is not supported.> ...
+%! V = datetime (2020, 1, 1) + days ([0; 1]);
+%! setdiff (V, V, 'legacy');
+%!error<datetime.setxor: 'legacy' option is not supported.> ...
+%! V = datetime (2020, 1, 1) + days ([0; 1]);
+%! setxor (V, V, 'legacy');
+
+## colon, caldiff, between and dateshift validate their own arguments
+%!error<datetime.colon: range endpoints must be finite \(neither NaT nor Inf\).> ...
+%! D = datetime (2020, 1, 1);
+%! colon (NaT, days (1), D);
+%!error<datetime.caldiff: invalid input argument.> ...
+%! V = datetime (2020, 1, 1) + days ([0; 1]);
+%! caldiff (V, {1});
+%!error<datetime.between: too many input arguments.> ...
+%! D = datetime (2020, 1, 1);
+%! between (D, D, 'y', 5);
+%!error<datetime.dateshift: too many input arguments.> ...
+%! D = datetime (2020, 1, 1);
+%! dateshift (D, 'start', 'day', 1, 2);
+
+## subsasgn: only '()' reaches the values, and the assigned value and the
+## named properties are checked
+%!error<datetime.subsasgn: '.' invalid indexing for assigning values. Use '\(\)' instead.> ...
+%! D = datetime (2020, 1, 1);
+%! subsasgn (D, substruct ('.', 'Format', '.', 'x'), 1);
+%!error<datetime.subsasgn: '{}' invalid indexing for assigning values. Use '\(\)' instead.> ...
+%! D = datetime (2020, 1, 1);
+%! subsasgn (D, substruct ('{}', {1}), D);
+%!error<datetime.subsasgn: cannot assign cell values to a datetime array.> ...
+%! D = datetime (2020, 1, 1);
+%! subsasgn (D, substruct ('()', {1}), {1});
+%!error<datetime.subsasgn: 'Format' must be a character vector.> ...
+%! D = datetime (2020, 1, 1);
+%! subsasgn (D, substruct ('.', 'Format'), 5);
+%!error<datetime.subsasgn: unrecognized property: Nope> ...
+%! D = datetime (2020, 1, 1);
+%! subsasgn (D, substruct ('.', 'Nope'), 5);
+
+## min and max share one implementation; its two-array and option checks
+%!error<datetime.min: a second output is not supported when comparing two arrays.> ...
+%! V = datetime (2020, 1, 1) + days ([0; 1]);
+%! [m, i] = min (V, V);
+%!error<datetime.min: comparison of two arrays requires both to be datetime.> ...
+%! V = datetime (2020, 1, 1) + days ([0; 1]);
+%! min (V, {1});
+%!error<datetime.min: cannot compare a datetime with a time zone to one without a time zone.> ...
+%! D = datetime (2020, 1, 1);
+%! min (D, datetime (2020, 1, 1, 'TimeZone', 'UTC'));
+%!error<datetime.min: invalid option in a two-array comparison.> ...
+%! V = datetime (2020, 1, 1) + days ([0; 1]);
+%! min (V, V, 'nope');
+%!error<datetime.min: DIM must be a positive integer.> ...
+%! V = datetime (2020, 1, 1) + days ([0; 1]);
+%! min (V, [], -1);
+%!error<datetime.min: invalid option 'nope'.> ...
+%! V = datetime (2020, 1, 1) + days ([0; 1]);
+%! min (V, [], 'nope');
+%!error<datetime.min: invalid input argument.> ...
+%! V = datetime (2020, 1, 1) + days ([0; 1]);
+%! min (V, [], {1});
+
+## a 'UTCLeapSeconds' array accepts only its own display format
+%!error<datetime.subsasgn: the display format of a 'UTCLeapSeconds' datetime array must be "uuuu-MM-dd'T'HH:mm:ss'Z'", optionally with one to nine fractional second digits, as in "uuuu-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'".> ...
+%! L = datetime (2020, 1, 1, 'TimeZone', 'UTCLeapSeconds');
+%! subsasgn (L, substruct ('.', 'Format'), 'yyyy');

@@ -334,13 +334,14 @@ classdef (Abstract) tabular
 
     ## Class specific subscripted reference
     function varargout = subsref (this, s)
+      clstype = class (this);
       chain_s = s(2:end);
       s = s(1);
       switch (s.type)
         case '()'
           if (numel (s.subs) != 2)
-            error (strcat ("table.subsref: '()' indexing of table", ...
-                           " requires exactly two arguments."));
+            error (strcat ("%s.subsref: '()' indexing of %s requires", ...
+                           " exactly two arguments."), clstype, clstype);
           endif
           [ixRow, ixVar] = resolveRowVarRefs (this, s.subs{1}, s.subs{2});
           tbl = this;
@@ -349,8 +350,8 @@ classdef (Abstract) tabular
 
         case '{}'
           if (numel (s.subs) != 2)
-            error (strcat ("table.subsref: '{}' indexing of table", ...
-                           " requires exactly two arguments."));
+            error (strcat ("%s.subsref: '{}' indexing of %s requires", ...
+                           " exactly two arguments."), clstype, clstype);
           endif
           [ixRow, ixVar] = resolveRowVarRefs (this, s.subs{1}, s.subs{2});
           tbl = this;
@@ -358,9 +359,10 @@ classdef (Abstract) tabular
           tbl = subsetvars (tbl, ixVar);
           pair = tabular.mixed_cell_pair (tbl.VariableValues);
           if (! isempty (pair))
-            error (strcat ("table.subsref: cannot concatenate the table", ...
+            error (strcat ("%s.subsref: cannot concatenate the %s", ...
                            " variables '%s' and '%s', because their types", ...
-                           " are %s and %s."), tbl.VariableNames{pair(1)}, ...
+                           " are %s and %s."), clstype, clstype, ...
+                   tbl.VariableNames{pair(1)}, ...
                    tbl.VariableNames{pair(2)}, ...
                    class (tbl.VariableValues{pair(1)}), ...
                    class (tbl.VariableValues{pair(2)}));
@@ -368,14 +370,14 @@ classdef (Abstract) tabular
           try
             tbl = table2array (tbl);
           catch
-            error (strcat ("table.subsref: table cannot be concatenated", ...
-                           " into a matrix."));
+            error (strcat ("%s.subsref: %s cannot be concatenated", ...
+                           " into a matrix."), clstype, clstype);
           end_try_catch
 
         case '.'
           if (! ischar (s.subs))
-            error (strcat ("table.subsref: '.' index argument must be a", ...
-                           " character vector."));
+            error (strcat ("%s.subsref: '.' index argument must be a", ...
+                           " character vector."), clstype);
           endif
           ## Handle special cases: "Properties" and "DimensionNames"
           if (isequal (s.subs, 'Properties'))
@@ -542,17 +544,19 @@ classdef (Abstract) tabular
     ## unless strictness is 'lenient', in which case it will return 0 for the
     ## index and '' for the name for each variable which could not be resolved.
     function [ixVar, varNames] = resolveVarRef (this, varRef, strictness)
+      clstype = class (this);
       if (nargin < 3 || isempty (strictness))
         strictness = 'strict';
       endif
       if (! isvector (varRef))
-        error ("table: variable index must be a vector.");
+        error ("%s: variable index must be a vector.", clstype);
       endif
       nvars = width (this);
       if (islogical (varRef))
         vec = numel (varRef);
         if (nvars != vec)
-          error ("table: variable logical index does not match table width.");
+          error ("%s: variable logical index does not match %s width.", ...
+                 clstype, clstype);
         endif
         ixVar = 1:nvars;
         ixVar(! varRef) = [];
@@ -560,9 +564,9 @@ classdef (Abstract) tabular
         ixVar = varRef;
         ix_bad = find (ixVar > nvars | ixVar < 1);
         if (! isempty (ix_bad))
-          error (strcat ("table: variable index out of bounds: requested", ...
-                         " index %d; table has %d variables."), ...
-                 ixVar(ix_bad(1)), nvars);
+          error (strcat ("%s: variable index out of bounds: requested", ...
+                         " index %d; %s has %d variables."), ...
+                 clstype, ixVar(ix_bad(1)), clstype, nvars);
         endif
       elseif (ischar (varRef) && isequal (varRef, ':'))
         ixVar = 1:nvars;
@@ -572,11 +576,12 @@ classdef (Abstract) tabular
         if (isequal (strictness, 'strict'))
           if (! all (tf))
             if (sum (! tf) == 1)
-              error ("table: no such variable in table: '%s'", varRef{! tf});
+              error ("%s: no such variable in %s: '%s'", ...
+                     clstype, clstype, varRef{! tf});
             else
-              missing_vars = sprintf ("'%s', ", varRef{! tf});
-              missing_vars(end-1:end) = [];
-              error ("table: no such variables in table: %s.", missing_vars);
+              missing_vars = strjoin (varRef(! tf), ', ');
+              error ("%s: no such variables in %s: '%s'", ...
+                     clstype, clstype, missing_vars);
             endif
           endif
         else
@@ -597,8 +602,8 @@ classdef (Abstract) tabular
           endif
         endfor
       else
-        error ("table: unsupported variable indexing operand type: '%s'", ...
-               class (varRef));
+        error ("%s: unsupported variable indexing operand type: '%s'", ...
+               clstype, class (varRef));
       endif
       if (nargout > 1)
         varNames = repmat ({''}, size (ixVar));
@@ -608,6 +613,7 @@ classdef (Abstract) tabular
 
     ## Resolve both row and variable references to indices.
     function [ixRow, ixVar] = resolveRowVarRefs (this, rowRef, varRef)
+      clstype = class (this);
       if (isnumeric (rowRef) || islogical (rowRef))
         ixRow = rowRef;
       elseif (isequal (rowRef, ':'))
@@ -616,8 +622,8 @@ classdef (Abstract) tabular
         rowRef = cellstr (rowRef);
         ixRow = resolveRowRef (this, rowRef);
       else
-        error ("table: unsupported row indexing operand type: '%s'", ...
-               class (rowRef));
+        error ("%s: unsupported row indexing operand type: '%s'", ...
+               clstype, class (rowRef));
       endif
       ixVar = resolveVarRef (this, varRef);
     endfunction
@@ -818,6 +824,7 @@ classdef (Abstract) tabular
     ##
     ## @end deftypefn
     function tbl = setvar (this, varRef, value)
+      clstype = class (this);
       ## Do scalar expansion if necessary
       n_rows = height (this);
       val_is_scalar = (isscalar (value) || (ischar (value) && ...
@@ -831,7 +838,8 @@ classdef (Abstract) tabular
       endif
       ## Check input matches table height
       if (size (value, 1) != n_rows)
-        error ("table.subsasgn: input value and table height mismatch.");
+        error ("%s.subsasgn: input value and %s height mismatch.", ...
+               clstype, clstype);
       endif
       ## Resolve variable index
       ixVar = resolveVarRef (this, varRef, 'lenient');
@@ -881,11 +889,12 @@ classdef (Abstract) tabular
 
     ## Resolve subscripted reference for internal use called by subsasgn
     function out = single_subref (this, s)
+      clstype = class (this);
       switch s.type
         case '()'
           if (numel (s.subs) != 2)
-            error (strcat ("table.subsasgn: ()-indexing of table", ...
-                           " requires exactly two arguments."));
+            error (strcat ("%s.subsasgn: ()-indexing of %s requires", ...
+                           " exactly two arguments."), clstype, clstype);
           endif
           [ixRow, ixVar] = resolveRowVarRefs (this, s.subs{1}, s.subs{2});
           out = this;
@@ -894,8 +903,8 @@ classdef (Abstract) tabular
 
         case '.'
           if (! ischar (s.subs))
-            error (strcat ("table.subsasgn: .-index argument must be a", ...
-                           " character vector."));
+            error (strcat ("%s.subsasgn: .-index argument must", ...
+                           " be a character vector."), clstype);
           endif
           ## Handle special cases: "Properties" and "DimensionNames"
           if isequal (s.subs, 'Properties')

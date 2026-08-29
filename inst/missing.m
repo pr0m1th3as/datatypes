@@ -183,8 +183,8 @@ classdef missing
       if (nargout == 0 || nargout == 1)
         varargout{1} = sz;
       elseif (numel (sz) != nargout)
-        error (strcat ("missing.size: nargout > 1 but does not", ...
-                       " match number of requested dimensions."));
+        error (strcat ("missing.size: nargout does not match the", ...
+                       " number of requested dimensions."));
       else
         for i = 1:nargout
           varargout{i} = sz(i);

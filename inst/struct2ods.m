@@ -83,8 +83,7 @@ function struct2ods (filename, s)
     ## the field name, so non-identifier sheet names can round-trip.
     sheetName = fields{k};
     cp = T.Properties.CustomProperties;
-    if (isstruct (cp) && isfield (cp, 'ActualSheetName') ...
-        && ! isempty (cp.ActualSheetName))
+    if (isfield (cp, 'ActualSheetName') && ! isempty (cp.ActualSheetName))
       sheetName = char (cp.ActualSheetName);
     endif
     if (! (ischar (sheetName) && isrow (sheetName) && ! isempty (sheetName)))
@@ -93,7 +92,7 @@ function struct2ods (filename, s)
     endif
     if (any (ismember (sheetName, '[]*?:/\')))
       error (strcat ("struct2ods: sheet name '%s' contains an invalid", ...
-                     " character ([ ] * ? : / \\)."), sheetName);
+                     " character ([ ] * ? : / \\\\)."), sheetName);
     endif
     if (any (strcmp (sheetName, names(1:k-1))))
       error ("struct2ods: duplicate sheet name '%s'.", sheetName);
@@ -203,3 +202,17 @@ endfunction
 %! struct2ods ([tempname() '.ods'], struct ('a', table (1), 'b', 5))
 %!error <struct2ods: S must have at least one field.> ...
 %! struct2ods ([tempname() '.ods'], struct ())
+%!error <struct2ods: FILENAME must be a character vector, cellstr, or string.> ...
+%! struct2ods (42, struct ('a', table (1)))
+%!error <struct2ods: sheet name for field 'a' must be a non-empty character vector.> ...
+%! T = addprop (table (1), 'ActualSheetName', 'table');
+%! T.Properties.CustomProperties.ActualSheetName = ['A'; 'B'];
+%! struct2ods ([tempname() '.ods'], struct ('a', T));
+%!error <struct2ods: sheet name 'a\*b' contains an invalid character \(\[ \] \* \? : / \\\).> ...
+%! T = addprop (table (1), 'ActualSheetName', 'table');
+%! T.Properties.CustomProperties.ActualSheetName = 'a*b';
+%! struct2ods ([tempname() '.ods'], struct ('a', T));
+%!error <struct2ods: duplicate sheet name 'S'.> ...
+%! T = addprop (table (1), 'ActualSheetName', 'table');
+%! T.Properties.CustomProperties.ActualSheetName = 'S';
+%! struct2ods ([tempname() '.ods'], struct ('a', T, 'b', T));

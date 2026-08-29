@@ -2862,7 +2862,7 @@
 %! removevars (tblA, [1, 2, 7]);
 %!error <table: no such variable in table: 'Smoker'> ...
 %! removevars (tblA, "Smoker");
-%!error <table: no such variables in table: 'Smoker', 'Health'.> ...
+%!error <table: no such variables in table: 'Smoker, Health'> ...
 %! removevars (tblA, {"Smoker", "Health"});
 %!error <table: unsupported variable indexing operand type: 'cell'> ...
 %! removevars (tblA, {1});
@@ -6683,3 +6683,243 @@
 ## Test 'sortrows' -- the DIRECTION value is matched without regard to case
 %!assert_equal (sortrows (table ([3; 1; 2]), 1, 'Descend').Var1', [3 2 1])
 %!assert_equal (sortrows (table ([3; 1; 2]), 1, 'ASCEND').Var1', [1 2 3])
+
+## the shared 'tabular' machinery, reached through a table.  Its messages
+## take the class name from the subclass, so they read 'table' here
+%!error <table.subsref: table cannot be concatenated into a matrix.> ...
+%! N = table ([1; 2], 'VariableNames', {'n'});
+%! N.sub = table ([3; 4], [5; 6]);
+%! N{:, :};
+%!error <table: unsupported row indexing operand type: 'struct'> ...
+%! T = table ([1; 2], 'VariableNames', {'n'});
+%! T(struct ('a', 1), :);
+%!error <table.subsasgn: \(\)-indexing of table requires exactly two arguments.> ...
+%! T = table ([1; 2], 'VariableNames', {'n'});
+%! subsasgn (T, substruct ('()', {1}, '.', 'n'), 5);
+
+## table2array and writetable refuse a nested table
+%!error <table.table2array: table cannot be concatenated into a matrix due to incompatible variable types.> ...
+%! N = table ([1; 2], 'VariableNames', {'n'});
+%! N.sub = table ([3; 4], [5; 6]);
+%! table2array (N);
+%!error <table.writetable: writetable does not support writing nested tables.  Use splitvars to split multicolumn variables into single-column variables before writing.> ...
+%! N = table ([1; 2], 'VariableNames', {'n'});
+%! N.sub = table ([3; 4], [5; 6]);
+%! writetable (N, [tempname() '.csv']);
+
+## the spreadsheet writers validate their file name, type, sheet and delimiter
+%!error <table.table2ods: 'Sheet' must be a sheet name.> ...
+%! N = table ([1; 2], 'VariableNames', {'n'});
+%! N.sub = table ([3; 4], [5; 6]);
+%! table2ods (N, [tempname() '.ods'], 'Sheet', 5);
+%!error <table.writetable: FILENAME must be a character vector or string scalar.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! writetable (T, 42);
+%!error <table.writetable: cannot infer the file type from '.zzz'; specify 'FileType'.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! writetable (T, 'x.zzz');
+%!error <table.writetable: 'FileType' must be 'text' or 'spreadsheet'.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! writetable (T, 'x.csv', 'FileType', 'nope');
+%!error <table.writetable: 'Sheet' must be a sheet name.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! writetable (T, [tempname() '.xlsx'], 'Sheet', 5);
+%!error <table.writetable: 'Delimiter' must be a character vector or string.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! writetable (T, 'x.csv', 'Delimiter', 42);
+%!error <table.writetable: unsupported 'Delimiter' value 'nope'.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! writetable (T, 'x.csv', 'Delimiter', 'nope');
+
+## ismissing, rmmissing and fillmissing validate their options
+%!error <table.ismissing: invalid value for 'OutputFormat'.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! ismissing (T, 'OutputFormat', 'nope');
+%!error <table.ismissing: INDICATOR must be a vector.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! ismissing (T, ones (2, 2));
+%!error <table.ismissing: INDICATOR must explicitly contain scalar elements or character vectors.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! ismissing (T, {[1, 2]});
+%!error <table.rmmissing: 'MissingLocations' must be a logical matrix of the same size as the input table or the part of it referenced by 'DataVariables'.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! rmmissing (T, 'MissingLocations', true (3, 3));
+%!error <table.rmmissing: invalid data type for 'MissingLocations'.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! rmmissing (T, 'MissingLocations', 'nope');
+%!error <table.fillmissing: 'ReplaceValues' must be a logical scalar.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! fillmissing (T, 'constant', 0, 'ReplaceValues', [1, 2]);
+
+## findgroups and splitapply on a table
+%!error <table.findgroups: T must have at least one variable.> ...
+%! findgroups (table ());
+%!error <table.findgroups: unsupported grouping variable type 'cell'.> ...
+%! findgroups (table ({{1}; {2}}, 'VariableNames', {'v'}));
+%!error <table.splitapply: FUNC must be a function handle.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! splitapply (5, T, [1; 2]);
+%!error <table.splitapply: G must be a numeric vector with one element per row of T.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! splitapply (@(x) 1, T, [1; 2; 3]);
+%!error <table.splitapply: G must contain positive integers.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! splitapply (@(x) 1, T, [0; 1]);
+%!error <table.splitapply: G must contain every integer between 1 and the number of groups.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! splitapply (@(x) 1, T, [1; 3]);
+
+## varfun and rowfun validate their Name/Value options
+%!error <table.varfun: 'ErrorHandler' must be a function handle.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! varfun (@(x) x, T, 'InputVariables', 'n', 'ErrorHandler', 5);
+%!error <table.varfun: 'OutputFormat' must be a character vector.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! varfun (@(x) x, T, 'InputVariables', 'n', 'OutputFormat', 5);
+%!error <table.varfun: 'timetable' OutputFormat is not supported.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! varfun (@(x) x, T, 'InputVariables', 'n', 'OutputFormat', 'timetable');
+%!error <table.rowfun: 'ExtractCellContents' must be a logical scalar.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! rowfun (@(x) x, T, 'InputVariables', 'n', 'ExtractCellContents', [1, 2]);
+%!error <table.rowfun: 'ErrorHandler' must be a function handle.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! rowfun (@(x) x, T, 'InputVariables', 'n', 'ErrorHandler', 5);
+%!error <table.rowfun: there are no variables to which to apply FUNC.> ...
+%! rowfun (@(x) 1, table ());
+%!error <table.rowfun: 'NumOutputs' must be a nonnegative integer.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! rowfun (@(x) x, T, 'InputVariables', 'n', 'NumOutputs', -1);
+
+## the grouping methods validate their group options
+%!error <table.groupsummary: 'IncludeMissingGroups' must be a logical scalar.> ...
+%! G = table ([1; 1], [1; 2], 'VariableNames', {'g', 'v'});
+%! groupsummary (G, 'g', 'mean', 'IncludeMissingGroups', [1, 2]);
+%!error <table.groupsummary: 'IncludeEmptyGroups' must be a logical scalar.> ...
+%! G = table ([1; 1], [1; 2], 'VariableNames', {'g', 'v'});
+%! groupsummary (G, 'g', 'mean', 'IncludeEmptyGroups', [1, 2]);
+%!error <table.groupcounts: 'IncludeMissingGroups' must be a logical scalar.> ...
+%! G = table ([1; 1], [1; 2], 'VariableNames', {'g', 'v'});
+%! groupcounts (G, 'g', 'IncludeMissingGroups', [1, 2]);
+%!error <table.groupcounts: 'IncludeEmptyGroups' must be a logical scalar.> ...
+%! G = table ([1; 1], [1; 2], 'VariableNames', {'g', 'v'});
+%! groupcounts (G, 'g', 'IncludeEmptyGroups', [1, 2]);
+%!error <table.pivot: invalid optional arguments.> ...
+%! G = table ([1; 1], [1; 2], 'VariableNames', {'g', 'v'});
+%! pivot (G, 5);
+%!error <table.pivot: 'Method' must be a method name or a function handle.> ...
+%! G = table ([1; 1], [1; 2], 'VariableNames', {'g', 'v'});
+%! pivot (G, 'Rows', 'g', 'DataVariable', 'v', 'Method', 5);
+
+## subsasgn validates every metadata property, its index shape and its type
+%!error <table.subsasgn: Table description must be a character vector or string scalar.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'Description'), 5);
+%!error <table.subsasgn: cannot index DimensionNames with more than one dimension. Use a vector to index multiple DimensionNames at once.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'DimensionNames', '()', {1, 1}), {'a'});
+%!error <table.subsasgn: out of bound index for DimensionNames.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'DimensionNames', '()', {5}), {'a'});
+%!error <table.subsasgn: DimensionNames must be a cell array of character vectors or a string array matching the number of indexed variables.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'DimensionNames', '()', {1}), 5);
+%!error <table.subsasgn: DimensionNames must be a two-element cell array of character vectors or string array.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'DimensionNames'), {'a'});
+%!error <table.subsasgn: cannot index VariableNames with more than one dimension. Use a vector to index multiple VariableNames at once.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableNames', '()', {1, 1}), {'a'});
+%!error <table.subsasgn: VariableNames must be a cell array of character vectors or a string array matching the number of variables.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableNames'), 5);
+%!error <table.subsasgn: cannot index VariableTypes with more than one dimension. Use a vector to index multiple VariableTypes at once.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableTypes', '()', {1, 1}), {'a'});
+%!error <table.subsasgn: out of bound index for VariableTypes.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableTypes', '()', {5}), {'a'});
+%!error <table.subsasgn: VariableTypes must be a cell array of character vectors or a string array matching the number of variables.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableTypes'), 5);
+%!error <table.subsasgn: cannot index VariableDescriptions with more than one dimension. Use a vector to index multiple VariableDescriptions at once.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableDescriptions', '()', {1, 1}), {'a'});
+%!error <table.subsasgn: out of bound index for VariableDescriptions.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableDescriptions', '()', {5}), {'a'});
+%!error <table.subsasgn: VariableDescriptions must be a cell array of character vectors or a string array matching the number of indexed variables.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableDescriptions', '()', {1}), 5);
+%!error <table.subsasgn: VariableDescriptions must be a cell array of character vectors or a string array matching the number of variables.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableDescriptions'), 5);
+%!error <table.subsasgn: cannot index VariableUnits with more than one dimension. Use a vector to index multiple VariableUnits at once.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableUnits', '()', {1, 1}), {'a'});
+%!error <table.subsasgn: out of bound index for VariableUnits.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableUnits', '()', {5}), {'a'});
+%!error <table.subsasgn: VariableUnits must be a cell array of character vectors or a string array matching the number of indexed variables.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableUnits', '()', {1}), 5);
+%!error <table.subsasgn: VariableUnits must be a cell array of character vectors or a string array matching the number of variables.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableUnits'), 5);
+%!error <table.subsasgn: cannot index VariableContinuity with more than one dimension. Use a vector to index multiple variables at once.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableContinuity', '()', {1, 1}), {'unset'});
+%!error <table.subsasgn: VariableContinuity must be a cell array of character vectors or a string array.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableContinuity'), 5);
+%!error <table.subsasgn: to assign to the VariableContinuity property, use a string array or a cell array of character vectors. A character vector can be assigned only to an individual element of the property.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableContinuity'), "unset");
+
+## and the custom properties, which are scalar per table or one value
+## per variable
+%!error <table.subsasgn: use '.' notation to index a custom property.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! T = addprop (T, 'tp', 'table');
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '()', {1}), 1);
+%!error <table.subsasgn: custom property 'tp' is a table property and only a scalar value can be assigned to it.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! T = addprop (T, 'tp', 'table');
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'tp'), [1, 2]);
+%!error <table.subsasgn: custom property 'tp' is a scalar table property and cannot be indexed any further.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! T = addprop (T, 'tp', 'table');
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'tp', '()', {1}), 1);
+%!error <table.subsasgn: cannot index a custom variable property in more than one dimension.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! T = addprop (T, 'vp', 'variable');
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'vp', '()', {1, 1}), {1});
+%!error <table.subsasgn: out of bound index for custom variable property 'vp'.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! T = addprop (T, 'vp', 'variable');
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'vp', '()', {5}), {1});
+%!error <table.subsasgn: input vector does not match the number of indexed variables in the custom variable property 'vp'.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! T = addprop (T, 'vp', 'variable');
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'vp', '()', {1}), {1, 2});
+%!error <table.subsasgn: input vector does not match the number of variables in table.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! T = addprop (T, 'vp', 'variable');
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'vp'), 5);
+
+## writetable refuses 'Range' when merging into a file that already exists
+%!error <table.writetable: 'Range' is not supported when writing into an existing file.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! fn = [tempname() '.xlsx'];
+%! unwind_protect
+%!   writetable (T, fn);
+%!   writetable (T, fn, 'Range', 'A1', 'WriteMode', 'inplace');
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## a custom variable property takes one value per variable, as a vector
+%!error <table.subsasgn: assigned value to a custom variable property must be a vector.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! T = addprop (T, 'vp', 'variable');
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'vp'), ones (2, 2));
