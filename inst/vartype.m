@@ -71,8 +71,8 @@ classdef vartype
     ## @end deftypefn
     function this = vartype (type)
       if (! ((isvector (type) && ischar (type)) || isa (type, "string")))
-        error (["vartype: TYPE  must be either a character", ...
-                " vector or a string scalar."]);
+        error (strcat ("vartype: TYPE must be either a character", ...
+                       " vector or a string scalar."));
       endif
       this.type = char (cellstr (type));
     endfunction
@@ -135,5 +135,5 @@ endclassdef
 %! assert_equal (S.varMatch (hours (12)), false);
 
 ## Test input validation
-%!error <vartype: TYPE  must be either a character vector or a string scalar.> ...
+%!error <vartype: TYPE must be either a character vector or a string scalar.> ...
 %! vartype (3)

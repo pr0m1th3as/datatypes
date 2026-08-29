@@ -3313,7 +3313,7 @@ classdef table < tabular
         if (any (cIxVars == 0))
           constVars = cellstr (constVars);
           error (strcat ("table.stack: 'ConstantVariables' index a", ...
-                         " non-existing  variable: '%s'"), ...
+                         " non-existing variable: '%s'"), ...
                  constVars{find (cIxVars == 0)(1)});
         endif
         if (any (ismember (cIxVars, allStackIx)))
@@ -3639,8 +3639,9 @@ classdef table < tabular
           if (! ismember (class (GvarValues), allowed))
             invalid = this.VariableNames{gIxVars(i)};
             gIxVars(i) = [];
-            warning (["table.unstack: 'GroupingVariables' index a variable", ...
-                      " of invalid type: '%s', which is ignored."], invalid);
+            warning (strcat ("table.unstack: 'GroupingVariables' index a", ...
+                             " variable of invalid type: '%s', which is", ...
+                             " ignored."), invalid);
           endif
         endif
       endfor

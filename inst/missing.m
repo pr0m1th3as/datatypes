@@ -183,8 +183,8 @@ classdef missing
       if (nargout == 0 || nargout == 1)
         varargout{1} = sz;
       elseif (numel (sz) != nargout)
-        error (["missing.size: nargout > 1 but does not", ...
-                " match number of requested dimensions."]);
+        error (strcat ("missing.size: nargout > 1 but does not", ...
+                       " match number of requested dimensions."));
       else
         for i = 1:nargout
           varargout{i} = sz(i);
@@ -645,12 +645,12 @@ classdef missing
           out.data = this.data(s.subs{:});
 
         case '{}'
-          error (["missing.subsref: '{}' invalid indexing", ...
-                  " for referencing values. Use '()' instead."]);
+          error (strcat ("missing.subsref: '{}' invalid indexing", ...
+                         " for referencing values. Use '()' instead."));
 
         case '.'
-          error (["missing.subsref: '.' invalid indexing", ...
-                  " for referencing values. Use '()' instead."]);
+          error (strcat ("missing.subsref: '.' invalid indexing", ...
+                         " for referencing values. Use '()' instead."));
       endswitch
 
       ## Chained references
@@ -678,12 +678,12 @@ classdef missing
           endif
 
         case '{}'
-          error (["missing.subsasgn: '{}' invalid indexing", ...
-                  " for assigning values. Use '()' instead."]);
+          error (strcat ("missing.subsasgn: '{}' invalid indexing", ...
+                         " for assigning values. Use '()' instead."));
 
         case '.'
-          error (["missing.subsasgn: '.' invalid indexing", ...
-                  " for assigning values. Use '()' instead."]);
+          error (strcat ("missing.subsasgn: '.' invalid indexing", ...
+                         " for assigning values. Use '()' instead."));
       endswitch
 
     endfunction

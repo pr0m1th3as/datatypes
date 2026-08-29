@@ -415,23 +415,23 @@ classdef (Abstract) tabular
   methods (Hidden)
 
     function out = repelems (this, varargin)
-      error ("Function 'repelems' is not supported for tables.");
+      error ("%s.repelems: 'repelems' is not supported.", class (this));
     endfunction
 
     function out = reshape (this, varargin)
-      error ("Function 'reshape' is not supported for tables.");
+      error ("%s.reshape: 'reshape' is not supported.", class (this));
     endfunction
 
     function out = resize (this, varargin)
-      error ("Function 'resize' is not supported for tables.");
+      error ("%s.resize: 'resize' is not supported.", class (this));
     endfunction
 
     function out = shiftdims (this, varargin)
-      error ("Function 'shiftdims' is not supported for tables.");
+      error ("%s.shiftdims: 'shiftdims' is not supported.", class (this));
     endfunction
 
     function out = vec (this, varargin)
-      error ("Function 'vec' is not supported for tables.");
+      error ("%s.vec: 'vec' is not supported.", class (this));
     endfunction
 
     ## Shared helper for the house-format ODS exporters ('table2ods' and the

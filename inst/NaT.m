@@ -58,13 +58,13 @@ function T = NaT (varargin)
   ## Check optional Name-Value paired arguments
   if (! ((ischar (Format) && isvector (Format)) ||
          (isa (Format, "string") && isscalar (Format))))
-    error (["NaT: 'Format' must be either a character vector or", ...
-            " a string scalar."]);
+    error (strcat ("NaT: 'Format' must be either a character vector or", ...
+                   " a string scalar."));
   endif
   if (! ((ischar (TimeZone) && (isvector (TimeZone) || isempty (TimeZone))) ||
          (isa (TimeZone, "string") && isscalar (TimeZone))))
-    error (["NaT: 'TimeZone' must be either a character vector or", ...
-            " a string scalar."]);
+    error (strcat ("NaT: 'TimeZone' must be either a character vector or", ...
+                   " a string scalar."));
   endif
 
   ## Parse and check SIZE arguments.  Use the count of positional arguments
