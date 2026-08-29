@@ -71,46 +71,70 @@ classdef table < tabular
 
 
 ################################################################################
-##                    **    Row label hooks    **                             ##
+##                         **    Subclass hooks    **                         ##
 ################################################################################
 ##                                                                            ##
-## The seven hooks 'tabular' declares, implemented for a table, whose rows    ##
+## The eight hooks 'tabular' declares, implemented for a table, whose rows    ##
 ## are labelled by 'RowNames' and may carry no labels at all.                 ##
 ##                                                                            ##
 ################################################################################
 
   methods (Access = protected)
 
+    ## True when this table has 'RowNames'.  They are optional, and a table
+    ## created without them keeps the empty cell array the property defaults
+    ## to, so emptiness is the whole test.
     function tf = hasRowLabels (this)
       tf = ! isempty (this.RowNames);
     endfunction
 
+    ## The 'RowNames' cell array exactly as stored: a column cellstr of
+    ## unique, nonempty names, one per row, or empty when the table has none.
     function out = getRowLabels (this)
       out = this.RowNames;
     endfunction
 
+    ## The constant 'RowNames', which is the property name.  It is not the
+    ## row dimension name: 'DimensionNames{1}' also reaches the labels, but it
+    ## defaults to 'Row' and the user may rename it.
     function out = rowLabelName (this)
       out = 'RowNames';
     endfunction
 
+    ## The 'RowNames' unchanged.  A table's labels are already character data,
+    ## so displaying and exporting them needs no rendering step and this hook
+    ## has nothing to do beyond what 'getRowLabels' does.
     function out = rowLabelStrings (this)
       out = this.RowNames;
     endfunction
 
+    ## Keeps the 'RowNames' entries picked out by IXROWS, in the order given,
+    ## so that reordering or repeating rows carries their names along.  A
+    ## table with no row names is left alone: indexing the empty cell array
+    ## would raise instead of staying empty.
     function this = subsetRowLabels (this, ixRows)
       if (! isempty (this.RowNames))
         this.RowNames = this.RowNames(ixRows);
       endif
     endfunction
 
+    ## Drops the 'RowNames' outright, putting the property back to the empty
+    ## cell array that marks a table carrying no row labels.
     function this = clearRowLabels (this)
       this.RowNames = {};
     endfunction
 
+    ## Wraps the metadata struct that 'getProperties' assembles in a
+    ## 'datatypes.tabular.TableProperties', the class that adds 'RowNames' to
+    ## the shared properties and fixes the order the whole set displays in.
     function out = makeProperties (this)
       out = datatypes.tabular.TableProperties (getProperties (this));
     endfunction
 
+    ## Matches ROWREF, a cellstr of row names, against the 'RowNames' and
+    ## returns their positions.  Raises when the table has no row names at all
+    ## to match against, and again naming every reference that is not one of
+    ## them.  Row names are unique, so each match is a single row.
     function ixRows = resolveRowRef (this, rowRef)
       if (isempty (this.RowNames))
         error ("table: this table has no RowNames.");
