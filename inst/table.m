@@ -124,14 +124,6 @@ classdef table < tabular
 
   endmethods
 
-  methods (Hidden)
-
-    ## Custom display
-
-    ## Custom display
-
-  endmethods
-
 ################################################################################
 ##                    ** Create Table and Convert Type **                     ##
 ################################################################################
@@ -8001,38 +7993,15 @@ classdef table < tabular
   endmethods
 
 ################################################################################
-##                       **    Forbidden Methods    **                        ##
-################################################################################
-##                             Available Methods                              ##
-##                                                                            ##
-## 'repelems'         'reshape'          'resize'           'shiftdims'       ##
-## 'vec'                                                                      ##
-##                                                                            ##
-################################################################################
-
-  methods (Hidden)
-
-
-
-
-
-
-  endmethods
-
-################################################################################
 ##                  ** Reference and Assignment Operations **                 ##
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'end'              'subsref'          'subsasgn'                           ##
+## 'subsasgn'                                                                 ##
 ##                                                                            ##
 ################################################################################
 
   methods (Hidden)
-
-    ## Overload 'end' keyword
-
-    ## Class specific subscripted reference
 
     ## Class specific subscripted assignment
     function tbl = subsasgn (this, s, val)
@@ -8574,112 +8543,7 @@ classdef table < tabular
 
   endmethods
 
-  ## Private methods for accessing Tables and Properties
-  methods (Access = private)
-
-    ## Resolve variable references to indices and variable names.
-    ## Returns:
-    ##   @var{ixVar} - numeric indices of the variables in @var{tbl}
-    ##   @var{varNames} - a cellstr of the names of the indexed variables
-    ##
-    ## Raises an error if any of the specified variables could not be resolved,
-    ## unless strictness is 'lenient', in which case it will return 0 for the
-    ## index and '' for the name for each variable which could not be resolved.
-
-    ## Resolve both row and variable references to indices.
-
-    ## Return a subset of rows defined by the numerical or logical vector ixRows
-
-    ## Build consistent numeric row proxies for two tables sharing the same set
-    ## of variable names, so that equal rows (compared by variable value, in the
-    ## variable order of TBLA) map to equal proxy rows.  Returns an errmsg body
-    ## (empty on success) emitted by the caller under its own name.
-
-    ## Build one side of an outer join from a row-index vector IDX (zeros mark
-    ## rows with no match, filled with missing values).  Returns an errmsg body
-    ## (empty on success) emitted by the caller under its own name.
-
-    ## Merge the custom properties of a set of horizontally-combined tables
-    ## (a cell array TABLES whose variables are concatenated in order).  Table-
-    ## scoped properties are unioned with the first table winning on a name
-    ## clash; variable-scoped properties are concatenated across the tables'
-    ## variable blocks, filling the block of any table lacking the property with
-    ## NaN (numeric) or an empty cell.  Table-scoped properties are listed before
-    ## variable-scoped ones, matching MATLAB.
-
-    ## Return a subset of variables defined by the numerical vector ixVars
-
-    ## Get table properties as a struct for internal use called by subsasgn
-
-    ## Get values from a single referenced variable
-
-    ## -*- texinfo -*-
-    ## @deftypefn {table} {@var{out} =} setvar (@var{tbl}, @var{varRef}, @var{value})
-    ##
-    ## Set values to an existing or a new variable in table.
-    ##
-    ## This sets (adds or replaces) the value for a variable in @var{tbl}. It
-    ## may be used to change the value of an existing variable, or add a new
-    ## variable.
-    ##
-    ## @var{varRef} is a variable reference, either its index or its name.
-    ## If you are adding a new variable, it must be a name, and not an index.
-    ##
-    ## @var{value} is the value to set the variable to.  If it is a scalar, it
-    ## is scalar-expanded to match the number of rows in @var{tbl}.
-    ##
-    ## @end deftypefn
-
-    ## Resolve subscripted reference for internal use called by subsasgn
-
-  endmethods
-
-  ## Private methods for displaying (printing) Tables and Properties
-  methods (Access = private)
-
-    ## Print Table Properties
-
-    ## Display table internal function
-
-    ## Prepare table for printing
-
-    ## Summary internal function
-
-  endmethods
-
-  ## Shared helper for the house-format ODS exporters ('table2ods' and the
-  ## standalone 'struct2ods').  Hidden rather than private so 'struct2ods' can
-  ## reuse the exact flattening + metadata assembly.
-  methods (Hidden)
-
-    ## Build the house-format ODS parts for THIS table: the data grid V (with
-    ## ISO-formatted datetime/duration values), the per-column ODS value types,
-    ## and the metadata block (a descriptive comment row followed by the
-    ## variable types, names, descriptions, and units, mirroring the header
-    ## block that 'table2csv' writes so 'ods2table' can reuse its parser).
-    ## CALLER names the function for error reporting.
-
-    ## Build the MATLAB-interop spreadsheet parts for THIS table: the variable
-    ## names (a header row), the flat data grid V with ISO-formatted
-    ## datetime/duration values, and the per-column ODS value types.  No hidden
-    ## metadata (interop format).  Shared by 'writetable' and 'struct2xlsx'.
-    ## CALLER names the function for error reporting.
-
-  endmethods
-
-  ## Private methods for exporting (saving) Tables and Properties to files
-  methods (Access = private)
-
-    ## Export table to cell arrays
-
-  endmethods
-
 endclassdef
-
-## Convert a datetime array to datenum-valued doubles of the same size,
-## mapping NaT to NaN.  Used by 'summary'.  Core 'datenum' cannot process the
-## NaN date components of a NaT, so those rows are substituted with a valid
-## placeholder before conversion and set back to NaN afterwards.
 
 ## Return a logical mask, the same size as a table variable V, that flags the
 ## missing entries.  Used by 'fillmissing'.  Char arrays have no standard
@@ -8888,9 +8752,6 @@ function v = std_apply_indicator (v, numInd, txtInd)
   ## variables have no compatible standard missing value here; pass through.
 endfunction
 
-## Special function to convert a mixed cell array to cellstr array
-## that keeps MATLAB like formatting for each type of element
-
 ## Helper function for unstack method to get default aggregation function
 ## and missing values according to the data type of the stacked variable
 function [mcvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, aggrFcn)
@@ -9028,9 +8889,6 @@ function val = enforce_scalar_aggr (val)
   endif
 endfunction
 
-## Map a key variable kind to a comparison category.  Returns an empty
-## character vector for types that cannot be used as keys.
-
 ## Validate the optional SETORDER argument shared by the set operations.
 ## Returns the lower-cased order ('sorted' default) and an errmsg body (empty on
 ## success) emitted by the caller under its own name.
@@ -9063,13 +8921,6 @@ function [lsuf, rsuf] = join_suffixes (leftName, rightName)
   lsuf = ['_', leftName];
   rsuf = ['_', rightName];
 endfunction
-
-## Encode two cellstr key columns into consistent integer codes so that equal
-## strings (across both columns) map to the same code.
-
-## Build consistent numeric key proxies for the same key variable taken from
-## two tables, so that equal key values map to equal proxy rows.  Returns an
-## errmsg body (empty on success) emitted by the caller under its own name.
 
 ## Build a single-column grouping proxy for one grouping variable COL: a numeric
 ## matrix P (one row per element) whose sort order matches COL's value order, so
@@ -10063,23 +9914,6 @@ function out = build_grouped_apply_result (caller, fmt, res, outNames, gcols, ..
   endswitch
 endfunction
 
-## Detect the cell/non-cell mix of variable values VALS that cannot form a
-## homogeneous array.  Returns the column indices [LO, HI] (in column order) of
-## the first cell and first non-cell variable, or [] when VALS are not such a
-## mix.  Callers emit the incompatibility error under their own method name.
-
-## Set the rows of a variable V selected by the logical MASK to the standard
-## missing value for V's type.  Returns an errmsg body for unsupported types.
-
-## Create an N-row array of standard missing values matching the type and width
-## of PROTO.  Used when one input table has no rows to replicate from.  Returns
-## an errmsg body for unsupported types.
-
-## Map a variable type name to the ODS cell value type used by 'table2ods'.
-## Numeric types become 'float', logical becomes 'boolean', datetime and
-## duration map to the native 'date' and 'time' types, and everything else
-## (text, categorical, calendarDuration, cell) is written as a 'string'.
-
 ## Add, replace, or append table T to the struct of tables S (read from an
 ## existing house workbook) for the sheet named SHEET, per WRITEMODE.  The
 ## struct is later written back with 'struct2ods'; sheet names that are not
@@ -10139,12 +9973,6 @@ function T = copy_actual_sheet_name (T, src)
   endif
 endfunction
 
-## Prepare the flat value/name/type cell arrays produced by 'table2cellarrays'
-## for the MATLAB-compatible 'writetable' output: strip or keep the leading row
-## names column (which carries an empty variable name) per WRITEROWNAMES, and
-## de-duplicate the shared names of a multicolumn variable with _1, _2, ...
-## suffixes, matching MATLAB.
-
 ## Translate a MATLAB delimiter (named or literal) into a single character for
 ## 'writetable'.
 function d = wt_resolve_delimiter (delim)
@@ -10173,19 +10001,6 @@ function d = wt_resolve_delimiter (delim)
       endif
   endswitch
 endfunction
-
-## Format a datetime column as a column cell of ISO 8601 strings for 'table2ods'.
-## NaT values yield an empty string, which the writer records as a missing (empty)
-## cell.  The wall-clock components are used; any TimeZone is not encoded in the
-## value (mirroring the datetime display round-trip of the CSV path).
-
-## Format a duration column as a column cell of ISO 8601 duration strings
-## (@code{PTnHnMnS}) for 'table2ods'.  NaN values yield an empty string (written
-## as a missing cell).  Hours are not wrapped at 24, so durations of any
-## magnitude are preserved; negative durations carry a leading minus sign.
-
-## Format a seconds value for an ISO 8601 string: a two-digit integer when whole,
-## otherwise a fractional part (up to microseconds) with trailing zeros trimmed.
 
 function args = drop_null_operands (args)
   ## A 0x0 non-char operand takes no part in concatenation and is dropped,

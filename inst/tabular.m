@@ -273,6 +273,7 @@ classdef (Abstract) tabular
 
   methods (Hidden)
 
+    ## Custom display
     function display (this)
       in_name = inputname (1);
       if (! isempty (in_name))
@@ -281,6 +282,7 @@ classdef (Abstract) tabular
       disp (this);
     endfunction
 
+    ## Custom display
     function disp (this)
       if (isempty (this))
         fprintf ("  %dx%d empty table\n\n", size (this));
@@ -310,6 +312,7 @@ classdef (Abstract) tabular
       error ("Function 'vec' is not supported for tables");
     endfunction
 
+    ## Overload 'end' keyword
     function last_index = end (this, end_dim, ndim_obj)
       lastdim = ndims (this);
       if (end_dim == ndim_obj && ndim_obj == 1)
@@ -321,6 +324,7 @@ classdef (Abstract) tabular
       endif
     endfunction
 
+    ## Class specific subscripted reference
     function varargout = subsref (this, s)
       chain_s = s(2:end);
       s = s(1);
@@ -389,11 +393,22 @@ classdef (Abstract) tabular
       varargout{1} = tbl;
     endfunction
 
+    ## Shared helper for the house-format ODS exporters ('table2ods' and the
+    ## standalone 'struct2ods').  Hidden rather than private so 'struct2ods' can
+    ## reuse the exact flattening + metadata assembly.
+    ##
+    ## Build the house-format ODS parts for THIS table: the data grid V (with
+    ## ISO-formatted datetime/duration values), the per-column ODS value types,
+    ## and the metadata block (a descriptive comment row followed by the
+    ## variable types, names, descriptions, and units, mirroring the header
+    ## block that 'table2csv' writes so 'ods2table' can reuse its parser).
+    ## CALLER names the function for error reporting.
     function [V, vtype, meta] = __ods_parts__ (this, caller)
       [V, N, T, D, U] = table2cellarrays (this, 'iso');
       ## Nested tables and structs carry a multi-row (cell) type entry
       if (any (cellfun (@iscell, T)))
-        error ("%s: nested tables and structs are not supported; flatten them before writing.", caller);
+        error (strcat ("%s: nested tables and structs are not supported;", ...
+                       " flatten them before writing."), caller);
       endif
       Ccols = size (V, 2);
       vtype = cell (1, Ccols);
@@ -444,10 +459,17 @@ classdef (Abstract) tabular
       meta = [cmt; Header];
     endfunction
 
+    ## Build the MATLAB-interop spreadsheet parts for THIS table: the variable
+    ## names (a header row), the flat data grid V with ISO-formatted
+    ## datetime/duration values, and the per-column ODS value types.  No hidden
+    ## metadata (interop format).  Shared by 'writetable' and 'struct2xlsx'.
+    ## CALLER names the function for error reporting.
     function [names, V, vtype] = __interop_parts__ (this, caller)
       [V, N, T] = table2cellarrays (this, 'iso');
       if (any (cellfun (@iscell, T)))
-        error ("%s: nested tables and structs are not supported; flatten multicolumn variables with splitvars before writing.", caller);
+        error (strcat ("%s: nested tables and structs are not supported;", ...
+                       " flatten multicolumn variables with splitvars", ...
+                       " before writing."), caller);
       endif
       [names, V, T] = tabular.writetable_prep (V, N, T, false);
       vtype = cell (1, numel (T));
@@ -470,6 +492,14 @@ classdef (Abstract) tabular
 
   methods (Access = protected)
 
+    ## Resolve variable references to indices and variable names.
+    ## Returns:
+    ##   @var{ixVar} - numeric indices of the variables in @var{tbl}
+    ##   @var{varNames} - a cellstr of the names of the indexed variables
+    ##
+    ## Raises an error if any of the specified variables could not be resolved,
+    ## unless strictness is 'lenient', in which case it will return 0 for the
+    ## index and '' for the name for each variable which could not be resolved.
     function [ixVar, varNames] = resolveVarRef (this, varRef, strictness)
       if (nargin < 3 || isempty (strictness))
         strictness = 'strict';
@@ -535,6 +565,7 @@ classdef (Abstract) tabular
       endif
     endfunction
 
+    ## Resolve both row and variable references to indices.
     function [ixRow, ixVar] = resolveRowVarRefs (this, rowRef, varRef)
       if (isnumeric (rowRef) || islogical (rowRef))
         ixRow = rowRef;
@@ -550,6 +581,7 @@ classdef (Abstract) tabular
       ixVar = resolveVarRef (this, varRef);
     endfunction
 
+    ## Return a subset of rows defined by the numerical or logical vector ixRows
     function tbl = subsetrows (this, ixRows)
       tbl = this;
       s = struct ('type', '()', 'subs', {{ixRows,':'}});
@@ -559,6 +591,10 @@ classdef (Abstract) tabular
       tbl = subsetRowLabels (tbl, ixRows);
     endfunction
 
+    ## Build consistent numeric row proxies for two tables sharing the same set
+    ## of variable names, so that equal rows (compared by variable value, in the
+    ## variable order of TBLA) map to equal proxy rows.  Returns an errmsg body
+    ## (empty on success) emitted by the caller under its own name.
     function [proxyA, proxyB, errmsg] = rowProxies (tblA, tblB)
       proxyA = [];
       proxyB = [];
@@ -581,6 +617,9 @@ classdef (Abstract) tabular
       endfor
     endfunction
 
+    ## Build one side of an outer join from a row-index vector IDX (zeros mark
+    ## rows with no match, filled with missing values).  Returns an errmsg body
+    ## (empty on success) emitted by the caller under its own name.
     function [out, errmsg] = joinBuildSide (this, idx)
       out = this;
       errmsg = '';
@@ -604,6 +643,13 @@ classdef (Abstract) tabular
       out = clearRowLabels (out);
     endfunction
 
+    ## Merge the custom properties of a set of horizontally-combined tables
+    ## (a cell array TABLES whose variables are concatenated in order).  Table-
+    ## scoped properties are unioned with the first table winning on a name
+    ## clash; variable-scoped properties are concatenated across the tables'
+    ## variable blocks, filling the block of any table lacking the property with
+    ## NaN (numeric) or an empty cell.  Table-scoped properties are listed
+    ## before variable-scoped ones, matching MATLAB.
     function [cp, cpTypes] = merge_hcat_props (this, tables)
       widths = cellfun (@width, tables);
       cp = struct ();
@@ -661,6 +707,7 @@ classdef (Abstract) tabular
       endif
     endfunction
 
+    ## Return a subset of variables defined by the numerical vector ixVars
     function tbl = subsetvars (this, ixVars)
       tbl = this;
       ## Copy selected variables
@@ -692,6 +739,7 @@ classdef (Abstract) tabular
       endif
     endfunction
 
+    ## Get table properties as a struct for internal use called by subsasgn
     function out = getProperties (this)
       out = struct;
       out.Description = this.Description;
@@ -706,11 +754,28 @@ classdef (Abstract) tabular
       out.CustomProperties = this.CustomProperties;
     endfunction
 
+    ## Get values from a single referenced variable
     function out = getvar (this, var_ref)
       [ix_var, ~] = resolveVarRef (this, var_ref);
       out = this.VariableValues{ix_var};
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {table} {@var{out} =} setvar (@var{tbl}, @var{varRef}, @var{value})
+    ##
+    ## Set values to an existing or a new variable in table.
+    ##
+    ## This sets (adds or replaces) the value for a variable in @var{tbl}. It
+    ## may be used to change the value of an existing variable, or add a new
+    ## variable.
+    ##
+    ## @var{varRef} is a variable reference, either its index or its name.
+    ## If you are adding a new variable, it must be a name, and not an index.
+    ##
+    ## @var{value} is the value to set the variable to.  If it is a scalar, it
+    ## is scalar-expanded to match the number of rows in @var{tbl}.
+    ##
+    ## @end deftypefn
     function tbl = setvar (this, varRef, value)
       ## Do scalar expansion if necessary
       n_rows = height (this);
@@ -773,6 +838,7 @@ classdef (Abstract) tabular
       endif
     endfunction
 
+    ## Resolve subscripted reference for internal use called by subsasgn
     function out = single_subref (this, s)
       switch s.type
         case '()'
@@ -804,6 +870,7 @@ classdef (Abstract) tabular
       endswitch
     endfunction
 
+    ## Print Table Properties
     function print_properties (this)
       ## Gather info
       D = this.Description;
@@ -908,6 +975,7 @@ classdef (Abstract) tabular
       fprintf ("%s\n", CP);
     endfunction
 
+    ## Display table internal function
     function print_table (this)
       ## Get VariableNames and VariableNames for optimal length of each column
       var_num = width (this);
@@ -1035,6 +1103,7 @@ classdef (Abstract) tabular
       endif
     endfunction
 
+    ## Prepare table for printing
     function [colData, rowSpat, T] = resolve_table_for_printing ...
                                      (this, colData, rowSpat, T)
       ## Get recursion for nested tables
@@ -1308,6 +1377,7 @@ classdef (Abstract) tabular
       endfor
     endfunction
 
+    ## Summary internal function
     function s = summary_for_variables (this)
       for v = 1:width (this)
         varName = this.VariableNames{v};
@@ -1374,6 +1444,7 @@ classdef (Abstract) tabular
       endfor
     endfunction
 
+    ## Export table to cell arrays
     function [V, N, T, D, U] = table2cellarrays (this, fmt = 'display')
       V = {};  # variable values
       N = {};  # variable names
@@ -1525,401 +1596,4 @@ classdef (Abstract) tabular
 ##                                                                            ##
 ## They are Hidden rather than protected because a local function carries no   ##
 ## class context, so protected access is refused there, and several of the     ##
-## callers are local functions.  Hidden keeps them out of 'methods' just as    ##
-## protected would, so they stay off the class pages either way.               ##
-##                                                                            ##
-################################################################################
-
-  methods (Static, Hidden)
-
-function dn = datetime_to_datenum (v)
-  sz = size (v);
-  DV = datevec (v);                     # (numel)-by-6 in column-major order
-  nat = any (isnan (DV), 2);
-  DV(nat,:) = 0;
-  DV(nat,2:3) = 1;                      # valid month/day placeholder
-  dn = datenum (DV);
-  dn(nat) = NaN;
-  dn = reshape (dn, sz);
-endfunction
-
-function k = key_kind (col)
-  if (isa (col, 'categorical') || isa (col, 'string') || iscellstr (col)
-      || ischar (col))
-    k = 'text';
-  elseif (isa (col, 'datetime'))
-    k = 'datetime';
-  elseif (isa (col, 'duration'))
-    k = 'duration';
-  elseif (isa (col, 'calendarDuration'))
-    k = 'calendarDuration';
-  elseif (isnumeric (col) || islogical (col))
-    k = 'numeric';
-  else
-    k = '';
-  endif
-endfunction
-
-function [lp, rp] = text_codes (lc, rc)
-  nl = numel (lc);
-  [~, ~, ic] = unique ([lc(:); rc(:)]);
-  lp = ic(1:nl);
-  rp = ic(nl+1:end);
-endfunction
-
-function [lp, rp, errmsg] = key_col_proxy (lcol, rcol)
-  lp = [];
-  rp = [];
-  errmsg = '';
-  kl = tabular.key_kind (lcol);
-  kr = tabular.key_kind (rcol);
-  if (isempty (kl))
-    errmsg = sprintf ("unsupported key variable type '%s'.", class (lcol));
-    return;
-  elseif (isempty (kr))
-    errmsg = sprintf ("unsupported key variable type '%s'.", class (rcol));
-    return;
-  elseif (! strcmp (kl, kr))
-    errmsg = "key variables have incompatible types.";
-    return;
-  endif
-  switch (kl)
-    case 'text'
-      [lp, rp] = tabular.text_codes (cellstr (lcol), cellstr (rcol));
-    case 'datetime'
-      lp = tabular.datetime_to_datenum (lcol);
-      rp = tabular.datetime_to_datenum (rcol);
-    case 'duration'
-      lp = days (lcol);
-      rp = days (rcol);
-    case 'calendarDuration'
-      lp = lcol.proxyArray;
-      rp = rcol.proxyArray;
-    case 'numeric'
-      lp = double (lcol);
-      rp = double (rcol);
-  endswitch
-  if (size (lp, 2) != size (rp, 2))
-    lp = [];
-    rp = [];
-    errmsg = "key variables have incompatible sizes.";
-  endif
-endfunction
-
-function pair = mixed_cell_pair (vals)
-  isCellVar = cellfun (@iscell, vals);
-  if (any (isCellVar) && ! all (isCellVar))
-    pair = sort ([find(isCellVar, 1), find(! isCellVar, 1)]);
-  else
-    pair = [];
-  endif
-endfunction
-
-function vt = ods_value_type (typestr)
-  ## A zone-aware datetime carries its TimeZone in the type ('datetime <tz>').
-  if (strncmp (typestr, 'datetime', 8))
-    vt = 'date';
-    return;
-  endif
-  switch (typestr)
-    case 'logical'
-      vt = 'boolean';
-    case 'datetime'
-      vt = 'date';
-    case 'duration'
-      vt = 'time';
-    case {'double', 'single', 'int8', 'int16', 'int32', 'int64', ...
-          'uint8', 'uint16', 'uint32', 'uint64'}
-      vt = 'float';
-    otherwise
-      vt = 'string';
-  endswitch
-endfunction
-
-function [names, V, T] = writetable_prep (V, N, T, writeRowNames)
-  hasRN = (! isempty (N) && isempty (N{1}));
-  rnCol = {};
-  if (hasRN)
-    rnCol = V(:,1);
-    V(:,1) = [];  N(:,1) = [];  T(:,1) = [];
-  endif
-  names = {};
-  c = 1;
-  n = numel (N);
-  while (c <= n)
-    c2 = c;
-    while (c2 < n && strcmp (N{c2+1}, N{c}))
-      c2 += 1;
-    endwhile
-    k = c2 - c + 1;
-    if (k == 1)
-      names{end+1} = N{c};
-    else
-      for j = 1:k
-        names{end+1} = sprintf ("%s_%d", N{c}, j);
-      endfor
-    endif
-    c = c2 + 1;
-  endwhile
-  if (writeRowNames && hasRN)
-    V = [rnCol, V];
-    names = [{'Row'}, names];
-    T = [{'cellstr'}, T];
-  endif
-endfunction
-
-  endmethods
-
-endclassdef
-
-function [outData, optLen]  = mixedcell2str (data, varLen)
-  ## Preallocate indexes to avoid truncation when last elements are 0
-  idx_cell = logical (zeros (size (data)));
-  idx_charvec = idx_cell;
-  idx_logical = idx_cell;
-  idx_numeric = idx_cell;
-  idx_object = idx_cell;
-  idx_string = idx_cell;
-  idx_struct = idx_cell;
-
-  ## Find scalars or row vectors
-  se = cell2mat (cellfun (@(x) numel (x), data, 'UniformOutput', false)) == 1;
-  ve = cell2mat (cellfun (@(x) size (x,1), data, 'UniformOutput', false)) == 1;
-
-  ## Catch 'cell' scalars
-  tmp = cell2mat (cellfun (@iscell, data(se), 'UniformOutput', false)) == 1;
-  idx_cell(se) = tmp;
-  sf = @(x) sprintf ("1x1 cell");
-  out_str(idx_cell) = (cellfun (sf, data(idx_cell), ...
-                       'UniformOutput', false));
-  ## Catch 'char' scalars or row vectors
-  tmp = cell2mat (cellfun (@ischar, data(ve), 'UniformOutput', false));
-  idx_charvec(ve) = tmp;
-  sf = @(x) sprintf ("'%s'", x);
-  out_str(idx_charvec) = (cellfun (sf, data(idx_charvec), ...
-                          'UniformOutput', false));
-  ## Catch 'logical' scalars or row vectors
-  tmp = cell2mat (cellfun (@islogical, data(ve), 'UniformOutput', false)) == 1;
-  idx_logical(ve) = tmp;
-  sf = @(x) sprintf ("[%s]", strtrim (sprintf ("%d ", x)));
-  out_str(idx_logical) = (cellfun (sf, data(idx_logical), ...
-                          'UniformOutput', false));
-  ## Catch 'numeric' scalars or row vectors
-  tmp = cell2mat (cellfun (@isnumeric, data(ve), 'UniformOutput', false)) == 1;
-  idx_numeric(ve) = tmp;
-  sf = @(x) sprintf ("[%s]", strtrim (sprintf ("%g ", x)));
-  out_str(idx_numeric) = (cellfun (sf, data(idx_numeric), ...
-                          'UniformOutput', false));
-  ## Catch 'object' scalars
-  tmp = cell2mat (cellfun (@isobject, data(se), 'UniformOutput', false)) == 1;
-  idx_struct(se) = tmp;
-  sf = @(x) sprintf ("1x1 %s", class (x));
-  out_str(idx_struct) = (cellfun (sf, data(idx_struct), ...
-                         'UniformOutput', false));
-  ## Catch 'string' scalars or row vectors
-  tmp = cell2mat (cellfun (@isstring, data(ve), 'UniformOutput', false)) == 1;
-  idx_string(ve) = tmp;
-  sf = @(x) sprintf ("[%s]", strtrim (sprintf ("%s    ", dispstrings (x){:})));
-  out_str(idx_string) = (cellfun (sf, data(idx_string), ...
-                         'UniformOutput', false));
-  ## Catch scalar elements of struct type
-  tmp = cell2mat (cellfun (@isstruct, data(se), 'UniformOutput', false)) == 1;
-  idx_struct(se) = tmp;
-  sf = @(x) sprintf ("1x1 struct");
-  out_str(idx_struct) = (cellfun (sf, data(idx_struct), ...
-                         'UniformOutput', false));
-
-  ## Keep indexes for numerical and logical values to right alignment
-  pad_B = idx_numeric | idx_logical;  # pad before: sprintf("{%%-%ds}"
-  pad_A = ! pad_B;                    # pad after:  sprintf("{%%+%ds}"
-
-  ## Catch remaining elements
-  me = ! (idx_cell | idx_charvec | idx_logical | idx_numeric | ...
-          idx_object | idx_string | idx_struct);
-
-  ## Preallocate indexes to avoid truncation when last elements are 0
-  idx_cell = logical (zeros (size (data)));
-  idx_charvec = idx_cell;
-  idx_logical = idx_cell;
-  idx_numeric = idx_cell;
-  idx_object = idx_cell;
-  idx_string = idx_cell;
-  idx_struct = idx_cell;
-
-  if (any (me))
-    ## 'cell' arrays
-    tmp = cell2mat (cellfun (@iscell, data(me), 'UniformOutput', false)) == 1;
-    idx_cell(me) = tmp;
-    sf = @(x) sprintf (strcat ([strjoin(repmat ({'%d'}, 1, ndims (x)), 'x'), ...
-                                   ' cell']), size (x));
-    out_str(idx_cell) = (cellfun (sf, data(idx_cell), ...
-                         'UniformOutput', false));
-    ## 'char' arrays
-    tmp = cell2mat (cellfun (@ischar, data(me), 'UniformOutput', false));
-    idx_charvec(me) = tmp;
-    sf = @(x) sprintf (strcat (strjoin (repmat ({'%d'}, 1, ndims (x)), 'x'), ...
-                               ' char'), size (x));
-    out_str(idx_charvec) = (cellfun (sf, data(idx_charvec), ...
-                            'UniformOutput', false));
-    ## 'logical' arrays
-    tmp = cell2mat (cellfun (@islogical, data(me), ...
-                             'UniformOutput', false)) == 1;
-    idx_logical(me) = tmp;
-    sf = @(x) sprintf (strcat (strjoin (repmat ({'%d'}, 1, ndims (x)), 'x'), ...
-                               ' logical'), size (x));
-    out_str(idx_logical) = (cellfun (sf, data(idx_logical), ...
-                            'UniformOutput', false));
-    ## 'numeric' arrays
-    tmp = cell2mat (cellfun (@isnumeric, data(me), ...
-                             'UniformOutput', false)) == 1;
-    idx_numeric(me) = tmp;
-    sf = @(x) sprintf (strcat (strjoin (repmat ({'%d'}, 1, ndims (x)), 'x'), ...
-                               ' array'), size (x));
-    out_str(idx_numeric) = (cellfun (sf, data(idx_numeric), ...
-                            'UniformOutput', false));
-    ## 'object' arrays
-    tmp = cell2mat (cellfun (@isstring, data(me), 'UniformOutput', false)) == 1;
-    idx_string(me) = tmp;
-    sf = @(x) sprintf (strcat (strjoin (repmat ({'%d'}, 1, ndims (x)), 'x'), ...
-                               ' %s'), size (x), class (x));
-    out_str(idx_string) = (cellfun (sf, data(idx_string), ...
-                           'UniformOutput', false));
-    ## 'string' arrays
-    tmp = cell2mat (cellfun (@isstring, data(me), 'UniformOutput', false)) == 1;
-    idx_string(me) = tmp;
-    sf = @(x) sprintf (strcat (strjoin (repmat ({'%d'}, 1, ndims (x)), 'x'), ...
-                               ' string'), size (x));
-    out_str(idx_string) = (cellfun (sf, data(idx_string), ...
-                           'UniformOutput', false));
-    ## 'struct' arrays
-    tmp = cell2mat (cellfun (@isstruct, data(me), 'UniformOutput', false)) == 1;
-    idx_struct(me) = tmp;
-    sf = @(x) sprintf (strcat (strjoin (repmat ({'%d'}, 1, ndims (x)), 'x'), ...
-                               ' struct'), size (x));
-    out_str(idx_struct) = (cellfun (sf, data(idx_struct), ...
-                           'UniformOutput', false));
-  endif
-
-  ## Get optimal length
-  strLen = max (cellfun (@length, out_str)) + 2;
-  optLen = max ([varLen, strLen]);
-
-  ## Pad data according to optimal length
-  ## numeric and logical is right aligned, everything else is left aligned
-  Ra = sprintf ("{%%+%ds}", optLen - 2);
-  La = sprintf ("{%%-%ds}", optLen - 2);
-  fcn = @(x) sprintf (Ra, x);
-  outData(pad_B) = cellfun (fcn, out_str(pad_B), 'UniformOutput', false);
-  fcn = @(x) sprintf (La, x);
-  outData(pad_A) = cellfun (fcn, out_str(pad_A), 'UniformOutput', false);
-  outData = outData(:);
-endfunction
-
-function [v, errmsg] = set_var_missing (v, mask)
-  errmsg = '';
-  if (! any (mask))
-    return;
-  endif
-  if (isa (v, 'string'))
-    v(mask) = string (missing);
-  elseif (isa (v, 'categorical'))
-    v(mask) = categorical (missing);
-  elseif (isa (v, 'datetime'))
-    v(mask) = NaT;
-  elseif (isa (v, 'duration'))
-    v(mask) = missing;
-  elseif (isa (v, 'calendarDuration'))
-    v(mask,:) = NaN;
-  elseif (iscellstr (v))
-    v(mask) = {''};
-  elseif (islogical (v))
-    v(mask,:) = false;
-  elseif (isinteger (v))
-    v(mask,:) = 0;
-  elseif (isfloat (v))
-    v(mask,:) = NaN;
-  else
-    errmsg = sprintf (strcat ("cannot create missing values for a variable", ...
-                              " of type '%s'."), class (v));
-  endif
-endfunction
-
-function [col, errmsg] = missing_rows (proto, n)
-  errmsg = '';
-  col = [];
-  w = max (size (proto, 2), 1);
-  if (isa (proto, 'string'))
-    col = repmat (string (missing), n, w);
-  elseif (isa (proto, 'categorical'))
-    col = repmat (categorical (missing), n, w);
-  elseif (isa (proto, 'datetime'))
-    col = repmat (NaT, n, w);
-  elseif (isa (proto, 'duration'))
-    col = hours (NaN (n, w));
-  elseif (isa (proto, 'calendarDuration'))
-    col = calmonths (NaN (n, w));
-  elseif (iscellstr (proto))
-    col = repmat ({''}, n, w);
-  elseif (islogical (proto))
-    col = false (n, w);
-  elseif (isinteger (proto))
-    col = zeros (n, w, class (proto));
-  elseif (isfloat (proto))
-    col = NaN (n, w);
-  else
-    errmsg = sprintf (strcat ("cannot create missing values for a variable", ...
-                              " of type '%s'."), class (proto));
-  endif
-endfunction
-
-function C = datetime2iso (dt)
-  [Y, M, D] = ymd (dt(:));
-  [h, m, s] = hms (dt(:));
-  n = numel (Y);
-  C = cell (n, 1);
-  for i = 1:n
-    if (isnan (Y(i)))
-      C{i} = '';
-    else
-      C{i} = sprintf ("%04d-%02d-%02dT%02d:%02d:%s", ...
-                      Y(i), M(i), D(i), h(i), m(i), iso_seconds (s(i)));
-    endif
-  endfor
-endfunction
-
-function C = duration2iso (du)
-  tot = seconds (du(:));
-  n = numel (tot);
-  C = cell (n, 1);
-  for i = 1:n
-    if (isnan (tot(i)))
-      C{i} = '';
-    else
-      a = abs (tot(i));
-      H = floor (a / 3600);
-      MI = floor (mod (a, 3600) / 60);
-      S = mod (a, 60);
-      sgn = '';
-      if (tot(i) < 0)
-        sgn = '-';
-      endif
-      C{i} = sprintf ("%sPT%dH%dM%sS", sgn, H, MI, iso_seconds (S));
-    endif
-  endfor
-endfunction
-
-function str = iso_seconds (s)
-  si = floor (s);
-  frac = round ((s - si) * 1e6);
-  if (frac >= 1e6)                       # rounded up to a whole second
-    si += 1;
-    frac = 0;
-  endif
-  if (frac == 0)
-    str = sprintf ("%02d", si);
-  else
-    fs = regexprep (sprintf ("%06d", frac), '0+$', '');
-    str = sprintf ("%02d.%s", si, fs);
-  endif
-endfunction
-
+## callers are local functions.  Hid
