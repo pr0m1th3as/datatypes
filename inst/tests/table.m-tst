@@ -4949,9 +4949,16 @@
 %! d([1 4]) = NaT;
 %! R = fillmissing (table (d), 'previous', 'EndValues', datetime (2000, 1, 1));
 %! assert_equal (year (R.d), [2000; 2024; 2024; 2000]);
-%!test  # 'linear' leaves non-numeric variables unchanged
-%! T = table ([1; NaN; 3], {'a'; ''; 'c'}, 'VariableNames', {'x', 'y'});
+%!test  # 'linear' leaves a datetime variable alone rather than refusing it
+%! d = datetime (2024, 1, [1;2;3]);
+%! d(2) = NaT;
+%! T = table ([1; NaN; 3], d, 'VariableNames', {'x', 'd'});
 %! R = fillmissing (T, 'linear');
+%! assert_equal (R.x, [1; 2; 3]);
+%! assert_equal (isnat (R.d), [false; true; false]);
+%!test  # a variable 'linear' cannot interpolate is untouched when not targeted
+%! T = table ([1; NaN; 3], {'a'; ''; 'c'}, 'VariableNames', {'x', 'y'});
+%! R = fillmissing (T, 'linear', 'DataVariables', 'x');
 %! assert_equal (R.x, [1; 2; 3]);
 %! assert_equal (R.y, {'a'; ''; 'c'});
 %!test  # fewer than two anchors cannot be interpolated
@@ -4991,6 +4998,18 @@
 %! fillmissing (table ([1; 2; 3], 'VariableNames', {'x'}), 'linear', 'EndValues', [1 2]);
 %!error <table.fillmissing: 'EndValues' constant must be a scalar.> ...
 %! fillmissing (table ([NaN; 2; 3], 'VariableNames', {'x'}), 'linear', 'EndValues', {1, 2});
+## 'linear' refuses a targeted variable whose type it cannot interpolate
+%!error <table.fillmissing: the 'linear' method does not support the type of table variable 'y'.> ...
+%! T = table ([1; NaN; 3], {'a'; ''; 'c'}, 'VariableNames', {'x', 'y'});
+%! fillmissing (T, 'linear');
+%!error <table.fillmissing: the 'linear' method does not support the type of table variable 'c'.> ...
+%! c = categorical ({'a'; 'b'; 'c'});
+%! c(2) = missing;
+%! fillmissing (table ([1; NaN; 3], c, 'VariableNames', {'x', 'c'}), 'linear');
+## the type is checked before anything is filled, missing entries or not
+%!error <table.fillmissing: the 'linear' method does not support the type of table variable 'y'.> ...
+%! T = table ([1; NaN; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
+%! fillmissing (T, 'linear');
 ## the constant must be assignable to the variable it fills
 %!error <table.fillmissing: the 'EndValues' constant cannot be assigned to table variable 'd'.> ...
 %! d = datetime (2024, 1, [1;2;3;4]);

@@ -5642,6 +5642,22 @@ classdef table < tabular
         endif
       endif
 
+      ## Every targeted variable must have a type the 'linear' method can
+      ## interpolate, and that is settled before anything is filled: the call
+      ## is refused whether or not the variable has an entry missing.
+      if (strcmp (method, 'linear'))
+        for k = 1:numel (ixVars)
+          v = tblA.VariableValues{ixVars(k)};
+          if (isnumeric (v) || islogical (v) || isdatetime (v) ...
+              || isduration (v))
+            continue;
+          endif
+          error (strcat ("table.fillmissing: the 'linear' method does not", ...
+                         " support the type of table variable '%s'."), ...
+                 tblA.VariableNames{ixVars(k)});
+        endfor
+      endif
+
       ## Resolve per-variable fill values for the 'constant' method
       if (strcmp (method, 'constant'))
         fillVals = resolve_const_values (constVal, numel (ixVars));
@@ -5665,7 +5681,9 @@ classdef table < tabular
           [v, filled] = fill_constant (v, M, fillVals{k}, ...
                                        tbl.VariableNames{iv});
         elseif (strcmp (method, 'linear') && ! (isnumeric (v) || islogical (v)))
-          ## 'linear' applies only to numeric variables; skip others
+          ## Only datetime and duration reach here, the type check above
+          ## having refused everything else.  MATLAB interpolates them; we do
+          ## not yet, so they are left as they are.
           continue;
         else
           for c = 1:columns (M)
