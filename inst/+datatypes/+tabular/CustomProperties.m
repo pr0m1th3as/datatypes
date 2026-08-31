@@ -31,7 +31,7 @@ classdef CustomProperties
 
   properties (Access = private)
     Values = struct ()
-    Types = {}
+    Types = struct ()
   endproperties
 
   methods (Access = {?datatypes.tabular.TableProperties})
@@ -40,8 +40,17 @@ classdef CustomProperties
       if (nargin > 0 && isstruct (s))
         this.Values = s;
       endif
-      if (nargin > 1 && iscellstr (types))
+      if (nargin > 1 && isstruct (types))
         this.Types = types;
+      endif
+      ## Every property carries its type under its own name.  A set that does
+      ## not match means a table wrote one container and not the other, and
+      ## every read of 'Properties' passes through here, so it is caught at
+      ## the first look rather than answering with the wrong type.
+      if (! isequal (sort (fieldnames (this.Values)), ...
+                     sort (fieldnames (this.Types))))
+        error (strcat ("datatypes.tabular.CustomProperties: the custom", ...
+                       " properties and their types do not match."));
       endif
     endfunction
 
@@ -50,8 +59,8 @@ classdef CustomProperties
   methods (Access = {?table})
 
     ## Return the stored values and the type of each, so that a table can
-    ## take the whole store in one assignment.  The types are in the order
-    ## the values are, which is how the store is built.
+    ## take the whole store in one assignment.  Both are structs keyed by the
+    ## property names.
     function [vals, types] = unpack (this)
       vals = this.Values;
       types = this.Types;
@@ -69,6 +78,20 @@ classdef CustomProperties
     ## @end deftypefn
     function names = fieldnames (this)
       names = fieldnames (this.Values);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {datatypes.tabular.CustomProperties} {@var{names} =} properties (@var{obj})
+    ##
+    ## Return the names of the custom properties that are set.
+    ##
+    ## The names are data rather than properties the class declares, so
+    ## @code{properties} answers from the set that is stored, exactly as
+    ## @code{fieldnames} does.
+    ##
+    ## @end deftypefn
+    function names = properties (this)
+      names = fieldnames (this);
     endfunction
 
     ## -*- texinfo -*-

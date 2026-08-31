@@ -39,7 +39,7 @@ classdef TableProperties < datatypes.tabular.TabularProperties
         return;
       endif
       if (nargin < 2)
-        cpTypes = {};
+        cpTypes = struct ();
       endif
       names = fieldnames (s);
       for i = 1:numel (names)

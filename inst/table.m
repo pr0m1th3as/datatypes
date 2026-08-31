@@ -2521,11 +2521,8 @@ classdef table < tabular
 
       ## Check for custom variable properties and remove accordingly
       if (! isempty (this.CustomProperties))
-        cpIdx = strcmp (this.CustomPropTypes, "variable");
-        if (any (cpIdx))
-          ## Get the fieldnames of custom variable properties
-          cpNames = fieldnames (this.CustomProperties);
-          cpNames = cpNames(cpIdx);
+        cpNames = customPropsOfType (this, 'variable');
+        if (! isempty (cpNames))
           ## Remove referenced variable values from custom variable properties
           for i = 1:numel (cpNames)
             tmp = this.CustomProperties.(cpNames{i});
@@ -3175,15 +3172,11 @@ classdef table < tabular
 
       ## Remove any custom variable properties
       if (! isempty (tbl.CustomProperties))
-        cp_names = fieldnames (this.CustomProperties);
-        cp_types = this.CustomPropTypes;
-        idx = find (strcmpi (cp_types, "variable"));
+        cp_names = customPropsOfType (this, 'variable');
         ## Remove custom variable properties only
-        if (! isempty (idx))
-          for i = idx
-            tbl = rmprop (tbl, cp_names{i});
-          endfor
-        endif
+        for i = 1:numel (cp_names)
+          tbl = rmprop (tbl, cp_names{i});
+        endfor
       endif
 
     endfunction
@@ -3745,13 +3738,11 @@ classdef table < tabular
         ## carried by the constant and grouping variables through the final
         ## horzcat that assembles the output.
         if (! isempty (this.CustomProperties))
-          cpNames = fieldnames (this.CustomProperties);
+          cpNames = customPropsOfType (this, 'variable');
           for ci = 1:numel (cpNames)
-            if (strcmp (this.CustomPropTypes{ci}, 'variable'))
-              srcval = this.CustomProperties.(cpNames{ci})(ixVars);
-              UvarTable.CustomProperties.(cpNames{ci}) = repmat (srcval, 1, ncols);
-              UvarTable.CustomPropTypes{end+1} = 'variable';
-            endif
+            srcval = this.CustomProperties.(cpNames{ci})(ixVars);
+            UvarTable.CustomProperties.(cpNames{ci}) = repmat (srcval, 1, ncols);
+            UvarTable.CustomPropTypes.(cpNames{ci}) = 'variable';
           endfor
         endif
 
@@ -3846,17 +3837,15 @@ classdef table < tabular
         ## carried by the constant and grouping variables through the final
         ## horzcat that assembles the output.
         if (! isempty (this.CustomProperties))
-          cpNames = fieldnames (this.CustomProperties);
+          cpNames = customPropsOfType (this, 'variable');
           for ci = 1:numel (cpNames)
-            if (strcmp (this.CustomPropTypes{ci}, 'variable'))
-              blk = [];
-              for i = 1:nvars
-                srcval = this.CustomProperties.(cpNames{ci})(ixVars(i));
-                blk = [blk, repmat(srcval, 1, ncols)];
-              endfor
-              UvarTable.CustomProperties.(cpNames{ci}) = blk;
-              UvarTable.CustomPropTypes{end+1} = 'variable';
-            endif
+            blk = [];
+            for i = 1:nvars
+              srcval = this.CustomProperties.(cpNames{ci})(ixVars(i));
+              blk = [blk, repmat(srcval, 1, ncols)];
+            endfor
+            UvarTable.CustomProperties.(cpNames{ci}) = blk;
+            UvarTable.CustomPropTypes.(cpNames{ci}) = 'variable';
           endfor
         endif
 
@@ -4059,14 +4048,10 @@ classdef table < tabular
       tbl.VariableDescriptions = outDesc;
       tbl.VariableUnits = outUnits;
       if (! isempty (this.CustomProperties))
-        cpIdx = strcmp (this.CustomPropTypes, "variable");
-        if (any (cpIdx))
-          cpNames = fieldnames (this.CustomProperties);
-          cpNames = cpNames(cpIdx);
-          for i = 1:numel (cpNames)
-            tbl.CustomProperties = rmfield (tbl.CustomProperties, cpNames{i});
-          endfor
-          tbl.CustomPropTypes(cpIdx) = [];
+        cpNames = customPropsOfType (this, 'variable');
+        if (! isempty (cpNames))
+          tbl.CustomProperties = rmfield (tbl.CustomProperties, cpNames);
+          tbl.CustomPropTypes = rmfield (tbl.CustomPropTypes, cpNames);
         endif
       endif
 
@@ -4138,9 +4123,6 @@ classdef table < tabular
           error ("table.addprop: custom property '%s' already exists.", ...
                   Names{find (idx)(1)});
         endif
-        offset = numel (this.CustomPropTypes);
-      else
-        offset = 0;
       endif
 
       ## Add each custom property
@@ -4156,7 +4138,7 @@ classdef table < tabular
           error ("table.addprop: invalid value for 'propertyTypes'.");
         endif
         this.CustomProperties.(Names{idx}) = [];
-        this.CustomPropTypes(idx + offset) = Types{idx};
+        this.CustomPropTypes.(Names{idx}) = Types{idx};
       endfor
       tbl = this;
 
@@ -4196,7 +4178,8 @@ classdef table < tabular
         if (any (tf))
           this.CustomProperties = rmfield (this.CustomProperties, ...
                                            existingNames(tf));
-          this.CustomPropTypes(tf) = [];
+          this.CustomPropTypes = rmfield (this.CustomPropTypes, ...
+                                          existingNames(tf));
         endif
       endif
       tbl = this;
@@ -7710,17 +7693,13 @@ classdef table < tabular
         tbl.VariableNames = newNames;
         ## Handle custom variable properties
         if (! isempty (this.CustomProperties))
-          cp_names = fieldnames (this.CustomProperties);
-          cp_types = this.CustomPropTypes;
-          idx = find (strcmpi (cp_types, "variable"));
+          cp_names = customPropsOfType (this, 'variable');
           ## Replicate custom variable properties only
-          if (! isempty (idx))
-            for i = idx
-              cvp_name = cp_names{i};
-              tbl.CustomProperties.(cvp_name) = ...
-                             repelem (tbl.CustomProperties.(cvp_name), 1, cols);
-            endfor
-          endif
+          for i = 1:numel (cp_names)
+            cvp_name = cp_names{i};
+            tbl.CustomProperties.(cvp_name) = ...
+                           repelem (tbl.CustomProperties.(cvp_name), 1, cols);
+          endfor
         endif
       endif
 
@@ -7804,17 +7783,13 @@ classdef table < tabular
         tbl.VariableNames = newNames;
         ## Handle custom variable properties
         if (! isempty (this.CustomProperties))
-          cp_names = fieldnames (this.CustomProperties);
-          cp_types = this.CustomPropTypes;
-          idx = find (strcmpi (cp_types, "variable"));
+          cp_names = customPropsOfType (this, 'variable');
           ## Replicate custom variable properties only
-          if (! isempty (idx))
-            for i = idx
-              cvp_name = cp_names{i};
-              tbl.CustomProperties.(cvp_name) = ...
-                             repmat (tbl.CustomProperties.(cvp_name), 1, cols);
-            endfor
-          endif
+          for i = 1:numel (cp_names)
+            cvp_name = cp_names{i};
+            tbl.CustomProperties.(cvp_name) = ...
+                           repmat (tbl.CustomProperties.(cvp_name), 1, cols);
+          endfor
         endif
       endif
 
@@ -8489,7 +8464,7 @@ classdef table < tabular
                 cpNames = fieldnames (cpVals);
                 for i = 1:numel (cpNames)
                   cpVal = cpVals.(cpNames{i});
-                  if (! strcmp (cpTypes{i}, 'variable'))
+                  if (! strcmp (cpTypes.(cpNames{i}), 'variable'))
                     continue;
                   endif
                   ## A 0-by-0 empty fits a table of any width.
@@ -8506,7 +8481,7 @@ classdef table < tabular
                 ## An empty store is [] with no types, as everywhere else.
                 if (isempty (cpNames))
                   this.CustomProperties = [];
-                  this.CustomPropTypes = {};
+                  this.CustomPropTypes = struct ();
                 else
                   this.CustomProperties = cpVals;
                   this.CustomPropTypes = cpTypes;
@@ -8544,7 +8519,7 @@ classdef table < tabular
                        cpName);
               endif
               ## Get type of custom property
-              cpType = this.CustomPropTypes{strcmp (cpName, existingNames)};
+              cpType = this.CustomPropTypes.(cpName);
               if (strcmp (cpType, 'table'))
                 ## A 'table' property is metadata the class never reads, so
                 ## it holds any value of any type and size, stored as given.

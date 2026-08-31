@@ -210,7 +210,7 @@ classdef (Abstract) tabular
   endproperties
 
   properties (Access = protected)
-    CustomPropTypes = {}
+    CustomPropTypes = struct ()
     VariableValues = {}
   endproperties
 
@@ -547,6 +547,20 @@ classdef (Abstract) tabular
 
   methods (Access = protected)
 
+    ## The names of the custom properties of one scope, in the order they were
+    ## added.  TYPE is 'table' or 'variable'.  A property's type is held under
+    ## the property's own name, so nothing here depends on two containers
+    ## agreeing on an order.
+    function names = customPropsOfType (this, type)
+      names = {};
+      if (isempty (this.CustomProperties))
+        return;
+      endif
+      names = fieldnames (this.CustomProperties);
+      keep = cellfun (@(n) strcmp (this.CustomPropTypes.(n), type), names);
+      names = names(keep);
+    endfunction
+
     ## Resolve variable references to indices and variable names.
     ## Returns:
     ##   @var{ixVar} - numeric indices of the variables in @var{tbl}
@@ -712,7 +726,7 @@ classdef (Abstract) tabular
     function [cp, cpTypes] = merge_hcat_props (this, tables)
       widths = cellfun (@width, tables);
       cp = struct ();
-      cpTypes = {};
+      cpTypes = struct ();
       ## Pass 1: table-scoped properties (union, first table wins).
       for t = 1:numel (tables)
         T = tables{t};
@@ -721,9 +735,10 @@ classdef (Abstract) tabular
         endif
         nm = fieldnames (T.CustomProperties);
         for i = 1:numel (nm)
-          if (strcmp (T.CustomPropTypes{i}, 'table') && ! isfield (cp, nm{i}))
+          if (strcmp (T.CustomPropTypes.(nm{i}), 'table') ...
+              && ! isfield (cp, nm{i}))
             cp.(nm{i}) = T.CustomProperties.(nm{i});
-            cpTypes{end+1} = 'table';
+            cpTypes.(nm{i}) = 'table';
           endif
         endfor
       endfor
@@ -737,7 +752,7 @@ classdef (Abstract) tabular
         endif
         nm = fieldnames (T.CustomProperties);
         for i = 1:numel (nm)
-          if (! strcmp (T.CustomPropTypes{i}, 'variable') ...
+          if (! strcmp (T.CustomPropTypes.(nm{i}), 'variable') ...
               || any (strcmp (nm{i}, seen)))
             continue;
           endif
@@ -757,12 +772,12 @@ classdef (Abstract) tabular
             vec = [vec, blk];
           endfor
           cp.(nm{i}) = vec;
-          cpTypes{end+1} = 'variable';
+          cpTypes.(nm{i}) = 'variable';
         endfor
       endfor
       if (isempty (fieldnames (cp)))
         cp = [];
-        cpTypes = {};
+        cpTypes = struct ();
       endif
     endfunction
 
@@ -780,11 +795,8 @@ classdef (Abstract) tabular
       endif
       ## Check for custom variable properties
       if (! isempty (this.CustomProperties))
-        cpIdx = strcmp (this.CustomPropTypes, "variable");
-        if (any (cpIdx))
-          ## Get the fieldnames of custom variable properties
-          cpNames = fieldnames (this.CustomProperties);
-          cpNames = cpNames(cpIdx);
+        cpNames = customPropsOfType (this, 'variable');
+        if (! isempty (cpNames))
           ## Copy custom variable properties from selected variables
           for i = 1:numel (cpNames)
             tmp = this.CustomProperties.(cpNames{i});
@@ -869,11 +881,8 @@ classdef (Abstract) tabular
         endif
         ## Check for custom variable properties
         if (! isempty (this.CustomProperties))
-          cpIdx = strcmp (this.CustomPropTypes, "variable");
-          if (any (cpIdx))
-            ## Get the fieldnames of custom variable properties
-            cpNames = fieldnames (this.CustomProperties);
-            cpNames = cpNames(cpIdx);
+          cpNames = customPropsOfType (this, 'variable');
+          if (! isempty (cpNames))
             ## Add default values to custom variable properties for new variable
             for i = 1:numel (cpNames)
               tmp = this.CustomProperties.(cpNames{i});

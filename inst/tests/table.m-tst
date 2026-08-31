@@ -6617,6 +6617,19 @@
 %! T = addprop (table ([1; 2], 'VariableNames', {'x'}), 'Extra', 'table');
 %! assert_equal (isempty (T.Properties.CustomProperties), false);
 %! assert_equal (fieldnames (T.Properties.CustomProperties), {'Extra'});
+## Test 'properties' of the store names the custom properties that are set
+%!test
+%! T = addprop (table ([1; 2], 'VariableNames', {'x'}), 'Extra', 'table');
+%! assert_equal (properties (T.Properties.CustomProperties), {'Extra'});
+## Test 'properties' of an empty store is an empty column
+%!test
+%! T = table ([1; 2], 'VariableNames', {'x'});
+%! assert_equal (properties (T.Properties.CustomProperties), cell (0, 1));
+## Test 'properties' of the store keeps the order the properties were added in
+%!test
+%! T = addprop (table ([1; 2], 'VariableNames', {'x'}), {'zz', 'aa'}, ...
+%!              {'table', 'table'});
+%! assert_equal (properties (T.Properties.CustomProperties), {'zz'; 'aa'});
 ## Test a custom property round trips through the object
 %!test
 %! T = addprop (table ([1; 2], 'VariableNames', {'x'}), 'Extra', 'table');
