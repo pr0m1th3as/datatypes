@@ -23,7 +23,7 @@
 ## It holds the properties added with @code{addprop} and removed with
 ## @code{rmprop}, and is reached as
 ## @qcode{@var{tbl}.Properties.CustomProperties.@var{name}}.  A single class
-## serves both tabular classes, as in MATLAB.  It is never constructed
+## serves both tabular classes, as in MATLAB.  It cannot be constructed
 ## directly.
 ##
 ## @end deftp
@@ -33,13 +33,17 @@ classdef CustomProperties
     Values = struct ()
   endproperties
 
-  methods
+  methods (Access = {?datatypes.tabular.TableProperties})
 
     function this = CustomProperties (s)
       if (nargin > 0 && isstruct (s))
         this.Values = s;
       endif
     endfunction
+
+  endmethods
+
+  methods
 
     ## -*- texinfo -*-
     ## @deftypefn {datatypes.tabular.CustomProperties} {@var{names} =} fieldnames (@var{obj})

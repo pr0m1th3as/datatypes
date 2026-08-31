@@ -22,7 +22,7 @@
 ##
 ## It carries the metadata every tabular class shares, from
 ## @code{datatypes.tabular.TabularProperties}, and adds @qcode{RowNames}.
-## It is what @qcode{@var{tbl}.Properties} returns and is never constructed
+## It is what @qcode{@var{tbl}.Properties} returns and cannot be constructed
 ## directly.
 ##
 ## @end deftp
@@ -32,7 +32,7 @@ classdef TableProperties < datatypes.tabular.TabularProperties
     RowNames = {}
   endproperties
 
-  methods
+  methods (Access = {?table})
 
     function this = TableProperties (s)
       if (nargin < 1)
