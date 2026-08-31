@@ -190,11 +190,19 @@ classdef (Abstract) tabular
     ## is created with the @code{addprop} method.  A variable-scoped property
     ## holds one element per variable.
     ##
-    ## You can add custom properties only by using the @code{addprop} method and
-    ## you can only remove a custom property with the @code{rmprop} method.  To
-    ## access existing custom properties use dot name structure assignment as in
+    ## You can add an individual custom property only by using the
+    ## @code{addprop} method and you can only remove a custom property with the
+    ## @code{rmprop} method.  To access existing custom properties use dot name
+    ## structure assignment as in
     ## @qcode{@var{tbl}.Properties.CustomProperties.@var{PropertyName}}, where
     ## @var{PropertyName} is the name used with the @code{addprop} method.
+    ##
+    ## The whole set may also be taken from another table by assigning that
+    ## table's @qcode{CustomProperties} to this one, which replaces every
+    ## custom property with those of the other table, their types included.  A
+    ## variable-scoped property arriving that way must hold one element for
+    ## each variable of the receiving table, or be a 0-by-0 empty.  Nothing
+    ## else can be assigned there.
     ##
     ## @end deftp
     CustomProperties = []

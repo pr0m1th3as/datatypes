@@ -127,7 +127,8 @@ classdef table < tabular
     ## 'datatypes.tabular.TableProperties', the class that adds 'RowNames' to
     ## the shared properties and fixes the order the whole set displays in.
     function out = makeProperties (this)
-      out = datatypes.tabular.TableProperties (getProperties (this));
+      out = datatypes.tabular.TableProperties (getProperties (this), ...
+                                               this.CustomPropTypes);
     endfunction
 
     ## Matches ROWREF, a cellstr of row names, against the 'RowNames' and
@@ -8474,15 +8475,44 @@ classdef table < tabular
               tbl = this;
 
             elseif (isequal (s.subs, 'CustomProperties'))
-              ## Check that a custom property name is indexed
+              ## Assigning the store itself replaces it whole, as in MATLAB,
+              ## and only a store taken from a table can be assigned.  The
+              ## types travel with it, so a variable property stays one.
               if (numel (chain_s) < 2)
-                if (isempty (val))
-                  error (strcat ("table.subsasgn: use 'rmprop' to remove", ...
-                                 " an existing custom property."));
-                else
-                  error (strcat ("table.subsasgn: use 'addprop' to add a", ...
-                                 " new custom property."));
+                if (! isa (val, 'datatypes.tabular.CustomProperties'))
+                  error (strcat ("table.subsasgn: the value assigned to", ...
+                                 " 'CustomProperties' must be a", ...
+                                 " datatypes.tabular.CustomProperties", ...
+                                 " object."));
                 endif
+                [cpVals, cpTypes] = unpack (val);
+                cpNames = fieldnames (cpVals);
+                for i = 1:numel (cpNames)
+                  cpVal = cpVals.(cpNames{i});
+                  if (! strcmp (cpTypes{i}, 'variable'))
+                    continue;
+                  endif
+                  ## A 0-by-0 empty fits a table of any width.
+                  if (ndims (cpVal) == 2 && all (size (cpVal) == 0))
+                    continue;
+                  endif
+                  if (numel (cpVal) != width (this))
+                    error (strcat ("table.subsasgn: custom property '%s'", ...
+                                   " must have one element for each", ...
+                                   " variable in the table, or be a 0-by-0", ...
+                                   " empty."), cpNames{i});
+                  endif
+                endfor
+                ## An empty store is [] with no types, as everywhere else.
+                if (isempty (cpNames))
+                  this.CustomProperties = [];
+                  this.CustomPropTypes = {};
+                else
+                  this.CustomProperties = cpVals;
+                  this.CustomPropTypes = cpTypes;
+                endif
+                tbl = this;
+                return;
               endif
               ## Check for valid indexing a custom property
               if (! strcmp (chain_s(2).type, '.'))

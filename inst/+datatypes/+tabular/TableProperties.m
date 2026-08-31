@@ -34,15 +34,18 @@ classdef TableProperties < datatypes.tabular.TabularProperties
 
   methods (Access = {?table})
 
-    function this = TableProperties (s)
+    function this = TableProperties (s, cpTypes)
       if (nargin < 1)
         return;
+      endif
+      if (nargin < 2)
+        cpTypes = {};
       endif
       names = fieldnames (s);
       for i = 1:numel (names)
         if (strcmp (names{i}, 'CustomProperties'))
-          this.CustomProperties = ...
-            datatypes.tabular.CustomProperties (s.CustomProperties);
+          this.CustomProperties = datatypes.tabular.CustomProperties ( ...
+                                    s.CustomProperties, cpTypes);
         else
           this.(names{i}) = s.(names{i});
         endif

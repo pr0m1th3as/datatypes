@@ -31,14 +31,30 @@ classdef CustomProperties
 
   properties (Access = private)
     Values = struct ()
+    Types = {}
   endproperties
 
   methods (Access = {?datatypes.tabular.TableProperties})
 
-    function this = CustomProperties (s)
+    function this = CustomProperties (s, types)
       if (nargin > 0 && isstruct (s))
         this.Values = s;
       endif
+      if (nargin > 1 && iscellstr (types))
+        this.Types = types;
+      endif
+    endfunction
+
+  endmethods
+
+  methods (Access = {?table})
+
+    ## Return the stored values and the type of each, so that a table can
+    ## take the whole store in one assignment.  The types are in the order
+    ## the values are, which is how the store is built.
+    function [vals, types] = unpack (this)
+      vals = this.Values;
+      types = this.Types;
     endfunction
 
   endmethods
