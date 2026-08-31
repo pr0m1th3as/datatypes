@@ -6670,6 +6670,34 @@
 %! T.Properties.CustomProperties.vp(2) = 99;
 %! assert_equal (T.Properties.CustomProperties.vp, [10 99]);
 
+## a table-scoped custom property holds a matrix, stored as given
+%!test
+%! T = table ([1;2;3], 'VariableNames', {'x'});
+%! T = addprop (T, 'tp', 'table');
+%! T.Properties.CustomProperties.tp = magic (3);
+%! assert_equal (T.Properties.CustomProperties.tp, magic (3));
+
+## a table-scoped custom property holds a cell array of character vectors
+%!test
+%! T = table ([1;2;3], 'VariableNames', {'x'});
+%! T = addprop (T, 'tp', 'table');
+%! T.Properties.CustomProperties.tp = {'a', 'b', 'c'};
+%! assert_equal (T.Properties.CustomProperties.tp, {'a', 'b', 'c'});
+
+## a table-scoped custom property holds another table
+%!test
+%! T = table ([1;2;3], 'VariableNames', {'x'});
+%! T = addprop (T, 'tp', 'table');
+%! T.Properties.CustomProperties.tp = table ([1; 2]);
+%! assert_equal (height (T.Properties.CustomProperties.tp), 2);
+
+## a table-scoped custom property holds a multi-element string array
+%!test
+%! T = table ([1;2;3], 'VariableNames', {'x'});
+%! T = addprop (T, 'tp', 'table');
+%! T.Properties.CustomProperties.tp = string ({'a', 'b'});
+%! assert_equal (numel (T.Properties.CustomProperties.tp), 2);
+
 ## Test input validation for 'subsasgn' custom property assignment
 %!error <table.subsasgn: custom property 'nope' does not exist, use 'addprop' to add it.> ...
 %! T = table ([1;2;3]); T.Properties.CustomProperties.nope = 5;
@@ -6882,11 +6910,7 @@
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! T = addprop (T, 'tp', 'table');
 %! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '()', {1}), 1);
-%!error <table.subsasgn: custom property 'tp' is a table property and only a scalar value can be assigned to it.> ...
-%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
-%! T = addprop (T, 'tp', 'table');
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'tp'), [1, 2]);
-%!error <table.subsasgn: custom property 'tp' is a scalar table property and cannot be indexed any further.> ...
+%!error <table.subsasgn: custom property 'tp' is a table property and cannot be indexed any further.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! T = addprop (T, 'tp', 'table');
 %! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'tp', '()', {1}), 1);
@@ -6923,3 +6947,69 @@
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! T = addprop (T, 'vp', 'variable');
 %! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'vp'), ones (2, 2));
+
+## a 0-by-0 empty clears a custom variable property whatever the table's width
+%!test
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! T = addprop (T, 'vp', 'variable');
+%! T.Properties.CustomProperties.vp = [10 20];
+%! T.Properties.CustomProperties.vp = [];
+%! assert_equal (T.Properties.CustomProperties.vp, []);
+
+## an empty of any other class clears it too, and is stored as []
+%!test
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! T = addprop (T, 'vp', 'variable');
+%! T.Properties.CustomProperties.vp = {};
+%! assert_equal (T.Properties.CustomProperties.vp, []);
+
+## a cleared custom variable property stays empty when a variable is added
+%!test
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! T = addprop (T, 'vp', 'variable');
+%! T.Properties.CustomProperties.vp = [];
+%! T = addvars (T, [3; 4]);
+%! assert_equal (T.Properties.CustomProperties.vp, []);
+
+## a character vector is not a per-variable value, whatever its size
+%!error <table.subsasgn: a character vector is not a valid value for a custom variable property, use a cell array of character vectors or a string array.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! T = addprop (T, 'vp', 'variable');
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'vp'), '');
+
+## an indexed assignment re-expands a cleared property to the table's width
+%!test
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! T = addprop (T, 'vp', 'variable');
+%! T.Properties.CustomProperties.vp = [];
+%! T.Properties.CustomProperties.vp(2) = 5;
+%! assert_equal (T.Properties.CustomProperties.vp, [NaN, 5]);
+
+## a cleared property re-expands as a cell when a cell value is assigned
+%!test
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! T = addprop (T, 'vp', 'variable');
+%! T.Properties.CustomProperties.vp = [];
+%! T.Properties.CustomProperties.vp(2) = {'x'};
+%! assert_equal (T.Properties.CustomProperties.vp, {[], 'x'});
+
+## a logical subscript assigns to the variables it marks
+%!test
+%! T = table ([1; 2], {'a'; 'b'}, [3; 4], 'VariableNames', {'n', 'c', 'd'});
+%! T = addprop (T, 'vp', 'variable');
+%! T.Properties.CustomProperties.vp = [1 2 3];
+%! T.Properties.CustomProperties.vp(logical ([1 0 1])) = [9 9];
+%! assert_equal (T.Properties.CustomProperties.vp, [9 2 9]);
+
+## a logical mask longer than the table is out of bounds
+%!error <table.subsasgn: out of bound index for custom variable property 'vp'.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! T = addprop (T, 'vp', 'variable');
+%! T.Properties.CustomProperties.vp = [1 2];
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'vp', '()', {logical([1 0 1])}), 5);
+
+## how a property is indexed is settled before what is assigned to it
+%!error <table.subsasgn: custom property 'vp' is a variable property and cannot be indexed any further with '.' notation.> ...
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
+%! T = addprop (T, 'vp', 'variable');
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'vp', '.', 'x'), ones (2, 2));

@@ -4089,9 +4089,16 @@ classdef table < tabular
     ##
     ## Valid @var{propertyTypes} are either @qcode{'table'} or
     ## @qcode{'variable'}.  When defined as @qcode{'table'}, the custom property
-    ## can contain a scalar value of arbitrary type, which applies as metadata
-    ## to the table as a whole.  When defined as @qcode{'variable'}, the custom
-    ## property contains a vector with one element per variable in the table.
+    ## can contain any value of any type and size, which applies as metadata to
+    ## the table as a whole and is stored exactly as it is given.  When defined
+    ## as @qcode{'variable'}, the custom property contains a vector with one
+    ## element per variable in the table.
+    ##
+    ## A @qcode{'variable'} property is cleared by assigning an empty 0-by-0
+    ## value, such as @code{[]} or @code{@{@}}, whatever the width of the
+    ## table; empty values of any other size are not accepted.  A character
+    ## vector is not a valid value for a @qcode{'variable'} property: use a
+    ## cell array of character vectors or a string array instead.
     ##
     ## After adding custom properties using @code{addprop}, metadata values can
     ## be assigned to the properties using dot syntax.
@@ -8492,27 +8499,17 @@ classdef table < tabular
               ## Get type of custom property
               cpType = this.CustomPropTypes{strcmp (cpName, existingNames)};
               if (strcmp (cpType, 'table'))
-                if (! ischar (val) && numel (val) > 1)
-                  error (strcat ("table.subsasgn: custom property '%s'", ...
-                                 " is a table property and only a scalar", ...
-                                 " value can be assigned to it."), ...
-                         cpName);
-                endif
+                ## A 'table' property is metadata the class never reads, so
+                ## it holds any value of any type and size, stored as given.
                 if (numel (chain_s) > 2)
                   error (strcat ("table.subsasgn: custom property '%s'", ...
-                                 " is a scalar table property and cannot", ...
-                                 " be indexed any further."), ...
+                                 " is a table property and cannot be", ...
+                                 " indexed any further."), ...
                          cpName);
                 endif
                 this.CustomProperties.(cpName) = val;
               else
                 maxIdx = width (this);
-                ## Check input is a vector
-                if (! isvector (val))
-                  error (strcat ("table.subsasgn: assigned value to a", ...
-                                 " custom variable property must be a", ...
-                                 " vector."));
-                endif
                 ## Get further indexing (if available)
                 if (numel (chain_s) > 2)
                   if (strcmp (chain_s(3).type, '.'))
@@ -8531,11 +8528,26 @@ classdef table < tabular
                   cpIdx = cell2mat (cpIdx);
                   if (isequal (cpIdx, ':'))
                     cpIdx = [1:maxIdx];
+                  elseif (islogical (cpIdx))
+                    ## A logical mask selects the variables it marks.  It may
+                    ## be shorter than the table but never longer.
+                    if (numel (cpIdx) > maxIdx)
+                      error (strcat ("table.subsasgn: out of bound index", ...
+                                     " for custom variable property", ...
+                                     " '%s'."), cpName);
+                    endif
+                    cpIdx = find (cpIdx);
                   endif
                   if (! all (ismember (cpIdx, [1:maxIdx])))
                     error (strcat ("table.subsasgn: out of bound index", ...
                                    " for custom variable property '%s'."), ...
                            cpName);
+                  endif
+                  ## Check input is a vector
+                  if (! isvector (val))
+                    error (strcat ("table.subsasgn: assigned value to a", ...
+                                   " custom variable property must be a", ...
+                                   " vector."));
                   endif
                   if (numel (val) != numel (cpIdx))
                     error (strcat ("table.subsasgn: input vector does", ...
@@ -8544,10 +8556,40 @@ classdef table < tabular
                                    " property '%s'."), ...
                            cpName);
                   endif
-                  this.CustomProperties.(cpName)(cpIdx) = val;
+                  ## A cleared property is re-expanded to the table's width
+                  ## before the assignment, padded the way merging pads it,
+                  ## so indexing can never leave a short vector behind.
+                  tmp = this.CustomProperties.(cpName);
+                  if (numel (tmp) != maxIdx)
+                    if (iscell (tmp) || iscell (val))
+                      tmp = cell (1, maxIdx);
+                    else
+                      tmp = NaN (1, maxIdx);
+                    endif
+                  endif
+                  tmp(cpIdx) = val;
+                  this.CustomProperties.(cpName) = tmp;
                 else
-                  ## Check that input vector matches the number of variables
-                  if (numel (val) != maxIdx)
+                  ## A character vector is never a per-variable value, so the
+                  ## type is checked before the size: '' is 0-by-0 and would
+                  ## otherwise read as a clearing value.
+                  if (ischar (val))
+                    error (strcat ("table.subsasgn: a character vector is", ...
+                                   " not a valid value for a custom", ...
+                                   " variable property, use a cell array", ...
+                                   " of character vectors or a string", ...
+                                   " array."));
+                  endif
+                  ## A 0-by-0 empty clears the property whatever the table's
+                  ## width and is stored as []; empties of any other size are
+                  ## not accepted.
+                  if (ndims (val) == 2 && all (size (val) == 0))
+                    val = [];
+                  elseif (! isvector (val))
+                    error (strcat ("table.subsasgn: assigned value to a", ...
+                                   " custom variable property must be a", ...
+                                   " vector."));
+                  elseif (numel (val) != maxIdx)
                     error (strcat ("table.subsasgn: input vector does", ...
                                    " not match the number of variables", ...
                                    " in table."));
