@@ -5530,10 +5530,15 @@ classdef table < tabular
     ## methods.  By default, every variable is targeted.
     ##
     ## @item @qcode{'EndValues'}
-    ## Control how the @qcode{'linear'} method treats leading and trailing
-    ## missing entries.  Valid values are @qcode{'extrap'} (default, linear
-    ## extrapolation), @qcode{'none'} (leave them missing), or a numeric scalar
-    ## used as a constant for the end gaps.
+    ## Control how leading and trailing missing entries are filled, whatever
+    ## the fill method is.  Leading entries are those before the first entry
+    ## that is not missing, and trailing entries those after the last.  Valid
+    ## values are @qcode{'extrap'} (default), which leaves them to the fill
+    ## method itself, @qcode{'none'}, which leaves them missing,
+    ## @qcode{'previous'}, @qcode{'next'} and @qcode{'nearest'}, which take
+    ## the value of the nearest entry that is not missing on the side they
+    ## name and leave the other side missing, or a scalar constant, which must
+    ## be assignable to the variable it fills.
     ## @end table
     ##
     ## @code{[@var{tblB}, @var{TF}] = fillmissing (@dots{})} also returns a
@@ -5597,6 +5602,22 @@ classdef table < tabular
         error (strcat ("table.fillmissing: 'ReplaceValues' set to false is", ...
                        " not supported yet."));
       endif
+      ## 'EndValues' is checked here rather than where the end gaps are
+      ## filled, so that a bad value is refused whatever the data looks like.
+      ## A keyword names how the ends are filled; anything else is a constant,
+      ## which must be a scalar and is type-checked against each variable when
+      ## it is written.
+      endKeys = {'extrap', 'none', 'previous', 'next', 'nearest'};
+      if (ischar (endVals) || (isa (endVals, 'string') && isscalar (endVals)))
+        endVals = lower (char (endVals));
+        if (! any (strcmp (endVals, endKeys)))
+          error (strcat ("table.fillmissing: 'EndValues' must be 'extrap',", ...
+                         " 'previous', 'next', 'nearest', 'none', or a", ...
+                         " scalar constant."));
+        endif
+      elseif (! isscalar (endVals))
+        error ("table.fillmissing: 'EndValues' constant must be a scalar.");
+      endif
 
       ## Resolve targeted variables
       if (isempty (dVars))
@@ -5639,6 +5660,7 @@ classdef table < tabular
           continue;
         endif
         filled = false (size (M));
+        v0 = v;
         if (strcmp (method, 'constant'))
           [v, filled] = fill_constant (v, M, fillVals{k}, ...
                                        tbl.VariableNames{iv});
@@ -5652,13 +5674,26 @@ classdef table < tabular
               continue;
             endif
             if (strcmp (method, 'linear'))
-              [v(:,c), filled(:,c)] = fill_linear (v(:,c), m, endVals);
+              [v(:,c), filled(:,c)] = fill_linear (v(:,c), m);
             else
               si = fill_neighbor_idx (m, method);
               rows = m & si > 0;
               v(rows,c) = v(si(rows),c);
               filled(:,c) = rows;
             endif
+          endfor
+        endif
+        ## Every method has now filled the end gaps the way it extrapolates,
+        ## which is what 'extrap' asks for.  Any other 'EndValues' overrides
+        ## them, whatever the method was.
+        if (! (ischar (endVals) && strcmp (endVals, 'extrap')))
+          for c = 1:columns (M)
+            if (! any (M(:,c)))
+              continue;
+            endif
+            [v(:,c), filled(:,c)] = apply_end_values (v(:,c), v0(:,c), ...
+                                      M(:,c), filled(:,c), endVals, ...
+                                      tbl.VariableNames{iv});
           endfor
         endif
         tbl.VariableValues{iv} = v;
@@ -8739,7 +8774,7 @@ endfunction
 ## ENDVALS controls leading/trailing gaps ('extrap', 'none', or a numeric
 ## scalar).  Returns the filled column and a logical mask of filled rows.  Used
 ## by 'fillmissing'.
-function [col, filled] = fill_linear (col, m, endVals)
+function [col, filled] = fill_linear (col, m)
   m = m(:);
   n = numel (m);
   filled = false (n, 1);
@@ -8758,27 +8793,84 @@ function [col, filled] = fill_linear (col, m, endVals)
     col(interior) = interp1 (xk, yk, x(interior), 'linear');
     filled(interior) = true;
   endif
-  ## Leading and trailing gaps via the 'EndValues' option
+  ## The end gaps are extrapolated, which is what 'EndValues' 'extrap' asks
+  ## of this method.  Any other value overrides them in the caller.
   ends = m & (x < lo | x > hi);
   if (any (ends))
-    if (ischar (endVals) || (isa (endVals, 'string') && isscalar (endVals)))
-      switch (lower (char (endVals)))
-        case 'extrap'
-          col(ends) = interp1 (xk, yk, x(ends), 'linear', 'extrap');
-          filled(ends) = true;
-        case 'none'
-          ## leave the end gaps missing
-        otherwise
-          error (strcat ("table.fillmissing: unsupported 'EndValues'", ...
-                         " option '%s'."), lower (char (endVals)));
-      endswitch
-    elseif (isnumeric (endVals) && isscalar (endVals))
-      col(ends) = endVals;
-      filled(ends) = true;
-    else
-      error (strcat ("table.fillmissing: 'EndValues' must be 'extrap',", ...
-                     " 'none', or a numeric scalar."));
-    endif
+    col(ends) = interp1 (xk, yk, x(ends), 'linear', 'extrap');
+    filled(ends) = true;
+  endif
+endfunction
+
+## The leading and trailing runs of missing entries of a column with missing
+## mask M.  Everything before the first known entry is a leading gap and
+## everything after the last is a trailing one.  When nothing is known there
+## is no anchor to sit between, so every entry is a leading gap, which is what
+## a constant end value fills and what every keyword leaves alone.
+function [head, tail] = end_gaps (m)
+  m = m(:);
+  known = find (! m);
+  if (isempty (known))
+    head = m;
+    tail = false (size (m));
+    return;
+  endif
+  x = (1:numel (m))';
+  head = m & x < known(1);
+  tail = m & x > known(end);
+endfunction
+
+## Impose 'EndValues' on the end gaps of a column.  COL is the column after
+## the fill method has run and COL0 the column before it, so a value the
+## method placed in an end gap can be taken back out.  A keyword takes the
+## value of the anchor on the side it names and leaves the other side missing;
+## a constant is written directly and must be assignable to the variable.
+function [col, filled] = apply_end_values (col, col0, m, filled, endVals, vname)
+  [head, tail] = end_gaps (m);
+  if (! any (head | tail))
+    return;
+  endif
+  known = find (! m(:));
+  if (ischar (endVals))
+    switch (endVals)
+      case 'none'
+        col(head | tail) = col0(head | tail);
+        filled(head | tail) = false;
+      case 'previous'
+        col(head) = col0(head);
+        filled(head) = false;
+        if (! isempty (known))
+          col(tail) = col(known(end));
+          filled(tail) = true;
+        endif
+      case 'next'
+        col(tail) = col0(tail);
+        filled(tail) = false;
+        if (! isempty (known))
+          col(head) = col(known(1));
+          filled(head) = true;
+        endif
+      case 'nearest'
+        if (isempty (known))
+          col(head | tail) = col0(head | tail);
+          filled(head | tail) = false;
+        else
+          col(head) = col(known(1));
+          col(tail) = col(known(end));
+          filled(head | tail) = true;
+        endif
+      otherwise
+        error (strcat ("table.fillmissing: unsupported 'EndValues'", ...
+                       " option '%s'."), endVals);
+    endswitch
+  else
+    try
+      col(head | tail) = endVals;
+    catch
+      error (strcat ("table.fillmissing: the 'EndValues' constant cannot be", ...
+                     " assigned to table variable '%s'."), vname);
+    end_try_catch
+    filled(head | tail) = true;
   endif
 endfunction
 

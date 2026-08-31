@@ -4908,6 +4908,47 @@
 %! T = table ([NaN; 2; 4; NaN], 'VariableNames', {'x'});
 %! R = fillmissing (T, 'linear', 'EndValues', 0);
 %! assert_equal (R.x, [0; 2; 4; 0]);
+%!test  # 'EndValues' 'previous' holds the last known value, leaving the head
+%! T = table ([NaN; 2; 3; NaN], 'VariableNames', {'x'});
+%! R = fillmissing (T, 'linear', 'EndValues', 'previous');
+%! assert_equal (R.x, [NaN; 2; 3; 3]);
+%!test  # 'EndValues' 'next' holds the first known value, leaving the tail
+%! T = table ([NaN; 2; 3; NaN], 'VariableNames', {'x'});
+%! R = fillmissing (T, 'linear', 'EndValues', 'next');
+%! assert_equal (R.x, [2; 2; 3; NaN]);
+%!test  # 'EndValues' 'nearest' fills both ends from the nearest known value
+%! T = table ([NaN; NaN; 3; 4; NaN; NaN], 'VariableNames', {'x'});
+%! R = fillmissing (T, 'linear', 'EndValues', 'nearest');
+%! assert_equal (R.x, [3; 3; 3; 4; 4; 4]);
+%!test  # 'EndValues' governs the end gaps whatever the fill method is
+%! T = table ([NaN; 2; 3; NaN], 'VariableNames', {'x'});
+%! R = fillmissing (T, 'previous', 'EndValues', 'next');
+%! assert_equal (R.x, [2; 2; 3; NaN]);
+%!test  # 'extrap' leaves the ends to the method, not to linear extrapolation
+%! T = table ([NaN; 2; 3; NaN], 'VariableNames', {'x'});
+%! R = fillmissing (T, 'previous', 'EndValues', 'extrap');
+%! assert_equal (R.x, [NaN; 2; 3; 3]);
+%!test  # a constant overrides the ends under the 'constant' method too
+%! T = table ([NaN; 2; 3; NaN], 'VariableNames', {'x'});
+%! R = fillmissing (T, 'constant', 0, 'EndValues', 9);
+%! assert_equal (R.x, [9; 2; 3; 9]);
+%!test  # one known value is enough for a keyword
+%! T = table ([NaN; 5; NaN], 'VariableNames', {'x'});
+%! R = fillmissing (T, 'linear', 'EndValues', 'nearest');
+%! assert_equal (R.x, [5; 5; 5]);
+%!test  # a constant fills a column with no known value at all
+%! T = table ([NaN; NaN; NaN], 'VariableNames', {'x'});
+%! R = fillmissing (T, 'linear', 'EndValues', 9);
+%! assert_equal (R.x, [9; 9; 9]);
+%!test  # a keyword has nothing to take when nothing is known
+%! T = table ([NaN; NaN; NaN], 'VariableNames', {'x'});
+%! R = fillmissing (T, 'linear', 'EndValues', 'nearest');
+%! assert_equal (R.x, [NaN; NaN; NaN]);
+%!test  # 'EndValues' reaches a datetime variable, which 'linear' never did
+%! d = datetime (2024, 1, [1;2;3;4]);
+%! d([1 4]) = NaT;
+%! R = fillmissing (table (d), 'previous', 'EndValues', datetime (2000, 1, 1));
+%! assert_equal (year (R.d), [2000; 2024; 2024; 2000]);
 %!test  # 'linear' leaves non-numeric variables unchanged
 %! T = table ([1; NaN; 3], {'a'; ''; 'c'}, 'VariableNames', {'x', 'y'});
 %! R = fillmissing (T, 'linear');
@@ -4941,8 +4982,20 @@
 %! fillmissing (table ([1; NaN], {'a'; ''}, 'VariableNames', {'x', 'y'}), 'constant', 0);
 %!error <table.fillmissing: 'DataVariables' index a non-existing variable: 'zzz'> ...
 %! fillmissing (table ([1; NaN], 'VariableNames', {'x'}), 'previous', 'DataVariables', 'zzz');
-%!error <table.fillmissing: unsupported 'EndValues' option 'bogus'.> ...
+%!error <table.fillmissing: 'EndValues' must be 'extrap', 'previous', 'next', 'nearest', 'none', or a scalar constant.> ...
 %! fillmissing (table ([NaN; 2; 3], 'VariableNames', {'x'}), 'linear', 'EndValues', 'bogus');
+## the option is checked at the parse, so data without end gaps refuses it too
+%!error <table.fillmissing: 'EndValues' must be 'extrap', 'previous', 'next', 'nearest', 'none', or a scalar constant.> ...
+%! fillmissing (table ([1; 2; 3], 'VariableNames', {'x'}), 'linear', 'EndValues', 'bogus');
+%!error <table.fillmissing: 'EndValues' constant must be a scalar.> ...
+%! fillmissing (table ([1; 2; 3], 'VariableNames', {'x'}), 'linear', 'EndValues', [1 2]);
+%!error <table.fillmissing: 'EndValues' constant must be a scalar.> ...
+%! fillmissing (table ([NaN; 2; 3], 'VariableNames', {'x'}), 'linear', 'EndValues', {1, 2});
+## the constant must be assignable to the variable it fills
+%!error <table.fillmissing: the 'EndValues' constant cannot be assigned to table variable 'd'.> ...
+%! d = datetime (2024, 1, [1;2;3;4]);
+%! d([1 4]) = NaT;
+%! fillmissing (table (d), 'previous', 'EndValues', 9);
 %!error <table.fillmissing: 'ReplaceValues' set to false is not supported yet.> ...
 %! fillmissing (table (1), 'previous', 'ReplaceValues', false);
 
