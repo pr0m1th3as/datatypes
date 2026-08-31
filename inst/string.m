@@ -3271,8 +3271,8 @@ MP = lower (MP);
       optNames = {'MissingPlacement'};
       dfValues = {'auto'};
       [MP, args] = parsePairedArguments (optNames, dfValues, varargin(:));
-## The values are matched without regard to case, as MATLAB does.
-MP = lower (MP);
+      ## The values are matched without regard to case, as MATLAB does.
+      MP = lower (MP);
       if (! any (strcmp (MP, {'auto', 'first', 'last'})))
         error ("string.sortrows: invalid value for 'MissingPlacement'.");
       endif
@@ -4511,8 +4511,12 @@ MP = lower (MP);
       ## Check for categorical input
       idx = find (cellfun ('iscategorical', varargin), 1);
       if (isempty (idx))
-        if (any (cellfun (@(x) ! isa (x, 'string'), varargin)))
-          error ("string.isequal: unsupported input types.");
+        [varargin, istext] = coerce_text (varargin);
+        if (! istext)
+          ## An operand that is not text can never equal a string, which is
+          ## answered rather than raised.
+          TF = false;
+          return;
         endif
         tmp1 = cellfun (@(x) x.strs, varargin, 'UniformOutput', false);
         tmp2 = cellfun (@(x) x.isMissing, varargin, 'UniformOutput', false);
@@ -4534,8 +4538,12 @@ MP = lower (MP);
       ## Check for categorical input
       idx = find (cellfun ('iscategorical', varargin), 1);
       if (isempty (idx))
-        if (any (cellfun (@(x) ! isa (x, 'string'), varargin)))
-          error ("string.isequaln: unsupported input types.");
+        [varargin, istext] = coerce_text (varargin);
+        if (! istext)
+          ## An operand that is not text can never equal a string, which is
+          ## answered rather than raised.
+          TF = false;
+          return;
         endif
         tmp1 = cellfun (@(x) x.strs, varargin, 'UniformOutput', false);
         tmp2 = cellfun (@(x) x.isMissing, varargin, 'UniformOutput', false);
@@ -4804,6 +4812,24 @@ MP = lower (MP);
   endmethods
 
 endclassdef
+
+## Coerce the operands of an equality comparison to string arrays.  Text in
+## any form is comparable, so a character array or a cell array of character
+## vectors becomes a string.  Anything else is not text at all and ISTEXT is
+## returned false, so the caller answers false instead of raising.
+function [args, istext] = coerce_text (args)
+  istext = true;
+  for i = 1:numel (args)
+    if (isa (args{i}, 'string'))
+      continue;
+    elseif (ischar (args{i}) || iscellstr (args{i}))
+      args{i} = string (args{i});
+    else
+      istext = false;
+      return;
+    endif
+  endfor
+endfunction
 
 ## Broadcast a scalar boundary argument to the size of STR, or verify that it
 ## already matches.  Works for both numeric arrays and cell arrays of patterns.

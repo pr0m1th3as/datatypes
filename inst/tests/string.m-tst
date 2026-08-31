@@ -2172,9 +2172,15 @@
 %!assert_equal (isequal (string ('a'), string ('a'), string ('a')), true)
 ## isequal: a categorical operand delegates to categorical isequal
 %!assert_equal (isequal (string ({'a', 'b'}), categorical ({'a', 'b'})), true)
-## isequal: a non-string, non-categorical operand is an error
-%!error <string.isequal: unsupported input types.> ...
-%! isequal (string ({'a'}), 5)
+## isequal: text in any form is comparable
+%!assert_equal (isequal (string ('a'), 'a'), true)
+%!assert_equal (isequal ('a', string ('a')), true)
+%!assert_equal (isequal (string ('a'), 'ab'), false)
+%!assert_equal (isequal (string ('a'), {'a'}), true)
+%!assert_equal (isequal (string ({'a', 'b'}), {'a', 'b'}), true)
+%!assert_equal (isequal (string (''), ''), true)
+## isequal: an operand that is not text is false, not an error
+%!assert_equal (isequal (string ({'a'}), 5), false)
 
 ## isequaln: like isequal but treats same-position missing values as equal
 %!assert_equal (isequaln (string ({'a', missing}), ...
@@ -2184,9 +2190,11 @@
 %!assert_equal (isequaln (string ({'a', 'b'}), string ({'a', 'b'})), true)
 ## isequaln: a categorical operand delegates to categorical isequaln
 %!assert_equal (isequaln (string ({'a', 'b'}), categorical ({'a', 'b'})), true)
-## isequaln: a non-string, non-categorical operand is an error
-%!error <string.isequaln: unsupported input types.> ...
-%! isequaln (string ({'a'}), 5)
+## isequaln: text in any form is comparable
+%!assert_equal (isequaln (string ('a'), 'a'), true)
+%!assert_equal (isequaln (string ('a'), {'a'}), true)
+## isequaln: an operand that is not text is false, not an error
+%!assert_equal (isequaln (string ({'a'}), 5), false)
 
 ## empty: a 0-by-0 empty string array by default
 %!test
