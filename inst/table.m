@@ -5513,8 +5513,10 @@ classdef table < tabular
     ## non-missing entries are equidistant, the later (next) one is used.
     ##
     ## @item @qcode{'linear'}
-    ## Fill numeric variables by linear interpolation of neighboring
-    ## non-missing entries.  Non-numeric variables are left unchanged.
+    ## Fill by linear interpolation of the neighbouring entries that are not
+    ## missing.  Numeric, logical, @code{datetime} and @code{duration}
+    ## variables can be interpolated; a targeted variable of any other type
+    ## raises an error.
     ## @end table
     ##
     ## The @qcode{'previous'}, @qcode{'next'}, and @qcode{'nearest'} methods
@@ -5680,11 +5682,6 @@ classdef table < tabular
         if (strcmp (method, 'constant'))
           [v, filled] = fill_constant (v, M, fillVals{k}, ...
                                        tbl.VariableNames{iv});
-        elseif (strcmp (method, 'linear') && ! (isnumeric (v) || islogical (v)))
-          ## Only datetime and duration reach here, the type check above
-          ## having refused everything else.  MATLAB interpolates them; we do
-          ## not yet, so they are left as they are.
-          continue;
         else
           for c = 1:columns (M)
             m = M(:,c);
@@ -8802,22 +8799,41 @@ function [col, filled] = fill_linear (col, m)
   endif
   x = (1:n)';
   xk = x(known);
-  yk = double (col(known));
+  ## A datetime or a duration is interpolated in seconds and put back through
+  ## the class's own arithmetic, so its type, format and time zone survive.  A
+  ## datetime has no natural zero, so it is measured from its first known
+  ## entry.
+  origin = [];
+  if (isdatetime (col))
+    origin = col(xk(1));
+    yk = seconds (col(known) - origin);
+  elseif (isduration (col))
+    yk = seconds (col(known));
+  else
+    yk = double (col(known));
+  endif
   lo = xk(1);
   hi = xk(end);
-  ## Interior gaps via linear interpolation
+  vals = NaN (n, 1);
+  ## Interior gaps are interpolated; the end gaps are extrapolated, which is
+  ## what 'EndValues' 'extrap' asks of this method.  Any other value overrides
+  ## them in the caller.
   interior = m & x > lo & x < hi;
   if (any (interior))
-    col(interior) = interp1 (xk, yk, x(interior), 'linear');
-    filled(interior) = true;
+    vals(interior) = interp1 (xk, yk, x(interior), 'linear');
   endif
-  ## The end gaps are extrapolated, which is what 'EndValues' 'extrap' asks
-  ## of this method.  Any other value overrides them in the caller.
   ends = m & (x < lo | x > hi);
   if (any (ends))
-    col(ends) = interp1 (xk, yk, x(ends), 'linear', 'extrap');
-    filled(ends) = true;
+    vals(ends) = interp1 (xk, yk, x(ends), 'linear', 'extrap');
   endif
+  if (isdatetime (col))
+    col(m) = origin + seconds (vals(m));
+  elseif (isduration (col))
+    col(m) = seconds (vals(m));
+  else
+    col(m) = vals(m);
+  endif
+  filled(m) = true;
 endfunction
 
 ## The leading and trailing runs of missing entries of a column with missing

@@ -4949,13 +4949,25 @@
 %! d([1 4]) = NaT;
 %! R = fillmissing (table (d), 'previous', 'EndValues', datetime (2000, 1, 1));
 %! assert_equal (year (R.d), [2000; 2024; 2024; 2000]);
-%!test  # 'linear' leaves a datetime variable alone rather than refusing it
+%!test  # 'linear' interpolates a datetime variable
 %! d = datetime (2024, 1, [1;2;3]);
 %! d(2) = NaT;
-%! T = table ([1; NaN; 3], d, 'VariableNames', {'x', 'd'});
-%! R = fillmissing (T, 'linear');
-%! assert_equal (R.x, [1; 2; 3]);
-%! assert_equal (isnat (R.d), [false; true; false]);
+%! R = fillmissing (table (d), 'linear');
+%! assert_equal (day (R.d), [1; 2; 3]);
+%!test  # 'linear' extrapolates a datetime variable past both ends
+%! d = datetime (2024, 1, [1;2;3;4]);
+%! d([1 4]) = NaT;
+%! R = fillmissing (table (d), 'linear');
+%! assert_equal (day (R.d), [1; 2; 3; 4]);
+%!test  # 'EndValues' governs a datetime variable's end gaps
+%! d = datetime (2024, 1, [1;2;3;4]);
+%! d([1 4]) = NaT;
+%! R = fillmissing (table (d), 'linear', 'EndValues', 'none');
+%! assert_equal (isnat (R.d), [true; false; false; true]);
+%!test  # 'linear' interpolates a duration variable and keeps its format
+%! u = hours ([1;NaN;3]);
+%! R = fillmissing (table (u), 'linear');
+%! assert_equal (hours (R.u), [1; 2; 3]);
 %!test  # a variable 'linear' cannot interpolate is untouched when not targeted
 %! T = table ([1; NaN; 3], {'a'; ''; 'c'}, 'VariableNames', {'x', 'y'});
 %! R = fillmissing (T, 'linear', 'DataVariables', 'x');
