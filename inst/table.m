@@ -8098,9 +8098,13 @@ classdef table < tabular
                          " assigning values. Use '()' instead."));
 
         case '.'
-          if (! ischar (s.subs))
+          ## A field name may be given as a string scalar, as in MATLAB.
+          if (isstring (s.subs) && isscalar (s.subs))
+            s.subs = char (s.subs);
+          endif
+          if (! (ischar (s.subs) && isrow (s.subs)))
             error (strcat ("table.subsasgn: '.' index argument must be a", ...
-                           " character vector."));
+                           " character vector or a string scalar."));
           endif
           ## Grab Properties
           if (isequal (s.subs, 'Properties'))
@@ -8109,6 +8113,14 @@ classdef table < tabular
               error ("table.subsasgn: cannot assign new properties.");
             endif
             s = chain_s(1);
+            ## A property name may be given as a string scalar, as in MATLAB.
+            if (isstring (s.subs) && isscalar (s.subs))
+              s.subs = char (s.subs);
+            endif
+            if (! (ischar (s.subs) && isrow (s.subs)))
+              error (strcat ("table.subsasgn: '.' index argument must be a", ...
+                             " character vector or a string scalar."));
+            endif
 
             ## Handle table properties
             if (isequal (s.subs, 'Description'))
@@ -8478,9 +8490,14 @@ classdef table < tabular
                                " index a custom property."));
               endif
               cpName = chain_s(2).subs;
-              if (! ischar (cpName))
-                error (strcat ("table.subsasgn: indexing a custom", ...
-                               " property requires a character vector."));
+              ## A property name may be given as a string scalar, as in MATLAB.
+              if (isstring (cpName) && isscalar (cpName))
+                cpName = char (cpName);
+              endif
+              if (! (ischar (cpName) && isrow (cpName)))
+                error (strcat ("table.subsasgn: indexing a custom property", ...
+                               " requires a character vector or a string", ...
+                               " scalar."));
               endif
               ## Check that referenced custom property exists
               if (isempty (this.CustomProperties))
@@ -8598,6 +8615,9 @@ classdef table < tabular
                 endif
               endif
               tbl = this;
+
+            else
+              error ("table.subsasgn: unknown table property '%s'.", s.subs);
             endif
 
           else

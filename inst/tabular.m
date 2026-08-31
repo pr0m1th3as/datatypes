@@ -375,9 +375,13 @@ classdef (Abstract) tabular
           end_try_catch
 
         case '.'
-          if (! ischar (s.subs))
+          ## A field name may be given as a string scalar, as in MATLAB.
+          if (isstring (s.subs) && isscalar (s.subs))
+            s.subs = char (s.subs);
+          endif
+          if (! (ischar (s.subs) && isrow (s.subs)))
             error (strcat ("%s.subsref: '.' index argument must be a", ...
-                           " character vector."), clstype);
+                           " character vector or a string scalar."), clstype);
           endif
           ## Handle special cases: "Properties" and "DimensionNames"
           if (isequal (s.subs, 'Properties'))
@@ -902,9 +906,13 @@ classdef (Abstract) tabular
           out = subsetvars (out, ixVar);
 
         case '.'
-          if (! ischar (s.subs))
-            error (strcat ("%s.subsasgn: .-index argument must", ...
-                           " be a character vector."), clstype);
+          ## A field name may be given as a string scalar, as in MATLAB.
+          if (isstring (s.subs) && isscalar (s.subs))
+            s.subs = char (s.subs);
+          endif
+          if (! (ischar (s.subs) && isrow (s.subs)))
+            error (strcat ("%s.subsasgn: .-index argument must be a", ...
+                           " character vector or a string scalar."), clstype);
           endif
           ## Handle special cases: "Properties" and "DimensionNames"
           if isequal (s.subs, 'Properties')

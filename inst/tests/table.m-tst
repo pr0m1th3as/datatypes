@@ -7013,3 +7013,94 @@
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! T = addprop (T, 'vp', 'variable');
 %! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'vp', '.', 'x'), ones (2, 2));
+
+## a '.' subscript may name a variable with a string scalar
+%!test
+%! T = table ([1;2;3], [4;5;6], 'VariableNames', {'x', 'y'});
+%! T = subsasgn (T, struct ('type', '.', 'subs', string ('x')), [7;8;9]);
+%! assert_equal (T.x, [7;8;9]);
+
+## the same on the reading side
+%!test
+%! T = table ([1;2;3], [4;5;6], 'VariableNames', {'x', 'y'});
+%! assert_equal (subsref (T, struct ('type', '.', 'subs', string ('x'))), [1;2;3]);
+
+## a string scalar names 'Properties'
+%!test
+%! T = table ([1;2;3], 'VariableNames', {'x'});
+%! s = struct ('type', {'.', '.'}, 'subs', {string('Properties'), 'Description'});
+%! T = subsasgn (T, s, 'meta');
+%! assert_equal (T.Properties.Description, 'meta');
+
+## a string scalar names a property field
+%!test
+%! T = table ([1;2;3], 'VariableNames', {'x'});
+%! s = struct ('type', {'.', '.'}, 'subs', {'Properties', string('Description')});
+%! T = subsasgn (T, s, 'meta');
+%! assert_equal (T.Properties.Description, 'meta');
+
+## a string scalar names a custom property
+%!test
+%! T = addprop (table ([1;2;3], 'VariableNames', {'x'}), 'tp', 'table');
+%! s = struct ('type', {'.', '.', '.'}, ...
+%!            'subs', {'Properties', 'CustomProperties', string('tp')});
+%! T = subsasgn (T, s, 42);
+%! assert_equal (T.Properties.CustomProperties.tp, 42);
+
+## a string scalar names a variable through a chained subscript
+%!test
+%! T = table ([1;2;3], 'VariableNames', {'x'});
+%! s = struct ('type', {'.', '()'}, 'subs', {string('x'), {2}});
+%! T = subsasgn (T, s, 99);
+%! assert_equal (T.x, [1;99;3]);
+
+## a string array of more than one element is not a field name
+%!error <table.subsasgn: '.' index argument must be a character vector or a string scalar.> ...
+%! T = table ([1;2;3], 'VariableNames', {'x'});
+%! subsasgn (T, struct ('type', '.', 'subs', string ({'x', 'y'})), 1);
+
+%!error <table.subsref: '.' index argument must be a character vector or a string scalar.> ...
+%! T = table ([1;2;3], 'VariableNames', {'x'});
+%! subsref (T, struct ('type', '.', 'subs', string ({'x', 'y'})));
+
+%!error <table.subsasgn: .-index argument must be a character vector or a string scalar.> ...
+%! T = table ([1;2;3], 'VariableNames', {'x'});
+%! subsasgn (T, struct ('type', {'.', '()'}, 'subs', {string({'x','y'}), {2}}), 1);
+
+%!error <table.subsasgn: indexing a custom property requires a character vector or a string scalar.> ...
+%! T = addprop (table ([1;2;3], 'VariableNames', {'x'}), 'tp', 'table');
+%! s = struct ('type', {'.', '.', '.'}, ...
+%!            'subs', {'Properties', 'CustomProperties', string({'a','b'})});
+%! subsasgn (T, s, 1);
+
+## an empty character array is not a field name
+%!error <table.subsasgn: '.' index argument must be a character vector or a string scalar.> ...
+%! T = table ([1;2;3], 'VariableNames', {'x'});
+%! subsasgn (T, struct ('type', '.', 'subs', ''), [1;2;3]);
+
+## neither is a character matrix
+%!error <table.subsref: '.' index argument must be a character vector or a string scalar.> ...
+%! T = table ([1;2;3], 'VariableNames', {'x'});
+%! subsref (T, struct ('type', '.', 'subs', ['er'; 'ty']));
+
+## a missing string names nothing, and is refused before it becomes ''
+%!error <table.subsasgn: '.' index argument must be a character vector or a string scalar.> ...
+%! T = table ([1;2;3], 'VariableNames', {'x'});
+%! subsasgn (T, struct ('type', '.', 'subs', string (missing)), [1;2;3]);
+
+## the custom property name is held to the same rule
+%!error <table.subsasgn: indexing a custom property requires a character vector or a string scalar.> ...
+%! T = addprop (table ([1;2;3], 'VariableNames', {'x'}), 'tp', 'table');
+%! s = struct ('type', {'.', '.', '.'}, ...
+%!            'subs', {'Properties', 'CustomProperties', ''});
+%! subsasgn (T, s, 1);
+
+## an unknown table property is not assigned in silence
+%!error <table.subsasgn: unknown table property 'Nonsense'.> ...
+%! T = table ([1;2;3], 'VariableNames', {'x'});
+%! T.Properties.Nonsense = 5;
+
+## a property name is held to the same rule as any other field name
+%!error <table.subsasgn: '.' index argument must be a character vector or a string scalar.> ...
+%! T = table ([1;2;3], 'VariableNames', {'x'});
+%! subsasgn (T, struct ('type', {'.', '.'}, 'subs', {'Properties', ''}), 5);
