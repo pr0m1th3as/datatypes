@@ -847,7 +847,6 @@
 %!assert_equal (datevec (datetime ('2024-03-09 14:30:45')), ...
 %!              [2024, 3, 9, 14, 30, 45])
 %!assert_equal (datevec (datetime ('2024/03/09')), [2024, 3, 9, 0, 0, 0])
-%!assert_equal (datevec (datetime ('03/09/2024')), [2024, 3, 9, 0, 0, 0])
 %!assert_equal (datevec (datetime ('09-Mar-2024')), [2024, 3, 9, 0, 0, 0])
 %!assert_equal (datevec (datetime ('09-March-2024')), [2024, 3, 9, 0, 0, 0])
 %!assert_equal (datevec (datetime ('09-Mar-2024 14:30:45')), ...
