@@ -56,11 +56,11 @@ classdef CustomProperties
 
   endmethods
 
-  methods (Access = {?table})
+  methods (Access = {?tabular})
 
-    ## Return the stored values and the type of each, so that a table can
-    ## take the whole store in one assignment.  Both are structs keyed by the
-    ## property names.
+    ## Return the stored values and the type of each, so that a tabular class
+    ## can take the whole store in one assignment.  Both are structs keyed by
+    ## the property names.
     function [vals, types] = unpack (this)
       vals = this.Values;
       types = this.Types;

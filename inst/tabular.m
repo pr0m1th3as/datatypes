@@ -218,19 +218,20 @@ classdef (Abstract) tabular
 ##                         **    Subclass hooks    **                         ##
 ################################################################################
 ##                                                                            ##
-## Every subclass must implement all nine.  Octave's classdef has no          ##
+## Every subclass must implement all ten.  Octave's classdef has no           ##
 ## 'methods (Abstract)' block, so the contract cannot be declared; these      ##
 ## raising defaults stand in for it, and name the subclass that is missing    ##
 ## one because 'class (this)' resolves downwards.                             ##
 ##                                                                            ##
-## Eight of them concern row labels, which is the whole of what separates     ##
-## one tabular class from another; the ninth names the properties object.     ##
+## Nine of them concern row labels, which is the whole of what separates      ##
+## one tabular class from another; the tenth names the properties object.     ##
 ##                                                                            ##
 ## 'hasRowLabels'      whether the object carries row labels at all           ##
 ## 'getRowLabels'      the labels themselves, in their own type               ##
 ## 'rowLabelName'      the name the labels are known by                       ##
 ## 'rowLabelStrings'   the labels rendered for display                        ##
 ## 'rowLabelProperties'  the row label metadata, named as it is published     ##
+## 'setRowLabelProperty'  one of those properties assigned                    ##
 ## 'subsetRowLabels'   the object with its labels subset by an index          ##
 ## 'clearRowLabels'    the object with its labels removed                     ##
 ## 'resolveRowRef'     a row reference resolved to row indices                ##
@@ -277,6 +278,14 @@ classdef (Abstract) tabular
       error ("%s: subclass must implement rowLabelProperties.", class (this));
     endfunction
 
+    ## One row label property assigned.  'subsasgn' has already handled the
+    ## nine shared properties and every name left over is one of these, so
+    ## HANDLED reports whether NAME was recognised and an unrecognised name
+    ## is refused by the caller.  CHAIN_S carries any further subscripts.
+    function [this, handled] = setRowLabelProperty (this, name, val, chain_s)
+      error ("%s: subclass must implement setRowLabelProperty.", class (this));
+    endfunction
+
     ## This object with its labels subset by IXROWS, the same index the caller
     ## has just applied to the variables.  A class whose labels are optional
     ## leaves them alone when there are none to subset.
@@ -309,11 +318,12 @@ classdef (Abstract) tabular
   endmethods
 
 ################################################################################
-##                     **    Display and reference    **                      ##
+##               **    Display, reference and assignment    **                ##
 ################################################################################
 ##                                                                            ##
-## The display path and the two reference overloads.  'subsasgn' is not       ##
-## here: it is row-label aware throughout and stays with each subclass.       ##
+## The display path, the two reference overloads and the assignment          ##
+## overload.  Only the last branch of 'subsasgn' is row-label aware, and      ##
+## that one asks the subclass.                                               ##
 ##                                                                            ##
 ################################################################################
 
@@ -423,6 +433,583 @@ classdef (Abstract) tabular
         tbl = subsref (tbl, chain_s);
       endif
       varargout{1} = tbl;
+    endfunction
+
+    ## Class specific subscripted assignment.  Every branch is shared but
+    ## the last: a property that is none of the nine belongs to the
+    ## subclass's own row labels, and 'setRowLabelProperty' assigns it.
+    function tbl = subsasgn (this, s, val)
+      clstype = class (this);
+
+      ## Chained subscripts
+      chain_s = s(2:end);
+      s = s(1);
+      if (! isempty (chain_s) && ! isequal (s.subs, 'Properties'))
+        rhs_in = single_subref (this, s);
+        rhs = subsasgn (rhs_in, chain_s, val);
+      else
+        rhs = val;
+      endif
+
+      tbl = this;
+      switch (s.type)
+        case '()'
+          if (numel (s.subs) != 2)
+            error (strcat ("%s.subsasgn: '()' indexing of %s", ...
+                           " requires exactly two arguments."), ...
+                   clstype, clstype);
+          endif
+          [ixRow, ixVar] = resolveRowVarRefs (this, s.subs{1}, s.subs{2});
+          ## Check input data matches referenced elements
+          if (! isequal (size (rhs), [numel(ixRow), numel(ixVar)]))
+            error (strcat ("%s.subsasgn: input data mismatch indexed", ...
+                           " dimensions."), clstype);
+          endif
+          ## Handle different cases of input data
+          if (isa (rhs, 'table'))     # MATLAB compatible
+            rhs = table2cell (rhs);
+          endif
+          if (isa (rhs, 'cell'))      # MATLAB compatible
+            for i = 1:numel (ixVar)
+              varData = this.VariableValues{ixVar(i)};
+              col = rhs(:,i);
+              try
+                if (iscell (varData))
+                  varData(ixRow) = col;
+                else
+                  varData(ixRow) = vertcat (col{:});
+                endif
+              catch
+                error (strcat ("%s.subsasgn: input data type mismatch", ...
+                               " indexed variable type."), clstype);
+              end_try_catch
+              tbl.VariableValues{ixVar(i)} = varData;
+            endfor
+          else                        # Octave specific
+            for i = 1:numel (ixVar)
+              varData = this.VariableValues{ixVar(i)};
+              try
+                varData(ixRow) = rhs(:,i);
+              catch
+                error (strcat ("%s.subsasgn: input data type mismatch", ...
+                               " indexed variable type."), clstype);
+              end_try_catch
+              tbl.VariableValues{ixVar(i)} = varData;
+            endfor
+          endif
+
+        ## {} not used in Octave for assigning values
+        case '{}'
+          error (strcat ("%s.subsasgn: '{}' invalid indexing for", ...
+                         " assigning values. Use '()' instead."), clstype);
+
+        case '.'
+          ## A field name may be given as a string scalar, as in MATLAB.
+          if (isstring (s.subs) && isscalar (s.subs))
+            s.subs = char (s.subs);
+          endif
+          if (! (ischar (s.subs) && isrow (s.subs)))
+            error (strcat ("%s.subsasgn: '.' index argument must be a", ...
+                           " character vector or a string scalar."), clstype);
+          endif
+          ## Grab Properties
+          if (isequal (s.subs, 'Properties'))
+            ## no further recursion, everything is handled here
+            if (isempty (chain_s))
+              error ("%s.subsasgn: cannot assign new properties.", clstype);
+            endif
+            s = chain_s(1);
+            ## A property name may be given as a string scalar, as in MATLAB.
+            if (isstring (s.subs) && isscalar (s.subs))
+              s.subs = char (s.subs);
+            endif
+            if (! (ischar (s.subs) && isrow (s.subs)))
+              error (strcat ("%s.subsasgn: '.' index argument must be a", ...
+                             " character vector or a string scalar."), clstype);
+            endif
+
+            ## Handle table properties
+            if (isequal (s.subs, 'Description'))
+              ## Check for valid input: character vector of string
+              if (isa (val, 'string'))
+                if (numel (val) > 1)
+                  error (strcat ("%s.subsasgn: Table description must", ...
+                                 " be a character vector or a string", ...
+                                 " scalar."), clstype);
+                endif
+                val = cellstr (val){1};
+              endif
+              if (! ischar (val))
+                error (strcat ("%s.subsasgn: Table description must be", ...
+                               " a character vector or string scalar."), ...
+                       clstype);
+              endif
+              this.Description = val;
+              tbl = this;
+
+            elseif (isequal (s.subs, 'UserData'))
+              ## Any kind !!
+              this.UserData = val;
+              tbl = this;
+
+            elseif (isequal (s.subs, 'DimensionNames'))
+              ## Check for further indexing of specific variable(s)
+              if (numel (chain_s) > 1)
+                idx = chain_s(2).subs;
+                if (numel (idx) > 1)
+                  error (strcat ("%s.subsasgn: cannot index", ...
+                                 " DimensionNames with more than one", ...
+                                 " dimension. Use a vector to index", ...
+                                 " multiple DimensionNames at once."), clstype);
+                endif
+                idx = cell2mat (idx);
+                if (isequal (idx, ':'))
+                  idx = [1:2];
+                endif
+                if (! all (ismember (idx, [1:2])))
+                  error (strcat ("%s.subsasgn: out of bound index for", ...
+                                 " DimensionNames."), clstype);
+                endif
+                if (ischar (val) || isa (val, 'string'))
+                  val = cellstr (val);
+                endif
+                if (! (iscellstr (val) && numel (val) == numel (idx)))
+                  error (strcat ("%s.subsasgn: DimensionNames must be", ...
+                                 " a cell array of character vectors or", ...
+                                 " a string array matching the number of", ...
+                                 " indexed variables."), clstype);
+                endif
+                this.DimensionNames(idx) = val;
+                tbl = this;
+                return
+              endif
+              ## Check for valid input: two-element cellstring or string array
+              if (ischar (val) || isa (val, 'string'))
+                val = cellstr (val);
+              endif
+              if (! (iscellstr (val) && numel (val) == 2))
+                error (strcat ("%s.subsasgn: DimensionNames must be a", ...
+                               " two-element cell array of character", ...
+                               " vectors or string array."), clstype);
+              endif
+              this.DimensionNames = val;
+              tbl = this;
+
+            elseif (isequal (s.subs, 'VariableNames'))
+              ## Check for further indexing of specific variable(s)
+              if (numel (chain_s) > 1)
+                idx = chain_s(2).subs;
+                if (numel (idx) > 1)
+                  error (strcat ("%s.subsasgn: cannot index", ...
+                                 " VariableNames with more than one", ...
+                                 " dimension. Use a vector to index", ...
+                                 " multiple VariableNames at once."), clstype);
+                endif
+                idx = cell2mat (idx);
+                if (isequal (idx, ':'))
+                  idx = [1:width(this)];
+                endif
+                if (! all (ismember (idx, [1:width(this)])))
+                  error (strcat ("%s.subsasgn: out of bound index for", ...
+                                 " VariableNames."), clstype);
+                endif
+                if (ischar (val) || isa (val, 'string'))
+                  val = cellstr (val);
+                endif
+                if (! (iscellstr (val) && numel (val) == numel (idx)))
+                  error (strcat ("%s.subsasgn: VariableNames must be", ...
+                                 " a cell array of character vectors or", ...
+                                 " a string array matching the number of", ...
+                                 " indexed variables."), clstype);
+                endif
+                this.VariableNames(idx) = val;
+                tbl = this;
+                return
+              endif
+              ## Check for valid input: cellstring or string array matching
+              ## the number of variables in the table
+              if (ischar (val) || isa (val, 'string'))
+                val = cellstr (val);
+              endif
+              if (! (iscellstr (val) && numel (val) == width (this)))
+                error (strcat ("%s.subsasgn: VariableNames must be a", ...
+                               " cell array of character vectors or a", ...
+                               " string array matching the number of", ...
+                               " variables."), clstype);
+              endif
+              this.VariableNames = val;
+              tbl = this;
+
+            elseif (isequal (s.subs, 'VariableTypes'))
+              ## Check for further indexing of specific variable(s)
+              if (numel (chain_s) > 1)
+                idx = chain_s(2).subs;
+                if (numel (idx) > 1)
+                  error (strcat ("%s.subsasgn: cannot index", ...
+                                 " VariableTypes with more than one", ...
+                                 " dimension. Use a vector to index", ...
+                                 " multiple VariableTypes at once."), clstype);
+                endif
+                idx = cell2mat (idx);
+                if (isequal (idx, ':'))
+                  idx = [1:width(this)];
+                endif
+                if (! all (ismember (idx, [1:width(this)])))
+                  error (strcat ("%s.subsasgn: out of bound index for", ...
+                                 " VariableTypes."), clstype);
+                endif
+                if (ischar (val) || isa (val, 'string'))
+                  val = cellstr (val);
+                endif
+                if (! (iscellstr (val) && numel (val) == numel (idx)))
+                  error (strcat ("%s.subsasgn: VariableTypes must be", ...
+                                 " a cell array of character vectors or", ...
+                                 " a string array matching the number of", ...
+                                 " indexed variables."), clstype);
+                endif
+                ## Convert each selected variable to its new data type;
+                ## convertvars updates both the data and the VariableTypes
+                ## entry for the corresponding variable.
+                tbl = this;
+                for k = 1:numel (idx)
+                  tbl = convertvars (tbl, idx(k), val{k});
+                endfor
+                return
+              endif
+              ## Check for valid input: cellstring or string array matching
+              ## the number of variables in the table
+              if (ischar (val) || isa (val, 'string'))
+                val = cellstr (val);
+              endif
+              if (! (iscellstr (val) && numel (val) == width (this)))
+                error (strcat ("%s.subsasgn: VariableTypes must be a", ...
+                               " cell array of character vectors or a", ...
+                               " string array matching the number of", ...
+                               " variables."), clstype);
+              endif
+              ## Convert each variable to its new data type; convertvars
+              ## updates both the data and the VariableTypes entry for the
+              ## corresponding variable.
+              tbl = this;
+              for k = 1:width (this)
+                tbl = convertvars (tbl, k, val{k});
+              endfor
+
+            elseif (isequal (s.subs, 'VariableDescriptions'))
+              ## Check for further indexing of specific variable(s)
+              if (numel (chain_s) > 1)
+                idx = chain_s(2).subs;
+                if (numel (idx) > 1)
+                  error (strcat ("%s.subsasgn: cannot index", ...
+                                 " VariableDescriptions with more than", ...
+                                 " one dimension. Use a vector to index", ...
+                                 " multiple VariableDescriptions at", ...
+                                 " once."), clstype);
+                endif
+                idx = cell2mat (idx);
+                if (isequal (idx, ':'))
+                  idx = [1:width(this)];
+                endif
+                if (! all (ismember (idx, [1:width(this)])))
+                  error (strcat ("%s.subsasgn: out of bound index for", ...
+                                 " VariableDescriptions."), clstype);
+                endif
+                if (ischar (val) || isa (val, 'string'))
+                  val = cellstr (val);
+                endif
+                if (! (iscellstr (val) && numel (val) == numel (idx)))
+                  error (strcat ("%s.subsasgn: VariableDescriptions", ...
+                                 " must be a cell array of character", ...
+                                 " vectors or a string array matching", ...
+                                 " the number of indexed variables."), clstype);
+                endif
+                this.VariableDescriptions(idx) = val;
+                tbl = this;
+                return
+              endif
+              ## Check for valid input: cellstring or string array matching
+              ## the number of variables in the table
+              if (ischar (val) || isa (val, 'string'))
+                val = cellstr (val);
+              endif
+              if (! (iscellstr (val) && numel (val) == width (this)))
+                error (strcat ("%s.subsasgn: VariableDescriptions", ...
+                               " must be a cell array of character", ...
+                               " vectors or a string array matching the", ...
+                               " number of variables."), clstype);
+              endif
+              this.VariableDescriptions = val;
+              tbl = this;
+
+            elseif (isequal (s.subs, 'VariableUnits'))
+              ## Check for further indexing of specific variable(s)
+              if (numel (chain_s) > 1)
+                idx = chain_s(2).subs;
+                if (numel (idx) > 1)
+                  error (strcat ("%s.subsasgn: cannot index", ...
+                                 " VariableUnits with more than one", ...
+                                 " dimension. Use a vector to index", ...
+                                 " multiple VariableUnits at once."), clstype);
+                endif
+                idx = cell2mat (idx);
+                if (isequal (idx, ':'))
+                  idx = [1:width(this)];
+                endif
+                if (! all (ismember (idx, [1:width(this)])))
+                  error (strcat ("%s.subsasgn: out of bound index for", ...
+                                 " VariableUnits."), clstype);
+                endif
+                if (ischar (val) || isa (val, 'string'))
+                  val = cellstr (val);
+                endif
+                if (! (iscellstr (val) && numel (val) == numel (idx)))
+                  error (strcat ("%s.subsasgn: VariableUnits must be", ...
+                                 " a cell array of character vectors or", ...
+                                 " a string array matching the number of", ...
+                                 " indexed variables."), clstype);
+                endif
+                this.VariableUnits(idx) = val;
+                tbl = this;
+                return
+              endif
+              ## Check for valid input: cellstring or string array matching
+              ## the number of variables in the table
+              if (ischar (val) || isa (val, 'string'))
+                val = cellstr (val);
+              endif
+              if (! (iscellstr (val) && numel (val) == width (this)))
+                error (strcat ("%s.subsasgn: VariableUnits must be a", ...
+                               " cell array of character vectors or a", ...
+                               " string array matching the number of", ...
+                               " variables."), clstype);
+              endif
+              this.VariableUnits = val;
+              tbl = this;
+
+            elseif (isequal (s.subs, 'VariableContinuity'))
+              ## Check for further indexing of specific variable(s)
+              if (numel (chain_s) > 1)
+                idx = chain_s(2).subs;
+                if (numel (idx) > 1)
+                  error (strcat ("%s.subsasgn: cannot index", ...
+                                 " VariableContinuity with more than one", ...
+                                 " dimension. Use a vector to index", ...
+                                 " multiple variables at once."), clstype);
+                endif
+                idx = cell2mat (idx);
+                if (isequal (idx, ':'))
+                  idx = [1:width(this)];
+                endif
+                if (! all (ismember (idx, [1:width(this)])))
+                  error (strcat ("%s.subsasgn: out of bound index for", ...
+                                 " VariableContinuity."), clstype);
+                endif
+                if (isempty (this.VariableContinuity))
+                  this.VariableContinuity = repmat ({'unset'}, [1, width(this)]);
+                endif
+                val = check_continuity (val, numel (idx), true, clstype);
+                this.VariableContinuity(idx) = val;
+                tbl = this;
+                return
+              endif
+              ## An empty value of any type clears the property
+              if (isempty (val))
+                this.VariableContinuity = [];
+                tbl = this;
+                return;
+              endif
+              this.VariableContinuity = check_continuity (val, width (this), ...
+                                                          false, clstype);
+              tbl = this;
+
+            elseif (isequal (s.subs, 'CustomProperties'))
+              ## Assigning the store itself replaces it whole, as in MATLAB,
+              ## and only a store taken from a table can be assigned.  The
+              ## types travel with it, so a variable property stays one.
+              if (numel (chain_s) < 2)
+                if (! isa (val, 'datatypes.tabular.CustomProperties'))
+                  error (strcat ("%s.subsasgn: the value assigned to", ...
+                                 " 'CustomProperties' must be a", ...
+                                 " datatypes.tabular.CustomProperties", ...
+                                 " object."), clstype);
+                endif
+                [cpVals, cpTypes] = unpack (val);
+                cpNames = fieldnames (cpVals);
+                for i = 1:numel (cpNames)
+                  cpVal = cpVals.(cpNames{i});
+                  if (! strcmp (cpTypes.(cpNames{i}), 'variable'))
+                    continue;
+                  endif
+                  ## A 0-by-0 empty fits a table of any width.
+                  if (ndims (cpVal) == 2 && all (size (cpVal) == 0))
+                    continue;
+                  endif
+                  if (numel (cpVal) != width (this))
+                    error (strcat ("%s.subsasgn: custom property '%s'", ...
+                                   " must have one element for each", ...
+                                   " variable in the table, or be a 0-by-0", ...
+                                   " empty."), clstype, cpNames{i});
+                  endif
+                endfor
+                ## An empty store is [] with no types, as everywhere else.
+                if (isempty (cpNames))
+                  this.CustomProperties = [];
+                  this.CustomPropTypes = struct ();
+                else
+                  this.CustomProperties = cpVals;
+                  this.CustomPropTypes = cpTypes;
+                endif
+                tbl = this;
+                return;
+              endif
+              ## Check for valid indexing a custom property
+              if (! strcmp (chain_s(2).type, '.'))
+                error (strcat ("%s.subsasgn: use '.' notation to", ...
+                               " index a custom property."), clstype);
+              endif
+              cpName = chain_s(2).subs;
+              ## A property name may be given as a string scalar, as in MATLAB.
+              if (isstring (cpName) && isscalar (cpName))
+                cpName = char (cpName);
+              endif
+              if (! (ischar (cpName) && isrow (cpName)))
+                error (strcat ("%s.subsasgn: indexing a custom property", ...
+                               " requires a character vector or a string", ...
+                               " scalar."), clstype);
+              endif
+              ## Check that referenced custom property exists
+              if (isempty (this.CustomProperties))
+                error (strcat ("%s.subsasgn: custom property '%s'", ...
+                               " does not exist, use 'addprop' to add", ...
+                               " it."), clstype, ...
+                       cpName);
+              endif
+              existingNames = fieldnames (this.CustomProperties);
+              if (! ismember (cpName, existingNames))
+                error (strcat ("%s.subsasgn: custom property '%s'", ...
+                               " does not exist, use 'addprop' to add", ...
+                               " it."), clstype, ...
+                       cpName);
+              endif
+              ## Get type of custom property
+              cpType = this.CustomPropTypes.(cpName);
+              if (strcmp (cpType, 'table'))
+                ## A 'table' property is metadata the class never reads, so
+                ## it holds any value of any type and size, stored as given.
+                if (numel (chain_s) > 2)
+                  error (strcat ("%s.subsasgn: custom property '%s'", ...
+                                 " is a table property and cannot be", ...
+                                 " indexed any further."), clstype, ...
+                         cpName);
+                endif
+                this.CustomProperties.(cpName) = val;
+              else
+                maxIdx = width (this);
+                ## Get further indexing (if available)
+                if (numel (chain_s) > 2)
+                  if (strcmp (chain_s(3).type, '.'))
+                    error (strcat ("%s.subsasgn: custom property '%s'", ...
+                                   " is a variable property and cannot", ...
+                                   " be indexed any further with '.'", ...
+                                   " notation."), clstype, ...
+                           cpName);
+                  endif
+                  cpIdx = chain_s(3).subs;
+                  if (numel (cpIdx) > 1)
+                    error (strcat ("%s.subsasgn: cannot index a", ...
+                                   " custom variable property in more", ...
+                                   " than one dimension."), clstype);
+                  endif
+                  cpIdx = cell2mat (cpIdx);
+                  if (isequal (cpIdx, ':'))
+                    cpIdx = [1:maxIdx];
+                  elseif (islogical (cpIdx))
+                    ## A logical mask selects the variables it marks.  It may
+                    ## be shorter than the table but never longer.
+                    if (numel (cpIdx) > maxIdx)
+                      error (strcat ("%s.subsasgn: out of bound index", ...
+                                     " for custom variable property", ...
+                                     " '%s'."), clstype, cpName);
+                    endif
+                    cpIdx = find (cpIdx);
+                  endif
+                  if (! all (ismember (cpIdx, [1:maxIdx])))
+                    error (strcat ("%s.subsasgn: out of bound index", ...
+                                   " for custom variable property", ...
+                                   " '%s'."), clstype, cpName);
+                  endif
+                  ## Check input is a vector
+                  if (! isvector (val))
+                    error (strcat ("%s.subsasgn: assigned value to a", ...
+                                   " custom variable property must be a", ...
+                                   " vector."), clstype);
+                  endif
+                  if (numel (val) != numel (cpIdx))
+                    error (strcat ("%s.subsasgn: input vector does", ...
+                                   " not match the number of indexed", ...
+                                   " variables in the custom variable", ...
+                                   " property '%s'."), clstype, ...
+                           cpName);
+                  endif
+                  ## A cleared property is re-expanded to the table's width
+                  ## before the assignment, padded the way merging pads it,
+                  ## so indexing can never leave a short vector behind.
+                  tmp = this.CustomProperties.(cpName);
+                  if (numel (tmp) != maxIdx)
+                    if (iscell (tmp) || iscell (val))
+                      tmp = cell (1, maxIdx);
+                    else
+                      tmp = NaN (1, maxIdx);
+                    endif
+                  endif
+                  tmp(cpIdx) = val;
+                  this.CustomProperties.(cpName) = tmp;
+                else
+                  ## A character vector is never a per-variable value, so the
+                  ## type is checked before the size: '' is 0-by-0 and would
+                  ## otherwise read as a clearing value.
+                  if (ischar (val))
+                    error (strcat ("%s.subsasgn: a character vector is", ...
+                                   " not a valid value for a custom", ...
+                                   " variable property, use a cell array", ...
+                                   " of character vectors or a string", ...
+                                   " array."), clstype);
+                  endif
+                  ## A 0-by-0 empty clears the property whatever the table's
+                  ## width and is stored as []; empties of any other size are
+                  ## not accepted.
+                  if (ndims (val) == 2 && all (size (val) == 0))
+                    val = [];
+                  elseif (! isvector (val))
+                    error (strcat ("%s.subsasgn: assigned value to a", ...
+                                   " custom variable property must be a", ...
+                                   " vector."), clstype);
+                  elseif (numel (val) != maxIdx)
+                    error (strcat ("%s.subsasgn: input vector does", ...
+                                   " not match the number of variables", ...
+                                   " in table."), clstype);
+                  endif
+                  this.CustomProperties.(cpName) = val;
+                endif
+              endif
+              tbl = this;
+
+            else
+              ## Whatever is left names the subclass's own row labels, and
+              ## only the subclass knows how to assign it.
+              [tbl, handled] = setRowLabelProperty (this, s.subs, val, ...
+                                                    chain_s);
+              if (! handled)
+                error ("%s.subsasgn: unknown %s property '%s'.", ...
+                       clstype, clstype, s.subs);
+              endif
+            endif
+
+          else
+            ## Everything else is indexing a variable name (existing of new)
+            tbl = setvar (this, s.subs, rhs);
+          endif
+      endswitch
     endfunction
 
   endmethods
@@ -1766,6 +2353,36 @@ classdef (Abstract) tabular
 
 endclassdef
 
+## Validate a VariableContinuity assignment of N elements and return it as a
+## cell array of character vectors.  A bare character vector is only valid
+## when indexing individual variables, which is what ALLOWCHAR marks.
+## CLSTYPE names the class the assignment was made on.
+function val = check_continuity (val, n, allowchar, clstype)
+  if (ischar (val) && ! allowchar)
+    error (strcat ("%s.subsasgn: to assign to the VariableContinuity", ...
+                   " property, use a string array or a cell array of", ...
+                   " character vectors. A character vector can be assigned", ...
+                   " only to an individual element of the property."), clstype);
+  endif
+  if (ischar (val) || isa (val, 'string'))
+    val = cellstr (val);
+  endif
+  if (! iscellstr (val))
+    error (strcat ("%s.subsasgn: VariableContinuity must be a cell array", ...
+                   " of character vectors or a string array."), clstype);
+  endif
+  if (numel (val) != n)
+    error (strcat ("%s.subsasgn: VariableContinuity property must have", ...
+                   " one element for each variable in the table."), clstype);
+  endif
+  if (! all (ismember (val, {'continuous', 'step', 'event', 'unset'})))
+    error (strcat ("%s.subsasgn: VariableContinuity property must be", ...
+                   " specified with 'continuous', 'step', 'event', or", ...
+                   " 'unset'."), clstype);
+  endif
+  val = val(:)';
+endfunction
+
 ## Special function to convert a mixed cell array to cellstr array
 ## that keeps MATLAB like formatting for each type of element
 function [outData, optLen]  = mixedcell2str (data, varLen)
@@ -2035,7 +2652,7 @@ function str = iso_seconds (s)
 endfunction
 
 
-## Every subclass must implement all nine hooks, and the message names the
+## Every subclass must implement all ten hooks, and the message names the
 ## subclass that is missing one.  The hooks are protected, so they can only be
 ## reached from inside a subclass: the fixture implements none of them and
 ## exposes one public wrapper per hook.
@@ -2058,6 +2675,9 @@ endfunction
 %!        '    endfunction', ...
 %!        '    function out = call_rowLabelProperties (this)', ...
 %!        '      out = rowLabelProperties (this);', ...
+%!        '    endfunction', ...
+%!        '    function out = call_setRowLabelProperty (this)', ...
+%!        '      out = setRowLabelProperty (this, "x", 1, []);', ...
 %!        '    endfunction', ...
 %!        '    function out = call_subsetRowLabels (this)', ...
 %!        '      out = subsetRowLabels (this, 1);', ...
@@ -2093,6 +2713,9 @@ endfunction
 ## Test 'rowLabelProperties' raises until the subclass implements it
 %!error <notable: subclass must implement rowLabelProperties.> ...
 %! call_rowLabelProperties (notable ());
+## Test 'setRowLabelProperty' raises until the subclass implements it
+%!error <notable: subclass must implement setRowLabelProperty.> ...
+%! call_setRowLabelProperty (notable ());
 ## Test 'subsetRowLabels' raises until the subclass implements it
 %!error <notable: subclass must implement subsetRowLabels.> ...
 %! call_subsetRowLabels (notable ());
