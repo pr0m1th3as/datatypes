@@ -114,28 +114,34 @@ classdef (Abstract) TabularProperties
           str = "[]";
         endif
       elseif (iscellstr (val))
+        ## Only a row of names is written out; anything else is summarized by
+        ## its size, as MATLAB does.  'RowNames' is the property this reaches.
         if (all (cellfun (@isempty, val)))
           str = "{}";
-        else
+        elseif (isrow (val))
           str = ["{", strtrim(sprintf ("'%s'  ", val{:})), "}"];
+        else
+          str = sprintf ("{%s cell}", sizestr (val));
         endif
       elseif (isa (val, 'string'))
         str = ["[", strtrim(sprintf ("""%s""  ", cellstr(val){:})), "]"];
       elseif (islogical (val) || isnumeric (val))
-        sz = strjoin (arrayfun (@(x) sprintf ("%d", x), size (val), ...
-                                "UniformOutput", false), "x");
         if (isscalar (val))
           str = ["[", strtrim(disp (val)), "]"];
         else
-          str = sprintf ("[%s %s]", sz, class (val));
+          str = sprintf ("[%s %s]", sizestr (val), class (val));
         endif
       else
-        sz = strjoin (arrayfun (@(x) sprintf ("%d", x), size (val), ...
-                                "UniformOutput", false), "x");
-        str = sprintf ("{%s %s}", sz, class (val));
+        str = sprintf ("{%s %s}", sizestr (val), class (val));
       endif
     endfunction
 
   endmethods
 
 endclassdef
+
+## The size of a value the way it is written in this listing, as in '2x1'.
+function str = sizestr (val)
+  str = strjoin (arrayfun (@(x) sprintf ("%d", x), size (val), ...
+                           "UniformOutput", false), "x");
+endfunction

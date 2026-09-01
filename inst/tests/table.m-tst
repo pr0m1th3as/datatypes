@@ -6689,6 +6689,23 @@
 %!test
 %! T = table ([1; 2], 'VariableNames', {'x'});
 %! assert_equal (any (strcmp (properties (T.Properties), 'VariableValues')), false);
+## Test the properties listing writes out a row of names
+%!test
+%! fv = @(v) datatypes.tabular.TabularProperties.formatValue (v);
+%! assert_equal (fv ({'a', 'b'}), "{'a'  'b'}");
+## Test the properties listing summarizes a column of names by its size
+%!test
+%! fv = @(v) datatypes.tabular.TabularProperties.formatValue (v);
+%! assert_equal (fv ({'a'; 'b'}), '{2x1 cell}');
+## Test the properties listing summarizes a 2-D cell array of names by its size
+%!test
+%! fv = @(v) datatypes.tabular.TabularProperties.formatValue (v);
+%! assert_equal (fv ({'a', 'b'; 'c', 'd'}), '{2x2 cell}');
+## Test 'RowNames' of a multi-row table is listed by its size
+%!test
+%! T = table ([1; 2], 'VariableNames', {'x'}, 'RowNames', {'r1', 'r2'});
+%! fv = @(v) datatypes.tabular.TabularProperties.formatValue (v);
+%! assert_equal (fv (T.Properties.RowNames), '{2x1 cell}');
 ## Test 'CustomProperties' is a CustomProperties object
 %!test
 %! T = table ([1; 2], 'VariableNames', {'x'});
