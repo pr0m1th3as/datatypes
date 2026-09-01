@@ -218,18 +218,19 @@ classdef (Abstract) tabular
 ##                         **    Subclass hooks    **                         ##
 ################################################################################
 ##                                                                            ##
-## Every subclass must implement all ten.  Octave's classdef has no           ##
+## Every subclass must implement all eleven.  Octave's classdef has no        ##
 ## 'methods (Abstract)' block, so the contract cannot be declared; these      ##
 ## raising defaults stand in for it, and name the subclass that is missing    ##
 ## one because 'class (this)' resolves downwards.                             ##
 ##                                                                            ##
-## Nine of them concern row labels, which is the whole of what separates      ##
-## one tabular class from another; the tenth names the properties object.     ##
+## Ten of them concern row labels, which is the whole of what separates       ##
+## one tabular class from another; the eleventh names the properties object.  ##
 ##                                                                            ##
 ## 'hasRowLabels'      whether the object carries row labels at all           ##
 ## 'getRowLabels'      the labels themselves, in their own type               ##
 ## 'rowLabelName'      the name the labels are known by                       ##
 ## 'rowLabelStrings'   the labels rendered for display                        ##
+## 'rowLabelHeader'    the heading printed over them, if any                  ##
 ## 'rowLabelProperties'  the row label metadata, named as it is published     ##
 ## 'setRowLabelProperty'  one of those properties assigned                    ##
 ## 'subsetRowLabels'   the object with its labels subset by an index          ##
@@ -267,6 +268,14 @@ classdef (Abstract) tabular
     ## their own format before anything can print or export them.
     function out = rowLabelStrings (this)
       error ("%s: subclass must implement rowLabelStrings.", class (this));
+    endfunction
+
+    ## The heading printed over the row label column, or empty for a class
+    ## whose labels carry none.  A table's row names are headed by nothing at
+    ## all, not even the row dimension name; a class whose labels are a
+    ## dimension in their own right names them.
+    function out = rowLabelHeader (this)
+      error ("%s: subclass must implement rowLabelHeader.", class (this));
     endfunction
 
     ## The row label metadata as a struct, keyed by the names the properties
@@ -1661,13 +1670,28 @@ classdef (Abstract) tabular
       ## the displayed table with
       if (hasRowLabels (this))
         rowLabels = rowLabelStrings (this);
-        rnLen = max (cellfun (@length, rowLabels)) + 4;
+        rowHead = rowLabelHeader (this);
+        ## The column is as wide as the wider of its labels and its heading,
+        ## the labels sit at the left of it, and the heading is centred over
+        ## it exactly as a variable's name is centred over its own column.
+        rnWidth = max ([cellfun(@length, rowLabels)(:); length(rowHead)]);
+        rnLen = rnWidth + 4;
         padPT = sprintf ("%%-%ds", rnLen);
         padfn = @(x) sprintf (padPT, x);
         rowNM = cellfun (padfn, rowLabels, 'UniformOutput', false);
+        if (isempty (rowHead))
+          rowHeadStr = repmat (" ", [1, rnLen]);
+          rowLineStr = repmat (" ", [1, rnLen]);
+        else
+          padB = floor ((rnWidth - length (rowHead)) / 2);
+          padA = rnWidth - length (rowHead) - padB;
+          rowHeadStr = [repmat(" ", [1, padB]), rowHead, ...
+                        repmat(" ", [1, padA]), colgap];
+          rowLineStr = [repmat("_", [1, rnWidth]), colgap];
+        endif
         ## Print table header
-        fprintf ("    %s%s\n", repmat (" ", [1, rnLen]), strhead1);
-        fprintf ("    %s%s\n\n", repmat (" ", [1, rnLen]), strline1);
+        fprintf ("    %s%s\n", rowHeadStr, strhead1);
+        fprintf ("    %s%s\n\n", rowLineStr, strline1);
         if (nested)
           fprintf ("    %s%s\n", repmat (" ", [1, rnLen]), strhead2);
           fprintf ("    %s%s\n\n", repmat (" ", [1, rnLen]), strline2);
@@ -2660,7 +2684,7 @@ function str = iso_seconds (s)
 endfunction
 
 
-## Every subclass must implement all ten hooks, and the message names the
+## Every subclass must implement all eleven hooks, and the message names the
 ## subclass that is missing one.  The hooks are protected, so they can only be
 ## reached from inside a subclass: the fixture implements none of them and
 ## exposes one public wrapper per hook.
@@ -2680,6 +2704,9 @@ endfunction
 %!        '    endfunction', ...
 %!        '    function out = call_rowLabelStrings (this)', ...
 %!        '      out = rowLabelStrings (this);', ...
+%!        '    endfunction', ...
+%!        '    function out = call_rowLabelHeader (this)', ...
+%!        '      out = rowLabelHeader (this);', ...
 %!        '    endfunction', ...
 %!        '    function out = call_rowLabelProperties (this)', ...
 %!        '      out = rowLabelProperties (this);', ...
@@ -2718,6 +2745,9 @@ endfunction
 ## Test 'rowLabelStrings' raises until the subclass implements it
 %!error <notable: subclass must implement rowLabelStrings.> ...
 %! call_rowLabelStrings (notable ());
+## Test 'rowLabelHeader' raises until the subclass implements it
+%!error <notable: subclass must implement rowLabelHeader.> ...
+%! call_rowLabelHeader (notable ());
 ## Test 'rowLabelProperties' raises until the subclass implements it
 %!error <notable: subclass must implement rowLabelProperties.> ...
 %! call_rowLabelProperties (notable ());

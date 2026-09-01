@@ -73,7 +73,7 @@ classdef table < tabular
 ##                         **    Subclass hooks    **                         ##
 ################################################################################
 ##                                                                            ##
-## The ten hooks 'tabular' declares, implemented for a table, whose rows      ##
+## The eleven hooks 'tabular' declares, implemented for a table, whose rows   ##
 ## are labelled by 'RowNames' and may carry no labels at all.                 ##
 ##                                                                            ##
 ################################################################################
@@ -114,6 +114,13 @@ classdef table < tabular
     function out = rowLabelProperties (this)
       out = struct ();
       out.RowNames = this.RowNames;
+    endfunction
+
+    ## Nothing.  A table's row names are printed with no heading over them
+    ## and no rule under them, not even the row dimension name, which may be
+    ## renamed without changing the display at all.
+    function out = rowLabelHeader (this)
+      out = '';
     endfunction
 
     ## The one row label property a table has.  'RowNames' is the only name

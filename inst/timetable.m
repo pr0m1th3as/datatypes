@@ -120,8 +120,8 @@ classdef timetable < tabular
 ##                         **    Subclass hooks    **                         ##
 ################################################################################
 ##                                                                            ##
-## The ten hooks 'tabular' declares, implemented for a timetable, whose rows  ##
-## are labelled by 'RowTimes' and always carry labels.                        ##
+## The eleven hooks 'tabular' declares, implemented for a timetable, whose   ##
+## rows are labelled by 'RowTimes' and always carry labels.                   ##
 ##                                                                            ##
 ################################################################################
 
@@ -157,6 +157,14 @@ classdef timetable < tabular
         out = cellstr (this.RowTimes);
         out = out(:);
       endif
+    endfunction
+
+    ## The row dimension name, which heads the column of row times as a
+    ## variable's name heads its own.  Unlike a table, whose row names are
+    ## printed bare, a timetable's row times are a named dimension and are
+    ## shown as one.
+    function out = rowLabelHeader (this)
+      out = this.DimensionNames{1};
     endfunction
 
     ## The four properties a timetable publishes about its row times, keyed
