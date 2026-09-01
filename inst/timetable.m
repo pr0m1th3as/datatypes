@@ -229,11 +229,17 @@ classdef timetable < tabular
     endfunction
 
     ## Matches ROWREF against the row times and returns the rows it picks
-    ## out.  A reference may be a datetime or duration vector, or text that
-    ## converts to one, and it matches exactly.  Row times need not be
-    ## unique, so one reference may pick out several rows, and they come back
-    ## in reference order.  Raises naming every reference that matches none.
+    ## out.  A reference may be a range of times or a tolerant match, each of
+    ## which knows how to select from a vector of times; or a datetime or
+    ## duration vector, or text that converts to one, which matches exactly.
+    ## Row times need not be unique, so one reference may pick out several
+    ## rows, and they come back in reference order.  Raises naming every
+    ## reference that matches none.
     function ixRows = resolveRowRef (this, rowRef)
+      if (isa (rowRef, 'timerange') || isa (rowRef, 'withtol'))
+        ixRows = rowIndices (rowRef, this.RowTimes);
+        return
+      endif
       ref = rowRefTimes (rowRef, this.RowTimes);
       ixRows = [];
       unmatched = {};

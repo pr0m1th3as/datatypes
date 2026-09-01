@@ -50,6 +50,8 @@ timetable arrays
 supplementary classes
  missing
  vartype
+ timerange
+ withtol
  @cell/disp
  @cell/display
 supplementary functions

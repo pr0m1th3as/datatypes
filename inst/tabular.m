@@ -1266,13 +1266,11 @@ classdef (Abstract) tabular
       elseif (ischar (rowRef) || iscellstr (rowRef) || isa (rowRef, 'string'))
         rowRef = cellstr (rowRef);
         ixRow = resolveRowRef (this, rowRef);
-      elseif (isdatetime (rowRef) || isduration (rowRef))
-        ## A class whose rows are labelled by time takes one as a subscript;
-        ## one whose rows are labelled by name refuses it in its own hook.
-        ixRow = resolveRowRef (this, rowRef);
       else
-        error ("%s: unsupported row indexing operand type: '%s'", ...
-               clstype, class (rowRef));
+        ## Anything else is a row reference of a kind only the subclass can
+        ## read: a row time, a range of them, a tolerant match.  A class that
+        ## does not take the kind offered refuses it in its own hook.
+        ixRow = resolveRowRef (this, rowRef);
       endif
       ixVar = resolveVarRef (this, varRef);
     endfunction

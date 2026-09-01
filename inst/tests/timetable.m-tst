@@ -745,6 +745,38 @@
 %! assert_equal (TT.Properties.TimeStep, calmonths (1));
 
 ################################################################################
+##                     **    Row time subscripts    **                        ##
+################################################################################
+
+## Test a time range selects the rows in it
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:5)';
+%! V = timetable (tv, (1:6)', 'VariableNames', {'A'});
+%! S = V(timerange (tv(2), tv(4)), :);
+%! assert_equal (class (S), 'timetable');
+%! assert_equal (S.A, [2; 3]);
+%! assert_equal (S.Properties.RowTimes, tv(2:3));
+
+## Test a tolerant subscript selects the rows near the times asked for
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:5)';
+%! V = timetable (tv, (1:6)', 'VariableNames', {'A'});
+%! assert_equal (V(withtol (tv(3), hours (1)), :).A, [2; 3; 4]);
+%! assert_equal (V(withtol (tv([5 2]), minutes (1)), :).A, [5; 2]);
+
+## Test a range subscript reaches the braces too
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:5)';
+%! V = timetable (tv, (1:6)', 'VariableNames', {'A'});
+%! assert_equal (V{timerange (tv(2), tv(4)), 1}, [2; 3]);
+
+## Test a range subscript keeps the step where the rows stay evenly spaced
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:5)';
+%! V = timetable (tv, (1:6)', 'VariableNames', {'A'});
+%! assert_equal (V(timerange (tv(1), tv(4)), :).Properties.TimeStep, hours (1));
+
+################################################################################
 ##                        **    Brace reference    **                         ##
 ################################################################################
 
