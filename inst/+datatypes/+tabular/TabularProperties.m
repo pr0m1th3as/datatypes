@@ -216,3 +216,28 @@ function str = sizestr (val)
   str = strjoin (arrayfun (@(x) sprintf ("%d", x), size (val), ...
                            "UniformOutput", false), "x");
 endfunction
+
+## The subclass must state the display order, and the stub raises until it
+## does, naming the subclass that has not.  It is protected, so the fixture is
+## a subclass that implements nothing; 'properties' asks for the order and so
+## reaches it without a wrapper of its own.
+%!shared fixdir
+%! fixdir = tempname ();
+%! mkdir (fixdir);
+%! src = {'classdef noprops < datatypes.tabular.TabularProperties', ...
+%!        'endclassdef'};
+%! fid = fopen (fullfile (fixdir, 'noprops.m'), 'w');
+%! fprintf (fid, '%s\n', src{:});
+%! fclose (fid);
+%! addpath (fixdir);
+
+## Test 'displayOrder' raises until the subclass implements it
+%!error <noprops: subclass must implement displayOrder.> ...
+%! properties (noprops ());
+
+## Test the fixture is removed again
+%!test
+%! rmpath (fixdir);
+%! delete (fullfile (fixdir, 'noprops.m'));
+%! rmdir (fixdir);
+%! assert_equal (exist (fixdir, 'dir'), 0);
