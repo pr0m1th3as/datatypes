@@ -38,6 +38,23 @@
 %! P = timetable ().Properties;
 %! assert_equal (class (P.RowTimes), 'datetime');
 %! assert_equal (isempty (P.RowTimes), true);
+%! assert_equal (P.DimensionNames, {'Time', 'Variables'});
+
+## Test 'length' is not defined for a timetable
+%!error <timetable.length: 'length' is not defined for a timetable; use 'height', 'width' or 'size'.> ...
+%! length (timetable ((1:3)', 'TimeStep', hours (1)));
+
+## Test a subscripted reference counts as one timetable
+%!test
+%! TT = timetable ((1:5)', (6:10)', 'TimeStep', hours (1));
+%! assert_equal (numel (TT), 10);
+%! assert_equal (numel (TT, 1, 1), 1);
+
+## Test assigning a time step to an empty timetable keeps the step
+%!test
+%! TT = timetable ();
+%! TT.Properties.TimeStep = hours (1);
+%! assert_equal (TT.Properties.TimeStep, hours (1));
 
 ## Test construction from a leading row time vector
 %!test
@@ -473,7 +490,6 @@
 %! assert_equal (width (TT), 2);
 %! assert_equal (numel (TT), 12);
 %! assert_equal (ndims (TT), 2);
-%! assert_equal (length (TT), 6);
 %! assert_equal (isempty (TT), false);
 
 ## Test 'size' with two outputs
@@ -522,15 +538,65 @@
 %! assert_equal (isregular (TT, 'time'), false);
 %! assert_equal (isregular (TT, 'months'), true);
 
-## Test an hourly timetable is regular in the units its step divides
+## Test an hourly timetable is regular in time and in no calendar unit
 %!test
 %! t0 = datetime (2024, 1, 1);
 %! TT = timetable ((1:5)', 'TimeStep', hours (1), 'StartTime', t0);
-%! assert_equal (isregular (TT, 'seconds'), true);
-%! assert_equal (isregular (TT, 'minutes'), true);
-%! assert_equal (isregular (TT, 'hours'), true);
+%! assert_equal (isregular (TT, 'time'), true);
 %! assert_equal (isregular (TT, 'days'), false);
+%! assert_equal (isregular (TT, 'weeks'), false);
 %! assert_equal (isregular (TT, 'months'), false);
+%! assert_equal (isregular (TT, 'quarters'), false);
+%! assert_equal (isregular (TT, 'years'), false);
+
+## Test a daily timetable is regular in days and not in weeks
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:5)', 'TimeStep', caldays (1), 'StartTime', t0);
+%! assert_equal (TT.Properties.TimeStep, caldays (1));
+%! assert_equal (isregular (TT), true);
+%! assert_equal (isregular (TT, 'days'), true);
+%! assert_equal (isregular (TT, 'weeks'), false);
+%! assert_equal (isregular (TT, 'months'), false);
+
+## Test a weekly timetable is regular in days and in weeks
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:5)', 'TimeStep', calweeks (1), 'StartTime', t0);
+%! assert_equal (isregular (TT, 'days'), true);
+%! assert_equal (isregular (TT, 'weeks'), true);
+%! assert_equal (isregular (TT, 'months'), false);
+
+## Test a whole number of days is inferred as a calendar step
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! P = timetable ((1:5)', 'RowTimes', t0 + hours (0:24:96)').Properties;
+%! assert_equal (class (P.TimeStep), 'calendarDuration');
+%! assert_equal (P.TimeStep, caldays (1));
+%! assert_equal (P.SampleRate, NaN);
+
+## Test a step given as a duration stays one, whole days or not
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! P = timetable ((1:5)', 'TimeStep', hours (24), 'StartTime', t0).Properties;
+%! assert_equal (class (P.TimeStep), 'duration');
+%! assert_equal (P.TimeStep, hours (24));
+
+## Test a spacing that is not whole days stays a duration
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! rt = t0 + (0:4)' * (caldays (1) + hours (2));
+%! P = timetable ((1:5)', 'RowTimes', rt).Properties;
+%! assert_equal (class (P.TimeStep), 'duration');
+%! assert_equal (P.TimeStep, hours (26));
+
+## Test a calendar spacing of more than one unit is no calendar step
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! rt = t0 + calmonths (0:4)' + caldays (0:4)';
+%! P = timetable ((1:5)', 'RowTimes', rt).Properties;
+%! assert_equal (class (P.TimeStep), 'duration');
+%! assert_equal (ismissing (P.TimeStep), true);
 
 ## Test a monthly timetable is regular in months and not in quarters
 %!test
@@ -539,6 +605,7 @@
 %! assert_equal (isregular (TT, 'quarters'), false);
 %! assert_equal (isregular (TT, 'years'), false);
 %! assert_equal (isregular (TT, 'days'), false);
+%! assert_equal (isregular (TT, 'weeks'), false);
 
 ## Test a quarterly timetable is regular in quarters and in months
 %!test
@@ -560,20 +627,23 @@
 %!test
 %! z0 = datetime (2024, 3, 9, 12, 0, 0, 'TimeZone', 'America/New_York');
 %! TT = timetable ((1:4)', 'RowTimes', z0 + days (0:3)');
+%! assert_equal (class (TT.Properties.TimeStep), 'duration');
 %! assert_equal (TT.Properties.TimeStep, hours (24));
 %! assert_equal (isregular (TT), true);
+%! assert_equal (isregular (TT, 'days'), false);
 
 ## Test 'isregular' on a one-row subset falls back on the step it remembers
 %!test
 %! t0 = datetime (2024, 1, 1);
 %! TT = timetable ((1:5)', 'TimeStep', hours (1), 'StartTime', t0);
-%! assert_equal (isregular (TT(1,:), 'hours'), true);
+%! assert_equal (isregular (TT(1,:), 'time'), true);
 %! assert_equal (isregular (TT(1,:), 'days'), false);
 
 ## Test 'isregular' accepts a string scalar unit
 %!test
-%! TT = timetable ((1:5)', 'TimeStep', hours (1));
-%! assert_equal (isregular (TT, "hours"), true);
+%! TT = timetable ((1:5)', 'TimeStep', caldays (1), ...
+%!                 'StartTime', datetime (2024, 1, 1));
+%! assert_equal (isregular (TT, "days"), true);
 
 ## Test the type predicates
 %!test
@@ -612,6 +682,68 @@
 %! TT = timetable (tv, (1:5)');
 %! assert_equal (TT.tv, tv);
 
+## Test a negative sample rate steps backwards and stays regular
+%!test
+%! P = timetable ((1:5)', 'SampleRate', -1).Properties;
+%! assert_equal (P.TimeStep, seconds (-1));
+%! assert_equal (P.SampleRate, -1);
+%! assert_equal (P.RowTimes, seconds (0:-1:-4)');
+%! assert_equal (isregular (timetable ((1:5)', 'SampleRate', -1)), true);
+
+## Test a negative time step steps backwards
+%!test
+%! P = timetable ((1:5)', 'TimeStep', hours (-1)).Properties;
+%! assert_equal (P.RowTimes, hours (0:-1:-4)');
+%! assert_equal (P.SampleRate, -1 / 3600);
+
+## Test a zero sample rate carries its arithmetic into the row times
+%!test
+%! P = timetable ((1:5)', 'SampleRate', 0).Properties;
+%! assert_equal (P.StartTime, seconds (0));
+%! assert_equal (isinf (seconds (P.RowTimes(2:end))), true (4, 1));
+%! assert_equal (ismissing (P.TimeStep), true);
+%! assert_equal (P.SampleRate, NaN);
+
+## Test an infinite sample rate puts every row at the same time
+%!test
+%! P = timetable ((1:5)', 'SampleRate', Inf).Properties;
+%! assert_equal (P.RowTimes, seconds (zeros (5, 1)));
+%! assert_equal (ismissing (P.TimeStep), true);
+
+## Test assigning a datetime start time re-anchors elapsed row times
+%!test
+%! TT = timetable ((1:5)', 'TimeStep', hours (1));
+%! TT.Properties.StartTime = datetime (2024, 1, 1);
+%! assert_equal (class (TT.Properties.RowTimes), 'datetime');
+%! assert_equal (TT.Properties.RowTimes, datetime (2024, 1, 1) + hours (0:4)');
+%! assert_equal (TT.Properties.TimeStep, hours (1));
+%! assert_equal (isregular (TT), true);
+
+## Test assigning a duration start time reduces dated row times
+%!test
+%! TT = timetable ((1:5)', 'TimeStep', hours (1), ...
+%!                 'StartTime', datetime (2024, 1, 1));
+%! TT.Properties.StartTime = hours (10);
+%! assert_equal (class (TT.Properties.RowTimes), 'duration');
+%! assert_equal (TT.Properties.RowTimes, hours (10:14)');
+
+## Test re-anchoring an irregular timetable keeps its spacing
+%!test
+%! TT = timetable ((1:5)', 'RowTimes', hours ([0 1 3 6 10])');
+%! TT.Properties.StartTime = datetime (2024, 1, 1);
+%! assert_equal (TT.Properties.RowTimes, ...
+%!               datetime (2024, 1, 1) + hours ([0 1 3 6 10])');
+%! assert_equal (ismissing (TT.Properties.TimeStep), true);
+
+## Test re-anchoring a calendar timetable keeps its calendar offsets
+%!test
+%! TT = timetable ((1:5)', 'TimeStep', calmonths (1), ...
+%!                 'StartTime', datetime (2024, 1, 1));
+%! TT.Properties.StartTime = datetime (2025, 6, 15);
+%! assert_equal (TT.Properties.RowTimes, ...
+%!               datetime (2025, 6, 15) + calmonths (0:4)');
+%! assert_equal (TT.Properties.TimeStep, calmonths (1));
+
 ################################################################################
 ##                        **    Input validation    **                        ##
 ################################################################################
@@ -648,6 +780,16 @@
 %!error <timetable: 'TimeStep' must be a scalar.> ...
 %! timetable ((1:3)', 'TimeStep', hours (1:2));
 
+## Test a calendar step names a single calendar unit
+%!error <timetable: a calendarDuration 'TimeStep' must name a single calendar unit; use 'caldays', 'calweeks', 'calmonths', 'calquarters' or 'calyears'.> ...
+%! timetable ((1:3)', 'TimeStep', calmonths (1) + caldays (1), ...
+%!            'StartTime', datetime (2024, 1, 1));
+
+## Test a calendar step carries no time of day
+%!error <timetable: a calendarDuration 'TimeStep' must name a single calendar unit; use 'caldays', 'calweeks', 'calmonths', 'calquarters' or 'calyears'.> ...
+%! timetable ((1:3)', 'TimeStep', caldays (1) + hours (2), ...
+%!            'StartTime', datetime (2024, 1, 1));
+
 ## Test a calendar step needs a datetime start time
 %!error <timetable: 'StartTime' must be a datetime when 'TimeStep' is a calendarDuration.> ...
 %! timetable ((1:3)', 'TimeStep', calmonths (1));
@@ -663,14 +805,6 @@
 ## Test the sample rate must be numeric
 %!error <timetable: 'SampleRate' must be a numeric scalar.> ...
 %! timetable ((1:3)', 'SampleRate', 'fast');
-
-## Test the sample rate must be positive and finite
-%!error <timetable: 'SampleRate' must be positive and finite.> ...
-%! timetable ((1:3)', 'SampleRate', -1);
-
-## Test the sample rate must be positive and finite, not infinite
-%!error <timetable: 'SampleRate' must be positive and finite.> ...
-%! timetable ((1:3)', 'SampleRate', Inf);
 
 ## Test 'VariableNames' must be text
 %!error <timetable: 'VariableNames' must be either a cell array of character vectors or a string array.> ...
@@ -740,22 +874,21 @@
 %!            'TimeStep', hours (1));
 
 ## Test 'isregular' refuses a unit it does not know
-%!error <timetable.isregular: UNIT must be one of 'time', 'seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'quarters' or 'years'.> ...
+%!error <timetable.isregular: UNIT must be one of 'time', 'days', 'weeks', 'months', 'quarters' or 'years'.> ...
 %! isregular (timetable ((1:3)', 'TimeStep', hours (1)), 'fortnights');
 
+## Test 'isregular' has no unit smaller than a day
+%!error <timetable.isregular: UNIT must be one of 'time', 'days', 'weeks', 'months', 'quarters' or 'years'.> ...
+%! isregular (timetable ((1:3)', 'TimeStep', hours (1)), 'hours');
+
 ## Test 'isregular' refuses a unit that is not text
-%!error <timetable.isregular: UNIT must be one of 'time', 'seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'quarters' or 'years'.> ...
+%!error <timetable.isregular: UNIT must be one of 'time', 'days', 'weeks', 'months', 'quarters' or 'years'.> ...
 %! isregular (timetable ((1:3)', 'TimeStep', hours (1)), 5);
 
 ## Test assigning row times of the wrong length is refused
 %!error <timetable: the number of 'RowTimes' \(6\) must equal the number of rows \(3\).> ...
 %! TT = timetable ((1:3)', 'TimeStep', hours (1)); ...
 %! TT.Properties.RowTimes = hours (0:5)';
-
-## Test assigning a start time of the wrong type is refused
-%!error <timetable: 'StartTime' must be a duration, to match the row times.> ...
-%! TT = timetable ((1:3)', 'TimeStep', hours (1)); ...
-%! TT.Properties.StartTime = datetime (2024, 1, 1);
 
 ## Test assigning a calendar step to a duration-keyed timetable is refused
 %!error <timetable: 'StartTime' must be a datetime when 'TimeStep' is a calendarDuration.> ...

@@ -181,8 +181,8 @@ classdef timetable < tabular
           this = applyRowTimes (this, val, true);
 
         case 'StartTime'
-          val = checkStartTime (val, class (this.RowTimes));
-          this = applyRowTimes (this, shiftedTimes (this, val), false);
+          val = checkStartTime (val);
+          this = applyRowTimes (this, reanchored (this, val), false);
 
         case 'TimeStep'
           val = checkTimeStep (val, this.StartTime);
@@ -277,16 +277,19 @@ classdef timetable < tabular
     ## GIVENSTEP is the step the caller generated RT from, when there was
     ## one.  The step is still read off RT, because a calendar step need not
     ## reproduce the times it generated and an unreproducible one leaves the
-    ## timetable irregular; but where the two agree the caller's own object
-    ## is kept, so that a step given as 'hours (1)' goes on reading as one
-    ## hour rather than as the 01:00:00 that a difference of datetimes
-    ## comes out as.
+    ## timetable irregular.  But where RT implies any step at all, the
+    ## caller's own object is the one kept: a step given as 'hours (1)' goes
+    ## on reading as one hour rather than as the 01:00:00 a difference of
+    ## datetimes comes out as, and one given as 'hours (24)' stays a
+    ## duration rather than becoming the calendar day it also describes.
     function this = applyRowTimes (this, rt, inferStep, givenStep)
       this.RowTimes = rt(:);
       if (inferStep)
         [this.TimeStep, this.SampleRate] = stepOf (this.RowTimes);
-        if (nargin > 3 && sameStep (this.TimeStep, givenStep))
+        if (nargin > 3 && (numel (this.RowTimes) < 2
+                           || ! any (ismissing (this.TimeStep))))
           this.TimeStep = givenStep;
+          this.SampleRate = stepRate (givenStep);
         endif
       endif
       if (! isempty (this.RowTimes))
@@ -294,13 +297,25 @@ classdef timetable < tabular
       endif
     endfunction
 
-    ## The row times shifted so that the first of them is ST, which is what
-    ## assigning 'StartTime' does.  The shape of the vector is untouched, so
-    ## an irregular timetable stays as irregular as it was.
-    function rt = shiftedTimes (this, st)
+    ## The row times re-anchored so that the first of them is ST, which is
+    ## what assigning 'StartTime' does.  Every row keeps its offset from the
+    ## first, so an irregular timetable stays exactly as irregular as it was,
+    ## and a calendar-stepped one keeps its calendar offsets: moving a
+    ## monthly timetable to the 15th of a month gives the 15th of every
+    ## following month, where shifting by a fixed number of days would not.
+    ##
+    ## ST need not be of the type the row times already have.  Giving a
+    ## datetime to a timetable keyed by elapsed time is how the recording is
+    ## said to have begun on a date, and giving a duration to a dated one
+    ## reduces it back to elapsed time.
+    function rt = reanchored (this, st)
       rt = this.RowTimes;
-      if (! isempty (rt))
-        rt = rt + (st - rt(1));
+      if (isempty (rt))
+        rt = st([]);
+      elseif (iscalendarduration (this.TimeStep))
+        rt = steppedTimes (st, this.TimeStep, numel (rt));
+      else
+        rt = st + (rt - rt(1));
       endif
     endfunction
 
@@ -384,6 +399,7 @@ classdef timetable < tabular
 
       ## Return an empty timetable object
       if (nargin == 0)
+        this.DimensionNames = {'Time', 'Variables'};
         this.RowTimes = NaT (0, 1);
         this.StartTime = NaT;
         this.TimeStep = seconds (NaN);
@@ -571,7 +587,7 @@ classdef timetable < tabular
         if (! wasGiven (StartTime))
           StartTime = defaultStart (TimeStep);
         else
-          StartTime = checkStartTime (StartTime, '');
+          StartTime = checkStartTime (StartTime);
         endif
         TimeStep = checkTimeStep (TimeStep, StartTime);
         if (isempty (nrows))
@@ -692,7 +708,16 @@ classdef timetable < tabular
     ## @seealso{size, height, width}
     ## @end deftypefn
     function out = numel (this, varargin)
-      out = prod (size (this));
+      if (nargin < 2)
+        out = prod (size (this));
+      else
+        ## Given subscripts, report how many elements a reference with them
+        ## would produce, which is what the classdef machinery asks in order
+        ## to size a chained reference.  A '()' reference into a timetable
+        ## yields one timetable whatever the subscripts select, an empty one
+        ## included, so the answer is always one.
+        out = 1;
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -711,17 +736,20 @@ classdef timetable < tabular
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {timetable} {@var{N} =} length (@var{tt})
+    ## @deftypefn {timetable} {} length (@var{tt})
     ##
-    ## Length of a timetable.
+    ## Length is not defined for a timetable.
     ##
-    ## @code{@var{N} = length (@var{tt})} returns the larger of the number of
-    ## rows and the number of variables in @var{tt}.
+    ## @code{length (@var{tt})} always raises.  A timetable has two
+    ## dimensions that mean different things, and the larger of them is not
+    ## a useful answer about either; ask @code{height}, @code{width} or
+    ## @code{size} for the one that is wanted.
     ##
-    ## @seealso{size, height, width}
+    ## @seealso{height, width, size}
     ## @end deftypefn
     function out = length (this, varargin)
-      out = max (size (this));
+      error (strcat ("timetable.length: 'length' is not defined for a", ...
+                     " timetable; use 'height', 'width' or 'size'."));
     endfunction
 
     ## -*- texinfo -*-
@@ -758,24 +786,29 @@ classdef timetable < tabular
     ## True when the row times of a timetable are evenly spaced.
     ##
     ## @code{@var{TF} = isregular (@var{tt})} returns true when @var{tt} is
-    ## regular with respect to absolute time, that is when its stored
-    ## @qcode{TimeStep} is a @code{duration} and not @qcode{NaN}.  A calendar
-    ## step is not regular in absolute time, a calendar month having no fixed
-    ## length, so a monthly timetable answers false here and true for
-    ## @qcode{'months'} below.
+    ## regular with respect to absolute time, that is when consecutive row
+    ## times are separated by the same fixed length of time.  A calendar
+    ## month has no fixed length, so a monthly timetable answers false here
+    ## and true for @qcode{'months'} below.
     ##
     ## @code{@var{TF} = isregular (@var{tt}, @var{unit})} returns true when
     ## the row times are evenly spaced by a whole number of @var{unit}, one
-    ## of @qcode{'time'}, @qcode{'seconds'}, @qcode{'minutes'},
-    ## @qcode{'hours'}, @qcode{'days'}, @qcode{'weeks'}, @qcode{'months'},
-    ## @qcode{'quarters'} or @qcode{'years'}.  @qcode{'time'} means absolute
-    ## time and is what the one-argument form asks.
+    ## of @qcode{'time'}, @qcode{'days'}, @qcode{'weeks'},
+    ## @qcode{'months'}, @qcode{'quarters'} or @qcode{'years'}.
+    ## @qcode{'time'} means absolute time and is what the one-argument form
+    ## asks.  There is no unit smaller than a day: an hourly timetable is
+    ## regular in time and in nothing else.
     ##
     ## The calendar units are measured on the calendar rather than in
-    ## elapsed time, which is what separates them: across a daylight saving
+    ## elapsed time, which is what separates them.  Across a daylight saving
     ## change a run of calendar days is regular in @qcode{'days'} and regular
-    ## in nothing else, since one of those days is an hour shorter than the
-    ## rest.
+    ## in nothing else, one of those days being an hour shorter than the
+    ## rest, and such a timetable reports no time step at all while still
+    ## answering true here.
+    ##
+    ## A timetable with fewer than two rows has no spacing to measure and
+    ## answers from the time step it remembers, so a single row taken out of
+    ## an hourly timetable is still regular in time.
     ##
     ## @seealso{timetable}
     ## @end deftypefn
@@ -786,28 +819,33 @@ classdef timetable < tabular
       if (isstring (unit) && isscalar (unit))
         unit = char (unit);
       endif
-      units = {'time', 'seconds', 'minutes', 'hours', 'days', 'weeks', ...
-               'months', 'quarters', 'years'};
+      units = {'time', 'days', 'weeks', 'months', 'quarters', 'years'};
       if (! (ischar (unit) && isrow (unit)) || ! any (strcmp (unit, units)))
         error (strcat ("timetable.isregular: UNIT must be one of 'time',", ...
-                       " 'seconds', 'minutes', 'hours', 'days', 'weeks',", ...
-                       " 'months', 'quarters' or 'years'."));
+                       " 'days', 'weeks', 'months', 'quarters' or", ...
+                       " 'years'."));
       endif
+      rt = this.RowTimes;
       if (strcmp (unit, 'time'))
-        TF = isduration (this.TimeStep) && ! any (ismissing (this.TimeStep));
+        if (numel (rt) > 1)
+          ds = seconds (diff (rt));
+          TF = ! any (ismissing (rt)) && ds(1) != 0 && all (ds == ds(1));
+        else
+          TF = isduration (this.TimeStep) && ! any (ismissing (this.TimeStep));
+        endif
         return
       endif
-      ## Every other unit is measured on the row times, not on the stored
-      ## step, so that a run of calendar days survives a daylight saving
-      ## change even though its stored step does not.  A timetable with
-      ## fewer than two rows has no spacing to measure and falls back on the
-      ## step it remembers.
-      if (height (this) > 1)
-        [absSecs, calParts] = spacingOf (this.RowTimes);
+      ## Every other unit is measured on the row times rather than on the
+      ## stored step, so that a run of calendar days survives a daylight
+      ## saving change even though its step does not.
+      if (numel (rt) > 1)
+        cd = calendarStepOf (rt);
+      elseif (iscalendarduration (this.TimeStep))
+        cd = this.TimeStep;
       else
-        [absSecs, calParts] = spacingOfStep (this.TimeStep);
+        cd = [];
       endif
-      TF = unitDivides (unit, absSecs, calParts);
+      TF = unitDivides (unit, cd);
     endfunction
 
     ## -*- texinfo -*-
@@ -894,20 +932,17 @@ function rt = checkRowTimes (rt, n)
   rt = rt(:);
 endfunction
 
-## Validate a start time, which must be a scalar of the row times' own type.
-## RTCLASS names that type; a timetable keyed by elapsed time cannot be
-## started at a date and one keyed by dates cannot be started at a duration.
-function st = checkStartTime (st, rtclass)
+## Validate a start time, a datetime or duration scalar.  It need not match
+## the type the row times already have: assigning one of the other kind
+## re-types them, which is how an elapsed-time timetable is given a date to
+## have begun on.
+function st = checkStartTime (st)
   if (! (isdatetime (st) || isduration (st)))
     error (strcat ("timetable: 'StartTime' must be a datetime or a", ...
                    " duration scalar."));
   endif
   if (! isscalar (st))
     error ("timetable: 'StartTime' must be a scalar.");
-  endif
-  if (! isempty (rtclass) && ! strcmp (class (st), rtclass))
-    error (strcat ("timetable: 'StartTime' must be a %s, to match the", ...
-                   " row times."), rtclass);
   endif
 endfunction
 
@@ -926,15 +961,24 @@ function ts = checkTimeStep (ts, st)
     error (strcat ("timetable: 'StartTime' must be a datetime when", ...
                    " 'TimeStep' is a calendarDuration."));
   endif
+  if (iscalendarduration (ts))
+    dv = datevec (ts);
+    if (any (dv(4:6)) || ((dv(1) != 0 || dv(2) != 0) && dv(3) != 0))
+      error (strcat ("timetable: a calendarDuration 'TimeStep' must name", ...
+                     " a single calendar unit; use 'caldays', 'calweeks',", ...
+                     " 'calmonths', 'calquarters' or 'calyears'."));
+    endif
+  endif
 endfunction
 
-## Validate a sample rate, a positive finite numeric scalar in hertz.
+## Validate a sample rate, a real numeric scalar in hertz.  Neither the sign
+## nor the magnitude is constrained: a negative rate steps backwards, which
+## is as regular as stepping forwards, and the degenerate rates simply carry
+## their arithmetic into the row times, a rate of zero giving an infinite
+## step and an infinite rate giving no step at all.
 function fs = checkSampleRate (fs)
   if (! (isnumeric (fs) && isscalar (fs) && isreal (fs)))
     error ("timetable: 'SampleRate' must be a numeric scalar.");
-  endif
-  if (! (fs > 0 && isfinite (fs)))
-    error ("timetable: 'SampleRate' must be positive and finite.");
   endif
 endfunction
 
@@ -943,10 +987,12 @@ endfunction
 ## units the step was written in.  A calendar step has no such zero and is
 ## refused before this is reached.
 function st = defaultStart (ts)
+  st = seconds (0);
   if (isduration (ts))
-    st = ts - ts;
-  else
-    st = seconds (0);
+    ## A zero of the step's own units, taken by copying its format rather
+    ## than by subtracting it from itself, which would be NaN for a step
+    ## that is not finite.
+    st.Format = ts.Format;
   endif
 endfunction
 
@@ -956,6 +1002,10 @@ function rt = steppedTimes (st, ts, n)
     rt = st([]);
   else
     rt = st + ts * (0:n-1)';
+    ## The first row time is the start time itself.  Reaching it as
+    ## 'start + step * 0' costs nothing until the step is not finite, where
+    ## 'Inf * 0' is NaN and would poison a row that has no step in it.
+    rt(1) = st;
   endif
 endfunction
 
@@ -979,37 +1029,55 @@ endfunction
 ## vector carrying a missing time, a repeated time or an uneven gap: all of
 ## them give a NaN duration, which is what marks a timetable as irregular.
 ##
-## A vector evenly spaced in absolute time gives a duration step, keeping the
-## format the difference came out in.  One that is not may still be evenly
-## spaced on the calendar, and a whole number of calendar months gives a
-## calendarDuration step; calendar days do not, since days are absolute
-## except across a daylight saving change and MATLAB calls such a run
-## irregular.
+## A calendar step is preferred wherever there is one, and the two halves of
+## the calendar are inferred on different terms.  Months, quarters and years
+## have no fixed length in seconds, so an even calendar spacing is all they
+## can be asked for.  Days and weeks are meant to be absolute, so they must
+## be even in absolute time as well: a run of calendar days interrupted by a
+## clock change contains a day of 23 hours and is not regular at all.
+##
+## Failing that, a vector evenly spaced in absolute time gives a duration
+## step, keeping the format the difference came out in.
 function [ts, fs] = stepOf (rt)
   ts = seconds (NaN);
   if (numel (rt) >= 2 && ! any (ismissing (rt)))
     d = diff (rt);
     ds = seconds (d);
-    if (ds(1) != 0 && all (ds == ds(1)))
+    absReg = (ds(1) != 0 && all (ds == ds(1)));
+    cd = calendarStepOf (rt);
+    if (! isempty (cd) && (calendarMonths (cd) != 0 || absReg))
+      ts = cd;
+    elseif (absReg)
       ts = d(1);
-    elseif (isdatetime (rt))
-      cd = caldiff (rt);
-      dv = datevec (cd);
-      months = dv(:,1) * 12 + dv(:,2);
-      if (months(1) != 0 && all (months == months(1))
-                         && ! any (any (dv(:,3:6))))
-        ts = cd(1);
-      endif
     endif
   endif
   fs = stepRate (ts);
 endfunction
 
-## Whether two time steps are the same spacing.  Steps of different kinds
-## never are, a calendar month being no fixed number of seconds, and a
-## missing step is never the same as anything, itself included.
-function tf = sameStep (a, b)
-  tf = strcmp (class (a), class (b)) && ! any (ismissing (a)) && a == b;
+## The constant calendar difference of a vector of row times, or empty when
+## it has none.  Duration row times carry no calendar and never have one.
+##
+## A calendar step names one calendar unit and no time of day.  An hourly
+## run, a run of days-plus-two-hours and a run of months-plus-a-day are each
+## evenly spaced on the calendar in a sense, and none of them is a calendar
+## step; the last is refused for an explicit 'TimeStep' too.
+function cd = calendarStepOf (rt)
+  cd = [];
+  if (! isdatetime (rt) || numel (rt) < 2 || any (ismissing (rt)))
+    return
+  endif
+  c = caldiff (rt);
+  dv = datevec (c);
+  if (all (all (dv == dv(1,:))) && any (dv(1,1:3)) && ! any (dv(1,4:6))
+      && ! ((dv(1,1) != 0 || dv(1,2) != 0) && dv(1,3) != 0))
+    cd = c(1);
+  endif
+endfunction
+
+## A calendar step counted in whole months, years and quarters included.
+function m = calendarMonths (cd)
+  dv = datevec (cd);
+  m = dv(1) * 12 + dv(2);
 endfunction
 
 ## The sample rate of a time step: rows per second, and NaN for a calendar
@@ -1023,92 +1091,30 @@ function fs = stepRate (ts)
   endif
 endfunction
 
-## The spacing of a vector of row times, measured twice: ABSSECS is the
-## spacing in seconds when it is even in absolute time and NaN otherwise,
-## and CALPARTS is [months, days, seconds] of the spacing when it is even on
-## the calendar and empty otherwise.  Both may be present, and across a
-## daylight saving change only the second is.
-function [absSecs, calParts] = spacingOf (rt)
-  absSecs = NaN;
-  calParts = [];
-  if (numel (rt) < 2 || any (ismissing (rt)))
+## Whether a calendar step is a whole, nonzero number of UNIT.  The two
+## families do not mix: a step in days is a whole number of days and of
+## weeks but of no months, and a step in months is a whole number of months,
+## quarters or years but of no days.
+function tf = unitDivides (unit, cd)
+  tf = false;
+  if (isempty (cd))
     return
   endif
-  ds = seconds (diff (rt));
-  if (ds(1) != 0 && all (ds == ds(1)))
-    absSecs = ds(1);
-  endif
-  if (isdatetime (rt))
-    dv = datevec (caldiff (rt));
-    parts = [dv(:,1) * 12 + dv(:,2), dv(:,3), ...
-             dv(:,4) * 3600 + dv(:,5) * 60 + dv(:,6)];
-    if (all (all (parts == parts(1,:))) && any (parts(1,:)))
-      calParts = parts(1,:);
-    endif
-  endif
-endfunction
-
-## The same two measurements taken from a stored time step instead of from a
-## vector, for a timetable with fewer than two rows to measure.
-function [absSecs, calParts] = spacingOfStep (ts)
-  absSecs = NaN;
-  calParts = [];
-  if (iscalendarduration (ts))
-    dv = datevec (ts);
-    calParts = [dv(1) * 12 + dv(2), dv(3), ...
-                dv(4) * 3600 + dv(5) * 60 + dv(6)];
-  elseif (! any (ismissing (ts)))
-    absSecs = seconds (ts);
-    if (absSecs != 0)
-      calParts = [0, fix(absSecs / 86400), rem(absSecs, 86400)];
-    endif
-  endif
-endfunction
-
-## Whether a spacing is a whole, nonzero number of UNIT.  The three smallest
-## units are absolute and read ABSSECS; the two largest are calendar units
-## and read CALPARTS; days and weeks are either, being absolute in general
-## and calendar units across a daylight saving change.
-function tf = unitDivides (unit, absSecs, calParts)
+  dv = datevec (cd);
+  months = dv(1) * 12 + dv(2);
+  days = dv(3);
   switch (unit)
-    case 'seconds'
-      tf = wholeSeconds (absSecs, 1);
-    case 'minutes'
-      tf = wholeSeconds (absSecs, 60);
-    case 'hours'
-      tf = wholeSeconds (absSecs, 3600);
     case 'days'
-      tf = wholeSeconds (absSecs, 86400) || wholeDays (calParts, 1);
+      tf = months == 0 && days != 0;
     case 'weeks'
-      tf = wholeSeconds (absSecs, 604800) || wholeDays (calParts, 7);
+      tf = months == 0 && days != 0 && mod (days, 7) == 0;
     case 'months'
-      tf = wholeMonths (calParts, 1);
+      tf = days == 0 && months != 0;
     case 'quarters'
-      tf = wholeMonths (calParts, 3);
+      tf = days == 0 && months != 0 && mod (months, 3) == 0;
     case 'years'
-      tf = wholeMonths (calParts, 12);
-    otherwise
-      tf = false;
+      tf = days == 0 && months != 0 && mod (months, 12) == 0;
   endswitch
-endfunction
-
-## Whether an absolute spacing is a whole, nonzero number of N seconds.
-function tf = wholeSeconds (absSecs, n)
-  tf = ! isnan (absSecs) && absSecs != 0 && mod (absSecs, n) == 0;
-endfunction
-
-## Whether a calendar spacing is a whole, nonzero number of N days, carrying
-## no months and no leftover time.
-function tf = wholeDays (calParts, n)
-  tf = ! isempty (calParts) && calParts(1) == 0 && calParts(3) == 0 && ...
-       calParts(2) != 0 && mod (calParts(2), n) == 0;
-endfunction
-
-## Whether a calendar spacing is a whole, nonzero number of N months,
-## carrying no days and no leftover time.
-function tf = wholeMonths (calParts, n)
-  tf = ! isempty (calParts) && calParts(2) == 0 && calParts(3) == 0 && ...
-       calParts(1) != 0 && mod (calParts(1), n) == 0;
 endfunction
 
 ## A row time reference converted to the type of the row times it will be
