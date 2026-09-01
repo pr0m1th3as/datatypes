@@ -6724,6 +6724,25 @@
 %!test
 %! T = table ([1; 2], 'VariableNames', {'x'}, 'RowNames', {'r1', 'r2'});
 %! assert_equal (fieldnames (T.Properties), properties (T.Properties));
+## Test a table property may be named with a string scalar
+%!test
+%! T = table ([1; 2], 'VariableNames', {'x'});
+%! s = struct ('type', '.', 'subs', string ('VariableNames'));
+%! assert_equal (subsref (T.Properties, s), {'x'});
+## Test a table property name must be a character vector or a string scalar
+%!error <datatypes.tabular.TableProperties.subsref: '.' index argument must be a character vector or a string scalar.> ...
+%! T = table ([1; 2], 'VariableNames', {'x'});
+%! subsref (T.Properties, struct ('type', '.', 'subs', 5));
+## Test a custom property may be named with a string scalar
+%!test
+%! T = addprop (table ([1; 2]), 'tp', 'table');
+%! T.Properties.CustomProperties.tp = 7;
+%! s = struct ('type', '.', 'subs', string ('tp'));
+%! assert_equal (subsref (T.Properties.CustomProperties, s), 7);
+## Test a custom property name must be a character vector or a string scalar
+%!error <datatypes.tabular.CustomProperties: '.' index argument must be a character vector or a string scalar.> ...
+%! T = addprop (table ([1; 2]), 'tp', 'table');
+%! subsref (T.Properties.CustomProperties, struct ('type', '.', 'subs', 5));
 ## Test 'CustomProperties' is a CustomProperties object
 %!test
 %! T = table ([1; 2], 'VariableNames', {'x'});

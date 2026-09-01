@@ -4758,6 +4758,14 @@ CM = lower (CM);
                          " for referencing values. Use '()' instead."));
 
         case '.'
+          ## A field name may be given as a string scalar, as in MATLAB.
+          if (isstring (s.subs) && isscalar (s.subs))
+            s.subs = char (s.subs);
+          endif
+          if (! (ischar (s.subs) && isrow (s.subs)))
+            error (strcat ("duration.subsref: '.' index argument must", ...
+                           " be a character vector or a string scalar."));
+          endif
           switch (s.subs)
             case 'Format'
               out = this.Format;
@@ -4808,6 +4816,14 @@ CM = lower (CM);
                          " for assigning values. Use '()' instead."));
 
         case '.'
+          ## A field name may be given as a string scalar, as in MATLAB.
+          if (isstring (s.subs) && isscalar (s.subs))
+            s.subs = char (s.subs);
+          endif
+          if (! (ischar (s.subs) && isrow (s.subs)))
+            error (strcat ("duration.subsasgn: '.' index argument must", ...
+                           " be a character vector or a string scalar."));
+          endif
           switch (s.subs)
             case 'Format'
               ## Convert string to character vector if necessary

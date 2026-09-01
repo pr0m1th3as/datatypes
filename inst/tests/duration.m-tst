@@ -4459,6 +4459,22 @@
 %! D = duration ([1:5], 0, 0); D.Format = 'hh:mm.SM'
 %!error<duration.subsasgn: more than nine fractional second digits in display format.> ...
 %! D = duration ([1:5], 0, 0); D.Format = 'hh:mm:ss.SSSSSSSSSS'
+## Test 'subsref' names a property with a string scalar
+%!test
+%! D = duration (1, 2, 3);
+%! s = struct ('type', '.', 'subs', string ('Format'));
+%! assert_equal (subsref (D, s), D.Format);
+## Test 'subsasgn' names a property with a string scalar
+%!test
+%! D = duration (1, 2, 3);
+%! s = struct ('type', '.', 'subs', string ('Format'));
+%! assert_equal (subsasgn (D, s, 'hh:mm').Format, 'hh:mm');
+## Test 'subsref' refuses a property name that is not a single row
+%!error<duration.subsref: '.' index argument must be a character vector or a string scalar.> ...
+%! subsref (duration (1, 2, 3), struct ('type', '.', 'subs', ['ab'; 'cd']));
+## Test 'subsasgn' refuses a property name that is not a single row
+%!error<duration.subsasgn: '.' index argument must be a character vector or a string scalar.> ...
+%! subsasgn (duration (1, 2, 3), struct ('type', '.', 'subs', ''), 5);
 
 %!test
 %! D = hours (0:9);

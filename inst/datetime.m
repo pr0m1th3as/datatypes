@@ -5492,9 +5492,13 @@ classdef datetime
                          " for referencing values. Use '()' instead."));
 
         case '.'
-          if (! ischar (s.subs))
-            error (strcat ("datetime.subsref: '.' index argument", ...
-                           " must be a character vector."));
+          ## A field name may be given as a string scalar, as in MATLAB.
+          if (isstring (s.subs) && isscalar (s.subs))
+            s.subs = char (s.subs);
+          endif
+          if (! (ischar (s.subs) && isrow (s.subs)))
+            error (strcat ("datetime.subsref: '.' index argument must", ...
+                           " be a character vector or a string scalar."));
           endif
           switch (s.subs)
             case 'proxyArray'  # used by 'table' class
@@ -5605,9 +5609,13 @@ classdef datetime
                          " for assigning values. Use '()' instead."));
 
         case '.'
-          if (! ischar (s.subs))
-            error (strcat ("datetime.subsasgn: '.' index argument", ...
-                           " must be a character vector."));
+          ## A field name may be given as a string scalar, as in MATLAB.
+          if (isstring (s.subs) && isscalar (s.subs))
+            s.subs = char (s.subs);
+          endif
+          if (! (ischar (s.subs) && isrow (s.subs)))
+            error (strcat ("datetime.subsasgn: '.' index argument must", ...
+                           " be a character vector or a string scalar."));
           endif
           switch (s.subs)
             case 'Format'

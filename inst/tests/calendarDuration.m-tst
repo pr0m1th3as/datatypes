@@ -2452,6 +2452,22 @@
 %! subsasgn (calendarDuration (1, 0, 0), substruct ('()', {1}, '.', 'x'), 1);
 %!error<calendarDuration.subsasgn: unrecognized property: 'fdasd'> ...
 %! cD = caldays([1:5]); cD.fdasd = 1
+## Test 'subsref' names a property with a string scalar
+%!test
+%! cD = calendarDuration (1, 2, 3);
+%! s = struct ('type', '.', 'subs', string ('Format'));
+%! assert_equal (subsref (cD, s), cD.Format);
+## Test 'subsasgn' names a property with a string scalar
+%!test
+%! cD = calendarDuration (1, 2, 3);
+%! s = struct ('type', '.', 'subs', string ('Format'));
+%! assert_equal (subsasgn (cD, s, 'ymdt').Format, 'ymdt');
+## Test 'subsref' refuses a property name that is not a single row
+%!error<calendarDuration.subsref: '.' index argument must be a character vector or a string scalar.> ...
+%! subsref (calendarDuration (1, 2, 3), struct ('type', '.', 'subs', ['ab'; 'cd']));
+## Test 'subsasgn' refuses a property name that is not a single row
+%!error<calendarDuration.subsasgn: '.' index argument must be a character vector or a string scalar.> ...
+%! subsasgn (calendarDuration (1, 2, 3), struct ('type', '.', 'subs', ''), 5);
 
 ## Test 'calendarDuration.empty' -- empty calendarDuration arrays
 %!assert_equal (size (calendarDuration.empty), [0, 0])

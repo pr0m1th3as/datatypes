@@ -6611,6 +6611,22 @@
 %!error<datetime.subsasgn: unrecognized property: Nope> ...
 %! D = datetime (2020, 1, 1);
 %! subsasgn (D, substruct ('.', 'Nope'), 5);
+## Test 'subsref' names a property with a string scalar
+%!test
+%! D = datetime (2020, 1, 1);
+%! s = struct ('type', '.', 'subs', string ('Format'));
+%! assert_equal (subsref (D, s), D.Format);
+## Test 'subsasgn' names a property with a string scalar
+%!test
+%! D = datetime (2020, 1, 1);
+%! s = struct ('type', '.', 'subs', string ('Format'));
+%! assert_equal (subsasgn (D, s, 'yyyy').Format, 'yyyy');
+## Test 'subsref' refuses a property name that is not a single row
+%!error<datetime.subsref: '.' index argument must be a character vector or a string scalar.> ...
+%! subsref (datetime (2020, 1, 1), struct ('type', '.', 'subs', ['ab'; 'cd']));
+## Test 'subsasgn' refuses a property name that is not a single row
+%!error<datetime.subsasgn: '.' index argument must be a character vector or a string scalar.> ...
+%! subsasgn (datetime (2020, 1, 1), struct ('type', '.', 'subs', ''), 5);
 
 ## min and max share one implementation; its two-array and option checks
 %!error<datetime.min: a second output is not supported when comparing two arrays.> ...

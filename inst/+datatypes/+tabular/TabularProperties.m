@@ -84,6 +84,34 @@ classdef (Abstract) TabularProperties
 
   methods (Hidden)
 
+    ## Class specific subscripted reference.  Only the field name is handled
+    ## here; the properties, the methods and the unknown-name refusal stay
+    ## with the builtin, which already answers correctly.  The rest of the
+    ## chain goes back through 'subsref' so that a member carrying its own,
+    ## such as 'CustomProperties', is the one that resolves it.
+    function varargout = subsref (this, s)
+      chain_s = s(2:end);
+      s = s(1);
+      if (strcmp (s.type, '.'))
+        ## A field name may be given as a string scalar, as in MATLAB.
+        if (isstring (s.subs) && isscalar (s.subs))
+          s.subs = char (s.subs);
+        endif
+        if (! (ischar (s.subs) && isrow (s.subs)))
+          error (strcat ("%s.subsref: '.' index argument must be a", ...
+                         " character vector or a string scalar."), ...
+                 class (this));
+        endif
+      endif
+      out = builtin ("subsref", this, s);
+
+      ## Chained references
+      if (! isempty (chain_s))
+        out = subsref (out, chain_s);
+      endif
+      varargout{1} = out;
+    endfunction
+
     function display (this)
       in_name = inputname (1);
       if (! isempty (in_name))

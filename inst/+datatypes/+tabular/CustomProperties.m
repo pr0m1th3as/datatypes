@@ -127,6 +127,15 @@ classdef CustomProperties
                        " indexing is supported."));
       endif
       name = s(1).subs;
+      ## A property name may be given as a string scalar, as in MATLAB.
+      if (isstring (name) && isscalar (name))
+        name = char (name);
+      endif
+      if (! (ischar (name) && isrow (name)))
+        error (strcat ("datatypes.tabular.CustomProperties: '.' index", ...
+                       " argument must be a character vector or a", ...
+                       " string scalar."));
+      endif
       if (! isfield (this.Values, name))
         error (strcat ("datatypes.tabular.CustomProperties: there is no", ...
                        " custom property named '%s'."), name);
