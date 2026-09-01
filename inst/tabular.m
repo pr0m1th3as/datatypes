@@ -415,7 +415,7 @@ classdef (Abstract) tabular
                    class (tbl.VariableValues{pair(2)}));
           endif
           try
-            tbl = table2array (tbl);
+            tbl = varsAsArray (tbl, 'subsref');
           catch
             error (strcat ("%s.subsref: %s cannot be concatenated", ...
                            " into a matrix."), clstype, clstype);
@@ -437,9 +437,9 @@ classdef (Abstract) tabular
             tbl = getRowLabels (this);
           elseif (isequal (s.subs, this.DimensionNames{2}))
             try
-              tbl = table2array (this);
+              tbl = varsAsArray (this, 'subsref');
             catch
-              tbl = table2cell (this);
+              tbl = varsAsCell (this);
             end_try_catch
           ## Everything else is indexing an existing variable name
           else
@@ -1431,6 +1431,66 @@ classdef (Abstract) tabular
           endfor
         endif
       endif
+    endfunction
+
+    ## The variables laid side by side as one homogeneous array, and as a
+    ## cell array.  Neither reads the row labels, so both serve every
+    ## tabular class; CALLER names the method reporting a refusal, which is
+    ## the public conversion for a table and the brace reference otherwise.
+    function A = varsAsArray (this, caller)
+      ## Handle empty table
+      if isempty (this)
+        A = [];
+        return
+      endif
+      ## A mix of cell and non-cell variables cannot form a homogeneous array.
+      ## Octave would silently promote single-row pieces to a cell (MATLAB
+      ## errors), so guard explicitly and report the first incompatible pair.
+      pair = tabular.mixed_cell_pair (this.VariableValues);
+      if (! isempty (pair))
+        error (strcat ("%s.%s: cannot concatenate the table", ...
+                       " variables '%s' and '%s', because their types are", ...
+                       " %s and %s."), class (this), caller, ...
+               this.VariableNames{pair(1)}, ...
+               this.VariableNames{pair(2)}, ...
+               class (this.VariableValues{pair(1)}), ...
+               class (this.VariableValues{pair(2)}));
+      endif
+      ## Add a try...catch block instead of heuristics
+      try
+        A = cat (2, this.VariableValues{:});
+      catch
+        error (strcat ("%s.%s: table cannot be concatenated", ...
+                       " into a matrix due to incompatible variable", ...
+                       " types."), class (this), caller);
+      end_try_catch
+    endfunction
+
+    function C = varsAsCell (this)
+      C = cell (size (this));
+      for i = 1:width (this)
+        varVal = this.VariableValues{i};
+        if (iscell (varVal))
+          C(:,i) = varVal;
+        elseif (isnumeric (varVal) || islogical (varVal))
+          C(:,i) = num2cell (varVal, 2);
+        elseif (any (isa (varVal, {'calendarDuration', 'categorical'})))
+          C(:,i) = dispstrings (varVal);
+        elseif (any (isa (varVal, {'datetime', 'duration'})))
+          C(:,i) = dispstrings (varVal);
+        elseif (isa (varVal, 'string'))
+          C(:,i) = cellstr (varVal);
+        elseif (isa (varVal, 'table'))
+          tmpVal = table2cell (varVal);
+          if (size (tmpVal, 2) > 1)
+            C(:,i) = num2cell (cell2mat (tmpVal), 2);
+          else
+            C(:,i) = tmpVal;
+          endif
+        elseif (isa (varVal, 'struct'))
+          C(:,i) = num2cell (varVal(:));
+        endif
+      endfor
     endfunction
 
     ## The stored variable values, and the types of the custom properties,

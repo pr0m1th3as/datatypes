@@ -745,6 +745,46 @@
 %! assert_equal (TT.Properties.TimeStep, calmonths (1));
 
 ################################################################################
+##                        **    Brace reference    **                         ##
+################################################################################
+
+## Test braces return one variable in its own type
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:5)';
+%! V = timetable (tv, (1:6)', 'VariableNames', {'A'});
+%! assert_equal (class (V{:, 1}), 'double');
+%! assert_equal (V{:, 1}, (1:6)');
+
+## Test braces take a subset of rows
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:5)';
+%! V = timetable (tv, (1:6)', 'VariableNames', {'A'});
+%! assert_equal (V{2:3, 1}, [2; 3]);
+
+## Test braces take a variable by name
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:5)';
+%! V = timetable (tv, (1:6)', 'VariableNames', {'A'});
+%! assert_equal (V{:, 'A'}, (1:6)');
+
+## Test braces over every variable of one type
+%!test
+%! V = timetable (hours (0:5)', (1:6)', (7:12)', 'VariableNames', {'A', 'B'});
+%! assert_equal (class (V{:, :}), 'double');
+%! assert_equal (V{:, :}, [(1:6)', (7:12)']);
+
+## Test the variable dimension name reaches the variable values
+%!test
+%! V = timetable (hours (0:2)', (1:3)', 'VariableNames', {'A'});
+%! assert_equal (V.Variables, (1:3)');
+
+## Test braces refuse variables that cannot be laid side by side
+%!error <timetable.subsref: cannot concatenate the timetable variables 'A' and 'B', because their types are double and cell.> ...
+%! V = timetable (hours (0:2)', (1:3)', {1; 2; 3}, ...
+%!                'VariableNames', {'A', 'B'}); ...
+%! V{:, :};
+
+################################################################################
 ##                        **    Concatenation    **                           ##
 ################################################################################
 

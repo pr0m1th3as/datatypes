@@ -496,31 +496,7 @@ classdef table < tabular
     ##
     ## @end deftypefn
     function A = table2array (this)
-      ## Handle empty table
-      if isempty (this)
-        A = [];
-        return
-      endif
-      ## A mix of cell and non-cell variables cannot form a homogeneous array.
-      ## Octave would silently promote single-row pieces to a cell (MATLAB
-      ## errors), so guard explicitly and report the first incompatible pair.
-      pair = tabular.mixed_cell_pair (this.VariableValues);
-      if (! isempty (pair))
-        error (strcat ("table.table2array: cannot concatenate the table", ...
-                       " variables '%s' and '%s', because their types are", ...
-                       " %s and %s."), this.VariableNames{pair(1)}, ...
-               this.VariableNames{pair(2)}, ...
-               class (this.VariableValues{pair(1)}), ...
-               class (this.VariableValues{pair(2)}));
-      endif
-      ## Add a try...catch block instead of heuristics
-      try
-        A = cat (2, this.VariableValues{:});
-      catch
-        error (strcat ("table.table2array: table cannot be concatenated", ...
-                       " into a matrix due to incompatible variable", ...
-                       " types."));
-      end_try_catch
+      A = varsAsArray (this, 'table2array');
     endfunction
 
     ## -*- texinfo -*-
@@ -552,30 +528,7 @@ classdef table < tabular
     ##
     ## @end deftypefn
     function C = table2cell (this, varargin)
-      C = cell (size (this));
-      for i = 1:width (this)
-        varVal = this.VariableValues{i};
-        if (iscell (varVal))
-          C(:,i) = varVal;
-        elseif (isnumeric (varVal) || islogical (varVal))
-          C(:,i) = num2cell (varVal, 2);
-        elseif (any (isa (varVal, {'calendarDuration', 'categorical'})))
-          C(:,i) = dispstrings (varVal);
-        elseif (any (isa (varVal, {'datetime', 'duration'})))
-          C(:,i) = dispstrings (varVal);
-        elseif (isa (varVal, 'string'))
-          C(:,i) = cellstr (varVal);
-        elseif (isa (varVal, 'table'))
-          tmpVal = table2cell (varVal);
-          if (size (tmpVal, 2) > 1)
-            C(:,i) = num2cell (cell2mat (tmpVal), 2);
-          else
-            C(:,i) = tmpVal;
-          endif
-        elseif (isa (varVal, 'struct'))
-          C(:,i) = num2cell (varVal(:));
-        endif
-      endfor
+      C = varsAsCell (this);
     endfunction
 
     ## -*- texinfo -*-
