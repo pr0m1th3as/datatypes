@@ -34,7 +34,7 @@ classdef CustomProperties
     Types = struct ()
   endproperties
 
-  methods (Access = {?datatypes.tabular.TableProperties})
+  methods (Access = {?datatypes.tabular.TabularProperties})
 
     function this = CustomProperties (s, types)
       if (nargin > 0 && isstruct (s))

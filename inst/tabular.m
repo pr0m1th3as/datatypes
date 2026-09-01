@@ -338,12 +338,13 @@ classdef (Abstract) tabular
       disp (this);
     endfunction
 
-    ## Custom display
+    ## Custom display.  The header names the class rather than saying
+    ## 'table', so that a timetable says what it is.
     function disp (this)
       if (isempty (this))
-        fprintf ("  %dx%d empty table\n\n", size (this));
+        fprintf ("  %dx%d empty %s\n\n", size (this), class (this));
       else
-        fprintf ("  %dx%d table\n\n", height (this), width (this));
+        fprintf ("  %dx%d %s\n\n", height (this), width (this), class (this));
         print_table (this);
       endif
     endfunction
@@ -1238,10 +1239,18 @@ classdef (Abstract) tabular
       clstype = class (this);
       if (isnumeric (rowRef) || islogical (rowRef))
         ixRow = rowRef;
-      elseif (isequal (rowRef, ':'))
+      elseif ((ischar (rowRef) || isa (rowRef, 'string'))
+              && isequal (rowRef, ':'))
+        ## The type is checked before the comparison: 'isequal' against a
+        ## row time would dispatch to the row time's own, which reads the
+        ## colon as a time string and fails on it.
         ixRow = 1:height (this);
       elseif (ischar (rowRef) || iscellstr (rowRef) || isa (rowRef, 'string'))
         rowRef = cellstr (rowRef);
+        ixRow = resolveRowRef (this, rowRef);
+      elseif (isdatetime (rowRef) || isduration (rowRef))
+        ## A class whose rows are labelled by time takes one as a subscript;
+        ## one whose rows are labelled by name refuses it in its own hook.
         ixRow = resolveRowRef (this, rowRef);
       else
         error ("%s: unsupported row indexing operand type: '%s'", ...

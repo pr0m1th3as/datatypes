@@ -1,0 +1,784 @@
+## Copyright (C) 2026 Andreas Bertsatos <abertsatos@biol.uoa.gr>
+##
+## This file is part of the datatypes package for GNU Octave.
+##
+## This program is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free Software
+## Foundation; either version 3 of the License, or (at your option) any later
+## version.
+##
+## This program is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+## details.
+##
+## You should have received a copy of the GNU General Public License along with
+## this program; if not, see <http://www.gnu.org/licenses/>.
+
+## Every expected value below was measured against MATLAB R2024a.  Row times
+## and time steps are compared as objects rather than as rendered text, so
+## that a user who has set a default display format does not see this file
+## fail; the few assertions that do read text use duration row times, whose
+## format travels with the value.
+
+################################################################################
+##                        **    Construction    **                            ##
+################################################################################
+
+## Test the empty constructor
+%!test
+%! TT = timetable ();
+%! assert_equal (class (TT), 'timetable');
+%! assert_equal (size (TT), [0, 0]);
+%! assert_equal (height (TT), 0);
+%! assert_equal (width (TT), 0);
+
+## Test the empty constructor keys its rows by datetime
+%!test
+%! P = timetable ().Properties;
+%! assert_equal (class (P.RowTimes), 'datetime');
+%! assert_equal (isempty (P.RowTimes), true);
+
+## Test construction from a leading row time vector
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:4)';
+%! TT = timetable (tv, (1:5)');
+%! assert_equal (size (TT), [5, 1]);
+%! assert_equal (TT.Properties.RowTimes, tv);
+
+## Test construction from 'RowTimes'
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:4)';
+%! TT = timetable ((1:5)', 'RowTimes', tv);
+%! assert_equal (TT.Properties.RowTimes, tv);
+
+## Test construction from 'TimeStep'
+%!test
+%! TT = timetable ((1:5)', 'TimeStep', hours (1));
+%! assert_equal (TT.Properties.RowTimes, hours (0:4)');
+
+## Test construction from 'TimeStep' with a 'StartTime'
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:5)', 'TimeStep', hours (1), 'StartTime', t0);
+%! assert_equal (TT.Properties.RowTimes, t0 + hours (0:4)');
+
+## Test construction from 'SampleRate'
+%!test
+%! TT = timetable ((1:5)', 'SampleRate', 2);
+%! assert_equal (TT.Properties.TimeStep, seconds (0.5));
+%! assert_equal (TT.Properties.SampleRate, 2);
+
+## Test the row times are stored as a column whatever shape they are given in
+%!test
+%! TT = timetable ((1:3)', 'RowTimes', hours (0:2));
+%! assert_equal (size (TT.Properties.RowTimes), [3, 1]);
+
+## Test variable names are taken from the input variable names
+%!test
+%! tv = hours (0:2)';
+%! alpha = [1; 2; 3];
+%! beta = [4; 5; 6];
+%! TT = timetable (tv, alpha, beta);
+%! assert_equal (TT.Properties.VariableNames, {'alpha', 'beta'});
+
+## Test variable names fall back to 'Var%d' for an unnamed input
+%!test
+%! TT = timetable ((1:3)', 'TimeStep', hours (1));
+%! assert_equal (TT.Properties.VariableNames, {'Var1'});
+
+## Test 'VariableNames' overrides the input variable names
+%!test
+%! TT = timetable ((1:3)', (4:6)', 'TimeStep', hours (1), ...
+%!                 'VariableNames', {'a', 'b'});
+%! assert_equal (TT.Properties.VariableNames, {'a', 'b'});
+
+## Test the row dimension is named after the leading row time argument
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:5)';
+%! TT = timetable (tv, (1:6)');
+%! assert_equal (TT.Properties.DimensionNames, {'tv', 'Variables'});
+
+## Test the row dimension defaults to 'Time' when the times are generated
+%!test
+%! TT = timetable ((1:5)', 'TimeStep', hours (1));
+%! assert_equal (TT.Properties.DimensionNames, {'Time', 'Variables'});
+
+## Test 'DimensionNames' overrides the default
+%!test
+%! TT = timetable ((1:3)', 'TimeStep', hours (1), ...
+%!                 'DimensionNames', {'When', 'What'});
+%! assert_equal (TT.Properties.DimensionNames, {'When', 'What'});
+
+## Test preallocation by 'Size' and 'VariableTypes'
+%!test
+%! TT = timetable ('Size', [3, 2], 'VariableTypes', {'double', 'string'}, ...
+%!                 'TimeStep', hours (1));
+%! assert_equal (size (TT), [3, 2]);
+%! assert_equal (TT.Properties.VariableTypes, {'double', 'string'});
+%! assert_equal (TT.Properties.RowTimes, hours (0:2)');
+
+## Test preallocation names its variables when none are given
+%!test
+%! TT = timetable ('Size', [2, 2], 'VariableTypes', {'double', 'double'}, ...
+%!                 'TimeStep', hours (1));
+%! assert_equal (TT.Properties.VariableNames, {'Var1', 'Var2'});
+
+## Test preallocation takes explicit row times
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:2)';
+%! TT = timetable ('Size', [3, 1], 'VariableTypes', {'double'}, ...
+%!                 'RowTimes', tv);
+%! assert_equal (TT.Properties.RowTimes, tv);
+
+## Test a timetable with no variables still counts its rows
+%!test
+%! TT = timetable ('Size', [4, 0], 'VariableTypes', {}, 'TimeStep', hours (1));
+%! assert_equal (size (TT), [4, 0]);
+%! assert_equal (height (TT), 4);
+
+## Test an empty row time vector builds a timetable with no rows
+%!test
+%! TT = timetable (zeros (0, 1), 'RowTimes', datetime.empty (0, 1));
+%! assert_equal (size (TT), [0, 1]);
+%! assert_equal (class (TT.Properties.RowTimes), 'datetime');
+
+################################################################################
+##                      **    The regularity law    **                        ##
+################################################################################
+
+## Test an evenly spaced datetime vector implies its step
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:4)';
+%! P = timetable ((1:5)', 'RowTimes', tv).Properties;
+%! assert_equal (P.TimeStep, hours (1));
+%! assert_equal (class (P.TimeStep), 'duration');
+%! assert_equal (P.SampleRate, 1 / 3600);
+%! assert_equal (P.StartTime, tv(1));
+
+## Test a generated duration-keyed timetable starts at a zero of its own unit
+%!test
+%! P = timetable ((1:5)', 'TimeStep', hours (1)).Properties;
+%! assert_equal (P.StartTime, hours (0));
+%! assert_equal (class (P.StartTime), 'duration');
+%! assert_equal (class (P.RowTimes), 'duration');
+
+## Test a step given as hours keeps its own units
+%!test
+%! P = timetable ((1:5)', 'TimeStep', hours (1)).Properties;
+%! assert_equal (cellstr (P.TimeStep), {'1 hr'});
+
+## Test a step read off a datetime vector comes out in clock units
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:4)';
+%! P = timetable ((1:5)', 'RowTimes', tv).Properties;
+%! assert_equal (cellstr (P.TimeStep), {'01:00:00'});
+
+## Test a step given with a datetime start keeps its own units
+%!test
+%! P = timetable ((1:5)', 'TimeStep', hours (1), ...
+%!                'StartTime', datetime (2024, 1, 1)).Properties;
+%! assert_equal (cellstr (P.TimeStep), {'1 hr'});
+
+## Test a sample rate implies the reciprocal step
+%!test
+%! P = timetable ((1:5)', 'SampleRate', 2).Properties;
+%! assert_equal (cellstr (P.TimeStep), {'0.5 sec'});
+%! assert_equal (P.SampleRate, 2);
+
+## Test duration row times imply a duration step
+%!test
+%! P = timetable ((1:5)', 'RowTimes', seconds (0:4)').Properties;
+%! assert_equal (P.TimeStep, seconds (1));
+%! assert_equal (P.SampleRate, 1);
+%! assert_equal (P.StartTime, seconds (0));
+%! assert_equal (isregular (timetable ((1:5)', 'RowTimes', seconds (0:4)')), ...
+%!               true);
+
+## Test a calendar step is kept as a calendarDuration
+%!test
+%! P = timetable ((1:5)', 'TimeStep', calmonths (1), ...
+%!                'StartTime', datetime (2024, 1, 1)).Properties;
+%! assert_equal (class (P.TimeStep), 'calendarDuration');
+%! assert_equal (P.TimeStep, calmonths (1));
+%! assert_equal (P.SampleRate, NaN);
+
+## Test a calendar step generates calendar row times
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:5)', 'TimeStep', calmonths (1), 'StartTime', t0);
+%! P = TT.Properties;
+%! assert_equal (P.RowTimes, t0 + calmonths (0:4)');
+
+## Test a calendar step is inferred from calendar-regular row times
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! P = timetable ((1:5)', 'RowTimes', t0 + calmonths (0:4)').Properties;
+%! assert_equal (class (P.TimeStep), 'calendarDuration');
+%! assert_equal (P.TimeStep, calmonths (1));
+%! assert_equal (P.SampleRate, NaN);
+
+## Test a calendar step that cannot reproduce its own times is not kept
+%!test
+%! t0 = datetime (2024, 1, 31);
+%! TT = timetable ((1:5)', 'TimeStep', calmonths (1), 'StartTime', t0);
+%! P = TT.Properties;
+%! assert_equal (class (P.TimeStep), 'duration');
+%! assert_equal (ismissing (P.TimeStep), true);
+%! assert_equal (P.RowTimes, t0 + calmonths (0:4)');
+
+## Test row times clamped by a short month are irregular in every sense
+%!test
+%! t0 = datetime (2024, 1, 31);
+%! TT = timetable ((1:5)', 'RowTimes', t0 + calmonths (0:4)');
+%! assert_equal (ismissing (TT.Properties.TimeStep), true);
+%! assert_equal (TT.Properties.SampleRate, NaN);
+%! assert_equal (isregular (TT), false);
+%! assert_equal (isregular (TT, 'months'), false);
+%! assert_equal (isregular (TT, 'time'), false);
+
+## Test unevenly spaced row times imply no step
+%!test
+%! tv = datetime (2024, 1, 1) + hours ([0 1 3 6 10])';
+%! P = timetable ((1:5)', 'RowTimes', tv).Properties;
+%! assert_equal (class (P.TimeStep), 'duration');
+%! assert_equal (ismissing (P.TimeStep), true);
+%! assert_equal (isempty (P.TimeStep), false);
+%! assert_equal (P.SampleRate, NaN);
+%! assert_equal (P.StartTime, tv(1));
+
+## Test a descending sequence is as regular as an ascending one
+%!test
+%! TT = timetable ((1:5)', 'TimeStep', hours (1));
+%! assert_equal (TT(end:-1:1,:).Properties.TimeStep, hours (-1));
+%! assert_equal (isregular (TT(end:-1:1,:)), true);
+
+## Test duplicate row times make a timetable irregular
+%!test
+%! tv = datetime (2024, 1, 1) + hours ([0 0 1])';
+%! TT = timetable ((1:3)', 'RowTimes', tv);
+%! assert_equal (class (TT), 'timetable');
+%! assert_equal (ismissing (TT.Properties.TimeStep), true);
+%! assert_equal (isregular (TT), false);
+
+## Test unsorted row times are accepted and make a timetable irregular
+%!test
+%! TT = timetable ((1:3)', 'RowTimes', hours ([2 0 1])');
+%! assert_equal (class (TT), 'timetable');
+%! assert_equal (ismissing (TT.Properties.TimeStep), true);
+%! assert_equal (isregular (TT), false);
+
+## Test a missing row time makes a timetable irregular
+%!test
+%! tv = [datetime(2024,1,1); NaT; datetime(2024,1,3)];
+%! TT = timetable ((1:3)', 'RowTimes', tv);
+%! assert_equal (class (TT), 'timetable');
+%! assert_equal (ismissing (TT.Properties.TimeStep), true);
+%! assert_equal (isregular (TT), false);
+
+## Test a freshly built one-row timetable has no step
+%!test
+%! TT = timetable (1, 'RowTimes', datetime (2024, 1, 1));
+%! assert_equal (ismissing (TT.Properties.TimeStep), true);
+%! assert_equal (isregular (TT), false);
+
+## Test a freshly built one-row duration-keyed timetable has no step
+%!test
+%! TT = timetable (1, 'RowTimes', hours (0));
+%! assert_equal (ismissing (TT.Properties.TimeStep), true);
+
+## Test a freshly built zero-row timetable has no step
+%!test
+%! TT = timetable (zeros (0, 1), 'RowTimes', datetime.empty (0, 1));
+%! assert_equal (ismissing (TT.Properties.TimeStep), true);
+
+################################################################################
+##                 **    The step carried through a subset    **              ##
+################################################################################
+
+## Test a truncated subset keeps the step it implies
+%!test
+%! TT = timetable ((1:5)', 'TimeStep', hours (1));
+%! assert_equal (TT(1:4,:).Properties.TimeStep, hours (1));
+%! assert_equal (TT(1:4,:).Properties.SampleRate, 1 / 3600);
+
+## Test a subset with a gap in it loses the step
+%!test
+%! TT = timetable ((1:5)', 'TimeStep', hours (1));
+%! assert_equal (ismissing (TT([1 2 4 5],:).Properties.TimeStep), true);
+%! assert_equal (isregular (TT([1 2 4 5],:)), false);
+
+## Test a two-row subset still implies its step
+%!test
+%! TT = timetable ((1:5)', 'TimeStep', hours (1));
+%! assert_equal (TT(1:2,:).Properties.TimeStep, hours (1));
+
+## Test a one-row subset keeps the step it came from
+%!test
+%! TT = timetable ((1:5)', 'TimeStep', hours (1));
+%! assert_equal (TT(1,:).Properties.TimeStep, hours (1));
+%! assert_equal (isregular (TT(1,:)), true);
+
+## Test a zero-row subset keeps the step and the start it came from
+%!test
+%! TT = timetable ((1:5)', 'TimeStep', hours (1));
+%! assert_equal (TT([],:).Properties.TimeStep, hours (1));
+%! assert_equal (isregular (TT([],:)), true);
+%! assert_equal (TT([],:).Properties.StartTime, hours (0));
+
+## Test dropping the first row moves the start time to the new first row
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:5)', 'TimeStep', hours (1), 'StartTime', t0);
+%! assert_equal (TT(2:end,:).Properties.StartTime, t0 + hours (1));
+
+## Test a calendar-stepped timetable loses its step when a row is dropped
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:5)', 'TimeStep', calmonths (1), 'StartTime', t0);
+%! assert_equal (ismissing (TT([1 2 4 5],:).Properties.TimeStep), true);
+
+## Test a timetable with all its variables removed keeps its rows
+%!test
+%! TT = timetable ('Size', [5, 0], 'VariableTypes', {}, 'TimeStep', hours (1));
+%! assert_equal (class (TT), 'timetable');
+%! assert_equal (size (TT), [5, 0]);
+%! assert_equal (TT.Properties.TimeStep, hours (1));
+
+################################################################################
+##                      **    Property assignment    **                       ##
+################################################################################
+
+## Test assigning the same row times leaves the step alone
+%!test
+%! TT = timetable ((1:5)', 'TimeStep', hours (1));
+%! TT.Properties.RowTimes = TT.Properties.RowTimes;
+%! assert_equal (TT.Properties.TimeStep, hours (1));
+
+## Test assigning irregular row times drops the step
+%!test
+%! TT = timetable ((1:5)', 'TimeStep', hours (1));
+%! TT.Properties.RowTimes = hours ([0 1 3 6 10])';
+%! assert_equal (ismissing (TT.Properties.TimeStep), true);
+
+## Test assigning row times recomputes the step
+%!test
+%! TT = timetable ((1:5)', 'TimeStep', hours (1));
+%! TT.Properties.RowTimes = hours (0:2:8)';
+%! assert_equal (TT.Properties.TimeStep, hours (2));
+
+## Test assigning a step to an irregular timetable regenerates its row times
+%!test
+%! tv = datetime (2024, 1, 1) + hours ([0 1 3 6 10])';
+%! TT = timetable ((1:5)', 'RowTimes', tv);
+%! TT.Properties.TimeStep = hours (1);
+%! assert_equal (TT.Properties.RowTimes, tv(1) + hours (0:4)');
+%! assert_equal (TT.Properties.TimeStep, hours (1));
+
+## Test assigning a calendar step regenerates calendar row times
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:5)', 'TimeStep', hours (1), 'StartTime', t0);
+%! TT.Properties.TimeStep = calmonths (1);
+%! assert_equal (TT.Properties.RowTimes, t0 + calmonths (0:4)');
+
+## Test assigning a sample rate regenerates the row times and the step
+%!test
+%! TT = timetable ((1:5)', 'TimeStep', hours (1));
+%! TT.Properties.SampleRate = 4;
+%! assert_equal (TT.Properties.TimeStep, seconds (0.25));
+%! assert_equal (TT.Properties.RowTimes, hours (0) + seconds ((0:4)' / 4));
+
+## Test assigning a start time shifts the row times and keeps the step
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:5)', 'TimeStep', hours (1), 'StartTime', t0);
+%! TT.Properties.StartTime = datetime (2030, 1, 1);
+%! assert_equal (TT.Properties.RowTimes, datetime (2030, 1, 1) + hours (0:4)');
+%! assert_equal (TT.Properties.TimeStep, hours (1));
+
+## Test assigning a start time leaves an irregular timetable irregular
+%!test
+%! TT = timetable ((1:5)', 'RowTimes', hours ([0 1 3 6 10])');
+%! TT.Properties.StartTime = hours (10);
+%! assert_equal (TT.Properties.RowTimes, hours ([10 11 13 16 20])');
+%! assert_equal (ismissing (TT.Properties.TimeStep), true);
+
+## Test the shared metadata properties are still assignable
+%!test
+%! TT = timetable ((1:3)', 'TimeStep', hours (1));
+%! TT.Properties.Description = 'a description';
+%! TT.Properties.VariableNames = {'v'};
+%! TT.Properties.VariableUnits = {'m'};
+%! assert_equal (TT.Properties.Description, 'a description');
+%! assert_equal (TT.Properties.VariableNames, {'v'});
+%! assert_equal (TT.Properties.VariableUnits, {'m'});
+
+################################################################################
+##                      **    The properties object    **                     ##
+################################################################################
+
+## Test 'Properties' returns a TimetableProperties
+%!test
+%! TT = timetable ((1:3)', 'TimeStep', hours (1));
+%! assert_equal (class (TT.Properties), ...
+%!               'datatypes.tabular.TimetableProperties');
+
+## Test the properties object is a TabularProperties
+%!test
+%! TT = timetable ((1:3)', 'TimeStep', hours (1));
+%! assert_equal (isa (TT.Properties, ...
+%!                    'datatypes.tabular.TabularProperties'), true);
+
+## Test a timetable has no 'RowNames' and a table's properties object differs
+%!test
+%! TT = timetable ((1:3)', 'TimeStep', hours (1));
+%! assert_equal (any (strcmp (properties (TT.Properties), 'RowNames')), false);
+%! assert_equal (isa (TT.Properties, ...
+%!                    'datatypes.tabular.TableProperties'), false);
+
+## Test the properties are enumerated in the order they are displayed in
+%!test
+%! TT = timetable ((1:3)', 'TimeStep', hours (1));
+%! assert_equal (properties (TT.Properties), ...
+%!               {'Description'; 'UserData'; 'DimensionNames'; ...
+%!                'VariableNames'; 'VariableTypes'; 'VariableDescriptions'; ...
+%!                'VariableUnits'; 'VariableContinuity'; 'RowTimes'; ...
+%!                'StartTime'; 'SampleRate'; 'TimeStep'; 'CustomProperties'});
+
+## Test 'fieldnames' answers in the same order as 'properties'
+%!test
+%! TT = timetable ((1:3)', 'TimeStep', hours (1));
+%! assert_equal (fieldnames (TT.Properties), properties (TT.Properties));
+
+## Test the custom property store starts out empty
+%!test
+%! TT = timetable ((1:3)', 'TimeStep', hours (1));
+%! assert_equal (class (TT.Properties.CustomProperties), ...
+%!               'datatypes.tabular.CustomProperties');
+%! assert_equal (isempty (TT.Properties.CustomProperties), true);
+
+################################################################################
+##                          **    Size and shape    **                        ##
+################################################################################
+
+## Test the size family
+%!test
+%! TT = timetable ((1:6)', (7:12)', 'TimeStep', hours (1));
+%! assert_equal (size (TT), [6, 2]);
+%! assert_equal (size (TT, 1), 6);
+%! assert_equal (size (TT, 2), 2);
+%! assert_equal (size (TT, 3), 1);
+%! assert_equal (height (TT), 6);
+%! assert_equal (width (TT), 2);
+%! assert_equal (numel (TT), 12);
+%! assert_equal (ndims (TT), 2);
+%! assert_equal (length (TT), 6);
+%! assert_equal (isempty (TT), false);
+
+## Test 'size' with two outputs
+%!test
+%! TT = timetable ((1:6)', (7:12)', 'TimeStep', hours (1));
+%! [r, c] = size (TT);
+%! assert_equal ([r, c], [6, 2]);
+
+## Test 'size' pads dimensions above the second with ones
+%!test
+%! TT = timetable ((1:6)', 'TimeStep', hours (1));
+%! [r, c, p] = size (TT);
+%! assert_equal ([r, c, p], [6, 1, 1]);
+
+## Test a timetable with no rows is empty
+%!test
+%! TT = timetable (zeros (0, 1), 'RowTimes', datetime.empty (0, 1));
+%! assert_equal (isempty (TT), true);
+
+## Test a timetable with no variables is empty although it has rows
+%!test
+%! TT = timetable ('Size', [5, 0], 'VariableTypes', {}, 'TimeStep', hours (1));
+%! assert_equal (isempty (TT), true);
+%! assert_equal (height (TT), 5);
+
+################################################################################
+##                       **    Regularity and type    **                      ##
+################################################################################
+
+## Test 'isregular' returns a logical
+%!test
+%! TT = timetable ((1:5)', 'TimeStep', hours (1));
+%! assert_equal (class (isregular (TT)), 'logical');
+
+## Test 'isregular' and its 'time' unit agree
+%!test
+%! TT = timetable ((1:5)', 'TimeStep', hours (1));
+%! assert_equal (isregular (TT), true);
+%! assert_equal (isregular (TT, 'time'), true);
+
+## Test a calendar-stepped timetable is regular on the calendar only
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:5)', 'TimeStep', calmonths (1), 'StartTime', t0);
+%! assert_equal (isregular (TT), false);
+%! assert_equal (isregular (TT, 'time'), false);
+%! assert_equal (isregular (TT, 'months'), true);
+
+## Test an hourly timetable is regular in the units its step divides
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:5)', 'TimeStep', hours (1), 'StartTime', t0);
+%! assert_equal (isregular (TT, 'seconds'), true);
+%! assert_equal (isregular (TT, 'minutes'), true);
+%! assert_equal (isregular (TT, 'hours'), true);
+%! assert_equal (isregular (TT, 'days'), false);
+%! assert_equal (isregular (TT, 'months'), false);
+
+## Test a monthly timetable is regular in months and not in quarters
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:5)', 'TimeStep', calmonths (1), 'StartTime', t0);
+%! assert_equal (isregular (TT, 'quarters'), false);
+%! assert_equal (isregular (TT, 'years'), false);
+%! assert_equal (isregular (TT, 'days'), false);
+
+## Test a quarterly timetable is regular in quarters and in months
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:5)', 'RowTimes', t0 + calmonths (0:3:12)');
+%! assert_equal (isregular (TT, 'months'), true);
+%! assert_equal (isregular (TT, 'quarters'), true);
+%! assert_equal (isregular (TT, 'years'), false);
+
+## Test days across a daylight saving change are regular in days only
+%!test
+%! z0 = datetime (2024, 3, 9, 12, 0, 0, 'TimeZone', 'America/New_York');
+%! TT = timetable ((1:4)', 'RowTimes', z0 + caldays (0:3)');
+%! assert_equal (ismissing (TT.Properties.TimeStep), true);
+%! assert_equal (isregular (TT), false);
+%! assert_equal (isregular (TT, 'days'), true);
+
+## Test absolute days across the same change stay regular in absolute time
+%!test
+%! z0 = datetime (2024, 3, 9, 12, 0, 0, 'TimeZone', 'America/New_York');
+%! TT = timetable ((1:4)', 'RowTimes', z0 + days (0:3)');
+%! assert_equal (TT.Properties.TimeStep, hours (24));
+%! assert_equal (isregular (TT), true);
+
+## Test 'isregular' on a one-row subset falls back on the step it remembers
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:5)', 'TimeStep', hours (1), 'StartTime', t0);
+%! assert_equal (isregular (TT(1,:), 'hours'), true);
+%! assert_equal (isregular (TT(1,:), 'days'), false);
+
+## Test 'isregular' accepts a string scalar unit
+%!test
+%! TT = timetable ((1:5)', 'TimeStep', hours (1));
+%! assert_equal (isregular (TT, "hours"), true);
+
+## Test the type predicates
+%!test
+%! TT = timetable ((1:3)', 'TimeStep', hours (1));
+%! assert_equal (istimetable (TT), true);
+%! assert_equal (istabular (TT), true);
+%! assert_equal (istable (TT), false);
+%! assert_equal (isa (TT, 'table'), false);
+%! assert_equal (isa (TT, 'tabular'), true);
+
+################################################################################
+##                          **    Row subscripts    **                        ##
+################################################################################
+
+## Test a datetime subscript selects the rows it names
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:4)';
+%! TT = timetable ((1:5)', 'RowTimes', tv);
+%! assert_equal (class (TT(tv(2:3),:)), 'timetable');
+%! assert_equal (TT(tv(2:3),:).Properties.RowTimes, tv(2:3));
+
+## Test a duration subscript selects the rows it names
+%!test
+%! TT = timetable ((1:5)', 'TimeStep', hours (1));
+%! assert_equal (TT(hours (3),:).Properties.RowTimes, hours (3));
+
+## Test a repeated row time is matched by every row carrying it
+%!test
+%! tv = hours ([0 0 1])';
+%! TT = timetable ((1:3)', 'RowTimes', tv);
+%! assert_equal (height (TT(hours (0),:)), 2);
+
+## Test the row dimension name reaches the row times
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:4)';
+%! TT = timetable (tv, (1:5)');
+%! assert_equal (TT.tv, tv);
+
+################################################################################
+##                        **    Input validation    **                        ##
+################################################################################
+
+## Test the row times must be given
+%!error <timetable: row times are required; give them as the first argument or with 'RowTimes', 'TimeStep' or 'SampleRate'.> ...
+%! timetable ((1:3)');
+
+## Test the row times are given only once
+%!error <timetable: row times were given both as the first argument and as a Name-Value pair.> ...
+%! timetable (hours (0:2)', (1:3)', 'TimeStep', hours (1));
+
+## Test only one way of saying when the rows are may be used
+%!error <timetable: only one of 'RowTimes', 'TimeStep' and 'SampleRate' may be given.> ...
+%! timetable ((1:3)', 'RowTimes', hours (0:2)', 'TimeStep', hours (1));
+
+## Test the row times must be a datetime or a duration
+%!error <timetable: 'RowTimes' must be a datetime or a duration vector.> ...
+%! timetable ((1:3)', 'RowTimes', (1:3)');
+
+## Test the row times must be a vector
+%!error <timetable: 'RowTimes' must be a vector.> ...
+%! timetable ((1:4)', 'RowTimes', hours (reshape (0:3, 2, 2)));
+
+## Test the row times must match the number of rows
+%!error <timetable: the number of 'RowTimes' \(5\) must equal the number of rows \(3\).> ...
+%! timetable ((1:3)', 'RowTimes', hours (0:4)');
+
+## Test the time step must be a duration or a calendarDuration
+%!error <timetable: 'TimeStep' must be a duration or a calendarDuration scalar.> ...
+%! timetable ((1:3)', 'TimeStep', 1);
+
+## Test the time step must be a scalar
+%!error <timetable: 'TimeStep' must be a scalar.> ...
+%! timetable ((1:3)', 'TimeStep', hours (1:2));
+
+## Test a calendar step needs a datetime start time
+%!error <timetable: 'StartTime' must be a datetime when 'TimeStep' is a calendarDuration.> ...
+%! timetable ((1:3)', 'TimeStep', calmonths (1));
+
+## Test the start time must be a datetime or a duration
+%!error <timetable: 'StartTime' must be a datetime or a duration scalar.> ...
+%! timetable ((1:3)', 'TimeStep', hours (1), 'StartTime', 0);
+
+## Test the start time must be a scalar
+%!error <timetable: 'StartTime' must be a scalar.> ...
+%! timetable ((1:3)', 'TimeStep', hours (1), 'StartTime', hours (0:1));
+
+## Test the sample rate must be numeric
+%!error <timetable: 'SampleRate' must be a numeric scalar.> ...
+%! timetable ((1:3)', 'SampleRate', 'fast');
+
+## Test the sample rate must be positive and finite
+%!error <timetable: 'SampleRate' must be positive and finite.> ...
+%! timetable ((1:3)', 'SampleRate', -1);
+
+## Test the sample rate must be positive and finite, not infinite
+%!error <timetable: 'SampleRate' must be positive and finite.> ...
+%! timetable ((1:3)', 'SampleRate', Inf);
+
+## Test 'VariableNames' must be text
+%!error <timetable: 'VariableNames' must be either a cell array of character vectors or a string array.> ...
+%! timetable ((1:3)', 'TimeStep', hours (1), 'VariableNames', 5);
+
+## Test 'VariableNames' must be nonempty
+%!error <timetable: 'VariableNames' must contain nonempty names.> ...
+%! timetable ((1:3)', 'TimeStep', hours (1), 'VariableNames', {''});
+
+## Test 'DimensionNames' must have two elements
+%!error <timetable: 'DimensionNames' must be either a two-element cell array of character vectors or a two-element string array.> ...
+%! timetable ((1:3)', 'TimeStep', hours (1), 'DimensionNames', {'One'});
+
+## Test 'DimensionNames' cannot use a reserved name
+%!error <timetable: 'DimensionNames' cannot include the reserved name: 'RowTimes'> ...
+%! timetable ((1:3)', 'TimeStep', hours (1), ...
+%!            'DimensionNames', {'RowTimes', 'Variables'});
+
+## Test a dimension name cannot repeat a variable name
+%!error <timetable: duplicate dimension and variable name: 'v'> ...
+%! timetable ((1:3)', 'TimeStep', hours (1), 'VariableNames', {'v'}, ...
+%!            'DimensionNames', {'v', 'Variables'});
+
+## Test duplicate variable names are refused
+%!error <timetable: duplicate variable names: b> ...
+%! timetable ((1:3)', (4:6)', 'TimeStep', hours (1), ...
+%!            'VariableNames', {'b', 'b'});
+
+## Test the number of variable names must match the number of variables
+%!error <timetable: inconsistent number of variable names \(1\) and variable values \(2\).> ...
+%! timetable ((1:3)', (4:6)', 'TimeStep', hours (1), 'VariableNames', {'a'});
+
+## Test variables must agree on their number of rows
+%!error <timetable: inconsistent sizes between variables: var 'Var1' has 3 rows; var 'Var2' has 2 rows.> ...
+%! timetable ((1:3)', (1:2)', 'TimeStep', hours (1));
+
+## Test a variable may not have more than two dimensions
+%!error <timetable: variable values must not have more than 2 dimensions: input 1 'Var1' has 3.> ...
+%! timetable (ones (2, 2, 2), 'TimeStep', hours (1));
+
+## Test a later variable may not have more than two dimensions
+%!error <timetable: variable values must not have more than 2 dimensions: input 2 'Var2' has 3.> ...
+%! timetable ((1:2)', ones (2, 2, 2), 'TimeStep', hours (1));
+
+## Test 'Size' must be a two-element numeric vector
+%!error <timetable: 'Size' must be a two-element numeric vector.> ...
+%! timetable ('Size', [3], 'VariableTypes', {'double'}, 'TimeStep', hours (1));
+
+## Test 'VariableTypes' must match the number of variables asked for
+%!error <timetable: 'VariableTypes' must be a cellstring array of the same number of elements as defined in SZ\(2\).> ...
+%! timetable ('Size', [3, 2], 'VariableTypes', {'double'}, ...
+%!            'TimeStep', hours (1));
+
+## Test 'VariableNames' must match 'VariableTypes' when preallocating
+%!error <timetable: inconsistent number of 'VariableNames' and 'VariableTypes'.> ...
+%! timetable ('Size', [3, 2], 'VariableTypes', {'double', 'double'}, ...
+%!            'TimeStep', hours (1), 'VariableNames', {'a'});
+
+## Test an unsupported variable type is refused
+%!error <timetable: unsupported variable type: 'nosuchtype'> ...
+%! timetable ('Size', [3, 1], 'VariableTypes', {'nosuchtype'}, ...
+%!            'TimeStep', hours (1));
+
+## Test a nested timetable variable is refused
+%!error <timetable: 'timetable' variable type not supported yet.> ...
+%! timetable ('Size', [3, 1], 'VariableTypes', {'timetable'}, ...
+%!            'TimeStep', hours (1));
+
+## Test 'isregular' refuses a unit it does not know
+%!error <timetable.isregular: UNIT must be one of 'time', 'seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'quarters' or 'years'.> ...
+%! isregular (timetable ((1:3)', 'TimeStep', hours (1)), 'fortnights');
+
+## Test 'isregular' refuses a unit that is not text
+%!error <timetable.isregular: UNIT must be one of 'time', 'seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'quarters' or 'years'.> ...
+%! isregular (timetable ((1:3)', 'TimeStep', hours (1)), 5);
+
+## Test assigning row times of the wrong length is refused
+%!error <timetable: the number of 'RowTimes' \(6\) must equal the number of rows \(3\).> ...
+%! TT = timetable ((1:3)', 'TimeStep', hours (1)); ...
+%! TT.Properties.RowTimes = hours (0:5)';
+
+## Test assigning a start time of the wrong type is refused
+%!error <timetable: 'StartTime' must be a duration, to match the row times.> ...
+%! TT = timetable ((1:3)', 'TimeStep', hours (1)); ...
+%! TT.Properties.StartTime = datetime (2024, 1, 1);
+
+## Test assigning a calendar step to a duration-keyed timetable is refused
+%!error <timetable: 'StartTime' must be a datetime when 'TimeStep' is a calendarDuration.> ...
+%! TT = timetable ((1:3)', 'TimeStep', hours (1)); ...
+%! TT.Properties.TimeStep = calmonths (1);
+
+## Test an unknown property is refused
+%!error <timetable.subsasgn: unknown timetable property 'Nope'.> ...
+%! TT = timetable ((1:3)', 'TimeStep', hours (1)); ...
+%! TT.Properties.Nope = 1;
+
+## Test a row time subscript of the wrong type is refused
+%!error <timetable: a row time subscript must be a duration, to match the row times.> ...
+%! TT = timetable ((1:3)', 'TimeStep', hours (1)); ...
+%! TT(datetime (2024, 1, 1),:);
+
+## Test a row subscript that is not a time is refused
+%!error <timetable: a row subscript could not be read as a datetime: 'nonsense'> ...
+%! TT = timetable ((1:3)', 'TimeStep', hours (1), ...
+%!                 'StartTime', datetime (2024, 1, 1)); ...
+%! TT('nonsense',:);
+
+## Test a row time that matches no row is refused
+%!error <timetable: no such row time in timetable: '9 hr'> ...
+%! TT = timetable ((1:3)', 'TimeStep', hours (1)); ...
+%! TT(hours (9),:);

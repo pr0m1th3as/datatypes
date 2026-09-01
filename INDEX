@@ -41,6 +41,9 @@ table arrays
  struct2table
  xlsx2struct
  istable
+timetable arrays
+ timetable
+ istimetable
 supplementary classes
  missing
  vartype
@@ -52,6 +55,7 @@ supplementary functions
  keyHash
  keyMatch
  parsePairedArguments
+ istabular
 compiled functions
  __ckeyHash__
  __nkeyHash__

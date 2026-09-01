@@ -6913,6 +6913,8 @@
 %! N = table ([1; 2], 'VariableNames', {'n'});
 %! N.sub = table ([3; 4], [5; 6]);
 %! N{:, :};
+%!error <table: unsupported row indexing operand type: 'datetime'> ...
+%! T = table ([1;2], 'RowNames', {'a', 'b'}); T(datetime (2024, 1, 1),:);
 %!error <table: unsupported row indexing operand type: 'struct'> ...
 %! T = table ([1; 2], 'VariableNames', {'n'});
 %! T(struct ('a', 1), :);

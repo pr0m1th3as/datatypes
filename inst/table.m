@@ -209,6 +209,12 @@ classdef table < tabular
     ## to match against, and again naming every reference that is not one of
     ## them.  Row names are unique, so each match is a single row.
     function ixRows = resolveRowRef (this, rowRef)
+      ## A table's rows are labelled by name, so a row time is no more a
+      ## reference to one of them than a struct is.
+      if (! iscellstr (rowRef))
+        error ("table: unsupported row indexing operand type: '%s'", ...
+               class (rowRef));
+      endif
       if (isempty (this.RowNames))
         error ("table: this table has no RowNames.");
       endif
