@@ -305,6 +305,24 @@ classdef timetable < tabular
       endif
     endfunction
 
+    ## The metadata a stacked operand contributes: whatever the result does
+    ## not carry already, the first input to have set a thing keeping it.
+    function tbl = adoptMetadata (tbl, in)
+      props = getProperties (in);
+      fields = {'VariableDescriptions', 'VariableUnits', ...
+                'VariableContinuity', 'Description', 'UserData'};
+      for i = 1:numel (fields)
+        if (isempty (tbl.(fields{i})))
+          tbl.(fields{i}) = props.(fields{i});
+        endif
+      endfor
+      if (isempty (tbl.CustomProperties)
+          && ! isempty (props.CustomProperties))
+        tbl.CustomProperties = props.CustomProperties;
+        tbl.CustomPropTypes = customPropTypes (in);
+      endif
+    endfunction
+
     ## The row times re-anchored so that the first of them is ST, which is
     ## what assigning 'StartTime' does.  Every row keeps its offset from the
     ## first, so an irregular timetable stays exactly as irregular as it was,
@@ -325,6 +343,41 @@ classdef timetable < tabular
       else
         rt = st + (rt - rt(1));
       endif
+    endfunction
+
+  endmethods
+
+  methods (Static, Access = protected)
+
+    ## The variable names of every operand of a concatenation, and the row
+    ## dimension name the result takes.  Also the place both concatenations
+    ## refuse an input that is not tabular at all.  A table put before the
+    ## timetable needs no check here: concatenation dispatches on the first
+    ## operand, so such a call reaches 'table' and is refused there.
+    ##
+    ## Metadata is read through 'getProperties' rather than from the
+    ## properties themselves, because a public property read from outside
+    ## its own class goes through 'subsref' and is taken for a variable
+    ## name; a concatenation that mixes the two classes reads a table's.
+    function [names, dimName] = catOperands (args, caller)
+      if (! all (cellfun (@istabular, args)))
+        error (strcat ("timetable.%s: all inputs must be tables or", ...
+                       " timetables."), caller);
+      endif
+      names = cell (1, numel (args));
+      dimName = 'Time';
+      seen = false;
+      for i = 1:numel (args)
+        props = getProperties (args{i});
+        names{i} = props.VariableNames;
+        if (! seen && istimetable (args{i})
+            && ! strcmp (props.DimensionNames{1}, 'Time'))
+          ## An explicit name outranks the default whichever side it is on,
+          ## and the first explicit one wins.
+          dimName = props.DimensionNames{1};
+          seen = true;
+        endif
+      endfor
     endfunction
 
   endmethods
@@ -616,6 +669,188 @@ classdef timetable < tabular
         this = applyRowTimes (this, RowTimes, true);
       else
         this = applyRowTimes (this, RowTimes, true, TimeStep);
+      endif
+    endfunction
+
+  endmethods
+
+################################################################################
+##                    **    Concatenation Operations    **                    ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'vertcat'          'horzcat'          'cat'                                ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timetable} {@var{tt} =} vertcat (@var{tt1}, @var{tt2}, @dots{})
+    ##
+    ## Concatenate timetables vertically.
+    ##
+    ## @code{@var{tt} = vertcat (@var{tt1}, @var{tt2}, @dots{})} stacks the
+    ## rows of its inputs, which must all have the same variable names.  It
+    ## is the operation @code{[@var{tt1}; @var{tt2}]} performs.
+    ##
+    ## The row times are stacked in the order the inputs are given and are
+    ## never sorted, so a later block that starts before an earlier one ends
+    ## simply makes the result irregular, as duplicate times do.  The time
+    ## step is read afresh from the stacked times, so two blocks that meet
+    ## exactly keep the step they share and any other pair loses it.
+    ##
+    ## A @code{table} may be stacked onto a timetable, but only after it:
+    ## its rows carry no times and are labelled with missing ones.  The row
+    ## dimension is named after the first input that does not use the
+    ## default name.
+    ##
+    ## @seealso{horzcat, cat}
+    ## @end deftypefn
+    function tbl = vertcat (varargin)
+      varargin = tabular.drop_null_operands (varargin);
+      if (isempty (varargin))
+        tbl = timetable ();
+        return;
+      elseif (numel (varargin) == 1 && istimetable (varargin{1}))
+        tbl = varargin{1};
+        return;
+      endif
+      [names, dimName] = timetable.catOperands (varargin, 'vertcat');
+
+      ## Every input names the same variables, in whatever order.
+      sorted = cellfun (@sort, names, 'UniformOutput', false);
+      if (numel (sorted) > 1 && ! isequal (sorted{:}))
+        error (strcat ("timetable.vertcat: all inputs must have identical", ...
+                       " variable names."));
+      endif
+      numCols = numel (names{1});
+
+      tbl = varargin{1};
+      tbl.DimensionNames{1} = dimName;
+      rt = tbl.RowTimes;
+      for i = 2:numel (varargin)
+        in = varargin{i};
+        ixVars = cellfun (@(x) find (ismember (names{1}, x)), names{i});
+        in = subsetvars (in, ixVars);
+        inVals = varValues (in);
+        for v = 1:numCols
+          tbl.VariableValues{v} = [tbl.VariableValues{v}; inVals{v}];
+        endfor
+        ## A table brings rows but no times, and they are labelled missing.
+        if (istimetable (in))
+          rt = [rt; getRowLabels(in)];
+        else
+          rt = [rt; missingTimes(rt, height (in))];
+        endif
+        tbl = adoptMetadata (tbl, in);
+      endfor
+      tbl.VariableTypes = cellfun ('class', tbl.VariableValues, ...
+                                   'UniformOutput', false);
+      tbl = applyRowTimes (tbl, rt, true);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timetable} {@var{tt} =} horzcat (@var{tt1}, @var{tt2}, @dots{})
+    ##
+    ## Concatenate timetables horizontally.
+    ##
+    ## @code{@var{tt} = horzcat (@var{tt1}, @var{tt2}, @dots{})} appends the
+    ## variables of its inputs, which must all have distinct variable names
+    ## and, where they are timetables, identical row times.  It is the
+    ## operation @code{[@var{tt1}, @var{tt2}]} performs.
+    ##
+    ## A @code{table} may be appended to a timetable, but only after it, and
+    ## it must have as many rows as the timetable has.  The row times and the
+    ## time step are those of the timetable, and the row dimension is named
+    ## after the first input that does not use the default name.
+    ##
+    ## @seealso{vertcat, cat}
+    ## @end deftypefn
+    function tbl = horzcat (varargin)
+      varargin = tabular.drop_null_operands (varargin);
+      if (isempty (varargin))
+        tbl = timetable ();
+        return;
+      elseif (numel (varargin) == 1 && istimetable (varargin{1}))
+        tbl = varargin{1};
+        return;
+      endif
+      [names, dimName] = timetable.catOperands (varargin, 'horzcat');
+
+      ## Variable names are distinct across the whole result.  This is
+      ## checked before the row times, as in MATLAB, so two blocks that
+      ## share a name are refused for the name whatever their times.
+      allNames = [names{:}];
+      if (numel (allNames) != numel (__unique__ (allNames)))
+        error (strcat ("timetable.horzcat: all inputs must have unique", ...
+                       " variable names."));
+      endif
+      if (numel (__unique__ (cellfun (@height, varargin))) != 1)
+        error (strcat ("timetable.horzcat: all inputs must have the same", ...
+                       " number of rows."));
+      endif
+      for i = 2:numel (varargin)
+        if (istimetable (varargin{i})
+            && ! isequal (getRowLabels (varargin{i}),
+                          getRowLabels (varargin{1})))
+          error (strcat ("timetable.horzcat: all timetables being", ...
+                         " concatenated must have the same row times."));
+        endif
+      endfor
+
+      tbl = varargin{1};
+      tbl.DimensionNames{1} = dimName;
+      tbl.VariableNames = allNames;
+      for i = 2:numel (varargin)
+        in = varargin{i};
+        props = getProperties (in);
+        inVals = varValues (in);
+        tbl.VariableContinuity = tabular.merge_continuity ( ...
+                     tbl.VariableContinuity, numel (tbl.VariableValues), ...
+                     props.VariableContinuity, numel (inVals));
+        tbl.VariableValues = [tbl.VariableValues, inVals];
+        tbl.VariableDescriptions = [tbl.VariableDescriptions, ...
+                                    props.VariableDescriptions];
+        tbl.VariableUnits = [tbl.VariableUnits, props.VariableUnits];
+        if (isempty (tbl.Description))
+          tbl.Description = props.Description;
+        endif
+        if (isempty (tbl.UserData))
+          tbl.UserData = props.UserData;
+        endif
+      endfor
+      tbl.VariableTypes = cellfun ('class', tbl.VariableValues, ...
+                                   'UniformOutput', false);
+      [cp, cpTypes] = merge_hcat_props (tbl, varargin);
+      tbl.CustomProperties = cp;
+      tbl.CustomPropTypes = cpTypes;
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timetable} {@var{tt} =} cat (@var{dim}, @var{tt1}, @var{tt2}, @dots{})
+    ##
+    ## Concatenate timetables along a dimension.
+    ##
+    ## @code{@var{tt} = cat (@var{dim}, @var{tt1}, @var{tt2}, @dots{})}
+    ## concatenates along @var{dim}, which must be 1 or 2: a timetable has
+    ## two dimensions and there is nothing to stack along a third.
+    ## @code{cat (1, @dots{})} is @code{vertcat} and @code{cat (2, @dots{})}
+    ## is @code{horzcat}.
+    ##
+    ## @seealso{vertcat, horzcat}
+    ## @end deftypefn
+    function tbl = cat (dim, varargin)
+      if (nargin < 1)
+        print_usage ();
+      endif
+      if (! (isnumeric (dim) && isscalar (dim) && any (dim == [1, 2])))
+        error ("timetable.cat: DIM must be 1 or 2 for a 2-D timetable.");
+      endif
+      if (dim == 1)
+        tbl = vertcat (varargin{:});
+      else
+        tbl = horzcat (varargin{:});
       endif
     endfunction
 
@@ -1015,6 +1250,12 @@ function rt = steppedTimes (st, ts, n)
     ## 'Inf * 0' is NaN and would poison a row that has no step in it.
     rt(1) = st;
   endif
+endfunction
+
+## N missing row times of the same type as RT, which is what the rows of a
+## plain table are labelled with when one is stacked onto a timetable.
+function m = missingTimes (rt, n)
+  m = repmat (startOf (rt([])), [n, 1]);
 endfunction
 
 ## The first of a vector of row times, or a missing one of the same type

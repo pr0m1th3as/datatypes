@@ -1433,6 +1433,19 @@ classdef (Abstract) tabular
       endif
     endfunction
 
+    ## The stored variable values, and the types of the custom properties,
+    ## reachable from a sibling class.  Dot access on an object of another
+    ## class goes through that class's 'subsref' and is read as a variable
+    ## name whatever the property's access, so an operation that mixes the
+    ## two classes cannot read them directly and asks here instead.
+    function out = varValues (this)
+      out = this.VariableValues;
+    endfunction
+
+    function out = customPropTypes (this)
+      out = this.CustomPropTypes;
+    endfunction
+
     ## Get table properties as a struct for internal use called by subsasgn
     function out = getProperties (this)
       out = struct;
@@ -2232,6 +2245,38 @@ classdef (Abstract) tabular
 ################################################################################
 
   methods (Static, Hidden)
+
+    ## A 0x0 non-char operand takes no part in concatenation and is dropped,
+    ## as in MATLAB: [], zeros (0, 0), {} and an empty table all vanish.  A
+    ## 0x2 double and '' are not 0x0-and-non-char, so they survive here and
+    ## are rejected by the caller's "all inputs must be tabular" check.
+    function args = drop_null_operands (args)
+      keep = true (1, numel (args));
+      for i = 1:numel (args)
+        arg = args{i};
+        if (! ischar (arg) && ndims (arg) == 2 && all (size (arg) == 0))
+          keep(i) = false;
+        endif
+      endfor
+      args = args(keep);
+    endfunction
+
+    ## Merge the VariableContinuity of two horizontally combined operands.
+    ## An operand carrying none contributes 'unset' for each of its
+    ## variables, and the result is empty only when neither carries any.
+    function vc = merge_continuity (a, na, b, nb)
+      if (isempty (a) && isempty (b))
+        vc = [];
+        return;
+      endif
+      if (isempty (a))
+        a = repmat ({'unset'}, [1, na]);
+      endif
+      if (isempty (b))
+        b = repmat ({'unset'}, [1, nb]);
+      endif
+      vc = [a, b];
+    endfunction
 
     ## Convert a datetime array to datenum-valued doubles of the same size,
     ## mapping NaT to NaN.  Used by 'summary'.  Core 'datenum' cannot process

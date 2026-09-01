@@ -7475,7 +7475,7 @@ classdef table < tabular
     ## @end deftypefn
     function tbl = horzcat (varargin)
       ## Null operands take no part in concatenation
-      varargin = drop_null_operands (varargin);
+      varargin = tabular.drop_null_operands (varargin);
       if (isempty (varargin))
         tbl = table ();
         return;
@@ -7510,7 +7510,7 @@ classdef table < tabular
         tbl.VariableNames = varNames;
         for i = 2:numel (varargin)
           in = varargin{i};
-          tbl.VariableContinuity = merge_continuity ( ...
+          tbl.VariableContinuity = tabular.merge_continuity ( ...
                        tbl.VariableContinuity, numel (tbl.VariableValues), ...
                        in.VariableContinuity, numel (in.VariableValues));
           tbl.VariableValues = [tbl.VariableValues, in.VariableValues];
@@ -7529,7 +7529,7 @@ classdef table < tabular
         tbl.VariableNames = varNames;
         for i = 2:numel (varargin)
           in = varargin{i};
-          tbl.VariableContinuity = merge_continuity ( ...
+          tbl.VariableContinuity = tabular.merge_continuity ( ...
                        tbl.VariableContinuity, numel (tbl.VariableValues), ...
                        in.VariableContinuity, numel (in.VariableValues));
           tbl.VariableValues = [tbl.VariableValues, in.VariableValues];
@@ -7585,7 +7585,7 @@ classdef table < tabular
               tbl.RowNames = in.RowNames(ixRows);
               add_row_names = false;
             endif
-            tbl.VariableContinuity = merge_continuity ( ...
+            tbl.VariableContinuity = tabular.merge_continuity ( ...
                        tbl.VariableContinuity, numel (tbl.VariableValues), ...
                        in.VariableContinuity, numel (in.VariableValues));
             tbl.VariableValues = [tbl.VariableValues, in.VariableValues];
@@ -7593,7 +7593,7 @@ classdef table < tabular
                                         in.VariableDescriptions];
             tbl.VariableUnits = [tbl.VariableUnits, in.VariableUnits];
           else
-            tbl.VariableContinuity = merge_continuity ( ...
+            tbl.VariableContinuity = tabular.merge_continuity ( ...
                        tbl.VariableContinuity, numel (tbl.VariableValues), ...
                        in.VariableContinuity, numel (in.VariableValues));
             tbl.VariableValues = [tbl.VariableValues, in.VariableValues];
@@ -8003,7 +8003,7 @@ classdef table < tabular
     ## @end deftypefn
     function tbl = vertcat (varargin)
       ## Null operands take no part in concatenation
-      varargin = drop_null_operands (varargin);
+      varargin = tabular.drop_null_operands (varargin);
       if (isempty (varargin))
         tbl = table ();
         return;
@@ -9665,34 +9665,3 @@ function d = wt_resolve_delimiter (delim)
   endswitch
 endfunction
 
-## A 0x0 non-char operand takes no part in concatenation and is dropped,
-## as in MATLAB: [], zeros (0, 0), {} and an empty table all vanish.  A
-## 0x2 double and '' are not 0x0-and-non-char, so they survive here and
-## are rejected by the caller's "all inputs must be tables" check.
-function args = drop_null_operands (args)
-  keep = true (1, numel (args));
-  for i = 1:numel (args)
-    arg = args{i};
-    if (! ischar (arg) && ndims (arg) == 2 && all (size (arg) == 0))
-      keep(i) = false;
-    endif
-  endfor
-  args = args(keep);
-endfunction
-
-## Merge the VariableContinuity of two horizontally combined operands.  An
-## operand carrying none contributes 'unset' for each of its variables, and
-## the result is empty only when neither operand carries any.
-function vc = merge_continuity (a, na, b, nb)
-  if (isempty (a) && isempty (b))
-    vc = [];
-    return;
-  endif
-  if (isempty (a))
-    a = repmat ({'unset'}, [1, na]);
-  endif
-  if (isempty (b))
-    b = repmat ({'unset'}, [1, nb]);
-  endif
-  vc = [a, b];
-endfunction

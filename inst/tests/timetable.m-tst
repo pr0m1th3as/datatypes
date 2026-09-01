@@ -745,6 +745,117 @@
 %! assert_equal (TT.Properties.TimeStep, calmonths (1));
 
 ################################################################################
+##                        **    Concatenation    **                           ##
+################################################################################
+
+## Test vertical concatenation stacks rows in operand order
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:2)';
+%! V = timetable (tv, (1:3)', 'VariableNames', {'A'});
+%! X = [V; V];
+%! assert_equal (size (X), [6, 1]);
+%! assert_equal (X.Properties.RowTimes, [tv; tv]);
+%! assert_equal (X.A, [1;2;3;1;2;3]);
+
+## Test vertical concatenation never sorts the row times
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:2)';
+%! V = timetable (tv, (1:3)', 'VariableNames', {'A'});
+%! W = timetable (tv - hours (9), (4:6)', 'VariableNames', {'A'});
+%! assert_equal ([V; W].Properties.RowTimes, [tv; tv - hours(9)]);
+
+## Test blocks that meet exactly keep the step they share
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:2)';
+%! V = timetable (tv, (1:3)', 'VariableNames', {'A'});
+%! W = timetable (tv + hours (3), (4:6)', 'VariableNames', {'A'});
+%! X = [V; W];
+%! assert_equal (X.Properties.TimeStep, hours (1));
+%! assert_equal (isregular (X), true);
+
+## Test a gap between blocks loses the step
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:2)';
+%! V = timetable (tv, (1:3)', 'VariableNames', {'A'});
+%! W = timetable (tv + hours (9), (4:6)', 'VariableNames', {'A'});
+%! assert_equal (ismissing ([V; W].Properties.TimeStep), true);
+
+## Test three operands stack in order
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:2)';
+%! V = timetable (tv, (1:3)', 'VariableNames', {'A'});
+%! W = timetable (tv + hours (3), (4:6)', 'VariableNames', {'A'});
+%! X = [V; W; V];
+%! assert_equal (size (X), [9, 1]);
+%! assert_equal (X.A, [1;2;3;4;5;6;1;2;3]);
+
+## Test a table stacked onto a timetable gets missing row times
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:2)';
+%! V = timetable (tv, (1:3)', 'VariableNames', {'A'});
+%! T = table ((4:6)', 'VariableNames', {'A'});
+%! X = [V; T];
+%! assert_equal (size (X), [6, 1]);
+%! assert_equal (class (X), 'timetable');
+%! assert_equal (X.A, [1;2;3;4;5;6]);
+%! assert_equal (ismissing (X.Properties.RowTimes), [false(3,1); true(3,1)]);
+%! assert_equal (ismissing (X.Properties.TimeStep), true);
+
+## Test the row dimension takes the first name that is not the default
+%!test
+%! aa = datetime (2024, 1, 1) + hours (0:2)';
+%! A = timetable (aa, (1:3)', 'VariableNames', {'A'});
+%! D = timetable ((4:6)', 'RowTimes', aa, 'VariableNames', {'A'});
+%! assert_equal (D.Properties.DimensionNames{1}, 'Time');
+%! assert_equal ([A; D].Properties.DimensionNames{1}, 'aa');
+%! assert_equal ([D; A].Properties.DimensionNames{1}, 'aa');
+%! assert_equal ([D; D].Properties.DimensionNames{1}, 'Time');
+
+## Test horizontal concatenation appends variables and keeps the times
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:2)';
+%! V = timetable (tv, (1:3)', 'VariableNames', {'A'});
+%! N = timetable (tv, (7:9)', 'VariableNames', {'B'});
+%! X = [V N];
+%! assert_equal (size (X), [3, 2]);
+%! assert_equal (X.Properties.VariableNames, {'A', 'B'});
+%! assert_equal (X.Properties.RowTimes, tv);
+%! assert_equal (X.Properties.TimeStep, hours (1));
+
+## Test a table appended to a timetable
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:2)';
+%! V = timetable (tv, (1:3)', 'VariableNames', {'A'});
+%! X = [V table((7:9)', 'VariableNames', {'B'})];
+%! assert_equal (class (X), 'timetable');
+%! assert_equal (size (X), [3, 2]);
+%! assert_equal (X.Properties.RowTimes, tv);
+
+## Test horizontal concatenation takes the first non-default dimension name
+%!test
+%! aa = datetime (2024, 1, 1) + hours (0:2)';
+%! A = timetable (aa, (1:3)', 'VariableNames', {'A'});
+%! D = timetable ((4:6)', 'RowTimes', aa, 'VariableNames', {'B'});
+%! assert_equal ([A D].Properties.DimensionNames{1}, 'aa');
+%! assert_equal ([D A].Properties.DimensionNames{1}, 'aa');
+
+## Test 'cat' along each dimension
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:2)';
+%! V = timetable (tv, (1:3)', 'VariableNames', {'A'});
+%! N = timetable (tv, (7:9)', 'VariableNames', {'B'});
+%! assert_equal (size (cat (1, V, V)), [6, 1]);
+%! assert_equal (size (cat (2, V, N)), [3, 2]);
+
+## Test a null operand takes no part and a single operand passes through
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:2)';
+%! V = timetable (tv, (1:3)', 'VariableNames', {'A'});
+%! assert_equal (size ([V; []]), [3, 1]);
+%! assert_equal (size ([V []]), [3, 1]);
+%! assert_equal (size ([V]), [3, 1]);
+
+################################################################################
 ##                        **    Input validation    **                        ##
 ################################################################################
 
@@ -904,6 +1015,48 @@
 %!error <timetable: a row time subscript must be a duration, to match the row times.> ...
 %! TT = timetable ((1:3)', 'TimeStep', hours (1)); ...
 %! TT(datetime (2024, 1, 1),:);
+
+## Test vertical concatenation requires identical variable names
+%!error <timetable.vertcat: all inputs must have identical variable names.> ...
+%! tv = datetime (2024, 1, 1) + hours (0:2)'; ...
+%! vertcat (timetable (tv, (1:3)', 'VariableNames', {'A'}), ...
+%!          timetable (tv, (4:6)', 'VariableNames', {'B'}));
+
+## Test a table put before a timetable is refused, by 'table' since
+## concatenation dispatches on the first operand
+%!error <table.vertcat: all inputs must be tables.> ...
+%! tv = datetime (2024, 1, 1) + hours (0:2)'; ...
+%! vertcat (table ((4:6)', 'VariableNames', {'A'}), ...
+%!          timetable (tv, (1:3)', 'VariableNames', {'A'}));
+
+## Test concatenation refuses an input that is not tabular
+%!error <timetable.vertcat: all inputs must be tables or timetables.> ...
+%! tv = datetime (2024, 1, 1) + hours (0:2)'; ...
+%! vertcat (timetable (tv, (1:3)', 'VariableNames', {'A'}), (1:3)');
+
+## Test horizontal concatenation requires unique variable names
+%!error <timetable.horzcat: all inputs must have unique variable names.> ...
+%! tv = datetime (2024, 1, 1) + hours (0:2)'; ...
+%! horzcat (timetable (tv, (1:3)', 'VariableNames', {'A'}), ...
+%!          timetable (tv, (4:6)', 'VariableNames', {'A'}));
+
+## Test horizontal concatenation requires the same number of rows
+%!error <timetable.horzcat: all inputs must have the same number of rows.> ...
+%! tv = datetime (2024, 1, 1) + hours (0:2)'; ...
+%! horzcat (timetable (tv, (1:3)', 'VariableNames', {'A'}), ...
+%!          timetable (tv(1:2), (4:5)', 'VariableNames', {'B'}));
+
+## Test horizontal concatenation requires the same row times
+%!error <timetable.horzcat: all timetables being concatenated must have the same row times.> ...
+%! tv = datetime (2024, 1, 1) + hours (0:2)'; ...
+%! horzcat (timetable (tv, (1:3)', 'VariableNames', {'A'}), ...
+%!          timetable (tv + hours (9), (4:6)', 'VariableNames', {'B'}));
+
+## Test 'cat' has no third dimension
+%!error <timetable.cat: DIM must be 1 or 2 for a 2-D timetable.> ...
+%! tv = datetime (2024, 1, 1) + hours (0:2)'; ...
+%! V = timetable (tv, (1:3)', 'VariableNames', {'A'}); ...
+%! cat (3, V, V);
 
 ## Test a row subscript that is not a time is refused
 %!error <timetable: a row subscript could not be read as a datetime: 'nonsense'> ...
