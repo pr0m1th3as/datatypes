@@ -52,6 +52,7 @@ supplementary classes
  vartype
  timerange
  withtol
+ rowfilter
  @cell/disp
  @cell/display
 supplementary functions
