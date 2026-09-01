@@ -52,6 +52,36 @@ classdef (Abstract) TabularProperties
 
   endmethods
 
+  methods
+
+    ## -*- texinfo -*-
+    ## @deftypefn {datatypes.tabular.TabularProperties} {@var{names} =} properties (@var{obj})
+    ##
+    ## Return the names of the metadata properties.
+    ##
+    ## The names are returned in the order they are displayed in, which is not
+    ## the order they are declared in.
+    ##
+    ## @end deftypefn
+    function names = properties (this)
+      names = orderedNames (this);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {datatypes.tabular.TabularProperties} {@var{names} =} fieldnames (@var{obj})
+    ##
+    ## Return the names of the metadata properties.
+    ##
+    ## The names are returned in the order they are displayed in, which is not
+    ## the order they are declared in.
+    ##
+    ## @end deftypefn
+    function names = fieldnames (this)
+      names = orderedNames (this);
+    endfunction
+
+  endmethods
+
   methods (Hidden)
 
     function display (this)
@@ -79,6 +109,17 @@ classdef (Abstract) TabularProperties
   endmethods
 
   methods (Access = private)
+
+    ## The declared property names sorted into the display order.  The
+    ## declared list is what is sorted, rather than 'displayOrder' being
+    ## returned as it stands, so that a property left out of 'displayOrder'
+    ## is still listed instead of disappearing from view.
+    function names = orderedNames (this)
+      declared = builtin ("properties", this);
+      order = displayOrder (this);
+      shown = order(ismember (order, declared));
+      names = [shown(:); declared(! ismember (declared, order))];
+    endfunction
 
     function txt = customPropertyText (this)
       if (isempty (this.CustomProperties))
@@ -131,8 +172,10 @@ classdef (Abstract) TabularProperties
         else
           str = sprintf ("[%s %s]", sizestr (val), class (val));
         endif
+      elseif (iscell (val))
+        str = sprintf ("{%s cell}", sizestr (val));
       else
-        str = sprintf ("{%s %s}", sizestr (val), class (val));
+        str = sprintf ("[%s %s]", sizestr (val), class (val));
       endif
     endfunction
 
