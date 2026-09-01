@@ -6998,6 +6998,9 @@
 %!error <table.groupsummary: 'IncludeEmptyGroups' must be a logical scalar.> ...
 %! G = table ([1; 1], [1; 2], 'VariableNames', {'g', 'v'});
 %! groupsummary (G, 'g', 'mean', 'IncludeEmptyGroups', [1, 2]);
+%!error <table.groupsummary: the 'fun1' results for variable 'v' cannot be concatenated into a column.> ...
+%! G = table ([1; 1; 2], [1; 2; 3], 'VariableNames', {'g', 'v'});
+%! groupsummary (G, 'g', @(x) 1:numel (x), 'v');
 %!error <table.groupcounts: 'IncludeMissingGroups' must be a logical scalar.> ...
 %! G = table ([1; 1], [1; 2], 'VariableNames', {'g', 'v'});
 %! groupcounts (G, 'g', 'IncludeMissingGroups', [1, 2]);

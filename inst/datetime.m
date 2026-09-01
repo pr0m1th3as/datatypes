@@ -5132,12 +5132,6 @@ classdef datetime
                                && ! ischar (x), args);
       args(drop) = [];
       isdt(drop) = [];
-      ## Defensive only: Octave dispatches here just when some operand is a
-      ## datetime, so this cannot be reached through a concatenation.
-      if (! any (isdt))
-        error (strcat ("datetime.cat: at least one input must be a", ...
-                       " datetime array."));
-      endif
       ## The first datetime operand gives the result its Format and TimeZone,
       ## and is what any date/time text is read against: such text names a wall
       ## clock in that zone rather than an instant to be converted into it, the

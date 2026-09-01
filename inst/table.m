@@ -7940,12 +7940,9 @@ classdef table < tabular
         error (strcat ("table.vertcat: input tables must have identical", ...
                        " variable names."));
       endif
-      ## All tables must have the same columns (width)
-      numCols = cellfun (@width, varargin);
-      if (numel (unique (numCols)) != 1)
-        error ("table.vertcat: all input tables must have the same width.");
-      endif
-      numCols = numCols(1);
+      ## Identical variable names force identical widths, the sorted lists
+      ## just compared being the same length as the widths they come from.
+      numCols = width (varargin{1});
       ## We need to figure out some indexing for the variables of every other
       ## table so we can re-index to the variables of the first table.
       index = [1:numCols]; # first table is reindexed to itself

@@ -468,6 +468,8 @@
 %!assert_equal (isnat (datetime (NaN, 'ConvertFrom', 'yyyymmdd')), true)
 %!error <datetime: Year, Month, Day, Hour, and Minute components must be integer values.> ...
 %! datetime (20240309.5, 'ConvertFrom', 'yyyymmdd')
+%!error <datetime: 'yyyymmdd' input must be numeric.> ...
+%! datetime (true, 'ConvertFrom', 'yyyymmdd')
 
 ## Test 'datetime' constructor -- TimeZone and Format properties
 %!assert_equal (datetime (2020, 1, 1, 'TimeZone', 'UTC').TimeZone, 'UTC')
@@ -755,6 +757,8 @@
 %! datetime (datetime (2024, 1, 1), 'ConvertFrom', 'datenum')
 %!error <datetime: a datetime array must be the only positional input.> ...
 %! datetime (datetime (2024, 1, 1), datetime (2024, 1, 2))
+%!error <datetime: 'InputFormat' cannot be used with 'ConvertFrom'.> ...
+%! datetime (20240101, 'ConvertFrom', 'yyyymmdd', 'InputFormat', 'yyyyMMdd')
 
 ## Test 'datetime' constructor -- elapsed time names no instant
 %!error <datetime: input data must be a numeric array, a string array, a cell array of character vectors, or a character vector.> ...

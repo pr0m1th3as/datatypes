@@ -176,3 +176,7 @@ endfunction
 %! T = addprop (table (1), 'ActualSheetName', 'table');
 %! T.Properties.CustomProperties.ActualSheetName = 'S';
 %! struct2xlsx ([tempname() '.xlsx'], struct ('a', T, 'b', T));
+%!error <struct2xlsx: nested tables and structs are not supported; flatten multicolumn variables with splitvars before writing.> ...
+%! T = table ([1; 2], 'VariableNames', {'a'});
+%! T.nest = table ([3; 4], [5; 6], 'VariableNames', {'p', 'q'});
+%! struct2xlsx ([tempname() '.xlsx'], struct ('a', T));
