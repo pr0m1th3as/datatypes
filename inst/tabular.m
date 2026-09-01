@@ -349,11 +349,20 @@ classdef (Abstract) tabular
 
     ## Custom display.  The header names the class rather than saying
     ## 'table', so that a timetable says what it is.
+    ##
+    ## An object with no rows still has columns to show, so the body is
+    ## printed whenever there is a column: any variable will do, and for a
+    ## class that heads its row label column, so will a row.  That is what
+    ## leaves a table with no variables printing nothing at all while a
+    ## timetable with none still shows the times it labels its rows by.
     function disp (this)
       if (isempty (this))
         fprintf ("  %dx%d empty %s\n\n", size (this), class (this));
       else
         fprintf ("  %dx%d %s\n\n", height (this), width (this), class (this));
+      endif
+      if (width (this) > 0
+          || (height (this) > 0 && ! isempty (rowLabelHeader (this))))
         print_table (this);
       endif
     endfunction
@@ -1696,9 +1705,14 @@ classdef (Abstract) tabular
           fprintf ("    %s%s\n", repmat (" ", [1, rnLen]), strhead2);
           fprintf ("    %s%s\n\n", repmat (" ", [1, rnLen]), strline2);
         endif
-        ## Print table rows
+        ## Print table rows.  With no variables there is nothing to lay out
+        ## beside the labels, and the row is the label alone.
         for iRow = 1:height (this)
-          strrow = sprintf (rowSpat, colData{iRow,:});
+          if (var_num > 0)
+            strrow = sprintf (rowSpat, colData{iRow,:});
+          else
+            strrow = "";
+          endif
           fprintf ("    %s%s\n", rowNM{iRow}, strrow);
         endfor
         fprintf ("\n");
