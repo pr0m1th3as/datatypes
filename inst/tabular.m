@@ -218,18 +218,19 @@ classdef (Abstract) tabular
 ##                         **    Subclass hooks    **                         ##
 ################################################################################
 ##                                                                            ##
-## Every subclass must implement all eight.  Octave's classdef has no         ##
+## Every subclass must implement all nine.  Octave's classdef has no          ##
 ## 'methods (Abstract)' block, so the contract cannot be declared; these      ##
 ## raising defaults stand in for it, and name the subclass that is missing    ##
 ## one because 'class (this)' resolves downwards.                             ##
 ##                                                                            ##
-## Seven of them concern row labels, which is the whole of what separates     ##
-## one tabular class from another; the eighth names the properties object.    ##
+## Eight of them concern row labels, which is the whole of what separates     ##
+## one tabular class from another; the ninth names the properties object.     ##
 ##                                                                            ##
 ## 'hasRowLabels'      whether the object carries row labels at all           ##
 ## 'getRowLabels'      the labels themselves, in their own type               ##
 ## 'rowLabelName'      the name the labels are known by                       ##
 ## 'rowLabelStrings'   the labels rendered for display                        ##
+## 'rowLabelProperties'  the row label metadata, named as it is published     ##
 ## 'subsetRowLabels'   the object with its labels subset by an index          ##
 ## 'clearRowLabels'    the object with its labels removed                     ##
 ## 'resolveRowRef'     a row reference resolved to row indices                ##
@@ -265,6 +266,15 @@ classdef (Abstract) tabular
     ## their own format before anything can print or export them.
     function out = rowLabelStrings (this)
       error ("%s: subclass must implement rowLabelStrings.", class (this));
+    endfunction
+
+    ## The row label metadata as a struct, keyed by the names the properties
+    ## object publishes it under.  Separate from 'rowLabelName', which names
+    ## the labels for a file header and for a timetable is the row dimension
+    ## name: a class may publish its labels under a different name than that,
+    ## and may publish more than one property describing them.
+    function out = rowLabelProperties (this)
+      error ("%s: subclass must implement rowLabelProperties.", class (this));
     endfunction
 
     ## This object with its labels subset by IXROWS, the same index the caller
@@ -821,7 +831,11 @@ classdef (Abstract) tabular
       out.VariableDescriptions = this.VariableDescriptions;
       out.VariableUnits = this.VariableUnits;
       out.VariableContinuity = this.VariableContinuity;
-      out.(rowLabelName (this)) = getRowLabels (this);
+      rowProps = rowLabelProperties (this);
+      rowNames = fieldnames (rowProps);
+      for i = 1:numel (rowNames)
+        out.(rowNames{i}) = rowProps.(rowNames{i});
+      endfor
       out.CustomProperties = this.CustomProperties;
     endfunction
 
@@ -2021,7 +2035,7 @@ function str = iso_seconds (s)
 endfunction
 
 
-## Every subclass must implement all eight hooks, and the message names the
+## Every subclass must implement all nine hooks, and the message names the
 ## subclass that is missing one.  The hooks are protected, so they can only be
 ## reached from inside a subclass: the fixture implements none of them and
 ## exposes one public wrapper per hook.
@@ -2041,6 +2055,9 @@ endfunction
 %!        '    endfunction', ...
 %!        '    function out = call_rowLabelStrings (this)', ...
 %!        '      out = rowLabelStrings (this);', ...
+%!        '    endfunction', ...
+%!        '    function out = call_rowLabelProperties (this)', ...
+%!        '      out = rowLabelProperties (this);', ...
 %!        '    endfunction', ...
 %!        '    function out = call_subsetRowLabels (this)', ...
 %!        '      out = subsetRowLabels (this, 1);', ...
@@ -2073,6 +2090,9 @@ endfunction
 ## Test 'rowLabelStrings' raises until the subclass implements it
 %!error <notable: subclass must implement rowLabelStrings.> ...
 %! call_rowLabelStrings (notable ());
+## Test 'rowLabelProperties' raises until the subclass implements it
+%!error <notable: subclass must implement rowLabelProperties.> ...
+%! call_rowLabelProperties (notable ());
 ## Test 'subsetRowLabels' raises until the subclass implements it
 %!error <notable: subclass must implement subsetRowLabels.> ...
 %! call_subsetRowLabels (notable ());

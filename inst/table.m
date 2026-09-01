@@ -73,7 +73,7 @@ classdef table < tabular
 ##                         **    Subclass hooks    **                         ##
 ################################################################################
 ##                                                                            ##
-## The eight hooks 'tabular' declares, implemented for a table, whose rows    ##
+## The nine hooks 'tabular' declares, implemented for a table, whose rows     ##
 ## are labelled by 'RowNames' and may carry no labels at all.                 ##
 ##                                                                            ##
 ################################################################################
@@ -105,6 +105,15 @@ classdef table < tabular
     ## has nothing to do beyond what 'getRowLabels' does.
     function out = rowLabelStrings (this)
       out = this.RowNames;
+    endfunction
+
+    ## The one property a table publishes about its row labels, under the
+    ## name it declares them with.  It is also what 'rowLabelName' answers
+    ## here, but the two are not the same question and a timetable answers
+    ## them differently.
+    function out = rowLabelProperties (this)
+      out = struct ();
+      out.RowNames = this.RowNames;
     endfunction
 
     ## Keeps the 'RowNames' entries picked out by IXROWS, in the order given,
