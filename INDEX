@@ -43,6 +43,9 @@ table arrays
  istable
 timetable arrays
  timetable
+ array2timetable
+ table2timetable
+ timetable2table
  istimetable
 supplementary classes
  missing
