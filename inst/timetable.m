@@ -43,6 +43,10 @@ classdef timetable < tabular
   ## true for either while @code{istable} and @code{istimetable} each single
   ## one of them out.
   ##
+  ## Assigning an empty matrix to a subscripted timetable deletes rows or
+  ## variables exactly as it does for a @code{table}, and the row times go
+  ## with the rows they label.  The row times themselves cannot be deleted.
+  ##
   ## Besides the @code{timetable} constructor, you can also use
   ## @code{table2timetable} and @code{array2timetable} to create timetables
   ## from the respective data types.

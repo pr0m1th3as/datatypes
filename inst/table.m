@@ -35,6 +35,15 @@ classdef table < tabular
   ## the contents of the table.  In this case, the original data types of the
   ## selected variables are returned.
   ##
+  ## Assigning an empty matrix to a subscripted table deletes rows or
+  ## variables.  @code{@var{tbl}(@var{rows},:) = []} removes the referenced
+  ## rows, @code{@var{tbl}(:,@var{vars}) = []} removes the referenced
+  ## variables, and @code{@var{tbl}.@var{varname} = []} removes a single
+  ## variable by name.  One of the two subscripts must be a colon, and when
+  ## both of them are, the rows are removed.  A table that has lost its last
+  ## variable keeps its height, so a five-row table displays as
+  ## @qcode{5x0} rather than as empty.
+  ##
   ## Besides the @code{table} constructor, you can also use @code{array2table},
   ## @code{cell2table}, and @code{struct2table} to create tables from the
   ## respective data types.
@@ -1325,10 +1334,13 @@ classdef table < tabular
     ##
     ## @end deftypefn
     function out = height (this)
-      if (isempty (this.VariableValues))
-        out = 0;
-      else
+      if (! isempty (this.VariableValues))
         out = size (this.VariableValues{1}, 1);
+      elseif (! isempty (this.RowNames))
+        ## The row names outlive the variables and count the rows themselves.
+        out = numel (this.RowNames);
+      else
+        out = this.RowCount;
       endif
     endfunction
 
@@ -1683,6 +1695,13 @@ classdef table < tabular
       ## Resolve varRef to variables' indices
       ixVars = resolveVarRef (this, varRef);
 
+      ## With nothing to sort by the order cannot change, and the sort
+      ## itself has no key to build.
+      if (isempty (ixVars) && inRowNames == 0)
+        tbl = this;
+        index = (1:height (this))';
+        return;
+      endif
       ## Build a cell array for the selected variables to be used in sorting
       if (inRowNames == 0)
         varVal = cell (1, numel (ixVars));
@@ -1851,6 +1870,15 @@ classdef table < tabular
         else
           error ("table.unique: invalid option '%s'.", varargin{1});
         endif
+      endif
+
+      ## Every row of an object with no variables is the same empty row, so
+      ## they reduce to one; there is no proxy to build from.
+      if (width (this) == 0 && height (this) > 0)
+        tbl = subsetrows (this, 1);
+        ia = 1;
+        ic = ones (height (this), 1);
+        return;
       endif
 
       ## Prepare a proxy array by converting all variables to numeric proxies
@@ -2545,6 +2573,7 @@ classdef table < tabular
       ixVar = resolveVarRef (this, vars);
 
       ## Remove selected variables
+      nrows = height (this);
       tbl = this;
       tbl.VariableTypes(ixVar) = [];
       tbl.VariableNames(ixVar) = [];
@@ -2572,6 +2601,7 @@ classdef table < tabular
           endfor
         endif
       endif
+      tbl = setRowCount (tbl, nrows);
     endfunction
 
     ## -*- texinfo -*-
@@ -7574,6 +7604,7 @@ classdef table < tabular
       [cp, cpTypes] = merge_hcat_props (tbl, varargin);
       tbl.CustomProperties = cp;
       tbl.CustomPropTypes = cpTypes;
+      tbl = setRowCount (tbl, height (tbl));
     endfunction
 
     ## -*- texinfo -*-
@@ -7982,6 +8013,8 @@ classdef table < tabular
       ## Identical variable names force identical widths, the sorted lists
       ## just compared being the same length as the widths they come from.
       numCols = width (varargin{1});
+      ## With no variables to stack, nothing else carries the row count.
+      totalRows = sum (cellfun (@height, varargin));
       ## We need to figure out some indexing for the variables of every other
       ## table so we can re-index to the variables of the first table.
       index = [1:numCols]; # first table is reindexed to itself
@@ -8080,6 +8113,9 @@ classdef table < tabular
             tbl.CustomPropTypes = in.CustomPropTypes;
           endif
         endfor
+      endif
+      if (numCols == 0)
+        tbl.RowCount = totalRows;
       endif
     endfunction
 

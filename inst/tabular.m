@@ -212,6 +212,12 @@ classdef (Abstract) tabular
   properties (Access = protected)
     CustomPropTypes = struct ()
     VariableValues = {}
+    ## The row count, which outlives the last variable.  While an object has
+    ## variables its first one is authoritative and this is not read, so it
+    ## only has to be right at the moment the variables go: every path that
+    ## drops one records it first.  A class whose row labels are mandatory
+    ## reads its count off them and never reaches this.
+    RowCount = 0
   endproperties
 
 ################################################################################
@@ -477,6 +483,14 @@ classdef (Abstract) tabular
             error (strcat ("%s.subsasgn: '()' indexing of %s", ...
                            " requires exactly two arguments."), ...
                    clstype, clstype);
+          endif
+          ## Assigning [] deletes rows or variables.  MATLAB's trigger is
+          ## the literal empty matrix, which Octave cannot tell apart from
+          ## any other 0-by-0 double, so any of those deletes.
+          if (isempty (chain_s) && isa (rhs, 'double')
+              && isequal (size (rhs), [0, 0]))
+            tbl = deleteSubs (this, s.subs{1}, s.subs{2});
+            return;
           endif
           [ixRow, ixVar] = resolveRowVarRefs (this, s.subs{1}, s.subs{2});
           ## Check input data matches referenced elements
@@ -1024,8 +1038,18 @@ classdef (Abstract) tabular
             endif
 
           else
-            ## Everything else is indexing a variable name (existing of new)
-            tbl = setvar (this, s.subs, rhs);
+            ## Everything else is indexing a variable name (existing of new),
+            ## except that assigning [] to one deletes it.
+            if (isempty (chain_s) && isa (rhs, 'double')
+                && isequal (size (rhs), [0, 0]))
+              if (isequal (s.subs, this.DimensionNames{1}))
+                error (strcat ("%s.subsasgn: cannot delete the row labels", ...
+                               " of a %s."), clstype, clstype);
+              endif
+              tbl = deleteVars (this, s.subs);
+            else
+              tbl = setvar (this, s.subs, rhs);
+            endif
           endif
       endswitch
     endfunction
@@ -1282,11 +1306,97 @@ classdef (Abstract) tabular
     ## Return a subset of rows defined by the numerical or logical vector ixRows
     function tbl = subsetrows (this, ixRows)
       tbl = this;
+      if (width (this) == 0)
+        ## With no variable to index, nothing would raise on an out-of-range
+        ## row and nothing would carry the new count, so both happen here.
+        ixRows = validateRowIndex (this, ixRows);
+        tbl.RowCount = numel (ixRows);
+      endif
       s = struct ('type', '()', 'subs', {{ixRows,':'}});
       for i = 1:width (this)
         tbl.VariableValues{i} = subsref (tbl.VariableValues{i}, s);
       endfor
       tbl = subsetRowLabels (tbl, ixRows);
+    endfunction
+
+    ## Keep the stored row count normalised: an object carries it only while
+    ## it has no variable to carry the height for it, and carries zero
+    ## otherwise.  Without that, two objects equal in every observable way
+    ## could still differ in this, and 'isequal' compares it.
+    function tbl = setRowCount (this, nrows)
+      tbl = this;
+      if (width (this) == 0)
+        tbl.RowCount = nrows;
+      else
+        tbl.RowCount = 0;
+      endif
+    endfunction
+
+    ## Resolve a row subscript to a validated vector of row indices.  The
+    ## variables normally raise on a bad row when they are indexed; this is
+    ## for the paths where there is no variable left to do it.
+    function ixRows = validateRowIndex (this, ixRows)
+      clstype = class (this);
+      nrows = height (this);
+      if (ischar (ixRows) && isequal (ixRows, ':'))
+        ixRows = 1:nrows;
+      elseif (islogical (ixRows))
+        if (numel (ixRows) > nrows)
+          error ("%s: row logical index does not match %s height.", ...
+                 clstype, clstype);
+        endif
+        ixRows = find (ixRows(:))';
+      elseif (isnumeric (ixRows))
+        ixRows = ixRows(:)';
+        if (any (ixRows < 1 | ixRows != fix (ixRows)))
+          error ("%s: row index must be a positive integer.", clstype);
+        endif
+        ix_bad = find (ixRows > nrows, 1);
+        if (! isempty (ix_bad))
+          error (strcat ("%s: row index out of bounds: requested index", ...
+                         " %d; %s has %d rows."), clstype, ...
+                 ixRows(ix_bad), clstype, nrows);
+        endif
+      endif
+    endfunction
+
+    ## Delete rows or variables, which is what assigning [] means.  One
+    ## subscript must be ':' and the other names what goes; with both of
+    ## them ':' the rows go.
+    function tbl = deleteSubs (this, rowRef, varRef)
+      rowColon = is_colon_ref (rowRef);
+      varColon = is_colon_ref (varRef);
+      if (! rowColon && ! varColon)
+        error (strcat ("%s.subsasgn: deleting rows or variables by", ...
+                       " assigning [] requires one subscript to be ':'."), ...
+               class (this));
+      endif
+      if (rowColon && ! varColon)
+        tbl = deleteVars (this, varRef);
+      else
+        tbl = deleteRows (this, rowRef);
+      endif
+    endfunction
+
+    ## Delete the referenced variables.  An empty reference removes nothing.
+    function tbl = deleteVars (this, varRef)
+      if (isempty (varRef))
+        tbl = this;
+        return;
+      endif
+      ixVar = resolveVarRef (this, varRef);
+      tbl = subsetvars (this, setdiff (1:width (this), ixVar(:)'));
+    endfunction
+
+    ## Delete the referenced rows.  An empty reference removes nothing.
+    function tbl = deleteRows (this, rowRef)
+      if (isempty (rowRef) && ! is_colon_ref (rowRef))
+        tbl = this;
+        return;
+      endif
+      ixRow = resolveRowVarRefs (this, rowRef, ':');
+      ixRow = validateRowIndex (this, ixRow);
+      tbl = subsetrows (this, setdiff (1:height (this), ixRow));
     endfunction
 
     ## Build consistent numeric row proxies for two tables sharing the same set
@@ -1408,6 +1518,7 @@ classdef (Abstract) tabular
 
     ## Return a subset of variables defined by the numerical vector ixVars
     function tbl = subsetvars (this, ixVars)
+      nrows = height (this);
       tbl = this;
       ## Copy selected variables
       tbl.VariableTypes = this.VariableTypes(ixVars);
@@ -1433,6 +1544,7 @@ classdef (Abstract) tabular
           endfor
         endif
       endif
+      tbl = setRowCount (tbl, nrows);
     endfunction
 
     ## The variables laid side by side as one homogeneous array, and as a
@@ -1440,9 +1552,10 @@ classdef (Abstract) tabular
     ## tabular class; CALLER names the method reporting a refusal, which is
     ## the public conversion for a table and the brace reference otherwise.
     function A = varsAsArray (this, caller)
-      ## Handle empty table
+      ## Handle empty table.  An object with rows but no variables still
+      ## reports its height, so the array it becomes keeps it too.
       if isempty (this)
-        A = [];
+        A = zeros (size (this));
         return
       endif
       ## A mix of cell and non-cell variables cannot form a homogeneous array.
@@ -1608,6 +1721,7 @@ classdef (Abstract) tabular
         tbl.VariableTypes{ixVar} = class (value);
         tbl.VariableValues{ixVar} = value;
       endif
+      tbl = setRowCount (tbl, n_rows);
     endfunction
 
     ## Resolve subscripted reference for internal use called by subsasgn
@@ -2084,6 +2198,8 @@ classdef (Abstract) tabular
 
     ## Summary internal function
     function s = summary_for_variables (this)
+      ## An object with no variables summarises to no fields, not to nothing.
+      s = struct ();
       for v = 1:width (this)
         varName = this.VariableNames{v};
         val = this.VariableValues{v};
@@ -2505,6 +2621,17 @@ classdef (Abstract) tabular
   endmethods
 
 endclassdef
+
+## Whether a subscript is the colon that selects a whole dimension.
+function tf = is_colon_ref (ref)
+  tf = false;
+  if (isa (ref, 'string') && isscalar (ref))
+    ref = char (ref);
+  endif
+  if (ischar (ref) && isrow (ref))
+    tf = isequal (ref, ':');
+  endif
+endfunction
 
 ## Validate a VariableContinuity assignment of N elements and return it as a
 ## cell array of character vectors.  A bare character vector is only valid
