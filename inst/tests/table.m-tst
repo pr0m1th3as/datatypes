@@ -194,6 +194,42 @@
 %! T = table ('Size', [3, 1], 'VariableTypes', {'double'}, ...
 %!            'RowNames', {'a'; 'b'; 'c'});
 %! assert_equal (T.Properties.RowNames, {'a'; 'b'; 'c'});
+## Test the constructor -- an empty table built with 'Size' or 'table.empty'
+%!test  # 'Size' with no variables keeps the requested row count
+%! T = table ('Size', [5, 0], 'VariableTypes', {});
+%! assert_equal (size (T), [5, 0]);
+%! assert_equal (height (T), 5);
+%! assert_equal (T.Properties.VariableNames, cell (1, 0));
+%!test  # 'Size' with no variables takes row names for the rows it declares
+%! T = table ('Size', [3, 0], 'VariableTypes', {}, ...
+%!            'RowNames', {'a', 'b', 'c'});
+%! assert_equal (size (T), [3, 0]);
+%! assert_equal (T.Properties.RowNames, {'a'; 'b'; 'c'});
+%!test  # 'table.empty' takes both dimensions, a size vector, or neither
+%! assert_equal (size (table.empty), [0, 0]);
+%! assert_equal (size (table.empty (5, 0)), [5, 0]);
+%! assert_equal (height (table.empty (5, 0)), 5);
+%! assert_equal (size (table.empty ([5, 0])), [5, 0]);
+%! assert_equal (size (table.empty (0, 0)), [0, 0]);
+%! assert_equal (class (table.empty), 'table');
+%!test  # 'table.empty' names and types the variables it is asked for
+%! T = table.empty (0, 3);
+%! assert_equal (size (T), [0, 3]);
+%! assert_equal (T.Properties.VariableNames, {'Var1', 'Var2', 'Var3'});
+%! assert_equal (class (T.Var1), 'double');
+## Test input validation for 'table.empty'
+%!error <table.empty: at least one dimension must be zero.> table.empty (5, 3);
+%!error <table.empty: at least one dimension must be zero.> table.empty (5);
+%!error <table.empty: each dimension must be a non-negative integer.> ...
+%! table.empty (-1, 0);
+%!error <table.empty: each dimension must be a non-negative integer.> ...
+%! table.empty (2.5, 0);
+%!error <table.empty: SZ must be a numeric vector.> table.empty ({1, 0});
+%!error <table.empty: each dimension must be a numeric scalar.> ...
+%! table.empty (5, 'a');
+%!error <table.empty: a table has only two dimensions.> table.empty (5, 0, 2);
+
+
 ## Test input validation for the constructor
 %!error <table: 'VariableNames' must be either a cell array of character vectors or a string array.> ...
 %! table ([1; 2], [3; 4], "VariableNames", {2, 3});
@@ -2915,6 +2951,21 @@
 %! B = [4;5;6];
 %! T = table (A, B, [7;8;9], 'VariableNames', {'A', 'B', 'C'});
 %! assert_equal (isequal (removevars (T, 'C'), table (A, B)), true);
+## Test an empty variable subscript
+%!test  # an empty numeric subscript selects no variables and keeps the height
+%! T = table ([1;2;3;4;5], [6;7;8;9;10], 'VariableNames', {'A', 'B'});
+%! assert_equal (size (T(:,[])), [5, 0]);
+%! assert_equal (height (T(:,[])), 5);
+%! assert_equal (size (T(:,zeros (0, 3))), [5, 0]);
+%! assert_equal (size (T(1:2,[])), [2, 0]);
+%!test  # an empty variable reference keeps the row names
+%! T = table ([1;2;3], 'VariableNames', {'A'}, 'RowNames', {'a', 'b', 'c'});
+%! assert_equal (T(:,[]).Properties.RowNames, {'a'; 'b'; 'c'});
+## Test an empty cell is not a variable subscript, as it is not on any array
+%!error <table: variable index must be a vector.> ...
+%! T = table ([1;2], [3;4]); T(:,{});
+
+
 ## Test input validation for a table left with no variables
 %!error <table: row index out of bounds: requested index 6; table has 5 rows.> ...
 %! T = table ([1;2;3;4;5]); R = removevars (T, 'Var1'); R(6,:);
@@ -6010,6 +6061,22 @@
 %! assert_equal (H.Properties.VariableNames, {'x', 'y', 'z'});
 %! assert_equal (H.x, [1; 2; 3]);
 %! assert_equal (H.z, [10; 20; 30]);
+%!test  # 'horzcat' refuses inputs of different heights
+%! T1 = table ([1; 2; 3], 'VariableNames', {'x'});
+%! T2 = table ([10; 20], 'VariableNames', {'z'});
+%! assert_equal (size (horzcat (T1, table ([4; 5; 6], ...
+%!                              'VariableNames', {'w'}))), [3, 2]);
+%!test  # a table with rows but no variables counts in the height check
+%! T = table ([1;2;3;4;5], 'VariableNames', {'A'});
+%! Z = removevars (T, 'A');
+%! assert_equal (size (horzcat (Z, table ((1:5)', ...
+%!                              'VariableNames', {'C'}))), [5, 1]);
+%!error <table.horzcat: all input tables must have the same height.> ...
+%! horzcat (table ([1; 2; 3], 'VariableNames', {'x'}), ...
+%!          table ([10; 20], 'VariableNames', {'z'}));
+%!error <table.horzcat: all input tables must have the same height.> ...
+%! T = table ([1;2;3;4;5], 'VariableNames', {'A'}); ...
+%! horzcat (removevars (T, 'A'), table ([1; 2; 3], 'VariableNames', {'C'}));
 %!test  # '[ , ]' operator dispatches to horzcat
 %! T1 = table ([1; 2; 3], 'VariableNames', {'x'});
 %! T2 = table ([10; 20; 30], 'VariableNames', {'z'});

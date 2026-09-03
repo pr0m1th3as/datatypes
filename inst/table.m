@@ -35,6 +35,11 @@ classdef table < tabular
   ## the contents of the table.  In this case, the original data types of the
   ## selected variables are returned.
   ##
+  ## An empty numeric variable subscript selects no variables, so
+  ## @code{@var{tbl}(:,[])} is a table of the same height with nothing in
+  ## it.  An empty cell is not a subscript and is refused, as it is on any
+  ## other array.
+  ##
   ## Assigning an empty matrix to a subscripted table deletes rows or
   ## variables.  @code{@var{tbl}(@var{rows},:) = []} removes the referenced
   ## rows, @code{@var{tbl}(:,@var{vars}) = []} removes the referenced
@@ -349,7 +354,10 @@ classdef table < tabular
                this.DimensionNames{idx});
       endif
 
-      ## Construct a preallocated table with default values
+      ## Construct a preallocated table with default values.  SIZEROWS holds
+      ## the requested row count, which is the only record of it when no
+      ## variable is asked for.
+      sizeRows = [];
       if (numel (args) == 4 && strcmpi (args{1}, 'Size') &&
                                strcmpi (args{3}, 'VariableTypes'))
         ## Validate the size specifier
@@ -359,6 +367,7 @@ classdef table < tabular
         ## Get number of rows and variables
         nr = args{2}(1);
         nv = args{2}(2);
+        sizeRows = nr;
         ## Get variable types
         varTypes = args{4};
         if (! iscellstr (varTypes) || numel (varTypes) != nv)
@@ -481,11 +490,18 @@ classdef table < tabular
       this.VariableValues = VariableValues;
       this.VariableTypes = cellfun ('class', VariableValues, ...
                                     'UniformOutput', false);
+      if (! isempty (VariableValues))
+        this.RowCount = 0;
+      elseif (! isempty (sizeRows))
+        this.RowCount = sizeRows;
+      endif
       if (! isempty (RowNames))
-        if (isempty (VariableValues))
-          nrows = 0;
-        else
+        if (! isempty (VariableValues))
           nrows = size (VariableValues{1}, 1);
+        elseif (! isempty (sizeRows))
+          nrows = sizeRows;
+        else
+          nrows = 0;
         endif
         if (numel (RowNames) != nrows)
           error (strcat ("table: the number of 'RowNames' (%d) must", ...
@@ -3770,6 +3786,9 @@ classdef table < tabular
         [~, I, J] = __unique__ (IvarValues, 'stable', 'rows');
         nrows = 1;
         rowIdx = 1;
+        ## With no grouping variable every row collapses into one, and the
+        ## grouping table is the empty half of that single row.
+        GvarTable = subsetrows (GvarTable, 1:min (1, height (GvarTable)));
       endif
 
       ## Start unstacking here
@@ -7474,15 +7493,16 @@ classdef table < tabular
       ## All tables must have unique variable names
       varNames = cellfun (@(obj) obj.VariableNames, varargin, ...
                           'UniformOutput', false);
-      is_empty = cellfun (@isempty, varNames);
       varNames = [varNames{:}];
       if (numel (varNames) != numel (unique (varNames)))
         error (strcat ("table.horzcat: all input tables must have unique", ...
                        " variable names."));
       endif
-      ## All tables must have the same rows (height)
+      ## All tables must have the same rows (height).  A table with rows but
+      ## no variables counts: it knows its height, and a 0-by-0 one is gone
+      ## already, having been dropped as a null operand.
       numRows = cellfun (@height, varargin);
-      if (numel (unique (numRows(! is_empty))) != 1)
+      if (numel (unique (numRows)) != 1)
         error ("table.horzcat: all input tables must have the same height.");
       endif
       numRows = numRows(1);
@@ -7775,6 +7795,10 @@ classdef table < tabular
       tbl = this;
       ## Replicate elements per rows (apply on each variable)
       if (rows > 1)
+        if (width (this) == 0)
+          ## No variable carries the height, so the stored count does.
+          tbl.RowCount = height (this) * rows;
+        endif
         for i = 1:width (this)
           tbl.VariableValues{i} = repelem (this.VariableValues{i}, rows, 1);
         endfor
@@ -7866,6 +7890,10 @@ classdef table < tabular
       tbl = this;
       ## Replicate elements per rows (apply on each variable)
       if (rows > 1)
+        if (width (this) == 0)
+          ## No variable carries the height, so the stored count does.
+          tbl.RowCount = height (this) * rows;
+        endif
         for i = 1:width (this)
           tbl.VariableValues{i} = repmat (this.VariableValues{i}, rows, 1);
         endfor
@@ -8117,6 +8145,69 @@ classdef table < tabular
       if (numCols == 0)
         tbl.RowCount = totalRows;
       endif
+    endfunction
+
+  endmethods
+
+  methods (Static)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {table} {@var{tbl} =} table.empty ()
+    ## @deftypefnx {table} {@var{tbl} =} table.empty (@var{n})
+    ## @deftypefnx {table} {@var{tbl} =} table.empty (@var{r}, @var{v})
+    ## @deftypefnx {table} {@var{tbl} =} table.empty (@var{sz})
+    ##
+    ## Create an empty table.
+    ##
+    ## @code{@var{tbl} = table.empty ()} returns a 0-by-0 table.
+    ##
+    ## @code{@var{tbl} = table.empty (@var{r}, @var{v})} returns a table with
+    ## @var{r} rows and @var{v} variables, at least one of which must be
+    ## zero.  A table with rows but no variables keeps its height, so
+    ## @code{table.empty (5, 0)} answers 5 to @code{height}.  A table with
+    ## variables but no rows names them @qcode{Var1} to @qcode{VarN} and
+    ## gives each of them a @qcode{double} value, exactly as
+    ## @code{table (@qcode{'Size'}, @dots{})} does.
+    ##
+    ## @code{@var{tbl} = table.empty (@var{sz})} takes the two dimensions
+    ## from the two-element vector @var{sz}, and @code{table.empty (@var{n})}
+    ## is the same as @code{table.empty (@var{n}, @var{n})}.
+    ##
+    ## @seealso{table, isempty, height, width}
+    ## @end deftypefn
+    function tbl = empty (varargin)
+      if (numel (varargin) == 0)
+        sz = [0, 0];
+      elseif (numel (varargin) == 1)
+        sz = varargin{1};
+        if (! (isnumeric (sz) && isvector (sz) && ! isempty (sz)))
+          error ("table.empty: SZ must be a numeric vector.");
+        endif
+        sz = sz(:)';
+        if (isscalar (sz))
+          sz = [sz, sz];
+        endif
+      else
+        isnum = cellfun (@(x) isnumeric (x) && isscalar (x), varargin);
+        if (! all (isnum))
+          error ("table.empty: each dimension must be a numeric scalar.");
+        endif
+        sz = cell2mat (varargin(:)');
+      endif
+      if (numel (sz) > 2)
+        if (any (sz(3:end) != 1))
+          error ("table.empty: a table has only two dimensions.");
+        endif
+        sz = sz(1:2);
+      endif
+      if (any (sz < 0) || any (sz != fix (sz)))
+        error ("table.empty: each dimension must be a non-negative integer.");
+      endif
+      if (all (sz != 0))
+        error ("table.empty: at least one dimension must be zero.");
+      endif
+      tbl = table ('Size', sz, 'VariableTypes', ...
+                   repmat ({'double'}, 1, sz(2)));
     endfunction
 
   endmethods

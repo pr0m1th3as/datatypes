@@ -1213,6 +1213,16 @@ classdef (Abstract) tabular
       if (nargin < 3 || isempty (strictness))
         strictness = 'strict';
       endif
+      if (isnumeric (varRef) && isempty (varRef))
+        ## An empty numeric subscript selects no variables, as it does on any
+        ## array.  An empty cell is not an index at all and is refused below,
+        ## which is what indexing an ordinary array with one does.
+        ixVar = zeros (1, 0);
+        if (nargout > 1)
+          varNames = cell (1, 0);
+        endif
+        return;
+      endif
       if (! isvector (varRef))
         error ("%s: variable index must be a vector.", clstype);
       endif
