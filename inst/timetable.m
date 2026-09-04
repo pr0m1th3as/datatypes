@@ -2309,7 +2309,7 @@ classdef timetable < tabular
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'varfun'           'rowfun'           'grouptransform'   'groupcounts'     ##
-## 'groupsummary'     'groupfilter'                                           ##
+## 'groupsummary'     'groupfilter'      'stack'                              ##
 ##                                                                            ##
 ################################################################################
 
@@ -2669,6 +2669,57 @@ classdef timetable < tabular
       [G, errmsg] = groupfilterResult (tt, groupvars, varargin);
       if (! isempty (errmsg))
         error ("timetable.groupfilter: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{tt2} =} stack (@var{tt}, @var{vars})
+    ## @deftypefnx {timetable} {@var{tt2} =} stack (@var{tt}, @var{vars}, @var{Name}, @var{Value})
+    ## @deftypefnx {timetable} {[@var{tt2}, @var{index}] =} stack (@dots{})
+    ##
+    ## Stack several variables of a timetable into one.
+    ##
+    ## @code{@var{tt2} = stack (@var{tt}, @var{vars})} replaces the variables
+    ## named in @var{vars} with a single variable holding their values one
+    ## under the other, and an indicator variable naming which of them each
+    ## value came from.  Every other variable is carried along, repeated once
+    ## per stacked variable, and so is the row time of the row it came from:
+    ## a timetable of two rows stacking two variables has four rows and two
+    ## pairs of equal row times, which generally makes it irregular.
+    ##
+    ## @var{vars} names the variables to stack.  A cell array of variable
+    ## references stacks several groups at once, one new variable per group,
+    ## each group holding the same number of variables.
+    ##
+    ## @code{[@var{tt2}, @var{index}] = stack (@dots{})} also returns
+    ## @var{index}, naming the row of @var{tt} each row of @var{tt2} came
+    ## from.
+    ##
+    ## The following @var{Name}/@var{Value} pairs are accepted:
+    ##
+    ## @table @asis
+    ## @item @qcode{'ConstantVariables'}
+    ## The variables carried along unstacked.  By default every variable that
+    ## is not being stacked is carried.
+    ##
+    ## @item @qcode{'NewDataVariableName'}
+    ## The name of the stacked variable, one per group.  By default the names
+    ## of the stacked variables are joined with underscores.
+    ##
+    ## @item @qcode{'IndexVariableName'}
+    ## The name of the indicator variable.  By default it is the name of the
+    ## stacked variable followed by @qcode{_Indicator}.
+    ## @end table
+    ##
+    ## @seealso{timetable}
+    ## @end deftypefn
+    function [tt2, index] = stack (tt, vars, varargin)
+      if (nargin < 2)
+        vars = [];
+      endif
+      [tt2, index, errmsg] = stackResult (tt, vars, varargin);
+      if (! isempty (errmsg))
+        error ("timetable.stack: %s", errmsg);
       endif
     endfunction
 

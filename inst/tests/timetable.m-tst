@@ -2799,6 +2799,69 @@
 %! TT = timetable ([1; 2], 'RowTimes', rt, 'VariableNames', {'A'});
 %! groupfilter (TT, 'Time', 'nope');
 
+## Test 'stack' repeats each row time once per stacked variable
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! rt = t0 + hours (0:1)';
+%! TT = timetable ([1; 2], [3; 4], 'RowTimes', rt, ...
+%!                 'VariableNames', {'A', 'B'});
+%! S = stack (TT, {'A', 'B'});
+%! assert_equal (class (S), 'timetable');
+%! assert_equal (S.Properties.VariableNames, {'A_B_Indicator', 'A_B'});
+%! assert_equal (S.A_B, [1; 3; 2; 4]);
+%! assert_equal (S.Properties.RowTimes, repelem (rt, 2, 1));
+
+## Test one stacked variable leaves the row times as they were
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! rt = t0 + hours (0:2)';
+%! TT = timetable ([1; 2; 3], 'RowTimes', rt, 'VariableNames', {'A'});
+%! S = stack (TT, {'A'});
+%! assert_equal (S.Properties.VariableNames, {'A_Indicator', 'A'});
+%! assert_equal (S.A, [1; 2; 3]);
+%! assert_equal (S.Properties.RowTimes, rt);
+
+## Test a constant variable is carried along, repeated with its row
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! rt = t0 + hours (0:1)';
+%! TT = timetable (categorical ({'x'; 'y'}), [1; 2], [3; 4], ...
+%!                 'RowTimes', rt, 'VariableNames', {'g', 'A', 'B'});
+%! S = stack (TT, {'A', 'B'}, 'ConstantVariables', 'g');
+%! assert_equal (S.Properties.VariableNames, {'g', 'A_B_Indicator', 'A_B'});
+%! assert_equal (cellstr (S.g), {'x'; 'x'; 'y'; 'y'});
+
+## Test the indicator names which variable each value came from
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2], [3; 4], 'RowTimes', t0 + hours (0:1)', ...
+%!                 'VariableNames', {'A', 'B'});
+%! S = stack (TT, {'A', 'B'});
+%! assert_equal (categories (S.A_B_Indicator), {'A'; 'B'});
+%! assert_equal (cellstr (S.A_B_Indicator), {'A'; 'B'; 'A'; 'B'});
+
+## Test the second output names the row each stacked row came from
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2], [3; 4], 'RowTimes', t0 + hours (0:1)', ...
+%!                 'VariableNames', {'A', 'B'});
+%! [~, ix] = stack (TT, {'A', 'B'});
+%! assert_equal (ix, [1; 1; 2; 2]);
+
+## Test the names may be chosen
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2], [3; 4], 'RowTimes', t0 + hours (0:1)', ...
+%!                 'VariableNames', {'A', 'B'});
+%! S = stack (TT, {'A', 'B'}, 'NewDataVariableName', 'val', ...
+%!            'IndexVariableName', 'which');
+%! assert_equal (S.Properties.VariableNames, {'which', 'val'});
+
+## Test the validation is the timetable's own
+%!error <timetable.stack: too few input arguments.> ...
+%! rt = datetime (2024, 1, 1) + hours (0:1)';
+%! stack (timetable ([1; 2], 'RowTimes', rt));
+
 ################################################################################
 ##                        **    Input validation    **                        ##
 ################################################################################

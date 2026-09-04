@@ -3611,6 +3611,189 @@ classdef (Abstract) tabular
       G = table (vars{:}, 'VariableNames', names);
     endfunction
 
+    ## The body behind 'stack' on both classes.  Returns an errmsg body
+    ## (empty on success) for the caller to raise under its own name.  The
+    ## constant part is subset and repeated, which carries whatever row
+    ## labels the class has, and the stacked part is laid beside it, so the
+    ## result is of the calling class.
+    function [tbl, idxA, errmsg] = stackResult (this, vars, args_in)
+      tbl = [];
+      idxA = [];
+      errmsg = '';
+
+      ## Check input argument
+      if (isempty (vars))
+        errmsg = 'too few input arguments.';
+        return;
+      endif
+
+      ## Parse optional Name-Value paired arguments
+      optNames = {'ConstantVariables', 'NewDataVariableName', ...
+                  'IndexVariableName'};
+      dfValues = {[], [], []};
+      [constVars, newVarName, idxVarName] = ...
+                  parsePairedArguments (optNames, dfValues, args_in(:));
+
+      ## Determine single- vs multi-group stacking.  Multiple groups of
+      ## variables to stack are passed as a cell array of variable references
+      ## (each a cellstr, string, numeric, or logical index), producing one
+      ## stacked data variable per group; a single group is any other valid
+      ## variable reference.
+      isMulti = iscell (vars) && ! iscellstr (vars);
+      if (isMulti)
+        groups = vars;
+      else
+        groups = {vars};
+      endif
+      nGroup = numel (groups);
+
+      ## Resolve each group of variables to stack
+      grpIx = cell (1, nGroup);
+      grpNames = cell (1, nGroup);
+      for g = 1:nGroup
+        [ix, nm] = resolveVarRef (this, groups{g}, 'lenient');
+        if (any (ix == 0))
+          gv = cellstr (groups{g});
+          bad = find (ix == 0);
+          errmsg = sprintf (strcat ("VARS index a non-existing", ...
+                                    " variable: '%s'"), gv{bad(1)});
+          return;
+        endif
+        grpIx{g} = ix(:)';
+        grpNames{g} = nm;
+      endfor
+
+      ## All groups must contain the same number of variables
+      grpSize = numel (grpIx{1});
+      if (any (cellfun (@numel, grpIx) != grpSize))
+        errmsg = strcat ("all groups of variables to stack must be", ...
+                         " the same size.");
+        return;
+      endif
+      allStackIx = [grpIx{:}];
+
+      ## Get constant variables to include
+      if (isempty (constVars))
+        cIxVars = setdiff (1:width (this), allStackIx);
+      else
+        cIxVars = resolveVarRef (this, constVars, 'lenient');
+        if (any (cIxVars == 0))
+          constVars = cellstr (constVars);
+          bad = find (cIxVars == 0);
+          errmsg = sprintf (strcat ("'ConstantVariables' index a", ...
+                                    " non-existing variable: '%s'"), ...
+                            constVars{bad(1)});
+          return;
+        endif
+        if (any (ismember (cIxVars, allStackIx)))
+          errmsg = strcat ("'ConstantVariables' cannot contain any", ...
+                           " variables to be stacked as specified by", ...
+                           " VARS.");
+          return;
+        endif
+      endif
+
+      ## Get new data variable name(s), one per group
+      if (isempty (newVarName))
+        newVarName = cellfun (@(nm) strjoin (nm, '_'), grpNames, ...
+                              'UniformOutput', false);
+      else
+        if (! ((ischar (newVarName) && isvector (newVarName)) ||
+               ((iscellstr (newVarName) || isa (newVarName, 'string')) &&
+                ! isempty (newVarName))))
+          errmsg = strcat ("'NewDataVariableName' must be a character", ...
+                           " vector, or a cellstring or string array.");
+          return;
+        endif
+        newVarName = cellstr (newVarName);
+        if (numel (newVarName) != nGroup)
+          errmsg = strcat ("the number of 'NewDataVariableName' names", ...
+                           " must equal the number of variable groups to", ...
+                           " stack.");
+          return;
+        endif
+      endif
+
+      ## Get index (indicator) variable name
+      if (isempty (idxVarName))
+        if (isMulti)
+          idxVarName = 'Indicator';
+        else
+          idxVarName = strcat (newVarName{1}, '_Indicator');
+        endif
+      else
+        if (! ((ischar (idxVarName) && isvector (idxVarName)) ||
+               ((iscellstr (idxVarName) || isa (idxVarName, 'string')) &&
+                isscalar (idxVarName))))
+          errmsg = strcat ("'IndexVariableName' must be either a", ...
+                           " character vector, or a cellstring or string", ...
+                           " scalar.");
+          return;
+        endif
+        idxVarName = char (idxVarName);
+      endif
+
+      ## Handle the constant variables first; 'subsetvars' carries whatever
+      ## row labels the class has, and 'repelem' repeats them.
+      constTable = subsetvars (this, cIxVars);
+      constTable = repelem (constTable, grpSize, 1);
+
+      ## Build the indicator variable values.  For a single group these are the
+      ## categorical names of the stacked variables; for multiple groups they
+      ## are the numeric position within each group, since the variable names
+      ## differ between groups.
+      nRow = height (this);
+      if (isMulti)
+        idVarValues = repmat ((1:grpSize)', nRow, 1);
+      else
+        idVarValues = repmat (categorical (grpNames{1})', nRow, 1);
+      endif
+
+      ## Build one stacked data column per group
+      ndCols = cell (1, nGroup);
+      for g = 1:nGroup
+        gvals = this.VariableValues(grpIx{g});
+        ndCols{g} = vec (cat (2, gvals{:})');
+      endfor
+
+      ## Assemble the stacked table (indicator followed by the data columns)
+      stackVals = [{idVarValues}, ndCols];
+      stackNames = [{idxVarName}, newVarName];
+      stackedTable = table (stackVals{:}, 'VariableNames', stackNames);
+
+      ## Inherit units and descriptions for the new data variables from the
+      ## first variable of each group; the indicator carries a fixed
+      ## description and no units.
+      ndUnits = cell (1, nGroup);
+      ndDescr = cell (1, nGroup);
+      for g = 1:nGroup
+        ndUnits{g} = this.VariableUnits{grpIx{g}(1)};
+        ndDescr{g} = this.VariableDescriptions{grpIx{g}(1)};
+      endfor
+      stackedTable.VariableUnits = [{''}, ndUnits];
+      stackedTable.VariableDescriptions = [{'Data indicator'}, ndDescr];
+      ## The indicator has no continuity of its own; each stacked variable
+      ## takes the continuity of the first variable of its group.
+      if (! isempty (this.VariableContinuity))
+        ndCont = cell (1, nGroup);
+        for g = 1:nGroup
+          ndCont{g} = this.VariableContinuity{grpIx{g}(1)};
+        endfor
+        stackedTable.VariableContinuity = [{'unset'}, ndCont];
+      endif
+
+      ## Merge tables
+      tbl = [constTable, stackedTable];
+
+      ## Assign variable types in the new table
+      new_types = cellfun ('class', tbl.VariableValues, 'UniformOutput', false);
+      tbl.VariableTypes = new_types;
+
+      ## The index of the input row each output row came from.
+      idxA = repelem ((1:nRow)', grpSize, 1);
+
+    endfunction
+
     ## The body behind 'groupfilter' on both classes.  Returns an errmsg body
     ## (empty on success) for the caller to raise under its own name.  The
     ## result is of the calling class: the rows that survive keep their order
