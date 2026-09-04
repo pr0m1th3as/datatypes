@@ -410,7 +410,7 @@ classdef (Abstract) tabular
           tbl = this;
           tbl = subsetrows (tbl, ixRow);
           tbl = subsetvars (tbl, ixVar);
-          pair = tabular.mixed_cell_pair (tbl.VariableValues);
+          pair = tabular.incompatible_pair (tbl.VariableValues);
           if (! isempty (pair))
             error (strcat ("%s.subsref: cannot concatenate the %s", ...
                            " variables '%s' and '%s', because their types", ...
@@ -1213,10 +1213,11 @@ classdef (Abstract) tabular
       if (nargin < 3 || isempty (strictness))
         strictness = 'strict';
       endif
-      if (isnumeric (varRef) && isempty (varRef))
-        ## An empty numeric subscript selects no variables, as it does on any
-        ## array.  An empty cell is not an index at all and is refused below,
-        ## which is what indexing an ordinary array with one does.
+      if ((isnumeric (varRef) || islogical (varRef)) && isempty (varRef))
+        ## An empty numeric or logical subscript selects no variables, as it
+        ## does on any array.  An empty cell is not an index at all and is
+        ## refused below, which is what indexing an ordinary array with one
+        ## does.
         ixVar = zeros (1, 0);
         if (nargout > 1)
           varNames = cell (1, 0);
@@ -1571,7 +1572,7 @@ classdef (Abstract) tabular
       ## A mix of cell and non-cell variables cannot form a homogeneous array.
       ## Octave would silently promote single-row pieces to a cell (MATLAB
       ## errors), so guard explicitly and report the first incompatible pair.
-      pair = tabular.mixed_cell_pair (this.VariableValues);
+      pair = tabular.incompatible_pair (this.VariableValues);
       if (! isempty (pair))
         error (strcat ("%s.%s: cannot concatenate the table", ...
                        " variables '%s' and '%s', because their types are", ...
@@ -2556,12 +2557,78 @@ classdef (Abstract) tabular
     ## of the first cell and first non-cell variable, or [] when VALS are not
     ## such a mix.  Callers emit the incompatibility error under their own
     ## method name.
-    function pair = mixed_cell_pair (vals)
-      isCellVar = cellfun (@iscell, vals);
-      if (any (isCellVar) && ! all (isCellVar))
-        pair = sort ([find(isCellVar, 1), find(! isCellVar, 1)]);
+    ## Validate an 'empty' size specification and return it as [rows, vars].
+    ## CLSTYPE names the class for the one message that has to say it.
+    ## Returns an errmsg body (empty on success) emitted by the caller under
+    ## its own name.
+    function [sz, errmsg] = emptySize (clstype, args)
+      sz = [0, 0];
+      errmsg = '';
+      if (numel (args) == 1)
+        sz = args{1};
+        if (! (isnumeric (sz) && isvector (sz) && ! isempty (sz)))
+          errmsg = 'SZ must be a numeric vector.';
+          return;
+        endif
+        sz = sz(:)';
+        if (isscalar (sz))
+          sz = [sz, sz];
+        endif
+      elseif (numel (args) > 1)
+        isnum = cellfun (@(x) isnumeric (x) && isscalar (x), args);
+        if (! all (isnum))
+          errmsg = 'each dimension must be a numeric scalar.';
+          return;
+        endif
+        sz = cell2mat (args(:)');
+      endif
+      if (numel (sz) > 2)
+        if (any (sz(3:end) != 1))
+          errmsg = sprintf ('a %s has only two dimensions.', clstype);
+          return;
+        endif
+        sz = sz(1:2);
+      endif
+      if (any (sz < 0) || any (sz != fix (sz)))
+        errmsg = 'each dimension must be a non-negative integer.';
+        return;
+      endif
+      if (all (sz != 0))
+        errmsg = 'at least one dimension must be zero.';
+        return;
+      endif
+    endfunction
+
+    ## The family a variable's type belongs to for concatenation into one
+    ## array.  Numbers, logicals, character data and strings promote into one
+    ## another, so they are one family; every other type concatenates only
+    ## with its own kind.
+    function fam = concat_family (val)
+      if (iscell (val))
+        fam = 'cell';
+      elseif (isnumeric (val) || islogical (val) || ischar (val)
+              || isa (val, 'string'))
+        fam = 'promotable';
+      elseif (isstruct (val))
+        fam = 'struct';
       else
-        pair = [];
+        fam = class (val);
+      endif
+    endfunction
+
+    ## The first pair of variables that cannot form one array, or empty when
+    ## they all can.  Octave coerces several cross-family mixes silently,
+    ## a numeric beside a categorical coming back as the categorical's
+    ## codes, so the refusal has to be made here rather than left to 'cat'.
+    function pair = incompatible_pair (vals)
+      pair = [];
+      if (numel (vals) < 2)
+        return;
+      endif
+      fams = cellfun (@tabular.concat_family, vals, 'UniformOutput', false);
+      ix = find (! strcmp (fams, fams{1}), 1);
+      if (! isempty (ix))
+        pair = [1, ix];
       endif
     endfunction
 

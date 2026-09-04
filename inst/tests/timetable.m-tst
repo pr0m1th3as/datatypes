@@ -1176,3 +1176,51 @@
 %!error <timetable.subsasgn: cannot delete the row labels of a timetable.> ...
 %! TT = timetable ((1:3)', 'TimeStep', hours (1)); ...
 %! TT.Time = [];
+
+## Test a calendar step names the coarsest whole unit it fills
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! W = timetable (t0 + days ((0:3)' * 7), (1:4)');
+%! assert_equal (char (string (W.Properties.TimeStep)), '1w');
+%! assert_equal (caldays (W.Properties.TimeStep), 7);
+%! Q = timetable (t0 + calmonths ((0:3)' * 3), (1:4)');
+%! assert_equal (char (string (Q.Properties.TimeStep)), '1q');
+%! assert_equal (calmonths (Q.Properties.TimeStep), 3);
+
+## Test a step filling no coarser unit keeps the one caldiff gives it
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! D = timetable (t0 + days (0:3)', (1:4)');
+%! assert_equal (char (string (D.Properties.TimeStep)), '1d');
+%! M = timetable (t0 + calmonths ((0:3)'), (1:4)');
+%! assert_equal (char (string (M.Properties.TimeStep)), '1mo');
+%! Y = timetable (t0 + calmonths ((0:3)' * 12), (1:4)');
+%! assert_equal (char (string (Y.Properties.TimeStep)), '1y');
+
+## Test 'timetable.empty' takes both dimensions, a size vector, or neither
+%!test
+%! assert_equal (size (timetable.empty), [0, 0]);
+%! assert_equal (size (timetable.empty (5, 0)), [5, 0]);
+%! assert_equal (height (timetable.empty (5, 0)), 5);
+%! assert_equal (size (timetable.empty ([5, 0])), [5, 0]);
+%! assert_equal (class (timetable.empty), 'timetable');
+
+## Test the row times of an empty timetable are missing, one per row
+%!test
+%! TT = timetable.empty (5, 0);
+%! assert_equal (numel (TT.Properties.RowTimes), 5);
+%! assert_equal (all (ismissing (TT.Properties.RowTimes)), true);
+
+## Test 'timetable.empty' names and types the variables it is asked for
+%!test
+%! TT = timetable.empty (0, 3);
+%! assert_equal (size (TT), [0, 3]);
+%! assert_equal (TT.Properties.VariableNames, {'Var1', 'Var2', 'Var3'});
+
+## Test input validation for 'timetable.empty'
+%!error <timetable.empty: at least one dimension must be zero.> ...
+%! timetable.empty (5, 3);
+%!error <timetable.empty: a timetable has only two dimensions.> ...
+%! timetable.empty (5, 0, 2);
+%!error <timetable.empty: SZ must be a numeric vector.> ...
+%! timetable.empty ({1, 0});

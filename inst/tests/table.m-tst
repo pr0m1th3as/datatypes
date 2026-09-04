@@ -217,6 +217,14 @@
 %! assert_equal (size (T), [0, 3]);
 %! assert_equal (T.Properties.VariableNames, {'Var1', 'Var2', 'Var3'});
 %! assert_equal (class (T.Var1), 'double');
+%!test  # 'Size' on its own gives every variable a double
+%! T = table ('Size', [5, 0]);
+%! assert_equal (size (T), [5, 0]);
+%! assert_equal (height (T), 5);
+%! U = table ('Size', [0, 3]);
+%! assert_equal (size (U), [0, 3]);
+%! assert_equal (U.Properties.VariableNames, {'Var1', 'Var2', 'Var3'});
+%! assert_equal (class (U.Var1), 'double');
 ## Test input validation for 'table.empty'
 %!error <table.empty: at least one dimension must be zero.> table.empty (5, 3);
 %!error <table.empty: at least one dimension must be zero.> table.empty (5);
@@ -2961,6 +2969,10 @@
 %!test  # an empty variable reference keeps the row names
 %! T = table ([1;2;3], 'VariableNames', {'A'}, 'RowNames', {'a', 'b', 'c'});
 %! assert_equal (T(:,[]).Properties.RowNames, {'a'; 'b'; 'c'});
+%!test  # an empty logical subscript selects no variables too
+%! T = table ([1;2;3;4;5], [6;7;8;9;10], 'VariableNames', {'A', 'B'});
+%! assert_equal (size (T(:,logical ([]))), [5, 0]);
+%! assert_equal (height (T(:,logical ([]))), 5);
 ## Test an empty cell is not a variable subscript, as it is not on any array
 %!error <table: variable index must be a vector.> ...
 %! T = table ([1;2], [3;4]); T(:,{});
@@ -7094,7 +7106,7 @@
 
 ## the shared 'tabular' machinery, reached through a table.  Its messages
 ## take the class name from the subclass, so they read 'table' here
-%!error <table.subsref: table cannot be concatenated into a matrix.> ...
+%!error <table.subsref: cannot concatenate the table variables 'n' and 'sub', because their types are double and table.> ...
 %! N = table ([1; 2], 'VariableNames', {'n'});
 %! N.sub = table ([3; 4], [5; 6]);
 %! N{:, :};
@@ -7107,8 +7119,28 @@
 %! T = table ([1; 2], 'VariableNames', {'n'});
 %! subsasgn (T, substruct ('()', {1}, '.', 'n'), 5);
 
+## Test variables of different types cannot form one array
+%!test  # numbers, logicals and characters concatenate with one another
+%! T = table ([1;2], int8 ([3;4]), logical ([1;0]), ...
+%!            'VariableNames', {'a', 'b', 'c'});
+%! assert_equal (size (table2array (T)), [2, 3]);
+%! assert_equal (class (table2array (T)), 'int8');
+%!test  # variables of one non-numeric type concatenate with each other
+%! T = table (categorical ({'x';'y'}), categorical ({'a';'b'}));
+%! assert_equal (class (table2array (T)), 'categorical');
+%!error <table.table2array: cannot concatenate the table variables 'Var1' and 'Var2', because their types are double and categorical.> ...
+%! table2array (table ([1;2;3], categorical ({'x';'y';'x'})));
+%!error <table.table2array: cannot concatenate the table variables 'Var1' and 'Var2', because their types are double and duration.> ...
+%! table2array (table ([1;2;3], duration ([1;2;3], 0, 0)));
+%!test  # a string promotes a number beside it, as concatenation does
+%! T = table ([1;2;3], string ({'a';'b';'c'}));
+%! assert_equal (class (table2array (T)), 'string');
+%! assert_equal (size (table2array (T)), [3, 2]);
+%!error <table.table2array: cannot concatenate the table variables 'Var1' and 'Var2', because their types are string and categorical.> ...
+%! table2array (table (string ({'a';'b'}), categorical ({'x';'y'})));
+
 ## table2array and writetable refuse a nested table
-%!error <table.table2array: table cannot be concatenated into a matrix due to incompatible variable types.> ...
+%!error <table.table2array: cannot concatenate the table variables 'n' and 'sub', because their types are double and table.> ...
 %! N = table ([1; 2], 'VariableNames', {'n'});
 %! N.sub = table ([3; 4], [5; 6]);
 %! table2array (N);

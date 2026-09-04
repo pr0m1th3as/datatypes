@@ -358,8 +358,9 @@ classdef table < tabular
       ## the requested row count, which is the only record of it when no
       ## variable is asked for.
       sizeRows = [];
-      if (numel (args) == 4 && strcmpi (args{1}, 'Size') &&
-                               strcmpi (args{3}, 'VariableTypes'))
+      if ((numel (args) == 2 || numel (args) == 4)
+          && strcmpi (args{1}, 'Size')
+          && (numel (args) == 2 || strcmpi (args{3}, 'VariableTypes')))
         ## Validate the size specifier
         if (! isnumeric (args{2}) || numel (args{2}) != 2)
           error ("table: 'Size' must be a two-element numeric vector.");
@@ -368,8 +369,14 @@ classdef table < tabular
         nr = args{2}(1);
         nv = args{2}(2);
         sizeRows = nr;
-        ## Get variable types
-        varTypes = args{4};
+        ## Get variable types.  'Size' on its own gives every variable a
+        ## double, which is what a size with no variables needs and what a
+        ## preallocation without a stated type is taken to mean.
+        if (numel (args) == 4)
+          varTypes = args{4};
+        else
+          varTypes = repmat ({'double'}, 1, nv);
+        endif
         if (! iscellstr (varTypes) || numel (varTypes) != nv)
           error (strcat ("table: 'VariableTypes' must be a cellstring", ...
                          " array of the same number of elements as", ...
@@ -8176,35 +8183,9 @@ classdef table < tabular
     ## @seealso{table, isempty, height, width}
     ## @end deftypefn
     function tbl = empty (varargin)
-      if (numel (varargin) == 0)
-        sz = [0, 0];
-      elseif (numel (varargin) == 1)
-        sz = varargin{1};
-        if (! (isnumeric (sz) && isvector (sz) && ! isempty (sz)))
-          error ("table.empty: SZ must be a numeric vector.");
-        endif
-        sz = sz(:)';
-        if (isscalar (sz))
-          sz = [sz, sz];
-        endif
-      else
-        isnum = cellfun (@(x) isnumeric (x) && isscalar (x), varargin);
-        if (! all (isnum))
-          error ("table.empty: each dimension must be a numeric scalar.");
-        endif
-        sz = cell2mat (varargin(:)');
-      endif
-      if (numel (sz) > 2)
-        if (any (sz(3:end) != 1))
-          error ("table.empty: a table has only two dimensions.");
-        endif
-        sz = sz(1:2);
-      endif
-      if (any (sz < 0) || any (sz != fix (sz)))
-        error ("table.empty: each dimension must be a non-negative integer.");
-      endif
-      if (all (sz != 0))
-        error ("table.empty: at least one dimension must be zero.");
+      [sz, errmsg] = tabular.emptySize ('table', varargin);
+      if (! isempty (errmsg))
+        error ('table.empty: %s', errmsg);
       endif
       tbl = table ('Size', sz, 'VariableTypes', ...
                    repmat ({'double'}, 1, sz(2)));

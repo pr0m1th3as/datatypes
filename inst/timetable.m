@@ -1117,6 +1117,44 @@ classdef timetable < tabular
 
   endmethods
 
+  methods (Static)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{tt} =} timetable.empty ()
+    ## @deftypefnx {timetable} {@var{tt} =} timetable.empty (@var{n})
+    ## @deftypefnx {timetable} {@var{tt} =} timetable.empty (@var{r}, @var{v})
+    ## @deftypefnx {timetable} {@var{tt} =} timetable.empty (@var{sz})
+    ##
+    ## Create an empty timetable.
+    ##
+    ## @code{@var{tt} = timetable.empty ()} returns a 0-by-0 timetable.
+    ##
+    ## @code{@var{tt} = timetable.empty (@var{r}, @var{v})} returns a
+    ## timetable with @var{r} rows and @var{v} variables, at least one of
+    ## which must be zero.  The row times are @qcode{NaT}, one per row, since
+    ## a row of a timetable is labelled whether or not it holds anything.  A
+    ## timetable with variables but no rows names them @qcode{Var1} to
+    ## @qcode{VarN} and gives each of them a @qcode{double} value.
+    ##
+    ## @code{@var{tt} = timetable.empty (@var{sz})} takes the two dimensions
+    ## from the two-element vector @var{sz}, and
+    ## @code{timetable.empty (@var{n})} is the same as
+    ## @code{timetable.empty (@var{n}, @var{n})}.
+    ##
+    ## @seealso{timetable, table, isempty, height, width}
+    ## @end deftypefn
+    function tt = empty (varargin)
+      [sz, errmsg] = tabular.emptySize ('timetable', varargin);
+      if (! isempty (errmsg))
+        error ('timetable.empty: %s', errmsg);
+      endif
+      tt = timetable ('Size', sz, 'VariableTypes', ...
+                      repmat ({'double'}, 1, sz(2)), ...
+                      'RowTimes', NaT (sz(1), 1));
+    endfunction
+
+  endmethods
+
 endclassdef
 
 ## Whether an optional argument was given at all.  The parser reports an
@@ -1305,7 +1343,7 @@ function [ts, fs] = stepOf (rt)
     absReg = (ds(1) != 0 && all (ds == ds(1)));
     cd = calendarStepOf (rt);
     if (! isempty (cd) && (calendarMonths (cd) != 0 || absReg))
-      ts = cd;
+      ts = stepUnit (cd);
     elseif (absReg)
       ts = d(1);
     endif
@@ -1330,6 +1368,21 @@ function cd = calendarStepOf (rt)
   if (all (all (dv == dv(1,:))) && any (dv(1,1:3)) && ! any (dv(1,4:6))
       && ! ((dv(1,1) != 0 || dv(1,2) != 0) && dv(1,3) != 0))
     cd = c(1);
+  endif
+endfunction
+
+## A calendar step written in the coarsest whole unit it fills.  'caldiff'
+## reports in years, months and days, so a weekly run comes back as '7d' and
+## a quarterly one as '3mo'; a step names its own unit instead.  The value is
+## the same either way and only the unit it is written in changes.
+function cd = stepUnit (cd)
+  dv = datevec (cd);
+  months = dv(1) * 12 + dv(2);
+  if (months == 0 && dv(3) != 0 && mod (dv(3), 7) == 0)
+    cd = calweeks (dv(3) / 7);
+  elseif (dv(3) == 0 && months != 0 && mod (months, 3) == 0
+          && mod (months, 12) != 0)
+    cd = calquarters (months / 3);
   endif
 endfunction
 
