@@ -2920,6 +2920,60 @@
 %! rt = datetime (2024, 1, 1) + hours (0:1)';
 %! rows2vars (timetable ([1 2; 3 4], 'RowTimes', rt));
 
+## Test two timetables join on their row times with no key named
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! rt = t0 + hours (0:2)';
+%! A = timetable ([1; 2; 3], 'RowTimes', rt, 'VariableNames', {'A'});
+%! B = timetable ({'p'; 'q'; 'r'}, 'RowTimes', rt, 'VariableNames', {'B'});
+%! C = join (A, B);
+%! assert_equal (class (C), 'timetable');
+%! assert_equal (C.Properties.VariableNames, {'A', 'B'});
+%! assert_equal (C.Properties.RowTimes, rt);
+%! assert_equal (C.B, {'p'; 'q'; 'r'});
+
+## Test a table joins onto a timetable when the row times are named as a key
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! rt = t0 + hours (0:2)';
+%! TT = timetable ([1; 2; 3], 'RowTimes', rt, 'VariableNames', {'A'});
+%! T = table (t0 + hours ([2; 0; 1]), {'X'; 'Y'; 'Z'}, ...
+%!            'VariableNames', {'Time', 'Rv'});
+%! C = join (TT, T, 'LeftKeys', 'Time', 'RightKeys', 'Time');
+%! assert_equal (class (C), 'timetable');
+%! assert_equal (C.Properties.VariableNames, {'A', 'Rv'});
+%! assert_equal (C.Properties.RowTimes, rt);
+%! assert_equal (C.Rv, {'Y'; 'Z'; 'X'});
+
+## Test the left operand decides the class of the result
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! rt = t0 + hours (0:2)';
+%! TT = timetable ([1; 2; 3], 'RowTimes', rt, 'VariableNames', {'A'});
+%! T = table (t0 + hours ([2; 0; 1]), {'X'; 'Y'; 'Z'}, ...
+%!            'VariableNames', {'Time', 'Rv'});
+%! C = join (T, TT, 'LeftKeys', 'Time', 'RightKeys', 'Time');
+%! assert_equal (class (C), 'table');
+%! assert_equal (C.Properties.VariableNames, {'Time', 'Rv', 'A'});
+%! assert_equal (C.A, [3; 1; 2]);
+
+## Test the second output names the row of the right operand each row took
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! rt = t0 + hours (0:2)';
+%! A = timetable ([1; 2; 3], 'RowTimes', rt, 'VariableNames', {'A'});
+%! B = timetable ({'p'; 'q'; 'r'}, 'RowTimes', rt(end:-1:1), ...
+%!                'VariableNames', {'B'});
+%! [~, ix] = join (A, B);
+%! assert_equal (ix, [3; 2; 1]);
+
+## Test a timetable and a table share no key unless one is named
+%!error <timetable.join: cannot find any common key variables between the two tables.> ...
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2], 'RowTimes', t0 + hours (0:1)', ...
+%!                 'VariableNames', {'A'});
+%! join (TT, table ([1; 2], 'VariableNames', {'Rv'}));
+
 ################################################################################
 ##                        **    Input validation    **                        ##
 ################################################################################

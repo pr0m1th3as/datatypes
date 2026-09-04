@@ -5421,6 +5421,21 @@
 %!error <table.rowfun: 'timetable' OutputFormat is not supported.> ...
 %! rowfun (@(a) a, table ([1; 2]), 'OutputFormat', 'timetable')
 
+## a right table may hold several rows per key, and each one is matched
+%!test
+%! L = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'Key', 'Lv'});
+%! R = table ([1; 1; 2], {'p'; 'q'; 'r'}, 'VariableNames', {'Key', 'Rv'});
+%! C = innerjoin (L, R);
+%! assert_equal (C.Key, [1; 1; 2]);
+%! assert_equal (C.Lv, {'a'; 'a'; 'b'});
+%! assert_equal (C.Rv, {'p'; 'q'; 'r'});
+%!test
+%! L = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'Key', 'Lv'});
+%! R = table ([1; 1; 2], {'p'; 'q'; 'r'}, 'VariableNames', {'Key', 'Rv'});
+%! C = outerjoin (L, R);
+%! assert_equal (size (C), [3, 4]);
+%! assert_equal (C.Rv, {'p'; 'q'; 'r'});
+
 ## 'all' names every method, in the order they are reported
 %!test
 %! T = table (categorical ({'a'; 'a'; 'b'}), [1; 2; 3], ...

@@ -142,6 +142,12 @@ classdef table < tabular
       out = {'RowNames', this.DimensionNames{1}};
     endfunction
 
+    ## A table is already a plain table; only its row names go.
+    function out = plainTable (this)
+      out = this;
+      out.RowNames = {};
+    endfunction
+
     ## Row names are unique, so grouping by them would put every row in a
     ## group of its own; they are not a grouping key.
     function tf = groupsByLabels (this)
@@ -3050,125 +3056,16 @@ classdef table < tabular
     ##
     ## @end deftypefn
     function [tbl, ixR] = join (tblL, tblR, varargin)
-
-      ## Check input arguments
       if (nargin < 2)
         error ("table.join: too few input arguments.");
       endif
-      if (! istable (tblL) || ! istable (tblR))
-        error ("table.join: both inputs must be tables.");
+      ## The caller's own names for the operands are read here, before
+      ## the shared body, which cannot see them.
+      [tbl, ixR, errmsg] = joinResult (tblL, tblR, varargin, ...
+                                       inputname (1), inputname (2));
+      if (! isempty (errmsg))
+        error ("table.join: %s", errmsg);
       endif
-
-      ## Parse Name/Value options
-      optNames = {'Keys', 'LeftKeys', 'RightKeys', 'LeftVariables', ...
-                  'RightVariables', 'KeepOneCopy'};
-      dfValues = {[], [], [], [], [], []};
-      [Keys, LeftKeys, RightKeys, LeftVariables, RightVariables, KeepOneCopy, ...
-       rem] = parsePairedArguments (optNames, dfValues, varargin(:));
-      if (! isempty (rem))
-        error ("table.join: invalid optional input argument.");
-      endif
-
-      ## Resolve key variables on each side
-      if (! isempty (Keys))
-        if (! isempty (LeftKeys) || ! isempty (RightKeys))
-          error (strcat ("table.join: 'Keys' cannot be combined with", ...
-                         " 'LeftKeys' or 'RightKeys'."));
-        endif
-        lKeyIdx = resolveVarRef (tblL, Keys);
-        rKeyIdx = resolveVarRef (tblR, Keys);
-      elseif (! isempty (LeftKeys) || ! isempty (RightKeys))
-        if (isempty (LeftKeys) || isempty (RightKeys))
-          error (strcat ("table.join: 'LeftKeys' and 'RightKeys' must be", ...
-                         " specified together."));
-        endif
-        lKeyIdx = resolveVarRef (tblL, LeftKeys);
-        rKeyIdx = resolveVarRef (tblR, RightKeys);
-        if (numel (lKeyIdx) != numel (rKeyIdx))
-          error (strcat ("table.join: 'LeftKeys' and 'RightKeys' must", ...
-                         " reference the same number of variables."));
-        endif
-      else
-        ## Default keys are the variables common to both tables (left order)
-        isCommon = ismember (tblL.VariableNames, tblR.VariableNames);
-        lKeyIdx = find (isCommon);
-        if (isempty (lKeyIdx))
-          error (strcat ("table.join: cannot find any common key variables", ...
-                         " between the two tables."));
-        endif
-        [~, rKeyIdx] = ismember (tblL.VariableNames(lKeyIdx), ...
-                                 tblR.VariableNames);
-      endif
-
-      ## Resolve output variables on each side
-      if (isempty (LeftVariables))
-        lVarIdx = 1:width (tblL);
-      else
-        lVarIdx = resolveVarRef (tblL, LeftVariables);
-      endif
-      if (isempty (RightVariables))
-        rVarIdx = setdiff (1:width (tblR), rKeyIdx);
-      else
-        rVarIdx = resolveVarRef (tblR, RightVariables);
-      endif
-
-      ## Drop the right copy of any 'KeepOneCopy' variable shared with the left
-      if (! isempty (KeepOneCopy))
-        keepNames = cellstr (KeepOneCopy);
-        rNames = tblR.VariableNames(rVarIdx);
-        lNames = tblL.VariableNames(lVarIdx);
-        dropMask = ismember (rNames, keepNames) & ismember (rNames, lNames);
-        rVarIdx(dropMask) = [];
-      endif
-
-      ## Build consistent numeric key proxies for both tables
-      leftProxy = [];
-      rightProxy = [];
-      for k = 1:numel (lKeyIdx)
-        lcol = tblL.VariableValues{lKeyIdx(k)};
-        rcol = tblR.VariableValues{rKeyIdx(k)};
-        [lp, rp, errmsg] = tabular.key_col_proxy (lcol, rcol);
-        if (! isempty (errmsg))
-          error ("table.join: %s", errmsg);
-        endif
-        leftProxy = [leftProxy, lp];
-        rightProxy = [rightProxy, rp];
-      endfor
-
-      ## The right key combinations must be unique
-      if (rows (unique (rightProxy, 'rows')) != rows (rightProxy))
-        error (strcat ("table.join: the key variables of TBLR must contain", ...
-                       " unique combinations of values."));
-      endif
-
-      ## Match each left row to its unique right row
-      [tf, ixR] = ismember (leftProxy, rightProxy, 'rows');
-      if (! all (tf))
-        error (strcat ("table.join: the key variables of TBLR must contain", ...
-                       " all values of the key variables of TBLL."));
-      endif
-
-      ## Assemble the output: all selected left rows + matched right rows
-      Lpart = subsetvars (tblL, lVarIdx);
-      Rpart = subsetrows (subsetvars (tblR, rVarIdx), ixR);
-      Rpart.RowNames = {};
-      ## Suffix any non-key variable names shared by both sides
-      shared = intersect (Lpart.VariableNames, Rpart.VariableNames);
-      if (! isempty (shared))
-        [lsuf, rsuf] = join_suffixes (inputname (1), inputname (2));
-        lNames = Lpart.VariableNames;
-        rNames = Rpart.VariableNames;
-        for i = find (ismember (lNames, shared))
-          lNames{i} = [lNames{i}, lsuf];
-        endfor
-        for i = find (ismember (rNames, shared))
-          rNames{i} = [rNames{i}, rsuf];
-        endfor
-        Lpart.VariableNames = lNames;
-        Rpart.VariableNames = rNames;
-      endif
-      tbl = horzcat (Lpart, Rpart);
-
     endfunction
 
     ## -*- texinfo -*-
@@ -3312,7 +3209,7 @@ classdef table < tabular
         lr = find (icL == g);
         rr = find (icR == g);
         if (! isempty (lr) && ! isempty (rr))
-          ixL = [ixL; repelem(lr(:), numel (rr))];
+          ixL = [ixL; repelem(lr(:), numel (rr), 1)];
           ixR = [ixR; repmat(rr(:), numel (lr), 1)];
         endif
       endfor
@@ -3325,7 +3222,7 @@ classdef table < tabular
       ## Suffix any non-key variable names shared by both sides
       shared = intersect (Lpart.VariableNames, Rpart.VariableNames);
       if (! isempty (shared))
-        [lsuf, rsuf] = join_suffixes (inputname (1), inputname (2));
+        [lsuf, rsuf] = tabular.join_suffixes (inputname (1), inputname (2));
         lNames = Lpart.VariableNames;
         rNames = Rpart.VariableNames;
         for i = find (ismember (lNames, shared))
@@ -3511,7 +3408,7 @@ classdef table < tabular
         nl = numel (lr);
         nr = numel (rr);
         if (nl > 0 && nr > 0)
-          ixL = [ixL; repelem(lr(:), nr)];
+          ixL = [ixL; repelem(lr(:), nr, 1)];
           ixR = [ixR; repmat(rr(:), nl, 1)];
         elseif (nl > 0 && keepL)
           ixL = [ixL; lr(:)];
@@ -3564,7 +3461,7 @@ classdef table < tabular
       ## Suffix any variable names shared by both sides
       shared = intersect (Lout.VariableNames, Rout.VariableNames);
       if (! isempty (shared))
-        [lsuf, rsuf] = join_suffixes (inputname (1), inputname (2));
+        [lsuf, rsuf] = tabular.join_suffixes (inputname (1), inputname (2));
         lNames = Lout.VariableNames;
         rNames = Rout.VariableNames;
         for i = find (ismember (lNames, shared))
@@ -5906,21 +5803,6 @@ function [order, errmsg] = parse_set_order (args)
       order = lower (args{1});
     endif
   endif
-endfunction
-
-## Build the disambiguation suffixes used by the join methods when a variable
-## name is shared by both tables.  MATLAB derives them from the input argument
-## names (e.g. inputs L and R give '_L'/'_R'); fall back to '_left'/'_right'
-## when an input has no workspace name.
-function [lsuf, rsuf] = join_suffixes (leftName, rightName)
-  if (isempty (leftName))
-    leftName = 'left';
-  endif
-  if (isempty (rightName))
-    rightName = 'right';
-  endif
-  lsuf = ['_', leftName];
-  rsuf = ['_', rightName];
 endfunction
 
 ## Map a scalar grouping value VAL to the character vector used as a 'pivot'

@@ -196,6 +196,19 @@ classdef timetable < tabular
       out = this.DimensionNames(1);
     endfunction
 
+    ## The variables alone, as a table: the row times label rows and a table
+    ## has no rows to label.
+    function out = plainTable (this)
+      vals = this.VariableValues;
+      if (isempty (vals))
+        out = table.empty (height (this), 0);
+      else
+        out = table (vals{:}, 'VariableNames', this.VariableNames);
+        out.Properties.VariableDescriptions = this.VariableDescriptions;
+        out.Properties.VariableUnits = this.VariableUnits;
+      endif
+    endfunction
+
     ## The row times are an ordinary grouping key, named by the row
     ## dimension.
     function tf = groupsByLabels (this)
@@ -2310,6 +2323,7 @@ classdef timetable < tabular
 ##                                                                            ##
 ## 'varfun'           'rowfun'           'grouptransform'   'groupcounts'     ##
 ## 'groupsummary'     'groupfilter'      'stack'            'rows2vars'       ##
+## 'join'                                                                     ##
 ##                                                                            ##
 ################################################################################
 
@@ -2764,6 +2778,65 @@ classdef timetable < tabular
       [tbl, errmsg] = rows2varsResult (tt, varargin);
       if (! isempty (errmsg))
         error ("timetable.rows2vars: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{ttC} =} join (@var{ttL}, @var{tblR})
+    ## @deftypefnx {timetable} {@var{ttC} =} join (@var{ttL}, @var{tblR}, @var{Name}, @var{Value})
+    ## @deftypefnx {timetable} {[@var{ttC}, @var{index}] =} join (@dots{})
+    ##
+    ## Join a timetable with another tabular object.
+    ##
+    ## @code{@var{ttC} = join (@var{ttL}, @var{tblR})} returns a timetable
+    ## with every row of @var{ttL}, its row times kept, and beside it the row
+    ## of @var{tblR} whose key matches.  The right operand contributes
+    ## variables only, so the result is a timetable exactly as long as
+    ## @var{ttL}.
+    ##
+    ## The key must name a row of @var{tblR} for every row of @var{ttL}, and
+    ## the keys of @var{tblR} must be unique.  With no key named, two
+    ## timetables join on their row times; a timetable and a table have no
+    ## key in common unless one is named, since the row times are not a
+    ## variable.
+    ##
+    ## @code{[@var{ttC}, @var{index}] = join (@dots{})} also returns
+    ## @var{index}, naming the row of @var{tblR} each row took.
+    ##
+    ## The following @var{Name}/@var{Value} pairs are accepted:
+    ##
+    ## @table @asis
+    ## @item @qcode{'Keys'}
+    ## The variables to match on, named on both sides.  The row dimension name
+    ## names the row times.
+    ##
+    ## @item @qcode{'LeftKeys'}, @qcode{'RightKeys'}
+    ## The variables to match on, named separately for each side and given
+    ## together.  They must name the same number of keys.
+    ##
+    ## @item @qcode{'LeftVariables'}, @qcode{'RightVariables'}
+    ## The variables each side contributes.  By default the left contributes
+    ## all of its own and the right all but its keys.
+    ##
+    ## @item @qcode{'KeepOneCopy'}
+    ## Variables that both sides carry and only the left contributes.
+    ## @end table
+    ##
+    ## A variable name carried by both sides and contributed by both is
+    ## suffixed with the caller's own name for each operand, falling back to
+    ## @qcode{_left} and @qcode{_right}.
+    ##
+    ## @end deftypefn
+    function [ttC, index] = join (ttL, tblR, varargin)
+      if (nargin < 2)
+        error ("timetable.join: too few input arguments.");
+      endif
+      ## The caller's own names for the operands are read here, before the
+      ## shared body, which cannot see them.
+      [ttC, index, errmsg] = joinResult (ttL, tblR, varargin, ...
+                                         inputname (1), inputname (2));
+      if (! isempty (errmsg))
+        error ("timetable.join: %s", errmsg);
       endif
     endfunction
 

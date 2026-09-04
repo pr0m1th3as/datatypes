@@ -224,12 +224,12 @@ classdef (Abstract) tabular
 ##                         **    Subclass hooks    **                         ##
 ################################################################################
 ##                                                                            ##
-## Every subclass must implement all nineteen.  Octave's classdef has no      ##
+## Every subclass must implement all twenty.  Octave's classdef has no        ##
 ## 'methods (Abstract)' block, so the contract cannot be declared; these      ##
 ## raising defaults stand in for it, and name the subclass that is missing    ##
 ## one because 'class (this)' resolves downwards.                             ##
 ##                                                                            ##
-## Seventeen of them concern row labels, which is the whole of what           ##
+## Eighteen of them concern row labels, which is the whole of what            ##
 ## separates one tabular class from another; the other two name the           ##
 ## properties object and build the result of an apply method.                 ##
 ##                                                                            ##
@@ -252,6 +252,7 @@ classdef (Abstract) tabular
 ## 'makeProperties'    the properties object this class's metadata lives in   ##
 ## 'assembleApply'     an object built from an apply method's output          ##
 ## 'repeatRowLabels'   the labels with each row repeated N times              ##
+## 'plainTable'        the variables as a table, the labels dropped           ##
 ##                                                                            ##
 ################################################################################
 
@@ -376,6 +377,14 @@ classdef (Abstract) tabular
     ## Raises when the object carries no labels to match against.
     function ixRows = resolveRowRef (this, rowRef)
       error ("%s: subclass must implement resolveRowRef.", class (this));
+    endfunction
+
+    ## The variables of this object as a plain table, its row labels dropped.
+    ## A join lays the right operand's variables beside the left's, and only
+    ## the left's labels survive, so the right side is reduced to this first.
+    function out = plainTable (this)
+      error (strcat ("%s: subclass must implement", ...
+                     " plainTable."), class (this));
     endfunction
 
     ## This object with its row labels repeated N times, ELEMENTWISE placing
@@ -3611,6 +3620,148 @@ classdef (Abstract) tabular
       G = table (vars{:}, 'VariableNames', names);
     endfunction
 
+    ## The body behind 'join' on both classes.  NAMEL and NAMER are the
+    ## caller's own names for the two operands, which name a collision.
+    ## Returns an errmsg body (empty on success) for the caller to raise
+    ## under its own name.  The result is of the left operand's class: its
+    ## rows and its labels are kept and the right side contributes variables.
+    function [tbl, ixR, errmsg] = joinResult (tblL, tblR, args_in, ...
+                                              nameL, nameR)
+      tbl = [];
+      ixR = [];
+      errmsg = '';
+      if (! isa (tblR, 'tabular'))
+        errmsg = 'both inputs must be tables or timetables.';
+        return;
+      endif
+
+      ## Parse Name/Value options
+      optNames = {'Keys', 'LeftKeys', 'RightKeys', 'LeftVariables', ...
+                  'RightVariables', 'KeepOneCopy'};
+      dfValues = {[], [], [], [], [], []};
+      [Keys, LeftKeys, RightKeys, LeftVariables, RightVariables, ...
+       KeepOneCopy, rem] = parsePairedArguments (optNames, dfValues, ...
+                                                 args_in(:));
+      if (! isempty (rem))
+        errmsg = 'invalid optional input argument.';
+        return;
+      endif
+
+      ## Resolve key columns on each side.  A class that groups by its row
+      ## labels answers to their name, so a timetable joins on its row times.
+      if (! isempty (Keys))
+        if (! isempty (LeftKeys) || ! isempty (RightKeys))
+          errmsg = strcat ("'Keys' cannot be combined with 'LeftKeys' or", ...
+                           " 'RightKeys'.");
+          return;
+        endif
+        [lCols, ~, lKeyIdx] = keyColumns (tblL, Keys);
+        [rCols, ~, rKeyIdx] = keyColumns (tblR, Keys);
+      elseif (! isempty (LeftKeys) || ! isempty (RightKeys))
+        if (isempty (LeftKeys) || isempty (RightKeys))
+          errmsg = strcat ("'LeftKeys' and 'RightKeys' must be specified", ...
+                           " together.");
+          return;
+        endif
+        [lCols, ~, lKeyIdx] = keyColumns (tblL, LeftKeys);
+        [rCols, ~, rKeyIdx] = keyColumns (tblR, RightKeys);
+        if (numel (lCols) != numel (rCols))
+          errmsg = strcat ("'LeftKeys' and 'RightKeys' must reference the", ...
+                           " same number of variables.");
+          return;
+        endif
+      elseif (groupsByLabels (tblL) && groupsByLabels (tblR))
+        ## Two classes labelled by the same kind of thing join on the labels.
+        lCols = {getRowLabels(tblL)};
+        rCols = {getRowLabels(tblR)};
+        lKeyIdx = 0;
+        rKeyIdx = 0;
+      else
+        ## Default keys are the variables common to both (left order)
+        isCommon = ismember (tblL.VariableNames, tblR.VariableNames);
+        lKeyIdx = find (isCommon);
+        if (isempty (lKeyIdx))
+          errmsg = strcat ("cannot find any common key variables between", ...
+                           " the two tables.");
+          return;
+        endif
+        [~, rKeyIdx] = ismember (tblL.VariableNames(lKeyIdx), ...
+                                 tblR.VariableNames);
+        lCols = tblL.VariableValues(lKeyIdx);
+        rCols = tblR.VariableValues(rKeyIdx);
+      endif
+
+      ## Resolve output variables on each side
+      if (isempty (LeftVariables))
+        lVarIdx = 1:width (tblL);
+      else
+        lVarIdx = resolveVarRef (tblL, LeftVariables);
+      endif
+      if (isempty (RightVariables))
+        rVarIdx = setdiff (1:width (tblR), rKeyIdx(rKeyIdx > 0));
+      else
+        rVarIdx = resolveVarRef (tblR, RightVariables);
+      endif
+
+      ## Drop the right copy of a 'KeepOneCopy' variable shared with the left
+      if (! isempty (KeepOneCopy))
+        keepNames = cellstr (KeepOneCopy);
+        rNames = tblR.VariableNames(rVarIdx);
+        lNames = tblL.VariableNames(lVarIdx);
+        dropMask = ismember (rNames, keepNames) & ismember (rNames, lNames);
+        rVarIdx(dropMask) = [];
+      endif
+
+      ## Build consistent numeric key proxies for both sides
+      leftProxy = [];
+      rightProxy = [];
+      for k = 1:numel (lCols)
+        [lp, rp, errmsg] = tabular.key_col_proxy (lCols{k}, rCols{k});
+        if (! isempty (errmsg))
+          return;
+        endif
+        leftProxy = [leftProxy, lp];
+        rightProxy = [rightProxy, rp];
+      endfor
+
+      ## The right key combinations must be unique
+      if (rows (unique (rightProxy, 'rows')) != rows (rightProxy))
+        errmsg = strcat ("the key variables of TBLR must contain unique", ...
+                         " combinations of values.");
+        return;
+      endif
+
+      ## Match each left row to its unique right row
+      [tf, ixR] = ismember (leftProxy, rightProxy, 'rows');
+      if (! all (tf))
+        errmsg = strcat ("the key variables of TBLR must contain all", ...
+                         " values of the key variables of TBLL.");
+        return;
+      endif
+
+      ## Assemble the output: the left rows keep their labels, the right side
+      ## contributes variables and nothing else.
+      Lpart = subsetvars (tblL, lVarIdx);
+      Rpart = subsetrows (subsetvars (tblR, rVarIdx), ixR);
+      Rpart = plainTable (Rpart);
+      ## Suffix any non-key variable names shared by both sides
+      shared = intersect (Lpart.VariableNames, Rpart.VariableNames);
+      if (! isempty (shared))
+        [lsuf, rsuf] = tabular.join_suffixes (nameL, nameR);
+        lNames = Lpart.VariableNames;
+        rNames = Rpart.VariableNames;
+        for i = find (ismember (lNames, shared))
+          lNames{i} = [lNames{i}, lsuf];
+        endfor
+        for i = find (ismember (rNames, shared))
+          rNames{i} = [rNames{i}, rsuf];
+        endfor
+        Lpart.VariableNames = lNames;
+        Rpart.VariableNames = rNames;
+      endif
+      tbl = horzcat (Lpart, Rpart);
+    endfunction
+
     ## The body behind 'rows2vars' on both classes.  Returns an errmsg body
     ## (empty on success) for the caller to raise under its own name.  The
     ## result is a table whatever the input was: its rows are the variables of
@@ -4586,6 +4737,44 @@ classdef (Abstract) tabular
       names = fieldnames (this.CustomProperties);
       keep = cellfun (@(n) strcmp (this.CustomPropTypes.(n), type), names);
       names = names(keep);
+    endfunction
+
+    ## The key columns a join reference names, in the order it names them.
+    ## A class that groups by its row labels answers to their name here too,
+    ## and contributes the labels themselves as a key column, for which IXVAR
+    ## reports 0, there being no variable to exclude from the result.
+    function [cols, names, ixVar] = keyColumns (this, ref)
+      isText = ischar (ref) || iscellstr (ref) || isa (ref, 'string');
+      if (! isText)
+        ix = resolveVarRef (this, ref);
+        ixVar = ix(:)';
+        cols = this.VariableValues(ixVar);
+        names = this.VariableNames(ixVar);
+        return;
+      endif
+      if (ischar (ref))
+        want = {ref};
+      else
+        want = cellstr (ref);
+      endif
+      want = want(:)';
+      if (groupsByLabels (this))
+        keys = rowLabelKeyNames (this);
+      else
+        keys = {};
+      endif
+      cols = cell (1, numel (want));
+      ixVar = zeros (1, numel (want));
+      names = want;
+      for k = 1:numel (want)
+        if (any (strcmp (want{k}, keys)))
+          cols{k} = getRowLabels (this);
+        else
+          ix = resolveVarRef (this, want(k));
+          ixVar(k) = ix;
+          cols{k} = this.VariableValues{ix};
+        endif
+      endfor
     endfunction
 
     ## Resolve a 'GroupingVariables' reference.  IXVAR indexes the variables
@@ -6957,6 +7146,21 @@ classdef (Abstract) tabular
           keep(rows) = keep(rows) & m;
         endfor
       endfor
+    endfunction
+
+    ## Build the disambiguation suffixes used by the join methods when a
+    ## variable name is shared by both tables.  MATLAB derives them from the
+    ## input argument names (e.g. inputs L and R give '_L'/'_R'); fall back to
+    ## '_left'/'_right' when an input has no workspace name.
+    function [lsuf, rsuf] = join_suffixes (leftName, rightName)
+      if (isempty (leftName))
+        leftName = 'left';
+      endif
+      if (isempty (rightName))
+        rightName = 'right';
+      endif
+      lsuf = ['_', leftName];
+      rsuf = ['_', rightName];
     endfunction
 
     ## Build the cell array of input arguments passed to FUNC for the rows
