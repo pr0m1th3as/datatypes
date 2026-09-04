@@ -224,12 +224,12 @@ classdef (Abstract) tabular
 ##                         **    Subclass hooks    **                         ##
 ################################################################################
 ##                                                                            ##
-## Every subclass must implement all twenty.  Octave's classdef has no        ##
+## Every subclass must implement all twenty-one.  Octave's classdef has no    ##
 ## 'methods (Abstract)' block, so the contract cannot be declared; these      ##
 ## raising defaults stand in for it, and name the subclass that is missing    ##
 ## one because 'class (this)' resolves downwards.                             ##
 ##                                                                            ##
-## Eighteen of them concern row labels, which is the whole of what            ##
+## Nineteen of them concern row labels, which is the whole of what            ##
 ## separates one tabular class from another; the other two name the           ##
 ## properties object and build the result of an apply method.                 ##
 ##                                                                            ##
@@ -253,6 +253,7 @@ classdef (Abstract) tabular
 ## 'assembleApply'     an object built from an apply method's output          ##
 ## 'repeatRowLabels'   the labels with each row repeated N times              ##
 ## 'plainTable'        the variables as a table, the labels dropped           ##
+## 'setRowLabels'      the object given a set of labels of its own type       ##
 ##                                                                            ##
 ################################################################################
 
@@ -377,6 +378,14 @@ classdef (Abstract) tabular
     ## Raises when the object carries no labels to match against.
     function ixRows = resolveRowRef (this, rowRef)
       error ("%s: subclass must implement resolveRowRef.", class (this));
+    endfunction
+
+    ## This object with LABELS as its row labels, given in the class's own
+    ## type.  The counterpart of 'getRowLabels', for the few places that build
+    ## a set of labels rather than subsetting the ones there are.
+    function this = setRowLabels (this, labels)
+      error (strcat ("%s: subclass must implement", ...
+                     " setRowLabels."), class (this));
     endfunction
 
     ## The variables of this object as a plain table, its row labels dropped.
@@ -3649,6 +3658,153 @@ classdef (Abstract) tabular
 
       ## Resolve key columns on each side.  A class that groups by its row
       ## labels answers to their name, so a timetable joins on its row times.
+      [lCols, rCols, ~, rKeyIdx, errmsg] = joinKeys (tblL, tblR, Keys, ...
+                                                     LeftKeys, RightKeys);
+      if (! isempty (errmsg))
+        return;
+      endif
+
+      ## Resolve output variables on each side
+      if (isempty (LeftVariables))
+        lVarIdx = 1:width (tblL);
+      else
+        lVarIdx = resolveVarRef (tblL, LeftVariables);
+      endif
+      if (isempty (RightVariables))
+        rVarIdx = setdiff (1:width (tblR), rKeyIdx(rKeyIdx > 0));
+      else
+        rVarIdx = resolveVarRef (tblR, RightVariables);
+      endif
+
+      ## Drop the right copy of a 'KeepOneCopy' variable shared with the left
+      if (! isempty (KeepOneCopy))
+        keepNames = cellstr (KeepOneCopy);
+        rNames = tblR.VariableNames(rVarIdx);
+        lNames = tblL.VariableNames(lVarIdx);
+        dropMask = ismember (rNames, keepNames) & ismember (rNames, lNames);
+        rVarIdx(dropMask) = [];
+      endif
+
+      ## Build consistent numeric key proxies for both sides
+      [leftProxy, rightProxy, errmsg] = tabular.joinProxies (lCols, ...
+                                                            rCols);
+      if (! isempty (errmsg))
+        return;
+      endif
+
+      ## The right key combinations must be unique
+      if (rows (unique (rightProxy, 'rows')) != rows (rightProxy))
+        errmsg = strcat ("the key variables of TBLR must contain unique", ...
+                         " combinations of values.");
+        return;
+      endif
+
+      ## Match each left row to its unique right row
+      [tf, ixR] = ismember (leftProxy, rightProxy, 'rows');
+      if (! all (tf))
+        errmsg = strcat ("the key variables of TBLR must contain all", ...
+                         " values of the key variables of TBLL.");
+        return;
+      endif
+
+      ## Assemble the output: the left rows keep their labels, the right side
+      ## contributes variables and nothing else.
+      Lpart = subsetvars (tblL, lVarIdx);
+      Rpart = subsetrows (subsetvars (tblR, rVarIdx), ixR);
+      Rpart = plainTable (Rpart);
+      [Lpart, Rpart] = suffixShared (Lpart, Rpart, nameL, nameR);
+      tbl = horzcat (Lpart, Rpart);
+    endfunction
+
+    ## The body behind 'innerjoin' on both classes.  NAMEL and NAMER are the
+    ## caller's own names for the two operands, which name a collision.
+    ## Returns an errmsg body (empty on success) for the caller to raise
+    ## under its own name.  The result is of the left operand's class and
+    ## carries the labels of the left rows it matched, where those labels are
+    ## a dimension of their own; a table's row names are dropped, the rows
+    ## being pairs rather than the rows they came from.
+    function [tbl, ixL, ixR, errmsg] = innerjoinResult (tblL, tblR, ...
+                                                        args_in, nameL, nameR)
+      tbl = [];
+      ixL = [];
+      ixR = [];
+      errmsg = '';
+      if (! isa (tblR, 'tabular'))
+        errmsg = 'both inputs must be tables or timetables.';
+        return;
+      endif
+
+      ## Parse Name/Value options
+      optNames = {'Keys', 'LeftKeys', 'RightKeys', 'LeftVariables', ...
+                  'RightVariables'};
+      dfValues = {[], [], [], [], []};
+      [Keys, LeftKeys, RightKeys, LeftVariables, RightVariables, rem] = ...
+        parsePairedArguments (optNames, dfValues, args_in(:));
+      if (! isempty (rem))
+        errmsg = 'invalid optional input argument.';
+        return;
+      endif
+
+      [lCols, rCols, ~, rKeyIdx, errmsg] = joinKeys (tblL, tblR, Keys, ...
+                                                     LeftKeys, RightKeys);
+      if (! isempty (errmsg))
+        return;
+      endif
+
+      ## Resolve output variables on each side
+      if (isempty (LeftVariables))
+        lVarIdx = 1:width (tblL);
+      else
+        lVarIdx = resolveVarRef (tblL, LeftVariables);
+      endif
+      if (isempty (RightVariables))
+        rVarIdx = setdiff (1:width (tblR), rKeyIdx(rKeyIdx > 0));
+      else
+        rVarIdx = resolveVarRef (tblR, RightVariables);
+      endif
+
+      ## Build consistent numeric key proxies for both sides
+      [leftProxy, rightProxy, errmsg] = tabular.joinProxies (lCols, ...
+                                                            rCols);
+      if (! isempty (errmsg))
+        return;
+      endif
+
+      ## Match key rows and lay out the Cartesian product, key-sorted
+      Nl = height (tblL);
+      [uKeys, ~, ic] = unique ([leftProxy; rightProxy], 'rows');
+      icL = ic(1:Nl);
+      icR = ic(Nl+1:end);
+      for g = 1:rows (uKeys)
+        lr = find (icL == g);
+        rr = find (icR == g);
+        if (! isempty (lr) && ! isempty (rr))
+          ixL = [ixL; repelem(lr(:), numel (rr), 1)];
+          ixR = [ixR; repmat(rr(:), numel (lr), 1)];
+        endif
+      endfor
+
+      ## Assemble the output
+      Lpart = subsetrows (subsetvars (tblL, lVarIdx), ixL);
+      if (isempty (rowLabelHeader (tblL)))
+        Lpart = clearRowLabels (Lpart);
+      endif
+      Rpart = plainTable (subsetrows (subsetvars (tblR, rVarIdx), ixR));
+      [Lpart, Rpart] = suffixShared (Lpart, Rpart, nameL, nameR);
+      tbl = horzcat (Lpart, Rpart);
+    endfunction
+
+    ## The key columns of a join, resolved on both sides from whichever of
+    ## 'Keys', 'LeftKeys'/'RightKeys' or the default was given.  RKEYIDX
+    ## indexes the right variables the keys used, 0 where a key is the row
+    ## labels on either side.  Returns an errmsg body (empty on success).
+    function [lCols, rCols, lKeyIdx, rKeyIdx, errmsg] = joinKeys (tblL, ...
+                                 tblR, Keys, LeftKeys, RightKeys)
+      lCols = {};
+      rCols = {};
+      lKeyIdx = [];
+      rKeyIdx = [];
+      errmsg = '';
       if (! isempty (Keys))
         if (! isempty (LeftKeys) || ! isempty (RightKeys))
           errmsg = strcat ("'Keys' cannot be combined with 'LeftKeys' or", ...
@@ -3677,7 +3833,6 @@ classdef (Abstract) tabular
         lKeyIdx = 0;
         rKeyIdx = 0;
       else
-        ## Default keys are the variables common to both (left order)
         isCommon = ismember (tblL.VariableNames, tblR.VariableNames);
         lKeyIdx = find (isCommon);
         if (isempty (lKeyIdx))
@@ -3690,76 +3845,164 @@ classdef (Abstract) tabular
         lCols = tblL.VariableValues(lKeyIdx);
         rCols = tblR.VariableValues(rKeyIdx);
       endif
+    endfunction
 
-      ## Resolve output variables on each side
+    ## The two sides of a join with any name they share suffixed by the
+    ## caller's own name for each operand.
+    function [Lpart, Rpart] = suffixShared (Lpart, Rpart, nameL, nameR)
+      shared = intersect (Lpart.VariableNames, Rpart.VariableNames);
+      if (isempty (shared))
+        return;
+      endif
+      [lsuf, rsuf] = tabular.join_suffixes (nameL, nameR);
+      lNames = Lpart.VariableNames;
+      rNames = Rpart.VariableNames;
+      for i = find (ismember (lNames, shared))
+        lNames{i} = [lNames{i}, lsuf];
+      endfor
+      for i = find (ismember (rNames, shared))
+        rNames{i} = [rNames{i}, rsuf];
+      endfor
+      Lpart.VariableNames = lNames;
+      Rpart.VariableNames = rNames;
+    endfunction
+
+    ## The body behind 'outerjoin' on both classes.  NAMEL and NAMER are the
+    ## caller's own names for the two operands, which name a collision.
+    ## Returns an errmsg body (empty on success) for the caller to raise
+    ## under its own name.  The result is of the left operand's class; a row
+    ## with no left row to come from carries no label of its own.
+    function [tbl, ixL, ixR, errmsg] = outerjoinResult (tblL, tblR, ...
+                                                        args_in, nameL, nameR)
+      tbl = [];
+      ixL = [];
+      ixR = [];
+      errmsg = '';
+      if (! isa (tblR, 'tabular'))
+        errmsg = 'both inputs must be tables or timetables.';
+        return;
+      endif
+
+      ## Parse Name/Value options
+      optNames = {'Keys', 'LeftKeys', 'RightKeys', 'LeftVariables', ...
+                  'RightVariables', 'Type', 'MergeKeys'};
+      dfValues = {[], [], [], [], [], 'full', false};
+      [Keys, LeftKeys, RightKeys, LeftVariables, RightVariables, Type, ...
+       MergeKeys, rem] = parsePairedArguments (optNames, dfValues, args_in(:));
+      if (! isempty (rem))
+        errmsg = 'invalid optional input argument.';
+        return;
+      endif
+
+      ## Validate 'Type' and 'MergeKeys'
+      if (! (ischar (Type) && isrow (Type))
+          || ! any (strcmpi (Type, {'full', 'left', 'right'})))
+        errmsg = "'Type' must be 'full', 'left', or 'right'.";
+        return;
+      endif
+      Type = lower (Type);
+      if (! (islogical (MergeKeys) && isscalar (MergeKeys)))
+        errmsg = "'MergeKeys' must be a logical scalar.";
+        return;
+      endif
+
+      ## Resolve key columns on each side.  A class that groups by its row
+      ## labels answers to their name, so a timetable joins on its row times.
+      [lCols, rCols, lKeyIdx, rKeyIdx, errmsg] = joinKeys (tblL, tblR, ...
+                                          Keys, LeftKeys, RightKeys);
+      if (! isempty (errmsg))
+        return;
+      endif
+
+      ## Resolve output variables (defaults: all variables of each table)
       if (isempty (LeftVariables))
         lVarIdx = 1:width (tblL);
       else
         lVarIdx = resolveVarRef (tblL, LeftVariables);
       endif
       if (isempty (RightVariables))
-        rVarIdx = setdiff (1:width (tblR), rKeyIdx(rKeyIdx > 0));
+        rVarIdx = 1:width (tblR);
       else
         rVarIdx = resolveVarRef (tblR, RightVariables);
       endif
 
-      ## Drop the right copy of a 'KeepOneCopy' variable shared with the left
-      if (! isempty (KeepOneCopy))
-        keepNames = cellstr (KeepOneCopy);
-        rNames = tblR.VariableNames(rVarIdx);
-        lNames = tblL.VariableNames(lVarIdx);
-        dropMask = ismember (rNames, keepNames) & ismember (rNames, lNames);
-        rVarIdx(dropMask) = [];
+      ## Build consistent numeric key proxies for both sides
+      [leftProxy, rightProxy, errmsg] = tabular.joinProxies (lCols, rCols);
+      if (! isempty (errmsg))
+        return;
       endif
 
-      ## Build consistent numeric key proxies for both sides
-      leftProxy = [];
-      rightProxy = [];
-      for k = 1:numel (lCols)
-        [lp, rp, errmsg] = tabular.key_col_proxy (lCols{k}, rCols{k});
-        if (! isempty (errmsg))
-          return;
+      ## Match key rows, producing zero-filled index vectors per join type
+      Nl = height (tblL);
+      [uKeys, ~, ic] = unique ([leftProxy; rightProxy], 'rows');
+      icL = ic(1:Nl);
+      icR = ic(Nl+1:end);
+      keepL = any (strcmp (Type, {'full', 'left'}));
+      keepR = any (strcmp (Type, {'full', 'right'}));
+      ixL = [];
+      ixR = [];
+      for g = 1:rows (uKeys)
+        lr = find (icL == g);
+        rr = find (icR == g);
+        nl = numel (lr);
+        nr = numel (rr);
+        if (nl > 0 && nr > 0)
+          ixL = [ixL; repelem(lr(:), nr, 1)];
+          ixR = [ixR; repmat(rr(:), nl, 1)];
+        elseif (nl > 0 && keepL)
+          ixL = [ixL; lr(:)];
+          ixR = [ixR; zeros(nl, 1)];
+        elseif (nr > 0 && keepR)
+          ixL = [ixL; zeros(nr, 1)];
+          ixR = [ixR; rr(:)];
         endif
-        leftProxy = [leftProxy, lp];
-        rightProxy = [rightProxy, rp];
       endfor
 
-      ## The right key combinations must be unique
-      if (rows (unique (rightProxy, 'rows')) != rows (rightProxy))
-        errmsg = strcat ("the key variables of TBLR must contain unique", ...
-                         " combinations of values.");
+      ## Assemble each side, filling unmatched rows with missing values
+      [Lout, errmsg] = joinBuildSide (subsetvars (tblL, lVarIdx), ixL);
+      if (! isempty (errmsg))
         return;
       endif
-
-      ## Match each left row to its unique right row
-      [tf, ixR] = ismember (leftProxy, rightProxy, 'rows');
-      if (! all (tf))
-        errmsg = strcat ("the key variables of TBLR must contain all", ...
-                         " values of the key variables of TBLL.");
+      [Rout, errmsg] = joinBuildSide (subsetvars (tblR, rVarIdx), ixR);
+      if (! isempty (errmsg))
         return;
       endif
+      Rout = plainTable (Rout);
 
-      ## Assemble the output: the left rows keep their labels, the right side
-      ## contributes variables and nothing else.
-      Lpart = subsetvars (tblL, lVarIdx);
-      Rpart = subsetrows (subsetvars (tblR, rVarIdx), ixR);
-      Rpart = plainTable (Rpart);
-      ## Suffix any non-key variable names shared by both sides
-      shared = intersect (Lpart.VariableNames, Rpart.VariableNames);
-      if (! isempty (shared))
-        [lsuf, rsuf] = tabular.join_suffixes (nameL, nameR);
-        lNames = Lpart.VariableNames;
-        rNames = Rpart.VariableNames;
-        for i = find (ismember (lNames, shared))
-          lNames{i} = [lNames{i}, lsuf];
+      ## Optionally merge each key pair into a single variable.  A merged key
+      ## keeps the left position; its name is the left key name when both keys
+      ## share it, or 'leftName_rightName' when they differ.
+      if (MergeKeys)
+        [tfL, posL] = ismember (lKeyIdx, lVarIdx);
+        [tfR, posR] = ismember (rKeyIdx, rVarIdx);
+        tfL = tfL & (lKeyIdx > 0);
+        tfR = tfR & (rKeyIdx > 0);
+        dropR = [];
+        fillRows = (ixL == 0);
+        lNames = Lout.VariableNames;
+        for k = 1:numel (lKeyIdx)
+          if (tfL(k) && tfR(k))
+            mcol = Lout.VariableValues{posL(k)};
+            rcol = Rout.VariableValues{posR(k)};
+            mcol(fillRows,:) = rcol(fillRows,:);
+            Lout.VariableValues{posL(k)} = mcol;
+            lkn = tblL.VariableNames{lKeyIdx(k)};
+            rkn = tblR.VariableNames{rKeyIdx(k)};
+            if (! strcmp (lkn, rkn))
+              lNames{posL(k)} = [lkn, '_', rkn];
+            endif
+            dropR = [dropR, posR(k)];
+          endif
         endfor
-        for i = find (ismember (rNames, shared))
-          rNames{i} = [rNames{i}, rsuf];
-        endfor
-        Lpart.VariableNames = lNames;
-        Rpart.VariableNames = rNames;
+        Lout.VariableNames = lNames;
+        if (! isempty (dropR))
+          Rout = subsetvars (Rout, setdiff (1:width (Rout), dropR));
+        endif
       endif
-      tbl = horzcat (Lpart, Rpart);
+
+      ## Suffix any variable names shared by both sides
+      [Lout, Rout] = suffixShared (Lout, Rout, nameL, nameR);
+      tbl = horzcat (Lout, Rout);
     endfunction
 
     ## The body behind 'rows2vars' on both classes.  Returns an errmsg body
@@ -5066,7 +5309,23 @@ classdef (Abstract) tabular
         endif
         out.VariableValues{j} = col;
       endfor
-      out = clearRowLabels (out);
+      ## Labels that are a dimension of their own follow the rows they came
+      ## from, and a row that came from none carries a missing label; a
+      ## table's row names are dropped, the rows being pairs rather than the
+      ## rows they came from.
+      if (isempty (rowLabelHeader (this)) || ! any (pos))
+        out = clearRowLabels (out);
+      else
+        src = idx;
+        src(! pos) = idx(find (pos, 1));
+        labels = getRowLabels (this);
+        lab = labels(src);
+        [lab, errmsg] = set_var_missing (lab, ! pos);
+        if (! isempty (errmsg))
+          return;
+        endif
+        out = setRowLabels (out, lab);
+      endif
     endfunction
 
     ## Merge the custom properties of a set of horizontally-combined tables
@@ -7161,6 +7420,21 @@ classdef (Abstract) tabular
       endif
       lsuf = ['_', leftName];
       rsuf = ['_', rightName];
+    endfunction
+
+    ## The numeric proxies a join matches its key columns by.
+    function [leftProxy, rightProxy, errmsg] = joinProxies (lCols, rCols)
+      leftProxy = [];
+      rightProxy = [];
+      errmsg = '';
+      for k = 1:numel (lCols)
+        [lp, rp, errmsg] = tabular.key_col_proxy (lCols{k}, rCols{k});
+        if (! isempty (errmsg))
+          return;
+        endif
+        leftProxy = [leftProxy, lp];
+        rightProxy = [rightProxy, rp];
+      endfor
     endfunction
 
     ## Build the cell array of input arguments passed to FUNC for the rows

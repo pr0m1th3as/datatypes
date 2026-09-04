@@ -142,6 +142,11 @@ classdef table < tabular
       out = {'RowNames', this.DimensionNames{1}};
     endfunction
 
+    ## Row names given as a cellstr, or cleared when there are none.
+    function this = setRowLabels (this, labels)
+      this.RowNames = labels;
+    endfunction
+
     ## A table is already a plain table; only its row names go.
     function out = plainTable (this)
       out = this;
@@ -3122,120 +3127,15 @@ classdef table < tabular
     ##
     ## @end deftypefn
     function [tbl, ixL, ixR] = innerjoin (tblL, tblR, varargin)
-
-      ## Check input arguments
       if (nargin < 2)
         error ("table.innerjoin: too few input arguments.");
       endif
-      if (! istable (tblL) || ! istable (tblR))
-        error ("table.innerjoin: both inputs must be tables.");
+      [tbl, ixL, ixR, errmsg] = innerjoinResult (tblL, tblR, ...
+                                    varargin, inputname (1), ...
+                                    inputname (2));
+      if (! isempty (errmsg))
+        error ("table.innerjoin: %s", errmsg);
       endif
-
-      ## Parse Name/Value options
-      optNames = {'Keys', 'LeftKeys', 'RightKeys', 'LeftVariables', ...
-                  'RightVariables'};
-      dfValues = {[], [], [], [], []};
-      [Keys, LeftKeys, RightKeys, LeftVariables, RightVariables, rem] = ...
-        parsePairedArguments (optNames, dfValues, varargin(:));
-      if (! isempty (rem))
-        error ("table.innerjoin: invalid optional input argument.");
-      endif
-
-      ## Resolve key variables on each side
-      if (! isempty (Keys))
-        if (! isempty (LeftKeys) || ! isempty (RightKeys))
-          error (strcat ("table.innerjoin: 'Keys' cannot be combined with", ...
-                         " 'LeftKeys' or 'RightKeys'."));
-        endif
-        lKeyIdx = resolveVarRef (tblL, Keys);
-        rKeyIdx = resolveVarRef (tblR, Keys);
-      elseif (! isempty (LeftKeys) || ! isempty (RightKeys))
-        if (isempty (LeftKeys) || isempty (RightKeys))
-          error (strcat ("table.innerjoin: 'LeftKeys' and 'RightKeys' must", ...
-                         " be specified together."));
-        endif
-        lKeyIdx = resolveVarRef (tblL, LeftKeys);
-        rKeyIdx = resolveVarRef (tblR, RightKeys);
-        if (numel (lKeyIdx) != numel (rKeyIdx))
-          error (strcat ("table.innerjoin: 'LeftKeys' and 'RightKeys' must", ...
-                         " reference the same number of variables."));
-        endif
-      else
-        ## Default keys are the variables common to both tables (left order)
-        isCommon = ismember (tblL.VariableNames, tblR.VariableNames);
-        lKeyIdx = find (isCommon);
-        if (isempty (lKeyIdx))
-          error (strcat ("table.innerjoin: cannot find any common key", ...
-                         " variables between the two tables."));
-        endif
-        [~, rKeyIdx] = ismember (tblL.VariableNames(lKeyIdx), ...
-                                 tblR.VariableNames);
-      endif
-
-      ## Resolve output variables on each side
-      if (isempty (LeftVariables))
-        lVarIdx = 1:width (tblL);
-      else
-        lVarIdx = resolveVarRef (tblL, LeftVariables);
-      endif
-      if (isempty (RightVariables))
-        rVarIdx = setdiff (1:width (tblR), rKeyIdx);
-      else
-        rVarIdx = resolveVarRef (tblR, RightVariables);
-      endif
-
-      ## Build consistent numeric key proxies for both tables
-      leftProxy = [];
-      rightProxy = [];
-      for k = 1:numel (lKeyIdx)
-        lcol = tblL.VariableValues{lKeyIdx(k)};
-        rcol = tblR.VariableValues{rKeyIdx(k)};
-        [lp, rp, errmsg] = tabular.key_col_proxy (lcol, rcol);
-        if (! isempty (errmsg))
-          error ("table.innerjoin: %s", errmsg);
-        endif
-        leftProxy = [leftProxy, lp];
-        rightProxy = [rightProxy, rp];
-      endfor
-
-      ## Match key rows and lay out the Cartesian product, key-sorted
-      Nl = height (tblL);
-      [uKeys, ~, ic] = unique ([leftProxy; rightProxy], 'rows');
-      icL = ic(1:Nl);
-      icR = ic(Nl+1:end);
-      ixL = [];
-      ixR = [];
-      for g = 1:rows (uKeys)
-        lr = find (icL == g);
-        rr = find (icR == g);
-        if (! isempty (lr) && ! isempty (rr))
-          ixL = [ixL; repelem(lr(:), numel (rr), 1)];
-          ixR = [ixR; repmat(rr(:), numel (lr), 1)];
-        endif
-      endfor
-
-      ## Assemble the output table
-      Lpart = subsetrows (subsetvars (tblL, lVarIdx), ixL);
-      Rpart = subsetrows (subsetvars (tblR, rVarIdx), ixR);
-      Lpart.RowNames = {};
-      Rpart.RowNames = {};
-      ## Suffix any non-key variable names shared by both sides
-      shared = intersect (Lpart.VariableNames, Rpart.VariableNames);
-      if (! isempty (shared))
-        [lsuf, rsuf] = tabular.join_suffixes (inputname (1), inputname (2));
-        lNames = Lpart.VariableNames;
-        rNames = Rpart.VariableNames;
-        for i = find (ismember (lNames, shared))
-          lNames{i} = [lNames{i}, lsuf];
-        endfor
-        for i = find (ismember (rNames, shared))
-          rNames{i} = [rNames{i}, rsuf];
-        endfor
-        Lpart.VariableNames = lNames;
-        Rpart.VariableNames = rNames;
-      endif
-      tbl = horzcat (Lpart, Rpart);
-
     endfunction
 
     ## -*- texinfo -*-
@@ -3306,175 +3206,15 @@ classdef table < tabular
     ##
     ## @end deftypefn
     function [tbl, ixL, ixR] = outerjoin (tblL, tblR, varargin)
-
-      ## Check input arguments
       if (nargin < 2)
         error ("table.outerjoin: too few input arguments.");
       endif
-      if (! istable (tblL) || ! istable (tblR))
-        error ("table.outerjoin: both inputs must be tables.");
+      [tbl, ixL, ixR, errmsg] = outerjoinResult (tblL, tblR, ...
+                                    varargin, inputname (1), ...
+                                    inputname (2));
+      if (! isempty (errmsg))
+        error ("table.outerjoin: %s", errmsg);
       endif
-
-      ## Parse Name/Value options
-      optNames = {'Keys', 'LeftKeys', 'RightKeys', 'LeftVariables', ...
-                  'RightVariables', 'Type', 'MergeKeys'};
-      dfValues = {[], [], [], [], [], 'full', false};
-      [Keys, LeftKeys, RightKeys, LeftVariables, RightVariables, Type, ...
-       MergeKeys, rem] = parsePairedArguments (optNames, dfValues, varargin(:));
-      if (! isempty (rem))
-        error ("table.outerjoin: invalid optional input argument.");
-      endif
-
-      ## Validate 'Type' and 'MergeKeys'
-      if (! (ischar (Type) && isrow (Type))
-          || ! any (strcmpi (Type, {'full', 'left', 'right'})))
-        error (strcat ("table.outerjoin: 'Type' must be 'full', 'left', or", ...
-                       " 'right'."));
-      endif
-      Type = lower (Type);
-      if (! (islogical (MergeKeys) && isscalar (MergeKeys)))
-        error ("table.outerjoin: 'MergeKeys' must be a logical scalar.");
-      endif
-
-      ## Resolve key variables on each side
-      if (! isempty (Keys))
-        if (! isempty (LeftKeys) || ! isempty (RightKeys))
-          error (strcat ("table.outerjoin: 'Keys' cannot be combined with", ...
-                         " 'LeftKeys' or 'RightKeys'."));
-        endif
-        lKeyIdx = resolveVarRef (tblL, Keys);
-        rKeyIdx = resolveVarRef (tblR, Keys);
-      elseif (! isempty (LeftKeys) || ! isempty (RightKeys))
-        if (isempty (LeftKeys) || isempty (RightKeys))
-          error (strcat ("table.outerjoin: 'LeftKeys' and 'RightKeys' must", ...
-                         " be specified together."));
-        endif
-        lKeyIdx = resolveVarRef (tblL, LeftKeys);
-        rKeyIdx = resolveVarRef (tblR, RightKeys);
-        if (numel (lKeyIdx) != numel (rKeyIdx))
-          error (strcat ("table.outerjoin: 'LeftKeys' and 'RightKeys' must", ...
-                         " reference the same number of variables."));
-        endif
-      else
-        ## Default keys are the variables common to both tables (left order)
-        isCommon = ismember (tblL.VariableNames, tblR.VariableNames);
-        lKeyIdx = find (isCommon);
-        if (isempty (lKeyIdx))
-          error (strcat ("table.outerjoin: cannot find any common key", ...
-                         " variables between the two tables."));
-        endif
-        [~, rKeyIdx] = ismember (tblL.VariableNames(lKeyIdx), ...
-                                 tblR.VariableNames);
-      endif
-
-      ## Resolve output variables (defaults: all variables of each table)
-      if (isempty (LeftVariables))
-        lVarIdx = 1:width (tblL);
-      else
-        lVarIdx = resolveVarRef (tblL, LeftVariables);
-      endif
-      if (isempty (RightVariables))
-        rVarIdx = 1:width (tblR);
-      else
-        rVarIdx = resolveVarRef (tblR, RightVariables);
-      endif
-
-      ## Build consistent numeric key proxies for both tables
-      leftProxy = [];
-      rightProxy = [];
-      for k = 1:numel (lKeyIdx)
-        lcol = tblL.VariableValues{lKeyIdx(k)};
-        rcol = tblR.VariableValues{rKeyIdx(k)};
-        [lp, rp, errmsg] = tabular.key_col_proxy (lcol, rcol);
-        if (! isempty (errmsg))
-          error ("table.outerjoin: %s", errmsg);
-        endif
-        leftProxy = [leftProxy, lp];
-        rightProxy = [rightProxy, rp];
-      endfor
-
-      ## Match key rows, producing zero-filled index vectors per join type
-      Nl = height (tblL);
-      [uKeys, ~, ic] = unique ([leftProxy; rightProxy], 'rows');
-      icL = ic(1:Nl);
-      icR = ic(Nl+1:end);
-      keepL = any (strcmp (Type, {'full', 'left'}));
-      keepR = any (strcmp (Type, {'full', 'right'}));
-      ixL = [];
-      ixR = [];
-      for g = 1:rows (uKeys)
-        lr = find (icL == g);
-        rr = find (icR == g);
-        nl = numel (lr);
-        nr = numel (rr);
-        if (nl > 0 && nr > 0)
-          ixL = [ixL; repelem(lr(:), nr, 1)];
-          ixR = [ixR; repmat(rr(:), nl, 1)];
-        elseif (nl > 0 && keepL)
-          ixL = [ixL; lr(:)];
-          ixR = [ixR; zeros(nl, 1)];
-        elseif (nr > 0 && keepR)
-          ixL = [ixL; zeros(nr, 1)];
-          ixR = [ixR; rr(:)];
-        endif
-      endfor
-
-      ## Assemble each side, filling unmatched rows with missing values
-      [Lout, emsg] = joinBuildSide (subsetvars (tblL, lVarIdx), ixL);
-      if (! isempty (emsg))
-        error ("table.outerjoin: %s", emsg);
-      endif
-      [Rout, emsg] = joinBuildSide (subsetvars (tblR, rVarIdx), ixR);
-      if (! isempty (emsg))
-        error ("table.outerjoin: %s", emsg);
-      endif
-
-      ## Optionally merge each key pair into a single variable.  A merged key
-      ## keeps the left position; its name is the left key name when both keys
-      ## share it, or 'leftName_rightName' when they differ.
-      if (MergeKeys)
-        [tfL, posL] = ismember (lKeyIdx, lVarIdx);
-        [tfR, posR] = ismember (rKeyIdx, rVarIdx);
-        dropR = [];
-        fillRows = (ixL == 0);
-        lNames = Lout.VariableNames;
-        for k = 1:numel (lKeyIdx)
-          if (tfL(k) && tfR(k))
-            mcol = Lout.VariableValues{posL(k)};
-            rcol = Rout.VariableValues{posR(k)};
-            mcol(fillRows,:) = rcol(fillRows,:);
-            Lout.VariableValues{posL(k)} = mcol;
-            lkn = tblL.VariableNames{lKeyIdx(k)};
-            rkn = tblR.VariableNames{rKeyIdx(k)};
-            if (! strcmp (lkn, rkn))
-              lNames{posL(k)} = [lkn, '_', rkn];
-            endif
-            dropR = [dropR, posR(k)];
-          endif
-        endfor
-        Lout.VariableNames = lNames;
-        if (! isempty (dropR))
-          Rout = subsetvars (Rout, setdiff (1:width (Rout), dropR));
-        endif
-      endif
-
-      ## Suffix any variable names shared by both sides
-      shared = intersect (Lout.VariableNames, Rout.VariableNames);
-      if (! isempty (shared))
-        [lsuf, rsuf] = tabular.join_suffixes (inputname (1), inputname (2));
-        lNames = Lout.VariableNames;
-        rNames = Rout.VariableNames;
-        for i = find (ismember (lNames, shared))
-          lNames{i} = [lNames{i}, lsuf];
-        endfor
-        for i = find (ismember (rNames, shared))
-          rNames{i} = [rNames{i}, rsuf];
-        endfor
-        Lout.VariableNames = lNames;
-        Rout.VariableNames = rNames;
-      endif
-      tbl = horzcat (Lout, Rout);
-
     endfunction
 
     ## -*- texinfo -*-

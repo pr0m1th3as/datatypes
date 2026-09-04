@@ -196,6 +196,11 @@ classdef timetable < tabular
       out = this.DimensionNames(1);
     endfunction
 
+    ## Row times given outright, the step read off them afresh.
+    function this = setRowLabels (this, labels)
+      this = applyRowTimes (this, labels, true);
+    endfunction
+
     ## The variables alone, as a table: the row times label rows and a table
     ## has no rows to label.
     function out = plainTable (this)
@@ -2323,7 +2328,7 @@ classdef timetable < tabular
 ##                                                                            ##
 ## 'varfun'           'rowfun'           'grouptransform'   'groupcounts'     ##
 ## 'groupsummary'     'groupfilter'      'stack'            'rows2vars'       ##
-## 'join'                                                                     ##
+## 'join'             'innerjoin'        'outerjoin'                          ##
 ##                                                                            ##
 ################################################################################
 
@@ -2837,6 +2842,107 @@ classdef timetable < tabular
                                          inputname (1), inputname (2));
       if (! isempty (errmsg))
         error ("timetable.join: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{ttC} =} innerjoin (@var{ttL}, @var{tblR})
+    ## @deftypefnx {timetable} {@var{ttC} =} innerjoin (@var{ttL}, @var{tblR}, @var{Name}, @var{Value})
+    ## @deftypefnx {timetable} {[@var{ttC}, @var{iL}, @var{iR}] =} innerjoin (@dots{})
+    ##
+    ## Join a timetable with another tabular object, keeping matched rows.
+    ##
+    ## @code{@var{ttC} = innerjoin (@var{ttL}, @var{tblR})} returns a
+    ## timetable holding one row for every pair of rows of @var{ttL} and
+    ## @var{tblR} whose keys match, in key order.  Each row carries the row
+    ## time of the row of @var{ttL} it came from, so a key matched more than
+    ## once repeats its row time and the result is generally irregular.
+    ##
+    ## With no key named, two timetables join on their row times; a timetable
+    ## and a table have no key in common unless one is named, since the row
+    ## times are not a variable.
+    ##
+    ## @code{[@var{ttC}, @var{iL}, @var{iR}] = innerjoin (@dots{})} also
+    ## returns the rows of @var{ttL} and of @var{tblR} each row came from.
+    ##
+    ## The following @var{Name}/@var{Value} pairs are accepted:
+    ##
+    ## @table @asis
+    ## @item @qcode{'Keys'}
+    ## The variables to match on, named on both sides.  The row dimension name
+    ## names the row times.
+    ##
+    ## @item @qcode{'LeftKeys'}, @qcode{'RightKeys'}
+    ## The variables to match on, named separately for each side and given
+    ## together.
+    ##
+    ## @item @qcode{'LeftVariables'}, @qcode{'RightVariables'}
+    ## The variables each side contributes.  By default the left contributes
+    ## all of its own and the right all but its keys.
+    ## @end table
+    ##
+    ## @end deftypefn
+    function [ttC, iL, iR] = innerjoin (ttL, tblR, varargin)
+      if (nargin < 2)
+        error ("timetable.innerjoin: too few input arguments.");
+      endif
+      [ttC, iL, iR, errmsg] = innerjoinResult (ttL, tblR, varargin, ...
+                                               inputname (1), inputname (2));
+      if (! isempty (errmsg))
+        error ("timetable.innerjoin: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{ttC} =} outerjoin (@var{ttL}, @var{tblR})
+    ## @deftypefnx {timetable} {@var{ttC} =} outerjoin (@var{ttL}, @var{tblR}, @var{Name}, @var{Value})
+    ## @deftypefnx {timetable} {[@var{ttC}, @var{iL}, @var{iR}] =} outerjoin (@dots{})
+    ##
+    ## Join a timetable with another tabular object, keeping unmatched rows.
+    ##
+    ## @code{@var{ttC} = outerjoin (@var{ttL}, @var{tblR})} returns a
+    ## timetable holding one row for every pair of rows of @var{ttL} and
+    ## @var{tblR} whose keys match, and one for every row of either that
+    ## matched nothing, its variables from the other side filled with missing
+    ## values.  A row that came from a row of @var{ttL} carries its row time;
+    ## a row that matched nothing on the left has none of its own.
+    ##
+    ## With no key named, two timetables join on their row times; a timetable
+    ## and a table have no key in common unless one is named.
+    ##
+    ## @code{[@var{ttC}, @var{iL}, @var{iR}] = outerjoin (@dots{})} also
+    ## returns the rows of @var{ttL} and of @var{tblR} each row came from,
+    ## @code{0} where it came from neither.
+    ##
+    ## The following @var{Name}/@var{Value} pairs are accepted:
+    ##
+    ## @table @asis
+    ## @item @qcode{'Keys'}, @qcode{'LeftKeys'}, @qcode{'RightKeys'}
+    ## The variables to match on.  The row dimension name names the row times.
+    ##
+    ## @item @qcode{'LeftVariables'}, @qcode{'RightVariables'}
+    ## The variables each side contributes.  By default each contributes all
+    ## of its own, keys included.
+    ##
+    ## @item @qcode{'Type'}
+    ## @qcode{'full'} (the default) keeps the unmatched rows of both sides,
+    ## @qcode{'left'} and @qcode{'right'} only those of the side named.
+    ##
+    ## @item @qcode{'MergeKeys'}
+    ## A logical scalar.  When @code{true} each pair of keys becomes a single
+    ## variable in the left one's position, taking its value from whichever
+    ## side had a row.
+    ## @end table
+    ##
+    ## @end deftypefn
+    function [ttC, iL, iR] = outerjoin (ttL, tblR, varargin)
+      if (nargin < 2)
+        error ("timetable.outerjoin: too few input arguments.");
+      endif
+      [ttC, iL, iR, errmsg] = outerjoinResult (ttL, tblR, varargin, ...
+                                               inputname (1), inputname (2));
+      if (! isempty (errmsg))
+        error ("timetable.outerjoin: %s", errmsg);
       endif
     endfunction
 

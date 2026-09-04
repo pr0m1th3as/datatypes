@@ -2974,6 +2974,80 @@
 %!                 'VariableNames', {'A'});
 %! join (TT, table ([1; 2], 'VariableNames', {'Rv'}));
 
+## Test two timetables innerjoin on their row times with no key named
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! rt = t0 + hours (0:2)';
+%! A = timetable ([1; 2; 3], 'RowTimes', rt, 'VariableNames', {'A'});
+%! B = timetable ([4; 5; 6], categorical ({'x'; 'y'; 'z'}), ...
+%!                'RowTimes', rt, 'VariableNames', {'A', 'g'});
+%! C = innerjoin (A, B);
+%! assert_equal (class (C), 'timetable');
+%! assert_equal (C.Properties.VariableNames, {'A_A', 'A_B', 'g'});
+%! assert_equal (C.Properties.RowTimes, rt);
+%! assert_equal (C.A_A, [1; 2; 3]);
+%! assert_equal (C.A_B, [4; 5; 6]);
+
+## Test innerjoin keeps only the rows whose keys match
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! A = timetable ([1; 2; 3], 'RowTimes', t0 + hours (0:2)', ...
+%!                'VariableNames', {'A'});
+%! B = timetable ([9; 8], 'RowTimes', t0 + hours ([1 3])', ...
+%!                'VariableNames', {'B'});
+%! [C, iL, iR] = innerjoin (A, B);
+%! assert_equal (size (C), [1, 2]);
+%! assert_equal (C.Properties.RowTimes, t0 + hours (1));
+%! assert_equal (iL, 2);
+%! assert_equal (iR, 1);
+
+## Test outerjoin keeps the rows that matched nothing
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! A = timetable ([1; 2], 'RowTimes', t0 + hours (0:1)', ...
+%!                'VariableNames', {'A'});
+%! B = timetable ([9; 8], 'RowTimes', t0 + hours ([1 3])', ...
+%!                'VariableNames', {'B'});
+%! C = outerjoin (A, B);
+%! assert_equal (class (C), 'timetable');
+%! assert_equal (size (C), [3, 2]);
+%! assert_equal (C.A, [1; 2; NaN]);
+%! assert_equal (C.B, [NaN; 9; 8]);
+
+## Test 'Type' keeps the unmatched rows of one side only
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! A = timetable ([1; 2], 'RowTimes', t0 + hours (0:1)', ...
+%!                'VariableNames', {'A'});
+%! B = timetable ([9; 8], 'RowTimes', t0 + hours ([1 3])', ...
+%!                'VariableNames', {'B'});
+%! assert_equal (height (outerjoin (A, B, 'Type', 'left')), 2);
+%! assert_equal (height (outerjoin (A, B, 'Type', 'right')), 2);
+
+## Test a table may be joined onto a timetable by naming the row times
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! rt = t0 + hours (0:2)';
+%! TT = timetable ([1; 2; 3], 'RowTimes', rt, 'VariableNames', {'A'});
+%! T = table (t0 + hours ([2; 0; 1]), {'X'; 'Y'; 'Z'}, ...
+%!            'VariableNames', {'Time', 'Rv'});
+%! C = innerjoin (TT, T, 'LeftKeys', 'Time', 'RightKeys', 'Time');
+%! assert_equal (class (C), 'timetable');
+%! assert_equal (C.Properties.VariableNames, {'A', 'Rv'});
+%! assert_equal (C.Rv, {'Y'; 'Z'; 'X'});
+
+## Test a timetable and a table share no key unless one is named
+%!error <timetable.innerjoin: cannot find any common key variables between the two tables.> ...
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2], 'RowTimes', t0 + hours (0:1)', ...
+%!                 'VariableNames', {'A'});
+%! innerjoin (TT, table ([1; 2], 'VariableNames', {'Rv'}));
+%!error <timetable.outerjoin: 'Type' must be 'full', 'left', or 'right'.> ...
+%! t0 = datetime (2024, 1, 1);
+%! A = timetable ([1; 2], 'RowTimes', t0 + hours (0:1)', ...
+%!                'VariableNames', {'A'});
+%! outerjoin (A, A, 'Type', 'inner');
+
 ################################################################################
 ##                        **    Input validation    **                        ##
 ################################################################################
