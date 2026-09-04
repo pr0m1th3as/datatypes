@@ -1,0 +1,38 @@
+%!demo
+%! ## `summary` prints what a timetable holds: its size, its row times, its
+%! ## variables with their types, and a table of statistics for everything
+%! ## that has any.  The row times come first, under the row dimension's name.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! Depth = [12; 45; 23; 8];
+%! Site = categorical ({'N'; 'S'; 'N'; 'S'});
+%! TT = timetable (Depth, Site, 'RowTimes', t0 + hours (0:3)');
+%! summary (TT)
+
+%!demo
+%! ## Ask for an output and the same thing comes back as a structure, one
+%! ## field per variable and one for the row times.  Those report where the
+%! ## times start, how fast they run and how far apart they step.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([12; 45; 23; 8], 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'Depth'});
+%! s = summary (TT);
+%! fieldnames (s)
+%! s.Time.StartTime
+%! s.Time.TimeStep
+%! s.Depth.Mean
+
+%!demo
+%! ## Which statistics a variable reports follows its type.  An integer has no
+%! ## standard deviation and its median rounds to its own type; a `logical`
+%! ## reports how many are true and appears in no statistics at all.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable (int8 ([1; 2; 3; 4]), logical ([1; 0; 1; 1]), ...
+%!                 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'Count', 'Flag'});
+%! s = summary (TT);
+%! fieldnames (s.Count)
+%! s.Count.Median
+%! fieldnames (s.Flag)

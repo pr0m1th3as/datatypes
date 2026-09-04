@@ -1214,159 +1214,17 @@ classdef table < tabular
     ## @end itemize
     ##
     ## @end deftypefn
-    function [varargout] = summary (this)
-      ## Get summary for each variable into the returning structure
-      s = summary_for_variables (this);
-      ## Print summary if no output is requested
-      if (nargout == 0)
-        ## Print table description
-        if (! isempty (this.Description))
-          fprintf ("Description:  %s\n\n", this.Description);
-        endif
-        ## Print summary for each variable
-        fprintf ("Variables:\n\n");
-        tab = "    ";
-        varNames = fieldnames (s);
-        for i = 1:numel (varNames)
-          var = s.(varNames{i});
-          ## Print variable name
-          fprintf ("%s%s: %dx%d %s\n\n", tab, varNames{i}, var.Size(1), ...
-                                         var.Size(2), var.Type);
-          ## Print variable properties (if available)
-          if (! isempty (var.Units) || ! isempty (var.Description) || ...
-              ! isempty (var.Continuity))
-            fprintf ("%s    Properties:\n", tab);
-            if (! isempty (var.Continuity))
-              fprintf ("%s        Continuity: %s\n", tab, var.Continuity);
-            endif
-            if (! isempty (var.Units))
-              fprintf ("%s        Units: %s\n", tab, var.Units);
-            endif
-            if (! isempty (var.Description))
-              fprintf ("%s        Description: %s\n", tab, var.Description);
-            endif
-          endif
-          ## Print custom properties (if available)
-          if (isfield (var, 'CustomProperties'))
-            if (! isempty (var.CustomProperties))
-              fprintf ("%s    Custom Properties:\n", tab);
-              cpNames = fieldnames (var.CustomProperties);
-              for p = 1:numel (cpNames)
-                fprintf ("%s        %s: %s\n", tab, cpNames{p}, ...
-                         var.CustomProperties.(cpNames{p}){:});
-              endfor
-            endif
-          endif
-          ## Print values (numeric/datetime/duration Min Median Max, logical
-          ## True False) followed by the count of missing values, if any.
-          if (isfield (var, 'Min') || isfield (var, 'True'))
-            fprintf ("%s    Values:\n", tab);
-            isLogical = isfield (var, 'True');
-            isNumeric = isfield (var, 'Min') && isnumeric (var.Min);
-            ## Check for multicolumnar variable
-            if (var.Size(2) > 1)
-              ## Find max element length for aligning the columns
-              if (isNumeric)
-                mLen = max (arrayfun (@(x) length (num2str (x)), ...
-                            [var.Min, var.Median, var.Max]));
-              elseif (isLogical)
-                mLen = max (arrayfun (@(x) length (num2str (x)), ...
-                            [var.True, var.False]));
-              else
-                strs = [dispstrings(var.Min), dispstrings(var.Median), ...
-                        dispstrings(var.Max)];
-                mLen = max (cellfun (@length, strs));
-              endif
-              ## Create padding character vectors
-              mLen = max (8, mLen);
-              pad = repmat (' ', 1, mLen - 8);
-              strhead = '';
-              strline = '';
-              for c = 1:var.Size(2)
-                strhead = [strhead, sprintf("%sColumn %d    ", pad, c)];
-                strline = [strline, sprintf("%s________    ", pad)];
-              endfor
-              ## Print multicolumnar variable header
-              fprintf ("%s                  %s\n", tab, strhead);
-              fprintf ("%s                  %s\n", tab, strline);
-              ## Print multicolumnar variable statistics
-              if (isNumeric)
-                template = ["%s%", sprintf("%d", mLen), "g    "];
-                strMin = '';
-                strMed = '';
-                strMax = '';
-                for c = 1:numel (var.Min)
-                  strMin = [strMin, sprintf(template, pad, var.Min(c))];
-                  strMed = [strMed, sprintf(template, pad, var.Median(c))];
-                  strMax = [strMax, sprintf(template, pad, var.Max(c))];
-                endfor
-                fprintf ("%s        Min       %s\n", tab, strMin);
-                fprintf ("%s        Median    %s\n", tab, strMed);
-                fprintf ("%s        Max       %s\n", tab, strMax);
-              elseif (isLogical)
-                template = ["%s%", sprintf("%d", mLen), "g    "];
-                strTrue = '';
-                strFalse = '';
-                for c = 1:numel (var.True)
-                  strTrue = [strTrue, sprintf(template, pad, var.True(c))];
-                  strFalse = [strFalse, sprintf(template, pad, var.False(c))];
-                endfor
-                fprintf ("%s        True      %s\n", tab, strTrue);
-                fprintf ("%s        False     %s\n", tab, strFalse);
-              else
-                ## datetime or duration
-                template = ["%s%", sprintf("%d", mLen), "s    "];
-                minStr = dispstrings (var.Min);
-                medStr = dispstrings (var.Median);
-                maxStr = dispstrings (var.Max);
-                strMin = '';
-                strMed = '';
-                strMax = '';
-                for c = 1:numel (minStr)
-                  strMin = [strMin, sprintf(template, pad, minStr{c})];
-                  strMed = [strMed, sprintf(template, pad, medStr{c})];
-                  strMax = [strMax, sprintf(template, pad, maxStr{c})];
-                endfor
-                fprintf ("%s        Min       %s\n", tab, strMin);
-                fprintf ("%s        Median    %s\n", tab, strMed);
-                fprintf ("%s        Max       %s\n", tab, strMax);
-              endif
-            ## Print single column variable
-            else
-              if (isNumeric)
-                fprintf ("%s        Min       %g\n", tab, var.Min);
-                fprintf ("%s        Median    %g\n", tab, var.Median);
-                fprintf ("%s        Max       %g\n", tab, var.Max);
-              elseif (isLogical)
-                fprintf ("%s        True      %d\n", tab, var.True);
-                fprintf ("%s        False     %d\n", tab, var.False);
-              else
-                ## datetime or duration
-                fprintf ("%s        Min       %s\n", tab, ...
-                         dispstrings (var.Min){:});
-                fprintf ("%s        Median    %s\n", tab, ...
-                         dispstrings (var.Median){:});
-                fprintf ("%s        Max       %s\n", tab, ...
-                         dispstrings (var.Max){:});
-              endif
-            endif
-            ## Print number of missing values, if any
-            if (isfield (var, 'NumMissing') && any (var.NumMissing(:) > 0))
-              fprintf ("%s        NumMissing%s\n", tab, ...
-                       sprintf (" %d", var.NumMissing));
-            endif
-            fprintf ("\n");
-          ## Variables carrying only a missing-value count (calendarDuration)
-          elseif (isfield (var, 'NumMissing') && any (var.NumMissing(:) > 0))
-            fprintf ("%s    Values:\n", tab);
-            fprintf ("%s        NumMissing%s\n\n", tab, ...
-                     sprintf (" %d", var.NumMissing));
-          endif
-        endfor
+    function [varargout] = summary (this, varargin)
+      if (! isempty (varargin))
+        error ("table.summary: too many input arguments.");
       endif
-      ## Return structure if requested
-      if (nargout > 0)
+      s = summaryOf (this);
+      if (nargout == 0)
+        summaryPrint (this, s, inputname (1));
+      elseif (nargout == 1)
         varargout{1} = s;
+      else
+        error ("table.summary: invalid number of output arguments.");
       endif
     endfunction
 

@@ -1888,35 +1888,49 @@
 %!test
 %! str = evalc (["summary (table ([1; 2; NaN], logical ([1; 0; 1]), ", ...
 %!               "'VariableNames', {'a', 'b'}));"]);
+%! assert_equal (! isempty (strfind (str, '3x2 table')), true);
 %! assert_equal (! isempty (strfind (str, 'Variables:')), true);
+%! assert_equal (! isempty (strfind (str, '    a: double')), true);
+%! assert_equal (! isempty (strfind (str, '    b: logical (2 true)')), true);
+%! assert_equal (! isempty ...
+%!               (strfind (str, 'Statistics for applicable variables:')), true);
+%! assert_equal (! isempty (strfind (str, 'NumMissing')), true);
 %! assert_equal (! isempty (strfind (str, 'Median')), true);
-%! assert_equal (! isempty (strfind (str, 'NumMissing 1')), true);
-%! assert_equal (! isempty (strfind (str, 'True')), true);
-%! assert_equal (! isempty (strfind (str, 'False')), true);
+%! assert_equal (! isempty (strfind (str, 'Std')), true);
+
+## Test a logical variable is counted on its own line, not in the statistics
+%!test
+%! str = evalc (["summary (table (logical ([1; 0; 1]), ", ...
+%!               "'VariableNames', {'b'}));"]);
+%! assert_equal (! isempty (strfind (str, '    b: logical (2 true)')), true);
+%! assert_equal (isempty (strfind (str, 'Statistics')), true);
 ## Test 'summary' printed output shows table and variable Description
 %!test
 %! tt = table ([1; 2; 3], 'VariableNames', {'v'});
 %! tt.Properties.Description = 'My table';
 %! tt.Properties.VariableDescriptions = {'a weight'};
 %! str = evalc ("summary (tt);");
-%! assert_equal (! isempty (strfind (str, 'Description:  My table')), true);
-%! assert_equal (! isempty (strfind (str, 'Description: a weight')), true);
+%! assert_equal (! isempty (strfind (str, 'Description: My table')), true);
+%! assert_equal (! isempty (strfind (str, '    v: double (a weight)')), true);
 ## Test 'summary' printed output for datetime and duration variables
 %!test
 %! sd = evalc (["summary (table (duration ([1; 2; 3], 0, 0), ", ...
 %!              "'VariableNames', {'D'}));"]);
-%! assert_equal (! isempty (strfind (sd, 'Min       01:00:00')), true);
-%! assert_equal (! isempty (strfind (sd, 'Max       03:00:00')), true);
+%! assert_equal (! isempty (strfind (sd, '01:00:00')), true);
+%! assert_equal (! isempty (strfind (sd, '03:00:00')), true);
+%! assert_equal (! isempty (strfind (sd, '    D: duration')), true);
 %! st = evalc (["summary (table (datetime (2020, 1, [1; 2; 3]), ", ...
 %!              "'VariableNames', {'T'}));"]);
-%! assert_equal (! isempty (strfind (st, 'Min       01-Jan-2020')), true);
-%! assert_equal (! isempty (strfind (st, 'Max       03-Jan-2020')), true);
+%! assert_equal (! isempty (strfind (st, '01-Jan-2020')), true);
+%! assert_equal (! isempty (strfind (st, '03-Jan-2020')), true);
+%! assert_equal (! isempty (strfind (st, '    T: datetime')), true);
 ## Test 'summary' printed output for calendarDuration shows only NumMissing
 %!test
 %! sc = evalc (["summary (table (calendarDuration ([1; NaN], 0, 0), ", ...
 %!              "'VariableNames', {'C'}));"]);
-%! assert_equal (! isempty (strfind (sc, 'NumMissing 1')), true);
-%! assert_equal (isempty (strfind (sc, 'Min')), true);
+%! assert_equal (! isempty (strfind (sc, 'NumMissing')), true);
+%! assert_equal (! isempty (strfind (sc, '    C: calendarDuration')), true);
+%! assert_equal (isempty (strfind (sc, 'Median')), true);
 
 ## Test 'height': number of rows, equivalent to size (TBL, 1)
 %!assert_equal (height (T), 5);
@@ -6871,7 +6885,8 @@
 %!test
 %! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
 %! T.Properties.VariableContinuity = {'continuous', 'step'};
-%! assert_equal (! isempty (strfind (evalc ('summary (T);'), 'Continuity')), true);
+%! assert_equal (isfield (summary (T).(T.Properties.VariableNames{1}), ...
+%!                        'Continuity'), true);
 ## Test 'VariableContinuity' can be assigned per variable
 %!test
 %! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});

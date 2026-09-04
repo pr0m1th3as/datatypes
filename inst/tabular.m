@@ -4164,73 +4164,138 @@ classdef (Abstract) tabular
     endfunction
 
     ## Summary internal function
+    ## -*- texinfo -*-
+    ## @deftypefn {tabular} {@var{s} =} summaryOf (@var{obj})
+    ##
+    ## The summary structure, row labels first where the class has them.
+    ##
+    ## @end deftypefn
+    function s = summaryOf (this)
+
+      s = struct ();
+      [lname, lentry] = summaryLabelEntry (this);
+      if (! isempty (lname))
+        s.(lname) = lentry;
+      endif
+      vs = summary_for_variables (this);
+      f = fieldnames (vs);
+      for i = 1:numel (f)
+        s.(f{i}) = vs.(f{i});
+      endfor
+
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {tabular} {} summaryPrint (@var{obj}, @var{s}, @var{name})
+    ##
+    ## Print the summary of an object.
+    ##
+    ## @var{s} is the structure @code{summaryOf} built and @var{name} the
+    ## caller's own name for the object, which only the public method can
+    ## read and which is omitted where there is none.
+    ##
+    ## @end deftypefn
+    function summaryPrint (this, s, name)
+
+      sz = size (this);
+      fprintf ('\n');
+      if (isempty (name))
+        fprintf ('%dx%d %s\n', sz(1), sz(2), class (this));
+      else
+        fprintf ('%s: %dx%d %s\n', name, sz(1), sz(2), class (this));
+      endif
+      if (! isempty (this.Description))
+        fprintf ('Description: %s\n', this.Description);
+      endif
+
+      [lname, ~] = summaryLabelEntry (this);
+      hasLabel = ! isempty (lname);
+      if (hasLabel)
+        fprintf ('Row Times:\n');
+        fprintf ('    %s: %s\n', lname, s.(lname).Type);
+      endif
+
+      if (width (this) > 0)
+        fprintf ('Variables:\n');
+        for v = 1:width (this)
+          nm = this.VariableNames{v};
+          fprintf ('%s\n', summaryVarLine (nm, this.VariableValues{v}, ...
+                                            s.(nm)));
+        endfor
+      endif
+
+      ## The statistics of everything that has any, one row per column of a
+      ## multi-column variable.  A nested table is left out: its statistics
+      ## are tables themselves and there is no rendering them in a cell.
+      names = {};
+      if (hasLabel)
+        names = {lname};
+      endif
+      for v = 1:width (this)
+        if (! (isa (this.VariableValues{v}, 'table')
+               || isa (this.VariableValues{v}, 'timetable')))
+          names{end+1} = this.VariableNames{v};
+        endif
+      endfor
+      ## With no rows there is nothing to report statistics about.
+      if (sz(1) == 0)
+        names = {};
+      endif
+      [labels, cells, cols] = summaryStatRows (s, names);
+      if (isempty (labels))
+        fprintf ('\n');
+        return
+      endif
+      if (hasLabel)
+        fprintf ('Statistics for applicable variables and row times:\n');
+      else
+        fprintf ('Statistics for applicable variables:\n');
+      endif
+      summaryStatTable (labels, cells, cols);
+      fprintf ('\n');
+
+    endfunction
+
     function s = summary_for_variables (this)
       ## An object with no variables summarises to no fields, not to nothing.
       s = struct ();
       for v = 1:width (this)
         varName = this.VariableNames{v};
         val = this.VariableValues{v};
-        s.(varName).Size = size (val);
-        s.(varName).Type = class (val);
+        e = struct ();
+        e.Size = size (val);
+        e.Type = class (val);
+        e.Description = '';
         if (! isempty (this.VariableDescriptions{v}))
-          s.(varName).Description = this.VariableDescriptions{v};
-        else
-          s.(varName).Description = "";
+          e.Description = this.VariableDescriptions{v};
         endif
+        e.Units = '';
         if (! isempty (this.VariableUnits{v}))
-          s.(varName).Units = this.VariableUnits{v};
-        else
-          s.(varName).Units = "";
+          e.Units = this.VariableUnits{v};
         endif
-        if (isempty (this.VariableContinuity))
-          s.(varName).Continuity = [];
-        else
-          s.(varName).Continuity = this.VariableContinuity{v};
+        e.Continuity = [];
+        if (! isempty (this.VariableContinuity))
+          e.Continuity = this.VariableContinuity{v};
         endif
-        if (islogical (val))
-          s.(varName).True = sum (val, 1);
-          s.(varName).False = sum (! val, 1);
-        elseif (isa (val, 'duration'))
-          ## Work in seconds (native 'median' does not omit NaN), then
-          ## rebuild durations preserving the variable's display format.
-          sec = seconds (val);
-          fmt = val.Format;
-          mn = seconds (__nanmin__ (sec));
-          md = seconds (median (sec, 'omitnan'));
-          mx = seconds (__nanmax__ (sec));
-          mn.Format = fmt;
-          md.Format = fmt;
-          mx.Format = fmt;
-          s.(varName).Min = mn;
-          s.(varName).Median = md;
-          s.(varName).Max = mx;
-          s.(varName).NumMissing = sum (isnan (sec), 1);
-        elseif (isa (val, 'datetime'))
-          ## Operate on datenum-valued doubles (NaT mapped to NaN), then
-          ## rebuild datetimes from the resulting statistics.
-          dn = tabular.datetime_to_datenum (val);
-          s.(varName).Min = datetime (__nanmin__ (dn), ...
-                                      'ConvertFrom', 'datenum');
-          s.(varName).Median = datetime (median (dn, 'omitnan'), ...
-                                         'ConvertFrom', 'datenum');
-          s.(varName).Max = datetime (__nanmax__ (dn), ...
-                                      'ConvertFrom', 'datenum');
-          s.(varName).NumMissing = sum (isnan (dn), 1);
-        elseif (isa (val, 'calendarDuration'))
-          ## 'calendarDuration' is not totally ordered (months and days are
-          ## not interconvertible), so Min/Median/Max are undefined; report
-          ## only the count of missing values.
-          s.(varName).NumMissing = sum (ismissing (val), 1);
-        elseif (isnumeric (val))
-          s.(varName).Min = __nanmin__ (val);
-          s.(varName).Median = median (val, 'omitnan');
-          s.(varName).Max = __nanmax__ (val);
-          s.(varName).NumMissing = sum (isnan (val), 1);
-        endif
-        ## No need to summarize values in 'cell', 'cellstr', 'string',
-        ## 'categorical', and 'struct' variable types.
+        s.(varName) = tabular.summaryStats (e, val);
       endfor
     endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {tabular} {[@var{name}, @var{entry}] =} summaryLabelEntry (@var{obj})
+    ##
+    ## The summary entry for the row labels, where the class has one.
+    ##
+    ## @var{name} is the field it is filed under and @var{entry} the entry
+    ## itself.  A class whose row labels are not summarised answers with an
+    ## empty name.
+    ##
+    ## @end deftypefn
+    function [name, entry] = summaryLabelEntry (this)
+      name = '';
+      entry = [];
+    endfunction
+
 
     ## Export table to cell arrays
     function [V, N, T, D, U] = table2cellarrays (this, fmt = 'display')
@@ -4390,6 +4455,119 @@ classdef (Abstract) tabular
 ################################################################################
 
   methods (Static, Hidden)
+
+    ## -*- texinfo -*-
+    ## @deftypefn {tabular} {@var{e} =} summaryStats (@var{e}, @var{val})
+    ##
+    ## Add the statistics half of a summary entry, chosen by the value's type.
+    ##
+    ## The order the fields are added in is the order they are reported in,
+    ## and which of them a type gets was measured rather than reasoned: a
+    ## logical carries counts and nothing else, an integer has no standard
+    ## deviation, and only an ordinal categorical can be ordered.
+    ##
+    ## @end deftypefn
+    function e = summaryStats (e, val)
+
+
+    if (islogical (val))
+      e.True = sum (val, 1);
+      e.False = sum (! val, 1);
+
+    elseif (isa (val, 'categorical'))
+      e.Categories = categories (val);
+      e.Counts = countcats (val);
+      e.NumMissing = sum (ismissing (val), 1);
+      if (isordinal (val))
+        d = double (val);
+        cats = categories (val);
+        e.Min = catOf (cats, __nanmin__ (d), val);
+        e.Median = catOf (cats, ceil (median (d, 'omitnan')), val);
+        e.Max = catOf (cats, __nanmax__ (d), val);
+      endif
+
+    elseif (isa (val, 'duration'))
+      sec = seconds (val);
+      fmt = val.Format;
+      e.NumMissing = sum (isnan (sec), 1);
+      e.Min = durOf (__nanmin__ (sec), fmt);
+      e.Median = durOf (median (sec, 'omitnan'), fmt);
+      e.Max = durOf (__nanmax__ (sec), fmt);
+      e.Mean = durOf (colmean (sec), fmt);
+      e.Std = durOf (colstd (sec), fmt);
+
+    elseif (isa (val, 'datetime'))
+      ## Measured from the first known instant so that the time zone, which
+      ## the arithmetic carries, survives into every statistic.
+      e.TimeZone = val.TimeZone;
+      nm = ismissing (val);
+      e.NumMissing = sum (nm, 1);
+      ix = find (! nm(:), 1);
+      if (isempty (ix) && isempty (val))
+        ## Nothing at all to measure from, not even a zero point.
+        e.Min = val;
+        e.Median = val;
+        e.Max = val;
+        e.Mean = val;
+        e.Std = durOf (NaN, 'hh:mm:ss');
+        return
+      elseif (isempty (ix))
+        sec = NaN (size (val));
+        origin = val(1);
+      else
+        origin = val(ix);
+        sec = seconds (val - origin);
+      endif
+      e.Min = origin + seconds (__nanmin__ (sec));
+      e.Median = origin + seconds (median (sec, 'omitnan'));
+      e.Max = origin + seconds (__nanmax__ (sec));
+      e.Mean = origin + seconds (colmean (sec));
+      e.Std = durOf (colstd (sec), 'hh:mm:ss');
+
+    elseif (isa (val, 'calendarDuration'))
+      ## Not totally ordered: months and days are not interconvertible, so
+      ## there is nothing to report but the count.
+      e.NumMissing = sum (ismissing (val), 1);
+
+    elseif (isinteger (val))
+      ## An integer median rounds to the type, and there is no deviation.
+      e.NumMissing = zeros (1, columns (val));
+      e.Min = min (val, [], 1);
+      e.Median = cast (round (median (double (val), 1)), class (val));
+      e.Max = max (val, [], 1);
+      e.Mean = mean (double (val), 1);
+
+    elseif (isnumeric (val))
+        e.NumMissing = sum (isnan (val), 1);
+      if (size (val, 1) == 0)
+        ## With no rows there is no smallest and no largest, while the
+        ## averages still answer, as NaN.
+        e.Min = val;
+        e.Median = NaN (1, columns (val));
+        e.Max = val;
+        e.Mean = NaN (1, columns (val));
+        e.Std = NaN (1, columns (val));
+        return
+      endif
+      e.Min = __nanmin__ (val);
+      e.Median = median (val, 'omitnan');
+      e.Max = __nanmax__ (val);
+      ## A single stays single through its own statistics.
+      e.Mean = cast (colmean (val), class (val));
+      e.Std = cast (colstd (val), class (val));
+
+    elseif (isa (val, 'table') || isa (val, 'timetable'))
+      e.NumMissing = sum (__varmissing__ (val), 1);
+
+    else
+      ## Text, cells, structs and anything else carry a count alone.
+      m = __varmissing__ (val);
+      if (size (m, 1) != size (val, 1))
+        m = false (size (val, 1), 1);
+      endif
+      e.NumMissing = sum (m, 1);
+    endif
+    endfunction
 
     ## A 0x0 non-char operand takes no part in concatenation and is dropped,
     ## as in MATLAB: [], zeros (0, 0), {} and an empty table all vanish.  A
@@ -5011,6 +5189,208 @@ endfunction
 
 ## Replace entries of variable V that match a (type-compatible) indicator with
 ## the standard missing value of V's class.  Used by 'standardizeMissing'.
+
+
+## One category value per column statistic, taken by its code.
+function c = catOf (cats, code, proto)
+
+  c = proto([]);
+  for i = 1:numel (code)
+    if (isnan (code(i)) || code(i) < 1 || code(i) > numel (cats))
+      c(i) = proto(1);
+      c(i) = missing;
+    else
+      c(i) = categorical (cats(code(i)), cats, 'Ordinal', isordinal (proto));
+    endif
+  endfor
+
+endfunction
+
+## A duration of X seconds carrying the format asked for.
+function d = durOf (x, fmt)
+
+  d = seconds (x);
+  d.Format = fmt;
+
+endfunction
+
+## Column means and sample deviations with the missing entries left out.
+function m = colmean (x)
+
+  m = NaN (1, columns (x));
+  for c = 1:columns (x)
+    k = x(! isnan (x(:,c)), c);
+    if (! isempty (k))
+      m(c) = sum (k) / numel (k);
+    endif
+  endfor
+
+endfunction
+
+function sd = colstd (x)
+
+  sd = NaN (1, columns (x));
+  for c = 1:columns (x)
+    k = x(! isnan (x(:,c)), c);
+    if (numel (k) > 1)
+      mu = sum (k) / numel (k);
+      sd(c) = sqrt (sum ((k - mu) .^ 2) / (numel (k) - 1));
+    elseif (numel (k) == 1)
+      ## One observation deviates from itself by nothing.
+      sd(c) = 0;
+    endif
+  endfor
+
+endfunction
+
+## How one variable is described on its own line of a summary.
+function out = summaryVarLine (name, val, e)
+
+  t = class (val);
+  nr = size (val, 1);
+  nc = size (val, 2);
+  if (isa (val, 'table') || isa (val, 'timetable') || nr == 0)
+    d = sprintf ('%dx%d %s', nr, nc, t);
+  elseif (nc > 1)
+    d = sprintf ('%d-column %s', nc, t);
+  elseif (islogical (val))
+    d = sprintf ('logical (%d true)', sum (val));
+  elseif (isa (val, 'categorical'))
+    n = numel (categories (val));
+    if (isordinal (val))
+      d = sprintf ('ordinal categorical (%d categories)', n);
+    else
+      d = sprintf ('categorical (%d categories)', n);
+    endif
+  elseif (iscellstr (val))
+    d = 'cell array of character vectors';
+  else
+    d = t;
+  endif
+  extra = {};
+  if (! isempty (e.Units))
+    extra{end+1} = e.Units;
+  endif
+  if (! isempty (e.Description))
+    extra{end+1} = e.Description;
+  endif
+  if (! isempty (extra))
+    d = sprintf ('%s (%s)', d, strjoin (extra, ', '));
+  endif
+  out = sprintf ('    %s: %s', name, d);
+
+endfunction
+
+## The rows of the statistics block.  A multi-column variable contributes one
+## row per column, named the way a subscript would reach it, and a column of
+## the block is kept only where something reports that statistic.
+function [labels, cells, cols] = summaryStatRows (s, names)
+
+  stats = {'NumMissing', 'Min', 'Median', 'Max', 'Mean', 'Std'};
+  keep = false (1, numel (stats));
+  labels = {};
+  cells = {};
+  for i = 1:numel (names)
+    e = s.(names{i});
+    if (! isfield (e, 'NumMissing'))
+      continue;
+    endif
+    nc = max (1, numel (e.NumMissing));
+    for c = 1:nc
+      if (nc == 1)
+        labels{end+1} = names{i};
+      else
+        labels{end+1} = sprintf ('%s(:,%d)', names{i}, c);
+      endif
+      row = cell (1, numel (stats));
+      for k = 1:numel (stats)
+        row{k} = '';
+        if (isfield (e, stats{k}))
+          v = e.(stats{k});
+          if (numel (v) >= c)
+            row{k} = summaryCell (v(c));
+            keep(k) = true;
+          endif
+        endif
+      endfor
+      cells{end+1} = row;
+    endfor
+  endfor
+  cols = stats(keep);
+  for i = 1:numel (cells)
+    cells{i} = cells{i}(keep);
+  endfor
+
+endfunction
+
+## One statistic rendered for the block: a whole number bare, anything else
+## to four decimals, and a typed value through its own display.
+function out = summaryCell (v)
+
+  try
+    if (isnumeric (v))
+      if (isreal (v) && ! isnan (v) && ! isinf (v) && v == fix (v))
+        out = sprintf ('%d', v);
+      else
+        out = strtrim (sprintf ('%.4f', v));
+        if (isnan (v))
+          out = 'NaN';
+        elseif (isinf (v))
+          out = sprintf ('%g', v);
+        elseif (! isreal (v))
+          out = strtrim (num2str (v));
+        endif
+      endif
+    elseif (islogical (v))
+      out = sprintf ('%d', v);
+    elseif (ischar (v))
+      out = v;
+    else
+      out = char (string (v));
+    endif
+  catch
+    out = '';
+  end_try_catch
+
+endfunction
+
+## Lay the statistics block out in columns, each as wide as the widest thing
+## in it and its heading, values to the right.
+function summaryStatTable (labels, cells, cols)
+
+  lw = 0;
+  for i = 1:numel (labels)
+    lw = max (lw, numel (labels{i}));
+  endfor
+  cw = zeros (1, numel (cols));
+  for k = 1:numel (cols)
+    cw(k) = numel (cols{k});
+    for i = 1:numel (cells)
+      cw(k) = max (cw(k), numel (cells{i}{k}));
+    endfor
+  endfor
+  line = [blanks(4 + lw)];
+  for k = 1:numel (cols)
+    line = [line, blanks(4), padleft(cols{k}, cw(k))];
+  endfor
+  fprintf ('%s\n', line);
+  for i = 1:numel (cells)
+    line = ['    ', padright(labels{i}, lw)];
+    for k = 1:numel (cols)
+      line = [line, blanks(4), padleft(cells{i}{k}, cw(k))];
+    endfor
+    fprintf ('%s\n', line);
+  endfor
+
+endfunction
+
+function out = padleft (str, w)
+  out = [blanks(w - numel (str)), str];
+endfunction
+
+function out = padright (str, w)
+  out = [str, blanks(w - numel (str))];
+endfunction
 
 function index = labelOrder (labels, direction, MP)
 

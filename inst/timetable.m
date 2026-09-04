@@ -213,6 +213,25 @@ classdef timetable < tabular
       tf = tf(:);
     endfunction
 
+    ## The row times are summarised beside the variables, under the row
+    ## dimension's name.  They carry no description, units or continuity, and
+    ## report instead where they start, how fast they run and how far apart
+    ## they step.
+    function [name, entry] = summaryLabelEntry (this)
+      name = this.DimensionNames{1};
+      rt = this.RowTimes;
+      e = struct ();
+      e.Size = size (rt);
+      e.Type = class (rt);
+      if (isdatetime (rt))
+        e.TimeZone = rt.TimeZone;
+      endif
+      e.SampleRate = this.SampleRate;
+      e.StartTime = this.StartTime;
+      entry = tabular.summaryStats (e, rt);
+      entry.TimeStep = this.TimeStep;
+    endfunction
+
     ## A timetable interpolates against its row times, measured in seconds
     ## from the first of them.  A row time that is missing places nothing, so
     ## the whole object is refused rather than filled around the gap.
@@ -1358,6 +1377,53 @@ classdef timetable < tabular
       [tbl, TF, errmsg] = fillmissingResult (this, varargin{:});
       if (! isempty (errmsg))
         error ("timetable.fillmissing: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {} summary (@var{tt})
+    ## @deftypefnx {timetable} {@var{s} =} summary (@var{tt})
+    ##
+    ## Summarise a timetable.
+    ##
+    ## @code{summary (@var{tt})} prints what the timetable holds: its size,
+    ## its description where it has one, the row times, the variables with
+    ## their types and any units and descriptions, and a table of statistics
+    ## for everything that has any.
+    ##
+    ## @code{@var{s} = summary (@var{tt})} returns that as a structure
+    ## instead, one field per variable and one for the row times, filed under
+    ## the row dimension's name and coming first.
+    ##
+    ## The row times report where they start, how fast they run and how far
+    ## apart they step, in @qcode{StartTime}, @qcode{SampleRate} and
+    ## @qcode{TimeStep}, alongside the statistics a @code{datetime} or
+    ## @code{duration} variable would report.  They carry no description,
+    ## units or continuity, having none.
+    ##
+    ## Which statistics a variable reports follows its type.  Numeric,
+    ## @code{datetime} and @code{duration} variables report the count of
+    ## missing values, the smallest, the median, the largest, the mean and
+    ## the standard deviation; an integer reports no deviation and its median
+    ## rounds to its own type; an ordinal @code{categorical} is ordered but
+    ## has no mean; a plain one reports its categories and their counts; a
+    ## @code{logical} reports how many are true and false and appears in no
+    ## statistics; and everything else reports the count of missing values
+    ## alone.  A variable of several columns reports one row per column.
+    ##
+    ## @seealso{ismissing, timetable}
+    ## @end deftypefn
+    function [varargout] = summary (this, varargin)
+      if (! isempty (varargin))
+        error ("timetable.summary: too many input arguments.");
+      endif
+      s = summaryOf (this);
+      if (nargout == 0)
+        summaryPrint (this, s, inputname (1));
+      elseif (nargout == 1)
+        varargout{1} = s;
+      else
+        error ("timetable.summary: invalid number of output arguments.");
       endif
     endfunction
 

@@ -31,7 +31,7 @@ function M = __varmissing__ (v)
   if (isa (v, 'table') || isa (v, 'timetable'))
     M = false (size (v));
   elseif (any (isa (v, {'calendarDuration', 'categorical', 'datetime', ...
-                        'duration', 'string'})))
+                        'duration', 'missing', 'string'})))
     M = ismissing (v);
   elseif (ischar (v))
     M = false (size (v));
