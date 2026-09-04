@@ -136,10 +136,46 @@
 %! assert_equal (size (T), [0, 2]);
 %! assert_equal (height (T), 0);
 %! assert_equal (width (T), 2);
-%!test  # 'VariableDescriptions' and 'VariableUnits' default to empty
+%!test  # 'VariableDescriptions' and 'VariableUnits' default to unset
 %! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
+%! assert_equal (T.Properties.VariableDescriptions, {});
+%! assert_equal (T.Properties.VariableUnits, {});
+%!test  # blanks are a set property, not an unset one
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
+%! T.Properties.VariableDescriptions = {'', ''};
 %! assert_equal (T.Properties.VariableDescriptions, {'', ''});
-%! assert_equal (T.Properties.VariableUnits, {'', ''});
+%!test  # naming one entry of an unset property blanks the rest
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
+%! T.Properties.VariableUnits(2) = {'kg'};
+%! assert_equal (T.Properties.VariableUnits, {'', 'kg'});
+%!test  # an empty returns a set property to unset
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
+%! T.Properties.VariableUnits = {'m', 'kg'};
+%! T.Properties.VariableUnits = {};
+%! assert_equal (T.Properties.VariableUnits, {});
+%!test  # removing a variable leaves an unset property unset
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
+%! T = removevars (T, 'a');
+%! assert_equal (T.Properties.VariableUnits, {});
+%!test  # adding a variable leaves an unset property unset
+%! T = table ([1; 2], 'VariableNames', {'a'});
+%! T.b = [3; 4];
+%! assert_equal (T.Properties.VariableUnits, {});
+%!test  # adding a variable extends a set property with a blank
+%! T = table ([1; 2], 'VariableNames', {'a'});
+%! T.Properties.VariableUnits = {'m'};
+%! T.b = [3; 4];
+%! assert_equal (T.Properties.VariableUnits, {'m', ''});
+%!test  # horzcat leaves the units unset when neither input has any
+%! T = [table([1; 2], 'VariableNames', {'a'}), ...
+%!      table([3; 4], 'VariableNames', {'b'})];
+%! assert_equal (T.Properties.VariableUnits, {});
+%!test  # horzcat blanks the units of the input that has none
+%! A = table ([1; 2], 'VariableNames', {'a'});
+%! A.Properties.VariableUnits = {'m'};
+%! B = table ([3; 4], 'VariableNames', {'b'});
+%! T = [A, B];
+%! assert_equal (T.Properties.VariableUnits, {'m', ''});
 %!test  # a nested table is accepted as a variable
 %! T = table ([1; 2], table ([3; 4], [5; 6]), 'VariableNames', {'a', 'b'});
 %! assert_equal (width (T), 2);
@@ -502,6 +538,31 @@
 %!   assert_equal (R.name, {'a'; 'b'; 'c'});
 %!   assert_equal (R.Properties.VariableDescriptions, {'the id', 'the name', 'the value'});
 %!   assert_equal (R.Properties.VariableUnits, {'#', 'str', 'kg'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # a units row of blanks round-trips as a set property
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
+%! T.Properties.VariableUnits = {'', ''};
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   assert_equal (R.Properties.VariableUnits, {'', ''});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # units that were never set round-trip as unset
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   assert_equal (R.Properties.VariableUnits, {});
 %! unwind_protect_cleanup
 %!   if (exist (fn, 'file'))
 %!     delete (fn);
@@ -6980,7 +7041,7 @@
 %! assert_equal (T.x, single ([1;2;3]));
 %! assert_equal (T.z, int32 ([10;20;30]));
 %! assert_equal (T.Properties.VariableTypes, {'single', 'int32'});
-%! assert_equal (T.Properties.VariableDescriptions, {'', ''});
+%! assert_equal (T.Properties.VariableDescriptions, {});
 %!test  # VariableTypes converts a single indexed variable
 %! T = table ([1;2;3], [10;20;30], 'VariableNames', {'x','z'});
 %! T.Properties.VariableTypes(2) = {'single'};

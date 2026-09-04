@@ -573,8 +573,11 @@ classdef table < tabular
       endif
 
       ## Construction
-      this.VariableDescriptions = repmat ({''}, [1, numel(VariableNames)]);
-      this.VariableUnits = repmat ({''}, [1, numel(VariableNames)]);
+      ## Descriptions and units stay unset until they are given: an empty
+      ## property says 'none', which is not the same as one blank per
+      ## variable and is what an empty assignment returns them to.
+      this.VariableDescriptions = {};
+      this.VariableUnits = {};
       this.VariableNames = VariableNames(:)';
       this.VariableValues = VariableValues;
       this.VariableTypes = cellfun ('class', VariableValues, ...
@@ -784,14 +787,16 @@ classdef table < tabular
       ## Descriptions and units are written when any variable carries one (the
       ## rest are left empty); nested variables expand them to as many rows as
       ## varNames/varTypes.
-      Drows = cellfun (@(x) size (x, 1), D);
-      if (any (cellfun (@(x) ! isempty (x), D(isvar))))
+      Drows = cellfun (@(x) max (1, size (x, 1)), D);
+      if (! isempty (this.VariableDescriptions)
+          || any (cellfun (@(x) ! isempty (x), D(isvar))))
         Dmaxr = max (Drows(isvar));
       else
         Dmaxr = 0;
       endif
-      Urows = cellfun (@(x) size (x, 1), U);
-      if (any (cellfun (@(x) ! isempty (x), U(isvar))))
+      Urows = cellfun (@(x) max (1, size (x, 1)), U);
+      if (! isempty (this.VariableUnits)
+          || any (cellfun (@(x) ! isempty (x), U(isvar))))
         Umaxr = max (Urows(isvar));
       else
         Umaxr = 0;
@@ -3910,13 +3915,16 @@ classdef table < tabular
         tbl.VariableNames = varNames;
         for i = 2:numel (varargin)
           in = varargin{i};
+          nA = numel (tbl.VariableValues);
+          nB = numel (in.VariableValues);
           tbl.VariableContinuity = tabular.merge_continuity ( ...
-                       tbl.VariableContinuity, numel (tbl.VariableValues), ...
-                       in.VariableContinuity, numel (in.VariableValues));
+                       tbl.VariableContinuity, nA, in.VariableContinuity, nB);
+          tbl.VariableDescriptions = tabular.merge_meta ( ...
+                       tbl.VariableDescriptions, nA, ...
+                       in.VariableDescriptions, nB);
+          tbl.VariableUnits = tabular.merge_meta (tbl.VariableUnits, nA, ...
+                                                  in.VariableUnits, nB);
           tbl.VariableValues = [tbl.VariableValues, in.VariableValues];
-          tbl.VariableDescriptions = [tbl.VariableDescriptions, ...
-                                      in.VariableDescriptions];
-          tbl.VariableUnits = [tbl.VariableUnits, in.VariableUnits];
           if (isempty (tbl.Description))
             tbl.Description = in.Description;
           endif
@@ -3929,13 +3937,16 @@ classdef table < tabular
         tbl.VariableNames = varNames;
         for i = 2:numel (varargin)
           in = varargin{i};
+          nA = numel (tbl.VariableValues);
+          nB = numel (in.VariableValues);
           tbl.VariableContinuity = tabular.merge_continuity ( ...
-                       tbl.VariableContinuity, numel (tbl.VariableValues), ...
-                       in.VariableContinuity, numel (in.VariableValues));
+                       tbl.VariableContinuity, nA, in.VariableContinuity, nB);
+          tbl.VariableDescriptions = tabular.merge_meta ( ...
+                       tbl.VariableDescriptions, nA, ...
+                       in.VariableDescriptions, nB);
+          tbl.VariableUnits = tabular.merge_meta (tbl.VariableUnits, nA, ...
+                                                  in.VariableUnits, nB);
           tbl.VariableValues = [tbl.VariableValues, in.VariableValues];
-          tbl.VariableDescriptions = [tbl.VariableDescriptions, ...
-                                      in.VariableDescriptions];
-          tbl.VariableUnits = [tbl.VariableUnits, in.VariableUnits];
           if (! isempty (in.RowNames))
             tbl.RowNames = in.RowNames;
           endif
@@ -3985,21 +3996,27 @@ classdef table < tabular
               tbl.RowNames = in.RowNames(ixRows);
               add_row_names = false;
             endif
+            nA = numel (tbl.VariableValues);
+            nB = numel (in.VariableValues);
             tbl.VariableContinuity = tabular.merge_continuity ( ...
-                       tbl.VariableContinuity, numel (tbl.VariableValues), ...
-                       in.VariableContinuity, numel (in.VariableValues));
+                       tbl.VariableContinuity, nA, in.VariableContinuity, nB);
+            tbl.VariableDescriptions = tabular.merge_meta ( ...
+                       tbl.VariableDescriptions, nA, ...
+                       in.VariableDescriptions, nB);
+            tbl.VariableUnits = tabular.merge_meta (tbl.VariableUnits, nA, ...
+                                                    in.VariableUnits, nB);
             tbl.VariableValues = [tbl.VariableValues, in.VariableValues];
-            tbl.VariableDescriptions = [tbl.VariableDescriptions, ...
-                                        in.VariableDescriptions];
-            tbl.VariableUnits = [tbl.VariableUnits, in.VariableUnits];
           else
+            nA = numel (tbl.VariableValues);
+            nB = numel (in.VariableValues);
             tbl.VariableContinuity = tabular.merge_continuity ( ...
-                       tbl.VariableContinuity, numel (tbl.VariableValues), ...
-                       in.VariableContinuity, numel (in.VariableValues));
+                       tbl.VariableContinuity, nA, in.VariableContinuity, nB);
+            tbl.VariableDescriptions = tabular.merge_meta ( ...
+                       tbl.VariableDescriptions, nA, ...
+                       in.VariableDescriptions, nB);
+            tbl.VariableUnits = tabular.merge_meta (tbl.VariableUnits, nA, ...
+                                                    in.VariableUnits, nB);
             tbl.VariableValues = [tbl.VariableValues, in.VariableValues];
-            tbl.VariableDescriptions = [tbl.VariableDescriptions, ...
-                                        in.VariableDescriptions];
-            tbl.VariableUnits = [tbl.VariableUnits, in.VariableUnits];
           endif
           if (isempty (tbl.Description))
             tbl.Description = in.Description;
@@ -4393,12 +4410,6 @@ classdef table < tabular
             tbl.VariableValues{v} = [tbl.VariableValues{v}; ...
                                      in.VariableValues{v}];
           endfor
-          if (isempty (tbl.VariableDescriptions))
-            tbl.VariableDescriptions = in.VariableDescriptions;
-          endif
-          if (isempty (tbl.VariableUnits))
-            tbl.VariableUnits = in.VariableUnits;
-          endif
           if (isempty (tbl.VariableContinuity))
             tbl.VariableContinuity = in.VariableContinuity;
           endif
@@ -4441,12 +4452,6 @@ classdef table < tabular
           tbl.RowNames = [tbl.RowNames; in.RowNames];
           pos += height (in);
           ## Handle remaining stuff
-          if (isempty (tbl.VariableDescriptions))
-            tbl.VariableDescriptions = in.VariableDescriptions;
-          endif
-          if (isempty (tbl.VariableUnits))
-            tbl.VariableUnits = in.VariableUnits;
-          endif
           if (isempty (tbl.VariableContinuity))
             tbl.VariableContinuity = in.VariableContinuity;
           endif

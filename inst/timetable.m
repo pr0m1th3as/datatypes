@@ -833,8 +833,11 @@ classdef timetable < tabular
       endif
 
       ## Construction
-      this.VariableDescriptions = repmat ({''}, [1, numel(VariableNames)]);
-      this.VariableUnits = repmat ({''}, [1, numel(VariableNames)]);
+      ## Descriptions and units stay unset until they are given: an empty
+      ## property says 'none', which is not the same as one blank per
+      ## variable and is what an empty assignment returns them to.
+      this.VariableDescriptions = {};
+      this.VariableUnits = {};
       this.VariableNames = VariableNames(:)';
       this.VariableValues = VariableValues;
       this.VariableTypes = cellfun ('class', VariableValues, ...
@@ -984,13 +987,17 @@ classdef timetable < tabular
         in = varargin{i};
         props = getProperties (in);
         inVals = varValues (in);
+        nA = numel (tbl.VariableValues);
+        nB = numel (inVals);
         tbl.VariableContinuity = tabular.merge_continuity ( ...
-                     tbl.VariableContinuity, numel (tbl.VariableValues), ...
-                     props.VariableContinuity, numel (inVals));
+                     tbl.VariableContinuity, nA, ...
+                     props.VariableContinuity, nB);
+        tbl.VariableDescriptions = tabular.merge_meta ( ...
+                     tbl.VariableDescriptions, nA, ...
+                     props.VariableDescriptions, nB);
+        tbl.VariableUnits = tabular.merge_meta (tbl.VariableUnits, nA, ...
+                                                props.VariableUnits, nB);
         tbl.VariableValues = [tbl.VariableValues, inVals];
-        tbl.VariableDescriptions = [tbl.VariableDescriptions, ...
-                                    props.VariableDescriptions];
-        tbl.VariableUnits = [tbl.VariableUnits, props.VariableUnits];
         if (isempty (tbl.Description))
           tbl.Description = props.Description;
         endif

@@ -130,6 +130,9 @@ classdef (Abstract) tabular
     ## string.  You can access the @qcode{VariableDescriptions} property of a
     ## table @var{tbl} with @qcode{@var{tbl}.Properties.VariableDescriptions}.
     ## You can further index specific variables to access their description.
+    ## Assigning an empty cell or string array returns the property to its
+    ## default, and describing a single variable of a table that has no
+    ## descriptions gives the remaining variables an empty description.
     ##
     ## @end deftp
     VariableDescriptions = {}
@@ -147,7 +150,10 @@ classdef (Abstract) tabular
     ## an individual empty character vector or an empty string.  You can access
     ## the @qcode{VariableUnits} property of a table @var{tbl} with
     ## @qcode{@var{tbl}.Properties.VariableUnits}.  You can further index
-    ## specific variables to access their unit.
+    ## specific variables to access their unit.  Assigning an empty cell or
+    ## string array returns the property to its default, and giving a unit to
+    ## a single variable of a table that has none gives the remaining
+    ## variables an empty unit.
     ##
     ## @end deftp
     VariableUnits = {}
@@ -849,7 +855,19 @@ classdef (Abstract) tabular
                                  " vectors or a string array matching", ...
                                  " the number of indexed variables."), clstype);
                 endif
+                ## Naming one entry of an unset property sets them all, the
+                ## rest blank: the property is either unset or one entry per
+                ## variable, never anything in between.
+                if (isempty (this.VariableDescriptions))
+                  this.VariableDescriptions = repmat ({''}, 1, width (this));
+                endif
                 this.VariableDescriptions(idx) = val;
+                tbl = this;
+                return
+              endif
+              ## An empty returns the property to unset.
+              if ((iscell (val) || isa (val, 'string')) && isempty (val))
+                this.VariableDescriptions = {};
                 tbl = this;
                 return
               endif
@@ -894,7 +912,19 @@ classdef (Abstract) tabular
                                  " a string array matching the number of", ...
                                  " indexed variables."), clstype);
                 endif
+                ## Naming one entry of an unset property sets them all, the
+                ## rest blank: the property is either unset or one entry per
+                ## variable, never anything in between.
+                if (isempty (this.VariableUnits))
+                  this.VariableUnits = repmat ({''}, 1, width (this));
+                endif
                 this.VariableUnits(idx) = val;
+                tbl = this;
+                return
+              endif
+              ## An empty returns the property to unset.
+              if ((iscell (val) || isa (val, 'string')) && isempty (val))
+                this.VariableUnits = {};
                 tbl = this;
                 return
               endif
@@ -1215,14 +1245,16 @@ classdef (Abstract) tabular
       Nrows = cellfun (@(x) size (x, 1), N);
       Nmaxr = max (Nrows);
       isvar = cellfun (@(x) ! isempty (x), N(1,:));
-      Drows = cellfun (@(x) size (x, 1), D);
-      if (any (cellfun (@(x) ! isempty (x), D(isvar))))
+      Drows = cellfun (@(x) max (1, size (x, 1)), D);
+      if (! isempty (this.VariableDescriptions)
+          || any (cellfun (@(x) ! isempty (x), D(isvar))))
         Dmaxr = max (Drows(isvar));
       else
         Dmaxr = 0;
       endif
-      Urows = cellfun (@(x) size (x, 1), U);
-      if (any (cellfun (@(x) ! isempty (x), U(isvar))))
+      Urows = cellfun (@(x) max (1, size (x, 1)), U);
+      if (! isempty (this.VariableUnits)
+          || any (cellfun (@(x) ! isempty (x), U(isvar))))
         Umaxr = max (Urows(isvar));
       else
         Umaxr = 0;
@@ -2122,8 +2154,12 @@ classdef (Abstract) tabular
       tbl.VariableTypes(ixVar) = [];
       tbl.VariableNames(ixVar) = [];
       tbl.VariableValues(ixVar) = [];
-      tbl.VariableDescriptions(ixVar) = [];
-      tbl.VariableUnits(ixVar) = [];
+      if (! isempty (tbl.VariableDescriptions))
+        tbl.VariableDescriptions(ixVar) = [];
+      endif
+      if (! isempty (tbl.VariableUnits))
+        tbl.VariableUnits(ixVar) = [];
+      endif
       if (! isempty (this.VariableContinuity))
         tbl.VariableContinuity(ixVar) = [];
         if (isempty (tbl.VariableContinuity))
@@ -2489,6 +2525,8 @@ classdef (Abstract) tabular
           endif
           ## Change variable data here
           if (istable (tmp))
+            tmpD = tabular.meta_or_blank (tmp.VariableDescriptions, col);
+            tmpU = tabular.meta_or_blank (tmp.VariableUnits, col);
             for i = 1:col
               ## Copy new variable name if given
               if (change_newNames)
@@ -2498,11 +2536,19 @@ classdef (Abstract) tabular
               tbl.VariableValues{idx} = tmp.VariableValues{i};
               ## Copy variable properties from nested table
               tbl.VariableTypes{idx} = tmp.VariableTypes{i};
-              if (! isempty (tmp.VariableDescriptions{i}))
-                tbl.VariableDescriptions{idx} = tmp.VariableDescriptions{i};
+              if (! isempty (tmpD{i}))
+                if (isempty (tbl.VariableDescriptions))
+                  tbl.VariableDescriptions = repmat ({''}, 1, ...
+                                                     numel (tbl.VariableNames));
+                endif
+                tbl.VariableDescriptions{idx} = tmpD{i};
               endif
-              if (! isempty (tmp.VariableUnits{i}))
-                tbl.VariableUnits{idx} = tmp.VariableUnits{i};
+              if (! isempty (tmpU{i}))
+                if (isempty (tbl.VariableUnits))
+                  tbl.VariableUnits = repmat ({''}, 1, ...
+                                              numel (tbl.VariableNames));
+                endif
+                tbl.VariableUnits{idx} = tmpU{i};
               endif
               ## Variable-scoped custom properties are already replicated to the
               ## split columns by subsetvars via the repeated indices in
@@ -3442,8 +3488,9 @@ classdef (Abstract) tabular
         endif
         tbl.VariableTypes = tbl.VariableTypes(ixVars);
         tbl.VariableValues = tbl.VariableValues(ixVars);
-        tbl.VariableDescriptions = tbl.VariableDescriptions(ixVars);
-        tbl.VariableUnits = tbl.VariableUnits(ixVars);
+        tbl.VariableDescriptions = tabular.subset_meta ( ...
+                                     tbl.VariableDescriptions, ixVars);
+        tbl.VariableUnits = tabular.subset_meta (tbl.VariableUnits, ixVars);
         if (! isempty (tbl.VariableContinuity))
           tbl.VariableContinuity = tbl.VariableContinuity(ixVars);
         endif
@@ -4363,10 +4410,14 @@ classdef (Abstract) tabular
         UvarTable = table ('Size', [nrows, ncols], 'VariableTypes', vtype, ...
                            'VariableNames', newVarNames);
         ## Copy descriptions and units to unstacked variables
-        vd = this.VariableDescriptions{ixVars};
-        UvarTable.VariableDescriptions = repmat ({vd}, 1, ncols);
-        vu = this.VariableUnits{ixVars};
-        UvarTable.VariableUnits = repmat ({vu}, 1, ncols);
+        if (! isempty (this.VariableDescriptions))
+          vd = this.VariableDescriptions{ixVars};
+          UvarTable.VariableDescriptions = repmat ({vd}, 1, ncols);
+        endif
+        if (! isempty (this.VariableUnits))
+          vu = this.VariableUnits{ixVars};
+          UvarTable.VariableUnits = repmat ({vu}, 1, ncols);
+        endif
 
         ## Replicate the unstacked variable's variable-scoped custom properties
         ## onto each new column (MATLAB copies them); table-scoped properties
@@ -4463,13 +4514,21 @@ classdef (Abstract) tabular
         VD = {};
         VU = {};
         for i = 1:nvars
-          vd = this.VariableDescriptions{ixVars(i)};
-          VD = [VD, repmat({vd}, 1, ncols)];
-          vu = this.VariableUnits{ixVars(i)};
-          VU = [VU, repmat({vu}, 1, ncols)];
+          if (! isempty (this.VariableDescriptions))
+            vd = this.VariableDescriptions{ixVars(i)};
+            VD = [VD, repmat({vd}, 1, ncols)];
+          endif
+          if (! isempty (this.VariableUnits))
+            vu = this.VariableUnits{ixVars(i)};
+            VU = [VU, repmat({vu}, 1, ncols)];
+          endif
         endfor
-        UvarTable.VariableDescriptions = VD;
-        UvarTable.VariableUnits = VU;
+        if (! isempty (VD))
+          UvarTable.VariableDescriptions = VD;
+        endif
+        if (! isempty (VU))
+          UvarTable.VariableUnits = VU;
+        endif
 
         ## Replicate each unstacked variable's variable-scoped custom properties
         ## onto its new columns (MATLAB copies them); table-scoped properties
@@ -4944,23 +5003,31 @@ classdef (Abstract) tabular
         endfor
         if (numel (srcJ) == 1)
           nt = this.VariableValues{ixNest(srcJ)};
+          ntD = tabular.meta_or_blank (nt.VariableDescriptions, width (nt));
+          ntU = tabular.meta_or_blank (nt.VariableUnits, width (nt));
           newVals{k} = nt.VariableValues{srcP};
           newTypes{k} = nt.VariableTypes{srcP};
-          newDesc{k} = nt.VariableDescriptions{srcP};
-          newUnits{k} = nt.VariableUnits{srcP};
+          newDesc{k} = ntD{srcP};
+          newUnits{k} = ntU{srcP};
         else
           cols = cell (1, numel (srcJ));
           descs = cell (1, numel (srcJ));
           units = cell (1, numel (srcJ));
           for m = 1:numel (srcJ)
             nt = this.VariableValues{ixNest(srcJ(m))};
+            ntD = tabular.meta_or_blank (nt.VariableDescriptions, width (nt));
+            ntU = tabular.meta_or_blank (nt.VariableUnits, width (nt));
             cols{m} = nt.VariableValues{srcP(m)};
-            descs{m} = nt.VariableDescriptions{srcP(m)};
-            units{m} = nt.VariableUnits{srcP(m)};
+            descs{m} = ntD{srcP(m)};
+            units{m} = ntU{srcP(m)};
           endfor
           nt2 = table (cols{:}, 'VariableNames', nestNames(srcJ));
-          nt2.VariableDescriptions = descs;
-          nt2.VariableUnits = units;
+          if (any (! cellfun ("isempty", descs)))
+            nt2.VariableDescriptions = descs;
+          endif
+          if (any (! cellfun ("isempty", units)))
+            nt2.VariableUnits = units;
+          endif
           newVals{k} = nt2;
           newTypes{k} = 'table';
           newDesc{k} = '';
@@ -4976,6 +5043,8 @@ classdef (Abstract) tabular
       outTypes = {};
       outDesc = {};
       outUnits = {};
+      thisD = tabular.meta_or_blank (this.VariableDescriptions, width (this));
+      thisU = tabular.meta_or_blank (this.VariableUnits, width (this));
       emitted = false;
       for ix = 1:width (this)
         if (ismember (ix, ixNest))
@@ -4993,8 +5062,8 @@ classdef (Abstract) tabular
           outNames{end+1} = this.VariableNames{ix};
           outVals{end+1} = this.VariableValues{ix};
           outTypes{end+1} = this.VariableTypes{ix};
-          outDesc{end+1} = this.VariableDescriptions{ix};
-          outUnits{end+1} = this.VariableUnits{ix};
+          outDesc{end+1} = thisD{ix};
+          outUnits{end+1} = thisU{ix};
         endif
       endfor
 
@@ -5012,8 +5081,16 @@ classdef (Abstract) tabular
       tbl.VariableNames = outNames;
       tbl.VariableValues = outVals;
       tbl.VariableTypes = outTypes;
-      tbl.VariableDescriptions = outDesc;
-      tbl.VariableUnits = outUnits;
+      ## Leave them unset unless something was inherited, or the input had
+      ## them set to blanks in the first place.
+      if (! isempty (this.VariableDescriptions)
+          || any (! cellfun ("isempty", outDesc)))
+        tbl.VariableDescriptions = outDesc;
+      endif
+      if (! isempty (this.VariableUnits)
+          || any (! cellfun ("isempty", outUnits)))
+        tbl.VariableUnits = outUnits;
+      endif
       if (! isempty (this.VariableContinuity))
         ## The variables are not the ones that carried it.
         tbl.VariableContinuity = repmat ({'unset'}, 1, numel (outNames));
@@ -5185,9 +5262,9 @@ classdef (Abstract) tabular
       OriginalVariableNames = table (OriginalVariableNames);
       tbl = [OriginalVariableNames, out];
 
-      ## Fix lengths of VariableDescriptions and VariableUnits
-      tbl.VariableDescriptions = repmat ({''}, 1, size (tbl, 2));
-      tbl.VariableUnits = repmat ({''}, 1, size (tbl, 2));
+      ## The output variables are new ones, carrying no description or units.
+      tbl.VariableDescriptions = {};
+      tbl.VariableUnits = {};
 
       ## Assign variable types in the new table
       new_types = cellfun ('class', tbl.VariableValues, 'UniformOutput', false);
@@ -5364,13 +5441,19 @@ classdef (Abstract) tabular
       ## Inherit units and descriptions for the new data variables from the
       ## first variable of each group; the indicator carries a fixed
       ## description and no units.
-      ndUnits = cell (1, nGroup);
-      ndDescr = cell (1, nGroup);
-      for g = 1:nGroup
-        ndUnits{g} = this.VariableUnits{grpIx{g}(1)};
-        ndDescr{g} = this.VariableDescriptions{grpIx{g}(1)};
-      endfor
-      stackedTable.VariableUnits = [{''}, ndUnits];
+      ndDescr = repmat ({''}, 1, nGroup);
+      if (! isempty (this.VariableUnits))
+        ndUnits = cell (1, nGroup);
+        for g = 1:nGroup
+          ndUnits{g} = this.VariableUnits{grpIx{g}(1)};
+        endfor
+        stackedTable.VariableUnits = [{''}, ndUnits];
+      endif
+      if (! isempty (this.VariableDescriptions))
+        for g = 1:nGroup
+          ndDescr{g} = this.VariableDescriptions{grpIx{g}(1)};
+        endfor
+      endif
       stackedTable.VariableDescriptions = [{'Data indicator'}, ndDescr];
       ## The indicator has no continuity of its own; each stacked variable
       ## takes the continuity of the first variable of its group.
@@ -6424,8 +6507,9 @@ classdef (Abstract) tabular
       tbl.VariableTypes = this.VariableTypes(ixVars);
       tbl.VariableNames = this.VariableNames(ixVars);
       tbl.VariableValues = this.VariableValues(ixVars);
-      tbl.VariableDescriptions = this.VariableDescriptions(ixVars);
-      tbl.VariableUnits = this.VariableUnits(ixVars);
+      tbl.VariableDescriptions = tabular.subset_meta ( ...
+                                   this.VariableDescriptions, ixVars);
+      tbl.VariableUnits = tabular.subset_meta (this.VariableUnits, ixVars);
       if (! isempty (this.VariableContinuity))
         tbl.VariableContinuity = this.VariableContinuity(ixVars);
       endif
@@ -6589,8 +6673,12 @@ classdef (Abstract) tabular
         tbl.VariableNames{ix_new_var} = varRef;
         tbl.VariableTypes{ix_new_var} = class (value);
         tbl.VariableValues{ix_new_var} = value;
-        tbl.VariableDescriptions{ix_new_var} = "";
-        tbl.VariableUnits{ix_new_var} = "";
+        if (! isempty (tbl.VariableDescriptions))
+          tbl.VariableDescriptions{ix_new_var} = '';
+        endif
+        if (! isempty (tbl.VariableUnits))
+          tbl.VariableUnits{ix_new_var} = '';
+        endif
         if (! isempty (this.VariableContinuity))
           tbl.VariableContinuity{ix_new_var} = 'unset';
         endif
@@ -7192,6 +7280,8 @@ classdef (Abstract) tabular
     function s = summary_for_variables (this)
       ## An object with no variables summarises to no fields, not to nothing.
       s = struct ();
+      sumD = tabular.meta_or_blank (this.VariableDescriptions, width (this));
+      sumU = tabular.meta_or_blank (this.VariableUnits, width (this));
       for v = 1:width (this)
         varName = this.VariableNames{v};
         val = this.VariableValues{v};
@@ -7199,12 +7289,12 @@ classdef (Abstract) tabular
         e.Size = size (val);
         e.Type = class (val);
         e.Description = '';
-        if (! isempty (this.VariableDescriptions{v}))
-          e.Description = this.VariableDescriptions{v};
+        if (! isempty (sumD{v}))
+          e.Description = sumD{v};
         endif
         e.Units = '';
-        if (! isempty (this.VariableUnits{v}))
-          e.Units = this.VariableUnits{v};
+        if (! isempty (sumU{v}))
+          e.Units = sumU{v};
         endif
         e.Continuity = [];
         if (! isempty (this.VariableContinuity))
@@ -7237,6 +7327,10 @@ classdef (Abstract) tabular
       T = {};  # variable types
       D = {};  # variable descriptions
       U = {};  # variable units
+      ## Every exported column needs a description and a units slot, so an
+      ## unset property reads here as one blank per variable.
+      VD = tabular.meta_or_blank (this.VariableDescriptions, width (this));
+      VU = tabular.meta_or_blank (this.VariableUnits, width (this));
       ## Process the row labels
       if (hasRowLabels (this))
         V = [V, rowLabelStrings(this)];
@@ -7255,40 +7349,40 @@ classdef (Abstract) tabular
             V = [V, var_V(:,col)];
             N = [N, this.VariableNames{ix}];
             T = [T, 'cell'];
-            D = [D, this.VariableDescriptions(ix)];
-            U = [U, this.VariableUnits(ix)];
+            D = [D, VD(ix)];
+            U = [U, VU(ix)];
           endfor
         elseif (islogical (var_V))
           for col = 1:ncols
             V = [V, num2cell(var_V(:,col))];
             N = [N, this.VariableNames{ix}];
             T = [T, 'logical'];
-            D = [D, this.VariableDescriptions(ix)];
-            U = [U, this.VariableUnits(ix)];
+            D = [D, VD(ix)];
+            U = [U, VU(ix)];
           endfor
         elseif (isnumeric (var_V))
           for col = 1:ncols
             V = [V, num2cell(var_V(:,col))];
             N = [N, this.VariableNames{ix}];
             T = [T, class(var_V(:,col))];
-            D = [D, this.VariableDescriptions(ix)];
-            U = [U, this.VariableUnits(ix)];
+            D = [D, VD(ix)];
+            U = [U, VU(ix)];
           endfor
         elseif (isa (var_V, 'calendarDuration'))
           for col = 1:ncols
             V = [V, cellstr(var_V(:,col))];
             N = [N, this.VariableNames{ix}];
             T = [T, 'calendarDuration'];
-            D = [D, this.VariableDescriptions(ix)];
-            U = [U, this.VariableUnits(ix)];
+            D = [D, VD(ix)];
+            U = [U, VU(ix)];
           endfor
         elseif (isa (var_V, 'categorical'))
           for col = 1:ncols
             V = [V, cellstr(var_V(:,col))];
             N = [N, this.VariableNames{ix}];
             T = [T, 'categorical'];
-            D = [D, this.VariableDescriptions(ix)];
-            U = [U, this.VariableUnits(ix)];
+            D = [D, VD(ix)];
+            U = [U, VU(ix)];
           endfor
         elseif (isa (var_V, 'datetime'))
           ## Carry a non-empty TimeZone in the type string ('datetime <tz>') so
@@ -7307,8 +7401,8 @@ classdef (Abstract) tabular
             endif
             N = [N, this.VariableNames{ix}];
             T = [T, dttype];
-            D = [D, this.VariableDescriptions(ix)];
-            U = [U, this.VariableUnits(ix)];
+            D = [D, VD(ix)];
+            U = [U, VU(ix)];
           endfor
         elseif (isa (var_V, 'duration'))
           for col = 1:ncols
@@ -7319,16 +7413,16 @@ classdef (Abstract) tabular
             endif
             N = [N, this.VariableNames{ix}];
             T = [T, 'duration'];
-            D = [D, this.VariableDescriptions(ix)];
-            U = [U, this.VariableUnits(ix)];
+            D = [D, VD(ix)];
+            U = [U, VU(ix)];
           endfor
         elseif (isa (var_V, 'string'))
           for col = 1:ncols
             V = [V, cellstr(var_V(:,col))];
             N = [N, this.VariableNames{ix}];
             T = [T, 'string'];
-            D = [D, this.VariableDescriptions(ix)];
-            U = [U, this.VariableUnits(ix)];
+            D = [D, VD(ix)];
+            U = [U, VU(ix)];
           endfor
         elseif (isa (var_V, 'table'))
           [tmpV, tmpN, tmpT tmpD, tmpU] = table2cellarrays (var_V, fmt);
@@ -7340,8 +7434,8 @@ classdef (Abstract) tabular
           for col = 1:size (tmpV, 2)
             nestedN = [nestedN, {{this.VariableNames{ix}; tmpN{col}}}];
             nestedT = [nestedT, {{'table'; tmpT{col}}}];
-            nestedD = [nestedD, {{this.VariableDescriptions{ix}; tmpD{col}}}];
-            nestedU = [nestedU, {{this.VariableUnits{ix}; tmpU{col}}}];
+            nestedD = [nestedD, {{VD{ix}; tmpD{col}}}];
+            nestedU = [nestedU, {{VU{ix}; tmpU{col}}}];
           endfor
           N = [N, nestedN];
           T = [T, nestedT];
@@ -7359,8 +7453,8 @@ classdef (Abstract) tabular
           for col = 1:size (tmpV, 2)
             nestedN = [nestedN, {{this.VariableNames{ix}; tmpN{col}}}];
             nestedT = [nestedT, {{'struct'; tmpT{col}}}];
-            nestedD = [nestedD, {{this.VariableDescriptions{ix}; ''}}];
-            nestedU = [nestedU, {{this.VariableUnits{ix}; ''}}];
+            nestedD = [nestedD, {{VD{ix}; ''}}];
+            nestedU = [nestedU, {{VU{ix}; ''}}];
           endfor
           N = [N, nestedN];
           T = [T, nestedT];
@@ -7520,6 +7614,39 @@ classdef (Abstract) tabular
     ## Merge the VariableContinuity of two horizontally combined operands.
     ## An operand carrying none contributes 'unset' for each of its
     ## variables, and the result is empty only when neither carries any.
+    ## A variable-scoped metadata property carried onto a derived object by
+    ## the index IX.  An unset property stays unset: the derived object was
+    ## told nothing either.
+    function out = subset_meta (v, ix)
+      if (isempty (v))
+        out = {};
+      else
+        out = v(ix);
+      endif
+    endfunction
+
+    ## The same property read as one entry per variable, an unset one giving N
+    ## blanks.  For the places that need a slot per variable whether or not
+    ## anything was ever set, such as the display and export paths.
+    function out = meta_or_blank (v, n)
+      if (isempty (v))
+        out = repmat ({''}, 1, n);
+      else
+        out = v;
+      endif
+    endfunction
+
+    ## The concatenation of two such properties, over objects of NA and NB
+    ## variables.  Unset on both sides stays unset; unset on one side fills
+    ## with blanks so the result still holds one entry per variable.
+    function m = merge_meta (a, na, b, nb)
+      if (isempty (a) && isempty (b))
+        m = {};
+        return;
+      endif
+      m = [tabular.meta_or_blank(a, na), tabular.meta_or_blank(b, nb)];
+    endfunction
+
     function vc = merge_continuity (a, na, b, nb)
       if (isempty (a) && isempty (b))
         vc = [];
