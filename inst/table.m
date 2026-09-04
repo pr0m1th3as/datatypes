@@ -4721,137 +4721,10 @@ classdef table < tabular
       if (nargin < 2)
         print_usage ();
       endif
-
-      ## Split the trailing arguments into the optional positional METHOD and
-      ## DATAVARS arguments and any Name-Value pairs.  A Name-Value region starts
-      ## at the first char-vector/string that names a known option.
-      optNames = {'IncludeMissingGroups', 'IncludeEmptyGroups', 'IncludedEdge'};
-      nvStart = numel (varargin) + 1;
-      for k = 1:numel (varargin)
-        a = varargin{k};
-        if ((ischar (a) && isrow (a)) || (isa (a, 'string') && isscalar (a)))
-          if (any (strcmpi (char (a), optNames)))
-            nvStart = k;
-            break;
-          endif
-        endif
-      endfor
-      posArgs = varargin(1:nvStart-1);
-      nvArgs = varargin(nvStart:end);
-      ## An optional GROUPBINS positional argument precedes METHOD.
-      hasGroupbins = false;
-      groupbins = [];
-      if (! isempty (posArgs) && __groupbins__ ('is_spec', posArgs{1}))
-        hasGroupbins = true;
-        groupbins = posArgs{1};
-        posArgs = posArgs(2:end);
-      endif
-      if (numel (posArgs) > 2)
-        error ("table.groupsummary: too many positional arguments.");
-      endif
-      if (numel (posArgs) >= 1)
-        method = posArgs{1};
-      else
-        method = {};
-      endif
-      if (numel (posArgs) >= 2)
-        datavars = posArgs{2};
-        hasDataVars = true;
-      else
-        datavars = [];
-        hasDataVars = false;
-      endif
-
-      ## Parse Name-Value options.
-      dfValues = {true, false, 'left'};
-      [incMiss, incEmpty, incEdge] = ...
-                  parsePairedArguments (optNames, dfValues, nvArgs(:));
-      if (! (isscalar (incMiss) && (islogical (incMiss) || isnumeric (incMiss))))
-        error (strcat ("table.groupsummary: 'IncludeMissingGroups' must be", ...
-                       " a logical scalar."));
-      endif
-      incMiss = logical (incMiss);
-      if (! (isscalar (incEmpty)
-             && (islogical (incEmpty) || isnumeric (incEmpty))))
-        error (strcat ("table.groupsummary: 'IncludeEmptyGroups' must be", ...
-                       " a logical scalar."));
-      endif
-      incEmpty = logical (incEmpty);
-      incEdge = tabular.check_included_edge ('table.groupsummary', incEdge);
-
-      ## Normalise METHOD into parallel cell arrays of method specs and the
-      ## display names used to build output variable names.
-      [methods, methNames, errmsg] = gs_normalise_methods (method);
+      [G, errmsg] = groupsummaryResult (T, groupvars, varargin);
       if (! isempty (errmsg))
         error ("table.groupsummary: %s", errmsg);
       endif
-
-      ## Resolve grouping and data variables.  The default data variables are all
-      ## variables that are not grouping variables.
-      gIx = resolveVarRef (T, groupvars)(:)';
-      if (isempty (gIx))
-        error ("table.groupsummary: at least one grouping variable is required.");
-      endif
-      if (hasDataVars)
-        dIx = resolveVarRef (T, datavars)(:)';
-      else
-        dIx = 1:width (T);
-        dIx(ismember (dIx, gIx)) = [];
-      endif
-
-      ## Bin the grouping variables when a GROUPBINS argument was given.
-      grpCols = T.VariableValues(gIx);
-      grpNames = T.VariableNames(gIx);
-      if (hasGroupbins)
-        [grpCols, grpNames, errmsg] = __groupbins__ ('bin', grpCols, ...
-                                    grpNames, groupbins, incEdge, 'groupsummary');
-        if (! isempty (errmsg))
-          error ("table.groupsummary: %s", errmsg);
-        endif
-      endif
-
-      ## Group the rows, treating missing grouping values as their own groups
-      ## (sorted last) when IncludeMissingGroups is true; IncludeEmptyGroups adds
-      ## the unused categories of a categorical or binned grouping variable as
-      ## empty groups.
-      [Grp, ng, gcols, errmsg] = tabular.gs_grouping (grpCols, incMiss, incEmpty);
-      if (! isempty (errmsg))
-        error ("table.groupsummary: %s", errmsg);
-      endif
-      gcount = accumarray (Grp(! isnan (Grp)), 1, [ng, 1]);
-
-      ## Compute each method over each data variable.  Output columns are ordered
-      ## data variable first, then method, to match MATLAB's column order.
-      datNames = T.VariableNames(dIx);
-      rescols = {};
-      resNames = {};
-      for di = 1:numel (dIx)
-        for mi = 1:numel (methods)
-          col = T.VariableValues{dIx(di)};
-          vals = cell (ng, 1);
-          for g = 1:ng
-            rows = (Grp == g);
-            [v, errmsg] = gs_apply_method (methods{mi}, col(rows,:));
-            if (! isempty (errmsg))
-              error ("table.groupsummary: variable '%s': %s", ...
-                     datNames{di}, errmsg);
-            endif
-            vals{g} = v;
-          endfor
-          try
-            rescols{end+1} = vertcat (vals{:});
-          catch
-            error (strcat ("table.groupsummary: the '%s' results for", ...
-                           " variable '%s' cannot be concatenated into a", ...
-                           " column."), methNames{mi}, datNames{di});
-          end_try_catch
-          resNames{end+1} = sprintf ("%s_%s", methNames{mi}, datNames{di});
-        endfor
-      endfor
-
-      vars = [gcols, {gcount}, rescols];
-      names = [grpNames, {'GroupCount'}, resNames];
-      G = table (vars{:}, 'VariableNames', names);
     endfunction
 
     ## -*- texinfo -*-
@@ -6593,167 +6466,6 @@ function [keep, errmsg] = gf_keep_mask (method, dataCols, G, ng)
   endfor
 endfunction
 
-## Normalise the 'groupsummary' METHOD argument into a cell array of method specs
-## METHODS (each a method-name char vector or a function handle) and a parallel
-## cell array of display names METHNAMES used to build output variable names
-## (the method name, or 'fun<n>' for the n-th function handle).  Returns an
-## errmsg body (empty on success) emitted by the caller.
-function [methods, methNames, errmsg] = gs_normalise_methods (method)
-  methods = {};
-  methNames = {};
-  errmsg = '';
-  if (isempty (method) && ! iscell (method) && ! ischar (method)
-      && ! is_function_handle (method))
-    return;   # no method requested: counts only
-  endif
-  if (is_function_handle (method) || (ischar (method) && isrow (method))
-      || isa (method, 'string'))
-    items = {method};
-  elseif (iscell (method))
-    items = method(:)';
-  else
-    errmsg = strcat ("METHOD must be a method name, a function handle, or a", ...
-                     " cell array of method names and function handles.");
-    return;
-  endif
-  known = {'sum', 'mean', 'median', 'mode', 'var', 'std', 'min', 'max', ...
-           'range', 'nnz', 'nummissing', 'numunique'};
-  nfun = 0;
-  for k = 1:numel (items)
-    it = items{k};
-    if (is_function_handle (it))
-      nfun++;
-      methods{end+1} = it;
-      methNames{end+1} = sprintf ("fun%d", nfun);
-    elseif ((ischar (it) && isrow (it)) || (isa (it, 'string') && isscalar (it)))
-      nm = lower (char (it));
-      if (! any (strcmp (nm, known)))
-        errmsg = sprintf ("'%s' is not a supported method name.", char (it));
-        return;
-      endif
-      methods{end+1} = nm;
-      methNames{end+1} = nm;
-    else
-      errmsg = strcat ("each method must be a method name or a function", ...
-                       " handle.");
-      return;
-    endif
-  endfor
-endfunction
-
-## Apply a single 'groupsummary' method M (a method-name char vector or a
-## function handle) to the column slice X of one group, returning a row result V.
-## Named methods omit missing values (except 'nummissing'); a function handle
-## receives X unchanged and must return a single row.  Returns an errmsg body
-## (empty on success) emitted by the caller.
-function [v, errmsg] = gs_apply_method (m, x)
-  v = [];
-  errmsg = '';
-  if (is_function_handle (m))
-    v = m (x);
-    if (size (v, 1) != 1)
-      errmsg = "a function handle method must return a single row.";
-    endif
-    return;
-  endif
-
-  ## Type-agnostic counting methods.
-  if (strcmp (m, 'nummissing'))
-    v = sum (gs_missing_mask (x), 1);
-    return;
-  endif
-  if (strcmp (m, 'numunique'))
-    miss = gs_missing_mask (x);
-    if (size (x, 2) == 1)
-      v = numel (unique (x(! miss,:)));
-    else
-      v = zeros (1, size (x, 2));
-      for c = 1:size (x, 2)
-        col = x(:,c);
-        v(c) = numel (unique (col(! miss(:,c))));
-      endfor
-    endif
-    return;
-  endif
-
-  ## The remaining named methods require numeric or logical data.
-  if (! (isnumeric (x) || islogical (x)))
-    errmsg = sprintf (strcat ("named method '%s' is not supported for", ...
-                              " variables of type '%s'; use a function", ...
-                              " handle."), m, class (x));
-    return;
-  endif
-  x = double (x);
-  ## An empty group (e.g. an unused IncludeEmptyGroups category) takes the
-  ## method's empty value: 0 for the additive 'sum'/'nnz', NaN otherwise.
-  if (rows (x) == 0)
-    if (any (strcmp (m, {'sum', 'nnz'})))
-      v = zeros (1, columns (x));
-    else
-      v = NaN (1, columns (x));
-    endif
-    return;
-  endif
-  nan = isnan (x);
-  cnt = sum (! nan, 1);
-  z = x;
-  z(nan) = 0;
-  switch (m)
-    case 'sum'
-      v = sum (z, 1);
-    case 'mean'
-      v = sum (z, 1) ./ cnt;
-    case 'min'
-      v = min (x, [], 1);
-    case 'max'
-      v = max (x, [], 1);
-    case 'range'
-      v = max (x, [], 1) - min (x, [], 1);
-    case 'nnz'
-      v = sum (x != 0 & ! nan, 1);
-    case {'median', 'mode', 'var', 'std'}
-      v = NaN (1, size (x, 2));
-      for c = 1:size (x, 2)
-        col = x(! nan(:,c), c);
-        if (! isempty (col))
-          switch (m)
-            case 'median'
-              v(c) = median (col);
-            case 'mode'
-              v(c) = mode (col);
-            case 'var'
-              v(c) = var (col);
-            case 'std'
-              v(c) = std (col);
-          endswitch
-        endif
-      endfor
-  endswitch
-endfunction
-
-## Return a logical mask the size of X flagging its missing elements, used by the
-## type-agnostic 'groupsummary' methods.  Supports the numeric, logical, text,
-## datetime, duration, calendarDuration, and categorical variable types.
-function mask = gs_missing_mask (x)
-  if (isa (x, 'datetime'))
-    mask = isnan (tabular.datetime_to_datenum (x));
-  elseif (isa (x, 'duration'))
-    mask = isnan (days (x));
-  elseif (isa (x, 'calendarDuration'))
-    mask = any (isnan (x.proxyArray), 2);
-  elseif (isa (x, 'categorical') || isa (x, 'string'))
-    mask = ismissing (x);
-  elseif (iscellstr (x))
-    mask = cellfun (@isempty, x);
-  elseif (islogical (x))
-    mask = false (size (x));
-  elseif (isnumeric (x))
-    mask = isnan (x);
-  else
-    mask = false (size (x));
-  endif
-endfunction
-
 ## Map a scalar grouping value VAL to the character vector used as a 'pivot'
 ## column variable name (or part of one).  Logical values render as 'true' or
 ## 'false', numeric values through 'num2str', and text, categorical, datetime,
@@ -6843,7 +6555,7 @@ endfunction
 function [mv, ok] = pivot_missing_scalar (x)
   ok = true;
   mv = [];
-  mm = any (gs_missing_mask (x), 2);
+  mm = any (tabular.gs_missing_mask (x), 2);
   if (any (mm))
     mv = x(find (mm, 1), :);
   elseif (isnumeric (x))
@@ -6947,7 +6659,7 @@ function [v, errmsg] = pivot_cell_value (method, hasDV, dataVals, rows, ...
     if (! hasDV)
       v = numel (rows);
     else
-      v = sum (! any (gs_missing_mask (dataVals(rows,:)), 2));
+      v = sum (! any (tabular.gs_missing_mask (dataVals(rows,:)), 2));
     endif
   elseif (ischar (method) && strcmp (method, 'percentage'))
     v = 100 * numel (rows) / totalAssigned;
@@ -6960,7 +6672,7 @@ function [v, errmsg] = pivot_cell_value (method, hasDV, dataVals, rows, ...
       v = NaN;
     endif
   else
-    [v, errmsg] = gs_apply_method (method, dataVals(rows,:));
+    [v, errmsg] = tabular.gs_apply_method (method, dataVals(rows,:));
   endif
 endfunction
 

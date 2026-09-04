@@ -2593,6 +2593,66 @@
 %! TT = timetable ([1; 2], 'RowTimes', rt, 'VariableNames', {'A'});
 %! groupcounts (TT, 'Time', 'IncludeEmptyGroups', 'yes');
 
+## Test 'groupsummary' returns a table, the summary describing groups
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2; 3; 4], categorical ({'a'; 'b'; 'a'; 'b'}), ...
+%!                 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'A', 'g'});
+%! G = groupsummary (TT, 'g', 'mean', 'A');
+%! assert_equal (class (G), 'table');
+%! assert_equal (G.Properties.VariableNames, {'g', 'GroupCount', 'mean_A'});
+%! assert_equal (G.GroupCount, [2; 2]);
+%! assert_equal (G.mean_A, [2; 3]);
+
+## Test the counts alone are reported when no method is asked for
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2; 3; 4], categorical ({'a'; 'b'; 'a'; 'b'}), ...
+%!                 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'A', 'g'});
+%! G = groupsummary (TT, 'g');
+%! assert_equal (G.Properties.VariableNames, {'g', 'GroupCount'});
+
+## Test grouping by the row dimension name groups by the row times
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2; 3], 'RowTimes', t0 + hours ([0 1 1])', ...
+%!                 'VariableNames', {'A'});
+%! G = groupsummary (TT, 'Time', 'sum', 'A');
+%! assert_equal (G.Properties.VariableNames, {'Time', 'GroupCount', 'sum_A'});
+%! assert_equal (G.GroupCount, [1; 2]);
+%! assert_equal (G.sum_A, [1; 5]);
+
+## Test a time unit bins the row times before grouping
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2; 3; 4], categorical ({'a'; 'b'; 'a'; 'b'}), ...
+%!                 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'A', 'g'});
+%! G = groupsummary (TT, 'Time', 'hour', 'mean', 'A');
+%! assert_equal (G.Properties.VariableNames, {'hour_Time', 'GroupCount', ...
+%!                                            'mean_A'});
+%! assert_equal (G.GroupCount, [1; 1; 1; 1]);
+%! assert_equal (G.mean_A, [1; 2; 3; 4]);
+
+## Test several methods are reported in the order they were asked for
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2; 3; 4], categorical ({'a'; 'b'; 'a'; 'b'}), ...
+%!                 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'A', 'g'});
+%! G = groupsummary (TT, 'g', {'mean', 'max'}, 'A');
+%! assert_equal (G.Properties.VariableNames, {'g', 'GroupCount', 'mean_A', ...
+%!                                            'max_A'});
+%! assert_equal (G.max_A, [3; 4]);
+
+## Test the method validation is the timetable's own
+%!error <timetable.groupsummary: 'bogus' is not a supported method name.> ...
+%! rt = datetime (2024, 1, 1) + hours (0:1)';
+%! TT = timetable ([1; 2], 'RowTimes', rt, 'VariableNames', {'A'});
+%! groupsummary (TT, 'Time', 'bogus', 'A');
+
 ################################################################################
 ##                        **    Input validation    **                        ##
 ################################################################################

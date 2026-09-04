@@ -2245,6 +2245,7 @@ classdef timetable < tabular
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'varfun'           'rowfun'           'grouptransform'   'groupcounts'     ##
+## 'groupsummary'                                                             ##
 ##                                                                            ##
 ################################################################################
 
@@ -2492,6 +2493,74 @@ classdef timetable < tabular
       [G, errmsg] = groupcountsResult (tt, groupvars, varargin);
       if (! isempty (errmsg))
         error ("timetable.groupcounts: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{G} =} groupsummary (@var{tt}, @var{groupvars})
+    ## @deftypefnx {timetable} {@var{G} =} groupsummary (@var{tt}, @var{groupvars}, @var{method})
+    ## @deftypefnx {timetable} {@var{G} =} groupsummary (@var{tt}, @var{groupvars}, @var{method}, @var{datavars})
+    ## @deftypefnx {timetable} {@var{G} =} groupsummary (@var{tt}, @var{groupvars}, @var{groupbins}, @dots{})
+    ## @deftypefnx {timetable} {@var{G} =} groupsummary (@dots{}, @var{Name}, @var{Value})
+    ##
+    ## Summarise the variables of a timetable group by group.
+    ##
+    ## @code{@var{G} = groupsummary (@var{tt}, @var{groupvars})} groups the
+    ## rows of @var{tt} by the variables named in @var{groupvars} and returns
+    ## a @code{table} with one row per group, carrying the grouping variables
+    ## and a @qcode{GroupCount} variable.  The result is a table and not a
+    ## timetable: its rows describe groups rather than instants, so there is
+    ## nothing left for row times to label.
+    ##
+    ## @var{groupvars} names one or more variables, or the row dimension name,
+    ## which groups by the row times themselves.
+    ##
+    ## @code{@var{G} = groupsummary (@var{tt}, @var{groupvars}, @var{method})}
+    ## also applies @var{method} to each data variable of each group, adding
+    ## one variable per method and data variable named for both, as in
+    ## @qcode{mean_Speed}.  @var{method} is one of @qcode{'mean'},
+    ## @qcode{'sum'}, @qcode{'min'}, @qcode{'max'}, @qcode{'range'},
+    ## @qcode{'median'}, @qcode{'mode'}, @qcode{'var'}, @qcode{'std'},
+    ## @qcode{'nummissing'}, @qcode{'nnz'} and @qcode{'numunique'}, or
+    ## @qcode{'all'} for every one of them in that order, or a function handle,
+    ## or a cell array of any of these.  A name may be abbreviated to any
+    ## unambiguous prefix.  @qcode{'std'} and @qcode{'var'} are not defined on
+    ## an integer variable and refuse one.
+    ##
+    ## @code{@var{G} = groupsummary (@var{tt}, @var{groupvars}, @var{method},
+    ## @var{datavars})} summarises only the variables named in @var{datavars}.
+    ## By default every variable that is not a grouping variable is used.
+    ##
+    ## @code{@var{G} = groupsummary (@var{tt}, @var{groupvars},
+    ## @var{groupbins}, @dots{})} bins the grouping variables before grouping,
+    ## @var{groupbins} being a bin count, a vector of edges, or a time unit for
+    ## a datetime or duration variable.
+    ##
+    ## The following @var{Name}/@var{Value} pairs are accepted:
+    ##
+    ## @table @asis
+    ## @item @qcode{'IncludeMissingGroups'}
+    ## A logical scalar.  When @code{true} (the default) rows whose grouping
+    ## value is missing form a group of their own, sorted last.
+    ##
+    ## @item @qcode{'IncludeEmptyGroups'}
+    ## A logical scalar.  When @code{true} the unused categories of a
+    ## categorical or binned grouping variable are reported as groups with a
+    ## count of zero.  It defaults to @code{false}.
+    ##
+    ## @item @qcode{'IncludedEdge'}
+    ## Which edge of a bin is included, @qcode{'left'} (the default) or
+    ## @qcode{'right'}.  It applies only where @var{groupbins} was given.
+    ## @end table
+    ##
+    ## @end deftypefn
+    function G = groupsummary (tt, groupvars, varargin)
+      if (nargin < 2)
+        print_usage ();
+      endif
+      [G, errmsg] = groupsummaryResult (tt, groupvars, varargin);
+      if (! isempty (errmsg))
+        error ("timetable.groupsummary: %s", errmsg);
       endif
     endfunction
 
