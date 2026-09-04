@@ -1,0 +1,14 @@
+%!demo
+%! ## `removevars` deletes variables.  The row times are not a variable, so
+%! ## they cannot be removed: a timetable emptied of variables still carries
+%! ## its times and its time step.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([12; 45; 23], [1; 2; 3], 'RowTimes', t0 + hours (0:2)', ...
+%!                 'VariableNames', {'Depth', 'Cast'})
+%! removevars (TT, 'Cast')
+%!
+%! ## Take both away and the times remain.
+%! E = removevars (TT, {'Depth', 'Cast'});
+%! size (E)
+%! E.Properties.TimeStep

@@ -1,0 +1,10 @@
+%!demo
+%! ## `splitvars` is the other direction: a multi-column variable becomes one
+%! ## variable per column, named after it unless told otherwise.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([12 34.1; 45 34.6; 23 35.0], (1:3)', 'RowTimes', ...
+%!                 t0 + hours (0:2)', 'VariableNames', {'Cast', 'Station'});
+%! splitvars (TT).Properties.VariableNames
+%! splitvars (TT, 'Cast', 'NewVariableNames', ...
+%!            {'Depth', 'Salinity'}).Properties.VariableNames

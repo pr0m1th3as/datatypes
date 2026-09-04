@@ -1172,6 +1172,207 @@ classdef timetable < tabular
   endmethods
 
 ################################################################################
+##                     **    Variable Management    **                        ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'addvars'          'removevars'       'movevars'         'renamevars'      ##
+## 'convertvars'      'mergevars'        'splitvars'                          ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{ttB} =} addvars (@var{ttA}, @var{var1}, @dots{}, @var{varN})
+    ## @deftypefnx {timetable} {@var{ttB} =} addvars (@dots{}, @qcode{'Before'}, @var{location})
+    ## @deftypefnx {timetable} {@var{ttB} =} addvars (@dots{}, @qcode{'After'}, @var{location})
+    ## @deftypefnx {timetable} {@var{ttB} =} addvars (@dots{}, @qcode{'NewVariableNames'}, @var{newNames})
+    ##
+    ## Add variables to a timetable.
+    ##
+    ## @code{@var{ttB} = addvars (@var{ttA}, @var{var1}, @dots{})} appends
+    ## each array as a new variable at the right-hand end.  Every one must
+    ## have as many rows as the timetable has.
+    ##
+    ## Unnamed variables take the name of the workspace variable they came
+    ## from, or @qcode{Var@var{N}} where there is none.  A name that would
+    ## collide with the row dimension is not allowed and one that arrives by
+    ## the workspace route is given a suffix instead.
+    ##
+    ## @qcode{'Before'} and @qcode{'After'} place the new variables beside an
+    ## existing one, named or numbered.  The row times are not a variable and
+    ## cannot be used as the location, nor can position zero.
+    ##
+    ## The row times are untouched, so the time step is unchanged.
+    ##
+    ## @seealso{removevars, movevars, timetable}
+    ## @end deftypefn
+    function tbl = addvars (this, varargin)
+      ## Only the public method can read the caller's names.
+      argNames = cell (1, numel (varargin));
+      for i = 1:numel (varargin)
+        argNames{i} = inputname (i + 1);
+      endfor
+      [tbl, errmsg] = addvarsResult (this, argNames, varargin{:});
+      if (! isempty (errmsg))
+        error ("timetable.addvars: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timetable} {@var{ttB} =} removevars (@var{ttA}, @var{vars})
+    ##
+    ## Remove variables from a timetable.
+    ##
+    ## @code{@var{ttB} = removevars (@var{ttA}, @var{vars})} deletes the
+    ## variables named, numbered, selected by a logical vector or picked out
+    ## by a @code{vartype}.
+    ##
+    ## The row times are not a variable and cannot be removed: a timetable
+    ## keeps them whatever else goes.  Removing every variable leaves a
+    ## timetable with none, still carrying its row times and its time step,
+    ## rather than an empty one.
+    ##
+    ## @seealso{addvars, movevars, timetable}
+    ## @end deftypefn
+    function tbl = removevars (this, varargin)
+      [tbl, errmsg] = removevarsResult (this, varargin{:});
+      if (! isempty (errmsg))
+        error ("timetable.removevars: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{ttB} =} movevars (@var{ttA}, @var{vars}, @qcode{'Before'}, @var{location})
+    ## @deftypefnx {timetable} {@var{ttB} =} movevars (@var{ttA}, @var{vars}, @qcode{'After'}, @var{location})
+    ##
+    ## Move variables within a timetable.
+    ##
+    ## @code{@var{ttB} = movevars (@var{ttA}, @var{vars}, @dots{})} puts the
+    ## variables named in @var{vars} before or after @var{location}, which
+    ## names or numbers another variable.  Each variable takes its units,
+    ## description and continuity with it.
+    ##
+    ## The row times are not a variable: they can be neither moved nor used
+    ## as the location, and they stay where they are whatever else is
+    ## reordered.
+    ##
+    ## @seealso{addvars, removevars, timetable}
+    ## @end deftypefn
+    function tbl = movevars (this, varargin)
+      [tbl, errmsg] = movevarsResult (this, varargin{:});
+      if (! isempty (errmsg))
+        error ("timetable.movevars: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timetable} {@var{ttB} =} renamevars (@var{ttA}, @var{vars}, @var{newNames})
+    ##
+    ## Rename variables in a timetable.
+    ##
+    ## @code{@var{ttB} = renamevars (@var{ttA}, @var{vars}, @var{newNames})}
+    ## gives each variable in @var{vars} the matching name in
+    ## @var{newNames}.  Everything else about the variable is kept, its units
+    ## and its description included.
+    ##
+    ## Dimension names are not renamed here: assign to
+    ## @qcode{@var{tt}.Properties.DimensionNames} for that.  A variable
+    ## cannot be given the row dimension's name either, the two sharing one
+    ## namespace.
+    ##
+    ## @seealso{movevars, timetable}
+    ## @end deftypefn
+    function tbl = renamevars (this, varargin)
+      [tbl, errmsg] = renamevarsResult (this, varargin{:});
+      if (! isempty (errmsg))
+        error ("timetable.renamevars: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timetable} {@var{ttB} =} convertvars (@var{ttA}, @var{vars}, @var{dataType})
+    ##
+    ## Convert variables of a timetable to a given type.
+    ##
+    ## @code{@var{ttB} = convertvars (@var{ttA}, @var{vars}, @var{dataType})}
+    ## converts each variable in @var{vars}, which may be named, numbered,
+    ## selected by a logical vector or picked out by a @code{vartype}.
+    ## @var{dataType} is a type name or a function handle that performs the
+    ## conversion.
+    ##
+    ## The row times are not a data variable and cannot be converted; assign
+    ## to @qcode{@var{tt}.Properties.RowTimes} to change them.
+    ##
+    ## @seealso{renamevars, timetable}
+    ## @end deftypefn
+    function tbl = convertvars (this, varargin)
+      [tbl, errmsg] = convertvarsResult (this, varargin{:});
+      if (! isempty (errmsg))
+        error ("timetable.convertvars: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{ttB} =} mergevars (@var{ttA}, @var{vars})
+    ## @deftypefnx {timetable} {@var{ttB} =} mergevars (@dots{}, @qcode{'NewVariableName'}, @var{name})
+    ## @deftypefnx {timetable} {@var{ttB} =} mergevars (@dots{}, @qcode{'MergeAsTable'}, @var{tf})
+    ##
+    ## Combine several variables of a timetable into one.
+    ##
+    ## @code{@var{ttB} = mergevars (@var{ttA}, @var{vars})} replaces the
+    ## variables in @var{vars} with a single multi-column one, put where the
+    ## first of them was.  It is named @qcode{Var@var{N}} unless
+    ## @qcode{'NewVariableName'} says otherwise, and the merged variables are
+    ## no longer reachable by their old names.
+    ##
+    ## The units and descriptions of the merged variables do not survive:
+    ## one variable carries one of each, and there is no saying which it
+    ## should be.  The remaining variables keep theirs.
+    ##
+    ## The row times are not a variable and cannot be merged.
+    ##
+    ## @seealso{splitvars, timetable}
+    ## @end deftypefn
+    function tbl = mergevars (this, varargin)
+      [tbl, errmsg] = mergevarsResult (this, varargin{:});
+      if (! isempty (errmsg))
+        error ("timetable.mergevars: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{ttB} =} splitvars (@var{ttA})
+    ## @deftypefnx {timetable} {@var{ttB} =} splitvars (@var{ttA}, @var{vars})
+    ## @deftypefnx {timetable} {@var{ttB} =} splitvars (@dots{}, @qcode{'NewVariableNames'}, @var{newNames})
+    ##
+    ## Split multi-column variables of a timetable into one each.
+    ##
+    ## @code{@var{ttB} = splitvars (@var{ttA})} splits every multi-column
+    ## variable, and every nested table, into one variable per column.
+    ## @code{@var{ttB} = splitvars (@var{ttA}, @var{vars})} splits only those
+    ## named.
+    ##
+    ## The new variables are named after the one they came from with a column
+    ## number appended, unless @qcode{'NewVariableNames'} gives them names.
+    ## Splitting a variable that was merged does not bring back the units the
+    ## merge discarded.
+    ##
+    ## The row times are not a variable and cannot be split.
+    ##
+    ## @seealso{mergevars, timetable}
+    ## @end deftypefn
+    function tbl = splitvars (this, varargin)
+      [tbl, errmsg] = splitvarsResult (this, varargin{:});
+      if (! isempty (errmsg))
+        error ("timetable.splitvars: %s", errmsg);
+      endif
+    endfunction
+
+  endmethods
+
+################################################################################
 ##                       **    First and Last Rows    **                      ##
 ################################################################################
 ##                             Available Methods                              ##

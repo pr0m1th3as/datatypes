@@ -1010,6 +1010,144 @@
 %! assert_equal (size ([V]), [3, 1]);
 
 ################################################################################
+##                      **    Variable management    **                       ##
+################################################################################
+
+## Test 'addvars' appends and names, and leaves the row times alone
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:6)', [10;20;30;40;50;60], 'RowTimes', ...
+%!                 t0 + hours (0:5)', 'VariableNames', {'A', 'B'});
+%! assert_equal (addvars (TT, (1:6)').Properties.VariableNames, ...
+%!               {'A', 'B', 'Var3'});
+%! assert_equal (addvars (TT, (1:6)', 'NewVariableNames', ...
+%!                        {'Z'}).Properties.VariableNames, {'A', 'B', 'Z'});
+%! assert_equal (addvars (TT, (1:6)').Properties.TimeStep, hours (1));
+
+## Test 'addvars' places a variable before or after another
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:6)', [10;20;30;40;50;60], 'RowTimes', ...
+%!                 t0 + hours (0:5)', 'VariableNames', {'A', 'B'});
+%! assert_equal (addvars (TT, (1:6)', 'Before', 'B', 'NewVariableNames', ...
+%!                        {'Z'}).Properties.VariableNames, {'A', 'Z', 'B'});
+%! assert_equal (addvars (TT, (1:6)', 'Before', 1, 'NewVariableNames', ...
+%!                        {'Z'}).Properties.VariableNames, {'Z', 'A', 'B'});
+
+## Test a name taken from the workspace is deconflicted, not refused
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! Time = t0 + hours (0:5)';
+%! TT = timetable ((1:6)', [10;20;30;40;50;60], 'RowTimes', Time, ...
+%!                 'VariableNames', {'A', 'B'});
+%! assert_equal (addvars (TT, Time).Properties.VariableNames, ...
+%!               {'A', 'B', 'Time_1'});
+
+## Test 'removevars' can empty a timetable of variables but not of times
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:6)', [10;20;30;40;50;60], 'RowTimes', ...
+%!                 t0 + hours (0:5)', 'VariableNames', {'A', 'B'});
+%! assert_equal (removevars (TT, 'B').Properties.VariableNames, {'A'});
+%! E = removevars (TT, {'A', 'B'});
+%! assert_equal (size (E), [6, 0]);
+%! assert_equal (E.Properties.RowTimes, t0 + hours (0:5)');
+%! assert_equal (E.Properties.TimeStep, hours (1));
+
+## Test 'movevars' and 'renamevars' carry the metadata with the variable
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:6)', [10;20;30;40;50;60], 'RowTimes', ...
+%!                 t0 + hours (0:5)', 'VariableNames', {'A', 'B'});
+%! TT.Properties.VariableUnits = {'m', 's'};
+%! M = movevars (TT, 'B', 'Before', 'A');
+%! assert_equal (M.Properties.VariableNames, {'B', 'A'});
+%! assert_equal (M.Properties.VariableUnits, {'s', 'm'});
+%! R = renamevars (TT, 'A', 'AA');
+%! assert_equal (R.Properties.VariableNames, {'AA', 'B'});
+%! assert_equal (R.Properties.VariableUnits, {'m', 's'});
+
+## Test the dimension names are left alone by a rename
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:6)', [10;20;30;40;50;60], 'RowTimes', ...
+%!                 t0 + hours (0:5)', 'VariableNames', {'A', 'B'});
+%! assert_equal (renamevars (TT, 'B', 'BB').Properties.DimensionNames, ...
+%!               {'Time', 'Variables'});
+
+## Test 'convertvars' converts a variable and keeps the row times
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:6)', 'RowTimes', t0 + hours (0:5)', ...
+%!                 'VariableNames', {'A'});
+%! C = convertvars (TT, 'A', 'string');
+%! assert_equal (class (C.A), 'string');
+%! assert_equal (C.Properties.TimeStep, hours (1));
+
+## Test 'mergevars' combines variables and discards their units
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:6)', [10;20;30;40;50;60], 'RowTimes', ...
+%!                 t0 + hours (0:5)', 'VariableNames', {'A', 'B'});
+%! TT.Properties.VariableUnits = {'m', 's'};
+%! M = mergevars (TT, {'A', 'B'});
+%! assert_equal (M.Properties.VariableNames, {'Var1'});
+%! assert_equal (M.Properties.VariableUnits, {''});
+%! assert_equal (size (M.Var1), [6, 2]);
+%! assert_equal (M.Properties.TimeStep, hours (1));
+%! N = mergevars (TT, {'A', 'B'}, 'NewVariableName', 'AB');
+%! assert_equal (N.Properties.VariableNames, {'AB'});
+
+## Test 'splitvars' splits a multicolumn variable into one each
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! W = timetable ([1 2; 3 4; 5 6], (7:9)', 'RowTimes', t0 + hours (0:2)', ...
+%!                'VariableNames', {'MC', 'S'});
+%! assert_equal (splitvars (W).Properties.VariableNames, ...
+%!               {'MC_1', 'MC_2', 'S'});
+%! assert_equal (splitvars (W, 'MC', 'NewVariableNames', ...
+%!                          {'p', 'q'}).Properties.VariableNames, ...
+%!               {'p', 'q', 'S'});
+%! assert_equal (splitvars (W).Properties.TimeStep, hours (1));
+
+## Test the row times are not a variable for any of the family
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:6)', [10;20;30;40;50;60], 'RowTimes', ...
+%!                 t0 + hours (0:5)', 'VariableNames', {'A', 'B'});
+%! fail = 0;
+%! for f = {@() removevars (TT, 'Time'), @() convertvars (TT, 'Time', ...
+%!          'double'), @() splitvars (TT, 'Time'), ...
+%!          @() mergevars (TT, {'Time', 'A'})}
+%!   try
+%!     f{1} ();
+%!   catch
+%!     fail++;
+%!   end_try_catch
+%! endfor
+%! assert_equal (fail, 4);
+
+## Test input validation for the variable-management family
+%!error <timetable: no such variable in timetable: 'Time'> ...
+%! addvars (timetable ((1:3)', 'RowTimes', ...
+%!          datetime (2024, 1, 1) + hours (0:2)'), (1:3)', 'Before', 'Time');
+%!error <timetable.addvars: duplicate dimension and variable name: 'Time'.> ...
+%! addvars (timetable ((1:3)', 'RowTimes', ...
+%!          datetime (2024, 1, 1) + hours (0:2)'), (1:3)', ...
+%!          'NewVariableNames', {'Time'});
+%!error <timetable.renamevars: duplicate dimension and variable name: 'Time'.> ...
+%! renamevars (timetable ((1:3)', 'RowTimes', ...
+%!             datetime (2024, 1, 1) + hours (0:2)', ...
+%!             'VariableNames', {'A'}), 'A', 'Time');
+%!error <timetable: no such variable in timetable: 'Time'> ...
+%! removevars (timetable ((1:3)', 'RowTimes', ...
+%!             datetime (2024, 1, 1) + hours (0:2)'), 'Time');
+%!error <timetable.movevars: LOCATION does not index an existing variable.> ...
+%! movevars (timetable ((1:3)', 'RowTimes', ...
+%!           datetime (2024, 1, 1) + hours (0:2)', 'VariableNames', {'A'}), ...
+%!           'A', 'Before', 'Time');
+
+################################################################################
 ##                       **    First and last rows    **                      ##
 ################################################################################
 

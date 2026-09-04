@@ -1,0 +1,11 @@
+%!demo
+%! ## `movevars` reorders variables, each carrying its units and description
+%! ## along with it.  The row times stay where they are.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([12; 45; 23], [34.1; 34.6; 35.0], 'RowTimes', ...
+%!                 t0 + hours (0:2)', 'VariableNames', {'Depth', 'Salinity'});
+%! TT.Properties.VariableUnits = {'m', 'psu'};
+%! M = movevars (TT, 'Salinity', 'Before', 'Depth');
+%! M.Properties.VariableNames
+%! M.Properties.VariableUnits

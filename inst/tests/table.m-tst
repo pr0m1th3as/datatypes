@@ -2739,6 +2739,32 @@
 %! assert_equal (R.N.P, [7; 8]);
 %! R = addvars (T, [11;12], [13;14], 'NewVariableNames', string ({'X', 'Y'}));
 %! assert_equal (R.Properties.VariableNames, {'A', 'B', 'X', 'Y'});
+## Test a variable may not take a dimension's name
+%!test
+%! T = table ([1; 2], 'VariableNames', {'A'});
+%! assert_equal (T.Properties.DimensionNames{1}, 'Row');
+%! fail1 = 0;
+%! try
+%!   addvars (T, [3; 4], 'NewVariableNames', {'Row'});
+%! catch err1
+%!   fail1 = 1;
+%! end_try_catch
+%! assert_equal (fail1, 1);
+%! fail2 = 0;
+%! try
+%!   renamevars (T, 'A', 'Row');
+%! catch err2
+%!   fail2 = 1;
+%! end_try_catch
+%! assert_equal (fail2, 1);
+
+## Test 'mergevars' discards the units of the variables it merges
+%!test
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'A', 'B'});
+%! T.Properties.VariableUnits = {'m', 's'};
+%! M = mergevars (T, {'A', 'B'});
+%! assert_equal (M.Properties.VariableUnits, {''});
+
 ## Test input validation for 'addvars' method
 %!error <table.addvars: cannot use both 'After' and 'Before' options.> ...
 %! addvars (tblA, Smoker, 'After', 1, 'Before', 2);

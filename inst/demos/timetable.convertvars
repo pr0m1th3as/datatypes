@@ -1,0 +1,11 @@
+%!demo
+%! ## `convertvars` changes the type of chosen variables, by type name or by
+%! ## a function handle.  The row times are not a data variable and are left
+%! ## for `Properties.RowTimes` to change.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2; 3], {'a'; 'b'; 'c'}, 'RowTimes', ...
+%!                 t0 + hours (0:2)', 'VariableNames', {'Cast', 'Site'})
+%! C = convertvars (TT, 'Site', 'categorical');
+%! class (C.Site)
+%! C.Properties.TimeStep

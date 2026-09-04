@@ -1679,6 +1679,791 @@ classdef (Abstract) tabular
 
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =} addvarsResult (@dots{})
+    ##
+    ## The object with variables added.
+    ##
+    ## Variables belong to a tabular object whatever labels its rows, so the
+    ## work is the same for either class.  @var{errmsg} carries the body of
+    ## any complaint so that the calling class can raise it under its own
+    ## name.
+    ## @var{argNames} carries the caller's own names for the new
+    ## variables, which only the public method can read.
+
+    ##
+    ## @end deftypefn
+    function [tbl, errmsg] = addvarsResult (this, argNames, varargin)
+
+      tbl = this;
+      errmsg = '';
+
+      ## Add defaults
+      tbl_width = width (this);
+      ix_insert = tbl_width;
+      AB_insert = true;   # after by default
+
+      ## Parse optional Name-Value paired arguments
+      optNames = {'After', 'Before', 'NewVariableNames'};
+      dfValues = {[], [], []};
+      [After, Before, newVarNames, args] = ...
+                      parsePairedArguments (optNames, dfValues, varargin(:));
+
+      ## Check optional Name-Value paired arguments
+      if (! isempty (After) && ! isempty (Before))
+        errmsg = "cannot use both 'After' and 'Before' options.";
+        return
+      endif
+      ## All other errors will be handled by 'resolveVarRef' for invalid input
+      msg_error1 = "LOCATION must index a single variable.";
+      msg_error2 = strcat ("LOCATION must be either a", ...
+                           " scalar integer, a character vector, or a", ...
+                           " logical vector indexing a single table variable.");
+      if (! isempty (After))
+        if ((isnumeric (After) && isscalar (After)) || ischar (After) || ...
+            (isa (After, 'string') && isscalar (After)))
+          ix_insert = resolveVarRef (this, After);
+        elseif (isvector (After) && islogical (After))
+          ix_insert = resolveVarRef (this, After);
+          if (numel (ix_insert) > 1)
+            errmsg = msg_error1;
+            return
+          endif
+        else
+          errmsg = msg_error2;
+          return
+        endif
+      elseif (! isempty (Before))
+        if ((isnumeric (Before) && isscalar (Before)) || ischar (Before) || ...
+            (isa (Before, 'string') && isscalar (Before)))
+          ix_insert = resolveVarRef (this, Before);
+          AB_insert = false;
+        elseif (isvector (Before) && islogical (Before))
+          ix_insert = resolveVarRef (this, Before);
+          AB_insert = false;
+          if (numel (ix_insert) > 1)
+            errmsg = msg_error1;
+            return
+          endif
+        else
+          errmsg = msg_error2;
+          return
+        endif
+      endif
+      if (isempty (newVarNames))
+        ## Create names for new variables
+        offset = width (this);   # for incrementing automatic variable naming
+        newVarNames = cell (size (args));
+        for i = 1:numel (args)
+          newVarNames{i} = argNames{i};
+          ## A name taken from the caller's workspace is deconflicted rather
+          ## than refused: the dimension names share the variables' namespace.
+          if (any (strcmp (newVarNames{i}, this.DimensionNames)))
+            suffix = 1;
+            while (any (strcmp (sprintf ("%s_%d", argNames{i}, suffix), ...
+                                [this.VariableNames, this.DimensionNames])))
+              suffix++;
+            endwhile
+            newVarNames{i} = sprintf ("%s_%d", argNames{i}, suffix);
+          endif
+          if (isempty (newVarNames{i}))
+            newVarNames{i} = sprintf ("Var%d", i + offset);
+            ## Catch case that Var1 ... already exists
+            while (ismember (newVarNames{i}, this.VariableNames))
+              newVarNames{i} = sprintf ("Var%d", i + offset);
+              offset++;
+            endwhile
+          endif
+        endfor
+      else
+        ## Force to cellstr (in case of string array)
+        newVarNames = cellstr (newVarNames);
+        clash = newVarNames(ismember (newVarNames, this.DimensionNames));
+        if (! isempty (clash))
+          errmsg = sprintf ("duplicate dimension and variable name: '%s'.", ...
+                            clash{1});
+          return
+        endif
+        if (numel (args) != numel (newVarNames))
+          errmsg = strcat ("NEWNAMES does not match the", ...
+                         " number of new variables.");
+          return
+        endif
+        if (numel (__unique__ (newVarNames)) != numel (newVarNames))
+          errmsg = "NEWNAMES contains duplicate names.";
+          return
+        endif
+        idx = ismember (newVarNames, this.VariableNames);
+        if (any (idx))
+          if (sum (idx) == 1)
+            errmsg = sprintf ("new variable name '%s' already exists.", ...
+                   newVarNames{idx});
+            return
+          else
+            msg_error3 = sprintf ("'%s', ", newVarNames{idx});
+            msg_error3(end-1:end) = [];
+            errmsg = sprintf ("new variable names %s already exist.", ...
+                   msg_error3);
+            return
+          endif
+        endif
+      endif
+
+      ## Append the new variables
+      tbl = this;
+      for i = 1:numel (args)
+        tbl = setvar (tbl, newVarNames{i}, args{i});
+      endfor
+
+      ## Relocate new variables (if necessary)
+      if (AB_insert)  # after
+        if (ix_insert < tbl_width)
+          ix_L = [1:ix_insert];
+          ix_M = [tbl_width+1:tbl_width+numel(args)];
+          ix_R = [ix_insert+1:tbl_width];
+          ixVars = [ix_L, ix_M, ix_R];
+          tbl = subsetvars (tbl, ixVars);
+        endif
+      else            # before
+        if (ix_insert > 1)
+          ix_L = [1:ix_insert-1];
+          ix_M = [tbl_width+1:tbl_width+numel(args)];
+          ix_R = [ix_insert:tbl_width];
+          ixVars = [ix_L, ix_M, ix_R];
+        else
+          ixVars = [tbl_width+1:tbl_width+numel(args), 1:tbl_width];
+        endif
+        tbl = subsetvars (tbl, ixVars);
+      endif
+
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =} movevarsResult (@dots{})
+    ##
+    ## The object with a variable moved.
+    ##
+    ## Variables belong to a tabular object whatever labels its rows, so the
+    ## work is the same for either class.  @var{errmsg} carries the body of
+    ## any complaint so that the calling class can raise it under its own
+    ## name.
+    ##
+    ## @end deftypefn
+    function [tbl, errmsg] = movevarsResult (this, vars, varargin)
+
+      tbl = this;
+      errmsg = '';
+
+      ## Check input argument
+      if (nargin < 2 || isempty (vars))
+        errmsg = "too few input arguments.";
+        return
+      endif
+
+      ## Add defaults
+      tbl_width = width (this);
+      ix_insert = tbl_width;
+      AB_insert = true;   # after by default
+
+      ## Parse optional Name-Value paired arguments
+      optNames = {'After', 'Before'};
+      dfValues = {[], []};
+      [After, Before] = parsePairedArguments (optNames, dfValues, varargin(:));
+
+      ## Check optional Name-Value paired arguments
+      if (! isempty (After) && ! isempty (Before))
+        errmsg = "cannot use both 'After' and 'Before' options.";
+        return
+      endif
+
+      ## All other errors will be handled by 'resolveVarRef' for invalid input
+      msg_error1 = "LOCATION must index a single variable.";
+      msg_error2 = strcat ("LOCATION must be either a", ...
+                           " scalar integer, a character vector, or a", ...
+                           " logical vector indexing a single table variable.");
+      msg_error3 = strcat ("LOCATION does not index an", ...
+                           " existing variable.");
+
+      if (! isempty (After) || ! isempty (Before))
+        if (! isempty (Before))
+          AB_insert = false;
+          After = Before;
+        endif
+        if ((isnumeric (After) && isscalar (After)) || ischar (After) || ...
+            (isa (After, 'string') && isscalar (After)))
+          ix_insert = resolveVarRef (this, After, 'lenient');
+        elseif (isvector (After) && islogical (After))
+          ix_insert = resolveVarRef (this, After, 'lenient');
+          if (numel (ix_insert) > 1)
+            errmsg = msg_error1;
+            return
+          endif
+        else
+          errmsg = msg_error2;
+          return
+        endif
+        ## Grab silent errors returned by 'resolveVarRef'
+        if (any (ix_insert == 0))
+          errmsg = msg_error3;
+          return
+        endif
+      endif
+
+      ## Get variables to be moved
+      mvVar = resolveVarRef (this, vars, 'lenient');
+      if (any (mvVar == 0))
+        vars = cellstr (vars);
+        errmsg = sprintf ("cannot index non-existing variable: '%s'", ...
+               vars{find (mvVar == 0)});
+        return
+      endif
+
+      ## Get variables that remain static
+      stVar = 1:tbl_width;
+      stVar(mvVar) = [];
+
+      ## Construct remapping vector
+      if (AB_insert)  # after
+        if (ix_insert < tbl_width)
+          ## Check LOCATION variable is a static one
+          if (ismember (ix_insert, mvVar))
+            errmsg = "LOCATION variable cannot be moved.";
+            return
+          endif
+          ix_L = stVar(stVar <= ix_insert);
+          ix_R = stVar(stVar > ix_insert);
+          ixVars = [ix_L, mvVar, ix_R];
+        else
+          ixVars = [stVar, mvVar];
+        endif
+      else            # before
+        if (ix_insert > 1)
+          ## Check LOCATION variable is a static one
+          if (ismember (ix_insert, mvVar))
+            errmsg = "LOCATION variable cannot be moved.";
+            return
+          endif
+          ix_L = stVar(stVar < ix_insert);
+          ix_R = stVar(stVar >= ix_insert);
+          ixVars = [ix_L, mvVar, ix_R];
+        else
+          ixVars = [mvVar, stVar];
+        endif
+      endif
+
+      ## Return remapped table
+      tbl = subsetvars (this, ixVars);
+
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =} renamevarsResult (@dots{})
+    ##
+    ## The object with variables renamed.
+    ##
+    ## Variables belong to a tabular object whatever labels its rows, so the
+    ## work is the same for either class.  @var{errmsg} carries the body of
+    ## any complaint so that the calling class can raise it under its own
+    ## name.
+    ##
+    ## @end deftypefn
+    function [tbl, errmsg] = renamevarsResult (this, vars, newNames)
+
+      tbl = this;
+      errmsg = '';
+
+      ## Check input arguments
+      if (nargin < 3 || isempty (vars) || isempty (newNames))
+        errmsg = "too few input arguments.";
+        return
+      endif
+      if (! iscellstr (newNames) && ! isa (newNames, 'string') &&
+          ! (ischar (newNames) && isvector (newNames)))
+        errmsg = strcat ("NEWNAMES must be either a", ...
+                       " character vector, a cell array of character", ...
+                       " vectors, or a string array.");
+        return
+      endif
+
+      ## Force to cellstring and get indices
+      newNames = cellstr (newNames);
+      ## The dimension names share the variables' namespace.
+      clash = newNames(ismember (newNames, this.DimensionNames));
+      if (! isempty (clash))
+        errmsg = sprintf ("duplicate dimension and variable name: '%s'.", ...
+                          clash{1});
+        return
+      endif
+      if (numel (__unique__ (newNames)) != numel (newNames))
+        errmsg = "NEWNAMES contains duplicate names.";
+        return
+      endif
+      ixVars = resolveVarRef (this, vars, 'lenient');
+
+      ## Check selected variables
+      if (any (ixVars == 0))
+        errmsg = sprintf ("cannot index non-existing variable: '%s'",...
+               vars{find (ixVars == 0)});
+        return
+      elseif (numel (ixVars) != numel (newNames))
+        errmsg = strcat ("number of names in NEWNAMES do", ...
+                       " not match the selected variables specified by", ...
+                       " VARS.");
+        return
+      endif
+
+      ## Rename the indexed variables
+      tbl = this;
+      tbl.VariableNames(ixVars) = newNames;
+
+      ## Check for duplicate names
+      if (numel (__unique__ (tbl.VariableNames)) != numel (tbl.VariableNames))
+        errmsg = strcat ("newly assigned variable name", ...
+                       " already exists.");
+        return
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =} removevarsResult (@dots{})
+    ##
+    ## The object with variables removed.
+    ##
+    ## Variables belong to a tabular object whatever labels its rows, so the
+    ## work is the same for either class.  @var{errmsg} carries the body of
+    ## any complaint so that the calling class can raise it under its own
+    ## name.
+    ##
+    ## @end deftypefn
+    function [tbl, errmsg] = removevarsResult (this, vars)
+
+      tbl = this;
+      errmsg = '';
+
+      ## Check input argument
+      if (nargin < 2 || isempty (vars))
+        errmsg = "too few input arguments.";
+        return
+      endif
+
+      ## Resolve variables to be removed
+      ixVar = resolveVarRef (this, vars);
+
+      ## Remove selected variables
+      nrows = height (this);
+      tbl = this;
+      tbl.VariableTypes(ixVar) = [];
+      tbl.VariableNames(ixVar) = [];
+      tbl.VariableValues(ixVar) = [];
+      tbl.VariableDescriptions(ixVar) = [];
+      tbl.VariableUnits(ixVar) = [];
+      if (! isempty (this.VariableContinuity))
+        tbl.VariableContinuity(ixVar) = [];
+        if (isempty (tbl.VariableContinuity))
+          tbl.VariableContinuity = [];
+        endif
+      endif
+
+      ## Check for custom variable properties and remove accordingly
+      if (! isempty (this.CustomProperties))
+        cpNames = customPropsOfType (this, 'variable');
+        if (! isempty (cpNames))
+          ## Remove referenced variable values from custom variable properties
+          for i = 1:numel (cpNames)
+            tmp = this.CustomProperties.(cpNames{i});
+            if (! isempty (tmp))
+              tmp(ixVar) = [];
+              tbl.CustomProperties.(cpNames{i}) = tmp;
+            endif
+          endfor
+        endif
+      endif
+      tbl = setRowCount (tbl, nrows);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =} convertvarsResult (@dots{})
+    ##
+    ## The object with variables converted.
+    ##
+    ## Variables belong to a tabular object whatever labels its rows, so the
+    ## work is the same for either class.  @var{errmsg} carries the body of
+    ## any complaint so that the calling class can raise it under its own
+    ## name.
+    ##
+    ## @end deftypefn
+    function [tbl, errmsg] = convertvarsResult (this, vars, dataType)
+
+      tbl = this;
+      errmsg = '';
+
+      ## Check input arguments
+      if (nargin < 3 || isempty (vars) || isempty (dataType))
+        errmsg = "too few input arguments.";
+        return
+      endif
+
+      if (ischar (dataType))
+        if (! isvector (dataType))
+          errmsg = "DATATYPE must be a character vector.";
+          return
+        endif
+      elseif (! isa (dataType, 'function_handle'))
+        errmsg = sprintf (strcat ("DATATYPE must be either a", ...
+                       " character vector or a function handle; got a", ...
+                       " '%s'."), ...
+               class (dataType));
+        return
+      endif
+
+      ## Get variables to convert (input validation is done by 'resolveVarRef')
+      [ixVars, varNames] = resolveVarRef (this, vars);
+      tbl = this;
+
+      ## Apply conversion
+      for i = 1:numel (ixVars)
+        try
+          newVarValue = feval (dataType, this.VariableValues{ixVars(i)});
+        catch
+          errmsg = sprintf (strcat ("specified DATATYPE", ...
+                         " conversion cannot be applied on selected", ...
+                         " variable '%s'."), ...
+                 varNames{i});
+          return
+        end_try_catch
+        if (size (newVarValue, 1) != height (this))
+          errmsg = sprintf (strcat ("specified DATATYPE", ...
+                         " conversion on '%s' does not return the", ...
+                         " appropriate amount of rows."), ...
+                 varNames{i});
+          return
+        endif
+
+        ## Write output
+        tbl.VariableTypes{ixVars(i)} = class (newVarValue);
+        tbl.VariableValues{ixVars(i)} = newVarValue;
+      endfor
+
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =} mergevarsResult (@dots{})
+    ##
+    ## The object with variables merged.
+    ##
+    ## Variables belong to a tabular object whatever labels its rows, so the
+    ## work is the same for either class.  @var{errmsg} carries the body of
+    ## any complaint so that the calling class can raise it under its own
+    ## name.
+    ##
+    ## @end deftypefn
+    function [tbl, errmsg] = mergevarsResult (this, vars, varargin)
+
+      tbl = this;
+      errmsg = '';
+
+      ## Check input argument
+      if (nargin < 2 || isempty (vars))
+        errmsg = "too few input arguments.";
+        return
+      endif
+
+      ## Parse optional Name-Value paired arguments
+      optNames = {'NewVariableName', 'MergeAsTable'};
+      dfValues = {[], false};
+      [newVarName, mergeAsTable] = parsePairedArguments (optNames, dfValues, ...
+                                                         varargin(:));
+
+      ## Check user input for 'MergeAsTable'
+      if (! isscalar (mergeAsTable))
+        errmsg = "invalid input for 'MergeAsTable'.";
+        return
+      endif
+      if (! (isbool (mergeAsTable) || ismember (mergeAsTable, [0, 1])))
+        errmsg = "invalid input for 'MergeAsTable'.";
+        return
+      endif
+
+      ## Resolve variables to be removed
+      [ixVars, varNames] = resolveVarRef (this, vars);
+      if (isscalar (ixVars))
+        tbl = this;
+        return;
+      endif
+
+      ## Get name and location for new variable
+      [ixVars, ixSorted] = sort (ixVars);
+      varNames = varNames(ixSorted);
+      location = ixVars(1);
+      if (isempty (newVarName))
+        newVarName = cellstr (sprintf ("Var%d", location));
+      else
+        ## Check user input for 'NewVariableName'
+        if (isa (newVarName, 'string') && isscalar (newVarName))
+          newVarName = cellstr (newVarName);
+        elseif (ischar (newVarName) && isvector (newVarName))
+          newVarName = cellstr (newVarName);
+        elseif (! (iscellstr (newVarName) && isscalar (newVarName)))
+          errmsg = "invalid input for 'NewVariableName'.";
+          return
+        endif
+      endif
+
+      ## Gather remaining variables to be copied unaltered
+      ixRem = 1:width (this);
+      ixRem(ixVars) = [];
+      tbl = subsetvars (this, ixRem);
+
+      ## Check that new variable name does not conflict any existing variable
+      if (ismember (newVarName, tbl.VariableNames))
+        errmsg = "assigned 'NewVariableName' already exists.";
+        return
+      endif
+
+      ## Merge as a table (easy, custom properties are handled by 'subsetvars')
+      if (mergeAsTable)
+        newVarTable = subsetvars (this, ixVars);
+        tbl = addvars (tbl, newVarTable, 'Before', location, ...
+                       'NewVariableNames', newVarName);
+        return;
+      endif
+
+      ## Merge into multicolumn variable.  (keep the custom properties of the
+      ## first variable that is to be merged)
+      if (! mergeAsTable)
+        ## Use the first to-be-merged variable for copying custom properties
+        ixRem = 1:width (this);
+        ixRem(ixVars(2:end)) = [];
+        tbl = subsetvars (this, ixRem);
+        ## Add a try...catch block instead of heuristics to check how
+        ## selected variables can be merged
+        try
+          newVarValue = cat (2, this.VariableValues{ixVars});
+        catch
+          errmsg = strcat ("selected variables cannot be", ...
+                         " merged into a multicolumn variable due to", ...
+                         " incompatible variable types.");
+          return
+        end_try_catch
+        tbl.VariableTypes{location} = class (newVarValue);
+        tbl.VariableValues{location} = newVarValue;
+        tbl.VariableNames(location) = newVarName;
+        ## The merged variable is a new one, so its continuity is unset even
+        ## though the first merged variable's slot is being reused.
+        ## Units and descriptions do not survive a merge: one variable
+        ## carries one of each and there is no saying which it should be.
+        if (! isempty (tbl.VariableUnits))
+          tbl.VariableUnits{location} = '';
+        endif
+        if (! isempty (tbl.VariableDescriptions))
+          tbl.VariableDescriptions{location} = '';
+        endif
+        if (! isempty (tbl.VariableContinuity))
+          tbl.VariableContinuity{location} = 'unset';
+        endif
+      endif
+
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =} splitvarsResult (@dots{})
+    ##
+    ## The object with a variable split.
+    ##
+    ## Variables belong to a tabular object whatever labels its rows, so the
+    ## work is the same for either class.  @var{errmsg} carries the body of
+    ## any complaint so that the calling class can raise it under its own
+    ## name.
+    ##
+    ## @end deftypefn
+    function [tbl, errmsg] = splitvarsResult (this, varargin)
+
+      tbl = this;
+      errmsg = '';
+
+      ## Check max number of input arguments
+      if (nargin > 4)
+        errmsg = "too many input arguments.";
+        return
+      endif
+
+      ## Parse optional Name-Value paired arguments
+      optNames = {'NewVariableNames'};
+      dfValues = {[]};
+      [newNames, vars] = parsePairedArguments (optNames, dfValues, varargin(:));
+
+      ## Get vars to actually split
+      if (isempty (vars))
+        vars_to_split = [];
+        for ix = 1:width (this)
+          if (size (this.VariableValues{ix}, 2) > 1)  # multicolumn variable
+            vars_to_split(end+1) = ix;
+          elseif (istable (this.VariableValues{ix}))  # nested table
+            vars_to_split(end+1) = ix;
+          endif
+        endfor
+        [ixVars, oldNames] = resolveVarRef (this, vars_to_split);
+      else
+        [ixVars, oldNames] = resolveVarRef (this, vars{1});
+        [ixVars, ixSorted] = sort (ixVars);
+        oldNames = oldNames(ixSorted);
+        ## Ignore referenced variables that cannot be split
+        for ix = numel (ixVars):-1:1
+          if (size (this.VariableValues{ixVars(ix)}, 2) == 1)
+            ixVars(ix) = [];
+            oldNames(ix) = [];
+          endif
+        endfor
+      endif
+
+      ## Return input table if there's nothing to split
+      if (isempty (ixVars))
+        tbl = this;
+        return;
+      endif
+
+      ## Create a remapping vector along with the corresponding variable names
+      ixCols = [];
+      ix_remap = [];
+      ix_names = {};
+      for ix = 1:width (this)
+        if (ismember (ix, ixVars))
+          tmp = this.VariableValues{ix};
+          col = size (tmp, 2);
+          ix_remap = [ix_remap, repmat(ix, 1, col)];
+          if (istable (tmp))
+            ix_names = [ix_names, tmp.VariableNames];
+          else
+            fcn = @(x) sprintf ("%s_%d", this.VariableNames{ix}, x);
+            newnames = arrayfun (fcn, 1:col, 'UniformOutput', false);
+            ix_names = [ix_names, newnames];
+          endif
+          ixCols(end+1) = col;
+        else
+          ix_remap(end+1) = ix;
+          ix_names{end+1} = this.VariableNames{ix};
+        endif
+      endfor
+
+      ## If there are duplicate variable names, this means that there are
+      ## nested tables with identical variable names. Switch to optional
+      ## 'nestedTableName_varName' naming convention applied only on tables
+      ## with duplicated variable names.
+      if (numel (__unique__ (ix_names)) != numel (ix_names))
+        dup_N = arrayfun (@(k) sum (arrayfun (@(j) isequal (ix_names{k}, ...
+                          ix_names{j}), 1:numel (ix_names))), ...
+                          1:numel (ix_names));
+        dup_names = ix_names (dup_N > 1);
+        ixCols = 0;
+        ix_remap = [];
+        ix_names = {};
+        for ix = 1:width (this)
+          if (ismember (ix, ixVars))
+            tmp = this.VariableValues{ix};
+            col = size (tmp, 2);
+            ix_remap = [ix_remap, repmat(ix, 1, col)];
+            if (istable (tmp))
+              if (any (ismember (dup_names, tmp.VariableNames)))
+                fcn = @(x) sprintf ("%s_%s", this.VariableNames{ix}, x);
+                newnames = cellfun (fcn, tmp.VariableNames, ...
+                                    'UniformOutput', false);
+                ix_names = [ix_names, newnames];
+              else
+                ix_names = [ix_names, tmp.VariableNames];
+              endif
+            else
+              fcn = @(x) sprintf ("%s_%d", this.VariableNames{ix}, x);
+              newnames = arrayfun (fcn, 1:col, 'UniformOutput', false);
+              ix_names = [ix_names, newnames];
+            endif
+            ixCols(end+1) = col;
+          else
+            ix_remap(end+1) = ix;
+            ix_names{end+1} = this.VariableNames{ix};
+          endif
+        endfor
+      endif
+
+      ## Create the new table by duplicating splitable variables
+      ## and set new variable names
+      tbl = subsetvars (this, ix_remap);
+      tbl.VariableNames = ix_names;
+
+      ## Split the multicolumn data into separate variables
+      idx = 1;  # variable index
+      idc = 1;  # new name index
+      for ix = 1:width (this)
+        if (ismember (ix, ixVars))
+          tmp = this.VariableValues{ix};
+          col = size (tmp, 2);
+          ## Check for user defined new variable names
+          if (! isempty (newNames))
+            if (! iscellstr (newNames) && iscell (newNames))
+              if (iscellstr (newNames{idc}))
+                varNames = newNames{idc};
+              elseif (isa (newNames{idc}, 'string'))
+                varNames = cellstr (newNames{idc});
+              else
+                errmsg = strcat ("invalid input for", ...
+                               " 'NewVariableNames'.");
+                return
+              endif
+              idc += 1;
+            elseif (iscellstr (newNames) && idc == 1)
+              varNames = newNames;
+            else
+              errmsg = "invalid input for 'NewVariableNames'.";
+              return
+            endif
+            if (numel (varNames) != col)
+              errmsg = "wrong number of 'NewVariableNames'.";
+              return
+            endif
+            change_newNames = true;
+          else
+            change_newNames = false;
+          endif
+          ## Change variable data here
+          if (istable (tmp))
+            for i = 1:col
+              ## Copy new variable name if given
+              if (change_newNames)
+                tbl.VariableNames{idx} = varNames{i};
+              endif
+              ## Copy data from each separate column
+              tbl.VariableValues{idx} = tmp.VariableValues{i};
+              ## Copy variable properties from nested table
+              tbl.VariableTypes{idx} = tmp.VariableTypes{i};
+              if (! isempty (tmp.VariableDescriptions{i}))
+                tbl.VariableDescriptions{idx} = tmp.VariableDescriptions{i};
+              endif
+              if (! isempty (tmp.VariableUnits{i}))
+                tbl.VariableUnits{idx} = tmp.VariableUnits{i};
+              endif
+              ## Variable-scoped custom properties are already replicated to the
+              ## split columns by subsetvars via the repeated indices in
+              ## 'ix_remap', so no further handling is needed here.
+              idx += 1;
+            endfor
+          else
+            for i = 1:col
+              ## Copy new variable name if given
+              if (change_newNames)
+                tbl.VariableNames{idx} = varNames{i};
+              endif
+              ## Copy data from each separate column
+              tbl.VariableValues{idx} = tmp(:,i);
+              tbl.VariableTypes{idx} = class (tmp(:,1));
+              idx += 1;
+            endfor
+          endif
+        else
+          idx += 1;
+        endif
+      endfor
+
+    endfunction
+
     function names = customPropsOfType (this, type)
       names = {};
       if (isempty (this.CustomProperties))

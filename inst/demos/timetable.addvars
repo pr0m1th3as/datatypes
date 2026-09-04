@@ -1,0 +1,25 @@
+%!demo
+%! ## `addvars` appends variables, naming them after the workspace variables
+%! ## they came from.  The row times are untouched, so the time step stands.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! Depth = [12; 45; 23];
+%! TT = timetable (Depth, 'RowTimes', t0 + hours (0:2)');
+%! Salinity = [34.1; 34.6; 35.0];
+%! addvars (TT, Salinity)
+
+%!demo
+%! ## `'Before'` and `'After'` place the new variable beside an existing one.
+%! ## The row times are not a variable and cannot be used as the location; a
+%! ## name that would clash with the row dimension is refused outright, while
+%! ## one arriving from the workspace is given a suffix instead.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([12; 45; 23], [1; 2; 3], 'RowTimes', t0 + hours (0:2)', ...
+%!                 'VariableNames', {'Depth', 'Cast'});
+%! addvars (TT, [34.1; 34.6; 35.0], 'Before', 'Cast', ...
+%!          'NewVariableNames', {'Salinity'})
+%!
+%! ## A workspace variable called `Time` becomes `Time_1`.
+%! Time = t0 + hours (0:2)';
+%! addvars (TT, Time).Properties.VariableNames

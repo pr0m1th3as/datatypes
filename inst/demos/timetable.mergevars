@@ -1,0 +1,11 @@
+%!demo
+%! ## `mergevars` combines several variables into one multi-column variable,
+%! ## put where the first of them was.  Their units do not survive: one
+%! ## variable carries one set, and there is no saying which it should be.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([12; 45; 23], [34.1; 34.6; 35.0], 'RowTimes', ...
+%!                 t0 + hours (0:2)', 'VariableNames', {'Depth', 'Salinity'});
+%! TT.Properties.VariableUnits = {'m', 'psu'};
+%! M = mergevars (TT, {'Depth', 'Salinity'}, 'NewVariableName', 'Cast')
+%! M.Properties.VariableUnits
