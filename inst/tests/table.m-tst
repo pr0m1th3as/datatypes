@@ -3519,8 +3519,17 @@
 %! rows2vars (tblA, "VariableNamesSource", {"LastName", "Age"});
 %!error <table.rows2vars: 'VariableNamesSource' indexes a non-existing variable: 'Some'> ...
 %! rows2vars (tblA, "VariableNamesSource", {"Some"});
-%!error <table.rows2vars: the number of names taken from the variable specified in 'VariableNamesSource' does not match the number of rows in input table.> ...
-%! rows2vars (tblA, "VariableNamesSource", {"Age"});
+## a repeated name from 'VariableNamesSource' is numbered, not refused, and
+## the columns take the name of the variable that named them
+%!test
+%! age = [38; 43; 38; 40; 49];
+%! hgt = [71; 69; 64; 67; 64];
+%! T = table (age, hgt, 'VariableNames', {'Age', 'Height'});
+%! R = rows2vars (T, 'VariableNamesSource', {'Age'});
+%! assert_equal (R.Properties.VariableNames, ...
+%!               {'OriginalVariableNames', 'x38', 'x43', 'x38_1', 'x40', ...
+%!                'x49'});
+%! assert_equal (R.Properties.DimensionNames, {'Row', 'Age'});
 %!error <table.rows2vars: 'VariableNamesSource' cannot specify a variable that is also specified by 'DataVariables'.> ...
 %! LastName = {"Sanchez"; "Johnson"; "Li"; "Diaz"; "Brown"};
 %! Age = [38; 43; 38; 40; 49];

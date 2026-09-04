@@ -3611,6 +3611,189 @@ classdef (Abstract) tabular
       G = table (vars{:}, 'VariableNames', names);
     endfunction
 
+    ## The body behind 'rows2vars' on both classes.  Returns an errmsg body
+    ## (empty on success) for the caller to raise under its own name.  The
+    ## result is a table whatever the input was: its rows are the variables of
+    ## the input and its columns the rows, so nothing is left in the order the
+    ## row labels described.
+    function [tbl, errmsg] = rows2varsResult (this, args_in)
+      tbl = [];
+      errmsg = '';
+
+      dimName = '';
+
+      ## Parse optional Name-Value paired arguments
+      optNames = {'DataVariables', 'VariableNamesSource', 'VariableNamingRule'};
+      dfValues = {[], [], 'modify'};
+      [varRef, source, rule] = parsePairedArguments (optNames, dfValues, ...
+                                                     args_in(:));
+
+      ## Check user input for 'DataVariables'
+      if (! isempty (varRef))
+        ixVar = resolveVarRef (this, varRef, 'lenient');
+        if (any (ixVar == 0))
+          varRef = cellstr (varRef);
+          bad = find (ixVar == 0);
+          errmsg = sprintf (strcat ("'DataVariables' index a", ...
+                                    " non-existing variable: '%s'"), ...
+                            varRef{bad(1)});
+          return;
+        endif
+        tbl = subsetvars (this, ixVar);
+      else
+        tbl = this;
+      endif
+
+      ## Check user input for 'VariableNamesSource'
+      if (! isempty (source))
+        srcVar = resolveVarRef (this, source, 'lenient');
+        if (! isscalar (srcVar))
+          errmsg = strcat ("'VariableNamesSource' must index a single", ...
+                           " variable.");
+          return;
+        elseif (any (srcVar == 0))
+          source = cellstr (source);
+          bad = find (srcVar == 0);
+          errmsg = sprintf (strcat ("'VariableNamesSource' indexes a", ...
+                                    " non-existing variable: '%s'"), ...
+                            source{bad(1)});
+          return;
+        endif
+        ## One name per row of the input, in the order the rows are in.
+        ## Repeats are numbered below rather than refused: the source is an
+        ## ordinary variable and nothing obliges it to hold distinct values.
+        newVarNames = this.VariableValues{srcVar};
+        if (! iscellstr (newVarNames))
+          newVarNames = cellstr (string (newVarNames));
+        endif
+        if (numel (newVarNames) != height (this))
+          errmsg = strcat ("the number of names taken from the variable", ...
+                           " specified in 'VariableNamesSource' does not", ...
+                           " match the number of rows in input table.");
+          return;
+        endif
+        dimName = this.VariableNames{srcVar};
+        ## Check that 'VariableNamesSource' does not specify a variable
+        ## that is specified by 'DataVariables', otherwise remove it from
+        ## returning table
+        if (! isempty (varRef))
+          if (ismember (srcVar, ixVar))
+            errmsg = strcat ("'VariableNamesSource' cannot specify a", ...
+                             " variable that is also specified by", ...
+                             " 'DataVariables'.");
+            return;
+          endif
+        else
+          tbl = removevars (tbl, srcVar);
+        endif
+      elseif (hasRowLabels (this))
+        ## The row labels name the new variables, rendered as the class
+        ## displays them.  A class whose labels are a dimension of their own
+        ## lends that dimension's name to the result; a table's row names are
+        ## not a dimension and lend nothing.
+        newVarNames = rowLabelStrings (this);
+        dimName = rowLabelHeader (this);
+      else
+        rows = height (tbl);
+        newVarNames = cell (1, rows);
+        for i = 1:rows
+          newVarNames{i} = sprintf ("Var%d", i);
+        endfor
+      endif
+      newVarNames = newVarNames(:)';
+
+      ## Handle variable naming rule
+      if (strcmpi (rule, 'modify'))
+        for i = 1:numel (newVarNames)
+          if (! isvarname (newVarNames{i}))
+            newVarNames{i} = matlab.lang.makeValidName (newVarNames{i});
+          endif
+        endfor
+      elseif (! strcmpi (rule, 'preserve'))
+        errmsg = "invalid input for 'VariableNamingRule'.";
+        return;
+      endif
+
+      ## Number a repeated name rather than refusing it.
+      seen = struct ();
+      for i = 1:numel (newVarNames)
+        key = matlab.lang.makeValidName (newVarNames{i});
+        if (isfield (seen, key))
+          seen.(key)++;
+          newVarNames{i} = sprintf ('%s_%d', newVarNames{i}, seen.(key) - 1);
+        else
+          seen.(key) = 1;
+        endif
+      endfor
+
+      ## Check for multicolumn variables and nested tables
+      for i = 1:width (tbl)
+        if (isa (tbl.VariableValues{i}, 'table'))
+          errmsg = 'input table must not contain nested tables.';
+          return;
+        elseif (size (tbl.VariableValues{i}, 2) > 1)
+          errmsg = 'input table must not contain multicolumn variables.';
+          return;
+        endif
+      endfor
+
+      ## Check column types to decide whether to return arrays or cell arrays
+      col_types = cellfun (@(x) class (x), tbl.VariableValues, ...
+                           'UniformOutput', false);
+      if (isscalar (__unique__ (col_types)))
+        matrix = cat (2, tbl.VariableValues{:})';
+        new_var_values = num2cell (matrix, 1);
+        out = table (new_var_values{:}, 'VariableNames', newVarNames);
+      else
+        cols_as_cells = cell (1, width (tbl));
+        for i = 1:width (tbl)
+          if (iscellstr (tbl.VariableValues{i}))
+            cols_as_cells{i} = tbl.VariableValues{i};
+          elseif (iscell (tbl.VariableValues{i}))
+            cols_as_cells{i} = tbl.VariableValues{i};
+          else
+            cols_as_cells{i} = num2cell (tbl.VariableValues{i});
+          endif
+        endfor
+        matrix = cat (2, cols_as_cells{:})';
+        out = table ();
+        for i = 1:height (tbl)
+          tmp = table (matrix(:,i), 'VariableNames', newVarNames(i));
+          out = [out tmp];
+        endfor
+      endif
+
+      ## Merge original variable names into the table
+      OriginalVariableNames = tbl.VariableNames(:);
+      OriginalVariableNames = table (OriginalVariableNames);
+      tbl = [OriginalVariableNames, out];
+
+      ## Fix lengths of VariableDescriptions and VariableUnits
+      tbl.VariableDescriptions = repmat ({''}, 1, size (tbl, 2));
+      tbl.VariableUnits = repmat ({''}, 1, size (tbl, 2));
+
+      ## Assign variable types in the new table
+      new_types = cellfun ('class', tbl.VariableValues, 'UniformOutput', false);
+      tbl.VariableTypes = new_types;
+
+      ## The columns now stand for whatever named them.
+      if (! isempty (dimName))
+        dn = tbl.DimensionNames;
+        dn{2} = dimName;
+        tbl.DimensionNames = dn;
+      endif
+
+      ## Remove any custom variable properties
+      if (! isempty (tbl.CustomProperties))
+        cp_names = customPropsOfType (this, 'variable');
+        ## Remove custom variable properties only
+        for i = 1:numel (cp_names)
+          tbl = rmprop (tbl, cp_names{i});
+        endfor
+      endif
+
+    endfunction
+
     ## The body behind 'stack' on both classes.  Returns an errmsg body
     ## (empty on success) for the caller to raise under its own name.  The
     ## constant part is subset and repeated, which carries whatever row

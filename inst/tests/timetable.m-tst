@@ -2862,6 +2862,64 @@
 %! rt = datetime (2024, 1, 1) + hours (0:1)';
 %! stack (timetable ([1; 2], 'RowTimes', rt));
 
+## Test 'rows2vars' names the new variables for the row times
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2; 3], 'RowTimes', t0 + hours (0:2)', ...
+%!                 'VariableNames', {'A'});
+%! R = rows2vars (TT);
+%! assert_equal (class (R), 'table');
+%! assert_equal (size (R), [1, 4]);
+%! assert_equal (R.Properties.VariableNames, ...
+%!               {'OriginalVariableNames', 'x01_Jan_202400_00_00', ...
+%!                'x01_Jan_202401_00_00', 'x01_Jan_202402_00_00'});
+%! assert_equal (R.Properties.DimensionNames, {'Row', 'Time'});
+%! assert_equal (R.OriginalVariableNames, {'A'});
+
+## Test the values are transposed into the new variables
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2], [3; 4], 'RowTimes', t0 + hours (0:1)', ...
+%!                 'VariableNames', {'A', 'B'});
+%! R = rows2vars (TT);
+%! n = R.Properties.VariableNames;
+%! assert_equal (R.(n{2}), [1; 3]);
+%! assert_equal (R.(n{3}), [2; 4]);
+
+## Test 'DataVariables' chooses which variables become rows
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2], [3; 4], 'RowTimes', t0 + hours (0:1)', ...
+%!                 'VariableNames', {'A', 'B'});
+%! R = rows2vars (TT, 'DataVariables', 'B');
+%! assert_equal (R.OriginalVariableNames, {'B'});
+%! assert_equal (size (R), [1, 3]);
+
+## Test a variable may name the new variables instead of the row times
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2], categorical ({'p'; 'q'}), ...
+%!                 'RowTimes', t0 + hours (0:1)', ...
+%!                 'VariableNames', {'A', 'g'});
+%! R = rows2vars (TT, 'VariableNamesSource', 'g');
+%! assert_equal (R.Properties.VariableNames, ...
+%!               {'OriginalVariableNames', 'p', 'q'});
+%! assert_equal (R.Properties.DimensionNames, {'Row', 'g'});
+
+## Test variables of different types come back as cell arrays
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2], {'p'; 'q'}, 'RowTimes', t0 + hours (0:1)', ...
+%!                 'VariableNames', {'A', 'B'});
+%! R = rows2vars (TT);
+%! n = R.Properties.VariableNames;
+%! assert_equal (class (R.(n{2})), 'cell');
+
+## Test the validation is the timetable's own
+%!error <timetable.rows2vars: input table must not contain multicolumn variables.> ...
+%! rt = datetime (2024, 1, 1) + hours (0:1)';
+%! rows2vars (timetable ([1 2; 3 4], 'RowTimes', rt));
+
 ################################################################################
 ##                        **    Input validation    **                        ##
 ################################################################################

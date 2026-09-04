@@ -2309,7 +2309,7 @@ classdef timetable < tabular
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'varfun'           'rowfun'           'grouptransform'   'groupcounts'     ##
-## 'groupsummary'     'groupfilter'      'stack'                              ##
+## 'groupsummary'     'groupfilter'      'stack'            'rows2vars'       ##
 ##                                                                            ##
 ################################################################################
 
@@ -2720,6 +2720,50 @@ classdef timetable < tabular
       [tt2, index, errmsg] = stackResult (tt, vars, varargin);
       if (! isempty (errmsg))
         error ("timetable.stack: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{tbl} =} rows2vars (@var{tt})
+    ## @deftypefnx {timetable} {@var{tbl} =} rows2vars (@var{tt}, @var{Name}, @var{Value})
+    ##
+    ## Turn the rows of a timetable into variables.
+    ##
+    ## @code{@var{tbl} = rows2vars (@var{tt})} returns a @code{table} whose
+    ## rows are the variables of @var{tt} and whose variables are its rows.
+    ## The first variable, @qcode{OriginalVariableNames}, names the variables
+    ## of @var{tt}; the rest are named for the row times they came from,
+    ## rendered as the timetable displays them and made into valid names, and
+    ## the second dimension of the result takes the name of the row dimension.
+    ##
+    ## The result is a table and not a timetable: its rows are variables and
+    ## there is no longer a time to label them by.
+    ##
+    ## Where the variables are not all of one type the result holds cell
+    ## arrays, every value being wrapped so that one variable can carry them
+    ## all.
+    ##
+    ## The following @var{Name}/@var{Value} pairs are accepted:
+    ##
+    ## @table @asis
+    ## @item @qcode{'DataVariables'}
+    ## The variables of @var{tt} that become rows.  By default all of them do.
+    ##
+    ## @item @qcode{'VariableNamesSource'}
+    ## A variable of @var{tt} whose values name the new variables instead of
+    ## the row times.  A repeated name is numbered rather than refused, and
+    ## the second dimension of the result takes the name of that variable.
+    ##
+    ## @item @qcode{'VariableNamingRule'}
+    ## @qcode{'modify'} (the default) makes each new name a valid identifier;
+    ## @qcode{'preserve'} keeps it as it is.
+    ## @end table
+    ##
+    ## @end deftypefn
+    function tbl = rows2vars (tt, varargin)
+      [tbl, errmsg] = rows2varsResult (tt, varargin);
+      if (! isempty (errmsg))
+        error ("timetable.rows2vars: %s", errmsg);
       endif
     endfunction
 
