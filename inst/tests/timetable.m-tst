@@ -656,12 +656,21 @@
 %! repelem (timetable ([1; 2], 'RowTimes', rt), 2);
 
 ## Test the argument validation is the timetable's own
-%!error <timetable.repelem: COLUMNS must be a positive integer.> ...
+%!error <timetable.repelem: replication factors must be nonnegative integer-valued scalars.> ...
 %! rt = datetime (2024, 1, 1) + hours (0:1)';
-%! repelem (timetable ([1; 2], 'RowTimes', rt), 2, 0);
+%! repelem (timetable ([1; 2], 'RowTimes', rt), -1, 1);
 %!error <timetable.repmat: only 2 dimensions are supported.> ...
 %! rt = datetime (2024, 1, 1) + hours (0:1)';
 %! repmat (timetable ([1; 2], 'RowTimes', rt), 2, 2, 2);
+
+## Test a size vector names both counts and a zero count empties a dimension
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2], [3; 4], 'RowTimes', t0 + hours (0:1)', ...
+%!                 'VariableNames', {'A', 'B'});
+%! assert_equal (size (repmat (TT, [2 3])), [4, 6]);
+%! assert_equal (size (repelem (TT, 0, 1)), [0, 2]);
+%! assert_equal (size (repelem (TT, 1, 0)), [2, 0]);
 
 ################################################################################
 ##                       **    Regularity and type    **                      ##

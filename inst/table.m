@@ -260,22 +260,20 @@ classdef table < tabular
       base = this.RowNames;
       nrow = numel (base);
       if (elementwise)
-        this.RowNames = repelem (base, n, 1);
-        for i = 1:n - 1
-          vec = i + 1:n:nrow * n;
-          this.RowNames(vec) = cellfun (@(x) sprintf ('%s_%d', x, i), ...
-                                        this.RowNames(vec), ...
-                                        'UniformOutput', false);
-        endfor
+        ix = repelem ((1:nrow)', n, 1);
       else
-        this.RowNames = repmat (base, n, 1);
-        for i = 1:n - 1
-          vec = i * nrow + 1:nrow * (i + 1);
-          this.RowNames(vec) = cellfun (@(x) sprintf ('%s_%d', x, i), ...
-                                        this.RowNames(vec), ...
-                                        'UniformOutput', false);
-        endfor
+        ix = repmat ((1:nrow)', n, 1);
       endif
+      names = base(ix);
+      seen = zeros (1, nrow);
+      for k = 1:numel (ix)
+        v = ix(k);
+        seen(v)++;
+        if (seen(v) > 1)
+          names{k} = sprintf ('%s_%d', base{v}, seen(v) - 1);
+        endif
+      endfor
+      this.RowNames = names;
     endfunction
 
     ## A table built from an apply method's output.  Row names are carried

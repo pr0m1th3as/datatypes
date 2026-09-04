@@ -3325,100 +3325,133 @@ classdef (Abstract) tabular
       tbl = [];
       errmsg = '';
       nargs = numel (args);
-      if (elementwise && nargs != 2)
-        ## 'repelem' takes a count per dimension and nothing else.  A lone
-        ## count is not read as both, as it is for an array: MATLAB refuses
-        ## it for a tabular object and so do we.
-        errmsg = 'exactly three input arguments are required.';
-        return;
-      endif
-      if (nargs < 1)
-        errmsg = 'too few input arguments.';
-        return;
-      endif
-      if (nargs > 2)
-        errmsg = 'only 2 dimensions are supported.';
-        return;
-      endif
-      if (nargs == 1)
-        rows = cols = args{1};
-      else
+      if (elementwise)
+        ## 'repelem' takes a count per dimension and nothing else: neither a
+        ## lone count nor a size vector, a tabular object having exactly two
+        ## dimensions and both being named.
+        if (nargs != 2)
+          errmsg = 'exactly three input arguments are required.';
+          return;
+        endif
         rows = args{1};
         cols = args{2};
-      endif
-      if (rows < 1 || fix (rows) != rows || ! isnumeric (rows))
-        if (nargs == 1)
-          errmsg = 'SZ must be a positive integer.';
-        else
-          errmsg = 'ROWS must be a positive integer.';
+        for v = {rows, cols}
+          k = v{1};
+          if (! (isnumeric (k) && isscalar (k) && isreal (k)
+                 && k >= 0 && k == fix (k)))
+            errmsg = strcat ("replication factors must be nonnegative", ...
+                             " integer-valued scalars.");
+            return;
+          endif
+        endfor
+      else
+        ## 'repmat' takes a lone count for both dimensions, a count for each,
+        ## or the two of them as a size vector.
+        if (nargs < 1)
+          errmsg = 'too few input arguments.';
+          return;
         endif
-        return;
-      endif
-      if (cols < 1 || fix (cols) != cols || ! isnumeric (cols))
-        errmsg = 'COLUMNS must be a positive integer.';
-        return;
+        if (nargs > 2)
+          errmsg = 'only 2 dimensions are supported.';
+          return;
+        endif
+        if (nargs == 1)
+          sz = args{1};
+          if (! isnumeric (sz))
+            errmsg = strcat ("replication factors must be a row vector of", ...
+                             " integers or integer scalars.");
+            return;
+          endif
+          if (isscalar (sz))
+            rows = cols = sz;
+          elseif (numel (sz) == 2)
+            rows = sz(1);
+            cols = sz(2);
+          else
+            errmsg = 'only 2 dimensions are supported.';
+            return;
+          endif
+        else
+          rows = args{1};
+          cols = args{2};
+        endif
+        for v = {rows, cols}
+          k = v{1};
+          if (! (isnumeric (k) && isscalar (k) && isreal (k)
+                 && k == fix (k)))
+            errmsg = strcat ("replication factors must be a row vector of", ...
+                             " integers or integer scalars.");
+            return;
+          endif
+        endfor
+        ## A negative count repeats nothing, as it does for an array.
+        rows = max (rows, 0);
+        cols = max (cols, 0);
       endif
 
       tbl = this;
-      ## Replicate the rows of each variable, then hand the row labels to the
-      ## subclass, which alone knows whether a repeated label needs a name of
-      ## its own.
-      if (rows > 1)
+      ## Replicate the rows by the index they come from, then hand the row
+      ## labels to the subclass, which alone knows whether a repeated label
+      ## needs a name of its own.
+      if (rows != 1)
+        nrow = height (this);
+        if (elementwise)
+          ixRows = repelem ((1:nrow)', rows, 1);
+        else
+          ixRows = repmat ((1:nrow)', rows, 1);
+        endif
         if (width (this) == 0)
           ## No variable carries the height, so the stored count does.
-          tbl.RowCount = height (this) * rows;
+          tbl.RowCount = numel (ixRows);
         endif
         for i = 1:width (this)
-          if (elementwise)
-            tbl.VariableValues{i} = repelem (this.VariableValues{i}, rows, 1);
-          else
-            tbl.VariableValues{i} = repmat (this.VariableValues{i}, rows, 1);
-          endif
+          col = this.VariableValues{i};
+          tbl.VariableValues{i} = col(ixRows,:);
         endfor
         tbl = repeatRowLabels (tbl, rows, elementwise);
       endif
 
-      ## Replicate the variables themselves.
-      if (cols > 1)
+      ## Replicate the variables the same way, numbering the repeats in the
+      ## order they come out.  The height is carried across, since a result
+      ## with no variables left has nothing else to carry it.
+      if (cols != 1)
+        nrowsOut = height (tbl);
+        nvar = width (this);
         if (elementwise)
-          rep = @(v) repelem (v, 1, cols);
+          ixVars = repelem ((1:nvar)', cols, 1)';
         else
-          rep = @(v) repmat (v, 1, cols);
+          ixVars = repmat ((1:nvar)', cols, 1)';
         endif
-        tbl.VariableTypes = rep (tbl.VariableTypes);
-        tbl.VariableValues = rep (tbl.VariableValues);
-        tbl.VariableDescriptions = rep (tbl.VariableDescriptions);
-        tbl.VariableUnits = rep (tbl.VariableUnits);
+        tbl.VariableTypes = tbl.VariableTypes(ixVars);
+        tbl.VariableValues = tbl.VariableValues(ixVars);
+        tbl.VariableDescriptions = tbl.VariableDescriptions(ixVars);
+        tbl.VariableUnits = tbl.VariableUnits(ixVars);
         if (! isempty (tbl.VariableContinuity))
-          tbl.VariableContinuity = rep (tbl.VariableContinuity);
+          tbl.VariableContinuity = tbl.VariableContinuity(ixVars);
         endif
-        ## Number the repeated names, in the order the values were repeated.
-        newNames = {};
-        if (elementwise)
-          for i = 1:width (this)
-            newNames = [newNames, this.VariableNames(i)];
-            for k = 1:cols - 1
-              newNames = [newNames, ...
-                          {sprintf('%s_%d', this.VariableNames{i}, k)}];
-            endfor
-          endfor
-        else
-          newNames = this.VariableNames;
-          for k = 1:cols - 1
-            add = cellfun (@(x) sprintf ('%s_%d', x, k), ...
-                           this.VariableNames, 'UniformOutput', false);
-            newNames = [newNames, add];
-          endfor
-        endif
+        newNames = cell (1, numel (ixVars));
+        seen = zeros (1, nvar);
+        for k = 1:numel (ixVars)
+          v = ixVars(k);
+          seen(v)++;
+          if (seen(v) == 1)
+            newNames{k} = this.VariableNames{v};
+          else
+            newNames{k} = sprintf ('%s_%d', this.VariableNames{v}, ...
+                                   seen(v) - 1);
+          endif
+        endfor
         tbl.VariableNames = newNames;
         ## Handle custom variable properties
         if (! isempty (this.CustomProperties))
           cp_names = customPropsOfType (this, 'variable');
           for i = 1:numel (cp_names)
             nm = cp_names{i};
-            tbl.CustomProperties.(nm) = rep (tbl.CustomProperties.(nm));
+            val = tbl.CustomProperties.(nm);
+            tbl.CustomProperties.(nm) = val(ixVars);
           endfor
         endif
+        tbl = setRowCount (tbl, nrowsOut);
       endif
     endfunction
 
@@ -3907,6 +3940,22 @@ classdef (Abstract) tabular
       endif
 
       inCols = this.VariableValues(iIx);
+      ## A row laid side by side into one argument is a concatenation of the
+      ## variables, and the same pairs refuse here as anywhere else.  The
+      ## types do not change row by row, so it is asked once.
+      if (! sepIn)
+        pair = tabular.incompatible_pair (inCols);
+        if (! isempty (pair))
+          inNames = this.VariableNames(iIx);
+          errmsg = sprintf (strcat ("cannot concatenate the table", ...
+                                    " variables '%s' and '%s', because", ...
+                                    " their types are %s and %s."), ...
+                            inNames{pair(1)}, inNames{pair(2)}, ...
+                            class (inCols{pair(1)}), ...
+                            class (inCols{pair(2)}));
+          return;
+        endif
+      endif
       if (! grouped)
         ## Ungrouped: apply FUNC to each row.  The result maps the input row
         ## for row, so it carries the labels of the rows it was built from.
@@ -6402,7 +6451,10 @@ classdef (Abstract) tabular
       vals = cell (1, numel (inCols));
       for k = 1:numel (inCols)
         col = inCols{k};
-        if (extractCell && iscell (col))
+        ## Extraction unwraps a cell variable for the argument it becomes on
+        ## its own.  It says nothing about a row laid side by side into one
+        ## argument, which is the variables as they are stored.
+        if (sepIn && extractCell && iscell (col))
           sub = col(rows);
           if (numel (sub) == 1)
             vals{k} = sub{1};

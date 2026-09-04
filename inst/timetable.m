@@ -357,12 +357,13 @@ classdef timetable < tabular
     ## time; the step is recomputed from the result, which a repetition
     ## generally makes irregular.
     function this = repeatRowLabels (this, n, elementwise)
+      nrow = numel (this.RowTimes);
       if (elementwise)
-        rt = repelem (this.RowTimes, n, 1);
+        ix = repelem ((1:nrow)', n, 1);
       else
-        rt = repmat (this.RowTimes, n, 1);
+        ix = repmat ((1:nrow)', n, 1);
       endif
-      this = applyRowTimes (this, rt, true);
+      this = applyRowTimes (this, this.RowTimes(ix), true);
     endfunction
 
     ## A timetable built from an apply method's output.  Each output row takes
