@@ -182,6 +182,11 @@ classdef timetable < tabular
       tf = true;
     endfunction
 
+    ## Row times are part of what makes a row distinct.
+    function tf = uniqueIncludesLabels (this)
+      tf = true;
+    endfunction
+
     ## The four properties a timetable publishes about its row times, keyed
     ## by the names they are published under.  'RowTimes' is the stored
     ## truth; the other three describe it and are maintained with it.
@@ -1129,11 +1134,11 @@ classdef timetable < tabular
   endmethods
 
 ################################################################################
-##                          **    Row Ordering    **                          ##
+##                     **    Row Ordering and Sets    **                      ##
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'sortrows'                                                                 ##
+## 'sortrows'         'unique'                                                ##
 ##                                                                            ##
 ################################################################################
 
@@ -1199,6 +1204,49 @@ classdef timetable < tabular
         error ("timetable.sortrows: %s", errmsg);
       endif
       tbl = subsetrows (this, index);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{ttB} =} unique (@var{ttA})
+    ## @deftypefnx {timetable} {@var{ttB} =} unique (@var{ttA}, @var{setOrder})
+    ## @deftypefnx {timetable} {[@var{ttB}, @var{ia}, @var{ic}] =} unique (@dots{})
+    ##
+    ## Unique rows of a timetable.
+    ##
+    ## @code{@var{ttB} = unique (@var{ttA})} returns the distinct rows of
+    ## @var{ttA}, ordered by row time.  A row is its time together with its
+    ## values, so two rows count as one only when they agree on both.  Rows
+    ## sharing a time but differing in a variable are all kept, as are rows
+    ## sharing their values at different times; the row times are a column of
+    ## the comparison and not a key that overrides it.
+    ##
+    ## @code{@var{ttB} = unique (@var{ttA}, @var{setOrder})} chooses the
+    ## order of the result.  @qcode{'sorted'} is the default and
+    ## @qcode{'stable'} keeps the rows in the order they were met.
+    ## @qcode{'first'} and @qcode{'last'} say which of a set of equal rows is
+    ## the one reported in @var{ia}.  @qcode{'rows'} is accepted and changes
+    ## nothing, rows being the only thing a timetable compares.
+    ##
+    ## @code{[@var{ttB}, @var{ia}, @var{ic}] = unique (@dots{})} also returns
+    ## index vectors, such that @var{ttB} is @code{@var{ttA}(@var{ia},:)} and
+    ## @var{ttA} is @code{@var{ttB}(@var{ic},:)}.
+    ##
+    ## A timetable with no variables is compared on its row times alone, so
+    ## repeated times reduce to one.  The time step is read afresh from the
+    ## row times that survive.
+    ##
+    ## Variables of @code{cell}, other than a cell array of character
+    ## vectors, and of @code{struct} have no order to compare and are
+    ## refused.
+    ##
+    ## @seealso{sortrows, timetable}
+    ## @end deftypefn
+    function [tbl, ia, ic] = unique (this, varargin)
+      [ia, ic, errmsg] = uniqueIndex (this, varargin);
+      if (! isempty (errmsg))
+        error ("timetable.unique: %s", errmsg);
+      endif
+      tbl = subsetrows (this, ia);
     endfunction
 
   endmethods

@@ -1,0 +1,41 @@
+%!demo
+%! ## For a timetable a row is its time *together with* its values, so two
+%! ## rows count as one only when they agree on both.  Here the two readings
+%! ## at 01:00 differ, so both are kept, while the pair at 04:00 is identical
+%! ## and collapses to one.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! Reading = [12; 20; 25; 44; 44];
+%! TT = timetable (Reading, 'RowTimes', t0 + hours ([0 1 1 4 4])')
+%! unique (TT)
+
+%!demo
+%! ## The row times are a column of the comparison, not a key that overrides
+%! ## it, so equal values at different times are all kept too.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([7; 7; 7], 'RowTimes', t0 + hours (0:2)', ...
+%!                 'VariableNames', {'Reading'});
+%! height (unique (TT))
+%!
+%! ## Strip the variables and only the times are left to compare, so repeated
+%! ## times do reduce to one.
+%! D = timetable ([1; 2; 3], 'RowTimes', t0 + hours ([0 1 1])', ...
+%!                'VariableNames', {'Reading'});
+%! unique (D(:, []))
+
+%!demo
+%! ## The result is ordered by row time unless `'stable'` asks for the order
+%! ## the rows were met in, and the index vectors map each way between the
+%! ## two timetables.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([30; 10; 40; 10], 'RowTimes', t0 + hours ([2 0 3 0])', ...
+%!                 'VariableNames', {'Depth'});
+%! [U, ia, ic] = unique (TT);
+%! U
+%! ia
+%! ic
+%!
+%! ## `'stable'` reports them in the order they arrived instead.
+%! unique (TT, 'stable')

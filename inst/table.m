@@ -147,6 +147,11 @@ classdef table < tabular
       tf = false;
     endfunction
 
+    ## Row names do not tell two otherwise equal rows apart.
+    function tf = uniqueIncludesLabels (this)
+      tf = false;
+    endfunction
+
     ## The one row label property a table has.  'RowNames' is the only name
     ## it recognises; anything else is not a table property at all and the
     ## caller says so.
@@ -1643,90 +1648,11 @@ classdef table < tabular
     ##
     ## @end deftypefn
     function [tbl, ia, ic] = unique (this, varargin)
-
-      ## Check max number of input arguments
-      if (nargin > 2)
-        error ("table.unique: too many input arguments.");
+      [ia, ic, errmsg] = uniqueIndex (this, varargin);
+      if (! isempty (errmsg))
+        error ("table.unique: %s", errmsg);
       endif
-
-      ## Handle 'setOrder' and 'occurrence' options
-      opt = 'sorted';
-      if (! isempty (varargin))
-        if (any (strcmp (varargin{1}, {'sorted', 'stable', 'first', 'last'})))
-          opt = varargin{1};
-        else
-          error ("table.unique: invalid option '%s'.", varargin{1});
-        endif
-      endif
-
-      ## Every row of an object with no variables is the same empty row, so
-      ## they reduce to one; there is no proxy to build from.
-      if (width (this) == 0 && height (this) > 0)
-        tbl = subsetrows (this, 1);
-        ia = 1;
-        ic = ones (height (this), 1);
-        return;
-      endif
-
-      ## Prepare a proxy array by converting all variables to numeric proxies
-      varProxy = [];
-      for ix = 1:width (this)
-
-        varVal = this.VariableValues{ix};
-        if (isa (varVal, 'categorical'))
-          varVal = double (varVal);
-          varProxy = [varProxy, varVal];
-
-        elseif (isa (varVal, 'calendarDuration'))
-          varVal = varVal.proxyArray;
-          varProxy = [varProxy, varVal];
-
-        elseif (isa (varVal, 'datetime'))
-          varVal = tabular.datetime_to_datenum (varVal);
-          varProxy = [varProxy, varVal];
-
-        elseif (isa (varVal, 'duration'))
-          varVal = days (varVal);
-          varProxy = [varProxy, varVal];
-
-        elseif (isa (varVal, 'string'))
-          varVal = cellstr (varVal);
-          [~, ~, idx] = __unique__ (varVal, 'rows');
-          varProxy = [varProxy, idx];
-
-        elseif (iscellstr (varVal))
-          [~, ~, idx] = __unique__ (varVal, 'rows');
-          varProxy = [varProxy, idx];
-
-        elseif (iscell (varVal))
-          ## Mixed cell data is not supported
-          error (strcat ("table.unique: cannot find unique rows for", ...
-                         " variables of 'cell' type."));
-
-        elseif (isnumeric (varVal) || islogical (varVal))
-          varProxy = [varProxy, varVal];
-
-        elseif (isstruct (varVal))
-          ## Structure data is not supported
-          error (strcat ("table.unique: cannot find unique rows for", ...
-                         " variables of 'struct' type."));
-
-        elseif (isa (varVal, 'table'))
-          try
-            varVal = table2array (varVal);
-            varProxy = [varProxy, varVal];
-          catch
-            error (strcat ("table.unique: cannot find unique rows for", ...
-                           " nested tables with mixed data types."));
-          end_try_catch
-        endif
-      endfor
-
-      ## Find unique rows in proxy table
-      [~, ia, ic] = __unique__ (varProxy, opt, 'rows');
-      ## Return unique table
       tbl = subsetrows (this, ia);
-
     endfunction
 
     ## -*- texinfo -*-

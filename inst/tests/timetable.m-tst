@@ -1081,6 +1081,111 @@
 %!           datetime (2024, 1, 1) + hours (0:2)'), 1, ...
 %!           'MissingPlacement', 'middle');
 
+
+## Test a row is its time together with its values, and both must agree
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! V = timetable ([1; 2; 2; 5; 5; 8; 9], 'RowTimes', ...
+%!                t0 + hours ([0 1 1 2 3 4 4])', 'VariableNames', {'A'});
+%! U = unique (V);
+%! assert_equal (height (U), 6);
+%! assert_equal (U.A, [1; 2; 5; 5; 8; 9]);
+%! assert_equal (U.Properties.RowTimes, ...
+%!               t0 + hours ([0 1 2 3 4 4])');
+
+## Test the index vectors map each way between the two timetables
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! V = timetable ([1; 2; 2; 5; 5; 8; 9], 'RowTimes', ...
+%!                t0 + hours ([0 1 1 2 3 4 4])', 'VariableNames', {'A'});
+%! [U, ia, ic] = unique (V);
+%! assert_equal (ia, [1; 2; 4; 5; 6; 7]);
+%! assert_equal (ic, [1; 2; 2; 3; 4; 5; 6]);
+%! assert_equal (U.A, V.A(ia));
+%! assert_equal (V.A, U.A(ic));
+
+## Test rows sharing a time but not their values are all kept
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! D = timetable ([1; 2; 3; 4], 'RowTimes', t0 + hours ([0 1 1 3])', ...
+%!                'VariableNames', {'A'});
+%! assert_equal (height (unique (D)), 4);
+
+## Test rows sharing their values at different times are all kept
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! S = timetable ([7; 7; 7], 'RowTimes', t0 + hours (0:2)', ...
+%!                'VariableNames', {'A'});
+%! assert_equal (height (unique (S)), 3);
+
+## Test the result comes back ordered by row time
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! U = timetable ([30; 10; 40; 20], 'RowTimes', t0 + hours ([2 0 3 1])', ...
+%!                'VariableNames', {'A'});
+%! assert_equal (unique (U).A, [10; 20; 30; 40]);
+
+## Test 'stable' keeps the rows in the order they were met
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! U = timetable ([30; 10; 40; 20], 'RowTimes', t0 + hours ([2 0 3 1])', ...
+%!                'VariableNames', {'A'});
+%! assert_equal (unique (U, 'stable').A, [30; 10; 40; 20]);
+
+## Test 'rows' is accepted and changes nothing
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! V = timetable ([1; 2; 2; 5], 'RowTimes', t0 + hours ([0 1 1 2])', ...
+%!                'VariableNames', {'A'});
+%! assert_equal (unique (V, 'rows').A, unique (V).A);
+
+## Test the time step is read afresh from the rows that survive
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:6)', 'RowTimes', t0 + hours (0:5)', ...
+%!                 'VariableNames', {'A'});
+%! assert_equal (unique (TT).Properties.TimeStep, hours (1));
+%! V = timetable ([1; 2; 2; 5; 5; 8; 9], 'RowTimes', ...
+%!                t0 + hours ([0 1 1 2 3 4 4])', 'VariableNames', {'A'});
+%! assert_equal (isnan (unique (V).Properties.TimeStep), true);
+
+## Test a missing row time survives and comes last
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! N = timetable ([1; 2; NaN; 4], 'RowTimes', ...
+%!                [t0; NaT; t0 + hours(2); t0 + hours(3)], ...
+%!                'VariableNames', {'A'});
+%! U = unique (N);
+%! assert_equal (height (U), 4);
+%! assert_equal (ismissing (U.Properties.RowTimes), ...
+%!               [false; false; false; true]);
+
+## Test a timetable with no variables is compared on its row times alone
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! D = timetable ([1; 2; 3; 4], 'RowTimes', t0 + hours ([0 1 1 3])', ...
+%!                'VariableNames', {'A'});
+%! U = unique (D(:, []));
+%! assert_equal (size (U), [3, 0]);
+%! assert_equal (U.Properties.RowTimes, t0 + hours ([0 1 3])');
+
+## Test duration row times compare like any other
+%!test
+%! Q = timetable ([1; 2; 3; 4], 'RowTimes', hours ([2 0 3 1])', ...
+%!                'VariableNames', {'A'});
+%! assert_equal (unique (Q).Properties.RowTimes, hours (0:3)');
+
+## Test input validation for 'timetable.unique'
+%!error <timetable.unique: too many input arguments.> ...
+%! unique (timetable ((1:3)', 'RowTimes', ...
+%!         datetime (2024, 1, 1) + hours (0:2)'), 1, 2);
+%!error <timetable.unique: invalid option 'some'.> ...
+%! unique (timetable ((1:3)', 'RowTimes', ...
+%!         datetime (2024, 1, 1) + hours (0:2)'), 'some');
+%!error <timetable.unique: cannot find unique rows for variables of 'cell' type.> ...
+%! unique (timetable ({1; 2; 3}, 'RowTimes', ...
+%!         datetime (2024, 1, 1) + hours (0:2)'));
+
 ################################################################################
 ##                       **    Range predicates    **                         ##
 ################################################################################

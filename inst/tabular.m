@@ -298,6 +298,13 @@ classdef (Abstract) tabular
                      " sortsByLabelsByDefault."), class (this));
     endfunction
 
+    ## Whether the row labels are part of what makes a row distinct.  A
+    ## timetable's row times are, a table's row names are not.
+    function tf = uniqueIncludesLabels (this)
+      error (strcat ("%s: subclass must implement", ...
+                     " uniqueIncludesLabels."), class (this));
+    endfunction
+
     ## The row label metadata as a struct, keyed by the names the properties
     ## object publishes it under.  Separate from 'rowLabelName', which names
     ## the labels for a file header and for a timetable is the row dimension
@@ -1502,6 +1509,82 @@ classdef (Abstract) tabular
           index = [is_nan; no_nan];
         endif
       endif
+
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {tabular} {[@var{ia}, @var{ic}, @var{errmsg}] =} uniqueIndex (@var{obj}, @var{args})
+    ##
+    ## Work out which rows @code{unique} keeps.
+    ##
+    ## @var{args} is the cell of arguments the public method was given, less
+    ## the object itself.  @var{ia} indexes the rows to keep and @var{ic}
+    ## maps every original row onto one of them, as @code{unique} returns
+    ## them.  @var{errmsg} carries the body of any complaint so that the
+    ## calling class can raise it under its own name.
+    ##
+    ## @end deftypefn
+    function [ia, ic, errmsg] = uniqueIndex (this, args_in)
+
+      ia = [];
+      ic = [];
+      errmsg = '';
+
+      ## Check max number of input arguments
+      if (numel (args_in) > 1)
+        errmsg = "too many input arguments.";
+        return
+      endif
+
+      ## Handle 'setOrder' and 'occurrence' options
+      opt = 'sorted';
+      if (! isempty (args_in))
+        opts = {'sorted', 'stable', 'first', 'last', 'rows'};
+        if (any (strcmp (args_in{1}, opts)))
+          opt = args_in{1};
+        else
+          errmsg = sprintf ("invalid option '%s'.", args_in{1});
+          return
+        endif
+      endif
+      ## Rows are the only thing a tabular object compares, so naming them
+      ## changes nothing.
+      if (strcmp (opt, 'rows'))
+        opt = 'sorted';
+      endif
+
+      ## What makes a row distinct.  A timetable is told apart by its row
+      ## times as well as by its variables; a table by its variables alone.
+      keyVals = {};
+      if (uniqueIncludesLabels (this) && hasRowLabels (this))
+        labels = getRowLabels (this);
+        keyVals(end+1) = {labels};
+      endif
+      for ix = 1:width (this)
+        keyVals(end+1) = this.VariableValues(ix);
+      endfor
+
+      ## Every row of an object with nothing to compare is the same empty
+      ## row, so they reduce to one; there is no proxy to build from.
+      if (isempty (keyVals) && height (this) > 0)
+        ia = 1;
+        ic = ones (height (this), 1);
+        return
+      endif
+
+      ## Prepare a proxy array by converting every key to numeric proxies
+      proxy = [];
+      for ix = 1:numel (keyVals)
+        [p, badtype] = valueProxy (keyVals{ix}, 'auto');
+        if (! isempty (badtype))
+          errmsg = uniqueBadType (badtype);
+          return
+        endif
+        proxy = [proxy, p];
+      endfor
+
+      ## Find unique rows in the proxy
+      [~, ia, ic] = __unique__ (proxy, opt, 'rows');
 
     endfunction
 
@@ -3019,6 +3102,68 @@ endclassdef
 ## missing ones.  Octave's sort already puts them last ascending and first
 ## descending, which is what 'auto' means, so only 'first' and 'last' move
 ## anything.
+## The numeric stand-in that one variable's values sort and compare by.
+## Callers phrase their own complaint, so an unsupported type comes back
+## named rather than as a message.  CM is the comparison method asked of
+## numeric data, and is 'auto' where none applies.
+function [p, badtype] = valueProxy (v, CM)
+
+  p = [];
+  badtype = '';
+  if (isa (v, 'categorical'))
+    p = double (v);
+  elseif (isa (v, 'calendarDuration'))
+    p = v.proxyArray;
+  elseif (isa (v, 'datetime'))
+    p = tabular.datetime_to_datenum (v);
+  elseif (isa (v, 'duration'))
+    p = days (v);
+  elseif (isa (v, 'string'))
+    c = cellstr (v);
+    [~, ~, p] = __unique__ (c, 'rows');
+  elseif (iscellstr (v))
+    [~, ~, p] = __unique__ (v, 'rows');
+  elseif (iscell (v))
+    badtype = 'cell';
+  elseif (isnumeric (v))
+    if (strcmpi (CM, 'real') && iscomplex (v))
+      p = real (v);
+    elseif (strcmpi (CM, 'abs') && isreal (v))
+      p = abs (v);
+    else
+      p = v;
+    endif
+  elseif (islogical (v))
+    p = v;
+  elseif (isstruct (v))
+    badtype = 'struct';
+  elseif (isa (v, 'table') || isa (v, 'timetable'))
+    try
+      p = table2array (v);
+    catch
+      badtype = 'nested';
+    end_try_catch
+  endif
+
+endfunction
+
+## How 'unique' names a type it cannot compare.
+function msg = uniqueBadType (badtype)
+
+  switch (badtype)
+    case 'cell'
+      msg = strcat ("cannot find unique rows for variables of", ...
+                    " 'cell' type.");
+    case 'struct'
+      msg = strcat ("cannot find unique rows for variables of", ...
+                    " 'struct' type.");
+    otherwise
+      msg = strcat ("cannot find unique rows for nested tables with", ...
+                    " mixed data types.");
+  endswitch
+
+endfunction
+
 function index = labelOrder (labels, direction, MP)
 
   [~, index] = sort (labels, direction);
