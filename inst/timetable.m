@@ -2329,7 +2329,7 @@ classdef timetable < tabular
 ## 'varfun'           'rowfun'           'grouptransform'   'groupcounts'     ##
 ## 'groupsummary'     'groupfilter'      'stack'            'rows2vars'       ##
 ## 'join'             'innerjoin'        'outerjoin'        'inner2outer'     ##
-## 'findgroups'       'splitapply'                                            ##
+## 'findgroups'       'splitapply'       'unstack'                            ##
 ##                                                                            ##
 ################################################################################
 
@@ -3035,6 +3035,62 @@ classdef timetable < tabular
       for k = 1:nout
         varargout{k} = vertcat (results{:,k});
       endfor
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{tt2} =} unstack (@var{tt}, @var{vars}, @var{ivar})
+    ## @deftypefnx {timetable} {@var{tt2} =} unstack (@var{tt}, @var{vars}, @var{ivar}, @var{Name}, @var{Value})
+    ## @deftypefnx {timetable} {[@var{tt2}, @var{index}] =} unstack (@dots{})
+    ##
+    ## Spread one variable of a timetable across several.
+    ##
+    ## @code{@var{tt2} = unstack (@var{tt}, @var{vars}, @var{ivar})} replaces
+    ## the variable named in @var{vars} with one variable per distinct value
+    ## of the indicator variable @var{ivar}, each holding the values that
+    ## carried that indicator.  Rows sharing a group become one row.
+    ##
+    ## The row times group: with no @qcode{'GroupingVariables'} given, one row
+    ## comes back per distinct row time, so @var{tt2} is a timetable carrying
+    ## those times.  A group that has no value for an indicator is filled with
+    ## a missing value.
+    ##
+    ## @code{[@var{tt2}, @var{index}] = unstack (@dots{})} also returns
+    ## @var{index}, naming a row of @var{tt} in each group.
+    ##
+    ## The following @var{Name}/@var{Value} pairs are accepted:
+    ##
+    ## @table @asis
+    ## @item @qcode{'GroupingVariables'}
+    ## The variables whose combinations define the rows of the result,
+    ## alongside the row times.
+    ##
+    ## @item @qcode{'ConstantVariables'}
+    ## The variables carried along unchanged, taken from one row of each group.
+    ##
+    ## @item @qcode{'NewDataVariableNames'}
+    ## The names of the new variables, one per distinct indicator value.
+    ##
+    ## @item @qcode{'AggregationFunction'}
+    ## The function applied where a group holds several values for one
+    ## indicator.  By default numeric data are summed and everything else must
+    ## be unique within its group.
+    ##
+    ## @item @qcode{'VariableNamingRule'}
+    ## @qcode{'modify'} (the default) makes each new name a valid identifier;
+    ## @qcode{'preserve'} keeps it as it is.
+    ## @end table
+    ##
+    ## @seealso{stack, timetable}
+    ## @end deftypefn
+    function [tt2, index] = unstack (tt, vars, ivar, varargin)
+      if (nargin < 3)
+        vars = [];
+        ivar = [];
+      endif
+      [tt2, index, errmsg] = unstackResult (tt, vars, ivar, varargin);
+      if (! isempty (errmsg))
+        error ("timetable.unstack: %s", errmsg);
+      endif
     endfunction
 
   endmethods

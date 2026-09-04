@@ -4097,6 +4097,438 @@ classdef (Abstract) tabular
       endfor
     endfunction
 
+    ## The body behind 'unstack' on both classes.  Returns an errmsg body
+    ## (empty on success) for the caller to raise under its own name.  A class
+    ## whose row labels make a row distinct groups by them, so a timetable
+    ## with no grouping variable still answers with one row per row time, and
+    ## the result is of the calling class.
+    function [tbl, idxA, errmsg] = unstackResult (this, vars, ivar, args_in)
+      tbl = [];
+      idxA = [];
+      errmsg = '';
+      scope = sprintf ('%s.unstack', class (this));
+
+      ## Check input argument
+      if (isempty (vars))
+        errmsg = "too few input arguments.";
+        return;
+      endif
+
+      ## Define allowed vartypes (cellstr + numeric are checked in place)
+      allowed = {'logical', 'string', 'categorical'};
+
+      ## Parse optional Name-Value paired arguments
+      optNames = {'GroupingVariables', 'ConstantVariables', ...
+                  'NewDataVariableNames', 'AggregationFunction', ...
+                  'VariableNamingRule'};
+      dfValues = {[], [], [], [], 'modify'};
+      [groupVars, constVars, newVarNames, aggrFcn, rule] = ...
+                  parsePairedArguments (optNames, dfValues, args_in(:));
+
+      ## Get variables to unstack
+      [ixVars, ~] = resolveVarRef (this, vars, 'lenient');
+      if (any (ixVars == 0))
+        vars = cellstr (vars);
+        errmsg = sprintf ("VARS index a non-existing variable: '%s'", ...
+               vars{find (ixVars == 0)});
+        return;
+      endif
+      ## Check that variables to unstack do not contain nested tables
+      for i = ixVars
+        if (isa (this.VariableValues{i}, 'table'))
+          errmsg = "VARS must not index nested tables.";
+          return;
+        endif
+      endfor
+      ## Move variables to unstack into a new table
+      VarsTable = subsetvars (this, ixVars);
+
+      ## Get indicator variable
+      [ixIvar, ~] = resolveVarRef (this, ivar, 'lenient');
+      if (! isscalar (ixIvar))
+        errmsg = "IVAR must index a single variable.";
+        return;
+      elseif (ixIvar == 0)
+        ivar = cellstr (ivar);
+        errmsg = sprintf ("IVAR indexes a non-existing variable: '%s'", ...
+               ivar{find (ixIvar == 0)});
+        return;
+      endif
+      ## Check indicator variable is not a multicolumn variable
+      ## or member of the variables to be unstacked
+      IvarValues = this.VariableValues{ixIvar};
+      if (! isvector (IvarValues))
+        errmsg = "IVAR must index a single column variable.";
+        return;
+      endif
+      if (ismember (ixIvar, ixVars))
+        errmsg = strcat ("IVAR cannot be any of the", ...
+                       " variables to be unstacked as specified by VARS.");
+        return;
+      endif
+      ## Check indicator variable is of a valid type
+      if (! (iscellstr (IvarValues) || isnumeric (IvarValues)))
+        if (! ismember (class (IvarValues), allowed))
+          errmsg = sprintf (strcat ("IVAR indexes a variable of", ...
+                         " invalid type: '%s'"), ...
+                 class (IvarValues));
+          return;
+        endif
+        IvarValues = cellstr (string (IvarValues));
+      endif
+
+      ## Get default names for new unstacked variables
+      IvarNames = __unique__ (IvarValues);
+      ## Force both names and values to cellstr
+      if (! iscellstr (IvarNames))
+        IvarNames = cellstr (string (IvarNames));
+        IvarValues = cellstr (string (IvarValues));
+      endif
+
+      ## Get constant variables
+      if (! isempty (constVars))
+        cIxVars = resolveVarRef (this, constVars, 'lenient');
+        if (any (cIxVars == 0))
+          constVars = cellstr (constVars);
+          errmsg = sprintf (strcat ("'ConstantVariables' index a", ...
+                         " non-existing variable: '%s'"), ...
+                 constVars{find (cIxVars == 0)});
+          return;
+        endif
+        if (any (ismember (cIxVars, ixVars)))
+          errmsg = strcat ("'ConstantVariables' cannot", ...
+                         " contain any variables to be unstacked as", ...
+                         " specified by VARS.");
+          return;
+        endif
+        if (any (ismember (cIxVars, ixIvar)))
+          errmsg = strcat ("'ConstantVariables' cannot", ...
+                         " contain the indicator variable as specified", ...
+                         " by IVAR.");
+          return;
+        endif
+      else
+        cIxVars = [];
+      endif
+
+      ## Get grouping variables
+      if (isempty (groupVars))
+        gIxVars = setdiff (1:width (this), [ixVars, ixIvar, cIxVars]);
+      else
+        gIxVars = resolveVarRef (this, groupVars, 'lenient');
+        if (any (gIxVars == 0))
+          groupVars = cellstr (groupVars);
+          errmsg = sprintf (strcat ("'GroupingVariables' index a", ...
+                         " non-existing variable: '%s'"), ...
+                 groupVars{find (gIxVars == 0)});
+          return;
+        endif
+        if (any (ismember (gIxVars, ixVars)))
+          errmsg = strcat ("'GroupingVariables' cannot", ...
+                         " contain any variables to be unstacked as", ...
+                         " specified by VARS.");
+          return;
+        endif
+        if (any (ismember (gIxVars, ixIvar)))
+          errmsg = strcat ("'GroupingVariables' cannot", ...
+                         " contain the indicator variable as specified", ...
+                         " by IVAR.");
+          return;
+        endif
+      endif
+      ## Exclude variables of invalid type as grouping variables (emit warning)
+      for i = numel (gIxVars):-1:1
+        GvarValues = this.VariableValues{gIxVars(i)};
+        if (! (iscellstr (GvarValues) || isnumeric (GvarValues)))
+          if (! ismember (class (GvarValues), allowed))
+            invalid = this.VariableNames{gIxVars(i)};
+            gIxVars(i) = [];
+            warning (strcat ("%s: 'GroupingVariables' index a variable", ...
+                             " of invalid type: '%s', which is", ...
+                             " ignored."), scope, invalid);
+          endif
+        endif
+      endfor
+
+      ## Move grouping variables into a new table
+      removeVar = setdiff (1:width (this), gIxVars);
+      GvarTable = removevars (this, removeVar);
+
+      ## Move constant variables into a new table
+      if (! isempty (cIxVars))
+        if (any (ismember (cIxVars, gIxVars)) && ! isempty (groupVars))
+          errmsg = strcat ("'ConstantVariables' cannot", ...
+                         " contain any grouping variables as specified", ...
+                         " by 'GroupingVariables'.");
+          return;
+        endif
+        CvarTable = subsetvars (this, cIxVars);
+      else
+        CvarTable = table;
+      endif
+
+      ## Get new data variable names
+      if (isempty (newVarNames))
+        newVarNames = IvarNames';
+      else
+        if (! (iscellstr (newVarNames) && ! (isa (newVarNames, 'string'))))
+          errmsg = strcat ("'NewDataVariableNames' must be", ...
+                         " either a cell array of character vectors, or", ...
+                         " a string array.");
+          return;
+        endif
+        if (numel (newVarNames) != numel (IvarNames))
+          errmsg = strcat ("'NewDataVariableNames' do not", ...
+                         " match the number of unique values in the", ...
+                         " indicator variable.");
+          return;
+        endif
+      endif
+
+      ## Check user-defined aggregation function
+      if (! isempty (aggrFcn))
+        if (! is_function_handle (aggrFcn))
+          errmsg = strcat ("'AggregationFunction' must be a", ...
+                         " function handle.");
+          return;
+        endif
+      endif
+
+      ## Create table containing unique instances of grouping variables,
+      ## otherwise use unique instances of the indicator variable.  Rows whose
+      ## grouping variables contain missing values are excluded from unstacking,
+      ## together with the corresponding indicator, data, and constant values,
+      ## while the original row indices are retained for the returned index.
+      ## A class whose row labels make a row distinct groups by them, so a
+      ## timetable with no grouping variable still has one row per row time.
+      if (! isempty (GvarTable) || uniqueIncludesLabels (this))
+        [GvarTable, rmRows] = rmmissing (GvarTable);
+        validRows = ! rmRows;
+        origIdx = find (validRows);
+        IvarValues = IvarValues(validRows);
+        VarsTable = subsetrows (VarsTable, origIdx);
+        if (! isempty (CvarTable))
+          CvarTable = subsetrows (CvarTable, origIdx);
+        endif
+        [GvarTable, I, J] = unique (GvarTable, 'stable');
+        nrows = numel (I);
+        rowIdx = origIdx(I);
+      else
+        [~, I, J] = __unique__ (IvarValues, 'stable', 'rows');
+        nrows = 1;
+        rowIdx = 1;
+        ## With no grouping variable every row collapses into one, and the
+        ## grouping table is the empty half of that single row.
+        GvarTable = subsetrows (GvarTable, 1:min (1, height (GvarTable)));
+      endif
+
+      ## Start unstacking here
+      if (isscalar (ixVars))  # single variable to unstack
+        ## Handle variable naming rule
+        ncols = numel (newVarNames);
+        if (strcmpi (rule, 'modify'))
+          for i = 1:ncols
+            if (! isvarname (newVarNames{i}))
+              newVarNames{i} = matlab.lang.makeValidName (newVarNames{i});
+            endif
+          endfor
+        elseif (! strcmpi (rule, 'preserve'))
+          errmsg = "invalid input for 'VariableNamingRule'.";
+          return;
+        endif
+
+        ## Create table with unstacked variables
+        vvals = VarsTable.VariableValues{:,:};
+        if (iscellstr (vvals))
+          vtype = 'cellstr';
+        else
+          vtype = class (vvals);
+        endif
+        vtype = repmat ({vtype}, 1, ncols);
+        UvarTable = table ('Size', [nrows, ncols], 'VariableTypes', vtype, ...
+                           'VariableNames', newVarNames);
+        ## Copy descriptions and units to unstacked variables
+        vd = this.VariableDescriptions{ixVars};
+        UvarTable.VariableDescriptions = repmat ({vd}, 1, ncols);
+        vu = this.VariableUnits{ixVars};
+        UvarTable.VariableUnits = repmat ({vu}, 1, ncols);
+
+        ## Replicate the unstacked variable's variable-scoped custom properties
+        ## onto each new column (MATLAB copies them); table-scoped properties
+        ## are carried by the constant and grouping variables through the final
+        ## horzcat that assembles the output.
+        if (! isempty (this.CustomProperties))
+          cpNames = customPropsOfType (this, 'variable');
+          for ci = 1:numel (cpNames)
+            srcval = this.CustomProperties.(cpNames{ci})(ixVars);
+            UvarTable.CustomProperties.(cpNames{ci}) = ...
+                                              repmat (srcval, 1, ncols);
+            UvarTable.CustomPropTypes.(cpNames{ci}) = 'variable';
+          endfor
+        endif
+
+        ## Add type-specific NaN values and handle multicolumn variables
+        ## Check that aggregation function returns suitable output
+        [mcvec, aggrFcn] = tabular.get_default_aggrFcn (vvals, nrows, ...
+                                                        aggrFcn, scope);
+        if (ischar (aggrFcn))
+          errmsg = aggrFcn;
+          return;
+        endif
+
+        ## Process each unstacked variable
+        for i = 1:ncols
+          UvarTable.VariableValues{i} = mcvec;
+          ix = strcmp (IvarNames{i}, IvarValues);
+          if (nrows == 1)
+            aggrVal = aggrFcn (vvals(ix, :));
+            UvarTable.VariableValues{i} = aggrVal;
+            CixRows = 1;
+          else
+            CixRows = [];
+            for j = 1:nrows
+              tmpIvarNames = IvarValues(J == j);
+              ix = strcmp (IvarNames{i}, tmpIvarNames);
+              if (any (ix))
+                aggrVec = ismember (tmpIvarNames, IvarNames{i});
+                aggrVal = aggrFcn (vvals(J == j, :)(aggrVec,:));
+                UvarTable.VariableValues{i}(j,:) = aggrVal;
+              endif
+              CixRows = [CixRows, find(J == j, 1)];
+            endfor
+          endif
+        endfor
+
+        ## Keep corresponding rows from ConstantVariables
+        if (! isempty (CvarTable))
+          CvarTable = subsetrows (CvarTable, CixRows);
+        endif
+
+      else # multiple variables to unstack
+        nvars = numel (ixVars);
+        ncols = numel (newVarNames);
+        expVarNames = cell (1, nvars * ncols);
+        expVarTypes = expVarNames;
+
+        ## Create composite variable names and get vartypes
+        ij = 1;
+        for i = 1:nvars
+          vvals = VarsTable.VariableValues{i};
+          if (iscellstr (vvals))
+            vtype = 'cellstr';
+          else
+            vtype = class (vvals);
+          endif
+          for j = 1:ncols
+            expVarNames{ij} = sprintf ('%s_%s', VarsTable.VariableNames{i}, ...
+                                                newVarNames{j});
+            expVarTypes{ij} = vtype;
+            ij++;
+          endfor
+        endfor
+
+        ## Handle variable naming rule
+        if (strcmpi (rule, 'modify'))
+          for i = 1:numel (expVarNames)
+            if (! isvarname (expVarNames{i}))
+              expVarNames{i} = matlab.lang.makeValidName (expVarNames{i});
+            endif
+          endfor
+        elseif (! strcmpi (rule, 'preserve'))
+          errmsg = "invalid input for 'VariableNamingRule'.";
+          return;
+        endif
+
+        ## Create table for each unstacked variable
+        UvarTable = table ('Size', [nrows, ncols*nvars], ...
+                           'VariableTypes', expVarTypes, ...
+                           'VariableNames', expVarNames);
+
+        ## Copy descriptions and units to unstacked variables
+        VD = {};
+        VU = {};
+        for i = 1:nvars
+          vd = this.VariableDescriptions{ixVars(i)};
+          VD = [VD, repmat({vd}, 1, ncols)];
+          vu = this.VariableUnits{ixVars(i)};
+          VU = [VU, repmat({vu}, 1, ncols)];
+        endfor
+        UvarTable.VariableDescriptions = VD;
+        UvarTable.VariableUnits = VU;
+
+        ## Replicate each unstacked variable's variable-scoped custom properties
+        ## onto its new columns (MATLAB copies them); table-scoped properties
+        ## are carried by the constant and grouping variables through the final
+        ## horzcat that assembles the output.
+        if (! isempty (this.CustomProperties))
+          cpNames = customPropsOfType (this, 'variable');
+          for ci = 1:numel (cpNames)
+            blk = [];
+            for i = 1:nvars
+              srcval = this.CustomProperties.(cpNames{ci})(ixVars(i));
+              blk = [blk, repmat(srcval, 1, ncols)];
+            endfor
+            UvarTable.CustomProperties.(cpNames{ci}) = blk;
+            UvarTable.CustomPropTypes.(cpNames{ci}) = 'variable';
+          endfor
+        endif
+
+        ## Process each separate variable to be unstacked
+        vi = 1;
+        for v = 1:nvars
+          ## Get values of selected variable
+          vvals = VarsTable.VariableValues{v};
+
+          ## Add type-specific NaN values and handle multicolumn variables.
+          ## Resolve the aggregation per variable into THISAGGR so that the
+          ## original AGGRFCN (or its default placeholder) is not overwritten
+          ## between variables of different types.
+          [mcvec, thisAggr] = tabular.get_default_aggrFcn (vvals, nrows, ...
+                                                           aggrFcn, scope);
+          if (ischar (thisAggr))
+            errmsg = thisAggr;
+            return;
+          endif
+
+          ## Process each unstacked variable
+          for i = 1:ncols
+            UvarTable.VariableValues{vi} = mcvec;
+            ix = strcmp (IvarNames{i}, IvarValues);
+            if (nrows == 1)
+              aggrVal = thisAggr (vvals(ix, :));
+              UvarTable.VariableValues{vi} = aggrVal;
+              CixRows = 1;
+            else
+              CixRows = [];
+              for j = 1:nrows
+                tmpIvarNames = IvarValues(J == j);
+                ix = strcmp (IvarNames{i}, tmpIvarNames);
+                if (any (ix))
+                  aggrVec = ismember (tmpIvarNames, IvarNames{i});
+                  aggrVal = thisAggr (vvals(J == j, :)(aggrVec,:));
+                  UvarTable.VariableValues{vi}(j,:) = aggrVal;
+                endif
+                if (v == 1)
+                  CixRows = [CixRows, find(J == j, 1)];
+                endif
+              endfor
+            endif
+            vi++;
+          endfor
+        endfor
+
+        ## Keep corresponding rows from ConstantVariables
+        if (! isempty (CvarTable))
+          CvarTable = subsetrows (CvarTable, CixRows);
+        endif
+      endif
+
+      ## Merge output table and return index
+      tbl = [GvarTable, CvarTable, UvarTable];
+      idxA = rowIdx;
+
+    endfunction
+
     ## The body behind 'inner2outer' on both classes.  Returns an errmsg body
     ## (empty on success) for the caller to raise under its own name.  The
     ## result is of the calling class, keeping its rows and their labels; only
@@ -7663,6 +8095,151 @@ classdef (Abstract) tabular
         leftProxy = [leftProxy, lp];
         rightProxy = [rightProxy, rp];
       endfor
+    endfunction
+
+    ## Return a logical mask, the same size as a table variable V, that flags
+    ## the missing entries.  Used by 'fillmissing'.  Char arrays have no
+    ## standard missing value and nested tables are treated as non-missing.
+    ## Expand the 'constant' fill value into a 1-by-NVARS cell, one value per
+    ## targeted variable (scalar broadcast, per-variable vector, or per-variable
+    ## cell).  Used by 'fillmissing'.
+    function [mcvec, aggrFcn] = get_default_aggrFcn (vvals, nrows, ...
+                                                     aggrFcn, scope)
+      ## Get columns of stacked variable
+      vcols = size (vvals, 2);
+      ## Handle each specific data type
+      if (any (isa (vvals, {'single', 'double'})))
+        mcvec =  NaN (nrows, vcols, 'like', vvals);
+        if (isempty (aggrFcn))  # add default aggrevation function
+          aggrFcn = @sum;
+        else  # check that it produces correct output
+          tmpval = 1:5;
+          try
+            tmpval = aggrFcn (tmpval);
+          catch
+            aggrFcn = strcat ("invalid 'AggregationFunction'", ...
+                              " for numeric data.");
+          end_try_catch
+          if (! isscalar (tmpval))
+            aggrFcn = strcat ("'AggregationFunction'", ...
+                              " must return a scalar value.");
+          endif
+        endif
+      elseif (isnumeric (vvals))  # integer types have no missing value, use 0
+        mcvec =  zeros (nrows, vcols, 'like', vvals);
+        if (isempty (aggrFcn))  # add default aggrevation function
+          aggrFcn = @sum;
+        else  # check that it produces correct output
+          tmpval = 1:5;
+          try
+            tmpval = aggrFcn (tmpval);
+          catch
+            aggrFcn = strcat ("invalid 'AggregationFunction'", ...
+                              " for numeric data.");
+          end_try_catch
+          if (! isscalar (tmpval))
+            aggrFcn = strcat ("'AggregationFunction'", ...
+                              " must return a scalar value.");
+          endif
+        endif
+      elseif (isa (vvals, 'calendarDuration'))
+        mcvec =  repmat (calendarDuration ([0, 0, 0]), nrows, vcols);
+        if (isempty (aggrFcn))  # add default aggrevation function
+          aggrFcn = @unique;
+        else  # check that it produces correct output
+          tmpval = calendarDuration (1:5, 0, 0);
+          try
+            tmpval = aggrFcn (tmpval);
+          catch
+            aggrFcn = strcat ("invalid 'AggregationFunction'", ...
+                              " for calendarDuration data.");
+          end_try_catch
+          if (! isscalar (tmpval))
+            aggrFcn = strcat ("'AggregationFunction'", ...
+                              " must return a scalar value.");
+          endif
+        endif
+      elseif (isa (vvals, 'duration'))
+        mcvec =  repmat (duration ([0, 0, 0]), nrows, vcols);
+        if (isempty (aggrFcn))  # add default aggrevation function
+          aggrFcn = @unique;
+        else  # check that it produces correct output
+          tmpval = duration (1:5, 0, 0);
+          try
+            tmpval = aggrFcn (tmpval);
+          catch
+            aggrFcn = strcat ("invalid 'AggregationFunction'", ...
+                              " for duration data.");
+          end_try_catch
+          if (! isscalar (tmpval))
+            aggrFcn = strcat ("'AggregationFunction'", ...
+                              " must return a scalar value.");
+          endif
+        endif
+      elseif (islogical (vvals))
+        mcvec =  false (nrows, vcols);
+        if (isempty (aggrFcn))  # add default aggrevation function
+          aggrFcn = @unique;
+        else  # check that it produces correct output
+          tmpval = [false, false, true, true, false];
+          try
+            tmpval = aggrFcn (tmpval);
+          catch
+            aggrFcn = strcat ("invalid 'AggregationFunction'", ...
+                              " for logical data.");
+          end_try_catch
+          if (! isscalar (tmpval))
+            aggrFcn = strcat ("'AggregationFunction'", ...
+                              " must return a scalar value.");
+          endif
+        endif
+      elseif (isa (vvals, 'categorical'))
+        mcvec =  repmat (categorical (NaN), nrows, vcols);
+        if (isempty (aggrFcn))  # add default aggrevation function
+          aggrFcn = @unique;
+        else  # check that it produces correct output
+          tmpval = categorical (1:5);
+          try
+            tmpval = aggrFcn (tmpval);
+          catch
+            aggrFcn = strcat ("invalid 'AggregationFunction'", ...
+                              " for categorical data.");
+          end_try_catch
+          if (! isscalar (tmpval))
+            aggrFcn = strcat ("'AggregationFunction'", ...
+                              " must return a scalar value.");
+          endif
+        endif
+      else  # all other data types (string, cellstr, datetime, ...)
+        if (iscellstr (vvals))
+          vt = 'cellstr';
+        else
+          vt = class (vvals);
+        endif
+        tmpl = table ('Size', [nrows, 1], 'VariableTypes', {vt});
+        ## Inside the class a dot reads a property, so the column is taken
+        ## from where it is stored rather than by its name.
+        mcvec = repmat (tmpl.VariableValues{1}, 1, vcols);
+        if (isempty (aggrFcn))  # add default aggrevation function
+          aggrFcn = @unique;
+        endif
+      endif
+
+      ## Enforce a scalar aggregation result, erroring on e.g. conflicting
+      ## non-numeric values under the default @unique, matching MATLAB.
+      if (! ischar (aggrFcn))
+        baseFcn = aggrFcn;
+        aggrFcn = @(x) tabular.enforce_scalar_aggr (baseFcn (x), scope);
+      endif
+    endfunction
+
+    ## Error out when an unstack aggregation function returns a non-scalar
+    ## value.
+    function val = enforce_scalar_aggr (val, scope)
+      if (size (val, 1) > 1)
+        error (strcat ("%s: 'AggregationFunction' must return", ...
+                       " a scalar value."), scope);
+      endif
     endfunction
 
     ## Build the cell array of input arguments passed to FUNC for the rows
