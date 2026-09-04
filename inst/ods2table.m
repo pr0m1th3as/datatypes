@@ -43,12 +43,13 @@
 ## application) the variable types are inferred from the cell value types and
 ## the variables are named @qcode{Var1}, @qcode{Var2}, and so on.
 ##
-## The following round-trip limitations apply, mirroring @code{csv2table}:
-## @code{calendarDuration} and @code{categorical} variables are returned as cell
-## arrays of character vectors (their values are not reconstructed), missing
-## @code{string} values are read back as empty strings, and datetime and
-## duration display formats are not preserved, although the values themselves
-## are exact.
+## A @code{datetime} or @code{duration} variable is restored exactly, along
+## with its @qcode{Format} and, for a zone-aware @code{datetime}, its
+## @qcode{TimeZone}.  The following round-trip limitations apply, mirroring
+## @code{csv2table}: @code{calendarDuration} and @code{categorical} variables
+## are returned as cell arrays of character vectors (their values are not
+## reconstructed), and missing @code{string} values are read back as empty
+## strings.
 ##
 ## @end deftypefn
 
@@ -191,14 +192,23 @@ function v = ods_cell2var (C, VT, T)
       v = cast (M, T);
     endif
   elseif (strncmp (T, 'datetime', 8))
-    ## A zone-aware datetime carries its TimeZone after 'datetime '.
+    ## A zone-aware datetime carries its TimeZone after 'datetime ' and its
+    ## display format after a '|'.
+    [T, dispfmt] = __typefmt__ (T);
     tz = '';
     if (numel (T) > 9)
       tz = T(10:end);
     endif
-    v = ods_iso2datetime (C, tz);
-  elseif (strcmp (T, 'duration'))
-    v = ods_iso2duration (C);
+    v = __iso2dt__ (C, tz);
+    if (! isempty (dispfmt))
+      v.Format = dispfmt;
+    endif
+  elseif (strncmp (T, 'duration', 8))
+    [~, dispfmt] = __typefmt__ (T);
+    v = __iso2dur__ (C);
+    if (! isempty (dispfmt))
+      v.Format = dispfmt;
+    endif
   elseif (strcmp (T, 'string'))
     v = string (ods_column_strings (C, VT));
   elseif (strcmp (T, 'calendarDuration'))
@@ -238,57 +248,6 @@ function S = ods_column_strings (C, VT)
   endfor
 endfunction
 
-## Parse an ISO 8601 data block into a datetime array; empty cells become NaT.
-## A non-empty TZ restores the datetime's TimeZone (the ISO strings are the
-## wall-clock time in that zone).
-function dt = ods_iso2datetime (C, tz = '')
-  sz = size (C);
-  Y = nan (sz);  Mo = nan (sz);  D = nan (sz);
-  h = nan (sz);  mi = nan (sz);  s = nan (sz);
-  for i = 1:numel (C)
-    str = C{i};
-    if (ischar (str) && ! isempty (str))
-      val = sscanf (str, "%d-%d-%dT%d:%d:%f");
-      if (numel (val) == 6)
-        Y(i) = val(1);  Mo(i) = val(2);  D(i) = val(3);
-        h(i) = val(4);  mi(i) = val(5);  s(i) = val(6);
-      endif
-    endif
-  endfor
-  if (isempty (tz))
-    dt = datetime (Y, Mo, D, h, mi, s);   # NaN components yield NaT
-  else
-    dt = datetime (Y, Mo, D, h, mi, s, 'TimeZone', tz);
-  endif
-endfunction
-
-## Parse an ISO 8601 duration block (PTnHnMnS) into a duration array; empty
-## cells become NaN durations.
-function du = ods_iso2duration (C)
-  tot = nan (size (C));
-  for i = 1:numel (C)
-    str = C{i};
-    if (ischar (str) && ! isempty (str))
-      neg = (str(1) == '-');
-      if (neg)
-        str(1) = [];
-      endif
-      tk = regexp (str, '^PT([\d.]+)H([\d.]+)M([\d.]+)S$', 'tokens');
-      if (! isempty (tk))
-        H = str2double (tk{1}{1});
-        M = str2double (tk{1}{2});
-        S = str2double (tk{1}{3});
-        val = H * 3600 + M * 60 + S;
-        if (neg)
-          val = -val;
-        endif
-        tot(i) = val;
-      endif
-    endif
-  endfor
-  du = seconds (tot);                   # NaN yields a missing duration
-endfunction
-
 ## Foreign-file fallback: no metadata sheet, so infer each column's type from
 ## its cell value types and name the variables Var1, Var2, ...
 function tbl = ods_autodetect (data, vtype)
@@ -310,9 +269,9 @@ function tbl = ods_autodetect (data, vtype)
       case 'boolean'
         varValues{c} = logical (ods_column_numeric (data(:,c)));
       case 'date'
-        varValues{c} = ods_iso2datetime (data(:,c));
+        varValues{c} = __iso2dt__ (data(:,c));
       case 'time'
-        varValues{c} = ods_iso2duration (data(:,c));
+        varValues{c} = __iso2dur__ (data(:,c));
       otherwise
         varValues{c} = ods_column_strings (data(:,c), vtype(:,c));
     endswitch
@@ -397,6 +356,48 @@ endfunction
 %!   R = ods2table (fn);
 %!   assert_equal (class (R.flag), 'logical');
 %!   assert_equal (R.flag, [true; false; true]);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Round-trip: a double is restored bit for bit
+%!test
+%! fn = [tempname() '.fods'];
+%! x = [pi; 0.1; realmin; eps; 1e308; -1/3];
+%! T = table (x, 'VariableNames', {'v'});
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   R = ods2table (fn);
+%!   assert_equal (R.v, x);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Round-trip: a datetime keeps its display format
+%!test
+%! fn = [tempname() '.fods'];
+%! d = datetime ({'2020-01-02 03:04:05'; '2021-03-04 05:06:07'});
+%! d.Format = 'dd/MM/yyyy';
+%! T = table (d, 'VariableNames', {'v'});
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   R = ods2table (fn);
+%!   assert_equal (isequaln (R.v, d), true);
+%!   assert_equal (R.v.Format, 'dd/MM/yyyy');
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Round-trip: a duration keeps its display format
+%!test
+%! fn = [tempname() '.fods'];
+%! u = hours ([1; 2]);
+%! T = table (u, 'VariableNames', {'v'});
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   R = ods2table (fn);
+%!   assert_equal (isequaln (R.v, u), true);
+%!   assert_equal (R.v.Format, 'h');
 %! unwind_protect_cleanup
 %!   delete (fn);
 %! end_unwind_protect

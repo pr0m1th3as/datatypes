@@ -21,6 +21,7 @@ this program; if not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <vector>
 #include <fstream>
+#include <cstdlib>
 #include <cstring>
 #include <stdint.h>
 #include <octave/oct.h>
@@ -30,12 +31,29 @@ this program; if not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 
+// Write the shortest decimal string that reads back as exactly the same
+// double.  15 significant digits suffice for most values and 17 always do, so
+// a value is written with the fewest digits that survive the read.
+static int
+shortest_double (char *buf, size_t n, double v)
+{
+  int cx = snprintf (buf, n, "%.15g", v);
+  if (strtod (buf, nullptr) != v)
+    {
+      cx = snprintf (buf, n, "%.16g", v);
+      if (strtod (buf, nullptr) != v)
+        cx = snprintf (buf, n, "%.17g", v);
+    }
+  return cx;
+}
+
 static const char *ODS_MIMETYPE =
   "application/vnd.oasis.opendocument.spreadsheet";
 
 // Write a numeric <table:table-cell>: integer scalars keep their exact digits
 // (a double cannot hold the full 64-bit range; the reader restores the exact
-// class from the metadata sheet), everything else prints with %.15g.  NaN and
+// class from the metadata sheet), everything else prints the shortest
+// decimal that reads back as the same double.  NaN and
 // empty produce a bare, value-less cell (i.e. a missing value).
 static void
 write_float (pugi::xml_node &cell, const octave_value &ov)
@@ -59,7 +77,7 @@ write_float (pugi::xml_node &cell, const octave_value &ov)
     if (isnan (value))
       return;                           // NaN -> missing (bare cell)
     char tmp[32];
-    snprintf (tmp, 32, "%.15g", value);
+    shortest_double (tmp, 32, value);
     cell.append_attribute ("office:value-type") = "float";
     cell.append_attribute ("office:value") = tmp;
     cell.append_child ("text:p").text ().set (tmp);
@@ -174,7 +192,7 @@ display_len (const octave_value &ov, const string &vt)
       if (isnan (v))
         return 0;
       char tmp[32];
-      return snprintf (tmp, 32, "%.15g", v);
+      return shortest_double (tmp, 32, v);
     }
     return 0;
   }

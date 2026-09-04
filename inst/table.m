@@ -747,8 +747,11 @@ classdef table < tabular
     ## text.
     ##
     ## @item
-    ## @code{datetime}, @code{duration}, @code{calendarDuration}, and
-    ## @code{categorical} variables are written as their display strings.
+    ## @code{datetime} and @code{duration} variables are written in ISO 8601
+    ## form, which is exact whatever their display format; the format itself is
+    ## recorded alongside the variable type, so that it is restored on read.
+    ## @code{calendarDuration} and @code{categorical} variables are written as
+    ## their display strings.
     ##
     ## @item
     ## A multicolumn variable is split into consecutive columns that share the
@@ -769,14 +772,16 @@ classdef table < tabular
     ## Note the following round-trip limitations when reading the file back
     ## with @code{csv2table}: @code{calendarDuration} and @code{categorical}
     ## variables are returned as cell arrays of character vectors (their values
-    ## are not reconstructed), missing @code{string} values are read back as
-    ## empty strings, and datetime and duration display formats are not
-    ## preserved, although the values themselves are exact.
+    ## are not reconstructed), and missing @code{string} values are read back as
+    ## empty strings.
     ##
     ## @end deftypefn
     function table2csv (this, file)
       file = char (cellstr (file));
-      [V, N, T, D, U] = table2cellarrays (this);
+      ## A datetime or duration is written in its ISO 8601 form rather than as
+      ## its display string: a display format may round or omit components, and
+      ## a day-first one is indistinguishable from a month-first one on read.
+      [V, N, T, D, U] = table2cellarrays (this, 'iso');
       ## Get columns for final cell array
       Ccols = size (V, 2);
       ## Get rows for variable types, names, descriptions, and units
@@ -917,9 +922,8 @@ classdef table < tabular
     ## Nested tables and structures are not supported and raise an error.  Note
     ## the following round-trip limitations when reading the file back with
     ## @code{ods2table}: @code{calendarDuration} and @code{categorical}
-    ## variables are returned as cell arrays of character vectors (their values
-    ## are not reconstructed), and datetime and duration display formats are not
-    ## preserved, although the values themselves are exact.
+    ## variables are returned as cell arrays of character vectors and their
+    ## values are not reconstructed.
     ##
     ## @end deftypefn
     function table2ods (this, file, varargin)

@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License along with
 this program; if not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
 #include <fstream>
 #include <sstream>
 #include <stdint.h>
@@ -26,6 +27,22 @@ this program; if not, see <http://www.gnu.org/licenses/>.
 #include <octave/Cell.h>
 
 using namespace std;
+
+// Write the shortest decimal string that reads back as exactly the same
+// double.  15 significant digits suffice for most values and 17 always do, so
+// a value is written with the fewest digits that survive the read.
+static int
+shortest_double (char *buf, size_t n, double v)
+{
+  int cx = snprintf (buf, n, "%.15g", v);
+  if (strtod (buf, nullptr) != v)
+    {
+      cx = snprintf (buf, n, "%.16g", v);
+      if (strtod (buf, nullptr) != v)
+        cx = snprintf (buf, n, "%.17g", v);
+    }
+  return cx;
+}
 
 DEFUN_DLD (__table2csv__, args, nargout,
            "-*- texinfo -*-\n \
@@ -138,7 +155,7 @@ This is a helper IO function for the @qcode{table2csv} method of the \
         else
         {
           char tmp[32];
-          int cx = snprintf(tmp, 32, "%.15g", value);
+          shortest_double (tmp, 32, value);
           word += tmp;
         }
       }

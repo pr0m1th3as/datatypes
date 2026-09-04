@@ -7386,12 +7386,16 @@ classdef (Abstract) tabular
           endfor
         elseif (isa (var_V, 'datetime'))
           ## Carry a non-empty TimeZone in the type string ('datetime <tz>') so
-          ## the house readers can restore a zone-aware datetime.
+          ## the house readers can restore a zone-aware datetime, and the
+          ## display format after a '|', so that it survives the round trip.
           tz = var_V.TimeZone;
           if (isempty (tz))
             dttype = 'datetime';
           else
             dttype = ['datetime ', tz];
+          endif
+          if (! isempty (var_V.Format))
+            dttype = [dttype, '|', var_V.Format];
           endif
           for col = 1:ncols
             if (strcmp (fmt, 'iso'))
@@ -7405,6 +7409,10 @@ classdef (Abstract) tabular
             U = [U, VU(ix)];
           endfor
         elseif (isa (var_V, 'duration'))
+          dutype = 'duration';
+          if (! isempty (var_V.Format))
+            dutype = ['duration|', var_V.Format];
+          endif
           for col = 1:ncols
             if (strcmp (fmt, 'iso'))
               V = [V, duration2iso(var_V(:,col))];
@@ -7412,7 +7420,7 @@ classdef (Abstract) tabular
               V = [V, cellstr(var_V(:,col))];
             endif
             N = [N, this.VariableNames{ix}];
-            T = [T, 'duration'];
+            T = [T, dutype];
             D = [D, VD(ix)];
             U = [U, VU(ix)];
           endfor
@@ -7832,18 +7840,18 @@ classdef (Abstract) tabular
     ## (text, categorical, calendarDuration, cell) is written as a 'string'.
     function vt = ods_value_type (typestr)
       ## A zone-aware datetime carries its TimeZone in the type
-      ## ('datetime <tz>').
+      ## ('datetime <tz>'), and either carries its display format after a '|'.
       if (strncmp (typestr, 'datetime', 8))
         vt = 'date';
+        return;
+      endif
+      if (strncmp (typestr, 'duration', 8))
+        vt = 'time';
         return;
       endif
       switch (typestr)
         case 'logical'
           vt = 'boolean';
-        case 'datetime'
-          vt = 'date';
-        case 'duration'
-          vt = 'time';
         case {'double', 'single', 'int8', 'int16', 'int32', 'int64', ...
               'uint8', 'uint16', 'uint32', 'uint64'}
           vt = 'float';
@@ -9954,20 +9962,22 @@ function C = duration2iso (du)
 endfunction
 
 ## Format a seconds value for an ISO 8601 string: a two-digit integer when
-## whole, otherwise a fractional part (up to microseconds) with trailing zeros
-## trimmed.
+## whole, otherwise the shortest fraction that reads back as the same double, so
+## that a duration of any resolution survives the round trip.
 function str = iso_seconds (s)
   si = floor (s);
-  frac = round ((s - si) * 1e6);
-  if (frac >= 1e6)                       # rounded up to a whole second
-    si += 1;
-    frac = 0;
-  endif
-  if (frac == 0)
+  if (s == si)
     str = sprintf ("%02d", si);
-  else
-    fs = regexprep (sprintf ("%06d", frac), '0+$', '');
-    str = sprintf ("%02d.%s", si, fs);
+    return;
+  endif
+  for prec = 15:17
+    str = sprintf ("%.*g", prec, s);
+    if (str2double (str) == s)
+      break;
+    endif
+  endfor
+  if (si < 10)
+    str = ['0', str];
   endif
 endfunction
 

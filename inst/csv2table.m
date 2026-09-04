@@ -156,12 +156,13 @@
 ## @qcode{"uint16"}, @qcode{"uint32"}, and @qcode{"uint64"}.
 ## @end multitable
 ##
-## The following round-trip limitations apply when reading a file written by
-## @code{table2csv}: @code{calendarDuration} and @code{categorical} variables
-## are returned as cell arrays of character vectors (their values are not
-## reconstructed), missing @code{string} values are read back as empty strings,
-## and datetime and duration display formats are not preserved, although the
-## values themselves are exact.
+## A @code{datetime} or @code{duration} variable written by @code{table2csv} is
+## restored exactly, along with its @qcode{Format} and, for a zone-aware
+## @code{datetime}, its @qcode{TimeZone}.  The following round-trip limitations
+## apply when reading a file written by @code{table2csv}:
+## @code{calendarDuration} and @code{categorical} variables are returned as cell
+## arrays of character vectors (their values are not reconstructed), and missing
+## @code{string} values are read back as empty strings.
 ##
 ## @seealso{array2table, struct2table, table}
 ## @end deftypefn
@@ -425,26 +426,45 @@ function varValue = cell2var (C, T)
     warning ("csv2table: 'categorical' strings are not converted.");
     varValue = C;
   elseif (strncmp (T, "datetime", 8))
-    ## A zone-aware datetime carries its TimeZone after 'datetime '; the date
-    ## strings are the wall-clock time in that zone.
+    ## A zone-aware datetime carries its TimeZone after 'datetime ' and its
+    ## display format after a '|'; the date strings are the wall-clock time in
+    ## that zone.
+    [T, dispfmt] = __typefmt__ (T);
+    tz = '';
     tzargs = {};
     if (numel (T) > 9)
-      tzargs = {'TimeZone', T(10:end)};
+      tz = T(10:end);
+      tzargs = {'TimeZone', tz};
     endif
-    ## A 'NaT' token cannot be parsed alongside date strings (the format
-    ## cannot be inferred), so reconstruct missing entries explicitly.  This
-    ## mirrors how a 'NaN' token round-trips for a duration variable.
-    isNaT = strcmp (strtrim (C), 'NaT');
-    if (any (isNaT(:)))
-      varValue = NaT (size (C, 1), size (C, 2), tzargs{:});
-      if (! all (isNaT(:)))
-        varValue(! isNaT) = datetime (C(! isNaT), tzargs{:});
+    ## 'table2csv' writes ISO 8601; a file written by another program carries
+    ## whatever date strings it chose, which are parsed as they always were.
+    [varValue, isISO] = __iso2dt__ (C, tz);
+    if (! isISO)
+      ## A 'NaT' token cannot be parsed alongside date strings (the format
+      ## cannot be inferred), so reconstruct missing entries explicitly.  This
+      ## mirrors how a 'NaN' token round-trips for a duration variable.
+      isNaT = strcmp (strtrim (C), 'NaT');
+      if (any (isNaT(:)))
+        varValue = NaT (size (C, 1), size (C, 2), tzargs{:});
+        if (! all (isNaT(:)))
+          varValue(! isNaT) = datetime (C(! isNaT), tzargs{:});
+        endif
+      else
+        varValue = datetime (C, tzargs{:});
       endif
-    else
-      varValue = datetime (C, tzargs{:});
     endif
-  elseif (strcmp (T, "duration"))
-    varValue = duration (C);
+    if (! isempty (dispfmt))
+      varValue.Format = dispfmt;
+    endif
+  elseif (strncmp (T, "duration", 8))
+    [~, dispfmt] = __typefmt__ (T);
+    [varValue, isISO] = __iso2dur__ (C);
+    if (! isISO)
+      varValue = duration (C);
+    endif
+    if (! isempty (dispfmt))
+      varValue.Format = dispfmt;
+    endif
   elseif (strcmp (T, "string"))
     varValue = string (C);
   endif
