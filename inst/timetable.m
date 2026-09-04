@@ -1117,6 +1117,164 @@ classdef timetable < tabular
 
   endmethods
 
+################################################################################
+##                        **    Range Predicates    **                        ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'containsrange'    'overlapsrange'    'withinrange'                        ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{TF} =} containsrange (@var{tt}, @var{ref})
+    ## @deftypefnx {timetable} {[@var{TF}, @var{whichRows}] =} containsrange (@var{tt}, @var{ref})
+    ##
+    ## True when a timetable spans the whole of a range of times.
+    ##
+    ## @code{@var{TF} = containsrange (@var{tt}, @var{ref})} returns true when
+    ## every instant of @var{ref} lies inside the range of @var{tt}, that is
+    ## between its earliest and its latest row time, both included.  The row
+    ## times need be neither sorted nor unique, since only the two ends of the
+    ## range are read, and missing row times take no part in it.
+    ##
+    ## @var{ref} says what range is meant, in one of three ways.  A
+    ## @code{timerange} gives its own bounds, and says at each end whether the
+    ## bound itself belongs to the range.  A @code{timetable} gives the range
+    ## between its earliest and its latest row time, both ends included.  A
+    ## @code{datetime} or @code{duration} scalar gives a single instant.  A
+    ## reference whose times are of the other kind is refused: elapsed time
+    ## and a calendar cannot be compared.
+    ##
+    ## @code{[@var{TF}, @var{whichRows}] = containsrange (@dots{})} also
+    ## returns a column of logicals, one per row of @var{tt}, saying which of
+    ## its rows fall in @var{ref}.  That answer is the same for all three
+    ## range predicates and is independent of @var{TF}: rows may fall in a
+    ## range the timetable does not contain.
+    ##
+    ## A timetable whose row times are all missing has no range and answers
+    ## false, and so does a reference naming no instant, such as a @code{NaT}.
+    ##
+    ## @seealso{overlapsrange, withinrange, timerange, timetable}
+    ## @end deftypefn
+    function [TF, whichRows] = containsrange (this, ref)
+
+      if (nargin < 2)
+        error ("timetable.containsrange: not enough input arguments.");
+      endif
+      [R, errmsg] = rangeRef (ref, this.RowTimes);
+      if (! isempty (errmsg))
+        error ("timetable.containsrange: %s", errmsg);
+      endif
+      whichRows = R.whichRows;
+      [tlo, thi, spanOk] = timeSpan (this.RowTimes);
+      TF = spanOk && R.valid && R.hasLo && R.hasHi ...
+           && R.lo >= tlo && R.hi <= thi;
+
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{TF} =} overlapsrange (@var{tt}, @var{ref})
+    ## @deftypefnx {timetable} {[@var{TF}, @var{whichRows}] =} overlapsrange (@var{tt}, @var{ref})
+    ##
+    ## True when a timetable and a range of times have any instant in common.
+    ##
+    ## @code{@var{TF} = overlapsrange (@var{tt}, @var{ref})} returns true when
+    ## the range of @var{tt}, from its earliest to its latest row time, shares
+    ## at least one instant with @var{ref}.  Meeting at a single instant is
+    ## enough: a range that starts exactly at the last row time overlaps.
+    ##
+    ## Whether the ends themselves count is @var{ref}'s to say.  A
+    ## @code{timerange} that excludes its lower bound does not overlap a
+    ## timetable that reaches only as far as that bound.
+    ##
+    ## @var{ref} takes the same three forms as in @code{containsrange}: a
+    ## @code{timerange}, a @code{timetable} whose earliest and latest row
+    ## times give the range, or a @code{datetime} or @code{duration} scalar
+    ## naming one instant.
+    ##
+    ## @code{[@var{TF}, @var{whichRows}] = overlapsrange (@dots{})} also
+    ## returns a column of logicals saying which rows of @var{tt} fall in
+    ## @var{ref}.  A timetable can overlap a range without any of its rows
+    ## falling in it, the overlap being of the ranges and not of the rows.
+    ##
+    ## @seealso{containsrange, withinrange, timerange, timetable}
+    ## @end deftypefn
+    function [TF, whichRows] = overlapsrange (this, ref)
+
+      if (nargin < 2)
+        error ("timetable.overlapsrange: not enough input arguments.");
+      endif
+      [R, errmsg] = rangeRef (ref, this.RowTimes);
+      if (! isempty (errmsg))
+        error ("timetable.overlapsrange: %s", errmsg);
+      endif
+      whichRows = R.whichRows;
+      [tlo, thi, spanOk] = timeSpan (this.RowTimes);
+      if (! (spanOk && R.valid))
+        TF = false;
+        return
+      endif
+      above = ! R.hasLo || boundMet (thi, R.lo, R.closedLeft, 'above');
+      below = ! R.hasHi || boundMet (tlo, R.hi, R.closedRight, 'below');
+      TF = above && below;
+
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{TF} =} withinrange (@var{tt}, @var{ref})
+    ## @deftypefnx {timetable} {[@var{TF}, @var{whichRows}] =} withinrange (@var{tt}, @var{ref})
+    ##
+    ## True when the whole range of a timetable lies inside a range of times.
+    ##
+    ## @code{@var{TF} = withinrange (@var{tt}, @var{ref})} returns true when
+    ## every row time of @var{tt} lies inside @var{ref}, which is to say that
+    ## its earliest and its latest row time both do.
+    ##
+    ## Whether the ends themselves count is @var{ref}'s to say, and this is
+    ## where it tells.  A @code{timerange} is half open by default, excluding
+    ## the time it ends at, so a timetable whose last row falls exactly on
+    ## that time is @emph{not} within it; the same range built closed
+    ## contains that instant, and the answer turns true.
+    ##
+    ## @var{ref} takes the same three forms as in @code{containsrange}: a
+    ## @code{timerange}, a @code{timetable} whose earliest and latest row
+    ## times give the range, or a @code{datetime} or @code{duration} scalar
+    ## naming one instant.  A timetable is within a single instant only when
+    ## every row time it has is that instant.
+    ##
+    ## @code{[@var{TF}, @var{whichRows}] = withinrange (@dots{})} also returns
+    ## a column of logicals saying which rows of @var{tt} fall in @var{ref}.
+    ## When @var{TF} is true they are all true, this being the one predicate
+    ## for which the two answers agree.
+    ##
+    ## @seealso{containsrange, overlapsrange, timerange, timetable}
+    ## @end deftypefn
+    function [TF, whichRows] = withinrange (this, ref)
+
+      if (nargin < 2)
+        error ("timetable.withinrange: not enough input arguments.");
+      endif
+      [R, errmsg] = rangeRef (ref, this.RowTimes);
+      if (! isempty (errmsg))
+        error ("timetable.withinrange: %s", errmsg);
+      endif
+      whichRows = R.whichRows;
+      [tlo, thi, spanOk] = timeSpan (this.RowTimes);
+      if (! (spanOk && R.valid))
+        TF = false;
+        return
+      endif
+      above = ! R.hasLo || boundMet (tlo, R.lo, R.closedLeft, 'above');
+      below = ! R.hasHi || boundMet (thi, R.hi, R.closedRight, 'below');
+      TF = above && below;
+
+    endfunction
+
+  endmethods
+
   methods (Static)
 
     ## -*- texinfo -*-
@@ -1162,6 +1320,113 @@ endclassdef
 ## legitimate thing to give, a timetable with no rows being built from an
 ## empty vector.  A 'missing' is the sentinel because none of the arguments
 ## it stands in for can ever be one.
+## Resolve the second argument of a range predicate into the interval it
+## describes, and into the rows of the timetable that fall in it.  All three
+## predicates need the same values and differ only in how they compare that
+## interval with the span of the row times, so the reading is done once here.
+## 'valid' is false where the reference names no instant at all, which makes
+## every predicate false rather than vacuously true.
+function [R, errmsg] = rangeRef (ref, rowTimes)
+
+  R = struct ('valid', false, 'lo', [], 'hi', [], 'hasLo', false, ...
+              'hasHi', false, 'closedLeft', true, 'closedRight', true, ...
+              'whichRows', false (numel (rowTimes), 1));
+  errmsg = '';
+
+  ## A range knows its own bounds and its own closure, and it is the range
+  ## that refuses a bound of the wrong kind, exactly as it does when it is
+  ## used as a subscript.
+  if (isa (ref, 'timerange'))
+    [lo, hi, cl, cr] = interval (ref, rowTimes);
+    R.valid = true;
+    R.lo = lo;
+    R.hi = hi;
+    R.hasLo = ! isnumeric (lo);
+    R.hasHi = ! isnumeric (hi);
+    R.closedLeft = cl;
+    R.closedRight = cr;
+    R.whichRows(rowIndices (ref, rowTimes)) = true;
+    return
+  endif
+
+  if (isa (ref, 'timetable'))
+    other = ref.Properties.RowTimes;
+    if (! strcmp (class (other), class (rowTimes)))
+      errmsg = sprintf (strcat ("a timetable with %s row times cannot be", ...
+                                " compared against one with %s row times."), ...
+                        class (rowTimes), class (other));
+      return
+    endif
+    [lo, hi, ok] = timeSpan (other);
+    if (! ok)
+      return
+    endif
+  elseif ((isdatetime (ref) || isduration (ref)) && isscalar (ref))
+    if (! strcmp (class (ref), class (rowTimes)))
+      errmsg = sprintf (strcat ("a timetable with %s row times cannot be", ...
+                                " compared against a %s."), ...
+                        class (rowTimes), class (ref));
+      return
+    endif
+    if (ismissing (ref))
+      return
+    endif
+    lo = ref;
+    hi = ref;
+  else
+    errmsg = strcat ("REF must be a timetable, a timerange, or a datetime", ...
+                     " or duration scalar.");
+    return
+  endif
+
+  ## Both remaining forms name a closed interval, so the defaults stand.
+  R.valid = true;
+  R.lo = lo;
+  R.hi = hi;
+  R.hasLo = true;
+  R.hasHi = true;
+  R.whichRows = rowTimes >= lo & rowTimes <= hi;
+
+endfunction
+
+## The closed interval the row times themselves span.  Missing times are not
+## part of it, and a timetable left with none has no span to compare.
+function [lo, hi, ok] = timeSpan (rowTimes)
+
+  lo = [];
+  hi = [];
+  keep = ! ismissing (rowTimes);
+  ok = any (keep);
+  if (! ok)
+    return
+  endif
+  rt = rowTimes(keep);
+  lo = min (rt);
+  hi = max (rt);
+
+endfunction
+
+## Compare one end of a span against one bound, letting the bound say whether
+## standing on it counts.  'above' asks whether T reaches the lower bound B,
+## 'below' whether it stays under the upper one.
+function tf = boundMet (t, b, closed, side)
+
+  if (strcmp (side, 'above'))
+    if (closed)
+      tf = t >= b;
+    else
+      tf = t > b;
+    endif
+  else
+    if (closed)
+      tf = t <= b;
+    else
+      tf = t < b;
+    endif
+  endif
+
+endfunction
+
 function tf = wasGiven (x)
   tf = ! isa (x, 'missing');
 endfunction

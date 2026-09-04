@@ -1,0 +1,26 @@
+%!demo
+%! ## `withinrange` asks whether the whole of a timetable lies inside a range
+%! ## of times.  A `timerange` is half open by default, excluding the time it
+%! ## ends at, so a timetable whose last row falls exactly there is *not*
+%! ## within it.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! Load = [220; 245; 260; 255; 231; 219];
+%! TT = timetable (Load, 'RowTimes', t0 + hours (0:5)')
+%! withinrange (TT, timerange (t0, t0 + hours (5)))
+%!
+%! ## Close that same range and the last row is inside it.
+%! withinrange (TT, timerange (t0, t0 + hours (5), 'closed'))
+
+%!demo
+%! ## The three predicates answer three different questions about the same
+%! ## pair of ranges.  A range wider than the timetable is one the timetable
+%! ## lies within and one it does not contain.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([220; 245; 260], 'RowTimes', t0 + hours (0:2)', ...
+%!                 'VariableNames', {'Load'});
+%! R = timerange (t0 - hours (1), t0 + hours (9));
+%! containsrange (TT, R)
+%! overlapsrange (TT, R)
+%! withinrange (TT, R)

@@ -1,0 +1,34 @@
+%!demo
+%! ## `containsrange` asks whether a timetable spans the whole of a range of
+%! ## times.  A timetable's range runs from its earliest row time to its
+%! ## latest, so the question is about the two ends and not about the rows in
+%! ## between.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! Temp = [17.2; 18.9; 21.4; 22.0; 20.1; 18.3];
+%! Site = categorical ({'N'; 'N'; 'S'; 'S'; 'N'; 'S'});
+%! TT = timetable (Temp, Site, 'RowTimes', t0 + hours (0:5)')
+%! containsrange (TT, timerange (t0 + hours (1), t0 + hours (3)))
+%!
+%! ## A range reaching past the last reading is not one the timetable spans.
+%! containsrange (TT, timerange (t0 + hours (3), t0 + hours (8)))
+
+%!demo
+%! ## The second output says which rows fell inside the range.  It answers a
+%! ## different question from the first: an instant between two readings lies
+%! ## in the timetable's range while belonging to no row of it.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([17.2; 18.9; 21.4], 'RowTimes', t0 + hours (0:2)', ...
+%!                 'VariableNames', {'Temp'});
+%! [tf, whichRows] = containsrange (TT, t0 + minutes (90))
+
+%!demo
+%! ## Another timetable may stand for the range, in which case it is the range
+%! ## between that one's earliest and latest row times, both ends included.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! Wide = timetable ((1:12)', 'RowTimes', t0 + hours (0:11)');
+%! Narrow = timetable ((1:4)', 'RowTimes', t0 + hours (2:5)');
+%! containsrange (Wide, Narrow)
+%! containsrange (Narrow, Wide)
