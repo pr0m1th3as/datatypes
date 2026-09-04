@@ -254,11 +254,11 @@ classdef table < tabular
     ## only where the method has some to give, which the mapping methods do
     ## and the reducing ones do not; ROWIX names input rows and means nothing
     ## to a class whose labels do not follow them.
-    function out = assembleApply (this, vars, names, rowNames, rowIx)
-      if (isempty (rowNames))
+    function out = assembleApply (this, vars, names, rowLabels, rowIx)
+      if (isempty (rowLabels))
         out = table (vars{:}, 'VariableNames', names);
       else
-        out = table (vars{:}, 'VariableNames', names, 'RowNames', rowNames);
+        out = table (vars{:}, 'VariableNames', names, 'RowNames', rowLabels);
       endif
     endfunction
 
@@ -4622,109 +4622,9 @@ classdef table < tabular
       if (nargin < 2)
         print_usage ();
       endif
-      if (! is_function_handle (func))
-        error ("table.rowfun: FUNC must be a function handle.");
-      endif
-
-      ## Parse optional Name-Value paired arguments
-      optNames = {'InputVariables', 'GroupingVariables', ...
-                  'OutputVariableNames', 'NumOutputs', 'SeparateInputs', ...
-                  'ExtractCellContents', 'OutputFormat', 'ErrorHandler'};
-      dfValues = {[], [], [], [], true, false, 'auto', []};
-      [inVars, grpVars, outNames, numOut, sepIn, extractCell, outFmt, ...
-       errHandler] = parsePairedArguments (optNames, dfValues, varargin(:));
-      outFmt = tabular.check_output_format ('table.rowfun', outFmt);
-      if (! (isscalar (sepIn) && (islogical (sepIn) || isnumeric (sepIn))))
-        error ("table.rowfun: 'SeparateInputs' must be a logical scalar.");
-      endif
-      sepIn = logical (sepIn);
-      if (! (isscalar (extractCell)
-             && (islogical (extractCell) || isnumeric (extractCell))))
-        error ("table.rowfun: 'ExtractCellContents' must be a logical scalar.");
-      endif
-      extractCell = logical (extractCell);
-      if (! isempty (errHandler) && ! is_function_handle (errHandler))
-        error ("table.rowfun: 'ErrorHandler' must be a function handle.");
-      endif
-
-      ## Resolve grouping variables and input variables (default input is every
-      ## variable that is not a grouping variable).
-      if (isempty (grpVars))
-        gIx = [];
-      else
-        gIx = resolveVarRef (A, grpVars)(:)';
-      endif
-      if (isempty (inVars))
-        iIx = 1:width (A);
-        iIx(ismember (iIx, gIx)) = [];
-      else
-        iIx = resolveVarRef (A, inVars)(:)';
-      endif
-      if (isempty (iIx))
-        error ("table.rowfun: there are no variables to which to apply FUNC.");
-      endif
-
-      ## Determine the number of outputs requested from FUNC.
-      if (! isempty (numOut))
-        if (! (isnumeric (numOut) && isscalar (numOut) && numOut >= 0
-               && numOut == fix (numOut)))
-          error ("table.rowfun: 'NumOutputs' must be a nonnegative integer.");
-        endif
-        nout = numOut;
-        if (! isempty (outNames) && numel (cellstr (outNames)) != nout)
-          error (strcat ("table.rowfun: the number of", ...
-                         " 'OutputVariableNames' must equal 'NumOutputs'."));
-        endif
-      elseif (! isempty (outNames))
-        nout = numel (cellstr (outNames));
-      else
-        nout = 1;
-      endif
-
-      ## Build the output variable names.  Default names are 'Var<k>'; for
-      ## grouped output the numbering continues past the grouping variables and
-      ## the GroupCount column (so the first result is 'Var<ngroup+2>').
-      if (isempty (outNames))
-        if (isempty (gIx))
-          base = 0;
-        else
-          base = numel (gIx) + 1;
-        endif
-        resNames = arrayfun (@(k) sprintf ("Var%d", base + k), 1:nout, ...
-                             "UniformOutput", false);
-      else
-        resNames = cellstr (outNames)(:)';
-      endif
-
-      inCols = A.VariableValues(iIx);
-      if (isempty (gIx))
-        ## Ungrouped: apply FUNC to each row.
-        n = height (A);
-        res = cell (n, max (nout, 1));
-        for r = 1:n
-          rows = false (n, 1);
-          rows(r) = true;
-          args = build_row_args (inCols, rows, sepIn, extractCell);
-          res(r,:) = tabular.apply_func (func, errHandler, r, nout, args);
-        endfor
-        B = build_apply_result (A, 'table.rowfun', outFmt, res(:,1:nout), ...
-                                resNames, {}, {}, [], A.RowNames, []);
-      else
-        ## Grouped: apply FUNC to the rows of each group.
-        [G, ng, repRows, errmsg] = tabular.group_table_rows (A.VariableValues(gIx));
-        if (! isempty (errmsg))
-          error ("table.rowfun: %s", errmsg);
-        endif
-        res = cell (ng, max (nout, 1));
-        for g = 1:ng
-          rows = (G == g);
-          args = build_row_args (inCols, rows, sepIn, extractCell);
-          res(g,:) = tabular.apply_func (func, errHandler, g, nout, args);
-        endfor
-        [gcols, gcount] = tabular.group_output_cols (A.VariableValues(gIx), G, repRows);
-        B = build_grouped_apply_result (A, 'table.rowfun', outFmt, ...
-                                        res(:,1:nout), resNames, gcols, ...
-                                        A.VariableNames(gIx), gcount, []);
+      [B, errmsg] = rowfunResult (A, func, varargin);
+      if (! isempty (errmsg))
+        error ("table.rowfun: %s", errmsg);
       endif
     endfunction
 
@@ -7566,34 +7466,6 @@ function [v, errmsg] = pivot_cell_value (method, hasDV, dataVals, rows, ...
     endif
   else
     [v, errmsg] = gs_apply_method (method, dataVals(rows,:));
-  endif
-endfunction
-
-## Build the cell array of input arguments passed to FUNC for the rows selected
-## by the logical mask ROWS, taken from the input-variable values INCOLS (a cell
-## array of variable values).  When SEPIN is true each variable's selected rows
-## form a separate argument; otherwise they are horizontally concatenated into a
-## single argument.  When EXTRACTCELL is true the contents of cell-valued
-## variables are extracted.
-function args = build_row_args (inCols, rows, sepIn, extractCell)
-  vals = cell (1, numel (inCols));
-  for k = 1:numel (inCols)
-    col = inCols{k};
-    if (extractCell && iscell (col))
-      sub = col(rows);
-      if (numel (sub) == 1)
-        vals{k} = sub{1};
-      else
-        vals{k} = vertcat (sub{:});
-      endif
-    else
-      vals{k} = col(rows,:);
-    endif
-  endfor
-  if (sepIn)
-    args = vals;
-  else
-    args = {horzcat(vals{:})};
   endif
 endfunction
 

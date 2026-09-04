@@ -356,8 +356,9 @@ classdef timetable < tabular
     ## A timetable built from an apply method's output.  Each output row
     ## takes the row time of the input row ROWIX names it came from; with no
     ## index to go on every row takes the first row time, which is what a
-    ## whole-object reduction leaves behind.  ROWNAMES means nothing here.
-    function out = assembleApply (this, vars, names, rowNames, rowIx)
+    ## whole-object reduction leaves behind.  ROWLABELS means nothing here,
+    ## the row times following the index instead.
+    function out = assembleApply (this, vars, names, rowLabels, rowIx)
       if (isempty (vars))
         nrows = 0;
       else
@@ -2243,7 +2244,7 @@ classdef timetable < tabular
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'varfun'                                                                   ##
+## 'varfun'           'rowfun'                                                ##
 ##                                                                            ##
 ################################################################################
 
@@ -2305,6 +2306,86 @@ classdef timetable < tabular
       [B, errmsg] = varfunResult (A, func, varargin);
       if (! isempty (errmsg))
         error ("timetable.varfun: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{B} =} rowfun (@var{func}, @var{A})
+    ## @deftypefnx {timetable} {@var{B} =} rowfun (@var{func}, @var{A}, @var{Name}, @var{Value}, @dots{})
+    ##
+    ## Apply a function to each row of a timetable.
+    ##
+    ## @code{@var{B} = rowfun (@var{func}, @var{A})} applies the function
+    ## handle @var{func} to each row of the timetable @var{A} and returns the
+    ## results in the timetable @var{B}, which has one row for each row of
+    ## @var{A} and carries its row times.  By default the value of each
+    ## variable in the row is passed to @var{func} as a separate input
+    ## argument, and the output variables of @var{B} are named @qcode{Var1},
+    ## @qcode{Var2}, and so on.
+    ##
+    ## @code{@var{B} = rowfun (@var{func}, @var{A}, @var{Name}, @var{Value},
+    ## @dots{})} modifies the operation through the following
+    ## @var{Name}/@var{Value} pairs:
+    ##
+    ## @table @asis
+    ## @item @qcode{'InputVariables'}
+    ## The variables of @var{A} that are passed to @var{func}, given as
+    ## variable names, indices, a logical vector, or a function handle.  By
+    ## default every variable of @var{A} that is not a grouping variable is
+    ## used.
+    ##
+    ## @item @qcode{'GroupingVariables'}
+    ## One or more variables of @var{A} that define groups of rows, or the row
+    ## dimension name, which groups by the row times themselves.  @var{func}
+    ## is then applied once to each group, receiving the values of each input
+    ## variable across the rows of the group, and @var{B} has one row per
+    ## group, carrying the row time of the first row of the group.  Grouping
+    ## variables appear in @var{B} alongside a @qcode{GroupCount} variable;
+    ## the row times do not, being the row times of the result.  Rows with a
+    ## missing value in any grouping variable are omitted.
+    ##
+    ## @item @qcode{'OutputVariableNames'}
+    ## The names of the output variables of @var{B}, one per output of
+    ## @var{func}.
+    ##
+    ## @item @qcode{'NumOutputs'}
+    ## The number of output arguments to request from @var{func}.  It defaults
+    ## to the number of @qcode{'OutputVariableNames'} if those are given,
+    ## otherwise to @code{1}.
+    ##
+    ## @item @qcode{'SeparateInputs'}
+    ## A logical scalar.  When @code{true} (the default), the value of each
+    ## input variable is passed to @var{func} as a separate argument.  When
+    ## @code{false}, the values of the row are horizontally concatenated and
+    ## passed as a single argument.
+    ##
+    ## @item @qcode{'ExtractCellContents'}
+    ## A logical scalar.  When @code{true}, the contents of cell-valued
+    ## variables are extracted before being passed to @var{func}.  It defaults
+    ## to @code{false}.
+    ##
+    ## @item @qcode{'OutputFormat'}
+    ## One of @qcode{'table'} (the default, and also selected by
+    ## @qcode{'auto'}), which returns the results in a timetable;
+    ## @qcode{'uniform'}, which requires @var{func} to return a scalar and
+    ## returns them in an array; or @qcode{'cell'}, which returns them in a
+    ## cell array.
+    ##
+    ## @item @qcode{'ErrorHandler'}
+    ## A function handle called whenever @var{func} raises an error, receiving
+    ## a structure with fields @qcode{identifier}, @qcode{message} and
+    ## @qcode{index}, followed by the arguments @var{func} was called with.
+    ## Its outputs are used in place of the ones @var{func} did not return.
+    ## @end table
+    ##
+    ## @end deftypefn
+    function B = rowfun (func, A, varargin)
+      if (nargin < 2)
+        print_usage ();
+      endif
+      [B, errmsg] = rowfunResult (A, func, varargin);
+      if (! isempty (errmsg))
+        error ("timetable.rowfun: %s", errmsg);
       endif
     endfunction
 

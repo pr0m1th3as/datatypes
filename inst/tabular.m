@@ -380,10 +380,10 @@ classdef (Abstract) tabular
     ## An object of this class assembled from the output of an apply method:
     ## VARS holds the variable values and NAMES their names.  Each class takes
     ## the row labels from the argument that means something to it and ignores
-    ## the other: ROWNAMES is the cellstr a table carries, empty where the
-    ## result has none, and ROWIX indexes the input row each output row takes
-    ## its label from, empty where the caller has none to give.
-    function out = assembleApply (this, vars, names, rowNames, rowIx)
+    ## the other: ROWLABELS holds them in the class's own type, empty where
+    ## the result carries none, and ROWIX indexes the input row each output
+    ## row takes its label from, empty where the caller has none to give.
+    function out = assembleApply (this, vars, names, rowLabels, rowIx)
       error (strcat ("%s: subclass must implement", ...
                      " assembleApply."), class (this));
     endfunction
@@ -3319,6 +3319,139 @@ classdef (Abstract) tabular
       endif
     endfunction
 
+    ## The body behind 'rowfun' on both classes.  Returns an errmsg body
+    ## (empty on success) for the caller to raise under its own name.
+    function [B, errmsg] = rowfunResult (this, func, args_in)
+      B = [];
+      errmsg = '';
+      scope = sprintf ('%s.rowfun', class (this));
+      if (! is_function_handle (func))
+        errmsg = 'FUNC must be a function handle.';
+        return;
+      endif
+
+      ## Parse optional Name-Value paired arguments
+      optNames = {'InputVariables', 'GroupingVariables', ...
+                  'OutputVariableNames', 'NumOutputs', 'SeparateInputs', ...
+                  'ExtractCellContents', 'OutputFormat', 'ErrorHandler'};
+      dfValues = {[], [], [], [], true, false, 'auto', []};
+      [inVars, grpVars, outNames, numOut, sepIn, extractCell, outFmt, ...
+       errHandler] = parsePairedArguments (optNames, dfValues, args_in(:));
+      outFmt = tabular.check_output_format (scope, outFmt);
+      if (! (isscalar (sepIn) && (islogical (sepIn) || isnumeric (sepIn))))
+        errmsg = "'SeparateInputs' must be a logical scalar.";
+        return;
+      endif
+      sepIn = logical (sepIn);
+      if (! (isscalar (extractCell)
+             && (islogical (extractCell) || isnumeric (extractCell))))
+        errmsg = "'ExtractCellContents' must be a logical scalar.";
+        return;
+      endif
+      extractCell = logical (extractCell);
+      if (! isempty (errHandler) && ! is_function_handle (errHandler))
+        errmsg = "'ErrorHandler' must be a function handle.";
+        return;
+      endif
+
+      ## Resolve grouping variables and input variables (default input is
+      ## every variable that is not a grouping variable).
+      byLabels = false;
+      gIx = [];
+      if (! isempty (grpVars))
+        [gIx, byLabels] = resolveGroupRef (this, grpVars);
+      endif
+      grouped = ! isempty (gIx) || byLabels;
+      if (isempty (inVars))
+        iIx = 1:width (this);
+        iIx(ismember (iIx, gIx)) = [];
+      else
+        iIx = resolveVarRef (this, inVars)(:)';
+      endif
+      if (isempty (iIx))
+        errmsg = 'there are no variables to which to apply FUNC.';
+        return;
+      endif
+
+      ## Determine the number of outputs requested from FUNC.
+      if (! isempty (numOut))
+        if (! (isnumeric (numOut) && isscalar (numOut) && numOut >= 0
+               && numOut == fix (numOut)))
+          errmsg = "'NumOutputs' must be a nonnegative integer.";
+          return;
+        endif
+        nout = numOut;
+        if (! isempty (outNames) && numel (cellstr (outNames)) != nout)
+          errmsg = strcat ("the number of 'OutputVariableNames' must", ...
+                           " equal 'NumOutputs'.");
+          return;
+        endif
+      elseif (! isempty (outNames))
+        nout = numel (cellstr (outNames));
+      else
+        nout = 1;
+      endif
+
+      ## Build the output variable names.  Default names are 'Var<k>'; for
+      ## grouped output the numbering continues past the grouping variables
+      ## and the GroupCount column, so the first result is 'Var<ngroup+2>'.
+      if (isempty (outNames))
+        if (grouped)
+          base = numel (gIx) + 1;
+        else
+          base = 0;
+        endif
+        resNames = arrayfun (@(k) sprintf ("Var%d", base + k), 1:nout, ...
+                             "UniformOutput", false);
+      else
+        resNames = cellstr (outNames)(:)';
+      endif
+
+      inCols = this.VariableValues(iIx);
+      if (! grouped)
+        ## Ungrouped: apply FUNC to each row.  The result maps the input row
+        ## for row, so it carries the labels of the rows it was built from.
+        n = height (this);
+        res = cell (n, max (nout, 1));
+        for r = 1:n
+          rows = false (n, 1);
+          rows(r) = true;
+          args = tabular.build_row_args (inCols, rows, sepIn, extractCell);
+          res(r,:) = tabular.apply_func (func, errHandler, r, nout, args);
+        endfor
+        labels = {};
+        if (hasRowLabels (this))
+          labels = getRowLabels (this);
+        endif
+        B = build_apply_result (this, scope, outFmt, res(:,1:nout), ...
+                                resNames, {}, {}, [], labels, (1:n)');
+      else
+        ## Grouped: apply FUNC to the rows of each group.
+        grpCols = this.VariableValues(gIx);
+        if (byLabels)
+          labels = getRowLabels (this);
+          grpCols = [{labels}, grpCols];
+        endif
+        [G, ng, repRows, gerr] = tabular.group_table_rows (grpCols);
+        if (! isempty (gerr))
+          errmsg = gerr;
+          return;
+        endif
+        res = cell (ng, max (nout, 1));
+        for g = 1:ng
+          rows = (G == g);
+          args = tabular.build_row_args (inCols, rows, sepIn, extractCell);
+          res(g,:) = tabular.apply_func (func, errHandler, g, nout, args);
+        endfor
+        [gcols, gcount] = tabular.group_output_cols ( ...
+                              this.VariableValues(gIx), G, repRows);
+        B = build_grouped_apply_result (this, scope, outFmt, ...
+                                        res(:,1:nout), resNames, gcols, ...
+                                        this.VariableNames(gIx), gcount, ...
+                                        repRows);
+      endif
+    endfunction
+
     ## Assemble the output of an apply method from the R-by-C cell array of
     ## per-row (or per-group) results RES with output names OUTNAMES.  For
     ## grouped output the grouping columns GCOLS (named GNAMES) and the GCOUNT
@@ -3326,9 +3459,9 @@ classdef (Abstract) tabular
     ## the 'table', 'uniform', or 'cell' return format; CALLER names the method
     ## for error messages.
     function out = build_apply_result (this, caller, fmt, res, outNames, ...
-                                      gcols, gnames, gcount, rowNames, rowIx)
+                                      gcols, gnames, gcount, rowLabels, rowIx)
       if (nargin < 9)
-        rowNames = {};
+        rowLabels = {};
       endif
       if (nargin < 10)
         rowIx = [];
@@ -3347,7 +3480,13 @@ classdef (Abstract) tabular
             vars = [gcols, {gcount}, rescols];
             names = [gnames, {'GroupCount'}, outNames];
           endif
-          out = assembleApply (this, vars, names, rowNames, rowIx);
+          ## An index that does not describe the rows just built cannot
+          ## label them; the class falls back on what it does for a result
+          ## with no index at all.
+          if (! isempty (rowIx) && numel (rowIx) != size (rescols{1}, 1))
+            rowIx = [];
+          endif
+          out = assembleApply (this, vars, names, rowLabels, rowIx);
         case 'uniform'
           out = [];
           for c = 1:C
@@ -5218,6 +5357,34 @@ classdef (Abstract) tabular
         gcols{p} = grpCols{p}(repRows,:);
       endfor
       gcount = accumarray (G(! isnan (G)), 1, [ngroups, 1]);
+    endfunction
+
+    ## Build the cell array of input arguments passed to FUNC for the rows selected
+    ## by the logical mask ROWS, taken from the input-variable values INCOLS (a cell
+    ## array of variable values).  When SEPIN is true each variable's selected rows
+    ## form a separate argument; otherwise they are horizontally concatenated into a
+    ## single argument.  When EXTRACTCELL is true the contents of cell-valued
+    ## variables are extracted.
+    function args = build_row_args (inCols, rows, sepIn, extractCell)
+      vals = cell (1, numel (inCols));
+      for k = 1:numel (inCols)
+        col = inCols{k};
+        if (extractCell && iscell (col))
+          sub = col(rows);
+          if (numel (sub) == 1)
+            vals{k} = sub{1};
+          else
+            vals{k} = vertcat (sub{:});
+          endif
+        else
+          vals{k} = col(rows,:);
+        endif
+      endfor
+      if (sepIn)
+        args = vals;
+      else
+        args = {horzcat(vals{:})};
+      endif
     endfunction
 
     ## Return the name used to prefix 'varfun' output variables: the name of
