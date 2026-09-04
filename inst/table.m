@@ -4814,7 +4814,7 @@ classdef table < tabular
       ## (sorted last) when IncludeMissingGroups is true; IncludeEmptyGroups adds
       ## the unused categories of a categorical or binned grouping variable as
       ## empty groups.
-      [Grp, ng, gcols, errmsg] = gs_grouping (grpCols, incMiss, incEmpty);
+      [Grp, ng, gcols, errmsg] = tabular.gs_grouping (grpCols, incMiss, incEmpty);
       if (! isempty (errmsg))
         error ("table.groupsummary: %s", errmsg);
       endif
@@ -4900,78 +4900,10 @@ classdef table < tabular
       if (nargin < 2)
         print_usage ();
       endif
-
-      ## An optional GROUPBINS positional argument may precede the Name-Value
-      ## options; anything else after GROUPVARS must be a recognised option.
-      optNames = {'IncludeMissingGroups', 'IncludeEmptyGroups', 'IncludedEdge'};
-      hasGroupbins = false;
-      groupbins = [];
-      if (! isempty (varargin))
-        a = varargin{1};
-        isOpt = ((ischar (a) && isrow (a)) ...
-                 || (isa (a, 'string') && isscalar (a))) ...
-                && any (strcmpi (char (a), optNames));
-        if (! isOpt)
-          if (__groupbins__ ('is_spec', a))
-            hasGroupbins = true;
-            groupbins = a;
-            varargin = varargin(2:end);
-          else
-            error (strcat ("table.groupcounts: invalid argument; expected a", ...
-                           " GROUPBINS binning scheme or a Name-Value option."));
-          endif
-        endif
-      endif
-
-      ## Parse Name-Value options.
-      dfValues = {true, false, 'left'};
-      [incMiss, incEmpty, incEdge] = ...
-                  parsePairedArguments (optNames, dfValues, varargin(:));
-      if (! (isscalar (incMiss) && (islogical (incMiss) || isnumeric (incMiss))))
-        error (strcat ("table.groupcounts: 'IncludeMissingGroups' must be", ...
-                       " a logical scalar."));
-      endif
-      incMiss = logical (incMiss);
-      if (! (isscalar (incEmpty)
-             && (islogical (incEmpty) || isnumeric (incEmpty))))
-        error (strcat ("table.groupcounts: 'IncludeEmptyGroups' must be", ...
-                       " a logical scalar."));
-      endif
-      incEmpty = logical (incEmpty);
-      incEdge = tabular.check_included_edge ('table.groupcounts', incEdge);
-
-      ## Resolve grouping variables.
-      gIx = resolveVarRef (T, groupvars)(:)';
-      if (isempty (gIx))
-        error (strcat ("table.groupcounts: at least one grouping variable", ...
-                       " is required."));
-      endif
-
-      ## Bin the grouping variables when a GROUPBINS argument was given.
-      grpCols = T.VariableValues(gIx);
-      grpNames = T.VariableNames(gIx);
-      if (hasGroupbins)
-        [grpCols, grpNames, errmsg] = __groupbins__ ('bin', grpCols, ...
-                                     grpNames, groupbins, incEdge, 'groupcounts');
-        if (! isempty (errmsg))
-          error ("table.groupcounts: %s", errmsg);
-        endif
-      endif
-
-      ## Group the rows, treating missing grouping values as their own groups
-      ## (sorted last) when IncludeMissingGroups is true; IncludeEmptyGroups adds
-      ## the unused categories of a categorical or binned grouping variable as
-      ## empty groups.
-      [Grp, ng, gcols, errmsg] = gs_grouping (grpCols, incMiss, incEmpty);
+      [G, errmsg] = groupcountsResult (T, groupvars, varargin);
       if (! isempty (errmsg))
         error ("table.groupcounts: %s", errmsg);
       endif
-      gcount = accumarray (Grp(! isnan (Grp)), 1, [ng, 1]);
-      pcent = 100 * gcount / sum (gcount);
-
-      vars = [gcols, {gcount, pcent}];
-      names = [grpNames, {'GroupCount', 'Percent'}];
-      G = table (vars{:}, 'VariableNames', names);
     endfunction
 
     ## -*- texinfo -*-
@@ -5428,12 +5360,12 @@ classdef table < tabular
       ## Group the rows along each dimension.
       n = height (T);
       [rGid, nR, rLvlOf, rLevVals, ~, emsg] = ...
-              pivot_dimension (rowGcols, n, incMiss, incEmpty);
+              tabular.pivot_dimension (rowGcols, n, incMiss, incEmpty);
       if (! isempty (emsg))
         error ("table.pivot: %s", emsg);
       endif
       [cGid, nC, cLvlOf, cLevVals, cMissLvls, emsg] = ...
-              pivot_dimension (colGcols, n, incMiss, incEmpty);
+              tabular.pivot_dimension (colGcols, n, incMiss, incEmpty);
       if (! isempty (emsg))
         error ("table.pivot: %s", emsg);
       endif
@@ -6709,43 +6641,6 @@ function [methods, methNames, errmsg] = gs_normalise_methods (method)
   endfor
 endfunction
 
-## Group the rows of 'groupsummary'/'groupcounts' by the grouping-variable values
-## GRPCOLS (already binned when a GROUPBINS argument was given).  Returns G, the
-## n-by-1 group numbers (NaN for an excluded row), NG the number of groups, GCOLS
-## a 1-by-K cell of the typed grouping-variable output columns (one value per
-## group), and an errmsg body emitted by the caller.  When INCEMPTY is true the
-## unused categories of a categorical (or binned) grouping variable contribute
-## empty groups, built from the full level machinery; otherwise only the observed
-## groups are returned, in ascending grouping-value order with missing groups
-## last.
-function [G, ng, gcols, errmsg] = gs_grouping (grpCols, incMiss, incEmpty)
-  errmsg = '';
-  gcols = {};
-  K = numel (grpCols);
-  n = size (grpCols{1}, 1);
-  if (incEmpty)
-    [G, ng, lvlOf, levVals, ~, errmsg] = ...
-            pivot_dimension (grpCols, n, incMiss, true);
-    if (! isempty (errmsg))
-      G = []; ng = 0;
-      return;
-    endif
-    gcols = cell (1, K);
-    for j = 1:K
-      gcols{j} = levVals{j}(lvlOf(:,j), :);
-    endfor
-  else
-    [G, ng, repRows, errmsg] = tabular.gs_group_rows (grpCols, incMiss);
-    if (! isempty (errmsg))
-      return;
-    endif
-    gcols = cell (1, K);
-    for j = 1:K
-      gcols{j} = grpCols{j}(repRows, :);
-    endfor
-  endif
-endfunction
-
 ## Apply a single 'groupsummary' method M (a method-name char vector or a
 ## function handle) to the column slice X of one group, returning a row result V.
 ## Named methods omit missing values (except 'nummissing'); a function handle
@@ -6856,136 +6751,6 @@ function mask = gs_missing_mask (x)
     mask = isnan (x);
   else
     mask = false (size (x));
-  endif
-endfunction
-
-## Build the level structure of one 'pivot' grouping variable COL.  Returns IDX,
-## an n-by-1 vector of level indices (1..L) for the rows of COL (NaN for a row
-## holding a missing value when INCMISS is false, so that row is excluded from
-## every group), LEVVALS, a typed column vector with one representative value per
-## level used to build row labels and column names, MISSLVL, a 1-by-L logical
-## flagging the missing level, and an errmsg body (empty on success).  Levels are
-## the sorted unique values of COL; a categorical variable uses its category
-## order, and when INCEMPTY is true every category is a level even if unused in
-## the data.  A missing value forms one extra level, sorted last, when INCMISS.
-function [idx, levVals, missLvl, errmsg] = pivot_levels (col, incMiss, incEmpty)
-  idx = [];
-  levVals = [];
-  missLvl = [];
-  errmsg = '';
-  n = size (col, 1);
-  [p, miss, errmsg] = tabular.group_col_proxy (col);
-  if (! isempty (errmsg))
-    return;
-  endif
-  if (isa (col, 'categorical') && incEmpty)
-    ## Every category is a level, in category order; codes are the proxy.
-    cats = categories (col);
-    L = numel (cats);
-    idx = double (col)(:);
-    levVals = categorical (cats(:), cats, 'Ordinal', isordinal (col));
-    missLvl = false (1, L);
-  else
-    ## Observed levels only, sorted by proxy value ascending.
-    idx = NaN (n, 1);
-    keep = find (! miss);
-    if (isempty (keep))
-      levVals = col([], :);
-      L = 0;
-      missLvl = [];
-    else
-      [~, ia, ic] = unique (p(keep,:), "rows");
-      idx(keep) = ic;
-      levVals = col(keep(ia), :);
-      L = numel (ia);
-      missLvl = false (1, L);
-    endif
-  endif
-  ## A missing value forms one extra level, sorted last, when included.
-  if (any (miss))
-    if (incMiss)
-      L = L + 1;
-      idx(miss) = L;
-      mrow = find (miss, 1);
-      levVals = [levVals; col(mrow, :)];
-      missLvl = [missLvl, true];
-    else
-      idx(miss) = NaN;
-    endif
-  endif
-endfunction
-
-## Group the rows of one 'pivot' dimension (rows or columns) defined by the
-## grouping-variable columns GRPCOLS (a cell array, empty for an omitted
-## dimension).  N is the table height.  Returns GID, an n-by-1 group index per
-## row (NaN when the row is excluded), NG, the number of groups, LVLOF, an
-## ng-by-K matrix of per-variable level indices for each group, LEVVALS, a
-## 1-by-K cell of the per-variable typed level values from 'pivot_levels',
-## MISSLVLS, a 1-by-K cell of the per-variable missing-level logical flags, and
-## an errmsg body (empty on success).  When INCEMPTY is true the groups span the
-## full Cartesian product of the variables' levels (so unused combinations appear
-## as empty groups); otherwise only the observed combinations are kept, sorted in
-## ascending level order with the first variable varying slowest.
-function [gid, ng, lvlOf, levVals, missLvls, errmsg] = ...
-                              pivot_dimension (grpCols, n, incMiss, incEmpty)
-  errmsg = '';
-  K = numel (grpCols);
-  if (K == 0)
-    ## An omitted dimension is a single group holding every row.
-    gid = ones (n, 1);
-    ng = 1;
-    lvlOf = zeros (1, 0);
-    levVals = {};
-    missLvls = {};
-    return;
-  endif
-  idxAll = NaN (n, K);
-  levVals = cell (1, K);
-  missLvls = cell (1, K);
-  sizes = zeros (1, K);
-  for j = 1:K
-    [idx, lv, ml, errmsg] = pivot_levels (grpCols{j}, incMiss, incEmpty);
-    if (! isempty (errmsg))
-      gid = []; ng = 0; lvlOf = [];
-      return;
-    endif
-    idxAll(:,j) = idx;
-    levVals{j} = lv;
-    missLvls{j} = ml;
-    sizes(j) = size (lv, 1);
-  endfor
-  gid = NaN (n, 1);
-  if (incEmpty)
-    ## Full Cartesian product, first variable slowest (most significant).
-    ng = prod (sizes);
-    lvlOf = ones (ng, K);
-    period = 1;
-    for j = K:-1:1
-      lvlOf(:,j) = mod (floor ((0:ng-1)' / period), sizes(j)) + 1;
-      period = period * sizes(j);
-    endfor
-    valid = all (! isnan (idxAll), 2);
-    lin = zeros (n, 1);
-    period = 1;
-    for j = K:-1:1
-      col = idxAll(:,j);
-      col(isnan (col)) = 1;
-      lin = lin + (col - 1) * period;
-      period = period * sizes(j);
-    endfor
-    gid(valid) = lin(valid) + 1;
-  else
-    ## Observed combinations only, in ascending level order.
-    valid = all (! isnan (idxAll), 2);
-    if (! any (valid))
-      ng = 0;
-      lvlOf = zeros (0, K);
-      return;
-    endif
-    [u, ~, ic] = unique (idxAll(valid,:), "rows");
-    ng = size (u, 1);
-    lvlOf = u;
-    gid(valid) = ic;
   endif
 endfunction
 

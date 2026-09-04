@@ -2543,6 +2543,56 @@
 %! rt = datetime (2024, 1, 1) + hours (0:1)';
 %! grouptransform (timetable ([1; 2], 'RowTimes', rt), 'Time', 'bogus');
 
+## Test 'groupcounts' returns a table, the counts describing groups not rows
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2; 3; 4], categorical ({'a'; 'b'; 'a'; 'b'}), ...
+%!                 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'A', 'g'});
+%! G = groupcounts (TT, 'g');
+%! assert_equal (class (G), 'table');
+%! assert_equal (G.Properties.VariableNames, {'g', 'GroupCount', 'Percent'});
+%! assert_equal (G.GroupCount, [2; 2]);
+%! assert_equal (G.Percent, [50; 50]);
+
+## Test grouping by the row dimension name counts the row times
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2; 3], 'RowTimes', t0 + hours ([0 1 1])', ...
+%!                 'VariableNames', {'A'});
+%! G = groupcounts (TT, 'Time');
+%! assert_equal (G.Properties.VariableNames, {'Time', 'GroupCount', ...
+%!                                            'Percent'});
+%! assert_equal (G.GroupCount, [1; 2]);
+%! assert_equal (G.Time, [t0; t0 + hours(1)]);
+
+## Test 'IncludeMissingGroups' false drops the group of missing values
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2; 3], categorical ({'a'; ''; 'a'}), ...
+%!                 'RowTimes', t0 + hours (0:2)', ...
+%!                 'VariableNames', {'A', 'g'});
+%! assert_equal (height (groupcounts (TT, 'g')), 2);
+%! G = groupcounts (TT, 'g', 'IncludeMissingGroups', false);
+%! assert_equal (height (G), 1);
+%! assert_equal (G.GroupCount, 2);
+
+## Test 'IncludeEmptyGroups' true reports an unused category
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! g = categorical ({'hi'; 'lo'}, {'lo', 'mid', 'hi'}, 'Ordinal', true);
+%! TT = timetable ([1; 2], g, 'RowTimes', t0 + hours (0:1)', ...
+%!                 'VariableNames', {'A', 'g'});
+%! G = groupcounts (TT, 'g', 'IncludeEmptyGroups', true);
+%! assert_equal (height (G), 3);
+%! assert_equal (G.GroupCount, [1; 0; 1]);
+
+## Test the option validation is the timetable's own
+%!error <timetable.groupcounts: 'IncludeEmptyGroups' must be a logical scalar.> ...
+%! rt = datetime (2024, 1, 1) + hours (0:1)';
+%! TT = timetable ([1; 2], 'RowTimes', rt, 'VariableNames', {'A'});
+%! groupcounts (TT, 'Time', 'IncludeEmptyGroups', 'yes');
+
 ################################################################################
 ##                        **    Input validation    **                        ##
 ################################################################################
