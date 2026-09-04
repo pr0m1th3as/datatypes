@@ -3182,6 +3182,56 @@
 %!                 'VariableNames', {'A', 'g', 'B'});
 %! unstack (TT, 'A', {'g', 'B'});
 
+## Test 'pivot' returns a table, its rows and columns being groups
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2; 3; 4], categorical ({'a'; 'b'; 'a'; 'b'}), ...
+%!                 categorical ({'p'; 'p'; 'q'; 'q'}), ...
+%!                 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'v', 'g', 'k'});
+%! P = pivot (TT, 'Rows', 'g');
+%! assert_equal (class (P), 'table');
+%! assert_equal (P.Properties.VariableNames, {'g', 'count'});
+%! assert_equal (P.count, [2; 2]);
+
+## Test grouping down the page and across it at once
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2; 3; 4], categorical ({'a'; 'b'; 'a'; 'b'}), ...
+%!                 categorical ({'p'; 'p'; 'q'; 'q'}), ...
+%!                 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'v', 'g', 'k'});
+%! P = pivot (TT, 'Rows', 'g', 'Columns', 'k', 'DataVariable', 'v');
+%! assert_equal (P.Properties.VariableNames, {'g', 'p', 'q'});
+%! assert_equal (P.p, [1; 2]);
+%! assert_equal (P.q, [3; 4]);
+
+## Test the row dimension name groups down the page by the row times
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! rt = t0 + hours (0:3)';
+%! TT = timetable ([1; 2; 3; 4], 'RowTimes', rt, 'VariableNames', {'v'});
+%! P = pivot (TT, 'Rows', 'Time', 'DataVariable', 'v');
+%! assert_equal (class (P), 'table');
+%! assert_equal (P.Properties.VariableNames, {'Time', 'sum_v'});
+%! assert_equal (P.Time, rt);
+%! assert_equal (P.sum_v, [1; 2; 3; 4]);
+
+## Test the row dimension name names the variables when it groups across
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2], categorical ({'a'; 'b'}), ...
+%!                 'RowTimes', t0 + hours (0:1)', ...
+%!                 'VariableNames', {'v', 'g'});
+%! P = pivot (TT, 'Rows', 'g', 'Columns', 'Time', 'DataVariable', 'v');
+%! assert_equal (P.Properties.VariableNames{1}, 'g');
+%! assert_equal (numel (P.Properties.VariableNames), 3);
+
+## Test the validation is the timetable's own
+%!error <timetable.pivot: specify at least one of 'Columns' or 'Rows'.> ...
+%! rt = datetime (2024, 1, 1) + hours (0:1)';
+%! pivot (timetable ([1; 2], 'RowTimes', rt, 'VariableNames', {'v'}));
+
 ################################################################################
 ##                        **    Input validation    **                        ##
 ################################################################################

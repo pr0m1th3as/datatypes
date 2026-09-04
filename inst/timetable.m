@@ -2329,7 +2329,7 @@ classdef timetable < tabular
 ## 'varfun'           'rowfun'           'grouptransform'   'groupcounts'     ##
 ## 'groupsummary'     'groupfilter'      'stack'            'rows2vars'       ##
 ## 'join'             'innerjoin'        'outerjoin'        'inner2outer'     ##
-## 'findgroups'       'splitapply'       'unstack'                            ##
+## 'findgroups'       'splitapply'       'unstack'          'pivot'           ##
 ##                                                                            ##
 ################################################################################
 
@@ -3090,6 +3090,70 @@ classdef timetable < tabular
       [tt2, index, errmsg] = unstackResult (tt, vars, ivar, varargin);
       if (! isempty (errmsg))
         error ("timetable.unstack: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timetable} {@var{P} =} pivot (@var{tt}, @var{Name}, @var{Value}, @dots{})
+    ##
+    ## Summarise a timetable across two grouping dimensions.
+    ##
+    ## @code{@var{P} = pivot (@var{tt}, @qcode{'Rows'}, @var{rowvars},
+    ## @qcode{'Columns'}, @var{colvars})} groups the rows of @var{tt} by
+    ## @var{rowvars} down the page and by @var{colvars} across it, and returns
+    ## a @code{table} holding one row per row group and one variable per
+    ## column group.  At least one of the two must be given.
+    ##
+    ## Either may name the row dimension, which groups by the row times: as
+    ## @qcode{'Rows'} they become a variable of the result, and as
+    ## @qcode{'Columns'} they name its variables.  The result is a table and
+    ## not a timetable, its rows and columns being groups rather than
+    ## instants.
+    ##
+    ## With no @qcode{'DataVariable'} the cells count the rows of each group;
+    ## with one they summarise its values, by @qcode{'Method'}, which defaults
+    ## to summing them.
+    ##
+    ## The following @var{Name}/@var{Value} pairs are accepted:
+    ##
+    ## @table @asis
+    ## @item @qcode{'Rows'}, @qcode{'Columns'}
+    ## The variables grouping down the page and across it, or the row
+    ## dimension name.
+    ##
+    ## @item @qcode{'DataVariable'}
+    ## The variable summarised in each cell.
+    ##
+    ## @item @qcode{'Method'}
+    ## The summary applied to each cell, a method name or a function handle.
+    ##
+    ## @item @qcode{'RowsBinMethod'}, @qcode{'ColumnsBinMethod'}
+    ## Binning applied to the grouping variables before grouping, with
+    ## @qcode{'IncludedEdge'} saying which edge of a bin is included.
+    ##
+    ## @item @qcode{'IncludeMissingGroups'}, @qcode{'IncludeEmptyGroups'}
+    ## Whether a group of missing values, and whether an unused category, are
+    ## reported.
+    ##
+    ## @item @qcode{'IncludeTotals'}
+    ## Whether a marginal row and column are added, labelled
+    ## @qcode{Overall_<method>}.
+    ##
+    ## @item @qcode{'RowLabelPlacement'}
+    ## Whether the row groups become a variable of the result or its row
+    ## names.
+    ##
+    ## @item @qcode{'OutputFormat'}
+    ## @qcode{'flat'} (the default) or @qcode{'nested'}, which groups the data
+    ## variables into nested tables by the column hierarchy.
+    ## @end table
+    ##
+    ## @seealso{groupsummary, timetable}
+    ## @end deftypefn
+    function P = pivot (tt, varargin)
+      [P, errmsg] = pivotResult (tt, varargin);
+      if (! isempty (errmsg))
+        error ("timetable.pivot: %s", errmsg);
       endif
     endfunction
 
