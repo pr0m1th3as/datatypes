@@ -6108,10 +6108,11 @@
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'horzcat'          'iscolumn'         'isempty'          'ismatrix'        ##
-## 'isrow'            'isscalar'         'istable'          'isvector'        ##
-## 'length'           'ndims'            'numel'            'repelem'         ##
-## 'repmat'           'size'             'squeeze'          'vertcat'         ##
+## 'horzcat'          'iscolumn'         'isempty'          'isequal'         ##
+## 'isequaln'         'ismatrix'         'isrow'            'isscalar'        ##
+## 'istable'          'isvector'         'length'           'ndims'           ##
+## 'numel'            'repelem'          'repmat'           'size'            ##
+## 'squeeze'          'vertcat'                                               ##
 ##                                                                            ##
 ################################################################################
 
@@ -6458,6 +6459,107 @@
 %! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
 %! assert_equal (isequal (squeeze (T), T), true);
 %!assert_equal (isequal (squeeze (table ()), table ()), true)
+
+
+## 'isequal' compares variables by value, not by class
+%!assert_equal (isequal (table ([1; 2]), table ([1; 2])), true)
+%!assert_equal (isequal (table (int8 ([1; 2])), table ([1; 2])), true)
+%!assert_equal (isequal (table (single ([1; 2])), table ([1; 2])), true)
+%!assert_equal (isequal (table (logical ([1; 0])), table ([1; 0])), true)
+%!assert_equal (isequal (table ({'a'; 'b'}), table (string ({'a'; 'b'}))), true)
+## a difference in any other property makes the tables unequal
+%!test
+%! A = table ([1; 2], 'VariableNames', {'a'});
+%! B = A;
+%! B.Properties.VariableNames = {'b'};
+%! assert_equal (isequal (A, B), false);
+%!test
+%! A = table ([1; 2], 'VariableNames', {'a'});
+%! B = A;
+%! B.Properties.DimensionNames = {'Obs', 'Variables'};
+%! assert_equal (isequal (A, B), false);
+%!test
+%! A = table ([1; 2], 'VariableNames', {'a'});
+%! B = A;
+%! B.Properties.Description = 'note';
+%! assert_equal (isequal (A, B), false);
+%!test
+%! A = table ([1; 2], 'VariableNames', {'a'});
+%! B = A;
+%! B.Properties.UserData = 42;
+%! assert_equal (isequal (A, B), false);
+%!test
+%! A = table ([1; 2], 'VariableNames', {'a'});
+%! B = A;
+%! B.Properties.VariableUnits = {'m'};
+%! assert_equal (isequal (A, B), false);
+%!test
+%! A = table ([1; 2], 'VariableNames', {'a'});
+%! B = A;
+%! B.Properties.VariableDescriptions = {'d'};
+%! assert_equal (isequal (A, B), false);
+## a custom property counts, whether it is absent on one side or differs
+%!test
+%! A = table ([1; 2], 'VariableNames', {'a'});
+%! B = addprop (A, {'tp'}, {'table'});
+%! assert_equal (isequal (A, B), false);
+%!test
+%! A = addprop (table ([1; 2], 'VariableNames', {'a'}), {'tp'}, {'table'});
+%! B = A;
+%! A.Properties.CustomProperties.tp = 1;
+%! B.Properties.CustomProperties.tp = 2;
+%! assert_equal (isequal (A, B), false);
+## so do the row names, absent on one side or different
+%!test
+%! A = table ([1; 2], 'VariableNames', {'a'});
+%! B = A;
+%! B.Properties.RowNames = {'r1', 'r2'};
+%! assert_equal (isequal (A, B), false);
+%!test
+%! A = table ([1; 2], 'VariableNames', {'a'}, 'RowNames', {'r1', 'r2'});
+%! B = table ([1; 2], 'VariableNames', {'a'}, 'RowNames', {'q1', 'q2'});
+%! assert_equal (isequal (A, B), false);
+## order is part of the value, in both dimensions
+%!test
+%! A = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
+%! assert_equal (isequal (A, A(:, {'b', 'a'})), false);
+%! assert_equal (isequal (A, A([2 1], :)), false);
+## size is compared before anything else
+%!assert_equal (isequal (table ([1; 2]), table (1)), false)
+%!assert_equal (isequal (table (), table ([1; 2])([], :)), false)
+%!assert_equal (isequal (table ([1; 2])([], :), table ([1; 2])([], :)), true)
+%!assert_equal (isequal (table (), table ()), true)
+## a missing value is never equal to itself, and a nested table is compared
+%!assert_equal (isequal (table ([NaN; 1]), table ([NaN; 1])), false)
+%!assert_equal (isequal (table (table ([1; 2])), table (table ([1; 2]))), true)
+## more than two tables are all compared against the first
+%!test
+%! A = table ([1; 2], 'VariableNames', {'a'});
+%! assert_equal (isequal (A, A, A), true);
+%! assert_equal (isequal (A, A, A(1, :)), false);
+## anything that is not a table is unequal rather than an error
+%!assert_equal (isequal (table ([1; 2]), 5), false)
+%!assert_equal (isequal (table ([1; 2]), []), false)
+%!assert_equal (isequal (table ([1; 2]), struct ('a', 1)), false)
+%!test
+%! TT = timetable ([1; 2], 'RowTimes', datetime (2024, 1, 1) + hours (0:1)');
+%! assert_equal (isequal (table ([1; 2]), TT), false);
+
+## 'isequaln' treats missing values as equal
+%!assert_equal (isequaln (table ([NaN; 1]), table ([NaN; 1])), true)
+%!test
+%! s = string ({'a'; 'b'});
+%! s(2) = missing;
+%! assert_equal (isequal (table (s), table (s)), false);
+%! assert_equal (isequaln (table (s), table (s)), true);
+## it is otherwise 'isequal', so a metadata difference still tells
+%!test
+%! A = table ([NaN; 1], 'VariableNames', {'a'});
+%! B = A;
+%! B.Properties.Description = 'note';
+%! assert_equal (isequaln (A, B), false);
+## and it compares variables by value, not by class
+%!assert_equal (isequaln (table (int8 ([1; 2])), table ([1; 2])), true)
 
 ################################################################################
 ##                       **    Forbidden Methods    **                        ##

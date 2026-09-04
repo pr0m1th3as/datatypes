@@ -3146,6 +3146,58 @@ classdef (Abstract) tabular
 
     endfunction
 
+    ## The comparison behind 'isequal' and 'isequaln' on both classes.  It
+    ## compares the properties it names and nothing else, so the exclusions
+    ## are the ones absent from the list: 'VariableTypes', which only
+    ## restates the class of each variable and would make a table holding
+    ## int8 unequal to one holding the same values as double, where the
+    ## values themselves compare equal; and a timetable's 'TimeStep',
+    ## 'SampleRate', 'StartTime' and step provenance, which describe the row
+    ## times rather than adding to them, so a timetable told its step equals
+    ## one that read the same step off the times it was given.  OTHERS holds
+    ## the remaining arguments, already known to be of this same class.
+    ## NANEQUAL selects 'isequaln' wherever a user value can sit.
+    function TF = isequalResult (this, others, nanEqual)
+      if (nanEqual)
+        eqf = @isequaln;
+      else
+        eqf = @isequal;
+      endif
+      TF = false;
+      for i = 1:numel (others)
+        B = others{i};
+        if (! isequal (size (this), size (B)))
+          return;
+        endif
+        if (! (isequal (this.VariableNames, B.VariableNames)
+               && isequal (this.DimensionNames, B.DimensionNames)
+               && isequal (this.Description, B.Description)
+               && isequal (this.VariableDescriptions, B.VariableDescriptions)
+               && isequal (this.VariableUnits, B.VariableUnits)
+               && isequal (this.VariableContinuity, B.VariableContinuity)
+               && isequal (this.CustomPropTypes, B.CustomPropTypes)))
+          return;
+        endif
+        if (! (eqf (this.UserData, B.UserData)
+               && eqf (this.CustomProperties, B.CustomProperties)))
+          return;
+        endif
+        if (hasRowLabels (this) != hasRowLabels (B))
+          return;
+        endif
+        if (hasRowLabels (this)
+            && ! eqf (getRowLabels (this), getRowLabels (B)))
+          return;
+        endif
+        for j = 1:numel (this.VariableValues)
+          if (! eqf (this.VariableValues{j}, B.VariableValues{j}))
+            return;
+          endif
+        endfor
+      endfor
+      TF = true;
+    endfunction
+
     function names = customPropsOfType (this, type)
       names = {};
       if (isempty (this.CustomProperties))

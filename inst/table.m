@@ -5863,10 +5863,10 @@ classdef table < tabular
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'cat'              'horzcat'          'iscolumn'         'isempty'         ##
-## 'ismatrix'         'isrow'            'isscalar'         'istable'         ##
-## 'isvector'         'length'           'ndims'            'numel'           ##
-## 'repelem'          'repmat'           'size'             'squeeze'         ##
-## 'vertcat'                                                                  ##
+## 'isequal'          'isequaln'         'ismatrix'         'isrow'           ##
+## 'isscalar'         'istable'          'isvector'         'length'          ##
+## 'ndims'            'numel'            'repelem'          'repmat'          ##
+## 'size'             'squeeze'          'vertcat'                            ##
 ##                                                                            ##
 ################################################################################
 
@@ -6097,6 +6097,80 @@ classdef table < tabular
     ## @end deftypefn
     function TF = isempty (this)
       TF = prod (size (this)) == 0;
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {table} {@var{TF} =} isequal (@var{A}, @var{B})
+    ## @deftypefnx {table} {@var{TF} =} isequal (@var{A}, @var{B}, @dots{})
+    ##
+    ## Test tables for equality.
+    ##
+    ## @code{@var{TF} = isequal (@var{A}, @var{B})} returns a logical scalar
+    ## @var{TF}, which is @qcode{true} when the tables @var{A} and @var{B} are
+    ## the same size, carry the same variable names, row names and metadata,
+    ## and each pair of corresponding variables holds equal values, and
+    ## @qcode{false} otherwise.
+    ##
+    ## Variables are compared by value and not by class, exactly as
+    ## @code{isequal} compares arrays elsewhere, so a table holding
+    ## @code{int8 ([1; 2])} equals one holding @code{[1; 2]}.  The
+    ## @qcode{VariableTypes} property, which only restates those classes,
+    ## takes no part in the comparison.  Every other property does: two
+    ## tables differing only in @qcode{Description}, @qcode{UserData},
+    ## @qcode{VariableUnits}, @qcode{VariableDescriptions} or a custom
+    ## property are not equal.
+    ##
+    ## As with @qcode{NaN}, missing values are never equal, so a missing
+    ## element anywhere in either table makes the result @qcode{false}; use
+    ## @code{isequaln} to treat missing values as equal.
+    ##
+    ## Further tables may be supplied, as in @code{isequal (@var{A}, @var{B},
+    ## @var{C}, @dots{})}, in which case @var{TF} is @qcode{true} only when
+    ## all of them are equal to one another.  Any argument that is not a
+    ## table, a timetable included, makes the result @qcode{false} rather
+    ## than raising an error.
+    ##
+    ## @end deftypefn
+    function TF = isequal (varargin)
+      if (nargin < 2)
+        print_usage ();
+      endif
+      TF = false;
+      if (all (cellfun (@(x) isa (x, 'table'), varargin)))
+        TF = isequalResult (varargin{1}, varargin(2:end), false);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {table} {@var{TF} =} isequaln (@var{A}, @var{B})
+    ## @deftypefnx {table} {@var{TF} =} isequaln (@var{A}, @var{B}, @dots{})
+    ##
+    ## Test tables for equality, treating missing values as equal.
+    ##
+    ## @code{@var{TF} = isequaln (@var{A}, @var{B})} is identical to
+    ## @code{isequal (@var{A}, @var{B})} except that missing values are
+    ## treated as equal to one another, in the same way that @code{isequaln}
+    ## treats @qcode{NaN}.  It returns a logical scalar @var{TF}, which is
+    ## @qcode{true} when the tables are the same size, carry the same
+    ## variable names, row names and metadata, and each pair of corresponding
+    ## elements is either equal or missing in both, and @qcode{false}
+    ## otherwise.
+    ##
+    ## Further tables may be supplied, as in @code{isequaln (@var{A},
+    ## @var{B}, @var{C}, @dots{})}, in which case @var{TF} is @qcode{true}
+    ## only when all of them are equal to one another.  Any argument that is
+    ## not a table, a timetable included, makes the result @qcode{false}
+    ## rather than raising an error.
+    ##
+    ## @end deftypefn
+    function TF = isequaln (varargin)
+      if (nargin < 2)
+        print_usage ();
+      endif
+      TF = false;
+      if (all (cellfun (@(x) isa (x, 'table'), varargin)))
+        TF = isequalResult (varargin{1}, varargin(2:end), true);
+      endif
     endfunction
 
     ## -*- texinfo -*-

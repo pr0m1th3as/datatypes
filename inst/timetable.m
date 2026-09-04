@@ -388,6 +388,7 @@ classdef timetable < tabular
     ## datetimes comes out as, and one given as 'hours (24)' stays a
     ## duration rather than becoming the calendar day it also describes.
     function this = applyRowTimes (this, rt, inferStep, givenStep)
+      oldStep = this.TimeStep;
       this.RowTimes = rt(:);
       if (inferStep)
         [this.TimeStep, this.SampleRate] = stepOf (this.RowTimes);
@@ -395,6 +396,12 @@ classdef timetable < tabular
                            || ! any (ismissing (this.TimeStep))))
           this.TimeStep = givenStep;
           this.SampleRate = stepRate (givenStep);
+        elseif (this.StepDeclared && ! any (ismissing (this.TimeStep)))
+          ## A declared step also names the unit the class goes on reporting
+          ## in, so a step read off a subset reads in that unit too: an
+          ## hourly timetable subset to every other row reports '2 hr', not
+          ## the '02:00:00' a difference of datetimes comes out as.
+          this.TimeStep = carryStepFormat (oldStep, this.TimeStep);
         endif
       elseif (numel (this.RowTimes) < 2 && ! this.StepDeclared)
         ## Fewer than two rows imply no spacing of their own, and an object
@@ -1215,6 +1222,98 @@ classdef timetable < tabular
     ## @end deftypefn
     function TF = istimetable (this)
       TF = true;
+    endfunction
+
+  endmethods
+
+################################################################################
+##                          **    Comparison    **                            ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'isequal'          'isequaln'                                              ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{TF} =} isequal (@var{A}, @var{B})
+    ## @deftypefnx {timetable} {@var{TF} =} isequal (@var{A}, @var{B}, @dots{})
+    ##
+    ## Test timetables for equality.
+    ##
+    ## @code{@var{TF} = isequal (@var{A}, @var{B})} returns a logical scalar
+    ## @var{TF}, which is @qcode{true} when the timetables @var{A} and @var{B}
+    ## are the same size, carry the same row times, variable names and
+    ## metadata, and each pair of corresponding variables holds equal values,
+    ## and @qcode{false} otherwise.
+    ##
+    ## The row times take part in the comparison and the properties that
+    ## merely describe them do not, so @qcode{TimeStep}, @qcode{SampleRate}
+    ## and @qcode{StartTime} are excluded.  A timetable told its time step at
+    ## construction therefore equals one that read the same step off the row
+    ## times it was given, although the two report a different
+    ## @qcode{TimeStep} once subset to a single row.
+    ##
+    ## Variables are compared by value and not by class, exactly as
+    ## @code{isequal} compares arrays elsewhere, so a timetable holding
+    ## @code{int8 ([1; 2])} equals one holding @code{[1; 2]}.  The
+    ## @qcode{VariableTypes} property, which only restates those classes,
+    ## takes no part in the comparison.  Every other property does: two
+    ## timetables differing only in @qcode{Description}, @qcode{UserData},
+    ## @qcode{VariableUnits}, @qcode{VariableDescriptions},
+    ## @qcode{VariableContinuity} or a custom property are not equal.
+    ##
+    ## As with @qcode{NaN}, missing values are never equal, so a missing row
+    ## time or element anywhere in either timetable makes the result
+    ## @qcode{false}; use @code{isequaln} to treat missing values as equal.
+    ##
+    ## Further timetables may be supplied, as in @code{isequal (@var{A},
+    ## @var{B}, @var{C}, @dots{})}, in which case @var{TF} is @qcode{true}
+    ## only when all of them are equal to one another.  Any argument that is
+    ## not a timetable, a table included, makes the result @qcode{false}
+    ## rather than raising an error.
+    ##
+    ## @end deftypefn
+    function TF = isequal (varargin)
+      if (nargin < 2)
+        print_usage ();
+      endif
+      TF = false;
+      if (all (cellfun (@(x) isa (x, 'timetable'), varargin)))
+        TF = isequalResult (varargin{1}, varargin(2:end), false);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{TF} =} isequaln (@var{A}, @var{B})
+    ## @deftypefnx {timetable} {@var{TF} =} isequaln (@var{A}, @var{B}, @dots{})
+    ##
+    ## Test timetables for equality, treating missing values as equal.
+    ##
+    ## @code{@var{TF} = isequaln (@var{A}, @var{B})} is identical to
+    ## @code{isequal (@var{A}, @var{B})} except that missing values are
+    ## treated as equal to one another, in the same way that @code{isequaln}
+    ## treats @qcode{NaN}.  Two timetables whose row times are @qcode{NaT} in
+    ## the same places are therefore equal, where @code{isequal} calls them
+    ## unequal.
+    ##
+    ## Further timetables may be supplied, as in @code{isequaln (@var{A},
+    ## @var{B}, @var{C}, @dots{})}, in which case @var{TF} is @qcode{true}
+    ## only when all of them are equal to one another.  Any argument that is
+    ## not a timetable, a table included, makes the result @qcode{false}
+    ## rather than raising an error.
+    ##
+    ## @end deftypefn
+    function TF = isequaln (varargin)
+      if (nargin < 2)
+        print_usage ();
+      endif
+      TF = false;
+      if (all (cellfun (@(x) isa (x, 'timetable'), varargin)))
+        TF = isequalResult (varargin{1}, varargin(2:end), true);
+      endif
     endfunction
 
   endmethods
@@ -2501,6 +2600,15 @@ endfunction
 ## The sample rate of a time step: rows per second, and NaN for a calendar
 ## step, which has no fixed length in seconds to take a reciprocal of.  A
 ## NaN step gives a NaN rate by the same arithmetic.
+## The format of a declared step carried onto a step recomputed from the row
+## times.  Only a duration has one to carry, and a calendar step that gave way
+## to a duration, or the reverse, keeps whatever the new value came with.
+function step = carryStepFormat (oldStep, step)
+  if (isa (oldStep, 'duration') && isa (step, 'duration'))
+    step.Format = oldStep.Format;
+  endif
+endfunction
+
 function fs = stepRate (ts)
   if (iscalendarduration (ts))
     fs = NaN;

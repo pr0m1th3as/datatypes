@@ -437,6 +437,15 @@
 %! D.Properties.RowTimes = t0 + hours (0:4)';
 %! assert_equal (isnan (D(1,:).Properties.TimeStep), true);
 
+## Test a declared step names the unit a recomputed step reads in
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! D = timetable ((1:5)', 'TimeStep', hours (1), 'StartTime', t0);
+%! I = timetable ((1:5)', 'RowTimes', t0 + hours (0:4)');
+%! assert_equal (D([1 3],:).Properties.TimeStep.Format, 'h');
+%! assert_equal (I([1 3],:).Properties.TimeStep.Format, 'hh:mm:ss');
+%! assert_equal (D([1 3],:).Properties.TimeStep, hours (2));
+
 ## Test assigning a step to an inferred timetable declares it
 %!test
 %! t0 = datetime (2024, 1, 1);
@@ -735,6 +744,98 @@
 %! assert_equal (istable (TT), false);
 %! assert_equal (isa (TT, 'table'), false);
 %! assert_equal (isa (TT, 'tabular'), true);
+
+################################################################################
+##                          **    Comparison    **                            ##
+################################################################################
+
+## Test a declared step and an inferred one compare equal
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! D = timetable ((1:5)', 'TimeStep', hours (1), 'StartTime', t0);
+%! I = timetable ((1:5)', 'RowTimes', t0 + hours (0:4)');
+%! assert_equal (isequal (D, I), true);
+%! assert_equal (isequaln (D, I), true);
+
+## Test they stay equal where their reported step differs
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! D = timetable ((1:5)', 'TimeStep', hours (1), 'StartTime', t0);
+%! I = timetable ((1:5)', 'RowTimes', t0 + hours (0:4)');
+%! ds = D(1,:).Properties.TimeStep;
+%! is = I(1,:).Properties.TimeStep;
+%! assert_equal (ismissing (is), true);
+%! assert_equal (ds, hours (1));
+%! assert_equal (isequal (D(1,:), I(1,:)), true);
+
+## Test a declared rate and a declared step compare equal
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! R = timetable ((1:5)', 'SampleRate', 1 / 3600, 'StartTime', t0);
+%! D = timetable ((1:5)', 'TimeStep', hours (1), 'StartTime', t0);
+%! assert_equal (isequal (R, D), true);
+
+## Test sorting an already sorted timetable leaves it equal
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! D = timetable ((1:5)', 'TimeStep', hours (1), 'StartTime', t0);
+%! I = timetable ((1:5)', 'RowTimes', t0 + hours (0:4)');
+%! assert_equal (isequal (sortrows (D), I), true);
+
+## Test the row times themselves are compared
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! A = timetable ((1:3)', 'RowTimes', t0 + hours (0:2)');
+%! B = timetable ((1:3)', 'RowTimes', t0 + hours (1:3)');
+%! assert_equal (isequal (A, B), false);
+%! assert_equal (isequal (A, A([3 2 1],:)), false);
+
+## Test a time zone is part of the row times
+%!test
+%! A = timetable ((1:3)', 'RowTimes', datetime (2024, 1, 1) + hours (0:2)');
+%! z0 = datetime (2024, 1, 1, 'TimeZone', 'UTC');
+%! B = timetable ((1:3)', 'RowTimes', z0 + hours (0:2)');
+%! assert_equal (isequal (A, B), false);
+
+## Test the display format of the row times is not
+%!test
+%! rt = datetime (2024, 1, 1) + hours (0:2)';
+%! A = timetable ((1:3)', 'RowTimes', rt);
+%! rt.Format = 'yyyy-MM-dd HH:mm';
+%! B = timetable ((1:3)', 'RowTimes', rt);
+%! assert_equal (isequal (A, B), true);
+
+## Test 'VariableContinuity' is compared
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! A = timetable ((1:3)', 'RowTimes', t0 + hours (0:2)');
+%! B = A;
+%! B.Properties.VariableContinuity = {'continuous'};
+%! assert_equal (isequal (A, B), false);
+
+## Test a missing row time is never equal to itself, and 'isequaln' says it is
+%!test
+%! rt = [datetime(2024,1,1); NaT; datetime(2024,1,1)+hours(2)];
+%! A = timetable ((1:3)', 'RowTimes', rt);
+%! assert_equal (isequal (A, A), false);
+%! assert_equal (isequaln (A, A), true);
+
+## Test variables are compared by value, not by class
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! rt = t0 + hours (0:1)';
+%! A = timetable (int8 ([1; 2]), 'RowTimes', rt);
+%! B = timetable ([1; 2], 'RowTimes', rt);
+%! assert_equal (isequal (A, B), true);
+
+## Test anything that is not a timetable is unequal rather than an error
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! A = timetable ((1:2)', 'RowTimes', t0 + hours (0:1)');
+%! assert_equal (isequal (A, table ((1:2)')), false);
+%! assert_equal (isequal (A, 5), false);
+%! assert_equal (isequal (A, []), false);
+%! assert_equal (isequal (A, A, A), true);
 
 ################################################################################
 ##                          **    Row subscripts    **                        ##
