@@ -157,6 +157,13 @@ classdef table < tabular
       tf = true (height (this), 1);
     endfunction
 
+    ## A table has only the order of its rows to interpolate against.
+    function [x, ownPoints, errmsg] = fillSamplePoints (this)
+      x = (1:height (this))';
+      ownPoints = false;
+      errmsg = '';
+    endfunction
+
     ## The one row label property a table has.  'RowNames' is the only name
     ## it recognises; anything else is not a table property at all and the
     ## caller says so.

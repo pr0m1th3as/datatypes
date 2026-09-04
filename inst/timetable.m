@@ -213,6 +213,28 @@ classdef timetable < tabular
       tf = tf(:);
     endfunction
 
+    ## A timetable interpolates against its row times, measured in seconds
+    ## from the first of them.  A row time that is missing places nothing, so
+    ## the whole object is refused rather than filled around the gap.
+    function [x, ownPoints, errmsg] = fillSamplePoints (this)
+      x = [];
+      ownPoints = true;
+      errmsg = '';
+      rt = this.RowTimes;
+      if (any (ismissing (rt)))
+        errmsg = "row times must not be missing.";
+        return
+      endif
+      if (isempty (rt))
+        x = zeros (0, 1);
+      elseif (isdatetime (rt))
+        x = seconds (rt - rt(1));
+      else
+        x = seconds (rt);
+      endif
+      x = x(:);
+    endfunction
+
     ## The four properties a timetable publishes about its row times, keyed
     ## by the names they are published under.  'RowTimes' is the stored
     ## truth; the other three describe it and are maintained with it.
@@ -1293,6 +1315,49 @@ classdef timetable < tabular
       [tbl, errmsg] = standardizeMissingResult (this, varargin{:});
       if (! isempty (errmsg))
         error ("timetable.standardizeMissing: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{ttB} =} fillmissing (@var{ttA}, @var{method})
+    ## @deftypefnx {timetable} {@var{ttB} =} fillmissing (@var{ttA}, @qcode{'constant'}, @var{v})
+    ## @deftypefnx {timetable} {@var{ttB} =} fillmissing (@dots{}, @var{Name}, @var{Value})
+    ## @deftypefnx {timetable} {[@var{ttB}, @var{TF}] =} fillmissing (@dots{})
+    ##
+    ## Fill the missing values of a timetable.
+    ##
+    ## @code{@var{ttB} = fillmissing (@var{ttA}, @var{method})} replaces each
+    ## missing value by one worked out from the values around it.
+    ## @qcode{'previous'}, @qcode{'next'} and @qcode{'nearest'} copy a
+    ## neighbouring value; @qcode{'linear'}, @qcode{'spline'},
+    ## @qcode{'pchip'} and @qcode{'makima'} interpolate; and
+    ## @qcode{'constant'} takes the value given after it.
+    ##
+    ## @strong{The row times are what the filling runs against}, not the
+    ## order of the rows.  A gap an hour after its left neighbour and two
+    ## hours before its right one is filled a third of the way between them
+    ## by @qcode{'linear'}, and takes the left value under
+    ## @qcode{'nearest'}, where counting rows would put it midway and call
+    ## the two neighbours equally close.  The row times are already the
+    ## sample points, so @qcode{'SamplePoints'} is not accepted; a timetable
+    ## whose row times are not all known is refused outright rather than
+    ## filled around the gap.
+    ##
+    ## @qcode{'DataVariables'} names the variables to fill and
+    ## @qcode{'EndValues'} says what to do with a gap that has no neighbour
+    ## on one side, taking @qcode{'extrap'}, another method name, or a
+    ## constant.
+    ##
+    ## @code{[@var{ttB}, @var{TF}] = fillmissing (@dots{})} also returns a
+    ## logical array marking what was filled.  The row times themselves are
+    ## never filled and the time step is unchanged.
+    ##
+    ## @seealso{ismissing, rmmissing, standardizeMissing, timetable}
+    ## @end deftypefn
+    function [tbl, TF] = fillmissing (this, varargin)
+      [tbl, TF, errmsg] = fillmissingResult (this, varargin{:});
+      if (! isempty (errmsg))
+        error ("timetable.fillmissing: %s", errmsg);
       endif
     endfunction
 

@@ -1107,6 +1107,58 @@
 %! D = standardizeMissing (TT, 30, 'DataVariables', 'B');
 %! assert_equal (D.B, [10; 20; NaN; 40; 50; 60]);
 
+
+## Test 'fillmissing' interpolates against the row times, not the row order
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! F = timetable ([10; NaN; 30], 'RowTimes', t0 + hours ([0 1 3])', ...
+%!                'VariableNames', {'A'});
+%! assert_equal (fillmissing (F, 'linear').A, [10; 16.666666666666668; 30]);
+%! assert_equal (fillmissing (F, 'spline').A, [10; 16.666666666666668; 30]);
+
+## Test 'nearest' measures the distance in time and not in rows
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! F = timetable ([10; NaN; 30], 'RowTimes', t0 + hours ([0 1 3])', ...
+%!                'VariableNames', {'A'});
+%! assert_equal (fillmissing (F, 'nearest').A, [10; 10; 30]);
+%! assert_equal (fillmissing (F, 'previous').A, [10; 10; 30]);
+%! assert_equal (fillmissing (F, 'next').A, [10; 30; 30]);
+
+## Test a constant fill and an 'EndValues' override
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! F = timetable ([10; NaN; 30], 'RowTimes', t0 + hours ([0 1 3])', ...
+%!                'VariableNames', {'A'});
+%! assert_equal (fillmissing (F, 'constant', 0).A, [10; 0; 30]);
+%! assert_equal (fillmissing (F, 'linear', 'EndValues', 'nearest').A, ...
+%!               [10; 16.666666666666668; 30]);
+
+## Test the row times are never filled and the time step is unchanged
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! F = timetable ([10; NaN; 30], 'RowTimes', t0 + hours ([0 1 3])', ...
+%!                'VariableNames', {'A'});
+%! G = fillmissing (F, 'linear');
+%! assert_equal (G.Properties.RowTimes, t0 + hours ([0 1 3])');
+%! assert_equal (isnan (G.Properties.TimeStep), true);
+%! R = timetable ([10; NaN; 30], 'RowTimes', t0 + hours (0:2)', ...
+%!                'VariableNames', {'A'});
+%! assert_equal (fillmissing (R, 'linear').Properties.TimeStep, hours (1));
+
+## Test input validation for 'timetable.fillmissing'
+%!error <timetable.fillmissing: row times must not be missing.> ...
+%! fillmissing (timetable ([1; 2; 3], 'RowTimes', ...
+%!              [datetime(2024,1,1); NaT; datetime(2024,1,1) + hours(2)]), ...
+%!              'previous');
+%!error <timetable.fillmissing: 'SamplePoints' is not accepted here; the row times are the sample points.> ...
+%! fillmissing (timetable ([10; NaN; 30], 'RowTimes', ...
+%!              datetime (2024, 1, 1) + hours ([0 1 3])'), 'linear', ...
+%!              'SamplePoints', (1:3)');
+%!error <timetable.fillmissing: unknown option 'Bogus'.> ...
+%! fillmissing (timetable ([10; NaN; 30], 'RowTimes', ...
+%!              datetime (2024, 1, 1) + hours ([0 1 3])'), 'linear', ...
+%!              'Bogus', 1);
 ################################################################################
 ##                      **    Variable management    **                       ##
 ################################################################################

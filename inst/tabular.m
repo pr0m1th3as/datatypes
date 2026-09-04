@@ -313,6 +313,15 @@ classdef (Abstract) tabular
                      " usableRowLabels."), class (this));
     endfunction
 
+    ## The points the variables are sampled at, for the methods that
+    ## interpolate or measure a distance.  A table has only the row order to
+    ## go on; a timetable has its row times, which is why the same gap fills
+    ## differently in the two.
+    function [x, ownPoints, errmsg] = fillSamplePoints (this)
+      error (strcat ("%s: subclass must implement", ...
+                     " fillSamplePoints."), class (this));
+    endfunction
+
     ## The row label metadata as a struct, keyed by the names the properties
     ## object publishes it under.  Separate from 'rowLabelName', which names
     ## the labels for a file header and for a timetable is the row dimension
@@ -2898,10 +2907,10 @@ classdef (Abstract) tabular
           endif
           constVal = rest{1};
           rest = rest(2:end);
-        case {'previous', 'next', 'nearest', 'linear'}
+        case {'previous', 'next', 'nearest', 'linear', 'spline', ...
+              'pchip', 'makima'}
           ## supported; no extra positional argument
-        case {'movmean', 'movmedian', 'spline', 'pchip', 'makima', 'knn', ...
-              'mean', 'median', 'mode'}
+        case {'movmean', 'movmedian', 'knn', 'mean', 'median', 'mode'}
           errmsg = sprintf (strcat ("method '%s' is not supported", ...
                          " yet."), method);
           return
@@ -2911,10 +2920,40 @@ classdef (Abstract) tabular
       endswitch
 
       ## Parse optional Name-Value paired arguments
+      ## Where the rows sit, which decides how far apart a gap's neighbours
+      ## are and what an interpolation runs against.  Read before anything is
+      ## filled, so a timetable that cannot say is refused whatever the method.
+      [x, ownPoints, errmsg] = fillSamplePoints (tblA);
+      if (! isempty (errmsg))
+        return
+      endif
+
       optNames = {'DataVariables', 'EndValues', 'ReplaceValues'};
       dfValues = {[], 'extrap', true};
-      [dVars, endVals, replace] = parsePairedArguments (optNames, dfValues, ...
-                                                        rest(:));
+      [dVars, endVals, replace, extra] = parsePairedArguments (optNames, ...
+                                                    dfValues, rest(:));
+      ## Anything left over was asked for and not understood.  Saying so
+      ## beats filling to a rule the caller did not ask for, which is what a
+      ## misspelt option would otherwise get.
+      if (! isempty (extra))
+        name = extra{1};
+        if (isa (name, 'string') && isscalar (name))
+          name = char (name);
+        endif
+        if (ischar (name) && isrow (name) && strcmpi (name, 'SamplePoints'))
+          if (ownPoints)
+            errmsg = strcat ("'SamplePoints' is not accepted here; the", ...
+                             " row times are the sample points.");
+          else
+            errmsg = "'SamplePoints' is not supported yet.";
+          endif
+        elseif (ischar (name) && isrow (name))
+          errmsg = sprintf ("unknown option '%s'.", name);
+        else
+          errmsg = "unknown optional argument.";
+        endif
+        return
+      endif
       if (! (islogical (replace) && isscalar (replace)))
         errmsg = "'ReplaceValues' must be a logical scalar.";
         return
@@ -3012,10 +3051,11 @@ classdef (Abstract) tabular
             if (! any (m))
               continue;
             endif
-            if (strcmp (method, 'linear'))
-              [v(:,c), filled(:,c)] = fill_linear (v(:,c), m);
+            if (any (strcmp (method, {'linear', 'spline', 'pchip', ...
+                                      'makima'})))
+              [v(:,c), filled(:,c)] = fill_interp (v(:,c), m, x, method);
             else
-              si = fill_neighbor_idx (m, method);
+              si = fill_neighbor_idx (m, method, x);
               rows = m & si > 0;
               v(rows,c) = v(si(rows),c);
               filled(:,c) = rows;
@@ -4793,7 +4833,7 @@ endfunction
 ## reachable).  METHOD is 'previous', 'next', or 'nearest'.  Used by
 ## 'fillmissing'.
 
-function [col, filled] = fill_linear (col, m)
+function [col, filled] = fill_interp (col, m, x, method)
   m = m(:);
   n = numel (m);
   filled = false (n, 1);
@@ -4801,7 +4841,7 @@ function [col, filled] = fill_linear (col, m)
   if (sum (known) < 2)
     return;                         # need at least two anchors to interpolate
   endif
-  x = (1:n)';
+  x = x(:);
   xk = x(known);
   ## A datetime or a duration is interpolated in seconds and put back through
   ## the class's own arithmetic, so its type, format and time zone survive.  A
@@ -4824,11 +4864,11 @@ function [col, filled] = fill_linear (col, m)
   ## them in the caller.
   interior = m & x > lo & x < hi;
   if (any (interior))
-    vals(interior) = interp1 (xk, yk, x(interior), 'linear');
+    vals(interior) = interp1 (xk, yk, x(interior), method);
   endif
   ends = m & (x < lo | x > hi);
   if (any (ends))
-    vals(ends) = interp1 (xk, yk, x(ends), 'linear', 'extrap');
+    vals(ends) = interp1 (xk, yk, x(ends), method, 'extrap');
   endif
   if (isdatetime (col))
     col(m) = origin + seconds (vals(m));
@@ -4846,7 +4886,7 @@ endfunction
 ## is no anchor to sit between, so every entry is a leading gap, which is what
 ## a constant end value fills and what every keyword leaves alone.
 
-function si = fill_neighbor_idx (m, method)
+function si = fill_neighbor_idx (m, method, x)
   m = m(:);
   n = numel (m);
   idx = (1:n)';
@@ -4871,7 +4911,7 @@ function si = fill_neighbor_idx (m, method)
           si(i) = sn(i);
         elseif (sn(i) == 0)
           si(i) = sp(i);
-        elseif (sn(i) - i <= i - sp(i))
+        elseif (x(sn(i)) - x(i) <= x(i) - x(sp(i)))
           si(i) = sn(i);            # tie favors the later (next) value
         else
           si(i) = sp(i);

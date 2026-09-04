@@ -1,0 +1,36 @@
+%!demo
+%! ## `fillmissing` runs against the *row times*, not the order of the rows.
+%! ## The gap below sits an hour after its left neighbour and two hours before
+%! ## its right one, so `'linear'` fills it a third of the way between them.
+%! ## Counting rows would have put it midway, at 20.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! Depth = [10; NaN; 30];
+%! TT = timetable (Depth, 'RowTimes', t0 + hours ([0 1 3])')
+%! fillmissing (TT, 'linear')
+
+%!demo
+%! ## The same spacing decides which neighbour is nearest.  Here the earlier
+%! ## reading is an hour away and the later one two, so `'nearest'` takes the
+%! ## earlier; by row count the two would be equally close.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([10; NaN; 30], 'RowTimes', t0 + hours ([0 1 3])', ...
+%!                 'VariableNames', {'Depth'});
+%! fillmissing (TT, 'nearest').Depth
+%! fillmissing (TT, 'next').Depth
+%! fillmissing (TT, 'constant', 0).Depth
+
+%!demo
+%! ## Because the row times are already the sample points, `'SamplePoints'` is
+%! ## not accepted, and a timetable that cannot say when a row happened is
+%! ## refused rather than filled around the gap.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([10; NaN; 30], 'RowTimes', [t0; NaT; t0 + hours(3)], ...
+%!                 'VariableNames', {'Depth'});
+%! try
+%!   fillmissing (TT, 'previous')
+%! catch err
+%!   disp (err.message)
+%! end

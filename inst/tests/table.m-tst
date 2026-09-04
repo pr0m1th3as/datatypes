@@ -5155,6 +5155,23 @@
 %! [R, TF] = fillmissing (T, 'previous');
 %! assert_equal (isequal (R, T), true);
 %! assert_equal (TF, [false; false; false]);
+## Test an option that is not understood is reported, not ignored
+%!test
+%! T = table ([10; NaN; 30], 'VariableNames', {'A'});
+%! fail = 0;
+%! try
+%!   fillmissing (T, 'linear', 'EndValuess', 'extrap');
+%! catch
+%!   fail = 1;
+%! end_try_catch
+%! assert_equal (fail, 1);
+
+## Test 'fillmissing' interpolates with the methods that were refused before
+%!test
+%! T = table ([10; NaN; 30], 'VariableNames', {'A'});
+%! assert_equal (fillmissing (T, 'linear').A, [10; 20; 30]);
+%! assert_equal (fillmissing (T, 'spline').A, [10; 20; 30]);
+
 ## Test input validation for 'fillmissing' method
 %!error <table.fillmissing: too few input arguments.> ...
 %! fillmissing (table (1));
