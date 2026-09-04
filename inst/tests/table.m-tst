@@ -2310,6 +2310,18 @@
 %! assert_equal (issortedrows (tblN, 'W', 'MissingPlacement', 'last'), false);
 %! [tblB, index] = sortrows (tblN, 'W', 'MissingPlacement', 'auto');
 %! assert_equal (index, [3; 4; 1; 2; 5]);
+## Test 'sortrows' sorts by a logical variable
+%!test
+%! T = table ([3; 1; 2], logical ([1; 0; 1]), 'VariableNames', {'N', 'L'});
+%! assert_equal (sortrows (T, 'L').L, logical ([0; 1; 1]));
+%! assert_equal (sortrows (T, 'L', 'descend').L, logical ([1; 1; 0]));
+
+## Test a logical variable does not stop a table being sorted at all
+%!test
+%! T = table ([3; 1; 2], logical ([1; 0; 1]), 'VariableNames', {'N', 'L'});
+%! assert_equal (sortrows (T).N, [1; 2; 3]);
+%! assert_equal (sortrows (T, {'N', 'L'}).N, [1; 2; 3]);
+
 ## Test input validation for 'sortrows' method
 %!error <table.sortrows: 'MissingPlacement' parameter can be either 'auto', 'first', or 'last'.> ...
 %! sortrows (tblA, "MissingPlacement", "param");

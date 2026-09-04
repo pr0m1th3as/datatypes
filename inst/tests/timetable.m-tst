@@ -1165,6 +1165,15 @@
 %!                'VariableNames', {'A'});
 %! assert_equal (sortrows (Q).Properties.RowTimes, hours (0:3)');
 
+## Test 'sortrows' sorts a timetable by a logical variable
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable (logical ([1; 0; 1]), 'RowTimes', t0 + hours (0:2)', ...
+%!                 'VariableNames', {'L'});
+%! assert_equal (sortrows (TT, 'L').L, logical ([0; 1; 1]));
+%! assert_equal (sortrows (TT, 'L').Properties.RowTimes, ...
+%!               t0 + hours ([1 0 2])');
+
 ## Test input validation for 'timetable.sortrows'
 %!error <timetable.sortrows: VARS indexes non-existing variable names.> ...
 %! sortrows (timetable ((1:3)', 'RowTimes', ...

@@ -1419,73 +1419,26 @@ classdef (Abstract) tabular
         endif
       endfor
 
-      ## Prepare a proxy array by converting all variable to numeric proxies
+      ## Prepare a proxy array by converting every key to numeric proxies.
+      ## The direction vector is widened by the proxy's own column count, so
+      ## a key that yields no columns contributes no direction either.
       varValIdx = [];
       varValDir = [];
       for ix = 1:numel (varVal)
 
-        tmpVal = varVal{ix};
         if (strcmpi (direction{ix}, 'ascend'))
           tmpDir = 1;
         else
           tmpDir = -1;
         endif
-
-        if (isa (tmpVal, 'categorical'))
-          tmpVal = double (tmpVal);
-          varValIdx = [varValIdx, tmpVal];
-
-        elseif (isa (tmpVal, 'calendarDuration'))
-          tmpVal = tmpVal.proxyArray;
-          varValIdx = [varValIdx, tmpVal];
-
-        elseif (isa (tmpVal, 'datetime'))
-          tmpVal = tabular.datetime_to_datenum (tmpVal);
-          varValIdx = [varValIdx, tmpVal];
-
-        elseif (isa (tmpVal, 'duration'))
-          tmpVal = days (tmpVal);
-          varValIdx = [varValIdx, tmpVal];
-
-        elseif (isa (tmpVal, 'string'))
-          tmpVal = cellstr (tmpVal);
-          [~, ~, idx] = __unique__ (tmpVal, 'rows');
-          varValIdx = [varValIdx, idx];
-
-        elseif (iscellstr (tmpVal))
-          [~, ~, idx] = __unique__ (tmpVal, 'rows');
-          varValIdx = [varValIdx, idx];
-
-        elseif (iscell (tmpVal))
-          ## Sorting mixed cell data is not supported
-          errmsg = "cannot sort variables of 'cell' type.";
+        [p, badtype] = valueProxy (varVal{ix}, CM);
+        if (! isempty (badtype))
+          errmsg = sortBadType (badtype);
           return
-
-        elseif (isnumeric (tmpVal))
-          if (strcmpi (CM, 'real') && iscomplex (tmpVal))
-            tmpVal = real (tmpVal);
-          elseif (strcmpi (CM, 'abs') && isreal (tmpVal))
-            tmpVal = abs (tmpVal);
-          endif
-          varValIdx = [varValIdx, tmpVal];
-
-        elseif (isstruct (tmpVal))
-          ## Sorting structure data is not supported
-          errmsg = "cannot sort variables of 'struct' type.";
-          return
-
-        elseif (isa (tmpVal, 'table'))
-          try
-            tmpVal = table2array (varVal{ix});
-            varValIdx = [varValIdx, tmpVal];
-          catch
-            errmsg = strcat ("cannot sort nested tables", ...
-                           " with mixed data types.");
-            return
-          end_try_catch
         endif
-        tmpDir = repmat (tmpDir, 1, size (tmpVal, 2));
-        varValDir = [varValDir, tmpDir];
+        dirCols = repmat (tmpDir, 1, size (p, 2));
+        varValIdx = [varValIdx, p];
+        varValDir = [varValDir, dirCols];
       endfor
 
       ## Fix direction vector
@@ -3179,6 +3132,21 @@ function [p, badtype] = valueProxy (v, CM)
       badtype = 'nested';
     end_try_catch
   endif
+
+endfunction
+
+## How 'sortrows' names a type it cannot compare.
+function msg = sortBadType (badtype)
+
+  switch (badtype)
+    case 'cell'
+      msg = "cannot sort variables of 'cell' type.";
+    case 'struct'
+      msg = "cannot sort variables of 'struct' type.";
+    otherwise
+      msg = strcat ("cannot sort nested tables with mixed data", ...
+                    " types.");
+  endswitch
 
 endfunction
 
