@@ -34,9 +34,11 @@ classdef timetable < tabular
   ## A timetable is @emph{regular} when its rows are evenly spaced.  The
   ## spacing is reported by the @qcode{TimeStep} property and its reciprocal
   ## @qcode{SampleRate}, and a timetable that is not evenly spaced reports a
-  ## @qcode{NaN} time step.  @qcode{TimeStep} is remembered rather than
-  ## recomputed on demand, so a single row taken out of an hourly timetable
-  ## still knows that it came from one.
+  ## @qcode{NaN} time step.  A timetable told its step at construction, by
+  ## @qcode{'TimeStep'} or @qcode{'SampleRate'}, remembers it even where a
+  ## subset is too short to imply one, so a single row taken out of it is
+  ## still hourly; one that read its step off the row times it was given has
+  ## nothing to fall back on and reports @qcode{NaN} there.
   ##
   ## A timetable is not a @code{table} and neither is a subclass of the
   ## other; both derive from the same abstract class, so @code{istabular} is
@@ -109,14 +111,31 @@ classdef timetable < tabular
     ##
     ## Spacing between consecutive row times, specified as a @code{duration}
     ## or @code{calendarDuration} scalar, or a @qcode{NaN} duration when the
-    ## timetable is irregular.  It is stored rather than recomputed, so a
-    ## subset too short to imply a step keeps the one it was taken from,
-    ## while a freshly built one-row timetable has none.  A negative step is
-    ## as regular as a positive one.  Assigning it regenerates the row times
-    ## from @qcode{StartTime}, even when the timetable was irregular.
+    ## timetable is irregular.  Two rows or more always imply a step of their
+    ## own and it is read off them afresh, so a subset with a gap in it steps
+    ## by nothing and a reversed one steps backwards.  Fewer than two rows
+    ## imply nothing, and there it matters how the step was arrived at: one
+    ## given by @qcode{'TimeStep'} or @qcode{'SampleRate'} is remembered,
+    ## while one read off the row times is not and becomes @qcode{NaN}, its
+    ## class resetting to @code{duration} with it.  A freshly built one-row
+    ## timetable has no step either way.  A negative step is as regular as a
+    ## positive one.  Assigning it regenerates the row times from
+    ## @qcode{StartTime}, even when the timetable was irregular.
     ##
     ## @end deftp
     TimeStep = []
+
+  endproperties
+
+  properties (Access = protected)
+
+    ## Whether the time step was declared rather than inferred.  It is set
+    ## when a step is given, by 'TimeStep' or by 'SampleRate', and cleared
+    ## when the row times are given instead and the step read off them.  It
+    ## decides one thing only: what becomes of the step when a result is left
+    ## with fewer than two rows and there is no spacing left to read.  A
+    ## declared step is remembered there, an inferred one is not.
+    StepDeclared = false
 
   endproperties
 
@@ -206,6 +225,7 @@ classdef timetable < tabular
       switch (name)
         case 'RowTimes'
           val = checkRowTimes (val, height (this));
+          this.StepDeclared = false;
           this = applyRowTimes (this, val, true);
 
         case 'StartTime'
@@ -215,11 +235,13 @@ classdef timetable < tabular
         case 'TimeStep'
           val = checkTimeStep (val, this.StartTime);
           rt = steppedTimes (this.StartTime, val, height (this));
+          this.StepDeclared = true;
           this = applyRowTimes (this, rt, true, val);
 
         case 'SampleRate'
           val = seconds (1 / checkSampleRate (val));
           rt = steppedTimes (this.StartTime, val, height (this));
+          this.StepDeclared = true;
           this = applyRowTimes (this, rt, true, val);
 
         otherwise
@@ -232,8 +254,9 @@ classdef timetable < tabular
     ## or more implies a step of its own, so it is read off afresh: a
     ## reversed subset of an hourly timetable steps by minus one hour and a
     ## subset with a gap in it steps by nothing.  A shorter result implies
-    ## nothing, and there the stored step is kept, which is how a single row
-    ## taken out of an hourly timetable stays hourly (§1.3).
+    ## nothing, and there the step is kept only if it was declared: a single
+    ## row taken out of a timetable built with 'TimeStep' stays hourly, one
+    ## taken out of a timetable built from its row times does not.
     function this = subsetRowLabels (this, ixRows)
       rt = this.RowTimes(ixRows);
       this = applyRowTimes (this, rt, numel (rt) > 1);
@@ -325,9 +348,19 @@ classdef timetable < tabular
           this.TimeStep = givenStep;
           this.SampleRate = stepRate (givenStep);
         endif
+      elseif (numel (this.RowTimes) < 2 && ! this.StepDeclared)
+        ## Fewer than two rows imply no spacing of their own, and an object
+        ## that was never told one has nothing to keep.  The class resets
+        ## with the value, so an inferred calendar step becomes a duration.
+        this.TimeStep = seconds (NaN);
+        this.SampleRate = NaN;
       endif
       if (! isempty (this.RowTimes))
         this.StartTime = this.RowTimes(1);
+      elseif (! this.StepDeclared)
+        ## The start was only ever the first row time and there is none
+        ## left, so it goes missing rather than empty.
+        this.StartTime = missingTimes (this.RowTimes, 1);
       endif
     endfunction
 
@@ -691,6 +724,7 @@ classdef timetable < tabular
       this.VariableTypes = cellfun ('class', VariableValues, ...
                                     'UniformOutput', false);
       this.StartTime = StartTime;
+      this.StepDeclared = ! (leading || given(1));
       if (leading || given(1))
         this = applyRowTimes (this, RowTimes, true);
       else
@@ -773,6 +807,8 @@ classdef timetable < tabular
       endfor
       tbl.VariableTypes = cellfun ('class', tbl.VariableValues, ...
                                    'UniformOutput', false);
+      ## Concatenation reads its step off the times it ends up with.
+      tbl.StepDeclared = false;
       tbl = applyRowTimes (tbl, rt, true);
     endfunction
 
@@ -1077,7 +1113,9 @@ classdef timetable < tabular
     ##
     ## A timetable with fewer than two rows has no spacing to measure and
     ## answers from the time step it remembers, so a single row taken out of
-    ## an hourly timetable is still regular in time.
+    ## a timetable told it was hourly is still regular in time, while one
+    ## taken out of a timetable that read its step off its row times is
+    ## not.
     ##
     ## @seealso{timetable}
     ## @end deftypefn
