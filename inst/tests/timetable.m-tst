@@ -3014,6 +3014,31 @@
 %! assert_equal (C.A, [1; 2; NaN]);
 %! assert_equal (C.B, [NaN; 9; 8]);
 
+## Test an unmatched row keyed by the row times carries the time it has
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! A = timetable ([1; 2], 'RowTimes', t0 + hours (0:1)', ...
+%!                'VariableNames', {'A'});
+%! B = timetable ([9; 8], 'RowTimes', t0 + hours ([1 3])', ...
+%!                'VariableNames', {'B'});
+%! C = outerjoin (A, B);
+%! assert_equal (C.Properties.RowTimes, ...
+%!               [t0; t0 + hours(1); t0 + hours(3)]);
+%! D = outerjoin (A, B, 'Type', 'right');
+%! assert_equal (D.Properties.RowTimes, [t0 + hours(1); t0 + hours(3)]);
+
+## Test an unmatched row keyed by a variable has no time of its own
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! A = timetable ([1; 2], 'RowTimes', t0 + hours (0:1)', ...
+%!                'VariableNames', {'K'});
+%! B = timetable ([2; 3], 'RowTimes', t0 + hours ([5 6])', ...
+%!                'VariableNames', {'K'});
+%! C = outerjoin (A, B, 'Keys', 'K');
+%! rt = C.Properties.RowTimes;
+%! assert_equal (rt(1:2), [t0; t0 + hours(1)]);
+%! assert_equal (ismissing (rt(3)), true);
+
 ## Test 'Type' keeps the unmatched rows of one side only
 %!test
 %! t0 = datetime (2024, 1, 1);

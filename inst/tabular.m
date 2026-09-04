@@ -3969,6 +3969,21 @@ classdef (Abstract) tabular
       endif
       Rout = plainTable (Rout);
 
+      ## A row with no row of its own on the left has no label from there.
+      ## Where the key is the labels themselves, the right side knows it: the
+      ## row matched nothing precisely because its key, which is its label,
+      ## was not on the left.  Where the key is an ordinary variable, nothing
+      ## says when such a row happened and its label stays missing.
+      if (any (lKeyIdx == 0) && ! isempty (rowLabelHeader (tblL)))
+        fill = (ixL == 0);
+        if (any (fill))
+          labels = getRowLabels (Lout);
+          rlabels = getRowLabels (tblR);
+          labels(fill) = rlabels(ixR(fill));
+          Lout = setRowLabels (Lout, labels);
+        endif
+      endif
+
       ## Optionally merge each key pair into a single variable.  A merged key
       ## keeps the left position; its name is the left key name when both keys
       ## share it, or 'leftName_rightName' when they differ.

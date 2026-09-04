@@ -189,6 +189,20 @@ function c = gb_make_categorical (idx, labs, n)
 endfunction
 
 ## ---- Number-of-bins / edge-vector binning (numeric, datetime, duration) ----
+## The numeric proxy of a set of edges, in the same space 'gb_edge_bins'
+## works in: a serial date number for a datetime, days for a duration, and
+## the value itself for anything numeric.
+function p = gb_proxy_of (edges, ctype)
+  switch (ctype)
+    case 'datetime'
+      p = gb_dt2dn (edges)(:)';
+    case 'duration'
+      p = days (edges)(:)';
+    otherwise
+      p = double (edges)(:)';
+  endswitch
+endfunction
+
 function [idx, labs, errmsg] = gb_edge_bins (col, scheme, incEdge, varname)
   idx = [];  labs = {};  errmsg = '';
 
@@ -211,14 +225,13 @@ function [idx, labs, errmsg] = gb_edge_bins (col, scheme, incEdge, varname)
                         " '%s' must be a positive integer."), varname);
       return;
     endif
-    good = proxy(! isnan (proxy));
-    if (isempty (good))
-      edgesP = [0, 1];
-    elseif (min (good) == max (good))
-      edgesP = [min(good), min(good) + 1];
-    else
-      edgesP = min (good) + (0:nb) * (max (good) - min (good)) / nb;
-    endif
+    ## The edges a bin count implies are the ones 'discretize' picks: the
+    ## grouping methods share their rule with it and with 'histcounts', which
+    ## is a rounded bin width rather than the data range divided evenly, and
+    ## each type has its own ladder of units to snap to.  Asking 'discretize'
+    ## is how they stay one rule rather than three.
+    [~, edges] = discretize (col, nb);
+    edgesP = gb_proxy_of (edges, ctype);
   elseif (isnumeric (scheme))
     if (! strcmp (ctype, 'numeric'))
       errmsg = sprintf (strcat ("bin edges for grouping variable '%s' must be", ...
@@ -487,12 +500,10 @@ function s = gb_edge_labels (edgesP, ctype, dfmt)
   endswitch
 endfunction
 
+## A numeric edge as its label.  Six significant digits, so a large edge
+## reads as an exponent rather than as its digits: 3e+06, not 3000000.
 function s = gb_num_str (v)
-  if (isfinite (v) && v == fix (v) && abs (v) < 1e15)
-    s = sprintf ("%d", v);
-  else
-    s = num2str (v);
-  endif
+  s = sprintf ('%g', v);
 endfunction
 
 ## The duration column's display format (for duration edge labels), else ''.
