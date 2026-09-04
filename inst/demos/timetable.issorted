@@ -1,0 +1,21 @@
+%!demo
+%! ## `issorted` asks one question: are the row times in ascending order?  The
+%! ## ordering is not strict, so repeated times are sorted.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! Reading = [12; 20; 25; 44];
+%! issorted (timetable (Reading, 'RowTimes', t0 + hours (0:3)'))
+%! issorted (timetable (Reading, 'RowTimes', t0 + hours ([2 0 3 1])'))
+%! issorted (timetable (Reading, 'RowTimes', t0 + hours ([0 1 1 3])'))
+
+%!demo
+%! ## A missing row time leaves a timetable unsorted, and a timetable with
+%! ## fewer than two rows has nothing out of order.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! issorted (timetable ([1; 2; 3], 'RowTimes', [t0; NaT; t0 + hours(2)]))
+%! TT = timetable ((1:4)', 'RowTimes', t0 + hours (0:3)');
+%! issorted (TT(1,:))
+%!
+%! ## For anything beyond that question, ask `issortedrows` instead.
+%! issortedrows (TT, 'Time', 'descend')

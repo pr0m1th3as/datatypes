@@ -1655,6 +1655,30 @@ classdef (Abstract) tabular
 
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {tabular} {[@var{TF}, @var{errmsg}] =} issortedrowsCheck (@var{obj}, @var{args})
+    ##
+    ## Whether the rows are already in the order asked for.
+    ##
+    ## @var{args} is the cell of arguments the public method was given, less
+    ## the object itself, and takes the same forms @code{sortrows} does.  The
+    ## sort is stable, so the rows are in that order exactly when sorting
+    ## them would leave every one where it is.  @var{errmsg} carries the body
+    ## of any complaint so that the calling class can raise it under its own
+    ## name.
+    ##
+    ## @end deftypefn
+    function [TF, errmsg] = issortedrowsCheck (this, args_in)
+
+      TF = false;
+      [index, errmsg] = sortrowsIndex (this, args_in);
+      if (! isempty (errmsg))
+        return
+      endif
+      TF = isequal (index(:)', 1:height (this));
+
+    endfunction
+
     function names = customPropsOfType (this, type)
       names = {};
       if (isempty (this.CustomProperties))

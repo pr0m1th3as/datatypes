@@ -1277,6 +1277,7 @@ classdef timetable < tabular
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'sortrows'         'unique'           'topkrows'                           ##
+## 'issorted'         'issortedrows'                                          ##
 ##                                                                            ##
 ################################################################################
 
@@ -1434,6 +1435,66 @@ classdef timetable < tabular
         error ("timetable.topkrows: %s", errmsg);
       endif
       tbl = subsetrows (this, ix);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timetable} {@var{TF} =} issorted (@var{tt})
+    ##
+    ## True when the row times of a timetable are in ascending order.
+    ##
+    ## @code{@var{TF} = issorted (@var{tt})} returns true when each row time
+    ## is at or after the one before it.  The ordering is not strict, so
+    ## repeated times are sorted; a timetable with any missing row time is
+    ## not, and one with fewer than two rows has nothing out of order and so
+    ## is.  Only the row times are read: the variables take no part.
+    ##
+    ## This is the whole of the question @code{issorted} answers here.  It
+    ## takes no dimension, no direction and no options; use
+    ## @code{issortedrows} to ask about a direction, about a variable, or
+    ## about where missing values should fall.
+    ##
+    ## A @code{table} has no @code{issorted}, its row names being labels
+    ## rather than an ordering.
+    ##
+    ## @seealso{issortedrows, sortrows, timetable}
+    ## @end deftypefn
+    function TF = issorted (this, varargin)
+      if (nargin > 1)
+        error (strcat ("timetable.issorted: no options are accepted;", ...
+                       " use 'issortedrows' instead."));
+      endif
+      TF = issorted (this.RowTimes);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{TF} =} issortedrows (@var{tt})
+    ## @deftypefnx {timetable} {@var{TF} =} issortedrows (@var{tt}, @var{rowDimName})
+    ## @deftypefnx {timetable} {@var{TF} =} issortedrows (@var{tt}, @var{vars})
+    ## @deftypefnx {timetable} {@var{TF} =} issortedrows (@var{tt}, @dots{}, @var{direction})
+    ## @deftypefnx {timetable} {@var{TF} =} issortedrows (@dots{}, @var{Name}, @var{Value})
+    ##
+    ## True when the rows of a timetable are already in a given order.
+    ##
+    ## @code{@var{TF} = issortedrows (@var{tt})} returns true when the rows
+    ## are in ascending order of their row times, which is the order
+    ## @code{sortrows} would put them in with nothing else asked.
+    ##
+    ## Every form @code{sortrows} accepts is accepted here and asks the same
+    ## question of it: the row dimension name, one or more variables named,
+    ## indexed or selected, a direction, and the @qcode{'MissingPlacement'}
+    ## and @qcode{'ComparisonMethod'} pairs.  A direction must follow the
+    ## keys it applies to, as it must there.
+    ##
+    ## The sort is stable, so the answer is exactly whether sorting would
+    ## leave every row where it already is.
+    ##
+    ## @seealso{issorted, sortrows, timetable}
+    ## @end deftypefn
+    function TF = issortedrows (this, varargin)
+      [TF, errmsg] = issortedrowsCheck (this, varargin);
+      if (! isempty (errmsg))
+        error ("timetable.issortedrows: %s", errmsg);
+      endif
     endfunction
 
   endmethods

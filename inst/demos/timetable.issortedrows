@@ -1,0 +1,25 @@
+%!demo
+%! ## `issortedrows` asks whether the rows are already in the order `sortrows`
+%! ## would put them in, and takes every form `sortrows` does.  With nothing
+%! ## else asked, that order is ascending row times.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! Depth = [12; 45; 23; 8];
+%! TT = timetable (Depth, 'RowTimes', t0 + hours ([2 0 3 1])')
+%! issortedrows (TT)
+%! issortedrows (sortrows (TT))
+
+%!demo
+%! ## Name a variable or a direction to ask a narrower question.  The sort is
+%! ## stable, so the answer is exactly whether sorting would leave every row
+%! ## where it already is.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:6)', [10;20;30;40;50;60], 'RowTimes', ...
+%!                 t0 + hours (0:5)', 'VariableNames', {'A', 'B'});
+%! issortedrows (TT, 'B')
+%! issortedrows (TT, 'B', 'descend')
+%!
+%! ## A numeric index counts the variables, and a negative one asks about
+%! ## descending order.
+%! issortedrows (TT, -1)

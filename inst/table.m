@@ -1739,10 +1739,10 @@ classdef table < tabular
     ##
     ## @end deftypefn
     function TF = issortedrows (this, varargin)
-      ## Get indices of sorted table according to the user's options
-      [~, ix] = sortrows (this, varargin{:});
-      ## Check that indices match the current order
-      TF = isequal (ix', 1:height (this));
+      [TF, errmsg] = issortedrowsCheck (this, varargin);
+      if (! isempty (errmsg))
+        error ("table.issortedrows: %s", errmsg);
+      endif
     endfunction
 
     ## -*- texinfo -*-
