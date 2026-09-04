@@ -6954,10 +6954,9 @@ function [f, fmt] = parseCalComponents (comps, op)
   endif
   ## The calendarDuration Format must contain 'm', 'd', and 't', so a
   ## single-component result such as caldiff (..., 'Years') keeps them even
-  ## though only years are populated.  This is invisible for a non-zero result
-  ## (the other fields are zero and are not shown) but means an all-zero result
-  ## displays as '0d' rather than MATLAB's '0y'/'0q'/'0w'; the stored value is
-  ## the same.
+  ## though only years are populated.  This is invisible for a non-zero
+  ## result (the other fields are zero and are not shown), and an all-zero
+  ## result displays as '0d', as it does in MATLAB.
   fmt = '';
   if (f.y)
     fmt = [fmt, 'y'];
