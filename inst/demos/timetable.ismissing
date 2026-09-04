@@ -1,0 +1,14 @@
+%!demo
+%! ## `ismissing` marks the missing values of each variable, one column per
+%! ## variable and one row per row.  What counts as missing depends on the
+%! ## type: `NaN` for numbers, `NaT` for datetimes, an empty string for text.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! Depth = [12; 45; NaN];
+%! Site = {'N'; ''; 'S'};
+%! TT = timetable (Depth, Site, 'RowTimes', t0 + hours (0:2)')
+%! ismissing (TT)
+%!
+%! ## The row times are not read: they label the rows rather than being one
+%! ## of them.  A second argument names further values to treat as missing.
+%! ismissing (TT, 45)

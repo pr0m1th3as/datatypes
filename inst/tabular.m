@@ -305,6 +305,14 @@ classdef (Abstract) tabular
                      " uniqueIncludesLabels."), class (this));
     endfunction
 
+    ## Whether the row labels are still usable, one logical per row.  A
+    ## table's row names never disqualify a row; a timetable's row times do
+    ## when they are missing, there being no placing such a row in time.
+    function tf = usableRowLabels (this)
+      error (strcat ("%s: subclass must implement", ...
+                     " usableRowLabels."), class (this));
+    endfunction
+
     ## The row label metadata as a struct, keyed by the names the properties
     ## object publishes it under.  Separate from 'rowLabelName', which names
     ## the labels for a file header and for a timetable is the row dimension
@@ -2464,6 +2472,640 @@ classdef (Abstract) tabular
 
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {tabular} {[@var{TF}, @var{errmsg}] =} ismissingResult (@dots{})
+    ##
+    ## Which elements of the variables are missing.
+    ##
+    ## Missing values belong to the variables, which a tabular object holds
+    ## the same way whatever labels its rows.  @var{errmsg} carries the body
+    ## of any complaint so that the calling class can raise it under its own
+    ## name.
+    ##
+    ## @end deftypefn
+    function [TF, errmsg] = ismissingResult (this, varargin)
+
+      TF = [];
+      errmsg = '';
+
+      ## Parse optional Name-Value paired arguments
+      optNames = {'OutputFormat'};
+      dfValues = {'logical'};
+      [outFmt, indicator] = parsePairedArguments (optNames, dfValues, ...
+                                                  varargin(:));
+
+      if (! any (strcmpi (outFmt, {'logical', 'tabular'})))
+        errmsg = "invalid value for 'OutputFormat'.";
+        return
+      endif
+
+      ## Process each table variable with default missing values
+      if (isempty (indicator))
+        for i = 1:width (this)
+          tmpVar = this.VariableValues{i};
+          if (isa (tmpVar, 'table'))
+            varTF = ismissing (tmpVar, 'OutputFormat', 'logical');
+            varTF = any (varTF, 2);
+            this.VariableValues{i} = varTF;
+          elseif (any (isa (tmpVar, {'calendarDuration', 'categorical', ...
+                                     'datetime', 'duration', 'string'})))
+            varTF = ismissing (tmpVar);
+            varTF = any (varTF, 2);
+            this.VariableValues{i} = varTF;
+          elseif (ischar (tmpVar))
+            varTF = __ismissing__ (tmpVar);
+            varTF = all (varTF, 2);
+            this.VariableValues{i} = varTF;
+          else  # numeric, logical, and cellstr arrays
+            varTF = __ismissing__ (tmpVar);
+            varTF = any (varTF, 2);
+            this.VariableValues{i} = varTF;
+          endif
+        endfor
+      else
+        ## Remove nested cell caused by parsing with paredArgs
+        indicator = indicator{1};
+        ## Indicator must be a vector in any case
+        if (! isvector (indicator))
+          errmsg = "INDICATOR must be a vector.";
+          return
+        endif
+        ## NaN values for calendarDuration and duration
+        nan_calendarDuration = nan_duration = false;
+        ## Preprocess indicator if it is a cell array
+        if (iscell (indicator) && ! iscellstr (indicator))
+          ## Elements in indicator vector must be scalars (except char vectors)
+          fcn = @(x) isscalar (x) | isempty (x) | (ischar (x) & isvector (x));
+          all_scalar = all (cellfun (fcn, indicator));
+          if (! all_scalar)
+            errmsg = strcat ("INDICATOR must explicitly", ...
+                           " contain scalar elements or character", ...
+                           " vectors.");
+            return
+          endif
+          ## categorical arrays
+          idx_categorical = false;
+          categorical_indicator = [];
+          fcn = @(x) isa (x, 'categorical');
+          ids_categorical = cellfun (fcn, indicator);
+          if (any (ids_categorical))
+            new_categories = [indicator{ids_categorical}];
+            categorical_indicator = [categorical_indicator, new_categories];
+            idx_categorical = true;
+          endif
+          fcn = @(x) isa (x, 'string');
+          ids_categorical = cellfun (fcn, indicator);
+          if (any (ids_categorical))
+            new_categories = categorical ([indicator{ids_categorical}]);
+            categorical_indicator = [categorical_indicator, new_categories];
+            idx_categorical = true;
+          endif
+          ids_categorical = cellfun ('ischar', indicator);
+          if (any (ids_categorical))
+            new_categories = ...
+                categorical (string ([indicator{ids_categorical}]));
+            categorical_indicator = [categorical_indicator, new_categories];
+            idx_categorical = true;
+          endif
+          ## datetime arrays
+          fcn = @(x) isa (x, 'datetime');
+          idx_datetime = cellfun (fcn, indicator);
+          if (any (idx_datetime))
+            datetime_indicator = [indicator{idx_datetime}];
+            idx_datetime = true;
+          endif
+          ## duration arrays
+          fcn = @(x) isa (x, 'duration');
+          idx_duration = cellfun (fcn, indicator);
+          if (any (idx_duration))
+            duration_indicator = [indicator{idx_duration}];
+            idx_duration = true;
+          endif
+          ## string arrays
+          fcn = @(x) isa (x, 'string') || ischar (x) || iscellstr (x);
+          idx_string = cellfun (fcn, indicator);
+          if (any (idx_string))
+            string_indicator = string (indicator(idx_string));
+            idx_string = true;
+          endif
+          ## cell arrays of character vectors
+          fcn = @(x) iscellstr (x);
+          idx_iscstr = cellfun (fcn, indicator);
+          if (any (idx_iscstr))
+            iscstr_indicator = indicator{idx_iscstr};
+            idx_iscstr = true;
+          endif
+          ## char arrays
+          idx_ischar = cellfun ('ischar', indicator);
+          if (any (idx_ischar))
+            ischar_indicator = [indicator{idx_ischar}];
+            idx_ischar = true;
+          endif
+          ## numeric and logical arrays
+          fcn = @(x) isnumeric (x) || islogical (x);
+          idx_numlog = cellfun (fcn, indicator);
+          if (any (idx_numlog))
+            numlog_indicator = [indicator{idx_numlog}];
+            idx_numlog = true;
+            ## Check for NaN and apply to duration and calendarDuration arrays
+            if (any (isnan (numlog_indicator)))
+              nan_calendarDuration = nan_duration = true;
+            endif
+          endif
+        elseif (iscellstr (indicator))
+          ## cell arrays of character vectors and string arrays are searched
+          idx_iscstr = true;
+          iscstr_indicator = indicator;
+          idx_string = true;
+          string_indicator = indicator;
+          ## all other arrays are ignored
+          idx_categorical = false;
+          idx_datetime = false;
+          idx_duration = false;
+          idx_ischar = false;
+          idx_numlog = false;
+        else  # single data type indicator
+          idx_categorical = false;
+          idx_datetime = false;
+          idx_duration = false;
+          idx_string = false;
+          idx_iscstr = false;
+          idx_ischar = false;
+          idx_numlog = false;
+          if (isa (indicator, 'categorical'))
+            idx_categorical = true;
+            categorical_indicator = indicator;
+          elseif (isa (indicator, 'datetime'))
+            idx_datetime = true;
+            datetime_indicator = indicator;
+          elseif (isa (indicator, 'duration'))
+            idx_duration = true;
+            duration_indicator = indicator;
+          elseif (isa (indicator, 'string'))
+            idx_string = true;
+            string_indicator = indicator;
+            idx_categorical = true;
+            categorical_indicator = categorical (indicator);
+          elseif (iscellstr (indicator))
+            idx_iscstr = true;
+            iscstr_indicator = indicator;
+            idx_string = true;
+            string_indicator = string (indicator);
+          elseif (ischar (indicator))
+            idx_ischar = true;
+            ischar_indicator = cellstr (indicator);
+            idx_string = true;
+            string_indicator = string (indicator);
+            idx_categorical = true;
+            categorical_indicator = categorical (string_indicator);
+          else  # numeric and logical arrays
+            idx_numlog = true;
+            numlog_indicator = indicator;
+            ## Check for NaN and apply to duration and calendarDuration arrays
+            if (any (isnan (numlog_indicator)))
+              nan_calendarDuration = nan_duration = true;
+            endif
+          endif
+        endif
+        ## Return false TF vector for any datatypes that are not
+        ## represented in the indicator and should be ignored
+        TF_false = false (rows (this), 1);
+        for i = 1:width (this)
+          tmpVar = this.VariableValues{i};
+          if (isa (tmpVar, 'table'))
+            varTF = ismissing (tmpVar, indicator, 'OutputFormat', 'logical');
+          elseif (isa (tmpVar, 'calendarDuration'))
+            if (nan_calendarDuration)
+              varTF = ismissing (tmpVar);
+            else
+              varTF = TF_false;
+            endif
+          elseif (isa (tmpVar, 'categorical'))
+            if (idx_categorical)
+              varTF = ismissing (tmpVar, categorical_indicator);
+            else
+              varTF = TF_false;
+            endif
+          elseif (isa (tmpVar, 'datetime'))
+            if (idx_datetime)
+              varTF = ismissing (tmpVar, datetime_indicator);
+            else
+              varTF = TF_false;
+            endif
+          elseif (isa (tmpVar, 'duration'))
+            varTF = TF_false;
+            if (nan_duration)
+              varTF = varTF | ismissing (tmpVar);
+            endif
+            if (idx_duration)
+              varTF = varTF | ismissing (tmpVar, duration_indicator);
+            endif
+          elseif (isa (tmpVar, 'string'))
+            if (idx_string)
+              varTF = ismissing (tmpVar, string_indicator);
+            else
+              varTF = TF_false;
+            endif
+          elseif (iscellstr (tmpVar))
+            if (idx_iscstr)
+              varTF = __ismissing__ (tmpVar, iscstr_indicator);
+            else
+              varTF = TF_false;
+            endif
+          elseif (ischar (tmpVar))
+            if (idx_ischar)
+              varTF = __ismissing__ (cellstr (tmpVar), ischar_indicator);
+            else
+              varTF = TF_false;
+            endif
+          else  # numeric and logical arrays
+            if (idx_numlog)
+              varTF = __ismissing__ (tmpVar, numlog_indicator);
+            else
+              varTF = TF_false;
+            endif
+          endif
+          varTF = any (varTF, 2);
+          this.VariableValues{i} = varTF;
+        endfor
+      endif
+
+      ## Return appropriate OutputFormat.  The array comes from the shared
+      ## accessor rather than from 'table2array', which only a table has.
+      if (strcmpi (outFmt, 'logical'))
+        TF = varsAsArray (this, 'ismissing');
+      else
+        TF = this;
+      endif
+
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {tabular} {[@var{tbl}, @var{TF}, @var{errmsg}] =} rmmissingResult (@dots{})
+    ##
+    ## The object with its incomplete rows removed.
+    ##
+    ## Missing values belong to the variables, which a tabular object holds
+    ## the same way whatever labels its rows.  @var{errmsg} carries the body
+    ## of any complaint so that the calling class can raise it under its own
+    ## name.
+    ##
+    ## @end deftypefn
+    function [tbl, TF, errmsg] = rmmissingResult (this, varargin)
+
+      tbl = this;
+      TF = [];
+      errmsg = '';
+      ## A row whose label disqualifies it goes whatever the data
+      ## says, and whatever 'DataVariables' or 'MinNumMissing' say.
+      usable = usableRowLabels (this);
+      ## Handle simple input argument first
+      if (numel (varargin) == 0)
+        TF = any (ismissing (this), 2);
+        TF = TF | ! usable;
+        tbl = subsetrows (this, ! TF);
+        return;
+      endif
+
+      ## Parse optional Name-Value paired arguments
+      optNames = {'MinNumMissing', 'DataVariables', 'MissingLocations'};
+      dfValues = {1, [], []};
+      [minNum, dVars, mLocs] = parsePairedArguments (optNames, dfValues, ...
+                                                     varargin(:));
+
+      ## Check optional Name-Value paired arguments and operate accordingly
+      if (! isscalar (minNum) || fix (minNum) != minNum || minNum <= 0)
+        errmsg = "'MinNumMissing' must be a positive integer.";
+        return
+      endif
+      if (! isempty (dVars))
+        dIxVars = resolveVarRef (this, dVars, 'lenient');
+        if (any (dIxVars == 0))
+          badpos = find (dIxVars == 0)(1);
+          dv = dVars;
+          if (isa (dv, 'string'))
+            dv = cellstr (dv);
+          endif
+          if (ischar (dv))
+            badname = dv;
+          elseif (iscellstr (dv))
+            badname = dv{badpos};
+          else
+            badname = "<unknown>";
+          endif
+          errmsg = sprintf (strcat ("'DataVariables' index a", ...
+                         " non-existing variable: '%s'"), badname);
+          return
+        endif
+        tmpT = subsetvars (this, dIxVars);
+      else
+        tmpT = this;
+      endif
+      if (! isempty (mLocs))
+        if (islogical (mLocs))
+          if (! isequal (size (mLocs), size (tmpT)))
+            errmsg = strcat ("'MissingLocations' must be", ...
+                           " a logical matrix of the same size as the", ...
+                           " input table or the part of it referenced by", ...
+                           " 'DataVariables'.");
+            return
+          endif
+          TF = sum (mLocs, 2) >= minNum;
+          TF = TF | ! usable;
+          tbl = subsetrows (this, ! TF);
+        elseif (isa (mLocs, 'table'))
+          if (! all (ismember (tmpT.VariableNames, mLocs.VariableNames)))
+            errmsg = strcat ("'MissingLocations' must be", ...
+                           " a table with the same variable names as the", ...
+                           " input table or the part of it referenced by", ...
+                           " 'DataVariables'.");
+            return
+          endif
+          TF = false (rows (this), 0);
+          for jx = 1:width (tmpT)
+            kx = find (strcmp (tmpT.VariableNames{jx}, mLocs.VariableNames), 1);
+            varTF = mLocs.VariableValues{kx};
+            if (! islogical (varTF))
+              errmsg = strcat ("'MissingLocations' must", ...
+                             " be a table with logical variables.");
+              return
+            endif
+            if (! isequal (size (varTF), size (tmpT.VariableValues{jx})))
+              errmsg = strcat ("'MissingLocations' must", ...
+                             " be a table with the same variable sizes", ...
+                             " as the input table or the part of it", ...
+                             " referenced by 'DataVariables'.");
+              return
+            endif
+            TF = [TF, any(varTF, 2)];
+          endfor
+          TF = sum (TF, 2) >= minNum;
+          TF = TF | ! usable;
+          tbl = subsetrows (this, ! TF);
+        else
+          errmsg = "invalid data type for 'MissingLocations'.";
+          return
+        endif
+      else
+        TF = sum (ismissing (tmpT), 2) >= minNum;
+        TF = TF | ! usable;
+        tbl = subsetrows (this, ! TF);
+      endif
+
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {tabular} {[@var{tbl}, @var{TF}, @var{errmsg}] =} fillmissingResult (@dots{})
+    ##
+    ## The object with its missing values filled.
+    ##
+    ## Missing values belong to the variables, which a tabular object holds
+    ## the same way whatever labels its rows.  @var{errmsg} carries the body
+    ## of any complaint so that the calling class can raise it under its own
+    ## name.
+    ##
+    ## @end deftypefn
+    function [tbl, TF, errmsg] = fillmissingResult (tblA, varargin)
+
+      tbl = tblA;
+      TF = [];
+      errmsg = '';
+
+      ## Check input arguments
+      if (nargin < 2)
+        errmsg = "too few input arguments.";
+        return
+      endif
+
+      ## Resolve the fill method (and the value for the 'constant' method)
+      method = varargin{1};
+      if (isa (method, 'string') && isscalar (method))
+        method = char (method);
+      endif
+      if (! (ischar (method) && isrow (method)))
+        errmsg = "METHOD must be a character vector.";
+        return
+      endif
+      method = lower (method);
+      rest = varargin(2:end);
+      constVal = [];
+      switch (method)
+        case 'constant'
+          if (isempty (rest))
+            errmsg = strcat ("the 'constant' method", ...
+                           " requires a fill value.");
+            return
+          endif
+          constVal = rest{1};
+          rest = rest(2:end);
+        case {'previous', 'next', 'nearest', 'linear'}
+          ## supported; no extra positional argument
+        case {'movmean', 'movmedian', 'spline', 'pchip', 'makima', 'knn', ...
+              'mean', 'median', 'mode'}
+          errmsg = sprintf (strcat ("method '%s' is not supported", ...
+                         " yet."), method);
+          return
+        otherwise
+          errmsg = sprintf ("unknown method '%s'.", method);
+          return
+      endswitch
+
+      ## Parse optional Name-Value paired arguments
+      optNames = {'DataVariables', 'EndValues', 'ReplaceValues'};
+      dfValues = {[], 'extrap', true};
+      [dVars, endVals, replace] = parsePairedArguments (optNames, dfValues, ...
+                                                        rest(:));
+      if (! (islogical (replace) && isscalar (replace)))
+        errmsg = "'ReplaceValues' must be a logical scalar.";
+        return
+      endif
+      if (! replace)
+        errmsg = strcat ("'ReplaceValues' set to false is", ...
+                       " not supported yet.");
+        return
+      endif
+      ## 'EndValues' is checked here rather than where the end gaps are
+      ## filled, so that a bad value is refused whatever the data looks like.
+      ## A keyword names how the ends are filled; anything else is a constant,
+      ## which must be a scalar and is type-checked against each variable when
+      ## it is written.
+      endKeys = {'extrap', 'none', 'previous', 'next', 'nearest'};
+      if (ischar (endVals) || (isa (endVals, 'string') && isscalar (endVals)))
+        endVals = lower (char (endVals));
+        if (! any (strcmp (endVals, endKeys)))
+          errmsg = strcat ("'EndValues' must be 'extrap',", ...
+                         " 'previous', 'next', 'nearest', 'none', or a", ...
+                         " scalar constant.");
+          return
+        endif
+      elseif (! isscalar (endVals))
+        errmsg = "'EndValues' constant must be a scalar.";
+        return
+      endif
+
+      ## Resolve targeted variables
+      if (isempty (dVars))
+        ixVars = 1:width (tblA);
+      else
+        ixVars = resolveVarRef (tblA, dVars, 'lenient');
+        if (any (ixVars == 0))
+          badpos = find (ixVars == 0)(1);
+          dv = dVars;
+          if (isa (dv, 'string'))
+            dv = cellstr (dv);
+          endif
+          if (ischar (dv))
+            badname = dv;
+          elseif (iscellstr (dv))
+            badname = dv{badpos};
+          else
+            badname = "<unknown>";
+          endif
+          errmsg = sprintf (strcat ("'DataVariables' index a", ...
+                         " non-existing variable: '%s'"), badname);
+          return
+        endif
+      endif
+
+      ## Every targeted variable must have a type the 'linear' method can
+      ## interpolate, and that is settled before anything is filled: the call
+      ## is refused whether or not the variable has an entry missing.
+      if (strcmp (method, 'linear'))
+        for k = 1:numel (ixVars)
+          v = tblA.VariableValues{ixVars(k)};
+          if (isnumeric (v) || islogical (v) || isdatetime (v) ...
+              || isduration (v))
+            continue;
+          endif
+          errmsg = sprintf (strcat ("the 'linear' method does not", ...
+                         " support the type of table variable '%s'."), ...
+                 tblA.VariableNames{ixVars(k)});
+          return
+        endfor
+      endif
+
+      ## Resolve per-variable fill values for the 'constant' method
+      if (strcmp (method, 'constant'))
+        fillVals = resolve_const_values (constVal, numel (ixVars));
+      endif
+
+      ## Initialize outputs (TF has one column per table variable)
+      tbl = tblA;
+      TF = false (height (tblA), width (tblA));
+
+      ## Fill each targeted variable
+      for k = 1:numel (ixVars)
+        iv = ixVars(k);
+        v = tbl.VariableValues{iv};
+        M = __varmissing__ (v);
+        if (! any (M(:)))
+          continue;
+        endif
+        filled = false (size (M));
+        v0 = v;
+        if (strcmp (method, 'constant'))
+          [v, filled] = fill_constant (v, M, fillVals{k}, ...
+                                       tbl.VariableNames{iv});
+        else
+          for c = 1:columns (M)
+            m = M(:,c);
+            if (! any (m))
+              continue;
+            endif
+            if (strcmp (method, 'linear'))
+              [v(:,c), filled(:,c)] = fill_linear (v(:,c), m);
+            else
+              si = fill_neighbor_idx (m, method);
+              rows = m & si > 0;
+              v(rows,c) = v(si(rows),c);
+              filled(:,c) = rows;
+            endif
+          endfor
+        endif
+        ## Every method has now filled the end gaps the way it extrapolates,
+        ## which is what 'extrap' asks for.  Any other 'EndValues' overrides
+        ## them, whatever the method was.
+        if (! (ischar (endVals) && strcmp (endVals, 'extrap')))
+          for c = 1:columns (M)
+            if (! any (M(:,c)))
+              continue;
+            endif
+            [v(:,c), filled(:,c)] = apply_end_values (v(:,c), v0(:,c), ...
+                                      M(:,c), filled(:,c), endVals, ...
+                                      tbl.VariableNames{iv});
+          endfor
+        endif
+        tbl.VariableValues{iv} = v;
+        TF(:,iv) = any (filled, 2);
+      endfor
+
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =} standardizeMissingResult (@dots{})
+    ##
+    ## The object with the given values made missing.
+    ##
+    ## Missing values belong to the variables, which a tabular object holds
+    ## the same way whatever labels its rows.  @var{errmsg} carries the body
+    ## of any complaint so that the calling class can raise it under its own
+    ## name.
+    ##
+    ## @end deftypefn
+    function [tbl, errmsg] = standardizeMissingResult (tblA, indicator, ...
+                                                       varargin)
+
+      tbl = tblA;
+      errmsg = '';
+
+      ## Check input arguments
+      if (nargin < 2)
+        errmsg = "too few input arguments.";
+        return
+      endif
+
+      ## Parse optional Name-Value paired arguments
+      optNames = {'DataVariables'};
+      dfValues = {[]};
+      dVars = parsePairedArguments (optNames, dfValues, varargin(:));
+
+      ## Resolve targeted variables
+      if (isempty (dVars))
+        ixVars = 1:width (tblA);
+      else
+        ixVars = resolveVarRef (tblA, dVars, 'lenient');
+        if (any (ixVars == 0))
+          badpos = find (ixVars == 0)(1);
+          dv = dVars;
+          if (isa (dv, 'string'))
+            dv = cellstr (dv);
+          endif
+          if (ischar (dv))
+            badname = dv;
+          elseif (iscellstr (dv))
+            badname = dv{badpos};
+          else
+            badname = "<unknown>";
+          endif
+          errmsg = sprintf (strcat ("'DataVariables' index", ...
+                         " a non-existing variable: '%s'"), badname);
+          return
+        endif
+      endif
+
+      ## Split the indicator into numeric and text indicator values
+      [numInd, txtInd] = std_normalize_indicator (indicator);
+
+      ## Standardize each targeted variable
+      tbl = tblA;
+      for k = 1:numel (ixVars)
+        iv = ixVars(k);
+        v = std_apply_indicator (tbl.VariableValues{iv}, numInd, txtInd);
+        tbl.VariableValues{iv} = v;
+      endfor
+
+    endfunction
+
     function names = customPropsOfType (this, type)
       names = {};
       if (isempty (this.CustomProperties))
@@ -4054,6 +4696,281 @@ function msg = uniqueBadType (badtype)
   endswitch
 
 endfunction
+
+function [col, filled] = apply_end_values (col, col0, m, filled, endVals, vname)
+  [head, tail] = end_gaps (m);
+  if (! any (head | tail))
+    return;
+  endif
+  known = find (! m(:));
+  if (ischar (endVals))
+    switch (endVals)
+      case 'none'
+        col(head | tail) = col0(head | tail);
+        filled(head | tail) = false;
+      case 'previous'
+        col(head) = col0(head);
+        filled(head) = false;
+        if (! isempty (known))
+          col(tail) = col(known(end));
+          filled(tail) = true;
+        endif
+      case 'next'
+        col(tail) = col0(tail);
+        filled(tail) = false;
+        if (! isempty (known))
+          col(head) = col(known(1));
+          filled(head) = true;
+        endif
+      case 'nearest'
+        if (isempty (known))
+          col(head | tail) = col0(head | tail);
+          filled(head | tail) = false;
+        else
+          col(head) = col(known(1));
+          col(tail) = col(known(end));
+          filled(head | tail) = true;
+        endif
+      otherwise
+        error (strcat ("table.fillmissing: unsupported 'EndValues'", ...
+                       " option '%s'."), endVals);
+    endswitch
+  else
+    try
+      col(head | tail) = endVals;
+    catch
+      error (strcat ("table.fillmissing: the 'EndValues' constant", ...
+                     " cannot be", ...
+                     " assigned to table variable '%s'."), vname);
+    end_try_catch
+    filled(head | tail) = true;
+  endif
+endfunction
+
+## Split a 'standardizeMissing' indicator into a numeric row vector NUMIND and a
+## cellstr row TXTIND of text indicators.  Used by 'standardizeMissing'.
+
+function [head, tail] = end_gaps (m)
+  m = m(:);
+  known = find (! m);
+  if (isempty (known))
+    head = m;
+    tail = false (size (m));
+    return;
+  endif
+  x = (1:numel (m))';
+  head = m & x < known(1);
+  tail = m & x > known(end);
+endfunction
+
+## Impose 'EndValues' on the end gaps of a column.  COL is the column after
+## the fill method has run and COL0 the column before it, so a value the
+## method placed in an end gap can be taken back out.  A keyword takes the
+## value of the anchor on the side it names and leaves the other side missing;
+## a constant is written directly and must be assignable to the variable.
+
+function [v, filled] = fill_constant (v, M, fv, varname)
+  filled = M;
+  try
+    if (iscellstr (v))
+      if (ischar (fv))
+        fv = {fv};
+      elseif (! (iscellstr (fv) && isscalar (fv)))
+        error ("incompatible");
+      endif
+      v(M) = fv;
+    else
+      v(M) = fv;
+    endif
+  catch
+    error (strcat ("table.fillmissing: the fill value is incompatible", ...
+                   " with variable '%s'."), varname);
+  end_try_catch
+endfunction
+
+## For a column with logical missing mask M, return the source row index SI for
+## each row: SI(i) is the row whose value should fill row i (0 when none is
+## reachable).  METHOD is 'previous', 'next', or 'nearest'.  Used by
+## 'fillmissing'.
+
+function [col, filled] = fill_linear (col, m)
+  m = m(:);
+  n = numel (m);
+  filled = false (n, 1);
+  known = ! m;
+  if (sum (known) < 2)
+    return;                         # need at least two anchors to interpolate
+  endif
+  x = (1:n)';
+  xk = x(known);
+  ## A datetime or a duration is interpolated in seconds and put back through
+  ## the class's own arithmetic, so its type, format and time zone survive.  A
+  ## datetime has no natural zero, so it is measured from its first known
+  ## entry.
+  origin = [];
+  if (isdatetime (col))
+    origin = col(xk(1));
+    yk = seconds (col(known) - origin);
+  elseif (isduration (col))
+    yk = seconds (col(known));
+  else
+    yk = double (col(known));
+  endif
+  lo = xk(1);
+  hi = xk(end);
+  vals = NaN (n, 1);
+  ## Interior gaps are interpolated; the end gaps are extrapolated, which is
+  ## what 'EndValues' 'extrap' asks of this method.  Any other value overrides
+  ## them in the caller.
+  interior = m & x > lo & x < hi;
+  if (any (interior))
+    vals(interior) = interp1 (xk, yk, x(interior), 'linear');
+  endif
+  ends = m & (x < lo | x > hi);
+  if (any (ends))
+    vals(ends) = interp1 (xk, yk, x(ends), 'linear', 'extrap');
+  endif
+  if (isdatetime (col))
+    col(m) = origin + seconds (vals(m));
+  elseif (isduration (col))
+    col(m) = seconds (vals(m));
+  else
+    col(m) = vals(m);
+  endif
+  filled(m) = true;
+endfunction
+
+## The leading and trailing runs of missing entries of a column with missing
+## mask M.  Everything before the first known entry is a leading gap and
+## everything after the last is a trailing one.  When nothing is known there
+## is no anchor to sit between, so every entry is a leading gap, which is what
+## a constant end value fills and what every keyword leaves alone.
+
+function si = fill_neighbor_idx (m, method)
+  m = m(:);
+  n = numel (m);
+  idx = (1:n)';
+  vp = idx;
+  vp(m) = 0;
+  sp = cummax (vp);                 # previous non-missing index (0 if none)
+  vn = idx;
+  vn(m) = n + 1;
+  sn = flipud (cummin (flipud (vn)));
+  sn(sn == n + 1) = 0;              # next non-missing index (0 if none)
+  switch (method)
+    case 'previous'
+      si = sp;
+    case 'next'
+      si = sn;
+    case 'nearest'
+      si = idx;
+      for i = find (m)'
+        if (sp(i) == 0 && sn(i) == 0)
+          si(i) = 0;
+        elseif (sp(i) == 0)
+          si(i) = sn(i);
+        elseif (sn(i) == 0)
+          si(i) = sp(i);
+        elseif (sn(i) - i <= i - sp(i))
+          si(i) = sn(i);            # tie favors the later (next) value
+        else
+          si(i) = sp(i);
+        endif
+      endfor
+  endswitch
+endfunction
+
+## Linearly interpolate the missing entries of numeric column COL (mask M).
+## ENDVALS controls leading/trailing gaps ('extrap', 'none', or a numeric
+## scalar).  Returns the filled column and a logical mask of filled rows.  Used
+## by 'fillmissing'.
+
+function fvals = resolve_const_values (constVal, nvars)
+  if (iscell (constVal))
+    if (isscalar (constVal))
+      fvals = repmat (constVal, 1, nvars);
+    elseif (numel (constVal) == nvars)
+      fvals = reshape (constVal, 1, nvars);
+    else
+      error (strcat ("table.fillmissing: a cell array of fill values must", ...
+                     " have one element per targeted variable."));
+    endif
+  elseif (ischar (constVal) || isscalar (constVal))
+    fvals = repmat ({constVal}, 1, nvars);
+  elseif (isvector (constVal) && numel (constVal) == nvars)
+    fvals = num2cell (reshape (constVal, 1, nvars));
+  else
+    error (strcat ("table.fillmissing: the fill value must be a scalar, a", ...
+                   " vector with one element per targeted variable, or a", ...
+                   " cell array of per-variable values."));
+  endif
+endfunction
+
+## Fill every missing entry of variable V (mask M) with the constant FV.  Used
+## by 'fillmissing'.  VARNAME names the variable for error reporting.
+
+function v = std_apply_indicator (v, numInd, txtInd)
+  if (isfloat (v))
+    if (! isempty (numInd))
+      v(ismember (v, numInd)) = NaN;
+    endif
+  elseif (iscellstr (v))
+    if (! isempty (txtInd))
+      v(ismember (v, txtInd)) = {''};
+    endif
+  elseif (isa (v, 'string'))
+    if (! isempty (txtInd))
+      v(ismember (cellstr (v), txtInd)) = string (missing);
+    endif
+  elseif (isa (v, 'categorical'))
+    if (! isempty (txtInd))
+      v(ismember (cellstr (v), txtInd)) = categorical (missing);
+    endif
+  endif
+  ## logical, integer, duration, datetime, calendarDuration, and nested table
+  ## variables have no compatible standard missing value here; pass through.
+endfunction
+
+## Helper function for unstack method to get default aggregation function
+## and missing values according to the data type of the stacked variable
+
+function [numInd, txtInd] = std_normalize_indicator (indicator)
+  numInd = [];
+  txtInd = {};
+  if (iscell (indicator) && ! iscellstr (indicator))
+    for i = 1:numel (indicator)
+      e = indicator{i};
+      if (ischar (e))
+        txtInd{end+1} = e;
+      elseif (isa (e, 'string'))
+        tmp = cellstr (e);
+        txtInd = [txtInd, tmp(:)'];
+      elseif (iscellstr (e))
+        txtInd = [txtInd, e(:)'];
+      elseif (isnumeric (e) || islogical (e))
+        numInd = [numInd, double(e(:)')];
+      else
+        error (strcat ("table.standardizeMissing: unsupported indicator", ...
+                       " element of class '%s'."), class (e));
+      endif
+    endfor
+  elseif (iscellstr (indicator))
+    txtInd = indicator(:)';
+  elseif (ischar (indicator))
+    txtInd = {indicator};
+  elseif (isa (indicator, 'string'))
+    tmp = cellstr (indicator);
+    txtInd = tmp(:)';
+  elseif (isnumeric (indicator) || islogical (indicator))
+    numInd = double (indicator(:)');
+  else
+    error (strcat ("table.standardizeMissing: invalid INDICATOR of class", ...
+                   " '%s'."), class (indicator));
+  endif
+endfunction
+
+## Replace entries of variable V that match a (type-compatible) indicator with
+## the standard missing value of V's class.  Used by 'standardizeMissing'.
 
 function index = labelOrder (labels, direction, MP)
 

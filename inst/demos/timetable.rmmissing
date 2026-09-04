@@ -1,0 +1,26 @@
+%!demo
+%! ## `rmmissing` drops the rows holding a missing value, and reports which
+%! ## ones went.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! Depth = [12; 45; NaN; 8];
+%! TT = timetable (Depth, 'RowTimes', t0 + hours (0:3)')
+%! [R, TF] = rmmissing (TT);
+%! R
+%! TF
+
+%!demo
+%! ## A row whose *time* is missing goes whatever its data holds.  That is a
+%! ## precondition rather than a report of missingness: `ismissing` does not
+%! ## mark such a row and `anymissing` does not count it, yet `rmmissing`
+%! ## cannot keep a row it has no way to place in time.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([12; 45; 23], 'RowTimes', [t0; NaT; t0 + hours(2)], ...
+%!                 'VariableNames', {'Depth'});
+%! anymissing (TT)
+%! rmmissing (TT)
+%!
+%! ## Neither `'DataVariables'` nor `'MinNumMissing'` reaches the row times,
+%! ## so neither can spare that row.
+%! rmmissing (TT, 'MinNumMissing', 2)

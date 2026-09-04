@@ -206,6 +206,13 @@ classdef timetable < tabular
       tf = true;
     endfunction
 
+    ## A missing row time disqualifies its row: there is no placing such a
+    ## row in time, whatever its variables hold.
+    function tf = usableRowLabels (this)
+      tf = ! ismissing (this.RowTimes);
+      tf = tf(:);
+    endfunction
+
     ## The four properties a timetable publishes about its row times, keyed
     ## by the names they are published under.  'RowTimes' is the stored
     ## truth; the other three describe it and are maintained with it.
@@ -1167,6 +1174,126 @@ classdef timetable < tabular
     ## @end deftypefn
     function TF = istimetable (this)
       TF = true;
+    endfunction
+
+  endmethods
+
+################################################################################
+##                        **    Missing Data    **                            ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'ismissing'        'anymissing'       'rmmissing'                          ##
+## 'standardizeMissing'                                                       ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{TF} =} ismissing (@var{tt})
+    ## @deftypefnx {timetable} {@var{TF} =} ismissing (@var{tt}, @var{indicator})
+    ##
+    ## Find missing values in the variables of a timetable.
+    ##
+    ## @code{@var{TF} = ismissing (@var{tt})} returns a logical array with one
+    ## row per row of @var{tt} and one column per variable, true where the
+    ## variable is missing there.  What counts as missing depends on the type:
+    ## @qcode{NaN} for numeric data, @qcode{NaT} for @code{datetime},
+    ## @qcode{<undefined>} for @code{categorical}, and an empty character
+    ## vector or string.
+    ##
+    ## The row times are not read.  They label the rows rather than being one
+    ## of them, so a missing row time is not reported here and does not make
+    ## @code{anymissing} true.  @code{rmmissing} does drop such a row, being
+    ## about what can be kept rather than about what is missing.
+    ##
+    ## @code{@var{TF} = ismissing (@var{tt}, @var{indicator})} treats the
+    ## values in @var{indicator} as missing as well.
+    ##
+    ## @seealso{anymissing, rmmissing, standardizeMissing, timetable}
+    ## @end deftypefn
+    function TF = ismissing (this, varargin)
+      [TF, errmsg] = ismissingResult (this, varargin{:});
+      if (! isempty (errmsg))
+        error ("timetable.ismissing: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timetable} {@var{TF} =} anymissing (@var{tt})
+    ##
+    ## True when any variable of a timetable has a missing value.
+    ##
+    ## @code{@var{TF} = anymissing (@var{tt})} is @code{any (ismissing
+    ## (@var{tt})(:))} and reads the same thing: the variables, and not the
+    ## row times.  A timetable whose only missing value is a row time
+    ## answers false here and still loses that row to @code{rmmissing}.
+    ##
+    ## @seealso{ismissing, rmmissing, timetable}
+    ## @end deftypefn
+    function TF = anymissing (this)
+      TF = any (any (ismissing (this)));
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{ttB} =} rmmissing (@var{ttA})
+    ## @deftypefnx {timetable} {@var{ttB} =} rmmissing (@var{ttA}, @var{Name}, @var{Value})
+    ## @deftypefnx {timetable} {[@var{ttB}, @var{TF}] =} rmmissing (@dots{})
+    ##
+    ## Remove the incomplete rows of a timetable.
+    ##
+    ## @code{@var{ttB} = rmmissing (@var{ttA})} removes every row holding a
+    ## missing value.
+    ##
+    ## @strong{A row whose row time is missing is removed whatever its
+    ## variables hold}, and whatever @qcode{'DataVariables'} or
+    ## @qcode{'MinNumMissing'} say: a row that cannot be placed in time is
+    ## not a row a timetable can keep.  That is a precondition rather than a
+    ## report of missingness, which is why @code{ismissing} does not mark
+    ## such a row and @code{anymissing} does not count it.
+    ##
+    ## @qcode{'DataVariables'} names the variables to judge a row by, and
+    ## @qcode{'MinNumMissing'} how many missing values a row must hold before
+    ## it goes.  Neither reaches the row times.
+    ##
+    ## @code{[@var{ttB}, @var{TF}] = rmmissing (@dots{})} also returns a
+    ## logical column marking the rows that were removed, the ones dropped
+    ## for their row times included.
+    ##
+    ## The time step is read afresh from the rows that survive.
+    ##
+    ## @seealso{ismissing, standardizeMissing, timetable}
+    ## @end deftypefn
+    function [tbl, TF] = rmmissing (this, varargin)
+      [tbl, TF, errmsg] = rmmissingResult (this, varargin{:});
+      if (! isempty (errmsg))
+        error ("timetable.rmmissing: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{ttB} =} standardizeMissing (@var{ttA}, @var{indicator})
+    ## @deftypefnx {timetable} {@var{ttB} =} standardizeMissing (@dots{}, @qcode{'DataVariables'}, @var{vars})
+    ##
+    ## Make given values missing in a timetable.
+    ##
+    ## @code{@var{ttB} = standardizeMissing (@var{ttA}, @var{indicator})}
+    ## replaces every value matching @var{indicator} with the missing value
+    ## of its own type, so that @code{ismissing} and @code{rmmissing} will
+    ## afterwards treat it as missing.
+    ##
+    ## @qcode{'DataVariables'} restricts it to the variables named.  The row
+    ## times are not a data variable and are never rewritten, so the time
+    ## step is unchanged.
+    ##
+    ## @seealso{ismissing, rmmissing, timetable}
+    ## @end deftypefn
+    function tbl = standardizeMissing (this, varargin)
+      [tbl, errmsg] = standardizeMissingResult (this, varargin{:});
+      if (! isempty (errmsg))
+        error ("timetable.standardizeMissing: %s", errmsg);
+      endif
     endfunction
 
   endmethods
