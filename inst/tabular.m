@@ -3325,6 +3325,13 @@ classdef (Abstract) tabular
       tbl = [];
       errmsg = '';
       nargs = numel (args);
+      if (elementwise && nargs != 2)
+        ## 'repelem' takes a count per dimension and nothing else.  A lone
+        ## count is not read as both, as it is for an array: MATLAB refuses
+        ## it for a tabular object and so do we.
+        errmsg = 'exactly three input arguments are required.';
+        return;
+      endif
       if (nargs < 1)
         errmsg = 'too few input arguments.';
         return;

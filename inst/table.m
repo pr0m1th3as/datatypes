@@ -5847,14 +5847,18 @@ classdef table < tabular
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn  {table} {@var{tblB} =} repelem (@var{tblA}, @var{sz})
-    ## @deftypefnx {table} {@var{tblB} =} repelem (@var{tblA}, @var{rows}, @var{columns})
+    ## @deftypefn {table} {@var{tblB} =} repelem (@var{tblA}, @var{rows}, @var{columns})
     ##
     ## Replicate elements of a table.
     ##
-    ## Replicates elements of the input table @var{tblA} in a similar fashion
-    ## to how @code{repelem} applies to a matrix.  Only two dimensions are
-    ## supported for tables.
+    ## Replicates each row of the input table @var{tblA} @var{rows} times and
+    ## each variable @var{columns} times, keeping the repeats of a row
+    ## together, in a similar fashion to how @code{repelem} applies to a
+    ## matrix.  Each repeated variable takes a numbered name, @qcode{x}
+    ## becoming @qcode{x}, @qcode{x_1}.
+    ##
+    ## Both counts must be given.  A table has exactly two dimensions, so a
+    ## lone count is not read as applying to both, as it is for a matrix.
     ##
     ## @end deftypefn
     function tbl = repelem (this, varargin)

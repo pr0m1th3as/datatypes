@@ -1170,18 +1170,17 @@ classdef timetable < tabular
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn  {timetable} {@var{tt2} =} repelem (@var{tt}, @var{sz})
-    ## @deftypefnx {timetable} {@var{tt2} =} repelem (@var{tt}, @var{rows}, @var{cols})
+    ## @deftypefn {timetable} {@var{tt2} =} repelem (@var{tt}, @var{rows}, @var{cols})
     ##
     ## Repeat each row and variable of a timetable in place.
     ##
     ## @code{@var{tt2} = repelem (@var{tt}, @var{rows}, @var{cols})} repeats
     ## each row of @var{tt} @var{rows} times and each variable @var{cols}
-    ## times, keeping the repeats of a row together.  Given a single argument
-    ## both counts take it.  Each repeated row carries the row time of the row
-    ## it came from, so the result has repeated row times and is generally
-    ## irregular; each repeated variable takes a numbered name, @qcode{A}
-    ## becoming @qcode{A}, @qcode{A_1}.
+    ## times, keeping the repeats of a row together.  Both counts must be
+    ## given, a timetable having exactly two dimensions.  Each repeated row
+    ## carries the row time of the row it came from, so the result has
+    ## repeated row times and is generally irregular; each repeated variable
+    ## takes a numbered name, @qcode{A} becoming @qcode{A}, @qcode{A_1}.
     ##
     ## @seealso{repmat, timetable}
     ## @end deftypefn

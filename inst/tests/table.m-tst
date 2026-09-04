@@ -6416,24 +6416,22 @@
 %! assert_equal (R.Properties.VariableNames, {'x', 'x_1', 'y', 'y_1'});
 %! assert_equal (R.x, [1; 2; 3]);
 %! assert_equal (R.x_1, [1; 2; 3]);
-%!test  # a scalar count applies to both dimensions
+%!test  # a scalar count applies to both dimensions of 'repmat' alone
 %! T = table ([1; 2; 3], 'VariableNames', {'x'});
-%! R = repelem (T, 2);
+%! R = repmat (T, 2);
 %! assert_equal (size (R), [6, 2]);
-%! assert_equal (R.x, [1; 1; 2; 2; 3; 3]);
+%! assert_equal (R.x, [1; 2; 3; 1; 2; 3]);
 %! assert_equal (R.Properties.VariableNames, {'x', 'x_1'});
 %!test  # repelem (T, 1, 1) leaves the table unchanged
 %! T = table ([1; 2; 3], 'VariableNames', {'x'});
 %! assert_equal (isequal (repelem (T, 1, 1), T), true);
 ## Test input validation for 'repelem' method
-%!error <table.repelem: too few input arguments.> ...
+%!error <table.repelem: exactly three input arguments are required.> ...
 %! repelem (table (1));
-%!error <table.repelem: only 2 dimensions are supported.> ...
+%!error <table.repelem: exactly three input arguments are required.> ...
 %! repelem (table (1), 1, 2, 3);
-%!error <table.repelem: SZ must be a positive integer.> ...
-%! repelem (table (1), 1.5);
-%!error <table.repelem: SZ must be a positive integer.> ...
-%! repelem (table (1), 0);
+%!error <table.repelem: exactly three input arguments are required.> ...
+%! repelem (table (1), 2);
 %!error <table.repelem: ROWS must be a positive integer.> ...
 %! repelem (table (1), 1.5, 1);
 %!error <table.repelem: COLUMNS must be a positive integer.> ...

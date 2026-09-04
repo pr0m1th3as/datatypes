@@ -645,13 +645,15 @@
 %! assert_equal (isregular (repelem (TT, 2, 1)), false);
 %! assert_equal (ismissing (repelem (TT, 2, 1).Properties.TimeStep), true);
 
-## Test a single argument repeats in both dimensions
+## Test a single argument repeats both dimensions of 'repmat' alone
 %!test
 %! t0 = datetime (2024, 1, 1);
 %! TT = timetable ([1; 2], 'RowTimes', t0 + hours (0:1)', ...
 %!                 'VariableNames', {'A'});
-%! assert_equal (size (repelem (TT, 2)), [4, 2]);
 %! assert_equal (size (repmat (TT, 2)), [4, 2]);
+%!error <timetable.repelem: exactly three input arguments are required.> ...
+%! rt = datetime (2024, 1, 1) + hours (0:1)';
+%! repelem (timetable ([1; 2], 'RowTimes', rt), 2);
 
 ## Test the argument validation is the timetable's own
 %!error <timetable.repelem: COLUMNS must be a positive integer.> ...
