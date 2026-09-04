@@ -138,39 +138,13 @@ function tbl = ods2table (filename, varargin)
     if (! isempty (U)),  U(:,1) = [];  endif
   endif
 
-  ## Group consecutive columns that share a variable name (multicolumn
-  ## variables), then reconstruct each variable from its declared type.
-  names = N(1,:);
-  ncol = numel (names);
-  varNames = {};
-  varValues = {};
-  descr = {};
-  units = {};
-  c = 1;
-  while (c <= ncol)
-    c2 = c;
-    while (c2 < ncol && strcmp (names{c2+1}, names{c}))
-      c2 += 1;
-    endwhile
-    idx = c:c2;
-    varNames{end+1} = names{c};
-    varValues{end+1} = ods_cell2var (data(:,idx), vtype(:,idx), T{1,c});
-    if (! isempty (D)),  descr{end+1} = D{1,c};  endif
-    if (! isempty (U)),  units{end+1} = U{1,c};  endif
-    c = c2 + 1;
-  endwhile
-
-  if (isempty (RowNames))
-    tbl = table (varValues{:}, 'VariableNames', varNames);
-  else
-    tbl = table (varValues{:}, 'VariableNames', varNames, 'RowNames', RowNames);
-  endif
-  if (! isempty (descr))
-    tbl.Properties.VariableDescriptions = descr;
-  endif
-  if (! isempty (units))
-    tbl.Properties.VariableUnits = units;
-  endif
+  ## Group the columns that share a variable name into one variable, rebuild
+  ## any nested table or structure from the deeper header rows, and restore the
+  ## descriptions and units.  The value types travel alongside the data so that
+  ## the leaf conversion still sees them.
+  tbl = __cell2tbl__ (data, T, N, D, U, RowNames, ...
+                      @(varC, varVT, typestr) ods_cell2var (varC, varVT, ...
+                                                            typestr), vtype);
 
 endfunction
 
@@ -364,6 +338,75 @@ endfunction
 %!   R = ods2table (fn);
 %!   assert_equal (class (R.flag), 'logical');
 %!   assert_equal (R.flag, [true; false; true]);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Round-trip: a nested table, values and metadata
+%!test
+%! fn = [tempname() '.fods'];
+%! inner = table ([3; 4], [5; 6], 'VariableNames', {'p', 'q'});
+%! inner.Properties.VariableUnits = {'m', 's'};
+%! T = table ([1; 2], inner, 'VariableNames', {'a', 'v'});
+%! T.Properties.VariableUnits = {'kg', ''};
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   R = ods2table (fn);
+%!   assert_equal (isequaln (R, T), true);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Round-trip: a nested table in a zipped '.ods' package
+%!test
+%! fn = [tempname() '.ods'];
+%! inner = table ([3; 4], [5; 6], 'VariableNames', {'p', 'q'});
+%! T = table ([1; 2], inner, 'VariableNames', {'a', 'v'});
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   R = ods2table (fn);
+%!   assert_equal (isequaln (R, T), true);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Round-trip: a struct variable becomes one column per field
+%!test
+%! fn = [tempname() '.fods'];
+%! T = table ([9; 8], struct ('f', {1; 2}, 'g', {3; 4}), ...
+%!            'VariableNames', {'a', 'v'});
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   R = ods2table (fn);
+%!   assert_equal (isequaln (R, T), true);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Round-trip: a nested table alongside a multicolumn variable and row names
+%!test
+%! fn = [tempname() '.fods'];
+%! inner = table ([3; 4], [5; 6], 'VariableNames', {'p', 'q'});
+%! T = table ([1; 2], inner, [7, 8; 9, 10], 'VariableNames', {'a', 'v', 'm'});
+%! T.Properties.RowNames = {'r1', 'r2'};
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   R = ods2table (fn);
+%!   assert_equal (isequaln (R, T), true);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Round-trip: a nested table holding a datetime and a duration
+%!test
+%! fn = [tempname() '.fods'];
+%! inner = table (datetime (2024, 1, [1; 2]), hours ([1; 2]), ...
+%!                'VariableNames', {'d', 'u'});
+%! T = table ([1; 2], inner, 'VariableNames', {'a', 'v'});
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   R = ods2table (fn);
+%!   assert_equal (isequaln (R, T), true);
 %! unwind_protect_cleanup
 %!   delete (fn);
 %! end_unwind_protect

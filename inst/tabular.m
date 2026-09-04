@@ -1223,15 +1223,17 @@ classdef (Abstract) tabular
     ## CALLER names the function for error reporting.
     function [V, vtype, meta] = __ods_parts__ (this, caller)
       [V, N, T, D, U] = table2cellarrays (this, 'iso');
-      ## Nested tables and structs carry a multi-row (cell) type entry
-      if (any (cellfun (@iscell, T)))
-        error (strcat ("%s: nested tables and structs are not supported;", ...
-                       " flatten them before writing."), caller);
-      endif
       Ccols = size (V, 2);
+      ## A nested table or a struct carries a column of type entries, one per
+      ## nesting level; the cells themselves hold the innermost variable's
+      ## values, so the value type comes from the innermost entry.
       vtype = cell (1, Ccols);
       for c = 1:Ccols
-        vtype{c} = tabular.ods_value_type (T{c});
+        if (iscell (T{c}))
+          vtype{c} = tabular.ods_value_type (T{c}{end});
+        else
+          vtype{c} = tabular.ods_value_type (T{c});
+        endif
       endfor
       txt = strcat ("# varTypes %d rows; varNames %d rows;", ...
                     " varDescriptions %d rows; varUnits %d rows.");
@@ -1259,16 +1261,20 @@ classdef (Abstract) tabular
       else
         Umaxr = 0;
       endif
+      ## A nested variable's entry is a column of one entry per nesting level
+      ## and is written down the block; a plain variable fills its first row.
       Header = repmat ({''}, Nmaxr + Tmaxr + Dmaxr + Umaxr, Ccols);
       for c = 1:Ccols
         if (isvar(c))
-          Header{1,c} = T{c};
-          Header{1 + Tmaxr,c} = N{c};
+          Header(1:Trows(c),c) = tabular.header_entry (T{c});
+          Header(1 + Tmaxr:Nrows(c) + Tmaxr,c) = tabular.header_entry (N{c});
           if (Dmaxr)
-            Header{1 + Tmaxr + Nmaxr,c} = D{c};
+            base = Tmaxr + Nmaxr;
+            Header(1 + base:Drows(c) + base,c) = tabular.header_entry (D{c});
           endif
           if (Umaxr)
-            Header{1 + Tmaxr + Nmaxr + Dmaxr,c} = U{c};
+            base = Tmaxr + Nmaxr + Dmaxr;
+            Header(1 + base:Urows(c) + base,c) = tabular.header_entry (U{c});
           endif
         else
           Header{1,c} = rowLabelName (this);
@@ -7855,6 +7861,16 @@ classdef (Abstract) tabular
       ix = find (! strcmp (fams, fams{1}), 1);
       if (! isempty (ix))
         pair = [1, ix];
+      endif
+    endfunction
+
+    ## One header block entry as a column cell, whether it came in as a single
+    ## character vector or as a column of them (a nested table or a struct).
+    function out = header_entry (e)
+      if (iscell (e))
+        out = e(:);
+      else
+        out = {e};
       endif
     endfunction
 

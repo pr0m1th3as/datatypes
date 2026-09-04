@@ -256,7 +256,8 @@ function tbl = csv2table (name, varargin)
     ## After this point C contains only data
 
     ## Construct table
-    tbl = cell2tbl (C, T, N, D, U, RowNames);
+    tbl = __cell2tbl__ (C, T, N, D, U, RowNames, ...
+                        @(varC, varA, typestr) cell2var (varC, typestr));
   endif
 
   ## Parse optional Name-Value paired arguments
@@ -485,69 +486,6 @@ function varValue = cell2var (C, T)
   endif
 endfunction
 
-function tbl = cell2tbl (C, T, N, D, U, RowNames);
-  ## Get names, number, and positions of top level variables
-  [varNames, ii, varIdx] = __unique__ (N(1,:), 'stable');
-  varlen = numel (ii);
-  varValues = cell (1, varlen);
-  ## No nested table or structure
-  if (size (T, 1) == 1)
-    for ix = 1:varlen
-      colIdx = varIdx == ix;
-      varC = C(:,colIdx);
-      varValues{ix} = cell2var (varC, T{ii(ix)});
-    endfor
-  ## Table contains nested tables or structures
-  else
-    ## For each top level variable search for nested tables or structures
-    for ix = 1:varlen
-      colIdx = varIdx == ix;
-      varC = C(:,colIdx);
-      varN = N(:,colIdx);
-      varT = T(:,colIdx);
-      ## No nested table or structure in this variable
-      if (all (__ismissing__ (varT(2,:))))
-        varValues{ix} = cell2var (varC, varT{1});
-      ## Check for structure
-      elseif (all (strcmp (varT(1,:), 'struct')))
-        varValues{ix} = cell2struct (varC, varN(2,:), 2);
-      ## Check for table
-      elseif (all (strcmp (varT(1,:), 'table')))
-        ## Pass the nested descriptions/units (rows below the top-level one)
-        ## down so the recursive call restores them on the inner table.
-        if (isempty (D))
-          varD = [];
-        else
-          varD = D(2:end,colIdx);
-        endif
-        if (isempty (U))
-          varU = [];
-        else
-          varU = U(2:end,colIdx);
-        endif
-        varValues{ix} = cell2tbl (varC, varT(2:end,:), varN(2:end,:), ...
-                                  varD, varU, []);
-      endif
-    endfor
-  endif
-  ## Create table
-  if (isempty (RowNames))
-    tbl = table (varValues{:}, 'VariableNames', varNames);
-  else
-    tbl = table (varValues{:}, 'VariableNames', varNames, 'RowNames', RowNames);
-  endif
-  ## Restore variable descriptions and units, when present.  The first header
-  ## row holds each top-level variable's metadata (deeper rows belong to nested
-  ## tables and are restored by the recursive calls above).  Multicolumn
-  ## variables repeat the entry across split columns, so take the first column
-  ## belonging to each variable.
-  if (! isempty (D))
-    tbl.Properties.VariableDescriptions = D(1,ii);
-  endif
-  if (! isempty (U))
-    tbl.Properties.VariableUnits = U(1,ii);
-  endif
-endfunction
 
 function varValue = cell2auto (C, textType, datetimeType, durationTypes, ...
                                hexType)

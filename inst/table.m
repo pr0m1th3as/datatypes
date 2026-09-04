@@ -923,10 +923,13 @@ classdef table < tabular
     ## rows to it, and @qcode{'replacefile'} discards any existing file.
     ##
     ## Nested tables and structures are not supported and raise an error.  Note
-    ## the following round-trip limitations when reading the file back with
-    ## @code{ods2table}: @code{calendarDuration} and @code{categorical}
-    ## variables are returned as cell arrays of character vectors and their
-    ## values are not reconstructed.
+    ## A nested table is split into columns tagged with both the outer and the
+    ## nested variable name, and a structure into one column per field, exactly
+    ## as @code{table2csv} does; the tagging rows live on the hidden metadata
+    ## sheet, so the data sheet stays flat.  Note the following round-trip
+    ## limitation when reading the file back with @code{ods2table}:
+    ## @code{calendarDuration} and @code{categorical} variables are returned as
+    ## cell arrays of character vectors and their values are not reconstructed.
     ##
     ## @end deftypefn
     function table2ods (this, file, varargin)
