@@ -7360,6 +7360,25 @@ classdef (Abstract) tabular
             D = [D, VD(ix)];
             U = [U, VU(ix)];
           endfor
+        elseif (ischar (var_V))
+          ## A char matrix is one column of text and its rows are kept whole,
+          ## padding included; splitting it by column would split it between
+          ## characters.
+          V = [V, num2cell(var_V, 2)];
+          N = [N, this.VariableNames{ix}];
+          T = [T, 'char'];
+          D = [D, VD(ix)];
+          U = [U, VU(ix)];
+        elseif (isa (var_V, 'missing'))
+          ## Every entry is missing, so the values carry nothing and the
+          ## variable type alone restores the variable.
+          for col = 1:ncols
+            V = [V, repmat({[]}, size (var_V, 1), 1)];
+            N = [N, this.VariableNames{ix}];
+            T = [T, 'missing'];
+            D = [D, VD(ix)];
+            U = [U, VU(ix)];
+          endfor
         elseif (isnumeric (var_V))
           for col = 1:ncols
             V = [V, num2cell(var_V(:,col))];
@@ -7426,7 +7445,12 @@ classdef (Abstract) tabular
           endfor
         elseif (isa (var_V, 'string'))
           for col = 1:ncols
-            V = [V, cellstr(var_V(:,col))];
+            ## A missing string carries no value, which is not the same as an
+            ## empty one; it is written as nothing rather than as an empty
+            ## string.
+            sv = cellstr (var_V(:,col));
+            sv(ismissing (var_V(:,col))) = {[]};
+            V = [V, sv];
             N = [N, this.VariableNames{ix}];
             T = [T, 'string'];
             D = [D, VD(ix)];
@@ -7852,6 +7876,8 @@ classdef (Abstract) tabular
       switch (typestr)
         case 'logical'
           vt = 'boolean';
+        case 'missing'
+          vt = 'string';         # every cell is bare, the type restores it
         case {'double', 'single', 'int8', 'int16', 'int32', 'int64', ...
               'uint8', 'uint16', 'uint32', 'uint64'}
           vt = 'float';

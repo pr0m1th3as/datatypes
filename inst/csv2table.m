@@ -158,11 +158,14 @@
 ##
 ## A @code{datetime} or @code{duration} variable written by @code{table2csv} is
 ## restored exactly, along with its @qcode{Format} and, for a zone-aware
-## @code{datetime}, its @qcode{TimeZone}.  The following round-trip limitations
-## apply when reading a file written by @code{table2csv}:
-## @code{calendarDuration} and @code{categorical} variables are returned as cell
-## arrays of character vectors (their values are not reconstructed), and missing
-## @code{string} values are read back as empty strings.
+## @code{datetime}, its @qcode{TimeZone}.  Where the column's type is declared,
+## either by the file or by @qcode{"VariableTypes"}, a field that is empty and
+## unquoted carries no value and is read as a missing entry, where an empty
+## quoted field (@qcode{""}) is read as an empty string; a column whose type is
+## guessed is unaffected.  The following round-trip limitation applies when
+## reading a file written by @code{table2csv}: @code{calendarDuration} and
+## @code{categorical} variables are returned as cell arrays of character vectors
+## and their values are not reconstructed.
 ##
 ## @seealso{array2table, struct2table, table}
 ## @end deftypefn
@@ -405,11 +408,21 @@ function varValue = cell2var (C, T)
   ## Numeric vartypes
   numvartype = {'double', 'single', 'int8', 'uint8', 'int16', ...
                 'uint16', 'int32', 'uint32', 'int64', 'uint64'};
+  ## A field that was empty and unquoted holds no value: the reader returns []
+  ## for it, where an empty quoted field ("") returns an empty character
+  ## vector.  With the column's type declared, the first is a missing entry.
+  blank = cellfun (@(x) isnumeric (x) && isempty (x), C);
   if (strcmp (T, "cell"))
     varValue = C;
+  elseif (strcmp (T, "char"))
+    C(blank) = {''};
+    varValue = char (C);
+  elseif (strcmp (T, "missing"))
+    varValue = repmat (missing, size (C, 1), size (C, 2));
   elseif (strcmp (T, "logical"))
     varValue = logical (cell2mat (C));
   elseif (ismember (T, numvartype))
+    C(blank) = {NaN};
     ## Cast each element to the declared type directly.  Large integers may
     ## have been read as int64/uint64 (to avoid double precision loss); casting
     ## the whole cell2mat result would let a mixed signed/unsigned column be
@@ -466,7 +479,9 @@ function varValue = cell2var (C, T)
       varValue.Format = dispfmt;
     endif
   elseif (strcmp (T, "string"))
+    C(blank) = {''};
     varValue = string (C);
+    varValue(blank) = string (missing);
   endif
 endfunction
 

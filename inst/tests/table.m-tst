@@ -628,6 +628,59 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
+%!test  # a char matrix round-trips with its padding
+%! T = table (['ab '; 'c  '], 'VariableNames', {'v'});
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   assert_equal (R.v, ['ab '; 'c  ']);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # a missing variable round-trips as a missing variable
+%! T = table ([missing; missing], 'VariableNames', {'v'});
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   assert_equal (class (R.v), 'missing');
+%!   assert_equal (size (R.v), [2, 1]);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # a missing string stays missing and an empty one stays empty
+%! T = table ([string('a'); string(missing); string('')], 'VariableNames', {'v'});
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   assert_equal (ismissing (R.v), [false; true; false]);
+%!   assert_equal (char (R.v(3)), '');
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # a blank field in a declared numeric column reads as NaN
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   fid = fopen (fn, 'w');
+%!   fputs (fid, "\"# varTypes 1 rows; varNames 1 rows;");
+%!   fputs (fid, " varDescriptions 0 rows; varUnits 0 rows.\",\n");
+%!   fputs (fid, "\"double\",\"double\"\n\"n\",\"m\"\n1,\n2,4\n");
+%!   fclose (fid);
+%!   R = csv2table (fn);
+%!   assert_equal (R.m, [NaN; 4]);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
 %!test  # a units row of blanks round-trips as a set property
 %! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
 %! T.Properties.VariableUnits = {'', ''};

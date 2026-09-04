@@ -160,10 +160,19 @@ call it directly. \n\
         // A fully consumed, unquoted token is numeric.
         bool is_num = (word != "") && (! oinside) &&
                       (err == word_str + word.length ());
+        // A field that is empty and was never quoted carries no value at all,
+        // where an empty quoted field ("") carries an empty string.  The two
+        // are kept apart, as [] and '', so that a reader told the column's
+        // type can tell a missing entry from an empty one.
+        bool is_blank = (word == "") && (! oinside);
         // Store into the cell; check if it is in address argument range
         if (col < cols)
         {
-          if (is_na)
+          if (is_blank)
+          {
+            C(row, col) = octave_value (Matrix (0, 0));
+          }
+          else if (is_na)
           {
             C(row, col) = octave_value (octave::numeric_limits<double>::NA ());
           }

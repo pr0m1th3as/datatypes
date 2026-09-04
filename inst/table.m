@@ -744,7 +744,11 @@ classdef table < tabular
     ##
     ## @item
     ## Character, cellstr, and @code{string} variables are written as quoted
-    ## text.
+    ## text.  A @code{char} matrix is one column of text, each row written
+    ## whole so that its padding survives.  A missing @code{string}, and every
+    ## entry of a @code{missing} variable, is written as an empty unquoted
+    ## field, which says that there is no value where @qcode{""} says the value
+    ## is an empty string.
     ##
     ## @item
     ## @code{datetime} and @code{duration} variables are written in ISO 8601
@@ -769,11 +773,10 @@ classdef table < tabular
     ## or a nested variable carries one; a property that was never set writes
     ## no row at all, so that it reads back unset.
     ##
-    ## Note the following round-trip limitations when reading the file back
+    ## Note the following round-trip limitation when reading the file back
     ## with @code{csv2table}: @code{calendarDuration} and @code{categorical}
-    ## variables are returned as cell arrays of character vectors (their values
-    ## are not reconstructed), and missing @code{string} values are read back as
-    ## empty strings.
+    ## variables are returned as cell arrays of character vectors and their
+    ## values are not reconstructed.
     ##
     ## @end deftypefn
     function table2csv (this, file)

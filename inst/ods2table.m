@@ -45,11 +45,11 @@
 ##
 ## A @code{datetime} or @code{duration} variable is restored exactly, along
 ## with its @qcode{Format} and, for a zone-aware @code{datetime}, its
-## @qcode{TimeZone}.  The following round-trip limitations apply, mirroring
-## @code{csv2table}: @code{calendarDuration} and @code{categorical} variables
-## are returned as cell arrays of character vectors (their values are not
-## reconstructed), and missing @code{string} values are read back as empty
-## strings.
+## @qcode{TimeZone}.  A cell that carries no value at all is a missing entry,
+## which is not the same as a cell holding an empty string.  The following
+## round-trip limitation applies, mirroring @code{csv2table}:
+## @code{calendarDuration} and @code{categorical} variables are returned as cell
+## arrays of character vectors and their values are not reconstructed.
 ##
 ## @end deftypefn
 
@@ -182,6 +182,10 @@ function v = ods_cell2var (C, VT, T)
                 'int32', 'uint32', 'int64', 'uint64'};
   if (strcmp (T, 'cell'))
     v = C;
+  elseif (strcmp (T, 'char'))
+    v = char (ods_column_strings (C, VT));
+  elseif (strcmp (T, 'missing'))
+    v = repmat (missing, size (C, 1), size (C, 2));
   elseif (strcmp (T, 'logical'))
     v = logical (cell2mat (C));
   elseif (ismember (T, numvartype))
@@ -210,7 +214,11 @@ function v = ods_cell2var (C, VT, T)
       v.Format = dispfmt;
     endif
   elseif (strcmp (T, 'string'))
+    ## A cell with no value type at all carries no value: the string is
+    ## missing, which is not the same as an empty one.
+    blank = cellfun (@isempty, VT);
     v = string (ods_column_strings (C, VT));
+    v(blank) = string (missing);
   elseif (strcmp (T, 'calendarDuration'))
     warning ("ods2table: 'calendarDuration' strings are not converted.");
     v = ods_column_strings (C, VT);
@@ -356,6 +364,31 @@ endfunction
 %!   R = ods2table (fn);
 %!   assert_equal (class (R.flag), 'logical');
 %!   assert_equal (R.flag, [true; false; true]);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Round-trip: a char matrix keeps its padding
+%!test
+%! fn = [tempname() '.fods'];
+%! T = table (['ab '; 'c  '], 'VariableNames', {'v'});
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   R = ods2table (fn);
+%!   assert_equal (R.v, ['ab '; 'c  ']);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Round-trip: a missing string stays missing, an empty one stays empty
+%!test
+%! fn = [tempname() '.fods'];
+%! T = table ([string('a'); string(missing); string('')], 'VariableNames', {'v'});
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   R = ods2table (fn);
+%!   assert_equal (ismissing (R.v), [false; true; false]);
+%!   assert_equal (char (R.v(3)), '');
 %! unwind_protect_cleanup
 %!   delete (fn);
 %! end_unwind_protect
