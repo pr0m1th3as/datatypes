@@ -4847,92 +4847,10 @@ classdef table < tabular
       if (nargin < 3)
         print_usage ();
       endif
-
-      ## Split off a trailing 'IncludedEdge' Name-Value option, then an optional
-      ## GROUPBINS positional argument that precedes the filter function METHOD.
-      optNames = {'IncludedEdge'};
-      args = varargin;
-      nvStart = numel (args) + 1;
-      for k = 1:numel (args)
-        a = args{k};
-        if (((ischar (a) && isrow (a)) || (isa (a, 'string') && isscalar (a)))
-            && any (strcmpi (char (a), optNames)))
-          nvStart = k;
-          break;
-        endif
-      endfor
-      nvArgs = args(nvStart:end);
-      args = args(1:nvStart-1);
-      incEdge = parsePairedArguments (optNames, {'left'}, nvArgs(:));
-      incEdge = tabular.check_included_edge ('table.groupfilter', incEdge);
-
-      hasGroupbins = false;
-      groupbins = [];
-      if (! isempty (args) && __groupbins__ ('is_spec', args{1}))
-        hasGroupbins = true;
-        groupbins = args{1};
-        args = args(2:end);
-      endif
-
-      ## The filter function METHOD is the first remaining argument.
-      if (isempty (args))
-        print_usage ();
-      endif
-      method = args{1};
-      if (! is_function_handle (method))
-        error ("table.groupfilter: METHOD must be a function handle.");
-      endif
-
-      ## An optional DATAVARS argument may follow the filter function.
-      rest = args(2:end);
-      if (numel (rest) > 1)
-        error ("table.groupfilter: too many positional arguments.");
-      endif
-      if (numel (rest) == 1)
-        datavars = rest{1};
-        hasDataVars = true;
-      else
-        datavars = [];
-        hasDataVars = false;
-      endif
-
-      ## Resolve grouping and data variables.  The default data variables are all
-      ## variables that are not grouping variables.
-      gIx = resolveVarRef (T, groupvars)(:)';
-      if (isempty (gIx))
-        error (strcat ("table.groupfilter: at least one grouping variable", ...
-                       " is required."));
-      endif
-      if (hasDataVars)
-        dIx = resolveVarRef (T, datavars)(:)';
-      else
-        dIx = 1:width (T);
-        dIx(ismember (dIx, gIx)) = [];
-      endif
-
-      ## Bin the grouping variables when a GROUPBINS argument was given, then
-      ## group the rows, treating missing grouping values as their own groups so
-      ## that every row belongs to exactly one group.
-      grpCols = T.VariableValues(gIx);
-      if (hasGroupbins)
-        [grpCols, ~, errmsg] = __groupbins__ ('bin', grpCols, T.VariableNames(gIx), ...
-                                           groupbins, incEdge, 'groupfilter');
-        if (! isempty (errmsg))
-          error ("table.groupfilter: %s", errmsg);
-        endif
-      endif
-      [Grp, ng, ~, errmsg] = tabular.gs_group_rows (grpCols, true);
+      [G, errmsg] = groupfilterResult (T, groupvars, varargin);
       if (! isempty (errmsg))
         error ("table.groupfilter: %s", errmsg);
       endif
-
-      ## Build the row keep-mask by applying METHOD to each data variable.
-      [keep, errmsg] = gf_keep_mask (method, T.VariableValues(dIx), Grp, ng);
-      if (! isempty (errmsg))
-        error ("table.groupfilter: %s", errmsg);
-      endif
-
-      G = subsetrows (T, find (keep));
     endfunction
 
     ## -*- texinfo -*-
@@ -6301,46 +6219,6 @@ function [lsuf, rsuf] = join_suffixes (leftName, rightName)
   endif
   lsuf = ['_', leftName];
   rsuf = ['_', rightName];
-endfunction
-
-## Build the row keep-mask for 'groupfilter' by applying the filter function
-## METHOD to each data variable's per-group slice.  DATACOLS is a cell array of
-## data-variable values; G the n-by-1 group numbers (1..NG), every row assigned
-## to a group.  For each group METHOD receives the variable's slice and must
-## return a logical scalar (keep/drop the whole group) or a logical vector with
-## one element per group row.  The per-variable masks are combined with logical
-## AND, so a row is kept only when the condition holds across all data variables.
-## Returns KEEP (n-by-1 logical) and an errmsg body emitted by the caller.
-function [keep, errmsg] = gf_keep_mask (method, dataCols, G, ng)
-  errmsg = '';
-  n = numel (G);
-  keep = true (n, 1);
-  for d = 1:numel (dataCols)
-    col = dataCols{d};
-    for g = 1:ng
-      rows = find (G == g);
-      if (isempty (rows))
-        continue;
-      endif
-      r = method (col(rows,:));
-      if (! (islogical (r) || isnumeric (r)))
-        errmsg = "the filter function must return a logical result.";
-        return;
-      endif
-      r = logical (r(:));
-      if (isscalar (r))
-        m = repmat (r, numel (rows), 1);
-      elseif (numel (r) == numel (rows))
-        m = r;
-      else
-        errmsg = strcat ("the filter function must return a logical scalar", ...
-                         " or a logical vector with one element per group", ...
-                         " row.");
-        return;
-      endif
-      keep(rows) = keep(rows) & m;
-    endfor
-  endfor
 endfunction
 
 ## Map a scalar grouping value VAL to the character vector used as a 'pivot'

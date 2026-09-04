@@ -2741,6 +2741,64 @@
 %! TT = timetable ([1; 2], 'RowTimes', rt, 'VariableNames', {'A'});
 %! groupsummary (TT, 'Time', 'bogus', 'A');
 
+## Test 'groupfilter' keeps the rows it accepts, in order, with their times
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! rt = t0 + hours (0:3)';
+%! TT = timetable ([1; 2; 3; 4], categorical ({'a'; 'b'; 'a'; 'b'}), ...
+%!                 'RowTimes', rt, 'VariableNames', {'A', 'g'});
+%! G = groupfilter (TT, 'g', @(x) numel (x) > 1);
+%! assert_equal (class (G), 'timetable');
+%! assert_equal (G.Properties.VariableNames, {'A', 'g'});
+%! assert_equal (G.A, [1; 2; 3; 4]);
+%! assert_equal (G.Properties.RowTimes, rt);
+
+## Test a group that fails the test takes its rows with it
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! rt = t0 + hours (0:4)';
+%! TT = timetable ([1; 2; 3; 4; 5], ...
+%!                 categorical ({'a'; 'b'; 'a'; 'b'; 'c'}), ...
+%!                 'RowTimes', rt, 'VariableNames', {'A', 'g'});
+%! G = groupfilter (TT, 'g', @(x) numel (x) > 1);
+%! assert_equal (G.A, [1; 2; 3; 4]);
+%! assert_equal (G.Properties.RowTimes, rt(1:4));
+
+## Test the filter may be applied to a named data variable
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2; 3; 4], [10; 20; 30; 40], ...
+%!                 categorical ({'a'; 'b'; 'a'; 'b'}), ...
+%!                 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'A', 'B', 'g'});
+%! G = groupfilter (TT, 'g', @(x) mean (x) > 25, 'B');
+%! assert_equal (G.B, [20; 40]);
+
+## Test grouping by the row dimension name groups by the row times
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! rt = t0 + hours ([0 1 1])';
+%! TT = timetable ([1; 2; 3], 'RowTimes', rt, 'VariableNames', {'A'});
+%! G = groupfilter (TT, 'Time', @(x) numel (x) > 1);
+%! assert_equal (G.A, [2; 3]);
+%! assert_equal (G.Properties.RowTimes, rt(2:3));
+
+## Test a filter that keeps nothing still answers with a timetable
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2], categorical ({'a'; 'b'}), ...
+%!                 'RowTimes', t0 + hours (0:1)', ...
+%!                 'VariableNames', {'A', 'g'});
+%! G = groupfilter (TT, 'g', @(x) numel (x) > 99);
+%! assert_equal (class (G), 'timetable');
+%! assert_equal (size (G), [0, 2]);
+
+## Test the validation is the timetable's own
+%!error <timetable.groupfilter: METHOD must be a function handle.> ...
+%! rt = datetime (2024, 1, 1) + hours (0:1)';
+%! TT = timetable ([1; 2], 'RowTimes', rt, 'VariableNames', {'A'});
+%! groupfilter (TT, 'Time', 'nope');
+
 ################################################################################
 ##                        **    Input validation    **                        ##
 ################################################################################

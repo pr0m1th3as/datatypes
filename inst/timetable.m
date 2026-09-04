@@ -2309,7 +2309,7 @@ classdef timetable < tabular
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'varfun'           'rowfun'           'grouptransform'   'groupcounts'     ##
-## 'groupsummary'                                                             ##
+## 'groupsummary'     'groupfilter'                                           ##
 ##                                                                            ##
 ################################################################################
 
@@ -2625,6 +2625,50 @@ classdef timetable < tabular
       [G, errmsg] = groupsummaryResult (tt, groupvars, varargin);
       if (! isempty (errmsg))
         error ("timetable.groupsummary: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{G} =} groupfilter (@var{tt}, @var{groupvars}, @var{method})
+    ## @deftypefnx {timetable} {@var{G} =} groupfilter (@var{tt}, @var{groupvars}, @var{method}, @var{datavars})
+    ## @deftypefnx {timetable} {@var{G} =} groupfilter (@var{tt}, @var{groupvars}, @var{groupbins}, @var{method}, @dots{})
+    ## @deftypefnx {timetable} {@var{G} =} groupfilter (@dots{}, @qcode{'IncludedEdge'}, @var{edge})
+    ##
+    ## Keep the rows of a timetable whose group passes a test.
+    ##
+    ## @code{@var{G} = groupfilter (@var{tt}, @var{groupvars}, @var{method})}
+    ## groups the rows of @var{tt} by the variables named in @var{groupvars},
+    ## applies the function handle @var{method} to each data variable of each
+    ## group, and returns the rows of the groups it accepted.  @var{method}
+    ## receives the values of one variable across the rows of one group and
+    ## answers with a logical scalar, keeping or dropping the whole group, or
+    ## with one logical per row of the group, keeping those rows.  The rows
+    ## that survive keep their order and their row times.
+    ##
+    ## @var{groupvars} names one or more variables, or the row dimension name,
+    ## which groups by the row times themselves.
+    ##
+    ## @code{@var{G} = groupfilter (@var{tt}, @var{groupvars}, @var{method},
+    ## @var{datavars})} applies @var{method} only to the variables named in
+    ## @var{datavars}.  By default every variable that is not a grouping
+    ## variable is used, and a row is kept only where every one of them
+    ## accepts it.
+    ##
+    ## @code{@var{G} = groupfilter (@var{tt}, @var{groupvars},
+    ## @var{groupbins}, @var{method}, @dots{})} bins the grouping variables
+    ## before grouping, @var{groupbins} being a bin count, a vector of edges,
+    ## or a time unit for a datetime or duration variable.  The
+    ## @qcode{'IncludedEdge'} option then says which edge of a bin is
+    ## included, @qcode{'left'} (the default) or @qcode{'right'}.
+    ##
+    ## @end deftypefn
+    function G = groupfilter (tt, groupvars, varargin)
+      if (nargin < 3)
+        print_usage ();
+      endif
+      [G, errmsg] = groupfilterResult (tt, groupvars, varargin);
+      if (! isempty (errmsg))
+        error ("timetable.groupfilter: %s", errmsg);
       endif
     endfunction
 

@@ -3611,6 +3611,116 @@ classdef (Abstract) tabular
       G = table (vars{:}, 'VariableNames', names);
     endfunction
 
+    ## The body behind 'groupfilter' on both classes.  Returns an errmsg body
+    ## (empty on success) for the caller to raise under its own name.  The
+    ## result is of the calling class: the rows that survive keep their order
+    ## and whatever labels they carried.
+    function [G, errmsg] = groupfilterResult (this, groupvars, args_in)
+      G = [];
+      errmsg = '';
+      scope = sprintf ('%s.groupfilter', class (this));
+
+      ## Split off a trailing 'IncludedEdge' Name-Value option, then an
+      ## optional GROUPBINS positional argument that precedes the filter
+      ## function METHOD.
+      optNames = {'IncludedEdge'};
+      args = args_in;
+      nvStart = numel (args) + 1;
+      for k = 1:numel (args)
+        a = args{k};
+        if (((ischar (a) && isrow (a)) || (isa (a, 'string') && isscalar (a)))
+            && any (strcmpi (char (a), optNames)))
+          nvStart = k;
+          break;
+        endif
+      endfor
+      nvArgs = args(nvStart:end);
+      args = args(1:nvStart-1);
+      incEdge = parsePairedArguments (optNames, {'left'}, nvArgs(:));
+      incEdge = tabular.check_included_edge (scope, incEdge);
+
+      hasGroupbins = false;
+      groupbins = [];
+      if (! isempty (args) && __groupbins__ ('is_spec', args{1}))
+        hasGroupbins = true;
+        groupbins = args{1};
+        args = args(2:end);
+      endif
+
+      ## The filter function METHOD is the first remaining argument.
+      if (isempty (args))
+        errmsg = 'a filter function METHOD is required.';
+        return;
+      endif
+      method = args{1};
+      if (! is_function_handle (method))
+        errmsg = 'METHOD must be a function handle.';
+        return;
+      endif
+
+      ## An optional DATAVARS argument may follow the filter function.
+      rest = args(2:end);
+      if (numel (rest) > 1)
+        errmsg = 'too many positional arguments.';
+        return;
+      endif
+      if (numel (rest) == 1)
+        datavars = rest{1};
+        hasDataVars = true;
+      else
+        datavars = [];
+        hasDataVars = false;
+      endif
+
+      ## Resolve grouping and data variables.  The default data variables are
+      ## all variables that are not grouping variables.
+      [gIx, byLabels] = resolveGroupRef (this, groupvars);
+      if (isempty (gIx) && ! byLabels)
+        errmsg = 'at least one grouping variable is required.';
+        return;
+      endif
+      if (hasDataVars)
+        dIx = resolveVarRef (this, datavars)(:)';
+      else
+        dIx = 1:width (this);
+        dIx(ismember (dIx, gIx)) = [];
+      endif
+
+      ## Bin the grouping variables when a GROUPBINS argument was given, then
+      ## group the rows, treating missing grouping values as their own groups
+      ## so that every row belongs to exactly one group.  The row labels group
+      ## as a column of their own when they were named.
+      grpCols = this.VariableValues(gIx);
+      grpNames = this.VariableNames(gIx);
+      if (byLabels)
+        labels = getRowLabels (this);
+        lname = rowLabelName (this);
+        grpCols = [{labels}, grpCols];
+        grpNames = [{lname}, grpNames];
+      endif
+      if (hasGroupbins)
+        [grpCols, ~, errmsg] = __groupbins__ ('bin', grpCols, grpNames, ...
+                                              groupbins, incEdge, ...
+                                              'groupfilter');
+        if (! isempty (errmsg))
+          return;
+        endif
+      endif
+      [Grp, ng, ~, errmsg] = tabular.gs_group_rows (grpCols, true);
+      if (! isempty (errmsg))
+        return;
+      endif
+
+      ## Build the row keep-mask by applying METHOD to each data variable.
+      [keep, errmsg] = tabular.gf_keep_mask (method, ...
+                           this.VariableValues(dIx), Grp, ng);
+      if (! isempty (errmsg))
+        return;
+      endif
+
+      G = subsetrows (this, find (keep));
+    endfunction
+
     ## The body behind 'groupcounts' on both classes.  Returns an errmsg body
     ## (empty on success) for the caller to raise under its own name.  The
     ## result is a table whatever the input was, the counts describing groups
@@ -6439,6 +6549,48 @@ classdef (Abstract) tabular
       else
         mask = false (size (x));
       endif
+    endfunction
+
+    ## Build the row keep-mask for 'groupfilter' by applying the filter function
+    ## METHOD to each data variable's per-group slice.  DATACOLS is a cell array
+    ## of data-variable values; G the n-by-1 group numbers (1..NG), every row
+    ## assigned to a group.  For each group METHOD receives the variable's slice
+    ## and must return a logical scalar (keep/drop the whole group) or a logical
+    ## vector with one element per group row.  The per-variable masks are
+    ## combined with logical AND, so a row is kept only when the condition holds
+    ## across all data variables. Returns KEEP (n-by-1 logical) and an errmsg
+    ## body emitted by the caller.
+    function [keep, errmsg] = gf_keep_mask (method, dataCols, G, ng)
+      errmsg = '';
+      n = numel (G);
+      keep = true (n, 1);
+      for d = 1:numel (dataCols)
+        col = dataCols{d};
+        for g = 1:ng
+          rows = find (G == g);
+          if (isempty (rows))
+            continue;
+          endif
+          r = method (col(rows,:));
+          if (! (islogical (r) || isnumeric (r)))
+            errmsg = "the filter function must return a logical result.";
+            return;
+          endif
+          r = logical (r(:));
+          if (isscalar (r))
+            m = repmat (r, numel (rows), 1);
+          elseif (numel (r) == numel (rows))
+            m = r;
+          else
+            errmsg = strcat ("the filter function must return a logical", ...
+                             " scalar or a logical vector with one element", ...
+                             " per group", ...
+                             " row.");
+            return;
+          endif
+          keep(rows) = keep(rows) & m;
+        endfor
+      endfor
     endfunction
 
     ## Build the cell array of input arguments passed to FUNC for the rows
