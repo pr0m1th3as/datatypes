@@ -1576,6 +1576,85 @@ classdef (Abstract) tabular
 
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {tabular} {[@var{ixRows}, @var{errmsg}] =} topkrowsIndex (@var{obj}, @var{k}, @var{args})
+    ##
+    ## The rows @code{topkrows} keeps, in the order it reports them.
+    ##
+    ## @code{topkrows} is @code{sortrows} with a descending default and a
+    ## count, so the ordering is worked out by @code{sortrowsIndex} and only
+    ## the defaults differ: sorting runs downwards unless a direction is
+    ## given, and missing keys go last rather than wherever the direction
+    ## would put them.  @var{errmsg} carries the body of any complaint so
+    ## that the calling class can raise it under its own name.
+    ##
+    ## @end deftypefn
+    function [ixRows, errmsg] = topkrowsIndex (this, k, args_in)
+
+      ixRows = [];
+      errmsg = '';
+
+      ## Check for valid k
+      if (! (isnumeric (k) && isscalar (k) && isreal (k) && isfinite (k)
+             && fix (k) == k && k >= 0))
+        errmsg = "K must be a nonnegative integer scalar.";
+        return
+      endif
+
+      ## Split off any trailing Name-Value pairs, so that the positional
+      ## arguments can be adjusted without disturbing them.
+      optNames = {'MissingPlacement', 'ComparisonMethod'};
+      nvStart = numel (args_in) + 1;
+      for ii = 1:numel (args_in)
+        if (ischar (args_in{ii}) && isrow (args_in{ii})
+            && any (strcmp (args_in{ii}, optNames)))
+          nvStart = ii;
+          break;
+        endif
+      endfor
+      pos = args_in(1:nvStart-1);
+      nv = args_in(nvStart:end);
+
+      ## With no explicit DIRECTION, that is with fewer than two positional
+      ## arguments, enforce the descending default.
+      if (numel (pos) < 2)
+        if (numel (pos) == 0)
+          ## No VARS.  A class whose rows carry labels ranks by them, as it
+          ## does when sorting; every other ranks by all of its variables.
+          if (sortsByLabelsByDefault (this))
+            labelNames = rowLabelKeyNames (this);
+            pos = {labelNames{1}, 'descend'};
+          else
+            pos = {':', 'descend'};
+          endif
+        elseif (isnumeric (pos{1}) && ! isempty (pos{1}))
+          ## Signed numeric index: flip the sign convention relative to
+          ## 'sortrows' so that a positive index ranks downwards and a
+          ## negative index upwards.
+          pos = {-pos{1}};
+        else
+          ## Named, logical, vartype, ':' or [] selection.
+          pos = [pos, {'descend'}];
+        endif
+      endif
+
+      ## Missing keys rank last however the sort runs, which is where
+      ## 'topkrows' parts company with 'sortrows' and its 'auto'.
+      if (! any (strcmp (nv, 'MissingPlacement')))
+        nv = [nv, {'MissingPlacement', 'last'}];
+      endif
+
+      [index, errmsg] = sortrowsIndex (this, [pos, nv]);
+      if (! isempty (errmsg))
+        return
+      endif
+      if (k < numel (index))
+        index = index(1:k);
+      endif
+      ixRows = index;
+
+    endfunction
+
     function names = customPropsOfType (this, type)
       names = {};
       if (isempty (this.CustomProperties))

@@ -1276,7 +1276,7 @@ classdef timetable < tabular
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'sortrows'         'unique'                                                ##
+## 'sortrows'         'unique'           'topkrows'                           ##
 ##                                                                            ##
 ################################################################################
 
@@ -1385,6 +1385,55 @@ classdef timetable < tabular
         error ("timetable.unique: %s", errmsg);
       endif
       tbl = subsetrows (this, ia);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{ttB} =} topkrows (@var{ttA}, @var{k})
+    ## @deftypefnx {timetable} {@var{ttB} =} topkrows (@var{ttA}, @var{k}, @var{vars})
+    ## @deftypefnx {timetable} {@var{ttB} =} topkrows (@var{ttA}, @var{k}, @var{vars}, @var{direction})
+    ## @deftypefnx {timetable} {@var{ttB} =} topkrows (@dots{}, @var{Name}, @var{Value})
+    ## @deftypefnx {timetable} {[@var{ttB}, @var{index}] =} topkrows (@dots{})
+    ##
+    ## The top @var{k} rows of a timetable, in sorted order.
+    ##
+    ## @code{@var{ttB} = topkrows (@var{ttA}, @var{k})} returns the @var{k}
+    ## rows with the latest row times, latest first.  This is where it parts
+    ## company with @code{head}, which takes the first rows as they are
+    ## stored: @code{topkrows} ranks them.
+    ##
+    ## @code{@var{ttB} = topkrows (@var{ttA}, @var{k}, @var{vars})} ranks by
+    ## one or more variables instead, named, indexed by number, selected by a
+    ## logical vector or picked out by a @code{vartype}.  The row dimension
+    ## name may be used to rank by the row times explicitly.  A numeric index
+    ## counts the variables, and its sign is read the other way round from
+    ## @code{sortrows}: a positive index ranks downwards.
+    ##
+    ## @code{@var{ttB} = topkrows (@dots{}, @var{direction})} sorts as
+    ## @qcode{'ascend'} or @qcode{'descend'}, the latter being the default
+    ## and what makes these the top rows rather than the bottom ones.
+    ##
+    ## Missing keys rank last however the sort runs, which is the one place
+    ## @code{topkrows} differs from @code{sortrows} beyond its direction.
+    ## @qcode{'MissingPlacement'} overrides that, and
+    ## @qcode{'ComparisonMethod'} applies to numeric variables as usual.
+    ##
+    ## Asking for more rows than there are returns all of them, still
+    ## ranked, and a @var{k} of zero returns none.
+    ##
+    ## @code{[@var{ttB}, @var{index}] = topkrows (@dots{})} also returns the
+    ## rows chosen, so that @code{@var{ttA}(@var{index},:)} is @var{ttB}.
+    ##
+    ## The time step is read afresh from the row times that are kept, so the
+    ## default ranking of a regular timetable steps backwards.
+    ##
+    ## @seealso{head, sortrows, timetable}
+    ## @end deftypefn
+    function [tbl, ix] = topkrows (this, k, varargin)
+      [ix, errmsg] = topkrowsIndex (this, k, varargin);
+      if (! isempty (errmsg))
+        error ("timetable.topkrows: %s", errmsg);
+      endif
+      tbl = subsetrows (this, ix);
     endfunction
 
   endmethods

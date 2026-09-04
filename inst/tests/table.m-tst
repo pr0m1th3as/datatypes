@@ -2469,6 +2469,15 @@
 %!error <table.unique: cannot find unique rows for nested tables with mixed data types.> ...
 %! unique (table (table (Age, LastName)), "sorted");
 
+## Test 'topkrows' ranks missing values last whichever way it sorts
+%!test
+%! T = table ([1; NaN; 3; 2], 'VariableNames', {'A'});
+%! assert_equal (topkrows (T, 2).A, [3; 2]);
+%! assert_equal (topkrows (T, 4).A, [3; 2; 1; NaN]);
+%! assert_equal (topkrows (T, 2, 'A', 'ascend').A, [1; 2]);
+%! assert_equal (topkrows (T, 4, 'A', 'MissingPlacement', 'first').A, ...
+%!               [NaN; 3; 2; 1]);
+
 ## Test 'topkrows' method
 %!test
 %! LastName = {"Sanchez"; "Johnson"; "Li"; "Diaz"; "Brown"};
@@ -2593,7 +2602,7 @@
 %! assert_equal (issortedrows (tblB, "Weights", "descend", ...
 %!                             "MissingPlacement", "first"), true);
 %! [tblB, index] = topkrows (tblN, 3, "Weights");
-%! assert_equal (index, [2; 5; 1]);
+%! assert_equal (index, [1; 4; 3]);
 %! assert_equal (issortedrows (tblB, "Weights", "descend"), true);
 %!test
 %! tblN = table (Age, Height, Weight, BloodPressure, LastName);

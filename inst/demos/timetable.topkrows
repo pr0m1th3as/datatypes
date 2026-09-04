@@ -1,0 +1,33 @@
+%!demo
+%! ## `topkrows` returns the rows with the latest times, latest first.  This
+%! ## is where it parts company with `head`, which takes the first rows as
+%! ## they happen to be stored rather than ranking them.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! Depth = [30; 10; 40; 20];
+%! TT = timetable (Depth, 'RowTimes', t0 + hours ([2 0 3 1])')
+%! topkrows (TT, 2)
+%! head (TT, 2)
+
+%!demo
+%! ## Name a variable to rank by that instead, and a direction to take the
+%! ## bottom rows rather than the top.  A numeric index counts the variables,
+%! ## and its sign reads the other way round from `sortrows`: positive ranks
+%! ## downwards.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! Depth = [12; 45; 23; 8];
+%! Site = categorical ({'N'; 'S'; 'N'; 'S'});
+%! TT = timetable (Depth, Site, 'RowTimes', t0 + hours (0:3)');
+%! topkrows (TT, 2, 'Depth')
+%! topkrows (TT, 2, 'Depth', 'ascend')
+
+%!demo
+%! ## Missing keys rank last whichever way the sort runs, which is the one
+%! ## place `topkrows` differs from `sortrows` beyond its direction.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2; NaN; 4], 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'Reading'});
+%! topkrows (TT, 4, 'Reading').Reading
+%! sortrows (TT, 'Reading', 'descend').Reading
