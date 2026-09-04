@@ -250,6 +250,34 @@ classdef table < tabular
       this.RowNames = {};
     endfunction
 
+    ## Row names must stay unique, so a repeated name takes a numbered one:
+    ## 'r1' repeated becomes 'r1', 'r1_1'.  A table with no row names has
+    ## nothing to repeat.
+    function this = repeatRowLabels (this, n, elementwise)
+      if (isempty (this.RowNames))
+        return;
+      endif
+      base = this.RowNames;
+      nrow = numel (base);
+      if (elementwise)
+        this.RowNames = repelem (base, n, 1);
+        for i = 1:n - 1
+          vec = i + 1:n:nrow * n;
+          this.RowNames(vec) = cellfun (@(x) sprintf ('%s_%d', x, i), ...
+                                        this.RowNames(vec), ...
+                                        'UniformOutput', false);
+        endfor
+      else
+        this.RowNames = repmat (base, n, 1);
+        for i = 1:n - 1
+          vec = i * nrow + 1:nrow * (i + 1);
+          this.RowNames(vec) = cellfun (@(x) sprintf ('%s_%d', x, i), ...
+                                        this.RowNames(vec), ...
+                                        'UniformOutput', false);
+        endfor
+      endif
+    endfunction
+
     ## A table built from an apply method's output.  Row names are carried
     ## only where the method has some to give, which the mapping methods do
     ## and the reducing ones do not; ROWIX names input rows and means nothing
@@ -5830,87 +5858,10 @@ classdef table < tabular
     ##
     ## @end deftypefn
     function tbl = repelem (this, varargin)
-
-      ## Check input arguments
-      nargs = numel (varargin);
-      if (nargs < 1)
-        error ("table.repelem: too few input arguments for table input.");
+      [tbl, errmsg] = repeatResult (this, varargin, true);
+      if (! isempty (errmsg))
+        error ("table.repelem: %s", errmsg);
       endif
-      if (nargs > 2)
-        error ("table.repelem: only 2 dimensions are supported for tables.");
-      endif
-      if (nargs == 1)
-        rows = cols = varargin{1};
-      else
-        rows = varargin{1};
-        cols = varargin{2};
-      endif
-      if (rows < 1 || fix (rows) != rows || ! isnumeric (rows))
-        if (nargs == 1)
-          error ("table.repelem: SZ must be a positive integer.");
-        else
-          error ("table.repelem: ROWS must be a positive integer.");
-        endif
-      endif
-      if (cols < 1 || fix (cols) != cols || ! isnumeric (cols))
-        error ("table.repelem: COLUMNS must be a positive integer.");
-      endif
-
-      tbl = this;
-      ## Replicate elements per rows (apply on each variable)
-      if (rows > 1)
-        if (width (this) == 0)
-          ## No variable carries the height, so the stored count does.
-          tbl.RowCount = height (this) * rows;
-        endif
-        for i = 1:width (this)
-          tbl.VariableValues{i} = repelem (this.VariableValues{i}, rows, 1);
-        endfor
-        ## Handle RowNames (if not empty)
-        if (! isempty (this.RowNames))
-          tbl.RowNames = repelem (this.RowNames, rows, 1);
-          ## Fix row name repetitions
-          for i = 1:rows - 1
-            vec = i + 1:rows:height (tbl);
-            fcn = eval (["@(x) sprintf (""%s_", sprintf("%d", i), """, x)"]);
-            tbl.RowNames(vec) = cellfun (fcn, tbl.RowNames(vec), ...
-                                         'UniformOutput', false);
-          endfor
-        endif
-      endif
-
-      ## Replicate variables accordingly
-      if (cols > 1)
-        ## Replicate variables
-        tbl.VariableTypes = repelem (tbl.VariableTypes, 1, cols);
-        tbl.VariableValues = repelem (tbl.VariableValues, 1, cols);
-        tbl.VariableDescriptions = repelem (tbl.VariableDescriptions, 1, cols);
-        tbl.VariableUnits = repelem (tbl.VariableUnits, 1, cols);
-        if (! isempty (tbl.VariableContinuity))
-          tbl.VariableContinuity = repelem (tbl.VariableContinuity, 1, cols);
-        endif
-        ## Fix variable name repetitions
-        idx = num2cell (1:cols - 1);
-        newNames = {};
-        for i = 1:width (this)
-          newNames = [newNames, this.VariableNames{i}];
-          fnc = eval (["@(x) sprintf (""", this.VariableNames{i}, "_%d"", x)"]);
-          addNames = cellfun (fnc, idx, 'UniformOutput', false);
-          newNames = [newNames, addNames];
-        endfor
-        tbl.VariableNames = newNames;
-        ## Handle custom variable properties
-        if (! isempty (this.CustomProperties))
-          cp_names = customPropsOfType (this, 'variable');
-          ## Replicate custom variable properties only
-          for i = 1:numel (cp_names)
-            cvp_name = cp_names{i};
-            tbl.CustomProperties.(cvp_name) = ...
-                           repelem (tbl.CustomProperties.(cvp_name), 1, cols);
-          endfor
-        endif
-      endif
-
     endfunction
 
     ## -*- texinfo -*-
@@ -5925,86 +5876,10 @@ classdef table < tabular
     ##
     ## @end deftypefn
     function tbl = repmat (this, varargin)
-
-      ## Check input arguments
-      nargs = numel (varargin);
-      if (nargs < 1)
-        error ("table.repmat: too few input arguments for table input.");
+      [tbl, errmsg] = repeatResult (this, varargin, false);
+      if (! isempty (errmsg))
+        error ("table.repmat: %s", errmsg);
       endif
-      if (nargs > 2)
-        error ("table.repmat: only 2 dimensions are supported for tables.");
-      endif
-      if (nargs == 1)
-        rows = cols = varargin{1};
-      else
-        rows = varargin{1};
-        cols = varargin{2};
-      endif
-      if (rows < 1 || fix (rows) != rows || ! isnumeric (rows))
-        if (nargs == 1)
-          error ("table.repmat: SZ must be a positive integer.");
-        else
-          error ("table.repmat: ROWS must be a positive integer.");
-        endif
-      endif
-      if (cols < 1 || fix (cols) != cols || ! isnumeric (cols))
-        error ("table.repmat: COLUMNS must be a positive integer.");
-      endif
-
-      tbl = this;
-      ## Replicate elements per rows (apply on each variable)
-      if (rows > 1)
-        if (width (this) == 0)
-          ## No variable carries the height, so the stored count does.
-          tbl.RowCount = height (this) * rows;
-        endif
-        for i = 1:width (this)
-          tbl.VariableValues{i} = repmat (this.VariableValues{i}, rows, 1);
-        endfor
-        ## Handle RowNames (if not empty)
-        if (! isempty (this.RowNames))
-          tbl.RowNames = repmat (this.RowNames, rows, 1);
-          ## Fix row name repetitions
-          for i = 1:rows - 1
-            rep = height (this);
-            vec = i * rep + 1:rep * (i + 1);
-            fcn = eval (["@(x) sprintf (""%s_", sprintf("%d", i), """, x)"]);
-            tbl.RowNames(vec) = cellfun (fcn, tbl.RowNames(vec), ...
-                                         'UniformOutput', false);
-          endfor
-        endif
-      endif
-
-      ## Replicate variables accordingly
-      if (cols > 1)
-        ## Replicate variables
-        tbl.VariableTypes = repmat (tbl.VariableTypes, 1, cols);
-        tbl.VariableValues = repmat (tbl.VariableValues, 1, cols);
-        tbl.VariableDescriptions = repmat (tbl.VariableDescriptions, 1, cols);
-        tbl.VariableUnits = repmat (tbl.VariableUnits, 1, cols);
-        if (! isempty (tbl.VariableContinuity))
-          tbl.VariableContinuity = repmat (tbl.VariableContinuity, 1, cols);
-        endif
-        ## Fix variable name repetitions
-        newNames = this.VariableNames;
-        for i = 1:cols - 1
-          fnc = eval (["@(x) sprintf (""%s_", sprintf("%d", i), """, x)"]);
-          addNames = cellfun (fnc, this.VariableNames, 'UniformOutput', false);
-          newNames = [newNames, addNames];
-        endfor
-        tbl.VariableNames = newNames;
-        ## Handle custom variable properties
-        if (! isempty (this.CustomProperties))
-          cp_names = customPropsOfType (this, 'variable');
-          ## Replicate custom variable properties only
-          for i = 1:numel (cp_names)
-            cvp_name = cp_names{i};
-            tbl.CustomProperties.(cvp_name) = ...
-                           repmat (tbl.CustomProperties.(cvp_name), 1, cols);
-          endfor
-        endif
-      endif
-
     endfunction
 
     ## -*- texinfo -*-

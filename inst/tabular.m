@@ -224,14 +224,14 @@ classdef (Abstract) tabular
 ##                         **    Subclass hooks    **                         ##
 ################################################################################
 ##                                                                            ##
-## Every subclass must implement all eighteen.  Octave's classdef has no      ##
+## Every subclass must implement all nineteen.  Octave's classdef has no      ##
 ## 'methods (Abstract)' block, so the contract cannot be declared; these      ##
 ## raising defaults stand in for it, and name the subclass that is missing    ##
 ## one because 'class (this)' resolves downwards.                             ##
 ##                                                                            ##
-## Sixteen of them concern row labels, which is the whole of what separates   ##
-## one tabular class from another; the other two name the properties object   ##
-## and build the result of an apply method.                                   ##
+## Seventeen of them concern row labels, which is the whole of what           ##
+## separates one tabular class from another; the other two name the           ##
+## properties object and build the result of an apply method.                 ##
 ##                                                                            ##
 ## 'hasRowLabels'      whether the object carries row labels at all           ##
 ## 'getRowLabels'      the labels themselves, in their own type               ##
@@ -251,6 +251,7 @@ classdef (Abstract) tabular
 ## 'resolveRowRef'     a row reference resolved to row indices                ##
 ## 'makeProperties'    the properties object this class's metadata lives in   ##
 ## 'assembleApply'     an object built from an apply method's output          ##
+## 'repeatRowLabels'   the labels with each row repeated N times              ##
 ##                                                                            ##
 ################################################################################
 
@@ -375,6 +376,15 @@ classdef (Abstract) tabular
     ## Raises when the object carries no labels to match against.
     function ixRows = resolveRowRef (this, rowRef)
       error ("%s: subclass must implement resolveRowRef.", class (this));
+    endfunction
+
+    ## This object with its row labels repeated N times, ELEMENTWISE placing
+    ## each row's repeats together as 'repelem' does and otherwise repeating
+    ## the whole block as 'repmat' does.  A class whose labels must be unique
+    ## numbers the repeats; one whose labels may repeat leaves them alone.
+    function this = repeatRowLabels (this, n, elementwise)
+      error (strcat ("%s: subclass must implement", ...
+                     " repeatRowLabels."), class (this));
     endfunction
 
     ## An object of this class assembled from the output of an apply method:
@@ -3303,6 +3313,104 @@ classdef (Abstract) tabular
         B = build_grouped_apply_result (this, scope, outFmt, res, outNames, ...
                                         gcols, this.VariableNames(gIx), ...
                                         gcount, repRows);
+      endif
+    endfunction
+
+    ## The body behind 'repelem' and 'repmat' on both classes.  ELEMENTWISE
+    ## selects between them: 'repelem' repeats each row and each variable in
+    ## place, 'repmat' repeats the whole block.  Returns an errmsg body (empty
+    ## on success) for the caller to raise under its own name.
+    function [tbl, errmsg] = repeatResult (this, args, elementwise)
+      tbl = [];
+      errmsg = '';
+      nargs = numel (args);
+      if (nargs < 1)
+        errmsg = 'too few input arguments.';
+        return;
+      endif
+      if (nargs > 2)
+        errmsg = 'only 2 dimensions are supported.';
+        return;
+      endif
+      if (nargs == 1)
+        rows = cols = args{1};
+      else
+        rows = args{1};
+        cols = args{2};
+      endif
+      if (rows < 1 || fix (rows) != rows || ! isnumeric (rows))
+        if (nargs == 1)
+          errmsg = 'SZ must be a positive integer.';
+        else
+          errmsg = 'ROWS must be a positive integer.';
+        endif
+        return;
+      endif
+      if (cols < 1 || fix (cols) != cols || ! isnumeric (cols))
+        errmsg = 'COLUMNS must be a positive integer.';
+        return;
+      endif
+
+      tbl = this;
+      ## Replicate the rows of each variable, then hand the row labels to the
+      ## subclass, which alone knows whether a repeated label needs a name of
+      ## its own.
+      if (rows > 1)
+        if (width (this) == 0)
+          ## No variable carries the height, so the stored count does.
+          tbl.RowCount = height (this) * rows;
+        endif
+        for i = 1:width (this)
+          if (elementwise)
+            tbl.VariableValues{i} = repelem (this.VariableValues{i}, rows, 1);
+          else
+            tbl.VariableValues{i} = repmat (this.VariableValues{i}, rows, 1);
+          endif
+        endfor
+        tbl = repeatRowLabels (tbl, rows, elementwise);
+      endif
+
+      ## Replicate the variables themselves.
+      if (cols > 1)
+        if (elementwise)
+          rep = @(v) repelem (v, 1, cols);
+        else
+          rep = @(v) repmat (v, 1, cols);
+        endif
+        tbl.VariableTypes = rep (tbl.VariableTypes);
+        tbl.VariableValues = rep (tbl.VariableValues);
+        tbl.VariableDescriptions = rep (tbl.VariableDescriptions);
+        tbl.VariableUnits = rep (tbl.VariableUnits);
+        if (! isempty (tbl.VariableContinuity))
+          tbl.VariableContinuity = rep (tbl.VariableContinuity);
+        endif
+        ## Number the repeated names, in the order the values were repeated.
+        newNames = {};
+        if (elementwise)
+          for i = 1:width (this)
+            newNames = [newNames, this.VariableNames(i)];
+            for k = 1:cols - 1
+              newNames = [newNames, ...
+                          {sprintf('%s_%d', this.VariableNames{i}, k)}];
+            endfor
+          endfor
+        else
+          newNames = this.VariableNames;
+          for k = 1:cols - 1
+            add = cellfun (@(x) sprintf ('%s_%d', x, k), ...
+                           this.VariableNames, 'UniformOutput', false);
+            newNames = [newNames, add];
+          endfor
+        endif
+        tbl.VariableNames = newNames;
+        ## Handle custom variable properties
+        if (! isempty (this.CustomProperties))
+          cp_names = customPropsOfType (this, 'variable');
+          for i = 1:numel (cp_names)
+            nm = cp_names{i};
+            tbl.CustomProperties.(nm) = rep (tbl.CustomProperties.(nm));
+          endfor
+        endif
       endif
     endfunction
 

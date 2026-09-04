@@ -353,6 +353,18 @@ classdef timetable < tabular
       endif
     endfunction
 
+    ## Row times need not be unique, so a repeated row simply repeats its
+    ## time; the step is recomputed from the result, which a repetition
+    ## generally makes irregular.
+    function this = repeatRowLabels (this, n, elementwise)
+      if (elementwise)
+        rt = repelem (this.RowTimes, n, 1);
+      else
+        rt = repmat (this.RowTimes, n, 1);
+      endif
+      this = applyRowTimes (this, rt, true);
+    endfunction
+
     ## A timetable built from an apply method's output.  Each output row
     ## takes the row time of the input row ROWIX names it came from; with no
     ## index to go on every row takes the first row time, which is what a
@@ -1003,7 +1015,8 @@ classdef timetable < tabular
 ##                             Available Methods                              ##
 ##                                                                            ##
 ## 'height'           'width'            'size'             'numel'          ##
-## 'ndims'            'length'           'isempty'                           ##
+## 'ndims'            'length'           'isempty'          'repelem'         ##
+## 'repmat'                                                                  ##
 ##                                                                            ##
 ################################################################################
 
@@ -1148,6 +1161,51 @@ classdef timetable < tabular
     ## @end deftypefn
     function TF = isempty (this)
       TF = prod (size (this)) == 0;
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{tt2} =} repelem (@var{tt}, @var{sz})
+    ## @deftypefnx {timetable} {@var{tt2} =} repelem (@var{tt}, @var{rows}, @var{cols})
+    ##
+    ## Repeat each row and variable of a timetable in place.
+    ##
+    ## @code{@var{tt2} = repelem (@var{tt}, @var{rows}, @var{cols})} repeats
+    ## each row of @var{tt} @var{rows} times and each variable @var{cols}
+    ## times, keeping the repeats of a row together.  Given a single argument
+    ## both counts take it.  Each repeated row carries the row time of the row
+    ## it came from, so the result has repeated row times and is generally
+    ## irregular; each repeated variable takes a numbered name, @qcode{A}
+    ## becoming @qcode{A}, @qcode{A_1}.
+    ##
+    ## @seealso{repmat, timetable}
+    ## @end deftypefn
+    function tt2 = repelem (this, varargin)
+      [tt2, errmsg] = repeatResult (this, varargin, true);
+      if (! isempty (errmsg))
+        error ("timetable.repelem: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{tt2} =} repmat (@var{tt}, @var{sz})
+    ## @deftypefnx {timetable} {@var{tt2} =} repmat (@var{tt}, @var{rows}, @var{cols})
+    ##
+    ## Repeat a timetable as a block.
+    ##
+    ## @code{@var{tt2} = repmat (@var{tt}, @var{rows}, @var{cols})} repeats
+    ## the whole timetable @var{rows} times downwards and @var{cols} times
+    ## across.  Given a single argument both counts take it.  Each copy carries
+    ## the row times it came from, so the result has repeated row times and is
+    ## generally irregular; each repeated variable takes a numbered name,
+    ## @qcode{A} becoming @qcode{A}, @qcode{A_1}.
+    ##
+    ## @seealso{repelem, timetable}
+    ## @end deftypefn
+    function tt2 = repmat (this, varargin)
+      [tt2, errmsg] = repeatResult (this, varargin, false);
+      if (! isempty (errmsg))
+        error ("timetable.repmat: %s", errmsg);
+      endif
     endfunction
 
   endmethods
