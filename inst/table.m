@@ -761,9 +761,10 @@ classdef table < tabular
     ## @end itemize
     ##
     ## When @var{tbl} has row names they are written under a leading
-    ## @qcode{RowNames} column.  Variable descriptions and units are written
-    ## whenever @emph{any} variable has a non-empty description or unit,
-    ## respectively (the others are left empty).
+    ## @qcode{RowNames} column.  A row of variable descriptions and a row of
+    ## variable units are written whenever the corresponding property is set,
+    ## or a nested variable carries one; a property that was never set writes
+    ## no row at all, so that it reads back unset.
     ##
     ## Note the following round-trip limitations when reading the file back
     ## with @code{csv2table}: @code{calendarDuration} and @code{categorical}
@@ -784,19 +785,21 @@ classdef table < tabular
       Nrows = cellfun (@(x) size (x, 1), N);
       Nmaxr = max (Nrows);
       isvar = cellfun (@(x) ! isempty (x), N(1,:));
-      ## Descriptions and units are written when any variable carries one (the
-      ## rest are left empty); nested variables expand them to as many rows as
-      ## varNames/varTypes.
+      ## Descriptions and units are written when the property is set, or when a
+      ## nested variable carries one; nested variables expand them to as many
+      ## rows as varNames/varTypes.  A nested variable's entry is a column of
+      ## one entry per nesting level, so the test has to look through it at the
+      ## text rather than at the column itself, which is never empty.
+      hasText = @(x) any (! cellfun ("isempty", cellstr (x)));
       Drows = cellfun (@(x) max (1, size (x, 1)), D);
-      if (! isempty (this.VariableDescriptions)
-          || any (cellfun (@(x) ! isempty (x), D(isvar))))
+      if (! isempty (this.VariableDescriptions) || any (cellfun (hasText, ...
+                                                                D(isvar))))
         Dmaxr = max (Drows(isvar));
       else
         Dmaxr = 0;
       endif
       Urows = cellfun (@(x) max (1, size (x, 1)), U);
-      if (! isempty (this.VariableUnits)
-          || any (cellfun (@(x) ! isempty (x), U(isvar))))
+      if (! isempty (this.VariableUnits) || any (cellfun (hasText, U(isvar))))
         Umaxr = max (Urows(isvar));
       else
         Umaxr = 0;
@@ -896,9 +899,10 @@ classdef table < tabular
     ##
     ## Missing values (@code{NaN}, @code{NaT}, and missing strings) are written
     ## as empty cells.  When @var{tbl} has row names they are written under a
-    ## leading @qcode{RowNames} column.  Variable descriptions and units are
-    ## written whenever @emph{any} variable has a non-empty description or unit,
-    ## respectively (the others are left empty).  A zone-aware @code{datetime}
+    ## leading @qcode{RowNames} column.  A row of variable descriptions and a
+    ## row of variable units are written whenever the corresponding property is
+    ## set; a property that was never set writes no row at all, so that it
+    ## reads back unset.  A zone-aware @code{datetime}
     ## variable keeps its @code{TimeZone} on read-back.
     ##
     ## @code{table2ods (@dots{}, @qcode{'Sheet'}, @var{name})} writes to a sheet

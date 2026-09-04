@@ -556,6 +556,34 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
+%!test  # a nested table with no descriptions round-trips as unset
+%! T = table ([1; 2], table ([3; 4], [5; 6]), 'VariableNames', {'a', 'v'});
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   assert_equal (R.Properties.VariableDescriptions, {});
+%!   assert_equal (R.Properties.VariableUnits, {});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # a nested table's own description survives the round-trip
+%! inner = table ([3; 4], [5; 6]);
+%! inner.Properties.VariableDescriptions = {'inner one', ''};
+%! T = table ([1; 2], 'VariableNames', {'a'});
+%! T.v = inner;
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   assert_equal (R.v.Properties.VariableDescriptions, {'inner one', ''});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
 %!test  # units that were never set round-trip as unset
 %! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
 %! fn = [tempname() '.csv'];

@@ -1245,16 +1245,16 @@ classdef (Abstract) tabular
       Nrows = cellfun (@(x) size (x, 1), N);
       Nmaxr = max (Nrows);
       isvar = cellfun (@(x) ! isempty (x), N(1,:));
+      hasText = @(x) any (! cellfun ("isempty", cellstr (x)));
       Drows = cellfun (@(x) max (1, size (x, 1)), D);
-      if (! isempty (this.VariableDescriptions)
-          || any (cellfun (@(x) ! isempty (x), D(isvar))))
+      if (! isempty (this.VariableDescriptions) || any (cellfun (hasText, ...
+                                                                D(isvar))))
         Dmaxr = max (Drows(isvar));
       else
         Dmaxr = 0;
       endif
       Urows = cellfun (@(x) max (1, size (x, 1)), U);
-      if (! isempty (this.VariableUnits)
-          || any (cellfun (@(x) ! isempty (x), U(isvar))))
+      if (! isempty (this.VariableUnits) || any (cellfun (hasText, U(isvar))))
         Umaxr = max (Urows(isvar));
       else
         Umaxr = 0;
