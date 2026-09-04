@@ -4005,6 +4005,98 @@ classdef (Abstract) tabular
       tbl = horzcat (Lout, Rout);
     endfunction
 
+    ## The body behind 'findgroups' on both classes.  Returns an errmsg body
+    ## (empty on success) for the caller to raise under its own name.  The
+    ## groups are read from the variables alone; row labels take no part, and
+    ## TID is a plain table, its rows being groups rather than rows of the
+    ## input.
+    function [G, TID, errmsg] = findgroupsResult (this)
+      G = [];
+      TID = [];
+      errmsg = '';
+      nvar = width (this);
+      n = height (this);
+      if (nvar == 0)
+        errmsg = 'T must have at least one variable.';
+        return;
+      endif
+      ## Build the combined proxy matrix and the overall missing-row mask.
+      P = [];
+      miss = false (n, 1);
+      for j = 1:nvar
+        [p, m, errmsg] = tabular.group_col_proxy (this.VariableValues{j});
+        if (! isempty (errmsg))
+          return;
+        endif
+        P = [P, p];
+        miss = miss | m;
+      endfor
+      ## Label the non-missing rows by sorted unique combination.
+      G = NaN (n, 1);
+      keep = find (! miss);
+      ia = [];
+      if (! isempty (keep))
+        [~, ia, ic] = unique (P(keep,:), "rows");
+        G(keep) = ic;
+      endif
+      if (isempty (keep))
+        TID = plainTable (subsetrows (this, []));
+      else
+        repRows = keep(ia);
+        idcols = cell (1, nvar);
+        for j = 1:nvar
+          col = this.VariableValues{j};
+          idcols{j} = col(repRows,:);
+        endfor
+        TID = table (idcols{:}, "VariableNames", this.VariableNames);
+      endif
+    endfunction
+
+    ## The body behind 'splitapply' on both classes.  Returns an errmsg body
+    ## (empty on success) for the caller to raise under its own name.  The
+    ## function receives one argument per variable, holding the rows of one
+    ## group; row labels take no part.
+    function [results, N, errmsg] = splitapplyResult (this, func, G, nout)
+      results = {};
+      N = 0;
+      errmsg = '';
+      if (! is_function_handle (func))
+        errmsg = 'FUNC must be a function handle.';
+        return;
+      endif
+      n = height (this);
+      if (! (isnumeric (G) && isvector (G) && numel (G) == n))
+        errmsg = strcat ("G must be a numeric vector with one element per", ...
+                         " row of T.");
+        return;
+      endif
+      G = G(:);
+      gv = G(! isnan (G));
+      if (any (gv != fix (gv)) || any (gv < 1))
+        errmsg = 'G must contain positive integers.';
+        return;
+      endif
+      if (! isempty (gv))
+        N = max (gv);
+        if (! isequal (unique (gv), (1:N)'))
+          errmsg = strcat ("G must contain every integer between 1 and the", ...
+                           " number of groups.");
+          return;
+        endif
+      endif
+      nvar = width (this);
+      results = cell (N, nout);
+      for g = 1:N
+        rows = (G == g);
+        args = cell (1, nvar);
+        for j = 1:nvar
+          col = this.VariableValues{j};
+          args{j} = col(rows,:);
+        endfor
+        [results{g,:}] = func (args{:});
+      endfor
+    endfunction
+
     ## The body behind 'inner2outer' on both classes.  Returns an errmsg body
     ## (empty on success) for the caller to raise under its own name.  The
     ## result is of the calling class, keeping its rows and their labels; only

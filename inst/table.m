@@ -3635,41 +3635,9 @@ classdef table < tabular
       if (nargin != 1)
         print_usage ();
       endif
-      nvar = width (this);
-      n = height (this);
-      if (nvar == 0)
-        error ("table.findgroups: T must have at least one variable.");
-      endif
-      ## Build the combined proxy matrix and the overall missing-row mask.
-      P = [];
-      miss = false (n, 1);
-      for j = 1:nvar
-        [p, m, errmsg] = tabular.group_col_proxy (this.VariableValues{j});
-        if (! isempty (errmsg))
-          error ("table.findgroups: %s", errmsg);
-        endif
-        P = [P, p];
-        miss = miss | m;
-      endfor
-      ## Label the non-missing rows by sorted unique combination.
-      G = NaN (n, 1);
-      keep = find (! miss);
-      if (! isempty (keep))
-        [~, ia, ic] = unique (P(keep,:), "rows");
-        G(keep) = ic;
-      endif
-      if (nargout > 1)
-        if (isempty (keep))
-          TID = this([], :);
-        else
-          repRows = keep(ia);
-          idcols = cell (1, nvar);
-          for j = 1:nvar
-            col = this.VariableValues{j};
-            idcols{j} = col(repRows,:);
-          endfor
-          TID = table (idcols{:}, "VariableNames", this.VariableNames);
-        endif
+      [G, TID, errmsg] = findgroupsResult (this);
+      if (! isempty (errmsg))
+        error ("table.findgroups: %s", errmsg);
       endif
     endfunction
 
@@ -3698,40 +3666,11 @@ classdef table < tabular
       if (nargin != 3)
         print_usage ();
       endif
-      if (! is_function_handle (func))
-        error ("table.splitapply: FUNC must be a function handle.");
-      endif
-      n = height (this);
-      if (! (isnumeric (G) && isvector (G) && numel (G) == n))
-        error (strcat ("table.splitapply: G must be a numeric vector with", ...
-                       " one element per row of T."));
-      endif
-      G = G(:);
-      gv = G(! isnan (G));
-      if (any (gv != fix (gv)) || any (gv < 1))
-        error ("table.splitapply: G must contain positive integers.");
-      endif
-      if (isempty (gv))
-        N = 0;
-      else
-        N = max (gv);
-        if (! isequal (unique (gv), (1:N)'))
-          error (strcat ("table.splitapply: G must contain every integer", ...
-                         " between 1 and the number of groups."));
-        endif
-      endif
-      nvar = width (this);
       nout = max (nargout, 1);
-      results = cell (N, nout);
-      for g = 1:N
-        rows = (G == g);
-        args = cell (1, nvar);
-        for j = 1:nvar
-          col = this.VariableValues{j};
-          args{j} = col(rows,:);
-        endfor
-        [results{g,:}] = func (args{:});
-      endfor
+      [results, N, errmsg] = splitapplyResult (this, func, G, nout);
+      if (! isempty (errmsg))
+        error ("table.splitapply: %s", errmsg);
+      endif
       varargout = cell (1, nout);
       for k = 1:nout
         varargout{k} = vertcat (results{:,k});

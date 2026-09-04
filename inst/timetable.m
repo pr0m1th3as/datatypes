@@ -2329,6 +2329,7 @@ classdef timetable < tabular
 ## 'varfun'           'rowfun'           'grouptransform'   'groupcounts'     ##
 ## 'groupsummary'     'groupfilter'      'stack'            'rows2vars'       ##
 ## 'join'             'innerjoin'        'outerjoin'        'inner2outer'     ##
+## 'findgroups'       'splitapply'                                            ##
 ##                                                                            ##
 ################################################################################
 
@@ -2968,6 +2969,72 @@ classdef timetable < tabular
       if (! isempty (errmsg))
         error ("timetable.inner2outer: %s", errmsg);
       endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{G} =} findgroups (@var{tt})
+    ## @deftypefnx {timetable} {[@var{G}, @var{TID}] =} findgroups (@var{tt})
+    ##
+    ## Number the groups the rows of a timetable fall into.
+    ##
+    ## @code{@var{G} = findgroups (@var{tt})} returns a column of group
+    ## numbers, one per row of @var{tt}, numbering the distinct combinations
+    ## of its variables in sorted order.  A row holding a missing value in any
+    ## variable belongs to no group and is numbered @code{NaN}.
+    ##
+    ## The row times take no part: a timetable groups by its variables, as a
+    ## table does.
+    ##
+    ## @code{[@var{G}, @var{TID}] = findgroups (@var{tt})} also returns a
+    ## @code{table} with one row per group, holding the combination of values
+    ## that defines it.  It is a table and not a timetable, its rows being
+    ## groups rather than instants.
+    ##
+    ## @seealso{splitapply, timetable}
+    ## @end deftypefn
+    function [G, TID] = findgroups (tt)
+      if (nargin != 1)
+        print_usage ();
+      endif
+      [G, TID, errmsg] = findgroupsResult (tt);
+      if (! isempty (errmsg))
+        error ("timetable.findgroups: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{Y} =} splitapply (@var{func}, @var{tt}, @var{G})
+    ## @deftypefnx {timetable} {[@var{Y1}, @dots{}] =} splitapply (@var{func}, @var{tt}, @var{G})
+    ##
+    ## Apply a function to each group of rows of a timetable.
+    ##
+    ## @code{@var{Y} = splitapply (@var{func}, @var{tt}, @var{G})} splits the
+    ## rows of @var{tt} into the groups the numbers in @var{G} name, calls
+    ## @var{func} once per group with one argument per variable holding that
+    ## group's rows, and stacks the results.  @var{G} holds one number per row
+    ## of @var{tt}, as @code{findgroups} returns; a row numbered @code{NaN}
+    ## belongs to no group and is left out.
+    ##
+    ## The row times take no part: @var{func} receives the variables alone.
+    ##
+    ## @code{[@var{Y1}, @dots{}] = splitapply (@dots{})} asks @var{func} for as
+    ## many outputs as are requested and stacks each of them.
+    ##
+    ## @seealso{findgroups, timetable}
+    ## @end deftypefn
+    function varargout = splitapply (func, tt, G)
+      if (nargin != 3)
+        print_usage ();
+      endif
+      nout = max (nargout, 1);
+      [results, N, errmsg] = splitapplyResult (tt, func, G, nout);
+      if (! isempty (errmsg))
+        error ("timetable.splitapply: %s", errmsg);
+      endif
+      varargout = cell (1, nout);
+      for k = 1:nout
+        varargout{k} = vertcat (results{:,k});
+      endfor
     endfunction
 
   endmethods
