@@ -4881,6 +4881,241 @@ classdef (Abstract) tabular
       endif
     endfunction
 
+    ## Build a single-column grouping proxy for one grouping variable COL: a
+    ## numeric matrix P (one row per element) whose sort order matches COL's
+    ## value order, so that 'unique (P, "rows")' recovers the sorted unique
+    ## groups, together with a logical MISS mask flagging the elements that
+    ## findgroups treats as missing (NaN/NaT/<missing>/''/<undefined>).  Returns
+    ## an errmsg body (empty on success) emitted by the caller under its own
+    ## name.
+    function [p, miss, errmsg] = group_col_proxy (col)
+      p = [];
+      miss = [];
+      errmsg = '';
+      if (isa (col, 'categorical'))
+        ## Categorical groups follow category order (ordinal or reordered),
+        ## which the underlying category codes encode; <undefined> maps to NaN.
+        p = double (col)(:);
+        miss = isnan (p);
+        return;
+      endif
+      k = tabular.key_kind (col);
+      if (isempty (k))
+        errmsg = sprintf ("unsupported grouping variable type '%s'.", ...
+                          class (col));
+        return;
+      endif
+      switch (k)
+        case 'text'
+          c = cellstr (col);
+          c = c(:);
+          miss = cellfun (@isempty, c);
+          [~, ~, ic] = unique (c);
+          p = ic(:);
+        case 'datetime'
+          p = tabular.datetime_to_datenum (col)(:);
+          miss = isnan (p);
+        case 'duration'
+          p = days (col)(:);
+          miss = isnan (p);
+        case 'calendarDuration'
+          p = col.proxyArray;
+          miss = any (isnan (p), 2);
+        case 'numeric'
+          p = double (col)(:);
+          miss = isnan (p);
+      endswitch
+    endfunction
+
+    ## Group table rows by the grouping-variable columns GRPCOLS (a cell array
+    ## of variable values, one per grouping variable), using 'group_col_proxy'
+    ## on each. Returns G, an n-by-1 vector of group numbers (NaN for rows
+    ## holding a missing value in any grouping variable), NGROUPS, the number of
+    ## groups, REPROWS, a representative row index per group in sorted group
+    ## order, and an errmsg body (empty on success) emitted by the caller.
+    function [G, ngroups, repRows, errmsg] = group_table_rows (grpCols)
+      errmsg = '';
+      ngroups = 0;
+      repRows = [];
+      n = size (grpCols{1}, 1);
+      P = [];
+      miss = false (n, 1);
+      for j = 1:numel (grpCols)
+        [p, m, e] = tabular.group_col_proxy (grpCols{j});
+        if (! isempty (e))
+          G = [];
+          errmsg = e;
+          return;
+        endif
+        P = [P, p];
+        miss = miss | m;
+      endfor
+      G = NaN (n, 1);
+      keep = find (! miss);
+      if (! isempty (keep))
+        [~, ia, ic] = unique (P(keep,:), "rows");
+        G(keep) = ic;
+        repRows = keep(ia);
+        ngroups = numel (ia);
+      endif
+    endfunction
+
+    ## Build the grouping-variable columns of a grouped apply output from the
+    ## grouping-variable values GRPCOLS: GCOLS holds the value of each grouping
+    ## variable at the representative rows REPROWS, and GCOUNT the number of
+    ## rows in each group, derived from the group-number vector G.
+    function [gcols, gcount] = group_output_cols (grpCols, G, repRows)
+      ngroups = numel (repRows);
+      gcols = cell (1, numel (grpCols));
+      for p = 1:numel (grpCols)
+        gcols{p} = grpCols{p}(repRows,:);
+      endfor
+      gcount = accumarray (G(! isnan (G)), 1, [ngroups, 1]);
+    endfunction
+
+    ## Return the name used to prefix 'varfun' output variables: the name of
+    ## FUNC, or 'Fun' when FUNC is an anonymous function handle.
+    function fname = apply_func_name (func)
+      fstr = func2str (func);
+      if (isempty (fstr) || fstr(1) == '@')
+        fname = 'Fun';
+      else
+        fname = fstr;
+      endif
+    endfunction
+
+    ## Validate and normalise an OutputFormat value for the apply methods: map
+    ## 'auto' to 'table' and accept 'table', 'uniform', and 'cell'.  CALLER
+    ## names the method for error messages.
+    function fmt = check_output_format (caller, fmt)
+      if (isa (fmt, 'string'))
+        fmt = char (fmt);
+      endif
+      if (! (ischar (fmt) && isrow (fmt)))
+        error ("%s: 'OutputFormat' must be a character vector.", caller);
+      endif
+      switch (lower (fmt))
+        case {'auto', 'table'}
+          fmt = 'table';
+        case 'uniform'
+          fmt = 'uniform';
+        case 'cell'
+          fmt = 'cell';
+        case 'timetable'
+          error ("%s: 'timetable' OutputFormat is not supported.", caller);
+        otherwise
+          error ("%s: invalid 'OutputFormat' value '%s'.", caller, fmt);
+      endswitch
+    endfunction
+
+    ## Call FUNC with the arguments ARGS, requesting NOUT outputs, and return
+    ## them in a 1-by-max(NOUT,1) cell row.  When ERRHANDLER is non-empty it is
+    ## called with a struct describing any error thrown by FUNC (fields
+    ## 'identifier', 'message', and 'index' set to IDX) followed by ARGS, and
+    ## its outputs are used instead.
+    function out = apply_func (func, errHandler, idx, nout, args)
+      out = cell (1, max (nout, 1));
+      if (isempty (errHandler))
+        [out{1:nout}] = func (args{:});
+      else
+        try
+          [out{1:nout}] = func (args{:});
+        catch err
+          S = struct ('identifier', err.identifier, 'message', err.message, ...
+                      'index', idx);
+          [out{1:nout}] = errHandler (S, args{:});
+        end_try_catch
+      endif
+    endfunction
+
+    ## Assemble the output of an apply method from the R-by-C cell array of
+    ## per-row (or per-group) results RES with output names OUTNAMES.  For
+    ## grouped output the grouping columns GCOLS (named GNAMES) and the GCOUNT
+    ## counts are prepended; for ungrouped output these are empty.  FMT selects
+    ## the 'table', 'uniform', or 'cell' return format; CALLER names the method
+    ## for error messages.
+    function out = build_apply_result (caller, fmt, res, outNames, gcols, ...
+                                       gnames, gcount, rowNames)
+      if (nargin < 8)
+        rowNames = {};
+      endif
+      C = size (res, 2);
+      switch (fmt)
+        case 'table'
+          rescols = cell (1, C);
+          for c = 1:C
+            rescols{c} = vertcat (res{:,c});
+          endfor
+          if (isempty (gcols) && isempty (gcount))
+            vars = rescols;
+            names = outNames;
+          else
+            vars = [gcols, {gcount}, rescols];
+            names = [gnames, {'GroupCount'}, outNames];
+          endif
+          if (isempty (rowNames))
+            out = table (vars{:}, 'VariableNames', names);
+          else
+            out = table (vars{:}, 'VariableNames', names, 'RowNames', rowNames);
+          endif
+        case 'uniform'
+          out = [];
+          for c = 1:C
+            colvals = res(:,c);
+            if (! all (cellfun (@isscalar, colvals)))
+              error (strcat ("%s: OutputFormat 'uniform' requires FUNC", ...
+                             " to return a scalar for each call."), caller);
+            endif
+            out = [out, vertcat(colvals{:})];
+          endfor
+        case 'cell'
+          out = res;
+      endswitch
+    endfunction
+
+    ## Assemble the output of a grouped 'rowfun' or 'varfun' from the NG-by-C
+    ## cell array of per-group results RES.  Unlike an aggregating apply, FUNC
+    ## may return several rows for a group; each group g therefore contributes
+    ## 'size (RES{g,1}, 1)' rows and the grouping columns GCOLS (named GNAMES)
+    ## and the GCOUNT counts are replicated to match before the per-group
+    ## results are stacked.  FMT selects the 'table', 'uniform', or 'cell'
+    ## return format; CALLER names the method for error messages.
+    function out = build_grouped_apply_result (caller, fmt, res, outNames, ...
+                                               gcols, gnames, gcount)
+      ng = size (res, 1);
+      C = size (res, 2);
+      switch (fmt)
+        case 'table'
+          repIdx = [];
+          for g = 1:ng
+            repIdx = [repIdx; repmat(g, size (res{g,1}, 1), 1)];
+          endfor
+          rescols = cell (1, C);
+          for c = 1:C
+            rescols{c} = vertcat (res{:,c});
+          endfor
+          gcolsR = cell (1, numel (gcols));
+          for p = 1:numel (gcols)
+            gcolsR{p} = gcols{p}(repIdx,:);
+          endfor
+          vars = [gcolsR, {gcount(repIdx)}, rescols];
+          names = [gnames, {'GroupCount'}, outNames];
+          out = table (vars{:}, 'VariableNames', names);
+        case 'uniform'
+          out = [];
+          for c = 1:C
+            colvals = res(:,c);
+            if (! all (cellfun (@isscalar, colvals)))
+              error (strcat ("%s: OutputFormat 'uniform' requires FUNC", ...
+                             " to return a scalar for each call."), caller);
+            endif
+            out = [out, vertcat(colvals{:})];
+          endfor
+        case 'cell'
+          out = res;
+      endswitch
+    endfunction
+
   endmethods
 
 endclassdef
