@@ -3048,6 +3048,37 @@
 %!                'VariableNames', {'A'});
 %! outerjoin (A, A, 'Type', 'inner');
 
+## Test 'inner2outer' turns the nesting inside out and keeps the row times
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! rt = t0 + hours (0:1)';
+%! i1 = table ([1; 2], [3; 4], 'VariableNames', {'p', 'q'});
+%! i2 = table ([5; 6], [7; 8], 'VariableNames', {'p', 'q'});
+%! TT = timetable (i1, i2, 'RowTimes', rt, 'VariableNames', {'i1', 'i2'});
+%! R = inner2outer (TT);
+%! assert_equal (class (R), 'timetable');
+%! assert_equal (R.Properties.VariableNames, {'p', 'q'});
+%! assert_equal (R.Properties.RowTimes, rt);
+%! assert_equal (R.p.Properties.VariableNames, {'i1', 'i2'});
+%! assert_equal (R.p.i1, [1; 2]);
+%! assert_equal (R.p.i2, [5; 6]);
+
+## Test turning it inside out twice gives back what it started as
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! i1 = table ([1; 2], [3; 4], 'VariableNames', {'p', 'q'});
+%! i2 = table ([5; 6], [7; 8], 'VariableNames', {'p', 'q'});
+%! TT = timetable (i1, i2, 'RowTimes', t0 + hours (0:1)', ...
+%!                 'VariableNames', {'i1', 'i2'});
+%! assert_equal (isequal (inner2outer (inner2outer (TT)), TT), true);
+
+## Test a timetable holding nothing nested comes back as it was
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2], 'RowTimes', t0 + hours (0:1)', ...
+%!                 'VariableNames', {'A'});
+%! assert_equal (isequal (inner2outer (TT), TT), true);
+
 ################################################################################
 ##                        **    Input validation    **                        ##
 ################################################################################

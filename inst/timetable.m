@@ -2328,7 +2328,7 @@ classdef timetable < tabular
 ##                                                                            ##
 ## 'varfun'           'rowfun'           'grouptransform'   'groupcounts'     ##
 ## 'groupsummary'     'groupfilter'      'stack'            'rows2vars'       ##
-## 'join'             'innerjoin'        'outerjoin'                          ##
+## 'join'             'innerjoin'        'outerjoin'        'inner2outer'     ##
 ##                                                                            ##
 ################################################################################
 
@@ -2943,6 +2943,30 @@ classdef timetable < tabular
                                                inputname (1), inputname (2));
       if (! isempty (errmsg))
         error ("timetable.outerjoin: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timetable} {@var{tt2} =} inner2outer (@var{tt})
+    ##
+    ## Turn the nesting of a timetable inside out.
+    ##
+    ## @code{@var{tt2} = inner2outer (@var{tt})} returns a timetable whose
+    ## variables are named for the variables of the tables nested inside
+    ## @var{tt}, each holding a nested table named for the variables of
+    ## @var{tt} that held them.  The rows and their row times are untouched:
+    ## only the nesting is turned inside out.
+    ##
+    ## An inner variable name held by one nested table alone becomes a plain
+    ## variable rather than a nested one.  A timetable holding nothing nested
+    ## is returned as it is.
+    ##
+    ## @seealso{timetable}
+    ## @end deftypefn
+    function tt2 = inner2outer (tt)
+      [tt2, errmsg] = inner2outerResult (tt);
+      if (! isempty (errmsg))
+        error ("timetable.inner2outer: %s", errmsg);
       endif
     endfunction
 

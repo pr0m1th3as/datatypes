@@ -4005,6 +4005,142 @@ classdef (Abstract) tabular
       tbl = horzcat (Lout, Rout);
     endfunction
 
+    ## The body behind 'inner2outer' on both classes.  Returns an errmsg body
+    ## (empty on success) for the caller to raise under its own name.  The
+    ## result is of the calling class, keeping its rows and their labels; only
+    ## the nesting is turned inside out.
+    function [tbl, errmsg] = inner2outerResult (this)
+      errmsg = '';
+
+      ## Identify the variables that are themselves tables (nested tables)
+      isNested = cellfun (@istable, this.VariableValues);
+      ixNest = find (isNested);
+      if (isempty (ixNest))
+        ## Nothing is nested, so there is nothing to turn inside out.
+        tbl = this;
+        return;
+      endif
+
+      ## The names of the nested-table variables become the variable names of
+      ## the nested tables in the output.
+      nestNames = this.VariableNames(ixNest);
+
+      ## The union of the inner variable names (ordered by first appearance
+      ## across the nested tables) becomes the outer variable names of the
+      ## output.  Nested tables need not share the same set of names.
+      allNames = {};
+      for j = 1:numel (ixNest)
+        allNames = [allNames, this.VariableValues{ixNest(j)}.VariableNames];
+      endfor
+      innerNames = __unique__ (allNames, 'stable');
+
+      ## Build one outer variable per inner variable name.  An inner name held
+      ## by more than one nested table becomes a nested table grouping those
+      ## source variables (named by the source nested-table variable names),
+      ## inheriting each source variable's description and units.  An inner name
+      ## held by a single nested table becomes a plain variable carrying that
+      ## column and its metadata.
+      newVals = cell (1, numel (innerNames));
+      newTypes = cell (1, numel (innerNames));
+      newDesc = cell (1, numel (innerNames));
+      newUnits = cell (1, numel (innerNames));
+      for k = 1:numel (innerNames)
+        srcJ = [];
+        srcP = [];
+        for j = 1:numel (ixNest)
+          nt = this.VariableValues{ixNest(j)};
+          p = find (strcmp (nt.VariableNames, innerNames{k}), 1);
+          if (! isempty (p))
+            srcJ(end+1) = j;
+            srcP(end+1) = p;
+          endif
+        endfor
+        if (numel (srcJ) == 1)
+          nt = this.VariableValues{ixNest(srcJ)};
+          newVals{k} = nt.VariableValues{srcP};
+          newTypes{k} = nt.VariableTypes{srcP};
+          newDesc{k} = nt.VariableDescriptions{srcP};
+          newUnits{k} = nt.VariableUnits{srcP};
+        else
+          cols = cell (1, numel (srcJ));
+          descs = cell (1, numel (srcJ));
+          units = cell (1, numel (srcJ));
+          for m = 1:numel (srcJ)
+            nt = this.VariableValues{ixNest(srcJ(m))};
+            cols{m} = nt.VariableValues{srcP(m)};
+            descs{m} = nt.VariableDescriptions{srcP(m)};
+            units{m} = nt.VariableUnits{srcP(m)};
+          endfor
+          nt2 = table (cols{:}, 'VariableNames', nestNames(srcJ));
+          nt2.VariableDescriptions = descs;
+          nt2.VariableUnits = units;
+          newVals{k} = nt2;
+          newTypes{k} = 'table';
+          newDesc{k} = '';
+          newUnits{k} = '';
+        endif
+      endfor
+
+      ## Assemble the output variable order: the new outer block sits at the
+      ## position of the first nested variable, the other nested variables drop
+      ## out, and the non-nested variables keep their relative position.
+      outNames = {};
+      outVals = {};
+      outTypes = {};
+      outDesc = {};
+      outUnits = {};
+      emitted = false;
+      for ix = 1:width (this)
+        if (ismember (ix, ixNest))
+          if (! emitted)
+            for k = 1:numel (innerNames)
+              outNames{end+1} = innerNames{k};
+              outVals{end+1} = newVals{k};
+              outTypes{end+1} = newTypes{k};
+              outDesc{end+1} = newDesc{k};
+              outUnits{end+1} = newUnits{k};
+            endfor
+            emitted = true;
+          endif
+        else
+          outNames{end+1} = this.VariableNames{ix};
+          outVals{end+1} = this.VariableValues{ix};
+          outTypes{end+1} = this.VariableTypes{ix};
+          outDesc{end+1} = this.VariableDescriptions{ix};
+          outUnits{end+1} = this.VariableUnits{ix};
+        endif
+      endfor
+
+      ## A new outer variable name must not clash with a kept non-nested one.
+      if (numel (__unique__ (outNames)) != numel (outNames))
+        errmsg = strcat ("an inner variable name clashes with an existing", ...
+                         " variable name in TBLA.");
+        tbl = [];
+        return;
+      endif
+
+      ## Build the output: preserve table-level metadata and row names; drop
+      ## variable-scoped custom properties since the variable identities change.
+      tbl = this;
+      tbl.VariableNames = outNames;
+      tbl.VariableValues = outVals;
+      tbl.VariableTypes = outTypes;
+      tbl.VariableDescriptions = outDesc;
+      tbl.VariableUnits = outUnits;
+      if (! isempty (this.VariableContinuity))
+        ## The variables are not the ones that carried it.
+        tbl.VariableContinuity = repmat ({'unset'}, 1, numel (outNames));
+      endif
+      if (! isempty (this.CustomProperties))
+        cpNames = customPropsOfType (this, 'variable');
+        if (! isempty (cpNames))
+          tbl.CustomProperties = rmfield (tbl.CustomProperties, cpNames);
+          tbl.CustomPropTypes = rmfield (tbl.CustomPropTypes, cpNames);
+        endif
+      endif
+
+    endfunction
+
     ## The body behind 'rows2vars' on both classes.  Returns an errmsg body
     ## (empty on success) for the caller to raise under its own name.  The
     ## result is a table whatever the input was: its rows are the variables of

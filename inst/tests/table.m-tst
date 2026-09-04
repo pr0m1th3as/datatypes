@@ -3950,8 +3950,10 @@
 %! assert_equal (T.Y.Properties.VariableUnits, {'m', 'm'});
 %! assert_equal (isempty (T.X.Properties.RowNames), true);
 ## Test input validation for 'inner2outer' method
-%!error <table.inner2outer: TBLA must have at least one variable that contains a table.> ...
-%! inner2outer (table ([1; 2]));
+## a table holding nothing nested has nothing to turn inside out
+%!test
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'A', 'B'});
+%! assert_equal (isequal (inner2outer (T), T), true);
 %!error <table.inner2outer: an inner variable name clashes with an existing variable name in TBLA.> ...
 %! inner2outer (table (table ([1;2], 'VariableNames', {'A'}), [3;4], ...
 %!                     'VariableNames', {'N', 'A'}));
