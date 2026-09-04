@@ -2321,6 +2321,93 @@
 %!                timerange (hours (1), hours (2)));
 
 ################################################################################
+##                      **    Apply functions    **                           ##
+################################################################################
+
+## Test an ungrouped 'varfun' reduces to one row at the first row time
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2; 3], 'RowTimes', t0 + hours (0:2)', ...
+%!                 'VariableNames', {'A'});
+%! B = varfun (@mean, TT);
+%! assert_equal (class (B), 'timetable');
+%! assert_equal (size (B), [1, 1]);
+%! assert_equal (B.Properties.VariableNames, {'mean_A'});
+%! assert_equal (B.mean_A, 2);
+%! assert_equal (B.Properties.RowTimes, t0);
+
+## Test grouping by a variable gives each group the row time of its first row
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2; 3; 4], categorical ({'a'; 'b'; 'a'; 'b'}), ...
+%!                 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'A', 'g'});
+%! B = varfun (@mean, TT, 'GroupingVariables', 'g', 'InputVariables', 'A');
+%! assert_equal (B.Properties.VariableNames, {'g', 'GroupCount', 'mean_A'});
+%! assert_equal (B.GroupCount, [2; 2]);
+%! assert_equal (B.mean_A, [2; 3]);
+%! assert_equal (B.Properties.RowTimes, [t0; t0 + hours(1)]);
+
+## Test grouping by the row dimension name groups by the row times themselves
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2; 3; 4], categorical ({'a'; 'b'; 'a'; 'b'}), ...
+%!                 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'A', 'g'});
+%! B = varfun (@mean, TT, 'GroupingVariables', 'Time', 'InputVariables', 'A');
+%! assert_equal (B.Properties.VariableNames, {'GroupCount', 'mean_A'});
+%! assert_equal (B.GroupCount, [1; 1; 1; 1]);
+%! assert_equal (B.mean_A, [1; 2; 3; 4]);
+%! assert_equal (B.Properties.RowTimes, t0 + hours (0:3)');
+
+## Test duplicate row times group together under the row dimension name
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2; 3], 'RowTimes', t0 + hours ([0 1 1])', ...
+%!                 'VariableNames', {'A'});
+%! B = varfun (@sum, TT, 'GroupingVariables', 'Time');
+%! assert_equal (B.GroupCount, [1; 2]);
+%! assert_equal (B.sum_A, [1; 5]);
+%! assert_equal (B.Properties.RowTimes, [t0; t0 + hours(1)]);
+
+## Test 'InputVariables' selects what the function is applied to
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2], [10; 20], 'RowTimes', t0 + hours (0:1)', ...
+%!                 'VariableNames', {'A', 'B'});
+%! B = varfun (@sum, TT, 'InputVariables', 'B');
+%! assert_equal (B.Properties.VariableNames, {'sum_B'});
+%! assert_equal (B.sum_B, 30);
+
+## Test the non-table output formats return arrays rather than timetables
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2], [10; 20], 'RowTimes', t0 + hours (0:1)', ...
+%!                 'VariableNames', {'A', 'B'});
+%! assert_equal (varfun (@mean, TT, 'OutputFormat', 'uniform'), [1.5, 15]);
+%! assert_equal (varfun (@sum, TT, 'OutputFormat', 'cell'), {3, 30});
+
+## Test 'ErrorHandler' stands in for a function that fails
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2], 'RowTimes', t0 + hours (0:1)', ...
+%!                 'VariableNames', {'A'});
+%! B = varfun (@(x) error ('boom'), TT, 'ErrorHandler', @(s, varargin) NaN);
+%! assert_equal (B.Fun_A, NaN);
+
+## Test a failure names the function and the variable it was applied to
+%!error <timetable.varfun: applying the function 'mean' to the variable 'str' generated an error.> ...
+%! TT = timetable ([1; 2], string ({'p'; 'q'}), 'RowTimes', ...
+%!                 datetime (2024, 1, 1) + hours (0:1)', ...
+%!                 'VariableNames', {'num', 'str'});
+%! varfun (@mean, TT);
+
+## Test the option validation is the timetable's own
+%!error <timetable.varfun: FUNC must be a function handle.> ...
+%! rt = datetime (2024, 1, 1) + hours (0:1)';
+%! varfun (1, timetable ([1; 2], 'RowTimes', rt));
+
+################################################################################
 ##                        **    Input validation    **                        ##
 ################################################################################
 

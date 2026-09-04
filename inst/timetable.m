@@ -196,6 +196,12 @@ classdef timetable < tabular
       out = this.DimensionNames(1);
     endfunction
 
+    ## The row times are an ordinary grouping key, named by the row
+    ## dimension.
+    function tf = groupsByLabels (this)
+      tf = true;
+    endfunction
+
     ## A bare 'sortrows (tt)' orders by the row times.
     function tf = sortsByLabelsByDefault (this)
       tf = true;
@@ -345,6 +351,23 @@ classdef timetable < tabular
         error ("timetable: no such row time in timetable: '%s'", ...
                strjoin (unmatched, ", "));
       endif
+    endfunction
+
+    ## A timetable built from an apply method's output.  Each output row
+    ## takes the row time of the input row ROWIX names it came from; with no
+    ## index to go on every row takes the first row time, which is what a
+    ## whole-object reduction leaves behind.  ROWNAMES means nothing here.
+    function out = assembleApply (this, vars, names, rowNames, rowIx)
+      if (isempty (vars))
+        nrows = 0;
+      else
+        nrows = size (vars{1}, 1);
+      endif
+      if (isempty (rowIx))
+        rowIx = ones (nrows, 1);
+      endif
+      rt = this.RowTimes(rowIx(:));
+      out = timetable (vars{:}, 'RowTimes', rt, 'VariableNames', names);
     endfunction
 
     ## Wraps the metadata struct that 'getProperties' assembles in a
@@ -2211,6 +2234,78 @@ classdef timetable < tabular
       below = ! R.hasHi || boundMet (thi, R.hi, R.closedRight, 'below');
       TF = above && below;
 
+    endfunction
+
+  endmethods
+
+################################################################################
+##             **    Apply Functions to Timetable Contents    **              ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'varfun'                                                                   ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{B} =} varfun (@var{func}, @var{A})
+    ## @deftypefnx {timetable} {@var{B} =} varfun (@var{func}, @var{A}, @var{Name}, @var{Value}, @dots{})
+    ##
+    ## Apply a function to each variable of a timetable.
+    ##
+    ## @code{@var{B} = varfun (@var{func}, @var{A})} applies the function
+    ## handle @var{func} separately to each variable of the timetable @var{A}
+    ## and returns the results in the timetable @var{B}.  Each variable is
+    ## passed whole, so a function that reduces a column to a scalar gives a
+    ## one-row result.  The output variables are named for the function and
+    ## the variable they came from, as in @qcode{mean_Speed}, and every row of
+    ## the result carries the row time of the first row it was computed from.
+    ##
+    ## @code{@var{B} = varfun (@var{func}, @var{A}, @var{Name}, @var{Value},
+    ## @dots{})} modifies the operation through the following
+    ## @var{Name}/@var{Value} pairs:
+    ##
+    ## @table @asis
+    ## @item @qcode{'InputVariables'}
+    ## The variables of @var{A} that @var{func} is applied to, given as
+    ## variable names, indices, a logical vector, or a function handle.  By
+    ## default every variable of @var{A} that is not a grouping variable is
+    ## used.
+    ##
+    ## @item @qcode{'GroupingVariables'}
+    ## One or more variables of @var{A} that define groups of rows, or the row
+    ## dimension name, which groups by the row times themselves.  @var{func}
+    ## is then applied once to each group and @var{B} has one row per group,
+    ## carrying the row time of the first row of the group.  Grouping
+    ## variables appear in @var{B} alongside a @qcode{GroupCount} variable;
+    ## the row times do not, being the row times of the result.  Rows with a
+    ## missing value in any grouping variable are omitted.
+    ##
+    ## @item @qcode{'OutputFormat'}
+    ## One of @qcode{'table'} (the default, and also selected by
+    ## @qcode{'auto'}), which returns the results in a timetable;
+    ## @qcode{'uniform'}, which requires @var{func} to return a scalar and
+    ## returns them in an array; or @qcode{'cell'}, which returns them in a
+    ## cell array.
+    ##
+    ## @item @qcode{'ErrorHandler'}
+    ## A function handle called whenever @var{func} raises an error, receiving
+    ## a structure with fields @qcode{identifier}, @qcode{message} and
+    ## @qcode{index}, followed by the arguments @var{func} was called with.
+    ## Its outputs are used in place of the ones @var{func} did not return.
+    ## @end table
+    ##
+    ## @end deftypefn
+    function B = varfun (func, A, varargin)
+      if (nargin < 2)
+        print_usage ();
+      endif
+      [B, errmsg] = varfunResult (A, func, varargin);
+      if (! isempty (errmsg))
+        error ("timetable.varfun: %s", errmsg);
+      endif
     endfunction
 
   endmethods

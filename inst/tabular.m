@@ -224,25 +224,33 @@ classdef (Abstract) tabular
 ##                         **    Subclass hooks    **                         ##
 ################################################################################
 ##                                                                            ##
-## Every subclass must implement all eleven.  Octave's classdef has no        ##
+## Every subclass must implement all eighteen.  Octave's classdef has no      ##
 ## 'methods (Abstract)' block, so the contract cannot be declared; these      ##
 ## raising defaults stand in for it, and name the subclass that is missing    ##
 ## one because 'class (this)' resolves downwards.                             ##
 ##                                                                            ##
-## Ten of them concern row labels, which is the whole of what separates       ##
-## one tabular class from another; the eleventh names the properties object.  ##
+## Sixteen of them concern row labels, which is the whole of what separates   ##
+## one tabular class from another; the other two name the properties object   ##
+## and build the result of an apply method.                                   ##
 ##                                                                            ##
 ## 'hasRowLabels'      whether the object carries row labels at all           ##
 ## 'getRowLabels'      the labels themselves, in their own type               ##
 ## 'rowLabelName'      the name the labels are known by                       ##
 ## 'rowLabelStrings'   the labels rendered for display                        ##
 ## 'rowLabelHeader'    the heading printed over them, if any                  ##
+## 'rowLabelKeyNames'  the names that mean "by the labels" rather than a var  ##
+## 'sortsByLabelsByDefault'  whether a bare 'sortrows' orders by them         ##
+## 'uniqueIncludesLabels'  whether they make a row distinct                   ##
+## 'usableRowLabels'   which rows carry a label that can be used              ##
+## 'fillSamplePoints'  the points the variables are sampled at                ##
+## 'groupsByLabels'    whether a grouping reference may name them             ##
 ## 'rowLabelProperties'  the row label metadata, named as it is published     ##
 ## 'setRowLabelProperty'  one of those properties assigned                    ##
 ## 'subsetRowLabels'   the object with its labels subset by an index          ##
 ## 'clearRowLabels'    the object with its labels removed                     ##
 ## 'resolveRowRef'     a row reference resolved to row indices                ##
 ## 'makeProperties'    the properties object this class's metadata lives in   ##
+## 'assembleApply'     an object built from an apply method's output          ##
 ##                                                                            ##
 ################################################################################
 
@@ -313,6 +321,15 @@ classdef (Abstract) tabular
                      " usableRowLabels."), class (this));
     endfunction
 
+    ## Whether a grouping reference may name the row labels instead of a
+    ## variable.  A timetable's row times are an ordinary grouping key,
+    ## named by the row dimension; a table's row names are not one, being
+    ## unique and so grouping nothing together.
+    function tf = groupsByLabels (this)
+      error (strcat ("%s: subclass must implement", ...
+                     " groupsByLabels."), class (this));
+    endfunction
+
     ## The points the variables are sampled at, for the methods that
     ## interpolate or measure a distance.  A table has only the row order to
     ## go on; a timetable has its row times, which is why the same gap fills
@@ -358,6 +375,17 @@ classdef (Abstract) tabular
     ## Raises when the object carries no labels to match against.
     function ixRows = resolveRowRef (this, rowRef)
       error ("%s: subclass must implement resolveRowRef.", class (this));
+    endfunction
+
+    ## An object of this class assembled from the output of an apply method:
+    ## VARS holds the variable values and NAMES their names.  Each class takes
+    ## the row labels from the argument that means something to it and ignores
+    ## the other: ROWNAMES is the cellstr a table carries, empty where the
+    ## result has none, and ROWIX indexes the input row each output row takes
+    ## its label from, empty where the caller has none to give.
+    function out = assembleApply (this, vars, names, rowNames, rowIx)
+      error (strcat ("%s: subclass must implement", ...
+                     " assembleApply."), class (this));
     endfunction
 
     ## The properties object this class's metadata lives in, which is what
@@ -3198,6 +3226,195 @@ classdef (Abstract) tabular
       TF = true;
     endfunction
 
+    ## The body behind 'varfun' on both classes.  Returns an errmsg body
+    ## (empty on success) for the caller to raise under its own name.
+    function [B, errmsg] = varfunResult (this, func, args_in)
+      B = [];
+      errmsg = '';
+      scope = sprintf ('%s.varfun', class (this));
+      if (! is_function_handle (func))
+        errmsg = 'FUNC must be a function handle.';
+        return;
+      endif
+
+      ## Parse optional Name-Value paired arguments
+      optNames = {'InputVariables', 'GroupingVariables', 'OutputFormat', ...
+                  'ErrorHandler'};
+      dfValues = {[], [], 'auto', []};
+      [inVars, grpVars, outFmt, errHandler] = ...
+                  parsePairedArguments (optNames, dfValues, args_in(:));
+      outFmt = tabular.check_output_format (scope, outFmt);
+      if (! isempty (errHandler) && ! is_function_handle (errHandler))
+        errmsg = "'ErrorHandler' must be a function handle.";
+        return;
+      endif
+
+      ## Resolve grouping variables and input variables (default input is
+      ## every variable that is not a grouping variable).
+      byLabels = false;
+      gIx = [];
+      if (! isempty (grpVars))
+        [gIx, byLabels] = resolveGroupRef (this, grpVars);
+      endif
+      if (isempty (inVars))
+        iIx = 1:width (this);
+        iIx(ismember (iIx, gIx)) = [];
+      else
+        iIx = resolveVarRef (this, inVars)(:)';
+      endif
+      if (isempty (iIx))
+        errmsg = 'there are no variables to which to apply FUNC.';
+        return;
+      endif
+
+      ## Build the output variable names from the function and variable names.
+      inNames = this.VariableNames(iIx);
+      fname = tabular.apply_func_name (func);
+      outNames = strcat (fname, '_', inNames);
+
+      if (isempty (gIx) && ! byLabels)
+        ## Ungrouped: apply FUNC to each whole variable.
+        res = cell (1, numel (iIx));
+        for k = 1:numel (iIx)
+          col = this.VariableValues{iIx(k)};
+          what = sprintf ("the variable '%s'", inNames{k});
+          out = tabular.apply_func (func, errHandler, k, 1, {col}, scope, ...
+                                    what);
+          res{1,k} = out{1};
+        endfor
+        B = build_apply_result (this, scope, outFmt, res, outNames, {}, ...
+                               {}, [], {}, []);
+      else
+        ## Grouped: apply FUNC to each group's slice of each variable.  The
+        ## row labels group as a column of their own when they were named,
+        ## and are reported as row labels of the result rather than as a
+        ## grouping variable of it.
+        inCols = this.VariableValues(iIx);
+        grpCols = this.VariableValues(gIx);
+        if (byLabels)
+          labels = getRowLabels (this);
+          grpCols = [{labels}, grpCols];
+        endif
+        [G, ng, repRows, gerr] = tabular.group_table_rows (grpCols);
+        if (! isempty (gerr))
+          errmsg = gerr;
+          return;
+        endif
+        res = cell (ng, numel (iIx));
+        for g = 1:ng
+          rows = (G == g);
+          for k = 1:numel (iIx)
+            col = inCols{k};
+            what = sprintf ("the variable '%s'", inNames{k});
+            out = tabular.apply_func (func, errHandler, g, 1, ...
+                                      {col(rows,:)}, scope, what);
+            res{g,k} = out{1};
+          endfor
+        endfor
+        [gcols, gcount] = tabular.group_output_cols ( ...
+                              this.VariableValues(gIx), G, repRows);
+        B = build_grouped_apply_result (this, scope, outFmt, res, outNames, ...
+                                        gcols, this.VariableNames(gIx), ...
+                                        gcount, repRows);
+      endif
+    endfunction
+
+    ## Assemble the output of an apply method from the R-by-C cell array of
+    ## per-row (or per-group) results RES with output names OUTNAMES.  For
+    ## grouped output the grouping columns GCOLS (named GNAMES) and the GCOUNT
+    ## counts are prepended; for ungrouped output these are empty.  FMT selects
+    ## the 'table', 'uniform', or 'cell' return format; CALLER names the method
+    ## for error messages.
+    function out = build_apply_result (this, caller, fmt, res, outNames, ...
+                                      gcols, gnames, gcount, rowNames, rowIx)
+      if (nargin < 9)
+        rowNames = {};
+      endif
+      if (nargin < 10)
+        rowIx = [];
+      endif
+      C = size (res, 2);
+      switch (fmt)
+        case 'table'
+          rescols = cell (1, C);
+          for c = 1:C
+            rescols{c} = vertcat (res{:,c});
+          endfor
+          if (isempty (gcols) && isempty (gcount))
+            vars = rescols;
+            names = outNames;
+          else
+            vars = [gcols, {gcount}, rescols];
+            names = [gnames, {'GroupCount'}, outNames];
+          endif
+          out = assembleApply (this, vars, names, rowNames, rowIx);
+        case 'uniform'
+          out = [];
+          for c = 1:C
+            colvals = res(:,c);
+            if (! all (cellfun (@isscalar, colvals)))
+              error (strcat ("%s: OutputFormat 'uniform' requires FUNC", ...
+                             " to return a scalar for each call."), caller);
+            endif
+            out = [out, vertcat(colvals{:})];
+          endfor
+        case 'cell'
+          out = res;
+      endswitch
+    endfunction
+
+    ## Assemble the output of a grouped 'rowfun' or 'varfun' from the NG-by-C
+    ## cell array of per-group results RES.  Unlike an aggregating apply, FUNC
+    ## may return several rows for a group; each group g therefore contributes
+    ## 'size (RES{g,1}, 1)' rows and the grouping columns GCOLS (named GNAMES)
+    ## and the GCOUNT counts are replicated to match before the per-group
+    ## results are stacked.  FMT selects the 'table', 'uniform', or 'cell'
+    ## return format; CALLER names the method for error messages.
+    function out = build_grouped_apply_result (this, caller, fmt, res, ...
+                                              outNames, gcols, gnames, ...
+                                              gcount, rowIx)
+      if (nargin < 9)
+        rowIx = [];
+      endif
+      ng = size (res, 1);
+      C = size (res, 2);
+      switch (fmt)
+        case 'table'
+          repIdx = [];
+          for g = 1:ng
+            repIdx = [repIdx; repmat(g, size (res{g,1}, 1), 1)];
+          endfor
+          rescols = cell (1, C);
+          for c = 1:C
+            rescols{c} = vertcat (res{:,c});
+          endfor
+          gcolsR = cell (1, numel (gcols));
+          for p = 1:numel (gcols)
+            gcolsR{p} = gcols{p}(repIdx,:);
+          endfor
+          vars = [gcolsR, {gcount(repIdx)}, rescols];
+          names = [gnames, {'GroupCount'}, outNames];
+          if (isempty (rowIx))
+            outIx = [];
+          else
+            outIx = rowIx(repIdx);
+          endif
+          out = assembleApply (this, vars, names, {}, outIx);
+        case 'uniform'
+          out = [];
+          for c = 1:C
+            colvals = res(:,c);
+            if (! all (cellfun (@isscalar, colvals)))
+              error (strcat ("%s: OutputFormat 'uniform' requires FUNC", ...
+                             " to return a scalar for each call."), caller);
+            endif
+            out = [out, vertcat(colvals{:})];
+          endfor
+        case 'cell'
+          out = res;
+      endswitch
+    endfunction
+
     function names = customPropsOfType (this, type)
       names = {};
       if (isempty (this.CustomProperties))
@@ -3206,6 +3423,36 @@ classdef (Abstract) tabular
       names = fieldnames (this.CustomProperties);
       keep = cellfun (@(n) strcmp (this.CustomPropTypes.(n), type), names);
       names = names(keep);
+    endfunction
+
+    ## Resolve a 'GroupingVariables' reference.  IXVAR indexes the variables
+    ## named and BYLABELS says the row labels were named too, which only a
+    ## class that groups by them answers to, under any of its label key
+    ## names.  The rows are then grouped by the label column followed by
+    ## those variables, while only the variables are reported back as
+    ## grouping variables of the result.
+    function [ixVar, byLabels] = resolveGroupRef (this, grpRef)
+      byLabels = false;
+      isText = ischar (grpRef) || iscellstr (grpRef) ...
+               || isa (grpRef, 'string');
+      if (groupsByLabels (this) && isText)
+        if (ischar (grpRef))
+          names = {grpRef};
+        else
+          names = cellstr (grpRef);
+        endif
+        names = names(:)';
+        keys = rowLabelKeyNames (this);
+        isLabel = ismember (names, keys);
+        byLabels = any (isLabel);
+        grpRef = names(! isLabel);
+      endif
+      if (byLabels && isempty (grpRef))
+        ixVar = zeros (1, 0);
+        return;
+      endif
+      ixVar = resolveVarRef (this, grpRef);
+      ixVar = ixVar(:)';
     endfunction
 
     ## Resolve variable references to indices and variable names.
@@ -5012,11 +5259,23 @@ classdef (Abstract) tabular
     ## them in a 1-by-max(NOUT,1) cell row.  When ERRHANDLER is non-empty it is
     ## called with a struct describing any error thrown by FUNC (fields
     ## 'identifier', 'message', and 'index' set to IDX) followed by ARGS, and
-    ## its outputs are used instead.
-    function out = apply_func (func, errHandler, idx, nout, args)
+    ## its outputs are used instead.  WHAT names what FUNC was applied to, as
+    ## in "the variable 'x'", and where it is given a failure is reported
+    ## against it under SCOPE rather than being left to speak for itself.
+    function out = apply_func (func, errHandler, idx, nout, args, scope, what)
       out = cell (1, max (nout, 1));
       if (isempty (errHandler))
-        [out{1:nout}] = func (args{:});
+        if (nargin < 7 || isempty (what))
+          [out{1:nout}] = func (args{:});
+        else
+          try
+            [out{1:nout}] = func (args{:});
+          catch
+            error (strcat ("%s: applying the function '%s' to %s", ...
+                           " generated an error."), scope, ...
+                   tabular.apply_func_name (func), what);
+          end_try_catch
+        endif
       else
         try
           [out{1:nout}] = func (args{:});
@@ -5026,94 +5285,6 @@ classdef (Abstract) tabular
           [out{1:nout}] = errHandler (S, args{:});
         end_try_catch
       endif
-    endfunction
-
-    ## Assemble the output of an apply method from the R-by-C cell array of
-    ## per-row (or per-group) results RES with output names OUTNAMES.  For
-    ## grouped output the grouping columns GCOLS (named GNAMES) and the GCOUNT
-    ## counts are prepended; for ungrouped output these are empty.  FMT selects
-    ## the 'table', 'uniform', or 'cell' return format; CALLER names the method
-    ## for error messages.
-    function out = build_apply_result (caller, fmt, res, outNames, gcols, ...
-                                       gnames, gcount, rowNames)
-      if (nargin < 8)
-        rowNames = {};
-      endif
-      C = size (res, 2);
-      switch (fmt)
-        case 'table'
-          rescols = cell (1, C);
-          for c = 1:C
-            rescols{c} = vertcat (res{:,c});
-          endfor
-          if (isempty (gcols) && isempty (gcount))
-            vars = rescols;
-            names = outNames;
-          else
-            vars = [gcols, {gcount}, rescols];
-            names = [gnames, {'GroupCount'}, outNames];
-          endif
-          if (isempty (rowNames))
-            out = table (vars{:}, 'VariableNames', names);
-          else
-            out = table (vars{:}, 'VariableNames', names, 'RowNames', rowNames);
-          endif
-        case 'uniform'
-          out = [];
-          for c = 1:C
-            colvals = res(:,c);
-            if (! all (cellfun (@isscalar, colvals)))
-              error (strcat ("%s: OutputFormat 'uniform' requires FUNC", ...
-                             " to return a scalar for each call."), caller);
-            endif
-            out = [out, vertcat(colvals{:})];
-          endfor
-        case 'cell'
-          out = res;
-      endswitch
-    endfunction
-
-    ## Assemble the output of a grouped 'rowfun' or 'varfun' from the NG-by-C
-    ## cell array of per-group results RES.  Unlike an aggregating apply, FUNC
-    ## may return several rows for a group; each group g therefore contributes
-    ## 'size (RES{g,1}, 1)' rows and the grouping columns GCOLS (named GNAMES)
-    ## and the GCOUNT counts are replicated to match before the per-group
-    ## results are stacked.  FMT selects the 'table', 'uniform', or 'cell'
-    ## return format; CALLER names the method for error messages.
-    function out = build_grouped_apply_result (caller, fmt, res, outNames, ...
-                                               gcols, gnames, gcount)
-      ng = size (res, 1);
-      C = size (res, 2);
-      switch (fmt)
-        case 'table'
-          repIdx = [];
-          for g = 1:ng
-            repIdx = [repIdx; repmat(g, size (res{g,1}, 1), 1)];
-          endfor
-          rescols = cell (1, C);
-          for c = 1:C
-            rescols{c} = vertcat (res{:,c});
-          endfor
-          gcolsR = cell (1, numel (gcols));
-          for p = 1:numel (gcols)
-            gcolsR{p} = gcols{p}(repIdx,:);
-          endfor
-          vars = [gcolsR, {gcount(repIdx)}, rescols];
-          names = [gnames, {'GroupCount'}, outNames];
-          out = table (vars{:}, 'VariableNames', names);
-        case 'uniform'
-          out = [];
-          for c = 1:C
-            colvals = res(:,c);
-            if (! all (cellfun (@isscalar, colvals)))
-              error (strcat ("%s: OutputFormat 'uniform' requires FUNC", ...
-                             " to return a scalar for each call."), caller);
-            endif
-            out = [out, vertcat(colvals{:})];
-          endfor
-        case 'cell'
-          out = res;
-      endswitch
     endfunction
 
   endmethods

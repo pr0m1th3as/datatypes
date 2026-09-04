@@ -142,6 +142,12 @@ classdef table < tabular
       out = {'RowNames', this.DimensionNames{1}};
     endfunction
 
+    ## Row names are unique, so grouping by them would put every row in a
+    ## group of its own; they are not a grouping key.
+    function tf = groupsByLabels (this)
+      tf = false;
+    endfunction
+
     ## A bare 'sortrows (tbl)' orders by every variable, not by the names.
     function tf = sortsByLabelsByDefault (this)
       tf = false;
@@ -242,6 +248,18 @@ classdef table < tabular
     ## cell array that marks a table carrying no row labels.
     function this = clearRowLabels (this)
       this.RowNames = {};
+    endfunction
+
+    ## A table built from an apply method's output.  Row names are carried
+    ## only where the method has some to give, which the mapping methods do
+    ## and the reducing ones do not; ROWIX names input rows and means nothing
+    ## to a class whose labels do not follow them.
+    function out = assembleApply (this, vars, names, rowNames, rowIx)
+      if (isempty (rowNames))
+        out = table (vars{:}, 'VariableNames', names);
+      else
+        out = table (vars{:}, 'VariableNames', names, 'RowNames', rowNames);
+      endif
     endfunction
 
     ## Wraps the metadata struct that 'getProperties' assembles in a
@@ -4528,70 +4546,9 @@ classdef table < tabular
       if (nargin < 2)
         print_usage ();
       endif
-      if (! is_function_handle (func))
-        error ("table.varfun: FUNC must be a function handle.");
-      endif
-
-      ## Parse optional Name-Value paired arguments
-      optNames = {'InputVariables', 'GroupingVariables', 'OutputFormat', ...
-                  'ErrorHandler'};
-      dfValues = {[], [], 'auto', []};
-      [inVars, grpVars, outFmt, errHandler] = ...
-                  parsePairedArguments (optNames, dfValues, varargin(:));
-      outFmt = tabular.check_output_format ('table.varfun', outFmt);
-      if (! isempty (errHandler) && ! is_function_handle (errHandler))
-        error ("table.varfun: 'ErrorHandler' must be a function handle.");
-      endif
-
-      ## Resolve grouping variables and input variables (default input is every
-      ## variable that is not a grouping variable).
-      if (isempty (grpVars))
-        gIx = [];
-      else
-        gIx = resolveVarRef (A, grpVars)(:)';
-      endif
-      if (isempty (inVars))
-        iIx = 1:width (A);
-        iIx(ismember (iIx, gIx)) = [];
-      else
-        iIx = resolveVarRef (A, inVars)(:)';
-      endif
-      if (isempty (iIx))
-        error ("table.varfun: there are no variables to which to apply FUNC.");
-      endif
-
-      ## Build the output variable names from the function and variable names.
-      inNames = A.VariableNames(iIx);
-      fname = tabular.apply_func_name (func);
-      outNames = strcat (fname, '_', inNames);
-
-      if (isempty (gIx))
-        ## Ungrouped: apply FUNC to each whole variable.
-        res = cell (1, numel (iIx));
-        for k = 1:numel (iIx)
-          out = tabular.apply_func (func, errHandler, k, 1, {A.VariableValues{iIx(k)}});
-          res{1,k} = out{1};
-        endfor
-        B = tabular.build_apply_result ('table.varfun', outFmt, res, outNames, {}, {}, []);
-      else
-        ## Grouped: apply FUNC to each group's slice of each variable.
-        inCols = A.VariableValues(iIx);
-        [G, ng, repRows, errmsg] = tabular.group_table_rows (A.VariableValues(gIx));
-        if (! isempty (errmsg))
-          error ("table.varfun: %s", errmsg);
-        endif
-        res = cell (ng, numel (iIx));
-        for g = 1:ng
-          rows = (G == g);
-          for k = 1:numel (iIx)
-            col = inCols{k};
-            out = tabular.apply_func (func, errHandler, g, 1, {col(rows,:)});
-            res{g,k} = out{1};
-          endfor
-        endfor
-        [gcols, gcount] = tabular.group_output_cols (A.VariableValues(gIx), G, repRows);
-        B = tabular.build_grouped_apply_result ('table.varfun', outFmt, res, outNames, ...
-                                        gcols, A.VariableNames(gIx), gcount);
+      [B, errmsg] = varfunResult (A, func, varargin);
+      if (! isempty (errmsg))
+        error ("table.varfun: %s", errmsg);
       endif
     endfunction
 
@@ -4750,8 +4707,8 @@ classdef table < tabular
           args = build_row_args (inCols, rows, sepIn, extractCell);
           res(r,:) = tabular.apply_func (func, errHandler, r, nout, args);
         endfor
-        B = tabular.build_apply_result ('table.rowfun', outFmt, res(:,1:nout), resNames, ...
-                                {}, {}, [], A.RowNames);
+        B = build_apply_result (A, 'table.rowfun', outFmt, res(:,1:nout), ...
+                                resNames, {}, {}, [], A.RowNames, []);
       else
         ## Grouped: apply FUNC to the rows of each group.
         [G, ng, repRows, errmsg] = tabular.group_table_rows (A.VariableValues(gIx));
@@ -4765,9 +4722,9 @@ classdef table < tabular
           res(g,:) = tabular.apply_func (func, errHandler, g, nout, args);
         endfor
         [gcols, gcount] = tabular.group_output_cols (A.VariableValues(gIx), G, repRows);
-        B = tabular.build_grouped_apply_result ('table.rowfun', outFmt, res(:,1:nout), ...
-                                        resNames, gcols, ...
-                                        A.VariableNames(gIx), gcount);
+        B = build_grouped_apply_result (A, 'table.rowfun', outFmt, ...
+                                        res(:,1:nout), resNames, gcols, ...
+                                        A.VariableNames(gIx), gcount, []);
       endif
     endfunction
 
