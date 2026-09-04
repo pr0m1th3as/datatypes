@@ -1415,8 +1415,9 @@ classdef table < tabular
     ## displayed.
     ##
     ## @code{head (@var{tbl}, @var{k})} displays the first @var{k} rows of the
-    ## table @var{tbl}.  @var{k} must be a positive integer scalar value.  If
-    ## @var{tbl} has fewer than @var{k} rows, then all rows are displayed.
+    ## table @var{tbl}.  @var{k} must be a real, nonnegative, integer scalar
+    ## value.  If @var{tbl} has fewer than @var{k} rows, then all rows are
+    ## displayed, and @var{k} of zero displays none.
     ##
     ## @code{@var{out} = head (@var{tbl}, @var{k})} returns the first @var{k}
     ## rows in a new table @var{out} instead of displaying them.  If @var{k} is
@@ -1428,18 +1429,14 @@ classdef table < tabular
     ##
     ## @end deftypefn
     function [varargout] = head (this, k)
-      if (nargin < 2 || isempty (k))
-        k = 8;
+      if (nargin < 2)
+        k = [];
       endif
-      if (! isscalar (k) || fix (k) != k || k <= 0)
-        error ("table.head: K must be a positive integer scalar value.");
+      [ixRows, errmsg] = headTailRows (this, k, false);
+      if (! isempty (errmsg))
+        error ("table.head: %s", errmsg);
       endif
-      nRows = height (this);
-      if (nRows < k)
-        out = this;
-      else
-        out = subsetrows (this, 1:k);
-      endif
+      out = subsetrows (this, ixRows);
       if (nargout == 0)
         print_table (out);
       elseif (nargout == 1)
@@ -1461,8 +1458,9 @@ classdef table < tabular
     ## displayed.
     ##
     ## @code{tail (@var{tbl}, @var{k})} displays the last @var{k} rows of the
-    ## table @var{tbl}.  @var{k} must be a positive integer scalar value.  If
-    ## @var{tbl} has fewer than @var{k} rows, then all rows are displayed.
+    ## table @var{tbl}.  @var{k} must be a real, nonnegative, integer scalar
+    ## value.  If @var{tbl} has fewer than @var{k} rows, then all rows are
+    ## displayed, and @var{k} of zero displays none.
     ##
     ## @code{@var{out} = tail (@var{tbl}, @var{k})} returns the last @var{k}
     ## rows in a new table @var{out} instead of displaying them.  If @var{k} is
@@ -1474,18 +1472,14 @@ classdef table < tabular
     ##
     ## @end deftypefn
     function [varargout] = tail (this, k)
-      if (nargin < 2 || isempty (k))
-        k = 8;
+      if (nargin < 2)
+        k = [];
       endif
-      if (! isscalar (k) || fix (k) != k || k <= 0)
-        error ("table.tail: K must be a positive integer scalar value.");
+      [ixRows, errmsg] = headTailRows (this, k, true);
+      if (! isempty (errmsg))
+        error ("table.tail: %s", errmsg);
       endif
-      nRows = height (this);
-      if (nRows < k)
-        out = this;
-      else
-        out = subsetrows (this, [(nRows - (k - 1)):nRows]);
-      endif
+      out = subsetrows (this, ixRows);
       if (nargout == 0)
         print_table (out);
       elseif (nargout == 1)

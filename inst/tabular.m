@@ -1588,6 +1588,41 @@ classdef (Abstract) tabular
 
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {tabular} {[@var{ixRows}, @var{errmsg}] =} headTailRows (@var{obj}, @var{k}, @var{fromEnd})
+    ##
+    ## The rows @code{head} or @code{tail} returns.
+    ##
+    ## @var{k} is the count asked for, empty for the default of eight, and
+    ## @var{fromEnd} says which end to count from.  Asking for more rows than
+    ## there are yields all of them, and asking for none yields none.
+    ## @var{errmsg} carries the body of any complaint so that the calling
+    ## class can raise it under its own name.
+    ##
+    ## @end deftypefn
+    function [ixRows, errmsg] = headTailRows (this, k, fromEnd)
+
+      ixRows = [];
+      errmsg = '';
+      if (isempty (k))
+        k = 8;
+      endif
+      if (! (isnumeric (k) && isscalar (k) && isreal (k) && isfinite (k))
+          || fix (k) != k || k < 0)
+        errmsg = strcat ("K must be a real, nonnegative, integer scalar", ...
+                         " value.");
+        return
+      endif
+      n = height (this);
+      k = min (k, n);
+      if (fromEnd)
+        ixRows = ((n - k + 1):n)';
+      else
+        ixRows = (1:k)';
+      endif
+
+    endfunction
+
     function names = customPropsOfType (this, type)
       names = {};
       if (isempty (this.CustomProperties))

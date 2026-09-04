@@ -1,0 +1,19 @@
+%!demo
+%! ## `tail` shows the last rows of a timetable, eight of them unless told
+%! ## otherwise.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! Temp = 15 + (1:12)' / 2;
+%! TT = timetable (Temp, 'RowTimes', t0 + hours (0:11)');
+%! tail (TT, 4)
+
+%!demo
+%! ## The time step is read afresh from the rows that are kept, so the tail of
+%! ## a timetable whose spacing changes partway may not be regular even when
+%! ## the head of it is.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! G = timetable ((1:4)', 'RowTimes', t0 + hours ([0 1 2 9])', ...
+%!                'VariableNames', {'Reading'});
+%! head (G, 3).Properties.TimeStep
+%! tail (G, 3).Properties.TimeStep

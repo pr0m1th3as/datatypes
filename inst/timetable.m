@@ -1134,6 +1134,106 @@ classdef timetable < tabular
   endmethods
 
 ################################################################################
+##                       **    First and Last Rows    **                      ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'head'             'tail'                                                  ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {} head (@var{tt})
+    ## @deftypefnx {timetable} {} head (@var{tt}, @var{k})
+    ## @deftypefnx {timetable} {@var{out} =} head (@var{tt}, @var{k})
+    ##
+    ## Display or return the first @var{k} rows of a timetable.
+    ##
+    ## @code{head (@var{tt})} displays the first eight rows of @var{tt}, or
+    ## all of them if it has fewer.  @code{head (@var{tt}, @var{k})} displays
+    ## the first @var{k} instead.  @var{k} must be a real, nonnegative,
+    ## integer scalar value; a @var{k} of zero displays no rows at all rather
+    ## than raising.
+    ##
+    ## @code{@var{out} = head (@var{tt}, @var{k})} returns those rows in a
+    ## new timetable instead of displaying them.  If @var{k} is omitted or
+    ## empty it defaults to eight.
+    ##
+    ## The rows come back in the order the timetable holds them.  @code{head}
+    ## takes the first rows and not the earliest ones, so on a timetable
+    ## whose times are out of order it returns whatever happens to be stored
+    ## first.  Sort it beforehand to ask the other question.
+    ##
+    ## The time step is read afresh from the row times that are kept, so the
+    ## head of an hourly timetable is hourly and the head of a timetable
+    ## whose spacing changes partway may not be.
+    ##
+    ## @seealso{tail, sortrows, timetable}
+    ## @end deftypefn
+    function [varargout] = head (this, k)
+      if (nargin < 2)
+        k = [];
+      endif
+      [ixRows, errmsg] = headTailRows (this, k, false);
+      if (! isempty (errmsg))
+        error ("timetable.head: %s", errmsg);
+      endif
+      out = subsetrows (this, ixRows);
+      if (nargout == 0)
+        print_table (out);
+      elseif (nargout == 1)
+        varargout{1} = out;
+      else
+        error ("timetable.head: invalid number of output arguments.");
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {} tail (@var{tt})
+    ## @deftypefnx {timetable} {} tail (@var{tt}, @var{k})
+    ## @deftypefnx {timetable} {@var{out} =} tail (@var{tt}, @var{k})
+    ##
+    ## Display or return the last @var{k} rows of a timetable.
+    ##
+    ## @code{tail (@var{tt})} displays the last eight rows of @var{tt}, or
+    ## all of them if it has fewer.  @code{tail (@var{tt}, @var{k})} displays
+    ## the last @var{k} instead.  @var{k} must be a real, nonnegative,
+    ## integer scalar value; a @var{k} of zero displays no rows at all rather
+    ## than raising.
+    ##
+    ## @code{@var{out} = tail (@var{tt}, @var{k})} returns those rows in a
+    ## new timetable instead of displaying them.  If @var{k} is omitted or
+    ## empty it defaults to eight.
+    ##
+    ## The rows come back in the order the timetable holds them, and they are
+    ## the last rows rather than the latest ones.  The time step is read
+    ## afresh from the row times that are kept.
+    ##
+    ## @seealso{head, sortrows, timetable}
+    ## @end deftypefn
+    function [varargout] = tail (this, k)
+      if (nargin < 2)
+        k = [];
+      endif
+      [ixRows, errmsg] = headTailRows (this, k, true);
+      if (! isempty (errmsg))
+        error ("timetable.tail: %s", errmsg);
+      endif
+      out = subsetrows (this, ixRows);
+      if (nargout == 0)
+        print_table (out);
+      elseif (nargout == 1)
+        varargout{1} = out;
+      else
+        error ("timetable.tail: invalid number of output arguments.");
+      endif
+    endfunction
+
+  endmethods
+
+################################################################################
 ##                     **    Row Ordering and Sets    **                      ##
 ################################################################################
 ##                             Available Methods                              ##

@@ -1,0 +1,30 @@
+%!demo
+%! ## `head` shows the first rows of a timetable, eight of them unless told
+%! ## otherwise, which is a quick way to look at a long one.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! Temp = 15 + (1:12)' / 2;
+%! TT = timetable (Temp, 'RowTimes', t0 + hours (0:11)');
+%! head (TT, 4)
+
+%!demo
+%! ## `head` takes the *first* rows and not the earliest ones.  On a timetable
+%! ## whose times are out of order it returns whatever happens to be stored
+%! ## first, so sort it beforehand to ask the other question.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! U = timetable ([30; 10; 40; 20], 'RowTimes', t0 + hours ([2 0 3 1])', ...
+%!                'VariableNames', {'Depth'});
+%! head (U, 2)
+%! head (sortrows (U), 2)
+
+%!demo
+%! ## A count of zero is allowed and returns a timetable with no rows, which
+%! ## keeps the variables and their types.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:6)', 'RowTimes', t0 + hours (0:5)', ...
+%!                 'VariableNames', {'Reading'});
+%! E = head (TT, 0);
+%! size (E)
+%! E.Properties.VariableNames
