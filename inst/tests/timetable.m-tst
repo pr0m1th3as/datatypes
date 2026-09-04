@@ -2489,6 +2489,60 @@
 %! rt = datetime (2024, 1, 1) + hours (0:1)';
 %! rowfun (1, timetable ([1; 2], 'RowTimes', rt));
 
+## Test 'grouptransform' keeps every row, its order and its row times
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! rt = t0 + hours (0:3)';
+%! TT = timetable ([1; 2; 3; 4], categorical ({'a'; 'b'; 'a'; 'b'}), ...
+%!                 'RowTimes', rt, 'VariableNames', {'A', 'g'});
+%! G = grouptransform (TT, 'g', 'zscore', 'A');
+%! assert_equal (class (G), 'timetable');
+%! assert_equal (G.Properties.VariableNames, {'A', 'g'});
+%! assert_equal (G.Properties.RowTimes, rt);
+%! assert_equal (G.A, [-1; -1; 1; 1] / sqrt (2));
+
+## Test 'ReplaceValues' false appends the result under its own name
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2; 3; 4], categorical ({'a'; 'b'; 'a'; 'b'}), ...
+%!                 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'A', 'g'});
+%! G = grouptransform (TT, 'g', 'zscore', 'A', 'ReplaceValues', false);
+%! assert_equal (G.Properties.VariableNames, {'A', 'g', 'zscore_A'});
+%! assert_equal (G.A, [1; 2; 3; 4]);
+
+## Test grouping by the row dimension name groups by the row times
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! rt = t0 + hours ([0 1 1 3])';
+%! TT = timetable ([1; 2; 4; 5], 'RowTimes', rt, 'VariableNames', {'A'});
+%! G = grouptransform (TT, 'Time', 'meancenter');
+%! assert_equal (G.Properties.RowTimes, rt);
+%! assert_equal (G.A, [0; -1; 1; 0]);
+
+## Test a function handle is applied group by group
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2; 3; 4], categorical ({'a'; 'b'; 'a'; 'b'}), ...
+%!                 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'A', 'g'});
+%! G = grouptransform (TT, 'g', @(x) x - 1, 'A');
+%! assert_equal (G.A, [0; 1; 2; 3]);
+
+## Test 'meanfill' fills a gap from the group it belongs to
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ([1; 2; NaN; 4], categorical ({'a'; 'b'; 'a'; 'b'}), ...
+%!                 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'A', 'g'});
+%! G = grouptransform (TT, 'g', 'meanfill', 'A');
+%! assert_equal (G.A, [1; 2; 1; 4]);
+
+## Test the option validation is the timetable's own
+%!error <timetable.grouptransform: METHOD must be one of 'zscore', 'norm', 'meancenter', 'rescale', 'meanfill', 'linearfill', or a function handle.> ...
+%! rt = datetime (2024, 1, 1) + hours (0:1)';
+%! grouptransform (timetable ([1; 2], 'RowTimes', rt), 'Time', 'bogus');
+
 ################################################################################
 ##                        **    Input validation    **                        ##
 ################################################################################

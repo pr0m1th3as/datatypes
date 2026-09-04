@@ -4777,7 +4777,7 @@ classdef table < tabular
                        " a logical scalar."));
       endif
       incEmpty = logical (incEmpty);
-      incEdge = check_included_edge ('groupsummary', incEdge);
+      incEdge = tabular.check_included_edge ('table.groupsummary', incEdge);
 
       ## Normalise METHOD into parallel cell arrays of method specs and the
       ## display names used to build output variable names.
@@ -4938,7 +4938,7 @@ classdef table < tabular
                        " a logical scalar."));
       endif
       incEmpty = logical (incEmpty);
-      incEdge = check_included_edge ('groupcounts', incEdge);
+      incEdge = tabular.check_included_edge ('table.groupcounts', incEdge);
 
       ## Resolve grouping variables.
       gIx = resolveVarRef (T, groupvars)(:)';
@@ -5033,7 +5033,7 @@ classdef table < tabular
       nvArgs = args(nvStart:end);
       args = args(1:nvStart-1);
       incEdge = parsePairedArguments (optNames, {'left'}, nvArgs(:));
-      incEdge = check_included_edge ('groupfilter', incEdge);
+      incEdge = tabular.check_included_edge ('table.groupfilter', incEdge);
 
       hasGroupbins = false;
       groupbins = [];
@@ -5090,7 +5090,7 @@ classdef table < tabular
           error ("table.groupfilter: %s", errmsg);
         endif
       endif
-      [Grp, ng, ~, errmsg] = gs_group_rows (grpCols, true);
+      [Grp, ng, ~, errmsg] = tabular.gs_group_rows (grpCols, true);
       if (! isempty (errmsg))
         error ("table.groupfilter: %s", errmsg);
       endif
@@ -5181,126 +5181,9 @@ classdef table < tabular
       if (nargin < 3)
         print_usage ();
       endif
-
-      ## An optional GROUPBINS positional argument precedes the transform METHOD
-      ## (a known method name or a function handle).
-      args = varargin;
-      hasGroupbins = false;
-      groupbins = [];
-      if (! isempty (args) && __groupbins__ ('is_spec', args{1}))
-        hasGroupbins = true;
-        groupbins = args{1};
-        args = args(2:end);
-      endif
-      if (isempty (args))
-        print_usage ();
-      endif
-      method = args{1};
-      knownMethods = {'zscore', 'norm', 'meancenter', 'rescale', ...
-                      'meanfill', 'linearfill'};
-      if (is_function_handle (method))
-        methDisp = 'fun1';
-      elseif (((ischar (method) && isrow (method))
-               || (isa (method, 'string') && isscalar (method)))
-              && any (strcmpi (char (method), knownMethods)))
-        method = lower (char (method));
-        methDisp = method;
-      else
-        error (strcat ("table.grouptransform: METHOD must be one of 'zscore',", ...
-                       " 'norm', 'meancenter', 'rescale', 'meanfill',", ...
-                       " 'linearfill', or a function handle."));
-      endif
-
-      ## Split the remaining arguments into the optional positional DATAVARS and
-      ## any Name-Value pairs (a Name-Value region starts at the first option).
-      rest = args(2:end);
-      optNames = {'ReplaceValues', 'IncludedEdge'};
-      nvStart = numel (rest) + 1;
-      for k = 1:numel (rest)
-        a = rest{k};
-        if (((ischar (a) && isrow (a)) || (isa (a, 'string') && isscalar (a)))
-            && any (strcmpi (char (a), optNames)))
-          nvStart = k;
-          break;
-        endif
-      endfor
-      posArgs = rest(1:nvStart-1);
-      nvArgs = rest(nvStart:end);
-      if (numel (posArgs) > 1)
-        error ("table.grouptransform: too many positional arguments.");
-      endif
-      if (numel (posArgs) == 1)
-        datavars = posArgs{1};
-        hasDataVars = true;
-      else
-        datavars = [];
-        hasDataVars = false;
-      endif
-
-      dfValues = {true, 'left'};
-      [replaceVals, incEdge] = ...
-                  parsePairedArguments (optNames, dfValues, nvArgs(:));
-      if (! (isscalar (replaceVals)
-             && (islogical (replaceVals) || isnumeric (replaceVals))))
-        error (strcat ("table.grouptransform: 'ReplaceValues' must be a", ...
-                       " logical scalar."));
-      endif
-      replaceVals = logical (replaceVals);
-      incEdge = check_included_edge ('grouptransform', incEdge);
-
-      ## Resolve grouping and data variables.  The default data variables are all
-      ## variables that are not grouping variables.
-      gIx = resolveVarRef (T, groupvars)(:)';
-      if (isempty (gIx))
-        error (strcat ("table.grouptransform: at least one grouping variable", ...
-                       " is required."));
-      endif
-      if (hasDataVars)
-        dIx = resolveVarRef (T, datavars)(:)';
-      else
-        dIx = 1:width (T);
-        dIx(ismember (dIx, gIx)) = [];
-      endif
-
-      ## Bin the grouping variables when a GROUPBINS argument was given, then
-      ## group the rows, treating missing grouping values as their own groups so
-      ## that every row belongs to exactly one group.
-      grpCols = T.VariableValues(gIx);
-      if (hasGroupbins)
-        [grpCols, ~, errmsg] = __groupbins__ ('bin', grpCols, T.VariableNames(gIx), ...
-                                           groupbins, incEdge, 'grouptransform');
-        if (! isempty (errmsg))
-          error ("table.grouptransform: %s", errmsg);
-        endif
-      endif
-      [Grp, ng, ~, errmsg] = gs_group_rows (grpCols, true);
+      [G, errmsg] = grouptransformResult (T, groupvars, varargin);
       if (! isempty (errmsg))
         error ("table.grouptransform: %s", errmsg);
-      endif
-
-      ## Transform each data variable, group by group.
-      transCols = cell (1, numel (dIx));
-      for i = 1:numel (dIx)
-        [tc, errmsg] = gt_transform_col (method, T.VariableValues{dIx(i)}, ...
-                                         Grp, ng);
-        if (! isempty (errmsg))
-          error ("table.grouptransform: variable '%s': %s", ...
-                 T.VariableNames{dIx(i)}, errmsg);
-        endif
-        transCols{i} = tc;
-      endfor
-
-      if (replaceVals)
-        G = T;
-        for i = 1:numel (dIx)
-          G.VariableValues{dIx(i)} = transCols{i};
-        endfor
-      else
-        newNames = cell (1, numel (dIx));
-        for i = 1:numel (dIx)
-          newNames{i} = sprintf ("%s_%s", methDisp, T.VariableNames{dIx(i)});
-        endfor
-        G = addvars (T, transCols{:}, 'NewVariableNames', newNames);
       endif
     endfunction
 
@@ -5420,7 +5303,7 @@ classdef table < tabular
       endif
 
       ## Validate the IncludedEdge binning and OutputFormat options.
-      incEdge = check_included_edge ('pivot', incEdge);
+      incEdge = tabular.check_included_edge ('table.pivot', incEdge);
       if (isa (outFmt, 'string'))
         outFmt = char (outFmt);
       endif
@@ -6778,93 +6661,6 @@ function [keep, errmsg] = gf_keep_mask (method, dataCols, G, ng)
   endfor
 endfunction
 
-## Transform one data variable COL group by group for 'grouptransform', applying
-## METHOD (a transform-name char vector or a function handle) to each group's
-## slice and returning OUT, the transformed values the same size as COL.  G is
-## the n-by-1 group-number vector (1..NG), every row assigned to a group.  A
-## function handle must return a single row (broadcast) or one row per group row.
-## Returns an errmsg body (empty on success) emitted by the caller.
-function [out, errmsg] = gt_transform_col (method, col, G, ng)
-  out = [];
-  errmsg = '';
-  if (! (isnumeric (col) || islogical (col)))
-    errmsg = sprintf (strcat ("grouptransform requires numeric or logical", ...
-                              " data; got '%s'."), class (col));
-    return;
-  endif
-  x = double (col);
-  out = x;
-  for g = 1:ng
-    rows = find (G == g);
-    if (isempty (rows))
-      continue;
-    endif
-    slice = x(rows,:);
-    if (is_function_handle (method))
-      r = method (slice);
-      if (! (isnumeric (r) || islogical (r)))
-        errmsg = "the transform function must return a numeric result.";
-        out = [];
-        return;
-      endif
-      if (size (r, 1) == 1)
-        r = repmat (r, numel (rows), 1);
-      endif
-      if (! isequal (size (r), size (slice)))
-        errmsg = strcat ("the transform function must return a result the", ...
-                         " same size as the group, or a single row.");
-        out = [];
-        return;
-      endif
-      out(rows,:) = r;
-    else
-      for c = 1:columns (slice)
-        out(rows,c) = gt_apply_named (method, slice(:,c));
-      endfor
-    endif
-  endfor
-endfunction
-
-## Apply a single named transform METHOD to the column vector X (a group's slice
-## of one data variable), returning the transformed values V the same size as X.
-## NaN values are omitted when computing the group statistics; the centring and
-## scaling methods leave NaN in place, while 'meanfill'/'linearfill' fill them.
-function v = gt_apply_named (method, x)
-  nan = isnan (x);
-  xo = x(! nan);
-  switch (method)
-    case 'meancenter'
-      v = x - mean (xo);
-    case 'zscore'
-      v = (x - mean (xo)) / std (xo);
-    case 'norm'
-      v = x / norm (xo);
-    case 'rescale'
-      mn = min (xo);
-      mx = max (xo);
-      v = (x - mn) / (mx - mn);
-    case 'meanfill'
-      v = x;
-      v(nan) = mean (xo);
-    case 'linearfill'
-      v = gt_linearfill (x);
-  endswitch
-endfunction
-
-## Fill the missing values of the column vector X by linear interpolation over
-## the non-missing positions, leaving leading and trailing missing values (and
-## any group with fewer than two non-missing values) unchanged.
-function v = gt_linearfill (x)
-  v = x;
-  idx = find (! isnan (x));
-  if (numel (idx) >= 2)
-    pos = (1:numel (x))';
-    vi = interp1 (idx, x(idx), pos, "linear");
-    fill = isnan (x) & pos > idx(1) & pos < idx(end);
-    v(fill) = vi(fill);
-  endif
-endfunction
-
 ## Normalise the 'groupsummary' METHOD argument into a cell array of method specs
 ## METHODS (each a method-name char vector or a function handle) and a parallel
 ## cell array of display names METHNAMES used to build output variable names
@@ -6913,59 +6709,6 @@ function [methods, methNames, errmsg] = gs_normalise_methods (method)
   endfor
 endfunction
 
-## Group table rows for 'groupsummary' by the grouping-variable values GRPCOLS,
-## treating each grouping variable's missing values as a single group value.
-## Returns G, an n-by-1 vector of group numbers (1..NGROUPS); NGROUPS; REPROWS,
-## a representative row index per group; and an errmsg body emitted by the
-## caller.  Groups are sorted by grouping value with missing groups last.  When
-## INCMISS is false, rows holding a missing grouping value are dropped (labelled
-## NaN in G and excluded from NGROUPS/REPROWS).
-function [G, ngroups, repRows, errmsg] = gs_group_rows (grpCols, incMiss)
-  errmsg = '';
-  G = [];
-  ngroups = 0;
-  repRows = [];
-  n = size (grpCols{1}, 1);
-  KEY = [];
-  SORT = [];
-  anyMiss = false (n, 1);
-  for j = 1:numel (grpCols)
-    [p, m, e] = tabular.group_col_proxy (grpCols{j});
-    if (! isempty (e))
-      errmsg = e;
-      return;
-    endif
-    pc = p;
-    pc(m,:) = 0;                  # collapse all missing values of this variable
-    KEY = [KEY, pc, double(m)];
-    sp = p;
-    sp(m,:) = Inf;                # sort missing groups last
-    SORT = [SORT, sp];
-    anyMiss = anyMiss | m;
-  endfor
-
-  [~, ia, ic] = unique (KEY, "rows");
-  ng = numel (ia);
-  grpMiss = anyMiss(ia);
-  [~, ord] = sortrows (SORT(ia,:));
-  reps = ia(ord);
-  grpMiss = grpMiss(ord);
-  pos = zeros (ng, 1);
-  pos(ord) = 1:ng;
-  G = pos(ic);
-
-  if (! incMiss && any (grpMiss))
-    keep = find (! grpMiss);
-    newId = NaN (ng, 1);
-    newId(keep) = 1:numel (keep);
-    G = newId(G);
-    reps = reps(keep);
-    ng = numel (keep);
-  endif
-  ngroups = ng;
-  repRows = reps;
-endfunction
-
 ## Group the rows of 'groupsummary'/'groupcounts' by the grouping-variable values
 ## GRPCOLS (already binned when a GROUPBINS argument was given).  Returns G, the
 ## n-by-1 group numbers (NaN for an excluded row), NG the number of groups, GCOLS
@@ -6992,7 +6735,7 @@ function [G, ng, gcols, errmsg] = gs_grouping (grpCols, incMiss, incEmpty)
       gcols{j} = levVals{j}(lvlOf(:,j), :);
     endfor
   else
-    [G, ng, repRows, errmsg] = gs_group_rows (grpCols, incMiss);
+    [G, ng, repRows, errmsg] = tabular.gs_group_rows (grpCols, incMiss);
     if (! isempty (errmsg))
       return;
     endif
@@ -7414,19 +7157,6 @@ function [col, ok] = pivot_append_label (col, label)
   else
     ok = false;
   endif
-endfunction
-
-## Validate an 'IncludedEdge' binning option VAL for method CALLER, returning it
-## lowercased as 'left' or 'right'.
-function e = check_included_edge (caller, val)
-  if (isa (val, 'string') && isscalar (val))
-    val = char (val);
-  endif
-  if (! (ischar (val) && isrow (val) ...
-         && any (strcmpi (val, {'left', 'right'}))))
-    error ("table.%s: 'IncludedEdge' must be 'left' or 'right'.", caller);
-  endif
-  e = lower (val);
 endfunction
 
 ## Validate a logical-scalar 'pivot' option VAL named NAME, returning it as a

@@ -1255,18 +1255,17 @@ classdef (Abstract) tabular
     ## The names of the custom properties of one scope, in the order they were
     ## added.  TYPE is 'table' or 'variable'.  A property's type is held under
     ## the property's own name, so nothing here depends on two containers
-    ## agreeing on an order.
-    ## -*- texinfo -*-
-    ## @deftypefn {tabular} {[@var{index}, @var{errmsg}] =} sortrowsIndex (@var{obj}, @var{args})
+    ## agreeing on an order. -*- texinfo -*- @deftypefn {tabular} {[@var{index},
+    ## @var{errmsg}] =} sortrowsIndex (@var{obj}, @var{args})
     ##
     ## Work out the row order @code{sortrows} asks for.
     ##
-    ## @var{args} is the cell of arguments the public method was given, less
-    ## the object itself.  The permutation comes back in @var{index}, and
-    ## @var{errmsg} carries the body of any complaint so that the calling
-    ## class can raise it under its own name.  The caller applies the order
-    ## with @code{subsetrows}, which is where a subclass maintains whatever
-    ## its row labels oblige it to.
+    ## @var{args} is the cell of arguments the public method was given, less the
+    ## object itself.  The permutation comes back in @var{index}, and
+    ## @var{errmsg} carries the body of any complaint so that the calling class
+    ## can raise it under its own name.  The caller applies the order with
+    ## @code{subsetrows}, which is where a subclass maintains whatever its row
+    ## labels oblige it to.
     ##
     ## @end deftypefn
     function [index, errmsg] = sortrowsIndex (this, args_in)
@@ -1510,16 +1509,16 @@ classdef (Abstract) tabular
 
     endfunction
 
-    ## -*- texinfo -*-
-    ## @deftypefn {tabular} {[@var{ia}, @var{ic}, @var{errmsg}] =} uniqueIndex (@var{obj}, @var{args})
+    ## -*- texinfo -*- @deftypefn {tabular} {[@var{ia}, @var{ic}, @var{errmsg}]
+    ## =} uniqueIndex (@var{obj}, @var{args})
     ##
     ## Work out which rows @code{unique} keeps.
     ##
-    ## @var{args} is the cell of arguments the public method was given, less
-    ## the object itself.  @var{ia} indexes the rows to keep and @var{ic}
-    ## maps every original row onto one of them, as @code{unique} returns
-    ## them.  @var{errmsg} carries the body of any complaint so that the
-    ## calling class can raise it under its own name.
+    ## @var{args} is the cell of arguments the public method was given, less the
+    ## object itself.  @var{ia} indexes the rows to keep and @var{ic} maps every
+    ## original row onto one of them, as @code{unique} returns them.
+    ## @var{errmsg} carries the body of any complaint so that the calling class
+    ## can raise it under its own name.
     ##
     ## @end deftypefn
     function [ia, ic, errmsg] = uniqueIndex (this, args_in)
@@ -1586,16 +1585,16 @@ classdef (Abstract) tabular
 
     endfunction
 
-    ## -*- texinfo -*-
-    ## @deftypefn {tabular} {[@var{ixRows}, @var{errmsg}] =} headTailRows (@var{obj}, @var{k}, @var{fromEnd})
+    ## -*- texinfo -*- @deftypefn {tabular} {[@var{ixRows}, @var{errmsg}] =}
+    ## headTailRows (@var{obj}, @var{k}, @var{fromEnd})
     ##
     ## The rows @code{head} or @code{tail} returns.
     ##
     ## @var{k} is the count asked for, empty for the default of eight, and
     ## @var{fromEnd} says which end to count from.  Asking for more rows than
     ## there are yields all of them, and asking for none yields none.
-    ## @var{errmsg} carries the body of any complaint so that the calling
-    ## class can raise it under its own name.
+    ## @var{errmsg} carries the body of any complaint so that the calling class
+    ## can raise it under its own name.
     ##
     ## @end deftypefn
     function [ixRows, errmsg] = headTailRows (this, k, fromEnd)
@@ -1621,17 +1620,17 @@ classdef (Abstract) tabular
 
     endfunction
 
-    ## -*- texinfo -*-
-    ## @deftypefn {tabular} {[@var{ixRows}, @var{errmsg}] =} topkrowsIndex (@var{obj}, @var{k}, @var{args})
+    ## -*- texinfo -*- @deftypefn {tabular} {[@var{ixRows}, @var{errmsg}] =}
+    ## topkrowsIndex (@var{obj}, @var{k}, @var{args})
     ##
     ## The rows @code{topkrows} keeps, in the order it reports them.
     ##
-    ## @code{topkrows} is @code{sortrows} with a descending default and a
-    ## count, so the ordering is worked out by @code{sortrowsIndex} and only
-    ## the defaults differ: sorting runs downwards unless a direction is
-    ## given, and missing keys go last rather than wherever the direction
-    ## would put them.  @var{errmsg} carries the body of any complaint so
-    ## that the calling class can raise it under its own name.
+    ## @code{topkrows} is @code{sortrows} with a descending default and a count,
+    ## so the ordering is worked out by @code{sortrowsIndex} and only the
+    ## defaults differ: sorting runs downwards unless a direction is given, and
+    ## missing keys go last rather than wherever the direction would put them.
+    ## @var{errmsg} carries the body of any complaint so that the calling class
+    ## can raise it under its own name.
     ##
     ## @end deftypefn
     function [ixRows, errmsg] = topkrowsIndex (this, k, args_in)
@@ -1700,17 +1699,16 @@ classdef (Abstract) tabular
 
     endfunction
 
-    ## -*- texinfo -*-
-    ## @deftypefn {tabular} {[@var{TF}, @var{errmsg}] =} issortedrowsCheck (@var{obj}, @var{args})
+    ## -*- texinfo -*- @deftypefn {tabular} {[@var{TF}, @var{errmsg}] =}
+    ## issortedrowsCheck (@var{obj}, @var{args})
     ##
     ## Whether the rows are already in the order asked for.
     ##
-    ## @var{args} is the cell of arguments the public method was given, less
-    ## the object itself, and takes the same forms @code{sortrows} does.  The
-    ## sort is stable, so the rows are in that order exactly when sorting
-    ## them would leave every one where it is.  @var{errmsg} carries the body
-    ## of any complaint so that the calling class can raise it under its own
-    ## name.
+    ## @var{args} is the cell of arguments the public method was given, less the
+    ## object itself, and takes the same forms @code{sortrows} does.  The sort
+    ## is stable, so the rows are in that order exactly when sorting them would
+    ## leave every one where it is.  @var{errmsg} carries the body of any
+    ## complaint so that the calling class can raise it under its own name.
     ##
     ## @end deftypefn
     function [TF, errmsg] = issortedrowsCheck (this, args_in)
@@ -1724,17 +1722,16 @@ classdef (Abstract) tabular
 
     endfunction
 
-    ## -*- texinfo -*-
-    ## @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =} addvarsResult (@dots{})
+    ## -*- texinfo -*- @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =}
+    ## addvarsResult (@dots{})
     ##
     ## The object with variables added.
     ##
     ## Variables belong to a tabular object whatever labels its rows, so the
-    ## work is the same for either class.  @var{errmsg} carries the body of
-    ## any complaint so that the calling class can raise it under its own
-    ## name.
-    ## @var{argNames} carries the caller's own names for the new
-    ## variables, which only the public method can read.
+    ## work is the same for either class.  @var{errmsg} carries the body of any
+    ## complaint so that the calling class can raise it under its own name.
+    ## @var{argNames} carries the caller's own names for the new variables,
+    ## which only the public method can read.
 
     ##
     ## @end deftypefn
@@ -1883,15 +1880,14 @@ classdef (Abstract) tabular
 
     endfunction
 
-    ## -*- texinfo -*-
-    ## @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =} movevarsResult (@dots{})
+    ## -*- texinfo -*- @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =}
+    ## movevarsResult (@dots{})
     ##
     ## The object with a variable moved.
     ##
     ## Variables belong to a tabular object whatever labels its rows, so the
-    ## work is the same for either class.  @var{errmsg} carries the body of
-    ## any complaint so that the calling class can raise it under its own
-    ## name.
+    ## work is the same for either class.  @var{errmsg} carries the body of any
+    ## complaint so that the calling class can raise it under its own name.
     ##
     ## @end deftypefn
     function [tbl, errmsg] = movevarsResult (this, vars, varargin)
@@ -2001,15 +1997,14 @@ classdef (Abstract) tabular
 
     endfunction
 
-    ## -*- texinfo -*-
-    ## @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =} renamevarsResult (@dots{})
+    ## -*- texinfo -*- @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =}
+    ## renamevarsResult (@dots{})
     ##
     ## The object with variables renamed.
     ##
     ## Variables belong to a tabular object whatever labels its rows, so the
-    ## work is the same for either class.  @var{errmsg} carries the body of
-    ## any complaint so that the calling class can raise it under its own
-    ## name.
+    ## work is the same for either class.  @var{errmsg} carries the body of any
+    ## complaint so that the calling class can raise it under its own name.
     ##
     ## @end deftypefn
     function [tbl, errmsg] = renamevarsResult (this, vars, newNames)
@@ -2069,15 +2064,14 @@ classdef (Abstract) tabular
       endif
     endfunction
 
-    ## -*- texinfo -*-
-    ## @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =} removevarsResult (@dots{})
+    ## -*- texinfo -*- @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =}
+    ## removevarsResult (@dots{})
     ##
     ## The object with variables removed.
     ##
     ## Variables belong to a tabular object whatever labels its rows, so the
-    ## work is the same for either class.  @var{errmsg} carries the body of
-    ## any complaint so that the calling class can raise it under its own
-    ## name.
+    ## work is the same for either class.  @var{errmsg} carries the body of any
+    ## complaint so that the calling class can raise it under its own name.
     ##
     ## @end deftypefn
     function [tbl, errmsg] = removevarsResult (this, vars)
@@ -2126,15 +2120,14 @@ classdef (Abstract) tabular
       tbl = setRowCount (tbl, nrows);
     endfunction
 
-    ## -*- texinfo -*-
-    ## @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =} convertvarsResult (@dots{})
+    ## -*- texinfo -*- @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =}
+    ## convertvarsResult (@dots{})
     ##
     ## The object with variables converted.
     ##
     ## Variables belong to a tabular object whatever labels its rows, so the
-    ## work is the same for either class.  @var{errmsg} carries the body of
-    ## any complaint so that the calling class can raise it under its own
-    ## name.
+    ## work is the same for either class.  @var{errmsg} carries the body of any
+    ## complaint so that the calling class can raise it under its own name.
     ##
     ## @end deftypefn
     function [tbl, errmsg] = convertvarsResult (this, vars, dataType)
@@ -2191,15 +2184,14 @@ classdef (Abstract) tabular
 
     endfunction
 
-    ## -*- texinfo -*-
-    ## @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =} mergevarsResult (@dots{})
+    ## -*- texinfo -*- @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =}
+    ## mergevarsResult (@dots{})
     ##
     ## The object with variables merged.
     ##
     ## Variables belong to a tabular object whatever labels its rows, so the
-    ## work is the same for either class.  @var{errmsg} carries the body of
-    ## any complaint so that the calling class can raise it under its own
-    ## name.
+    ## work is the same for either class.  @var{errmsg} carries the body of any
+    ## complaint so that the calling class can raise it under its own name.
     ##
     ## @end deftypefn
     function [tbl, errmsg] = mergevarsResult (this, vars, varargin)
@@ -2310,15 +2302,14 @@ classdef (Abstract) tabular
 
     endfunction
 
-    ## -*- texinfo -*-
-    ## @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =} splitvarsResult (@dots{})
+    ## -*- texinfo -*- @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =}
+    ## splitvarsResult (@dots{})
     ##
     ## The object with a variable split.
     ##
     ## Variables belong to a tabular object whatever labels its rows, so the
-    ## work is the same for either class.  @var{errmsg} carries the body of
-    ## any complaint so that the calling class can raise it under its own
-    ## name.
+    ## work is the same for either class.  @var{errmsg} carries the body of any
+    ## complaint so that the calling class can raise it under its own name.
     ##
     ## @end deftypefn
     function [tbl, errmsg] = splitvarsResult (this, varargin)
@@ -2509,15 +2500,14 @@ classdef (Abstract) tabular
 
     endfunction
 
-    ## -*- texinfo -*-
-    ## @deftypefn {tabular} {[@var{TF}, @var{errmsg}] =} ismissingResult (@dots{})
+    ## -*- texinfo -*- @deftypefn {tabular} {[@var{TF}, @var{errmsg}] =}
+    ## ismissingResult (@dots{})
     ##
     ## Which elements of the variables are missing.
     ##
-    ## Missing values belong to the variables, which a tabular object holds
-    ## the same way whatever labels its rows.  @var{errmsg} carries the body
-    ## of any complaint so that the calling class can raise it under its own
-    ## name.
+    ## Missing values belong to the variables, which a tabular object holds the
+    ## same way whatever labels its rows.  @var{errmsg} carries the body of any
+    ## complaint so that the calling class can raise it under its own name.
     ##
     ## @end deftypefn
     function [TF, errmsg] = ismissingResult (this, varargin)
@@ -2777,15 +2767,14 @@ classdef (Abstract) tabular
 
     endfunction
 
-    ## -*- texinfo -*-
-    ## @deftypefn {tabular} {[@var{tbl}, @var{TF}, @var{errmsg}] =} rmmissingResult (@dots{})
+    ## -*- texinfo -*- @deftypefn {tabular} {[@var{tbl}, @var{TF}, @var{errmsg}]
+    ## =} rmmissingResult (@dots{})
     ##
     ## The object with its incomplete rows removed.
     ##
-    ## Missing values belong to the variables, which a tabular object holds
-    ## the same way whatever labels its rows.  @var{errmsg} carries the body
-    ## of any complaint so that the calling class can raise it under its own
-    ## name.
+    ## Missing values belong to the variables, which a tabular object holds the
+    ## same way whatever labels its rows.  @var{errmsg} carries the body of any
+    ## complaint so that the calling class can raise it under its own name.
     ##
     ## @end deftypefn
     function [tbl, TF, errmsg] = rmmissingResult (this, varargin)
@@ -2891,15 +2880,14 @@ classdef (Abstract) tabular
 
     endfunction
 
-    ## -*- texinfo -*-
-    ## @deftypefn {tabular} {[@var{tbl}, @var{TF}, @var{errmsg}] =} fillmissingResult (@dots{})
+    ## -*- texinfo -*- @deftypefn {tabular} {[@var{tbl}, @var{TF}, @var{errmsg}]
+    ## =} fillmissingResult (@dots{})
     ##
     ## The object with its missing values filled.
     ##
-    ## Missing values belong to the variables, which a tabular object holds
-    ## the same way whatever labels its rows.  @var{errmsg} carries the body
-    ## of any complaint so that the calling class can raise it under its own
-    ## name.
+    ## Missing values belong to the variables, which a tabular object holds the
+    ## same way whatever labels its rows.  @var{errmsg} carries the body of any
+    ## complaint so that the calling class can raise it under its own name.
     ##
     ## @end deftypefn
     function [tbl, TF, errmsg] = fillmissingResult (tblA, varargin)
@@ -3109,15 +3097,14 @@ classdef (Abstract) tabular
 
     endfunction
 
-    ## -*- texinfo -*-
-    ## @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =} standardizeMissingResult (@dots{})
+    ## -*- texinfo -*- @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =}
+    ## standardizeMissingResult (@dots{})
     ##
     ## The object with the given values made missing.
     ##
-    ## Missing values belong to the variables, which a tabular object holds
-    ## the same way whatever labels its rows.  @var{errmsg} carries the body
-    ## of any complaint so that the calling class can raise it under its own
-    ## name.
+    ## Missing values belong to the variables, which a tabular object holds the
+    ## same way whatever labels its rows.  @var{errmsg} carries the body of any
+    ## complaint so that the calling class can raise it under its own name.
     ##
     ## @end deftypefn
     function [tbl, errmsg] = standardizeMissingResult (tblA, indicator, ...
@@ -3316,6 +3303,150 @@ classdef (Abstract) tabular
         B = build_grouped_apply_result (this, scope, outFmt, res, outNames, ...
                                         gcols, this.VariableNames(gIx), ...
                                         gcount, repRows);
+      endif
+    endfunction
+
+    ## The body behind 'grouptransform' on both classes.  Returns an errmsg
+    ## body (empty on success) for the caller to raise under its own name.
+    function [G, errmsg] = grouptransformResult (this, groupvars, args_in)
+      G = [];
+      errmsg = '';
+      scope = sprintf ('%s.grouptransform', class (this));
+
+      ## An optional GROUPBINS positional argument precedes the transform
+      ## METHOD (a known method name or a function handle).
+      args = args_in;
+      hasGroupbins = false;
+      groupbins = [];
+      if (! isempty (args) && __groupbins__ ('is_spec', args{1}))
+        hasGroupbins = true;
+        groupbins = args{1};
+        args = args(2:end);
+      endif
+      if (isempty (args))
+        errmsg = 'a transform METHOD is required.';
+        return;
+      endif
+      method = args{1};
+      knownMethods = {'zscore', 'norm', 'meancenter', 'rescale', ...
+                      'meanfill', 'linearfill'};
+      if (is_function_handle (method))
+        methDisp = 'fun1';
+      elseif (((ischar (method) && isrow (method))
+               || (isa (method, 'string') && isscalar (method)))
+              && any (strcmpi (char (method), knownMethods)))
+        method = lower (char (method));
+        methDisp = method;
+      else
+        errmsg = strcat ("METHOD must be one of 'zscore', 'norm',", ...
+                         " 'meancenter', 'rescale', 'meanfill',", ...
+                         " 'linearfill', or a function handle.");
+        return;
+      endif
+
+      ## Split the remaining arguments into the optional positional DATAVARS
+      ## and any Name-Value pairs (a Name-Value region starts at the first
+      ## option).
+      rest = args(2:end);
+      optNames = {'ReplaceValues', 'IncludedEdge'};
+      nvStart = numel (rest) + 1;
+      for k = 1:numel (rest)
+        a = rest{k};
+        if (((ischar (a) && isrow (a)) || (isa (a, 'string') && isscalar (a)))
+            && any (strcmpi (char (a), optNames)))
+          nvStart = k;
+          break;
+        endif
+      endfor
+      posArgs = rest(1:nvStart-1);
+      nvArgs = rest(nvStart:end);
+      if (numel (posArgs) > 1)
+        errmsg = 'too many positional arguments.';
+        return;
+      endif
+      if (numel (posArgs) == 1)
+        datavars = posArgs{1};
+        hasDataVars = true;
+      else
+        datavars = [];
+        hasDataVars = false;
+      endif
+
+      dfValues = {true, 'left'};
+      [replaceVals, incEdge] = ...
+                  parsePairedArguments (optNames, dfValues, nvArgs(:));
+      if (! (isscalar (replaceVals)
+             && (islogical (replaceVals) || isnumeric (replaceVals))))
+        errmsg = "'ReplaceValues' must be a logical scalar.";
+        return;
+      endif
+      replaceVals = logical (replaceVals);
+      incEdge = tabular.check_included_edge (scope, incEdge);
+
+      ## Resolve grouping and data variables.  The default data variables are
+      ## all variables that are not grouping variables.
+      [gIx, byLabels] = resolveGroupRef (this, groupvars);
+      if (isempty (gIx) && ! byLabels)
+        errmsg = 'at least one grouping variable is required.';
+        return;
+      endif
+      if (hasDataVars)
+        dIx = resolveVarRef (this, datavars)(:)';
+      else
+        dIx = 1:width (this);
+        dIx(ismember (dIx, gIx)) = [];
+      endif
+
+      ## Bin the grouping variables when a GROUPBINS argument was given, then
+      ## group the rows, treating missing grouping values as their own groups
+      ## so that every row belongs to exactly one group.  The row labels group
+      ## as a column of their own when they were named.
+      grpCols = this.VariableValues(gIx);
+      grpNames = this.VariableNames(gIx);
+      if (byLabels)
+        labels = getRowLabels (this);
+        lname = rowLabelName (this);
+        grpCols = [{labels}, grpCols];
+        grpNames = [{lname}, grpNames];
+      endif
+      if (hasGroupbins)
+        [grpCols, ~, errmsg] = __groupbins__ ('bin', grpCols, grpNames, ...
+                                              groupbins, incEdge, ...
+                                              'grouptransform');
+        if (! isempty (errmsg))
+          return;
+        endif
+      endif
+      [Grp, ng, ~, errmsg] = tabular.gs_group_rows (grpCols, true);
+      if (! isempty (errmsg))
+        return;
+      endif
+
+      ## Transform each data variable, group by group.
+      transCols = cell (1, numel (dIx));
+      for i = 1:numel (dIx)
+        col = this.VariableValues{dIx(i)};
+        [tc, terr] = tabular.gt_transform_col (method, col, Grp, ng);
+        if (! isempty (terr))
+          errmsg = sprintf ("variable '%s': %s", ...
+                            this.VariableNames{dIx(i)}, terr);
+          return;
+        endif
+        transCols{i} = tc;
+      endfor
+
+      if (replaceVals)
+        G = this;
+        for i = 1:numel (dIx)
+          G.VariableValues{dIx(i)} = transCols{i};
+        endfor
+      else
+        newNames = cell (1, numel (dIx));
+        for i = 1:numel (dIx)
+          newNames{i} = sprintf ("%s_%s", methDisp, ...
+                                 this.VariableNames{dIx(i)});
+        endfor
+        G = addvars (this, transCols{:}, 'NewVariableNames', newNames);
       endif
     endfunction
 
@@ -4051,8 +4182,8 @@ classdef (Abstract) tabular
       out = this.VariableValues{ix_var};
     endfunction
 
-    ## -*- texinfo -*-
-    ## @deftypefn {table} {@var{out} =} setvar (@var{tbl}, @var{varRef}, @var{value})
+    ## -*- texinfo -*- @deftypefn {table} {@var{out} =} setvar (@var{tbl},
+    ## @var{varRef}, @var{value})
     ##
     ## Set values to an existing or a new variable in table.
     ##
@@ -4060,8 +4191,8 @@ classdef (Abstract) tabular
     ## may be used to change the value of an existing variable, or add a new
     ## variable.
     ##
-    ## @var{varRef} is a variable reference, either its index or its name.
-    ## If you are adding a new variable, it must be a name, and not an index.
+    ## @var{varRef} is a variable reference, either its index or its name. If
+    ## you are adding a new variable, it must be a name, and not an index.
     ##
     ## @var{value} is the value to set the variable to.  If it is a scalar, it
     ## is scalar-expanded to match the number of rows in @var{tbl}.
@@ -4719,8 +4850,8 @@ classdef (Abstract) tabular
       endfor
     endfunction
 
-    ## -*- texinfo -*-
-    ## @deftypefn {tabular} {[@var{name}, @var{entry}] =} summaryLabelEntry (@var{obj})
+    ## -*- texinfo -*- @deftypefn {tabular} {[@var{name}, @var{entry}] =}
+    ## summaryLabelEntry (@var{obj})
     ##
     ## The summary entry for the row labels, where the class has one.
     ##
@@ -5359,12 +5490,170 @@ classdef (Abstract) tabular
       gcount = accumarray (G(! isnan (G)), 1, [ngroups, 1]);
     endfunction
 
-    ## Build the cell array of input arguments passed to FUNC for the rows selected
-    ## by the logical mask ROWS, taken from the input-variable values INCOLS (a cell
-    ## array of variable values).  When SEPIN is true each variable's selected rows
-    ## form a separate argument; otherwise they are horizontally concatenated into a
-    ## single argument.  When EXTRACTCELL is true the contents of cell-valued
-    ## variables are extracted.
+    ## Validate an 'IncludedEdge' binning option VAL for method CALLER,
+    ## returning it lowercased as 'left' or 'right'.
+    function e = check_included_edge (caller, val)
+      if (isa (val, 'string') && isscalar (val))
+        val = char (val);
+      endif
+      if (! (ischar (val) && isrow (val) ...
+             && any (strcmpi (val, {'left', 'right'}))))
+        error ("%s: 'IncludedEdge' must be 'left' or 'right'.", caller);
+      endif
+      e = lower (val);
+    endfunction
+
+    ## Group table rows for 'groupsummary' by the grouping-variable values
+    ## GRPCOLS, treating each grouping variable's missing values as a single
+    ## group value. Returns G, an n-by-1 vector of group numbers (1..NGROUPS);
+    ## NGROUPS; REPROWS, a representative row index per group; and an errmsg
+    ## body emitted by the caller.  Groups are sorted by grouping value with
+    ## missing groups last.  When INCMISS is false, rows holding a missing
+    ## grouping value are dropped (labelled NaN in G and excluded from
+    ## NGROUPS/REPROWS).
+    function [G, ngroups, repRows, errmsg] = gs_group_rows (grpCols, incMiss)
+      errmsg = '';
+      G = [];
+      ngroups = 0;
+      repRows = [];
+      n = size (grpCols{1}, 1);
+      KEY = [];
+      SORT = [];
+      anyMiss = false (n, 1);
+      for j = 1:numel (grpCols)
+        [p, m, e] = tabular.group_col_proxy (grpCols{j});
+        if (! isempty (e))
+          errmsg = e;
+          return;
+        endif
+        pc = p;
+        ## collapse all missing values of this variable
+        pc(m,:) = 0;
+        KEY = [KEY, pc, double(m)];
+        sp = p;
+        sp(m,:) = Inf;                # sort missing groups last
+        SORT = [SORT, sp];
+        anyMiss = anyMiss | m;
+      endfor
+
+      [~, ia, ic] = unique (KEY, "rows");
+      ng = numel (ia);
+      grpMiss = anyMiss(ia);
+      [~, ord] = sortrows (SORT(ia,:));
+      reps = ia(ord);
+      grpMiss = grpMiss(ord);
+      pos = zeros (ng, 1);
+      pos(ord) = 1:ng;
+      G = pos(ic);
+
+      if (! incMiss && any (grpMiss))
+        keep = find (! grpMiss);
+        newId = NaN (ng, 1);
+        newId(keep) = 1:numel (keep);
+        G = newId(G);
+        reps = reps(keep);
+        ng = numel (keep);
+      endif
+      ngroups = ng;
+      repRows = reps;
+    endfunction
+
+    ## Transform one data variable COL group by group for 'grouptransform',
+    ## applying METHOD (a transform-name char vector or a function handle) to
+    ## each group's slice and returning OUT, the transformed values the same
+    ## size as COL.  G is the n-by-1 group-number vector (1..NG), every row
+    ## assigned to a group.  A function handle must return a single row
+    ## (broadcast) or one row per group row. Returns an errmsg body (empty on
+    ## success) emitted by the caller.
+    function [out, errmsg] = gt_transform_col (method, col, G, ng)
+      out = [];
+      errmsg = '';
+      if (! (isnumeric (col) || islogical (col)))
+        errmsg = sprintf (strcat ("grouptransform requires numeric or", ...
+                                  " logical data; got '%s'."), class (col));
+        return;
+      endif
+      x = double (col);
+      out = x;
+      for g = 1:ng
+        rows = find (G == g);
+        if (isempty (rows))
+          continue;
+        endif
+        slice = x(rows,:);
+        if (is_function_handle (method))
+          r = method (slice);
+          if (! (isnumeric (r) || islogical (r)))
+            errmsg = "the transform function must return a numeric result.";
+            out = [];
+            return;
+          endif
+          if (size (r, 1) == 1)
+            r = repmat (r, numel (rows), 1);
+          endif
+          if (! isequal (size (r), size (slice)))
+            errmsg = strcat ("the transform function must return a", ...
+                             " result the same size as the group, or a", ...
+                             " single row.");
+            out = [];
+            return;
+          endif
+          out(rows,:) = r;
+        else
+          for c = 1:columns (slice)
+            out(rows,c) = tabular.gt_apply_named (method, slice(:,c));
+          endfor
+        endif
+      endfor
+    endfunction
+
+    ## Apply a single named transform METHOD to the column vector X (a group's
+    ## slice of one data variable), returning the transformed values V the same
+    ## size as X. NaN values are omitted when computing the group statistics;
+    ## the centring and scaling methods leave NaN in place, while
+    ## 'meanfill'/'linearfill' fill them.
+    function v = gt_apply_named (method, x)
+      nan = isnan (x);
+      xo = x(! nan);
+      switch (method)
+        case 'meancenter'
+          v = x - mean (xo);
+        case 'zscore'
+          v = (x - mean (xo)) / std (xo);
+        case 'norm'
+          v = x / norm (xo);
+        case 'rescale'
+          mn = min (xo);
+          mx = max (xo);
+          v = (x - mn) / (mx - mn);
+        case 'meanfill'
+          v = x;
+          v(nan) = mean (xo);
+        case 'linearfill'
+          v = tabular.gt_linearfill (x);
+      endswitch
+    endfunction
+
+    ## Fill the missing values of the column vector X by linear interpolation
+    ## over the non-missing positions, leaving leading and trailing missing
+    ## values (and any group with fewer than two non-missing values) unchanged.
+    function v = gt_linearfill (x)
+      v = x;
+      idx = find (! isnan (x));
+      if (numel (idx) >= 2)
+        pos = (1:numel (x))';
+        vi = interp1 (idx, x(idx), pos, "linear");
+        fill = isnan (x) & pos > idx(1) & pos < idx(end);
+        v(fill) = vi(fill);
+      endif
+    endfunction
+
+    ## Build the cell array of input arguments passed to FUNC for the rows
+    ## selected by the logical mask ROWS, taken from the input-variable values
+    ## INCOLS (a cell array of variable values).  When SEPIN is true each
+    ## variable's selected rows form a separate argument; otherwise they are
+    ## horizontally concatenated into a single argument.  When EXTRACTCELL is
+    ## true the contents of cell-valued variables are extracted.
     function args = build_row_args (inCols, rows, sepIn, extractCell)
       vals = cell (1, numel (inCols));
       for k = 1:numel (inCols)
@@ -6296,10 +6585,11 @@ function [col, errmsg] = missing_rows (proto, n)
   endif
 endfunction
 
-## Format a datetime column as a column cell of ISO 8601 strings for 'table2ods'.
-## NaT values yield an empty string, which the writer records as a missing (empty)
-## cell.  The wall-clock components are used; any TimeZone is not encoded in the
-## value (mirroring the datetime display round-trip of the CSV path).
+## Format a datetime column as a column cell of ISO 8601 strings for
+## 'table2ods'. NaT values yield an empty string, which the writer records as a
+## missing (empty) cell.  The wall-clock components are used; any TimeZone is
+## not encoded in the value (mirroring the datetime display round-trip of the
+## CSV path).
 function C = datetime2iso (dt)
   [Y, M, D] = ymd (dt(:));
   [h, m, s] = hms (dt(:));
@@ -6340,8 +6630,9 @@ function C = duration2iso (du)
   endfor
 endfunction
 
-## Format a seconds value for an ISO 8601 string: a two-digit integer when whole,
-## otherwise a fractional part (up to microseconds) with trailing zeros trimmed.
+## Format a seconds value for an ISO 8601 string: a two-digit integer when
+## whole, otherwise a fractional part (up to microseconds) with trailing zeros
+## trimmed.
 function str = iso_seconds (s)
   si = floor (s);
   frac = round ((s - si) * 1e6);

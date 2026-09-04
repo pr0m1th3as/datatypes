@@ -2244,7 +2244,7 @@ classdef timetable < tabular
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'varfun'           'rowfun'                                                ##
+## 'varfun'           'rowfun'           'grouptransform'                     ##
 ##                                                                            ##
 ################################################################################
 
@@ -2386,6 +2386,62 @@ classdef timetable < tabular
       [B, errmsg] = rowfunResult (A, func, varargin);
       if (! isempty (errmsg))
         error ("timetable.rowfun: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{G} =} grouptransform (@var{tt}, @var{groupvars}, @var{method})
+    ## @deftypefnx {timetable} {@var{G} =} grouptransform (@var{tt}, @var{groupvars}, @var{method}, @var{datavars})
+    ## @deftypefnx {timetable} {@var{G} =} grouptransform (@var{tt}, @var{groupvars}, @var{groupbins}, @var{method}, @dots{})
+    ## @deftypefnx {timetable} {@var{G} =} grouptransform (@dots{}, @var{Name}, @var{Value})
+    ##
+    ## Transform the variables of a timetable group by group.
+    ##
+    ## @code{@var{G} = grouptransform (@var{tt}, @var{groupvars},
+    ## @var{method})} groups the rows of @var{tt} by the variables named in
+    ## @var{groupvars} and applies @var{method} to each data variable within
+    ## each group.  The result has the same rows as @var{tt}, in the same
+    ## order and carrying the same row times, so a transform never moves a row
+    ## in time.
+    ##
+    ## @var{groupvars} names one or more variables, or the row dimension name,
+    ## which groups by the row times themselves.  @var{method} is one of
+    ## @qcode{'zscore'}, @qcode{'norm'}, @qcode{'meancenter'},
+    ## @qcode{'rescale'}, @qcode{'meanfill'} and @qcode{'linearfill'}, or a
+    ## function handle applied to each group.
+    ##
+    ## @code{@var{G} = grouptransform (@var{tt}, @var{groupvars},
+    ## @var{method}, @var{datavars})} transforms only the variables named in
+    ## @var{datavars}.  By default every variable that is not a grouping
+    ## variable is transformed.
+    ##
+    ## @code{@var{G} = grouptransform (@var{tt}, @var{groupvars},
+    ## @var{groupbins}, @var{method}, @dots{})} bins the grouping variables
+    ## before grouping, @var{groupbins} being a bin count, a vector of edges,
+    ## or a time unit for a datetime or duration variable.
+    ##
+    ## The following @var{Name}/@var{Value} pairs are accepted:
+    ##
+    ## @table @asis
+    ## @item @qcode{'ReplaceValues'}
+    ## A logical scalar.  When @code{true} (the default) each transformed
+    ## variable replaces the one it came from; when @code{false} the results
+    ## are appended as new variables named for the method and the variable
+    ## they came from, as in @qcode{zscore_Speed}.
+    ##
+    ## @item @qcode{'IncludedEdge'}
+    ## Which edge of a bin is included, @qcode{'left'} (the default) or
+    ## @qcode{'right'}.  It applies only where @var{groupbins} was given.
+    ## @end table
+    ##
+    ## @end deftypefn
+    function G = grouptransform (tt, groupvars, varargin)
+      if (nargin < 3)
+        print_usage ();
+      endif
+      [G, errmsg] = grouptransformResult (tt, groupvars, varargin);
+      if (! isempty (errmsg))
+        error ("timetable.grouptransform: %s", errmsg);
       endif
     endfunction
 
