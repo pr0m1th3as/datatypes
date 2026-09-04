@@ -3240,7 +3240,8 @@ classdef (Abstract) tabular
       dfValues = {[], [], 'auto', []};
       [inVars, grpVars, outFmt, errHandler] = ...
                   parsePairedArguments (optNames, dfValues, args_in(:));
-      outFmt = tabular.check_output_format (scope, outFmt);
+      outFmt = tabular.check_output_format (scope, outFmt, ...
+                                            class (this));
       if (! isempty (errHandler) && ! is_function_handle (errHandler))
         errmsg = "'ErrorHandler' must be a function handle.";
         return;
@@ -3827,7 +3828,8 @@ classdef (Abstract) tabular
       dfValues = {[], [], [], [], true, false, 'auto', []};
       [inVars, grpVars, outNames, numOut, sepIn, extractCell, outFmt, ...
        errHandler] = parsePairedArguments (optNames, dfValues, args_in(:));
-      outFmt = tabular.check_output_format (scope, outFmt);
+      outFmt = tabular.check_output_format (scope, outFmt, ...
+                                            class (this));
       if (! (isscalar (sepIn) && (islogical (sepIn) || isnumeric (sepIn))))
         errmsg = "'SeparateInputs' must be a logical scalar.";
         return;
@@ -6425,25 +6427,31 @@ classdef (Abstract) tabular
     ## Validate and normalise an OutputFormat value for the apply methods: map
     ## 'auto' to 'table' and accept 'table', 'uniform', and 'cell'.  CALLER
     ## names the method for error messages.
-    function fmt = check_output_format (caller, fmt)
+    function fmt = check_output_format (caller, fmt, clsname)
+      if (nargin < 3)
+        clsname = 'table';
+      endif
       if (isa (fmt, 'string'))
         fmt = char (fmt);
       endif
       if (! (ischar (fmt) && isrow (fmt)))
         error ("%s: 'OutputFormat' must be a character vector.", caller);
       endif
-      switch (lower (fmt))
-        case {'auto', 'table'}
-          fmt = 'table';
-        case 'uniform'
-          fmt = 'uniform';
-        case 'cell'
-          fmt = 'cell';
-        case 'timetable'
-          error ("%s: 'timetable' OutputFormat is not supported.", caller);
-        otherwise
-          error ("%s: invalid 'OutputFormat' value '%s'.", caller, fmt);
-      endswitch
+      low = lower (fmt);
+      ## A class answers to its own name as well as to 'table', both meaning
+      ## an object of that class; the other class's name does not, there
+      ## being no row times to invent or discard.
+      if (any (strcmp (low, {'auto', 'table', lower(clsname)})))
+        fmt = 'table';
+      elseif (strcmp (low, 'uniform'))
+        fmt = 'uniform';
+      elseif (strcmp (low, 'cell'))
+        fmt = 'cell';
+      elseif (any (strcmp (low, {'table', 'timetable'})))
+        error ("%s: '%s' OutputFormat is not supported.", caller, low);
+      else
+        error ("%s: invalid 'OutputFormat' value '%s'.", caller, fmt);
+      endif
     endfunction
 
     ## Call FUNC with the arguments ARGS, requesting NOUT outputs, and return

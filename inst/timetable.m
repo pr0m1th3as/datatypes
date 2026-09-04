@@ -365,11 +365,10 @@ classdef timetable < tabular
       this = applyRowTimes (this, rt, true);
     endfunction
 
-    ## A timetable built from an apply method's output.  Each output row
-    ## takes the row time of the input row ROWIX names it came from; with no
-    ## index to go on every row takes the first row time, which is what a
-    ## whole-object reduction leaves behind.  ROWLABELS means nothing here,
-    ## the row times following the index instead.
+    ## A timetable built from an apply method's output.  Each output row takes
+    ## the row time of the input row ROWIX names it came from; with no index
+    ## to go on the rows take the row times from the top of the input.
+    ## ROWLABELS means nothing here, the row times following the index.
     function out = assembleApply (this, vars, names, rowLabels, rowIx)
       if (isempty (vars))
         nrows = 0;
@@ -377,7 +376,14 @@ classdef timetable < tabular
         nrows = size (vars{1}, 1);
       endif
       if (isempty (rowIx))
-        rowIx = ones (nrows, 1);
+        ## With no index to go on the result takes the first row times, one
+        ## per row it has: a reduction to a single row takes the first, and a
+        ## function returning several takes as many from the top.
+        n = min (nrows, height (this));
+        rowIx = (1:n)';
+        if (n < nrows && n > 0)
+          rowIx = [rowIx; repmat(n, nrows - n, 1)];
+        endif
       endif
       rt = this.RowTimes(rowIx(:));
       out = timetable (vars{:}, 'RowTimes', rt, 'VariableNames', names);
