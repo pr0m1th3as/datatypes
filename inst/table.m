@@ -137,6 +137,16 @@ classdef table < tabular
       out = '';
     endfunction
 
+    ## A table orders by its row names under either spelling.
+    function out = rowLabelKeyNames (this)
+      out = {'RowNames', this.DimensionNames{1}};
+    endfunction
+
+    ## A bare 'sortrows (tbl)' orders by every variable, not by the names.
+    function tf = sortsByLabelsByDefault (this)
+      tf = false;
+    endfunction
+
     ## The one row label property a table has.  'RowNames' is the only name
     ## it recognises; anything else is not a table property at all and the
     ## caller says so.
@@ -1585,257 +1595,11 @@ classdef table < tabular
     ##
     ## @end deftypefn
     function [tbl, index] = sortrows (this, varargin)
-
-      ## Add defaults
-      varRef = ':';
-      doRowNames = false;
-      inRowNames = 0;
-      direction = {'ascend'};
-      dir_given = false;
-
-      ## Parse optional Name-Value paired arguments
-      optNames = {'MissingPlacement', 'ComparisonMethod'};
-      dfValues = {'auto', 'auto'};
-      [MP, CM, args] = parsePairedArguments (optNames, dfValues, varargin(:));
-
-      ## Check optional Name-Value paired arguments
-      if (! ismember (MP, {'auto', 'first', 'last'}))
-        error (strcat ("table.sortrows: 'MissingPlacement' parameter can", ...
-                       " be either 'auto', 'first', or 'last'."));
+      [index, errmsg] = sortrowsIndex (this, varargin);
+      if (! isempty (errmsg))
+        error ("table.sortrows: %s", errmsg);
       endif
-      if (! ismember (CM, {'auto', 'real', 'abs'}))
-        error (strcat ("table.sortrows: 'ComparisonMethod' parameter can", ...
-                       " be either 'auto', 'real', or 'abs'."));
-      endif
-
-      ## Parse extra arguments
-      nargs = numel (args);
-      if (nargs > 2)
-        error ("table.sortrows: invalid number of input arguments.");
-      endif
-      if (nargs > 1)
-        ## Matched without regard to case, as MATLAB does.
-        direction = lower (cellstr (args{2}));
-        dir_given = true;
-        if (! all (ismember (direction, {'ascend', 'descend'})))
-          error ("table.sortrows: invalid value for DIRECTION argument.");
-        endif
-      endif
-      if (nargs > 0)
-        ## RowNames and rowDimName take precedence over variable names
-        arg1 = args{1};
-        if (ischar (arg1) && isvector (arg1) &&
-            ismember (arg1, {'RowNames', this.DimensionNames{1}}))
-          ## Check user's direction is scalar
-          if (dir_given && numel (direction) != 1)
-            error (strcat ("table.sortrows: DIRECTION must be a scalar", ...
-                           " input when 'RowNames' or 'rowDimNames' are", ...
-                           " selected."));
-          endif
-          ## Handle special case here
-          if (isempty (this.RowNames))
-            tbl = this;
-            index = [1:height(this)]';
-            return
-          else
-            [~, index] = sort (this.RowNames, direction{:});
-            tbl = subsetrows (this, index);
-            return
-          endif
-        endif
-
-        ## At this point, VARS must be variable name(s)
-        if (islogical (arg1))
-          varRef = arg1;
-          if (! (isvector (varRef) && numel (varRef) == width (this)))
-            error (strcat ("table.sortrows: logical indexing vector does", ...
-                           " not match table width."));
-          endif
-          ## Check user's direction matches selected variables
-          if (! isscalar (direction))
-            if (dir_given && sum (varRef) != numel (direction))
-              error ("table.sortrows: invalid size for DIRECTION argument.");
-            endif
-          endif
-        elseif (isnumeric (arg1))
-          if (isempty (arg1))
-            arg1 = [1:width(this)];
-          endif
-          if (! isvector (arg1) || any (fix (arg1) != arg1) || any (arg1 == 0))
-            error (strcat ("table.sortrows: numerical indexing must be a", ...
-                           " vector of nonzero integers."));
-          endif
-          if (any (abs (arg1) > width (this)))
-            error ("table.sortrows: numerical index exceeds table dimensions.");
-          endif
-          varRef = arg1;
-          ## If direction was given, ignore sign of numerical indexing
-          if (dir_given)
-            varRef = abs (varRef);
-            ## Check user's direction matches selected variables
-            if (! isscalar (direction))
-              if (! isequal (size (varRef), size (direction)))
-                error ("table.sortrows: invalid size for DIRECTION argument.");
-              endif
-            endif
-          else
-            direction = cell (1, numel (varRef));
-            direction(sign (varRef) > 0) = 'ascend';
-            direction(sign (varRef) < 0) = 'descend';
-            varRef = abs (varRef);
-          endif
-        elseif (ischar (arg1) || iscellstr (arg1) || isa (arg1, 'string'))
-          varRef = cellstr (arg1);
-          if (isscalar (varRef) && strcmp (varRef, ':'))
-            varRef = ':';
-          elseif (! all (ismember (varRef, [this.VariableNames, {'RowNames'}])))
-            error ("table.sortrows: VARS indexes non-existing variable names.");
-          endif
-          ## Check user's direction matches selected variables
-          if (! isscalar (direction))
-            if (strcmp (varRef, ':') && numel (direction) != width (this))
-              error ("table.sortrows: invalid size for DIRECTION argument.");
-            elseif (! isequal (size (varRef), size (direction)))
-              error ("table.sortrows: invalid size for DIRECTION argument.");
-            endif
-          endif
-          ## Check whether 'RowNames' are included in the indexed variables
-          if (any (ismember (varRef, 'RowNames')))
-            inRowNames = find (strcmp (varRef, 'RowNames'));
-            varRef(inRowNames) = [];
-          endif
-        elseif (isa (arg1, 'vartype'))
-          varRef = arg1;
-          ## Check user's direction is scalar
-          if (dir_given && numel (direction) != 1)
-            error (strcat ("table.sortrows: DIRECTION must be a scalar", ...
-                           " input when variables are indexed with a", ...
-                           " 'vartype' object."));
-          endif
-        endif
-      endif
-
-      ## Resolve varRef to variables' indices
-      ixVars = resolveVarRef (this, varRef);
-
-      ## With nothing to sort by the order cannot change, and the sort
-      ## itself has no key to build.
-      if (isempty (ixVars) && inRowNames == 0)
-        tbl = this;
-        index = (1:height (this))';
-        return;
-      endif
-      ## Build a cell array for the selected variables to be used in sorting
-      if (inRowNames == 0)
-        varVal = cell (1, numel (ixVars));
-      else
-        varVal = cell (1, numel (ixVars) + 1);
-      endif
-
-      ## Expand direction if it is a scalar
-      if (isscalar (direction))
-        direction = repmat (direction, 1, numel (varVal));
-      endif
-
-      ## Populate cell array for sorting
-      offset = 0;
-      for ix = 1:numel (varVal)
-        if (inRowNames == ix)
-          varVal(ix) = {this.RowNames};
-          offset = 1;
-        else
-          varVal(ix) = this.VariableValues(ixVars(ix - offset));
-        endif
-      endfor
-
-      ## Prepare a proxy array by converting all variable to numeric proxies
-      varValIdx = [];
-      varValDir = [];
-      for ix = 1:numel (varVal)
-
-        tmpVal = varVal{ix};
-        if (strcmpi (direction{ix}, 'ascend'))
-          tmpDir = 1;
-        else
-          tmpDir = -1;
-        endif
-
-        if (isa (tmpVal, 'categorical'))
-          tmpVal = double (tmpVal);
-          varValIdx = [varValIdx, tmpVal];
-
-        elseif (isa (tmpVal, 'calendarDuration'))
-          tmpVal = tmpVal.proxyArray;
-          varValIdx = [varValIdx, tmpVal];
-
-        elseif (isa (tmpVal, 'datetime'))
-          tmpVal = tabular.datetime_to_datenum (tmpVal);
-          varValIdx = [varValIdx, tmpVal];
-
-        elseif (isa (tmpVal, 'duration'))
-          tmpVal = days (tmpVal);
-          varValIdx = [varValIdx, tmpVal];
-
-        elseif (isa (tmpVal, 'string'))
-          tmpVal = cellstr (tmpVal);
-          [~, ~, idx] = __unique__ (tmpVal, 'rows');
-          varValIdx = [varValIdx, idx];
-
-        elseif (iscellstr (tmpVal))
-          [~, ~, idx] = __unique__ (tmpVal, 'rows');
-          varValIdx = [varValIdx, idx];
-
-        elseif (iscell (tmpVal))
-          ## Sorting mixed cell data is not supported
-          error ("table.sortrows: cannot sort variables of 'cell' type.");
-
-        elseif (isnumeric (tmpVal))
-          if (strcmpi (CM, 'real') && iscomplex (tmpVal))
-            tmpVal = real (tmpVal);
-          elseif (strcmpi (CM, 'abs') && isreal (tmpVal))
-            tmpVal = abs (tmpVal);
-          endif
-          varValIdx = [varValIdx, tmpVal];
-
-        elseif (isstruct (tmpVal))
-          ## Sorting structure data is not supported
-          error ("table.sortrows: cannot sort variables of 'struct' type.");
-
-        elseif (isa (tmpVal, 'table'))
-          try
-            tmpVal = table2array (varVal{ix});
-            varValIdx = [varValIdx, tmpVal];
-          catch
-            error (strcat ("table.sortrows: cannot sort nested tables", ...
-                           " with mixed data types."));
-          end_try_catch
-        endif
-        tmpDir = repmat (tmpDir, 1, size (tmpVal, 2));
-        varValDir = [varValDir, tmpDir];
-      endfor
-
-      ## Fix direction vector
-      varValDir = [1:numel(varValDir)] .* varValDir;
-
-      ## Do the actual sorting here
-      [~, index] = sortrows (varValIdx, varValDir);
       tbl = subsetrows (this, index);
-      index = index(:);
-
-      ## Fix missing placement
-      TF = ismissing (tbl);
-      TFvec = TF(:,ixVars(1));
-      if (any (TFvec) && ! all (TFvec))
-        is_nan = index(TFvec);
-        no_nan = index(! TFvec);
-        if (any (find (TFvec) == 1) && strcmpi (MP, 'last'))
-          index = [no_nan; is_nan];
-        elseif (any (find (TFvec) == numel (index)) && strcmpi (MP, 'first'))
-          index = [is_nan; no_nan];
-        endif
-        tbl = subsetrows (this, index);
-      endif
-
     endfunction
 
     ## -*- texinfo -*-
@@ -5768,7 +5532,7 @@ classdef table < tabular
       for k = 1:numel (ixVars)
         iv = ixVars(k);
         v = tbl.VariableValues{iv};
-        M = var_missing_mask (v);
+        M = __varmissing__ (v);
         if (! any (M(:)))
           continue;
         endif
@@ -8198,19 +7962,6 @@ endclassdef
 ## Return a logical mask, the same size as a table variable V, that flags the
 ## missing entries.  Used by 'fillmissing'.  Char arrays have no standard
 ## missing value and nested tables are treated as non-missing.
-function M = var_missing_mask (v)
-  if (isa (v, 'table'))
-    M = false (size (v));
-  elseif (any (isa (v, {'calendarDuration', 'categorical', 'datetime', ...
-                        'duration', 'string'})))
-    M = ismissing (v);
-  elseif (ischar (v))
-    M = false (size (v));
-  else  # numeric, logical, cellstr
-    M = __ismissing__ (v);
-  endif
-endfunction
-
 ## Expand the 'constant' fill value into a 1-by-NVARS cell, one value per
 ## targeted variable (scalar broadcast, per-variable vector, or per-variable
 ## cell).  Used by 'fillmissing'.

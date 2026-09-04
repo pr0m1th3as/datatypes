@@ -1,0 +1,39 @@
+%!demo
+%! ## `sortrows` on a timetable orders by the row times unless told otherwise.
+%! ## Rows sharing a time keep the order they were in: the times alone decide,
+%! ## and the variables are never consulted to break a tie.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! Reading = [9.4; 3.1; 1.7; 7.2];
+%! TT = timetable (Reading, 'RowTimes', t0 + hours ([1 0 1 0])')
+%! sortrows (TT)
+
+%!demo
+%! ## Name the row dimension to sort by the times explicitly, or a variable to
+%! ## sort by that instead, in which case the row times travel with their rows.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! Depth = [12; 45; 23; 8];
+%! Site = categorical ({'N'; 'S'; 'N'; 'S'});
+%! TT = timetable (Depth, Site, 'RowTimes', t0 + hours ([2 0 3 1])')
+%! sortrows (TT, 'Time', 'descend')
+%!
+%! ## A numeric index counts the *variables*, so 1 means `Depth`, never the
+%! ## times, and a negative index sorts that variable downwards.
+%! sortrows (TT, -1)
+
+%!demo
+%! ## The time step is read afresh from the sorted row times rather than
+%! ## carried over.  Sorting an out-of-order hourly timetable makes it regular
+%! ## again, and sorting one that ran backwards turns its step positive.
+%!
+%! t0 = datetime (2024, 1, 1);
+%! U = timetable ([30; 10; 40; 20], 'RowTimes', t0 + hours ([2 0 3 1])');
+%! U.Properties.TimeStep
+%! S = sortrows (U);
+%! S.Properties.TimeStep
+%!
+%! ## The same timetable built backwards steps by minus one hour.
+%! Z = timetable ((1:4)', 'RowTimes', t0 - hours (0:3)');
+%! Z.Properties.TimeStep
+%! sortrows (Z).Properties.TimeStep

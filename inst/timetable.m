@@ -171,6 +171,17 @@ classdef timetable < tabular
       out = this.DimensionNames{1};
     endfunction
 
+    ## A timetable orders by its row times, which are named by the row
+    ## dimension and by nothing else.
+    function out = rowLabelKeyNames (this)
+      out = this.DimensionNames(1);
+    endfunction
+
+    ## A bare 'sortrows (tt)' orders by the row times.
+    function tf = sortsByLabelsByDefault (this)
+      tf = true;
+    endfunction
+
     ## The four properties a timetable publishes about its row times, keyed
     ## by the names they are published under.  'RowTimes' is the stored
     ## truth; the other three describe it and are maintained with it.
@@ -1113,6 +1124,81 @@ classdef timetable < tabular
     ## @end deftypefn
     function TF = istimetable (this)
       TF = true;
+    endfunction
+
+  endmethods
+
+################################################################################
+##                          **    Row Ordering    **                          ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'sortrows'                                                                 ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{ttB} =} sortrows (@var{ttA})
+    ## @deftypefnx {timetable} {@var{ttB} =} sortrows (@var{ttA}, @var{rowDimName})
+    ## @deftypefnx {timetable} {@var{ttB} =} sortrows (@var{ttA}, @var{vars})
+    ## @deftypefnx {timetable} {@var{ttB} =} sortrows (@var{ttA}, @dots{}, @var{direction})
+    ## @deftypefnx {timetable} {@var{ttB} =} sortrows (@dots{}, @var{Name}, @var{Value})
+    ## @deftypefnx {timetable} {[@var{ttB}, @var{index}] =} sortrows (@dots{})
+    ##
+    ## Sort the rows of a timetable.
+    ##
+    ## @code{@var{ttB} = sortrows (@var{ttA})} orders the rows by their row
+    ## times, earliest first.  Rows sharing a time keep the order they were
+    ## in: the row times alone decide, and the variables are never consulted
+    ## to break a tie.
+    ##
+    ## @code{@var{ttB} = sortrows (@var{ttA}, @var{rowDimName})} does the
+    ## same, naming the row times through the first of
+    ## @code{@var{ttA}.Properties.DimensionNames}.  That name is the only way
+    ## to reach them: a numeric index counts the variables, so
+    ## @code{sortrows (@var{ttA}, 1)} orders by the first variable and not by
+    ## the times, and there is no index that means the row times.  Renaming
+    ## the row dimension renames the key with it.
+    ##
+    ## @code{@var{ttB} = sortrows (@var{ttA}, @var{vars})} orders by one or
+    ## more variables, named, indexed by number, selected by a logical vector
+    ## or picked out by a @code{vartype}.  A negative index sorts that
+    ## variable in descending order.  The row dimension name may appear among
+    ## @var{vars}, in which case the row times take their turn as a key like
+    ## any other.
+    ##
+    ## @code{@var{ttB} = sortrows (@dots{}, @var{direction})} sorts as
+    ## @qcode{'ascend'} or @qcode{'descend'}, either one direction for every
+    ## key or one per key.  A direction must follow the keys it applies to,
+    ## so @code{sortrows (@var{ttA}, 'descend')} is an error rather than a
+    ## reversed sort: with nothing else given, the first argument is read as
+    ## the variables to sort by.
+    ##
+    ## The name-value pair @qcode{'MissingPlacement'} takes
+    ## @qcode{'auto'} (the default), @qcode{'first'} or @qcode{'last'} and
+    ## says where missing keys go.  @qcode{'auto'} puts them last when
+    ## sorting up and first when sorting down.  @qcode{'ComparisonMethod'}
+    ## takes @qcode{'auto'}, @qcode{'real'} or @qcode{'abs'} and applies to
+    ## numeric variables.  Both must follow the keys as well.
+    ##
+    ## @code{[@var{ttB}, @var{index}] = sortrows (@dots{})} also returns the
+    ## permutation, so that @code{@var{ttA}(@var{index},:)} is @var{ttB}.
+    ##
+    ## The time step is read afresh from the sorted row times rather than
+    ## carried over, so sorting an out-of-order hourly timetable makes it
+    ## regular again, and sorting one that ran backwards turns its step from
+    ## minus one hour to plus one.
+    ##
+    ## @seealso{issortedrows, timetable}
+    ## @end deftypefn
+    function [tbl, index] = sortrows (this, varargin)
+      [index, errmsg] = sortrowsIndex (this, varargin);
+      if (! isempty (errmsg))
+        error ("timetable.sortrows: %s", errmsg);
+      endif
+      tbl = subsetrows (this, index);
     endfunction
 
   endmethods

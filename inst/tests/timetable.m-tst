@@ -928,6 +928,160 @@
 %! assert_equal (size ([V]), [3, 1]);
 
 ################################################################################
+##                          **    Row ordering    **                          ##
+################################################################################
+
+## Test 'sortrows' orders by the row times when nothing else is asked
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! U = timetable ([30; 10; 40; 20], 'RowTimes', t0 + hours ([2 0 3 1])', ...
+%!                'VariableNames', {'A'});
+%! S = sortrows (U);
+%! assert_equal (S.Properties.RowTimes, t0 + hours (0:3)');
+%! assert_equal (S.A, [10; 20; 30; 40]);
+
+## Test tied row times keep their order and the variables never break the tie
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! D = timetable ([9; 3; 1; 7], 'RowTimes', t0 + hours ([1 0 1 0])', ...
+%!                'VariableNames', {'A'});
+%! assert_equal (sortrows (D).A, [3; 7; 9; 1]);
+
+## Test the second output is the permutation that produced the order
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! U = timetable ([30; 10; 40; 20], 'RowTimes', t0 + hours ([2 0 3 1])', ...
+%!                'VariableNames', {'A'});
+%! [S, index] = sortrows (U);
+%! assert_equal (index, [2; 4; 1; 3]);
+%! assert_equal (S.A, U.A(index));
+
+## Test the row dimension name orders by the row times
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! U = timetable ([30; 10; 40; 20], 'RowTimes', t0 + hours ([2 0 3 1])', ...
+%!                'VariableNames', {'A'});
+%! assert_equal (sortrows (U, 'Time').A, [10; 20; 30; 40]);
+%! assert_equal (sortrows (U, 'Time', 'descend').A, [40; 30; 20; 10]);
+
+## Test renaming the row dimension renames the key with it
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! U = timetable ([30; 10; 40; 20], 'RowTimes', t0 + hours ([2 0 3 1])', ...
+%!                'VariableNames', {'A'});
+%! U.Properties.DimensionNames = {'Date', 'Vars'};
+%! assert_equal (sortrows (U, 'Date').A, [10; 20; 30; 40]);
+
+## Test sorting by a variable carries the row times along with it
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:6)', [10;20;30;40;50;60], 'RowTimes', ...
+%!                 t0 + hours (0:5)', 'VariableNames', {'A', 'B'});
+%! S = sortrows (TT, 'B', 'descend');
+%! assert_equal (S.A, [6; 5; 4; 3; 2; 1]);
+%! assert_equal (S.Properties.RowTimes, flipud (t0 + hours (0:5)'));
+
+## Test the row dimension name may be one key among several
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! D = timetable ([9; 3; 1; 7], 'RowTimes', t0 + hours ([1 0 1 0])', ...
+%!                'VariableNames', {'A'});
+%! assert_equal (sortrows (D, {'Time', 'A'}).A, [3; 7; 1; 9]);
+%! assert_equal (sortrows (D, {'A', 'Time'}).A, [1; 3; 7; 9]);
+
+## Test a numeric index counts the variables and never the row times
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:6)', [10;20;30;40;50;60], 'RowTimes', ...
+%!                 t0 + hours (0:5)', 'VariableNames', {'A', 'B'});
+%! assert_equal (sortrows (TT, 1).A, (1:6)');
+%! assert_equal (sortrows (TT, 2).A, (1:6)');
+%! assert_equal (sortrows (TT, -1).A, (6:-1:1)');
+
+## Test missing row times sort last by default
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! N = timetable ([1; 2; NaN; 4], 'RowTimes', ...
+%!                [t0; NaT; t0 + hours(2); t0 + hours(3)], ...
+%!                'VariableNames', {'A'});
+%! rt = sortrows (N).Properties.RowTimes;
+%! assert_equal (ismissing (rt), [false; false; false; true]);
+
+## Test 'MissingPlacement' moves a missing key to the front
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! N = timetable ([1; 2; NaN; 4], 'RowTimes', ...
+%!                [t0; NaT; t0 + hours(2); t0 + hours(3)], ...
+%!                'VariableNames', {'A'});
+%! assert_equal (sortrows (N, 'A', 'MissingPlacement', 'first').A, ...
+%!               [NaN; 1; 2; 4]);
+
+## Test the time step is read afresh from the sorted row times
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! U = timetable ([30; 10; 40; 20], 'RowTimes', t0 + hours ([2 0 3 1])', ...
+%!                'VariableNames', {'A'});
+%! assert_equal (isnan (U.Properties.TimeStep), true);
+%! assert_equal (sortrows (U).Properties.TimeStep, hours (1));
+
+## Test sorting a backwards timetable turns its step positive
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! Z = timetable ((1:4)', 'RowTimes', t0 - hours (0:3)', ...
+%!                'VariableNames', {'A'});
+%! assert_equal (Z.Properties.TimeStep, hours (-1));
+%! S = sortrows (Z);
+%! assert_equal (S.Properties.TimeStep, hours (1));
+%! assert_equal (S.Properties.RowTimes, flipud (t0 - hours (0:3)'));
+
+## Test duplicate row times keep the order they were in
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! D = timetable ([1; 2; 3; 4], 'RowTimes', t0 + hours ([0 1 1 3])', ...
+%!                'VariableNames', {'A'});
+%! assert_equal (sortrows (D).A, [1; 2; 3; 4]);
+
+## Test 'ComparisonMethod' is accepted after the keys
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:6)', 'RowTimes', t0 + hours (0:5)', ...
+%!                 'VariableNames', {'A'});
+%! assert_equal (sortrows (TT, 'A', 'ComparisonMethod', 'abs').A, (1:6)');
+
+## Test sorting a timetable with no rows returns one with no rows
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:6)', 'RowTimes', t0 + hours (0:5)', ...
+%!                 'VariableNames', {'A'});
+%! S = sortrows (TT([], :));
+%! assert_equal (size (S), [0, 1]);
+%! assert_equal (class (S), 'timetable');
+
+## Test duration row times sort like any other
+%!test
+%! Q = timetable ([1; 2; 3; 4], 'RowTimes', hours ([2 0 3 1])', ...
+%!                'VariableNames', {'A'});
+%! assert_equal (sortrows (Q).Properties.RowTimes, hours (0:3)');
+
+## Test input validation for 'timetable.sortrows'
+%!error <timetable.sortrows: VARS indexes non-existing variable names.> ...
+%! sortrows (timetable ((1:3)', 'RowTimes', ...
+%!           datetime (2024, 1, 1) + hours (0:2)'), 'descend');
+%!error <timetable.sortrows: VARS indexes non-existing variable names.> ...
+%! sortrows (timetable ((1:3)', 'RowTimes', ...
+%!           datetime (2024, 1, 1) + hours (0:2)'), 'Nope');
+%!error <timetable.sortrows: VARS indexes non-existing variable names.> ...
+%! sortrows (timetable ((1:3)', 'RowTimes', ...
+%!           datetime (2024, 1, 1) + hours (0:2)'), 'Variables');
+%!error <timetable.sortrows: numerical indexing must be a vector of nonzero integers.> ...
+%! sortrows (timetable ((1:3)', 'RowTimes', ...
+%!           datetime (2024, 1, 1) + hours (0:2)'), 0);
+%!error <timetable.sortrows: 'MissingPlacement' parameter can be either 'auto', 'first', or 'last'.> ...
+%! sortrows (timetable ((1:3)', 'RowTimes', ...
+%!           datetime (2024, 1, 1) + hours (0:2)'), 1, ...
+%!           'MissingPlacement', 'middle');
+
+################################################################################
 ##                       **    Range predicates    **                         ##
 ################################################################################
 

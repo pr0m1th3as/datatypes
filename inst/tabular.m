@@ -284,6 +284,20 @@ classdef (Abstract) tabular
       error ("%s: subclass must implement rowLabelHeader.", class (this));
     endfunction
 
+    ## The names that mean "order by the row labels" rather than by a
+    ## variable.  A table answers to 'RowNames' and to its row dimension
+    ## name, a timetable to its row dimension name alone.
+    function out = rowLabelKeyNames (this)
+      error ("%s: subclass must implement rowLabelKeyNames.", class (this));
+    endfunction
+
+    ## Whether a bare 'sortrows (obj)' orders by the row labels.  A table
+    ## orders by every variable it has, a timetable by its row times.
+    function tf = sortsByLabelsByDefault (this)
+      error (strcat ("%s: subclass must implement", ...
+                     " sortsByLabelsByDefault."), class (this));
+    endfunction
+
     ## The row label metadata as a struct, keyed by the names the properties
     ## object publishes it under.  Separate from 'rowLabelName', which names
     ## the labels for a file header and for a timetable is the row dimension
@@ -1190,6 +1204,307 @@ classdef (Abstract) tabular
     ## added.  TYPE is 'table' or 'variable'.  A property's type is held under
     ## the property's own name, so nothing here depends on two containers
     ## agreeing on an order.
+    ## -*- texinfo -*-
+    ## @deftypefn {tabular} {[@var{index}, @var{errmsg}] =} sortrowsIndex (@var{obj}, @var{args})
+    ##
+    ## Work out the row order @code{sortrows} asks for.
+    ##
+    ## @var{args} is the cell of arguments the public method was given, less
+    ## the object itself.  The permutation comes back in @var{index}, and
+    ## @var{errmsg} carries the body of any complaint so that the calling
+    ## class can raise it under its own name.  The caller applies the order
+    ## with @code{subsetrows}, which is where a subclass maintains whatever
+    ## its row labels oblige it to.
+    ##
+    ## @end deftypefn
+    function [index, errmsg] = sortrowsIndex (this, args_in)
+
+      index = [];
+      errmsg = '';
+      varargin = args_in;
+
+      ## Bound before use: a call inside [] or {} is split by the space
+      ## before its paren and would run with no arguments.
+      labelNames = rowLabelKeyNames (this);
+      keyNames = [this.VariableNames, labelNames];
+
+
+      ## Add defaults.  A class whose rows carry labels may sort by them
+      ## when nothing else is asked for; a table sorts by every variable.
+      if (sortsByLabelsByDefault (this))
+        varRef = [];
+        inLabels = 1;
+      else
+        varRef = ':';
+        inLabels = 0;
+      endif
+      direction = {'ascend'};
+      dir_given = false;
+
+      ## Parse optional Name-Value paired arguments
+      optNames = {'MissingPlacement', 'ComparisonMethod'};
+      dfValues = {'auto', 'auto'};
+      [MP, CM, args] = parsePairedArguments (optNames, dfValues, varargin(:));
+
+      ## Check optional Name-Value paired arguments
+      if (! ismember (MP, {'auto', 'first', 'last'}))
+        errmsg = strcat ("'MissingPlacement' parameter can", ...
+                       " be either 'auto', 'first', or 'last'.");
+        return
+      endif
+      if (! ismember (CM, {'auto', 'real', 'abs'}))
+        errmsg = strcat ("'ComparisonMethod' parameter can", ...
+                       " be either 'auto', 'real', or 'abs'.");
+        return
+      endif
+
+      ## Parse extra arguments
+      nargs = numel (args);
+      if (nargs > 2)
+        errmsg = "invalid number of input arguments.";
+        return
+      endif
+      if (nargs > 1)
+        ## Matched without regard to case, as MATLAB does.
+        direction = lower (cellstr (args{2}));
+        dir_given = true;
+        if (! all (ismember (direction, {'ascend', 'descend'})))
+          errmsg = "invalid value for DIRECTION argument.";
+          return
+        endif
+      endif
+      if (nargs > 0)
+        ## Given keys of its own, the object no longer falls back on its row
+        ## labels; they take part only if named among those keys.
+        inLabels = 0;
+        ## RowNames and rowDimName take precedence over variable names
+        arg1 = args{1};
+        if (ischar (arg1) && isvector (arg1) &&
+            ismember (arg1, labelNames))
+          ## Check user's direction is scalar
+          if (dir_given && numel (direction) != 1)
+            errmsg = strcat ("DIRECTION must be a scalar", ...
+                           " input when 'RowNames' or 'rowDimNames' are", ...
+                           " selected.");
+            return
+          endif
+          ## Handle special case here
+          if (! hasRowLabels (this))
+            index = [1:height(this)]';
+            return
+          else
+            index = labelOrder (getRowLabels (this), direction{1}, MP);
+            return
+          endif
+        endif
+
+        ## At this point, VARS must be variable name(s)
+        if (islogical (arg1))
+          varRef = arg1;
+          if (! (isvector (varRef) && numel (varRef) == width (this)))
+            errmsg = strcat ("logical indexing vector does", ...
+                           " not match table width.");
+            return
+          endif
+          ## Check user's direction matches selected variables
+          if (! isscalar (direction))
+            if (dir_given && sum (varRef) != numel (direction))
+              errmsg = "invalid size for DIRECTION argument.";
+              return
+            endif
+          endif
+        elseif (isnumeric (arg1))
+          if (isempty (arg1))
+            arg1 = [1:width(this)];
+          endif
+          if (! isvector (arg1) || any (fix (arg1) != arg1) || any (arg1 == 0))
+            errmsg = strcat ("numerical indexing must be a", ...
+                           " vector of nonzero integers.");
+            return
+          endif
+          if (any (abs (arg1) > width (this)))
+            errmsg = "numerical index exceeds table dimensions.";
+            return
+          endif
+          varRef = arg1;
+          ## If direction was given, ignore sign of numerical indexing
+          if (dir_given)
+            varRef = abs (varRef);
+            ## Check user's direction matches selected variables
+            if (! isscalar (direction))
+              if (! isequal (size (varRef), size (direction)))
+                errmsg = "invalid size for DIRECTION argument.";
+                return
+              endif
+            endif
+          else
+            direction = cell (1, numel (varRef));
+            direction(sign (varRef) > 0) = 'ascend';
+            direction(sign (varRef) < 0) = 'descend';
+            varRef = abs (varRef);
+          endif
+        elseif (ischar (arg1) || iscellstr (arg1) || isa (arg1, 'string'))
+          varRef = cellstr (arg1);
+          if (isscalar (varRef) && strcmp (varRef, ':'))
+            varRef = ':';
+          elseif (! all (ismember (varRef, keyNames)))
+            errmsg = "VARS indexes non-existing variable names.";
+            return
+          endif
+          ## Check user's direction matches selected variables
+          if (! isscalar (direction))
+            if (strcmp (varRef, ':') && numel (direction) != width (this))
+              errmsg = "invalid size for DIRECTION argument.";
+              return
+            elseif (! isequal (size (varRef), size (direction)))
+              errmsg = "invalid size for DIRECTION argument.";
+              return
+            endif
+          endif
+          ## Check whether the row labels are among the indexed variables
+          isLabel = ismember (varRef, labelNames);
+          if (any (isLabel))
+            inLabels = find (isLabel);
+            varRef(isLabel) = [];
+          endif
+        elseif (isa (arg1, 'vartype'))
+          varRef = arg1;
+          ## Check user's direction is scalar
+          if (dir_given && numel (direction) != 1)
+            errmsg = strcat ("DIRECTION must be a scalar", ...
+                           " input when variables are indexed with a", ...
+                           " 'vartype' object.");
+            return
+          endif
+        endif
+      endif
+
+      ## Resolve varRef to variables' indices
+      ixVars = resolveVarRef (this, varRef);
+
+      ## With nothing to sort by the order cannot change, and the sort
+      ## itself has no key to build.
+      if (isempty (ixVars) && inLabels == 0)
+        index = (1:height (this))';
+        return;
+      endif
+      ## Build a cell array for the selected variables to be used in sorting
+      if (inLabels == 0)
+        varVal = cell (1, numel (ixVars));
+      else
+        varVal = cell (1, numel (ixVars) + 1);
+      endif
+
+      ## Expand direction if it is a scalar
+      if (isscalar (direction))
+        direction = repmat (direction, 1, numel (varVal));
+      endif
+
+      ## Populate cell array for sorting
+      offset = 0;
+      for ix = 1:numel (varVal)
+        if (inLabels == ix)
+          labels = getRowLabels (this);
+          varVal(ix) = {labels};
+          offset = 1;
+        else
+          varVal(ix) = this.VariableValues(ixVars(ix - offset));
+        endif
+      endfor
+
+      ## Prepare a proxy array by converting all variable to numeric proxies
+      varValIdx = [];
+      varValDir = [];
+      for ix = 1:numel (varVal)
+
+        tmpVal = varVal{ix};
+        if (strcmpi (direction{ix}, 'ascend'))
+          tmpDir = 1;
+        else
+          tmpDir = -1;
+        endif
+
+        if (isa (tmpVal, 'categorical'))
+          tmpVal = double (tmpVal);
+          varValIdx = [varValIdx, tmpVal];
+
+        elseif (isa (tmpVal, 'calendarDuration'))
+          tmpVal = tmpVal.proxyArray;
+          varValIdx = [varValIdx, tmpVal];
+
+        elseif (isa (tmpVal, 'datetime'))
+          tmpVal = tabular.datetime_to_datenum (tmpVal);
+          varValIdx = [varValIdx, tmpVal];
+
+        elseif (isa (tmpVal, 'duration'))
+          tmpVal = days (tmpVal);
+          varValIdx = [varValIdx, tmpVal];
+
+        elseif (isa (tmpVal, 'string'))
+          tmpVal = cellstr (tmpVal);
+          [~, ~, idx] = __unique__ (tmpVal, 'rows');
+          varValIdx = [varValIdx, idx];
+
+        elseif (iscellstr (tmpVal))
+          [~, ~, idx] = __unique__ (tmpVal, 'rows');
+          varValIdx = [varValIdx, idx];
+
+        elseif (iscell (tmpVal))
+          ## Sorting mixed cell data is not supported
+          errmsg = "cannot sort variables of 'cell' type.";
+          return
+
+        elseif (isnumeric (tmpVal))
+          if (strcmpi (CM, 'real') && iscomplex (tmpVal))
+            tmpVal = real (tmpVal);
+          elseif (strcmpi (CM, 'abs') && isreal (tmpVal))
+            tmpVal = abs (tmpVal);
+          endif
+          varValIdx = [varValIdx, tmpVal];
+
+        elseif (isstruct (tmpVal))
+          ## Sorting structure data is not supported
+          errmsg = "cannot sort variables of 'struct' type.";
+          return
+
+        elseif (isa (tmpVal, 'table'))
+          try
+            tmpVal = table2array (varVal{ix});
+            varValIdx = [varValIdx, tmpVal];
+          catch
+            errmsg = strcat ("cannot sort nested tables", ...
+                           " with mixed data types.");
+            return
+          end_try_catch
+        endif
+        tmpDir = repmat (tmpDir, 1, size (tmpVal, 2));
+        varValDir = [varValDir, tmpDir];
+      endfor
+
+      ## Fix direction vector
+      varValDir = [1:numel(varValDir)] .* varValDir;
+
+      ## Do the actual sorting here
+      [~, index] = sortrows (varValIdx, varValDir);
+      index = index(:);
+
+      ## Fix missing placement.  The first key decides it, and that key may
+      ## be the row labels, so the mask is read off the key itself rather
+      ## than off the object: a subclass need not implement 'ismissing'.
+      mask = keyMissingMask (varVal{1});
+      TFvec = mask(index);
+      if (any (TFvec) && ! all (TFvec))
+        is_nan = index(TFvec);
+        no_nan = index(! TFvec);
+        if (any (find (TFvec) == 1) && strcmpi (MP, 'last'))
+          index = [no_nan; is_nan];
+        elseif (any (find (TFvec) == numel (index)) && strcmpi (MP, 'first'))
+          index = [is_nan; no_nan];
+        endif
+      endif
+
+    endfunction
+
     function names = customPropsOfType (this, type)
       names = {};
       if (isempty (this.CustomProperties))
@@ -2700,6 +3015,42 @@ classdef (Abstract) tabular
 endclassdef
 
 ## Whether a subscript is the colon that selects a whole dimension.
+## Order row labels on their own, honouring the placement asked for the
+## missing ones.  Octave's sort already puts them last ascending and first
+## descending, which is what 'auto' means, so only 'first' and 'last' move
+## anything.
+function index = labelOrder (labels, direction, MP)
+
+  [~, index] = sort (labels, direction);
+  index = index(:);
+  mask = keyMissingMask (labels);
+  TFvec = mask(index);
+  if (any (TFvec) && ! all (TFvec))
+    is_nan = index(TFvec);
+    no_nan = index(! TFvec);
+    if (strcmpi (MP, 'first'))
+      index = [is_nan; no_nan];
+    elseif (strcmpi (MP, 'last'))
+      index = [no_nan; is_nan];
+    endif
+  endif
+
+endfunction
+
+## One logical per row saying whether the sort key is missing there.  Read
+## off the key itself rather than off the object, so that a class without an
+## 'ismissing' method can still be sorted, and so that a key which cannot be
+## missing at all simply answers false.
+function mask = keyMissingMask (v)
+
+  m = __varmissing__ (v);
+  if (size (m, 2) > 1)
+    m = any (m, 2);
+  endif
+  mask = m(:);
+
+endfunction
+
 function tf = is_colon_ref (ref)
   tf = false;
   if (isa (ref, 'string') && isscalar (ref))
