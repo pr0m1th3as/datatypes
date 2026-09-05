@@ -9360,7 +9360,12 @@ function [col, filled] = fill_interp (col, m, x, method)
   ## entry.
   origin = [];
   if (isdatetime (col))
-    origin = col(xk(1));
+    ## Measured from the first known entry, which is a row of the column and
+    ## so is found by position.  The sample points are values, not positions:
+    ## a table's happen to run 1:n and a timetable's are seconds from its
+    ## first row time, which start at zero and index nothing.
+    kidx = find (known);
+    origin = col(kidx(1));
     yk = seconds (col(known) - origin);
   elseif (isduration (col))
     yk = seconds (col(known));
