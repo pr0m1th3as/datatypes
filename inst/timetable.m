@@ -604,7 +604,23 @@ classdef timetable < tabular
           return
         endif
         step = this.TimeStep;
-        r = seconds (n) / seconds (step);
+        if (iscalendarduration (step))
+          ## A calendar step has no fixed length, so a lag given as a
+          ## duration can only be counted where the step is a whole number
+          ## of days and the lag is too.
+          [unit, sper, errmsg] = lagCalendarUnit (step);
+          if (! isempty (errmsg))
+            return
+          endif
+          if (! strcmp (unit, 'days'))
+            errmsg = strcat ("a lag given as a duration cannot be", ...
+                             " counted against a step in months.");
+            return
+          endif
+          r = days (n) / sper;
+        else
+          r = seconds (n) / seconds (step);
+        endif
         if (abs (r - round (r)) > 4 * eps (abs (r) + 1))
           errmsg = strcat ("the lag must be a multiple of the time step", ...
                            " of the timetable.");
@@ -724,7 +740,8 @@ classdef timetable < tabular
       if (! isempty (errmsg))
         return
       endif
-      [errmsg, warns] = retimeOptionUse (method, konst, endVals, edgeGiven);
+      [errmsg, warns] = retimeOptionUse (method, ...
+                          namedOption (rest, 'Constant'), endVals, edgeGiven);
       if (! isempty (errmsg))
         return
       endif
@@ -816,7 +833,8 @@ classdef timetable < tabular
       if (! isempty (errmsg))
         return
       endif
-      [errmsg, warns] = retimeOptionUse (method, konst, endVals, edgeGiven);
+      [errmsg, warns] = retimeOptionUse (method, ...
+                          namedOption (rest, 'Constant'), endVals, edgeGiven);
       if (! isempty (errmsg))
         return
       endif
@@ -875,6 +893,7 @@ classdef timetable < tabular
       isInterp = false (1, nv);
       isAgg = false (1, nv);
       isNeigh = false (1, nv);
+      isFilled = false (1, nv);
       for j = 1:nv
         if (is_function_handle (mv{j}))
           isAgg(j) = true;
@@ -883,6 +902,13 @@ classdef timetable < tabular
           isNeigh(j) = any (strcmp (mv{j}, neighbours));
           isAgg(j) = any (strcmp (mv{j}, aggs));
         endif
+        ## A value that was missing before the call is a gap like any other
+        ## and is filled with them, so a method that fills goes through the
+        ## fill engine, which knows how to skip one.  A type with no missing
+        ## value can have no such gap and takes the shorter route, which is
+        ## also the only one open to it.
+        isFilled(j) = (isInterp(j) || isNeigh(j)) ...
+                      && retimeHasMissing (this.VariableValues{j});
       endfor
 
       ## What the row times must say depends on what is asked of them.
@@ -921,8 +947,8 @@ classdef timetable < tabular
       endfor
 
       F = [];
-      if (any (isInterp) && nOld > 0 && nNew > 0)
-        [F, errmsg] = retimeFilled (this, find (isInterp), mv, nt, endVals);
+      if (any (isFilled) && nOld > 0 && nNew > 0)
+        [F, errmsg] = retimeFilled (this, find (isFilled), mv, nt, endVals);
         if (! isempty (errmsg))
           return
         endif
@@ -945,10 +971,10 @@ classdef timetable < tabular
         endif
       endif
 
-      ivars = find (isInterp);
+      ivars = find (isFilled);
       for j = 1:width (this)
         src = this.VariableValues{j};
-        if (isInterp(j) && nOld > 0 && nNew > 0)
+        if (isFilled(j) && nOld > 0 && nNew > 0)
           tt.VariableValues{j} = F.VariableValues{find (ivars == j)};
           continue
         endif
@@ -972,7 +998,16 @@ classdef timetable < tabular
           endif
           si = retimeNeighbor (rt, nt, 'exact');
           col = src(max (si, 1), :);
-          col(si == 0, :) = konst;
+          fill = konst;
+          if (isa (konst, 'missing'))
+            ## The missing value itself has to be turned into the variable's
+            ## own before it can be put in one.
+            [fill, errmsg] = retimeMissingRow (src, 1);
+            if (! isempty (errmsg))
+              return
+            endif
+          endif
+          col(si == 0, :) = fill;
           tt.VariableValues{j} = col;
           continue
         endif
@@ -980,7 +1015,7 @@ classdef timetable < tabular
         ## Rows taken from the source where there is one and built missing
         ## where there is not, which is the same question an outer join asks
         ## of its unmatched rows and is answered in the same place.
-        if (nOld == 0 || nNew == 0 || isInterp(j)
+        if (nOld == 0 || nNew == 0
             || any (strcmp (mv{j}, {'fillwithmissing', 'fillwithconstant'})))
           if (nOld > 0 && nNew > 0
               && (islogical (src) || ischar (src)
@@ -1028,11 +1063,10 @@ classdef timetable < tabular
 
     endfunction
 
-    ## The interpolating variables of THIS, filled onto the target times.  The
-    ## added rows are placed among the existing ones and left missing, so the
-    ## fill engine sees the sample points it would have seen had the gaps
-    ## been missing all along, and the rows that were already there are put
-    ## back afterwards: a row the target keeps is kept, not resampled.
+    ## The variables of THIS that a fill method serves, filled onto the target
+    ## times.  The added rows are placed among the existing ones and left
+    ## missing, so that a row the target adds and a value that was missing
+    ## before the call are the same kind of gap and are filled alike.
     function [F, errmsg] = retimeFilled (this, ivars, mv, nt, endVals)
 
       F = [];
@@ -1065,13 +1099,6 @@ classdef timetable < tabular
         endif
       endfor
 
-      pos = find (idx > 0);
-      for j = 1:width (U)
-        col = U.VariableValues{j};
-        src = sub.VariableValues{j};
-        col(pos,:) = src(idx(pos),:);
-        U.VariableValues{j} = col;
-      endfor
       F = subsetrows (U, back(nOld+1:end));
 
     endfunction
@@ -3839,9 +3866,11 @@ classdef timetable < tabular
     ## interpolating methods extrapolate and the neighbouring methods carry
     ## the nearest known value outward.
     ##
-    ## @strong{A row the new times keep is kept, not resampled.}  Its value
-    ## is the one it had, and a value that was missing before the call is
-    ## still missing after it.
+    ## @strong{A value that was missing before the call is a gap like any
+    ## other} and is filled with them: a row the new times keep is resampled
+    ## along with the rest, so @qcode{'previous'} gives it the last value
+    ## that was not missing rather than the missing value it held.  Only
+    ## @qcode{'fillwithmissing'} leaves such a value alone.
     ##
     ## Every property of the timetable survives, @qcode{VariableUnits},
     ## @qcode{VariableDescriptions} and @qcode{VariableContinuity} included,
@@ -4508,7 +4537,7 @@ function [nt, errmsg] = retimeTimes (rt, spec, tstep, srate)
       return
     endif
     [lo, hi] = gridSpan (rt);
-    nt = steppedGrid (lo, hi, step);
+    nt = steppedGrid (floorToStep (lo, step), hi, step);
     return
   endif
 
@@ -4758,6 +4787,11 @@ function [col, errmsg] = retimeAggregated (src, bins, nNew, m, vname)
                         " datetime variable '%s'."), m, vname);
       return
     endif
+    if (isduration (src) && strcmp (m, 'prod'))
+      errmsg = sprintf (strcat ("the 'prod' method has no meaning for the", ...
+                        " duration variable '%s'."), vname);
+      return
+    endif
   endif
 
   for j = 1:nNew
@@ -4820,6 +4854,10 @@ function [v, errmsg] = retimeApply (m, x, proto)
       v = retimeZeroRow (proto, nc, 0);
     elseif (strcmp (m, 'prod'))
       v = retimeZeroRow (proto, nc, 1);
+    elseif (islogical (proto) || isinteger (proto))
+      ## These methods answer in double for such a variable, so an empty bin
+      ## answers with the missing value of a double and not of the variable.
+      v = NaN (1, nc);
     else
       [v, errmsg] = retimeMissingRow (proto, nc);
     endif
@@ -4890,7 +4928,15 @@ function [v, errmsg] = retimeMissingRow (proto, nc)
     v = repmat (string (missing), 1, nc);
   elseif (iscellstr (proto))
     v = repmat ({''}, 1, nc);
-  elseif (islogical (proto) || isinteger (proto))
+  elseif (islogical (proto))
+    ## Neither a logical nor a character has a missing value, and an empty
+    ## bin still has to answer in the variable's own type.
+    v = false (1, nc);
+  elseif (ischar (proto))
+    v = repmat (" ", 1, nc);
+  elseif (iscell (proto))
+    v = repmat ({''}, 1, nc);
+  elseif (isinteger (proto))
     v = NaN (1, nc);
   elseif (isnumeric (proto))
     v = NaN (1, nc, class (proto));
@@ -4920,6 +4966,16 @@ endfunction
 function errmsg = retimeConstantFits (konst, src, vname)
 
   errmsg = '';
+  ## The missing value itself stands for a value of any type that has one.
+  if (isa (konst, 'missing') && isscalar (konst))
+    if (! retimeHasMissing (src))
+      errmsg = sprintf (strcat ("variable '%s' of class '%s' has no", ...
+                        " missing value to fill with."), vname, ...
+                        class (src));
+    endif
+    return
+  endif
+
   txt = ischar (konst) || isa (konst, 'string') || iscellstr (konst);
 
   ## One value, and for a variable that holds text one word of it: a category
@@ -5005,19 +5061,20 @@ endfunction
 ## value to invent for it, so it is required rather than defaulted; the
 ## others are warned about and ignored, once per call.
 
-function [errmsg, warns] = retimeOptionUse (method, konst, endVals, edgeGiven)
+function [errmsg, warns] = retimeOptionUse (method, kGiven, endVals, ...
+                                            edgeGiven)
 
   errmsg = '';
   warns = {};
   aggs = timetable.retimeAggregations ();
   isAggCall = is_function_handle (method) || any (strcmp (method, aggs));
 
-  if (strcmp (method, 'fillwithconstant') && ! wasGiven (konst))
+  if (strcmp (method, 'fillwithconstant') && ! kGiven)
     errmsg = strcat ("the 'fillwithconstant' method requires a", ...
                      " 'Constant'.");
     return
   endif
-  if (wasGiven (konst) && ! strcmp (method, 'fillwithconstant'))
+  if (kGiven && ! strcmp (method, 'fillwithconstant'))
     warns{end+1} = sprintf (strcat ("'Constant' has no effect with the", ...
                             " '%s' method."), retimeMethodName (method));
   endif
@@ -5199,4 +5256,46 @@ function step = retimeGivenStep (tstep, srate)
   elseif (wasGiven (srate))
     step = seconds (1 / srate);
   endif
+endfunction
+
+## Whether a variable can hold a missing value at all.  A logical, a
+## character matrix and a cell of anything but text have none, so they can
+## carry no gap and nothing can fill one for them.
+
+function tf = retimeHasMissing (v)
+  tf = ! (islogical (v) || ischar (v) || (iscell (v) && ! iscellstr (v)));
+endfunction
+
+## The step boundary at or before T.  A grid asked for as a step starts on
+## one of those, as a grid asked for as a time unit starts on the unit's own
+## boundary; for a datetime the boundaries are counted from midnight of its
+## own day, there being no other origin to count them from.
+
+function t = floorToStep (t, step)
+  s = seconds (step);
+  if (isdatetime (t))
+    origin = dateshift (t, 'start', 'day');
+    t = origin + step * floor (seconds (t - origin) / s);
+  else
+    t = step * floor (seconds (t) / s);
+  endif
+endfunction
+
+## Whether the caller named an option, read off the argument list rather than
+## off the value it parsed to.  The value cannot answer it: the sentinel that
+## marks an option as absent is 'missing', which is also a value a caller may
+## legitimately ask for.
+
+function tf = namedOption (args, name)
+  tf = false;
+  for k = 1:2:numel (args)
+    v = args{k};
+    if (isa (v, 'string') && isscalar (v))
+      v = char (v);
+    endif
+    if (ischar (v) && isrow (v) && strcmpi (v, name))
+      tf = true;
+      return
+    endif
+  endfor
 endfunction
