@@ -1221,8 +1221,15 @@ classdef (Abstract) tabular
     ## variable types, names, descriptions, and units, mirroring the header
     ## block that 'table2csv' writes so 'ods2table' can reuse its parser).
     ## CALLER names the function for error reporting.
-    function [V, vtype, meta] = __ods_parts__ (this, caller)
+    function [V, vtype, meta] = __ods_parts__ (this, caller, ...
+                                               writeVarNames = true, ...
+                                               writeRowNames = true)
       [V, N, T, D, U] = table2cellarrays (this, 'iso');
+      ## The row labels lead the block when the object has them; dropping the
+      ## column here keeps them out of the file entirely.
+      if (! writeRowNames && hasRowLabels (this))
+        V(:,1) = [];  N(:,1) = [];  T(:,1) = [];  D(:,1) = [];  U(:,1) = [];
+      endif
       Ccols = size (V, 2);
       ## A nested table or a struct carries a column of type entries, one per
       ## nesting level; the cells themselves hold the innermost variable's
@@ -1245,8 +1252,15 @@ classdef (Abstract) tabular
       Trows = cellfun (@(x) size (x, 1), T);
       Tmaxr = max (Trows);
       Nrows = cellfun (@(x) size (x, 1), N);
-      Nmaxr = max (Nrows);
       isvar = cellfun (@(x) ! isempty (x), N(1,:));
+      ## Suppressing the names leaves the block without them; the count in the
+      ## comment says so, and the reader then numbers the variables.
+      if (writeVarNames)
+        Nmaxr = max (Nrows);
+      else
+        Nmaxr = 0;
+        Nrows = zeros (size (Nrows));
+      endif
       hasText = @(x) any (! cellfun ("isempty", cellstr (x)));
       Drows = cellfun (@(x) max (1, size (x, 1)), D);
       if (! isempty (this.VariableDescriptions) || any (cellfun (hasText, ...
@@ -1267,7 +1281,9 @@ classdef (Abstract) tabular
       for c = 1:Ccols
         if (isvar(c))
           Header(1:Trows(c),c) = tabular.header_entry (T{c});
-          Header(1 + Tmaxr:Nrows(c) + Tmaxr,c) = tabular.header_entry (N{c});
+          if (Nmaxr)
+            Header(1 + Tmaxr:Nrows(c) + Tmaxr,c) = tabular.header_entry (N{c});
+          endif
           if (Dmaxr)
             base = Tmaxr + Nmaxr;
             Header(1 + base:Drows(c) + base,c) = tabular.header_entry (D{c});

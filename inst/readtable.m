@@ -185,14 +185,17 @@ function tbl = read_spreadsheet (file, readVarNames, readRowNames, textType, ...
     ## A file written by 'table2ods' carries the package's own metadata sheet,
     ## so its variable names, types and row names are known exactly and its
     ## data sheet holds no header row.  Read it with 'ods2table' rather than
-    ## positionally, which would take the first row of data for the names.  An
-    ## explicit 'Range' asks for a block of the sheet instead, and is honoured.
+    ## positionally, which would take the first row of data for the names; the
+    ## caller's own 'ReadVariableNames' and 'ReadRowNames' still decide what is
+    ## taken from it.  An explicit 'Range' asks for a block of the sheet
+    ## instead, and is honoured.
     if (! isempty (meta) && isempty (range))
-      if (isempty (sheet))
-        tbl = ods2table (file);
-      else
-        tbl = ods2table (file, 'Sheet', sheet);
+      odsargs = {'ReadVariableNames', readVarNames, ...
+                 'ReadRowNames', readRowNames};
+      if (! isempty (sheet))
+        odsargs = [{'Sheet', sheet}, odsargs];
       endif
+      tbl = ods2table (file, odsargs{:});
       return;
     endif
   endif

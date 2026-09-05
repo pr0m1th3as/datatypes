@@ -917,6 +917,17 @@ classdef table < tabular
     ## named @var{name} (default @qcode{'Sheet1'}).  When @var{file} already
     ## exists the named sheet is added or replaced while every other sheet is
     ## preserved, so a workbook can be built up one table at a time.
+    ## @code{table2ods (@dots{}, @qcode{'WriteVariableNames'}, @var{tf})}
+    ## chooses whether the variable names are written (default @qcode{true}).
+    ## When @qcode{false} the file carries none at all, so @code{ods2table}
+    ## numbers the variables on read and can no longer group the columns: a
+    ## multicolumn variable comes back as separate variables and a nested table
+    ## as flat columns.
+    ##
+    ## @code{table2ods (@dots{}, @qcode{'WriteRowNames'}, @var{tf})} chooses
+    ## whether the row labels are written as a leading column (default
+    ## @qcode{true}).
+    ##
     ## @code{table2ods (@dots{}, @qcode{'WriteMode'}, @var{mode})} selects the
     ## behaviour: @qcode{'overwritesheet'} / @qcode{'inplace'} replace the sheet
     ## (the default when the sheet exists), @qcode{'append'} appends the table's
@@ -945,10 +956,19 @@ classdef table < tabular
                        " '.fods' extension."));
       endif
 
-      optNames = {'Sheet', 'WriteMode'};
-      dfValues = {'Sheet1', ''};
-      [sheet, writeMode, args] = ...
+      optNames = {'Sheet', 'WriteMode', 'WriteVariableNames', ...
+                  'WriteRowNames'};
+      dfValues = {'Sheet1', '', true, true};
+      [sheet, writeMode, writeVarNames, writeRowNames, args] = ...
               parsePairedArguments (optNames, dfValues, varargin(:));
+      if (! (islogical (writeVarNames) && isscalar (writeVarNames)))
+        error (strcat ("table.table2ods: 'WriteVariableNames' must be a", ...
+                       " logical scalar."));
+      endif
+      if (! (islogical (writeRowNames) && isscalar (writeRowNames)))
+        error (strcat ("table.table2ods: 'WriteRowNames' must be a logical", ...
+                       " scalar."));
+      endif
       if (! isempty (args))
         error ("table.table2ods: unknown option '%s'.", args{1});
       endif
@@ -976,7 +996,8 @@ classdef table < tabular
       endif
 
       ## Fresh single-sheet write.
-      [V, vtype, meta] = __ods_parts__ (this, 'table.table2ods');
+      [V, vtype, meta] = __ods_parts__ (this, 'table.table2ods', ...
+                                        writeVarNames, writeRowNames);
       msg = __table2ods__ (file, V, vtype, meta, is_flat, ...
                            struct ('sheetname', sheet));
       if (! isequal (msg, 0))

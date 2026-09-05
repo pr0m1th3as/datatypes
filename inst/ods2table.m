@@ -63,9 +63,21 @@ function tbl = ods2table (filename, varargin)
   endif
   file = char (cellstr (filename));
 
-  optNames = {'Sheet'};
-  dfValues = {[]};
-  [sheet, args] = parsePairedArguments (optNames, dfValues, varargin(:));
+  optNames = {'Sheet', 'ReadVariableNames', 'ReadRowNames'};
+  dfValues = {[], true, true};
+  ## A sheet with no metadata cannot say which column holds row names, and
+  ## taking the first one uninvited would leave a single-column sheet with no
+  ## variables at all.  Absent a metadata sheet the caller has to ask, so
+  ## whether 'ReadRowNames' was given is kept apart from its value.
+  gaveRowNames = any (strcmpi (varargin(1:2:end), 'ReadRowNames'));
+  [sheet, readVarNames, readRowNames, args] = ...
+                        parsePairedArguments (optNames, dfValues, varargin(:));
+  if (! (islogical (readVarNames) && isscalar (readVarNames)))
+    error ("ods2table: 'ReadVariableNames' must be a logical scalar.");
+  endif
+  if (! (islogical (readRowNames) && isscalar (readRowNames)))
+    error ("ods2table: 'ReadRowNames' must be a logical scalar.");
+  endif
   if (! isempty (args))
     error ("ods2table: unknown option '%s'.", args{1});
   endif
@@ -87,7 +99,8 @@ function tbl = ods2table (filename, varargin)
 
   ## No metadata sheet -> infer everything from the data cell value types
   if (isempty (meta))
-    tbl = ods_autodetect (data, vtype);
+    tbl = ods_autodetect (data, vtype, readVarNames, ...
+                          readRowNames && gaveRowNames);
     return;
   endif
 
@@ -99,8 +112,10 @@ function tbl = ods2table (filename, varargin)
   endif
   Trows = hdr(1);  Nrows = hdr(2);  Drows = hdr(3);  Urows = hdr(4);
 
-  ## A table with no variables round-trips to an empty table
-  if (Nrows == 0)
+  ## A table with no variables round-trips to an empty table.  A written table
+  ## always has a type row, so an absent one means there was nothing to write;
+  ## an absent NAME row means only that the names were not written.
+  if (Trows == 0)
     tbl = table ();
     return;
   endif
@@ -128,14 +143,41 @@ function tbl = ods2table (filename, varargin)
     vtype = cell (size (data, 1), metacols);
   endif
 
-  ## A leading RowNames column is tagged in the type row with an empty name
+  ## A leading RowNames column is tagged in the type row; the column is
+  ## consumed either way, and kept only when the caller asked for it.
   RowNames = {};
-  if (strcmp (T{1,1}, 'RowNames') && isempty (N{1,1}))
-    RowNames = ods_column_strings (data(:,1), vtype(:,1));
+  if (strcmp (T{1,1}, 'RowNames'))
+    if (readRowNames)
+      RowNames = ods_column_strings (data(:,1), vtype(:,1));
+    endif
     data(:,1) = [];  vtype(:,1) = [];
-    T(:,1) = [];     N(:,1) = [];
+    T(:,1) = [];
+    if (! isempty (N)),  N(:,1) = [];  endif
     if (! isempty (D)),  D(:,1) = [];  endif
     if (! isempty (U)),  U(:,1) = [];  endif
+  endif
+
+  ## Without a name block there is nothing to group the columns by, so each
+  ## column is one variable, numbered, and carries the innermost type it was
+  ## written with.  A nested table cannot be rebuilt without the names that
+  ## tagged its columns.
+  if (Nrows == 0 || ! readVarNames)
+    ncol = size (T, 2);
+    varNames = arrayfun (@(c) sprintf ("Var%d", c), 1:ncol, ...
+                         'UniformOutput', false);
+    varValues = cell (1, ncol);
+    for c = 1:ncol
+      col = T(:,c);
+      col = col(! cellfun (@isempty, col));
+      varValues{c} = ods_cell2var (data(:,c), vtype(:,c), col{end});
+    endfor
+    if (isempty (RowNames))
+      tbl = table (varValues{:}, 'VariableNames', varNames);
+    else
+      tbl = table (varValues{:}, 'VariableNames', varNames, ...
+                   'RowNames', RowNames);
+    endif
+    return;
   endif
 
   ## Group the columns that share a variable name into one variable, rebuild
@@ -232,10 +274,30 @@ endfunction
 
 ## Foreign-file fallback: no metadata sheet, so infer each column's type from
 ## its cell value types and name the variables Var1, Var2, ...
-function tbl = ods_autodetect (data, vtype)
+function tbl = ods_autodetect (data, vtype, readVarNames, readRowNames)
+  ## A foreign sheet carries no metadata, so the caller's options decide what
+  ## the first column and the first row hold, exactly as they do in
+  ## 'csv2table'.
+  RowNames = {};
+  if (readRowNames && size (data, 2) > 0)
+    RowNames = ods_column_strings (data(:,1), vtype(:,1));
+    data(:,1) = [];  vtype(:,1) = [];
+  endif
   ncol = size (data, 2);
-  varNames = arrayfun (@(x) sprintf ("Var%d", x), 1:ncol, ...
-                       'UniformOutput', false);
+  if (readVarNames && size (data, 1) > 0)
+    varNames = ods_column_strings (data(1,:), vtype(1,:));
+    empt = cellfun (@isempty, varNames);
+    varNames(empt) = arrayfun (@(x) sprintf ("Var%d", x), find (empt), ...
+                               'UniformOutput', false);
+    varNames = matlab.lang.makeValidName (varNames);
+    data(1,:) = [];  vtype(1,:) = [];
+    if (! isempty (RowNames))
+      RowNames(1) = [];
+    endif
+  else
+    varNames = arrayfun (@(x) sprintf ("Var%d", x), 1:ncol, ...
+                         'UniformOutput', false);
+  endif
   varValues = cell (1, ncol);
   for c = 1:ncol
     vt = vtype(:,c);
@@ -258,7 +320,12 @@ function tbl = ods_autodetect (data, vtype)
         varValues{c} = ods_column_strings (data(:,c), vtype(:,c));
     endswitch
   endfor
-  tbl = table (varValues{:}, 'VariableNames', varNames);
+  if (isempty (RowNames))
+    tbl = table (varValues{:}, 'VariableNames', varNames);
+  else
+    tbl = table (varValues{:}, 'VariableNames', varNames, ...
+                 'RowNames', RowNames);
+  endif
 endfunction
 
 %!demo
@@ -338,6 +405,85 @@ endfunction
 %!   R = ods2table (fn);
 %!   assert_equal (class (R.flag), 'logical');
 %!   assert_equal (R.flag, [true; false; true]);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## 'WriteVariableNames' false leaves no names in the file at all
+%!test
+%! fn = [tempname() '.fods'];
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 's'});
+%! unwind_protect
+%!   table2ods (T, fn, 'WriteVariableNames', false);
+%!   R = ods2table (fn);
+%!   assert_equal (R.Properties.VariableNames, {'Var1', 'Var2'});
+%!   assert_equal (R.Var1, [1; 2]);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## 'WriteRowNames' false leaves the row labels out
+%!test
+%! fn = [tempname() '.fods'];
+%! T = table ([1; 2], 'VariableNames', {'n'});
+%! T.Properties.RowNames = {'r1', 'r2'};
+%! unwind_protect
+%!   table2ods (T, fn, 'WriteRowNames', false);
+%!   R = ods2table (fn);
+%!   assert_equal (R.Properties.RowNames, {});
+%!   assert_equal (R.Properties.VariableNames, {'n'});
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## 'ReadVariableNames' false numbers the variables of a file that has names
+%!test
+%! fn = [tempname() '.fods'];
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 's'});
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   R = ods2table (fn, 'ReadVariableNames', false);
+%!   assert_equal (R.Properties.VariableNames, {'Var1', 'Var2'});
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## 'ReadRowNames' false drops the row labels a file carries
+%!test
+%! fn = [tempname() '.fods'];
+%! T = table ([1; 2], 'VariableNames', {'n'});
+%! T.Properties.RowNames = {'r1', 'r2'};
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   R = ods2table (fn, 'ReadRowNames', false);
+%!   assert_equal (R.Properties.RowNames, {});
+%!   assert_equal (R.n, [1; 2]);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## A sheet with no metadata takes its names from the first row
+%!test
+%! fn = [tempname() '.ods'];
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 's'});
+%! unwind_protect
+%!   writetable (T, fn);
+%!   R = ods2table (fn);
+%!   assert_equal (R.Properties.VariableNames, {'n', 's'});
+%!   assert_equal (height (R), 2);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## A sheet with no metadata gives up its first column only when asked
+%!test
+%! fn = [tempname() '.ods'];
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 's'});
+%! unwind_protect
+%!   writetable (T, fn);
+%!   R = ods2table (fn, 'ReadRowNames', true);
+%!   assert_equal (R.Properties.RowNames, {'1'; '2'});
+%!   assert_equal (R.Properties.VariableNames, {'s'});
 %! unwind_protect_cleanup
 %!   delete (fn);
 %! end_unwind_protect
@@ -624,7 +770,7 @@ endfunction
 %!   txt = regexprep (txt, ...
 %!         '<table:table table:name="__datatypes_meta__".*?</table:table>', '');
 %!   fid = fopen (fn, 'w');  fputs (fid, txt);  fclose (fid);
-%!   R = ods2table (fn);
+%!   R = ods2table (fn, 'ReadVariableNames', false);
 %!   assert_equal (R.Properties.VariableNames, {'Var1', 'Var2'});
 %!   assert_equal (R.Var1, [1; 2; 3]);
 %!   assert_equal (class (R.Var2), 'cell');
@@ -650,11 +796,11 @@ endfunction
 %!        '</office:spreadsheet></office:body></office:document>'];
 %! fid = fopen (fn, 'w');  fputs (fid, doc);  fclose (fid);
 %! unwind_protect
-%!   Rdef = ods2table (fn);                    # default reads the first sheet
-%!   assert_equal (Rdef.Var1, 11);
-%!   Rname = ods2table (fn, 'Sheet', 'Two');
+%!   Rdef = ods2table (fn, 'ReadVariableNames', false);
+%!   assert_equal (Rdef.Var1, 11);      # the default reads the first sheet
+%!   Rname = ods2table (fn, 'Sheet', 'Two', 'ReadVariableNames', false);
 %!   assert_equal (Rname.Var1, 22);
-%!   Ridx = ods2table (fn, 'Sheet', 2);
+%!   Ridx = ods2table (fn, 'Sheet', 2, 'ReadVariableNames', false);
 %!   assert_equal (Ridx.Var1, 22);
 %! unwind_protect_cleanup
 %!   delete (fn);
