@@ -4565,3 +4565,59 @@
 %! standardizeMissing (timetable (datetime (2024, 1, 1) + hours ((0:2)'), [1; NaN; 3], 'VariableNames', {'v'}), {@sin});
 %!error <timetable.pivot: 'IncludeTotals' must be a logical scalar.> ...
 %! pivot (timetable (datetime (2024, 1, 1) + hours ((0:1)'), categorical ({'a'; 'b'}), 'VariableNames', {'g'}), 'Rows', 'g', 'IncludeTotals', {1});
+
+## Test a constant fills a gap that was there before the call
+%!test
+%! tm = datetime (2024, 1, 1) + hours (0:3)';
+%! TT = timetable (tm, [10; NaN; 30; 40], 'VariableNames', {'v'});
+%! v = retime (TT, tm, 'fillwithconstant', 'Constant', 7).v;
+%! assert_equal (v, [10; 7; 30; 40]);
+## Test a constant fills an added row and an old gap alike
+%!test
+%! tm = datetime (2024, 1, 1) + hours (0:3)';
+%! TT = timetable (tm, [10; NaN; 30; 40], 'VariableNames', {'v'});
+%! tq = datetime (2024, 1, 1) + minutes (0:30:180)';
+%! v = retime (TT, tq, 'fillwithconstant', 'Constant', 7).v;
+%! assert_equal (v, [10; 7; 7; 7; 30; 7; 40]);
+## Test a constant fills a missing string
+%!test
+%! tm = datetime (2024, 1, 1) + hours (0:3)';
+%! TT = timetable (tm, string ({'a'; missing; 'c'; 'd'}), ...
+%!                 'VariableNames', {'v'});
+%! v = retime (TT, tm, 'fillwithconstant', 'Constant', 'z').v;
+%! assert_equal (v, string ({'a'; 'z'; 'c'; 'd'}));
+
+## Test a regular grid floors its start to a step boundary from midnight
+%!test
+%! to = datetime (2024, 1, 1, 0, 17, 0) + hours (0:2)';
+%! TT = timetable (to, (1:3)', 'VariableNames', {'v'});
+%! rt = retime (TT, 'regular', 'previous', 'TimeStep', minutes (7));
+%! assert_equal (rt.Properties.RowTimes(1), datetime (2024, 1, 1, 0, 14, 0));
+## Test the origin is the day rather than the week or the epoch
+%!test
+%! tw = datetime (2024, 3, 6, 5, 43, 0) + hours (0:2)';
+%! TT = timetable (tw, (1:3)', 'VariableNames', {'v'});
+%! rt = retime (TT, 'regular', 'previous', 'TimeStep', minutes (50));
+%! assert_equal (rt.Properties.RowTimes(1), datetime (2024, 3, 6, 5, 0, 0));
+## Test duration row times floor from zero
+%!test
+%! TT = timetable (seconds ([17; 77; 137]), (1:3)', 'VariableNames', {'v'});
+%! rt = retime (TT, 'regular', 'previous', 'TimeStep', seconds (50));
+%! assert_equal (rt.Properties.RowTimes, seconds ((0:50:150)'));
+
+## Test a numeric variable-scoped property gains a missing entry, not a cell
+%!test
+%! tm = datetime (2024, 1, 1) + hours ((0:2)');
+%! TT = timetable (tm, (1:3)', (11:13)', 'VariableNames', {'a', 'b'});
+%! TT = addprop (TT, {'q'}, {'variable'});
+%! TT.Properties.CustomProperties.q = [10 20];
+%! q = timetable2table (TT).Properties.CustomProperties.q;
+%! assert_equal (q, [NaN 10 20]);
+## Test a merged variable blanks a numeric entry with a missing value
+%!test
+%! tm = datetime (2024, 1, 1) + hours ((0:2)');
+%! TT = timetable (tm, (1:3)', (11:13)', 'VariableNames', {'a', 'b'});
+%! TT = addprop (TT, {'q'}, {'variable'});
+%! TT.Properties.CustomProperties.q = [10 20];
+%! q = mergevars (TT, {'a', 'b'}).Properties.CustomProperties.q;
+%! assert_equal (q, NaN);

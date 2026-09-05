@@ -1007,7 +1007,13 @@ classdef timetable < tabular
               return
             endif
           endif
-          col(si == 0, :) = fill;
+          ## A value that was already missing is a gap like any other and
+          ## takes the constant with the rows the target adds.
+          gap = si == 0;
+          if (retimeHasMissing (src))
+            gap = gap | any (__varmissing__ (col), 2);
+          endif
+          col(gap, :) = fill;
           tt.VariableValues{j} = col;
           continue
         endif

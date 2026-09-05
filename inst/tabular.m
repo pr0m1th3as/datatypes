@@ -2402,8 +2402,12 @@ classdef (Abstract) tabular
               continue
             endif
             cpVal = tbl.CustomProperties.(cpNames{k});
-            if (iscell (cpVal) && numel (cpVal) >= location)
-              cpVal(location) = {[]};
+            if (numel (cpVal) >= location)
+              if (iscell (cpVal))
+                cpVal(location) = {[]};
+              else
+                cpVal(location) = NaN;
+              endif
               tbl.CustomProperties.(cpNames{k}) = cpVal;
             endif
           endfor
@@ -7683,6 +7687,16 @@ classdef (Abstract) tabular
             val = out;
           elseif (all (ixVars > 0) && max (ixVars) <= numel (val))
             val = val(ixVars);
+          else
+            ## A variable the source did not have takes the missing value of
+            ## the property's own type rather than turning it into a cell.
+            out = NaN (1, numel (ixVars));
+            for j = 1:numel (ixVars)
+              if (ixVars(j) > 0 && ixVars(j) <= numel (val))
+                out(j) = val(ixVars(j));
+              endif
+            endfor
+            val = out;
           endif
         endif
         dst.CustomProperties.(name) = val;
