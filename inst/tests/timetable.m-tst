@@ -1541,21 +1541,18 @@
 %! assert_equal (splitvars (W).Properties.TimeStep, hours (1));
 
 ## Test the row times are not a variable for any of the family
-%!test
-%! t0 = datetime (2024, 1, 1);
+%!shared TT
 %! TT = timetable ((1:6)', [10;20;30;40;50;60], 'RowTimes', ...
-%!                 t0 + hours (0:5)', 'VariableNames', {'A', 'B'});
-%! fail = 0;
-%! for f = {@() removevars (TT, 'Time'), @() convertvars (TT, 'Time', ...
-%!          'double'), @() splitvars (TT, 'Time'), ...
-%!          @() mergevars (TT, {'Time', 'A'})}
-%!   try
-%!     f{1} ();
-%!   catch
-%!     fail++;
-%!   end_try_catch
-%! endfor
-%! assert_equal (fail, 4);
+%!                 datetime (2024, 1, 1) + hours (0:5)', ...
+%!                 'VariableNames', {'A', 'B'});
+%!error <timetable: no such variable in timetable: 'Time'> ...
+%! removevars (TT, 'Time');
+%!error <timetable: no such variable in timetable: 'Time'> ...
+%! convertvars (TT, 'Time', 'double');
+%!error <timetable: no such variable in timetable: 'Time'> ...
+%! splitvars (TT, 'Time');
+%!error <timetable: no such variable in timetable: 'Time'> ...
+%! mergevars (TT, {'Time', 'A'});
 
 ## Test input validation for the variable-management family
 %!error <timetable: no such variable in timetable: 'Time'> ...
