@@ -654,6 +654,37 @@ endfunction
 %!   delete (fn);
 %! end_unwind_protect
 
+## Round-trip: an inner description leaves the outer property unset
+%!test
+%! fn = [tempname() '.fods'];
+%! inner = table ([3; 4], [5; 6], 'VariableNames', {'p', 'q'});
+%! inner.Properties.VariableDescriptions = {'inner p', 'inner q'};
+%! T = table ([1; 2], inner, 'VariableNames', {'a', 'v'});
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   R = ods2table (fn);
+%!   assert_equal (R.Properties.VariableDescriptions, {});
+%!   assert_equal (isequaln (R, T), true);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Round-trip: an outer property set to blanks stays set beside a set inner one
+%!test
+%! fn = [tempname() '.fods'];
+%! inner = table ([3; 4], [5; 6], 'VariableNames', {'p', 'q'});
+%! inner.Properties.VariableUnits = {'m', 's'};
+%! T = table ([1; 2], inner, 'VariableNames', {'a', 'v'});
+%! T.Properties.VariableUnits = {'', ''};
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   R = ods2table (fn);
+%!   assert_equal (R.Properties.VariableUnits, {'', ''});
+%!   assert_equal (R.v.Properties.VariableUnits, {'m', 's'});
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
 ## Round-trip: a nested table in a zipped '.ods' package
 %!test
 %! fn = [tempname() '.ods'];

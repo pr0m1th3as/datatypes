@@ -94,12 +94,11 @@ function tbl = __cell2tbl__ (C, T, N, D, U, RowNames, leaf, A = {})
   ## tables and are restored by the recursive calls above).  Multicolumn
   ## variables repeat the entry across split columns, so take the first column
   ## belonging to each variable.
-  if (! isempty (D))
-    tbl.Properties.VariableDescriptions = D(1,ii);
-  endif
-  if (! isempty (U))
-    tbl.Properties.VariableUnits = U(1,ii);
-  endif
+  ## A level whose entries are all value-less carries no property at all,
+  ## where one holding an empty string carries a blank; a file written before
+  ## the two were told apart has empty strings throughout and reads as set.
+  tbl = restore_meta (tbl, 'VariableDescriptions', D, ii);
+  tbl = restore_meta (tbl, 'VariableUnits', U, ii);
 endfunction
 
 ## A companion block is sliced by the same columns as the data block; a reader
@@ -110,4 +109,17 @@ function varA = slice_companion (A, colIdx)
   else
     varA = A(:,colIdx);
   endif
+endfunction
+
+function tbl = restore_meta (tbl, prop, block, ii)
+  if (isempty (block))
+    return;
+  endif
+  entries = block(1,ii);
+  isset = cellfun (@ischar, entries);
+  if (! any (isset))
+    return;
+  endif
+  entries(! isset) = {''};
+  tbl.Properties.(prop) = entries;
 endfunction

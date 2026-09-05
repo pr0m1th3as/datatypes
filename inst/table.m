@@ -840,7 +840,10 @@ classdef table < tabular
       ## rows as varNames/varTypes.  A nested variable's entry is a column of
       ## one entry per nesting level, so the test has to look through it at the
       ## text rather than at the column itself, which is never empty.
-      hasText = @(x) any (! cellfun ("isempty", cellstr (x)));
+      ## The block is written when any level of any variable has the property
+      ## set, a set-but-blank entry being a character vector where an unset one
+      ## is an empty.
+      hasText = @(x) any (cellfun (@ischar, tabular.header_entry (x)));
       Drows = cellfun (@(x) max (1, size (x, 1)), D);
       if (! isempty (this.VariableDescriptions) || any (cellfun (hasText, ...
                                                                 D(isvar))))

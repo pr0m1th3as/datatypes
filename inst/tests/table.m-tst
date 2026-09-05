@@ -746,6 +746,50 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
+%!test  # an inner description leaves the outer property unset
+%! inner = table ([3; 4], [5; 6], 'VariableNames', {'p', 'q'});
+%! inner.Properties.VariableDescriptions = {'inner p', 'inner q'};
+%! T = table ([1; 2], inner, 'VariableNames', {'a', 'v'});
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   assert_equal (R.Properties.VariableDescriptions, {});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # an outer property set to blanks stays set beside a set inner one
+%! inner = table ([3; 4], [5; 6], 'VariableNames', {'p', 'q'});
+%! inner.Properties.VariableDescriptions = {'inner p', 'inner q'};
+%! T = table ([1; 2], inner, 'VariableNames', {'a', 'v'});
+%! T.Properties.VariableDescriptions = {'', ''};
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   assert_equal (R.Properties.VariableDescriptions, {'', ''});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
+%!test  # inner units leave the outer units unset
+%! inner = table ([3; 4], [5; 6], 'VariableNames', {'p', 'q'});
+%! inner.Properties.VariableUnits = {'m', 's'};
+%! T = table ([1; 2], inner, 'VariableNames', {'a', 'v'});
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   assert_equal (R.Properties.VariableUnits, {});
+%!   assert_equal (R.v.Properties.VariableUnits, {'m', 's'});
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
 %!test  # a nested table's own description survives the round-trip
 %! inner = table ([3; 4], [5; 6]);
 %! inner.Properties.VariableDescriptions = {'inner one', ''};

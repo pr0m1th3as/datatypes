@@ -1262,7 +1262,10 @@ classdef (Abstract) tabular
         Nmaxr = 0;
         Nrows = zeros (size (Nrows));
       endif
-      hasText = @(x) any (! cellfun ("isempty", cellstr (x)));
+      ## The block is written when any level of any variable has the property
+      ## set, a set-but-blank entry being a character vector where an unset one
+      ## is an empty.
+      hasText = @(x) any (cellfun (@ischar, tabular.header_entry (x)));
       Drows = cellfun (@(x) max (1, size (x, 1)), D);
       if (! isempty (this.VariableDescriptions) || any (cellfun (hasText, ...
                                                                 D(isvar))))
@@ -7355,17 +7358,26 @@ classdef (Abstract) tabular
       T = {};  # variable types
       D = {};  # variable descriptions
       U = {};  # variable units
-      ## Every exported column needs a description and a units slot, so an
-      ## unset property reads here as one blank per variable.
-      VD = tabular.meta_or_blank (this.VariableDescriptions, width (this));
-      VU = tabular.meta_or_blank (this.VariableUnits, width (this));
+      ## Every exported column needs a description and a units slot.  An unset
+      ## property gives empties, which a file writes as value-less fields and
+      ## so distinguishes from the empty strings a set-but-blank one gives.
+      VD = tabular.meta_or_bare (this.VariableDescriptions, width (this));
+      VU = tabular.meta_or_bare (this.VariableUnits, width (this));
+      dBare = {[]};
+      if (! isempty (this.VariableDescriptions))
+        dBare = {''};
+      endif
+      uBare = {[]};
+      if (! isempty (this.VariableUnits))
+        uBare = {''};
+      endif
       ## Process the row labels
       if (hasRowLabels (this))
         V = [V, rowLabelStrings(this)];
         N = [N, {''}];
         T = [T, 'cellstr'];
-        D = [D, {''}];
-        U = [U, {''}];
+        D = [D, dBare];
+        U = [U, uBare];
       endif
       ## Process variables
       for ix = 1:width (this)
@@ -7513,8 +7525,8 @@ classdef (Abstract) tabular
           for col = 1:size (tmpV, 2)
             nestedN = [nestedN, {{this.VariableNames{ix}; tmpN{col}}}];
             nestedT = [nestedT, {{'struct'; tmpT{col}}}];
-            nestedD = [nestedD, {{VD{ix}; ''}}];
-            nestedU = [nestedU, {{VU{ix}; ''}}];
+            nestedD = [nestedD, {{VD{ix}; []}}];
+            nestedU = [nestedU, {{VU{ix}; []}}];
           endfor
           N = [N, nestedN];
           T = [T, nestedT];
@@ -7691,6 +7703,18 @@ classdef (Abstract) tabular
     function out = meta_or_blank (v, n)
       if (isempty (v))
         out = repmat ({''}, 1, n);
+      else
+        out = v;
+      endif
+    endfunction
+
+    ## The same property as one entry per variable for the export paths, an
+    ## unset one giving N empties rather than N blanks.  A file writes an empty
+    ## as a value-less field and a blank as an empty string, so a block written
+    ## for one nesting level can still say that another level has none.
+    function out = meta_or_bare (v, n)
+      if (isempty (v))
+        out = repmat ({[]}, 1, n);
       else
         out = v;
       endif

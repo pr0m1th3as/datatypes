@@ -181,7 +181,13 @@ read_sheet (const pugi::xml_node &table, Cell &data, Cell &vtype, bool typed,
       vtype(r, c) = vt;
       if (! typed)                      // metadata sheet: text only
       {
-        data(r, c) = raw;
+        // A cell with no value type at all carries no text, which is not the
+        // same as a cell holding an empty string: a metadata block written
+        // for one nesting level says with it that another level has none.
+        if (vt.empty ())
+          data(r, c) = Matrix (0, 0);
+        else
+          data(r, c) = raw;
       }
       else if (vt == "float" || vt == "percentage" || vt == "currency")
       {
