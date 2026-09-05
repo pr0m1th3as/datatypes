@@ -1221,9 +1221,9 @@ classdef (Abstract) tabular
     ## variable types, names, descriptions, and units, mirroring the header
     ## block that 'table2csv' writes so 'ods2table' can reuse its parser).
     ## CALLER names the function for error reporting.
-    function [V, vtype, meta] = __ods_parts__ (this, caller, ...
-                                               writeVarNames = true, ...
-                                               writeRowNames = true)
+    function [V, vtype, meta, hdr] = __ods_parts__ (this, caller, ...
+                                                    writeVarNames = true, ...
+                                                    writeRowNames = true)
       [V, N, T, D, U] = table2cellarrays (this, 'iso');
       ## The row labels lead the block when the object has them; dropping the
       ## column here keeps them out of the file entirely.
@@ -1247,6 +1247,7 @@ classdef (Abstract) tabular
       ## A table with no variables carries only the descriptive comment
       if (Ccols == 0)
         meta = {sprintf(txt, 0, 0, 0, 0)};
+        hdr = {};
         return;
       endif
       Trows = cellfun (@(x) size (x, 1), T);
@@ -1275,25 +1276,30 @@ classdef (Abstract) tabular
       else
         Umaxr = 0;
       endif
-      ## A nested variable's entry is a column of one entry per nesting level
-      ## and is written down the block; a plain variable fills its first row.
-      Header = repmat ({''}, Nmaxr + Tmaxr + Dmaxr + Umaxr, Ccols);
+      ## The variable names go on the data sheet, where a reader of the file
+      ## can see them, and everything else on the hidden one.  A nested
+      ## variable's entry is a column of one entry per nesting level and is
+      ## written down its block; a plain variable fills its first row.
+      Header = repmat ({''}, Tmaxr + Dmaxr + Umaxr, Ccols);
+      hdr = repmat ({''}, Nmaxr, Ccols);
       for c = 1:Ccols
         if (isvar(c))
           Header(1:Trows(c),c) = tabular.header_entry (T{c});
           if (Nmaxr)
-            Header(1 + Tmaxr:Nrows(c) + Tmaxr,c) = tabular.header_entry (N{c});
+            hdr(1:Nrows(c),c) = tabular.header_entry (N{c});
           endif
           if (Dmaxr)
-            base = Tmaxr + Nmaxr;
-            Header(1 + base:Drows(c) + base,c) = tabular.header_entry (D{c});
+            Header(1 + Tmaxr:Drows(c) + Tmaxr,c) = tabular.header_entry (D{c});
           endif
           if (Umaxr)
-            base = Tmaxr + Nmaxr + Dmaxr;
+            base = Tmaxr + Dmaxr;
             Header(1 + base:Urows(c) + base,c) = tabular.header_entry (U{c});
           endif
         else
           Header{1,c} = rowLabelName (this);
+          if (Nmaxr)
+            hdr{1,c} = rowLabelName (this);
+          endif
         endif
       endfor
       cmt = repmat ({''}, 1, Ccols);

@@ -55,11 +55,14 @@
 ## @end multitable
 ##
 ## When the file carries the hidden @qcode{__datatypes_meta__} sheet written by
-## the @code{table2ods} method, the variable types, names, descriptions, and
-## units are restored from it, and @code{date} and @code{time} cells are
+## the @code{table2ods} method, the variable types, descriptions and units are
+## restored from it and the variable names from the rows heading the data
+## sheet, and @code{date} and @code{time} cells are
 ## reconstructed as @code{datetime} and @code{duration} arrays.  Integers are
 ## restored without loss of precision and missing cells become @code{NaN},
-## @code{NaT}, or missing strings as appropriate.
+## @code{NaT}, or missing strings as appropriate.  A file written before the
+## names moved to the data sheet carries them on the metadata sheet, and is
+## read just as well.
 ##
 ## When the metadata sheet is absent (a spreadsheet written by another
 ## application) the variable types are inferred from the cell value types.
@@ -159,10 +162,21 @@ function tbl = ods2table (filename, varargin)
     return;
   endif
 
-  ## Split the metadata rows into type, name, description, and unit blocks
+  ## Split the metadata rows into type, name, description, and unit blocks.
+  ## The variable names sit on the data sheet, above the data; a file written
+  ## before they moved carries them on the metadata sheet instead, which its
+  ## extra block of rows gives away.
   body = meta(2:end,:);
+  namesOnMeta = (size (body, 1) == Trows + Nrows + Drows + Urows && Nrows > 0);
   T = body(1:Trows,:);          body(1:Trows,:) = [];
-  N = body(1:Nrows,:);          body(1:Nrows,:) = [];
+  if (namesOnMeta)
+    N = body(1:Nrows,:);        body(1:Nrows,:) = [];
+  elseif (Nrows > 0)
+    N = data(1:Nrows,:);
+    data(1:Nrows,:) = [];       vtype(1:Nrows,:) = [];
+  else
+    N = {};
+  endif
   if (Drows)
     D = body(1:Drows,:);        body(1:Drows,:) = [];
   else
@@ -585,6 +599,26 @@ endfunction
 %!   delete (fn);
 %! end_unwind_protect
 
+## The variable names sit on the data sheet, where a reader of the file sees
+## them, and a nested table's take one row per level
+%!test
+%! fn = [tempname() '.fods'];
+%! inner = table ([3; 4], [5; 6], 'VariableNames', {'p', 'q'});
+%! T = table ([1; 2], inner, 'VariableNames', {'a', 'v'});
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   txt = fileread (fn);
+%!   ix = strfind (txt, 'table:name="__datatypes_meta__"');
+%!   visible = txt(1:ix-1);
+%!   assert_equal (! isempty (strfind (visible, '<text:p>a</text:p>')), true);
+%!   assert_equal (! isempty (strfind (visible, '<text:p>p</text:p>')), true);
+%!   hidden = txt(ix:end);
+%!   assert_equal (isempty (strfind (hidden, '<text:p>p</text:p>')), true);
+%!   assert_equal (isequaln (ods2table (fn), T), true);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
 ## Round-trip: a nested table, values and metadata
 %!test
 %! fn = [tempname() '.fods'];
@@ -857,7 +891,7 @@ endfunction
 %!   delete (fn);
 %! end_unwind_protect
 
-## Foreign spreadsheet with no metadata sheet: infer types, name Var1, Var2, ...
+## A sheet with no metadata sheet: types inferred, names from the header row
 %!test
 %! fn = [tempname() '.fods'];
 %! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'g'});
@@ -867,10 +901,10 @@ endfunction
 %!   txt = regexprep (txt, ...
 %!         '<table:table table:name="__datatypes_meta__".*?</table:table>', '');
 %!   fid = fopen (fn, 'w');  fputs (fid, txt);  fclose (fid);
-%!   R = ods2table (fn, 'ReadVariableNames', false);
-%!   assert_equal (R.Properties.VariableNames, {'Var1', 'Var2'});
-%!   assert_equal (R.Var1, [1; 2; 3]);
-%!   assert_equal (class (R.Var2), 'cell');
+%!   R = ods2table (fn);
+%!   assert_equal (R.Properties.VariableNames, {'x', 'g'});
+%!   assert_equal (R.x, [1; 2; 3]);
+%!   assert_equal (class (R.g), 'cell');
 %! unwind_protect_cleanup
 %!   delete (fn);
 %! end_unwind_protect

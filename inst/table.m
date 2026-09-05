@@ -924,11 +924,13 @@ classdef table < tabular
     ## (single-XML) OpenDocument spreadsheet is written instead.  The resulting
     ## file can be read back with @code{ods2table}.
     ##
-    ## The data sheet (named @qcode{Sheet1} by default) carries one natively
-    ## typed cell per value, and a hidden @qcode{__datatypes_meta__} sheet
-    ## carries the variable types, names, descriptions, and units needed to
-    ## restore the exact Octave types on read-back.  Variables map to ODS cell
-    ## types as follows:
+    ## The data sheet (named @qcode{Sheet1} by default) is headed by the
+    ## variable names and then carries one natively typed cell per value, and a
+    ## hidden @qcode{__datatypes_meta__} sheet carries the variable types,
+    ## descriptions and units needed to restore the exact Octave types on
+    ## read-back.  The names are on the data sheet, where anyone opening the
+    ## file can see them, and a nested table takes one header row per nesting
+    ## level.  Variables map to ODS cell types as follows:
     ##
     ## @itemize
     ## @item
@@ -1041,10 +1043,10 @@ classdef table < tabular
       endif
 
       ## Fresh single-sheet write.
-      [V, vtype, meta] = __ods_parts__ (this, 'table.table2ods', ...
-                                        writeVarNames, writeRowNames);
+      [V, vtype, meta, hdr] = __ods_parts__ (this, 'table.table2ods', ...
+                                             writeVarNames, writeRowNames);
       msg = __table2ods__ (file, V, vtype, meta, is_flat, ...
-                           struct ('sheetname', sheet));
+                           struct ('sheetname', sheet, 'header', {hdr}));
       if (! isequal (msg, 0))
         error ("table.table2ods: %s", msg);
       endif

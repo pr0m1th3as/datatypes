@@ -218,13 +218,19 @@ compute_col_widths (const Cell &C, const Cell &vtype, const Cell &header)
   octave_idx_type rows = C.rows ();
   octave_idx_type cols = C.columns ();
   bool have_vt = (vtype.numel () == cols);
-  bool have_hd = (header.numel () == cols);
+  bool have_hd = (header.columns () == cols && header.rows () > 0);
   vector<double> widths (cols, 0.0);
   for (octave_idx_type c = 0; c < cols; c++)
   {
     size_t maxlen = 0;
-    if (have_hd && header(c).is_string ())
-      maxlen = header(c).string_value ().size ();
+    if (have_hd)
+      for (octave_idx_type h = 0; h < header.rows (); h++)
+        if (header(h, c).is_string ())
+        {
+          size_t l = header(h, c).string_value ().size ();
+          if (l > maxlen)
+            maxlen = l;
+        }
     for (octave_idx_type r = 0; r < rows; r++)
     {
       string vt = have_vt ? vtype(c).string_value () : string ("string");
@@ -309,17 +315,23 @@ write_sheet_body (pugi::xml_node &table, const Cell &C, const Cell &vtype,
     if (roff > 1)
       row.append_attribute ("table:number-rows-repeated") = (int) roff;
   }
-  // Optional visible header row of variable names (text cells)
-  if (header.numel () == cols && cols > 0)
+  // Optional visible header rows of variable names (text cells).  A nested
+  // table needs one row per nesting level, so the block may be several rows
+  // deep; the metadata records how many, and the reader takes that many off.
+  if (header.columns () == cols && cols > 0)
   {
-    pugi::xml_node row = table.append_child ("table:table-row");
-    pad_cols (row, coff);
-    for (octave_idx_type c = 0; c < cols; c++)
+    for (octave_idx_type h = 0; h < header.rows (); h++)
     {
-      pugi::xml_node cell = row.append_child ("table:table-cell");
-      string h = header(c).string_value ();
-      cell.append_attribute ("office:value-type") = "string";
-      cell.append_child ("text:p").text ().set (h.c_str ());
+      pugi::xml_node row = table.append_child ("table:table-row");
+      pad_cols (row, coff);
+      for (octave_idx_type c = 0; c < cols; c++)
+      {
+        pugi::xml_node cell = row.append_child ("table:table-cell");
+        string t = header(h, c).is_string ()
+                   ? header(h, c).string_value () : string ();
+        cell.append_attribute ("office:value-type") = "string";
+        cell.append_child ("text:p").text ().set (t.c_str ());
+      }
     }
   }
   append_data_rows (table, C, vtype, coff);
@@ -482,8 +494,8 @@ build_spreadsheet (pugi::xml_node &root, const Cell &data, const Cell &vtype,
 // Append office:body -> office:spreadsheet with several data sheets (from the
 // struct array 'sheets', fields 'name'/'data'/'vtype') followed by one hidden,
 // sectioned metadata sheet.  Used by 'struct2ods' for multi-sheet workbooks.
-// Data sheets carry no visible header row (house format: variable names live in
-// the metadata sheet) and no per-column width styles.
+// Each data sheet carries its own visible header rows of variable names, from
+// the 'header' field when the struct array has one, and no per-column widths.
 static void
 build_multi_spreadsheet (pugi::xml_node &root, const octave_map &sheets,
                          const Cell &meta)
@@ -493,10 +505,13 @@ build_multi_spreadsheet (pugi::xml_node &root, const octave_map &sheets,
   Cell names  = sheets.contents ("name");
   Cell datas  = sheets.contents ("data");
   Cell vtypes = sheets.contents ("vtype");
+  bool have_hd = sheets.isfield ("header");
+  Cell headers = have_hd ? sheets.contents ("header") : Cell ();
   octave_idx_type K = names.numel ();
   for (octave_idx_type k = 0; k < K; k++)
     write_sheet (spreadsheet, names(k).string_value (), datas(k).cell_value (),
-                 vtypes(k).cell_value (), 0, false, Cell (), 0, 0);
+                 vtypes(k).cell_value (), 0, false,
+                 have_hd ? headers(k).cell_value () : Cell (), 0, 0);
   if (meta.numel () > 0)
     write_sheet (spreadsheet, "__datatypes_meta__", meta, Cell (), "hidden_tbl");
 }

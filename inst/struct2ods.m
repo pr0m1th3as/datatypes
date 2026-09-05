@@ -73,6 +73,7 @@ function struct2ods (filename, s)
   names = cell (1, K);
   datas = cell (1, K);
   vtypes = cell (1, K);
+  headers = cell (1, K);
   metablocks = cell (1, K);
   for k = 1:K
     T = s.(fields{k});
@@ -98,7 +99,8 @@ function struct2ods (filename, s)
       error ("struct2ods: duplicate sheet name '%s'.", sheetName);
     endif
     names{k} = sheetName;
-    [datas{k}, vtypes{k}, metablocks{k}] = __ods_parts__ (T, 'struct2ods');
+    [datas{k}, vtypes{k}, metablocks{k}, headers{k}] = ...
+                                          __ods_parts__ (T, 'struct2ods');
   endfor
 
   ## Assemble the sectioned metadata grid: each table's metadata block preceded
@@ -121,7 +123,8 @@ function struct2ods (filename, s)
   endfor
 
   opts = struct ();
-  opts.sheets = struct ('name', names, 'data', datas, 'vtype', vtypes);
+  opts.sheets = struct ('name', names, 'data', datas, 'vtype', vtypes, ...
+                        'header', headers);
   opts.meta = metagrid;
   msg = __table2ods__ (file, {}, {}, {}, is_flat, opts);
   if (! isequal (msg, 0))
