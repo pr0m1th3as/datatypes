@@ -52,6 +52,16 @@
 ## name or by a 1-based index over the data sheets (default: the first sheet).
 ## @item @qcode{'Range'} @tab Spreadsheet only: an A1-style range such as
 ## @qcode{'C5'} or @qcode{'C5:D8'} limiting the region read.
+## @item @qcode{'VariableNamesRow'} @tab A nonnegative integer naming the line
+## or row that holds the variable names (default @qcode{1}).  Zero is
+## equivalent to @qcode{'ReadVariableNames'}, @qcode{false}.
+## @item @qcode{'VariableNamesLine'} @tab MATLAB's spelling of
+## @qcode{'VariableNamesRow'} for a text file, and an exact alias of it.
+## Passing both names raises an error rather than one silently winning.
+## @item @qcode{'RowNamesColumn'} @tab A nonnegative integer naming the column
+## that holds the row names (default @qcode{1}), used when
+## @qcode{'ReadRowNames'} is @qcode{true}.  Zero is equivalent to
+## @qcode{'ReadRowNames'}, @qcode{false}.
 ## @end multitable
 ##
 ## An OpenDocument file written by @code{table2ods} carries the package's own
@@ -82,11 +92,13 @@ function tbl = readtable (filename, varargin)
 
   optNames = {'FileType', 'ReadVariableNames', 'ReadRowNames', 'Delimiter', ...
               'NumHeaderLines', 'TextType', 'VariableNamingRule', 'Sheet', ...
-              'Range'};
-  dfValues = {'', true, false, ',', 0, 'char', 'modify', [], ''};
+              'Range', 'VariableNamesRow', 'RowNamesColumn', ...
+              'VariableNamesLine'};
+  dfValues = {'', true, false, ',', 0, 'char', 'modify', [], '', [], 1, []};
   [fileType, readVarNames, readRowNames, delim, numHeaderLines, textType, ...
-   namingRule, sheet, range, args] = ...
+   namingRule, sheet, range, varNamesRow, rowNamesCol, varNamesLine, args] = ...
                           parsePairedArguments (optNames, dfValues, varargin(:));
+  varNamesRow = __namesrow__ (varNamesRow, varNamesLine, 'readtable');
   if (! isempty (args))
     error ("readtable: unknown option '%s'.", args{1});
   endif
@@ -95,6 +107,11 @@ function tbl = readtable (filename, varargin)
   endif
   if (isa (range, 'string'))
     range = char (range);
+  endif
+  if (! (isnumeric (rowNamesCol) && isscalar (rowNamesCol)
+         && rowNamesCol == fix (rowNamesCol) && rowNamesCol >= 0))
+    error (strcat ("readtable: 'RowNamesColumn' must be a non-negative", ...
+                   " integer."));
   endif
 
   ## Resolve the file type from the option or the extension
@@ -129,13 +146,16 @@ function tbl = readtable (filename, varargin)
       ## Hexadecimal auto-detection is a csv2table extension that MATLAB's
       ## readtable does not perform, so keep hex-like strings as text.
       tbl = csv2table (file, 'ReadVariableNames', readVarNames, ...
-                       'ReadRowNames', readRowNames, 'RowNamesColumn', 1, ...
+                       'ReadRowNames', readRowNames, ...
+                       'RowNamesColumn', rowNamesCol, ...
+                       'VariableNamesRow', varNamesRow, ...
                        'NumHeaderLines', numHeaderLines, 'TextType', textType, ...
                        'VariableNamingRule', namingRule, 'Delimiter', d, ...
                        'HexType', 'text');
     case 'spreadsheet'
       tbl = read_spreadsheet (file, readVarNames, readRowNames, textType, ...
-                              namingRule, sheet, range, isXlsx);
+                              namingRule, sheet, range, isXlsx, ...
+                              varNamesRow, rowNamesCol);
     otherwise
       error ("readtable: 'FileType' must be 'text' or 'spreadsheet'.");
   endswitch
@@ -174,7 +194,15 @@ endfunction
 ## first row (when requested), then one column per sheet column with its type
 ## taken from the native ODS cell value types.
 function tbl = read_spreadsheet (file, readVarNames, readRowNames, textType, ...
-                                 namingRule, sheet, range, isXlsx)
+                                 namingRule, sheet, range, isXlsx, ...
+                                 varNamesRow, rowNamesCol)
+  ## Either switch turns its position off; the position alone can too.
+  if (! readVarNames)
+    varNamesRow = 0;
+  endif
+  if (! readRowNames)
+    rowNamesCol = 0;
+  endif
   if (isXlsx)
     [data, vtype] = __xlsx2table__ (file, sheet);
   else
@@ -191,7 +219,9 @@ function tbl = read_spreadsheet (file, readVarNames, readRowNames, textType, ...
     ## instead, and is honoured.
     if (! isempty (meta) && isempty (range))
       odsargs = {'ReadVariableNames', readVarNames, ...
-                 'ReadRowNames', readRowNames};
+                 'ReadRowNames', readRowNames, ...
+                 'VariableNamesRow', varNamesRow, ...
+                 'RowNamesColumn', rowNamesCol};
       if (! isempty (sheet))
         odsargs = [{'Sheet', sheet}, odsargs];
       endif
@@ -215,11 +245,11 @@ function tbl = read_spreadsheet (file, readVarNames, readRowNames, textType, ...
     return;
   endif
 
-  ## Variable names from the first row
-  if (readVarNames && size (data, 1) >= 1)
+  ## Variable names from the row the caller named
+  if (varNamesRow > 0 && size (data, 1) >= varNamesRow)
     names = cell (1, ncols);
     for c = 1:ncols
-      x = data{1,c};
+      x = data{varNamesRow,c};
       if (ischar (x) && ! isempty (x))
         names{c} = x;
       elseif (isempty (x))
@@ -228,7 +258,7 @@ function tbl = read_spreadsheet (file, readVarNames, readRowNames, textType, ...
         names{c} = num2str (x);
       endif
     endfor
-    data(1,:) = [];  vtype(1,:) = [];
+    data(varNamesRow,:) = [];  vtype(varNamesRow,:) = [];
   else
     names = arrayfun (@(c) sprintf ("Var%d", c), 1:ncols, ...
                       'UniformOutput', false);
@@ -239,9 +269,10 @@ function tbl = read_spreadsheet (file, readVarNames, readRowNames, textType, ...
 
   ## A leading column becomes row names when requested
   rowNames = {};
-  if (readRowNames)
-    rowNames = ods_strings (data(:,1), vtype(:,1));
-    data(:,1) = [];  vtype(:,1) = [];  names(1) = [];
+  if (rowNamesCol > 0 && rowNamesCol <= size (data, 2))
+    rowNames = ods_strings (data(:,rowNamesCol), vtype(:,rowNamesCol));
+    data(:,rowNamesCol) = [];  vtype(:,rowNamesCol) = [];
+    names(rowNamesCol) = [];
   endif
 
   ## Reconstruct each column from its native value type
@@ -415,6 +446,56 @@ endfunction
 ## Read a comma-delimited file with a header row and automatic type detection
 ## A file written by 'table2ods' is read through its own metadata, not
 ## positionally
+## 'VariableNamesLine' is MATLAB's spelling of the same option
+%!test
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   fid = fopen (fn, 'w');
+%!   fputs (fid, "skip,me\nn,s\n1,a\n2,b\n");
+%!   fclose (fid);
+%!   R = readtable (fn, 'VariableNamesLine', 2);
+%!   assert_equal (R.Properties.VariableNames, {'n', 's'});
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+%!error <readtable: 'VariableNamesRow' and 'VariableNamesLine' name the same thing; pass one of them.> ...
+%! readtable ([tempname() '.csv'], 'VariableNamesRow', 1, 'VariableNamesLine', 1);
+
+## 'VariableNamesRow' and 'RowNamesColumn' reach the text reader
+%!test
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   fid = fopen (fn, 'w');
+%!   fputs (fid, "skip,me\nn,s\n1,a\n2,b\n");
+%!   fclose (fid);
+%!   R = readtable (fn, 'VariableNamesRow', 2);
+%!   assert_equal (R.Properties.VariableNames, {'n', 's'});
+%!   R2 = readtable (fn, 'VariableNamesRow', 2, 'ReadRowNames', true, ...
+%!                   'RowNamesColumn', 2);
+%!   assert_equal (R2.Properties.VariableNames, {'n'});
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## 'VariableNamesRow' reaches the spreadsheet reader
+%!test
+%! fn = [tempname() '.ods'];
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 's'});
+%! unwind_protect
+%!   writetable (T, fn);
+%!   R = readtable (fn, 'VariableNamesRow', 0);
+%!   assert_equal (R.Properties.VariableNames, {'Var1', 'Var2'});
+%!   assert_equal (height (R), 3);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+%!error <readtable: 'VariableNamesRow' must be a non-negative integer.> ...
+%! readtable ([tempname() '.csv'], 'VariableNamesRow', -1);
+%!error <readtable: 'RowNamesColumn' must be a non-negative integer.> ...
+%! readtable ([tempname() '.csv'], 'RowNamesColumn', 1.5);
+
 %!test
 %! fn = [tempname() '.fods'];
 %! T = table ([1; 2], {'a'; 'b'}, hours ([1; 2]), ...

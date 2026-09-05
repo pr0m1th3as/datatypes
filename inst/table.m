@@ -722,7 +722,8 @@ classdef table < tabular
   methods (Access = public)
 
     ## -*- texinfo -*-
-    ## @deftypefn {table} {} table2csv (@var{tbl}, @var{file})
+    ## @deftypefn  {table} {} table2csv (@var{tbl}, @var{file})
+    ## @deftypefnx {table} {} table2csv (@var{tbl}, @var{file}, @var{Name}, @var{Value})
     ##
     ## Write a table to a comma-separated-value (CSV) file.
     ##
@@ -773,26 +774,67 @@ classdef table < tabular
     ## or a nested variable carries one; a property that was never set writes
     ## no row at all, so that it reads back unset.
     ##
+    ## The following @var{Name}-@var{Value} options are supported:
+    ##
+    ## @multitable @columnfractions 0.30 0.70
+    ## @headitem @var{Name} @tab @var{Value}
+    ## @item @qcode{'WriteVariableNames'} @tab A logical scalar specifying
+    ## whether the variable names are written (default @qcode{true}).  When
+    ## @qcode{false} the file carries none, so @code{csv2table} numbers the
+    ## variables on read and can no longer group the columns: a multicolumn
+    ## variable comes back as separate variables and a nested table as flat
+    ## columns.
+    ## @item @qcode{'WriteRowNames'} @tab A logical scalar specifying whether
+    ## the row labels are written as a leading column (default @qcode{true}).
+    ## @end multitable
+    ##
     ## Note the following round-trip limitation when reading the file back
     ## with @code{csv2table}: @code{calendarDuration} and @code{categorical}
     ## variables are returned as cell arrays of character vectors and their
     ## values are not reconstructed.
     ##
     ## @end deftypefn
-    function table2csv (this, file)
+    function table2csv (this, file, varargin)
       file = char (cellstr (file));
+      optNames = {'WriteVariableNames', 'WriteRowNames'};
+      dfValues = {true, true};
+      [writeVarNames, writeRowNames, args] = ...
+              parsePairedArguments (optNames, dfValues, varargin(:));
+      if (! isempty (args))
+        error ("table.table2csv: unknown option '%s'.", args{1});
+      endif
+      if (! (islogical (writeVarNames) && isscalar (writeVarNames)))
+        error (strcat ("table.table2csv: 'WriteVariableNames' must be a", ...
+                       " logical scalar."));
+      endif
+      if (! (islogical (writeRowNames) && isscalar (writeRowNames)))
+        error (strcat ("table.table2csv: 'WriteRowNames' must be a logical", ...
+                       " scalar."));
+      endif
       ## A datetime or duration is written in its ISO 8601 form rather than as
       ## its display string: a display format may round or omit components, and
       ## a day-first one is indistinguishable from a month-first one on read.
       [V, N, T, D, U] = table2cellarrays (this, 'iso');
+      ## The row labels lead the block when the object has them; dropping the
+      ## column here keeps them out of the file entirely.
+      if (! writeRowNames && hasRowLabels (this))
+        V(:,1) = [];  N(:,1) = [];  T(:,1) = [];  D(:,1) = [];  U(:,1) = [];
+      endif
       ## Get columns for final cell array
       Ccols = size (V, 2);
       ## Get rows for variable types, names, descriptions, and units
       Trows = cellfun (@(x) size (x, 1), T);
       Tmaxr = max (Trows);
       Nrows = cellfun (@(x) size (x, 1), N);
-      Nmaxr = max (Nrows);
       isvar = cellfun (@(x) ! isempty (x), N(1,:));
+      ## Suppressing the names leaves the block without them; the count in the
+      ## comment says so, and the reader then numbers the variables.
+      if (writeVarNames)
+        Nmaxr = max (Nrows);
+      else
+        Nmaxr = 0;
+        Nrows = zeros (size (Nrows));
+      endif
       ## Descriptions and units are written when the property is set, or when a
       ## nested variable carries one; nested variables expand them to as many
       ## rows as varNames/varTypes.  A nested variable's entry is a column of
@@ -824,12 +866,14 @@ classdef table < tabular
               Header{tr,c} = T{c}{tr};
             endfor
           endif
-          if (Nrows(c) == 1)
-            Header{1 + Tmaxr,c} = N{c};
-          else
-            for nr = 1:Nrows(c)
-              Header{nr + Tmaxr,c} = N{c}{nr};
-            endfor
+          if (Nmaxr)
+            if (Nrows(c) == 1)
+              Header{1 + Tmaxr,c} = N{c};
+            else
+              for nr = 1:Nrows(c)
+                Header{nr + Tmaxr,c} = N{c}{nr};
+              endfor
+            endif
           endif
           if (Dmaxr)
             if (Drows(c) == 1)
@@ -913,27 +957,28 @@ classdef table < tabular
     ## reads back unset.  A zone-aware @code{datetime}
     ## variable keeps its @code{TimeZone} on read-back.
     ##
-    ## @code{table2ods (@dots{}, @qcode{'Sheet'}, @var{name})} writes to a sheet
-    ## named @var{name} (default @qcode{'Sheet1'}).  When @var{file} already
-    ## exists the named sheet is added or replaced while every other sheet is
-    ## preserved, so a workbook can be built up one table at a time.
-    ## @code{table2ods (@dots{}, @qcode{'WriteVariableNames'}, @var{tf})}
-    ## chooses whether the variable names are written (default @qcode{true}).
-    ## When @qcode{false} the file carries none at all, so @code{ods2table}
-    ## numbers the variables on read and can no longer group the columns: a
-    ## multicolumn variable comes back as separate variables and a nested table
-    ## as flat columns.
+    ## The following @var{Name}-@var{Value} options are supported:
     ##
-    ## @code{table2ods (@dots{}, @qcode{'WriteRowNames'}, @var{tf})} chooses
-    ## whether the row labels are written as a leading column (default
-    ## @qcode{true}).
+    ## @multitable @columnfractions 0.30 0.70
+    ## @headitem @var{Name} @tab @var{Value}
+    ## @item @qcode{'Sheet'} @tab The name of the sheet to write (default
+    ## @qcode{'Sheet1'}).  When @var{file} already exists the named sheet is
+    ## added or replaced while every other sheet is preserved, so a workbook can
+    ## be built up one table at a time.
+    ## @item @qcode{'WriteVariableNames'} @tab A logical scalar specifying
+    ## whether the variable names are written (default @qcode{true}).  When
+    ## @qcode{false} the file carries none at all, the hidden metadata sheet
+    ## included, so @code{ods2table} numbers the variables on read and can no
+    ## longer group the columns: a multicolumn variable comes back as separate
+    ## variables and a nested table as flat columns.
+    ## @item @qcode{'WriteRowNames'} @tab A logical scalar specifying whether
+    ## the row labels are written as a leading column (default @qcode{true}).
+    ## @item @qcode{'WriteMode'} @tab @qcode{'overwritesheet'} or
+    ## @qcode{'inplace'} replace the sheet (the default when the sheet exists),
+    ## @qcode{'append'} appends the table's rows to it, and
+    ## @qcode{'replacefile'} discards any existing file.
+    ## @end multitable
     ##
-    ## @code{table2ods (@dots{}, @qcode{'WriteMode'}, @var{mode})} selects the
-    ## behaviour: @qcode{'overwritesheet'} / @qcode{'inplace'} replace the sheet
-    ## (the default when the sheet exists), @qcode{'append'} appends the table's
-    ## rows to it, and @qcode{'replacefile'} discards any existing file.
-    ##
-    ## Nested tables and structures are not supported and raise an error.  Note
     ## A nested table is split into columns tagged with both the outer and the
     ## nested variable name, and a structure into one column per field, exactly
     ## as @code{table2csv} does; the tagging rows live on the hidden metadata

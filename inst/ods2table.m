@@ -27,10 +27,30 @@
 ## compressed @qcode{.ods} and the flat @qcode{.fods} formats are read; the
 ## format is detected from the file contents, not its extension.
 ##
-## @code{@var{tbl} = ods2table (@dots{}, @qcode{'Sheet'}, @var{sheet})} reads a
-## specific sheet, selected either by its name (a character vector or string
-## scalar) or by a 1-based index over the data sheets.  Without this option the
-## first data sheet is read.
+## The following @var{Name}-@var{Value} options are supported:
+##
+## @multitable @columnfractions 0.30 0.70
+## @headitem @var{Name} @tab @var{Value}
+## @item @qcode{'Sheet'} @tab The sheet to read, selected by its name (a
+## character vector or string scalar) or by a 1-based index over the data
+## sheets.  The default is the first data sheet.
+## @item @qcode{'ReadVariableNames'} @tab A logical scalar specifying whether
+## the variable names are taken from the file (default @qcode{true}).  Setting
+## it @qcode{false} numbers the variables @qcode{Var1}, @qcode{Var2}, and so on.
+## @item @qcode{'ReadRowNames'} @tab A logical scalar specifying whether the
+## table takes row names from the file (default @qcode{true}).  Setting it
+## @qcode{false} leaves the table without row names.
+## @item @qcode{'VariableNamesRow'} @tab A nonnegative integer scalar naming the
+## row of the sheet that holds the variable names (default @qcode{1}).  Zero is
+## equivalent to setting @qcode{'ReadVariableNames'} to @qcode{false}.  It
+## applies only to a sheet with no metadata; a sheet written by
+## @code{table2ods} records the names, so there is no row to name.
+## @item @qcode{'RowNamesColumn'} @tab A nonnegative integer scalar naming the
+## column of the sheet that holds the row names (default @qcode{0}).  Zero is
+## equivalent to setting @qcode{'ReadRowNames'} to @qcode{false}.  It applies
+## only to a sheet with no metadata, which says nothing about which column holds
+## row names; a sheet written by @code{table2ods} records the column.
+## @end multitable
 ##
 ## When the file carries the hidden @qcode{__datatypes_meta__} sheet written by
 ## the @code{table2ods} method, the variable types, names, descriptions, and
@@ -40,8 +60,10 @@
 ## @code{NaT}, or missing strings as appropriate.
 ##
 ## When the metadata sheet is absent (a spreadsheet written by another
-## application) the variable types are inferred from the cell value types and
-## the variables are named @qcode{Var1}, @qcode{Var2}, and so on.
+## application) the variable types are inferred from the cell value types.
+## Where no names are available the variables are numbered, and the columns can
+## then no longer be grouped, so a multicolumn variable comes back as separate
+## variables and a nested table as flat columns.
 ##
 ## A @code{datetime} or @code{duration} variable is restored exactly, along
 ## with its @qcode{Format} and, for a zone-aware @code{datetime}, its
@@ -63,20 +85,36 @@ function tbl = ods2table (filename, varargin)
   endif
   file = char (cellstr (filename));
 
-  optNames = {'Sheet', 'ReadVariableNames', 'ReadRowNames'};
-  dfValues = {[], true, true};
-  ## A sheet with no metadata cannot say which column holds row names, and
-  ## taking the first one uninvited would leave a single-column sheet with no
-  ## variables at all.  Absent a metadata sheet the caller has to ask, so
-  ## whether 'ReadRowNames' was given is kept apart from its value.
-  gaveRowNames = any (strcmpi (varargin(1:2:end), 'ReadRowNames'));
-  [sheet, readVarNames, readRowNames, args] = ...
+  optNames = {'Sheet', 'ReadVariableNames', 'ReadRowNames', ...
+              'VariableNamesRow', 'RowNamesColumn'};
+  ## A sheet with no metadata says nothing about which column holds row names,
+  ## and taking the first one uninvited would leave a single-column sheet with
+  ## no variables at all, so the column defaults to none.
+  dfValues = {[], true, true, 1, 0};
+  [sheet, readVarNames, readRowNames, varNamesRow, rowNamesCol, args] = ...
                         parsePairedArguments (optNames, dfValues, varargin(:));
   if (! (islogical (readVarNames) && isscalar (readVarNames)))
     error ("ods2table: 'ReadVariableNames' must be a logical scalar.");
   endif
   if (! (islogical (readRowNames) && isscalar (readRowNames)))
     error ("ods2table: 'ReadRowNames' must be a logical scalar.");
+  endif
+  if (! (isnumeric (varNamesRow) && isscalar (varNamesRow)
+         && varNamesRow == fix (varNamesRow) && varNamesRow >= 0))
+    error (strcat ("ods2table: 'VariableNamesRow' must be a non-negative", ...
+                   " integer."));
+  endif
+  if (! (isnumeric (rowNamesCol) && isscalar (rowNamesCol)
+         && rowNamesCol == fix (rowNamesCol) && rowNamesCol >= 0))
+    error (strcat ("ods2table: 'RowNamesColumn' must be a non-negative", ...
+                   " integer."));
+  endif
+  ## Either switch turns its position off; the position alone can too.
+  if (! readVarNames)
+    varNamesRow = 0;
+  endif
+  if (! readRowNames)
+    rowNamesCol = 0;
   endif
   if (! isempty (args))
     error ("ods2table: unknown option '%s'.", args{1});
@@ -99,8 +137,7 @@ function tbl = ods2table (filename, varargin)
 
   ## No metadata sheet -> infer everything from the data cell value types
   if (isempty (meta))
-    tbl = ods_autodetect (data, vtype, readVarNames, ...
-                          readRowNames && gaveRowNames);
+    tbl = ods_autodetect (data, vtype, varNamesRow, rowNamesCol);
     return;
   endif
 
@@ -274,25 +311,24 @@ endfunction
 
 ## Foreign-file fallback: no metadata sheet, so infer each column's type from
 ## its cell value types and name the variables Var1, Var2, ...
-function tbl = ods_autodetect (data, vtype, readVarNames, readRowNames)
-  ## A foreign sheet carries no metadata, so the caller's options decide what
-  ## the first column and the first row hold, exactly as they do in
-  ## 'csv2table'.
+function tbl = ods_autodetect (data, vtype, varNamesRow, rowNamesCol)
+  ## A foreign sheet carries no metadata, so the caller's options say which row
+  ## holds the names and which column the row names, a zero meaning neither.
   RowNames = {};
-  if (readRowNames && size (data, 2) > 0)
-    RowNames = ods_column_strings (data(:,1), vtype(:,1));
-    data(:,1) = [];  vtype(:,1) = [];
+  if (rowNamesCol > 0 && rowNamesCol <= size (data, 2))
+    RowNames = ods_column_strings (data(:,rowNamesCol), vtype(:,rowNamesCol));
+    data(:,rowNamesCol) = [];  vtype(:,rowNamesCol) = [];
   endif
   ncol = size (data, 2);
-  if (readVarNames && size (data, 1) > 0)
-    varNames = ods_column_strings (data(1,:), vtype(1,:));
+  if (varNamesRow > 0 && varNamesRow <= size (data, 1))
+    varNames = ods_column_strings (data(varNamesRow,:), vtype(varNamesRow,:));
     empt = cellfun (@isempty, varNames);
     varNames(empt) = arrayfun (@(x) sprintf ("Var%d", x), find (empt), ...
                                'UniformOutput', false);
     varNames = matlab.lang.makeValidName (varNames);
-    data(1,:) = [];  vtype(1,:) = [];
+    data(varNamesRow,:) = [];  vtype(varNamesRow,:) = [];
     if (! isempty (RowNames))
-      RowNames(1) = [];
+      RowNames(varNamesRow) = [];
     endif
   else
     varNames = arrayfun (@(x) sprintf ("Var%d", x), 1:ncol, ...
@@ -475,13 +511,39 @@ endfunction
 %!   delete (fn);
 %! end_unwind_protect
 
-## A sheet with no metadata gives up its first column only when asked
+## 'VariableNamesRow' names the row of a sheet that carries the names
 %!test
 %! fn = [tempname() '.ods'];
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 's'});
 %! unwind_protect
 %!   writetable (T, fn);
-%!   R = ods2table (fn, 'ReadRowNames', true);
+%!   R = ods2table (fn, 'VariableNamesRow', 2);
+%!   assert_equal (R.Properties.VariableNames, {'x1', 'a'});
+%!   assert_equal (height (R), 2);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## 'VariableNamesRow' zero is the same as 'ReadVariableNames' false
+%!test
+%! fn = [tempname() '.ods'];
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 's'});
+%! unwind_protect
+%!   writetable (T, fn);
+%!   R = ods2table (fn, 'VariableNamesRow', 0);
+%!   assert_equal (R.Properties.VariableNames, {'Var1', 'Var2'});
+%!   assert_equal (height (R), 3);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## A sheet with no metadata gives up a column as row names only when named
+%!test
+%! fn = [tempname() '.ods'];
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 's'});
+%! unwind_protect
+%!   writetable (T, fn);
+%!   R = ods2table (fn, 'RowNamesColumn', 1);
 %!   assert_equal (R.Properties.RowNames, {'1'; '2'});
 %!   assert_equal (R.Properties.VariableNames, {'s'});
 %! unwind_protect_cleanup

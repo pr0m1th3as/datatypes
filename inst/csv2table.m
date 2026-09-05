@@ -41,7 +41,7 @@
 ## vectors and all variable names are automatically modified to valid Octave
 ## variable names.  To change the default behavior, you need to specify the
 ## @qcode{ReadVariableNames}, @qcode{VariableNamingRule}, and
-## @qcode{VariableNamesLine} paired arguments accordingly.
+## @qcode{VariableNamesRow} paired arguments accordingly.
 ## @item The data type of each column in the remaining data is automatically
 ## detected according to its contents.  Consequently, text is converted to
 ## character vectors, datetime and duration strings are converted to datetime
@@ -85,13 +85,17 @@
 ## options are @qcode{"modify"} and @qcode{"preserve"}.  By default,
 ## @code{csv2table} modifies the parsed variable names.
 ##
-## @item @qcode{'VariableNamesLine'} @tab A nonnegative integer scalar
+## @item @qcode{'VariableNamesRow'} @tab A nonnegative integer scalar
 ## value specifying the line number in the CSV file, which should be parsed for
 ## variable names.  This only applies if the @qcode{'ReadVariableNames'} option
 ## is @qcode{true}.  The specified line is subsequently removed from the
-## remaining data contained in the CSV file.  If @qcode{'VariableNamesLine'} is
+## remaining data contained in the CSV file.  If @qcode{'VariableNamesRow'} is
 ## set to zero, then it is equivalent to setting @qcode{'ReadVariableNames'} to
 ## @qcode{false}.
+##
+## @item @qcode{'VariableNamesLine'} @tab MATLAB's spelling of
+## @qcode{'VariableNamesRow'} for a text file, and an exact alias of it.
+## Passing both names raises an error rather than one silently winning.
 ##
 ## @item @qcode{'VariableTypes'} @tab A cell array of character vectors or
 ## a string array specifying the data type of the variables of the created
@@ -124,7 +128,9 @@
 ## to zero, then it is equivalent to setting @qcode{'ReadRowNames'} to
 ## @qcode{false}.  Note that the values in the column specified by
 ## @qcode{'RowNamesColumn'} must be unique, otherwise @code{csv2table} will
-## return an error.
+## return an error.  The default value is @qcode{0}: a file that does not say
+## which column holds its row names is read as data throughout, and a file
+## written by @code{table2csv} records the column itself.
 ##
 ## @item @qcode{'TextType'} @tab A character vector or a string scalar
 ## specifying whether the text data in the CSV file should be stored in the
@@ -171,19 +177,39 @@
 ## @end deftypefn
 function tbl = csv2table (name, varargin)
 
-  ## The field delimiter must be known before the file is read, so pre-scan the
-  ## optional arguments for it (it is also parsed as a normal option below).
-  delim = ',';
-  for i = 1:2:numel (varargin) - 1
-    if (ischar (varargin{i}) && strcmpi (varargin{i}, 'Delimiter'))
-      delim = varargin{i+1};
-      if (isa (delim, 'string'))
-        delim = char (delim);
-      endif
-    endif
-  endfor
+  ## The options are read before the file, both because the field delimiter is
+  ## needed to read it and because whether the names and row names are wanted
+  ## decides how its header block is used.
+  optNames = {'NumHeaderLines', 'VariableNames', 'ReadVariableNames', ...
+              'VariableNamingRule', 'VariableNamesRow', 'VariableTypes', ...
+              'VariableUnitsLine', 'VariableDescriptionsLine', ...
+              'ReadRowNames', 'RowNamesColumn', 'TextType', ...
+              'DatetimeType', 'DurationType', 'HexType', 'Delimiter', ...
+              'VariableNamesLine'};
+  dfValues = {0, {}, true, 'modify', [], {}, 0, 0, true, 0, 'char', ...
+              'datetime', 'duration', 'auto', ',', []};
+  [numHeaderLines, varNames, readVarNames, varNamingRule, varNamesRow, ...
+   varTypes, varUnitsLine, varDescrLine, readRowNames, rowNamesColumn, ...
+   textType, datetimeType, durationTypes, hexType, delim, ...
+   varNamesLine, args] = ...
+             parsePairedArguments (optNames, dfValues, varargin(:));
+  varNamesRow = __namesrow__ (varNamesRow, varNamesLine, 'csv2table');
+  if (isa (delim, 'string'))
+    delim = char (delim);
+  endif
   if (! (ischar (delim) && isscalar (delim)))
     error ("csv2table: 'Delimiter' must be a single character.");
+  endif
+  if (! (islogical (readVarNames) && isscalar (readVarNames)))
+    error ("csv2table: 'ReadVariableNames' must be a logical scalar.");
+  endif
+  if (! (islogical (readRowNames) && isscalar (readRowNames)))
+    error ("csv2table: 'ReadRowNames' must be a logical scalar.");
+  endif
+  if (! (isnumeric (rowNamesColumn) && isscalar (rowNamesColumn)
+         && rowNamesColumn == fix (rowNamesColumn) && rowNamesColumn >= 0))
+    error (strcat ("csv2table: 'RowNamesColumn' must be a non-negative", ...
+                   " integer."));
   endif
 
   ## Check first input is a character vector or a string scalar
@@ -228,12 +254,14 @@ function tbl = csv2table (name, varargin)
   if (Trows > 0)
     Hrows = Trows + Nrows + Drows + Urows;
 
-    ## Check for RowNames
-    if (strcmp (C{1,1}, 'RowNames') && isempty (C{Trows+1,1}))
-      RowNames = C([Hrows+1:end],1);
+    ## Check for RowNames.  The column is consumed either way and kept only
+    ## when the caller asked for it.
+    RowNames = {};
+    if (strcmp (C{1,1}, 'RowNames'))
+      if (readRowNames)
+        RowNames = C([Hrows+1:end],1);
+      endif
       C(:,1) = [];        # remove row names
-    else
-      RowNames = {};
     endif
 
     ## Split cell into headers and data
@@ -255,34 +283,38 @@ function tbl = csv2table (name, varargin)
     endif
     ## After this point C contains only data
 
-    ## Construct table
-    tbl = __cell2tbl__ (C, T, N, D, U, RowNames, ...
-                        @(varC, varA, typestr) cell2var (varC, typestr));
+    ## Construct table.  Without a name block there is nothing to group the
+    ## columns by, so each column is one variable, numbered, and carries the
+    ## innermost type it was written with; a nested table cannot be rebuilt
+    ## without the names that tagged its columns.
+    if (Nrows == 0 || ! readVarNames)
+      ncol = size (T, 2);
+      names = arrayfun (@(c) sprintf ("Var%d", c), 1:ncol, ...
+                        'UniformOutput', false);
+      vals = cell (1, ncol);
+      for c = 1:ncol
+        col = T(:,c);
+        col = col(! cellfun (@isempty, col));
+        vals{c} = cell2var (C(:,c), col{end});
+      endfor
+      if (isempty (RowNames))
+        tbl = table (vals{:}, 'VariableNames', names);
+      else
+        tbl = table (vals{:}, 'VariableNames', names, 'RowNames', RowNames);
+      endif
+    else
+      tbl = __cell2tbl__ (C, T, N, D, U, RowNames, ...
+                          @(varC, varA, typestr) cell2var (varC, typestr));
+    endif
   endif
 
-  ## Parse optional Name-Value paired arguments
-  optNames = {'NumHeaderLines', 'VariableNames', 'ReadVariableNames', ...
-              'VariableNamingRule', 'VariableNamesLine', 'VariableTypes', ...
-              'VariableUnitsLine', 'VariableDescriptionsLine', ...
-              'ReadRowNames', 'RowNamesColumn', 'TextType', ...
-              'DatetimeType', 'DurationType', 'HexType', 'Delimiter'};
-  dfValues = {0, {}, true, 'modify', 1, {}, 0, 0, true, 1, 'char', ...
-              'datetime', 'duration', 'auto', ','};
-  [numHeaderLines, varNames, readVarNames, varNamingRule, varNamesLine, ...
-   varTypes, varUnitsLine, varDescrLine, readRowNames, rowNamesColumn, ...
-   textType, datetimeType, durationTypes, hexType, delim, args] = ...
-             parsePairedArguments (optNames, dfValues, varargin(:));
-
-  ## Apply optional arguments to CSV files with vartype header
+  ## Apply the remaining options to a file that carried a vartype header
   if (Trows > 0)
     if (numHeaderLines)
       tbl(1:numHeaderLines,:) = [];
     endif
     if (! isempty (varNames))
       tbl = tbl(:,varNames);
-    endif
-    if (! readRowNames)
-      tbl.Properties.RowNames = [];
     endif
     return
   endif
@@ -312,8 +344,8 @@ function tbl = csv2table (name, varargin)
   ## the consumed header rows are removed together below -- removing them one at
   ## a time would shift the indices of the lines still to be read.
   cols = size (C, 2);
-  if (readVarNames && varNamesLine)
-    N = C(varNamesLine,:);
+  if (readVarNames && varNamesRow)
+    N = C(varNamesRow,:);
     isnum = cellfun ('isnumeric', N);
     N(isnum) = cellfun ('num2str', N(isnum), "UniformOutput", false);
     ## Force to valid variable names
@@ -347,8 +379,8 @@ function tbl = csv2table (name, varargin)
 
   ## Remove all consumed header rows from data and RowNames at once
   droprows = [];
-  if (readVarNames && varNamesLine)
-    droprows = [droprows, varNamesLine];
+  if (readVarNames && varNamesRow)
+    droprows = [droprows, varNamesRow];
   endif
   if (varDescrLine)
     droprows = [droprows, varDescrLine];
@@ -606,6 +638,64 @@ endfunction
 %! delete (filename);
 
 ## Test user-defined 'VariableTypes' are applied per column
+## 'VariableNamesLine' is MATLAB's spelling of the same option
+%!test
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   fid = fopen (fn, 'w');
+%!   fputs (fid, "skip,me\nn,s\n1,a\n2,b\n");
+%!   fclose (fid);
+%!   R = csv2table (fn, 'VariableNamesLine', 2);
+%!   assert_equal (R.Properties.VariableNames, {'n', 's'});
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+%!error <csv2table: 'VariableNamesRow' and 'VariableNamesLine' name the same thing; pass one of them.> ...
+%! csv2table ([tempname() '.csv'], 'VariableNamesRow', 1, 'VariableNamesLine', 1);
+
+## 'VariableNamesRow' names the line of a plain CSV that holds the names
+%!test
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   fid = fopen (fn, 'w');
+%!   fputs (fid, "skip,me\nn,s\n1,a\n2,b\n");
+%!   fclose (fid);
+%!   R = csv2table (fn, 'VariableNamesRow', 2);
+%!   assert_equal (R.Properties.VariableNames, {'n', 's'});
+%!   assert_equal (height (R), 3);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## 'RowNamesColumn' names the column of a plain CSV that holds the row names
+%!test
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   fid = fopen (fn, 'w');
+%!   fputs (fid, "n,s\n1,a\n2,b\n");
+%!   fclose (fid);
+%!   R = csv2table (fn, 'RowNamesColumn', 2);
+%!   assert_equal (R.Properties.RowNames, {'a'; 'b'});
+%!   assert_equal (R.Properties.VariableNames, {'n'});
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## A plain CSV keeps every column when no row-names column is named
+%!test
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   fid = fopen (fn, 'w');
+%!   fputs (fid, "n,s\n1,a\n2,b\n");
+%!   fclose (fid);
+%!   R = csv2table (fn);
+%!   assert_equal (R.Properties.VariableNames, {'n', 's'});
+%!   assert_equal (R.Properties.RowNames, {});
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
 %!test
 %! fn = tempname ();
 %! fid = fopen (fn, "w");
