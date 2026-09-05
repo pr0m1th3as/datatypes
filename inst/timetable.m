@@ -521,6 +521,135 @@ classdef timetable < tabular
     endfunction
 
 
+    ## The body behind 'synchronize'.  ARGS is the whole argument list and
+    ## NAMES the caller's names for them, which are what a clash between two
+    ## variables of the same name is settled by.  Returns an errmsg body and
+    ## any warnings for the caller to emit under its own name.
+    function [tt, errmsg, warns] = synchronizeResult (this, args, names)
+
+      tt = this;
+      errmsg = '';
+      warns = {};
+
+      ## The operands are the timetables the call opens with; everything
+      ## after the first argument that is not one describes what to do.
+      nOp = 0;
+      while (nOp < numel (args) && isa (args{nOp+1}, 'timetable'))
+        nOp += 1;
+      endwhile
+      ops = args(1:nOp);
+      rest = args(nOp+1:end);
+      names = names(1:nOp);
+
+      o = ops{1};
+      rt1 = o.RowTimes;
+      for k = 2:nOp
+        o = ops{k};
+        if (isdatetime (o.RowTimes) != isdatetime (rt1))
+          errmsg = strcat ("every timetable must have row times of the", ...
+                           " same type.");
+          return
+        endif
+      endfor
+
+      ## The time base, the method and the options, in that order and each
+      ## of them optional.
+      optNames = {'TimeStep', 'SampleRate', 'EndValues', 'IncludedEdge', ...
+                  'Constant'};
+      spec = 'union';
+      if (! isempty (rest))
+        first = rest{1};
+        if (isa (first, 'string') && isscalar (first))
+          first = char (first);
+        endif
+        if (isdatetime (first) || isduration (first)
+            || (ischar (first) && isrow (first)
+                && ! any (strcmpi (first, optNames))))
+          spec = first;
+          rest = rest(2:end);
+        endif
+      endif
+
+      method = 'default';
+      if (! isempty (rest))
+        first = rest{1};
+        if (is_function_handle (first))
+          method = first;
+          rest = rest(2:end);
+        else
+          if (isa (first, 'string') && isscalar (first))
+            first = char (first);
+          endif
+          if (ischar (first) && isrow (first)
+              && ! any (strcmpi (first, optNames)))
+            method = lower (first);
+            rest = rest(2:end);
+          endif
+        endif
+      elseif (iscell (spec))
+        errmsg = strcat ("the method must be one name or one function", ...
+                         " handle for every timetable.");
+        return
+      endif
+      if (! isempty (rest) && iscell (rest{1}))
+        errmsg = strcat ("the method must be one name or one function", ...
+                         " handle for every timetable.");
+        return
+      endif
+
+      dfValues = {missing, missing, 'extrap', missing, missing};
+      [tstep, srate, endVals, incEdge, konst, extra] = ...
+                    parsePairedArguments (optNames, dfValues, rest(:));
+      if (! isempty (extra))
+        name = extra{1};
+        if (isa (name, 'string') && isscalar (name))
+          name = char (name);
+        endif
+        if (! (ischar (name) && isrow (name)))
+          name = '<unknown>';
+        endif
+        errmsg = sprintf ("unknown option '%s'.", name);
+        return
+      endif
+      [endVals, incEdge, edgeGiven, errmsg] = retimeCheckOptions (endVals, ...
+                                                                 incEdge);
+      if (! isempty (errmsg))
+        return
+      endif
+      [errmsg, warns] = retimeOptionUse (method, konst, endVals, edgeGiven);
+      if (! isempty (errmsg))
+        return
+      endif
+
+      ## Where the rows of the answer sit.
+      [nt, errmsg] = synchronizeBase (ops, spec, tstep, srate);
+      if (! isempty (errmsg))
+        return
+      endif
+
+      ## Every operand put on that base, then set side by side.  Two
+      ## variables of the same name are told apart by the names the caller
+      ## gave the timetables they came from.
+      out = {};
+      for k = 1:nOp
+        [o, errmsg] = retimeOnto (ops{k}, nt, method, endVals, incEdge, ...
+                                  konst);
+        if (! isempty (errmsg))
+          return
+        endif
+        out{k} = o;
+      endfor
+      out = synchronizeRename (out, names);
+      tt = out{1};
+      for k = 2:nOp
+        tt = horzcat (tt, out{k});
+      endfor
+      if (wasGiven (tstep))
+        tt = applyRowTimes (tt, nt, true, tstep);
+      endif
+
+    endfunction
+
     ## The argument surface of 'retime': the target the caller named, the
     ## method if one was given, and the options.  The method is positional
     ## and optional at once, so anything in its place that names an option is
@@ -573,69 +702,14 @@ classdef timetable < tabular
         return
       endif
 
-      ## 'EndValues' is narrower here than in 'fillmissing': a target time
-      ## outside the old span either extrapolates or takes a constant, and
-      ## the method names 'fillmissing' also accepts have no meaning for a
-      ## grid that reaches past the data.
-      if (isa (endVals, 'string') && isscalar (endVals))
-        endVals = char (endVals);
-      endif
-      if (ischar (endVals))
-        if (! strcmpi (endVals, 'extrap'))
-          errmsg = strcat ("'EndValues' must be 'extrap' or a constant", ...
-                           " scalar.");
-          return
-        endif
-        endVals = 'extrap';
-      elseif (! isscalar (endVals))
-        errmsg = "'EndValues' constant must be a scalar.";
+      [endVals, incEdge, edgeGiven, errmsg] = retimeCheckOptions (endVals, ...
+                                                                 incEdge);
+      if (! isempty (errmsg))
         return
       endif
-
-      edgeGiven = wasGiven (incEdge);
-      if (! edgeGiven)
-        incEdge = 'left';
-      endif
-      if (isa (incEdge, 'string') && isscalar (incEdge))
-        incEdge = char (incEdge);
-      endif
-      if (! (ischar (incEdge) && isrow (incEdge)
-             && any (strcmpi (incEdge, {'left', 'right'}))))
-        errmsg = "'IncludedEdge' must be 'left' or 'right'.";
+      [errmsg, warns] = retimeOptionUse (method, konst, endVals, edgeGiven);
+      if (! isempty (errmsg))
         return
-      endif
-      incEdge = lower (incEdge);
-
-      ## 'Constant' is what 'fillwithconstant' fills with and there is no
-      ## sensible value to invent for it, so it is required rather than
-      ## defaulted.
-      aggs = timetable.retimeAggregations ();
-      isAggCall = is_function_handle (method) || any (strcmp (method, aggs));
-      isInterpCall = ! is_function_handle (method) ...
-                     && any (strcmp (method, {'linear', 'spline', ...
-                                              'pchip', 'makima'}));
-      if (strcmp (method, 'fillwithconstant') && ! wasGiven (konst))
-        errmsg = strcat ("the 'fillwithconstant' method requires a", ...
-                         " 'Constant'.");
-        return
-      endif
-
-      ## An option the chosen method cannot use is said to be unused rather
-      ## than quietly dropped, once per call.
-      if (wasGiven (konst) && ! strcmp (method, 'fillwithconstant'))
-        warns{end+1} = sprintf (strcat ("'Constant' has no effect with", ...
-                                " the '%s' method."), ...
-                                retimeMethodName (method));
-      endif
-      if (! any (strcmp (endVals, 'extrap')) && isAggCall)
-        warns{end+1} = sprintf (strcat ("'EndValues' has no effect with", ...
-                                " the '%s' method."), ...
-                                retimeMethodName (method));
-      endif
-      if (edgeGiven && ! isAggCall)
-        warns{end+1} = sprintf (strcat ("'IncludedEdge' has no effect", ...
-                                " with the '%s' method."), ...
-                                retimeMethodName (method));
       endif
 
       [nt, errmsg] = retimeTimes (this.RowTimes, spec, tstep, srate);
@@ -643,6 +717,12 @@ classdef timetable < tabular
         return
       endif
       [tt, errmsg] = retimeOnto (this, nt, method, endVals, incEdge, konst);
+      if (isempty (errmsg) && wasGiven (tstep))
+        ## A step the caller named is the unit the result reports in, so an
+        ## hourly grid asked for as 'TimeStep' reads '1 hr' and not
+        ## '01:00:00'.
+        tt = applyRowTimes (tt, nt, true, tstep);
+      endif
 
     endfunction
     ## The body behind 'retime', and the per-operand half of 'synchronize'.
@@ -3667,6 +3747,69 @@ classdef timetable < tabular
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{tt} =} synchronize (@var{tt1}, @var{tt2})
+    ## @deftypefnx {timetable} {@var{tt} =} synchronize (@var{tt1}, @dots{}, @var{ttN})
+    ## @deftypefnx {timetable} {@var{tt} =} synchronize (@dots{}, @var{newTimes})
+    ## @deftypefnx {timetable} {@var{tt} =} synchronize (@dots{}, @var{method})
+    ## @deftypefnx {timetable} {@var{tt} =} synchronize (@dots{}, @var{Name}, @var{Value})
+    ##
+    ## Put several timetables on one set of row times and set them side by
+    ## side.
+    ##
+    ## @code{@var{tt} = synchronize (@var{tt1}, @var{tt2})} returns a
+    ## timetable holding the variables of both, at every row time either of
+    ## them carries.  Any number of timetables may be given, and they must
+    ## all have row times of the same type.
+    ##
+    ## @var{newTimes} says where the rows of the answer sit.  It is a
+    ## @code{datetime} or @code{duration} vector, one of the time units
+    ## @code{retime} takes, @qcode{'regular'} with a @qcode{'TimeStep'} or a
+    ## @qcode{'SampleRate'}, or one of:
+    ##
+    ## @table @asis
+    ## @item @qcode{'union'}
+    ## Every time any of them carries.  This is the default.
+    ##
+    ## @item @qcode{'intersection'}
+    ## Only the times every one of them carries.
+    ##
+    ## @item @qcode{'commonrange'}
+    ## Every time any of them carries that lies within the span they all
+    ## cover.
+    ##
+    ## @item @qcode{'first'}, @qcode{'last'}
+    ## The row times of the first or of the last timetable given.
+    ## @end table
+    ##
+    ## A timetable with no rows says nothing about where the answer should
+    ## sit and takes no part in choosing.
+    ##
+    ## @var{method} and the options are @code{retime}'s, and one method
+    ## serves every timetable: a method for each is not accepted.
+    ##
+    ## Two timetables carrying a variable of the same name have both of them
+    ## renamed for the timetable they came from, so @var{a} from @var{tt1}
+    ## and @var{tt2} become @code{a_tt1} and @code{a_tt2}.  An operand that
+    ## is an expression rather than a variable is known by its place in the
+    ## call.
+    ##
+    ## @seealso{retime, timetable, horzcat, isregular}
+    ## @end deftypefn
+    function tt = synchronize (varargin)
+      names = cell (1, numel (varargin));
+      for k = 1:numel (varargin)
+        names{k} = inputname (k);
+      endfor
+      [tt, errmsg, warns] = synchronizeResult (varargin{1}, varargin, names);
+      for k = 1:numel (warns)
+        warning ("timetable.synchronize: %s", warns{k});
+      endfor
+      if (! isempty (errmsg))
+        error ("timetable.synchronize: %s", errmsg);
+      endif
+    endfunction
+
   endmethods
   methods (Static, Hidden)
 
@@ -4663,5 +4806,197 @@ function errmsg = retimeConstantFits (konst, src, vname)
                       " not a value of variable '%s' of class '%s'."), ...
                       class (konst), vname, class (src));
   endif
+
+endfunction
+
+## The two options both 'retime' and 'synchronize' read the same way.
+## 'EndValues' is narrower here than in 'fillmissing': a target time outside
+## the old span either extrapolates or takes a constant, the method names
+## 'fillmissing' also accepts having no meaning for a grid that reaches past
+## the data.
+
+function [endVals, incEdge, edgeGiven, errmsg] = ...
+                                     retimeCheckOptions (endVals, incEdge)
+
+  errmsg = '';
+  edgeGiven = wasGiven (incEdge);
+  if (! edgeGiven)
+    incEdge = 'left';
+  endif
+  if (isa (endVals, 'string') && isscalar (endVals))
+    endVals = char (endVals);
+  endif
+  if (ischar (endVals))
+    if (! strcmpi (endVals, 'extrap'))
+      errmsg = strcat ("'EndValues' must be 'extrap' or a constant", ...
+                       " scalar.");
+      return
+    endif
+    endVals = 'extrap';
+  elseif (! isscalar (endVals))
+    errmsg = "'EndValues' constant must be a scalar.";
+    return
+  endif
+
+  if (isa (incEdge, 'string') && isscalar (incEdge))
+    incEdge = char (incEdge);
+  endif
+  if (! (ischar (incEdge) && isrow (incEdge)
+         && any (strcmpi (incEdge, {'left', 'right'}))))
+    errmsg = "'IncludedEdge' must be 'left' or 'right'.";
+    return
+  endif
+  incEdge = lower (incEdge);
+
+endfunction
+
+## Whether each option the caller gave is one the chosen method can use.
+## 'Constant' is what 'fillwithconstant' fills with and there is no sensible
+## value to invent for it, so it is required rather than defaulted; the
+## others are warned about and ignored, once per call.
+
+function [errmsg, warns] = retimeOptionUse (method, konst, endVals, edgeGiven)
+
+  errmsg = '';
+  warns = {};
+  aggs = timetable.retimeAggregations ();
+  isAggCall = is_function_handle (method) || any (strcmp (method, aggs));
+
+  if (strcmp (method, 'fillwithconstant') && ! wasGiven (konst))
+    errmsg = strcat ("the 'fillwithconstant' method requires a", ...
+                     " 'Constant'.");
+    return
+  endif
+  if (wasGiven (konst) && ! strcmp (method, 'fillwithconstant'))
+    warns{end+1} = sprintf (strcat ("'Constant' has no effect with the", ...
+                            " '%s' method."), retimeMethodName (method));
+  endif
+  if (! any (strcmp (endVals, 'extrap')) && isAggCall)
+    warns{end+1} = sprintf (strcat ("'EndValues' has no effect with the", ...
+                            " '%s' method."), retimeMethodName (method));
+  endif
+  if (edgeGiven && ! isAggCall)
+    warns{end+1} = sprintf (strcat ("'IncludedEdge' has no effect with", ...
+                            " the '%s' method."), ...
+                            retimeMethodName (method));
+  endif
+
+endfunction
+
+## The row times every operand of a 'synchronize' is put onto.  A timetable
+## with no rows says nothing about where the answer should sit, so it takes
+## no part in choosing; without that an empty operand would empty an
+## intersection.
+
+function [nt, errmsg] = synchronizeBase (ops, spec, tstep, srate)
+
+  nt = [];
+  errmsg = '';
+  have = {};
+  for k = 1:numel (ops)
+    o = ops{k};
+    rt = o.Properties.RowTimes;
+    if (! isempty (rt))
+      have{end+1} = rt(:);
+    endif
+  endfor
+  if (isempty (have))
+    o = ops{1};
+    nt = o.Properties.RowTimes;
+    return
+  endif
+
+  if (isdatetime (spec) || isduration (spec))
+    [nt, errmsg] = retimeTimes (have{1}, spec, tstep, srate);
+    return
+  endif
+  if (isa (spec, 'string') && isscalar (spec))
+    spec = char (spec);
+  endif
+  if (! (ischar (spec) && isrow (spec)))
+    errmsg = strcat ("the time base must be a time vector, a time unit,", ...
+                     " 'union', 'intersection', 'commonrange', 'first',", ...
+                     " 'last', or 'regular'.");
+    return
+  endif
+
+  all = have{1};
+  for k = 2:numel (have)
+    all = [all; have{k}];
+  endfor
+  all = unique (all);
+
+  switch (lower (spec))
+    case 'union'
+      nt = all;
+    case 'intersection'
+      nt = have{1};
+      for k = 2:numel (have)
+        nt = intersect (nt, have{k});
+      endfor
+      nt = nt(:);
+    case 'commonrange'
+      lo = min (have{1});
+      hi = max (have{1});
+      for k = 2:numel (have)
+        lo = max (lo, min (have{k}));
+        hi = min (hi, max (have{k}));
+      endfor
+      nt = all(all >= lo & all <= hi);
+    case 'first'
+      o = ops{1};
+      nt = o.Properties.RowTimes(:);
+    case 'last'
+      o = ops{end};
+      nt = o.Properties.RowTimes(:);
+    otherwise
+      ## Anything left is a time unit or 'regular', and a complaint about it
+      ## has to offer the time bases as well, which 'retime' knows nothing
+      ## about.
+      [nt, errmsg] = retimeTimes (all, spec, tstep, srate);
+      if (! isempty (errmsg) && ! isempty (strfind (errmsg, "is not a time")))
+        errmsg = sprintf (strcat ("'%s' is not a time base; use", ...
+                          " 'union', 'intersection', 'commonrange',", ...
+                          " 'first', 'last', 'regular', a time unit, or", ...
+                          " a time vector."), spec);
+      endif
+  endswitch
+
+endfunction
+
+## Two operands carrying a variable of the same name have both of them
+## renamed for the timetable they came from, which is what the caller called
+## it.  An operand the caller did not name, an expression rather than a
+## variable, is known by its place in the call.
+
+function ops = synchronizeRename (ops, names)
+
+  all = {};
+  for k = 1:numel (ops)
+    o = ops{k};
+    all = [all, o.Properties.VariableNames];
+  endfor
+  [~, first] = unique (all, 'first');
+  dup = all;
+  dup(first) = [];
+  if (isempty (dup))
+    return
+  endif
+
+  for k = 1:numel (ops)
+    o = ops{k};
+    vn = o.Properties.VariableNames;
+    tag = names{k};
+    if (isempty (tag))
+      tag = sprintf ("%d", k);
+    endif
+    for j = 1:numel (vn)
+      if (any (strcmp (vn{j}, dup)))
+        vn{j} = sprintf ("%s_%s", vn{j}, tag);
+      endif
+    endfor
+    o.Properties.VariableNames = vn;
+    ops{k} = o;
+  endfor
 
 endfunction

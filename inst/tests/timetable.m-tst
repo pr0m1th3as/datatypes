@@ -4095,3 +4095,164 @@
 %! assert_equal (v, categorical ({'x'; 'y'; 'newcat'; 'x'}));
 %!error <timetable.retime: 'Constant' must be a scalar.> ...
 %! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), datetime (2024, 1, 1) + hours ((0:2)'), 'fillwithconstant', 'Constant', 'zz');
+
+## Test 'synchronize' puts both timetables on every time either carries
+%!test
+%! t1 = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! t2 = datetime (2024, 1, 1) + hours ([1 2 4])';
+%! A = timetable (t1, [10; 20; 40], 'VariableNames', {'a'});
+%! B = timetable (t2, [1; 2; 4], 'VariableNames', {'b'});
+%! rt = synchronize (A, B, 'union').Properties.RowTimes;
+%! assert_equal (rt, datetime (2024, 1, 1) + hours ((0:4)'));
+## Test 'union' is the base when none is named
+%!test
+%! t1 = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! t2 = datetime (2024, 1, 1) + hours ([1 2 4])';
+%! A = timetable (t1, [10; 20; 40], 'VariableNames', {'a'});
+%! B = timetable (t2, [1; 2; 4], 'VariableNames', {'b'});
+%! assert_equal (synchronize (A, B).Properties.RowTimes, ...
+%!               synchronize (A, B, 'union').Properties.RowTimes);
+## Test 'intersection' keeps only the times both carry
+%!test
+%! t1 = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! t2 = datetime (2024, 1, 1) + hours ([1 2 4])';
+%! A = timetable (t1, [10; 20; 40], 'VariableNames', {'a'});
+%! B = timetable (t2, [1; 2; 4], 'VariableNames', {'b'});
+%! rt = synchronize (A, B, 'intersection').Properties.RowTimes;
+%! assert_equal (rt, datetime (2024, 1, 1) + hours (1));
+## Test 'commonrange' keeps the times within the span both cover
+%!test
+%! t1 = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! t2 = datetime (2024, 1, 1) + hours ([1 2 4])';
+%! A = timetable (t1, [10; 20; 40], 'VariableNames', {'a'});
+%! B = timetable (t2, [1; 2; 4], 'VariableNames', {'b'});
+%! rt = synchronize (A, B, 'commonrange').Properties.RowTimes;
+%! assert_equal (rt, datetime (2024, 1, 1) + hours ((1:3)'));
+## Test 'first' takes the row times of the first timetable
+%!test
+%! t1 = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! t2 = datetime (2024, 1, 1) + hours ([1 2 4])';
+%! A = timetable (t1, [10; 20; 40], 'VariableNames', {'a'});
+%! B = timetable (t2, [1; 2; 4], 'VariableNames', {'b'});
+%! assert_equal (synchronize (A, B, 'first').Properties.RowTimes, t1);
+## Test 'last' takes the row times of the last timetable
+%!test
+%! t1 = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! t2 = datetime (2024, 1, 1) + hours ([1 2 4])';
+%! A = timetable (t1, [10; 20; 40], 'VariableNames', {'a'});
+%! B = timetable (t2, [1; 2; 4], 'VariableNames', {'b'});
+%! assert_equal (synchronize (A, B, 'last').Properties.RowTimes, t2);
+## Test 'regular' builds the base from a time step
+%!test
+%! t1 = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! t2 = datetime (2024, 1, 1) + hours ([1 2 4])';
+%! A = timetable (t1, [10; 20; 40], 'VariableNames', {'a'});
+%! B = timetable (t2, [1; 2; 4], 'VariableNames', {'b'});
+%! R = synchronize (A, B, 'regular', 'TimeStep', hours (1));
+%! assert_equal (R.Properties.RowTimes, datetime (2024, 1, 1) + hours ((0:4)'));
+## Test a named time step is the unit the result reports in
+%!test
+%! t1 = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! t2 = datetime (2024, 1, 1) + hours ([1 2 4])';
+%! A = timetable (t1, [10; 20; 40], 'VariableNames', {'a'});
+%! B = timetable (t2, [1; 2; 4], 'VariableNames', {'b'});
+%! R = synchronize (A, B, 'regular', 'TimeStep', hours (1));
+%! assert_equal (char (R.Properties.TimeStep), '1 hr');
+
+## Test each timetable keeps its own values on the shared base
+%!test
+%! t1 = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! t2 = datetime (2024, 1, 1) + hours ([1 2 4])';
+%! A = timetable (t1, [10; 20; 40], 'VariableNames', {'a'});
+%! B = timetable (t2, [1; 2; 4], 'VariableNames', {'b'});
+%! assert_equal (synchronize (A, B, 'union').a, [10; 20; NaN; 40; NaN]);
+## Test the second timetable is filled on the shared base too
+%!test
+%! t1 = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! t2 = datetime (2024, 1, 1) + hours ([1 2 4])';
+%! A = timetable (t1, [10; 20; 40], 'VariableNames', {'a'});
+%! B = timetable (t2, [1; 2; 4], 'VariableNames', {'b'});
+%! assert_equal (synchronize (A, B, 'union').b, [NaN; 1; 2; NaN; 4]);
+## Test a method applies to every timetable given
+%!test
+%! t1 = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! t2 = datetime (2024, 1, 1) + hours ([1 2 4])';
+%! A = timetable (t1, [10; 20; 40], 'VariableNames', {'a'});
+%! B = timetable (t2, [1; 2; 4], 'VariableNames', {'b'});
+%! assert_equal (synchronize (A, B, 'union', 'linear').a, [10; 20; 30; 40; 50]);
+## Test an aggregation applies to every timetable given
+%!test
+%! t1 = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! t2 = datetime (2024, 1, 1) + hours ([1 2 4])';
+%! A = timetable (t1, [10; 20; 40], 'VariableNames', {'a'});
+%! B = timetable (t2, [1; 2; 4], 'VariableNames', {'b'});
+%! assert_equal (synchronize (A, B, 'union', 'sum').a, [10; 20; 0; 40; 0]);
+
+## Test three timetables are set side by side
+%!test
+%! t1 = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! t2 = datetime (2024, 1, 1) + hours ([1 2 4])';
+%! t3 = datetime (2024, 1, 1) + hours ([0 2])';
+%! A = timetable (t1, [10; 20; 40], 'VariableNames', {'a'});
+%! B = timetable (t2, [1; 2; 4], 'VariableNames', {'b'});
+%! C = timetable (t3, [100; 200], 'VariableNames', {'c'});
+%! R = synchronize (A, B, C, 'union');
+%! assert_equal (R.Properties.VariableNames, {'a', 'b', 'c'});
+## Test a variable name carried by two timetables is renamed for each
+%!test
+%! t1 = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! t2 = datetime (2024, 1, 1) + hours ([1 2 4])';
+%! A = timetable (t1, [10; 20; 40], 'VariableNames', {'a'});
+%! D = timetable (t2, [7; 8; 9], 'VariableNames', {'a'});
+%! R = synchronize (A, D, 'union');
+%! assert_equal (R.Properties.VariableNames, {'a_A', 'a_D'});
+## Test a timetable with no rows takes no part in choosing the base
+%!test
+%! t1 = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! A = timetable (t1, [10; 20; 40], 'VariableNames', {'a'});
+%! E = timetable (datetime.empty (0, 1), zeros (0, 1), 'VariableNames', {'z'});
+%! assert_equal (size (synchronize (A, E, 'union')), [3, 2]);
+## Test timetables that share no span have no common range
+%!test
+%! t1 = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! t4 = datetime (2024, 1, 10) + hours ([0 1])';
+%! A = timetable (t1, [10; 20; 40], 'VariableNames', {'a'});
+%! E = timetable (t4, [5; 6], 'VariableNames', {'e'});
+%! assert_equal (size (synchronize (A, E, 'commonrange')), [0, 2]);
+## Test one timetable is put on its own base
+%!test
+%! t1 = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! A = timetable (t1, [10; 20; 40], 'VariableNames', {'a'});
+%! assert_equal (size (synchronize (A, 'union')), [3, 1]);
+## Test 'synchronize' keeps the variable units of each timetable
+%!test
+%! t1 = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! t2 = datetime (2024, 1, 1) + hours ([1 2 4])';
+%! A = timetable (t1, [10; 20; 40], 'VariableNames', {'a'});
+%! A.Properties.VariableUnits = {'m'};
+%! B = timetable (t2, [1; 2; 4], 'VariableNames', {'b'});
+%! u = synchronize (A, B, 'union').Properties.VariableUnits;
+%! assert_equal (u{1}, 'm');
+## Test 'synchronize' returns a timetable
+%!test
+%! t1 = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! t2 = datetime (2024, 1, 1) + hours ([1 2 4])';
+%! A = timetable (t1, [10; 20; 40], 'VariableNames', {'a'});
+%! B = timetable (t2, [1; 2; 4], 'VariableNames', {'b'});
+%! assert_equal (class (synchronize (A, B, 'union')), 'timetable');
+## Test 'synchronize' puts duration row times on one base too
+%!test
+%! G = timetable (seconds ([0; 1; 3]), [10; 20; 40], 'VariableNames', {'g'});
+%! H = timetable (seconds ([1; 2; 4]), [1; 2; 4], 'VariableNames', {'h'});
+%! rt = synchronize (G, H, 'union').Properties.RowTimes;
+%! assert_equal (rt, seconds ((0:4)'));
+
+## Test input validation for 'timetable.synchronize'
+%!error <timetable.synchronize: every timetable must have row times of the same type.> ...
+%! synchronize (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), timetable (seconds ((0:2)'), (1:3)'), 'union');
+%!error <timetable.synchronize: 'bogus' is not a time base; use 'union', 'intersection', 'commonrange', 'first', 'last', 'regular', a time unit, or a time vector.> ...
+%! synchronize (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)', 'VariableNames', {'b'}), 'bogus');
+%!error <timetable.synchronize: 'regular' requires a 'TimeStep' or a 'SampleRate'.> ...
+%! synchronize (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)', 'VariableNames', {'b'}), 'regular');
+%!error <timetable.synchronize: the method must be one name or one function handle for every timetable.> ...
+%! synchronize (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)', 'VariableNames', {'b'}), 'union', {'linear', 'previous'});
