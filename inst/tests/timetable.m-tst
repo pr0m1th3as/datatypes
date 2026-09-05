@@ -2913,7 +2913,7 @@
 %! assert_equal (class (R.(n{2})), 'cell');
 
 ## Test the validation is the timetable's own
-%!error <timetable.rows2vars: input table must not contain multicolumn variables.> ...
+%!error <timetable.rows2vars: the input must not contain multicolumn variables.> ...
 %! rt = datetime (2024, 1, 1) + hours (0:1)';
 %! rows2vars (timetable ([1 2; 3 4], 'RowTimes', rt));
 
@@ -4557,3 +4557,11 @@
 %! TT.Properties.CustomProperties.q = {'m', 'kg'};
 %! q = mergevars (TT, {'a', 'b'}).Properties.CustomProperties.q;
 %! assert_equal (q, {[]});
+
+## Test a shared message names the timetable rather than a table
+%!error <timetable.fillmissing: a cell array of fill values must have one element per targeted variable.> ...
+%! fillmissing (timetable (datetime (2024, 1, 1) + hours ((0:2)'), [1; NaN; 3], 'VariableNames', {'v'}), 'constant', {1, 2, 3});
+%!error <timetable.standardizeMissing: unsupported indicator element of class 'function_handle'.> ...
+%! standardizeMissing (timetable (datetime (2024, 1, 1) + hours ((0:2)'), [1; NaN; 3], 'VariableNames', {'v'}), {@sin});
+%!error <timetable.pivot: 'IncludeTotals' must be a logical scalar.> ...
+%! pivot (timetable (datetime (2024, 1, 1) + hours ((0:1)'), categorical ({'a'; 'b'}), 'VariableNames', {'g'}), 'Rows', 'g', 'IncludeTotals', {1});

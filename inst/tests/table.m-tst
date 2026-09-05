@@ -3851,7 +3851,7 @@
 %!error <table.rows2vars: input table must not contain nested tables.> ...
 %! LastName = {"Sanchez"; "Johnson"; "Li"; "Diaz"; "Brown"};
 %! rows2vars (table (tblA, LastName));
-%!error <table.rows2vars: input table must not contain multicolumn variables.> ...
+%!error <table.rows2vars: the input must not contain multicolumn variables.> ...
 %! rows2vars (tblA);
 
 ## Test 'stack' method
@@ -7947,7 +7947,7 @@
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! T = addprop (T, 'vp', 'variable');
 %! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'vp', '()', {1}), {1, 2});
-%!error <table.subsasgn: input vector does not match the number of variables in table.> ...
+%!error <table.subsasgn: input vector does not match the number of variables.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! T = addprop (T, 'vp', 'variable');
 %! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'vp'), 5);

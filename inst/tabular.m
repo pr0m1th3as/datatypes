@@ -1142,8 +1142,8 @@ classdef (Abstract) tabular
                                    " vector."), clstype);
                   elseif (numel (val) != maxIdx)
                     error (strcat ("%s.subsasgn: input vector does", ...
-                                   " not match the number of variables", ...
-                                   " in table."), clstype);
+                                   " not match the number of", ...
+                                   " variables."), clstype);
                   endif
                   this.CustomProperties.(cpName) = val;
                 endif
@@ -3161,7 +3161,8 @@ classdef (Abstract) tabular
 
       ## Resolve per-variable fill values for the 'constant' method
       if (strcmp (method, 'constant'))
-        fillVals = resolve_const_values (constVal, numel (ixVars));
+        fillVals = resolve_const_values (constVal, numel (ixVars), ...
+                                         class (tblA));
       endif
 
       ## Initialize outputs (TF has one column per table variable)
@@ -3180,7 +3181,7 @@ classdef (Abstract) tabular
         v0 = v;
         if (strcmp (method, 'constant'))
           [v, filled] = fill_constant (v, M, fillVals{k}, ...
-                                       tbl.VariableNames{iv});
+                                       tbl.VariableNames{iv}, class (tblA));
         else
           for c = 1:columns (M)
             m = M(:,c);
@@ -3208,7 +3209,7 @@ classdef (Abstract) tabular
             endif
             [v(:,c), filled(:,c)] = apply_end_values (v(:,c), v0(:,c), ...
                                       M(:,c), filled(:,c), endVals, ...
-                                      tbl.VariableNames{iv});
+                                      tbl.VariableNames{iv}, class (tblA));
           endfor
         endif
         tbl.VariableValues{iv} = v;
@@ -3269,7 +3270,7 @@ classdef (Abstract) tabular
       endif
 
       ## Split the indicator into numeric and text indicator values
-      [numInd, txtInd] = std_normalize_indicator (indicator);
+      [numInd, txtInd] = std_normalize_indicator (indicator, class (tblA));
 
       ## Standardize each targeted variable
       tbl = tblA;
@@ -4695,9 +4696,12 @@ classdef (Abstract) tabular
       nested = strcmpi (outFmt, 'nested');
 
       ## Validate the logical-scalar and RowLabelPlacement options.
-      incMiss = tabular.pivot_logical_opt ('IncludeMissingGroups', incMiss);
-      incEmpty = tabular.pivot_logical_opt ('IncludeEmptyGroups', incEmpty);
-      incTot = tabular.pivot_logical_opt ('IncludeTotals', incTot);
+      incMiss = tabular.pivot_logical_opt ('IncludeMissingGroups', incMiss, ...
+                                           class (T));
+      incEmpty = tabular.pivot_logical_opt ('IncludeEmptyGroups', incEmpty, ...
+                                           class (T));
+      incTot = tabular.pivot_logical_opt ('IncludeTotals', incTot, ...
+                                           class (T));
       if (isa (rowPlace, 'string'))
         rowPlace = char (rowPlace);
       endif
@@ -5272,7 +5276,7 @@ classdef (Abstract) tabular
           errmsg = 'input table must not contain nested tables.';
           return;
         elseif (size (tbl.VariableValues{i}, 2) > 1)
-          errmsg = 'input table must not contain multicolumn variables.';
+          errmsg = 'the input must not contain multicolumn variables.';
           return;
         endif
       endfor
@@ -9023,9 +9027,9 @@ classdef (Abstract) tabular
 
     ## Validate a logical-scalar 'pivot' option VAL named NAME, returning it as
     ## a logical scalar.
-    function tf = pivot_logical_opt (name, val)
+    function tf = pivot_logical_opt (name, val, cls)
       if (! (isscalar (val) && (islogical (val) || isnumeric (val))))
-        error ("table.pivot: '%s' must be a logical scalar.", name);
+        error ("%s.pivot: '%s' must be a logical scalar.", cls, name);
       endif
       tf = logical (val);
     endfunction
@@ -9380,7 +9384,8 @@ function msg = uniqueBadType (badtype)
 
 endfunction
 
-function [col, filled] = apply_end_values (col, col0, m, filled, endVals, vname)
+function [col, filled] = apply_end_values (col, col0, m, filled, ...
+                                           endVals, vname, cls)
   [head, tail] = end_gaps (m);
   if (! any (head | tail))
     return;
@@ -9415,16 +9420,16 @@ function [col, filled] = apply_end_values (col, col0, m, filled, endVals, vname)
           filled(head | tail) = true;
         endif
       otherwise
-        error (strcat ("table.fillmissing: unsupported 'EndValues'", ...
-                       " option '%s'."), endVals);
+        error (strcat ("%s.fillmissing: unsupported 'EndValues'", ...
+                       " option '%s'."), cls, endVals);
     endswitch
   else
     try
       col(head | tail) = endVals;
     catch
-      error (strcat ("table.fillmissing: the 'EndValues' constant", ...
+      error (strcat ("%s.fillmissing: the 'EndValues' constant", ...
                      " cannot be", ...
-                     " assigned to table variable '%s'."), vname);
+                     " assigned to table variable '%s'."), cls, vname);
     end_try_catch
     filled(head | tail) = true;
   endif
@@ -9452,7 +9457,7 @@ endfunction
 ## value of the anchor on the side it names and leaves the other side missing;
 ## a constant is written directly and must be assignable to the variable.
 
-function [v, filled] = fill_constant (v, M, fv, varname)
+function [v, filled] = fill_constant (v, M, fv, varname, cls)
   filled = M;
   try
     if (iscellstr (v))
@@ -9466,8 +9471,8 @@ function [v, filled] = fill_constant (v, M, fv, varname)
       v(M) = fv;
     endif
   catch
-    error (strcat ("table.fillmissing: the fill value is incompatible", ...
-                   " with variable '%s'."), varname);
+    error (strcat ("%s.fillmissing: the fill value is incompatible", ...
+                   " with variable '%s'."), cls, varname);
   end_try_catch
 endfunction
 
@@ -9584,24 +9589,24 @@ endfunction
 ## scalar).  Returns the filled column and a logical mask of filled rows.  Used
 ## by 'fillmissing'.
 
-function fvals = resolve_const_values (constVal, nvars)
+function fvals = resolve_const_values (constVal, nvars, cls)
   if (iscell (constVal))
     if (isscalar (constVal))
       fvals = repmat (constVal, 1, nvars);
     elseif (numel (constVal) == nvars)
       fvals = reshape (constVal, 1, nvars);
     else
-      error (strcat ("table.fillmissing: a cell array of fill values must", ...
-                     " have one element per targeted variable."));
+      error (strcat ("%s.fillmissing: a cell array of fill values must", ...
+                     " have one element per targeted variable."), cls);
     endif
   elseif (ischar (constVal) || isscalar (constVal))
     fvals = repmat ({constVal}, 1, nvars);
   elseif (isvector (constVal) && numel (constVal) == nvars)
     fvals = num2cell (reshape (constVal, 1, nvars));
   else
-    error (strcat ("table.fillmissing: the fill value must be a scalar, a", ...
+    error (strcat ("%s.fillmissing: the fill value must be a scalar, a", ...
                    " vector with one element per targeted variable, or a", ...
-                   " cell array of per-variable values."));
+                   " cell array of per-variable values."), cls);
   endif
 endfunction
 
@@ -9633,7 +9638,7 @@ endfunction
 ## Helper function for unstack method to get default aggregation function
 ## and missing values according to the data type of the stacked variable
 
-function [numInd, txtInd] = std_normalize_indicator (indicator)
+function [numInd, txtInd] = std_normalize_indicator (indicator, cls)
   numInd = [];
   txtInd = {};
   if (iscell (indicator) && ! iscellstr (indicator))
@@ -9649,8 +9654,8 @@ function [numInd, txtInd] = std_normalize_indicator (indicator)
       elseif (isnumeric (e) || islogical (e))
         numInd = [numInd, double(e(:)')];
       else
-        error (strcat ("table.standardizeMissing: unsupported indicator", ...
-                       " element of class '%s'."), class (e));
+        error (strcat ("%s.standardizeMissing: unsupported indicator", ...
+                       " element of class '%s'."), cls, class (e));
       endif
     endfor
   elseif (iscellstr (indicator))
@@ -9663,8 +9668,8 @@ function [numInd, txtInd] = std_normalize_indicator (indicator)
   elseif (isnumeric (indicator) || islogical (indicator))
     numInd = double (indicator(:)');
   else
-    error (strcat ("table.standardizeMissing: invalid INDICATOR of class", ...
-                   " '%s'."), class (indicator));
+    error (strcat ("%s.standardizeMissing: invalid INDICATOR of class", ...
+                   " '%s'."), cls, class (indicator));
   endif
 endfunction
 
