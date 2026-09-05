@@ -9378,13 +9378,24 @@ function [col, filled] = fill_interp (col, m, x, method)
   ## Interior gaps are interpolated; the end gaps are extrapolated, which is
   ## what 'EndValues' 'extrap' asks of this method.  Any other value overrides
   ## them in the caller.
+  ## Core 'interp1' has no 'makima', so that one method is served by the
+  ## package's own copy, which extrapolates from the boundary polynomials
+  ## and so answers both calls the same way.
   interior = m & x > lo & x < hi;
   if (any (interior))
-    vals(interior) = interp1 (xk, yk, x(interior), method);
+    if (strcmp (method, 'makima'))
+      vals(interior) = __makima__ (xk, yk, x(interior));
+    else
+      vals(interior) = interp1 (xk, yk, x(interior), method);
+    endif
   endif
   ends = m & (x < lo | x > hi);
   if (any (ends))
-    vals(ends) = interp1 (xk, yk, x(ends), method, 'extrap');
+    if (strcmp (method, 'makima'))
+      vals(ends) = __makima__ (xk, yk, x(ends));
+    else
+      vals(ends) = interp1 (xk, yk, x(ends), method, 'extrap');
+    endif
   endif
   if (isdatetime (col))
     col(m) = origin + seconds (vals(m));

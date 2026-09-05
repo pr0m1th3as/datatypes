@@ -8125,3 +8125,8 @@
 %!error <table.subsasgn: '.' index argument must be a character vector or a string scalar.> ...
 %! T = table ([1;2;3], 'VariableNames', {'x'});
 %! subsasgn (T, struct ('type', {'.', '.'}, 'subs', {'Properties', ''}), 5);
+
+## Test 'fillmissing' interpolates with a modified Akima spline
+%!test
+%! T = table ([1; NaN; 3], 'VariableNames', {'v'});
+%! assert (fillmissing (T, 'makima').v, [1; 2; 3], 1e-12);

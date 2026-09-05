@@ -3861,3 +3861,11 @@
 %! d = [datetime(2024, 1, 1); NaT; datetime(2024, 1, 3)];
 %! TT = timetable (t, d, 'VariableNames', {'d'});
 %! assert_equal (fillmissing (TT, 'linear').d(2), datetime (2024, 1, 2));
+
+## Test 'retime' interpolates with a modified Akima spline
+%!test
+%! ta = datetime (2024, 1, 1) + hours (0:3)';
+%! TT = timetable (ta, [0; 1; 8; 27], 'VariableNames', {'v'});
+%! tq = datetime (2024, 1, 1) + minutes (0:30:180)';
+%! v = [0; 0.0056818181818182; 1; 3.6126692456480; 8; 15.812392179413; 27];
+%! assert (retime (TT, tq, 'makima').v, v, 1e-12);
