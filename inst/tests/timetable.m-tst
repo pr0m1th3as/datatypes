@@ -4018,3 +4018,80 @@
 %! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), datetime (2024, 1, 1) + hours ((0:2)'), 'VariableNames', {'v'}), datetime (2024, 1, 1) + hours ((0:2)'), 'sum');
 %!error <timetable.retime: the function handle method @\(x\) max \(x\) - min \(x\) returned a value that is not a single row for variable 'v'.> ...
 %! retime (timetable (datetime (2024, 1, 1) + hours ([0 1 4 5]'), [1; 2; 3; 4], 'VariableNames', {'v'}), datetime (2024, 1, 1) + hours ((0:2:6)'), @(x) max (x) - min (x));
+
+## Test 'fillwithconstant' gives an added row the constant
+%!test
+%! tb = datetime (2024, 1, 1) + hours (1:3)';
+%! TT = timetable (tb, [10; 20; 40], 'VariableNames', {'v'});
+%! tx = datetime (2024, 1, 1) + hours (0:4)';
+%! v = retime (TT, tx, 'fillwithconstant', 'Constant', 7).v;
+%! assert_equal (v, [7; 10; 20; 40; 7]);
+## Test a row the target times keep is not given the constant
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, [10; 20; 40], 'VariableNames', {'v'});
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! v = retime (TT, th, 'fillwithconstant', 'Constant', 7).v;
+%! assert_equal (v, [10; 20; 7; 40]);
+## Test a duration constant fills a duration variable
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, seconds ([1; 2; 3]), 'VariableNames', {'v'});
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! v = retime (TT, th, 'fillwithconstant', 'Constant', seconds (9)).v;
+%! assert_equal (v, seconds ([1; 2; 9; 3]));
+## Test a character constant names a category and adds it
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, categorical ({'x'; 'y'; 'x'}), 'VariableNames', {'v'});
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! v = retime (TT, th, 'fillwithconstant', 'Constant', 'z').v;
+%! assert_equal (v, categorical ({'x'; 'y'; 'z'; 'x'}));
+## Test 'fillwithconstant' serves a logical variable, which has no missing
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, logical ([1; 0; 1]), 'VariableNames', {'v'});
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! v = retime (TT, th, 'fillwithconstant', 'Constant', true).v;
+%! assert_equal (v, logical ([1; 0; 1; 1]));
+
+## Test an option the method cannot use is warned about and ignored
+%!warning <timetable.retime: 'Constant' has no effect with the 'linear' method.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), datetime (2024, 1, 1) + hours ((0:2)'), 'linear', 'Constant', 7);
+%!warning <timetable.retime: 'EndValues' has no effect with the 'sum' method.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), datetime (2024, 1, 1) + hours ((0:2)'), 'sum', 'EndValues', 99);
+%!warning <timetable.retime: 'IncludedEdge' has no effect with the 'linear' method.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), datetime (2024, 1, 1) + hours ((0:2)'), 'linear', 'IncludedEdge', 'right');
+## Test an ignored option leaves the result exactly as it was
+%!test
+%! st = warning ('off', 'all');
+%! unwind_protect
+%!   ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%!   TT = timetable (ta, [10; 20; 40], 'VariableNames', {'v'});
+%!   th = datetime (2024, 1, 1) + hours (0:3)';
+%!   v = retime (TT, th, 'linear', 'Constant', 7).v;
+%! unwind_protect_cleanup
+%!   warning (st);
+%! end_unwind_protect
+%! assert_equal (v, [10; 20; 30; 40]);
+
+## Test input validation for 'timetable.retime' with a constant
+%!error <timetable.retime: the 'fillwithconstant' method requires a 'Constant'.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), datetime (2024, 1, 1) + hours ((0:2)'), 'fillwithconstant');
+%!error <timetable.retime: 'Constant' must be a scalar.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), datetime (2024, 1, 1) + hours ((0:2)'), 'fillwithconstant', 'Constant', [1 2]);
+%!error <timetable.retime: the 'Constant' is of class 'double', which is not a value of variable 'v' of class 'duration'.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), seconds ((1:3)'), 'VariableNames', {'v'}), datetime (2024, 1, 1) + hours ((0:2)'), 'fillwithconstant', 'Constant', 9);
+%!error <timetable.retime: the 'Constant' is of class 'double', which is not a value of variable 'v' of class 'string'.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), string ({'a'; 'b'; 'c'}), 'VariableNames', {'v'}), datetime (2024, 1, 1) + hours ((0:2)'), 'fillwithconstant', 'Constant', 7);
+%!error <timetable.retime: the 'Constant' is of class 'double', which is not a value of variable 'v' of class 'datetime'.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), datetime (2024, 1, 1) + hours ((0:2)'), 'VariableNames', {'v'}), datetime (2024, 1, 1) + hours ((0:2)'), 'fillwithconstant', 'Constant', 0);
+## Test a constant naming a category may be more than one character
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, categorical ({'x'; 'y'; 'x'}), 'VariableNames', {'v'});
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! v = retime (TT, th, 'fillwithconstant', 'Constant', 'newcat').v;
+%! assert_equal (v, categorical ({'x'; 'y'; 'newcat'; 'x'}));
+%!error <timetable.retime: 'Constant' must be a scalar.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), datetime (2024, 1, 1) + hours ((0:2)'), 'fillwithconstant', 'Constant', 'zz');

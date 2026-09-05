@@ -526,10 +526,11 @@ classdef timetable < tabular
     ## and optional at once, so anything in its place that names an option is
     ## read as one, which is how a call can leave the method out entirely.
     ## Returns an errmsg body for the caller to raise under its own name.
-    function [tt, errmsg] = retimeResult (this, args)
+    function [tt, errmsg, warns] = retimeResult (this, args)
 
       tt = this;
       errmsg = '';
+      warns = {};
       if (isempty (args))
         errmsg = "too few input arguments.";
         return
@@ -537,7 +538,8 @@ classdef timetable < tabular
       spec = args{1};
       rest = args(2:end);
 
-      optNames = {'TimeStep', 'SampleRate', 'EndValues', 'IncludedEdge'};
+      optNames = {'TimeStep', 'SampleRate', 'EndValues', 'IncludedEdge', ...
+                  'Constant'};
       method = 'default';
       if (! isempty (rest))
         first = rest{1};
@@ -556,8 +558,8 @@ classdef timetable < tabular
         endif
       endif
 
-      dfValues = {missing, missing, 'extrap', 'left'};
-      [tstep, srate, endVals, incEdge, extra] = ...
+      dfValues = {missing, missing, 'extrap', missing, missing};
+      [tstep, srate, endVals, incEdge, konst, extra] = ...
                     parsePairedArguments (optNames, dfValues, rest(:));
       if (! isempty (extra))
         name = extra{1};
@@ -590,6 +592,10 @@ classdef timetable < tabular
         return
       endif
 
+      edgeGiven = wasGiven (incEdge);
+      if (! edgeGiven)
+        incEdge = 'left';
+      endif
       if (isa (incEdge, 'string') && isscalar (incEdge))
         incEdge = char (incEdge);
       endif
@@ -600,11 +606,43 @@ classdef timetable < tabular
       endif
       incEdge = lower (incEdge);
 
+      ## 'Constant' is what 'fillwithconstant' fills with and there is no
+      ## sensible value to invent for it, so it is required rather than
+      ## defaulted.
+      aggs = timetable.retimeAggregations ();
+      isAggCall = is_function_handle (method) || any (strcmp (method, aggs));
+      isInterpCall = ! is_function_handle (method) ...
+                     && any (strcmp (method, {'linear', 'spline', ...
+                                              'pchip', 'makima'}));
+      if (strcmp (method, 'fillwithconstant') && ! wasGiven (konst))
+        errmsg = strcat ("the 'fillwithconstant' method requires a", ...
+                         " 'Constant'.");
+        return
+      endif
+
+      ## An option the chosen method cannot use is said to be unused rather
+      ## than quietly dropped, once per call.
+      if (wasGiven (konst) && ! strcmp (method, 'fillwithconstant'))
+        warns{end+1} = sprintf (strcat ("'Constant' has no effect with", ...
+                                " the '%s' method."), ...
+                                retimeMethodName (method));
+      endif
+      if (! any (strcmp (endVals, 'extrap')) && isAggCall)
+        warns{end+1} = sprintf (strcat ("'EndValues' has no effect with", ...
+                                " the '%s' method."), ...
+                                retimeMethodName (method));
+      endif
+      if (edgeGiven && ! isAggCall)
+        warns{end+1} = sprintf (strcat ("'IncludedEdge' has no effect", ...
+                                " with the '%s' method."), ...
+                                retimeMethodName (method));
+      endif
+
       [nt, errmsg] = retimeTimes (this.RowTimes, spec, tstep, srate);
       if (! isempty (errmsg))
         return
       endif
-      [tt, errmsg] = retimeOnto (this, nt, method, endVals, incEdge);
+      [tt, errmsg] = retimeOnto (this, nt, method, endVals, incEdge, konst);
 
     endfunction
     ## The body behind 'retime', and the per-operand half of 'synchronize'.
@@ -618,7 +656,8 @@ classdef timetable < tabular
     ## target time up among the row times, and needs no missing value on the
     ## way, so it serves a cell or a char variable that has none.
     ## Interpolation goes through the fill engine, which does need one.
-    function [tt, errmsg] = retimeOnto (this, nt, method, endVals, incEdge)
+    function [tt, errmsg] = retimeOnto (this, nt, method, endVals, ...
+                                        incEdge, konst)
 
       tt = this;
       errmsg = '';
@@ -731,11 +770,26 @@ classdef timetable < tabular
           continue
         endif
 
+        ## A row the target keeps takes the value it had; a row the target
+        ## adds takes the constant, which needs no missing value of its own
+        ## and so serves a variable that has none.
+        if (strcmp (mv{j}, 'fillwithconstant') && nOld > 0 && nNew > 0)
+          errmsg = retimeConstantFits (konst, src, this.VariableNames{j});
+          if (! isempty (errmsg))
+            return
+          endif
+          si = retimeNeighbor (rt, nt, 'exact');
+          col = src(max (si, 1), :);
+          col(si == 0, :) = konst;
+          tt.VariableValues{j} = col;
+          continue
+        endif
+
         ## Rows taken from the source where there is one and built missing
         ## where there is not, which is the same question an outer join asks
         ## of its unmatched rows and is answered in the same place.
-        if (nOld == 0 || nNew == 0 || strcmp (mv{j}, 'fillwithmissing')
-            || isInterp(j))
+        if (nOld == 0 || nNew == 0 || isInterp(j)
+            || any (strcmp (mv{j}, {'fillwithmissing', 'fillwithconstant'})))
           if (nOld > 0 && nNew > 0
               && (islogical (src) || ischar (src)
                   || (iscell (src) && ! iscellstr (src))))
@@ -842,8 +896,8 @@ classdef timetable < tabular
         mv = repmat ({method}, 1, width (this));
         return
       endif
-      known = [{'fillwithmissing', 'previous', 'next', 'nearest', ...
-                'linear', 'spline', 'pchip', 'makima'}, ...
+      known = [{'fillwithmissing', 'fillwithconstant', 'previous', ...
+                'next', 'nearest', 'linear', 'spline', 'pchip', 'makima'}, ...
                timetable.retimeAggregations()];
       if (any (strcmp (method, known)))
         mv = repmat ({method}, 1, width (this));
@@ -3569,9 +3623,23 @@ classdef timetable < tabular
     ## last target time; @qcode{'right'} instead lets the first bin run back
     ## before the first.  It is read only by an aggregating method.
     ##
+    ## An option the chosen method cannot use is @strong{warned about and
+    ## ignored} rather than dropped in silence, once per call.  MATLAB says
+    ## nothing in that case.
+    ##
     ## An aggregation reads the row times as bins rather than as sample
     ## points, so it accepts row times that repeat and row times out of
     ## order, both of which the other methods refuse.
+    ##
+    ## @qcode{'fillwithconstant'} gives every added row the value of
+    ## @qcode{'Constant'}, which is required with it and must be a value of
+    ## the variable's own kind: a number for a numeric or @code{logical}
+    ## variable, a @code{duration} for a @code{duration} one, and text for a
+    ## @code{string} or a @code{categorical} one, where a name the variable
+    ## does not yet carry is added to its categories.  A number standing for
+    ## a @code{duration} or for text is refused rather than read as days or
+    ## as digits.  Needing no missing value of its own, it serves a variable
+    ## that has none.
     ##
     ## @qcode{'EndValues'} says what a target time outside the span of the
     ## old ones takes, either @qcode{'extrap'} or a constant.  It is
@@ -3590,7 +3658,10 @@ classdef timetable < tabular
     ## @seealso{timetable, isregular, fillmissing, synchronize}
     ## @end deftypefn
     function tt = retime (this, varargin)
-      [tt, errmsg] = retimeResult (this, varargin);
+      [tt, errmsg, warns] = retimeResult (this, varargin);
+      for k = 1:numel (warns)
+        warning ("timetable.retime: %s", warns{k});
+      endfor
       if (! isempty (errmsg))
         error ("timetable.retime: %s", errmsg);
       endif
@@ -4544,4 +4615,53 @@ function v = retimeZeroRow (proto, nc, k)
   else
     v = cast (k * ones (1, nc), class (proto));
   endif
+endfunction
+
+## Whether a 'Constant' can stand in for a value of variable SRC, and the
+## complaint when it cannot.  The constant's type must belong to the
+## variable's own family: that MATLAB can coerce one into the other is not
+## enough, a bare number meaning nine days in a duration variable and the
+## text "7" in a string one.  Numbers and logicals are one family, as they
+## are everywhere else, and text names a category.
+
+function errmsg = retimeConstantFits (konst, src, vname)
+
+  errmsg = '';
+  txt = ischar (konst) || isa (konst, 'string') || iscellstr (konst);
+
+  ## One value, and for a variable that holds text one word of it: a category
+  ## name is a word rather than a letter, so a character vector counts as a
+  ## single value there and nowhere else.
+  txtVar = isa (src, 'categorical') || isa (src, 'string') ...
+           || iscellstr (src);
+  if (! (isscalar (konst) || (txtVar && ischar (konst) && isrow (konst))))
+    errmsg = "'Constant' must be a scalar.";
+    return
+  endif
+  if (isnumeric (src) || islogical (src))
+    ok = isnumeric (konst) || islogical (konst);
+  elseif (isdatetime (src))
+    ok = isdatetime (konst);
+  elseif (isduration (src))
+    ok = isduration (konst);
+  elseif (isa (src, 'calendarDuration'))
+    ok = isa (konst, 'calendarDuration');
+  elseif (isa (src, 'categorical'))
+    ok = isa (konst, 'categorical') || txt;
+  elseif (isa (src, 'string'))
+    ok = isa (konst, 'string') || ischar (konst);
+  elseif (iscellstr (src))
+    ok = txt;
+  elseif (iscell (src))
+    ok = iscell (konst);
+  else
+    ok = strcmp (class (konst), class (src));
+  endif
+
+  if (! ok)
+    errmsg = sprintf (strcat ("the 'Constant' is of class '%s', which is", ...
+                      " not a value of variable '%s' of class '%s'."), ...
+                      class (konst), vname, class (src));
+  endif
+
 endfunction
