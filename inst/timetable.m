@@ -520,6 +520,292 @@ classdef timetable < tabular
       endif
     endfunction
 
+
+    ## The argument surface of 'retime': the target the caller named, the
+    ## method if one was given, and the options.  The method is positional
+    ## and optional at once, so anything in its place that names an option is
+    ## read as one, which is how a call can leave the method out entirely.
+    ## Returns an errmsg body for the caller to raise under its own name.
+    function [tt, errmsg] = retimeResult (this, args)
+
+      tt = this;
+      errmsg = '';
+      if (isempty (args))
+        errmsg = "too few input arguments.";
+        return
+      endif
+      spec = args{1};
+      rest = args(2:end);
+
+      method = 'default';
+      if (! isempty (rest))
+        first = rest{1};
+        if (isa (first, 'string') && isscalar (first))
+          first = char (first);
+        endif
+        if (ischar (first) && isrow (first) && ! any (strcmpi (first, ...
+                                {'TimeStep', 'SampleRate', 'EndValues'})))
+          method = lower (first);
+          rest = rest(2:end);
+        endif
+      endif
+
+      optNames = {'TimeStep', 'SampleRate', 'EndValues'};
+      dfValues = {missing, missing, 'extrap'};
+      [tstep, srate, endVals, extra] = parsePairedArguments (optNames, ...
+                                                    dfValues, rest(:));
+      if (! isempty (extra))
+        name = extra{1};
+        if (isa (name, 'string') && isscalar (name))
+          name = char (name);
+        endif
+        if (! (ischar (name) && isrow (name)))
+          name = '<unknown>';
+        endif
+        errmsg = sprintf ("unknown option '%s'.", name);
+        return
+      endif
+
+      ## 'EndValues' is narrower here than in 'fillmissing': a target time
+      ## outside the old span either extrapolates or takes a constant, and
+      ## the method names 'fillmissing' also accepts have no meaning for a
+      ## grid that reaches past the data.
+      if (isa (endVals, 'string') && isscalar (endVals))
+        endVals = char (endVals);
+      endif
+      if (ischar (endVals))
+        if (! strcmpi (endVals, 'extrap'))
+          errmsg = strcat ("'EndValues' must be 'extrap' or a constant", ...
+                           " scalar.");
+          return
+        endif
+        endVals = 'extrap';
+      elseif (! isscalar (endVals))
+        errmsg = "'EndValues' constant must be a scalar.";
+        return
+      endif
+
+      [nt, errmsg] = retimeTimes (this.RowTimes, spec, tstep, srate);
+      if (! isempty (errmsg))
+        return
+      endif
+      [tt, errmsg] = retimeOnto (this, nt, method, endVals);
+
+    endfunction
+    ## The body behind 'retime', and the per-operand half of 'synchronize'.
+    ## NT is the target row times already resolved, METHOD a fill or an
+    ## interpolation method, and ENDVALS the 'EndValues' option.  Returns an
+    ## errmsg body for the caller to raise under its own name.
+    ##
+    ## Each family of methods reaches its values a different way, which is
+    ## why the variables are rebuilt one at a time rather than the whole
+    ## object filled at once.  A neighbouring value is found by looking the
+    ## target time up among the row times, and needs no missing value on the
+    ## way, so it serves a cell or a char variable that has none.
+    ## Interpolation goes through the fill engine, which does need one.
+    function [tt, errmsg] = retimeOnto (this, nt, method, endVals)
+
+      tt = this;
+      errmsg = '';
+      rt = this.RowTimes;
+      nt = nt(:);
+      nOld = numel (rt);
+      nNew = numel (nt);
+
+      ## Reading values off the old times means knowing where every row sits,
+      ## and knowing it once each.
+      if (any (ismissing (rt)))
+        errmsg = "the row times must not be missing.";
+        return
+      endif
+      if (nOld > 1)
+        if (numel (unique (rt)) != nOld)
+          errmsg = sprintf (strcat ("the row times must be unique when", ...
+                                    " retiming with '%s'."), method);
+          return
+        endif
+        if (! (issorted (rt) || issorted (flipud (rt))))
+          errmsg = sprintf (strcat ("the row times must be sorted when", ...
+                                    " retiming with '%s'."), method);
+          return
+        endif
+      endif
+
+      [mv, errmsg] = retimeMethods (this, method);
+      if (! isempty (errmsg))
+        return
+      endif
+
+      interps = {'linear', 'spline', 'pchip', 'makima'};
+      isInterp = false (1, width (this));
+      for j = 1:width (this)
+        isInterp(j) = any (strcmp (mv{j}, interps));
+      endfor
+
+      ## A variable an interpolating method cannot take is refused here
+      ## rather than by the fill engine, so that the complaint names the
+      ## method the caller asked for and the variable that does not suit it.
+      for j = find (isInterp)
+        v = this.VariableValues{j};
+        if (! (isnumeric (v) || isdatetime (v) || isduration (v)))
+          errmsg = sprintf (strcat ("the '%s' method takes numeric,", ...
+                            " datetime and duration variables only, and", ...
+                            " '%s' is of class '%s'."), mv{j}, ...
+                            this.VariableNames{j}, class (v));
+          return
+        endif
+      endfor
+
+      F = [];
+      if (any (isInterp) && nOld > 0 && nNew > 0)
+        [F, errmsg] = retimeFilled (this, find (isInterp), mv, nt, endVals);
+        if (! isempty (errmsg))
+          return
+        endif
+      endif
+
+      ## The result is shaped from a row of the source and then overwritten
+      ## variable by variable, no row of it being a row of the source.
+      if (nOld == 0)
+        tt = subsetrows (this, zeros (0, 1));
+      else
+        tt = subsetrows (this, ones (nNew, 1));
+      endif
+      ivars = find (isInterp);
+      for j = 1:width (this)
+        src = this.VariableValues{j};
+        if (isInterp(j) && nOld > 0 && nNew > 0)
+          tt.VariableValues{j} = F.VariableValues{find (ivars == j)};
+          continue
+        endif
+
+        ## Rows taken from the source where there is one and built missing
+        ## where there is not, which is the same question an outer join asks
+        ## of its unmatched rows and is answered in the same place.
+        if (nOld == 0 || nNew == 0 || strcmp (mv{j}, 'fillwithmissing')
+            || isInterp(j))
+          if (nOld > 0 && nNew > 0
+              && (islogical (src) || ischar (src)
+                  || (iscell (src) && ! iscellstr (src))))
+            errmsg = sprintf (strcat ("the 'fillwithmissing' method needs", ...
+                              " a variable with a missing value, and", ...
+                              " '%s' is of class '%s'."), ...
+                              this.VariableNames{j}, class (src));
+            return
+          endif
+          si = zeros (nNew, 1);
+          if (nOld > 0 && nNew > 0)
+            si = retimeNeighbor (rt, nt, 'exact');
+          endif
+        else
+          si = retimeNeighbor (rt, nt, mv{j});
+        endif
+        [B, errmsg] = joinBuildSide (subsetvars (this, j), si);
+        if (! isempty (errmsg))
+          return
+        endif
+        col = B.VariableValues{1};
+
+        ## A constant 'EndValues' answers for every target outside the span
+        ## of the row times, whether or not the method found it a value
+        ## there; only 'extrap' leaves the method's own answer standing.
+        if (nOld > 0 && nNew > 0 && ! (ischar (endVals)
+                                       && strcmp (endVals, 'extrap')))
+          out = nt < min (rt) | nt > max (rt);
+          if (any (out))
+            try
+              col(out,:) = endVals;
+            catch
+              errmsg = sprintf (strcat ("the 'EndValues' constant cannot", ...
+                                " be assigned to variable '%s' of class", ...
+                                " '%s'."), this.VariableNames{j}, ...
+                                class (col));
+              return
+            end_try_catch
+          endif
+        endif
+        tt.VariableValues{j} = col;
+      endfor
+      tt = applyRowTimes (tt, nt, true);
+
+    endfunction
+
+    ## The interpolating variables of THIS, filled onto the target times.  The
+    ## added rows are placed among the existing ones and left missing, so the
+    ## fill engine sees the sample points it would have seen had the gaps
+    ## been missing all along, and the rows that were already there are put
+    ## back afterwards: a row the target keeps is kept, not resampled.
+    function [F, errmsg] = retimeFilled (this, ivars, mv, nt, endVals)
+
+      F = [];
+      errmsg = '';
+      rt = this.RowTimes;
+      nOld = numel (rt);
+      sub = subsetvars (this, ivars);
+      [ut, ~, back] = unique ([rt(:); nt(:)]);
+      idx = zeros (numel (ut), 1);
+      idx(back(1:nOld)) = (1:nOld)';
+      [U, errmsg] = joinBuildSide (sub, idx);
+      if (! isempty (errmsg))
+        return
+      endif
+      U = applyRowTimes (U, ut, true);
+
+      ## One pass per distinct method, the variables of each named together.
+      done = false (1, numel (ivars));
+      for k = 1:numel (ivars)
+        if (done(k))
+          continue
+        endif
+        m = mv{ivars(k)};
+        same = find (strcmp (mv(ivars), m));
+        done(same) = true;
+        [U, TF, errmsg] = fillmissingResult (U, m, 'DataVariables', same, ...
+                                             'EndValues', endVals);
+        if (! isempty (errmsg))
+          return
+        endif
+      endfor
+
+      pos = find (idx > 0);
+      for j = 1:width (U)
+        col = U.VariableValues{j};
+        src = sub.VariableValues{j};
+        col(pos,:) = src(idx(pos),:);
+        U.VariableValues{j} = col;
+      endfor
+      F = subsetrows (U, back(nOld+1:end));
+
+    endfunction
+
+    ## The method each variable takes.  Every method but 'default' applies to
+    ## all of them; 'default' reads 'VariableContinuity', where 'continuous'
+    ## interpolates, 'step' holds the previous value, and 'unset' and 'event'
+    ## are left missing, which is what an unset property leaves every one.
+    function [mv, errmsg] = retimeMethods (this, method)
+
+      mv = {};
+      errmsg = '';
+      known = {'fillwithmissing', 'previous', 'next', 'nearest', ...
+               'linear', 'spline', 'pchip', 'makima'};
+      if (any (strcmp (method, known)))
+        mv = repmat ({method}, 1, width (this));
+        return
+      endif
+      if (! strcmp (method, 'default'))
+        errmsg = sprintf ("unknown method '%s'.", method);
+        return
+      endif
+      mv = repmat ({'fillwithmissing'}, 1, width (this));
+      cont = this.VariableContinuity;
+      if (isempty (cont))
+        return
+      endif
+      mv(strcmp (cont, 'continuous')) = {'linear'};
+      mv(strcmp (cont, 'step')) = {'previous'};
+
+    endfunction
+
   endmethods
 
   methods (Static, Access = protected)
@@ -3166,6 +3452,73 @@ classdef timetable < tabular
 
   endmethods
 
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{ttB} =} retime (@var{ttA}, @var{newTimes})
+    ## @deftypefnx {timetable} {@var{ttB} =} retime (@var{ttA}, @var{newTimeStep})
+    ## @deftypefnx {timetable} {@var{ttB} =} retime (@dots{}, @var{method})
+    ## @deftypefnx {timetable} {@var{ttB} =} retime (@dots{}, @var{Name}, @var{Value})
+    ##
+    ## Resample a timetable onto new row times.
+    ##
+    ## @code{@var{ttB} = retime (@var{ttA}, @var{newTimes})} returns a
+    ## timetable whose rows sit at @var{newTimes}, a @code{datetime} or
+    ## @code{duration} vector of the same kind as the row times of
+    ## @var{ttA}, sorted and without repeats.
+    ##
+    ## @code{@var{ttB} = retime (@var{ttA}, @var{newTimeStep})} builds those
+    ## times instead from a time unit, one of @qcode{'secondly'},
+    ## @qcode{'minutely'}, @qcode{'hourly'}, @qcode{'daily'},
+    ## @qcode{'weekly'}, @qcode{'monthly'}, @qcode{'quarterly'} and
+    ## @qcode{'yearly'}.  The grid starts at the unit's own boundary at or
+    ## before the first row time and runs to the first boundary at or after
+    ## the last, so three hours of data retimed @qcode{'daily'} spans two
+    ## days.  Weeks begin on Sunday.  A @code{duration} row time carries no
+    ## calendar, so it takes the fixed units up to @qcode{'weekly'} and
+    ## refuses @qcode{'monthly'}, @qcode{'quarterly'} and @qcode{'yearly'}.
+    ##
+    ## @code{@var{ttB} = retime (@var{ttA}, @qcode{'regular'}, @dots{})}
+    ## builds a grid from the first row time in steps of the
+    ## @qcode{'TimeStep'} or @qcode{'SampleRate'} given after it, exactly one
+    ## of which is required.  @qcode{'SampleRate'} is in hertz.
+    ##
+    ## @var{method} says how a row that the old times do not carry takes its
+    ## value.  @qcode{'fillwithmissing'} leaves it missing;
+    ## @qcode{'previous'}, @qcode{'next'} and @qcode{'nearest'} copy a
+    ## neighbouring value; and @qcode{'linear'}, @qcode{'spline'},
+    ## @qcode{'pchip'} and @qcode{'makima'} interpolate, which restricts the
+    ## timetable to numeric, @code{datetime} and @code{duration} variables.
+    ## @qcode{'default'}, which is also what no method at all means, reads
+    ## @qcode{VariableContinuity} and treats a @qcode{'continuous'} variable
+    ## as @qcode{'linear'}, a @qcode{'step'} one as @qcode{'previous'}, and
+    ## an @qcode{'unset'} or @qcode{'event'} one as
+    ## @qcode{'fillwithmissing'}.
+    ##
+    ## @qcode{'EndValues'} says what a target time outside the span of the
+    ## old ones takes, either @qcode{'extrap'} or a constant.  It is
+    ## @qcode{'extrap'} by default, under which @qcode{'linear'} and the
+    ## interpolating methods extrapolate and the neighbouring methods carry
+    ## the nearest known value outward.
+    ##
+    ## @strong{A row the new times keep is kept, not resampled.}  Its value
+    ## is the one it had, and a value that was missing before the call is
+    ## still missing after it.
+    ##
+    ## Every property of the timetable survives, @qcode{VariableUnits},
+    ## @qcode{VariableDescriptions} and @qcode{VariableContinuity} included,
+    ## and the result carries the time step its new row times imply.
+    ##
+    ## @seealso{timetable, isregular, fillmissing, synchronize}
+    ## @end deftypefn
+    function tt = retime (this, varargin)
+      [tt, errmsg] = retimeResult (this, varargin);
+      if (! isempty (errmsg))
+        error ("timetable.retime: %s", errmsg);
+      endif
+    endfunction
+
+  endmethods
   methods (Static)
 
     ## -*- texinfo -*-
@@ -3618,4 +3971,264 @@ function ref = rowRefTimes (rowRef, rt)
                    " %s: '%s'"), class (rt), strjoin (txt, ", "));
   end_try_catch
   ref = ref(:);
+endfunction
+
+## The target row times a 'retime' call asks for.  SPEC is a time vector, one
+## of the eight time units, or 'regular'; TSTEP and SRATE carry the
+## 'TimeStep' and 'SampleRate' options, of which 'regular' takes exactly one.
+## Returns an errmsg body for the caller to raise.
+
+function [nt, errmsg] = retimeTimes (rt, spec, tstep, srate)
+
+  nt = [];
+  errmsg = '';
+  units = {'secondly', 'minutely', 'hourly', 'daily', 'weekly', ...
+           'monthly', 'quarterly', 'yearly'};
+
+  ## A time vector is taken as it is, once it agrees with the row times about
+  ## what kind of time they are.
+  if (isdatetime (spec) || isduration (spec))
+    if (isdatetime (rt) != isdatetime (spec))
+      errmsg = strcat ("the target times must be of the same type as", ...
+                       " the row times.");
+      return
+    endif
+    nt = spec(:);
+    if (any (ismissing (nt)))
+      errmsg = "the target times must not be missing.";
+      return
+    endif
+    if (numel (nt) > 1 && ! (issorted (nt) || issorted (flipud (nt))))
+      errmsg = "the target times must be sorted.";
+      return
+    endif
+    if (numel (unique (nt)) != numel (nt))
+      errmsg = "the target times must be unique.";
+      return
+    endif
+    return
+  endif
+
+  if (isa (spec, 'string') && isscalar (spec))
+    spec = char (spec);
+  endif
+  if (! (ischar (spec) && isrow (spec)))
+    errmsg = strcat ("the target times must be a time vector, a time", ...
+                     " unit, or 'regular'.");
+    return
+  endif
+  spec = lower (spec);
+
+  ## Nothing to place a grid against, and nowhere for it to start.
+  if (isempty (rt))
+    nt = rt;
+    return
+  endif
+  if (any (ismissing (rt)))
+    errmsg = "the row times must not be missing.";
+    return
+  endif
+
+  if (strcmp (spec, 'regular'))
+    if (wasGiven (tstep) && wasGiven (srate))
+      errmsg = strcat ("'regular' takes a 'TimeStep' or a", ...
+                       " 'SampleRate', not both.");
+      return
+    elseif (wasGiven (tstep))
+      if (! (isduration (tstep) && isscalar (tstep)
+             && ! ismissing (tstep) && seconds (tstep) > 0))
+        errmsg = "'TimeStep' must be a positive duration scalar.";
+        return
+      endif
+      step = tstep;
+    elseif (wasGiven (srate))
+      if (! (isnumeric (srate) && isscalar (srate) && isreal (srate)
+             && isfinite (srate) && srate > 0))
+        errmsg = "'SampleRate' must be a positive real scalar.";
+        return
+      endif
+      step = seconds (1 / srate);
+    else
+      errmsg = strcat ("'regular' requires a 'TimeStep' or a", ...
+                       " 'SampleRate'.");
+      return
+    endif
+    [lo, hi] = gridSpan (rt);
+    nt = steppedGrid (lo, hi, step);
+    return
+  endif
+
+  if (! any (strcmp (spec, units)))
+    errmsg = sprintf (strcat ("'%s' is not a time unit; use one of", ...
+                              " 'secondly', 'minutely', 'hourly',", ...
+                              " 'daily', 'weekly', 'monthly',", ...
+                              " 'quarterly' and 'yearly', a time vector,", ...
+                              " or 'regular'."), spec);
+    return
+  endif
+  [nt, errmsg] = unitGrid (rt, spec);
+
+endfunction
+
+## The span a target grid must cover.  A descending timetable is taken by its
+## ends rather than by its order, the grid itself always running forward.
+
+function [lo, hi] = gridSpan (rt)
+  lo = min (rt);
+  hi = max (rt);
+endfunction
+
+## A grid from LO in steps of STEP whose last point lands at or past HI.  The
+## count is worked out rather than stepped towards, a duration dividing a
+## span exactly.
+
+function nt = steppedGrid (lo, hi, step)
+  n = 0;
+  if (hi > lo)
+    n = ceil (seconds (hi - lo) / seconds (step));
+  endif
+  nt = lo + step * (0:n)';
+endfunction
+
+## The same for a calendar step, which has no fixed length to divide a span
+## by and so is stepped one unit at a time.
+
+function nt = calendarGrid (lo, hi, unit)
+  nt = lo;
+  k = 0;
+  t = lo;
+  while (t < hi)
+    k += 1;
+    switch (unit)
+      case 'day'
+        t = lo + caldays (k);
+      case 'week'
+        t = lo + calweeks (k);
+      case 'month'
+        t = lo + calmonths (k);
+      case 'quarter'
+        t = lo + calquarters (k);
+      case 'year'
+        t = lo + calyears (k);
+    endswitch
+    nt(k+1,1) = t;
+  endwhile
+endfunction
+
+## The grid a time unit asks for: from the unit's own boundary at or before
+## the first row time, to the first boundary at or after the last.
+
+function [nt, errmsg] = unitGrid (rt, spec)
+
+  nt = [];
+  errmsg = '';
+  switch (spec)
+    case 'secondly'
+      unit = 'second';
+    case 'minutely'
+      unit = 'minute';
+    case 'hourly'
+      unit = 'hour';
+    case 'daily'
+      unit = 'day';
+    case 'weekly'
+      unit = 'week';
+    case 'monthly'
+      unit = 'month';
+    case 'quarterly'
+      unit = 'quarter';
+    case 'yearly'
+      unit = 'year';
+  endswitch
+  [lo, hi] = gridSpan (rt);
+
+  if (isdatetime (rt))
+    lo = dateshift (lo, 'start', unit);
+    switch (unit)
+      case 'second'
+        nt = steppedGrid (lo, hi, seconds (1));
+      case 'minute'
+        nt = steppedGrid (lo, hi, minutes (1));
+      case 'hour'
+        nt = steppedGrid (lo, hi, hours (1));
+      otherwise
+        ## A calendar step follows the wall clock, so a day across a clock
+        ## change is still one day and a month is still one month.
+        nt = calendarGrid (lo, hi, unit);
+    endswitch
+    return
+  endif
+
+  ## A duration carries no calendar, so the three units that need one have
+  ## nothing to anchor to; the fixed ones floor to a multiple of themselves.
+  switch (unit)
+    case 'second'
+      step = seconds (1);
+    case 'minute'
+      step = minutes (1);
+    case 'hour'
+      step = hours (1);
+    case 'day'
+      step = days (1);
+    case 'week'
+      step = days (7);
+    otherwise
+      errmsg = sprintf (strcat ("'%s' has no meaning for duration row", ...
+                                " times, which carry no calendar."), spec);
+      return
+  endswitch
+  lo = step * floor (seconds (lo) / seconds (step));
+  nt = steppedGrid (lo, hi, step);
+
+endfunction
+
+## Where each target time takes a neighbouring value from: the index of the
+## row of RT that METHOD picks for it, or 0 where there is none on that side.
+## The times are compared as seconds from the first row time, which is what
+## makes an irregular timetable pick by distance rather than by row count.  A
+## target falling exactly on a row time takes that row under every method,
+## and a tie between two neighbours goes to the later, as it does in
+## 'fillmissing'.
+
+function si = retimeNeighbor (rt, nt, method)
+
+  [rs, ord] = sort (rt(:));
+  if (isdatetime (rs))
+    x = seconds (rs - rs(1));
+    q = seconds (nt(:) - rs(1));
+  else
+    x = seconds (rs);
+    q = seconds (nt(:));
+  endif
+
+  ip = lookup (x, q);                 # last x at or before q, 0 when none
+  hit = false (size (q));
+  nz = ip > 0;
+  hit(nz) = x(ip(nz)) == q(nz);
+  in = ip + 1;
+  in(hit) = ip(hit);
+  in(in > numel (x)) = 0;
+
+  switch (method)
+    case 'exact'
+      ## Only a target that lands on a row time takes anything at all, which
+      ## is what keeps a row the target keeps and leaves the rest missing.
+      j = zeros (size (q));
+      j(hit) = ip(hit);
+    case 'previous'
+      j = ip;
+    case 'next'
+      j = in;
+    case 'nearest'
+      j = ip;
+      j(ip == 0) = in(ip == 0);
+      both = find (ip > 0 & in > 0);
+      later = (x(in(both)) - q(both)) <= (q(both) - x(ip(both)));
+      j(both(later)) = in(both(later));
+  endswitch
+
+  si = zeros (size (j));
+  ok = j > 0;
+  si(ok) = ord(j(ok));
+
 endfunction

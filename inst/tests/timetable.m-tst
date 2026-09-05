@@ -3551,3 +3551,313 @@
 %! timetable.empty (5, 0, 2);
 %!error <timetable.empty: SZ must be a numeric vector.> ...
 %! timetable.empty ({1, 0});
+
+## Test 'retime' onto an explicit time vector holds the previous value
+%!test
+%! ta = datetime (2024, 1, 1) + hours (0:3)';
+%! TT = timetable (ta, [0; 1; 8; 27], 'VariableNames', {'v'});
+%! tq = datetime (2024, 1, 1) + minutes (0:30:180)';
+%! assert_equal (retime (TT, tq, 'previous').v, [0; 0; 1; 1; 8; 8; 27]);
+## Test 'retime' takes the next value
+%!test
+%! ta = datetime (2024, 1, 1) + hours (0:3)';
+%! TT = timetable (ta, [0; 1; 8; 27], 'VariableNames', {'v'});
+%! tq = datetime (2024, 1, 1) + minutes (0:30:180)';
+%! assert_equal (retime (TT, tq, 'next').v, [0; 1; 1; 8; 8; 27; 27]);
+## Test 'retime' breaks a tie between two neighbours towards the later
+%!test
+%! ta = datetime (2024, 1, 1) + hours (0:3)';
+%! TT = timetable (ta, [0; 1; 8; 27], 'VariableNames', {'v'});
+%! tq = datetime (2024, 1, 1) + minutes (0:30:180)';
+%! assert_equal (retime (TT, tq, 'nearest').v, [0; 1; 1; 8; 8; 27; 27]);
+## Test 'retime' interpolates linearly against the row times
+%!test
+%! ta = datetime (2024, 1, 1) + hours (0:3)';
+%! TT = timetable (ta, [0; 1; 8; 27], 'VariableNames', {'v'});
+%! tq = datetime (2024, 1, 1) + minutes (0:30:180)';
+%! assert_equal (retime (TT, tq, 'linear').v, [0; 0.5; 1; 4.5; 8; 17.5; 27]);
+## Test 'retime' interpolates with a spline
+%!test
+%! ta = datetime (2024, 1, 1) + hours (0:3)';
+%! TT = timetable (ta, [0; 1; 8; 27], 'VariableNames', {'v'});
+%! tq = datetime (2024, 1, 1) + minutes (0:30:180)';
+%! v = [0; 0.125; 1; 3.375; 8; 15.625; 27];
+%! assert (retime (TT, tq, 'spline').v, v, 1e-12);
+## Test 'retime' leaves an added row missing when asked to
+%!test
+%! ta = datetime (2024, 1, 1) + hours (0:3)';
+%! TT = timetable (ta, [0; 1; 8; 27], 'VariableNames', {'v'});
+%! tq = datetime (2024, 1, 1) + minutes (0:30:180)';
+%! v = [0; NaN; 1; NaN; 8; NaN; 27];
+%! assert_equal (retime (TT, tq, 'fillwithmissing').v, v);
+## Test no method at all leaves an added row missing
+%!test
+%! ta = datetime (2024, 1, 1) + hours (0:3)';
+%! TT = timetable (ta, [0; 1; 8; 27], 'VariableNames', {'v'});
+%! tq = datetime (2024, 1, 1) + minutes (0:30:180)';
+%! assert_equal (retime (TT, tq).v, [0; NaN; 1; NaN; 8; NaN; 27]);
+
+## Test a target time past the data extrapolates under 'linear'
+%!test
+%! tb = datetime (2024, 1, 1) + hours (1:3)';
+%! TT = timetable (tb, [10; 20; 40], 'VariableNames', {'v'});
+%! tx = datetime (2024, 1, 1) + hours (0:4)';
+%! assert_equal (retime (TT, tx, 'linear').v, [0; 10; 20; 40; 60]);
+## Test 'previous' has nothing before the data and carries the last forward
+%!test
+%! tb = datetime (2024, 1, 1) + hours (1:3)';
+%! TT = timetable (tb, [10; 20; 40], 'VariableNames', {'v'});
+%! tx = datetime (2024, 1, 1) + hours (0:4)';
+%! assert_equal (retime (TT, tx, 'previous').v, [NaN; 10; 20; 40; 40]);
+## Test 'next' carries the first value back and has nothing after the data
+%!test
+%! tb = datetime (2024, 1, 1) + hours (1:3)';
+%! TT = timetable (tb, [10; 20; 40], 'VariableNames', {'v'});
+%! tx = datetime (2024, 1, 1) + hours (0:4)';
+%! assert_equal (retime (TT, tx, 'next').v, [10; 10; 20; 40; NaN]);
+## Test 'nearest' answers on both sides of the data
+%!test
+%! tb = datetime (2024, 1, 1) + hours (1:3)';
+%! TT = timetable (tb, [10; 20; 40], 'VariableNames', {'v'});
+%! tx = datetime (2024, 1, 1) + hours (0:4)';
+%! assert_equal (retime (TT, tx, 'nearest').v, [10; 10; 20; 40; 40]);
+## Test a constant 'EndValues' answers outside the data under 'linear'
+%!test
+%! tb = datetime (2024, 1, 1) + hours (1:3)';
+%! TT = timetable (tb, [10; 20; 40], 'VariableNames', {'v'});
+%! tx = datetime (2024, 1, 1) + hours (0:4)';
+%! v = retime (TT, tx, 'linear', 'EndValues', 99).v;
+%! assert_equal (v, [99; 10; 20; 40; 99]);
+## Test a constant 'EndValues' overrides what a neighbour method found
+%!test
+%! tb = datetime (2024, 1, 1) + hours (1:3)';
+%! TT = timetable (tb, [10; 20; 40], 'VariableNames', {'v'});
+%! tx = datetime (2024, 1, 1) + hours (0:4)';
+%! v = retime (TT, tx, 'previous', 'EndValues', 99).v;
+%! assert_equal (v, [99; 10; 20; 40; 99]);
+
+## Test 'retime' keeps a row the target times keep
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, [10; NaN; 40], 'VariableNames', {'v'});
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! assert_equal (retime (TT, th, 'previous').v(2), NaN);
+
+## Test 'retime' holds the previous value of a logical variable
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, logical ([1; 0; 1]), 'VariableNames', {'v'});
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! assert_equal (retime (TT, th, 'previous').v, logical ([1; 0; 0; 1]));
+## Test a logical variable stays logical
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, logical ([1; 0; 1]), 'VariableNames', {'v'});
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! assert_equal (class (retime (TT, th, 'previous').v), 'logical');
+## Test 'retime' holds the previous value of a categorical variable
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, categorical ({'x'; 'y'; 'x'}), 'VariableNames', {'v'});
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! c = categorical ({'x'; 'y'; 'y'; 'x'});
+%! assert_equal (retime (TT, th, 'previous').v, c);
+## Test 'retime' holds the previous value of a cell variable
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, {1; 2; 3}, 'VariableNames', {'v'});
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! assert_equal (retime (TT, th, 'previous').v, {1; 2; 2; 3});
+## Test 'retime' interpolates a datetime variable
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, ta, 'VariableNames', {'v'});
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! assert_equal (retime (TT, th, 'linear').v, th);
+## Test 'retime' interpolates a duration variable
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, seconds ([1; 2; 3]), 'VariableNames', {'v'});
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! assert_equal (retime (TT, th, 'linear').v, seconds ([1; 2; 2.5; 3]));
+
+## Test the time unit grid runs to the first boundary past the last row time
+%!test
+%! tn = datetime (2024, 1, 1) + hours (0:3)';
+%! TT = timetable (tn, [1; 2; 3; 4], 'VariableNames', {'v'});
+%! rt = retime (TT, 'daily', 'previous').Properties.RowTimes;
+%! assert_equal (rt, [datetime(2024,1,1); datetime(2024,1,2)]);
+## Test an hourly grid stops on the last row time when it lands there
+%!test
+%! tn = datetime (2024, 1, 1) + hours (0:3)';
+%! TT = timetable (tn, [1; 2; 3; 4], 'VariableNames', {'v'});
+%! assert_equal (retime (TT, 'hourly', 'previous').Properties.RowTimes, tn);
+## Test a weekly grid begins on the Sunday at or before the first row time
+%!test
+%! t = datetime (2024, 1, 3) + days (0:20)';
+%! TT = timetable (t, (1:21)', 'VariableNames', {'v'});
+%! rt = retime (TT, 'weekly', 'previous').Properties.RowTimes;
+%! assert_equal (rt(1), datetime (2023, 12, 31));
+## Test a weekly grid steps by one week
+%!test
+%! t = datetime (2024, 1, 3) + days (0:20)';
+%! TT = timetable (t, (1:21)', 'VariableNames', {'v'});
+%! rt = retime (TT, 'weekly', 'previous').Properties.RowTimes;
+%! assert_equal (numel (rt), 5);
+## Test a monthly grid anchors on the first of the month
+%!test
+%! tn = datetime (2024, 1, 1) + hours (0:3)';
+%! TT = timetable (tn, [1; 2; 3; 4], 'VariableNames', {'v'});
+%! rt = retime (TT, 'monthly', 'previous').Properties.RowTimes;
+%! assert_equal (rt, [datetime(2024,1,1); datetime(2024,2,1)]);
+## Test a quarterly grid anchors on the first of the quarter
+%!test
+%! tn = datetime (2024, 1, 1) + hours (0:3)';
+%! TT = timetable (tn, [1; 2; 3; 4], 'VariableNames', {'v'});
+%! rt = retime (TT, 'quarterly', 'previous').Properties.RowTimes;
+%! assert_equal (rt, [datetime(2024,1,1); datetime(2024,4,1)]);
+## Test a yearly grid anchors on the first of the year
+%!test
+%! tn = datetime (2024, 1, 1) + hours (0:3)';
+%! TT = timetable (tn, [1; 2; 3; 4], 'VariableNames', {'v'});
+%! rt = retime (TT, 'yearly', 'previous').Properties.RowTimes;
+%! assert_equal (rt, [datetime(2024,1,1); datetime(2025,1,1)]);
+## Test 'regular' builds a grid from a time step
+%!test
+%! tn = datetime (2024, 1, 1) + hours (0:3)';
+%! TT = timetable (tn, [1; 2; 3; 4], 'VariableNames', {'v'});
+%! rt = retime (TT, 'regular', 'previous', 'TimeStep', minutes (30));
+%! assert_equal (numel (rt.Properties.RowTimes), 7);
+## Test 'SampleRate' is read in hertz
+%!test
+%! ts = datetime (2024, 1, 1) + seconds (0:4)';
+%! TT = timetable (ts, (1:5)', 'VariableNames', {'v'});
+%! rt = retime (TT, 'regular', 'previous', 'SampleRate', 2);
+%! assert_equal (numel (rt.Properties.RowTimes), 9);
+## Test an empty target vector gives a timetable with no rows
+%!test
+%! tn = datetime (2024, 1, 1) + hours (0:3)';
+%! TT = timetable (tn, [1; 2; 3; 4], 'VariableNames', {'v'});
+%! assert_equal (size (retime (TT, datetime.empty (0, 1), 'previous')), [0, 1]);
+
+## Test 'retime' resamples duration row times
+%!test
+%! U = timetable (seconds ([0; 1; 3]), [10; 20; 40], 'VariableNames', {'v'});
+%! assert_equal (retime (U, seconds ((0:3)'), 'linear').v, [10; 20; 30; 40]);
+## Test duration row times take a time unit grid
+%!test
+%! U = timetable (seconds ([0; 1; 3]), [10; 20; 40], 'VariableNames', {'v'});
+%! rt = retime (U, 'secondly', 'previous').Properties.RowTimes;
+%! assert_equal (rt, seconds ((0:3)'));
+## Test the row times of the result keep their own type
+%!test
+%! U = timetable (seconds ([0; 1; 3]), [10; 20; 40], 'VariableNames', {'v'});
+%! rt = retime (U, seconds ((0:3)'), 'linear').Properties.RowTimes;
+%! assert_equal (class (rt), 'duration');
+
+## Test 'retime' keeps the variable units
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, [10; 20; 40], [1; 2; 3], 'VariableNames', {'a', 'b'});
+%! TT.Properties.VariableUnits = {'m', 'kg'};
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! u = retime (TT, th, 'previous').Properties.VariableUnits;
+%! assert_equal (u, {'m', 'kg'});
+## Test 'retime' keeps the variable continuity
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, [10; 20; 40], [1; 2; 3], 'VariableNames', {'a', 'b'});
+%! TT.Properties.VariableContinuity = {'continuous', 'step'};
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! c = retime (TT, th, 'previous').Properties.VariableContinuity;
+%! assert_equal (c, {'continuous', 'step'});
+## Test the result of 'retime' is regular and carries its time step
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, [10; 20; 40], 'VariableNames', {'v'});
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! assert_equal (isregular (retime (TT, th, 'previous')), true);
+## Test 'retime' returns a timetable
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, [10; 20; 40], 'VariableNames', {'v'});
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! assert_equal (class (retime (TT, th, 'previous')), 'timetable');
+
+## Test 'VariableContinuity' drives the method when none is given
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, [10; 20; 40], [10; 20; 40], [10; 20; 40], ...
+%!                 'VariableNames', {'unset', 'cont', 'stp'});
+%! TT.Properties.VariableContinuity = {'unset', 'continuous', 'step'};
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! assert_equal (retime (TT, th, 'default').unset, [10; 20; NaN; 40]);
+## Test a continuous variable interpolates under 'default'
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, [10; 20; 40], 'VariableNames', {'cont'});
+%! TT.Properties.VariableContinuity = {'continuous'};
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! assert_equal (retime (TT, th, 'default').cont, [10; 20; 30; 40]);
+## Test a step variable holds its previous value under 'default'
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, [10; 20; 40], 'VariableNames', {'stp'});
+%! TT.Properties.VariableContinuity = {'step'};
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! assert_equal (retime (TT, th, 'default').stp, [10; 20; 20; 40]);
+## Test an event variable is left missing under 'default'
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, [10; 20; 40], 'VariableNames', {'evt'});
+%! TT.Properties.VariableContinuity = {'event'};
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! assert_equal (retime (TT, th, 'default').evt, [10; 20; NaN; 40]);
+## Test an explicit method overrides the continuity
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, [10; 20; 40], 'VariableNames', {'stp'});
+%! TT.Properties.VariableContinuity = {'step'};
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! assert_equal (retime (TT, th, 'linear').stp, [10; 20; 30; 40]);
+
+## Test input validation for 'timetable.retime'
+%!error <timetable.retime: too few input arguments.> ...
+%! retime (timetable (datetime (2024, 1, 1), 1));
+%!error <timetable.retime: the target times must be of the same type as the row times.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), seconds ((0:2)'));
+%!error <timetable.retime: the target times must be sorted.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), datetime (2024, 1, 1) + hours ([1 0 2]'));
+%!error <timetable.retime: the target times must be unique.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), datetime (2024, 1, 1) + hours ([0 0 2]'));
+%!error <timetable.retime: 'regular' requires a 'TimeStep' or a 'SampleRate'.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), 'regular', 'previous');
+%!error <timetable.retime: 'regular' takes a 'TimeStep' or a 'SampleRate', not both.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), 'regular', 'previous', 'TimeStep', hours (1), 'SampleRate', 2);
+%!error <timetable.retime: 'SampleRate' must be a positive real scalar.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), 'regular', 'previous', 'SampleRate', -1);
+%!error <timetable.retime: 'TimeStep' must be a positive duration scalar.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), 'regular', 'previous', 'TimeStep', 5);
+%!error <timetable.retime: 'EndValues' must be 'extrap' or a constant scalar.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), datetime (2024, 1, 1) + hours ((0:2)'), 'linear', 'EndValues', 'none');
+%!error <timetable.retime: 'EndValues' constant must be a scalar.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), datetime (2024, 1, 1) + hours ((0:2)'), 'linear', 'EndValues', [1 2]);
+%!error <timetable.retime: unknown method 'bogus'.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), datetime (2024, 1, 1) + hours ((0:2)'), 'bogus');
+%!error <timetable.retime: unknown option 'Bogus'.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), datetime (2024, 1, 1) + hours ((0:2)'), 'linear', 'Bogus', 1);
+%!error <timetable.retime: the 'linear' method takes numeric, datetime and duration variables only, and 'v' is of class 'categorical'.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), categorical ({'a'; 'b'; 'c'}), 'VariableNames', {'v'}), datetime (2024, 1, 1) + hours ((0:2)'), 'linear');
+%!error <timetable.retime: the 'fillwithmissing' method needs a variable with a missing value, and 'v' is of class 'logical'.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), logical ([1; 0; 1]), 'VariableNames', {'v'}), datetime (2024, 1, 1) + hours ((0:2)'), 'fillwithmissing');
+%!error <timetable.retime: 'monthly' has no meaning for duration row times, which carry no calendar.> ...
+%! retime (timetable (seconds ((0:2)'), (1:3)'), 'monthly', 'previous');
+%!error <timetable.retime: 'bogus' is not a time unit; use one of 'secondly', 'minutely', 'hourly', 'daily', 'weekly', 'monthly', 'quarterly' and 'yearly', a time vector, or 'regular'.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), 'bogus');
+
+## Test 'fillmissing' interpolates a datetime variable against the row times
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:2)');
+%! d = [datetime(2024, 1, 1); NaT; datetime(2024, 1, 3)];
+%! TT = timetable (t, d, 'VariableNames', {'d'});
+%! assert_equal (fillmissing (TT, 'linear').d(2), datetime (2024, 1, 2));
