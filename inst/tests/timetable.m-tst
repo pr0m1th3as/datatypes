@@ -4463,3 +4463,88 @@
 %! TT = timetable (ta, logical ([1; 0; 1]), 'VariableNames', {'v'});
 %! th = datetime (2024, 1, 1) + hours (0:3)';
 %! assert_equal (retime (TT, th, 'mean').v, [1; 0; NaN; 1]);
+
+## Test 'addprop' adds a custom property describing the whole timetable
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:2)');
+%! TT = timetable (t, (1:3)', (11:13)', 'VariableNames', {'a', 'b'});
+%! TT = addprop (TT, {'p'}, {'table'});
+%! assert_equal (fieldnames (TT.Properties.CustomProperties), {'p'});
+## Test a table-typed custom property takes the value it is given
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:2)');
+%! TT = timetable (t, (1:3)', 'VariableNames', {'a'});
+%! TT = addprop (TT, {'p'}, {'table'});
+%! TT.Properties.CustomProperties.p = 7;
+%! assert_equal (TT.Properties.CustomProperties.p, 7);
+## Test a variable-typed custom property takes one entry per variable
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:2)');
+%! TT = timetable (t, (1:3)', (11:13)', 'VariableNames', {'a', 'b'});
+%! TT = addprop (TT, {'q'}, {'variable'});
+%! TT.Properties.CustomProperties.q = {'m', 'kg'};
+%! assert_equal (TT.Properties.CustomProperties.q, {'m', 'kg'});
+## Test 'rmprop' removes a custom property
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:2)');
+%! TT = timetable (t, (1:3)', 'VariableNames', {'a'});
+%! TT = addprop (TT, {'p'}, {'table'});
+%! TT = rmprop (TT, {'p'});
+%! assert_equal (isempty (fieldnames (TT.Properties.CustomProperties)), true);
+## Test 'rmprop' ignores a name matching no custom property
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:2)');
+%! TT = timetable (t, (1:3)', 'VariableNames', {'a'});
+%! assert_equal (class (rmprop (TT, {'nope'})), 'timetable');
+
+## Test a variable-typed property gains an entry with a new variable
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:2)');
+%! TT = timetable (t, (1:3)', (11:13)', 'VariableNames', {'a', 'b'});
+%! TT = addprop (TT, {'q'}, {'variable'});
+%! TT.Properties.CustomProperties.q = {'m', 'kg'};
+%! V = addvars (TT, (21:23)', 'NewVariableNames', {'c'});
+%! assert_equal (numel (V.Properties.CustomProperties.q), 3);
+## Test a variable-typed property loses the entry of a removed variable
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:2)');
+%! TT = timetable (t, (1:3)', (11:13)', 'VariableNames', {'a', 'b'});
+%! TT = addprop (TT, {'q'}, {'variable'});
+%! TT.Properties.CustomProperties.q = {'m', 'kg'};
+%! V = removevars (TT, 'a');
+%! assert_equal (V.Properties.CustomProperties.q, {'kg'});
+## Test a variable-typed property follows a moved variable
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:2)');
+%! TT = timetable (t, (1:3)', (11:13)', 'VariableNames', {'a', 'b'});
+%! TT = addprop (TT, {'q'}, {'variable'});
+%! TT.Properties.CustomProperties.q = {'m', 'kg'};
+%! V = movevars (TT, 'b', 'Before', 'a');
+%! assert_equal (V.Properties.CustomProperties.q, {'kg', 'm'});
+## Test a variable-typed property survives a resampling
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:2)');
+%! TT = timetable (t, (1:3)', (11:13)', 'VariableNames', {'a', 'b'});
+%! TT = addprop (TT, {'q'}, {'variable'});
+%! TT.Properties.CustomProperties.q = {'m', 'kg'};
+%! V = retime (TT, 'hourly', 'previous');
+%! assert_equal (V.Properties.CustomProperties.q, {'m', 'kg'});
+## Test a variable-typed property survives a shift
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:2)');
+%! TT = timetable (t, (1:3)', (11:13)', 'VariableNames', {'a', 'b'});
+%! TT = addprop (TT, {'q'}, {'variable'});
+%! TT.Properties.CustomProperties.q = {'m', 'kg'};
+%! assert_equal (lag (TT).Properties.CustomProperties.q, {'m', 'kg'});
+
+## Test input validation for 'timetable.addprop' and 'timetable.rmprop'
+%!error <timetable.addprop: too few input arguments.> ...
+%! addprop (timetable (datetime (2024, 1, 1), 1), {'p'});
+%!error <timetable.addprop: invalid value for 'propertyTypes'.> ...
+%! addprop (timetable (datetime (2024, 1, 1), 1), {'p'}, {'bogus'});
+%!error <timetable.addprop: custom property 'p' already exists.> ...
+%! addprop (addprop (timetable (datetime (2024, 1, 1), 1), {'p'}, {'table'}), {'p'}, {'table'});
+%!error <timetable.rmprop: too few input arguments.> ...
+%! rmprop (timetable (datetime (2024, 1, 1), 1));
+%!error <timetable.rmprop: invalid input type for 'propertyNames'.> ...
+%! rmprop (timetable (datetime (2024, 1, 1), 1), 7);

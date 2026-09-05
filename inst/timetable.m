@@ -3990,6 +3990,63 @@ classdef timetable < tabular
     endfunction
 
   endmethods
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{tt} =} addprop (@var{tt}, @var{propertyNames}, @var{propertyTypes})
+    ##
+    ## Add custom properties to a timetable.
+    ##
+    ## @code{@var{tt} = addprop (@var{tt}, @var{propertyNames},
+    ## @var{propertyTypes})} adds properties that carry custom metadata to the
+    ## timetable @var{tt}.  @var{propertyNames} names them, as a character
+    ## vector, a cell array of character vectors, or a string array, and
+    ## @var{propertyTypes} says what each one describes, one per name:
+    ## @qcode{'table'} for a property describing the timetable as a whole and
+    ## @qcode{'variable'} for one carrying an entry per variable, which is
+    ## kept in step as variables are added, removed, moved and renamed.
+    ##
+    ## A property is added empty; assign it through
+    ## @qcode{@var{tt}.Properties.CustomProperties.@var{PropertyName}}.  The
+    ## row times are not a variable and carry no entry of their own.
+    ##
+    ## @seealso{rmprop, timetable}
+    ## @end deftypefn
+    function tt = addprop (this, Names, Types)
+      if (nargin < 3)
+        error ("timetable.addprop: too few input arguments.");
+      endif
+      [tt, errmsg] = addpropResult (this, Names, Types);
+      if (! isempty (errmsg))
+        error ("timetable.addprop: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{tt} =} rmprop (@var{tt}, @var{propertyNames})
+    ##
+    ## Remove custom properties from a timetable.
+    ##
+    ## @code{@var{tt} = rmprop (@var{tt}, @var{propertyNames})} removes the
+    ## named properties carrying custom metadata from the timetable
+    ## @var{tt}.  @var{propertyNames} is a character vector, a cell array of
+    ## character vectors, or a string array.  A name matching no custom
+    ## property is ignored rather than refused.
+    ##
+    ## @seealso{addprop, timetable}
+    ## @end deftypefn
+    function tt = rmprop (this, Names)
+      if (nargin < 2)
+        error ("timetable.rmprop: too few input arguments.");
+      endif
+      [tt, errmsg] = rmpropResult (this, Names);
+      if (! isempty (errmsg))
+        error ("timetable.rmprop: %s", errmsg);
+      endif
+    endfunction
+
+  endmethods
+
   methods (Static, Hidden)
 
     ## The named methods that aggregate the rows falling in one target bin.

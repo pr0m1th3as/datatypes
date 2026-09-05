@@ -151,6 +151,9 @@ function TT = table2timetable (tbl, varargin)
   if (! isempty (props.UserData))
     TT.Properties.UserData = props.UserData;
   endif
+  ## A custom property describing the variables loses the entry of the one
+  ## that became the row times, which is no longer a variable.
+  TT = tabular.carryCustomProps (TT, tbl, find (keep));
 
 endfunction
 
@@ -277,3 +280,30 @@ endfunction
 %! table2timetable (table ((1:3)'), 'RowTimes', 7);
 %!error <table2timetable: the variable 'Var1' is a double; row times must be a datetime or a duration.> ...
 %! table2timetable (table ((1:3)'), 'RowTimes', 1);
+
+## Test a custom property describing the table survives the conversion
+%!test
+%! T = table ((1:3)', 'VariableNames', {'A'});
+%! T = addprop (T, {'p'}, {'table'});
+%! T.Properties.CustomProperties.p = 7;
+%! tv = datetime (2024, 1, 1) + hours ((0:2)');
+%! TT = table2timetable (T, 'RowTimes', tv);
+%! assert_equal (TT.Properties.CustomProperties.p, 7);
+
+## Test a custom property describing the variables survives the conversion
+%!test
+%! T = table ((1:3)', (11:13)', 'VariableNames', {'A', 'B'});
+%! T = addprop (T, {'q'}, {'variable'});
+%! T.Properties.CustomProperties.q = {'m', 'kg'};
+%! tv = datetime (2024, 1, 1) + hours ((0:2)');
+%! TT = table2timetable (T, 'RowTimes', tv);
+%! assert_equal (TT.Properties.CustomProperties.q, {'m', 'kg'});
+
+## Test the variable that became the row times loses its entry
+%!test
+%! tv = datetime (2024, 1, 1) + hours ((0:2)');
+%! T = table (tv, (1:3)', 'VariableNames', {'when', 'A'});
+%! T = addprop (T, {'q'}, {'variable'});
+%! T.Properties.CustomProperties.q = {'x', 'm'};
+%! TT = table2timetable (T, 'RowTimes', 'when');
+%! assert_equal (TT.Properties.CustomProperties.q, {'m'});

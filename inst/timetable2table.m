@@ -86,6 +86,13 @@ function tbl = timetable2table (tt, varargin)
   if (! isempty (props.UserData))
     tbl.Properties.UserData = props.UserData;
   endif
+  ## The row times become the first variable when they are converted, and a
+  ## custom property describing the variables has no entry for them.
+  ixVars = 1:numel (varNames);
+  if (ConvertRowTimes)
+    ixVars = [0, 1:(numel (varNames) - 1)];
+  endif
+  tbl = tabular.carryCustomProps (tbl, tt, ixVars);
 
 endfunction
 
@@ -150,3 +157,21 @@ endfunction
 %!error <timetable2table: 'ConvertRowTimes' must be a logical scalar.> ...
 %! timetable2table (timetable (hours (0:2)', (1:3)'), ...
 %!                  'ConvertRowTimes', 'yes');
+
+## Test a custom property describing the timetable survives the conversion
+%!test
+%! tv = datetime (2024, 1, 1) + hours ((0:2)');
+%! TT = timetable (tv, (1:3)', 'VariableNames', {'A'});
+%! TT = addprop (TT, {'p'}, {'table'});
+%! TT.Properties.CustomProperties.p = 7;
+%! assert_equal (timetable2table (TT).Properties.CustomProperties.p, 7);
+
+## Test the row times become a variable with no entry of their own
+%!test
+%! tv = datetime (2024, 1, 1) + hours ((0:2)');
+%! TT = timetable (tv, (1:3)', (11:13)', 'VariableNames', {'A', 'B'});
+%! TT = addprop (TT, {'q'}, {'variable'});
+%! TT.Properties.CustomProperties.q = {'m', 'kg'};
+%! q = timetable2table (TT).Properties.CustomProperties.q;
+%! assert_equal (numel (q), 3);
+%! assert_equal (q(2:3), {'m', 'kg'});

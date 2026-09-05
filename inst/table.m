@@ -2485,57 +2485,13 @@ classdef table < tabular
     ##
     ## @end deftypefn
     function tbl = addprop (this, Names, Types)
-
-      ## Check input arguments
       if (nargin < 3)
         error ("table.addprop: too few input arguments.");
-      elseif (! (any (isa (Names, {'string', 'char'})) || iscellstr (Names)))
-        error ("table.addprop: invalid input type for 'propertyNames'.");
-      elseif (! (any (isa (Types, {'string', 'char'})) || iscellstr (Types)))
-        error ("table.addprop: invalid input type for 'propertyTypes'.");
       endif
-
-      ## Force to cellstr
-      Names = cellstr (Names);
-      Types = cellstr (Types);
-      if (numel (Names) != numel (Types))
-        error (strcat ("table.addprop: the number of 'propertyTypes'", ...
-                       " must equal the number of 'propertyNames'."));
+      [tbl, errmsg] = addpropResult (this, Names, Types);
+      if (! isempty (errmsg))
+        error ("table.addprop: %s", errmsg);
       endif
-
-      ## Check for duplicate property names within the input
-      if (numel (unique (Names)) != numel (Names))
-        error (strcat ("table.addprop: 'propertyNames' cannot contain", ...
-                       " duplicate names."));
-      endif
-
-      ## Check for property names that already exist
-      if (! isempty (this.CustomProperties))
-        existingNames = fieldnames (this.CustomProperties);
-        idx = ismember (Names, existingNames);
-        if (any (idx))
-          error ("table.addprop: custom property '%s' already exists.", ...
-                  Names{find (idx)(1)});
-        endif
-      endif
-
-      ## Add each custom property
-      for idx = 1:numel (Names)
-        ## Check for valid custom property name
-        if (! isvarname (Names{idx}))
-          error (strcat ("table.addprop: custom property '%s' does not", ...
-                         " have a valid name."), ...
-                 Names{idx});
-        endif
-        ## Check for valid custom property type
-        if (! any (strcmp (Types{idx}, {'table', 'variable'})))
-          error ("table.addprop: invalid value for 'propertyTypes'.");
-        endif
-        this.CustomProperties.(Names{idx}) = [];
-        this.CustomPropTypes.(Names{idx}) = Types{idx};
-      endfor
-      tbl = this;
-
     endfunction
 
     ## -*- texinfo -*-
@@ -2552,32 +2508,13 @@ classdef table < tabular
     ##
     ## @end deftypefn
     function tbl = rmprop (this, Names)
-
-      ## Check input arguments
       if (nargin < 2)
         error ("table.rmprop: too few input arguments.");
-      elseif (! (any (isa (Names, {'string', 'char'})) || iscellstr (Names)))
-        error ("table.rmprop: invalid input type for 'propertyNames'.");
       endif
-
-      ## Force to cellstr
-      Names = cellstr (Names);
-
-      ## Remove the referenced custom properties that exist; names that do not
-      ## match any existing custom property (including repeated names) are
-      ## silently ignored, matching MATLAB.
-      if (! isempty (this.CustomProperties))
-        existingNames = fieldnames (this.CustomProperties);
-        tf = ismember (existingNames, Names);
-        if (any (tf))
-          this.CustomProperties = rmfield (this.CustomProperties, ...
-                                           existingNames(tf));
-          this.CustomPropTypes = rmfield (this.CustomPropTypes, ...
-                                          existingNames(tf));
-        endif
+      [tbl, errmsg] = rmpropResult (this, Names);
+      if (! isempty (errmsg))
+        error ("table.rmprop: %s", errmsg);
       endif
-      tbl = this;
-
     endfunction
 
   endmethods

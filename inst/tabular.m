@@ -6426,6 +6426,88 @@ classdef (Abstract) tabular
     ## Build one side of an outer join from a row-index vector IDX (zeros mark
     ## rows with no match, filled with missing values).  Returns an errmsg body
     ## (empty on success) emitted by the caller under its own name.
+    ## The body behind 'addprop' on both classes.  NAMES and TYPES are the
+    ## caller's arguments, TYPES being 'table' or 'variable' for each.  A
+    ## custom property is stored the same way whatever labels the rows, so
+    ## only the name a complaint is raised under differs between them.
+    ## Returns an errmsg body for the caller to raise under its own name.
+    function [tbl, errmsg] = addpropResult (this, Names, Types)
+
+      tbl = this;
+      errmsg = '';
+      if (! (any (isa (Names, {'string', 'char'})) || iscellstr (Names)))
+        errmsg = "invalid input type for 'propertyNames'.";
+        return
+      elseif (! (any (isa (Types, {'string', 'char'})) || iscellstr (Types)))
+        errmsg = "invalid input type for 'propertyTypes'.";
+        return
+      endif
+
+      Names = cellstr (Names);
+      Types = cellstr (Types);
+      if (numel (Names) != numel (Types))
+        errmsg = strcat ("the number of 'propertyTypes' must equal the", ...
+                         " number of 'propertyNames'.");
+        return
+      endif
+      if (numel (unique (Names)) != numel (Names))
+        errmsg = "'propertyNames' cannot contain duplicate names.";
+        return
+      endif
+      if (! isempty (this.CustomProperties))
+        existingNames = fieldnames (this.CustomProperties);
+        idx = ismember (Names, existingNames);
+        if (any (idx))
+          errmsg = sprintf ("custom property '%s' already exists.", ...
+                            Names{find (idx)(1)});
+          return
+        endif
+      endif
+
+      for idx = 1:numel (Names)
+        if (! isvarname (Names{idx}))
+          errmsg = sprintf (strcat ("custom property '%s' does not have", ...
+                                    " a valid name."), Names{idx});
+          return
+        endif
+        if (! any (strcmp (Types{idx}, {'table', 'variable'})))
+          errmsg = "invalid value for 'propertyTypes'.";
+          return
+        endif
+        this.CustomProperties.(Names{idx}) = [];
+        this.CustomPropTypes.(Names{idx}) = Types{idx};
+      endfor
+      tbl = this;
+
+    endfunction
+
+    ## The body behind 'rmprop' on both classes.  A name matching no custom
+    ## property is ignored rather than refused, repeated names included, as
+    ## MATLAB ignores it.  Returns an errmsg body for the caller to raise.
+    function [tbl, errmsg] = rmpropResult (this, Names)
+
+      tbl = this;
+      errmsg = '';
+      if (! (any (isa (Names, {'string', 'char'})) || iscellstr (Names)))
+        errmsg = "invalid input type for 'propertyNames'.";
+        return
+      endif
+      Names = cellstr (Names);
+
+      if (! isempty (this.CustomProperties))
+        existingNames = fieldnames (this.CustomProperties);
+        tf = ismember (existingNames, Names);
+        if (any (tf))
+          this.CustomProperties = rmfield (this.CustomProperties, ...
+                                           existingNames(tf));
+          this.CustomPropTypes = rmfield (this.CustomPropTypes, ...
+                                          existingNames(tf));
+        endif
+      endif
+      tbl = this;
+
+    endfunction
+
     function [out, errmsg] = joinBuildSide (this, idx)
       out = this;
       errmsg = '';
@@ -7554,6 +7636,41 @@ classdef (Abstract) tabular
 ################################################################################
 
   methods (Static, Hidden)
+
+    ## Carry the custom properties of SRC onto DST.  IXVARS maps each
+    ## variable of DST to the variable of SRC it came from, 0 for one that
+    ## came from none, which is how a conversion that gains or loses a
+    ## variable keeps a 'variable' property in step: a timetable turned into
+    ## a table gains the row times as its first variable, and that variable
+    ## has no entry to inherit.  A 'table' property is carried whole.
+    function dst = carryCustomProps (dst, src, ixVars)
+
+      if (isempty (src.CustomProperties))
+        return
+      endif
+      names = fieldnames (src.CustomProperties);
+      for k = 1:numel (names)
+        name = names{k};
+        ty = src.CustomPropTypes.(name);
+        val = src.CustomProperties.(name);
+        if (strcmp (ty, 'variable') && ! isempty (val))
+          if (iscell (val))
+            out = cell (1, numel (ixVars));
+            for j = 1:numel (ixVars)
+              if (ixVars(j) > 0 && ixVars(j) <= numel (val))
+                out(j) = val(ixVars(j));
+              endif
+            endfor
+            val = out;
+          elseif (all (ixVars > 0) && max (ixVars) <= numel (val))
+            val = val(ixVars);
+          endif
+        endif
+        dst.CustomProperties.(name) = val;
+        dst.CustomPropTypes.(name) = ty;
+      endfor
+
+    endfunction
 
     ## -*- texinfo -*-
     ## @deftypefn {tabular} {@var{e} =} summaryStats (@var{e}, @var{val})
