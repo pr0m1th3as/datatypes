@@ -4256,3 +4256,130 @@
 %! synchronize (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)', 'VariableNames', {'b'}), 'regular');
 %!error <timetable.synchronize: the method must be one name or one function handle for every timetable.> ...
 %! synchronize (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)', 'VariableNames', {'b'}), 'union', {'linear', 'previous'});
+
+## Test 'lag' moves every value one row later by default
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:4)');
+%! TT = timetable (t, (1:5)', 'VariableNames', {'v'});
+%! assert_equal (lag (TT).v, [NaN; 1; 2; 3; 4]);
+## Test 'lag' moves the values as many rows as it is asked
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:4)');
+%! TT = timetable (t, (1:5)', 'VariableNames', {'v'});
+%! assert_equal (lag (TT, 2).v, [NaN; NaN; 1; 2; 3]);
+## Test a negative lag moves the values earlier
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:4)');
+%! TT = timetable (t, (1:5)', 'VariableNames', {'v'});
+%! assert_equal (lag (TT, -1).v, [2; 3; 4; 5; NaN]);
+## Test a lag of no rows leaves the values where they were
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:4)');
+%! TT = timetable (t, (1:5)', 'VariableNames', {'v'});
+%! assert_equal (lag (TT, 0).v, (1:5)');
+## Test a lag past the height leaves every row missing
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:4)');
+%! TT = timetable (t, (1:5)', 'VariableNames', {'v'});
+%! assert_equal (lag (TT, 99).v, NaN (5, 1));
+## Test the row times do not move
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:4)');
+%! TT = timetable (t, (1:5)', 'VariableNames', {'v'});
+%! assert_equal (lag (TT, 2).Properties.RowTimes, t);
+
+## Test a duration lag counts by the time step
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:4)');
+%! TT = timetable (t, (1:5)', 'VariableNames', {'v'});
+%! assert_equal (lag (TT, hours (2)).v, [NaN; NaN; 1; 2; 3]);
+## Test a negative duration lag moves the values earlier
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:4)');
+%! TT = timetable (t, (1:5)', 'VariableNames', {'v'});
+%! assert_equal (lag (TT, hours (-1)).v, [2; 3; 4; 5; NaN]);
+## Test a calendarDuration lag counts by a calendar step
+%!test
+%! t = datetime (2024, 1, 1) + caldays ((0:4)');
+%! TT = timetable (t, (1:5)', 'VariableNames', {'v'});
+%! assert_equal (lag (TT, caldays (2)).v, [NaN; NaN; 1; 2; 3]);
+## Test duration row times take a lag
+%!test
+%! TT = timetable (seconds ((0:3)'), (1:4)', 'VariableNames', {'v'});
+%! assert_equal (lag (TT, 1).v, [NaN; 1; 2; 3]);
+
+## Test a logical variable is vacated with false, having no missing value
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:2)');
+%! TT = timetable (t, logical ([1; 0; 1]), 'VariableNames', {'v'});
+%! assert_equal (lag (TT).v, logical ([0; 1; 0]));
+## Test a character variable is vacated with a space
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:2)');
+%! TT = timetable (t, ['a'; 'b'; 'c'], 'VariableNames', {'v'});
+%! assert_equal (lag (TT).v, [' '; 'a'; 'b']);
+## Test a string variable is vacated with a missing string
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:2)');
+%! TT = timetable (t, string ({'a'; 'b'; 'c'}), 'VariableNames', {'v'});
+%! assert_equal (ismissing (lag (TT).v), [true; false; false]);
+## Test a categorical variable is vacated with a missing category
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:2)');
+%! TT = timetable (t, categorical ({'x'; 'y'; 'x'}), 'VariableNames', {'v'});
+%! assert_equal (ismissing (lag (TT).v), [true; false; false]);
+## Test a cell variable is vacated with an empty entry
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:2)');
+%! TT = timetable (t, {'a'; 'b'; 'c'}, 'VariableNames', {'v'});
+%! assert_equal (lag (TT).v, {''; 'a'; 'b'});
+
+## Test 'lag' keeps the variable units
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:4)');
+%! TT = timetable (t, (1:5)', (11:15)', 'VariableNames', {'a', 'b'});
+%! TT.Properties.VariableUnits = {'m', 'kg'};
+%! assert_equal (lag (TT).Properties.VariableUnits, {'m', 'kg'});
+## Test 'lag' keeps the variable continuity
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:4)');
+%! TT = timetable (t, (1:5)', (11:15)', 'VariableNames', {'a', 'b'});
+%! TT.Properties.VariableContinuity = {'continuous', 'step'};
+%! c = lag (TT).Properties.VariableContinuity;
+%! assert_equal (c, {'continuous', 'step'});
+## Test 'lag' keeps the time step
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:4)');
+%! TT = timetable (t, (1:5)', 'VariableNames', {'v'});
+%! assert_equal (lag (TT).Properties.TimeStep, TT.Properties.TimeStep);
+## Test 'lag' shifts every variable
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:4)');
+%! TT = timetable (t, (1:5)', (11:15)', 'VariableNames', {'a', 'b'});
+%! assert_equal (lag (TT).b, [NaN; 11; 12; 13; 14]);
+## Test 'lag' returns a timetable
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:4)');
+%! TT = timetable (t, (1:5)', 'VariableNames', {'v'});
+%! assert_equal (class (lag (TT)), 'timetable');
+
+## Test input validation for 'timetable.lag'
+%!error <timetable.lag: the lag must be a whole number of rows, a duration, or a calendarDuration.> ...
+%! lag (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), 1.5);
+%!error <timetable.lag: the timetable must be regular with respect to time.> ...
+%! lag (timetable (datetime (2024, 1, 1) + hours ([0 1 3]'), (1:3)'));
+%!error <timetable.lag: the timetable must be regular with respect to time.> ...
+%! lag (timetable (datetime (2024, 1, 1), 1));
+%!error <timetable.lag: the lag must be a multiple of the time step of the timetable.> ...
+%! lag (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), minutes (90));
+%!error <timetable.lag: the timetable must be regular with respect to days.> ...
+%! lag (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), caldays (1));
+%!error <timetable.lag: the timetable must be regular with respect to months.> ...
+%! lag (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), calmonths (1));
+
+## Test a named sample rate is the unit the result reports its step in
+%!test
+%! ts = datetime (2024, 1, 1) + seconds ((0:4)');
+%! TT = timetable (ts, (1:5)', 'VariableNames', {'v'});
+%! R = retime (TT, 'regular', 'previous', 'SampleRate', 2);
+%! assert_equal (char (R.Properties.TimeStep), '0.5 sec');

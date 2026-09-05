@@ -521,6 +521,114 @@ classdef timetable < tabular
     endfunction
 
 
+    ## The body behind 'lag'.  N is the shift as the caller gave it, which
+    ## may be a count of rows, a duration or a calendarDuration.  Returns an
+    ## errmsg body for the caller to raise under its own name.
+    function [tt, errmsg] = lagResult (this, n)
+
+      tt = this;
+      [k, errmsg] = lagCount (this, n);
+      if (! isempty (errmsg))
+        return
+      endif
+
+      ## Where each row takes its value from, 0 for a row that has nothing
+      ## to take.
+      nr = height (this);
+      si = (1:nr)' - k;
+      si(si < 1 | si > nr) = 0;
+
+      for j = 1:width (this)
+        src = this.VariableValues{j};
+        if (ischar (src))
+          ## A character matrix has no missing value, and MATLAB blanks the
+          ## row rather than refusing the variable.
+          col = src(max (si, 1), :);
+          col(si == 0, :) = " ";
+        else
+          [B, errmsg] = joinBuildSide (subsetvars (this, j), si);
+          if (! isempty (errmsg))
+            return
+          endif
+          col = B.VariableValues{1};
+        endif
+        tt.VariableValues{j} = col;
+      endfor
+
+    endfunction
+
+    ## How many rows a lag moves the data by.  A count says so directly; a
+    ## duration says it in time, which the step turns into rows; and a
+    ## calendarDuration says it in a calendar unit, which only a timetable
+    ## regular in that unit can answer at all.
+    function [k, errmsg] = lagCount (this, n)
+
+      k = 0;
+      errmsg = '';
+      if (isa (n, 'calendarDuration'))
+        if (! isscalar (n))
+          errmsg = "the lag must be a scalar.";
+          return
+        endif
+        [unit, per, errmsg] = lagCalendarUnit (n);
+        if (! isempty (errmsg))
+          return
+        endif
+        if (! isregular (this, unit))
+          errmsg = sprintf (strcat ("the timetable must be regular with", ...
+                            " respect to %s."), unit);
+          return
+        endif
+        step = calendarStepOf (this.RowTimes);
+        [~, sper, errmsg] = lagCalendarUnit (step);
+        if (! isempty (errmsg))
+          return
+        endif
+        if (sper == 0 || mod (per, sper) != 0)
+          errmsg = strcat ("the lag must be a multiple of the time step", ...
+                           " of the timetable.");
+          return
+        endif
+        k = per / sper;
+        return
+      endif
+
+      if (isduration (n))
+        if (! (isscalar (n) && ! ismissing (n)))
+          errmsg = "the lag must be a scalar.";
+          return
+        endif
+        if (! isregular (this))
+          errmsg = strcat ("the timetable must be regular with respect", ...
+                           " to time.");
+          return
+        endif
+        step = this.TimeStep;
+        r = seconds (n) / seconds (step);
+        if (abs (r - round (r)) > 4 * eps (abs (r) + 1))
+          errmsg = strcat ("the lag must be a multiple of the time step", ...
+                           " of the timetable.");
+          return
+        endif
+        k = round (r);
+        return
+      endif
+
+      if (! (isnumeric (n) && isscalar (n) && isreal (n) && isfinite (n)
+             && n == fix (n)))
+        errmsg = strcat ("the lag must be a whole number of rows, a", ...
+                         " duration, or a calendarDuration.");
+        return
+      endif
+      if (! isregular (this))
+        errmsg = strcat ("the timetable must be regular with respect to", ...
+                         " time.");
+        return
+      endif
+      k = double (n);
+
+    endfunction
+
     ## The body behind 'synchronize'.  ARGS is the whole argument list and
     ## NAMES the caller's names for them, which are what a clash between two
     ## variables of the same name is settled by.  Returns an errmsg body and
@@ -644,8 +752,9 @@ classdef timetable < tabular
       for k = 2:nOp
         tt = horzcat (tt, out{k});
       endfor
-      if (wasGiven (tstep))
-        tt = applyRowTimes (tt, nt, true, tstep);
+      given = retimeGivenStep (tstep, srate);
+      if (! isempty (given))
+        tt = applyRowTimes (tt, nt, true, given);
       endif
 
     endfunction
@@ -717,11 +826,14 @@ classdef timetable < tabular
         return
       endif
       [tt, errmsg] = retimeOnto (this, nt, method, endVals, incEdge, konst);
-      if (isempty (errmsg) && wasGiven (tstep))
+      if (isempty (errmsg))
         ## A step the caller named is the unit the result reports in, so an
         ## hourly grid asked for as 'TimeStep' reads '1 hr' and not
-        ## '01:00:00'.
-        tt = applyRowTimes (tt, nt, true, tstep);
+        ## '01:00:00', and a rate of 2 Hz reads '0.5 sec'.
+        given = retimeGivenStep (tstep, srate);
+        if (! isempty (given))
+          tt = applyRowTimes (tt, nt, true, given);
+        endif
       endif
 
     endfunction
@@ -3748,6 +3860,44 @@ classdef timetable < tabular
     endfunction
 
     ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{ttB} =} lag (@var{ttA})
+    ## @deftypefnx {timetable} {@var{ttB} =} lag (@var{ttA}, @var{n})
+    ##
+    ## Shift the data of a timetable along its own row times.
+    ##
+    ## @code{@var{ttB} = lag (@var{ttA})} moves every value one row later,
+    ## leaving the first row missing and dropping what fell off the end.
+    ## The row times themselves do not move, so the values arrive against
+    ## later times than the ones they were recorded at.
+    ##
+    ## @var{n} says how far, as a whole number of rows, as a
+    ## @code{duration} that must be a multiple of the time step, or as a
+    ## @code{calendarDuration} whose unit the timetable must be regular in.
+    ## A negative @var{n} moves the values earlier instead, and a lag past
+    ## the height of the timetable leaves every row missing.
+    ##
+    ## The timetable must be @strong{regular}: a shift by rows only means
+    ## anything when the rows are evenly spaced, and a timetable of one row
+    ## or of none is not regular.
+    ##
+    ## A row left with no value takes the missing value of its variable's
+    ## own type, which for a @code{logical} variable is @code{false} and for
+    ## a character one a space, neither type having a missing value of its
+    ## own.  Every property of the timetable survives.
+    ##
+    ## @seealso{retime, synchronize, isregular, timetable}
+    ## @end deftypefn
+    function tt = lag (this, n)
+      if (nargin < 2)
+        n = 1;
+      endif
+      [tt, errmsg] = lagResult (this, n);
+      if (! isempty (errmsg))
+        error ("timetable.lag: %s", errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
     ## @deftypefn  {timetable} {@var{tt} =} synchronize (@var{tt1}, @var{tt2})
     ## @deftypefnx {timetable} {@var{tt} =} synchronize (@var{tt1}, @dots{}, @var{ttN})
     ## @deftypefnx {timetable} {@var{tt} =} synchronize (@dots{}, @var{newTimes})
@@ -4999,4 +5149,54 @@ function ops = synchronizeRename (ops, names)
     ops{k} = o;
   endfor
 
+endfunction
+
+## The calendar unit a calendarDuration lag is counted in, and how many of
+## that unit it holds.  A step mixing months with days names no single unit
+## and so cannot count a lag at all.
+
+function [unit, per, errmsg] = lagCalendarUnit (cd)
+
+  unit = '';
+  per = 0;
+  errmsg = '';
+  if (isempty (cd))
+    errmsg = "the timetable has no calendar time step.";
+    return
+  endif
+  dv = datevec (cd);
+  months = dv(1) * 12 + dv(2);
+  dys = dv(3);
+  if (any (dv(4:6)))
+    errmsg = strcat ("a lag in calendar units cannot carry a time of", ...
+                     " day.");
+    return
+  endif
+  if (months != 0 && dys != 0)
+    errmsg = strcat ("a lag in calendar units cannot mix months with", ...
+                     " days.");
+    return
+  endif
+  if (months != 0)
+    unit = 'months';
+    per = months;
+  elseif (dys != 0)
+    unit = 'days';
+    per = dys;
+  else
+    errmsg = "the lag must not be zero calendar units.";
+  endif
+
+endfunction
+
+## The time step the caller named, if it named one at all.  A sample rate
+## names it just as a time step does, in seconds.
+
+function step = retimeGivenStep (tstep, srate)
+  step = [];
+  if (wasGiven (tstep))
+    step = tstep;
+  elseif (wasGiven (srate))
+    step = seconds (1 / srate);
+  endif
 endfunction
