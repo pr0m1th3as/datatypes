@@ -2413,9 +2413,13 @@ classdef timetable < tabular
     ## @qcode{'NewVariableName'} says otherwise, and the merged variables are
     ## no longer reachable by their old names.
     ##
-    ## The units and descriptions of the merged variables do not survive:
-    ## one variable carries one of each, and there is no saying which it
-    ## should be.  The remaining variables keep theirs.
+    ## Nothing the merged variables carried about themselves survives: one
+    ## variable carries one unit, one description, one continuity and one
+    ## entry of a custom property describing the variables, and there is no
+    ## saying which of them the merged variable should take, so it takes
+    ## none: where the continuity is set at all, the merged variable's
+    ## reads @qcode{'unset'}, and a property that was never set stays
+    ## unset.  The remaining variables keep theirs.
     ##
     ## The row times are not a variable and cannot be merged.
     ##

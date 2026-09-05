@@ -2124,6 +2124,14 @@ classdef table < tabular
     ## (@qcode{true}) or @qcode{0} (@qcode{false}).
     ## @end itemize
     ##
+    ## Nothing the merged variables carried about themselves survives: one
+    ## variable carries one unit, one description, one continuity and one
+    ## entry of a custom property describing the variables, and there is no
+    ## saying which of them the merged variable should take, so it takes
+    ## none: where the continuity is set at all, the merged variable's
+    ## reads @qcode{'unset'}, and a property that was never set stays
+    ## unset.  The remaining variables keep theirs.
+    ##
     ## @end deftypefn
     function tbl = mergevars (this, varargin)
       [tbl, errmsg] = mergevarsResult (this, varargin{:});

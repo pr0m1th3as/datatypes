@@ -4548,3 +4548,12 @@
 %! rmprop (timetable (datetime (2024, 1, 1), 1));
 %!error <timetable.rmprop: invalid input type for 'propertyNames'.> ...
 %! rmprop (timetable (datetime (2024, 1, 1), 1), 7);
+
+## Test a merged variable has no entry in a variable-typed custom property
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:2)');
+%! TT = timetable (t, (1:3)', (11:13)', 'VariableNames', {'a', 'b'});
+%! TT = addprop (TT, {'q'}, {'variable'});
+%! TT.Properties.CustomProperties.q = {'m', 'kg'};
+%! q = mergevars (TT, {'a', 'b'}).Properties.CustomProperties.q;
+%! assert_equal (q, {[]});

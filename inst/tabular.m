@@ -2393,6 +2393,21 @@ classdef (Abstract) tabular
         if (! isempty (tbl.VariableContinuity))
           tbl.VariableContinuity{location} = 'unset';
         endif
+        ## A custom property describing the variables says nothing about the
+        ## merged one either, for the same reason.
+        if (! isempty (tbl.CustomProperties))
+          cpNames = fieldnames (tbl.CustomProperties);
+          for k = 1:numel (cpNames)
+            if (! strcmp (tbl.CustomPropTypes.(cpNames{k}), 'variable'))
+              continue
+            endif
+            cpVal = tbl.CustomProperties.(cpNames{k});
+            if (iscell (cpVal) && numel (cpVal) >= location)
+              cpVal(location) = {[]};
+              tbl.CustomProperties.(cpNames{k}) = cpVal;
+            endif
+          endfor
+        endif
       endif
 
     endfunction
