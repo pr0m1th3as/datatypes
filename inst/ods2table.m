@@ -49,7 +49,9 @@
 ## column of the sheet that holds the row names (default @qcode{0}).  Zero is
 ## equivalent to setting @qcode{'ReadRowNames'} to @qcode{false}.  It applies
 ## only to a sheet with no metadata, which says nothing about which column holds
-## row names; a sheet written by @code{table2ods} records the column.
+## row names; a sheet written by @code{table2ods} records the column.  A leading
+## column headed @qcode{Row}, which is what @code{writetable} writes for the row
+## names, is taken as the row names without being named here.
 ## @end multitable
 ##
 ## When the file carries the hidden @qcode{__datatypes_meta__} sheet written by
@@ -314,6 +316,14 @@ endfunction
 function tbl = ods_autodetect (data, vtype, varNamesRow, rowNamesCol)
   ## A foreign sheet carries no metadata, so the caller's options say which row
   ## holds the names and which column the row names, a zero meaning neither.
+  ## A leading column headed with the row-labels dimension name is what
+  ## 'writetable' writes for the row names, so the header declares the column
+  ## rather than the caller having to guess at it.
+  if (! rowNamesCol && varNamesRow > 0 && size (data, 1) >= varNamesRow
+      && ischar (data{varNamesRow,1}) && strcmp (data{varNamesRow,1}, 'Row'))
+    rowNamesCol = 1;
+  endif
+
   RowNames = {};
   if (rowNamesCol > 0 && rowNamesCol <= size (data, 2))
     RowNames = ods_column_strings (data(:,rowNamesCol), vtype(:,rowNamesCol));
@@ -507,6 +517,31 @@ endfunction
 %!   R = ods2table (fn);
 %!   assert_equal (R.Properties.VariableNames, {'n', 's'});
 %!   assert_equal (height (R), 2);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## A file written by 'writetable' round-trips, names and values
+%!test
+%! fn = [tempname() '.ods'];
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 's'});
+%! unwind_protect
+%!   writetable (T, fn);
+%!   R = ods2table (fn);
+%!   assert_equal (isequaln (R, T), true);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## A 'writetable' file keeps its row names, the header naming the column
+%!test
+%! fn = [tempname() '.ods'];
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 's'});
+%! T.Properties.RowNames = {'r1', 'r2'};
+%! unwind_protect
+%!   writetable (T, fn, 'WriteRowNames', true);
+%!   R = ods2table (fn);
+%!   assert_equal (isequaln (R, T), true);
 %! unwind_protect_cleanup
 %!   delete (fn);
 %! end_unwind_protect

@@ -130,7 +130,9 @@
 ## @qcode{'RowNamesColumn'} must be unique, otherwise @code{csv2table} will
 ## return an error.  The default value is @qcode{0}: a file that does not say
 ## which column holds its row names is read as data throughout, and a file
-## written by @code{table2csv} records the column itself.
+## written by @code{table2csv} records the column itself.  A leading column
+## headed @qcode{Row}, which is what @code{writetable} writes for the row
+## names, is taken as the row names without being named here.
 ##
 ## @item @qcode{'TextType'} @tab A character vector or a string scalar
 ## specifying whether the text data in the CSV file should be stored in the
@@ -154,12 +156,15 @@
 ##
 ## @item @qcode{'HexType'} @tab A character vector or a string scalar
 ## specifying whether the hexadecimal text found in the CSV file should be
-## stored as a suitable integer type, @qcode{"auto"} (default), as unaltered
-## input text, @qcode{"text"}, (in which case the data type depends on the
-## @qcode{'TextType'} option), or as any of the integer types supported by
+## stored as a suitable integer type, @qcode{"auto"}, as unaltered
+## input text, @qcode{"text"} (the default, in which case the data type depends
+## on the @qcode{'TextType'} option), or as any of the integer types supported by
 ## Octave.  Valid options are @qcode{"auto"}, @qcode{"text"}, @qcode{"int8"},
 ## @qcode{"int16"}, @qcode{"int32"}, @qcode{"int64"}, @qcode{"uint8"},
-## @qcode{"uint16"}, @qcode{"uint32"}, and @qcode{"uint64"}.
+## @qcode{"uint16"}, @qcode{"uint32"}, and @qcode{"uint64"}.  Detection is off
+## by default because MATLAB does not perform it, so a file carrying no header
+## of ours is read the way MATLAB reads it.  It never applies to a file written
+## by @code{table2csv}, which declares every variable's type.
 ## @end multitable
 ##
 ## A @code{datetime} or @code{duration} variable written by @code{table2csv} is
@@ -186,8 +191,12 @@ function tbl = csv2table (name, varargin)
               'ReadRowNames', 'RowNamesColumn', 'TextType', ...
               'DatetimeType', 'DurationType', 'HexType', 'Delimiter', ...
               'VariableNamesLine'};
+  ## A file that carries no header of ours is read the way MATLAB reads it, so
+  ## hexadecimal detection, which MATLAB does not perform, is off unless it is
+  ## asked for.  It applies only to such a file: a file with a vartype header
+  ## declares every type.
   dfValues = {0, {}, true, 'modify', [], {}, 0, 0, true, 0, 'char', ...
-              'datetime', 'duration', 'auto', ',', []};
+              'datetime', 'duration', 'text', ',', []};
   [numHeaderLines, varNames, readVarNames, varNamingRule, varNamesRow, ...
    varTypes, varUnitsLine, varDescrLine, readRowNames, rowNamesColumn, ...
    textType, datetimeType, durationTypes, hexType, delim, ...
@@ -324,6 +333,15 @@ function tbl = csv2table (name, varargin)
   ## Remove unnecessary header lines
   if (numHeaderLines)
     C(1:numHeaderLines,:) = [];
+  endif
+
+  ## A leading column headed with the row-labels dimension name is what
+  ## 'writetable' writes for the row names, so the header declares the column
+  ## rather than the caller having to guess at it.
+  if (readRowNames && ! rowNamesColumn && varNamesRow > 0
+      && size (C, 1) >= varNamesRow && ischar (C{varNamesRow,1})
+      && strcmp (C{varNamesRow,1}, 'Row'))
+    rowNamesColumn = 1;
   endif
 
   ## Read row names
@@ -638,6 +656,45 @@ endfunction
 %! delete (filename);
 
 ## Test user-defined 'VariableTypes' are applied per column
+## Hexadecimal text is left alone unless the detection is asked for
+%!test
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   fid = fopen (fn, 'w');
+%!   fputs (fid, "h\nFF\n0A\n");
+%!   fclose (fid);
+%!   t = csv2table (fn);
+%!   assert_equal (class (t.h), 'cell');
+%!   assert_equal (t.h, {'FF'; '0A'});
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## A file written by 'writetable' round-trips, names and values
+%!test
+%! fn = [tempname() '.csv'];
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 's'});
+%! unwind_protect
+%!   writetable (T, fn);
+%!   R = csv2table (fn);
+%!   assert_equal (isequaln (R, T), true);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## A 'writetable' file keeps its row names, the header naming the column
+%!test
+%! fn = [tempname() '.csv'];
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 's'});
+%! T.Properties.RowNames = {'r1', 'r2'};
+%! unwind_protect
+%!   writetable (T, fn, 'WriteRowNames', true);
+%!   R = csv2table (fn);
+%!   assert_equal (isequaln (R, T), true);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
 ## 'VariableNamesLine' is MATLAB's spelling of the same option
 %!test
 %! fn = [tempname() '.csv'];
@@ -833,7 +890,7 @@ endfunction
 %! fputs (fid, "h\nFF\n0A\n");
 %! fclose (fid);
 %! unwind_protect
-%!   t = csv2table (fn, 'ReadRowNames', false);
+%!   t = csv2table (fn, 'ReadRowNames', false, 'HexType', 'auto');
 %!   assert_equal (class (t.h), 'uint8');
 %!   assert_equal (t.h, uint8 ([255; 10]));
 %! unwind_protect_cleanup
@@ -937,7 +994,7 @@ endfunction
 %! fputs (fid, "h\nFF\n0A\n");
 %! fclose (fid);
 %! unwind_protect
-%!   t = csv2table (fn, 'ReadRowNames', false);
+%!   t = csv2table (fn, 'ReadRowNames', false, 'HexType', 'auto');
 %!   assert_equal (t.h, uint8 ([255; 10]));
 %! unwind_protect_cleanup
 %!   delete (fn);
