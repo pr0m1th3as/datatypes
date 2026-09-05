@@ -266,6 +266,9 @@ function tbl = read_spreadsheet (file, readVarNames, readRowNames, textType, ...
   if (strcmpi (namingRule, 'modify'))
     names = matlab.lang.makeValidName (names);
   endif
+  ## A table refuses a variable named after one of its dimensions, so a column
+  ## headed 'Row' takes a suffix rather than being refused.
+  names = __undimname__ (names, {'Row', 'Variables'});
 
   ## A leading column becomes row names when requested
   rowNames = {};
@@ -446,6 +449,56 @@ endfunction
 ## Read a comma-delimited file with a header row and automatic type detection
 ## A file written by 'table2ods' is read through its own metadata, not
 ## positionally
+## A text file written by 'writetable' with row names keeps the column
+%!test
+%! fn = [tempname() '.csv'];
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 's'});
+%! T.Properties.RowNames = {'r1', 'r2'};
+%! unwind_protect
+%!   writetable (T, fn, 'WriteRowNames', true);
+%!   R = readtable (fn);
+%!   assert_equal (R.Properties.VariableNames, {'Row_1', 'n', 's'});
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## A spreadsheet written by 'writetable' with row names keeps the column
+%!test
+%! fn = [tempname() '.ods'];
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 's'});
+%! T.Properties.RowNames = {'r1', 'r2'};
+%! unwind_protect
+%!   writetable (T, fn, 'WriteRowNames', true);
+%!   R = readtable (fn);
+%!   assert_equal (R.Properties.VariableNames, {'Row_1', 'n', 's'});
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## 'ReadRowNames' true restores the row names of a text 'writetable' file
+%!test
+%! fn = [tempname() '.csv'];
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 's'});
+%! T.Properties.RowNames = {'r1', 'r2'};
+%! unwind_protect
+%!   writetable (T, fn, 'WriteRowNames', true);
+%!   assert_equal (isequaln (readtable (fn, 'ReadRowNames', true), T), true);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## 'ReadRowNames' true restores the row names of a 'writetable' spreadsheet
+%!test
+%! fn = [tempname() '.ods'];
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 's'});
+%! T.Properties.RowNames = {'r1', 'r2'};
+%! unwind_protect
+%!   writetable (T, fn, 'WriteRowNames', true);
+%!   assert_equal (isequaln (readtable (fn, 'ReadRowNames', true), T), true);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
 ## 'VariableNamesLine' is MATLAB's spelling of the same option
 %!test
 %! fn = [tempname() '.csv'];

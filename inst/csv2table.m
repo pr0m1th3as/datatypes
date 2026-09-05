@@ -378,6 +378,9 @@ function tbl = csv2table (name, varargin)
   if (! isempty (varNames))
     N = varNames;
   endif
+  ## A table refuses a variable named after one of its dimensions, so a column
+  ## of a foreign file headed 'Row' takes a suffix rather than being refused.
+  N = __undimname__ (N, {'Row', 'Variables'});
 
   ## Read variable descriptions and units
   if (varDescrLine)
@@ -666,6 +669,21 @@ endfunction
 %!   t = csv2table (fn);
 %!   assert_equal (class (t.h), 'cell');
 %!   assert_equal (t.h, {'FF'; '0A'});
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## A column named after a dimension is kept under a suffixed name
+%!test
+%! fn = [tempname() '.csv'];
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 's'});
+%! T.Properties.RowNames = {'r1', 'r2'};
+%! unwind_protect
+%!   writetable (T, fn, 'WriteRowNames', true);
+%!   R = csv2table (fn, 'ReadRowNames', false);
+%!   assert_equal (R.Properties.VariableNames, {'Row_1', 'n', 's'});
+%!   assert_equal (R.Row_1, {'r1'; 'r2'});
+%!   assert_equal (R.Properties.RowNames, {});
 %! unwind_protect_cleanup
 %!   delete (fn);
 %! end_unwind_protect

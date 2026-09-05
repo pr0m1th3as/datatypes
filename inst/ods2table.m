@@ -142,7 +142,7 @@ function tbl = ods2table (filename, varargin)
 
   ## No metadata sheet -> infer everything from the data cell value types
   if (isempty (meta))
-    tbl = ods_autodetect (data, vtype, varNamesRow, rowNamesCol);
+    tbl = ods_autodetect (data, vtype, varNamesRow, rowNamesCol, readRowNames);
     return;
   endif
 
@@ -327,14 +327,16 @@ endfunction
 
 ## Foreign-file fallback: no metadata sheet, so infer each column's type from
 ## its cell value types and name the variables Var1, Var2, ...
-function tbl = ods_autodetect (data, vtype, varNamesRow, rowNamesCol)
+function tbl = ods_autodetect (data, vtype, varNamesRow, rowNamesCol, ...
+                               readRowNames)
   ## A foreign sheet carries no metadata, so the caller's options say which row
   ## holds the names and which column the row names, a zero meaning neither.
   ## A leading column headed with the row-labels dimension name is what
   ## 'writetable' writes for the row names, so the header declares the column
   ## rather than the caller having to guess at it.
-  if (! rowNamesCol && varNamesRow > 0 && size (data, 1) >= varNamesRow
-      && ischar (data{varNamesRow,1}) && strcmp (data{varNamesRow,1}, 'Row'))
+  if (readRowNames && ! rowNamesCol && varNamesRow > 0
+      && size (data, 1) >= varNamesRow && ischar (data{varNamesRow,1})
+      && strcmp (data{varNamesRow,1}, 'Row'))
     rowNamesCol = 1;
   endif
 
@@ -358,6 +360,9 @@ function tbl = ods_autodetect (data, vtype, varNamesRow, rowNamesCol)
     varNames = arrayfun (@(x) sprintf ("Var%d", x), 1:ncol, ...
                          'UniformOutput', false);
   endif
+  ## A table refuses a variable named after one of its dimensions, so a column
+  ## of a foreign sheet headed 'Row' takes a suffix rather than being refused.
+  varNames = __undimname__ (varNames, {'Row', 'Variables'});
   varValues = cell (1, ncol);
   for c = 1:ncol
     vt = vtype(:,c);
@@ -531,6 +536,21 @@ endfunction
 %!   R = ods2table (fn);
 %!   assert_equal (R.Properties.VariableNames, {'n', 's'});
 %!   assert_equal (height (R), 2);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## A column named after a dimension is kept under a suffixed name
+%!test
+%! fn = [tempname() '.ods'];
+%! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 's'});
+%! T.Properties.RowNames = {'r1', 'r2'};
+%! unwind_protect
+%!   writetable (T, fn, 'WriteRowNames', true);
+%!   R = ods2table (fn, 'ReadRowNames', false);
+%!   assert_equal (R.Properties.VariableNames, {'Row_1', 'n', 's'});
+%!   assert_equal (R.Row_1, {'r1'; 'r2'});
+%!   assert_equal (R.Properties.RowNames, {});
 %! unwind_protect_cleanup
 %!   delete (fn);
 %! end_unwind_protect
