@@ -54,6 +54,13 @@
 ## @qcode{'C5'} or @qcode{'C5:D8'} limiting the region read.
 ## @end multitable
 ##
+## An OpenDocument file written by @code{table2ods} carries the package's own
+## metadata, which names and types every variable exactly and leaves the data
+## sheet without a header row.  Such a file is read by @code{ods2table}, so it
+## comes back whole rather than being read positionally, which would take its
+## first row of data for the variable names.  An explicit @qcode{'Range'} asks
+## for a block of the sheet instead and is read positionally as usual.
+##
 ## Office Open XML spreadsheets (@qcode{.xlsx}, @qcode{.xlsm}) are read via the
 ## same interface as ODS.  The legacy binary formats @qcode{.xls} and
 ## @qcode{.xlsb} are not supported; use @qcode{.xlsx}, @qcode{.ods}, or a text
@@ -171,7 +178,23 @@ function tbl = read_spreadsheet (file, readVarNames, readRowNames, textType, ...
   if (isXlsx)
     [data, vtype] = __xlsx2table__ (file, sheet);
   else
-    [data, vtype] = __ods2table__ (file, sheet);
+    [data, vtype, meta] = __ods2table__ (file, sheet);
+    if (ischar (data))
+      error ("readtable: %s", data);
+    endif
+    ## A file written by 'table2ods' carries the package's own metadata sheet,
+    ## so its variable names, types and row names are known exactly and its
+    ## data sheet holds no header row.  Read it with 'ods2table' rather than
+    ## positionally, which would take the first row of data for the names.  An
+    ## explicit 'Range' asks for a block of the sheet instead, and is honoured.
+    if (! isempty (meta) && isempty (range))
+      if (isempty (sheet))
+        tbl = ods2table (file);
+      else
+        tbl = ods2table (file, 'Sheet', sheet);
+      endif
+      return;
+    endif
   endif
   if (ischar (data))
     error ("readtable: %s", data);
@@ -387,6 +410,46 @@ endfunction
 %! delete (filename);
 
 ## Read a comma-delimited file with a header row and automatic type detection
+## A file written by 'table2ods' is read through its own metadata, not
+## positionally
+%!test
+%! fn = [tempname() '.fods'];
+%! T = table ([1; 2], {'a'; 'b'}, hours ([1; 2]), ...
+%!            'VariableNames', {'n', 's', 'u'});
+%! T.Properties.VariableUnits = {'kg', '', 'h'};
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   R = readtable (fn);
+%!   assert_equal (isequaln (R, T), true);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## A nested table survives 'readtable' the same way
+%!test
+%! fn = [tempname() '.fods'];
+%! inner = table ([3; 4], [5; 6], 'VariableNames', {'p', 'q'});
+%! T = table ([1; 2], inner, 'VariableNames', {'a', 'v'});
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   R = readtable (fn);
+%!   assert_equal (isequaln (R, T), true);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## An explicit 'Range' reads the block positionally
+%!test
+%! fn = [tempname() '.fods'];
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'n', 'm'});
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   R = readtable (fn, 'Range', 'A1:B2');
+%!   assert_equal (size (R), [1, 2]);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
 %!test
 %! fn = [tempname() '.csv'];
 %! fid = fopen (fn, 'w');
