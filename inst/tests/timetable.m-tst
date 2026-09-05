@@ -3869,3 +3869,152 @@
 %! tq = datetime (2024, 1, 1) + minutes (0:30:180)';
 %! v = [0; 0.0056818181818182; 1; 3.6126692456480; 8; 15.812392179413; 27];
 %! assert (retime (TT, tq, 'makima').v, v, 1e-12);
+
+## Test 'retime' sums the rows falling in each bin, an empty bin giving zero
+%!test
+%! tc = datetime (2024, 1, 1) + hours ([0 1 4 5])';
+%! TT = timetable (tc, [1; 2; 3; 4], 'VariableNames', {'v'});
+%! tg = datetime (2024, 1, 1) + hours (0:2:6)';
+%! assert_equal (retime (TT, tg, 'sum').v, [3; 0; 7; 0]);
+## Test an empty bin makes a product of one
+%!test
+%! tc = datetime (2024, 1, 1) + hours ([0 1 4 5])';
+%! TT = timetable (tc, [1; 2; 3; 4], 'VariableNames', {'v'});
+%! tg = datetime (2024, 1, 1) + hours (0:2:6)';
+%! assert_equal (retime (TT, tg, 'prod').v, [2; 1; 12; 1]);
+## Test an empty bin has no mean
+%!test
+%! tc = datetime (2024, 1, 1) + hours ([0 1 4 5])';
+%! TT = timetable (tc, [1; 2; 3; 4], 'VariableNames', {'v'});
+%! tg = datetime (2024, 1, 1) + hours (0:2:6)';
+%! assert_equal (retime (TT, tg, 'mean').v, [1.5; NaN; 3.5; NaN]);
+## Test an empty bin has no smallest value
+%!test
+%! tc = datetime (2024, 1, 1) + hours ([0 1 4 5])';
+%! TT = timetable (tc, [1; 2; 3; 4], 'VariableNames', {'v'});
+%! tg = datetime (2024, 1, 1) + hours (0:2:6)';
+%! assert_equal (retime (TT, tg, 'min').v, [1; NaN; 3; NaN]);
+## Test an empty bin has no largest value
+%!test
+%! tc = datetime (2024, 1, 1) + hours ([0 1 4 5])';
+%! TT = timetable (tc, [1; 2; 3; 4], 'VariableNames', {'v'});
+%! tg = datetime (2024, 1, 1) + hours (0:2:6)';
+%! assert_equal (retime (TT, tg, 'max').v, [2; NaN; 4; NaN]);
+## Test an empty bin counts no rows
+%!test
+%! tc = datetime (2024, 1, 1) + hours ([0 1 4 5])';
+%! TT = timetable (tc, [1; 2; 3; 4], 'VariableNames', {'v'});
+%! tg = datetime (2024, 1, 1) + hours (0:2:6)';
+%! assert_equal (retime (TT, tg, 'count').v, [2; 0; 2; 0]);
+## Test an empty bin has no first value
+%!test
+%! tc = datetime (2024, 1, 1) + hours ([0 1 4 5])';
+%! TT = timetable (tc, [1; 2; 3; 4], 'VariableNames', {'v'});
+%! tg = datetime (2024, 1, 1) + hours (0:2:6)';
+%! assert_equal (retime (TT, tg, 'firstvalue').v, [1; NaN; 3; NaN]);
+## Test the last value of each bin
+%!test
+%! tc = datetime (2024, 1, 1) + hours ([0 1 4 5])';
+%! TT = timetable (tc, [1; 2; 3; 4], 'VariableNames', {'v'});
+%! tg = datetime (2024, 1, 1) + hours (0:2:6)';
+%! assert_equal (retime (TT, tg, 'lastvalue').v, [2; NaN; 4; NaN]);
+## Test the median of each bin
+%!test
+%! tc = datetime (2024, 1, 1) + hours ([0 1 4 5])';
+%! TT = timetable (tc, [1; 2; 3; 4], 'VariableNames', {'v'});
+%! tg = datetime (2024, 1, 1) + hours (0:2:6)';
+%! assert_equal (retime (TT, tg, 'median').v, [1.5; NaN; 3.5; NaN]);
+## Test the mode of each bin
+%!test
+%! tc = datetime (2024, 1, 1) + hours ([0 1 4 5])';
+%! TT = timetable (tc, [1; 2; 3; 4], 'VariableNames', {'v'});
+%! tg = datetime (2024, 1, 1) + hours (0:2:6)';
+%! assert_equal (retime (TT, tg, 'mode').v, [1; NaN; 3; NaN]);
+
+## Test a function handle is applied to the rows of each bin
+%!test
+%! tc = datetime (2024, 1, 1) + hours ([0 1 4 5])';
+%! TT = timetable (tc, [1; 2; 3; 4], 'VariableNames', {'v'});
+%! tg = datetime (2024, 1, 1) + hours (0:2:6)';
+%! assert_equal (retime (TT, tg, @(x) numel (x)).v, [2; 0; 2; 0]);
+## Test a function handle is given an empty slice for an empty bin
+%!test
+%! tc = datetime (2024, 1, 1) + hours ([0 1 4 5])';
+%! TT = timetable (tc, [1; 2; 3; 4], 'VariableNames', {'v'});
+%! tg = datetime (2024, 1, 1) + hours (0:2:6)';
+%! assert_equal (retime (TT, tg, @(x) double (isempty (x))).v, [0; 1; 0; 1]);
+## Test the slice a function handle is given keeps the variable's type
+%!test
+%! tc = datetime (2024, 1, 1) + hours ([0 1 4 5])';
+%! TT = timetable (tc, [1; 2; 3; 4], 'VariableNames', {'v'});
+%! tg = datetime (2024, 1, 1) + hours (0:2:6)';
+%! f = @(x) double (isa (x, 'double'));
+%! assert_equal (retime (TT, tg, f).v, [1; 1; 1; 1]);
+
+## Test the bins are closed on the left by default
+%!test
+%! ti = datetime (2024, 1, 1) + hours (0:4)';
+%! TT = timetable (ti, [1; 2; 3; 4; 5], 'VariableNames', {'v'});
+%! te = datetime (2024, 1, 1) + hours (0:2:4)';
+%! assert_equal (retime (TT, te, 'sum').v, [3; 7; 5]);
+## Test 'IncludedEdge' closes the bins on the right
+%!test
+%! ti = datetime (2024, 1, 1) + hours (0:4)';
+%! TT = timetable (ti, [1; 2; 3; 4; 5], 'VariableNames', {'v'});
+%! te = datetime (2024, 1, 1) + hours (0:2:4)';
+%! v = retime (TT, te, 'sum', 'IncludedEdge', 'right').v;
+%! assert_equal (v, [1; 5; 9]);
+
+## Test aggregating a duration variable keeps it a duration
+%!test
+%! tc = datetime (2024, 1, 1) + hours ([0 1 4 5])';
+%! TT = timetable (tc, seconds ([1; 2; 3; 4]), 'VariableNames', {'v'});
+%! tg = datetime (2024, 1, 1) + hours (0:2:6)';
+%! assert_equal (class (retime (TT, tg, 'sum').v), 'duration');
+## Test the mean of a logical variable is a double
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, logical ([1; 0; 1]), 'VariableNames', {'v'});
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! assert_equal (class (retime (TT, th, 'mean').v), 'double');
+## Test aggregating a datetime variable keeps it a datetime
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, ta, 'VariableNames', {'v'});
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! assert_equal (class (retime (TT, th, 'mean').v), 'datetime');
+## Test counting the rows of a categorical variable
+%!test
+%! ta = datetime (2024, 1, 1) + hours ([0 1 3])';
+%! TT = timetable (ta, categorical ({'x'; 'y'; 'x'}), 'VariableNames', {'v'});
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! assert_equal (retime (TT, th, 'count').v, [1; 1; 0; 1]);
+
+## Test an aggregation accepts duplicated row times
+%!test
+%! td = datetime (2024, 1, 1) + hours ([0 1 1 3])';
+%! TT = timetable (td, [1; 2; 3; 4], 'VariableNames', {'v'});
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! assert_equal (retime (TT, th, 'sum').v, [1; 5; 0; 4]);
+## Test an aggregation accepts unsorted row times
+%!test
+%! tu = datetime (2024, 1, 1) + hours ([2 0 1 3])';
+%! TT = timetable (tu, [1; 2; 3; 4], 'VariableNames', {'v'});
+%! th = datetime (2024, 1, 1) + hours (0:3)';
+%! assert_equal (retime (TT, th, 'sum').v, [2; 3; 1; 4]);
+## Test aggregating duration row times
+%!test
+%! U = timetable (seconds ([0; 1; 3]), [10; 20; 40], 'VariableNames', {'v'});
+%! assert_equal (retime (U, seconds ((0:2:4)'), 'sum').v, [30; 40; 0]);
+
+## Test input validation for 'timetable.retime' aggregation
+%!error <timetable.retime: unknown method 'std'.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), datetime (2024, 1, 1) + hours ((0:2)'), 'std');
+%!error <timetable.retime: 'IncludedEdge' must be 'left' or 'right'.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), (1:3)'), datetime (2024, 1, 1) + hours ((0:2)'), 'sum', 'IncludedEdge', 'middle');
+%!error <timetable.retime: the 'mean' method takes numeric, logical, datetime and duration variables only, and 'v' is of class 'categorical'.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), categorical ({'a'; 'b'; 'c'}), 'VariableNames', {'v'}), datetime (2024, 1, 1) + hours ((0:2)'), 'mean');
+%!error <timetable.retime: the 'sum' method has no meaning for the datetime variable 'v'.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ((0:2)'), datetime (2024, 1, 1) + hours ((0:2)'), 'VariableNames', {'v'}), datetime (2024, 1, 1) + hours ((0:2)'), 'sum');
+%!error <timetable.retime: the function handle method @\(x\) max \(x\) - min \(x\) returned a value that is not a single row for variable 'v'.> ...
+%! retime (timetable (datetime (2024, 1, 1) + hours ([0 1 4 5]'), [1; 2; 3; 4], 'VariableNames', {'v'}), datetime (2024, 1, 1) + hours ((0:2:6)'), @(x) max (x) - min (x));

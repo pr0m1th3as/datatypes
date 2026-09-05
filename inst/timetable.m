@@ -537,23 +537,28 @@ classdef timetable < tabular
       spec = args{1};
       rest = args(2:end);
 
+      optNames = {'TimeStep', 'SampleRate', 'EndValues', 'IncludedEdge'};
       method = 'default';
       if (! isempty (rest))
         first = rest{1};
-        if (isa (first, 'string') && isscalar (first))
-          first = char (first);
-        endif
-        if (ischar (first) && isrow (first) && ! any (strcmpi (first, ...
-                                {'TimeStep', 'SampleRate', 'EndValues'})))
-          method = lower (first);
+        if (is_function_handle (first))
+          method = first;
           rest = rest(2:end);
+        else
+          if (isa (first, 'string') && isscalar (first))
+            first = char (first);
+          endif
+          if (ischar (first) && isrow (first)
+              && ! any (strcmpi (first, optNames)))
+            method = lower (first);
+            rest = rest(2:end);
+          endif
         endif
       endif
 
-      optNames = {'TimeStep', 'SampleRate', 'EndValues'};
-      dfValues = {missing, missing, 'extrap'};
-      [tstep, srate, endVals, extra] = parsePairedArguments (optNames, ...
-                                                    dfValues, rest(:));
+      dfValues = {missing, missing, 'extrap', 'left'};
+      [tstep, srate, endVals, incEdge, extra] = ...
+                    parsePairedArguments (optNames, dfValues, rest(:));
       if (! isempty (extra))
         name = extra{1};
         if (isa (name, 'string') && isscalar (name))
@@ -585,11 +590,21 @@ classdef timetable < tabular
         return
       endif
 
+      if (isa (incEdge, 'string') && isscalar (incEdge))
+        incEdge = char (incEdge);
+      endif
+      if (! (ischar (incEdge) && isrow (incEdge)
+             && any (strcmpi (incEdge, {'left', 'right'}))))
+        errmsg = "'IncludedEdge' must be 'left' or 'right'.";
+        return
+      endif
+      incEdge = lower (incEdge);
+
       [nt, errmsg] = retimeTimes (this.RowTimes, spec, tstep, srate);
       if (! isempty (errmsg))
         return
       endif
-      [tt, errmsg] = retimeOnto (this, nt, method, endVals);
+      [tt, errmsg] = retimeOnto (this, nt, method, endVals, incEdge);
 
     endfunction
     ## The body behind 'retime', and the per-operand half of 'synchronize'.
@@ -603,7 +618,7 @@ classdef timetable < tabular
     ## target time up among the row times, and needs no missing value on the
     ## way, so it serves a cell or a char variable that has none.
     ## Interpolation goes through the fill engine, which does need one.
-    function [tt, errmsg] = retimeOnto (this, nt, method, endVals)
+    function [tt, errmsg] = retimeOnto (this, nt, method, endVals, incEdge)
 
       tt = this;
       errmsg = '';
@@ -612,23 +627,9 @@ classdef timetable < tabular
       nOld = numel (rt);
       nNew = numel (nt);
 
-      ## Reading values off the old times means knowing where every row sits,
-      ## and knowing it once each.
       if (any (ismissing (rt)))
         errmsg = "the row times must not be missing.";
         return
-      endif
-      if (nOld > 1)
-        if (numel (unique (rt)) != nOld)
-          errmsg = sprintf (strcat ("the row times must be unique when", ...
-                                    " retiming with '%s'."), method);
-          return
-        endif
-        if (! (issorted (rt) || issorted (flipud (rt))))
-          errmsg = sprintf (strcat ("the row times must be sorted when", ...
-                                    " retiming with '%s'."), method);
-          return
-        endif
       endif
 
       [mv, errmsg] = retimeMethods (this, method);
@@ -637,10 +638,42 @@ classdef timetable < tabular
       endif
 
       interps = {'linear', 'spline', 'pchip', 'makima'};
-      isInterp = false (1, width (this));
-      for j = 1:width (this)
-        isInterp(j) = any (strcmp (mv{j}, interps));
+      neighbours = {'previous', 'next', 'nearest'};
+      aggs = timetable.retimeAggregations ();
+      nv = width (this);
+      isInterp = false (1, nv);
+      isAgg = false (1, nv);
+      isNeigh = false (1, nv);
+      for j = 1:nv
+        if (is_function_handle (mv{j}))
+          isAgg(j) = true;
+        else
+          isInterp(j) = any (strcmp (mv{j}, interps));
+          isNeigh(j) = any (strcmp (mv{j}, neighbours));
+          isAgg(j) = any (strcmp (mv{j}, aggs));
+        endif
       endfor
+
+      ## What the row times must say depends on what is asked of them.
+      ## Interpolation reads them as sample points and needs each row placed
+      ## once; a neighbouring value needs only an order to look along; and an
+      ## aggregation puts rows into bins, which repeats and disorder do not
+      ## disturb.
+      if (nOld > 1)
+        if (any (isInterp) && numel (unique (rt)) != nOld)
+          errmsg = sprintf (strcat ("the row times must be unique when", ...
+                                    " retiming with '%s'."), ...
+                            retimeMethodName (method));
+          return
+        endif
+        if ((any (isInterp) || any (isNeigh))
+            && ! (issorted (rt) || issorted (flipud (rt))))
+          errmsg = sprintf (strcat ("the row times must be sorted when", ...
+                                    " retiming with '%s'."), ...
+                            retimeMethodName (method));
+          return
+        endif
+      endif
 
       ## A variable an interpolating method cannot take is refused here
       ## rather than by the fill engine, so that the complaint names the
@@ -671,11 +704,30 @@ classdef timetable < tabular
       else
         tt = subsetrows (this, ones (nNew, 1));
       endif
+      ## Which target bin each row falls into, worked out once for every
+      ## aggregating variable since they all share the grid.
+      bins = [];
+      if (any (isAgg) && nOld > 0 && nNew > 0)
+        [bins, errmsg] = retimeBins (rt, nt, incEdge);
+        if (! isempty (errmsg))
+          return
+        endif
+      endif
+
       ivars = find (isInterp);
       for j = 1:width (this)
         src = this.VariableValues{j};
         if (isInterp(j) && nOld > 0 && nNew > 0)
           tt.VariableValues{j} = F.VariableValues{find (ivars == j)};
+          continue
+        endif
+        if (isAgg(j) && nOld > 0 && nNew > 0)
+          [col, errmsg] = retimeAggregated (src, bins, nNew, mv{j}, ...
+                                            this.VariableNames{j});
+          if (! isempty (errmsg))
+            return
+          endif
+          tt.VariableValues{j} = col;
           continue
         endif
 
@@ -786,8 +838,13 @@ classdef timetable < tabular
 
       mv = {};
       errmsg = '';
-      known = {'fillwithmissing', 'previous', 'next', 'nearest', ...
-               'linear', 'spline', 'pchip', 'makima'};
+      if (is_function_handle (method))
+        mv = repmat ({method}, 1, width (this));
+        return
+      endif
+      known = [{'fillwithmissing', 'previous', 'next', 'nearest', ...
+                'linear', 'spline', 'pchip', 'makima'}, ...
+               timetable.retimeAggregations()];
       if (any (strcmp (method, known)))
         mv = repmat ({method}, 1, width (this));
         return
@@ -3495,6 +3552,27 @@ classdef timetable < tabular
     ## an @qcode{'unset'} or @qcode{'event'} one as
     ## @qcode{'fillwithmissing'}.
     ##
+    ## @var{method} may instead aggregate the rows the target times gather
+    ## into each bin, as @qcode{'sum'}, @qcode{'prod'}, @qcode{'mean'},
+    ## @qcode{'median'}, @qcode{'mode'}, @qcode{'min'}, @qcode{'max'},
+    ## @qcode{'count'}, @qcode{'firstvalue'} or @qcode{'lastvalue'}, or as a
+    ## function handle taking the rows of one bin and returning a single row.
+    ## A bin holding no row answers 0 for @qcode{'sum'}, 1 for
+    ## @qcode{'prod'}, 0 for @qcode{'count'} and missing for the rest, and a
+    ## function handle is called on it too, with an empty slice of the
+    ## variable's own type.  Every method but @qcode{'count'},
+    ## @qcode{'firstvalue'} and @qcode{'lastvalue'} needs a numeric,
+    ## @code{logical}, @code{datetime} or @code{duration} variable.
+    ##
+    ## @qcode{'IncludedEdge'} says which edge of a bin belongs to it,
+    ## @qcode{'left'} by default, under which the last bin runs on past the
+    ## last target time; @qcode{'right'} instead lets the first bin run back
+    ## before the first.  It is read only by an aggregating method.
+    ##
+    ## An aggregation reads the row times as bins rather than as sample
+    ## points, so it accepts row times that repeat and row times out of
+    ## order, both of which the other methods refuse.
+    ##
     ## @qcode{'EndValues'} says what a target time outside the span of the
     ## old ones takes, either @qcode{'extrap'} or a constant.  It is
     ## @qcode{'extrap'} by default, under which @qcode{'linear'} and the
@@ -3519,6 +3597,18 @@ classdef timetable < tabular
     endfunction
 
   endmethods
+  methods (Static, Hidden)
+
+    ## The named methods that aggregate the rows falling in one target bin.
+    ## Kept in one place because both the method resolver and the family
+    ## test read it.
+    function out = retimeAggregations ()
+      out = {'sum', 'prod', 'mean', 'median', 'mode', 'min', 'max', ...
+             'count', 'firstvalue', 'lastvalue'};
+    endfunction
+
+  endmethods
+
   methods (Static)
 
     ## -*- texinfo -*-
@@ -4231,4 +4321,227 @@ function si = retimeNeighbor (rt, nt, method)
   ok = j > 0;
   si(ok) = ord(j(ok));
 
+endfunction
+
+## The name a complaint about the row times should use, a function handle
+## having none of its own.
+
+function out = retimeMethodName (method)
+  if (is_function_handle (method))
+    out = func2str (method);
+  else
+    out = method;
+  endif
+endfunction
+
+## Which target bin each row time falls into, or NaN for a row in none.  The
+## bins are the intervals the target times cut the line into: closed on the
+## left by default, so the last one runs on to the end of time, and closed on
+## the right instead when asked, so the first one runs back from the start.
+
+function [bins, errmsg] = retimeBins (rt, nt, incEdge)
+
+  bins = [];
+  errmsg = '';
+  ns = sort (nt);
+  if (isdatetime (rt))
+    x = seconds (rt(:) - ns(1));
+    e = seconds (ns(:)' - ns(1));
+  else
+    x = seconds (rt(:));
+    e = seconds (ns(:)');
+  endif
+  if (strcmp (incEdge, 'left'))
+    bins = __binassign__ (x, [e, Inf], true);
+  else
+    bins = __binassign__ (x, [-Inf, e], false);
+  endif
+
+  ## The bins are numbered along the sorted target times; a caller that asked
+  ## for them in the other order is answered in the order it asked.
+  if (numel (nt) > 1 && ! issorted (nt))
+    [~, back] = ismember (nt(:), ns(:));
+    remap = zeros (numel (ns), 1);
+    remap(back) = (1:numel (nt))';
+    ok = ! isnan (bins);
+    bins(ok) = remap(bins(ok));
+  endif
+
+endfunction
+
+## One variable aggregated onto NNEW target bins.  BINS says which bin each
+## row belongs to.  Returns an errmsg body for the caller to raise.
+
+function [col, errmsg] = retimeAggregated (src, bins, nNew, m, vname)
+
+  col = [];
+  errmsg = '';
+  counting = {'count', 'firstvalue', 'lastvalue'};
+
+  ## The computing methods work on a number, so a variable that is not one
+  ## and cannot be read as one is refused; picking a row out or counting the
+  ## rows asks nothing of the type at all.
+  if (! (is_function_handle (m) || any (strcmp (m, counting))))
+    if (! (isnumeric (src) || islogical (src) || isdatetime (src)
+           || isduration (src)))
+      errmsg = sprintf (strcat ("the '%s' method takes numeric, logical,", ...
+                        " datetime and duration variables only, and '%s'", ...
+                        " is of class '%s'."), m, vname, class (src));
+      return
+    endif
+    if (isdatetime (src) && any (strcmp (m, {'sum', 'prod'})))
+      errmsg = sprintf (strcat ("the '%s' method has no meaning for the", ...
+                        " datetime variable '%s'."), m, vname);
+      return
+    endif
+  endif
+
+  for j = 1:nNew
+    rows = find (bins == j);
+    [v, errmsg] = retimeApply (m, src(rows,:), src);
+    if (! isempty (errmsg))
+      if (is_function_handle (m))
+        errmsg = sprintf (strcat ("the function handle method %s returned", ...
+                          " a value that is not a single row for variable", ...
+                          " '%s'."), func2str (m), vname);
+      endif
+      return
+    endif
+    if (j == 1)
+      col = repmat (v, nNew, 1);
+    else
+      col(j,:) = v;
+    endif
+  endfor
+
+endfunction
+
+## One method applied to the rows of one bin, returning a single row.  PROTO
+## is the whole variable, which carries the type an empty bin still has to
+## answer in.
+
+function [v, errmsg] = retimeApply (m, x, proto)
+
+  v = [];
+  errmsg = '';
+  if (is_function_handle (m))
+    v = m (x);
+    if (size (v, 1) != 1)
+      errmsg = "not a single row.";
+    endif
+    return
+  endif
+
+  nc = max (size (proto, 2), 1);
+  if (strcmp (m, 'count'))
+    v = repmat (size (x, 1), 1, nc);
+    return
+  endif
+  if (any (strcmp (m, {'firstvalue', 'lastvalue'})))
+    if (isempty (x))
+      [v, errmsg] = retimeMissingRow (proto, nc);
+    elseif (strcmp (m, 'firstvalue'))
+      v = x(1,:);
+    else
+      v = x(end,:);
+    endif
+    return
+  endif
+
+  ## An empty bin takes the method's own empty value, which is 0 for a sum
+  ## and 1 for a product because that is what each of them makes of nothing,
+  ## and missing for every method that has to look at a value to answer.
+  if (isempty (x))
+    if (strcmp (m, 'sum'))
+      v = retimeZeroRow (proto, nc, 0);
+    elseif (strcmp (m, 'prod'))
+      v = retimeZeroRow (proto, nc, 1);
+    else
+      [v, errmsg] = retimeMissingRow (proto, nc);
+    endif
+    return
+  endif
+
+  ## A datetime is measured from its own first entry and a duration in
+  ## seconds, so that each comes back as what it was.
+  if (isdatetime (x))
+    origin = x(1);
+    y = seconds (x - origin);
+  elseif (isduration (x))
+    y = seconds (x);
+  else
+    y = double (x);
+  endif
+  nan = isnan (y);
+  cnt = sum (! nan, 1);
+  z = y;
+  z(nan) = 0;
+  switch (m)
+    case 'sum'
+      w = sum (z, 1);
+    case 'prod'
+      z(nan) = 1;
+      w = prod (z, 1);
+    case 'mean'
+      w = sum (z, 1) ./ cnt;
+    case 'min'
+      w = min (y, [], 1);
+    case 'max'
+      w = max (y, [], 1);
+    case {'median', 'mode'}
+      w = NaN (1, columns (y));
+      for c = 1:columns (y)
+        col = y(! nan(:,c), c);
+        if (! isempty (col))
+          w(c) = feval (m, col);
+        endif
+      endfor
+  endswitch
+
+  if (isdatetime (x))
+    v = origin + seconds (w);
+  elseif (isduration (x))
+    v = seconds (w);
+  elseif (islogical (x))
+    v = w;
+  else
+    v = cast (w, class (x));
+  endif
+
+endfunction
+
+## One row of missing values matching the type of PROTO, and one row of a
+## constant matching it, for the bins that hold nothing.
+
+function [v, errmsg] = retimeMissingRow (proto, nc)
+  v = [];
+  errmsg = '';
+  if (isdatetime (proto))
+    v = repmat (NaT, 1, nc);
+  elseif (isduration (proto))
+    v = seconds (NaN (1, nc));
+  elseif (isa (proto, 'categorical'))
+    v = repmat (categorical (missing), 1, nc);
+  elseif (isa (proto, 'string'))
+    v = repmat (string (missing), 1, nc);
+  elseif (iscellstr (proto))
+    v = repmat ({''}, 1, nc);
+  elseif (islogical (proto) || isinteger (proto))
+    v = NaN (1, nc);
+  elseif (isnumeric (proto))
+    v = NaN (1, nc, class (proto));
+  else
+    errmsg = sprintf (strcat ("a bin holding no row has no value for a", ...
+                              " variable of class '%s'."), class (proto));
+  endif
+endfunction
+
+function v = retimeZeroRow (proto, nc, k)
+  if (isduration (proto))
+    v = seconds (k * ones (1, nc));
+  elseif (islogical (proto))
+    v = k * ones (1, nc);
+  else
+    v = cast (k * ones (1, nc), class (proto));
+  endif
 endfunction
