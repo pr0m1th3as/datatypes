@@ -22,8 +22,9 @@
 ##
 ## It carries the metadata every tabular class shares, from
 ## @code{datatypes.tabular.TabularProperties}, and adds the four that
-## describe the row times: @qcode{RowTimes}, @qcode{StartTime},
-## @qcode{SampleRate} and @qcode{TimeStep}.  It is what
+## describe the row times, @qcode{RowTimes}, @qcode{StartTime},
+## @qcode{SampleRate} and @qcode{TimeStep}, together with @qcode{Events}.
+## It is what
 ## @qcode{@var{tt}.Properties} returns and cannot be constructed directly.
 ##
 ## @end deftp
@@ -34,6 +35,7 @@ classdef TimetableProperties < datatypes.tabular.TabularProperties
     StartTime = []
     SampleRate = []
     TimeStep = []
+    Events = []
   endproperties
 
   methods (Access = {?timetable})
@@ -67,7 +69,7 @@ classdef TimetableProperties < datatypes.tabular.TabularProperties
       names = {'Description', 'UserData', 'DimensionNames', 'VariableNames', ...
                'VariableTypes', 'VariableDescriptions', 'VariableUnits', ...
                'VariableContinuity', 'RowTimes', 'StartTime', 'SampleRate', ...
-               'TimeStep', 'CustomProperties'};
+               'TimeStep', 'Events', 'CustomProperties'};
     endfunction
 
   endmethods

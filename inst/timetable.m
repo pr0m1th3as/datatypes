@@ -125,6 +125,31 @@ classdef timetable < tabular
     ## @end deftp
     TimeStep = []
 
+    ## -*- texinfo -*-
+    ## @deftp {timetable} {property} Events
+    ##
+    ## Event table attached to this timetable
+    ##
+    ## Event table attached to this timetable, specified as an
+    ## @code{eventtable}, or empty when no events are attached.  A plain
+    ## @code{timetable} may be assigned and is converted, though no variable
+    ## of it is guessed to hold the event labels; assigning @code{[]} detaches
+    ## whatever was there.  The event table's row times must be of the same
+    ## type as this timetable's, so a duration-keyed timetable takes a
+    ## duration-keyed event table and a datetime-keyed one takes a
+    ## datetime-keyed event table.  Nothing requires the events to lie within
+    ## the span of the row times, and events entirely outside it are accepted.
+    ##
+    ## An operation that preserves the rows carries the event table through
+    ## unchanged: it is never subsetted, filtered, re-timed or reordered along
+    ## with them.
+    ##
+    ## An @code{eventtable} has no @qcode{Events} property of its own, an
+    ## event table not being something that can itself carry events.
+    ##
+    ## @end deftp
+    Events = []
+
   endproperties
 
   properties (Access = protected)
@@ -287,6 +312,20 @@ classdef timetable < tabular
       out.StartTime = this.StartTime;
       out.SampleRate = this.SampleRate;
       out.TimeStep = this.TimeStep;
+      out.Events = eventsOf (this);
+    endfunction
+
+    ## The attached event table, read through an accessor rather than off the
+    ## property.  A subclass may not have the property at all, and an
+    ## 'eventtable' does not: nothing inherited from here may name it.
+    function out = eventsOf (this)
+      out = this.Events;
+    endfunction
+
+    ## The attached event table assigned, through the same seam.  VAL is
+    ## whatever the user gave and is validated here.
+    function this = setEventsOf (this, val)
+      this.Events = checkEvents (this, val);
     endfunction
 
     ## One of those four assigned.  Each of them writes through to the
@@ -315,6 +354,9 @@ classdef timetable < tabular
           rt = steppedTimes (this.StartTime, val, height (this));
           this.StepDeclared = true;
           this = applyRowTimes (this, rt, true, val);
+
+        case 'Events'
+          this = setEventsOf (this, val);
 
         otherwise
           handled = false;
@@ -4219,6 +4261,33 @@ function tf = boundMet (t, b, closed, side)
     endif
   endif
 
+endfunction
+
+## The value assigned to 'Events', validated and, where it is a plain
+## timetable, converted.  An empty matrix detaches whatever was there.  The
+## event times must be of the same type as the row times they annotate,
+## since an event that cannot be placed against a row says nothing about it.
+function val = checkEvents (this, val)
+  clstype = class (this);
+  if (isnumeric (val) && isempty (val))
+    val = [];
+    return
+  endif
+  if (! isa (val, 'timetable'))
+    error (strcat ("%s.subsasgn: 'Events' must be an eventtable, a", ...
+                   " timetable to convert into one, or [] to detach the", ...
+                   " one attached."), clstype);
+  endif
+  if (! isa (val, 'eventtable'))
+    val = eventtable (val);
+  endif
+  evClass = class (val.Properties.RowTimes);
+  ttClass = class (this.Properties.RowTimes);
+  if (! strcmp (evClass, ttClass))
+    error (strcat ("%s.subsasgn: the attached event table's row times must", ...
+                   " be of the same type as this %s's row times: got %s", ...
+                   " against %s."), clstype, clstype, evClass, ttClass);
+  endif
 endfunction
 
 function tf = wasGiven (x)

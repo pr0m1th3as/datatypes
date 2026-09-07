@@ -365,6 +365,14 @@ classdef (Abstract) tabular
       error ("%s: subclass must implement setRowLabelProperty.", class (this));
     endfunction
 
+    ## The event table attached to this object, or empty where the class has
+    ## no such thing.  Only a 'timetable' carries one, and an 'eventtable'
+    ## carries none however much it inherits, so the property is reached
+    ## through here and never named by a shared body.
+    function out = eventsOf (this)
+      out = [];
+    endfunction
+
     ## This object with its labels subset by IXROWS, the same index the caller
     ## has just applied to the variables.  A class whose labels are optional
     ## leaves them alone when there are none to subset.
@@ -3294,7 +3302,10 @@ classdef (Abstract) tabular
     ## values themselves compare equal; and a timetable's 'TimeStep',
     ## 'SampleRate', 'StartTime' and step provenance, which describe the row
     ## times rather than adding to them, so a timetable told its step equals
-    ## one that read the same step off the times it was given.  OTHERS holds
+    ## one that read the same step off the times it was given.  An attached
+    ## event table is state a user set rather than a description of the row
+    ## times, so it is compared, and reached through 'eventsOf' because a
+    ## shared body may not name the property.  OTHERS holds
     ## the remaining arguments, already known to be of this same class.
     ## NANEQUAL selects 'isequaln' wherever a user value can sit.
     function TF = isequalResult (this, others, nanEqual)
@@ -3319,7 +3330,8 @@ classdef (Abstract) tabular
           return;
         endif
         if (! (eqf (this.UserData, B.UserData)
-               && eqf (this.CustomProperties, B.CustomProperties)))
+               && eqf (this.CustomProperties, B.CustomProperties)
+               && eqf (eventsOf (this), eventsOf (B))))
           return;
         endif
         if (hasRowLabels (this) != hasRowLabels (B))

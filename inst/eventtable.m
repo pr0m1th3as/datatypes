@@ -121,6 +121,24 @@ classdef eventtable < timetable
 
   endproperties
 
+  properties (Constant, Access = private, Hidden)
+
+    ## An event table is not something that can carry an event table, so the
+    ## property inherited from 'timetable' is shadowed by one that cannot be
+    ## read, written or discovered.  A classdef subclass cannot delete an
+    ## inherited property, and hiding it alone would leave the slot writable:
+    ## a merge body storing an event table here would build a cycle that
+    ## every recursive operation would follow, and nothing would report it at
+    ## the time.  Constant and private together make that state
+    ## unrepresentable rather than merely forbidden.  'isprop' still answers
+    ## true for the name, and the value is never anything but this one.
+    ##
+    ## Nothing inherited from 'timetable' may name this property; the two
+    ## accessors below are the only way in, and both refuse.
+    Events = []
+
+  endproperties
+
   methods (Access = public)
 
     ## -*- texinfo -*-
@@ -318,12 +336,29 @@ classdef eventtable < timetable
   methods (Access = protected)
 
     ## The three event properties travel with the four a timetable publishes
-    ## about its row times, so that 'Properties' carries all seven.
+    ## about its row times.  'Events' is not among them: an event table does
+    ## not carry one, so the field goes before the properties object is
+    ## handed the rest.
     function out = rowLabelProperties (this)
       out = rowLabelProperties@timetable (this);
+      out = rmfield (out, 'Events');
       out.EventLabelsVariable = this.EventLabelsVariable;
       out.EventLengthsVariable = this.EventLengthsVariable;
       out.EventEndsVariable = this.EventEndsVariable;
+    endfunction
+
+    ## An event table has no attached event table and never will, so the
+    ## reader answers with nothing rather than reaching the shadowed
+    ## property, which it could not read anyway.
+    function out = eventsOf (this)
+      out = [];
+    endfunction
+
+    ## Nothing may attach an event table to an event table.
+    function this = setEventsOf (this, val)
+      error (strcat ("eventtable.subsasgn: 'Events' is not a property of", ...
+                     " an event table; an event table cannot carry an", ...
+                     " event table."));
     endfunction
 
     ## One of the seven assigned.  The three event properties hold a variable
