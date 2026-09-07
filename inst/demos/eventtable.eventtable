@@ -1,0 +1,52 @@
+%!demo
+%! ## An event table is a timetable whose rows are events.  Given only the
+%! ## times, it labels them `Event 1`, `Event 2` and so on and points
+%! ## `EventLabelsVariable` at the variable holding them.
+%!
+%! t0 = datetime (2024, 3, 1);
+%! eventtable (t0 + hours ([2; 9; 14]))
+
+%!demo
+%! ## `EventLabels` names the events, and `EventLengths` makes each of them
+%! ## an interval rather than an instant.  An interval runs from the event's
+%! ## own time and stops short of its end, so a two-hour event beginning at
+%! ## 02:00 covers 02:00 and 03:00 but not 04:00.
+%!
+%! t0 = datetime (2024, 3, 1);
+%! ET = eventtable (t0 + hours ([2; 9]), ...
+%!                  'EventLabels', ["rain"; "snow"], ...
+%!                  'EventLengths', hours ([2; 1]))
+%!
+%! ## The three properties hold variable *names*, not the values.
+%! ET.Properties.EventLabelsVariable
+
+%!demo
+%! ## `EventEnds` says the same thing the other way round.  A length and an
+%! ## end are mutually exclusive: an event states its extent once.
+%!
+%! t0 = datetime (2024, 3, 1);
+%! eventtable (t0 + hours ([2; 9]), 'EventLabels', ["rain"; "snow"], ...
+%!             'EventEnds', t0 + hours ([4; 10]))
+
+%!demo
+%! ## An existing timetable becomes an event table, keeping its variables.
+%! ## No variable is guessed to hold the labels, so `EventLabelsVariable`
+%! ## has to be named if one of them does.
+%!
+%! t0 = datetime (2024, 3, 1);
+%! Phase = ["dry"; "wet"];
+%! Depth = [12; 45];
+%! TT = timetable (Phase, Depth, 'RowTimes', t0 + hours ([2; 9]));
+%! ET = eventtable (TT, 'EventLabelsVariable', 'Phase');
+%! ET.Properties.EventLabelsVariable
+
+%!demo
+%! ## The event table is attached to the timetable it describes, and a
+%! ## row-preserving operation carries it through untouched.
+%!
+%! t0 = datetime (2024, 3, 1);
+%! TT = timetable ([12; 45; 23; 31], 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'Depth'});
+%! TT.Properties.Events = eventtable (t0 + hours ([1; 3]), ...
+%!                                    'EventLabels', ["rain"; "snow"]);
+%! height (sortrows (TT).Properties.Events)

@@ -1,0 +1,35 @@
+%!demo
+%! ## `syncevents` copies the attached event table's data onto the rows its
+%! ## events cover.  A row no event covers takes a missing value.
+%!
+%! t0 = datetime (2024, 3, 1);
+%! TT = timetable ([12; 45; 23; 31], 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'Depth'});
+%! TT.Properties.Events = eventtable (t0 + hours ([1; 3]), ...
+%!                                    'EventLabels', ["rain"; "snow"]);
+%! syncevents (TT)
+
+%!demo
+%! ## An interval event covers the rows from its own time up to but not
+%! ## including its end, so a two-hour event beginning at 01:00 covers 01:00
+%! ## and 02:00.  A default label answers for the rows left over.
+%!
+%! t0 = datetime (2024, 3, 1);
+%! TT = timetable ([12; 45; 23; 31], 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'Depth'});
+%! TT.Properties.Events = eventtable (t0 + hours (1), ...
+%!                                    'EventLabels', "rain", ...
+%!                                    'EventLengths', hours (2));
+%! syncevents (TT, "dry")
+
+%!demo
+%! ## A row two events both cover is repeated, once per event, which
+%! ## generally makes the result irregular.
+%!
+%! t0 = datetime (2024, 3, 1);
+%! TT = timetable ([12; 45; 23; 31], 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'Depth'});
+%! TT.Properties.Events = eventtable (t0 + hours ([1; 2]), ...
+%!                                    'EventLabels', ["rain"; "hail"], ...
+%!                                    'EventLengths', hours ([2; 2]));
+%! height (syncevents (TT))

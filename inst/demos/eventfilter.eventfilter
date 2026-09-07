@@ -1,0 +1,49 @@
+%!demo
+%! ## An event filter selects the rows of a timetable by what was happening,
+%! ## rather than by the clock.  The condition picks out *events*; the rows
+%! ## the matching events cover follow from them.
+%!
+%! t0 = datetime (2024, 3, 1);
+%! TT = timetable ([12; 45; 23; 31], 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'Depth'});
+%! TT.Properties.Events = eventtable (t0 + hours (1), ...
+%!                                    'EventLabels', "rain", ...
+%!                                    'EventLengths', hours (2));
+%! EF = eventfilter (TT);
+%! TT(EF.EventLabels == "rain", :)
+
+%!demo
+%! ## Conditions combine with `&` and `|`, and `Time` names the *event's*
+%! ## time rather than the row's.
+%!
+%! t0 = datetime (2024, 3, 1);
+%! TT = timetable ([12; 45; 23; 31], 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'Depth'});
+%! TT.Properties.Events = eventtable (t0 + hours ([1; 2]), ...
+%!                                    'EventLabels', ["rain"; "hail"], ...
+%!                                    'EventLengths', hours ([1; 2]));
+%! EF = eventfilter (TT);
+%! TT(EF.EventLabels == "hail" & EF.EventLengths > hours (1), :)
+
+%!demo
+%! ## A filter made from labels alone is a whole condition already, and
+%! ## needs no timetable to be written against.
+%!
+%! t0 = datetime (2024, 3, 1);
+%! TT = timetable ([12; 45; 23; 31], 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'Depth'});
+%! TT.Properties.Events = eventtable (t0 + hours ([1; 2]), ...
+%!                                    'EventLabels', ["rain"; "hail"]);
+%! TT(eventfilter ("hail"), :)
+
+%!demo
+%! ## `timerange` takes two event filters as bounds, running from the start
+%! ## of one event to the start of the other and stopping short of it.
+%!
+%! t0 = datetime (2024, 3, 1);
+%! TT = timetable ([12; 45; 23; 31], 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'Depth'});
+%! TT.Properties.Events = eventtable (t0 + hours ([1; 3]), ...
+%!                                    'EventLabels', ["rain"; "snow"]);
+%! EF = eventfilter (TT);
+%! TT(timerange (EF.EventLabels == "rain", EF.EventLabels == "snow"), :)

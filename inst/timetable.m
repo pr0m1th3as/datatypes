@@ -4598,7 +4598,13 @@ classdef timetable < tabular
         ixCopy = resolveVarRef (ev, DataVars);
         ixCopy = ixCopy(:)';
       else
-        extent = [Pev.EventLengthsVariable, Pev.EventEndsVariable];
+        ## At most one of the two is set, an event stating its extent once,
+        ## so the name is taken from whichever it is rather than by joining
+        ## a name to an empty matrix.
+        extent = Pev.EventLengthsVariable;
+        if (isempty (extent))
+          extent = Pev.EventEndsVariable;
+        endif
         ixCopy = 1:width (ev);
         if (! isempty (extent))
           ixCopy = ixCopy(! strcmp (Pev.VariableNames, extent));

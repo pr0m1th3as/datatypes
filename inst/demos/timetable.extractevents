@@ -1,0 +1,44 @@
+%!demo
+%! ## `extractevents` builds an event table out of a timetable's own rows.
+%! ## Given a row subscript it takes the times and nothing else.
+%!
+%! t0 = datetime (2024, 3, 1);
+%! TT = timetable ([12; 45; 23; 31], 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'Depth'});
+%! extractevents (TT, [2; 4])
+
+%!demo
+%! ## Given a `categorical` with one element per row, every row whose label
+%! ## is not missing becomes an event labelled by it.  Consecutive rows
+%! ## sharing a label are *not* gathered into one interval: each row is its
+%! ## own instantaneous event.
+%!
+%! t0 = datetime (2024, 3, 1);
+%! TT = timetable ([12; 45; 23; 31], 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'Depth'});
+%! phase = categorical ({'dry'; 'dry'; ''; 'wet'});
+%! extractevents (TT, phase)
+
+%!demo
+%! ## Options say what else the event table carries.  A value given as
+%! ## `EventLengths` becomes a variable of that name; a variable of the
+%! ## timetable named by `EventDataVariables` keeps its own.
+%!
+%! t0 = datetime (2024, 3, 1);
+%! TT = timetable ([12; 45; 23; 31], 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'Depth'});
+%! extractevents (TT, [2; 4], 'EventLabels', ["rain"; "snow"], ...
+%!                'EventLengths', hours ([1; 2]), ...
+%!                'EventDataVariables', {'Depth'})
+
+%!demo
+%! ## A second output returns the timetable without the variables the event
+%! ## table took from it.  Only a variable that was *named* is taken, so a
+%! ## call that names none leaves it as it was.
+%!
+%! t0 = datetime (2024, 3, 1);
+%! TT = timetable ([12; 45; 23; 31], ["a"; "b"; "c"; "d"], ...
+%!                 'RowTimes', t0 + hours (0:3)', ...
+%!                 'VariableNames', {'Depth', 'Tag'});
+%! [ET, TT2] = extractevents (TT, [2; 4], 'EventLabelsVariable', 'Tag');
+%! TT2.Properties.VariableNames

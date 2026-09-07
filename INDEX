@@ -47,12 +47,14 @@ timetable arrays
  table2timetable
  timetable2table
  istimetable
+ eventtable
 supplementary classes
  missing
  vartype
  timerange
  withtol
  rowfilter
+ eventfilter
  @cell/disp
  @cell/display
 supplementary functions
