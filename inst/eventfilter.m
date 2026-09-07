@@ -164,11 +164,11 @@ classdef eventfilter
               || iscategorical (arg))
         ## A character row vector is one label, not a column of letters,
         ## which is what indexing it would make of it.
-        if (iscategorical (arg))
+        if (iscategorical (arg) || isa (arg, 'string'))
           lab = arg(:);
         else
           lab = cellstr (arg);
-          lab = string (lab(:));
+          lab = lab(:);
         endif
         this.labels = lab;
         this.text = sprintf ("event labels in %s", labelstr (arg));
@@ -257,7 +257,7 @@ classdef eventfilter
         ## Both sides are read as text so that a label given as a string
         ## matches a categorical labels variable and the other way round.
         col = ev.(lv);
-        mask = ismember (string (col(:)), string (this.labels));
+        mask = ismember (astext (col), astext (this.labels));
         return
       endif
       if (isempty (this.condition))
@@ -300,10 +300,10 @@ classdef eventfilter
       out = ef;
       out.pending = '';
       if (swapped)
-        out.condition = @(e) fcn (val, e.(name));
+        out.condition = @(e) cmpValues (fcn, sym, val, e.(name));
         out.text = sprintf ("%s %s %s", name, mirror, labelstr (val));
       else
-        out.condition = @(e) fcn (e.(name), val);
+        out.condition = @(e) cmpValues (fcn, sym, e.(name), val);
         out.text = sprintf ("%s %s %s", name, sym, labelstr (val));
       endif
     endfunction
@@ -395,6 +395,52 @@ function keep = coveredRows (ev, mask, rowTimes)
       keep = keep | (rowTimes >= evTimes(k) & rowTimes < evEnds(k));
     endif
   endfor
+endfunction
+
+## One comparison of a variable with a value.  Octave has no '==' for a cell
+## array against text, and a list of names is held here as a cellstr, so an
+## equality against one is answered by comparing the text itself; every other
+## comparison is the operator's own.
+function out = cmpValues (fcn, sym, a, b)
+  if (! (any (strcmp (sym, {'==', '~='})) && (iscellstr (a) || iscellstr (b))))
+    out = fcn (a, b);
+    return
+  endif
+  if (iscellstr (a))
+    col = a;
+    val = b;
+  else
+    col = b;
+    val = a;
+  endif
+  if (! (ischar (val) || iscellstr (val) || isa (val, 'string')
+         || iscategorical (val)))
+    error (strcat ("eventfilter: '%s' compares a list of names with text,", ...
+                   " not with a %s."), sym, class (val));
+  endif
+  v = astext (val);
+  if (isscalar (v))
+    tf = strcmp (col(:), v{1});
+  else
+    tf = strcmp (col(:), v(:));
+  endif
+  if (strcmp (sym, '~='))
+    tf = ! tf;
+  endif
+  out = tf(:);
+endfunction
+
+## Any text, as a cell array of character vectors, for comparing by value.
+function c = astext (x)
+  if (iscellstr (x))
+    c = x(:);
+  elseif (ischar (x))
+    c = cellstr (x);
+    c = c(:);
+  else
+    c = cellstr (string (x(:)));
+    c = c(:);
+  endif
 endfunction
 
 ## A value rendered for the display of a condition.

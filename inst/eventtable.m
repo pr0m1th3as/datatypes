@@ -81,9 +81,10 @@ classdef eventtable < timetable
   ## them, and refuses where their three event properties disagree; a
   ## row-preserving one carries the event table through unchanged.
   ##
-  ## Labels given as text are held as a @code{string}, whatever text they
-  ## arrived as, so that a labels variable can be compared with @code{==},
-  ## which is how an @code{eventfilter} condition is written.
+  ## Labels given as text are held as a cell array of character vectors,
+  ## which is how this package holds a list of names; a @code{string} given
+  ## as such is kept as one.  An @code{eventfilter} compares either as text,
+  ## so a condition reads the same whichever they are.
   ##
   ## @seealso{timetable, table, istimetable, eventfilter, extractevents,
   ## syncevents}
@@ -307,7 +308,7 @@ classdef eventtable < timetable
           auto{i} = sprintf ("Event %d", i);
         endfor
         [varNames, varValues] = addEventVar (varNames, varValues, ...
-                                             'EventLabels', string (auto));
+                                             'EventLabels', auto);
         lblVar = 'EventLabels';
       endif
       if (wasGiven (Lengths))
@@ -539,17 +540,13 @@ function val = checkEventLabels (val, nev)
     error (strcat ("eventtable: 'EventLabels' must not be a datetime, a", ...
                    " duration, a calendarDuration, a table or a timetable."));
   endif
-  ## Text labels are held as a 'string', whatever text they arrived as.
-  ## Octave has no string literal of its own, so labels are written in char
-  ## more often than not, and a char or cellstr labels variable could not be
-  ## compared with '==', which is how an 'eventfilter' is written.  A
-  ## character matrix is one label per row on the way, which is how Octave
-  ## holds a list of names in char.
-  if (ischar (val) && rows (val) > 1)
+  ## Text labels are held as a cellstr, which is how this package holds a
+  ## list of names: Octave has no string literal of its own, so text arrives
+  ## as char far more often than as a 'string', and a class does not turn one
+  ## representation into another behind the caller's back.  A character
+  ## matrix is one label per row.  A 'string' given as such is kept as it is.
+  if (ischar (val))
     val = cellstr (val);
-  endif
-  if (ischar (val) || iscellstr (val))
-    val = string (val);
   endif
   val = broadcastEventVar (val, nev, 'EventLabels');
 endfunction
@@ -582,11 +579,6 @@ endfunction
 ## One value labels, lengthens or ends every event alike; otherwise there is
 ## one value per event.
 function val = broadcastEventVar (val, nev, opt)
-  ## A character row vector is one value, whatever its length.
-  if (ischar (val) && isrow (val))
-    val = repmat ({val}, nev, 1);
-    return
-  endif
   if (isscalar (val))
     val = repmat (val(:), nev, 1);
   elseif (numel (val) == nev)

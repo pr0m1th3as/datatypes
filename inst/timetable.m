@@ -4666,11 +4666,16 @@ classdef timetable < tabular
         if (! isempty (k))
           col = evOut.VariableValues{k};
           val = args{1};
-          ## A label of another type is converted to the labels variable's
-          ## own rather than assigned across it, which would leave the
-          ## conversion to the core and warn about it on the way.
-          if (isa (col, 'string') && ! isa (val, 'string'))
+          ## A label of another type is brought to the labels variable's own
+          ## rather than assigned across it, which would leave the conversion
+          ## to the core and warn about it on the way.
+          if (isa (col, 'string') && ! isa (col, class (val)))
             val = string (val);
+          elseif (iscell (col) && ! iscell (val))
+            if (! ischar (val))
+              val = char (string (val));
+            endif
+            val = {val};
           endif
           col(ixEv == 0,:) = val;
           evOut.VariableValues{k} = col;
@@ -4943,13 +4948,11 @@ endfunction
 ## One value given as an option to 'extractevents', sized to the events: one
 ## value stands for every event alike, otherwise there is one apiece.
 function val = eventOptionValue (val, nev, opt)
-  ## Text becomes a 'string', as it does in the 'eventtable' constructor, so
-  ## that a labels variable can be compared with '=='.
-  if (ischar (val) || iscellstr (val))
-    if (ischar (val) && rows (val) > 1)
-      val = cellstr (val);
-    endif
-    val = string (val);
+  ## Text becomes a cellstr, as it does in the 'eventtable' constructor: a
+  ## character matrix is one value per row, and a character row vector is a
+  ## single value.
+  if (ischar (val))
+    val = cellstr (val);
   endif
   if (isscalar (val))
     val = repmat (val(:), nev, 1);
