@@ -68,7 +68,25 @@ classdef eventtable < timetable
   ## 02:00 and lasting two hours covers 02:00 and 03:00 but not 04:00.  An
   ## event of zero length therefore covers nothing at all.
   ##
-  ## @seealso{timetable, table, istimetable}
+  ## Three things read an event table once it is attached to a timetable by
+  ## that timetable's @qcode{Events} property.  @code{syncevents} copies the
+  ## events' data onto the rows they cover, repeating a row that more than
+  ## one event covers.  @code{eventfilter} selects the rows the events
+  ## matching a condition cover, and a row covered more than once is selected
+  ## once.  @code{timerange} takes two event filters as bounds, running from
+  ## one event to another.  In the other direction, @code{extractevents}
+  ## builds an event table out of a timetable's own rows.
+  ##
+  ## A binary operation over two timetables carrying event tables merges
+  ## them, and refuses where their three event properties disagree; a
+  ## row-preserving one carries the event table through unchanged.
+  ##
+  ## Labels given as text are held as a @code{string}, whatever text they
+  ## arrived as, so that a labels variable can be compared with @code{==},
+  ## which is how an @code{eventfilter} condition is written.
+  ##
+  ## @seealso{timetable, table, istimetable, eventfilter, extractevents,
+  ## syncevents}
   ## @end deftp
 
   properties

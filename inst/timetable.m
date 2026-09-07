@@ -53,7 +53,12 @@ classdef timetable < tabular
   ## @code{table2timetable} and @code{array2timetable} to create timetables
   ## from the respective data types.
   ##
-  ## @seealso{table, istimetable, istabular, isregular, datetime, duration}
+  ## @code{eventtable} derives from this class and inherits every method
+  ## documented here; where one of them behaves differently for an event
+  ## table, its own documentation says so.
+  ##
+  ## @seealso{table, eventtable, istimetable, istabular, isregular,
+  ## datetime, duration}
   ## @end deftp
 
   properties
@@ -1701,6 +1706,13 @@ classdef timetable < tabular
     ## dimension is named after the first input that does not use the
     ## default name.
     ##
+    ## Where an operand is an @code{eventtable}, or carries one on its
+    ## @qcode{Events} property, the result is an event table too and the
+    ## operands' event tables are merged: an outer join keyed on the event
+    ## times and every variable the two share, ordered by those keys.  The
+    ## three properties saying which variables describe the events must
+    ## agree, and the operation is refused where they do not.
+    ##
     ## @seealso{horzcat, cat}
     ## @end deftypefn
     function tbl = vertcat (varargin)
@@ -1771,6 +1783,13 @@ classdef timetable < tabular
     ## it must have as many rows as the timetable has.  The row times and the
     ## time step are those of the timetable, and the row dimension is named
     ## after the first input that does not use the default name.
+    ##
+    ## Where an operand is an @code{eventtable}, or carries one on its
+    ## @qcode{Events} property, the result is an event table too and the
+    ## operands' event tables are merged: an outer join keyed on the event
+    ## times and every variable the two share, ordered by those keys.  The
+    ## three properties saying which variables describe the events must
+    ## agree, and the operation is refused where they do not.
     ##
     ## @seealso{vertcat, cat}
     ## @end deftypefn
@@ -2539,6 +2558,11 @@ classdef timetable < tabular
     ## timetable with none, still carrying its row times and its time step,
     ## rather than an empty one.
     ##
+    ## Removing a variable of an @code{eventtable} that one of its three
+    ## event properties names clears that designation, the name having
+    ## nothing left to resolve to.  Deleting the variable by assigning an
+    ## empty matrix does the same.
+    ##
     ## @seealso{addvars, movevars, timetable}
     ## @end deftypefn
     function tbl = removevars (this, varargin)
@@ -2586,6 +2610,11 @@ classdef timetable < tabular
     ## @qcode{@var{tt}.Properties.DimensionNames} for that.  A variable
     ## cannot be given the row dimension's name either, the two sharing one
     ## namespace.
+    ##
+    ## Renaming a variable of an @code{eventtable} that one of its three
+    ## event properties names carries that designation to the new name.
+    ## MATLAB clears it instead and does not restore it when the variable is
+    ## renamed back; see deviation D6.
     ##
     ## @seealso{movevars, timetable}
     ## @end deftypefn
@@ -2641,6 +2670,11 @@ classdef timetable < tabular
     ## unset.  The remaining variables keep theirs.
     ##
     ## The row times are not a variable and cannot be merged.
+    ##
+    ## Merging a variable of an @code{eventtable} that one of its three event
+    ## properties names clears that designation, the merged variable being a
+    ## different variable under a different name.  MATLAB refuses the call
+    ## instead, on the ground that the merged variable is no longer a column.
     ##
     ## @seealso{splitvars, timetable}
     ## @end deftypefn
@@ -3678,6 +3712,13 @@ classdef timetable < tabular
     ## suffixed with the caller's own name for each operand, falling back to
     ## @qcode{_left} and @qcode{_right}.
     ##
+    ## Where an operand is an @code{eventtable}, or carries one on its
+    ## @qcode{Events} property, the result is an event table too and the
+    ## operands' event tables are merged: an outer join keyed on the event
+    ## times and every variable the two share, ordered by those keys.  The
+    ## three properties saying which variables describe the events must
+    ## agree, and the operation is refused where they do not.
+    ##
     ## @end deftypefn
     function [ttC, index] = join (ttL, tblR, varargin)
       if (nargin < 2)
@@ -3731,6 +3772,13 @@ classdef timetable < tabular
     ## The variables each side contributes.  By default the left contributes
     ## all of its own and the right all but its keys.
     ## @end table
+    ##
+    ## Where an operand is an @code{eventtable}, or carries one on its
+    ## @qcode{Events} property, the result is an event table too and the
+    ## operands' event tables are merged: an outer join keyed on the event
+    ## times and every variable the two share, ordered by those keys.  The
+    ## three properties saying which variables describe the events must
+    ## agree, and the operation is refused where they do not.
     ##
     ## @end deftypefn
     function [ttC, iL, iR] = innerjoin (ttL, tblR, varargin)
@@ -3788,6 +3836,13 @@ classdef timetable < tabular
     ## variable in the left one's position, taking its value from whichever
     ## side had a row.
     ## @end table
+    ##
+    ## Where an operand is an @code{eventtable}, or carries one on its
+    ## @qcode{Events} property, the result is an event table too and the
+    ## operands' event tables are merged: an outer join keyed on the event
+    ## times and every variable the two share, ordered by those keys.  The
+    ## three properties saying which variables describe the events must
+    ## agree, and the operation is refused where they do not.
     ##
     ## @end deftypefn
     function [ttC, iL, iR] = outerjoin (ttL, tblR, varargin)
@@ -4207,6 +4262,13 @@ classdef timetable < tabular
     ## and @var{tt2} become @code{a_tt1} and @code{a_tt2}.  An operand that
     ## is an expression rather than a variable is known by its place in the
     ## call.
+    ##
+    ## Where an operand is an @code{eventtable}, or carries one on its
+    ## @qcode{Events} property, the result is an event table too and the
+    ## operands' event tables are merged: an outer join keyed on the event
+    ## times and every variable the two share, ordered by those keys.  The
+    ## three properties saying which variables describe the events must
+    ## agree, and the operation is refused where they do not.
     ##
     ## @seealso{retime, timetable, horzcat, isregular}
     ## @end deftypefn

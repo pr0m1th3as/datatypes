@@ -33,7 +33,12 @@
 ## the result has only the variables, and the times are gone rather than
 ## kept elsewhere.
 ##
-## @seealso{table2timetable, array2timetable, timetable, table}
+## An event table attached to @var{tt} is not carried across, a table having
+## nowhere to keep one, and converting the result back with
+## @code{table2timetable} does not bring it back.  An @code{eventtable} given
+## here becomes a plain table like any other timetable.
+##
+## @seealso{table2timetable, array2timetable, timetable, table, eventtable}
 ## @end deftypefn
 function tbl = timetable2table (tt, varargin)
 
