@@ -2456,6 +2456,7 @@ classdef (Abstract) tabular
           endfor
         endif
       endif
+      tbl = varsChanged (tbl);
 
     endfunction
 
