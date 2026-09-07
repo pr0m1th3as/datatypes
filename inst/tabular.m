@@ -365,6 +365,20 @@ classdef (Abstract) tabular
       error ("%s: subclass must implement setRowLabelProperty.", class (this));
     endfunction
 
+    ## This object's metadata re-resolved after its variable names changed
+    ## without any of them being renamed: a designation naming a variable
+    ## that is no longer there stops meaning anything, and is dropped.  The
+    ## default has nothing that names a variable.
+    function this = varsChanged (this)
+    endfunction
+
+    ## This object's metadata carried across a rename.  OLDNAMES and NEWNAMES
+    ## are the same length and pair up, and every other name is unchanged.  A
+    ## designation naming a renamed variable follows it, which is where a
+    ## rename parts company with a removal: the variable is still there.
+    function this = varsRenamed (this, oldNames, newNames)
+    endfunction
+
     ## TBL rebuilt as this object's class, where this object's class is the
     ## more derived of the two.  A binary operation takes the most derived
     ## class among its operands rather than the class of the first, so each
@@ -778,8 +792,9 @@ classdef (Abstract) tabular
                                  " a string array matching the number of", ...
                                  " indexed variables."), clstype);
                 endif
+                oldNames = this.VariableNames(idx);
                 this.VariableNames(idx) = val;
-                tbl = this;
+                tbl = varsRenamed (this, oldNames, val);
                 return
               endif
               ## Check for valid input: cellstring or string array matching
@@ -793,8 +808,9 @@ classdef (Abstract) tabular
                                " string array matching the number of", ...
                                " variables."), clstype);
               endif
+              oldNames = this.VariableNames;
               this.VariableNames = val;
-              tbl = this;
+              tbl = varsRenamed (this, oldNames, val);
 
             elseif (isequal (s.subs, 'VariableTypes'))
               ## Check for further indexing of specific variable(s)
@@ -2169,6 +2185,7 @@ classdef (Abstract) tabular
 
       ## Rename the indexed variables
       tbl = this;
+      oldNames = this.VariableNames(ixVars);
       tbl.VariableNames(ixVars) = newNames;
 
       ## Check for duplicate names
@@ -2177,6 +2194,7 @@ classdef (Abstract) tabular
                        " already exists.");
         return
       endif
+      tbl = varsRenamed (tbl, oldNames, newNames);
     endfunction
 
     ## -*- texinfo -*- @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =}
@@ -2237,6 +2255,7 @@ classdef (Abstract) tabular
         endif
       endif
       tbl = setRowCount (tbl, nrows);
+      tbl = varsChanged (tbl);
     endfunction
 
     ## -*- texinfo -*- @deftypefn {tabular} {[@var{tbl}, @var{errmsg}] =}
@@ -6693,6 +6712,7 @@ classdef (Abstract) tabular
         endif
       endif
       tbl = setRowCount (tbl, nrows);
+      tbl = varsChanged (tbl);
     endfunction
 
     ## The variables laid side by side as one homogeneous array, and as a

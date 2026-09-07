@@ -383,6 +383,30 @@ classdef eventtable < timetable
       out = [];
     endfunction
 
+    ## A designation naming a variable that is no longer there is dropped.
+    ## Removing the variable, and deleting it by assigning an empty matrix,
+    ## both arrive here; moving one or converting its type do too and change
+    ## nothing, the name still resolving.
+    function this = varsChanged (this)
+      names = this.VariableNames;
+      this.EventLabelsVariable = carried (this.EventLabelsVariable, names);
+      this.EventLengthsVariable = carried (this.EventLengthsVariable, names);
+      this.EventEndsVariable = carried (this.EventEndsVariable, names);
+    endfunction
+
+    ## A designation follows the variable it names across a rename.  MATLAB
+    ## clears it instead, and does not restore it when the variable is
+    ## renamed back, so a cosmetic operation loses the designation for good;
+    ## see deviation D6.
+    function this = varsRenamed (this, oldNames, newNames)
+      this.EventLabelsVariable = renamed (this.EventLabelsVariable, ...
+                                          oldNames, newNames);
+      this.EventLengthsVariable = renamed (this.EventLengthsVariable, ...
+                                           oldNames, newNames);
+      this.EventEndsVariable = renamed (this.EventEndsVariable, ...
+                                        oldNames, newNames);
+    endfunction
+
     ## An event table is the more derived class, so a result built from one
     ## and a plain timetable is an event table however the two were ordered.
     ## The three properties come from this operand; one naming a variable the
@@ -579,6 +603,20 @@ endfunction
 function val = carried (val, names)
   if (! isempty (val) && ! any (strcmp (names, val)))
     val = [];
+  endif
+endfunction
+
+## An event property carried across a rename: where it names one of the
+## renamed variables it takes that variable's new name, and otherwise it is
+## left as it stands.
+function val = renamed (val, oldNames, newNames)
+  if (isempty (val))
+    return;
+  endif
+  ix = find (strcmp (cellstr (oldNames), val), 1);
+  if (! isempty (ix))
+    newNames = cellstr (newNames);
+    val = newNames{ix};
   endif
 endfunction
 

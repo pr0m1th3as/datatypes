@@ -796,3 +796,121 @@
 ## Test neither dimension being zero
 %!error <eventtable.empty: at least one dimension must be zero.> ...
 %! eventtable.empty (2, 3);
+
+################################################################################
+##          **    The designations follow the variables they name    **       ##
+################################################################################
+
+## Test removing the labels variable clears the designation
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])');
+%! ET = addvars (ET, [10; 20], 'NewVariableNames', {'val'});
+%! P = removevars (ET, 'EventLabels').Properties;
+%! assert_equal (isempty (P.EventLabelsVariable), true);
+
+## Test removing another variable leaves the designation alone
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])');
+%! ET = addvars (ET, [10; 20], 'NewVariableNames', {'val'});
+%! P = removevars (ET, 'val').Properties;
+%! assert_equal (P.EventLabelsVariable, 'EventLabels');
+
+## Test deleting the labels variable by empty assignment clears it
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])');
+%! ET = addvars (ET, [10; 20], 'NewVariableNames', {'val'});
+%! ET(:,'EventLabels') = [];
+%! assert_equal (isempty (ET.Properties.EventLabelsVariable), true);
+
+## Test removing the lengths variable clears only that designation
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])', ...
+%!                  'EventLengths', hours ([1; 1]));
+%! P = removevars (ET, 'EventLengths').Properties;
+%! assert_equal (isempty (P.EventLengthsVariable), true);
+%! assert_equal (P.EventLabelsVariable, 'EventLabels');
+
+## Test moving a variable leaves the designation alone
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])');
+%! ET = addvars (ET, [10; 20], 'NewVariableNames', {'val'});
+%! P = movevars (ET, 'EventLabels', 'After', 'val').Properties;
+%! assert_equal (P.EventLabelsVariable, 'EventLabels');
+
+## Test converting a variable's type leaves the designation alone
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])');
+%! P = convertvars (ET, 'EventLabels', 'categorical').Properties;
+%! assert_equal (P.EventLabelsVariable, 'EventLabels');
+
+## Test renaming the labels variable carries the designation with it
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])');
+%! P = renamevars (ET, 'EventLabels', 'Tag').Properties;
+%! assert_equal (P.EventLabelsVariable, 'Tag');
+%! assert_equal (P.VariableNames, {'Tag'});
+
+## Test renaming the lengths variable carries its designation with it
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])', ...
+%!                  'EventLengths', hours ([1; 1]));
+%! P = renamevars (ET, 'EventLengths', 'Dur').Properties;
+%! assert_equal (P.EventLengthsVariable, 'Dur');
+%! assert_equal (P.EventLabelsVariable, 'EventLabels');
+
+## Test renaming another variable leaves the designation alone
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])');
+%! ET = addvars (ET, [10; 20], 'NewVariableNames', {'val'});
+%! P = renamevars (ET, 'val', 'other').Properties;
+%! assert_equal (P.EventLabelsVariable, 'EventLabels');
+
+## Test renaming there and back restores the designation
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])');
+%! ET = renamevars (ET, 'EventLabels', 'Tag');
+%! ET = renamevars (ET, 'Tag', 'EventLabels');
+%! assert_equal (ET.Properties.EventLabelsVariable, 'EventLabels');
+
+## Test assigning the whole variable name list carries the designation
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])');
+%! ET = addvars (ET, [10; 20], 'NewVariableNames', {'val'});
+%! ET.Properties.VariableNames = {'Tag', 'val'};
+%! assert_equal (ET.Properties.EventLabelsVariable, 'Tag');
+
+## Test assigning one indexed variable name carries the designation
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])');
+%! ET = addvars (ET, [10; 20], 'NewVariableNames', {'val'});
+%! ET.Properties.VariableNames{1} = 'Tag';
+%! assert_equal (ET.Properties.EventLabelsVariable, 'Tag');
+
+## Test a stripped event table no longer merges with a labelled one
+%!error <timetable.horzcat: the event tables attached to the inputs cannot be merged: their 'EventLabelsVariable' differ \(unset and 'EventLabels'\).> ...
+%! t = datetime (2024, 1, 1) + hours ((0:3))';
+%! A = timetable (t, (1:4)', 'VariableNames', {'A'});
+%! B = timetable (t, (5:8)', 'VariableNames', {'B'});
+%! EA = addvars (eventtable (t([2 4])), [10; 20], 'NewVariableNames', {'val'});
+%! A.Properties.Events = removevars (EA, 'EventLabels');
+%! B.Properties.Events = addvars (eventtable (t([1 3])), [10; 20], ...
+%!                                'NewVariableNames', {'val'});
+%! horzcat (A, B);
+
+## Test a renamed event table no longer merges with an unrenamed one
+%!error <timetable.horzcat: the event tables attached to the inputs cannot be merged: their 'EventLabelsVariable' differ \('Tag' and 'EventLabels'\).> ...
+%! t = datetime (2024, 1, 1) + hours ((0:3))';
+%! A = timetable (t, (1:4)', 'VariableNames', {'A'});
+%! B = timetable (t, (5:8)', 'VariableNames', {'B'});
+%! A.Properties.Events = renamevars (eventtable (t([2 4])), ...
+%!                                   'EventLabels', 'Tag');
+%! B.Properties.Events = eventtable (t([1 3]));
+%! horzcat (A, B);
+
+## Test a plain timetable is unaffected by either hook
+%!test
+%! t = datetime (2024, 1, 1) + hours ([1 3])';
+%! TT = timetable (t, [1; 2], [3; 4], 'VariableNames', {'a', 'b'});
+%! TT = renamevars (TT, 'a', 'z');
+%! TT = removevars (TT, 'b');
+%! assert_equal (TT.Properties.VariableNames, {'z'});
