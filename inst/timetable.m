@@ -4466,6 +4466,162 @@ classdef timetable < tabular
     endfunction
 
     ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{tt2} =} syncevents (@var{tt})
+    ## @deftypefnx {timetable} {@var{tt2} =} syncevents (@var{tt}, @var{defaultLabel})
+    ## @deftypefnx {timetable} {@var{tt2} =} syncevents (@dots{}, @qcode{'EventDataVariables'}, @var{vars})
+    ##
+    ## Copy the attached event table's data onto the rows it covers.
+    ##
+    ## @code{@var{tt2} = syncevents (@var{tt})} adds the variables of the
+    ## event table attached to @var{tt} as variables of @var{tt}, each row
+    ## taking the values of the event covering its time.  A row no event
+    ## covers takes missing values.  @var{tt} must have an event table
+    ## attached.
+    ##
+    ## An event covers the times from its own onwards and stops short of its
+    ## end, so an event beginning at 02:00 and lasting two hours covers 02:00
+    ## and 03:00 but not 04:00, and an event of zero length covers nothing.
+    ## An event with neither a length nor an end is an instant and covers
+    ## only a row at exactly its own time.
+    ##
+    ## A row covered by more than one event is @emph{repeated}, once per
+    ## event, which generally makes the result irregular.
+    ##
+    ## By default every variable of the event table is copied except the one
+    ## holding the event lengths or ends, which describes the events rather
+    ## than what happened.  @qcode{'EventDataVariables'} names the variables
+    ## to copy instead, and replaces that default rather than adding to it,
+    ## so it can ask for the lengths and can leave the labels out.
+    ##
+    ## @code{@var{tt2} = syncevents (@var{tt}, @var{defaultLabel})} gives
+    ## @var{defaultLabel} to the rows no event covers, in place of a missing
+    ## label.  It reaches the labels variable alone; every other copied
+    ## variable stays missing there.
+    ##
+    ## A copied variable whose name @var{tt} already uses has both of them
+    ## renamed, the timetable's with a @qcode{_tt} suffix and the event
+    ## table's with @qcode{_et}, so neither is lost to the other.
+    ##
+    ## The result keeps the event table it was synchronised from.
+    ##
+    ## @seealso{extractevents, eventtable, timetable}
+    ## @end deftypefn
+    function TT2 = syncevents (this, varargin)
+
+      [DataVars, args] = parsePairedArguments ({'EventDataVariables'}, ...
+                                               {missing}, varargin(:));
+      if (numel (args) > 1)
+        error (strcat ("timetable.syncevents: too many input arguments;", ...
+                       " only a default label may be given positionally."));
+      endif
+      hasDefault = (numel (args) == 1);
+
+      ev = eventsOf (this);
+      if (isempty (ev))
+        error (strcat ("timetable.syncevents: the timetable has no event", ...
+                       " table attached; assign one to", ...
+                       " 'Properties.Events' first."));
+      endif
+      Pev = getProperties (ev);
+
+      ## Which of the event table's variables are copied.  The default is
+      ## everything that says what happened, which is everything but the
+      ## variable saying how far the event ran.
+      if (wasGiven (DataVars))
+        ixCopy = resolveVarRef (ev, DataVars);
+        ixCopy = ixCopy(:)';
+      else
+        extent = [Pev.EventLengthsVariable, Pev.EventEndsVariable];
+        ixCopy = 1:width (ev);
+        if (! isempty (extent))
+          ixCopy = ixCopy(! strcmp (Pev.VariableNames, extent));
+        endif
+      endif
+
+      ## The span of each event.  A length or an end makes it an interval,
+      ## closed on the left and open on the right; with neither it is an
+      ## instant.
+      evTimes = getRowLabels (ev);
+      if (! isempty (Pev.EventLengthsVariable))
+        evEnds = evTimes + getvar (ev, Pev.EventLengthsVariable);
+      elseif (! isempty (Pev.EventEndsVariable))
+        evEnds = getvar (ev, Pev.EventEndsVariable);
+      else
+        evEnds = [];
+      endif
+
+      ## Every row paired with each event covering it, and once with no
+      ## event where none does.  The pairs are built row by row so that the
+      ## result is in row order, and within a row in event order.
+      rt = getRowLabels (this);
+      ixRows = [];
+      ixEv = [];
+      for r = 1:numel (rt)
+        if (isempty (evEnds))
+          hit = find (evTimes == rt(r));
+        else
+          hit = find (evTimes <= rt(r) & rt(r) < evEnds);
+        endif
+        if (isempty (hit))
+          ixRows = [ixRows; r];
+          ixEv = [ixEv; 0];
+        else
+          ixRows = [ixRows; repmat(r, numel (hit), 1)];
+          ixEv = [ixEv; hit(:)];
+        endif
+      endfor
+
+      TT2 = subsetrows (this, ixRows);
+
+      ## The copied columns, missing wherever the row met no event.
+      [evOut, errmsg] = joinBuildSide (subsetvars (ev, ixCopy), ixEv);
+      if (! isempty (errmsg))
+        error ("timetable.syncevents: %s", errmsg);
+      endif
+      copyNames = Pev.VariableNames(ixCopy);
+
+      ## A default label answers for the rows no event covered, and reaches
+      ## the labels variable alone.
+      if (hasDefault)
+        lblVar = Pev.EventLabelsVariable;
+        if (isempty (lblVar))
+          error (strcat ("timetable.syncevents: a default label needs the", ...
+                         " event table to say which of its variables holds", ...
+                         " the labels; 'EventLabelsVariable' is unset."));
+        endif
+        k = find (strcmp (copyNames, lblVar), 1);
+        if (! isempty (k))
+          col = evOut.VariableValues{k};
+          val = args{1};
+          ## A label of another type is converted to the labels variable's
+          ## own rather than assigned across it, which would leave the
+          ## conversion to the core and warn about it on the way.
+          if (isa (col, 'string') && ! isa (val, 'string'))
+            val = string (val);
+          endif
+          col(ixEv == 0,:) = val;
+          evOut.VariableValues{k} = col;
+        endif
+      endif
+
+      ## A name used on both sides names neither cleanly, so both move.
+      clash = ismember (copyNames, TT2.VariableNames);
+      if (any (clash))
+        newSelf = TT2.VariableNames;
+        for k = find (clash)
+          j = find (strcmp (newSelf, copyNames{k}), 1);
+          newSelf{j} = [newSelf{j}, '_tt'];
+          copyNames{k} = [copyNames{k}, '_et'];
+        endfor
+        TT2.VariableNames = newSelf;
+      endif
+
+      for k = 1:numel (copyNames)
+        TT2 = setvar (TT2, copyNames{k}, evOut.VariableValues{k});
+      endfor
+    endfunction
+
+    ## -*- texinfo -*-
     ## @deftypefn  {timetable} {@var{tt} =} addprop (@var{tt}, @var{propertyNames}, @var{propertyTypes})
     ##
     ## Add custom properties to a timetable.

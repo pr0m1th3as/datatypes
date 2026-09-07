@@ -1152,3 +1152,182 @@
 ## Test too few input arguments
 %!error <timetable.extractevents: too few input arguments.> ...
 %! extractevents (timetable ((1:3)', 'TimeStep', hours (1)));
+
+################################################################################
+##                          **    'syncevents'    **                          ##
+################################################################################
+
+## Test an interval event covers its own time and stops short of its end
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:7))';
+%! TT = timetable (t, (1:8)', 'VariableNames', {'v'});
+%! TT.Properties.Events = eventtable (t([3 6]), 'EventLabels', ...
+%!                                    string ({'rain'; 'snow'}), ...
+%!                                    'EventLengths', hours ([2; 1]));
+%! out = syncevents (TT);
+%! assert_equal (height (out), 8);
+%! assert_equal (cellstr (out.EventLabels(3:5)), {'rain'; 'rain'; ''});
+
+## Test an event given an end covers the same rows as one given a length
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:7))';
+%! TT = timetable (t, (1:8)', 'VariableNames', {'v'});
+%! A = TT;
+%! A.Properties.Events = eventtable (t(3), 'EventLabels', "rain", ...
+%!                                   'EventLengths', hours (2));
+%! B = TT;
+%! B.Properties.Events = eventtable (t(3), 'EventLabels', "rain", ...
+%!                                   'EventEnds', t(5));
+%! assert_equal (cellstr (syncevents (A).EventLabels), ...
+%!               cellstr (syncevents (B).EventLabels));
+
+## Test an instantaneous event covers only a row at its own time
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:7))';
+%! TT = timetable (t, (1:8)', 'VariableNames', {'v'});
+%! TT.Properties.Events = eventtable (t([3 6]), 'EventLabels', ...
+%!                                    string ({'rain'; 'snow'}));
+%! out = syncevents (TT);
+%! assert_equal (cellstr (out.EventLabels(3:4)), {'rain'; ''});
+
+## Test an event of zero length covers nothing
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:7))';
+%! TT = timetable (t, (1:8)', 'VariableNames', {'v'});
+%! TT.Properties.Events = eventtable (t([3 6]), 'EventLabels', ...
+%!                                    string ({'rain'; 'snow'}), ...
+%!                                    'EventLengths', hours ([0; 0]));
+%! assert_equal (all (ismissing (syncevents (TT).EventLabels)), true);
+
+## Test events lying outside the row times leave every row missing
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:7))';
+%! TT = timetable (t, (1:8)', 'VariableNames', {'v'});
+%! TT.Properties.Events = eventtable (t([3 6]) + years (5), 'EventLabels', ...
+%!                                    string ({'rain'; 'snow'}), ...
+%!                                    'EventLengths', hours ([2; 1]));
+%! assert_equal (all (ismissing (syncevents (TT).EventLabels)), true);
+
+## Test a row covered by two events is repeated once per event
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:7))';
+%! TT = timetable (t, (1:8)', 'VariableNames', {'v'});
+%! TT.Properties.Events = eventtable (t([3 4]), 'EventLabels', ...
+%!                                    string ({'rain'; 'snow'}), ...
+%!                                    'EventLengths', hours ([3; 3]));
+%! out = syncevents (TT);
+%! assert_equal (height (out), 10);
+%! assert_equal (out.v', [1, 2, 3, 4, 4, 5, 5, 6, 7, 8]);
+%! assert_equal (cellstr (out.EventLabels(4:5)), {'rain'; 'snow'});
+
+## Test the variable holding the lengths is not copied by default
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:7))';
+%! TT = timetable (t, (1:8)', 'VariableNames', {'v'});
+%! TT.Properties.Events = eventtable (t([3 6]), 'EventLabels', ...
+%!                                    string ({'rain'; 'snow'}), ...
+%!                                    'EventLengths', hours ([2; 1]));
+%! assert_equal (syncevents (TT).Properties.VariableNames, ...
+%!               {'v', 'EventLabels'});
+
+## Test an event data variable is copied by default
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:7))';
+%! TT = timetable (t, (1:8)', 'VariableNames', {'v'});
+%! ET = eventtable (t([3 6]), 'EventLabels', string ({'rain'; 'snow'}), ...
+%!                  'EventLengths', hours ([2; 1]));
+%! TT.Properties.Events = addvars (ET, [7; 8], ...
+%!                                 'NewVariableNames', {'amount'});
+%! out = syncevents (TT);
+%! assert_equal (out.Properties.VariableNames, {'v', 'EventLabels', 'amount'});
+%! assert_equal (out.amount', [NaN, NaN, 7, 7, NaN, 8, NaN, NaN]);
+
+## Test 'EventDataVariables' replaces the default set rather than adding
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:7))';
+%! TT = timetable (t, (1:8)', 'VariableNames', {'v'});
+%! ET = eventtable (t([3 6]), 'EventLabels', string ({'rain'; 'snow'}), ...
+%!                  'EventLengths', hours ([2; 1]));
+%! TT.Properties.Events = addvars (ET, [7; 8], ...
+%!                                 'NewVariableNames', {'amount'});
+%! out = syncevents (TT, 'EventDataVariables', {'amount'});
+%! assert_equal (out.Properties.VariableNames, {'v', 'amount'});
+
+## Test 'EventDataVariables' can ask for the lengths
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:7))';
+%! TT = timetable (t, (1:8)', 'VariableNames', {'v'});
+%! TT.Properties.Events = eventtable (t([3 6]), 'EventLabels', ...
+%!                                    string ({'rain'; 'snow'}), ...
+%!                                    'EventLengths', hours ([2; 1]));
+%! out = syncevents (TT, 'EventDataVariables', {'EventLengths'});
+%! assert_equal (out.Properties.VariableNames, {'v', 'EventLengths'});
+
+## Test a default label answers for the rows no event covered
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:7))';
+%! TT = timetable (t, (1:8)', 'VariableNames', {'v'});
+%! TT.Properties.Events = eventtable (t([3 6]), 'EventLabels', ...
+%!                                    string ({'rain'; 'snow'}), ...
+%!                                    'EventLengths', hours ([2; 1]));
+%! out = syncevents (TT, "none");
+%! assert_equal (cellstr (out.EventLabels'), ...
+%!               {'none', 'none', 'rain', 'rain', 'none', 'snow', ...
+%!                'none', 'none'});
+
+## Test a default label of another type is converted to the labels' own
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:7))';
+%! TT = timetable (t, (1:8)', 'VariableNames', {'v'});
+%! TT.Properties.Events = eventtable (t([3 6]), 'EventLabels', ...
+%!                                    string ({'rain'; 'snow'}), ...
+%!                                    'EventLengths', hours ([2; 1]));
+%! out = syncevents (TT, 7);
+%! assert_equal (cellstr (out.EventLabels(1)), {'7'});
+
+## Test a name used on both sides has both of them moved
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:7))';
+%! TT = timetable (t, (1:8)', 'VariableNames', {'v'});
+%! ET = eventtable (t([3 6]), 'EventLabels', string ({'rain'; 'snow'}));
+%! TT.Properties.Events = addvars (ET, [7; 8], 'NewVariableNames', {'v'});
+%! out = syncevents (TT);
+%! assert_equal (out.Properties.VariableNames, ...
+%!               {'v_tt', 'EventLabels', 'v_et'});
+
+## Test the result keeps the event table it was synchronised from
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:7))';
+%! TT = timetable (t, (1:8)', 'VariableNames', {'v'});
+%! TT.Properties.Events = eventtable (t([3 6]), 'EventLabels', ...
+%!                                    string ({'rain'; 'snow'}));
+%! assert_equal (class (syncevents (TT).Properties.Events), 'eventtable');
+
+## Test a duration-keyed timetable
+%!test
+%! TD = timetable (seconds ((0:7))', (1:8)', 'VariableNames', {'v'});
+%! TD.Properties.Events = eventtable (seconds ([2 5])', 'EventLabels', ...
+%!                                    string ({'rain'; 'snow'}), ...
+%!                                    'EventLengths', seconds ([2; 1]));
+%! out = syncevents (TD);
+%! assert_equal (cellstr (out.EventLabels(3:5)), {'rain'; 'rain'; ''});
+
+## Test a timetable with no event table attached
+%!error <timetable.syncevents: the timetable has no event table attached; assign one to 'Properties.Events' first.> ...
+%! syncevents (timetable ((1:3)', 'TimeStep', hours (1)));
+
+## Test more than one positional argument
+%!error <timetable.syncevents: too many input arguments; only a default label may be given positionally.> ...
+%! t = datetime (2024, 1, 1) + hours ((0:3))';
+%! TT = timetable (t, (1:4)', 'VariableNames', {'v'});
+%! TT.Properties.Events = eventtable (t([2 3]));
+%! syncevents (TT, "a", "b");
+
+## Test a default label with no labels variable to put it in
+%!error <timetable.syncevents: a default label needs the event table to say which of its variables holds the labels; 'EventLabelsVariable' is unset.> ...
+%! t = datetime (2024, 1, 1) + hours ((0:3))';
+%! TT = timetable (t, (1:4)', 'VariableNames', {'v'});
+%! ET = eventtable (t([2 3]));
+%! ET.Properties.EventLabelsVariable = [];
+%! TT.Properties.Events = ET;
+%! syncevents (TT, "none");
