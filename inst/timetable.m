@@ -332,6 +332,20 @@ classdef timetable < tabular
       this.Events = checkEvents (this, val);
     endfunction
 
+    ## A variable named by one of the three '...Variable' options of
+    ## 'extractevents': its name, its values at the extracted rows, and its
+    ## index, which is what the second output loses.
+    function [name, col, ix] = takenVariable (this, ref, ixRows, opt)
+      ix = resolveVarRef (this, ref);
+      if (numel (ix) != 1)
+        error (strcat ("timetable.extractevents: '%s' must name exactly", ...
+                       " one variable; %d were named."), opt, numel (ix));
+      endif
+      name = this.VariableNames{ix};
+      col = getvar (this, ix);
+      col = col(ixRows,:);
+    endfunction
+
     ## The event tables of OPS carried onto TBL, which is the result of a
     ## binary operation over them.  One operand carrying events hands them
     ## over unchanged; two or more are merged; none leaves the result with
@@ -4213,6 +4227,245 @@ classdef timetable < tabular
   methods (Access = public)
 
     ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{et} =} extractevents (@var{tt}, @var{rows})
+    ## @deftypefnx {timetable} {@var{et} =} extractevents (@var{tt}, @var{labels})
+    ## @deftypefnx {timetable} {@var{et} =} extractevents (@dots{}, @var{Name}, @var{Value})
+    ## @deftypefnx {timetable} {[@var{et}, @var{tt2}] =} extractevents (@dots{})
+    ##
+    ## Build an event table out of the rows of a timetable.
+    ##
+    ## @code{@var{et} = extractevents (@var{tt}, @var{rows})} returns an
+    ## @code{eventtable} whose events happen at the times of the rows
+    ## @var{rows} picks out.  @var{rows} is any row subscript a timetable
+    ## accepts: row numbers, a logical vector, row times, a @code{timerange},
+    ## a @code{withtol} or a colon.  The events come out in the order the
+    ## subscript names them and a row named twice gives two events; with no
+    ## option saying otherwise the event table carries no variables at all
+    ## and designates nothing.
+    ##
+    ## @code{@var{et} = extractevents (@var{tt}, @var{labels})} takes a
+    ## @code{categorical} vector with one element per row of @var{tt} and
+    ## makes an event of every row whose label is not missing, labelled by
+    ## it.  Consecutive rows sharing a label are @emph{not} gathered into one
+    ## interval: each row is its own instantaneous event.
+    ##
+    ## @code{[@var{et}, @var{tt2}] = extractevents (@dots{})} also returns
+    ## @var{tt2}, a copy of @var{tt} without the variables the event table
+    ## took from it.  Only variables named by @qcode{'EventDataVariables'} or
+    ## by one of the three @qcode{'@dots{}Variable'} options are taken, so a
+    ## call that names none leaves @var{tt2} exactly as @var{tt} was.
+    ##
+    ## The following @var{Name}-@var{Value} options are supported:
+    ##
+    ## @multitable @columnfractions 0.30 0.70
+    ## @headitem @var{Name} @tab @var{Value}
+    ##
+    ## @item @qcode{'EventLabels'} @tab A scalar, labelling every event
+    ## alike, or one value per event.  Added as a variable named
+    ## @qcode{EventLabels}.
+    ##
+    ## @item @qcode{'EventLabelsVariable'} @tab The name of a variable of
+    ## @var{tt} holding the labels.  It keeps its own name in the event
+    ## table and leaves @var{tt2}.
+    ##
+    ## @item @qcode{'EventLengths'} @tab A @code{duration} or
+    ## @code{calendarDuration}, scalar or one per event, added as a variable
+    ## named @qcode{EventLengths}.
+    ##
+    ## @item @qcode{'EventLengthsVariable'} @tab The name of a variable of
+    ## @var{tt} holding the lengths, which must be a @code{duration} or
+    ## @code{calendarDuration} column.
+    ##
+    ## @item @qcode{'EventEnds'} @tab Scalar or one per event, of the same
+    ## type as the row times, added as a variable named @qcode{EventEnds}.
+    ##
+    ## @item @qcode{'EventEndsVariable'} @tab The name of a variable of
+    ## @var{tt} holding the end times, which must be a @code{datetime} or
+    ## @code{duration} column.
+    ##
+    ## @item @qcode{'EventDataVariables'} @tab Variables of @var{tt} to carry
+    ## into the event table as event data.  Each keeps its own name.
+    ##
+    ## @item @qcode{'PreserveEventVariables'} @tab A logical scalar.  When
+    ## @qcode{true} the variables the event table took stay in @var{tt2} as
+    ## well.  It says what to do with variables that were named, so it
+    ## requires at least one option that names some.
+    ##
+    ## @end multitable
+    ##
+    ## Lengths and ends are mutually exclusive, however they are given, and
+    ## so are labels given as values and labels named as a variable.  Neither
+    ## labels option may be combined with the @var{labels} form, which
+    ## carries its own.
+    ##
+    ## @seealso{eventtable, syncevents, timetable}
+    ## @end deftypefn
+    function [ET, TT2] = extractevents (this, arg, varargin)
+
+      if (nargin < 2)
+        error ("timetable.extractevents: too few input arguments.");
+      endif
+
+      optNames = {'EventLabels', 'EventLabelsVariable', 'EventLengths', ...
+                  'EventLengthsVariable', 'EventEnds', 'EventEndsVariable', ...
+                  'EventDataVariables', 'PreserveEventVariables'};
+      dfValues = repmat ({missing}, 1, numel (optNames));
+      [Labels, LabelsVar, Lengths, LengthsVar, Ends, EndsVar, DataVars, ...
+       Preserve, rem] = parsePairedArguments (optNames, dfValues, varargin(:));
+      if (! isempty (rem))
+        name = rem{1};
+        if (! (ischar (name) || isa (name, 'string')))
+          name = '(non-text)';
+        endif
+        error (strcat ("timetable.extractevents: unknown option '%s'; it", ...
+                       " must be one of %s."), char (name), ...
+               strjoin (strcat ("'", optNames, "'"), ", "));
+      endif
+
+      ## A length and an end say the same thing two ways, and so do labels
+      ## given as values and labels named as a variable.
+      if ((wasGiven (Lengths) || wasGiven (LengthsVar))
+          && (wasGiven (Ends) || wasGiven (EndsVar)))
+        error (strcat ("timetable.extractevents: specify either the event", ...
+                       " lengths or the event ends, but not both."));
+      endif
+      if (wasGiven (Labels) && wasGiven (LabelsVar))
+        error (strcat ("timetable.extractevents: specify either the event", ...
+                       " labels or an event labels variable, but not both."));
+      endif
+
+      ## The two forms of the second argument.  A categorical says which
+      ## rows are events and what each is called at once, so it settles the
+      ## labels and nothing else may.
+      byLabels = iscategorical (arg);
+      if (byLabels)
+        if (wasGiven (Labels) || wasGiven (LabelsVar))
+          error (strcat ("timetable.extractevents: event labels cannot be", ...
+                         " given as well when the second input is a", ...
+                         " categorical, which carries its own."));
+        endif
+        if (numel (arg) != height (this))
+          error (strcat ("timetable.extractevents: the labels must have", ...
+                         " one element per row of the timetable; got %d", ...
+                         " for %d rows."), numel (arg), height (this));
+        endif
+        keep = ! ismissing (arg(:));
+        ixRows = find (keep);
+      else
+        ixRows = resolveRowVarRefs (this, arg, ':');
+        ixRows = validateRowIndex (this, ixRows);
+        ixRows = ixRows(:);
+      endif
+      nev = numel (ixRows);
+
+      ## The event table's variables, and which of the timetable's went into
+      ## them.  Order follows the kinds: what the events are called, how far
+      ## they run, then whatever data rides along.
+      varNames = {};
+      varValues = {};
+      taken = [];
+      lblVar = [];
+      lenVar = [];
+      endVar = [];
+
+      if (byLabels)
+        lab = arg(:);
+        varNames{end+1} = 'EventLabels';
+        varValues{end+1} = lab(ixRows);
+        lblVar = 'EventLabels';
+      elseif (wasGiven (Labels))
+        varNames{end+1} = 'EventLabels';
+        varValues{end+1} = eventOptionValue (Labels, nev, 'EventLabels');
+        lblVar = 'EventLabels';
+      elseif (wasGiven (LabelsVar))
+        [lblVar, col, ix] = takenVariable (this, LabelsVar, ixRows, ...
+                                           'EventLabelsVariable');
+        varNames{end+1} = lblVar;
+        varValues{end+1} = col;
+        taken = [taken, ix];
+      endif
+
+      if (wasGiven (Lengths))
+        varNames{end+1} = 'EventLengths';
+        varValues{end+1} = eventOptionValue (Lengths, nev, 'EventLengths');
+        lenVar = 'EventLengths';
+      elseif (wasGiven (LengthsVar))
+        [lenVar, col, ix] = takenVariable (this, LengthsVar, ixRows, ...
+                                           'EventLengthsVariable');
+        if (! (isduration (col) || iscalendarduration (col)))
+          error (strcat ("timetable.extractevents: the variable named by", ...
+                         " 'EventLengthsVariable' must be a duration or a", ...
+                         " calendarDuration; '%s' is a %s."), lenVar, ...
+                 class (col));
+        endif
+        varNames{end+1} = lenVar;
+        varValues{end+1} = col;
+        taken = [taken, ix];
+      endif
+
+      if (wasGiven (Ends))
+        varNames{end+1} = 'EventEnds';
+        varValues{end+1} = eventOptionValue (Ends, nev, 'EventEnds');
+        endVar = 'EventEnds';
+      elseif (wasGiven (EndsVar))
+        [endVar, col, ix] = takenVariable (this, EndsVar, ixRows, ...
+                                           'EventEndsVariable');
+        if (! (isdatetime (col) || isduration (col)))
+          error (strcat ("timetable.extractevents: the variable named by", ...
+                         " 'EventEndsVariable' must be a datetime or a", ...
+                         " duration; '%s' is a %s."), endVar, class (col));
+        endif
+        varNames{end+1} = endVar;
+        varValues{end+1} = col;
+        taken = [taken, ix];
+      endif
+
+      if (wasGiven (DataVars))
+        ixData = resolveVarRef (this, DataVars);
+        for k = 1:numel (ixData)
+          col = getvar (this, ixData(k));
+          varNames{end+1} = this.VariableNames{ixData(k)};
+          varValues{end+1} = col(ixRows,:);
+        endfor
+        taken = [taken, ixData(:)'];
+      endif
+
+      ## 'PreserveEventVariables' says what becomes of the variables the
+      ## event table took, so it needs a call that takes some.
+      if (wasGiven (Preserve))
+        if (! (islogical (Preserve) && isscalar (Preserve)))
+          error (strcat ("timetable.extractevents:", ...
+                         " 'PreserveEventVariables' must be a logical", ...
+                         " scalar."));
+        endif
+        if (isempty (taken))
+          error (strcat ("timetable.extractevents:", ...
+                         " 'PreserveEventVariables' says what becomes of", ...
+                         " the variables taken from the timetable, so at", ...
+                         " least one of 'EventDataVariables',", ...
+                         " 'EventLabelsVariable', 'EventLengthsVariable'", ...
+                         " and 'EventEndsVariable' must be given."));
+        endif
+      else
+        Preserve = false;
+      endif
+
+      rt = getRowLabels (this);
+      ET = eventtable (timetable (rt(ixRows), varValues{:}, ...
+                                  'VariableNames', varNames));
+      ET.EventLabelsVariable = lblVar;
+      ET.EventLengthsVariable = lenVar;
+      ET.EventEndsVariable = endVar;
+
+      if (nargout > 1)
+        TT2 = this;
+        if (! Preserve && ! isempty (taken))
+          TT2 = subsetvars (this, setdiff (1:width (this), unique (taken)));
+        endif
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
     ## @deftypefn  {timetable} {@var{tt} =} addprop (@var{tt}, @var{propertyNames}, @var{propertyTypes})
     ##
     ## Add custom properties to a timetable.
@@ -4455,6 +4708,27 @@ function val = checkEvents (this, val)
     error (strcat ("%s.subsasgn: the attached event table's row times must", ...
                    " be of the same type as this %s's row times: got %s", ...
                    " against %s."), clstype, clstype, evClass, ttClass);
+  endif
+endfunction
+
+## One value given as an option to 'extractevents', sized to the events: one
+## value stands for every event alike, otherwise there is one apiece.
+function val = eventOptionValue (val, nev, opt)
+  if (ischar (val) && isrow (val))
+    val = repmat ({val}, nev, 1);
+    return;
+  endif
+  if (ischar (val) && rows (val) > 1)
+    val = cellstr (val);
+  endif
+  if (isscalar (val))
+    val = repmat (val(:), nev, 1);
+  elseif (numel (val) == nev)
+    val = val(:);
+  else
+    error (strcat ("timetable.extractevents: '%s' must be a scalar or", ...
+                   " have one element per event; got %d for %d events."), ...
+           opt, numel (val), nev);
   endif
 endfunction
 
