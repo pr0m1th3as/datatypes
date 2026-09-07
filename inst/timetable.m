@@ -322,10 +322,137 @@ classdef timetable < tabular
       out = this.Events;
     endfunction
 
+    function this = detachEvents (this)
+      this.Events = [];
+    endfunction
+
     ## The attached event table assigned, through the same seam.  VAL is
     ## whatever the user gave and is validated here.
     function this = setEventsOf (this, val)
       this.Events = checkEvents (this, val);
+    endfunction
+
+    ## The event tables of OPS carried onto TBL, which is the result of a
+    ## binary operation over them.  One operand carrying events hands them
+    ## over unchanged; two or more are merged; none leaves the result with
+    ## none.  Returns an errmsg body for the caller to raise under its own
+    ## name.
+    function [tbl, errmsg] = carryEvents (tbl, ops)
+      errmsg = '';
+      ev = [];
+      for i = 1:numel (ops)
+        if (! isa (ops{i}, 'tabular'))
+          continue;
+        endif
+        evi = eventsOf (ops{i});
+        if (isempty (evi))
+          continue;
+        endif
+        if (isempty (ev))
+          ev = evi;
+        else
+          [ev, errmsg] = mergeEventTables (ev, evi);
+          if (! isempty (errmsg))
+            return;
+          endif
+        endif
+      endfor
+      tbl = setEventsOf (tbl, ev);
+    endfunction
+
+    ## Two event tables merged, which is an outer join keyed on the row times
+    ## together with every variable the two share.  A key found on both sides
+    ## yields one row, a key found on one yields a row whose variables from
+    ## the other side are missing, and the result is ordered by those same
+    ## keys, so operand order does not reach the answer.  Variables the two
+    ## do not share are no obstacle; the three event properties are, and must
+    ## agree.
+    function [ev, errmsg] = mergeEventTables (evA, evB)
+      ev = [];
+      ## 'Properties' is synthesised by 'subsref' and a method's dot access
+      ## does not go through it, so the metadata is read as a struct here.
+      PA = getProperties (evA);
+      PB = getProperties (evB);
+      errmsg = mergeableEvents (PA, PB);
+      if (! isempty (errmsg))
+        return;
+      endif
+
+      namesA = PA.VariableNames;
+      namesB = PB.VariableNames;
+      common = namesA(ismember (namesA, namesB));
+
+      ## The key columns of each side, the row times leading.
+      lCols = {getRowLabels(evA)};
+      rCols = {getRowLabels(evB)};
+      for k = 1:numel (common)
+        lCols{end+1} = getvar (evA, common{k});
+        rCols{end+1} = getvar (evB, common{k});
+      endfor
+      [pL, pR, errmsg] = tabular.joinProxies (lCols, rCols);
+      if (! isempty (errmsg))
+        return;
+      endif
+
+      ## One output row per distinct key, taking the left row where there is
+      ## one.  A key repeated within an operand contributes once: an event
+      ## table holding a row twice describes one event twice.
+      nA = height (evA);
+      [~, ~, ic] = unique ([pL; pR], 'rows');
+      icL = ic(1:nA);
+      icR = ic(nA+1:end);
+      ng = max (ic);
+      ixA = zeros (ng, 1);
+      ixB = zeros (ng, 1);
+      for g = 1:ng
+        a = find (icL == g, 1);
+        b = find (icR == g, 1);
+        if (! isempty (a))
+          ixA(g) = a;
+        endif
+        if (! isempty (b))
+          ixB(g) = b;
+        endif
+      endfor
+
+      [ev, errmsg] = joinBuildSide (evA, ixA);
+      if (! isempty (errmsg))
+        return;
+      endif
+
+      ## A row that came from the right alone has no row time and no key
+      ## values from the left, and both are known: they are what matched
+      ## nothing, so the right side carries them.
+      rtA = getRowLabels (evA);
+      rtB = getRowLabels (evB);
+      rt = rtA(max (ixA, 1));
+      fromB = (ixA == 0);
+      if (any (fromB))
+        rt(fromB) = rtB(ixB(fromB));
+        for k = 1:numel (common)
+          col = getvar (ev, common{k});
+          src = getvar (evB, common{k});
+          col(fromB,:) = src(ixB(fromB),:);
+          ev = setvar (ev, common{k}, col);
+        endfor
+      endif
+      ev = setRowLabels (ev, rt);
+
+      ## The variables only the right side has, filled where the left had no
+      ## row of its own.
+      bOnly = namesB(! ismember (namesB, namesA));
+      if (! isempty (bOnly))
+        ixOnly = resolveVarRef (evB, bOnly);
+        [Bout, errmsg] = joinBuildSide (subsetvars (evB, ixOnly), ixB);
+        if (! isempty (errmsg))
+          return;
+        endif
+        for k = 1:numel (bOnly)
+          ev = setvar (ev, bOnly{k}, getvar (Bout, k));
+        endfor
+      endif
+
+      ev = sortrows (ev, [{PA.DimensionNames{1}}, common]);
     endfunction
 
     ## One of those four assigned.  Each of them writes through to the
@@ -807,6 +934,13 @@ classdef timetable < tabular
         out{k} = o;
       endfor
       out = synchronizeRename (out, names);
+      ## The pieces are combined with 'horzcat', which would merge their
+      ## event tables and raise under its own name for a call the user made
+      ## to 'synchronize'.  The public method carries the events from the
+      ## operands themselves, so the pieces go in carrying none.
+      for k = 1:nOp
+        out{k} = detachEvents (out{k});
+      endfor
       tt = out{1};
       for k = 2:nOp
         tt = horzcat (tt, out{k});
@@ -1593,6 +1727,10 @@ classdef timetable < tabular
       ## Concatenation reads its step off the times it ends up with.
       tbl.StepDeclared = false;
       tbl = applyRowTimes (tbl, rt, true);
+      [tbl, errmsg] = carryEvents (tbl, varargin);
+      if (! isempty (errmsg))
+        error ("timetable.vertcat: %s", errmsg);
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -1674,6 +1812,10 @@ classdef timetable < tabular
       [cp, cpTypes] = merge_hcat_props (tbl, varargin);
       tbl.CustomProperties = cp;
       tbl.CustomPropTypes = cpTypes;
+      [tbl, errmsg] = carryEvents (tbl, varargin);
+      if (! isempty (errmsg))
+        error ("timetable.horzcat: %s", errmsg);
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -3519,6 +3661,10 @@ classdef timetable < tabular
       if (! isempty (errmsg))
         error ("timetable.join: %s", errmsg);
       endif
+      [ttC, errmsg] = carryEvents (ttC, {ttL, tblR});
+      if (! isempty (errmsg))
+        error ("timetable.join: %s", errmsg);
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -3564,6 +3710,10 @@ classdef timetable < tabular
       endif
       [ttC, iL, iR, errmsg] = innerjoinResult (ttL, tblR, varargin, ...
                                                inputname (1), inputname (2));
+      if (! isempty (errmsg))
+        error ("timetable.innerjoin: %s", errmsg);
+      endif
+      [ttC, errmsg] = carryEvents (ttC, {ttL, tblR});
       if (! isempty (errmsg))
         error ("timetable.innerjoin: %s", errmsg);
       endif
@@ -3617,6 +3767,10 @@ classdef timetable < tabular
       endif
       [ttC, iL, iR, errmsg] = outerjoinResult (ttL, tblR, varargin, ...
                                                inputname (1), inputname (2));
+      if (! isempty (errmsg))
+        error ("timetable.outerjoin: %s", errmsg);
+      endif
+      [ttC, errmsg] = carryEvents (ttC, {ttL, tblR});
       if (! isempty (errmsg))
         error ("timetable.outerjoin: %s", errmsg);
       endif
@@ -4039,6 +4193,10 @@ classdef timetable < tabular
       if (! isempty (errmsg))
         error ("timetable.synchronize: %s", errmsg);
       endif
+      [tt, errmsg] = carryEvents (tt, varargin);
+      if (! isempty (errmsg))
+        error ("timetable.synchronize: %s", errmsg);
+      endif
     endfunction
 
   endmethods
@@ -4287,6 +4445,38 @@ function val = checkEvents (this, val)
     error (strcat ("%s.subsasgn: the attached event table's row times must", ...
                    " be of the same type as this %s's row times: got %s", ...
                    " against %s."), clstype, clstype, evClass, ttClass);
+  endif
+endfunction
+
+## Whether two event tables may be merged at all.  Their variables need not
+## agree, an outer join filling what one side lacks, but the three properties
+## saying which variables describe the events must: a merge that had to choose
+## between two answers to that would be inventing one.  The message names both
+## values, since the usual way into a mismatch is renaming a variable in one
+## of the two and it has to point back there.
+function errmsg = mergeableEvents (PA, PB)
+  errmsg = '';
+  props = {'EventLabelsVariable', 'EventLengthsVariable', ...
+           'EventEndsVariable'};
+  for k = 1:numel (props)
+    a = PA.(props{k});
+    b = PB.(props{k});
+    if (! isequal (a, b))
+      errmsg = sprintf (strcat ("the event tables attached to the inputs", ...
+                                " cannot be merged: their '%s' differ", ...
+                                " (%s and %s)."), ...
+                        props{k}, nameOrUnset (a), nameOrUnset (b));
+      return;
+    endif
+  endfor
+endfunction
+
+## One event property's value, rendered for a message.
+function txt = nameOrUnset (val)
+  if (isempty (val))
+    txt = 'unset';
+  else
+    txt = sprintf ("'%s'", val);
   endif
 endfunction
 

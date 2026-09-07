@@ -354,6 +354,16 @@ classdef eventtable < timetable
       out = [];
     endfunction
 
+    ## An event table has nothing to detach.
+    function this = detachEvents (this)
+    endfunction
+
+    ## A binary operation over event tables has nothing to carry: an event
+    ## table holds no event table of its own.
+    function [tbl, errmsg] = carryEvents (tbl, ops)
+      errmsg = '';
+    endfunction
+
     ## Nothing may attach an event table to an event table.
     function this = setEventsOf (this, val)
       error (strcat ("eventtable.subsasgn: 'Events' is not a property of", ...

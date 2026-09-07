@@ -365,6 +365,14 @@ classdef (Abstract) tabular
       error ("%s: subclass must implement setRowLabelProperty.", class (this));
     endfunction
 
+    ## This object with any attached event table detached.  It is the seam a
+    ## shared body uses where an intermediate result must not carry events
+    ## onward, and it is not the property route: assigning to 'Events' is
+    ## refused for a class that has no such property, while detaching what
+    ## was never there is simply nothing to do.
+    function this = detachEvents (this)
+    endfunction
+
     ## The event table attached to this object, or empty where the class has
     ## no such thing.  Only a 'timetable' carries one, and an 'eventtable'
     ## carries none however much it inherits, so the property is reached
