@@ -94,12 +94,13 @@
 %!                  'EventLabels', "hit");
 %! assert_equal (cellstr (ET.EventLabels), {'hit'; 'hit'});
 
-## Test a character matrix labels one event per row, blanks trimmed as
-## 'cellstr' trims them
+## Test a character matrix labels one event per row, held as a string with
+## the blanks trimmed as 'cellstr' trims them
 %!test
 %! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])', ...
 %!                  'EventLabels', ['on '; 'off']);
-%! assert_equal (ET.EventLabels, {'on'; 'off'});
+%! assert_equal (class (ET.EventLabels), 'string');
+%! assert_equal (cellstr (ET.EventLabels), {'on'; 'off'});
 
 ## Test 'EventLengths' makes the events intervals
 %!test

@@ -6362,6 +6362,10 @@ classdef (Abstract) tabular
         ## A filter is a condition on the variables and reads no row labels,
         ## so it selects from any tabular class the same way.
         ixRow = rowIndices (rowRef, this);
+      elseif (isa (rowRef, 'eventfilter'))
+        ## An event filter is a condition on the attached event table, and
+        ## selects the rows its matching events cover.
+        ixRow = rowIndices (rowRef, this);
       else
         ## Anything else is a row reference of a kind only the subclass can
         ## read: a row time, a range of them, a tolerant match.  A class that

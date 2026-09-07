@@ -97,6 +97,26 @@ classdef timerange
       first = varargin{1};
       second = varargin{2};
 
+      ## Two event filters name the bounds by what was happening rather than
+      ## by when.  They cannot be resolved here, the events living on the
+      ## timetable the range will subscript, so they are kept as they are and
+      ## resolved when it arrives.
+      if (isa (first, 'eventfilter') || isa (second, 'eventfilter'))
+        if (! (isa (first, 'eventfilter') && isa (second, 'eventfilter')))
+          error (strcat ("timerange: an event filter bound needs an event", ...
+                         " filter at the other end too; a range runs from", ...
+                         " one event to another."));
+        endif
+        if (nargin > 2)
+          error (strcat ("timerange: an interval type cannot be given with", ...
+                         " event filter bounds."));
+        endif
+        this.first = first;
+        this.last = second;
+        this.intervalType = 'openright';
+        return
+      endif
+
       ## The two-argument form is a unit whenever the second argument names
       ## one; anything else there is the far bound of the interval.
       if (nargin == 2 && isUnitName (second))
@@ -134,6 +154,31 @@ classdef timerange
     ## its lower and its upper end.
     ##
     ## @end deftypefn
+    ## -*- texinfo -*-
+    ## @deftypefn {timerange} {@var{tf} =} hasEventBounds (@var{tr})
+    ##
+    ## Whether the range's bounds are event filters awaiting a timetable.
+    ##
+    ## @end deftypefn
+    function tf = hasEventBounds (this)
+      tf = isa (this.first, 'eventfilter');
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timerange} {@var{tr2} =} resolveEventBounds (@var{tr}, @var{tt})
+    ##
+    ## Return the range with its event filter bounds read against @var{tt}.
+    ##
+    ## Each bound becomes the time of the first event of @var{tt} its filter
+    ## matches, so the range runs from the start of one event to the start of
+    ## the other and stops short of it.
+    ##
+    ## @end deftypefn
+    function this = resolveEventBounds (this, tt)
+      this.first = firstEventTime (this.first, tt, 'START');
+      this.last = firstEventTime (this.last, tt, 'END');
+    endfunction
+
     function [lo, hi, cl, cr] = interval (this, rowTimes)
       lo = matchBound (this.first, rowTimes);
       hi = matchBound (this.last, rowTimes);
@@ -347,3 +392,14 @@ endfunction
 %!error <timerange: a timetable with duration row times cannot be subscripted with datetime bounds.> ...
 %! rowIndices (timerange (datetime (2024, 1, 1), datetime (2024, 1, 2)), ...
 %!             hours (0:2)');
+
+## The time of the first event TT carries that EF matches, which is what one
+## end of a range given as event filters comes to.
+function t = firstEventTime (ef, tt, which)
+  times = eventTimes (ef, tt);
+  if (isempty (times))
+    error (strcat ("timerange: the %s bound's event filter matches no", ...
+                   " event of this timetable."), which);
+  endif
+  t = times(1);
+endfunction

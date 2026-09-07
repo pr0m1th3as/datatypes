@@ -521,10 +521,17 @@ function val = checkEventLabels (val, nev)
     error (strcat ("eventtable: 'EventLabels' must not be a datetime, a", ...
                    " duration, a calendarDuration, a table or a timetable."));
   endif
-  ## A character matrix labels one event per row, which is how Octave holds a
-  ## list of names in char; a character row vector is a single label.
+  ## Text labels are held as a 'string', whatever text they arrived as.
+  ## Octave has no string literal of its own, so labels are written in char
+  ## more often than not, and a char or cellstr labels variable could not be
+  ## compared with '==', which is how an 'eventfilter' is written.  A
+  ## character matrix is one label per row on the way, which is how Octave
+  ## holds a list of names in char.
   if (ischar (val) && rows (val) > 1)
     val = cellstr (val);
+  endif
+  if (ischar (val) || iscellstr (val))
+    val = string (val);
   endif
   val = broadcastEventVar (val, nev, 'EventLabels');
 endfunction

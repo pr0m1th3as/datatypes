@@ -534,6 +534,11 @@ classdef timetable < tabular
     ## rows, and they come back in reference order.  Raises naming every
     ## reference that matches none.
     function ixRows = resolveRowRef (this, rowRef)
+      ## A range whose bounds are event filters reads them against this
+      ## timetable, which is what carries the events they name.
+      if (isa (rowRef, 'timerange') && hasEventBounds (rowRef))
+        rowRef = resolveEventBounds (rowRef, this);
+      endif
       if (isa (rowRef, 'timerange') || isa (rowRef, 'withtol'))
         ixRows = rowIndices (rowRef, this.RowTimes);
         return
@@ -4870,12 +4875,13 @@ endfunction
 ## One value given as an option to 'extractevents', sized to the events: one
 ## value stands for every event alike, otherwise there is one apiece.
 function val = eventOptionValue (val, nev, opt)
-  if (ischar (val) && isrow (val))
-    val = repmat ({val}, nev, 1);
-    return;
-  endif
-  if (ischar (val) && rows (val) > 1)
-    val = cellstr (val);
+  ## Text becomes a 'string', as it does in the 'eventtable' constructor, so
+  ## that a labels variable can be compared with '=='.
+  if (ischar (val) || iscellstr (val))
+    if (ischar (val) && rows (val) > 1)
+      val = cellstr (val);
+    endif
+    val = string (val);
   endif
   if (isscalar (val))
     val = repmat (val(:), nev, 1);
