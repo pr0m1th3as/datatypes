@@ -1,0 +1,301 @@
+## Copyright (C) 2026 Andreas Bertsatos <abertsatos@biol.uoa.gr>
+##
+## This file is part of the datatypes package for GNU Octave.
+##
+## This program is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free Software
+## Foundation; either version 3 of the License, or (at your option) any later
+## version.
+##
+## This program is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+## details.
+##
+## You should have received a copy of the GNU General Public License along with
+## this program; if not, see <http://www.gnu.org/licenses/>.
+
+## Every expected value below was measured against MATLAB R2026a, which is
+## where 'eventtable' exists; R2024a has no such class.
+
+################################################################################
+##                        **    Construction    **                            ##
+################################################################################
+
+## Test the empty constructor
+%!test
+%! ET = eventtable ();
+%! assert_equal (class (ET), 'eventtable');
+%! assert_equal (size (ET), [0, 0]);
+
+## Test the empty constructor designates nothing
+%!test
+%! P = eventtable ().Properties;
+%! assert_equal (isempty (P.EventLabelsVariable), true);
+%! assert_equal (isempty (P.EventLengthsVariable), true);
+%! assert_equal (isempty (P.EventEndsVariable), true);
+
+## Test construction from a datetime vector labels the events itself
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])');
+%! assert_equal (ET.Properties.VariableNames, {'EventLabels'});
+%! assert_equal (ET.Properties.EventLabelsVariable, 'EventLabels');
+%! assert_equal (cellstr (ET.EventLabels), {'Event 1'; 'Event 2'});
+
+## Test the generated labels are numbered from one for each event table
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ((1:4))');
+%! assert_equal (cellstr (ET.EventLabels), ...
+%!               {'Event 1'; 'Event 2'; 'Event 3'; 'Event 4'});
+
+## Test construction from a duration vector
+%!test
+%! ET = eventtable (seconds ([1 3])');
+%! assert_equal (class (ET), 'eventtable');
+%! assert_equal (ET.Properties.RowTimes, seconds ([1; 3]));
+
+## Test construction from a timetable keeps its variables
+%!test
+%! tv = datetime (2024, 1, 1) + hours ([1 3])';
+%! TT = timetable (tv, string ({'a'; 'b'}), [10; 20], ...
+%!                 'VariableNames', {'lab', 'val'});
+%! ET = eventtable (TT);
+%! assert_equal (class (ET), 'eventtable');
+%! assert_equal (ET.Properties.VariableNames, {'lab', 'val'});
+%! assert_equal (ET.Properties.RowTimes, tv);
+
+## Test construction from a timetable guesses no labels variable
+%!test
+%! tv = datetime (2024, 1, 1) + hours ([1 3])';
+%! TT = timetable (tv, string ({'a'; 'b'}), 'VariableNames', {'lab'});
+%! P = eventtable (TT).Properties;
+%! assert_equal (isempty (P.EventLabelsVariable), true);
+
+## Test construction from a timetable carries its variable metadata
+%!test
+%! tv = datetime (2024, 1, 1) + hours ([1 3])';
+%! TT = timetable (tv, [10; 20], 'VariableNames', {'val'});
+%! TT.Properties.VariableUnits = {'kg'};
+%! TT.Properties.Description = 'source';
+%! ET = eventtable (TT);
+%! assert_equal (ET.Properties.VariableUnits, {'kg'});
+%! assert_equal (ET.Properties.Description, 'source');
+
+## Test 'EventLabels' names the events and is added as a variable
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])', ...
+%!                  'EventLabels', string ({'on'; 'off'}));
+%! assert_equal (ET.Properties.VariableNames, {'EventLabels'});
+%! assert_equal (cellstr (ET.EventLabels), {'on'; 'off'});
+
+## Test a scalar 'EventLabels' labels every event alike
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])', ...
+%!                  'EventLabels', "hit");
+%! assert_equal (cellstr (ET.EventLabels), {'hit'; 'hit'});
+
+## Test a character matrix labels one event per row, blanks trimmed as
+## 'cellstr' trims them
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])', ...
+%!                  'EventLabels', ['on '; 'off']);
+%! assert_equal (ET.EventLabels, {'on'; 'off'});
+
+## Test 'EventLengths' makes the events intervals
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])', ...
+%!                  'EventLengths', hours ([2; 1]));
+%! assert_equal (ET.Properties.EventLengthsVariable, 'EventLengths');
+%! assert_equal (ET.EventLengths, hours ([2; 1]));
+
+## Test 'EventLengths' takes a calendarDuration against datetime event times
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])', ...
+%!                  'EventLengths', caldays ([1; 1]));
+%! assert_equal (class (ET.EventLengths), 'calendarDuration');
+
+## Test 'EventEnds' makes the events intervals
+%!test
+%! tv = datetime (2024, 1, 1) + hours ([1 3])';
+%! ET = eventtable (tv, 'EventEnds', tv + hours (1));
+%! assert_equal (ET.Properties.EventEndsVariable, 'EventEnds');
+%! assert_equal (isempty (ET.Properties.EventLengthsVariable), true);
+
+## Test 'EventLabelsVariable' points at a variable of the timetable
+%!test
+%! tv = datetime (2024, 1, 1) + hours ([1 3])';
+%! TT = timetable (tv, string ({'a'; 'b'}), 'VariableNames', {'lab'});
+%! ET = eventtable (TT, 'EventLabelsVariable', 'lab');
+%! assert_equal (ET.Properties.EventLabelsVariable, 'lab');
+%! assert_equal (ET.Properties.VariableNames, {'lab'});
+
+## Test 'EventLengthsVariable' points at a variable of the timetable
+%!test
+%! tv = datetime (2024, 1, 1) + hours ([1 3])';
+%! TT = timetable (tv, hours ([2; 1]), 'VariableNames', {'dur'});
+%! ET = eventtable (TT, 'EventLengthsVariable', 'dur');
+%! assert_equal (ET.Properties.EventLengthsVariable, 'dur');
+
+################################################################################
+##                   **    Construction: refusals    **                       ##
+################################################################################
+
+## Test a first input that is neither a timetable nor a time vector
+%!error <eventtable: first input must be a timetable, or a datetime or duration vector.> ...
+%! eventtable (table (1));
+
+## Test the event times are required
+%!error <eventtable: the event times or the timetable they come from must be given exactly once.> ...
+%! eventtable ('EventLabels', "a");
+
+## Test a length and an end together
+%!error <eventtable: specify either the event lengths or the event ends, but not both.> ...
+%! eventtable (datetime (2024, 1, 1), 'EventLengths', hours (1), ...
+%!             'EventEnds', datetime (2024, 1, 2));
+
+## Test labels given both ways
+%!error <eventtable: specify either the event labels or an event labels variable, but not both.> ...
+%! eventtable (timetable (datetime (2024, 1, 1), 1, 'VariableNames', {'v'}), ...
+%!             'EventLabels', "a", 'EventLabelsVariable', 'v');
+
+## Test a variable-naming option against a vector of times
+%!error <eventtable: 'EventLabelsVariable' names a variable of a timetable and cannot be used with a vector of event times.> ...
+%! eventtable (datetime (2024, 1, 1), 'EventLabelsVariable', 'v');
+
+## Test labels of a type that describes when rather than what
+%!error <eventtable: 'EventLabels' must not be a datetime, a duration, a calendarDuration, a table or a timetable.> ...
+%! eventtable (datetime (2024, 1, 1), 'EventLabels', hours (1));
+
+## Test a wrong number of labels
+%!error <eventtable: 'EventLabels' must be a scalar or have one element per event; got 3 for 2 events.> ...
+%! eventtable (datetime (2024, 1, 1) + hours ([1 3])', ...
+%!             'EventLabels', string ({'a'; 'b'; 'c'}));
+
+## Test a calendar length against duration event times
+%!error <eventtable: 'EventLengths' must be a duration when the event times are durations.> ...
+%! eventtable (seconds ([1 3])', 'EventLengths', calmonths ([1; 1]));
+
+## Test a length that is neither a duration nor a calendarDuration
+%!error <eventtable: 'EventLengths' must be a duration or a calendarDuration.> ...
+%! eventtable (datetime (2024, 1, 1), 'EventLengths', 5);
+
+## Test an end of a different type from the event times
+%!error <eventtable: 'EventEnds' must be a datetime, the same type as the event times.> ...
+%! eventtable (datetime (2024, 1, 1), 'EventEnds', hours (1));
+
+## Test an option value colliding with a variable the input already has
+%!error <eventtable: the input already has a variable named 'EventLabels'; give the values with 'EventLabelsVariable' instead.> ...
+%! eventtable (timetable (datetime (2024, 1, 1), 1, ...
+%!                        'VariableNames', {'EventLabels'}), ...
+%!             'EventLabels', "a");
+
+################################################################################
+##                      **    The three properties    **                      ##
+################################################################################
+
+## Test a property may be pointed at another variable
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])');
+%! ET = addvars (ET, [1; 2], 'NewVariableNames', {'val'});
+%! ET.Properties.EventLabelsVariable = 'val';
+%! assert_equal (ET.Properties.EventLabelsVariable, 'val');
+
+## Test a property is cleared by assigning an empty matrix
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])');
+%! ET.Properties.EventLabelsVariable = [];
+%! assert_equal (isempty (ET.Properties.EventLabelsVariable), true);
+
+## Test a property accepts a string scalar as a name
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])');
+%! ET.Properties.EventLabelsVariable = "EventLabels";
+%! assert_equal (ET.Properties.EventLabelsVariable, 'EventLabels');
+
+## Test an empty character vector is not a name and does not clear
+%!error <eventtable: 'EventLabelsVariable' must be the name of a variable, given as a character vector or a string scalar, or \[\] to clear it.> ...
+%! ET = eventtable (datetime (2024, 1, 1));
+%! ET.Properties.EventLabelsVariable = '';
+
+## Test a name that no variable answers to
+%!error <eventtable: 'EventLabelsVariable' names no variable of this event table: 'nosuch'.> ...
+%! ET = eventtable (datetime (2024, 1, 1));
+%! ET.Properties.EventLabelsVariable = 'nosuch';
+
+## Test an end variable cannot be set while a length variable is
+%!error <eventtable.subsasgn: 'EventEndsVariable' cannot be set while 'EventLengthsVariable' is set; clear that one first.> ...
+%! ET = eventtable (datetime (2024, 1, 1), 'EventLengths', hours (1));
+%! ET.Properties.EventEndsVariable = 'EventLengths';
+
+## Test a length variable cannot be set while an end variable is
+%!error <eventtable.subsasgn: 'EventLengthsVariable' cannot be set while 'EventEndsVariable' is set; clear that one first.> ...
+%! ET = eventtable (datetime (2024, 1, 1), 'EventEnds', datetime (2024, 1, 2));
+%! ET.Properties.EventLengthsVariable = 'EventEnds';
+
+################################################################################
+##                    **    The properties object    **                       ##
+################################################################################
+
+## Test 'Properties' returns an EventtableProperties object
+%!assert (class (eventtable (datetime (2024, 1, 1)).Properties), ...
+%!        'datatypes.tabular.EventtableProperties')
+
+## Test the three event properties are listed first, ahead of 'Description'
+%!test
+%! names = properties (eventtable (datetime (2024, 1, 1)).Properties);
+%! assert_equal (names(1:3)', {'EventLabelsVariable', ...
+%!                             'EventLengthsVariable', 'EventEndsVariable'});
+
+## Test the whole published order
+%!test
+%! names = properties (eventtable (datetime (2024, 1, 1)).Properties);
+%! assert_equal (names', {'EventLabelsVariable', 'EventLengthsVariable', ...
+%!                        'EventEndsVariable', 'Description', 'UserData', ...
+%!                        'DimensionNames', 'VariableNames', ...
+%!                        'VariableTypes', 'VariableDescriptions', ...
+%!                        'VariableUnits', 'VariableContinuity', ...
+%!                        'RowTimes', 'StartTime', 'SampleRate', ...
+%!                        'TimeStep', 'CustomProperties'});
+
+################################################################################
+##                  **    An event table is a timetable    **                 ##
+################################################################################
+
+## Test the class hierarchy
+%!test
+%! ET = eventtable (datetime (2024, 1, 1));
+%! assert_equal (isa (ET, 'timetable'), true);
+%! assert_equal (isa (ET, 'tabular'), true);
+%! assert_equal (isa (ET, 'table'), false);
+
+## Test the type predicates single it out as a timetable
+%!test
+%! ET = eventtable (datetime (2024, 1, 1));
+%! assert_equal (istimetable (ET), true);
+%! assert_equal (istabular (ET), true);
+%! assert_equal (istable (ET), false);
+
+## Test a row subset is still an event table
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3 5])');
+%! assert_equal (class (ET(1:2,:)), 'eventtable');
+%! assert_equal (ET(1:2,:).Properties.EventLabelsVariable, 'EventLabels');
+
+## Test 'sortrows' returns an event table
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([3 1])');
+%! assert_equal (class (sortrows (ET)), 'eventtable');
+
+## Test 'head' returns an event table
+%!test
+%! ET = eventtable (datetime (2024, 1, 1) + hours ([1 3])');
+%! assert_equal (class (head (ET, 1)), 'eventtable');
+
+## Test 'addvars' returns an event table
+%!assert (class (addvars (eventtable (datetime (2024, 1, 1)), 1)), 'eventtable')
+
+## Test 'removevars' returns an event table
+%!test
+%! ET = eventtable (datetime (2024, 1, 1));
+%! ET = addvars (ET, 1, 'NewVariableNames', {'val'});
+%! assert_equal (class (removevars (ET, 'val')), 'eventtable');
