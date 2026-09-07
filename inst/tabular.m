@@ -365,6 +365,14 @@ classdef (Abstract) tabular
       error ("%s: subclass must implement setRowLabelProperty.", class (this));
     endfunction
 
+    ## TBL rebuilt as this object's class, where this object's class is the
+    ## more derived of the two.  A binary operation takes the most derived
+    ## class among its operands rather than the class of the first, so each
+    ## operand is offered the result in turn and all but the most derived
+    ## decline.  The default declines.
+    function tbl = promoteResult (this, tbl)
+    endfunction
+
     ## This object with any attached event table detached.  It is the seam a
     ## shared body uses where an intermediate result must not carry events
     ## onward, and it is not the property route: assigning to 'Events' is

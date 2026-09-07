@@ -1727,6 +1727,11 @@ classdef timetable < tabular
       ## Concatenation reads its step off the times it ends up with.
       tbl.StepDeclared = false;
       tbl = applyRowTimes (tbl, rt, true);
+      for i = 1:numel (varargin)
+        if (isa (varargin{i}, 'tabular'))
+          tbl = promoteResult (varargin{i}, tbl);
+        endif
+      endfor
       [tbl, errmsg] = carryEvents (tbl, varargin);
       if (! isempty (errmsg))
         error ("timetable.vertcat: %s", errmsg);
@@ -1812,6 +1817,11 @@ classdef timetable < tabular
       [cp, cpTypes] = merge_hcat_props (tbl, varargin);
       tbl.CustomProperties = cp;
       tbl.CustomPropTypes = cpTypes;
+      for i = 1:numel (varargin)
+        if (isa (varargin{i}, 'tabular'))
+          tbl = promoteResult (varargin{i}, tbl);
+        endif
+      endfor
       [tbl, errmsg] = carryEvents (tbl, varargin);
       if (! isempty (errmsg))
         error ("timetable.horzcat: %s", errmsg);

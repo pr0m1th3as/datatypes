@@ -694,3 +694,105 @@
 %! A.Properties.Events = EA;
 %! B.Properties.Events = EB;
 %! assert_equal (height ([A B].Properties.Events), 4);
+
+################################################################################
+##            **    The result takes the more derived class    **             ##
+################################################################################
+
+## Test 'horzcat' with the event table first
+%!test
+%! t = datetime (2024, 1, 1) + hours ([1 3])';
+%! ET = eventtable (t, 'EventLabels', string ({'on'; 'off'}));
+%! TT = timetable (t, [7; 8], 'VariableNames', {'V'});
+%! out = horzcat (ET, TT);
+%! assert_equal (class (out), 'eventtable');
+%! assert_equal (out.Properties.VariableNames, {'EventLabels', 'V'});
+%! assert_equal (out.Properties.EventLabelsVariable, 'EventLabels');
+
+## Test 'horzcat' with the plain timetable first
+%!test
+%! t = datetime (2024, 1, 1) + hours ([1 3])';
+%! ET = eventtable (t, 'EventLabels', string ({'on'; 'off'}));
+%! TT = timetable (t, [7; 8], 'VariableNames', {'V'});
+%! out = horzcat (TT, ET);
+%! assert_equal (class (out), 'eventtable');
+%! assert_equal (out.Properties.VariableNames, {'V', 'EventLabels'});
+%! assert_equal (out.Properties.EventLabelsVariable, 'EventLabels');
+
+## Test 'vertcat' with the event table first
+%!test
+%! t = datetime (2024, 1, 1) + hours ([1 3])';
+%! ET = eventtable (t, 'EventLabels', string ({'on'; 'off'}));
+%! TT = timetable (t, string ({'p'; 'q'}), 'VariableNames', {'EventLabels'});
+%! out = vertcat (ET, TT);
+%! assert_equal (class (out), 'eventtable');
+%! assert_equal (height (out), 4);
+%! assert_equal (out.Properties.EventLabelsVariable, 'EventLabels');
+
+## Test 'vertcat' with the plain timetable first
+%!test
+%! t = datetime (2024, 1, 1) + hours ([1 3])';
+%! ET = eventtable (t, 'EventLabels', string ({'on'; 'off'}));
+%! TT = timetable (t, string ({'p'; 'q'}), 'VariableNames', {'EventLabels'});
+%! out = vertcat (TT, ET);
+%! assert_equal (class (out), 'eventtable');
+%! assert_equal (height (out), 4);
+%! assert_equal (out.Properties.EventLabelsVariable, 'EventLabels');
+
+## Test a promoted result drops a designation naming no variable of its own
+%!test
+%! t = datetime (2024, 1, 1) + hours ([1 3])';
+%! ET = eventtable (t, 'EventLabels', string ({'on'; 'off'}));
+%! ET = removevars (ET, 'EventLabels');
+%! ET.Properties.EventLabelsVariable = [];
+%! TT = timetable (t, [7; 8], 'VariableNames', {'V'});
+%! out = horzcat (TT, ET);
+%! assert_equal (class (out), 'eventtable');
+%! assert_equal (isempty (out.Properties.EventLabelsVariable), true);
+
+## Test two plain timetables are not promoted
+%!test
+%! t = datetime (2024, 1, 1) + hours ([1 3])';
+%! A = timetable (t, [1; 2], 'VariableNames', {'A'});
+%! B = timetable (t, [3; 4], 'VariableNames', {'B'});
+%! assert_equal (class (horzcat (A, B)), 'timetable');
+
+## Test 'cat' promotes along both dimensions
+%!test
+%! t = datetime (2024, 1, 1) + hours ([1 3])';
+%! ET = eventtable (t, 'EventLabels', string ({'on'; 'off'}));
+%! TT = timetable (t, [7; 8], 'VariableNames', {'V'});
+%! TT2 = timetable (t, string ({'p'; 'q'}), 'VariableNames', {'EventLabels'});
+%! assert_equal (class (cat (2, TT, ET)), 'eventtable');
+%! assert_equal (class (cat (1, TT2, ET)), 'eventtable');
+
+################################################################################
+##                       **    'eventtable.empty'    **                       ##
+################################################################################
+
+## Test the no-argument form
+%!test
+%! ET = eventtable.empty ();
+%! assert_equal (class (ET), 'eventtable');
+%! assert_equal (size (ET), [0, 0]);
+
+## Test the two-argument form
+%!test
+%! ET = eventtable.empty (0, 3);
+%! assert_equal (class (ET), 'eventtable');
+%! assert_equal (size (ET), [0, 3]);
+%! assert_equal (ET.Properties.VariableNames, {'Var1', 'Var2', 'Var3'});
+
+## Test the size-vector form
+%!assert (size (eventtable.empty ([0, 2])), [0, 2])
+
+## Test an empty event table designates nothing
+%!test
+%! P = eventtable.empty (0, 3).Properties;
+%! assert_equal (isempty (P.EventLabelsVariable), true);
+%! assert_equal (isempty (P.EventLengthsVariable), true);
+%! assert_equal (isempty (P.EventEndsVariable), true);
+
+## Test neither dimension being zero
+%!error <eventtable.empty: at least one dimension must be zero.> ...
+%! eventtable.empty (2, 3);

@@ -333,6 +333,35 @@ classdef eventtable < timetable
 
   endmethods
 
+  methods (Static)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {eventtable} {@var{et} =} eventtable.empty ()
+    ## @deftypefnx {eventtable} {@var{et} =} eventtable.empty (@var{r}, @var{v})
+    ## @deftypefnx {eventtable} {@var{et} =} eventtable.empty (@var{sz})
+    ##
+    ## Create an empty event table.
+    ##
+    ## The arguments are those of @code{timetable.empty}, which this is in
+    ## every respect but the class of what comes back: a 0-by-0 event table
+    ## with no arguments, and otherwise one of @var{r} rows and @var{v}
+    ## variables, at least one of the two being zero.  None of the three
+    ## event properties is set, there being no variable for one to name.
+    ##
+    ## @seealso{eventtable, timetable}
+    ## @end deftypefn
+    function et = empty (varargin)
+      [sz, errmsg] = tabular.emptySize ('eventtable', varargin);
+      if (! isempty (errmsg))
+        error ('eventtable.empty: %s', errmsg);
+      endif
+      et = eventtable (timetable ('Size', sz, 'VariableTypes', ...
+                                  repmat ({'double'}, 1, sz(2)), ...
+                                  'RowTimes', NaT (sz(1), 1)));
+    endfunction
+
+  endmethods
+
   methods (Access = protected)
 
     ## The three event properties travel with the four a timetable publishes
@@ -352,6 +381,22 @@ classdef eventtable < timetable
     ## property, which it could not read anyway.
     function out = eventsOf (this)
       out = [];
+    endfunction
+
+    ## An event table is the more derived class, so a result built from one
+    ## and a plain timetable is an event table however the two were ordered.
+    ## The three properties come from this operand; one naming a variable the
+    ## result does not carry is left unset, the designation having nothing to
+    ## point at.
+    function tbl = promoteResult (this, tbl)
+      if (isa (tbl, 'eventtable'))
+        return;
+      endif
+      tbl = eventtable (tbl);
+      names = tbl.VariableNames;
+      tbl.EventLabelsVariable = carried (this.EventLabelsVariable, names);
+      tbl.EventLengthsVariable = carried (this.EventLengthsVariable, names);
+      tbl.EventEndsVariable = carried (this.EventEndsVariable, names);
     endfunction
 
     ## An event table has nothing to detach.
@@ -527,6 +572,14 @@ function name = checkEventVariable (this, val, prop)
            prop, val);
   endif
   name = val;
+endfunction
+
+## An event property carried onto a promoted result, or unset where the
+## variable it names is not among that result's.
+function val = carried (val, names)
+  if (! isempty (val) && ! any (strcmp (names, val)))
+    val = [];
+  endif
 endfunction
 
 function tf = wasGiven (x)
