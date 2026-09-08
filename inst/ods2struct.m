@@ -24,7 +24,12 @@
 ## OpenDocument spreadsheet named by @var{filename} into a @code{table} and
 ## returns a scalar structure with one field per sheet, in sheet order.  A
 ## sheet written from a @code{timetable} is tagged as such and comes back as
-## one, so a workbook of both round-trips through @code{struct2ods}.  Both
+## one, so a workbook of both round-trips through @code{struct2ods}.
+##
+## A sheet named as another sheet's event table is @strong{consumed}: it is
+## attached to the timetable that names it and gets no field of its own, since
+## returning the same event table twice would leave an edit to one copy
+## disagreeing with the other on the rewrite.  Both
 ## the compressed @qcode{.ods} and the flat @qcode{.fods} formats are read.
 ## Each sheet is reconstructed exactly as by @code{ods2table}; it is the inverse
 ## of @code{struct2ods}.
@@ -49,21 +54,47 @@ function s = ods2struct (filename)
   file = char (cellstr (filename));
 
   ## Enumerate the data sheet names (the first output doubles as an error probe).
-  [data, ~, ~, names] = __ods2table__ (file);
+  [data, ~, ~, names, preamble] = __ods2table__ (file);
   if (ischar (data))
     error ("ods2struct: %s", data);
   endif
+
+  ## A sheet named as the event table of another is consumed by it and gets no
+  ## field of its own; returning it twice would put the same event table in
+  ## two places, and an edit to one copy would disagree with the other on the
+  ## rewrite.
+  xrefs = __odscrossrefs__ (preamble);
+  for i = 1:numel (xrefs)
+    if (! any (strcmp (xrefs(i).from, names)))
+      error (strcat ("ods2struct: sheet '%s' is said to have its events on", ...
+                     " sheet '%s', but the file has no sheet '%s'."), ...
+             xrefs(i).from, xrefs(i).to, xrefs(i).from);
+    endif
+    if (any (strcmp (xrefs(i).to, {xrefs.from})))
+      error (strcat ("ods2struct: sheet '%s' is named as an event table", ...
+                     " and carries one of its own; an event table cannot", ...
+                     " carry an event table."), xrefs(i).to);
+    endif
+  endfor
+  consumed = {xrefs.to};
 
   s = struct ();
   usedFields = {};
   for k = 1:numel (names)
     sn = names{k};
+    if (any (strcmp (sn, consumed)))
+      continue;
+    endif
     ## A sheet whose leading column is tagged as row times came from a
     ## timetable and goes back to being one; every other sheet is a table,
     ## including one whose first variable merely happens to be a datetime.
     [R, rowTimesName] = ods2table (file, 'Sheet', sn);
     if (! isempty (rowTimesName))
       R = table2timetable (R, 'RowTimes', rowTimesName);
+      ix = find (strcmp (sn, {xrefs.from}), 1);
+      if (! isempty (ix))
+        R = __odsattach__ (R, file, xrefs(ix), names, 'ods2struct');
+      endif
     endif
     fn = matlab.lang.makeValidName (sn);
     ## Make the field name unique if canonicalisation collided with an earlier

@@ -4898,8 +4898,13 @@ classdef timetable < tabular
     ## @qcode{'replacefile'} discards any existing file.
     ## @end multitable
     ##
-    ## An attached event table is @strong{not} written by this method and
-    ## nothing warns.
+    ## An attached event table is written too, on a sheet of its own named
+    ## @qcode{<sheet>_Events}, with a @qcode{## Events crossref:} line in the
+    ## hidden metadata sheet tying the two together and carrying the event
+    ## table's three variable designations.  @code{ods2timetable} reads that
+    ## sheet back and attaches it, and skips it when choosing which sheet to
+    ## read.  This is the only file format of the package that carries events:
+    ## @code{timetable2csv} and @code{writetimetable} drop them.
     ##
     ## Note the following round-trip limitation when reading the file back
     ## with @code{ods2timetable}: @code{calendarDuration} and
@@ -4961,6 +4966,14 @@ classdef timetable < tabular
         s = ods2struct (file);
         s = __mergesheet__ (s, this, sheet, writeMode);
         struct2ods (file, s);
+        return;
+      endif
+
+      ## An attached event table needs a sheet of its own and a line tying
+      ## the two together, which is the workbook writer's work, so the file
+      ## is written as a workbook of one timetable rather than as one sheet.
+      if (isa (eventsOf (this), 'eventtable'))
+        struct2ods (file, __mergesheet__ (struct (), this, sheet, ''));
         return;
       endif
 

@@ -266,12 +266,44 @@ meta_section (const Cell &meta, const string &sel)
   return Cell ();                       // sectioned but no section for this sheet
 }
 
+// The rows of the metadata grid above the first "## Sheet: " marker.  They
+// belong to no sheet and carry facts about the workbook as a whole, such as
+// which sheet holds the events of which other sheet.  An unsectioned grid, or
+// one whose first row is already a marker, has no preamble.
+static Cell
+meta_preamble (const Cell &meta)
+{
+  octave_idx_type nr = meta.rows ();
+  octave_idx_type nc = meta.columns ();
+  const string pfx = "## Sheet: ";
+  octave_idx_type first = -1;
+  for (octave_idx_type r = 0; r < nr && first < 0; r++)
+  {
+    if (meta(r, 0).is_string ())
+    {
+      string s = meta(r, 0).string_value ();
+      if (s.size () >= pfx.size () && s.compare (0, pfx.size (), pfx) == 0)
+        first = r;
+    }
+  }
+  if (first <= 0)
+    return Cell ();
+
+  Cell out (first, nc);
+  for (octave_idx_type r = 0; r < first; r++)
+    for (octave_idx_type c = 0; c < nc; c++)
+      out(r, c) = meta(r, c);
+  return out;
+}
+
 DEFUN_DLD (__ods2table__, args, nargout,
            "-*- texinfo -*-\n \
  @deftypefn {datatypes} {[@var{data}, @var{vtype}, @var{meta}] =} \
 __ods2table__ (@var{file})\n\
  @deftypefnx {datatypes} {[@var{data}, @var{vtype}, @var{meta}] =} \
 __ods2table__ (@var{file}, @var{sheet})\n\
+ @deftypefnx {datatypes} {[@var{data}, @var{vtype}, @var{meta}, @var{names}, \
+@var{preamble}] =} __ods2table__ (@dots{})\n\
 \n\
 \n\
 Barebone function for reading a flat ODS (@qcode{.fods}) file.\n\
@@ -281,13 +313,14 @@ it directly. \n\
 \n\
 @end deftypefn")
 {
-  octave_value_list retval (4);
-  // Keep the value-type, metadata, and sheet-name outputs defined even on the
-  // error paths, so a caller's multi-output call never sees an undefined
-  // return element.
+  octave_value_list retval (5);
+  // Keep the value-type, metadata, sheet-name, and preamble outputs defined
+  // even on the error paths, so a caller's multi-output call never sees an
+  // undefined return element.
   retval(1) = Cell ();
   retval(2) = Cell ();
   retval(3) = Cell ();
+  retval(4) = Cell ();
 
   if (args.length () < 1 || args.length () > 2)
     error ("__ods2table__: one or two input arguments are required.");
@@ -410,6 +443,10 @@ it directly. \n\
   if (meta_tbl)
     read_sheet (meta_tbl, meta, meta_vt, false, false);
 
+  // The preamble is read off the whole grid, before the section belonging to
+  // one sheet replaces it.
+  Cell preamble = meta_preamble (meta);
+
   // In a multi-sheet house workbook the metadata sheet is sectioned; keep only
   // the section belonging to the selected data sheet.
   if (meta.numel () > 0 && data_tbl)
@@ -426,5 +463,6 @@ it directly. \n\
   retval(1) = vtype;
   retval(2) = meta;
   retval(3) = names_out;
+  retval(4) = preamble;
   return retval;
 }

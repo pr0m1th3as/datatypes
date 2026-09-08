@@ -25,7 +25,11 @@
 ## @var{filename}.  Every field of @var{s} must hold a @code{table} or a
 ## @code{timetable}; the field name becomes the sheet name.  A timetable's row
 ## times lead its sheet and are tagged as row times, so @code{ods2struct}
-## returns a timetable for that sheet and a table for the others.  Both the
+## returns a timetable for that sheet and a table for the others.  A timetable
+## carrying an event table gets a second sheet holding it, named
+## @qcode{<sheet>_Events}, and a @qcode{## Events crossref:} line above the
+## first sheet marker of the hidden sheet tying the two together and carrying
+## the event table's three variable designations.  Both the
 ## compressed @qcode{.ods} and the flat @qcode{.fods} formats are supported,
 ## selected by the file extension.
 ##
@@ -107,6 +111,44 @@ function struct2ods (filename, s)
                                           __ods_parts__ (T, 'struct2ods');
   endfor
 
+  ## A timetable carrying events gets a second sheet of its own holding the
+  ## event table, and a line in the preamble tying the two together.  An event
+  ## table cannot carry one, so nothing here recurses.
+  xfrom = {};
+  xto = {};
+  xlbl = {};
+  xlen = {};
+  xend = {};
+  for k = 1:K
+    T = s.(fields{k});
+    if (! (isa (T, 'timetable') && ! isa (T, 'eventtable')))
+      continue;
+    endif
+    ev = T.Properties.Events;
+    if (! isa (ev, 'eventtable'))
+      continue;
+    endif
+    evName = [names{k} '_Events'];
+    j = 1;
+    while (any (strcmp (evName, names)))
+      evName = sprintf ('%s_Events_%d', names{k}, j);
+      j += 1;
+    endwhile
+    names{end+1} = evName;
+    [datas{end+1}, vtypes{end+1}, metablocks{end+1}, headers{end+1}] = ...
+                                          __ods_parts__ (ev, 'struct2ods');
+    ## The three designations are the event table's own metadata and no
+    ## sheet carries them, so they ride on the cross-reference beside the
+    ## two sheet names.
+    P = ev.Properties;
+    xfrom{end+1} = names{k};
+    xto{end+1} = evName;
+    xlbl{end+1} = char_or_blank (P.EventLabelsVariable);
+    xlen{end+1} = char_or_blank (P.EventLengthsVariable);
+    xend{end+1} = char_or_blank (P.EventEndsVariable);
+  endfor
+  K = numel (names);
+
   ## Assemble the sectioned metadata grid: each table's metadata block preceded
   ## by a "## Sheet: <name>" marker row, all padded to a common width.
   sections = cell (1, K);
@@ -117,7 +159,18 @@ function struct2ods (filename, s)
     sections{k} = [marker; mb];
     maxcols = max (maxcols, columns (sections{k}));
   endfor
+  ## The cross-references lead the grid, above the first marker, where they
+  ## belong to no sheet and no reader that predates them ever meets them: a
+  ## section runs from its marker to the next, so a line placed at the end
+  ## would be read as part of the last sheet's block.  The two names go in
+  ## cells of their own because a sheet name may contain spaces.
+  maxcols = max (maxcols, 6 * (numel (xfrom) > 0));
   metagrid = cell (0, maxcols);
+  for x = 1:numel (xfrom)
+    row = [{'## Events crossref:'}, xfrom(x), xto(x), xlbl(x), xlen(x), ...
+           xend(x), repmat({''}, 1, max (0, maxcols - 6))];
+    metagrid = [metagrid; row];
+  endfor
   for k = 1:K
     sec = sections{k};
     if (columns (sec) < maxcols)
@@ -135,6 +188,14 @@ function struct2ods (filename, s)
     error ("struct2ods: %s", msg);
   endif
 
+endfunction
+
+## A variable designation as text, blank when it is unset.
+function out = char_or_blank (v)
+  out = '';
+  if (! isempty (v))
+    out = char (v);
+  endif
 endfunction
 
 %!demo
