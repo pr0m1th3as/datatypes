@@ -979,12 +979,14 @@ classdef table < tabular
     ## recovered by @code{readtable} through automatic detection (text) or the
     ## native cell types (spreadsheet).
     ##
-    ## @strong{The @qcode{.ods} extension is an addition of ours and is not an
-    ## interoperable choice.}  MATLAB's @code{writetable} refuses it outright,
-    ## and MATLAB reads no OpenDocument file at all except on Windows with
-    ## Excel installed, so a file written for a MATLAB user should be
-    ## @qcode{.csv} or @qcode{.xlsx}.  Between Octave sessions it is a perfectly
-    ## good choice, and @code{table2ods} is the better one, being lossless.
+    ## @qcode{.ods} is the OpenDocument spreadsheet format, an open standard
+    ## that LibreOffice and other applications read and write on every
+    ## platform.  @strong{MATLAB is the exception and cannot be given one.}
+    ## Its @code{writetable} refuses the extension, and its readers open an
+    ## OpenDocument file only by handing it to Excel, so a MATLAB user without
+    ## Excel cannot read one at all.  A file written for a MATLAB user should
+    ## therefore be @qcode{.csv} or @qcode{.xlsx}.  Everywhere else the format
+    ## is a good choice, and @code{table2ods} writes it losslessly.
     ##
     ## The following options are supported:
     ##
