@@ -1266,21 +1266,41 @@
 %! TT = timetable ((1:6)', 'RowTimes', t0 + hours (0:5)', ...
 %!                 'VariableNames', {'A'});
 %! str = evalc ('summary (TT);');
-%! assert_equal (! isempty (strfind (str, 'Row Times:')), true);
-%! assert_equal (! isempty (strfind (str, '    Time: datetime')), true);
+%! assert_equal (! isempty (strfind (str, 'RowTimes:')), true);
+%! assert_equal (! isempty (strfind (str, '    Time: 6x1 datetime')), true);
 %! assert_equal (! isempty (strfind (str, 'Variables:')), true);
-%! assert_equal (! isempty (strfind (str, '    A: double')), true);
-%! assert_equal (! isempty (strfind (str, ...
-%!               'Statistics for applicable variables and row times:')), true);
+%! assert_equal (! isempty (strfind (str, '    A: 6x1 double')), true);
 
-## Test a timetable with no rows reports no statistics
+## Test a regular timetable reports its time step with the row times
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:6)', 'RowTimes', t0 + hours (0:5)', ...
+%!                 'VariableNames', {'A'});
+%! str = evalc ('summary (TT);');
+%! assert_equal (! isempty (strfind (str, 'TimeStep')), true);
+%! TT2 = timetable ((1:3)', 'RowTimes', t0 + [0; 1; 5] * hours (1), ...
+%!                  'VariableNames', {'A'});
+%! assert_equal (isempty (strfind (evalc ('summary (TT2);'), 'TimeStep')), ...
+%!               true);
+
+## Test a timetable with no rows reports no values
 %!test
 %! t0 = datetime (2024, 1, 1);
 %! TT = timetable ((1:6)', 'RowTimes', t0 + hours (0:5)', ...
 %!                 'VariableNames', {'A'});
 %! str = evalc ('summary (TT([], :));');
-%! assert_equal (! isempty (strfind (str, 'Row Times:')), true);
-%! assert_equal (isempty (strfind (str, 'Statistics')), true);
+%! assert_equal (! isempty (strfind (str, 'RowTimes:')), true);
+%! assert_equal (isempty (strfind (str, 'Values:')), true);
+
+## Test 'VariableContinuity' is printed under the variable it belongs to
+%!test
+%! t0 = datetime (2024, 1, 1);
+%! TT = timetable ((1:3)', 'RowTimes', t0 + hours (0:2)', ...
+%!                 'VariableNames', {'A'});
+%! TT.Properties.VariableContinuity = {'continuous'};
+%! str = evalc ('summary (TT);');
+%! assert_equal (! isempty (strfind (str, ...
+%!               '            Continuity:  continuous')), true);
 
 ## Test input validation for 'timetable.summary'
 %!error <timetable.summary: too many input arguments.> ...

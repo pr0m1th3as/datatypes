@@ -2487,7 +2487,7 @@ classdef timetable < tabular
       endif
       s = summaryOf (this);
       if (nargout == 0)
-        summaryPrint (this, s, inputname (1));
+        summaryPrint (this, s);
       elseif (nargout == 1)
         varargout{1} = s;
       else
