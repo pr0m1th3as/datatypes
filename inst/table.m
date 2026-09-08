@@ -1119,94 +1119,16 @@ classdef table < tabular
         endif
       endif
 
-      ## Flatten the table; nested tables and structs (multi-row type entries)
-      ## are refused, as MATLAB does.
-      [V, N, T] = table2cellarrays (this, fmt);
-      if (any (cellfun (@iscell, T)))
-        error (strcat ("table.writetable: writetable does not support", ...
-                       " writing nested tables.  Use splitvars to split", ...
-                       " multicolumn variables into single-column variables", ...
-                       " before writing."));
-      endif
-      [names, V, T] = tabular.writetable_prep (V, N, T, writeRowNames);
-
-      if (strcmp (fmt, 'display'))
-        ## In append mode MATLAB writes the data rows only, never a header.
-        if (writeVarNames && ! appendMode)
-          grid = [names; V];
-        else
-          grid = V;
-        endif
-        d = wt_resolve_delimiter (delim);
-        msg = __table2csv__ (file, grid, d, lower (quoteStrings), appendMode);
-        if (msg)
-          error ("table.writetable: %s", msg);
-        endif
-      else
-        vtype = cell (1, numel (T));
-        for c = 1:numel (T)
-          vtype{c} = tabular.ods_value_type (T{c});
-        endfor
-        opts = struct ();
-        ## Append mode writes data rows only, never a header.
-        if (writeVarNames && ! strcmp (writeMode, 'append'))
-          opts.header = names;
-        else
-          opts.header = {};
-        endif
-        ## Writing into an existing workbook with no explicit 'Sheet' targets the
-        ## first existing sheet (MATLAB behaviour), not a new 'Sheet1'.
-        if (isempty (sheet) && exist (file, 'file') ...
-            && ! strcmp (writeMode, 'replacefile'))
-          if (isXlsx)
-            [~, ~, ~, exNames] = __xlsx2table__ (file);
-          else
-            [~, ~, ~, exNames] = __ods2table__ (file);
-          endif
-          if (iscell (exNames) && ! isempty (exNames))
-            sheet = exNames{1};
-          endif
-        endif
-        if (! isempty (sheet))
-          opts.sheetname = sheet;
-        endif
-        if (isXlsx)
-          if (exist (file, 'file') && ! strcmp (writeMode, 'replacefile'))
-            ## Merge into an existing workbook by reading it back, modifying the
-            ## struct of tables, and rewriting (interop re-encode, like the
-            ## incremental table2ods path).
-            s = xlsx2struct (file);
-            s = __mergesheet__ (s, this, sheet, writeMode);
-            struct2xlsx (file, s);
-            msg = 0;
-          else
-            ## A fresh single-sheet write.
-            if (! isempty (range))
-              [r1, c1] = __a1ref__ (range);
-              opts.roff = r1 - 1;
-              opts.coff = c1 - 1;
-            endif
-            opts.macro = strcmpi (ext, '.xlsm');
-            msg = __table2xlsx__ (file, V, vtype, opts);
-          endif
-        else
-          is_flat = strcmpi (ext, '.fods');
-          ## Merge into an existing workbook (preserving other sheets) unless the
-          ## file is new or 'replacefile' asks to overwrite it outright.
-          if (exist (file, 'file') && ! strcmp (writeMode, 'replacefile'))
-            opts.merge = true;
-            opts.writemode = writeMode;
-          elseif (! isempty (range))
-            [r1, c1] = __a1ref__ (range);
-            opts.roff = r1 - 1;
-            opts.coff = c1 - 1;
-          endif
-          msg = __table2ods__ (file, V, vtype, {}, is_flat, opts);
-        endif
-        if (! isequal (msg, 0))
-          error ("table.writetable: %s", msg);
-        endif
-      endif
+      __interop_write__ (this, 'table.writetable', file, ...
+                         struct ('ext', ext, 'isXlsx', isXlsx, 'fmt', fmt, ...
+                                 'appendMode', appendMode, ...
+                                 'writeVarNames', writeVarNames, ...
+                                 'writeRowLabels', writeRowNames, ...
+                                 'rowLabelHeader', 'Row', 'delim', delim, ...
+                                 'fname', 'writetable', ...
+                                 'quoteStrings', quoteStrings, ...
+                                 'sheet', sheet, 'range', range, ...
+                                 'writeMode', writeMode));
     endfunction
 
   endmethods
@@ -4471,32 +4393,4 @@ endfunction
 ## Add, replace, or append table T to the struct of tables S (read from an
 ## existing house workbook) for the sheet named SHEET, per WRITEMODE.  The
 ## struct is later written back with 'struct2ods'; sheet names that are not
-## Translate a MATLAB delimiter (named or literal) into a single character for
-## 'writetable'.
-function d = wt_resolve_delimiter (delim)
-  if (isa (delim, 'string'))
-    delim = char (delim);
-  endif
-  if (! ischar (delim))
-    error ("table.writetable: 'Delimiter' must be a character vector or string.");
-  endif
-  switch (lower (delim))
-    case {'comma', ','}
-      d = ',';
-    case {'space', ' '}
-      d = ' ';
-    case {'tab', "\t"}
-      d = "\t";
-    case {'semi', ';'}
-      d = ';';
-    case {'bar', '|'}
-      d = '|';
-    otherwise
-      if (isscalar (delim))
-        d = delim;
-      else
-        error ("table.writetable: unsupported 'Delimiter' value '%s'.", delim);
-      endif
-  endswitch
-endfunction
 

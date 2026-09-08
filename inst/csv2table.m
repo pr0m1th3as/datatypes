@@ -579,14 +579,30 @@ function varValue = cell2auto (C, textType, datetimeType, durationTypes, ...
     is_datetime = false;
     is_duration = false;
     is_hex = false;
-    ## Check for datetime strings
-    if (strcmpi (datetimeType, 'datetime'))
-      try
-        varValue = datetime (C);
+    ## Check for datetime strings.  The RFC 9557 form 'writetimetable' uses
+    ## for a zoned datetime carries the zone name in brackets, which no
+    ## ordinary parse accepts and which a duration parse would otherwise
+    ## claim, so it is tested for first.
+    ## A bare clock with no date is a duration, not a time of day today.  It
+    ## is what a duration is written as, by this package and by MATLAB alike,
+    ## and both read it back as one, so the datetime parse must not claim it
+    ## first.
+    isclock = all (cellfun (@(x) ! isempty (regexp (x, ...
+                   '^\s*-?\d+:\d{2}(:\d{2}(\.\d+)?)?\s*$', 'once')), ...
+                   C(! idx)));
+    if (strcmpi (datetimeType, 'datetime') && ! isclock)
+      [dtv, okv] = __rfc95572dt__ (C);
+      if (okv)
+        varValue = dtv;
         is_datetime = true;
-      catch
-        is_datetime = false;
-      end_try_catch
+      else
+        try
+          varValue = datetime (C);
+          is_datetime = true;
+        catch
+          is_datetime = false;
+        end_try_catch
+      endif
     endif
     ## Check for duration strings
     if (! is_datetime && strcmpi (durationTypes, 'duration'))

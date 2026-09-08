@@ -1480,6 +1480,138 @@ classdef (Abstract) tabular
       meta = [cmt; Header];
     endfunction
 
+    ## Write THIS object to a file in the MATLAB-compatible interop form: no
+    ## hidden metadata, one header row of names, one row per row.  O carries
+    ## the options the public method has already resolved and validated, so
+    ## that 'table.writetable' and 'timetable.writetimetable' share the
+    ## writing and differ only in what they accept and what they call
+    ## themselves.
+    function __interop_write__ (this, caller, file, o)
+      ## Flatten the table; nested tables and structs (multi-row type entries)
+      ## are refused, as MATLAB does.
+      [V, N, T] = table2cellarrays (this, o.fmt);
+      if (any (cellfun (@iscell, T)))
+        error (strcat ("%s: %s does not support writing nested tables.", ...
+                       "  Use splitvars to split multicolumn variables", ...
+                       " into single-column variables before writing."), ...
+               caller, o.fname);
+      endif
+      ## Deviation D7: a zoned datetime row-time column goes out in RFC 9557
+      ## form on the text route.  MATLAB writes the display string, which
+      ## carries the zone only when the format asks for it and which its own
+      ## reader cannot recover in any form, so nothing is lost by writing the
+      ## standard form instead and the zone and the fold are both kept.
+      if (o.writeRowLabels && hasRowLabels (this) && strcmp (o.fmt, 'display'))
+        lbl = getRowLabels (this);
+        if (isa (lbl, 'datetime') && ! isempty (lbl.TimeZone))
+          V(:,1) = __dt2rfc9557__ (lbl);
+        elseif (isa (lbl, 'duration'))
+          ## A duration's own display format may be '1 hr', which no reader
+          ## parses back, MATLAB's included.  The clock form is what MATLAB
+          ## writes by default and what both readers take.
+          l2 = lbl(:);
+          if (any (mod (seconds (l2), 1) != 0))
+            l2.Format = 'hh:mm:ss.SSS';
+          else
+            l2.Format = 'hh:mm:ss';
+          endif
+          V(:,1) = cellstr (l2);
+        endif
+      endif
+      [names, V, T] = tabular.writetable_prep (V, N, T, o.writeRowLabels);
+      ## 'writetable_prep' heads the row-label column 'Row' and types it
+      ## 'cellstr', which is what a table's row names are.  A timetable heads
+      ## it with its row dimension name, and its row times are written as the
+      ## native date or time cells of their own type.
+      if (o.writeRowLabels && hasRowLabels (this))
+        names{1} = o.rowLabelHeader;
+        lbl = getRowLabels (this);
+        if (isa (lbl, 'datetime') || isa (lbl, 'duration'))
+          T{1} = class (lbl);
+        endif
+      endif
+
+      if (strcmp (o.fmt, 'display'))
+        ## In append mode MATLAB writes the data rows only, never a header.
+        if (o.writeVarNames && ! o.appendMode)
+          grid = [names; V];
+        else
+          grid = V;
+        endif
+        d = wt_resolve_delimiter (o.delim, caller);
+        msg = __table2csv__ (file, grid, d, lower (o.quoteStrings), ...
+                             o.appendMode);
+        if (msg)
+          error ("%s: %s", caller, msg);
+        endif
+      else
+        vtype = cell (1, numel (T));
+        for c = 1:numel (T)
+          vtype{c} = tabular.ods_value_type (T{c});
+        endfor
+        opts = struct ();
+        ## Append mode writes data rows only, never a header.
+        if (o.writeVarNames && ! strcmp (o.writeMode, 'append'))
+          opts.header = names;
+        else
+          opts.header = {};
+        endif
+        ## Writing into an existing workbook with no explicit 'Sheet' takes
+        ## the first existing sheet, as MATLAB does, not a new one.
+        if (isempty (o.sheet) && exist (file, 'file') ...
+            && ! strcmp (o.writeMode, 'replacefile'))
+          if (o.isXlsx)
+            [~, ~, ~, exNames] = __xlsx2table__ (file);
+          else
+            [~, ~, ~, exNames] = __ods2table__ (file);
+          endif
+          if (iscell (exNames) && ! isempty (exNames))
+            o.sheet = exNames{1};
+          endif
+        endif
+        if (! isempty (o.sheet))
+          opts.sheetname = o.sheet;
+        endif
+        if (o.isXlsx)
+          if (exist (file, 'file') && ! strcmp (o.writeMode, 'replacefile'))
+            ## Merge into an existing workbook by reading it back, modifying the
+            ## struct of tables, and rewriting (interop re-encode, like the
+            ## incremental table2ods path).
+            s = xlsx2struct (file);
+            s = __mergesheet__ (s, this, o.sheet, o.writeMode);
+            struct2xlsx (file, s);
+            msg = 0;
+          else
+            ## A fresh single-sheet write.
+            if (! isempty (o.range))
+              [r1, c1] = __a1ref__ (o.range);
+              opts.roff = r1 - 1;
+              opts.coff = c1 - 1;
+            endif
+            opts.macro = strcmpi (o.ext, '.xlsm');
+            msg = __table2xlsx__ (file, V, vtype, opts);
+          endif
+        else
+          is_flat = strcmpi (o.ext, '.fods');
+          ## Merge into an existing workbook, keeping its other sheets,
+          ## unless the file is new or 'replacefile' overwrites it.
+          if (exist (file, 'file') && ! strcmp (o.writeMode, 'replacefile'))
+            opts.merge = true;
+            opts.writemode = o.writeMode;
+          elseif (! isempty (o.range))
+            [r1, c1] = __a1ref__ (o.range);
+            opts.roff = r1 - 1;
+            opts.coff = c1 - 1;
+          endif
+          msg = __table2ods__ (file, V, vtype, {}, is_flat, opts);
+        endif
+        if (! isequal (msg, 0))
+          error ("%s: %s", caller, msg);
+        endif
+      endif
+    endfunction
+
+
     ## Build the MATLAB-interop spreadsheet parts for THIS table: the variable
     ## names (a header row), the flat data grid V with ISO-formatted
     ## datetime/duration values, and the per-column ODS value types.  No hidden
@@ -10543,3 +10675,32 @@ endfunction
 %! delete (fullfile (fixdir, 'notable.m'));
 %! rmdir (fixdir);
 %! assert_equal (exist (fixdir, 'dir'), 0);
+
+## Translate a MATLAB delimiter (named or literal) into a single character for
+## 'writetable'.
+function d = wt_resolve_delimiter (delim, caller)
+  if (isa (delim, 'string'))
+    delim = char (delim);
+  endif
+  if (! ischar (delim))
+    error ("%s: 'Delimiter' must be a character vector or string.", caller);
+  endif
+  switch (lower (delim))
+    case {'comma', ','}
+      d = ',';
+    case {'space', ' '}
+      d = ' ';
+    case {'tab', "\t"}
+      d = "\t";
+    case {'semi', ';'}
+      d = ';';
+    case {'bar', '|'}
+      d = '|';
+    otherwise
+      if (isscalar (delim))
+        d = delim;
+      else
+        error ("%s: unsupported 'Delimiter' value '%s'.", caller, delim);
+      endif
+  endswitch
+endfunction

@@ -4988,6 +4988,192 @@ classdef timetable < tabular
       endif
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {} writetimetable (@var{tt}, @var{filename})
+    ## @deftypefnx {timetable} {} writetimetable (@var{tt}, @var{filename}, @var{Name}, @var{Value})
+    ##
+    ## Write a timetable to a file in the MATLAB-compatible form.
+    ##
+    ## @code{writetimetable (@var{tt}, @var{filename})} writes the timetable
+    ## @var{tt} to @var{filename} with no hidden metadata of any kind: one
+    ## header row of names and then one row per row of the timetable, which is
+    ## what @code{readtimetable} and MATLAB both expect.  The file type follows
+    ## the extension, @qcode{.txt}, @qcode{.csv} and @qcode{.dat} being text
+    ## and @qcode{.ods}, @qcode{.fods}, @qcode{.xlsx} and @qcode{.xlsm}
+    ## spreadsheets, and @qcode{'FileType'} overrides it.
+    ##
+    ## The row times lead the file under the row dimension name, as MATLAB
+    ## writes them.  They are not optional: a timetable without them is not
+    ## one, so there is no switch to leave them out, and @qcode{'WriteRowNames'}
+    ## is refused because a timetable has no row names.
+    ##
+    ## @strong{A zone-aware @code{datetime} is written in the RFC 9557 form},
+    ## @qcode{2024-03-09T22:00:00-05:00[America/New_York]}, rather than as the
+    ## display string MATLAB writes.  This is deviation @strong{D7}; see the
+    ## note below for why it is better.  An unzoned @code{datetime} and a
+    ## @code{duration} are written as MATLAB writes them, both of those
+    ## round-tripping through MATLAB exactly.
+    ##
+    ## The following @var{Name}-@var{Value} options are supported:
+    ##
+    ## @multitable @columnfractions 0.30 0.70
+    ## @headitem @var{Name} @tab @var{Value}
+    ## @item @qcode{'FileType'} @tab @qcode{'text'} or @qcode{'spreadsheet'},
+    ## overriding what the extension says.
+    ## @item @qcode{'WriteVariableNames'} @tab A logical scalar specifying
+    ## whether the header row of names is written (default @qcode{true}).
+    ## @item @qcode{'Delimiter'} @tab The field delimiter of a text file, named
+    ## (@qcode{'comma'}, @qcode{'space'}, @qcode{'tab'}, @qcode{'semi'},
+    ## @qcode{'bar'}) or given as the character itself (default @qcode{','}).
+    ## @item @qcode{'QuoteStrings'} @tab @qcode{'minimal'}, @qcode{'all'} or
+    ## @qcode{'none'}, saying which text fields are quoted (default
+    ## @qcode{'minimal'}).
+    ## @item @qcode{'Sheet'} @tab The sheet of a spreadsheet to write.
+    ## @item @qcode{'Range'} @tab The top-left cell a fresh spreadsheet write
+    ## is anchored at, in A1 notation.
+    ## @item @qcode{'WriteMode'} @tab @qcode{'overwrite'} or @qcode{'append'}
+    ## for a text file; @qcode{'overwritesheet'}, @qcode{'inplace'},
+    ## @qcode{'append'} or @qcode{'replacefile'} for a spreadsheet.
+    ## @end multitable
+    ##
+    ## An attached event table is @strong{not} written and nothing warns, as
+    ## nothing warns in MATLAB.  Use @code{timetable2ods}, the only format of
+    ## the package that carries events.
+    ##
+    ## @strong{Deviation D7, and why the RFC 9557 form is the better answer.}
+    ## MATLAB writes a zoned @code{datetime} as its display string, so the zone
+    ## is written only when the @qcode{Format} happens to ask for it, and
+    ## @code{readtimetable} then reads the file back unzoned and at the wrong
+    ## instant without complaining.  Measured against R2026a, @strong{no text
+    ## form of a zoned row time survives MATLAB's own reader}: given a format
+    ## carrying the offset, MATLAB writes
+    ## @qcode{2024-03-09T22:00:00-05:00} itself and then fails to read that
+    ## very file, so there is no encoding that keeps MATLAB working.  The
+    ## choice is between a loud failure there and a silent one, and this
+    ## package takes the loud one.  RFC 9557 is a published standard, not an
+    ## invention of ours, and it carries both the offset and the zone name: the
+    ## offset alone cannot name a zone, and the name alone cannot say which
+    ## side of a repeated hour an instant falls on, so a timestamp inside a
+    ## daylight-saving fold round-trips here and would not otherwise.
+    ##
+    ## @seealso{readtimetable, timetable2ods, timetable2csv, writetable}
+    ## @end deftypefn
+    function writetimetable (this, filename, varargin)
+      if (nargin < 2)
+        error ("timetable.writetimetable: too few input arguments.");
+      endif
+      if (! ((ischar (filename) && isvector (filename)) ...
+             || (isa (filename, 'string') && isscalar (filename))))
+        error (strcat ("timetable.writetimetable: FILENAME must be a", ...
+                       " character vector or string scalar."));
+      endif
+      file = char (filename);
+
+      if (any (strcmpi (varargin(1:2:end), 'WriteRowNames')))
+        error (strcat ("timetable.writetimetable: 'WriteRowNames' is not", ...
+                       " supported; a timetable labels its rows by time.", ...
+                       "  Write a table with row names using 'writetable'."));
+      endif
+      optNames = {'FileType', 'WriteVariableNames', 'Delimiter', ...
+                  'QuoteStrings', 'Sheet', 'Range', 'WriteMode'};
+      dfValues = {'', true, ',', 'minimal', '', '', ''};
+      [fileType, writeVarNames, delim, quoteStrings, sheet, range, ...
+       writeMode, args] = ...
+              parsePairedArguments (optNames, dfValues, varargin(:));
+      if (! isempty (args))
+        error ("timetable.writetimetable: unknown option '%s'.", args{1});
+      endif
+      if (! (islogical (writeVarNames) && isscalar (writeVarNames)))
+        error (strcat ("timetable.writetimetable: 'WriteVariableNames'", ...
+                       " must be a logical scalar."));
+      endif
+      if (isa (sheet, 'string'))
+        sheet = char (sheet);
+      endif
+      if (isa (range, 'string'))
+        range = char (range);
+      endif
+      writeMode = lower (char (writeMode));
+
+      [~, ~, ext] = fileparts (file);
+      if (isempty (fileType))
+        switch (lower (ext))
+          case {'.txt', '.csv', '.dat'}
+            fileType = 'text';
+          case {'.ods', '.fods', '.xlsx', '.xlsm'}
+            fileType = 'spreadsheet';
+          case {'.xls', '.xlsb'}
+            error (strcat ("timetable.writetimetable: '%s' Excel files are", ...
+                           " not supported; use '.xlsx', '.ods', or a text", ...
+                           " format."), ext);
+          otherwise
+            error (strcat ("timetable.writetimetable: cannot infer the", ...
+                           " file type from '%s'; specify 'FileType'."), ext);
+        endswitch
+      endif
+      switch (lower (fileType))
+        case 'text'
+          fmt = 'display';
+        case 'spreadsheet'
+          fmt = 'iso';
+        otherwise
+          error (strcat ("timetable.writetimetable: 'FileType' must be", ...
+                         " 'text' or 'spreadsheet'."));
+      endswitch
+      isXlsx = any (strcmpi (ext, {'.xlsx', '.xlsm'}));
+
+      appendMode = false;
+      if (strcmp (fmt, 'display'))
+        if (! isempty (sheet) || ! isempty (range))
+          error (strcat ("timetable.writetimetable: 'Sheet' and 'Range'", ...
+                         " are not supported for text files."));
+        endif
+        switch (writeMode)
+          case {'', 'overwrite'}
+            appendMode = false;
+          case 'append'
+            appendMode = true;
+          otherwise
+            error (strcat ("timetable.writetimetable: 'WriteMode' '%s' is", ...
+                           " not valid for text files; use 'overwrite' or", ...
+                           " 'append'."), writeMode);
+        endswitch
+      else
+        if (! isempty (sheet) && ! (ischar (sheet) && isrow (sheet)))
+          error ("timetable.writetimetable: 'Sheet' must be a sheet name.");
+        endif
+        switch (writeMode)
+          case {'', 'replacefile', 'overwritesheet', 'inplace', 'append'}
+            ## supported spreadsheet write modes
+          otherwise
+            error (strcat ("timetable.writetimetable: 'WriteMode' '%s' is", ...
+                           " not valid for spreadsheet files."), writeMode);
+        endswitch
+        if (! isempty (range))
+          if (strcmp (writeMode, 'append'))
+            error (strcat ("timetable.writetimetable: 'Range' is not", ...
+                           " supported with 'WriteMode' 'append'."));
+          endif
+          if (exist (file, 'file') && ! strcmp (writeMode, 'replacefile'))
+            error (strcat ("timetable.writetimetable: 'Range' is not", ...
+                           " supported when writing into an existing file."));
+          endif
+        endif
+      endif
+
+      __interop_write__ (this, 'timetable.writetimetable', file, ...
+                         struct ('ext', ext, 'isXlsx', isXlsx, 'fmt', fmt, ...
+                                 'appendMode', appendMode, ...
+                                 'writeVarNames', writeVarNames, ...
+                                 'writeRowLabels', true, ...
+                                 'rowLabelHeader', rowLabelName (this), ...
+                                 'delim', delim, ...
+                                 'quoteStrings', quoteStrings, ...
+                                 'sheet', sheet, 'range', range, ...
+                                 'writeMode', writeMode, ...
+                                 'fname', 'writetimetable'));
+    endfunction
+
   endmethods
 
   methods (Static, Hidden)

@@ -48,6 +48,7 @@ timetable arrays
  timetable2table
  csv2timetable
  ods2timetable
+ readtimetable
  istimetable
  eventtable
 supplementary classes
