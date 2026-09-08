@@ -1,0 +1,49 @@
+%!demo
+%! ## `writetimetable` writes the MATLAB-compatible form: no hidden metadata,
+%! ## one header row of names, the row times leading under the row dimension's
+%! ## name, and one row per row.  `readtimetable` reads it back.
+%!
+%! TT = timetable ([12.5; 13.1; 11.8], ...
+%!                 'RowTimes', datetime (2024, 1, (1:3)'), ...
+%!                 'VariableNames', {'Reading'});
+%! filename = fullfile (tempdir (), 'plain.csv');
+%! writetimetable (TT, filename);
+%! type (filename);
+%! readtimetable (filename)
+%!
+%! delete (filename);
+
+%!demo
+%! ## A zone-aware datetime is written in the RFC 9557 form, which carries the
+%! ## offset **and** the zone name.  MATLAB writes the display string instead
+%! ## and cannot read the zone back at all, so this file says more than a
+%! ## MATLAB one does about the same instants.
+%!
+%! t = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', 'America/New_York') ...
+%!     + hours (0:2)';
+%! TT = timetable ([1; 2; 3], 'RowTimes', t, 'VariableNames', {'Reading'});
+%! filename = fullfile (tempdir (), 'zoned.csv');
+%! writetimetable (TT, filename);
+%! type (filename);
+%! readtimetable (filename).Properties.RowTimes.TimeZone
+%!
+%! delete (filename);
+
+%!demo
+%! ## Carrying the offset as well as the zone name is what makes a repeated
+%! ## hour survive.  These two rows are the same wall clock on the night the
+%! ## clocks go back, one hour apart in real time, and they come back as the
+%! ## two distinct instants they are.
+%!
+%! a = datetime (2024, 11, 3, 5, 30, 0, 'TimeZone', 'UTC');
+%! a.TimeZone = 'America/New_York';
+%! b = datetime (2024, 11, 3, 6, 30, 0, 'TimeZone', 'UTC');
+%! b.TimeZone = 'America/New_York';
+%! TT = timetable ([1; 2], 'RowTimes', [a; b], 'VariableNames', {'Reading'});
+%! filename = fullfile (tempdir (), 'fold.csv');
+%! writetimetable (TT, filename);
+%! type (filename);
+%! back = readtimetable (filename);
+%! tzoffset (back.Properties.RowTimes)
+%!
+%! delete (filename);

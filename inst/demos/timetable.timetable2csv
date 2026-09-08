@@ -1,0 +1,45 @@
+%!demo
+%! ## `timetable2csv` writes a timetable to a text file that keeps everything:
+%! ## the row times lead the file in ISO 8601 form, and their type, time zone
+%! ## and display format ride in the header block rather than in the values.
+%! ## `csv2timetable` gives back what went in.
+%!
+%! t = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', 'America/New_York') ...
+%!     + hours (0:3)';
+%! Reading = [12.5; 13.1; 11.8; 12.0];
+%! Site = categorical ({'N'; 'S'; 'N'; 'S'});
+%! TT = timetable (Reading, Site, 'RowTimes', t)
+%! filename = fullfile (tempdir (), 'readings.csv');
+%! timetable2csv (TT, filename);
+%! back = csv2timetable (filename)
+%!
+%! delete (filename);
+
+%!demo
+%! ## The file is readable in any text editor.  Its first line says how many
+%! ## header rows follow, the second types every column, and the third names
+%! ## them.  The row-time column is tagged `RowTimes` ahead of its own type,
+%! ## and the row dimension's name sits beside it.
+%!
+%! TT = timetable ([1; 2], 'RowTimes', datetime (2024, 1, [1; 2]), ...
+%!                 'VariableNames', {'Count'});
+%! TT.Properties.DimensionNames{1} = 'Day';
+%! filename = fullfile (tempdir (), 'counts.csv');
+%! timetable2csv (TT, filename);
+%! type (filename);
+%!
+%! delete (filename);
+
+%!demo
+%! ## A CSV file holds one table and has nowhere to put a second, so an
+%! ## attached event table is not written and nothing warns.  Write the
+%! ## timetable to an OpenDocument spreadsheet to keep its events.
+%!
+%! t = datetime (2024, 1, 1) + hours (0:3)';
+%! TT = timetable ([1; 2; 3; 4], 'RowTimes', t, 'VariableNames', {'Flow'});
+%! TT.Properties.Events = eventtable (t(2), 'EventLabels', {'valve opened'});
+%! filename = fullfile (tempdir (), 'flow.csv');
+%! timetable2csv (TT, filename);
+%! csv2timetable (filename).Properties.Events
+%!
+%! delete (filename);

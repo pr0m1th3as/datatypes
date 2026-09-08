@@ -1,0 +1,50 @@
+%!demo
+%! ## `timetable2ods` writes a timetable to an OpenDocument spreadsheet, one
+%! ## natively typed cell per value.  The row times become real date cells, so
+%! ## a spreadsheet application shows them as times rather than as text, and
+%! ## `ods2timetable` restores their type, zone and format exactly.
+%!
+%! t = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', 'America/New_York') ...
+%!     + hours (0:2)';
+%! Reading = [12.5; 13.1; 11.8];
+%! TT = timetable (Reading, 'RowTimes', t)
+%! filename = fullfile (tempdir (), 'readings.ods');
+%! timetable2ods (TT, filename);
+%! ods2timetable (filename)
+%!
+%! delete (filename);
+
+%!demo
+%! ## This is the only file format of the package that carries an event table.
+%! ## It goes on a sheet of its own, and a cross-reference in the hidden
+%! ## metadata sheet ties the two together, so the events come back attached.
+%!
+%! t = datetime (2024, 1, 1) + hours (0:5)';
+%! TT = timetable ([1; 2; 3; 4; 5; 6], 'RowTimes', t, ...
+%!                 'VariableNames', {'Flow'});
+%! TT.Properties.Events = eventtable (t([2 4]), ...
+%!                                    'EventLabels', {'opened'; 'closed'}, ...
+%!                                    'EventLengths', hours ([2; 1]));
+%! filename = fullfile (tempdir (), 'flow.ods');
+%! timetable2ods (TT, filename);
+%! back = ods2timetable (filename);
+%! back.Properties.Events
+%!
+%! delete (filename);
+
+%!demo
+%! ## Writing to a named `'Sheet'` of an existing workbook adds or replaces
+%! ## just that sheet and leaves the others alone, so a table and a timetable
+%! ## can share one file and each comes back as what it was.
+%!
+%! filename = fullfile (tempdir (), 'workbook.ods');
+%! table2ods (table ([38; 43], 'VariableNames', {'Age'}), filename, ...
+%!            'Sheet', 'Patients');
+%! TT = timetable ([1; 2], 'RowTimes', datetime (2024, 1, [1; 2]), ...
+%!                 'VariableNames', {'Visit'});
+%! timetable2ods (TT, filename, 'Sheet', 'Visits');
+%! s = ods2struct (filename);
+%! class (s.Patients)
+%! class (s.Visits)
+%!
+%! delete (filename);
