@@ -44,7 +44,6 @@ table arrays
 timetable arrays
  timetable
  array2timetable
- timetable2table
  csv2timetable
  ods2timetable
  readtimetable

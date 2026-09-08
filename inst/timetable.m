@@ -4758,6 +4758,92 @@ classdef timetable < tabular
 
   endmethods
 
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{tbl} =} timetable2table (@var{tt})
+    ## @deftypefnx {timetable} {@var{tbl} =} timetable2table (@var{tt}, @qcode{'ConvertRowTimes'}, @var{tf})
+    ##
+    ## Convert a timetable to a table.
+    ##
+    ## @code{@var{tbl} = timetable2table (@var{tt})} converts the timetable
+    ## @var{tt} to a table whose @strong{first} variable is the row times,
+    ## named after the row dimension they came from.  The dimension names of
+    ## the result are the defaults, @qcode{'Row'} and @qcode{'Variables'}, a
+    ## table labelling its rows by name rather than by time.
+    ##
+    ## @code{@var{tbl} = timetable2table (@var{tt}, @qcode{'ConvertRowTimes'},
+    ## @var{tf})} keeps the row times as that first variable when @var{tf} is
+    ## true, which is the default, and @strong{discards them} when it is false:
+    ## the result has only the variables, and the times are gone rather than
+    ## kept elsewhere.
+    ##
+    ## An event table attached to @var{tt} is not carried across, a table having
+    ## nowhere to keep one, and converting the result back with
+    ## @code{table2timetable} does not bring it back.  An @code{eventtable}
+    ## given here becomes a plain table like any other timetable.
+    ##
+    ## @seealso{table2timetable, array2timetable, timetable, table, eventtable}
+    ## @end deftypefn
+    function tbl = timetable2table (this, varargin)
+
+      ## Parse optional Name-Value paired arguments
+      [ConvertRowTimes, args] = parsePairedArguments ({'ConvertRowTimes'}, ...
+                                                      {true}, varargin(:));
+      if (! isempty (args))
+        error ("timetable.timetable2table: unrecognized optional argument.");
+      endif
+      if (! (isscalar (ConvertRowTimes) && (islogical (ConvertRowTimes)
+                                            || isnumeric (ConvertRowTimes))))
+        error (strcat ("timetable.timetable2table: 'ConvertRowTimes' must", ...
+                       " be a logical scalar."));
+      endif
+
+      ## 'Properties' is synthesised by 'subsref' and a method's dot access to
+      ## its own class does not go through it, so the metadata is read off the
+      ## properties themselves and the values through 'getvar'.
+      varNames = this.VariableNames;
+      vals = cell (1, numel (varNames));
+      for i = 1:numel (varNames)
+        vals{i} = getvar (this, varNames{i});
+      endfor
+
+      if (ConvertRowTimes)
+        vals = [{getRowLabels(this)}, vals];
+        varNames = [{this.DimensionNames{1}}, varNames];
+      endif
+
+      tbl = table (vals{:}, 'VariableNames', varNames);
+      if (! isempty (this.VariableDescriptions))
+        tbl.Properties.VariableDescriptions = shiftMeta ( ...
+                         this.VariableDescriptions, ConvertRowTimes, '');
+      endif
+      if (! isempty (this.VariableUnits))
+        tbl.Properties.VariableUnits = shiftMeta (this.VariableUnits, ...
+                                                  ConvertRowTimes, '');
+      endif
+      if (! isempty (this.VariableContinuity))
+        tbl.Properties.VariableContinuity = shiftMeta ( ...
+                         this.VariableContinuity, ConvertRowTimes, 'unset');
+      endif
+      if (! isempty (this.Description))
+        tbl.Properties.Description = this.Description;
+      endif
+      if (! isempty (this.UserData))
+        tbl.Properties.UserData = this.UserData;
+      endif
+      ## The row times become the first variable when they are converted, and a
+      ## custom property describing the variables has no entry for them.
+      ixVars = 1:numel (varNames);
+      if (ConvertRowTimes)
+        ixVars = [0, 1:(numel (varNames) - 1)];
+      endif
+      tbl = tabular.carryCustomProps (tbl, this, ixVars);
+
+    endfunction
+
+  endmethods
+
 ################################################################################
 ##                            **    File I/O    **                            ##
 ################################################################################
@@ -6574,3 +6660,13 @@ function tf = namedOption (args, name)
     endif
   endfor
 endfunction
+
+## Per-variable metadata with an entry prepended for the row times when they
+## have become a variable of their own, since they carried none as times.
+function meta = shiftMeta (meta, prepend, blank)
+  if (prepend)
+    meta = [{blank}, meta];
+  endif
+endfunction
+
+## Test the row times become the first variable, named after the dimension
