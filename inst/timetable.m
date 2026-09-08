@@ -5007,6 +5007,14 @@ classdef timetable < tabular
     ## one, so there is no switch to leave them out, and @qcode{'WriteRowNames'}
     ## is refused because a timetable has no row names.
     ##
+    ## @strong{The @qcode{.ods} extension is an addition of ours and is not an
+    ## interoperable choice.}  MATLAB's @code{writetimetable} refuses it
+    ## outright, and MATLAB reads no OpenDocument file at all except on Windows
+    ## with Excel installed, so a file written for a MATLAB user should be
+    ## @qcode{.csv} or @qcode{.xlsx}.  Between Octave sessions it is a
+    ## perfectly good choice, and @code{timetable2ods} is the better one, being
+    ## lossless and the only format that carries an event table.
+    ##
     ## @strong{A zone-aware @code{datetime} is written in the RFC 9557 form},
     ## @qcode{2024-03-09T22:00:00-05:00[America/New_York]}, rather than as the
     ## display string MATLAB writes.  This is deviation @strong{D7}; see the

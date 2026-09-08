@@ -977,7 +977,16 @@ classdef table < tabular
     ## the file holds only an optional variable-name header row followed by the
     ## data, so it can be read by other applications.  Type information is
     ## recovered by @code{readtable} through automatic detection (text) or the
-    ## native cell types (spreadsheet).  The following options are supported:
+    ## native cell types (spreadsheet).
+    ##
+    ## @strong{The @qcode{.ods} extension is an addition of ours and is not an
+    ## interoperable choice.}  MATLAB's @code{writetable} refuses it outright,
+    ## and MATLAB reads no OpenDocument file at all except on Windows with
+    ## Excel installed, so a file written for a MATLAB user should be
+    ## @qcode{.csv} or @qcode{.xlsx}.  Between Octave sessions it is a perfectly
+    ## good choice, and @code{table2ods} is the better one, being lossless.
+    ##
+    ## The following options are supported:
     ##
     ## @multitable @columnfractions 0.28 0.72
     ## @headitem @var{Name} @tab @var{Value}
