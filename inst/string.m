@@ -190,8 +190,14 @@ classdef string
 
       ## Handle all other valid cases
       if (isa (in, "categorical"))
+        ## An undefined element becomes a missing string and carries no text.
+        ## 'cellstr' of a categorical renders it as '<undefined>', which is a
+        ## display string and not a value: leaving it in the array would put
+        ## those eleven characters where a missing string has nothing, and
+        ## 'char' and 'cellstr' of the result would hand them back.
         this.strs = cellstr (in);
         this.isMissing = isundefined (in);
+        this.strs(this.isMissing) = {''};
 
       elseif (ischar (in))
         ## Convert each row to a string element with 'num2cell' rather than

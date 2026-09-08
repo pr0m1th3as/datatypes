@@ -2240,6 +2240,17 @@
 %!error<ismember: only "rows" and "legacy" are valid options.> ...
 %! ismember (string ('a'), string ('a'), 'nope');
 
+## an undefined categorical element becomes a missing string carrying no text
+%!test
+%! s = string (categorical ({'a'; ''; 'b'}));
+%! assert_equal (ismissing (s), [false; true; false]);
+%! assert_equal (cellstr (s), {'a'; ''; 'b'});
+%! assert_equal (char (s(2)), '');
+%! assert_equal (strlength (s), [1; NaN; 1]);
+
+## an undefined categorical element is not the text '<undefined>'
+%!assert_equal (string (categorical ({''})) == "<undefined>", false)
+
 ## the constructor refuses a cell whose elements are neither scalars nor
 ## character vectors
 %!error<string: cell array must explicitly contain scalar elements or character vectors.> ...
