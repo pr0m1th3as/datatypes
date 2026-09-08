@@ -308,6 +308,22 @@ classdef (Abstract) tabular
       error ("%s: subclass must implement rowLabelKeyNames.", class (this));
     endfunction
 
+    ## What the row-label column of an exported file is tagged with, which
+    ## says what kind of labels it holds and not merely what they are called.
+    ## Text labels are tagged 'RowNames', as they always were.  Row times are
+    ## tagged 'RowTimes' followed by their own type string, so that a reader
+    ## knows to rebuild a timetable and knows the type, zone and format to
+    ## rebuild it with; their name is a dimension name and travels in the
+    ## variable-name row beside them.
+    function out = rowLabelTag (this)
+      lbl = getRowLabels (this);
+      if (isa (lbl, 'datetime') || isa (lbl, 'duration'))
+        out = ['RowTimes|', tabular.value_type_string(lbl)];
+      else
+        out = rowLabelName (this);
+      endif
+    endfunction
+
     ## Whether a bare 'sortrows (obj)' orders by the row labels.  A table
     ## orders by every variable it has, a timetable by its row times.
     function tf = sortsByLabelsByDefault (this)
@@ -1249,6 +1265,117 @@ classdef (Abstract) tabular
 
     function out = vec (this, varargin)
       error ("%s.vec: 'vec' is not supported.", class (this));
+    endfunction
+
+    ## Build the house-format CSV grid for THIS object: the descriptive
+    ## comment row, the header block carrying the variable types, names,
+    ## descriptions and units, and the data.  Shared by 'table.table2csv' and
+    ## 'timetable.timetable2csv', which differ only in what their row-label
+    ## column holds.
+    function csv = __csv_parts__ (this, writeVarNames = true, ...
+                                  writeRowLabels = true)
+      ## A datetime or duration is written in its ISO 8601 form rather than as
+      ## its display string: a display format may round or omit components, and
+      ## a day-first one is indistinguishable from a month-first one on read.
+      [V, N, T, D, U] = table2cellarrays (this, 'iso');
+      ## The row labels lead the block when the object has them; dropping the
+      ## column here keeps them out of the file entirely.
+      if (! writeRowLabels && hasRowLabels (this))
+        V(:,1) = [];  N(:,1) = [];  T(:,1) = [];  D(:,1) = [];  U(:,1) = [];
+      endif
+      ## Get columns for final cell array
+      Ccols = size (V, 2);
+      ## Get rows for variable types, names, descriptions, and units
+      Trows = cellfun (@(x) size (x, 1), T);
+      Tmaxr = max (Trows);
+      Nrows = cellfun (@(x) size (x, 1), N);
+      isvar = cellfun (@(x) ! isempty (x), N(1,:));
+      ## Suppressing the names leaves the block without them; the count in the
+      ## comment says so, and the reader then numbers the variables.
+      if (writeVarNames)
+        Nmaxr = max (Nrows);
+      else
+        Nmaxr = 0;
+        Nrows = zeros (size (Nrows));
+      endif
+      ## Descriptions and units are written when the property is set, or when a
+      ## nested variable carries one; nested variables expand them to as many
+      ## rows as varNames/varTypes.  A nested variable's entry is a column of
+      ## one entry per nesting level, so the test has to look through it at the
+      ## text rather than at the column itself, which is never empty.
+      ## The block is written when any level of any variable has the property
+      ## set, a set-but-blank entry being a character vector where an unset one
+      ## is an empty.
+      hasText = @(x) any (cellfun (@ischar, tabular.header_entry (x)));
+      Drows = cellfun (@(x) max (1, size (x, 1)), D);
+      if (! isempty (this.VariableDescriptions) || any (cellfun (hasText, ...
+                                                                D(isvar))))
+        Dmaxr = max (Drows(isvar));
+      else
+        Dmaxr = 0;
+      endif
+      Urows = cellfun (@(x) max (1, size (x, 1)), U);
+      if (! isempty (this.VariableUnits) || any (cellfun (hasText, U(isvar))))
+        Umaxr = max (Urows(isvar));
+      else
+        Umaxr = 0;
+      endif
+      ## Initialize header
+      Header = repmat ({''}, Nmaxr + Tmaxr + Dmaxr + Umaxr, Ccols);
+      ## Populate header
+      for c = 1:Ccols
+        if (isvar(c))   # variable
+          if (Trows(c) == 1)
+            Header{1,c} = T{c};
+          else
+            for tr = 1:Trows(c)
+              Header{tr,c} = T{c}{tr};
+            endfor
+          endif
+          if (Nmaxr)
+            if (Nrows(c) == 1)
+              Header{1 + Tmaxr,c} = N{c};
+            else
+              for nr = 1:Nrows(c)
+                Header{nr + Tmaxr,c} = N{c}{nr};
+              endfor
+            endif
+          endif
+          if (Dmaxr)
+            if (Drows(c) == 1)
+              Header{1 + Tmaxr + Nmaxr,c} = D{c};
+            else
+              for dr = 1:Drows(c)
+                Header{dr + Tmaxr + Nmaxr,c} = D{c}{dr};
+              endfor
+            endif
+          endif
+          if (Umaxr)
+            if (Urows(c) == 1)
+              Header{1 + Tmaxr + Nmaxr + Dmaxr,c} = U{c};
+            else
+              for ur = 1:Urows(c)
+                Header{ur + Tmaxr + Nmaxr + Dmaxr,c} = U{c}{ur};
+              endfor
+            endif
+          endif
+        else            # the row-label column
+          ## The tag says what kind of labels the column holds; a dimension
+          ## name, which only row times have, travels in the name row beside
+          ## it exactly as a variable's name does.
+          Header{1,c} = rowLabelTag (this);
+          if (Nmaxr && ! strcmp (Header{1,c}, rowLabelName (this)))
+            Header{1 + Tmaxr,c} = rowLabelName (this);
+          endif
+        endif
+      endfor
+      ## Generate descriptive comment for header contents
+      cmt = cell (1, Ccols);
+      txt = strcat ("# varTypes %d rows; varNames %d rows;", ...
+                    " varDescriptions %d rows; varUnits %d rows.");
+      cmt{1} = sprintf (txt, Tmaxr, Nmaxr, Dmaxr, Umaxr);
+      ## Merge cell arrays into a single cell array for saving to csv file
+      csv = [cmt; Header; V];
     endfunction
 
     ## Shared helper for the house-format ODS exporters ('table2ods' and the
@@ -7529,11 +7656,30 @@ classdef (Abstract) tabular
       if (! isempty (this.VariableUnits))
         uBare = {''};
       endif
-      ## Process the row labels
+      ## Process the row labels.  Labels that are row times are exported
+      ## exactly as a variable of their type is, in ISO form and under their
+      ## own type string, so that a display format cannot round or reorder
+      ## them on the way out; labels that are already text are text.
       if (hasRowLabels (this))
-        V = [V, rowLabelStrings(this)];
+        lbl = getRowLabels (this);
+        if (isa (lbl, 'datetime') || isa (lbl, 'duration'))
+          ltype = ['RowTimes|', tabular.value_type_string(lbl)];
+          if (strcmp (fmt, 'iso'))
+            if (isa (lbl, 'datetime'))
+              lval = datetime2iso (lbl);
+            else
+              lval = duration2iso (lbl);
+            endif
+          else
+            lval = rowLabelStrings (this);
+          endif
+        else
+          ltype = 'cellstr';
+          lval = rowLabelStrings (this);
+        endif
+        V = [V, lval];
         N = [N, {''}];
-        T = [T, 'cellstr'];
+        T = [T, ltype];
         D = [D, dBare];
         U = [U, uBare];
       endif
@@ -7605,15 +7751,7 @@ classdef (Abstract) tabular
           ## Carry a non-empty TimeZone in the type string ('datetime <tz>') so
           ## the house readers can restore a zone-aware datetime, and the
           ## display format after a '|', so that it survives the round trip.
-          tz = var_V.TimeZone;
-          if (isempty (tz))
-            dttype = 'datetime';
-          else
-            dttype = ['datetime ', tz];
-          endif
-          if (! isempty (var_V.Format))
-            dttype = [dttype, '|', var_V.Format];
-          endif
+          dttype = tabular.value_type_string (var_V);
           for col = 1:ncols
             if (strcmp (fmt, 'iso'))
               V = [V, datetime2iso(var_V(:,col))];
@@ -7626,10 +7764,7 @@ classdef (Abstract) tabular
             U = [U, VU(ix)];
           endfor
         elseif (isa (var_V, 'duration'))
-          dutype = 'duration';
-          if (! isempty (var_V.Format))
-            dutype = ['duration|', var_V.Format];
-          endif
+          dutype = tabular.value_type_string (var_V);
           for col = 1:ncols
             if (strcmp (fmt, 'iso'))
               V = [V, duration2iso(var_V(:,col))];
@@ -8127,6 +8262,25 @@ classdef (Abstract) tabular
     ## Numeric types become 'float', logical becomes 'boolean', datetime and
     ## duration map to the native 'date' and 'time' types, and everything else
     ## (text, categorical, calendarDuration, cell) is written as a 'string'.
+    ## -*- texinfo -*-
+    ## The variable-type string a 'datetime' or 'duration' is exported under.
+    ##
+    ## A zone-aware 'datetime' carries its 'TimeZone' after a space and either
+    ## carries its display format after a '|', so that both survive the round
+    ## trip.  Any other value is named by its class alone.  It is one function
+    ## because the row-label column and the variables must agree on the
+    ## spelling, and they are built in different places.
+    function typestr = value_type_string (val)
+      typestr = class (val);
+      if (isa (val, 'datetime') && ! isempty (val.TimeZone))
+        typestr = [typestr, ' ', val.TimeZone];
+      endif
+      if ((isa (val, 'datetime') || isa (val, 'duration')) ...
+          && ! isempty (val.Format))
+        typestr = [typestr, '|', val.Format];
+      endif
+    endfunction
+
     function vt = ods_value_type (typestr)
       ## A zone-aware datetime carries its TimeZone in the type
       ## ('datetime <tz>'), and either carries its display format after a '|'.

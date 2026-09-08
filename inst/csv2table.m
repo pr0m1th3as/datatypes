@@ -263,6 +263,15 @@ function tbl = csv2table (name, varargin)
   if (Trows > 0)
     Hrows = Trows + Nrows + Drows + Urows;
 
+    ## A leading column of row times is tagged 'RowTimes' ahead of its own
+    ## type.  A table has no row times, so the column is kept as an ordinary
+    ## leading variable under the row dimension name written beside it, which
+    ## is what MATLAB's 'readtable' does with a file holding a timetable;
+    ## 'csv2timetable' reads the same file as the timetable it came from.
+    if (strncmp (C{1,1}, 'RowTimes|', 9))
+      C{1,1} = C{1,1}(10:end);
+    endif
+
     ## Check for RowNames.  The column is consumed either way and kept only
     ## when the caller asked for it.
     RowNames = {};

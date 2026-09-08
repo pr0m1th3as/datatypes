@@ -4622,3 +4622,69 @@
 %! TT.Properties.CustomProperties.q = [10 20];
 %! q = mergevars (TT, {'a', 'b'}).Properties.CustomProperties.q;
 %! assert_equal (q, NaN);
+
+################################################################################
+##                         **    'timetable2csv'    **                        ##
+################################################################################
+
+## Test the row-time column is tagged with its type, zone and format
+%!test
+%! t = datetime (2024, 1, (1:2)', 'TimeZone', 'UTC');
+%! t.Format = 'uuuu-MM-dd';
+%! TT = timetable (t, (1:2)', 'VariableNames', {'v'});
+%! fname = [tempname(), '.csv'];
+%! unwind_protect
+%!   timetable2csv (TT, fname);
+%!   txt = fileread (fname);
+%!   assert_equal (! isempty (strfind (txt, ...
+%!                 '"RowTimes|datetime UTC|uuuu-MM-dd"')), true);
+%! unwind_protect_cleanup
+%!   delete (fname);
+%! end_unwind_protect
+
+## Test the row times are written in ISO form, not in their display format
+%!test
+%! t = datetime (2024, 1, 2);
+%! t.Format = 'dd/MM/uuuu';
+%! TT = timetable (t, 1, 'VariableNames', {'v'});
+%! fname = [tempname(), '.csv'];
+%! unwind_protect
+%!   timetable2csv (TT, fname);
+%!   txt = fileread (fname);
+%!   assert_equal (! isempty (strfind (txt, '2024-01-02T00:00:00')), true);
+%!   assert_equal (isempty (strfind (txt, '02/01/2024')), true);
+%! unwind_protect_cleanup
+%!   delete (fname);
+%! end_unwind_protect
+
+## Test the row dimension name is written in the variable-name row
+%!test
+%! t = datetime (2024, 1, (1:2)');
+%! TT = timetable (t, (1:2)', 'VariableNames', {'v'});
+%! TT.Properties.DimensionNames{1} = 'Stamp';
+%! fname = [tempname(), '.csv'];
+%! unwind_protect
+%!   timetable2csv (TT, fname);
+%!   lines = strsplit (fileread (fname), "\n");
+%!   assert_equal (strncmp (lines{3}, '"Stamp","v"', 11), true);
+%! unwind_protect_cleanup
+%!   delete (fname);
+%! end_unwind_protect
+
+## Test too few input arguments
+%!error <timetable.timetable2csv: too few input arguments.> ...
+%! timetable2csv (timetable ((1:3)', 'TimeStep', hours (1)))
+
+## Test an invalid FILE
+%!error <timetable.timetable2csv: FILE must be a character vector, cellstr, or string.> ...
+%! timetable2csv (timetable ((1:3)', 'TimeStep', hours (1)), 42)
+
+## Test an unknown option
+%!error <timetable.timetable2csv: unknown option 'NoSuchOption'.> ...
+%! timetable2csv (timetable ((1:3)', 'TimeStep', hours (1)), 'f.csv', ...
+%!                'NoSuchOption', 1)
+
+## Test an invalid 'WriteVariableNames'
+%!error <timetable.timetable2csv: 'WriteVariableNames' must be a logical scalar.> ...
+%! timetable2csv (timetable ((1:3)', 'TimeStep', hours (1)), 'f.csv', ...
+%!                'WriteVariableNames', 'yes')

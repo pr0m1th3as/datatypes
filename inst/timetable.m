@@ -4758,6 +4758,98 @@ classdef timetable < tabular
 
   endmethods
 
+################################################################################
+##                            **    File I/O    **                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {} timetable2csv (@var{tt}, @var{file})
+    ## @deftypefnx {timetable} {} timetable2csv (@var{tt}, @var{file}, @var{Name}, @var{Value})
+    ##
+    ## Write a timetable to a comma-separated-value (CSV) file.
+    ##
+    ## @code{timetable2csv (@var{tt}, @var{file})} writes the timetable
+    ## @var{tt} to @var{file}, which may be a character vector, a cellstr, or a
+    ## string scalar.  The resulting file can be read back with
+    ## @code{csv2timetable}.
+    ##
+    ## The file begins with a comment line reporting how many consecutive rows
+    ## hold the variable types, names, descriptions, and units, in that order.
+    ## Those header rows are followed by one row of data per timetable row.
+    ## The variables are serialized exactly as @code{table2csv} serializes
+    ## them.
+    ##
+    ## The row times lead the file as a column of their own, written in ISO
+    ## 8601 form so that they are exact whatever their display format.  The
+    ## column is tagged @qcode{RowTimes} in the variable-type row, followed by
+    ## the row times' own type, their @code{TimeZone} where they have one, and
+    ## their @code{Format}; the row dimension name travels in the
+    ## variable-name row beside it.  A zone-aware @code{datetime} and a
+    ## @code{duration} of any resolution therefore both come back exactly as
+    ## they went out, which @code{writetimetable} does not manage for either.
+    ##
+    ## The row times are not optional: a timetable without them is not one, so
+    ## there is no switch to leave them out.
+    ##
+    ## The following @var{Name}-@var{Value} options are supported:
+    ##
+    ## @multitable @columnfractions 0.30 0.70
+    ## @headitem @var{Name} @tab @var{Value}
+    ## @item @qcode{'WriteVariableNames'} @tab A logical scalar specifying
+    ## whether the variable names are written (default @qcode{true}).  When
+    ## @qcode{false} the file carries none, so @code{csv2timetable} numbers the
+    ## variables on read and can no longer group the columns: a multicolumn
+    ## variable comes back as separate variables and a nested table as flat
+    ## columns.  The row dimension name is a name too and goes with them, so
+    ## the row times come back under the default @qcode{Time}.
+    ## @end multitable
+    ##
+    ## A CSV file holds one table and has nowhere to put a second, so an
+    ## attached event table is @strong{not} written and nothing warns.  Write
+    ## the timetable to an OpenDocument spreadsheet with @code{timetable2ods}
+    ## to keep its events.  @code{TimeStep}, @code{SampleRate} and
+    ## @code{VariableContinuity} are not written either; the first two are
+    ## worked out again from the row times on read.
+    ##
+    ## Note the following round-trip limitation when reading the file back
+    ## with @code{csv2timetable}: @code{calendarDuration} and
+    ## @code{categorical} variables are returned as cell arrays of character
+    ## vectors and their values are not reconstructed.
+    ##
+    ## @seealso{csv2timetable, timetable2ods, writetimetable, table2csv}
+    ## @end deftypefn
+    function timetable2csv (this, file, varargin)
+      if (nargin < 2)
+        error ("timetable.timetable2csv: too few input arguments.");
+      endif
+      if (! ((ischar (file) && isvector (file)) || iscellstr (file) ...
+             || isa (file, 'string')))
+        error (strcat ("timetable.timetable2csv: FILE must be a character", ...
+                       " vector, cellstr, or string."));
+      endif
+      file = char (cellstr (file));
+      optNames = {'WriteVariableNames'};
+      dfValues = {true};
+      [writeVarNames, args] = ...
+              parsePairedArguments (optNames, dfValues, varargin(:));
+      if (! isempty (args))
+        error ("timetable.timetable2csv: unknown option '%s'.", args{1});
+      endif
+      if (! (islogical (writeVarNames) && isscalar (writeVarNames)))
+        error (strcat ("timetable.timetable2csv: 'WriteVariableNames' must", ...
+                       " be a logical scalar."));
+      endif
+      csv = __csv_parts__ (this, writeVarNames, true);
+      msg = __table2csv__ (file, csv);
+      if (msg)
+        error ("timetable.timetable2csv: %s", msg);
+      endif
+    endfunction
+
+  endmethods
+
   methods (Static, Hidden)
 
     ## The named methods that aggregate the rows falling in one target bin.

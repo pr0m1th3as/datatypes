@@ -46,6 +46,7 @@ timetable arrays
  array2timetable
  table2timetable
  timetable2table
+ csv2timetable
  istimetable
  eventtable
 supplementary classes
