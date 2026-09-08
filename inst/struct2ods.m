@@ -22,9 +22,12 @@
 ##
 ## @code{struct2ods (@var{filename}, @var{s})} writes each field of the scalar
 ## structure @var{s} to its own sheet in the OpenDocument spreadsheet named by
-## @var{filename}.  Every field of @var{s} must hold a @code{table}; the field
-## name becomes the sheet name.  Both the compressed @qcode{.ods} and the flat
-## @qcode{.fods} formats are supported, selected by the file extension.
+## @var{filename}.  Every field of @var{s} must hold a @code{table} or a
+## @code{timetable}; the field name becomes the sheet name.  A timetable's row
+## times lead its sheet and are tagged as row times, so @code{ods2struct}
+## returns a timetable for that sheet and a table for the others.  Both the
+## compressed @qcode{.ods} and the flat @qcode{.fods} formats are supported,
+## selected by the file extension.
 ##
 ## Full type fidelity is preserved through a hidden, sectioned
 ## @qcode{__datatypes_meta__} sheet, exactly as for the single-table
@@ -77,8 +80,9 @@ function struct2ods (filename, s)
   metablocks = cell (1, K);
   for k = 1:K
     T = s.(fields{k});
-    if (! isa (T, 'table'))
-      error ("struct2ods: field '%s' is not a table.", fields{k});
+    if (! isa (T, 'tabular'))
+      error (strcat ("struct2ods: field '%s' is not a table or a", ...
+                     " timetable."), fields{k});
     endif
     ## Resolve the sheet name: an 'ActualSheetName' custom property wins over
     ## the field name, so non-identifier sheet names can round-trip.
@@ -201,7 +205,7 @@ endfunction
 %! struct2ods ('bad.txt', struct ('a', table (1)))
 %!error <struct2ods: S must be a scalar structure.> ...
 %! struct2ods ([tempname() '.ods'], struct ('a', {table(1), table(2)}))
-%!error <struct2ods: field 'b' is not a table.> ...
+%!error <struct2ods: field 'b' is not a table or a timetable.> ...
 %! struct2ods ([tempname() '.ods'], struct ('a', table (1), 'b', 5))
 %!error <struct2ods: S must have at least one field.> ...
 %! struct2ods ([tempname() '.ods'], struct ())

@@ -1466,7 +1466,10 @@ classdef (Abstract) tabular
             Header(1 + base:Urows(c) + base,c) = tabular.header_entry (U{c});
           endif
         else
-          Header{1,c} = rowLabelName (this);
+          ## The type row says what kind of labels the column holds, and the
+          ## data sheet's own header names them, where a reader opening the
+          ## file in a spreadsheet application sees the name.
+          Header{1,c} = rowLabelTag (this);
           if (Nmaxr)
             hdr{1,c} = rowLabelName (this);
           endif
@@ -8282,6 +8285,13 @@ classdef (Abstract) tabular
     endfunction
 
     function vt = ods_value_type (typestr)
+      ## Row times are tagged by kind ahead of their own type, and are written
+      ## as the native date or time cells that variable would be: a
+      ## spreadsheet showing the row times as text beside a datetime variable
+      ## shown as a date would be the odd outcome.
+      if (strncmp (typestr, 'RowTimes|', 9))
+        typestr = typestr(10:end);
+      endif
       ## A zone-aware datetime carries its TimeZone in the type
       ## ('datetime <tz>'), and either carries its display format after a '|'.
       if (strncmp (typestr, 'datetime', 8))

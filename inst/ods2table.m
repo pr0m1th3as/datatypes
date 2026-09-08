@@ -18,6 +18,7 @@
 ## -*- texinfo -*-
 ## @deftypefn  {datatypes} {@var{tbl} =} ods2table (@var{filename})
 ## @deftypefnx {datatypes} {@var{tbl} =} ods2table (@var{filename}, @qcode{'Sheet'}, @var{sheet})
+## @deftypefnx {datatypes} {[@var{tbl}, @var{rowTimesName}] =} ods2table (@dots{})
 ##
 ## Read an OpenDocument spreadsheet file into a table.
 ##
@@ -64,6 +65,14 @@
 ## names moved to the data sheet carries them on the metadata sheet, and is
 ## read just as well.
 ##
+## A sheet written from a timetable tags its leading column as row times.  A
+## table has no row times, so the column is returned as an ordinary leading
+## variable under the row dimension name, and the second output
+## @var{rowTimesName} names it; @var{rowTimesName} is empty for every other
+## sheet, which is how @code{ods2struct} tells a sheet that held a timetable
+## from one whose first variable merely happens to be a @code{datetime}.  Read
+## such a sheet with @code{ods2timetable} to get the timetable back.
+##
 ## When the metadata sheet is absent (a spreadsheet written by another
 ## application) the variable types are inferred from the cell value types.
 ## Where no names are available the variables are numbered, and the columns can
@@ -80,7 +89,7 @@
 ##
 ## @end deftypefn
 
-function tbl = ods2table (filename, varargin)
+function [tbl, rowTimesName] = ods2table (filename, varargin)
 
   if (nargin < 1)
     print_usage ();
@@ -89,6 +98,9 @@ function tbl = ods2table (filename, varargin)
     error ("ods2table: FILENAME must be a character vector, cellstr, or string.");
   endif
   file = char (cellstr (filename));
+  ## Empty unless the sheet's leading column was tagged as row times, in which
+  ## case it names the variable that column became.
+  rowTimesName = '';
 
   optNames = {'Sheet', 'ReadVariableNames', 'ReadRowNames', ...
               'VariableNamesRow', 'RowNamesColumn'};
@@ -196,6 +208,16 @@ function tbl = ods2table (filename, varargin)
     vtype = cell (size (data, 1), metacols);
   endif
 
+  ## A leading column of row times is tagged 'RowTimes' ahead of its own
+  ## type.  A table has no row times, so the column is kept as an ordinary
+  ## leading variable under the row dimension name written beside it, which is
+  ## what MATLAB's 'readtable' does with a file holding a timetable;
+  ## 'ods2timetable' reads the same sheet as the timetable it came from.
+  hasRowTimes = strncmp (T{1,1}, 'RowTimes|', 9);
+  if (hasRowTimes)
+    T{1,1} = T{1,1}(10:end);
+  endif
+
   ## A leading RowNames column is tagged in the type row; the column is
   ## consumed either way, and kept only when the caller asked for it.
   RowNames = {};
@@ -230,6 +252,9 @@ function tbl = ods2table (filename, varargin)
       tbl = table (varValues{:}, 'VariableNames', varNames, ...
                    'RowNames', RowNames);
     endif
+    if (hasRowTimes && width (tbl) > 0)
+      rowTimesName = tbl.Properties.VariableNames{1};
+    endif
     return;
   endif
 
@@ -240,6 +265,9 @@ function tbl = ods2table (filename, varargin)
   tbl = __cell2tbl__ (data, T, N, D, U, RowNames, ...
                       @(varC, varVT, typestr) ods_cell2var (varC, varVT, ...
                                                             typestr), vtype);
+  if (hasRowTimes && width (tbl) > 0)
+    rowTimesName = tbl.Properties.VariableNames{1};
+  endif
 
 endfunction
 

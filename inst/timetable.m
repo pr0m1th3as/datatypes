@@ -4848,6 +4848,133 @@ classdef timetable < tabular
       endif
     endfunction
 
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {} timetable2ods (@var{tt}, @var{file})
+    ## @deftypefnx {timetable} {} timetable2ods (@var{tt}, @var{file}, @var{Name}, @var{Value})
+    ##
+    ## Write a timetable to an OpenDocument spreadsheet file.
+    ##
+    ## @code{timetable2ods (@var{tt}, @var{file})} writes the timetable
+    ## @var{tt} to @var{file}, which may be a character vector, a cellstr, or a
+    ## string scalar.  When @var{file} ends in @qcode{.ods} a compressed
+    ## (ZIP-packaged) OpenDocument spreadsheet is written; when it ends in
+    ## @qcode{.fods} a flat (single-XML) one is written instead.  The resulting
+    ## file can be read back with @code{ods2timetable}.
+    ##
+    ## The data sheet is headed by the row dimension name and the variable
+    ## names and then carries one natively typed cell per value, and a hidden
+    ## @qcode{__datatypes_meta__} sheet carries the variable types,
+    ## descriptions and units, exactly as @code{table2ods} writes them.
+    ##
+    ## The row times lead the sheet as a column of their own, written as
+    ## native @code{date} or @code{time} cells as a @code{datetime} or
+    ## @code{duration} variable is, so a spreadsheet application shows them as
+    ## times rather than as text.  The column is tagged @qcode{RowTimes} in the
+    ## hidden sheet, followed by the row times' own type, their
+    ## @code{TimeZone} where they have one, and their @code{Format}, so that
+    ## all three come back exactly.
+    ##
+    ## The row times are not optional: a timetable without them is not one, so
+    ## there is no switch to leave them out.
+    ##
+    ## The following @var{Name}-@var{Value} options are supported:
+    ##
+    ## @multitable @columnfractions 0.30 0.70
+    ## @headitem @var{Name} @tab @var{Value}
+    ## @item @qcode{'Sheet'} @tab The name of the sheet to write (default
+    ## @qcode{'Sheet1'}).  When @var{file} already exists the named sheet is
+    ## added or replaced while every other sheet is preserved, so a workbook
+    ## can be built up one object at a time.
+    ## @item @qcode{'WriteVariableNames'} @tab A logical scalar specifying
+    ## whether the variable names are written (default @qcode{true}).  When
+    ## @qcode{false} the file carries none at all, the hidden metadata sheet
+    ## included, so @code{ods2timetable} numbers the variables on read and can
+    ## no longer group the columns.  The row dimension name is a name too and
+    ## goes with them.
+    ## @item @qcode{'WriteMode'} @tab @qcode{'overwritesheet'} or
+    ## @qcode{'inplace'} replace the sheet (the default when the sheet
+    ## exists), @qcode{'append'} appends the timetable's rows to it, and
+    ## @qcode{'replacefile'} discards any existing file.
+    ## @end multitable
+    ##
+    ## An attached event table is @strong{not} written by this method and
+    ## nothing warns.
+    ##
+    ## Note the following round-trip limitation when reading the file back
+    ## with @code{ods2timetable}: @code{calendarDuration} and
+    ## @code{categorical} variables are returned as cell arrays of character
+    ## vectors and their values are not reconstructed.
+    ##
+    ## @seealso{ods2timetable, timetable2csv, struct2ods, table2ods}
+    ## @end deftypefn
+    function timetable2ods (this, file, varargin)
+      if (nargin < 2)
+        error ("timetable.timetable2ods: too few input arguments.");
+      endif
+      if (! ((ischar (file) && isvector (file)) || iscellstr (file) ...
+             || isa (file, 'string')))
+        error (strcat ("timetable.timetable2ods: FILE must be a character", ...
+                       " vector, cellstr, or string."));
+      endif
+      file = char (cellstr (file));
+      ## A '.fods' file is written as flat XML, a '.ods' file as a ZIP package.
+      [~, ~, ext] = fileparts (file);
+      if (strcmpi (ext, '.fods'))
+        is_flat = true;
+      elseif (strcmpi (ext, '.ods'))
+        is_flat = false;
+      else
+        error (strcat ("timetable.timetable2ods: FILE must have a '.ods'", ...
+                       " or '.fods' extension."));
+      endif
+
+      optNames = {'Sheet', 'WriteMode', 'WriteVariableNames'};
+      dfValues = {'Sheet1', '', true};
+      [sheet, writeMode, writeVarNames, args] = ...
+              parsePairedArguments (optNames, dfValues, varargin(:));
+      if (! isempty (args))
+        error ("timetable.timetable2ods: unknown option '%s'.", args{1});
+      endif
+      if (! (islogical (writeVarNames) && isscalar (writeVarNames)))
+        error (strcat ("timetable.timetable2ods: 'WriteVariableNames' must", ...
+                       " be a logical scalar."));
+      endif
+      if (isa (sheet, 'string'))
+        sheet = char (sheet);
+      endif
+      if (! (ischar (sheet) && isrow (sheet)))
+        error ("timetable.timetable2ods: 'Sheet' must be a sheet name.");
+      endif
+      writeMode = lower (char (writeMode));
+      switch (writeMode)
+        case {'', 'replacefile', 'overwritesheet', 'inplace', 'append'}
+          ## supported write modes
+        otherwise
+          error ("timetable.timetable2ods: 'WriteMode' '%s' is not valid.", ...
+                 writeMode);
+      endswitch
+
+      ## Merge into an existing workbook (preserving other sheets) by reading
+      ## it back, modifying the struct of objects, and rewriting the file.
+      if (exist (file, 'file') && ! strcmp (writeMode, 'replacefile'))
+        s = ods2struct (file);
+        s = __mergesheet__ (s, this, sheet, writeMode);
+        struct2ods (file, s);
+        return;
+      endif
+
+      ## Fresh single-sheet write.
+      [V, vtype, meta, hdr] = __ods_parts__ (this, ...
+                                             'timetable.timetable2ods', ...
+                                             writeVarNames, true);
+      msg = __table2ods__ (file, V, vtype, meta, is_flat, ...
+                           struct ('sheetname', sheet, 'header', {hdr}));
+      if (! isequal (msg, 0))
+        error ("timetable.timetable2ods: %s", msg);
+      endif
+    endfunction
+
   endmethods
 
   methods (Static, Hidden)

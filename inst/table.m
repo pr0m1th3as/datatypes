@@ -945,7 +945,7 @@ classdef table < tabular
       ## back, modifying the struct of tables, and rewriting the whole file.
       if (exist (file, 'file') && ! strcmp (writeMode, 'replacefile'))
         s = ods2struct (file);
-        s = merge_table_into_struct (s, this, sheet, writeMode);
+        s = __mergesheet__ (s, this, sheet, writeMode);
         struct2ods (file, s);
         return;
       endif
@@ -1176,7 +1176,7 @@ classdef table < tabular
             ## struct of tables, and rewriting (interop re-encode, like the
             ## incremental table2ods path).
             s = xlsx2struct (file);
-            s = merge_table_into_struct (s, this, sheet, writeMode);
+            s = __mergesheet__ (s, this, sheet, writeMode);
             struct2xlsx (file, s);
             msg = 0;
           else
@@ -4471,60 +4471,6 @@ endfunction
 ## Add, replace, or append table T to the struct of tables S (read from an
 ## existing house workbook) for the sheet named SHEET, per WRITEMODE.  The
 ## struct is later written back with 'struct2ods'; sheet names that are not
-## valid field names ride along as the 'ActualSheetName' custom property.
-function s = merge_table_into_struct (s, T, sheet, writeMode)
-  ## Find the field whose sheet name (ActualSheetName, else field name) matches.
-  fields = fieldnames (s);
-  targetField = '';
-  for i = 1:numel (fields)
-    fsheet = fields{i};
-    cp = s.(fields{i}).Properties.CustomProperties;
-    if (isfield (cp, 'ActualSheetName') && ! isempty (cp.ActualSheetName))
-      fsheet = cp.ActualSheetName;
-    endif
-    if (strcmp (fsheet, sheet))
-      targetField = fields{i};
-      break;
-    endif
-  endfor
-  ## Select mode
-  if (strcmp (writeMode, 'append') && ! isempty (targetField))
-    ## Append the rows; table vertcat errors if the variables are incompatible.
-    combined = [s.(targetField); T];
-    s.(targetField) = copy_actual_sheet_name (combined, s.(targetField));
-  elseif (! isempty (targetField))
-    ## Replace the sheet, keeping its resolved name.
-    s.(targetField) = copy_actual_sheet_name (T, s.(targetField));
-  else
-    ## A new sheet: canonicalise SHEET to a unique field name and stash the
-    ## original name when it had to change.
-    fn = matlab.lang.makeValidName (sheet);
-    base = fn;
-    j = 1;
-    while (isfield (s, fn))
-      fn = sprintf ("%s_%d", base, j);
-      j += 1;
-    endwhile
-    if (! strcmp (fn, sheet))
-      T = addprop (T, 'ActualSheetName', 'table');
-      T.Properties.CustomProperties.ActualSheetName = sheet;
-    endif
-    s.(fn) = T;
-  endif
-endfunction
-
-## Copy the 'ActualSheetName' custom property from SRC onto T, if SRC carries it.
-function T = copy_actual_sheet_name (T, src)
-  cp = src.Properties.CustomProperties;
-  if (isfield (cp, 'ActualSheetName') && ! isempty (cp.ActualSheetName))
-    tcp = T.Properties.CustomProperties;
-    if (! isfield (tcp, 'ActualSheetName'))
-      T = addprop (T, 'ActualSheetName', 'table');
-    endif
-    T.Properties.CustomProperties.ActualSheetName = cp.ActualSheetName;
-  endif
-endfunction
-
 ## Translate a MATLAB delimiter (named or literal) into a single character for
 ## 'writetable'.
 function d = wt_resolve_delimiter (delim)

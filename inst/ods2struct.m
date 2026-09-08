@@ -22,7 +22,9 @@
 ##
 ## @code{@var{s} = ods2struct (@var{filename})} reads each data sheet of the
 ## OpenDocument spreadsheet named by @var{filename} into a @code{table} and
-## returns a scalar structure with one field per sheet, in sheet order.  Both
+## returns a scalar structure with one field per sheet, in sheet order.  A
+## sheet written from a @code{timetable} is tagged as such and comes back as
+## one, so a workbook of both round-trips through @code{struct2ods}.  Both
 ## the compressed @qcode{.ods} and the flat @qcode{.fods} formats are read.
 ## Each sheet is reconstructed exactly as by @code{ods2table}; it is the inverse
 ## of @code{struct2ods}.
@@ -56,7 +58,13 @@ function s = ods2struct (filename)
   usedFields = {};
   for k = 1:numel (names)
     sn = names{k};
-    R = ods2table (file, 'Sheet', sn);
+    ## A sheet whose leading column is tagged as row times came from a
+    ## timetable and goes back to being one; every other sheet is a table,
+    ## including one whose first variable merely happens to be a datetime.
+    [R, rowTimesName] = ods2table (file, 'Sheet', sn);
+    if (! isempty (rowTimesName))
+      R = table2timetable (R, 'RowTimes', rowTimesName);
+    endif
     fn = matlab.lang.makeValidName (sn);
     ## Make the field name unique if canonicalisation collided with an earlier
     ## one; the ActualSheetName property below preserves the true sheet name.
