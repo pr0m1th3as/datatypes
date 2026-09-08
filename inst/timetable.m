@@ -364,10 +364,12 @@ classdef timetable < tabular
           continue;
         endif
         evi = eventsOf (ops{i});
-        if (isempty (evi))
+        ## An attached event table with no events is still attached, so the
+        ## test is on the class and not on emptiness.
+        if (! isa (evi, 'eventtable'))
           continue;
         endif
-        if (isempty (ev))
+        if (! isa (ev, 'eventtable'))
           ev = evi;
         else
           [ev, errmsg] = mergeEventTables (ev, evi);
@@ -4584,7 +4586,9 @@ classdef timetable < tabular
       hasDefault = (numel (args) == 1);
 
       ev = eventsOf (this);
-      if (isempty (ev))
+      ## An attached event table with no events is still attached; it covers
+      ## no row, so every row is answered as one no event reached.
+      if (! isa (ev, 'eventtable'))
         error (strcat ("timetable.syncevents: the timetable has no event", ...
                        " table attached; assign one to", ...
                        " 'Properties.Events' first."));

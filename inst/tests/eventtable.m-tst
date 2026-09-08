@@ -582,6 +582,18 @@
 %!                                   string ({'mid'; 'down'}));
 %! assert_equal (height ([A; C].Properties.Events), 4);
 
+## Test 'vertcat' carries an attached event table holding no events
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:3))';
+%! t2 = datetime (2024, 1, 1) + hours ((4:7))';
+%! A = timetable (t, (1:4)', 'VariableNames', {'A'});
+%! C = timetable (t2, (9:12)', 'VariableNames', {'A'});
+%! E = eventtable (t([2 4]), 'EventLabels', string ({'on'; 'off'}));
+%! A.Properties.Events = E([], :);
+%! out = [A; C].Properties.Events;
+%! assert_equal (isa (out, 'eventtable'), true);
+%! assert_equal (height (out), 0);
+
 ## Test 'synchronize' merges the event tables
 %!test
 %! t = datetime (2024, 1, 1) + hours ((0:3))';
@@ -1234,6 +1246,16 @@
 %!                                    string ({'rain'; 'snow'}), ...
 %!                                    'EventLengths', hours ([0; 0]));
 %! assert_equal (all (ismissing (syncevents (TT).EventLabels)), true);
+
+## Test an attached event table holding no events leaves every row missing
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:7))';
+%! TT = timetable (t, (1:8)', 'VariableNames', {'v'});
+%! E = eventtable (t([3 6]), 'EventLabels', string ({'rain'; 'snow'}));
+%! TT.Properties.Events = E([], :);
+%! out = syncevents (TT);
+%! assert_equal (height (out), 8);
+%! assert_equal (all (ismissing (out.EventLabels)), true);
 
 ## Test events lying outside the row times leave every row missing
 %!test
