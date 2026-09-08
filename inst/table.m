@@ -708,6 +708,146 @@ classdef table < tabular
       endif
     endfunction
 
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {table} {@var{tt} =} table2timetable (@var{tbl})
+    ## @deftypefnx {table} {@var{tt} =} table2timetable (@var{tbl}, @qcode{'RowTimes'}, @var{rowTimes})
+    ## @deftypefnx {table} {@var{tt} =} table2timetable (@var{tbl}, @qcode{'TimeStep'}, @var{dt})
+    ## @deftypefnx {table} {@var{tt} =} table2timetable (@var{tbl}, @qcode{'SampleRate'}, @var{fs})
+    ## @deftypefnx {table} {@var{tt} =} table2timetable (@dots{}, @qcode{'StartTime'}, @var{t0})
+    ##
+    ## Convert a table to a timetable.
+    ##
+    ## @code{@var{tt} = table2timetable (@var{tbl})} converts the table
+    ## @var{tbl} to a timetable, taking its row times from the @strong{first}
+    ## variable that is a @code{datetime} or a @code{duration}.  That
+    ## variable stops being a variable and becomes the row times, and the row
+    ## dimension is named after it.  A table with no such variable cannot be
+    ## converted this way.
+    ##
+    ## @code{@var{tt} = table2timetable (@var{tbl}, @qcode{'RowTimes'},
+    ## @var{rowTimes})} says which times to use.  @var{rowTimes} may be a
+    ## @code{datetime} or @code{duration} vector with one element per row, in
+    ## which case every variable of @var{tbl} is kept and the row dimension is
+    ## named @qcode{'Time'}; or it may name one of the variables, by name or by
+    ## index, which is then taken as the row times exactly as above.
+    ##
+    ## @code{@var{tt} = table2timetable (@var{tbl}, @qcode{'TimeStep'},
+    ## @var{dt})} and @code{@var{tt} = table2timetable (@var{tbl},
+    ## @qcode{'SampleRate'}, @var{fs})} generate the row times instead, keeping
+    ## every variable.  @qcode{'StartTime'} sets the time of the first row for
+    ## either, and the row dimension is named @qcode{'Time'}.
+    ##
+    ## The row names of @var{tbl}, if it has any, are not carried over: a
+    ## timetable labels its rows by time and by nothing else.
+    ##
+    ## @seealso{timetable2table, array2timetable, timetable, table}
+    ## @end deftypefn
+    function TT = table2timetable (this, varargin)
+
+      ## Parse optional Name-Value paired arguments
+      optNames = {'RowTimes', 'TimeStep', 'SampleRate', 'StartTime'};
+      dfValues = {missing, missing, missing, missing};
+      [RowTimes, TimeStep, SampleRate, StartTime, args] = ...
+                  parsePairedArguments (optNames, dfValues, varargin(:));
+      if (! isempty (args))
+        error ("table.table2timetable: unrecognized optional argument.");
+      endif
+      given = [! isa(RowTimes, 'missing'), ! isa(TimeStep, 'missing'), ...
+               ! isa(SampleRate, 'missing')];
+      if (sum (given) > 1)
+        error (strcat ("table.table2timetable: only one of 'RowTimes',", ...
+                       " 'TimeStep' and 'SampleRate' may be given."));
+      endif
+
+      ## 'Properties' is synthesised by 'subsref' and a method's dot access
+      ## to its own class does not go through it, so the metadata is read off
+      ## the properties themselves.
+      varNames = this.VariableNames;
+
+      ## Decide where the row times come from, and which variable if any stops
+      ## being one.  A vector of times takes no variable and leaves the row
+      ## dimension at its default; a variable, whether named outright or found
+      ## by type, gives the dimension its own name.
+      ixTime = 0;
+      dimName = 'Time';
+      timeArgs = {};
+      if (given(1))
+        if (isdatetime (RowTimes) || isduration (RowTimes))
+          timeArgs = {'RowTimes', RowTimes};
+        else
+          ixTime = resolveTimeVar (RowTimes, varNames);
+        endif
+      elseif (given(2))
+        timeArgs = {'TimeStep', TimeStep};
+      elseif (given(3))
+        timeArgs = {'SampleRate', SampleRate};
+      else
+        for i = 1:numel (varNames)
+          v = getvar (this, varNames{i});
+          if (isdatetime (v) || isduration (v))
+            ixTime = i;
+            break;
+          endif
+        endfor
+        if (ixTime == 0)
+          error (strcat ("table.table2timetable: TBL must contain a", ...
+                         " datetime or a duration variable to use as row", ...
+                         " times, or the row times must be given."));
+        endif
+      endif
+      if (ixTime > 0)
+        rt = getvar (this, varNames{ixTime});
+        if (! (isdatetime (rt) || isduration (rt)))
+          error (strcat ("table.table2timetable: the variable '%s' is a", ...
+                         " %s; row times must be a datetime or a", ...
+                         " duration."), ...
+                 varNames{ixTime}, class (rt));
+        endif
+        timeArgs = {'RowTimes', rt};
+        dimName = varNames{ixTime};
+        varNames(ixTime) = [];
+      endif
+      if (! isa (StartTime, 'missing'))
+        timeArgs = [timeArgs, {'StartTime', StartTime}];
+      endif
+
+      ## Build the timetable empty and fill it by name.  The variables cannot be
+      ## handed to the constructor positionally: a surviving datetime variable
+      ## would be read as the row times.
+      TT = timetable ('Size', [height(this), 0], 'VariableTypes', {}, ...
+                      timeArgs{:});
+      for i = 1:numel (varNames)
+        TT.(varNames{i}) = getvar (this, varNames{i});
+      endfor
+      TT.Properties.DimensionNames = {dimName, this.DimensionNames{2}};
+
+      ## Carry the metadata of the variables that survived, and of the table.
+      keep = true (1, numel (this.VariableNames));
+      if (ixTime > 0)
+        keep(ixTime) = false;
+      endif
+      if (! isempty (this.VariableDescriptions))
+        TT.Properties.VariableDescriptions = this.VariableDescriptions(keep);
+      endif
+      if (! isempty (this.VariableUnits))
+        TT.Properties.VariableUnits = this.VariableUnits(keep);
+      endif
+      if (! isempty (this.VariableContinuity))
+        TT.Properties.VariableContinuity = this.VariableContinuity(keep);
+      endif
+      if (! isempty (this.Description))
+        TT.Properties.Description = this.Description;
+      endif
+      if (! isempty (this.UserData))
+        TT.Properties.UserData = this.UserData;
+      endif
+      ## A custom property describing the variables loses the entry of the one
+      ## that became the row times, which is no longer a variable.
+      TT = tabular.carryCustomProps (TT, this, find (keep));
+
+    endfunction
+
   endmethods
 
 ################################################################################
@@ -4405,3 +4545,29 @@ endfunction
 ## existing house workbook) for the sheet named SHEET, per WRITEMODE.  The
 ## struct is later written back with 'struct2ods'; sheet names that are not
 
+## The index of the variable named by REF, which may be its name or its
+## position.  Only one variable may be named: the row times are one vector.
+function ix = resolveTimeVar (ref, varNames)
+  if (isnumeric (ref) && isscalar (ref) && ref == fix (ref))
+    ix = ref;
+    if (ix < 1 || ix > numel (varNames))
+      error ("table.table2timetable: 'RowTimes' index out of bound.");
+    endif
+    return
+  endif
+  if (isa (ref, 'string') && isscalar (ref))
+    ref = char (ref);
+  endif
+  if (ischar (ref) && isrow (ref))
+    ref = {ref};
+  endif
+  if (! (iscellstr (ref) && isscalar (ref)))
+    error (strcat ("table.table2timetable: 'RowTimes' must be a datetime", ...
+                   " or duration vector, or the name or index of a single", ...
+                   " variable."));
+  endif
+  ix = find (strcmp (varNames, ref{1}));
+  if (isempty (ix))
+    error ("table.table2timetable: no such variable in table: '%s'", ref{1});
+  endif
+endfunction
