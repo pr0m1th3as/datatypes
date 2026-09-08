@@ -33,6 +33,11 @@ classdef rowfilter
   ## @end group
   ## @end example
   ##
+  ## A filter of this package is a @code{rowfilter}, a class of its own beside
+  ## @code{vartype}, @code{timerange} and @code{withtol}, where MATLAB's is a
+  ## @code{matlab.io.RowFilter}.  Only the class name differs: nothing here
+  ## calls itself @code{matlab.*}, and no behaviour follows from it.
+  ##
   ## @seealso{timerange, withtol, table, timetable}
   ## @end deftp
 

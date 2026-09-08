@@ -2141,6 +2141,18 @@ classdef timetable < tabular
     ## taken out of a timetable that read its step off its row times is
     ## not.
     ##
+    ## @strong{The answer is always computed from the row times and
+    ## @var{unit} is always checked}, which MATLAB does neither of when the
+    ## step was declared with @qcode{'TimeStep'} or @qcode{'SampleRate'} and
+    ## is a @code{duration}: there it answers from the stored step alone.  Two
+    ## consequences follow there and not here.  A misspelt unit, and the
+    ## non-units @qcode{'seconds'}, @qcode{'minutes'} and @qcode{'hours'},
+    ## come back @code{false} rather than raising.  And two timetables with
+    ## @strong{identical row times} disagree: times built as
+    ## @code{d0 + hours (0:24:96)} answer true for @qcode{'days'} while the
+    ## same times declared as @qcode{'TimeStep'}, @code{hours (24)} answer
+    ## false.  Both answer true here.
+    ##
     ## @seealso{timetable}
     ## @end deftypefn
     function TF = isregular (this, unit)
