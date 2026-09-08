@@ -2196,111 +2196,89 @@
 %! assert_equal (fieldnames (ss), {'a'; 'b'});
 %! str = evalc ("summary (et);");
 %! assert_equal (! isempty (strfind (str, 'Variables:')), true);
-## Test 'summary' prints one block per variable, with its size and type
+## Test 'summary' printed output for numeric, logical, and missing values
 %!test
 %! str = evalc (["summary (table ([1; 2; NaN], logical ([1; 0; 1]), ", ...
 %!               "'VariableNames', {'a', 'b'}));"]);
+%! assert_equal (! isempty (strfind (str, '3x2 table')), true);
 %! assert_equal (! isempty (strfind (str, 'Variables:')), true);
-%! assert_equal (! isempty (strfind (str, '    a: 3x1 double')), true);
-%! assert_equal (! isempty (strfind (str, '    b: 3x1 logical')), true);
-%! assert_equal (! isempty (strfind (str, '        Values:')), true);
-%! assert_equal (! isempty (strfind (str, 'Median')), true);
-
-## Test a count of missing values appears only when something is missing
-%!test
-%! str = evalc ("summary (table ([1; 2; NaN], 'VariableNames', {'a'}));");
+%! assert_equal (! isempty (strfind (str, '    a: double')), true);
+%! assert_equal (! isempty (strfind (str, '    b: logical (2 true)')), true);
+%! assert_equal (! isempty ...
+%!               (strfind (str, 'Statistics for applicable variables:')), true);
 %! assert_equal (! isempty (strfind (str, 'NumMissing')), true);
-%! str = evalc ("summary (table ([1; 2; 3], 'VariableNames', {'a'}));");
-%! assert_equal (isempty (strfind (str, 'NumMissing')), true);
+%! assert_equal (! isempty (strfind (str, 'Median')), true);
+%! assert_equal (! isempty (strfind (str, 'Std')), true);
 
-## Test a logical variable is counted as True and False
+## Test the units, the type note and the description share one bracket
+%!test
+%! Tn = table ([1; 2; 3], categorical ({'x'; 'y'; 'x'}), ...
+%!             'VariableNames', {'num', 'cat'});
+%! Tn.Properties.VariableUnits = {'kg', 'none'};
+%! Tn.Properties.VariableDescriptions = {'a count', 'a label'};
+%! str = evalc ("summary (Tn);");
+%! assert_equal (! isempty (strfind (str, ...
+%!               '    num: double (kg, a count)')), true);
+%! assert_equal (! isempty (strfind (str, ...
+%!               '    cat: categorical (none, 2 categories, a label)')), true);
+
+## Test a heading wider than its column is centred over it, not right-aligned
+%!test
+%! str = evalc ("summary (table ([1; 2; 3], 'VariableNames', {'v'}));");
+%! c = strsplit (str, "\n");
+%! ix = find (! cellfun (@isempty, strfind (c, 'NumMissing')), 1);
+%! head = c{ix};
+%! row = c{ix + 1};
+%! hs = strfind (head, 'NumMissing');
+%! assert_equal (numel (hs), 1);
+%! ## the single-digit count sits at the middle of its heading, not its end
+%! vs = strfind (row, '0');
+%! assert_equal (vs(1) > hs(1), true);
+%! assert_equal (vs(1) < hs(1) + 9, true);
+
+## Test no line is padded past its last value
+%!test
+%! Tn = table ([1; 2; 3], categorical ({'x'; 'y'; 'x'}), ...
+%!             'VariableNames', {'num', 'cat'});
+%! str = evalc ("summary (Tn);");
+%! c = strsplit (str, "\n");
+%! for k = 1:numel (c)
+%!   assert_equal (isempty (c{k}) || ! isspace (c{k}(end)), true);
+%! endfor
+
+## Test a logical variable is counted on its own line, not in the statistics
 %!test
 %! str = evalc (["summary (table (logical ([1; 0; 1]), ", ...
 %!               "'VariableNames', {'b'}));"]);
-%! assert_equal (! isempty (strfind (str, '    b: 3x1 logical')), true);
-%! assert_equal (! isempty (strfind (str, 'True')), true);
-%! assert_equal (! isempty (strfind (str, 'False')), true);
-%! assert_equal (isempty (strfind (str, 'Median')), true);
-
-## Test a type with no statistics gets no 'Values:' block
-%!test
-%! str = evalc (["summary (table ({'a'; 'b'; 'c'}, ", ...
-%!               "'VariableNames', {'c'}));"]);
-%! assert_equal (! isempty (strfind (str, ...
-%!               '    c: 3x1 cell array of character vectors')), true);
-%! assert_equal (isempty (strfind (str, 'Values:')), true);
-
-## Test a categorical is counted by category, an ordinal one saying so
-%!test
-%! str = evalc (["summary (table (categorical ({'x'; 'y'; 'x'}), ", ...
-%!               "'VariableNames', {'c'}));"]);
-%! assert_equal (! isempty (strfind (str, '    c: 3x1 categorical')), true);
-%! assert_equal (! isempty (strfind (str, 'x')), true);
-%! str = evalc (["summary (table (categorical ({'lo'; 'hi'}, ", ...
-%!               "{'lo', 'hi'}, 'Ordinal', true), 'VariableNames', {'c'}));"]);
-%! assert_equal (! isempty (strfind (str, '3x1 ordinal categorical')), ...
-%!               false);
-%! assert_equal (! isempty (strfind (str, '2x1 ordinal categorical')), true);
-
-## Test the units and the description of a variable are printed under it
-%!test
-%! Tu = table ([1; 2; 3], 'VariableNames', {'v'});
-%! Tu.Properties.VariableUnits = {'kg'};
-%! Tu.Properties.VariableDescriptions = {'a weight'};
-%! str = evalc ("summary (Tu);");
-%! assert_equal (! isempty (strfind (str, '        Properties:')), true);
-%! assert_equal (! isempty (strfind (str, '            Units:  kg')), true);
-%! assert_equal (! isempty (strfind (str, ...
-%!               '            Description:  a weight')), true);
-
-## Test a custom property of the variables is printed and one of the table is not
-%!test
-%! Tp = table ([1; 2; 3], 'VariableNames', {'v'});
-%! Tp = addprop (Tp, {'Sensor', 'Source'}, {'variable', 'table'});
-%! Tp.Properties.CustomProperties.Sensor = {'thermo'};
-%! Tp.Properties.CustomProperties.Source = 'lab notebook';
-%! str = evalc ("summary (Tp);");
-%! assert_equal (! isempty (strfind (str, '        Custom Properties:')), true);
-%! assert_equal (! isempty (strfind (str, ...
-%!               '            Sensor:  thermo')), true);
-%! assert_equal (isempty (strfind (str, 'lab notebook')), true);
-
-## Test the variables block is headed by the second dimension name
-%!test
-%! Td = table ([1; 2; 3], 'VariableNames', {'v'});
-%! Td.Properties.DimensionNames = {'Case', 'Measure'};
-%! str = evalc ("summary (Td);");
-%! assert_equal (! isempty (strfind (str, 'Measure:')), true);
-%! assert_equal (isempty (strfind (str, 'Variables:')), true);
+%! assert_equal (! isempty (strfind (str, '    b: logical (2 true)')), true);
+%! assert_equal (isempty (strfind (str, 'Statistics')), true);
 ## Test 'summary' printed output shows table and variable Description
 %!test
 %! tt = table ([1; 2; 3], 'VariableNames', {'v'});
 %! tt.Properties.Description = 'My table';
 %! tt.Properties.VariableDescriptions = {'a weight'};
 %! str = evalc ("summary (tt);");
-%! assert_equal (! isempty (strfind (str, 'Description:  My table')), true);
-%! assert_equal (! isempty (strfind (str, '    v: 3x1 double')), true);
-%! assert_equal (! isempty (strfind (str, ...
-%!               '            Description:  a weight')), true);
+%! assert_equal (! isempty (strfind (str, 'Description: My table')), true);
+%! assert_equal (! isempty (strfind (str, '    v: double (a weight)')), true);
 ## Test 'summary' printed output for datetime and duration variables
 %!test
 %! sd = evalc (["summary (table (duration ([1; 2; 3], 0, 0), ", ...
 %!              "'VariableNames', {'D'}));"]);
 %! assert_equal (! isempty (strfind (sd, '01:00:00')), true);
 %! assert_equal (! isempty (strfind (sd, '03:00:00')), true);
-%! assert_equal (! isempty (strfind (sd, '    D: 3x1 duration')), true);
+%! assert_equal (! isempty (strfind (sd, '    D: duration')), true);
 %! st = evalc (["summary (table (datetime (2020, 1, [1; 2; 3]), ", ...
 %!              "'VariableNames', {'T'}));"]);
 %! assert_equal (! isempty (strfind (st, '01-Jan-2020')), true);
 %! assert_equal (! isempty (strfind (st, '03-Jan-2020')), true);
-%! assert_equal (! isempty (strfind (st, '    T: 3x1 datetime')), true);
-## Test a calendarDuration has no statistics at all, not even a count
+%! assert_equal (! isempty (strfind (st, '    T: datetime')), true);
+## Test 'summary' printed output for calendarDuration shows only NumMissing
 %!test
 %! sc = evalc (["summary (table (calendarDuration ([1; NaN], 0, 0), ", ...
 %!              "'VariableNames', {'C'}));"]);
-%! assert_equal (! isempty (strfind (sc, '    C: 2x1 calendarDuration')), true);
-%! assert_equal (isempty (strfind (sc, 'Values:')), true);
-%! assert_equal (isempty (strfind (sc, 'NumMissing')), true);
+%! assert_equal (! isempty (strfind (sc, 'NumMissing')), true);
+%! assert_equal (! isempty (strfind (sc, '    C: calendarDuration')), true);
+%! assert_equal (isempty (strfind (sc, 'Median')), true);
 
 ## Test 'height': number of rows, equivalent to size (TBL, 1)
 %!assert_equal (height (T), 5);

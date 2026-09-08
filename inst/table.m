@@ -1343,7 +1343,7 @@ classdef table < tabular
       endif
       s = summaryOf (this);
       if (nargout == 0)
-        summaryPrint (this, s);
+        summaryPrint (this, s, inputname (1));
       elseif (nargout == 1)
         varargout{1} = s;
       else

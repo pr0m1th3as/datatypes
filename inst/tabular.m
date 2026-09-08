@@ -7667,39 +7667,63 @@ classdef (Abstract) tabular
     ## read and which is omitted where there is none.
     ##
     ## @end deftypefn
-    ## Print the summary in the per-variable block form: an optional
-    ## description, the row times where the class has any, then one block per
-    ## variable carrying its size and type, whatever of its metadata is set,
-    ## its custom properties, and the statistics its type has.  A type with no
-    ## statistics gets no 'Values:' block at all rather than an empty one.
-    function summaryPrint (this, s)
+    function summaryPrint (this, s, name)
 
+      sz = size (this);
       fprintf ('\n');
+      if (isempty (name))
+        fprintf ('%dx%d %s\n', sz(1), sz(2), class (this));
+      else
+        fprintf ('%s: %dx%d %s\n', name, sz(1), sz(2), class (this));
+      endif
       if (! isempty (this.Description))
-        fprintf ('Description:  %s\n', this.Description);
+        fprintf ('Description: %s\n', this.Description);
       endif
 
-      ## Row labels that are times are a block of their own, ahead of the
-      ## variables and headed by what they are rather than by their name.
-      [lname, lentry] = summaryLabelEntry (this);
-      if (! isempty (lname))
-        fprintf ('RowTimes:\n');
-        summaryVarBlock (lname, getRowLabels (this), lentry, {});
+      [lname, ~] = summaryLabelEntry (this);
+      hasLabel = ! isempty (lname);
+      if (hasLabel)
+        fprintf ('Row Times:\n');
+        fprintf ('    %s: %s\n', lname, s.(lname).Type);
       endif
 
-      fprintf ('%s:\n', this.DimensionNames{2});
-      cpNames = customPropsOfType (this, 'variable');
-      for v = 1:width (this)
-        nm = this.VariableNames{v};
-        cp = {};
-        for k = 1:numel (cpNames)
-          val = this.CustomProperties.(cpNames{k});
-          if (iscell (val) && numel (val) >= v)
-            cp = [cp, {cpNames{k}, val{v}}];
-          endif
+      if (width (this) > 0)
+        fprintf ('Variables:\n');
+        for v = 1:width (this)
+          nm = this.VariableNames{v};
+          fprintf ('%s\n', summaryVarLine (nm, this.VariableValues{v}, ...
+                                            s.(nm)));
         endfor
-        summaryVarBlock (nm, this.VariableValues{v}, s.(nm), cp);
+      endif
+
+      ## The statistics of everything that has any, one row per column of a
+      ## multi-column variable.  A nested table is left out: its statistics
+      ## are tables themselves and there is no rendering them in a cell.
+      names = {};
+      if (hasLabel)
+        names = {lname};
+      endif
+      for v = 1:width (this)
+        if (! (isa (this.VariableValues{v}, 'table')
+               || isa (this.VariableValues{v}, 'timetable')))
+          names{end+1} = this.VariableNames{v};
+        endif
       endfor
+      ## With no rows there is nothing to report statistics about.
+      if (sz(1) == 0)
+        names = {};
+      endif
+      [labels, cells, cols] = summaryStatRows (s, names);
+      if (isempty (labels))
+        fprintf ('\n');
+        return
+      endif
+      if (hasLabel)
+        fprintf ('Statistics for applicable variables and row times:\n');
+      else
+        fprintf ('Statistics for applicable variables:\n');
+      endif
+      summaryStatTable (labels, cells, cols);
       fprintf ('\n');
 
     endfunction
@@ -10068,151 +10092,90 @@ function sd = colstd (x)
 
 endfunction
 
-## One variable's block: its name, size and type, then whatever of its
-## metadata is set, then its custom properties, then the statistics its type
-## has.  CP is a flat cell of name/value pairs for the variable-scoped custom
-## properties, empty when there are none.
-function summaryVarBlock (name, val, e, cp)
+## How one variable is described on its own line of a summary.
+function out = summaryVarLine (name, val, e)
 
-  fprintf ('    %s: %dx%d %s\n', name, e.Size(1), e.Size(2), ...
-           summaryTypeName (val, e));
-
-  props = {};
-  if (isfield (e, 'Units') && ! isempty (e.Units))
-    props = [props, {'Units', e.Units}];
-  endif
-  if (isfield (e, 'Description') && ! isempty (e.Description))
-    props = [props, {'Description', e.Description}];
-  endif
-  if (isfield (e, 'Continuity') && ! isempty (e.Continuity))
-    props = [props, {'Continuity', e.Continuity}];
-  endif
-  summaryNamedBlock ('Properties', props);
-  summaryNamedBlock ('Custom Properties', cp);
-
-  [labels, cells] = summaryValueRows (val, e);
-  if (isempty (labels))
-    return;
-  endif
-  fprintf ('        Values:\n');
-  ncol = numel (cells{1});
-  lw = max (cellfun (@numel, labels));
-  cw = zeros (1, ncol);
-  for k = 1:ncol
-    for i = 1:numel (cells)
-      cw(k) = max (cw(k), numel (cells{i}{k}));
-    endfor
-  endfor
-  ## A multi-column variable names its columns above the values.
-  if (ncol > 1)
-    head = blanks (12 + lw);
-    rule = blanks (12 + lw);
-    for k = 1:ncol
-      nm = sprintf ('Column %d', k);
-      cw(k) = max (cw(k), numel (nm));
-      head = [head, blanks(4), padleft(nm, cw(k))];
-      rule = [rule, blanks(4), repmat('_', 1, cw(k))];
-    endfor
-    fprintf ('%s\n%s\n', head, rule);
-  endif
-  for i = 1:numel (labels)
-    line = [blanks(12), padright(labels{i}, lw)];
-    for k = 1:ncol
-      line = [line, blanks(4), padleft(cells{i}{k}, cw(k))];
-    endfor
-    fprintf ('%s\n', line);
-  endfor
-
-endfunction
-
-## A named sub-block of name/value lines, printed only when it has any.
-function summaryNamedBlock (head, pairs)
-
-  if (isempty (pairs))
-    return;
-  endif
-  fprintf ('        %s:\n', head);
-  for i = 1:2:numel (pairs)
-    fprintf ('            %s:  %s\n', pairs{i}, summaryCell (pairs{i+1}));
-  endfor
-
-endfunction
-
-## What a variable's type is called on its own line.  An ordinal categorical
-## and a cellstr say more than their class name does.
-function out = summaryTypeName (val, e)
-
-  out = e.Type;
-  if (isa (val, 'categorical') && isordinal (val))
-    out = 'ordinal categorical';
+  t = class (val);
+  nr = size (val, 1);
+  nc = size (val, 2);
+  ## What a type says about itself joins the units and the description inside
+  ## one parenthesis, in that order: 'categorical (none, 2 categories, a
+  ## label)' rather than a bracket apiece.
+  note = '';
+  if (isa (val, 'table') || isa (val, 'timetable') || nr == 0)
+    d = sprintf ('%dx%d %s', nr, nc, t);
+  elseif (nc > 1)
+    d = sprintf ('%d-column %s', nc, t);
+  elseif (islogical (val))
+    d = 'logical';
+    note = sprintf ('%d true', sum (val));
+  elseif (isa (val, 'categorical'))
+    d = 'categorical';
+    if (isordinal (val))
+      d = 'ordinal categorical';
+    endif
+    note = sprintf ('%d categories', numel (categories (val)));
   elseif (iscellstr (val))
-    out = 'cell array of character vectors';
+    d = 'cell array of character vectors';
+  else
+    d = t;
   endif
+  extra = {};
+  if (! isempty (e.Units))
+    extra{end+1} = e.Units;
+  endif
+  if (! isempty (note))
+    extra{end+1} = note;
+  endif
+  if (! isempty (e.Description))
+    extra{end+1} = e.Description;
+  endif
+  if (! isempty (extra))
+    d = sprintf ('%s (%s)', d, strjoin (extra, ', '));
+  endif
+  out = sprintf ('    %s: %s', name, d);
 
 endfunction
 
-## The label and the values of each statistics row a variable has, empty for
-## a type that has none.  One cell per column of a multi-column variable.
-function [labels, cells] = summaryValueRows (val, e)
+## The rows of the statistics block.  A multi-column variable contributes one
+## row per column, named the way a subscript would reach it, and a column of
+## the block is kept only where something reports that statistic.
+function [labels, cells, cols] = summaryStatRows (s, names)
 
+  stats = {'NumMissing', 'Min', 'Median', 'Max', 'Mean', 'Std'};
+  keep = false (1, numel (stats));
   labels = {};
   cells = {};
-  if (isempty (val) || size (val, 1) == 0)
-    return;
-  endif
-  if (isa (val, 'categorical'))
-    cats = e.Categories;
-    for i = 1:numel (cats)
-      labels{end+1} = cats{i};
-      cells{end+1} = {summaryCell(e.Counts(i))};
-    endfor
-    labels = labels(:)';
-    cells = cells(:)';
-  elseif (islogical (val))
-    labels = {'True', 'False'};
-    cells = {{summaryCell(e.True)}, {summaryCell(e.False)}};
-    return;
-  elseif (isnumeric (val) || isa (val, 'datetime') || isa (val, 'duration'))
-    for nm = {'Min', 'Median', 'Max'}
-      if (! isfield (e, nm{1}))
-        continue;
-      endif
-      labels{end+1} = nm{1};
-      cells{end+1} = summaryRowCells (e.(nm{1}));
-    endfor
-    if (isfield (e, 'TimeStep') && ! isempty (e.TimeStep) ...
-        && ! any (isnan (seconds (e.TimeStep))))
-      labels{end+1} = 'TimeStep';
-      cells{end+1} = summaryRowCells (e.TimeStep);
+  for i = 1:numel (names)
+    e = s.(names{i});
+    if (! isfield (e, 'NumMissing'))
+      continue;
     endif
-  else
-    return;
-  endif
-  ## A count of what is missing is reported only when something is.
-  if (isfield (e, 'NumMissing') && any (e.NumMissing > 0))
-    labels{end+1} = 'NumMissing';
-    cells{end+1} = summaryRowCells (e.NumMissing);
-  endif
-  ## Every row carries one cell per column.
-  n = max (cellfun (@numel, cells));
+    nc = max (1, numel (e.NumMissing));
+    for c = 1:nc
+      if (nc == 1)
+        labels{end+1} = names{i};
+      else
+        labels{end+1} = sprintf ('%s(:,%d)', names{i}, c);
+      endif
+      row = cell (1, numel (stats));
+      for k = 1:numel (stats)
+        row{k} = '';
+        if (isfield (e, stats{k}))
+          v = e.(stats{k});
+          if (numel (v) >= c)
+            row{k} = summaryCell (v(c));
+            keep(k) = true;
+          endif
+        endif
+      endfor
+      cells{end+1} = row;
+    endfor
+  endfor
+  cols = stats(keep);
   for i = 1:numel (cells)
-    while (numel (cells{i}) < n)
-      cells{i}{end+1} = '';
-    endwhile
+    cells{i} = cells{i}(keep);
   endfor
-
-endfunction
-
-## One statistic rendered as one cell per column of its variable.
-function out = summaryRowCells (v)
-
-  out = {};
-  for k = 1:numel (v)
-    out{end+1} = summaryCell (v(k));
-  endfor
-  if (isempty (out))
-    out = {''};
-  endif
 
 endfunction
 
@@ -10225,9 +10188,7 @@ function out = summaryCell (v)
       if (isreal (v) && ! isnan (v) && ! isinf (v) && v == fix (v))
         out = sprintf ('%d', v);
       else
-        ## Five significant digits with no trailing zeros, which is what the
-        ## block form shows: 3.5 rather than 3.5000.
-        out = strtrim (sprintf ('%.5g', v));
+        out = strtrim (sprintf ('%.4f', v));
         if (isnan (v))
           out = 'NaN';
         elseif (isinf (v))
@@ -10249,8 +10210,64 @@ function out = summaryCell (v)
 
 endfunction
 
+## Lay the statistics block out in columns, each as wide as the widest thing
+## in it and its heading, values to the right.
+function summaryStatTable (labels, cells, cols)
+
+  lw = 0;
+  for i = 1:numel (labels)
+    lw = max (lw, numel (labels{i}));
+  endfor
+  ## The field is as wide as the widest value in it and no wider: a heading
+  ## wider than that overhangs rather than stretching the field.
+  cw = zeros (1, numel (cols));
+  for k = 1:numel (cols)
+    for i = 1:numel (cells)
+      cw(k) = max (cw(k), numel (cells{i}{k}));
+    endfor
+  endfor
+  ## A column is as wide as the wider of its heading and its values.  The
+  ## values are right-aligned in their own field and the heading is centred
+  ## over it, so a heading wider than anything under it, 'NumMissing' over a
+  ## column of single digits, overhangs on both sides rather than one.
+  bw = zeros (1, numel (cols));
+  for k = 1:numel (cols)
+    bw(k) = max (cw(k), numel (cols{k}));
+  endfor
+  gap = 4;
+  line = blanks (4 + lw);
+  for k = 1:numel (cols)
+    line = [line, blanks(gap), padcentre(cols{k}, bw(k))];
+    gap = 8;
+  endfor
+  fprintf ('%s\n', deblank (line));
+  for i = 1:numel (cells)
+    line = ['    ', padright(labels{i}, lw)];
+    gap = 4;
+    for k = 1:numel (cols)
+      field = padleft (cells{i}{k}, cw(k));
+      line = [line, blanks(gap), padcentre(field, bw(k))];
+      gap = 8;
+    endfor
+    fprintf ('%s\n', deblank (line));
+  endfor
+
+endfunction
+
 function out = padleft (str, w)
   out = [blanks(w - numel (str)), str];
+endfunction
+
+## Centre a field in a wider block, the extra space favouring the left where
+## it cannot be split evenly.
+function out = padcentre (str, w)
+  pad = w - numel (str);
+  if (pad <= 0)
+    out = str;
+    return;
+  endif
+  left = floor (pad / 2);
+  out = [blanks(left), str, blanks(pad - left)];
 endfunction
 
 function out = padright (str, w)
