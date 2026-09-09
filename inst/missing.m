@@ -98,17 +98,18 @@ classdef missing
       out = single (this.data);
     endfunction
 
-    function out = calendarDuration (this)
-      out = calendarDuration (NaN (size (this)), NaN, NaN);
+    ## Each of the four conversions below hands whatever follows the array to
+    ## the constructor it targets rather than refusing it: a missing value
+    ## says nothing about a display format, a time zone or a category set, so
+    ## a conversion naming one has to be able to say so.
+    function out = calendarDuration (this, varargin)
+      out = calendarDuration (NaN (size (this)), NaN, NaN, varargin{:});
     endfunction
 
-    function out = categorical (this)
-      out = categorical (NaN (size (this)));
+    function out = categorical (this, varargin)
+      out = categorical (NaN (size (this)), varargin{:});
     endfunction
 
-    ## Options are handed to the 'datetime' constructor rather than refused:
-    ## a missing value says nothing about the zone or the display format, so
-    ## a conversion naming either has to be able to say so.
     function out = datetime (this, varargin)
       out = NaT (size (this));
       if (nargin > 1)
@@ -119,8 +120,9 @@ classdef missing
     ## 'duration' reads a numeric input as an Nx3 [h m s] matrix, so build one
     ## row per element and restore the shape.  NaN (size (this)) has a single
     ## column and is rejected.
-    function out = duration (this)
-      out = reshape (duration (NaN (numel (this), 3)), size (this));
+    function out = duration (this, varargin)
+      out = reshape (duration (NaN (numel (this), 3), varargin{:}), ...
+                     size (this));
     endfunction
 
     ## A missing value equals nothing, itself included, exactly as NaN does

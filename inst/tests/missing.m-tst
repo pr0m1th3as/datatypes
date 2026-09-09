@@ -77,6 +77,52 @@
 %! assert_equal (D.TimeZone, 'America/New_York');
 %! assert_equal (all (ismissing (D)(:)), true);
 
+## duration: the conversion takes the constructor's options (R2024a)
+%!test
+%! D = duration (missing, 'Format', 'hh:mm');
+%! assert_equal (D.Format, 'hh:mm');
+%! assert_equal (ismissing (D), true);
+%!test
+%! assert_equal (duration (missing, 'Format', 'dd:hh:mm:ss').Format, ...
+%!               'dd:hh:mm:ss');
+%!test
+%! D = duration (repmat (missing, 2, 3), 'Format', 'hh:mm');
+%! assert_equal (size (D), [2, 3]);
+%! assert_equal (D.Format, 'hh:mm');
+
+## calendarDuration: likewise, for a format that names every required
+## character (R2024a).  A format that omits one is refused here where MATLAB
+## warns and repairs it, which the class docstring records.
+%!test
+%! assert_equal (calendarDuration (missing, 'Format', 'mdt').Format, 'mdt');
+%!test
+%! assert_equal (calendarDuration (missing, 'Format', 'ymwdt').Format, ...
+%!               'ymwdt');
+%!test
+%! D = calendarDuration (repmat (missing, 2, 3), 'Format', 'mdt');
+%! assert_equal (size (D), [2, 3]);
+%! assert_equal (D.Format, 'mdt');
+
+## categorical: the category set and the ordinal flag reach the constructor
+## (R2024a)
+%!test
+%! C = categorical (missing, [1 2], {'a', 'b'});
+%! assert_equal (categories (C), {'a'; 'b'});
+%! assert_equal (isordinal (C), false);
+%! assert_equal (ismissing (C), true);
+%!test
+%! C = categorical (missing, 'Ordinal', true);
+%! assert_equal (isordinal (C), true);
+%! assert_equal (isempty (categories (C)), true);
+%!test
+%! C = categorical (missing, [1 2], {'a', 'b'}, 'Ordinal', true);
+%! assert_equal (categories (C), {'a'; 'b'});
+%! assert_equal (isordinal (C), true);
+%!test
+%! C = categorical (repmat (missing, 2, 3), 'Ordinal', true);
+%! assert_equal (size (C), [2, 3]);
+%! assert_equal (isordinal (C), true);
+
 ## cellstr: a missing value carries no text, so it cannot become one
 %!error<missing.cellstr: cannot convert 'missing' to 'cell' type.> cellstr (missing)
 %!error<missing.cellstr: cannot convert 'missing' to 'cell' type.> cellstr (repmat (missing, 2, 3))
