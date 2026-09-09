@@ -656,12 +656,28 @@ classdef (Abstract) tabular
             tbl = deleteSubs (this, s.subs{1}, s.subs{2});
             return;
           endif
-          [ixRow, ixVar] = resolveRowVarRefs (this, s.subs{1}, s.subs{2});
+          [ixRow, ixVar, newLabels] = resolveRowVarRefs (this, s.subs{1}, ...
+                                                         s.subs{2});
           ## A row index past the end grows the object.  The variables grow
           ## by being assigned into, but the row labels are not indexed here
           ## and would be left behind, so the height they carry is worked out
           ## now and the labels are extended once the variables are in.
           newHeight = growthHeight (this, ixRow);
+          ## A label the object does not carry names a row to add.  The rows
+          ## go on the end, in the order the reference named them, and take
+          ## the places the resolver left marked.
+          if (! isempty (newLabels))
+            nNew = size (newLabels, 1);
+            base = height (this);
+            ixRow(isnan (ixRow)) = (base + 1):(base + nNew);
+            labels = getRowLabels (this);
+            this = setRowLabels (this, [labels(:); newLabels(:)]);
+            tbl = this;
+            newHeight = max (newHeight, base + nNew);
+            labelsAdded = true;
+          else
+            labelsAdded = false;
+          endif
           ## Check input data matches referenced elements
           if (! isequal (size (rhs), [numel(ixRow), numel(ixVar)]))
             error (strcat ("%s.subsasgn: input data mismatch indexed", ...
@@ -713,7 +729,7 @@ classdef (Abstract) tabular
               tbl.VariableValues{ixVar(i)} = varData;
             endfor
           endif
-          if (newHeight > 0)
+          if (newHeight > 0 && ! labelsAdded)
             tbl = growRowLabels (tbl, newHeight);
           endif
 
@@ -6700,8 +6716,15 @@ classdef (Abstract) tabular
     endfunction
 
     ## Resolve both row and variable references to indices.
-    function [ixRow, ixVar] = resolveRowVarRefs (this, rowRef, varRef)
+    function [ixRow, ixVar, newLabels] = resolveRowVarRefs (this, rowRef, ...
+                                                            varRef)
       clstype = class (this);
+      newLabels = [];
+      ## A caller that asks for NEWLABELS is assigning, and takes the labels
+      ## the object does not carry so that it can add the rows they name.
+      ## One that does not is reading, and the class says whether a label it
+      ## does not carry is nothing or is an error.
+      wantNew = nargout > 2;
       if (isnumeric (rowRef) || islogical (rowRef))
         ixRow = rowRef;
       elseif ((ischar (rowRef) || isa (rowRef, 'string'))
@@ -6712,7 +6735,11 @@ classdef (Abstract) tabular
         ixRow = 1:height (this);
       elseif (ischar (rowRef) || iscellstr (rowRef) || isa (rowRef, 'string'))
         rowRef = cellstr (rowRef);
-        ixRow = resolveRowRef (this, rowRef);
+        if (wantNew)
+          [ixRow, newLabels] = resolveRowRef (this, rowRef);
+        else
+          ixRow = resolveRowRef (this, rowRef);
+        endif
       elseif (isa (rowRef, 'rowfilter'))
         ## A filter is a condition on the variables and reads no row labels,
         ## so it selects from any tabular class the same way.
@@ -6725,7 +6752,11 @@ classdef (Abstract) tabular
         ## Anything else is a row reference of a kind only the subclass can
         ## read: a row time, a range of them, a tolerant match.  A class that
         ## does not take the kind offered refuses it in its own hook.
-        ixRow = resolveRowRef (this, rowRef);
+        if (wantNew)
+          [ixRow, newLabels] = resolveRowRef (this, rowRef);
+        else
+          ixRow = resolveRowRef (this, rowRef);
+        endif
       endif
       ixVar = resolveVarRef (this, varRef);
     endfunction

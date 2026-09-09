@@ -7304,6 +7304,33 @@
 %! assert_equal (T.b, logical ([1;0;1;0;1]));
 
 
+## A row name is matched against the names there are.  Reading one the table
+## does not carry raises, but assigning to it asks for the row and adds it.
+## Measured on MATLAB R2024a.
+%!test  # assigning at an unknown name appends the row with that name
+%! T = table ([1;2;3], 'RowNames', {'a';'b';'c'});
+%! T('z',:) = {9};
+%! assert_equal (height (T), 4);
+%! assert_equal (T.Properties.RowNames, {'a';'b';'c';'z'});
+%! assert_equal (T.Var1, [1;2;3;9]);
+%!test  # a reference mixing a known and an unknown name does both
+%! T = table ([1;2;3], 'RowNames', {'a';'b';'c'});
+%! T({'a','z'},:) = {7; 8};
+%! assert_equal (T.Properties.RowNames, {'a';'b';'c';'z'});
+%! assert_equal (T.Var1, [7;2;3;8]);
+%!test  # two unknown names add two rows, in the order they were named
+%! T = table ([1;2;3], 'RowNames', {'a';'b';'c'});
+%! T({'y','z'},:) = {7; 8};
+%! assert_equal (T.Properties.RowNames, {'a';'b';'c';'y';'z'});
+%! assert_equal (T.Var1, [1;2;3;7;8]);
+
+## Test reading an unknown row name is still refused
+%!error <table: no such named row in table: 'z'> ...
+%! T = table ([1;2;3], 'RowNames', {'a';'b';'c'}); T('z',:);
+%!error <table: no such named row in table: 'z'> ...
+%! T = table ([1;2;3], 'RowNames', {'a';'b';'c'}); T{'z','Var1'};
+
+
 ## Test input validation for 'subsasgn' with '()' indexing
 %!error <table.subsasgn: '\(\)' indexing of table requires exactly two arguments.> ...
 %! T = table ([1;2;3]); T(1) = 5;

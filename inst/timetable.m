@@ -540,7 +540,8 @@ classdef timetable < tabular
     ## Row times need not be unique, so one reference may pick out several
     ## rows, and they come back in reference order.  Raises naming every
     ## reference that matches none.
-    function ixRows = resolveRowRef (this, rowRef)
+    function [ixRows, newLabels] = resolveRowRef (this, rowRef)
+      newLabels = rowRef([]);
       ## A range whose bounds are event filters reads them against this
       ## timetable, which is what carries the events they name.
       if (isa (rowRef, 'timerange') && hasEventBounds (rowRef))
@@ -550,19 +551,28 @@ classdef timetable < tabular
         ixRows = rowIndices (rowRef, this.RowTimes);
         return
       endif
+      ## A row time is matched against the times there are, not read as a
+      ## position, so a time the timetable does not carry simply matches
+      ## nothing.  Reading it gives no rows; assigning to it asks for the
+      ## row, and the caller takes the second output to add it.  A NaN
+      ## marks where an unmatched time stood, so the caller can put the row
+      ## it adds in the place the reference named.
       ref = rowRefTimes (rowRef, this.RowTimes);
-      ixRows = [];
-      unmatched = {};
+      ixRows = zeros (0, 1);
+      keep = true (numel (ref), 1);
       for i = 1:numel (ref)
         hit = find (this.RowTimes == ref(i));
         if (isempty (hit))
-          unmatched{end+1} = cellstr (ref(i)){1};
+          keep(i) = false;
+          ixRows = [ixRows; NaN];
+        else
+          ixRows = [ixRows; hit(:)];
         endif
-        ixRows = [ixRows; hit(:)];
       endfor
-      if (! isempty (unmatched))
-        error ("timetable: no such row time in timetable: '%s'", ...
-               strjoin (unmatched, ", "));
+      if (nargout > 1)
+        newLabels = ref(! keep);
+      else
+        ixRows = ixRows(! isnan (ixRows));
       endif
     endfunction
 

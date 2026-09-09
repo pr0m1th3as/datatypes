@@ -324,7 +324,8 @@ classdef table < tabular
     ## returns their positions.  Raises when the table has no row names at all
     ## to match against, and again naming every reference that is not one of
     ## them.  Row names are unique, so each match is a single row.
-    function ixRows = resolveRowRef (this, rowRef)
+    function [ixRows, newLabels] = resolveRowRef (this, rowRef)
+      newLabels = {};
       ## A table's rows are labelled by name, so a row time is no more a
       ## reference to one of them than a struct is.
       if (! iscellstr (rowRef))
@@ -335,9 +336,20 @@ classdef table < tabular
         error ("table: this table has no RowNames.");
       endif
       [tf, ixRows] = ismember (rowRef, this.RowNames);
+      ixRows = ixRows(:);
+      tf = tf(:);
       if (! all (tf))
-        error ("table: no such named row in table: '%s'", ...
-               strjoin (rowRef(! tf), ", "));
+        ## A name the table does not carry is a name to add when a row is
+        ## being assigned, and nothing at all when one is being read.  The
+        ## caller says which by asking for the second output.  A NaN marks
+        ## the place the reference named, so the row added lands there.
+        if (nargout < 2)
+          error ("table: no such named row in table: '%s'", ...
+                 strjoin (rowRef(! tf), ", "));
+        endif
+        newLabels = rowRef(! tf);
+        newLabels = newLabels(:);
+        ixRows(! tf) = NaN;
       endif
     endfunction
 
