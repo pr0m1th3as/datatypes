@@ -4545,6 +4545,475 @@
 %! assert_equal (table2timetable (T).Properties.TimeStep, hours (1));
 
 ################################################################################
+## A zoned timetable is spaced in absolute time, so an hourly grid crossing a
+## clock change keeps its one-hour step while the wall clock skips an hour in
+## spring and repeats one in autumn.  Measured on MATLAB R2024a.
+## Test the spring gap shows in the wall clock, not in the spacing
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! assert_equal (hour (t)', [0, 1, 3, 4, 5, 6]);
+%! assert_equal (diff (posixtime (t))', [3600, 3600, 3600, 3600, 3600]);
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! assert_equal (A.Properties.TimeStep, hours (1));
+%! assert_equal (isregular (A, 'time'), true);
+%! assert_equal (isregular (A, 'days'), false);
+## Test the autumn repeat shows the same way
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 11, 3, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! assert_equal (hour (t)', [0, 1, 1, 2, 3, 4]);
+%! assert_equal (diff (posixtime (t))', [3600, 3600, 3600, 3600, 3600]);
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 11, 3, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! assert_equal (A.Properties.TimeStep, hours (1));
+%! assert_equal (isregular (A), true);
+
+## Test 'head' and 'tail' carry the row times across the gap unchanged
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! assert_equal (head (A, 3).Properties.RowTimes, t(1:3));
+%! assert_equal (tail (A, 3).Properties.RowTimes, t(4:6));
+%! assert_equal (head (A, 3).Properties.TimeStep, hours (1));
+## Test descending order reverses the times and the step alike
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! D = sortrows (A, 'Time', 'descend');
+%! assert_equal (D.Properties.RowTimes, flipud (t));
+%! assert_equal (D.Properties.TimeStep, hours (-1));
+%! assert_equal (isregular (D), true);
+## Test 'topkrows' takes the largest and reports the step it is left with
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! K = topkrows (A, 2, 'v');
+%! assert_equal (K.Properties.RowTimes, [t(6); t(5)]);
+%! assert_equal (K.v, [6; 5]);
+
+## Test repeating rows repeats their times and gives up the step
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! R = repelem (A, 2, 1);
+%! assert_equal (height (R), 12);
+%! assert_equal (R.Properties.RowTimes, repelem (t, 2, 1));
+%! assert_equal (isregular (R), false);
+%! assert_equal (ismissing (R.Properties.TimeStep), true);
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! R = repmat (A, 2, 1);
+%! assert_equal (R.Properties.RowTimes, [t; t]);
+%! assert_equal (isregular (R), false);
+## Test a row added on the grid keeps the timetable regular
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! B = timetable (7, 'RowTimes', t(6) + hours (1), 'VariableNames', {'v'});
+%! V = [A; B];
+%! assert_equal (height (V), 7);
+%! assert_equal (V.Properties.TimeStep, hours (1));
+%! assert_equal (isregular (V), true);
+## Test 'unique' takes a doubled block back down to its rows
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! U = unique ([A; A]);
+%! assert_equal (U.Properties.RowTimes, t);
+%! assert_equal (isregular (U), true);
+
+## Test 'rmmissing' drops the row and the time that labelled it
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! A.v(3) = NaN;
+%! R = rmmissing (A);
+%! assert_equal (R.Properties.RowTimes, t([1, 2, 4, 5, 6]));
+%! assert_equal (isregular (R), false);
+## Test 'fillmissing' interpolates against absolute time, not the wall clock
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! A.v(3) = NaN;
+%! F = fillmissing (A, 'linear');
+%! assert_equal (F.v, (1:6)');
+%! assert_equal (F.Properties.TimeStep, hours (1));
+
+## Test 'lag' shifts the values and leaves the times where they were
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! L = lag (A, 1);
+%! assert_equal (L.Properties.RowTimes, t);
+%! assert_equal (L.v, [NaN; 1; 2; 3; 4; 5]);
+%! assert_equal (L.Properties.TimeStep, hours (1));
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 11, 3, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! assert_equal (lag (A, 1).v, [NaN; 1; 2; 3; 4; 5]);
+
+## Test an hourly grid follows absolute hours, so the gap adds no row
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! R = retime (A, 'hourly', 'sum');
+%! assert_equal (height (R), 6);
+%! assert_equal (R.Properties.RowTimes, t);
+## Test the repeated wall-clock hour adds no row either
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 11, 3, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! assert_equal (height (retime (A, 'hourly', 'sum')), 6);
+## Test a daily grid gathers the whole short day into one row
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! R = retime (A, 'daily', 'sum');
+%! assert_equal (height (R), 1);
+%! assert_equal (R.v, 21);
+## Test the long day gathers the same way
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 11, 3, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! assert_equal (retime (A, 'daily', 'sum').v, 21);
+## Test 'synchronize' lays two zoned timetables on the union of their times
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! n = datetime (2024, 11, 3, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! B = timetable ((1:6)', 'RowTimes', n, 'VariableNames', {'w'});
+%! S = synchronize (A, B, 'union', 'fillwithmissing');
+%! assert_equal (height (S), 12);
+%! assert_equal (S.Properties.RowTimes, [t; n]);
+
+## Test the apply methods carry the times and the step through
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! V = varfun (@(x) x * 2, A);
+%! assert_equal (V.Properties.RowTimes, t);
+%! assert_equal (V.Properties.TimeStep, hours (1));
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! R = rowfun (@(x) x * 2, A, 'OutputFormat', 'timetable');
+%! assert_equal (R.Properties.RowTimes, t);
+## Test grouping by the row times bins them by the wall clock
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! G = groupsummary (A, 'Time', 'hour', 'sum');
+%! assert_equal (height (G), 6);
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! assert_equal (height (groupsummary (A, 'Time', 'day', 'sum')), 1);
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! G = grouptransform (A, 'Time', 'hour', 'norm');
+%! assert_equal (height (G), 6);
+%! assert_equal (G.v, ones (6, 1));
+
+## Test the zone survives every method that rebuilds the row times
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! D = sortrows (A, 'Time', 'descend');
+%! assert_equal (D.Properties.RowTimes.TimeZone, z);
+%! assert_equal (lag (A, 1).Properties.RowTimes.TimeZone, z);
+%! assert_equal (retime (A, 'hourly', 'sum').Properties.RowTimes.TimeZone, z);
+## Test moving and converting variables leaves the times alone
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! assert_equal (movevars (A, 'v', 'Before', 'v').Properties.TimeStep, ...
+%!               hours (1));
+%! assert_equal (class (convertvars (A, 'v', 'single').v), 'single');
+## Test 'stack' repeats the row times once per stacked variable
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', (11:16)', 'RowTimes', t, ...
+%!                'VariableNames', {'v', 'w'});
+%! S = stack (A, {'v', 'w'});
+%! assert_equal (height (S), 12);
+## Test a join on a key keeps the left operand's zoned times
+%!test
+%! z = 'America/New_York';
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', z) + hours ((0:5)');
+%! A = timetable ((1:6)', (1:6)', 'RowTimes', t, 'VariableNames', {'v', 'k'});
+%! B = timetable ((1:6)', (1:6)', 'RowTimes', t, 'VariableNames', {'u', 'k'});
+%! J = innerjoin (A, B, 'Keys', 'k');
+%! assert_equal (height (J), 6);
+%! assert_equal (J.Properties.RowTimes.TimeZone, z);
+
+################################################################################
+##                **    The sample rate kept or given up    **                ##
+################################################################################
+
+## A declared 'SampleRate' is metadata a row-touching method must either keep
+## or give up, and it travels with 'TimeStep': the two report the same
+## spacing, one in hertz and one as a duration.  Measured on MATLAB R2024a.
+## Test a declared rate reads back beside the step it means
+%!test
+%! R = timetable ((1:6)', 'SampleRate', 2);
+%! assert_equal (R.Properties.SampleRate, 2);
+%! assert_equal (R.Properties.TimeStep, seconds (0.5));
+%! assert_equal (isregular (R), true);
+%!test
+%! R = timetable ((1:6)', 'SampleRate', 2, 'StartTime', datetime (2024, 1, 1));
+%! assert_equal (R.Properties.SampleRate, 2);
+%! assert_equal (R.Properties.TimeStep, seconds (0.5));
+
+## Test taking rows off either end keeps the rate
+%!test
+%! R = timetable ((1:6)', 'SampleRate', 2);
+%! assert_equal (head (R, 3).Properties.SampleRate, 2);
+%! assert_equal (tail (R, 3).Properties.SampleRate, 2);
+%!test
+%! R = timetable ((1:6)', 'SampleRate', 2);
+%! assert_equal (R(1:3, :).Properties.SampleRate, 2);
+%! assert_equal (R(2, :).Properties.SampleRate, 2);
+## Test a subset taken every other row halves the rate
+%!test
+%! R = timetable ((1:6)', 'SampleRate', 2);
+%! S = R([1, 3, 5], :);
+%! assert_equal (S.Properties.SampleRate, 1);
+%! assert_equal (S.Properties.TimeStep, seconds (1));
+## Test sorting keeps it, and descending order negates it
+%!test
+%! R = timetable ((1:6)', 'SampleRate', 2);
+%! assert_equal (sortrows (R).Properties.SampleRate, 2);
+%! assert_equal (sortrows (R, 'Time', 'descend').Properties.SampleRate, -2);
+%!test
+%! R = timetable ((1:6)', 'SampleRate', 2);
+%! assert_equal (topkrows (R, 2, 'Var1').Properties.SampleRate, -2);
+## Test 'unique' over already unique rows keeps it
+%!test
+%! R = timetable ((1:6)', 'SampleRate', 2);
+%! assert_equal (unique (R).Properties.SampleRate, 2);
+
+## Test the methods that only touch variables keep it
+%!test
+%! R = timetable ((1:6)', 'SampleRate', 2);
+%! assert_equal (addvars (R, (7:12)').Properties.SampleRate, 2);
+%! assert_equal (removevars (addvars (R, (7:12)'), 2).Properties.SampleRate, 2);
+%!test
+%! R = timetable ((1:6)', 'SampleRate', 2);
+%! M = movevars (R, 'Var1', 'Before', 'Var1');
+%! assert_equal (M.Properties.SampleRate, 2);
+%! assert_equal (convertvars (R, 'Var1', 'single').Properties.SampleRate, 2);
+%!test
+%! R = timetable ((1:6)', 'SampleRate', 2);
+%! assert_equal (varfun (@(x) x * 2, R).Properties.SampleRate, 2);
+%! assert_equal (rowfun (@(x) x * 2, R, 'OutputFormat', ...
+%!                       'timetable').Properties.SampleRate, 2);
+## Test the methods that only touch values keep it
+%!test
+%! R = timetable ((1:6)', 'SampleRate', 2);
+%! assert_equal (rmmissing (R).Properties.SampleRate, 2);
+%! assert_equal (fillmissing (R, 'linear').Properties.SampleRate, 2);
+%! assert_equal (lag (R, 1).Properties.SampleRate, 2);
+
+## Test retiming onto the same grid keeps it and onto a coarser one resets it
+%!test
+%! R = timetable ((1:6)', 'SampleRate', 2);
+%! S = retime (R, seconds ((0:0.5:2.5)'), 'sum');
+%! assert_equal (S.Properties.SampleRate, 2);
+%!test
+%! R = timetable ((1:6)', 'SampleRate', 2);
+%! S = retime (R, 'regular', 'sum', 'SampleRate', 1);
+%! assert_equal (S.Properties.SampleRate, 1);
+%! assert_equal (S.Properties.TimeStep, seconds (1));
+%!test
+%! R = timetable ((1:6)', 'SampleRate', 2);
+%! W = renamevars (R, 'Var1', 'w');
+%! assert_equal (synchronize (R, W).Properties.SampleRate, 2);
+
+## Test the methods that break the spacing give the rate up with the step
+%!test
+%! R = timetable ((1:6)', 'SampleRate', 2);
+%! V = [R; R];
+%! assert_equal (height (V), 12);
+%! assert_equal (V.Properties.SampleRate, NaN);
+%! assert_equal (ismissing (V.Properties.TimeStep), true);
+%! assert_equal (isregular (V), false);
+%!test
+%! R = timetable ((1:6)', 'SampleRate', 2);
+%! assert_equal (repelem (R, 2, 1).Properties.SampleRate, NaN);
+%! assert_equal (repmat (R, 2, 1).Properties.SampleRate, NaN);
+%!test
+%! R = timetable ((1:6)', 'SampleRate', 2);
+%! D = R;
+%! D(3, :) = [];
+%! assert_equal (height (D), 5);
+%! assert_equal (seconds (D.Properties.RowTimes), [0; 0.5; 1.5; 2; 2.5]);
+%! assert_equal (D.Properties.SampleRate, NaN);
+## Test repeating the rows repeats their times
+%!test
+%! R = timetable ((1:6)', 'SampleRate', 2);
+%! assert_equal (seconds (repelem (R, 2, 1).Properties.RowTimes)', ...
+%!               [0, 0, 0.5, 0.5, 1, 1, 1.5, 1.5, 2, 2, 2.5, 2.5]);
+## Test assigning the row times outright reads the rate off the new ones
+%!test
+%! R = timetable ((1:6)', 'SampleRate', 2);
+%! R.Properties.RowTimes = seconds ((0:5)' * 3);
+%! assert_equal (R.Properties.TimeStep, seconds (3));
+%! assert (R.Properties.SampleRate, 1/3, 1e-12);
+## Test growing on the grid keeps the rate
+%!test
+%! R = timetable ((1:6)', 'SampleRate', 2);
+%! R(7, :) = {99};
+%! assert_equal (height (R), 7);
+%! assert_equal (R.Properties.SampleRate, 2);
+
+################################################################################
+##                **    Time range and brace subscripts    **                 ##
+################################################################################
+
+## A time range subscript reads the four interval types as it says, and the
+## result is an ordinary timetable carrying whatever step is left.  Measured
+## on MATLAB R2024a.
+## Test the default range takes the start and leaves the end out
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:5)');
+%! C = timetable ((1:6)', (11:16)', 'RowTimes', t, ...
+%!                'VariableNames', {'v', 'w'});
+%! R = C(timerange (t(2), t(5)), :);
+%! assert_equal (R.Properties.RowTimes, t(2:4));
+%! assert_equal (R.v, [2; 3; 4]);
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:5)');
+%! C = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! assert_equal (C(timerange (t(2), t(5), 'closed'), :).v, [2; 3; 4; 5]);
+%! assert_equal (C(timerange (t(2), t(5), 'open'), :).v, [3; 4]);
+%! assert_equal (C(timerange (t(2), t(5), 'openleft'), :).v, [3; 4; 5]);
+%! assert_equal (C(timerange (t(2), t(5), 'openright'), :).v, [2; 3; 4]);
+## Test the range result keeps the step the rows it kept have
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:5)');
+%! C = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! R = C(timerange (t(2), t(5)), :);
+%! assert_equal (R.Properties.TimeStep, hours (1));
+%! assert_equal (isregular (R), true);
+## Test a range running backwards selects nothing
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:5)');
+%! C = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! assert_equal (height (C(timerange (t(5), t(2)), :)), 0);
+
+## Test a vector of row times selects the rows carrying them
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:5)');
+%! C = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! R = C([t(2); t(5)], :);
+%! assert_equal (R.Properties.RowTimes, [t(2); t(5)]);
+%! assert_equal (R.v, [2; 5]);
+## Test one row time gives the one row
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:5)');
+%! C = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! assert_equal (C(t(2), :).v, 2);
+## Test naming a time twice takes its row twice
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:5)');
+%! C = timetable ((1:6)', 'RowTimes', t, 'VariableNames', {'v'});
+%! assert_equal (height (C([t(2); t(2)], :)), 2);
+## Test duration row times are subscripted the same way
+%!test
+%! D = timetable ((1:6)', 'RowTimes', seconds ((0:5)'), ...
+%!                'VariableNames', {'v'});
+%! assert_equal (D(seconds ([1; 3]), :).v, [2; 4]);
+%! assert_equal (D(timerange (seconds (1), seconds (4)), :).v, [2; 3; 4]);
+%! assert_equal (D(timerange (seconds (1), seconds (4), 'closed'), :).v, ...
+%!               [2; 3; 4; 5]);
+%!test
+%! D = timetable ((1:6)', 'RowTimes', seconds ((0:5)'), ...
+%!                'VariableNames', {'v'});
+%! R = D(timerange (seconds (1), seconds (4)), :);
+%! assert_equal (R.Properties.TimeStep, seconds (1));
+
+## Test brace reference brings back the values without the timetable
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:5)');
+%! C = timetable ((1:6)', (11:16)', 'RowTimes', t, ...
+%!                'VariableNames', {'v', 'w'});
+%! assert_equal (C{:, :}, [(1:6)', (11:16)']);
+%! assert_equal (C{:, 'v'}, (1:6)');
+## Test a brace reference takes a row time subscript too
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:5)');
+%! C = timetable ((1:6)', (11:16)', 'RowTimes', t, ...
+%!                'VariableNames', {'v', 'w'});
+%! assert_equal (C{[t(2); t(5)], 'v'}, [2; 5]);
+%! assert_equal (C{timerange (t(2), t(5)), :}, [(2:4)', (12:14)']);
+## Test 'end' counts the rows in a brace reference
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:5)');
+%! C = timetable ((1:6)', (11:16)', 'RowTimes', t, ...
+%!                'VariableNames', {'v', 'w'});
+%! assert_equal (C{end, :}, [6, 16]);
+%!test
+%! D = timetable ((1:6)', 'RowTimes', seconds ((0:5)'), ...
+%!                'VariableNames', {'v'});
+%! assert_equal (D{seconds ([1; 3]), 'v'}, [2; 4]);
+
+## Test a variable type subscript takes the variables of that type
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:5)');
+%! C = timetable ((1:6)', (11:16)', 'RowTimes', t, ...
+%!                'VariableNames', {'v', 'w'});
+%! assert_equal (C(:, vartype ('numeric')).Properties.VariableNames, ...
+%!               {'v', 'w'});
+%! assert_equal (width (C(:, vartype ('duration'))), 0);
+%! assert_equal (width (C(:, vartype ('cell'))), 0);
+## Test it sorts a mixed timetable into its types
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:5)');
+%! C = timetable ((1:6)', (11:16)', 'RowTimes', t, ...
+%!                'VariableNames', {'v', 'w'});
+%! C.d = seconds ((1:6)');
+%! assert_equal (C(:, vartype ('numeric')).Properties.VariableNames, ...
+%!               {'v', 'w'});
+%! assert_equal (C(:, vartype ('duration')).Properties.VariableNames, {'d'});
+## Test a variable type subscript reads in a brace reference as well
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:5)');
+%! C = timetable ((1:6)', (11:16)', 'RowTimes', t, ...
+%!                'VariableNames', {'v', 'w'});
+%! assert_equal (C{:, vartype ('numeric')}, [(1:6)', (11:16)']);
+
 ##                     **    The file round trips    **                       ##
 ################################################################################
 
