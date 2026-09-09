@@ -4906,6 +4906,11 @@ classdef timetable < tabular
       endif
 
       tbl = table (vals{:}, 'VariableNames', varNames);
+      ## The rows stop being labelled by time and are labelled by nothing, so
+      ## the first dimension takes a table's own default name; the second
+      ## goes on naming what it named, being a name for the variables and not
+      ## for the rows.
+      tbl.Properties.DimensionNames = {'Row', this.DimensionNames{2}};
       if (! isempty (this.VariableDescriptions))
         tbl.Properties.VariableDescriptions = shiftMeta ( ...
                          this.VariableDescriptions, ConvertRowTimes, '');

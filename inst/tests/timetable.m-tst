@@ -4545,6 +4545,180 @@
 %! assert_equal (table2timetable (T).Properties.TimeStep, hours (1));
 
 ################################################################################
+##                        **    The table round trip    **                    ##
+################################################################################
+
+## What survives 'timetable2table' and comes back through 'table2timetable'.
+## Every expectation was measured on MATLAB R2024a.
+
+## Test the row times become the first variable, under their own name
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:3)';
+%! TT = timetable (t, (1:4)', {'p'; 'q'; 'r'; 's'}, ...
+%!                 'VariableNames', {'a', 'b'});
+%! TT.Properties.DimensionNames = {'Stamp', 'Vars'};
+%! TT.Properties.VariableUnits = {'m', ''};
+%! TT.Properties.VariableDescriptions = {'first', 'second'};
+%! TT.Properties.VariableContinuity = {'continuous', 'unset'};
+%! TT.Properties.Description = 'a description';
+%! TT = addprop (TT, {'tp', 'vp'}, {'table', 'variable'});
+%! TT.Properties.CustomProperties.tp = 'table scoped';
+%! TT.Properties.CustomProperties.vp = {'u', 'v'};
+%! T = timetable2table (TT);
+%! assert_equal (T.Properties.VariableNames, {'Stamp', 'a', 'b'});
+%! assert_equal (class (T.Stamp), 'datetime');
+%! assert_equal (isempty (T.Properties.RowNames), true);
+## Test the rows stop being labelled by time and the variables keep their name
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:3)';
+%! TT = timetable (t, (1:4)', {'p'; 'q'; 'r'; 's'}, ...
+%!                 'VariableNames', {'a', 'b'});
+%! TT.Properties.DimensionNames = {'Stamp', 'Vars'};
+%! TT.Properties.VariableUnits = {'m', ''};
+%! TT.Properties.VariableDescriptions = {'first', 'second'};
+%! TT.Properties.VariableContinuity = {'continuous', 'unset'};
+%! TT.Properties.Description = 'a description';
+%! TT = addprop (TT, {'tp', 'vp'}, {'table', 'variable'});
+%! TT.Properties.CustomProperties.tp = 'table scoped';
+%! TT.Properties.CustomProperties.vp = {'u', 'v'};
+%! T = timetable2table (TT);
+%! assert_equal (T.Properties.DimensionNames, {'Row', 'Vars'});
+## Test the variable metadata shifts along with the variables
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:3)';
+%! TT = timetable (t, (1:4)', {'p'; 'q'; 'r'; 's'}, ...
+%!                 'VariableNames', {'a', 'b'});
+%! TT.Properties.DimensionNames = {'Stamp', 'Vars'};
+%! TT.Properties.VariableUnits = {'m', ''};
+%! TT.Properties.VariableDescriptions = {'first', 'second'};
+%! TT.Properties.VariableContinuity = {'continuous', 'unset'};
+%! TT.Properties.Description = 'a description';
+%! TT = addprop (TT, {'tp', 'vp'}, {'table', 'variable'});
+%! TT.Properties.CustomProperties.tp = 'table scoped';
+%! TT.Properties.CustomProperties.vp = {'u', 'v'};
+%! T = timetable2table (TT);
+%! assert_equal (T.Properties.VariableUnits, {'', 'm', ''});
+%! assert_equal (T.Properties.VariableDescriptions, {'', 'first', 'second'});
+%! assert_equal (T.Properties.Description, 'a description');
+## Test a variable-scoped custom property gains an empty entry for the times
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:3)';
+%! TT = timetable (t, (1:4)', {'p'; 'q'; 'r'; 's'}, ...
+%!                 'VariableNames', {'a', 'b'});
+%! TT.Properties.DimensionNames = {'Stamp', 'Vars'};
+%! TT.Properties.VariableUnits = {'m', ''};
+%! TT.Properties.VariableDescriptions = {'first', 'second'};
+%! TT.Properties.VariableContinuity = {'continuous', 'unset'};
+%! TT.Properties.Description = 'a description';
+%! TT = addprop (TT, {'tp', 'vp'}, {'table', 'variable'});
+%! TT.Properties.CustomProperties.tp = 'table scoped';
+%! TT.Properties.CustomProperties.vp = {'u', 'v'};
+%! v = timetable2table (TT).Properties.CustomProperties.vp;
+%! assert_equal (numel (v), 3);
+%! assert_equal (isempty (v{1}), true);
+%! assert_equal (class (v{1}), 'double');
+%! assert_equal (v(2:3), {'u', 'v'});
+%! assert_equal (timetable2table (TT).Properties.CustomProperties.tp, ...
+%!               'table scoped');
+
+## Test the trip back restores everything it took
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:3)';
+%! TT = timetable (t, (1:4)', {'p'; 'q'; 'r'; 's'}, ...
+%!                 'VariableNames', {'a', 'b'});
+%! TT.Properties.DimensionNames = {'Stamp', 'Vars'};
+%! TT.Properties.VariableUnits = {'m', ''};
+%! TT.Properties.VariableDescriptions = {'first', 'second'};
+%! TT.Properties.VariableContinuity = {'continuous', 'unset'};
+%! TT.Properties.Description = 'a description';
+%! TT = addprop (TT, {'tp', 'vp'}, {'table', 'variable'});
+%! TT.Properties.CustomProperties.tp = 'table scoped';
+%! TT.Properties.CustomProperties.vp = {'u', 'v'};
+%! B = table2timetable (timetable2table (TT));
+%! assert_equal (class (B), 'timetable');
+%! assert_equal (B.Properties.VariableNames, {'a', 'b'});
+%! assert_equal (B.Properties.DimensionNames, {'Stamp', 'Vars'});
+%! assert_equal (B.Properties.VariableUnits, {'m', ''});
+%! assert_equal (B.Properties.VariableDescriptions, {'first', 'second'});
+%! assert_equal (cellstr (B.Properties.VariableContinuity), ...
+%!               {'continuous', 'unset'});
+%! assert_equal (B.Properties.Description, 'a description');
+%! assert_equal (B.Properties.CustomProperties.tp, 'table scoped');
+%! assert_equal (B.Properties.CustomProperties.vp, {'u', 'v'});
+%! assert_equal (B.Properties.TimeStep, hours (1));
+%! assert_equal (B.Properties.RowTimes, t);
+## Test the round trip gives back what it was given
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:3)';
+%! TT = timetable (t, (1:4)', {'p'; 'q'; 'r'; 's'}, ...
+%!                 'VariableNames', {'a', 'b'});
+%! TT.Properties.DimensionNames = {'Stamp', 'Vars'};
+%! TT.Properties.VariableUnits = {'m', ''};
+%! TT.Properties.VariableDescriptions = {'first', 'second'};
+%! TT.Properties.VariableContinuity = {'continuous', 'unset'};
+%! TT.Properties.Description = 'a description';
+%! TT = addprop (TT, {'tp', 'vp'}, {'table', 'variable'});
+%! TT.Properties.CustomProperties.tp = 'table scoped';
+%! TT.Properties.CustomProperties.vp = {'u', 'v'};
+%! assert_equal (isequal (table2timetable (timetable2table (TT)), TT), true);
+
+## Test 'ConvertRowTimes' false drops the times and keeps the rest
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:3)';
+%! TT = timetable (t, (1:4)', {'p'; 'q'; 'r'; 's'}, ...
+%!                 'VariableNames', {'a', 'b'});
+%! TT.Properties.DimensionNames = {'Stamp', 'Vars'};
+%! TT.Properties.VariableUnits = {'m', ''};
+%! TT.Properties.VariableDescriptions = {'first', 'second'};
+%! TT.Properties.VariableContinuity = {'continuous', 'unset'};
+%! TT.Properties.Description = 'a description';
+%! TT = addprop (TT, {'tp', 'vp'}, {'table', 'variable'});
+%! TT.Properties.CustomProperties.tp = 'table scoped';
+%! TT.Properties.CustomProperties.vp = {'u', 'v'};
+%! N = timetable2table (TT, 'ConvertRowTimes', false);
+%! assert_equal (N.Properties.VariableNames, {'a', 'b'});
+%! assert_equal (N.Properties.DimensionNames, {'Row', 'Vars'});
+%! assert_equal (height (N), 4);
+
+## Test a zoned row time comes back with its zone
+%!test
+%! ny = 'America/New_York';
+%! Z = timetable (datetime (2024, 6, 1, 'TimeZone', ny) + hours (0:2)', ...
+%!                (1:3)');
+%! B = table2timetable (timetable2table (Z));
+%! assert_equal (B.Properties.RowTimes.TimeZone, ny);
+%! assert_equal (isequal (B, Z), true);
+
+## Test duration row times come back whole, format included
+%!test
+%! D = timetable (hours (0:3)', (1:4)');
+%! B = table2timetable (timetable2table (D));
+%! assert_equal (seconds (B.Properties.RowTimes)', [0, 3600, 7200, 10800]);
+%! assert_equal (B.Properties.RowTimes.Format, 'h');
+%! assert_equal (isequal (B, D), true);
+
+## A step given at construction does not survive the trip: the table keeps
+## no step, so the timetable reads one off the row times it is given and a
+## subset too short to imply one has nothing to fall back on.
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:3)';
+%! F = timetable ((1:4)', 'TimeStep', hours (1), 'StartTime', t(1));
+%! B = table2timetable (timetable2table (F));
+%! assert_equal (B.Properties.TimeStep, hours (1));
+%! assert_equal (F(1, :).Properties.TimeStep, hours (1));
+%! assert_equal (isnan (B(1, :).Properties.TimeStep), true);
+
+## Test the event table does not survive, a table having nowhere to put one
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:3)';
+%! E = timetable (t, (1:4)', 'VariableNames', {'v'});
+%! E.Properties.Events = eventtable (timetable (t([2, 3]), {'x'; 'y'}, ...
+%!                                   'VariableNames', {'L'}));
+%! B = table2timetable (timetable2table (E));
+%! assert_equal (class (B.Properties.Events), 'double');
+%! assert_equal (isempty (B.Properties.Events), true);
+
+################################################################################
 ##                        **    Row time shapes    **                         ##
 ################################################################################
 
