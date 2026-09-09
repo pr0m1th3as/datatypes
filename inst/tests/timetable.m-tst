@@ -2628,6 +2628,51 @@
 %! assert_equal (B.mean_A, 2);
 %! assert_equal (B.Properties.RowTimes, t0);
 
+## A step the timetable was told at construction outlives a reduction to one
+## row, which is too short to imply one of its own, exactly as a subset of
+## that length does.  Two rows or more say what their own step is, so a
+## grouped apply reports the spacing of the groups.  Measured on R2024a.
+%!test
+%! R2 = timetable ((1:6)', 'TimeStep', hours (1));
+%! B = varfun (@mean, R2);
+%! assert_equal (height (B), 1);
+%! assert_equal (B.Properties.TimeStep, hours (1));
+%! assert_equal (isregular (B), true);
+%!test
+%! R3 = timetable ((1:6)', 'SampleRate', 2);
+%! B = varfun (@mean, R3);
+%! assert_equal (B.Properties.SampleRate, 2);
+%! assert_equal (B.Properties.TimeStep, seconds (0.5));
+%! assert_equal (isregular (B), true);
+%!test
+%! CM = timetable ((1:6)', 'TimeStep', calmonths (1), ...
+%!                 'StartTime', datetime (2024, 6, 1));
+%! B = varfun (@mean, CM);
+%! assert_equal (B.Properties.TimeStep, calmonths (1));
+%! assert_equal (isregular (B), false);
+%!test
+%! assert_equal (varfun (@sum, timetable ((1:6)', ...
+%!               'TimeStep', hours (1))).Properties.TimeStep, hours (1));
+## Test a step only the row times implied does not outlive the reduction
+%!test
+%! R1 = timetable ((1:6)', 'RowTimes', ...
+%!                 datetime (2024, 6, 1) + hours (0:5)');
+%! B = varfun (@mean, R1);
+%! assert_equal (isnan (B.Properties.TimeStep), true);
+%! assert_equal (isregular (B), false);
+## Test a grouped apply reports the spacing of the groups it made
+%!test
+%! GD = timetable ([1; 1; 2; 2; 3; 3], (1:6)', 'TimeStep', hours (1), ...
+%!                 'VariableNames', {'g', 'v'});
+%! B = varfun (@mean, GD, 'GroupingVariables', 'g');
+%! assert_equal (height (B), 3);
+%! assert_equal (B.Properties.TimeStep, hours (2));
+%! assert_equal (isregular (B), true);
+## Test a subset of every other row does the same
+%!test
+%! R2 = timetable ((1:6)', 'TimeStep', hours (1));
+%! assert_equal (R2([1, 3, 5], :).Properties.TimeStep, hours (2));
+
 ## Test a function returning several rows takes that many row times from the top
 %!test
 %! t0 = datetime (2024, 1, 1);

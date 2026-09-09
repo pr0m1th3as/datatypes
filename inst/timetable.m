@@ -601,6 +601,16 @@ classdef timetable < tabular
       endif
       rt = this.RowTimes(rowIx(:));
       out = timetable (vars{:}, 'RowTimes', rt, 'VariableNames', names);
+      if (this.StepDeclared && numel (rt) < 2)
+        ## Too few rows to imply a spacing of their own, and the object this
+        ## was built from had been told one: it keeps that step, exactly as a
+        ## subset too short to imply one does.  With two rows or more the
+        ## result's own times say what the step is, so a grouped apply reports
+        ## the spacing of the groups rather than the one it started from.
+        out.StepDeclared = true;
+        out.TimeStep = this.TimeStep;
+        out.SampleRate = this.SampleRate;
+      endif
     endfunction
 
     ## Wraps the metadata struct that 'getProperties' assembles in a
