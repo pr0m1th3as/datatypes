@@ -6341,6 +6341,176 @@
 %!             'daily', 'sum');
 %! assert_equal (height (R), 1);
 
+## An aggregating method bins the rows, so 'IncludedEdge' says which bin a
+## row time sitting on a boundary falls into, and the grid moves with it.
+## Measured on MATLAB R2024a.
+## Test bins closed on the left end where the last row time is
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', ...
+%!                 datetime (2024, 6, 1) + minutes ([0 30 60 90])');
+%! R = retime (TT, 'hourly', 'sum', 'IncludedEdge', 'left');
+%! assert_equal (height (R), 2);
+%! assert_equal (R.Var1, [3; 7]);
+## Test bins closed on the right reach one unit past it
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', ...
+%!                 datetime (2024, 6, 1) + minutes ([0 30 60 90])');
+%! R = retime (TT, 'hourly', 'sum', 'IncludedEdge', 'right');
+%! assert_equal (height (R), 3);
+%! assert_equal (R.Properties.RowTimes(3), datetime (2024, 6, 1, 2, 0, 0));
+%! assert_equal (R.Var1, [1; 5; 4]);
+## Test counting the rows agrees with summing them
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', ...
+%!                 datetime (2024, 6, 1) + minutes ([0 30 60 90])');
+%! R = retime (TT, 'hourly', 'count', 'IncludedEdge', 'right');
+%! assert_equal (R.Var1, [1; 2; 1]);
+
+## Test bins closed on the right drop a leading label nothing can reach
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', ...
+%!                 datetime (2024, 6, 1) + minutes ([30 60 90 120])');
+%! R = retime (TT, 'hourly', 'sum', 'IncludedEdge', 'right');
+%! assert_equal (height (R), 2);
+%! assert_equal (R.Properties.RowTimes(1), datetime (2024, 6, 1, 1, 0, 0));
+%! assert_equal (R.Var1, [3; 7]);
+## Test the left-closed grid over the same rows starts an hour earlier
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', ...
+%!                 datetime (2024, 6, 1) + minutes ([30 60 90 120])');
+%! R = retime (TT, 'hourly', 'sum', 'IncludedEdge', 'left');
+%! assert_equal (height (R), 3);
+%! assert_equal (R.Properties.RowTimes(1), datetime (2024, 6, 1));
+%! assert_equal (R.Var1, [1; 5; 4]);
+## Test a daily grid closed on the right names the day the rows ran into
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', ...
+%!                 datetime (2024, 6, 1) + minutes ([30 60 90 120])');
+%! R = retime (TT, 'daily', 'sum', 'IncludedEdge', 'right');
+%! assert_equal (height (R), 1);
+%! assert_equal (R.Properties.RowTimes, datetime (2024, 6, 2));
+%! assert_equal (R.Var1, 10);
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', ...
+%!                 datetime (2024, 6, 1) + minutes ([30 60 90 120])');
+%! R = retime (TT, 'daily', 'sum', 'IncludedEdge', 'left');
+%! assert_equal (R.Properties.RowTimes, datetime (2024, 6, 1));
+%! assert_equal (R.Var1, 10);
+
+## Test a row time on the boundary joins the earlier bin when closed right
+%!test
+%! TT = timetable ((1:3)', 'RowTimes', ...
+%!                 datetime (2024, 6, 1) + minutes ([0 30 60])');
+%! R = retime (TT, 'daily', 'sum', 'IncludedEdge', 'right');
+%! assert_equal (height (R), 2);
+%! assert_equal (R.Var1, [1; 5]);
+%!test
+%! TT = timetable ((1:3)', 'RowTimes', ...
+%!                 datetime (2024, 6, 1) + minutes ([0 30 60])');
+%! R = retime (TT, 'daily', 'sum', 'IncludedEdge', 'left');
+%! assert_equal (height (R), 1);
+%! assert_equal (R.Var1, 6);
+## Test the same rule over a grid of days spanned by the rows
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', ...
+%!                 datetime (2024, 6, 1) + hours ([0 5 25 30])');
+%! R = retime (TT, 'daily', 'sum', 'IncludedEdge', 'right');
+%! assert_equal (height (R), 3);
+%! assert_equal (R.Var1, [1; 2; 7]);
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', ...
+%!                 datetime (2024, 6, 1) + hours ([0 5 25 30])');
+%! R = retime (TT, 'daily', 'sum', 'IncludedEdge', 'left');
+%! assert_equal (height (R), 2);
+%! assert_equal (R.Var1, [3; 7]);
+
+## A method that fills the grid rather than gathering into it reads the rows
+## one at a time, so 'IncludedEdge' leaves it alone.
+## Test a filling method ignores the option
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', ...
+%!                 datetime (2024, 6, 1) + minutes ([0 30 60 90])');
+%! L = retime (TT, 'hourly', 'previous', 'IncludedEdge', 'left');
+%! R = retime (TT, 'hourly', 'previous', 'IncludedEdge', 'right');
+%! assert_equal (height (L), 3);
+%! assert_equal (L.Var1, R.Var1);
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', ...
+%!                 datetime (2024, 6, 1) + minutes ([0 30 60 90])');
+%! L = retime (TT, 'daily', 'fillwithmissing', 'IncludedEdge', 'left');
+%! R = retime (TT, 'daily', 'fillwithmissing', 'IncludedEdge', 'right');
+%! assert_equal (height (L), 2);
+%! assert_equal (L.Var1, R.Var1);
+
+## Test a 'regular' grid is bounded by the same rule
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', ...
+%!                 datetime (2024, 6, 1) + minutes ([0 30 60 90])');
+%! R = retime (TT, 'regular', 'sum', 'TimeStep', hours (1), ...
+%!             'IncludedEdge', 'left');
+%! assert_equal (height (R), 2);
+%! assert_equal (R.Var1, [3; 7]);
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', ...
+%!                 datetime (2024, 6, 1) + minutes ([0 30 60 90])');
+%! R = retime (TT, 'regular', 'sum', 'TimeStep', hours (1), ...
+%!             'IncludedEdge', 'right');
+%! assert_equal (height (R), 3);
+%! assert_equal (R.Var1, [1; 5; 4]);
+## Test a filling method over a 'regular' grid is unmoved by the option
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', ...
+%!                 datetime (2024, 6, 1) + minutes ([0 30 60 90])');
+%! L = retime (TT, 'regular', 'previous', 'TimeStep', hours (1), ...
+%!             'IncludedEdge', 'left');
+%! R = retime (TT, 'regular', 'previous', 'TimeStep', hours (1), ...
+%!             'IncludedEdge', 'right');
+%! assert_equal (height (L), 3);
+%! assert_equal (L.Var1, [1; 3; 4]);
+%! assert_equal (L.Var1, R.Var1);
+
+## Test the ordered aggregations take the edge like the others
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', ...
+%!                 datetime (2024, 6, 1) + minutes ([0 30 60 90])');
+%! R = retime (TT, 'hourly', 'firstvalue', 'IncludedEdge', 'left');
+%! assert_equal (height (R), 2);
+%! assert_equal (R.Var1, [1; 3]);
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', ...
+%!                 datetime (2024, 6, 1) + minutes ([0 30 60 90])');
+%! R = retime (TT, 'hourly', 'lastvalue', 'IncludedEdge', 'right');
+%! assert_equal (height (R), 3);
+%! assert_equal (R.Var1, [1; 3; 4]);
+
+## Test duration row times take the rule as datetimes do
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', seconds ([0; 30; 90; 150]));
+%! R = retime (TT, 'hourly', 'sum', 'IncludedEdge', 'left');
+%! assert_equal (height (R), 1);
+%! assert_equal (R.Var1, 10);
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', seconds ([0; 30; 90; 150]));
+%! R = retime (TT, 'hourly', 'sum', 'IncludedEdge', 'right');
+%! assert_equal (height (R), 2);
+%! assert_equal (seconds (R.Properties.RowTimes), [0; 3600]);
+%! assert_equal (R.Var1, [1; 9]);
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', seconds ([0; 30; 90; 150]));
+%! R = retime (TT, 'daily', 'count', 'IncludedEdge', 'right');
+%! assert_equal (seconds (R.Properties.RowTimes), [0; 86400]);
+%! assert_equal (R.Var1, [1; 3]);
+
+## Test a grid given as a vector of times is used as it stands, both ways
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', ...
+%!                 datetime (2024, 6, 1) + minutes ([0 30 60 90])');
+%! tq = datetime (2024, 6, 1) + hours ((0:2)');
+%! assert_equal (retime (TT, tq, 'sum', 'IncludedEdge', 'left').Var1, ...
+%!               [3; 7; 0]);
+%! assert_equal (retime (TT, tq, 'sum', 'IncludedEdge', 'right').Var1, ...
+%!               [1; 5; 4]);
+
 ## Test a calendar month and week grid over three monthly rows
 %!test
 %! TT = timetable ((1:3)', 'RowTimes', ...
@@ -6746,6 +6916,86 @@
 %! tq = datetime (2024, 1, 1) + minutes (0:30:180)';
 %! v = [0; 0.0056818181818182; 1; 3.6126692456480; 8; 15.812392179413; 27];
 %! assert (retime (TT, tq, 'makima').v, v, 1e-12);
+
+## Test 'retime' interpolates over unevenly spaced row times
+%!test
+%! ta = datetime (2024, 6, 1) + hours ([0; 1; 3]);
+%! TT = timetable (ta, [0; 1; 8], 'VariableNames', {'v'});
+%! tq = datetime (2024, 6, 1) + hours ([0; 0.5; 1; 2; 3; 4]);
+%! v = [0; 0.5; 1; 4.5; 8; 11.5];
+%! assert_equal (retime (TT, tq, 'linear').v, v);
+%!test
+%! ta = datetime (2024, 6, 1) + hours ([0; 1; 3]);
+%! TT = timetable (ta, [0; 1; 8], 'VariableNames', {'v'});
+%! tq = datetime (2024, 6, 1) + hours ([0; 0.5; 1; 2; 3; 4]);
+%! v = [0; 0.29166666666666663; 1; 3.666666666666667; 8; 14];
+%! assert (retime (TT, tq, 'spline').v, v, 1e-12);
+## Test the shape-preserving interpolant over the same rows
+%!test
+%! ta = datetime (2024, 6, 1) + hours ([0; 1; 3]);
+%! TT = timetable (ta, [0; 1; 8], 'VariableNames', {'v'});
+%! tq = datetime (2024, 6, 1) + hours ([0; 0.5; 1; 2; 3; 4]);
+%! v = [0; 0.33769379844961239; 1; 3.5746124031007751; 8; 13.723837209302324];
+%! assert (retime (TT, tq, 'pchip').v, v, 1e-12);
+%!test
+%! ta = datetime (2024, 6, 1) + hours ([0; 1; 3]);
+%! TT = timetable (ta, [0; 1; 8], 'VariableNames', {'v'});
+%! tq = datetime (2024, 6, 1) + hours ([0; 0.5; 1; 2; 3; 4]);
+%! v = [0; 0.265625; 1; 3.8421336206896552; 8; 11.983297413793101];
+%! assert (retime (TT, tq, 'makima').v, v, 1e-12);
+## Test the neighbour methods over the same rows
+%!test
+%! ta = datetime (2024, 6, 1) + hours ([0; 1; 3]);
+%! TT = timetable (ta, [0; 1; 8], 'VariableNames', {'v'});
+%! tq = datetime (2024, 6, 1) + hours ([0; 0.5; 1; 2; 3; 4]);
+%! assert_equal (retime (TT, tq, 'previous').v, [0; 0; 1; 1; 8; 8]);
+%! assert_equal (retime (TT, tq, 'next').v, [0; 1; 1; 8; 8; NaN]);
+%! assert_equal (retime (TT, tq, 'nearest').v, [0; 1; 1; 8; 8; 8]);
+
+## Test 'EndValues' asked for by name gives what the method gives anyway
+%!test
+%! ta = datetime (2024, 6, 1) + hours ([0; 1; 3]);
+%! TT = timetable (ta, [0; 1; 8], 'VariableNames', {'v'});
+%! tq = datetime (2024, 6, 1) + hours ([0; 0.5; 1; 2; 3; 4]);
+%! v = retime (TT, tq, 'linear', 'EndValues', 'extrap').v;
+%! assert_equal (v, [0; 0.5; 1; 4.5; 8; 11.5]);
+%!test
+%! ta = datetime (2024, 6, 1) + hours ([0; 1; 3]);
+%! TT = timetable (ta, [0; 1; 8], 'VariableNames', {'v'});
+%! tq = datetime (2024, 6, 1) + hours ([0; 0.5; 1; 2; 3; 4]);
+%! v = retime (TT, tq, 'spline', 'EndValues', 'extrap').v;
+%! assert (v, [0; 0.29166666666666663; 1; 3.666666666666667; 8; 14], 1e-12);
+## Test a constant 'EndValues' replaces only the row past the data
+%!test
+%! ta = datetime (2024, 6, 1) + hours ([0; 1; 3]);
+%! TT = timetable (ta, [0; 1; 8], 'VariableNames', {'v'});
+%! tq = datetime (2024, 6, 1) + hours ([0; 0.5; 1; 2; 3; 4]);
+%! v = retime (TT, tq, 'linear', 'EndValues', 99).v;
+%! assert_equal (v, [0; 0.5; 1; 4.5; 8; 99]);
+
+## Test a 'Constant' fills every row the source has nothing for
+%!test
+%! ta = datetime (2024, 6, 1) + hours ([0; 1; 3]);
+%! TT = timetable (ta, [0; 1; 8], 'VariableNames', {'v'});
+%! tq = datetime (2024, 6, 1) + hours ([0; 0.5; 1; 2; 3; 4]);
+%! v = retime (TT, tq, 'fillwithconstant', 'Constant', 9).v;
+%! assert_equal (v, [0; 9; 1; 9; 8; 9]);
+## Test a 'Constant' of missing fills them with the missing value
+%!test
+%! ta = datetime (2024, 6, 1) + hours ([0; 1; 3]);
+%! TT = timetable (ta, [0; 1; 8], 'VariableNames', {'v'});
+%! tq = datetime (2024, 6, 1) + hours ([0; 0.5; 1; 2; 3; 4]);
+%! v = retime (TT, tq, 'fillwithconstant', 'Constant', missing).v;
+%! assert_equal (v, [0; NaN; 1; NaN; 8; NaN]);
+## A character 'Constant' fills a cell array of strings with that string.
+## MATLAB refuses it, reporting that a char cannot be converted to a cell;
+## we take it, since it is the only reading a char constant can have there.
+%!test
+%! ta = datetime (2024, 6, 1) + hours ([0; 1; 3]);
+%! TT = timetable (ta, {'p'; 'q'; 'r'}, 'VariableNames', {'s'});
+%! tq = datetime (2024, 6, 1) + hours ([0; 0.5; 1; 2; 3; 4]);
+%! v = retime (TT, tq, 'fillwithconstant', 'Constant', 'z').s;
+%! assert_equal (v, {'p'; 'z'; 'q'; 'z'; 'r'; 'z'});
 
 ## Test 'retime' sums the rows falling in each bin, an empty bin giving zero
 %!test

@@ -996,7 +996,7 @@ classdef timetable < tabular
 
       ## Where the rows of the answer sit.
       [nt, errmsg] = synchronizeBase (ops, spec, tstep, srate, ...
-                                      retimeIsAggregation (method));
+                                      retimeIsAggregation (method), incEdge);
       if (! isempty (errmsg))
         return
       endif
@@ -1096,7 +1096,7 @@ classdef timetable < tabular
       endif
 
       [nt, errmsg] = retimeTimes (this.RowTimes, spec, tstep, srate, ...
-                                  retimeIsAggregation (method));
+                                  retimeIsAggregation (method), incEdge);
       if (! isempty (errmsg))
         return
       endif
@@ -4186,16 +4186,22 @@ classdef timetable < tabular
     ## @qcode{'minutely'}, @qcode{'hourly'}, @qcode{'daily'},
     ## @qcode{'weekly'}, @qcode{'monthly'}, @qcode{'quarterly'} and
     ## @qcode{'yearly'}.  The grid starts at the unit's own boundary at or
-    ## before the first row time and runs to the first boundary at or after
-    ## the last, so three hours of data retimed @qcode{'daily'} spans two
-    ## days.  Weeks begin on Sunday.  A @code{duration} row time carries no
-    ## calendar, so it takes the fixed units up to @qcode{'weekly'} and
-    ## refuses @qcode{'monthly'}, @qcode{'quarterly'} and @qcode{'yearly'}.
+    ## before the first row time.  A filling method reads the times as sample
+    ## points and runs the grid to the first boundary at or after the last row
+    ## time, so three hours of data retimed @qcode{'daily'} spans two days; an
+    ## aggregating method reads them as bins and stops at the bin holding the
+    ## last row time, so the same three hours give one day.  Weeks begin on
+    ## Sunday.  A @code{duration} row time carries no calendar, so a unit
+    ## measures it only where a @code{duration} counts in that unit:
+    ## @qcode{'secondly'}, @qcode{'minutely'}, @qcode{'hourly'},
+    ## @qcode{'daily'} and @qcode{'yearly'} are taken and @qcode{'weekly'},
+    ## @qcode{'monthly'} and @qcode{'quarterly'} are refused.
     ##
     ## @code{@var{ttB} = retime (@var{ttA}, @qcode{'regular'}, @dots{})}
     ## builds a grid from the first row time in steps of the
     ## @qcode{'TimeStep'} or @qcode{'SampleRate'} given after it, exactly one
-    ## of which is required.  @qcode{'SampleRate'} is in hertz.
+    ## of which is required.  @qcode{'SampleRate'} is in hertz.  It is bounded
+    ## by the same rule.
     ##
     ## @var{method} says how a row that the old times do not carry takes its
     ## value.  @qcode{'fillwithmissing'} leaves it missing;
@@ -4224,7 +4230,10 @@ classdef timetable < tabular
     ## @qcode{'IncludedEdge'} says which edge of a bin belongs to it,
     ## @qcode{'left'} by default, under which the last bin runs on past the
     ## last target time; @qcode{'right'} instead lets the first bin run back
-    ## before the first.  It is read only by an aggregating method.
+    ## before the first.  A grid built from a unit or a step moves with it:
+    ## closed on the right it starts at the first bin that can hold a row and
+    ## ends one unit past the last row time.  It is read only by an
+    ## aggregating method.
     ##
     ## An option the chosen method cannot use is @strong{warned about and
     ## ignored} rather than dropped in silence, once per call.  MATLAB says
@@ -5919,13 +5928,23 @@ endfunction
 ## 'TimeStep' and 'SampleRate' options, of which 'regular' takes exactly one.
 ## Returns an errmsg body for the caller to raise.
 
-function [nt, errmsg] = retimeTimes (rt, spec, tstep, srate, isAgg)
+function [nt, errmsg] = retimeTimes (rt, spec, tstep, srate, isAgg, incEdge)
 
   nt = [];
   errmsg = '';
   if (nargin < 5)
     isAgg = false;
   endif
+  if (nargin < 6)
+    incEdge = 'left';
+  endif
+  ## A bin closed on the right is labelled by its upper bound, so the grid
+  ## runs from the boundary at or after the first row time to the one at or
+  ## after the last, where a bin closed on the left runs from the boundary at
+  ## or before the first to the one at or before the last.  The edge says
+  ## nothing about a grid of points to compute a value for.
+  binRight = isAgg && strcmpi (incEdge, 'right');
+  binLeft = isAgg && ! binRight;
   units = {'secondly', 'minutely', 'hourly', 'daily', 'weekly', ...
            'monthly', 'quarterly', 'yearly'};
 
@@ -5998,8 +6017,11 @@ function [nt, errmsg] = retimeTimes (rt, spec, tstep, srate, isAgg)
         return
       endif
       [lo, hi] = gridSpan (rt);
-      nt = calendarGrid (floorToCalendar (lo, cunit), hi, cunit, cper, ...
-                         isAgg);
+      clo = floorToCalendar (lo, cunit);
+      if (binRight && clo < lo)
+        clo = advanceCalendar (clo, cunit, cper);
+      endif
+      nt = calendarGrid (clo, hi, cunit, cper, binLeft);
       return
     elseif (wasGiven (tstep))
       if (! (isduration (tstep) && isscalar (tstep)
@@ -6022,7 +6044,11 @@ function [nt, errmsg] = retimeTimes (rt, spec, tstep, srate, isAgg)
       return
     endif
     [lo, hi] = gridSpan (rt);
-    nt = steppedGrid (floorToStep (lo, step), hi, step);
+    lo = floorToStep (lo, step);
+    if (binRight && lo < min (rt))
+      lo = lo + step;
+    endif
+    nt = unitSteps (lo, hi, step, binLeft);
     return
   endif
 
@@ -6034,7 +6060,7 @@ function [nt, errmsg] = retimeTimes (rt, spec, tstep, srate, isAgg)
                               " or 'regular'."), spec);
     return
   endif
-  [nt, errmsg] = unitGrid (rt, spec, isAgg);
+  [nt, errmsg] = unitGrid (rt, spec, binLeft, binRight);
 
 endfunction
 
@@ -6067,8 +6093,8 @@ endfunction
 ## rather than trusted from the division, so a last row time landing exactly
 ## on a step is never lost to a rounding error in it.
 
-function nt = unitSteps (lo, hi, step, isAgg)
-  if (! isAgg)
+function nt = unitSteps (lo, hi, step, binLeft)
+  if (! binLeft)
     nt = steppedGrid (lo, hi, step);
     return
   endif
@@ -6085,12 +6111,12 @@ endfunction
 ## The same for a calendar step, which has no fixed length to divide a span
 ## by and so is stepped one unit at a time.
 
-function nt = calendarGrid (lo, hi, unit, per, isAgg)
+function nt = calendarGrid (lo, hi, unit, per, binLeft)
   if (nargin < 4)
     per = 1;
   endif
   if (nargin < 5)
-    isAgg = false;
+    binLeft = false;
   endif
   nt = lo;
   k = 0;
@@ -6109,11 +6135,43 @@ function nt = calendarGrid (lo, hi, unit, per, isAgg)
       case 'year'
         t = lo + calyears (k);
     endswitch
-    if (isAgg && t > hi)
+    if (binLeft && t > hi)
       break
     endif
     nt(k+1,1) = t;
   endwhile
+endfunction
+
+## One unit on from a boundary, which is where a grid of bins closed on the
+## right starts when the first row time is not on a boundary itself.
+
+function t = advanceUnit (t, unit)
+  switch (unit)
+    case 'second'
+      t = t + seconds (1);
+    case 'minute'
+      t = t + minutes (1);
+    case 'hour'
+      t = t + hours (1);
+    case 'day'
+      t = t + caldays (1);
+    case 'week'
+      t = t + calweeks (1);
+    case 'month'
+      t = t + calmonths (1);
+    case 'quarter'
+      t = t + calquarters (1);
+    case 'year'
+      t = t + calyears (1);
+  endswitch
+endfunction
+
+function t = advanceCalendar (t, unit, per)
+  if (strcmp (unit, 'months'))
+    t = t + calmonths (per);
+  else
+    t = t + caldays (per);
+  endif
 endfunction
 
 ## The boundary a calendar grid starts from: the start of the month where the
@@ -6166,12 +6224,15 @@ endfunction
 ## The grid a time unit asks for: from the unit's own boundary at or before
 ## the first row time, to the last boundary the method has any use for.
 
-function [nt, errmsg] = unitGrid (rt, spec, isAgg)
+function [nt, errmsg] = unitGrid (rt, spec, binLeft, binRight)
 
   nt = [];
   errmsg = '';
   if (nargin < 3)
-    isAgg = false;
+    binLeft = false;
+  endif
+  if (nargin < 4)
+    binRight = false;
   endif
   switch (spec)
     case 'secondly'
@@ -6192,20 +6253,24 @@ function [nt, errmsg] = unitGrid (rt, spec, isAgg)
       unit = 'year';
   endswitch
   [lo, hi] = gridSpan (rt);
+  lo0 = lo;
 
   if (isdatetime (rt))
     lo = dateshift (lo, 'start', unit);
+    if (binRight && lo < lo0)
+      lo = advanceUnit (lo, unit);
+    endif
     switch (unit)
       case 'second'
-        nt = unitSteps (lo, hi, seconds (1), isAgg);
+        nt = unitSteps (lo, hi, seconds (1), binLeft);
       case 'minute'
-        nt = unitSteps (lo, hi, minutes (1), isAgg);
+        nt = unitSteps (lo, hi, minutes (1), binLeft);
       case 'hour'
-        nt = unitSteps (lo, hi, hours (1), isAgg);
+        nt = unitSteps (lo, hi, hours (1), binLeft);
       otherwise
         ## A calendar step follows the wall clock, so a day across a clock
         ## change is still one day and a month is still one month.
-        nt = calendarGrid (lo, hi, unit, 1, isAgg);
+        nt = calendarGrid (lo, hi, unit, 1, binLeft);
     endswitch
     return
   endif
@@ -6233,7 +6298,10 @@ function [nt, errmsg] = unitGrid (rt, spec, isAgg)
       return
   endswitch
   lo = step * floor (seconds (lo) / seconds (step));
-  nt = unitSteps (lo, hi, step, isAgg);
+  if (binRight && lo < lo0)
+    lo = lo + step;
+  endif
+  nt = unitSteps (lo, hi, step, binLeft);
   ## The grid is generated from the unit's own duration and so comes out in
   ## the unit's display format.  The row times keep theirs: asking for the
   ## rows by the minute says how to gather them, not how to print them.
@@ -6688,12 +6756,16 @@ endfunction
 ## no part in choosing; without that an empty operand would empty an
 ## intersection.
 
-function [nt, errmsg] = synchronizeBase (ops, spec, tstep, srate, isAgg)
+function [nt, errmsg] = synchronizeBase (ops, spec, tstep, srate, isAgg, ...
+                                        incEdge)
 
   nt = [];
   errmsg = '';
   if (nargin < 5)
     isAgg = false;
+  endif
+  if (nargin < 6)
+    incEdge = 'left';
   endif
   have = {};
   for k = 1:numel (ops)
@@ -6710,7 +6782,8 @@ function [nt, errmsg] = synchronizeBase (ops, spec, tstep, srate, isAgg)
   endif
 
   if (isdatetime (spec) || isduration (spec))
-    [nt, errmsg] = retimeTimes (have{1}, spec, tstep, srate, isAgg);
+    [nt, errmsg] = retimeTimes (have{1}, spec, tstep, srate, isAgg, ...
+                                incEdge);
     return
   endif
   if (isa (spec, 'string') && isscalar (spec))
@@ -6756,7 +6829,8 @@ function [nt, errmsg] = synchronizeBase (ops, spec, tstep, srate, isAgg)
       ## Anything left is a time unit or 'regular', and a complaint about it
       ## has to offer the time bases as well, which 'retime' knows nothing
       ## about.
-      [nt, errmsg] = retimeTimes (all, spec, tstep, srate, isAgg);
+      [nt, errmsg] = retimeTimes (all, spec, tstep, srate, isAgg, ...
+                                  incEdge);
       if (! isempty (errmsg) && ! isempty (strfind (errmsg, "is not a time")))
         errmsg = sprintf (strcat ("'%s' is not a time base; use", ...
                           " 'union', 'intersection', 'commonrange',", ...
