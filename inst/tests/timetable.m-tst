@@ -4545,6 +4545,268 @@
 %! assert_equal (table2timetable (T).Properties.TimeStep, hours (1));
 
 ################################################################################
+##                     **    Per method behaviour    **                       ##
+################################################################################
+
+## Measured on MATLAB R2024a.  These are the methods the other sections
+## touch only in passing.
+
+## Test the size queries answer for two dimensions
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (width (A), 2);
+%! assert_equal (ndims (A), 2);
+%! assert_equal (numel (A), 12);
+%! assert_equal (size (A, 2), 2);
+
+## Test the concatenations called by name agree with the bracket syntax
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (height (vertcat (A, A)), 12);
+%! assert_equal (height (cat (1, A, A)), 12);
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! B = renamevars (A, {'a', 'b'}, {'c', 'd'});
+%! assert_equal (width (horzcat (A, B)), 4);
+%! assert_equal (width (cat (2, A, B)), 4);
+
+## Test 'repelem' repeats each row where 'repmat' repeats the block
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (height (repelem (A, 2, 1)), 12);
+%! assert_equal (repelem (A(1:2, :), 2, 1).Properties.RowTimes, ...
+%!               t([1, 1, 2, 2]));
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (height (repmat (A, 2, 1)), 12);
+%! assert_equal (repmat (A(1:2, :), 2, 1).Properties.RowTimes, ...
+%!               t([1, 2, 1, 2]));
+%! assert_equal (width (repmat (A, 1, 2)), 4);
+
+## Test 'isequaln' counts two missing values alike where 'isequal' does not
+%!test
+%! t4 = datetime (2024, 6, 1) + hours (0:3)';
+%! X = timetable (t4, [1; NaN; 3; NaN], 'VariableNames', {'v'});
+%! assert_equal (isequaln (X, X), true);
+%! assert_equal (isequal (X, X), false);
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (isequaln (A, A), true);
+%! assert_equal (anymissing (A), false);
+
+## Test the missing-data family reads the variables and not the row times
+%!test
+%! t4 = datetime (2024, 6, 1) + hours (0:3)';
+%! X = timetable (t4, [1; NaN; 3; NaN], 'VariableNames', {'v'});
+%! assert_equal (anymissing (X), true);
+%! assert_equal (sum (ismissing (X)), 2);
+%! assert_equal (height (rmmissing (X)), 2);
+%!test
+%! t4 = datetime (2024, 6, 1) + hours (0:3)';
+%! X = timetable (t4, [1; NaN; 3; NaN], 'VariableNames', {'v'});
+%! [~, TF] = rmmissing (X);
+%! assert_equal (TF', [false, true, false, true]);
+%!test
+%! t4 = datetime (2024, 6, 1) + hours (0:3)';
+%! X = timetable (t4, [1; NaN; 3; NaN], 'VariableNames', {'v'});
+%! assert_equal (fillmissing (X, 'previous').v, [1; 1; 3; 3]);
+%! assert_equal (fillmissing (X, 'constant', 0).v, [1; 0; 3; 0]);
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (standardizeMissing (A(:, 1), 3).a, [1; 2; NaN; 4; 5; 6]);
+
+## Test the variable-management family names and orders as asked
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (removevars (A, 'a').Properties.VariableNames, {'b'});
+%! assert_equal (movevars (A, 'a', 'After', 'b').Properties.VariableNames, ...
+%!               {'b', 'a'});
+%! assert_equal (renamevars (A, 'a', 'q').Properties.VariableNames, ...
+%!               {'q', 'b'});
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (class (convertvars (A, 'a', 'single').a), 'single');
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! M = mergevars (A, {'a', 'b'});
+%! assert_equal (M.Properties.VariableNames, {'Var1'});
+%! assert_equal (size (M.Var1), [6, 2]);
+%!test
+%! t4 = datetime (2024, 6, 1) + hours (0:3)';
+%! M = timetable (t4, [1, 2; 3, 4; 5, 6; 7, 8], 'VariableNames', {'m'});
+%! S = splitvars (M);
+%! assert_equal (S.Properties.VariableNames, {'m_1', 'm_2'});
+%! assert_equal (height (S), 4);
+## A generated variable name counts the place the variable takes in the
+## result and not how many variables there were, so one put before the first
+## is 'Var1'.  A name already in use is deconflicted with a suffix.
+## Measured on MATLAB R2024a.
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (addvars (A, (1:6)').Properties.VariableNames, ...
+%!               {'a', 'b', 'Var3'});
+%! assert_equal (addvars (A, (1:6)', (7:12)').Properties.VariableNames, ...
+%!               {'a', 'b', 'Var3', 'Var4'});
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! B1 = addvars (A, (1:6)', 'Before', 'a');
+%! assert_equal (B1.Properties.VariableNames, {'Var1', 'a', 'b'});
+%! assert_equal (addvars (A, (1:6)', (7:12)', ...
+%!               'Before', 'a').Properties.VariableNames, ...
+%!               {'Var1', 'Var2', 'a', 'b'});
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! B2 = addvars (A, (1:6)', 'After', 'a');
+%! assert_equal (B2.Properties.VariableNames, {'a', 'Var2', 'b'});
+%! assert_equal (addvars (A, (1:6)', (7:12)', ...
+%!               'After', 'a').Properties.VariableNames, ...
+%!               {'a', 'Var2', 'Var3', 'b'});
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! C = timetable (t, (1:6)', (11:16)', (21:26)', ...
+%!                'VariableNames', {'p', 'q', 'r'});
+%! B3 = addvars (C, (1:6)', 'After', 'q');
+%! assert_equal (B3.Properties.VariableNames, {'p', 'q', 'Var3', 'r'});
+## Test a generated name already in use is deconflicted, not renumbered
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! B = timetable (t, (1:6)', 'VariableNames', {'Var1'});
+%! assert_equal (addvars (B, (1:6)', ...
+%!               'Before', 'Var1').Properties.VariableNames, ...
+%!               {'Var1_1', 'Var1'});
+%! assert_equal (addvars (B, (1:6)').Properties.VariableNames, ...
+%!               {'Var1', 'Var2'});
+
+## Test a new variable gains an empty entry in the units
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! A.Properties.VariableUnits = {'m', 's'};
+%! assert_equal (addvars (A, (1:6)').Properties.VariableUnits, {'m', 's', ''});
+
+## Test the sortedness queries read the variables, not the row times
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (issortedrows (A), true);
+%! assert_equal (issortedrows (A, 'a'), true);
+%! assert_equal (issortedrows (A, 'a', 'descend'), false);
+%! assert_equal (issorted (flipud (A)), false);
+%!test
+%! t4 = datetime (2024, 6, 1) + hours (0:3)';
+%! C = timetable (t4, (1:4)', categorical ({'x'; 'y'; 'x'; 'y'}), ...
+%!                'VariableNames', {'v', 'g'});
+%! assert_equal (sortrows (C, {'g', 'v'}).v, [1; 3; 2; 4]);
+
+## Test the grouping family names and counts its result
+%!test
+%! t4 = datetime (2024, 6, 1) + hours (0:3)';
+%! C = timetable (t4, (1:4)', categorical ({'x'; 'y'; 'x'; 'y'}), ...
+%!                'VariableNames', {'v', 'g'});
+%! G = grouptransform (C, 'g', 'zscore');
+%! assert_equal (height (G), 4);
+%! assert_equal (G.Properties.VariableNames, {'v', 'g'});
+%!test
+%! t4 = datetime (2024, 6, 1) + hours (0:3)';
+%! C = timetable (t4, (1:4)', categorical ({'x'; 'y'; 'x'; 'y'}), ...
+%!                'VariableNames', {'v', 'g'});
+%! G = groupsummary (C, 'g', 'sum', 'v');
+%! assert_equal (height (G), 2);
+%! assert_equal (G.Properties.VariableNames, {'g', 'GroupCount', 'sum_v'});
+%!test
+%! t4 = datetime (2024, 6, 1) + hours (0:3)';
+%! C = timetable (t4, (1:4)', categorical ({'x'; 'y'; 'x'; 'y'}), ...
+%!                'VariableNames', {'v', 'g'});
+%! assert_equal (height (groupfilter (C, 'g', @(x) sum (x) > 3)), 4);
+%! assert_equal (groupcounts (C, 'g').Properties.VariableNames, ...
+%!               {'g', 'GroupCount', 'Percent'});
+%!test
+%! t4 = datetime (2024, 6, 1) + hours (0:3)';
+%! C = timetable (t4, (1:4)', categorical ({'x'; 'y'; 'x'; 'y'}), ...
+%!                'VariableNames', {'v', 'g'});
+%! assert_equal (findgroups (C(:, {'g'})), [1; 2; 1; 2]);
+%! assert_equal (splitapply (@(x) sum (x), C(:, {'v'}), [1; 2; 1; 2]), ...
+%!               [4; 6]);
+
+## Test the reshaping family names its result
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! S = stack (A, {'a', 'b'});
+%! assert_equal (S.Properties.VariableNames, {'a_b_Indicator', 'a_b'});
+%! assert_equal (height (S), 12);
+%!test
+%! t4 = datetime (2024, 6, 1) + hours (0:3)';
+%! C = timetable (t4, (1:4)', categorical ({'x'; 'y'; 'x'; 'y'}), ...
+%!                'VariableNames', {'v', 'g'});
+%! U = unstack (C, 'v', 'g');
+%! assert_equal (U.Properties.VariableNames, {'x', 'y'});
+%! assert_equal (height (U), 4);
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! V = rows2vars (A);
+%! assert_equal (height (V), 2);
+%! assert_equal (V.Properties.VariableNames{1}, 'OriginalVariableNames');
+%!test
+%! t4 = datetime (2024, 6, 1) + hours (0:3)';
+%! C = timetable (t4, (1:4)', categorical ({'x'; 'y'; 'x'; 'y'}), ...
+%!                'VariableNames', {'v', 'g'});
+%! assert_equal (pivot (C, 'Rows', 'g').Properties.VariableNames, ...
+%!               {'g', 'count'});
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (inner2outer (A).Properties.VariableNames, {'a', 'b'});
+
+## Test the joins keep, rename and merge the keys as asked
+%!test
+%! t4 = datetime (2024, 6, 1) + hours (0:3)';
+%! L = timetable (t4, [1; 2; 3; 4], 'VariableNames', {'K'});
+%! R = timetable (t4, [1; 2; 3; 9], {'p'; 'q'; 'r'; 's'}, ...
+%!                'VariableNames', {'K', 'z'});
+%! I = innerjoin (L, R, 'Keys', 'K');
+%! assert_equal (height (I), 3);
+%! assert_equal (I.Properties.VariableNames, {'K', 'z'});
+%!test
+%! t4 = datetime (2024, 6, 1) + hours (0:3)';
+%! L = timetable (t4, [1; 2; 3; 4], 'VariableNames', {'K'});
+%! R = timetable (t4, [1; 2; 3; 9], {'p'; 'q'; 'r'; 's'}, ...
+%!                'VariableNames', {'K', 'z'});
+%! O = outerjoin (L, R, 'Keys', 'K');
+%! assert_equal (height (O), 5);
+%! assert_equal (O.Properties.VariableNames, {'K_L', 'K_R', 'z'});
+%!test
+%! t4 = datetime (2024, 6, 1) + hours (0:3)';
+%! L = timetable (t4, [1; 2; 3; 4], 'VariableNames', {'K'});
+%! R = timetable (t4, [1; 2; 3; 9], {'p'; 'q'; 'r'; 's'}, ...
+%!                'VariableNames', {'K', 'z'});
+%! M = outerjoin (L, R, 'Keys', 'K', 'MergeKeys', true);
+%! assert_equal (M.Properties.VariableNames, {'K', 'z'});
+
+## Test a custom property comes and goes by name
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! P = addprop (A, {'q'}, {'table'});
+%! assert_equal (fieldnames (P.Properties.CustomProperties)', {'q'});
+%! assert_equal (isempty (fieldnames ( ...
+%!               rmprop (P, {'q'}).Properties.CustomProperties)), true);
+
+################################################################################
 ##                        **    The table round trip    **                    ##
 ################################################################################
 

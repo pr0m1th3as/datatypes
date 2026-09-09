@@ -2188,7 +2188,12 @@ classdef (Abstract) tabular
       endif
       if (isempty (newVarNames))
         ## Create names for new variables
-        offset = width (this);   # for incrementing automatic variable naming
+        ## The place the first new variable takes in the result, which is
+        ## what a generated name counts.
+        offset = ix_insert;
+        if (! AB_insert)
+          offset = ix_insert - 1;
+        endif
         newVarNames = cell (size (args));
         for i = 1:numel (args)
           newVarNames{i} = argNames{i};
@@ -2203,12 +2208,21 @@ classdef (Abstract) tabular
             newVarNames{i} = sprintf ("%s_%d", argNames{i}, suffix);
           endif
           if (isempty (newVarNames{i}))
-            newVarNames{i} = sprintf ("Var%d", i + offset);
-            ## Catch case that Var1 ... already exists
-            while (ismember (newVarNames{i}, this.VariableNames))
-              newVarNames{i} = sprintf ("Var%d", i + offset);
-              offset++;
-            endwhile
+            ## A generated name counts the place the variable takes in the
+            ## result and not how many variables there were, so one put
+            ## before the first is 'Var1' whatever it is put before.  A name
+            ## already in use is deconflicted with a suffix, as a name taken
+            ## from the caller's workspace is.
+            newVarNames{i} = sprintf ("Var%d", offset + i);
+            if (ismember (newVarNames{i}, this.VariableNames))
+              base = newVarNames{i};
+              suffix = 1;
+              while (ismember (sprintf ("%s_%d", base, suffix), ...
+                               [this.VariableNames, this.DimensionNames]))
+                suffix++;
+              endwhile
+              newVarNames{i} = sprintf ("%s_%d", base, suffix);
+            endif
           endif
         endfor
       else
