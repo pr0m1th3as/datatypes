@@ -5916,10 +5916,30 @@ function [nt, errmsg] = retimeTimes (rt, spec, tstep, srate, isAgg)
       errmsg = strcat ("'regular' takes a 'TimeStep' or a", ...
                        " 'SampleRate', not both.");
       return
+    elseif (wasGiven (tstep) && iscalendarduration (tstep))
+      ## A calendar step follows the wall clock, so the grid is stepped one
+      ## unit at a time from a boundary of that unit rather than computed
+      ## from a fixed length.  Row times that carry no calendar have no such
+      ## boundary to start from.
+      if (! isdatetime (rt))
+        errmsg = strcat ("a 'TimeStep' given as a calendarDuration needs", ...
+                         " datetime row times, which carry the calendar it", ...
+                         " counts in.");
+        return
+      endif
+      [cunit, cper, errmsg] = retimeCalendarStep (tstep);
+      if (! isempty (errmsg))
+        return
+      endif
+      [lo, hi] = gridSpan (rt);
+      nt = calendarGrid (floorToCalendar (lo, cunit), hi, cunit, cper, ...
+                         isAgg);
+      return
     elseif (wasGiven (tstep))
       if (! (isduration (tstep) && isscalar (tstep)
              && ! ismissing (tstep) && seconds (tstep) > 0))
-        errmsg = "'TimeStep' must be a positive duration scalar.";
+        errmsg = strcat ("'TimeStep' must be a positive duration or", ...
+                         " calendarDuration scalar.");
         return
       endif
       step = tstep;
@@ -5999,8 +6019,11 @@ endfunction
 ## The same for a calendar step, which has no fixed length to divide a span
 ## by and so is stepped one unit at a time.
 
-function nt = calendarGrid (lo, hi, unit, isAgg)
+function nt = calendarGrid (lo, hi, unit, per, isAgg)
   if (nargin < 4)
+    per = 1;
+  endif
+  if (nargin < 5)
     isAgg = false;
   endif
   nt = lo;
@@ -6009,12 +6032,12 @@ function nt = calendarGrid (lo, hi, unit, isAgg)
   while (t < hi)
     k += 1;
     switch (unit)
-      case 'day'
-        t = lo + caldays (k);
+      case {'day', 'days'}
+        t = lo + caldays (per * k);
       case 'week'
         t = lo + calweeks (k);
-      case 'month'
-        t = lo + calmonths (k);
+      case {'month', 'months'}
+        t = lo + calmonths (per * k);
       case 'quarter'
         t = lo + calquarters (k);
       case 'year'
@@ -6025,6 +6048,53 @@ function nt = calendarGrid (lo, hi, unit, isAgg)
     endif
     nt(k+1,1) = t;
   endwhile
+endfunction
+
+## The boundary a calendar grid starts from: the start of the month where the
+## step counts months, and the start of the day where it counts days.  A step
+## in quarters or years counts months and a step in weeks counts days, so
+## neither starts on a boundary of its own name -- a weekly grid begins on the
+## day of the first row time, not on the Sunday before it.
+
+function lo = floorToCalendar (lo, unit)
+  if (strcmp (unit, 'months'))
+    lo = dateshift (lo, 'start', 'month');
+  else
+    lo = dateshift (lo, 'start', 'day');
+  endif
+endfunction
+
+## The single calendar unit a 'TimeStep' names, and how many of it.  Quarters
+## and years are counted in months and weeks in days, which is how a
+## calendarDuration stores them; a step mixing the two, or carrying a time of
+## day, names no one unit and is refused, as it is in MATLAB.
+
+function [unit, per, errmsg] = retimeCalendarStep (ts)
+  unit = '';
+  per = 0;
+  errmsg = '';
+  if (! (isscalar (ts) && ! ismissing (ts)))
+    errmsg = "'TimeStep' must be a positive calendarDuration scalar.";
+    return
+  endif
+  dv = datevec (ts);
+  months = dv(1) * 12 + dv(2);
+  dys = dv(3);
+  if (any (dv(4:6)) || (months != 0 && dys != 0))
+    errmsg = strcat ("a 'TimeStep' given as a calendarDuration must name", ...
+                     " one calendar unit; use 'caldays', 'calweeks',", ...
+                     " 'calmonths', 'calquarters' or 'calyears'.");
+    return
+  endif
+  if (months > 0)
+    unit = 'months';
+    per = months;
+  elseif (dys > 0)
+    unit = 'days';
+    per = dys;
+  else
+    errmsg = "'TimeStep' must be a positive calendarDuration scalar.";
+  endif
 endfunction
 
 ## The grid a time unit asks for: from the unit's own boundary at or before
@@ -6069,7 +6139,7 @@ function [nt, errmsg] = unitGrid (rt, spec, isAgg)
       otherwise
         ## A calendar step follows the wall clock, so a day across a clock
         ## change is still one day and a month is still one month.
-        nt = calendarGrid (lo, hi, unit, isAgg);
+        nt = calendarGrid (lo, hi, unit, 1, isAgg);
     endswitch
     return
   endif
