@@ -521,3 +521,46 @@ endfunction
 %! unwind_protect_cleanup
 %!   delete (fname);
 %! end_unwind_protect
+
+## Two files nothing can be read out of: one whose columns are all numeric,
+## so nothing in it can label the rows, and one in which a second cross
+## reference points at the data sheet, leaving every sheet of the file the
+## event table of another.
+%!shared fnum, fev
+%! fnum = [tempname(), '.fods'];
+%! table2ods (table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'}), fnum);
+%! fev = [tempname(), '.fods'];
+%! t = datetime (2024, 1, 1) + hours ((0:3)');
+%! TT = timetable (t, (1:4)', 'VariableNames', {'v'});
+%! ET = eventtable (timetable (t([2, 3]), {'a'; 'b'}, ...
+%!                             'VariableNames', {'L'}));
+%! ET.EventLabelsVariable = 'L';
+%! TT.Properties.Events = ET;
+%! timetable2ods (TT, fev);
+%! txt = fileread (fev);
+%! tc = '<table:table-cell office:value-type="string">';
+%! row = ['<table:table-row>', tc, ...
+%!        '<text:p>## Events crossref:</text:p></table:table-cell>', ...
+%!        tc, '<text:p>Sheet1_Events</text:p></table:table-cell>', ...
+%!        tc, '<text:p>Sheet1</text:p></table:table-cell>', ...
+%!        '</table:table-row>'];
+%! ix = strfind (txt, '<text:p>## Events crossref:</text:p>')(1);
+%! ie = ix + strfind (txt(ix:end), '</table:table-row>')(1) + 17;
+%! fid = fopen (fev, 'w');
+%! fputs (fid, [txt(1:ie-1), row, txt(ie:end)]);
+%! fclose (fid);
+
+## Test a sheet with no time column cannot become a timetable
+%!error <ods2timetable: the sheet has no datetime or duration column to use as row times.> ...
+%! ods2timetable (fnum)
+
+## Test a file whose every sheet is somebody's event table names none to read
+%!error <ods2timetable: every sheet of '.*' holds the events of another; name the one to read.> ...
+%! ods2timetable (fev)
+
+## Test the fixtures are removed again
+%!test
+%! delete (fnum);
+%! delete (fev);
+%! assert_equal (exist (fnum, 'file'), 0);
+%! assert_equal (exist (fev, 'file'), 0);

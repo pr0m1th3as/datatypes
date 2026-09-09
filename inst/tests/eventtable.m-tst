@@ -1184,6 +1184,12 @@
 %! TT = timetable (t, (1:4)', (101:104)', 'VariableNames', {'v', 'q'});
 %! extractevents (TT, [2; 3], 'EventEndsVariable', 'q');
 
+## Test 'PreserveEventVariables' must be a logical scalar
+%!error <timetable.extractevents: 'PreserveEventVariables' must be a logical scalar.> ...
+%! t = datetime (2024, 1, 1) + hours ((0:3))';
+%! TT = timetable (t, (1:4)', 'VariableNames', {'v'});
+%! extractevents (TT, [2; 3], 'PreserveEventVariables', 'yes');
+
 ## Test 'PreserveEventVariables' with nothing named to preserve
 %!error <timetable.extractevents: 'PreserveEventVariables' says what becomes of the variables taken from the timetable, so at least one of 'EventDataVariables', 'EventLabelsVariable', 'EventLengthsVariable' and 'EventEndsVariable' must be given.> ...
 %! t = datetime (2024, 1, 1) + hours ((0:3))';

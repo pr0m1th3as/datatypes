@@ -260,3 +260,19 @@ endfunction
 ## Test 'RowNamesColumn' is refused
 %!error <csv2timetable: 'RowNamesColumn' is not supported; a timetable labels its rows by time.  Read a file whose rows are named with 'csv2table'.> ...
 %! csv2timetable ('none.csv', 'RowNamesColumn', 1)
+
+## A file whose columns are all numeric, so nothing in it can label the rows.
+%!shared fnum
+%! fnum = [tempname(), '.csv'];
+%! fid = fopen (fnum, 'w');
+%! fputs (fid, "a,b\n1,2\n3,4\n");
+%! fclose (fid);
+
+## Test a file with no time column cannot become a timetable
+%!error <csv2timetable: the file has no datetime or duration column to use as row times.> ...
+%! csv2timetable (fnum)
+
+## Test the fixture is removed again
+%!test
+%! delete (fnum);
+%! assert_equal (exist (fnum, 'file'), 0);

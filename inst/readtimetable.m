@@ -257,19 +257,6 @@ endfunction
 %!   delete (fname);
 %! end_unwind_protect
 
-## Test a file with no datetime or duration column is refused
-%!test
-%! fname = [tempname(), '.csv'];
-%! unwind_protect
-%!   fid = fopen (fname, 'w');
-%!   fprintf (fid, "a,b\n1,2\n3,4\n");
-%!   fclose (fid);
-%!   fail ("readtimetable (fname)", ...
-%!         "the file has no datetime or duration column");
-%! unwind_protect_cleanup
-%!   delete (fname);
-%! end_unwind_protect
-
 ## Test too few input arguments
 %!error <readtimetable: too few input arguments.> readtimetable ()
 
@@ -289,3 +276,19 @@ endfunction
 %!error <timetable.writetimetable: 'WriteRowNames' is not supported; a timetable labels its rows by time.  Write a table with row names using 'writetable'.> ...
 %! writetimetable (timetable ((1:3)', 'TimeStep', hours (1)), 'f.csv', ...
 %!                 'WriteRowNames', true)
+
+## A file whose columns are all numeric, so nothing in it can label the rows.
+%!shared fnum
+%! fnum = [tempname(), '.csv'];
+%! fid = fopen (fnum, 'w');
+%! fputs (fid, "a,b\n1,2\n3,4\n");
+%! fclose (fid);
+
+## Test a file with no time column cannot become a timetable
+%!error <readtimetable: the file has no datetime or duration column to use as row times.> ...
+%! readtimetable (fnum)
+
+## Test the fixture is removed again
+%!test
+%! delete (fnum);
+%! assert_equal (exist (fnum, 'file'), 0);
