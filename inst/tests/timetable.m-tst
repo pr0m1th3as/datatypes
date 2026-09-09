@@ -4545,6 +4545,232 @@
 %! assert_equal (table2timetable (T).Properties.TimeStep, hours (1));
 
 ################################################################################
+##                     **    The file round trips    **                       ##
+################################################################################
+
+## Each of the three file routes is asked to give back what it was handed.
+## The row times and their type are the point: a format that loses them
+## loses what the class is for.  The house text and spreadsheet pairs are
+## this package's own, so what they keep is settled here rather than
+## against MATLAB; 'writetimetable' and 'readtimetable' write what MATLAB
+## writes and were read on R2026a when the format was settled.
+
+## Test the house text pair gives back the row times, their type and format
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:3)';
+%! TT = timetable (t, (1:4)', {'p'; 'q'; 'r'; 's'}, ...
+%!                 'VariableNames', {'a', 'b'});
+%! fname = [tempname(), '.csv'];
+%! unwind_protect
+%!   timetable2csv (TT, fname);
+%!   B = csv2timetable (fname);
+%!   assert_equal (class (B), 'timetable');
+%!   assert_equal (B.Properties.RowTimes, t);
+%!   assert_equal (B.Properties.VariableNames, {'a', 'b'});
+%!   assert_equal (B.a, (1:4)');
+%!   assert_equal (B.b, {'p'; 'q'; 'r'; 's'});
+%! unwind_protect_cleanup
+%!   delete (fname);
+%! end_unwind_protect
+## Test a zoned row time comes back zoned through the text pair
+%!test
+%! ny = 'America/New_York';
+%! t = datetime (2024, 3, 10, 'TimeZone', ny) + hours (0:3)';
+%! TT = timetable (t, (1:4)', 'VariableNames', {'v'});
+%! fname = [tempname(), '.csv'];
+%! unwind_protect
+%!   timetable2csv (TT, fname);
+%!   B = csv2timetable (fname);
+%!   assert_equal (B.Properties.RowTimes.TimeZone, ny);
+%!   assert_equal (B.Properties.RowTimes, t);
+%! unwind_protect_cleanup
+%!   delete (fname);
+%! end_unwind_protect
+## Test duration row times come back a duration and not a number
+%!test
+%! TT = timetable (hours (0:3)', (1:4)', 'VariableNames', {'v'});
+%! fname = [tempname(), '.csv'];
+%! unwind_protect
+%!   timetable2csv (TT, fname);
+%!   B = csv2timetable (fname);
+%!   assert_equal (class (B.Properties.RowTimes), 'duration');
+%!   assert_equal (seconds (B.Properties.RowTimes)', [0, 3600, 7200, 10800]);
+%! unwind_protect_cleanup
+%!   delete (fname);
+%! end_unwind_protect
+
+## Test the house spreadsheet pair gives back the row times and the values
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:3)';
+%! TT = timetable (t, (1:4)', 'VariableNames', {'v'});
+%! fname = [tempname(), '.fods'];
+%! unwind_protect
+%!   timetable2ods (TT, fname);
+%!   B = ods2timetable (fname);
+%!   assert_equal (class (B), 'timetable');
+%!   assert_equal (B.Properties.RowTimes, t);
+%!   assert_equal (B.v, (1:4)');
+%! unwind_protect_cleanup
+%!   delete (fname);
+%! end_unwind_protect
+## Test the spreadsheet pair is the one that carries an event table
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:3)';
+%! TT = timetable (t, (1:4)', 'VariableNames', {'v'});
+%! ET = eventtable (timetable (t([2, 3]), {'x'; 'y'}, ...
+%!                             'VariableNames', {'L'}));
+%! ET.EventLabelsVariable = 'L';
+%! TT.Properties.Events = ET;
+%! fname = [tempname(), '.fods'];
+%! unwind_protect
+%!   timetable2ods (TT, fname);
+%!   B = ods2timetable (fname);
+%!   assert_equal (class (B.Properties.Events), 'eventtable');
+%!   assert_equal (height (B.Properties.Events), 2);
+%!   assert_equal (B.Properties.Events.Properties.RowTimes, t([2, 3]));
+%! unwind_protect_cleanup
+%!   delete (fname);
+%! end_unwind_protect
+
+## Test the MATLAB-compatible pair round trips through a text file
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:3)';
+%! TT = timetable (t, (1:4)', 'VariableNames', {'v'});
+%! fname = [tempname(), '.csv'];
+%! unwind_protect
+%!   writetimetable (TT, fname);
+%!   B = readtimetable (fname);
+%!   assert_equal (class (B), 'timetable');
+%!   assert_equal (B.Properties.RowTimes, t);
+%!   assert_equal (B.v, (1:4)');
+%! unwind_protect_cleanup
+%!   delete (fname);
+%! end_unwind_protect
+## Test it round trips through a spreadsheet as well
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:3)';
+%! TT = timetable (t, (1:4)', 'VariableNames', {'v'});
+%! fname = [tempname(), '.fods'];
+%! unwind_protect
+%!   writetimetable (TT, fname);
+%!   B = readtimetable (fname);
+%!   assert_equal (B.Properties.RowTimes, t);
+%!   assert_equal (B.v, (1:4)');
+%! unwind_protect_cleanup
+%!   delete (fname);
+%! end_unwind_protect
+## Test a zoned row time survives it in the RFC 9557 form of deviation D7
+%!test
+%! ny = 'America/New_York';
+%! t = datetime (2024, 3, 10, 'TimeZone', ny) + hours (0:3)';
+%! TT = timetable (t, (1:4)', 'VariableNames', {'v'});
+%! fname = [tempname(), '.csv'];
+%! unwind_protect
+%!   writetimetable (TT, fname);
+%!   B = readtimetable (fname);
+%!   assert_equal (B.Properties.RowTimes.TimeZone, ny);
+%!   assert_equal (B.Properties.RowTimes, t);
+%! unwind_protect_cleanup
+%!   delete (fname);
+%! end_unwind_protect
+
+################################################################################
+##                    **    Regularity by unit    **                          ##
+################################################################################
+
+## 'isregular' asks whether the rows are evenly spaced in the unit named.  A
+## calendar unit is answered by the calendar and a coarser one implies the
+## finer ones it divides into; a duration carries no calendar, so it answers
+## for time alone.  Measured on MATLAB R2024a.
+
+## Test an hourly timetable is regular in time and in nothing else
+%!test
+%! d0 = datetime (2024, 1, 1);
+%! T = timetable (d0 + hours (0:5)', (1:6)');
+%! assert_equal (isregular (T), true);
+%! assert_equal (isregular (T, 'time'), true);
+%! assert_equal (isregular (T, 'days'), false);
+%! assert_equal (isregular (T, 'months'), false);
+%! assert_equal (isregular (T, 'years'), false);
+## Test a daily one is regular in days but not in weeks
+%!test
+%! d0 = datetime (2024, 1, 1);
+%! T = timetable (d0 + days (0:5)', (1:6)');
+%! assert_equal (isregular (T, 'time'), true);
+%! assert_equal (isregular (T, 'days'), true);
+%! assert_equal (isregular (T, 'weeks'), false);
+%! assert_equal (isregular (T, 'months'), false);
+## Test a weekly one is regular in weeks and in the days they hold
+%!test
+%! d0 = datetime (2024, 1, 1);
+%! T = timetable (d0 + days (0:7:35)', (1:6)');
+%! assert_equal (isregular (T, 'time'), true);
+%! assert_equal (isregular (T, 'days'), true);
+%! assert_equal (isregular (T, 'weeks'), true);
+%! assert_equal (isregular (T, 'months'), false);
+
+## Test a monthly one is regular in months and in no fixed length of time
+%!test
+%! d0 = datetime (2024, 1, 1);
+%! T = timetable (d0 + calmonths ((0:5)'), (1:6)');
+%! assert_equal (isregular (T), false);
+%! assert_equal (isregular (T, 'time'), false);
+%! assert_equal (isregular (T, 'days'), false);
+%! assert_equal (isregular (T, 'months'), true);
+%! assert_equal (isregular (T, 'quarters'), false);
+## Test a coarser calendar unit implies the finer ones it divides into
+%!test
+%! d0 = datetime (2024, 1, 1);
+%! T = timetable (d0 + calquarters ((0:5)'), (1:6)');
+%! assert_equal (isregular (T, 'months'), true);
+%! assert_equal (isregular (T, 'quarters'), true);
+%! assert_equal (isregular (T, 'years'), false);
+%!test
+%! d0 = datetime (2024, 1, 1);
+%! T = timetable (d0 + calyears ((0:5)'), (1:6)');
+%! assert_equal (isregular (T, 'months'), true);
+%! assert_equal (isregular (T, 'quarters'), true);
+%! assert_equal (isregular (T, 'years'), true);
+%! assert_equal (isregular (T, 'time'), false);
+
+## Test duration row times answer for time and for no calendar unit, a
+## duration of whole days included
+%!test
+%! T = timetable (hours (0:5)', (1:6)');
+%! assert_equal (isregular (T, 'time'), true);
+%! assert_equal (isregular (T, 'days'), false);
+%! assert_equal (isregular (T, 'months'), false);
+%!test
+%! T = timetable (days (0:5)', (1:6)');
+%! assert_equal (isregular (T, 'time'), true);
+%! assert_equal (isregular (T, 'days'), false);
+%! assert_equal (isregular (T, 'weeks'), false);
+## Test an irregular timetable is regular in nothing
+%!test
+%! d0 = datetime (2024, 1, 1);
+%! T = timetable (d0 + hours ([0, 1, 3, 6, 10, 15])', (1:6)');
+%! assert_equal (isregular (T), false);
+%! assert_equal (isregular (T, 'time'), false);
+%! assert_equal (isregular (T, 'days'), false);
+%! assert_equal (isregular (T, 'months'), false);
+
+## Test the three predicates single out what each is for
+%!test
+%! T = timetable (datetime (2024, 1, 1), 1);
+%! assert_equal (istimetable (T), true);
+%! assert_equal (istable (T), false);
+%! assert_equal (istabular (T), true);
+%! assert_equal (istimetable (table (1)), false);
+%! assert_equal (istabular (table (1)), true);
+%! assert_equal (istimetable (1), false);
+%! assert_equal (istabular (1), false);
+## Test an event table is a timetable and still not a table
+%!test
+%! E = eventtable (timetable (datetime (2024, 1, 1), 1));
+%! assert_equal (istimetable (E), true);
+%! assert_equal (istable (E), false);
+
+################################################################################
 ##                 **    Row selection and assignment    **                   ##
 ################################################################################
 
