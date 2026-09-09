@@ -64,6 +64,7 @@ classdef timerange
     ## @deftypefn  {timerange} {@var{tr} =} timerange (@var{startTime}, @var{endTime})
     ## @deftypefnx {timerange} {@var{tr} =} timerange (@var{startTime}, @var{endTime}, @var{intervalType})
     ## @deftypefnx {timerange} {@var{tr} =} timerange (@var{t}, @var{unit})
+    ## @deftypefnx {timerange} {@var{tr} =} timerange (@var{startTime}, @var{endTime}, @var{unit})
     ##
     ## Create a time range subscript.
     ##
@@ -86,6 +87,13 @@ classdef timerange
     ## @qcode{'months'}, @qcode{'quarters'} or @qcode{'years'}, in the
     ## singular or the plural.  @var{t} must be a @code{datetime}: a
     ## @code{duration} is elapsed time and sits on no calendar.
+    ##
+    ## @code{@var{tr} = timerange (@var{startTime}, @var{endTime},
+    ## @var{unit})} widens the range to whole periods of @var{unit}: it runs
+    ## from the start of the period holding @var{startTime} to the start of
+    ## the period after the one holding @var{endTime}, the far end left out
+    ## as usual.  Both bounds must be @code{datetime} scalars.  A unit and an
+    ## interval type cannot both be given, the unit fixing the ends itself.
     ##
     ## @seealso{withtol, timetable}
     ## @end deftypefn
@@ -125,6 +133,22 @@ classdef timerange
                          " time is given; a duration sits on no calendar."));
         endif
         [this.first, this.last] = unitPeriod (first, second);
+        this.intervalType = 'openright';
+        return
+      endif
+
+      ## A unit in the third place widens the range to whole units rather
+      ## than saying which ends belong to it: it runs from the start of the
+      ## unit holding the first bound to the start of the unit after the one
+      ## holding the second, and the far end is left out as usual.
+      if (nargin == 3 && isUnitName (varargin{3}))
+        if (! (isdatetime (first) && isdatetime (second)))
+          error (strcat ("timerange: START and END must both be datetimes", ...
+                         " when a unit of time is given; a duration sits", ...
+                         " on no calendar."));
+        endif
+        [this.first, ~] = unitPeriod (first, varargin{3});
+        [~, this.last] = unitPeriod (second, varargin{3});
         this.intervalType = 'openright';
         return
       endif
@@ -371,6 +395,51 @@ endfunction
 %! assert_equal (rowIndices (timerange (tv(1), 'day'), tv), (1:6)');
 %! assert_equal (rowIndices (timerange (tv(1), 'year'), tv), (1:6)');
 %! assert_equal (rowIndices (timerange (tv(1), 'hours'), tv), 1);
+
+## The three-argument unit form widens the range to whole periods spanning
+## both bounds, rather than saying which ends belong to it.  Measured on
+## MATLAB R2024a.
+## Test a unit spanning both bounds runs from period start to period end
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:5)';
+%! tr = timerange (tv(2), tv(5), 'hours');
+%! assert_equal (rowIndices (tr, tv), (2:5)');
+## Test a coarser unit reaches past both bounds
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:5)';
+%! assert_equal (rowIndices (timerange (tv(2), tv(5), 'days'), tv), (1:6)');
+%! assert_equal (rowIndices (timerange (tv(2), tv(5), 'months'), tv), (1:6)');
+%! assert_equal (rowIndices (timerange (tv(2), tv(5), 'quarters'), tv), ...
+%!               (1:6)');
+%! assert_equal (rowIndices (timerange (tv(2), tv(5), 'years'), tv), (1:6)');
+## Test a finer unit adds only the part of the period past the end bound
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:5)';
+%! assert_equal (rowIndices (timerange (tv(2), tv(5), 'seconds'), tv), ...
+%!               (2:5)');
+%! assert_equal (rowIndices (timerange (tv(2), tv(5), 'minutes'), tv), ...
+%!               (2:5)');
+## Test the singular names are taken as the plural ones are
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:5)';
+%! assert_equal (rowIndices (timerange (tv(2), tv(5), 'hour'), tv), (2:5)');
+%! assert_equal (rowIndices (timerange (tv(2), tv(5), 'day'), tv), (1:6)');
+## Test the widened range keeps its far end out
+%!test
+%! tv = datetime (2024, 1, 1) + hours (0:5)';
+%! [lo, hi] = interval (timerange (tv(2), tv(4), 'hours'), tv);
+%! assert_equal (lo, tv(2));
+%! assert_equal (hi, tv(5));
+## Test the bounds of the unit form are read off a partial time
+%!test
+%! tv = datetime (2024, 1, 1) + minutes (0:30:150)';
+%! assert_equal (rowIndices (timerange (tv(2), tv(4), 'hours'), tv), (1:4)');
+
+## Test input validation for the three-argument unit form
+%!error <timerange: START and END must both be datetimes when a unit of time is given; a duration sits on no calendar.> ...
+%! timerange (hours (1), hours (3), 'hours');
+%!error <timerange: START and END must both be datetimes when a unit of time is given; a duration sits on no calendar.> ...
+%! timerange (datetime (2024, 1, 1), hours (3), 'hours');
 
 ## Test a reversed or distant range selects nothing
 %!test

@@ -4975,6 +4975,17 @@
 %! assert_equal (A.a, [1; 2; 3; 4; 5; 6; 7]);
 %! assert_equal (A.b, [11; 12; 13; 14; 15; 16; 7]);
 
+## Test a time range given a unit widens to whole periods
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (height (A(timerange (t(2), t(4), 'hours'), :)), 3);
+%! assert_equal (height (A(timerange (t(2), t(4), 'days'), :)), 6);
+%!test
+%! t = datetime (2024, 6, 1) + minutes (0:30:150)';
+%! A = timetable (t, (1:6)', 'VariableNames', {'a'});
+%! assert_equal (A(timerange (t(2), t(4), 'hours'), :).a, [1; 2; 3; 4]);
+
 ## Test the four kinds of time range take their bounds as they say
 %!test
 %! t = datetime (2024, 6, 1) + hours (0:5)';
