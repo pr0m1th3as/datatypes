@@ -4545,6 +4545,142 @@
 %! assert_equal (table2timetable (T).Properties.TimeStep, hours (1));
 
 ################################################################################
+##                 **    Row selection and assignment    **                   ##
+################################################################################
+
+## Measured on MATLAB R2024a.
+
+## Test 'head' and 'tail' take eight rows by default and clamp to the height
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (height (head (A)), 6);
+%! assert_equal (height (tail (A)), 6);
+%! assert_equal (height (head (A, 99)), 6);
+%! assert_equal (height (tail (A, 99)), 6);
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (height (head (A, 0)), 0);
+%! assert_equal (height (tail (A, 0)), 0);
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (head (A, 2).Properties.RowTimes, t(1:2));
+%! assert_equal (tail (A, 2).Properties.RowTimes, t(5:6));
+
+## Test assigning the row times replaces them and reads the step afresh
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! B = A;
+%! B.Properties.RowTimes = t + hours (10);
+%! assert_equal (B.Properties.RowTimes, t + hours (10));
+%! assert_equal (B.Properties.TimeStep, hours (1));
+## Test assigning the start time shifts every row and keeps the step
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! D = timetable ((1:6)', 'TimeStep', hours (1), 'StartTime', t(1));
+%! B = D;
+%! B.Properties.StartTime = t(1) + hours (5);
+%! assert_equal (B.Properties.RowTimes, t + hours (5));
+%! assert_equal (B.Properties.TimeStep, hours (1));
+## Test assigning the step regenerates the row times from the start
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! D = timetable ((1:6)', 'TimeStep', hours (1), 'StartTime', t(1));
+%! B = D;
+%! B.Properties.TimeStep = hours (2);
+%! assert_equal (B.Properties.RowTimes, t(1) + hours (0:2:10)');
+%! assert_equal (B.Properties.SampleRate, 1/7200);
+## Test assigning the rate does the same, being the step's reciprocal
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! D = timetable ((1:6)', 'TimeStep', hours (1), 'StartTime', t(1));
+%! B = D;
+%! B.Properties.SampleRate = 1;
+%! assert_equal (B.Properties.TimeStep, seconds (1));
+%! assert_equal (B.Properties.RowTimes, t(1) + seconds (0:5)');
+
+## Test deleting rows takes their times with them and reads the step afresh
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! B = A;
+%! B(2, :) = [];
+%! assert_equal (height (B), 5);
+%! assert_equal (B.Properties.RowTimes, t([1, 3, 4, 5, 6]));
+%! assert_equal (isnan (B.Properties.TimeStep), true);
+## Test a variable goes by assigning it away, and arrives by naming it
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! B = A;
+%! B.a = [];
+%! assert_equal (B.Properties.VariableNames, {'b'});
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! B = A;
+%! B.a = (21:26)';
+%! assert_equal (B.a, (21:26)');
+%! B.c = (21:26)';
+%! assert_equal (B.Properties.VariableNames, {'a', 'b', 'c'});
+## Test a row time the timetable does not have cannot be assigned into
+%!error <timetable: no such row time in timetable: '01-Jun-2024 09:00:00'> ...
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! A(t(1) + hours (9), :) = [7, 7];
+
+## Test the four kinds of time range take their bounds as they say
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (height (A(timerange (t(2), t(4)), :)), 2);
+%! assert_equal (height (A(timerange (t(2), t(4), 'closed'), :)), 3);
+%! assert_equal (height (A(timerange (t(2), t(4), 'openleft'), :)), 2);
+%! assert_equal (height (A(timerange (t(2), t(4), 'open'), :)), 1);
+## Test a tolerance takes the rows within it
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (height (A(withtol (t(3), minutes (0)), :)), 1);
+%! assert_equal (height (A(withtol (t(3), minutes (90)), :)), 3);
+%! assert_equal (height (A(withtol (t([2, 4]), minutes (10)), :)), 2);
+## Test a variable type subscript selects by type
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (width (A(:, vartype ('numeric'))), 2);
+## Test the range predicates read a closed range and one that misses
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (containsrange (A, timerange (t(2), t(4), 'closed')), true);
+%! assert_equal (withinrange (A, timerange (t(2), t(4), 'closed')), false);
+%! assert_equal (overlapsrange (A, timerange (t(1) - hours (5), ...
+%!                                            t(1) - hours (2))), false);
+
+## Test 'summary' keys its struct by the row time and variable names
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! S = summary (A);
+%! assert_equal (fieldnames (S)', {'t', 'a', 'b'});
+%! assert_equal (S.a.Min, 1);
+%! assert_equal (S.a.Max, 6);
+## Test a categorical variable is described by its categories
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! C = timetable (t, categorical ({'x'; 'y'; 'x'; 'y'; 'x'; 'y'}), ...
+%!                'VariableNames', {'g'});
+%! S = summary (C);
+%! assert_equal (fieldnames (S.g)', {'Size', 'Type', 'Description', ...
+%!               'Units', 'Continuity', 'Categories', 'Counts', ...
+%!               'NumMissing'});
+%! assert_equal (S.g.Categories', {'x', 'y'});
+
+################################################################################
 ##                     **    Per method behaviour    **                       ##
 ################################################################################
 
