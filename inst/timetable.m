@@ -1133,11 +1133,6 @@ classdef timetable < tabular
       nOld = numel (rt);
       nNew = numel (nt);
 
-      if (any (ismissing (rt)))
-        errmsg = "the row times must not be missing.";
-        return
-      endif
-
       [mv, errmsg] = retimeMethods (this, method);
       if (! isempty (errmsg))
         return
@@ -1145,11 +1140,16 @@ classdef timetable < tabular
 
       interps = {'linear', 'spline', 'pchip', 'makima'};
       neighbours = {'previous', 'next', 'nearest'};
+      ## Two of the aggregations name a row by where it comes rather than by
+      ## what it holds, so they need the row times ordered as the filling
+      ## methods do, although they gather rather than fill.
+      ordered = {'firstvalue', 'lastvalue'};
       aggs = timetable.retimeAggregations ();
       nv = width (this);
       isInterp = false (1, nv);
       isAgg = false (1, nv);
       isNeigh = false (1, nv);
+      isOrder = false (1, nv);
       isFilled = false (1, nv);
       for j = 1:nv
         if (is_function_handle (mv{j}))
@@ -1158,6 +1158,7 @@ classdef timetable < tabular
           isInterp(j) = any (strcmp (mv{j}, interps));
           isNeigh(j) = any (strcmp (mv{j}, neighbours));
           isAgg(j) = any (strcmp (mv{j}, aggs));
+          isOrder(j) = any (strcmp (mv{j}, ordered));
         endif
         ## A value that was missing before the call is a gap like any other
         ## and is filled with them, so a method that fills goes through the
@@ -1180,7 +1181,7 @@ classdef timetable < tabular
                             retimeMethodName (method));
           return
         endif
-        if ((any (isInterp) || any (isNeigh))
+        if ((any (isInterp) || any (isNeigh) || any (isOrder))
             && ! (issorted (rt) || issorted (flipud (rt))))
           errmsg = sprintf (strcat ("the row times must be sorted when", ...
                                     " retiming with '%s'."), ...
@@ -5962,8 +5963,12 @@ function [nt, errmsg] = retimeTimes (rt, spec, tstep, srate, isAgg)
     nt = rt;
     return
   endif
-  if (any (ismissing (rt)))
-    errmsg = "the row times must not be missing.";
+  ## A missing row time places no row, but it does not stop the others being
+  ## placed: the grid is built from the times that name an instant and the
+  ## row falls in no bin.  Only a timetable with nothing but missing times
+  ## leaves the grid nothing to span.
+  if (all (ismissing (rt)))
+    errmsg = "the row times must not all be missing.";
     return
   endif
 
@@ -6237,7 +6242,14 @@ endfunction
 
 function si = retimeNeighbor (rt, nt, method)
 
-  [rs, ord] = sort (rt(:));
+  ## A missing row time names no instant, so it is no neighbour of any
+  ## target and takes no part in the search.  It is dropped before the sort
+  ## rather than left to sort last, where it would sit at the end of the
+  ## table 'lookup' reads and answer for the target beyond the last real
+  ## row.
+  keep = find (! ismissing (rt(:)));
+  [rs, o] = sort (rt(keep));
+  ord = keep(o);
   if (isdatetime (rs))
     x = seconds (rs - rs(1));
     q = seconds (nt(:) - rs(1));

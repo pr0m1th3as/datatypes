@@ -5416,6 +5416,82 @@
 %! assert_equal (height (synchronize (A, B, 'regular', 'sum', ...
 %!                                    'TimeStep', caldays (1))), 1);
 
+## A method needs the row times ordered only where it names a row by where
+## it comes: the filling methods and the two aggregations that take the
+## first or the last of a bin.  The rest gather what falls in each bin and
+## take no interest in the order, so a missing row time simply falls in no
+## bin.  Measured on MATLAB R2024a.
+%!test
+%! d0 = datetime (2024, 6, 1);
+%! N = timetable ([d0; d0 + hours(1); NaT; d0 + hours(3)], (1:4)');
+%! assert_equal (retime (N, 'hourly', 'sum').Var1', [1, 2, 0, 4]);
+%! assert_equal (retime (N, 'hourly', 'count').Var1', [1, 1, 0, 1]);
+%! assert_equal (retime (N, 'hourly', 'prod').Var1', [1, 2, 1, 4]);
+%!test
+%! d0 = datetime (2024, 6, 1);
+%! N = timetable ([d0; d0 + hours(1); NaT; d0 + hours(3)], (1:4)');
+%! assert_equal (retime (N, 'hourly', 'mean').Var1', [1, 2, NaN, 4]);
+%! assert_equal (retime (N, 'hourly', 'median').Var1', [1, 2, NaN, 4]);
+%! assert_equal (retime (N, 'hourly', 'mode').Var1', [1, 2, NaN, 4]);
+%! assert_equal (retime (N, 'hourly', 'min').Var1', [1, 2, NaN, 4]);
+%! assert_equal (retime (N, 'hourly', 'max').Var1', [1, 2, NaN, 4]);
+%!test
+%! d0 = datetime (2024, 6, 1);
+%! N = timetable ([d0; d0 + hours(1); NaT; d0 + hours(3)], (1:4)');
+%! assert_equal (retime (N, 'hourly', @sum).Var1', [1, 2, 0, 4]);
+## Test the two filling methods that ask nothing of the order take it too
+%!test
+%! d0 = datetime (2024, 6, 1);
+%! N = timetable ([d0; d0 + hours(1); NaT; d0 + hours(3)], (1:4)');
+%! assert_equal (retime (N, 'hourly', 'fillwithmissing').Var1', ...
+%!               [1, 2, NaN, 4]);
+%! assert_equal (retime (N, 'hourly', 'fillwithconstant', ...
+%!                       'Constant', 9).Var1', [1, 2, 9, 4]);
+## Test the row times of the result span the times that name an instant
+%!test
+%! d0 = datetime (2024, 6, 1);
+%! N = timetable ([d0; d0 + hours(1); NaT; d0 + hours(3)], (1:4)');
+%! R = retime (N, 'hourly', 'sum');
+%! assert_equal (height (R), 4);
+%! assert_equal (R.Properties.RowTimes, d0 + hours (0:3)');
+
+## Test a method that reads the neighbours refuses a missing row time
+%!error <timetable.retime: the row times must be sorted when retiming with 'previous'.> ...
+%! d0 = datetime (2024, 6, 1);
+%! retime (timetable ([d0; d0 + hours(1); NaT; d0 + hours(3)], (1:4)'), ...
+%!         'hourly', 'previous');
+%!error <timetable.retime: the row times must be sorted when retiming with 'linear'.> ...
+%! d0 = datetime (2024, 6, 1);
+%! retime (timetable ([d0; d0 + hours(1); NaT; d0 + hours(3)], (1:4)'), ...
+%!         'hourly', 'linear');
+## Test 'firstvalue' and 'lastvalue' name a row by where it comes, so they
+## ask for the order as the filling methods do
+%!error <timetable.retime: the row times must be sorted when retiming with 'firstvalue'.> ...
+%! d0 = datetime (2024, 6, 1);
+%! retime (timetable (d0 + hours ([0; 2; 1; 3]), (1:4)'), ...
+%!         'hourly', 'firstvalue');
+%!error <timetable.retime: the row times must be sorted when retiming with 'lastvalue'.> ...
+%! d0 = datetime (2024, 6, 1);
+%! retime (timetable (d0 + hours ([0; 2; 1; 3]), (1:4)'), ...
+%!         'hourly', 'lastvalue');
+## Test the gathering methods take row times in any order
+%!test
+%! d0 = datetime (2024, 6, 1);
+%! S = timetable (d0 + hours ([0; 2; 1; 3]), (1:4)');
+%! assert_equal (retime (S, 'hourly', 'sum').Var1', [1, 3, 2, 4]);
+%! assert_equal (retime (S, 'hourly', 'mean').Var1', [1, 3, 2, 4]);
+%! assert_equal (retime (S, 'hourly', 'fillwithmissing').Var1', [1, 3, 2, 4]);
+## Test descending row times are sorted, so every method takes them
+%!test
+%! d0 = datetime (2024, 6, 1);
+%! D = timetable (d0 + hours ([3; 2; 1; 0]), (1:4)');
+%! assert_equal (retime (D, 'hourly', 'sum').Var1', [4, 3, 2, 1]);
+%! assert_equal (retime (D, 'hourly', 'previous').Var1', [4, 3, 2, 1]);
+%! assert_equal (retime (D, 'hourly', 'firstvalue').Var1', [4, 3, 2, 1]);
+## Test row times that are all missing leave the grid nothing to span
+%!error <timetable.retime: the row times must not all be missing.> ...
+%! retime (timetable ([NaT; NaT], [1; 2]), 'hourly', 'sum');
+
 ## Test a 'regular' grid runs on to the step at or after the last row
 %!test
 %! TT = timetable ((1:5)', 'RowTimes', datetime (2024, 6, 1) + hours (0:4)');
