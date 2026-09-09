@@ -4845,6 +4845,30 @@
 %! assert_equal (seconds (R.Properties.RowTimes), [0; 60]);
 %! assert_equal (R.Var1, [3; 3]);
 
+## Asking for the rows by a unit says how to gather them, not how to print
+## them, so the row times keep the display format they had rather than
+## taking the unit's.  Measured on MATLAB R2024a and R2026a.
+%!test
+%! TT = timetable ((1:3)', 'RowTimes', seconds ([0; 30; 90]));
+%! assert_equal (TT.Properties.RowTimes.Format, 's');
+%! assert_equal (retime (TT, 'hourly', 'sum').Properties.RowTimes.Format, 's');
+%! assert_equal (retime (TT, 'minutely', 'sum').Properties.RowTimes.Format, ...
+%!               's');
+%!test
+%! TT = timetable ((1:3)', 'RowTimes', seconds ([0; 30; 90]));
+%! R = retime (TT, 'minutely', 'previous');
+%! assert_equal (R.Properties.RowTimes.Format, 's');
+%!test
+%! TT = timetable ((1:3)', 'RowTimes', hours ([0; 0.25; 0.75]));
+%! assert_equal (TT.Properties.RowTimes.Format, 'h');
+%! R = retime (TT, 'minutely', 'sum');
+%! assert_equal (R.Properties.RowTimes.Format, 'h');
+## Test a 'regular' grid keeps it too, as it always did
+%!test
+%! TT = timetable ((1:3)', 'RowTimes', seconds ([0; 30; 90]));
+%! R = retime (TT, 'regular', 'previous', 'TimeStep', seconds (60));
+%! assert_equal (R.Properties.RowTimes.Format, 's');
+
 ## Test 'synchronize' ends its grid by the same rule
 %!test
 %! d0 = datetime (2024, 6, 1);

@@ -6164,6 +6164,10 @@ function [nt, errmsg] = unitGrid (rt, spec, isAgg)
   endswitch
   lo = step * floor (seconds (lo) / seconds (step));
   nt = unitSteps (lo, hi, step, isAgg);
+  ## The grid is generated from the unit's own duration and so comes out in
+  ## the unit's display format.  The row times keep theirs: asking for the
+  ## rows by the minute says how to gather them, not how to print them.
+  nt.Format = rt.Format;
 
 endfunction
 
