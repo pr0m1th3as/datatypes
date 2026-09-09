@@ -904,6 +904,14 @@
 %! assert_equal (isequal (A, []), false);
 %! assert_equal (isequal (A, A, A), true);
 
+## Test a comparison needs something to compare against
+%!error <timetable.isequal: too few input arguments.> ...
+%! isequal (timetable ((1:2)', 'RowTimes', ...
+%!          datetime (2024, 1, 1) + hours (0:1)'));
+%!error <timetable.isequaln: too few input arguments.> ...
+%! isequaln (timetable ((1:2)', 'RowTimes', ...
+%!           datetime (2024, 1, 1) + hours (0:1)'));
+
 ################################################################################
 ##                          **    Row subscripts    **                        ##
 ################################################################################
@@ -2517,6 +2525,9 @@
 %!error <timetable.varfun: FUNC must be a function handle.> ...
 %! rt = datetime (2024, 1, 1) + hours (0:1)';
 %! varfun (1, timetable ([1; 2], 'RowTimes', rt));
+%!error <timetable.varfun: too few input arguments.> ...
+%! varfun (timetable ([1; 2], 'RowTimes', ...
+%!         datetime (2024, 1, 1) + hours (0:1)'));
 
 ## Test an ungrouped 'rowfun' maps row for row and keeps every row time
 %!test
@@ -2599,6 +2610,9 @@
 %!error <timetable.rowfun: FUNC must be a function handle.> ...
 %! rt = datetime (2024, 1, 1) + hours (0:1)';
 %! rowfun (1, timetable ([1; 2], 'RowTimes', rt));
+%!error <timetable.rowfun: too few input arguments.> ...
+%! rowfun (timetable ([1; 2], 'RowTimes', ...
+%!         datetime (2024, 1, 1) + hours (0:1)'));
 
 ## Test 'grouptransform' keeps every row, its order and its row times
 %!test
@@ -2653,6 +2667,9 @@
 %!error <timetable.grouptransform: METHOD must be one of 'zscore', 'norm', 'meancenter', 'rescale', 'meanfill', 'linearfill', or a function handle.> ...
 %! rt = datetime (2024, 1, 1) + hours (0:1)';
 %! grouptransform (timetable ([1; 2], 'RowTimes', rt), 'Time', 'bogus');
+%!error <timetable.grouptransform: too few input arguments.> ...
+%! grouptransform (timetable ([1; 2], 'RowTimes', ...
+%!                 datetime (2024, 1, 1) + hours (0:1)'), 'Time');
 
 ## Test 'groupcounts' returns a table, the counts describing groups not rows
 %!test
@@ -2703,6 +2720,9 @@
 %! rt = datetime (2024, 1, 1) + hours (0:1)';
 %! TT = timetable ([1; 2], 'RowTimes', rt, 'VariableNames', {'A'});
 %! groupcounts (TT, 'Time', 'IncludeEmptyGroups', 'yes');
+%!error <timetable.groupcounts: too few input arguments.> ...
+%! groupcounts (timetable ([1; 2], 'RowTimes', ...
+%!              datetime (2024, 1, 1) + hours (0:1)'));
 
 ## Test 'groupsummary' returns a table, the summary describing groups
 %!test
@@ -2763,6 +2783,9 @@
 %! rt = datetime (2024, 1, 1) + hours (0:1)';
 %! TT = timetable ([1; 2], 'RowTimes', rt, 'VariableNames', {'A'});
 %! groupsummary (TT, 'Time', 'bogus', 'A');
+%!error <timetable.groupsummary: too few input arguments.> ...
+%! groupsummary (timetable ([1; 2], 'RowTimes', ...
+%!               datetime (2024, 1, 1) + hours (0:1)'));
 
 ## Test 'groupfilter' keeps the rows it accepts, in order, with their times
 %!test
@@ -2821,6 +2844,9 @@
 %! rt = datetime (2024, 1, 1) + hours (0:1)';
 %! TT = timetable ([1; 2], 'RowTimes', rt, 'VariableNames', {'A'});
 %! groupfilter (TT, 'Time', 'nope');
+%!error <timetable.groupfilter: too few input arguments.> ...
+%! groupfilter (timetable ([1; 2], 'RowTimes', ...
+%!              datetime (2024, 1, 1) + hours (0:1)'), 'Time');
 
 ## Test 'stack' repeats each row time once per stacked variable
 %!test
@@ -3201,6 +3227,9 @@
 %!error <timetable.splitapply: FUNC must be a function handle.> ...
 %! rt = datetime (2024, 1, 1) + hours (0:1)';
 %! splitapply (1, timetable ([1; 2], 'RowTimes', rt), [1; 2]);
+%!error <timetable.splitapply: too few input arguments.> ...
+%! splitapply (@mean, timetable ([1; 2], 'RowTimes', ...
+%!             datetime (2024, 1, 1) + hours (0:1)'));
 
 ## Test 'unstack' groups by the row times when no grouping variable is given
 %!test

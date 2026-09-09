@@ -1883,7 +1883,7 @@ classdef timetable < tabular
     ## @end deftypefn
     function tbl = cat (dim, varargin)
       if (nargin < 1)
-        print_usage ();
+        error ("timetable.cat: too few input arguments.");
       endif
       if (! (isnumeric (dim) && isscalar (dim) && any (dim == [1, 2])))
         error ("timetable.cat: DIM must be 1 or 2 for a 2-D timetable.");
@@ -2259,7 +2259,7 @@ classdef timetable < tabular
     ## @end deftypefn
     function TF = isequal (varargin)
       if (nargin < 2)
-        print_usage ();
+        error ("timetable.isequal: too few input arguments.");
       endif
       TF = false;
       if (all (cellfun (@(x) isa (x, 'timetable'), varargin)))
@@ -2289,7 +2289,7 @@ classdef timetable < tabular
     ## @end deftypefn
     function TF = isequaln (varargin)
       if (nargin < 2)
-        print_usage ();
+        error ("timetable.isequaln: too few input arguments.");
       endif
       TF = false;
       if (all (cellfun (@(x) isa (x, 'timetable'), varargin)))
@@ -3280,7 +3280,7 @@ classdef timetable < tabular
     ## @end deftypefn
     function B = varfun (func, A, varargin)
       if (nargin < 2)
-        print_usage ();
+        error ("timetable.varfun: too few input arguments.");
       endif
       [B, errmsg] = varfunResult (A, func, varargin);
       if (! isempty (errmsg))
@@ -3360,7 +3360,7 @@ classdef timetable < tabular
     ## @end deftypefn
     function B = rowfun (func, A, varargin)
       if (nargin < 2)
-        print_usage ();
+        error ("timetable.rowfun: too few input arguments.");
       endif
       [B, errmsg] = rowfunResult (A, func, varargin);
       if (! isempty (errmsg))
@@ -3416,7 +3416,7 @@ classdef timetable < tabular
     ## @end deftypefn
     function G = grouptransform (tt, groupvars, varargin)
       if (nargin < 3)
-        print_usage ();
+        error ("timetable.grouptransform: too few input arguments.");
       endif
       [G, errmsg] = grouptransformResult (tt, groupvars, varargin);
       if (! isempty (errmsg))
@@ -3466,7 +3466,7 @@ classdef timetable < tabular
     ## @end deftypefn
     function G = groupcounts (tt, groupvars, varargin)
       if (nargin < 2)
-        print_usage ();
+        error ("timetable.groupcounts: too few input arguments.");
       endif
       [G, errmsg] = groupcountsResult (tt, groupvars, varargin);
       if (! isempty (errmsg))
@@ -3534,7 +3534,7 @@ classdef timetable < tabular
     ## @end deftypefn
     function G = groupsummary (tt, groupvars, varargin)
       if (nargin < 2)
-        print_usage ();
+        error ("timetable.groupsummary: too few input arguments.");
       endif
       [G, errmsg] = groupsummaryResult (tt, groupvars, varargin);
       if (! isempty (errmsg))
@@ -3578,7 +3578,7 @@ classdef timetable < tabular
     ## @end deftypefn
     function G = groupfilter (tt, groupvars, varargin)
       if (nargin < 3)
-        print_usage ();
+        error ("timetable.groupfilter: too few input arguments.");
       endif
       [G, errmsg] = groupfilterResult (tt, groupvars, varargin);
       if (! isempty (errmsg))
@@ -3921,7 +3921,7 @@ classdef timetable < tabular
     ## @end deftypefn
     function [G, TID] = findgroups (tt)
       if (nargin != 1)
-        print_usage ();
+        error ("timetable.findgroups: too few input arguments.");
       endif
       [G, TID, errmsg] = findgroupsResult (tt);
       if (! isempty (errmsg))
@@ -3951,7 +3951,7 @@ classdef timetable < tabular
     ## @end deftypefn
     function varargout = splitapply (func, tt, G)
       if (nargin != 3)
-        print_usage ();
+        error ("timetable.splitapply: too few input arguments.");
       endif
       nout = max (nargout, 1);
       [results, N, errmsg] = splitapplyResult (tt, func, G, nout);

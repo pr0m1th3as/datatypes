@@ -5758,6 +5758,7 @@
 %! assert_equal (C{1}, [20; 40]);
 %! assert_equal (C{2}, [60; 80]);
 %!error <table.varfun: FUNC must be a function handle.> varfun (1, table ([1; 2]))
+%!error <table.varfun: too few input arguments.> varfun (table ([1; 2]))
 %!error <table.varfun: invalid 'OutputFormat' value 'bogus'.> ...
 %! varfun (@sum, table ([1; 2]), 'OutputFormat', 'bogus')
 %!error <table.varfun: there are no variables to which to apply FUNC.> ...
@@ -5902,6 +5903,7 @@
 %! assert_equal (B.GroupCount, [2; 2; 2; 2]);
 %! assert_equal (B.Var3, [15; 26; 37; 48]);
 %!error <table.rowfun: FUNC must be a function handle.> rowfun (1, table ([1; 2]))
+%!error <table.rowfun: too few input arguments.> rowfun (table ([1; 2]))
 %!error <table.rowfun: 'SeparateInputs' must be a logical scalar.> ...
 %! rowfun (@(x) x, table ([1; 2]), 'SeparateInputs', 'yes')
 %!error <table.rowfun: the number of 'OutputVariableNames' must equal 'NumOutputs'.> ...
@@ -6032,6 +6034,8 @@
 %! groupsummary (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', 'sum', 'x', 5)
 %!error <table.groupsummary: at least one grouping variable is required.> ...
 %! groupsummary (table ([1; 2], 'VariableNames', {'g'}), false)
+%!error <table.groupsummary: too few input arguments.> ...
+%! groupsummary (table ([1; 2], 'VariableNames', {'g'}))
 %!error <table.groupsummary: variable 'x': named method 'mean' is not supported for variables of type 'cell'; use a function handle.> ...
 %! groupsummary (table ([1; 2], {'a'; 'b'}, 'VariableNames', {'g', 'x'}), 'g', 'mean')
 
@@ -6250,6 +6254,8 @@
 %! assert_equal (G2.x, [4; 5; 6]);
 %!error <table.groupfilter: METHOD must be a function handle.> ...
 %! groupfilter (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', 'sum')
+%!error <table.groupfilter: too few input arguments.> ...
+%! groupfilter (table ([1; 2], 'VariableNames', {'g'}), 'g')
 %!error <table.groupfilter: binning grouping variable 'g' by time unit 'month' is only supported for datetime variables.> ...
 %! groupfilter (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', 'month', @(x) x > 0)
 %!error <table.groupfilter: too many positional arguments.> ...
@@ -6339,6 +6345,8 @@
 %! grouptransform (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', 'zscore', 'x', 5)
 %!error <table.grouptransform: variable 'x': grouptransform requires numeric or logical data; got 'cell'.> ...
 %! grouptransform (table ([1; 2], {'a'; 'b'}, 'VariableNames', {'g', 'x'}), 'g', 'zscore')
+%!error <table.grouptransform: too few input arguments.> ...
+%! grouptransform (table ([1; 2], 'VariableNames', {'g'}), 'g')
 
 ## 'pivot' counts the rows of each row-and-column group by default
 %!test
@@ -7006,6 +7014,10 @@
 %! assert_equal (isequaln (A, B), false);
 ## and it compares variables by value, not by class
 %!assert_equal (isequaln (table (int8 ([1; 2])), table ([1; 2])), true)
+
+## Test a comparison needs something to compare against
+%!error <table.isequal: too few input arguments.> isequal (table ([1; 2]))
+%!error <table.isequaln: too few input arguments.> isequaln (table ([1; 2]))
 
 ################################################################################
 ##                       **    Forbidden Methods    **                        ##
@@ -7838,6 +7850,8 @@
 %!error <table.splitapply: FUNC must be a function handle.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! splitapply (5, T, [1; 2]);
+%!error <table.splitapply: too few input arguments.> ...
+%! splitapply (@mean, table ([1; 2], 'VariableNames', {'n'}));
 %!error <table.splitapply: G must be a numeric vector with one element per row of T.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! splitapply (@(x) 1, T, [1; 2; 3]);
@@ -7883,6 +7897,8 @@
 %!error <table.groupcounts: 'IncludeMissingGroups' must be a logical scalar.> ...
 %! G = table ([1; 1], [1; 2], 'VariableNames', {'g', 'v'});
 %! groupcounts (G, 'g', 'IncludeMissingGroups', [1, 2]);
+%!error <table.groupcounts: too few input arguments.> ...
+%! groupcounts (table ([1; 1], 'VariableNames', {'g'}));
 %!error <table.groupcounts: 'IncludeEmptyGroups' must be a logical scalar.> ...
 %! G = table ([1; 1], [1; 2], 'VariableNames', {'g', 'v'});
 %! groupcounts (G, 'g', 'IncludeEmptyGroups', [1, 2]);

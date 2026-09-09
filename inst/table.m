@@ -3261,7 +3261,7 @@ classdef table < tabular
     ## @end deftypefn
     function [G, TID] = findgroups (this)
       if (nargin != 1)
-        print_usage ();
+        error ("table.findgroups: too few input arguments.");
       endif
       [G, TID, errmsg] = findgroupsResult (this);
       if (! isempty (errmsg))
@@ -3292,7 +3292,7 @@ classdef table < tabular
     ## @end deftypefn
     function varargout = splitapply (func, this, G)
       if (nargin != 3)
-        print_usage ();
+        error ("table.splitapply: too few input arguments.");
       endif
       nout = max (nargout, 1);
       [results, N, errmsg] = splitapplyResult (this, func, G, nout);
@@ -3359,7 +3359,7 @@ classdef table < tabular
     ## @end deftypefn
     function B = varfun (func, A, varargin)
       if (nargin < 2)
-        print_usage ();
+        error ("table.varfun: too few input arguments.");
       endif
       [B, errmsg] = varfunResult (A, func, varargin);
       if (! isempty (errmsg))
@@ -3435,7 +3435,7 @@ classdef table < tabular
     ## @end deftypefn
     function B = rowfun (func, A, varargin)
       if (nargin < 2)
-        print_usage ();
+        error ("table.rowfun: too few input arguments.");
       endif
       [B, errmsg] = rowfunResult (A, func, varargin);
       if (! isempty (errmsg))
@@ -3534,7 +3534,7 @@ classdef table < tabular
     ## @end deftypefn
     function G = groupsummary (T, groupvars, varargin)
       if (nargin < 2)
-        print_usage ();
+        error ("table.groupsummary: too few input arguments.");
       endif
       [G, errmsg] = groupsummaryResult (T, groupvars, varargin);
       if (! isempty (errmsg))
@@ -3586,7 +3586,7 @@ classdef table < tabular
     ## @end deftypefn
     function G = groupcounts (T, groupvars, varargin)
       if (nargin < 2)
-        print_usage ();
+        error ("table.groupcounts: too few input arguments.");
       endif
       [G, errmsg] = groupcountsResult (T, groupvars, varargin);
       if (! isempty (errmsg))
@@ -3634,7 +3634,7 @@ classdef table < tabular
     ## @end deftypefn
     function G = groupfilter (T, groupvars, varargin)
       if (nargin < 3)
-        print_usage ();
+        error ("table.groupfilter: too few input arguments.");
       endif
       [G, errmsg] = groupfilterResult (T, groupvars, varargin);
       if (! isempty (errmsg))
@@ -3717,7 +3717,7 @@ classdef table < tabular
     ## @end deftypefn
     function G = grouptransform (T, groupvars, varargin)
       if (nargin < 3)
-        print_usage ();
+        error ("table.grouptransform: too few input arguments.");
       endif
       [G, errmsg] = grouptransformResult (T, groupvars, varargin);
       if (! isempty (errmsg))
@@ -3856,7 +3856,7 @@ classdef table < tabular
     ## @end deftypefn
     function tbl = cat (dim, varargin)
       if (nargin < 1)
-        print_usage ();
+        error ("table.cat: too few input arguments.");
       endif
       if (! (isnumeric (dim) && isscalar (dim) && any (dim == [1, 2])))
         error ("table.cat: DIM must be 1 or 2 for a 2-D table.");
@@ -4110,7 +4110,7 @@ classdef table < tabular
     ## @end deftypefn
     function TF = isequal (varargin)
       if (nargin < 2)
-        print_usage ();
+        error ("table.isequal: too few input arguments.");
       endif
       TF = false;
       if (all (cellfun (@(x) isa (x, 'table'), varargin)))
@@ -4142,7 +4142,7 @@ classdef table < tabular
     ## @end deftypefn
     function TF = isequaln (varargin)
       if (nargin < 2)
-        print_usage ();
+        error ("table.isequaln: too few input arguments.");
       endif
       TF = false;
       if (all (cellfun (@(x) isa (x, 'table'), varargin)))
