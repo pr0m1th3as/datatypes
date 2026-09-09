@@ -106,8 +106,14 @@ classdef missing
       out = categorical (NaN (size (this)));
     endfunction
 
-    function out = datetime (this)
+    ## Options are handed to the 'datetime' constructor rather than refused:
+    ## a missing value says nothing about the zone or the display format, so
+    ## a conversion naming either has to be able to say so.
+    function out = datetime (this, varargin)
       out = NaT (size (this));
+      if (nargin > 1)
+        out = datetime (out, varargin{:});
+      endif
     endfunction
 
     ## 'duration' reads a numeric input as an Nx3 [h m s] matrix, so build one

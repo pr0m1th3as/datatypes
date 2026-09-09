@@ -45,6 +45,38 @@
 %! assert_equal (D.Format, 'hh:mm:ss');
 %! assert_equal (cellstr (D), {'NaN'});
 
+## datetime: the conversion takes the constructor's options, so a missing
+## value can be turned into one that carries a zone or a display format
+## (measured on MATLAB R2024a)
+%!test
+%! D = datetime (missing, 'TimeZone', 'America/New_York');
+%! assert_equal (D.TimeZone, 'America/New_York');
+%! assert_equal (D.Format, 'dd-MMM-uuuu HH:mm:ss');
+%! assert_equal (ismissing (D), true);
+%!test
+%! D = datetime (missing, 'Format', 'uuuu-MM-dd');
+%! assert_equal (D.Format, 'uuuu-MM-dd');
+%! assert_equal (D.TimeZone, '');
+%!test
+%! D = datetime (missing, 'TimeZone', 'America/New_York', ...
+%!               'Format', 'uuuu-MM-dd');
+%! assert_equal (D.TimeZone, 'America/New_York');
+%! assert_equal (D.Format, 'uuuu-MM-dd');
+%!test
+%! assert_equal (datetime (missing, 'TimeZone', 'UTC').TimeZone, 'UTC');
+## 'InputFormat' describes how text is read and has nothing to act on here,
+## so it is accepted and ignored, as it is for a datetime input
+%!test
+%! D = datetime (missing, 'InputFormat', 'uuuu');
+%! assert_equal (D.Format, 'dd-MMM-uuuu HH:mm:ss');
+%! assert_equal (D.TimeZone, '');
+## the shape is kept whether an option is given or not
+%!test
+%! D = datetime (repmat (missing, 2, 3), 'TimeZone', 'America/New_York');
+%! assert_equal (size (D), [2, 3]);
+%! assert_equal (D.TimeZone, 'America/New_York');
+%! assert_equal (all (ismissing (D)(:)), true);
+
 ## cellstr: a missing value carries no text, so it cannot become one
 %!error<missing.cellstr: cannot convert 'missing' to 'cell' type.> cellstr (missing)
 %!error<missing.cellstr: cannot convert 'missing' to 'cell' type.> cellstr (repmat (missing, 2, 3))
