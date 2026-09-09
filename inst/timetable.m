@@ -868,7 +868,29 @@ classdef timetable < tabular
         endif
       endif
       k = double (n);
+      ## A lag is measured in time and not in row position, so where the row
+      ## times descend a step later in time is a row earlier in the table and
+      ## the count moves the other way.  A lag given as a duration or a
+      ## calendarDuration is already signed, being divided by the step.
+      if (lagDescending (this))
+        k = -k;
+      endif
 
+    endfunction
+
+    ## Whether the row times run backwards, which the step says where it has
+    ## a sign to give and the ends say otherwise.
+    function tf = lagDescending (this)
+      tf = false;
+      ts = this.TimeStep;
+      if (isduration (ts) && ! any (ismissing (ts)))
+        tf = seconds (ts) < 0;
+        return
+      endif
+      rt = this.RowTimes;
+      if (numel (rt) > 1)
+        tf = rt(end) < rt(1);
+      endif
     endfunction
 
     ## The body behind 'synchronize'.  ARGS is the whole argument list and

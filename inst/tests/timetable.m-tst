@@ -6045,6 +6045,30 @@
 %! CM = timetable ((1:6)', 'TimeStep', calmonths (1), ...
 %!                 'StartTime', datetime (2024, 6, 1));
 %! assert_equal (lag (CM, calmonths (1)).Var1, [NaN; 1; 2; 3; 4; 5]);
+## A lag is measured in time and not in row position, so a timetable whose
+## row times descend moves its data the other way for the same count.
+## Measured on MATLAB R2024a.
+%!test
+%! D = timetable (datetime (2024, 6, 1) + hours ([5; 4; 3; 2; 1; 0]), (1:6)');
+%! assert_equal (seconds (D.Properties.TimeStep), -3600);
+%! assert_equal (isregular (D), true);
+%! assert_equal (lag (D, 1).Var1', [2, 3, 4, 5, 6, NaN]);
+%! assert_equal (lag (D, 2).Var1', [3, 4, 5, 6, NaN, NaN]);
+%! assert_equal (lag (D, -1).Var1', [NaN, 1, 2, 3, 4, 5]);
+## Test a lag named as a duration was already signed by the step
+%!test
+%! D = timetable (datetime (2024, 6, 1) + hours ([5; 4; 3; 2; 1; 0]), (1:6)');
+%! assert_equal (lag (D, hours (1)).Var1', [2, 3, 4, 5, 6, NaN]);
+## Test duration row times that descend do the same
+%!test
+%! DD = timetable (hours ([5; 4; 3; 2; 1; 0]), (1:6)');
+%! assert_equal (lag (DD, 1).Var1', [2, 3, 4, 5, 6, NaN]);
+## Test an ascending timetable is unchanged by any of this
+%!test
+%! A = timetable (datetime (2024, 6, 1) + hours (0:5)', (1:6)');
+%! assert_equal (lag (A, 1).Var1', [NaN, 1, 2, 3, 4, 5]);
+%! assert_equal (lag (A, -1).Var1', [2, 3, 4, 5, 6, NaN]);
+
 ## Test a timetable regular in days is lagged by a row count as well
 %!test
 %! DY = timetable ((1:5)', 'TimeStep', caldays (1), ...
