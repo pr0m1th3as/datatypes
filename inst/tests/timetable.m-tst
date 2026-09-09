@@ -4436,6 +4436,305 @@
 %! assert_equal (isnan (V.Properties.TimeStep), true);
 
 ################################################################################
+##                          **    Return types    **                          ##
+################################################################################
+
+## What each method hands back, measured on MATLAB R2024a.  A method that
+## keeps the rows returns a timetable; one whose rows describe something
+## else than instants degrades to a table, and the brace and dot references
+## degrade further to the variable's own type.
+
+## Test a timetable is tabular without being a table
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', categorical ({'a'; 'b'; 'a'; 'b'; 'a'; 'b'}), ...
+%!                {'p'; 'q'; 'r'; 's'; 't'; 'u'}, ...
+%!                'VariableNames', {'a', 'g', 's'});
+%! assert_equal (istimetable (A), true);
+%! assert_equal (istable (A), false);
+%! assert_equal (istabular (A), true);
+%! assert_equal (isa (A, 'table'), false);
+%! assert_equal (isa (A, 'tabular'), true);
+%! assert_equal (isa (A, 'timetable'), true);
+
+## Test the size and shape queries answer with numbers, not objects
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', categorical ({'a'; 'b'; 'a'; 'b'; 'a'; 'b'}), ...
+%!                {'p'; 'q'; 'r'; 's'; 't'; 'u'}, ...
+%!                'VariableNames', {'a', 'g', 's'});
+%! assert_equal (class (height (A)), 'double');
+%! assert_equal (class (width (A)), 'double');
+%! assert_equal (class (size (A)), 'double');
+%! assert_equal (class (numel (A)), 'double');
+%! assert_equal (class (ndims (A)), 'double');
+%! assert_equal (class (isempty (A)), 'logical');
+
+## Test concatenation keeps the class, whichever direction and however asked
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! N = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! B = timetable (t, (7:12)', 'VariableNames', {'z'});
+%! assert_equal (class ([N; N]), 'timetable');
+%! assert_equal (class ([N, B]), 'timetable');
+%! assert_equal (class (cat (1, N, N)), 'timetable');
+%! assert_equal (class (cat (2, N, B)), 'timetable');
+## Test a table stacked onto a timetable comes back a timetable
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! N = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! PT = table ((1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (class ([N; PT]), 'timetable');
+## Test the two repetitions keep the class
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', categorical ({'a'; 'b'; 'a'; 'b'; 'a'; 'b'}), ...
+%!                {'p'; 'q'; 'r'; 's'; 't'; 'u'}, ...
+%!                'VariableNames', {'a', 'g', 's'});
+%! assert_equal (class (repelem (A, 2, 1)), 'timetable');
+%! assert_equal (class (repmat (A, 2, 1)), 'timetable');
+
+## Test the variable-management family keeps the class
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', categorical ({'a'; 'b'; 'a'; 'b'; 'a'; 'b'}), ...
+%!                {'p'; 'q'; 'r'; 's'; 't'; 'u'}, ...
+%!                'VariableNames', {'a', 'g', 's'});
+%! assert_equal (class (addvars (A, (1:6)')), 'timetable');
+%! assert_equal (class (removevars (A, 'g')), 'timetable');
+%! assert_equal (class (movevars (A, 'a', 'After', 'g')), 'timetable');
+%! assert_equal (class (renamevars (A, 'a', 'q')), 'timetable');
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! N = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (class (convertvars (N, 'a', 'single')), 'timetable');
+%! assert_equal (class (mergevars (N, {'a', 'b'})), 'timetable');
+%! assert_equal (class (splitvars (mergevars (N, {'a', 'b'}))), 'timetable');
+## Test the row-selecting methods keep the class
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', categorical ({'a'; 'b'; 'a'; 'b'; 'a'; 'b'}), ...
+%!                {'p'; 'q'; 'r'; 's'; 't'; 'u'}, ...
+%!                'VariableNames', {'a', 'g', 's'});
+%! assert_equal (class (head (A, 2)), 'timetable');
+%! assert_equal (class (tail (A, 2)), 'timetable');
+
+## Test a subscript that keeps rows keeps the class
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', categorical ({'a'; 'b'; 'a'; 'b'; 'a'; 'b'}), ...
+%!                {'p'; 'q'; 'r'; 's'; 't'; 'u'}, ...
+%!                'VariableNames', {'a', 'g', 's'});
+%! assert_equal (class (A(1:2, :)), 'timetable');
+%! assert_equal (class (A(:, 1)), 'timetable');
+%! assert_equal (class (A(1, 1)), 'timetable');
+## Test a brace reference degrades to the values themselves
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! N = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (class (N{:, 1}), 'double');
+%! assert_equal (class (N{:, :}), 'double');
+## Test a dot reference gives the variable its own type
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', categorical ({'a'; 'b'; 'a'; 'b'; 'a'; 'b'}), ...
+%!                {'p'; 'q'; 'r'; 's'; 't'; 'u'}, ...
+%!                'VariableNames', {'a', 'g', 's'});
+%! assert_equal (class (A.a), 'double');
+%! assert_equal (class (A.g), 'categorical');
+%! assert_equal (class (A.s), 'cell');
+
+## Test the row time properties carry their own types
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', categorical ({'a'; 'b'; 'a'; 'b'; 'a'; 'b'}), ...
+%!                {'p'; 'q'; 'r'; 's'; 't'; 'u'}, ...
+%!                'VariableNames', {'a', 'g', 's'});
+%! assert_equal (class (A.Properties.RowTimes), 'datetime');
+%! assert_equal (class (A.Properties.StartTime), 'datetime');
+%! assert_equal (class (A.Properties.TimeStep), 'duration');
+%! assert_equal (class (A.Properties.SampleRate), 'double');
+## Test duration row times give a duration everywhere a datetime gives one
+%!test
+%! D = timetable (hours (0:5)', (1:6)', 'VariableNames', {'a'});
+%! assert_equal (class (D.Properties.RowTimes), 'duration');
+%! assert_equal (class (D.Properties.StartTime), 'duration');
+%! assert_equal (class (D.Properties.TimeStep), 'duration');
+
+## Test duration row times keep the class through the same methods
+%!test
+%! D = timetable (hours (0:5)', (1:6)', 'VariableNames', {'a'});
+%! assert_equal (class ([D; D]), 'timetable');
+%! assert_equal (class (sortrows (D)), 'timetable');
+%! assert_equal (class (head (D, 2)), 'timetable');
+%! assert_equal (class (retime (D, 'hourly', 'previous')), 'timetable');
+## Test they degrade the same way too
+%!test
+%! D = timetable (hours (0:5)', (1:6)', categorical ({'a'; 'b'; 'a'; 'b'; ...
+%!                'a'; 'b'}), 'VariableNames', {'a', 'g'});
+%! assert_equal (class (timetable2table (D)), 'table');
+%! assert_equal (class (groupcounts (D, 'g')), 'table');
+%! assert_equal (class (summary (D)), 'struct');
+
+## Test the predicates answer with a logical
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! N = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (class (isregular (N)), 'logical');
+%! assert_equal (class (isequal (N, N)), 'logical');
+%! assert_equal (class (isequaln (N, N)), 'logical');
+%! assert_equal (class (ismissing (N)), 'logical');
+%! assert_equal (class (anymissing (N)), 'logical');
+%! assert_equal (class (issorted (N)), 'logical');
+%! assert_equal (class (issortedrows (N)), 'logical');
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! N = timetable (t, (1:6)', 'VariableNames', {'a'});
+%! R = timerange (t(2), t(4));
+%! assert_equal (class (overlapsrange (N, R)), 'logical');
+%! assert_equal (class (withinrange (N, R)), 'logical');
+%! [tf, w] = containsrange (N, R);
+%! assert_equal (class (tf), 'logical');
+%! assert_equal (class (w), 'logical');
+
+## Test the missing-data family keeps the class, and says so alongside
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! N = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (class (standardizeMissing (N, 1)), 'timetable');
+%! [B, TF] = rmmissing (N);
+%! assert_equal (class (B), 'timetable');
+%! assert_equal (class (TF), 'logical');
+%! [C, TF2] = fillmissing (N, 'previous');
+%! assert_equal (class (C), 'timetable');
+%! assert_equal (class (TF2), 'logical');
+## Test 'summary' answers with a struct and not a tabular object
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! N = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (class (summary (N)), 'struct');
+
+## Test the ordering family keeps the class and indexes with doubles
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! N = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! [B, ix] = sortrows (N, 'a');
+%! assert_equal (class (B), 'timetable');
+%! assert_equal (class (ix), 'double');
+%! [C, ia, ic] = unique (N);
+%! assert_equal (class (C), 'timetable');
+%! assert_equal (class (ia), 'double');
+%! assert_equal (class (ic), 'double');
+%! [D, ixk] = topkrows (N, 2, 'a');
+%! assert_equal (class (D), 'timetable');
+%! assert_equal (class (ixk), 'double');
+
+## Test an apply that keeps the rows keeps the class
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! N = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (class (varfun (@mean, N)), 'timetable');
+%! assert_equal (class (rowfun (@(x, y) x + y, N)), 'timetable');
+## Test 'OutputFormat' answers with what it names
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! N = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (class (varfun (@mean, N, 'OutputFormat', 'uniform')), ...
+%!               'double');
+%! assert_equal (class (varfun (@mean, N, 'OutputFormat', 'cell')), 'cell');
+## Test the grouping family degrades where its rows describe groups
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! G = timetable (t, categorical ({'a'; 'b'; 'a'; 'b'; 'a'; 'b'}), (1:6)', ...
+%!                'VariableNames', {'g', 'v'});
+%! assert_equal (class (grouptransform (G, 'g', 'zscore')), 'timetable');
+%! assert_equal (class (groupfilter (G, 'g', @(x) x > 0)), 'timetable');
+%! assert_equal (class (groupcounts (G, 'g')), 'table');
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! N = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (class (groupsummary (N, 'a', 'sum', 'b')), 'table');
+%! assert_equal (class (pivot (timetable (t, categorical ({'a'; 'b'; 'a'; ...
+%!               'b'; 'a'; 'b'}), 'VariableNames', {'g'}), 'Rows', 'g')), ...
+%!               'table');
+%! assert_equal (class (rows2vars (N)), 'table');
+## Test 'findgroups' numbers with doubles and describes with a table
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! G = timetable (t, categorical ({'a'; 'b'; 'a'; 'b'; 'a'; 'b'}), (1:6)', ...
+%!                'VariableNames', {'g', 'v'});
+%! [gr, TID] = findgroups (G(:, {'g'}));
+%! assert_equal (class (gr), 'double');
+%! assert_equal (class (TID), 'table');
+%! assert_equal (class (splitapply (@(x, y) sum (x), ...
+%!               timetable (t, (1:6)', (11:16)'), ones (6, 1))), 'double');
+
+## Test the reshaping and joining family keeps the class
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! N = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! [S, ixs] = stack (N, {'a', 'b'});
+%! assert_equal (class (S), 'timetable');
+%! assert_equal (class (ixs), 'double');
+%! assert_equal (class (inner2outer (N)), 'timetable');
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! N = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! B = timetable (t, (7:12)', 'VariableNames', {'z'});
+%! [C, ix] = join (N, B);
+%! assert_equal (class (C), 'timetable');
+%! assert_equal (class (ix), 'double');
+%! [E, iL, iR] = innerjoin (N, B);
+%! assert_equal (class (E), 'timetable');
+%! assert_equal (class (iL), 'double');
+%! assert_equal (class (iR), 'double');
+%! [F, jL, jR] = outerjoin (N, B);
+%! assert_equal (class (F), 'timetable');
+%! assert_equal (class (jL), 'double');
+%! assert_equal (class (jR), 'double');
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! G = timetable (t, categorical ({'a'; 'b'; 'a'; 'b'; 'a'; 'b'}), (1:6)', ...
+%!                'VariableNames', {'g', 'v'});
+%! [U, ixu] = unstack (G, 'v', 'g');
+%! assert_equal (class (U), 'timetable');
+%! assert_equal (class (ixu), 'double');
+
+## Test the row time family keeps the class
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! N = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (class (retime (N, 'hourly', 'previous')), 'timetable');
+%! assert_equal (class (retime (N, 'daily', 'sum')), 'timetable');
+%! assert_equal (class (lag (N, 1)), 'timetable');
+%! assert_equal (class (synchronize (N, timetable (t, (7:12)', ...
+%!               'VariableNames', {'z'}))), 'timetable');
+## Test the property family keeps it, and 'timetable2table' does not
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! N = timetable (t, (1:6)', (11:16)', 'VariableNames', {'a', 'b'});
+%! assert_equal (class (addprop (N, {'q'}, {'table'})), 'timetable');
+%! assert_equal (class (rmprop (addprop (N, {'q'}, {'table'}), {'q'})), ...
+%!               'timetable');
+%! assert_equal (class (timetable2table (N)), 'table');
+%! assert_equal (class (timetable.empty (0, 2)), 'timetable');
+
+## Test the event methods answer with an eventtable and a timetable
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', 'VariableNames', {'a'});
+%! [ET, TT2] = extractevents (A, [2; 4]);
+%! assert_equal (class (ET), 'eventtable');
+%! assert_equal (class (TT2), 'timetable');
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:5)';
+%! A = timetable (t, (1:6)', 'VariableNames', {'a'});
+%! A.Properties.Events = eventtable (timetable (t([2, 4]), {'x'; 'y'}, ...
+%!                                   'VariableNames', {'L'}));
+%! assert_equal (class (A.Properties.Events), 'eventtable');
+%! assert_equal (class (syncevents (A)), 'timetable');
+
+################################################################################
 ##                        **    Input validation    **                        ##
 ################################################################################
 
