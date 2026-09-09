@@ -144,17 +144,6 @@ classdef timerange
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {timerange} {[@var{lo}, @var{hi}, @var{cl}, @var{cr}] =} interval (@var{tr}, @var{rowTimes})
-    ##
-    ## Return the interval the range describes, in the row times' own type.
-    ##
-    ## @var{lo} and @var{hi} come back as the class of @var{rowTimes}, or as
-    ## @code{-Inf} or @code{Inf} where the range is unbounded on that side.
-    ## @var{cl} and @var{cr} say whether the interval includes the bound at
-    ## its lower and its upper end.
-    ##
-    ## @end deftypefn
-    ## -*- texinfo -*-
     ## @deftypefn {timerange} {@var{tf} =} hasEventBounds (@var{tr})
     ##
     ## Whether the range's bounds are event filters awaiting a timetable.
@@ -179,6 +168,17 @@ classdef timerange
       this.last = firstEventTime (this.last, tt, 'END');
     endfunction
 
+    ## -*- texinfo -*-
+    ## @deftypefn {timerange} {[@var{lo}, @var{hi}, @var{cl}, @var{cr}] =} interval (@var{tr}, @var{rowTimes})
+    ##
+    ## Return the interval the range describes, in the row times' own type.
+    ##
+    ## @var{lo} and @var{hi} come back as the class of @var{rowTimes}, or as
+    ## @code{-Inf} or @code{Inf} where the range is unbounded on that side.
+    ## @var{cl} and @var{cr} say whether the interval includes the bound at
+    ## its lower and its upper end.
+    ##
+    ## @end deftypefn
     function [lo, hi, cl, cr] = interval (this, rowTimes)
       lo = matchBound (this.first, rowTimes);
       hi = matchBound (this.last, rowTimes);
