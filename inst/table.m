@@ -291,7 +291,8 @@ classdef table < tabular
     ## only where the method has some to give, which the mapping methods do
     ## and the reducing ones do not; ROWIX names input rows and means nothing
     ## to a class whose labels do not follow them.
-    function out = assembleApply (this, vars, names, rowLabels, rowIx)
+    function out = assembleApply (this, vars, names, rowLabels, rowIx, ...
+                                  caller)
       if (isempty (rowLabels))
         out = table (vars{:}, 'VariableNames', names);
       else

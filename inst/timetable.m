@@ -583,11 +583,21 @@ classdef timetable < tabular
     ## the row time of the input row ROWIX names it came from; with no index
     ## to go on the rows take the row times from the top of the input.
     ## ROWLABELS means nothing here, the row times following the index.
-    function out = assembleApply (this, vars, names, rowLabels, rowIx)
+    function out = assembleApply (this, vars, names, rowLabels, rowIx, ...
+                                  caller)
       if (isempty (vars))
         nrows = 0;
       else
         nrows = size (vars{1}, 1);
+      endif
+      ## Every row of a timetable is labelled by a row time, and there are
+      ## only as many of those as the timetable has rows.  A result longer
+      ## than that, or one carrying rows a group had nothing to match, is
+      ## refused rather than answered with a time repeated to fill the gap.
+      if (nrows > height (this) || any (isnan (rowIx(:))))
+        error (strcat ("%s: the result has rows the timetable has no row", ...
+                       " time for; ask for it as a table with", ...
+                       " 'OutputFormat', 'table'."), caller);
       endif
       if (isempty (rowIx))
         ## With no index to go on the result takes the first row times, one

@@ -471,7 +471,8 @@ classdef (Abstract) tabular
     ## the other: ROWLABELS holds them in the class's own type, empty where
     ## the result carries none, and ROWIX indexes the input row each output
     ## row takes its label from, empty where the caller has none to give.
-    function out = assembleApply (this, vars, names, rowLabels, rowIx)
+    function out = assembleApply (this, vars, names, rowLabels, rowIx, ...
+                                  caller)
       error (strcat ("%s: subclass must implement", ...
                      " assembleApply."), class (this));
     endfunction
@@ -6306,6 +6307,18 @@ classdef (Abstract) tabular
           rows(r) = true;
           args = tabular.build_row_args (inCols, rows, sepIn, extractCell);
           res(r,:) = tabular.apply_func (func, errHandler, r, nout, args);
+          ## An ungrouped 'rowfun' answers one row with one row, so a
+          ## function returning more leaves the result with rows the input
+          ## has nothing to match them to.
+          for c = 1:max (nout, 1)
+            if (size (res{r,c}, 1) != 1)
+              errmsg = sprintf (strcat ("the function returned %d rows for", ...
+                                " row %d; an ungrouped 'rowfun' takes one", ...
+                                " row and returns one."), ...
+                                size (res{r,c}, 1), r);
+              return;
+            endif
+          endfor
         endfor
         labels = {};
         if (hasRowLabels (this))
@@ -6377,7 +6390,8 @@ classdef (Abstract) tabular
           if (strcmp (fmt, 'plaintable'))
             out = table (vars{:}, 'VariableNames', names);
           else
-            out = assembleApply (this, vars, names, rowLabels, rowIx);
+            out = assembleApply (this, vars, names, rowLabels, ...
+                                 rowIx, caller);
           endif
         case 'uniform'
           out = [];
@@ -6445,8 +6459,12 @@ classdef (Abstract) tabular
               k = size (res{g,1}, 1);
               take = min (k, numel (src));
               ix = src(1:take);
-              if (k > take && take > 0)
-                ix = [ix; repmat(src(take), k - take, 1)];
+              if (k > take)
+                ## The group has fewer rows than the function returned, so
+                ## these output rows answer for no row of it.  The class
+                ## decides what that means: a timetable has no row time for
+                ## them, a table does not label its rows by them at all.
+                ix = [ix; NaN(k - take, 1)];
               endif
               outIx = [outIx; ix];
             endfor
@@ -6454,7 +6472,7 @@ classdef (Abstract) tabular
           if (strcmp (fmt, 'plaintable'))
             out = table (vars{:}, 'VariableNames', names);
           else
-            out = assembleApply (this, vars, names, {}, outIx);
+            out = assembleApply (this, vars, names, {}, outIx, caller);
           endif
         case 'uniform'
           out = [];
