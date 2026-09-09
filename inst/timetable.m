@@ -3422,6 +3422,14 @@ classdef timetable < tabular
     ## before grouping, @var{groupbins} being a bin count, a vector of edges,
     ## or a time unit for a datetime or duration variable.
     ##
+    ## A duration is binned by the units that have a fixed length of their
+    ## own, @qcode{'second'}, @qcode{'minute'}, @qcode{'hour'},
+    ## @qcode{'day'} and @qcode{'year'}; a week, a month and a quarter have
+    ## none and are refused.  A narrow bin over a wide span asks for more
+    ## bins than a @code{categorical} can name, and the call is refused
+    ## rather than answered; MATLAB stops at 65536 bins there and returns a
+    ## grid that does not reach the end of the span.
+    ##
     ## The following @var{Name}/@var{Value} pairs are accepted:
     ##
     ## @table @asis
@@ -3468,6 +3476,14 @@ classdef timetable < tabular
     ## @var{groupbins})} bins the grouping variables before grouping,
     ## @var{groupbins} being a bin count, a vector of edges, or a time unit
     ## for a datetime or duration variable.
+    ##
+    ## A duration is binned by the units that have a fixed length of their
+    ## own, @qcode{'second'}, @qcode{'minute'}, @qcode{'hour'},
+    ## @qcode{'day'} and @qcode{'year'}; a week, a month and a quarter have
+    ## none and are refused.  A narrow bin over a wide span asks for more
+    ## bins than a @code{categorical} can name, and the call is refused
+    ## rather than answered; MATLAB stops at 65536 bins there and returns a
+    ## grid that does not reach the end of the span.
     ##
     ## The following @var{Name}/@var{Value} pairs are accepted:
     ##
@@ -3597,6 +3613,14 @@ classdef timetable < tabular
     ## or a time unit for a datetime or duration variable.  The
     ## @qcode{'IncludedEdge'} option then says which edge of a bin is
     ## included, @qcode{'left'} (the default) or @qcode{'right'}.
+    ##
+    ## A duration is binned by the units that have a fixed length of their
+    ## own, @qcode{'second'}, @qcode{'minute'}, @qcode{'hour'},
+    ## @qcode{'day'} and @qcode{'year'}; a week, a month and a quarter have
+    ## none and are refused.  A narrow bin over a wide span asks for more
+    ## bins than a @code{categorical} can name, and the call is refused
+    ## rather than answered; MATLAB stops at 65536 bins there and returns a
+    ## grid that does not reach the end of the span.
     ##
     ## @end deftypefn
     function G = groupfilter (tt, groupvars, varargin)

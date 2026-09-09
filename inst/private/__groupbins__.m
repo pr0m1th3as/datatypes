@@ -52,6 +52,26 @@ endfunction
 ## Contiguous calendar-period time-unit keywords (datetime only).  The component
 ## keywords ('monthofyear', 'dayofweek', ...) are recognised as specs but not
 ## yet implemented (they raise a clean "not yet supported" error when binning).
+## The duration a time unit stands for, or [] where the unit has no fixed
+## length of its own and so cannot measure a duration.
+
+function w = gb_duration_unit (unit)
+  switch (unit)
+    case 'second'
+      w = seconds (1);
+    case 'minute'
+      w = minutes (1);
+    case 'hour'
+      w = hours (1);
+    case 'day'
+      w = days (1);
+    case 'year'
+      w = years (1);
+    otherwise
+      w = [];
+  endswitch
+endfunction
+
 function kw = gb_period_units ()
   kw = {'second', 'minute', 'hour', 'day', 'week', 'month', 'quarter', ...
         'year', 'decade', 'century'};
@@ -142,6 +162,28 @@ function [binned, newname, errmsg] = gb_bin_col (col, scheme, incEdge, varname)
   if (gb_is_charrow (scheme))
     unit = lower (char (scheme));
     if (any (strcmp (unit, gb_period_units ())))
+      if (isduration (col))
+        ## A duration carries no calendar, so a unit measures it only where
+        ## the unit has a fixed length of its own, which is to say where
+        ## there is a duration constructor for it.  A week, a month and a
+        ## quarter have none and are refused; a year is the fixed 365.2425
+        ## days that 'years' builds.
+        w = gb_duration_unit (unit);
+        if (isempty (w))
+          errmsg = sprintf (strcat ("binning grouping variable '%s' by time", ...
+                            " unit '%s' is not supported for duration", ...
+                            " variables; use 'second', 'minute', 'hour',", ...
+                            " 'day' or 'year'."), varname, unit);
+          return;
+        endif
+        [idx, labs, errmsg] = gb_width_bins (col, w, incEdge, varname);
+        if (! isempty (errmsg))
+          return;
+        endif
+        binned = gb_make_categorical (idx, labs, n);
+        newname = [unit, '_', varname];
+        return;
+      endif
       if (! isa (col, 'datetime'))
         errmsg = sprintf (strcat ("binning grouping variable '%s' by time unit", ...
                           " '%s' is only supported for datetime variables."), ...
@@ -309,6 +351,17 @@ function [idx, labs, errmsg] = gb_width_bins (col, width, incEdge, varname)
   hi = max (good);
   r = (hi - lo) / w;
   ne = max (1, ceil (r - 4 * eps (max (r, 1))));
+  ## A bin per width across the span, which a narrow width over a wide span
+  ## makes a great many of.  MATLAB silently stops at 65536 of them, leaving
+  ## a grid that does not reach the end of the span; the count is refused
+  ## here instead, so that no result comes back binned by a grid that covers
+  ## less than it says.  The ceiling is the categorical's own.
+  if (ne > 65535)
+    errmsg = sprintf (strcat ("binning grouping variable '%s' by that width", ...
+                      " needs %d bins, more than the 65535 a categorical", ...
+                      " can hold; use a wider bin."), varname, ne);
+    return;
+  endif
   edgesP = lo + (0:ne) * w;
   ## The last bin is closed, so the largest value belongs in it; the top edge
   ## is computed by multiplication and can land an ulp below that value, which
