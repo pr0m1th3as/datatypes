@@ -6205,8 +6205,11 @@ function [nt, errmsg] = unitGrid (rt, spec, isAgg)
     return
   endif
 
-  ## A duration carries no calendar, so the three units that need one have
-  ## nothing to anchor to; the fixed ones floor to a multiple of themselves.
+  ## A duration carries no calendar, so a unit measures it only where the
+  ## unit is one a duration counts in -- which is to say where there is a
+  ## duration constructor for it.  A week, a month and a quarter have none;
+  ## a year is the fixed 365.2425 days that 'years' builds.  The same rule
+  ## decides which units bin a duration grouping variable.
   switch (unit)
     case 'second'
       step = seconds (1);
@@ -6216,11 +6219,12 @@ function [nt, errmsg] = unitGrid (rt, spec, isAgg)
       step = hours (1);
     case 'day'
       step = days (1);
-    case 'week'
-      step = days (7);
+    case 'year'
+      step = years (1);
     otherwise
-      errmsg = sprintf (strcat ("'%s' has no meaning for duration row", ...
-                                " times, which carry no calendar."), spec);
+      errmsg = sprintf (strcat ("'%s' is not a unit a duration counts in;", ...
+                                " use 'secondly', 'minutely', 'hourly',", ...
+                                " 'daily' or 'yearly'."), spec);
       return
   endswitch
   lo = step * floor (seconds (lo) / seconds (step));
