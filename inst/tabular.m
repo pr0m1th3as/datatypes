@@ -6356,7 +6356,7 @@ classdef (Abstract) tabular
       endif
       C = size (res, 2);
       switch (fmt)
-        case 'table'
+        case {'table', 'plaintable'}
           rescols = cell (1, C);
           for c = 1:C
             rescols{c} = vertcat (res{:,c});
@@ -6374,7 +6374,11 @@ classdef (Abstract) tabular
           if (! isempty (rowIx) && numel (rowIx) != size (rescols{1}, 1))
             rowIx = [];
           endif
-          out = assembleApply (this, vars, names, rowLabels, rowIx);
+          if (strcmp (fmt, 'plaintable'))
+            out = table (vars{:}, 'VariableNames', names);
+          else
+            out = assembleApply (this, vars, names, rowLabels, rowIx);
+          endif
         case 'uniform'
           out = [];
           for c = 1:C
@@ -6409,7 +6413,7 @@ classdef (Abstract) tabular
       ng = size (res, 1);
       C = size (res, 2);
       switch (fmt)
-        case 'table'
+        case {'table', 'plaintable'}
           repIdx = [];
           for g = 1:ng
             repIdx = [repIdx; repmat(g, size (res{g,1}, 1), 1)];
@@ -6447,7 +6451,11 @@ classdef (Abstract) tabular
               outIx = [outIx; ix];
             endfor
           endif
-          out = assembleApply (this, vars, names, {}, outIx);
+          if (strcmp (fmt, 'plaintable'))
+            out = table (vars{:}, 'VariableNames', names);
+          else
+            out = assembleApply (this, vars, names, {}, outIx);
+          endif
         case 'uniform'
           out = [];
           for c = 1:C
@@ -9634,11 +9642,18 @@ classdef (Abstract) tabular
         error ("%s: 'OutputFormat' must be a character vector.", caller);
       endif
       low = lower (fmt);
-      ## A class answers to its own name as well as to 'table', both meaning
-      ## an object of that class; the other class's name does not, there
-      ## being no row times to invent or discard.
-      if (any (strcmp (low, {'auto', 'table', lower(clsname)})))
+      ## A class answers to 'auto' and to its own name with an object of that
+      ## class; the other class's name does not, there being no row times to
+      ## invent.  'table' asked of a timetable means a plain table, which is
+      ## how a result too long to carry row times is asked for.
+      if (any (strcmp (low, {'auto', lower(clsname)})))
         fmt = 'table';
+      elseif (strcmp (low, 'table'))
+        if (strcmp (lower (clsname), 'table'))
+          fmt = 'table';
+        else
+          fmt = 'plaintable';
+        endif
       elseif (strcmp (low, 'uniform'))
         fmt = 'uniform';
       elseif (strcmp (low, 'cell'))

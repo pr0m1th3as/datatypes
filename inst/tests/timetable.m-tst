@@ -2769,6 +2769,45 @@
 %! varfun (timetable ([1; 2], 'RowTimes', ...
 %!         datetime (2024, 1, 1) + hours (0:1)'));
 
+## 'OutputFormat' asked of a timetable answers with a timetable under
+## 'auto' and under its own name, and with a plain table under 'table',
+## which is how a result is asked for without row times.  Measured on
+## MATLAB R2024a.
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', datetime (2024, 6, 1) + hours (0:3)');
+%! assert_equal (class (varfun (@mean, TT)), 'timetable');
+%! assert_equal (class (varfun (@mean, TT, 'OutputFormat', 'auto')), ...
+%!               'timetable');
+%! assert_equal (class (varfun (@mean, TT, 'OutputFormat', 'timetable')), ...
+%!               'timetable');
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', datetime (2024, 6, 1) + hours (0:3)');
+%! B = varfun (@mean, TT, 'OutputFormat', 'table');
+%! assert_equal (class (B), 'table');
+%! assert_equal (size (B), [1, 1]);
+%! assert_equal (B.Properties.VariableNames, {'mean_Var1'});
+%!test
+%! TT = timetable ((1:4)', 'RowTimes', datetime (2024, 6, 1) + hours (0:3)');
+%! B = rowfun (@(a) a, TT, 'OutputFormat', 'table');
+%! assert_equal (class (B), 'table');
+%! assert_equal (size (B), [4, 1]);
+## Test a grouped apply answers the same way
+%!test
+%! GG = timetable ([1; 1; 2; 2; 3; 3], (1:6)', 'RowTimes', ...
+%!                 datetime (2024, 6, 1) + hours (0:5)', ...
+%!                 'VariableNames', {'g', 'v'});
+%! B = rowfun (@(a) a, GG, 'GroupingVariables', 'g', 'OutputFormat', 'table');
+%! assert_equal (class (B), 'table');
+%! assert_equal (height (B), 6);
+%! assert_equal (B.Properties.VariableNames, {'g', 'GroupCount', 'Var3'});
+%! assert_equal (isempty (B.Properties.RowNames), true);
+## Test a table is unaffected, 'table' meaning what 'auto' does there
+%!test
+%! T = table ((1:4)', 'VariableNames', {'v'});
+%! assert_equal (class (rowfun (@(a) a, T)), 'table');
+%! assert_equal (class (rowfun (@(a) a, T, 'OutputFormat', 'table')), 'table');
+%! assert_equal (class (varfun (@mean, T, 'OutputFormat', 'table')), 'table');
+
 ## Test the shared branches of 'varfun' name the timetable
 %!error <timetable.varfun: 'ErrorHandler' must be a function handle.> ...
 %! rt = datetime (2024, 1, 1) + hours (0:1)';
