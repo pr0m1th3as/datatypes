@@ -86,8 +86,8 @@ classdef eventtable < timetable
   ## as such is kept as one.  An @code{eventfilter} compares either as text,
   ## so a condition reads the same whichever they are.
   ##
-  ## @seealso{timetable, table, istimetable, eventfilter, extractevents,
-  ## syncevents}
+  ## @seealso{timetable, table, istimetable, eventfilter,
+  ## timetable.extractevents, timetable.syncevents}
   ## @end deftp
 
   properties
