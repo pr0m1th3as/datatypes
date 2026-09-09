@@ -264,6 +264,18 @@ classdef table < tabular
     ## Row names must stay unique, so a repeated name takes a numbered one:
     ## 'r1' repeated becomes 'r1', 'r1_1'.  A table with no row names has
     ## nothing to repeat.
+    function this = growRowLabels (this, n)
+      if (isempty (this.RowNames))
+        this.RowCount = n;
+        return;
+      endif
+      ## A row grown into has no name of its own, so it takes the default
+      ## one for its place, which is what MATLAB writes there.
+      for k = (numel (this.RowNames) + 1):n
+        this.RowNames{k,1} = sprintf ('Row%d', k);
+      endfor
+    endfunction
+
     function this = repeatRowLabels (this, n, elementwise)
       if (isempty (this.RowNames))
         return;

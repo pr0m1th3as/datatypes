@@ -7270,6 +7270,40 @@
 %! T(1,1) = {99};
 %! assert_equal (T.x, [99;2;3]);
 
+## Assigning to a row past the end grows the table, the rows skipped over
+## taking the fill their variable's own type gives.  Measured on MATLAB
+## R2024a.
+%!test  # growing pads a numeric variable with zero
+%! T = table ([1;2;3], [4;5;6]);
+%! T(5,:) = {9, 9};
+%! assert_equal (height (T), 5);
+%! assert_equal (T.Var1, [1;2;3;0;9]);
+%! assert_equal (T.Var2, [4;5;6;0;9]);
+%!test  # a variable the assignment does not name grows with the rest
+%! T = table ([1;2;3], [4;5;6]);
+%! T(5,1) = {9};
+%! assert_equal (height (T), 5);
+%! assert_equal (T.Var2, [4;5;6;0;0]);
+%!test  # row names grow with the rows, the added ones taking their place
+%! T = table ([1;2;3], 'RowNames', {'a';'b';'c'});
+%! T(5,:) = {9};
+%! assert_equal (height (T), 5);
+%! assert_equal (T.Properties.RowNames, {'a';'b';'c';'Row4';'Row5'});
+%!test  # a table with no row names grows without gaining any
+%! T = table ([1;2;3]);
+%! T(5,:) = {9};
+%! assert_equal (T.Properties.RowNames, {});
+%!test  # a cellstr variable grows with a blank and stays a cellstr
+%! T = table ({'a';'b';'c'}, 'VariableNames', {'y'});
+%! T(5,1) = {'z'};
+%! assert_equal (iscellstr (T.y), true);
+%! assert_equal (T.y, {'a';'b';'c';'';'z'});
+%!test  # a logical variable grows with false
+%! T = table (logical ([1;0;1]), 'VariableNames', {'b'});
+%! T(5,1) = {true};
+%! assert_equal (T.b, logical ([1;0;1;0;1]));
+
+
 ## Test input validation for 'subsasgn' with '()' indexing
 %!error <table.subsasgn: '\(\)' indexing of table requires exactly two arguments.> ...
 %! T = table ([1;2;3]); T(1) = 5;

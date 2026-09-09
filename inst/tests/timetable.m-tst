@@ -4795,6 +4795,119 @@
 %! assert_equal (head (A, 2).Properties.RowTimes, t(1:2));
 %! assert_equal (tail (A, 2).Properties.RowTimes, t(5:6));
 
+## Assigning to a row past the end grows the timetable.  A declared step says
+## what the row after the last one is, so the grid goes on; a step only read
+## off the rows says nothing about a row that was never there, and the times
+## added go missing.  Measured on MATLAB R2024a.
+## Test a declared 'TimeStep' carries the grid on
+%!test
+%! A = timetable ((1:6)', 'TimeStep', hours (1), ...
+%!                'StartTime', datetime (2024, 1, 1));
+%! A(8, :) = {99};
+%! assert_equal (height (A), 8);
+%! assert_equal (A.Properties.RowTimes, ...
+%!               datetime (2024, 1, 1) + hours ((0:7)'));
+%! assert_equal (A.Var1, [1; 2; 3; 4; 5; 6; 0; 99]);
+%! assert_equal (A.Properties.TimeStep, hours (1));
+%! assert_equal (isregular (A), true);
+## Test a declared 'SampleRate' does the same
+%!test
+%! A = timetable ((1:6)', 'SampleRate', 2);
+%! A(7, :) = {99};
+%! assert_equal (height (A), 7);
+%! assert_equal (seconds (A.Properties.RowTimes), (0:0.5:3)');
+%! assert_equal (A.Properties.SampleRate, 2);
+## Test the rows skipped over are filled, a numeric variable with zero
+%!test
+%! A = timetable ((1:6)', 'SampleRate', 2);
+%! A(9, :) = {99};
+%! assert_equal (height (A), 9);
+%! assert_equal (A.Var1, [1; 2; 3; 4; 5; 6; 0; 0; 99]);
+%! assert_equal (seconds (A.Properties.RowTimes), (0:0.5:4)');
+
+## Test a step only inferred leaves the added row times missing
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:2)');
+%! A = timetable ((1:3)', 'RowTimes', t);
+%! A(5, :) = {99};
+%! assert_equal (height (A), 5);
+%! assert_equal (ismissing (A.Properties.RowTimes), ...
+%!               logical ([0; 0; 0; 1; 1]));
+%! assert_equal (isregular (A), false);
+%! assert_equal (ismissing (A.Properties.TimeStep), true);
+## Test an irregular timetable grows the same way
+%!test
+%! A = timetable ((1:4)', 'RowTimes', seconds ([0; 1; 3; 7]));
+%! A(5, :) = {99};
+%! assert_equal (height (A), 5);
+%! assert_equal (ismissing (A.Properties.RowTimes(5)), true);
+%! assert_equal (A.Var1, [1; 2; 3; 4; 99]);
+## Test duration row times take a missing time too
+%!test
+%! A = timetable ((1:3)', 'RowTimes', seconds ((0:2)'));
+%! A(5, :) = {99};
+%! assert_equal (seconds (A.Properties.RowTimes(1:3)), (0:2)');
+%! assert_equal (ismissing (A.Properties.RowTimes(4:5)), [true; true]);
+%! assert_equal (isregular (A), false);
+
+## Test a subsetted timetable carries on by the step it reports
+%!test
+%! A = timetable ((1:6)', 'TimeStep', hours (1), ...
+%!                'StartTime', datetime (2024, 1, 1));
+%! B = A([1, 3, 5], :);
+%! assert_equal (B.Properties.TimeStep, hours (2));
+%! B(5, :) = {99};
+%! assert_equal (B.Properties.RowTimes, ...
+%!               datetime (2024, 1, 1) + hours ((0:2:8)'));
+%! assert_equal (B.Properties.TimeStep, hours (2));
+
+## Test a zoned timetable keeps its zone and blanks in its own zone
+%!test
+%! t = datetime (2024, 3, 10, 0, 0, 0, 'TimeZone', 'America/New_York') ...
+%!     + hours ((0:2)');
+%! A = timetable ((1:3)', 'RowTimes', t);
+%! A(5, :) = {99};
+%! assert_equal (height (A), 5);
+%! assert_equal (A.Properties.RowTimes.TimeZone, 'America/New_York');
+%! assert_equal (ismissing (A.Properties.RowTimes(4:5)), [true; true]);
+
+## Test a variable the assignment did not name grows with the rest
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:2)');
+%! A = timetable ((1:3)', (4:6)', 'RowTimes', t);
+%! A(5, :) = {9, 9};
+%! assert_equal (A.Var1, [1; 2; 3; 0; 9]);
+%! assert_equal (A.Var2, [4; 5; 6; 0; 9]);
+%! assert_equal (numel (A.Properties.RowTimes), 5);
+## Test a text variable grows with a blank rather than a broken cell
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:2)');
+%! A = timetable ({'a'; 'b'; 'c'}, 'RowTimes', t);
+%! A(5, :) = {'z'};
+%! assert_equal (A.Var1, {'a'; 'b'; 'c'; ''; 'z'});
+## Test a logical variable grows with false
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:2)');
+%! A = timetable (logical ([1; 0; 1]), 'RowTimes', t);
+%! A(5, :) = {true};
+%! assert_equal (A.Var1, logical ([1; 0; 1; 0; 1]));
+## Test a datetime variable grows with a missing value
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:2)');
+%! A = timetable ((1:3)', 'RowTimes', t);
+%! A.d = t;
+%! A(5, :) = {9, datetime(2024, 2, 1)};
+%! assert_equal (ismissing (A.d), logical ([0; 0; 0; 1; 0]));
+
+## Test growing an empty timetable gives it its first row
+%!test
+%! A = timetable ('Size', [0, 1], 'VariableTypes', {'double'}, ...
+%!                'RowTimes', datetime.empty (0, 1));
+%! A(1, :) = {5};
+%! assert_equal (height (A), 1);
+%! assert_equal (A.Var1, 5);
+%! assert_equal (ismissing (A.Properties.RowTimes), true);
+
 ## Test assigning the row times replaces them and reads the step afresh
 %!test
 %! t = datetime (2024, 6, 1) + hours (0:5)';

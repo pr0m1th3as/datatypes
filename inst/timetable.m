@@ -569,6 +569,30 @@ classdef timetable < tabular
     ## Row times need not be unique, so a repeated row simply repeats its
     ## time; the step is recomputed from the result, which a repetition
     ## generally makes irregular.
+    function this = growRowLabels (this, n)
+      rt = this.RowTimes;
+      nrow = numel (rt);
+      if (n <= nrow)
+        return;
+      endif
+      step = this.TimeStep;
+      if (nrow > 0 && this.StepDeclared && ! any (ismissing (step)))
+        ## A declared step says what the row after the last one is, so the
+        ## grid goes on rather than breaking.  A step only read off the rows
+        ## says nothing about a row that was never there.
+        add = repmat (rt(nrow), [n - nrow, 1]);
+        t = rt(nrow);
+        for k = 1:(n - nrow)
+          t = t + step;
+          add(k) = t;
+        endfor
+        this = applyRowTimes (this, [rt(:); add(:)], true, step);
+      else
+        add = missingTimes (rt, n - nrow);
+        this = applyRowTimes (this, [rt(:); add(:)], true);
+      endif
+    endfunction
+
     function this = repeatRowLabels (this, n, elementwise)
       nrow = numel (this.RowTimes);
       if (elementwise)

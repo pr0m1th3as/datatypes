@@ -465,6 +465,15 @@ classdef (Abstract) tabular
                      " repeatRowLabels."), class (this));
     endfunction
 
+    ## This object with its row labels extended to N rows.  An assignment to
+    ## a row past the end grows the variables by padding them, and the labels
+    ## have to grow with them or the object is left counting two heights at
+    ## once.  Each class says what a row added this way is labelled by.
+    function this = growRowLabels (this, n)
+      error (strcat ("%s: subclass must implement", ...
+                     " growRowLabels."), class (this));
+    endfunction
+
     ## An object of this class assembled from the output of an apply method:
     ## VARS holds the variable values and NAMES their names.  Each class takes
     ## the row labels from the argument that means something to it and ignores
@@ -648,10 +657,29 @@ classdef (Abstract) tabular
             return;
           endif
           [ixRow, ixVar] = resolveRowVarRefs (this, s.subs{1}, s.subs{2});
+          ## A row index past the end grows the object.  The variables grow
+          ## by being assigned into, but the row labels are not indexed here
+          ## and would be left behind, so the height they carry is worked out
+          ## now and the labels are extended once the variables are in.
+          newHeight = growthHeight (this, ixRow);
           ## Check input data matches referenced elements
           if (! isequal (size (rhs), [numel(ixRow), numel(ixVar)]))
             error (strcat ("%s.subsasgn: input data mismatch indexed", ...
                            " dimensions."), clstype);
+          endif
+          if (newHeight > 0)
+            ## The variables grow before anything is written into them, so
+            ## that the rows the assignment passes over carry the fill the
+            ## class gives rather than whatever indexed growth leaves, and a
+            ## variable the assignment does not name grows with the rest.
+            for i = 1:numel (this.VariableValues)
+              [v, errmsg] = padVariable (this.VariableValues{i}, newHeight);
+              if (! isempty (errmsg))
+                error ("%s.subsasgn: %s", clstype, errmsg);
+              endif
+              this.VariableValues{i} = v;
+              tbl.VariableValues{i} = v;
+            endfor
           endif
           ## Handle different cases of input data
           if (isa (rhs, 'table'))     # MATLAB compatible
@@ -684,6 +712,9 @@ classdef (Abstract) tabular
               end_try_catch
               tbl.VariableValues{ixVar(i)} = varData;
             endfor
+          endif
+          if (newHeight > 0)
+            tbl = growRowLabels (tbl, newHeight);
           endif
 
         ## {} not used in Octave for assigning values
@@ -10561,6 +10592,52 @@ endfunction
 
 ## Set the rows of a variable V selected by the logical MASK to the standard
 ## missing value for V's type.  Returns an errmsg body for unsupported types.
+## The height an assignment grows the object to, or 0 where it grows nothing.
+## Only a numeric row index reaches past the end; a logical mask is read
+## against the rows there are.
+
+function n = growthHeight (this, ixRow)
+  n = 0;
+  if (isnumeric (ixRow) && ! isempty (ixRow))
+    m = max (ixRow(:));
+    if (m > height (this))
+      n = m;
+    endif
+  endif
+endfunction
+
+## PROTO grown to N rows, the rows added taking the fill the class gives an
+## array grown by indexed assignment: zero for a numeric variable, as MATLAB
+## does, and the class's own missing value for one that has such a thing.
+## Returns an errmsg body for a type with neither.
+
+function [v, errmsg] = padVariable (v, n)
+  errmsg = '';
+  nrow = size (v, 1);
+  if (nrow >= n)
+    return;
+  endif
+  k = n - nrow;
+  w = size (v, 2);
+  if (islogical (v))
+    pad = false (k, w);
+  elseif (isnumeric (v))
+    pad = zeros (k, w, class (v));
+  elseif (iscellstr (v))
+    pad = repmat ({''}, k, w);
+  elseif (iscell (v))
+    pad = cell (k, w);
+  elseif (ischar (v))
+    pad = repmat (' ', k, w);
+  else
+    [pad, errmsg] = missing_rows (v, k);
+    if (! isempty (errmsg))
+      return;
+    endif
+  endif
+  v = [v; pad];
+endfunction
+
 function [v, errmsg] = set_var_missing (v, mask)
   errmsg = '';
   if (! any (mask))
