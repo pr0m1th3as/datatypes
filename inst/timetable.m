@@ -832,9 +832,20 @@ classdef timetable < tabular
         return
       endif
       if (! isregular (this))
-        errmsg = strcat ("the timetable must be regular with respect to", ...
-                         " time.");
-        return
+        ## A row count moves the data by rows whatever the step measures, so
+        ## a timetable regular in a calendar unit answers here although it is
+        ## not regular with respect to absolute time: a month is a step even
+        ## where no two of them are the same length.
+        cstep = calendarStepOf (this.RowTimes);
+        cunit = '';
+        if (! isempty (cstep))
+          cunit = lagCalendarUnit (cstep);
+        endif
+        if (isempty (cunit) || ! isregular (this, cunit))
+          errmsg = strcat ("the timetable must be regular with respect to", ...
+                           " time.");
+          return
+        endif
       endif
       k = double (n);
 

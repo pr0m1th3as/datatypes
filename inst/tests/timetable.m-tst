@@ -5223,6 +5223,41 @@
 %! t = datetime (2024, 1, 1) + hours ((0:4)');
 %! TT = timetable (t, (1:5)', 'VariableNames', {'v'});
 %! assert_equal (lag (TT, -1).v, [2; 3; 4; 5; NaN]);
+
+## A row count moves the data by rows, so a timetable regular in a calendar
+## unit is lagged although no two of its steps are the same length and it is
+## not regular with respect to absolute time (measured on MATLAB R2024a).
+%!test
+%! CM = timetable ((1:6)', 'TimeStep', calmonths (1), ...
+%!                 'StartTime', datetime (2024, 6, 1));
+%! assert_equal (isregular (CM), false);
+%! assert_equal (isregular (CM, 'months'), true);
+%!test
+%! CM = timetable ((1:6)', 'TimeStep', calmonths (1), ...
+%!                 'StartTime', datetime (2024, 6, 1));
+%! L = lag (CM, 1);
+%! assert_equal (L.Var1, [NaN; 1; 2; 3; 4; 5]);
+%! assert_equal (L.Properties.RowTimes, CM.Properties.RowTimes);
+%! assert_equal (L.Properties.TimeStep, calmonths (1));
+%! assert_equal (isregular (L), false);
+%!test
+%! CM = timetable ((1:6)', 'TimeStep', calmonths (1), ...
+%!                 'StartTime', datetime (2024, 6, 1));
+%! assert_equal (lag (CM, 2).Var1, [NaN; NaN; 1; 2; 3; 4]);
+%!test
+%! CM = timetable ((1:6)', 'TimeStep', calmonths (1), ...
+%!                 'StartTime', datetime (2024, 6, 1));
+%! assert_equal (lag (CM, -1).Var1, [2; 3; 4; 5; 6; NaN]);
+## Test the same lag named as a calendarDuration agrees with the row count
+%!test
+%! CM = timetable ((1:6)', 'TimeStep', calmonths (1), ...
+%!                 'StartTime', datetime (2024, 6, 1));
+%! assert_equal (lag (CM, calmonths (1)).Var1, [NaN; 1; 2; 3; 4; 5]);
+## Test a timetable regular in days is lagged by a row count as well
+%!test
+%! DY = timetable ((1:5)', 'TimeStep', caldays (1), ...
+%!                 'StartTime', datetime (2024, 6, 1));
+%! assert_equal (lag (DY, 1).Var1, [NaN; 1; 2; 3; 4]);
 ## Test a lag of no rows leaves the values where they were
 %!test
 %! t = datetime (2024, 1, 1) + hours ((0:4)');
