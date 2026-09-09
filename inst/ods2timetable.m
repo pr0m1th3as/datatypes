@@ -468,60 +468,56 @@ endfunction
 %!   delete (fname);
 %! end_unwind_protect
 
-## Test a reference to a sheet the file does not have is refused
-%!test
+## Three files a hand edit has made inconsistent: one whose cross reference
+## names a sheet that is not there, one whose event table is said to carry an
+## event table of its own, and one whose event table keeps row times of
+## another type than the sheet it annotates.
+%!shared fmiss, fdeep, ftype
 %! t = datetime (2024, 1, 1) + hours ((0:3)');
+%! A = timetable (t, (1:4)', 'VariableNames', {'v'});
+%! A.Properties.Events = eventtable (t(2), 'EventLabels', {'up'});
 %! TT = timetable (t, (1:4)', 'VariableNames', {'v'});
 %! TT.Properties.Events = eventtable (t(2), 'EventLabels', {'on'});
-%! fname = [tempname(), '.fods'];
-%! unwind_protect
-%!   timetable2ods (TT, fname, 'Sheet', 'Data');
-%!   txt = fileread (fname);
-%!   txt = strrep (txt, '<text:p>Data_Events</text:p>', ...
-%!                 '<text:p>Nope</text:p>');
-%!   fid = fopen (fname, 'w');  fputs (fid, txt);  fclose (fid);
-%!   fail ("ods2timetable (fname)", ...
-%!         "the event table of sheet 'Data' is said to be on sheet 'Nope'");
-%! unwind_protect_cleanup
-%!   delete (fname);
-%! end_unwind_protect
-
-## Test an event table said to carry an event table is refused
-%!test
-%! t = datetime (2024, 1, 1) + hours ((0:3)');
-%! A = timetable (t, (1:4)', 'VariableNames', {'v'});
-%! A.Properties.Events = eventtable (t(2), 'EventLabels', {'up'});
+%! fmiss = [tempname(), '.fods'];
+%! timetable2ods (TT, fmiss, 'Sheet', 'Data');
+%! txt = fileread (fmiss);
+%! txt = strrep (txt, '<text:p>Data_Events</text:p>', ...
+%!                    '<text:p>Nope</text:p>');
+%! fid = fopen (fmiss, 'w');  fputs (fid, txt);  fclose (fid);
 %! B = timetable (t, (5:8)', 'VariableNames', {'w'});
 %! B.Properties.Events = eventtable (t(3), 'EventLabels', {'down'});
-%! fname = [tempname(), '.fods'];
-%! unwind_protect
-%!   struct2ods (fname, struct ('A', A, 'B', B));
-%!   txt = fileread (fname);
-%!   txt = strrep (txt, '<text:p>B_Events</text:p>', '<text:p>A</text:p>');
-%!   fid = fopen (fname, 'w');  fputs (fid, txt);  fclose (fid);
-%!   fail ("ods2struct (fname)", "an event table cannot carry an event table");
-%! unwind_protect_cleanup
-%!   delete (fname);
-%! end_unwind_protect
+%! fdeep = [tempname(), '.fods'];
+%! struct2ods (fdeep, struct ('A', A, 'B', B));
+%! txt = fileread (fdeep);
+%! txt = strrep (txt, '<text:p>B_Events</text:p>', '<text:p>A</text:p>');
+%! fid = fopen (fdeep, 'w');  fputs (fid, txt);  fclose (fid);
+%! C = timetable (hours ((0:3)'), (5:8)', 'VariableNames', {'w'});
+%! ftype = [tempname(), '.fods'];
+%! struct2ods (ftype, struct ('A', A, 'B', C));
+%! txt = fileread (ftype);
+%! txt = strrep (txt, '<text:p>A_Events</text:p>', '<text:p>B</text:p>');
+%! fid = fopen (ftype, 'w');  fputs (fid, txt);  fclose (fid);
+
+## Test a reference to a sheet the file does not have is refused
+%!error <ods2timetable: the event table of sheet 'Data' is said to be on sheet 'Nope', which the file does not have.> ...
+%! ods2timetable (fmiss)
+
+## Test an event table said to carry an event table is refused
+%!error <ods2struct: sheet 'A' is named as an event table and carries one of its own; an event table cannot carry an event table.> ...
+%! ods2struct (fdeep)
 
 ## Test an event table whose row times are of another type is refused
-%!test
-%! t = datetime (2024, 1, 1) + hours ((0:3)');
-%! A = timetable (t, (1:4)', 'VariableNames', {'v'});
-%! A.Properties.Events = eventtable (t(2), 'EventLabels', {'up'});
-%! B = timetable (hours ((0:3)'), (5:8)', 'VariableNames', {'w'});
-%! fname = [tempname(), '.fods'];
-%! unwind_protect
-%!   struct2ods (fname, struct ('A', A, 'B', B));
-%!   txt = fileread (fname);
-%!   txt = strrep (txt, '<text:p>A_Events</text:p>', '<text:p>B</text:p>');
-%!   fid = fopen (fname, 'w');  fputs (fid, txt);  fclose (fid);
-%!   fail ("ods2struct (fname)", ...
-%!         "has duration row times where sheet 'A' has datetime");
-%! unwind_protect_cleanup
-%!   delete (fname);
-%! end_unwind_protect
+%!error <ods2struct: the event table on sheet 'B' has duration row times where sheet 'A' has datetime ones.> ...
+%! ods2struct (ftype)
 
+## Test the fixtures are removed again
+%!test
+%! delete (fmiss);
+%! delete (fdeep);
+%! delete (ftype);
+%! assert_equal (exist (fmiss, 'file'), 0);
+%! assert_equal (exist (fdeep, 'file'), 0);
+%! assert_equal (exist (ftype, 'file'), 0);
 ## Two files nothing can be read out of: one whose columns are all numeric,
 ## so nothing in it can label the rows, and one in which a second cross
 ## reference points at the data sheet, leaving every sheet of the file the
