@@ -534,30 +534,42 @@ endfunction
 
 ## Format proxy bin edges as label strings of type CTYPE.  DFMT is the duration
 ## column's display format (e.g. 'm'), so duration edges label in the same unit.
+## The edges are labelled all at once rather than one at a time: a narrow bin
+## over a wide span makes tens of thousands of them, and formatting each on
+## its own -- building a one-element object, assigning its format through
+## 'subsasgn' and rendering it -- costs seconds where the whole set costs a
+## fraction of one.  The strings are the same either way.
+
 function s = gb_edge_labels (edgesP, ctype, dfmt)
   n = numel (edgesP);
   s = cell (1, n);
+  if (n == 0)
+    return;
+  endif
   switch (ctype)
     case 'datetime'
       ## Use a uniform format across the edges: show the time component on every
       ## edge (including midnight) when any edge carries one, else date only.
       DVe = datevec (edgesP(:));
       hasTime = any (DVe(:,4) != 0 | DVe(:,5) != 0 | round (DVe(:,6)) != 0);
-      for i = 1:n
-        if (hasTime)
-          s{i} = gb_datetime_str (edgesP(i));
-        else
-          s{i} = gb_date_str (edgesP(i));
-        endif
-      endfor
+      mon = {'Jan','Feb','Mar','Apr','May','Jun', ...
+             'Jul','Aug','Sep','Oct','Nov','Dec'};
+      dash = repmat ('-', n, 1);
+      txt = [num2str(DVe(:,3), '%02d'), dash, char(mon(DVe(:,2))), dash, ...
+             num2str(DVe(:,1), '%04d')];
+      if (hasTime)
+        colon = repmat (':', n, 1);
+        txt = [txt, repmat(' ', n, 1), num2str(DVe(:,4), '%02d'), colon, ...
+               num2str(DVe(:,5), '%02d'), colon, ...
+               num2str(round (DVe(:,6)), '%02d')];
+      endif
+      s = cellstr (txt)';
     case 'duration'
-      for i = 1:n
-        ed = days (edgesP(i));
-        if (! isempty (dfmt))
-          ed.Format = dfmt;
-        endif
-        s{i} = char (ed);
-      endfor
+      ed = days (edgesP(:));
+      if (! isempty (dfmt))
+        ed.Format = dfmt;
+      endif
+      s = dispstrings (ed)(:)';
     otherwise
       for i = 1:n
         s{i} = gb_num_str (edgesP(i));

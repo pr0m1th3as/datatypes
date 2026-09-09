@@ -3207,6 +3207,15 @@
 %! assert_equal (cellstr (R.hour_Time)', ...
 %!               {'[0 hr, 1 hr)', '[1 hr, 2 hr)', '[25 hr, 26 hr)', ...
 %!                '[26 hr, 27 hr)', '[199 hr, 200 hr]'});
+## Test a bin fine enough to make thousands of them still answers promptly
+%!test
+%! T = timetable ((1:6)', 'RowTimes', hours ([0; 0.5; 1; 25; 26; 200]));
+%! t0 = tic ();
+%! R = groupcounts (T, 'Time', 'minute');
+%! assert_equal (height (R), 6);
+%! assert_equal (numel (categories (R.minute_Time)), 12000);
+%! assert_equal (toc (t0) < 10, true);
+
 ## Test the other apply families reach the same binning
 %!test
 %! T = timetable ((1:6)', 'RowTimes', hours ([0; 0.5; 1; 25; 26; 200]));
