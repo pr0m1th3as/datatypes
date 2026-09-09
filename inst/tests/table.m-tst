@@ -5592,6 +5592,10 @@
 %! fillmissing (table (d), 'previous', 'EndValues', 9);
 %!error <table.fillmissing: 'ReplaceValues' set to false is not supported yet.> ...
 %! fillmissing (table (1), 'previous', 'ReplaceValues', false);
+%!error <table.fillmissing: 'SamplePoints' is not supported yet.> ...
+%! fillmissing (table ([1; NaN; 3]), 'previous', 'SamplePoints', (1:3)');
+%!error <table.fillmissing: unknown optional argument.> ...
+%! fillmissing (table (1), 'previous', 5);
 
 ## Test 'standardizeMissing' method
 %!test  # a numeric scalar indicator becomes NaN in numeric variables
