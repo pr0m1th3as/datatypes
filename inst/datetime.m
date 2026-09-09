@@ -5572,6 +5572,19 @@ classdef datetime
             error (strcat ("datetime.subsasgn: cannot assign %s values", ...
                            " to a datetime array."), class (val));
           endif
+          ## A 'NaT' names no instant, so it carries no zone that could
+          ## disagree with the array's own and MATLAB assigns one into a
+          ## zoned array as readily as it assigns 'missing'.  It is brought
+          ## to the array's zone here, so that the check below -- which is
+          ## right for every datetime that does name an instant -- has
+          ## nothing left to refuse.
+          if (isa (val, "datetime") && ! isempty (this.TimeZone)
+              && isempty (val.TimeZone))
+            miss = ismissing (val);
+            if (! isempty (miss) && all (miss(:)))
+              val = NaT (size (val), 'TimeZone', this.TimeZone);
+            endif
+          endif
           ## An element arriving from another zone is CONVERTED into this
           ## array's, as it is when concatenated: assignment changes which array
           ## an element belongs to, not the instant it names.  Going through

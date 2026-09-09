@@ -2050,8 +2050,39 @@
 %! n(2:3) = [u, u];
 %! assert_equal (char (n(3), 'HH:mm'), '08:00');
 
+## A 'NaT' names no instant and so carries no zone to disagree with the
+## array's own: it is assigned into a zoned array as readily as 'missing' is,
+## and the two are indistinguishable afterwards.  Measured on MATLAB R2026a,
+## which refuses the real datetime below on the same fixture.
+%!test
+%! v = datetime (2024, 6, 1, 'TimeZone', 'America/New_York') + hours (0:3)';
+%! v(2) = NaT;
+%! assert_equal (v.TimeZone, 'America/New_York');
+%! assert_equal (ismissing (v)', [false, true, false, false]);
+%! ny = 'America/New_York';
+%! assert_equal (v(3), datetime (2024, 6, 1, 2, 0, 0, 'TimeZone', ny));
+%!test
+%! v = datetime (2024, 6, 1, 'TimeZone', 'America/New_York') + hours (0:3)';
+%! w = v;
+%! v(2) = NaT;
+%! w(2) = missing;
+%! assert_equal (isequaln (v, w), true);
+%!test
+%! v = datetime (2024, 6, 1, 'TimeZone', 'America/New_York') + hours (0:3)';
+%! v(2:3) = NaT (1, 2);
+%! assert_equal (v.TimeZone, 'America/New_York');
+%! assert_equal (ismissing (v)', [false, true, true, false]);
+## Test an unzoned array takes a 'NaT' as it always did
+%!test
+%! u = datetime (2024, 6, 1) + hours (0:3)';
+%! u(2) = NaT;
+%! assert_equal (u.TimeZone, '');
+%! assert_equal (ismissing (u)', [false, true, false, false]);
+
 ## Test that the two mixtures with no answer are refused rather than silently
 ## admitted, which is what concatenation already did and what MATLAB does here.
+## A datetime that does name an instant is refused whichever way it goes, on
+## R2024a and R2026a alike; only a missing one is exempt.
 %!error <datetime.subsasgn: cannot combine a datetime array with a time zone with one without a time zone.> ...
 %! n = datetime (2024, 3, 15, 'TimeZone', 'America/New_York');
 %! n(2) = datetime (2024, 3, 15);
