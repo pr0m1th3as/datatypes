@@ -3073,6 +3073,32 @@
 %! groupcounts (timetable ([1; 2], 'RowTimes', ...
 %!              datetime (2024, 1, 1) + hours (0:1)'));
 
+## A grouping variable binned by a width gets one bin per width across the
+## span it covers, and the last of them is closed, so the largest value falls
+## in it rather than in a bin of its own past the end.  Measured on R2026a.
+%!test
+%! T = timetable ((1:6)', 'RowTimes', hours ([0; 0.5; 1; 25; 26; 200]));
+%! R = groupcounts (T, 'Time', hours (2));
+%! assert_equal (height (R), 4);
+%! assert_equal (numel (categories (R.(R.Properties.VariableNames{1}))), 100);
+%!test
+%! T = timetable ((1:6)', 'RowTimes', hours ([0; 0.5; 1; 25; 26; 200]));
+%! R = groupcounts (T, 'Time', hours (2), 'IncludeEmptyGroups', true);
+%! assert_equal (height (R), 100);
+## Test the value sitting on the top edge is binned rather than left out
+%!test
+%! T = timetable ((1:6)', 'RowTimes', hours ([0; 0.5; 1; 25; 26; 200]));
+%! R = groupcounts (T, 'Time', hours (2), 'IncludeEmptyGroups', true);
+%! assert_equal (any (ismissing (R.(R.Properties.VariableNames{1}))), false);
+%! assert_equal (sum (R.GroupCount), 6);
+## Test the time-unit path over datetime row times is unchanged
+%!test
+%! T = timetable ((1:6)', 'RowTimes', ...
+%!                datetime (2024, 1, 1) + hours ([0; 0.5; 1; 25; 26; 200]));
+%! R = groupcounts (T, 'Time', 'hour');
+%! assert_equal (height (R), 5);
+%! assert_equal (numel (categories (R.(R.Properties.VariableNames{1}))), 201);
+
 ## Test the shared branches of 'groupcounts' name the timetable
 %!error <timetable.groupcounts: invalid argument; expected a GROUPBINS binning scheme or a Name-Value option.> ...
 %! rt = datetime (2024, 1, 1) + hours (0:1)';

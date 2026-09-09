@@ -299,11 +299,23 @@ function [idx, labs, errmsg] = gb_width_bins (col, width, incEdge, varname)
                       varname);
     return;
   endif
-  ## Anchor width bins to multiples of the width from 0.
+  ## Anchor width bins to multiples of the width from 0.  The last bin is
+  ## closed and so holds the largest value itself: a span that is an exact
+  ## multiple of the width needs that many bins and not one more, which is
+  ## what rounding the ratio up after nudging it would have added.  The nudge
+  ## goes downwards instead, so that a ratio a hair over a whole number from
+  ## the division alone does not buy an empty bin at the end.
   lo = floor (min (good) / w) * w;
   hi = max (good);
-  ne = max (1, ceil ((hi - lo) / w + eps (hi)));
+  r = (hi - lo) / w;
+  ne = max (1, ceil (r - 4 * eps (max (r, 1))));
   edgesP = lo + (0:ne) * w;
+  ## The last bin is closed, so the largest value belongs in it; the top edge
+  ## is computed by multiplication and can land an ulp below that value, which
+  ## would leave the row in no bin at all.  Widening the edge to reach it
+  ## changes nothing else: where the span is not a whole number of widths the
+  ## edge is already past it and the maximum wins nothing.
+  edgesP(end) = max (edgesP(end), hi);
   [idx, labs] = gb_assign_intervals (proxy, edgesP, incEdge, ...
                                      gb_edge_labels (edgesP, ctype, gb_dur_fmt (col, ctype)));
 endfunction
