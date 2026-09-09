@@ -2239,24 +2239,6 @@ classdef duration
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {duration} {@var{C} =} rdivide (@var{A}, @var{B})
-    ##
-    ## Element-wise right division for duration arrays.
-    ##
-    ## @code{@var{C} = rdivide (@var{A}, @var{B})} is the equivalent of the
-    ## syntax @code{@var{C} = @var{A} ./ @var{B}} and returns the element-wise
-    ## division of the duration array @var{A} by the corresponding elements of
-    ## input array @var{B}, which can either be a duration or a numeric array.
-    ## If @var{B} is a duration array, then @var{C} is a double numeric array.
-    ## If @var{B} is a numeric array, then @var{C} is a duration array.
-    ##
-    ## @var{A} and @var{B} must be size compatible, which translates to they
-    ## can be the same size, one can be scalar, or for every dimension, their
-    ## dimension sizes must be equal or one of them must be 1.  The size of
-    ## @var{C} is determined by the size compatibility of @var{A} and @var{B}.
-    ##
-    ## @end deftypefn
-    ## -*- texinfo -*-
     ## @deftypefn {duration} {@var{C} =} mod (@var{A}, @var{B})
     ##
     ## Remainder after division of duration arrays, with the sign of the divisor.
