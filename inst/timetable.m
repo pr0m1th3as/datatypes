@@ -963,7 +963,8 @@ classdef timetable < tabular
       endif
 
       ## Where the rows of the answer sit.
-      [nt, errmsg] = synchronizeBase (ops, spec, tstep, srate);
+      [nt, errmsg] = synchronizeBase (ops, spec, tstep, srate, ...
+                                      retimeIsAggregation (method));
       if (! isempty (errmsg))
         return
       endif
@@ -1062,7 +1063,8 @@ classdef timetable < tabular
         return
       endif
 
-      [nt, errmsg] = retimeTimes (this.RowTimes, spec, tstep, srate);
+      [nt, errmsg] = retimeTimes (this.RowTimes, spec, tstep, srate, ...
+                                  retimeIsAggregation (method));
       if (! isempty (errmsg))
         return
       endif
@@ -5855,10 +5857,13 @@ endfunction
 ## 'TimeStep' and 'SampleRate' options, of which 'regular' takes exactly one.
 ## Returns an errmsg body for the caller to raise.
 
-function [nt, errmsg] = retimeTimes (rt, spec, tstep, srate)
+function [nt, errmsg] = retimeTimes (rt, spec, tstep, srate, isAgg)
 
   nt = [];
   errmsg = '';
+  if (nargin < 5)
+    isAgg = false;
+  endif
   units = {'secondly', 'minutely', 'hourly', 'daily', 'weekly', ...
            'monthly', 'quarterly', 'yearly'};
 
@@ -5943,7 +5948,7 @@ function [nt, errmsg] = retimeTimes (rt, spec, tstep, srate)
                               " or 'regular'."), spec);
     return
   endif
-  [nt, errmsg] = unitGrid (rt, spec);
+  [nt, errmsg] = unitGrid (rt, spec, isAgg);
 
 endfunction
 
@@ -5967,10 +5972,37 @@ function nt = steppedGrid (lo, hi, step)
   nt = lo + step * (0:n)';
 endfunction
 
+## The grid a time unit asks for, which ends at a different place depending
+## on what is done with it: an aggregation gathers the rows falling in each
+## bin, so a bin past the last row time would come back empty and the grid
+## stops at the step at or before it; a fill computes a value for every
+## target time whether a row reaches it or not, so its grid runs on to the
+## step at or after, as 'regular' does.  The count is checked against HI
+## rather than trusted from the division, so a last row time landing exactly
+## on a step is never lost to a rounding error in it.
+
+function nt = unitSteps (lo, hi, step, isAgg)
+  if (! isAgg)
+    nt = steppedGrid (lo, hi, step);
+    return
+  endif
+  n = 0;
+  if (hi > lo)
+    n = floor (seconds (hi - lo) / seconds (step));
+    if (lo + step * (n + 1) <= hi)
+      n += 1;
+    endif
+  endif
+  nt = lo + step * (0:n)';
+endfunction
+
 ## The same for a calendar step, which has no fixed length to divide a span
 ## by and so is stepped one unit at a time.
 
-function nt = calendarGrid (lo, hi, unit)
+function nt = calendarGrid (lo, hi, unit, isAgg)
+  if (nargin < 4)
+    isAgg = false;
+  endif
   nt = lo;
   k = 0;
   t = lo;
@@ -5988,17 +6020,23 @@ function nt = calendarGrid (lo, hi, unit)
       case 'year'
         t = lo + calyears (k);
     endswitch
+    if (isAgg && t > hi)
+      break
+    endif
     nt(k+1,1) = t;
   endwhile
 endfunction
 
 ## The grid a time unit asks for: from the unit's own boundary at or before
-## the first row time, to the first boundary at or after the last.
+## the first row time, to the last boundary the method has any use for.
 
-function [nt, errmsg] = unitGrid (rt, spec)
+function [nt, errmsg] = unitGrid (rt, spec, isAgg)
 
   nt = [];
   errmsg = '';
+  if (nargin < 3)
+    isAgg = false;
+  endif
   switch (spec)
     case 'secondly'
       unit = 'second';
@@ -6023,15 +6061,15 @@ function [nt, errmsg] = unitGrid (rt, spec)
     lo = dateshift (lo, 'start', unit);
     switch (unit)
       case 'second'
-        nt = steppedGrid (lo, hi, seconds (1));
+        nt = unitSteps (lo, hi, seconds (1), isAgg);
       case 'minute'
-        nt = steppedGrid (lo, hi, minutes (1));
+        nt = unitSteps (lo, hi, minutes (1), isAgg);
       case 'hour'
-        nt = steppedGrid (lo, hi, hours (1));
+        nt = unitSteps (lo, hi, hours (1), isAgg);
       otherwise
         ## A calendar step follows the wall clock, so a day across a clock
         ## change is still one day and a month is still one month.
-        nt = calendarGrid (lo, hi, unit);
+        nt = calendarGrid (lo, hi, unit, isAgg);
     endswitch
     return
   endif
@@ -6055,7 +6093,7 @@ function [nt, errmsg] = unitGrid (rt, spec)
       return
   endswitch
   lo = step * floor (seconds (lo) / seconds (step));
-  nt = steppedGrid (lo, hi, step);
+  nt = unitSteps (lo, hi, step, isAgg);
 
 endfunction
 
@@ -6112,6 +6150,16 @@ endfunction
 
 ## The name a complaint about the row times should use, a function handle
 ## having none of its own.
+
+## Whether the method the caller named gathers the rows falling in each
+## target bin, which is what decides where the grid of a time unit ends.  A
+## function handle aggregates; naming no method at all fills.
+
+function out = retimeIsAggregation (method)
+  out = is_function_handle (method) ...
+        || (ischar (method) && isrow (method)
+            && any (strcmp (method, timetable.retimeAggregations ())));
+endfunction
 
 function out = retimeMethodName (method)
   if (is_function_handle (method))
@@ -6489,10 +6537,13 @@ endfunction
 ## no part in choosing; without that an empty operand would empty an
 ## intersection.
 
-function [nt, errmsg] = synchronizeBase (ops, spec, tstep, srate)
+function [nt, errmsg] = synchronizeBase (ops, spec, tstep, srate, isAgg)
 
   nt = [];
   errmsg = '';
+  if (nargin < 5)
+    isAgg = false;
+  endif
   have = {};
   for k = 1:numel (ops)
     o = ops{k};
@@ -6508,7 +6559,7 @@ function [nt, errmsg] = synchronizeBase (ops, spec, tstep, srate)
   endif
 
   if (isdatetime (spec) || isduration (spec))
-    [nt, errmsg] = retimeTimes (have{1}, spec, tstep, srate);
+    [nt, errmsg] = retimeTimes (have{1}, spec, tstep, srate, isAgg);
     return
   endif
   if (isa (spec, 'string') && isscalar (spec))
@@ -6554,7 +6605,7 @@ function [nt, errmsg] = synchronizeBase (ops, spec, tstep, srate)
       ## Anything left is a time unit or 'regular', and a complaint about it
       ## has to offer the time bases as well, which 'retime' knows nothing
       ## about.
-      [nt, errmsg] = retimeTimes (all, spec, tstep, srate);
+      [nt, errmsg] = retimeTimes (all, spec, tstep, srate, isAgg);
       if (! isempty (errmsg) && ! isempty (strfind (errmsg, "is not a time")))
         errmsg = sprintf (strcat ("'%s' is not a time base; use", ...
                           " 'union', 'intersection', 'commonrange',", ...
