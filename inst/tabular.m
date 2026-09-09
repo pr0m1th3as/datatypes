@@ -6336,7 +6336,7 @@ classdef (Abstract) tabular
         B = build_grouped_apply_result (this, scope, outFmt, ...
                                         res(:,1:nout), resNames, gcols, ...
                                         this.VariableNames(gIx), gcount, ...
-                                        repRows);
+                                        repRows, G);
       endif
     endfunction
 
@@ -6399,9 +6399,12 @@ classdef (Abstract) tabular
     ## return format; CALLER names the method for error messages.
     function out = build_grouped_apply_result (this, caller, fmt, res, ...
                                               outNames, gcols, gnames, ...
-                                              gcount, rowIx)
+                                              gcount, rowIx, gvec)
       if (nargin < 9)
         rowIx = [];
+      endif
+      if (nargin < 10)
+        gvec = [];
       endif
       ng = size (res, 1);
       C = size (res, 2);
@@ -6423,8 +6426,26 @@ classdef (Abstract) tabular
           names = [gnames, {'GroupCount'}, outNames];
           if (isempty (rowIx))
             outIx = [];
-          else
+          elseif (isempty (gvec))
             outIx = rowIx(repIdx);
+          else
+            ## Each output row answers for a row of the group it came from,
+            ## taken from the top as the ungrouped path takes them: a group
+            ## reduced to one row answers for its first, and one that keeps
+            ## its rows answers for each in turn.  Only a group returning
+            ## more rows than it holds runs out, and the last of them stands
+            ## in for the rest.
+            outIx = [];
+            for g = 1:ng
+              src = find (gvec == g);
+              k = size (res{g,1}, 1);
+              take = min (k, numel (src));
+              ix = src(1:take);
+              if (k > take && take > 0)
+                ix = [ix; repmat(src(take), k - take, 1)];
+              endif
+              outIx = [outIx; ix];
+            endfor
           endif
           out = assembleApply (this, vars, names, {}, outIx);
         case 'uniform'
