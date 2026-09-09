@@ -10503,7 +10503,10 @@ function [v, errmsg] = set_var_missing (v, mask)
   elseif (isa (v, 'categorical'))
     v(mask) = categorical (missing);
   elseif (isa (v, 'datetime'))
-    v(mask) = NaT;
+    ## 'missing' rather than a bare 'NaT', which carries no time zone and
+    ## cannot be assigned into a zoned array; assigning 'missing' blanks the
+    ## element in the array's own zone.
+    v(mask) = missing;
   elseif (isa (v, 'duration'))
     v(mask) = missing;
   elseif (isa (v, 'calendarDuration'))
@@ -10534,7 +10537,13 @@ function [col, errmsg] = missing_rows (proto, n)
   elseif (isa (proto, 'categorical'))
     col = repmat (categorical (missing), n, w);
   elseif (isa (proto, 'datetime'))
-    col = repmat (NaT, n, w);
+    ## The column is built rather than assigned into, so it takes the
+    ## prototype's zone here or the result would be an unzoned column beside
+    ## zoned ones.
+    col = NaT (n, w);
+    if (! isempty (proto.TimeZone))
+      col.TimeZone = proto.TimeZone;
+    endif
   elseif (isa (proto, 'duration'))
     col = hours (NaN (n, w));
   elseif (isa (proto, 'calendarDuration'))
