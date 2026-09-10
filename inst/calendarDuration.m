@@ -40,7 +40,7 @@ classdef calendarDuration
 
   properties
     ## -*- texinfo -*-
-    ## @deftp {duration} {property} Format
+    ## @deftp {calendarDuration} {property} Format
     ##
     ## Display format
     ##
