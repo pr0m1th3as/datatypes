@@ -51,7 +51,7 @@ isequal (TT, TT2)      % true, units and row times included
 
 It is also the only format of the package that carries an attached `eventtable`, on a sheet of its own.
 
-The layout is documented in [`doc/ODS_FORMAT.md`](doc/ODS_FORMAT.md), so that a reader in another language can be written against it and so that a file can be understood by someone holding only the file.
+The layout is documented in [`doc/ODS_FORMAT.md`](doc/ODS_FORMAT.md), so that a reader in another language can be written against it and so that a file can be understood by someone holding only the file. There is also a longer write-up of the problem this solves, [Why your CSV loses your data types, and what to do about it](https://pr0m1th3as.github.io/datatypes/blog/csv-and-data-types.html).
 
 ## 4. Installation
 
