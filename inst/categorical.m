@@ -5072,3 +5072,9 @@ function [dispstr, optLen]  = mixedcell2str (data)
   fcn = @(x) sprintf (La_wB, x);
   dispstr(is_char) = cellfun (fcn, dispstr(is_char), "UniformOutput", false);
 endfunction
+
+## 'pkg test' reads the BISTs from the file it is testing, so a class
+## whose suite lives in inst/tests/ reads as carrying none.  This block
+## answers for it and checks nothing itself.
+%!test
+%! ## The suite for this class is inst/tests/categorical.m-tst.

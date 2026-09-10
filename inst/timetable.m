@@ -7012,4 +7012,8 @@ function meta = shiftMeta (meta, prepend, blank)
   endif
 endfunction
 
-## Test the row times become the first variable, named after the dimension
+## 'pkg test' reads the BISTs from the file it is testing, so a class
+## whose suite lives in inst/tests/ reads as carrying none.  This block
+## answers for it and checks nothing itself.
+%!test
+%! ## The suite for this class is inst/tests/timetable.m-tst.

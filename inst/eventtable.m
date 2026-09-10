@@ -640,3 +640,9 @@ endfunction
 function tf = wasGiven (x)
   tf = ! isa (x, 'missing');
 endfunction
+
+## 'pkg test' reads the BISTs from the file it is testing, so a class
+## whose suite lives in inst/tests/ reads as carrying none.  This block
+## answers for it and checks nothing itself.
+%!test
+%! ## The suite for this class is inst/tests/eventtable.m-tst.
