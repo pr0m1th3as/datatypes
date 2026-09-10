@@ -68,3 +68,35 @@ classdef TableProperties < datatypes.tabular.TabularProperties
   endmethods
 
 endclassdef
+
+## The properties object of a table.  It cannot be constructed, so every
+## fixture reaches it through a table.  Measured on MATLAB R2024a.
+
+## Test the object a table hands back is this class
+%!assert_equal (class (table (1).Properties), ...
+%!              'datatypes.tabular.TableProperties')
+
+## Test the display order names the row labels before the custom properties
+%!test
+%! p = properties (table (1).Properties);
+%! assert_equal (p{end-1}, 'RowNames');
+%! assert_equal (p{end}, 'CustomProperties');
+%!test
+%! p = properties (table (1).Properties);
+%! assert_equal (p(1:3), {'Description'; 'UserData'; 'DimensionNames'});
+## Test 'fieldnames' answers as 'properties' does
+%!test
+%! P = table (1).Properties;
+%! assert_equal (fieldnames (P), properties (P));
+## Test the row labels are the only thing this class adds
+%!test
+%! P = table (1).Properties;
+%! assert_equal (sum (strcmp (properties (P), 'RowNames')), 1);
+%! assert_equal (any (strcmp (properties (P), 'RowTimes')), false);
+
+## Test the metadata reads back through the object
+%!test
+%! T = table ([1; 2], [3; 4], 'VariableNames', {'v', 'w'});
+%! assert_equal (T.Properties.VariableNames, {'v', 'w'});
+%! assert_equal (T.Properties.DimensionNames, {'Row', 'Variables'});
+%! assert_equal (T.Properties.RowNames, {});

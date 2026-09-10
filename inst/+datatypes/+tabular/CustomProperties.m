@@ -174,3 +174,56 @@ classdef CustomProperties
   endmethods
 
 endclassdef
+
+## The container a tabular class keeps its custom properties in.  It cannot
+## be constructed, so every fixture reaches it through 'addprop'.  Measured
+## on MATLAB R2024a.
+
+## Test the object a table hands back is this class
+%!assert_equal (class (table (1).Properties.CustomProperties), ...
+%!              'datatypes.tabular.CustomProperties')
+
+## Test a table with no custom property carries an empty container
+%!test
+%! C = table (1).Properties.CustomProperties;
+%! assert_equal (isempty (C), true);
+%! assert_equal (properties (C), cell (0, 1));
+%! assert_equal (fieldnames (C), cell (0, 1));
+## Test 'addprop' names them and 'properties' answers in that order
+%!test
+%! T = addprop (table (1), {'p', 'q'}, {'table', 'variable'});
+%! C = T.Properties.CustomProperties;
+%! assert_equal (isempty (C), false);
+%! assert_equal (properties (C), {'p'; 'q'});
+%! assert_equal (fieldnames (C), properties (C));
+## Test 'isfield' answers for a name that is there and one that is not
+%!test
+%! T = addprop (table (1), {'p'}, {'table'});
+%! C = T.Properties.CustomProperties;
+%! assert_equal (isfield (C, 'p'), true);
+%! assert_equal (isfield (C, 'zz'), false);
+## Test a custom property reads back by name
+%!test
+%! T = addprop (table (1), {'p'}, {'table'});
+%! T.Properties.CustomProperties.p = 'hello';
+%! assert_equal (T.Properties.CustomProperties.p, 'hello');
+## Test 'rmprop' takes it out of the container again
+%!test
+%! T = addprop (table (1), {'p', 'q'}, {'table', 'table'});
+%! T = rmprop (T, {'p'});
+%! assert_equal (properties (T.Properties.CustomProperties), {'q'});
+
+## Test input validation for 'datatypes.tabular.CustomProperties'
+%!error <datatypes.tabular.CustomProperties: only '\.' indexing is supported.> ...
+%! C = table (1).Properties.CustomProperties; ...
+%! subsref (C, substruct ('()', {1}));
+%!error <datatypes.tabular.CustomProperties: only '\.' indexing is supported.> ...
+%! C = table (1).Properties.CustomProperties; ...
+%! subsref (C, substruct ('{}', {1}));
+%!error <datatypes.tabular.CustomProperties: there is no custom property named 'Nope'.> ...
+%! C = table (1).Properties.CustomProperties; ...
+%! C.Nope;
+%!error <datatypes.tabular.CustomProperties: '\.' index argument must be a character vector or a string scalar.> ...
+%! C = table (1).Properties.CustomProperties; ...
+%! s = struct ('type', '.', 'subs', 7); ...
+%! subsref (C, s);

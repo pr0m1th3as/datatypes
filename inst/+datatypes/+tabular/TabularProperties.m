@@ -121,7 +121,8 @@ classdef (Abstract) TabularProperties
     endfunction
 
     function disp (this)
-      fprintf ("\n  %s with properties:\n\n", strsplit (class (this), '.'){end});
+      parts = strsplit (class (this), '.');
+      fprintf ("\n  %s with properties:\n\n", parts{end});
       names = displayOrder (this);
       for i = 1:numel (names)
         if (strcmp (names{i}, 'CustomProperties'))
@@ -241,3 +242,16 @@ endfunction
 %! delete (fullfile (fixdir, 'noprops.m'));
 %! rmdir (fixdir);
 %! assert_equal (exist (fixdir, 'dir'), 0);
+
+## The '.' subscript is read by the shared body, which names the class that
+## was asked rather than itself, so a table's properties object and a
+## timetable's report under their own names.
+## Test the refusal names the calling class
+%!error <datatypes.tabular.TableProperties.subsref: '\.' index argument must be a character vector or a string scalar.> ...
+%! P = table (1).Properties; ...
+%! s = struct ('type', '.', 'subs', 7); ...
+%! subsref (P, s);
+%!error <datatypes.tabular.TimetableProperties.subsref: '\.' index argument must be a character vector or a string scalar.> ...
+%! P = timetable (1, 'RowTimes', datetime (2024, 1, 1)).Properties; ...
+%! s = struct ('type', '.', 'subs', 7); ...
+%! subsref (P, s);

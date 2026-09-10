@@ -75,3 +75,39 @@ classdef TimetableProperties < datatypes.tabular.TabularProperties
   endmethods
 
 endclassdef
+
+## The properties object of a timetable.  It cannot be constructed, so every
+## fixture reaches it through a timetable.  Measured on MATLAB R2024a.
+
+## Test the object a timetable hands back is this class
+%!assert_equal (class (timetable (1, 'RowTimes', datetime (2024, 1, 1)) ...
+%!                     .Properties), 'datatypes.tabular.TimetableProperties')
+
+## Test the display order names the time metadata before the custom
+## properties, where a table names its row labels
+%!test
+%! TT = timetable ((1:2)', 'TimeStep', hours (1), ...
+%!                 'StartTime', datetime (2024, 1, 1));
+%! p = properties (TT.Properties);
+%! assert_equal (p(end-6:end-1), {'VariableContinuity'; 'RowTimes'; ...
+%!                                'StartTime'; 'SampleRate'; 'TimeStep'; ...
+%!                                'Events'});
+%!test
+%! TT = timetable ((1:2)', 'TimeStep', hours (1), ...
+%!                 'StartTime', datetime (2024, 1, 1));
+%! p = properties (TT.Properties);
+%! assert_equal (p{end}, 'CustomProperties');
+%! assert_equal (any (strcmp (p, 'RowNames')), false);
+## Test 'fieldnames' answers as 'properties' does
+%!test
+%! TT = timetable ((1:2)', 'TimeStep', hours (1), ...
+%!                 'StartTime', datetime (2024, 1, 1));
+%! assert_equal (fieldnames (TT.Properties), properties (TT.Properties));
+
+## Test the time metadata reads back through the object
+%!test
+%! TT = timetable ((1:2)', 'TimeStep', hours (1), ...
+%!                 'StartTime', datetime (2024, 1, 1));
+%! assert_equal (TT.Properties.TimeStep, hours (1));
+%! assert_equal (TT.Properties.StartTime, datetime (2024, 1, 1));
+%! assert_equal (TT.Properties.DimensionNames, {'Time', 'Variables'});

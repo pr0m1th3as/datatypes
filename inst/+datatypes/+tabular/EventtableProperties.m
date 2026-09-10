@@ -113,3 +113,47 @@ classdef EventtableProperties < datatypes.tabular.TimetableProperties
   endmethods
 
 endclassdef
+
+## The properties object of an event table.  It cannot be constructed, so
+## every fixture reaches it through an event table.  Measured on MATLAB
+## R2024a.
+
+## Test the object an event table hands back is this class
+%!assert_equal (class (eventtable (datetime (2024, 1, 1)).Properties), ...
+%!              'datatypes.tabular.EventtableProperties')
+
+## Test the three event designations are named first, before the metadata
+## every tabular class shares
+%!test
+%! E = eventtable (datetime (2024, 1, 1) + hours ((0:1)'));
+%! p = properties (E.Properties);
+%! assert_equal (p(1:3), {'EventLabelsVariable'; 'EventLengthsVariable'; ...
+%!                        'EventEndsVariable'});
+%! assert_equal (p{4}, 'Description');
+## Test the time metadata is named as a timetable's is
+%!test
+%! E = eventtable (datetime (2024, 1, 1) + hours ((0:1)'));
+%! p = properties (E.Properties);
+%! assert_equal (p{end}, 'CustomProperties');
+%! assert_equal (any (strcmp (p, 'RowTimes')), true);
+## Test 'fieldnames' answers as 'properties' does
+%!test
+%! E = eventtable (datetime (2024, 1, 1) + hours ((0:1)'));
+%! assert_equal (fieldnames (E.Properties), properties (E.Properties));
+
+## An event table carries events; it is not carried by one, so 'Events' is
+## the one property of a timetable it does not have.
+## Test 'Events' is absent from the display order
+%!test
+%! E = eventtable (datetime (2024, 1, 1) + hours ((0:1)'));
+%! assert_equal (any (strcmp (properties (E.Properties), 'Events')), false);
+## Test reading it is refused rather than answered
+%!error <eventtable: 'Events' is not a property of an event table; an event table cannot carry an event table.> ...
+%! eventtable (datetime (2024, 1, 1)).Properties.Events;
+
+## Test the designations read back through the object
+%!test
+%! E = eventtable (datetime (2024, 1, 1) + hours ([1 3])');
+%! assert_equal (E.Properties.EventLabelsVariable, 'EventLabels');
+%! assert_equal (isempty (E.Properties.EventLengthsVariable), true);
+%! assert_equal (isempty (E.Properties.EventEndsVariable), true);
