@@ -1,0 +1,314 @@
+# doc-cache created by Octave 11.3.0
+# name: cache
+# type: cell
+# rows: 3
+# columns: 10
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 12
+__ckeyHash__
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 504
+: uint64 = __ckeyHash__ ( str )
+: uint64 = __ckeyHash__ ( cstr )
+: uint64 = __ckeyHash__ (&hellip;, FNV1A64_BASE )
+
+Fowler–Noll–Vo hash key for a character vector or a cell array of them.
+
+Given a cell array, the elements are hashed with their lengths so that the boundaries between them are part of the key and no two different splittings of the same characters can collide.
+
+This is a helper function for keyHash methods of &lsquo;datatypes&lsquo;&rsquo; classes. Do NOT use this function directly.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 75
+Fowler–Noll–Vo hash key for a character vector or a cell array of them.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 13
+__csv2table__
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 179
+datatypes: C = __csv2table__ ( file )
+
+Barebone function for loading a CSV file to a cell array.
+
+This is a helper IO function for the csv2table function. Do NOT call it directly.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 57
+Barebone function for loading a CSV file to a cell array.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 12
+__datetime__
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 1851
+datatypes: [ Y , MO , D , H , MI , S ] __datetime__ (&hellip;)
+datatypes: [ Y , MO , D , H , MI , S , errmsg ] __datetime__ (&hellip;)
+datatypes: [&hellip;] = __datetime__ ( 'now' )
+datatypes: [&hellip;] = __datetime__ ( 'today' )
+datatypes: [&hellip;] = __datetime__ ( 'tomorrow' )
+datatypes: [&hellip;] = __datetime__ ( 'yesterday' )
+datatypes: [&hellip;] = __datetime__ ( Y , MO , D )
+datatypes: [&hellip;] = __datetime__ ( Y , MO , D , H , MI , S )
+datatypes: [&hellip;] = __datetime__ ( Y , MO , D , H , MI , S , MS )
+datatypes: [&hellip;] = __datetime__ ( X , 'ConvertFrom' , dateType )
+datatypes: [&hellip;] = __datetime__ (&hellip;, 'Precision' , precision )
+datatypes: [&hellip;] = __datetime__ (&hellip;, 'TimeZone' , tzone , 'toTimeZone' , totzone )
+datatypes: [&hellip;] = __datetime__ (&hellip;, 'Offset' , off )
+
+Base function for datetime class.
+
+The 'Offset' parameter gives the stored UTC offset of each element
+in seconds, which is what tells apart the two instants a repeated wall
+clock names on the day a zone puts its clock back. It is accepted by the
+'ConvertTo' modes listed below; those that also read it answer for
+the wall clock alone when it is not given.
+
+'instant'
+POSIX seconds of each element, taken from its offset by subtraction, with no
+time-zone lookup at all.
+'fromposix'
+The six components of each POSIX instant read in tzone , plus the
+offset in force there as a seventh output.
+'rezone'
+The six components of each element expressed in totzone while keeping
+its instant, plus the offset there as a seventh output.
+'zoneoffset'
+The offset the wall clock resolves to.
+'keepfold'
+The given offset where it still names this wall clock, and the resolved
+offset otherwise.
+'isdst' , 'zoneabbrev'
+Daylight-saving flag and zone abbreviation, for the element&rsquo;s own pass over
+a repeated clock when an offset is given.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 33
+Base function for datetime class.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 8
+__ldml__
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 603
+: DV = __ldml__ ("parse", strs , fmt , pivot , locale )
+
+Parse date/time strings under an LDML 'InputFormat' pattern.
+
+strs is a cell array of character vectors, fmt an LDML pattern, pivot the two-digit year pivot, and locale a language tag such as 'fr_FR' (empty or 'system' for English). The return value is an N-by-6 date-vector matrix.
+
+syms = __ldml__ ("symbols", fmt ) returns the field symbols of fmt , in order and one character per field run, with literal text omitted.
+
+This is a helper function for the datetime class of the &lsquo;datatypes&lsquo; package. Do NOT use this function directly.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 60
+Parse date/time strings under an LDML 'InputFormat' pattern.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 12
+__nkeyHash__
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 250
+: uint64 = __nkeyHash__ ( x )
+: uint64 = __nkeyHash__ ( x , FNV1A64_BASE )
+
+Fowler–Noll–Vo hash key for a numeric vector.
+
+This is a helper function for keyHash methods of &lsquo;datatypes&lsquo;&rsquo; classes. Do NOT use this function directly.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 49
+Fowler–Noll–Vo hash key for a numeric vector.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 13
+__ods2table__
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 349
+datatypes: [ data , vtype , meta ] = __ods2table__ ( file )
+datatypes: [ data , vtype , meta ] = __ods2table__ ( file , sheet )
+datatypes: [ data , vtype , meta , names , preamble ] = __ods2table__ (&hellip;)
+
+Barebone function for reading a flat ODS ( .fods ) file.
+
+This is a helper IO function for the ods2table function. Do NOT call it directly.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 54
+Barebone function for reading a flat ODS (.fods) file.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 13
+__table2csv__
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 195
+datatypes: __table2csv__ ( file , C )
+
+Barebone function for saving a cell array to a CSV file.
+
+This is a helper IO function for the table2csv method of the table class. Do NOT call it directly.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 56
+Barebone function for saving a cell array to a CSV file.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 13
+__table2ods__
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 344
+datatypes: __table2ods__ ( file , data , vtype , meta , flat )
+datatypes: __table2ods__ ( file , data , vtype , meta , flat , opts )
+
+Barebone function for saving a table to a flat ( .fods ) or compressed ( .ods ) OpenDocument spreadsheet file.
+
+This is a helper IO function for the table2ods method of the table class. Do NOT call it directly.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 106
+Barebone function for saving a table to a flat (.fods) or compressed (.ods) OpenDocument spreadsheet file.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 14
+__table2xlsx__
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 393
+datatypes: __table2xlsx__ ( file , data , vtype , opts )
+
+Barebone function for writing an Office Open XML ( .xlsx / .xlsm ) spreadsheet. A single sheet is written from data / vtype ; when opts carries a sheets struct array (fields name , data , vtype , header ) a multi-sheet workbook is written instead.
+
+This is a helper IO function for writetable and struct2xlsx . Do NOT call it directly.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 77
+Barebone function for writing an Office Open XML (.xlsx / .xlsm) spreadsheet.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 14
+__xlsx2table__
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 320
+datatypes: [ data , vtype , meta , names ] = __xlsx2table__ ( file )
+datatypes: [ data , vtype , meta , names ] = __xlsx2table__ ( file , sheet )
+
+Barebone function for reading a sheet of an Office Open XML ( .xlsx / .xlsm ) spreadsheet.
+
+This is a helper IO function for the readtable function. Do NOT call it directly.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 88
+Barebone function for reading a sheet of an Office Open XML (.xlsx / .xlsm) spreadsheet.
+
+
+
+
+
