@@ -23,7 +23,8 @@ this program; if not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 
-static inline constexpr uint64_t fnv1a64 (const char* buf, size_t len, uint64_t out)
+static inline constexpr uint64_t
+fnv1a64 (const char* buf, size_t len, uint64_t out)
 {
   for (size_t i = 0; i < len; i++)
   {

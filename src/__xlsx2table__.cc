@@ -180,7 +180,8 @@ it directly. \n\
 {
   octave_value_list retval (4);
   retval(1) = Cell ();
-  retval(2) = Cell ();                  // no metadata sheet in the interop format
+  // no metadata sheet in the interop format
+  retval(2) = Cell ();
   retval(3) = Cell ();
 
   if (args.length () < 1 || args.length () > 2)
@@ -212,7 +213,8 @@ it directly. \n\
     return retval;
   }
 
-  // --- workbook.xml: sheet names in order, plus each sheet's relationship id ---
+  // --- workbook.xml: sheet names in order, plus each sheet's
+  // relationship id ---
   pugi::xml_document wbdoc;
   string wbxml = read_member (zip, "xl/workbook.xml");
   if (wbxml.empty () || ! wbdoc.load_buffer (wbxml.data (), wbxml.size ()))

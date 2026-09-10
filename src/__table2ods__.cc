@@ -479,16 +479,19 @@ add_column_styles (pugi::xml_node &root, const vector<double> &widths)
 // with the hidden table style.
 static void
 build_spreadsheet (pugi::xml_node &root, const Cell &data, const Cell &vtype,
-                   const Cell &meta, const Cell &header, const string &sheetname,
+                   const Cell &meta, const Cell &header,
+                   const string &sheetname,
                    octave_idx_type roff, octave_idx_type coff)
 {
   pugi::xml_node body = root.append_child ("office:body");
   pugi::xml_node spreadsheet = body.append_child ("office:spreadsheet");
-  write_sheet (spreadsheet, sheetname, data, vtype, 0, true, header, roff, coff);
+  write_sheet (spreadsheet, sheetname, data, vtype, 0, true, header, roff,
+               coff);
   // The hidden metadata sheet is written only for the house format (non-empty
   // 'meta'); the MATLAB-compatible 'writetable' path passes an empty 'meta'.
   if (meta.numel () > 0)
-    write_sheet (spreadsheet, "__datatypes_meta__", meta, Cell (), "hidden_tbl");
+    write_sheet (spreadsheet, "__datatypes_meta__", meta, Cell (),
+                 "hidden_tbl");
 }
 
 // Append office:body -> office:spreadsheet with several data sheets (from the
@@ -513,7 +516,8 @@ build_multi_spreadsheet (pugi::xml_node &root, const octave_map &sheets,
                  vtypes(k).cell_value (), 0, false,
                  have_hd ? headers(k).cell_value () : Cell (), 0, 0);
   if (meta.numel () > 0)
-    write_sheet (spreadsheet, "__datatypes_meta__", meta, Cell (), "hidden_tbl");
+    write_sheet (spreadsheet, "__datatypes_meta__", meta, Cell (),
+                 "hidden_tbl");
 }
 
 // Populate a document root with automatic styles and the spreadsheet body,
@@ -609,7 +613,8 @@ write_zip_entries (const string &file, const vector<ods_entry> &entries)
     put32 (central, 0x02014b50);  put16 (central, 20);  put16 (central, 20);
     put16 (central, 0);           put16 (central, method);
     put16 (central, 0);           put16 (central, 0);
-    put32 (central, crc);         put32 (central, csize);  put32 (central, usize);
+    put32 (central, crc);         put32 (central, csize);
+    put32 (central, usize);
     put16 (central, namelen);     put16 (central, 0);   put16 (central, 0);
     put16 (central, 0);           put16 (central, 0);   put32 (central, 0);
     put32 (central, offset);

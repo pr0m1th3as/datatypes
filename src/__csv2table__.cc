@@ -91,7 +91,8 @@ call it directly. \n\
     {
       cols++;
     }
-    else if ((inside) && line[c] == prot && (c + 1 < len && line[c + 1] == prot))
+    else if ((inside) && line[c] == prot
+             && (c + 1 < len && line[c + 1] == prot))
     {
       ++c;
     }
@@ -142,7 +143,8 @@ call it directly. \n\
         if (! line_too_long && col == cols)
         {
           line_too_long = true;
-          warning ("__csv2table__: line(s) found with more fields than in headerline");
+          warning ("__csv2table__: line(s) found with more fields "
+                   "than in headerline");
           break;
         }
         // Check for last char to be 13 (CR) and remove if found
@@ -220,7 +222,8 @@ call it directly. \n\
         word = "";
         oinside = false;
       }
-      else if ((inside) && line[k] == prot && (k + 1 < len && line[k+1] == prot))
+      else if ((inside) && line[k] == prot
+               && (k + 1 < len && line[k+1] == prot))
       {
         // Inside a string
         word += prot;

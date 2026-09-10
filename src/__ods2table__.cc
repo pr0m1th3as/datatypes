@@ -51,7 +51,8 @@ parse_float (const string &word)
   const char *word_str = word.c_str ();
   char *err;
   double val = strtod (word_str, &err);
-  size_t start = (! word.empty () && (word[0] == '+' || word[0] == '-')) ? 1 : 0;
+  size_t start
+    = (! word.empty () && (word[0] == '+' || word[0] == '-')) ? 1 : 0;
   bool is_int = (word.length () > start);
   size_t ndig = 0;
   for (size_t i = start; i < word.length (); i++)
@@ -114,14 +115,16 @@ read_sheet (const pugi::xml_node &table, Cell &data, Cell &vtype, bool typed,
   // 'Range' handling.  When 'trim' is clear (our house files, whose metadata
   // sheet makes the grid authoritative), every cell is materialised verbatim --
   // a trailing row of all-missing values is real data and must be kept.
-  long pending_rows = 0;              // empty rows not yet flushed (may be trailing)
+  // empty rows not yet flushed (may be trailing)
+  long pending_rows = 0;
   for (pugi::xml_node row = table.child ("table:table-row"); row;
        row = row.next_sibling ("table:table-row"))
   {
     long rrep = row.attribute ("table:number-rows-repeated").as_int (1);
     if (rrep < 1) rrep = 1;
     vector<pair<string, string>> cols;
-    long pending_cols = 0;            // empty cells not yet flushed (may be trailing)
+    // empty cells not yet flushed (may be trailing)
+    long pending_cols = 0;
     for (pugi::xml_node cell = row.child ("table:table-cell"); cell;
          cell = cell.next_sibling ("table:table-cell"))
     {
@@ -139,11 +142,13 @@ read_sheet (const pugi::xml_node &table, Cell &data, Cell &vtype, bool typed,
         raw = cell.attribute ("office:time-value").as_string ();
       else                              // string / empty
         raw = cell_text (cell);
-      if (trim && vt.empty () && raw.empty ())  // blank: defer (may be trailing)
+      // blank: defer (may be trailing)
+      if (trim && vt.empty () && raw.empty ())
       {
         pending_cols += crep;
       }
-      else                              // content cell: flush deferred blanks first
+      // content cell: flush deferred blanks first
+      else
       {
         for (long k = 0; k < pending_cols; k++)
           cols.push_back (make_pair (string (), string ()));
@@ -263,7 +268,8 @@ meta_section (const Cell &meta, const string &sel)
       return out;
     }
   }
-  return Cell ();                       // sectioned but no section for this sheet
+  // sectioned but no section for this sheet
+  return Cell ();
 }
 
 // The rows of the metadata grid above the first "## Sheet: " marker.  They

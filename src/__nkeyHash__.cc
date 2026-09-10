@@ -102,7 +102,8 @@ static inline uint64_t fnv1a64_float (const char *buf, size_t nelem,
   return out;
 }
 
-static inline constexpr uint64_t fnv1a64 (const char* buf, size_t len, uint64_t out)
+static inline constexpr uint64_t
+fnv1a64 (const char* buf, size_t len, uint64_t out)
 {
   for (size_t i = 0; i < len; i++)
   {
@@ -114,7 +115,8 @@ static inline constexpr uint64_t fnv1a64 (const char* buf, size_t len, uint64_t 
   return out;
 }
 
-static inline constexpr uint64_t fnv1a64 (const char* buf, size_t len, size_t nbytes, uint64_t out)
+static inline constexpr uint64_t
+fnv1a64 (const char* buf, size_t len, size_t nbytes, uint64_t out)
 {
   for (size_t i = 0; i < len; i++)
   {
@@ -150,7 +152,8 @@ static_assert(fnv1a64(nan32LE.data(), 4, 0xcbf29ce484222325)
 // 1.0, whose high byte 0x3f is positive and whose 0xf0 is not, so both
 // signedness cases are covered
 static_assert(fnv1a64(one64LE.data(), 8, 0xcbf29ce484222325)
-              == fnv1a64_bits<uint64_t>(0x3ff0000000000000ULL, 0xcbf29ce484222325));
+              == fnv1a64_bits<uint64_t>(0x3ff0000000000000ULL,
+                                         0xcbf29ce484222325));
 }
 
 

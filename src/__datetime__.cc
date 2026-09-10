@@ -272,7 +272,8 @@ localtime2vector (const LocalType& t_local, string precision)
   return OUT;
 }
 
-template <typename ZonedType> RowVector tz2vector (const ZonedType& to, string precision)
+template <typename ZonedType> RowVector
+tz2vector (const ZonedType& to, string precision)
 {
   return localtime2vector (to.get_local_time (), precision);
 }
@@ -543,8 +544,12 @@ auto timezone_precision (double time_sec, string timezone, string precision)
   else
   {
     auto tp = double2nano (time_sec);
-    using duration_type = std::chrono::duration<std::int64_t, std::ratio<1, 1000000>>; // microseconds
-    tz = resolve_local (timezone, std::chrono::time_point_cast<duration_type>(tp));
+    // microseconds
+    using duration_type
+      = std::chrono::duration<std::int64_t, std::ratio<1, 1000000>>;
+    tz = resolve_local (timezone,
+                        std::chrono::time_point_cast<duration_type>
+                          (tp));
   }
   return tz;
 }

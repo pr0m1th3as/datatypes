@@ -53,9 +53,11 @@ iso_datetime_to_serial (const string &s, double &serial, bool &date_only)
 {
   int Y, Mo, D, h, mi;
   double sec;
-  if (sscanf (s.c_str (), "%d-%d-%dT%d:%d:%lf", &Y, &Mo, &D, &h, &mi, &sec) != 6)
+  if (sscanf (s.c_str (), "%d-%d-%dT%d:%d:%lf",
+              &Y, &Mo, &D, &h, &mi, &sec) != 6)
     return false;
-  double day = (double) days_from_civil (Y, (unsigned) Mo, (unsigned) D) + 25569.0;
+  double day
+    = (double) days_from_civil (Y, (unsigned) Mo, (unsigned) D) + 25569.0;
   if (day < 61.0)
     day -= 1.0;
   serial = day + (h * 3600.0 + mi * 60.0 + sec) / 86400.0;
@@ -243,7 +245,8 @@ build_worksheet (const Cell &data, const Cell &vtype, const Cell &header,
       << "<worksheet xmlns=\"http://schemas.openxmlformats.org/"
          "spreadsheetml/2006/main\"><sheetData>";
 
-  long row = roff;                      // 1-based row number of the next row - 1
+  // 1-based row number of the next row - 1
+  long row = roff;
   if (have_hd)
   {
     row++;
@@ -274,7 +277,8 @@ content_types_xml (bool macro, size_t nsheets)
 {
   string wb = macro
     ? "application/vnd.ms-excel.sheet.macroEnabled.main+xml"
-    : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml";
+    : "application/vnd.openxmlformats-officedocument.spreadsheetml"
+      ".sheet.main+xml";
   ostringstream o;
   o << "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
        "<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/"
@@ -460,7 +464,8 @@ Do NOT call it directly. \n\
   {
     string pn = "xl/worksheets/sheet" + std::to_string (k + 1) + ".xml";
     ok = ok && mz_zip_writer_add_mem (&zip, pn.c_str (), sheetxml[k].data (),
-                                      sheetxml[k].size (), MZ_DEFAULT_COMPRESSION);
+                                      sheetxml[k].size (),
+                                      MZ_DEFAULT_COMPRESSION);
   }
   if (! ok || ! mz_zip_writer_finalize_archive (&zip))
   {
