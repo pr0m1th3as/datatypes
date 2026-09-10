@@ -32,3 +32,26 @@ function display (this)
   __disp__ (this, in_name);
 endfunction
 
+## This overload adds the name line to what 'disp' prints; the rendering
+## itself is done by the private '__disp__'.
+
+## Test a named variable is announced before its contents
+%!test
+%! x = {1, 2};
+%! want = "x =\n  1x2 cell array\n\n    {[1]}    {[2]}    \n\n";
+%! assert_equal (evalc ('display (x)'), want);
+## Test the name is the variable's own, whatever it is
+%!test
+%! myCells = {1};
+%! want = "myCells =\n  1x1 cell array\n\n    {[1]}    \n\n";
+%! assert_equal (evalc ('display (myCells)'), want);
+## Test a value with no name of its own is printed without a name line
+%!test
+%! want = "  1x2 cell array\n\n    {[1]}    {[2]}    \n\n";
+%! assert_equal (evalc ('display ({1, 2})'), want);
+
+## Test what follows the name line is exactly what 'disp' prints
+%!test
+%! x = {1, 2};
+%! p = evalc ('display (x)');
+%! assert_equal (p(5:end), evalc ('disp (x)'));
