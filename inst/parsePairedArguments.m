@@ -17,11 +17,9 @@
 
 ## -*- texinfo -*-
 ## @deftypefn  {datatypes} {[@var{optarg_1}, @dots{}, @var{optarg_N}] =} @
-## parsePairedArguments (@var{optarg_names}, @var{default_values},
-## @var{arg_list})
+## parsePairedArguments (@var{optarg_names}, @var{default_values}, @var{arg_list})
 ## @deftypefnx {datatypes} {[@var{optarg_1}, @dots{}, @var{optarg_N}, @var{rem_args}] =} @
-## parsePairedArguments (@var{optarg_names}, @var{default_values},
-## @var{arg_list})
+## parsePairedArguments (@var{optarg_names}, @var{default_values}, @var{arg_list})
 ##
 ## Parse optional paired arguments from variable argument list.
 ##
