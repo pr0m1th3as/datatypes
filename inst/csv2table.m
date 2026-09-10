@@ -154,11 +154,11 @@
 ## duration strings as duration arrays.  If @qcode{"text"} is specified, then
 ## the data type depends on the @qcode{'TextType'} option.
 ##
-## @item @qcode{'HexType'} @tab A character vector or a string scalar
-## specifying whether the hexadecimal text found in the CSV file should be
-## stored as a suitable integer type, @qcode{"auto"}, as unaltered
-## input text, @qcode{"text"} (the default, in which case the data type depends
-## on the @qcode{'TextType'} option), or as any of the integer types supported by
+## @item @qcode{'HexType'} @tab A character vector or a string scalar specifying
+## whether the hexadecimal text found in the CSV file should be stored as a
+## suitable integer type, @qcode{"auto"}, as unaltered input text,
+## @qcode{"text"} (the default, in which case the data type depends on the
+## @qcode{'TextType'} option), or as any of the integer types supported by
 ## Octave.  Valid options are @qcode{"auto"}, @qcode{"text"}, @qcode{"int8"},
 ## @qcode{"int16"}, @qcode{"int32"}, @qcode{"int64"}, @qcode{"uint8"},
 ## @qcode{"uint16"}, @qcode{"uint32"}, and @qcode{"uint64"}.  Detection is off
@@ -664,7 +664,8 @@ endfunction
 
 %!demo
 %! ## `csv2table` reads a CSV back into a table.  When the file was written by
-%! ## `table2csv`, the typed header lets it restore each variable's type exactly.
+%! ## `table2csv`, the typed header lets it restore each variable's type
+%! ## exactly.
 %!
 %! T = table ([38; 43], [71.5; 69.0], 'VariableNames', {'Age', 'Height'});
 %! filename = fullfile (tempdir (), 'patients.csv');
@@ -983,7 +984,7 @@ endfunction
 %!   delete (fn);
 %! end_unwind_protect
 
-## Test a large integer column is read exactly as a 64-bit integer (no double loss)
+## Test a large integer column is read exactly as a 64-bit integer
 %!test
 %! fn = tempname ();
 %! fid = fopen (fn, "w");

@@ -42,7 +42,8 @@ function out = hours (x)
 endfunction
 
 %!demo
-%! ## `hours` builds a duration from a number of hours; fractional values are fine.
+%! ## `hours` builds a duration from a number of hours; fractional values are
+%! ## fine.
 %!
 %! hours (1.5)
 %! hours ([1, 2.5, 8])

@@ -20,15 +20,15 @@
 ##
 ## Assign values to bins.
 ##
-## @code{@var{bin} = __binassign__ (@var{xv}, @var{ev}, @var{leftClosed})} returns
-## the index of the bin each element of the column vector @var{xv} falls into,
-## given the non-decreasing row vector of edges @var{ev}.  @qcode{NaN} is
+## @code{@var{bin} = __binassign__ (@var{xv}, @var{ev}, @var{leftClosed})}
+## returns the index of the bin each element of the column vector @var{xv} falls
+## into, given the non-decreasing row vector of edges @var{ev}.  @qcode{NaN} is
 ## returned for values that fall in no bin and for @qcode{NaN} input.
 ##
 ## When @var{leftClosed} is true each bin covers @code{[e(j), e(j+1))} with the
-## last bin closed at both ends; otherwise each covers @code{(e(j), e(j+1)]} with
-## the first bin closed at both ends.  Repeated edges define empty bins, which
-## are never selected.
+## last bin closed at both ends; otherwise each covers @code{(e(j), e(j+1)]}
+## with the first bin closed at both ends.  Repeated edges define empty bins,
+## which are never selected.
 ##
 ## This is shared by @code{discretize} and @code{histcounts} so that the two can
 ## never disagree about which bin a value belongs to.

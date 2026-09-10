@@ -1864,16 +1864,16 @@ classdef datetime
     ## format of the core @code{datestr} function.
     ##
     ## @code{@var{S} = datestr (@var{T}, @var{f})} uses the format specified by
-    ## @var{f}, a format number or a format string that follows the @emph{legacy}
-    ## @code{datestr} field codes, in which @qcode{'mm'} denotes months and
-    ## @qcode{'MM'} denotes minutes.  Any further arguments @var{opt} are passed
-    ## on to the core @code{datestr} function.
+    ## @var{f}, a format number or a format string that follows the
+    ## @emph{legacy} @code{datestr} field codes, in which @qcode{'mm'} denotes
+    ## months and @qcode{'MM'} denotes minutes.  Any further arguments @var{opt}
+    ## are passed on to the core @code{datestr} function.
     ##
-    ## @code{datestr} is provided for compatibility with legacy code.  It renders
-    ## the wall-clock components of @var{T} and, for a zoned array, does not
-    ## include the time zone.  For time-zone-aware formatting with the modern
-    ## Unicode (LDML) field codes, use @code{char}, @code{cellstr}, or set the
-    ## @qcode{Format} property of @var{T} instead.
+    ## @code{datestr} is provided for compatibility with legacy code.  It
+    ## renders the wall-clock components of @var{T} and, for a zoned array, does
+    ## not include the time zone.  For time-zone-aware formatting with the
+    ## modern Unicode (LDML) field codes, use @code{char}, @code{cellstr}, or
+    ## set the @qcode{Format} property of @var{T} instead.
     ##
     ## The legacy field codes have no way to write a 60th second, so for a
     ## @qcode{'UTCLeapSeconds'} array an inserted second folds backward onto the
@@ -1894,14 +1894,14 @@ classdef datetime
     ##
     ## Convert datetime array to a string array.
     ##
-    ## @code{@var{S} = string (@var{T})} converts the datetime array @var{T} to a
-    ## @code{string} array @var{S} of the same size, formatting each element with
-    ## the display format of @var{T} (its @qcode{Format} property).  Not-A-Time
-    ## (@qcode{NaT}) values become missing string elements.
+    ## @code{@var{S} = string (@var{T})} converts the datetime array @var{T} to
+    ## a @code{string} array @var{S} of the same size, formatting each element
+    ## with the display format of @var{T} (its @qcode{Format} property).
+    ## Not-A-Time (@qcode{NaT}) values become missing string elements.
     ##
-    ## @code{@var{S} = string (@var{T}, @var{fmt})} formats each element with the
-    ## Unicode (LDML) format @var{fmt} instead of the @qcode{Format} property of
-    ## @var{T} (see @code{char}).
+    ## @code{@var{S} = string (@var{T}, @var{fmt})} formats each element with
+    ## the Unicode (LDML) format @var{fmt} instead of the @qcode{Format}
+    ## property of @var{T} (see @code{char}).
     ##
     ## @end deftypefn
     function s = string (this, fmt)
@@ -1922,11 +1922,11 @@ classdef datetime
     ##
     ## Convert datetime array to @code{YYYYMMDD} numeric form.
     ##
-    ## @code{@var{D} = yyyymmdd (@var{T})} returns a @qcode{double} array @var{D}
-    ## of the same size as @var{T} in which each element encodes the date of the
-    ## corresponding datetime as @code{@var{year} * 10000 + @var{month} * 100 +
-    ## @var{day}}.  The time of day is ignored.  Not-A-Time (@qcode{NaT}) values
-    ## are returned as @qcode{NaN}.
+    ## @code{@var{D} = yyyymmdd (@var{T})} returns a @qcode{double} array
+    ## @var{D} of the same size as @var{T} in which each element encodes the
+    ## date of the corresponding datetime as @code{@var{year} * 10000 +
+    ## @var{month} * 100 + @var{day}}.  The time of day is ignored.  Not-A-Time
+    ## (@qcode{NaT}) values are returned as @qcode{NaN}.
     ##
     ## @end deftypefn
     function out = yyyymmdd (this)
@@ -1974,10 +1974,10 @@ classdef datetime
     ##
     ## @code{@var{E} = exceltime (@var{T})} returns a @qcode{double} array
     ## @var{E} of the same size as @var{T} holding the Excel serial date number
-    ## of each element, using the Excel 1900 date system, in which the fractional
-    ## part represents the time of day.  As in Excel, the year 1900 is treated as
-    ## a leap year, so serial numbers on or after 1900-03-01 account for the
-    ## nonexistent date 1900-02-29.
+    ## of each element, using the Excel 1900 date system, in which the
+    ## fractional part represents the time of day.  As in Excel, the year 1900
+    ## is treated as a leap year, so serial numbers on or after 1900-03-01
+    ## account for the nonexistent date 1900-02-29.
     ##
     ## @code{@var{E} = exceltime (@var{T}, @var{dateType})} selects the date
     ## system: @qcode{'1900'} (default) or @qcode{'1904'}.  The 1904 system
@@ -1990,8 +1990,8 @@ classdef datetime
     ## @code{datetime (@var{E}, 'ConvertFrom', 'excel1904')} converts back
     ## exactly.
     ##
-    ## The time zone of a zoned @var{T} is ignored; its wall-clock components are
-    ## used.  Not-A-Time (@qcode{NaT}) values are returned as @qcode{NaN}.
+    ## The time zone of a zoned @var{T} is ignored; its wall-clock components
+    ## are used.  Not-A-Time (@qcode{NaT}) values are returned as @qcode{NaN}.
     ##
     ## @end deftypefn
     function out = exceltime (this, dateType = '1900')
@@ -2059,9 +2059,9 @@ classdef datetime
     ##
     ## @end deftypefn
     function out = juliandate (this, dateType = 'juliandate')
-      if (! (ischar (dateType) && isrow (dateType) && any (strcmpi (dateType, ...
-          ...
-             {'juliandate', 'modifiedjuliandate'}))))
+      if (! (ischar (dateType) && isrow (dateType)
+             && any (strcmpi (dateType, {'juliandate', ...
+                                         'modifiedjuliandate'}))))
         error (strcat ("datetime.juliandate: DATETYPE must be 'juliandate'", ...
                        " or 'modifiedjuliandate'."));
       endif
@@ -2093,8 +2093,8 @@ classdef datetime
     ##
     ## Convert datetime array to a numeric representation.
     ##
-    ## @code{@var{X} = convertTo (@var{T}, @var{dateType})} converts the datetime
-    ## array @var{T} to the numeric date/time representation named by
+    ## @code{@var{X} = convertTo (@var{T}, @var{dateType})} converts the
+    ## datetime array @var{T} to the numeric date/time representation named by
     ## @var{dateType}, returning an array @var{X} of the same size as @var{T}.
     ## It is a convenience wrapper around the individual conversion methods.
     ## @var{dateType} may be one of:
@@ -2104,10 +2104,12 @@ classdef datetime
     ## @code{datenum}).
     ## @item @qcode{'excel'} or @qcode{'excel1900'} -- Excel serial date, 1900
     ## system, @code{double} (see @code{exceltime}).
-    ## @item @qcode{'excel1904'} -- Excel serial date, 1904 system, @code{double}.
+    ## @item @qcode{'excel1904'} -- Excel serial date, 1904 system,
+    ## @code{double}.
     ## @item @qcode{'juliandate'} -- Julian date, @code{double} (see
     ## @code{juliandate}).
-    ## @item @qcode{'modifiedjuliandate'} -- modified Julian date, @code{double}.
+    ## @item @qcode{'modifiedjuliandate'} -- modified Julian date,
+    ## @code{double}.
     ## @item @qcode{'posixtime'} -- seconds since the Unix epoch, @code{double}
     ## (see @code{posixtime}).
     ## @item @qcode{'yyyymmdd'} -- @code{YYYYMMDD} numeric date, @code{double}
@@ -2131,9 +2133,9 @@ classdef datetime
     ##
     ## @code{@var{X} = convertTo (@var{T}, @qcode{'epochtime'}, @var{Name},
     ## @var{Value})} accepts the options @qcode{'Epoch'} (a scalar datetime
-    ## marking tick zero; default @code{1970-01-01}) and @qcode{'TicksPerSecond'}
-    ## (a positive scalar; default @code{1}).  The epoch and @var{T} must both be
-    ## zoned or both be unzoned.
+    ## marking tick zero; default @code{1970-01-01}) and
+    ## @qcode{'TicksPerSecond'} (a positive scalar; default @code{1}).  The
+    ## epoch and @var{T} must both be zoned or both be unzoned.
     ##
     ## @code{@var{X} = convertTo (@var{T}, @qcode{'tt2000'})} returns the number
     ## of nanoseconds since the J2000 Terrestrial Time epoch,
@@ -2210,7 +2212,6 @@ classdef datetime
             || any (abs (res(:)) > double (intmax ('int64'))))
           error (strcat ("datetime.convertTo: 'epochtime' conversion is", ...
                          " not", ...
-                 ...
                          " supported for missing values, infinite", ...
                          " datetimes,", ...
                          " or datetimes outside the int64 range for the", ...
@@ -2309,8 +2310,8 @@ classdef datetime
     ##
     ## Determine whether a datetime vector is regularly spaced.
     ##
-    ## @code{@var{tf} = isregular (@var{T})} returns @qcode{true} if the elements
-    ## of the datetime vector @var{T} are equally spaced in time, and
+    ## @code{@var{tf} = isregular (@var{T})} returns @qcode{true} if the
+    ## elements of the datetime vector @var{T} are equally spaced in time, and
     ## @qcode{false} otherwise.  A scalar or empty @var{T}, or one containing a
     ## Not-A-Time (@qcode{NaT}) value, is not regular.  Neither is a @var{T}
     ## that does not move: a step of zero describes no spacing, so a vector of
@@ -2321,8 +2322,8 @@ classdef datetime
     ## default), @qcode{'years'}, @qcode{'quarters'}, @qcode{'months'},
     ## @qcode{'weeks'}, or @qcode{'days'}.  With a calendar unit, @var{T} is
     ## regular when successive elements differ by the same whole number of that
-    ## unit, which -- unlike @qcode{'time'} -- accounts for varying month lengths
-    ## and daylight saving time.
+    ## unit, which -- unlike @qcode{'time'} -- accounts for varying month
+    ## lengths and daylight saving time.
     ##
     ## @code{[@var{tf}, @var{dt}] = isregular (@dots{})} also returns the common
     ## time step @var{dt}.  For @qcode{'time'} it is a @code{duration}; for a
@@ -2440,10 +2441,11 @@ classdef datetime
     ## containing @qcode{true} where the element of @var{X} lies between the
     ## corresponding @var{lower} and @var{upper} bounds.  @var{lower} and
     ## @var{upper} may each be a datetime array or a date/time character vector,
-    ## string array, or cell array of character vectors, and either may be scalar
-    ## to broadcast against @var{X}.  The comparison is made on the absolute
-    ## instant, so zoned inputs may be in different time zones.  A Not-A-Time
-    ## element in any input makes the corresponding result @qcode{false}.
+    ## string array, or cell array of character vectors, and either may be
+    ## scalar to broadcast against @var{X}.  The comparison is made on the
+    ## absolute instant, so zoned inputs may be in different time zones.  A
+    ## Not-A-Time element in any input makes the corresponding result
+    ## @qcode{false}.
     ##
     ## @code{@var{TF} = isbetween (@var{X}, @var{lower}, @var{upper},
     ## @var{intervalType})} selects which endpoints are included.
@@ -2486,7 +2488,6 @@ classdef datetime
       if (any (zoned) && ! all (zoned))
         error (strcat ("datetime.isbetween: cannot combine a datetime", ...
                        " array", ...
-               ...
                        " with a time zone with one without a time zone."));
       endif
       dtCheckLeapPair (X, lo, 'isbetween');
@@ -2515,11 +2516,11 @@ classdef datetime
     ## @code{@var{TF} = issorted (@var{A})} returns @qcode{true} if the elements
     ## of the datetime array @var{A} are sorted in ascending (non-decreasing)
     ## order along its first non-singleton dimension, and @qcode{false}
-    ## otherwise.  For a matrix, every column (or row, depending on the operating
-    ## dimension) must be sorted for @var{TF} to be @qcode{true}.  Not-A-Time
-    ## (@qcode{NaT}) elements are treated as greater than any other value, so an
-    ## array is sorted in ascending order only when its @qcode{NaT} elements
-    ## come last.
+    ## otherwise.  For a matrix, every column (or row, depending on the
+    ## operating dimension) must be sorted for @var{TF} to be @qcode{true}.
+    ## Not-A-Time (@qcode{NaT}) elements are treated as greater than any other
+    ## value, so an array is sorted in ascending order only when its @qcode{NaT}
+    ## elements come last.
     ##
     ## @code{@var{TF} = issorted (@var{A}, @var{dim})} operates along dimension
     ## @var{dim}.
@@ -2605,8 +2606,8 @@ classdef datetime
     ## @code{@var{TF} = issortedrows (@var{A})} returns @qcode{true} if the rows
     ## of the 2-D datetime array @var{A} are sorted in ascending order, i.e.@:
     ## lexicographically by the first column, ties broken by the second column,
-    ## and so on, and @qcode{false} otherwise.  Not-A-Time (@qcode{NaT}) elements
-    ## are treated as greater than any other value.
+    ## and so on, and @qcode{false} otherwise.  Not-A-Time (@qcode{NaT})
+    ## elements are treated as greater than any other value.
     ##
     ## @code{@var{TF} = issortedrows (@var{A}, @var{column})} checks the order
     ## using only the columns listed in @var{column}, in the given priority.  A
@@ -2614,11 +2615,12 @@ classdef datetime
     ##
     ## @code{@var{TF} = issortedrows (@var{A}, @var{direction})} checks for the
     ## order given by @var{direction}, which may be one of @qcode{'ascend'}
-    ## (default), @qcode{'descend'}, @qcode{'monotonic'}, @qcode{'strictascend'},
-    ## @qcode{'strictdescend'}, or @qcode{'strictmonotonic'}.  It may also be a
-    ## cell array of @qcode{'ascend'}/@qcode{'descend'} strings, one per sort
-    ## column.  For the strict options a matrix qualifies only when its first
-    ## sort column is strictly monotonic and free of @qcode{NaT}.
+    ## (default), @qcode{'descend'}, @qcode{'monotonic'},
+    ## @qcode{'strictascend'}, @qcode{'strictdescend'}, or
+    ## @qcode{'strictmonotonic'}.  It may also be a cell array of
+    ## @qcode{'ascend'}/@qcode{'descend'} strings, one per sort column.  For the
+    ## strict options a matrix qualifies only when its first sort column is
+    ## strictly monotonic and free of @qcode{NaT}.
     ##
     ## @code{@var{TF} = issortedrows (@var{A}, @var{column}, @var{direction})}
     ## combines an explicit column list with a @var{direction}.
@@ -2799,10 +2801,11 @@ classdef datetime
     ## @code{@var{TF} = isequaln (@var{A}, @var{B})} is identical to
     ## @code{isequal (@var{A}, @var{B})} except that Not-A-Time (@qcode{NaT})
     ## elements are treated as equal to one another, in the same way that
-    ## @code{isequaln} treats @qcode{NaN}.  It returns a logical scalar @var{TF},
-    ## which is @qcode{true} if the datetime arrays @var{A} and @var{B} are the
-    ## same size and each pair of corresponding elements is either the same
-    ## point in time or both @qcode{NaT}, and @qcode{false} otherwise.
+    ## @code{isequaln} treats @qcode{NaN}.  It returns a logical scalar
+    ## @var{TF}, which is @qcode{true} if the datetime arrays @var{A} and
+    ## @var{B} are the same size and each pair of corresponding elements is
+    ## either the same point in time or both @qcode{NaT}, and @qcode{false}
+    ## otherwise.
     ##
     ## Additional arrays may be supplied, as in @code{isequaln (@var{A},
     ## @var{B}, @var{C}, @dots{})}, in which case @var{TF} is @qcode{true} only
@@ -3088,10 +3091,11 @@ classdef datetime
     ##
     ## Sort a datetime array.
     ##
-    ## @code{@var{B} = sort (@var{A})} returns the elements of the datetime array
-    ## @var{A} sorted in ascending order along its first non-singleton
-    ## dimension.  For a matrix, each column is sorted independently.  Sorting is
-    ## stable: elements that compare as equal keep their original relative order.
+    ## @code{@var{B} = sort (@var{A})} returns the elements of the datetime
+    ## array @var{A} sorted in ascending order along its first non-singleton
+    ## dimension.  For a matrix, each column is sorted independently.  Sorting
+    ## is stable: elements that compare as equal keep their original relative
+    ## order.
     ##
     ## @code{@var{B} = sort (@var{A}, @var{dim})} sorts along dimension
     ## @var{dim}.
@@ -3101,9 +3105,9 @@ classdef datetime
     ## @qcode{'descend'}.
     ##
     ## @code{@var{B} = sort (@dots{}, @qcode{'MissingPlacement'}, @var{mp})}
-    ## controls where Not-A-Time (@qcode{NaT}) elements are placed.  @var{mp} may
-    ## be @qcode{'auto'} (default; @qcode{NaT} last for ascending order and first
-    ## for descending order), @qcode{'first'}, or @qcode{'last'}.
+    ## controls where Not-A-Time (@qcode{NaT}) elements are placed.  @var{mp}
+    ## may be @qcode{'auto'} (default; @qcode{NaT} last for ascending order and
+    ## first for descending order), @qcode{'first'}, or @qcode{'last'}.
     ##
     ## @code{[@var{B}, @var{I}] = sort (@dots{})} also returns an index array
     ## @var{I} of the same size as @var{A} such that @var{B} is @var{A} indexed
@@ -3238,19 +3242,19 @@ classdef datetime
     ## sorts the corresponding column in descending order.  Columns not listed
     ## are not used as sort keys.
     ##
-    ## @code{@var{B} = sortrows (@var{A}, @var{direction})} sorts every column in
-    ## the given @var{direction}, either @qcode{'ascend'} (default) or
+    ## @code{@var{B} = sortrows (@var{A}, @var{direction})} sorts every column
+    ## in the given @var{direction}, either @qcode{'ascend'} (default) or
     ## @qcode{'descend'}.  @var{direction} may also be a cell array of strings
     ## with one such value per sort column.
     ##
-    ## @code{@var{B} = sortrows (@var{A}, @var{column}, @var{direction})} combines
-    ## an explicit column list with a per-column @var{direction}.
+    ## @code{@var{B} = sortrows (@var{A}, @var{column}, @var{direction})}
+    ## combines an explicit column list with a per-column @var{direction}.
     ##
     ## @code{@var{B} = sortrows (@dots{}, @qcode{'MissingPlacement'}, @var{mp})}
-    ## controls where Not-A-Time (@qcode{NaT}) elements are placed.  @var{mp} may
-    ## be @qcode{'auto'} (default; @qcode{NaT} sorts as the largest value, i.e.@:
-    ## last for ascending and first for descending columns), @qcode{'first'}, or
-    ## @qcode{'last'}.
+    ## controls where Not-A-Time (@qcode{NaT}) elements are placed.  @var{mp}
+    ## may be @qcode{'auto'} (default; @qcode{NaT} sorts as the largest value,
+    ## i.e.@: last for ascending and first for descending columns),
+    ## @qcode{'first'}, or @qcode{'last'}.
     ##
     ## @code{[@var{B}, @var{index}] = sortrows (@dots{})} also returns a column
     ## index vector @var{index} that maps the rows of @var{A} to @var{B}, such
@@ -3262,8 +3266,8 @@ classdef datetime
         error ("datetime.sortrows: A must be a 2-D datetime array.");
       endif
       ncol = size (A, 2);
-      ## Split the 'MissingPlacement' (and ignored 'ComparisonMethod') name-value
-      ## pairs off from the positional COLUMN/DIRECTION arguments.
+      ## Split the 'MissingPlacement' (and ignored 'ComparisonMethod')
+      ## name-value pairs off from the positional COLUMN/DIRECTION arguments.
       placement = 'auto';
       pos = {};
       k = 1;
@@ -3342,8 +3346,8 @@ classdef datetime
         endif
       endif
       ## Build the numeric key matrix from each selected column's instant.  NaT
-      ## maps to a signed-Inf sentinel that places it per MissingPlacement in the
-      ## column's own direction ('auto' treats NaT as the largest value).
+      ## maps to a signed-Inf sentinel that places it per MissingPlacement in
+      ## the column's own direction ('auto' treats NaT as the largest value).
       S = serial (A);
       N = size (S, 1);
       K = S(:, colmag);
@@ -3426,11 +3430,11 @@ classdef datetime
     ##
     ## Maximum of a datetime array.
     ##
-    ## @code{@var{M} = max (@var{A})} returns the largest element of the datetime
-    ## array @var{A} along its first non-singleton dimension.  For a matrix,
-    ## @var{M} is a row vector with the maximum of each column.  Not-A-Time
-    ## (@qcode{NaT}) elements are omitted; a reduction over @qcode{NaT} elements
-    ## only yields @qcode{NaT}.
+    ## @code{@var{M} = max (@var{A})} returns the largest element of the
+    ## datetime array @var{A} along its first non-singleton dimension.  For a
+    ## matrix, @var{M} is a row vector with the maximum of each column.
+    ## Not-A-Time (@qcode{NaT}) elements are omitted; a reduction over
+    ## @qcode{NaT} elements only yields @qcode{NaT}.
     ##
     ## @code{@var{M} = max (@var{A}, @var{B})} returns an array the same size as
     ## @var{A} and @var{B} (after broadcasting) holding the element-wise maximum
@@ -3652,8 +3656,9 @@ classdef datetime
     ## and @var{B} are row vectors and a column vector otherwise.
     ##
     ## @code{@var{C} = intersect (@var{A}, @var{B}, @qcode{'rows'})} treats each
-    ## row of the datetime matrices @var{A} and @var{B}, which must have the same
-    ## number of columns, as a single element and returns their common rows.
+    ## row of the datetime matrices @var{A} and @var{B}, which must have the
+    ## same number of columns, as a single element and returns their common
+    ## rows.
     ##
     ## @code{@dots{} = intersect (@dots{}, @var{order})} returns the values in
     ## @qcode{'sorted'} order (the default) or in @qcode{'stable'} order, i.e.@:
@@ -3711,9 +3716,9 @@ classdef datetime
     ## @qcode{'sorted'} order (the default) or in @qcode{'stable'} order.
     ##
     ## @code{[@var{C}, @var{ixA}, @var{ixB}] = union (@dots{})} also returns
-    ## index vectors @var{ixA} and @var{ixB} such that @var{C} is the combination
-    ## of @code{@var{A}(@var{ixA})} and @code{@var{B}(@var{ixB})}, or the
-    ## corresponding row selections when @qcode{'rows'} is used.
+    ## index vectors @var{ixA} and @var{ixB} such that @var{C} is the
+    ## combination of @code{@var{A}(@var{ixA})} and @code{@var{B}(@var{ixB})},
+    ## or the corresponding row selections when @qcode{'rows'} is used.
     ##
     ## @end deftypefn
     function [C, ixA, ixB] = union (A, B, varargin)
@@ -3750,13 +3755,13 @@ classdef datetime
     ## Membership is decided on the absolute instant, so two zoned inputs may be
     ## in different time zones; the result carries the time zone and display
     ## format of @var{A}.  @qcode{NaT} elements in @var{A} are all retained, as
-    ## they never match an element of @var{B}.  @var{C} is a row vector when both
-    ## @var{A} and @var{B} are row vectors and a column vector otherwise.
+    ## they never match an element of @var{B}.  @var{C} is a row vector when
+    ## both @var{A} and @var{B} are row vectors and a column vector otherwise.
     ##
     ## @code{@var{C} = setdiff (@var{A}, @var{B}, @qcode{'rows'})} treats each
-    ## row of the datetime matrices @var{A} and @var{B}, which must have the same
-    ## number of columns, as a single element and returns the rows of @var{A}
-    ## that are not rows of @var{B}.
+    ## row of the datetime matrices @var{A} and @var{B}, which must have the
+    ## same number of columns, as a single element and returns the rows of
+    ## @var{A} that are not rows of @var{B}.
     ##
     ## @code{@dots{} = setdiff (@dots{}, @var{order})} returns the values in
     ## @qcode{'sorted'} order (the default) or in @qcode{'stable'} order.
@@ -3803,18 +3808,18 @@ classdef datetime
     ## retained.  @var{C} is a row vector when both @var{A} and @var{B} are row
     ## vectors and a column vector otherwise.
     ##
-    ## @code{@var{C} = setxor (@var{A}, @var{B}, @qcode{'rows'})} treats each row
-    ## of the datetime matrices @var{A} and @var{B}, which must have the same
-    ## number of columns, as a single element and returns the rows that are in
-    ## one input but not both.
+    ## @code{@var{C} = setxor (@var{A}, @var{B}, @qcode{'rows'})} treats each
+    ## row of the datetime matrices @var{A} and @var{B}, which must have the
+    ## same number of columns, as a single element and returns the rows that are
+    ## in one input but not both.
     ##
     ## @code{@dots{} = setxor (@dots{}, @var{order})} returns the values in
     ## @qcode{'sorted'} order (the default) or in @qcode{'stable'} order.
     ##
     ## @code{[@var{C}, @var{ixA}, @var{ixB}] = setxor (@dots{})} also returns
-    ## index vectors @var{ixA} and @var{ixB} such that @var{C} is the combination
-    ## of @code{@var{A}(@var{ixA})} and @code{@var{B}(@var{ixB})}, or the
-    ## corresponding row selections when @qcode{'rows'} is used.
+    ## index vectors @var{ixA} and @var{ixB} such that @var{C} is the
+    ## combination of @code{@var{A}(@var{ixA})} and @code{@var{B}(@var{ixB})},
+    ## or the corresponding row selections when @qcode{'rows'} is used.
     ##
     ## @end deftypefn
     function [C, ixA, ixB] = setxor (A, B, varargin)
@@ -3849,9 +3854,9 @@ classdef datetime
     ## otherwise.  Either input may instead be a date/time character vector,
     ## string array, or cell array of character vectors, which is promoted to a
     ## datetime array before the test.  Membership is decided on the absolute
-    ## instant, so two zoned inputs may be in different time zones.  Similarly to
-    ## @qcode{NaN} values, Not-A-Time (@qcode{NaT}) elements are not equal with
-    ## each other and always return @qcode{false}.
+    ## instant, so two zoned inputs may be in different time zones.  Similarly
+    ## to @qcode{NaN} values, Not-A-Time (@qcode{NaT}) elements are not equal
+    ## with each other and always return @qcode{false}.
     ##
     ## @code{@var{TF} = ismember (@var{A}, @var{B}, @qcode{'rows'})} only
     ## applies to datetime matrices with the same number of columns, in which
@@ -3907,8 +3912,8 @@ classdef datetime
     ##
     ## One-dimensional interpolation involving datetime arrays.
     ##
-    ## @code{@var{VI} = interp1 (@var{X}, @var{V}, @var{XI})} interpolates to find
-    ## @var{VI}, the values of the underlying function @code{@var{V} = f
+    ## @code{@var{VI} = interp1 (@var{X}, @var{V}, @var{XI})} interpolates to
+    ## find @var{VI}, the values of the underlying function @code{@var{V} = f
     ## (@var{X})} at the query points @var{XI}.  Datetime arrays are handled by
     ## interpolating on their absolute (POSIX) instants:
     ##
@@ -3921,10 +3926,11 @@ classdef datetime
     ## @end itemize
     ##
     ## The optional @var{method} (@qcode{'linear'} by default) and @var{extrap}
-    ## arguments are passed to the built-in @code{interp1} (see its documentation
-    ## for the supported interpolation methods and extrapolation options).  Query
-    ## points outside the range of @var{X}, and Not-A-Time query points, yield
-    ## @qcode{NaN} or @qcode{NaT} unless extrapolation is requested.
+    ## arguments are passed to the built-in @code{interp1} (see its
+    ## documentation for the supported interpolation methods and extrapolation
+    ## options).  Query points outside the range of @var{X}, and Not-A-Time
+    ## query points, yield @qcode{NaN} or @qcode{NaT} unless extrapolation is
+    ## requested.
     ##
     ## @end deftypefn
     function BI = interp1 (A, B, AI, varargin)
@@ -3933,7 +3939,6 @@ classdef datetime
         if (! isa (AI, 'datetime'))
           error (strcat ("datetime.interp1: query points must be a", ...
                          " datetime", ...
-                 ...
                          " array when the sample points are datetime."));
         endif
         x = serial (A);
@@ -3942,7 +3947,6 @@ classdef datetime
         if (isa (AI, 'datetime'))
           error (strcat ("datetime.interp1: query points must be numeric", ...
                          " when", ...
-                 ...
                          " the sample points are numeric."));
         endif
         x = A;
@@ -3985,8 +3989,8 @@ classdef datetime
     ## @code{@var{M} = mean (@var{A})} returns the mean of the datetime array
     ## @var{A} as a scalar datetime, computed as the average of the absolute
     ## instants along the first non-singleton dimension.  A @var{dim} or
-    ## @qcode{'all'} argument selects the dimension(s) to operate on.  The result
-    ## carries the @code{Format} and @code{TimeZone} of @var{A}.
+    ## @qcode{'all'} argument selects the dimension(s) to operate on.  The
+    ## result carries the @code{Format} and @code{TimeZone} of @var{A}.
     ##
     ## By default a Not-A-Time element makes the corresponding result
     ## @qcode{NaT}; pass @qcode{'omitnat'} (equivalently @qcode{'omitmissing'})
@@ -4006,12 +4010,12 @@ classdef datetime
     ##
     ## Median of a datetime array.
     ##
-    ## @code{@var{M} = median (@var{A})} returns the median of the datetime array
-    ## @var{A} as a datetime, computed on the absolute instants along the first
-    ## non-singleton dimension (for an even number of elements the average of the
-    ## two middle instants).  A @var{dim} or @qcode{'all'} argument selects the
-    ## dimension(s).  The result carries the @code{Format} and @code{TimeZone} of
-    ## @var{A}.  Missing-value handling matches @code{mean}.
+    ## @code{@var{M} = median (@var{A})} returns the median of the datetime
+    ## array @var{A} as a datetime, computed on the absolute instants along the
+    ## first non-singleton dimension (for an even number of elements the average
+    ## of the two middle instants).  A @var{dim} or @qcode{'all'} argument
+    ## selects the dimension(s).  The result carries the @code{Format} and
+    ## @code{TimeZone} of @var{A}.  Missing-value handling matches @code{mean}.
     ##
     ## @end deftypefn
     function R = median (A, varargin)
@@ -4067,8 +4071,8 @@ classdef datetime
     ## @code{1} divides by @math{N}), and a @var{dim} or @qcode{'all'} argument
     ## selects the dimension(s).  Missing-value handling matches @code{mean}.
     ##
-    ## @code{[@var{S}, @var{M}] = std (@dots{})} also returns the mean @var{M} as
-    ## a datetime.
+    ## @code{[@var{S}, @var{M}] = std (@dots{})} also returns the mean @var{M}
+    ## as a datetime.
     ##
     ## @end deftypefn
     function [S, M] = std (A, varargin)
@@ -4338,8 +4342,8 @@ classdef datetime
     ## values starting at @var{A} and increasing in steps of one calendar day up
     ## to, and possibly including, @var{B}.
     ##
-    ## @code{@var{R} = colon (@var{A}, @var{step}, @var{B})} is the equivalent of
-    ## the syntax @code{@var{R} = @var{A}:@var{step}:@var{B}} and uses the
+    ## @code{@var{R} = colon (@var{A}, @var{step}, @var{B})} is the equivalent
+    ## of the syntax @code{@var{R} = @var{A}:@var{step}:@var{B}} and uses the
     ## specified @var{step} between consecutive elements.  @var{step} may be:
     ##
     ## @itemize
@@ -4347,19 +4351,20 @@ classdef datetime
     ## days), in which case successive elements advance by a fixed amount of
     ## elapsed time; for a zoned range this is aware of daylight saving time.
     ##
-    ## @item a @code{calendarDuration}, in which case successive elements advance
-    ## in calendar units.  Each element is computed as @code{@var{A} + k*@var{step}}
-    ## for @code{k = 0, 1, 2, @dots{}}, so month and year steps clamp the day of
-    ## month independently for every element (e.g.@: a one-month step from
-    ## 31 January yields 31 January, 28 February, 31 March, @dots{}).
+    ## @item a @code{calendarDuration}, in which case successive elements
+    ## advance in calendar units.  Each element is computed as @code{@var{A} +
+    ## k*@var{step}} for @code{k = 0, 1, 2, @dots{}}, so month and year steps
+    ## clamp the day of month independently for every element (e.g.@: a
+    ## one-month step from 31 January yields 31 January, 28 February, 31 March,
+    ## @dots{}).
     ## @end itemize
     ##
     ## The default step of @code{@var{A}:@var{B}} is one calendar day
     ## (@code{caldays (1)}), which preserves the time of day across daylight
     ## saving time changes.  A range whose @var{step} points away from @var{B}
     ## (for example an increasing step with @code{@var{A} > @var{B}}) is empty.
-    ## @var{A} and @var{B} must be datetime scalars that are either both zoned or
-    ## both unzoned, and must be finite.
+    ## @var{A} and @var{B} must be datetime scalars that are either both zoned
+    ## or both unzoned, and must be finite.
     ##
     ## @end deftypefn
     function R = colon (varargin)
@@ -4504,9 +4509,10 @@ classdef datetime
     ## @end itemize
     ##
     ## Adding two datetime arrays is not defined and raises an error.  @var{A}
-    ## and @var{B} must be size compatible: they can be the same size, one can be
-    ## scalar, or for every dimension their sizes must be equal or one of them
-    ## must be 1.  Not-A-Time and infinite elements propagate to the result.
+    ## and @var{B} must be size compatible: they can be the same size, one can
+    ## be scalar, or for every dimension their sizes must be equal or one of
+    ## them must be 1.  Not-A-Time and infinite elements propagate to the
+    ## result.
     ##
     ## @end deftypefn
     function C = plus (A, B)
@@ -4533,13 +4539,11 @@ classdef datetime
       elseif (isinteger (B))
         error (strcat ("datetime.plus: cannot add a '%s' array to a", ...
                        " datetime", ...
-               ...
                        " array; convert it to double or a duration first."), ...
                class (B));
       else
         error (strcat ("datetime.plus: cannot add a '%s' array to a", ...
                        " datetime", ...
-               ...
                        " array."), class (B));
       endif
     endfunction
@@ -4575,8 +4579,8 @@ classdef datetime
     ## @end itemize
     ##
     ## @var{A} and @var{B} must be size compatible: they can be the same size,
-    ## one can be scalar, or for every dimension their sizes must be equal or one
-    ## of them must be 1.  Not-A-Time and infinite elements propagate to the
+    ## one can be scalar, or for every dimension their sizes must be equal or
+    ## one of them must be 1.  Not-A-Time and infinite elements propagate to the
     ## result.
     ##
     ## @end deftypefn
@@ -4609,14 +4613,12 @@ classdef datetime
       elseif (isinteger (B))
         error (strcat ("datetime.minus: cannot subtract a '%s' array from", ...
                        " a", ...
-               ...
                        " datetime array; convert it to double or a", ...
                        " duration", ...
                        " first."), class (B));
       else
         error (strcat ("datetime.minus: cannot subtract a '%s' array from", ...
                        " a", ...
-               ...
                        " datetime array."), class (B));
       endif
     endfunction
@@ -4628,8 +4630,8 @@ classdef datetime
     ##
     ## Differences between successive datetime elements.
     ##
-    ## @code{@var{D} = diff (@var{A})} returns a @code{duration} array holding the
-    ## elapsed time between successive elements of @var{A} along its first
+    ## @code{@var{D} = diff (@var{A})} returns a @code{duration} array holding
+    ## the elapsed time between successive elements of @var{A} along its first
     ## non-singleton dimension.  The differences are computed from the absolute
     ## instants, so for a zoned array they are aware of daylight saving time
     ## transitions (a calendar day spanning a transition is 23 or 25 hours, not
@@ -4654,7 +4656,6 @@ classdef datetime
         if (! (isnumeric (n) && isscalar (n) && n > 0 && n == fix (n)))
           error (strcat ("datetime.diff: order N must be a positive", ...
                          " integer", ...
-                 ...
                          " scalar."));
         endif
       endif
@@ -4689,18 +4690,18 @@ classdef datetime
     ##
     ## Calendar differences between successive datetime elements.
     ##
-    ## @code{@var{D} = caldiff (@var{A})} returns a @code{calendarDuration} array
-    ## holding the calendar difference between successive elements of @var{A}
-    ## along its first non-singleton dimension.  Unlike @code{diff}, the result
-    ## is expressed in whole calendar units (years, months, days) plus a leftover
-    ## time, so it is aware of month lengths and, for a zoned array, of daylight
-    ## saving time.  Not-A-Time elements yield @qcode{NaN}.
+    ## @code{@var{D} = caldiff (@var{A})} returns a @code{calendarDuration}
+    ## array holding the calendar difference between successive elements of
+    ## @var{A} along its first non-singleton dimension.  Unlike @code{diff}, the
+    ## result is expressed in whole calendar units (years, months, days) plus a
+    ## leftover time, so it is aware of month lengths and, for a zoned array, of
+    ## daylight saving time.  Not-A-Time elements yield @qcode{NaN}.
     ##
     ## @code{@var{D} = caldiff (@var{A}, @var{components})} expresses each
-    ## difference using only the requested calendar components.
-    ## @var{components} is one of @qcode{'Years'}, @qcode{'Quarters'},
-    ## @qcode{'Months'}, @qcode{'Weeks'}, @qcode{'Days'}, or @qcode{'Time'}, or a
-    ## cell array or string array containing several of them.  The default is
+    ## difference using only the requested calendar components. @var{components}
+    ## is one of @qcode{'Years'}, @qcode{'Quarters'}, @qcode{'Months'},
+    ## @qcode{'Weeks'}, @qcode{'Days'}, or @qcode{'Time'}, or a cell array or
+    ## string array containing several of them.  The default is
     ## @qcode{@{'Years', 'Months', 'Days', 'Time'@}}.
     ##
     ## @code{@var{D} = caldiff (@var{A}, @var{components}, @var{dim})} operates
@@ -4741,11 +4742,12 @@ classdef datetime
     ##
     ## @code{@var{D} = between (@var{A}, @var{B})} returns a
     ## @code{calendarDuration} array holding the calendar difference from each
-    ## element of @var{A} to the corresponding element of @var{B}.  The result is
-    ## signed (it is negative where @var{B} precedes @var{A}) and is expressed in
-    ## whole calendar units plus a leftover time, taking month lengths and
-    ## daylight saving time into account.  @var{A} and @var{B} must be the same
-    ## size or one of them must be scalar.  Not-A-Time elements yield @qcode{NaN}.
+    ## element of @var{A} to the corresponding element of @var{B}.  The result
+    ## is signed (it is negative where @var{B} precedes @var{A}) and is
+    ## expressed in whole calendar units plus a leftover time, taking month
+    ## lengths and daylight saving time into account.  @var{A} and @var{B} must
+    ## be the same size or one of them must be scalar.  Not-A-Time elements
+    ## yield @qcode{NaN}.
     ##
     ## @code{@var{D} = between (@var{A}, @var{B}, @var{components})} expresses
     ## each difference using only the requested calendar components (see
@@ -4777,29 +4779,30 @@ classdef datetime
     ##
     ## Shift datetime values to calendar boundaries.
     ##
-    ## @code{@var{R} = dateshift (@var{A}, @qcode{'start'}, @var{unit})} returns a
-    ## datetime array in which each element of @var{A} is moved back to the start
-    ## of the calendar @var{unit} that contains it, with the finer components set
-    ## to zero.  @var{unit} is @qcode{'second'}, @qcode{'minute'},
-    ## @qcode{'hour'}, @qcode{'day'}, @qcode{'week'}, @qcode{'month'},
-    ## @qcode{'quarter'}, or @qcode{'year'}.  A week starts on Sunday.
+    ## @code{@var{R} = dateshift (@var{A}, @qcode{'start'}, @var{unit})} returns
+    ## a datetime array in which each element of @var{A} is moved back to the
+    ## start of the calendar @var{unit} that contains it, with the finer
+    ## components set to zero.  @var{unit} is @qcode{'second'},
+    ## @qcode{'minute'}, @qcode{'hour'}, @qcode{'day'}, @qcode{'week'},
+    ## @qcode{'month'}, @qcode{'quarter'}, or @qcode{'year'}.  A week starts on
+    ## Sunday.
     ##
-    ## @code{@var{R} = dateshift (@var{A}, @qcode{'end'}, @var{unit})} moves each
-    ## element to the end of its unit: the start of the next second, minute,
-    ## hour, or day, and the last day (at midnight) of the week, month, quarter,
-    ## or year.
+    ## @code{@var{R} = dateshift (@var{A}, @qcode{'end'}, @var{unit})} moves
+    ## each element to the end of its unit: the start of the next second,
+    ## minute, hour, or day, and the last day (at midnight) of the week, month,
+    ## quarter, or year.
     ##
-    ## @code{@var{R} = dateshift (@dots{}, @var{rule})} first shifts each element
-    ## by @var{rule} whole units.  @var{rule} is @qcode{'current'} (the default),
-    ## @qcode{'next'}, @qcode{'previous'}, @qcode{'nearest'}, or an integer
-    ## number of units.
+    ## @code{@var{R} = dateshift (@dots{}, @var{rule})} first shifts each
+    ## element by @var{rule} whole units.  @var{rule} is @qcode{'current'} (the
+    ## default), @qcode{'next'}, @qcode{'previous'}, @qcode{'nearest'}, or an
+    ## integer number of units.
     ##
-    ## @code{@var{R} = dateshift (@var{A}, @qcode{'dayofweek'}, @var{dow})} moves
-    ## each element to the next date, on or after it, whose day of the week is
-    ## @var{dow} (a number from 1 for Sunday to 7 for Saturday, or a day name),
-    ## keeping the time of day.  A trailing @var{rule} of @qcode{'previous'},
-    ## @qcode{'nearest'}, @qcode{'current'} (the day within the current week), or
-    ## an integer occurrence selects a different date.
+    ## @code{@var{R} = dateshift (@var{A}, @qcode{'dayofweek'}, @var{dow})}
+    ## moves each element to the next date, on or after it, whose day of the
+    ## week is @var{dow} (a number from 1 for Sunday to 7 for Saturday, or a day
+    ## name), keeping the time of day.  A trailing @var{rule} of
+    ## @qcode{'previous'}, @qcode{'nearest'}, @qcode{'current'} (the day within
+    ## the current week), or an integer occurrence selects a different date.
     ##
     ## Not-A-Time and infinite elements are returned unchanged.
     ##
@@ -6139,7 +6142,6 @@ classdef datetime
       if (xor (isempty (A.TimeZone), isempty (B.TimeZone)))
         error (strcat ("datetime.%s: cannot combine a datetime array with", ...
                        " a", ...
-               ...
                        " time zone with one without a time zone."), op);
       endif
       dtCheckLeapPair (A, B, op);
@@ -6197,14 +6199,14 @@ classdef datetime
       endif
     endfunction
 
-    ## Calendar-aware difference from A to B, element-wise on equal-sized inputs,
-    ## expressed in the requested COMPS.  Whole units are taken greedily from the
-    ## largest requested down to the smallest (years, quarters, months, then
-    ## weeks, days), each taking the most that does not step past B; the day of
-    ## month is clamped on month steps and a whole unit is only borrowed if the
-    ## time of day allows it (31 Jan 10:00 to 28 Feb 08:00 is 27 days 22 hours,
-    ## not one month).  When 'Time' is requested the leftover is its absolute
-    ## instant difference, so it is daylight-saving aware.  Returns a
+    ## Calendar-aware difference from A to B, element-wise on equal-sized
+    ## inputs, expressed in the requested COMPS.  Whole units are taken greedily
+    ## from the largest requested down to the smallest (years, quarters, months,
+    ## then weeks, days), each taking the most that does not step past B; the
+    ## day of month is clamped on month steps and a whole unit is only borrowed
+    ## if the time of day allows it (31 Jan 10:00 to 28 Feb 08:00 is 27 days 22
+    ## hours, not one month).  When 'Time' is requested the leftover is its
+    ## absolute instant difference, so it is daylight-saving aware.  Returns a
     ## calendarDuration; NaT operands yield NaN.
     function C = calDiff (A, B, comps, op)
       [f, fmt] = parseCalComponents (comps, op);
@@ -6213,8 +6215,8 @@ classdef datetime
       Y2 = B.Year; M2 = B.Month; D2 = B.Day;
       h2 = B.Hour; mi2 = B.Minute; s2 = B.Second;
       sz = size (Y1);
-      ## A Not-A-Time operand yields a NaN result.  Replace NaN components with a
-      ## harmless placeholder for the calendar arithmetic, then restore NaN in
+      ## A Not-A-Time operand yields a NaN result.  Replace NaN components with
+      ## a harmless placeholder for the calendar arithmetic, then restore NaN in
       ## the outputs, so month/day indexing never hits a NaN subscript.
       bad = isnan (Y1) | isnan (Y2);
       if (any (bad(:)))
@@ -6394,8 +6396,8 @@ classdef datetime
     ## Shift each element by a calendarDuration (SGN is +1 for addition, -1 for
     ## subtraction).  Whole months are applied first with end-of-month day
     ## clamping, then whole calendar days (wall-clock preserving), then the
-    ## time-of-day component as an instant.  Not-A-Time and infinite elements are
-    ## carried through unchanged.
+    ## time-of-day component as an instant.  Not-A-Time and infinite elements
+    ## are carried through unchanged.
     function this = addCalendar (this, calD, sgn)
       dMonths = sgn * calmonths (calD);
       dDays   = sgn * split (calD, 'days');
@@ -6533,7 +6535,6 @@ classdef datetime
       if (xor (isempty (A.TimeZone), isempty (B.TimeZone)))
         error (strcat ("datetime.%s: cannot compare a datetime array with", ...
                        " a", ...
-               ...
                        " time zone to one without a time zone."), op);
       endif
       dtCheckLeapPair (A, B, op);
@@ -6753,12 +6754,10 @@ function d = dtSetPromote (x, ref, op)
   elseif (isa (x, 'duration') || isa (x, 'calendarDuration'))
     error (strcat ("datetime.%s: comparison is not defined between", ...
                    " datetime", ...
-           ...
                    " and duration arrays."), op);
   else
     error (strcat ("datetime.%s: comparison is not defined between", ...
                    " datetime", ...
-           ...
                    " and numeric arrays."), op);
   endif
 endfunction
@@ -6868,9 +6867,9 @@ function [kind, n] = dsRule (r)
   endif
 endfunction
 
-## Shift a date/time by N whole units (used by dateshift's rule).  Calendar units
-## produce a canonical date; sub-day units may overflow and are canonicalised by
-## the caller's final normalisation.
+## Shift a date/time by N whole units (used by dateshift's rule).  Calendar
+## units produce a canonical date; sub-day units may overflow and are
+## canonicalised by the caller's final normalisation.
 function [Y, M, D, h, mi, s] = dsShiftUnits (Y, M, D, h, mi, s, unit, n)
   switch (unit)
     case 'year'
@@ -7147,7 +7146,6 @@ function dtCheckIntegerComponents (args)
   if (any (isfinite (vals(:)) & (fix (vals(:)) != vals(:))))
     error (strcat ("datetime: Year, Month, Day, Hour, and Minute", ...
                    " components", ...
-           ...
                    " must be integer values."));
   endif
 endfunction
@@ -7155,8 +7153,8 @@ endfunction
 ## Days between 1970-01-01 and a proleptic Gregorian civil date, and the year a
 ## date given as such a day count falls in.  Vectorized, and exact in double
 ## precision over any range the calendar carries.  Used by the Excel serial
-## conversions and by the elapsed-time difference, both of which need a day count
-## rather than a second calendar.
+## conversions and by the elapsed-time difference, both of which need a day
+## count rather than a second calendar.
 function z = dtDaysFromCivil (y, m, d)
   y = y - (m <= 2);
   era = floor (y ./ 400);
@@ -7846,7 +7844,6 @@ function out = dtFixedEpoch (posix, kind)
   if (! all (ok(:)))
     error (strcat ("datetime.convertTo: '%s' conversion is not supported", ...
                    " for", ...
-           ...
                    " missing values, infinite datetimes, or datetimes", ...
                    " outside", ...
                    " the representable range."), tname);

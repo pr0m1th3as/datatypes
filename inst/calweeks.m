@@ -48,7 +48,8 @@ function out = calweeks (x)
 endfunction
 
 %!demo
-%! ## `calweeks` builds a calendar duration of whole weeks (each week is 7 days).
+%! ## `calweeks` builds a calendar duration of whole weeks (each week is 7
+%! ## days).
 %!
 %! calweeks (3)
 %!

@@ -32,31 +32,31 @@
 ## after the non-missing groups.
 ##
 ## @var{method} is one of the names @qcode{'sum'}, @qcode{'mean'},
-## @qcode{'median'}, @qcode{'mode'}, @qcode{'var'}, @qcode{'std'}, @qcode{'min'},
-## @qcode{'max'}, @qcode{'range'}, @qcode{'nnz'}, @qcode{'nummissing'}, or
-## @qcode{'numunique'}, a function handle, or a cell
-## array of method names and@/or function handles.  @code{NaN} values are omitted
-## for every named method except @qcode{'nummissing'}; a function handle receives
-## the values with @code{NaN} included and must return a single row.  When
-## several methods are requested the columns of @var{B} are ordered by column of
-## @var{A} first, then by method.
+## @qcode{'median'}, @qcode{'mode'}, @qcode{'var'}, @qcode{'std'},
+## @qcode{'min'}, @qcode{'max'}, @qcode{'range'}, @qcode{'nnz'},
+## @qcode{'nummissing'}, or @qcode{'numunique'}, a function handle, or a cell
+## array of method names and@/or function handles.  @code{NaN} values are
+## omitted for every named method except @qcode{'nummissing'}; a function handle
+## receives the values with @code{NaN} included and must return a single row.
+## When several methods are requested the columns of @var{B} are ordered by
+## column of @var{A} first, then by method.
 ##
 ## @code{[@var{B}, @var{BG}, @var{BC}] = groupsummary (@dots{})} also returns
-## @var{BG}, the grouping values that identify each group, and @var{BC}, a column
-## vector with the number of rows in each group.  When @var{groupvars} is a
-## single grouping vector, @var{BG} holds its representative value for each group;
-## when several grouping variables are given, @var{BG} is a cell array with one
-## element per grouping variable.
+## @var{BG}, the grouping values that identify each group, and @var{BC}, a
+## column vector with the number of rows in each group.  When @var{groupvars} is
+## a single grouping vector, @var{BG} holds its representative value for each
+## group; when several grouping variables are given, @var{BG} is a cell array
+## with one element per grouping variable.
 ##
 ## The optional @var{groupbins} argument bins the grouping variables before
 ## grouping: a vector of bin edges or a positive integer number of equal-width
-## bins, applied to a numeric, datetime, or duration grouping variable, or a cell
-## array with one scheme per grouping variable.  Each binned variable becomes a
-## categorical of bin interval labels.
+## bins, applied to a numeric, datetime, or duration grouping variable, or a
+## cell array with one scheme per grouping variable.  Each binned variable
+## becomes a categorical of bin interval labels.
 ##
-## The behaviour can be modified with the @qcode{'IncludeMissingGroups'} (default
-## @code{true}), @qcode{'IncludeEmptyGroups'} (default @code{false}), and
-## @qcode{'IncludedEdge'} (default @qcode{'left'}, the inclusive bin edge)
+## The behaviour can be modified with the @qcode{'IncludeMissingGroups'}
+## (default @code{true}), @qcode{'IncludeEmptyGroups'} (default @code{false}),
+## and @qcode{'IncludedEdge'} (default @qcode{'left'}, the inclusive bin edge)
 ## @var{Name}/@var{Value} pairs, as for the @code{table} method.  When
 ## @qcode{'IncludeEmptyGroups'} is @code{true}, the unused categories of a
 ## categorical or binned grouping variable contribute empty groups.
@@ -73,8 +73,8 @@ function [B, varargout] = groupsummary (A, groupvars, varargin)
     print_usage ();
   endif
 
-  ## An optional GROUPBINS positional argument precedes the method; the method is
-  ## the next trailing argument, and the rest are Name-Value pairs.
+  ## An optional GROUPBINS positional argument precedes the method; the method
+  ## is the next trailing argument, and the rest are Name-Value pairs.
   args = varargin;
   hasGB = false;
   groupbins = [];
@@ -209,7 +209,6 @@ function [methods, methNames, errmsg] = gs_normalise_methods (method)
   else
     errmsg = strcat ("METHOD must be a method name, a function handle, or", ...
                      " a", ...
-                     ...
                      " cell array of method names and function handles.");
     return;
   endif
@@ -241,9 +240,9 @@ endfunction
 
 ## Group rows by the grouping-variable values GVS (a cell array of column
 ## vectors), treating each variable's missing values as a single group value.
-## Returns G (1..NGROUPS), NGROUPS, REPROWS (a representative row per group), and
-## an errmsg body.  Groups are sorted by value with missing groups last; when
-## INCMISS is false the rows with a missing grouping value are dropped.
+## Returns G (1..NGROUPS), NGROUPS, REPROWS (a representative row per group),
+## and an errmsg body.  Groups are sorted by value with missing groups last;
+## when INCMISS is false the rows with a missing grouping value are dropped.
 function [G, ngroups, repRows, errmsg] = gs_group_rows (gvs, incMiss)
   errmsg = '';
   G = [];
@@ -299,8 +298,8 @@ function [p, miss, errmsg] = group_col_proxy (col)
   miss = [];
   errmsg = '';
   if (isa (col, 'categorical'))
-    ## Categorical groups follow category order (ordinal or reordered), which the
-    ## underlying category codes encode; <undefined> maps to NaN.
+    ## Categorical groups follow category order (ordinal or reordered), which
+    ## the underlying category codes encode; <undefined> maps to NaN.
     p = double (col)(:);
     miss = isnan (p);
   elseif (isa (col, 'string') || iscellstr (col) || ischar (col))
@@ -333,9 +332,10 @@ function [p, miss, errmsg] = group_col_proxy (col)
 endfunction
 
 ## Apply a single method M (a method-name char vector or a function handle) to
-## the column slice X of one group, returning a row result V.  Named methods omit
-## missing values (except 'nummissing'); a function handle receives X unchanged
-## and must return a single row.  Returns an errmsg body emitted by the caller.
+## the column slice X of one group, returning a row result V.  Named methods
+## omit missing values (except 'nummissing'); a function handle receives X
+## unchanged and must return a single row.  Returns an errmsg body emitted by
+## the caller.
 function [v, errmsg] = gs_apply_method (m, x)
   v = [];
   errmsg = '';
@@ -459,11 +459,11 @@ endfunction
 
 ## Group rows by the grouping-variable values GVS (already binned when a
 ## GROUPBINS argument was given).  Returns G (1..NG, NaN for an excluded row),
-## NG, GVALS (a 1-by-K cell of the typed level-value columns, one per group), and
-## an errmsg body.  When INCEMPTY is true the unused categories of a categorical
-## or binned grouping variable contribute empty groups, built from the full
-## Cartesian product of the per-variable levels; otherwise only the observed
-## groups are returned.
+## NG, GVALS (a 1-by-K cell of the typed level-value columns, one per group),
+## and an errmsg body.  When INCEMPTY is true the unused categories of a
+## categorical or binned grouping variable contribute empty groups, built from
+## the full Cartesian product of the per-variable levels; otherwise only the
+## observed groups are returned.
 function [G, ng, gvals, errmsg] = gb_grouping (gvs, incMiss, incEmpty)
   errmsg = '';
   G = []; ng = 0; gvals = {};

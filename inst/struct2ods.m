@@ -9,8 +9,8 @@
 ##
 ## This program is distributed in the hope that it will be useful, but WITHOUT
 ## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-## details.
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
 ##
 ## You should have received a copy of the GNU General Public License along with
 ## this program; if not, see <http://www.gnu.org/licenses/>.
@@ -200,8 +200,9 @@ function out = char_or_blank (v)
 endfunction
 
 %!demo
-%! ## `struct2ods` writes a whole workbook at once: each field of a scalar struct
-%! ## of tables becomes its own sheet, and the field name becomes the sheet name.
+%! ## `struct2ods` writes a whole workbook at once: each field of a scalar
+%! ## struct of tables becomes its own sheet, and the field name becomes the
+%! ## sheet name.
 %!
 %! wb.Patients = table ({'Li'; 'Diaz'}, [38; 40], 'VariableNames', {'Name', ...
 %!                      'Age'});

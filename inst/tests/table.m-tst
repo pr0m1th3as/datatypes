@@ -19,8 +19,8 @@
 ## through 'table2cell', 'csv2table', 'summary' and 'groupsummary'.  Those
 ## renderings use the default display formats, which persist across sessions, so
 ## a user who has set one with 'datetime.setDefaultFormats' would otherwise see
-## this file fail.  Save whatever is stored, run at the factory defaults, and put
-## it back in the closing block; a format that was never set is restored as
+## this file fail.  Save whatever is stored, run at the factory defaults, and
+## put it back in the closing block; a format that was never set is restored as
 ## absent rather than as its factory value.
 ##
 ## The saved formats live in a persistent inside this helper rather than in a
@@ -962,7 +962,8 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
-## a calendarDuration is written as text; csv2table reads it back as cellstr (lossy)
+## a calendarDuration is written as text; csv2table reads it back as cellstr
+## (lossy)
 %!test
 %! T = table (calendarDuration ([1; 2], [0; 1], [0; 0]), 'VariableNames', ...
 %!            {'cd'});
@@ -997,7 +998,8 @@
 %! fn = [tempname() '.csv'];
 %! table2csv (T, fn);
 %! R = csv2table (fn);
-## a categorical is written as labels; csv2table reads it back as cellstr (lossy)
+## a categorical is written as labels; csv2table reads it back as cellstr
+## (lossy)
 %!test
 %! T = table (categorical ({'lo'; 'hi'; 'lo'}), 'VariableNames', {'c'});
 %! T.Properties.VariableDescriptions = {'level'};
@@ -1201,7 +1203,8 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
-## a complex table of many variable types round-trips with descriptions and units
+## a complex table of many variable types round-trips with descriptions and
+## units
 %!test
 %! T = table ([1; 2; 3], single ([1.5; 2.5; 3.5]), int16 ([10; 20; 30]), ...
 %!            [true; false; true], string ({'x'; 'y'; 'z'}), ...
@@ -1250,7 +1253,8 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
-## a complex table with row names round-trips data, row names, descriptions, and units
+## a complex table with row names round-trips data, row names, descriptions, and
+## units
 %!test
 %! T = table ([10; 20], string ({'aa'; 'bb'}), datetime (2022, 6, [1; 2]), ...
 %!            'VariableNames', {'n', 'tag', 'day'}, ...
@@ -1277,15 +1281,13 @@
 ## every integer class (full range, exact) and the float classes round-trip
 %!test
 %! T = table (int8 ([intmin('int8'); intmax('int8')]), ...
-%!            int16 ([intmin('int16'); intmax('int16')]), ...
-%!            int32 ([intmin('int32'); intmax('int32')]), ...
-%!            int64 ([intmin('int64'); intmax('int64')]), ...
-%!            uint8 ([0; intmax('uint8')]), uint16 ([0; intmax('uint16')]), ...
-%!            uint32 ([0; intmax('uint32')]), uint64 ([0; intmax('uint64')]), ...
-%!            single ([1.5; -2.5]), [1.25; -3.75], ...
-%!            'VariableNames', ...
-%!            {'i8', 'i16', 'i32', 'i64', 'u8', 'u16', 'u32', 'u64', 'sg', ...
-%!              'db'});
+%! int16 ([intmin('int16'); intmax('int16')]), ...
+%! int32 ([intmin('int32'); intmax('int32')]), ...
+%! int64 ([intmin('int64'); intmax('int64')]), uint8 ([0; intmax('uint8')]), ...
+%! uint16 ([0; intmax('uint16')]), uint32 ([0; intmax('uint32')]), ...
+%! uint64 ([0; intmax('uint64')]), single ([1.5; -2.5]), [1.25; -3.75], ...
+%! 'VariableNames', {'i8', 'i16', 'i32', 'i64', 'u8', 'u16', 'u32', 'u64', ...
+%! 'sg', 'db'});
 %! fn = [tempname() '.csv'];
 %! unwind_protect
 %!   table2csv (T, fn);
@@ -1384,7 +1386,8 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
-## a multicolumn categorical is written as labels and read back as 2-D cellstr (lossy)
+## a multicolumn categorical is written as labels and read back as 2-D cellstr
+## (lossy)
 %!test
 %! T = table (categorical ({'x', 'y'; 'y', 'x'}), 'VariableNames', {'c'});
 %! fn = [tempname() '.csv'];
@@ -1497,7 +1500,8 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
-## a table mixing multicolumn, nested, and several types round-trips with metadata
+## a table mixing multicolumn, nested, and several types round-trips with
+## metadata
 %!test
 %! inner = table (duration ([1; 2], [0; 0], [0; 0]), string ({'p'; 'q'}), ...
 %!                categorical ({'lo'; 'hi'}), 'VariableNames', {'idu', ...
@@ -1655,7 +1659,8 @@
 %!   namelen = hdr(27) + hdr(28) * 256;
 %!   assert_equal (hdr(1:4), [80, 75, 3, 4]);       # ZIP magic "PK\x03\x04"
 %!   assert_equal (method, 0);                      # stored, not deflated
-%!   assert_equal (flag, 0);                        # no data descriptor / extras
+%!   ## no data descriptor / extras
+%!   assert_equal (flag, 0);
 %!   assert_equal (char (hdr(31:30+namelen)), 'mimetype');
 %! unwind_protect_cleanup
 %!   if (exist (fn, 'file'))
@@ -4512,7 +4517,8 @@
 %!              'variable'); S.Properties.CustomProperties.vs = [100 200];
 %! SS = splitvars (S, 'm');
 %! assert_equal (SS.Properties.CustomProperties.vs, [100 200 200]);
-## join maps variable-scoped props per source (key+left from left, right from right)
+## join maps variable-scoped props per source (key+left from left, right from
+## right)
 %!test
 %! L = table ([1; 2], [3; 4], 'VariableNames', {'k', 'a'});
 %! L = addprop (L, 'ts', 'table');    L.Properties.CustomProperties.ts = 'L';
@@ -5931,7 +5937,8 @@
 %! assert_equal (size (C), [3, 4]);
 %! assert_equal (C.Rv, {'p'; 'q'; 'r'});
 
-## a bin count picks the edges 'discretize' picks, not the data range split evenly
+## a bin count picks the edges 'discretize' picks, not the data range split
+## evenly
 %!test
 %! T = table ((1:6)', (1:6)', 'VariableNames', {'A', 'B'});
 %! G = groupsummary (T, 'A', 2, 'sum', 'B');
@@ -6084,7 +6091,8 @@
 %! G = groupsummary (T, 'g', 'mean', 'x');
 %! assert_equal (G.Properties.VariableNames, {'g', 'GroupCount', 'mean_x'});
 %! assert_equal (G.mean_x, [80/3; 35]);
-## Several methods and data variables are ordered data variable first, then method
+## Several methods and data variables are ordered data variable first, then
+## method
 %!test
 %! T = table ([1; 1; 2; 2; 1], [10; 20; 30; 40; 50], [1; 2; 3; 4; 5], ...
 %!            'VariableNames', {'g', 'x', 'y'});
@@ -6269,7 +6277,8 @@
 %! assert_equal (cellstr (groupsummary (T, 't', 'quarter', 'sum', ...
 %!               'x').quarter_t), ...
 %!               {'Q1 2024'; 'Q2 2024'});
-## A duration bin width bins a duration variable (labelled in its unit, disc_<var>)
+## A duration bin width bins a duration variable (labelled in its unit,
+## disc_<var>)
 %!test
 %! d = minutes ([100; 200; 300]);
 %! T = table (d, (1:3)', 'VariableNames', {'d', 'x'});
@@ -6480,7 +6489,8 @@
 %!            'VariableNames', {'g', 'x'});
 %! G = grouptransform (T, 'g', @(v) v - mean (v));
 %! assert_equal (G.x, [-10; 0; 10; -10; 10]);
-## 'ReplaceValues' false appends a '<method>_<datavar>' column, keeping originals
+## 'ReplaceValues' false appends a '<method>_<datavar>' column, keeping
+## originals
 %!test
 %! T = table ([1; 1; 1; 2; 2], [10; 20; 30; 40; 60], ...
 %!            'VariableNames', {'g', 'x'});
@@ -6551,7 +6561,8 @@
 %! P = pivot (T, 'Columns', 'b', 'DataVariable', 'v', 'Method', 'sum');
 %! assert_equal (P.Properties.VariableNames, {'false', 'true'});
 %! assert_equal (P{:, :}, [3, 7]);
-## 'DataVariable' with 'Method' aggregates that variable; empty mean cells are NaN
+## 'DataVariable' with 'Method' aggregates that variable; empty mean cells are
+## NaN
 %!test
 %! T = table (categorical ({'a'; 'a'; 'b'; 'b'}), ...
 %!            categorical ({'x'; 'y'; 'x'; 'x'}), [10; 20; 30; 50], ...
@@ -6580,7 +6591,8 @@
 %!            'VariableNames', {'g', 'h'});
 %! P = pivot (T, 'Rows', 'g', 'Columns', 'h', 'Method', 'percentage');
 %! assert_equal (P{:, {'x', 'y'}}, [25, 25; 25, 25]);
-## Method 'none' rearranges the data without aggregating; empty cells are missing
+## Method 'none' rearranges the data without aggregating; empty cells are
+## missing
 %!test
 %! T = table (categorical ({'a'; 'a'; 'b'}), categorical ({'x'; 'y'; 'x'}), ...
 %!            [10; 20; 30], 'VariableNames', {'g', 'h', 'v'});

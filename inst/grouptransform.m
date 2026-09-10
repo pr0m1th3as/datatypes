@@ -26,11 +26,11 @@
 ## @code{@var{B} = grouptransform (@var{A}, @var{groupvars}, @var{method})}
 ## groups the rows of the array @var{A} by the grouping variables
 ## @var{groupvars}, applies @var{method} to each column of @var{A} within each
-## group, and returns @var{B}, the transformed values, one row per row of @var{A}
-## and in the original order.  @var{groupvars} is a grouping vector with one
-## element per row of @var{A}, or a cell array of such vectors.  Rows holding a
-## missing value in a grouping variable form their own groups, which are
-## transformed like any other group.
+## group, and returns @var{B}, the transformed values, one row per row of
+## @var{A} and in the original order.  @var{groupvars} is a grouping vector with
+## one element per row of @var{A}, or a cell array of such vectors.  Rows
+## holding a missing value in a grouping variable form their own groups, which
+## are transformed like any other group.
 ##
 ## @var{method} is one of the names @qcode{'zscore'}, @qcode{'norm'},
 ## @qcode{'meancenter'}, @qcode{'rescale'}, @qcode{'meanfill'},
@@ -41,9 +41,9 @@
 ## replaces missing values with the group mean; and @qcode{'linearfill'} fills
 ## missing values by linear interpolation within the group (leaving leading and
 ## trailing missing values unchanged).  For the named methods @code{NaN} values
-## are omitted when computing the group statistics.  A function handle is applied
-## to each group's column slice and must return either a single row (broadcast)
-## or one row per row of the group.
+## are omitted when computing the group statistics.  A function handle is
+## applied to each group's column slice and must return either a single row
+## (broadcast) or one row per row of the group.
 ##
 ## @code{[@var{B}, @var{BG}] = grouptransform (@dots{})} also returns @var{BG},
 ## the grouping values of each row.  When @var{groupvars} is a single grouping
@@ -51,12 +51,13 @@
 ## @var{BG} is a cell array with one element per grouping variable.
 ##
 ## The @qcode{'ReplaceValues'} @var{Name}/@var{Value} pair (default @code{true})
-## controls whether the transformed values replace the columns of @var{A} or, when
-## @code{false}, are appended to them.  The optional @var{groupbins} argument bins
-## the grouping variables before grouping (a vector of bin edges or a positive
-## integer number of bins, or a cell array with one scheme per grouping variable);
-## see @code{groupsummary} for details.  The @qcode{'IncludedEdge'} pair
-## (@qcode{'left'} by default, or @qcode{'right'}) selects the inclusive bin edge.
+## controls whether the transformed values replace the columns of @var{A} or,
+## when @code{false}, are appended to them.  The optional @var{groupbins}
+## argument bins the grouping variables before grouping (a vector of bin edges
+## or a positive integer number of bins, or a cell array with one scheme per
+## grouping variable); see @code{groupsummary} for details.  The
+## @qcode{'IncludedEdge'} pair (@qcode{'left'} by default, or @qcode{'right'})
+## selects the inclusive bin edge.
 ##
 ## To transform the variables of a @code{table}, call @code{grouptransform
 ## (@var{T}, @var{groupvars}, @dots{})}, which dispatches to the @code{table}
@@ -95,7 +96,6 @@ function [B, varargout] = grouptransform (A, groupvars, varargin)
   else
     error (strcat ("grouptransform: METHOD must be one of 'zscore',", ...
                    " 'norm',", ...
-           ...
                    " 'meancenter', 'rescale', 'meanfill', 'linearfill', or", ...
                    " a", ...
                    " function handle."));
@@ -399,7 +399,6 @@ endfunction
 %! [B, BG] = grouptransform (x, g, 'norm');
 %! assert_equal (B, ...
 %!               [[10; 20] ./ norm([10; 20]); [30; 40] ./ norm([30; 40])], ...
-%!               ...
 %!               8 * eps);
 %! assert_equal (BG, [1; 1; 2; 2]);
 %!test

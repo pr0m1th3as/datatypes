@@ -29,9 +29,9 @@
 ## @var{N} groups are found, every integer between 1 and @var{N} labels a group.
 ## Elements of @var{A} that are missing (@code{NaN}, @code{NaT},
 ## @code{<missing>}, @code{''}, or @code{<undefined>}) are labelled @code{NaN}
-## in @var{G}.  @var{A} can be a numeric, logical, @code{string}, @code{cellstr},
-## @code{char}, @code{datetime}, @code{duration}, @code{calendarDuration}, or
-## @code{categorical} vector.
+## in @var{G}.  @var{A} can be a numeric, logical, @code{string},
+## @code{cellstr}, @code{char}, @code{datetime}, @code{duration},
+## @code{calendarDuration}, or @code{categorical} vector.
 ##
 ## @code{@var{G} = findgroups (@var{A1}, @dots{}, @var{AN})} defines groups as
 ## the sorted unique combinations of values across the grouping variables
@@ -78,7 +78,8 @@ function [G, varargout] = findgroups (varargin)
   miss = false (n, 1);
   for k = 1:nvar
     if (size (vars{k}, 1) != n)
-      error ("findgroups: grouping variables must have the same number of elements.");
+      error (strcat ("findgroups: grouping variables must have the same", ...
+                     " number of elements."));
     endif
     [p, m, errmsg] = group_col_proxy (vars{k});
     if (! isempty (errmsg))
@@ -114,15 +115,16 @@ endfunction
 ## matrix P (one row per element) whose sort order matches COL's value order, so
 ## that 'unique (P, "rows")' recovers the sorted unique groups, together with a
 ## logical MISS mask flagging the elements that findgroups treats as missing
-## (NaN/NaT/<missing>/''/<undefined>).  Returns an errmsg body (empty on success)
-## emitted by the caller under its own name.  Self-contained: no table dependency.
+## (NaN/NaT/<missing>/''/<undefined>).  Returns an errmsg body (empty on
+## success) emitted by the caller under its own name.  Self-contained: no table
+## dependency.
 function [p, miss, errmsg] = group_col_proxy (col)
   p = [];
   miss = [];
   errmsg = '';
   if (isa (col, 'categorical'))
-    ## Categorical groups follow category order (ordinal or reordered), which the
-    ## underlying category codes encode; <undefined> maps to NaN.
+    ## Categorical groups follow category order (ordinal or reordered), which
+    ## the underlying category codes encode; <undefined> maps to NaN.
     p = double (col)(:);
     miss = isnan (p);
   elseif (isa (col, 'string') || iscellstr (col) || ischar (col))

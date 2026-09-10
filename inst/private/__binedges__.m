@@ -20,11 +20,12 @@
 ##
 ## Bin edges for a requested bin count.
 ##
-## @code{@var{edges} = __binedges__ (@var{xmin}, @var{xmax}, @var{nbins})} returns
-## a row vector of @code{@var{nbins} + 1} uniformly spaced edges covering the
-## closed interval @code{[@var{xmin}, @var{xmax}]}, placed at "nice" decimal
-## positions.  @var{xmin} and @var{xmax} must be finite real scalars with
-## @code{@var{xmin} <= @var{xmax}}, and @var{nbins} a positive integer.
+## @code{@var{edges} = __binedges__ (@var{xmin}, @var{xmax}, @var{nbins})}
+## returns a row vector of @code{@var{nbins} + 1} uniformly spaced edges
+## covering the closed interval @code{[@var{xmin}, @var{xmax}]}, placed at
+## "nice" decimal positions.  @var{xmin} and @var{xmax} must be finite real
+## scalars with @code{@var{xmin} <= @var{xmax}}, and @var{nbins} a positive
+## integer.
 ##
 ## This is the shared edge generator behind the bin-count syntax of both
 ## @code{discretize} and @code{histcounts}; the two must never disagree.

@@ -31,9 +31,10 @@
 ## integer between 1 and @var{N} must occur at least once.  Elements for which
 ## @var{G} is @code{NaN} are omitted.
 ##
-## @code{@var{Y} = splitapply (@var{func}, @var{X1}, @dots{}, @var{XN}, @var{G})}
-## splits each of the data variables @var{X1}, @dots{}, @var{XN} and passes the
-## corresponding group of each as a separate input argument to @var{func}.
+## @code{@var{Y} = splitapply (@var{func}, @var{X1}, @dots{}, @var{XN},
+## @var{G})} splits each of the data variables @var{X1}, @dots{}, @var{XN} and
+## passes the corresponding group of each as a separate input argument to
+## @var{func}.
 ##
 ## @code{[@var{Y1}, @dots{}, @var{YM}] = splitapply (@dots{})} returns the
 ## multiple outputs of @var{func}, each concatenated across groups.
@@ -78,7 +79,6 @@ function varargout = splitapply (func, varargin)
   if (! (isnumeric (G) && isvector (G) && numel (G) == n))
     error (strcat ("splitapply: G must be a numeric vector with one", ...
                    " element", ...
-           ...
                    " per row of the data variables."));
   endif
   G = G(:);

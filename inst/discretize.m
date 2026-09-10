@@ -29,43 +29,42 @@
 ## @code{@var{bin} = discretize (@var{X}, @var{edges})} returns an array of the
 ## same size as @var{X} whose elements give the index of the bin that each value
 ## of @var{X} falls into.  @var{edges} must be a real numeric or logical vector
-## of monotonically non-decreasing values, and defines
-## @code{numel (@var{edges}) - 1} bins.  Bin @math{j} covers the half-open
-## interval @code{[@var{edges}(j), @var{edges}(j+1))}, except the last bin, which
-## is closed at both ends.  Values outside @code{[@var{edges}(1),
-## @var{edges}(end)]}, and any @qcode{NaN}, return @qcode{NaN}.  @var{bin} is
-## always of type @qcode{double}.
+## of monotonically non-decreasing values, and defines @code{numel (@var{edges})
+## - 1} bins.  Bin @math{j} covers the half-open interval @code{[@var{edges}(j),
+## @var{edges}(j+1))}, except the last bin, which is closed at both ends.
+## Values outside @code{[@var{edges}(1), @var{edges}(end)]}, and any
+## @qcode{NaN}, return @qcode{NaN}.  @var{bin} is always of type @qcode{double}.
 ##
-## Repeated edges are permitted and meaningful: they define empty bins, which are
-## simply never selected.  @code{discretize ([1, 2, 3], [1, 2, 2, 3])} returns
-## @code{[1, 3, 3]}.
+## Repeated edges are permitted and meaningful: they define empty bins, which
+## are simply never selected.  @code{discretize ([1, 2, 3], [1, 2, 2, 3])}
+## returns @code{[1, 3, 3]}.
 ##
 ## @code{@var{bin} = discretize (@var{X}, @var{N})} uses @var{N} bins of uniform
 ## width spanning the range of @var{X}, where @var{N} is a positive integer
 ## scalar.  The edges are placed at "nice" decimal positions rather than exactly
-## at @code{min (@var{X})} and @code{max (@var{X})}, so the bins generally extend
-## slightly beyond the data.  @qcode{NaN} and infinite values are ignored when
-## determining the range.  This syntax is not available when @var{X} is of an
-## integer type; supply explicit edges instead.
+## at @code{min (@var{X})} and @code{max (@var{X})}, so the bins generally
+## extend slightly beyond the data.  @qcode{NaN} and infinite values are ignored
+## when determining the range.  This syntax is not available when @var{X} is of
+## an integer type; supply explicit edges instead.
 ##
 ## @code{@var{Y} = discretize (@dots{}, @var{values})} returns the corresponding
 ## element of @var{values} in place of the bin index, so @var{values} must be a
 ## vector whose length equals the number of bins.  @var{Y} takes the type of
-## @var{values}.  Elements of @var{X} that fall in no bin return @qcode{NaN} when
-## @var{values} is a floating-point array, zero when it is of an integer type,
-## and raise an error when it is a cell array.
+## @var{values}.  Elements of @var{X} that fall in no bin return @qcode{NaN}
+## when @var{values} is a floating-point array, zero when it is of an integer
+## type, and raise an error when it is a cell array.
 ##
 ## @code{@var{C} = discretize (@dots{}, 'categorical')} returns an ordinal
 ## @qcode{categorical} array whose categories are named after the bin intervals,
 ## for example @qcode{'[1, 3)'}.  @code{@var{C} = discretize (@dots{},
-## 'categorical', @var{names})} names the categories explicitly; @var{names} must
-## be a cell array of character vectors or a @qcode{string} vector whose length
-## equals the number of bins.
+## 'categorical', @var{names})} names the categories explicitly; @var{names}
+## must be a cell array of character vectors or a @qcode{string} vector whose
+## length equals the number of bins.
 ##
-## @code{@var{Y} = discretize (@dots{}, 'IncludedEdge', @var{side})} selects which
-## end of each bin is closed.  @var{side} may be @qcode{'left'} (the default,
-## giving @code{[@var{edges}(j), @var{edges}(j+1))} with the last bin closed at
-## both ends) or @qcode{'right'} (giving @code{(@var{edges}(j),
+## @code{@var{Y} = discretize (@dots{}, 'IncludedEdge', @var{side})} selects
+## which end of each bin is closed.  @var{side} may be @qcode{'left'} (the
+## default, giving @code{[@var{edges}(j), @var{edges}(j+1))} with the last bin
+## closed at both ends) or @qcode{'right'} (giving @code{(@var{edges}(j),
 ## @var{edges}(j+1)]} with the first bin closed at both ends).
 ##
 ## @code{[@var{bin}, @var{edges}] = discretize (@dots{})} also returns the bin

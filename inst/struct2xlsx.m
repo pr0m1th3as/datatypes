@@ -9,8 +9,8 @@
 ##
 ## This program is distributed in the hope that it will be useful, but WITHOUT
 ## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-## details.
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
 ##
 ## You should have received a copy of the GNU General Public License along with
 ## this program; if not, see <http://www.gnu.org/licenses/>.
@@ -26,13 +26,13 @@
 ## @code{table}; the field name becomes the sheet name.
 ##
 ## This is the Excel counterpart of @code{struct2ods}.  Like @code{writetable},
-## it writes the MATLAB-interoperable format (a variable-name header row followed
-## by the data, with no hidden type metadata); read it back with
+## it writes the MATLAB-interoperable format (a variable-name header row
+## followed by the data, with no hidden type metadata); read it back with
 ## @code{xlsx2struct}.  A field whose table carries an @qcode{'ActualSheetName'}
 ## custom property uses that value as the sheet name instead of the field name.
-## Sheet names must be non-empty, at most 31 characters, and must not contain any
-## of the characters @qcode{[ ] * ? : / @backslashchar{}}; the resolved names
-## must be unique.
+## Sheet names must be non-empty, at most 31 characters, and must not contain
+## any of the characters @qcode{[ ] * ? : / @backslashchar{}}; the resolved
+## names must be unique.
 ##
 ## @seealso{xlsx2struct, struct2ods, writetable, readtable}
 ## @end deftypefn
@@ -83,7 +83,6 @@ function struct2xlsx (filename, s)
     if (numel (sheetName) > 31)
       error (strcat ("struct2xlsx: sheet name '%s' exceeds the", ...
                      " 31-character", ...
-             ...
                      " Excel limit."), sheetName);
     endif
     if (any (ismember (sheetName, '[]*?:/\')))
@@ -110,7 +109,8 @@ endfunction
 
 %!demo
 %! ## `struct2xlsx` is the Excel counterpart of `struct2ods`: each field of a
-%! ## scalar struct of tables is written as its own worksheet in an `.xlsx` file.
+%! ## scalar struct of tables is written as its own worksheet in an `.xlsx`
+%! ## file.
 %!
 %! wb.Patients = table ({'Li'; 'Diaz'}, [38; 40], 'VariableNames', {'Name', ...
 %!                      'Age'});

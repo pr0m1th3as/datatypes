@@ -25,17 +25,18 @@
 ##
 ## @code{@var{B} = groupcounts (@var{A})} groups the rows of @var{A} by their
 ## values and returns @var{B}, a column vector with the number of elements in
-## each group.  @var{A} is a grouping vector, a matrix whose columns are grouping
-## variables, or a cell array of grouping vectors.  Groups are the sorted unique
-## combinations of grouping values; rows holding a missing value in a grouping
-## variable form their own groups, sorted after the non-missing groups.
+## each group.  @var{A} is a grouping vector, a matrix whose columns are
+## grouping variables, or a cell array of grouping vectors.  Groups are the
+## sorted unique combinations of grouping values; rows holding a missing value
+## in a grouping variable form their own groups, sorted after the non-missing
+## groups.
 ##
 ## @code{[@var{B}, @var{BG}, @var{BP}] = groupcounts (@dots{})} also returns
-## @var{BG}, the grouping values that identify each group, and @var{BP}, a column
-## vector giving each group's count as a percentage of the total.  When @var{A}
-## is a single grouping vector, @var{BG} holds its representative value for each
-## group; when several grouping variables are given, @var{BG} is a cell array
-## with one element per grouping variable.
+## @var{BG}, the grouping values that identify each group, and @var{BP}, a
+## column vector giving each group's count as a percentage of the total.  When
+## @var{A} is a single grouping vector, @var{BG} holds its representative value
+## for each group; when several grouping variables are given, @var{BG} is a cell
+## array with one element per grouping variable.
 ##
 ## The optional @var{groupbins} argument bins the grouping variables before
 ## grouping (a vector of bin edges or a positive integer number of bins, applied
@@ -43,9 +44,9 @@
 ## one scheme per grouping variable); each binned variable becomes a categorical
 ## of bin interval labels.
 ##
-## The behaviour can be modified with the @qcode{'IncludeMissingGroups'} (default
-## @code{true}), @qcode{'IncludeEmptyGroups'} (default @code{false}), and
-## @qcode{'IncludedEdge'} (default @qcode{'left'}, the inclusive bin edge)
+## The behaviour can be modified with the @qcode{'IncludeMissingGroups'}
+## (default @code{true}), @qcode{'IncludeEmptyGroups'} (default @code{false}),
+## and @qcode{'IncludedEdge'} (default @qcode{'left'}, the inclusive bin edge)
 ## @var{Name}/@var{Value} pairs, as for the @code{table} method.  When
 ## @qcode{'IncludeEmptyGroups'} is @code{true}, the unused categories of a
 ## categorical or binned grouping variable contribute empty groups.
@@ -80,7 +81,6 @@ function [B, varargout] = groupcounts (A, varargin)
       else
         error (strcat ("groupcounts: invalid argument; expected a", ...
                        " GROUPBINS", ...
-               ...
                        " binning scheme or a Name-Value option."));
       endif
     endif
@@ -174,9 +174,9 @@ endfunction
 
 ## Group rows by the grouping-variable values GVS (a cell array of column
 ## vectors), treating each variable's missing values as a single group value.
-## Returns G (1..NGROUPS), NGROUPS, REPROWS (a representative row per group), and
-## an errmsg body.  Groups are sorted by value with missing groups last; when
-## INCMISS is false the rows with a missing grouping value are dropped.
+## Returns G (1..NGROUPS), NGROUPS, REPROWS (a representative row per group),
+## and an errmsg body.  Groups are sorted by value with missing groups last;
+## when INCMISS is false the rows with a missing grouping value are dropped.
 ## Self-contained: no table dependency.
 function [G, ngroups, repRows, errmsg] = gc_group_rows (gvs, incMiss)
   errmsg = '';
@@ -233,8 +233,8 @@ function [p, miss, errmsg] = gc_col_proxy (col)
   miss = [];
   errmsg = '';
   if (isa (col, 'categorical'))
-    ## Categorical groups follow category order (ordinal or reordered), which the
-    ## underlying category codes encode; <undefined> maps to NaN.
+    ## Categorical groups follow category order (ordinal or reordered), which
+    ## the underlying category codes encode; <undefined> maps to NaN.
     p = double (col)(:);
     miss = isnan (p);
   elseif (isa (col, 'string') || iscellstr (col) || ischar (col))
@@ -282,8 +282,9 @@ endfunction
 ## Group rows by the grouping-variable values GVS (already binned when a
 ## GROUPBINS argument was given).  Returns G (1..NG, NaN excluded), NG, GVALS (a
 ## 1-by-K cell of typed level-value columns, one per group), and an errmsg body.
-## When INCEMPTY is true the unused categories of a categorical or binned grouping
-## variable contribute empty groups, from the full Cartesian product of levels.
+## When INCEMPTY is true the unused categories of a categorical or binned
+## grouping variable contribute empty groups, from the full Cartesian product of
+## levels.
 function [G, ng, gvals, errmsg] = gb_grouping (gvs, incMiss, incEmpty)
   errmsg = '';
   G = []; ng = 0; gvals = {};

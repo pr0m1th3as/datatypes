@@ -9,8 +9,8 @@
 ##
 ## This program is distributed in the hope that it will be useful, but WITHOUT
 ## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-## details.
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
 ##
 ## You should have received a copy of the GNU General Public License along with
 ## this program; if not, see <http://www.gnu.org/licenses/>.
@@ -35,10 +35,11 @@
 ## of @code{struct2ods}.
 ##
 ## A sheet name that is not a valid structure field name is canonicalised with
-## @code{matlab.lang.makeValidName} (and made unique if two sheet names collide).
-## Whenever the field name differs from the sheet name, the original sheet name
-## is stored on that field's table as the @qcode{'ActualSheetName'} custom
-## property, so a subsequent @code{struct2ods} restores the exact sheet name.
+## @code{matlab.lang.makeValidName} (and made unique if two sheet names
+## collide). Whenever the field name differs from the sheet name, the original
+## sheet name is stored on that field's table as the @qcode{'ActualSheetName'}
+## custom property, so a subsequent @code{struct2ods} restores the exact sheet
+## name.
 ##
 ## @seealso{struct2ods, ods2table, table2ods, readtable}
 ## @end deftypefn
@@ -49,11 +50,13 @@ function s = ods2struct (filename)
     print_usage ();
   endif
   if (! (ischar (filename) || iscellstr (filename) || isa (filename, 'string')))
-    error ("ods2struct: FILENAME must be a character vector, cellstr, or string.");
+    error (strcat ("ods2struct: FILENAME must be a character vector,", ...
+                   " cellstr, or string."));
   endif
   file = char (cellstr (filename));
 
-  ## Enumerate the data sheet names (the first output doubles as an error probe).
+  ## Enumerate the data sheet names (the first output doubles as an error
+  ## probe).
   [data, ~, ~, names, preamble] = __ods2table__ (file);
   if (ischar (data))
     error ("ods2struct: %s", data);
@@ -117,8 +120,8 @@ function s = ods2struct (filename)
 endfunction
 
 %!demo
-%! ## `ods2struct` is the inverse of `struct2ods`: it reads *every* data sheet of
-%! ## a workbook into one scalar struct, one field per sheet, in sheet order.
+%! ## `ods2struct` is the inverse of `struct2ods`: it reads *every* data sheet
+%! ## of a workbook into one scalar struct, one field per sheet, in sheet order.
 %!
 %! wb.Patients = table ({'Li'; 'Diaz'}, [38; 40], 'VariableNames', {'Name', ...
 %!                      'Age'});

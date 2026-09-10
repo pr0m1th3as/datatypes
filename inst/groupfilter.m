@@ -26,8 +26,8 @@
 ## the rows of the array @var{A} by the grouping variables @var{groupvars},
 ## applies the filter function @var{method} to each group, and returns @var{B},
 ## the rows of @var{A} that satisfy the condition, in their original order.
-## @var{groupvars} is a grouping vector with one element per row of @var{A}, or a
-## cell array of such vectors.  Rows holding a missing value in a grouping
+## @var{groupvars} is a grouping vector with one element per row of @var{A}, or
+## a cell array of such vectors.  Rows holding a missing value in a grouping
 ## variable form their own groups, to which @var{method} is applied like any
 ## other group.
 ##
@@ -39,14 +39,14 @@
 ##
 ## @code{[@var{B}, @var{BG}] = groupfilter (@dots{})} also returns @var{BG}, the
 ## grouping values of the kept rows.  When @var{groupvars} is a single grouping
-## vector, @var{BG} is a column vector with one element per kept row; when several
-## grouping variables are given, @var{BG} is a cell array with one element per
-## grouping variable.
+## vector, @var{BG} is a column vector with one element per kept row; when
+## several grouping variables are given, @var{BG} is a cell array with one
+## element per grouping variable.
 ##
 ## The optional @var{groupbins} argument bins the grouping variables before
 ## grouping (a vector of bin edges or a positive integer number of bins, or a
-## cell array with one scheme per grouping variable); see @code{groupsummary} for
-## details.  The @qcode{'IncludedEdge'} Name-Value pair (@qcode{'left'} by
+## cell array with one scheme per grouping variable); see @code{groupsummary}
+## for details.  The @qcode{'IncludedEdge'} Name-Value pair (@qcode{'left'} by
 ## default, or @qcode{'right'}) selects which bin edge is inclusive.
 ##
 ## To filter the rows of a @code{table}, call @code{groupfilter (@var{T},

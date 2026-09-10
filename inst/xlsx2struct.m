@@ -9,8 +9,8 @@
 ##
 ## This program is distributed in the hope that it will be useful, but WITHOUT
 ## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-## details.
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
 ##
 ## You should have received a copy of the GNU General Public License along with
 ## this program; if not, see <http://www.gnu.org/licenses/>.
@@ -77,7 +77,8 @@ endfunction
 
 %!demo
 %! ## `xlsx2struct` is the inverse of `struct2xlsx`: it reads every worksheet of
-%! ## an Excel workbook into a scalar struct, one field per sheet, in sheet order.
+%! ## an Excel workbook into a scalar struct, one field per sheet, in sheet
+%! ## order.
 %!
 %! wb.Patients = table ({'Li'; 'Diaz'}, [38; 40], 'VariableNames', {'Name', ...
 %!                      'Age'});

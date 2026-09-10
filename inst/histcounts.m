@@ -31,19 +31,19 @@
 ## and @qcode{NaN} and infinite values are excluded.
 ##
 ## @code{@var{N} = histcounts (@var{X}, @var{nbins})} uses @var{nbins} bins, and
-## @code{@var{N} = histcounts (@var{X}, @var{edges})} uses the bin edges given in
-## the monotonically non-decreasing vector @var{edges}.  Bin @math{j} covers
+## @code{@var{N} = histcounts (@var{X}, @var{edges})} uses the bin edges given
+## in the monotonically non-decreasing vector @var{edges}.  Bin @math{j} covers
 ## @code{[@var{edges}(j), @var{edges}(j+1))}, except the last bin, which is
 ## closed at both ends.
 ##
 ## @code{[@var{N}, @var{edges}, @var{bin}] = histcounts (@dots{})} also returns
 ## the bin edges and, in @var{bin}, the index of the bin each element of @var{X}
 ## belongs to.  @var{bin} has the same size as @var{X} and holds @math{0} for
-## elements that fall in no bin.  Note this differs from @code{discretize}, which
-## returns @qcode{NaN} for such elements.
+## elements that fall in no bin.  Note this differs from @code{discretize},
+## which returns @qcode{NaN} for such elements.
 ##
-## The following @var{Name}, @var{Value} pairs are supported.  When more than one
-## of @qcode{'NumBins'}, @qcode{'BinWidth'}, @qcode{'BinEdges'} and
+## The following @var{Name}, @var{Value} pairs are supported.  When more than
+## one of @qcode{'NumBins'}, @qcode{'BinWidth'}, @qcode{'BinEdges'} and
 ## @qcode{'BinMethod'} is given, the last one specified takes effect.
 ##
 ## @multitable @columnfractions 0.2 0.8
@@ -64,8 +64,9 @@
 ##
 ## @item @qcode{'BinMethod'} @tab One of @qcode{'auto'} (default),
 ## @qcode{'scott'}, @qcode{'fd'}, @qcode{'integers'}, @qcode{'sturges'} or
-## @qcode{'sqrt'}.  @qcode{'auto'} uses the @qcode{'integers'} rule when the data
-## are integer-valued and span at most 50, and @qcode{'scott'} otherwise.
+## @qcode{'sqrt'}.  @qcode{'auto'} uses the @qcode{'integers'} rule when the
+## data are integer-valued and span at most 50, and @qcode{'scott'}
+## otherwise.
 ##
 ## @item @qcode{'Normalization'} @tab One of @qcode{'count'} (default),
 ## @qcode{'countdensity'}, @qcode{'cumcount'}, @qcode{'probability'},
@@ -75,8 +76,8 @@
 ## values excluded by being @qcode{NaN} or out of range still contribute to it.
 ## @end multitable
 ##
-## MATLAB accepts @qcode{'percentage'} but omits it from the list of valid values
-## in its own error message; it is documented here.
+## MATLAB accepts @qcode{'percentage'} but omits it from the list of valid
+## values in its own error message; it is documented here.
 ##
 ## @seealso{discretize}
 ## @end deftypefn
@@ -136,7 +137,7 @@ function [N, EDGES, BIN] = histcounts (X, varargin)
       case 'binmethod'
         if (! isTextScalar (value)
             || ! any (strcmpi (charOf (value), {'auto', 'scott', 'fd', ...
-                                                'integers', 'sturges', 'sqrt'})))
+            'integers', 'sturges', 'sqrt'})))
           error (strcat ("histcounts: invalid value for 'BinMethod'.", ...
                          " Possible values are: 'auto', 'scott', 'fd',", ...
                          " 'integers', 'sturges', and 'sqrt'."));

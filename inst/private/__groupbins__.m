@@ -9,8 +9,8 @@
 ##
 ## This program is distributed in the hope that it will be useful, but WITHOUT
 ## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-## details.
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
 ##
 ## You should have received a copy of the GNU General Public License along with
 ## this program; if not, see <http://www.gnu.org/licenses/>.
@@ -21,18 +21,19 @@
 ##
 ## Shared @qcode{'groupbins'} engine for the grouping methods and functions.
 ##
-## @code{__groupbins__ (@qcode{'is_spec'}, @var{x})} returns true when @var{x} is
-## a @qcode{'groupbins'} binning specification (used to tell a positional binning
-## argument apart from a method argument).
+## @code{__groupbins__ (@qcode{'is_spec'}, @var{x})} returns true when @var{x}
+## is a @qcode{'groupbins'} binning specification (used to tell a positional
+## binning argument apart from a method argument).
 ##
 ## @code{__groupbins__ (@qcode{'bin'}, @var{cols}, @var{names}, @var{scheme},
-## @var{incedge}, @var{caller})} bins each grouping-variable column in @var{cols}
-## per @var{scheme} (a number of bins, an edge vector, a @code{duration} /
-## @code{calendarDuration} bin width, or a datetime time-unit keyword), returning
-## the binned columns (categoricals) and the MATLAB-style output variable names
-## (@qcode{@var{unit}_@var{var}} for a time unit, @qcode{disc_@var{var}}
-## otherwise; unbinned variables keep their name).  @var{errmsg} is a message
-## body the caller emits under its own name (empty on success).
+## @var{incedge}, @var{caller})} bins each grouping-variable column in
+## @var{cols} per @var{scheme} (a number of bins, an edge vector, a
+## @code{duration} / @code{calendarDuration} bin width, or a datetime time-unit
+## keyword), returning the binned columns (categoricals) and the MATLAB-style
+## output variable names (@qcode{@var{unit}_@var{var}} for a time unit,
+## @qcode{disc_@var{var}} otherwise; unbinned variables keep their name).
+## @var{errmsg} is a message body the caller emits under its own name (empty on
+## success).
 ##
 ## This is an internal helper; do NOT call it directly.
 ##
@@ -173,7 +174,6 @@ function [binned, newname, errmsg] = gb_bin_col (col, scheme, incEdge, varname)
         if (isempty (w))
           errmsg = sprintf (strcat ("binning grouping variable '%s' by", ...
                                     " time", ...
-                            ...
                             " unit '%s' is not supported for duration", ...
                             " variables; use 'second', 'minute', 'hour',", ...
                             " 'day' or 'year'."), varname, unit);
@@ -190,7 +190,6 @@ function [binned, newname, errmsg] = gb_bin_col (col, scheme, incEdge, varname)
       if (! isa (col, 'datetime'))
         errmsg = sprintf (strcat ("binning grouping variable '%s' by time", ...
                                   " unit", ...
-                          ...
                           " '%s' is only supported for datetime", ...
                           " variables."), ...
                           varname, unit);
@@ -203,7 +202,6 @@ function [binned, newname, errmsg] = gb_bin_col (col, scheme, incEdge, varname)
     endif
     errmsg = sprintf (strcat ("binning grouping variable '%s' by '%s' is", ...
                               " not", ...
-                      ...
                       " yet supported."), varname, unit);
     return;
   endif
@@ -265,7 +263,6 @@ function [idx, labs, errmsg] = gb_edge_bins (col, scheme, incEdge, varname)
   else
     errmsg = sprintf (strcat ("binning is not supported for grouping", ...
                               " variable", ...
-                      ...
                       " '%s' of type '%s'."), varname, class (col));
     return;
   endif
@@ -288,7 +285,6 @@ function [idx, labs, errmsg] = gb_edge_bins (col, scheme, incEdge, varname)
     if (! strcmp (ctype, 'numeric'))
       errmsg = sprintf (strcat ("bin edges for grouping variable '%s' must", ...
                                 " be", ...
-                        ...
                         " of type '%s'."), varname, ctype);
       return;
     endif
@@ -297,7 +293,6 @@ function [idx, labs, errmsg] = gb_edge_bins (col, scheme, incEdge, varname)
     if (! strcmp (ctype, 'datetime'))
       errmsg = sprintf (strcat ("bin edges for grouping variable '%s' must", ...
                                 " be", ...
-                        ...
                         " of type '%s'."), varname, ctype);
       return;
     endif
@@ -306,7 +301,6 @@ function [idx, labs, errmsg] = gb_edge_bins (col, scheme, incEdge, varname)
     if (! strcmp (ctype, 'duration'))
       errmsg = sprintf (strcat ("bin edges for grouping variable '%s' must", ...
                                 " be", ...
-                        ...
                         " of type '%s'."), varname, ctype);
       return;
     endif
@@ -320,7 +314,6 @@ function [idx, labs, errmsg] = gb_edge_bins (col, scheme, incEdge, varname)
   if (numel (edgesP) < 2 || any (isnan (edgesP)) || any (diff (edgesP) <= 0))
     errmsg = sprintf (strcat ("bin edges for grouping variable '%s' must", ...
                               " be at", ...
-                      ...
                       " least two finite, strictly increasing", ...
                       " values."), varname);
     return;
@@ -341,7 +334,6 @@ function [idx, labs, errmsg] = gb_width_bins (col, width, incEdge, varname)
   else
     errmsg = sprintf (strcat ("bin-width binning is not supported for", ...
                               " grouping", ...
-                      ...
                       " variable '%s' of type '%s'."), varname, class (col));
     return;
   endif
@@ -360,9 +352,8 @@ function [idx, labs, errmsg] = gb_width_bins (col, width, incEdge, varname)
   endif
   w = days (width);
   if (! (w > 0))
-    errmsg = sprintf ("bin width for grouping variable '%s' must be positive.", ...
-                      ...
-                      varname);
+    errmsg = sprintf (strcat ("bin width for grouping variable '%s'", ...
+                              " must be positive."), varname);
     return;
   endif
   ## Anchor width bins to multiples of the width from 0.  The last bin is
@@ -383,7 +374,6 @@ function [idx, labs, errmsg] = gb_width_bins (col, width, incEdge, varname)
   if (ne > 65535)
     errmsg = sprintf (strcat ("binning grouping variable '%s' by that", ...
                               " width", ...
-                      ...
                       " needs %d bins, more than the 65535 a categorical", ...
                       " can hold; use a wider bin."), varname, ne);
     return;

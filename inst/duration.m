@@ -2241,7 +2241,8 @@ classdef duration
     ## -*- texinfo -*-
     ## @deftypefn {duration} {@var{C} =} mod (@var{A}, @var{B})
     ##
-    ## Remainder after division of duration arrays, with the sign of the divisor.
+    ## Remainder after division of duration arrays, with the sign of the
+    ## divisor.
     ##
     ## @code{@var{C} = mod (@var{A}, @var{B})} returns the remainder left after
     ## dividing @var{A} by @var{B}, as a @code{duration} array of the size the
@@ -3341,7 +3342,8 @@ classdef duration
     ## the bin each element of @var{D} falls into, given a @qcode{duration}
     ## vector of bin edges.  Bin @math{j} covers @code{[@var{edges}(j),
     ## @var{edges}(j+1))}, except the last, which is closed at both ends.
-    ## Elements outside the edges, and @qcode{NaN} durations, return @qcode{NaN}.
+    ## Elements outside the edges, and @qcode{NaN} durations, return
+    ## @qcode{NaN}.
     ##
     ## @code{@var{bin} = discretize (@var{D}, @var{N})} uses @var{N} bins of
     ## uniform width, placed on whole time units where that is possible.
@@ -3417,8 +3419,8 @@ classdef duration
     ##
     ## @qcode{'Normalization'} accepts @qcode{'count'}, @qcode{'cumcount'},
     ## @qcode{'probability'}, @qcode{'percentage'} and @qcode{'cdf'}.
-    ## @qcode{'countdensity'} and @qcode{'pdf'} are not accepted, since a density
-    ## per unit time has no meaning here.
+    ## @qcode{'countdensity'} and @qcode{'pdf'} are not accepted, since a
+    ## density per unit time has no meaning here.
     ##
     ## @seealso{discretize, histcounts}
     ## @end deftypefn

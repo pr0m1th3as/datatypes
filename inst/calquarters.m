@@ -48,8 +48,8 @@ function out = calquarters (x)
 endfunction
 
 %!demo
-%! ## `calquarters` builds a calendar duration of whole quarters (each quarter is
-%! ## three months).
+%! ## `calquarters` builds a calendar duration of whole quarters (each quarter
+%! ## is three months).
 %!
 %! calquarters (3)
 %!
