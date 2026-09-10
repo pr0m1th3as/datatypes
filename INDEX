@@ -50,6 +50,7 @@ timetable arrays
  istimetable
  eventtable
 supplementary classes
+ tabular
  missing
  vartype
  timerange
@@ -61,6 +62,12 @@ supplementary classes
 supplementary functions
  findgroups
  splitapply
+ groupcounts
+ groupfilter
+ groupsummary
+ grouptransform
+ discretize
+ histcounts
  keyHash
  keyMatch
  parsePairedArguments
@@ -69,6 +76,7 @@ compiled functions
  __ckeyHash__
  __nkeyHash__
  __datetime__
+ __ldml__
  __csv2table__
  __table2csv__
  __ods2table__
