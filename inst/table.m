@@ -1248,7 +1248,8 @@ classdef table < tabular
         case 'spreadsheet'
           fmt = 'iso';
         otherwise
-          error ("table.writetable: 'FileType' must be 'text' or 'spreadsheet'.");
+          error (strcat ("table.writetable: 'FileType' must be 'text'", ...
+                         " or 'spreadsheet'."));
       endswitch
       ## Office Open XML (.xlsx/.xlsm) uses a separate courier from ODS.
       isXlsx = any (strcmpi (ext, {'.xlsx', '.xlsm'}));
@@ -1266,8 +1267,9 @@ classdef table < tabular
           case 'append'
             appendMode = true;
           otherwise
-            error (strcat ("table.writetable: 'WriteMode' '%s' is not valid", ...
-                           " for text files; use 'overwrite' or 'append'."), ...
+            error (strcat ("table.writetable: 'WriteMode' '%s' is not", ...
+                           " valid for text files; use 'overwrite' or", ...
+                           " 'append'."), ...
                    writeMode);
         endswitch
       else                                  # spreadsheet
@@ -1278,19 +1280,19 @@ classdef table < tabular
           case {'', 'replacefile', 'overwritesheet', 'inplace', 'append'}
             ## supported spreadsheet write modes
           otherwise
-            error (strcat ("table.writetable: 'WriteMode' '%s' is not valid", ...
-                           " for spreadsheet files."), writeMode);
+            error (strcat ("table.writetable: 'WriteMode' '%s' is not", ...
+                           " valid for spreadsheet files."), writeMode);
         endswitch
         ## A 'Range' anchors a fresh write; it has no meaning when merging into
         ## an existing workbook.
         if (! isempty (range))
           if (strcmp (writeMode, 'append'))
-            error (strcat ("table.writetable: 'Range' is not supported with", ...
-                           " 'WriteMode' 'append'."));
+            error (strcat ("table.writetable: 'Range' is not supported", ...
+                           " with 'WriteMode' 'append'."));
           endif
           if (exist (file, 'file') && ! strcmp (writeMode, 'replacefile'))
-            error (strcat ("table.writetable: 'Range' is not supported when", ...
-                           " writing into an existing file."));
+            error (strcat ("table.writetable: 'Range' is not supported", ...
+                           " when writing into an existing file."));
           endif
         endif
       endif

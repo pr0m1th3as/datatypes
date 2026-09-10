@@ -1065,7 +1065,8 @@ classdef (Abstract) tabular
                                  " VariableContinuity."), clstype);
                 endif
                 if (isempty (this.VariableContinuity))
-                  this.VariableContinuity = repmat ({'unset'}, [1, width(this)]);
+                  this.VariableContinuity = repmat ({'unset'}, ...
+                                                   [1, width(this)]);
                 endif
                 val = check_continuity (val, numel (idx), true, clstype);
                 this.VariableContinuity(idx) = val;
