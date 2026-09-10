@@ -1,18 +1,52 @@
-Summary of important user-visible changes for datatypes 1.3.4:
+Summary of important user-visible changes for datatypes 1.4.0:
 --------------------------------------------------------------
 
- This release ships the package's Qt help file, so that its documentation is
- available in the Documentation tab of Octave's GUI, and documents the one
- method that carried no help text.
+ This release adds the `timetable` class and its event tables, and reworks the
+ metadata every tabular class shares.  It breaks code written against the old
+ `Properties` struct.
 
- ** The package ships `doc/datatypes.qch`, which `pkg load` registers with
-    Octave's GUI and `pkg unload` unregisters.  The Documentation tab lists
-    every function of the INDEX under its category, and every classdef under
-    the category its INDEX entry puts it in, carrying the class help text, its
-    properties, and its methods under a page per method group.  The file is
-    built by `package_texi2qch` of the `pkg-octave-doc` package and holds no
-    demos.
+ ** New classes: `timetable`, `eventtable`, `eventfilter`, and the
+    `datatypes.tabular` properties objects.
 
- ** `duration.rdivide` is documented.  The method carried no help text at all,
-    so `help duration.rdivide` answered "undocumented method" where every
-    other public method of the class answers with its texinfo.
+ ** `timetable` carries 37 methods: `retime` and `synchronize`, the joins, the
+    grouping family, `rowfun`/`varfun`, the missing-data family, ordering and
+    range predicates, and the variable-management family.
+
+ ** Three file routes carry a timetable both ways: `timetable2csv`/
+    `csv2timetable`, `timetable2ods`/`ods2timetable`, and the
+    MATLAB-compatible `writetimetable`/`readtimetable`.  An event table
+    survives only the OpenDocument route.
+
+ ** `discretize`, `histcounts`, `groupcounts`, `groupfilter`, `groupsummary`
+    and `grouptransform` are listed in INDEX.  They shipped in 1.3.4 but were
+    absent from the catalogue, so `pkg describe` and `lookfor` did not find
+    them.
+
+ ** 27 improvements and 77 bug fixes, the largest groups in `retime`,
+    `fillmissing`, `table`, `datetime` and `string`.
+
+
+Backwards incompatible improvements:
+
+ ** `Properties` is an object, not a struct, and no longer carries
+    `VariableValues`.  Code calling `isstruct` on it, or reaching for
+    `VariableValues`, must change.
+
+ ** `csv2table` no longer takes the first column of a plain CSV as row names.
+    A file read before this release gives a different table now.
+
+ ** An unset `VariableUnits` or `VariableDescriptions` is empty rather than a
+    cell of empty strings.
+
+ ** `repelem` on a table or timetable requires both counts.  A count of zero
+    is accepted and empties that dimension.
+
+ ** `table2timetable` and `timetable2table` are methods of `table` and
+    `timetable`.
+
+ ** The three readers and the three writers take one set of name options.
+
+ ** CSV and ODS files carry datetime and duration differently.
+
+ ** `summary` prints its statistics block as the current MATLAB does, and
+    reports the mean and the standard deviation.
