@@ -182,11 +182,13 @@
 %! assert_equal (class (T.b), 'table');
 ## Test the constructor -- 'Size'/'VariableTypes' preallocation
 %!test  # preallocates a table of the requested size with default values
-%! T = table ('Size', [4, 3], 'VariableTypes', {'double', 'datetime', 'string'});
+%! T = table ('Size', [4, 3], 'VariableTypes', {'double', 'datetime', ...
+%!            'string'});
 %! assert_equal (size (T), [4, 3]);
 %! assert_equal (T.Properties.VariableNames, {'Var1', 'Var2', 'Var3'});
 %!test  # 'VariableNames' names the preallocated variables
-%! T = table ('Size', [4, 3], 'VariableTypes', {'double', 'datetime', 'string'}, ...
+%! T = table ('Size', [4, 3], 'VariableTypes', {'double', 'datetime', ...
+%!            'string'}, ...
 %!            'VariableNames', {'A', 'B', 'C'});
 %! assert_equal (T.Properties.VariableNames, {'A', 'B', 'C'});
 %!test  # numeric and logical types default to zeros/false
@@ -219,7 +221,8 @@
 %! assert_equal (iscellstr (T.Var1), true);
 %! assert_equal (T.Var1, {''; ''; ''});
 %!test  # a 'table' typed variable preallocates an empty nested table
-%! T = table ('Size', [4, 3], 'VariableTypes', {'double', 'datetime', 'table'}, ...
+%! T = table ('Size', [4, 3], 'VariableTypes', {'double', 'datetime', ...
+%!            'table'}, ...
 %!            'VariableNames', {'A', 'B', 'C'});
 %! assert_equal (size (T), [4, 3]);
 %! assert_equal (class (T.A), 'double');
@@ -322,7 +325,8 @@
 %!error <table: 'Size' must be a two-element numeric vector.> ...
 %! table ("Size", [3, 1, 2], "VariableTypes", {"double"});
 %!error <table: 'timetable' variable type not supported yet.> ...
-%! table ("Size", [4, 3], "VariableTypes", {"double", "double", "timetable"}, ...
+%! table ("Size", [4, 3], "VariableTypes", {"double", "double", ...
+%!        "timetable"}, ...
 %!        "VariableNames", {"A", "B", "C"});
 %!error <table: 'timetable' variable type not supported yet.> ...
 %! table ("Size", [4, 3], "VariableTypes", {"double", "double", "timetable"});
@@ -374,13 +378,15 @@
 %! assert_equal (M, [1; 2; 3]);
 %! assert_equal (class (M), 'double');
 %!test  # the result takes the dominant numeric type (double + single -> single)
-%! M = table2array (table ([1; 2], single ([3; 4]), 'VariableNames', {'a', 'b'}));
+%! M = table2array (table ([1; 2], single ([3; 4]), 'VariableNames', {'a', ...
+%!                  'b'}));
 %! assert_equal (class (M), 'single');
 %!test  # an integer variable dominates a double variable
 %! M = table2array (table (int8 ([1; 2]), [3; 4], 'VariableNames', {'a', 'b'}));
 %! assert_equal (class (M), 'int8');
 %!test  # a logical variable widens to double
-%! M = table2array (table (logical ([1; 0]), [3; 4], 'VariableNames', {'a', 'b'}));
+%! M = table2array (table (logical ([1; 0]), [3; 4], 'VariableNames', {'a', ...
+%!                  'b'}));
 %! assert_equal (class (M), 'double');
 %!test  # homogeneous string variables yield a string array
 %! M = table2array (table (string ({'a'; 'b'}), string ({'c'; 'd'}), ...
@@ -388,7 +394,8 @@
 %! assert_equal (class (M), 'string');
 %! assert_equal (size (M), [2, 2]);
 %!test  # homogeneous categorical variables yield a categorical array
-%! M = table2array (table (categorical ({'a'; 'b'}), categorical ({'c'; 'd'}), ...
+%! M = table2array (table (categorical ({'a'; 'b'}), ...
+%!                  categorical ({'c'; 'd'}), ...
 %!                         'VariableNames', {'x', 'y'}));
 %! assert_equal (class (M), 'categorical');
 %! assert_equal (size (M), [2, 2]);
@@ -400,13 +407,15 @@
 %!test  # an empty table returns an empty array
 %! assert_equal (table2array (table ()), []);
 %!test  # homogeneous cell variables yield a cell array
-%! M = table2array (table ({'a'; 'b'}, {'c'; 'd'}, 'VariableNames', {'x', 'y'}));
+%! M = table2array (table ({'a'; 'b'}, {'c'; 'd'}, 'VariableNames', {'x', ...
+%!                  'y'}));
 %! assert_equal (class (M), 'cell');
 %! assert_equal (size (M), [2, 2]);
 ## Test input validation for 'table2array' method: a mix of cell and non-cell
 ## variables cannot form a homogeneous array (matches MATLAB, names the pair).
 %!error <table.table2array: cannot concatenate the table variables 'A' and 'B', because their types are double and cell.> ...
-%! table2array (table ([1; 2; 3; 4; 5], {1; 2; 3; 4; 5}, "VariableNames", {"A", "B"}));
+%! table2array (table ([1; 2; 3; 4; 5], {1; 2; 3; 4; 5}, "VariableNames", ...
+%!              {"A", "B"}));
 
 ## Test 'table2cell' method
 %!test  # the output cell array has the same size as the table
@@ -536,7 +545,8 @@
 %!   assert_equal (R.id, [1; 2; 3]);
 %!   assert_equal (R.val, [1.5; 2.5; 3.5]);
 %!   assert_equal (R.name, {'a'; 'b'; 'c'});
-%!   assert_equal (R.Properties.VariableDescriptions, {'the id', 'the name', 'the value'});
+%!   assert_equal (R.Properties.VariableDescriptions, {'the id', 'the name', ...
+%!                 'the value'});
 %!   assert_equal (R.Properties.VariableUnits, {'#', 'str', 'kg'});
 %! unwind_protect_cleanup
 %!   if (exist (fn, 'file'))
@@ -693,7 +703,8 @@
 %!   endif
 %! end_unwind_protect
 %!test  # a missing string stays missing and an empty one stays empty
-%! T = table ([string('a'); string(missing); string('')], 'VariableNames', {'v'});
+%! T = table ([string('a'); string(missing); string('')], 'VariableNames', ...
+%!            {'v'});
 %! fn = [tempname() '.csv'];
 %! unwind_protect
 %!   table2csv (T, fn);
@@ -817,7 +828,8 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
-%!test  # integer and single variables preserve their class through the vartype row
+## integer and single variables preserve their class through the vartype row
+%!test
 %! T = table (int8 ([1; 2]), single ([1.5; 2.5]), uint16 ([10; 20]), ...
 %!            'VariableNames', {'a', 'b', 'c'});
 %! T.Properties.VariableDescriptions = {'sbyte', 'real', 'ushort'};
@@ -831,7 +843,8 @@
 %!   assert_equal (class (R.c), 'uint16');
 %!   assert_equal (R.a, int8 ([1; 2]));
 %!   assert_equal (R.b, single ([1.5; 2.5]));
-%!   assert_equal (R.Properties.VariableDescriptions, {'sbyte', 'real', 'ushort'});
+%!   assert_equal (R.Properties.VariableDescriptions, {'sbyte', 'real', ...
+%!                 'ushort'});
 %!   assert_equal (R.Properties.VariableUnits, {'au', 'au', 'au'});
 %! unwind_protect_cleanup
 %!   if (exist (fn, 'file'))
@@ -872,7 +885,8 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
-%!test  # NA and NaN are written as distinct tokens and round-trip through csv2table
+## NA and NaN are written as distinct tokens and round-trip through csv2table
+%!test
 %! T = table ([1; NA; NaN], 'VariableNames', {'v'});
 %! T.Properties.VariableDescriptions = {'measurement'};
 %! T.Properties.VariableUnits = {'mm'};
@@ -880,8 +894,10 @@
 %! unwind_protect
 %!   table2csv (T, fn);
 %!   txt = fileread (fn);
-%!   assert_equal (! isempty (regexp (txt, '^NA$', 'lineanchors', 'once')), true);
-%!   assert_equal (! isempty (regexp (txt, '^NaN$', 'lineanchors', 'once')), true);
+%!   assert_equal (! isempty (regexp (txt, '^NA$', 'lineanchors', 'once')), ...
+%!                 true);
+%!   assert_equal (! isempty (regexp (txt, '^NaN$', 'lineanchors', 'once')), ...
+%!                 true);
 %!   R = csv2table (fn);
 %!   assert_equal (class (R.v), 'double');
 %!   assert_equal (R.v(1), 1);
@@ -920,7 +936,8 @@
 %!   table2csv (T, fn);
 %!   R = csv2table (fn);
 %!   assert_equal (class (R.d), 'datetime');
-%!   assert_equal (cellstr (R.d), {'01-Jan-2020'; '02-Jan-2020'; '03-Jan-2020'});
+%!   assert_equal (cellstr (R.d), ...
+%!                 {'01-Jan-2020'; '02-Jan-2020'; '03-Jan-2020'});
 %!   assert_equal (R.Properties.VariableDescriptions, {'a date'});
 %!   assert_equal (R.Properties.VariableUnits, {'cal'});
 %! unwind_protect_cleanup
@@ -945,17 +962,22 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
-%!test  # a calendarDuration is written as text; csv2table reads it back as cellstr (lossy)
-%! T = table (calendarDuration ([1; 2], [0; 1], [0; 0]), 'VariableNames', {'cd'});
+## a calendarDuration is written as text; csv2table reads it back as cellstr (lossy)
+%!test
+%! T = table (calendarDuration ([1; 2], [0; 1], [0; 0]), 'VariableNames', ...
+%!            {'cd'});
 %! T.Properties.VariableDescriptions = {'span'};
 %! T.Properties.VariableUnits = {'ymd'};
 %! fn = [tempname() '.csv'];
 %! unwind_protect
 %!   table2csv (T, fn);
 %!   txt = fileread (fn);
-%!   assert_equal (! isempty (regexp (txt, '^"calendarDuration"$', 'lineanchors', 'once')), true);
-%!   assert_equal (! isempty (regexp (txt, '^"1y"$', 'lineanchors', 'once')), true);
-%!   assert_equal (! isempty (regexp (txt, '^"2y 1mo"$', 'lineanchors', 'once')), true);
+%!   assert_equal (! isempty (regexp (txt, '^"calendarDuration"$', ...
+%!                 'lineanchors', 'once')), true);
+%!   assert_equal (! isempty (regexp (txt, '^"1y"$', 'lineanchors', ...
+%!                 'once')), true);
+%!   assert_equal (! isempty (regexp (txt, '^"2y 1mo"$', 'lineanchors', ...
+%!                 'once')), true);
 %!   warning ('off', 'all', 'local');
 %!   R = csv2table (fn);
 %!   assert_equal (R.cd, {'1y'; '2y 1mo'});
@@ -968,13 +990,15 @@
 %! end_unwind_protect
 ## Test warning here
 %!warning <csv2table: 'calendarDuration' strings are not converted.> ...
-%! T = table (calendarDuration ([1; 2], [0; 1], [0; 0]), 'VariableNames', {'cd'});
+%! T = table (calendarDuration ([1; 2], [0; 1], [0; 0]), 'VariableNames', ...
+%!            {'cd'});
 %! T.Properties.VariableDescriptions = {'span'};
 %! T.Properties.VariableUnits = {'ymd'};
 %! fn = [tempname() '.csv'];
 %! table2csv (T, fn);
 %! R = csv2table (fn);
-%!test  # a categorical is written as labels; csv2table reads it back as cellstr (lossy)
+## a categorical is written as labels; csv2table reads it back as cellstr (lossy)
+%!test
 %! T = table (categorical ({'lo'; 'hi'; 'lo'}), 'VariableNames', {'c'});
 %! T.Properties.VariableDescriptions = {'level'};
 %! T.Properties.VariableUnits = {'cat'};
@@ -982,9 +1006,12 @@
 %! unwind_protect
 %!   table2csv (T, fn);
 %!   txt = fileread (fn);
-%!   assert_equal (! isempty (regexp (txt, '^"categorical"$', 'lineanchors', 'once')), true);
-%!   assert_equal (! isempty (regexp (txt, '^"lo"$', 'lineanchors', 'once')), true);
-%!   assert_equal (! isempty (regexp (txt, '^"hi"$', 'lineanchors', 'once')), true);
+%!   assert_equal (! isempty (regexp (txt, '^"categorical"$', 'lineanchors', ...
+%!                 'once')), true);
+%!   assert_equal (! isempty (regexp (txt, '^"lo"$', 'lineanchors', ...
+%!                 'once')), true);
+%!   assert_equal (! isempty (regexp (txt, '^"hi"$', 'lineanchors', ...
+%!                 'once')), true);
 %!   warning ('off', 'all', 'local');
 %!   R = csv2table (fn);
 %!   assert_equal (R.c, {'lo'; 'hi'; 'lo'});
@@ -1020,13 +1047,15 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
-%!test  # a nested table is split with two vartype rows and rebuilt on round-trip
+## a nested table is split with two vartype rows and rebuilt on round-trip
+%!test
 %! nt = table ([10; 20], [30; 40], 'VariableNames', {'p', 'q'});
 %! T = table ([1; 2], nt, 'VariableNames', {'id', 'nest'});
 %! fn = [tempname() '.csv'];
 %! unwind_protect
 %!   table2csv (T, fn);
-%!   assert_equal (! isempty (strfind (fileread (fn), 'varTypes 2 rows')), true);
+%!   assert_equal (! isempty (strfind (fileread (fn), 'varTypes 2 rows')), ...
+%!                 true);
 %!   R = csv2table (fn);
 %!   assert_equal (class (R.nest), 'table');
 %!   assert_equal (R.nest.p, [10; 20]);
@@ -1047,11 +1076,13 @@
 %! unwind_protect
 %!   table2csv (T, fn);
 %!   txt = fileread (fn);
-%!   assert_equal (! isempty (strfind (txt, 'varDescriptions 2 rows; varUnits 2 rows')), true);
+%!   assert_equal (! isempty (strfind (txt, ...
+%!                 'varDescriptions 2 rows; varUnits 2 rows')), true);
 %!   R = csv2table (fn);
 %!   assert_equal (R.Properties.VariableDescriptions, {'an id', 'a nest'});
 %!   assert_equal (R.Properties.VariableUnits, {'#', 'box'});
-%!   assert_equal (R.nest.Properties.VariableDescriptions, {'inner p', 'inner q'});
+%!   assert_equal (R.nest.Properties.VariableDescriptions, {'inner p', ...
+%!                 'inner q'});
 %!   assert_equal (R.nest.Properties.VariableUnits, {'mm', 'cm'});
 %! unwind_protect_cleanup
 %!   if (exist (fn, 'file'))
@@ -1097,7 +1128,8 @@
 %! fn = [tempname() '.csv'];
 %! unwind_protect
 %!   table2csv (T, fn);
-%!   assert_equal (! isempty (strfind (fileread (fn), 'varDescriptions 1 rows')), true);
+%!   assert_equal (! isempty (strfind (fileread (fn), ...
+%!                 'varDescriptions 1 rows')), true);
 %!   R = csv2table (fn);
 %!   assert_equal (R.Properties.VariableDescriptions, {'has one', ''});
 %!   assert_equal (R.a, [1; 2]);
@@ -1137,9 +1169,12 @@
 %! unwind_protect
 %!   table2csv (T, fn);
 %!   txt = fileread (fn);
-%!   assert_equal (! isempty (strfind (txt, 'varDescriptions 1 rows; varUnits 1 rows')), true);
-%!   assert_equal (! isempty (regexp (txt, '^"mass"$', 'lineanchors', 'once')), true);
-%!   assert_equal (! isempty (regexp (txt, '^"kg"$', 'lineanchors', 'once')), true);
+%!   assert_equal (! isempty (strfind (txt, ...
+%!                 'varDescriptions 1 rows; varUnits 1 rows')), true);
+%!   assert_equal (! isempty (regexp (txt, '^"mass"$', 'lineanchors', ...
+%!                 'once')), true);
+%!   assert_equal (! isempty (regexp (txt, '^"kg"$', 'lineanchors', ...
+%!                 'once')), true);
 %!   R = csv2table (fn);
 %!   assert_equal (R.v, [1; 2]);
 %!   assert_equal (R.Properties.VariableDescriptions, {'mass'});
@@ -1166,14 +1201,16 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
-%!test  # a complex table of many variable types round-trips with descriptions and units
+## a complex table of many variable types round-trips with descriptions and units
+%!test
 %! T = table ([1; 2; 3], single ([1.5; 2.5; 3.5]), int16 ([10; 20; 30]), ...
 %!            [true; false; true], string ({'x'; 'y'; 'z'}), ...
 %!            datetime (2021, 3, [4; 5; 6]), ...
 %!            duration ([1; 2; 3], [0; 30; 0], [0; 0; 0]), ...
 %!            categorical ({'lo'; 'hi'; 'lo'}), [1, 2; 3, 4; 5, 6], ...
 %!            'VariableNames', ...
-%!            {'id', 'score', 'cnt', 'ok', 'name', 'when', 'dur', 'grade', 'bp'});
+%!            {'id', 'score', 'cnt', 'ok', 'name', 'when', 'dur', 'grade', ...
+%!              'bp'});
 %! T.Properties.VariableDescriptions = ...
 %!   {'identifier', 'a score', 'a count', 'flag', 'a name', 'a date', ...
 %!    'elapsed', 'level', 'pair'};
@@ -1194,13 +1231,15 @@
 %!   assert_equal (class (R.name), 'string');
 %!   assert_equal (cellstr (R.name), {'x'; 'y'; 'z'});
 %!   assert_equal (class (R.when), 'datetime');
-%!   assert_equal (cellstr (R.when), {'04-Mar-2021'; '05-Mar-2021'; '06-Mar-2021'});
+%!   assert_equal (cellstr (R.when), ...
+%!                 {'04-Mar-2021'; '05-Mar-2021'; '06-Mar-2021'});
 %!   assert_equal (class (R.dur), 'duration');
 %!   assert_equal (cellstr (R.dur), {'01:00:00'; '02:30:00'; '03:00:00'});
 %!   assert_equal (R.grade, {'lo'; 'hi'; 'lo'});
 %!   assert_equal (R.bp, [1, 2; 3, 4; 5, 6]);
 %!   assert_equal (R.Properties.VariableNames, ...
-%!                 {'id', 'score', 'cnt', 'ok', 'name', 'when', 'dur', 'grade', 'bp'});
+%!                 {'id', 'score', 'cnt', 'ok', 'name', 'when', 'dur', ...
+%!                   'grade', 'bp'});
 %!   assert_equal (R.Properties.VariableDescriptions, ...
 %!                 {'identifier', 'a score', 'a count', 'flag', 'a name', ...
 %!                  'a date', 'elapsed', 'level', 'pair'});
@@ -1211,7 +1250,8 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
-%!test  # a complex table with row names round-trips data, row names, descriptions, and units
+## a complex table with row names round-trips data, row names, descriptions, and units
+%!test
 %! T = table ([10; 20], string ({'aa'; 'bb'}), datetime (2022, 6, [1; 2]), ...
 %!            'VariableNames', {'n', 'tag', 'day'}, ...
 %!            'RowNames', {'first'; 'second'});
@@ -1226,14 +1266,16 @@
 %!   assert_equal (cellstr (R.tag), {'aa'; 'bb'});
 %!   assert_equal (class (R.day), 'datetime');
 %!   assert_equal (cellstr (R.day), {'01-Jun-2022'; '02-Jun-2022'});
-%!   assert_equal (R.Properties.VariableDescriptions, {'a number', 'a tag', 'a day'});
+%!   assert_equal (R.Properties.VariableDescriptions, {'a number', 'a tag', ...
+%!                 'a day'});
 %!   assert_equal (R.Properties.VariableUnits, {'u1', 'u2', 'u3'});
 %! unwind_protect_cleanup
 %!   if (exist (fn, 'file'))
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
-%!test  # every integer class (full range, exact) and the float classes round-trip
+## every integer class (full range, exact) and the float classes round-trip
+%!test
 %! T = table (int8 ([intmin('int8'); intmax('int8')]), ...
 %!            int16 ([intmin('int16'); intmax('int16')]), ...
 %!            int32 ([intmin('int32'); intmax('int32')]), ...
@@ -1242,7 +1284,8 @@
 %!            uint32 ([0; intmax('uint32')]), uint64 ([0; intmax('uint64')]), ...
 %!            single ([1.5; -2.5]), [1.25; -3.75], ...
 %!            'VariableNames', ...
-%!            {'i8', 'i16', 'i32', 'i64', 'u8', 'u16', 'u32', 'u64', 'sg', 'db'});
+%!            {'i8', 'i16', 'i32', 'i64', 'u8', 'u16', 'u32', 'u64', 'sg', ...
+%!              'db'});
 %! fn = [tempname() '.csv'];
 %! unwind_protect
 %!   table2csv (T, fn);
@@ -1341,7 +1384,8 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
-%!test  # a multicolumn categorical is written as labels and read back as 2-D cellstr (lossy)
+## a multicolumn categorical is written as labels and read back as 2-D cellstr (lossy)
+%!test
 %! T = table (categorical ({'x', 'y'; 'y', 'x'}), 'VariableNames', {'c'});
 %! fn = [tempname() '.csv'];
 %! unwind_protect
@@ -1354,8 +1398,10 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
-%!test  # a datetime variable with a NaT round-trips, restoring the missing entry
-%! T = table ([datetime(2020, 1, 1); NaT; datetime(2020, 1, 3)], 'VariableNames', {'d'});
+## a datetime variable with a NaT round-trips, restoring the missing entry
+%!test
+%! T = table ([datetime(2020, 1, 1); NaT; datetime(2020, 1, 3)], ...
+%!            'VariableNames', {'d'});
 %! fn = [tempname() '.csv'];
 %! unwind_protect
 %!   table2csv (T, fn);
@@ -1368,8 +1414,10 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
-%!test  # a duration variable with a NaN round-trips, restoring the missing entry
-%! T = table (duration ([1; NaN; 3], [0; 0; 0], [0; 0; 0]), 'VariableNames', {'du'});
+## a duration variable with a NaN round-trips, restoring the missing entry
+%!test
+%! T = table (duration ([1; NaN; 3], [0; 0; 0], [0; 0; 0]), 'VariableNames', ...
+%!            {'du'});
 %! fn = [tempname() '.csv'];
 %! unwind_protect
 %!   table2csv (T, fn);
@@ -1382,7 +1430,8 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
-%!test  # a missing string value is written as an empty field and read back as ""
+## a missing string value is written as an empty field and read back as ""
+%!test
 %! T = table (string ({'a'; missing; 'c'}), 'VariableNames', {'s'});
 %! fn = [tempname() '.csv'];
 %! unwind_protect
@@ -1396,11 +1445,13 @@
 %!   endif
 %! end_unwind_protect
 %!test  # text with embedded commas, double quotes, and padding survives quoting
-%! T = table ({'a,b'; 'he said "hi"'; '  pad  '; 'plain'}, 'VariableNames', {'s'});
+%! T = table ({'a,b'; 'he said "hi"'; '  pad  '; 'plain'}, 'VariableNames', ...
+%!            {'s'});
 %! fn = [tempname() '.csv'];
 %! unwind_protect
 %!   table2csv (T, fn);
-%!   assert_equal (! isempty (strfind (fileread (fn), '"he said ""hi"""')), true);
+%!   assert_equal (! isempty (strfind (fileread (fn), '"he said ""hi"""')), ...
+%!                 true);
 %!   R = csv2table (fn);
 %!   assert_equal (R.s, {'a,b'; 'he said "hi"'; '  pad  '; 'plain'});
 %! unwind_protect_cleanup
@@ -1409,7 +1460,8 @@
 %!   endif
 %! end_unwind_protect
 %!test  # a nested table of special types round-trips (categorical is lossy)
-%! inner = table (datetime(2020, 1, [1; 2]), duration ([1; 2], [0; 0], [0; 0]), ...
+%! inner = table (datetime(2020, 1, [1; 2]), duration ([1; 2], [0; 0], ...
+%!                [0; 0]), ...
 %!                string ({'p'; 'q'}), categorical ({'lo'; 'hi'}), ...
 %!                'VariableNames', {'dt', 'du', 'st', 'ct'});
 %! T = table ([1; 2], inner, 'VariableNames', {'id', 'nest'});
@@ -1445,23 +1497,28 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
-%!test  # a table mixing multicolumn, nested, and several types round-trips with metadata
+## a table mixing multicolumn, nested, and several types round-trips with metadata
+%!test
 %! inner = table (duration ([1; 2], [0; 0], [0; 0]), string ({'p'; 'q'}), ...
-%!                categorical ({'lo'; 'hi'}), 'VariableNames', {'idu', 'ist', 'ict'});
-%! inner.Properties.VariableDescriptions = {'inner dur', 'inner str', 'inner cat'};
+%!                categorical ({'lo'; 'hi'}), 'VariableNames', {'idu', ...
+%!                             'ist', 'ict'});
+%! inner.Properties.VariableDescriptions = {'inner dur', 'inner str', ...
+%!   'inner cat'};
 %! inner.Properties.VariableUnits = {'h', 't', 'c'};
 %! T = table ([duration(1, 0, 0) .* [1; 2], duration(2, 0, 0) .* [1; 2]], ...
 %!            string ({'aa'; 'bb'}), categorical ({'x'; 'y'}), ...
 %!            [10, 11, 12; 20, 21, 22], inner, ...
 %!            'VariableNames', {'mdur', 'tag', 'grade', 'mat', 'nest'});
-%! T.Properties.VariableDescriptions = {'mc dur', 'a tag', 'a grade', 'a matrix', 'nested'};
+%! T.Properties.VariableDescriptions = {'mc dur', 'a tag', 'a grade', ...
+%!   'a matrix', 'nested'};
 %! T.Properties.VariableUnits = {'h', 't', 'g', 'm', 'n'};
 %! fn = [tempname() '.csv'];
 %! unwind_protect
 %!   table2csv (T, fn);
 %!   warning ('off', 'all', 'local');
 %!   R = csv2table (fn);
-%!   assert_equal (R.Properties.VariableNames, {'mdur', 'tag', 'grade', 'mat', 'nest'});
+%!   assert_equal (R.Properties.VariableNames, {'mdur', 'tag', 'grade', ...
+%!                 'mat', 'nest'});
 %!   assert_equal (class (R.mdur), 'duration');
 %!   assert_equal (size (R.mdur), [2, 2]);
 %!   assert_equal (cellstr (R.tag), {'aa'; 'bb'});
@@ -1474,21 +1531,24 @@
 %!   assert_equal (R.Properties.VariableDescriptions, ...
 %!                 {'mc dur', 'a tag', 'a grade', 'a matrix', 'nested'});
 %!   assert_equal (R.Properties.VariableUnits, {'h', 't', 'g', 'm', 'n'});
-%!   assert_equal (R.nest.Properties.VariableDescriptions, {'inner dur', 'inner str', 'inner cat'});
+%!   assert_equal (R.nest.Properties.VariableDescriptions, {'inner dur', ...
+%!                 'inner str', 'inner cat'});
 %!   assert_equal (R.nest.Properties.VariableUnits, {'h', 't', 'c'});
 %! unwind_protect_cleanup
 %!   if (exist (fn, 'file'))
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
-%!test  # full-range 64-bit integers round-trip exactly (written/read without double)
+## full-range 64-bit integers round-trip exactly (written/read without double)
+%!test
 %! ii = [intmin('int64'); intmin('int64') + 1; intmax('int64')];
 %! uu = [uint64(0); intmax('uint64') - uint64(1); intmax('uint64')];
 %! T = table (ii, uu, 'VariableNames', {'i', 'u'});
 %! fn = [tempname() '.csv'];
 %! unwind_protect
 %!   table2csv (T, fn);
-%!   assert_equal (! isempty (strfind (fileread (fn), '18446744073709551615')), true);
+%!   assert_equal (! isempty (strfind (fileread (fn), ...
+%!                 '18446744073709551615')), true);
 %!   R = csv2table (fn);
 %!   assert_equal (R.i, ii);
 %!   assert_equal (R.u, uu);
@@ -1533,9 +1593,11 @@
 %!   table2ods (T, fn);
 %!   txt = fileread (fn);
 %!   assert_equal (! isempty (strfind (txt, 'office:value-type="date"')), true);
-%!   assert_equal (! isempty (strfind (txt, 'office:date-value="2024-01-15T10:30:15"')), true);
+%!   assert_equal (! isempty (strfind (txt, ...
+%!                 'office:date-value="2024-01-15T10:30:15"')), true);
 %!   assert_equal (! isempty (strfind (txt, 'office:value-type="time"')), true);
-%!   assert_equal (! isempty (strfind (txt, 'office:time-value="PT25H30M00S"')), true);
+%!   assert_equal (! isempty (strfind (txt, ...
+%!                 'office:time-value="PT25H30M00S"')), true);
 %! unwind_protect_cleanup
 %!   if (exist (fn, 'file'))
 %!     delete (fn);
@@ -1565,7 +1627,8 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
-%!test  # a compressed '.ods' is a ZIP whose contents round-trip through ods2table
+## a compressed '.ods' is a ZIP whose contents round-trip through ods2table
+%!test
 %! T = table ([1; 2; 3], datetime (2024, 1, [1; 2; 3]), {'a'; 'b'; 'c'}, ...
 %!            'VariableNames', {'n', 'd', 'g'});
 %! fn = [tempname() '.ods'];
@@ -1719,7 +1782,8 @@
 %! unwind_protect
 %!   writetable (T, fn);
 %!   txt = fileread (fn);
-%!   assert_equal (! isempty (regexp (txt, '^a,b$', 'lineanchors', 'once')), true);
+%!   assert_equal (! isempty (regexp (txt, '^a,b$', 'lineanchors', 'once')), ...
+%!                 true);
 %!   assert_equal (isempty (strfind (txt, 'varTypes')), true);
 %! unwind_protect_cleanup
 %!   if (exist (fn, 'file'))
@@ -1923,7 +1987,8 @@
 %!   writetable (Z, fn);                         # no 'Sheet' -> first sheet
 %!   [~, ~, ~, nm] = __ods2table__ (fn);
 %!   assert_equal (nm(:), {'first'; 'second'});  # no stray 'Sheet1' added
-%!   assert_equal (readtable (fn, 'Sheet', 'first').Properties.VariableNames, {'z'});
+%!   assert_equal (readtable (fn, 'Sheet', ...
+%!                 'first').Properties.VariableNames, {'z'});
 %!   assert_equal (readtable (fn, 'Sheet', 'second').b, [3; 4; 5]);
 %! unwind_protect_cleanup
 %!   if (exist (fn, 'file')); delete (fn); endif
@@ -1959,7 +2024,8 @@
 %!error <table.writetable: 'WriteMode' 'bogus' is not valid for spreadsheet files.> ...
 %! writetable (table (1), [tempname() '.ods'], 'WriteMode', 'bogus');
 %!error <table.writetable: 'Range' is not supported with 'WriteMode' 'append'.> ...
-%! writetable (table (1), [tempname() '.ods'], 'WriteMode', 'append', 'Range', 'B2');
+%! writetable (table (1), [tempname() '.ods'], 'WriteMode', 'append', ...
+%!             'Range', 'B2');
 %!error <table.writetable: unknown option 'Bogus'.> ...
 %! writetable (table (1), [tempname() '.csv'], 'Bogus', 1);
 
@@ -2578,10 +2644,12 @@
 %! assert_equal (issortedrows (tblB, [true, true, false, false]), true);
 %! [tblB, index] = sortrows (tblA, [true, true, false, false], "ascend");
 %! assert_equal (index, [3; 1; 4; 2; 5]);
-%! assert_equal (issortedrows (tblB, [true, true, false, false], "ascend"), true);
+%! assert_equal (issortedrows (tblB, [true, true, false, false], "ascend"), ...
+%!               true);
 %! [tblB, index] = sortrows (tblA, [true, true, false, false], "descend");
 %! assert_equal (index, flip ([3; 1; 4; 2; 5]));
-%! assert_equal (issortedrows (tblB, [true, true, false, false], "descend"), true);
+%! assert_equal (issortedrows (tblB, [true, true, false, false], "descend"), ...
+%!               true);
 %! [tblB, index] = sortrows (tblA, [true, true, false, false], ...
 %!                                 {"ascend", "descend"});
 %! assert_equal (index, [1; 3; 4; 2; 5]);
@@ -2622,7 +2690,8 @@
 %! tblN = table (Age, Height, Weights, BloodPressure, 'RowNames', LastName);
 %! [tblB, index] = sortrows (tblN, "Weights", "MissingPlacement", "first");
 %! assert_equal (index, [2; 5; 3; 4; 1]);
-%! assert_equal (issortedrows (tblB, "Weights", "MissingPlacement", "first"), true);
+%! assert_equal (issortedrows (tblB, "Weights", "MissingPlacement", ...
+%!               "first"), true);
 %! [tblB, index] = sortrows (tblN, "Weights");
 %! assert_equal (index, [3; 4; 1; 2; 5]);
 %! assert_equal (issortedrows (tblB, "Weights"), true);
@@ -2634,7 +2703,8 @@
 %! [tblB, index] = sortrows (tblN, vartype ("cellstr"));
 %! assert_equal (index, [5; 2; 4; 1; 3]);
 %! assert_equal (issortedrows (tblB, vartype ("cellstr")), true);
-%!test  # special-type sort keys (datetime / categorical / string / calendarDuration)
+## special-type sort keys (datetime / categorical / string / calendarDuration)
+%!test
 %! S = {'b'; 'a'; 'c'; 'a'};
 %! dt = datetime (2020, [3; 1; 2; 1], 1);
 %! A = table (dt, S, 'VariableNames', {'D', 'S'});
@@ -2903,7 +2973,8 @@
 %! [tblB, index] = topkrows (tblA, 4, {"Height", "RowNames"}, ...
 %!                                    {"ascend", "descend"});
 %! assert_equal (index, [3; 5; 4; 2]);
-%! assert_equal (tblB.Properties.RowNames, {"Wang"; "Berger"; "Joiner"; "Jacobson"});
+%! assert_equal (tblB.Properties.RowNames, ...
+%!               {"Wang"; "Berger"; "Joiner"; "Jacobson"});
 %! assert_equal (issortedrows (tblB, {"Height", "RowNames"}, ...
 %!                             {"ascend", "descend"}), true);
 %!test
@@ -2913,10 +2984,12 @@
 %!               true);
 %! [tblB, index] = topkrows (tblA, 2, [true, true, false, false], "ascend");
 %! assert_equal (index, [3; 1]);
-%! assert_equal (issortedrows (tblB, [true, true, false, false], "ascend"), true);
+%! assert_equal (issortedrows (tblB, [true, true, false, false], "ascend"), ...
+%!               true);
 %! [tblB, index] = topkrows (tblA, 5, [true, true, false, false], "descend");
 %! assert_equal (index, flip ([3; 1; 4; 2; 5]));
-%! assert_equal (issortedrows (tblB, [true, true, false, false], "descend"), true);
+%! assert_equal (issortedrows (tblB, [true, true, false, false], "descend"), ...
+%!               true);
 %! [tblB, index] = topkrows (tblA, 6, [true, true, false, false], ...
 %!                                    {"ascend", "descend"});
 %! assert_equal (index, [1; 3; 4; 2; 5]);
@@ -2974,7 +3047,8 @@
 %! [tblB, index] = topkrows (tblN, 3, vartype ("cellstr"));
 %! assert_equal (index, [3; 1; 4]);
 %! assert_equal (issortedrows (tblB, vartype ("cellstr"), "descend"), true);
-%!test  # special-type sort keys (datetime / categorical / string / calendarDuration)
+## special-type sort keys (datetime / categorical / string / calendarDuration)
+%!test
 %! dt = datetime (2020, [3; 1; 2; 1], 1);
 %! [tblB, index] = topkrows (table (dt, 'VariableNames', {'D'}), 2);
 %! assert_equal (index, [1; 3]);
@@ -3017,12 +3091,14 @@
 %! T1 = table (Age, Height, Weight);
 %! T2 = addvars (T1, ones (size (Age)));
 %! assert_equal (size (head (T2, 3)), [3, 4]);
-%! assert_equal (T2.Properties.VariableNames, {'Age', 'Height', 'Weight', 'Var4'});
+%! assert_equal (T2.Properties.VariableNames, {'Age', 'Height', 'Weight', ...
+%!               'Var4'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Height, Weight);
 %! assert_equal (size (head (T1, 3)), [3, 4]);
-%! assert_equal (T1.Properties.VariableNames, {'LastName', 'Age', 'Height', 'Weight'});
+%! assert_equal (T1.Properties.VariableNames, {'LastName', 'Age', 'Height', ...
+%!               'Weight'});
 %! T2 = addvars (T1, Gender, Smoker);
 %! assert_equal (size (head (T2, 3)), [3, 6]);
 %! assert_equal (T2.Properties.VariableNames, ...
@@ -3058,7 +3134,8 @@
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! assert_equal (size (head (T1, 3)), [3, 4]);
-%! assert_equal (T1.Properties.VariableNames, {'LastName', 'Age', 'Gender', 'Smoker'});
+%! assert_equal (T1.Properties.VariableNames, {'LastName', 'Age', 'Gender', ...
+%!               'Smoker'});
 %! T2 = addvars (T1, [Diastolic Systolic], 'NewVariableNames', 'BloodPressure');
 %! assert_equal (size (head (T2, 3)), [3, 5]);
 %! assert_equal (T2.Properties.VariableNames, ...
@@ -3067,7 +3144,8 @@
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! assert_equal (size (head (T1, 3)), [3, 4]);
-%! assert_equal (T1.Properties.VariableNames, {'LastName', 'Age', 'Gender', 'Smoker'});
+%! assert_equal (T1.Properties.VariableNames, {'LastName', 'Age', 'Gender', ...
+%!               'Smoker'});
 %! T2 = addvars (T1, Height, Weight, 'Before', 'Smoker', ...
 %!                                   'NewVariableNames', {'Inches', 'Pounds'});
 %! assert_equal (size (head (T2, 3)), [3, 6]);
@@ -3151,7 +3229,8 @@
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
-%! assert_equal (T1.Properties.VariableNames, {'LastName', 'Age', 'Gender', 'Smoker'});
+%! assert_equal (T1.Properties.VariableNames, {'LastName', 'Age', 'Gender', ...
+%!               'Smoker'});
 %! T2 = renamevars (T1, {'LastName', 'Gender'}, {'Name', 'Sex'});
 %! assert_equal (T2.Properties.VariableNames, {'Name', 'Age', 'Sex', 'Smoker'});
 %!test
@@ -3202,46 +3281,56 @@
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
-%! assert_equal (T1.Properties.VariableNames, {'LastName', 'Age', 'Gender', 'Smoker'});
+%! assert_equal (T1.Properties.VariableNames, {'LastName', 'Age', 'Gender', ...
+%!               'Smoker'});
 %! T2 = movevars (T1, {'LastName', 'Gender'});
-%! assert_equal (T2.Properties.VariableNames, {'Age', 'Smoker', 'LastName', 'Gender'});
+%! assert_equal (T2.Properties.VariableNames, {'Age', 'Smoker', 'LastName', ...
+%!               'Gender'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! T2 = movevars (T1, vartype ("cellstr"));
-%! assert_equal (T2.Properties.VariableNames, {'Age', 'Smoker', 'LastName', 'Gender'});
+%! assert_equal (T2.Properties.VariableNames, {'Age', 'Smoker', 'LastName', ...
+%!               'Gender'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! T2 = movevars (T1, vartype ("numeric"));
-%! assert_equal (T2.Properties.VariableNames, {'LastName', 'Gender', 'Smoker', 'Age'});
+%! assert_equal (T2.Properties.VariableNames, {'LastName', 'Gender', ...
+%!               'Smoker', 'Age'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! T2 = movevars (T1, {'LastName', 'Gender'}, 'After', 'Age');
-%! assert_equal (T2.Properties.VariableNames, {'Age', 'LastName', 'Gender', 'Smoker'});
+%! assert_equal (T2.Properties.VariableNames, {'Age', 'LastName', 'Gender', ...
+%!               'Smoker'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! T2 = movevars (T1, [true, false, true, false], 'After', 'Age');
-%! assert_equal (T2.Properties.VariableNames, {'Age', 'LastName', 'Gender', 'Smoker'});
+%! assert_equal (T2.Properties.VariableNames, {'Age', 'LastName', 'Gender', ...
+%!               'Smoker'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! T2 = movevars (T1, [3, 4], 'Before', 'Age');
-%! assert_equal (T2.Properties.VariableNames, {'LastName', 'Gender', 'Smoker', 'Age'});
+%! assert_equal (T2.Properties.VariableNames, {'LastName', 'Gender', ...
+%!               'Smoker', 'Age'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! T2 = movevars (T1, [3, 4], 'Before', 2);
-%! assert_equal (T2.Properties.VariableNames, {'LastName', 'Gender', 'Smoker', 'Age'});
+%! assert_equal (T2.Properties.VariableNames, {'LastName', 'Gender', ...
+%!               'Smoker', 'Age'});
 %!test
 %! load patients
 %! T1 = table (LastName, Age, Gender, Smoker);
 %! T2 = movevars (T1, [3, 4], 'Before', [false, true, false, false]);
-%! assert_equal (T2.Properties.VariableNames, {'LastName', 'Gender', 'Smoker', 'Age'});
+%! assert_equal (T2.Properties.VariableNames, {'LastName', 'Gender', ...
+%!               'Smoker', 'Age'});
 %!test  # VARS forms (string array, char single) and LOCATION edges
-%! T = table ([1;2], [3;4], [5;6], [7;8], 'VariableNames', {'A', 'B', 'C', 'D'});
+%! T = table ([1;2], [3;4], [5;6], [7;8], 'VariableNames', {'A', 'B', 'C', ...
+%!            'D'});
 %! R = movevars (T, string ({'A', 'C'}));
 %! assert_equal (R.Properties.VariableNames, {'B', 'D', 'A', 'C'});
 %! R = movevars (T, 'A');
@@ -3641,12 +3730,14 @@
 %! assert_equal (T2.Properties.VariableNames, {'Merged', 'C', 'D'});
 %! assert_equal (isequal (T2.Merged, table (A, B)), true);
 %!test  # string-array VARS and string-scalar NewVariableName
-%! T = table ([1;2], [3;4], [5;6], [7;8], 'VariableNames', {'A', 'B', 'C', 'D'});
+%! T = table ([1;2], [3;4], [5;6], [7;8], 'VariableNames', {'A', 'B', 'C', ...
+%!            'D'});
 %! R = mergevars (T, string ({'B', 'C'}), 'NewVariableName', string ('M'));
 %! assert_equal (R.Properties.VariableNames, {'A', 'M', 'D'});
 %! assert_equal (R.M, [3, 5; 4, 6]);
 %!test  # logical and vartype VARS, and a single-variable merge is a no-op
-%! T = table ([1;2], [3;4], [5;6], [7;8], 'VariableNames', {'A', 'B', 'C', 'D'});
+%! T = table ([1;2], [3;4], [5;6], [7;8], 'VariableNames', {'A', 'B', 'C', ...
+%!            'D'});
 %! R = mergevars (T, [false, true, true, false]);
 %! assert_equal (R.Properties.VariableNames, {'A', 'Var2', 'D'});
 %! R = mergevars (T, vartype ('numeric'));
@@ -3654,7 +3745,8 @@
 %! R = mergevars (T, 2);
 %! assert_equal (R.Properties.VariableNames, {'A', 'B', 'C', 'D'});
 %!test  # non-contiguous VARS merge keeps the first-merged position
-%! T = table ([1;2], [3;4], [5;6], [7;8], 'VariableNames', {'A', 'B', 'C', 'D'});
+%! T = table ([1;2], [3;4], [5;6], [7;8], 'VariableNames', {'A', 'B', 'C', ...
+%!            'D'});
 %! R = mergevars (T, [2, 4]);
 %! assert_equal (R.Properties.VariableNames, {'A', 'Var2', 'C'});
 %! assert_equal (R.Var2, [3, 7; 4, 8]);
@@ -3664,7 +3756,8 @@
 %! assert_equal (class (R.Var1), 'duration');
 %! assert_equal (hours (R.Var1), [1, 3; 2, 4]);
 %!test  # a merged variable has no custom property entry of its own
-%! T = table ([1;2], [3;4], [5;6], [7;8], 'VariableNames', {'A', 'B', 'C', 'D'});
+%! T = table ([1;2], [3;4], [5;6], [7;8], 'VariableNames', {'A', 'B', 'C', ...
+%!            'D'});
 %! T = addprop (T, 'Note', 'variable');
 %! T.Properties.CustomProperties.Note = {'nA', 'nB', 'nC', 'nD'};
 %! R = mergevars (T, [2, 3]);
@@ -3738,7 +3831,8 @@
 %! T2 = convertvars (T1, "D", @(x) cellstr (upper (char (x))));
 %! assert_equal (T2.D, {"A"; "B"; "C"});
 %!test  # VARS forms: string array, logical vector, vartype
-%! T = table ([1;2;3], [4;5;6], {'x'; 'y'; 'z'}, 'VariableNames', {'A', 'B', 'C'});
+%! T = table ([1;2;3], [4;5;6], {'x'; 'y'; 'z'}, 'VariableNames', {'A', 'B', ...
+%!            'C'});
 %! R = convertvars (T, string ({'A', 'B'}), 'string');
 %! assert_equal (isa (R.A, 'string'), true);
 %! assert_equal (isa (R.B, 'string'), true);
@@ -3783,7 +3877,8 @@
 %! load patients
 %! T1 = table (Gender, Age, Height, Weight, "RowNames", LastName);
 %! T2 = rows2vars (T1);
-%! assert_equal (T2.OriginalVariableNames, {"Gender"; "Age"; "Height"; "Weight"});
+%! assert_equal (T2.OriginalVariableNames, ...
+%!               {"Gender"; "Age"; "Height"; "Weight"});
 %! assert_equal (T2.Smith, {"Male"; 38; 71; 176});
 %! assert_equal (T2.Johnson, {"Male"; 43; 69; 163});
 %! assert_equal (T2.Williams, {"Female"; 38; 64; 131});
@@ -3791,7 +3886,8 @@
 %! load patients
 %! T1 = table (LastName, Gender, Age, Height, Weight);
 %! T2 = rows2vars (T1, "VariableNamesSource", "LastName");
-%! assert_equal (T2.OriginalVariableNames, {"Gender"; "Age"; "Height"; "Weight"});
+%! assert_equal (T2.OriginalVariableNames, ...
+%!               {"Gender"; "Age"; "Height"; "Weight"});
 %! assert_equal (T2.Smith, {"Male"; 38; 71; 176});
 %! assert_equal (T2.Johnson, {"Male"; 43; 69; 163});
 %! assert_equal (T2.Williams, {"Female"; 38; 64; 131})
@@ -3881,7 +3977,8 @@
 %!error <table.rows2vars: 'VariableNamesSource' cannot specify a variable that is also specified by 'DataVariables'.> ...
 %! LastName = {"Sanchez"; "Johnson"; "Li"; "Diaz"; "Brown"};
 %! Age = [38; 43; 38; 40; 49];
-%! rows2vars (table (LastName, Age), "DataVariables", "LastName", "VariableNamesSource", "LastName");
+%! rows2vars (table (LastName, Age), "DataVariables", "LastName", ...
+%!            "VariableNamesSource", "LastName");
 %!error <table.rows2vars: invalid input for 'VariableNamingRule'.> ...
 %! rows2vars (tblA, "VariableNamingRule", "somerule");
 %!error <table.rows2vars: input table must not contain nested tables.> ...
@@ -3959,7 +4056,8 @@
 %! U.Properties.VariableDescriptions = {'height', 'weight'};
 %! S = stack (U, 1:2);
 %! assert_equal (S.Properties.VariableUnits, {'', 'cm'});
-%! assert_equal (S.Properties.VariableDescriptions, {'Data indicator', 'height'});
+%! assert_equal (S.Properties.VariableDescriptions, {'Data indicator', ...
+%!               'height'});
 %!test  # multiple variable groups stack into one data variable each
 %! T1 = [1; 2; 3];
 %! T2 = [4; 5; 6];
@@ -4027,7 +4125,8 @@
 %! assert_equal (U.Natick, [0; 5; 17; 13]);
 %! assert_equal (U.Worcester, [3; 10; 15; 16]);
 %! assert_equal (idx, [1; 3; 7; 8]);
-%!test  # duplicate group/indicator pairs are aggregated by @sum (numeric default)
+## duplicate group/indicator pairs are aggregated by @sum (numeric default)
+%!test
 %! Storm = [3; 3];
 %! Town = categorical ({'Boston'; 'Boston'});
 %! Snowfall = [5; 100];
@@ -4067,7 +4166,8 @@
 %! G = [1; 1; 2; 2];
 %! T = categorical ({'a'; 'b'; 'a'; 'b'});
 %! V = [1; 2; 3; 4];
-%! U = unstack (table (G, T, V), 'V', 'T', 'NewDataVariableNames', {'AA', 'BB'});
+%! U = unstack (table (G, T, V), 'V', 'T', 'NewDataVariableNames', {'AA', ...
+%!              'BB'});
 %! assert_equal (U.Properties.VariableNames, {'G', 'AA', 'BB'});
 %!test  # VariableNamingRule 'preserve' keeps invalid identifiers verbatim
 %! G = [1; 1; 2; 2];
@@ -4150,7 +4250,8 @@
 %! U = unstack (table (G, T, V), 'V', 'T');
 %! assert_equal (calmonths (U.a), [1; 3]);
 %! assert_equal (calmonths (U.b), [2; 4]);
-%!test  # missing calendarDuration cells fill with zero, identical conflicts collapse
+## missing calendarDuration cells fill with zero, identical conflicts collapse
+%!test
 %! G = [1; 1; 1; 2];
 %! T = categorical ({'a'; 'a'; 'b'; 'b'});
 %! V = calmonths ([1; 1; 2; 3]);
@@ -4215,9 +4316,11 @@
 %! Smoker = logical ([1; 0; 1; 0; 1]);
 %! Height = [71; 69; 64; 67; 64];
 %! Age = [38; 43; 38; 40; 49];
-%! unstack (table ({4;5;6;7;8}, Smoker, Height, Age), 'Height', 'Age', 'GroupingVariables', 'Var1');
+%! unstack (table ({4;5;6;7;8}, Smoker, Height, Age), 'Height', 'Age', ...
+%!          'GroupingVariables', 'Var1');
 %!error <table.unstack: 'ConstantVariables' cannot contain any grouping variables as specified by 'GroupingVariables'.> ...
-%! unstack (tblA, 'BloodPressure', 'Height', 'ConstantVariables', 'Age', 'GroupingVariables', 'Age');
+%! unstack (tblA, 'BloodPressure', 'Height', 'ConstantVariables', 'Age', ...
+%!          'GroupingVariables', 'Age');
 %!error <table.unstack: 'NewDataVariableNames' must be either a cell array of character vectors, or a string array.> ...
 %! unstack (tblA, 'Height', 'Age', 'NewDataVariableNames', [1:5]);
 %!error <table.unstack: 'NewDataVariableNames' do not match the number of unique values in the indicator variable.> ...
@@ -4233,7 +4336,8 @@
 %! unstack (table ([1; 1; 2], categorical ({'a'; 'a'; 'b'}), ...
 %!                 hours ([1; 2; 3])), 'Var3', 'Var2');
 %!error <table.unstack: invalid input for 'VariableNamingRule'.> ...
-%! unstack (tblA, {'Weight', 'Height'}, 'Age', 'VariableNamingRule', 'somerule');
+%! unstack (tblA, {'Weight', 'Height'}, 'Age', 'VariableNamingRule', ...
+%!          'somerule');
 
 ## Test 'inner2outer' method
 %!test  # basic transpose: two nested tables sharing inner names
@@ -4348,7 +4452,8 @@
 %!error <table.addprop: custom property 'Note' already exists.> ...
 %! addprop (addprop (table (1), 'Note', 'table'), 'Note', 'table');
 %!error <table.addprop: custom property 'Flags' already exists.> ...
-%! addprop (addprop (table (1), 'Flags', 'table'), {'New', 'Flags'}, {'table', 'table'});
+%! addprop (addprop (table (1), 'Flags', 'table'), {'New', 'Flags'}, ...
+%!          {'table', 'table'});
 %!error <table.addprop: custom property '1bad' does not have a valid name.> ...
 %! addprop (table (1), '1bad', 'table');
 %!error <table.addprop: invalid value for 'propertyTypes'.> ...
@@ -4358,59 +4463,75 @@
 %!test  # horzcat: table-scoped first-wins, variable-scoped concatenate
 %! A = table ([1; 2], [3; 4], 'VariableNames', {'k', 'a'});
 %! A = addprop (A, 'ts', 'table');    A.Properties.CustomProperties.ts = 'A';
-%! A = addprop (A, 'vs', 'variable'); A.Properties.CustomProperties.vs = [10 11];
+%! A = addprop (A, 'vs', ...
+%!              'variable'); A.Properties.CustomProperties.vs = [10 11];
 %! B = table ([7; 8], 'VariableNames', {'b'});
 %! B = addprop (B, 'ts', 'table');    B.Properties.CustomProperties.ts = 'B';
 %! B = addprop (B, 'vs', 'variable'); B.Properties.CustomProperties.vs = [20];
 %! H = [A, B];
 %! assert_equal (H.Properties.CustomProperties.ts, 'A');
 %! assert_equal (H.Properties.CustomProperties.vs, [10 11 20]);
-%!test  # horzcat: a table lacking a variable-scoped property NaN-fills its block
+## horzcat: a table lacking a variable-scoped property NaN-fills its block
+%!test
 %! A = table ([1; 2], [3; 4], 'VariableNames', {'k', 'a'});
-%! A = addprop (A, 'vs', 'variable'); A.Properties.CustomProperties.vs = [10 11];
+%! A = addprop (A, 'vs', ...
+%!              'variable'); A.Properties.CustomProperties.vs = [10 11];
 %! C = table ([7; 8], 'VariableNames', {'c'});
 %! H = [A, C];
 %! assert_equal (H.Properties.CustomProperties.vs, [10 11 NaN]);
-%!test  # horzcat: disjoint table-scoped props are unioned, table before variable
+## horzcat: disjoint table-scoped props are unioned, table before variable
+%!test
 %! A = table ([1; 2], [3; 4], 'VariableNames', {'k', 'a'});
 %! A = addprop (A, 'ts', 'table');    A.Properties.CustomProperties.ts = 'A';
-%! A = addprop (A, 'vs', 'variable'); A.Properties.CustomProperties.vs = [10 11];
+%! A = addprop (A, 'vs', ...
+%!              'variable'); A.Properties.CustomProperties.vs = [10 11];
 %! D = table ([7; 8], 'VariableNames', {'d'});
 %! D = addprop (D, 'other', 'table'); D.Properties.CustomProperties.other = 'D';
 %! H = [A, D];
-%! assert_equal (fieldnames (H.Properties.CustomProperties), {'ts'; 'other'; 'vs'});
+%! assert_equal (fieldnames (H.Properties.CustomProperties), ...
+%!               {'ts'; 'other'; 'vs'});
 %! assert_equal (H.Properties.CustomProperties.other, 'D');
 %! assert_equal (H.Properties.CustomProperties.vs, [10 11 NaN]);
-%!test  # vertcat keeps the first table's custom properties (identical variables)
+## vertcat keeps the first table's custom properties (identical variables)
+%!test
 %! A = table ([1; 2], [3; 4], 'VariableNames', {'k', 'a'});
 %! A = addprop (A, 'ts', 'table');    A.Properties.CustomProperties.ts = 'A';
-%! A = addprop (A, 'vs', 'variable'); A.Properties.CustomProperties.vs = [10 11];
+%! A = addprop (A, 'vs', ...
+%!              'variable'); A.Properties.CustomProperties.vs = [10 11];
 %! A2 = table ([5; 6], [7; 8], 'VariableNames', {'k', 'a'});
-%! A2 = addprop (A2, 'ts', 'table');    A2.Properties.CustomProperties.ts = 'A2';
-%! A2 = addprop (A2, 'vs', 'variable'); A2.Properties.CustomProperties.vs = [30 31];
+%! A2 = addprop (A2, 'ts', ...
+%!               'table');    A2.Properties.CustomProperties.ts = 'A2';
+%! A2 = addprop (A2, 'vs', ...
+%!               'variable'); A2.Properties.CustomProperties.vs = [30 31];
 %! V = [A; A2];
 %! assert_equal (V.Properties.CustomProperties.ts, 'A');
 %! assert_equal (V.Properties.CustomProperties.vs, [10 11]);
 %!test  # splitvars replicates a split variable's variable-scoped entry
 %! S = table ([1; 2], [3 4; 5 6], 'VariableNames', {'x', 'm'});
-%! S = addprop (S, 'vs', 'variable'); S.Properties.CustomProperties.vs = [100 200];
+%! S = addprop (S, 'vs', ...
+%!              'variable'); S.Properties.CustomProperties.vs = [100 200];
 %! SS = splitvars (S, 'm');
 %! assert_equal (SS.Properties.CustomProperties.vs, [100 200 200]);
-%!test  # join maps variable-scoped props per source (key+left from left, right from right)
+## join maps variable-scoped props per source (key+left from left, right from right)
+%!test
 %! L = table ([1; 2], [3; 4], 'VariableNames', {'k', 'a'});
 %! L = addprop (L, 'ts', 'table');    L.Properties.CustomProperties.ts = 'L';
-%! L = addprop (L, 'vs', 'variable'); L.Properties.CustomProperties.vs = [10 11];
+%! L = addprop (L, 'vs', ...
+%!              'variable'); L.Properties.CustomProperties.vs = [10 11];
 %! R = table ([1; 2], [5; 6], 'VariableNames', {'k', 'b'});
 %! R = addprop (R, 'ts', 'table');    R.Properties.CustomProperties.ts = 'R';
-%! R = addprop (R, 'vs', 'variable'); R.Properties.CustomProperties.vs = [20 21];
+%! R = addprop (R, 'vs', ...
+%!              'variable'); R.Properties.CustomProperties.vs = [20 21];
 %! J = innerjoin (L, R);
 %! assert_equal (J.Properties.CustomProperties.ts, 'L');
 %! assert_equal (J.Properties.CustomProperties.vs, [10 11 21]);
 %!test  # unstack replicates the unstacked variable's entry onto its new columns
-%! T = table ([1; 1; 2; 2], categorical ({'x'; 'y'; 'x'; 'y'}), [10; 20; 30; 40], ...
+%! T = table ([1; 1; 2; 2], categorical ({'x'; 'y'; 'x'; 'y'}), ...
+%!            [10; 20; 30; 40], ...
 %!            'VariableNames', {'g', 'k', 'v'});
 %! T = addprop (T, 'ts', 'table');    T.Properties.CustomProperties.ts = 'T';
-%! T = addprop (T, 'vs', 'variable'); T.Properties.CustomProperties.vs = [1 2 3];
+%! T = addprop (T, 'vs', ...
+%!              'variable'); T.Properties.CustomProperties.vs = [1 2 3];
 %! U = unstack (T, 'v', 'k');
 %! assert_equal (U.Properties.VariableNames, {'g', 'x', 'y'});
 %! assert_equal (U.Properties.CustomProperties.ts, 'T');
@@ -4883,7 +5004,8 @@
 %!test
 %! L = table (datetime (2020, 1, [3;1;2]), {'a';'b';'c'}, ...
 %!            'VariableNames', {'K', 'L'});
-%! R = table (datetime (2020, 1, [2;5]), {'p';'q'}, 'VariableNames', {'K', 'R'});
+%! R = table (datetime (2020, 1, [2;5]), {'p';'q'}, 'VariableNames', {'K', ...
+%!            'R'});
 %! [T, ixL, ixR] = outerjoin (L, R);
 %! assert_equal (datevec (T.K_L)(:,3), [1;2;3;NaN]);
 %! assert_equal (ismissing (T.K_L), [false;false;false;true]);
@@ -5057,7 +5179,8 @@
 %! assert_equal (ixB, [0;3;1;3]);
 ## Set operations work on text and numeric keys via the row proxy
 %!test
-%! A = table (categorical ({'a';'b';'c'}), [1;2;3], 'VariableNames', {'C', 'N'});
+%! A = table (categorical ({'a';'b';'c'}), [1;2;3], 'VariableNames', {'C', ...
+%!            'N'});
 %! B = table (categorical ({'b';'d'}), [2;4], 'VariableNames', {'C', 'N'});
 %! I = intersect (A, B);
 %! assert_equal (cellstr (I.C), {'b'});
@@ -5125,7 +5248,8 @@
 %!test
 %! A = table (datetime (2020, 1, [3;1;2]), {'c';'a';'b'}, ...
 %!            'VariableNames', {'D', 'S'});
-%! B = table (datetime (2020, 1, [2;5]), {'b';'e'}, 'VariableNames', {'D', 'S'});
+%! B = table (datetime (2020, 1, [2;5]), {'b';'e'}, 'VariableNames', {'D', ...
+%!            'S'});
 %! U = union (A, B);
 %! assert_equal (datevec (U.D)(:,3), [1;2;3;5]);
 %! I = intersect (A, B);
@@ -5269,23 +5393,27 @@
 %! assert_equal (class (TF), 'table');
 %! assert_equal (TF.Var1, [false; false; true; false]);
 %!test
-%! TF = ismissing (table ({'1'; '2'; ''; '4'}), {'4'}, 'OutputFormat', 'tabular');
+%! TF = ismissing (table ({'1'; '2'; ''; '4'}), {'4'}, 'OutputFormat', ...
+%!                 'tabular');
 %! assert_equal (class (TF), 'table');
 %! assert_equal (TF.Var1, [false; false; false; true]);
 %!test
-%! TF = ismissing (table ({'1'; '2'; ''; '4'}, string ([1; 2; 3; 4])), {'4', '3'}, 'OutputFormat', 'tabular');
+%! TF = ismissing (table ({'1'; '2'; ''; '4'}, string ([1; 2; 3; 4])), {'4', ...
+%!                 '3'}, 'OutputFormat', 'tabular');
 %! assert_equal (class (TF), 'table');
 %! assert_equal (TF.Var1, [false; false; false; true]);
 %! assert_equal (TF.Var2, [false; false; true; true]);
 %!test
-%! TF = ismissing (table ({'1'; '2'; ''; '4'}, string ([1; 2; 3; 4])), {'4', '3'});
+%! TF = ismissing (table ({'1'; '2'; ''; '4'}, string ([1; 2; 3; 4])), {'4', ...
+%!                 '3'});
 %! assert_equal (class (TF), 'logical');
 %! assert_equal (TF, [false, false; false, false; false, true; true, true]);
 %!test
 %! TF = ismissing (table (days ([1; 2; NaN; 4]), calweeks ([1; 2; NaN; 4])));
 %! assert_equal (TF, [false, false; false, false; true, true; false, false]);
 %!test  # a scalar duration indicator matches a duration variable
-%! TF = ismissing (table (hours ([1; 2; 3]), 'VariableNames', {'d'}), hours (2));
+%! TF = ismissing (table (hours ([1; 2; 3]), 'VariableNames', {'d'}), ...
+%!                 hours (2));
 %! assert_equal (TF, [false; true; false]);
 %!test  # a NaN indicator also flags genuinely missing duration entries
 %! TF = ismissing (table (hours ([1; NaN; 3]), 'VariableNames', {'d'}), NaN);
@@ -5345,10 +5473,12 @@
 %!            'MissingLocations', table ([1; 2; 3], 'VariableNames', {'a'}));
 %!error <table.rmmissing: 'MissingLocations' must be a table with the same variable sizes as the input table or the part of it referenced by 'DataVariables'.> ...
 %! rmmissing (table ([1; 2; 3], 'VariableNames', {'a'}), ...
-%!            'MissingLocations', table (logical ([0; 1]), 'VariableNames', {'a'}));
+%!            'MissingLocations', table (logical ([0; 1]), 'VariableNames', ...
+%!              {'a'}));
 %!error <table.rmmissing: 'MissingLocations' must be a table with the same variable names as the input table or the part of it referenced by 'DataVariables'.> ...
 %! rmmissing (table ([1; 2; 3], 'VariableNames', {'a'}), ...
-%!            'MissingLocations', table (logical ([0; 1; 0]), 'VariableNames', {'b'}));
+%!            'MissingLocations', table (logical ([0; 1; 0]), ...
+%!              'VariableNames', {'b'}));
 
 ## Test 'fillmissing' method -- 'constant' method
 %!test  # a scalar fill value is broadcast to the targeted numeric variable
@@ -5559,20 +5689,27 @@
 %!error <table.fillmissing: a cell array of fill values must have one element per targeted variable.> ...
 %! fillmissing (table ([1; NaN], 'VariableNames', {'x'}), 'constant', {1, 2});
 %!error <table.fillmissing: the fill value must be a scalar, a vector with one element per targeted variable, or a cell array of per-variable values.> ...
-%! fillmissing (table ([1; NaN], 'VariableNames', {'x'}), 'constant', [1, 2, 3]);
+%! fillmissing (table ([1; NaN], 'VariableNames', {'x'}), 'constant', [1, 2, ...
+%!              3]);
 %!error <table.fillmissing: the fill value is incompatible with variable 'y'.> ...
-%! fillmissing (table ([1; NaN], {'a'; ''}, 'VariableNames', {'x', 'y'}), 'constant', 0);
+%! fillmissing (table ([1; NaN], {'a'; ''}, 'VariableNames', {'x', 'y'}), ...
+%!              'constant', 0);
 %!error <table.fillmissing: 'DataVariables' index a non-existing variable: 'zzz'> ...
-%! fillmissing (table ([1; NaN], 'VariableNames', {'x'}), 'previous', 'DataVariables', 'zzz');
+%! fillmissing (table ([1; NaN], 'VariableNames', {'x'}), 'previous', ...
+%!              'DataVariables', 'zzz');
 %!error <table.fillmissing: 'EndValues' must be 'extrap', 'previous', 'next', 'nearest', 'none', or a scalar constant.> ...
-%! fillmissing (table ([NaN; 2; 3], 'VariableNames', {'x'}), 'linear', 'EndValues', 'bogus');
+%! fillmissing (table ([NaN; 2; 3], 'VariableNames', {'x'}), 'linear', ...
+%!              'EndValues', 'bogus');
 ## the option is checked at the parse, so data without end gaps refuses it too
 %!error <table.fillmissing: 'EndValues' must be 'extrap', 'previous', 'next', 'nearest', 'none', or a scalar constant.> ...
-%! fillmissing (table ([1; 2; 3], 'VariableNames', {'x'}), 'linear', 'EndValues', 'bogus');
+%! fillmissing (table ([1; 2; 3], 'VariableNames', {'x'}), 'linear', ...
+%!              'EndValues', 'bogus');
 %!error <table.fillmissing: 'EndValues' constant must be a scalar.> ...
-%! fillmissing (table ([1; 2; 3], 'VariableNames', {'x'}), 'linear', 'EndValues', [1 2]);
+%! fillmissing (table ([1; 2; 3], 'VariableNames', {'x'}), 'linear', ...
+%!              'EndValues', [1 2]);
 %!error <table.fillmissing: 'EndValues' constant must be a scalar.> ...
-%! fillmissing (table ([NaN; 2; 3], 'VariableNames', {'x'}), 'linear', 'EndValues', {1, 2});
+%! fillmissing (table ([NaN; 2; 3], 'VariableNames', {'x'}), 'linear', ...
+%!              'EndValues', {1, 2});
 ## 'linear' refuses a targeted variable whose type it cannot interpolate
 %!error <table.fillmissing: the 'linear' method does not support the type of table variable 'y'.> ...
 %! T = table ([1; NaN; 3], {'a'; ''; 'c'}, 'VariableNames', {'x', 'y'});
@@ -5646,7 +5783,8 @@
 %!error <table.standardizeMissing: unsupported indicator element of class 'struct'.> ...
 %! standardizeMissing (table (1), {struct('a', 1)});
 %!error <table.standardizeMissing: 'DataVariables' index a non-existing variable: 'zzz'> ...
-%! standardizeMissing (table ([1; 99], 'VariableNames', {'x'}), 99, 'DataVariables', 'zzz');
+%! standardizeMissing (table ([1; 99], 'VariableNames', {'x'}), 99, ...
+%!                     'DataVariables', 'zzz');
 
 ################################################################################
 ##                  ** Apply Functions to Table Contents **                   ##
@@ -5683,7 +5821,8 @@
 %!error <T must have at least one variable> findgroups (table ())
 
 ## 'splitapply' splits rows by group number and concatenates per-group results
-%!assert_equal (splitapply (@(x) mean (x), table ([1; 2; 3; 4]), [1; 1; 2; 2]), ...
+%!assert_equal (splitapply (@(x) mean (x), table ([1; 2; 3; 4]), ...
+%!              [1; 1; 2; 2]), ...
 %!              [1.5; 3.5])
 %!assert_equal (splitapply (@(x) sum (x), table ([1; 2; 3]), [2; 1; 2]), [2; 4])
 %!test
@@ -5766,7 +5905,8 @@
 %!error <table.varfun: invalid 'OutputFormat' value 'bogus'.> ...
 %! varfun (@sum, table ([1; 2]), 'OutputFormat', 'bogus')
 %!error <table.varfun: there are no variables to which to apply FUNC.> ...
-%! varfun (@sum, table ([1; 2], 'VariableNames', {'g'}), 'GroupingVariables', 'g')
+%! varfun (@sum, table ([1; 2], 'VariableNames', {'g'}), ...
+%!         'GroupingVariables', 'g')
 %!error <table.varfun: OutputFormat 'uniform' requires FUNC to return a scalar for each call.> ...
 %! varfun (@(x) x, table ([1; 2; 3]), 'OutputFormat', 'uniform')
 ## a failure names the function and the variable it was applied to
@@ -5800,7 +5940,8 @@
 %!test
 %! T = table ((1:6)', (1:6)', 'VariableNames', {'A', 'B'});
 %! G = groupsummary (T, 'A', 3, 'sum', 'B');
-%! assert_equal (categories (G.disc_A), {'[1, 2.7)'; '[2.7, 4.4)'; '[4.4, 6.1]'});
+%! assert_equal (categories (G.disc_A), ...
+%!               {'[1, 2.7)'; '[2.7, 4.4)'; '[4.4, 6.1]'});
 ## and the same rule reaches the other methods that bin
 %!test
 %! T = table ((1:6)', 'VariableNames', {'A'});
@@ -5825,13 +5966,16 @@
 %!test
 %! T = table (categorical ({'a'; 'a'; 'b'}), [1; 2; 3], ...
 %!            'VariableNames', {'g', 'A'});
-%! assert_equal (groupsummary (T, 'g', 'nummiss', 'A').Properties.VariableNames, ...
+%! assert_equal (groupsummary (T, 'g', 'nummiss', ...
+%!               'A').Properties.VariableNames, ...
 %!               {'g', 'GroupCount', 'nummissing_A'});
-%! assert_equal (groupsummary (T, 'g', 'MEDI', 'A').Properties.VariableNames, ...
+%! assert_equal (groupsummary (T, 'g', 'MEDI', ...
+%!               'A').Properties.VariableNames, ...
 %!               {'g', 'GroupCount', 'median_A'});
 ## an ambiguous abbreviation is refused
 %!error <table.groupsummary: 'm' matches more than one method name.> ...
-%! groupsummary (table (categorical ({'a'}), 1, 'VariableNames', {'g', 'A'}), ...
+%! groupsummary (table (categorical ({'a'}), 1, 'VariableNames', {'g', ...
+%!               'A'}), ...
 %!               'g', 'm', 'A')
 ## 'std' and 'var' are not defined on an integer variable
 %!error <table.groupsummary: variable 'A': named method 'std' is not supported for variables of type 'int8'.> ...
@@ -5842,7 +5986,8 @@
 %!                      'VariableNames', {'g', 'A'}), 'g', 'var', 'A')
 
 %!error <table.varfun: applying the function 'mean' to the variable 'str' generated an error.> ...
-%! varfun (@mean, table ([1; 2], string ({'p'; 'q'}), 'VariableNames', {'num', 'str'}))
+%! varfun (@mean, table ([1; 2], string ({'p'; 'q'}), 'VariableNames', ...
+%!         {'num', 'str'}))
 
 ## 'rowfun' applies FUNC to each row; default output names are Var1, Var2, ...
 %!test
@@ -5911,11 +6056,13 @@
 %!error <table.rowfun: 'SeparateInputs' must be a logical scalar.> ...
 %! rowfun (@(x) x, table ([1; 2]), 'SeparateInputs', 'yes')
 %!error <table.rowfun: the number of 'OutputVariableNames' must equal 'NumOutputs'.> ...
-%! rowfun (@(x) x, table ([1; 2]), 'OutputVariableNames', {'p', 'q'}, 'NumOutputs', 1)
+%! rowfun (@(x) x, table ([1; 2]), 'OutputVariableNames', {'p', 'q'}, ...
+%!         'NumOutputs', 1)
 
 ## 'groupsummary' with no method returns the grouping variables and GroupCount
 %!test
-%! T = table ([1; 1; 2; 2; 1], [10; 20; 30; 40; 50], 'VariableNames', {'g', 'x'});
+%! T = table ([1; 1; 2; 2; 1], [10; 20; 30; 40; 50], 'VariableNames', {'g', ...
+%!            'x'});
 %! G = groupsummary (T, 'g');
 %! assert_equal (G.Properties.VariableNames, {'g', 'GroupCount'});
 %! assert_equal (G.g, [1; 2]);
@@ -5925,7 +6072,8 @@
 %! T = table ([1; 1; 2; 2; 1], [10; 20; 30; 40; 50], [1; 2; 3; 4; 5], ...
 %!            'VariableNames', {'g', 'x', 'y'});
 %! G = groupsummary (T, 'g', 'sum');
-%! assert_equal (G.Properties.VariableNames, {'g', 'GroupCount', 'sum_x', 'sum_y'});
+%! assert_equal (G.Properties.VariableNames, {'g', 'GroupCount', 'sum_x', ...
+%!               'sum_y'});
 %! assert_equal (G.GroupCount, [3; 2]);
 %! assert_equal (G.sum_x, [80; 70]);
 %! assert_equal (G.sum_y, [8; 7]);
@@ -5949,7 +6097,8 @@
 %! assert_equal (G.sum_y, [8; 7]);
 ## Function handles are named 'fun<n>' by their position among the methods
 %!test
-%! T = table ([1; 1; 2; 2; 1], [10; 20; 30; 40; 50], 'VariableNames', {'g', 'x'});
+%! T = table ([1; 1; 2; 2; 1], [10; 20; 30; 40; 50], 'VariableNames', {'g', ...
+%!            'x'});
 %! G = groupsummary (T, 'g', @std);
 %! assert_equal (G.Properties.VariableNames, {'g', 'GroupCount', 'fun1_x'});
 %! assert_equal (G.fun1_x, [std([10; 20; 50]); std([30; 40])]);
@@ -5963,12 +6112,14 @@
 %! assert_equal (G.fun2_x, [median([10; 20; 50]); median([30; 40])]);
 ## A function handle may return a row, producing a multi-column result variable
 %!test
-%! T = table ([1; 1; 2; 2; 1], [10; 20; 30; 40; 50], 'VariableNames', {'g', 'x'});
+%! T = table ([1; 1; 2; 2; 1], [10; 20; 30; 40; 50], 'VariableNames', {'g', ...
+%!            'x'});
 %! G = groupsummary (T, 'g', @(v) [min(v), max(v)]);
 %! assert_equal (G.fun1_x, [10, 50; 30, 40]);
 ## 'min', 'max', 'range', 'std', 'var', 'median', 'mode' spot checks
 %!test
-%! T = table ([1; 1; 2; 2; 1], [10; 20; 30; 40; 50], 'VariableNames', {'g', 'x'});
+%! T = table ([1; 1; 2; 2; 1], [10; 20; 30; 40; 50], 'VariableNames', {'g', ...
+%!            'x'});
 %! G = groupsummary (T, 'g', {'min', 'max', 'range', 'var', 'median', 'mode'});
 %! assert_equal (G.min_x, [10; 30]);
 %! assert_equal (G.max_x, [50; 40]);
@@ -5995,21 +6146,24 @@
 %! assert_equal (G.nummissing_s, [0; 1]);
 ## Missing values in a grouping variable form their own group, sorted last
 %!test
-%! T = table ([1; 1; 2; NaN; 2], [10; 20; 30; 40; 50], 'VariableNames', {'g', 'x'});
+%! T = table ([1; 1; 2; NaN; 2], [10; 20; 30; 40; 50], 'VariableNames', ...
+%!            {'g', 'x'});
 %! G = groupsummary (T, 'g', 'mean');
 %! assert_equal (G.g, [1; 2; NaN]);
 %! assert_equal (G.GroupCount, [2; 2; 1]);
 %! assert_equal (G.mean_x, [15; 40; 40]);
 ## 'IncludeMissingGroups' false drops the rows with a missing grouping value
 %!test
-%! T = table ([1; 1; 2; NaN; 2], [10; 20; 30; 40; 50], 'VariableNames', {'g', 'x'});
+%! T = table ([1; 1; 2; NaN; 2], [10; 20; 30; 40; 50], 'VariableNames', ...
+%!            {'g', 'x'});
 %! G = groupsummary (T, 'g', 'mean', 'IncludeMissingGroups', false);
 %! assert_equal (G.g, [1; 2]);
 %! assert_equal (G.GroupCount, [2; 2]);
 %! assert_equal (G.mean_x, [15; 40]);
 ## Several grouping variables group by their unique combinations, missing last
 %!test
-%! T = table ([1; 1; 2; NaN; 2], {'b'; 'a'; 'a'; 'a'; 'b'}, [10; 20; 30; 40; 50], ...
+%! T = table ([1; 1; 2; NaN; 2], {'b'; 'a'; 'a'; 'a'; 'b'}, ...
+%!            [10; 20; 30; 40; 50], ...
 %!            'VariableNames', {'g1', 'g2', 'x'});
 %! G = groupsummary (T, {'g1', 'g2'}, 'sum');
 %! assert_equal (G.g1, [1; 1; 2; 2; NaN]);
@@ -6033,15 +6187,18 @@
 %! assert_equal (cellstr (G.g), {'low'; 'medium'; 'high'});
 %! assert_equal (G.sum_x, [6; 1; 3]);
 %!error <table.groupsummary: 'bogus' is not a supported method name.> ...
-%! groupsummary (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', 'bogus')
+%! groupsummary (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', ...
+%!               'bogus')
 %!error <table.groupsummary: too many positional arguments.> ...
-%! groupsummary (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', 'sum', 'x', 5)
+%! groupsummary (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', ...
+%!               'sum', 'x', 5)
 %!error <table.groupsummary: at least one grouping variable is required.> ...
 %! groupsummary (table ([1; 2], 'VariableNames', {'g'}), false)
 %!error <table.groupsummary: too few input arguments.> ...
 %! groupsummary (table ([1; 2], 'VariableNames', {'g'}))
 %!error <table.groupsummary: variable 'x': named method 'mean' is not supported for variables of type 'cell'; use a function handle.> ...
-%! groupsummary (table ([1; 2], {'a'; 'b'}, 'VariableNames', {'g', 'x'}), 'g', 'mean')
+%! groupsummary (table ([1; 2], {'a'; 'b'}, 'VariableNames', {'g', 'x'}), ...
+%!               'g', 'mean')
 
 ## 'IncludeEmptyGroups' adds the unused categories of a categorical grouping
 ## variable as empty groups (GroupCount 0, sum 0, NaN for the rest)
@@ -6079,7 +6236,8 @@
 ## Binning combined with 'IncludeEmptyGroups' keeps the empty bins
 %!test
 %! T = table ([1; 2; 3; 20], (1:4)', 'VariableNames', {'g', 'x'});
-%! G = groupsummary (T, 'g', [0 5 10 25], 'sum', 'x', 'IncludeEmptyGroups', true);
+%! G = groupsummary (T, 'g', [0 5 10 25], 'sum', 'x', 'IncludeEmptyGroups', ...
+%!                   true);
 %! assert_equal (cellstr (G.disc_g), {'[0, 5)'; '[5, 10)'; '[10, 25]'});
 %! assert_equal (G.GroupCount, [3; 0; 1]);
 %! assert_equal (G.sum_x, [6; 0; 4]);
@@ -6088,7 +6246,8 @@
 %! t = datetime (2023, [1; 1; 2; 3; 3], [1; 2; 3; 4; 5]);
 %! T = table (t, (1:5)', 'VariableNames', {'t', 'x'});
 %! G = groupsummary (T, 't', 'month', 'sum', 'x');
-%! assert_equal (G.Properties.VariableNames, {'month_t', 'GroupCount', 'sum_x'});
+%! assert_equal (G.Properties.VariableNames, {'month_t', 'GroupCount', ...
+%!               'sum_x'});
 %! assert_equal (iscategorical (G.month_t), true);
 %! assert_equal (cellstr (G.month_t), {'Jan-2023'; 'Feb-2023'; 'Mar-2023'});
 %! assert_equal (G.GroupCount, [2; 1; 2]);
@@ -6107,7 +6266,8 @@
 %! T = table (t, (1:2)', 'VariableNames', {'t', 'x'});
 %! assert_equal (cellstr (groupsummary (T, 't', 'day', 'sum', 'x').day_t), ...
 %!               {'03-Jan-2024'; '10-Apr-2024'});
-%! assert_equal (cellstr (groupsummary (T, 't', 'quarter', 'sum', 'x').quarter_t), ...
+%! assert_equal (cellstr (groupsummary (T, 't', 'quarter', 'sum', ...
+%!               'x').quarter_t), ...
 %!               {'Q1 2024'; 'Q2 2024'});
 ## A duration bin width bins a duration variable (labelled in its unit, disc_<var>)
 %!test
@@ -6115,21 +6275,27 @@
 %! T = table (d, (1:3)', 'VariableNames', {'d', 'x'});
 %! G = groupsummary (T, 'd', minutes (90), 'sum', 'x');
 %! assert_equal (G.Properties.VariableNames, {'disc_d', 'GroupCount', 'sum_x'});
-%! assert_equal (cellstr (G.disc_d), {'[90 min, 180 min)'; '[180 min, 270 min)'; ...
+%! assert_equal (cellstr (G.disc_d), ...
+%!               {'[90 min, 180 min)'; '[180 min, 270 min)'; ...
 %!               '[270 min, 360 min]'});
 ## Time-unit binning of a numeric variable is rejected
 %!error <table.groupsummary: binning grouping variable 'g' by time unit 'month' is only supported for datetime variables.> ...
-%! groupsummary (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', 'month', 'sum')
+%! groupsummary (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', ...
+%!               'month', 'sum')
 %!error <table.groupsummary: 'IncludedEdge' must be 'left' or 'right'.> ...
-%! groupsummary (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', 2, 'sum', 'IncludedEdge', 'mid')
+%! groupsummary (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', ...
+%!               2, 'sum', 'IncludedEdge', 'mid')
 %!error <table.groupsummary: binning is not supported for grouping variable 'g' of type 'cell'.> ...
-%! groupsummary (table ({'a'; 'b'}, [3; 4], 'VariableNames', {'g', 'x'}), 'g', 2, 'sum')
+%! groupsummary (table ({'a'; 'b'}, [3; 4], 'VariableNames', {'g', 'x'}), ...
+%!               'g', 2, 'sum')
 %!error <table.groupsummary: binning grouping variable 'g' by time unit 'month' is only supported for datetime variables.> ...
-%! groupsummary (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', 'month', 'sum')
+%! groupsummary (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', ...
+%!               'month', 'sum')
 
 ## 'groupcounts' returns the grouping variables, GroupCount, and Percent
 %!test
-%! T = table ([1; 1; 2; 2; 1], [10; 20; 30; 40; 50], 'VariableNames', {'g', 'x'});
+%! T = table ([1; 1; 2; 2; 1], [10; 20; 30; 40; 50], 'VariableNames', {'g', ...
+%!            'x'});
 %! G = groupcounts (T, 'g');
 %! assert_equal (G.Properties.VariableNames, {'g', 'GroupCount', 'Percent'});
 %! assert_equal (G.g, [1; 2]);
@@ -6200,7 +6366,8 @@
 %!error <table.groupcounts: invalid argument; expected a GROUPBINS binning scheme or a Name-Value option.> ...
 %! groupcounts (table ([1; 2], 'VariableNames', {'g'}), 'g', 'bogus')
 %!error <table.groupcounts: 'IncludedEdge' must be 'left' or 'right'.> ...
-%! groupcounts (table ([1; 2], 'VariableNames', {'g'}), 'g', 2, 'IncludedEdge', 'x')
+%! groupcounts (table ([1; 2], 'VariableNames', {'g'}), 'g', 2, ...
+%!              'IncludedEdge', 'x')
 
 ## 'groupfilter' with a scalar-returning method keeps or drops whole groups
 %!test
@@ -6254,20 +6421,24 @@
 %! T = table ([1; 3; 5; 7; 9; 11], (1:6)', 'VariableNames', {'g', 'x'});
 %! G = groupfilter (T, 'g', [0 6 12], @(x) numel (x) > 2);
 %! assert_equal (G.x, (1:6)');
-%! G2 = groupfilter (T, 'g', [0 6 12], @(x) mean (x) > 4, 'IncludedEdge', 'right');
+%! G2 = groupfilter (T, 'g', [0 6 12], @(x) mean (x) > 4, 'IncludedEdge', ...
+%!                   'right');
 %! assert_equal (G2.x, [4; 5; 6]);
 %!error <table.groupfilter: METHOD must be a function handle.> ...
 %! groupfilter (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', 'sum')
 %!error <table.groupfilter: too few input arguments.> ...
 %! groupfilter (table ([1; 2], 'VariableNames', {'g'}), 'g')
 %!error <table.groupfilter: binning grouping variable 'g' by time unit 'month' is only supported for datetime variables.> ...
-%! groupfilter (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', 'month', @(x) x > 0)
+%! groupfilter (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', ...
+%!              'month', @(x) x > 0)
 %!error <table.groupfilter: too many positional arguments.> ...
-%! groupfilter (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', @(x) x > 0, 'x', 5)
+%! groupfilter (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', ...
+%!              @(x) x > 0, 'x', 5)
 %!error <table.groupfilter: at least one grouping variable is required.> ...
 %! groupfilter (table ([1; 2], 'VariableNames', {'g'}), false, @(x) x > 0)
 %!error <table.groupfilter: the filter function must return a logical scalar or a logical vector with one element per group row.> ...
-%! groupfilter (table ([1; 1], [3; 4], 'VariableNames', {'g', 'x'}), 'g', @(x) [true; true; true])
+%! groupfilter (table ([1; 1], [3; 4], 'VariableNames', {'g', 'x'}), 'g', ...
+%!              @(x) [true; true; true])
 
 ## 'grouptransform' 'meancenter' subtracts the group mean, in place
 %!test
@@ -6340,15 +6511,20 @@
 %!error <table.grouptransform: at least one grouping variable is required.> ...
 %! grouptransform (table ([1; 2], 'VariableNames', {'g'}), false, 'zscore')
 %!error <table.grouptransform: METHOD must be one of 'zscore', 'norm', 'meancenter', 'rescale', 'meanfill', 'linearfill', or a function handle.> ...
-%! grouptransform (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', 'bogus')
+%! grouptransform (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', ...
+%!                 'bogus')
 %!error <table.grouptransform: binning grouping variable 'g' by time unit 'month' is only supported for datetime variables.> ...
-%! grouptransform (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', 'month', 'zscore')
+%! grouptransform (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', ...
+%!                 'month', 'zscore')
 %!error <table.grouptransform: 'ReplaceValues' must be a logical scalar.> ...
-%! grouptransform (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', 'zscore', 'ReplaceValues', 'yes')
+%! grouptransform (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', ...
+%!                 'zscore', 'ReplaceValues', 'yes')
 %!error <table.grouptransform: too many positional arguments.> ...
-%! grouptransform (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', 'zscore', 'x', 5)
+%! grouptransform (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', ...
+%!                 'zscore', 'x', 5)
 %!error <table.grouptransform: variable 'x': grouptransform requires numeric or logical data; got 'cell'.> ...
-%! grouptransform (table ([1; 2], {'a'; 'b'}, 'VariableNames', {'g', 'x'}), 'g', 'zscore')
+%! grouptransform (table ([1; 2], {'a'; 'b'}, 'VariableNames', {'g', 'x'}), ...
+%!                 'g', 'zscore')
 %!error <table.grouptransform: too few input arguments.> ...
 %! grouptransform (table ([1; 2], 'VariableNames', {'g'}), 'g')
 
@@ -6468,25 +6644,36 @@
 %!            'Method', 'sum', 'IncludeTotals', true);
 %! assert_equal (P.Properties.VariableNames, {'g', 'x', 'y', 'Overall_sum'});
 %! assert_equal (cellstr (P{:, 'g'}), {'a'; 'b'; 'Overall_sum'});
-%! assert_equal (P{:, {'x', 'y', 'Overall_sum'}}, [1, 2, 3; 3, 9, 12; 4, 11, 15]);
+%! assert_equal (P{:, {'x', 'y', 'Overall_sum'}}, [1, 2, 3; 3, 9, 12; 4, 11, ...
+%!               15]);
 %!error <table.pivot: specify at least one of 'Columns' or 'Rows'.> ...
 %! pivot (table (categorical ({'a'; 'b'}), 'VariableNames', {'g'}))
 %!error <table.pivot: 'DataVariable' must specify a single variable.> ...
-%! pivot (table ([1; 2], [3; 4], [5; 6], 'VariableNames', {'g', 'x', 'y'}), 'Rows', 'g', 'DataVariable', {'x', 'y'})
+%! pivot (table ([1; 2], [3; 4], [5; 6], 'VariableNames', {'g', 'x', 'y'}), ...
+%!        'Rows', 'g', 'DataVariable', {'x', 'y'})
 %!error <table.pivot: unknown Method 'bogus'.> ...
-%! pivot (table (categorical ({'a'; 'b'}), 'VariableNames', {'g'}), 'Rows', 'g', 'Method', 'bogus')
+%! pivot (table (categorical ({'a'; 'b'}), 'VariableNames', {'g'}), 'Rows', ...
+%!        'g', 'Method', 'bogus')
 %!error <table.pivot: Method 'sum' requires a 'DataVariable'.> ...
-%! pivot (table (categorical ({'a'; 'b'}), 'VariableNames', {'g'}), 'Rows', 'g', 'Method', 'sum')
+%! pivot (table (categorical ({'a'; 'b'}), 'VariableNames', {'g'}), 'Rows', ...
+%!        'g', 'Method', 'sum')
 %!error <table.pivot: Method 'none' allows at most one value per cell, but a group holds several; specify an aggregating method.> ...
-%! pivot (table (categorical ({'a'; 'a'}), categorical ({'x'; 'x'}), [1; 2], 'VariableNames', {'g', 'h', 'v'}), 'Rows', 'g', 'Columns', 'h', 'DataVariable', 'v', 'Method', 'none')
+%! pivot (table (categorical ({'a'; 'a'}), categorical ({'x'; 'x'}), [1; 2], ...
+%!        'VariableNames', {'g', 'h', 'v'}), 'Rows', 'g', 'Columns', 'h', ...
+%!        'DataVariable', 'v', 'Method', 'none')
 %!error <table.pivot: 'IncludeTotals' is not supported with Method 'none'.> ...
-%! pivot (table (categorical ({'a'; 'b'}), [1; 2], 'VariableNames', {'g', 'v'}), 'Rows', 'g', 'DataVariable', 'v', 'Method', 'none', 'IncludeTotals', true)
+%! pivot (table (categorical ({'a'; 'b'}), [1; 2], 'VariableNames', {'g', ...
+%!        'v'}), 'Rows', 'g', 'DataVariable', 'v', 'Method', 'none', ...
+%!        'IncludeTotals', true)
 %!error <table.pivot: 'RowLabelPlacement' must be 'variable' or 'rownames'.> ...
-%! pivot (table (categorical ({'a'; 'b'}), 'VariableNames', {'g'}), 'Rows', 'g', 'RowLabelPlacement', 'foo')
+%! pivot (table (categorical ({'a'; 'b'}), 'VariableNames', {'g'}), 'Rows', ...
+%!        'g', 'RowLabelPlacement', 'foo')
 %!error <table.pivot: 'IncludeMissingGroups' must be a logical scalar.> ...
-%! pivot (table (categorical ({'a'; 'b'}), 'VariableNames', {'g'}), 'Rows', 'g', 'IncludeMissingGroups', 'yes')
+%! pivot (table (categorical ({'a'; 'b'}), 'VariableNames', {'g'}), 'Rows', ...
+%!        'g', 'IncludeMissingGroups', 'yes')
 %!error <table.pivot: 'OutputFormat' must be 'flat' or 'nested'.> ...
-%! pivot (table (categorical ({'a'; 'b'}), 'VariableNames', {'g'}), 'Rows', 'g', 'OutputFormat', 'bogus')
+%! pivot (table (categorical ({'a'; 'b'}), 'VariableNames', {'g'}), 'Rows', ...
+%!        'g', 'OutputFormat', 'bogus')
 ## 'OutputFormat','nested' nests multiple Columns variables into nested tables
 %!test
 %! r = [1; 1; 2; 2; 1; 2];
@@ -6522,14 +6709,18 @@
 %! T = table (r, c1, c2, v, 'VariableNames', {'r', 'c1', 'c2', 'v'});
 %! P = pivot (T, 'Rows', 'r', 'Columns', {'c1', 'c2'}, 'DataVariable', 'v', ...
 %!            'Method', 'sum', 'OutputFormat', 'nested', 'IncludeTotals', true);
-%! assert_equal (any (strcmp (P.Properties.VariableNames, 'Overall_sum')), true);
+%! assert_equal (any (strcmp (P.Properties.VariableNames, 'Overall_sum')), ...
+%!               true);
 %! assert_equal (P.Overall_sum, [80; 130; 210]);
 %!error <table.pivot: 'IncludedEdge' must be 'left' or 'right'.> ...
-%! pivot (table ([1; 2], 'VariableNames', {'g'}), 'Rows', 'g', 'RowsBinMethod', 2, 'IncludedEdge', 'mid')
+%! pivot (table ([1; 2], 'VariableNames', {'g'}), 'Rows', 'g', ...
+%!        'RowsBinMethod', 2, 'IncludedEdge', 'mid')
 %!error <table.pivot: binning is not supported for grouping variable 'g' of type 'categorical'.> ...
-%! pivot (table (categorical ({'a'; 'b'}), 'VariableNames', {'g'}), 'Rows', 'g', 'RowsBinMethod', 5)
+%! pivot (table (categorical ({'a'; 'b'}), 'VariableNames', {'g'}), 'Rows', ...
+%!        'g', 'RowsBinMethod', 5)
 %!error <table.pivot: unrecognised option 'Wibble'.> ...
-%! pivot (table (categorical ({'a'; 'b'}), 'VariableNames', {'g'}), 'Rows', 'g', 'Wibble', 1)
+%! pivot (table (categorical ({'a'; 'b'}), 'VariableNames', {'g'}), 'Rows', ...
+%!        'g', 'Wibble', 1)
 
 ## 'RowsBinMethod' bins a numeric row grouping variable by bin interval
 %!test
@@ -6636,9 +6827,12 @@
 %! assert_equal (H.Properties.VariableNames, {'x', 'y'});
 %! assert_equal (H.Properties.RowNames, {'r1'; 'r2'});
 %!test  # multiple row-named inputs are aligned by row name, not position
-%! T1 = table ([1; 2; 3], 'VariableNames', {'x'}, 'RowNames', {'r1', 'r2', 'r3'});
-%! T2 = table ([20; 30; 10], 'VariableNames', {'y'}, 'RowNames', {'r2', 'r3', 'r1'});
-%! T3 = table ([300; 100; 200], 'VariableNames', {'z'}, 'RowNames', {'r3', 'r1', 'r2'});
+%! T1 = table ([1; 2; 3], 'VariableNames', {'x'}, 'RowNames', {'r1', 'r2', ...
+%!             'r3'});
+%! T2 = table ([20; 30; 10], 'VariableNames', {'y'}, 'RowNames', {'r2', ...
+%!             'r3', 'r1'});
+%! T3 = table ([300; 100; 200], 'VariableNames', {'z'}, 'RowNames', {'r3', ...
+%!             'r1', 'r2'});
 %! H = horzcat (T1, T2, T3);
 %! assert_equal (H.Properties.RowNames, {'r1'; 'r2'; 'r3'});
 %! assert_equal (H.x, [1; 2; 3]);
@@ -7076,9 +7270,11 @@
 %! Tc = table ({'a'; 'b'}, {'c'; 'd'}, 'VariableNames', {'x', 'y'});
 %! assert_equal (Tc{:,:}, {'a', 'c'; 'b', 'd'});
 %!error <table.subsref: cannot concatenate the table variables 'x' and 'y', because their types are double and cell.> ...
-%! Tm = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'}); Tm{1,:};
+%! Tm = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', ...
+%!             'y'}); Tm{1,:};
 %!error <table.subsref: cannot concatenate the table variables 'x' and 'y', because their types are double and cell.> ...
-%! Tm = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'}); Tm{:,:};
+%! Tm = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', ...
+%!             'y'}); Tm{:,:};
 %!assert_equal (T.Variables, [Age, Smoker, Height, Weight, BloodPressure]);
 %!assert_equal (isempty (T.Properties.RowNames), true);
 %!assert_equal (numel (T.Properties.VariableNames), 5);
@@ -7175,7 +7371,8 @@
 
 ## 'subsref' with '()' returns a sub-table for every row/variable reference type
 %!test
-%! T = table ([1;2;3], {'a';'b';'c'}, [10;20;30], 'VariableNames', {'x','y','z'});
+%! T = table ([1;2;3], {'a';'b';'c'}, [10;20;30], 'VariableNames', {'x','y', ...
+%!            'z'});
 %! assert_equal (class (T(2,:)), 'table');
 %! assert_equal (T(2,:).x, 2);
 %! assert_equal (size (T(1:2,[1 3])), [2, 2]);
@@ -7202,12 +7399,14 @@
 %!error <table: this table has no RowNames.> ...
 %! T = table ([1;2;3], 'VariableNames', {'x'}); T('r1',:);
 %!error <table: no such named row in table: 'r9'> ...
-%! T = table ([1;2;3], 'VariableNames', {'x'}, 'RowNames', {'r1','r2','r3'}); ...
+%! T = table ([1;2;3], 'VariableNames', {'x'}, 'RowNames', {'r1','r2', ...
+%!            'r3'}); ...
 %! T('r9',:);
 
 ## 'subsref' with '{}' extracts raw data from concatenable variables
 %!test
-%! T = table ([1;2;3], [10;20;30], [100;200;300], 'VariableNames', {'x','y','z'});
+%! T = table ([1;2;3], [10;20;30], [100;200;300], 'VariableNames', {'x','y', ...
+%!            'z'});
 %! assert_equal (T{2,:}, [2, 20, 200]);
 %! assert_equal (T{:,2}, [10;20;30]);
 %! assert_equal (T{1:2,[1 3]}, [1, 100; 2, 200]);
@@ -7421,8 +7620,10 @@
 
 ## Test 'Properties' of an empty table yields a value in argument position
 %!test
-%! assert_equal (class (table ().Properties), 'datatypes.tabular.TableProperties');
-%! assert_equal (isa (table ().Properties, 'datatypes.tabular.TabularProperties'), true);
+%! assert_equal (class (table ().Properties), ...
+%!               'datatypes.tabular.TableProperties');
+%! assert_equal (isa (table ().Properties, ...
+%!               'datatypes.tabular.TabularProperties'), true);
 ## Test 'Properties' of a zero-row table yields a value in argument position
 %!test
 %! Z = table (zeros (0, 1), 'VariableNames', {'v'});
@@ -7462,16 +7663,19 @@
 %!               {'continuous', 'event'});
 %! assert_equal (removevars (T, 'a').Properties.VariableContinuity, ...
 %!               {'step', 'event'});
-%! assert_equal (movevars (T, 'a', 'After', 'b').Properties.VariableContinuity, ...
+%! assert_equal (movevars (T, 'a', 'After', ...
+%!               'b').Properties.VariableContinuity, ...
 %!               {'step', 'continuous', 'event'});
 ## Test 'VariableContinuity' gains 'unset' for a variable added by addvars
 %!test
 %! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
 %! T.Properties.VariableContinuity = {'continuous', 'step'};
 %! A = addvars (T, [5; 6], 'NewVariableNames', {'c'});
-%! assert_equal (A.Properties.VariableContinuity, {'continuous', 'step', 'unset'});
+%! assert_equal (A.Properties.VariableContinuity, {'continuous', 'step', ...
+%!               'unset'});
 %! B = addvars (T, [5; 6], 'Before', 'a', 'NewVariableNames', {'z'});
-%! assert_equal (B.Properties.VariableContinuity, {'unset', 'continuous', 'step'});
+%! assert_equal (B.Properties.VariableContinuity, {'unset', 'continuous', ...
+%!               'step'});
 ## Test 'VariableContinuity' stays unset when the table has none
 %!test
 %! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
@@ -7482,7 +7686,8 @@
 %! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
 %! T.Properties.VariableContinuity = {'continuous', 'step'};
 %! H = [T, table([5; 6], 'VariableNames', {'z'})];
-%! assert_equal (H.Properties.VariableContinuity, {'continuous', 'step', 'unset'});
+%! assert_equal (H.Properties.VariableContinuity, {'continuous', 'step', ...
+%!               'unset'});
 ## Test 'VariableContinuity' takes the first non-empty operand in vertcat
 %!test
 %! T = table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'});
@@ -7522,7 +7727,8 @@
 %!error <table.subsasgn: VariableContinuity property must have one element for each variable in the table.> ...
 %! T = table ([1; 2], [3; 4]); T.Properties.VariableContinuity = {'step'};
 %!error <table.subsasgn: VariableContinuity property must be specified with 'continuous', 'step', 'event', or 'unset'.> ...
-%! T = table ([1; 2], [3; 4]); T.Properties.VariableContinuity = {'bogus', 'step'};
+%! T = table ([1; 2], [3; 4]); T.Properties.VariableContinuity = {'bogus', ...
+%!            'step'};
 %!error <table.subsasgn: to assign to the VariableContinuity property, use a string array or a cell array of character vectors.> ...
 %! T = table ([1; 2], [3; 4]); T.Properties.VariableContinuity = 'continuous';
 %!error <table.subsasgn: out of bound index for VariableContinuity.> ...
@@ -7532,11 +7738,13 @@
 %!test
 %! T = table ([1; 2], 'VariableNames', {'x'});
 %! assert_equal (class (T.Properties), 'datatypes.tabular.TableProperties');
-%! assert_equal (isa (T.Properties, 'datatypes.tabular.TabularProperties'), true);
+%! assert_equal (isa (T.Properties, 'datatypes.tabular.TabularProperties'), ...
+%!               true);
 ## Test 'Properties' no longer exposes the internal variable storage
 %!test
 %! T = table ([1; 2], 'VariableNames', {'x'});
-%! assert_equal (any (strcmp (properties (T.Properties), 'VariableValues')), false);
+%! assert_equal (any (strcmp (properties (T.Properties), 'VariableValues')), ...
+%!               false);
 ## Test the properties listing writes out a row of names
 %!test
 %! fv = @(v) datatypes.tabular.TabularProperties.formatValue (v);
@@ -7623,9 +7831,11 @@
 %! assert_equal (isempty (T.Properties.CustomProperties), false);
 ## Test input validation for 'CustomProperties' indexing
 %!error <datatypes.tabular.CustomProperties: there is no custom property named 'Nope'.> ...
-%! T = addprop (table ([1; 2]), 'Extra', 'table'); T.Properties.CustomProperties.Nope;
+%! T = addprop (table ([1; 2]), 'Extra', ...
+%!              'table'); T.Properties.CustomProperties.Nope;
 %!error <datatypes.tabular.CustomProperties: only '.' indexing is supported.> ...
-%! T = addprop (table ([1; 2]), 'Extra', 'table'); T.Properties.CustomProperties(1);
+%! T = addprop (table ([1; 2]), 'Extra', ...
+%!              'table'); T.Properties.CustomProperties(1);
 
 ## Test input validation for 'subsasgn' Properties assignment
 %!error <table.subsasgn: cannot assign new properties.> ...
@@ -7980,94 +8190,115 @@
 %! subsasgn (T, substruct ('.', 'Properties', '.', 'Description'), 5);
 %!error <table.subsasgn: table description must be a character vector or a string scalar.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'Description'), string ({'a', 'b'}));
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'Description'), ...
+%!           string ({'a', 'b'}));
 %!error <table.subsasgn: cannot index DimensionNames with more than one dimension. Use a vector to index multiple DimensionNames at once.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'DimensionNames', '()', {1, 1}), {'a'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'DimensionNames', '()', ...
+%!           {1, 1}), {'a'});
 %!error <table.subsasgn: out of bound index for DimensionNames.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'DimensionNames', '()', {5}), {'a'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'DimensionNames', '()', ...
+%!           {5}), {'a'});
 %!error <table.subsasgn: DimensionNames must be a cell array of character vectors or a string array matching the number of indexed variables.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'DimensionNames', '()', {1}), 5);
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'DimensionNames', '()', ...
+%!           {1}), 5);
 %!error <table.subsasgn: DimensionNames must be a two-element cell array of character vectors or string array.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! subsasgn (T, substruct ('.', 'Properties', '.', 'DimensionNames'), {'a'});
 %!error <table.subsasgn: cannot index VariableNames with more than one dimension. Use a vector to index multiple VariableNames at once.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableNames', '()', {1, 1}), {'a'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableNames', '()', ...
+%!           {1, 1}), {'a'});
 %!error <table.subsasgn: VariableNames must be a cell array of character vectors or a string array matching the number of variables.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableNames'), 5);
 %!error <table.subsasgn: cannot index VariableTypes with more than one dimension. Use a vector to index multiple VariableTypes at once.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableTypes', '()', {1, 1}), {'a'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableTypes', '()', ...
+%!           {1, 1}), {'a'});
 %!error <table.subsasgn: out of bound index for VariableTypes.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableTypes', '()', {5}), {'a'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableTypes', '()', ...
+%!           {5}), {'a'});
 %!error <table.subsasgn: VariableTypes must be a cell array of character vectors or a string array matching the number of variables.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableTypes'), 5);
 %!error <table.subsasgn: cannot index VariableDescriptions with more than one dimension. Use a vector to index multiple VariableDescriptions at once.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableDescriptions', '()', {1, 1}), {'a'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableDescriptions', ...
+%!           '()', {1, 1}), {'a'});
 %!error <table.subsasgn: out of bound index for VariableDescriptions.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableDescriptions', '()', {5}), {'a'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableDescriptions', ...
+%!           '()', {5}), {'a'});
 %!error <table.subsasgn: VariableDescriptions must be a cell array of character vectors or a string array matching the number of indexed variables.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableDescriptions', '()', {1}), 5);
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableDescriptions', ...
+%!           '()', {1}), 5);
 %!error <table.subsasgn: VariableDescriptions must be a cell array of character vectors or a string array matching the number of variables.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableDescriptions'), 5);
 %!error <table.subsasgn: cannot index VariableUnits with more than one dimension. Use a vector to index multiple VariableUnits at once.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableUnits', '()', {1, 1}), {'a'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableUnits', '()', ...
+%!           {1, 1}), {'a'});
 %!error <table.subsasgn: out of bound index for VariableUnits.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableUnits', '()', {5}), {'a'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableUnits', '()', ...
+%!           {5}), {'a'});
 %!error <table.subsasgn: VariableUnits must be a cell array of character vectors or a string array matching the number of indexed variables.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableUnits', '()', {1}), 5);
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableUnits', '()', ...
+%!           {1}), 5);
 %!error <table.subsasgn: VariableUnits must be a cell array of character vectors or a string array matching the number of variables.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableUnits'), 5);
 %!error <table.subsasgn: cannot index VariableContinuity with more than one dimension. Use a vector to index multiple variables at once.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableContinuity', '()', {1, 1}), {'unset'});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableContinuity', ...
+%!           '()', {1, 1}), {'unset'});
 %!error <table.subsasgn: VariableContinuity must be a cell array of character vectors or a string array.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableContinuity'), 5);
 %!error <table.subsasgn: to assign to the VariableContinuity property, use a string array or a cell array of character vectors. A character vector can be assigned only to an individual element of the property.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableContinuity'), "unset");
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'VariableContinuity'), ...
+%!           "unset");
 
 ## and the custom properties, which are scalar per table or one value
 ## per variable
 %!error <table.subsasgn: use '.' notation to index a custom property.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! T = addprop (T, 'tp', 'table');
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '()', {1}), 1);
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '()', ...
+%!           {1}), 1);
 %!error <table.subsasgn: custom property 'tp' is a table property and cannot be indexed any further.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! T = addprop (T, 'tp', 'table');
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'tp', '()', {1}), 1);
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', ...
+%!           'tp', '()', {1}), 1);
 %!error <table.subsasgn: cannot index a custom variable property in more than one dimension.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! T = addprop (T, 'vp', 'variable');
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'vp', '()', {1, 1}), {1});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', ...
+%!           'vp', '()', {1, 1}), {1});
 %!error <table.subsasgn: out of bound index for custom variable property 'vp'.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! T = addprop (T, 'vp', 'variable');
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'vp', '()', {5}), {1});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', ...
+%!           'vp', '()', {5}), {1});
 %!error <table.subsasgn: input vector does not match the number of indexed variables in the custom variable property 'vp'.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! T = addprop (T, 'vp', 'variable');
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'vp', '()', {1}), {1, 2});
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', ...
+%!           'vp', '()', {1}), {1, 2});
 %!error <table.subsasgn: input vector does not match the number of variables.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! T = addprop (T, 'vp', 'variable');
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'vp'), 5);
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', ...
+%!           'vp'), 5);
 
 ## writetable refuses 'Range' when merging into a file that already exists
 %!error <table.writetable: 'Range' is not supported when writing into an existing file.> ...
@@ -8084,7 +8315,8 @@
 %!error <table.subsasgn: assigned value to a custom variable property must be a vector.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! T = addprop (T, 'vp', 'variable');
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'vp'), ones (2, 2));
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', ...
+%!           'vp'), ones (2, 2));
 
 ## a 0-by-0 empty clears a custom variable property whatever the table's width
 %!test
@@ -8113,7 +8345,8 @@
 %!error <table.subsasgn: a character vector is not a valid value for a custom variable property, use a cell array of character vectors or a string array.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! T = addprop (T, 'vp', 'variable');
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'vp'), '');
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', ...
+%!           'vp'), '');
 
 ## an indexed assignment re-expands a cleared property to the table's width
 %!test
@@ -8144,13 +8377,15 @@
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! T = addprop (T, 'vp', 'variable');
 %! T.Properties.CustomProperties.vp = [1 2];
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'vp', '()', {logical([1 0 1])}), 5);
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', ...
+%!           'vp', '()', {logical([1 0 1])}), 5);
 
 ## how a property is indexed is settled before what is assigned to it
 %!error <table.subsasgn: custom property 'vp' is a variable property and cannot be indexed any further with '.' notation.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! T = addprop (T, 'vp', 'variable');
-%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', 'vp', '.', 'x'), ones (2, 2));
+%! subsasgn (T, substruct ('.', 'Properties', '.', 'CustomProperties', '.', ...
+%!           'vp', '.', 'x'), ones (2, 2));
 
 ## a '.' subscript may name a variable with a string scalar
 %!test
@@ -8161,19 +8396,22 @@
 ## the same on the reading side
 %!test
 %! T = table ([1;2;3], [4;5;6], 'VariableNames', {'x', 'y'});
-%! assert_equal (subsref (T, struct ('type', '.', 'subs', string ('x'))), [1;2;3]);
+%! assert_equal (subsref (T, struct ('type', '.', 'subs', string ('x'))), ...
+%!               [1;2;3]);
 
 ## a string scalar names 'Properties'
 %!test
 %! T = table ([1;2;3], 'VariableNames', {'x'});
-%! s = struct ('type', {'.', '.'}, 'subs', {string('Properties'), 'Description'});
+%! s = struct ('type', {'.', '.'}, 'subs', {string('Properties'), ...
+%!             'Description'});
 %! T = subsasgn (T, s, 'meta');
 %! assert_equal (T.Properties.Description, 'meta');
 
 ## a string scalar names a property field
 %!test
 %! T = table ([1;2;3], 'VariableNames', {'x'});
-%! s = struct ('type', {'.', '.'}, 'subs', {'Properties', string('Description')});
+%! s = struct ('type', {'.', '.'}, 'subs', {'Properties', ...
+%!             string('Description')});
 %! T = subsasgn (T, s, 'meta');
 %! assert_equal (T.Properties.Description, 'meta');
 
@@ -8203,7 +8441,8 @@
 
 %!error <table.subsasgn: .-index argument must be a character vector or a string scalar.> ...
 %! T = table ([1;2;3], 'VariableNames', {'x'});
-%! subsasgn (T, struct ('type', {'.', '()'}, 'subs', {string({'x','y'}), {2}}), 1);
+%! subsasgn (T, struct ('type', {'.', '()'}, 'subs', {string({'x','y'}), ...
+%!           {2}}), 1);
 
 %!error <table.subsasgn: indexing a custom property requires a character vector or a string scalar.> ...
 %! T = addprop (table ([1;2;3], 'VariableNames', {'x'}), 'tp', 'table');

@@ -234,7 +234,8 @@ endfunction
 %! n = categorical ({'a'}, {'a', 'b'});
 %! assert_equal (keyMatch (o, n), false);
 %! assert_equal (keyMatch (o, o2), false);
-%! assert_equal (keyMatch (o, categorical ({'a'}, {'a', 'b'}, 'Ordinal', true)), ...
+%! assert_equal (keyMatch (o, categorical ({'a'}, {'a', 'b'}, 'Ordinal', ...
+%!               true)), ...
 %!               true);
 
 ## Undefined categorical elements compare equal to one another.
@@ -287,8 +288,10 @@ endfunction
 %! assert_equal (keyMatch (struct ('a', 1), struct ('a', 1)), true);
 %! assert_equal (keyHash (struct ('a', 1)), keyHash (struct ('a', 1)));
 %!test
-%! assert_equal (keyMatch (struct ('a', 1, 'b', 2), struct ('b', 2, 'a', 1)), true);
-%! assert_equal (keyHash (struct ('a', 1, 'b', 2)), keyHash (struct ('b', 2, 'a', 1)));
+%! assert_equal (keyMatch (struct ('a', 1, 'b', 2), struct ('b', 2, 'a', ...
+%!               1)), true);
+%! assert_equal (keyHash (struct ('a', 1, 'b', 2)), keyHash (struct ('b', 2, ...
+%!               'a', 1)));
 %!test
 %! assert_equal (keyMatch (struct ('a', 1), struct ('a', 2)), false);
 %! assert_equal (keyMatch (struct ('a', 1), struct ('b', 1)), false);

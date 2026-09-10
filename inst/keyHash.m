@@ -285,12 +285,17 @@ endfunction
 ## fields were created in is NOT part of the key: R2024a reports two structs
 ## differing only in field order as one key and hashes them alike.
 %!assert_equal (keyHash (struct ('a', 1)), keyHash (struct ('a', 1)))
-%!assert_equal (keyHash (struct ('a', 1, 'b', 2)), keyHash (struct ('b', 2, 'a', 1)))
+%!assert_equal (keyHash (struct ('a', 1, 'b', 2)), keyHash (struct ('b', 2, ...
+%!              'a', 1)))
 %!assert_equal (keyHash (struct ()), keyHash (struct ()))
-%!assert_equal (isequal (keyHash (struct ('a', 1)), keyHash (struct ('a', 2))), false)
-%!assert_equal (isequal (keyHash (struct ('a', 1)), keyHash (struct ('b', 1))), false)
-%!assert_equal (isequal (keyHash (struct ('a', 1)), keyHash (struct ('a', 1, 'b', 2))), false)
-%!assert_equal (isequal (keyHash (struct ('a', 1)), keyHash (struct ('a', int8 (1)))), false)
+%!assert_equal (isequal (keyHash (struct ('a', 1)), keyHash (struct ('a', ...
+%!              2))), false)
+%!assert_equal (isequal (keyHash (struct ('a', 1)), keyHash (struct ('b', ...
+%!              1))), false)
+%!assert_equal (isequal (keyHash (struct ('a', 1)), keyHash (struct ('a', 1, ...
+%!              'b', 2))), false)
+%!assert_equal (isequal (keyHash (struct ('a', 1)), keyHash (struct ('a', ...
+%!              int8 (1)))), false)
 %!test  ## nesting, and a struct array against a scalar of the same field
 %! assert_equal (keyHash (struct ('a', struct ('b', 1))), ...
 %!               keyHash (struct ('a', struct ('b', 1))));

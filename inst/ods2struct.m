@@ -120,7 +120,8 @@ endfunction
 %! ## `ods2struct` is the inverse of `struct2ods`: it reads *every* data sheet of
 %! ## a workbook into one scalar struct, one field per sheet, in sheet order.
 %!
-%! wb.Patients = table ({'Li'; 'Diaz'}, [38; 40], 'VariableNames', {'Name', 'Age'});
+%! wb.Patients = table ({'Li'; 'Diaz'}, [38; 40], 'VariableNames', {'Name', ...
+%!                      'Age'});
 %! wb.Visits = table ([1; 2; 3], 'VariableNames', {'Visit'});
 %! filename = fullfile (tempdir (), 'clinic.ods');
 %! struct2ods (filename, wb);

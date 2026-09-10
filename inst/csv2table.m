@@ -559,7 +559,8 @@ function varValue = cell2auto (C, textType, datetimeType, durationTypes, ...
     if (all (cellfun (@(x) isa (x, 'double'), C)))
       varValue = cell2mat (C);
     elseif (any (cellfun (@(x) isa (x, 'int64'), C)))
-      varValue = cellfun (@(x) int64 (x), C);   # a negative large integer present
+      ## a negative large integer present
+      varValue = cellfun (@(x) int64 (x), C);
     else
       varValue = cellfun (@(x) uint64 (x), C);
     endif
@@ -752,7 +753,8 @@ endfunction
 %! end_unwind_protect
 
 %!error <csv2table: 'VariableNamesRow' and 'VariableNamesLine' name the same thing; pass one of them.> ...
-%! csv2table ([tempname() '.csv'], 'VariableNamesRow', 1, 'VariableNamesLine', 1);
+%! csv2table ([tempname() '.csv'], 'VariableNamesRow', 1, ...
+%!            'VariableNamesLine', 1);
 
 ## 'VariableNamesRow' names the line of a plain CSV that holds the names
 %!test
@@ -818,7 +820,8 @@ endfunction
 %! fputs (fid, "A,B,C\n1,2,3\n");
 %! fclose (fid);
 %! unwind_protect
-%!   csv2table (fn, 'ReadRowNames', false, 'VariableTypes', {'double', 'double'});
+%!   csv2table (fn, 'ReadRowNames', false, 'VariableTypes', {'double', ...
+%!              'double'});
 %! unwind_protect_cleanup
 %!   delete (fn);
 %! end_unwind_protect
@@ -916,8 +919,8 @@ endfunction
 %! fputs (fid, "A,B\nkg,m\nd1,d2\n1,2\n3,4\n");
 %! fclose (fid);
 %! unwind_protect
-%!   t = csv2table (fn, 'VariableUnitsLine', 2, 'VariableDescriptionsLine', 3, ...
-%!                  'ReadRowNames', false);
+%!   t = csv2table (fn, 'VariableUnitsLine', 2, 'VariableDescriptionsLine', ...
+%!                  3, 'ReadRowNames', false);
 %!   assert_equal (t.Properties.VariableUnits, {'kg', 'm'});
 %!   assert_equal (t.Properties.VariableDescriptions, {'d1', 'd2'});
 %!   assert_equal (t.A, [1; 3]);

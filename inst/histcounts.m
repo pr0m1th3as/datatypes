@@ -542,7 +542,8 @@ endfunction
 %! assert_equal (e, [-0.5, 0.5, 1.5]);
 %!assert_equal (histcounts (logical ([0, 1, 1])), [1, 2])
 %!assert_equal (histcounts ([1, 2; 3, 4], [1, 3, 5]), [2, 2])
-%!assert_equal (size (histcounts (reshape (1:24, 2, 3, 4), [1, 10, 20, 30])), ...
+%!assert_equal (size (histcounts (reshape (1:24, 2, 3, 4), [1, 10, 20, ...
+%!              30])), ...
 %!              [1, 3])
 %!test
 %! [~, ~, b] = histcounts ([1, 2; 3, 4], [1, 3, 5]);

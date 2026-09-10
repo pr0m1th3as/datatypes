@@ -93,8 +93,11 @@ function [B, varargout] = grouptransform (A, groupvars, varargin)
           && any (strcmpi (char (method), knownMethods)))
     method = lower (char (method));
   else
-    error (strcat ("grouptransform: METHOD must be one of 'zscore', 'norm',", ...
-                   " 'meancenter', 'rescale', 'meanfill', 'linearfill', or a", ...
+    error (strcat ("grouptransform: METHOD must be one of 'zscore',", ...
+                   " 'norm',", ...
+           ...
+                   " 'meancenter', 'rescale', 'meanfill', 'linearfill', or", ...
+                   " a", ...
                    " function handle."));
   endif
 
@@ -381,18 +384,22 @@ endfunction
 %! ## 'linearfill' interpolates interior missing values, leaving the edges NaN
 %! g = [1; 1; 1; 1; 2; 2; 2];
 %! x = [1; NaN; NaN; 4; NaN; 10; NaN];
-%! assert_equal (grouptransform (x, g, 'linearfill'), [1; 2; 3; 4; NaN; 10; NaN]);
+%! assert_equal (grouptransform (x, g, 'linearfill'), ...
+%!               [1; 2; 3; 4; NaN; 10; NaN]);
 %!test
 %! ## A function handle is applied to each group's slice
 %! g = [1; 1; 1; 2; 2];
 %! x = [10; 20; 30; 40; 60];
-%! assert_equal (grouptransform (x, g, @(v) v - mean (v)), [-10; 0; 10; -10; 10]);
+%! assert_equal (grouptransform (x, g, @(v) v - mean (v)), ...
+%!               [-10; 0; 10; -10; 10]);
 %!test
 %! ## The second output returns the grouping values of each row
 %! g = [1; 1; 2; 2];
 %! x = [10; 20; 30; 40];
 %! [B, BG] = grouptransform (x, g, 'norm');
-%! assert_equal (B, [[10; 20] ./ norm([10; 20]); [30; 40] ./ norm([30; 40])], ...
+%! assert_equal (B, ...
+%!               [[10; 20] ./ norm([10; 20]); [30; 40] ./ norm([30; 40])], ...
+%!               ...
 %!               8 * eps);
 %! assert_equal (BG, [1; 1; 2; 2]);
 %!test
@@ -430,7 +437,8 @@ endfunction
 %! [B, BG] = grouptransform (x, v, [0 2.5 5], 'meancenter');
 %! assert_equal (B, [-5; 5; -5; 5]);
 %! assert_equal (iscategorical (BG), true);
-%! assert_equal (cellstr (BG), {'[0, 2.5)'; '[0, 2.5)'; '[2.5, 5]'; '[2.5, 5]'});
+%! assert_equal (cellstr (BG), ...
+%!               {'[0, 2.5)'; '[0, 2.5)'; '[2.5, 5]'; '[2.5, 5]'});
 %!test
 %! ## A GROUPBINS number of bins makes equal-width bins over the data range
 %! x = [10; 20; 30; 40];

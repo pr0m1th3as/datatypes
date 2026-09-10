@@ -129,7 +129,8 @@
 
 ## dispstrings still yields the display placeholder, which is not a conversion
 %!assert_equal (dispstrings (missing), {'<missing>'})
-%!assert_equal (dispstrings (repmat (missing, 2, 2)), repmat ({'<missing>'}, 2, 2))
+%!assert_equal (dispstrings (repmat (missing, 2, 2)), repmat ({'<missing>'}, ...
+%!              2, 2))
 
 ## isequal: a missing value equals nothing, itself included
 %!assert_equal (isequal (missing, missing), false)
@@ -225,7 +226,8 @@
 %!assert_equal (class ([missing, categorical(1)]), 'categorical')
 %!assert_equal (class ([missing, NaT]), 'datetime')
 %!assert_equal (class ([missing, duration(1, 0, 0)]), 'duration')
-%!assert_equal (class ([missing, calendarDuration(1, 0, 0)]), 'calendarDuration')
+%!assert_equal (class ([missing, calendarDuration(1, 0, ...
+%!              0)]), 'calendarDuration')
 %!assert_equal (class ([missing, string('a')]), 'string')
 %!assert_equal (ismissing ([missing, duration(1, 0, 0)]), [true, false])
 %!assert_equal (ismissing ([missing, datetime(2020, 1, 1)]), [true, false])

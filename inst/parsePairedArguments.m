@@ -160,11 +160,13 @@ endfunction
 %! assert_equal (b, [1, 2]);
 %! assert_equal (c, 'text');
 %!test
-%! [a, b, c, args] = parsePairedArguments (optNames, dfValues, {'A', 5, 'A', 9});
+%! [a, b, c, args] = parsePairedArguments (optNames, dfValues, {'A', 5, 'A', ...
+%!   9});
 %! assert_equal (a, 9);
 %! assert_equal (numel (args), 0);
 %!test
-%! [a, b, c] = parsePairedArguments (optNames, dfValues, {'A', 5, 'A', 9, 'A', 7});
+%! [a, b, c] = parsePairedArguments (optNames, dfValues, {'A', 5, 'A', 9, ...
+%!                                   'A', 7});
 %! assert_equal (a, 7);
 %!test
 %! [a, b, c] = parsePairedArguments (optNames, dfValues, {'A', 5, 'a', 9});

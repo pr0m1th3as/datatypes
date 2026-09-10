@@ -222,7 +222,8 @@
 %!assert_equal (keyHash (string ({''})), uint64 (3839404358835980713))
 %!assert_equal (keyHash (string (NaN)), uint64 (3839403259324352502))
 %!assert_equal (keyHash (string (missing)), uint64 (3839403259324352502))
-%!assert_equal (keyHash (string ([missing, missing])), uint64 (1774881411061845027))
+%!assert_equal (keyHash (string ([missing, ...
+%!              missing])), uint64 (1774881411061845027))
 %!assert_equal (keyHash (string ([missing; missing])), uint64 (15349247600549626907))
 %!assert_equal (keyHash (string ('1')), uint64 (17490492431388450203))
 
@@ -471,7 +472,8 @@
 
 %!assert_equal (ismissing (string ('a'), 'a'), true)
 %!assert_equal (ismissing (string ('a'), string ({'a', 'c'})), true)
-%!assert_equal (ismissing (string ({'a', 'b'}), string ({'a', 'c'})), [true, false])
+%!assert_equal (ismissing (string ({'a', 'b'}), string ({'a', 'c'})), [true, ...
+%!              false])
 %!test
 %! TF = ismissing (string ({'a', 'b', ''}), string ({'a', 'c'}));
 %! assert_equal (TF, logical ([1, 0, 0]));
@@ -520,20 +522,24 @@
 %! assert_equal (issorted (string ({'a', 'b', 'c'}), 'monotonic'), true);
 %! assert_equal (issorted (string ({'b', 'a', 'c'}), 'monotonic'), false);
 %! assert_equal (issorted ([string('a') string('b') missing], 'ascend'), true);
-%! assert_equal (issorted ([string('a') string('b') missing], 'strictascend'), false);
+%! assert_equal (issorted ([string('a') string('b') missing], ...
+%!               'strictascend'), false);
 %!error<string.issorted: invalid value for 'MissingPlacement'.> ...
 %! issorted (string ({'a', 'b'}), 'MissingPlacement', 'bad')
 %!error<string.issorted: invalid DIRECTION value.> ...
 %! issorted (string ({'a', 'b'}), 'asd')
 
 %!test  ## strict issortedrows semantics, verified against MATLAB R2026a
-%! assert_equal (issortedrows (string ({'a', 'x'; 'a', 'y'}), 'strictascend'), false);
-%! assert_equal (issortedrows (string ({'a', 'x'; 'a', 'x'}), 'strictascend'), false);
+%! assert_equal (issortedrows (string ({'a', 'x'; 'a', 'y'}), ...
+%!               'strictascend'), false);
+%! assert_equal (issortedrows (string ({'a', 'x'; 'a', 'x'}), ...
+%!               'strictascend'), false);
 %! assert_equal (issortedrows (string ({'a', 'p'; 'a', 'q'}), ...
 %!                       {'strictascend', 'ascend'}), false);
 %! assert_equal (issortedrows (string ({'a', 'p'; 'b', 'p'}), ...
 %!                       {'ascend', 'strictascend'}), true);
-%! assert_equal (issortedrows (string ({'b', 'z'; 'a', 'y'}), 'monotonic'), true);
+%! assert_equal (issortedrows (string ({'b', 'z'; 'a', 'y'}), 'monotonic'), ...
+%!               true);
 %! assert_equal (issortedrows (string ({'b', 'z'; 'a', 'y'}), 'descend'), true);
 %! assert_equal (issortedrows (string ({'a', 'q'; 'b', 'p'}), 2, ...
 %!                       'strictascend'), false);
@@ -541,13 +547,16 @@
 %!                       'strictascend'), true);
 %!test  ## strict issortedrows with missing values (vs MATLAB R2026a)
 %! assert_equal (issortedrows ([string('a') string('p'); missing string('q')], ...
+%!               ...
 %!                       {'strictascend', 'ascend'}), false);
 %! assert_equal (issortedrows ([string('a') string('p'); missing string('q')], ...
+%!               ...
 %!                       {'ascend', 'strictascend'}), true);
 %! assert_equal (issortedrows ([missing string('p') string('z'); ...
 %!                        string('x') string('q') string('y')], ...
 %!                       2, 'strictascend'), true);
 %! assert_equal (issortedrows ([string('a') missing; string('b') string('y')], ...
+%!               ...
 %!                       'strictascend'), true);
 %!error<string.issortedrows: invalid DIRECTION value.> ...
 %! issortedrows (string ({'a', 'b'}), {'asd'})
@@ -586,7 +595,8 @@
 %!assert_equal (eq ({'A', 'b'}, string ('A')), [true, false]);
 %!assert_equal (eq (string ({'A', 'b'}), 'A'), [true, false]);
 %!assert_equal (eq ('A', string ({"A", "b"})), [true, false]);
-%!assert_equal (eq (string ({'A', 'B'}), string ({'A'; 'B'})), logical (eye (2)))
+%!assert_equal (eq (string ({'A', 'B'}), ...
+%!              string ({'A'; 'B'})), logical (eye (2)))
 %!error <string.eq: comparison between 'string' and 'double' is not supported.> ...
 %! eq (string ('A'), 2)
 %!error <string.eq: comparison between 'double' and 'string' is not supported.> ...
@@ -600,7 +610,8 @@
 %!assert_equal (ge ({'A', 'b'}, string ('b')), [false, true]);
 %!assert_equal (ge (string ({'A', 'b'}), 'A'), [true, true]);
 %!assert_equal (ge ('A', string ({'A', 'b'})), [true, false]);
-%!assert_equal (ge (string ({'A', 'B'}), string ({'A'; 'B'})), logical ([1, 1; 0, 1]))
+%!assert_equal (ge (string ({'A', 'B'}), string ({'A'; 'B'})), logical ([1, ...
+%!              1; 0, 1]))
 %!error <string.ge: comparison between 'string' and 'double' is not supported.> ...
 %! ge (string ('A'), 2)
 %!error <string.ge: comparison between 'double' and 'string' is not supported.> ...
@@ -614,7 +625,8 @@
 %!assert_equal (gt ({'A', 'b'}, string ('b')), [false, false]);
 %!assert_equal (gt (string ({'A', 'b'}), 'A'), [false, true]);
 %!assert_equal (gt ('A', string ({'A', 'b'})), [false, false]);
-%!assert_equal (gt (string ({'A', 'B'}), string ({'A'; 'B'})), logical ([0, 1; 0, 0]))
+%!assert_equal (gt (string ({'A', 'B'}), string ({'A'; 'B'})), logical ([0, ...
+%!              1; 0, 0]))
 %!error <string.gt: comparison between 'string' and 'double' is not supported.> ...
 %! gt (string ('A'), 2)
 %!error <string.gt: comparison between 'double' and 'string' is not supported.> ...
@@ -628,7 +640,8 @@
 %!assert_equal (le ({'A', 'b'}, string ('b')), [true, true]);
 %!assert_equal (le (string ({'A', 'b'}), 'A'), [true, false]);
 %!assert_equal (le ('A', string ({'A', 'b'})), [true, true]);
-%!assert_equal (le (string ({'A', 'B'}), string ({'A'; 'B'})), logical ([1, 0; 1, 1]))
+%!assert_equal (le (string ({'A', 'B'}), string ({'A'; 'B'})), logical ([1, ...
+%!              0; 1, 1]))
 %!error <string.le: comparison between 'string' and 'double' is not supported.> ...
 %! le (string ('A'), 2)
 %!error <string.le: comparison between 'double' and 'string' is not supported.> ...
@@ -642,7 +655,8 @@
 %!assert_equal (lt ({'A', 'b'}, string ("b")), [true, false]);
 %!assert_equal (lt (string ({'A', 'b'}), 'A'), [false, false]);
 %!assert_equal (lt ('A', string ({'A', 'b'})), [false, true]);
-%!assert_equal (lt (string ({'A', 'B'}), string ({'A'; 'B'})), logical ([0, 0; 1, 0]))
+%!assert_equal (lt (string ({'A', 'B'}), string ({'A'; 'B'})), logical ([0, ...
+%!              0; 1, 0]))
 %!error <string.lt: comparison between 'string' and 'double' is not supported.> ...
 %! lt (string ('A'), 2)
 %!error <string.lt: comparison between 'double' and 'string' is not supported.> ...
@@ -656,7 +670,8 @@
 %!assert_equal (ne ({'A', 'b'}, string ('A')), [false, true]);
 %!assert_equal (ne (string ({'A', 'b'}), 'A'), [false, true]);
 %!assert_equal (ne ('A', string ({'A', 'b'})), [false, true]);
-%!assert_equal (ne (string ({'A', 'B'}), string ({'A'; 'B'})), logical ([0, 1; 1, 0]))
+%!assert_equal (ne (string ({'A', 'B'}), string ({'A'; 'B'})), logical ([0, ...
+%!              1; 1, 0]))
 %!error <string.ne: comparison between 'string' and 'double' is not supported.> ...
 %! ne (string ('A'), 2)
 %!error <string.ne: comparison between 'double' and 'string' is not supported.> ...
@@ -692,7 +707,8 @@
 
 %!assert_equal (strncmp (string ("ASDFG"), "ASDER", 3), true);
 %!assert_equal (strncmp (string ("ASDFG"), "ASDER", 4), false);
-%!assert_equal (strncmp (string ("ASDFG"), {"ASDER","ASFGH"}, 3), [true, false]);
+%!assert_equal (strncmp (string ("ASDFG"), {"ASDER","ASFGH"}, 3), [true, ...
+%!              false]);
 %!assert_equal (strncmp (string ("ASDFG"), {"ASDER","ASFGH"}, 2), [true, true]);
 %!error <string.strncmp: comparison between 'string' and 'double' is not supported.> ...
 %! strncmp (string ("A"), 2)
@@ -702,8 +718,10 @@
 %! strncmp (string ({"A","B"}), string ({"a";"b"}), 1)
 %!assert_equal (strncmpi (string ("asDFG"), "ASDER", 3), true);
 %!assert_equal (strncmpi (string ("ASDFG"), "asDER", 4), false);
-%!assert_equal (strncmpi (string ("asdfg"), {"ASDER","ASFGH"}, 3), [true, false]);
-%!assert_equal (strncmpi (string ("asdfg"), {"ASDER","ASFGH"}, 2), [true, true]);
+%!assert_equal (strncmpi (string ("asdfg"), {"ASDER","ASFGH"}, 3), [true, ...
+%!              false]);
+%!assert_equal (strncmpi (string ("asdfg"), {"ASDER","ASFGH"}, 2), [true, ...
+%!              true]);
 %!error <string.strncmpi: comparison between 'string' and 'double' is not supported.> ...
 %! strncmpi (string ("A"), 2)
 %!error <string.strncmpi: comparison between 'double' and 'string' is not supported.> ...
@@ -727,17 +745,21 @@
 ################################################################################
 
 ## append: concatenates corresponding elements of its inputs
-%!assert_equal (append (string ('Hello'), string (' World')), string ('Hello World'))
-%!assert_equal (append (string ('a'), string ('b'), string ('c')), string ('abc'))
+%!assert_equal (append (string ('Hello'), ...
+%!              string (' World')), string ('Hello World'))
+%!assert_equal (append (string ('a'), string ('b'), ...
+%!              string ('c')), string ('abc'))
 ## append: preserves trailing whitespace (unlike 'strcat')
 %!assert_equal (append (string ('a '), string ('b')), string ('a b'))
 ## append: char vectors are one element, cellstr arguments are accepted
 %!assert_equal (append (string ('x'), '_', string ('y')), string ('x_y'))
 %!assert_equal (append (string ('x'), {'_'}, string ('y')), string ('x_y'))
 ## append: char matrices contribute one element per row (whitespace preserved)
-%!assert_equal (append (string ({'1'; '2'}), char ('a', 'bb')), string ({'1a '; '2bb'}))
+%!assert_equal (append (string ({'1'; '2'}), char ('a', ...
+%!              'bb')), string ({'1a '; '2bb'}))
 ## append: element-wise over equal-sized arrays
-%!assert_equal (append (string ({'a'; 'b'}), string ({'1'; '2'})), string ({'a1'; 'b2'}))
+%!assert_equal (append (string ({'a'; 'b'}), ...
+%!              string ({'1'; '2'})), string ({'a1'; 'b2'}))
 ## append: scalar expands against a non-scalar argument
 %!assert_equal (append (string ('p_'), string ({'a'; 'b'; 'c'})), ...
 %!              string ({'p_a'; 'p_b'; 'p_c'}))
@@ -769,11 +791,13 @@
 %!assert_equal (compose (string ('%d apples'), [1; 2; 3]), ...
 %!              string ({'1 apples'; '2 apples'; '3 apples'}))
 ## compose: formatting syntax -- multiple operators per row
-%!assert_equal (compose (string ('%d + %d = %d'), [1 2 3]), string ('1 + 2 = 3'))
+%!assert_equal (compose (string ('%d + %d = %d'), ...
+%!              [1 2 3]), string ('1 + 2 = 3'))
 %!assert_equal (compose (string ('%d %d %d'), [1 2 3; 4 5 6]), ...
 %!              string ({'1 2 3'; '4 5 6'}))
 ## compose: FORMATSPEC repeats when A has more columns than operators
-%!assert_equal (compose (string ('%d-%d '), [1 2 3 4]), string ({'1-2 ', '3-4 '}))
+%!assert_equal (compose (string ('%d-%d '), [1 2 3 4]), string ({'1-2 ', ...
+%!              '3-4 '}))
 ## compose: leftover operators are emitted unchanged
 %!assert_equal (compose (string ('%d and %d'), 5), string ('5 and %d'))
 ## compose: multiple input arrays consumed left to right
@@ -829,7 +853,8 @@
 ## erase: an empty match removes nothing
 %!assert_equal (erase (string ('abc'), ''), string ('abc'))
 ## erase: a char-vector match keeps trailing whitespace (bare cellstr deblanks)
-%!assert_equal (erase (string ('the quick brown'), 'quick '), string ('the brown'))
+%!assert_equal (erase (string ('the quick brown'), ...
+%!              'quick '), string ('the brown'))
 ## erase: accepts char vectors, cell arrays of char vectors, and string scalars
 %!assert_equal (erase (string ('abcabc'), string ('bc')), string ('aa'))
 %!assert_equal (erase (string ('aXa'), {'X'}), string ('aa'))
@@ -837,7 +862,8 @@
 %!assert_equal (erase (string ({'aXa', 'bXb'}), 'X'), string ({'aa', 'bb'}))
 %!assert_equal (erase (string ({'a.b'; 'c.d'}), '.'), string ({'ab'; 'cd'}))
 ## erase: a multi-element match deletes every occurrence of every element
-%!assert_equal (erase (string ('The quick brown fox'), string ({'The ', 'quick '})), ...
+%!assert_equal (erase (string ('The quick brown fox'), string ({'The ', ...
+%!              'quick '})), ...
 %!              string ('brown fox'))
 %!assert_equal (erase (string ('aXbYc'), {'X', 'Y'}), string ('abc'))
 ## erase: MATCH size need not match STR size (every element is removed from all)
@@ -858,16 +884,19 @@
 %! erase (string ('ab'), 5)
 
 ## eraseBetween: pattern syntax erases between boundaries (default exclusive)
-%!assert_equal (eraseBetween (string ('The quick brown fox'), 'quick', ' fox'), ...
+%!assert_equal (eraseBetween (string ('The quick brown fox'), 'quick', ...
+%!              ' fox'), ...
 %!              string ('The quick fox'))
 ## eraseBetween: pattern syntax with explicit exclusive boundaries
-%!assert_equal (eraseBetween (string ('a[xyz]b'), '[', ']', 'Boundaries', 'exclusive'), ...
+%!assert_equal (eraseBetween (string ('a[xyz]b'), '[', ']', 'Boundaries', ...
+%!              'exclusive'), ...
 %!              string ('a[]b'))
 ## eraseBetween: pattern syntax with inclusive boundaries erases them too
 %!assert_equal (eraseBetween (string ('The quick brown fox jumps over the lazy dog'), ...
 %!                            ' brown', 'lazy', 'Boundaries', 'inclusive'), ...
 %!              string ('The quick dog'))
-%!assert_equal (eraseBetween (string ('a[xyz]b'), '[', ']', 'Boundaries', 'inclusive'), ...
+%!assert_equal (eraseBetween (string ('a[xyz]b'), '[', ']', 'Boundaries', ...
+%!              'inclusive'), ...
 %!              string ('ab'))
 ## eraseBetween: char boundaries keep trailing whitespace (cellstr deblanks)
 %!assert_equal (eraseBetween (string ('a quick b'), 'a ', ' b', ...
@@ -886,30 +915,36 @@
 %!assert_equal (eraseBetween (string ({'<a>1', '<bb>2'}), '<', '>', ...
 %!                            'Boundaries', 'inclusive'), string ({'1', '2'}))
 ## eraseBetween: boundary pairs given element-wise, preserving size
-%!assert_equal (eraseBetween (string ({'aXbYc'; '1P2Q3'}), string ({'X'; 'P'}), ...
+%!assert_equal (eraseBetween (string ({'aXbYc'; '1P2Q3'}), ...
+%!              string ({'X'; 'P'}), ...
 %!                            string ({'Y'; 'Q'})), string ({'aXYc'; '1PQ3'}))
 ## eraseBetween: position syntax erases between positions (default inclusive)
-%!assert_equal (eraseBetween (string ('Edgar Allen Poe'), 6, 11), string ('Edgar Poe'))
-%!assert_equal (eraseBetween (string ('mushrooms, peppers, and onions'), 10, 19), ...
+%!assert_equal (eraseBetween (string ('Edgar Allen Poe'), 6, ...
+%!              11), string ('Edgar Poe'))
+%!assert_equal (eraseBetween (string ('mushrooms, peppers, and onions'), 10, ...
+%!              19), ...
 %!              string ('mushrooms and onions'))
 ## eraseBetween: position syntax with exclusive boundaries keeps the endpoints
 %!assert_equal (eraseBetween (string ('small|medium|large'), 6, 13, ...
 %!                            'Boundaries', 'exclusive'), string ('small||large'))
 ## eraseBetween: equal positions erase a single character (inclusive) or none
 %!assert_equal (eraseBetween (string ('abcde'), 3, 3), string ('abde'))
-%!assert_equal (eraseBetween (string ('abcde'), 3, 3, 'Boundaries', 'exclusive'), ...
+%!assert_equal (eraseBetween (string ('abcde'), 3, 3, 'Boundaries', ...
+%!              'exclusive'), ...
 %!              string ('abcde'))
 ## eraseBetween: scalar positions broadcast; array positions map by element
 %!assert_equal (eraseBetween (string ({'abcdef'; 'ABCDEF'}), 2, 4), ...
 %!              string ({'aef'; 'AEF'}))
-%!assert_equal (eraseBetween (string ({'abcdef'; 'ABCDEF'}), [2; 3], [4; 5]), ...
+%!assert_equal (eraseBetween (string ({'abcdef'; 'ABCDEF'}), [2; 3], ...
+%!              [4; 5]), ...
 %!              string ({'aef'; 'ABF'}))
 ## eraseBetween: 'Boundaries' name and string option are case-insensitive
 %!assert_equal (eraseBetween (string ('small|medium|large'), 6, 13, ...
 %!                            'boundaries', string ('exclusive')), string ('small||large'))
 ## eraseBetween: missing values are preserved and carry no text
 %!test
-%! str = eraseBetween (string ({'a[x]b', missing}), '[', ']', 'Boundaries', 'inclusive');
+%! str = eraseBetween (string ({'a[x]b', missing}), '[', ']', 'Boundaries', ...
+%!                     'inclusive');
 %! assert_equal (ismissing (str), [false, true]);
 %! assert_equal (cellstr (str), {'ab', ''});
 ## eraseBetween: error branches
@@ -961,7 +996,8 @@
 %! assert_equal (size (str), [2, 0]);
 ## extract: position form returns the single character at POS
 %!assert_equal (extract (string ("All's well that ends well"), 1), string ('A'))
-%!assert_equal (extract (string ("All's well that ends well"), 25), string ('l'))
+%!assert_equal (extract (string ("All's well that ends well"), ...
+%!              25), string ('l'))
 ## extract: position form is element-wise and preserves the size of STR
 %!assert_equal (extract (string ({'abc'; 'xyz'}), [1; 3]), string ({'a'; 'z'}))
 ## extract: a scalar position broadcasts over the array
@@ -996,14 +1032,16 @@
 %!                            string ({'quick '; 'the '})), ...
 %!              string ({'brown fox jumps'; 'lazy dog'}))
 ## extractAfter: a scalar pattern broadcasts over the array
-%!assert_equal (extractAfter (string ({'a:1', 'a:2'}), 'a:'), string ({'1', '2'}))
+%!assert_equal (extractAfter (string ({'a:1', 'a:2'}), 'a:'), string ({'1', ...
+%!              '2'}))
 ## extractAfter: a pattern that is not found yields a missing value
 %!test
 %! str = extractAfter (string ('hello'), 'z');
 %! assert_equal (ismissing (str), true);
 ## extractAfter: position form returns the text after POS
 %!assert_equal (extractAfter (string ('Edgar Allen Poe'), 12), string ('Poe'))
-%!assert_equal (extractAfter (string ({'abcd'; 'wxyz'}), [1; 2]), string ({'bcd'; 'yz'}))
+%!assert_equal (extractAfter (string ({'abcd'; 'wxyz'}), ...
+%!              [1; 2]), string ({'bcd'; 'yz'}))
 ## extractAfter: POS at the last character yields an empty string
 %!assert_equal (extractAfter (string ('abc'), 3), string (''))
 ## extractAfter: missing values are preserved
@@ -1028,14 +1066,16 @@
 %!              string ('The quick'))
 %!assert_equal (extractBefore (string ('a-b-c'), '-'), string ('a'))
 ## extractBefore: a scalar pattern broadcasts over the array
-%!assert_equal (extractBefore (string ({'1:a', '2:a'}), ':a'), string ({'1', '2'}))
+%!assert_equal (extractBefore (string ({'1:a', '2:a'}), ':a'), string ({'1', ...
+%!              '2'}))
 ## extractBefore: a pattern that is not found yields a missing value
 %!test
 %! str = extractBefore (string ('hello'), 'z');
 %! assert_equal (ismissing (str), true);
 ## extractBefore: position form returns the text before POS
 %!assert_equal (extractBefore (string ('Edgar Allen Poe'), 6), string ('Edgar'))
-%!assert_equal (extractBefore (string ({'abcd'; 'wxyz'}), [3; 2]), string ({'ab'; 'w'}))
+%!assert_equal (extractBefore (string ({'abcd'; 'wxyz'}), ...
+%!              [3; 2]), string ({'ab'; 'w'}))
 ## extractBefore: POS at the first character yields an empty string
 %!assert_equal (extractBefore (string ('abc'), 1), string (''))
 ## extractBefore: missing values are preserved
@@ -1052,13 +1092,16 @@
 %! extractBefore (string ('ab'), 5)
 
 ## extractBetween: pattern form returns the text between boundaries (exclusive)
-%!assert_equal (extractBetween (string ('The quick brown fox'), 'quick ', ' fox'), ...
+%!assert_equal (extractBetween (string ('The quick brown fox'), 'quick ', ...
+%!              ' fox'), ...
 %!              string ('brown'))
 ## extractBetween: pattern form with inclusive boundaries keeps the boundaries
-%!assert_equal (extractBetween (string ('The quick brown fox jumps'), ' brown', ...
+%!assert_equal (extractBetween (string ('The quick brown fox jumps'), ...
+%!              ' brown', ...
 %!                              'fox', 'Boundaries', 'inclusive'), string (' brown fox'))
 ## extractBetween: position form returns the span (inclusive by default)
-%!assert_equal (extractBetween (string ('Edgar Allen Poe'), 7, 11), string ('Allen'))
+%!assert_equal (extractBetween (string ('Edgar Allen Poe'), 7, ...
+%!              11), string ('Allen'))
 ## extractBetween: position form with exclusive boundaries drops the endpoints
 %!assert_equal (extractBetween (string ('small|medium|large'), 6, 13, ...
 %!                              'Boundaries', 'exclusive'), string ('medium'))
@@ -1106,22 +1149,26 @@
 ## 1-, 3-, and 4-byte UTF-8 sequences (built from raw bytes so this file stays
 ## ASCII): a(1) euro(2) b(3) emoji(4) c(5).
 %!test
-%! s = string (native2unicode (uint8 ([97 226 130 172 98 240 159 152 128 99]), 'UTF-8'));
+%! s = string (native2unicode (uint8 ([97 226 130 172 98 240 159 152 128 99]), ...
+%!             'UTF-8'));
 %! euro = string (native2unicode (uint8 ([226 130 172]), 'UTF-8'));
 %! emoji = string (native2unicode (uint8 ([240 159 152 128]), 'UTF-8'));
 %! ## extract: the 4th character is the whole emoji, not a stray byte
 %! assert_equal (extract (s, 4), emoji);
 %! assert_equal (extract (s, 2), euro);
 %! ## extractBefore / extractAfter split on character boundaries
-%! assert_equal (extractBefore (s, 4), append (string ('a'), euro, string ('b')));
-%! assert_equal (extractAfter (s, 2), append (string ('b'), emoji, string ('c')));
+%! assert_equal (extractBefore (s, 4), append (string ('a'), euro, ...
+%!               string ('b')));
+%! assert_equal (extractAfter (s, 2), append (string ('b'), emoji, ...
+%!               string ('c')));
 %! ## eraseBetween (inclusive removes chars 2..4; exclusive removes char 3)
 %! assert_equal (eraseBetween (s, 2, 4), string ('ac'));
 %! assert_equal (eraseBetween (s, 2, 4, 'Boundaries', 'exclusive'), ...
 %!               append (string ('a'), euro, emoji, string ('c')));
 %! ## extractBetween (inclusive keeps chars 2..4; exclusive keeps char 3)
 %! assert_equal (extractBetween (s, 2, 4), append (euro, string ('b'), emoji));
-%! assert_equal (extractBetween (s, 2, 4, 'Boundaries', 'exclusive'), string ('b'));
+%! assert_equal (extractBetween (s, 2, 4, 'Boundaries', 'exclusive'), ...
+%!               string ('b'));
 
 ## insertAfter: pattern form inserts after the match (single occurrence)
 %!assert_equal (insertAfter (string ('The quick fox'), 'quick', ' brown'), ...
@@ -1175,7 +1222,8 @@
 ## insertBefore: pattern form inserts before EVERY non-overlapping occurrence
 %!assert_equal (insertBefore (string ('a-b-c'), '-', 'X'), string ('aX-bX-c'))
 ## insertBefore: a scalar pattern and scalar NEW broadcast over the array
-%!assert_equal (insertBefore (string ({'cat', 'dog'}), string ({'c', 'd'}), '_'), ...
+%!assert_equal (insertBefore (string ({'cat', 'dog'}), string ({'c', 'd'}), ...
+%!              '_'), ...
 %!              string ({'_cat', '_dog'}))
 ## insertBefore: a pattern that is not found leaves the element unchanged
 %!assert_equal (insertBefore (string ('hello'), 'z', 'X'), string ('hello'))
@@ -1209,15 +1257,18 @@
 ## Code-point positions for insertAfter / insertBefore: numeric indexing counts
 ## whole characters, not UTF-8 bytes (same multibyte text as above).
 %!test
-%! s = string (native2unicode (uint8 ([97 226 130 172 98 240 159 152 128 99]), 'UTF-8'));
+%! s = string (native2unicode (uint8 ([97 226 130 172 98 240 159 152 128 99]), ...
+%!             'UTF-8'));
 %! euro = string (native2unicode (uint8 ([226 130 172]), 'UTF-8'));
 %! emoji = string (native2unicode (uint8 ([240 159 152 128]), 'UTF-8'));
 %! ## insertAfter after the euro (position 2) lands on a character boundary
 %! assert_equal (insertAfter (s, 2, string ('X')), ...
-%!               append (string ('a'), euro, string ('Xb'), emoji, string ('c')));
+%!               append (string ('a'), euro, string ('Xb'), emoji, ...
+%!                       string ('c')));
 %! ## insertBefore the emoji (position 4) lands on a character boundary
 %! assert_equal (insertBefore (s, 4, string ('X')), ...
-%!               append (string ('a'), euro, string ('bX'), emoji, string ('c')));
+%!               append (string ('a'), euro, string ('bX'), emoji, ...
+%!                       string ('c')));
 
 ## replace: replaces every occurrence of a single substring
 %!assert_equal (replace (string ('a-b-c'), '-', '_'), string ('a_b_c'))
@@ -1234,7 +1285,8 @@
 ## replace: multiple patterns applied simultaneously (a swap, not sequential)
 %!assert_equal (replace (string ('ab'), {'a', 'b'}, {'b', 'a'}), string ('ba'))
 ## replace: at each position the OLD substrings are tried in order, first wins
-%!assert_equal (replace (string ('aaa'), {'aa', 'a'}, {'X', 'Y'}), string ('XY'))
+%!assert_equal (replace (string ('aaa'), {'aa', 'a'}, {'X', ...
+%!              'Y'}), string ('XY'))
 ## replace: an empty OLD element matches nothing (single and multi-pattern)
 %!assert_equal (replace (string ('abc'), '', 'X'), string ('abc'))
 %!assert_equal (replace (string ('abc'), {'', 'b'}, {'X', 'Y'}), string ('aYc'))
@@ -1242,7 +1294,8 @@
 %!assert_equal (replace (string ('a b'), 'a ', 'Z'), string ('Zb'))
 %!assert_equal (replace (string ('ab'), 'a', 'X '), string ('X b'))
 ## replace: accepts char vectors, cell arrays of char vectors, and string arrays
-%!assert_equal (replace (string ('a-b'), string ('-'), string ('_')), string ('a_b'))
+%!assert_equal (replace (string ('a-b'), string ('-'), ...
+%!              string ('_')), string ('a_b'))
 ## replace: missing values are preserved and carry no text
 %!test
 %! str = replace (string ({'a-b', missing}), '-', '_');
@@ -1259,22 +1312,27 @@
 %! replace (string ('ab'), {'a', 'b'}, {'1', '2', '3'})
 
 ## replaceBetween: pattern replaces between boundaries (default exclusive)
-%!assert_equal (replaceBetween (string ('The quick brown fox'), 'quick ', ' fox', 'red'), ...
+%!assert_equal (replaceBetween (string ('The quick brown fox'), 'quick ', ...
+%!              ' fox', 'red'), ...
 %!              string ('The quick red fox'))
 ## replaceBetween: pattern syntax with explicit exclusive boundaries
-%!assert_equal (replaceBetween (string ('a[x]b'), '[', ']', 'Y', 'Boundaries', 'exclusive'), ...
+%!assert_equal (replaceBetween (string ('a[x]b'), '[', ']', 'Y', ...
+%!              'Boundaries', 'exclusive'), ...
 %!              string ('a[Y]b'))
 ## replaceBetween: pattern syntax with inclusive boundaries replaces them too
-%!assert_equal (replaceBetween (string ('a[x]b'), '[', ']', 'Y', 'Boundaries', 'inclusive'), ...
+%!assert_equal (replaceBetween (string ('a[x]b'), '[', ']', 'Y', ...
+%!              'Boundaries', 'inclusive'), ...
 %!              string ('aYb'))
 ## replaceBetween: an empty exclusive span inserts NEW between boundaries
-%!assert_equal (replaceBetween (string ('ab'), 'a', 'b', 'X', 'Boundaries', 'exclusive'), ...
+%!assert_equal (replaceBetween (string ('ab'), 'a', 'b', 'X', 'Boundaries', ...
+%!              'exclusive'), ...
 %!              string ('aXb'))
 ## replaceBetween: a scalar boundary broadcasts over the array
 %!assert_equal (replaceBetween (string ({'[1]', '[2]'}), '[', ']', '#'), ...
 %!              string ({'[#]', '[#]'}))
 ## replaceBetween: boundaries and NEW given per element
-%!assert_equal (replaceBetween (string ({'(a)'; '<b>'}), string ({'('; '<'}), ...
+%!assert_equal (replaceBetween (string ({'(a)'; '<b>'}), ...
+%!              string ({'('; '<'}), ...
 %!                              string ({')'; '>'}), string ({'1'; '2'})), ...
 %!              string ({'(1)'; '<2>'}))
 ## replaceBetween: an unmatched boundary leaves the element unchanged
@@ -1282,12 +1340,14 @@
 ## replaceBetween: position syntax replaces the span (inclusive by default)
 %!assert_equal (replaceBetween (string ('abcde'), 2, 4, 'X'), string ('aXe'))
 ## replaceBetween: position syntax with exclusive boundaries keeps the endpoints
-%!assert_equal (replaceBetween (string ('abcde'), 2, 4, 'X', 'Boundaries', 'exclusive'), ...
+%!assert_equal (replaceBetween (string ('abcde'), 2, 4, 'X', 'Boundaries', ...
+%!              'exclusive'), ...
 %!              string ('abXde'))
 ## replaceBetween: equal positions replace a single character (inclusive)
 %!assert_equal (replaceBetween (string ('abc'), 2, 2, 'XY'), string ('aXYc'))
 ## replaceBetween: 'Boundaries' name and string option are case-insensitive
-%!assert_equal (replaceBetween (string ('a[x]b'), '[', ']', 'Y', 'boundaries', string ('Inclusive')), ...
+%!assert_equal (replaceBetween (string ('a[x]b'), '[', ']', 'Y', ...
+%!              'boundaries', string ('Inclusive')), ...
 %!              string ('aYb'))
 ## replaceBetween: missing values in STR are preserved
 %!test
@@ -1319,19 +1379,23 @@
 ## Code-point positions for replaceBetween: numeric indexing counts whole
 ## characters, not UTF-8 bytes (same multibyte text as above): a euro b emoji c.
 %!test
-%! s = string (native2unicode (uint8 ([97 226 130 172 98 240 159 152 128 99]), 'UTF-8'));
+%! s = string (native2unicode (uint8 ([97 226 130 172 98 240 159 152 128 99]), ...
+%!             'UTF-8'));
 %! euro = string (native2unicode (uint8 ([226 130 172]), 'UTF-8'));
 %! emoji = string (native2unicode (uint8 ([240 159 152 128]), 'UTF-8'));
 %! ## inclusive default replaces chars 2..4 (euro,b,emoji) with 'X'
 %! assert_equal (replaceBetween (s, 2, 4, string ('X')), string ('aXc'));
 %! ## exclusive keeps chars 2 and 4, replacing char 3 (b) with 'X'
-%! assert_equal (replaceBetween (s, 2, 4, string ('X'), 'Boundaries', 'exclusive'), ...
-%!               append (string ('a'), euro, string ('X'), emoji, string ('c')));
+%! assert_equal (replaceBetween (s, 2, 4, string ('X'), 'Boundaries', ...
+%!               'exclusive'), ...
+%!               append (string ('a'), euro, string ('X'), emoji, ...
+%!                       string ('c')));
 
 ## reverse: reverses the order of the characters in a string scalar
 %!assert_equal (reverse (string ('hello')), string ('olleh'))
 ## reverse: the verbatim MATLAB documentation example
-%!assert_equal (reverse (string ({'airport', 'control tower', 'radar', 'runway'})), ...
+%!assert_equal (reverse (string ({'airport', 'control tower', 'radar', ...
+%!              'runway'})), ...
 %!              string ({'tropria', 'rewot lortnoc', 'radar', 'yawnur'}))
 ## reverse: a palindrome is returned unchanged
 %!assert_equal (reverse (string ('radar')), string ('radar'))
@@ -1374,11 +1438,13 @@
 ## reverse: counts whole characters, not UTF-8 bytes (multibyte text
 ## a euro b emoji c reverses to c emoji b euro a)
 %!test
-%! s = string (native2unicode (uint8 ([97 226 130 172 98 240 159 152 128 99]), 'UTF-8'));
+%! s = string (native2unicode (uint8 ([97 226 130 172 98 240 159 152 128 99]), ...
+%!             'UTF-8'));
 %! euro = string (native2unicode (uint8 ([226 130 172]), 'UTF-8'));
 %! emoji = string (native2unicode (uint8 ([240 159 152 128]), 'UTF-8'));
 %! assert_equal (reverse (s), ...
-%!               append (string ('c'), emoji, string ('b'), euro, string ('a')));
+%!               append (string ('c'), emoji, string ('b'), euro, ...
+%!                       string ('a')));
 %! ## reversing twice restores the multibyte original exactly
 %! assert_equal (reverse (reverse (s)), s);
 
@@ -1450,7 +1516,8 @@
 %!assert_equal (sortrows (string ({'b', 'x'; 'a', 'z'; 'b', 'a'}), [1, -2]), ...
 %!              string ({'a', 'z'; 'b', 'x'; 'b', 'a'}))
 ## sortrows: a single DIRECTION applies to all columns
-%!assert_equal (sortrows (string ({'b', 'x'; 'a', 'z'; 'b', 'a'}), 'descend'), ...
+%!assert_equal (sortrows (string ({'b', 'x'; 'a', 'z'; 'b', 'a'}), ...
+%!              'descend'), ...
 %!              string ({'b', 'x'; 'b', 'a'; 'a', 'z'}))
 ## sortrows: DIRECTION can be a cell array, one entry per column
 %!assert_equal (sortrows (string ({'b', 'x'; 'a', 'z'; 'b', 'a'}), ...
@@ -1507,7 +1574,8 @@
 ## split: a trailing delimiter yields a trailing empty string
 %!assert_equal (split (string ('a-'), '-'), string ({'a'; ''}))
 ## split: an Mx1 column splits into an MxN array
-%!assert_equal (split (string ({'a-b'; 'c-d'}), '-'), string ({'a', 'b'; 'c', 'd'}))
+%!assert_equal (split (string ({'a-b'; 'c-d'}), '-'), string ({'a', ...
+%!              'b'; 'c', 'd'}))
 ## split: a 1xM row splits into a 1xMxN array
 %!test
 %! r = split (string ({'a-b', 'c-d'}), '-');
@@ -1579,7 +1647,8 @@
 %! splitlines (string ({sprintf("a\nb"), 'c'}))
 
 ## strcat: concatenates corresponding elements (verbatim MATLAB example)
-%!assert_equal (strcat (string ({'John ', 'Mary '}), string ({'Smith', 'Jones'})), ...
+%!assert_equal (strcat (string ({'John ', 'Mary '}), string ({'Smith', ...
+%!              'Jones'})), ...
 %!              string ({'John Smith', 'Mary Jones'}))
 ## strcat: string inputs preserve trailing whitespace (unlike char strcat)
 %!assert_equal (strcat (string ('a '), string ('b')), string ('a b'))
@@ -1601,9 +1670,11 @@
 ## strip: removes leading and trailing whitespace from both sides by default
 %!assert_equal (strip (string ('  Ann Marie   ')), string ('Ann Marie'))
 ## strip: 'right' removes trailing whitespace only
-%!assert_equal (strip (string ('   Ann Marie   '), 'right'), string ('   Ann Marie'))
+%!assert_equal (strip (string ('   Ann Marie   '), ...
+%!              'right'), string ('   Ann Marie'))
 ## strip: 'left' removes leading whitespace only
-%!assert_equal (strip (string ('   Ann Marie   '), 'left'), string ('Ann Marie   '))
+%!assert_equal (strip (string ('   Ann Marie   '), ...
+%!              'left'), string ('Ann Marie   '))
 ## strip: a custom strip character on a given side (verbatim MATLAB example)
 %!assert_equal (strip (string ('0095.36'), 'left', '0'), string ('95.36'))
 ## strip: a single-character second argument is the strip character
@@ -1679,7 +1750,8 @@
 %! pad (string ('a'), 5, 'left', 'xy')
 
 ## join: combines along the last non-singleton dimension with a space (verbatim)
-%!assert_equal (join (string ({'Carlos', 'Sada'; 'Ella', 'Olsen'; 'Diana', 'Lee'})), ...
+%!assert_equal (join (string ({'Carlos', 'Sada'; 'Ella', 'Olsen'; 'Diana', ...
+%!              'Lee'})), ...
 %!              string ({'Carlos Sada'; 'Ella Olsen'; 'Diana Lee'}))
 ## join: a single custom delimiter is placed between all elements (verbatim)
 %!assert_equal (join (string ({'x', 'y', 'z'; 'a', 'b', 'c'}), '-'), ...
@@ -1689,7 +1761,8 @@
 %!                    string ({' + ', ' = '; ' - ', ' = '})), ...
 %!              string ({'x + y = z'; 'a - b = c'}))
 ## join: DIM selects the joined dimension (verbatim example, dim 1)
-%!assert_equal (join (string ({'Carlos', 'Sada'; 'Ella', 'Olsen'; 'Diana', 'Lee'}), 1), ...
+%!assert_equal (join (string ({'Carlos', 'Sada'; 'Ella', 'Olsen'; 'Diana', ...
+%!              'Lee'}), 1), ...
 %!              string ({'Carlos Ella Diana', 'Sada Olsen Lee'}))
 ## join: a row or column vector collapses to a string scalar
 %!assert_equal (join (string ({'a', 'b', 'c'})), string ('a b c'))
@@ -1720,7 +1793,8 @@
 %!assert_equal (string ('foo') + string ('bar'), string ('foobar'))
 %!assert_equal (plus (string ('foo'), string ('bar')), string ('foobar'))
 ## plus: applied element-wise across equal-sized arrays
-%!assert_equal (string ({'a', 'b'}) + string ({'1', '2'}), string ({'a1', 'b2'}))
+%!assert_equal (string ({'a', 'b'}) + string ({'1', '2'}), string ({'a1', ...
+%!              'b2'}))
 ## plus: a scalar operand broadcasts over the array
 %!assert_equal (string ({'a', 'b'}) + string ('!'), string ({'a!', 'b!'}))
 ## plus: a missing value propagates (any missing operand -> missing)
@@ -1790,7 +1864,8 @@
 %!error <string.unique: invalid option 'bogus'.> ...
 %! unique (string ('a'), 'bogus')
 %!error <string.unique: 'rows' applies only to 2-D matrices.> ...
-%! unique (reshape (string ({'a','b','c','d','e','f','g','h'}), 2, 2, 2), 'rows')
+%! unique (reshape (string ({'a','b','c','d','e','f','g','h'}), 2, 2, 2), ...
+%!         'rows')
 
 ################################################################################
 ##                           ** Array Operations **                           ##
@@ -2268,7 +2343,8 @@
 %!error<string.sortrows: invalid type for DIRECTION argument.> ...
 %! sortrows (string ({'b', 'a'; 'd', 'c'}), 1, 5);
 %!error<string.sortrows: DIRECTION does not match the elements in COL.> ...
-%! sortrows (string ({'b', 'a'; 'd', 'c'}), [1, 2], {'ascend', 'descend', 'ascend'});
+%! sortrows (string ({'b', 'a'; 'd', 'c'}), [1, 2], {'ascend', 'descend', ...
+%!           'ascend'});
 
 ## strip, pad and join reject a malformed second argument
 %!error<string.strip: the second argument must be a side \('left', 'right', or 'both'\) or a single character.> ...

@@ -81,7 +81,9 @@ function struct2xlsx (filename, s)
                      " non-empty character vector."), fields{k});
     endif
     if (numel (sheetName) > 31)
-      error (strcat ("struct2xlsx: sheet name '%s' exceeds the 31-character", ...
+      error (strcat ("struct2xlsx: sheet name '%s' exceeds the", ...
+                     " 31-character", ...
+             ...
                      " Excel limit."), sheetName);
     endif
     if (any (ismember (sheetName, '[]*?:/\')))
@@ -110,7 +112,8 @@ endfunction
 %! ## `struct2xlsx` is the Excel counterpart of `struct2ods`: each field of a
 %! ## scalar struct of tables is written as its own worksheet in an `.xlsx` file.
 %!
-%! wb.Patients = table ({'Li'; 'Diaz'}, [38; 40], 'VariableNames', {'Name', 'Age'});
+%! wb.Patients = table ({'Li'; 'Diaz'}, [38; 40], 'VariableNames', {'Name', ...
+%!                      'Age'});
 %! wb.Visits = table ([1; 2; 3], 'VariableNames', {'Visit'});
 %! filename = fullfile (tempdir (), 'clinic.xlsx');
 %! struct2xlsx (filename, wb);

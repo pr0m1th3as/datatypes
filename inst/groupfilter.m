@@ -343,7 +343,8 @@ endfunction
 %! g = [1; 3; 5; 7; 9; 11];
 %! B = groupfilter (x, g, [0 6 12], @(v) numel (v) > 2);
 %! assert_equal (B, (1:6)');
-%! B2 = groupfilter (x, g, [0 6 12], @(v) mean (v) > 4, 'IncludedEdge', 'right');
+%! B2 = groupfilter (x, g, [0 6 12], @(v) mean (v) > 4, 'IncludedEdge', ...
+%!                   'right');
 %! assert_equal (B2, [4; 5; 6]);
 
 %!error <Invalid call> groupfilter ([1; 2], [1; 2])

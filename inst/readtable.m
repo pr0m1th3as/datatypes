@@ -97,7 +97,8 @@ function tbl = readtable (filename, varargin)
   dfValues = {'', true, false, ',', 0, 'char', 'modify', [], '', [], 1, []};
   [fileType, readVarNames, readRowNames, delim, numHeaderLines, textType, ...
    namingRule, sheet, range, varNamesRow, rowNamesCol, varNamesLine, args] = ...
-                          parsePairedArguments (optNames, dfValues, varargin(:));
+                          parsePairedArguments (optNames, dfValues, ...
+                              varargin(:));
   varNamesRow = __namesrow__ (varNamesRow, varNamesLine, 'readtable');
   if (! isempty (args))
     error ("readtable: unknown option '%s'.", args{1});
@@ -513,7 +514,8 @@ endfunction
 %! end_unwind_protect
 
 %!error <readtable: 'VariableNamesRow' and 'VariableNamesLine' name the same thing; pass one of them.> ...
-%! readtable ([tempname() '.csv'], 'VariableNamesRow', 1, 'VariableNamesLine', 1);
+%! readtable ([tempname() '.csv'], 'VariableNamesRow', 1, ...
+%!            'VariableNamesLine', 1);
 
 ## 'VariableNamesRow' and 'RowNamesColumn' reach the text reader
 %!test
@@ -798,14 +800,16 @@ endfunction
 ## Round-trip through an '.xlsx' workbook written by writetable, including
 ## native datetime/duration/boolean columns and sheet/range selection
 %!test
-%! T = table ([1; 2; 3], {'a'; 'bb'; 'ccc'}, datetime (2024, 3, [1; 15; 31]), ...
+%! T = table ([1; 2; 3], {'a'; 'bb'; 'ccc'}, datetime (2024, 3, ...
+%!            [1; 15; 31]), ...
 %!            seconds ([30; 90; 3661]), [true; false; true], ...
 %!            'VariableNames', {'n', 's', 'when', 'dur', 'flag'});
 %! fn = [tempname() '.xlsx'];
 %! unwind_protect
 %!   writetable (T, fn, 'Sheet', 'Data');
 %!   R = readtable (fn, 'Sheet', 'Data');
-%!   assert_equal (R.Properties.VariableNames, {'n', 's', 'when', 'dur', 'flag'});
+%!   assert_equal (R.Properties.VariableNames, {'n', 's', 'when', 'dur', ...
+%!                 'flag'});
 %!   assert_equal (R.n, [1; 2; 3]);
 %!   assert_equal (R.s, {'a'; 'bb'; 'ccc'});
 %!   assert_equal (class (R.when), 'datetime');

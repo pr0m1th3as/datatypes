@@ -435,8 +435,10 @@ endfunction
 %! ## one page of a multi-sheet workbook.
 %!
 %! filename = fullfile (tempdir (), 'workbook.ods');
-%! table2ods (table ([38; 43], 'VariableNames', {'Age'}), filename, 'Sheet', 'Patients');
-%! table2ods (table ([1; 2; 3], 'VariableNames', {'Visit'}), filename, 'Sheet', 'Visits');
+%! table2ods (table ([38; 43], 'VariableNames', {'Age'}), filename, 'Sheet', ...
+%!            'Patients');
+%! table2ods (table ([1; 2; 3], 'VariableNames', {'Visit'}), filename, ...
+%!            'Sheet', 'Visits');
 %! ods2table (filename, 'Sheet', 'Visits')
 %!
 %! delete (filename);
@@ -782,7 +784,8 @@ endfunction
 ## Round-trip: a missing string stays missing, an empty one stays empty
 %!test
 %! fn = [tempname() '.fods'];
-%! T = table ([string('a'); string(missing); string('')], 'VariableNames', {'v'});
+%! T = table ([string('a'); string(missing); string('')], 'VariableNames', ...
+%!            {'v'});
 %! unwind_protect
 %!   table2ods (T, fn);
 %!   R = ods2table (fn);
@@ -837,7 +840,8 @@ endfunction
 ## Round-trip: datetime with a NaT, restored to native datetime
 %!test
 %! fn = [tempname() '.fods'];
-%! d = [datetime(2024, 1, 15, 10, 30, 15.5); NaT; datetime(1999, 12, 31, 23, 59, 59)];
+%! d = [datetime(2024, 1, 15, 10, 30, 15.5); NaT; datetime(1999, 12, 31, 23, ...
+%!               59, 59)];
 %! T = table (d, 'VariableNames', {'when'});
 %! unwind_protect
 %!   table2ods (T, fn);
@@ -903,7 +907,8 @@ endfunction
 ## Round-trip: row names
 %!test
 %! fn = [tempname() '.fods'];
-%! T = table ([1; 2; 3], 'VariableNames', {'v'}, 'RowNames', {'r1', 'r2', 'r3'});
+%! T = table ([1; 2; 3], 'VariableNames', {'v'}, 'RowNames', {'r1', 'r2', ...
+%!            'r3'});
 %! unwind_protect
 %!   table2ods (T, fn);
 %!   R = ods2table (fn);
@@ -916,7 +921,8 @@ endfunction
 ## Round-trip: multicolumn variable kept as one matrix-valued variable
 %!test
 %! fn = [tempname() '.fods'];
-%! T = table ([1 2; 3 4; 5 6], {'p'; 'q'; 'r'}, 'VariableNames', {'mat', 'tag'});
+%! T = table ([1 2; 3 4; 5 6], {'p'; 'q'; 'r'}, 'VariableNames', {'mat', ...
+%!            'tag'});
 %! unwind_protect
 %!   table2ods (T, fn);
 %!   R = ods2table (fn);
@@ -1043,7 +1049,8 @@ endfunction
 ## Round-trip: a table with no rows preserves its variable types
 %!test
 %! fn = [tempname() '.fods'];
-%! T = table (zeros (0, 1), int64 (zeros (0, 1)), datetime (zeros (0, 1), 1, 1), ...
+%! T = table (zeros (0, 1), int64 (zeros (0, 1)), datetime (zeros (0, 1), 1, ...
+%!            1), ...
 %!            seconds (zeros (0, 1)), string (cell (0, 1)), ...
 %!            'VariableNames', {'d', 'i', 'dt', 'du', 's'});
 %! unwind_protect
@@ -1141,7 +1148,8 @@ endfunction
 %!   delete (fn);
 %! end_unwind_protect
 %!warning <ods2table: 'calendarDuration' strings are not converted.> ...
-%! T = table (calendarDuration ([1; 2], [0; 0], [0; 0]), 'VariableNames', {'c'});
+%! T = table (calendarDuration ([1; 2], [0; 0], [0; 0]), 'VariableNames', ...
+%!            {'c'});
 %! fn = [tempname() '.ods'];
 %! unwind_protect
 %!   table2ods (T, fn);

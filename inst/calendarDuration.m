@@ -741,7 +741,8 @@ classdef calendarDuration
         endif
         found = strncmpi (unit, valid_units, numel (unit));
         if (! any (found))
-          error ("calendarDuration.split: '%s' is not a valid time unit.", unit);
+          error ("calendarDuration.split: '%s' is not a valid time unit.", ...
+                 unit);
         endif
         idx_order(i) = find (found, 1);
       endfor
@@ -2374,7 +2375,9 @@ function TF = isNonIntegral (x)
 endfunction
 
 function errmsg = monthlessErrMsg ()
-  errmsg = strcat ("cannot convert a calendarDuration to days or weeks when", ...
+  errmsg = strcat ("cannot convert a calendarDuration to days or weeks", ...
+                   " when", ...
+                   ...
                    " it contains a non-zero number of months. Use 'split'", ...
                    " instead.");
 endfunction

@@ -76,7 +76,9 @@ function varargout = splitapply (func, varargin)
 
   ## Validate the grouping vector.
   if (! (isnumeric (G) && isvector (G) && numel (G) == n))
-    error (strcat ("splitapply: G must be a numeric vector with one element", ...
+    error (strcat ("splitapply: G must be a numeric vector with one", ...
+                   " element", ...
+           ...
                    " per row of the data variables."));
   endif
   G = G(:);
@@ -115,11 +117,13 @@ function varargout = splitapply (func, varargin)
 
 endfunction
 
-%!assert_equal (splitapply (@(x) mean (x), [1; 2; 3; 4], [1; 1; 2; 2]), [1.5; 3.5])
+%!assert_equal (splitapply (@(x) mean (x), [1; 2; 3; 4], ...
+%!              [1; 1; 2; 2]), [1.5; 3.5])
 %!assert_equal (splitapply (@(x) sum (x), [1; 2; 3], [2; 1; 2]), [2; 4])
 %!test
 %! ## Multiple data variables become separate arguments to FUNC
-%! y = splitapply (@(a, b) sum (a) + sum (b), [1; 2; 3; 4], [10; 20; 30; 40], ...
+%! y = splitapply (@(a, b) sum (a) + sum (b), [1; 2; 3; 4], ...
+%!                 [10; 20; 30; 40], ...
 %!                 [1; 1; 2; 2]);
 %! assert_equal (y, [33; 77]);
 %!test

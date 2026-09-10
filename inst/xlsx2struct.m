@@ -79,7 +79,8 @@ endfunction
 %! ## `xlsx2struct` is the inverse of `struct2xlsx`: it reads every worksheet of
 %! ## an Excel workbook into a scalar struct, one field per sheet, in sheet order.
 %!
-%! wb.Patients = table ({'Li'; 'Diaz'}, [38; 40], 'VariableNames', {'Name', 'Age'});
+%! wb.Patients = table ({'Li'; 'Diaz'}, [38; 40], 'VariableNames', {'Name', ...
+%!                      'Age'});
 %! wb.Visits = table ([1; 2; 3], 'VariableNames', {'Visit'});
 %! filename = fullfile (tempdir (), 'clinic.xlsx');
 %! struct2xlsx (filename, wb);

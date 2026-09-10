@@ -155,7 +155,8 @@ function struct2ods (filename, s)
   maxcols = 0;
   for k = 1:K
     mb = metablocks{k};
-    marker = [{['## Sheet: ' names{k}]}, repmat({''}, 1, max (0, columns (mb) - 1))];
+    marker = [{['## Sheet: ' names{k}]}, repmat({''}, 1, max (0, ...
+        columns (mb) - 1))];
     sections{k} = [marker; mb];
     maxcols = max (maxcols, columns (sections{k}));
   endfor
@@ -202,7 +203,8 @@ endfunction
 %! ## `struct2ods` writes a whole workbook at once: each field of a scalar struct
 %! ## of tables becomes its own sheet, and the field name becomes the sheet name.
 %!
-%! wb.Patients = table ({'Li'; 'Diaz'}, [38; 40], 'VariableNames', {'Name', 'Age'});
+%! wb.Patients = table ({'Li'; 'Diaz'}, [38; 40], 'VariableNames', {'Name', ...
+%!                      'Age'});
 %! wb.Visits = table ([1; 2; 3], 'VariableNames', {'Visit'});
 %! filename = fullfile (tempdir (), 'clinic.ods');
 %! struct2ods (filename, wb);

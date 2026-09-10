@@ -207,7 +207,9 @@ function [methods, methNames, errmsg] = gs_normalise_methods (method)
   elseif (iscell (method))
     items = method(:)';
   else
-    errmsg = strcat ("METHOD must be a method name, a function handle, or a", ...
+    errmsg = strcat ("METHOD must be a method name, a function handle, or", ...
+                     " a", ...
+                     ...
                      " cell array of method names and function handles.");
     return;
   endif
@@ -220,7 +222,8 @@ function [methods, methNames, errmsg] = gs_normalise_methods (method)
       nfun++;
       methods{end+1} = it;
       methNames{end+1} = sprintf ("fun%d", nfun);
-    elseif ((ischar (it) && isrow (it)) || (isa (it, 'string') && isscalar (it)))
+    elseif ((ischar (it) && isrow (it)) || (isa (it, ...
+            'string') && isscalar (it)))
       nm = lower (char (it));
       if (! any (strcmp (nm, known)))
         errmsg = sprintf ("'%s' is not a supported method name.", char (it));
@@ -565,7 +568,8 @@ endfunction
 %! assert_equal (BC, [2; 2]);
 %!test
 %! ## A matrix is summarised column by column
-%! assert_equal (groupsummary ([10 1; 20 2; 30 3; 40 4], [1; 1; 2; 2], 'sum'), ...
+%! assert_equal (groupsummary ([10 1; 20 2; 30 3; 40 4], [1; 1; 2; 2], ...
+%!               'sum'), ...
 %!               [30, 3; 70, 7]);
 %!test
 %! ## Several methods order the columns of B by data column first, then method
@@ -573,7 +577,8 @@ endfunction
 %! assert_equal (B, [15, 30; 35, 70]);
 %!test
 %! ## Named methods omit NaN in the data
-%! assert_equal (groupsummary ([10; 20; NaN; 40], [1; 1; 2; 2], 'mean'), [15; 40]);
+%! assert_equal (groupsummary ([10; 20; NaN; 40], [1; 1; 2; 2], 'mean'), ...
+%!               [15; 40]);
 %!test
 %! ## A missing value in a grouping variable forms its own group, sorted last
 %! [B, BG, BC] = groupsummary ([10; 20; 30; 40], [1; 1; NaN; 2], 'mean');
@@ -592,7 +597,8 @@ endfunction
 %!test
 %! ## Several grouping vectors return BG as a cell array, one per variable
 %! [B, BG, BC] = groupsummary ([10; 20; 30; 40; 50], ...
-%!                             {[1; 1; 2; 2; 1], {'b'; 'a'; 'a'; 'b'; 'b'}}, 'sum');
+%!                             {[1; 1; 2; 2; 1], ...
+%!                               {'b'; 'a'; 'a'; 'b'; 'b'}}, 'sum');
 %! assert_equal (B, [20; 60; 30; 40]);
 %! assert_equal (BG, {[1; 1; 2; 2], {'a'; 'b'; 'a'; 'b'}});
 %! assert_equal (BC, [1; 2; 1; 1]);
