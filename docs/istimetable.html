@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Data Types for GNU Octave: istimetable</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+    <script type="text/javascript" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML">
+    </script>
+    <script type="text/javascript">
+      window.addEventListener("load", () => {
+        for (let i of document.querySelectorAll(".collapse ul")) {
+          let tog = document.createElement("div");
+          tog.innerHTML = i.previousSibling.textContent;
+          tog.className = "toggle";
+          tog.onclick = () => tog.classList.toggle("show");
+          i.parentElement.removeChild(i.previousSibling);
+          i.parentElement.insertBefore(tog, i);
+        }
+      });
+      // Open the collapsible demo an "#example" link points to, then scroll to
+      // it.  getElementById (not querySelector) matches ids that contain a dot,
+      // e.g. "Class.method-example1".
+      function openHashTarget () {
+        if (! window.location.hash) { return; }
+        let el = document.getElementById (
+          decodeURIComponent (window.location.hash.slice (1)));
+        if (! el) { return; }
+        if (el.classList.contains ("collapse") &&
+            ! el.classList.contains ("show")) {
+          bootstrap.Collapse.getOrCreateInstance (el).show ();
+        }
+        el.scrollIntoView ();
+      }
+      window.addEventListener ("DOMContentLoaded", openHashTarget);
+      window.addEventListener ("hashchange", openHashTarget);
+      // When the collapsible named by the current URL fragment is collapsed,
+      // drop the fragment (replaceState: no scroll, no history entry).  Otherwise
+      // the fragment would still equal this id, so clicking the same #example
+      // link again fires no "hashchange" and the example would not re-expand.
+      document.addEventListener ("hide.bs.collapse", (e) => {
+        if (e.target.id && window.location.hash === "#" + e.target.id) {
+          history.replaceState (null, "",
+            window.location.pathname + window.location.search);
+        }
+      });
+      // Let the browser's find-in-page reach the text inside a collapsed
+      // panel.  The attribute "hidden=until-found" is what makes content
+      // searchable and revealable; the style block below clears the
+      // "display: none" that would otherwise stop the attribute meaning
+      // anything, a box that is not generated having nothing to reveal.  Set
+      // it only where it is understood, which "content-visibility" is no test
+      // for, Firefox having shipped the two apart.  Where it is not, the panel
+      // keeps the user agent's plain [hidden] and the page behaves as before.
+      window.addEventListener ("DOMContentLoaded", () => {
+        if (! ("onbeforematch" in document.body)) { return; }
+        document.documentElement.classList.add ("until-found");
+        let panels = document.querySelectorAll (
+          ".collapse:not(.show):not(.navbar-collapse)");
+        for (let el of panels) {
+          el.setAttribute ("hidden", "until-found");
+          // Fired on a find-in-page hit, before the browser drops the
+          // attribute and scrolls to it.  Bootstrap keeps a panel's state in
+          // its class list, so adding the class here opens the panel in the
+          // same frame and leaves the button shutting it correctly afterwards.
+          // Bootstrap's own show () would animate against that scroll, and the
+          // attribute once dropped, "display: none" would take the panel back
+          // part way through.
+          el.addEventListener ("beforematch", () => {
+            el.classList.add ("show");
+            for (let b of document.querySelectorAll ("[data-bs-target]")) {
+              if (b.getAttribute ("data-bs-target") === "#" + el.id) {
+                b.setAttribute ("aria-expanded", "true");
+              }
+            }
+          });
+        }
+        // Drop the attribute before Bootstrap measures the panel it is opening,
+        // which it does after firing this; a revealable one measures nothing.
+        document.addEventListener ("show.bs.collapse", (e) => {
+          e.target.removeAttribute ("hidden");
+        });
+        // Restore it once the panel is shut, rather than while it is shutting.
+        document.addEventListener ("hidden.bs.collapse", (e) => {
+          if (! e.target.classList.contains ("navbar-collapse")) {
+            e.target.setAttribute ("hidden", "until-found");
+          }
+        });
+      });
+    </script>
+    <style>
+    h5.fs {
+    margin-top: -0.15em;
+    margin-bottom: -0.15em;
+    }
+    h6:hover {
+      color: gray;
+    }
+    code {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    white-space: nowrap;
+    color: gray;
+    }
+    code.description {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    white-space: normal;
+    font-size:1.2em;
+    color: gray;
+    }
+    var {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    font-style: normal;
+    font-weight: bold;
+    color: gray;
+    }
+    td {
+      vertical-align: top;
+    }
+    [id^="togList"],                        /* HIDE CHECKBOX */
+    [id^="togList"] ~ .list,                /* HIDE LIST */
+    [id^="togList"] + label  span + span,   /* HIDE "Collapse" */
+    [id^="togList"]:checked + label span{   /* HIDE "Expand" (IF CHECKED) */
+      display:none;
+    }
+    [id^="togList"]:checked + label span + span{
+      display:inline-block;                 /* SHOW "Collapse" (IF CHECKED) */
+    }
+    [id^="togList"]:checked ~ .list{
+      display:block;                        /* SHOW LIST (IF CHECKED) */
+    }
+    /* Bootstrap hides a collapsed panel with "display: none", which generates
+       no box, so the "content-visibility: hidden" the user agent gives
+       "hidden=until-found" could never apply and the text would stay beyond
+       find-in-page.  Clear that one declaration, and only where the script
+       above has found the attribute to be understood: an attribute selector
+       matches a value the browser does not understand, so an ungated rule
+       would leave every panel of an older browser standing open.  The
+       "!important" is required rather than decoration: the reboot carries
+       "[hidden] {display: none !important}", which the attribute itself brings
+       into play, and only another "!important" can outrank it. */
+    html.until-found .collapse[hidden="until-found"]:not(.show) {
+      display: block !important;
+    }
+    </style>
+  </head>
+  <body>
+    <div class="bg-dark">
+      <div class="container-xl">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+          <div class="container-fluid">
+            <a class="navbar-brand" href=index.html>
+              <img src="assets/datatypes.png" alt="datatypes" class="d-inline-block align-top" width="25" height="25">
+              Data Types for GNU Octave
+            </a>
+            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav">
+                <li class="nav-item">
+                  <a class="nav-link" href="index.html#timetable arrays">
+                    <i class="fas fa-list-alt"></i>
+                    timetable arrays
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="https://gnu-octave.github.io/packages/">
+                  <img src="assets/octave-logo.svg" alt="GNU Octave logo" class="d-inline-block align-top" width="25" height="25">
+                    Octave Packages
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="https://www.octave.org">
+                    <i class="fas fa-home"></i>
+                    GNU Octave website
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+    <div class="container-xl my-4">
+      <div class="row flex-nowrap" style="min-height:0">
+        <div class="col-md-2 bg-light" style="overflow-y: scroll; width: 250px;">
+          <div class="p-2" style="text-align: center;">
+            <h3>Categories &</h3>
+            <h4 style="color: blue">Functions List</h4>
+          </div>
+			<div class="row">
+				<input id="togList1" type="checkbox">
+				<label for="togList1">
+					<span><h6>categorical arrays</h6></span>
+					<span><h6>categorical arrays</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="categorical.html" class="text-decoration-none font-monospace"><small>categorical</small></a></li>
+					<li><a href="iscategorical.html" class="text-decoration-none font-monospace"><small>iscategorical</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList2" type="checkbox">
+				<label for="togList2">
+					<span><h6>calendarDuration arrays</h6></span>
+					<span><h6>calendarDuration arrays</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="calendarDuration.html" class="text-decoration-none font-monospace"><small>calendarDuration</small></a></li>
+					<li><a href="caldays.html" class="text-decoration-none font-monospace"><small>caldays</small></a></li>
+					<li><a href="calweeks.html" class="text-decoration-none font-monospace"><small>calweeks</small></a></li>
+					<li><a href="calmonths.html" class="text-decoration-none font-monospace"><small>calmonths</small></a></li>
+					<li><a href="calquarters.html" class="text-decoration-none font-monospace"><small>calquarters</small></a></li>
+					<li><a href="calyears.html" class="text-decoration-none font-monospace"><small>calyears</small></a></li>
+					<li><a href="iscalendarduration.html" class="text-decoration-none font-monospace"><small>iscalendarduration</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList3" type="checkbox">
+				<label for="togList3">
+					<span><h6>datetime arrays</h6></span>
+					<span><h6>datetime arrays</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="datetime.html" class="text-decoration-none font-monospace"><small>datetime</small></a></li>
+					<li><a href="isdatetime.html" class="text-decoration-none font-monospace"><small>isdatetime</small></a></li>
+					<li><a href="isnat.html" class="text-decoration-none font-monospace"><small>isnat</small></a></li>
+					<li><a href="NaT.html" class="text-decoration-none font-monospace"><small>NaT</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList4" type="checkbox">
+				<label for="togList4">
+					<span><h6>duration arrays</h6></span>
+					<span><h6>duration arrays</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="duration.html" class="text-decoration-none font-monospace"><small>duration</small></a></li>
+					<li><a href="days.html" class="text-decoration-none font-monospace"><small>days</small></a></li>
+					<li><a href="years.html" class="text-decoration-none font-monospace"><small>years</small></a></li>
+					<li><a href="hours.html" class="text-decoration-none font-monospace"><small>hours</small></a></li>
+					<li><a href="minutes.html" class="text-decoration-none font-monospace"><small>minutes</small></a></li>
+					<li><a href="seconds.html" class="text-decoration-none font-monospace"><small>seconds</small></a></li>
+					<li><a href="milliseconds.html" class="text-decoration-none font-monospace"><small>milliseconds</small></a></li>
+					<li><a href="isduration.html" class="text-decoration-none font-monospace"><small>isduration</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList5" type="checkbox">
+				<label for="togList5">
+					<span><h6>string arrays</h6></span>
+					<span><h6>string arrays</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="string.html" class="text-decoration-none font-monospace"><small>string</small></a></li>
+					<li><a href="convertCharsToStrings.html" class="text-decoration-none font-monospace"><small>convertCharsToStrings</small></a></li>
+					<li><a href="convertStringsToChars.html" class="text-decoration-none font-monospace"><small>convertStringsToChars</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList6" type="checkbox">
+				<label for="togList6">
+					<span><h6>table arrays</h6></span>
+					<span><h6>table arrays</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="table.html" class="text-decoration-none font-monospace"><small>table</small></a></li>
+					<li><a href="array2table.html" class="text-decoration-none font-monospace"><small>array2table</small></a></li>
+					<li><a href="cell2table.html" class="text-decoration-none font-monospace"><small>cell2table</small></a></li>
+					<li><a href="csv2table.html" class="text-decoration-none font-monospace"><small>csv2table</small></a></li>
+					<li><a href="ods2table.html" class="text-decoration-none font-monospace"><small>ods2table</small></a></li>
+					<li><a href="ods2struct.html" class="text-decoration-none font-monospace"><small>ods2struct</small></a></li>
+					<li><a href="readtable.html" class="text-decoration-none font-monospace"><small>readtable</small></a></li>
+					<li><a href="struct2ods.html" class="text-decoration-none font-monospace"><small>struct2ods</small></a></li>
+					<li><a href="struct2xlsx.html" class="text-decoration-none font-monospace"><small>struct2xlsx</small></a></li>
+					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
+					<li><a href="xlsx2struct.html" class="text-decoration-none font-monospace"><small>xlsx2struct</small></a></li>
+					<li><a href="istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList7" type="checkbox" checked>
+				<label for="togList7">
+					<span><h6>timetable arrays</h6></span>
+					<span><h6>timetable arrays</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="timetable.html" class="text-decoration-none font-monospace"><small>timetable</small></a></li>
+					<li><a href="array2timetable.html" class="text-decoration-none font-monospace"><small>array2timetable</small></a></li>
+					<li><a href="csv2timetable.html" class="text-decoration-none font-monospace"><small>csv2timetable</small></a></li>
+					<li><a href="ods2timetable.html" class="text-decoration-none font-monospace"><small>ods2timetable</small></a></li>
+					<li><a href="readtimetable.html" class="text-decoration-none font-monospace"><small>readtimetable</small></a></li>
+					<li><a href="istimetable.html" class="text-decoration-none font-monospace fw-bolder"><small>istimetable</small></a></li>
+					<li><a href="eventtable.html" class="text-decoration-none font-monospace"><small>eventtable</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList8" type="checkbox">
+				<label for="togList8">
+					<span><h6>supplementary classes</h6></span>
+					<span><h6>supplementary classes</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="tabular.html" class="text-decoration-none font-monospace"><small>tabular</small></a></li>
+					<li><a href="missing.html" class="text-decoration-none font-monospace"><small>missing</small></a></li>
+					<li><a href="vartype.html" class="text-decoration-none font-monospace"><small>vartype</small></a></li>
+					<li><a href="timerange.html" class="text-decoration-none font-monospace"><small>timerange</small></a></li>
+					<li><a href="withtol.html" class="text-decoration-none font-monospace"><small>withtol</small></a></li>
+					<li><a href="rowfilter.html" class="text-decoration-none font-monospace"><small>rowfilter</small></a></li>
+					<li><a href="eventfilter.html" class="text-decoration-none font-monospace"><small>eventfilter</small></a></li>
+					<li><a href="@cell_disp.html" class="text-decoration-none font-monospace"><small>@cell/disp</small></a></li>
+					<li><a href="@cell_display.html" class="text-decoration-none font-monospace"><small>@cell/display</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList9" type="checkbox">
+				<label for="togList9">
+					<span><h6>supplementary functions</h6></span>
+					<span><h6>supplementary functions</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="findgroups.html" class="text-decoration-none font-monospace"><small>findgroups</small></a></li>
+					<li><a href="splitapply.html" class="text-decoration-none font-monospace"><small>splitapply</small></a></li>
+					<li><a href="groupcounts.html" class="text-decoration-none font-monospace"><small>groupcounts</small></a></li>
+					<li><a href="groupfilter.html" class="text-decoration-none font-monospace"><small>groupfilter</small></a></li>
+					<li><a href="groupsummary.html" class="text-decoration-none font-monospace"><small>groupsummary</small></a></li>
+					<li><a href="grouptransform.html" class="text-decoration-none font-monospace"><small>grouptransform</small></a></li>
+					<li><a href="discretize.html" class="text-decoration-none font-monospace"><small>discretize</small></a></li>
+					<li><a href="histcounts.html" class="text-decoration-none font-monospace"><small>histcounts</small></a></li>
+					<li><a href="keyHash.html" class="text-decoration-none font-monospace"><small>keyHash</small></a></li>
+					<li><a href="keyMatch.html" class="text-decoration-none font-monospace"><small>keyMatch</small></a></li>
+					<li><a href="parsePairedArguments.html" class="text-decoration-none font-monospace"><small>parsePairedArguments</small></a></li>
+					<li><a href="istabular.html" class="text-decoration-none font-monospace"><small>istabular</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList10" type="checkbox">
+				<label for="togList10">
+					<span><h6>compiled functions</h6></span>
+					<span><h6>compiled functions</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="__ckeyHash__.html" class="text-decoration-none font-monospace"><small>__ckeyHash__</small></a></li>
+					<li><a href="__nkeyHash__.html" class="text-decoration-none font-monospace"><small>__nkeyHash__</small></a></li>
+					<li><a href="__datetime__.html" class="text-decoration-none font-monospace"><small>__datetime__</small></a></li>
+					<li><a href="__ldml__.html" class="text-decoration-none font-monospace"><small>__ldml__</small></a></li>
+					<li><a href="__csv2table__.html" class="text-decoration-none font-monospace"><small>__csv2table__</small></a></li>
+					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace"><small>__table2csv__</small></a></li>
+					<li><a href="__ods2table__.html" class="text-decoration-none font-monospace"><small>__ods2table__</small></a></li>
+					<li><a href="__table2ods__.html" class="text-decoration-none font-monospace"><small>__table2ods__</small></a></li>
+					<li><a href="__xlsx2table__.html" class="text-decoration-none font-monospace"><small>__xlsx2table__</small></a></li>
+					<li><a href="__table2xlsx__.html" class="text-decoration-none font-monospace"><small>__table2xlsx__</small></a></li>
+				</ul>
+				</div>
+			</div>
+
+			  </div>
+			  <div class="col-md-10">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <h3 class="d-inline-block mr-2">
+                Function&nbsp;Reference: <b><code>istimetable</code></b>
+                </h3>
+              </div>
+            </div>
+            <div class="card-body">
+<dl>
+<dt><code><h5 class="fs">datatypes: <var>TF</var> = <b>istimetable</b> (<var>X</var>)</code></h5></dt>
+</dl>
+<p> True if input is a <code>timetable</code>, false otherwise.
+</p>
+<div class="ms-5">
+<p> <code><var>TF</var> = istimetable (<var>X</var>)</code> always returns a logical scalar,
+ irrespective of the size of <var>X</var>.  It is false for a <code>table</code>,
+ which is not a <code>timetable</code> and is not a superclass of one.
+</p>
+<p> <strong>See also: </strong>
+  <a href="https:__github.com_pr0m1th3as_datatypes_blob_2c7436d_inst_istable.m.html">istable</a>, 
+  <a href="https:__github.com_pr0m1th3as_datatypes_blob_2c7436d_inst_istabular.m.html">istabular</a>, 
+  <a href="https:__github.com_pr0m1th3as_datatypes_blob_2c7436d_inst_timetable.m.html">timetable</a>, 
+  <a href="https:__github.com_pr0m1th3as_datatypes_blob_2c7436d_inst_table.m.html">table</a>
+</p>
+<p><strong>Source Code: </strong>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/2c7436d/inst/istimetable.m">istimetable</a>
+</div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>

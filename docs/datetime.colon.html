@@ -47,6 +47,49 @@
             window.location.pathname + window.location.search);
         }
       });
+      // Let the browser's find-in-page reach the text inside a collapsed
+      // panel.  The attribute "hidden=until-found" is what makes content
+      // searchable and revealable; the style block below clears the
+      // "display: none" that would otherwise stop the attribute meaning
+      // anything, a box that is not generated having nothing to reveal.  Set
+      // it only where it is understood, which "content-visibility" is no test
+      // for, Firefox having shipped the two apart.  Where it is not, the panel
+      // keeps the user agent's plain [hidden] and the page behaves as before.
+      window.addEventListener ("DOMContentLoaded", () => {
+        if (! ("onbeforematch" in document.body)) { return; }
+        document.documentElement.classList.add ("until-found");
+        let panels = document.querySelectorAll (
+          ".collapse:not(.show):not(.navbar-collapse)");
+        for (let el of panels) {
+          el.setAttribute ("hidden", "until-found");
+          // Fired on a find-in-page hit, before the browser drops the
+          // attribute and scrolls to it.  Bootstrap keeps a panel's state in
+          // its class list, so adding the class here opens the panel in the
+          // same frame and leaves the button shutting it correctly afterwards.
+          // Bootstrap's own show () would animate against that scroll, and the
+          // attribute once dropped, "display: none" would take the panel back
+          // part way through.
+          el.addEventListener ("beforematch", () => {
+            el.classList.add ("show");
+            for (let b of document.querySelectorAll ("[data-bs-target]")) {
+              if (b.getAttribute ("data-bs-target") === "#" + el.id) {
+                b.setAttribute ("aria-expanded", "true");
+              }
+            }
+          });
+        }
+        // Drop the attribute before Bootstrap measures the panel it is opening,
+        // which it does after firing this; a revealable one measures nothing.
+        document.addEventListener ("show.bs.collapse", (e) => {
+          e.target.removeAttribute ("hidden");
+        });
+        // Restore it once the panel is shut, rather than while it is shutting.
+        document.addEventListener ("hidden.bs.collapse", (e) => {
+          if (! e.target.classList.contains ("navbar-collapse")) {
+            e.target.setAttribute ("hidden", "until-found");
+          }
+        });
+      });
     </script>
     <style>
     h5.fs {
@@ -90,6 +133,19 @@
     }
     [id^="togList"]:checked ~ .list{
       display:block;                        /* SHOW LIST (IF CHECKED) */
+    }
+    /* Bootstrap hides a collapsed panel with "display: none", which generates
+       no box, so the "content-visibility: hidden" the user agent gives
+       "hidden=until-found" could never apply and the text would stay beyond
+       find-in-page.  Clear that one declaration, and only where the script
+       above has found the attribute to be understood: an attribute selector
+       matches a value the browser does not understand, so an ungated rule
+       would leave every panel of an older browser standing open.  The
+       "!important" is required rather than decoration: the reboot carries
+       "[hidden] {display: none !important}", which the attribute itself brings
+       into play, and only another "!important" can outrank it. */
+    html.until-found .collapse[hidden="until-found"]:not(.show) {
+      display: block !important;
     }
     </style>
   </head>
@@ -391,30 +447,31 @@
  values starting at <var>A</var> and increasing in steps of one calendar day up
  to, and possibly including, <var>B</var>.
 </p>
-<p> <code><var>R</var> = colon (<var>A</var>, <var>step</var>, <var>B</var>)</code> is the equivalent of
- the syntax <code><var>R</var> = <var>A</var>:<var>step</var>:<var>B</var></code> and uses the
+<p> <code><var>R</var> = colon (<var>A</var>, <var>step</var>, <var>B</var>)</code> is the equivalent
+ of the syntax <code><var>R</var> = <var>A</var>:<var>step</var>:<var>B</var></code> and uses the
  specified <var>step</var> between consecutive elements.  <var>step</var> may be:
 </p>
 <ul>
 <li> a <code>duration</code> or a numeric scalar (a number of fixed 24-hour
  days), in which case successive elements advance by a fixed amount of
  elapsed time; for a zoned range this is aware of daylight saving time.
-</li><li> a <code>calendarDuration</code>, in which case successive elements advance
- in calendar units.  Each element is computed as <code><var>A</var> + k*<var>step</var></code>
- for <code>k = 0, 1, 2, &hellip;</code>, so month and year steps clamp the day of
- month independently for every element (e.g. a one-month step from
- 31 January yields 31 January, 28 February, 31 March, &hellip;).
+</li><li> a <code>calendarDuration</code>, in which case successive elements
+ advance in calendar units.  Each element is computed as <code><var>A</var> +
+ k*<var>step</var></code> for <code>k = 0, 1, 2, &hellip;</code>, so month and year steps
+ clamp the day of month independently for every element (e.g. a
+ one-month step from 31 January yields 31 January, 28 February, 31 March,
+ &hellip;).
 </li></ul>
 
 <p> The default step of <code><var>A</var>:<var>B</var></code> is one calendar day
  (<code>caldays (1)</code>), which preserves the time of day across daylight
  saving time changes.  A range whose <var>step</var> points away from <var>B</var>
  (for example an increasing step with <code><var>A</var> &gt; <var>B</var></code>) is empty.
- <var>A</var> and <var>B</var> must be datetime scalars that are either both zoned or
- both unzoned, and must be finite.
+ <var>A</var> and <var>B</var> must be datetime scalars that are either both zoned
+ or both unzoned, and must be finite.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/datetime.m">datetime</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/2c7436d/inst/datetime.m#L4234">datetime</a>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

@@ -47,6 +47,49 @@
             window.location.pathname + window.location.search);
         }
       });
+      // Let the browser's find-in-page reach the text inside a collapsed
+      // panel.  The attribute "hidden=until-found" is what makes content
+      // searchable and revealable; the style block below clears the
+      // "display: none" that would otherwise stop the attribute meaning
+      // anything, a box that is not generated having nothing to reveal.  Set
+      // it only where it is understood, which "content-visibility" is no test
+      // for, Firefox having shipped the two apart.  Where it is not, the panel
+      // keeps the user agent's plain [hidden] and the page behaves as before.
+      window.addEventListener ("DOMContentLoaded", () => {
+        if (! ("onbeforematch" in document.body)) { return; }
+        document.documentElement.classList.add ("until-found");
+        let panels = document.querySelectorAll (
+          ".collapse:not(.show):not(.navbar-collapse)");
+        for (let el of panels) {
+          el.setAttribute ("hidden", "until-found");
+          // Fired on a find-in-page hit, before the browser drops the
+          // attribute and scrolls to it.  Bootstrap keeps a panel's state in
+          // its class list, so adding the class here opens the panel in the
+          // same frame and leaves the button shutting it correctly afterwards.
+          // Bootstrap's own show () would animate against that scroll, and the
+          // attribute once dropped, "display: none" would take the panel back
+          // part way through.
+          el.addEventListener ("beforematch", () => {
+            el.classList.add ("show");
+            for (let b of document.querySelectorAll ("[data-bs-target]")) {
+              if (b.getAttribute ("data-bs-target") === "#" + el.id) {
+                b.setAttribute ("aria-expanded", "true");
+              }
+            }
+          });
+        }
+        // Drop the attribute before Bootstrap measures the panel it is opening,
+        // which it does after firing this; a revealable one measures nothing.
+        document.addEventListener ("show.bs.collapse", (e) => {
+          e.target.removeAttribute ("hidden");
+        });
+        // Restore it once the panel is shut, rather than while it is shutting.
+        document.addEventListener ("hidden.bs.collapse", (e) => {
+          if (! e.target.classList.contains ("navbar-collapse")) {
+            e.target.setAttribute ("hidden", "until-found");
+          }
+        });
+      });
     </script>
     <style>
     h5.fs {
@@ -90,6 +133,19 @@
     }
     [id^="togList"]:checked ~ .list{
       display:block;                        /* SHOW LIST (IF CHECKED) */
+    }
+    /* Bootstrap hides a collapsed panel with "display: none", which generates
+       no box, so the "content-visibility: hidden" the user agent gives
+       "hidden=until-found" could never apply and the text would stay beyond
+       find-in-page.  Clear that one declaration, and only where the script
+       above has found the attribute to be understood: an attribute selector
+       matches a value the browser does not understand, so an ungated rule
+       would leave every panel of an older browser standing open.  The
+       "!important" is required rather than decoration: the reboot carries
+       "[hidden] {display: none !important}", which the attribute itself brings
+       into play, and only another "!important" can outrank it. */
+    html.until-found .collapse[hidden="until-found"]:not(.show) {
+      display: block !important;
     }
     </style>
   </head>
@@ -153,6 +209,7 @@
 					<li><a href="table.table2array.html" class="text-decoration-none font-monospace"><small>table2array</small></a></li>
 					<li><a href="table.table2cell.html" class="text-decoration-none font-monospace"><small>table2cell</small></a></li>
 					<li><a href="table.table2struct.html" class="text-decoration-none font-monospace"><small>table2struct</small></a></li>
+					<li><a href="table.table2timetable.html" class="text-decoration-none font-monospace"><small>table2timetable</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -277,9 +334,12 @@
 				</label>
 				<div class="list">
 				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="table.cat.html" class="text-decoration-none font-monospace"><small>cat</small></a></li>
 					<li><a href="table.horzcat.html" class="text-decoration-none font-monospace"><small>horzcat</small></a></li>
 					<li><a href="table.iscolumn.html" class="text-decoration-none font-monospace"><small>iscolumn</small></a></li>
 					<li><a href="table.isempty.html" class="text-decoration-none font-monospace"><small>isempty</small></a></li>
+					<li><a href="table.isequal.html" class="text-decoration-none font-monospace"><small>isequal</small></a></li>
+					<li><a href="table.isequaln.html" class="text-decoration-none font-monospace"><small>isequaln</small></a></li>
 					<li><a href="table.ismatrix.html" class="text-decoration-none font-monospace"><small>ismatrix</small></a></li>
 					<li><a href="table.isrow.html" class="text-decoration-none font-monospace"><small>isrow</small></a></li>
 					<li><a href="table.isscalar.html" class="text-decoration-none font-monospace"><small>isscalar</small></a></li>
@@ -293,6 +353,7 @@
 					<li><a href="table.size.html" class="text-decoration-none font-monospace"><small>size</small></a></li>
 					<li><a href="table.squeeze.html" class="text-decoration-none font-monospace"><small>squeeze</small></a></li>
 					<li><a href="table.vertcat.html" class="text-decoration-none font-monospace"><small>vertcat</small></a></li>
+					<li><a href="table.empty.html" class="text-decoration-none font-monospace"><small>empty</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -354,7 +415,7 @@
 </li></ul>
 
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/table.m">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/2c7436d/inst/table.m#L1299">table</a>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">
@@ -381,38 +442,20 @@
  T.Properties.VariableDescriptions(4) = {'Systolic/Diastolic'};</pre>
                 <p>Print a summary of the table</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> summary (T)</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">Description:  Simulated patient data
-
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">
+T: 100x4 table
+Description: Simulated patient data
 Variables:
-
-    Gender: 100x1 cell
-
-    Age: 100x1 double
-
-        Properties:
-            Units: Yrs
-        Values:
-            Min       25
-            Median    39
-            Max       50
-
-    Smoker: 100x1 logical
-
-        Values:
-            True      34
-            False     66
-
-    BloodPressure: 100x2 double
-
-        Properties:
-            Units: mm Hg
-            Description: Systolic/Diastolic
-        Values:
-                      Column 1    Column 2    
-                      ________    ________    
-            Min            109          68    
-            Median         122        81.5    
-            Max            138          99</pre>
+    Gender: cell array of character vectors
+    Age: double (Yrs)
+    Smoker: logical (34 true)
+    BloodPressure: 2-column double (mm Hg, Systolic/Diastolic)
+Statistics for applicable variables:
+                          NumMissing        Min        Median         Max          Mean           Std
+    Gender                    0
+    Age                       0              25             39         50         38.2800        7.2154
+    BloodPressure(:,1)        0             109            122        138        122.7800        6.7128
+    BloodPressure(:,2)        0              68        81.5000         99         82.9600        6.9325</pre>
 
             </div>
           </div>

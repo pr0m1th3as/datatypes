@@ -47,6 +47,49 @@
             window.location.pathname + window.location.search);
         }
       });
+      // Let the browser's find-in-page reach the text inside a collapsed
+      // panel.  The attribute "hidden=until-found" is what makes content
+      // searchable and revealable; the style block below clears the
+      // "display: none" that would otherwise stop the attribute meaning
+      // anything, a box that is not generated having nothing to reveal.  Set
+      // it only where it is understood, which "content-visibility" is no test
+      // for, Firefox having shipped the two apart.  Where it is not, the panel
+      // keeps the user agent's plain [hidden] and the page behaves as before.
+      window.addEventListener ("DOMContentLoaded", () => {
+        if (! ("onbeforematch" in document.body)) { return; }
+        document.documentElement.classList.add ("until-found");
+        let panels = document.querySelectorAll (
+          ".collapse:not(.show):not(.navbar-collapse)");
+        for (let el of panels) {
+          el.setAttribute ("hidden", "until-found");
+          // Fired on a find-in-page hit, before the browser drops the
+          // attribute and scrolls to it.  Bootstrap keeps a panel's state in
+          // its class list, so adding the class here opens the panel in the
+          // same frame and leaves the button shutting it correctly afterwards.
+          // Bootstrap's own show () would animate against that scroll, and the
+          // attribute once dropped, "display: none" would take the panel back
+          // part way through.
+          el.addEventListener ("beforematch", () => {
+            el.classList.add ("show");
+            for (let b of document.querySelectorAll ("[data-bs-target]")) {
+              if (b.getAttribute ("data-bs-target") === "#" + el.id) {
+                b.setAttribute ("aria-expanded", "true");
+              }
+            }
+          });
+        }
+        // Drop the attribute before Bootstrap measures the panel it is opening,
+        // which it does after firing this; a revealable one measures nothing.
+        document.addEventListener ("show.bs.collapse", (e) => {
+          e.target.removeAttribute ("hidden");
+        });
+        // Restore it once the panel is shut, rather than while it is shutting.
+        document.addEventListener ("hidden.bs.collapse", (e) => {
+          if (! e.target.classList.contains ("navbar-collapse")) {
+            e.target.setAttribute ("hidden", "until-found");
+          }
+        });
+      });
     </script>
     <style>
     h5.fs {
@@ -90,6 +133,19 @@
     }
     [id^="togList"]:checked ~ .list{
       display:block;                        /* SHOW LIST (IF CHECKED) */
+    }
+    /* Bootstrap hides a collapsed panel with "display: none", which generates
+       no box, so the "content-visibility: hidden" the user agent gives
+       "hidden=until-found" could never apply and the text would stay beyond
+       find-in-page.  Clear that one declaration, and only where the script
+       above has found the attribute to be understood: an attribute selector
+       matches a value the browser does not understand, so an ungated rule
+       would leave every panel of an older browser standing open.  The
+       "!important" is required rather than decoration: the reboot carries
+       "[hidden] {display: none !important}", which the attribute itself brings
+       into play, and only another "!important" can outrank it. */
+    html.until-found .collapse[hidden="until-found"]:not(.show) {
+      display: block !important;
     }
     </style>
   </head>
@@ -243,21 +299,44 @@
 			<div class="row">
 				<input id="togList7" type="checkbox">
 				<label for="togList7">
-					<span><h6>supplementary classes</h6></span>
-					<span><h6>supplementary classes</h6></span>
+					<span><h6>timetable arrays</h6></span>
+					<span><h6>timetable arrays</h6></span>
 				</label>
 				<div class="list">
 				<ul style="list-style-type: none; padding-left: 20px;">
-					<li><a href="missing.html" class="text-decoration-none font-monospace"><small>missing</small></a></li>
-					<li><a href="vartype.html" class="text-decoration-none font-monospace"><small>vartype</small></a></li>
-					<li><a href="@cell_disp.html" class="text-decoration-none font-monospace"><small>@cell/disp</small></a></li>
-					<li><a href="@cell_display.html" class="text-decoration-none font-monospace"><small>@cell/display</small></a></li>
+					<li><a href="timetable.html" class="text-decoration-none font-monospace"><small>timetable</small></a></li>
+					<li><a href="array2timetable.html" class="text-decoration-none font-monospace"><small>array2timetable</small></a></li>
+					<li><a href="csv2timetable.html" class="text-decoration-none font-monospace"><small>csv2timetable</small></a></li>
+					<li><a href="ods2timetable.html" class="text-decoration-none font-monospace"><small>ods2timetable</small></a></li>
+					<li><a href="readtimetable.html" class="text-decoration-none font-monospace"><small>readtimetable</small></a></li>
+					<li><a href="istimetable.html" class="text-decoration-none font-monospace"><small>istimetable</small></a></li>
+					<li><a href="eventtable.html" class="text-decoration-none font-monospace"><small>eventtable</small></a></li>
 				</ul>
 				</div>
 			</div>
 			<div class="row">
 				<input id="togList8" type="checkbox">
 				<label for="togList8">
+					<span><h6>supplementary classes</h6></span>
+					<span><h6>supplementary classes</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="tabular.html" class="text-decoration-none font-monospace"><small>tabular</small></a></li>
+					<li><a href="missing.html" class="text-decoration-none font-monospace"><small>missing</small></a></li>
+					<li><a href="vartype.html" class="text-decoration-none font-monospace"><small>vartype</small></a></li>
+					<li><a href="timerange.html" class="text-decoration-none font-monospace"><small>timerange</small></a></li>
+					<li><a href="withtol.html" class="text-decoration-none font-monospace"><small>withtol</small></a></li>
+					<li><a href="rowfilter.html" class="text-decoration-none font-monospace"><small>rowfilter</small></a></li>
+					<li><a href="eventfilter.html" class="text-decoration-none font-monospace"><small>eventfilter</small></a></li>
+					<li><a href="@cell_disp.html" class="text-decoration-none font-monospace"><small>@cell/disp</small></a></li>
+					<li><a href="@cell_display.html" class="text-decoration-none font-monospace"><small>@cell/display</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList9" type="checkbox">
+				<label for="togList9">
 					<span><h6>supplementary functions</h6></span>
 					<span><h6>supplementary functions</h6></span>
 				</label>
@@ -265,15 +344,22 @@
 				<ul style="list-style-type: none; padding-left: 20px;">
 					<li><a href="findgroups.html" class="text-decoration-none font-monospace"><small>findgroups</small></a></li>
 					<li><a href="splitapply.html" class="text-decoration-none font-monospace"><small>splitapply</small></a></li>
+					<li><a href="groupcounts.html" class="text-decoration-none font-monospace"><small>groupcounts</small></a></li>
+					<li><a href="groupfilter.html" class="text-decoration-none font-monospace"><small>groupfilter</small></a></li>
+					<li><a href="groupsummary.html" class="text-decoration-none font-monospace"><small>groupsummary</small></a></li>
+					<li><a href="grouptransform.html" class="text-decoration-none font-monospace"><small>grouptransform</small></a></li>
+					<li><a href="discretize.html" class="text-decoration-none font-monospace"><small>discretize</small></a></li>
+					<li><a href="histcounts.html" class="text-decoration-none font-monospace"><small>histcounts</small></a></li>
 					<li><a href="keyHash.html" class="text-decoration-none font-monospace"><small>keyHash</small></a></li>
 					<li><a href="keyMatch.html" class="text-decoration-none font-monospace"><small>keyMatch</small></a></li>
 					<li><a href="parsePairedArguments.html" class="text-decoration-none font-monospace"><small>parsePairedArguments</small></a></li>
+					<li><a href="istabular.html" class="text-decoration-none font-monospace"><small>istabular</small></a></li>
 				</ul>
 				</div>
 			</div>
 			<div class="row">
-				<input id="togList9" type="checkbox">
-				<label for="togList9">
+				<input id="togList10" type="checkbox">
+				<label for="togList10">
 					<span><h6>compiled functions</h6></span>
 					<span><h6>compiled functions</h6></span>
 				</label>
@@ -282,6 +368,7 @@
 					<li><a href="__ckeyHash__.html" class="text-decoration-none font-monospace"><small>__ckeyHash__</small></a></li>
 					<li><a href="__nkeyHash__.html" class="text-decoration-none font-monospace"><small>__nkeyHash__</small></a></li>
 					<li><a href="__datetime__.html" class="text-decoration-none font-monospace"><small>__datetime__</small></a></li>
+					<li><a href="__ldml__.html" class="text-decoration-none font-monospace"><small>__ldml__</small></a></li>
 					<li><a href="__csv2table__.html" class="text-decoration-none font-monospace"><small>__csv2table__</small></a></li>
 					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace"><small>__table2csv__</small></a></li>
 					<li><a href="__ods2table__.html" class="text-decoration-none font-monospace"><small>__ods2table__</small></a></li>
@@ -325,8 +412,8 @@
 <table class="table table-striped table-bordered table-sm">
 <thead class="table-primary"><tr><th width="28%"><var>Name</var></th><th width="72%"><var>Value</var></th></tr></thead>
 <tr><td width="28%"><code>'FileType'</code></td><td width="72%"><code>'text'</code> or <code>'spreadsheet'</code>.</td></tr>
-<tr><td width="28%"><code>'ReadVariableNames'</code></td><td width="72%">Logical; read the first row as variable
- names (default <code>true</code>).</td></tr>
+<tr><td width="28%"><code>'ReadVariableNames'</code></td><td width="72%">Logical; read the first row as
+ variable names (default <code>true</code>).</td></tr>
 <tr><td width="28%"><code>'ReadRowNames'</code></td><td width="72%">Logical; read the first column as row names
  (default <code>false</code>).</td></tr>
 <tr><td width="28%"><code>'Delimiter'</code></td><td width="72%">Field delimiter for text files: a single
@@ -336,17 +423,34 @@
  (default <code>0</code>).</td></tr>
 <tr><td width="28%"><code>'TextType'</code></td><td width="72%"><code>'char'</code> or <code>'string'</code> for text
  columns (default <code>'char'</code>).</td></tr>
-<tr><td width="28%"><code>'VariableNamingRule'</code></td><td width="72%"><code>'modify'</code> or <code>'preserve'</code>
- (default <code>'modify'</code>).</td></tr>
+<tr><td width="28%"><code>'VariableNamingRule'</code></td><td width="72%"><code>'modify'</code> or
+ <code>'preserve'</code> (default <code>'modify'</code>).</td></tr>
 <tr><td width="28%"><code>'Sheet'</code></td><td width="72%">Spreadsheet only: the sheet to read, selected by
  name or by a 1-based index over the data sheets (default: the first sheet).</td></tr>
 <tr><td width="28%"><code>'Range'</code></td><td width="72%">Spreadsheet only: an A1-style range such as
  <code>'C5'</code> or <code>'C5:D8'</code> limiting the region read.</td></tr>
+<tr><td width="28%"><code>'VariableNamesRow'</code></td><td width="72%">A nonnegative integer naming the line
+ or row that holds the variable names (default <code>1</code>).  Zero is
+ equivalent to <code>'ReadVariableNames'</code>, <code>false</code>.</td></tr>
+<tr><td width="28%"><code>'VariableNamesLine'</code></td><td width="72%">MATLAB&rsquo;s spelling of
+ <code>'VariableNamesRow'</code> for a text file, and an exact alias of it.
+ Passing both names raises an error rather than one silently winning.</td></tr>
+<tr><td width="28%"><code>'RowNamesColumn'</code></td><td width="72%">A nonnegative integer naming the column
+ that holds the row names (default <code>1</code>), used when
+ <code>'ReadRowNames'</code> is <code>true</code>.  Zero is equivalent to
+ <code>'ReadRowNames'</code>, <code>false</code>.</td></tr>
 </table>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/readtable.m">readtable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/2c7436d/inst/readtable.m">readtable</a>
 </div>
 
+<p> An OpenDocument file written by <code>table2ods</code> carries the package&rsquo;s own
+ metadata, which names and types every variable exactly and leaves the data
+ sheet without a header row.  Such a file is read by <code>ods2table</code>, so it
+ comes back whole rather than being read positionally, which would take its
+ first row of data for the variable names.  An explicit <code>'Range'</code> asks
+ for a block of the sheet instead and is read positionally as usual.
+</p>
 <p> Office Open XML spreadsheets (<code>.xlsx</code>, <code>.xlsm</code>) are read via the
  same interface as ODS.  The legacy binary formats <code>.xls</code> and
  <code>.xlsb</code> are not supported; use <code>.xlsx</code>, <code>.ods</code>, or a text
@@ -354,11 +458,11 @@
 </p>
 <p> <strong>See also: </strong>
 writetable, 
-  <a href="csv2table.html">csv2table</a>, 
-  <a href="ods2table.html">ods2table</a>
+  <a href="https:__github.com_pr0m1th3as_datatypes_blob_2c7436d_inst_csv2table.m.html">csv2table</a>, 
+  <a href="https:__github.com_pr0m1th3as_datatypes_blob_2c7436d_inst_ods2table.m.html">ods2table</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/readtable.m">readtable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/2c7436d/inst/readtable.m">readtable</a>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">
@@ -413,14 +517,7 @@ writetable,
  T = table ([38; 43], 'VariableNames', {'Age'}, 'RowNames', {'Li', 'Diaz'});
  writetable (T, filename, 'WriteRowNames', true);
  readtable (filename, 'ReadRowNames', true)</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
-  2x1 table
-
-            Age    
-            ___    
-
-    Li       38    
-    Diaz     43</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">error: =: nonconformant arguments (op1 is 1x1, op2 is 1x2)</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> delete (filename);</pre>
 
             </div>

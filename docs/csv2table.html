@@ -47,6 +47,49 @@
             window.location.pathname + window.location.search);
         }
       });
+      // Let the browser's find-in-page reach the text inside a collapsed
+      // panel.  The attribute "hidden=until-found" is what makes content
+      // searchable and revealable; the style block below clears the
+      // "display: none" that would otherwise stop the attribute meaning
+      // anything, a box that is not generated having nothing to reveal.  Set
+      // it only where it is understood, which "content-visibility" is no test
+      // for, Firefox having shipped the two apart.  Where it is not, the panel
+      // keeps the user agent's plain [hidden] and the page behaves as before.
+      window.addEventListener ("DOMContentLoaded", () => {
+        if (! ("onbeforematch" in document.body)) { return; }
+        document.documentElement.classList.add ("until-found");
+        let panels = document.querySelectorAll (
+          ".collapse:not(.show):not(.navbar-collapse)");
+        for (let el of panels) {
+          el.setAttribute ("hidden", "until-found");
+          // Fired on a find-in-page hit, before the browser drops the
+          // attribute and scrolls to it.  Bootstrap keeps a panel's state in
+          // its class list, so adding the class here opens the panel in the
+          // same frame and leaves the button shutting it correctly afterwards.
+          // Bootstrap's own show () would animate against that scroll, and the
+          // attribute once dropped, "display: none" would take the panel back
+          // part way through.
+          el.addEventListener ("beforematch", () => {
+            el.classList.add ("show");
+            for (let b of document.querySelectorAll ("[data-bs-target]")) {
+              if (b.getAttribute ("data-bs-target") === "#" + el.id) {
+                b.setAttribute ("aria-expanded", "true");
+              }
+            }
+          });
+        }
+        // Drop the attribute before Bootstrap measures the panel it is opening,
+        // which it does after firing this; a revealable one measures nothing.
+        document.addEventListener ("show.bs.collapse", (e) => {
+          e.target.removeAttribute ("hidden");
+        });
+        // Restore it once the panel is shut, rather than while it is shutting.
+        document.addEventListener ("hidden.bs.collapse", (e) => {
+          if (! e.target.classList.contains ("navbar-collapse")) {
+            e.target.setAttribute ("hidden", "until-found");
+          }
+        });
+      });
     </script>
     <style>
     h5.fs {
@@ -90,6 +133,19 @@
     }
     [id^="togList"]:checked ~ .list{
       display:block;                        /* SHOW LIST (IF CHECKED) */
+    }
+    /* Bootstrap hides a collapsed panel with "display: none", which generates
+       no box, so the "content-visibility: hidden" the user agent gives
+       "hidden=until-found" could never apply and the text would stay beyond
+       find-in-page.  Clear that one declaration, and only where the script
+       above has found the attribute to be understood: an attribute selector
+       matches a value the browser does not understand, so an ungated rule
+       would leave every panel of an older browser standing open.  The
+       "!important" is required rather than decoration: the reboot carries
+       "[hidden] {display: none !important}", which the attribute itself brings
+       into play, and only another "!important" can outrank it. */
+    html.until-found .collapse[hidden="until-found"]:not(.show) {
+      display: block !important;
     }
     </style>
   </head>
@@ -243,21 +299,44 @@
 			<div class="row">
 				<input id="togList7" type="checkbox">
 				<label for="togList7">
-					<span><h6>supplementary classes</h6></span>
-					<span><h6>supplementary classes</h6></span>
+					<span><h6>timetable arrays</h6></span>
+					<span><h6>timetable arrays</h6></span>
 				</label>
 				<div class="list">
 				<ul style="list-style-type: none; padding-left: 20px;">
-					<li><a href="missing.html" class="text-decoration-none font-monospace"><small>missing</small></a></li>
-					<li><a href="vartype.html" class="text-decoration-none font-monospace"><small>vartype</small></a></li>
-					<li><a href="@cell_disp.html" class="text-decoration-none font-monospace"><small>@cell/disp</small></a></li>
-					<li><a href="@cell_display.html" class="text-decoration-none font-monospace"><small>@cell/display</small></a></li>
+					<li><a href="timetable.html" class="text-decoration-none font-monospace"><small>timetable</small></a></li>
+					<li><a href="array2timetable.html" class="text-decoration-none font-monospace"><small>array2timetable</small></a></li>
+					<li><a href="csv2timetable.html" class="text-decoration-none font-monospace"><small>csv2timetable</small></a></li>
+					<li><a href="ods2timetable.html" class="text-decoration-none font-monospace"><small>ods2timetable</small></a></li>
+					<li><a href="readtimetable.html" class="text-decoration-none font-monospace"><small>readtimetable</small></a></li>
+					<li><a href="istimetable.html" class="text-decoration-none font-monospace"><small>istimetable</small></a></li>
+					<li><a href="eventtable.html" class="text-decoration-none font-monospace"><small>eventtable</small></a></li>
 				</ul>
 				</div>
 			</div>
 			<div class="row">
 				<input id="togList8" type="checkbox">
 				<label for="togList8">
+					<span><h6>supplementary classes</h6></span>
+					<span><h6>supplementary classes</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="tabular.html" class="text-decoration-none font-monospace"><small>tabular</small></a></li>
+					<li><a href="missing.html" class="text-decoration-none font-monospace"><small>missing</small></a></li>
+					<li><a href="vartype.html" class="text-decoration-none font-monospace"><small>vartype</small></a></li>
+					<li><a href="timerange.html" class="text-decoration-none font-monospace"><small>timerange</small></a></li>
+					<li><a href="withtol.html" class="text-decoration-none font-monospace"><small>withtol</small></a></li>
+					<li><a href="rowfilter.html" class="text-decoration-none font-monospace"><small>rowfilter</small></a></li>
+					<li><a href="eventfilter.html" class="text-decoration-none font-monospace"><small>eventfilter</small></a></li>
+					<li><a href="@cell_disp.html" class="text-decoration-none font-monospace"><small>@cell/disp</small></a></li>
+					<li><a href="@cell_display.html" class="text-decoration-none font-monospace"><small>@cell/display</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList9" type="checkbox">
+				<label for="togList9">
 					<span><h6>supplementary functions</h6></span>
 					<span><h6>supplementary functions</h6></span>
 				</label>
@@ -265,15 +344,22 @@
 				<ul style="list-style-type: none; padding-left: 20px;">
 					<li><a href="findgroups.html" class="text-decoration-none font-monospace"><small>findgroups</small></a></li>
 					<li><a href="splitapply.html" class="text-decoration-none font-monospace"><small>splitapply</small></a></li>
+					<li><a href="groupcounts.html" class="text-decoration-none font-monospace"><small>groupcounts</small></a></li>
+					<li><a href="groupfilter.html" class="text-decoration-none font-monospace"><small>groupfilter</small></a></li>
+					<li><a href="groupsummary.html" class="text-decoration-none font-monospace"><small>groupsummary</small></a></li>
+					<li><a href="grouptransform.html" class="text-decoration-none font-monospace"><small>grouptransform</small></a></li>
+					<li><a href="discretize.html" class="text-decoration-none font-monospace"><small>discretize</small></a></li>
+					<li><a href="histcounts.html" class="text-decoration-none font-monospace"><small>histcounts</small></a></li>
 					<li><a href="keyHash.html" class="text-decoration-none font-monospace"><small>keyHash</small></a></li>
 					<li><a href="keyMatch.html" class="text-decoration-none font-monospace"><small>keyMatch</small></a></li>
 					<li><a href="parsePairedArguments.html" class="text-decoration-none font-monospace"><small>parsePairedArguments</small></a></li>
+					<li><a href="istabular.html" class="text-decoration-none font-monospace"><small>istabular</small></a></li>
 				</ul>
 				</div>
 			</div>
 			<div class="row">
-				<input id="togList9" type="checkbox">
-				<label for="togList9">
+				<input id="togList10" type="checkbox">
+				<label for="togList10">
 					<span><h6>compiled functions</h6></span>
 					<span><h6>compiled functions</h6></span>
 				</label>
@@ -282,6 +368,7 @@
 					<li><a href="__ckeyHash__.html" class="text-decoration-none font-monospace"><small>__ckeyHash__</small></a></li>
 					<li><a href="__nkeyHash__.html" class="text-decoration-none font-monospace"><small>__nkeyHash__</small></a></li>
 					<li><a href="__datetime__.html" class="text-decoration-none font-monospace"><small>__datetime__</small></a></li>
+					<li><a href="__ldml__.html" class="text-decoration-none font-monospace"><small>__ldml__</small></a></li>
 					<li><a href="__csv2table__.html" class="text-decoration-none font-monospace"><small>__csv2table__</small></a></li>
 					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace"><small>__table2csv__</small></a></li>
 					<li><a href="__ods2table__.html" class="text-decoration-none font-monospace"><small>__ods2table__</small></a></li>
@@ -330,7 +417,7 @@
  vectors and all variable names are automatically modified to valid Octave
  variable names.  To change the default behavior, you need to specify the
  <code>ReadVariableNames</code>, <code>VariableNamingRule</code>, and
- <code>VariableNamesLine</code> paired arguments accordingly.
+ <code>VariableNamesRow</code> paired arguments accordingly.
 </li><li> The data type of each column in the remaining data is automatically
  detected according to its contents.  Consequently, text is converted to
  character vectors, datetime and duration strings are converted to datetime
@@ -370,13 +457,16 @@
  Octave variable names or the original names should be preserved.  Valid
  options are <code>&quot;modify&quot;</code> and <code>&quot;preserve&quot;</code>.  By default,
  <code>csv2table</code> modifies the parsed variable names.</td></tr>
-<tr><td width="33%"><code>'VariableNamesLine'</code></td><td width="65%">A nonnegative integer scalar
+<tr><td width="33%"><code>'VariableNamesRow'</code></td><td width="65%">A nonnegative integer scalar
  value specifying the line number in the CSV file, which should be parsed for
  variable names.  This only applies if the <code>'ReadVariableNames'</code> option
  is <code>true</code>.  The specified line is subsequently removed from the
- remaining data contained in the CSV file.  If <code>'VariableNamesLine'</code> is
+ remaining data contained in the CSV file.  If <code>'VariableNamesRow'</code> is
  set to zero, then it is equivalent to setting <code>'ReadVariableNames'</code> to
  <code>false</code>.</td></tr>
+<tr><td width="33%"><code>'VariableNamesLine'</code></td><td width="65%">MATLAB&rsquo;s spelling of
+ <code>'VariableNamesRow'</code> for a text file, and an exact alias of it.
+ Passing both names raises an error rather than one silently winning.</td></tr>
 <tr><td width="33%"><code>'VariableTypes'</code></td><td width="65%">A cell array of character vectors or
  a string array specifying the data type of the variables of the created
  table.  The number of elements must much the number of variable in the table.
@@ -404,7 +494,11 @@
  to zero, then it is equivalent to setting <code>'ReadRowNames'</code> to
  <code>false</code>.  Note that the values in the column specified by
  <code>'RowNamesColumn'</code> must be unique, otherwise <code>csv2table</code> will
- return an error.</td></tr>
+ return an error.  The default value is <code>0</code>: a file that does not say
+ which column holds its row names is read as data throughout, and a file
+ written by <code>table2csv</code> records the column itself.  A leading column
+ headed <code>Row</code>, which is what <code>writetable</code> writes for the row
+ names, is taken as the row names without being named here.</td></tr>
 <tr><td width="33%"><code>'TextType'</code></td><td width="65%">A character vector or a string scalar
  specifying whether the text data in the CSV file should be stored in the
  table as character vectors or string arrays.  Valid options are
@@ -422,33 +516,40 @@
  <code>&quot;duration&quot;</code> and <code>&quot;text&quot;</code>.  By default, <code>csv2table</code> stores
  duration strings as duration arrays.  If <code>&quot;text&quot;</code> is specified, then
  the data type depends on the <code>'TextType'</code> option.</td></tr>
-<tr><td width="33%"><code>'HexType'</code></td><td width="65%">A character vector or a string scalar
- specifying whether the hexadecimal text found in the CSV file should be
- stored as a suitable integer type, <code>&quot;auto&quot;</code> (default), as unaltered
- input text, <code>&quot;text&quot;</code>, (in which case the data type depends on the
+<tr><td width="33%"><code>'HexType'</code></td><td width="65%">A character vector or a string scalar specifying
+ whether the hexadecimal text found in the CSV file should be stored as a
+ suitable integer type, <code>&quot;auto&quot;</code>, as unaltered input text,
+ <code>&quot;text&quot;</code> (the default, in which case the data type depends on the
  <code>'TextType'</code> option), or as any of the integer types supported by
  Octave.  Valid options are <code>&quot;auto&quot;</code>, <code>&quot;text&quot;</code>, <code>&quot;int8&quot;</code>,
  <code>&quot;int16&quot;</code>, <code>&quot;int32&quot;</code>, <code>&quot;int64&quot;</code>, <code>&quot;uint8&quot;</code>,
- <code>&quot;uint16&quot;</code>, <code>&quot;uint32&quot;</code>, and <code>&quot;uint64&quot;</code>.</td></tr>
+ <code>&quot;uint16&quot;</code>, <code>&quot;uint32&quot;</code>, and <code>&quot;uint64&quot;</code>.  Detection is off
+ by default because MATLAB does not perform it, so a file carrying no header
+ of ours is read the way MATLAB reads it.  It never applies to a file written
+ by <code>table2csv</code>, which declares every variable&rsquo;s type.</td></tr>
 </table>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/csv2table.m">csv2table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/2c7436d/inst/csv2table.m">csv2table</a>
 </div>
 
-<p> The following round-trip limitations apply when reading a file written by
- <code>table2csv</code>: <code>calendarDuration</code> and <code>categorical</code> variables
- are returned as cell arrays of character vectors (their values are not
- reconstructed), missing <code>string</code> values are read back as empty strings,
- and datetime and duration display formats are not preserved, although the
- values themselves are exact.
+<p> A <code>datetime</code> or <code>duration</code> variable written by <code>table2csv</code> is
+ restored exactly, along with its <code>Format</code> and, for a zone-aware
+ <code>datetime</code>, its <code>TimeZone</code>.  Where the column&rsquo;s type is declared,
+ either by the file or by <code>&quot;VariableTypes&quot;</code>, a field that is empty and
+ unquoted carries no value and is read as a missing entry, where an empty
+ quoted field (<code>&quot;&quot;</code>) is read as an empty string; a column whose type is
+ guessed is unaffected.  The following round-trip limitation applies when
+ reading a file written by <code>table2csv</code>: <code>calendarDuration</code> and
+ <code>categorical</code> variables are returned as cell arrays of character vectors
+ and their values are not reconstructed.
 </p>
 <p> <strong>See also: </strong>
-  <a href="array2table.html">array2table</a>, 
-  <a href="struct2table.html">struct2table</a>, 
-  <a href="table.html">table</a>
+  <a href="https:__github.com_pr0m1th3as_datatypes_blob_2c7436d_inst_array2table.m.html">array2table</a>, 
+  <a href="https:__github.com_pr0m1th3as_datatypes_blob_2c7436d_inst_struct2table.m.html">struct2table</a>, 
+  <a href="https:__github.com_pr0m1th3as_datatypes_blob_2c7436d_inst_table.m.html">table</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/csv2table.m">csv2table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/2c7436d/inst/csv2table.m">csv2table</a>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">
@@ -505,13 +606,13 @@
  fclose (fid);
  csv2table (filename, 'ReadRowNames', true)</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
-  2x2 table
+  2x3 table
 
-            Age    Height    
-            ___    ______    
+    Patient     Age    Height    
+    ________    ___    ______    
 
-    Li       38        64    
-    Diaz     40        67</pre>
+    {'Li'  }     38        64    
+    {'Diaz'}     40        67</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> delete (filename);</pre>
 
             </div>

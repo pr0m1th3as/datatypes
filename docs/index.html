@@ -47,6 +47,49 @@
             window.location.pathname + window.location.search);
         }
       });
+      // Let the browser's find-in-page reach the text inside a collapsed
+      // panel.  The attribute "hidden=until-found" is what makes content
+      // searchable and revealable; the style block below clears the
+      // "display: none" that would otherwise stop the attribute meaning
+      // anything, a box that is not generated having nothing to reveal.  Set
+      // it only where it is understood, which "content-visibility" is no test
+      // for, Firefox having shipped the two apart.  Where it is not, the panel
+      // keeps the user agent's plain [hidden] and the page behaves as before.
+      window.addEventListener ("DOMContentLoaded", () => {
+        if (! ("onbeforematch" in document.body)) { return; }
+        document.documentElement.classList.add ("until-found");
+        let panels = document.querySelectorAll (
+          ".collapse:not(.show):not(.navbar-collapse)");
+        for (let el of panels) {
+          el.setAttribute ("hidden", "until-found");
+          // Fired on a find-in-page hit, before the browser drops the
+          // attribute and scrolls to it.  Bootstrap keeps a panel's state in
+          // its class list, so adding the class here opens the panel in the
+          // same frame and leaves the button shutting it correctly afterwards.
+          // Bootstrap's own show () would animate against that scroll, and the
+          // attribute once dropped, "display: none" would take the panel back
+          // part way through.
+          el.addEventListener ("beforematch", () => {
+            el.classList.add ("show");
+            for (let b of document.querySelectorAll ("[data-bs-target]")) {
+              if (b.getAttribute ("data-bs-target") === "#" + el.id) {
+                b.setAttribute ("aria-expanded", "true");
+              }
+            }
+          });
+        }
+        // Drop the attribute before Bootstrap measures the panel it is opening,
+        // which it does after firing this; a revealable one measures nothing.
+        document.addEventListener ("show.bs.collapse", (e) => {
+          e.target.removeAttribute ("hidden");
+        });
+        // Restore it once the panel is shut, rather than while it is shutting.
+        document.addEventListener ("hidden.bs.collapse", (e) => {
+          if (! e.target.classList.contains ("navbar-collapse")) {
+            e.target.setAttribute ("hidden", "until-found");
+          }
+        });
+      });
     </script>
     <style>
     h5.fs {
@@ -91,6 +134,19 @@
     [id^="togList"]:checked ~ .list{
       display:block;                        /* SHOW LIST (IF CHECKED) */
     }
+    /* Bootstrap hides a collapsed panel with "display: none", which generates
+       no box, so the "content-visibility: hidden" the user agent gives
+       "hidden=until-found" could never apply and the text would stay beyond
+       find-in-page.  Clear that one declaration, and only where the script
+       above has found the attribute to be understood: an attribute selector
+       matches a value the browser does not understand, so an ungated rule
+       would leave every panel of an older browser standing open.  The
+       "!important" is required rather than decoration: the reboot carries
+       "[hidden] {display: none !important}", which the attribute itself brings
+       into play, and only another "!important" can outrank it. */
+    html.until-found .collapse[hidden="until-found"]:not(.show) {
+      display: block !important;
+    }
     </style>
   </head>
   <body>
@@ -134,7 +190,7 @@
             </div>
             <div class="col-sm-9 col-md-10">
               <h3 class="d-inline-block mr-2">datatypes</h3>
-              <b>1.3.4&nbsp;2026-08-26</b>
+              <b>1.4.0&nbsp;2026-09-10</b>
               <p class="indent">
                 A package for providing extra data types  and related functionality for GNU Octave.
               </p>
@@ -150,6 +206,7 @@
              <option value="#duration arrays">duration arrays</option>
              <option value="#string arrays">string arrays</option>
              <option value="#table arrays">table arrays</option>
+             <option value="#timetable arrays">timetable arrays</option>
              <option value="#supplementary classes">supplementary classes</option>
              <option value="#supplementary functions">supplementary functions</option>
              <option value="#compiled functions">compiled functions</option>
@@ -498,10 +555,86 @@ units.</td>
              </tbody>
            </table>
            <h3 class="category">
+             <a name="timetable arrays">timetable arrays</a>
+           </h3>
+           <table class="table table-striped">
+             <tbody>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="timetable.html">timetable</a>
+                   </code></b>
+                 </td>
+                 <td>Array of tabular data whose rows are labelled by time.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="array2timetable.html">array2timetable</a>
+                   </code></b>
+                 </td>
+                 <td>Convert an array to a timetable.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="csv2timetable.html">csv2timetable</a>
+                   </code></b>
+                 </td>
+                 <td>Read a comma-separated-value (CSV) file into a timetable.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="ods2timetable.html">ods2timetable</a>
+                   </code></b>
+                 </td>
+                 <td>Read an OpenDocument spreadsheet file into a timetable.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="readtimetable.html">readtimetable</a>
+                   </code></b>
+                 </td>
+                 <td>Read a file into a timetable, in the MATLAB-compatible form.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="istimetable.html">istimetable</a>
+                   </code></b>
+                 </td>
+                 <td>True if input is a ‘timetable’, false otherwise.
+
+  </td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="eventtable.html">eventtable</a>
+                   </code></b>
+                 </td>
+                 <td>Timetable of events, describing what was happening rather than what was
+measured.</td>
+               </tr>
+             </tbody>
+           </table>
+           <h3 class="category">
              <a name="supplementary classes">supplementary classes</a>
            </h3>
            <table class="table table-striped">
              <tbody>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="tabular.html">tabular</a>
+                   </code></b>
+                 </td>
+                 <td>Abstract superclass of ‘table’ and ‘timetable’.
+
+   ‘ta</td>
+               </tr>
                <tr>
                  <td>
                    <b><code>
@@ -517,6 +650,38 @@ units.</td>
                    </code></b>
                  </td>
                  <td>Subscript into a table by variable type.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="timerange.html">timerange</a>
+                   </code></b>
+                 </td>
+                 <td>Subscript into a timetable by a range of times.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="withtol.html">withtol</a>
+                   </code></b>
+                 </td>
+                 <td>Subscript into a timetable by times matched within a tolerance.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="rowfilter.html">rowfilter</a>
+                   </code></b>
+                 </td>
+                 <td>Subscript into a table or timetable by a condition on its variables.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="eventfilter.html">eventfilter</a>
+                   </code></b>
+                 </td>
+                 <td>Subscript into a timetable by what was happening rather than by when.</td>
                </tr>
                <tr>
                  <td>
@@ -560,6 +725,54 @@ units.</td>
                <tr>
                  <td>
                    <b><code>
+                   <a href="groupcounts.html">groupcounts</a>
+                   </code></b>
+                 </td>
+                 <td>Count the number of elements in each group of an array.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="groupfilter.html">groupfilter</a>
+                   </code></b>
+                 </td>
+                 <td>Filter the rows of an array by a per-group condition.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="groupsummary.html">groupsummary</a>
+                   </code></b>
+                 </td>
+                 <td>Compute summary statistics by group for an array.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="grouptransform.html">grouptransform</a>
+                   </code></b>
+                 </td>
+                 <td>Transform the columns of an array group by group.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="discretize.html">discretize</a>
+                   </code></b>
+                 </td>
+                 <td>Group data into bins or categories.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="histcounts.html">histcounts</a>
+                   </code></b>
+                 </td>
+                 <td>Histogram bin counts.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
                    <a href="keyHash.html">keyHash</a>
                    </code></b>
                  </td>
@@ -580,6 +793,16 @@ units.</td>
                    </code></b>
                  </td>
                  <td>Parse optional paired arguments from variable argument list.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="istabular.html">istabular</a>
+                   </code></b>
+                 </td>
+                 <td>True if input is a ‘table’ or a ‘timetable’, false otherwise.
+
+   ‘TF</td>
                </tr>
              </tbody>
            </table>
@@ -615,6 +838,14 @@ units.</td>
                    </code></b>
                  </td>
                  <td>Base function for datetime class.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="__ldml__.html">__ldml__</a>
+                   </code></b>
+                 </td>
+                 <td>Parse date/time strings under an LDML 'InputFormat' pattern.</td>
                </tr>
                <tr>
                  <td>

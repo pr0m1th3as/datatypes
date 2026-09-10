@@ -47,6 +47,49 @@
             window.location.pathname + window.location.search);
         }
       });
+      // Let the browser's find-in-page reach the text inside a collapsed
+      // panel.  The attribute "hidden=until-found" is what makes content
+      // searchable and revealable; the style block below clears the
+      // "display: none" that would otherwise stop the attribute meaning
+      // anything, a box that is not generated having nothing to reveal.  Set
+      // it only where it is understood, which "content-visibility" is no test
+      // for, Firefox having shipped the two apart.  Where it is not, the panel
+      // keeps the user agent's plain [hidden] and the page behaves as before.
+      window.addEventListener ("DOMContentLoaded", () => {
+        if (! ("onbeforematch" in document.body)) { return; }
+        document.documentElement.classList.add ("until-found");
+        let panels = document.querySelectorAll (
+          ".collapse:not(.show):not(.navbar-collapse)");
+        for (let el of panels) {
+          el.setAttribute ("hidden", "until-found");
+          // Fired on a find-in-page hit, before the browser drops the
+          // attribute and scrolls to it.  Bootstrap keeps a panel's state in
+          // its class list, so adding the class here opens the panel in the
+          // same frame and leaves the button shutting it correctly afterwards.
+          // Bootstrap's own show () would animate against that scroll, and the
+          // attribute once dropped, "display: none" would take the panel back
+          // part way through.
+          el.addEventListener ("beforematch", () => {
+            el.classList.add ("show");
+            for (let b of document.querySelectorAll ("[data-bs-target]")) {
+              if (b.getAttribute ("data-bs-target") === "#" + el.id) {
+                b.setAttribute ("aria-expanded", "true");
+              }
+            }
+          });
+        }
+        // Drop the attribute before Bootstrap measures the panel it is opening,
+        // which it does after firing this; a revealable one measures nothing.
+        document.addEventListener ("show.bs.collapse", (e) => {
+          e.target.removeAttribute ("hidden");
+        });
+        // Restore it once the panel is shut, rather than while it is shutting.
+        document.addEventListener ("hidden.bs.collapse", (e) => {
+          if (! e.target.classList.contains ("navbar-collapse")) {
+            e.target.setAttribute ("hidden", "until-found");
+          }
+        });
+      });
     </script>
     <style>
     h5.fs {
@@ -90,6 +133,19 @@
     }
     [id^="togList"]:checked ~ .list{
       display:block;                        /* SHOW LIST (IF CHECKED) */
+    }
+    /* Bootstrap hides a collapsed panel with "display: none", which generates
+       no box, so the "content-visibility: hidden" the user agent gives
+       "hidden=until-found" could never apply and the text would stay beyond
+       find-in-page.  Clear that one declaration, and only where the script
+       above has found the attribute to be understood: an attribute selector
+       matches a value the browser does not understand, so an ungated rule
+       would leave every panel of an older browser standing open.  The
+       "!important" is required rather than decoration: the reboot carries
+       "[hidden] {display: none !important}", which the attribute itself brings
+       into play, and only another "!important" can outrank it. */
+    html.until-found .collapse[hidden="until-found"]:not(.show) {
+      display: block !important;
     }
     </style>
   </head>
@@ -243,21 +299,44 @@
 			<div class="row">
 				<input id="togList7" type="checkbox">
 				<label for="togList7">
+					<span><h6>timetable arrays</h6></span>
+					<span><h6>timetable arrays</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="timetable.html" class="text-decoration-none font-monospace"><small>timetable</small></a></li>
+					<li><a href="array2timetable.html" class="text-decoration-none font-monospace"><small>array2timetable</small></a></li>
+					<li><a href="csv2timetable.html" class="text-decoration-none font-monospace"><small>csv2timetable</small></a></li>
+					<li><a href="ods2timetable.html" class="text-decoration-none font-monospace"><small>ods2timetable</small></a></li>
+					<li><a href="readtimetable.html" class="text-decoration-none font-monospace"><small>readtimetable</small></a></li>
+					<li><a href="istimetable.html" class="text-decoration-none font-monospace"><small>istimetable</small></a></li>
+					<li><a href="eventtable.html" class="text-decoration-none font-monospace"><small>eventtable</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList8" type="checkbox">
+				<label for="togList8">
 					<span><h6>supplementary classes</h6></span>
 					<span><h6>supplementary classes</h6></span>
 				</label>
 				<div class="list">
 				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="tabular.html" class="text-decoration-none font-monospace"><small>tabular</small></a></li>
 					<li><a href="missing.html" class="text-decoration-none font-monospace"><small>missing</small></a></li>
 					<li><a href="vartype.html" class="text-decoration-none font-monospace"><small>vartype</small></a></li>
+					<li><a href="timerange.html" class="text-decoration-none font-monospace"><small>timerange</small></a></li>
+					<li><a href="withtol.html" class="text-decoration-none font-monospace"><small>withtol</small></a></li>
+					<li><a href="rowfilter.html" class="text-decoration-none font-monospace"><small>rowfilter</small></a></li>
+					<li><a href="eventfilter.html" class="text-decoration-none font-monospace"><small>eventfilter</small></a></li>
 					<li><a href="@cell_disp.html" class="text-decoration-none font-monospace"><small>@cell/disp</small></a></li>
 					<li><a href="@cell_display.html" class="text-decoration-none font-monospace"><small>@cell/display</small></a></li>
 				</ul>
 				</div>
 			</div>
 			<div class="row">
-				<input id="togList8" type="checkbox" checked>
-				<label for="togList8">
+				<input id="togList9" type="checkbox" checked>
+				<label for="togList9">
 					<span><h6>supplementary functions</h6></span>
 					<span><h6>supplementary functions</h6></span>
 				</label>
@@ -265,15 +344,22 @@
 				<ul style="list-style-type: none; padding-left: 20px;">
 					<li><a href="findgroups.html" class="text-decoration-none font-monospace fw-bolder"><small>findgroups</small></a></li>
 					<li><a href="splitapply.html" class="text-decoration-none font-monospace"><small>splitapply</small></a></li>
+					<li><a href="groupcounts.html" class="text-decoration-none font-monospace"><small>groupcounts</small></a></li>
+					<li><a href="groupfilter.html" class="text-decoration-none font-monospace"><small>groupfilter</small></a></li>
+					<li><a href="groupsummary.html" class="text-decoration-none font-monospace"><small>groupsummary</small></a></li>
+					<li><a href="grouptransform.html" class="text-decoration-none font-monospace"><small>grouptransform</small></a></li>
+					<li><a href="discretize.html" class="text-decoration-none font-monospace"><small>discretize</small></a></li>
+					<li><a href="histcounts.html" class="text-decoration-none font-monospace"><small>histcounts</small></a></li>
 					<li><a href="keyHash.html" class="text-decoration-none font-monospace"><small>keyHash</small></a></li>
 					<li><a href="keyMatch.html" class="text-decoration-none font-monospace"><small>keyMatch</small></a></li>
 					<li><a href="parsePairedArguments.html" class="text-decoration-none font-monospace"><small>parsePairedArguments</small></a></li>
+					<li><a href="istabular.html" class="text-decoration-none font-monospace"><small>istabular</small></a></li>
 				</ul>
 				</div>
 			</div>
 			<div class="row">
-				<input id="togList9" type="checkbox">
-				<label for="togList9">
+				<input id="togList10" type="checkbox">
+				<label for="togList10">
 					<span><h6>compiled functions</h6></span>
 					<span><h6>compiled functions</h6></span>
 				</label>
@@ -282,6 +368,7 @@
 					<li><a href="__ckeyHash__.html" class="text-decoration-none font-monospace"><small>__ckeyHash__</small></a></li>
 					<li><a href="__nkeyHash__.html" class="text-decoration-none font-monospace"><small>__nkeyHash__</small></a></li>
 					<li><a href="__datetime__.html" class="text-decoration-none font-monospace"><small>__datetime__</small></a></li>
+					<li><a href="__ldml__.html" class="text-decoration-none font-monospace"><small>__ldml__</small></a></li>
 					<li><a href="__csv2table__.html" class="text-decoration-none font-monospace"><small>__csv2table__</small></a></li>
 					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace"><small>__table2csv__</small></a></li>
 					<li><a href="__ods2table__.html" class="text-decoration-none font-monospace"><small>__ods2table__</small></a></li>
@@ -318,9 +405,9 @@
  <var>N</var> groups are found, every integer between 1 and <var>N</var> labels a group.
  Elements of <var>A</var> that are missing (<code>NaN</code>, <code>NaT</code>,
  <code>&lt;missing&gt;</code>, <code>''</code>, or <code>&lt;undefined&gt;</code>) are labelled <code>NaN</code>
- in <var>G</var>.  <var>A</var> can be a numeric, logical, <code>string</code>, <code>cellstr</code>,
- <code>char</code>, <code>datetime</code>, <code>duration</code>, <code>calendarDuration</code>, or
- <code>categorical</code> vector.
+ in <var>G</var>.  <var>A</var> can be a numeric, logical, <code>string</code>,
+ <code>cellstr</code>, <code>char</code>, <code>datetime</code>, <code>duration</code>,
+ <code>calendarDuration</code>, or <code>categorical</code> vector.
 </p>
 <p> <code><var>G</var> = findgroups (<var>A1</var>, &hellip;, <var>AN</var>)</code> defines groups as
  the sorted unique combinations of values across the grouping variables
@@ -337,11 +424,11 @@
  as a table.
 </p>
 <p> <strong>See also: </strong>
-  <a href="splitapply.html">splitapply</a>, 
-  <a href="table.html">table</a>
+  <a href="https:__github.com_pr0m1th3as_datatypes_blob_2c7436d_inst_splitapply.m.html">splitapply</a>, 
+  <a href="https:__github.com_pr0m1th3as_datatypes_blob_2c7436d_inst_table.m.html">table</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/findgroups.m">findgroups</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/2c7436d/inst/findgroups.m">findgroups</a>
 </div>
 
             </div>

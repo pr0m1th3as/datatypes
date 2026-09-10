@@ -47,6 +47,49 @@
             window.location.pathname + window.location.search);
         }
       });
+      // Let the browser's find-in-page reach the text inside a collapsed
+      // panel.  The attribute "hidden=until-found" is what makes content
+      // searchable and revealable; the style block below clears the
+      // "display: none" that would otherwise stop the attribute meaning
+      // anything, a box that is not generated having nothing to reveal.  Set
+      // it only where it is understood, which "content-visibility" is no test
+      // for, Firefox having shipped the two apart.  Where it is not, the panel
+      // keeps the user agent's plain [hidden] and the page behaves as before.
+      window.addEventListener ("DOMContentLoaded", () => {
+        if (! ("onbeforematch" in document.body)) { return; }
+        document.documentElement.classList.add ("until-found");
+        let panels = document.querySelectorAll (
+          ".collapse:not(.show):not(.navbar-collapse)");
+        for (let el of panels) {
+          el.setAttribute ("hidden", "until-found");
+          // Fired on a find-in-page hit, before the browser drops the
+          // attribute and scrolls to it.  Bootstrap keeps a panel's state in
+          // its class list, so adding the class here opens the panel in the
+          // same frame and leaves the button shutting it correctly afterwards.
+          // Bootstrap's own show () would animate against that scroll, and the
+          // attribute once dropped, "display: none" would take the panel back
+          // part way through.
+          el.addEventListener ("beforematch", () => {
+            el.classList.add ("show");
+            for (let b of document.querySelectorAll ("[data-bs-target]")) {
+              if (b.getAttribute ("data-bs-target") === "#" + el.id) {
+                b.setAttribute ("aria-expanded", "true");
+              }
+            }
+          });
+        }
+        // Drop the attribute before Bootstrap measures the panel it is opening,
+        // which it does after firing this; a revealable one measures nothing.
+        document.addEventListener ("show.bs.collapse", (e) => {
+          e.target.removeAttribute ("hidden");
+        });
+        // Restore it once the panel is shut, rather than while it is shutting.
+        document.addEventListener ("hidden.bs.collapse", (e) => {
+          if (! e.target.classList.contains ("navbar-collapse")) {
+            e.target.setAttribute ("hidden", "until-found");
+          }
+        });
+      });
     </script>
     <style>
     h5.fs {
@@ -90,6 +133,19 @@
     }
     [id^="togList"]:checked ~ .list{
       display:block;                        /* SHOW LIST (IF CHECKED) */
+    }
+    /* Bootstrap hides a collapsed panel with "display: none", which generates
+       no box, so the "content-visibility: hidden" the user agent gives
+       "hidden=until-found" could never apply and the text would stay beyond
+       find-in-page.  Clear that one declaration, and only where the script
+       above has found the attribute to be understood: an attribute selector
+       matches a value the browser does not understand, so an ungated rule
+       would leave every panel of an older browser standing open.  The
+       "!important" is required rather than decoration: the reboot carries
+       "[hidden] {display: none !important}", which the attribute itself brings
+       into play, and only another "!important" can outrank it. */
+    html.until-found .collapse[hidden="until-found"]:not(.show) {
+      display: block !important;
     }
     </style>
   </head>
@@ -386,8 +442,8 @@
 <p> Convert datetime array to a numeric representation.
 </p>
 <div class="ms-5">
-<p> <code><var>X</var> = convertTo (<var>T</var>, <var>dateType</var>)</code> converts the datetime
- array <var>T</var> to the numeric date/time representation named by
+<p> <code><var>X</var> = convertTo (<var>T</var>, <var>dateType</var>)</code> converts the
+ datetime array <var>T</var> to the numeric date/time representation named by
  <var>dateType</var>, returning an array <var>X</var> of the same size as <var>T</var>.
  It is a convenience wrapper around the individual conversion methods.
  <var>dateType</var> may be one of:
@@ -397,10 +453,12 @@
  <code>datenum</code>).
 </li><li> <code>'excel'</code> or <code>'excel1900'</code> &ndash; Excel serial date, 1900
  system, <code>double</code> (see <code>exceltime</code>).
-</li><li> <code>'excel1904'</code> &ndash; Excel serial date, 1904 system, <code>double</code>.
+</li><li> <code>'excel1904'</code> &ndash; Excel serial date, 1904 system,
+ <code>double</code>.
 </li><li> <code>'juliandate'</code> &ndash; Julian date, <code>double</code> (see
  <code>juliandate</code>).
-</li><li> <code>'modifiedjuliandate'</code> &ndash; modified Julian date, <code>double</code>.
+</li><li> <code>'modifiedjuliandate'</code> &ndash; modified Julian date,
+ <code>double</code>.
 </li><li> <code>'posixtime'</code> &ndash; seconds since the Unix epoch, <code>double</code>
  (see <code>posixtime</code>).
 </li><li> <code>'yyyymmdd'</code> &ndash; <code>YYYYMMDD</code> numeric date, <code>double</code>
@@ -424,9 +482,9 @@
 </p>
 <p> <code><var>X</var> = convertTo (<var>T</var>, <code>'epochtime'</code>, <var>Name</var>,
  <var>Value</var>)</code> accepts the options <code>'Epoch'</code> (a scalar datetime
- marking tick zero; default <code>1970-01-01</code>) and <code>'TicksPerSecond'</code>
- (a positive scalar; default <code>1</code>).  The epoch and <var>T</var> must both be
- zoned or both be unzoned.
+ marking tick zero; default <code>1970-01-01</code>) and
+ <code>'TicksPerSecond'</code> (a positive scalar; default <code>1</code>).  The
+ epoch and <var>T</var> must both be zoned or both be unzoned.
 </p>
 <p> <code><var>X</var> = convertTo (<var>T</var>, <code>'tt2000'</code>)</code> returns the number
  of nanoseconds since the J2000 Terrestrial Time epoch,
@@ -464,7 +522,7 @@
 </li></ul>
 
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/datetime.m">datetime</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/2c7436d/inst/datetime.m#L2112">datetime</a>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

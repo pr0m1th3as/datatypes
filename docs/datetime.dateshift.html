@@ -47,6 +47,49 @@
             window.location.pathname + window.location.search);
         }
       });
+      // Let the browser's find-in-page reach the text inside a collapsed
+      // panel.  The attribute "hidden=until-found" is what makes content
+      // searchable and revealable; the style block below clears the
+      // "display: none" that would otherwise stop the attribute meaning
+      // anything, a box that is not generated having nothing to reveal.  Set
+      // it only where it is understood, which "content-visibility" is no test
+      // for, Firefox having shipped the two apart.  Where it is not, the panel
+      // keeps the user agent's plain [hidden] and the page behaves as before.
+      window.addEventListener ("DOMContentLoaded", () => {
+        if (! ("onbeforematch" in document.body)) { return; }
+        document.documentElement.classList.add ("until-found");
+        let panels = document.querySelectorAll (
+          ".collapse:not(.show):not(.navbar-collapse)");
+        for (let el of panels) {
+          el.setAttribute ("hidden", "until-found");
+          // Fired on a find-in-page hit, before the browser drops the
+          // attribute and scrolls to it.  Bootstrap keeps a panel's state in
+          // its class list, so adding the class here opens the panel in the
+          // same frame and leaves the button shutting it correctly afterwards.
+          // Bootstrap's own show () would animate against that scroll, and the
+          // attribute once dropped, "display: none" would take the panel back
+          // part way through.
+          el.addEventListener ("beforematch", () => {
+            el.classList.add ("show");
+            for (let b of document.querySelectorAll ("[data-bs-target]")) {
+              if (b.getAttribute ("data-bs-target") === "#" + el.id) {
+                b.setAttribute ("aria-expanded", "true");
+              }
+            }
+          });
+        }
+        // Drop the attribute before Bootstrap measures the panel it is opening,
+        // which it does after firing this; a revealable one measures nothing.
+        document.addEventListener ("show.bs.collapse", (e) => {
+          e.target.removeAttribute ("hidden");
+        });
+        // Restore it once the panel is shut, rather than while it is shutting.
+        document.addEventListener ("hidden.bs.collapse", (e) => {
+          if (! e.target.classList.contains ("navbar-collapse")) {
+            e.target.setAttribute ("hidden", "until-found");
+          }
+        });
+      });
     </script>
     <style>
     h5.fs {
@@ -90,6 +133,19 @@
     }
     [id^="togList"]:checked ~ .list{
       display:block;                        /* SHOW LIST (IF CHECKED) */
+    }
+    /* Bootstrap hides a collapsed panel with "display: none", which generates
+       no box, so the "content-visibility: hidden" the user agent gives
+       "hidden=until-found" could never apply and the text would stay beyond
+       find-in-page.  Clear that one declaration, and only where the script
+       above has found the attribute to be understood: an attribute selector
+       matches a value the browser does not understand, so an ungated rule
+       would leave every panel of an older browser standing open.  The
+       "!important" is required rather than decoration: the reboot carries
+       "[hidden] {display: none !important}", which the attribute itself brings
+       into play, and only another "!important" can outrank it. */
+    html.until-found .collapse[hidden="until-found"]:not(.show) {
+      display: block !important;
     }
     </style>
   </head>
@@ -389,34 +445,35 @@
 <p> Shift datetime values to calendar boundaries.
 </p>
 <div class="ms-5">
-<p> <code><var>R</var> = dateshift (<var>A</var>, <code>'start'</code>, <var>unit</var>)</code> returns a
- datetime array in which each element of <var>A</var> is moved back to the start
- of the calendar <var>unit</var> that contains it, with the finer components set
- to zero.  <var>unit</var> is <code>'second'</code>, <code>'minute'</code>,
- <code>'hour'</code>, <code>'day'</code>, <code>'week'</code>, <code>'month'</code>,
- <code>'quarter'</code>, or <code>'year'</code>.  A week starts on Sunday.
+<p> <code><var>R</var> = dateshift (<var>A</var>, <code>'start'</code>, <var>unit</var>)</code> returns
+ a datetime array in which each element of <var>A</var> is moved back to the
+ start of the calendar <var>unit</var> that contains it, with the finer
+ components set to zero.  <var>unit</var> is <code>'second'</code>,
+ <code>'minute'</code>, <code>'hour'</code>, <code>'day'</code>, <code>'week'</code>,
+ <code>'month'</code>, <code>'quarter'</code>, or <code>'year'</code>.  A week starts on
+ Sunday.
 </p>
-<p> <code><var>R</var> = dateshift (<var>A</var>, <code>'end'</code>, <var>unit</var>)</code> moves each
- element to the end of its unit: the start of the next second, minute,
- hour, or day, and the last day (at midnight) of the week, month, quarter,
- or year.
+<p> <code><var>R</var> = dateshift (<var>A</var>, <code>'end'</code>, <var>unit</var>)</code> moves
+ each element to the end of its unit: the start of the next second,
+ minute, hour, or day, and the last day (at midnight) of the week, month,
+ quarter, or year.
 </p>
-<p> <code><var>R</var> = dateshift (&hellip;, <var>rule</var>)</code> first shifts each element
- by <var>rule</var> whole units.  <var>rule</var> is <code>'current'</code> (the default),
- <code>'next'</code>, <code>'previous'</code>, <code>'nearest'</code>, or an integer
- number of units.
+<p> <code><var>R</var> = dateshift (&hellip;, <var>rule</var>)</code> first shifts each
+ element by <var>rule</var> whole units.  <var>rule</var> is <code>'current'</code> (the
+ default), <code>'next'</code>, <code>'previous'</code>, <code>'nearest'</code>, or an
+ integer number of units.
 </p>
-<p> <code><var>R</var> = dateshift (<var>A</var>, <code>'dayofweek'</code>, <var>dow</var>)</code> moves
- each element to the next date, on or after it, whose day of the week is
- <var>dow</var> (a number from 1 for Sunday to 7 for Saturday, or a day name),
- keeping the time of day.  A trailing <var>rule</var> of <code>'previous'</code>,
- <code>'nearest'</code>, <code>'current'</code> (the day within the current week), or
- an integer occurrence selects a different date.
+<p> <code><var>R</var> = dateshift (<var>A</var>, <code>'dayofweek'</code>, <var>dow</var>)</code>
+ moves each element to the next date, on or after it, whose day of the
+ week is <var>dow</var> (a number from 1 for Sunday to 7 for Saturday, or a day
+ name), keeping the time of day.  A trailing <var>rule</var> of
+ <code>'previous'</code>, <code>'nearest'</code>, <code>'current'</code> (the day within
+ the current week), or an integer occurrence selects a different date.
 </p>
 <p> Not-A-Time and infinite elements are returned unchanged.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/tree/main/inst/datetime.m">datetime</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/2c7436d/inst/datetime.m#L4663">datetime</a>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">
