@@ -27,3 +27,7 @@ Summary of important user-visible changes for datatypes 1.4.1:
     element, or detected text whose first string cannot be read, raises one.
 
  ** A `'Locale'` may be written with a hyphen, as in `'en-GB'`.
+
+ ** `ods2table`, `ods2struct` and `table2ods` raise a clear error on a sheet
+    whose cells contradict the types its metadata declares, where they used
+    to fail with "nonconformant arguments".
