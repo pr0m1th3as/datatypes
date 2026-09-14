@@ -53,10 +53,12 @@ classdef datetime
     ## System time zone setting
     ##
     ## A read-only property specifying the local time zone of the system, where
-    ## Octave is running.
+    ## Octave is running, as the name of a zone in the IANA Time Zone Database,
+    ## such as @qcode{'Europe/Athens'}.  It is @qcode{'UTC'} when the system
+    ## time zone cannot be determined.
     ##
     ## @end deftp
-    SystemTimeZone = localtime (time ()).zone;
+    SystemTimeZone = __datetime__ ('systemtimezone');
   endproperties
 
   properties (Access = private, Hidden)
@@ -146,6 +148,9 @@ classdef datetime
     ## Time zone, specified as a character vector or string scalar.  If
     ## specified as a string scalar, it is converted and stored internally as
     ## a character vector.
+    ##
+    ## Setting it to @qcode{'local'}, in any letter case, stores the system time
+    ## zone given by @code{datetime.SystemTimeZone}.
     ##
     ## Besides the zones of the IANA Time Zone Database, the value
     ## @qcode{'UTCLeapSeconds'} selects UTC with its inserted leap seconds made
@@ -599,8 +604,10 @@ classdef datetime
     ## the time zone of the values in the output datetime array.  If not
     ## specified, the array is unzoned: its values are wall-clock readings that
     ## name no absolute instant, and no daylight saving rule applies to them.
-    ## Supported time zones are those of the IANA Time Zone Database.  A zone
-    ## may also be attached, changed, or dropped afterwards through the
+    ## Supported time zones are those of the IANA Time Zone Database, and
+    ## @qcode{'local'}, in any letter case, names the system time zone given by
+    ## @code{datetime.SystemTimeZone}, which is what the property stores.  A
+    ## zone may also be attached, changed, or dropped afterwards through the
     ## @qcode{'TimeZone'} property; attaching one reinterprets the wall-clock
     ## values in that zone, whereas changing between two zones preserves the
     ## absolute instant and shifts the wall-clock values by the difference in
@@ -713,6 +720,10 @@ classdef datetime
         error ("datetime: 'MixedFormats' must be a logical scalar.");
       endif
       MixedFormats = logical (MixedFormats);
+      ## 'local' names the system time zone, and the array stores its name.
+      if (ischar (TimeZone) && strcmpi (TimeZone, 'local'))
+        TimeZone = datetime.SystemTimeZone;
+      endif
 
       ## A datetime input is copied: its components, time zone and display
       ## format all carry over.  'Format' and 'TimeZone' may still be given to
@@ -5676,6 +5687,9 @@ classdef datetime
                                              || isempty (toTimeZone))))
                 error (strcat ("datetime.subsasgn: 'TimeZone' must be a", ...
                                " character vector."));
+              endif
+              if (strcmpi (toTimeZone, 'local'))
+                toTimeZone = datetime.SystemTimeZone;
               endif
               ## Validate the target zone (empty means an unzoned array).
               if (! isempty (toTimeZone))

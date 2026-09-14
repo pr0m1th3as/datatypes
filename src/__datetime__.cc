@@ -714,6 +714,22 @@ a repeated clock when an offset is given. \n\
     return ls_out;
   }
 
+  // The 'systemtimezone' mode returns the IANA name of the system time zone,
+  // or 'UTC' when it cannot be determined, as for the default zone below.
+  if (args.length () == 1 && args(0).is_string ()
+      && args(0).string_value () == "systemtimezone")
+  {
+    string name = "UTC";
+    try
+    {
+      name = current_zone () -> name ();
+    }
+    catch (const exception&)
+    {
+    }
+    return octave_value_list (1, octave_value (name));
+  }
+
   // The 'ConvertTo' serial mode returns a single output; every other mode
   // requires either 6 or 7 output arguments.  Detect the mode up front so the
   // output-count guard below can exempt it.

@@ -3423,6 +3423,44 @@
 %!error <datetime.subsasgn: 'TimeZone' must be a character vector.> ...
 %! d = datetime (2020, 1, 1); d.TimeZone = 5;
 
+## Test SystemTimeZone is a zone name, not an abbreviation
+%!test
+%! d = datetime (2024, 1, 1, 'TimeZone', datetime.SystemTimeZone);
+%! assert_equal (d.TimeZone, datetime.SystemTimeZone);
+
+## Test 'local' names the system time zone, in any letter case
+%!test
+%! d = datetime (2024, 1, 1, 12, 0, 0, 'TimeZone', 'local');
+%! assert_equal (d.TimeZone, datetime.SystemTimeZone);
+%! assert_equal ([d.Hour, d.Minute], [12, 0]);
+%!test
+%! d = datetime (2024, 1, 1, 'TimeZone', 'LOCAL');
+%! assert_equal (d.TimeZone, datetime.SystemTimeZone);
+%!test
+%! d = datetime ('2024-01-01 12:00:00', 'TimeZone', 'Local');
+%! assert_equal (d.TimeZone, datetime.SystemTimeZone);
+%! assert_equal ([d.Hour, d.Minute], [12, 0]);
+%!test
+%! d = datetime (0, 'ConvertFrom', 'posixtime', 'TimeZone', 'local');
+%! assert_equal (d.TimeZone, datetime.SystemTimeZone);
+%! assert_equal (posixtime (d), 0);
+%!test
+%! u = datetime (2024, 1, 1, 12, 0, 0, 'TimeZone', 'UTC');
+%! d = datetime (u, 'TimeZone', 'local');
+%! assert_equal (d.TimeZone, datetime.SystemTimeZone);
+%! assert_equal (posixtime (d), posixtime (u));
+%!test
+%! d = datetime (2024, 1, 1, 12, 0, 0);
+%! d.TimeZone = 'local';
+%! assert_equal (d.TimeZone, datetime.SystemTimeZone);
+%! assert_equal ([d.Hour, d.Minute], [12, 0]);
+%!test
+%! u = datetime (2024, 1, 1, 12, 0, 0, 'TimeZone', 'UTC');
+%! d = u;
+%! d.TimeZone = 'Local';
+%! assert_equal (d.TimeZone, datetime.SystemTimeZone);
+%! assert_equal (posixtime (d), posixtime (u));
+
 ## Test the two instants sharing a wall clock across a fall-back stay apart.
 ## On 3 November 2024 America/New_York puts its clock back at 02:00, so
 ## 01:30 comes round twice: once at UTC-4 and once at UTC-5.  Every value
