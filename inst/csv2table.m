@@ -1034,6 +1034,25 @@ endfunction
 %!   delete (fn);
 %! end_unwind_protect
 
+## A zoned column whose text carries an offset is read as instants in that zone
+%!test
+%! fn = [tempname() '.csv'];
+%! dt = datetime (2024, 6, [15; 16], 10, 30, 0, 'TimeZone', 'UTC');
+%! T = table (dt, 'VariableNames', {'t'});
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   txt = fileread (fn);
+%!   txt = regexprep (txt, '(\d{4}-\d{2}-\d{2}T[\d:.]+)', '$1-05:00');
+%!   fid = fopen (fn, 'w');
+%!   fputs (fid, txt);
+%!   fclose (fid);
+%!   R = csv2table (fn);
+%!   assert_equal (R.t.TimeZone, 'UTC');
+%!   assert_equal (hour (R.t), [15; 15]);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
 ## Round-trip: a fixed-offset zone keeps its TimeZone
 %!test
 %! fn = [tempname() '.csv'];

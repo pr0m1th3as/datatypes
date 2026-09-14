@@ -29,6 +29,20 @@
 
 function [dt, ok] = __iso2dt__ (C, tz = '')
 
+  ## Text carrying a UTC offset names an instant rather than a wall clock, and
+  ## the scan below would silently drop the offset, so it goes to the
+  ## constructor instead, which reads it into TZ and refuses it without one.
+  isOff = @(x) ischar (x) && ! isempty (regexp (x, ['T\d{1,2}:\d{2}', ...
+               '(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}(:?\d{2})?)\s*$'], 'once'));
+  if (any (cellfun (isOff, C(:))))
+    if (isempty (tz))
+      dt = datetime (C);
+    else
+      dt = datetime (C, 'TimeZone', tz);
+    endif
+    ok = true;
+    return;
+  endif
   sz = size (C);
   Y = nan (sz);  Mo = nan (sz);  D = nan (sz);
   h = nan (sz);  mi = nan (sz);  s = nan (sz);

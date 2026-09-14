@@ -6601,6 +6601,19 @@
 %!                 'StartTime', datetime (2024, 1, 1)); ...
 %! TT('nonsense',:);
 
+## Test a row subscript given as text carrying an offset is read in the zone of
+## the row times, and refused when they have none
+%!test
+%! TT = timetable ((1:3)', 'TimeStep', hours (1), 'StartTime', ...
+%!                datetime (2024, 3, 10, 2, 0, 0, 'TimeZone', 'UTC'), ...
+%!                'VariableNames', {'A'});
+%! R = TT('2024-03-09T22:00:00-05:00',:);
+%! assert_equal (R.A, 2);
+%!error <timetable: a row subscript could not be read as a datetime: '2024-03-09T22:00:00Z'> ...
+%! TT = timetable ((1:3)', 'TimeStep', hours (1), ...
+%!                 'StartTime', datetime (2024, 1, 1)); ...
+%! TT('2024-03-09T22:00:00Z',:);
+
 ## A row time is matched against the times there are, not read as a position,
 ## so a time the timetable does not carry matches nothing rather than raising.
 ## Assigning to one asks for the row and adds it.  Measured on MATLAB R2024a.

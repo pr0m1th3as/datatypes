@@ -5945,8 +5945,14 @@ function ref = rowRefTimes (rowRef, rt)
   txt = cellstr (rowRef);
   try
     if (isdatetime (rt))
-      ref = datetime (txt);
-      ref.TimeZone = rt.TimeZone;
+      try
+        ref = datetime (txt);
+        ref.TimeZone = rt.TimeZone;
+      catch
+        ## Text carrying an offset names an instant, which can only be read
+        ## into the zone of the row times.
+        ref = datetime (txt, 'TimeZone', rt.TimeZone);
+      end_try_catch
     else
       ref = duration (txt);
     endif
