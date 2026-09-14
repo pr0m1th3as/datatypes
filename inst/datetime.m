@@ -433,7 +433,10 @@ classdef datetime
     ## @multitable @columnfractions 0.34 0.66
     ## @item @qcode{'uuuu-MM-dd'} @tab optionally followed by @qcode{'HH:mm'},
     ## @qcode{'HH:mm:ss'}, or either with fractional seconds, the date and the
-    ## time separated by a space or by @qcode{'T'}.
+    ## time separated by a space or by @qcode{'T'}.  The time may carry a UTC
+    ## offset, @qcode{'Z'}, @qcode{'+HH'}, @qcode{'+HHMM'} or @qcode{'+HH:MM'},
+    ## which is read as with an offset field and so requires
+    ## @qcode{'TimeZone'}.  MATLAB detects no text carrying an offset.
     ## @item @qcode{'dd-MMM-uuuu'} @tab month named in full or abbreviated,
     ## optionally followed by a time as above.
     ## @item @qcode{'MMMM d, uuuu'} @tab as in @qcode{'March 15, 2024'}.
@@ -1062,9 +1065,19 @@ classdef datetime
                 error (strcat ("datetime: could not recognize the", ...
                                " date/time format of '%s'."), live{1});
               endif
+              ## Detected text carrying an offset follows the rule for an
+              ## explicit offset field: it names an instant, so a zone is
+              ## required rather than assumed.
+              hasOff = any (ismember (__ldml__ ('symbols', detected), 'zZXx'));
+              if (hasOff && isempty (TimeZone))
+                error (strcat ("datetime: the text '%s' carries a time", ...
+                               " zone offset, which requires 'TimeZone' to", ...
+                               " name a time zone."), live{1});
+              endif
               try
-                DV = dtParseInput (live, detected, dtDefaultPivot (), '', ...
-                                   dtIsLeapZone (TimeZone));
+                [DV, OFF] = dtParseInput (live, detected, dtDefaultPivot (), ...
+                                          '', dtIsLeapZone (TimeZone));
+                OFFSET(! blank) = OFF;
               catch
                 ## Only a lone string raises here, the array case losing just
                 ## the offending element.  Its message names an 'InputFormat'
@@ -7432,6 +7445,28 @@ function fmt = dtDetectFormat (strs)
   endif
   fmt = '';
   first = strs{1};
+  ## An ISO 8601 date and time carrying a UTC offset, as RFC 3339 writes it.
+  ## MATLAB detects none of these; reading them is an Octave extension.
+  offPat = '(Z|[+-]\d{2}(:?\d{2})?)$';
+  if (! isempty (regexp (first, ['^-?\d{4,}-\d{1,2}-\d{1,2}[T ]', ...
+                                 '\d{1,2}:\d{2}(:\d{2}(\.\d+)?)?', offPat], ...
+                         'once')))
+    body = regexprep (first, offPat, '');
+    if (any (body == 'T'))
+      fmt = "uuuu-MM-dd'T'HH:mm";
+    else
+      fmt = 'uuuu-MM-dd HH:mm';
+    endif
+    if (sum (body == ':') == 2)
+      fmt = [fmt, ':ss'];
+      frac = regexp (body, '\.(\d+)$', 'tokens', 'once');
+      if (! isempty (frac))
+        fmt = [fmt, '.', repmat('S', 1, numel (frac{1}))];
+      endif
+    endif
+    fmt = [fmt, 'XXX'];
+    return;
+  endif
   idx = 0;
   for k = 1:rows (shapes)
     if (! isempty (regexp (first, shapes{k,1}, 'once')))

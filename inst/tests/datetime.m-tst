@@ -1014,6 +1014,54 @@
 %!error <datetime: the 'InputFormat' of a 'UTCLeapSeconds' datetime array must be "uuuu-MM-dd'T'HH:mm:ss'Z'", optionally with one to nine fractional second digits, as in "uuuu-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'".> ...
 %! datetime ('2016-12-31T18:59:60-05:00', 'InputFormat', ...
 %!           'uuuu-MM-dd''T''HH:mm:ssXXX', 'TimeZone', 'UTCLeapSeconds')
+
+## Test ISO text carrying an offset is detected without 'InputFormat'
+## (an Octave extension: MATLAB R2024a refuses every one of these)
+%!test
+%! d = datetime ('2024-03-09T22:00:00Z', 'TimeZone', 'UTC');
+%! assert_equal (datevec (d), [2024, 3, 9, 22, 0, 0]);
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('2024-03-09T22:00:00-05:00', 'TimeZone', 'UTC');
+%! assert_equal (datevec (d), [2024, 3, 10, 3, 0, 0]);
+%!test
+%! d = datetime ('2024-03-09 22:00:00-05:00', 'TimeZone', 'UTC');
+%! assert_equal (datevec (d), [2024, 3, 10, 3, 0, 0]);
+%!test
+%! d = datetime ('2024-03-09T22:00:00+0530', 'TimeZone', 'UTC');
+%! assert_equal (datevec (d), [2024, 3, 9, 16, 30, 0]);
+%!test
+%! d = datetime ('2024-03-09T22:00:00-05', 'TimeZone', 'UTC');
+%! assert_equal (datevec (d), [2024, 3, 10, 3, 0, 0]);
+%!test
+%! d = datetime ('2024-03-09T22:00Z', 'TimeZone', 'UTC');
+%! assert_equal (datevec (d), [2024, 3, 9, 22, 0, 0]);
+%!test
+%! d = datetime ('2024-03-09T22:00:00.123Z', 'TimeZone', 'UTC');
+%! assert_equal (round (second (d) * 1000), 123);
+%!test
+%! d = datetime ('2024-03-09T22:00:00-05:00', 'TimeZone', 'Europe/Athens');
+%! assert_equal (datevec (d), [2024, 3, 10, 5, 0, 0]);
+%!test
+%! d = datetime ({'2024-03-09T22:00:00-05:00', '2024-03-09T22:00:00+02:00'}, ...
+%!               'TimeZone', 'UTC');
+%! assert_equal (hour (d), [3, 20]);
+%!test
+%! d = datetime ({'2024-03-09T22:00:00-05:00', '2024-03-09T22:00:00', ''}, ...
+%!               'TimeZone', 'UTC');
+%! assert_equal (isnat (d), [false, true, true]);
+%!test
+%! a = datetime ('2024-11-03T01:30:00-05:00', 'TimeZone', 'America/New_York');
+%! b = datetime ('2024-11-03T01:30:00-04:00', 'TimeZone', 'America/New_York');
+%! assert_equal (hours (a - b), 1);
+%!error <datetime: the text '2024-03-09T22:00:00Z' carries a time zone offset, which requires 'TimeZone' to name a time zone.> ...
+%! datetime ('2024-03-09T22:00:00Z')
+%!error <datetime: the text '2024-03-09T22:00:00-05:00' carries a time zone offset, which requires 'TimeZone' to name a time zone.> ...
+%! datetime ('2024-03-09T22:00:00-05:00', 'TimeZone', '')
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ('2024-02-30T22:00:00Z', 'TimeZone', 'UTC')
+%!error <datetime: text for a 'UTCLeapSeconds' datetime array must be an ISO 8601 UTC instant, as in '2016-12-31T23:59:60Z', optionally with fractional seconds.> ...
+%! datetime ('2016-12-31T18:59:60-05:00', 'TimeZone', 'UTCLeapSeconds')
 %!test
 %! d = datetime ({'xx', '2024-01-15'}, 'InputFormat', 'yyyy-MM-dd');
 %! assert_equal (isnat (d), [true, false])
