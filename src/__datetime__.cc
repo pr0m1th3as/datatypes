@@ -185,6 +185,11 @@ struct local_cache
   local_info li;
   chrono::seconds lo{0}, hi{0};
   bool valid = false;
+  // The daylight saving part last worked out, and the regime it belongs to.
+  const time_zone *dst_tz = nullptr;
+  sys_seconds dst_begin;
+  double dst = 0;
+  bool dst_valid = false;
 };
 
 // A wall clock may name one moment, two, or none, and which of those it is can
@@ -518,6 +523,7 @@ struct local_fold
 {
   double chosen;
   double kept;
+  double dst;
   bool   isdst;
   string abbrev;
 };
@@ -545,6 +551,51 @@ zone_year_shift (double Yv)
     return 400.0 * floor ((Yv - 1400.0) / 400.0);
   }
   return 0.0;
+}
+
+// The daylight saving part of a regime's offset in seconds, as MATLAB counts
+// it.  The database writes the winter of some zones as a negative saving
+// (Ireland, and Morocco during Ramadan), where MATLAB counts the other half of
+// the year as the daylight time instead: a negative saving is standard time,
+// and a zero saving between two negative ones is daylight time by that much.
+// A zero saving beside only one negative saving is standard time, as Ireland's
+// permanent +01:00 of 1968 to 1971 is.  Measured against R2024a for
+// Europe/Dublin and Africa/Casablanca.  Only a zero saving needs the
+// neighbouring regimes, two more lookups, so the answer for the last such
+// regime is kept in LC.
+double
+daylight_saving (const zone_ref& z, const sys_info& own, local_cache& lc)
+{
+  if (! z.tz || own.save < chrono::minutes {0})
+  {
+    return 0;
+  }
+  if (own.save > chrono::minutes {0})
+  {
+    return (double) chrono::duration_cast<chrono::seconds> (own.save).count ();
+  }
+  if (lc.dst_valid && lc.dst_tz == z.tz && lc.dst_begin == own.begin)
+  {
+    return lc.dst;
+  }
+  double d = 0;
+  const sys_seconds lo {sys_days {year::min () / January / 1}};
+  const sys_seconds hi {sys_days {year::max () / January / 1}};
+  if (own.begin > lo && own.end < hi)
+  {
+    const sys_info prev = z.tz->get_info (own.begin - chrono::seconds {1});
+    const sys_info next = z.tz->get_info (own.end);
+    if (prev.save < chrono::minutes {0} && next.save < chrono::minutes {0})
+    {
+      auto neg = chrono::duration_cast<chrono::seconds> (prev.save);
+      d = - (double) neg.count ();
+    }
+  }
+  lc.dst_tz = z.tz;
+  lc.dst_begin = own.begin;
+  lc.dst = d;
+  lc.dst_valid = true;
+  return d;
 }
 
 local_fold
@@ -579,8 +630,10 @@ components2fold (double Yv, double Mv, double Dv, double hv, double mv,
   {
     own = &info.first;
   }
-  out.isdst = own->save != chrono::minutes {0};
-  out.abbrev = own->abbrev;
+  const sys_info mine = *own;
+  out.abbrev = mine.abbrev;
+  out.dst = daylight_saving (tz, mine, lc);
+  out.isdst = (out.dst != 0);
   return out;
 }
 
@@ -1870,6 +1923,35 @@ a repeated clock when an offset is given. \n\
           A(i) = components2fold (Y(i), M(i), D(i), h(i), m(i), s(i), x(i),
                                   tzp, precision, OF(i), haveOffset,
                                   lc).abbrev;
+        }
+      }
+      retval(0) = A;
+      return retval;
+    }
+
+    // 'ConvertTo','dstoffset' returns the daylight saving part of the offset of
+    // each element in seconds, as 'daylight_saving' counts it, for the pass
+    // the element is on when an offset is given.  Not-A-Time and infinite
+    // datetimes map to NaN.
+    if (convertTo == "dstoffset")
+    {
+      NDArray A(sz, 0);
+      const zone_ref tzp = find_zone (timezone);
+      local_cache lc;
+      for (int i = 0; i < sz.numel (); i++)
+      {
+        RowVector tmp(7);
+        tmp(0) = Y(i); tmp(1) = M(i); tmp(2) = D(i);
+        tmp(3) = h(i); tmp(4) = m(i); tmp(5) = s(i); tmp(6) = x(i);
+        double chk = check_nan_inf (tmp);
+        if (isnan (chk) || isinf (chk))
+        {
+          A(i) = NAN;
+        }
+        else
+        {
+          A(i) = components2fold (Y(i), M(i), D(i), h(i), m(i), s(i), x(i),
+                                  tzp, precision, OF(i), haveOffset, lc).dst;
         }
       }
       retval(0) = A;

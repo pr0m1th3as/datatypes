@@ -695,6 +695,44 @@
 %!error <datetime: could not recognize date/time format from input.> ...
 %! datetime ({'2024-13-45', ''})
 
+## Test an array none of whose text 'InputFormat' can read is refused, unless
+## it holds a blank element; a character matrix always is (MATLAB R2024a)
+%!error <datetime: could not parse the date/time text with 'InputFormat' 'uuuu-MM-dd'.> ...
+%! datetime ({'garbage', 'garbage'}, 'InputFormat', 'uuuu-MM-dd')
+%!error <datetime: could not parse the date/time text with 'InputFormat' 'uuuu-MM-dd'.> ...
+%! datetime (['garbage   '; 'garbage   '], 'InputFormat', 'uuuu-MM-dd')
+%!error <datetime: could not parse the date/time text with 'InputFormat' 'uuuu-MM-dd'.> ...
+%! datetime (['garbage   '; '          '; 'garbage   '], 'InputFormat', ...
+%!           'uuuu-MM-dd')
+%!test
+%! d = datetime ({'garbage', 'garbage', ''}, 'InputFormat', 'uuuu-MM-dd');
+%! assert_equal (isnat (d), [true, true, true]);
+%!test
+%! d = datetime (['2024-01-01'; 'garbage   '], 'InputFormat', 'uuuu-MM-dd');
+%! assert_equal (isnat (d), [false; true]);
+%!test
+%! d = datetime (['garbage   '; '2024-01-01'], 'InputFormat', 'uuuu-MM-dd');
+%! assert_equal (isnat (d), [true; false]);
+
+## Test detected text whose first piece that is not blank cannot be read is
+## refused, whatever follows (MATLAB R2024a)
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ({'2024-13-45', '2024-01-01'})
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ({'', '2024-13-45', '2024-01-01'})
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime (['2024-13-45'; '2024-01-01'])
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime (['          '; '2024-13-45'; '2024-01-01'])
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ({'2024-13-45', '2024-02-30'})
+%!test
+%! d = datetime ({'', '2024-01-01', '2024-13-45'});
+%! assert_equal (isnat (d), [true, false, true]);
+%!test
+%! d = datetime (['2024-01-01'; '2024-13-45']);
+%! assert_equal (isnat (d), [false; true]);
+
 ## Test 'InputFormat' offset fields read an instant into 'TimeZone'
 ## (every value measured against MATLAB R2024a)
 %!test
@@ -4007,7 +4045,7 @@
 %! datetime (2024, 3, 9, 'TimeZone', '+1:30')
 %!error <datetime: unrecognized timezone: '\+3:5'> ...
 %! datetime (2024, 3, 9, 'TimeZone', '+3:5')
-%!error <datetime: unrecognized timezone: '\+24:00'> ...
+%!error <datetime: unrecognized timezone: '\+24:00'$> ...
 %! datetime (2024, 3, 9, 'TimeZone', '+24:00')
 %!error <datetime: unrecognized timezone: '-24:00'> ...
 %! datetime (2024, 3, 9, 'TimeZone', '-24:00')
@@ -4048,6 +4086,76 @@
 %!              'Europe/Athens')))), true)
 %!assert_equal (isnan (hours (tzoffset (datetime (Inf, 1, 1, 'TimeZone', ...
 %!              'Europe/Athens')))), true)
+
+## Test the second output of 'tzoffset' is the daylight saving part
+## (every value measured against MATLAB R2024a)
+%!test
+%! [dt, dst] = tzoffset (datetime (2024, [1, 7], 1, 12, 0, 0, ...
+%!                                 'TimeZone', 'Europe/Athens'));
+%! assert_equal (hours (dt), [2, 3]);
+%! assert_equal (hours (dst), [0, 1]);
+%! assert_equal (class (dst), 'duration');
+%! assert_equal (dst.Format, 'hh:mm');
+%!test
+%! [dt, dst] = tzoffset (datetime (2024, 1, 15, 12, 0, 0, ...
+%!                                 'TimeZone', 'Australia/Lord_Howe'));
+%! assert_equal (hours (dt), 11);
+%! assert_equal (hours (dst), 0.5);
+%!test
+%! t1 = datetime (2024, 11, 3, 5, 30, 0, 'TimeZone', 'UTC');
+%! t1.TimeZone = 'America/New_York';
+%! t2 = datetime (2024, 11, 3, 6, 30, 0, 'TimeZone', 'UTC');
+%! t2.TimeZone = 'America/New_York';
+%! [dt, dst] = tzoffset ([t1; t2]);
+%! assert_equal (hours (dt), [-4; -5]);
+%! assert_equal (hours (dst), [1; 0]);
+%!test
+%! [~, dst] = tzoffset (datetime (2024, 7, 1, 'TimeZone', '+03:00'));
+%! assert_equal (hours (dst), 0);
+%!test
+%! [~, dst] = tzoffset (datetime (2024, [1, 7], 1, 'TimeZone', 'UTC'));
+%! assert_equal (hours (dst), [0, 0]);
+%!test
+%! [~, dst] = tzoffset (datetime (2024, 7, 15, 12, 0, 0, ...
+%!                                'TimeZone', 'UTCLeapSeconds'));
+%! assert_equal (hours (dst), 0);
+%!test
+%! [dt, dst] = tzoffset (datetime (2024, 7, 1, 12, 0, 0));
+%! assert_equal (isnan (hours ([dt, dst])), [true, true]);
+%!test
+%! [~, dst] = tzoffset (NaT ('TimeZone', 'Europe/Athens'));
+%! assert_equal (isnan (hours (dst)), true);
+%!test
+%! [~, dst] = tzoffset (datetime (Inf, 1, 1, 'TimeZone', 'Europe/Athens'));
+%! assert_equal (isnan (hours (dst)), true);
+
+## Test a zone the database gives a negative saving counts its summer as the
+## daylight saving time, as MATLAB R2024a counts it
+%!test
+%! d = datetime (2024, [1, 7], 15, 12, 0, 0, 'TimeZone', 'Europe/Dublin');
+%! [dt, dst] = tzoffset (d);
+%! assert_equal (hours (dt), [0, 1]);
+%! assert_equal (hours (dst), [0, 1]);
+%! assert_equal (isdst (d), [false, true]);
+%!test
+%! d = datetime (2024, [1, 7], 15, 12, 0, 0, 'TimeZone', 'Europe/London');
+%! [dt, dst] = tzoffset (d);
+%! assert_equal (hours (dt), [0, 1]);
+%! assert_equal (hours (dst), [0, 1]);
+%! assert_equal (isdst (d), [false, true]);
+%!test
+%! d = datetime (2024, [1, 3], [15, 20], 12, 0, 0, ...
+%!               'TimeZone', 'Africa/Casablanca');
+%! [dt, dst] = tzoffset (d);
+%! assert_equal (hours (dt), [1, 0]);
+%! assert_equal (hours (dst), [1, 0]);
+%! assert_equal (isdst (d), [true, false]);
+%!test
+%! d = datetime (1970, 6, 15, 12, 0, 0, 'TimeZone', 'Europe/Dublin');
+%! [dt, dst] = tzoffset (d);
+%! assert_equal (hours (dt), 1);
+%! assert_equal (hours (dst), 0);
+%! assert_equal (isdst (d), false);
 %!test
 %! d = datetime (2024, 3, 30, 12, 0, 0, 'TimeZone', '+02:00') + days (1);
 %! assert_equal ([day(d), hour(d)], [31, 12]);

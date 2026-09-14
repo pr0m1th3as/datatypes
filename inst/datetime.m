@@ -424,9 +424,13 @@ classdef datetime
     ## format: text written in a different one is not given a format of its own
     ## but becomes @code{NaT}, so that a column of dates is read as the single
     ## thing it is meant to be.  Text no format can be detected from at all is
-    ## refused outright.  A date that the detected format cannot make sense of,
-    ## such as @qcode{'2024-04-31'}, is refused in the same way an explicit
-    ## @qcode{'InputFormat'} refuses it.
+    ## refused outright, and so is text whose first piece that is not blank
+    ## the detected format cannot read, whatever follows it.  A character
+    ## matrix is no exception, where MATLAB returns only @code{NaT} for one
+    ## whose first row is blank, even when a later row can be read.  A later
+    ## date that the detected format cannot make sense of, such as
+    ## @qcode{'2024-04-31'}, is lost in the same way an explicit
+    ## @qcode{'InputFormat'} loses it.
     ##
     ## The formats detected are:
     ##
@@ -483,7 +487,9 @@ classdef datetime
     ## not exist, such as @qcode{'2024-04-31'} or a 29th of February outside a
     ## leap year, cannot be converted.  A lone such string is an error; within
     ## an array only that element is lost and becomes @code{NaT}, so that one
-    ## unreadable entry does not cost the rest of the array.
+    ## unreadable entry does not cost the rest of the array.  An array none of
+    ## whose text can be read is an error too, unless it holds a blank element;
+    ## a character matrix none of whose rows can be read is always an error.
     ##
     ## An @var{INFMT} with a time zone offset field, @qcode{'z'}, @qcode{'Z'},
     ## @qcode{'X'} or @qcode{'x'}, reads each string as an instant, its wall
@@ -899,7 +905,7 @@ classdef datetime
         [~,~,~,~,~,~,errmsg] = __datetime__ (args{:}, 'ConvertFrom', ...
                                              ConvertFrom);
         if (! isnumeric (errmsg))
-          error ("datetime: %s ", errmsg);
+          error ("datetime: %s", errmsg);
         elseif (! isempty (inputFormat))
           error ("datetime: 'ConvertFrom' cannot be used with 'InputFormat'.");
         endif
@@ -940,7 +946,7 @@ classdef datetime
         ## Call __datetime__ to check for valid timezone string
         [~,~,~,~,~,~,errmsg] = __datetime__ (0, 0, 0, 'TimeZone', TimeZone);
         if (! isnumeric (errmsg))
-          error ("datetime: %s ", errmsg);
+          error ("datetime: %s", errmsg);
         endif
         this.TimeZone = TimeZone;
       endif
@@ -1033,6 +1039,14 @@ classdef datetime
               [DV, OFF] = dtParseInput (live, inputFormat, pivot, Locale, ...
                                         dtIsLeapZone (TimeZone), lone);
               OFFSET(! blank) = OFF;
+              ## An array none of whose text can be read is refused as a whole,
+              ## as MATLAB refuses it, unless it holds a blank element; a
+              ## character matrix is refused whatever its blank rows.
+              if (! lone && all (isnan (DV(:,1))) ...
+                  && (ischar (args{1}) || ! any (blank)))
+                error (strcat ("datetime: could not parse the date/time", ...
+                               " text with 'InputFormat' '%s'."), inputFormat);
+              endif
             elseif (dtIsLeapZone (TimeZone))
               ## A leap-second array reads text in the one shape it can also
               ## write, so nothing is auto-detected here: the string must be
@@ -1078,6 +1092,12 @@ classdef datetime
                 [DV, OFF] = dtParseInput (live, detected, dtDefaultPivot (), ...
                                           '', dtIsLeapZone (TimeZone));
                 OFFSET(! blank) = OFF;
+                ## The first text that is not blank is what the format was
+                ## detected from, so text it cannot read leaves no format at
+                ## all, whatever follows, as MATLAB has it.  Caught below.
+                if (isnan (DV(1,1)))
+                  error ("datetime: the first text is unreadable.");
+                endif
               catch
                 ## Only a lone string raises here, the array case losing just
                 ## the offending element.  Its message names an 'InputFormat'
@@ -1253,7 +1273,7 @@ classdef datetime
           [~,~,~,~,~,~, errmsg] = __datetime__ (args{:}, 'Precision', ...
                                                 'microseconds');
           if (! isnumeric (errmsg))
-            error ("datetime: %s ", errmsg);
+            error ("datetime: %s", errmsg);
           endif
           [Yr, Mr, Dr, hr, mir, sr] = dtSplitComponents (args);
           [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
@@ -1668,7 +1688,8 @@ classdef datetime
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {datetime} {@var{DT} =} tzoffset (@var{T})
+    ## @deftypefn  {datetime} {@var{DT} =} tzoffset (@var{T})
+    ## @deftypefnx {datetime} {[@var{DT}, @var{DST}] =} tzoffset (@var{T})
     ##
     ## Time zone offset of a datetime array.
     ##
@@ -1680,10 +1701,20 @@ classdef datetime
     ## (@qcode{NaT}) and infinite values, the corresponding offset is
     ## @qcode{NaN}.
     ##
+    ## @code{[@var{DT}, @var{DST}] = tzoffset (@var{T})} also returns the
+    ## daylight saving time part of each offset as a @code{duration} array
+    ## @var{DST}: zero in standard time and in a time zone without daylight
+    ## saving time, and @qcode{NaN} wherever @var{DT} is.  Where the IANA
+    ## database writes the winter of a time zone as a negative saving, as for
+    ## @qcode{'Europe/Dublin'} or @qcode{'Africa/Casablanca'}, the other half of
+    ## the year is counted as the daylight saving time instead, and
+    ## @code{isdst} agrees.
+    ##
     ## @end deftypefn
-    function out = tzoffset (this)
+    function [out, dst] = tzoffset (this)
       if (isempty (this.TimeZone))
         secs = nan (size (this));
+        dsecs = secs;
       else
         ## The stored offset is the answer already, and reading it rather than
         ## resolving the wall clock again is what tells the two passes over a
@@ -1691,9 +1722,19 @@ classdef datetime
         ## An element naming no instant has no offset, whatever is stored.
         secs = this.Offset + zeros (size (this.Year));
         secs(! isfinite (this.Year)) = NaN;
+        if (nargout > 1)
+          dsecs = dtDstOffset (this.Year, this.Month, this.Day, this.Hour, ...
+                               this.Minute, this.Second, this.TimeZone, ...
+                               this.Offset);
+          dsecs(! isfinite (this.Year)) = NaN;
+        endif
       endif
       out = duration (0, 0, secs);
       out.Format = 'hh:mm';
+      if (nargout > 1)
+        dst = duration (0, 0, dsecs);
+        dst.Format = 'hh:mm';
+      endif
     endfunction
 
   endmethods
@@ -7588,6 +7629,19 @@ function tf = dtIsDst (Y, M, D, H, Mi, S, TZ, off)
   tf = logical (__datetime__ (Y, M, D, H, Mi, S, 'ConvertTo', 'isdst', ...
                               'TimeZone', TZ, 'Offset', off, 'Precision', ...
                               'microseconds'));
+endfunction
+
+## Daylight saving part of the offset in seconds for each element of a zoned
+## datetime, from the compiled tz database via the __datetime__ builtin; zero
+## for a zone without transitions.
+function dst = dtDstOffset (Y, M, D, H, Mi, S, TZ, off)
+  if (dtIsZeroOffsetZone (TZ) || ! isempty (dtFixedOffset (TZ)))
+    dst = zeros (size (Y));
+    return;
+  endif
+  dst = __datetime__ (Y, M, D, H, Mi, S, 'ConvertTo', 'dstoffset', ...
+                      'TimeZone', TZ, 'Offset', off, 'Precision', ...
+                      'microseconds');
 endfunction
 
 ## Parse text into an N-by-6 date-vector matrix for a leap-second array with no
