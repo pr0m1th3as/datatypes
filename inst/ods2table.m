@@ -992,6 +992,76 @@ endfunction
 %!   delete (fn);
 %! end_unwind_protect
 
+## A sheet 'writetable' adds to a 'table2ods' file has no metadata of its own,
+## and the first sheet keeps its own
+%!test
+%! fn = [tempname() '.ods'];
+%! T = table (string ({'a'; 'b'; 'a'}), [1; 2; 3], ...
+%!            'VariableNames', {'g', 'x'});
+%! TR = table ([38; 43], [71; 69], 'VariableNames', {'Age', 'Height'}, ...
+%!             'RowNames', {'Li', 'Diaz'});
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   writetable (TR, fn, 'Sheet', 'Cohort', 'WriteRowNames', true);
+%!   R = readtable (fn, 'Sheet', 'Cohort', 'ReadRowNames', true);
+%!   assert_equal (R.Properties.RowNames, {'Li'; 'Diaz'});
+%!   assert_equal (R.Height, [71; 69]);
+%!   assert_equal (class (ods2table (fn).g), 'string');
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## 'writetable' replacing a 'table2ods' sheet drops its metadata
+%!test
+%! fn = [tempname() '.ods'];
+%! T = table ([38; 43; 40], [71; 69; 64], 'VariableNames', {'Age', 'Height'});
+%! T1 = table ([38; 43], 'VariableNames', {'Age'}, 'RowNames', {'Li', 'Diaz'});
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   writetable (T1, fn, 'WriteRowNames', true);
+%!   R = readtable (fn, 'ReadRowNames', true);
+%!   assert_equal (R.Age, [38; 43]);
+%!   assert_equal (R.Properties.RowNames, {'Li'; 'Diaz'});
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## 'writetable' replacing one sheet of a sectioned workbook leaves the other
+## sheet's metadata alone
+%!test
+%! fn = [tempname() '.ods'];
+%! TA = table ([1; 2], 'VariableNames', {'x'});
+%! TB = table (string ({'p'; 'q'}), 'VariableNames', {'g'});
+%! unwind_protect
+%!   table2ods (TA, fn, 'Sheet', 'A');
+%!   table2ods (TB, fn, 'Sheet', 'B');
+%!   writetable (table ([5; 6], 'VariableNames', {'y'}), fn, 'Sheet', 'A');
+%!   assert_equal (ods2table (fn, 'Sheet', 'A').y, [5; 6]);
+%!   assert_equal (class (ods2table (fn, 'Sheet', 'B').g), 'string');
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## An unsectioned metadata grid describes only the first sheet, even in a file
+## another program has added a sheet to
+%!test
+%! fn = [tempname() '.fods'];
+%! table2ods (table (string ({'a'; 'b'}), 'VariableNames', {'g'}), fn);
+%! unwind_protect
+%!   txt = fileread (fn);
+%!   s = regexp (txt, '<table:table table:name="Sheet1".*?</table:table>', ...
+%!               'match', 'once');
+%!   txt = strrep (txt, s, [s, strrep(s, 'table:name="Sheet1"', ...
+%!                                        'table:name="Other"')]);
+%!   fid = fopen (fn, 'w');
+%!   fputs (fid, txt);
+%!   fclose (fid);
+%!   assert_equal (class (ods2table (fn).g), 'string');
+%!   assert_equal (class (ods2table (fn, 'Sheet', 'Other').g), 'cell');
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
 ## A sheet with no metadata sheet: types inferred, names from the header row
 %!test
 %! fn = [tempname() '.fods'];

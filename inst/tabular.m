@@ -3816,19 +3816,29 @@ classdef (Abstract) tabular
       if (elementwise)
         ## 'repelem' takes a count per dimension and nothing else: neither a
         ## lone count nor a size vector, a tabular object having exactly two
-        ## dimensions and both being named.
+        ## dimensions and both being named.  Each count is a scalar or one per
+        ## row or variable, checked in the order MATLAB checks them.
         if (nargs != 2)
           errmsg = 'exactly three input arguments are required.';
           return;
         endif
         rows = args{1};
         cols = args{2};
-        for v = {rows, cols}
-          k = v{1};
-          if (! (isnumeric (k) && isscalar (k) && isreal (k)
-                 && k >= 0 && k == fix (k)))
+        counts = {rows, cols};
+        dims = [height(this), width(this)];
+        for j = 1:2
+          k = counts{j};
+          if (! isnumeric (k))
+            errmsg = 'replication factors must be numeric.';
+            return;
+          elseif (! (isscalar (k) || (isvector (k) && numel (k) == dims(j))))
+            errmsg = sprintf (strcat ("in repelem (A, N1, N2), N%d must be", ...
+                                      " a scalar or a vector of length", ...
+                                      " size (A, %d)."), j, j);
+            return;
+          elseif (! (isreal (k) && all (k(:) >= 0) && all (k(:) == fix (k(:)))))
             errmsg = strcat ("replication factors must be nonnegative", ...
-                             " integer-valued scalars.");
+                             " integer-valued scalars or vectors.");
             return;
           endif
         endfor
@@ -3880,8 +3890,9 @@ classdef (Abstract) tabular
       tbl = this;
       ## Replicate the rows by the index they come from, then hand the row
       ## labels to the subclass, which alone knows whether a repeated label
-      ## needs a name of its own.
-      if (rows != 1)
+      ## needs a name of its own.  A count may be one per row, so the test is
+      ## whether any of them repeats or drops something.
+      if (any (rows(:) != 1))
         nrow = height (this);
         if (elementwise)
           ixRows = repelem ((1:nrow)', rows, 1);
@@ -3902,7 +3913,7 @@ classdef (Abstract) tabular
       ## Replicate the variables the same way, numbering the repeats in the
       ## order they come out.  The height is carried across, since a result
       ## with no variables left has nothing else to carry it.
-      if (cols != 1)
+      if (any (cols(:) != 1))
         nrowsOut = height (tbl);
         nvar = width (this);
         if (elementwise)

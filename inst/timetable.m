@@ -2148,8 +2148,10 @@ classdef timetable < tabular
     ##
     ## @code{@var{tt2} = repelem (@var{tt}, @var{rows}, @var{cols})} repeats
     ## each row of @var{tt} @var{rows} times and each variable @var{cols}
-    ## times, keeping the repeats of a row together.  Both counts must be
-    ## given, a timetable having exactly two dimensions.  Each repeated row
+    ## times, keeping the repeats of a row together.  Either count may be a
+    ## vector with one count per row, or per variable, and a count of zero
+    ## drops that row or variable.  Both counts must be given, a timetable
+    ## having exactly two dimensions.  Each repeated row
     ## carries the row time of the row it came from, so the result has
     ## repeated row times and is generally irregular; each repeated variable
     ## takes a numbered name, @qcode{A} becoming @qcode{A}, @qcode{A_1}.

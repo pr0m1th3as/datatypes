@@ -217,10 +217,12 @@ read_sheet (const pugi::xml_node &table, Cell &data, Cell &vtype, bool typed,
 // If the metadata grid is sectioned (a multi-sheet workbook written by
 // 'struct2ods' precedes each table's metadata block with a "## Sheet: <name>"
 // marker row), return only the section whose marker matches 'sel'.  An
-// unsectioned grid (single-sheet house file, no markers) is returned
-// unchanged; a sectioned grid with no matching marker yields an empty grid.
+// unsectioned grid (single-sheet house file, no markers) describes the first
+// data sheet, 'first', alone: it is returned whole for that sheet and as an
+// empty grid for any other, which a later writer may have added without
+// metadata.  A sectioned grid with no matching marker yields an empty grid.
 static Cell
-meta_section (const Cell &meta, const string &sel)
+meta_section (const Cell &meta, const string &sel, const string &first)
 {
   octave_idx_type nr = meta.rows ();
   octave_idx_type nc = meta.columns ();
@@ -239,8 +241,8 @@ meta_section (const Cell &meta, const string &sel)
       }
     }
   }
-  if (marks.empty ())
-    return meta;                        // unsectioned: legacy single-sheet file
+  if (marks.empty ())                   // unsectioned: single-sheet house file
+    return (sel == first) ? meta : Cell ();
 
   for (size_t i = 0; i < marks.size (); i++)
   {
@@ -458,7 +460,7 @@ it directly. \n\
   if (meta.numel () > 0 && data_tbl)
   {
     string sel_name = data_tbl.attribute ("table:name").as_string ();
-    meta = meta_section (meta, sel_name);
+    meta = meta_section (meta, sel_name, sheet_names.front ());
   }
 
   Cell names_out (1, sheet_names.size ());

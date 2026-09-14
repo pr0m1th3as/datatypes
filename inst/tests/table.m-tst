@@ -7045,17 +7045,57 @@
 %! repelem (table (1), 1, 2, 3);
 %!error <table.repelem: exactly three input arguments are required.> ...
 %! repelem (table (1), 2);
-%!error <table.repelem: replication factors must be nonnegative integer-valued scalars.> ...
+%!error <table.repelem: replication factors must be nonnegative integer-valued scalars or vectors.> ...
 %! repelem (table (1), 1.5, 1);
-%!error <table.repelem: replication factors must be nonnegative integer-valued scalars.> ...
+%!error <table.repelem: replication factors must be nonnegative integer-valued scalars or vectors.> ...
 %! repelem (table (1), 2, 1.5);
-%!error <table.repelem: replication factors must be nonnegative integer-valued scalars.> ...
+%!error <table.repelem: replication factors must be nonnegative integer-valued scalars or vectors.> ...
 %! repelem (table (1), -1, 1);
+%!error <table.repelem: replication factors must be numeric.> ...
+%! repelem (table (1), {1}, 1);
+%!error <table.repelem: in repelem \(A, N1, N2\), N1 must be a scalar or a vector of length size \(A, 1\).> ...
+%! repelem (table ([1; 2; 3]), [1; 2], 1);
+%!error <table.repelem: in repelem \(A, N1, N2\), N2 must be a scalar or a vector of length size \(A, 2\).> ...
+%! repelem (table ([1; 2; 3]), 1, [1, 2]);
+%!error <table.repelem: replication factors must be nonnegative integer-valued scalars or vectors.> ...
+%! repelem (table ([1; 2; 3]), [1; -1; 2], 1);
+%!error <table.repelem: replication factors must be nonnegative integer-valued scalars or vectors.> ...
+%! repelem (table ([1; 2; 3]), [1; 1.5; 2], 1);
 ## a count of zero leaves that dimension empty rather than being refused
 %!test
 %! T = table ([1; 2], [3; 4], 'VariableNames', {'A', 'B'});
 %! assert_equal (size (repelem (T, 0, 1)), [0, 2]);
 %! assert_equal (size (repelem (T, 1, 0)), [2, 0]);
+## a count vector repeats each row or variable by its own count (R2024a)
+%!test
+%! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'X', 'Y'}, ...
+%!            'RowNames', {'r1'; 'r2'; 'r3'});
+%! R = repelem (T, [1; 2; 0], 1);
+%! assert_equal (R.X, [1; 2; 2]);
+%! assert_equal (R.Properties.RowNames, {'r1'; 'r2'; 'r2_1'});
+%!test
+%! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'X', 'Y'}, ...
+%!            'RowNames', {'r1'; 'r2'; 'r3'});
+%! R = repelem (T, [1, 2, 3], 1);
+%! assert_equal (R.Properties.RowNames, ...
+%!               {'r1'; 'r2'; 'r2_1'; 'r3'; 'r3_1'; 'r3_2'});
+%!test
+%! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'X', 'Y'});
+%! R = repelem (T, 1, [2, 1]);
+%! assert_equal (R.Properties.VariableNames, {'X', 'X_1', 'Y'});
+%! assert_equal (R.X_1, [1; 2; 3]);
+%!test
+%! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'X', 'Y'});
+%! R = repelem (T, [2; 2; 2], [1, 3]);
+%! assert_equal (R.Properties.VariableNames, {'X', 'Y', 'Y_1', 'Y_2'});
+%! assert_equal (height (R), 6);
+%!test
+%! T = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'X', 'Y'});
+%! R = repelem (T, 1, [0, 1]);
+%! assert_equal (R.Properties.VariableNames, {'Y'});
+%!test
+%! R = repelem (table ([1; 2]), [3; 0], 1);
+%! assert_equal (R.Var1, [1; 1; 1]);
 
 ## 'repmat' tiles whole rows and variables of a table
 %!test  # rows tiled as a block (1 2 3 1 2 3)

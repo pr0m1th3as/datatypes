@@ -369,6 +369,24 @@ endfunction
 %!   delete (fname);
 %! end_unwind_protect
 
+## Test 'writetable' replacing an event sheet detaches it from its timetable
+%!test
+%! t = datetime (2024, 1, 1) + hours ((0:3)');
+%! TT = timetable (t, (1:4)', 'VariableNames', {'v'});
+%! TT.Properties.Events = eventtable (t(2), 'EventLabels', {'on'});
+%! fname = [tempname(), '.ods'];
+%! unwind_protect
+%!   timetable2ods (TT, fname, 'Sheet', 'Data');
+%!   writetable (table ([7; 8], 'VariableNames', {'w'}), fname, ...
+%!               'Sheet', 'Data_Events');
+%!   out = ods2timetable (fname, 'Sheet', 'Data');
+%!   assert_equal (isempty (out.Properties.Events), true);
+%!   assert_equal (out.v, (1:4)');
+%!   assert_equal (readtable (fname, 'Sheet', 'Data_Events').w, [7; 8]);
+%! unwind_protect_cleanup
+%!   delete (fname);
+%! end_unwind_protect
+
 ## Test the three event designations survive
 %!test
 %! t = datetime (2024, 1, 1) + hours ((0:3)');

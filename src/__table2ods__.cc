@@ -663,6 +663,93 @@ write_ods_zip (const string &file, const string &content)
   return write_zip_entries (file, entries);
 }
 
+// The text of the cell at 0-based column 'col' of a metadata row, as the
+// reader sees it: repeated cells are counted and several paragraphs join with
+// newlines.
+static string
+meta_cell (const pugi::xml_node &row, long col)
+{
+  long c = 0;
+  for (pugi::xml_node cell = row.child ("table:table-cell"); cell;
+       cell = cell.next_sibling ("table:table-cell"))
+  {
+    long rep = cell.attribute ("table:number-columns-repeated").as_int (1);
+    if (rep < 1)
+      rep = 1;
+    if (col < c + rep)
+    {
+      string out;
+      for (pugi::xml_node p = cell.child ("text:p"); p;
+           p = p.next_sibling ("text:p"))
+      {
+        if (! out.empty ())
+          out += "\n";
+        out += p.text ().as_string ();
+      }
+      return out;
+    }
+    c += rep;
+  }
+  return string ();
+}
+
+// Keep the metadata sheet true to the data sheets once 'sheetname' has been
+// written without metadata.  A replaced sheet loses its section and every
+// events crossref line naming it; in an unsectioned grid, which describes the
+// first data sheet 'first' alone, replacing that sheet removes the grid.  A
+// sheet added beside an unsectioned grid first gives the grid the marker of
+// the sheet it describes, so that it is not taken for the new sheet's.
+static void
+update_meta (pugi::xml_node &spreadsheet, pugi::xml_node &meta,
+             const string &sheetname, const string &first, bool replaced)
+{
+  const string mark = "## Sheet: ";
+  const string xref = "## Events crossref:";
+  bool sectioned = false;
+  for (pugi::xml_node row = meta.child ("table:table-row"); row && ! sectioned;
+       row = row.next_sibling ("table:table-row"))
+    sectioned = (meta_cell (row, 0).compare (0, mark.size (), mark) == 0);
+
+  if (! sectioned)
+  {
+    if (replaced && sheetname == first)
+      spreadsheet.remove_child (meta);
+    else if (! replaced)
+    {
+      pugi::xml_node top = meta.child ("table:table-row");
+      pugi::xml_node row = meta.insert_child_before ("table:table-row", top);
+      pugi::xml_node cell = row.append_child ("table:table-cell");
+      cell.append_attribute ("office:value-type") = "string";
+      cell.append_child ("text:p").text ().set ((mark + first).c_str ());
+    }
+    return;
+  }
+
+  if (! replaced)
+    return;
+  bool inside = false;
+  pugi::xml_node row = meta.child ("table:table-row");
+  while (row)
+  {
+    pugi::xml_node next = row.next_sibling ("table:table-row");
+    string c0 = meta_cell (row, 0);
+    bool drop = false;
+    if (c0.compare (0, mark.size (), mark) == 0)
+    {
+      inside = (c0.substr (mark.size ()) == sheetname);
+      drop = inside;
+    }
+    else if (inside)
+      drop = true;
+    else if (c0.compare (0, xref.size (), xref) == 0)
+      drop = (meta_cell (row, 1) == sheetname
+              || meta_cell (row, 2) == sheetname);
+    if (drop)
+      meta.remove_child (row);
+    row = next;
+  }
+}
+
 // Read-modify-write an existing spreadsheet: add or replace the sheet named
 // 'sheetname' (or, for 'append', append the data rows to it) while preserving
 // every other sheet and every other package part.  'writemode' is "append",
@@ -752,14 +839,20 @@ merge_ods (const string &file, bool flat, const Cell &data, const Cell &vtype,
   }
 
   // --- Add, replace, or append to the target sheet ---
-  pugi::xml_node sheet;
+  pugi::xml_node sheet, meta;
+  string first;
   for (pugi::xml_node t = spreadsheet.child ("table:table"); t;
        t = t.next_sibling ("table:table"))
-    if (string (t.attribute ("table:name").as_string ()) == sheetname)
-    {
+  {
+    string name = t.attribute ("table:name").as_string ();
+    if (name == "__datatypes_meta__")
+      meta = t;
+    else if (first.empty ())
+      first = name;
+    if (name == sheetname && ! sheet)
       sheet = t;
-      break;
-    }
+  }
+  const bool existed = sheet;
 
   if (writemode == "append" && sheet)
   {
@@ -779,6 +872,11 @@ merge_ods (const string &file, bool flat, const Cell &data, const Cell &vtype,
     // The sheet does not exist yet: add it after the existing sheets.
     write_sheet (spreadsheet, sheetname, data, vtype, 0, false, header, 0, 0);
   }
+
+  // --- Keep the metadata sheet true to the data sheets; rows appended to an
+  //     existing sheet change nothing it records ---
+  if (meta && ! first.empty () && ! (writemode == "append" && existed))
+    update_meta (spreadsheet, meta, sheetname, first, existed);
 
   // --- Serialize and write back ---
   ostringstream oss;

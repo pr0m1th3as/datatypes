@@ -230,9 +230,10 @@ endfunction
 %! [bin, edges] = discretize ([1, 2, 3, 4, 5], 3)
 
 %!demo
-%! ## Return a label per bin rather than an index.
+%! ## Return a label per bin rather than an index.  Every value must fall in a
+%! ## bin when the labels are a cell array.
 %!
-%! discretize ([0, 1, 2, 3, 4, 5, 6], [1, 3, 5], {'low', 'high'})
+%! discretize ([1, 2, 3, 4, 5], [1, 3, 5], {'low', 'high'})
 
 ## Explicit edges
 %!assert_equal (discretize ([1, 2, 3, 4, 5], [1, 3, 5]), [1, 1, 2, 2, 2])

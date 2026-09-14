@@ -4286,10 +4286,13 @@ classdef table < tabular
     ## each variable @var{columns} times, keeping the repeats of a row
     ## together, in a similar fashion to how @code{repelem} applies to a
     ## matrix.  Each repeated variable takes a numbered name, @qcode{x}
-    ## becoming @qcode{x}, @qcode{x_1}.
+    ## becoming @qcode{x}, @qcode{x_1}, and so does each repeated row name.
     ##
-    ## Both counts must be given.  A table has exactly two dimensions, so a
-    ## lone count is not read as applying to both, as it is for a matrix.
+    ## Either count may be a vector with one count per row, or per variable,
+    ## as in @code{repelem (@var{tblA}, [1; 2; 0], 1)}, and a count of zero
+    ## drops that row or variable.  Both counts must be given.  A table has
+    ## exactly two dimensions, so a lone count is not read as applying to both,
+    ## as it is for a matrix.
     ##
     ## @end deftypefn
     function tbl = repelem (this, varargin)

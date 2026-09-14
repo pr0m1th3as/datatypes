@@ -55,7 +55,8 @@ A grid of text cells, read top to bottom. It has two parts: an optional
 
 A section opens with a marker row whose first cell is `## Sheet: <name>`,
 naming the data sheet it describes. A file holding a single table may omit the
-markers, in which case the whole grid is one unnamed section.
+markers, in which case the whole grid is one unnamed section describing the
+first data sheet alone; any other sheet in the file has no metadata.
 
 The marker is followed by a comment row carrying four counts:
 
@@ -163,6 +164,12 @@ and its preamble line are written like any other.
   least two sheets, so this is automatic in practice.
 * **An unrecognised `## <keyword>:` preamble line must be skipped**, so that a
   later addition does not break a reader written against this document.
+
+A writer that adds or replaces a data sheet without writing its metadata, as
+`writetable` does, must leave the metadata true to the sheets: a replaced sheet
+loses its section and every preamble line naming it, and a sheet added to a file
+whose grid is unsectioned first gives that grid the marker of the sheet it
+describes.
 
 A reader should refuse a reference naming a sheet the file does not hold, a
 preamble line whose referring sheet has no section, a referenced sheet whose
