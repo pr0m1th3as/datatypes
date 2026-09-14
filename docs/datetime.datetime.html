@@ -471,9 +471,13 @@
  format: text written in a different one is not given a format of its own
  but becomes <code>NaT</code>, so that a column of dates is read as the single
  thing it is meant to be.  Text no format can be detected from at all is
- refused outright.  A date that the detected format cannot make sense of,
- such as <code>'2024-04-31'</code>, is refused in the same way an explicit
- <code>'InputFormat'</code> refuses it.
+ refused outright, and so is text whose first piece that is not blank
+ the detected format cannot read, whatever follows it.  A character
+ matrix is no exception, where MATLAB returns only <code>NaT</code> for one
+ whose first row is blank, even when a later row can be read.  A later
+ date that the detected format cannot make sense of, such as
+ <code>'2024-04-31'</code>, is lost in the same way an explicit
+ <code>'InputFormat'</code> loses it.
 </p>
 <p> The formats detected are:
 </p>
@@ -481,7 +485,10 @@
 <table class="table table-striped table-bordered table-sm">
 <tr><td width="34%"><code>'uuuu-MM-dd'</code></td><td width="66%">optionally followed by <code>'HH:mm'</code>,
  <code>'HH:mm:ss'</code>, or either with fractional seconds, the date and the
- time separated by a space or by <code>'T'</code>.</td></tr>
+ time separated by a space or by <code>'T'</code>.  The time may carry a UTC
+ offset, <code>'Z'</code>, <code>'+HH'</code>, <code>'+HHMM'</code> or <code>'+HH:MM'</code>,
+ which is read as with an offset field and so requires
+ <code>'TimeZone'</code>.  MATLAB detects no text carrying an offset.</td></tr>
 <tr><td width="34%"><code>'dd-MMM-uuuu'</code></td><td width="66%">month named in full or abbreviated,
  optionally followed by a time as above.</td></tr>
 <tr><td width="34%"><code>'MMMM d, uuuu'</code></td><td width="66%">as in <code>'March 15, 2024'</code>.</td></tr>
@@ -489,7 +496,7 @@
 <tr><td width="34%"><code>'HH:mm:ss'</code></td><td width="66%">a time alone, taking today&rsquo;s date.</td></tr>
 </table>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/2c7436d/inst/datetime.m#L677">datetime</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/d1c9662/inst/datetime.m#L733">datetime</a>
 </div>
 
 <p> Three further shapes are read that MATLAB does not detect, and are
@@ -531,7 +538,30 @@
  not exist, such as <code>'2024-04-31'</code> or a 29th of February outside a
  leap year, cannot be converted.  A lone such string is an error; within
  an array only that element is lost and becomes <code>NaT</code>, so that one
- unreadable entry does not cost the rest of the array.
+ unreadable entry does not cost the rest of the array.  An array none of
+ whose text can be read is an error too, unless it holds a blank element;
+ a character matrix none of whose rows can be read is always an error.
+</p>
+<p> An <var>INFMT</var> with a time zone offset field, <code>'z'</code>, <code>'Z'</code>,
+ <code>'X'</code> or <code>'x'</code>, reads each string as an instant, its wall
+ clock less the offset it carries, and expresses it in the zone given by
+ <code>'TimeZone'</code>, which is then required.  The offset settles a
+ repeated or skipped wall clock, so such text is never rejected for
+ naming one.  Every width of <code>'Z'</code>, <code>'X'</code> and <code>'x'</code>
+ reads the same forms: <code>'Z'</code> for zero, a signed offset such as
+ <code>'-5'</code>, <code>'-05'</code>, <code>'-0500'</code>, <code>'-05:00'</code> or
+ <code>'-05:00:30'</code>, and either of those after <code>'GMT'</code> or
+ <code>'UTC'</code>, which alone is zero.  <code>'z'</code> reads the same, and a
+ time zone abbreviation such as <code>'EST'</code>, <code>'CET'</code> or
+ <code>'MSK'</code>, in any letter case.  An abbreviation with two meanings is
+ read only under a <var>LOCALE</var> that settles it: <code>'BST'</code> is +01:00
+ under <code>'en_GB'</code> and +06:00 under <code>'en_CA'</code>, <code>'IST'</code> is
+ +01:00 under <code>'en_IE'</code> and +05:30 under <code>'en_IN'</code> and
+ <code>'en_CA'</code>, <code>'ACST'</code> is +09:30 under <code>'en_AU'</code> and
+ -04:00 under <code>'pt_BR'</code>, and <code>'AMT'</code> is -04:00 under
+ <code>'pt_BR'</code>.  Under any other <var>LOCALE</var> they are refused, where
+ MATLAB reads <code>'BST'</code> as +06:00 and <code>'IST'</code> as +05:30 by
+ default.
 </p>
 <p> <code><var>T</var> = datetime (<var>DateStrings</var>, <code>'InputFormat'</code>,
  <var>INFMT</var>, <code>'PivotYear'</code>, <var>PIVOT</var>)</code> also allows to specify a
@@ -551,7 +581,8 @@
  case-insensitively; for Greek, matching is also accent-insensitive, so
  the accentless all-caps spelling is accepted, and the genitive month
  forms (<code>'Μαρτίου'</code>) are used.  A weekday name is validated but does
- not otherwise affect the result.
+ not otherwise affect the result.  A hyphen may stand for the underscore,
+ as in <code>'fr-FR'</code>.
 </p>
 <p> <code><var>T</var> = datetime (<var>DateVectors</var>)</code> creates a column vector of
  datetime values from the date vectors in <var>DateVectors</var>.
@@ -661,9 +692,9 @@
 <p> <code><var>T</var> = datetime (&hellip;, <code>'Format'</code>, <var>FMT</var>)</code>
  specifies the display format of the values in the output datetime array.
  <var>FMT</var> uses the same Unicode LDML date field symbols as
- <code>'InputFormat'</code>, with <code>'z'</code>, <code>'Z'</code>, <code>'X'</code>, and
- <code>'x'</code> additionally naming the time zone, and text between single
- quotes taken literally.  The default format renders a date alone when
+ <code>'InputFormat'</code>, <code>'z'</code>, <code>'Z'</code>, <code>'X'</code>, and
+ <code>'x'</code> naming the time zone, and text between single quotes taken
+ literally.  The default format renders a date alone when
  every element sits at midnight and a date with a time otherwise; a
  <code>NaT</code> carries no time of day and does not affect that choice.
 </p>
@@ -671,8 +702,12 @@
  the time zone of the values in the output datetime array.  If not
  specified, the array is unzoned: its values are wall-clock readings that
  name no absolute instant, and no daylight saving rule applies to them.
- Supported time zones are those of the IANA Time Zone Database.  A zone
- may also be attached, changed, or dropped afterwards through the
+ Supported time zones are those of the IANA Time Zone Database, and
+ <code>'local'</code>, in any letter case, names the system time zone given by
+ <code>datetime.SystemTimeZone</code>, which is what the property stores.  A
+ fixed offset from UTC such as <code>'+05:30'</code> is accepted too; see the
+ <code>TimeZone</code> property for its spellings.  A zone may also be
+ attached, changed, or dropped afterwards through the
  <code>'TimeZone'</code> property; attaching one reinterprets the wall-clock
  values in that zone, whereas changing between two zones preserves the
  absolute instant and shifts the wall-clock values by the difference in
@@ -762,14 +797,14 @@
  that zone does not allow.
 </p>
 <p> <strong>See also: </strong>
-  <a href="https:__github.com_pr0m1th3as_datatypes_blob_2c7436d_inst_NaT.m.html">NaT</a>, 
-  <a href="https:__github.com_pr0m1th3as_datatypes_blob_2c7436d_inst_datetime.m.html">datetime</a>, 
-  <a href="https:__github.com_pr0m1th3as_datatypes_blob_2c7436d_inst_isdatetime.m.html">isdatetime</a>, 
-  <a href="https:__github.com_pr0m1th3as_datatypes_blob_2c7436d_inst_calendarDuration.m.html">calendarDuration</a>, 
-  <a href="https:__github.com_pr0m1th3as_datatypes_blob_2c7436d_inst_duration.m.html">duration</a>
+  <a href="https:__github.com_pr0m1th3as_datatypes_blob_d1c9662_inst_NaT.m.html">NaT</a>, 
+  <a href="https:__github.com_pr0m1th3as_datatypes_blob_d1c9662_inst_datetime.m.html">datetime</a>, 
+  <a href="https:__github.com_pr0m1th3as_datatypes_blob_d1c9662_inst_isdatetime.m.html">isdatetime</a>, 
+  <a href="https:__github.com_pr0m1th3as_datatypes_blob_d1c9662_inst_calendarDuration.m.html">calendarDuration</a>, 
+  <a href="https:__github.com_pr0m1th3as_datatypes_blob_d1c9662_inst_duration.m.html">duration</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/2c7436d/inst/datetime.m#L677">datetime</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/d1c9662/inst/datetime.m#L733">datetime</a>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

@@ -437,6 +437,7 @@
 
 <dl>
 <dt><code><h5 class="fs">datetime: <var>DT</var> = <b>tzoffset</b> (<var>T</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: [<var>DT</var>, <var>DST</var>] = <b>tzoffset</b> (<var>T</var>)</code></h5></dt>
 </dl>
 <p> Time zone offset of a datetime array.
 </p>
@@ -446,10 +447,20 @@
  <var>DT</var> of the same size as <var>T</var>.  The offset is positive for time
  zones east of UTC and includes the additional hour when daylight saving
  time is in effect.  If <var>T</var> has no time zone, or for Not-A-Time
- (<code>NaT</code>) values, the corresponding offset is <code>NaN</code>.
+ (<code>NaT</code>) and infinite values, the corresponding offset is
+ <code>NaN</code>.
+</p>
+<p> <code>[<var>DT</var>, <var>DST</var>] = tzoffset (<var>T</var>)</code> also returns the
+ daylight saving time part of each offset as a <code>duration</code> array
+ <var>DST</var>: zero in standard time and in a time zone without daylight
+ saving time, and <code>NaN</code> wherever <var>DT</var> is.  Where the IANA
+ database writes the winter of a time zone as a negative saving, as for
+ <code>'Europe/Dublin'</code> or <code>'Africa/Casablanca'</code>, the other half of
+ the year is counted as the daylight saving time instead, and
+ <code>isdst</code> agrees.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/2c7436d/inst/datetime.m#L1542">datetime</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/d1c9662/inst/datetime.m#L1672">datetime</a>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

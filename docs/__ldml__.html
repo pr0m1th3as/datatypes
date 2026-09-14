@@ -391,12 +391,12 @@
             </div>
             <div class="card-body">
 <dl>
-<dt><code><h5 class="fs">: <var>DV</var> = <b>__ldml__</b> (&quot;parse&quot;, <var>strs</var>, <var>fmt</var>, <var>pivot</var>, <var>locale</var>)</code></h5></dt>
+<dt><code><h5 class="fs">: [<var>DV</var>, <var>OFF</var>] = <b>__ldml__</b> (&quot;parse&quot;, <var>strs</var>, <var>fmt</var>, <var>pivot</var>, <var>locale</var>)</code></h5></dt>
 </dl>
 <p>Parse date/time strings under an LDML <code>'InputFormat'</code> pattern. 
 </p>
 <div class="ms-5">
-<p><var>strs</var> is a cell array of character vectors, <var>fmt</var> an LDML pattern, <var>pivot</var> the two-digit year pivot, and <var>locale</var> a language tag such as <code>'fr_FR'</code> (empty or <code>'system'</code> for English).  The return value is an N-by-6 date-vector matrix. 
+<p><var>strs</var> is a cell array of character vectors, <var>fmt</var> an LDML pattern, <var>pivot</var> the two-digit year pivot, and <var>locale</var> a language tag such as <code>'fr_FR'</code> (empty or <code>'system'</code> for English).  The return value is an N-by-6 date-vector matrix, and the second output <var>OFF</var> the UTC offset in seconds each string carries in an offset field, NaN where it carries none. 
 </p>
 <p><code><var>syms</var> = __ldml__ (&quot;symbols&quot;, <var>fmt</var>)</code> returns the field symbols of <var>fmt</var>, in order and one character per field run, with literal text omitted. 
 </p>

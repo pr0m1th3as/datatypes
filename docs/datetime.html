@@ -417,11 +417,11 @@
  <code>zzzzz</code> (force <code>'matlab'</code>).  See <code>datetime.zoneNameStyle</code>.
 </p>
 <p> <strong>See also: </strong>
-  <a href="https:__github.com_pr0m1th3as_datatypes_blob_2c7436d_inst_calendarDuration.m.html">calendarDuration</a>, 
-  <a href="https:__github.com_pr0m1th3as_datatypes_blob_2c7436d_inst_duration.m.html">duration</a>
+  <a href="https:__github.com_pr0m1th3as_datatypes_blob_d1c9662_inst_calendarDuration.m.html">calendarDuration</a>, 
+  <a href="https:__github.com_pr0m1th3as_datatypes_blob_d1c9662_inst_duration.m.html">duration</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/2c7436d/inst/datetime.m">datetime</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/d1c9662/inst/datetime.m">datetime</a>
 </p>
 </div>
         <p class="lead my-3">The <code>datetime</code> class contains the following properties:</p>
@@ -447,7 +447,9 @@ System time zone setting
 
 <p> </p>
 <p> A read-only property specifying the local time zone of the system, where
- Octave is running.
+ Octave is running, as the name of a zone in the IANA Time Zone Database,
+ such as <code>'Europe/Athens'</code>.  It is <code>'UTC'</code> when the system
+ time zone cannot be determined.
 </p>
 
 
@@ -542,6 +544,25 @@ Time zone
 <p> Time zone, specified as a character vector or string scalar.  If
  specified as a string scalar, it is converted and stored internally as
  a character vector.
+</p>
+<p> Setting it to <code>'local'</code>, in any letter case, stores the system time
+ zone given by <code>datetime.SystemTimeZone</code>.
+</p>
+<p> A fixed offset from UTC, which never observes daylight saving time, is
+ stored as <code>'+HH:MM'</code> or <code>'-HH:MM'</code>, or as
+ <code>'+HH:MM:SS'</code> when the offset has seconds, and may be up to 23
+ hours and 59 minutes either way.  It may also be given as <code>'+H'</code>,
+ <code>'+HH'</code>, <code>'+HMM'</code>, <code>'+HHMM'</code> or <code>'+HHMMSS'</code>,
+ as <code>'Z'</code> for a zero offset, or with <code>'UTC'</code> or <code>'GMT'</code>
+ in front, in any letter case, as <code>'UTC+H'</code>, <code>'UTC+HH'</code>,
+ <code>'UTC+H:MM'</code>, <code>'UTC+HH:MM'</code> or <code>'UTC+HH:MM:SS'</code>.  The
+ database&rsquo;s own fixed-offset zones, such as <code>'Etc/GMT-3'</code> and
+ <code>'Etc/UTC'</code>, are stored as offsets as well.  A <code>'GMT'</code>
+ prefix and the names <code>'GMT0'</code>, <code>'Zulu'</code>, <code>'UCT'</code>,
+ <code>'Universal'</code> and <code>'Greenwich'</code> raise a warning.  Unlike the
+ database names, whose sign is reversed, <code>'+03:00'</code>,
+ <code>'GMT+3'</code> and <code>'Etc/GMT-3'</code> are all three hours ahead of
+ UTC.
 </p>
 <p> Besides the zones of the IANA Time Zone Database, the value
  <code>'UTCLeapSeconds'</code> selects UTC with its inserted leap seconds made

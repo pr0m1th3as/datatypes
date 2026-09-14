@@ -432,7 +432,7 @@
  names, is taken as the row names without being named here.</td></tr>
 </table>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/2c7436d/inst/ods2table.m">ods2table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/d1c9662/inst/ods2table.m">ods2table</a>
 </div>
 
 <p> When the file carries the hidden <code>__datatypes_meta__</code> sheet written by
@@ -468,7 +468,7 @@
  arrays of character vectors and their values are not reconstructed.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/2c7436d/inst/ods2table.m">ods2table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/d1c9662/inst/ods2table.m">ods2table</a>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">
@@ -489,7 +489,7 @@
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = table ([38; 43], [71; 69], 'VariableNames', {'Age', 'Height'});
  filename = fullfile (tempdir (), 'patients.ods');
  table2ods (T, filename);</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">error: =: nonconformant arguments (op1 is 1x1, op2 is 1x2)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">error: C(_,3): out of bound 2 (dimensions are 2x2)</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> ods2table (filename)</pre>
 
             </div>
