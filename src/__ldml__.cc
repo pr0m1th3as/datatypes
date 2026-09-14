@@ -876,16 +876,21 @@ zeropad (int width, long value)
 static string
 zone_utc (double offSec)
 {
-  if (fabs (offSec) < 1)
+  long a = static_cast<long> (round (fabs (offSec)));
+  if (a == 0)
   {
     return "UTC";
   }
-  double a = fabs (offSec);
-  long hh = static_cast<long> (floor (a / 3600));
-  long mm = static_cast<long> (floor (fmod (a, 3600) / 60 + 0.5));
+  long hh = a / 3600;
+  long mm = (a % 3600) / 60;
+  long ss = a % 60;
   char sgn = (offSec < 0 ? '-' : '+');
   char buf[64];
-  if (mm == 0)
+  if (ss != 0)
+  {
+    snprintf (buf, sizeof (buf), "UTC%c%ld:%02ld:%02ld", sgn, hh, mm, ss);
+  }
+  else if (mm == 0)
   {
     snprintf (buf, sizeof (buf), "UTC%c%ld", sgn, hh);
   }
@@ -922,11 +927,16 @@ zone_matlab (const string& ab, double offSec)
 static string
 zone_field (char c, int nn, double offSec)
 {
-  double a = fabs (offSec);
-  long hh = static_cast<long> (floor (a / 3600));
-  long mm = static_cast<long> (floor (fmod (a, 3600) / 60));
+  long a = static_cast<long> (round (fabs (offSec)));
+  long hh = a / 3600;
+  long mm = (a % 3600) / 60;
+  long ss = a % 60;
   char sgn = (offSec < 0 ? '-' : '+');
   char buf[64];
+  // The extended forms write the seconds of an offset that has them, as
+  // MATLAB does for a zone such as '+03:00:30': 'ZZZZ' and width 5 of each
+  // family.  The shorter forms have no place for them.
+  bool withSec = (ss != 0 && (nn >= 5 || (c == 'Z' && nn == 4)));
   if (c == 'Z')
   {
     if (nn >= 1 && nn <= 3)
@@ -1000,7 +1010,13 @@ zone_field (char c, int nn, double offSec)
       snprintf (buf, sizeof (buf), "%c%02ld:%02ld", sgn, hh, mm);
     }
   }
-  return string (buf);
+  string out (buf);
+  if (withSec)
+  {
+    snprintf (buf, sizeof (buf), ":%02ld", ss);
+    out += buf;
+  }
+  return out;
 }
 
 // Octave's mod for a positive divisor: the result carries the divisor's sign.

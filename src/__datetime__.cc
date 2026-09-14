@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License along with
 this program; if not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <cctype>
 #include <cmath>
 #include <thread>
 #include <iostream>
@@ -55,6 +56,97 @@ auto double2nano (double time_sec)
   return tp;
 }
 
+// A zone the conversions below can be asked about: a zone of the database, or
+// a fixed offset from UTC, which the database does not hold and does not need.
+// A fixed offset has one regime for all time and no daylight saving, so FIXED
+// answers for it and TZ is null.
+struct zone_ref
+{
+  const time_zone *tz = nullptr;
+  sys_info fixed;
+};
+
+// '+HH:MM' or '+HH:MM:SS', either sign: the only spellings the class stores for
+// a fixed-offset zone.  Anything else is a name for the database.
+bool
+parse_fixed_offset (const string& name, chrono::seconds& off)
+{
+  const size_t L = name.size ();
+  if ((L != 6 && L != 9) || (name[0] != '+' && name[0] != '-')
+      || name[3] != ':' || (L == 9 && name[6] != ':'))
+  {
+    return false;
+  }
+  long f[3] = {0, 0, 0};
+  for (size_t k = 1, i = 0; k < L; k += 3, i++)
+  {
+    if (! isdigit ((unsigned char) name[k])
+        || ! isdigit ((unsigned char) name[k+1]))
+    {
+      return false;
+    }
+    f[i] = (name[k] - '0') * 10 + (name[k+1] - '0');
+  }
+  if (f[0] > 23 || f[1] > 59 || f[2] > 59)
+  {
+    return false;
+  }
+  long v = f[0] * 3600 + f[1] * 60 + f[2];
+  off = chrono::seconds {name[0] == '-' ? -v : v};
+  return true;
+}
+
+// The abbreviation tzdata itself writes for a numeric zone, such as '+04' or
+// '+0530', and 'GMT' for a zero offset, which is what MATLAB's 'z' shows there.
+string
+fixed_abbrev (chrono::seconds off)
+{
+  long a = labs (off.count ());
+  if (a == 0)
+  {
+    return "GMT";
+  }
+  char sgn = (off.count () < 0 ? '-' : '+');
+  char buf[16];
+  if (a % 60)
+  {
+    snprintf (buf, sizeof (buf), "%c%02ld%02ld%02ld", sgn, a / 3600,
+              (a % 3600) / 60, a % 60);
+  }
+  else if (a % 3600)
+  {
+    snprintf (buf, sizeof (buf), "%c%02ld%02ld", sgn, a / 3600,
+              (a % 3600) / 60);
+  }
+  else
+  {
+    snprintf (buf, sizeof (buf), "%c%02ld", sgn, a / 3600);
+  }
+  return string (buf);
+}
+
+// The zone a name stands for.  Throws, as 'locate_zone' does, for a name the
+// database does not know.
+zone_ref
+find_zone (const string& name)
+{
+  zone_ref z;
+  chrono::seconds off;
+  if (parse_fixed_offset (name, off))
+  {
+    z.fixed.begin = sys_seconds::min ();
+    z.fixed.end = sys_seconds::max ();
+    z.fixed.offset = off;
+    z.fixed.save = chrono::minutes {0};
+    z.fixed.abbrev = fixed_abbrev (off);
+  }
+  else
+  {
+    z.tz = locate_zone (name);
+  }
+  return z;
+}
+
 // A one-entry cache of the last regime found in a zone.  Looking a moment up
 // in the tz database is by far the most expensive thing here -- an order of
 // magnitude more than the component arithmetic around it, which is why a zoned
@@ -70,14 +162,18 @@ struct sys_cache
 };
 
 // A moment names one regime, so the cached range is exactly the one the
-// database reports and the cache is exact.
+// database reports and the cache is exact.  A fixed offset is its own answer.
 const sys_info&
-cached_sys_info (const time_zone *tz, sys_seconds sys, sys_cache& zc)
+cached_sys_info (const zone_ref& z, sys_seconds sys, sys_cache& zc)
 {
-  if (! zc.valid || zc.tz != tz || sys < zc.si.begin || sys >= zc.si.end)
+  if (! z.tz)
   {
-    zc.si = tz->get_info (sys);
-    zc.tz = tz;
+    return z.fixed;
+  }
+  if (! zc.valid || zc.tz != z.tz || sys < zc.si.begin || sys >= zc.si.end)
+  {
+    zc.si = z.tz->get_info (sys);
+    zc.tz = z.tz;
     zc.valid = true;
   }
   return zc.si;
@@ -98,16 +194,25 @@ struct local_cache
 // goes back to the database.  No transition has ever moved a clock by remotely
 // that much, so the margin cannot hide an ambiguous or skipped clock.
 const local_info&
-cached_local_info (const time_zone *tz, local_time<chrono::microseconds> lt,
+cached_local_info (const zone_ref& z, local_time<chrono::microseconds> lt,
                    local_cache& lc)
 {
+  // A fixed offset names exactly one moment for every clock.
+  if (! z.tz)
+  {
+    lc.li.result = local_info::unique;
+    lc.li.first = z.fixed;
+    lc.tz = nullptr;
+    lc.valid = false;
+    return lc.li;
+  }
   auto l = chrono::duration_cast<chrono::seconds> (lt.time_since_epoch ());
-  if (lc.valid && lc.tz == tz && l >= lc.lo && l < lc.hi)
+  if (lc.valid && lc.tz == z.tz && l >= lc.lo && l < lc.hi)
   {
     return lc.li;
   }
-  lc.li = tz->get_info (lt);
-  lc.tz = tz;
+  lc.li = z.tz->get_info (lt);
+  lc.tz = z.tz;
   lc.valid = false;
   if (lc.li.result == local_info::unique)
   {
@@ -444,7 +549,7 @@ zone_year_shift (double Yv)
 
 local_fold
 components2fold (double Yv, double Mv, double Dv, double hv, double mv,
-                 double sv, double xv, const time_zone *tz, string precision,
+                 double sv, double xv, const zone_ref& tz, string precision,
                  double srcOff, bool haveSrc, local_cache& lc)
 {
   Yv -= zone_year_shift (Yv);
@@ -486,7 +591,7 @@ components2fold (double Yv, double Mv, double Dv, double hv, double mv,
 // and a subtraction rather than from a zoned_time, which would look the clock
 // up again to be asked for its instant.
 sys_time<chrono::microseconds>
-local2sys (const time_zone *tz, local_time<chrono::microseconds> lt,
+local2sys (const zone_ref& tz, local_time<chrono::microseconds> lt,
            local_cache& lc)
 {
   const local_info& info = cached_local_info (tz, lt, lc);
@@ -501,7 +606,7 @@ local2sys (const time_zone *tz, local_time<chrono::microseconds> lt,
 // zoned_time being built -- which would look the same moment up again on every
 // question asked of it.
 void
-sys2components (sys_time<chrono::microseconds> sys, const time_zone *tz,
+sys2components (sys_time<chrono::microseconds> sys, const zone_ref& tz,
                 RowVector& OUT, double& off, string precision, sys_cache& zc)
 {
   const sys_info& si = cached_sys_info (tz, chrono::floor<chrono::seconds>
@@ -512,7 +617,7 @@ sys2components (sys_time<chrono::microseconds> sys, const time_zone *tz,
 }
 
 void
-sys2components (double posix_sec, const time_zone *tz, RowVector& OUT,
+sys2components (double posix_sec, const zone_ref& tz, RowVector& OUT,
                 double& off, sys_cache& zc)
 {
   using ds = chrono::duration<double>;
@@ -554,10 +659,10 @@ auto timezone_precision (double time_sec, string timezone, string precision)
   return tz;
 }
 
-template <typename ZonedType> RowVector timezone2vector (const ZonedType& to)
+template <typename LocalType> RowVector
+timezone2vector (const LocalType& t_local)
 {
   RowVector OUT(6);
-  auto t_local = to.get_local_time();
   auto day_tp = chrono::floor<days>(t_local);
   hh_mm_ss time_tp{t_local - day_tp};
   year_month_day date_tp{day_tp};
@@ -947,7 +1052,7 @@ a repeated clock when an offset is given. \n\
   // Check for valid timezone input arguments
   try
   {
-    auto tmp = make_zoned(timezone, chrono::system_clock::now());
+    find_zone (timezone);
   }
   catch (exception)
   {
@@ -963,7 +1068,7 @@ a repeated clock when an offset is given. \n\
   }
   try
   {
-    auto tmp = make_zoned(to_tzone, chrono::system_clock::now());
+    find_zone (to_tzone);
   }
   catch (exception)
   {
@@ -988,10 +1093,20 @@ a repeated clock when an offset is given. \n\
     Matrix m(1,1);
     Matrix s(1,1);
     auto today = chrono::system_clock::now ();
+    // The wall clock an instant shows in the named zone, a fixed offset
+    // included.
+    const zone_ref zr = find_zone (timezone);
+    sys_cache zc0;
+    auto local_of = [&] (auto tp)
+    {
+      auto lt = tp + cached_sys_info (zr, chrono::floor<chrono::seconds> (tp),
+                                      zc0).offset;
+      return local_time<typename decltype (lt)::duration>
+               {lt.time_since_epoch ()};
+    };
     if (args(0).string_value () == "now")
     {
-      auto tz = make_zoned(timezone, today);
-      RowVector OUT = timezone2vector (tz);
+      RowVector OUT = timezone2vector (local_of (today));
       Y(0) = OUT(0); M(0) = OUT(1); D(0) = OUT(2); h(0) = OUT(3); m(0) = OUT(4);
       if (precision == "milliseconds")
       {
@@ -1008,22 +1123,21 @@ a repeated clock when an offset is given. \n\
     }
     else if (args(0).string_value () == "today")
     {
-      auto tz = make_zoned(timezone, floor<days>(today));
-      RowVector OUT = timezone2vector (tz);
+      RowVector OUT = timezone2vector (local_of (floor<days>(today)));
       Y(0) = OUT(0); M(0) = OUT(1); D(0) = OUT(2);
       h(0) = 0; m(0) = 0; s(0) = 0;
     }
     else if (args(0).string_value () == "yesterday")
     {
-      auto tz = make_zoned(timezone, floor<days>(today) - days{1});
-      RowVector OUT = timezone2vector (tz);
+      RowVector OUT = timezone2vector (local_of (floor<days>(today)
+                                                 - days{1}));
       Y(0) = OUT(0); M(0) = OUT(1); D(0) = OUT(2);
       h(0) = 0; m(0) = 0; s(0) = 0;
     }
     else if (args(0).string_value () == "tomorrow")
     {
-      auto tz = make_zoned(timezone, floor<days>(today) + days{1});
-      RowVector OUT = timezone2vector (tz);
+      RowVector OUT = timezone2vector (local_of (floor<days>(today)
+                                                 + days{1}));
       Y(0) = OUT(0); M(0) = OUT(1); D(0) = OUT(2);
       h(0) = 0; m(0) = 0; s(0) = 0;
     }
@@ -1272,7 +1386,7 @@ a repeated clock when an offset is given. \n\
     NDArray P = args(0).array_value ();
     NDArray Y(sz, 0), M(sz, 0), D(sz, 0), h(sz, 0), m(sz, 0), s(sz, 0);
     NDArray OFF(sz, 0);
-    const time_zone *tzp = locate_zone (timezone);
+    const zone_ref tzp = find_zone (timezone);
     sys_cache zc;
     for (int i = 0; i < sz.numel (); i++)
     {
@@ -1286,13 +1400,14 @@ a repeated clock when an offset is given. \n\
         Y(i) = P(i); M(i) = P(i); D(i) = P(i);
         h(i) = P(i); m(i) = P(i); s(i) = P(i); OFF(i) = 0;
       }
-      else if (timezone == "UTC")
+      else if (timezone == "UTC" || ! tzp.tz)
       {
-        // UTC has no transitions, so the instant is read straight off the
-        // calendar and any year survives.
-        RowVector C = seconds2vector (P(i), precision);
+        // UTC and a fixed offset have no transitions, so the instant is read
+        // straight off the calendar and any year survives.
+        double off = (tzp.tz ? 0 : (double) tzp.fixed.offset.count ());
+        RowVector C = seconds2vector (P(i) + off, precision);
         Y(i) = C(0); M(i) = C(1); D(i) = C(2);
-        h(i) = C(3); m(i) = C(4); s(i) = C(5); OFF(i) = 0;
+        h(i) = C(3); m(i) = C(4); s(i) = C(5); OFF(i) = off;
       }
       else
       {
@@ -1600,7 +1715,7 @@ a repeated clock when an offset is given. \n\
     {
       bool useSrc = (convertTo == "keepfold") && haveOffset;
       NDArray A(sz, 0);
-      const time_zone *tzp = locate_zone (timezone);
+      const zone_ref tzp = find_zone (timezone);
       local_cache lc;
       for (int i = 0; i < sz.numel (); i++)
       {
@@ -1636,7 +1751,7 @@ a repeated clock when an offset is given. \n\
     {
       NDArray rY(sz, 0), rM(sz, 0), rD(sz, 0);
       NDArray rh(sz, 0), rm(sz, 0), rs(sz, 0), rOFF(sz, 0);
-      const time_zone *tzp = locate_zone (to_tzone);
+      const zone_ref tzp = find_zone (to_tzone);
       sys_cache zc;
       for (int i = 0; i < sz.numel (); i++)
       {
@@ -1691,7 +1806,7 @@ a repeated clock when an offset is given. \n\
     // datetimes preserve their sign.
     if (convertTo == "posixtime")
     {
-      const time_zone *tzp = locate_zone (timezone);
+      const zone_ref tzp = find_zone (timezone);
       local_cache lc;
       NDArray S(sz, 0);
       for (int i = 0; i < sz.numel (); i++)
@@ -1708,7 +1823,7 @@ a repeated clock when an offset is given. \n\
         {
           S(i) = chk;
         }
-        else if (timezone == "UTC")
+        else if (timezone == "UTC" || ! tzp.tz)
         {
           // No offset to resolve, so the calendar answers on its own and any
           // year survives.
@@ -1717,7 +1832,7 @@ a repeated clock when an offset is given. \n\
           components2civil (Y(i), M(i), D(i), h(i), m(i), s(i), x(i),
                             precision, dnum, hms);
           S(i) = (double) dnum * 86400.0 + hms(3) * 3600 + hms(4) * 60
-                 + hms(5);
+                 + hms(5) - (tzp.tz ? 0 : (double) tzp.fixed.offset.count ());
         }
         else
         {
@@ -1738,7 +1853,7 @@ a repeated clock when an offset is given. \n\
     if (convertTo == "zoneabbrev")
     {
       Cell A(sz);
-      const time_zone *tzp = locate_zone (timezone);
+      const zone_ref tzp = find_zone (timezone);
       local_cache lc;
       for (int i = 0; i < sz.numel (); i++)
       {
@@ -1768,7 +1883,7 @@ a repeated clock when an offset is given. \n\
     if (convertTo == "isdst")
     {
       NDArray A(sz, 0);
-      const time_zone *tzp = locate_zone (timezone);
+      const zone_ref tzp = find_zone (timezone);
       local_cache lc;
       for (int i = 0; i < sz.numel (); i++)
       {
@@ -1840,8 +1955,8 @@ a repeated clock when an offset is given. \n\
       return retval;
     }
 
-    const time_zone *tzFrom = locate_zone (timezone);
-    const time_zone *tzTo = locate_zone (to_tzone);
+    const zone_ref tzFrom = find_zone (timezone);
+    const zone_ref tzTo = find_zone (to_tzone);
     local_cache lcn;
     sys_cache zcn;
     for (int i = 0; i < sz.numel (); i++)

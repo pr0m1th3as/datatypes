@@ -152,6 +152,22 @@ classdef datetime
     ## Setting it to @qcode{'local'}, in any letter case, stores the system time
     ## zone given by @code{datetime.SystemTimeZone}.
     ##
+    ## A fixed offset from UTC, which never observes daylight saving time, is
+    ## stored as @qcode{'+HH:MM'} or @qcode{'-HH:MM'}, or as
+    ## @qcode{'+HH:MM:SS'} when the offset has seconds, and may be up to 23
+    ## hours and 59 minutes either way.  It may also be given as @qcode{'+H'},
+    ## @qcode{'+HH'}, @qcode{'+HMM'}, @qcode{'+HHMM'} or @qcode{'+HHMMSS'},
+    ## as @qcode{'Z'} for a zero offset, or with @qcode{'UTC'} or @qcode{'GMT'}
+    ## in front, in any letter case, as @qcode{'UTC+H'}, @qcode{'UTC+HH'},
+    ## @qcode{'UTC+H:MM'}, @qcode{'UTC+HH:MM'} or @qcode{'UTC+HH:MM:SS'}.  The
+    ## database's own fixed-offset zones, such as @qcode{'Etc/GMT-3'} and
+    ## @qcode{'Etc/UTC'}, are stored as offsets as well.  A @qcode{'GMT'}
+    ## prefix and the names @qcode{'GMT0'}, @qcode{'Zulu'}, @qcode{'UCT'},
+    ## @qcode{'Universal'} and @qcode{'Greenwich'} raise a warning.  Unlike the
+    ## database names, whose sign is reversed, @qcode{'+03:00'},
+    ## @qcode{'GMT+3'} and @qcode{'Etc/GMT-3'} are all three hours ahead of
+    ## UTC.
+    ##
     ## Besides the zones of the IANA Time Zone Database, the value
     ## @qcode{'UTCLeapSeconds'} selects UTC with its inserted leap seconds made
     ## representable, so that the 60th second of a minute exists on the 27 dates
@@ -607,7 +623,9 @@ classdef datetime
     ## Supported time zones are those of the IANA Time Zone Database, and
     ## @qcode{'local'}, in any letter case, names the system time zone given by
     ## @code{datetime.SystemTimeZone}, which is what the property stores.  A
-    ## zone may also be attached, changed, or dropped afterwards through the
+    ## fixed offset from UTC such as @qcode{'+05:30'} is accepted too; see the
+    ## @code{TimeZone} property for its spellings.  A zone may also be
+    ## attached, changed, or dropped afterwards through the
     ## @qcode{'TimeZone'} property; attaching one reinterprets the wall-clock
     ## values in that zone, whereas changing between two zones preserves the
     ## absolute instant and shifts the wall-clock values by the difference in
@@ -723,6 +741,8 @@ classdef datetime
       ## 'local' names the system time zone, and the array stores its name.
       if (ischar (TimeZone) && strcmpi (TimeZone, 'local'))
         TimeZone = datetime.SystemTimeZone;
+      elseif (ischar (TimeZone) && ! isempty (TimeZone))
+        TimeZone = dtZoneName (TimeZone, 'datetime');
       endif
 
       ## A datetime input is copied: its components, time zone and display
@@ -1595,7 +1615,8 @@ classdef datetime
     ## @var{DT} of the same size as @var{T}.  The offset is positive for time
     ## zones east of UTC and includes the additional hour when daylight saving
     ## time is in effect.  If @var{T} has no time zone, or for Not-A-Time
-    ## (@qcode{NaT}) values, the corresponding offset is @qcode{NaN}.
+    ## (@qcode{NaT}) and infinite values, the corresponding offset is
+    ## @qcode{NaN}.
     ##
     ## @end deftypefn
     function out = tzoffset (this)
@@ -1605,7 +1626,9 @@ classdef datetime
         ## The stored offset is the answer already, and reading it rather than
         ## resolving the wall clock again is what tells the two passes over a
         ## repeated clock apart: the tz database would give both the later one.
+        ## An element naming no instant has no offset, whatever is stored.
         secs = this.Offset + zeros (size (this.Year));
+        secs(! isfinite (this.Year)) = NaN;
       endif
       out = duration (0, 0, secs);
       out.Format = 'hh:mm';
@@ -5696,6 +5719,8 @@ classdef datetime
               endif
               if (strcmpi (toTimeZone, 'local'))
                 toTimeZone = datetime.SystemTimeZone;
+              elseif (! isempty (toTimeZone))
+                toTimeZone = dtZoneName (toTimeZone, 'datetime.subsasgn');
               endif
               ## Validate the target zone (empty means an unzoned array).
               if (! isempty (toTimeZone))
@@ -6385,7 +6410,8 @@ classdef datetime
     ## wall-clock components.  DSEC may broadcast against the array size.  The
     ## Format and TimeZone properties are preserved.
     function this = addSeconds (this, dsec)
-      if (isempty (this.TimeZone) || strcmp (this.TimeZone, 'UTC'))
+      if (isempty (this.TimeZone) || strcmp (this.TimeZone, 'UTC') ...
+          || ! isempty (dtFixedOffset (this.TimeZone)))
         ## With no transitions to cross, a shift lands on the wall clock just
         ## as it does on the instant, so it can be added to the components --
         ## which keeps every figure, where a count of seconds from 1970 cannot.
@@ -6486,7 +6512,8 @@ classdef datetime
     function this = keepFold (this, srcOff)
       ## A fixed-offset zone has no fold to keep, and asking the database would
       ## only risk a year it cannot hold.
-      if (dtIsFixedZone (this.TimeZone))
+      if (dtIsZeroOffsetZone (this.TimeZone) ...
+          || ! isempty (dtFixedOffset (this.TimeZone)))
         return;
       endif
       this.Offset = __datetime__ (this.Year, this.Month, this.Day, ...
@@ -7458,7 +7485,7 @@ endfunction
 ## Zone abbreviation (e.g. 'EDT', 'EST', 'UTC') for each element of a zoned
 ## datetime, from the compiled tz database via the __datetime__ builtin.
 function ab = dtZoneAbbrev (Y, M, D, H, Mi, S, TZ, off)
-  if (dtIsFixedZone (TZ))
+  if (dtIsZeroOffsetZone (TZ))
     ab = repmat ({'UTC'}, size (Y));
     return;
   endif
@@ -7470,7 +7497,7 @@ endfunction
 ## Logical daylight-saving-time flag for each element of a zoned datetime,
 ## from the compiled tz database via the __datetime__ builtin.
 function tf = dtIsDst (Y, M, D, H, Mi, S, TZ, off)
-  if (dtIsFixedZone (TZ))
+  if (dtIsZeroOffsetZone (TZ) || ! isempty (dtFixedOffset (TZ)))
     tf = false (size (Y));
     return;
   endif
@@ -8507,17 +8534,135 @@ endfunction
 ## resolve_local's choices.  Zero for an unzoned or leap-second array.  Used by
 ## every wall-clock operation; an instant-based one must take its offset from
 ## 'serial2components' instead, which reads it off the instant.
-## Whether a zone can be answered without the timezone database: no zone at
-## all, UTC, or the leap-second timeline, each of which has a zero offset at
-## every instant.  Every other zone needs 'date.h', whose year is a 'short', and
-## is therefore confined to [-32767, 32767] however wide the calendar has grown.
-function tf = dtIsFixedZone (TZ)
+## Whether a zone has a zero offset at every instant: no zone at all, UTC, or
+## the leap-second timeline, none of which needs the timezone database.
+function tf = dtIsZeroOffsetZone (TZ)
   tf = isempty (TZ) || strcmp (TZ, 'UTC') || dtIsLeapZone (TZ);
 endfunction
 
+## The offset in seconds of a fixed-offset zone, stored as '+HH:MM' or
+## '+HH:MM:SS', and empty for any other zone.  Such a zone has no transitions,
+## so it needs the timezone database no more than UTC does.
+function off = dtFixedOffset (TZ)
+  off = [];
+  if (isempty (regexp (TZ, '^[+-]\d\d:\d\d(:\d\d)?$', 'once')))
+    return;
+  endif
+  v = sscanf (TZ(2:end), '%d:%d:%d');
+  off = v(1) * 3600 + v(2) * 60;
+  if (numel (v) == 3)
+    off += v(3);
+  endif
+  if (TZ(1) == '-')
+    off = -off;
+  endif
+endfunction
+
+## The name a zone is stored under.  A fixed offset from UTC in any accepted
+## spelling becomes '+HH:MM', or '+HH:MM:SS' when it has seconds.  Bare, either
+## sign: '+H', '+HH', '+HMM', '+HHMM', '+HHMMSS', '+HH:MM' and '+HH:MM:SS'.
+## After a 'UTC' or 'GMT' prefix, in any letter case: '+H', '+HH', '+H:MM',
+## '+HH:MM' and '+HH:MM:SS'.  'Z' and the database's fixed-offset zones are
+## stored as offsets too.  A 'GMT' prefix and the bare zero-offset aliases warn,
+## as MATLAB does.  Anything else, an offset out of range included, is returned
+## as given, for the timezone database to refuse.  All measured against R2024a.
+function TZ = dtZoneName (TZ, caller)
+  ## The database's own fixed-offset zones are stored as offsets, as MATLAB
+  ## stores them: 'Etc/GMT-3' is '+03:00', its sign reversed by POSIX custom.
+  ## Only the names the database has are read, -14 to +12.
+  if (any (strcmp (TZ, {'Z', 'Etc/GMT', 'Etc/UTC', 'Etc/GMT0', 'Etc/UCT', ...
+                        'Etc/Zulu', 'Etc/Greenwich', 'Etc/Universal'})))
+    TZ = '+00:00';
+    return;
+  endif
+  if (any (strcmp (TZ, {'GMT0', 'Zulu', 'UCT', 'Universal', 'Greenwich'})))
+    dtWarnFixedZone (caller, TZ, '+00:00');
+    TZ = '+00:00';
+    return;
+  endif
+  tok = regexp (TZ, '^Etc/GMT([+-])(\d{1,2})$', 'tokens', 'once');
+  if (! isempty (tok))
+    h = str2double (tok{2});
+    if (h == 0)
+      TZ = '+00:00';
+    elseif (tok{1} == '+' && h <= 12)
+      TZ = sprintf ('-%02d:00', h);
+    elseif (tok{1} == '-' && h <= 14)
+      TZ = sprintf ('+%02d:00', h);
+    endif
+    return;
+  endif
+  given = TZ;
+  prefix = '';
+  if (numel (TZ) > 4 && any (strcmpi (TZ(1:3), {'UTC', 'GMT'})) ...
+      && any (TZ(4) == '+-'))
+    prefix = upper (TZ(1:3));
+    TZ = TZ(4:end);
+  endif
+  if (numel (TZ) < 2 || ! any (TZ(1) == '+-'))
+    TZ = given;
+    return;
+  endif
+  body = TZ(2:end);
+  if (! isempty (regexp (body, '^(\d{1,4}|\d{6})$', 'once')) ...
+      && (isempty (prefix) || numel (body) <= 2))
+    n = numel (body);
+    if (n <= 2)
+      v = [str2double(body), 0, 0];
+    elseif (n == 3)
+      v = [str2double(body(1)), str2double(body(2:3)), 0];
+    elseif (n == 4)
+      v = [str2double(body(1:2)), str2double(body(3:4)), 0];
+    else
+      v = [str2double(body(1:2)), str2double(body(3:4)), ...
+           str2double(body(5:6))];
+    endif
+  elseif (! isempty (regexp (body, '^\d\d:\d\d(:\d\d)?$', 'once')) ...
+          || (! isempty (prefix) ...
+              && ! isempty (regexp (body, '^\d:\d\d$', 'once'))))
+    v = sscanf (body, '%d:%d:%d')';
+    v(end+1:3) = 0;
+  else
+    TZ = given;
+    return;
+  endif
+  if (v(1) > 23 || v(2) > 59 || v(3) > 59)
+    TZ = given;
+    return;
+  endif
+  sgn = TZ(1);
+  if (! any (v))
+    sgn = '+';
+  endif
+  TZ = sprintf ('%c%02d:%02d', sgn, v(1), v(2));
+  if (v(3) > 0)
+    TZ = sprintf ('%s:%02d', TZ, v(3));
+  endif
+  if (strcmp (prefix, 'GMT'))
+    dtWarnFixedZone (caller, given, TZ);
+  endif
+endfunction
+
+## Warn that the zone named GIVEN, stored as the offset TZ, is a fixed offset
+## from UTC under a name that does not say so.
+function dtWarnFixedZone (caller, given, TZ)
+  warning ('Octave:datetime:nonstandard-time-zone', ...
+           strcat ("%s: '%s' specifies a time zone with a fixed offset", ...
+                   " from UTC, %s, which does not follow daylight saving", ...
+                   " time."), caller, given, TZ);
+endfunction
+
 function off = dtOffsetOf (Y, M, D, h, m, s, tz)
-  if (dtIsFixedZone (tz))
+  if (dtIsZeroOffsetZone (tz))
     off = zeros (size (Y));
+    return;
+  endif
+  fixed = dtFixedOffset (tz);
+  if (! isempty (fixed))
+    ## As the database lookup answers: NaN for Not-a-Time, zero where infinite.
+    off = fixed + zeros (size (Y));
+    off(isnan (Y)) = NaN;
+    off(isinf (Y)) = 0;
     return;
   endif
   off = __datetime__ (Y, M, D, h, m, s, 'ConvertTo', 'zoneoffset', ...

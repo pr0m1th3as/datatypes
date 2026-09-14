@@ -3474,6 +3474,309 @@
 %! assert_equal (d.TimeZone, datetime.SystemTimeZone);
 %! assert_equal (posixtime (d), posixtime (u));
 
+## Test a fixed-offset zone is stored as '+HH:MM' whatever its spelling
+## (every value measured against MATLAB R2024a)
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', '-0500');
+%! assert_equal (d.TimeZone, '-05:00');
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', '+3');
+%! assert_equal (d.TimeZone, '+03:00');
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', '+03');
+%! assert_equal (d.TimeZone, '+03:00');
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', '+033');
+%! assert_equal (d.TimeZone, '+00:33');
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', '+0330');
+%! assert_equal (d.TimeZone, '+03:30');
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', '+05:45');
+%! assert_equal (d.TimeZone, '+05:45');
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', '+030030');
+%! assert_equal (d.TimeZone, '+03:00:30');
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', '+03:00:30');
+%! assert_equal (d.TimeZone, '+03:00:30');
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', '-00:00');
+%! assert_equal (d.TimeZone, '+00:00');
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', '+00');
+%! assert_equal (d.TimeZone, '+00:00');
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', 'Z');
+%! assert_equal (d.TimeZone, '+00:00');
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', 'UTC+03:00');
+%! assert_equal (d.TimeZone, '+03:00');
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', 'utc+03:00');
+%! assert_equal (d.TimeZone, '+03:00');
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', 'UTC+3:30');
+%! assert_equal (d.TimeZone, '+03:30');
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', 'UTC+1:30');
+%! assert_equal (d.TimeZone, '+01:30');
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', '+03:00');
+%! d.TimeZone = '+3';
+%! assert_equal (d.TimeZone, '+03:00');
+
+## Test a fixed offset may be up to 23:59 either way
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', '+23:59');
+%! assert_equal (d.TimeZone, '+23:59');
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', '-23:59');
+%! assert_equal (d.TimeZone, '-23:59');
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', '+15:00');
+%! assert_equal (d.TimeZone, '+15:00');
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', '-13:00');
+%! assert_equal (d.TimeZone, '-13:00');
+
+## Test the database's fixed-offset zones are stored as offsets
+%!test
+%! d = datetime (2024, 3, 9, 'TimeZone', 'Etc/GMT-3');
+%! assert_equal (d.TimeZone, '+03:00');
+%!test
+%! d = datetime (2024, 3, 9, 'TimeZone', 'Etc/GMT');
+%! assert_equal (d.TimeZone, '+00:00');
+%!test
+%! d = datetime (2024, 3, 9, 'TimeZone', 'Etc/UTC');
+%! assert_equal (d.TimeZone, '+00:00');
+%!test
+%! d = datetime (2024, 3, 9, 'TimeZone', 'Europe/Athens');
+%! d.TimeZone = 'Etc/GMT-2';
+%! assert_equal (d.TimeZone, '+02:00');
+%!test
+%! d = datetime (2024, 3, 9, 'TimeZone', '+03:00');
+%! d.TimeZone = 'Europe/Athens';
+%! assert_equal (d.TimeZone, 'Europe/Athens');
+%!test
+%! d = datetime (2024, 3, 9, 'TimeZone', 'Etc/GMT+5');
+%! assert_equal (d.TimeZone, '-05:00');
+%!test
+%! d = datetime (2024, 3, 9, 'TimeZone', 'Etc/GMT-14');
+%! assert_equal (d.TimeZone, '+14:00');
+%!test
+%! d = datetime (2024, 3, 9, 'TimeZone', 'Etc/GMT+0');
+%! assert_equal (d.TimeZone, '+00:00');
+%!test
+%! d = datetime (2024, 3, 9, 'TimeZone', 'Etc/GMT0');
+%! assert_equal (d.TimeZone, '+00:00');
+%!test
+%! d = datetime (2024, 3, 9, 'TimeZone', 'Etc/UCT');
+%! assert_equal (d.TimeZone, '+00:00');
+%!test
+%! d = datetime (2024, 3, 9, 'TimeZone', 'Etc/Zulu');
+%! assert_equal (d.TimeZone, '+00:00');
+%!test
+%! d = datetime (2024, 3, 9, 'TimeZone', 'Etc/Greenwich');
+%! assert_equal (d.TimeZone, '+00:00');
+%!test
+%! d = datetime (2024, 3, 9, 'TimeZone', 'Etc/Universal');
+%! assert_equal (d.TimeZone, '+00:00');
+%!error <datetime: unrecognized timezone: 'Etc/GMT-15'> ...
+%! datetime (2024, 3, 9, 'TimeZone', 'Etc/GMT-15')
+
+## Test the bare zero-offset aliases warn and are stored as offsets
+%!warning <datetime: 'Zulu' specifies a time zone with a fixed offset from UTC, \+00:00, which does not follow daylight saving time.> ...
+%! datetime (2024, 3, 9, 'TimeZone', 'Zulu');
+%!test
+%! warning ('off', 'Octave:datetime:nonstandard-time-zone', 'local');
+%! d = datetime (2024, 3, 9, 'TimeZone', 'GMT0');
+%! assert_equal (d.TimeZone, '+00:00');
+%!test
+%! warning ('off', 'Octave:datetime:nonstandard-time-zone', 'local');
+%! d = datetime (2024, 3, 9, 'TimeZone', 'UCT');
+%! assert_equal (d.TimeZone, '+00:00');
+%!test
+%! warning ('off', 'Octave:datetime:nonstandard-time-zone', 'local');
+%! d = datetime (2024, 3, 9, 'TimeZone', 'Universal');
+%! assert_equal (d.TimeZone, '+00:00');
+%!test
+%! warning ('off', 'Octave:datetime:nonstandard-time-zone', 'local');
+%! d = datetime (2024, 3, 9, 'TimeZone', 'Greenwich');
+%! assert_equal (d.TimeZone, '+00:00');
+%!test
+%! warning ('off', 'Octave:datetime:nonstandard-time-zone', 'local');
+%! d = datetime (2024, 3, 9, 'TimeZone', 'GMT+03');
+%! assert_equal (d.TimeZone, '+03:00');
+%!test
+%! d = datetime (2024, 3, 9, 'TimeZone', 'UTC+03:00:30');
+%! assert_equal (d.TimeZone, '+03:00:30');
+
+## Test a 'GMT' prefix warns and is stored as an offset of the same sign
+%!warning <datetime: 'GMT\+2' specifies a time zone with a fixed offset from UTC, \+02:00, which does not follow daylight saving time.> ...
+%! datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', 'GMT+2');
+%!test
+%! warning ('off', 'Octave:datetime:nonstandard-time-zone', 'local');
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', 'gmt+2');
+%! assert_equal (d.TimeZone, '+02:00');
+%!test
+%! warning ('off', 'Octave:datetime:nonstandard-time-zone', 'local');
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', 'GMT-0');
+%! assert_equal (d.TimeZone, '+00:00');
+%!test
+%! lastwarn ('');
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', 'UTC+2');
+%! assert_equal (lastwarn (), '');
+
+## Test a malformed or out-of-range fixed offset is refused
+%!error <datetime: unrecognized timezone: '\+1:30'> ...
+%! datetime (2024, 3, 9, 'TimeZone', '+1:30')
+%!error <datetime: unrecognized timezone: '\+3:5'> ...
+%! datetime (2024, 3, 9, 'TimeZone', '+3:5')
+%!error <datetime: unrecognized timezone: '\+24:00'> ...
+%! datetime (2024, 3, 9, 'TimeZone', '+24:00')
+%!error <datetime: unrecognized timezone: '-24:00'> ...
+%! datetime (2024, 3, 9, 'TimeZone', '-24:00')
+%!error <datetime: unrecognized timezone: '\+03:60'> ...
+%! datetime (2024, 3, 9, 'TimeZone', '+03:60')
+%!error <datetime: unrecognized timezone: '\+03:00:60'> ...
+%! datetime (2024, 3, 9, 'TimeZone', '+03:00:60')
+%!error <datetime: unrecognized timezone: '\+03:00:5'> ...
+%! datetime (2024, 3, 9, 'TimeZone', '+03:00:5')
+%!error <datetime: unrecognized timezone: ' \+03:00'> ...
+%! datetime (2024, 3, 9, 'TimeZone', ' +03:00')
+%!error <datetime: unrecognized timezone: '\+03:00 '> ...
+%! datetime (2024, 3, 9, 'TimeZone', '+03:00 ')
+%!error <datetime: unrecognized timezone: 'UTC \+03:00'> ...
+%! datetime (2024, 3, 9, 'TimeZone', 'UTC +03:00')
+%!error <datetime: unrecognized timezone: 'UTC\+5:3'> ...
+%! datetime (2024, 3, 9, 'TimeZone', 'UTC+5:3')
+%!error <datetime: unrecognized timezone: 'UTC\+033'> ...
+%! datetime (2024, 3, 9, 'TimeZone', 'UTC+033')
+%!error <datetime: unrecognized timezone: 'UTC\+0330'> ...
+%! datetime (2024, 3, 9, 'TimeZone', 'UTC+0330')
+%!error <datetime: unrecognized timezone: 'UTC\+030030'> ...
+%! datetime (2024, 3, 9, 'TimeZone', 'UTC+030030')
+%!error <datetime.subsasgn: unrecognized timezone: '\+24:00'> ...
+%! d = datetime (2024, 3, 9, 'TimeZone', 'UTC'); d.TimeZone = '+24:00';
+
+## Test a fixed-offset zone has no daylight saving
+%!assert_equal (isdst (datetime (2024, 7, 1, 'TimeZone', '+03:00')), false)
+%!assert_equal (hours (tzoffset (datetime (2024, 7, 1, 'TimeZone', ...
+%!              '+03:00'))), 3)
+%!assert_equal (isnan (hours (tzoffset (NaT ('TimeZone', '+03:00')))), true)
+%!assert_equal (isnan (hours (tzoffset (datetime (Inf, 1, 1, 'TimeZone', ...
+%!              '+03:00')))), true)
+
+## Test the offset of a Not-a-Time or infinite element is NaN in every zone
+%!assert_equal (isnan (hours (tzoffset (NaT ('TimeZone', 'UTC')))), true)
+%!assert_equal (isnan (hours (tzoffset (NaT ('TimeZone', ...
+%!              'Europe/Athens')))), true)
+%!assert_equal (isnan (hours (tzoffset (datetime (Inf, 1, 1, 'TimeZone', ...
+%!              'Europe/Athens')))), true)
+%!test
+%! d = datetime (2024, 3, 30, 12, 0, 0, 'TimeZone', '+02:00') + days (1);
+%! assert_equal ([day(d), hour(d)], [31, 12]);
+%!test
+%! d = datetime (2024, 3, 30, 12, 0, 0, 'TimeZone', '+02:00') + caldays (1);
+%! assert_equal ([day(d), hour(d)], [31, 12]);
+
+## Test a fixed-offset zone names instants like any other zone
+%!assert_equal (posixtime (datetime (1970, 1, 1, 3, 0, 0, 'TimeZone', ...
+%!              '+03:00')), 0)
+%!test
+%! d = datetime (0, 'ConvertFrom', 'posixtime', 'TimeZone', '+03:00');
+%! assert_equal (hour (d), 3);
+%!test
+%! d = datetime (2024, 3, 9, 12, 0, 0, 'TimeZone', 'UTC');
+%! d.TimeZone = '+05:30';
+%! assert_equal ([hour(d), minute(d)], [17, 30]);
+%!test
+%! d = datetime (2024, 3, 9, 12, 0, 0);
+%! d.TimeZone = '+05:30';
+%! assert_equal ([hour(d), minute(d)], [12, 0]);
+%!test
+%! d = datetime (2024, 3, 9, 12, 0, 0, 'TimeZone', '+05:30');
+%! d.TimeZone = '';
+%! assert_equal ([hour(d), minute(d)], [12, 0]);
+%!test
+%! d = datetime (2024, 3, 9, 12, 0, 0, 'TimeZone', '+05:30');
+%! d.TimeZone = 'UTCLeapSeconds';
+%! assert_equal (char (d), '2024-03-09T06:30:00.000Z');
+%!test
+%! d = datetime ('2024-03-09 12:00:00', 'TimeZone', '+03:00');
+%! assert_equal ([hour(d), minute(d)], [12, 0]);
+%!test
+%! d = datetime ('now', 'TimeZone', '+03:00');
+%! u = datetime ('now', 'TimeZone', 'UTC');
+%! assert_equal (d.TimeZone, '+03:00');
+%! assert_equal (abs (seconds (u - d)) < 5, true);
+%!test
+%! d = datetime ('2024-03-09 22:30', 'InputFormat', 'uuuu-MM-dd HH:mm', ...
+%!               'TimeZone', '+05:30');
+%! assert_equal (char (d, 'uuuu-MM-dd HH:mm XXX'), '2024-03-09 22:30 +05:30');
+
+## Test comparing and combining fixed-offset zones with other zones
+%!assert_equal (datetime (2024, 3, 9, 12, 0, 0, 'TimeZone', '+03:00') == ...
+%!              datetime (2024, 3, 9, 9, 0, 0, 'TimeZone', 'UTC'), true)
+%!assert_equal (isequal (datetime (2024, 3, 9, 12, 0, 0, 'TimeZone', ...
+%!              '+03:00'), datetime (2024, 3, 9, 9, 0, 0, 'TimeZone', ...
+%!              'UTC')), true)
+%!assert_equal (hours (datetime (2024, 3, 9, 12, 0, 0, 'TimeZone', ...
+%!              '+03:00') - datetime (2024, 3, 9, 12, 0, 0, 'TimeZone', ...
+%!              '+05:30')), 2.5)
+%!test
+%! d = [datetime(2024, 3, 9, 12, 0, 0, 'TimeZone', '+03:00'), ...
+%!      datetime(2024, 3, 9, 12, 0, 0, 'TimeZone', 'Europe/Athens')];
+%! assert_equal (d.TimeZone, '+03:00');
+%! assert_equal (hour (d), [12, 13]);
+%!test
+%! d = [datetime(2024, 3, 9, 12, 0, 0, 'TimeZone', 'Europe/Athens'), ...
+%!      datetime(2024, 3, 9, 12, 0, 0, 'TimeZone', '+03:00')];
+%! assert_equal (d.TimeZone, 'Europe/Athens');
+%! assert_equal (hour (d), [12, 11]);
+
+## Test a fixed-offset zone holds years the timezone database cannot
+%!test
+%! d = datetime (40000, 1, 1, 12, 0, 0, 'TimeZone', '+03:00');
+%! assert_equal ([year(d), hour(d)], [40000, 12]);
+%!test
+%! d = datetime (-40000, 1, 1, 12, 0, 0, 'TimeZone', '+03:00');
+%! assert_equal ([year(d), hour(d)], [-40000, 12]);
+%!test
+%! d = datetime (40000, 1, 1, 12, 0, 0, 'TimeZone', 'UTC');
+%! d.TimeZone = '+03:00';
+%! assert_equal ([year(d), hour(d)], [40000, 15]);
+
+## Test day-level operations on a fixed-offset zone
+%!assert_equal (char (dateshift (datetime (2024, 3, 9, 22, 30, 0, ...
+%!              'TimeZone', '+05:30'), 'start', 'day')), '09-Mar-2024')
+%!assert_equal (hours (timeofday (datetime (2024, 3, 9, 22, 30, 0, ...
+%!              'TimeZone', '+05:30'))), 22.5)
+
+## Test rendering a fixed-offset zone (MATLAB-style names via 'zzzzz')
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', '+05:30');
+%! assert_equal (char (d, 'zzzzz Z ZZZZ XXX'), ...
+%!               'UTC+5:30 +0530 UTC+05:30 +05:30');
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', '-03:30');
+%! assert_equal (char (d, 'zzzzz x'), 'UTC-3:30 -0330');
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', '-05:00');
+%! assert_equal (char (d, 'zzzzz ZZZZ XXX'), 'UTC-5 UTC-05:00 -05:00');
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', '+03:00:30');
+%! assert_equal (char (d, 'zzzzz ZZZZ XXXXX x'), ...
+%!               'UTC+3:00:30 UTC+03:00:30 +03:00:30 +03');
+%!test
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', '+00:00');
+%! assert_equal (char (d, 'zzzzz XXX Z ZZZZ x ZZZZZ'), 'GMT Z +0000 UTC +00 Z');
+%!test
+%! warning ('off', 'Octave:datetime:nonstandard-time-zone', 'local');
+%! d = datetime (2024, 3, 9, 22, 0, 0, 'TimeZone', 'GMT+2');
+%! assert_equal (char (d, 'zzzzz'), 'UTC+2');
+
 ## Test the two instants sharing a wall clock across a fall-back stay apart.
 ## On 3 November 2024 America/New_York puts its clock back at 02:00, so
 ## 01:30 comes round twice: once at UTC-4 and once at UTC-5.  Every value

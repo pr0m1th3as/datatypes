@@ -1034,6 +1034,20 @@ endfunction
 %!   delete (fn);
 %! end_unwind_protect
 
+## Round-trip: a fixed-offset zone keeps its TimeZone
+%!test
+%! fn = [tempname() '.csv'];
+%! dt = datetime (2024, 6, [15; 16], 10, 30, 0, 'TimeZone', '+05:30');
+%! T = table (dt, 'VariableNames', {'t'});
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   R = csv2table (fn);
+%!   assert_equal (R.t.TimeZone, '+05:30');
+%!   assert_equal (cellstr (char (R.t)), cellstr (char (dt)));
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
 ## Hexadecimal auto-detection still works after the detection-order fix
 %!test
 %! fn = tempname ();

@@ -978,6 +978,20 @@ endfunction
 %!   delete (fn);
 %! end_unwind_protect
 
+## Round-trip: a fixed-offset zone keeps its TimeZone
+%!test
+%! fn = [tempname() '.ods'];
+%! dt = datetime (2024, 6, [15; 16], 10, 30, 0, 'TimeZone', '+05:30');
+%! T = table (dt, 'VariableNames', {'t'});
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   R = ods2table (fn);
+%!   assert_equal (R.t.TimeZone, '+05:30');
+%!   assert_equal (cellstr (char (R.t)), cellstr (char (dt)));
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
 ## A sheet with no metadata sheet: types inferred, names from the header row
 %!test
 %! fn = [tempname() '.fods'];
