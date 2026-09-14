@@ -23793,7 +23793,7 @@ table.repelem
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 467
+# length: 660
 table: tblB = repelem ( tblA , rows , columns )
 
 Replicate elements of a table.
@@ -23802,10 +23802,13 @@ Replicates each row of the input table tblA rows times and
 each variable columns times, keeping the repeats of a row
 together, in a similar fashion to how repelem applies to a
 matrix. Each repeated variable takes a numbered name, x
-becoming x , x_1 .
+becoming x , x_1 , and so does each repeated row name.
 
-Both counts must be given. A table has exactly two dimensions, so a
-lone count is not read as applying to both, as it is for a matrix.
+Either count may be a vector with one count per row, or per variable,
+as in repelem ( tblA , [1; 2; 0], 1) , and a count of zero
+drops that row or variable. Both counts must be given. A table has
+exactly two dimensions, so a lone count is not read as applying to both,
+as it is for a matrix.
 
 
 # name: <cell-element>
@@ -28608,15 +28611,17 @@ timetable.repelem
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 535
+# length: 653
 timetable: tt2 = repelem ( tt , rows , cols )
 
 Repeat each row and variable of a timetable in place.
 
 tt2 = repelem ( tt , rows , cols ) repeats
 each row of tt rows times and each variable cols
-times, keeping the repeats of a row together. Both counts must be
-given, a timetable having exactly two dimensions. Each repeated row
+times, keeping the repeats of a row together. Either count may be a
+vector with one count per row, or per variable, and a count of zero
+drops that row or variable. Both counts must be given, a timetable
+having exactly two dimensions. Each repeated row
 carries the row time of the row it came from, so the result has
 repeated row times and is generally irregular; each repeated variable
 takes a numbered name, A becoming A , A_1 .
