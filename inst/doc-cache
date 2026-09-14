@@ -176,7 +176,7 @@ array2timetable
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1214
+# length: 1230
 datatypes: tt = array2timetable ( A , 'RowTimes' , rowTimes )
 datatypes: tt = array2timetable ( A , 'TimeStep' , dt )
 datatypes: tt = array2timetable ( A , 'SampleRate' , fs )
@@ -206,8 +206,8 @@ rows are named 'Time' .
 'TimeStep' and 'SampleRate' forms.
 
 See also:
-table2timetable,
-timetable2table,
+table.table2timetable,
+timetable.timetable2table,
 timetable,
 array2table
 
@@ -6180,7 +6180,7 @@ csv2timetable
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1591
+# length: 1601
 datatypes: tt = csv2timetable ( filename )
 datatypes: tt = csv2timetable ( filename , Name , Value )
 
@@ -6215,7 +6215,7 @@ result is always empty even when the timetable that was written had one;
 use timetable2ods and ods2timetable to keep events.
 
 See also:
-timetable2csv,
+timetable.timetable2csv,
 csv2table,
 ods2timetable,
 readtimetable,
@@ -16150,7 +16150,7 @@ eventtable.eventtable
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1992
+# length: 1998
 eventtable: et = eventtable ()
 eventtable: et = eventtable ( eventTimes )
 eventtable: et = eventtable ( tt )
@@ -16201,7 +16201,7 @@ and so are 'EventLabels' and 'EventLabelsVariable' .
 
 See also:
 timetable,
-table2timetable
+table.table2timetable
 
 
 # name: <cell-element>
@@ -17650,7 +17650,7 @@ ods2struct
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1257
+# length: 1263
 datatypes: s = ods2struct ( filename )
 
 Read every sheet of an OpenDocument spreadsheet into a scalar structure.
@@ -17679,7 +17679,7 @@ name.
 See also:
 struct2ods,
 ods2table,
-table2ods,
+table.table2ods,
 readtable
 
 
@@ -17792,7 +17792,7 @@ ods2timetable
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 2385
+# length: 2395
 datatypes: tt = ods2timetable ( filename )
 datatypes: tt = ods2timetable ( filename , Name , Value )
 
@@ -17841,7 +17841,7 @@ carries a reference of its own, an event table not being something that can
 carry an event table. All four are reachable only in a file edited by hand.
 
 See also:
-timetable2ods,
+timetable.timetable2ods,
 ods2table,
 ods2struct,
 csv2timetable,
@@ -17921,7 +17921,7 @@ readtable
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 2650
+# length: 2656
 datatypes: tbl = readtable ( filename )
 datatypes: tbl = readtable ( filename , Name , Value )
 
@@ -17981,7 +17981,7 @@ same interface as ODS. The legacy binary formats .xls and
 format.
 
 See also:
-writetable,
+table.writetable,
 csv2table,
 ods2table
 
@@ -18004,7 +18004,7 @@ readtimetable
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1791
+# length: 1801
 datatypes: tt = readtimetable ( filename )
 datatypes: tt = readtimetable ( filename , Name , Value )
 
@@ -18042,7 +18042,7 @@ worked out again from the row times. No file MATLAB can read carries an
 event table, so the result never has one; use ods2timetable for that.
 
 See also:
-writetimetable,
+timetable.writetimetable,
 readtable,
 ods2timetable,
 csv2timetable,
@@ -21227,7 +21227,7 @@ struct2ods
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1462
+# length: 1474
 datatypes: struct2ods ( filename , s )
 
 Write a scalar structure of tables to a multi-sheet OpenDocument spreadsheet.
@@ -21258,9 +21258,9 @@ resolved names must be unique.
 
 See also:
 ods2struct,
-table2ods,
+table.table2ods,
 ods2table,
-writetable
+table.writetable
 
 
 # name: <cell-element>
@@ -21333,7 +21333,7 @@ struct2xlsx
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 890
+# length: 896
 datatypes: struct2xlsx ( filename , s )
 
 Write a scalar structure of tables to a multi-sheet Excel workbook.
@@ -21355,7 +21355,7 @@ names must be unique.
 See also:
 xlsx2struct,
 struct2ods,
-writetable,
+table.writetable,
 readtable
 
 
@@ -24958,7 +24958,7 @@ table.table2timetable
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1390
+# length: 1400
 table: tt = table2timetable ( tbl )
 table: tt = table2timetable ( tbl , 'RowTimes' , rowTimes )
 table: tt = table2timetable ( tbl , 'TimeStep' , dt )
@@ -24991,7 +24991,7 @@ The row names of tbl , if it has any, are not carried over: a
 timetable labels its rows by time and by nothing else.
 
 See also:
-timetable2table,
+timetable.timetable2table,
 array2timetable,
 timetable,
 table
@@ -29557,7 +29557,7 @@ timetable.timetable
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 2552
+# length: 2558
 timetable: tt = timetable ( rowTimes , var1 , &hellip;, varN )
 timetable: tt = timetable ( var1 , &hellip;, varN , 'RowTimes' , rowTimes )
 timetable: tt = timetable ( var1 , &hellip;, varN , 'TimeStep' , dt )
@@ -29619,7 +29619,7 @@ tt = timetable () returns an empty timetable with 0 rows
 and 0 variables.
 
 See also:
-table2timetable,
+table.table2timetable,
 array2timetable,
 isregular
 
@@ -29642,7 +29642,7 @@ timetable.timetable2csv
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 2358
+# length: 2364
 timetable: timetable2csv ( tt , file )
 timetable: timetable2csv ( tt , file , Name , Value )
 
@@ -29698,7 +29698,7 @@ See also:
 csv2timetable,
 timetable2ods ,
 writetimetable ,
-table2csv
+table.table2csv
 
 
 # name: <cell-element>
@@ -29719,7 +29719,7 @@ timetable.timetable2ods
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 2760
+# length: 2766
 timetable: timetable2ods ( tt , file )
 timetable: timetable2ods ( tt , file , Name , Value )
 
@@ -29783,7 +29783,7 @@ See also:
 ods2timetable,
 timetable2csv ,
 struct2ods,
-table2ods
+table.table2ods
 
 
 # name: <cell-element>
@@ -29804,7 +29804,7 @@ timetable.timetable2table
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 993
+# length: 999
 timetable: tbl = timetable2table ( tt )
 timetable: tbl = timetable2table ( tt , 'ConvertRowTimes' , tf )
 
@@ -29828,7 +29828,7 @@ table2timetable does not bring it back. An eventtable
 given here becomes a plain table like any other timetable.
 
 See also:
-table2timetable,
+table.table2timetable,
 array2timetable,
 timetable,
 table,
@@ -30229,7 +30229,7 @@ timetable.writetimetable
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 3646
+# length: 3652
 timetable: writetimetable ( tt , filename )
 timetable: writetimetable ( tt , filename , Name , Value )
 
@@ -30309,7 +30309,7 @@ See also:
 readtimetable,
 timetable2ods ,
 timetable2csv ,
-writetable
+table.writetable
 
 
 # name: <cell-element>
@@ -30525,7 +30525,7 @@ xlsx2struct
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 843
+# length: 849
 datatypes: s = xlsx2struct ( filename )
 
 Read every sheet of an Excel workbook into a scalar structure.
@@ -30546,7 +30546,7 @@ subsequent struct2xlsx restores the exact sheet name.
 See also:
 struct2xlsx,
 readtable,
-writetable,
+table.writetable,
 ods2struct
 
 
