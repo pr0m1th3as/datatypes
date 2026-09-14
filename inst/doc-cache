@@ -17701,7 +17701,7 @@ ods2table
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 3609
+# length: 3765
 datatypes: tbl = ods2table ( filename )
 datatypes: tbl = ods2table ( filename , 'Sheet' , sheet )
 datatypes: [ tbl , rowTimesName ] = ods2table (&hellip;)
@@ -17747,7 +17747,9 @@ reconstructed as datetime and duration arrays. Integers are
 restored without loss of precision and missing cells become NaN ,
 NaT , or missing strings as appropriate. A file written before the
 names moved to the data sheet carries them on the metadata sheet, and is
-read just as well.
+read just as well. A sheet whose cells contradict the types its metadata
+declares, such as text under a numeric type after another program rewrote
+the sheet, raises an error.
 
 A sheet written from a timetable tags its leading column as row times. A
 table has no row times, so the column is returned as an ordinary leading

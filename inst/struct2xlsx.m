@@ -34,7 +34,7 @@
 ## any of the characters @qcode{[ ] * ? : / @backslashchar{}}; the resolved
 ## names must be unique.
 ##
-## @seealso{xlsx2struct, struct2ods, writetable, readtable}
+## @seealso{xlsx2struct, struct2ods, table.writetable, readtable}
 ## @end deftypefn
 
 function struct2xlsx (filename, s)

@@ -44,7 +44,7 @@
 ## contain any of the characters @qcode{[ ] * ? : / @backslashchar{}}, and the
 ## resolved names must be unique.
 ##
-## @seealso{ods2struct, table2ods, ods2table, writetable}
+## @seealso{ods2struct, table.table2ods, ods2table, table.writetable}
 ## @end deftypefn
 
 function struct2ods (filename, s)

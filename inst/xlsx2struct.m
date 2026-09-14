@@ -33,7 +33,7 @@
 ## field's table as the @qcode{'ActualSheetName'} custom property, so a
 ## subsequent @code{struct2xlsx} restores the exact sheet name.
 ##
-## @seealso{struct2xlsx, readtable, writetable, ods2struct}
+## @seealso{struct2xlsx, readtable, table.writetable, ods2struct}
 ## @end deftypefn
 
 function s = xlsx2struct (filename)

@@ -52,7 +52,8 @@
 ## worked out again from the row times.  No file MATLAB can read carries an
 ## event table, so the result never has one; use @code{ods2timetable} for that.
 ##
-## @seealso{writetimetable, readtable, ods2timetable, csv2timetable, timetable}
+## @seealso{timetable.writetimetable, readtable, ods2timetable, csv2timetable,
+## timetable}
 ## @end deftypefn
 
 function tt = readtimetable (filename, varargin)

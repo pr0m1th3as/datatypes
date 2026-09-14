@@ -63,7 +63,8 @@
 ## carries a reference of its own, an event table not being something that can
 ## carry an event table.  All four are reachable only in a file edited by hand.
 ##
-## @seealso{timetable2ods, ods2table, ods2struct, csv2timetable, timetable}
+## @seealso{timetable.timetable2ods, ods2table, ods2struct, csv2timetable,
+## timetable}
 ## @end deftypefn
 
 function tt = ods2timetable (filename, varargin)

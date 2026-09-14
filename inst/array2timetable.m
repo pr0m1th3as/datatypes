@@ -49,7 +49,8 @@
 ## @qcode{'TimeStep'} and @qcode{'SampleRate'} forms.
 ## @end multitable
 ##
-## @seealso{table2timetable, timetable2table, timetable, array2table}
+## @seealso{table.table2timetable, timetable.timetable2table, timetable,
+## array2table}
 ## @end deftypefn
 function TT = array2timetable (A, varargin)
 

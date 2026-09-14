@@ -76,7 +76,7 @@
 ## @qcode{.xlsb} are not supported; use @qcode{.xlsx}, @qcode{.ods}, or a text
 ## format.
 ##
-## @seealso{writetable, csv2table, ods2table}
+## @seealso{table.writetable, csv2table, ods2table}
 ## @end deftypefn
 
 function tbl = readtable (filename, varargin)

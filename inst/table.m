@@ -766,7 +766,7 @@ classdef table < tabular
     ## The row names of @var{tbl}, if it has any, are not carried over: a
     ## timetable labels its rows by time and by nothing else.
     ##
-    ## @seealso{timetable2table, array2timetable, timetable, table}
+    ## @seealso{timetable.timetable2table, array2timetable, timetable, table}
     ## @end deftypefn
     function TT = table2timetable (this, varargin)
 

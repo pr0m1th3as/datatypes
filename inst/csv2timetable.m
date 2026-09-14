@@ -49,7 +49,8 @@
 ## result is always empty even when the timetable that was written had one;
 ## use @code{timetable2ods} and @code{ods2timetable} to keep events.
 ##
-## @seealso{timetable2csv, csv2table, ods2timetable, readtimetable, timetable}
+## @seealso{timetable.timetable2csv, csv2table, ods2timetable, readtimetable,
+## timetable}
 ## @end deftypefn
 
 function tt = csv2timetable (filename, varargin)

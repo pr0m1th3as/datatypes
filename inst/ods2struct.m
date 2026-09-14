@@ -41,7 +41,7 @@
 ## custom property, so a subsequent @code{struct2ods} restores the exact sheet
 ## name.
 ##
-## @seealso{struct2ods, ods2table, table2ods, readtable}
+## @seealso{struct2ods, ods2table, table.table2ods, readtable}
 ## @end deftypefn
 
 function s = ods2struct (filename)

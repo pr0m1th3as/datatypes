@@ -1543,7 +1543,7 @@ classdef timetable < tabular
     ## @code{@var{tt} = timetable ()} returns an empty timetable with 0 rows
     ## and 0 variables.
     ##
-    ## @seealso{table2timetable, array2timetable, isregular}
+    ## @seealso{table.table2timetable, array2timetable, isregular}
     ## @end deftypefn
     function this = timetable (varargin)
 
@@ -4920,7 +4920,8 @@ classdef timetable < tabular
     ## @code{table2timetable} does not bring it back.  An @code{eventtable}
     ## given here becomes a plain table like any other timetable.
     ##
-    ## @seealso{table2timetable, array2timetable, timetable, table, eventtable}
+    ## @seealso{table.table2timetable, array2timetable, timetable, table,
+    ## eventtable}
     ## @end deftypefn
     function tbl = timetable2table (this, varargin)
 
@@ -5046,7 +5047,7 @@ classdef timetable < tabular
     ## @code{categorical} variables are returned as cell arrays of character
     ## vectors and their values are not reconstructed.
     ##
-    ## @seealso{csv2timetable, timetable2ods, writetimetable, table2csv}
+    ## @seealso{csv2timetable, timetable2ods, writetimetable, table.table2csv}
     ## @end deftypefn
     function timetable2csv (this, file, varargin)
       if (nargin < 2)
@@ -5139,7 +5140,7 @@ classdef timetable < tabular
     ## @code{categorical} variables are returned as cell arrays of character
     ## vectors and their values are not reconstructed.
     ##
-    ## @seealso{ods2timetable, timetable2csv, struct2ods, table2ods}
+    ## @seealso{ods2timetable, timetable2csv, struct2ods, table.table2ods}
     ## @end deftypefn
     function timetable2ods (this, file, varargin)
       if (nargin < 2)
@@ -5294,7 +5295,7 @@ classdef timetable < tabular
     ## side of a repeated hour an instant falls on, so a timestamp inside a
     ## daylight-saving fold round-trips here and would not otherwise.
     ##
-    ## @seealso{readtimetable, timetable2ods, timetable2csv, writetable}
+    ## @seealso{readtimetable, timetable2ods, timetable2csv, table.writetable}
     ## @end deftypefn
     function writetimetable (this, filename, varargin)
       if (nargin < 2)

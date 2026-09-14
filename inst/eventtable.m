@@ -218,7 +218,7 @@ classdef eventtable < timetable
     ## A length and an end are mutually exclusive, however they are given,
     ## and so are @qcode{'EventLabels'} and @qcode{'EventLabelsVariable'}.
     ##
-    ## @seealso{timetable, table2timetable}
+    ## @seealso{timetable, table.table2timetable}
     ## @end deftypefn
     function this = eventtable (varargin)
 
