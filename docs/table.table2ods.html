@@ -446,7 +446,7 @@
  <code>'replacefile'</code> discards any existing file.</td></tr>
 </table>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/5fb3419/inst/table.m#L1011">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/0ecbf17/inst/table.m#L1011">table</a>
 </div>
 
 <p> A nested table is split into columns tagged with both the outer and the
@@ -458,7 +458,7 @@
  cell arrays of character vectors and their values are not reconstructed.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/5fb3419/inst/table.m#L1011">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/0ecbf17/inst/table.m#L1011">table</a>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">
@@ -489,9 +489,17 @@
      43        69    
      40        64</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> filename = fullfile (tempdir (), 'patients.ods');
- table2ods (T, filename);</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">error: =: nonconformant arguments (op1 is 1x1, op2 is 1x2)</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> ods2table (filename)</pre>
+ table2ods (T, filename);
+ ods2table (filename)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  3x2 table
+
+    Age    Height    
+    ___    ______    
+
+     38        71    
+     43        69    
+     40        64</pre>
 
             </div>
           </div>

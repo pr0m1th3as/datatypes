@@ -432,7 +432,7 @@
  names, is taken as the row names without being named here.</td></tr>
 </table>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/5fb3419/inst/ods2table.m">ods2table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/0ecbf17/inst/ods2table.m">ods2table</a>
 </div>
 
 <p> When the file carries the hidden <code>__datatypes_meta__</code> sheet written by
@@ -443,7 +443,9 @@
  restored without loss of precision and missing cells become <code>NaN</code>,
  <code>NaT</code>, or missing strings as appropriate.  A file written before the
  names moved to the data sheet carries them on the metadata sheet, and is
- read just as well.
+ read just as well.  A sheet whose cells contradict the types its metadata
+ declares, such as text under a numeric type after another program rewrote
+ the sheet, raises an error.
 </p>
 <p> A sheet written from a timetable tags its leading column as row times.  A
  table has no row times, so the column is returned as an ordinary leading
@@ -468,7 +470,7 @@
  arrays of character vectors and their values are not reconstructed.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/5fb3419/inst/ods2table.m">ods2table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/0ecbf17/inst/ods2table.m">ods2table</a>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">
