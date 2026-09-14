@@ -681,6 +681,19 @@
 %! d = datetime ({'2024-01-15', '2024-04-31'}, 'InputFormat', 'yyyy-MM-dd');
 %! assert_equal (isnat (d), [false, true])
 %! assert_equal (cellstr (d), {'15-Jan-2024', 'NaT'})
+%!test  # an unreadable element beside a blank is still an array element
+%! d = datetime ({'garbage', ''}, 'InputFormat', 'uuuu-MM-dd');
+%! assert_equal (isnat (d), [true, true])
+%!test
+%! d = datetime ({'2024-02-30', ''}, 'InputFormat', 'uuuu-MM-dd');
+%! assert_equal (isnat (d), [true, true])
+%!test
+%! d = datetime ({''; '2024-04-31'; ''}, 'InputFormat', 'yyyy-MM-dd');
+%! assert_equal (isnat (d), [true; true; true])
+%!error <datetime: could not parse the date/time string 'garbage' with 'InputFormat' 'uuuu-MM-dd'.> ...
+%! datetime (['garbage   '; '          '], 'InputFormat', 'uuuu-MM-dd')
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ({'2024-13-45', ''})
 %!test
 %! d = datetime ({'xx', '2024-01-15'}, 'InputFormat', 'yyyy-MM-dd');
 %! assert_equal (isnat (d), [true, false])

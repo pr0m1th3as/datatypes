@@ -963,8 +963,14 @@ classdef datetime
                 now6 = clock ();
                 pivot = now6(1) - 50;
               endif
+              ## Blanks are gone from LIVE, so its length cannot say whether
+              ## the input was a single string: an unreadable element beside a
+              ## blank is NaT, as MATLAB does.  A character matrix keeps the
+              ## old count, since MATLAB refuses one with an unreadable row.
+              lone = numel (DateStrings) == 1 ...
+                     || (ischar (args{1}) && numel (live) == 1);
               DV = dtParseInput (live, inputFormat, pivot, Locale, ...
-                                 dtIsLeapZone (TimeZone));
+                                 dtIsLeapZone (TimeZone), lone);
             elseif (dtIsLeapZone (TimeZone))
               ## A leap-second array reads text in the one shape it can also
               ## write, so nothing is auto-detected here: the string must be
@@ -7406,12 +7412,13 @@ endfunction
 ## accent-insensitively against the locale tables.  Two-digit years are
 ## resolved against PIVOT.  Fields absent from the format default to the
 ## current date (year/month/day) or to zero (time), matching MATLAB.
-function DV = dtParseInput (strs, fmt, pivot, locale, leapok = false)
+function DV = dtParseInput (strs, fmt, pivot, locale, leapok = false, ...
+                            lone = numel (strs) == 1)
   ## An unset 'Locale' arrives as [], which the helper reads as English.
   if (isempty (locale))
     locale = '';
   endif
-  DV = __ldml__ ('parse', strs, fmt, pivot, locale, leapok);
+  DV = __ldml__ ('parse', strs, fmt, pivot, locale, leapok, lone);
 endfunction
 
 ## Render each element of a datetime array to a display string under a

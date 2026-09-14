@@ -467,7 +467,7 @@ days_in_month (double Y, double M)
 // owns the leap-second table.
 static Matrix
 ldml_parse (const Cell& strs, const string& fmt, double pivot, int lidx,
-            bool leapok)
+            bool leapok, bool lone)
 {
   vector<Token> toks;
   tokenize (fmt, toks);
@@ -812,8 +812,10 @@ ldml_parse (const Cell& strs, const string& fmt, double pivot, int lidx,
     {
       // A lone string that cannot be converted is an error, but within an
       // array only the offending element is lost, becoming NaT, as MATLAB
-      // does -- one bad row must not cost the whole column.
-      if (n == 1)
+      // does -- one bad row must not cost the whole column.  LONE comes from
+      // the caller, which has already removed blanks and so knows whether the
+      // input was a single string where N does not.
+      if (lone)
       {
         error ("datetime: could not parse the date/time string '%s' with "
                "'InputFormat' '%s'.", s.c_str (), fmt.c_str ());
@@ -1359,10 +1361,10 @@ package.  Do NOT use this function directly. \n\
 
   if (action == "parse")
   {
-    if (args.length () != 5 && args.length () != 6)
+    if (args.length () < 5 || args.length () > 7)
     {
-      error ("__ldml__: 'parse' takes STRS, FMT, PIVOT, LOCALE, and an "
-             "optional LEAPOK flag.");
+      error ("__ldml__: 'parse' takes STRS, FMT, PIVOT, LOCALE, and optional "
+             "LEAPOK and LONE flags.");
     }
     if (! args(1).iscellstr ())
     {
@@ -1382,8 +1384,10 @@ package.  Do NOT use this function directly. \n\
     {
       error ("__ldml__: unsupported locale '%s'.", locale.c_str ());
     }
-    bool leapok = (args.length () == 6 && args(5).bool_value ());
-    return ovl (ldml_parse (strs, fmt, pivot, lidx, leapok));
+    bool leapok = (args.length () >= 6 && args(5).bool_value ());
+    bool lone = (args.length () == 7 ? args(6).bool_value ()
+                                     : strs.numel () == 1);
+    return ovl (ldml_parse (strs, fmt, pivot, lidx, leapok, lone));
   }
 
   if (action == "symbols")
