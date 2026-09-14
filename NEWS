@@ -1,52 +1,29 @@
-Summary of important user-visible changes for datatypes 1.4.0:
+Summary of important user-visible changes for datatypes 1.4.1:
 --------------------------------------------------------------
 
- This release adds the `timetable` class and its event tables, and reworks the
- metadata every tabular class shares.  It breaks code written against the old
- `Properties` struct.
+ This patch release completes the time zone support of `datetime`: the
+ `'local'` zone, fixed offsets from UTC, and text carrying an offset or a zone
+ abbreviation.  It ships release 2026d of the Time Zone Database.
 
- ** New classes: `timetable`, `eventtable`, `eventfilter`, and the
-    `datatypes.tabular` properties objects.
+ ** `'TimeZone'` accepts `'local'`, and a fixed offset such as `'+05:30'` in
+    every spelling MATLAB accepts, `'Etc/GMT-3'` included.
+    `datetime.SystemTimeZone` returns the IANA name of the system zone, not
+    an abbreviation.
 
- ** `timetable` carries 37 methods: `retime` and `synchronize`, the joins, the
-    grouping family, `rowfun`/`varfun`, the missing-data family, ordering and
-    range predicates, and the variable-management family.
+ ** An `'InputFormat'` with a `z`, `Z`, `X` or `x` field reads the offset or
+    zone abbreviation each string carries, and requires `'TimeZone'`.  ISO
+    8601 text ending in `Z` or an offset is also read without an
+    `'InputFormat'`.
 
- ** Three file routes carry a timetable both ways: `timetable2csv`/
-    `csv2timetable`, `timetable2ods`/`ods2timetable`, and the
-    MATLAB-compatible `writetimetable`/`readtimetable`.  An event table
-    survives only the OpenDocument route.
+ ** `csv2table`, `ods2table` and timetable row subscripts keep the offset such
+    text carries, where they used to drop it.
 
- ** `discretize`, `histcounts`, `groupcounts`, `groupfilter`, `groupsummary`
-    and `grouptransform` are listed in INDEX.  They shipped in 1.3.4 but were
-    absent from the catalogue, so `pkg describe` and `lookfor` did not find
-    them.
+ ** `tzoffset` returns the daylight saving part of each offset as a second
+    output, and `isdst` no longer reports the winter of `Europe/Dublin` or
+    `Africa/Casablanca` as daylight saving time.
 
- ** 27 improvements and 77 bug fixes, the largest groups in `retime`,
-    `fillmissing`, `table`, `datetime` and `string`.
+ ** Unreadable text: a string beside a blank element becomes NaT instead of
+    raising an error, while an array with no readable text and no blank
+    element, or detected text whose first string cannot be read, raises one.
 
-
-Backwards incompatible improvements:
-
- ** `Properties` is an object, not a struct, and no longer carries
-    `VariableValues`.  Code calling `isstruct` on it, or reaching for
-    `VariableValues`, must change.
-
- ** `csv2table` no longer takes the first column of a plain CSV as row names.
-    A file read before this release gives a different table now.
-
- ** An unset `VariableUnits` or `VariableDescriptions` is empty rather than a
-    cell of empty strings.
-
- ** `repelem` on a table or timetable requires both counts.  A count of zero
-    is accepted and empties that dimension.
-
- ** `table2timetable` and `timetable2table` are methods of `table` and
-    `timetable`.
-
- ** The three readers and the three writers take one set of name options.
-
- ** CSV and ODS files carry datetime and duration differently.
-
- ** `summary` prints its statistics block as the current MATLAB does, and
-    reports the mean and the standard deviation.
+ ** A `'Locale'` may be written with a hyphen, as in `'en-GB'`.
