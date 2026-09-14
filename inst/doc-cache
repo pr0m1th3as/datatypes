@@ -6348,13 +6348,15 @@ datetime.SystemTimeZone
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 152
+# length: 292
 datetime: property SystemTimeZone
 
 System time zone setting
 
 A read-only property specifying the local time zone of the system, where
-Octave is running.
+Octave is running, as the name of a zone in the IANA Time Zone Database,
+such as 'Europe/Athens' . It is 'UTC' when the system
+time zone cannot be determined.
 
 
 # name: <cell-element>
@@ -6375,7 +6377,7 @@ datetime.TimeZone
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 987
+# length: 1851
 datetime: property TimeZone
 
 Time zone
@@ -6383,6 +6385,25 @@ Time zone
 Time zone, specified as a character vector or string scalar. If
 specified as a string scalar, it is converted and stored internally as
 a character vector.
+
+Setting it to 'local' , in any letter case, stores the system time
+zone given by datetime.SystemTimeZone .
+
+A fixed offset from UTC, which never observes daylight saving time, is
+stored as '+HH:MM' or '-HH:MM' , or as
+'+HH:MM:SS' when the offset has seconds, and may be up to 23
+hours and 59 minutes either way. It may also be given as '+H' ,
+'+HH' , '+HMM' , '+HHMM' or '+HHMMSS' ,
+as 'Z' for a zero offset, or with 'UTC' or 'GMT'
+in front, in any letter case, as 'UTC+H' , 'UTC+HH' ,
+'UTC+H:MM' , 'UTC+HH:MM' or 'UTC+HH:MM:SS' . The
+database&rsquo;s own fixed-offset zones, such as 'Etc/GMT-3' and
+'Etc/UTC' , are stored as offsets as well. A 'GMT'
+prefix and the names 'GMT0' , 'Zulu' , 'UCT' ,
+'Universal' and 'Greenwich' raise a warning. Unlike the
+database names, whose sign is reversed, '+03:00' ,
+'GMT+3' and 'Etc/GMT-3' are all three hours ahead of
+UTC.
 
 Besides the zones of the IANA Time Zone Database, the value
 'UTCLeapSeconds' selects UTC with its inserted leap seconds made
@@ -6965,7 +6986,7 @@ datetime.datetime
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 16155
+# length: 18040
 datetime: T = datetime ( 'now' )
 datetime: T = datetime ( 'today' )
 datetime: T = datetime ( 'tomorrow' )
@@ -7000,15 +7021,22 @@ text that is not blank, and every other piece is then read with that same
 format: text written in a different one is not given a format of its own
 but becomes NaT , so that a column of dates is read as the single
 thing it is meant to be. Text no format can be detected from at all is
-refused outright. A date that the detected format cannot make sense of,
-such as '2024-04-31' , is refused in the same way an explicit
-'InputFormat' refuses it.
+refused outright, and so is text whose first piece that is not blank
+the detected format cannot read, whatever follows it. A character
+matrix is no exception, where MATLAB returns only NaT for one
+whose first row is blank, even when a later row can be read. A later
+date that the detected format cannot make sense of, such as
+'2024-04-31' , is lost in the same way an explicit
+'InputFormat' loses it.
 
 The formats detected are:
 
 'uuuu-MM-dd' optionally followed by 'HH:mm' ,
 'HH:mm:ss' , or either with fractional seconds, the date and the
-time separated by a space or by 'T' .
+time separated by a space or by 'T' . The time may carry a UTC
+offset, 'Z' , '+HH' , '+HHMM' or '+HH:MM' ,
+which is read as with an offset field and so requires
+'TimeZone' . MATLAB detects no text carrying an offset.
 'dd-MMM-uuuu' month named in full or abbreviated,
 optionally followed by a time as above.
 'MMMM d, uuuu' as in 'March 15, 2024' .
@@ -7054,7 +7082,30 @@ A string that does not match INFMT , or that names a date which does
 not exist, such as '2024-04-31' or a 29th of February outside a
 leap year, cannot be converted. A lone such string is an error; within
 an array only that element is lost and becomes NaT , so that one
-unreadable entry does not cost the rest of the array.
+unreadable entry does not cost the rest of the array. An array none of
+whose text can be read is an error too, unless it holds a blank element;
+a character matrix none of whose rows can be read is always an error.
+
+An INFMT with a time zone offset field, 'z' , 'Z' ,
+'X' or 'x' , reads each string as an instant, its wall
+clock less the offset it carries, and expresses it in the zone given by
+'TimeZone' , which is then required. The offset settles a
+repeated or skipped wall clock, so such text is never rejected for
+naming one. Every width of 'Z' , 'X' and 'x'
+reads the same forms: 'Z' for zero, a signed offset such as
+'-5' , '-05' , '-0500' , '-05:00' or
+'-05:00:30' , and either of those after 'GMT' or
+'UTC' , which alone is zero. 'z' reads the same, and a
+time zone abbreviation such as 'EST' , 'CET' or
+'MSK' , in any letter case. An abbreviation with two meanings is
+read only under a LOCALE that settles it: 'BST' is +01:00
+under 'en_GB' and +06:00 under 'en_CA' , 'IST' is
++01:00 under 'en_IE' and +05:30 under 'en_IN' and
+'en_CA' , 'ACST' is +09:30 under 'en_AU' and
+-04:00 under 'pt_BR' , and 'AMT' is -04:00 under
+'pt_BR' . Under any other LOCALE they are refused, where
+MATLAB reads 'BST' as +06:00 and 'IST' as +05:30 by
+default.
 
 T = datetime ( DateStrings , 'InputFormat' ,
 INFMT , 'PivotYear' , PIVOT ) also allows to specify a
@@ -7074,7 +7125,8 @@ default), 'fr' , 'de' , 'es' , 'it' ,
 case-insensitively; for Greek, matching is also accent-insensitive, so
 the accentless all-caps spelling is accepted, and the genitive month
 forms ( 'Μαρτίου' ) are used. A weekday name is validated but does
-not otherwise affect the result.
+not otherwise affect the result. A hyphen may stand for the underscore,
+as in 'fr-FR' .
 
 T = datetime ( DateVectors ) creates a column vector of
 datetime values from the date vectors in DateVectors .
@@ -7182,9 +7234,9 @@ ignored, while 'ConvertFrom' is an error.
 T = datetime (&hellip;, 'Format' , FMT )
 specifies the display format of the values in the output datetime array.
 FMT uses the same Unicode LDML date field symbols as
-'InputFormat' , with 'z' , 'Z' , 'X' , and
-'x' additionally naming the time zone, and text between single
-quotes taken literally. The default format renders a date alone when
+'InputFormat' , 'z' , 'Z' , 'X' , and
+'x' naming the time zone, and text between single quotes taken
+literally. The default format renders a date alone when
 every element sits at midnight and a date with a time otherwise; a
 NaT carries no time of day and does not affect that choice.
 
@@ -7192,8 +7244,12 @@ T = datetime (&hellip;, 'TimeZone' , TZ ) sets
 the time zone of the values in the output datetime array. If not
 specified, the array is unzoned: its values are wall-clock readings that
 name no absolute instant, and no daylight saving rule applies to them.
-Supported time zones are those of the IANA Time Zone Database. A zone
-may also be attached, changed, or dropped afterwards through the
+Supported time zones are those of the IANA Time Zone Database, and
+'local' , in any letter case, names the system time zone given by
+datetime.SystemTimeZone , which is what the property stores. A
+fixed offset from UTC such as '+05:30' is accepted too; see the
+TimeZone property for its spellings. A zone may also be
+attached, changed, or dropped afterwards through the
 'TimeZone' property; attaching one reinterprets the wall-clock
 values in that zone, whereas changing between two zones preserves the
 absolute instant and shifts the wall-clock values by the difference in
@@ -10366,8 +10422,9 @@ datetime.tzoffset
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 424
+# length: 907
 datetime: DT = tzoffset ( T )
+datetime: [ DT , DST ] = tzoffset ( T )
 
 Time zone offset of a datetime array.
 
@@ -10376,7 +10433,17 @@ element of the input datetime array T as a duration array
 DT of the same size as T . The offset is positive for time
 zones east of UTC and includes the additional hour when daylight saving
 time is in effect. If T has no time zone, or for Not-A-Time
-( NaT ) values, the corresponding offset is NaN .
+( NaT ) and infinite values, the corresponding offset is
+NaN .
+
+[ DT , DST ] = tzoffset ( T ) also returns the
+daylight saving time part of each offset as a duration array
+DST : zero in standard time and in a time zone without daylight
+saving time, and NaN wherever DT is. Where the IANA
+database writes the winter of a time zone as a negative saving, as for
+'Europe/Dublin' or 'Africa/Casablanca' , the other half of
+the year is counted as the daylight saving time instead, and
+isdst agrees.
 
 
 # name: <cell-element>

@@ -129,12 +129,12 @@ __ldml__
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 603
-: DV = __ldml__ ("parse", strs , fmt , pivot , locale )
+# length: 732
+: [ DV , OFF ] = __ldml__ ("parse", strs , fmt , pivot , locale )
 
 Parse date/time strings under an LDML 'InputFormat' pattern.
 
-strs is a cell array of character vectors, fmt an LDML pattern, pivot the two-digit year pivot, and locale a language tag such as 'fr_FR' (empty or 'system' for English). The return value is an N-by-6 date-vector matrix.
+strs is a cell array of character vectors, fmt an LDML pattern, pivot the two-digit year pivot, and locale a language tag such as 'fr_FR' (empty or 'system' for English). The return value is an N-by-6 date-vector matrix, and the second output OFF the UTC offset in seconds each string carries in an offset field, NaN where it carries none.
 
 syms = __ldml__ ("symbols", fmt ) returns the field symbols of fmt , in order and one character per field run, with literal text omitted.
 
