@@ -599,6 +599,10 @@
 %! assert_equal (s.NumMissing, [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
 %! assert_equal (isequaln (s.Max, C), true);
 %! assert_equal (isequaln (s.Median, C), true);
+%!test  # a category name too wide for the terminal is cut, the others are not
+%! out = evalc ('summary (categorical ({repmat(''a'', 1, 500); ''b''}))');
+%! assert_equal (isempty (strfind (out, 'a ... ')), false);
+%! assert_equal (isempty (regexp (out, '\<b\>', 'once')), false);
 %!test
 %! s = summary (categorical ([1, 2, 1, 3, 2, 3, 2, 1, 3, NaN], [1, 2, 3], ...
 %!                           {'l','m','h'}, 'Ordinal', true), 1, ...

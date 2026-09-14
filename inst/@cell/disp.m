@@ -58,6 +58,12 @@ endfunction
 %! want = "\n  0x0 empty cell array\n\n";
 %! assert_equal (evalc ('disp (cell (0, 0))'), want);
 
+%!test  # a text too wide for the terminal is cut, the text beside it is not
+%! C = {repmat('a', 1, 500); 'categorical'};
+%! out = evalc ('disp (C)');
+%! assert_equal (isempty (strfind (out, 'a ... ''')), false);
+%! assert_equal (isempty (strfind (out, '''categorical''')), false);
+
 ## Test 'disp' names nothing, so it prints what 'display' prints for a value
 ## that has no name of its own
 %!test

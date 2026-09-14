@@ -198,10 +198,11 @@ function [dispstr, optLen]  = mixedcell2str (data, cols)
 
   ## Make sure a single column does not exceed terminal size
   if (optLen > cols)
-    for i = 1:sum (is_char)
-      hm_idx = find (is_char, i);
-      sf = @(x) sprintf ("'%s ... '", x(1:cols-10));
-      dispstr(hm_idx) = cellfun (sf, data(hm_idx), "UniformOutput", false);
+    ## Truncate only a text too wide for the column, leaving shorter ones whole.
+    for i = find (is_char)'
+      if (numel (dispstr{i}) > cols)
+        dispstr{i} = sprintf ("'%s ... '", data{i}(1:cols-10));
+      endif
     endfor
     for i = 1:sum (is_bool)
       hm_idx = find (is_bool)(i);
