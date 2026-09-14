@@ -448,11 +448,11 @@
  bin count was requested they are returned as a row vector.
 </p>
 <p> <strong>See also: </strong>
-  <a href="https:__github.com_pr0m1th3as_datatypes_blob_d1c9662_inst_histcounts.m.html">histcounts</a>, 
-  <a href="https:__github.com_pr0m1th3as_datatypes_blob_d1c9662_inst_categorical.m.html">categorical</a>
+  <a href="histcounts.html">histcounts</a>, 
+  <a href="categorical.html">categorical</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/d1c9662/inst/discretize.m">discretize</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/5fb3419/inst/discretize.m">discretize</a>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">
@@ -523,9 +523,12 @@ edges =
           </div>
           <div class="collapse show" id="discretize-example3">
             <div class="card-body">
-                <p>Return a label per bin rather than an index.</p>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> discretize ([0, 1, 2, 3, 4, 5, 6], [1, 3, 5], {'low', 'high'})</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">error: discretize: all elements of X must belong to a bin when VALUES is a cell array.</pre>
+                <p>Return a label per bin rather than an index.  Every value must fall in a bin when the labels are a cell array.</p>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> discretize ([1, 2, 3, 4, 5], [1, 3, 5], {'low', 'high'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  1x5 cell array
+
+    {'low'}    {'low'}    {'high'}    {'high'}    {'high'}</pre>
 
             </div>
           </div>

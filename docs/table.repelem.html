@@ -387,13 +387,16 @@
  each variable <var>columns</var> times, keeping the repeats of a row
  together, in a similar fashion to how <code>repelem</code> applies to a
  matrix.  Each repeated variable takes a numbered name, <code>x</code>
- becoming <code>x</code>, <code>x_1</code>.
+ becoming <code>x</code>, <code>x_1</code>, and so does each repeated row name.
 </p>
-<p> Both counts must be given.  A table has exactly two dimensions, so a
- lone count is not read as applying to both, as it is for a matrix.
+<p> Either count may be a vector with one count per row, or per variable,
+ as in <code>repelem (<var>tblA</var>, [1; 2; 0], 1)</code>, and a count of zero
+ drops that row or variable.  Both counts must be given.  A table has
+ exactly two dimensions, so a lone count is not read as applying to both,
+ as it is for a matrix.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/d1c9662/inst/table.m#L4152">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/5fb3419/inst/table.m#L4155">table</a>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">
@@ -438,7 +441,18 @@
     "Brown"        A</pre>
                 <p>A vector count sets the repeat count per row — here row 1 once, row 2 twice, row 3 three times.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> repelem (T, [1; 2; 3], 1)</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">error: table.repelem: replication factors must be nonnegative integer-valued scalars.</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  6x2 table
+
+     Name      Grade    
+    _______    _____    
+
+    "Li"           A    
+    "Diaz"         B    
+    "Diaz"         B    
+    "Brown"        A    
+    "Brown"        A    
+    "Brown"        A</pre>
 
             </div>
           </div>

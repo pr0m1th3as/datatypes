@@ -425,18 +425,20 @@
 <div class="ms-5">
 <p> <code><var>tt2</var> = repelem (<var>tt</var>, <var>rows</var>, <var>cols</var>)</code> repeats
  each row of <var>tt</var> <var>rows</var> times and each variable <var>cols</var>
- times, keeping the repeats of a row together.  Both counts must be
- given, a timetable having exactly two dimensions.  Each repeated row
+ times, keeping the repeats of a row together.  Either count may be a
+ vector with one count per row, or per variable, and a count of zero
+ drops that row or variable.  Both counts must be given, a timetable
+ having exactly two dimensions.  Each repeated row
  carries the row time of the row it came from, so the result has
  repeated row times and is generally irregular; each repeated variable
  takes a numbered name, <code>A</code> becoming <code>A</code>, <code>A_1</code>.
 </p>
 <p> <strong>See also: </strong>
   <a href="timetable.repmat.html">repmat</a>, 
-  <a href="https:__github.com_pr0m1th3as_datatypes_blob_d1c9662_inst_timetable.m.html">timetable</a>
+  <a href="timetable.html">timetable</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/d1c9662/inst/timetable.m#L2011">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/5fb3419/inst/timetable.m#L2013">timetable</a>
 </div>
 
             </div>

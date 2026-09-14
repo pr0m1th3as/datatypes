@@ -433,7 +433,7 @@
  rows to it), or <code>'replacefile'</code> (overwrite the whole file).</td></tr>
 </table>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/d1c9662/inst/table.m#L1143">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/5fb3419/inst/table.m#L1143">table</a>
 </div>
 
 <p> When the target spreadsheet already exists, the sheet named by
@@ -456,7 +456,7 @@
  <code>.xlsx</code>, <code>.ods</code>, or a text format.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/d1c9662/inst/table.m#L1143">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/5fb3419/inst/table.m#L1143">table</a>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">
@@ -526,7 +526,14 @@
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> filename = fullfile (tempdir (), 'patients.ods');
  writetable (T, filename, 'Sheet', 'Cohort', 'WriteRowNames', true);
  readtable (filename, 'Sheet', 'Cohort', 'ReadRowNames', true)</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">error: C(_,3): out of bound 2 (dimensions are 2x2)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  2x2 table
+
+            Age    Height    
+            ___    ______    
+
+    Li       38        71    
+    Diaz     43        69</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> delete (filename);</pre>
 
             </div>
