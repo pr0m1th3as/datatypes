@@ -63,7 +63,9 @@
 ## restored without loss of precision and missing cells become @code{NaN},
 ## @code{NaT}, or missing strings as appropriate.  A file written before the
 ## names moved to the data sheet carries them on the metadata sheet, and is
-## read just as well.
+## read just as well.  A sheet whose cells contradict the types its metadata
+## declares, such as text under a numeric type after another program rewrote
+## the sheet, raises an error.
 ##
 ## A sheet written from a timetable tags its leading column as row times.  A
 ## table has no row times, so the column is returned as an ordinary leading
@@ -223,7 +225,8 @@ function [tbl, rowTimesName] = ods2table (filename, varargin)
   ## A leading RowNames column is tagged in the type row; the column is
   ## consumed either way, and kept only when the caller asked for it.
   RowNames = {};
-  if (strcmp (T{1,1}, 'RowNames'))
+  rowNamesTagged = strcmp (T{1,1}, 'RowNames');
+  if (rowNamesTagged)
     if (readRowNames)
       RowNames = ods_column_strings (data(:,1), vtype(:,1));
     endif
@@ -233,6 +236,21 @@ function [tbl, rowTimesName] = ods2table (filename, varargin)
     if (! isempty (D)),  D(:,1) = [];  endif
     if (! isempty (U)),  U(:,1) = [];  endif
   endif
+
+  ## A sheet replaced by another writer can leave metadata that no longer fits
+  ## it; a text, date or time cell under a numeric or logical type gives it away.
+  numvartype = {'double', 'single', 'int8', 'uint8', 'int16', 'uint16', ...
+                'int32', 'uint32', 'int64', 'uint64', 'logical'};
+  for c = 1:min (size (T, 2), size (vtype, 2))
+    col = T(:,c);
+    col = col(! cellfun (@isempty, col));
+    if (! isempty (col) && any (strcmp (col{end}, numvartype))
+        && any (ismember (vtype(:,c), {'string', 'date', 'time'})))
+      error (strcat ("ods2table: the metadata in '%s' does not match its", ...
+                     " sheet: column %d holds text but is declared '%s'."), ...
+             file, c + rowNamesTagged, col{end});
+    endif
+  endfor
 
   ## Without a name block there is nothing to group the columns by, so each
   ## column is one variable, numbered, and carries the innermost type it was
@@ -1038,6 +1056,37 @@ endfunction
 %!   writetable (table ([5; 6], 'VariableNames', {'y'}), fn, 'Sheet', 'A');
 %!   assert_equal (ods2table (fn, 'Sheet', 'A').y, [5; 6]);
 %!   assert_equal (class (ods2table (fn, 'Sheet', 'B').g), 'string');
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## Metadata that no longer fits its sheet raises instead of being misapplied
+%!error <ods2table: the metadata in '.*' does not match its sheet: column 2 holds text but is declared 'double'.>
+%! fn = [tempname() '.fods'];
+%! T = table ([38; 43], {'Li'; 'Diaz'}, 'VariableNames', {'Age', 'Who'});
+%! table2ods (T, fn);
+%! unwind_protect
+%!   txt = strrep (fileread (fn), '<text:p>cell</text:p>', ...
+%!                 '<text:p>double</text:p>');
+%!   fid = fopen (fn, 'w');
+%!   fputs (fid, txt);
+%!   fclose (fid);
+%!   ods2table (fn);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+%!error <ods2table: the metadata in '.*' does not match its sheet: column 3 holds text but is declared 'double'.>
+%! fn = [tempname() '.fods'];
+%! T = table ([38; 43], {'Li'; 'Diaz'}, 'VariableNames', {'Age', 'Who'}, ...
+%!            'RowNames', {'r1', 'r2'});
+%! table2ods (T, fn);
+%! unwind_protect
+%!   txt = strrep (fileread (fn), '<text:p>cell</text:p>', ...
+%!                 '<text:p>double</text:p>');
+%!   fid = fopen (fn, 'w');
+%!   fputs (fid, txt);
+%!   fclose (fid);
+%!   ods2table (fn);
 %! unwind_protect_cleanup
 %!   delete (fn);
 %! end_unwind_protect
